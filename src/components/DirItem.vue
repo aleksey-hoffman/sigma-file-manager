@@ -377,7 +377,9 @@ export default {
       return new Promise((resolve, reject) => {
         const itemType = this.$utils.getFileType(dirItemRealPath)
         const disallowedMimes = [
-          'image/svg+xml'
+          'image/svg+xml',
+          'image/heic',
+          'image/vnd.adobe.photoshop'
         ]
         if (dirItemFileType === 'image' && !disallowedMimes.includes(itemType.mime)) {
           this.fetchImageThumb(dirItemThumbContainer, dirItemRealPath, dirItemNode)
