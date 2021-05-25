@@ -24,8 +24,20 @@ export default async function getStorageDevices () {
 async function addPropertiesToDrivesData (drives) {
   for (let index = 0; index < drives.length; index++) {
     const drive = drives[index]
-    const size = await diskusage.check(drive.mount)
-    const percentUsed = Math.floor((1 - (size.free / size.total)) * 100)
+
+    let size
+    let percentUsed
+
+    try {
+      size = await diskusage.check(drive.mount)
+      percentUsed = Math.floor((1 - (size.free / size.total)) * 100)
+    }
+    catch (e) {
+      // Drive couldn't be checked by diskusage, likely because it isn't readable
+      size = { available: 0, free: 0, total: 0 }
+      percentUsed = 0
+    }
+
     drive.size = size
     drive.percentUsed = percentUsed
     drive.titleSummary = getDriveTitleSummary(drive)
@@ -43,6 +55,10 @@ function processDrivesData (drives) {
       const isSwap = drive.fsType === 'swap'
       return allowedTypes && !isSwap
     })
+  }
+  else if (process.platform === 'win32') {
+    // Filter out drives with empty 'fsType' property (likely RAW drives or CD/DVD Drives)
+    drives = drives.filter(drive => drive.fsType !== '')
   }
   return drives
 }
