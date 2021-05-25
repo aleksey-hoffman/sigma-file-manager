@@ -1,8 +1,8 @@
 <img src="./.github/media/logo-1024x1024.png" width="64px">
 
-# Sigma file manager
+# Sigma File Manager
 
-"Sigma file manager" is a free, open-source, quickly evolving, modern file manager (explorer / finder) app for Windows, MacOS, and Linux.
+"Sigma File Manager" is a free, open-source, quickly evolving, modern file manager (explorer / finder) app for Windows, MacOS, and Linux.
 
 Designed, developed, and maintained by [Aleksey Hoffman](https://github.com/aleksey-hoffman)
 
@@ -442,7 +442,7 @@ If you want to see the list of features currently in development, or ask a quest
 - <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/issues/new?template=Problem_report.md">Create new problem report</a>
 - <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/discussions">Create new discussion</a>
 - <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/blob/main/CHANGELOG.md">See changelog (update history)</a>
-- <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/issues/issues/1">See improvements in development</a>
+- <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/discussions/31">See improvements in development</a>
 
 # Special thanks
 
