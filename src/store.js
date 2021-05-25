@@ -4432,8 +4432,8 @@ export default new Vuex.Store({
                   timeout: 8000,
                   closeButton: true,
                   title: 'Renamed 1 item',
-                  message: `<b>Was</b>: ${newName}
-                            <br><b>Now</b>: ${oldName}`,
+                  message: `<b>Was</b>: ${oldName}
+                            <br><b>Now</b>: ${newName}`,
                   actionButtons: [
                     {
                       title: localize.get('text_undo'),
