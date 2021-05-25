@@ -1,0 +1,784 @@
+<!-- SPDX-License-Identifier: GPL-3.0-or-later
+License: GNU GPLv3 or later. See the license file in the project root for more information.
+Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
+-->
+
+<template>
+  <div>
+    <v-menu
+      v-model="contextMenus.dirItem.value"
+      id="context-menu--navigator"
+      transition="context-menu-transition"
+      :position-x="contextMenus.dirItem.x"
+      :position-y="contextMenus.dirItem.y"
+      :close-on-content-click="false"
+      offset-y
+      absolute
+    >
+      <div class="context-menu__container">
+        <transition
+          :name="contextMenus.dirItem.subMenu.value
+            ? 'context-sub-menu-transition'
+            : 'context-sub-menu-transition-reversed'"
+          mode="out-in"
+        >
+          <div key="mainMenu" v-if="!contextMenus.dirItem.subMenu.value">
+            <v-list dense>
+              <!-- context-menu::main-view::toolbar -->
+              <div class="context-menu__toolbar">
+                <v-tooltip
+                  v-for="(item, index) in filteredList(toolbarItems)"
+                  :key="'toolbar-item-' + index"
+                  open-delay="200"
+                  max-width="300px"
+                  bottom
+                >
+                  <template v-slot:activator="{ on }">
+                    <v-btn v-on="on"
+                      @click.stop="runOnClickEvent(item)"
+                      class="context-menu__button"
+                      :active="item.isActive"
+                      icon small
+                    >
+                      <div class="indicator"></div>
+                      <v-icon :size="item.iconSize">
+                        {{filteredIcon(item)}}
+                      </v-icon>
+                    </v-btn>
+                  </template>
+                  <span>
+                    <div class="tooltip__description">{{item.tooltip.title}}</div>
+                    <div class="tooltip__shortcut" v-html="item.tooltip.text"></div>
+                  </span>
+                </v-tooltip>
+              </div>
+            </v-list>
+            <v-divider></v-divider>
+
+            <!-- context-menu::main-view::list -->
+            <v-list dense>
+              <v-list-item
+                v-for="(item, index) in filteredList(menuItems)"
+                :key="'menu-item-' + index"
+                @click.stop="runOnClickEvent(item)"
+              >
+                <v-list-item-icon>
+                  <v-icon :size="item.iconSize">
+                    {{item.icon}}
+                  </v-icon>
+                </v-list-item-icon>
+                <v-list-item-content>
+                  <v-list-item-title>
+                    {{item.title}}
+                  </v-list-item-title>
+                </v-list-item-content>
+              </v-list-item>
+            </v-list>
+          </div>
+
+          <div key="subMenu" v-if="contextMenus.dirItem.subMenu.value">
+            <v-list dense>
+              <!-- context-menu::sub-view::toolbar -->
+              <div class="context-menu__toolbar" sub-menu>
+                <v-tooltip
+                  open-delay="200"
+                  max-width="300px"
+                  bottom
+                >
+                  <template v-slot:activator="{ on }">
+                    <v-btn v-on="on"
+                      @click.stop="contextMenus.dirItem.subMenu.value = false"
+                      class="context-menu__button"
+                      icon small
+                    >
+                      <v-icon>
+                        mdi-arrow-left
+                      </v-icon>
+                    </v-btn>
+                  </template>
+                  <span>
+                    <div class="tooltip__description">Go back to main menu</div>
+                  </span>
+                </v-tooltip>
+                <v-spacer></v-spacer>
+                <div>
+                  {{contextMenus.dirItem.subMenu.title}}
+                </div>
+                <v-tooltip bottom>
+                  <template v-slot:activator="{ on }">
+                    <v-btn
+                      v-on="on"
+                      @click="
+                        contextMenus.dirItem.value = false,
+                        $store.state.dialogs.programEditorDialog.value = true
+                      "
+                      style="right: -6px"
+                      icon
+                    >
+                      <v-icon size="18px">
+                        mdi-pencil-outline
+                      </v-icon>
+                    </v-btn>
+                  </template>
+                  <span>Open program editor</span>
+                </v-tooltip>
+              </div>
+            </v-list>
+            <v-divider></v-divider>
+
+            <!-- context-menu::sub-view::list -->
+            <div v-if="contextMenus.dirItem.subMenu.target === 'open-with'">
+              <v-list dense>
+                <v-list-item
+                  class="item--add__button"
+                  @click="
+                    contextMenus.dirItem.value = false,
+                    dialogs.programEditorDialog.value = true
+                  "
+                >
+                  <v-list-item-title style="font-size: 15px">
+                    <v-layout align-center>
+                      <v-icon size="24px" class="mr-4">
+                        mdi-plus
+                      </v-icon>
+                      Add program
+                    </v-layout>
+                  </v-list-item-title>
+                </v-list-item>
+              </v-list>
+
+              <v-list dense>
+                <!-- context-menu::sub-view::list:open-with:default-programs -->
+                <v-list-item
+                  class="menu-item--open-with"
+                  v-for="program in externalProgramsDefaultItemsFiltered"
+                  :key="program.title"
+                  @click="handleDefaultExternalProgramAction(program)"
+                >
+                  <v-list-item-icon>
+                    <v-icon>{{program.icon}}</v-icon>
+                  </v-list-item-icon>
+                  <v-list-item-content>
+                    <v-list-item-title>{{program.name}}</v-list-item-title>
+                  </v-list-item-content>
+                </v-list-item>
+
+                <!-- context-menu::sub-view::list:open-with:custom-programs -->
+                <v-list-item
+                  class="menu-item--open-with"
+                  v-for="program in externalProgramsCustomItemsFiltered"
+                  :key="program.title"
+                  @click="handleCustomExternalProgramAction(program)"
+                >
+                  <v-list-item-icon>
+                    <v-icon>{{program.icon}}</v-icon>
+                  </v-list-item-icon>
+                  <v-list-item-content>
+                    <v-list-item-title>{{program.name}}</v-list-item-title>
+                  </v-list-item-content>
+                  <div class="menu-item--open-with__button">
+                    <v-btn
+                      v-show="!program.readonly"
+                      @click.stop="
+                        contextMenus.dirItem.value = false,
+                        dialogs.programEditorDialog.specifiedHashID = program.hashID
+                        dialogs.programEditorDialog.value = true
+                      "
+                      class="mr-0"
+                      icon small
+                    >
+                      <v-icon size="20px">mdi-pencil-outline</v-icon>
+                    </v-btn>
+                  </div>
+                </v-list-item>
+              </v-list>
+            </div>
+          </div>
+        </transition>
+      </div>
+    </v-menu>
+  </div>
+</template>
+
+<script>
+import { mapFields } from 'vuex-map-fields'
+import { shell } from 'electron'
+const childProcess = require('child_process')
+const PATH = require('path')
+
+export default {
+  data () {
+    return {
+    }
+  },
+  mounted () {
+    // Init listeners
+    this.$eventHub.$on('openInTerminal', () => {
+      this.$store.dispatch('OPEN_SELECTED_IN_TERMINAL', { asAdmin: false })
+    })
+
+    this.$eventHub.$on('openInTerminalAsAdmin', () => {
+      this.$store.dispatch('OPEN_SELECTED_IN_TERMINAL', { asAdmin: true })
+    })
+
+    this.$eventHub.$on('openWithQuickView', () => {
+      this.$store.dispatch('OPEN_WITH_QUICK_VIEW')
+    })
+
+    this.$eventHub.$on('openInNativeFileManager', () => {
+      this.targetItems.forEach(item => {
+        shell.showItemInFolder(PATH.normalize(item.path))
+      })
+    })
+  },
+  beforeDestroy () {
+    this.$eventHub.$off('openInTerminal')
+    this.$eventHub.$off('openInTerminalAsAdmin')
+    this.$eventHub.$off('openInNativeFileManager')
+  },
+  watch: {
+    'contextMenus.dirItem.value' (value) {
+      if (!value) {
+        this.contextMenus.dirItem.subMenu.value = false
+      }
+    }
+  },
+  computed: {
+    ...mapFields({
+      shortcuts: 'storageData.settings.shortcuts',
+      inputState: 'inputState',
+      contextMenus: 'contextMenus',
+      dialogs: 'dialogs',
+      pinnedItems: 'storageData.pinned.items',
+      protectedItems: 'storageData.protected.items',
+      externalProgramsDefaultItems: 'storageData.settings.externalPrograms.defaultItems',
+      externalProgramsCustomItems: 'storageData.settings.externalPrograms.items'
+    }),
+    targetItems () {
+      return this.$store.state.contextMenus.dirItem.targetItems
+    },
+    targetItemsStats () {
+      return this.$store.state.contextMenus.dirItem.targetItemsStats
+    },
+    toolbarItems () {
+      return [
+        {
+          title: 'protect',
+          selectionType: ['single', 'multiple'],
+          targetTypes: ['directory', 'file', 'file-symlink', 'directory-symlink'],
+          isActive: false,
+          onClick: () => {
+            this.$store.dispatch('SET_PROTECTED')
+          },
+          icon: 'mdi-shield-alert-outline',
+          iconSize: '20px',
+          tooltip: {
+            title: 'Protect item',
+            text: `
+              If enabled, the item will be added to the protected list. 
+              It will be protected from being modified / deleted from within this app only.
+              Other apps can still modify / delete it.
+            `
+          }
+        },
+        {
+          title: 'pin',
+          selectionType: ['single', 'multiple'],
+          targetTypes: ['directory', 'file', 'file-symlink', 'directory-symlink'],
+          isActive: false,
+          onClick: () => {
+            this.$store.dispatch('SET_PINNED')
+          },
+          icon: 'mdi-pin-outline',
+          iconSize: '20px',
+          tooltip: { title: 'Add to pinned', text: '' }
+        },
+        {
+          title: 'rename',
+          selectionType: ['single'],
+          targetTypes: ['directory', 'file', 'file-symlink', 'directory-symlink'],
+          isActive: false,
+          onClick: () => {
+            this.dialogs.renameDirItemDialog.value = true
+          },
+          closesMenu: true,
+          icon: 'mdi-form-textbox',
+          iconSize: '20px',
+          tooltip: {
+            title: 'Rename selected',
+            text: this.shortcuts.renameSelected.shortcut
+          }
+        },
+        {
+          title: 'move',
+          selectionType: ['single', 'multiple'],
+          targetTypes: ['directory', 'file', 'file-symlink', 'directory-symlink'],
+          isActive: false,
+          onClick: () => {
+            this.$store.dispatch('SET_FS_CLIPBOARD', { type: 'move' })
+          },
+          closesMenu: true,
+          icon: 'mdi-content-duplicate',
+          iconSize: '18px',
+          tooltip: {
+            title: 'Move selected to another directory',
+            text: this.shortcuts.moveSelectedDirItems.shortcut
+          }
+        },
+        {
+          title: 'copy',
+          selectionType: ['single', 'multiple'],
+          targetTypes: ['directory', 'file', 'file-symlink', 'directory-symlink'],
+          isActive: false,
+          onClick: () => {
+            this.$store.dispatch('SET_FS_CLIPBOARD', { type: 'copy' })
+          },
+          closesMenu: true,
+          icon: 'far fa-copy',
+          iconSize: '18px',
+          tooltip: {
+            title: 'Copy selected',
+            text: this.shortcuts.copySelectedDirItems.shortcut
+          }
+        },
+        {
+          title: 'link',
+          selectionType: ['single'],
+          targetTypes: ['directory', 'file'],
+          disallowedExtensions: ['lnk'],
+          isActive: false,
+          onClick: () => {
+            this.$store.dispatch('MAKE_DIR_ITEM_LINK')
+          },
+          closesMenu: true,
+          icon: 'mdi-link-variant-plus',
+          iconSize: '22px',
+          tooltip: { title: 'Create symbolic link (shortcut)', text: '' }
+        },
+        {
+          title: 'trash',
+          selectionType: ['single', 'multiple'],
+          targetTypes: ['directory', 'file', 'file-symlink', 'directory-symlink'],
+          isActive: false,
+          onClick: () => {
+            if (this.inputState.shift) {
+              this.$store.dispatch('INIT_DELETE_SELECTED')
+            }
+            else {
+              this.$store.dispatch('TRASH_SELECTED')
+            }
+          },
+          closesMenu: true,
+          icon: 'mdi-trash-can-outline',
+          iconSize: '22px',
+          tooltip: {
+            title: 'Move selected to trash',
+            text: `
+              ${this.shortcuts.trashSelected.description}
+              <br>${this.shortcuts.trashSelected.shortcut}
+              <br>${this.shortcuts.deleteSelected.description}
+              <br>${this.shortcuts.deleteSelected.shortcut}
+            `
+          }
+        }
+      ]
+    },
+    menuItems () {
+      return [
+        {
+          title: 'Open with',
+          selectionType: ['single', 'multiple'],
+          targetTypes: ['directory', 'file', 'file-symlink', 'directory-symlink'],
+          onClick: () => {
+            this.contextMenus.dirItem.subMenu.target = 'open-with'
+            this.contextMenus.dirItem.subMenu.title = 'Open with'
+            this.contextMenus.dirItem.subMenu.value = true
+            this.adjustMenuPositionToSubMenu()
+          },
+          closesMenu: false,
+          icon: 'mdi-subdirectory-arrow-right',
+          iconSize: '20px'
+        },
+        {
+          title: 'New tab',
+          selectionType: ['single'],
+          targetTypes: ['directory', 'directory-symlink'],
+          onClick: () => {
+            this.$store.dispatch('ADD_TAB')
+          },
+          closesMenu: true,
+          icon: 'mdi-tab',
+          iconSize: '18px'
+        },
+        {
+          title: 'Share directory with local devices',
+          targetTypes: ['directory', 'directory-symlink'],
+          selectionType: ['single'],
+          onClick: () => {
+            this.$eventHub.$emit('app:method', {
+              method: 'initLocalDirectoryShare'
+            })
+          },
+          closesMenu: true,
+          icon: 'mdi-folder-search-outline',
+          iconSize: '18px'
+        },
+        {
+          title: 'Share file with local devices',
+          targetTypes: ['file'],
+          selectionType: ['single'],
+          onClick: () => {
+            this.$eventHub.$emit('app:method', {
+              method: 'initLocalFileShare'
+            })
+          },
+          closesMenu: true,
+          icon: 'mdi-share-variant',
+          iconSize: '18px'
+        },
+        {
+          title: 'Compress to archive',
+          targetTypes: ['file', 'directory', 'file-symlink', 'directory-symlink'],
+          selectionType: ['single', 'multiple'],
+          onClick: () => {
+            this.dialogs.archiverDialog.data.dest.name = 'Archive'
+            this.dialogs.archiverDialog.value = true
+          },
+          closesMenu: true,
+          icon: 'mdi-cube-outline',
+          iconSize: '20px'
+        },
+        {
+          title: 'Extract archive',
+          targetTypes: ['file'],
+          selectionType: ['single'],
+          allowedFilesTypes: ['archive'],
+          onClick: () => {
+            this.$store.dispatch('EXTRACT_ARCHIVE', {source: 'target-items'})
+          },
+          closesMenu: true,
+          icon: 'mdi-package-variant',
+          iconSize: '20px'
+        },
+        {
+          title: 'Permissions',
+          targetTypes: ['file', 'directory'],
+          selectionType: ['single'],
+          onClick: () => {
+            this.$store.dispatch('INIT_FETCH_CONTEXT_MENU_TARGET_ITEMS', { type: 'dirItem' })
+            this.dialogs.dirItemPermissionManagerDialog.value = true
+          },
+          closesMenu: true,
+          icon: 'mdi-lock-outline',
+          iconSize: '18px'
+        }
+        // TODO: finish in v1.2.0
+        // {
+        //   title: 'Convert or edit image',
+        //   targetTypes: ['file'],
+        //   allowedFilesTypes: ['image'],
+        //   selectionType: ['single'],
+        //   onClick: {
+        //     method: 'convertOrEditImage',
+        //     params: {}
+        //   },
+        //   closesMenu: true,
+        //   icon: 'mdi-swap-horizontal',
+        //   iconSize: '23px'
+        // },
+        // {
+        //   title: 'Convert or edit audio',
+        //   targetTypes: ['file'],
+        //   allowedFilesTypes: ['audio'],
+        //   selectionType: ['single'],
+        //   onClick: {
+        //     method: 'convertOrEditAudio',
+        //     params: {}
+        //   },
+        //   closesMenu: true,
+        //   icon: 'mdi-swap-horizontal',
+        //   iconSize: '23px'
+        // },
+        // {
+        //   title: 'Convert or edit video',
+        //   targetTypes: ['file'],
+        //   allowedFilesTypes: ['video'],
+        //   selectionType: ['single'],
+        //   onClick: {
+        //     method: 'convertOrEditVideo',
+        //     params: {}
+        //   },
+        //   closesMenu: true,
+        //   icon: 'mdi-swap-horizontal',
+        //   iconSize: '23px'
+        // },
+        // {
+        //   title: 'Calculate hash',
+        //   selectionType: ['single'],
+        //   targetTypes: ['file', 'file-symlink'],
+        //   onClick: {
+        //     method: 'calculateHash',
+        //     params: {}
+        //   },
+        //   closesMenu: true,
+        //   icon: 'mdi-memory',
+        //   iconSize: '22px'
+        // }
+      ]
+    },
+    externalProgramsDefaultItemsFiltered () {
+      const itemsFilteredByItemType = this.filterAllowedTargetTypes(this.externalProgramsDefaultItems)
+      return itemsFilteredByItemType
+    },
+    externalProgramsCustomItemsFiltered () {
+      const itemsFilteredByAllowed = this.externalProgramsCustomItems.filter(customProgram => {
+        // 1. Filter matched by allowed item type
+        const everyAllowedTypeMatchDirItemTypes = this.targetItemsStats.types.every(selectionType => {
+          return customProgram.targetTypes.includes(selectionType)
+        })
+        // 2. Filter matched by allowed file type
+        const everyAllowedTypeMatchFileTypes = this.targetItemsStats.fileExtensions.every(listExtension => {
+          return customProgram.selectedAllowedFileTypes.some(type => {
+            return type.replace(/type:/, '') === this.$utils.getFileType(listExtension, 'extension').mimeDescription
+          })
+        })
+        // 3. Filter matched by allowed ext
+        const everyDirItemMatchAllowedExtensions = this.targetItemsStats.fileExtensions.every(listExtension => {
+          return customProgram.selectedAllowedFileTypes.includes(listExtension)
+        })
+        return everyAllowedTypeMatchDirItemTypes && (everyAllowedTypeMatchFileTypes || everyDirItemMatchAllowedExtensions)
+      })
+      // 4. Filter matched by disallowed ext
+      const itemsFilteredByDisallowed = itemsFilteredByAllowed.filter(customProgram => {
+        const everyDirItemMatchDisallowedExtensions = this.targetItemsStats.fileExtensions.every(listExtension => {
+          return !customProgram.selectedDisallowedFileTypes.includes(listExtension)
+        })
+        return everyDirItemMatchDisallowedExtensions
+      })
+      return itemsFilteredByDisallowed
+    }
+  },
+  methods: {
+    filteredList (list) {
+      const itemsFilteredBySelectionType = this.filterItemSelectionType(list)
+      const itemsFilteredByItemType = this.filterAllowedTargetTypes(itemsFilteredBySelectionType)
+      const itemsFilteredByAllowedFileType = this.filterAllowedFileTypes(itemsFilteredByItemType)
+      const itemsFilteredByDisallowedFileType = this.filterDisallowedFileTypes(itemsFilteredByAllowedFileType)
+      return itemsFilteredByDisallowedFileType
+    },
+    filteredIcon (item) {
+      if (item.title === 'pin') {
+        const someItemIsPinned = this.targetItems.every(selectedItem => {
+          return this.pinnedItems.some(pinnedItem => pinnedItem.path === selectedItem.path)
+        })
+        item.isActive = someItemIsPinned
+        return item.icon
+      }
+      else if (item.title === 'protect') {
+        const someItemIsProtected = this.targetItems.every(selectedItem => {
+          return this.protectedItems.some(protectedItem => protectedItem.path === selectedItem.path)
+        })
+        item.isActive = someItemIsProtected
+        return item.icon
+      }
+      else {
+        return item.icon
+      }
+    },
+    filterItemSelectionType (list) {
+      const filtered = list.filter(menuItem => {
+        return menuItem.selectionType.includes(this.targetItemsStats.selectionType)
+      })
+      return filtered
+    },
+    filterAllowedFileTypes (list) {
+      const selectionStats = this.targetItemsStats
+      const filteredList = list.filter(menuItem => {
+        if (menuItem.allowedFilesTypes) {
+          const condition1 = menuItem.allowedFilesTypes.every(type => {
+            return selectionStats.fileTypesReadable.includes(type)
+          })
+          return condition1
+        }
+        else {
+          return true
+        }
+      })
+      return filteredList
+    },
+    filterDisallowedFileTypes (list) {
+      const selectionStats = this.targetItemsStats
+      let filteredList = list.filter(menuItem => {
+        if (menuItem.disallowedFileTypes) {
+          const includesDisallowedFileTypes = menuItem.disallowedFileTypes.some(type => {
+            return selectionStats.fileTypesReadable.includes(type)
+          })
+          return !includesDisallowedFileTypes
+        }
+        else {
+          return true
+        }
+      })
+      // Filter out disallowed file extensions
+      filteredList = filteredList.filter(menuItem => {
+        if (menuItem.disallowedExtensions) {
+          const includesDisallowedExtensions = menuItem.disallowedExtensions.some(ext => {
+            return selectionStats.fileExtensions.includes(ext)
+          })
+          return !includesDisallowedExtensions
+        }
+        else {
+          return true
+        }
+      })
+      return filteredList
+    },
+    filterAllowedTargetTypes (list) {
+      // If target type is selected but is not acceptable target, remove it
+      return list.filter(menuItem => {
+        const hasAllowedTypes = this.targetItemsStats.types.some(type => {
+          return menuItem.targetTypes.includes(type)
+        })
+        return hasAllowedTypes
+      })
+    },
+    adjustMenuPositionToSubMenu () {
+      // Wait for submenu transition to finish and then reposition the menu
+      const winSize = this.$store.state.windowSize
+      const margin = 12
+      setTimeout(() => {
+        const menuNode = document.querySelector('.context-menu__container')
+        const menuNodeOverflows = this.contextMenus.dirItem.y + menuNode.offsetHeight + margin > winSize.y
+        if (menuNodeOverflows) {
+          this.contextMenus.dirItem.y = winSize.y - menuNode.offsetHeight - margin
+        }
+      }, 250)
+    },
+    runOnClickEvent (item) {
+      if (typeof item.onClick === 'function') {
+        item.onClick()
+      }
+      else if (typeof item.onClick === 'object') {
+        // Call specified onClick method
+        let method = item.onClick.method
+        if (item.onClick.modifierMethod?.ctrl && this.inputState.ctrl) {
+          method = item.onClick.modifierMethod.ctrl
+        }
+        else if (item.onClick.modifierMethod?.alt && this.inputState.alt) {
+          method = item.onClick.modifierMethod.alt
+        }
+        else if (item.onClick.modifierMethod?.shift && this.inputState.shift) {
+          method = item.onClick.modifierMethod.shift
+        }
+        this.$eventHub.$emit('app:method', {
+          method: method,
+          params: item.onClick.params
+        })
+      }
+      if (item.closesMenu) {
+        this.contextMenus.dirItem.value = false
+      }
+    },
+    handleDefaultExternalProgramAction (program) {
+      try {
+        program.action()
+      }
+      catch (error) {
+        throw Error(error)
+      }
+      this.contextMenus.dirItem.value = false
+    },
+    handleCustomExternalProgramAction (program) {
+      // Get string of paths for the command
+      const paths = this.targetItemsStats.dirItemsPaths.map((path) => {
+        return `"${path}"`
+      }).join(' ')
+      const args = ''
+      const command = `"${program.path}" ${paths} "${args}"`
+      childProcess.exec(
+        command,
+        (error, stdout, stderr) => {
+          if (error) {
+            this.$eventHub.$emit('notification', {
+              action: 'update-by-type',
+              type: 'error:search-file-problem',
+              timeout: 8000,
+              closeButton: true,
+              title: 'Error: couldn\'t open the program:',
+              message: error
+            })
+          }
+        }
+      )
+      this.contextMenus.dirItem.value = false
+    }
+  }
+}
+</script>
+
+<style>
+.context-menu__container {
+  min-width: 220px;
+}
+
+.context-menu__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  height: 48px;
+  gap: 12px;
+}
+
+.context-menu__toolbar[sub-menu] {
+  gap: 8px
+}
+
+.context-menu__container
+  .menu-item--open-with__button {
+    transition: all 0.25s;
+    opacity: 0
+  }
+
+.context-menu__container
+  .menu-item--open-with:hover
+    .menu-item--open-with__button {
+      opacity: 1 !important;
+    }
+
+.context-menu__container
+  .item--add__button {
+    background-color: rgb(255, 255, 255, 0.05)
+  }
+
+.context-menu__container
+  .item--add__button
+    .v-icon {
+      color: rgb(255, 255, 255, 0.5) !important
+    }
+
+.context-menu__container
+  .item--add__button:hover
+    .item--add__button {
+      opacity: 1 !important;
+    }
+
+.context-menu__button {
+  margin: 0;
+}
+
+.context-menu__button
+  .v-icon {
+    color: var(--icon-color-2) !important
+  }
+
+.context-menu__button[active] .indicator {
+  width: 12px;
+  height: 2px;
+  position: absolute;
+  bottom: -4px;
+  background-color: rgba(76, 167, 157, 0.7);
+  box-shadow: 0px 0px 4px rgb(0, 150, 136, 1);
+  transition: all 1s;
+}
+</style>

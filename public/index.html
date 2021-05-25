@@ -1,17 +1,121 @@
+<!-- SPDX-License-Identifier: GPL-3.0-or-later
+License: GNU GPLv3 or later. See the license file in the project root for more information.
+Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
+-->
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <link rel="icon" href="<%= BASE_URL %>favicon.ico">
-    <title><%= htmlWebpackPlugin.options.title %></title>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sigma file manager</title>
+
+    <style>
+      body {
+        padding: 0; 
+        margin: 0; 
+        overflow: hidden;
+      }
+
+      #loading-screen__container {
+        position: absolute;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        width: 100%;
+        height: 100%;
+        background: #37474f;
+        z-index: 100;
+        pointer-events: none;
+        user-select: none;
+      }
+
+      #loading-screen__logo {
+        color: #eee;
+        font-family: serif, "FreeSerif";
+        font-size: 128px;
+      }
+
+      #loading-screen__title {
+        color: #eee;
+        font-family: 'Noto Sans';
+        font-size: 48px;
+      }
+
+      #loading-screen__sub-title {
+        color: #bdbdbd;
+        font-family: 'Noto Sans';
+        font-size: 24px;
+      }
+
+      #loading-animation__container {
+        opacity: 1;
+        animation: fade-in 3000ms ease;
+      }
+      
+      @keyframes fade-in {
+        0% { 
+          opacity: 0; 
+          transform: scale(0.8); 
+        }
+        80% { 
+          opacity: 1; 
+          transform: scale(1); 
+        }
+        100% { 
+          opacity: 1; 
+          transform: scale(1); 
+        }
+      }
+    </style>
   </head>
   <body>
-    <noscript>
-      <strong>We're sorry but <%= htmlWebpackPlugin.options.title %> doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
-    </noscript>
+    <div id="loading-screen__container">
+      <div id="loading-animation__container">
+        <div id="loading-screen__logo">Σ</div>
+        <div id="loading-screen__title">SIGMA</div>
+        <div id="loading-screen__sub-title">FILE MANAGER</div>
+      </div>
+    </div>
     <div id="app"></div>
-    <!-- built files will be auto injected -->
+
+    <script>
+      function showDevToolsNotes() {
+        console.log(
+          '%cNOTE | Early development', 
+          `
+            background-color: #3f51b5;
+            color: #eee;
+            font-weight: bold;
+            padding: 4px 8px;
+            border-radius: 4px;
+          `, 
+          [
+            '\nThe app is in early development (prototyping) stage: ',
+            '\n- The codebase hasn\'t been optimized yet. A large portion of the codebase has been written when I barely knew how to code. ',
+            '\n- The whole codebase will be refactored and optimized in future updates.'
+          ].join('')
+        )
+        console.log(
+          '%cNOTE | Performance', 
+          `
+            background-color: #3f51b5;
+            color: #eee;
+            font-weight: bold;
+            padding: 4px 8px;
+            border-radius: 4px;
+          `, 
+          [
+            '\n Keep the following in mind when monitoring performance and resource usage:',
+            '\n- DevTools window uses a lot of resources (RAM, CPU, GPU). ',
+            '\n- The dev build is much slower and uses more resources than the production build. ', 
+          ].join('')
+        )
+      }
+      showDevToolsNotes()
+    </script>
   </body>
 </html>

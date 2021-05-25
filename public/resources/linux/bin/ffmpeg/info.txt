@@ -1,0 +1,2 @@
+version: ffmpeg-n4.4-18-gc813f5e343-linux64-lgpl-shared-4.4
+source: https://github.com/BtbN/FFmpeg-Builds

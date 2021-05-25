@@ -1,0 +1,737 @@
+<!-- SPDX-License-Identifier: GPL-3.0-or-later
+License: GNU GPLv3 or later. See the license file in the project root for more information.
+Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible">
+    <title>Shared directory</title>
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/css/materialdesignicons.css">
+    <style>
+      body {
+        all: unset;
+        font-family: 'Roboto', sans-serif;
+        background-color: rgba(36, 38, 44);
+        color: #bdbdbd;
+        overflow: hidden;
+        height: 100%;
+      }
+
+      @keyframes fade-in {
+        0% { 
+          opacity: 0; 
+        }
+        100% { 
+          opacity: 1; 
+        }
+      }
+
+      .custom-scrollbar::-webkit-scrollbar {
+        display: none !important;
+      }
+
+      .custom-scrollbar {
+        overflow: overlay !important;
+      }
+
+      .custom-scrollbar:hover::-webkit-scrollbar {
+        width: 18px;
+        display: block !important;
+      }
+
+      .custom-scrollbar::-webkit-scrollbar-thumb:vertical,
+      .custom-scrollbar::-webkit-scrollbar-thumb:horizontal {
+        background-color: rgba(255, 255, 255, 0.1);
+        overflow: overlay;
+        min-height: 50px;
+        background-clip: padding-box;
+        border: 6px solid transparent;
+      }
+
+      .custom-scrollbar::-webkit-scrollbar-track:vertical,
+      .custom-scrollbar::-webkit-scrollbar-track:horizontal {
+        background-color: transparent;
+      }
+
+      .custom-scrollbar::-webkit-scrollbar-thumb:vertical,
+      .custom-scrollbar::-webkit-scrollbar-thumb:horizontal {
+        background-color: transparent;
+      }
+
+      .custom-scrollbar:hover::-webkit-scrollbar-thumb:vertical,
+      .custom-scrollbar:hover::-webkit-scrollbar-thumb:horizontal {
+        background-color: rgba(255, 255, 255, 0.1);
+        /* border: 2px solid transparent */
+      }
+
+      .custom-scrollbar::-webkit-scrollbar-thumb:vertical:hover,
+      .custom-scrollbar::-webkit-scrollbar-thumb:horizontal:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        border: 1px solid transparent
+      }
+
+      .custom-scrollbar::-webkit-scrollbar-thumb:vertical:active,
+      .custom-scrollbar::-webkit-scrollbar-thumb:horizontal:active {
+        background-color: rgba(255, 255, 255, 0.1);
+        border: 1px solid transparent
+      }
+      
+      a {
+        color: #78909c
+      }
+
+      form {
+        position: relative;
+        padding: 24px;
+        background: #37474f;
+        box-shadow: 0 8px 32px rgba(55, 71, 79, 0.9);
+        border-radius: 8px;
+        border: 2px dashed rgba(255, 255, 255, 0.1);
+      }
+
+      .form-content-container {
+        display: flex;
+        flex-direction: column;
+        gap: 32px;
+        width: 100%;
+        height: 100%;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+      }
+
+      form input {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        margin: 0;
+        padding: 0;
+        outline: none;
+        opacity: 0;
+        cursor: pointer;
+      }
+
+
+      form button, 
+      .button {
+        padding: 8px 18px;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 1px;
+        border-radius: 4px;
+        text-transform: uppercase;
+        color: rgb(255, 255, 255, 0.7);
+        background: transparent;
+        border: 2px solid rgb(255, 255, 255, 0.4);
+      }
+
+      .form-description {
+        font-size: 20px;
+      }
+
+      .upload-form-card {
+        display: grid;
+        gap: 24px;
+        grid-template-rows: 300px minmax(128px, 1fr) 32px;
+        contain: size; /* fix content overflow */
+      }
+
+      .upload-list {
+        overflow-y: auto;
+        overflow-x: hidden !important;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        padding-inline-start: 32px;
+        margin-block-start: 0;
+        margin-block-end: 0;
+      }
+
+      .upload-list-placeholder {
+        display: flex;
+        width: 100%;
+        height: 100%;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        font-size: 20px;
+        opacity: 0.5;
+      }
+
+      .text--sub-title-1 {
+        font-size: 14px;
+        margin-bottom: 12px;
+        color: #757575;
+        text-transform: uppercase;
+        user-select: none;
+      }
+
+      #upload-button {
+        display: none;
+        width: 100%;
+        cursor: pointer;
+      }
+
+      #upload-overlay {
+        display: none;
+        transition: all 1s;
+      }
+
+      #upload-overlay[data-upload-overlay="true"] {
+        position: fixed;
+        z-index: 10;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: #37474f;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        transition: all 1s;
+        color: #bdbdbd;          
+      }
+
+      #upload-overlay[data-upload-overlay="true"] #upload-overlay__title {
+        font-size: 36px;
+        text-align: center;
+        font-family: "Noto sans"
+      }
+
+      .filter-field__container {
+        position: relative;
+        display: flex;
+        align-items: center;
+        height: 42px;
+        background-color: rgb(255, 255, 255, 0.025); 
+      }
+
+      .filter-field {
+        width: 200px;
+        height: 32px;
+        margin-left: 0px;
+        padding-top: 0px;
+        background: transparent;
+        padding-left: 12px;
+        border: 0px solid #b0bec5;
+        color: #bdbdbd;
+        caret-color: #bdbdbd;
+        outline: none;
+      }
+
+      .filter-field:focus {
+        border-width: 0 0 thin 0;
+        border-color: #bdbdbd;
+        padding-top: 1px;
+      }
+
+      .filter-field::placeholder {
+        color: #bdbdbd;
+      }
+
+      .app-content {
+        height: 100%;
+      }
+
+      .toolbar {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        height: 48px;
+        background: rgba(44, 47, 53);
+        z-index: 5;
+      }
+
+      .toolbar-content-container {
+        padding: 4px 32px;
+        width: 100%;
+      }
+
+      .content-area {
+        padding: 32px;
+        height: calc(100vh - 48px);
+        box-sizing: border-box;
+      }
+
+      .content-area__main {
+        display: grid;
+        grid-template-columns: 400px 2fr;
+        gap: 4px;
+        height: 100%;
+        box-sizing: border-box;
+      }
+
+      .section {
+        display: grid;
+        grid-template-rows: 48px 1fr;
+        background: rgb(30, 32, 37);
+        padding: 24px;
+        margin-top: 4px;
+        height: calc(100% - 64px);
+        box-sizing: border-box;
+        overflow: hidden;
+      }
+
+      .section--general {
+        background: rgb(30, 32, 37);
+        padding: 24px;
+      }
+
+      .section--upload {
+        
+      }
+
+      .section--download {
+        grid-template-rows: 72px 1fr;
+        padding: 24px 0px;
+      }
+
+      .dir-items-container {
+        overflow-y: auto;
+        overflow-x: hidden;
+        height: 100%;
+        padding: 0px 24px;
+      }
+
+      .directory {
+        margin-bottom: 40px;
+      }
+
+      .address-bar {
+        color:#bdbdbd;
+        margin-left: 4px;
+      }
+
+      .address-bar a {
+        text-decoration: none;
+      }
+
+      .address-bar-container {
+        width: 100%;
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        padding: 0px 24px;
+        box-sizing: border-box;
+      }
+
+      ul,
+      menu,
+      dir {
+        -webkit-padding-start: 0px;
+      }
+
+      #files li {
+        height: 48px;
+        list-style: none;
+      }
+
+      .dir-item[type="directory"],
+      .dir-item[type="file"] {
+        display: grid;
+        grid-template-columns: 3fr 200px 1fr;
+      }
+
+      #files li a {
+        display: grid;
+        text-decoration: none;
+        height: 100%;
+        width: 100%;
+        align-items: center;
+        justify-content: space-between;
+        margin: 4px;
+        color: #bdbdbd;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.05);
+        /* background-color: rgba(36, 38, 44); */
+        transition: all 0.3s ease-in-out; /* timing for 'out' transition */
+        z-index: 1;
+        opacity: 1;
+        animation: fade-in 1000ms ease;
+      }
+
+      #files li a:hover {
+        box-shadow: 0px 4px 32px rgb(0, 0, 0, 0.3);
+        transform: scale(1.005);
+        transition: all 0s; /* timing for 'in' transition */
+        z-index: 2;
+      }
+
+      #files li a.icon-directory {
+        grid-template-columns: 48px 3fr 200px 1fr 48px;
+        gap: 16px;
+      }
+      
+      #files li a.icon:not(.icon-directory) {
+        grid-template-columns: 48px 3fr 200px 1fr 48px;
+        gap: 16px;
+      }
+
+      #files .dir-item__icon {
+        justify-self: center;
+      }
+
+      #files .name {
+        background-size: 36px;
+        background-repeat: no-repeat;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+      }
+
+      #files .size {
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        min-width: 100px;
+      }
+
+
+      #files span {
+        display: inline-block;
+        overflow: hidden;
+      }
+
+      @media screen and (max-width: 1024px) {  
+        body {
+          overflow-y: auto;
+        }
+
+        .toolbar {
+          position: fixed;
+          top: 0;
+          left: 0;
+        }
+
+        .toolbar-content-container {
+          padding: 4px 16px;
+        }
+
+        .content-area {
+          margin-top: 48px;
+          padding: 16px;
+        }
+        
+        .content-area__main {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+          height: auto;
+        }
+
+        .dir-items-container {
+          padding: 0px 12px;
+        }
+        
+        .address-bar-container {
+          padding: 12px;
+        }
+
+        .section {
+          width: 100%;
+        }
+
+        .section--download {
+          grid-template-rows: 128px 1fr;
+          padding: 8px;
+          margin-top: 0px;
+        }
+
+        .filter-field {
+          width: 100%;
+        }
+        
+        .address-bar-container {
+          display: flex;
+          flex-direction: column;
+          flex-wrap: initial;
+        }
+        
+        .address-bar-header {
+          width: 100%;
+        }
+      }
+    </style>
+
+    <script>
+      // Block IE browsers
+      const isIE = /*@cc_on!@*/false || !!document.documentMode
+      if (isIE) {
+        window.location = '/browserIsNotSupported.html'
+      }
+    </script>
+  </head>
+  
+  <body id="directory" class="directory">
+    <div data-upload-overlay="false" id="upload-overlay">
+      <div id="upload-overlay__title">
+        Uploading files...
+      </div>
+    </div>
+
+    <div class="app-content">
+      <div class="toolbar">
+        <div class="toolbar-content-container">
+          <div style="text-transform: uppercase">Sigma file manager</div>
+        </div>
+      </div>
+      <div data-upload-overlay="false" class="content-area">
+        <div class="section--general" style="text-transform: uppercase; font-size: 16px;">
+          Local network directory sharing
+        </div>
+
+        <div class="content-area__main">
+          <div class="section section--upload">
+            <div class="text--sub-title-1" style="display: flex; align-items: center; height: 22px;">
+              <i 
+                class="mdi mdi-upload" 
+                style="margin-right: 12px; font-size: 20px"
+              ></i>
+              Upload to shared directory
+            </div>
+            <div class="upload-form-card">
+              <form 
+                id='upload-form'
+                action="/uploaded"
+                method='post'
+                encType="multipart/form-data"
+              >
+                <div>
+                  <input id="upload-input" type="file" name="items" multiple/>
+                </div>
+                <div class="form-content-container">
+                  <i 
+                    class="mdi mdi-file-outline" 
+                    style="font-size: 56px"
+                  ></i>
+                  <div class="form-description">
+                    Select or drag & drop a file here to upload it to the shared directory.
+                  </div>
+                  <div>
+                    <button class="button">Select a file</button>
+                  </div>
+                </div>
+              </form>
+              <div class="upload-list-placeholder"> 
+                <i 
+                  class="mdi mdi-format-list-numbered" 
+                  style="font-size: 96px"
+                ></i>
+                No files selected
+              </div>
+              <ol class="upload-list custom-scrollbar"></ol>
+              <div>
+                <button id="upload-button" class="button" onclick="initUploadFiles()">
+                  Upload to shared directory
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="section section--download">
+            <div class="address-bar-container">
+              <div class="address-bar-header">
+                <div class="text--sub-title-1" style="display: flex; align-items: center">
+                  <i 
+                    class="mdi mdi-download" 
+                    style="margin-right: 12px; font-size: 20px"
+                  ></i>
+                  Shared directory items
+                </div>
+                <div class="address-bar">
+                  {linked-path}
+                </div>
+              </div>
+              
+              <div class="filter-field__container">
+                <input 
+                  id="filter-field"
+                  class="filter-field"
+                  onkeyup="filter()"
+                  type="text"
+                  placeholder="Filter"
+                  autocomplete="off"
+                >
+              </div>
+            </div>
+            <div class="dir-items-container custom-scrollbar">{files}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+
+  <script>
+    function dirItemClickHandler(event, actionType, dirItemName) {
+      const path = encodeURIComponent(dirItemName)
+      const pathNodes = document.querySelector('.address-bar').querySelectorAll('a')
+      const currentPath = pathNodes[pathNodes.length- 1].pathname
+      if (actionType === 'download') {
+        event.srcElement.parentElement.setAttribute('download', '')
+        event.srcElement.parentElement.click()
+        event.srcElement.parentElement.removeAttribute('download')
+        event.preventDefault()
+        event.stopPropagation()
+      }
+      else {
+        window.location.pathname = `${currentPath}/${path}`
+      }
+    }
+
+    window.addEventListener('load', (event) => {
+      fetchDirItems()
+    })
+
+    function fetchDirItems () {
+      const dirItemsContainerNode = document
+        .querySelector('.dir-items-container')
+        .firstChild.getElementsByTagName('a')
+      for (let index = 0; index < dirItemsContainerNode.length; index++) {
+        const dirItemNode = dirItemsContainerNode[index]
+        const dirItemName = dirItemNode.querySelectorAll('span.name')[0].innerText
+        const itemType = dirItemNode.getAttribute('class').includes('icon-directory') ? 'directory' : 'file'
+        const directoryIconNode = `
+          <i 
+            class="dir-item__icon mdi mdi-folder-outline" 
+            style="font-size: 22px"
+          ></i>
+        `
+        const fileIconNode = `
+          <i 
+            class="dir-item__icon mdi mdi-file-outline" 
+            style="font-size: 22px"
+          ></i>
+        `
+        const chevronRightIconNode = `
+          <i 
+            class="mdi mdi-chevron-right" 
+            style="font-size: 22px"
+          ></i>
+        `
+        const downloadIconNode = `
+          <i 
+            class="mdi mdi-download" 
+            style="font-size: 22px"
+            onclick="dirItemClickHandler(event, 'download', '${dirItemName}')"
+          ></i>
+        `
+        if (itemType === 'directory') {
+          dirItemNode.insertAdjacentHTML('afterbegin', directoryIconNode)
+          dirItemNode.insertAdjacentHTML('beforeend', chevronRightIconNode)
+        }
+        else if (itemType === 'file') {
+          dirItemNode.insertAdjacentHTML('afterbegin', fileIconNode)
+          dirItemNode.insertAdjacentHTML('beforeend', downloadIconNode)
+        }
+      }
+    }
+
+    const inputElement = document.getElementById('upload-input')
+    inputElement.addEventListener('change', handleFiles, false)
+    function handleFiles() {
+      const fileList = this.files
+      const placeholderNode = document.querySelector('.upload-list-placeholder')
+      if (fileList.length > 0) {
+        placeholderNode.style.display = 'none'
+        const uploadButtonNode = document.querySelector('#upload-button')
+        const uploadListNode = document.querySelector('.upload-list')
+        uploadButtonNode.style.display = 'block'
+        while (uploadListNode.firstChild) {
+          uploadListNode.removeChild(uploadListNode.firstChild)
+        }
+        for (let index = 0; index < fileList.length; index++) {
+          const file = fileList[index]
+          const fileNode = `
+            <li class="dir-item--list">
+              <div>${file.name}</div>
+            </li>
+          `
+          uploadListNode.insertAdjacentHTML('beforeend', fileNode)
+        }
+      }
+      else {
+        placeholderNode.style.display = 'flex'
+      }
+    }
+
+    function initUploadFiles () {
+      const uploadFormNode = document.getElementById('upload-form')
+      const selectedFiles = document.getElementById('upload-input').files
+      if (selectedFiles.length) {
+        uploadOverlay = document.getElementById('upload-overlay')
+        uploadOverlay.dataset.uploadOverlay = 'true'
+        uploadFormNode.submit()
+      }
+    }
+    
+    function filter() {
+      let input, filter, ul, li, a, i
+      input = document.getElementById('filter-field')
+      filter = input.value.toUpperCase()
+      ul = document.getElementById('files')
+      li = ul.getElementsByTagName('li')
+      for (i = 0; i < li.length; i++) {
+        a = li[i].getElementsByTagName('span')[0]
+        if (a.innerHTML.toUpperCase().indexOf(filter) > -1) {
+          li[i].style.display = ''
+        } else {
+          li[i].style.display = 'none'
+
+        }
+      }
+    }
+
+    function formatBytes(bytes, decimals) {
+      if (bytes === 0) { return '0 Bytes' }
+      let k = 1024,
+        dm = decimals || 2,
+        sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'],
+        i = Math.floor(Math.log(bytes) / Math.log(k))
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i]
+    }
+
+    function updateValue(span) {
+      span.innerHTML = formatBytes(parseFloat(span.innerHTML))
+    }
+
+    let sizeValues = document.getElementsByClassName('size')
+    for (let i = 0; i < sizeValues.length; i++) {
+      if (sizeValues[i].innerHTML.length > 0) {
+        updateValue(sizeValues[i])
+      }
+    }
+  </script>
+
+  <!-- Styles to apply after page rendering: -->
+  <style>       
+    @media (max-width: 1300px) {  
+      #files li a.icon-directory {
+        grid-template-columns: 24px 1fr 0px 32px;
+      }
+
+      #files li a.icon:not(.icon-directory) {
+        grid-template-columns: 32px 1fr 72px 32px;
+      }
+
+      #files .name {
+        font-size: 14px;
+      }
+
+      #files .size {
+        font-size: 12px;
+      }
+
+      #files .date {
+        display: none;
+      }
+    }
+  </style>
+</html>
