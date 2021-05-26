@@ -12,6 +12,10 @@ module.exports = {
         {
           test: /\.worker\.(c|m)?js$/,
           loader: 'worker-loader'
+        },
+        {
+          test: /.node$/,
+          loader: 'node-loader'
         }
       ]
     }
