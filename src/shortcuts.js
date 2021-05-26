@@ -555,7 +555,7 @@ export default {
     routes: ['navigator'],
     icon: 'mdi-swap-horizontal',
     action: {
-      name: 'PASTE_PREPARED_DIR_ITEMS'
+      name: 'PASTE_FS_CLIPBOARD_DIR_ITEMS'
     },
     shortcut: 'Ctrl + V',
     size: '24px',

@@ -82,7 +82,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         <v-btn
           class="clipboard-toolbar__button"
           v-if="fsClipboard.items.length !== 0"
-          @click="$store.dispatch('PASTE_PREPARED_DIR_ITEMS', {operation: 'copy'})"
+          @click="$store.dispatch('PASTE_FS_CLIPBOARD_DIR_ITEMS')"
           :text="$vuetify.breakpoint.mdAndUp"
           :icon="$vuetify.breakpoint.smAndDown"
           small
@@ -151,7 +151,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 class="clipboard-toolbar__button"
                 v-if="fsClipboard.items.length !== 0"
                 :disabled="movePreparedDirItemsIsDisabled"
-                @click="$store.dispatch('PASTE_PREPARED_DIR_ITEMS', {operation: 'move'})"
+                @click="$store.dispatch('PASTE_FS_CLIPBOARD_DIR_ITEMS')"
                 :text="$vuetify.breakpoint.mdAndUp"
                 :icon="$vuetify.breakpoint.smAndDown"
                 small

@@ -2968,6 +2968,7 @@ export default new Vuex.Store({
       })
     },
     REMOVE_FROM_STORAGE_LIST (store, params) {
+      if (params.items.length === 0) {return}
       const defaultParams = {
         items: [],
         storageItems: [],
@@ -3048,6 +3049,11 @@ export default new Vuex.Store({
       }
     },
     REMOVE_FROM_PINNED (store, params) {
+      let items = getDirItemsFromSavedList({
+        items: params.items, 
+        list: store.state.storageData.pinned.items
+      })
+      params.items = items
       store.dispatch('REMOVE_FROM_STORAGE_LIST', {
         storageItems: store.state.storageData.pinned.items,
         storageItemsKey: 'storageData.pinned.items',
@@ -3055,6 +3061,11 @@ export default new Vuex.Store({
       })
     },
     REMOVE_FROM_PROTECTED (store, params) {
+      let items = getDirItemsFromSavedList({
+        items: params.items, 
+        list: store.state.storageData.protected.items
+      })
+      params.items = items
       store.dispatch('REMOVE_FROM_STORAGE_LIST', {
         storageItems: store.state.storageData.protected.items,
         storageItemsKey: 'storageData.protected.items',
@@ -3062,6 +3073,11 @@ export default new Vuex.Store({
       })
     },
     REMOVE_FROM_DIR_ITEMS_TIMELINE (store, params) {
+      let items = getDirItemsFromSavedList({
+        items: params.items, 
+        list: store.state.storageData.stats.dirItemsTimeline
+      })
+      params.items = items
       store.dispatch('REMOVE_FROM_STORAGE_LIST', {
         storageItems: store.state.storageData.stats.dirItemsTimeline,
         storageItemsKey: 'storageData.stats.dirItemsTimeline',
@@ -3078,10 +3094,9 @@ export default new Vuex.Store({
         const editTargets = utils.cloneDeep(items)
         const currentDirPath = state.navigatorView.currentDir.path
         const includesCurrentDir = editTargets.some(item => item.path === currentDirPath)
-        const protectedItems = [...editTargets].filter(item => {
-          return state.storageData.protected.items.some(protectedItem => {
-            return protectedItem.path === item.path
-          })
+        const protectedItems = getDirItemsFromSavedList({
+          items: editTargets, 
+          list: state.storageData.protected.items
         })
         const currentDirIsRoot = PATH.parse(currentDirPath).base === ''
         const includesItemLocatedInRoot = editTargets.some(item => {
@@ -4211,17 +4226,31 @@ export default new Vuex.Store({
         ...params.items
       ]
     },
-    async PASTE_PREPARED_DIR_ITEMS (store, params) {
+    async PASTE_FS_CLIPBOARD_DIR_ITEMS (store, params) {
       const defaultParams = {
         directory: store.state.navigatorView.currentDir.path
       }
       params = { ...defaultParams, ...params }
       const dirItemsToPaste = store.state.navigatorView.clipboard.fs.items
-      await store.dispatch('COPY_DIR_ITEMS', {
-        items: dirItemsToPaste,
-        directory: params.directory,
-        operation: params.operation
-      })
+      const type = store.state.navigatorView.clipboard.fs.type
+      if (type === 'move') {
+        await store.dispatch('MOVE_DIR_ITEMS', {
+          items: dirItemsToPaste,
+          directory: params.directory,
+          operation: type,
+          options: {
+            skipSafeCheck: true,
+            silent: true
+          }
+        })
+      }
+      else {
+        await store.dispatch('COPY_DIR_ITEMS', {
+          items: dirItemsToPaste,
+          directory: params.directory,
+          operation: type
+        })
+      }
       store.dispatch('CLEAR_FS_CLIPBOARD')
     },
     CONFORMATION_DIALOG (store, params) {
@@ -4587,6 +4616,9 @@ export default new Vuex.Store({
         const progress = {
           started: false,
           isDone: false,
+          isCanceled: false,
+          timePassed: 0,
+          timeStarted: new Date().getTime(),
           percentDone: 0,
           eta: 0
         }
@@ -4610,6 +4642,7 @@ export default new Vuex.Store({
         
         // Configure stream listeners
         task.readStream.on('data', (chunk) => {
+          progress.timePassed = new Date().getTime() - progress.timeStarted
           const percentageCopied = ((chunk.length * counter) / item.stat.size) * 100
           // Stop updating percentage after it reaches 100%
           // Otherwise the last chunk mess up the reading 
@@ -4626,16 +4659,20 @@ export default new Vuex.Store({
           // Update notification buttons
           progress.started = true
           notificationConfig.message = ''
-          notificationConfig.actionButtons = [
-            {
-              title: localize.get('text_cancel'),
-              action: '',
-              onClick: () => {
-                task.readStream.close()
-              },
-              closesNotification: true
-            }
-          ]
+          // Show cancel button
+          if (progress.timePassed > 1000) {
+            notificationConfig.actionButtons = [
+              {
+                title: localize.get('text_cancel'),
+                action: '',
+                onClick: () => {
+                  task.readStream.close()
+                  progress.isCanceled = true
+                },
+                closesNotification: true
+              }
+            ]
+          }
           // Update notification | write progress
           eventHub.$emit('notification', notificationConfig)
         })
@@ -4653,24 +4690,34 @@ export default new Vuex.Store({
           .on('finish', () => {
             // Add delay so that animations don't play at the same time
             setTimeout(() => {   
-              // Update notification buttons
-              notificationConfig.actionButtons = [
-                {
-                  title: localize.get('text_undo'),
-                  action: '',
-                  onClick: () => {
-                    // dispatch('SET', { key: 'storageData.stats.dirItemsTimeline', value: undoData })
-                  },
-                  closesNotification: true
-                }
-              ]
-              // Update notification | write progress
-              notificationConfig.title = operation === 'move' 
-                ? 'Item was moved'
-                : 'Item was copied'
-              notificationConfig.message = `<b>Destination path:</b><br>${destPath}`
-              notificationConfig.timeout = 5000
-              progress.isDone = true
+              // Update notification
+              if (progress.isCanceled) {
+                notificationConfig.actionButtons = []
+                notificationConfig.title = 'Item transfer was canceled'
+                notificationConfig.message = `<b>Destination path:</b><br>${destPath}`
+                notificationConfig.timeout = 5000
+                progress.isDone = true
+              }
+              else {
+                notificationConfig.actionButtons = []
+                // notificationConfig.actionButtons = [
+                //   {
+                //     title: localize.get('text_undo'),
+                //     action: '',
+                //     onClick: () => {
+                //       console.log(item, destPath)
+                //     },
+                //     closesNotification: true
+                //   }
+                // ]
+                // Update notification | write progress
+                notificationConfig.title = operation === 'move' 
+                  ? 'Item was moved'
+                  : 'Item was copied'
+                notificationConfig.message = `<b>Destination path:</b><br>${destPath}`
+                notificationConfig.timeout = 5000
+                progress.isDone = true
+              }
               eventHub.$emit('notification', notificationConfig)
               dispatch('REMOVE_TASK', { hashID })
               resolve()
@@ -5246,3 +5293,11 @@ export default new Vuex.Store({
     }
   }
 })
+
+function getDirItemsFromSavedList (params) {
+  return [...params.items].filter(item => {
+    return params.list.some(listItem => {
+      return listItem.path === item.path
+    })
+  })
+}
