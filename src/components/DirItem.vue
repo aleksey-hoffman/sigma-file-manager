@@ -24,6 +24,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       'drop-target drag-target': type && type.includes('directory'),
       'drag-target': type && type.includes('file')
     }"
+    :cursor="navigatorOpenDirItemWithSingleClick && !inputState.alt ? 'pointer' : 'default'"
   >
     <v-layout
       class="dir-item-card__content-container"
@@ -265,7 +266,6 @@ export default {
     return {
       dirItemAwaitsSecondClick: false,
       dirItemAwaitsSecondClickTimeout: null,
-      dirItemSecondClickDelay: 500,
       mouseDown: {
         item: {},
         leftClick: false,
@@ -301,6 +301,8 @@ export default {
       thumbsInProcessing: 'thumbsInProcessing',
       currentDir: 'navigatorView.currentDir',
       inputState: 'inputState',
+      openDirItemSecondClickDelay: 'storageData.settings.navigator.openDirItemSecondClickDelay',
+      navigatorOpenDirItemWithSingleClick: 'storageData.settings.navigator.openDirItemWithSingleClick',
       dirItemHoverEffect: 'storageData.settings.dirItemHoverEffect',
       visibleDirItems: 'navigatorView.visibleDirItems',
       dirItemsInfoIsFetched: 'navigatorView.dirItemsInfoIsFetched',
@@ -588,10 +590,15 @@ export default {
           }
           // Handle 1st pointer_btn_1_up
           else {
-            this.dirItemAwaitsSecondClick = true
-            this.dirItemAwaitsSecondClickTimeout = setTimeout(() => {
-              this.dirItemAwaitsSecondClick = false
-            }, this.dirItemSecondClickDelay)
+            if (this.navigatorOpenDirItemWithSingleClick && !this.inputState.alt) {
+              this.$store.dispatch('OPEN_DIR_ITEM', item)
+            }
+            else {
+              this.dirItemAwaitsSecondClick = true
+              this.dirItemAwaitsSecondClickTimeout = setTimeout(() => {
+                this.dirItemAwaitsSecondClick = false
+              }, this.openDirItemSecondClickDelay)
+            }
             if ((multipleItemsSelected || singleItemSelected) && !clickedItemIsSelected) {
               // this.$store.dispatch('DESELECT_ALL_DIR_ITEMS')
               // this.$store.dispatch('ADD_TO_SELECTED_DIR_ITEMS', item)
@@ -786,6 +793,10 @@ export default {
   /* background-color: var(--bg-color-1); */
   background-color: var(--dir-item-card-bg);
   transition: all 0.3s ease-in-out; /* 'leave' transition */
+}
+
+.dir-item-card[cursor="pointer"] {
+  cursor: pointer;
 }
 
 .dir-item--divider {

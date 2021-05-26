@@ -412,6 +412,46 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 </template>
               </section-settings>
 
+              <section-settings
+                class="content-area__content-card__section"
+                :header="{
+                  icon: {
+                    name: 'mdi-folder-outline'
+                  },
+                  title: 'Navigator'
+                }"
+              >
+                <template v-slot:content>
+                  <div>
+                    <div class="text--sub-title-1 mt-2">
+                      Directory items
+                    </div>
+                    <div class="mb-5">
+                      <v-switch
+                        class="my-0"
+                        v-model="navigatorOpenDirItemWithSingleClick"
+                        label="Open with single click"
+                        hide-details
+                      ></v-switch>
+                      <div 
+                        class="mt-3"
+                        v-show="navigatorOpenDirItemWithSingleClick"
+                      >
+                        Hold <span class="inline-code--light">Alt</span> button to select the item without opening it
+                      </div>
+                    </div>
+                    <div class="mb-5">
+                      <v-text-field
+                        v-show="!navigatorOpenDirItemWithSingleClick"
+                        v-model="openDirItemSecondClickDelay"
+                        label="Double-click delay (ms)"
+                        style="max-width: 200px"
+                        validate-on-blur
+                      ></v-text-field>
+                    </div>
+                  </div>
+                </template>
+              </section-settings>
             </v-tab-item>
 
             <!-- tab::ui-appearance -->
@@ -1091,6 +1131,8 @@ export default {
       windowCloseButtonAction: 'storageData.settings.windowCloseButtonAction',
       themeType: 'storageData.settings.theme.type',
       navigatorLayout: 'storageData.settings.navigatorLayout',
+      openDirItemSecondClickDelay: 'storageData.settings.navigator.openDirItemSecondClickDelay',
+      navigatorOpenDirItemWithSingleClick: 'storageData.settings.navigator.openDirItemWithSingleClick',
       dirItemHoverEffect: 'storageData.settings.dirItemHoverEffect',
       thumbnailStorageLimit: 'storageData.settings.thumbnailStorageLimit',
       driveCardProgressType: 'storageData.settings.driveCard.progressType',

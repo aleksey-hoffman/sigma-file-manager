@@ -394,6 +394,10 @@ export default new Vuex.Store({
         },
         lastRecordedAppVersion: null,
         isFirstAppLaunch: true,
+        navigator: {
+          openDirItemWithSingleClick: true,
+          openDirItemSecondClickDelay: 500,
+        },
         tips: [
           { 
             name: 'firstTime:fileProtection',

@@ -2,6 +2,13 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
+// TODO: 
+// resolve names of system directories automatically 
+// so they would work in all system locales:
+// On windwos they have short names:
+// WALLPA~1 - Wallpapers
+// SCREEN~1 - Screenshots
+
 const PATH = require('path')
 const electron = require('electron')
 

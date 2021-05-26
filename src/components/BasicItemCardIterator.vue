@@ -11,10 +11,12 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     <div
       class="basic-item-card drop-target"
       v-for="(item, index) in items"
-      @dblclick="handleDoubleClick($event, item)"
+      @click="handleClick({event: $event, item})"
+      @dblclick="handleDoubleClick({event: $event, item})"
       :key="'basic-item-card-' + index"
       :data-item-path="type === 'drive' ? item.mount : item.path"
       :lines="lines"
+      :cursor="navigatorOpenDirItemWithSingleClick ? 'pointer' : 'default'"
       v-ripple
     >
       <!-- card::overlays -->
@@ -196,7 +198,8 @@ export default {
       inputState: 'inputState',
       driveCardProgressType: 'storageData.settings.driveCard.progressType',
       driveCardShowProgress: 'storageData.settings.driveCard.showProgress',
-      showUserNameOnSystemDir: 'storageData.settings.showUserNameOnSystemDir'
+      showUserNameOnSystemDir: 'storageData.settings.showUserNameOnSystemDir',
+      navigatorOpenDirItemWithSingleClick: 'storageData.settings.navigator.openDirItemWithSingleClick',
     })
   },
   methods: {
@@ -261,12 +264,20 @@ export default {
         : colorTeal
       return color
     },
-    handleDoubleClick (event, item) {
+    handleClick (params) {
+      if (this.navigatorOpenDirItemWithSingleClick) {
+        this.handleClickAction(params)
+      }
+    },
+    handleDoubleClick (params) {
+      this.handleClickAction(params)
+    },
+    handleClickAction (params) {
       if (['file', 'dir', 'systemDir'].includes(this.type)) {
-        this.$store.dispatch('OPEN_DIR_ITEM_FROM_PATH', item.path)
+        this.$store.dispatch('OPEN_DIR_ITEM_FROM_PATH', params.item.path)
       }
       else if (this.type === 'drive') {
-        this.$store.dispatch('LOAD_DIR', { path: item.mount })
+        this.$store.dispatch('LOAD_DIR', {path: params.item.mount})
       }
     }
   }
@@ -326,6 +337,10 @@ export default {
             0px -9px 18px rgba(255, 255, 255, 0.03),
             4px 4px 8px -4px rgba(255, 255, 255, 0.04) inset; */
   z-index: 1;
+}
+
+.basic-item-card[cursor="pointer"] {
+  cursor: pointer;
 }
 
 .basic-item-card:hover {
