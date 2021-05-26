@@ -351,6 +351,70 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               <img src="../assets/guide/address-bar-2.png">
             </v-tab-item>
 
+            <!-- tab:navigator tips -->
+            <v-tab-item transition="fade-in" reverse-transition="fade-in">
+              <div class="text--title-1 mb-1">
+                {{getGuideTitle(dialogs.guideDialog.data.guideTabsSelected)}}
+              </div>
+              <v-divider class="divider-color-2 mb-4"></v-divider>
+
+              <h3>Range item selection</h3>
+              <div>
+                To select multiple directory items, 
+                <span class="inline-code--light">Hold [Shift] + LClick</span>
+                to select the <span class="inline-code--light">start</span> 
+                item, then move the cursor to the 
+                <span class="inline-code--light">end</span> item and 
+                press <span class="inline-code--light">LClick</span> on it to select the range.
+              </div>
+              <img class="mt-4" src="../assets/guide/navigator-list-highlight-1.png">
+             
+              <h3>Single item selection</h3>
+              <div>
+                To select a single directory item, press
+                <span class="inline-code--light">Ctrl + LClick</span>
+                on the item to select it.
+              </div>
+              
+              <h3>Keyboard item navigation</h3>
+              <div>
+                <li>
+                  To move selection to the next item press
+                  <span class="inline-code--light">{{shortcuts.navigateDirDown.shortcut}}</span>
+                  or
+                  <span class="inline-code--light">{{shortcuts.navigateDirRight.shortcut}}</span>
+                  (grid layout only) 
+                </li>
+                <li>
+                  To move selection to the previous item press
+                  <span class="inline-code--light">{{shortcuts.navigateDirUp.shortcut}}</span>
+                  or
+                  <span class="inline-code--light">{{shortcuts.navigateDirLeft.shortcut}}</span> 
+                  (grid layout only) 
+                </li>
+                <li>
+                  To open current directory press
+                  <span class="inline-code--light">{{shortcuts.openSelectedDirectory.shortcut}}</span>
+                </li>
+                <li>
+                  To quit current directory press
+                  <span class="inline-code--light">{{shortcuts.quitSelectedDirectory.shortcut}}</span>
+                </li>
+                <li>
+                  Go to previous directory in history
+                  <span class="inline-code--light">{{shortcuts.goToPreviousDirectory.shortcut}}</span>
+                </li>
+                <li>
+                  Go to next directory in history
+                  <span class="inline-code--light">{{shortcuts.goToNextDirectory.shortcut}}</span>
+                </li>
+                <li>
+                  Go up directory
+                  <span class="inline-code--light">{{shortcuts.goUpDirectory.shortcut}}</span>
+                </li>
+              </div>
+            </v-tab-item>
+
             <!-- tab:coming soon -->
             <v-tab-item transition="fade-in" reverse-transition="fade-in">
               <div class="text--title-1 mb-1">

@@ -783,6 +783,7 @@ export default new Vuex.Store({
             {text: 'Shortcuts'},
             {text: 'Data protection'},
             {text: 'Address bar'},
+            {text: 'Navigator tips'},
             {text: 'COMING SOON'},
           ],
         }
