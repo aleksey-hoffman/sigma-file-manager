@@ -96,7 +96,6 @@ function createMainWindow () {
   openMainWindowDevTools()
   loadWindow('main')
   initWindowListeners('main')
-  createQuickViewWindow()
 }
 
 function createQuickViewWindow () {
@@ -669,9 +668,15 @@ function initAppListeners () {
     createMainWindow()
     createTrayMenu()
     initAppUpdater()
+    createQuickViewWindow()
   })
 
   electron.app.on('before-quit', () => {
+    // Make sure all processes are terminated
+    // Otherwise some keep running on app.quit()
+    for (let window in windows) {
+      windows[window] = null
+    }
     if (tray !== null) {
       tray.destroy()
     }
