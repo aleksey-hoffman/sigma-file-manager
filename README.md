@@ -472,6 +472,14 @@ cd sigma-file-manager
 npm install && npm run electron:serve
 ```
 
+To build the project for your current platform, run the following commands:
+
+```
+npm run electron:build
+```
+
+The build can be configured in the `./vue.config.js` file
+
 # License
 
 Sigma file manager is licensed under [GNU GPLv3 or later](./LICENSE.md).
