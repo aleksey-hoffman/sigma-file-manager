@@ -37,7 +37,8 @@ const windows = {
   main: null,
   hiddenGame: null,
   errorWindow: null,
-  trashManager: null
+  trashManager: null,
+  quickViewWindow: null
 }
 const globalShortcuts = {}
 let storageData
@@ -94,7 +95,32 @@ function createMainWindow () {
   // Otherwise the main window will halt during loading
   openMainWindowDevTools()
   loadWindow('main')
-  initWindowListeners()
+  initWindowListeners('main')
+  createQuickViewWindow()
+}
+
+function createQuickViewWindow () {
+  // Create window
+  windows.quickViewWindow = new electron.BrowserWindow({
+    title: 'Sigma file manager | Quick view',
+    icon: PATH.join(__static, '/icons/logo-1024x1024.png'),
+    show: false,
+    // Set content size to 16:9 ratio by default since it's the most common one.
+    // Window dimensions are adjusted in the quickViewWindow.html, when the content is loaded 
+    useContentSize: true,
+    width: 1280,
+    height: 720,
+    minWidth: 300,
+    minHeight: 200,
+    webPreferences: {
+      webviewTag: true,
+      enableRemoteModule: true,
+      contextIsolation: !process.env.ELECTRON_NODE_INTEGRATION,
+      nodeIntegration: process.env.ELECTRON_NODE_INTEGRATION
+    }
+  }) 
+  loadWindow('quickViewWindow')
+  initWindowListeners('quickViewWindow')
 }
 
 function createHiddenGameWindow () {
@@ -145,9 +171,17 @@ function loadWindow (windowName) {
   else if (windowName === 'errorWindow') {
     filePath = 'errorWindow.html'
   }
+  else if (windowName === 'quickViewWindow') {
+    filePath = 'quickViewWindow.html'
+    developmentPath = `file://${__static}/quickViewWindow.html`
+  }
   // Get window URL
-  developmentPath = `${process.env.WEBPACK_DEV_SERVER_URL}${filePath}`
-  productionPath = `app://./${filePath}`
+  if (!developmentPath) {
+    developmentPath = `${process.env.WEBPACK_DEV_SERVER_URL}${filePath}`
+  }
+  if (!productionPath) {
+    productionPath = `app://./${filePath}`
+  }
   // Load window URL
   if (process.env.WEBPACK_DEV_SERVER_URL) {
     windows[windowName].loadURL(developmentPath)
@@ -161,17 +195,42 @@ function loadWindow (windowName) {
   }
 }
 
-function initWindowListeners () {
-  windows.main.on('focus', () => {
-    windows.main.setSkipTaskbar(false)
-    windows.main.webContents.send('window:focus')
-  })
-  windows.main.on('blur', () => {
-    windows.main.webContents.send('window:blur')
-  })
-  windows.main.on('closed', () => {
-    windows.main = null
-  })
+function initWindowListeners (name) {
+  if (name === 'main') {
+    windows.main.on('focus', () => {
+      windows.main.setSkipTaskbar(false)
+      windows.main.webContents.send('window:focus')
+    })
+    windows.main.on('blur', () => {
+      windows.main.webContents.send('window:blur')
+    })
+    windows.main.on('closed', () => {
+      windows.main = null
+    })
+  }
+  else if (name === 'quickViewWindow') {
+    // Init listeners
+    windows.quickViewWindow.webContents.session.once('will-download', _willDownloadHandler)
+    windows.quickViewWindow.once('close', () => {
+      // Remove listener to avoid multiple listeners
+      // Without it, a duplicate listener is created every time the windows is closed
+      windows.quickViewWindow.webContents.session.removeListener('will-download', _willDownloadHandler)
+    })
+    windows.quickViewWindow.once('closed', () => {
+      createQuickViewWindow()
+    })
+    function _willDownloadHandler (event, item, webContents) {
+      event.preventDefault()
+      console.log('main::load:webview::failed')
+      const fileURL = item.getURL()
+      windows.quickViewWindow.webContents.send('load:webview::cancel')
+      windows.main.webContents.send('load:webview::failed', {path: fileURL})
+      // Note: close the window even if file is not supported and window.show()
+      // wasn't called, in order to reset the listeners. Otherwise, unsupported
+      // files will break the window for all consecutive runs by throwing an error
+      windows.quickViewWindow.close()
+    }
+  }
 }
 
 function createUtilWindow (fileName) {
@@ -326,6 +385,10 @@ function initIPCListeners () {
   electron.ipcMain.on('open-hidden-game', (event) => {
     createHiddenGameWindow()
   })
+
+  electron.ipcMain.on('quick-view::open-file', (event, path) => {
+    openFileInQuickViewWindow(path)
+  })
 }
 
 function registerSafeFileProtocol () {
@@ -385,6 +448,21 @@ function showBuiltInNotificationUpdateAvailable (payload) {
       params: payload
     })
   }, 5000)
+}
+
+function openFileInQuickViewWindow (path) {
+  function _load () {
+    windows.quickViewWindow.webContents.send('load:webview', {path})
+  }
+  if (!windows.quickViewWindow) {
+    createQuickViewWindow() 
+    windows.quickViewWindow.webContents.once('did-finish-load', () => {
+      _load()
+    })
+  }
+  else {
+    _load()
+  }
 }
 
 // TODO: finish update auto install

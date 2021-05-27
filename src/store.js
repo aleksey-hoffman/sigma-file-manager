@@ -518,6 +518,17 @@ export default new Vuex.Store({
             askForArguments: false
           },
           defaultItems: [
+             {
+              name: 'Quick view',
+              action: () => {
+                eventHub.$emit('openWithQuickView')
+              },
+              readonly: true,
+              path: '',
+              icon: 'mdi-card-search-outline',
+              askForArguments: false,
+              targetTypes: ['file', 'file-symlink'],
+            },
             {
               name: 'Default file manager',
               action: () => {
@@ -2746,14 +2757,8 @@ export default new Vuex.Store({
       }
     },
     OPEN_FILE ({ state, commit, dispatch, getters }, path) {
-      if (state.inputState.alt) {
-        // Open in the preview window
-        electron.ipcRenderer.send('quick-view::open-file', path)
-      } 
-      else {
-        // Open in the default external program
-        electron.shell.openPath(PATH.normalize(path))
-      }
+      // Open in the default external program
+      electron.shell.openPath(PATH.normalize(path))
       dispatch('ADD_TO_DIR_ITEMS_TIMELINE', path)
     },
     AUTO_FOCUS_FILTER (store) {
@@ -5501,10 +5506,7 @@ export default new Vuex.Store({
         path: state.navigatorView.selectedDirItems.getLast().path
       }
       payload = {...defaultPayload, ...payload}
-      // TODO: finish in v1.1.0 (quick file preview)
-      // Add the "open with::quick file preview" options into context menu
-      // And add it to the shortcuts list so users know they can open files this way
-      // Open in the preview window
+      
       if (getters.dirItemsSelectionStats.fileCount > 0) {
         electron.ipcRenderer.send('quick-view::open-file', payload.path)
       }

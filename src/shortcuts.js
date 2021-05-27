@@ -61,6 +61,21 @@ export default {
     size: '22px',
     description: 'Close opened dialog / overlay; dismiss items prepared for copying or moving, deselect items'
   },
+  openWithQuickView: {
+    isGlobal: false,
+    isReadOnly: false,
+    conditions: {
+      inputFieldIsActive: false,
+      dialogIsOpened: false,
+    },
+    preventDefaultType: '!inputFieldIsActive',
+    routes: ['navigator', 'dashboard', 'home'],
+    icon: 'mdi-card-search-outline',
+    action: { name: 'OPEN_WITH_QUICK_VIEW' }, 
+    shortcut: 'Space',
+    size: '22px',
+    description: `Quick view lets you quickly open selected file in a preview window. Supported files: images, videos, audio, PDF, text / plain files`
+  },
   newDirectory: {
     isGlobal: false,
     isReadOnly: false,
