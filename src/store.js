@@ -231,6 +231,7 @@ export default new Vuex.Store({
       ]
     },
     navigatorView: {
+      info: {},
       visibleDirItems: [],
       dirItemsInfoIsFetched: false,
       timeSinceLoadDirItems: 0,
@@ -1021,6 +1022,107 @@ export default new Vuex.Store({
     },
     isLastDirItemSelected: (state, getters) => {
       return getters.selectedDirItems.some(item => item.path === getters.lastDirItem.path)
+    },
+    navigatorGridData: (state, getters) => {
+      let rowData = getRowContainingSelectedDirItem()
+      let itemData = getItemData(rowData)
+      let dirItemNodes = document.querySelectorAll('.dir-item-card')
+      let selectedDirItemNode
+      dirItemNodes.forEach(node => {
+        if (node.dataset.itemPath === state.navigatorView.selectedDirItems.getLast().path) {
+          selectedDirItemNode = node
+        }
+      })
+      
+      let data = {
+        rowIndex: rowData.rowIndex,
+        rowPositionIndex: rowData.row.positionIndex,
+        type: rowData.row.type,
+        inFirstRow: rowData.rowIndex === 0,
+        inLastRow: rowData.rowIndex === getters.dirItemRows.length - 1,
+        gridUpIndex: itemData.gridUpIndex,
+        gridDownIndex: itemData.gridDownIndex,
+        row: itemData.row,
+        isDirItemNodeInViewport: isInViewport(selectedDirItemNode),
+        selectedDirItemNode
+      }
+
+      function isInViewport (node) {
+        if (!node) {return false}
+        const nodeRect = node.getBoundingClientRect()
+        return (
+          nodeRect.top >= 0 &&
+          nodeRect.left >= 0 &&
+          nodeRect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+          nodeRect.right <= (window.innerWidth || document.documentElement.clientWidth)
+        )
+      }
+
+      function getItemData (rowData) {
+        let data = {
+          gridUpIndex: 0,
+          gridDownIndex: 0,
+          row: getters.dirItemRows[rowData.rowIndex],
+          previousRow: getters.dirItemRows[rowData.rowIndex - 1],
+          nextRow: getters.dirItemRows[rowData.rowIndex + 1],
+          previousPotentialItemSelectionIndex: 0,
+          nextPotentialItemSelectionIndex: 0,
+        }
+        if (data.previousRow) {
+          data.previousPotentialItemSelectionIndex = data.previousRow.items[rowData.columnIndex]?.dirItemPositionIndex
+          if (data.previousPotentialItemSelectionIndex) {
+            data.gridUpIndex = data.previousPotentialItemSelectionIndex
+          }
+          else if (!data.previousPotentialItemSelectionIndex && getters.dirItemRows[rowData.rowIndex - 2]) {
+            data.gridUpIndex = getters.dirItemRows[rowData.rowIndex - 2].items[rowData.columnIndex].dirItemPositionIndex
+          }
+        }
+        if (data.nextRow) {
+          data.nextPotentialItemSelectionIndex = data.nextRow.items[rowData.columnIndex]?.dirItemPositionIndex
+          if (data.nextPotentialItemSelectionIndex) {
+            data.gridDownIndex = data.nextPotentialItemSelectionIndex
+          }
+          else if (!data.nextPotentialItemSelectionIndex && getters.dirItemRows[rowData.rowIndex + 2]) {
+            data.gridDownIndex = getters.dirItemRows[rowData.rowIndex + 2].items[rowData.columnIndex].dirItemPositionIndex
+          }
+        }
+        return data
+      }
+
+      function getRowContainingSelectedDirItem () {
+        let data = {
+          rowIndex: null,
+          columnIndex: null,
+          row: null
+        }
+        getters.dirItemRows.forEach((row, rowIndex) => {
+          row.items.forEach((item, columnIndex) => {
+            const rowContainsItem = item.dirItemPositionIndex === state.navigatorView.selectedDirItems.getLast().dirItemPositionIndex
+            if (rowContainsItem) {
+              data.rowIndex = rowIndex
+              data.row = row
+              data.columnIndex = columnIndex
+            }
+          })
+        })
+        if (data.columnIndex !== null) {
+          return data
+        }
+      }
+      return data
+    },
+    dirItemRows: (state, getters) => {
+      const directoryRows = state.navigatorView.info.directoryRowsFormatted
+      const fileRows = state.navigatorView.info.fileRowsFormatted
+      if (directoryRows && fileRows) {
+        return [
+          ...state.navigatorView.info.directoryRowsFormatted,
+          ...state.navigatorView.info.fileRowsFormatted
+        ]
+      }
+      else {
+        return []
+      }
     },
     isOnlyCurrentDirItemSelected: (state, getters) => {
       return getters.selectedDirItems.length === 1 && 
@@ -2303,6 +2405,76 @@ export default new Vuex.Store({
       router.push(item.to).catch((error) => {})
     },
     NAVIGATE_DIR_UP (store) {
+      // Layout: grid
+      if (store.state.storageData.settings.navigatorLayout === 'grid') {
+        let navigatorGridData = store.getters.navigatorGridData
+        if (store.getters.isOnlyCurrentDirItemSelected) {
+          store.dispatch('SELECT_DIR_ITEM', {index: store.getters.firstDirItemIndex})
+        }
+        else if (store.state.navigatorView.selectedDirItems.length > 1) {
+          store.dispatch('SELECT_DIR_ITEM', {
+            index: store.state.navigatorView.selectedDirItems[0].dirItemPositionIndex
+          })
+        }
+        else if (store.state.navigatorView.selectedDirItems.length === 1) {
+          if (!navigatorGridData.inFirstRow) {
+            store.dispatch('SELECT_DIR_ITEM', {
+              index: navigatorGridData.gridUpIndex
+            })
+          }
+        }
+      }
+      // Layout: list
+      else {
+        if (store.getters.isOnlyCurrentDirItemSelected) {
+          store.dispatch('SELECT_DIR_ITEM', {index: store.getters.firstDirItemIndex})
+        }
+        else {
+          if (!store.getters.isFirstDirItemSelected) {
+            store.dispatch('SELECT_DIR_ITEM', {
+              index: store.getters.lastSelectedDirItem.dirItemPositionIndex - 1
+            })
+          }
+        }
+      }
+      store.dispatch('HANDLE_NAVIGATOR_ITEM_MOVE_SCROLL', {direction: 'up'})
+    },
+    NAVIGATE_DIR_DOWN (store) {
+      // Layout: grid
+      if (store.state.storageData.settings.navigatorLayout === 'grid') {
+        let navigatorGridData = store.getters.navigatorGridData
+        if (store.getters.isOnlyCurrentDirItemSelected) {
+          store.dispatch('SELECT_DIR_ITEM', {index: store.getters.firstDirItemIndex})
+        }
+        else if (store.state.navigatorView.selectedDirItems.length > 1) {
+          store.dispatch('SELECT_DIR_ITEM', {
+            index: store.state.navigatorView.selectedDirItems.getLast().dirItemPositionIndex
+          })
+        }
+        else if (store.state.navigatorView.selectedDirItems.length === 1) {
+          if (!navigatorGridData.inLastRow) {
+            store.dispatch('SELECT_DIR_ITEM', {
+              index: navigatorGridData.gridDownIndex
+            })
+          }
+        }
+      }
+      // Layout: list
+      else {
+        if (store.getters.isOnlyCurrentDirItemSelected) {
+          store.dispatch('SELECT_DIR_ITEM', {index: store.getters.firstDirItemIndex})
+        }
+        else {
+          if (!store.getters.isLastDirItemSelected) {
+            store.dispatch('SELECT_DIR_ITEM', {
+              index: store.getters.lastSelectedDirItem.dirItemPositionIndex + 1
+            })
+          }
+        }
+      }
+      store.dispatch('HANDLE_NAVIGATOR_ITEM_MOVE_SCROLL', {direction: 'down'})
+    },
+    NAVIGATE_DIR_LEFT (store) {
       if (store.getters.isOnlyCurrentDirItemSelected) {
         store.dispatch('SELECT_DIR_ITEM', {index: store.getters.firstDirItemIndex})
       }
@@ -2314,7 +2486,7 @@ export default new Vuex.Store({
         }
       }
     },
-    NAVIGATE_DIR_DOWN (store) {
+    NAVIGATE_DIR_RIGHT (store) {
       if (store.getters.isOnlyCurrentDirItemSelected) {
         store.dispatch('SELECT_DIR_ITEM', {index: store.getters.firstDirItemIndex})
       }
@@ -2322,6 +2494,29 @@ export default new Vuex.Store({
         if (!store.getters.isLastDirItemSelected) {
           store.dispatch('SELECT_DIR_ITEM', {
             index: store.getters.lastSelectedDirItem.dirItemPositionIndex + 1
+          })
+        }
+      }
+    },
+    HANDLE_NAVIGATOR_ITEM_MOVE_SCROLL (store, params) {
+      // Layout: grid
+      if (store.state.storageData.settings.navigatorLayout === 'grid') {
+        // TODO: finish 
+        // updatedNavigatorGridData.selectedDirItemNode is undefined when scrolling up
+        // Is the virtual container causing the problem?
+        let updatedNavigatorGridData = store.getters.navigatorGridData
+        if (!updatedNavigatorGridData.isDirItemNodeInViewport && updatedNavigatorGridData.selectedDirItemNode) {
+          let scrollContentNode = utils.getContentAreaNode(router.currentRoute.name)
+          // scrollContentNode.scroll({ 
+          //   top: params.direction === 'up'
+          //     ? scrollContentNode.scrollTop - updatedNavigatorGridData.row.height
+          //     : scrollContentNode.scrollTop + updatedNavigatorGridData.row.height,
+          //   left: 0,
+          //   behavior: 'smooth'
+          // })
+          updatedNavigatorGridData.selectedDirItemNode.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'nearest'
           })
         }
       }

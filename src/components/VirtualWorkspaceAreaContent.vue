@@ -103,6 +103,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       class="
         root
         custom-scrollbar
+        main-content-container
         drag-drop-container
         unselectable
         fade-mask--bottom

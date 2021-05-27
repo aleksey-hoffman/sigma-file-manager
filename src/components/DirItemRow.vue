@@ -42,6 +42,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         @addToThumbLoadSchedule="$emit('addToThumbLoadSchedule', $event)"
         @removeFromThumbLoadSchedule="$emit('removeFromThumbLoadSchedule', $event)"
         :ref="'dirItem' + item.positionIndex"
+        :row-type="row.type"
       ></dir-item>
     </template>
 

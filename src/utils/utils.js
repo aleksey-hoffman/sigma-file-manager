@@ -138,10 +138,10 @@ export default {
   getContentAreaNode (routeName) {
     try {
       if (routeName === 'navigator') {
-        return document.querySelector('.main-content-container')
+        return document.querySelector('#navigator-route .main-content-container')
       }
       else if (routeName === 'home') {
-        return document.querySelector('.main-content-container .os-viewport')
+        return document.querySelector('#home-route.main-content-container .os-viewport')
       }
       else {
         return document.querySelector('.content-area')

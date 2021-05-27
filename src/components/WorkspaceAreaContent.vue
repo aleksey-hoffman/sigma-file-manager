@@ -94,6 +94,11 @@ export default {
     },
     formattedDirItemsRows () {
       let results = []
+      let data = {
+        gridColumnAmount: null,
+        directoryRowsFormatted: [],
+        fileRowsFormatted: [],
+      }
       const dividerMarginBottom = 8
       const dirItemMarginBottom = 24
       const navMenuWidth = 64
@@ -111,9 +116,12 @@ export default {
         // to avoid item card clipping when it's hovered (scaled).
         containerWidth = this.$utils.getNodeContentWidth(container.firstChild)
       }
-      const chunkItemsAmount = Math.floor(containerWidth / itemMinWidth)
-      const gapAmount = chunkItemsAmount - 1
-      const gap = gapSize / chunkItemsAmount
+      
+      // TODO: Refactor: move all properties to data object
+      data.gridColumnAmount = this.getGridColumnAmount({containerWidth, itemMinWidth})
+
+      const gapAmount = data.gridColumnAmount - 1
+      const gap = gapSize / data.gridColumnAmount
       const chunkItemsAmountWithIncludedGap = Math.floor(containerWidth / (itemMinWidth + (gap * gapAmount)))
       const imageFilesDirItems = this.imageFilesDirItems
       const videoFilesDirItems = this.videoFilesDirItems
@@ -145,7 +153,7 @@ export default {
         height: 8,
         marginBottom: 0
       }]
-      const directoryDirItemsAsRowsFormatted = directoryDirItemsAsRows.map(row => {
+      data.directoryRowsFormatted = directoryDirItemsAsRows.map(row => {
         return {
           type: 'directory-row',
           height: 64 + dirItemMarginBottom,
@@ -153,7 +161,7 @@ export default {
           items: row
         }
       })
-      const fileDirItemsAsRowsFormatted = fileDirItemsAsRows.map(row => {
+      data.fileRowsFormatted = fileDirItemsAsRows.map(row => {
         return {
           type: 'file-row',
           height: 158 + dirItemMarginBottom,
@@ -193,7 +201,7 @@ export default {
         results = [
           ...topSpacer,
           ...directoryDivider,
-          ...directoryDirItemsAsRowsFormatted,
+          ...data.directoryRowsFormatted,
           ...fileDivider,
           ...fileDirItemsAsRowsFormattedGrouped,
           ...bottomSpacer
@@ -203,9 +211,9 @@ export default {
         results = [
           ...topSpacer,
           ...directoryDivider,
-          ...directoryDirItemsAsRowsFormatted,
+          ...data.directoryRowsFormatted,
           ...fileDivider,
-          ...fileDirItemsAsRowsFormatted,
+          ...data.fileRowsFormatted,
           ...bottomSpacer
         ]
       }
@@ -222,6 +230,7 @@ export default {
         item.dirItemPositionIndex = index
         return item
       })
+      this.setNavigatorViewInfo(data)
       return results
     },
     formattedDirItems () {
@@ -330,6 +339,15 @@ export default {
     }
   },
   methods: {
+    setNavigatorViewInfo (data) {
+      this.$store.dispatch('SET', {
+        key: 'navigatorView.info',
+        value: data
+      })
+    },
+    getGridColumnAmount (params) {
+      return Math.floor(params.containerWidth / params.itemMinWidth)
+    },
     getItemsMatchingFilter (items) {
       return itemFilter({
         filterQuery: this.filterQuery,
