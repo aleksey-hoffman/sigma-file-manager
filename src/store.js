@@ -4595,6 +4595,19 @@ export default new Vuex.Store({
         }
         params = { ...defaultOptions, ...params }
 
+        let notificationConfig = {
+          action: 'update-by-hash',
+          hashID: utils.getHash(),
+          type: 'dir-item-transfer',
+          icon: 'mdi-progress-clock',
+          closeButton: true,
+          timeout: 0,
+          title: params.operation === 'move' 
+            ? 'Moving items...'
+            : 'Copying items...',
+        }
+        eventHub.$emit('notification', notificationConfig)
+
         store.dispatch('CHECK_DIR_ITEMS_NAME_CONFLICTS', {
           directory: params.directory,
           items: params.items
@@ -4612,7 +4625,7 @@ export default new Vuex.Store({
                       overwrite: conformationResult === 'replace-all',
                       operation: params.operation
                     })
-                      .then(() => resolve())
+                      .then(() => {resolveTransfer()})
                   } 
                 })
             }
@@ -4623,10 +4636,21 @@ export default new Vuex.Store({
                 overwrite: false,
                 operation: params.operation
               })
-                .then(() => resolve())
+                .then(() => {resolveTransfer()})
             }
           })
 
+        function resolveTransfer () {
+          notificationConfig.title = params.operation === 'move' 
+            ? 'Items were moved'
+            : 'Items were copied'
+          notificationConfig.timeout = 3000
+          eventHub.$emit('notification', notificationConfig)
+          store.dispatch('RELOAD_DIR', {
+            scrollTop: false
+          })
+          store.dispatch('CLEAR_FS_CLIPBOARD')
+        }
       })
     },
     INIT_COPY_DIR_ITEMS_PROCESS (store, payload) {
@@ -4634,46 +4658,63 @@ export default new Vuex.Store({
         let promises = []
         payload.items.forEach(item => {
           const parsedItemPath = PATH.parse(item.path)
-          const destPath = PATH.join(payload.directory, parsedItemPath.base) 
+          const destPath = PATH.normalize(PATH.join(payload.directory, parsedItemPath.base))
           const uniqueDestPath = utils.getUniquePath(destPath)
-          promises.push(startWriteProcess(item, uniqueDestPath, payload))
+          const sourcePath = PATH.normalize(item.path)
+          promises.push(startWriteProcess({sourcePath, uniqueDestPath, payload}))
         })
         Promise.allSettled(promises)
           .then(() => {
             resolve()
           })
           
-        function startWriteProcess (item, destPath, payload) {
+        function startWriteProcess (params) {
           return new Promise((resolve, reject) => {
-            if (item.type === 'directory' || item.type === 'directory-symlink') {
-              store.dispatch('WRITE_DIRECTORY', { 
-                item,
-                destPath,
-                payload,
-                progress,
-                notificationData,
-                operation: payload.operation 
+            console.log(params)
+            if (params.payload.operation === 'move') {
+              store.dispatch('MOVE_ITEM', { 
+                sourcePath: params.sourcePath,
+                destPath: params.uniqueDestPath
               })
-                .then(() => { resolve() })
+                .then(() => {resolve()})
             }
-            else if (item.type === 'file' || item.type === 'file-symlink') {
-              store.dispatch('WRITE_FILE', { 
-                item,
-                destPath,
-                operation: payload.operation 
+            else if (params.payload.operation === 'copy') {
+              store.dispatch('COPY_ITEM', { 
+                sourcePath: params.sourcePath,
+                destPath: params.uniqueDestPath
               })
-                .then(() => { resolve() })
+                .then(() => {resolve()})
             }
           })
         }
       })
     },
+    async MOVE_ITEM (store, payload) {
+      try {
+        fsExtra.move(payload.sourcePath, payload.destPath, {recursive: true}, error => {
+          if (error) {throw Error(error)}
+          console.log('move item resolve')
+          return
+        })
+      }
+      catch (error) {
+        throw Error(error)
+      }
+    },
+    async COPY_ITEM (store, payload) {
+      try {
+        fsExtra.copy(payload.sourcePath, payload.destPath, {recursive: true}, error => {
+          if (error) {throw Error(error)}
+          return
+        })
+      }
+      catch (error) {
+        throw Error(error)
+      }
+    },
     async MOVE_DIR_ITEMS ({ state, commit, dispatch, getters }, payload) {
       payload.operation = 'move'
-      dispatch('COPY_DIR_ITEMS', payload)
-        .then(() => {
-          dispatch('DELETE_DIR_ITEMS', payload)
-        })
+      await dispatch('COPY_DIR_ITEMS', payload)
     },
     async RENAME_DIR_ITEM (store, payload) {
       const { oldPath, newPath, newName, oldName } = payload
@@ -4756,18 +4797,6 @@ export default new Vuex.Store({
       // TODO: Check if destination drive has enough space
       return new Promise((resolve, reject) => {
         resolve()
-      })
-    },
-    async WRITE_DIRECTORY ({ state, commit, dispatch, getters }, payload) {
-      return new Promise((resolve, reject) => {
-        fsExtra.copy(payload.item.path, payload.destPath)
-          .then(() => {
-            resolve()
-          })
-          .catch((error) => {
-            console.error(error)
-            reject()
-          })
       })
     },
     /** Prepares specified file for writing to drive.
