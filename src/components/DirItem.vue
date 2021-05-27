@@ -572,7 +572,7 @@ export default {
 
       if (!this.dirItemDragMoveTresholdReached) {
         // Handle pointer_btn_1_up
-        if (this.inputState.ctrl && leftClick) {
+        if ((this.inputState.ctrl || this.inputState.shift) && leftClick) {
           if (clickedItemIsSelected) {
             this.$store.dispatch('DESELECT_DIR_ITEM', item)
           }

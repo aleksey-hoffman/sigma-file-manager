@@ -1512,9 +1512,7 @@ export default {
           else {
             // Bind specified action to shortcuts
             if (!value.isReadOnly) {
-              console.log(value)
               mousetrap.bind(value.shortcut, (event) => {
-                console.log(event)
                 this.$store.dispatch('SHORTCUT_ACTION', { event, value })
               }, 'keydown')
             }
