@@ -969,6 +969,8 @@ export default new Vuex.Store({
           .replace(/Backtick/g, '`')
           .replace(/Plus/g, '=')
           .replace(/Minus/g, '-')
+          .replace(/</g, ',')
+          .replace(/>/g, '.')
           .toLowerCase()
       }
       let shortcutsList = utils.cloneDeep(state.storageData.settings.shortcuts)
@@ -2407,7 +2409,6 @@ export default new Vuex.Store({
     NAVIGATE_DIR_UP (store) {
       // Layout: grid
       if (store.state.storageData.settings.navigatorLayout === 'grid') {
-        let navigatorGridData = store.getters.navigatorGridData
         if (store.getters.isOnlyCurrentDirItemSelected) {
           store.dispatch('SELECT_DIR_ITEM', {index: store.getters.firstDirItemIndex})
         }
@@ -2417,6 +2418,7 @@ export default new Vuex.Store({
           })
         }
         else if (store.state.navigatorView.selectedDirItems.length === 1) {
+          let navigatorGridData = store.getters.navigatorGridData
           if (!navigatorGridData.inFirstRow) {
             store.dispatch('SELECT_DIR_ITEM', {
               index: navigatorGridData.gridUpIndex
@@ -2442,7 +2444,6 @@ export default new Vuex.Store({
     NAVIGATE_DIR_DOWN (store) {
       // Layout: grid
       if (store.state.storageData.settings.navigatorLayout === 'grid') {
-        let navigatorGridData = store.getters.navigatorGridData
         if (store.getters.isOnlyCurrentDirItemSelected) {
           store.dispatch('SELECT_DIR_ITEM', {index: store.getters.firstDirItemIndex})
         }
@@ -2452,6 +2453,7 @@ export default new Vuex.Store({
           })
         }
         else if (store.state.navigatorView.selectedDirItems.length === 1) {
+          let navigatorGridData = store.getters.navigatorGridData
           if (!navigatorGridData.inLastRow) {
             store.dispatch('SELECT_DIR_ITEM', {
               index: navigatorGridData.gridDownIndex
@@ -2922,6 +2924,18 @@ export default new Vuex.Store({
           store.dispatch('OPEN_DIR_ITEM', item)
         })
     },
+    COPY_DIR_PATH_TO_OS_CLIPBOARD (store, params = {}) {
+      if (store.state.navigatorView.currentDir.path) {
+        if (!params.path) {
+          params.path = store.state.navigatorView.currentDir.path
+        }
+        store.dispatch('COPY_TEXT_TO_CLIPBOARD', {
+          text: params.path,
+          title: 'Path was copied to OS clipboard',
+          message: params.path
+        })
+      }
+    },
     OPEN_DIR_PATH_FROM_OS_CLIPBOARD (store) {
       const osClipboardText = electron.clipboard.readText()
       const path = PATH.normalize(osClipboardText)
@@ -2929,14 +2943,21 @@ export default new Vuex.Store({
         if (error) {
           eventHub.$emit('notification', {
             action: 'update-by-type',
-            type: 'copyValue',
+            type: 'open-os-clipboard-path',
             timeout: 6000,
             title: 'Cannot open the path in the clipboard',
             message: '<b>Reason:</b> path does not exist on the drive.'
           })
         }
         else {
-          dispatch('LOAD_DIR', { path: osClipboardText })
+          store.dispatch('LOAD_DIR', { path: osClipboardText })
+          eventHub.$emit('notification', {
+            action: 'update-by-type',
+            type: 'open-os-clipboard-path',
+            timeout: 2000,
+            title: 'Opened path from clipboard',
+            message: osClipboardText
+          })
         }
       })
     },
@@ -2954,13 +2975,14 @@ export default new Vuex.Store({
           })
         })
     },
-    COPY_TEXT_TO_CLIPBOARD (store, string) {
-      electron.clipboard.writeText(string)
+    COPY_TEXT_TO_CLIPBOARD (store, params) {
+      electron.clipboard.writeText(params.text)
       eventHub.$emit('notification', {
         action: 'update-by-type',
         type: 'copyValue',
         timeout: 2000,
-        title: 'Text was copied to clipboard'
+        title: params.title ?? 'Text was copied to clipboard',
+        message: params.message
       })
     },
     COPY_CURRENT_DIR_PATH (store) {

@@ -902,7 +902,7 @@ export default {
             onClick: () => {
               this.$store.dispatch(
                 'COPY_TEXT_TO_CLIPBOARD',
-                `${this.directoryShareIp}:${this.directorySharePort}/ftp`
+                {text: `${this.directoryShareIp}:${this.directorySharePort}/ftp`}
               )
             },
             closesNotification: false
@@ -941,7 +941,7 @@ export default {
             onClick: () => {
               this.$store.dispatch(
                 'COPY_TEXT_TO_CLIPBOARD',
-                `${this.fileShareIp}:${this.fileSharePort}`
+                {text: `${this.fileShareIp}:${this.fileSharePort}`}
               )
             },
             closesNotification: false
@@ -1512,7 +1512,9 @@ export default {
           else {
             // Bind specified action to shortcuts
             if (!value.isReadOnly) {
+              console.log(value)
               mousetrap.bind(value.shortcut, (event) => {
+                console.log(event)
                 this.$store.dispatch('SHORTCUT_ACTION', { event, value })
               }, 'keydown')
             }

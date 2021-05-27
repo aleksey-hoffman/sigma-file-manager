@@ -251,10 +251,9 @@ export default {
   copyCurrentDirPath: {
     isGlobal: false,
     isReadOnly: false,
-    conditions: {},
     routes: ['all'],
     icon: 'mdi-link-variant',
-    action: { name: 'copyCurrentDirPath' },
+    action: { name: 'COPY_DIR_PATH_TO_OS_CLIPBOARD' },
     shortcut: 'Ctrl + <',
     size: '22px',
     description: 'Copy path to clipboard'
@@ -262,7 +261,6 @@ export default {
   openCopiedPath: {
     isGlobal: false,
     isReadOnly: false,
-    conditions: {},
     routes: ['all'],
     icon: 'mdi-link-variant',
     action: {

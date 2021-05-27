@@ -72,7 +72,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 v-on="on"
                 @click.ctrl="$store.dispatch(
                   'COPY_TEXT_TO_CLIPBOARD',
-                  selectedDirItemData.title
+                  {text: selectedDirItemData.title}
                 )"
                 class="info-panel__header__title"
                 :class="{'cursor-pointer': inputState.ctrl}"
@@ -146,7 +146,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     v-show="!showGetDirSizeBtn && !showCancelGetDirSizeBtn"
                     @click.ctrl="$store.dispatch(
                       'COPY_TEXT_TO_CLIPBOARD',
-                      $utils.prettyBytes(selectedDirItems.getLast().stat.size, 1)
+                      {text: $utils.prettyBytes(selectedDirItems.getLast().stat.size, 1)}
                     )"
                     class="info-panel__properties__item__value"
                     :class="{'cursor-pointer': inputState.ctrl}"
@@ -183,7 +183,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   v-on="on"
                   @click.ctrl="$store.dispatch(
                     'COPY_TEXT_TO_CLIPBOARD',
-                    item.value
+                    {text: item.value}
                   )"
                   class="info-panel__properties__item__value"
                   :class="{'cursor-pointer': inputState.ctrl}"

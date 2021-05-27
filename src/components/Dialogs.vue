@@ -1840,9 +1840,11 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           <v-btn
             @click="$store.dispatch(
               'COPY_TEXT_TO_CLIPBOARD',
-              dialogs.localShareManagerDialog.data.shareType === 'file'
-                ? `${localServer.fileShare.address}`
-                : `${localServer.directoryShare.address}`
+              {
+                text: dialogs.localShareManagerDialog.data.shareType === 'file'
+                  ? `${localServer.fileShare.address}`
+                  : `${localServer.directoryShare.address}`
+              }
             )"
             small depressed
             class="button-1 ml-3"
