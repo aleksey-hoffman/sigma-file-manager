@@ -396,7 +396,7 @@ export default new Vuex.Store({
         lastRecordedAppVersion: null,
         isFirstAppLaunch: true,
         navigator: {
-          openDirItemWithSingleClick: true,
+          openDirItemWithSingleClick: false,
           openDirItemSecondClickDelay: 500,
         },
         tips: [

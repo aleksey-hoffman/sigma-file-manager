@@ -1764,6 +1764,10 @@ button.v-btn.v-btn--disabled
   padding-top: 0px !important;
 }
 
+.v-list {
+  color: var(--color-6) !important;
+}
+
 .v-list-item.v-list-item--active {
   color: var(--color-5) !important;
   background-color: var(--highlight-color-6) !important;

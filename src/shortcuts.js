@@ -74,7 +74,7 @@ export default {
     action: { name: 'OPEN_WITH_QUICK_VIEW' }, 
     shortcut: 'Space',
     size: '22px',
-    description: `Quick view lets you quickly open selected file in a preview window. Supported files: images, videos, audio, PDF, text / plain files`
+    description: `Open selected file in Quick View window. Supported: images, videos, audio, PDF, plain text`
   },
   newDirectory: {
     isGlobal: false,
