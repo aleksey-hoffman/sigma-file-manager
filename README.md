@@ -177,17 +177,19 @@ This is how and why "Sigma file manager" was created. It all started from a simp
 
 ✅ **v1.0.0 (May 25 2021):** publish the app;
 
-⬜ **by v1.0.X (May 25-26 2021):** minor improvements, error fixes;
+✅ **by v1.1.0 (May 27 2021):** add 1 major feature, minor improvements, error fixes;
 
-⬜ **by v1.1.0 (May 29 2021):** add 2 major features, 2+ notable improvements, navigator performance improvements;
+⬜ **by v1.2.0 (May 29 2021):** add 2 major features, 2+ notable improvements, navigator performance improvements;
 
-⬜ **by v1.2.0 (June 2021):** localize the app to 10+ most popular languages;
+⬜ **by v1.3.0 (June 2021):** localize the app to 10+ most popular languages;
 
-⬜ **by v1.3.0 (June 2021):** add 2+ major features and 2+ notable improvements;
+⬜ **by v1.4.0 (June 2021):** add 2+ major features and 2+ notable improvements;
 
-⬜ **by v1.4.0 (date TBD):** refactor and rewrite the whole codebase in Vue 3, and fix all known issues;
+⬜ **by v1.5.0 (date TBD):** refactor and rewrite the whole codebase in Vue 3, and fix all known issues;
 
 ⬜ ...
+
+⬜ **by v2.0.0 (Oct 2021):** (1/20) Add 20 more new major features
 
 ⬜ **End goal:** improve the app to the point of becoming the best file manager and one the most useful productivity apps. This milestone will be considered to be achieved when at least 3 reputable independent sources (reviewers / platforms) decide that the app has achieved all of the following titles:
   - ⬜ (0/3 sources) the best productivity impact;
