@@ -4670,7 +4670,6 @@ export default new Vuex.Store({
           
         function startWriteProcess (params) {
           return new Promise((resolve, reject) => {
-            console.log(params)
             if (params.payload.operation === 'move') {
               store.dispatch('MOVE_ITEM', { 
                 sourcePath: params.sourcePath,
@@ -4693,7 +4692,6 @@ export default new Vuex.Store({
       try {
         fsExtra.move(payload.sourcePath, payload.destPath, {recursive: true}, error => {
           if (error) {throw Error(error)}
-          console.log('move item resolve')
           return
         })
       }
