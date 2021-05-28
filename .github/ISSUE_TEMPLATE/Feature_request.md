@@ -8,5 +8,5 @@ consider joining our community on Patreon: https://patreon.com/sigma_file_manage
 -->
 
 ## Feature request:
-<!-- Write your issue details below this comment -->
+
 
