@@ -1,6 +1,7 @@
 ---
 name: Problem Report
 about: Create a report to help improve the app
+title: '[Problem Report] '
 labels: bug
 ---
 <!-- 
