@@ -249,42 +249,42 @@ Click on the image to visit the source page.
     <tr>
       <td align="center" valign="middle">
         <a href="https://www.artstation.com/artwork/EV8Lo4">
-          <img width="128px" height="60px" src="./.github/media/home banner previews/Futuristic Japanese Palanquin by Julien Gauthier.jpg">
+          <img width="128px" height="50px" src="./.github/media/home banner previews/Futuristic Japanese Palanquin by Julien Gauthier.jpg">
         </a>
       </td>
       <td align="center" valign="middle">
         <a href="https://www.artstation.com/artwork/0Xl0OV">
-          <img width="128px" height="60px" src="./.github/media/home banner previews/The Legends of Star dust by Ahmed Teilab.jpg">
+          <img width="128px" height="50px" src="./.github/media/home banner previews/The Legends of Star dust by Ahmed Teilab.jpg">
         </a>
       </td>
       <td align="center" valign="middle">
         <a href="https://www.pexels.com/photo/gray-and-white-wallpaper-1103970/">
-          <img width="128px" height="60px" src="./.github/media/home banner previews/Abstract by Johannes Plenio.jpg">
+          <img width="128px" height="50px" src="./.github/media/home banner previews/Abstract by Johannes Plenio.jpg">
         </a>
       </td>
       <td align="center" valign="middle">
         <a href="https://www.pexels.com/photo/blue-and-red-galaxy-artwork-1629236/">
-          <img width="128px" height="60px" src="./.github/media/home banner previews/Abstract painting by Suzy Hazelwood.jpg">
+          <img width="128px" height="50px" src="./.github/media/home banner previews/Abstract painting by Suzy Hazelwood.jpg">
         </a>
       </td>
       <td align="center" valign="middle">
         <a href="https://www.artstation.com/artwork/g2L9Ke">
-          <img width="128px" height="60px" src="./.github/media/home banner previews/Land before Wi-Fi by Dana Franklin.jpg">
+          <img width="128px" height="50px" src="./.github/media/home banner previews/Land before Wi-Fi by Dana Franklin.jpg">
         </a>
       </td>
       <td align="center" valign="middle">
         <a href="https://unsplash.com/photos/sO-JmQj95ec">
-          <img width="128px" height="60px" src="./.github/media/home banner previews/Canyon by Kevin Lanceplaine.jpg">
+          <img width="128px" height="50px" src="./.github/media/home banner previews/Canyon by Kevin Lanceplaine.jpg">
         </a>
       </td>
       <td align="center" valign="middle">
         <a href="https://pixabay.com/videos/starry-sky-seis-am-schlern-14955">
-          <img width="128px" height="60px" src="./.github/media/home banner previews/Starry Sky by Andreas.jpg">
+          <img width="128px" height="50px" src="./.github/media/home banner previews/Starry Sky by Andreas.jpg">
         </a>
       </td>
       <td align="center" valign="middle">
         <a href="https://www.artstation.com/artwork/XkP2l">
-          <img width="128px" height="60px" src="./.github/media/home banner previews/Discovered planet by Darius Kalinauskas.jpg">
+          <img width="128px" height="50px" src="./.github/media/home banner previews/Discovered planet by Darius Kalinauskas.jpg">
         </a>
       </td>
     </tr>
@@ -317,42 +317,42 @@ Click on the image to visit the source page.
     <tr>
       <td align="center" valign="middle">
         <a href="https://www.pexels.com/video/drone-footage-of-the-waterfalls-and-the-mountain-3785075/">
-          <img width="128px" height="60px" src="./.github/media/home banner previews/Dragon's Nest by Klaus Pillon.jpg">
+          <img width="128px" height="50px" src="./.github/media/home banner previews/Dragon's Nest by Klaus Pillon.jpg">
         </a>
       </td>
       <td align="center" valign="middle">
         <a href="https://www.pexels.com/video/drone-footage-of-the-waterfalls-and-the-mountain-3785075/">
-          <img width="128px" height="60px" src="./.github/media/home banner previews/The City Before The Wall by Klaus Pillon.jpg">
+          <img width="128px" height="50px" src="./.github/media/home banner previews/The City Before The Wall by Klaus Pillon.jpg">
         </a>
       </td>
       <td align="center" valign="middle">
         <a href="https://www.pexels.com/video/drone-footage-of-the-waterfalls-and-the-mountain-3785075/">
-          <img width="128px" height="60px" src="./.github/media/home banner previews/Drone Footage Of The Waterfalls And The Mountain by Taryn Elliott.jpg">
+          <img width="128px" height="50px" src="./.github/media/home banner previews/Drone Footage Of The Waterfalls And The Mountain by Taryn Elliott.jpg">
         </a>
       </td>
       <td align="center" valign="middle">
         <a href="https://www.artstation.com/artwork/zOxE84">
-          <img width="128px" height="60px" src="./.github/media/home banner previews/Environment Explorations by Marcel van Vuuren.jpg">
+          <img width="128px" height="50px" src="./.github/media/home banner previews/Environment Explorations by Marcel van Vuuren.jpg">
         </a>
       </td>
       <td align="center" valign="middle">
         <a href="https://www.artstation.com/artwork/wgGRX">
-          <img width="128px" height="60px" src="./.github/media/home banner previews/Maffei 2 by Vadim Sadovski.jpg">
+          <img width="128px" height="50px" src="./.github/media/home banner previews/Maffei 2 by Vadim Sadovski.jpg">
         </a>
       </td>
       <td align="center" valign="middle">
         <a href="https://www.artstation.com/artwork/mD3XvZ">
-          <img width="128px" height="60px" src="./.github/media/home banner previews/Out of time by Alena Aenami.jpg">
+          <img width="128px" height="50px" src="./.github/media/home banner previews/Out of time by Alena Aenami.jpg">
         </a>
       </td>
       <td align="center" valign="middle">
         <a href="https://www.artstation.com/artwork/reodm">
-          <img width="128px" height="60px" src="./.github/media/home banner previews/Serenity by Alena Aenami.jpg">
+          <img width="128px" height="50px" src="./.github/media/home banner previews/Serenity by Alena Aenami.jpg">
         </a>
       </td>
       <td align="center" valign="middle">
         <a href="https://www.artstation.com/artwork/lVJXXe">
-          <img width="128px" height="60px" src="./.github/media/home banner previews/Wait by Alena Aenami.jpg">
+          <img width="128px" height="50px" src="./.github/media/home banner previews/Wait by Alena Aenami.jpg">
         </a>
       </td>
     </tr>
