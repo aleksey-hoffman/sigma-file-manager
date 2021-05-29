@@ -1,6 +1,8 @@
 ---
-name: Problem report
+name: Problem Report
 about: Create a report to help improve the app
+title: '[Problem Report] '
+labels: bug
 ---
 <!-- 
 NOTE: If you want all your issues / feature requests to have higher priority,
