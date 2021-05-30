@@ -9,14 +9,14 @@ const description = {
 
 const data = {
   app_name: 'Sigma file manager',
-  locale_detected_message: 'Cambiare la lingua dell'app in inglese?',
+  locale_detected_message: 'Cambiare la lingua dell app in inglese?',
   page_home_title: 'Home Page',
   page_navigator_title: 'Navigatore',
   page_dashboard_title: 'Dashboard',
   page_notes_title: 'Note',
   page_settings_title: 'impostazioni',
   settings_language_title: 'Lingua',
-  settings_language_options_title: 'Lingua dell'app',
+  settings_language_options_title: 'Lingua dell app',
   settings_ui_zoom_title: 'Ridimensionamento della finestra',
   settings_ui_zoom_options_title: 'livello di zoom UI | Corrente: ',
   settings_ui_zoom_button_reset: 'Ripristina',
@@ -46,7 +46,7 @@ const data = {
   text_modified: 'Contenuti modificati',
   text_changed: 'Meta modificato',
   text_protected: 'Protetto',
-  text_protected_win32: 'Protetto (all'interno di questa app)',
+  text_protected_win32: 'Protetto (all interno di questa app)',
   text_pinned: 'Appuntato',
   text_mode: 'Permessi',
   text_yes: 'Si',
@@ -54,9 +54,9 @@ const data = {
   text_read_only: 'Solo lettura',
   text_undo: 'annulla',
   text_cancel: 'cancella',
-  text_clear_list_message: 'l'elenco degli elementi è stato cancellato',
-  text_workspace_added: 'l'area di lavoro è stata aggiunta',
-  text_allow_global_search_message: 'La ricerca globale ti consente di trovare rapidamente qualsiasi file/directory sul tuo computer.<br>Esegue la scansione periodica delle unità e genera file di dati (mappe) in modo da poter trovare rapidamente i tuoi file.<br>I file creati dopo l'ultima scansione non potranno essere trovati poiché non saranno nei file di dati, quindi si consiglia di scegliere un periodo di scansione automatica più frequente.'
+  text_clear_list_message: 'l elenco degli elementi è stato cancellato',
+  text_workspace_added: 'l area di lavoro è stata aggiunta',
+  text_allow_global_search_message: 'La ricerca globale ti consente di trovare rapidamente qualsiasi file / directory sul tuo computer.<br>Esegue la scansione periodica delle unità e genera file di dati (mappe) in modo da poter trovare rapidamente i tuoi file.<br>I file creati dopo ultima scansione non potranno essere trovati poiché non saranno nei file di dati, quindi si consiglia di scegliere un periodo di scansione automatica più frequente.'
 }
 
 export {
