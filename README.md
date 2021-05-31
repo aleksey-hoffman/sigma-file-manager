@@ -232,7 +232,7 @@ Become the first supporter
     <tr>
       <td align="center" valign="middle">
         <a href="https://www.photoancestry.com/" title="Houston Photo Restoration">
-          <img width="64px" height="64px" src="https://www.photoancestry.com/images/photo-restoration-houston.png">
+          <img width="80px" height="80px" src="https://www.photoancestry.com/images/photo-restoration-houston.png">
         </a>
       </td>
     </tr>
