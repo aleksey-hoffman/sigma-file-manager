@@ -35,7 +35,7 @@ Become the first supporter
     </tr>
     <tr>
       <td align="center" valign="middle">
-        <a href="https://www.photoancestry.com/" title="Houston Photo Restoration">Jack Lesley</a>
+        <a href="https://www.photoancestry.com/" title="Houston Photo Restoration">Houston Photo Restoration</a>
       </td>
     </tr>
   </tbody>
