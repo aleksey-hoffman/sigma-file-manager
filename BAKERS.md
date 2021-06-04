@@ -24,7 +24,22 @@ Become the first supporter
 Become the first supporter
 
 ## GENEROUS SUPPORTERS
-Become the first supporter
+<table>
+  <tbody>
+    <tr>
+      <td align="center" valign="middle">
+        <a href="https://www.photoancestry.com/" title="Houston Photo Restoration">
+          <img width="80px" height="80px" src="https://www.photoancestry.com/images/photo-restoration-houston.png">
+        </a>
+      </td>
+    </tr>
+    <tr>
+      <td align="center" valign="middle">
+        <a href="https://www.photoancestry.com/" title="Houston Photo Restoration">Houston Photo Restoration</a>
+      </td>
+    </tr>
+  </tbody>
+</table>
 
 ## GRATEFUL SUPPORTERS
 Become the first supporter

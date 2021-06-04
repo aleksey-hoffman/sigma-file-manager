@@ -1,0 +1,14 @@
+on:
+  issues: [opened]
+  pull_request:
+    types: [opened]
+
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    name: Label issues and pull requests
+    steps:
+      - uses: actions/checkout@v2
+      - uses: IvanFon/super-labeler-action@v1
+        with:
+          github-token: '${{ secrets.GITHUB_TOKEN }}'
