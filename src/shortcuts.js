@@ -74,7 +74,7 @@ export default {
     action: { name: 'OPEN_WITH_QUICK_VIEW' }, 
     shortcut: 'Space',
     size: '22px',
-    description: `Open selected file in Quick View window. Supported: images, videos, audio, PDF, plain text`
+    description: `Open / close selected file in Quick View window. Supported: images, videos, audio, PDF, plain text`
   },
   newDirectory: {
     isGlobal: false,
