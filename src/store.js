@@ -389,6 +389,9 @@ export default new Vuex.Store({
       },
       settings: {
         fileName: 'settings.json',
+        appProperties: {
+          openAtLogin: true
+        },
         // TODO: Move to stats:
         time: {
           lastSearchScan: null

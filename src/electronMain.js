@@ -64,11 +64,13 @@ function setAppProperties () {
   // Temporary disable until native modules like 'node-diskusage'
   // are updated (to become context-aware or loaded via N-API)
   electron.app.allowRendererProcessReuse = false
-  // Handle system login
-  electron.app.setLoginItemSettings({
-    openAtLogin: true
-  })
   electron.app.setAppUserModelId('com.alekseyhoffman.sigma-file-manager')
+}
+
+function setCustomizedAppProperties (params) {
+  electron.app.setLoginItemSettings({
+    openAtLogin: params.openAtLogin
+  })
 }
 
 function createMainWindow () {
@@ -636,6 +638,12 @@ global.toggleApp = (options) => {
   }
 }
 
+function getCustomizedAppProperties (storageData) {
+  return {
+    openAtLogin: storageData['storageData.settings.appProperties.openAtLogin'] || true
+  }
+}
+
 function initAppListeners () {
   electron.app.on('render-process-gone', (event, webContents, details) => {
     windows.main.loadURL('app://./index.html')
@@ -663,6 +671,7 @@ function initAppListeners () {
     // initialization and is ready to create browser windows.
     // Some APIs can only be used after this event occurs.
     storageData = await fetchAppStorageData()
+    setCustomizedAppProperties(getCustomizedAppProperties(storageData))
     disableAppMenu()
     registerSafeFileProtocol()
     createMainWindow()

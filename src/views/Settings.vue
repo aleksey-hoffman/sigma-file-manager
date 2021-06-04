@@ -268,6 +268,29 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 </template>
               </section-settings>
 
+              <!-- section::app properties -->
+              <section-settings
+                class="content-area__content-card__section"
+                :header="{
+                  icon: {
+                    name: 'mdi-tune',
+                  },
+                  title: 'App properties'
+                }"
+              >
+                <template v-slot:content>
+                  <div class="text--sub-title-1 mt-2">
+                    Startup behavior
+                  </div>
+
+                  <v-switch
+                    v-model="appPropertiesOpenAtLogin"
+                    label="Launch app on system login"
+                    hide-details
+                  ></v-switch>
+                </template>
+              </section-settings>
+
               <!-- section::window-controls -->
               <section-settings
                 class="content-area__content-card__section"
@@ -1147,7 +1170,8 @@ export default {
       selectedLanguage: 'storageData.settings.localization.selectedLanguage',
       availableLanguages: 'storageData.settings.localization.availableLanguages',
       spellcheck: 'storageData.settings.spellcheck',
-      globalSearchDisallowedPathsItems: 'storageData.settings.globalSearch.disallowedPathsItems'
+      globalSearchDisallowedPathsItems: 'storageData.settings.globalSearch.disallowedPathsItems',
+      appPropertiesOpenAtLogin: 'storageData.settings.appProperties.openAtLogin',
     }
     const objects = {}
     for (const [modelKey, modelValue] of Object.entries(models)) {
