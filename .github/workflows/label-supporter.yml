@@ -1,7 +1,5 @@
 on:
   issues: [opened]
-  pull_request:
-    types: [opened]
 
 jobs:
   label:
