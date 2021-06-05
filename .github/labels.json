@@ -1,0 +1,20 @@
+{
+  "labels": {
+    "example": {
+      "name": "supporter 💖",
+      "colour": "#F9D0C4",
+      "description": "Supporter label"
+    }
+  },
+  "issue": {
+    "example": {
+      "requires": 1
+      "conditions": [
+        {
+          "type": "creatorMatches",
+          "pattern": "(aleksey-hoffman)"
+        }
+      ]
+    }
+  }
+}
