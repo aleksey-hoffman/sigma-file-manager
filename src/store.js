@@ -4034,7 +4034,7 @@ export default new Vuex.Store({
       const text_item = itemCount
         ? localizeUtils.pluralize(itemCount, 'item')
         : ''
-      const description = `${itemCount || ''} ${text_item}`
+      const description = `${itemCount ?? ''} ${text_item}`
       if (type === 'directory') {
         return `${localize.get('text_directory')}: ${description}`
       }

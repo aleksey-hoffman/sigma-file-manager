@@ -640,7 +640,7 @@ global.toggleApp = (options) => {
 
 function getCustomizedAppProperties (storageData) {
   return {
-    openAtLogin: storageData['storageData.settings.appProperties.openAtLogin'] || true
+    openAtLogin: storageData['storageData.settings.appProperties.openAtLogin'] ?? true
   }
 }
 
