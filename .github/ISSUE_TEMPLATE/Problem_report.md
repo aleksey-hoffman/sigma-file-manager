@@ -1,18 +1,37 @@
----
 name: Problem Report
-about: Create a report to help improve the app
-labels: bug
----
-## Problem:
-
-
-
-## System info:
-- **App version**: `SPECIFY_VERSION_HERE` <!-- for example: 1.0.0 -->
-- **Operating System**: `SPECIFY_OS_HERE` <!-- for example: x64 | Windows 10 -->
-
-
-<!-- 
-NOTE: If you want all your issues / feature requests to have higher priority,
-consider joining our community on Patreon: https://patreon.com/sigma_file_manager
--->
+description: Create a problem report to help improve the app
+labels: [bug]
+body:
+- type: checkboxes
+  attributes:
+    label: Is there an existing issue for this?
+    description: Please search [opened issues](https://github.com/aleksey-hoffman/sigma-file-manager/issues) to see if an issue already exists for this problem.
+    options:
+    - label: I have searched the opened issues
+      required: true
+- type: textarea
+  attributes:
+    label: Problem description
+    description: A clear & concise description of what you're experiencing.
+  validations:
+    required: false
+- type: textarea
+  attributes:
+    label: Steps to reproduce
+    description: Specify steps to reproduce the behavior.
+    value: |
+      1. 
+  validations:
+    required: false
+- type: textarea
+  attributes:
+    label: Environment
+    description: |
+      Examples:
+        - **OS**: Windows 10
+        - **App version**: 1.0.0
+    value: |
+        - OS: 
+        - App version: 
+  validations:
+    required: false
