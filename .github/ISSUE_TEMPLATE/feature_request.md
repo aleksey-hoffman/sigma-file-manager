@@ -1,7 +1,6 @@
 ---
 name: Feature Request
 about: Suggest a feature or improvement idea for the app
-title: '[Feature Request] '
 labels: enhancement
 ---
 <!-- 
