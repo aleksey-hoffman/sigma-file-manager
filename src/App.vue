@@ -1827,7 +1827,6 @@ button.v-btn.v-btn--disabled
   }
 
 .v-tooltip__content {
-  opacity: 1 !important;
   color: var(--color-5) !important;
   background: rgba(41, 43, 51, 0.95) !important;
   box-shadow: 0 8px 32px rgb(0,0,0,0.5);
