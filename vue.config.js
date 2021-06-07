@@ -78,6 +78,13 @@ module.exports = {
           args[0]['process.env.FLUENTFFMPEG_COV'] = false
           return args
         })
+      },
+      chainWebpackMainProcess: config => {
+        config.module
+          .rule('babel-main-process')
+          .test(/\.js$/)
+          .use('babel')
+          .loader('babel-loader')
       }
     }
   }
