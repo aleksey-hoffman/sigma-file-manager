@@ -33,6 +33,7 @@ global.mainProcessProps = {
 }
 
 // Keep global references to prevent garbage collection
+const singleAppInstance = electron.app.requestSingleInstanceLock()
 const windows = {
   main: null,
   hiddenGame: null,
@@ -56,9 +57,26 @@ electron.protocol.registerSchemesAsPrivileged([
   }
 ])
 
+lockSingleAppInstance()
 setAppProperties()
 initIPCListeners()
 initAppListeners()
+
+function lockSingleAppInstance () {
+  if (!singleAppInstance) {
+    electron.app.quit()
+  } 
+  else {
+    electron.app.on('second-instance', (event, commandLine, workingDirectory) => {
+      if (windows.main) {
+        if (windows.main.isMinimized()) {
+          windows.main.restore()
+        }
+        windows.main.focus()
+      }
+    })
+  }
+}
 
 function setAppProperties () {
   // Temporary disable until native modules like 'node-diskusage'
