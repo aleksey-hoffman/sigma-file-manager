@@ -98,7 +98,7 @@ The home page of the app has a unique, recognizable feature - a customizable med
 
 #### **FEATURE #11 | NOTES**
 
-Advanced note editor in this app allows you to create featureful notes and store them in one convenient, quickly accessible place. Gere's some of its features:
+Advanced note editor in this app allows you to create featureful notes and store them in one convenient, quickly accessible place. Here's some of its features:
 <br>- All your notes are always 1 click / shortcut away. You can create a new note instantly with just 1 keyboard shortcut, without even opening the app first.
 <br>- Note editor provides all the basic formatting functionality. It also supports images, math formulas (Katex), lists, checkboxes, etc.
 <br>- Notes can be protected from editing, moved into a group, assigned a color (or a tag) and more.
