@@ -81,8 +81,9 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
                 <v-list-item
                   class="px-5"
+                  v-if="$route.name !== 'notes'"
                   dense
-                  v-if="this.$route.name !== 'notes'">
+                >
                   <v-switch
                     v-model="navigatorShowHiddenItems"
                     label="Show Hidden Items"
