@@ -49,7 +49,7 @@ let bin7Zip
 let binYoutubeDl
 
 if (process.platform === 'win32') {
-  bin7Zip = PATH.join(sevenZip, '7za.exe')
+  bin7Zip = PATH.join(sevenZip, '7z.exe')
   binYoutubeDl = PATH.join(youtubeDl, 'youtube-dl.exe')
   systemDirs = [
     { name: 'Home directory', icon: 'mdi-folder-account-outline', path: home },
