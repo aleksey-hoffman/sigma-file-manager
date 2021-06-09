@@ -132,6 +132,7 @@ function createQuickViewWindow () {
     minWidth: 300,
     minHeight: 200,
     webPreferences: {
+      partition: 'quickPreview',
       webviewTag: true,
       enableRemoteModule: true,
       contextIsolation: !process.env.ELECTRON_NODE_INTEGRATION,
@@ -240,7 +241,6 @@ function initWindowListeners (name) {
     })
     function _willDownloadHandler (event, item, webContents) {
       event.preventDefault()
-      console.log('main::load:webview::failed')
       const fileURL = item.getURL()
       windows.quickViewWindow.webContents.send('load:webview::cancel')
       windows.main.webContents.send('load:webview::failed', {path: fileURL})
