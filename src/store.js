@@ -18,7 +18,7 @@ const electron = require('electron')
 const electronRemote = require('@electron/remote')
 const fsExtra = require('fs-extra')
 const eventHub = require('./utils/eventHub').eventHub
-const localize = require('./utils/localize')  
+const localize = require('./utils/localize')
 const os = require('os')
 const fs = require('fs')
 const PATH = require('path')
@@ -141,33 +141,33 @@ export default new Vuex.Store({
             glob: false
           },
           filterProperties: [
-            { 
-              name: 'name', 
-              title: 'item name', 
-              prefix: 'name:', 
-              property: 'name', 
+            {
+              name: 'name',
+              title: 'item name',
+              prefix: 'name:',
+              property: 'name',
             },
-            { 
-              name: 'itemCount', 
-              title: 'directory item count', 
-              prefix: 'items:', 
-              property: 'dirItemCount', 
+            {
+              name: 'itemCount',
+              title: 'directory item count',
+              prefix: 'items:',
+              property: 'dirItemCount',
             },
-            { 
-              name: 'fileSize', 
-              title: 'file size', 
-              prefix: 'size:', 
-              property: 'stat.size', 
+            {
+              name: 'fileSize',
+              title: 'file size',
+              prefix: 'size:',
+              property: 'stat.size',
               isDeepProperty: true,
               processing: (propertyValue) => {
                 return utils.prettyBytes(propertyValue, 1)
               }
             },
-            { 
-              name: 'dateMetaModified', 
-              title: 'date meta modified', 
-              prefix: 'date-m:', 
-              property: 'stat.ctime', 
+            {
+              name: 'dateMetaModified',
+              title: 'date meta modified',
+              prefix: 'date-m:',
+              property: 'stat.ctime',
               isDeepProperty: true,
               processing: (propertyValue) => {
                 return utils.formatDateTime(propertyValue, 'D MMM YYYY')
@@ -181,23 +181,23 @@ export default new Vuex.Store({
             glob: false
           },
           filterProperties: [
-            { 
-              name: 'title', 
-              title: 'note title', 
-              prefix: 'title:', 
-              property: 'title', 
+            {
+              name: 'title',
+              title: 'note title',
+              prefix: 'title:',
+              property: 'title',
             },
-            { 
-              name: 'content', 
-              title: 'note content', 
-              prefix: 'content:', 
-              property: 'content', 
+            {
+              name: 'content',
+              title: 'note content',
+              prefix: 'content:',
+              property: 'content',
             },
-            { 
-              name: 'group', 
-              title: 'note group', 
-              prefix: 'group:', 
-              property: 'group', 
+            {
+              name: 'group',
+              title: 'note group',
+              prefix: 'group:',
+              property: 'group',
             },
           ]
         },
@@ -207,11 +207,11 @@ export default new Vuex.Store({
             glob: false
           },
           filterProperties: [
-            { 
-              name: 'path', 
-              title: 'item path', 
-              prefix: 'path:', 
-              property: 'path', 
+            {
+              name: 'path',
+              title: 'item path',
+              prefix: 'path:',
+              property: 'path',
             }
           ]
         }
@@ -354,22 +354,22 @@ export default new Vuex.Store({
         workspaceActionTemplate: {
           id: null,
           name: 'New action',
-          type: { 
-            name: 'open-url', 
-            icon: 'mdi-web' 
+          type: {
+            name: 'open-url',
+            icon: 'mdi-web'
           },
           command: ''
         },
         actionTypes: [
-          { 
-            name: 'open-url', 
-            icon: 'mdi-web' 
+          {
+            name: 'open-url',
+            icon: 'mdi-web'
           },
-          { 
-            name: 'open-path', 
-            icon: 'mdi-link-variant' 
+          {
+            name: 'open-path',
+            icon: 'mdi-link-variant'
           },
-          { 
+          {
             name: 'terminal-command',
             icon: 'mdi-console'
           }
@@ -399,11 +399,12 @@ export default new Vuex.Store({
         lastRecordedAppVersion: null,
         isFirstAppLaunch: true,
         navigator: {
+          navigatorShowHiddenItems: false,
           openDirItemWithSingleClick: false,
           openDirItemSecondClickDelay: 500,
         },
         tips: [
-          { 
+          {
             name: 'firstTime:fileProtection',
             shown: false
           }
@@ -476,19 +477,19 @@ export default new Vuex.Store({
         dashboard: {
           selectedTab: null,
           tabs: {
-            pinned: { 
-              title: 'Pinned', 
-              show: true, 
-              icon: 'mdi-pin-outline' 
+            pinned: {
+              title: 'Pinned',
+              show: true,
+              icon: 'mdi-pin-outline'
             },
-            protected: { 
-              title: 'Protected', 
-              show: true, 
-              icon: 'mdi-shield-check-outline' 
+            protected: {
+              title: 'Protected',
+              show: true,
+              icon: 'mdi-shield-check-outline'
             },
-            timeline: { 
-              title: 'Timeline', 
-              show: true, 
+            timeline: {
+              title: 'Timeline',
+              show: true,
               icon: 'mdi-timeline-clock-outline'
              }
           }
@@ -910,8 +911,8 @@ export default new Vuex.Store({
           programs: [],
           selectedProgram: {},
           allowedFileTypes: [
-            'type:image', 'type:video', 'type:audio', 
-            'exe', 'txt', 'pdf', 'png', 'jpg', 'psd', 
+            'type:image', 'type:video', 'type:audio',
+            'exe', 'txt', 'pdf', 'png', 'jpg', 'psd',
             'mp4', 'avi', 'ts', 'mp3', 'wav', 'webm'
           ],
           disallowedFileTypes: [
@@ -1049,7 +1050,7 @@ export default new Vuex.Store({
           selectedDirItemNode = node
         }
       })
-      
+
       let data = {
         rowIndex: rowData.rowIndex,
         rowPositionIndex: rowData.row.positionIndex,
@@ -1141,7 +1142,7 @@ export default new Vuex.Store({
       }
     },
     isOnlyCurrentDirItemSelected: (state, getters) => {
-      return getters.selectedDirItems.length === 1 && 
+      return getters.selectedDirItems.length === 1 &&
         getters.selectedDirItems[0].path === state.navigatorView.currentDir.path
     },
     currentDirName: state => {
@@ -1238,10 +1239,10 @@ export default new Vuex.Store({
       const fileExtensions = getters.selectedDirItemsExtensions
       const fileTypes = getters.selectedDirItemsFileTypes.mime
       const fileTypesReadable = getters.selectedDirItemsFileTypes.readable
-      const selectionType = totalCount === 1 
-        ? 'single' 
-        : totalCount > 1 
-        ? 'multiple' 
+      const selectionType = totalCount === 1
+        ? 'single'
+        : totalCount > 1
+        ? 'multiple'
         : 'none'
 
       const data = {
@@ -1517,14 +1518,14 @@ export default new Vuex.Store({
       const path = state.navigatorView.selectedDirItems.getLast().path
       try {
         childProcess.exec(`"${app.path}" "${path}"`)
-      } 
+      }
       catch (error) {
         console.error(error)
       }
     }
   },
   actions: {
-    /** 
+    /**
     * @param {string} payload.key
     * @param {any} payload.value
     * @param {object} payload.options
@@ -1535,7 +1536,7 @@ export default new Vuex.Store({
         ...{
           updateStorage: true,
           postProcess: true
-        }, 
+        },
         ...payload.options
       }
       try {
@@ -1556,9 +1557,9 @@ export default new Vuex.Store({
       async function updateStorageFile (payload) {
         return new Promise((resolve, reject) => {
           payload = appendStoragePropertyFileName(payload)
-          // Throttle storage writing for properties of the same origin 
+          // Throttle storage writing for properties of the same origin
           // to avoid updating specific value too frequently
-          storageThrottle.throttleScheduled({ 
+          storageThrottle.throttleScheduled({
             time: 250,
             debounceOnLastCall: true,
             onThrottleRunning: () => {
@@ -1582,7 +1583,7 @@ export default new Vuex.Store({
           })
         })
       }
-      
+
       function scheduleTask (payload) {
         let existingTask = store.state.scheduler.storageOperations.find(task => task.key === payload.key)
         if (existingTask) {
@@ -1615,22 +1616,22 @@ export default new Vuex.Store({
         updatedPayload.fileName = fileName
         return updatedPayload
       }
-      
+
       async function writeToStorage (payload) {
         try {
           let updatedPayload = filterProperties(payload)
-          return await store.dispatch('UPDATE_STORAGE_FILE', updatedPayload)  
+          return await store.dispatch('UPDATE_STORAGE_FILE', updatedPayload)
         }
         catch (error) {
           throw Error(error)
         }
       }
-      
+
       function filterProperties (payload) {
         const storedProperties = {
-          'storageData.stats.dirItemsTimeline': ['path', 'openCount', 'openDate'], 
-          'storageData.pinned.items': ['path'], 
-          'storageData.protected.items': ['path'] 
+          'storageData.stats.dirItemsTimeline': ['path', 'openCount', 'openDate'],
+          'storageData.pinned.items': ['path'],
+          'storageData.protected.items': ['path']
         }
         for (const [key, value] of Object.entries(storedProperties)) {
           if (key === payload[0].key) {
@@ -1654,14 +1655,14 @@ export default new Vuex.Store({
             key: 'storageData.stats.dirItemsTimeline',
             value: [],
             options: {postProcess: false}
-          })  
+          })
         }
       }
       if (params.key === 'storageData.settings.stats.storeDirItemOpenCount') {
         if (params.value === false) {
           deleteProperty({
-            key: 'storageData.stats.dirItemsTimeline', 
-            value: store.state.storageData.stats.dirItemsTimeline, 
+            key: 'storageData.stats.dirItemsTimeline',
+            value: store.state.storageData.stats.dirItemsTimeline,
             propertyName: 'openCount'
           })
         }
@@ -1669,8 +1670,8 @@ export default new Vuex.Store({
       else if (params.key === 'storageData.settings.stats.storeDirItemOpenDate') {
         if (params.value === false) {
           deleteProperty({
-            key: 'storageData.stats.dirItemsTimeline', 
-            value: store.state.storageData.stats.dirItemsTimeline, 
+            key: 'storageData.stats.dirItemsTimeline',
+            value: store.state.storageData.stats.dirItemsTimeline,
             propertyName: 'openDate'
           })
         }
@@ -1684,16 +1685,16 @@ export default new Vuex.Store({
           key: params.key,
           value: params.value,
           options: {postProcess: false}
-        })  
+        })
       }
     },
-    /** 
+    /**
     * Description: state-storage writing process:
     * 1. Modify data directly in store
-    * 2. Write specific data properties to storage every N ms using throttle with 'debounceOnLastCall' options. 
+    * 2. Write specific data properties to storage every N ms using throttle with 'debounceOnLastCall' options.
     * Reasoning: this method allows the app to change many properties in memory without using the drive and
-    * then write only specific data properties to storage every N ms. Using throttle method instead of 
-    * debounce method because it waits for the last change before running which can potentially 
+    * then write only specific data properties to storage every N ms. Using throttle method instead of
+    * debounce method because it waits for the last change before running which can potentially
     * delay writing to storage for a long time (when many consecutive changes occur).
     * @param {object} params
     * @param {string} params.prop1
@@ -1704,11 +1705,11 @@ export default new Vuex.Store({
         payload = utils.ensureArray(payload)
         let fileGroups = groupPropertiesByFile(payload, 'fileName')
 
-        for (const [key, value] of Object.entries(fileGroups)) { 
+        for (const [key, value] of Object.entries(fileGroups)) {
           const properties = value
           const fileName = key
           let fileData = await dispatch('READ_STORAGE_FILE', fileName)
-          fileData = await dispatch('WRITE_STORAGE_FILE', { 
+          fileData = await dispatch('WRITE_STORAGE_FILE', {
             fileName,
             properties,
             data: fileData
@@ -1750,12 +1751,12 @@ export default new Vuex.Store({
     // TESTS:
     // - Write different data frequently in short period of time:
     //   - ✅ No errors;
-    //   - ✅ File is not corrupted (can happen when multiple processes are writing at the same time); 
+    //   - ✅ File is not corrupted (can happen when multiple processes are writing at the same time);
     async WRITE_STORAGE_FILE ({ state, commit, dispatch, getters }, payload) {
       let { fileName, properties, data } = payload
       const filePath = `${state.appPaths.storageDirectories.appStorage}/${fileName}`
       // Update storage data in memory.
-      // If key is provided, update its value, 
+      // If key is provided, update its value,
       // otherwise set the value as file's root property
       properties.forEach(property => {
         if (property.key && property.key !== '') { data[property.key] = property.value }
@@ -1805,8 +1806,8 @@ export default new Vuex.Store({
     },
     async RESET_APP_SETTINGS (store) {
       try {
-        await store.dispatch('DELETE_APP_FILE', { 
-          fileName: 'settings.json' 
+        await store.dispatch('DELETE_APP_FILE', {
+          fileName: 'settings.json'
         })
         utils.reloadMainWindow()
       }
@@ -1821,8 +1822,8 @@ export default new Vuex.Store({
         const normalizedPath = PATH.normalize(`${appStorageDir}/${appStorageFileName}`)
         await fs.promises.access(normalizedPath, fs.constants.F_OK)
         let item = await store.dispatch('FETCH_DIR_ITEM_INFO', normalizedPath)
-        await store.dispatch('DELETE_DIR_ITEMS', { 
-          items: [item], 
+        await store.dispatch('DELETE_DIR_ITEMS', {
+          items: [item],
           options: { skipSafeCheck: true }
         })
       }
@@ -1833,25 +1834,25 @@ export default new Vuex.Store({
     CLONE_STATE  (store) {
        store.state.defaultData = utils.cloneDeep(store.state)
     },
-    /** 
+    /**
     * @param {object} task
     * @param {string} task.name
     * @param {string} task.hashID
     * @param {number} task.timeCreated
     */
     ADD_TASK (store, task) {
-      if (task.name === undefined) { 
+      if (task.name === undefined) {
         return new Error('ADD_TASK: property task.name is required')
       }
       store.state.tasks.push(task)
       return task
     },
     UPDATE_TASK (store, props) {
-      if (props.getBy === 'hashID') { 
+      if (props.getBy === 'hashID') {
         let task = store.state.tasks.find(task => task.hashID === props.hashID)
         task = props.task
       }
-      else if (props.getBy === 'name') { 
+      else if (props.getBy === 'name') {
         let task = store.state.tasks.find(task => task.name === props.name)
         task = props.task
       }
@@ -1878,14 +1879,14 @@ export default new Vuex.Store({
       }
       state.appActionHistory.push(action)
     },
-    /** 
+    /**
     * @param {object} payload
     * @param {array<object>} payload.items
     */
     async CONVERT_DATA_OBJECTS_TO_PATHS ({ state, commit, dispatch, getters }, payload) {
       return payload.items.map(item => item?.path)
     },
-    /** 
+    /**
     * @param {object} payload
     * @param {array<string>} payload.items
     */
@@ -1900,7 +1901,7 @@ export default new Vuex.Store({
       }
       return newItems
     },
-    /** 
+    /**
     * @param {object} payload
     * @param {array<object>} payload.items
     */
@@ -1944,7 +1945,7 @@ export default new Vuex.Store({
 
       function handleAddItem (itemToAdd) {
         if (fs.statSync(path).isDirectory()) {
-          // Add directory to the timeline even if another file has been 
+          // Add directory to the timeline even if another file has been
           // opened before the timeout for the directory ran out.
           clearTimeout(store.state.timeouts.tempRecentlyOpenedTimeout)
           store.state.timeouts.tempRecentlyOpenedTimeout = setTimeout(() => {
@@ -1967,7 +1968,7 @@ export default new Vuex.Store({
         store.dispatch('SET', {
           key: 'storageData.stats.dirItemsTimeline',
           value: dirItemsTimeline
-        })  
+        })
       }
     },
     TERMINATE_PROCESS ({ state, commit,dispatch, getters }, execProcess) {
@@ -1985,7 +1986,7 @@ export default new Vuex.Store({
             throw Error('ERROR: TERMINATE_PROCESS: execProcess.pid === -1 || parentPid === -1')
           }
           return childProcess.spawn('ps', ['-o', 'pid', '--no-headers', '--ppid', parentPid])
-        }, 
+        },
           () => killAllProcesses(tree)
         )
       }
@@ -1996,7 +1997,7 @@ export default new Vuex.Store({
             throw Error('ERROR: TERMINATE_PROCESS: execProcess.pid === -1 || parentPid === -1')
           }
           return childProcess.spawn('pgrep', ['-P', parentPid])
-        }, 
+        },
           () => killAllProcesses(tree)
         )
       }
@@ -2009,12 +2010,12 @@ export default new Vuex.Store({
             })
             execProcess.kill(pidpid)
           })
-        } 
+        }
         catch (error) {
           console.log(error)
-        } 
+        }
       }
-      
+
       function buildProcessTree (parentPid, tree, pidsToProcess, spawnChildProcessesList) {
         const processesList = spawnChildProcessesList(parentPid)
         let allData = ''
@@ -2043,7 +2044,7 @@ export default new Vuex.Store({
     async HANDLE_HOME_PAGE_BACKGROUND_ITEM_DROP ({ state, commit, dispatch, getters }, event) {
       // TODO: use universal downloaing / copy method instead
       await processItems()
-      
+
       async function copyFileToAppStorage (file) {
         const destination = PATH.join(state.appPaths.storageDirectories.appStorageHomeBannerMedia, file.name)
         await fs.promises.copyFile(file.path, destination)
@@ -2075,7 +2076,7 @@ export default new Vuex.Store({
       console.log(payload)
       let status = { isCanceled: false }
 
-      // Add notification 
+      // Add notification
       const progress = {
         started: false,
         filename: null,
@@ -2106,13 +2107,13 @@ export default new Vuex.Store({
 
       function handleProcessM3U8 () {
         // Method 1: using .spawn() | Problem: doesn't download videos till the end
-        // let process = childProcess.spawn('ffmpeg', payload.command, { 
+        // let process = childProcess.spawn('ffmpeg', payload.command, {
         //   cwd: state.appPaths.binFFMPEG,
         //   shell: true
         // })
         // Method 2: using .exec()
         let mainExecProcess = childProcess.exec(
-          payload.command.join(' ').replace(/\n/g, ' '), 
+          payload.command.join(' ').replace(/\n/g, ' '),
           (error, stdout, stderr) => {
             if (error) {
               progress.eta = 0
@@ -2136,7 +2137,7 @@ export default new Vuex.Store({
             title: 'cancel',
             action: '',
             closesNotification: true,
-            onClick: () => { 
+            onClick: () => {
               status.isCanceled = true
               clearInterval(fileSizeCheckInterval)
               dispatch('TERMINATE_PROCESS', mainExecProcess)
@@ -2150,13 +2151,13 @@ export default new Vuex.Store({
         // Create listener
         // process.stdout.on('close', (data) => {
         //   if (!status.isCanceled) {
-        //     // Update notification 
+        //     // Update notification
         //     const actionButtons = [
         //       {
         //         title: 'open file',
         //         action: 'openDownloadedFile',
         //         closesNotification: true,
-        //         onClick: () => { 
+        //         onClick: () => {
         //           electron.shell.openPath(payload.path)
         //         }
         //       },
@@ -2164,7 +2165,7 @@ export default new Vuex.Store({
         //         title: 'show in directory',
         //         action: 'showDownloadedFile',
         //         closesNotification: true,
-        //         onClick: () => { 
+        //         onClick: () => {
         //           dispatch('LOAD_DIR', { path: payload.directory })
         //         }
         //       }
@@ -2198,7 +2199,7 @@ export default new Vuex.Store({
       function handleProcessYouTube () {
         let fileNameProcess = childProcess.exec(payload.commandForFileName)
         let mainExecProcess = childProcess.exec(
-          payload.command, 
+          payload.command,
           (error, stdout, stderr) => {
             if (error) {
               progress.eta = 0
@@ -2210,7 +2211,7 @@ export default new Vuex.Store({
             }
           }
         )
-        
+
         fileNameProcess?.stdout.on('data', (data) => {
           // Get file name from the process and update the data
           progress.message = ''
@@ -2237,7 +2238,7 @@ export default new Vuex.Store({
                   title: 'cancel',
                   action: '',
                   closesNotification: true,
-                  onClick: () => { 
+                  onClick: () => {
                     status.isCanceled = true
                     dispatch('TERMINATE_PROCESS', mainExecProcess)
                   }
@@ -2260,13 +2261,13 @@ export default new Vuex.Store({
             eventHub.$emit('notification', notificationData)
           }
           else if (!status.isCanceled) {
-            // Update notification 
+            // Update notification
             const actionButtons = [
               {
                 title: 'open file',
                 action: 'openDownloadedFile',
                 closesNotification: true,
-                onClick: () => { 
+                onClick: () => {
                   electron.shell.openPath(payload.filename)
                 }
               },
@@ -2274,7 +2275,7 @@ export default new Vuex.Store({
                 title: 'show in directory',
                 action: 'showDownloadedFile',
                 closesNotification: true,
-                onClick: () => { 
+                onClick: () => {
                   const dir = PATH.parse(payload.filename).dir
                   dispatch('SHOW_DIR_ITEM_IN_DIRECTORY', { dir: payload.directory, itemPath: payload.filename })
                 }
@@ -2310,16 +2311,16 @@ export default new Vuex.Store({
       const alertOnConditionUnfullfilled = payload.alertOnConditionUnfullfilled
       const someDirItemIsSelected = getters.selectedDirItems.length > 0
       // Condition: inputFieldIsActive
-      const condition1Fullfilled = payload.conditions.inputFieldIsActive === undefined || 
+      const condition1Fullfilled = payload.conditions.inputFieldIsActive === undefined ||
         (payload.conditions.inputFieldIsActive === utils.isCursorInsideATextField())
       // Condition: someDialogIsOpened
-      const condition2Fullfilled = payload.conditions.dialogIsOpened === undefined || 
+      const condition2Fullfilled = payload.conditions.dialogIsOpened === undefined ||
         (payload.conditions.dialogIsOpened === getters.someDialogIsOpened)
       // Condition: dirItemIsSelected
-      const condition3Fullfilled = payload.conditions.dirItemIsSelected === undefined || 
+      const condition3Fullfilled = payload.conditions.dirItemIsSelected === undefined ||
         (payload.conditions.dirItemIsSelected === someDirItemIsSelected)
       // Condition: route is allowed
-      const condition4Fullfilled = payload.routes[0] === 'all' || 
+      const condition4Fullfilled = payload.routes[0] === 'all' ||
         payload.routes.includes(router.currentRoute.name)
       if (alertOnConditionUnfullfilled && !condition1Fullfilled) {
         eventHub.$emit('notification', {
@@ -2361,9 +2362,9 @@ export default new Vuex.Store({
           message: 'Action is not allowed on this page'
         })
       }
-      return condition1Fullfilled && 
-        condition2Fullfilled && 
-        condition3Fullfilled && 
+      return condition1Fullfilled &&
+        condition2Fullfilled &&
+        condition3Fullfilled &&
         condition4Fullfilled
     },
     async SHORTCUT_ACTION ({ commit,dispatch, getters }, payload) {
@@ -2397,12 +2398,12 @@ export default new Vuex.Store({
       }
     },
     TOGGLE_ADDRESS_BAR ({ state, commit, dispatch }) {
-      // If previous page was not 'navigator', set 'addressBarEditor' to 'true' 
+      // If previous page was not 'navigator', set 'addressBarEditor' to 'true'
       // instead of toggling it to avoid the case:
       // - address bar is opened
       // - change page
       // - toggle address bar with the shortcut again
-      // - address bar will be closed because it was already opened before             
+      // - address bar will be closed because it was already opened before
       if (router.currentRoute.name !== 'navigator') {
         dispatch('SWITCH_ROUTE', { to: '/navigator' })
         dispatch('SET', { key: 'addressBarEditor', value: true })
@@ -2411,7 +2412,7 @@ export default new Vuex.Store({
         dispatch('TOGGLE', 'addressBarEditor')
       }
     },
-    SWITCH_ROUTE ({ state, commit, dispatch }, item) {            
+    SWITCH_ROUTE ({ state, commit, dispatch }, item) {
       if (item.to === '/navigator') {
         const someDirLoaded = Object.keys(state.navigatorView.currentDir).length !== 0
         if (!someDirLoaded) {
@@ -2517,21 +2518,21 @@ export default new Vuex.Store({
     HANDLE_NAVIGATOR_ITEM_MOVE_SCROLL (store, params) {
       // Layout: grid
       if (store.state.storageData.settings.navigatorLayout === 'grid') {
-        // TODO: finish 
+        // TODO: finish
         // updatedNavigatorGridData.selectedDirItemNode is undefined when scrolling up
         // Is the virtual container causing the problem?
         let updatedNavigatorGridData = store.getters.navigatorGridData
         if (!updatedNavigatorGridData.isDirItemNodeInViewport && updatedNavigatorGridData.selectedDirItemNode) {
           let scrollContentNode = utils.getContentAreaNode(router.currentRoute.name)
-          // scrollContentNode.scroll({ 
+          // scrollContentNode.scroll({
           //   top: params.direction === 'up'
           //     ? scrollContentNode.scrollTop - updatedNavigatorGridData.row.height
           //     : scrollContentNode.scrollTop + updatedNavigatorGridData.row.height,
           //   left: 0,
           //   behavior: 'smooth'
           // })
-          updatedNavigatorGridData.selectedDirItemNode.scrollIntoView({ 
-            behavior: 'smooth', 
+          updatedNavigatorGridData.selectedDirItemNode.scrollIntoView({
+            behavior: 'smooth',
             block: 'nearest'
           })
         }
@@ -2583,7 +2584,7 @@ export default new Vuex.Store({
       else if (state.contextMenus.dirItem.value) {
         state.contextMenus.dirItem.value = false
       }
-      // Hide fs clipboard toolbar 
+      // Hide fs clipboard toolbar
       else if (state.navigatorView.clipboard.fs.items.length > 0) {
         dispatch('CLEAR_FS_CLIPBOARD')
       }
@@ -2625,7 +2626,7 @@ export default new Vuex.Store({
           closeButton: true,
           title: 'Tab added to current workspace',
           message: `
-            Shortcut to open: 
+            Shortcut to open:
             ${state.storageData.settings.shortcuts.switchTab.shortcut.replace('[1 - 9]', tabs.length)}
           `
         })
@@ -2679,19 +2680,19 @@ export default new Vuex.Store({
     LOAD_ROUTE (store, routeName) {
       router.push(routeName).catch((error) => {})
     },
-    // TODO: 
-    // performance: instead of fetching all dir items, 
-    // fetch info for single item when it becomes visible (intersectionObserver) 
+    // TODO:
+    // performance: instead of fetching all dir items,
+    // fetch info for single item when it becomes visible (intersectionObserver)
     async LOAD_DIR (store, options) {
       store.dispatch('ADD_ACTION_TO_HISTORY', { action: 'store.js::LOAD_DIR()' })
-      options = { 
+      options = {
         ...{
           path: '/',
           skipHistory: false,
           scrollTop: true,
           selectCurrentDir: true
-        }, 
-        ...options 
+        },
+        ...options
       }
 
       store.dispatch('SET_NAVIGATOR_STATE')
@@ -2716,12 +2717,12 @@ export default new Vuex.Store({
       }
     },
     RELOAD_DIR (store, params) {
-      params = { 
+      params = {
         ...{
           scrollTop: true,
           selectCurrentDir: true
-        }, 
-        ...params 
+        },
+        ...params
       }
       if (router.history.current.name === 'navigator') {
         store.dispatch('LOAD_DIR', {
@@ -2754,7 +2755,7 @@ export default new Vuex.Store({
           value: true
         })
         return { dirInfo, dirItems }
-      } 
+      }
       catch (error) {
         throw Error(error)
       }
@@ -2766,7 +2767,7 @@ export default new Vuex.Store({
     },
     AUTO_FOCUS_FILTER (store) {
       // TODO:
-      // - Needs an option to ignore dir updates triggered by Chokidar 
+      // - Needs an option to ignore dir updates triggered by Chokidar
       // - Manual refresh would not focus the field.
 
       // Focus filter on directory change
@@ -2778,7 +2779,7 @@ export default new Vuex.Store({
         }, 100)
       }
     },
-    /** 
+    /**
     * @param {string} params.dest
     * @param {string[]} params.source
     */
@@ -2822,7 +2823,7 @@ export default new Vuex.Store({
         })
       })
     },
-    /** 
+    /**
     * @param {string} params.dest
     * @param {string} params.source
     */
@@ -2876,12 +2877,12 @@ export default new Vuex.Store({
       }
     },
     async RESTORE_NAVIGATOR_STATE (store) {
-      // When the current directory is reloaded, 
-      // restore the last navigator state so that the dir item 
+      // When the current directory is reloaded,
+      // restore the last navigator state so that the dir item
       // selection is not lost, only the data is refreshed
       const navigatorView = store.state.navigatorView
       if (navigatorView.state.currentDir.path === navigatorView.currentDir.path) {
-        await store.dispatch('REPLACE_SELECTED_DIR_ITEMS', navigatorView.state.selectedDirItems)   
+        await store.dispatch('REPLACE_SELECTED_DIR_ITEMS', navigatorView.state.selectedDirItems)
       }
     },
      async FOCUS_DIR_ITEM (store, params) {
@@ -2921,7 +2922,7 @@ export default new Vuex.Store({
       }
       if (item.type === 'file' || item.type === 'file-symlink') {
         store.dispatch('OPEN_FILE', item.path)
-      } 
+      }
       else {
         store.dispatch('LOAD_DIR', { path: item.realPath })
       }
@@ -3003,12 +3004,12 @@ export default new Vuex.Store({
     TOGGLE_GLOBAL_SEARCH (store) {
       if (router.history.current.name === 'navigator') {
         store.state.globalSearch.widget = !store.state.globalSearch.widget
-      } 
+      }
       else {
         const someDirLoaded = Object.keys(store.state.navigatorView.currentDir).length !== 0
         if (!someDirLoaded) {
           store.dispatch('OPEN_DIR_ITEM_FROM_PATH', '')
-        } 
+        }
         else {
           router.push('navigator').catch((error) => {})
         }
@@ -3023,7 +3024,7 @@ export default new Vuex.Store({
         dispatch('LOAD_DIR', { path: previousHistoryPath, skipHistory: true })
         dispatch('SET', {
           key: 'navigatorView.history.currentIndex',
-          value: currentHistoryIndex - 1 
+          value: currentHistoryIndex - 1
         })
       }
     },
@@ -3035,7 +3036,7 @@ export default new Vuex.Store({
         dispatch('LOAD_DIR', { path: nextHistoryPath, skipHistory: true })
         dispatch('SET', {
           key: 'navigatorView.history.currentIndex',
-          value: currentHistoryIndex + 1 
+          value: currentHistoryIndex + 1
         })
       }
     },
@@ -3106,9 +3107,9 @@ export default new Vuex.Store({
     },
     CLEAR_DIR_ITEMS_TIMELINE ({ state, commit, dispatch, getters }) {
       let undoData = utils.cloneDeep(state.storageData.stats.dirItemsTimeline)
-      dispatch('SET', { 
-        key: 'storageData.stats.dirItemsTimeline', 
-        value: [] 
+      dispatch('SET', {
+        key: 'storageData.stats.dirItemsTimeline',
+        value: []
       })
       eventHub.$emit('notification', {
         action: 'add',
@@ -3120,9 +3121,9 @@ export default new Vuex.Store({
             title: localize.get('text_undo'),
             action: '',
             onClick: () => {
-              dispatch('SET', { 
-                key: 'storageData.stats.dirItemsTimeline', 
-                value: undoData 
+              dispatch('SET', {
+                key: 'storageData.stats.dirItemsTimeline',
+                value: undoData
               })
             },
             closesNotification: true
@@ -3135,8 +3136,8 @@ export default new Vuex.Store({
     },
     CLEAR_PINNED ({ state, commit, dispatch, getters }) {
       let undoData = utils.cloneDeep(state.storageData.pinned.items)
-      dispatch('SET', { 
-        key: 'storageData.pinned.items', 
+      dispatch('SET', {
+        key: 'storageData.pinned.items',
         value: []
       })
       eventHub.$emit('notification', {
@@ -3150,8 +3151,8 @@ export default new Vuex.Store({
             title: localize.get('text_undo'),
             action: '',
             onClick: () => {
-              dispatch('SET', { 
-                key: 'storageData.pinned.items', 
+              dispatch('SET', {
+                key: 'storageData.pinned.items',
                 value: undoData
               })
             },
@@ -3165,8 +3166,8 @@ export default new Vuex.Store({
     },
     CLEAR_PROTECTED ({ state, commit, dispatch, getters }) {
       let undoData = utils.cloneDeep(state.storageData.protected.items)
-      dispatch('SET', { 
-        key: 'storageData.protected.items', 
+      dispatch('SET', {
+        key: 'storageData.protected.items',
         value: []
       })
       eventHub.$emit('notification', {
@@ -3180,8 +3181,8 @@ export default new Vuex.Store({
             title: localize.get('text_undo'),
             action: '',
             onClick: () => {
-              dispatch('SET', { 
-                key: 'storageData.protected.items', 
+              dispatch('SET', {
+                key: 'storageData.protected.items',
                 value: undoData
               })
             },
@@ -3209,7 +3210,7 @@ export default new Vuex.Store({
       let undoData = utils.cloneDeep(params.storageItems)
       let filteredItems = filterItems()
       let notificationCondition = false
-      let notificationParams = {} 
+      let notificationParams = {}
 
       setParams()
       setStorage()
@@ -3240,8 +3241,8 @@ export default new Vuex.Store({
       }
 
       function setStorage () {
-        store.dispatch('SET', { 
-          key: params.storageItemsKey, 
+        store.dispatch('SET', {
+          key: params.storageItemsKey,
           value: filteredItems
         })
       }
@@ -3254,8 +3255,8 @@ export default new Vuex.Store({
               title: localize.get('text_undo'),
               action: '',
               onClick: () => {
-                store.dispatch('SET', { 
-                  key: params.storageItemsKey, 
+                store.dispatch('SET', {
+                  key: params.storageItemsKey,
                   value: undoData
                 })
               },
@@ -3276,7 +3277,7 @@ export default new Vuex.Store({
     },
     REMOVE_FROM_PINNED (store, params) {
       let items = getDirItemsFromSavedList({
-        items: params.items, 
+        items: params.items,
         list: store.state.storageData.pinned.items
       })
       params.items = items
@@ -3288,7 +3289,7 @@ export default new Vuex.Store({
     },
     REMOVE_FROM_PROTECTED (store, params) {
       let items = getDirItemsFromSavedList({
-        items: params.items, 
+        items: params.items,
         list: store.state.storageData.protected.items
       })
       params.items = items
@@ -3300,7 +3301,7 @@ export default new Vuex.Store({
     },
     REMOVE_FROM_DIR_ITEMS_TIMELINE (store, params) {
       let items = getDirItemsFromSavedList({
-        items: params.items, 
+        items: params.items,
         list: store.state.storageData.stats.dirItemsTimeline
       })
       params.items = items
@@ -3312,7 +3313,7 @@ export default new Vuex.Store({
     },
     ENSURE_DIR_ITEMS_SAFE_TO_DELETE ({ state, commit, dispatch, getters }, payload) {
       const { operation, items } = payload
-      // TODO: 
+      // TODO:
       // Instead of checking currentDir, check PATH.parse(item).dir instead,
       // in case it's possible to delete an item while not being located in currentDir.
       return new Promise((resolve, reject) => {
@@ -3321,7 +3322,7 @@ export default new Vuex.Store({
         const currentDirPath = state.navigatorView.currentDir.path
         const includesCurrentDir = editTargets.some(item => item.path === currentDirPath)
         const protectedItems = getDirItemsFromSavedList({
-          items: editTargets, 
+          items: editTargets,
           list: state.storageData.protected.items
         })
         const currentDirIsRoot = PATH.parse(currentDirPath).base === ''
@@ -3347,7 +3348,7 @@ export default new Vuex.Store({
           }
           catch (error) {
             reject([])
-          }         
+          }
         }
 
         function confirmDeleteFromDrive (editTargets) {
@@ -3522,7 +3523,7 @@ export default new Vuex.Store({
               dispatch('CLEAR_FS_CLIPBOARD')
               dispatch('DESELECT_ALL_DIR_ITEMS')
               let areAllItemsTrashed = editTargets.every(item => data.trashedItems.includes(item.path))
-              // If route is still 'navigator', ask if user wants to reload the current directory 
+              // If route is still 'navigator', ask if user wants to reload the current directory
               let actionButtons = []
               if (router.currentRoute.name === 'navigator') {
                 actionButtons = [
@@ -3541,9 +3542,9 @@ export default new Vuex.Store({
                   type: 'successItemsTrashed',
                   icon: 'mdi-tab',
                   timeout: 5000,
-                  title: `Success | sent 
-                          ${data.trashedItems.length} 
-                          ${localizeUtils.pluralize(data.trashedItems.length, 'item')} 
+                  title: `Success | sent
+                          ${data.trashedItems.length}
+                          ${localizeUtils.pluralize(data.trashedItems.length, 'item')}
                           to trash`,
                   actionButtons
                 })
@@ -3556,7 +3557,7 @@ export default new Vuex.Store({
                   timeout: 5000,
                   title: `Failure | couldn't send
                           ${data.notTrashedItems.length}
-                          ${localizeUtils.pluralize(data.notTrashedItems.length, 'item')} 
+                          ${localizeUtils.pluralize(data.notTrashedItems.length, 'item')}
                           to trash:`,
                   message: data.notTrashedItems.join('<br>'),
                   actionButtons
@@ -3605,7 +3606,7 @@ export default new Vuex.Store({
     INIT_DELETE_SELECTED ({ state, commit, dispatch, getters }, payload) {
       dispatch('DELETE_DIR_ITEMS', { items: getters.selectedDirItems })
     },
-    /** 
+    /**
     * @param {object} payload
     * @param {array<object>} payload.items
     */
@@ -3758,8 +3759,8 @@ export default new Vuex.Store({
     ADD_PROTECTED ({ state, commit, dispatch, getters }, item) {
       // Add item to the protected items list
       const items = [...[item], ...storageData.protected.items]
-      dispatch('SET', { 
-        key: 'storageData.protected.items', 
+      dispatch('SET', {
+        key: 'storageData.protected.items',
         value: items
       })
     },
@@ -3858,11 +3859,11 @@ export default new Vuex.Store({
     },
     SET_HOME_BANNER_POSITION ({ commit, dispatch, getters }, payload) {
       let key
-      if (payload.axis === 'x') { 
-        key = 'storageData.settings.homeBanner.selectedItem.positionX' 
+      if (payload.axis === 'x') {
+        key = 'storageData.settings.homeBanner.selectedItem.positionX'
       }
-      if (payload.axis === 'y') { 
-        key = 'storageData.settings.homeBanner.selectedItem.positionY' 
+      if (payload.axis === 'y') {
+        key = 'storageData.settings.homeBanner.selectedItem.positionY'
       }
       dispatch('SET', {
         key: key,
@@ -3897,7 +3898,7 @@ export default new Vuex.Store({
       commit('DEHIGHLIGHT_ALL_DIR_ITEMS')
     },
     ADD_HIGHLIGHTED_DIR_ITEMS_TO_SELECTED (store) {
-      // Add highlighted to selected and remove duplicates 
+      // Add highlighted to selected and remove duplicates
       // that were added during range selection
       const listToSelect = [
         ...store.state.navigatorView.selectedDirItems,
@@ -3909,7 +3910,7 @@ export default new Vuex.Store({
       dispatch('ADD_TO_SELECTED_DIR_ITEMS', specifiedItem)
       dispatch('ADD_HIGHLIGHTED_DIR_ITEMS_TO_SELECTED')
     },
-    /** 
+    /**
     * @param {object} params.item
     * @returns {string}
     */
@@ -3971,55 +3972,55 @@ export default new Vuex.Store({
       // Define main properties
       const properties = [
         {
-          title: localize.get('text_path'), 
+          title: localize.get('text_path'),
           value: item.path,
-          tooltip: `${localize.get('tooltip_text_to_copy')}: Ctrl + LClick` 
+          tooltip: `${localize.get('tooltip_text_to_copy')}: Ctrl + LClick`
         },
         {
-          title: localize.get('text_created'), 
+          title: localize.get('text_created'),
           value: utils.formatDateTime(item.stat.birthtime, 'D MMM YYYY'),
-          tooltip: `${localize.get('tooltip_text_to_copy')}: Ctrl + LClick` 
+          tooltip: `${localize.get('tooltip_text_to_copy')}: Ctrl + LClick`
         },
         {
-          title: localize.get('text_modified'), 
+          title: localize.get('text_modified'),
           value: utils.formatDateTime(item.stat.mtime, 'D MMM YYYY'),
-          tooltip: `${localize.get('tooltip_text_to_copy')}: Ctrl + LClick` 
+          tooltip: `${localize.get('tooltip_text_to_copy')}: Ctrl + LClick`
         },
         {
-          title: localize.get('text_changed'), 
+          title: localize.get('text_changed'),
           value: utils.formatDateTime(item.stat.ctime, 'D MMM YYYY'),
-          tooltip: `${localize.get('tooltip_text_to_copy')}: Ctrl + LClick` 
+          tooltip: `${localize.get('tooltip_text_to_copy')}: Ctrl + LClick`
         },
         {
-          title: localize.get('text_mode'), 
+          title: localize.get('text_mode'),
           value: permissions,
-          tooltip: `${localize.get('tooltip_text_to_copy')}: Ctrl + LClick` 
+          tooltip: `${localize.get('tooltip_text_to_copy')}: Ctrl + LClick`
         },
         {
-          title: localize.get('text_protected'), 
-          value: isDirItemProtected 
-            ? localize.get('text_yes') 
+          title: localize.get('text_protected'),
+          value: isDirItemProtected
+            ? localize.get('text_yes')
             : localize.get('text_no'),
-          tooltip: `Protected items cannot be modified or deleted${process.platform === 'win32' ? ' (from within this app only)' : ''}. Protected items can be found on the dashboard page.` 
+          tooltip: `Protected items cannot be modified or deleted${process.platform === 'win32' ? ' (from within this app only)' : ''}. Protected items can be found on the dashboard page.`
         },
         {
-          title: localize.get('text_pinned'), 
-          value: isDirItemPinned 
-            ? localize.get('text_yes') 
+          title: localize.get('text_pinned'),
+          value: isDirItemPinned
+            ? localize.get('text_yes')
             : localize.get('text_no'),
-          tooltip: 'Pinned items can be found on the dashboard page' 
+          tooltip: 'Pinned items can be found on the dashboard page'
         }
       ]
       // Append conditional properties
       const realPath = {
-        title: localize.get('text_real_path'), 
+        title: localize.get('text_real_path'),
         value: item.realPath,
-        tooltip: `${localize.get('tooltip_text_to_copy')}: Ctrl + LClick` 
+        tooltip: `${localize.get('tooltip_text_to_copy')}: Ctrl + LClick`
       }
       if (item.path !== item.realPath) {
         properties.splice(1, 0, realPath)
       }
-      return { 
+      return {
         title,
         type,
         mimeDescription,
@@ -4049,8 +4050,8 @@ export default new Vuex.Store({
       }
     },
     async UPDATE_INFO_PANEL_DATA (store, item) {
-      // Prevent 2 consecutive calls to this function: 
-      // - Lclick => dir item deselect (1st call) 
+      // Prevent 2 consecutive calls to this function:
+      // - Lclick => dir item deselect (1st call)
       // - => currentDir select (2nd call)
       const shouldBreakOut = item.path === store.state.navigatorView.infoPanelData.properties.path
       if (shouldBreakOut) {return false}
@@ -4079,12 +4080,12 @@ export default new Vuex.Store({
       })
     },
     // Context menu actions
-    /** 
+    /**
     * @param {array<object>} payload
     */
     SET_CONTEXT_MENU (store, payload) {
       // Note: clone selected items to avoid modifying items that were selected after
-      // the context menu was opened (e.g. accidentally pressed shortcuts, unexpected app bugs, etc.) 
+      // the context menu was opened (e.g. accidentally pressed shortcuts, unexpected app bugs, etc.)
       store.state.contextMenus.dirItem.targetItems = utils.cloneDeep(store.getters.selectedDirItems)
       if ((payload.value === 'toggle' || payload.value === false) && !payload.x && !payload.y) {
         store.state.contextMenus.dirItem.value = false
@@ -4131,10 +4132,10 @@ export default new Vuex.Store({
       const fileExtensions = utils.cloneDeep(store.getters.selectedDirItemsExtensions)
       const fileTypes = utils.cloneDeep(store.getters.selectedDirItemsFileTypes.mime)
       const fileTypesReadable = utils.cloneDeep(store.getters.selectedDirItemsFileTypes.readable)
-      const selectionType = totalCount === 1 
-        ? 'single' 
-        : totalCount > 1 
-        ? 'multiple' 
+      const selectionType = totalCount === 1
+        ? 'single'
+        : totalCount > 1
+        ? 'multiple'
         : 'none'
 
       const data = {
@@ -4168,18 +4169,18 @@ export default new Vuex.Store({
       let notificationParams = {}
       let itemToAdd = {}
       let itemPropertiesToStore = ['path']
-      
+
       processItems()
       setStorage()
       setNotification()
-      
+
       function checkAllSelectedArePinned () {
         return items.every(item => {
           return store.state.storageData.pinned.items
             .some(pinnedItem => pinnedItem.path === item.path)
         })
       }
-    
+
       function processItems () {
         if (allSelectedArePinned) {
           removeItems()
@@ -4232,13 +4233,13 @@ export default new Vuex.Store({
       }
 
       function setStorage () {
-        store.dispatch('SET', { 
-          key: 'storageData.pinned.items', 
+        store.dispatch('SET', {
+          key: 'storageData.pinned.items',
           value: pinnedItems
         })
       }
     },
-    /** 
+    /**
     * @param {array<object>} payload
     */
     SET_PROTECTED (store, payload) {
@@ -4323,8 +4324,8 @@ export default new Vuex.Store({
       }
 
       function setStorage () {
-        store.dispatch('SET', { 
-          key: 'storageData.protected.items', 
+        store.dispatch('SET', {
+          key: 'storageData.protected.items',
           value: protectedItems
         })
       }
@@ -4424,7 +4425,7 @@ export default new Vuex.Store({
       const command = `"/c mklink ${directoryArgument} ${linkTypeArgument} ""${uniqueDestPath}"" ""${srcPath}"""`
       if (process.platform === 'win32') {
         childProcess.spawn('powershell', ['-command', 'Start-Process cmd', command, '-Verb RunAs'])
-      } 
+      }
       else if (process.platform === 'linux') {
         childProcess.spawn('sh', ['sudo', '-s', srcPath, uniqueDestPath])
       }
@@ -4588,7 +4589,7 @@ export default new Vuex.Store({
           conflictedPaths.push(dirItem.path)
         }
       })
-      return conflictedPaths 
+      return conflictedPaths
     },
     async COPY_DIR_ITEMS (store, params) {
       return new Promise((resolve, reject) => {
@@ -4605,7 +4606,7 @@ export default new Vuex.Store({
           icon: 'mdi-progress-clock',
           closeButton: true,
           timeout: 0,
-          title: params.operation === 'move' 
+          title: params.operation === 'move'
             ? 'Moving items...'
             : 'Copying items...',
         }
@@ -4629,7 +4630,7 @@ export default new Vuex.Store({
                       operation: params.operation
                     })
                       .then(() => {resolveTransfer()})
-                  } 
+                  }
                 })
             }
             else {
@@ -4644,7 +4645,7 @@ export default new Vuex.Store({
           })
 
         function resolveTransfer () {
-          notificationConfig.title = params.operation === 'move' 
+          notificationConfig.title = params.operation === 'move'
             ? 'Items were moved'
             : 'Items were copied'
           notificationConfig.timeout = 3000
@@ -4670,18 +4671,18 @@ export default new Vuex.Store({
           .then(() => {
             resolve()
           })
-          
+
         function startWriteProcess (params) {
           return new Promise((resolve, reject) => {
             if (params.payload.operation === 'move') {
-              store.dispatch('MOVE_ITEM', { 
+              store.dispatch('MOVE_ITEM', {
                 sourcePath: params.sourcePath,
                 destPath: params.uniqueDestPath
               })
                 .then(() => {resolve()})
             }
             else if (params.payload.operation === 'copy') {
-              store.dispatch('COPY_ITEM', { 
+              store.dispatch('COPY_ITEM', {
                 sourcePath: params.sourcePath,
                 destPath: params.uniqueDestPath
               })
@@ -4754,7 +4755,7 @@ export default new Vuex.Store({
                       closesNotification: true
                     }
                   ]
-                })    
+                })
               }, 1000)
               store.state.dialogs.renameDirItemDialog.value = false
             })
@@ -4790,7 +4791,7 @@ export default new Vuex.Store({
               Item with that name already exists
               <br>${newName}
             `
-          }) 
+          })
         }
       })
     },
@@ -4836,7 +4837,7 @@ export default new Vuex.Store({
     async GET_UNIQUE_PATH ({ state, commit, dispatch, getters }, payload) {
       return new Promise((resolve, reject) => {
         const parsedItemPath = PATH.parse(payload.path)
-        const destPath = PATH.join(payload.directory, parsedItemPath.base) 
+        const destPath = PATH.join(payload.directory, parsedItemPath.base)
         resolve(utils.getUniquePath(destPath))
       })
     },
@@ -4851,8 +4852,8 @@ export default new Vuex.Store({
         let counter = 1
         let finishedWriting = false
 
-        // It seems that 16 Mb chunks (highWaterMark) is the best value. 
-        // RAM usage is low, CPU usage is low, drive usage is high (hence transfer speed is high)  
+        // It seems that 16 Mb chunks (highWaterMark) is the best value.
+        // RAM usage is low, CPU usage is low, drive usage is high (hence transfer speed is high)
         const chunkSize = 16 * 1024 * 1024 // 16 mb
         const hashID = utils.getHash()
         const readStream = fs.createReadStream(item.path, { highWaterMark: chunkSize })
@@ -4865,7 +4866,7 @@ export default new Vuex.Store({
           readStream,
           writeStream,
         }
-      
+
         const progress = {
           started: false,
           isDone: false,
@@ -4875,7 +4876,7 @@ export default new Vuex.Store({
           percentDone: 0,
           eta: 0
         }
-        
+
         let notificationConfig = {
           action: 'update-by-hash',
           hashID,
@@ -4883,29 +4884,29 @@ export default new Vuex.Store({
           icon: 'mdi-progress-clock',
           closeButton: true,
           timeout: 0,
-          title: operation === 'move' 
+          title: operation === 'move'
             ? 'Moving item...'
             : 'Copying item...',
           message: 'Getting info...',
           progress
         }
-        
+
         // Add notification | write progress
         eventHub.$emit('notification', notificationConfig)
-        
+
         // Configure stream listeners
         task.readStream.on('data', (chunk) => {
           progress.timePassed = new Date().getTime() - progress.timeStarted
           const percentageCopied = ((chunk.length * counter) / item.stat.size) * 100
           // Stop updating percentage after it reaches 100%
-          // Otherwise the last chunk mess up the reading 
+          // Otherwise the last chunk mess up the reading
           if (!finishedWriting) {
             if (percentageCopied > 100) {
               progress.percentDone = 100
               finishedWriting = true
             }
             else {
-              progress.percentDone = Math.round(percentageCopied) 
+              progress.percentDone = Math.round(percentageCopied)
             }
           }
           counter += 1
@@ -4942,7 +4943,7 @@ export default new Vuex.Store({
           })
           .on('finish', () => {
             // Add delay so that animations don't play at the same time
-            setTimeout(() => {   
+            setTimeout(() => {
               // Update notification
               if (progress.isCanceled) {
                 notificationConfig.actionButtons = []
@@ -4964,7 +4965,7 @@ export default new Vuex.Store({
                 //   }
                 // ]
                 // Update notification | write progress
-                notificationConfig.title = operation === 'move' 
+                notificationConfig.title = operation === 'move'
                   ? 'Item was moved'
                   : 'Item was copied'
                 notificationConfig.message = `<b>Destination path:</b><br>${destPath}`
@@ -5012,7 +5013,7 @@ export default new Vuex.Store({
               {
                 title: 'See all releases',
                 action: '',
-                onClick: () => { 
+                onClick: () => {
                   utils.openLink(state.appPaths.githubLatestRelease)
                 },
                 closesNotification: true
@@ -5041,7 +5042,7 @@ export default new Vuex.Store({
               title: 'Project page',
               action: '',
               extrnalLink: state.appPaths.githubRepoLink,
-              onClick: () => { 
+              onClick: () => {
                 utils.openLink(state.appPaths.githubRepoLink)
               },
               closesNotification: false
@@ -5057,10 +5058,10 @@ export default new Vuex.Store({
         {
           title: 'Download',
           action: '',
-          onClick: () => { 
-            dispatch('DOWNLOAD_APP_UPDATE', { 
+          onClick: () => {
+            dispatch('DOWNLOAD_APP_UPDATE', {
               latestVersion,
-              downloadLink, 
+              downloadLink,
               size,
             })
           },
@@ -5069,7 +5070,7 @@ export default new Vuex.Store({
         {
           title: 'See what\'s new',
           action: '',
-          onClick: () => { 
+          onClick: () => {
             utils.openLink(state.appPaths.githubChangelogLink)
           },
           closesNotification: false
@@ -5104,7 +5105,7 @@ export default new Vuex.Store({
     },
     HANDLE_APP_UPDATE_DOWNLOADED ({ state, commit, dispatch, getters }, payload) {
       const { latestVersion, info } = payload
-      // Remove 'progress' notification 
+      // Remove 'progress' notification
       eventHub.$emit('notification', {
         action: 'remove',
         hashID: info.hashID
@@ -5114,7 +5115,7 @@ export default new Vuex.Store({
         {
           title: 'install update',
           action: '',
-          onClick: () => { 
+          onClick: () => {
             dispatch('OPEN_FILE', `${state.appPaths.updateDownloadDir}/${info.filename}`)
           },
           closesNotification: true
@@ -5123,7 +5124,7 @@ export default new Vuex.Store({
           title: 'show in directory',
           action: 'showDownloadedFile',
           closesNotification: false,
-          onClick: () => { 
+          onClick: () => {
             dispatch('SHOW_DIR_ITEM_IN_DIRECTORY', { dir: info.dir, itemPath: info.filePath })
           }
         }
@@ -5156,7 +5157,7 @@ export default new Vuex.Store({
     DOWNLOAD_APP_UPDATE ({ state, commit, dispatch, getters }, payload) {
       const { latestVersion, downloadLink, size } = payload
       electron.ipcRenderer.send('download-file', {
-        url: downloadLink, 
+        url: downloadLink,
         dir: state.appPaths.updateDownloadDir,
         hashID: utils.getHash(),
         size,
@@ -5171,7 +5172,7 @@ export default new Vuex.Store({
       if (lastRecordedAppVersion) {
         const recordedAppVersion = lastRecordedAppVersion.replace(/\./g, '')
         const currentAppVersion = state.appVersion.replace(/\./g, '')
-        const updateWasInstalled = recordedAppVersion < currentAppVersion 
+        const updateWasInstalled = recordedAppVersion < currentAppVersion
         if (updateWasInstalled) {
           dispatch('NOTIFY_USER_UPDATE_INSTALLED')
         }
@@ -5194,7 +5195,7 @@ export default new Vuex.Store({
           {
             title: 'See what\'s new',
             action: '',
-            onClick: () => { 
+            onClick: () => {
               utils.openLink(state.appPaths.githubChangelogLink)
             },
             closesNotification: true
@@ -5209,7 +5210,7 @@ export default new Vuex.Store({
       params = {...defaultParams, ...params}
       const contentAreaNode = utils.getContentAreaNode(router.currentRoute.name)
       if (contentAreaNode) {
-        contentAreaNode.scroll({ 
+        contentAreaNode.scroll({
           top: 0,
           left: 0,
           behavior: params.behavior
@@ -5251,7 +5252,7 @@ export default new Vuex.Store({
                 title: 'Shortcut was set',
                 message: shortcut
               })
-            })   
+            })
         })
         .catch((error) => {
           eventHub.$emit('notification', {
@@ -5274,7 +5275,7 @@ export default new Vuex.Store({
       let data = state.dialogs.shortcutEditorDialog.data
 
       // Handle "Enter" key event
-      const someModifierIsPressed = 
+      const someModifierIsPressed =
         event.ctrlKey ||
         event.altKey ||
         event.shiftKey ||
@@ -5296,7 +5297,7 @@ export default new Vuex.Store({
 
       // Reset data
       data.modifiers = []
-      
+
       // Set data
       if (event.altKey) { data.modifiers.push('Alt') }
       if (event.ctrlKey) { data.modifiers.push('Ctrl') }
@@ -5331,15 +5332,15 @@ export default new Vuex.Store({
 
       data.shortcut = formattedToReadable.replace(/\+/g, ' + ')
       data.rawShortcut = formattedToReadable
-      
+
       if (data.modifiers.length === 0) {
         data.isValid = false
         data.error = 'Shorcut should include at least 1 modifier: [Alt, Ctrl, Shit, Meta]'
-      } 
+      }
       else if (data.key.length === 0) {
         data.isValid = false
         data.error = 'Shorcut should include at least 1 key'
-      } 
+      }
       else {
         data.isValid = true
         data.error = ''
@@ -5517,12 +5518,12 @@ export default new Vuex.Store({
           }, task.props.options.timeout)
         }
         store.state.childProcesses.directorySize = childProcess.fork(
-          PATH.resolve('./src/processes/directorySizeProcess.js'), 
+          PATH.resolve('./src/processes/directorySizeProcess.js'),
           { silent: true }
         )
         store.state.childProcesses.directorySize.on('message', data => {
           clearTimeout(task.props.timeoutObject)
-          // Delay setting data to avoid the unpleasant flash when 
+          // Delay setting data to avoid the unpleasant flash when
           // placeholder is removed almost immidiatelly after being set
           setTimeout(() => {
             resolve(data)
@@ -5536,7 +5537,7 @@ export default new Vuex.Store({
         path: state.navigatorView.selectedDirItems.getLast().path
       }
       payload = {...defaultPayload, ...payload}
-      
+
       if (getters.dirItemsSelectionStats.fileCount > 0) {
         electron.ipcRenderer.send('quick-view::open-file', payload.path)
       }

@@ -45,6 +45,9 @@ export default {
   getLightnessContrastValue (color) {
     return colorUtils.getColorData(color).contrast.value
   },
+  isWindows () {
+    return process.platform === 'win32';
+  },
   templateToString (templateLiteralString) {
     return templateLiteralString.split('\n').map((line) => {
       return line.replace(/^\s+/gm, '')

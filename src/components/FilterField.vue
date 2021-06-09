@@ -79,6 +79,16 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   ></v-switch>
                 </v-list-item>
 
+                <v-list-item
+                  class="px-5"
+                  dense
+                  v-if="this.$route.name !== 'notes'">
+                  <v-switch
+                    v-model="navigatorShowHiddenItems"
+                    label="Show Hidden Items"
+                  ></v-switch>
+                </v-list-item>
+
                 <v-divider></v-divider>
 
                 <v-list-item class="inactive">
@@ -130,7 +140,8 @@ export default {
     ...mapFields({
       notesItems: 'storageData.notes.items',
       dirItems: 'navigatorView.dirItems',
-      focusedField: 'focusedField'
+      focusedField: 'focusedField',
+      navigatorShowHiddenItems: 'storageData.settings.navigator.navigatorShowHiddenItems'
     }),
     filterQuery: {
       get () {

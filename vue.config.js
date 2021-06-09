@@ -71,7 +71,7 @@ module.exports = {
         './src/utils/search.js'
       ],
       // Exclude dependencies from the output bundles
-      externals: ['chokidar', 'fsevents', 'xxhash-addon'],
+      externals: ['chokidar', 'fsevents', 'xxhash-addon', 'fswin'],
       // Webpack config for electron renderer process only
       chainWebpackRendererProcess: (config) => {
         config.plugin('define').tap(args => {

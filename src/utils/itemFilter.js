@@ -13,6 +13,7 @@ const data = {
 /**
 * @param {string} params.filterQuery
 * @param {array} params.items
+* @param {boolean} params.filterHiddenItems
 * @param {object} params.filterProperties
 * @param {object} params.filterQueryOptions
 * @returns {array}
@@ -20,7 +21,7 @@ const data = {
 export default function itemFilter (params) {
   if (!params.filterProperties) {
     throw Error(`
-      params.filterProperties is undefined. 
+      params.filterProperties is undefined.
       Probably forgot to define 'state.filterField.view[this.$route.name].filterProperties' in store
     `)
   }
@@ -34,7 +35,7 @@ function fetchFilterMatches () {
   const specifiedFilterProperty = getActivePrefix(query)
   const queryValue = query.replace(specifiedFilterProperty.prefix, '').trimStart()
   const propertiesToSearch = getPropertiesToSearch(specifiedFilterProperty)
-  const matchedItems = getMatchedItems(data.params.items, propertiesToSearch, queryValue)
+  const matchedItems = getMatchedItems(data.params.items, propertiesToSearch, queryValue, data.params.filterHiddenItems)
   return [...new Set(matchedItems)]
 }
 
@@ -49,9 +50,9 @@ function getPropertiesToSearch (specifiedFilterProperty) {
   return propertiesToSearch
 }
 
-function getMatchedItems (items, propertiesToSearch, queryValue) {
+function getMatchedItems (items, propertiesToSearch, queryValue, filterHiddenItems) {
   const matchedItems = []
-  items.forEach(item => {
+  items.filter(item => filterHiddenItems ? !item.isHidden : true).forEach(item => {
     propertiesToSearch.forEach(propertyToSearch => {
       const propertyValue = getPropertyValue(item, propertyToSearch)
       if (propertyValue) {

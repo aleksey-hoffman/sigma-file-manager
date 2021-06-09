@@ -450,20 +450,24 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                       Directory items
                     </div>
                     <div class="mb-5">
+                       <v-switch
+                        class="mt-0 pt-0"
+                        v-model="navigatorShowHiddenItems"
+                        label="Show Hidden Items"
+                      ></v-switch>
                       <v-switch
-                        class="my-0"
+                        class="mt-0 pt-0"
                         v-model="navigatorOpenDirItemWithSingleClick"
                         label="Open with single click"
-                        hide-details
                       ></v-switch>
-                      <div 
-                        class="mt-3"
+                      <div
+                        class="mt-0 pt-0"
                         v-show="navigatorOpenDirItemWithSingleClick"
                       >
                         Hold <span class="inline-code--light">Alt</span> button to select the item without opening it
                       </div>
                     </div>
-                    <div class="mb-5">
+                    <div class="mt-0 pt-0">
                       <v-text-field
                         v-show="!navigatorOpenDirItemWithSingleClick"
                         v-model="openDirItemSecondClickDelay"
@@ -1154,6 +1158,7 @@ export default {
       windowCloseButtonAction: 'storageData.settings.windowCloseButtonAction',
       themeType: 'storageData.settings.theme.type',
       navigatorLayout: 'storageData.settings.navigatorLayout',
+      navigatorShowHiddenItems: 'storageData.settings.navigator.navigatorShowHiddenItems',
       openDirItemSecondClickDelay: 'storageData.settings.navigator.openDirItemSecondClickDelay',
       navigatorOpenDirItemWithSingleClick: 'storageData.settings.navigator.openDirItemWithSingleClick',
       dirItemHoverEffect: 'storageData.settings.dirItemHoverEffect',
