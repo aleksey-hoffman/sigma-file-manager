@@ -7,6 +7,7 @@ const customParseFormat = require('dayjs/plugin/customParseFormat')
 const dayjs = require('dayjs')
 dayjs.extend(customParseFormat)
 const ColorUtils = require('./colorUtils.js')
+const supportedFormats = require('./supportedFormats.js')
 const { createXXHash64 } = require('hash-wasm')
 const eventHub = require('./eventHub').eventHub
 const PATH = require('path')
@@ -508,7 +509,7 @@ export default {
       const isVideo = mime.includes('video/')
       const isAudio = mime.includes('audio/')
       const isText = mime.includes('text/')
-      const isArchive = mime.includes('/x-7z') || mime.includes('/zip') || mime.includes('/x-tar')
+      const isArchive = supportedFormats.includes({type: 'archive', ext})
       let mimeDescription
       if (isImage) { mimeDescription = 'image' }
       else if (isVideo) { mimeDescription = 'video' }
