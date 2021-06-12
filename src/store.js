@@ -31,6 +31,7 @@ const getSystemRulesForPaths = require('./utils/systemRules').paths
 const systemRulesForPaths = getSystemRulesForPaths()
 const ColorUtils = require('./utils/colorUtils.js')
 const appDataPaths = require('./appPaths.js')
+const supportedFormats = require('./utils/supportedFormats.js')
 
 const appPaths = {
   ...externalLinks,
@@ -824,7 +825,7 @@ export default new Vuex.Store({
           isValid: true,
           error: '',
           selectedFormat: 'zip',
-          formats: ['zip', '7z', 'tar'],
+          formats: supportedFormats.formats.fileType.archivePack,
           dest: {
             name: ''
           }
