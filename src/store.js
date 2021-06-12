@@ -2831,11 +2831,32 @@ export default new Vuex.Store({
       if (params.source === 'target-items') {
         params.source = store.state.contextMenus.dirItem.targetItemsStats.dirItemsPaths[0]
       }
+
       if (!params.dest) {
         const parsed = PATH.parse(params.source)
-        const dest = PATH.join(parsed.dir, parsed.name)
+        const dest = utils.getUniquePath(PATH.join(parsed.dir, parsed.name))
         params.dest = dest
       }
+
+      const hash = utils.getHash()
+
+      let state = {
+        isCanceled: false
+      }
+
+      let notification = {
+        progress: {
+          percent: 0,
+          fileCount: 0,
+          file: ''
+        },
+        action: 'update-by-type',
+        hash,
+        type: `archiver:extract-progress-${hash}`,
+        colorStatus: 'blue',
+        timeout: 0,
+      }
+
       const appBinExtractStream = node7z.extractFull(
         params.source,
         params.dest,
@@ -2844,30 +2865,55 @@ export default new Vuex.Store({
           $progress: true
         }
       )
-      eventHub.$emit('notification', {
-        action: 'update-by-type',
-        type: 'archiver:extract',
-        timeout: 0,
-        title: 'Archive extraction started',
-        message: params.source
-      })
+
       appBinExtractStream.on('error', (error) => {
         eventHub.$emit('notification', {
           action: 'update-by-type',
-          type: 'archiver:extract',
+          type: 'archiver:extract-error',
+          colorStatus: 'red',
           timeout: 5000,
           title: 'Error: cannot extract the archive',
           message: error
         })
       })
+
+      appBinExtractStream.on('progress', (progress) => {
+        notification.progress = progress
+        notification.title = 'Extracting archive'
+        notification.message = `
+          ${notification.progress.percent}% • 
+          ${notification.progress.fileCount} files
+          <br><b>Archive:</b> ${params.source}
+        `
+        notification.actionButtons = [
+          {
+            title: 'cancel',
+            onClick: () => {
+              appBinExtractStream._childProcess.kill()
+              state.isCanceled = true
+            }
+          }
+        ]
+        eventHub.$emit('notification', notification)
+      })
+
       appBinExtractStream.on('end', () => {
-        eventHub.$emit('notification', {
-          action: 'update-by-type',
-          type: 'archiver:extract',
-          timeout: 5000,
-          title: 'Archive was extracted',
-          message: params.source
-        })
+        notification.timeout = 5000
+        notification.actionButtons = []
+        notification.message = `
+          Done • ${notification.progress.fileCount} files
+          <br><b>Destination:</b> ${params.dest}
+        `
+        if (!state.isCanceled) {
+          notification.colorStatus = 'teal'
+          notification.title = 'Archive was extracted'
+          eventHub.$emit('notification', notification)
+        }
+        else {
+          notification.colorStatus = 'red'
+          notification.title = 'Archive extraction canceled',
+          eventHub.$emit('notification', notification)
+        }
       })
     },
     SET_NAVIGATOR_STATE (store) {
