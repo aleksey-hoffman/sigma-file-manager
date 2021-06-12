@@ -1332,46 +1332,6 @@ export default new Vuex.Store({
       // Select specified workspace
       specifiedWorkspace.isSelected = true
     },
-    INCREASE_UI_ZOOM (state) {
-      const currentZoomFactor = electron.webFrame.getZoomFactor()
-      // Update zoom level
-      if (currentZoomFactor < 1.5) {
-        const newZoomFactor = currentZoomFactor + 0.1
-        electron.webFrame.setZoomFactor(newZoomFactor)
-        state.storageData.settings.UIZoomLevel = newZoomFactor
-        eventHub.$emit('notification', {
-          action: 'update-by-type',
-          type: 'updateZoomLevel',
-          timeout: 2000,
-          title: `UI scale changed: ${(newZoomFactor * 100).toFixed(0)}%`
-        })
-      }
-    },
-    DECREASE_UI_ZOOM (state) {
-      const currentZoomFactor = electron.webFrame.getZoomFactor()
-      // Update zoom level
-      if (currentZoomFactor > 0.6) {
-        const newZoomFactor = currentZoomFactor - 0.1
-        electron.webFrame.setZoomFactor(newZoomFactor)
-        state.storageData.settings.UIZoomLevel = newZoomFactor
-        eventHub.$emit('notification', {
-          action: 'update-by-type',
-          type: 'updateZoomLevel',
-          timeout: 2000,
-          title: `UI scale changed: ${(newZoomFactor * 100).toFixed(0)}%`
-        })
-      }
-    },
-    RESET_UI_ZOOM (state) {
-      state.storageData.settings.UIZoomLevel = 1.0
-      electron.webFrame.setZoomFactor(1)
-      eventHub.$emit('notification', {
-        action: 'update-by-type',
-        type: 'updateZoomLevel',
-        timeout: 2000,
-        title: `UI scale changed: 100%`
-      })
-    },
     DELETE_ALL_NOTES_IN_TRASH (state) {
       const notes = state.storageData.notes.items
       state.storageData.notes.items = notes.filter(note => !note.isTrashed)
@@ -2545,14 +2505,52 @@ export default new Vuex.Store({
     TOGGLE_FULLSCREEN () {
       utils.toggleFullscreen()
     },
-    INCREASE_UI_ZOOM ({ commit }) {
-      commit('INCREASE_UI_ZOOM')
+    INCREASE_UI_ZOOM (store) {
+      const currentZoomFactor = electron.webFrame.getZoomFactor()
+      if (currentZoomFactor < 1.5) {
+        const newZoomFactor = Number(parseFloat(currentZoomFactor + 0.1).toFixed(1))
+        electron.webFrame.setZoomFactor(newZoomFactor)
+        store.dispatch('SET', {
+          key: 'storageData.settings.UIZoomLevel',
+          value: newZoomFactor
+        })
+        eventHub.$emit('notification', {
+          action: 'update-by-type',
+          type: 'ui-zoom:change',
+          timeout: 2000,
+          title: `UI scale changed: ${(newZoomFactor * 100).toFixed(0)}%`
+        })
+      }
     },
-    DECREASE_UI_ZOOM ({ commit }) {
-      commit('DECREASE_UI_ZOOM')
+    DECREASE_UI_ZOOM (store) {
+      const currentZoomFactor = electron.webFrame.getZoomFactor()
+      if (currentZoomFactor > 0.6) {
+        const newZoomFactor = Number(parseFloat(currentZoomFactor - 0.1).toFixed(1))
+        electron.webFrame.setZoomFactor(newZoomFactor)
+        store.dispatch('SET', {
+          key: 'storageData.settings.UIZoomLevel',
+          value: newZoomFactor
+        })
+        eventHub.$emit('notification', {
+          action: 'update-by-type',
+          type: 'ui-zoom:change',
+          timeout: 2000,
+          title: `UI scale changed: ${(newZoomFactor * 100).toFixed(0)}%`
+        })
+      }
     },
-    RESET_UI_ZOOM ({ commit }) {
-      commit('RESET_UI_ZOOM')
+    RESET_UI_ZOOM (store) {
+      electron.webFrame.setZoomFactor(1)
+      store.dispatch('SET', {
+        key: 'storageData.settings.UIZoomLevel',
+        value: 1.0
+      })
+      eventHub.$emit('notification', {
+        action: 'update-by-type',
+        type: 'ui-zoom:change',
+        timeout: 2000,
+        title: `UI scale changed: 100%`
+      })
     },
     TOGGLE ({ commit }, key) {
       commit('TOGGLE', key)

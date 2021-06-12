@@ -1260,19 +1260,19 @@ export default {
           title: this.$localize.get('tooltip_button_ui_zoom_decrease_title'),
           shortcut: this.shortcuts.zoomDecrease.shortcut,
           icon: 'mdi-minus',
-          onClick: () => this.$store.commit('DECREASE_UI_ZOOM')
+          onClick: () => this.$store.dispatch('DECREASE_UI_ZOOM')
         },
         {
           title: this.$localize.get('tooltip_button_ui_zoom_increase_title'),
           shortcut: this.shortcuts.zoomIncrease.shortcut,
           icon: 'mdi-plus',
-          onClick: () => this.$store.commit('INCREASE_UI_ZOOM')
+          onClick: () => this.$store.dispatch('INCREASE_UI_ZOOM')
         },
         {
           title: this.$localize.get('tooltip_button_ui_zoom_reset_title'),
           shortcut: this.shortcuts.zoomReset.shortcut,
           buttonText: this.$localize.get('settings_ui_zoom_button_reset'),
-          onClick: () => this.$store.commit('RESET_UI_ZOOM')
+          onClick: () => this.$store.dispatch('RESET_UI_ZOOM')
         },
         {
           title: this.$localize.get('tooltip_button_full_screen_title'),
