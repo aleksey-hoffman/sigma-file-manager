@@ -15,7 +15,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     <v-progress-linear
       v-show="notification.timeout !== 0 && !notification.isHidden"
       :value="notification.timeoutData.percentsCounter"
-      color="blue-grey"
+      :color="notification.timeoutProgressColor || 'blue-grey'"
       height="2"
     ></v-progress-linear>
 
