@@ -5030,6 +5030,9 @@ export default new Vuex.Store({
           action: 'update-by-type',
           type: 'update:unavailable',
           timeout: 5000,
+          colorStatus: 'blue',
+          isPinned: true,
+          removeWhenHidden: false,
           title: 'No updates available',
           message: `
             <b>Current version:</b> ${state.appVersion}
@@ -5079,7 +5082,10 @@ export default new Vuex.Store({
       eventHub.$emit('notification', {
         action: 'update-by-type',
         type: 'update:available',
-        colorStatus: 'green',
+        colorStatus: 'blue',
+        isPinned: true,
+        isUpdate: true,
+        removeWhenHidden: false,
         timeout: 0,
         title: 'App update available',
         message: `
@@ -5089,24 +5095,12 @@ export default new Vuex.Store({
         closeButton: true,
         actionButtons
       })
-
-      // Add item to notifications list
-      state.notifications.push({
-        type: 'update-available',
-        colorStatus: 'green',
-        title: 'App update available',
-        message: `
-          <b>Current version:</b> ${state.appVersion}
-          <br><b>Latest version:</b> ${latestVersion}
-        `,
-        actionButtons
-      })
     },
     HANDLE_APP_UPDATE_DOWNLOADED ({ state, commit, dispatch, getters }, payload) {
       const { latestVersion, info } = payload
       // Remove 'progress' notification 
       eventHub.$emit('notification', {
-        action: 'remove',
+        action: 'hide',
         hashID: info.hashID
       })
 
@@ -5133,20 +5127,14 @@ export default new Vuex.Store({
       eventHub.$emit('notification', {
         action: 'add',
         type: 'update:downloaded',
-        colorStatus: 'green',
+        colorStatus: 'blue',
+        isPinned: true,
+        isUpdate: true,
+        removeWhenHidden: false,
         timeout: 0,
         title: `Update downloaded: v${latestVersion}`,
         message: 'Press install to close the app and update it',
         closeButton: true,
-        actionButtons
-      })
-
-      // Add item to notifications list
-      state.notifications.push({
-        type: 'update-downloaded',
-        colorStatus: 'green',
-        title: `Update downloaded: v${latestVersion}`,
-        message: 'Press install to close the app and update it',
         actionButtons
       })
 
@@ -5186,6 +5174,10 @@ export default new Vuex.Store({
         action: 'add',
         type: 'update:installed',
         icon: 'mdi-check-circle-outline',
+        colorStatus: 'blue',
+        isPinned: true,
+        isUpdate: true,
+        removeWhenHidden: false,
         timeout: 0,
         title: `Update was installed: v${state.appVersion}`,
         message: 'Check out what\'s new and what\'s changed',
@@ -5201,6 +5193,37 @@ export default new Vuex.Store({
           }
         ]
       })
+    },
+    async HIDE_NOTIFICATION (store, notification) {
+      store.dispatch('RESET_NOTIFICATION_TIMERS', notification)
+      // Call onNotificationHide callback
+      try {notification.onNotificationHide()}
+      catch (error) {}
+
+      if (notification.removeWhenHidden) {
+        store.dispatch('REMOVE_NOTIFICATION', notification)
+      }
+      else {
+        notification.isHidden = true
+      }
+    },
+    REMOVE_NOTIFICATION (store, notification) {
+      if (['update-by-hash', 'add', 'hide'].includes(notification.action)) {
+        const notificationIndex = store.state.notifications.findIndex(item => item.hashID === notification.hashID)
+        store.state.notifications.splice(notificationIndex, 1)
+      }
+      else if (notification.action === 'update-by-type') {
+        const notificationIndex = store.state.notifications.findIndex(item => item.type === notification.type)
+        store.state.notifications.splice(notificationIndex, 1)
+      }
+    },
+    async RESET_NOTIFICATION_TIMERS (store, notification) {
+      try {
+        notification.timeoutData.ongoingTimeout.clear()
+        clearInterval(notification.timeoutData.secondsCounterInterval)
+        clearInterval(notification.timeoutData.percentsCounterInterval)
+      }
+      catch (error) {}
     },
     SCROLL_TOP_CONTENT_AREA (store, params) {
       const defaultParams = {

@@ -30,6 +30,7 @@ import WorkspacesMenu from './components/WorkspacesMenu.vue'
 import TabsMenu from './components/TabsMenu.vue'
 import BasicMenu from './components/BasicMenu.vue'
 import NotificationMenu from './components/NotificationMenu.vue'
+import NotificationCard from './components/NotificationCard.vue'
 import SortableList from './components/SortableList.vue'
 import DirItem from './components/DirItem.vue'
 import DirItemRow from './components/DirItemRow.vue'
@@ -62,6 +63,7 @@ Vue.component('workspaces-menu', WorkspacesMenu)
 Vue.component('tabs-menu', TabsMenu)
 Vue.component('basic-menu', BasicMenu)
 Vue.component('notification-menu', NotificationMenu)
+Vue.component('notification-card', NotificationCard)
 Vue.component('sortable-list', SortableList)
 Vue.component('dir-item', DirItem)
 Vue.component('dir-item-row', DirItemRow)

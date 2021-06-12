@@ -9,7 +9,6 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       :value="value"
       @change="$emit('input', value)"
       offset-y
-      min-width="300px"
       :close-on-content-click="false"
       style="overflow: hidden"
     >
@@ -48,7 +47,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         </v-tooltip>
       </template>
 
-      <div class="menu-container">
+      <div class="menu-container" style="width: 400px">
         <v-list class="inactive">
           <v-list-item dense class="inactive">
             <v-list-item-content>
