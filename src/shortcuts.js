@@ -349,6 +349,25 @@ export default {
     size: '22px',
     description: 'Show / hide global search'
   },
+  reloadDirectory: {
+    isGlobal: false,
+    isReadOnly: false,
+    conditions: {
+      dialogIsOpened: false
+    },
+    routes: ['navigator'],
+    icon: 'mdi-refresh',
+    action: {
+      name: 'RELOAD_DIR',
+      props: {
+        scrollTop: false,
+        emitNotification: true
+      }
+    },
+    shortcut: 'F5',
+    size: '22px',
+    description: 'Reload current directory'
+  },
   openSelectedDirItem: {
     isGlobal: false,
     isReadOnly: false,
