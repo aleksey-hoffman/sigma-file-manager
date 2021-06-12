@@ -63,7 +63,6 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 </template>
 
 <script>
-import { mapFields } from 'vuex-map-fields'
 export default {
   data: () => ({
     menuItems: []
@@ -103,10 +102,18 @@ export default {
     ]
   },
   computed: {
-    ...mapFields({
-      homeBannerValue: 'storageData.settings.homeBanner.value'
-    }),
-    dialogs () { return this.$store.state.dialogs }
+    dialogs () { return this.$store.state.dialogs },
+    homeBannerValue: {
+      get () {
+        return this.$store.state.storageData.settings.homeBanner.value
+      },
+      set (value) {
+        this.$store.dispatch('SET', {
+          key: 'storageData.settings.homeBanner.value',
+          value
+        })
+      }
+    }
   }
 }
 </script>

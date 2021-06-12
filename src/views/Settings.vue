@@ -1215,6 +1215,7 @@ export default {
       spellcheck: 'storageData.settings.spellcheck',
       globalSearchDisallowedPathsItems: 'storageData.settings.globalSearch.disallowedPathsItems',
       appPropertiesOpenAtLogin: 'storageData.settings.appProperties.openAtLogin',
+      homeBannerValue: 'storageData.settings.homeBanner.value',
     }
     const objects = {}
     for (const [modelKey, modelValue] of Object.entries(models)) {
@@ -1274,7 +1275,6 @@ export default {
       toolbarColorItems: 'storageData.settings.theme.toolbarColorItems',
       dashboardTimeline: 'storageData.settings.dashboard.tabs.timeline.show',
       scanInProgress: 'globalSearch.scanInProgress',
-      homeBannerValue: 'storageData.settings.homeBanner.value',
       openDirItemSecondClickDelay: 'storageData.settings.navigator.openDirItemSecondClickDelay',
     }),
     validatedOpenDirItemSecondClickDelay: {
