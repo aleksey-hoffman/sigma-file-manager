@@ -162,6 +162,8 @@ export default {
       UIZoomLevel: 'storageData.settings.UIZoomLevel',
       thumbnailStorageLimit: 'storageData.settings.thumbnailStorageLimit',
       focusMainWindowOnDriveConnected: 'storageData.settings.focusMainWindowOnDriveConnected',
+      pointerButton3: 'storageData.settings.input.pointerButtons.button3',
+      pointerButton4: 'storageData.settings.input.pointerButtons.button4',
       timeSinceLoadDirItems: 'navigatorView.timeSinceLoadDirItems',
       history: 'navigatorView.history',
       globalSearchScanInProgress: 'globalSearch.scanInProgress',
@@ -308,6 +310,7 @@ export default {
       this.$store.dispatch('CHECK_IF_UPDATE_INSTALLED')
     },
     bindKeyEvents () {
+      this.bindMouseKeyEvents()
       this.bindGeneralKeyEvents()
       this.bindGeneralMousetrapEvents()
     },
@@ -1454,6 +1457,23 @@ export default {
       }
       catch (error) {
         throw Error(error)
+      }
+    },
+    bindMouseKeyEvents () {
+      window.addEventListener('mouseup', this.mouseupHandler)
+    },
+    mouseupHandler (mouseupEvent) {
+      if (mouseupEvent.button === 3) {
+        if (this.pointerButton3.onMouseUpEvent.action !== 'default') {
+          mouseupEvent.preventDefault()
+          this.$store.dispatch(this.pointerButton3.onMouseUpEvent.action)
+        }
+      }
+      else if (mouseupEvent.button === 4) {
+        if (this.pointerButton4.onMouseUpEvent.action !== 'default') {
+          mouseupEvent.preventDefault()
+          this.$store.dispatch(this.pointerButton4.onMouseUpEvent.action)
+        }
       }
     },
     bindGeneralKeyEvents () {

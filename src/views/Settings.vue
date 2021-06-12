@@ -721,6 +721,44 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               </section-settings>
             </v-tab-item>
 
+            <!-- tab::input -->
+            <v-tab-item transition="fade-in" reverse-transition="fade-in">
+              <section-settings
+                class="content-area__content-card__section"
+                :header="{
+                  icon: {
+                    name: 'mdi-mouse'
+                  },
+                  title: 'Pointer buttons'
+                }"
+              >
+                <template v-slot:content>
+                  <div class="text--sub-title-1 mt-2">
+                    Button actions
+                  </div>
+
+                  <v-select
+                    v-model="pointerButton3onMouseUpEvent"
+                    :items="pointerButton3onMouseUpEventItems"
+                    return-object
+                    item-text="title"
+                    label="Pointer button 3: up event"
+                    style="max-width: 400px"
+                  ></v-select>
+                  
+                  <v-select
+                    v-model="pointerButton4onMouseUpEvent"
+                    :items="pointerButton4onMouseUpEventItems"
+                    return-object
+                    item-text="title"
+                    label="Pointer button 4: up event"
+                    style="max-width: 400px"
+                  ></v-select>
+                </template>
+              </section-settings>
+            </v-tab-item>
+
+            <!-- tab::search-->
             <v-tab-item transition="fade-in" reverse-transition="fade-in">
               <section-settings
                 class="content-area__content-card__section"
@@ -1121,6 +1159,7 @@ export default {
       settingsTabs: [
         { text: 'General' },
         { text: 'UI appearance' },
+        { text: 'Input' },
         { text: 'Search' },
         { text: 'Data & storage' },
         { text: 'Stats' }
@@ -1157,6 +1196,10 @@ export default {
       openDirItemSecondClickDelay: 'storageData.settings.navigator.openDirItemSecondClickDelay',
       navigatorOpenDirItemWithSingleClick: 'storageData.settings.navigator.openDirItemWithSingleClick',
       dirItemHoverEffect: 'storageData.settings.dirItemHoverEffect',
+      pointerButton3onMouseUpEvent: 'storageData.settings.input.pointerButtons.button3.onMouseUpEvent',
+      pointerButton3onMouseUpEventItems: 'storageData.settings.input.pointerButtons.button3.onMouseUpEventItems',
+      pointerButton4onMouseUpEvent: 'storageData.settings.input.pointerButtons.button4.onMouseUpEvent',
+      pointerButton4onMouseUpEventItems: 'storageData.settings.input.pointerButtons.button4.onMouseUpEventItems',
       thumbnailStorageLimit: 'storageData.settings.thumbnailStorageLimit',
       driveCardProgressType: 'storageData.settings.driveCard.progressType',
       driveCardShowProgress: 'storageData.settings.driveCard.showProgress',

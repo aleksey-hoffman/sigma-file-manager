@@ -442,6 +442,42 @@ export default new Vuex.Store({
           storeDirItemOpenDate: false,
         },
         UIZoomLevel: 1,
+        input: {
+          pointerButtons: {
+            button3: {
+              onMouseUpEvent: {
+                title: 'Open previous page in history',
+                action: 'default'
+              },
+              onMouseUpEventItems: [
+                {
+                  title: 'Open previous page in history',
+                  action: 'default'
+                },
+                {
+                  title: 'Navigator: open previous directory in history',
+                  action: 'LOAD_PREVIOUS_HISTORY_PATH'
+                }
+              ]
+            },
+            button4: {
+              onMouseUpEvent: {
+                title: 'Open next page in history',
+                action: 'default'
+              },
+              onMouseUpEventItems: [
+                {
+                  title: 'Open next page in history',
+                  action: 'default'
+                },
+                {
+                  title: 'Navigator: open next directory in history',
+                  action: 'LOAD_NEXT_HISTORY_PATH'
+                }
+              ]
+            }
+          }
+        },
         navigatorLayout: 'list',
         navigatorLayoutItemHeight: {
           directory: 48,
