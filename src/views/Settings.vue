@@ -679,10 +679,11 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     <div class="mb-5">
                       <v-text-field
                         v-show="!navigatorOpenDirItemWithSingleClick"
-                        v-model="openDirItemSecondClickDelay"
+                        v-model="validatedOpenDirItemSecondClickDelay"
                         label="Double-click delay (ms)"
+                        :error="!checkedOpenDirItemSecondClickDelay.isValid"
+                        :hint="checkedOpenDirItemSecondClickDelay.error"
                         style="max-width: 200px"
-                        validate-on-blur
                       ></v-text-field>
                     </div>
                   </div>
@@ -1193,7 +1194,6 @@ export default {
       windowCloseButtonAction: 'storageData.settings.windowCloseButtonAction',
       themeType: 'storageData.settings.theme.type',
       navigatorLayout: 'storageData.settings.navigatorLayout',
-      openDirItemSecondClickDelay: 'storageData.settings.navigator.openDirItemSecondClickDelay',
       navigatorOpenDirItemWithSingleClick: 'storageData.settings.navigator.openDirItemWithSingleClick',
       dirItemHoverEffect: 'storageData.settings.dirItemHoverEffect',
       pointerButton3onMouseUpEvent: 'storageData.settings.input.pointerButtons.button3.onMouseUpEvent',
@@ -1274,8 +1274,24 @@ export default {
       toolbarColorItems: 'storageData.settings.theme.toolbarColorItems',
       dashboardTimeline: 'storageData.settings.dashboard.tabs.timeline.show',
       scanInProgress: 'globalSearch.scanInProgress',
-      homeBannerValue: 'storageData.settings.homeBanner.value'
+      homeBannerValue: 'storageData.settings.homeBanner.value',
+      openDirItemSecondClickDelay: 'storageData.settings.navigator.openDirItemSecondClickDelay',
     }),
+    validatedOpenDirItemSecondClickDelay: {
+      get () {
+        return this.openDirItemSecondClickDelay
+      },
+      set (value) {
+        value = parseInt(value) || 0
+        this.openDirItemSecondClickDelay = value
+        if (this.checkedOpenDirItemSecondClickDelay.isValid) {
+          this.$store.dispatch('SET', {
+            key: 'storageData.settings.navigator.openDirItemSecondClickDelay',
+            value
+          })
+        }
+      }
+    },
     headerButtons () {
       return [
         {
@@ -1358,7 +1374,29 @@ export default {
         complexity: this.globalSearchScanDepth * 2.5,
         compressionMultiplier: 1
       })
-    }
+    },
+    checkedOpenDirItemSecondClickDelay () {
+      const value = parseInt(this.openDirItemSecondClickDelay)
+      const minValue = 200
+      const maxValue = 1000
+      const validValueRange = minValue <= value && value <= maxValue
+      if (!validValueRange) {
+        return {
+          isValid: false,
+          error: 'The value should be in range 200 - 1000 (ms)',
+          minValue,
+          maxValue
+        }
+      }
+      else {
+        return {
+          isValid: true,
+          error: '',
+          minValue,
+          maxValue
+        }
+      }
+    },
   },
   methods: {
     getSearchTimeEstimates (params) {
