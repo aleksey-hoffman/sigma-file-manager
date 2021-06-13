@@ -429,6 +429,30 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 class="content-area__content-card__section"
                 :header="{
                   icon: {
+                    name: 'mdi-animation-play-outline'
+                  },
+                  title: 'Animations'
+                }"
+              >
+                <template v-slot:content>
+                  <div class="text--sub-title-1 mt-2">
+                    Home page animations
+                  </div>
+
+                  <v-switch
+                    class="mt-0 pt-0"
+                    v-model="animationsOnRouteChangeMediaBannerIn"
+                    label="Home banner animation"
+                    hint="Setting will apply on the next page change"
+                    persistent-hint
+                  ></v-switch>
+                </template>
+              </section-settings>
+
+              <section-settings
+                class="content-area__content-card__section"
+                :header="{
+                  icon: {
                     name: 'mdi-image-outline'
                   },
                   title: 'UI elements'
@@ -1197,6 +1221,7 @@ export default {
       navigatorLayout: 'storageData.settings.navigatorLayout',
       navigatorOpenDirItemWithSingleClick: 'storageData.settings.navigator.openDirItemWithSingleClick',
       dirItemHoverEffect: 'storageData.settings.dirItemHoverEffect',
+      animationsOnRouteChangeMediaBannerIn: 'storageData.settings.animations.onRouteChangeMediaBannerIn',
       pointerButton3onMouseUpEvent: 'storageData.settings.input.pointerButtons.button3.onMouseUpEvent',
       pointerButton3onMouseUpEventItems: 'storageData.settings.input.pointerButtons.button3.onMouseUpEventItems',
       pointerButton4onMouseUpEvent: 'storageData.settings.input.pointerButtons.button4.onMouseUpEvent',

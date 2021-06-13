@@ -442,6 +442,9 @@ export default new Vuex.Store({
           storeDirItemOpenDate: true,
         },
         UIZoomLevel: 1,
+        animations: {
+          onRouteChangeMediaBannerIn: true
+        },
         input: {
           pointerButtons: {
             button3: {
