@@ -1263,6 +1263,14 @@ export default {
       else if (!value) {
         this.$store.dispatch('STOP_APP_UPDATER')
       }
+    },
+    storeDirItemOpenEvent (newValue) {
+      if (!newValue) {
+        this.$store.dispatch('SET', {
+          key: 'storageData.stats.dirItemsTimeline',
+          value: []
+        })  
+      }
     }
   },
   computed: {
