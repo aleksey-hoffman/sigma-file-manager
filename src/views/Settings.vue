@@ -1094,7 +1094,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               >
                 <template v-slot:description>
                   If enabled, the app will store some event data of your interactions with
-                  directories / files.
+                  directories / files, for example, when and how many times they were opened.
                   <br>The statistics data is stored in the file called "stats.json"
                   located in the app directory.
                   <br>This data is needed for features like "timeline" to work.
@@ -1115,23 +1115,24 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   <div class="text--sub-title-1">
                     Timeline
                   </div>
+
                   <v-switch
                     v-model="storeDirItemOpenEvent"
-                    label="Store directory item open event"
+                    label="Store the list of opened directory items"
                     hide-details
                   ></v-switch>
 
                   <v-switch
                     v-if="storeDirItemOpenEvent"
                     v-model="storeDirItemOpenCount"
-                    label="Store directory item open count"
+                    label="Store the amount of times a directory item was opened"
                     hide-details
                   ></v-switch>
 
                   <v-switch
                     v-if="storeDirItemOpenEvent"
                     v-model="storeDirItemOpenDate"
-                    label="Store directory item open date"
+                    label="Store the date of opening a directory item"
                     hide-details
                   ></v-switch>
                 </template>
