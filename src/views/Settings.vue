@@ -1238,12 +1238,12 @@ export default {
     }
   },
   created () {
+    this.settingsSelectedTab = this.lastOpenedSettingsTabValue
   },
   mounted () {
     this.$store.dispatch('ROUTE_MOUNTED_HOOK_CALLBACK', {
       route: 'settings'
     })
-    this.settingsSelectedTab = this.lastOpenedSettingsTabValue
     this.fetchGithubProjectData()
   },
   watch: {
