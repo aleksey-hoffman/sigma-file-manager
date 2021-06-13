@@ -28,6 +28,8 @@ catch (error) {}
 
 export default {
   env: process.env.NODE_ENV,
+  platform: process.platform,
+  unixHiddenFileRegex: /(^|[\/\\])\../,
   openLink (link) {
     electron.shell.openExternal(link)
   },
@@ -44,9 +46,6 @@ export default {
   },
   getLightnessContrastValue (color) {
     return colorUtils.getColorData(color).contrast.value
-  },
-  isWindows () {
-    return process.platform === 'win32';
   },
   templateToString (templateLiteralString) {
     return templateLiteralString.split('\n').map((line) => {
