@@ -252,6 +252,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 <template v-slot:activator="{ on: tooltip }">
                   <v-btn
                     class="button-1 mb-4"
+                    v-show="stats.storeDirItemOpenEvent"
                     v-on="{ ...tooltip, ...menu }"
                     v-bind="attrs"
                     small
@@ -315,7 +316,21 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           </div>
 
           <!-- no-data -->
-          <div v-show="dirItemsTimeline.length === 0">
+          <div v-show="!stats.storeDirItemOpenEvent">
+            <div>
+              This feature is disabled. 
+              <br>The app doesn't store statistics of your interactions with directories / files.
+              <br>Enable the option called <span class="inline-code--light">"Store the list of opened directory items"</span> in the "Stats" section of settings:
+            </div>
+            <v-btn
+              class="button-1 mt-4"
+              @click="$router.push('settings')"
+              small
+            >Open settings
+            </v-btn>
+          </div>
+
+          <div v-show="stats.storeDirItemOpenEvent && dirItemsTimeline.length === 0">
             <div class="title">
               No data
             </div>
@@ -379,6 +394,7 @@ export default {
       protectedItems: 'storageData.protected.items',
       dirItemsTimeline: 'storageData.stats.dirItemsTimeline',
       dirItemsTimelineGroups: 'storageData.stats.dirItemsTimelineGroups',
+      stats: 'storageData.settings.stats',
       dashboard: 'storageData.settings.dashboard',
       filterQuery: 'filterField.view.dashboard.query',
       dashboardSelectedTab: 'storageData.settings.dashboard.selectedTab'
