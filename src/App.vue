@@ -16,14 +16,9 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
     <!-- app-content-area -->
     <v-main class="app-content">
-      <transition
-        name="route-transition"
-        mode="out-in"
-      >
         <keep-alive :include="['home']">
           <router-view/>
         </keep-alive>
-      </transition>
     </v-main>
   </v-app>
 </template>
@@ -2727,19 +2722,6 @@ i {
 
 .fade-in-2000ms-scale-120-percent-to-initial-2000ms {
   animation: fade-in 2000ms, scale-120-percent-to-initial 2000ms;
-}
-
-.route-transition-enter-active {
-  transition: all 0.3s ease;
-}
-
-.route-transition-leave-active {
-  transition: all 0.3s ease;
-}
-
-.route-transition-enter,
-.route-transition-leave-to {
-  opacity: 0;
 }
 
 .context-menu-transition-enter-active {
