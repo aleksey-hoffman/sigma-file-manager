@@ -16,7 +16,9 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
     <!-- app-content-area -->
     <v-main class="app-content">
-        <keep-alive :include="['home']">
+      <keep-alive 
+        :include="['home', 'settings']"
+      >
           <router-view/>
         </keep-alive>
     </v-main>
