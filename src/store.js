@@ -31,6 +31,7 @@ const getSystemRulesForPaths = require('./utils/systemRules').paths
 const systemRulesForPaths = getSystemRulesForPaths()
 const ColorUtils = require('./utils/colorUtils.js')
 const appDataPaths = require('./appPaths.js')
+const supportedFormats = require('./utils/supportedFormats.js')
 
 const appPaths = {
   ...externalLinks,
@@ -437,11 +438,50 @@ export default new Vuex.Store({
         compressSearchData: true,
         windowCloseButtonAction: 'minimizeAppToTray',
         stats: {
-          storeDirItemOpenEvent: false,
-          storeDirItemOpenCount: false,
-          storeDirItemOpenDate: false,
+          storeDirItemOpenEvent: true,
+          storeDirItemOpenCount: true,
+          storeDirItemOpenDate: true,
         },
         UIZoomLevel: 1,
+        animations: {
+          onRouteChangeMediaBannerIn: true
+        },
+        input: {
+          pointerButtons: {
+            button3: {
+              onMouseUpEvent: {
+                title: 'Open previous page in history',
+                action: 'default'
+              },
+              onMouseUpEventItems: [
+                {
+                  title: 'Open previous page in history',
+                  action: 'default'
+                },
+                {
+                  title: 'Navigator: open previous directory in history',
+                  action: 'LOAD_PREVIOUS_HISTORY_PATH'
+                }
+              ]
+            },
+            button4: {
+              onMouseUpEvent: {
+                title: 'Open next page in history',
+                action: 'default'
+              },
+              onMouseUpEventItems: [
+                {
+                  title: 'Open next page in history',
+                  action: 'default'
+                },
+                {
+                  title: 'Navigator: open next directory in history',
+                  action: 'LOAD_NEXT_HISTORY_PATH'
+                }
+              ]
+            }
+          }
+        },
         navigatorLayout: 'list',
         navigatorLayoutItemHeight: {
           directory: 48,
@@ -825,7 +865,7 @@ export default new Vuex.Store({
           isValid: true,
           error: '',
           selectedFormat: 'zip',
-          formats: ['zip', '7z', 'tar'],
+          formats: supportedFormats.formats.fileType.archivePack,
           dest: {
             name: ''
           }
@@ -1331,46 +1371,6 @@ export default new Vuex.Store({
       })
       // Select specified workspace
       specifiedWorkspace.isSelected = true
-    },
-    INCREASE_UI_ZOOM (state) {
-      const currentZoomFactor = electron.webFrame.getZoomFactor()
-      // Update zoom level
-      if (currentZoomFactor < 1.5) {
-        const newZoomFactor = currentZoomFactor + 0.1
-        electron.webFrame.setZoomFactor(newZoomFactor)
-        state.storageData.settings.UIZoomLevel = newZoomFactor
-        eventHub.$emit('notification', {
-          action: 'update-by-type',
-          type: 'updateZoomLevel',
-          timeout: 2000,
-          title: `UI scale changed: ${(newZoomFactor * 100).toFixed(0)}%`
-        })
-      }
-    },
-    DECREASE_UI_ZOOM (state) {
-      const currentZoomFactor = electron.webFrame.getZoomFactor()
-      // Update zoom level
-      if (currentZoomFactor > 0.6) {
-        const newZoomFactor = currentZoomFactor - 0.1
-        electron.webFrame.setZoomFactor(newZoomFactor)
-        state.storageData.settings.UIZoomLevel = newZoomFactor
-        eventHub.$emit('notification', {
-          action: 'update-by-type',
-          type: 'updateZoomLevel',
-          timeout: 2000,
-          title: `UI scale changed: ${(newZoomFactor * 100).toFixed(0)}%`
-        })
-      }
-    },
-    RESET_UI_ZOOM (state) {
-      state.storageData.settings.UIZoomLevel = 1.0
-      electron.webFrame.setZoomFactor(1)
-      eventHub.$emit('notification', {
-        action: 'update-by-type',
-        type: 'updateZoomLevel',
-        timeout: 2000,
-        title: `UI scale changed: 100%`
-      })
     },
     DELETE_ALL_NOTES_IN_TRASH (state) {
       const notes = state.storageData.notes.items
@@ -2379,7 +2379,7 @@ export default new Vuex.Store({
       }
       // Handle action if all conditions are fulfilled
       if (allConditionsAreFulfilled) {
-        dispatch(value.action.name, value.action.props)
+        dispatch(value.action.name, value.action.options)
       }
     },
     TOGGLE_DIALOG ({ state, commit, dispatch, getters }, payload) {
@@ -2545,14 +2545,52 @@ export default new Vuex.Store({
     TOGGLE_FULLSCREEN () {
       utils.toggleFullscreen()
     },
-    INCREASE_UI_ZOOM ({ commit }) {
-      commit('INCREASE_UI_ZOOM')
+    INCREASE_UI_ZOOM (store) {
+      const currentZoomFactor = electron.webFrame.getZoomFactor()
+      if (currentZoomFactor < 1.5) {
+        const newZoomFactor = Number(parseFloat(currentZoomFactor + 0.1).toFixed(1))
+        electron.webFrame.setZoomFactor(newZoomFactor)
+        store.dispatch('SET', {
+          key: 'storageData.settings.UIZoomLevel',
+          value: newZoomFactor
+        })
+        eventHub.$emit('notification', {
+          action: 'update-by-type',
+          type: 'ui-zoom:change',
+          timeout: 2000,
+          title: `UI scale changed: ${(newZoomFactor * 100).toFixed(0)}%`
+        })
+      }
     },
-    DECREASE_UI_ZOOM ({ commit }) {
-      commit('DECREASE_UI_ZOOM')
+    DECREASE_UI_ZOOM (store) {
+      const currentZoomFactor = electron.webFrame.getZoomFactor()
+      if (currentZoomFactor > 0.6) {
+        const newZoomFactor = Number(parseFloat(currentZoomFactor - 0.1).toFixed(1))
+        electron.webFrame.setZoomFactor(newZoomFactor)
+        store.dispatch('SET', {
+          key: 'storageData.settings.UIZoomLevel',
+          value: newZoomFactor
+        })
+        eventHub.$emit('notification', {
+          action: 'update-by-type',
+          type: 'ui-zoom:change',
+          timeout: 2000,
+          title: `UI scale changed: ${(newZoomFactor * 100).toFixed(0)}%`
+        })
+      }
     },
-    RESET_UI_ZOOM ({ commit }) {
-      commit('RESET_UI_ZOOM')
+    RESET_UI_ZOOM (store) {
+      electron.webFrame.setZoomFactor(1)
+      store.dispatch('SET', {
+        key: 'storageData.settings.UIZoomLevel',
+        value: 1.0
+      })
+      eventHub.$emit('notification', {
+        action: 'update-by-type',
+        type: 'ui-zoom:change',
+        timeout: 2000,
+        title: `UI scale changed: 100%`
+      })
     },
     TOGGLE ({ commit }, key) {
       commit('TOGGLE', key)
@@ -2720,15 +2758,25 @@ export default new Vuex.Store({
       params = {
         ...{
           scrollTop: true,
-          selectCurrentDir: true
-        },
-        ...params
+          selectCurrentDir: true,
+          emitNotification: false
+        }, 
+        ...params 
       }
       if (router.history.current.name === 'navigator') {
         store.dispatch('LOAD_DIR', {
           path: store.state.navigatorView.currentDir.path,
           ...params
         })
+        if (params.emitNotification) {
+          eventHub.$emit('notification', {
+            action: 'update-by-type',
+            type: 'navigator:reload',
+            timeout: 2000,
+            title: 'Directory reloaded',
+            message: `<b>Directory:</b> ${store.state.navigatorView.currentDir.path}`
+          })
+        }
       }
     },
     async LOAD_DIR_ITEMS ({ state, commit, dispatch, getters }, path) {
@@ -2831,11 +2879,32 @@ export default new Vuex.Store({
       if (params.source === 'target-items') {
         params.source = store.state.contextMenus.dirItem.targetItemsStats.dirItemsPaths[0]
       }
+
       if (!params.dest) {
         const parsed = PATH.parse(params.source)
-        const dest = PATH.join(parsed.dir, parsed.name)
+        const dest = utils.getUniquePath(PATH.join(parsed.dir, parsed.name))
         params.dest = dest
       }
+
+      const hash = utils.getHash()
+
+      let state = {
+        isCanceled: false
+      }
+
+      let notification = {
+        progress: {
+          percent: 0,
+          fileCount: 0,
+          file: ''
+        },
+        action: 'update-by-type',
+        hash,
+        type: `archiver:extract-progress-${hash}`,
+        colorStatus: 'blue',
+        timeout: 0,
+      }
+
       const appBinExtractStream = node7z.extractFull(
         params.source,
         params.dest,
@@ -2844,30 +2913,55 @@ export default new Vuex.Store({
           $progress: true
         }
       )
-      eventHub.$emit('notification', {
-        action: 'update-by-type',
-        type: 'archiver:extract',
-        timeout: 0,
-        title: 'Archive extraction started',
-        message: params.source
-      })
+
       appBinExtractStream.on('error', (error) => {
         eventHub.$emit('notification', {
           action: 'update-by-type',
-          type: 'archiver:extract',
+          type: 'archiver:extract-error',
+          colorStatus: 'red',
           timeout: 5000,
           title: 'Error: cannot extract the archive',
           message: error
         })
       })
+
+      appBinExtractStream.on('progress', (progress) => {
+        notification.progress = progress
+        notification.title = 'Extracting archive'
+        notification.message = `
+          ${notification.progress.percent}% • 
+          ${notification.progress.fileCount} files
+          <br><b>Archive:</b> ${params.source}
+        `
+        notification.actionButtons = [
+          {
+            title: 'cancel',
+            onClick: () => {
+              appBinExtractStream._childProcess.kill()
+              state.isCanceled = true
+            }
+          }
+        ]
+        eventHub.$emit('notification', notification)
+      })
+
       appBinExtractStream.on('end', () => {
-        eventHub.$emit('notification', {
-          action: 'update-by-type',
-          type: 'archiver:extract',
-          timeout: 5000,
-          title: 'Archive was extracted',
-          message: params.source
-        })
+        notification.timeout = 5000
+        notification.actionButtons = []
+        notification.message = `
+          Done • ${notification.progress.fileCount} files
+          <br><b>Destination:</b> ${params.dest}
+        `
+        if (!state.isCanceled) {
+          notification.colorStatus = 'teal'
+          notification.title = 'Archive was extracted'
+          eventHub.$emit('notification', notification)
+        }
+        else {
+          notification.colorStatus = 'red'
+          notification.title = 'Archive extraction canceled',
+          eventHub.$emit('notification', notification)
+        }
       })
     },
     SET_NAVIGATOR_STATE (store) {
@@ -5031,6 +5125,9 @@ export default new Vuex.Store({
           action: 'update-by-type',
           type: 'update:unavailable',
           timeout: 5000,
+          colorStatus: 'blue',
+          isPinned: true,
+          removeWhenHidden: false,
           title: 'No updates available',
           message: `
             <b>Current version:</b> ${state.appVersion}
@@ -5080,7 +5177,10 @@ export default new Vuex.Store({
       eventHub.$emit('notification', {
         action: 'update-by-type',
         type: 'update:available',
-        colorStatus: 'green',
+        colorStatus: 'blue',
+        isPinned: true,
+        isUpdate: true,
+        removeWhenHidden: false,
         timeout: 0,
         title: 'App update available',
         message: `
@@ -5090,24 +5190,12 @@ export default new Vuex.Store({
         closeButton: true,
         actionButtons
       })
-
-      // Add item to notifications list
-      state.notifications.push({
-        type: 'update-available',
-        colorStatus: 'green',
-        title: 'App update available',
-        message: `
-          <b>Current version:</b> ${state.appVersion}
-          <br><b>Latest version:</b> ${latestVersion}
-        `,
-        actionButtons
-      })
     },
     HANDLE_APP_UPDATE_DOWNLOADED ({ state, commit, dispatch, getters }, payload) {
       const { latestVersion, info } = payload
       // Remove 'progress' notification
       eventHub.$emit('notification', {
-        action: 'remove',
+        action: 'hide',
         hashID: info.hashID
       })
 
@@ -5134,20 +5222,14 @@ export default new Vuex.Store({
       eventHub.$emit('notification', {
         action: 'add',
         type: 'update:downloaded',
-        colorStatus: 'green',
+        colorStatus: 'blue',
+        isPinned: true,
+        isUpdate: true,
+        removeWhenHidden: false,
         timeout: 0,
         title: `Update downloaded: v${latestVersion}`,
         message: 'Press install to close the app and update it',
         closeButton: true,
-        actionButtons
-      })
-
-      // Add item to notifications list
-      state.notifications.push({
-        type: 'update-downloaded',
-        colorStatus: 'green',
-        title: `Update downloaded: v${latestVersion}`,
-        message: 'Press install to close the app and update it',
         actionButtons
       })
 
@@ -5187,6 +5269,10 @@ export default new Vuex.Store({
         action: 'add',
         type: 'update:installed',
         icon: 'mdi-check-circle-outline',
+        colorStatus: 'blue',
+        isPinned: true,
+        isUpdate: true,
+        removeWhenHidden: false,
         timeout: 0,
         title: `Update was installed: v${state.appVersion}`,
         message: 'Check out what\'s new and what\'s changed',
@@ -5202,6 +5288,37 @@ export default new Vuex.Store({
           }
         ]
       })
+    },
+    async HIDE_NOTIFICATION (store, notification) {
+      store.dispatch('RESET_NOTIFICATION_TIMERS', notification)
+      // Call onNotificationHide callback
+      try {notification.onNotificationHide()}
+      catch (error) {}
+
+      if (notification.removeWhenHidden) {
+        store.dispatch('REMOVE_NOTIFICATION', notification)
+      }
+      else {
+        notification.isHidden = true
+      }
+    },
+    REMOVE_NOTIFICATION (store, notification) {
+      if (['update-by-hash', 'add', 'hide'].includes(notification.action)) {
+        const notificationIndex = store.state.notifications.findIndex(item => item.hashID === notification.hashID)
+        store.state.notifications.splice(notificationIndex, 1)
+      }
+      else if (notification.action === 'update-by-type') {
+        const notificationIndex = store.state.notifications.findIndex(item => item.type === notification.type)
+        store.state.notifications.splice(notificationIndex, 1)
+      }
+    },
+    async RESET_NOTIFICATION_TIMERS (store, notification) {
+      try {
+        notification.timeoutData.ongoingTimeout.clear()
+        clearInterval(notification.timeoutData.secondsCounterInterval)
+        clearInterval(notification.timeoutData.percentsCounterInterval)
+      }
+      catch (error) {}
     },
     SCROLL_TOP_CONTENT_AREA (store, params) {
       const defaultParams = {

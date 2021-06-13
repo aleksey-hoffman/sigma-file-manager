@@ -508,6 +508,30 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 class="content-area__content-card__section"
                 :header="{
                   icon: {
+                    name: 'mdi-animation-play-outline'
+                  },
+                  title: 'Animations'
+                }"
+              >
+                <template v-slot:content>
+                  <div class="text--sub-title-1 mt-2">
+                    Home page animations
+                  </div>
+
+                  <v-switch
+                    class="mt-0 pt-0"
+                    v-model="animationsOnRouteChangeMediaBannerIn"
+                    label="Home banner animation"
+                    hint="Setting will apply on the next page change"
+                    persistent-hint
+                  ></v-switch>
+                </template>
+              </section-settings>
+
+              <section-settings
+                class="content-area__content-card__section"
+                :header="{
+                  icon: {
                     name: 'mdi-image-outline'
                   },
                   title: 'UI elements'
@@ -725,6 +749,120 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               </section-settings>
             </v-tab-item>
 
+            <!-- tab::input -->
+            <v-tab-item transition="fade-in" reverse-transition="fade-in">
+              <section-settings
+                class="content-area__content-card__section"
+                :header="{
+                  icon: {
+                    name: 'mdi-folder-outline'
+                  },
+                  title: 'Navigator'
+                }"
+              >
+                <template v-slot:content>
+                  <div>
+                    <div class="text--sub-title-1 mt-2">
+                      Directory items
+                    </div>
+                    <div class="mb-5">
+                      <v-switch
+                        class="my-0"
+                        v-model="navigatorOpenDirItemWithSingleClick"
+                        label="Open with single click"
+                        hide-details
+                      ></v-switch>
+                      <div 
+                        class="mt-3"
+                        v-show="navigatorOpenDirItemWithSingleClick"
+                      >
+                        Hold <span class="inline-code--light">Alt</span> button to select the item without opening it
+                      </div>
+                    </div>
+                    <div class="mb-5">
+                      <v-text-field
+                        v-show="!navigatorOpenDirItemWithSingleClick"
+                        v-model="validatedOpenDirItemSecondClickDelay"
+                        label="Double-click delay (ms)"
+                        :error="!checkedOpenDirItemSecondClickDelay.isValid"
+                        :hint="checkedOpenDirItemSecondClickDelay.error"
+                        style="max-width: 200px"
+                      ></v-text-field>
+                    </div>
+                  </div>
+                </template>
+              </section-settings>
+
+              <section-settings
+                class="content-area__content-card__section"
+                :header="{
+                  icon: {
+                    name: 'mdi-form-textbox'
+                  },
+                  title: 'Input elements'
+                }"
+              >
+                <template v-slot:content>
+                  <div>
+                    <div class="text--sub-title-1 mt-2">
+                      Filter options
+                    </div>
+                    <v-switch
+                      class="my-0"
+                      v-model="focusFilterOnDirectoryChange"
+                      label="Focus filter field automatically when directory changes"
+                      hide-details
+                    ></v-switch>
+
+                    <div class="text--sub-title-1 mt-2">
+                      Helpers
+                    </div>
+                    <v-switch
+                      class="my-0"
+                      v-model="spellcheck"
+                      label="Spellcheck"
+                      hide-details
+                    ></v-switch>
+                  </div>
+                </template>
+              </section-settings>
+
+              <section-settings
+                class="content-area__content-card__section"
+                :header="{
+                  icon: {
+                    name: 'mdi-mouse'
+                  },
+                  title: 'Pointer buttons'
+                }"
+              >
+                <template v-slot:content>
+                  <div class="text--sub-title-1 mt-2">
+                    Button actions
+                  </div>
+
+                  <v-select
+                    v-model="pointerButton3onMouseUpEvent"
+                    :items="pointerButton3onMouseUpEventItems"
+                    return-object
+                    item-text="title"
+                    label="Pointer button 3: up event"
+                    style="max-width: 400px"
+                  ></v-select>
+                  
+                  <v-select
+                    v-model="pointerButton4onMouseUpEvent"
+                    :items="pointerButton4onMouseUpEventItems"
+                    return-object
+                    item-text="title"
+                    label="Pointer button 4: up event"
+                    style="max-width: 400px"
+                  ></v-select>
+                </template>
+              </section-settings>
+            </v-tab-item>
+
+            <!-- tab::search-->
             <v-tab-item transition="fade-in" reverse-transition="fade-in">
               <section-settings
                 class="content-area__content-card__section"
@@ -1059,7 +1197,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               >
                 <template v-slot:description>
                   If enabled, the app will store some event data of your interactions with
-                  directories / files.
+                  directories / files, for example, when and how many times they were opened.
                   <br>The statistics data is stored in the file called "stats.json"
                   located in the app directory.
                   <br>This data is needed for features like "timeline" to work.
@@ -1080,23 +1218,24 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   <div class="text--sub-title-1">
                     Timeline
                   </div>
+
                   <v-switch
                     v-model="storeDirItemOpenEvent"
-                    label="Store directory item open event"
+                    label="Store the list of opened directory items"
                     hide-details
                   ></v-switch>
 
                   <v-switch
                     v-if="storeDirItemOpenEvent"
                     v-model="storeDirItemOpenCount"
-                    label="Store directory item open count"
+                    label="Store the amount of times a directory item was opened"
                     hide-details
                   ></v-switch>
 
                   <v-switch
                     v-if="storeDirItemOpenEvent"
                     v-model="storeDirItemOpenDate"
-                    label="Store directory item open date"
+                    label="Store the date of opening a directory item"
                     hide-details
                   ></v-switch>
                 </template>
@@ -1125,6 +1264,7 @@ export default {
       settingsTabs: [
         { text: 'General' },
         { text: 'UI appearance' },
+        { text: 'Input' },
         { text: 'Search' },
         { text: 'Data & storage' },
         { text: 'Stats' }
@@ -1159,9 +1299,13 @@ export default {
       themeType: 'storageData.settings.theme.type',
       navigatorLayout: 'storageData.settings.navigatorLayout',
       navigatorShowHiddenItems: 'storageData.settings.navigator.navigatorShowHiddenItems',
-      openDirItemSecondClickDelay: 'storageData.settings.navigator.openDirItemSecondClickDelay',
       navigatorOpenDirItemWithSingleClick: 'storageData.settings.navigator.openDirItemWithSingleClick',
       dirItemHoverEffect: 'storageData.settings.dirItemHoverEffect',
+      animationsOnRouteChangeMediaBannerIn: 'storageData.settings.animations.onRouteChangeMediaBannerIn',
+      pointerButton3onMouseUpEvent: 'storageData.settings.input.pointerButtons.button3.onMouseUpEvent',
+      pointerButton3onMouseUpEventItems: 'storageData.settings.input.pointerButtons.button3.onMouseUpEventItems',
+      pointerButton4onMouseUpEvent: 'storageData.settings.input.pointerButtons.button4.onMouseUpEvent',
+      pointerButton4onMouseUpEventItems: 'storageData.settings.input.pointerButtons.button4.onMouseUpEventItems',
       thumbnailStorageLimit: 'storageData.settings.thumbnailStorageLimit',
       driveCardProgressType: 'storageData.settings.driveCard.progressType',
       driveCardShowProgress: 'storageData.settings.driveCard.showProgress',
@@ -1177,6 +1321,7 @@ export default {
       spellcheck: 'storageData.settings.spellcheck',
       globalSearchDisallowedPathsItems: 'storageData.settings.globalSearch.disallowedPathsItems',
       appPropertiesOpenAtLogin: 'storageData.settings.appProperties.openAtLogin',
+      homeBannerValue: 'storageData.settings.homeBanner.value',
     }
     const objects = {}
     for (const [modelKey, modelValue] of Object.entries(models)) {
@@ -1198,12 +1343,12 @@ export default {
     }
   },
   created () {
+    this.settingsSelectedTab = this.lastOpenedSettingsTabValue
   },
   mounted () {
     this.$store.dispatch('ROUTE_MOUNTED_HOOK_CALLBACK', {
       route: 'settings'
     })
-    this.settingsSelectedTab = this.lastOpenedSettingsTabValue
     this.fetchGithubProjectData()
   },
   watch: {
@@ -1223,6 +1368,14 @@ export default {
       else if (!value) {
         this.$store.dispatch('STOP_APP_UPDATER')
       }
+    },
+    storeDirItemOpenEvent (newValue) {
+      if (!newValue) {
+        this.$store.dispatch('SET', {
+          key: 'storageData.stats.dirItemsTimeline',
+          value: []
+        })  
+      }
     }
   },
   computed: {
@@ -1236,8 +1389,23 @@ export default {
       toolbarColorItems: 'storageData.settings.theme.toolbarColorItems',
       dashboardTimeline: 'storageData.settings.dashboard.tabs.timeline.show',
       scanInProgress: 'globalSearch.scanInProgress',
-      homeBannerValue: 'storageData.settings.homeBanner.value'
+      openDirItemSecondClickDelay: 'storageData.settings.navigator.openDirItemSecondClickDelay',
     }),
+    validatedOpenDirItemSecondClickDelay: {
+      get () {
+        return this.openDirItemSecondClickDelay
+      },
+      set (value) {
+        value = parseInt(value) || 0
+        this.openDirItemSecondClickDelay = value
+        if (this.checkedOpenDirItemSecondClickDelay.isValid) {
+          this.$store.dispatch('SET', {
+            key: 'storageData.settings.navigator.openDirItemSecondClickDelay',
+            value
+          })
+        }
+      }
+    },
     headerButtons () {
       return [
         {
@@ -1265,19 +1433,19 @@ export default {
           title: this.$localize.get('tooltip_button_ui_zoom_decrease_title'),
           shortcut: this.shortcuts.zoomDecrease.shortcut,
           icon: 'mdi-minus',
-          onClick: () => this.$store.commit('DECREASE_UI_ZOOM')
+          onClick: () => this.$store.dispatch('DECREASE_UI_ZOOM')
         },
         {
           title: this.$localize.get('tooltip_button_ui_zoom_increase_title'),
           shortcut: this.shortcuts.zoomIncrease.shortcut,
           icon: 'mdi-plus',
-          onClick: () => this.$store.commit('INCREASE_UI_ZOOM')
+          onClick: () => this.$store.dispatch('INCREASE_UI_ZOOM')
         },
         {
           title: this.$localize.get('tooltip_button_ui_zoom_reset_title'),
           shortcut: this.shortcuts.zoomReset.shortcut,
           buttonText: this.$localize.get('settings_ui_zoom_button_reset'),
-          onClick: () => this.$store.commit('RESET_UI_ZOOM')
+          onClick: () => this.$store.dispatch('RESET_UI_ZOOM')
         },
         {
           title: this.$localize.get('tooltip_button_full_screen_title'),
@@ -1320,7 +1488,29 @@ export default {
         complexity: this.globalSearchScanDepth * 2.5,
         compressionMultiplier: 1
       })
-    }
+    },
+    checkedOpenDirItemSecondClickDelay () {
+      const value = parseInt(this.openDirItemSecondClickDelay)
+      const minValue = 200
+      const maxValue = 1000
+      const validValueRange = minValue <= value && value <= maxValue
+      if (!validValueRange) {
+        return {
+          isValid: false,
+          error: 'The value should be in range 200 - 1000 (ms)',
+          minValue,
+          maxValue
+        }
+      }
+      else {
+        return {
+          isValid: true,
+          error: '',
+          minValue,
+          maxValue
+        }
+      }
+    },
   },
   methods: {
     getSearchTimeEstimates (params) {

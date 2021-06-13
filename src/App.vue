@@ -16,14 +16,11 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
     <!-- app-content-area -->
     <v-main class="app-content">
-      <transition
-        name="route-transition"
-        mode="out-in"
+      <keep-alive 
+        :include="['home', 'settings']"
       >
-        <keep-alive :include="['home']">
-          <router-view/>
-        </keep-alive>
-      </transition>
+        <router-view/>
+      </keep-alive>
     </v-main>
   </v-app>
 </template>
@@ -64,7 +61,10 @@ export default {
       this.contextMenus.dirItem.value = false
       this.$store.dispatch('TERMINATE_ALL_FETCH_DIR_SIZE')
       if (to.name === 'home') {
-        this.animateHomeBanner({ delay: true })
+        this.animateHomeBannerIn()
+      }
+      if (from.name === 'home') {
+        this.animateHomeBannerOut()
       }
     },
     drives (value) {
@@ -162,6 +162,9 @@ export default {
       UIZoomLevel: 'storageData.settings.UIZoomLevel',
       thumbnailStorageLimit: 'storageData.settings.thumbnailStorageLimit',
       focusMainWindowOnDriveConnected: 'storageData.settings.focusMainWindowOnDriveConnected',
+      pointerButton3: 'storageData.settings.input.pointerButtons.button3',
+      pointerButton4: 'storageData.settings.input.pointerButtons.button4',
+      animations: 'storageData.settings.animations',
       timeSinceLoadDirItems: 'navigatorView.timeSinceLoadDirItems',
       history: 'navigatorView.history',
       globalSearchScanInProgress: 'globalSearch.scanInProgress',
@@ -308,6 +311,7 @@ export default {
       this.$store.dispatch('CHECK_IF_UPDATE_INSTALLED')
     },
     bindKeyEvents () {
+      this.bindMouseKeyEvents()
       this.bindGeneralKeyEvents()
       this.bindGeneralMousetrapEvents()
     },
@@ -1294,7 +1298,7 @@ export default {
             fill: 'forwards'
           }
         )
-        this.animateHomeBanner()
+        this.animateHomeBannerIn()
       }
     },
     removeLoadingScreen () {
@@ -1310,35 +1314,32 @@ export default {
         }, fadeOutTimeout)
       }
     },
-    animateHomeBanner (options = {}) {
-      setTimeout(() => {
-        animate()
-      }, options.delay ? 400 : 0)
-
-      function animate () {
-        try {
-          const homeBannerImgNode = document.querySelector('.media-banner img')
-          const homeBannerVideoNode = document.querySelector('.media-banner video')
-          let targetNode
-          if (homeBannerImgNode) {
-            targetNode = homeBannerImgNode
-          }
-          else if (homeBannerVideoNode) {
-            targetNode = homeBannerVideoNode
-          }
-          targetNode.animate(
-            [
-              { transform: 'scale(1.1)' },
-              { transform: 'scale(1)' }
-            ],
-            {
-              easing: 'cubic-bezier(.07,1.04,.74,1)',
-              duration: 2000,
-              fill: 'forwards'
-            }
-          )
+    animateHomeBanner (params) {
+      try {
+        const homeBannerImgNode = document.querySelector('.media-banner img')
+        const homeBannerVideoNode = document.querySelector('.media-banner video')
+        let targetNode
+        if (homeBannerImgNode) {
+          targetNode = homeBannerImgNode
         }
-        catch (error) {}
+        else if (homeBannerVideoNode) {
+          targetNode = homeBannerVideoNode
+        }
+        targetNode.style.transform = params.transform
+      }
+      catch (error) {}
+    },
+    animateHomeBannerIn () {
+      this.$nextTick(() => {
+        this.animateHomeBanner({transform: 'scale(1)'})
+      })
+    },
+    animateHomeBannerOut () {
+      if (this.animations.onRouteChangeMediaBannerIn) {
+        this.animateHomeBanner({transform: 'scale(1.2)'})
+      }
+      else {
+        this.animateHomeBanner({transform: 'scale(1)'})
       }
     },
     initGlobalShortcuts () {
@@ -1456,6 +1457,23 @@ export default {
         throw Error(error)
       }
     },
+    bindMouseKeyEvents () {
+      window.addEventListener('mouseup', this.mouseupHandler)
+    },
+    mouseupHandler (mouseupEvent) {
+      if (mouseupEvent.button === 3) {
+        if (this.pointerButton3.onMouseUpEvent.action !== 'default') {
+          mouseupEvent.preventDefault()
+          this.$store.dispatch(this.pointerButton3.onMouseUpEvent.action)
+        }
+      }
+      else if (mouseupEvent.button === 4) {
+        if (this.pointerButton4.onMouseUpEvent.action !== 'default') {
+          mouseupEvent.preventDefault()
+          this.$store.dispatch(this.pointerButton4.onMouseUpEvent.action)
+        }
+      }
+    },
     bindGeneralKeyEvents () {
       document.addEventListener('keydown', (event) => {
         this.setKeyboardInputState(event)
@@ -1505,7 +1523,7 @@ export default {
               .map((_, index) => `${shortcutStaticPart}${index + 1}`)
             mousetrap.bind(routeShortcuts, (event) => {
               const index = parseInt(event.code.replace('Digit', ''))
-              value.action.props = this.navigationPanel.items[index - 1]
+              value.action.options = this.navigationPanel.items[index - 1]
               this.$store.dispatch('SHORTCUT_ACTION', { event, value })
             }, 'keydown')
           }
@@ -2707,19 +2725,6 @@ i {
 
 .fade-in-2000ms-scale-120-percent-to-initial-2000ms {
   animation: fade-in 2000ms, scale-120-percent-to-initial 2000ms;
-}
-
-.route-transition-enter-active {
-  transition: all 0.3s ease;
-}
-
-.route-transition-leave-active {
-  transition: all 0.3s ease;
-}
-
-.route-transition-enter,
-.route-transition-leave-to {
-  opacity: 0;
 }
 
 .context-menu-transition-enter-active {

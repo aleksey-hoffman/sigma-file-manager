@@ -445,14 +445,13 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           </div>
           <div class="mt-2 mb-4 settings-card__description">
             Global shortcuts will trigger actions even when the app is not focused.
-            If another open app is using the same global shortcut, it might not trigger, in this case try changing the shortcut.
           </div>
           <div
             v-for="(shortcut, index) in globalShortcutsList"
             class="shortcut-list__item"
             :key="'shortcut-' + index"
           >
-            <v-icon :size="shortcut.size" class="">
+            <v-icon :size="shortcut.iconSize || '22px'" class="">
               {{shortcut.icon}}
             </v-icon>
             <div class="shortcut-list__item-description">
@@ -509,7 +508,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 class="shortcut-list__item"
                 v-if="shortcutFiltered(shortcut.shortcut)"
               >
-                <v-icon :size="shortcut.size">
+                <v-icon :size="shortcut.iconSize || '22px'">
                   {{shortcut.icon}}
                 </v-icon>
                 <div class="shortcut-list__item-description">

@@ -30,7 +30,6 @@ const userDataRoot = PATH.parse(userData).root.replace(/\\/g, '/')
 const resources = process.env.NODE_ENV === 'production'
   ? `${process.resourcesPath}/app.asar/resources`
   : PATH.join(__static, 'resources')
-const bin = PATH.join(resources, process.platform, 'bin')
 const appStorage = PATH.join(userData, 'app storage')
 const appStorageMedia = PATH.join(appStorage, 'media')
 const homeBannerMedia = PATH.join(resources, 'media', 'home banner')
@@ -39,17 +38,20 @@ const appStorageHomeBannerMedia = PATH.join(appStorage, 'media', 'home banner')
 const appStorageNotesMedia = PATH.join(appStorage, 'media', 'notes')
 const appStorageGlobalSearchData = PATH.join(appStorage, 'search data')
 const appStorageNavigatorThumbs = PATH.join(appStorage, 'media', 'thumbnails')
+const bin = process.env.NODE_ENV === 'production'
+  ? PATH.join(appStorage, 'bin')
+  : PATH.join(resources, process.platform, 'bin')
 
-const FFMPEG = PATH.join(appStorageBin, 'ffmpeg', 'bin')
-const youtubeDl = PATH.join(appStorageBin, 'youtube-dl')
-const sevenZip = PATH.join(appStorageBin, '7-zip')
+const FFMPEG = PATH.join(bin, 'ffmpeg', 'bin')
+const youtubeDl = PATH.join(bin, 'youtube-dl')
+const sevenZip = PATH.join(bin, '7-zip')
 
 let systemDirs
 let bin7Zip
 let binYoutubeDl
 
 if (process.platform === 'win32') {
-  bin7Zip = PATH.join(sevenZip, '7za.exe')
+  bin7Zip = PATH.join(sevenZip, '7z.exe')
   binYoutubeDl = PATH.join(youtubeDl, 'youtube-dl.exe')
   systemDirs = [
     { name: 'Home directory', icon: 'mdi-folder-account-outline', path: home },

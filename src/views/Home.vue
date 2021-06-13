@@ -321,10 +321,8 @@ export default {
     object-fit: cover;
     pointer-events: none;
     z-index: 0;
-    transition: object-position 2s ease;
-    /* box-shadow: 0px 2px 32px rgba(68, 73, 43, 0.5)  */
-    /* mask-image: linear-gradient(to top, transparent 0%, black 40%); */
-
+    transition: object-position 2s ease, transform 3s cubic-bezier(0.1, 1, 0.35, 1);
+    transform: scale(1.2);
   }
 
 .media-banner__title {
