@@ -28,6 +28,8 @@ catch (error) {}
 
 export default {
   env: process.env.NODE_ENV,
+  platform: process.platform,
+  unixHiddenFileRegex: /(^|[\/\\])\../,
   openLink (link) {
     electron.shell.openExternal(link)
   },

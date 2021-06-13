@@ -3,6 +3,7 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 import fsExtra from 'fs-extra'
+import fsWin from 'fswin'
 import utils from './utils'
 import * as fsManager from '../utils/fsManager'
 const PATH = require('path')
@@ -295,6 +296,7 @@ async function fetchDirItemData (path, nameBase, itemHeight) {
     dirItemData.stat = await getStat(path)
     if (isObjectEmpty(dirItemData.stat)) {throw Error('inaccessible item')}
     // console.log(dirItemData.path, isObjectEmpty(dirItemData.stat))
+    dirItemData.isHidden = utils.platform === 'win32' ? fsWin.getAttributesSync(dirItemData.path).IS_HIDDEN : utils.unixHiddenFileRegex.test(dirItemData.path)
     dirItemData.isInaccessible = isObjectEmpty(dirItemData.stat)
     dirItemData.isWin32Shortcut = await isFile(dirItemData, dirItemData.stat) && nameBase.endsWith('.lnk')
     dirItemData.win32ShortcutData = await getWin32ShortcutData(dirItemData, path)

@@ -79,6 +79,7 @@ export default {
       dirItems: 'navigatorView.dirItems',
       navigatorRouteIsLoaded: 'navigatorRouteIsLoaded',
       navigatorViewInfoPanel: 'storageData.settings.infoPanels.navigatorView',
+      navigatorShowHiddenItems: 'storageData.settings.navigator.navigatorShowHiddenItems',
       globalSearchWidget: 'globalSearch.widget',
       filterQuery: 'filterField.view.navigator.query',
       filterOptions: 'filterField.view.navigator.options',
@@ -116,7 +117,7 @@ export default {
         // to avoid item card clipping when it's hovered (scaled).
         containerWidth = this.$utils.getNodeContentWidth(container.firstChild)
       }
-      
+
       // TODO: Refactor: move all properties to data object
       data.gridColumnAmount = this.getGridColumnAmount({containerWidth, itemMinWidth})
 
@@ -352,6 +353,7 @@ export default {
       return itemFilter({
         filterQuery: this.filterQuery,
         items,
+        filterHiddenItems: !this.navigatorShowHiddenItems,
         filterProperties: this.$store.state.filterField.view[this.$route.name].filterProperties,
         filterQueryOptions: this.$store.state.filterField.view[this.$route.name].options
       })
