@@ -2764,13 +2764,15 @@ export default new Vuex.Store({
           path: store.state.navigatorView.currentDir.path,
           ...params
         })
-        eventHub.$emit('notification', {
-          action: 'update-by-type',
-          type: 'navigator:reload',
-          timeout: 2000,
-          title: 'Directory reloaded',
-          message: `<b>Directory:</b> ${store.state.navigatorView.currentDir.path}`
-        })
+        if (params.emitNotification) {
+          eventHub.$emit('notification', {
+            action: 'update-by-type',
+            type: 'navigator:reload',
+            timeout: 2000,
+            title: 'Directory reloaded',
+            message: `<b>Directory:</b> ${store.state.navigatorView.currentDir.path}`
+          })
+        }
       }
     },
     async LOAD_DIR_ITEMS ({ state, commit, dispatch, getters }, path) {
