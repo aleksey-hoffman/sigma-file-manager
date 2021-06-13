@@ -2754,7 +2754,8 @@ export default new Vuex.Store({
       params = { 
         ...{
           scrollTop: true,
-          selectCurrentDir: true
+          selectCurrentDir: true,
+          emitNotification: false
         }, 
         ...params 
       }
@@ -2762,6 +2763,13 @@ export default new Vuex.Store({
         store.dispatch('LOAD_DIR', {
           path: store.state.navigatorView.currentDir.path,
           ...params
+        })
+        eventHub.$emit('notification', {
+          action: 'update-by-type',
+          type: 'navigator:reload',
+          timeout: 2000,
+          title: 'Directory reloaded',
+          message: `<b>Directory:</b> ${store.state.navigatorView.currentDir.path}`
         })
       }
     },
