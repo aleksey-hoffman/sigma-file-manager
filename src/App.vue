@@ -1525,7 +1525,7 @@ export default {
               .map((_, index) => `${shortcutStaticPart}${index + 1}`)
             mousetrap.bind(routeShortcuts, (event) => {
               const index = parseInt(event.code.replace('Digit', ''))
-              value.action.props = this.navigationPanel.items[index - 1]
+              value.action.options = this.navigationPanel.items[index - 1]
               this.$store.dispatch('SHORTCUT_ACTION', { event, value })
             }, 'keydown')
           }
