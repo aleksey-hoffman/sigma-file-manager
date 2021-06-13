@@ -30,9 +30,6 @@ const userDataRoot = PATH.parse(userData).root.replace(/\\/g, '/')
 const resources = process.env.NODE_ENV === 'production'
   ? `${process.resourcesPath}/app.asar/resources`
   : PATH.join(__static, 'resources')
-const bin = process.env.NODE_ENV === 'production'
-  ? PATH.join(appStorage, 'bin')
-  : PATH.join(resources, process.platform, 'bin')
 const appStorage = PATH.join(userData, 'app storage')
 const appStorageMedia = PATH.join(appStorage, 'media')
 const homeBannerMedia = PATH.join(resources, 'media', 'home banner')
@@ -41,6 +38,9 @@ const appStorageHomeBannerMedia = PATH.join(appStorage, 'media', 'home banner')
 const appStorageNotesMedia = PATH.join(appStorage, 'media', 'notes')
 const appStorageGlobalSearchData = PATH.join(appStorage, 'search data')
 const appStorageNavigatorThumbs = PATH.join(appStorage, 'media', 'thumbnails')
+const bin = process.env.NODE_ENV === 'production'
+  ? PATH.join(appStorage, 'bin')
+  : PATH.join(resources, process.platform, 'bin')
 
 const FFMPEG = PATH.join(bin, 'ffmpeg', 'bin')
 const youtubeDl = PATH.join(bin, 'youtube-dl')
