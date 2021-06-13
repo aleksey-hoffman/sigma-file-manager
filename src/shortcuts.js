@@ -16,9 +16,8 @@ export default {
     conditions: {},
     routes: ['all'],
     icon: 'mdi-application',
-    action: { name: 'toggleApp' },
+    action: {name: 'toggleApp'},
     shortcut: 'Ctrl + Shift + Space',
-    size: '22px',
     description: 'Open / close the app window'
   },
   newNote: {
@@ -27,9 +26,8 @@ export default {
     conditions: {},
     routes: ['all'],
     icon: 'mdi-square-edit-outline',
-    action: { name: 'newNote' },
+    action: {name: 'newNote'},
     shortcut: 'Alt + Shift + N',
-    size: '22px',
     description: 'Open the app window & create a new note'
   },
   shortcutsDialog: {
@@ -42,12 +40,11 @@ export default {
     icon: 'mdi-pound',
     action: {
       name: 'TOGGLE_DIALOG',
-      props: {
+      options: {
         dialogName: 'shortcutsDialog'
       }
     },
     shortcut: 'Backtick',
-    size: '22px',
     description: 'Display shortcut list'
   },
   escapeAction: {
@@ -56,9 +53,8 @@ export default {
     conditions: {},
     routes: ['all'],
     icon: 'mdi-close',
-    action: { name: 'ESCAPE_BUTTON_HANDLER' },
+    action: {name: 'ESCAPE_BUTTON_HANDLER'},
     shortcut: 'Esc',
-    size: '22px',
     description: 'Close opened dialog / overlay; dismiss items prepared for copying or moving, deselect items'
   },
   openWithQuickView: {
@@ -71,66 +67,9 @@ export default {
     preventDefaultType: '!inputFieldIsActive',
     routes: ['navigator', 'dashboard', 'home'],
     icon: 'mdi-card-search-outline',
-    action: { name: 'OPEN_WITH_QUICK_VIEW' }, 
+    action: {name: 'OPEN_WITH_QUICK_VIEW'}, 
     shortcut: 'Space',
-    size: '22px',
     description: `Open / close selected file in Quick View window. Supported: images, videos, audio, PDF, plain text`
-  },
-  newDirectory: {
-    isGlobal: false,
-    isReadOnly: false,
-    conditions: {
-      dialogIsOpened: false
-    },
-    routes: ['navigator'],
-    icon: 'mdi-folder-plus-outline',
-    action: {
-      name: 'INIT_NEW_DIR_ITEM',
-      props: {
-        type: 'directory'
-      }
-    },
-    shortcut: 'Alt + N',
-    size: '22px',
-    description: 'Create new directory in the current directory'
-  },
-  newFile: {
-    isGlobal: false,
-    isReadOnly: false,
-    conditions: {
-      dialogIsOpened: false
-    },
-    routes: ['navigator'],
-    icon: 'mdi-file-plus-outline',
-    action: {
-      name: 'INIT_NEW_DIR_ITEM',
-      props: {
-        type: 'file'
-      }
-    },
-    shortcut: 'Alt + M',
-    size: '22px',
-    description: 'Create new file in current directory'
-  },
-  renameSelected: {
-    isGlobal: false,
-    isReadOnly: false,
-    conditions: {
-      inputFieldIsActive: false,
-      dialogIsOpened: false,
-      dirItemIsSelected: true
-    },
-    routes: ['all'],
-    icon: 'mdi-form-textbox',
-    action: {
-      name: 'OPEN_DIALOG',
-      props: {
-        dialogName: 'renameDirItemDialog'
-      }
-    },
-    shortcut: 'F2',
-    size: '20px',
-    description: 'Rename selected items'
   },
   fullScreen: {
     isGlobal: false,
@@ -138,9 +77,9 @@ export default {
     conditions: {},
     routes: ['all'],
     icon: 'mdi-fullscreen',
-    action: { name: 'TOGGLE_FULLSCREEN' },
+    iconSize: '26px',
+    action: {name: 'TOGGLE_FULLSCREEN'},
     shortcut: 'F11',
-    size: '26px',
     description: 'Toggle full screen'
   },
   zoomIncrease: {
@@ -150,9 +89,9 @@ export default {
     preventDefaultType: 'always',
     routes: ['all'],
     icon: 'mdi-plus',
-    action: { name: 'INCREASE_UI_ZOOM' },
+    iconSize: '26px',
+    action: {name: 'INCREASE_UI_ZOOM'},
     shortcut: 'Ctrl + Plus',
-    size: '26px',
     description: 'UI zoom increase'
   },
   zoomDecrease: {
@@ -162,9 +101,9 @@ export default {
     preventDefaultType: 'always',
     routes: ['all'],
     icon: 'mdi-minus',
-    action: { name: 'DECREASE_UI_ZOOM' },
+    iconSize: '26px',
+    action: {name: 'DECREASE_UI_ZOOM'},
     shortcut: 'Ctrl + Minus',
-    size: '26px',
     description: 'UI zoom decrease'
   },
   zoomReset: {
@@ -174,9 +113,9 @@ export default {
     preventDefaultType: 'always',
     routes: ['all'],
     icon: 'mdi-backup-restore',
-    action: { name: 'RESET_UI_ZOOM' },
+    iconSize: '26px',
+    action: {name: 'RESET_UI_ZOOM'},
     shortcut: 'Ctrl + 0',
-    size: '26px',
     description: 'UI zoom reset'
   },
   openInNewTab: {
@@ -188,12 +127,12 @@ export default {
     },
     routes: ['navigator', 'dashboard'],
     icon: 'mdi-tab-plus',
+    iconSize: '20px',
     action: {
       name: 'ADD_TAB',
-      props: 'selected'
+      options: 'selected'
     },
     shortcut: 'Ctrl + T',
-    size: '20px',
     description: 'New tab in current workspace'
   },
   scrollTop: {
@@ -204,11 +143,11 @@ export default {
     },
     routes: ['all'],
     icon: 'mdi-chevron-up',
+    iconSize: '28px',
     action: {
       name: 'SCROLL_TOP_CONTENT_AREA'
     },
     shortcut: 'Shift + T',
-    size: '28px',
     description: 'Scroll page to the top'
   },
   switchTab: {
@@ -217,9 +156,9 @@ export default {
     conditions: {},
     routes: ['all'],
     icon: 'mdi-tab',
-    action: { name: 'switchTab' },
+    iconSize: '20px',
+    action: {name: 'switchTab'},
     shortcut: 'Alt + [1 - 9]',
-    size: '20px',
     description: 'Switch between tabs'
   },
   switchWorkspace: {
@@ -228,9 +167,8 @@ export default {
     conditions: {},
     routes: ['all'],
     icon: 'mdi-vector-arrange-below',
-    action: { name: 'switchWorkspace' },
+    action: {name: 'switchWorkspace'},
     shortcut: 'Alt + Shift + [1 - 9]',
-    size: '22px',
     description: 'Switch between workspaces'
   },
   switchView: {
@@ -242,9 +180,8 @@ export default {
     },
     routes: ['all'],
     icon: 'mdi-arrange-send-backward',
-    action: { name: 'SWITCH_ROUTE' },
+    action: {name: 'SWITCH_ROUTE'},
     shortcut: 'Shift + [1 - 9]',
-    size: '22px',
     description: 'Switch between views'
   },
   focusAddressBar: {
@@ -257,10 +194,9 @@ export default {
     icon: 'mdi-link-variant',
     action: {
       name: 'TOGGLE_ADDRESS_BAR',
-      props: 'addressBarEditor'
+      options: 'addressBarEditor'
     },
     shortcut: 'Ctrl + /',
-    size: '22px',
     description: 'Toggle address bar'
   },
   copyCurrentDirPath: {
@@ -268,9 +204,8 @@ export default {
     isReadOnly: false,
     routes: ['all'],
     icon: 'mdi-link-variant',
-    action: { name: 'COPY_DIR_PATH_TO_OS_CLIPBOARD' },
+    action: {name: 'COPY_DIR_PATH_TO_OS_CLIPBOARD'},
     shortcut: 'Ctrl + <',
-    size: '22px',
     description: 'Copy path to clipboard'
   },
   openCopiedPath: {
@@ -282,7 +217,6 @@ export default {
       name: 'OPEN_DIR_PATH_FROM_OS_CLIPBOARD'
     },
     shortcut: 'Ctrl + >',
-    size: '22px',
     description: 'Open copied path'
   },
   openTerminal: {
@@ -296,12 +230,11 @@ export default {
     icon: 'mdi-console',
     action: {
       name: 'OPEN_SELECTED_IN_TERMINAL',
-      props: {
+      options: {
         asAdmin: false
       }
     },
     shortcut: 'Alt + T',
-    size: '22px',
     description: 'Open current dir in terminal'
   },
   openTerminalAsAdmin: {
@@ -315,12 +248,11 @@ export default {
     icon: 'mdi-console',
     action: {
       name: 'OPEN_SELECTED_IN_TERMINAL',
-      props: {
+      options: {
         asAdmin: true
       }
     },
     shortcut: 'Alt + Shift + T',
-    size: '22px',
     description: 'Open current dir in terminal as admin'
   },
   focusFilter: {
@@ -331,9 +263,8 @@ export default {
     },
     routes: ['all'],
     icon: 'mdi-filter-variant',
-    action: { name: 'TOGGLE_FILTER_FOCUS' },
+    action: {name: 'TOGGLE_FILTER_FOCUS'},
     shortcut: 'Ctrl + F',
-    size: '22px',
     description: 'Focus filter field'
   },
   toggleGlobalSearch: {
@@ -344,10 +275,63 @@ export default {
     },
     routes: ['all'],
     icon: 'mdi-magnify',
-    action: { name: 'TOGGLE_GLOBAL_SEARCH' },
+    action: {name: 'TOGGLE_GLOBAL_SEARCH'},
     shortcut: 'Ctrl + Shift + F',
-    size: '22px',
     description: 'Show / hide global search'
+  },
+  newDirectory: {
+    isGlobal: false,
+    isReadOnly: false,
+    conditions: {
+      dialogIsOpened: false
+    },
+    routes: ['navigator'],
+    icon: 'mdi-folder-plus-outline',
+    action: {
+      name: 'INIT_NEW_DIR_ITEM',
+      options: {
+        type: 'directory'
+      }
+    },
+    shortcut: 'Alt + N',
+    description: 'Create new directory in the current directory'
+  },
+  newFile: {
+    isGlobal: false,
+    isReadOnly: false,
+    conditions: {
+      dialogIsOpened: false
+    },
+    routes: ['navigator'],
+    icon: 'mdi-file-plus-outline',
+    action: {
+      name: 'INIT_NEW_DIR_ITEM',
+      options: {
+        type: 'file'
+      }
+    },
+    shortcut: 'Alt + M',
+    description: 'Create new file in current directory'
+  },
+  renameSelected: {
+    isGlobal: false,
+    isReadOnly: false,
+    conditions: {
+      inputFieldIsActive: false,
+      dialogIsOpened: false,
+      dirItemIsSelected: true
+    },
+    routes: ['all'],
+    icon: 'mdi-form-textbox',
+    iconSize: '20px',
+    action: {
+      name: 'OPEN_DIALOG',
+      options: {
+        dialogName: 'renameDirItemDialog'
+      }
+    },
+    shortcut: 'F2',
+    description: 'Rename selected items'
   },
   reloadDirectory: {
     isGlobal: false,
@@ -359,13 +343,12 @@ export default {
     icon: 'mdi-refresh',
     action: {
       name: 'RELOAD_DIR',
-      props: {
+      options: {
         scrollTop: false,
         emitNotification: true
       }
     },
     shortcut: 'F5',
-    size: '22px',
     description: 'Reload current directory'
   },
   openSelectedDirItem: {
@@ -376,9 +359,8 @@ export default {
     },
     routes: ['navigator'],
     icon: 'mdi-open-in-app',
-    action: { name: 'OPEN_LAST_SELECTED_DIRITEM' },
+    action: {name: 'OPEN_LAST_SELECTED_DIRITEM'},
     shortcut: 'Enter',
-    size: '22px',
     description: 'Open last selected directory item'
   },
   openSelectedDirectory: {
@@ -388,10 +370,9 @@ export default {
       dialogIsOpened: false
     },
     routes: ['navigator'],
-    icon: 'mdi-open-in-app',
-    action: { name: 'OPEN_LAST_SELECTED_DIRITEM' },
+    icon: 'mdi-subdirectory-arrow-right',
+    action: {name: 'OPEN_LAST_SELECTED_DIRITEM'},
     shortcut: 'Alt + E',
-    size: '22px',
     description: 'Enter selected directory'
   },
   quitSelectedDirectory: {
@@ -401,10 +382,9 @@ export default {
       dialogIsOpened: false
     },
     routes: ['navigator'],
-    icon: 'mdi-open-in-app',
-    action: { name: 'GO_UP_DIRECTORY' },
+    icon: 'mdi-subdirectory-arrow-left',
+    action: {name: 'GO_UP_DIRECTORY'},
     shortcut: 'Alt + Q',
-    size: '22px',
     description: 'Quit current directory'
   },
   navigateDirUp: {
@@ -415,9 +395,9 @@ export default {
     },
     routes: ['navigator'],
     icon: 'mdi-chevron-up',
-    action: { name: 'NAVIGATE_DIR_UP' },
+    iconSize: '26px',
+    action: {name: 'NAVIGATE_DIR_UP'},
     shortcut: 'Alt + W',
-    size: '26px',
     description: 'Select directory item in the direction: up'
   },
   navigateDirLeft: {
@@ -428,9 +408,9 @@ export default {
     },
     routes: ['navigator'],
     icon: 'mdi-chevron-left',
-    action: { name: 'NAVIGATE_DIR_LEFT' },
+    iconSize: '26px',
+    action: {name: 'NAVIGATE_DIR_LEFT'},
     shortcut: 'Alt + A',
-    size: '26px',
     description: 'Select directory item in the direction: left'
   },
   navigateDirDown: {
@@ -441,9 +421,9 @@ export default {
     },
     routes: ['navigator'],
     icon: 'mdi-chevron-down',
-    action: { name: 'NAVIGATE_DIR_DOWN' },
+    iconSize: '26px',
+    action: {name: 'NAVIGATE_DIR_DOWN'},
     shortcut: 'Alt + S',
-    size: '26px',
     description: 'Select directory item in the direction: down'
   },
   navigateDirRight: {
@@ -454,9 +434,9 @@ export default {
     },
     routes: ['navigator'],
     icon: 'mdi-chevron-right',
-    action: { name: 'NAVIGATE_DIR_RIGHT' },
+    iconSize: '26px',
+    action: {name: 'NAVIGATE_DIR_RIGHT'},
     shortcut: 'Alt + D',
-    size: '26px',
     description: 'Select directory item in the direction: right'
   },
   goToPreviousDirectory: {
@@ -468,9 +448,8 @@ export default {
     },
     routes: ['navigator'],
     icon: 'mdi-arrow-left',
-    action: { name: 'LOAD_PREVIOUS_HISTORY_PATH' },
+    action: {name: 'LOAD_PREVIOUS_HISTORY_PATH'},
     shortcut: 'Alt + Left',
-    size: '22px',
     description: 'Go to previous directory in history'
   },
   goToNextDirectory: {
@@ -482,9 +461,8 @@ export default {
     },
     routes: ['navigator'],
     icon: 'mdi-arrow-right',
-    action: { name: 'LOAD_NEXT_HISTORY_PATH' },
+    action: {name: 'LOAD_NEXT_HISTORY_PATH'},
     shortcut: 'Alt + Right',
-    size: '22px',
     description: 'Go to next directory in history'
   },
   goUpDirectory: {
@@ -496,9 +474,8 @@ export default {
     },
     routes: ['navigator'],
     icon: 'mdi-arrow-up',
-    action: { name: 'GO_UP_DIRECTORY' },
+    action: {name: 'GO_UP_DIRECTORY'},
     shortcut: 'Alt + Up',
-    size: '22px',
     description: 'Go up directory'
   },
   selectDirItem: {
@@ -509,9 +486,8 @@ export default {
     },
     routes: ['all'],
     icon: 'mdi-check-box-multiple-outline',
-    action: { name: 'selectDirItem' },
+    action: {name: 'selectDirItem'},
     shortcut: 'Ctrl + LeftClick',
-    size: '22px',
     description: 'Select / deselect item in the current directory'
   },
   selectDirItemRange: {
@@ -522,9 +498,8 @@ export default {
     },
     routes: ['all'],
     icon: 'mdi-priority-low',
-    action: { name: 'selectDirItemRange' },
+    action: {name: 'selectDirItemRange'},
     shortcut: 'Shift + LeftClick',
-    size: '22px',
     description: 'Select / deselect item range in the current directory'
   },
   selectAllDirItems: {
@@ -537,9 +512,8 @@ export default {
     preventDefaultType: '!inputFieldIsActive',
     routes: ['navigator'],
     icon: 'mdi-select-all',
-    action: { name: 'SELECT_ALL_DIR_ITEMS' },
+    action: {name: 'SELECT_ALL_DIR_ITEMS'},
     shortcut: 'Ctrl + A',
-    size: '22px',
     description: 'Select all items in current directory'
   },
   copySelectedDirItems: {
@@ -550,14 +524,14 @@ export default {
     },
     routes: ['navigator'],
     icon: 'mdi-content-copy',
+    iconSize: '20px',
     action: {
       name: 'SET_FS_CLIPBOARD',
-      props: {
+      options: {
         type: 'copy'
       }
     },
     shortcut: 'Ctrl + C',
-    size: '20px',
     description: 'Prepare selected items for copying'
   },
   moveSelectedDirItems: {
@@ -568,14 +542,14 @@ export default {
     },
     routes: ['navigator'],
     icon: 'mdi-content-duplicate',
+    iconSize: '20px',
     action: {
       name: 'SET_FS_CLIPBOARD',
-      props: {
+      options: {
         type: 'move'
       }
     },
     shortcut: 'Ctrl + X',
-    size: '20px',
     description: 'Prepare selected items for moving'
   },
   pasteSelectedDirItems: {
@@ -586,11 +560,11 @@ export default {
     },
     routes: ['navigator'],
     icon: 'mdi-swap-horizontal',
+    iconSize: '24px',
     action: {
       name: 'PASTE_FS_CLIPBOARD_DIR_ITEMS'
     },
     shortcut: 'Ctrl + V',
-    size: '24px',
     description: 'Transfer prepared items to current directory'
   },
   trashSelected: {
@@ -602,9 +576,8 @@ export default {
     },
     routes: ['all'],
     icon: 'mdi-trash-can-outline',
-    action: { name: 'TRASH_SELECTED' },
+    action: {name: 'TRASH_SELECTED'},
     shortcut: 'Delete',
-    size: '22px',
     description: 'Move selected items to trash'
   },
   deleteSelected: {
@@ -616,9 +589,8 @@ export default {
     },
     routes: ['all'],
     icon: 'mdi-eraser',
-    action: { name: 'INIT_DELETE_SELECTED' },
+    action: {name: 'INIT_DELETE_SELECTED'},
     shortcut: 'Shift + Delete',
-    size: '22px',
     description: 'Delete selected items from drive'
   },
   windowPosition: {
@@ -628,8 +600,11 @@ export default {
     routes: ['all'],
     icon: 'mdi-axis-arrow',
     description: 'Quick window positioning',
-    action: { name: 'windowPosition' },
-    shortcut: { win32: 'Meta + [Left | Right | Up]', linux: 'Meta + [Left | Right | Up | Down]' }
+    action: {name: 'windowPosition'},
+    shortcut: {
+      win32: 'Meta + [Left | Right | Up]', 
+      linux: 'Meta + [Left | Right | Up | Down]'
+    }
   },
   emoji: {
     isGlobal: false,
@@ -640,8 +615,11 @@ export default {
     routes: ['all'],
     icon: 'mdi-emoticon-outline',
     description: 'Display system emoji and symbol picker',
-    action: { name: 'emoji' },
-    shortcut: { win32: 'Meta + Dot', darwin: 'Cmd + Ctrl + Space' }
+    action: {name: 'emoji'},
+    shortcut: {
+      win32: 'Meta + Dot', 
+      darwin: 'Cmd + Ctrl + Space'
+    }
   },
   clipboard: {
     isGlobal: false,
@@ -652,7 +630,7 @@ export default {
     routes: ['all'],
     icon: 'mdi-clipboard-text-play-outline',
     description: 'Display system clipboard (must be turned on in system settings)',
-    action: { name: 'clipboard' },
-    shortcut: { win32: 'Meta + V' }
+    action: {name: 'clipboard'},
+    shortcut: {win32: 'Meta + V'}
   }
 }

@@ -2375,7 +2375,7 @@ export default new Vuex.Store({
       }
       // Handle action if all conditions are fulfilled
       if (allConditionsAreFulfilled) {
-        dispatch(value.action.name, value.action.props)
+        dispatch(value.action.name, value.action.options)
       }
     },
     TOGGLE_DIALOG ({ state, commit, dispatch, getters }, payload) {
