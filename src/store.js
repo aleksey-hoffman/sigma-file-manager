@@ -437,9 +437,9 @@ export default new Vuex.Store({
         compressSearchData: true,
         windowCloseButtonAction: 'minimizeAppToTray',
         stats: {
-          storeDirItemOpenEvent: false,
-          storeDirItemOpenCount: false,
-          storeDirItemOpenDate: false,
+          storeDirItemOpenEvent: true,
+          storeDirItemOpenCount: true,
+          storeDirItemOpenDate: true,
         },
         UIZoomLevel: 1,
         input: {
