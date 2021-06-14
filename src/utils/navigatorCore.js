@@ -244,6 +244,12 @@ async function isFile (dirItemData, stat) {
   }
 }
 
+function isHidden (dirItemData) {
+  return utils.platform === 'win32' 
+    ? fsWin.getAttributesSync(dirItemData.path).IS_HIDDEN 
+    : utils.unixHiddenFileRegex.test(dirItemData.path)
+}
+
 function isObjectEmpty (obj) {
   return obj &&
     Object.keys(obj).length === 0 &&
@@ -296,7 +302,7 @@ async function fetchDirItemData (path, nameBase, itemHeight) {
     dirItemData.stat = await getStat(path)
     if (isObjectEmpty(dirItemData.stat)) {throw Error('inaccessible item')}
     // console.log(dirItemData.path, isObjectEmpty(dirItemData.stat))
-    dirItemData.isHidden = utils.platform === 'win32' ? fsWin.getAttributesSync(dirItemData.path).IS_HIDDEN : utils.unixHiddenFileRegex.test(dirItemData.path)
+    dirItemData.isHidden = isHidden(dirItemData)
     dirItemData.isInaccessible = isObjectEmpty(dirItemData.stat)
     dirItemData.isWin32Shortcut = await isFile(dirItemData, dirItemData.stat) && nameBase.endsWith('.lnk')
     dirItemData.win32ShortcutData = await getWin32ShortcutData(dirItemData, path)
