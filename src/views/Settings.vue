@@ -400,85 +400,6 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   </v-radio-group>
                 </template>
               </section-settings>
-
-              <section-settings
-                class="content-area__content-card__section"
-                :header="{
-                  icon: {
-                    name: 'mdi-form-textbox'
-                  },
-                  title: 'Input elements'
-                }"
-              >
-                <template v-slot:content>
-                  <div>
-                    <div class="text--sub-title-1 mt-2">
-                      Filter options
-                    </div>
-                    <v-switch
-                      class="my-0"
-                      v-model="focusFilterOnDirectoryChange"
-                      label="Focus filter field automatically when directory changes"
-                      hide-details
-                    ></v-switch>
-
-                    <div class="text--sub-title-1 mt-2">
-                      Helpers
-                    </div>
-                    <v-switch
-                      class="my-0"
-                      v-model="spellcheck"
-                      label="Spellcheck"
-                      hide-details
-                    ></v-switch>
-                  </div>
-                </template>
-              </section-settings>
-
-              <section-settings
-                class="content-area__content-card__section"
-                :header="{
-                  icon: {
-                    name: 'mdi-folder-outline'
-                  },
-                  title: 'Navigator'
-                }"
-              >
-                <template v-slot:content>
-                  <div>
-                    <div class="text--sub-title-1 mt-2">
-                      Directory items
-                    </div>
-                    <div class="mb-5">
-                       <v-switch
-                        class="mt-0 pt-0"
-                        v-model="navigatorShowHiddenItems"
-                        label="Show Hidden Items"
-                      ></v-switch>
-                      <v-switch
-                        class="mt-0 pt-0"
-                        v-model="navigatorOpenDirItemWithSingleClick"
-                        label="Open with single click"
-                      ></v-switch>
-                      <div
-                        class="mt-0 pt-0"
-                        v-show="navigatorOpenDirItemWithSingleClick"
-                      >
-                        Hold <span class="inline-code--light">Alt</span> button to select the item without opening it
-                      </div>
-                    </div>
-                    <div class="mt-0 pt-0">
-                      <v-text-field
-                        v-show="!navigatorOpenDirItemWithSingleClick"
-                        v-model="openDirItemSecondClickDelay"
-                        label="Double-click delay (ms)"
-                        style="max-width: 200px"
-                        validate-on-blur
-                      ></v-text-field>
-                    </div>
-                  </div>
-                </template>
-              </section-settings>
             </v-tab-item>
 
             <!-- tab::ui-appearance -->
@@ -765,13 +686,21 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     <div class="text--sub-title-1 mt-2">
                       Directory items
                     </div>
+
                     <div class="mb-5">
+                      <v-switch
+                        class="my-0"
+                        v-model="navigatorShowHiddenItems"
+                        label="Show Hidden Items"
+                      ></v-switch>
+
                       <v-switch
                         class="my-0"
                         v-model="navigatorOpenDirItemWithSingleClick"
                         label="Open with single click"
                         hide-details
                       ></v-switch>
+
                       <div 
                         class="mt-3"
                         v-show="navigatorOpenDirItemWithSingleClick"
@@ -779,7 +708,8 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                         Hold <span class="inline-code--light">Alt</span> button to select the item without opening it
                       </div>
                     </div>
-                    <div class="mb-5">
+
+                    <div class="mb-0">
                       <v-text-field
                         v-show="!navigatorOpenDirItemWithSingleClick"
                         v-model="validatedOpenDirItemSecondClickDelay"
