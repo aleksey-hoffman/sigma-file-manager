@@ -142,8 +142,18 @@ export default {
       notesItems: 'storageData.notes.items',
       dirItems: 'navigatorView.dirItems',
       focusedField: 'focusedField',
-      navigatorShowHiddenDirItems: 'storageData.settings.navigator.showHiddenDirItems'
     }),
+    navigatorShowHiddenDirItems: {
+      get () {
+        return this.$store.state.storageData.settings.navigator.showHiddenDirItems
+      },
+      set (value) {
+        this.$store.dispatch('SET', {
+          key: 'storageData.settings.navigator.showHiddenDirItems',
+          value: value
+        })
+      }
+    },
     filterQuery: {
       get () {
         return this.$store.state.filterField.view[this.$route.name].query
