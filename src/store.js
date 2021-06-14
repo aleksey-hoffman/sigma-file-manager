@@ -416,7 +416,6 @@ export default new Vuex.Store({
           autoCheck: true,
           autoDownload: true,
           autoInstall: true,
-          askBeforeAutoInstall: true,
         },
         globalSearch: {
           disallowedPaths: ['C:/Windows', '**/node_modules'],

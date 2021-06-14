@@ -245,7 +245,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     hide-details
                   ></v-switch>
 
-                  <!-- <v-switch
+                  <v-switch
                     v-if="autoCheckForAppUpdates"
                     v-model="autoDownloadAppUpdates"
                     label="Download updates automatically"
@@ -258,13 +258,6 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     label="Install updates automatically"
                     hide-details
                   ></v-switch>
-
-                  <v-switch
-                    v-if="autoCheckForAppUpdates && autoDownloadAppUpdates && autoInstallAppUpdates"
-                    v-model="askBeforeAutoInstallAppUpdates"
-                    label="Ask before installing updates"
-                    hide-details
-                  ></v-switch> -->
                 </template>
               </section-settings>
 
@@ -1224,7 +1217,6 @@ export default {
       autoCheckForAppUpdates: 'storageData.settings.appUpdates.autoCheck',
       autoDownloadAppUpdates: 'storageData.settings.appUpdates.autoDownload',
       autoInstallAppUpdates: 'storageData.settings.appUpdates.autoInstall',
-      askBeforeAutoInstallAppUpdates: 'storageData.settings.appUpdates.askBeforeAutoInstall',
       windowCloseButtonAction: 'storageData.settings.windowCloseButtonAction',
       themeType: 'storageData.settings.theme.type',
       navigatorLayout: 'storageData.settings.navigatorLayout',
