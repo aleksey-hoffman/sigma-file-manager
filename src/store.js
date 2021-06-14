@@ -400,7 +400,7 @@ export default new Vuex.Store({
         lastRecordedAppVersion: null,
         isFirstAppLaunch: true,
         navigator: {
-          navigatorShowHiddenItems: false,
+          showHiddenDirItems: false,
           openDirItemWithSingleClick: false,
           openDirItemSecondClickDelay: 500,
         },

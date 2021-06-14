@@ -690,7 +690,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     <div class="mb-5">
                       <v-switch
                         class="my-0"
-                        v-model="navigatorShowHiddenItems"
+                        v-model="navigatorShowHiddenDirItems"
                         label="Show Hidden Items"
                       ></v-switch>
 
@@ -1228,7 +1228,7 @@ export default {
       windowCloseButtonAction: 'storageData.settings.windowCloseButtonAction',
       themeType: 'storageData.settings.theme.type',
       navigatorLayout: 'storageData.settings.navigatorLayout',
-      navigatorShowHiddenItems: 'storageData.settings.navigator.navigatorShowHiddenItems',
+      navigatorShowHiddenDirItems: 'storageData.settings.navigator.showHiddenDirItems',
       navigatorOpenDirItemWithSingleClick: 'storageData.settings.navigator.openDirItemWithSingleClick',
       dirItemHoverEffect: 'storageData.settings.dirItemHoverEffect',
       animationsOnRouteChangeMediaBannerIn: 'storageData.settings.animations.onRouteChangeMediaBannerIn',

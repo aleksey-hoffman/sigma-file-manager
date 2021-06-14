@@ -398,7 +398,7 @@ export default {
       dashboard: 'storageData.settings.dashboard',
       filterQuery: 'filterField.view.dashboard.query',
       dashboardSelectedTab: 'storageData.settings.dashboard.selectedTab',
-      navigatorShowHiddenItems: 'storageData.settings.navigator.navigatorShowHiddenItems'
+      navigatorShowHiddenDirItems: 'storageData.settings.navigator.showHiddenDirItems'
     }),
     pinnedItemsMatchingFilter () {
       return this.getItemsMatchingFilter(this.fetchedData.pinnedItems)
@@ -433,7 +433,7 @@ export default {
       return itemFilter({
         filterQuery: this.filterQuery,
         items,
-        filterHiddenItems: this.navigatorShowHiddenItems,
+        filterHiddenItems: this.navigatorShowHiddenDirItems,
         filterProperties: this.$store.state.filterField.view[this.$route.name].filterProperties,
         filterQueryOptions: this.$store.state.filterField.view[this.$route.name].options
       })

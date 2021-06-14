@@ -85,7 +85,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   dense
                 >
                   <v-switch
-                    v-model="navigatorShowHiddenItems"
+                    v-model="navigatorShowHiddenDirItems"
                     label="Show Hidden Items"
                   ></v-switch>
                 </v-list-item>
@@ -142,7 +142,7 @@ export default {
       notesItems: 'storageData.notes.items',
       dirItems: 'navigatorView.dirItems',
       focusedField: 'focusedField',
-      navigatorShowHiddenItems: 'storageData.settings.navigator.navigatorShowHiddenItems'
+      navigatorShowHiddenDirItems: 'storageData.settings.navigator.showHiddenDirItems'
     }),
     filterQuery: {
       get () {

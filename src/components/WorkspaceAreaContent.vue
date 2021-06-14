@@ -79,7 +79,7 @@ export default {
       dirItems: 'navigatorView.dirItems',
       navigatorRouteIsLoaded: 'navigatorRouteIsLoaded',
       navigatorViewInfoPanel: 'storageData.settings.infoPanels.navigatorView',
-      navigatorShowHiddenItems: 'storageData.settings.navigator.navigatorShowHiddenItems',
+      navigatorShowHiddenDirItems: 'storageData.settings.navigator.showHiddenDirItems',
       globalSearchWidget: 'globalSearch.widget',
       filterQuery: 'filterField.view.navigator.query',
       filterOptions: 'filterField.view.navigator.options',
@@ -353,7 +353,7 @@ export default {
       return itemFilter({
         filterQuery: this.filterQuery,
         items,
-        filterHiddenItems: !this.navigatorShowHiddenItems,
+        filterHiddenItems: !this.navigatorShowHiddenDirItems,
         filterProperties: this.$store.state.filterField.view[this.$route.name].filterProperties,
         filterQueryOptions: this.$store.state.filterField.view[this.$route.name].options
       })
