@@ -132,7 +132,7 @@ function createQuickViewWindow () {
     minWidth: 300,
     minHeight: 200,
     webPreferences: {
-      partition: 'quickPreview',
+      // partition: 'quickPreview',
       webviewTag: true,
       enableRemoteModule: true,
       contextIsolation: !process.env.ELECTRON_NODE_INTEGRATION,
@@ -230,6 +230,8 @@ function initWindowListeners (name) {
   }
   else if (name === 'quickViewWindow') {
     // Init listeners
+    // Note: this listener is used to detect unsupported by Chromium files that cannot be displayed.
+    // Unsupported files trigger will-download event.
     windows.quickViewWindow.webContents.session.once('will-download', _willDownloadHandler)
     windows.quickViewWindow.once('close', () => {
       // Remove listener to avoid multiple listeners
@@ -240,6 +242,7 @@ function initWindowListeners (name) {
       createQuickViewWindow()
     })
     function _willDownloadHandler (event, item, webContents) {
+      console.log('quickViewWindow will-download handler')
       event.preventDefault()
       const fileURL = item.getURL()
       windows.quickViewWindow.webContents.send('load:webview::cancel')

@@ -5082,7 +5082,8 @@ export default new Vuex.Store({
       }
       appUpdater.init({
         repo: state.appPaths.githubRepo,
-        currentVersion: state.appVersion,
+        // currentVersion: state.appVersion,
+        currentVersion: '1.0.0', // test value
         onUpdateAvailable: (payload) => {
           dispatch('HANDLE_APP_UPDATE_AVAILABLE', payload)
         },
