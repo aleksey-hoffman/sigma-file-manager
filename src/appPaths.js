@@ -33,14 +33,15 @@ const resources = process.env.NODE_ENV === 'production'
 const appStorage = PATH.join(userData, 'app storage')
 const appStorageMedia = PATH.join(appStorage, 'media')
 const homeBannerMedia = PATH.join(resources, 'media', 'home banner')
+const resourcesBin = PATH.join(resources, process.platform, 'bin')
 const appStorageBin = PATH.join(appStorage, 'bin')
 const appStorageHomeBannerMedia = PATH.join(appStorage, 'media', 'home banner')
 const appStorageNotesMedia = PATH.join(appStorage, 'media', 'notes')
 const appStorageGlobalSearchData = PATH.join(appStorage, 'search data')
 const appStorageNavigatorThumbs = PATH.join(appStorage, 'media', 'thumbnails')
 const bin = process.env.NODE_ENV === 'production'
-  ? PATH.join(appStorage, 'bin')
-  : PATH.join(resources, process.platform, 'bin')
+  ? appStorageBin
+  : resourcesBin
 
 const FFMPEG = PATH.join(bin, 'ffmpeg', 'bin')
 const youtubeDl = PATH.join(bin, 'youtube-dl')
@@ -149,6 +150,7 @@ const appPaths = {
   videos,
   music,
   binCompressed,
+  resourcesBin,
   bin,
   bin7Zip,
   binFFMPEG,

@@ -38,6 +38,7 @@ import idleJs from 'idle-js'
 const electron = require('electron')
 const PATH = require('path')
 const fs = require('fs')
+const fsExtra = require('fs-extra')
 const mousetrap = require('mousetrap')
 const diskusage = require('diskusage')
 const sysInfo = require('systeminformation')
@@ -366,8 +367,8 @@ export default {
       if (isEnvProduction) {
         // TODO: do not overwrite existing dirs in appStorageBin
         // if user puts custom binaries there (need a setting switch for it)
-        require('fs-extra').copy(
-          this.appPaths.bin, 
+        fsExtra.copy(
+          this.appPaths.resourcesBin, 
           this.appPaths.storageDirectories.appStorageBin
         )
       }
