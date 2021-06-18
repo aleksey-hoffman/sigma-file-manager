@@ -426,13 +426,6 @@ export default {
       })
     },
     addToThumbLoadSchedule (payload) {
-      // TODO:
-      // Currently, if ffmpeg cannot generate a thumb for the file
-      // it throws an error and stops generating thumbs for all
-      // succeeding thumbs in the dir (because the worker gets destroyed, perhaps?)
-      // The files that were causing the problem (already fixed):
-      // ['image/svg+xml']
-
       this.thumbLoadSchedule.push(payload)
       if (!this.thumbLoadIsLocked && !payload.item.isInaccessible) {
         this.handleThumbLoad(payload)

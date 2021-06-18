@@ -377,13 +377,7 @@ export default {
     },
     async addThumb (dirItemThumbContainer, dirItemRealPath, dirItemFileType, dirItemNode) {
       return new Promise((resolve, reject) => {
-        const itemType = this.$utils.getFileType(dirItemRealPath)
-        const disallowedMimes = [
-          'image/svg+xml',
-          'image/heic',
-          'image/vnd.adobe.photoshop'
-        ]
-        if (dirItemFileType === 'image' && !disallowedMimes.includes(itemType.mime)) {
+        if (dirItemFileType === 'image') {
           this.fetchImageThumb(dirItemThumbContainer, dirItemRealPath, dirItemNode)
             .then(() => {
               resolve()

@@ -34,6 +34,7 @@ async function initWorker (data) {
     .size(thumbSize)
     .on('error', (error) => {
       console.log(error)
+      self.postMessage({action: 'error'})
     })
     .on('end', () => {
       self.postMessage({ action: 'results' })
