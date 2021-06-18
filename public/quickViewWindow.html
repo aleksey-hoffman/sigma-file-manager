@@ -143,7 +143,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         else {
           const webviewNode = document.createElement('webview')
           webviewNode.setAttribute('id', 'content-webview')
-          // webviewNode.setAttribute('partition', 'quickPreview')
+          webviewNode.setAttribute('partition', 'quickView')
           webviewNode.setAttribute('src', getSafeURL(data.path))
           contentContainerNode.appendChild(webviewNode)
         }

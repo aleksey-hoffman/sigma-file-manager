@@ -132,7 +132,7 @@ function createQuickViewWindow () {
     minWidth: 300,
     minHeight: 200,
     webPreferences: {
-      // partition: 'quickPreview',
+      partition: 'quickView',
       webviewTag: true,
       enableRemoteModule: true,
       contextIsolation: !process.env.ELECTRON_NODE_INTEGRATION,
@@ -194,6 +194,7 @@ function loadWindow (windowName) {
   else if (windowName === 'quickViewWindow') {
     filePath = 'quickViewWindow.html'
     developmentPath = `file://${__static}/quickViewWindow.html`
+    productionPath = `file://${__static}/quickViewWindow.html`
   }
   // Get window URL
   if (!developmentPath) {
