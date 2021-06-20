@@ -63,7 +63,7 @@ initIPCListeners()
 initAppListeners()
 
 function lockSingleAppInstance () {
-  if (!singleAppInstance) {
+  if (!singleAppInstance && process.env.NODE_ENV === 'production') {
     electron.app.quit()
   } 
   else {
