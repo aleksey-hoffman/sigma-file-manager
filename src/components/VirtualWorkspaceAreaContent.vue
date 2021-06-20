@@ -414,11 +414,16 @@ export default {
       return new Promise((resolve, reject) => {
         this.thumbLoadIsLocked = true
         this.generateImageThumb(payload.item.path, payload.item.realPath, payload.thumbPath)
-          .then(() => {
-            resolve()
+          .then((event) => {
             this.thumbLoadIsLocked = false
             this.removeFromThumbLoadSchedule(payload)
-            payload.onEnd()
+            if (event.data.result === 'error') {
+              payload?.onError?.()
+            }
+            else {
+              payload?.onEnd?.()
+            }
+            resolve()
             if (this.thumbLoadSchedule.length > 0) {
               this.handleThumbLoad(this.thumbLoadSchedule[0])
             }
@@ -447,7 +452,7 @@ export default {
           appPaths: this.appPaths
         })
         this.thumbWorker.onmessage = (event) => {
-          resolve()
+          resolve(event)
         }
       })
     },

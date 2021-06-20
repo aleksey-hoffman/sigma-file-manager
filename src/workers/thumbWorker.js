@@ -30,14 +30,18 @@ async function initWorker (data) {
   
   ffmpeg.setFfmpegPath(data.appPaths.binFFMPEG)
   ffmpeg.setFfprobePath(data.appPaths.binFFPROBE)
+
+  // TODO:
+  // Support files containing glob characters e.g. "!@#$filename.jpg"
+  // by storing filename encoded with utils.getUrlSafePath
   ffmpeg(data.dirItemRealPath)
     .size(thumbSize)
     .on('error', (error) => {
       console.log(error)
-      self.postMessage({action: 'error'})
+      self.postMessage({result: 'error'})
     })
     .on('end', () => {
-      self.postMessage({ action: 'results' })
+      self.postMessage({result: 'end'})
     })
     .save(data.thumbPath)
 }
