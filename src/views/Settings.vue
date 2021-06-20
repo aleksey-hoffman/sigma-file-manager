@@ -281,6 +281,12 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     label="Launch app on system login"
                     hide-details
                   ></v-switch>
+
+                  <v-switch
+                    v-model="appPropertiesOpenAsHidden"
+                    label="Launch app in hidden state"
+                    hide-details
+                  ></v-switch>
                 </template>
               </section-settings>
 
@@ -1243,6 +1249,7 @@ export default {
       spellcheck: 'storageData.settings.spellcheck',
       globalSearchDisallowedPathsItems: 'storageData.settings.globalSearch.disallowedPathsItems',
       appPropertiesOpenAtLogin: 'storageData.settings.appProperties.openAtLogin',
+      appPropertiesOpenAsHidden: 'storageData.settings.appProperties.openAsHidden',
       homeBannerValue: 'storageData.settings.homeBanner.value',
     }
     const objects = {}

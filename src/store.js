@@ -391,7 +391,8 @@ export default new Vuex.Store({
       settings: {
         fileName: 'settings.json',
         appProperties: {
-          openAtLogin: true
+          openAtLogin: true,
+          openAsHidden: false,
         },
         // TODO: Move to stats:
         time: {

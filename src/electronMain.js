@@ -95,6 +95,7 @@ function createMainWindow () {
   windows.main = new electron.BrowserWindow({
     title: 'Sigma file manager',
     icon: PATH.join(__static, '/icons/logo-1024x1024.png'),
+    show: !storageData['storageData.settings.appProperties.openAsHidden'],
     width: 1280,
     height: 720,
     minWidth: 500,
