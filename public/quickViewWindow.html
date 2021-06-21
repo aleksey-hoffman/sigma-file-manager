@@ -76,13 +76,6 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         return safePath
       }
       
-      function getSafeURL (path) {
-        const safeFileProtocol = process.env.NODE_ENV === 'development'
-         ? 'file'
-         : 'sigma-file-manager'
-        return `${safeFileProtocol}://${getUrlSafePath(path)}`
-      }
-      
       function adjastWindowToContentSize (w, h) {
         if (w && h && w > 0 && h > 0) {
           try {
@@ -120,7 +113,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         // Load the file and adjust window size
         if (isVideo) {
           const videoNode = document.createElement('video')
-          videoNode.setAttribute('src', getSafeURL(data.path))
+          videoNode.setAttribute('src', getUrlSafePath(data.path))
           videoNode.setAttribute('controls', true)
           videoNode.setAttribute('autoplay', true)
           contentContainerNode.appendChild(videoNode)
@@ -132,7 +125,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         }
         else if (isImage) {
           const imageNode = document.createElement('img')
-          imageNode.setAttribute('src', getSafeURL(data.path))
+          imageNode.setAttribute('src', getUrlSafePath(data.path))
           contentContainerNode.appendChild(imageNode)
           imageNode.addEventListener('load', event => {
             let w = imageNode.naturalWidth
@@ -144,7 +137,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           const webviewNode = document.createElement('webview')
           webviewNode.setAttribute('id', 'content-webview')
           webviewNode.setAttribute('partition', 'quickView')
-          webviewNode.setAttribute('src', getSafeURL(data.path))
+          webviewNode.setAttribute('src', getUrlSafePath(data.path))
           contentContainerNode.appendChild(webviewNode)
         }
         // Wait before showing the window in case the file is not supported
