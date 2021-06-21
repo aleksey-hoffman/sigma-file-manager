@@ -4147,16 +4147,14 @@ export default new Vuex.Store({
       // Prevent 2 consecutive calls to this function:
       // - Lclick => dir item deselect (1st call)
       // - => currentDir select (2nd call)
-      const shouldBreakOut = item.path === store.state.navigatorView.infoPanelData.properties.path
+      const shouldBreakOut = item?.path === store.state.navigatorView?.infoPanelData?.itemProps?.path
       if (shouldBreakOut) {return false}
       if (typeof item === 'string') {
         item = await store.dispatch('FETCH_DIR_ITEM_INFO', item)
       }
-      else {
-        store.state.navigatorView.infoPanelData = await store.dispatch('FETCH_INFO_PANEL_DATA', item)
-        store.dispatch('TERMINATE_ALL_FETCH_DIR_SIZE')
-        store.dispatch('AUTO_CALCULATE_DIR_SIZE', item)
-      }
+      store.state.navigatorView.infoPanelData = await store.dispatch('FETCH_INFO_PANEL_DATA', item)
+      store.dispatch('TERMINATE_ALL_FETCH_DIR_SIZE')
+      store.dispatch('AUTO_CALCULATE_DIR_SIZE', item)
     },
     AUTO_CALCULATE_DIR_SIZE (store, item) {
       const isRootDir = PATH.parse(item.path).base === ''
