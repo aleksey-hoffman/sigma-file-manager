@@ -61,6 +61,32 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           </span>
         </v-tooltip>
 
+        <!-- item::button:support-link -->
+        <v-tooltip bottom>
+          <template v-slot:activator="{ on }">
+            <v-btn
+              v-on="on"
+              v-if="item.supportLink"
+              @click.stop="$utils.openLink(item.supportLink)"
+              icon
+              class="media-picker__item-icon--support-link"
+            >
+              <v-icon
+              >mdi-heart-outline
+              </v-icon>
+            </v-btn>
+          </template>
+          <span>
+            Support this artist
+            <v-layout align-center>
+              <v-icon class="mr-3" size="16px">
+                mdi-open-in-new
+              </v-icon>
+              {{item.supportLink}}
+            </v-layout>
+          </span>
+        </v-tooltip>
+
         <!-- item::button:remove -->
         <v-tooltip bottom>
           <template v-slot:activator="{ on }">
@@ -334,6 +360,7 @@ export default {
 
 .v-btn.media-picker__item-icon--selected,
 .v-btn.media-picker__item-icon--source-link,
+.v-btn.media-picker__item-icon--support-link,
 .v-btn.media-picker__item-icon--remove {
   z-index: 2;
   padding: 18px;
@@ -342,11 +369,13 @@ export default {
 
 .v-btn.media-picker__item-icon--selected .v-icon,
 .v-btn.media-picker__item-icon--source-link .v-icon,
+.v-btn.media-picker__item-icon--support-link .v-icon,
 .v-btn.media-picker__item-icon--remove .v-icon {
   color: var(--color-2) !important;
 }
 
-.v-btn.media-picker__item-icon--source-link {
+.v-btn.media-picker__item-icon--source-link,
+.v-btn.media-picker__item-icon--support-link {
   opacity: 0;
 }
 
@@ -362,7 +391,9 @@ export default {
   }
 
 .media-picker__item:hover
-  .media-picker__item-icon--source-link {
+  .media-picker__item-icon--source-link,
+.media-picker__item:hover
+  .media-picker__item-icon--support-link {
     opacity: 1;
   }
 
