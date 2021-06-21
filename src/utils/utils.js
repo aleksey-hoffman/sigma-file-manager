@@ -122,11 +122,20 @@ export default {
       title: 'Text was copied to clipboard'
     })
   },
+  /** Encode URL, replacing all URL-unsafe 
+  * characters (except slash) with hex representation
+  * @param {string} path
+  * @returns {string}
+  */
   getUrlSafePath (path) {
-    const safePath = path
-      .replace(/#/g, '%23')
-      .replace(/'/g, '%27')
-    return safePath
+    let colonCharPlacholder = `PLACEHOLDER-${this.getHash()}`
+    return path
+      .replace(/\\/g, '/')
+      .replace(/:/g, colonCharPlacholder)
+      .split('/')
+      .map(pathItem => encodeURIComponent(pathItem))
+      .join('/')
+      .replace(new RegExp(colonCharPlacholder, 'g'), ':')
   },
   /** Returns the width of specified HTML node content (without padding)
   * @param {HTMLElement} node
