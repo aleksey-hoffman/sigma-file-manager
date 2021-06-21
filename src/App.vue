@@ -4,7 +4,12 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <template>
-  <v-app :data-theme-type="themeType">
+  <v-app 
+    :data-theme-type="themeType" 
+    :class="{
+      'layout-no-transition': classLayoutNoTransition
+    }"
+  >
     <!-- global-components -->
     <window-toolbar/>
     <action-toolbar/>
@@ -202,6 +207,9 @@ export default {
           value
         })
       }
+    },
+    classLayoutNoTransition () {
+      return this.$route.name === 'home'
     }
   },
   methods: {
@@ -1761,6 +1769,19 @@ html {
 .v-main {
   transition: 0.5s ease !important;
 }
+
+#app.layout-no-transition
+  .v-navigation-drawer,
+#app.layout-no-transition
+  .window-toolbar__header-container,
+#app.layout-no-transition
+  .v-toolbar,
+#app.layout-no-transition
+  .v-footer,
+#app.layout-no-transition
+  .v-main {
+    transition: 0s ease !important;
+  }
 
 button.v-btn.v-btn--disabled
   .v-btn__content,
