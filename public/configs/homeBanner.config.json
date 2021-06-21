@@ -33,16 +33,27 @@
     {
       "positionY": 10,
       "fileNameBase": "Out of time by Alena Aenami.jpg",
-      "sourceLink": "https://www.artstation.com/artwork/mD3XvZ"
+      "sourceLink": "https://www.artstation.com/artwork/mD3XvZ",
+      "supportLink": "https://www.patreon.com/aenamiart"
     },
     {
       "positionY": 30,
       "fileNameBase": "Serenity by Alena Aenami.jpg",
-      "sourceLink": "https://www.artstation.com/artwork/reodm"
+      "sourceLink": "https://www.artstation.com/artwork/reodm",
+      "supportLink": "https://www.patreon.com/aenamiart"
     },
     {
       "fileNameBase": "Wait by Alena Aenami.jpg",
-      "sourceLink": "https://www.artstation.com/artwork/lVJXXe"
+      "sourceLink": "https://www.artstation.com/artwork/lVJXXe",
+      "supportLink": "https://www.patreon.com/aenamiart"
+    },
+    {
+      "fileNameBase": "Dragon's Nest by Klaus Pillon.jpg",
+      "sourceLink": "https://www.artstation.com/artwork/KrrA9"
+    },
+    {
+      "fileNameBase": "The City Before The Wall by Klaus Pillon.jpg",
+      "sourceLink": "https://www.artstation.com/artwork/glyNx"
     },
     {
       "fileNameBase": "Discovered planet by Darius Kalinauskas.jpg",
