@@ -26,8 +26,8 @@
   "scripts": {
     "serve": "vue-cli-service serve",
     "lint": "vue-cli-service lint",
-    "electron:build": "node ./src/prepareFilesForBuild.js && vue-cli-service electron:build",
-    "electron:serve": "node ./src/prepareFilesForDev.js && vue-cli-service electron:serve",
+    "electron:build": "vue-cli-service electron:build",
+    "electron:serve": "vue-cli-service electron:serve",
     "postinstall": "electron-builder install-app-deps",
     "postuninstall": "electron-builder install-app-deps",
     "nibble": "eslint-nibble *"
