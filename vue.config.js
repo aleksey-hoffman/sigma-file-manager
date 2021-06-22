@@ -1,3 +1,5 @@
+const CopyPlugin = require('copy-webpack-plugin')
+
 module.exports = {
   configureWebpack: {
     resolve: {
@@ -18,7 +20,12 @@ module.exports = {
           loader: 'node-loader'
         }
       ]
-    }
+    },
+    plugins: [
+      new CopyPlugin([
+        {from: './src', to: 'src'}
+      ])
+    ],
   },
   pages: {
     index: {
