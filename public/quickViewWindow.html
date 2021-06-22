@@ -54,38 +54,41 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
   </head>
   <body>
     <div id="content-container"></div>
-    <script>      
-      const { remote, ipcRenderer } = require('electron')
-      const PATH = require('path')
-      const MIME = require('mime-types')
-      const currentWindow = remote.getCurrentWindow()
-      const contentContainerNode = document.querySelector('#content-container')
+    <script type="module">
+      const electron = require('electron')
+      let sharedUtils
 
-      let status = {
+      if (isDev()) {
+        sharedUtils = require('../src/utils/sharedUtils.js')
+      }
+      else {
+        sharedUtils = require('./src/utils/sharedUtils.js')
+      }
+
+      let currentWindow = electron.remote.getCurrentWindow()
+      let contentContainerNode = document.querySelector('#content-container')
+      let state = {
         isCanceled: false
       }
-      
-      /** Removes URL-unsafe symbols like '#'
-      * @param {string} params.prop1
-      * @returns {string}
-      */
-      function getUrlSafePath (path) {
-        const safePath = path
-          .replace(/#/g, '%23')
-          .replace(/'/g, '%27')
-        return safePath
+
+      initListeners()
+
+      function isDev (fileWidth, fileHeight) {
+        // process.env.NODE_ENV is undefined in production
+        // Alternative method: require('electron').remote.app.isPackaged
+        return process.env.NODE_ENV === 'development'
       }
-      
-      function adjastWindowToContentSize (w, h) {
-        if (w && h && w > 0 && h > 0) {
+
+      function adjastWindowToContentSize (fileWidth, fileHeight) {
+        if (fileWidth && fileHeight && fileWidth > 0 && fileHeight > 0) {
           try {
-            if (w > h) {
-              const ratio = w / h
+            if (fileWidth > fileHeight) {
+              const ratio = fileWidth / fileHeight
               currentWindow.setContentSize(1280, Math.round(1280 / ratio))
               currentWindow.center()
             }
             else {
-              const ratio = h / w
+              const ratio = fileHeight / fileWidth
               currentWindow.setContentSize(Math.round(720 / ratio), 720)
               currentWindow.center()
             }
@@ -96,62 +99,72 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         }
       }
 
-      // Init listeners     
-      window.addEventListener('keydown', (event) => {
-        if (event.code === 'Space' || event.code === 'Escape') {
-          currentWindow.close()
-        }
-      })
-      ipcRenderer.on('load:webview', (event, data) => {
-        const ext = PATH.extname(data.path)
-        const mime = MIME.lookup(ext) || ''
-        const isImage = mime.includes('image/')
-        const isVideo = mime.includes('video/')
-        const isAudio = mime.includes('audio/')
-        const isText = mime.includes('text/')
-        const isArchive = mime.includes('/x-7z') || mime.includes('/zip') || mime.includes('/x-tar')
-        // Load the file and adjust window size
-        if (isVideo) {
-          const videoNode = document.createElement('video')
-          videoNode.setAttribute('src', getUrlSafePath(data.path))
-          videoNode.setAttribute('controls', true)
-          videoNode.setAttribute('autoplay', true)
-          contentContainerNode.appendChild(videoNode)
-          videoNode.addEventListener('resize', event => {
-            let w = videoNode.videoWidth
-            let h = videoNode.videoHeight
-            adjastWindowToContentSize(w, h)
-          }, false)
-        }
-        else if (isImage) {
-          const imageNode = document.createElement('img')
-          imageNode.setAttribute('src', getUrlSafePath(data.path))
-          contentContainerNode.appendChild(imageNode)
-          imageNode.addEventListener('load', event => {
-            let w = imageNode.naturalWidth
-            let h = imageNode.naturalHeight
-            adjastWindowToContentSize(w, h)
-          }, false)
-        }
-        else {
-          const webviewNode = document.createElement('webview')
-          webviewNode.setAttribute('id', 'content-webview')
-          webviewNode.setAttribute('partition', 'quickView')
-          webviewNode.setAttribute('src', getUrlSafePath(data.path))
-          contentContainerNode.appendChild(webviewNode)
-        }
+      function showWindow () {
         // Wait before showing the window in case the file is not supported
         // Otherwise window will flash (close soon after being opened)
         setTimeout(() => {
-          if (!status.isCanceled) {
+          if (!state.isCanceled) {
             currentWindow.show()
           }
         }, 200)
-      })
-      ipcRenderer.on('load:webview::cancel', (event, data) => {
-        status.isCanceled = true
-        console.log('cancel', status.isCanceled)
-      })
+      }
+
+      function renderFile (params) {
+        if (params.fileType.mimeDescription === 'video') {renderVideoNode(params.data)}
+        else if (params.fileType.mimeDescription === 'image') {renderImageNode(params.data)}
+        else {renderOtherFileTypeNode(params.data)}
+      }
+
+      function renderVideoNode (data) {
+        let videoNode = document.createElement('video')
+        videoNode.setAttribute('src', sharedUtils.getUrlSafePath(data.path))
+        videoNode.setAttribute('controls', true)
+        videoNode.setAttribute('autoplay', true)
+        contentContainerNode.appendChild(videoNode)
+        videoNode.addEventListener('resize', event => {
+          let fileWidth = videoNode.videoWidth
+          let fileHeight = videoNode.videoHeight
+          adjastWindowToContentSize(fileWidth, fileHeight)
+        }, false)
+      }
+
+      function renderImageNode (data) {
+        let imageNode = document.createElement('img')
+        imageNode.setAttribute('src', sharedUtils.getUrlSafePath(data.path))
+        contentContainerNode.appendChild(imageNode)
+        imageNode.addEventListener('load', event => {
+          let fileWidth = imageNode.naturalWidth
+          let fileHeight = imageNode.naturalHeight
+          adjastWindowToContentSize(fileWidth, fileHeight)
+        }, false)
+      }
+
+      function renderOtherFileTypeNode (data) {
+        let webviewNode = document.createElement('webview')
+        webviewNode.setAttribute('id', 'content-webview')
+        webviewNode.setAttribute('partition', 'quickView')
+        webviewNode.setAttribute('src', sharedUtils.getUrlSafePath(data.path))
+        contentContainerNode.appendChild(webviewNode)
+      }
+
+      function initListeners () {
+        window.addEventListener('keydown', (event) => {
+          if (event.code === 'Space' || event.code === 'Escape') {
+            event.preventDefault()
+            currentWindow.close()
+          }
+        })
+
+        electron.ipcRenderer.on('load:webview', (event, data) => {
+          const fileType = sharedUtils.getFileType(data.path)
+          renderFile({data, fileType})
+          showWindow()
+        })
+
+        electron.ipcRenderer.on('load:webview::cancel', (event, data) => {
+          state.isCanceled = true
+        })
+      }
     </script>
   </body>
 </html>
