@@ -434,7 +434,7 @@ async function fetchAppStorageData () {
 }
 
 async function initAppUpdater () {
-  if (storageData['storageData.settings.appUpdates.autoCheck']) {
+  if ([true, undefined].includes(storageData['storageData.settings.appUpdates.autoCheck'])) {
     await checkAppUpdates()
   }
 }
@@ -445,8 +445,7 @@ async function checkAppUpdates () {
     currentVersion: appVersion,
     onUpdateAvailable: (payload) => {
       showNativeNotificationUpdateAvailable(payload)
-      showBuiltInNotificationUpdateAvailable(payload)
-      // handleAutoUpdate(payload)
+      handleAutoUpdate(payload)
     }
   })
 }
@@ -454,7 +453,7 @@ async function checkAppUpdates () {
 function showNativeNotificationUpdateAvailable (payload) {
   const notificationParams = {
     title: 'Update available',
-    body: `Sigma file manager v${payload.latestVersion}`
+    body: `Sigma File Manager v${payload.latestVersion}`
   }
   const updateNotification = new electron.Notification(notificationParams)
   updateNotification.on('click', () => {
@@ -463,13 +462,38 @@ function showNativeNotificationUpdateAvailable (payload) {
   updateNotification.show()
 }
 
-function showBuiltInNotificationUpdateAvailable (payload) {
+async function handleAutoUpdate (payload) {
+  const autoDownload = [true, undefined].includes(storageData['storageData.settings.appUpdates.autoDownload'])
+  const autoInstall = [true, undefined].includes(storageData['storageData.settings.appUpdates.autoInstall'])
+  if (autoDownload) {
+    if (autoInstall) {
+      payload.autoInstall = true
+      initUpdateAction({
+        payload, 
+        action: 'DOWNLOAD_APP_UPDATE'
+      })
+    }
+    else {
+      initUpdateAction({
+        payload, 
+        action: 'DOWNLOAD_APP_UPDATE'
+      })
+    }
+  }
+  else {
+    initUpdateAction({
+      payload, 
+      action: 'HANDLE_APP_UPDATE_AVAILABLE'
+    })
+  }
+}
+
+async function initUpdateAction (params) {
   // Delay to make sure App.vue is loaded
   setTimeout(() => {
-     // windows.main.webContents.send('check-app-updates')
     windows.main.webContents.send('store:action', {
-      action: 'HANDLE_APP_UPDATE_AVAILABLE',
-      params: payload
+      action: params.action,
+      params: params.payload
     })
   }, 5000)
 }
@@ -488,34 +512,6 @@ function openFileInQuickViewWindow (path) {
     _load()
   }
 }
-
-// TODO: finish update auto install
-// async function handleAutoUpdate (payload) {
-//   const autoDownload = storageData['storageData.settings.appUpdates.autoDownload']
-//   const askBeforeAutoInstall = storageData['storageData.settings.appUpdates.askBeforeAutoInstall']
-//   const autoInstall = storageData['storageData.settings.appUpdates.autoInstall']
-//   if (autoDownload) {
-//     const updateFileData = await downloadUpdate(payload)
-//     // if (!askBeforeAutoInstall && autoInstall) {
-//     //   installUpdate(updateFileData)
-//     // }
-//   }
-// }
-
-// async function downloadUpdate (payload) {
-//   return new Promise((resolve, reject) => {
-//     setTimeout(() => {
-//       windows.main.webContents.send('store:action', {
-//         action: 'DOWNLOAD_APP_UPDATE',
-//         params: payload
-//       })
-//     }, 6000)
-//   })
-// }
-
-// function installUpdate (updateFileData) {
-//   console.log('install', updateFileData)
-// }
 
 async function downloadFile (payload) {
   const resultInfo = await downloadManager.download(windows.main, {
