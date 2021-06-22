@@ -5235,17 +5235,26 @@ export default new Vuex.Store({
       // Remove "update-available" item from notifications list
       state.notifications = state.notifications.filter(item => item.type !== 'update-available')
     },
-    DOWNLOAD_APP_UPDATE ({ state, commit, dispatch, getters }, payload) {
-      const { latestVersion, downloadLink, size } = payload
+    DOWNLOAD_APP_UPDATE (store, params) {
       electron.ipcRenderer.send('download-file', {
-        url: downloadLink,
-        dir: state.appPaths.updateDownloadDir,
+        url: params.downloadLink,
+        dir: store.state.appPaths.updateDownloadDir,
         hashID: utils.getHash(),
-        size,
+        size: params.size,
         isUpdate: true
       })
       electron.ipcRenderer.once('download-file-done', (event, info) => {
-        dispatch('HANDLE_APP_UPDATE_DOWNLOADED', { latestVersion, info })
+        if (params.autoInstall) {
+          // Remove 'progress' notification
+          eventHub.$emit('notification', {
+            action: 'hide',
+            hashID: info.hashID
+          })
+          store.dispatch('OPEN_FILE', `${store.state.appPaths.updateDownloadDir}/${info.filename}`)
+        }
+        else {
+          store.dispatch('HANDLE_APP_UPDATE_DOWNLOADED', {latestVersion: params.latestVersion, info})
+        }
       })
     },
     CHECK_IF_UPDATE_INSTALLED ({ state, commit, dispatch, getters }) {
