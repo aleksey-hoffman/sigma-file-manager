@@ -9,6 +9,7 @@ import router from './router'
 import store from './store'
 import vuetify from './plugins/vuetify'
 import utils from './utils/utils'
+import sharedUtils from './utils/sharedUtils'
 import localizeUtils from './utils/localizeUtils'
 import storeUtils from './utils/storeUtils'
 import { eventHub } from './utils/eventHub'
@@ -86,6 +87,7 @@ require('@mdi/font/css/materialdesignicons.css')
 require('@fortawesome/fontawesome-free/css/all.css')
 
 Vue.prototype.$utils = utils
+Vue.prototype.$sharedUtils = sharedUtils
 Vue.prototype.$localizeUtils = localizeUtils
 Vue.prototype.$storeUtils = storeUtils
 Vue.prototype.$localize = localize

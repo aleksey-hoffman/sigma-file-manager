@@ -20,7 +20,6 @@ const downloadManager = require('./utils/downloadManager')
 const SigmaAppUpdater = require('./utils/sigmaAppUpdater.js')
 const StorageReader = require('./utils/storageReader.js')
 const externalLinks = require('./utils/externalLinks.js')
-const sharedUtils = require('./utils/sharedUtils.js').default
 const appVersion = electron.app.getVersion()
 const appUpdater = new SigmaAppUpdater()
 const storageReader = new StorageReader()

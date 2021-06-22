@@ -4,7 +4,7 @@
 
 const childProcess = require('child_process')
 const readline = require('readline')
-const sharedUtils = require('../utils/sharedUtils.js').default
+const sharedUtils = require('../utils/sharedUtils.js')
 
 class CLI {
   constructor () {

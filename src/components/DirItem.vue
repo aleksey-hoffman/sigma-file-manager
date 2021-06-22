@@ -444,7 +444,7 @@ export default {
         const image = new Image()
         // image.style.position = 'absolute'
         image.classList.add('dir-item-card__thumb')
-        image.setAttribute('src', this.$storeUtils.getSafePath(this.$utils.getUrlSafePath(thumbPath)))
+        image.setAttribute('src', this.$storeUtils.getSafePath(this.$sharedUtils.getUrlSafePath(thumbPath)))
         if (this.specifiedNavigatorLayout === 'list') {
           image.animate(
             [

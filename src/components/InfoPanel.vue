@@ -293,13 +293,13 @@ export default {
       const itemMime = this.selectedDirItemData.mimeDescription
       const mediaPath = this.selectedDirItems.getLast().realPath
       if (itemMime === 'image') {
-        return this.$storeUtils.getSafePath(this.$utils.getUrlSafePath(mediaPath))
+        return this.$storeUtils.getSafePath(this.$sharedUtils.getUrlSafePath(mediaPath))
       }
       else if (itemMime === 'audio') {
-        return this.$storeUtils.getSafePath(this.$utils.getUrlSafePath(mediaPath))
+        return this.$storeUtils.getSafePath(this.$sharedUtils.getUrlSafePath(mediaPath))
       }
       else if (itemMime === 'video') {
-        return `${this.$storeUtils.getSafePath(this.$utils.getUrlSafePath(mediaPath))}#t=0.5`
+        return `${this.$storeUtils.getSafePath(this.$sharedUtils.getUrlSafePath(mediaPath))}#t=0.5`
       }
       else {
         return ''

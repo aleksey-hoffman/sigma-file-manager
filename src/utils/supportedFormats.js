@@ -27,7 +27,7 @@ function includes (params) {
   }
 }
 
-export {
+module.exports = {
   formats,
   includes
 } 

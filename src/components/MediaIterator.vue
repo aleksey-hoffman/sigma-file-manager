@@ -268,11 +268,11 @@ export default {
       let element
       if (elementType === 'image') {
         element = new Image()
-        element.setAttribute('src', this.$storeUtils.getSafePath(this.$utils.getUrlSafePath(path)))
+        element.setAttribute('src', this.$storeUtils.getSafePath(this.$sharedUtils.getUrlSafePath(path)))
       }
       else if (elementType === 'video') {
         element = document.createElement('video')
-        element.setAttribute('src', this.$storeUtils.getSafePath(this.$utils.getUrlSafePath(path)) + '#t=0.5')
+        element.setAttribute('src', this.$storeUtils.getSafePath(this.$sharedUtils.getUrlSafePath(path)) + '#t=0.5')
       }
       element.classList.add('media-picker__item-thumb')
       element.classList.add('fade-in-1s')
