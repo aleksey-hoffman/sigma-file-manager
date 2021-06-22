@@ -243,7 +243,6 @@ function initWindowListeners (name) {
       createQuickViewWindow()
     })
     function _willDownloadHandler (event, item, webContents) {
-      console.log('quickViewWindow will-download handler')
       event.preventDefault()
       const fileURL = item.getURL()
       windows.quickViewWindow.webContents.send('load:webview::cancel')
