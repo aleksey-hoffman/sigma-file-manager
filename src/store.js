@@ -17,6 +17,7 @@ import {readFile, readFileSync, writeFile, writeFileSync} from 'atomically'
 const electron = require('electron')
 const electronRemote = require('@electron/remote')
 const fsExtra = require('fs-extra')
+const sharedUtils = require('./utils/sharedUtils')
 const eventHub = require('./utils/eventHub').eventHub
 const localize = require('./utils/localize')
 const os = require('os')
@@ -2733,6 +2734,7 @@ export default new Vuex.Store({
         },
         ...options
       }
+      options.path = sharedUtils.normalizePath(options.path)
 
       store.dispatch('SET_NAVIGATOR_STATE')
       store.dispatch('LOAD_ROUTE', 'navigator')

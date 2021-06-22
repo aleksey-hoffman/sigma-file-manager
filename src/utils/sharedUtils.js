@@ -71,6 +71,17 @@ module.exports = {
       .replace(/\\/g, 'Backslash')
     return shortcut
   },
+  normalizePath (path) {
+    if (!path || path === '') {return ''}
+    if (['linux', 'darwin'].includes(process.platform)) {
+      // Add '/' to index 0. Node fs throws ENOENT error 
+      // if path doesn't start with '/'
+      if (path[0] !== '/') {
+        path = `/${path}`
+      }
+    }
+    return path
+  },
   getFileType (path, type = 'file') {
     let data = {
       mime: '', 
