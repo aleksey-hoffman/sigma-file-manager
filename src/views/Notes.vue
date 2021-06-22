@@ -101,7 +101,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             <div class="note-card__container">
               <note-card
                 v-show="note.group === group.value"
-                v-for="note in filteredNotes"
+                v-for="note in filteredExistingNotes"
                 :key="note.hashID"
                 :note="note"
               >
@@ -118,6 +118,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <script>
 import { mapFields } from 'vuex-map-fields'
+import itemFilter from '../utils/itemFilter'
 
 export default {
   name: 'notes',
@@ -145,7 +146,6 @@ export default {
       notes: 'storageData.notes.items',
       noteGroups: 'storageData.notes.groups',
       filterQuery: 'filterField.view.notes.query',
-      filterQueryMatchedItems: 'filterField.view.notes.matchedItems',
       currentNotesList: 'currentNotesList'
     }),
     notesListIsEmpty () {
@@ -155,28 +155,33 @@ export default {
       return [...this.notes.filter(note => note.isTrashed)].length === 0
     },
     ungroupedNotes () {
-      const ungroupedNotes = [...this.filteredNotes.filter(note => {
+      const ungroupedNotes = [...this.filteredExistingNotes.filter(note => {
         const groupIsDefined = this.noteGroups.some(group => group.value === note.group)
         return note.group === null || !groupIsDefined
       })]
       return ungroupedNotes
     },
     filteredNotes () {
-      const items = this.filterQuery.length > 0
-        ? this.filterQueryMatchedItems
-        : this.notes
-      return [...items].filter(note => !note.isTrashed)
+      return this.getItemsMatchingFilter(this.notes)
+    },
+    filteredExistingNotes () {
+      return this.filteredNotes.filter(note => !note.isTrashed)
     },
     filteredDeletedNotes () {
-      const items = this.filterQuery.length > 0
-        ? this.filterQueryMatchedItems
-        : this.notes
-      return [...items].filter(note => note.isTrashed)
+      return this.filteredNotes.filter(note => note.isTrashed)
     }
   },
   methods: {
+    getItemsMatchingFilter (items) {
+      return itemFilter({
+        filterQuery: this.filterQuery,
+        items,
+        filterProperties: this.$store.state.filterField.view[this.$route.name].filterProperties,
+        filterQueryOptions: this.$store.state.filterField.view[this.$route.name].options
+      })
+    },
     showNoteGroup (group) {
-      const groupHasNotes = this.filteredNotes.some(note => note.group === group.value)
+      const groupHasNotes = this.filteredExistingNotes.some(note => note.group === group.value)
       return groupHasNotes
     },
     onDrop (dropResult) {
