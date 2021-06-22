@@ -335,22 +335,27 @@ export default {
 
           // Handle transfer type: local file / directory
           const localItems = dropEvent.dataTransfer.files
-          localItems.forEach(item => {
-            promises.push(
-              this.handleLocalItemTransfer(dropEvent.dataTransfer, item)
-            )
-          })
+          
+          if (dropEvent.dataTransfer.items) {
+            if (dropEvent.dataTransfer.items[0].kind === 'file') {
+              for (const file of dropEvent.dataTransfer.files) {
+                promises.push(
+                  this.handleLocalItemTransfer(dropEvent.dataTransfer, file)
+                )
+              }
+            }
+          }
 
           // Handle transfer type: URL / external file / HTML
           const transferItem = { data: {} }
-          dropEvent.dataTransfer.items.forEach(item => {
+          for (const item of dropEvent.dataTransfer.items) {
             if (item.kind === 'string' && item.type === 'text/plain') {
               transferItem.data.plain = dropEvent.dataTransfer.getData('text/plain')
             }
             if (item.kind === 'string' && item.type === 'text/html') {
               transferItem.data.html = dropEvent.dataTransfer.getData('text/html')
             }
-          })
+          }
           console.log('text/plain', dropEvent.dataTransfer.getData('text/plain'))
           console.log('text/html', dropEvent.dataTransfer.getData('text/html'))
 
