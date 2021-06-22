@@ -164,19 +164,16 @@ export default {
       return this.drag.dirItemInbound.value && isValidDropTarget
     },
     currentDragTarget () {
+      const navigatorDirTarget = this.$route.name === 'navigator' &&
+        this.inputState.ctrl
       const navigatorCurrentDirTarget = this.$route.name === 'navigator' &&
         !this.inputState.ctrl
       const homePageBannerCustomMediaUploadTarget = this.$route.name === 'home' &&
         this.dialogs.homeBannerPickerDialog.value
-      if (navigatorCurrentDirTarget) {
-        return 'navigatorCurrentDirTarget'
-      }
-      else if (homePageBannerCustomMediaUploadTarget) {
-        return 'homePageBannerCustomMediaUploadTarget'
-      }
-      else {
-        return ''
-      }
+      if (navigatorCurrentDirTarget) {return 'navigatorCurrentDirTarget'}
+      else if (navigatorDirTarget) {return 'navigatorDirTarget'}
+      else if (homePageBannerCustomMediaUploadTarget) {return 'homePageBannerCustomMediaUploadTarget'}
+      else {return ''}
     },
     inboundDragOverlayText () {
       if (this.currentDragTarget === 'navigatorCurrentDirTarget') {
@@ -320,15 +317,18 @@ export default {
           this.$store.dispatch('HANDLE_HOME_PAGE_BACKGROUND_ITEM_DROP', dropEvent)
             .then(() => resolve())
         }
-        else if (this.currentDragTarget === 'navigatorCurrentDirTarget') {
-          this.handleTargetDrop(dropEvent, 'navigatorCurrentDirTarget')
+        else if (['navigatorDirTarget', 'navigatorCurrentDirTarget'].includes(this.currentDragTarget)) {
+          this.handleTargetDrop(dropEvent, this.currentDragTarget)
             .then(() => resolve())
         }
       })
     },
     handleTargetDrop (dropEvent, target) {
       return new Promise((resolve, reject) => {
-        if (this.inputState.pointer.hoveredItem.path === '') { resolve() }
+        if (this.inputState.pointer.hoveredItem.path === '') { 
+          resolve()
+          return
+        }
         if (!this.dragStartedInsideWindow) {
           console.log(dropEvent.dataTransfer.items)
           const promises = []
