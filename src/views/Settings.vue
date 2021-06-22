@@ -1305,6 +1305,12 @@ export default {
           value: []
         })  
       }
+    },
+    autoCheckForAppUpdates (newValue) {
+      if (!newValue) {
+        this.autoDownloadAppUpdates = false
+        this.autoInstallAppUpdates = false 
+      }
     }
   },
   computed: {
