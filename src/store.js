@@ -2205,6 +2205,7 @@ export default new Vuex.Store({
               progress.eta = 0
               notificationData.timeout = 5000
               notificationData.title = status.isCanceled ? 'Download canceled' : 'Download failed'
+              notificationData.message = error
               notificationData.actionButtons = []
               eventHub.$emit('notification', notificationData)
               return
