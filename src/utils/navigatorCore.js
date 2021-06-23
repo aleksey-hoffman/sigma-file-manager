@@ -274,7 +274,7 @@ async function fetchDirItemData (path, nameBase, itemHeight) {
   if (shouldFetchExtraStats(path)) {
     state.isGettingStats = true
     const dir = PATH.parse(path).dir.replace(/\\/g, '/')
-    state.extraStats = await fsManager.getItemChildrenStats({ path })
+    // state.extraStats = await fsManager.getItemChildrenStats({ path })
     state.extraStatsDir = dir
     state.isGettingStats = false
   }
@@ -300,7 +300,7 @@ async function fetchDirItemData (path, nameBase, itemHeight) {
   try {
     // addExtraStatsProperty(dirItemData)
     dirItemData.stat = await getStat(path)
-    if (isObjectEmpty(dirItemData.stat)) {throw Error('inaccessible item')}
+    // if (isObjectEmpty(dirItemData.stat)) {throw Error('inaccessible item')}
     // console.log(dirItemData.path, isObjectEmpty(dirItemData.stat))
     dirItemData.isHidden = isHidden(dirItemData)
     dirItemData.isInaccessible = isObjectEmpty(dirItemData.stat)
