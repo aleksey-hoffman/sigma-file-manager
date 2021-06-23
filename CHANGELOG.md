@@ -1,5 +1,112 @@
 # CHANGELOG
 
+## v1.2.0 (2021-23-06)
+
+# Release Notes for v1.2.0:
+
+⚠**Warning:** the app is still in early development stage, use with caution! Before using the app, it's recommended, to copy important files to your cloud storage or an external drive in case something goes wrong. Try not to use it for working with important files, until it's thoroughly tested.
+
+## Milestones:
+
+💗 **(Goal: 1/500 individuals & 0/20 companies supporters)** The first supporter joined our community on Patreon: <a href="https://www.photoancestry.com/" title="Houston Photo Restoration">Houston Photo Restoration</a>
+When we meet the goal, I will be able to dedicate more of my time improving the app, and add new features more frequently.
+
+## New minor features:
+
+- **New setting**: switch: "display hidden files". Allows you to toggle visibility of files with `hidden` attribute.
+| Contributors: @mattm-malone, @aleksey-hoffman | PR: #75
+- **New setting**: switch: "launch app on system login" | b018abc
+- **New setting**: switch: "launch app in hidden state" | 3cf3f8b
+- **New setting**: switch: "download updates automatically" | da5330b
+- **New setting**: switch: "install updates automatically" | da5330b
+- **New setting**: menu: "custom pointer buttons actions". Allows you to choose the behavior of mouse buttons `3` and `4` | Fixes #35 | 1ec99bf
+- **Shortcuts**: new local shortcut  `F5: reloadDirectory` | Fixes #81 | 4a26f11
+- **UX**: Display read-only and immutable directory items | ace9953
+- **Archiver**: Added support for more file formats: | 774bbcf
+    - **Packing / unpacking**: 7z, XZ, BZIP2, GZIP, TAR, ZIP, WIM.
+    - **Unpacking only**: AR, ARJ, CAB, CHM, CPIO, CramFS, DMG, EXT, FAT, GPT, HFS, IHEX, ISO, LZH, LZMA, MBR, MSI, NSIS, NTFS, QCOW2, RAR, RPM, SquashFS, UDF, UEFI, VDI, VHD, VMDK, WIM, XAR, Z.
+
+## Other improvements:
+
+- **UI / community**: Added 3 new default artworks for the home banner | 0c251ec
+-  **Community**: Added support links (icons) to the artwork cards, so users can easily find a way to support the artists | 3b73b1f
+- **Animations**:
+    - **UX**: Removed page transition animation to make the app feel more responsive and improve user workflow speed by `300ms` on every page transition | 3fae2d0
+    - **UX**: Home page transition can now be disabled | 80ffd69
+-  **Notifications**:
+    - **UX**: Notifications will now have a color indicator, making it possible to check the operation status without even reading the notification title or message. The indicator was added only to a few notifications, more will be added soon | 4fb9b3e
+    - **UX**: Notifications will now pause their timer when hovered by the cursor, preventing them from closing before you finish reading them | 4fb9b3e
+    - **UX**: Dismissed notifications / operations will now be displayed in the notification menu. This will make it possible to, for example, undo some file operations a few minutes after the operation was finished, or interact with a dismissed ongoing operation (e.g. cancel an ongoing download event), etc. | 4fb9b3e
+    - **UX**: Notifications for archiving operations will now display a progress bar | fd7a643
+    - **UX**: Now, when the current directory is reloaded, a notification will be shown | 3450044
+- **UX**: Archiving operations (extraction) can now be canceled | fd7a643
+- **UX**: Setting "double-click delay" now has min, max values: `200-1000ms` | 27c7570
+- **UX**: Delete existing statistics when the "store statistics" setting is disabled | 1fe62de
+- **UX**: Enable "store statistics" setting by default so the features that depend on it work out of the box | 236410e
+- **UX**: Show a message (instructions) on the timeline page if the "store statistics" setting is disabled | 56f4d43
+- **UX**: Show the error message if URL download fails | 9ecdf7d
+- **UX**: The app will now handle all unsupported characters in the file names | ef1f469
+- **Dev**: Upgrade dependencies | 084cf48, acfb92c
+- **Dev / UX**: refactor shortcuts dialog UI and code | f94d661
+- **Dev / UX**: refactor quickView window code | 0a354b9
+- **Dev**: Small improvements and fixes in the code
+
+## Fixed:
+
+- **UI**: Fixed: noticeable UI shifting when opening the settings page | 748b33d
+- **UI**: Fixed: tooltip animations were not working as intended | 876769d
+- **UX**: Fixed: the app was creating multiple instances when it was re-opened from taskbar / desktop / start menu icon | Fixes #7 | 50643ef
+- **UX**: Fixed: directories containing read-only items were not loading on the 1st time they were opened | ace9953
+- **UX**: Fixed: auto updater was not working in 1.1.0 | 3120880
+- **UX**: Fixed: auto updater was not checking for updates | 35dfacc
+- **UX**: Fixed: image thumbnail generator stops working when it encounters an unsupported file type | d3a9bc7
+- **UX**: Fixed: filter was not working on the "notes" page | 9241bd4
+- **UX**: Fixed: file downloading was not working in "selective drop" mode | a711a1e
+- **UX**: Fixed: URL downloading was not working at all | c40e9de
+- **UX**: Fixed: "UI scaling" setting not being saved to storage | Fixes #103 | 01a90a0
+- **UX**: Fixed: "home banner visibility" setting not being saved to storage | Fixes #76 | 73cdc75
+- **UX**: Fixed: notifications with updating content couldn't be hidden | 4fb9b3e
+- **UX**: `Mac, Linux`: Fixed: navigating directories via address bar breaks navigator | 0947dee
+- **UX**: `Mac, Linux`: Fixed: updater couldn't check / download updates from within the app | b2afc2e
+
+## Notes
+
+- Linux and MacOS builds are still quite broken. Some features don't work as expected. The issues will be gradually fixed in future updates.
+
+## Supporters
+
+💗 This release was made possible by my Patreon supporters.
+They are the reason free, open-source software can exist.
+Show them some love, check out their work:
+
+#### GENEROUS SUPPORTERS
+<table>
+  <tbody>
+    <tr>
+      <td align="center" valign="middle">
+        <a href="https://www.photoancestry.com/" title="Houston Photo Restoration">
+          <img width="80px" height="80px" src="https://www.photoancestry.com/images/photo-restoration-houston.png">
+        </a>
+      </td>
+    </tr>
+    <tr>
+      <td align="center" valign="middle">
+        <a href="https://www.photoancestry.com/" title="Houston Photo Restoration">Houston Photo Restoration</a>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+See the full list of rewards, and consider join our community on Patreon to help me fund the development of this project:
+
+<a target="_blank" href="https://patreon.com/sigma_file_manager">
+  <img
+    src="https://github.com/aleksey-hoffman/sigma-file-manager/blob/main/.github/media/patreon_button.png"
+    width="164px"
+  />
+</a>
+
+
 ## v1.1.0 (2021-27-05)
 
 # Release Notes for v1.1.0:
