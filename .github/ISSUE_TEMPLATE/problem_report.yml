@@ -1,4 +1,4 @@
-name: Problem Report Form
+name: Problem Report
 description: Create a problem report to help improve the app
 labels: [bug]
 body:
