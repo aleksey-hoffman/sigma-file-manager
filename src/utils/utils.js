@@ -112,14 +112,15 @@ export default {
   getAverage (array) {
     return array.reduce((a, b) => a + b, 0) / array.length
   },
-  copyToClipboard (string) {
-    electron.clipboard.writeText(string)
+  copyToClipboard (params) {
+    electron.clipboard.writeText(params.text)
     eventHub.$emit('notification', {
       action: 'add',
       timeout: 2000,
       closeButton: true,
       icon: 'mdi-clipboard-text-multiple-outline',
-      title: 'Text was copied to clipboard'
+      title: params.title ?? 'Text was copied to clipboard',
+      message: params.message
     })
   },
   /** Encode URL, replacing all URL-unsafe 

@@ -70,10 +70,9 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             <template v-slot:activator="{ on }">
               <div
                 v-on="on"
-                @click.ctrl="$store.dispatch(
-                  'COPY_TEXT_TO_CLIPBOARD',
-                  {text: selectedDirItemData.title}
-                )"
+                @click.ctrl="$utils.copyToClipboard({
+                  text: selectedDirItemData.title
+                })"
                 class="info-panel__header__title"
                 :class="{'cursor-pointer': inputState.ctrl}"
               >{{selectedDirItemData.title}}
@@ -144,10 +143,9 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   <div
                     v-on="on"
                     v-show="!showGetDirSizeBtn && !showCancelGetDirSizeBtn"
-                    @click.ctrl="$store.dispatch(
-                      'COPY_TEXT_TO_CLIPBOARD',
-                      {text: $utils.prettyBytes(selectedDirItems.getLast().stat.size, 1)}
-                    )"
+                    @click.ctrl="$utils.copyToClipboard({
+                      text: $utils.prettyBytes(selectedDirItems.getLast().stat.size, 1)
+                    })"
                     class="info-panel__properties__item__value"
                     :class="{'cursor-pointer': inputState.ctrl}"
                   >
@@ -181,10 +179,9 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               <template v-slot:activator="{ on }">
                 <div
                   v-on="on"
-                  @click.ctrl="$store.dispatch(
-                    'COPY_TEXT_TO_CLIPBOARD',
-                    {text: item.value}
-                  )"
+                  @click.ctrl="$utils.copyToClipboard({
+                    text: item.value
+                  })"
                   class="info-panel__properties__item__value"
                   :class="{'cursor-pointer': inputState.ctrl}"
                 >{{item.value}}

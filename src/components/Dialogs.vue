@@ -1837,14 +1837,12 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             readonly single-line hide-details
           ></v-text-field>
           <v-btn
-            @click="$store.dispatch(
-              'COPY_TEXT_TO_CLIPBOARD',
-              {
-                text: dialogs.localShareManagerDialog.data.shareType === 'file'
-                  ? `${localServer.fileShare.address}`
-                  : `${localServer.directoryShare.address}`
-              }
-            )"
+            @click="$utils.copyToClipboard({
+              text: dialogs.localShareManagerDialog.data.shareType === 'file'
+                ? `${localServer.fileShare.address}`
+                : `${localServer.directoryShare.address}`,
+              title: 'Address was copied to clipboard'
+            })"
             small depressed
             class="button-1 ml-3"
           >copy
@@ -2385,7 +2383,10 @@ export default {
               title: 'Copy link',
               action: '',
               onClick: () => {
-                this.$utils.copyToClipboard(link)
+                this.$utils.copyToClipboard({
+                  text: link,
+                  title: 'Link was copied to clipboard'
+                })
               },
               closesNotification: false
             },

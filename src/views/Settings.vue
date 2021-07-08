@@ -860,7 +860,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
                     <v-btn
                       class="button-1 my-4 mr-3"
-                      @click="$utils.copyToClipboard(appPaths.storageDirectories.appStorageGlobalSearchData)"
+                      @click="$utils.copyToClipboard({text: appPaths.storageDirectories.appStorageGlobalSearchData})"
                       depressed small
                     >
                       <v-icon small class="mr-2">

@@ -913,10 +913,10 @@ export default {
           {
             title: 'copy address',
             onClick: () => {
-              this.$store.dispatch(
-                'COPY_TEXT_TO_CLIPBOARD',
-                {text: `${this.directoryShareIp}:${this.directorySharePort}/ftp`}
-              )
+              this.$utils.copyToClipboard({
+                text: `${this.directoryShareIp}:${this.directorySharePort}/ftp`,
+                title: 'Address was copied to clipboard'
+              })
             },
             closesNotification: false
           }
@@ -952,10 +952,10 @@ export default {
           {
             title: 'copy address',
             onClick: () => {
-              this.$store.dispatch(
-                'COPY_TEXT_TO_CLIPBOARD',
-                {text: `${this.fileShareIp}:${this.fileSharePort}`}
-              )
+              this.$utils.copyToClipboard({
+                text: `${this.fileShareIp}:${this.fileSharePort}`,
+                title: 'Address was copied to clipboard'
+              })
             },
             closesNotification: false
           }

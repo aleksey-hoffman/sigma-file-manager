@@ -3030,18 +3030,6 @@ export default new Vuex.Store({
           store.dispatch('OPEN_DIR_ITEM', item)
         })
     },
-    COPY_DIR_PATH_TO_OS_CLIPBOARD (store, params = {}) {
-      if (store.state.navigatorView.currentDir.path) {
-        if (!params.path) {
-          params.path = store.state.navigatorView.currentDir.path
-        }
-        store.dispatch('COPY_TEXT_TO_CLIPBOARD', {
-          text: params.path,
-          title: 'Path was copied to OS clipboard',
-          message: params.path
-        })
-      }
-    },
     OPEN_DIR_PATH_FROM_OS_CLIPBOARD (store) {
       const osClipboardText = electron.clipboard.readText()
       const path = PATH.normalize(osClipboardText)
@@ -3081,19 +3069,18 @@ export default new Vuex.Store({
           })
         })
     },
-    COPY_TEXT_TO_CLIPBOARD (store, params) {
-      electron.clipboard.writeText(params.text)
-      eventHub.$emit('notification', {
-        action: 'update-by-type',
-        type: 'copyValue',
-        timeout: 2000,
-        title: params.title ?? 'Text was copied to clipboard',
-        message: params.message
-      })
-    },
     COPY_CURRENT_DIR_PATH (store) {
       const path = store.state.navigatorView.currentDir.path
-      utils.copyToClipboard(path)
+      store.dispatch('COPY_DIR_PATH_TO_CLIPBOARD', {path})
+    },
+    COPY_DIR_PATH_TO_CLIPBOARD (store, params = {}) {
+      if (params.path) {
+        utils.copyToClipboard({
+          text: params.path,
+          title: 'Path was copied to clipboard',
+          message: params.path
+        })
+      }
     },
     OPEN_ADDRESS_BAR_EDITOR (store) {
       store.state.addressBarEditor = true
