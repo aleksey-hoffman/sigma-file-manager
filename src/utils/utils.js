@@ -127,7 +127,7 @@ export default {
         }
       }
       else {
-        params.message = params.text
+        params.message = `"${params.text}"`
       }
     }
     electron.clipboard.writeText(params.text)
