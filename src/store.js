@@ -1023,7 +1023,7 @@ export default new Vuex.Store({
           .replace(/\s/g, '')
           .replace(/Delete/g, 'del')
           .replace(/Backtick/g, '`')
-          .replace(/Plus/g, '=')
+          .replace(/Plus/g, '+')
           .replace(/Minus/g, '-')
           .replace(/</g, ',')
           .replace(/>/g, '.')

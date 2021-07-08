@@ -1539,9 +1539,13 @@ export default {
           else {
             // Bind specified action to shortcuts
             if (!value.isReadOnly) {
+              // Add additional (duplicate) listeners
+              if (value.shortcut === 'ctrl++') {
+                value.shortcut = ['ctrl++', 'ctrl+=']
+              }
               mousetrap.bind(value.shortcut, (event) => {
                 this.$store.dispatch('SHORTCUT_ACTION', { event, value })
-              }, 'keydown')
+              }, value.eventName ?? 'keydown')
             }
           }
         }

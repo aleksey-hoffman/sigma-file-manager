@@ -8,6 +8,7 @@
 //   dialogIsOpened: Boolean
 //   dirItemIsSelected: Boolean
 // }
+// eventName: String ('keydown'|'keypress')
 
 export default {
   toggleApp: {
@@ -86,6 +87,7 @@ export default {
     isGlobal: false,
     isReadOnly: false,
     conditions: {},
+    eventName: 'keypress',
     preventDefaultType: 'always',
     routes: ['all'],
     icon: 'mdi-plus',
