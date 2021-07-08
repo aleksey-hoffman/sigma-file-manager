@@ -113,9 +113,27 @@ export default {
     return array.reduce((a, b) => a + b, 0) / array.length
   },
   copyToClipboard (params) {
+    if (params.asPath) {
+      if (this.platform === 'win32') {
+        if (params.pathSlashes === 'single-backward') {
+          const processedPath = `"${params.text.replace(/\//g, '\\')}"`
+          params.text = processedPath
+          params.message = processedPath
+        }
+        else if (params.pathSlashes === 'double-backward') {
+          const processedPath = `"${params.text.replace(/\//g, '\\\\')}"`
+          params.text = processedPath
+          params.message = processedPath
+        }
+      }
+      else {
+        params.message = params.text
+      }
+    }
     electron.clipboard.writeText(params.text)
     eventHub.$emit('notification', {
-      action: 'add',
+      action: 'update-by-type',
+      type: 'copy-to-clipboard',
       timeout: 2000,
       closeButton: true,
       icon: 'mdi-clipboard-text-multiple-outline',

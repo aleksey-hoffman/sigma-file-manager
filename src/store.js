@@ -3078,7 +3078,11 @@ export default new Vuex.Store({
         utils.copyToClipboard({
           text: params.path,
           title: 'Path was copied to clipboard',
-          message: params.path
+          message: params.path,
+          asPath: true,
+          pathSlashes: sharedUtils.platform === 'win32'
+            ? 'single-backward'
+            : ''
         })
       }
     },
@@ -4053,41 +4057,74 @@ export default new Vuex.Store({
         .some(listItem => listItem.path === item.path)
       const isDirItemProtected = store.state.storageData.protected.items
         .some(listItem => listItem.path === item.path)
+      const copyShortcut = 'Ctrl + LClick'
+
+      let copyPathTooltip
+      if (sharedUtils.platform === 'win32') {
+        copyPathTooltip = `
+          <div>
+            <span class="inline-code--light">${copyShortcut}</span> 
+              - copy path with 
+              <span class="inline-code--light">\\</span> 
+              slashes
+          </div>
+          <div>
+            <span class="inline-code--light">Ctrl + Alt + LClick</span> 
+              - copy path with 
+              <span class="inline-code--light">\\\\</span> 
+              slashes
+          </div>
+        `
+      }
+      else {
+        copyPathTooltip = `${localize.get('tooltip_text_to_copy')}: ${copyShortcut}`
+      }
+
       // Define main properties
       const properties = [
         {
+          propName: 'path',
           title: localize.get('text_path'),
           value: item.path,
-          tooltip: `${localize.get('tooltip_text_to_copy')}: Ctrl + LClick`
+          tooltip: copyPathTooltip
         },
         {
+          propName: 'dateCreated',
           title: localize.get('text_created'),
           value: utils.formatDateTime(item.stat.birthtime, 'D MMM YYYY'),
-          tooltip: `${localize.get('tooltip_text_to_copy')}: Ctrl + LClick`
+          tooltip: `${localize.get('tooltip_text_to_copy')}: ${copyShortcut}`
         },
         {
+          propName: 'dateModified',
           title: localize.get('text_modified'),
           value: utils.formatDateTime(item.stat.mtime, 'D MMM YYYY'),
-          tooltip: `${localize.get('tooltip_text_to_copy')}: Ctrl + LClick`
+          tooltip: `${localize.get('tooltip_text_to_copy')}: ${copyShortcut}`
         },
         {
+          propName: 'dateChanged',
           title: localize.get('text_changed'),
           value: utils.formatDateTime(item.stat.ctime, 'D MMM YYYY'),
-          tooltip: `${localize.get('tooltip_text_to_copy')}: Ctrl + LClick`
+          tooltip: `${localize.get('tooltip_text_to_copy')}: ${copyShortcut}`
         },
         {
+          propName: 'permissions',
           title: localize.get('text_mode'),
           value: permissions,
-          tooltip: `${localize.get('tooltip_text_to_copy')}: Ctrl + LClick`
+          tooltip: `${localize.get('tooltip_text_to_copy')}: ${copyShortcut}`
         },
         {
+          propName: 'protected',
           title: localize.get('text_protected'),
           value: isDirItemProtected
             ? localize.get('text_yes')
             : localize.get('text_no'),
-          tooltip: `Protected items cannot be modified or deleted${process.platform === 'win32' ? ' (from within this app only)' : ''}. Protected items can be found on the dashboard page.`
+          tooltip: `
+            Protected items cannot be modified or deleted (from within this app only). 
+            Protected items can be found on the dashboard page.
+          `
         },
         {
+          propName: 'pinned',
           title: localize.get('text_pinned'),
           value: isDirItemPinned
             ? localize.get('text_yes')
@@ -4097,9 +4134,10 @@ export default new Vuex.Store({
       ]
       // Append conditional properties
       const realPath = {
+        propName: 'realPath',
         title: localize.get('text_real_path'),
         value: item.realPath,
-        tooltip: `${localize.get('tooltip_text_to_copy')}: Ctrl + LClick`
+        tooltip: copyPathTooltip
       }
       if (item.path !== item.realPath) {
         properties.splice(1, 0, realPath)

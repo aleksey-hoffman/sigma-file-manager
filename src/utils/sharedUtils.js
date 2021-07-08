@@ -9,6 +9,8 @@ const MIME = require('mime-types')
 const supportedFormats = require('./supportedFormats.js')
 
 module.exports = {
+  env: process.env.NODE_ENV,
+  platform: process.platform,
   getHash (length = 32) {
     let hashID = ''
     const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'

@@ -179,15 +179,13 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               <template v-slot:activator="{ on }">
                 <div
                   v-on="on"
-                  @click.ctrl="$utils.copyToClipboard({
-                    text: item.value
-                  })"
+                  @click="handleClickPropertyValue({event: $event, item})"
                   class="info-panel__properties__item__value"
                   :class="{'cursor-pointer': inputState.ctrl}"
                 >{{item.value}}
                 </div>
               </template>
-              <span>{{item.tooltip}}</span>
+              <span v-html="item.tooltip"></span>
             </v-tooltip>
           </v-layout>
         </div>
@@ -337,6 +335,29 @@ export default {
     }
   },
   methods: {
+    handleClickPropertyValue (params) {
+      const isPath = ['path', 'realPath'].includes(params.item.propName)
+      let title
+      if (isPath) {
+        title = 'Path was copied to clipboard'
+      }
+      if (params.event.ctrlKey && !params.event.altKey) {
+        this.$utils.copyToClipboard({
+          text: params.item.value,
+          asPath: isPath,
+          pathSlashes: 'single-backward',
+          title
+        })
+      }
+      else if (params.event.ctrlKey && params.event.altKey) {
+        this.$utils.copyToClipboard({
+          text: params.item.value,
+          asPath: isPath,
+          pathSlashes: 'double-backward',
+          title
+        })
+      }
+    },
     showPreviewItem (mediaType) {
       const itemMime = this.selectedDirItemData.mimeDescription
       return itemMime === mediaType
