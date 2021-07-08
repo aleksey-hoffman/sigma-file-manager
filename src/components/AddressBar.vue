@@ -120,27 +120,7 @@ export default {
       query: '',
       selectedSuggestionIndex: -1,
       autocompleteList: [],
-      autocompleteListMatchedItems: [],
-      addressBarMenuItems: [
-        {
-          title: 'Type in address manually',
-          action: 'OPEN_ADDRESS_BAR_EDITOR',
-          shortcut: 'Ctrl + /',
-          icon: 'mdi-cursor-text'
-        },
-        {
-          title: 'Copy path to clipboard',
-          action: 'COPY_CURRENT_DIR_PATH',
-          shortcut: 'Ctrl + Comma',
-          icon: 'far fa-copy'
-        },
-        {
-          title: 'Open copied path',
-          action: 'OPEN_DIR_PATH_FROM_OS_CLIPBOARD',
-          shortcut: 'Ctrl + Dot',
-          icon: 'far fa-clipboard'
-        }
-      ]
+      autocompleteListMatchedItems: []
     }
   },
   watch: {
@@ -159,8 +139,31 @@ export default {
   computed: {
     ...mapFields({
       currentDir: 'navigatorView.currentDir',
-      addressBarEditor: 'addressBarEditor'
+      addressBarEditor: 'addressBarEditor',
+      shortcuts: 'storageData.settings.shortcuts'
     }),
+    addressBarMenuItems () {
+      return [
+        {
+          title: 'Type in address manually',
+          action: 'OPEN_ADDRESS_BAR_EDITOR',
+          shortcut: this.shortcuts.focusAddressBar.shortcut,
+          icon: 'mdi-cursor-text'
+        },
+        {
+          title: 'Copy path to clipboard',
+          action: 'COPY_CURRENT_DIR_PATH',
+          shortcut: this.shortcuts.copyCurrentDirPath.shortcut,
+          icon: 'far fa-copy'
+        },
+        {
+          title: 'Open copied path',
+          action: 'OPEN_DIR_PATH_FROM_OS_CLIPBOARD',
+          shortcut: this.shortcuts.openCopiedPath.shortcut,
+          icon: 'far fa-clipboard'
+        }
+      ]
+    },
     addressParts () {
       try {
         const formattedList = []
