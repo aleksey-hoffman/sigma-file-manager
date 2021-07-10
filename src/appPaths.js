@@ -47,14 +47,14 @@ const FFMPEG = PATH.join(bin, 'ffmpeg', 'bin')
 const youtubeDl = PATH.join(bin, 'youtube-dl')
 const sevenZip = PATH.join(bin, '7-zip')
 
-let systemDirs
+let userDirs
 let bin7Zip
 let binYoutubeDl
 
 if (process.platform === 'win32') {
   bin7Zip = PATH.join(sevenZip, '7z.exe')
   binYoutubeDl = PATH.join(youtubeDl, 'youtube-dl.exe')
-  systemDirs = [
+  userDirs = [
     { name: 'Home directory', icon: 'mdi-folder-account-outline', path: home },
     { name: 'Desktop', icon: 'mdi-aspect-ratio', path: desktop },
     { name: 'Downloads', icon: 'mdi-download', path: downloads },
@@ -68,7 +68,7 @@ if (process.platform === 'win32') {
 else if (process.platform === 'linux') {
   bin7Zip = PATH.join(sevenZip, '7zz')
   binYoutubeDl = PATH.join(youtubeDl, 'youtube-dl')
-  systemDirs = [
+  userDirs = [
     { name: 'Home directory', icon: 'mdi-folder-account-outline', path: home },
     { name: 'Desktop', icon: 'mdi-aspect-ratio', path: desktop },
     { name: 'Downloads', icon: 'mdi-download', path: downloads },
@@ -81,7 +81,7 @@ else if (process.platform === 'linux') {
 else if (process.platform === 'darwin') {
   bin7Zip = PATH.join(sevenZip, '7zz')
   binYoutubeDl = PATH.join(youtubeDl, 'youtube-dl')
-  systemDirs = [
+  userDirs = [
     { name: 'Home directory', icon: 'mdi-folder-account-outline', path: home },
     { name: 'Desktop', icon: 'mdi-aspect-ratio', path: desktop },
     { name: 'Downloads', icon: 'mdi-download', path: downloads },
@@ -137,7 +137,7 @@ const appPaths = {
   storageFiles,
   storageDirectories,
   resources,
-  systemDirs,
+  userDirs,
   homeBannerMedia,
   userData,
   userDataRoot,

@@ -145,9 +145,9 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
         <div class="content-area__section">
           <basic-item-card-iterator
-            :items="systemDirs"
-            category="systemDir"
-            type="systemDir"
+            :items="userDirs"
+            category="userDir"
+            type="userDir"
           ></basic-item-card-iterator>
         </div>
 
@@ -216,7 +216,7 @@ export default {
     ...mapFields({
       appPaths: 'appPaths',
       windowSize: 'windowSize',
-      systemDirs: 'appPaths.systemDirs',
+      userDirs: 'appPaths.userDirs',
       homeBannerIsOffscreen: 'homeBannerIsOffscreen',
       homeBannerValue: 'storageData.settings.homeBanner.value',
       homeBannerHeight: 'storageData.settings.homeBanner.height',

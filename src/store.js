@@ -497,7 +497,7 @@ export default new Vuex.Store({
         markdownShortcuts: true,
         spellcheck: true,
         focusMainWindowOnDriveConnected: true,
-        showUserNameOnSystemDir: true,
+        showUserNameOnUserHomeDir: true,
         shortcuts: appPaths.shortcuts,
         localization: {
           selectedLanguage: {

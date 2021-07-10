@@ -481,7 +481,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   </div>
 
                   <v-switch
-                    v-model="showUserNameOnSystemDir"
+                    v-model="showUserNameOnUserHomeDir"
                     label="Show user name on 'home directory' card"
                     class="mt-0 pt-0"
                   ></v-switch>
@@ -1238,7 +1238,7 @@ export default {
       driveCardProgressType: 'storageData.settings.driveCard.progressType',
       driveCardShowProgress: 'storageData.settings.driveCard.showProgress',
       focusMainWindowOnDriveConnected: 'storageData.settings.focusMainWindowOnDriveConnected',
-      showUserNameOnSystemDir: 'storageData.settings.showUserNameOnSystemDir',
+      showUserNameOnUserHomeDir: 'storageData.settings.showUserNameOnUserHomeDir',
       autoCalculateDirSize: 'storageData.settings.autoCalculateDirSize',
       lastOpenedSettingsTabValue: 'storageData.settings.lastOpenedSettingsTab',
       groupDirItems: 'storageData.settings.groupDirItems',

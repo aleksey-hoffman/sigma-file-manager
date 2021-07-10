@@ -22,7 +22,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       <!-- card::overlays -->
       <div
         class="overlay--drag-over"
-        v-if="['dir', 'file', 'systemDir', 'drive'].includes(type)"
+        v-if="['dir', 'file', 'userDir', 'drive'].includes(type)"
         :class="{'is-visible': showDragOverOverlay(item)}"
       ></div>
 
@@ -66,7 +66,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         <!-- card::thumb: {type: system-dir} -->
         <div
           class="basic-item-card__thumb__inner"
-          v-if="type === 'systemDir'"
+          v-if="type === 'userDir'"
         >
           <v-icon
             class="basic-item-card__icon"
@@ -126,11 +126,11 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       <!-- card::content: {type: system-dir} -->
       <div
         class="basic-item-card__content"
-        v-if="type === 'systemDir'"
+        v-if="type === 'userDir'"
       >
         <div class="basic-item-card__content__line-1">
           {{item.name}}
-          {{item.name === 'Home directory' && showUserNameOnSystemDir
+          {{item.name === 'Home directory' && showUserNameOnUserHomeDir
             ? `| ${$utils.getPathBase(item.path)}`
             : ''
          }}
@@ -198,7 +198,7 @@ export default {
       inputState: 'inputState',
       driveCardProgressType: 'storageData.settings.driveCard.progressType',
       driveCardShowProgress: 'storageData.settings.driveCard.showProgress',
-      showUserNameOnSystemDir: 'storageData.settings.showUserNameOnSystemDir',
+      showUserNameOnUserHomeDir: 'storageData.settings.showUserNameOnUserHomeDir',
       navigatorOpenDirItemWithSingleClick: 'storageData.settings.navigator.openDirItemWithSingleClick',
     })
   },
@@ -219,7 +219,7 @@ export default {
       }
     },
     showDragOverOverlay (item) {
-      if (this.type === 'dir' || this.type === 'file' || this.type === 'systemDir') {
+      if (this.type === 'dir' || this.type === 'file' || this.type === 'userDir') {
         return this.$store.getters.itemDragIsActive &&
           this.inputState.pointer.hoveredItem.path === item.path
       }
@@ -273,7 +273,7 @@ export default {
       this.handleClickAction(params)
     },
     handleClickAction (params) {
-      if (['file', 'dir', 'systemDir'].includes(this.type)) {
+      if (['file', 'dir', 'userDir'].includes(this.type)) {
         this.$store.dispatch('OPEN_DIR_ITEM_FROM_PATH', params.item.path)
       }
       else if (this.type === 'drive') {
