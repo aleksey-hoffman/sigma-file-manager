@@ -29,7 +29,7 @@ const data = {
   text_drive: 'Drive',
   text_drives: 'Drives',
   text_global_search_title: 'Global search',
-  text_system_directories: 'System directories',
+  text_user_directories: 'User directories',
   text_directory: 'directory',
   text_file: 'file',
   text_file_symlink: 'file-symlink',

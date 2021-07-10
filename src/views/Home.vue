@@ -140,7 +140,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
         <!-- title:system-dirs -->
         <div class="text--sub-title-1 mb-3 mt-0">
-          {{$localize.get('text_system_directories')}}
+          {{$localize.get('text_user_directories')}}
         </div>
 
         <div class="content-area__section">
