@@ -4568,13 +4568,27 @@ export default new Vuex.Store({
         childProcess.spawn('sh', ['sudo', '-s', srcPath, uniqueDestPath])
       }
     },
-    SET_FS_CLIPBOARD (store, params) {
+    SET_TO_FS_CLIPBOARD (store, params) {
       const defaultParams = {
         items: store.getters.selectedDirItems
       }
-      params = { ...defaultParams, ...params }
+      params = {...defaultParams, ...params}
       store.state.navigatorView.clipboard.fs.type = params.type
       store.state.navigatorView.clipboard.fs.items = params.items
+    },
+    ADD_TO_FS_CLIPBOARD (store, params) {
+      const defaultParams = {
+        items: store.getters.selectedDirItems
+      }
+      params = {...defaultParams, ...params}
+      store.state.navigatorView.clipboard.fs.type = params.type
+      params.items.forEach(item => {
+        const itemAlreadyAdded = store.state.navigatorView.clipboard.fs.items
+          .some(clipboardItem => clipboardItem.path === item.path)
+        if (!itemAlreadyAdded) {
+          store.state.navigatorView.clipboard.fs.items.push(item)
+        }
+      })
     },
     CLEAR_FS_CLIPBOARD (store) {
       store.state.navigatorView.clipboard.fs.type = ''

@@ -518,7 +518,7 @@ export default {
     shortcut: 'Ctrl + A',
     description: 'Select all items in current directory'
   },
-  copySelectedDirItems: {
+  setDirItemsForCopying: {
     isGlobal: false,
     isReadOnly: false,
     conditions: {
@@ -528,15 +528,33 @@ export default {
     icon: 'mdi-content-copy',
     iconSize: '20px',
     action: {
-      name: 'SET_FS_CLIPBOARD',
+      name: 'SET_TO_FS_CLIPBOARD',
       options: {
         type: 'copy'
       }
     },
     shortcut: 'Ctrl + C',
-    description: 'Prepare selected items for copying'
+    description: 'Set selected items for copying (replaces current list)'
   },
-  moveSelectedDirItems: {
+  addDirItemsForCopying: {
+    isGlobal: false,
+    isReadOnly: false,
+    conditions: {
+      inputFieldIsActive: false
+    },
+    routes: ['navigator'],
+    icon: 'mdi-content-copy',
+    iconSize: '20px',
+    action: {
+      name: 'ADD_TO_FS_CLIPBOARD',
+      options: {
+        type: 'copy'
+      }
+    },
+    shortcut: 'Ctrl + Shift + C',
+    description: 'Add selected items for copying. Allows to copy items from multiple directories at once'
+  },
+  setDirItemsForMoving: {
     isGlobal: false,
     isReadOnly: false,
     conditions: {
@@ -546,13 +564,31 @@ export default {
     icon: 'mdi-content-duplicate',
     iconSize: '20px',
     action: {
-      name: 'SET_FS_CLIPBOARD',
+      name: 'SET_TO_FS_CLIPBOARD',
       options: {
         type: 'move'
       }
     },
     shortcut: 'Ctrl + X',
-    description: 'Prepare selected items for moving'
+    description: 'Set selected items for moving'
+  },
+  addDirItemsForMoving: {
+    isGlobal: false,
+    isReadOnly: false,
+    conditions: {
+      inputFieldIsActive: false
+    },
+    routes: ['navigator'],
+    icon: 'mdi-content-copy',
+    iconSize: '20px',
+    action: {
+      name: 'ADD_TO_FS_CLIPBOARD',
+      options: {
+        type: 'move'
+      }
+    },
+    shortcut: 'Ctrl + Shift + X',
+    description: 'Add selected items for moving. Allows to move items from multiple directories at once'
   },
   pasteSelectedDirItems: {
     isGlobal: false,
@@ -567,7 +603,7 @@ export default {
       name: 'PASTE_FS_CLIPBOARD_DIR_ITEMS'
     },
     shortcut: 'Ctrl + V',
-    description: 'Transfer prepared items to current directory'
+    description: 'Transfer prepared for copying / moving items to current directory'
   },
   trashSelected: {
     isGlobal: false,

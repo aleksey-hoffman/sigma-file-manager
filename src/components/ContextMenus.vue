@@ -315,14 +315,14 @@ export default {
           targetTypes: ['directory', 'file', 'file-symlink', 'directory-symlink'],
           isActive: false,
           onClick: () => {
-            this.$store.dispatch('SET_FS_CLIPBOARD', { type: 'move' })
+            this.$store.dispatch('SET_TO_FS_CLIPBOARD', {type: 'move'})
           },
           closesMenu: true,
           icon: 'mdi-content-duplicate',
           iconSize: '18px',
           tooltip: {
             title: 'Move selected to another directory',
-            text: this.shortcuts.moveSelectedDirItems.shortcut
+            text: this.shortcuts.setDirItemsForMoving.shortcut
           }
         },
         {
@@ -331,14 +331,14 @@ export default {
           targetTypes: ['directory', 'file', 'file-symlink', 'directory-symlink'],
           isActive: false,
           onClick: () => {
-            this.$store.dispatch('SET_FS_CLIPBOARD', { type: 'copy' })
+            this.$store.dispatch('SET_TO_FS_CLIPBOARD', {type: 'copy'})
           },
           closesMenu: true,
           icon: 'far fa-copy',
           iconSize: '18px',
           tooltip: {
             title: 'Copy selected',
-            text: this.shortcuts.copySelectedDirItems.shortcut
+            text: this.shortcuts.setDirItemsForCopying.shortcut
           }
         },
         {
