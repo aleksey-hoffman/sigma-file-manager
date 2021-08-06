@@ -823,6 +823,7 @@ export default new Vuex.Store({
         data: {
           title: '',
           message: '',
+          closeButton: {},
           buttons: [
             {
               text: '',
@@ -3453,6 +3454,12 @@ export default new Vuex.Store({
                   <br>
                   ${editTargetsList}
                 `,
+                closeButton: {
+                  onClick: () => {
+                    resolve({ status: 'cancel' })
+                    state.dialogs.conformationDialog.value = false
+                  }
+                },
                 buttons: [
                   {
                     text: 'cancel',
@@ -3508,6 +3515,11 @@ export default new Vuex.Store({
                 message: `
                   Selected items contain ${protectedItems.length} protected items
                 `,
+                closeButton: {
+                  onClick: () => {
+                    reject()
+                  }
+                },
                 buttons: [
                   {
                     text: 'cancel',
@@ -3556,6 +3568,12 @@ export default new Vuex.Store({
                   in the root of a drive. Make sure these are your personal files and you are not deleting
                   any system files, otherwise your computer might become unusable.
                 `,
+                closeButton: {
+                  onClick: () => {
+                    reject({ status: 'failure:cancel', editTargets })
+                    state.dialogs.conformationDialog.value = false
+                  }
+                },
                 buttons: [
                   {
                     text: 'cancel',
@@ -4621,6 +4639,13 @@ export default new Vuex.Store({
                 type: 'password'
               }
             ],
+            closeButton: {
+              onClick: () => {
+                resolve('cancel')
+                store.state.dialogs.conformationDialog.data = {}
+                store.state.dialogs.conformationDialog.value = false
+              }
+            },
             buttons: [
               {
                 text: 'cancel',
@@ -4643,15 +4668,21 @@ export default new Vuex.Store({
         })
       })
     },
-    SHOW_CONFIRMATION_DIALOG_PASTE_DIR_ITEMS (store) {
+    SHOW_CONFIRMATION_DIALOG_PASTE_DIR_ITEMS (store, params) {
       return new Promise((resolve, reject) => {
         const data = {
           title: 'Files with that name already exist',
           message: `
             <ul>
-              ${props.conflictedPaths.map(path => `<li>${path}</li>`).join('')}
+              ${params.conflictedPaths.map(path => `<li>${path}</li>`).join('')}
             </ul>
           `,
+          closeButton: {
+            onClick: () => {
+              store.state.dialogs.conformationDialog.value = false
+              resolve('cancel')
+            }
+          },
           buttons: [
             {
               text: 'cancel',

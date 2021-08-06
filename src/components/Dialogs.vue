@@ -59,7 +59,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       :dialog="dialogs.conformationDialog"
       :persistent="true"
       :closeButton="{
-        onClick: () => closeDialog('conformationDialog'),
+        onClick: () => handleConformationDialogCloseButton()
       }"
       :inputs="dialogs.conformationDialog.data.inputs"
       :actionButtons="dialogs.conformationDialog.data.buttons"
@@ -2414,12 +2414,13 @@ export default {
     getGuideTitle (index) {
       return this.dialogs?.guideDialog?.data?.guideTabs?.[index]?.text || ''
     },
-    handleConformationDialogButton (button) {
+    handleConformationDialogCloseButton () {
       try {
-        if (button.onClick) {
-          button.onClick()
-          this.closeDialog('conformationDialog')
+        let closeButton = this.dialogs.conformationDialog.data.closeButton
+        if (closeButton.onClick) {
+          closeButton.onClick()
         }
+        this.closeDialog('conformationDialog')
       }
       catch (error) {}
     },
