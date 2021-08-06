@@ -4548,7 +4548,7 @@ export default new Vuex.Store({
         srcPath = params.item.path
       }
       const srcPathParsed = PATH.parse(srcPath)
-      const destPath = PATH.join(srcPathParsed.dir, `${srcPathParsed.name}${srcPathParsed.ext}.symlink`)
+      const destPath = PATH.join(srcPathParsed.dir, `${srcPathParsed.name}${srcPathParsed.ext}`)
       const uniqueDestPath = utils.getUniquePath(destPath)
       const isDirectory = store.getters.selectedDirItems.getLast().type === 'directory'
       const directoryArgument = isDirectory ? '/d' : ''
