@@ -92,11 +92,14 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
                 <v-divider></v-divider>
 
-                <v-list-item class="inactive">
-                  <v-list-item-content class="text--sub-title-1 ma-0">
-                    <v-list-item-title>
+                <v-list-item three-line class="inactive">
+                  <v-list-item-content>
+                    <v-list-item-title class="text--sub-title-1 ma-0">
                       Filter prefixes
                     </v-list-item-title>
+                    <v-list-item-subtitle>
+                      Add a prefix to the start to filter by specific property.
+                    </v-list-item-subtitle>
                   </v-list-item-content>
                 </v-list-item>
 
@@ -107,7 +110,8 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 >
                   <v-list-item-content>
                     <v-list-item-title>
-                      {{item.prefix}} [{{item.title}}]
+                      <span class="inline-code--light">{{item.prefix}}</span> 
+                      {{item.title}}
                     </v-list-item-title>
                   </v-list-item-content>
                 </v-list-item>
