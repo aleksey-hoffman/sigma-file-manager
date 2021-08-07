@@ -121,6 +121,38 @@ function getCommand (params) {
       // return `${sudoArg} '/c icacls "${params.dirItem.path}" /grant "${SID.everyone}:(F)"'`
       return `icacls "${params.dirItem.path}" /grant "${SID.everyone}:(F)"`
     }
+    else if (params.command === 'create-windows-link') {
+      return [
+        '$WshShell = New-Object -comObject WScript.Shell',
+        `$Shortcut = $WshShell.CreateShortcut("${params.destPath}")`,
+        `$Shortcut.TargetPath = "${params.srcPath}"`,
+        '$Shortcut.Save()'
+      ].join(';')
+    }
+    else if (params.command === 'create-link') {
+      let argDirectory = params.isDirectory ? '/d' : ''
+      let argLinkType = ''
+      if (params.linkType === 'hard-link') {argLinkType = '/h'}
+      if (params.linkType === 'symlink') {argLinkType = ''}
+
+      const commandArgs = [
+        '/c',
+        'mklink',
+        `${argDirectory}`,
+        `${argLinkType}`,
+        `""${params.uniqueDestPath}""`,
+        `""${params.srcPath}"" `
+      ].filter(item => item !== '')
+
+      const innerCommand = `"${commandArgs.join(' ')}"`
+      const command = [
+        '-command', 
+        'Start-Process cmd', 
+        innerCommand, 
+        '-Verb RunAs'
+      ]
+      return command
+    }
   }
   else if (process.platform === 'linux') {
     if (params.command === 'sudo') {
@@ -172,6 +204,19 @@ function getCommand (params) {
         : ''
       const sudoArg = getCommand({ ...params, command: 'sudo' })
       return `${sudoArg} chattr -i "${params.dirItem.path}" ${resetSudoPassword}`
+    }
+    else if (params.command === 'create-link') {
+      let argLinkType = ''
+      if (params.linkType === 'hard-link') {argLinkType = ''}
+      if (params.linkType === 'symlink') {argLinkType = '-s'}
+      const commandArgs = [
+        'sudo', 
+        'ln', 
+        argLinkType, 
+        params.srcPath, 
+        params.uniqueDestPath
+      ].filter(item => item !== '')
+      return commandArgs
     }
   }
 }

@@ -4540,32 +4540,29 @@ export default new Vuex.Store({
       store.state.dialogs.guideDialog.value = true
     },
     MAKE_DIR_ITEM_LINK (store, params = {}) {
-      let srcPath
-      if (!params.item) {
-        srcPath = store.getters.selectedDirItems.getLast().path
+      let defaultParams = {
+        srcPath: store.state.contextMenus.dirItem.targetItems.getLast().path
       }
-      else {
-        srcPath = params.item.path
-      }
-      const srcPathParsed = PATH.parse(srcPath)
-      const destPath = PATH.join(srcPathParsed.dir, `${srcPathParsed.name}${srcPathParsed.ext}`)
-      const uniqueDestPath = utils.getUniquePath(destPath)
-      const isDirectory = store.getters.selectedDirItems.getLast().type === 'directory'
-      const directoryArgument = isDirectory ? '/d' : ''
-      let linkTypeArgument = ''
-      // TODO: add ability to create hardlinks
-      // if (params.linkType === 'hard-link') {
-      //   linkTypeArgument = '/h'
-      // }
-      // if (params.linkType === 'soft-link') {
-      //   linkTypeArgument = ''
-      // }
-      const command = `"/c mklink ${directoryArgument} ${linkTypeArgument} ""${uniqueDestPath}"" ""${srcPath}"""`
+      params = {...defaultParams, ...params}
+      params.uniqueDestPath = utils.getUniquePath(params.destPath)
+      params.isDirectory = store.getters.selectedDirItems.getLast().type === 'directory'
+      
       if (process.platform === 'win32') {
-        childProcess.spawn('powershell', ['-command', 'Start-Process cmd', command, '-Verb RunAs'])
+        if (params.linkType === 'windows-link') {
+          childProcess.spawn('powershell', 
+            [fsManager.getCommand({command: 'create-windows-link', ...params})]
+          )
+        }
+        else {
+          childProcess.spawn('powershell', 
+            fsManager.getCommand({command: 'create-link', ...params})
+          )
+        }
       }
-      else if (process.platform === 'linux') {
-        childProcess.spawn('sh', ['sudo', '-s', srcPath, uniqueDestPath])
+      else if (process.platform === 'linux') {        
+        childProcess.spawn('sh', 
+          fsManager.getCommand({command: 'create-link', ...params})
+        )
       }
     },
     SET_TO_FS_CLIPBOARD (store, params) {
