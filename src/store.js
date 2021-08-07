@@ -4679,6 +4679,47 @@ export default new Vuex.Store({
         })
       })
     },
+    SHOW_CONFIRMATION_DIALOG_MAKE_LINK (store, params) {
+      return new Promise((resolve, reject) => {
+        store.dispatch('CONFORMATION_DIALOG', {
+          data: {
+            title: params.title,
+            message: `Specify link destination path`,
+            inputs: [
+              {
+                model: params.destPath,
+                type: ''
+              }
+            ],
+            closeButton: {
+              onClick: () => {
+                resolve('cancel')
+                store.state.dialogs.conformationDialog.data = {}
+                store.state.dialogs.conformationDialog.value = false
+              }
+            },
+            buttons: [
+              {
+                text: 'cancel',
+                onClick: () => {
+                  resolve('cancel')
+                  store.state.dialogs.conformationDialog.data = {}
+                  store.state.dialogs.conformationDialog.value = false
+                }
+              },
+              {
+                text: 'create',
+                onClick: () => {
+                  resolve({action: 'create', data: store.state.dialogs.conformationDialog.data})
+                  store.state.dialogs.conformationDialog.data = {}
+                  store.state.dialogs.conformationDialog.value = false
+                }
+              },
+            ]
+          }
+        })
+      })
+    },
     SHOW_CONFIRMATION_DIALOG_PASTE_DIR_ITEMS (store, params) {
       return new Promise((resolve, reject) => {
         const data = {
