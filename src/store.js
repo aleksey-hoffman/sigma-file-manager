@@ -4591,17 +4591,6 @@ export default new Vuex.Store({
       store.state.navigatorView.clipboard.fs.type = ''
       store.state.navigatorView.clipboard.fs.items = []
     },
-    ADD_TO_FS_CLIPBOARD (store, params) {
-      const defaultParams = {
-        items: store.getters.selectedDirItems
-      }
-      params = { ...defaultParams, ...params }
-      store.state.navigatorView.clipboard.fs.type = params.type
-      store.state.navigatorView.clipboard.fs.items = [
-        ...store.state.navigatorView.clipboard.fs.items,
-        ...params.items
-      ]
-    },
     async PASTE_FS_CLIPBOARD_DIR_ITEMS (store, params) {
       const defaultParams = {
         directory: store.state.navigatorView.currentDir.path
