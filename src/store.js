@@ -4570,6 +4570,8 @@ export default new Vuex.Store({
         items: store.getters.selectedDirItems
       }
       params = {...defaultParams, ...params}
+      params.items = utils.cloneDeep(params.items)
+      // Set clipboard data
       store.state.navigatorView.clipboard.fs.type = params.type
       store.state.navigatorView.clipboard.fs.items = params.items
     },
@@ -4578,6 +4580,8 @@ export default new Vuex.Store({
         items: store.getters.selectedDirItems
       }
       params = {...defaultParams, ...params}
+      params.items = utils.cloneDeep(params.items)
+      // Set clipboard data
       store.state.navigatorView.clipboard.fs.type = params.type
       params.items.forEach(item => {
         const itemAlreadyAdded = store.state.navigatorView.clipboard.fs.items
