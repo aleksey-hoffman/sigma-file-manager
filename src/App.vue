@@ -1888,6 +1888,20 @@ button.v-btn.v-btn--disabled
   font-size: 15px;
 }
 
+.tooltip__shortcut-list-item {
+  margin-bottom: 8px;
+}
+
+.tooltip__modifier-list-item {
+  margin-bottom: 8px;
+}
+
+.tooltip__modifier-list__title {
+  margin-top: 8px;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
 .tooltip__shortcut {
   font-size: 14px;
   color: var(--color-6);

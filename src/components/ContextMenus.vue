@@ -46,7 +46,46 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                       </v-icon>
                     </v-btn>
                   </template>
-                  <span>
+                  <span v-if="item.tooltip.shortcutList">
+                    <div 
+                      class="tooltip__shortcut-list-item"
+                      v-for="(shortcutItem, index) in item.tooltip.shortcutList"
+                      :key="`shortcut-list-item-${index}`"
+                    >
+                      <div class="tooltip__shortcut-list-item__title tooltip__description">
+                        {{shortcutItem.title}}
+                      </div>
+                      <span 
+                        class="tooltip__shortcut-list__shortcut inline-code--light" 
+                        v-html="shortcutItem.shortcut"
+                      ></span>
+                    </div>
+                  </span>
+
+                  <span v-else-if="item.tooltip.modifierList">
+                    <div 
+                      class="tooltip__modifier-list-item"
+                      v-for="(modifierItem, index) in item.tooltip.modifierList"
+                      :key="`modifier-list-item-${index}`"
+                    >
+                      <div class="tooltip__modifier-list-item__title tooltip__description">
+                        <span 
+                          class="tooltip__modifier-list__modifier inline-code--light" 
+                          v-if="modifierItem.modifier"
+                          v-html="modifierItem.modifier"
+                        ></span>
+                        {{modifierItem.title}}
+                      </div>
+                      <div 
+                        class="tooltip__modifier-list__title tooltip__description"
+                        v-if="!modifierItem.modifier"
+                      >
+                        Modifiers:
+                      </div>
+                    </div>
+                  </span>
+                  
+                  <span v-else>
                     <div class="tooltip__description">{{item.tooltip.title}}</div>
                     <div class="tooltip__shortcut" v-html="item.tooltip.text"></div>
                   </span>
@@ -291,7 +330,10 @@ export default {
           },
           icon: 'mdi-pin-outline',
           iconSize: '20px',
-          tooltip: { title: 'Add to pinned', text: '' }
+          tooltip: {
+            title: 'Add to pinned', 
+            text: 'Pinned items can be found on the dashboard page'
+          }
         },
         {
           title: 'rename',
@@ -305,8 +347,12 @@ export default {
           icon: 'mdi-form-textbox',
           iconSize: '20px',
           tooltip: {
-            title: 'Rename selected',
-            text: this.shortcuts.renameSelected.shortcut
+            shortcutList: [
+              {
+                title: 'Rename selected',
+                shortcut: this.shortcuts.renameSelected.shortcut
+              }
+            ]
           }
         },
         {
@@ -321,8 +367,16 @@ export default {
           icon: 'mdi-content-duplicate',
           iconSize: '18px',
           tooltip: {
-            title: 'Move selected to another directory',
-            text: this.shortcuts.setDirItemsForMoving.shortcut
+            shortcutList: [
+              {
+                title: 'Set selected items for moving',
+                shortcut: this.shortcuts.setDirItemsForMoving.shortcut
+              },
+              {
+                title: 'Add selected items for moving',
+                shortcut: this.shortcuts.addDirItemsForMoving.shortcut
+              }
+            ]
           }
         },
         {
@@ -337,8 +391,16 @@ export default {
           icon: 'far fa-copy',
           iconSize: '18px',
           tooltip: {
-            title: 'Copy selected',
-            text: this.shortcuts.setDirItemsForCopying.shortcut
+            shortcutList: [
+              {
+                title: 'Set selected items for copying',
+                shortcut: this.shortcuts.setDirItemsForCopying.shortcut
+              },
+              {
+                title: 'Add selected items for copying',
+                shortcut: this.shortcuts.addDirItemsForCopying.shortcut
+              }
+            ]
           }
         },
         {
@@ -348,12 +410,52 @@ export default {
           disallowedExtensions: ['lnk'],
           isActive: false,
           onClick: () => {
-            this.$store.dispatch('MAKE_DIR_ITEM_LINK')
+            let srcPath = this.targetItems[0].path
+            let params = {
+              title: '',
+              destPath: srcPath
+            }
+            let linkModifier = this.linkModifier
+            if (linkModifier === 'hard-link') {
+              params.title = 'Create hard link'
+            }
+            else if (linkModifier === 'windows-link') {
+              params.title = 'Create Windows link (.lnk)'
+              params.destPath = `${srcPath}.lnk`
+            }
+            else {
+              params.title = 'Create symlink'
+            }
+            this.$store.dispatch('SHOW_CONFIRMATION_DIALOG_MAKE_LINK', params)
+              .then(result => {
+                let destPath = result.data.inputs[0].model
+                if (linkModifier === 'hard-link') {
+                  this.$store.dispatch('MAKE_DIR_ITEM_LINK', {
+                    linkType: 'hard-link',
+                    srcPath,
+                    destPath
+                  })
+                }
+                else if (linkModifier === 'windows-link') {
+                  this.$store.dispatch('MAKE_DIR_ITEM_LINK', {
+                    linkType: 'windows-link',
+                    srcPath,
+                    destPath
+                  })
+                }
+                else {
+                  this.$store.dispatch('MAKE_DIR_ITEM_LINK', {
+                    linkType: 'symlink',
+                    srcPath,
+                    destPath
+                  })
+                }
+              })
           },
           closesMenu: true,
-          icon: 'mdi-link-variant-plus',
+          icon: this.linkActionIcon,
           iconSize: '22px',
-          tooltip: { title: 'Create symbolic link (shortcut)', text: '' }
+          tooltip: this.linkActionTooltip
         },
         {
           title: 'trash',
@@ -369,16 +471,21 @@ export default {
             }
           },
           closesMenu: true,
-          icon: 'mdi-trash-can-outline',
+          icon: this.inputState.shift
+            ? 'mdi-delete-forever-outline'
+            : 'mdi-trash-can-outline',
           iconSize: '22px',
           tooltip: {
-            title: 'Move selected to trash',
-            text: `
-              ${this.shortcuts.trashSelected.description}
-              <br>${this.shortcuts.trashSelected.shortcut}
-              <br>${this.shortcuts.deleteSelected.description}
-              <br>${this.shortcuts.deleteSelected.shortcut}
-            `
+            shortcutList: [
+              {
+                title: this.shortcuts.trashSelected.description,
+                shortcut: this.shortcuts.trashSelected.shortcut
+              },
+              {
+                title: this.shortcuts.deleteSelected.description,
+                shortcut: this.shortcuts.deleteSelected.shortcut
+              }
+            ]
           }
         }
       ]
@@ -556,7 +663,52 @@ export default {
         return everyDirItemMatchDisallowedExtensions
       })
       return itemsFilteredByDisallowed
-    }
+    },
+    linkModifier () {
+      if (this.inputState.shift) {
+        return 'hard-link'
+      }
+      else if (this.inputState.alt) {
+        return 'windows-link'
+      }
+      else {
+        return 'symlink'
+      }
+    },
+    linkActionIcon () {
+      if (process.platform === 'win32') {
+        return this.linkModifier === 'hard-link'
+          ? 'mdi-link-plus'
+          : this.linkModifier === 'windows-link'
+            ? 'mdi-link-box-variant-outline'
+            : 'mdi-link-variant-plus'
+      }
+      else {
+        return this.linkModifier === 'hard-link'
+          ? 'mdi-link-plus'
+          : 'mdi-link-variant-plus'
+      }
+    },
+    linkActionTooltip () {
+      let tooltip = {
+        modifierList: [
+          {
+            title: 'Create symbolic link',
+          },
+          {
+            title: 'Hard link',
+            modifier: 'Shift'
+          }
+        ]
+      }  
+      if (process.platform === 'win32') {
+        tooltip.modifierList.push({
+          title: 'Windows link (.lnk)',
+          modifier: 'Alt'
+        })
+      }
+      return tooltip
+    },
   },
   methods: {
     filteredList (list) {
