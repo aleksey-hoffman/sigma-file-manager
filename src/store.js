@@ -1201,11 +1201,6 @@ export default new Vuex.Store({
     selectedWorkspace: state => {
       return state.storageData.workspaces.items.find(workspace => workspace.isSelected)
     },
-    onlyCurrentDirIsSelected: (state, getters) => {
-      const items = getters.selectedDirItems
-      const firstItemIsCurrentDir = items?.[0].path === state.navigatorView.currentDir.path
-      return items.length === 1 && firstItemIsCurrentDir
-    },
     clipboardToolbarIsVisible: (state, getters) => {
       return getters.selectedDirItems.length > 1
     },

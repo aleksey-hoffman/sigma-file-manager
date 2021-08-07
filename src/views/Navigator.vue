@@ -182,7 +182,7 @@ export default {
       // deselected (and the current dir gets selected automatically)
       // so that the context menu does not remain displayed for the
       // deselected items
-      if (this.onlyCurrentDirIsSelected) {
+      if (this.isOnlyCurrentDirItemSelected) {
         this.contextMenus.dirItem.value = false
       }
     },
@@ -195,7 +195,7 @@ export default {
       'selectedWorkspace',
       'selectedDirItems',
       'clipboardToolbarIsVisible',
-      'onlyCurrentDirIsSelected'
+      'isOnlyCurrentDirItemSelected'
     ]),
     ...mapFields({
       focusedField: 'focusedField',
