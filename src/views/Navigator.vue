@@ -317,18 +317,4 @@ export default {
     .workspace-area__content {
       margin: 0px;
     }
-
-#navigator-route
-  .content-area[clipboard-toolbar-visible] {
-    /* height: calc(100vh - var(--window-toolbar-height) - var(--action-toolbar-height) - 32px); */
-    /* padding-bottom: 32px; */
-    overflow: hidden;
-  }
-
-#navigator-route
-  .content-area[clipboard-toolbar-visible]
-    .workspace-area__content {
-      padding-bottom: 132px;
-    }
-
 </style>
