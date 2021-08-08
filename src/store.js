@@ -3631,30 +3631,16 @@ export default new Vuex.Store({
               dispatch('CLEAR_FS_CLIPBOARD')
               dispatch('DESELECT_ALL_DIR_ITEMS')
               let areAllItemsTrashed = editTargets.every(item => data.trashedItems.includes(item.path))
-              // If route is still 'navigator', ask if user wants to reload the current directory
-              let actionButtons = []
-              if (router.currentRoute.name === 'navigator') {
-                actionButtons = [
-                  {
-                    title: 'reload current directory',
-                    onClick: () => {
-                      dispatch('RELOAD_DIR')
-                    },
-                    closesNotification: true
-                  }
-                ]
-              }
               if (areAllItemsTrashed) {
                 eventHub.$emit('notification', {
                   action: 'update-by-type',
                   type: 'successItemsTrashed',
-                  icon: 'mdi-tab',
+                  colorStatus: 'green',
                   timeout: 5000,
-                  title: `Success | sent
-                          ${data.trashedItems.length}
-                          ${localizeUtils.pluralize(data.trashedItems.length, 'item')}
-                          to trash`,
-                  actionButtons
+                  title: `Sent
+                  ${data.trashedItems.length}
+                  ${localizeUtils.pluralize(data.trashedItems.length, 'item')}
+                  to trash`,
                 })
               }
               else {
@@ -3662,15 +3648,20 @@ export default new Vuex.Store({
                   action: 'update-by-type',
                   type: 'failureItemsTrashed',
                   icon: 'mdi-tab',
+                  colorStatus: 'red',
                   timeout: 5000,
-                  title: `Failure | couldn't send
+                  title: `Failed to send
                           ${data.notTrashedItems.length}
                           ${localizeUtils.pluralize(data.notTrashedItems.length, 'item')}
                           to trash:`,
                   message: data.notTrashedItems.join('<br>'),
-                  actionButtons
                 })
               }
+
+              dispatch('RELOAD_DIR', {
+                scrollTop: false,
+                selectCurrentDir: false
+              })
             })
 
             // await trash(getters.selectedDirItemsPaths)
@@ -3744,6 +3735,10 @@ export default new Vuex.Store({
             dispatch('REMOVE_FROM_PINNED', params)
             dispatch('CLEAR_FS_CLIPBOARD')
             dispatch('DESELECT_ALL_DIR_ITEMS')
+            dispatch('RELOAD_DIR', {
+              scrollTop: false,
+              selectCurrentDir: false
+            })
           })
       }
 
