@@ -6,9 +6,6 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <template>
   <v-app 
     :data-theme-type="themeType" 
-    :class="{
-      'layout-no-transition': classLayoutNoTransition
-    }"
   >
     <!-- global-components -->
     <window-toolbar/>
@@ -67,6 +64,7 @@ export default {
       this.contextMenus.dirItem.value = false
       this.$store.dispatch('TERMINATE_ALL_FETCH_DIR_SIZE')
       if (to.name === 'home') {
+        this.preventHomeViewLayoutTransition()
         this.animateHomeBannerIn()
       }
       if (from.name === 'home') {
@@ -215,9 +213,6 @@ export default {
         })
       }
     },
-    classLayoutNoTransition () {
-      return this.$route.name === 'home'
-    }
   },
   methods: {
     initEventHubListeners () {
@@ -638,6 +633,15 @@ export default {
         key: 'storageData.settings.time.lastSearchScan',
         value: Date.now()
       })
+    },
+    preventHomeViewLayoutTransition () {
+      // This function prevents home banner layout shifting
+      // when transitioning from a view with an opened info panel
+      let appNode = document.querySelector('#app')
+      appNode.classList.add('layout-no-transition')
+      setTimeout(() => {
+        appNode.classList.remove('layout-no-transition')
+      }, 500)
     },
     restoreRouteScrollPosition (params) {
       const { toRoute } = params
