@@ -768,6 +768,10 @@ export default new Vuex.Store({
       shift: false,
       meta: false,
       pointer: {
+        hover: {
+          itemType: '',
+          item: {}
+        },
         button1: false,
         button2: false,
         button3: false,
@@ -1182,6 +1186,9 @@ export default new Vuex.Store({
       else {
         return []
       }
+    },
+    isCurrentDirItemSelected: (state, getters) => {
+      return getters.selectedDirItemsPaths.includes(state.navigatorView.currentDir.path)
     },
     isOnlyCurrentDirItemSelected: (state, getters) => {
       return getters.selectedDirItems.length === 1 &&
@@ -3990,6 +3997,20 @@ export default new Vuex.Store({
     },
     UPDATE_DIR_ITEM_SELECTION_HISTORY (store) {
       store.state.navigatorView.previouslySelectedDirItems = store.state.navigatorView.selectedDirItems
+    },
+    HANDLE_HIGHLIGHT_DIR_ITEM_RANGE (store, params) {
+      const isSomeDirItemSelected = store.getters.selectedDirItemsPaths.length !== 0
+      const isCurrentDirSelected = store.getters.isCurrentDirItemSelected
+      const isDraggingDirItem = store.state.overlays.dirItemDrag
+      const shouldHighlightDirItems = store.state.inputState.shift && 
+        isSomeDirItemSelected &&
+        !isDraggingDirItem &&
+        !isCurrentDirSelected
+      if (shouldHighlightDirItems) {
+        store.dispatch('HIGHLIGHT_DIR_ITEM_RANGE', {
+          hoveredItem: params.hoveredItem
+        })
+      }
     },
     HIGHLIGHT_DIR_ITEM_RANGE ({ state, commit, dispatch, getters }, payload) {
       commit('DEHIGHLIGHT_ALL_DIR_ITEMS')

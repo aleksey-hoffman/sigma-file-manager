@@ -87,7 +87,14 @@ export default {
       }
     },
     'inputState.shift' (value) {
-      if (!value) {
+      if (value) {
+        if (this.inputState.pointer.hover.itemType = 'dirItem') {
+          this.$store.dispatch('HANDLE_HIGHLIGHT_DIR_ITEM_RANGE', {
+            hoveredItem: this.inputState.pointer.hover.item
+          })
+        }  
+      }
+      else {
         this.$store.dispatch('DEHIGHLIGHT_ALL_DIR_ITEMS')
       }
     }

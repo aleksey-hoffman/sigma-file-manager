@@ -6,7 +6,8 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <template>
   <div
     @mousedown="handleDirItemMouseDown($event, source, index)"
-    @mouseover="handleDirItemMouseOver($event, source)"
+    @mouseenter="handleDirItemMouseEnter($event, source)"
+    @mouseleave="handleDirItemMouseLeave($event, source)"
     :id="`item-index-${index}`"
     :data-item-id="source.id"
     :index="index"
@@ -642,18 +643,16 @@ export default {
         this.handleMouseUpActions()
       }, { once: true })
     },
-    handleDirItemMouseOver (event, item) {
-      const someItemIsSelected = this.selectedDirItemsPaths.length !== 0
-      const currentDirIsSelected = this.selectedDirItemsPaths.includes(this.currentDir.path)
-      const isDraggingDirItem = this.dragDisplayDirItemDragOverlay
-      const shouldHighlightDirItems = !this.dirItemDragOverlay &&
-        this.inputState.shift &&
-        someItemIsSelected &&
-        !currentDirIsSelected &&
-        !isDraggingDirItem
-      if (shouldHighlightDirItems) {
-        this.$store.dispatch('HIGHLIGHT_DIR_ITEM_RANGE', { hoveredItem: item })
-      }
+    handleDirItemMouseEnter (event, item) {
+      this.inputState.pointer.hover.itemType = 'dirItem'
+      this.inputState.pointer.hover.item = item
+      this.$store.dispatch('HANDLE_HIGHLIGHT_DIR_ITEM_RANGE', {
+        hoveredItem: item
+      })
+    },
+    handleDirItemMouseLeave (event, item) {
+      this.inputState.pointer.hover.itemType = ''
+      this.inputState.pointer.hover.item = {}
     },
     handleDirItemCheckboxMouseDown (event, item) {
       if (this.isDirItemSelected(item)) {
