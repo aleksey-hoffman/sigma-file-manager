@@ -19,157 +19,152 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       height="2"
     ></v-progress-linear>
 
-    <div
-      class="notification__item__content"
-      align-center
-    >
-      <div>
-        <div>
-          <v-layout>
-            <div 
-              class="notification__item__icon"
-              v-show="notification.icon" 
-            >
-              <v-icon>{{notification.icon}}</v-icon>
-            </div>
-
-            <!-- color-indicator -->
-            <v-icon 
-              class="mr-1" 
-              v-if="notification.colorStatus !== ''"
-              size="18px" 
-              :color="notification.colorStatus" 
-            >mdi-circle-medium
-            </v-icon>
-
-            <div
-              class="notification__item__title"
-              v-if="notification.title"
-              v-html="notification.title"
-              :colorStatus="notification.colorStatus"
-            ></div>
-
-            <v-spacer></v-spacer>
-
-            <!-- button:hide-notification -->
-            <v-tooltip 
-              v-if="!notification.isHidden"
-              top
-            >
-              <template v-slot:activator="{ on }">
-                <v-btn
-                  v-on="on"
-                  v-show="notification.closeButton"
-                  @click="$store.dispatch('HIDE_NOTIFICATION', notification)"
-                  icon small
-                  color="grey"
-                >
-                  <div class="notification__item__icon--close">
-                    <v-icon>mdi-close</v-icon>
-                  </div>
-                </v-btn>
-              </template>
-              <span>Hide notification</span>
-            </v-tooltip>
-            
-            <!-- button:remove-notification -->
-            <v-tooltip 
-              v-if="notification.isHidden && notification.isStatic"
-              top
-            >
-              <template v-slot:activator="{ on }">
-                <v-btn
-                  v-on="on"
-                  v-show="notification.closeButton"
-                  @click="$store.dispatch('REMOVE_NOTIFICATION', notification)"
-                  icon small
-                  color="grey"
-                >
-                  <div class="notification__item__icon--close">
-                    <v-icon>mdi-trash-can-outline</v-icon>
-                  </div>
-                </v-btn>
-              </template>
-              <span>Remove notification</span>
-            </v-tooltip>
-          </v-layout>
-
+    <div class="notification__item__content">
+      <div class="notification__item__content__main">
+        <div class="notification__item__content__main__header">
           <div 
-            class="notification__item__message" 
-            v-html="notification.message"
+            class="notification__item__color-indicator" 
+            v-if="notification.colorStatus !== ''"
+            :color="notification.colorStatus" 
+            size="18px"
           ></div>
 
-          <div v-if="notification.type === 'progress:download-file'">
-            <div class="notification__item__progress">
-              <div 
-                class="notification__item__progress__filename"
-                v-if="notification.progress.filename" 
-              >
-                <b>File name:</b>
-                {{notification.progress.filename}}
-              </div>
-              <v-layout class="mb-1">
-                <div
-                  class="notification__item__progress__content"
-                  v-html="getNotificationProgressContent(notification)"
-                ></div>
-              </v-layout>
+          <div 
+            class="notification__item__icon"
+            v-show="notification.icon" 
+          >
+            <v-icon size="20px">{{notification.icon}}</v-icon>
+          </div>
 
-              <v-progress-linear
-                v-show="showProgressBar"
-                :value="notification.progress.percentDone"
-                height="4"
-                :background-color="$utils.getCSSVar('--bg-color-2')"
-                :color="$utils.getCSSVar('--highlight-color-1')"
-              ></v-progress-linear>
+          <div
+            class="notification__item__title"
+            v-if="notification.title"
+            v-html="notification.title"
+            :colorStatus="notification.colorStatus"
+          ></div>
+
+          <v-spacer></v-spacer>
+
+          <!-- button:hide-notification -->
+          <v-tooltip 
+            v-if="!notification.isHidden"
+            top
+          >
+            <template v-slot:activator="{on}">
+              <v-btn
+                v-on="on"
+                v-show="notification.closeButton"
+                @click="$store.dispatch('HIDE_NOTIFICATION', notification)"
+                icon small
+                color="grey"
+              >
+                <div class="notification__item__icon--close">
+                  <v-icon>mdi-close</v-icon>
+                </div>
+              </v-btn>
+            </template>
+            <span>Hide notification</span>
+          </v-tooltip>
+          
+          <!-- button:remove-notification -->
+          <v-tooltip 
+            v-if="notification.isHidden && notification.isStatic"
+            top
+          >
+            <template v-slot:activator="{on}">
+              <v-btn
+                v-on="on"
+                v-show="notification.closeButton"
+                @click="$store.dispatch('REMOVE_NOTIFICATION', notification)"
+                icon small
+                color="grey"
+              >
+                <div class="notification__item__icon--close">
+                  <v-icon>mdi-trash-can-outline</v-icon>
+                </div>
+              </v-btn>
+            </template>
+            <span>Remove notification</span>
+          </v-tooltip>
+        </div>
+
+        <div 
+          class="notification__item__message" 
+          v-html="notification.message"
+        ></div>
+
+        <div v-if="notification.type === 'progress:download-file'">
+          <div class="notification__item__progress">
+            <div 
+              class="notification__item__progress__filename"
+              v-if="notification.progress.filename" 
+            >
+              <b>File name:</b>
+              {{notification.progress.filename}}
             </div>
+            <v-layout class="mb-1">
+              <div
+                class="notification__item__progress__content"
+                v-html="getNotificationProgressContent(notification)"
+              ></div>
+            </v-layout>
+
+            <v-progress-linear
+              v-show="showProgressBar"
+              :value="notification.progress.percentDone"
+              height="4"
+              :background-color="$utils.getCSSVar('--bg-color-2')"
+              :color="$utils.getCSSVar('--highlight-color-1')"
+            ></v-progress-linear>
           </div>
         </div>
+      </div>
 
-        <div class="notification__actions">
-          <v-layout v-show="notification.actionButtons.length !== 0">
-            <v-tooltip
-              v-for="(button, index) in notification.actionButtons"
-              :key="`notification-button-${index}`"
-              :disabled="!(button.extrnalLink || button.tooltip)"
-              bottom
-            >
-              <template v-slot:activator="{ on }">
-                <v-btn
-                  class="button-1 mr-3"
-                  v-on="on"
-                  @click="handleNotificationButtonOnClickEvent(notification, button)"
-                  small depressed
-                >{{button.title}}
-                </v-btn>
-              </template>
-              <span>
-                <div v-show="button.extrnalLink">
-                  <div class="tooltip__description">
-                    <v-layout align-center>
-                      <v-icon class="mr-3" size="16px">
-                        mdi-open-in-new
-                      </v-icon>
-                      {{button.extrnalLink}}
-                    </v-layout>
-                  </div>
-                </div>
-                <div v-show="button.tooltip">
-                  <div class="tooltip__description">
-                    {{button.tooltip}}
-                  </div>
-                </div>
-              </span>
-            </v-tooltip>
-          </v-layout>
-        </div>
+      <div
+        class="notification__actions"
+        v-show="notification.actionButtons.length !== 0"
+      >
+        <v-tooltip
+          v-for="(button, index) in notification.actionButtons"
+          :key="`notification-button-${index}`"
+          :disabled="!(button.extrnalLink || button.tooltip)"
+          bottom
+          offset-overflow
+        >
+          <template v-slot:activator="{on}">
+            <v-btn
+              class="button-1 mr-3"
+              v-on="on"
+              @click="handleNotificationButtonOnClickEvent(notification, button)"
+              small depressed
+            >{{button.title}}
+            </v-btn>
+          </template>
+          <span>
+            <div v-show="button.extrnalLink">
+              <div class="tooltip__description">
+                <v-layout align-center>
+                  <v-icon class="mr-3" size="16px">
+                    mdi-open-in-new
+                  </v-icon>
+                  {{button.extrnalLink}}
+                </v-layout>
+              </div>
+            </div>
+            <div v-show="button.tooltip">
+              <div class="tooltip__description">
+                {{button.tooltip}}
+              </div>
+            </div>
+          </span>
+        </v-tooltip>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import { mapFields } from 'vuex-map-fields'
+import {mapFields} from 'vuex-map-fields'
 
 export default {
   props: {
@@ -257,31 +252,63 @@ export default {
 
 <style>
 .notification__item {
+  user-select: none;
+  overflow: hidden;
   width: 400px;
+  margin-bottom: 8px;
   border-radius: 8px;
   background-color: var(--bg-color-1);
-  margin-bottom: 8px;
-  user-select: none;
   transition: all 0.5s;
   box-shadow: var(--shadow-x4_hover);
-  overflow: hidden;
 }
 
 .notification__item[is-hidden] {
   margin-bottom: 0;
   border-radius: 0;
-  box-shadow: none;
   border-bottom: 1px solid var(--divider-color-1);
+  box-shadow: none;
 }
 
 .notification__item__content {
   display: grid;
   grid-template-columns: 1fr;
-  padding: 12px 16px 4px 16px;
+  padding: 12px 16px 0px 16px;
+}
+
+.notification__item__content__main__header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notification__item__color-indicator {
+  position: relative;
+  height: 6px; 
+  width: 6px; 
+  margin-right: 10px; 
+  border-radius: 50%;
+}
+
+.notification__item__color-indicator[color="blue"] {
+  background-color: rgb(54, 129, 179);
+  box-shadow: 0 0 8px rgb(54, 129, 179);
+}
+
+.notification__item__color-indicator[color="green"] {
+  background-color: #0e9674;
+  box-shadow: 0 0 8px #0e9674;
+}
+
+.notification__item__color-indicator[color="red"] {
+  background-color: #e53935;
+  box-shadow: 0 0 8px #e53935;
 }
 
 .notification__item__icon {
-  margin-right: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 10px;
 }
 
 .notification__item__icon 
@@ -297,6 +324,8 @@ export default {
 }
 
 .notification__item__message {
+  margin-top: 2px;
+  margin-bottom: 8px;
   color: #9e9e9e;
   font-size: 14px;
 }
@@ -313,7 +342,8 @@ export default {
 }
 
 .notification__actions {
-  margin-top: 8px;
-  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
 }
 </style>
