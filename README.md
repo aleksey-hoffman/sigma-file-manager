@@ -520,7 +520,7 @@ Developers, feel free to optimize and improve the app. Make sure to create a new
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) file for help, if you are new to contributing code.
 
-You will need Node.js <= `v15.14.0` and Vue 2 installed.
+You will need Node.js <= `v15.14.0` installed.
 
 To open the project on the dev server, run the following commands:
 
