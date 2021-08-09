@@ -194,6 +194,9 @@ Check out the full list of rewards on Patreon:
 
 #### Artworks used in the app
 
+Click on an image to visit the artist's page.
+If you like their art, consider supporting their work. You can find their support links in the app on the artwork cards in the background manager (app home page > banner menu > background manager).
+
 <table>
   <tbody>
     <tr>
@@ -346,10 +349,6 @@ Check out the full list of rewards on Patreon:
     </tr>
   </tbody>
 </table>
-
-Click on an image to visit the artist's page.
-<br>💗 And if you like their art, consider supporting their work. You can find their support links in the app on the artwork cards in the background manager (app home page > banner menu > background manager).
-
 
 # Download
 
