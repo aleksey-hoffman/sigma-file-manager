@@ -1,6 +1,7 @@
-<img src="./.github/media/logo-1024x1024.png" width="64px">
-
-# Sigma File Manager
+<h1>
+  <img valign="middle" src="./.github/media/logo-1024x1024.png" width="64px">
+  &nbsp;&nbsp;Sigma File Manager
+ </h1>
 
 "Sigma File Manager" is a free, open-source, quickly evolving, modern file manager (explorer / finder) app for Windows, MacOS, and Linux.
 
@@ -9,6 +10,10 @@ Designed, developed, and maintained by [Aleksey Hoffman](https://github.com/alek
 <img src="./.github/media/main.png">
 
 <i>Artwork in the image: [Futuristic Japanese Palanquin by Julien Gauthier](https://www.artstation.com/artwork/EV8Lo4)</i>
+
+### How to download?
+
+See the "Download" section below.
 
 # Features
 
@@ -114,32 +119,19 @@ Several more major features / improvements are already in development and will b
 
 # Supporters
 
-These wonderful people and companies are currently funding this project, they are the reason good quality free software can exist.
+These wonderful people and companies are currently funding this project. Thanks to them I can keep improving this app, they are the reason good quality free software can exist.
 
-See the list of rewards and consider joining our community on Patreon:
+<h4 style="margin: 32px 0px;">
+  <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/blob/main/BAKERS.md">Full list of supporters →</a>
+</h4>
 
-<a target="_blank" href="https://patreon.com/sigma_file_manager">
-  <img
-    src="./.github/media/patreon_button.png"
-    width="164px"
-    style="box-shadow: 0px 6px 24px rgb(255, 66, 77, 0.2); margin: 16px 0"
-  />
-</a>
-
-- Supporters are added to the list from top to bottom. The earlier you start supporting the project, the higher your name will be on the list.
-- "3+ months" supporters will have the ⭐ badge displayed next to their name.
-- The funding will be used for:
-  - Fund the development of this project;
-  - Fund the development of my other big research project: advanced tools / algorithms that will help scientists speed up development of new medications and treatments for diseases, reducing the time need to find a new medication from 10 years (current average) to just a few months, and hopefully help humanity get rid of diseases;
-  - Support other open-source and open-content creators (developers, educators, digital artists, etc);
-
-## SPONSORS - LEVEL 2
+### SPONSORS - LEVEL 2
 Become the first supporter
 
-## SPONSORS - LEVEL 1
+### SPONSORS - LEVEL 1
 Become the first supporter
 
-## GENEROUS SUPPORTERS
+### GENEROUS SUPPORTERS
 <table>
   <tbody>
     <tr>
@@ -157,13 +149,35 @@ Become the first supporter
   </tbody>
 </table>
 
-## GRATEFUL SUPPORTERS
-Become the first supporter
+### GRATEFUL SUPPORTERS
 
-<h4 style="margin: 32px 0px;">
-  <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/blob/main/BAKERS.md">See the full list of supporters</a>
-</h4>
+<div>
+  <a href="https://github.com/andyundso" title="Andy Pfister">
+    <b>~ Andy Pfister ~</b>
+  </a>
+</div>
 
+
+## Join
+
+#### 🎉 Supporter goal: 2 of 300 people joined
+
+See the list of rewards and consider joining our community on Patreon:
+
+<a target="_blank" href="https://patreon.com/sigma_file_manager">
+  <img
+    src="./.github/media/patreon_button.png"
+    width="164px"
+    style="box-shadow: 0px 6px 24px rgb(255, 66, 77, 0.2); margin: 16px 0"
+  />
+</a>
+
+- Supporters are added to the list from top to bottom. The earlier you start supporting the project, the higher your name will be on the list.
+- "3+ months" supporters will have the ⭐ badge displayed next to their name.
+- The funding will be used for:
+  - Fund the development of this project;
+  - Fund the development of my other big research project: advanced tools / algorithms that will help scientists speed up development of new medications and treatments for diseases, reducing the time need to find a new medication from 10 years (current average) to just a few months, and hopefully help humanity get rid of diseases;
+  - Support other open-source and open-content creators (developers, educators, digital artists, etc);
 
 # Contributors - open-content creators
 
@@ -307,33 +321,28 @@ Become the first supporter
         <a href="https://www.artstation.com/artwork/lVJXXe">Alena Aenami</a>
       </td>
     </tr>
+    <tr>
+      <td align="center" valign="middle">
+        <a href="https://www.artstation.com/artwork/vY18O">
+          <img width="128px" height="50px" src="./.github/media/home banner previews/Ice Cave by Wang Jie.jpg">
+        </a>
+      </td>
+    </tr>
+    <tr>
+      <td align="center" valign="middle">
+        <a href="https://www.artstation.com/artwork/EV8Lo4">Wang Jie</a>
+      </td>
+    </tr>
   </tbody>
 </table>
 
 Click on an image to visit the artist's page.
 <br>💗 And if you like their art, consider supporting their work. You can find their support links in the app on the artwork cards in the background manager (app home page > banner menu > background manager).
 
-# Project links
-
-If you want to see the list of features currently in development, or ask a question, or propose a new feature, or report a problem, here are the links:
-
-- <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/issues/new?template=Feature_request.md">Create new feature request</a>
-- <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/issues/new?template=Problem_report.md">Create new problem report</a>
-- <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/discussions">Create new discussion</a>
-- <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/blob/main/CHANGELOG.md">See changelog (update history)</a>
-- <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/discussions/31">See improvements in development</a>
 
 # Download
 
-The app is completely free. However, you if join our community on Patreon you will get a lot of awesome rewards and also ensure this app keeps improving by supporting the developer.
-
-<a target="_blank" href="https://patreon.com/sigma_file_manager">
-  <img
-    src="./.github/media/patreon_button.png"
-    width="164px"
-    style="box-shadow: 0px 6px 24px rgb(255, 66, 77, 0.2); margin-bottom: 16px"
-  />
-</a>
+The app is free, 
 
 <table>
   <thead>
@@ -347,7 +356,7 @@ The app is completely free. However, you if join our community on Patreon you wi
       <td>Windows</td>
       <td>
         <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/releases/">
-          Sigma_File_Manager_Windows.exe
+          Sigma-File-Manager-Windows.exe
         </a>
       </td>
     </tr>
@@ -355,7 +364,7 @@ The app is completely free. However, you if join our community on Patreon you wi
       <td>MacOS portable</td>
       <td>
         <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/releases/">
-          Sigma_File_Manager_MacOS.pkg
+          Sigma-File-Manager-MacOS.pkg
         </a>
       </td>
     </tr>
@@ -363,7 +372,7 @@ The app is completely free. However, you if join our community on Patreon you wi
       <td>Linux (any) portable</td>
       <td>
         <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/releases/">
-          Sigma_File_Manager_Linux.AppImage
+          Sigma-File-Manager-Linux.AppImage
         </a>
       </td>
     </tr>
@@ -396,6 +405,16 @@ The app is completely free. However, you if join our community on Patreon you wi
 
 [![Github All Releases](https://img.shields.io/github/downloads/aleksey-hoffman/sigma-file-manager/total.svg)]()
 
+If you like the app, consider supporting my work by joining our community on Patreon. You will get a lot of awesome rewards for your support there, check it out:
+
+<a target="_blank" href="https://patreon.com/sigma_file_manager">
+  <img
+    src="./.github/media/patreon_button.png"
+    width="164px"
+    style="box-shadow: 0px 6px 24px rgb(255, 66, 77, 0.2); margin-bottom: 16px"
+  />
+</a>
+
 #### ⚡ Requirements:
 
 - **Memory (RAM):** minimum: ~100 MB, average: ~300 MB;
@@ -420,6 +439,16 @@ If you just want to get updates on this project, you can click the "watch" butto
 
 There's a fun secret hidden somewhere in the app. See if you can find it. Hint: only the dinosaur knows about it.
 
+# Project links
+
+If you want to see the list of features currently in development, or ask a question, or propose a new feature, or report a problem, here are the links:
+
+- <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/issues/new?template=Feature_request.md">Create new feature request</a>
+- <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/issues/new?template=Problem_report.md">Create new problem report</a>
+- <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/discussions">Create new discussion</a>
+- <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/blob/main/CHANGELOG.md">See changelog (update history)</a>
+- <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/discussions/31">See improvements in development</a>
+
 # Milestones
 
 ✅ **v1.0.0 (May 25 2021):** publish the app;
@@ -428,7 +457,7 @@ There's a fun secret hidden somewhere in the app. See if you can find it. Hint: 
 
 ✅ **by v1.2.0 (June 2021):** new features, improvements, and fixes;
 
-⬜ **by v1.3.0 (July 2021):** new feature, improvements, and fixes. Localize the app to 10+ most popular languages;
+⬜ **by v1.3.0 (Augest 2021):** new feature, improvements, and fixes. Localize the app to 10+ most popular languages;
 
 ⬜ ...
 
@@ -483,8 +512,7 @@ See [CONTRIBUTING.md](./CONTRIBUTING.md) file for help, if you are new to contri
 To open the project on the dev server, run the following commands:
 
 ```
-cd sigma-file-manager
-npm install && npm run electron:serve
+cd ./sigma-file-manager && npm install && npm run electron:serve
 ```
 
 To build the project for your current platform, run the following commands:
@@ -500,3 +528,4 @@ The build can be configured in the `./vue.config.js` file
 Sigma file manager is licensed under [GNU GPLv3 or later](./LICENSE.md).
 
 Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
+  
