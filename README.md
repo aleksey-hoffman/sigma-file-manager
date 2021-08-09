@@ -121,9 +121,9 @@ Several more major features / improvements are already in development and will b
 
 These wonderful people and companies are currently funding this project. Thanks to them I can keep improving this app, they are the reason good quality free software can exist.
 
-<h4 style="margin: 32px 0px;">
+<!-- <h4 style="margin: 32px 0px;">
   <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/blob/main/BAKERS.md">Full list of supporters →</a>
-</h4>
+</h4> -->
 
 ### SPONSORS - LEVEL 2
 Become the first supporter
@@ -137,13 +137,13 @@ Become the first supporter
     <tr>
       <td align="center" valign="middle">
         <a href="https://www.photoancestry.com/" title="Houston Photo Restoration">
-          <img width="80px" height="80px" src="https://www.photoancestry.com/images/photo-restoration-houston.png">
+          <img width="64px" height="64px" src="https://www.photoancestry.com/images/photo-restoration-houston.png">
         </a>
       </td>
     </tr>
     <tr>
       <td align="center" valign="middle">
-        <a href="https://www.photoancestry.com/" title="Houston Photo Restoration">⭐Houston Photo Restoration</a>
+        <a href="https://www.photoancestry.com/" title="Houston Photo Restoration">⭐ Houston Photo Restoration</a>
       </td>
     </tr>
   </tbody>
@@ -157,12 +157,21 @@ Become the first supporter
   </a>
 </div>
 
+<br>
 
 ## Join
 
-#### 🎉 Supporter goal: 2 of 300 people joined
+#### 🎉 Supporter goal: 2 of 30 people joined
 
-See the list of rewards and consider joining our community on Patreon:
+Supporters get rewards for supporting this project on Patreon:
+
+- Your issues (feature requests) will have higher priority and a "supporter 💖" label;
+- You will be able to vote and decide which features should be prioritized;
+- Your name and the link to your project / website will be dispalyed on this page;
+- You will get access to a private Discord;
+- Also, thatnks to your support, you and everyone else will be getting new features in the app more frequently.
+
+Check out the full list of rewards on Patreon:
 
 <a target="_blank" href="https://patreon.com/sigma_file_manager">
   <img
@@ -171,6 +180,8 @@ See the list of rewards and consider joining our community on Patreon:
     style="box-shadow: 0px 6px 24px rgb(255, 66, 77, 0.2); margin: 16px 0"
   />
 </a>
+
+#### Additional info
 
 - Supporters are added to the list from top to bottom. The earlier you start supporting the project, the higher your name will be on the list.
 - "3+ months" supporters will have the ⭐ badge displayed next to their name.
@@ -216,16 +227,6 @@ See the list of rewards and consider joining our community on Patreon:
           <img width="128px" height="50px" src="./.github/media/home banner previews/Canyon by Kevin Lanceplaine.jpg">
         </a>
       </td>
-      <td align="center" valign="middle">
-        <a href="https://pixabay.com/videos/starry-sky-seis-am-schlern-14955">
-          <img width="128px" height="50px" src="./.github/media/home banner previews/Starry Sky by Andreas.jpg">
-        </a>
-      </td>
-      <td align="center" valign="middle">
-        <a href="https://www.artstation.com/artwork/XkP2l">
-          <img width="128px" height="50px" src="./.github/media/home banner previews/Discovered planet by Darius Kalinauskas.jpg">
-        </a>
-      </td>
     </tr>
     <tr>
       <td align="center" valign="middle">
@@ -245,12 +246,6 @@ See the list of rewards and consider joining our community on Patreon:
       </td>
       <td align="center" valign="middle">
         <a href="https://unsplash.com/photos/sO-JmQj95ec">Kevin Lanceplaine</a>
-      </td>
-      <td align="center" valign="middle">
-        <a href="https://pixabay.com/videos/starry-sky-seis-am-schlern-14955">Andreas</a>
-      </td>
-      <td align="center" valign="middle">
-        <a href="https://www.artstation.com/artwork/XkP2l">Darius Kalinauskas</a>
       </td>
     </tr>
     <tr>
@@ -280,18 +275,8 @@ See the list of rewards and consider joining our community on Patreon:
         </a>
       </td>
       <td align="center" valign="middle">
-        <a href="https://www.artstation.com/artwork/mD3XvZ">
-          <img width="128px" height="50px" src="./.github/media/home banner previews/Out of time by Alena Aenami.jpg">
-        </a>
-      </td>
-      <td align="center" valign="middle">
-        <a href="https://www.artstation.com/artwork/reodm">
-          <img width="128px" height="50px" src="./.github/media/home banner previews/Serenity by Alena Aenami.jpg">
-        </a>
-      </td>
-      <td align="center" valign="middle">
-        <a href="https://www.artstation.com/artwork/lVJXXe">
-          <img width="128px" height="50px" src="./.github/media/home banner previews/Wait by Alena Aenami.jpg">
+        <a href="https://pixabay.com/videos/starry-sky-seis-am-schlern-14955">
+          <img width="128px" height="50px" src="./.github/media/home banner previews/Starry Sky by Andreas.jpg">
         </a>
       </td>
     </tr>
@@ -312,6 +297,41 @@ See the list of rewards and consider joining our community on Patreon:
         <a href="https://www.artstation.com/artwork/wgGRX">Vadim Sadovski</a>
       </td>
       <td align="center" valign="middle">
+        <a href="https://pixabay.com/videos/starry-sky-seis-am-schlern-14955">Andreas</a>
+      </td>
+    </tr>
+    <tr>
+      <td align="center" valign="middle">
+        <a href="https://www.artstation.com/artwork/XkP2l">
+          <img width="128px" height="50px" src="./.github/media/home banner previews/Discovered planet by Darius Kalinauskas.jpg">
+        </a>
+      </td>
+      <td align="center" valign="middle">
+        <a href="https://www.artstation.com/artwork/mD3XvZ">
+          <img width="128px" height="50px" src="./.github/media/home banner previews/Out of time by Alena Aenami.jpg">
+        </a>
+      </td>
+      <td align="center" valign="middle">
+        <a href="https://www.artstation.com/artwork/reodm">
+          <img width="128px" height="50px" src="./.github/media/home banner previews/Serenity by Alena Aenami.jpg">
+        </a>
+      </td>
+      <td align="center" valign="middle">
+        <a href="https://www.artstation.com/artwork/lVJXXe">
+          <img width="128px" height="50px" src="./.github/media/home banner previews/Wait by Alena Aenami.jpg">
+        </a>
+      </td>
+      <td align="center" valign="middle">
+        <a href="https://www.artstation.com/artwork/vY18O">
+          <img width="128px" height="50px" src="./.github/media/home banner previews/Ice Cave by Wang Jie.jpg">
+        </a>
+      </td>
+    </tr>
+    <tr>
+      <td align="center" valign="middle">
+        <a href="https://www.artstation.com/artwork/XkP2l">Darius Kalinauskas</a>
+      </td>
+      <td align="center" valign="middle">
         <a href="https://www.artstation.com/artwork/mD3XvZ">Alena Aenami</a>
       </td>
       <td align="center" valign="middle">
@@ -320,15 +340,6 @@ See the list of rewards and consider joining our community on Patreon:
       <td align="center" valign="middle">
         <a href="https://www.artstation.com/artwork/lVJXXe">Alena Aenami</a>
       </td>
-    </tr>
-    <tr>
-      <td align="center" valign="middle">
-        <a href="https://www.artstation.com/artwork/vY18O">
-          <img width="128px" height="50px" src="./.github/media/home banner previews/Ice Cave by Wang Jie.jpg">
-        </a>
-      </td>
-    </tr>
-    <tr>
       <td align="center" valign="middle">
         <a href="https://www.artstation.com/artwork/EV8Lo4">Wang Jie</a>
       </td>
