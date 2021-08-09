@@ -165,7 +165,7 @@ Become the first supporter
 
 Supporters get rewards for supporting this project on Patreon:
 
-- Your issues (feature requests) will have higher priority and a "supporter 💖" label;
+- Your issues (feature requests) will have higher priority and a `supporter 💖` label;
 - You will be able to vote and decide which features should be prioritized;
 - Your name and the link to your project / website will be dispalyed on this page;
 - You will get access to a private Discord;
@@ -352,7 +352,12 @@ If you like their art, consider supporting their work. You can find their suppor
 
 # Download
 
-The app is free, 
+#### ⚡ Requirements:
+
+- **Memory (RAM):** minimum: ~100 MB, average: ~300 MB;
+- **Storage:** minimum: ~200 MB;
+- **OS:** 64-bit: Windows, MacOS, Linux;
+
 
 <table>
   <thead>
@@ -415,7 +420,8 @@ The app is free,
 
 [![Github All Releases](https://img.shields.io/github/downloads/aleksey-hoffman/sigma-file-manager/total.svg)]()
 
-If you like the app, consider supporting my work by joining our community on Patreon. You will get a lot of awesome rewards for your support there, check it out:
+If you like the app, consider supporting my work by joining our community on Patreon.
+I have a lot of awesome things in development for you guys, but the luck of funding makes it really difficult to create anything
 
 <a target="_blank" href="https://patreon.com/sigma_file_manager">
   <img
@@ -425,11 +431,6 @@ If you like the app, consider supporting my work by joining our community on Pat
   />
 </a>
 
-#### ⚡ Requirements:
-
-- **Memory (RAM):** minimum: ~100 MB, average: ~300 MB;
-- **Storage:** minimum: ~200 MB;
-- **OS:** 64-bit: Windows, MacOS, Linux;
 
 #### ⚠ Warnings:
 
