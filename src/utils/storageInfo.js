@@ -14,6 +14,7 @@ const diskusage = require('diskusage')
 const PATH = require('path')
 
 export default async function getStorageDevices () {
+  return []
   let drives = await sysInfo.blockDevices()
   drives = formatDrivesData(drives)
   drives = processDrivesData(drives)
