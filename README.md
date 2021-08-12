@@ -444,8 +444,6 @@ There's a fun secret hidden somewhere in the app. See if you can find it. Hint: 
 
 # Project links
 
-If you want to see the list of features currently in development, or ask a question, or propose a new feature, or report a problem, here are the links:
-
 - <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/issues/new?template=Feature_request.md">Create feature request</a>
 - <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/issues/new?template=Problem_report.md">Create problem report</a>
 - <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/discussions">Create discussion</a>
