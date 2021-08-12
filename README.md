@@ -5,7 +5,7 @@
 
 "Sigma File Manager" is a free, open-source, quickly evolving, modern file manager (explorer / finder) app for Windows, MacOS, and Linux.
 
-Designed, developed, and maintained by [Aleksey Hoffman](https://github.com/aleksey-hoffman)
+Designed, developed, and maintained by [Aleksey Hoffman](https://github.com/aleksey-hoffman) | [Twitter](https://twitter.com/hoffman_aleksey)
 
 <img src="./.github/media/main.png">
 
@@ -125,13 +125,13 @@ These wonderful people and companies are currently funding this project. Thanks 
   <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/blob/main/BAKERS.md">Full list of supporters →</a>
 </h4> -->
 
-### SPONSORS - LEVEL 2
+## Sponsors - level 2
 Become the first supporter
 
-### SPONSORS - LEVEL 1
+## Sponsors - level 1
 Become the first supporter
 
-### GENEROUS SUPPORTERS
+## Generous supporters
 <table>
   <tbody>
     <tr>
@@ -149,7 +149,7 @@ Become the first supporter
   </tbody>
 </table>
 
-### GRATEFUL SUPPORTERS
+## Grateful supporters
 
 <div>
   <a href="https://github.com/andyundso" title="Andy Pfister">
@@ -170,6 +170,8 @@ Supporters get rewards for supporting this project on Patreon:
 - Your name and the link to your project / website will be dispalyed on this page;
 - You will get access to a private Discord;
 - Also, thatnks to your support, you and everyone else will be getting new features in the app more frequently.
+
+If you like the app, consider supporting my work by joining our community on Patreon. I have a lot of awesome things in development for you guys, but the luck of funding makes it really difficult to create anything.
 
 Check out the full list of rewards on Patreon:
 
@@ -358,7 +360,6 @@ If you like their art, consider supporting their work. You can find their suppor
 - **Storage:** minimum: ~200 MB;
 - **OS:** 64-bit: Windows, MacOS, Linux;
 
-
 <table>
   <thead>
     <tr>
@@ -420,31 +421,22 @@ If you like their art, consider supporting their work. You can find their suppor
 
 [![Github All Releases](https://img.shields.io/github/downloads/aleksey-hoffman/sigma-file-manager/total.svg)]()
 
-If you like the app, consider supporting my work by joining our community on Patreon.
-I have a lot of awesome things in development for you guys, but the luck of funding makes it really difficult to create anything
-
-<a target="_blank" href="https://patreon.com/sigma_file_manager">
-  <img
-    src="./.github/media/patreon_button.png"
-    width="164px"
-    style="box-shadow: 0px 6px 24px rgb(255, 66, 77, 0.2); margin-bottom: 16px"
-  />
-</a>
-
-
 #### ⚠ Warnings:
 
-The app is still in early development (prototyping) stage.
-
-- The app hasn't been thoroughly tested yet. It's recommended to backup (copy) all of your important data to an external backup drive or to cloud storage before installing and using this app.
+- The app is still in early development (prototyping) stage. It is safe to use, it should not delete or damage any files by itself, but it's recommended to backup (copy) your important data to an external backup drive or to your cloud storage, just for good practice.
 - Expect to see some errors and performance issues in the first versions of the app. I will be fixing the problems gradually as they get reported by the users.
 - The app has not been optimized yet, RAM usage can spike and go over 1 GB during some operations. So, for now, avoid using the app on low-tier computers (i.e. computers with 4 GB of RAM or less).
 
 #### 💬 Get notified
 
-You can follow me on <a href="https://twitter.com/hoffman_aleksey" target="_blank">Twitter</a> if you want to get updates on this app, hear about my upcoming projects, participate in my future giveaways, or just hear my thoughts on different things.
+You can follow me on <a href="https://twitter.com/hoffman_aleksey" target="_blank">Twitter</a> if you want to:
 
-If you just want to get updates on this project, you can click the "watch" button on top of the page.
+- Get updates on this app, see screenshots of features in development
+- Learn about my new projects
+- See some memes about programming
+- Or just read my thoughts on different things
+
+If you can also click the "watch" button on top of the page if you want to get notified when I publish a new release, or someone opens a new discussion / issue.
 
 #### 💡 Hidden treasures
 
@@ -454,11 +446,11 @@ There's a fun secret hidden somewhere in the app. See if you can find it. Hint: 
 
 If you want to see the list of features currently in development, or ask a question, or propose a new feature, or report a problem, here are the links:
 
-- <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/issues/new?template=Feature_request.md">Create new feature request</a>
-- <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/issues/new?template=Problem_report.md">Create new problem report</a>
-- <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/discussions">Create new discussion</a>
-- <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/blob/main/CHANGELOG.md">See changelog (update history)</a>
-- <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/discussions/31">See improvements in development</a>
+- <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/issues/new?template=Feature_request.md">Create feature request</a>
+- <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/issues/new?template=Problem_report.md">Create problem report</a>
+- <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/discussions">Create discussion</a>
+- <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/blob/main/CHANGELOG.md">See changelog</a>
+- <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/discussions/31">See features in development</a>
 
 # Milestones
 
