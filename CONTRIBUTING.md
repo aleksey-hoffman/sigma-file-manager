@@ -1,8 +1,6 @@
 # Notes
 
-The app is in early development (prototyping) stage:
-- The codebase hasn't been optimized yet. A large portion of the codebase has been written when I barely knew how to code.
-- The whole codebase will be refactored and optimized in future updates.
+The app is in early development (prototyping) stage, the codebase hasn't been optimized yet, I will gradually refactor it in future updates.
 
 # How to contribute
 
