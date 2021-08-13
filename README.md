@@ -332,6 +332,11 @@ If you like their art, consider supporting their work. You can find their suppor
           <img width="128px" height="50px" src="./.github/media/home banner previews/Ice Cave by Wang Jie.jpg">
         </a>
       </td>
+      <td align="center" valign="middle">
+        <a href="https://www.artstation.com/artwork/vY18O">
+          <img width="128px" height="50px" src="./.github/media/home banner previews/Slum by Vladimir Manyukhin.jpg">
+        </a>
+      </td>
     </tr>
     <tr>
       <td align="center" valign="middle">
@@ -348,6 +353,9 @@ If you like their art, consider supporting their work. You can find their suppor
       </td>
       <td align="center" valign="middle">
         <a href="https://www.artstation.com/artwork/EV8Lo4">Wang Jie</a>
+      </td>
+      <td align="center" valign="middle">
+        <a href="https://www.artstation.com/artwork/EV8Lo4">Vladimir Manyukhin</a>
       </td>
     </tr>
   </tbody>
