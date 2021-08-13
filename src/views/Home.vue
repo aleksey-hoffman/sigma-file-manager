@@ -153,7 +153,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
         <!-- title:dirves -->
         <div class="text--sub-title-1 mb-3">
-          {{$localize.get('text_drives')}}
+          {{locationsTitle}}
         </div>
 
         <!-- Note: render only on 'Home' route, otherwise will get:
@@ -221,7 +221,15 @@ export default {
       homeBannerValue: 'storageData.settings.homeBanner.value',
       homeBannerHeight: 'storageData.settings.homeBanner.height',
       homeBannerOverlaySelectedItem: 'storageData.settings.homeBanner.overlay.selectedItem'
-    })
+    }),
+    locationsTitle () {
+      if (process.platform === 'win32') {
+        return this.$localize.get('text_drives')
+      }
+      else {
+        return this.$localize.get('locations')
+      }
+    }
   },
   methods: {
     watchContentAreaScroll () {
