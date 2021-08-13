@@ -430,6 +430,94 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   icon: {
                     name: 'mdi-animation-play-outline'
                   },
+                  title: 'Visual effects'
+                }"
+              >
+                <template v-slot:content>
+                  <div class="text--sub-title-1 mt-2">
+                    Window transparency effect
+                  </div>
+                  <v-switch
+                    class="mt-0 pt-0 d-inline-flex"
+                    v-model="windowTransparencyEffectValue"
+                    label="Display window transparency effect"
+                    hint="Disable if you see any visual glitches"
+                    :persistent-hint="windowTransparencyEffect.value"
+                    :hide-details="!windowTransparencyEffect.value"
+                  ></v-switch>
+
+                  <v-expand-transition>
+                    <div 
+                      class="mt-4"
+                      v-if="windowTransparencyEffect.value"
+                    >
+                      <div class="mt-2">
+                        Overlay blur: {{windowTransparencyEffectBlur}}px
+                      </div>
+                      <v-layout align-center>
+                        <v-slider
+                          class="align-center"
+                          v-model="windowTransparencyEffectBlur"
+                          max="100"
+                          min="0"
+                          step="1"
+                          hide-details
+                          style="max-width: 250px"
+                        ></v-slider>
+                      </v-layout>
+
+                      <div class="mt-2">
+                        Overlay opacity: {{windowTransparencyEffectOpacity}}%
+                      </div>
+                      <v-layout align-center>
+                        <v-slider
+                          class="align-center"
+                          v-model="windowTransparencyEffectOpacity"
+                          max="20"
+                          min="0"
+                          step="1"
+                          hide-details
+                          style="max-width: 250px"
+                        ></v-slider>
+                      
+                      </v-layout>
+                      
+                      <v-layout align-center>
+                        <v-select
+                          v-model="windowTransparencyEffectDataBackgroundSelected"
+                          :items="windowTransparencyEffect.data.background.items"
+                          item-text="fileNameBase"
+                          return-object
+                          label="Overlay background"
+                          style="max-width: 400px"
+                        ></v-select>
+                        
+                        <v-tooltip bottom>
+                          <template v-slot:activator="{ on }">
+                            <v-btn
+                              class="button-1 ml-3"
+                              v-on="on"
+                              @click="setNextWindowTransparencyEffectBackground()"
+                              depressed
+                              small
+                            >
+                              <v-icon size="18px" color="">mdi-autorenew</v-icon>
+                            </v-btn>
+                          </template>
+                          <span>Select next background</span>
+                        </v-tooltip>
+                      </v-layout>
+                    </div>
+                  </v-expand-transition>
+                </template>
+              </section-settings>
+
+              <section-settings
+                class="content-area__content-card__section"
+                :header="{
+                  icon: {
+                    name: 'mdi-animation-play-outline'
+                  },
                   title: 'Animations'
                 }"
               >
@@ -1229,6 +1317,10 @@ export default {
       navigatorShowHiddenDirItems: 'storageData.settings.navigator.showHiddenDirItems',
       navigatorOpenDirItemWithSingleClick: 'storageData.settings.navigator.openDirItemWithSingleClick',
       dirItemHoverEffect: 'storageData.settings.dirItemHoverEffect',
+      windowTransparencyEffectValue: 'storageData.settings.windowTransparencyEffect.value',
+      windowTransparencyEffectBlur: 'storageData.settings.windowTransparencyEffect.blur',
+      windowTransparencyEffectOpacity: 'storageData.settings.windowTransparencyEffect.opacity',
+      windowTransparencyEffectDataBackgroundSelected: 'storageData.settings.windowTransparencyEffect.data.background.selected',
       animationsOnRouteChangeMediaBannerIn: 'storageData.settings.animations.onRouteChangeMediaBannerIn',
       pointerButton3onMouseUpEvent: 'storageData.settings.input.pointerButtons.button3.onMouseUpEvent',
       pointerButton3onMouseUpEventItems: 'storageData.settings.input.pointerButtons.button3.onMouseUpEventItems',
@@ -1325,6 +1417,7 @@ export default {
       dashboardTimeline: 'storageData.settings.dashboard.tabs.timeline.show',
       scanInProgress: 'globalSearch.scanInProgress',
       openDirItemSecondClickDelay: 'storageData.settings.navigator.openDirItemSecondClickDelay',
+      windowTransparencyEffect: 'storageData.settings.windowTransparencyEffect',
     }),
     validatedOpenDirItemSecondClickDelay: {
       get () {
@@ -1491,6 +1584,18 @@ export default {
         .filter(listItem => listItem !== item)
       this.globalSearchDisallowedPaths = this.globalSearchDisallowedPaths
         .filter(listItem => listItem !== item)
+    },
+    setNextWindowTransparencyEffectBackground () {
+      let currentItemIndex = this.windowTransparencyEffect.data.background.items
+        .findIndex(item => item.path === this.windowTransparencyEffectDataBackgroundSelected.path)
+      let nextItemIndex = 0
+      if (currentItemIndex > this.windowTransparencyEffect.data.background.items.length - 2) {
+        nextItemIndex = 0
+      }
+      else {
+        nextItemIndex = currentItemIndex + 1
+      }
+      this.windowTransparencyEffectDataBackgroundSelected = this.windowTransparencyEffect.data.background.items[nextItemIndex]
     }
   }
 }

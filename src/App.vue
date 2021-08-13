@@ -15,6 +15,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     <overlays/>
     <clipboard-toolbar/>
     <dialogs v-if="appIsLoaded"/>
+    <window-effects/>
 
     <!-- app-content-area -->
     <v-main class="app-content">

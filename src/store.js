@@ -33,6 +33,7 @@ const systemRulesForPaths = getSystemRulesForPaths()
 const ColorUtils = require('./utils/colorUtils.js')
 const appDataPaths = require('./appPaths.js')
 const supportedFormats = require('./utils/supportedFormats.js')
+const windowTransparencyEffectData = require('./data/windowTransparencyEffectData.js')
 
 const appPaths = {
   ...externalLinks,
@@ -444,6 +445,12 @@ export default new Vuex.Store({
           storeDirItemOpenDate: true,
         },
         UIZoomLevel: 1,
+        windowTransparencyEffect: {
+          value: true,
+          blur: 56,
+          opacity: 10,
+          data: windowTransparencyEffectData,
+        },
         animations: {
           onRouteChangeMediaBannerIn: true
         },

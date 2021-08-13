@@ -47,6 +47,7 @@ import MediaIterator from './components/MediaIterator.vue'
 import DriveCardsIterator from './components/DriveCardsIterator.vue'
 import UpdatingComponent from './components/UpdatingComponent.vue'
 import SectionSettings from './components/SectionSettings.vue'
+import WindowEffects from './components/WindowEffects.vue'
 
 // Register components
 Vue.component('window-toolbar', WindowToolbar)
@@ -80,6 +81,7 @@ Vue.component('media-iterator', MediaIterator)
 Vue.component('drive-cards-iterator', DriveCardsIterator)
 Vue.component('updating-component', UpdatingComponent)
 Vue.component('section-settings', SectionSettings)
+Vue.component('window-effects', WindowEffects)
 
 const localize = require('./utils/localize')
 require('overlayscrollbars/css/OverlayScrollbars.css')
