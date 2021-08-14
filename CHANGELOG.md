@@ -1,6 +1,52 @@
 # CHANGELOG
 
-## v1.2.0 (2021-23-06)
+## v1.3.0 (2021-08-14)
+
+# Release Notes for v1.3.0:
+
+# Release Notes:
+
+This release improves stability, performance, and also brings a few new features:
+
+- 1 new major feature
+- 2 new minor features
+- 12 other improvements
+- 4 fixes
+
+## New major features:
+
+- **Feature**: Customizable window transparency effect | e54418a
+
+## New minor features:
+
+- **Feature**: add new shortcuts: `addDirItemsForCopying`, `addDirItemsForMoving`, which allow you to copy / move items from multiple 
+ different directories at once | 5ef4a9a
+- **Feature**: add ability to create `symlinks`, `hard links` and Windows `.lnk shortcuts` from the context menu by pressing different modifiers | 478b3dc
+
+## Other improvements:
+
+- **UI**: added new artwork for home banner: "Ice Cave by Wang Jie" | 2d40d4c
+- **UI**: added new artwork for home banner: "Slum by Vladimir Manyukhin" | cdbfefd
+- **UX**: the current directory will now reload immediately after deleting / trashing items | 17cceba
+- **UI**: notification cards will now have a nicer and more consistent design | 65b9a41
+- **UI**: items in the range selection will now be highlighted immediately when `Shift` key is pressed | 0ca8ff2
+- **UI**: filter field menu design was improved | 2a6ef8f
+- **UX**: you can now specify a custom path when creating a new link / shortcut  | dc7ae34
+- **UX**: icons in context-menu will now dynamically change when you press different key modifiers, and their tooltips will look nicer and more consistent | 106191f
+- **UX (for developers)**: All copied paths will now be automatically wrapped with quotes. On Windows, selected paths will now be copied with single backward `\` slashes, or with double backward `\\` slashes by pressing a key modifier | 86695f2
+- **UX**: `zoomIncrease` shortcut will now also be triggered with `Ctrl + Plus` on the numpad | 4f90117
+- **Dev**: Code optimizations and refactoring
+- A few other small improvements in UI
+
+## Fixed:
+
+- **UX**: fixed the issue with archiver feature not working on Linux and MacOS because of bin permissions | 1d646ca
+- **UI**: the animation of navigation panel will now work correctly on home page | 24ebe35
+- **UI**: removed excessive bottom padding when the bottom clipboard toolbar is shown | d78d7e8
+- **UX**: fixed the issue with items getting added to copy / move clipboard when you select other items | 51f345a
+
+
+## v1.2.0 (2021-06-23)
 
 # Release Notes for v1.2.0:
 
@@ -107,7 +153,7 @@ See the full list of rewards, and consider join our community on Patreon to help
 </a>
 
 
-## v1.1.0 (2021-27-05)
+## v1.1.0 (2021-05-27)
 
 # Release Notes for v1.1.0:
 
