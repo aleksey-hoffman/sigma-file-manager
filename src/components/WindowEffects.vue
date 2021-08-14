@@ -49,6 +49,11 @@ export default {
       this.$nextTick(() => {
         this.setMediaNode()
       })
+    },
+    'windowTransparencyEffect.value' () {
+      this.$nextTick(() => {
+        this.setMediaNode()
+      })
     }
   },
   computed: {
