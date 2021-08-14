@@ -2084,7 +2084,7 @@ export default new Vuex.Store({
       }
     },
     EXEC_DOWNLOAD_VIDEO ({ state, commit, dispatch, getters }, payload) {
-      console.log(payload)
+      // console.log(payload)
       let status = { isCanceled: false }
 
       // Add notification
@@ -2233,7 +2233,7 @@ export default new Vuex.Store({
         })
 
         mainExecProcess.stdout.on('data', (data) => {
-          console.log(data)
+          // console.log(data)
           const dataArray = data.split(' ')
             .filter(item => item !== '')
           // Get info from 'download' phase
@@ -2856,7 +2856,7 @@ export default new Vuex.Store({
         const uniqueDestPath = utils.getUniquePath(PATH.join(parsed.dir, 'Archive.zip'))
         params.dest = uniqueDestPath
       }
-      console.log(params.dest, params.source, store.state.appPaths.bin7Zip)
+      // console.log(params.dest, params.source, store.state.appPaths.bin7Zip)
       const appBinExtractStream = node7z.add(
         params.dest,
         params.source,
@@ -3618,7 +3618,7 @@ export default new Vuex.Store({
             return false
           }
           else {
-            console.log('editTargets', editTargets)
+            // console.log('editTargets', editTargets)
             electron.ipcRenderer.send('compute-request:trashDirItems', { items: editTargets })
             electron.ipcRenderer.once('compute-request-reply:trashDirItems', (event, data) => {
               dispatch('REMOVE_FROM_PROTECTED', {

@@ -83,6 +83,10 @@ function initWatcher (dirPath, eventDebouncer) {
         })
       }, { time: 1000 })
     })
-    .on('ready', () => console.log('Chokidar::on.ready'))
-    .on('error', (error) => console.log(error))
+    .on('ready', () => {
+      // console.log('Chokidar::on.ready')
+    })
+    .on('error', (error) => {
+      // console.log(error)
+    })
 }

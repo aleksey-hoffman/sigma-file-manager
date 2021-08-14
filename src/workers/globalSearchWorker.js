@@ -56,7 +56,7 @@ async function initWorker (event) {
     })
   }
   catch (error) {
-    console.log('error: globalSearchWorker.js: initWorker', error)
+    // console.log('error: globalSearchWorker.js: initWorker', error)
     self.postMessage({ action: 'error', error })
   }
 }

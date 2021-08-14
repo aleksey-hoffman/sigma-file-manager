@@ -37,7 +37,7 @@ async function initWorker (data) {
   ffmpeg(data.dirItemRealPath)
     .size(thumbSize)
     .on('error', (error) => {
-      console.log(error)
+      // console.log(error)
       self.postMessage({result: 'error'})
     })
     .on('end', () => {
