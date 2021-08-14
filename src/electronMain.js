@@ -82,7 +82,6 @@ function setAppProperties () {
   // are updated (to become context-aware or loaded via N-API)
   electron.app.allowRendererProcessReuse = false
   electron.app.setAppUserModelId('com.alekseyhoffman.sigma-file-manager')
-  electron.app.disableHardwareAcceleration()
 }
 
 function setCustomizedAppProperties (params) {
