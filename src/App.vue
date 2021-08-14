@@ -382,7 +382,31 @@ export default {
           this.appPaths.resourcesBin, 
           this.appPaths.storageDirectories.appStorageBin
         )
+          .then(() => {
+            if (process.platform !== 'win32') {
+              this.getAppStorageBinDirPermissions()
+            }
+          })
       }
+    },
+    getAppStorageBinDirPermissions () {
+      const commandGetBinDirPermissionsRecursive = `chmod -R u+rwx "${this.appPaths.storageDirectories.appStorageBin}"`
+      childProcess.exec(commandGetBinDirPermissionsRecursive, (error) => {
+        if (error) {
+          this.$eventHub.$emit('notification', {
+            action: 'update-by-type',
+            type: 'error:unlock-perm-failed',
+            timeout: 0,
+            closeButton: true,
+            title: 'Shell command failed',
+            message: `
+              Could not get exec permissions for app binary dir. 
+              Some functionality will not work until permissions are granted.
+              <br><br><b>Error</b>: ${error}
+            `
+          })
+        }
+      })
     },
     windowBlurHandler () {
       // Force reset keyboard state to avoid pressed keys state remain true
