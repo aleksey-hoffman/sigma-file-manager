@@ -384,8 +384,6 @@ export default {
         catch (error) {
           await fsExtra.copy(
             this.appPaths.resourcesBin, 
-          this.appPaths.resourcesBin, 
-            this.appPaths.resourcesBin, 
             this.appPaths.storageDirectories.appStorageBin
           )
           if (process.platform !== 'win32') {
