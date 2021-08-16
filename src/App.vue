@@ -371,22 +371,27 @@ export default {
         electron.ipcRenderer.send('focus-main-app-window')
       }
     },
-    extractAppBinaries () {
+    async extractAppBinaries () {
       // Moving binaries to app storage because fs.childProcess.spawn
       // and other modules cannot access it from within app.asar
       const isEnvProduction = process.env.NODE_ENV === 'production'
       if (isEnvProduction) {
-        // TODO: do not overwrite existing dirs in appStorageBin
-        // if user puts custom binaries there (need a setting switch for it)
-        fsExtra.copy(
+        try {
+          await fs.promises.access(this.appPaths.bin7Zip, fs.constants.F_OK)
+          await fs.promises.access(this.appPaths.binFFMPEG, fs.constants.F_OK)
+          await fs.promises.access(this.appPaths.binYoutubeDl, fs.constants.F_OK)
+        }
+        catch (error) {
+          await fsExtra.copy(
+            this.appPaths.resourcesBin, 
           this.appPaths.resourcesBin, 
-          this.appPaths.storageDirectories.appStorageBin
-        )
-          .then(() => {
-            if (process.platform !== 'win32') {
-              this.getAppStorageBinDirPermissions()
-            }
-          })
+            this.appPaths.resourcesBin, 
+            this.appPaths.storageDirectories.appStorageBin
+          )
+          if (process.platform !== 'win32') {
+            this.getAppStorageBinDirPermissions()
+          }
+        }
       }
     },
     getAppStorageBinDirPermissions () {
