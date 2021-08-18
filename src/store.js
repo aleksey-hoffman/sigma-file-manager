@@ -5764,7 +5764,7 @@ export default new Vuex.Store({
           }, task.props.options.timeout)
         }
         store.state.childProcesses.directorySize = childProcess.fork(
-          appPaths.get('./src/processes/directorySizeProcess.js'),
+          utils.getSrc('./src/processes/directorySizeProcess.js'),
           { silent: true }
         )
         store.state.childProcesses.directorySize.on('message', data => {

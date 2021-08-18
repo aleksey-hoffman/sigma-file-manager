@@ -123,12 +123,6 @@ const storageFiles = {
   }
 }
 
-function get (relativePath) {
-  return process.env.NODE_ENV === 'production'
-    ? PATH.join(__dirname, relativePath)
-    : PATH.join(relativePath)
-}
-
 const storageDirectories = {
   appStorage,
   appStorageMedia,
@@ -140,7 +134,6 @@ const storageDirectories = {
 }
 
 const appPaths = {
-  get,
   storageFiles,
   storageDirectories,
   resources,

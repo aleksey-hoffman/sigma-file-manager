@@ -30,6 +30,11 @@ export default {
   env: process.env.NODE_ENV,
   platform: process.platform,
   unixHiddenFileRegex: /(^|[\/\\])\../,
+  getSrc (relativePath) {
+    return process.env.NODE_ENV === 'production'
+      ? PATH.join(__dirname, relativePath)
+      : PATH.join(relativePath)
+  },
   openLink (link) {
     electron.shell.openExternal(link)
   },
