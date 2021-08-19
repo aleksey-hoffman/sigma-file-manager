@@ -303,7 +303,6 @@ export default {
       ffmpeg(path)
         .size(size)
         .on('error', (error) => {
-          // console.log(error)
         })
         .on('end', () => {
           this.appendThumb(target, thumbPath)

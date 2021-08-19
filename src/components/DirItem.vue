@@ -288,7 +288,6 @@ export default {
       this.$emit('removeFromThumbLoadSchedule', { item: this.source })
     }
     catch (error) { 
-      // console.log(error) 
     }
   },
   computed: {

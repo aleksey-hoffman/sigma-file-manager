@@ -43,8 +43,6 @@ const PATH = require('path')
 const fs = require('fs')
 const fsExtra = require('fs-extra')
 const mousetrap = require('mousetrap')
-const diskusage = require('diskusage')
-const sysInfo = require('systeminformation')
 const getDirSize = require('trammel')
 const fileUpload = require('express-fileupload')
 const serveIndex = require('serve-index')
@@ -332,7 +330,6 @@ export default {
         const disallowedErrors = [
           'ResizeObserver loop limit exceeded'
         ]
-        // console.log('error::App.vue::initWindowErrorHandler', event)
         if (!disallowedErrors.includes(event.message)) {
           const hashID = this.$utils.getHash()
           this.$eventHub.$emit('notification', {
@@ -616,7 +613,6 @@ export default {
           }
           // Setup listeners
           task.props.scans[index].stream.on('error', (error) => {
-            // console.log(error)
           })
           task.props.scans[index].stream.on('finish', () => {
             task.props.scannedDriveCount++
@@ -729,7 +725,6 @@ export default {
             }
           }
           workerObject.worker.onerror = (error) => {
-            // console.log('Error in "initglobalSearchWorker"', error)
             if (error.message === 'Uncaught Error: unexpected end of file') {
               this.$eventHub.$emit('app:method', {
                 method: 'initGlobalSearchDataScan'
@@ -783,7 +778,6 @@ export default {
           workerObject.worker.postMessage(params)
         })
         .catch((error) => {
-          // console.log(error)
         })
     },
     async handleChokidarEvent (data) {
@@ -864,10 +858,9 @@ export default {
       }, 10000)
     },
     initLocalFileShareServerProcess (path) {
-      // console.log('initLocalFileShareServerProcess', path)
-      this.$store.state.childProcesses.localFileShareServer = childProcess.fork('E:/Projects/Code/Apps/Desktop/Sigma file manager/Project/sigma-file-manager/src/workers/localFileShareServerWorker.js')
+     this.$store.state.childProcesses.localFileShareServer = childProcess.fork(
+       './src/workers/localFileShareServerWorker.js')
       this.$store.state.childProcesses.localFileShareServer.on('message', data => {
-        // console.log(data)
       })
       this.$store.state.childProcesses.localFileShareServer.send({
         action: 'start-server',
@@ -1269,7 +1262,6 @@ export default {
       //     data[key] = this.$sharedUtils.shortcutRawToReadable(data[key])
       //   })
       // }
-      // console.log('formatAppStorageData', data)
       return data
     },
     removeOutdatedDirItems (items) {
@@ -1450,7 +1442,6 @@ export default {
           }
         })
         .catch((error) => {
-          // console.log('error::App.vue::handleThumbCacheRemoval', error)
         })
     },
     async getDirItemTotalSize (paths) {

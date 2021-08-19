@@ -184,7 +184,6 @@ export default {
       }
     }
     catch (error) {
-      // console.log('error: getContentAreaNode():', error)
     }
   },
   wait (ms) {

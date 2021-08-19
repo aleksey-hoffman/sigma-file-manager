@@ -254,7 +254,6 @@ async function getType (params) {
   const typeIsHardlink = await isHardlink(params)
   const typeIsSymlink = await isSymlink(params)
   const typeIsFile = await isFile(params)
-  // console.log('getType', typeIsFile, typeIsSymlink, params)
   if (typeIsFile) {
     if (typeIsSymlink) {
       return 'file-symlink'
@@ -385,7 +384,6 @@ async function isFile (params) {
     }),
     ...params
   })
-  // console.log('isFile', typeIsFile, typeIsFile === 'True', params)
   return typeIsFile[0] === 'True'
 }
 
