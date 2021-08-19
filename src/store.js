@@ -846,13 +846,13 @@ export default new Vuex.Store({
       guideDialog: {
         value: false,
         data: {
-          guideTabsSelected: 0,
+          guideTabsSelected: 1,
           guideTabs: [
-            {text: 'Early development'},
+            {text: 'Introduction'},
+            {text: 'Navigator tips'},
             {text: 'Shortcuts'},
             {text: 'Data protection'},
             {text: 'Address bar'},
-            {text: 'Navigator tips'},
             {text: 'COMING SOON'},
           ],
         }
