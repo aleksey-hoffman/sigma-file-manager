@@ -441,16 +441,11 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     class="mt-0 pt-0 d-inline-flex"
                     v-model="windowTransparencyEffectValue"
                     label="Display window transparency effect"
-                    hint="Disable if you see any visual glitches"
-                    :persistent-hint="windowTransparencyEffect.value"
-                    :hide-details="!windowTransparencyEffect.value"
+                    hide-details
                   ></v-switch>
 
                   <v-expand-transition>
-                    <div 
-                      class="mt-4"
-                      v-if="windowTransparencyEffect.value"
-                    >
+                    <div v-if="windowTransparencyEffect.value">
                       <div class="mt-2">
                         Overlay blur: {{windowTransparencyEffectBlur}}px
                       </div>
