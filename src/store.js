@@ -401,7 +401,9 @@ export default new Vuex.Store({
           lastSearchScan: null
         },
         lastRecordedAppVersion: null,
-        isFirstAppLaunch: true,
+        firstTimeActions: {
+          appLaunch: true,
+        },
         navigator: {
           showHiddenDirItems: false,
           openDirItemWithSingleClick: false,

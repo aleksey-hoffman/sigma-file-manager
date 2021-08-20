@@ -166,7 +166,7 @@ export default {
       globalSearchScanDepth: 'storageData.settings.globalSearchScanDepth',
       globalSearchDisallowedPaths: 'storageData.settings.globalSearch.disallowedPaths',
       globalSearchCompressSearchData: 'storageData.settings.compressSearchData',
-      isFirstAppLaunch: 'storageData.settings.isFirstAppLaunch',
+      firstTimeActions: 'storageData.settings.firstTimeActions',
       lastSearchScanTime: 'storageData.settings.time.lastSearchScan',
       globalSearchAutoScanIntervalTime: 'storageData.settings.globalSearchAutoScanIntervalTime',
       UIZoomLevel: 'storageData.settings.UIZoomLevel',
@@ -808,11 +808,11 @@ export default {
     handleFirstAppLaunch () {
       // TODO:
       // In production, some store properties resolve after this method
-      // so this.isFirstAppLaunch is always true
+      // so this.firstTimeActions.appLaunch is always true
       return
-      if (this.isFirstAppLaunch) {
+      if (this.firstTimeActions.appLaunch) {
         this.$store.dispatch('SET', {
-          key: 'storageData.settings.isFirstAppLaunch',
+          key: 'storageData.settings.firstTimeActions.appLaunch',
           value: false
         })
         this.$eventHub.$emit('notification', {
