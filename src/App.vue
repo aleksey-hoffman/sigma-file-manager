@@ -920,83 +920,146 @@ export default {
       //   // }
       // })
     },
-    async initLocalDirectoryShare () {
-      await this.stopLocalDirectoryShareServer()
-      this.dialogs.localShareManagerDialog.value = true
-      this.dialogs.localShareManagerDialog.data.shareType = 'directory'
-      this.localServer.directoryShare.item = this.selectedDirItems.getLast()
-      this.directoryShareIp = await this.getLocalIPv4()
-      this.directorySharePort = await getPort({ port: getPort.makeRange(55000, 55999) })
-      this.localServer.directoryShare.address = `${this.directoryShareIp}:${this.directorySharePort}/ftp`
-      const path = this.selectedDirItems.getLast().path
-      this.serveDirectoryLocally(path)
-      this.$eventHub.$emit('notification', {
-        action: 'update-by-type',
-        type: 'directoryShare',
-        actionButtons: [
-          {
-            title: 'stop server',
-            onClick: () => {
-              this.stopLocalDirectoryShareServer()
-              this.dialogs.localShareManagerDialog.value = false
+    async showFirstTimeLocalSharePermissionsDialog () {
+      return new Promise((resolve, reject) => {
+        this.$store.dispatch('CONFORMATION_DIALOG', {
+          data: {
+            title: 'Firewall permissions',
+            message: `
+              <p>The "Local sharing" feature allows you to share files between computers on your local network.</p>
+              <p>To use local sharing, you need to allow the app access to your network when prompted.</p>
+            `,
+            closeButton: {
+              onClick: () => {
+                resolve({action: 'cancel'})
+                this.$store.state.dialogs.conformationDialog.value = false
+              }
             },
-            closesNotification: true
-          },
-          {
-            title: 'copy address',
-            onClick: () => {
-              this.$utils.copyToClipboard({
-                text: `${this.directoryShareIp}:${this.directorySharePort}/ftp`,
-                title: 'Address was copied to clipboard'
-              })
-            },
-            closesNotification: false
+            buttons: [
+              {
+                text: 'cancel',
+                onClick: () => {
+                  resolve({action: 'cancel'})
+                  this.$store.state.dialogs.conformationDialog.value = false
+                }
+              },
+              {
+                text: 'ok',
+                onClick: () => {
+                  resolve({action: 'ok'})
+                  this.$store.state.dialogs.conformationDialog.value = false
+                  this.$store.dispatch('SET', {
+                    key: 'storageData.settings.firstTimeActions.localShare',
+                    value: false
+                  })
+                }
+              },
+            ]
           }
-        ],
-        closeButton: false,
-        timeout: 0,
-        title: 'Directory is now accessible from local devices',
-        message: `Address: ${this.directoryShareIp}:${this.directorySharePort}/ftp`
+        })
       })
     },
+    async handleFirstTimeLocalSharePermissions () {
+      if (this.firstTimeActions.localShare) {
+        const result = await this.showFirstTimeLocalSharePermissionsDialog()
+        if (result.action === 'cancel') {
+          throw 'cancel'
+        }
+      }
+    },
+    async initLocalDirectoryShare () {
+      try {
+        await this.handleFirstTimeLocalSharePermissions()
+        await this.stopLocalDirectoryShareServer()
+        this.dialogs.localShareManagerDialog.value = true
+        this.dialogs.localShareManagerDialog.data.shareType = 'directory'
+        this.localServer.directoryShare.item = this.selectedDirItems.getLast()
+        this.directoryShareIp = await this.getLocalIPv4()
+        this.directorySharePort = await getPort({ port: getPort.makeRange(55000, 55999) })
+        this.localServer.directoryShare.address = `${this.directoryShareIp}:${this.directorySharePort}/ftp`
+        const path = this.selectedDirItems.getLast().path
+        this.serveDirectoryLocally(path)
+        this.$eventHub.$emit('notification', {
+          action: 'update-by-type',
+          type: 'directoryShare',
+          actionButtons: [
+            {
+              title: 'stop server',
+              onClick: () => {
+                this.stopLocalDirectoryShareServer()
+                this.dialogs.localShareManagerDialog.value = false
+              },
+              closesNotification: true
+            },
+            {
+              title: 'copy address',
+              onClick: () => {
+                this.$utils.copyToClipboard({
+                  text: `${this.directoryShareIp}:${this.directorySharePort}/ftp`,
+                  title: 'Address was copied to clipboard'
+                })
+              },
+              closesNotification: false
+            }
+          ],
+          closeButton: false,
+          timeout: 0,
+          title: 'Directory is now accessible from local devices',
+          message: `Address: ${this.directoryShareIp}:${this.directorySharePort}/ftp`
+        })
+      }
+      catch (error) {
+        if (error !== 'cancel') {
+          throw Error(error)
+        }
+      }
+    },
     async initLocalFileShare () {
-      await this.stopLocalFileShareServer()
-      this.dialogs.localShareManagerDialog.value = true
-      this.dialogs.localShareManagerDialog.data.shareType = 'file'
-      this.localServer.fileShare.item = this.targetItems.getLast()
-      this.fileShareIp = await this.getLocalIPv4()
-      this.fileSharePort = await getPort({ port: getPort.makeRange(56000, 56999) })
-      this.localServer.fileShare.address = `${this.fileShareIp}:${this.fileSharePort}`
-      const path = this.targetItems.getLast().path
-      this.serveFilesLocally(path)
-      this.$eventHub.$emit('notification', {
-        action: 'update-by-type',
-        type: 'fileShare',
-        actionButtons: [
-          {
-            title: 'stop server',
-            onClick: () => {
-              this.stopLocalFileShareServer()
-              this.dialogs.localShareManagerDialog.value = false
+      try {
+        await this.handleFirstTimeLocalSharePermissions()
+        await this.stopLocalFileShareServer()
+        this.dialogs.localShareManagerDialog.value = true
+        this.dialogs.localShareManagerDialog.data.shareType = 'file'
+        this.localServer.fileShare.item = this.targetItems.getLast()
+        this.fileShareIp = await this.getLocalIPv4()
+        this.fileSharePort = await getPort({ port: getPort.makeRange(56000, 56999) })
+        this.localServer.fileShare.address = `${this.fileShareIp}:${this.fileSharePort}`
+        const path = this.targetItems.getLast().path
+        this.serveFilesLocally(path)
+        this.$eventHub.$emit('notification', {
+          action: 'update-by-type',
+          type: 'fileShare',
+          actionButtons: [
+            {
+              title: 'stop server',
+              onClick: () => {
+                this.stopLocalFileShareServer()
+                this.dialogs.localShareManagerDialog.value = false
+              },
+              closesNotification: true
             },
-            closesNotification: true
-          },
-          {
-            title: 'copy address',
-            onClick: () => {
-              this.$utils.copyToClipboard({
-                text: `${this.fileShareIp}:${this.fileSharePort}`,
-                title: 'Address was copied to clipboard'
-              })
-            },
-            closesNotification: false
-          }
-        ],
-        closeButton: false,
-        timeout: 0,
-        title: 'Local file share is active',
-        message: `Address: ${this.fileShareIp}:${this.fileSharePort}`
-      })
+            {
+              title: 'copy address',
+              onClick: () => {
+                this.$utils.copyToClipboard({
+                  text: `${this.fileShareIp}:${this.fileSharePort}`,
+                  title: 'Address was copied to clipboard'
+                })
+              },
+              closesNotification: false
+            }
+          ],
+          closeButton: false,
+          timeout: 0,
+          title: 'Local file share is active',
+          message: `Address: ${this.fileShareIp}:${this.fileSharePort}`
+        })
+      }
+      catch (error) {
+        if (error !== 'cancel') {
+          throw Error(error)
+        }
+      }
     },
     getLocalIPv4 () {
       // TODO:

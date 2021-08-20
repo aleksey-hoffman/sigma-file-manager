@@ -403,6 +403,7 @@ export default new Vuex.Store({
         lastRecordedAppVersion: null,
         firstTimeActions: {
           appLaunch: true,
+          localShare: true,
         },
         navigator: {
           showHiddenDirItems: false,
