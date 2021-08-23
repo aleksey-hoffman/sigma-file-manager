@@ -28,7 +28,8 @@ const storageReader = new StorageReader()
 require('@electron/remote/main').initialize()
 
 global.mainProcessProps = {
-  safeFileProtocolName: 'sigma-file-manager'
+  safeFileProtocolName: 'sigma-file-manager',
+  env: process.env
 }
 
 // Keep global references to prevent garbage collection

@@ -16,15 +16,19 @@ const electronRemote = process.type === 'browser'
   ? electron
   : require('@electron/remote')
 
+const env = process.type === 'browser'
+  ? process.env
+  : electronRemote.getGlobal('mainProcessProps').env
+
 const userData = electronRemote.app.getPath('userData')
-const home = electronRemote.app.getPath('home')
-const desktop = electronRemote.app.getPath('desktop')
-const downloads = electronRemote.app.getPath('downloads')
-const documents = electronRemote.app.getPath('documents')
-const pictures = electronRemote.app.getPath('pictures')
+const home = getUserDirPath('home')
+const desktop = getUserDirPath('desktop')
+const downloads = getUserDirPath('downloads')
+const documents = getUserDirPath('documents')
+const pictures = getUserDirPath('pictures')
 const screenshots = PATH.join(pictures, 'Screenshots')
-const videos = electronRemote.app.getPath('videos')
-const music = electronRemote.app.getPath('music')
+const videos = getUserDirPath('videos')
+const music = getUserDirPath('music')
 
 const userDataRoot = PATH.parse(userData).root.replace(/\\/g, '/')
 const resources = process.env.NODE_ENV === 'production'
@@ -156,6 +160,17 @@ const appPaths = {
   binFFMPEG,
   binFFPROBE,
   binYoutubeDl
+}
+
+function getUserDirPath (dirName) {
+  try {
+    return electronRemote.app.getPath(dirName)
+  }
+  catch (error) {
+    let dirNameFormatted = dirName[0].toUpperCase() + dirName.slice(1) 
+    let userDir = env.USERPROFILE || env.HOME
+    return PATH.join(userDir, dirNameFormatted)
+  }
 }
 
 module.exports = appPaths
