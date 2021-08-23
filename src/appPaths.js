@@ -163,6 +163,16 @@ const appPaths = {
 }
 
 function getUserDirPath (dirName) {
+  if (dirName === 'screenshots') {
+    let screenshotsDir = PATH.join(pictures, 'Screenshots')
+    try {
+      fs.statSync(screenshotsDir)
+      return screenshotsDir
+    }
+    catch (error) {
+      return pictures
+    }
+  }
   try {
     return electronRemote.app.getPath(dirName)
   }
