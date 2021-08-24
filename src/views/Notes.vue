@@ -127,14 +127,16 @@ export default {
     }
   },
   beforeRouteLeave (to, from, next) {
-    this.$eventHub.$emit('app:method', {
-      method: 'setRouteScrollPosition',
-      params: {
-        toRoute: to,
-        fromRoute: from
-      }
+    this.$store.dispatch('SAVE_ROUTE_SCROLL_POSITION', {
+      toRoute: to,
+      fromRoute: from
     })
     next()
+  },
+  activated () {
+    this.$store.dispatch('ROUTE_ACTIVATED_HOOK_CALLBACK', {
+      route: 'notes'
+    })
   },
   mounted () {
     this.$store.dispatch('ROUTE_MOUNTED_HOOK_CALLBACK', {

@@ -667,30 +667,6 @@ export default {
         appNode.classList.remove('layout-no-transition')
       }, 500)
     },
-    restoreRouteScrollPosition (params) {
-      const { toRoute } = params
-      const historyItems = this.history.itemsRaw
-      const lastHistoryItem = historyItems[historyItems.length - 1]
-      const secondFromEndHistoryItem = historyItems[historyItems.length - 2]
-      const gotBackToSameNavigatorDir = toRoute.name === 'navigator' && (secondFromEndHistoryItem === this.currentDir.path)
-      const shouldRestoreScroll = toRoute.name !== 'navigator' || !gotBackToSameNavigatorDir
-      if (shouldRestoreScroll) {
-        const scrollArea = this.$utils.getContentAreaNode(toRoute.name)
-        const savedScrollPosition = this.routeScrollPosition[toRoute.name]
-        if (savedScrollPosition) {
-          scrollArea.scroll({
-            top: savedScrollPosition,
-            left: 0,
-            behavior: 'auto'
-          })
-        }
-      }
-    },
-    setRouteScrollPosition (params) {
-      const { fromRoute } = params
-      const scrollArea = this.$utils.getContentAreaNode(fromRoute.name)
-      this.routeScrollPosition[fromRoute.name] = scrollArea?.scrollTop
-    },
     importExpress () {
       // Lazy-import heavy module
       if (express === undefined) { express = require('express') }

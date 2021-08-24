@@ -2305,16 +2305,37 @@ export default new Vuex.Store({
         })
       }
     },
-    ROUTE_MOUNTED_HOOK_CALLBACK ({ state, commit,dispatch, getters }, payload) {
-      // Restore route scroll position
-      eventHub.$emit('app:method', {
-        method: 'restoreRouteScrollPosition',
-        params: {
-          toRoute: {
-            name: payload.route
-          }
+    ROUTE_MOUNTED_HOOK_CALLBACK (store, params) {
+      store.dispatch('RESTORE_ROUTE_SCROLL_POSITION', params)
+    },
+    ROUTE_ACTIVATED_HOOK_CALLBACK (store, params) {
+      store.dispatch('RESTORE_ROUTE_SCROLL_POSITION', params)
+    },
+    RESTORE_ROUTE_SCROLL_POSITION  (store, params) {
+      const historyItems = store.state.navigatorView.history.items
+      const secondFromEndHistoryPath = historyItems[historyItems.length - 2]
+      const returnedBackToSameNavigatorDir = params.route === 'navigator' &&
+        (
+          secondFromEndHistoryPath === store.state.navigatorView.currentDir.path || 
+          secondFromEndHistoryPath === undefined
+        )
+      const shouldRestoreScroll = params.route !== 'navigator' || returnedBackToSameNavigatorDir
+      
+      if (shouldRestoreScroll) {
+        const scrollArea = utils.getContentAreaNode(params.route)
+        const savedScrollPosition = store.state.routeScrollPosition[params.route]
+        if (savedScrollPosition) {
+          scrollArea.scroll({
+            top: savedScrollPosition,
+            behavior: 'auto'
+          })
         }
-      })
+      }
+    },
+    SAVE_ROUTE_SCROLL_POSITION  (store, params) {
+      const scrollArea = utils.getContentAreaNode(params.fromRoute.name)
+      const scrollAreaPosition = scrollArea?.scrollTop || 0
+      store.state.routeScrollPosition[params.fromRoute.name] = scrollAreaPosition
     },
     CHECK_CONDITIONS ({ commit,dispatch, getters }, payload) {
       const defaultOptions = {

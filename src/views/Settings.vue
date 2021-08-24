@@ -1285,12 +1285,9 @@ export default {
     }
   },
   beforeRouteLeave (to, from, next) {
-    this.$eventHub.$emit('app:method', {
-      method: 'setRouteScrollPosition',
-      params: {
-        toRoute: to,
-        fromRoute: from
-      }
+    this.$store.dispatch('SAVE_ROUTE_SCROLL_POSITION', {
+      toRoute: to,
+      fromRoute: from
     })
     next()
   },
@@ -1357,6 +1354,11 @@ export default {
       ...this.$options.computed,
       ...objects
     }
+  },
+  activated () {
+    this.$store.dispatch('ROUTE_ACTIVATED_HOOK_CALLBACK', {
+      route: 'settings'
+    })
   },
   created () {
     this.settingsSelectedTab = this.lastOpenedSettingsTabValue

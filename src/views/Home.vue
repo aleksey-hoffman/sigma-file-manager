@@ -182,16 +182,16 @@ export default {
     }
   },
   beforeRouteLeave (to, from, next) {
-    this.$eventHub.$emit('app:method', {
-      method: 'setRouteScrollPosition',
-      params: {
-        toRoute: to,
-        fromRoute: from
-      }
+    this.$store.dispatch('SAVE_ROUTE_SCROLL_POSITION', {
+      toRoute: to,
+      fromRoute: from
     })
     next()
   },
   activated () {
+    this.$store.dispatch('ROUTE_ACTIVATED_HOOK_CALLBACK', {
+      route: 'home'
+    })
     const video = document.querySelector('#media-banner__video')
     const videoGlow = document.querySelector('#media-banner__glow')
     if (video) { video.play() }
