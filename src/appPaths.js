@@ -10,6 +10,7 @@
 // SCREEN~1 - Screenshots
 
 const PATH = require('path')
+const fs = require('fs')
 const electron = require('electron')
 
 const electronRemote = process.type === 'browser'
@@ -26,7 +27,7 @@ const desktop = getUserDirPath('desktop')
 const downloads = getUserDirPath('downloads')
 const documents = getUserDirPath('documents')
 const pictures = getUserDirPath('pictures')
-const screenshots = PATH.join(pictures, 'Screenshots')
+const screenshots = getUserDirPath('screenshots')
 const videos = getUserDirPath('videos')
 const music = getUserDirPath('music')
 
