@@ -390,7 +390,7 @@ function initIPCListeners () {
       shortcut: data.shortcut
     }
     // Update global shortcuts in tray menu
-    createTrayMenu()
+    tray.setContextMenu(getTrayMenu())
   })
 
   electron.ipcMain.on('window:drag-out', (event, paths) => {
@@ -536,7 +536,15 @@ function createTrayMenu () {
   const trayIcon = process.platform === 'darwin'
     ? 'logo-20x20.png'
     : 'logo-32x32.png'
-  tray = new electron.Tray(PATH.join(__static, 'icons', trayIcon))
+    tray = new electron.Tray(PATH.join(__static, 'icons', trayIcon))
+    tray.setToolTip(`Sigma file manager v${appVersion}`)
+    tray.setContextMenu(getTrayMenu())
+    tray.on('click', () => {
+    tray.popUpContextMenu()
+  })
+}
+
+function getTrayMenu () {
   const contextMenu = electron.Menu.buildFromTemplate([
     {
       label: `Sigma file manager v${appVersion}`,
@@ -578,11 +586,7 @@ function createTrayMenu () {
       click: () => electron.shell.openExternal(externalLinks.githubReadmeSupportSectionLink)
     }
   ])
-  tray.setToolTip(`Sigma file manager v${appVersion}`)
-  tray.setContextMenu(contextMenu)
-  tray.on('click', () => {
-    tray.popUpContextMenu()
-  })
+  return contextMenu
 }
 
 function disableAppMenu () {
