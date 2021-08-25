@@ -79,9 +79,6 @@ function lockSingleAppInstance () {
 }
 
 function setAppProperties () {
-  // Temporary disable until native modules like 'node-diskusage'
-  // are updated (to become context-aware or loaded via N-API)
-  electron.app.allowRendererProcessReuse = false
   electron.app.setAppUserModelId('com.alekseyhoffman.sigma-file-manager')
 }
 
