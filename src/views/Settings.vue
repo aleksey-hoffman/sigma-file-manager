@@ -535,6 +535,44 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 class="content-area__content-card__section"
                 :header="{
                   icon: {
+                    name: 'mdi-timetable'
+                  },
+                  title: 'Date / time'
+                }"
+              >
+                <template v-slot:content>
+                  <div class="text--sub-title-1 mt-2">
+                    Month format
+                  </div>
+
+                  <v-radio-group
+                    class="py-0 mt-0"
+                    v-model="dateTimeMonth"
+                    hide-details
+                  >
+                    <v-radio
+                      label="Numeric"
+                      value="numeric"
+                    ></v-radio>
+                    <v-radio
+                      label="Short"
+                      value="short"
+                    ></v-radio>
+                  </v-radio-group>
+
+                  <div class="mt-2">
+                    Example: 
+                    <span class="inline-code--light">
+                      {{localDateTimeExample}}
+                    </span>
+                  </div>
+                </template>
+              </section-settings>
+
+              <section-settings
+                class="content-area__content-card__section"
+                :header="{
+                  icon: {
                     name: 'mdi-image-outline'
                   },
                   title: 'UI elements'
@@ -1314,6 +1352,7 @@ export default {
       windowTransparencyEffectOpacity: 'storageData.settings.windowTransparencyEffect.opacity',
       windowTransparencyEffectDataBackgroundSelected: 'storageData.settings.windowTransparencyEffect.data.background.selected',
       animationsOnRouteChangeMediaBannerIn: 'storageData.settings.animations.onRouteChangeMediaBannerIn',
+      dateTimeMonth: 'storageData.settings.dateTime.month',
       pointerButton3onMouseUpEvent: 'storageData.settings.input.pointerButtons.button3.onMouseUpEvent',
       pointerButton3onMouseUpEventItems: 'storageData.settings.input.pointerButtons.button3.onMouseUpEventItems',
       pointerButton4onMouseUpEvent: 'storageData.settings.input.pointerButtons.button4.onMouseUpEvent',
@@ -1536,6 +1575,12 @@ export default {
         }
       }
     },
+    localDateTimeExample () {
+      return this.$utils.getLocalDateTime(
+        Date.now(), 
+        this.$store.state.storageData.settings.dateTime
+      )
+    }
   },
   methods: {
     getSearchTimeEstimates (params) {
