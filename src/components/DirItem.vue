@@ -133,7 +133,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
         <!-- card::date-->
         <div class="dir-item-card__date">
-          {{$utils.formatDateTime(source.stat.ctime, 'D MMM YYYY')}}
+          {{getLocalDateTime({stat: 'ctime'})}}
         </div>
 
         <!-- {type: (directory|directory-symlink)} -->
@@ -327,6 +327,12 @@ export default {
     }
   },
   methods: {
+    getLocalDateTime (params) {
+      return this.$utils.getLocalDateTime(
+        this.source.stat[params.stat], 
+        this.$store.state.storageData.settings.dateTime
+      )
+    },
     async loadThumbHandler (path) {
       if (this.source.path === path) {
         await this.loadThumb()

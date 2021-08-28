@@ -19,7 +19,7 @@ const electronRemote = require('@electron/remote')
 const getSystemRulesForPaths = require('./systemRules').paths
 const systemRulesForPaths = getSystemRulesForPaths()
 const mainWindow = electronRemote.getCurrentWindow()
-const detectedLocale = electronRemote.app.getLocale().toLowerCase()
+const detectedLocale = electronRemote?.app?.getLocale()?.toLowerCase() || 'en'
 
 const colorUtils = new ColorUtils()
 
@@ -448,6 +448,24 @@ export default {
   formatDateTime (date, format) {
     if (!date) { return 'unknown' }
     return dayjs(date).locale(detectedLocale).format(format)
+  },
+  getLocalDateTime (date, options = {}) {
+    try {
+      return new Intl.DateTimeFormat(detectedLocale, {
+        ...{
+          year: 'numeric',
+          month: 'numeric',
+          day: 'numeric',
+          hour: 'numeric',
+          minute: 'numeric'
+        },
+        ...options
+      })
+      .format(date)
+    }
+    catch (error) {
+      return 'unknown'
+    }
   },
   getCSSProperty (property, element = '#app') {
     const node = document.querySelector(element)

@@ -400,6 +400,9 @@ export default new Vuex.Store({
         time: {
           lastSearchScan: null
         },
+        dateTime: {
+          month: 'short'
+        },
         lastRecordedAppVersion: null,
         firstTimeActions: {
           appLaunch: true,
@@ -4147,19 +4150,19 @@ export default new Vuex.Store({
         {
           propName: 'dateCreated',
           title: localize.get('text_created'),
-          value: utils.formatDateTime(item.stat.birthtime, 'D MMM YYYY'),
+          value: utils.getLocalDateTime(item.stat.birthtime, store.state.storageData.settings.dateTime),
           tooltip: `${localize.get('tooltip_text_to_copy')}: ${copyShortcut}`
         },
         {
           propName: 'dateModified',
           title: localize.get('text_modified'),
-          value: utils.formatDateTime(item.stat.mtime, 'D MMM YYYY'),
+          value: utils.getLocalDateTime(item.stat.mtime, store.state.storageData.settings.dateTime),
           tooltip: `${localize.get('tooltip_text_to_copy')}: ${copyShortcut}`
         },
         {
           propName: 'dateChanged',
           title: localize.get('text_changed'),
-          value: utils.formatDateTime(item.stat.ctime, 'D MMM YYYY'),
+          value: utils.getLocalDateTime(item.stat.ctime, store.state.storageData.settings.dateTime),
           tooltip: `${localize.get('tooltip_text_to_copy')}: ${copyShortcut}`
         },
         {
