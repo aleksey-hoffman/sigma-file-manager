@@ -30,6 +30,7 @@ const pictures = getUserDirPath('pictures')
 const screenshots = getUserDirPath('screenshots')
 const videos = getUserDirPath('videos')
 const music = getUserDirPath('music')
+const oneDrive = getUserDirPath('oneDrive')
 
 const userDataRoot = PATH.parse(userData).root.replace(/\\/g, '/')
 const resources = process.env.NODE_ENV === 'production'
@@ -154,6 +155,7 @@ const appPaths = {
   screenshots,
   videos,
   music,
+  oneDrive,
   binCompressed,
   resourcesBin,
   bin,
@@ -174,6 +176,10 @@ function getUserDirPath (dirName) {
       return pictures
     }
   }
+  else if (dirName === 'oneDrive') {
+    return env.OneDrive
+  }
+  
   try {
     return electronRemote.app.getPath(dirName)
   }

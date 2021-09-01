@@ -149,7 +149,23 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         <div
           v-else-if="type === 'file' || type === 'file-symlink'"
           class="dir-item-card__item-count"
-        >{{$utils.prettyBytes(source.stat.size, 1)}}
+        >
+          {{$utils.prettyBytes(source.stat.size, 1)}}
+          
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on }">
+              <v-icon
+                class="ml-2"
+                v-on="on"
+                v-show="isOffline"
+                color="var(--color-6)"
+                size="12px"
+              >
+                mdi-cloud-outline
+              </v-icon>
+            </template>
+            <span>Offline item (size on drive is 0)</span>
+          </v-tooltip>
         </div>
       </template>
 
@@ -324,6 +340,10 @@ export default {
       return this.layout
         ? this.layout
         : this.navigatorLayout
+    },
+    isOffline () {
+      let isOfflineFile = this.source.sizeOnDisk === 0 && !this.source.type.includes('directory')
+      return isOfflineFile
     }
   },
   methods: {

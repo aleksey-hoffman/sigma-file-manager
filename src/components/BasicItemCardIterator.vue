@@ -80,32 +80,45 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           class="basic-item-card__thumb__inner"
           v-if="type === 'drive'"
         >
-          <div v-if="!driveCardShowProgress || driveCardProgressType !== 'circular'">
+          <template v-if="!driveCardShowProgress || driveCardProgressType !== 'circular'">
             <v-icon
               class="basic-item-card__icon mt-1"
-              size="22px"
-            >{{getThumbIcon(item)}}
+              :size="$utils.getDriveIcon(item).size"
+            >{{$utils.getDriveIcon(item).icon}}
             </v-icon>
-            <div class="basic-item-card__progress--circular__text">
+            <div 
+              class="basic-item-card__progress__text"
+              v-if="item.percentUsed"
+            >
               {{item.percentUsed}}%
             </div>
-          </div>
+          </template>
 
-          <div
+          <template
             class="basic-item-card__progress--circular"
-            v-show="driveCardShowProgress && driveCardProgressType === 'circular'"
+            v-if="driveCardShowProgress && driveCardProgressType === 'circular'"
           >
+            <v-icon
+              class="basic-item-card__icon mt-1"
+              v-if="!item.percentUsed"
+              :size="$utils.getDriveIcon(item).size"
+            >{{$utils.getDriveIcon(item).icon}}
+            </v-icon>
             <v-progress-circular
+              v-if="item.percentUsed"
               :value="`${item.percentUsed}`"
               size="40"
               width="2"
               :color="getStorageBarColor({item, type: 'circular'})"
             >
-              <div class="basic-item-card__progress--circular__text">
+              <div 
+                class="basic-item-card__progress__text"
+                v-if="item.percentUsed"
+              >
                 {{item.percentUsed}}%
               </div>
             </v-progress-circular>
-          </div>
+          </template>
         </div>
       </div>
 

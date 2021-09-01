@@ -123,19 +123,31 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             <template v-slot:activator="{ on }">
               <v-layout
                 v-on="on"
-                @click="$store.dispatch('OPEN_DIR_ITEM_FROM_PATH', drive.mount)"
+                @click="$store.dispatch('OPEN_DIR_ITEM_FROM_PATH', drive.path)"
                 class="nav-panel__item"
                 align-center v-ripple
               >
                 <div class="nav-panel__item__indicator"></div>
                 <div class="nav-panel__item__icon-container">
-                  <v-icon size="20px" class="nav-panel__item__icon">
-                    {{drive.removable ? 'fab fa-usb' : 'far fa-hdd'}}
+                  <v-icon 
+                    class="nav-panel__item__icon"
+                    :size="$utils.getDriveIcon(drive).size" 
+                  >
+                    {{$utils.getDriveIcon(drive).icon}}
                   </v-icon>
                 </div>
                 <transition name="slide-fade-left">
                   <div v-if="!navigationPanelMiniVariant">
-                    <div class="nav-panel__item__title mb-1">
+                    <div 
+                      class="nav-panel__item__title"
+                      v-if="drive.type === 'cloud'"
+                    >
+                      {{drive.titleSummary}}
+                    </div>
+                    <div 
+                      class="nav-panel__item__title mb-1"
+                      v-else
+                    >
                       <v-layout align-center>
                         <div class="nav-panel__item__title__mount">
                           <span
@@ -147,10 +159,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                         </div>
                         <v-spacer></v-spacer>
                         <div class="caption">
-                          {{$utils.prettyBytes(drive.size.free, 1)}} left
+                          {{drive.size.free && $utils.prettyBytes(drive.size.free, 1)}} left
                         </div>
                       </v-layout>
-                      <div>
+                      <div v-if="drive.percentUsed">
                         <v-progress-linear
                           :value="`${drive.percentUsed}`"
                           height="4"

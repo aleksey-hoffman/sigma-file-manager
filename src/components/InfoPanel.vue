@@ -36,12 +36,12 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         <div class="info-panel__preview-container__media-container">
           <img
             class="fade-in-1s info-panel__preview-container__media"
-            v-if="showPreviewItem('image') && !selectedDirItemData.itemProps.isInaccessible"
+            v-if="showPreviewItem('image')"
             :src="previewMediaSrc"
           >
           <audio
             class="fade-in-1s info-panel__preview-container__media"
-            v-if="showPreviewItem('audio') && !selectedDirItemData.itemProps.isInaccessible"
+            v-if="showPreviewItem('audio')"
             :src="previewMediaSrc"
             controls
             preload="metadata"
@@ -49,7 +49,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           />
           <video
             class="fade-in-1s info-panel__preview-container__media"
-            v-if="showPreviewItem('video') && !selectedDirItemData.itemProps.isInaccessible"
+            v-if="showPreviewItem('video')"
             :src="previewMediaSrc"
             controls
             preload="metadata"
@@ -359,8 +359,10 @@ export default {
       }
     },
     showPreviewItem (mediaType) {
-      const itemMime = this.selectedDirItemData.mimeDescription
-      return itemMime === mediaType
+      const itemMime = this.selectedDirItemData?.mimeDescription
+      const isInaccessible = this.selectedDirItemData?.itemProps?.isInaccessible
+      const itemIsOffline = this.selectedDirItemData?.itemProps?.sizeOnDisk === 0
+      return (itemMime === mediaType) && !isInaccessible && !itemIsOffline
     },
     delayInfoPanel () {
       if (this.navigatorViewInfoPanel) {

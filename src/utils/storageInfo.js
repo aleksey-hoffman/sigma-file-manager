@@ -7,9 +7,12 @@
 import utils from './utils'
 import * as fsManager from './fsManager.js'
 
+const fs = require('fs')
 const PATH = require('path')
 const sysInfo = require('systeminformation')
 const diskusage = require('diskusage')
+const fsInfo = require('./fsInfo.js')
+const appPaths = require('../appPaths.js')
 
 let state = {
   extraDeviceData: [],
@@ -34,8 +37,10 @@ let state = {
 export async function getStorageDevices () {
   try {
     let blockDevices = await getBlockDevices()
+    let oneDrive = await getOneDrive()
     let storageDevices = [
       ...blockDevices, 
+      ...oneDrive
     ]
     state.previousDriveList = [...state.driveList]
     state.driveList = blockDevices
@@ -52,6 +57,28 @@ function handleDriveListChange () {
   let driveListChanged = state.previousDriveList.length !== state.driveList.length
   if (driveListChanged) {
     fetchBlockDevicesExtraData()
+  }
+}
+
+async function getOneDrive () {
+  let path = appPaths.oneDrive
+  if (path) {
+    let oneDriveItemList = await fs.promises.readdir(path)
+    let size = await fsInfo.getDirSize(path)
+    let sizeOnDisk = await fsInfo.getDirSizeOnDisk(path)
+    let formattedSizeOnDisk = utils.prettyBytes(sizeOnDisk, 1)
+    let formattedSizeTotal = utils.prettyBytes(size, 1)
+    return [{
+      type: 'cloud',
+      path,
+      mount: path,
+      infoSummary: `Used: ${formattedSizeTotal} • Locally: ${formattedSizeOnDisk}`,
+      titleSummary: 'OneDrive',
+      isEmpty: oneDriveItemList.length === 0
+    }]
+  }
+  else {
+    return []
   }
 }
 

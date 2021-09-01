@@ -264,6 +264,32 @@ function shouldFetchExtraStats (path) {
   return isExtraStatsEmpty && !isExtraStatsFetchInProgress && isExtraStatsForCurrentDir
 }
 
+function getAttributes (dirItemData) {
+  if (utils.platform === 'win32') {
+    return fsWin.getAttributesSync(dirItemData.path)
+  }
+  // TODO: FINISH
+  else if (utils.platform === 'linux') {
+    return {}
+  }
+  else if (utils.platform === 'darwin') {
+    return 0
+  }
+}
+
+function getSizeOnDisk (dirItemData) {
+  if (utils.platform === 'win32') {
+    return fsWin.ntfs.getCompressedSizeSync(dirItemData.path)
+  }
+  // TODO: FINISH
+  else if (utils.platform === 'linux') {
+    return {}
+  }
+  else if (utils.platform === 'darwin') {
+    return 0
+  }
+}
+
 /**
 * @param {string} path
 * @param {string} nameBase
@@ -302,6 +328,8 @@ async function fetchDirItemData (path, nameBase, itemHeight) {
     dirItemData.stat = await getStat(path)
     // if (isObjectEmpty(dirItemData.stat)) {throw Error('inaccessible item')}
     // console.log(dirItemData.path, isObjectEmpty(dirItemData.stat))
+    dirItemData.attributes = getAttributes(dirItemData)
+    dirItemData.sizeOnDisk = getSizeOnDisk(dirItemData)
     dirItemData.isHidden = isHidden(dirItemData)
     dirItemData.isInaccessible = isObjectEmpty(dirItemData.stat)
     dirItemData.isWin32Shortcut = await isFile(dirItemData, dirItemData.stat) && nameBase.endsWith('.lnk')
