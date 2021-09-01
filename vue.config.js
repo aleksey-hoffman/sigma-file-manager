@@ -62,7 +62,7 @@ module.exports = {
           artifactName: 'Sigma-File-Manager-${version}-Windows-Setup.${ext}',
           oneClick: true
         },
-        AppImage: {
+        appImage: {
           artifactName: 'Sigma-File-Manager-${version}-Linux-Debian.${ext}',
         },
         pkg: {
