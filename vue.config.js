@@ -41,17 +41,12 @@ module.exports = {
         copyright: 'Copyright © 2021 - present Aleksey Hoffman',
         win: {
           target: [
-            { target: 'nsis' }
+            {target: 'nsis'}
           ]
-        },
-        nsis: {
-          installerIcon: 'build/icon.ico',
-          uninstallerIcon: 'build/icon.ico',
-          oneClick: true
         },
         linux: {
           target: [
-            { target: 'AppImage' }
+            {target: 'AppImage'}
             // {target: 'snap'}
           ],
           icon: 'build/icon.png',
@@ -59,9 +54,19 @@ module.exports = {
           maintainer: 'Aleksey Hoffman'
         },
         mac: {
-          // Do not build DMG. Without a certificate (notorization)
-          // it will not work on the latest MacOS versions.
           target: 'pkg'
+        },
+        nsis: {
+          installerIcon: 'build/icon.ico',
+          uninstallerIcon: 'build/icon.ico',
+          artifactName: 'Sigma-File-Manager-${version}-Windows-Setup.${ext}',
+          oneClick: true
+        },
+        AppImage: {
+          artifactName: 'Sigma-File-Manager-${version}-Linux-Debian.${ext}',
+        },
+        pkg: {
+          artifactName: 'Sigma-File-Manager-${version}-MacOS-Setup.${ext}',
         },
         files: [
           '**/*',
