@@ -44,25 +44,65 @@ async function initCliProcess () {
     params.shell = '/bin/sh'
     params.args = []
   }
-
+  
   reusableCli.init(
     params,
     (spawnedCliProcess) => {
       state.cliProcess = spawnedCliProcess
+      if (process.platform === 'win32') {
+        setUTF8encoding()
+      }
     }
   )
 }
 
 function getCommand (params) {
   if (process.platform === 'win32') {
+    // Format path
+    if (params.path) {
+      params.path = params.path.replace(/\//g, '\\')
+    }
+    // Get command
     if (params.command === 'sudo') {
-      if (params.adminPrompt === 'built-in') {
-        // return `echo -e "${params.sudoPassword}\n" | sudo -S`
-        return `echo ${params.sudoPassword} | sudo -S`
-      }
-      else if (params.adminPrompt === 'pkexec') {
-        return 'pkexec'
-      }
+      return '-Verb RunAs'
+    }
+    if (params.command === 'set-utf-8-encoding') {
+      return '[System.Console]::OutputEncoding = [System.Console]::InputEncoding = [System.Text.Encoding]::UTF8'
+    }
+    if (params.command === 'drive-info') {
+      return [
+        'get-ciminstance -ClassName Win32_LogicalDisk',
+        '| convertTo-csv | convertFrom-csv | convertTo-json'
+      ].join(' ')
+    }
+    if (params.command === 'extra-drive-info') {
+      return `(Get-CimInstance Win32_Diskdrive -Filter "Partitions>0" | ForEach-Object {
+        $disk = Get-CimInstance
+          -ClassName MSFT_PhysicalDisk
+          -Namespace root\\Microsoft\\Windows\\Storage
+          -Filter "SerialNumber='$($_.SerialNumber.trim())'";
+    
+        foreach ($partition in $_ | Get-CimAssociatedInstance -ResultClassName Win32_DiskPartition) {
+            foreach ($logicaldisk in $partition | Get-CimAssociatedInstance -ResultClassName Win32_LogicalDisk) {
+                [PSCustomObject]@{
+                    Disk          = $_.DeviceID;
+                    DiskModel     = $_.Model;
+                    DiskSize      = $_.Size;
+                    HealthStatus  = $disk.HealthStatus;
+                    BusType       = $disk.BusType;
+                    DiskType      = $_.MediaType;
+                    MediaType     = $disk.MediaType;
+                    Partition     = $partition.Name;
+                    PartitionSize = $partition.Size;
+                    VolumeName    = $logicaldisk.VolumeName;
+                    DriveLetter   = $logicaldisk.DeviceID;
+                    VolumeSize    = $logicaldisk.Size;
+                    FreeSpace     = $logicaldisk.FreeSpace;
+                }
+            }
+          }
+        }) | convertTo-csv | convertFrom-csv | convertTo-json
+      `.replace(/\n/g, ' ')
     }
     // Note: all commands on win32 are executed with powershell.
     // it doesn't have support for operators like &&.
@@ -233,6 +273,35 @@ function execCommand (params) {
       onFinish: (result) => resolve(result)
     })
   })
+}
+
+/**
+* @returns void
+*/
+async function setUTF8encoding () {
+  execCommand({
+    command: getCommand({command: 'set-utf-8-encoding'})
+  })
+}
+
+/**
+* @returns {array}
+*/
+async function getDriveInfo () {
+  let data = await execCommand({
+    command: getCommand({command: 'drive-info'})
+  })
+  return JSON.parse(data.join(''))
+}
+
+/**
+* @returns {array}
+*/
+async function getExtraDriveInfo () {
+  let data = await execCommand({
+    command: getCommand({command: 'extra-drive-info'})
+  })
+  return JSON.parse(data.join(''))
 }
 
 /**
@@ -522,6 +591,8 @@ function changeMode (params) {
 export {
   initCliProcess,
   changeMode,
+  getDriveInfo,
+  getExtraDriveInfo,
   resetPermissions,
   getDirItemOwner,
   isDirItemImmutable,

@@ -36,7 +36,7 @@ import { Walk } from './utils/driveWalker.js'
 import GlobalSearchWorker from 'worker-loader!./workers/globalSearchWorker.js'
 import DirWatcherWorker from 'worker-loader!./workers/dirWatcherWorker.js'
 import TimeUtils from './utils/timeUtils.js'
-import getStorageDevices from './utils/storageInfo.js'
+import {getStorageDevices} from './utils/storageInfo.js'
 import idleJs from 'idle-js'
 const electron = require('electron')
 const PATH = require('path')
