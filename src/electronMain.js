@@ -216,6 +216,11 @@ function loadWindow (windowName) {
 
 function initWindowListeners (name) {
   if (name === 'main') {
+    windows.main.on('move', () => {
+      windows.main.webContents.send('main-window-move', {
+        position: windows.main.getPosition()
+      })
+    })
     windows.main.on('focus', () => {
       windows.main.setSkipTaskbar(false)
       windows.main.webContents.send('window:focus')

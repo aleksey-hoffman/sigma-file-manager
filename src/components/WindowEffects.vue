@@ -41,7 +41,10 @@ export default {
       transformThrottle: null
     }
   },
-  mounted() {
+  created () {
+    this.initIPCListeners()
+  },
+  mounted () {
     this.initMediaTransform()
   },
   watch: {
@@ -66,11 +69,15 @@ export default {
     })
   },
   methods: {
+    initIPCListeners () {
+      electron.ipcRenderer.on('main-window-move', (event, data) => {
+        this.handleWindowTransform()
+      })
+    },
     initMediaTransform () {
       // TODO: move to main process or to another thread to improve performance
       this.transformThrottle = new TimeUtils()
       this.setMediaNode()
-      currentWindow.on('move', this.handleWindowMove)
     },
     handleWindowTransform () {
       if (this.mediaNode) {
