@@ -32,7 +32,7 @@ import {mapFields} from 'vuex-map-fields'
 import TimeUtils from '../utils/timeUtils.js'
 
 const electron = require('electron')
-const currentWindow = electron.remote.getCurrentWindow()
+const currentWindow = require('@electron/remote').getCurrentWindow()
 
 export default {
   data () {
@@ -54,11 +54,15 @@ export default {
       this.$nextTick(() => {
         this.setMediaNode()
       })
+    },
+    'UIZoomLevel' () {
+      this.transformMedia()
     }
   },
   computed: {
     ...mapFields({
       windowTransparencyEffect: 'storageData.settings.windowTransparencyEffect',
+      UIZoomLevel: 'storageData.settings.UIZoomLevel',
     })
   },
   methods: {
@@ -68,7 +72,7 @@ export default {
       this.setMediaNode()
       currentWindow.on('move', this.handleWindowMove)
     },
-    handleWindowMove () {
+    handleWindowTransform () {
       if (this.mediaNode) {
         this.transformThrottle.throttle(this.transformMedia, {
           time: 10
@@ -77,12 +81,25 @@ export default {
     },
     setMediaNode () {
       this.mediaNode = document.querySelector('.overlay--window-transparency-effect__media')
+      // TODO: move appStorage getter to main process to avoid this:
+      // Set media position with a delay,
+      // in case appStorage files are still loading 
+      setTimeout(() => {
+        this.transformMedia()
+      }, 1000)
     },
-    transformMedia () {
-      let [winX, winY] = currentWindow.getPosition()
-      let newXposition = -(winX / 1920 * 100)
-      let newYposition = -(winY / 1080 * 100)
-      this.mediaNode.style.transform = `translate(${newXposition}%, ${newYposition}%)`
+    transformMedia (windowPoosition) {
+      if (this.mediaNode) {
+        this.mediaNode.width = window.screen.width / electron.webFrame.getZoomFactor()
+        this.mediaNode.height = window.screen.height / electron.webFrame.getZoomFactor()
+
+        if (this.windowTransparencyEffect.parallaxDistance > 0) {
+          let [winX, winY] = currentWindow.getPosition()
+          let newXposition = -(winX / window.screen.width * 100 / this.windowTransparencyEffect.parallaxDistance)
+          let newYposition = -(winY / window.screen.height * 100 / this.windowTransparencyEffect.parallaxDistance)
+          this.mediaNode.style.transform = `translate(${newXposition}%, ${newYposition}%)`
+        }
+      }
     }
   }
 }
@@ -90,12 +107,10 @@ export default {
 
 <style>
 .overlay--window-transparency-effect__media {
-  z-index: 1000;
+  z-index: 900;
   user-select: none;
   pointer-events: none;
   position: fixed;
-  width: 1920px;
-  height: 1080px;
   object-fit: cover;
   filter: blur(56px);
   opacity: 0.1;
