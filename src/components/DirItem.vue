@@ -151,21 +151,24 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           class="dir-item-card__item-count"
         >
           {{$utils.prettyBytes(source.stat.size, 1)}}
-          
-          <v-tooltip bottom>
-            <template v-slot:activator="{ on }">
-              <v-icon
-                class="ml-2"
-                v-on="on"
-                v-show="isOffline"
-                color="var(--color-6)"
-                size="12px"
-              >
-                mdi-cloud-outline
-              </v-icon>
-            </template>
-            <span>Offline item (size on drive is 0)</span>
-          </v-tooltip>
+        </div>
+        
+        <div class="dir-item-card__item-offline-status">
+          <div v-if="offlineStatus.status">
+            <v-tooltip bottom>
+              <template v-slot:activator="{ on }">
+                <v-icon
+                  v-on="on"
+                  color="var(--color-6)"
+                  size="12px"
+                >
+                  {{offlineStatus.icon}}
+                </v-icon>
+              </template>
+              <span>{{offlineStatus.tooltip}}</span>
+            </v-tooltip>
+          </div>
+          <div v-else></div>
         </div>
       </template>
 
@@ -341,9 +344,29 @@ export default {
         ? this.layout
         : this.navigatorLayout
     },
-    isOffline () {
-      let isOfflineFile = this.source.sizeOnDisk === 0 && !this.source.type.includes('directory')
-      return isOfflineFile
+    offlineStatus () {
+      let winFSstatusAttributes = {
+        offline: '5248544',
+        keepOnDevice: '525344',
+        reparsePoint: 'ReparsePoint'
+      }
+      if (this.source.status.includes('offline')) {
+        return {
+          status: 'offline',
+          icon: 'mdi-cloud-outline',
+          tooltip: 'Offline item (size on drive is 0)'
+        }
+      }
+      else if (this.source?.fsAttributes?.includes?.('525344')) {
+        return {
+          status: 'keepOnDevice',
+          icon: 'mdi-cloud-download',
+          tooltip: 'Keep on device'
+        }
+      }
+      else {
+        return {}
+      }
     }
   },
   methods: {

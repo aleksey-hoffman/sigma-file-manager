@@ -207,14 +207,17 @@ export default {
       let inaccessible = this.lastSelectedDirItem?.isInaccessible
         ? ' • Inaccessible'
         : ''
-      let isOffline = this.lastSelectedDirItem?.sizeOnDisk === 0
+      let isOffline = this.lastSelectedDirItem?.status.includes('offline')
         ? ' • Offline'
+        : ''
+      let keepOnDevice = this.lastSelectedDirItem?.fsAttributes?.includes?.('525344')
+        ? ' • Keep on device'
         : ''
       let itemMimeDescription = this.itemMimeDescription
         ? ` • ${this.itemMimeDescription}`
         : ''
       let description = this.$localize.get(`text_${type.replace(/-/g,'_')}`)
-      return `${description}${isOffline}${itemMimeDescription}${inaccessible}`
+      return `${description}${itemMimeDescription}${isOffline}${keepOnDevice}${inaccessible}`
     },
     itemType () {
       return this.lastSelectedDirItem?.type || ''  

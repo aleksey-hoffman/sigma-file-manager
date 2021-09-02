@@ -290,6 +290,30 @@ function getSizeOnDisk (dirItemData) {
   }
 }
 
+function appendFSAttributes (dirItemData) {
+  if (utils.platform === 'win32') {
+    fsManager.getFSAttributes({path: dirItemData.path})
+      .then((data) => {
+        dirItemData.fsAttributes = data
+        dirItemData.status.push(data)
+      })
+  }
+}
+
+function getStatus (dirItemData) {
+  if (utils.platform === 'win32') {
+    let status = []
+    let offline = dirItemData.sizeOnDisk === 0 && !dirItemData.type.includes('directory')
+    if (offline) {
+      status.push('offline')
+    }
+    return status
+  }
+  else {
+    return []
+  }
+}
+
 /**
 * @param {string} path
 * @param {string} nameBase
@@ -320,6 +344,8 @@ async function fetchDirItemData (path, nameBase, itemHeight) {
     isDamaged: false,
     isShown: true,
     isIntersected: true,
+    fsAttributes: [],
+    status: [],
     isWin32Shortcut: null,
     win32ShortcutData: {}
   }
@@ -343,7 +369,8 @@ async function fetchDirItemData (path, nameBase, itemHeight) {
     dirItemData.height = getHeight(dirItemData)
     dirItemData.dirItemCount = await getDirItemCount(dirItemData)
     dirItemData.mime = utils.getFileType(dirItemData.realPath, dirItemData.type)
-
+    dirItemData.status = getStatus(dirItemData)
+    appendFSAttributes(dirItemData)
     updateData(dirItemData)
   }
   catch (error) {}

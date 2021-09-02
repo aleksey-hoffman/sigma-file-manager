@@ -122,6 +122,9 @@ function getCommand (params) {
     else if (params.command === 'get-owner') {
       return `(Get-Acl "${params.path}").owner`
     }
+    else if (params.command === 'get-fs-attributes') {
+      return `(Get-Item "${params.path}").Attributes`
+    }
     else if (params.command === 'get-item-stats') {
       return `Get-Item -Path "${params.path}" | ConvertTo-Csv | ConvertFrom-Csv | ConvertTo-Json`
     }
@@ -344,6 +347,25 @@ async function getType (params) {
     else {
       return 'directory'
     }
+  }
+}
+
+/**
+* @param {string} params.path
+* @returns {string}
+*/
+async function getFSAttributes (params) {
+  try {
+    let data = await execCommand({
+      command: getCommand({
+        path: params.path,
+        command: 'get-fs-attributes'
+      })
+    })
+    return data[0].split(',').map(item => item.trim())
+  }
+  catch (error) {
+    return []
   }
 }
 
@@ -603,5 +625,6 @@ export {
   isFile,
   isDirectory,
   getType,
+  getFSAttributes,
   getCommand
 }
