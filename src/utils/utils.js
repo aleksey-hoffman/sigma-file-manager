@@ -3,9 +3,11 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 import * as localize from './localize.js'
-const customParseFormat = require('dayjs/plugin/customParseFormat')
+const dayjsCustomParseFormat = require('dayjs/plugin/customParseFormat')
+const dayjsDuration = require('dayjs/plugin/duration')
 const dayjs = require('dayjs')
-dayjs.extend(customParseFormat)
+dayjs.extend(dayjsCustomParseFormat)
+dayjs.extend(dayjsDuration)
 const ColorUtils = require('./colorUtils.js')
 const supportedFormats = require('./supportedFormats.js')
 const { createXXHash64 } = require('hash-wasm')
@@ -464,6 +466,9 @@ export default {
       else if (minutes > 60) { return `${minutes / 60} hours` }
       else { return minutes }
     }
+  },
+  getFormattedTime (params) {
+    return dayjs.duration(params.time, params.unit).format(params.format)
   },
   getTimeDiff (newer, older, format) {
     const milliseconds = newer - older

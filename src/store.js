@@ -252,13 +252,6 @@ export default new Vuex.Store({
           type: '',
           items: []
         }
-      },
-      infoPanelData: {
-        title: '',
-        type: '',
-        mimeDescription: '',
-        description: '',
-        properties: []
       }
     },
     supportedMediaFormats: {
@@ -551,7 +544,9 @@ export default new Vuex.Store({
         infoPanels: {
           navigatorView: {
             value: true,
-            data: {}
+            data: {
+              properties: []
+            }
           }
         },
         theme: {
@@ -1286,7 +1281,7 @@ export default new Vuex.Store({
       })
       return types
     },
-    dirItemsSelectionStats: (state, getters) => {
+    selectedDirItemsStats: (state, getters) => {
       const totalCount = getters.selectedDirItems.length
       const directoryCount = getters.selectedDirectories.length
       const fileCount = getters.selectedFiles.length
@@ -4067,12 +4062,10 @@ export default new Vuex.Store({
       if (!alreadySelected) {
         store.state.navigatorView.selectedDirItems.push(specifiedItem)
         store.dispatch('UPDATE_DIR_ITEM_SELECTION_HISTORY')
-        store.dispatch('UPDATE_INFO_PANEL_DATA', specifiedItem)
       }
     },
     REPLACE_SELECTED_DIR_ITEMS ({ state, commit, dispatch, getters }, items) {
       state.navigatorView.selectedDirItems = items
-      dispatch('UPDATE_INFO_PANEL_DATA', items.getLast())
     },
     SELECT_DIR_ITEM (store, params) {
       if (params.index !== undefined) {
@@ -4106,148 +4099,13 @@ export default new Vuex.Store({
     DISCARD_MOVED_DIR_ITEMS ({ state, commit }) {
       commit('DISCARD_MOVED_DIR_ITEMS')
     },
-    async FETCH_INFO_PANEL_DATA (store, item) {
-      const { isReadOnly, permissions } = utils.getItemPermissions(item)
-      const title = item.name
-      const type = item.type
-      const description = await store.dispatch('GET_INFO_PANEL_ITEM_DESCRIPTION', item)
-      const mimeDescription = item.mime.mimeDescription
-      const isDirItemPinned = store.state.storageData.pinned.items
-        .some(listItem => listItem.path === item.path)
-      const isDirItemProtected = store.state.storageData.protected.items
-        .some(listItem => listItem.path === item.path)
-      const copyShortcut = 'Ctrl + LClick'
-
-      let copyPathTooltip
-      if (sharedUtils.platform === 'win32') {
-        copyPathTooltip = `
-          <div>
-            <span class="inline-code--light">${copyShortcut}</span> 
-              - copy path with 
-              <span class="inline-code--light">\\</span> 
-              slashes
-          </div>
-          <div>
-            <span class="inline-code--light">Ctrl + Alt + LClick</span> 
-              - copy path with 
-              <span class="inline-code--light">\\\\</span> 
-              slashes
-          </div>
-        `
-      }
-      else {
-        copyPathTooltip = `${localize.get('tooltip_text_to_copy')}: ${copyShortcut}`
-      }
-
-      // Define main properties
-      const properties = [
-        {
-          propName: 'path',
-          title: localize.get('text_path'),
-          value: item.path,
-          tooltip: copyPathTooltip
-        },
-        {
-          propName: 'dateCreated',
-          title: localize.get('text_created'),
-          value: utils.getLocalDateTime(item.stat.birthtime, store.state.storageData.settings.dateTime),
-          tooltip: `${localize.get('tooltip_text_to_copy')}: ${copyShortcut}`
-        },
-        {
-          propName: 'dateModified',
-          title: localize.get('text_modified'),
-          value: utils.getLocalDateTime(item.stat.mtime, store.state.storageData.settings.dateTime),
-          tooltip: `${localize.get('tooltip_text_to_copy')}: ${copyShortcut}`
-        },
-        {
-          propName: 'dateChanged',
-          title: localize.get('text_changed'),
-          value: utils.getLocalDateTime(item.stat.ctime, store.state.storageData.settings.dateTime),
-          tooltip: `${localize.get('tooltip_text_to_copy')}: ${copyShortcut}`
-        },
-        {
-          propName: 'permissions',
-          title: localize.get('text_mode'),
-          value: permissions,
-          tooltip: `${localize.get('tooltip_text_to_copy')}: ${copyShortcut}`
-        },
-        {
-          propName: 'protected',
-          title: localize.get('text_protected'),
-          value: isDirItemProtected
-            ? localize.get('text_yes')
-            : localize.get('text_no'),
-          tooltip: `
-            Protected items cannot be modified or deleted (from within this app only). 
-            Protected items can be found on the dashboard page.
-          `
-        },
-        {
-          propName: 'pinned',
-          title: localize.get('text_pinned'),
-          value: isDirItemPinned
-            ? localize.get('text_yes')
-            : localize.get('text_no'),
-          tooltip: 'Pinned items can be found on the dashboard page'
+    async AUTO_CALCULATE_DIR_SIZE (store, item) {
+      return new Promise((resolve, reject) => {
+        const isRootDir = PATH.parse(item.path).base === ''
+        if (store.state.storageData.settings.autoCalculateDirSize && !isRootDir) {
+          store.dispatch('FETCH_DIR_SIZE', {item, options: {timeout: 1000}}).then(() => resolve())
         }
-      ]
-      // Append conditional properties
-      const realPath = {
-        propName: 'realPath',
-        title: localize.get('text_real_path'),
-        value: item.realPath,
-        tooltip: copyPathTooltip
-      }
-      if (item.path !== item.realPath) {
-        properties.splice(1, 0, realPath)
-      }
-      return {
-        title,
-        type,
-        mimeDescription,
-        description,
-        properties,
-        itemProps: item
-      }
-    },
-    GET_INFO_PANEL_ITEM_DESCRIPTION (store, item) {
-      const itemCount = item.dirItemCount
-      const type = item.type
-      const text_item = itemCount
-        ? localizeUtils.pluralize(itemCount, 'item')
-        : ''
-      const description = `${itemCount ?? ''} ${text_item}`
-      if (type === 'directory') {
-        return `${localize.get('text_directory')}: ${description}`
-      }
-      else if (type === 'file') {
-        return localize.get('text_file')
-      }
-      else if (type === 'file-symlink') {
-        return localize.get('text_file_symlink')
-      }
-      else if (type === 'directory-symlink') {
-        return localize.get('text_directory_symlink')
-      }
-    },
-    async UPDATE_INFO_PANEL_DATA (store, item) {
-      // Prevent 2 consecutive calls to this function:
-      // - Lclick => dir item deselect (1st call)
-      // - => currentDir select (2nd call)
-      const shouldBreakOut = item?.path === store.state.navigatorView?.infoPanelData?.itemProps?.path
-      if (shouldBreakOut) {return false}
-      if (typeof item === 'string') {
-        item = await store.dispatch('FETCH_DIR_ITEM_INFO', item)
-      }
-      store.state.navigatorView.infoPanelData = await store.dispatch('FETCH_INFO_PANEL_DATA', item)
-      store.dispatch('TERMINATE_ALL_FETCH_DIR_SIZE')
-      store.dispatch('AUTO_CALCULATE_DIR_SIZE', item)
-    },
-    AUTO_CALCULATE_DIR_SIZE (store, item) {
-      const isRootDir = PATH.parse(item.path).base === ''
-      if (store.state.storageData.settings.autoCalculateDirSize && !isRootDir) {
-        store.dispatch('FETCH_DIR_SIZE', {item, options: {timeout: 1000}})
-      }
+      })
     },
     SET_GLOBAL_SEARCH_DISALOWED_PATHS ({ state, commit, dispatch, getters }, value) {
       const normalisedList = value.map(path => {
@@ -5720,8 +5578,8 @@ export default new Vuex.Store({
     CANCEL_FETCH_CURRENT_DIR_SIZE (store, payload = {}) {
       store.dispatch('CANCEL_FETCH_DIR_SIZE', store.state.navigatorView.selectedDirItems.getLast())
     },
-    FETCH_CURRENT_DIR_SIZE (store, payload = {}) {
-      store.dispatch('FETCH_DIR_SIZE', {
+    async FETCH_CURRENT_DIR_SIZE (store, payload = {}) {
+      return await store.dispatch('FETCH_DIR_SIZE', {
         item: store.state.navigatorView.selectedDirItems.getLast(),
         options: payload.options || {}
       })
@@ -5747,31 +5605,30 @@ export default new Vuex.Store({
       }
       catch (error) {}
     },
-    FETCH_DIR_SIZE (store, payload) {
-      const taskHashID = utils.getHash()
-      store.dispatch('ADD_TASK', {
-        name: 'process::dir-size',
-        hashID: taskHashID,
-        props: {
-          item: payload.item,
-          options: payload.options,
-          timeoutObject: null
-        }
-      })
-        .then((task) => {
-          store.dispatch('SET_DIRECTORY_SIZE', {
-            item: task.props.item,
-            size: store.state.placeholders.calculatingDirSize
-          })
-          store.dispatch('INIT_DIR_SIZE_PROCESS', task)
-            .then((data) => {
-              store.dispatch('SET_DIRECTORY_SIZE', {
-                item: task.props.item,
-                size: data.size
-              })
-              store.dispatch('REMOVE_TASK', task)
-            })
+    async FETCH_DIR_SIZE (store, payload) {
+      return new Promise((resolve, reject) => {
+        const taskHashID = utils.getHash()
+        store.dispatch('ADD_TASK', {
+          name: 'process::dir-size',
+          hashID: taskHashID,
+          props: {
+            item: payload.item,
+            options: payload.options,
+            timeoutObject: null
+          }
         })
+          .then((task) => {
+            store.dispatch('INIT_DIR_SIZE_PROCESS', task)
+              .then((data) => {
+                resolve(data)
+                store.dispatch('SET_DIRECTORY_SIZE', {
+                  item: task.props.item,
+                  size: data.size
+                })
+                store.dispatch('REMOVE_TASK', task)
+              })
+          })
+      })
     },
     INIT_DIR_SIZE_PROCESS (store, task) {
       return new Promise((resolve, reject) => {
@@ -5807,7 +5664,7 @@ export default new Vuex.Store({
       }
       payload = {...defaultPayload, ...payload}
 
-      if (getters.dirItemsSelectionStats.fileCount > 0) {
+      if (getters.selectedDirItemsStats.fileCount > 0) {
         electron.ipcRenderer.send('quick-view::open-file', payload.path)
       }
     }
