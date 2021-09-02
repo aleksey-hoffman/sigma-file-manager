@@ -448,6 +448,7 @@ export default new Vuex.Store({
           value: true,
           blur: 56,
           opacity: 10,
+          parallaxDistance: 5,
           data: windowTransparencyEffectData,
         },
         animations: {
