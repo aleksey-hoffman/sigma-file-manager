@@ -7,20 +7,20 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
   <div v-if="windowTransparencyEffect.value">
     <img
       class="overlay--window-transparency-effect__media" 
-      v-if="windowTransparencyEffect.data.background.selected.type === 'image'"
-      :src="$storeUtils.getSafePath(windowTransparencyEffect.data.background.selected.path)"
+      v-if="currentPageEffects.windowTransparencyEffect.background.type === 'image'"
+      :src="$storeUtils.getSafePath(currentPageEffects.windowTransparencyEffect.background.path)"
       :style="{
-        'filter': `blur(${windowTransparencyEffect.blur}px)`,
-        'opacity': windowTransparencyEffect.opacity / 100
+        'filter': `blur(${currentPageEffects.windowTransparencyEffect.blur}px)`,
+        'opacity': currentPageEffects.windowTransparencyEffect.opacity / 100
       }"
     >
     <video
       class="overlay--window-transparency-effect__media" 
-      v-if="windowTransparencyEffect.data.background.selected.type === 'video'"
-      :src="$storeUtils.getSafePath(windowTransparencyEffect.data.background.selected.path)"
+      v-if="currentPageEffects.windowTransparencyEffect.background.type === 'video'"
+      :src="$storeUtils.getSafePath(currentPageEffects.windowTransparencyEffect.background.path)"
       :style="{
-        'filter': `blur(${windowTransparencyEffect.blur}px)`,
-        'opacity': windowTransparencyEffect.opacity / 100
+        'filter': `blur(${currentPageEffects.windowTransparencyEffect.blur}px)`,
+        'opacity': currentPageEffects.windowTransparencyEffect.opacity / 100
       }"
       autoplay loop muted
     />
@@ -48,7 +48,7 @@ export default {
     this.initMediaTransform()
   },
   watch: {
-    'windowTransparencyEffect.data.background.selected.path' () {
+    'windowTransparencyEffect.options.selectedPage.background.path' () {
       this.$nextTick(() => {
         this.setMediaNode()
       })
@@ -65,8 +65,42 @@ export default {
   computed: {
     ...mapFields({
       windowTransparencyEffect: 'storageData.settings.windowTransparencyEffect',
+      windowTransparencyEffectSameSettingsOnAllPages: 'storageData.settings.windowTransparencyEffect.sameSettingsOnAllPages',
+      windowTransparencyEffectOptionsSelectedPage: 'storageData.settings.windowTransparencyEffect.options.selectedPage',
+      windowTransparencyEffectOptionsPages: 'storageData.settings.windowTransparencyEffect.options.pages',
+      windowTransparencyEffectBlur: 'storageData.settings.windowTransparencyEffect.options.selectedPage.blur',
+      windowTransparencyEffectOpacity: 'storageData.settings.windowTransparencyEffect.options.selectedPage.opacity',
       UIZoomLevel: 'storageData.settings.UIZoomLevel',
-    })
+    }),
+    currentPageEffects () {
+      try {
+        if (this.windowTransparencyEffectSameSettingsOnAllPages) {
+          return {
+            windowTransparencyEffect: this.globalWindowTransparencyOptions
+          }
+        }
+        else {
+          return {
+            windowTransparencyEffect: this.currentPageWindowTransparencyOptions
+          }
+        }
+      }
+      catch (error) {
+        return {
+          windowTransparencyEffect: this.windowTransparencyEffectOptionsSelectedPage
+        }
+      }
+    },
+    globalWindowTransparencyOptions () {
+      return this.windowTransparencyEffectOptionsPages.find(page => {
+        return page.name === ''
+      })
+    },
+    currentPageWindowTransparencyOptions () {
+      return this.windowTransparencyEffectOptionsPages.find(page => {
+        return page.name === this.$route.name
+      })
+    }
   },
   methods: {
     initIPCListeners () {
@@ -95,15 +129,15 @@ export default {
         this.transformMedia()
       }, 1000)
     },
-    transformMedia (windowPoosition) {
+    transformMedia () {
       if (this.mediaNode) {
         this.mediaNode.width = window.screen.width / electron.webFrame.getZoomFactor()
         this.mediaNode.height = window.screen.height / electron.webFrame.getZoomFactor()
 
-        if (this.windowTransparencyEffect.parallaxDistance > 0) {
+        if (this.currentPageEffects.windowTransparencyEffect.parallaxDistance > 0) {
           let [winX, winY] = currentWindow.getPosition()
-          let newXposition = -(winX / window.screen.width * 100 / this.windowTransparencyEffect.parallaxDistance)
-          let newYposition = -(winY / window.screen.height * 100 / this.windowTransparencyEffect.parallaxDistance)
+          let newXposition = -(winX / window.screen.width * 100 / this.currentPageEffects.windowTransparencyEffect.parallaxDistance)
+          let newYposition = -(winY / window.screen.height * 100 / this.currentPageEffects.windowTransparencyEffect.parallaxDistance)
           this.mediaNode.style.transform = `translate(${newXposition}%, ${newYposition}%)`
         }
       }

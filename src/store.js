@@ -446,10 +446,76 @@ export default new Vuex.Store({
         UIZoomLevel: 1,
         windowTransparencyEffect: {
           value: true,
-          blur: 56,
-          opacity: 10,
-          parallaxDistance: 5,
+          sameSettingsOnAllPages: true,
           data: windowTransparencyEffectData,
+          options: {
+            selectedPage: {
+              title: 'Global settings',
+              name: '',
+              icon: 'mdi-infinity',
+              blur: 56,
+              opacity: 10,
+              parallaxDistance: 5,
+              background: windowTransparencyEffectData.background.selected,
+            },
+            pages: [
+              {
+                title: 'Global settings',
+                name: '',
+                icon: 'mdi-infinity',
+                blur: 56,
+                opacity: 10,
+                parallaxDistance: 5,
+                background: windowTransparencyEffectData.background.selected,
+              },
+              {
+                title: 'Home page',
+                name: 'home',
+                icon: 'mdi-apps',
+                blur: 56,
+                opacity: 10,
+                parallaxDistance: 5,
+                background: windowTransparencyEffectData.background.selected,
+              },
+              {
+                title: 'Navigator page',
+                name: 'navigator',
+                icon: 'mdi-folder-outline',
+                blur: 56,
+                opacity: 10,
+                parallaxDistance: 5,
+                background: windowTransparencyEffectData.background.selected,
+              },
+              {
+                title: 'Dashboard page',
+                name: 'dashboard',
+                icon: 'mdi-bookmark-multiple-outline',
+                blur: 56,
+                opacity: 10,
+                parallaxDistance: 5,
+                background: windowTransparencyEffectData.background.selected,
+              },
+              {
+                title: 'Notes page',
+                name: 'notes',
+                icon: 'mdi-square-edit-outline',
+                blur: 56,
+                opacity: 10,
+                parallaxDistance: 5,
+                background: windowTransparencyEffectData.background.selected,
+              },
+              {
+                title: 'Settings page',
+                name: 'settings',
+                icon: 'mdi-cog-outline',
+                blur: 56,
+                opacity: 10,
+                parallaxDistance: 5,
+                background: windowTransparencyEffectData.background.selected,
+              }
+            ]
+          }
+        },
         visualEffects: {
           homeBannerMediaGlowEffect: {
             value: true
