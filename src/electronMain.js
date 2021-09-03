@@ -79,6 +79,9 @@ function lockSingleAppInstance () {
 }
 
 function setAppProperties () {
+  // Temporary override. The default value sometimes breaks window loading on reload
+  // For example, on settings reset. https://github.com/electron/electron/issues/30710
+  electron.app.allowRendererProcessReuse = false
   electron.app.setAppUserModelId('com.alekseyhoffman.sigma-file-manager')
 }
 
