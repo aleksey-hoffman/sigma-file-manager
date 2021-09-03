@@ -446,6 +446,8 @@ export default new Vuex.Store({
         UIZoomLevel: 1,
         windowTransparencyEffect: {
           value: true,
+          lessProminentOnHomePage: true,
+          previewEffect: true,
           sameSettingsOnAllPages: true,
           data: windowTransparencyEffectData,
           options: {

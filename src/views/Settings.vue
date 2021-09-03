@@ -495,7 +495,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                       <v-layout align-center>
                         <v-select
                           v-model="windowTransparencyEffectDataBackgroundSelected"
-                          :items="windowTransparencyEffectDataBackground.items"
+                          :items="windowTransparencyEffectDataBackgroundItems"
                           item-text="fileNameBase"
                           return-object
                           label="Overlay background"
@@ -518,15 +518,52 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                         </v-tooltip>
                       </v-layout>
 
-                      <v-switch
-                        class="mt-0 pt-0 d-inline-flex"
-                        v-model="windowTransparencyEffectSameSettingsOnAllPages"
-                        label="Use the same settings for all pages"
-                        hide-details
-                      ></v-switch>
+                      <div>
+                        <v-switch
+                          class="d-inline-flex mt-0 pt-0"
+                          v-model="windowTransparencyEffectLessProminentOnHomePage"
+                          label="Make effect less prominent on home page"
+                        ></v-switch>
+                      </div>
+
+                      <div>
+                        <v-switch
+                          class="d-inline-flex mt-0 pt-0"
+                          v-model="windowTransparencyEffectSameSettingsOnAllPages"
+                          label="Use the same settings for all pages"
+                        ></v-switch>
+                      </div>
 
                       <v-expand-transition>
                         <div v-if="!windowTransparencyEffectSameSettingsOnAllPages">
+                          <div>
+                            <v-switch
+                              class="d-inline-flex mt-0 pt-0"
+                              v-model="windowTransparencyEffectPreviewEffect"
+                            >
+                              <template v-slot:label>
+                                <v-tooltip bottom max-width="400px">
+                                  <template v-slot:activator="{ on }">
+                                    <v-icon
+                                      v-on="on"
+                                      v-show="
+                                        windowTransparencyEffectPreviewEffect && 
+                                        windowTransparencyEffectOptionsSelectedPage.name !== 'settings'
+                                      "
+                                      color="red"
+                                    >mdi-circle-medium
+                                    </v-icon>
+                                    Preview effect for selected page
+                                  </template>
+                                  <span>
+                                    Disable after you finish customizing selected page to 
+                                    see the effects for "settings" page
+                                  </span>
+                                </v-tooltip>
+                              </template>
+                            </v-switch>
+                          </div>
+
                           <v-select
                             class="mt-2"
                             v-model="windowTransparencyEffectOptionsSelectedPage"
@@ -1417,14 +1454,16 @@ export default {
       navigatorOpenDirItemWithSingleClick: 'storageData.settings.navigator.openDirItemWithSingleClick',
       dirItemHoverEffect: 'storageData.settings.dirItemHoverEffect',
       windowTransparencyEffectValue: 'storageData.settings.windowTransparencyEffect.value',
+      windowTransparencyEffectLessProminentOnHomePage: 'storageData.settings.windowTransparencyEffect.lessProminentOnHomePage',
+      windowTransparencyEffectPreviewEffect: 'storageData.settings.windowTransparencyEffect.previewEffect',
       windowTransparencyEffectSameSettingsOnAllPages: 'storageData.settings.windowTransparencyEffect.sameSettingsOnAllPages',
       windowTransparencyEffectOptionsPages: 'storageData.settings.windowTransparencyEffect.options.pages',
       windowTransparencyEffectOptionsSelectedPage: 'storageData.settings.windowTransparencyEffect.options.selectedPage',
       windowTransparencyEffectBlur: 'storageData.settings.windowTransparencyEffect.options.selectedPage.blur',
       windowTransparencyEffectOpacity: 'storageData.settings.windowTransparencyEffect.options.selectedPage.opacity',
       windowTransparencyEffectParallaxDistance: 'storageData.settings.windowTransparencyEffect.options.selectedPage.parallaxDistance',
-      windowTransparencyEffectDataBackground: 'storageData.settings.windowTransparencyEffect.data.background',
-      windowTransparencyEffectDataBackgroundSelected: 'storageData.settings.windowTransparencyEffect.data.background.selected',
+      windowTransparencyEffectDataBackgroundItems: 'storageData.settings.windowTransparencyEffect.data.background.items',
+      windowTransparencyEffectDataBackgroundSelected: 'storageData.settings.windowTransparencyEffect.options.selectedPage.background',
       homeBannerMediaGlowEffectValue: 'storageData.settings.visualEffects.homeBannerMediaGlowEffect.value',
       animationsOnRouteChangeMediaBannerIn: 'storageData.settings.animations.onRouteChangeMediaBannerIn',
       dateTimeMonth: 'storageData.settings.dateTime.month',
@@ -1494,6 +1533,13 @@ export default {
         this.windowTransparencyEffectOptionsPages = clone
       },
       deep: true
+    },
+    windowTransparencyEffectSameSettingsOnAllPages (newValue) {
+      if (newValue) {
+        this.windowTransparencyEffectOptionsSelectedPage = this.windowTransparencyEffectOptionsPages.find(page => {
+          return page.name === ''
+        })
+      }
     },
     settingsSelectedTab (value) {
       this.lastOpenedSettingsTabValue = value
@@ -1714,16 +1760,16 @@ export default {
         .filter(listItem => listItem !== item)
     },
     setNextWindowTransparencyEffectBackground () {
-      let currentItemIndex = this.windowTransparencyEffectDataBackground.items
+      let currentItemIndex = this.windowTransparencyEffectDataBackgroundItems
         .findIndex(item => item.path === this.windowTransparencyEffectDataBackgroundSelected.path)
       let nextItemIndex = 0
-      if (currentItemIndex > this.windowTransparencyEffectDataBackground.items.length - 2) {
+      if (currentItemIndex > this.windowTransparencyEffectDataBackgroundItems.length - 2) {
         nextItemIndex = 0
       }
       else {
         nextItemIndex = currentItemIndex + 1
       }
-      this.windowTransparencyEffectDataBackgroundSelected = this.windowTransparencyEffectDataBackground.items[nextItemIndex]
+      this.windowTransparencyEffectDataBackgroundSelected = this.windowTransparencyEffectDataBackgroundItems[nextItemIndex]
     }
   }
 }

@@ -66,6 +66,8 @@ export default {
     ...mapFields({
       windowTransparencyEffect: 'storageData.settings.windowTransparencyEffect',
       windowTransparencyEffectSameSettingsOnAllPages: 'storageData.settings.windowTransparencyEffect.sameSettingsOnAllPages',
+      windowTransparencyEffectLessProminentOnHomePage: 'storageData.settings.windowTransparencyEffect.lessProminentOnHomePage',
+      windowTransparencyEffectPreviewEffect: 'storageData.settings.windowTransparencyEffect.previewEffect',
       windowTransparencyEffectOptionsSelectedPage: 'storageData.settings.windowTransparencyEffect.options.selectedPage',
       windowTransparencyEffectOptionsPages: 'storageData.settings.windowTransparencyEffect.options.pages',
       windowTransparencyEffectBlur: 'storageData.settings.windowTransparencyEffect.options.selectedPage.blur',
@@ -74,14 +76,29 @@ export default {
     }),
     currentPageEffects () {
       try {
-        if (this.windowTransparencyEffectSameSettingsOnAllPages) {
+        if (this.windowTransparencyEffectLessProminentOnHomePage && this.$route.name === 'home') {
+          let globalWindowTransparencyOptionsClone = this.$utils.cloneDeep(this.globalWindowTransparencyOptions)
+          globalWindowTransparencyOptionsClone.opacity = 5
+          globalWindowTransparencyOptionsClone.blur = 32
           return {
-            windowTransparencyEffect: this.globalWindowTransparencyOptions
-          }
+            windowTransparencyEffect: globalWindowTransparencyOptionsClone
+          } 
+        }
+        else if (this.windowTransparencyEffectPreviewEffect && this.$route.name === 'settings') {
+          return {
+            windowTransparencyEffect: this.windowTransparencyEffectOptionsSelectedPage
+          } 
         }
         else {
-          return {
-            windowTransparencyEffect: this.currentPageWindowTransparencyOptions
+          if (this.windowTransparencyEffectSameSettingsOnAllPages) {
+            return {
+              windowTransparencyEffect: this.globalWindowTransparencyOptions
+            }
+          }
+          else {
+            return {
+              windowTransparencyEffect: this.currentPageWindowTransparencyOptions
+            }
           }
         }
       }
@@ -111,7 +128,12 @@ export default {
     initMediaTransform () {
       // TODO: move to main process or to another thread to improve performance
       this.transformThrottle = new TimeUtils()
-      this.setMediaNode()
+      // TODO: move appStorage getter to main process to avoid this:
+      // Set media position with a delay,
+      // in case appStorage files are still loading 
+      setTimeout(() => {
+        this.setMediaNode()
+      }, 1000)
     },
     handleWindowTransform () {
       if (this.mediaNode) {
@@ -122,12 +144,7 @@ export default {
     },
     setMediaNode () {
       this.mediaNode = document.querySelector('.overlay--window-transparency-effect__media')
-      // TODO: move appStorage getter to main process to avoid this:
-      // Set media position with a delay,
-      // in case appStorage files are still loading 
-      setTimeout(() => {
-        this.transformMedia()
-      }, 1000)
+      this.transformMedia()
     },
     transformMedia () {
       if (this.mediaNode) {
