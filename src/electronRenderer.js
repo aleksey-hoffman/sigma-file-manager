@@ -48,6 +48,7 @@ import DriveCardsIterator from './components/DriveCardsIterator.vue'
 import UpdatingComponent from './components/UpdatingComponent.vue'
 import SectionSettings from './components/SectionSettings.vue'
 import WindowEffects from './components/WindowEffects.vue'
+import HomeBanner from './components/HomeBanner.vue'
 
 // Register components
 Vue.component('window-toolbar', WindowToolbar)
@@ -82,6 +83,7 @@ Vue.component('drive-cards-iterator', DriveCardsIterator)
 Vue.component('updating-component', UpdatingComponent)
 Vue.component('section-settings', SectionSettings)
 Vue.component('window-effects', WindowEffects)
+Vue.component('home-banner', HomeBanner)
 
 const localize = require('./utils/localize')
 require('overlayscrollbars/css/OverlayScrollbars.css')
