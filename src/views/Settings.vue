@@ -474,7 +474,22 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                           hide-details
                           style="max-width: 250px"
                         ></v-slider>
+                      </v-layout>
                       
+                      <div class="mt-2">
+                        Overlay parallax distance: 
+                        {{windowTransparencyEffectParallaxDistance}}
+                      </div>
+                      <v-layout align-center>
+                        <v-slider
+                          class="align-center"
+                          v-model="windowTransparencyEffectParallaxDistance"
+                          max="10"
+                          min="0"
+                          step="1"
+                          hide-details
+                          style="max-width: 250px"
+                        ></v-slider>
                       </v-layout>
                       
                       <v-layout align-center>
@@ -1360,6 +1375,7 @@ export default {
       windowTransparencyEffectValue: 'storageData.settings.windowTransparencyEffect.value',
       windowTransparencyEffectBlur: 'storageData.settings.windowTransparencyEffect.blur',
       windowTransparencyEffectOpacity: 'storageData.settings.windowTransparencyEffect.opacity',
+      windowTransparencyEffectParallaxDistance: 'storageData.settings.windowTransparencyEffect.parallaxDistance',
       windowTransparencyEffectDataBackgroundSelected: 'storageData.settings.windowTransparencyEffect.data.background.selected',
       homeBannerMediaGlowEffectValue: 'storageData.settings.visualEffects.homeBannerMediaGlowEffect.value',
       animationsOnRouteChangeMediaBannerIn: 'storageData.settings.animations.onRouteChangeMediaBannerIn',
