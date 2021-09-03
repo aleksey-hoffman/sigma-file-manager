@@ -358,6 +358,26 @@ If you like their art, consider supporting their work. You can find their suppor
         <a href="https://www.artstation.com/artwork/EV8Lo4">Vladimir Manyukhin</a>
       </td>
     </tr>
+    <tr>
+      <td align="center" valign="middle">
+        <a href="https://www.artstation.com/artwork/Yeg6aY">
+          <img width="128px" height="50px" src="./.github/media/home banner previews/Cyber Neon City by Laury Guintrand.jpg">
+        </a>
+      </td>
+      <td align="center" valign="middle">
+        <a href="https://www.artstation.com/artwork/OorWZk">
+          <img width="128px" height="50px" src="./.github/media/home banner previews/INCREASE by Sweeper3d (Austin Richey).jpg">
+        </a>
+      </td>
+    </tr>
+    </tr>
+      <td align="center" valign="middle">
+        <a href="https://www.artstation.com/artwork/Yeg6aY">Laury Guintrand</a>
+      </td>
+      <td align="center" valign="middle">
+        <a href="https://www.artstation.com/artwork/OorWZk">Sweeper3d</a>
+      </td>
+    <tr>
   </tbody>
 </table>
 
