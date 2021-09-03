@@ -834,8 +834,9 @@ export default {
       }, 10000)
     },
     initLocalFileShareServerProcess (path) {
-     this.$store.state.childProcesses.localFileShareServer = childProcess.fork(
-       './src/workers/localFileShareServerWorker.js')
+      this.$store.state.childProcesses.localFileShareServer = childProcess.fork(
+        this.$utils.getSrc('./src/workers/localFileShareServerWorker.js')
+      )
       this.$store.state.childProcesses.localFileShareServer.on('message', data => {
       })
       this.$store.state.childProcesses.localFileShareServer.send({
