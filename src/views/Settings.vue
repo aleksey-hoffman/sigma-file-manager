@@ -504,6 +504,16 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                       </v-layout>
                     </div>
                   </v-expand-transition>
+
+                  <div class="text--sub-title-1 mt-4">
+                    Home banner effects
+                  </div>
+                  <v-switch
+                    class="mt-0 pt-0 d-inline-flex"
+                    v-model="homeBannerMediaGlowEffectValue"
+                    label="Background glow effect"
+                    hide-details
+                  ></v-switch>
                 </template>
               </section-settings>
 
@@ -1351,6 +1361,7 @@ export default {
       windowTransparencyEffectBlur: 'storageData.settings.windowTransparencyEffect.blur',
       windowTransparencyEffectOpacity: 'storageData.settings.windowTransparencyEffect.opacity',
       windowTransparencyEffectDataBackgroundSelected: 'storageData.settings.windowTransparencyEffect.data.background.selected',
+      homeBannerMediaGlowEffectValue: 'storageData.settings.visualEffects.homeBannerMediaGlowEffect.value',
       animationsOnRouteChangeMediaBannerIn: 'storageData.settings.animations.onRouteChangeMediaBannerIn',
       dateTimeMonth: 'storageData.settings.dateTime.month',
       pointerButton3onMouseUpEvent: 'storageData.settings.input.pointerButtons.button3.onMouseUpEvent',

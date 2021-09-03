@@ -450,6 +450,10 @@ export default new Vuex.Store({
           opacity: 10,
           parallaxDistance: 5,
           data: windowTransparencyEffectData,
+        visualEffects: {
+          homeBannerMediaGlowEffect: {
+            value: true
+          },
         },
         animations: {
           onRouteChangeMediaBannerIn: true

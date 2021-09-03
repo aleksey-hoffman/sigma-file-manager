@@ -110,7 +110,13 @@ export default {
     this.setBannerMedia()
     this.setHomeBannerIsOffscreen()
   },
+  activated () {
+    this.setBannerMedia()
+  },
   watch: {
+    displayGlowEffect () {
+      this.setBannerMedia()
+    },
     'homeBannerSelectedMedia.path' () {
       this.setBannerMedia()
     },
@@ -139,8 +145,13 @@ export default {
     ...mapFields({
       homeBannerValue: 'storageData.settings.homeBanner.value',
       homeBannerHeight: 'storageData.settings.homeBanner.height',
-      homeBannerOverlaySelectedItem: 'storageData.settings.homeBanner.overlay.selectedItem'
+      homeBannerOverlaySelectedItem: 'storageData.settings.homeBanner.overlay.selectedItem',
+      homeBannerMediaGlowEffectValue: 'storageData.settings.visualEffects.homeBannerMediaGlowEffect.value',
     }),
+    displayGlowEffect () {
+      return this.homeBannerOverlaySelectedItem.name !== 'maskFade' && 
+        this.homeBannerMediaGlowEffectValue
+    }
   },
   methods: {
     async setBannerMedia () {
@@ -152,11 +163,13 @@ export default {
         let mediaNode = new Image()
         this.setImageMedia(mediaNode)
         await this.initMediaReplace(mediaNode)
+        this.setImageGlowMedia()
       }
       else if (type === 'video') {
         let mediaNode = document.createElement('video')
         this.setVideoMedia(mediaNode)
         await this.initMediaReplace(mediaNode)
+        this.setVideoGlowMedia()
       }
     },
     async initMediaReplace (mediaNode) {
@@ -192,12 +205,45 @@ export default {
       mediaNode.src = this.$storeUtils.getSafePath(this.homeBannerSelectedMedia.path)
       mediaNode.classList.add('media-banner__media-item')
     },
+    setImageGlowMedia () {
+      if (!this.displayGlowEffect) {return}
+
+      let mediaContainerNode = document.querySelector('.media-banner__media-container')
+      let mediaGlowNode = new Image()
+      mediaGlowNode.classList.add('media-banner__media-item-glow')
+      this.setImageMedia(mediaGlowNode)
+      mediaContainerNode.appendChild(mediaGlowNode)
+      this.$nextTick(() => {
+        mediaGlowNode.style.setProperty(
+          'object-position',
+          `${this.homeBannerSelectedMedia.positionX}% ${this.homeBannerSelectedMedia.positionY}%`
+        )
+      })
+    },
     setVideoMedia (mediaNode) {
       mediaNode.src = this.$storeUtils.getSafePath(this.homeBannerSelectedMedia.path)
       mediaNode.classList.add('media-banner__media-item')
       mediaNode.setAttribute('autoplay', true)
       mediaNode.setAttribute('loop', true)
       mediaNode.setAttribute('muted', true)
+    },
+    setVideoGlowMedia () {
+      if (!this.displayGlowEffect) {return}
+
+      let mediaContainerNode = document.querySelector('.media-banner__media-container')
+      let mediaGlowNode = document.createElement('video')
+      mediaGlowNode.classList.add('media-banner__media-item-glow')
+      mediaGlowNode.setAttribute('autoplay', true)
+      mediaGlowNode.setAttribute('loop', true)
+      mediaGlowNode.setAttribute('muted', true)
+      this.setVideoMedia(mediaGlowNode)
+      mediaContainerNode.appendChild(mediaGlowNode)
+      this.$nextTick(() => {
+        mediaGlowNode.style.setProperty(
+          'object-position',
+          `${this.homeBannerSelectedMedia.positionX}% ${this.homeBannerSelectedMedia.positionY}%`
+        )
+      })
     },
     handleClickHiddenButton (homeBannerSelectedMedia) {
       const isDinoImage = homeBannerSelectedMedia.fileNameBase === 'Land before Wi-Fi by Dana Franklin.jpg'
@@ -345,10 +391,13 @@ export default {
     );
   }
 
-.media-banner__media-item {
-  /* box-shadow: 0 0 12px rgb(0, 0, 0, 0.3); */
+.media-banner__media-item-glow {
+  top: 28px !important;
+  filter: blur(32px);
+  z-index: -1 !important;
+  box-shadow: none !important;
+  opacity: 0.3;
 }
-
 
 .hidden-game-button {
   position: absolute;
