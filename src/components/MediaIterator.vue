@@ -42,6 +42,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               v-on="on"
               v-if="item.sourceLink"
               @click.stop="$utils.openLink(item.sourceLink)"
+              :is-selected="item.path === homeBannerSelectedItem.path"
               icon
               class="media-picker__item-icon--source-link"
             >
@@ -68,6 +69,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               v-on="on"
               v-if="item.supportLink"
               @click.stop="$utils.openLink(item.supportLink)"
+              :is-selected="item.path === homeBannerSelectedItem.path"
               icon
               class="media-picker__item-icon--support-link"
             >
@@ -398,7 +400,9 @@ export default {
 .media-picker__item:hover
   .media-picker__item-icon--source-link,
 .media-picker__item:hover
-  .media-picker__item-icon--support-link {
+  .media-picker__item-icon--support-link,
+.media-picker__item-icon--source-link[is-selected],
+.media-picker__item-icon--support-link[is-selected] {
     opacity: 1;
   }
 
