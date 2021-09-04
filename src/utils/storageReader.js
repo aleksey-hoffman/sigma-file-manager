@@ -13,12 +13,10 @@ class StorageReader {
       const directoriesToInit = appPaths.storageDirectories
       const promises = []
       for (const [key, path] of Object.entries(directoriesToInit)) {
-        // Attempt to create directory.
-        // Don't do anything if it's already created
-        promises.push(fs.promises.mkdir(path, { recursive: true }))
+        // Attempt to create directory. Don't do anything if it's already created
+        promises.push(fs.promises.mkdir(path, {recursive: true}))
       }
-      Promise.allSettled(promises)
-        .then(() => resolve())
+      Promise.allSettled(promises).then(() => resolve())
     })
   }
 

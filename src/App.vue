@@ -106,7 +106,6 @@ export default {
   async mounted () {
     this.$store.dispatch('ADD_ACTION_TO_HISTORY', { action: 'App.vue::mounted()' })
     try {
-      await this.initMediaDirectories()
       await this.initAllStorageFiles()
       await this.fetchStorageDevices()
       this.handleFirstAppLaunch()
@@ -458,30 +457,6 @@ export default {
           value: lastSearchScanTimeElapsed
         })
       }, 1000)
-    },
-    initMediaDirectories () {
-      // TODO:
-      // - See what happens why I try to add the same image to multiple notes. 
-      // Will there be duplicates? Make sure it's not copied if it's already there
-      // - Add image gallery so that images from /notes can be reused in multiple notes
-      return new Promise((resolve, reject) => {
-        const directoriesToInit = [
-          this.appPaths.storageDirectories.appStorage,
-          this.appPaths.storageDirectories.appStorageBin,
-          this.appPaths.storageDirectories.appStorageHomeBannerMedia,
-          this.appPaths.storageDirectories.appStorageNotesMedia,
-          this.appPaths.storageDirectories.appStorageGlobalSearchData,
-          this.appPaths.storageDirectories.appStorageNavigatorThumbs
-        ]
-        const promises = []
-        directoriesToInit.forEach(path => {
-          // Attempt to create directory.
-          // Don't do anything if it's already created
-          promises.push(fs.promises.mkdir(path, { recursive: true }))
-        })
-        Promise.allSettled(promises)
-          .then(() => resolve())
-      })
     },
     async initGlobalSearchDataScan () {
       // TODO: Check if the drive has enough space on it
