@@ -881,7 +881,7 @@ export default {
 [data-layout="list"][data-type="file"] .dir-item-card__content-container,
 [data-layout="list"][data-type="file-symlink"] .dir-item-card__content-container {
   display: grid;
-  grid-template-columns: 48px 4fr 3fr 1fr 48px;
+  grid-template-columns: 48px 4.5fr 3fr 1fr 24px 48px;
   gap: 16px;
   border-bottom: 1px solid var(--dir-item-card-border-3);
   /* Set the element height to 48px, otherwise
