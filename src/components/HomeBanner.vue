@@ -184,7 +184,7 @@ export default {
     },
     replaceMedia (mediaNode) {
       let mediaContainerNode = document.querySelector('.media-banner__media-container')
-      mediaContainerNode.replaceChildren(mediaNode)
+      mediaContainerNode?.replaceChildren(mediaNode)
       this.$nextTick(() => {
         mediaNode.style.setProperty(
           'object-position',
@@ -212,7 +212,7 @@ export default {
       let mediaGlowNode = new Image()
       mediaGlowNode.classList.add('media-banner__media-item-glow')
       this.setImageMedia(mediaGlowNode)
-      mediaContainerNode.appendChild(mediaGlowNode)
+      mediaContainerNode?.appendChild(mediaGlowNode)
       this.$nextTick(() => {
         mediaGlowNode.style.setProperty(
           'object-position',
@@ -237,7 +237,7 @@ export default {
       mediaGlowNode.setAttribute('loop', true)
       mediaGlowNode.setAttribute('muted', true)
       this.setVideoMedia(mediaGlowNode)
-      mediaContainerNode.appendChild(mediaGlowNode)
+      mediaContainerNode?.appendChild(mediaGlowNode)
       this.$nextTick(() => {
         mediaGlowNode.style.setProperty(
           'object-position',
