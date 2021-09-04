@@ -296,10 +296,13 @@ export default {
     scrollAddressBarRight () {
       try {
         setTimeout(() => {
-          document.querySelector('#address-bar__parts-container').scrollTo({
-            left: 1000,
-            behavior: 'smooth'
-          })
+          let addressBarScrollContainerNode = document.querySelector('#address-bar__parts-container')
+          if (addressBarScrollContainerNode) {
+            addressBarScrollContainerNode.scrollTo({
+              left: 1000,
+              behavior: 'smooth'
+            })
+          }
         }, 50)
       }
       catch (error) {}
