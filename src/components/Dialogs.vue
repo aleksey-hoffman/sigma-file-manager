@@ -879,7 +879,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     >
       <template v-slot:content>
         <!-- iterator::custom-media::title -->
-        <div class="text--sub-title-1">
+        <div class="text--sub-title-1 mb-4">
           Custom backgrounds
         </div>
         
@@ -914,13 +914,13 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         ></media-iterator>
 
         <!-- iterator::default-media::title -->
-        <div class="text--sub-title-1 ma-0 mr-2">
+        <div class="text--sub-title-1 mb-2">
           Default backgrounds
         </div>
 
         <div class="mb-4">
-          The artworks below are created by different artists.
-          You can see their other work by clicking the link icon on the preview
+          The artworks provided by different artists.
+          Hover previews to see the links to their profiles and other details.
         </div>
 
         <!-- iterator::default-media -->
@@ -2377,7 +2377,9 @@ export default {
           action: 'add',
           timeout: 0,
           closeButton: true,
-          title: 'Success | error template was generated',
+          colorStatus: 'green',
+          title: 'Error template link was generated',
+          message: 'Open the link in your browser to continue',
           actionButtons: [
             {
               title: 'Copy link',
