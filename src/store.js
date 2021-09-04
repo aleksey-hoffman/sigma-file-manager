@@ -1980,8 +1980,10 @@ export default new Vuex.Store({
       if (payload.items !== undefined) {
         for (let index = 0; index < payload.items.length; index++) {
           const path = payload.items[index]
-          let item = await dispatch('FETCH_DIR_ITEM_INFO', path)
-          newItems.push(item)
+          if (typeof path === 'string') {
+            let item = await dispatch('FETCH_DIR_ITEM_INFO', path)
+            newItems.push(item)
+          }
         }
       }
       return newItems
@@ -2000,6 +2002,18 @@ export default new Vuex.Store({
         }
       }
       return newItems
+    },
+    /**
+    * @param {object} payload
+    * @param {array<object>} payload.items
+    */
+    async ENSURE_ALL_ITEMS_DATA_OBJECTS (store, items) {
+      if (items.some(item => typeof item === 'string')) {
+        return await store.dispatch('CONVERT_PATHS_TO_DATA_OBJECTS', {items})
+      }      
+      else {
+        return items
+      }
     },
     ADD_TO_DIR_ITEMS_TIMELINE (store, path) {
       if (!store.state.storageData.settings.stats.storeDirItemOpenEvent) {return false}
@@ -4759,134 +4773,191 @@ export default new Vuex.Store({
       const dirItems = await store.dispatch('FETCH_DIR_ITEMS', params.directory)
       const conflictedPaths = []
       dirItems.forEach(dirItem => {
-        if (params.items.includes(dirItem.path)) {
+        const nameIsConflicting = params.items.some(item => {
+          const srcAndDestPathsAreSame = item.path === dirItem.path
+          return item.name === dirItem.name && !srcAndDestPathsAreSame
+        })
+        if (nameIsConflicting) {
           conflictedPaths.push(dirItem.path)
         }
       })
       return conflictedPaths
     },
     async COPY_DIR_ITEMS (store, params) {
-      return new Promise((resolve, reject) => {
-        const defaultOptions = {
+      params = {
+        ...{
           operation: 'copy',
           overwrite: false
-        }
-        params = { ...defaultOptions, ...params }
+        }, 
+        ...params
+      }
 
-        let notificationConfig = {
-          action: 'update-by-hash',
-          hashID: utils.getHash(),
-          type: 'dir-item-transfer',
-          icon: 'mdi-progress-clock',
-          closeButton: true,
-          timeout: 0,
-          title: params.operation === 'move'
-            ? 'Moving items...'
-            : 'Copying items...',
+      let notification = new Notification({name: 'copyDirItemsInProgress'})
+      showInProgressNotification()
+      await copyItems(params)
+      
+      async function copyItems (params) {
+        try {
+          params.items = await store.dispatch('ENSURE_ALL_ITEMS_DATA_OBJECTS', params.items)
+          const conflictedPaths = await store.dispatch('CHECK_DIR_ITEMS_NAME_CONFLICTS', {
+            directory: params.directory,
+            items: params.items
+          })
+          
+          if (conflictedPaths.length > 0) {
+            showConformationDialog(conflictedPaths)
+          }
+          else {
+            initCopyProcess({overwrite: false})
+          }
+        } 
+        catch (error) {
+          handleCopyError(error)
         }
-        eventHub.$emit('notification', notificationConfig)
-
-        store.dispatch('CHECK_DIR_ITEMS_NAME_CONFLICTS', {
-          directory: params.directory,
-          items: params.items
+      }
+  
+      async function showConformationDialog (conflictedPaths) {
+        const conformationResult = await store.dispatch('SHOW_CONFIRMATION_DIALOG_PASTE_DIR_ITEMS', {
+          conflictedPaths
         })
-          .then((conflictedPaths) => {
-            if (conflictedPaths.length > 0) {
-              store.dispatch('SHOW_CONFIRMATION_DIALOG_PASTE_DIR_ITEMS', {
-                conflictedPaths
-              })
-                .then((conformationResult) => {
-                  if (conformationResult === 'replace-all' || conformationResult === 'auto-rename') {
-                    store.dispatch('INIT_COPY_DIR_ITEMS_PROCESS', {
-                      items: params.items,
-                      directory: params.directory,
-                      overwrite: conformationResult === 'replace-all',
-                      operation: params.operation
-                    })
-                      .then(() => {resolveTransfer()})
-                  }
-                })
-            }
-            else {
-              store.dispatch('INIT_COPY_DIR_ITEMS_PROCESS', {
-                items: params.items,
-                directory: params.directory,
-                overwrite: false,
-                operation: params.operation
-              })
-                .then(() => {resolveTransfer()})
-            }
-          })
-
-        function resolveTransfer () {
-          notificationConfig.title = params.operation === 'move'
-            ? 'Items were moved'
-            : 'Items were copied'
-          notificationConfig.timeout = 3000
-          eventHub.$emit('notification', notificationConfig)
-          store.dispatch('RELOAD_DIR', {
-            scrollTop: false
-          })
-          store.dispatch('CLEAR_FS_CLIPBOARD')
+        if (conformationResult === 'replace-all') {
+          initCopyProcess({overwrite: true})
         }
-      })
+        else if (conformationResult === 'auto-rename') {
+          initCopyProcess({overwrite: false})
+        }
+        else if (conformationResult === 'cancel') {
+          cancelTransfer()
+        }
+      }
+  
+      async function cancelTransfer () {
+        notification.hide()
+      }
+       
+      async function initCopyProcess (options) {
+        await store.dispatch('INIT_COPY_DIR_ITEMS_PROCESS', {
+          items: params.items,
+          directory: params.directory,
+          overwrite: options.overwrite ?? false,
+          operation: params.operation
+        })
+        resolveTransfer()
+      }
+       
+      function handleCopyError (error) {
+        notification.update({name: 'transferDirItemsError', error})
+      }
+
+      function showSuccessNotification () {
+        if (params.operation === 'move') {
+          notification.update({name: 'moveDirItemsSuccess', format: {items: params.items.length}})
+        }
+        else if (params.operation === 'copy') {
+          notification.update({name: 'copyDirItemsSuccess', format: {items: params.items.length}})
+        }
+      }
+      
+      function showInProgressNotification () {
+        if (params.operation === 'move') {
+          notification.update({name: 'moveDirItemsInProgress'})
+        }
+        else if (params.operation === 'copy') {
+          notification.update({name: 'copyDirItemsInProgress'})
+        }
+      }
+
+      function resolveTransfer () {
+        showSuccessNotification()
+        store.dispatch('RELOAD_DIR', {
+          scrollTop: false
+        })
+        store.dispatch('CLEAR_FS_CLIPBOARD')
+      }
     },
     INIT_COPY_DIR_ITEMS_PROCESS (store, payload) {
       return new Promise((resolve, reject) => {
         let promises = []
         payload.items.forEach(item => {
           const parsedItemPath = PATH.parse(item.path)
-          const destPath = PATH.normalize(PATH.join(payload.directory, parsedItemPath.base))
-          const uniqueDestPath = utils.getUniquePath(destPath)
           const sourcePath = PATH.normalize(item.path)
-          promises.push(startWriteProcess({sourcePath, uniqueDestPath, payload}))
+          const destPath = getDestPath(payload, parsedItemPath, sourcePath)
+          promises.push(startWriteProcess({sourcePath, destPath, payload}))
         })
-        Promise.allSettled(promises)
-          .then(() => {
-            resolve()
-          })
+        Promise.allSettled(promises).then(() => resolve())
+
+        function getDestPath (payload, parsedItemPath, sourcePath) {
+          let destPath = PATH.normalize(PATH.join(payload.directory, parsedItemPath.base))
+          if (!payload.overwrite || (destPath === sourcePath)) {
+            destPath = utils.getUniquePath(destPath)
+          }
+          return destPath
+        }
 
         function startWriteProcess (params) {
           return new Promise((resolve, reject) => {
             if (params.payload.operation === 'move') {
               store.dispatch('MOVE_ITEM', {
                 sourcePath: params.sourcePath,
-                destPath: params.uniqueDestPath
-              })
-                .then(() => {resolve()})
+                destPath: params.destPath,
+                overwrite: params.payload.overwrite
+              }).then(() => resolve())
             }
             else if (params.payload.operation === 'copy') {
               store.dispatch('COPY_ITEM', {
                 sourcePath: params.sourcePath,
-                destPath: params.uniqueDestPath
-              })
-                .then(() => {resolve()})
+                destPath: params.destPath,
+                overwrite: params.payload.overwrite
+              }).then(() => resolve())
             }
           })
         }
       })
     },
     async MOVE_ITEM (store, payload) {
-      try {
-        fsExtra.move(payload.sourcePath, payload.destPath, {recursive: true}, error => {
-          if (error) {throw Error(error)}
-          return
+      return new Promise((resolve, reject) => {
+        let options = {
+          overwrite: payload.overwrite,
+          recursive: true
+        }
+        fsExtra.move(payload.sourcePath, payload.destPath, options, error => {
+          if (error) {
+            store.dispatch('HANDLE_DIR_ITEM_TRANSFER_ERROR', {
+              title: 'Some items were not moved',
+              message: error
+            })
+          }
+          resolve()
         })
-      }
-      catch (error) {
-        throw Error(error)
-      }
+      })
     },
     async COPY_ITEM (store, payload) {
-      try {
-        fsExtra.copy(payload.sourcePath, payload.destPath, {recursive: true}, error => {
-          if (error) {throw Error(error)}
-          return
+      return new Promise((resolve, reject) => {
+        let options = {
+          overwrite: payload.overwrite,
+          recursive: true
+        }
+        fsExtra.copy(payload.sourcePath, payload.destPath, options, error => {
+          if (error) {
+            store.dispatch('HANDLE_DIR_ITEM_TRANSFER_ERROR', {
+              title: 'Some items were not copied',
+              message: error
+            })
+          }
+          resolve()
         })
-      }
-      catch (error) {
-        throw Error(error)
-      }
+      })
+    },
+    async HANDLE_DIR_ITEM_TRANSFER_ERROR (store, params) {
+      eventHub.$emit('notification', {
+        action: 'update-by-type',
+        type: 'update:unavailable',
+        timeout: 5000,
+        colorStatus: 'red',
+        title: params.title,
+        message: params.message,
+        closeButton: true,
+      })
     },
     async MOVE_DIR_ITEMS ({ state, commit, dispatch, getters }, payload) {
       payload.operation = 'move'
