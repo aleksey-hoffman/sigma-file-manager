@@ -2994,7 +2994,8 @@ export default new Vuex.Store({
       const hash = utils.getHash()
 
       let state = {
-        isCanceled: false
+        isCanceled: false,
+        error: false
       }
 
       let notification = {
@@ -3020,6 +3021,7 @@ export default new Vuex.Store({
       )
 
       appBinExtractStream.on('error', (error) => {
+        state.error = true
         eventHub.$emit('notification', {
           action: 'update-by-type',
           type: 'archiver:extract-error',
@@ -3057,15 +3059,17 @@ export default new Vuex.Store({
           Done • ${notification.progress.fileCount} files
           <br><b>Destination:</b> ${params.dest}
         `
-        if (!state.isCanceled) {
-          notification.colorStatus = 'teal'
-          notification.title = 'Archive was extracted'
-          eventHub.$emit('notification', notification)
-        }
-        else {
-          notification.colorStatus = 'red'
-          notification.title = 'Archive extraction canceled',
-          eventHub.$emit('notification', notification)
+        if (!state.error) {
+          if (!state.isCanceled) {
+            notification.colorStatus = 'teal'
+            notification.title = 'Archive was extracted'
+            eventHub.$emit('notification', notification)
+          }
+          else {
+            notification.colorStatus = 'red'
+            notification.title = 'Archive extraction canceled',
+            eventHub.$emit('notification', notification)
+          }
         }
       })
     },
