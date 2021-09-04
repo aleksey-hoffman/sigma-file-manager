@@ -1,0 +1,26 @@
+name: issue-checklist
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  comment:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: ben-z/actions-comment-on-issue@1.0.2
+      if: 
+        ${{ 
+          contains(
+            fromJson('[
+              "photoancestry",
+              "andyundso"
+            ]'), 
+            github.actor
+          ) 
+        }}
+      with:
+        message: Consider supporting the developer on Patreon to increase priority of all your issues, get access to private discord and other rewards.
+          <br>**Patreon page:** https://www.patreon.com/sigma_file_manager
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
