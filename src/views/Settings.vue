@@ -1531,6 +1531,10 @@ export default {
         let clone = this.$utils.cloneDeep(this.windowTransparencyEffectOptionsPages)
         clone[pageIndex] = this.windowTransparencyEffectOptionsSelectedPage
         this.windowTransparencyEffectOptionsPages = clone
+        // Turn on preview automatically
+        if (!this.windowTransparencyEffectPreviewEffect) {
+          this.windowTransparencyEffectPreviewEffect = true
+        }
       },
       deep: true
     },
