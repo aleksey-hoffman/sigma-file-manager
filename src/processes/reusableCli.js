@@ -87,16 +87,16 @@ class CLI {
         input: params.process.stdout
       })
       let result = []
-      const startIndentifier = `"start::${params.command.replaceAll('"', '\'')}"`
-      const endIndentifier = `"end::${params.command.replaceAll('"', '\'')}"`
-      const rawStartIndentifier = `start::${params.command.replaceAll('"', '\'')}`
-      const rawEndIndentifier = `end::${params.command.replaceAll('"', '\'')}`
+      const startIndentifier = `"start::"`
+      const endIndentifier = `"end::"`
+      const rawStartIndentifier = `start::`
+      const rawEndIndentifier = `end::`
 
       this.state.readlineProcess.on('line', (line) => {
-        if (line.includes(rawStartIndentifier)) {
+        if (line.startsWith(rawStartIndentifier)) {
           this.state.isGettingLines = true
         }
-        if (line.includes(rawEndIndentifier)) {
+        if (line.startsWith(rawEndIndentifier)) {
           this.state.isGettingLines = false
           this.state.readlineProcess.close()
         }
