@@ -4,7 +4,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <template>
-  <div v-if="windowTransparencyEffect.value">
+  <div v-show="windowTransparencyEffect.value">
     <img
       class="overlay--window-transparency-effect__media" 
       v-if="currentPageEffects.windowTransparencyEffect.background.type === 'image'"
