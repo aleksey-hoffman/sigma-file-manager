@@ -334,6 +334,7 @@ export default {
           this.$eventHub.$emit('notification', {
             action: 'add',
             hashID,
+            colorStatus: 'red',
             timeout: 0,
             closeButton: true,
             icon: 'mdi-alert-octagon-outline',

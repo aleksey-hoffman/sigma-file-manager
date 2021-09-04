@@ -13,7 +13,7 @@ import TimeUtils from './utils/timeUtils.js'
 import * as fsManager from './utils/fsManager'
 import { getField, updateField } from 'vuex-map-fields'
 import {readFile, readFileSync, writeFile, writeFileSync} from 'atomically'
-
+import Notification from './utils/notifications.js'
 const electron = require('electron')
 const electronRemote = require('@electron/remote')
 const fsExtra = require('fs-extra')
@@ -2289,7 +2289,7 @@ export default new Vuex.Store({
               progress.eta = 0
               notificationData.timeout = 5000
               notificationData.title = status.isCanceled ? 'Download canceled' : 'Download failed'
-              notificationData.message = error
+              notificationData.message = status.isCanceled ? undefined : error
               notificationData.actionButtons = []
               eventHub.$emit('notification', notificationData)
               return
@@ -3860,8 +3860,9 @@ export default new Vuex.Store({
                   action: 'update-by-type',
                   type: 'successItemsDeleted',
                   icon: 'mdi-tab',
+                  colorStatus: 'green',
                   timeout: 3000,
-                  title: `Success | deleted ${params.items.length} ${localizeUtils.pluralize(params.items.length, 'item')}`
+                  title: `Deleted ${params.items.length} ${localizeUtils.pluralize(params.items.length, 'item')}`
                 })
               }
             })
@@ -3872,8 +3873,9 @@ export default new Vuex.Store({
                   action: 'update-by-type',
                   type: 'successItemsDeleted',
                   icon: 'mdi-tab',
+                  colorStatus: 'red',
                   timeout: 3000,
-                  title: `Failure | some items were not deleted`,
+                  title: `Failed to delete some items`,
                   message: error
                 })
               }
@@ -4912,12 +4914,11 @@ export default new Vuex.Store({
                       onClick: () => {
                         fs.promises.rename(newPath, oldPath)
                           .then(() => {
-                            eventHub.$emit('notification', {
-                              action: 'add',
-                              timeout: 5000,
-                              closeButton: true,
-                              title: 'Success: undo rename',
-                              message: oldPath
+                            new Notification({
+                              name: 'renameSuccess', 
+                              props: {
+                                message: oldPath
+                              }
                             })
                           })
                           .catch((error) => {
@@ -4933,36 +4934,30 @@ export default new Vuex.Store({
             })
             .catch((error) => {
               if (error.code === 'ENOENT') {
-                eventHub.$emit('notification', {
-                  action: 'add',
-                  timeout: 5000,
-                  closeButton: true,
-                  title: 'Failure: cannot rename item',
-                  message: 'File / directory that you are renaming no longer exists'
+                new Notification({
+                  name: 'renameFailedNoLongerExists', 
+                  format: {
+                    oldPath
+                  }
                 })
               }
               else {
-                eventHub.$emit('notification', {
-                  action: 'add',
-                  timeout: 5000,
-                  closeButton: true,
-                  title: 'Failure: cannot rename item',
-                  message: `Error: ${error}`
+                new Notification({
+                  name: 'renameFailedError', 
+                  format: {
+                    error
+                  }
                 })
               }
             })
-        }
-        // If path already exists, do not rename
-        else {
-          eventHub.$emit('notification', {
-            action: 'add',
-            timeout: 3000,
-            closeButton: true,
-            title: 'Failure: cannot rename item',
-            message: `
-              Item with that name already exists
-              <br>${newName}
-            `
+          }
+          // If path already exists, do not rename
+          else {
+          new Notification({
+            name: 'renameFailedAlreadyExists', 
+            format: {
+              newName
+            }
           })
         }
       })

@@ -2676,9 +2676,10 @@ export default {
         this.dialogs.workspaceEditorDialog.data.selected = items.find(item => item.isTemplate)
         this.$eventHub.$emit('notification', {
           action: 'add',
+          colorStatus: 'green',
           timeout: 3000,
           closeButton: true,
-          title: 'Success | workspace changes were saved'
+          title: 'Workspace changes were saved'
         })
       }
       this.closeDialog('workspaceEditorDialog')
@@ -2702,9 +2703,10 @@ export default {
       })
       this.$eventHub.$emit('notification', {
         action: 'add',
+        colorStatus: 'green',
         timeout: 3000,
         closeButton: true,
-        title: 'Success | workspace was deleted',
+        title: 'Workspace was deleted',
         message: item.name
       })
     },
