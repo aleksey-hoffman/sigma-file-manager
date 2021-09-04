@@ -158,37 +158,60 @@ export default {
       let type = this.homeBannerSelectedMedia.type
       let mediaContainerNode = document.querySelector('.media-banner__media-container')
       if (!mediaContainerNode) {return}
+
+      this.$utils.clearHtmlContainer(mediaContainerNode)
       
       if (type === 'image') {
         let mediaNode = new Image()
         this.setImageMedia(mediaNode)
-        await this.initMediaReplace(mediaNode)
         this.setImageGlowMedia()
       }
       else if (type === 'video') {
         let mediaNode = document.createElement('video')
         this.setVideoMedia(mediaNode)
-        await this.initMediaReplace(mediaNode)
         this.setVideoGlowMedia()
       }
     },
-    async initMediaReplace (mediaNode) {
-      return new Promise((resolve, reject) => {
-        // Use timeout instead of Image.decode() to avoid error when multiple 
-        // consecutive calls overlap and it tries to decode a video instead
-        setTimeout(() => {
-          this.replaceMedia(mediaNode)
-          resolve()
-        }, 20)
-      })
-    },
-    replaceMedia (mediaNode) {
+    appendMedia (mediaNode, options = {}) {
       let mediaContainerNode = document.querySelector('.media-banner__media-container')
-      mediaContainerNode?.replaceChildren(mediaNode)
+      mediaContainerNode?.appendChild(mediaNode)
+      
+      mediaNode.style.opacity = '0'
+      mediaNode.style.objectPosition = '50% 50%'
+
       this.$nextTick(() => {
-        mediaNode.style.setProperty(
-          'object-position',
-          `${this.homeBannerSelectedMedia.positionX}% ${this.homeBannerSelectedMedia.positionY}%`
+        mediaNode.animate(
+          [
+            { 
+              objectPosition: `50% 50%`
+            },
+            { 
+              objectPosition: `
+                ${this.homeBannerSelectedMedia.positionX}% 
+                ${this.homeBannerSelectedMedia.positionY}%
+              ` 
+            }
+          ],
+          {
+            easing: 'ease',
+            duration: 2000,
+            fill: 'forwards'
+          }
+        )
+        mediaNode.animate(
+          [
+            { 
+              opacity: options.opacityStart ? options.opacityStart : 0, 
+            },
+            { 
+              opacity: options.opacityEnd ? options.opacityEnd : 1, 
+            }
+          ],
+          {
+            easing: 'ease',
+            duration: 1000,
+            fill: 'forwards'
+          }
         )
       })
     },
@@ -204,21 +227,7 @@ export default {
     setImageMedia (mediaNode) {
       mediaNode.src = this.$storeUtils.getSafePath(this.homeBannerSelectedMedia.path)
       mediaNode.classList.add('media-banner__media-item')
-    },
-    setImageGlowMedia () {
-      if (!this.displayGlowEffect) {return}
-
-      let mediaContainerNode = document.querySelector('.media-banner__media-container')
-      let mediaGlowNode = new Image()
-      mediaGlowNode.classList.add('media-banner__media-item-glow')
-      this.setImageMedia(mediaGlowNode)
-      mediaContainerNode?.appendChild(mediaGlowNode)
-      this.$nextTick(() => {
-        mediaGlowNode.style.setProperty(
-          'object-position',
-          `${this.homeBannerSelectedMedia.positionX}% ${this.homeBannerSelectedMedia.positionY}%`
-        )
-      })
+      this.appendMedia(mediaNode)
     },
     setVideoMedia (mediaNode) {
       mediaNode.src = this.$storeUtils.getSafePath(this.homeBannerSelectedMedia.path)
@@ -226,24 +235,26 @@ export default {
       mediaNode.setAttribute('autoplay', true)
       mediaNode.setAttribute('loop', true)
       mediaNode.setAttribute('muted', true)
+      this.appendMedia(mediaNode)
+    },
+    setImageGlowMedia () {
+      if (!this.displayGlowEffect) {return}
+
+      let mediaGlowNode = new Image()
+      mediaGlowNode.src = this.$storeUtils.getSafePath(this.homeBannerSelectedMedia.path)
+      mediaGlowNode.classList.add('media-banner__media-item-glow')
+      this.appendMedia(mediaGlowNode, {opacityEnd: 0.3})
     },
     setVideoGlowMedia () {
       if (!this.displayGlowEffect) {return}
 
-      let mediaContainerNode = document.querySelector('.media-banner__media-container')
       let mediaGlowNode = document.createElement('video')
       mediaGlowNode.classList.add('media-banner__media-item-glow')
+      mediaGlowNode.src = this.$storeUtils.getSafePath(this.homeBannerSelectedMedia.path)
       mediaGlowNode.setAttribute('autoplay', true)
       mediaGlowNode.setAttribute('loop', true)
       mediaGlowNode.setAttribute('muted', true)
-      this.setVideoMedia(mediaGlowNode)
-      mediaContainerNode?.appendChild(mediaGlowNode)
-      this.$nextTick(() => {
-        mediaGlowNode.style.setProperty(
-          'object-position',
-          `${this.homeBannerSelectedMedia.positionX}% ${this.homeBannerSelectedMedia.positionY}%`
-        )
-      })
+      this.appendMedia(mediaGlowNode, {opacityEnd: 0.3})
     },
     handleClickHiddenButton (homeBannerSelectedMedia) {
       const isDinoImage = homeBannerSelectedMedia.fileNameBase === 'Land before Wi-Fi by Dana Franklin.jpg'
