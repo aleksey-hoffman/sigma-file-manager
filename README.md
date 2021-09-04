@@ -206,168 +206,176 @@ If you like their art, consider supporting their work. You can find their suppor
       <td align="center" valign="middle">
         <a href="https://www.artstation.com/artwork/EV8Lo4">
           <img width="128px" height="50px" src="./.github/media/home banner previews/Futuristic Japanese Palanquin by Julien Gauthier.jpg">
-          <div align="center" valign="middle">
-            Julien Gauthier</a>
-          </div>
         </a>
       </td>
       <td align="center" valign="middle">
         <a href="https://www.artstation.com/artwork/0Xl0OV">
           <img width="128px" height="50px" src="./.github/media/home banner previews/The Legends of Star dust by Ahmed Teilab.jpg">
-          <div align="center" valign="middle">
-            Ahmed Teilab</a>
-          </div>
         </a>
       </td>
       <td align="center" valign="middle">
         <a href="https://www.pexels.com/photo/gray-and-white-wallpaper-1103970/">
           <img width="128px" height="50px" src="./.github/media/home banner previews/Abstract by Johannes Plenio.jpg">
-          <div align="center" valign="middle">
-            Johannes Plenio</a>
-          </div>
         </a>
       </td>
       <td align="center" valign="middle">
         <a href="https://www.pexels.com/photo/blue-and-red-galaxy-artwork-1629236/">
           <img width="128px" height="50px" src="./.github/media/home banner previews/Abstract painting by Suzy Hazelwood.jpg">
-          <div align="center" valign="middle">
-            Suzy Hazelwood</a>
-          </div>
         </a>
       </td>
       <td align="center" valign="middle">
         <a href="https://www.artstation.com/artwork/g2L9Ke">
           <img width="128px" height="50px" src="./.github/media/home banner previews/Land before Wi-Fi by Dana Franklin.jpg">
-          <div align="center" valign="middle">
-            Dana Franklin</a>
-          </div>
         </a>
       </td>
       <td align="center" valign="middle">
         <a href="https://unsplash.com/photos/sO-JmQj95ec">
           <img width="128px" height="50px" src="./.github/media/home banner previews/Canyon by Kevin Lanceplaine.jpg">
-          <div align="center" valign="middle">
-            Kevin Lanceplaine</a>
-          </div>
         </a>
+      </td>
+    </tr>
+    <tr>
+      <td align="center" valign="middle">
+        <a href="https://www.artstation.com/artwork/EV8Lo4">Julien Gauthier</a>
+      </td>
+      <td align="center" valign="middle">
+        <a href="https://www.artstation.com/artwork/0Xl0OV">Ahmed Teilab</a>
+      </td>
+      <td align="center" valign="middle">
+        <a href="https://www.pexels.com/photo/gray-and-white-wallpaper-1103970/">Johannes Plenio</a>
+      </td>
+      <td align="center" valign="middle">
+        <a href="https://www.pexels.com/photo/blue-and-red-galaxy-artwork-1629236/">Suzy Hazelwood</a>
+      </td>
+      <td align="center" valign="middle">
+        <a href="https://www.artstation.com/artwork/g2L9Ke">Dana Franklin</a>
+      </td>
+      <td align="center" valign="middle">
+        <a href="https://unsplash.com/photos/sO-JmQj95ec">Kevin Lanceplaine</a>
       </td>
     </tr>
     <tr>
       <td align="center" valign="middle">
         <a href="https://www.pexels.com/video/drone-footage-of-the-waterfalls-and-the-mountain-3785075/">
           <img width="128px" height="50px" src="./.github/media/home banner previews/Dragon's Nest by Klaus Pillon.jpg">
-          <div align="center" valign="middle">
-            Klaus Pillon
-          </div>
         </a>
       </td>
       <td align="center" valign="middle">
         <a href="https://www.pexels.com/video/drone-footage-of-the-waterfalls-and-the-mountain-3785075/">
           <img width="128px" height="50px" src="./.github/media/home banner previews/The City Before The Wall by Klaus Pillon.jpg">
-          <div align="center" valign="middle">
-            Klaus Pillon
-          </div>
         </a>
       </td>
       <td align="center" valign="middle">
         <a href="https://www.pexels.com/video/drone-footage-of-the-waterfalls-and-the-mountain-3785075/">
           <img width="128px" height="50px" src="./.github/media/home banner previews/Drone Footage Of The Waterfalls And The Mountain by Taryn Elliott.jpg">
-          <div align="center" valign="middle">
-            Taryn Elliott
-          </div>
         </a>
       </td>
       <td align="center" valign="middle">
         <a href="https://www.artstation.com/artwork/zOxE84">
           <img width="128px" height="50px" src="./.github/media/home banner previews/Environment Explorations by Marcel van Vuuren.jpg">
-          <div align="center" valign="middle">
-            Marcel van Vuuren
-          </div>
         </a>
       </td>
       <td align="center" valign="middle">
         <a href="https://www.artstation.com/artwork/wgGRX">
           <img width="128px" height="50px" src="./.github/media/home banner previews/Maffei 2 by Vadim Sadovski.jpg">
-          <div align="center" valign="middle">
-            Vadim Sadovski
-          </div>
         </a>
       </td>
       <td align="center" valign="middle">
         <a href="https://pixabay.com/videos/starry-sky-seis-am-schlern-14955">
           <img width="128px" height="50px" src="./.github/media/home banner previews/Starry Sky by Andreas.jpg">
-          <div align="center" valign="middle">
-            Andreas
-          </div>
         </a>
+      </td>
+    </tr>
+    <tr>
+      <td align="center" valign="middle">
+        <a href="https://www.artstation.com/artwork/KrrA9">Klaus Pillon</a>
+      </td>
+      <td align="center" valign="middle">
+        <a href="https://www.artstation.com/artwork/glyNx">Klaus Pillon</a>
+      </td>
+      <td align="center" valign="middle">
+        <a href="https://www.pexels.com/video/drone-footage-of-the-waterfalls-and-the-mountain-3785075/">Taryn Elliott</a>
+      </td>
+      <td align="center" valign="middle">
+        <a href="https://www.artstation.com/artwork/zOxE84">Marcel van Vuuren</a>
+      </td>
+      <td align="center" valign="middle">
+        <a href="https://www.artstation.com/artwork/wgGRX">Vadim Sadovski</a>
+      </td>
+      <td align="center" valign="middle">
+        <a href="https://pixabay.com/videos/starry-sky-seis-am-schlern-14955">Andreas</a>
       </td>
     </tr>
     <tr>
       <td align="center" valign="middle">
         <a href="https://www.artstation.com/artwork/XkP2l">
           <img width="128px" height="50px" src="./.github/media/home banner previews/Discovered planet by Darius Kalinauskas.jpg">
-          <div align="center" valign="middle">
-            Darius Kalinauskas
-          </div>
         </a>
       </td>
       <td align="center" valign="middle">
         <a href="https://www.artstation.com/artwork/mD3XvZ">
           <img width="128px" height="50px" src="./.github/media/home banner previews/Out of time by Alena Aenami.jpg">
-          <div align="center" valign="middle">
-            Alena Aenami
-          </div>
         </a>
       </td>
       <td align="center" valign="middle">
         <a href="https://www.artstation.com/artwork/reodm">
           <img width="128px" height="50px" src="./.github/media/home banner previews/Serenity by Alena Aenami.jpg">
-          <div align="center" valign="middle">
-            Alena Aenami
-          </div>
         </a>
       </td>
       <td align="center" valign="middle">
         <a href="https://www.artstation.com/artwork/lVJXXe">
           <img width="128px" height="50px" src="./.github/media/home banner previews/Wait by Alena Aenami.jpg">
-          <div align="center" valign="middle">
-            Alena Aenami
-          </div>
         </a>
       </td>
       <td align="center" valign="middle">
         <a href="https://www.artstation.com/artwork/vY18O">
           <img width="128px" height="50px" src="./.github/media/home banner previews/Ice Cave by Wang Jie.jpg">
-          <div align="center" valign="middle">
-            Wang Jie
-          </div>
         </a>
       </td>
       <td align="center" valign="middle">
         <a href="https://www.artstation.com/artwork/vY18O">
           <img width="128px" height="50px" src="./.github/media/home banner previews/Slum by Vladimir Manyukhin.jpg">
-          <div align="center" valign="middle">
-            Vladimir Manyukhin
-          </div>
         </a>
+      </td>
+    </tr>
+    <tr>
+      <td align="center" valign="middle">
+        <a href="https://www.artstation.com/artwork/XkP2l">Darius Kalinauskas</a>
+      </td>
+      <td align="center" valign="middle">
+        <a href="https://www.artstation.com/artwork/mD3XvZ">Alena Aenami</a>
+      </td>
+      <td align="center" valign="middle">
+        <a href="https://www.artstation.com/artwork/reodm">Alena Aenami</a>
+      </td>
+      <td align="center" valign="middle">
+        <a href="https://www.artstation.com/artwork/lVJXXe">Alena Aenami</a>
+      </td>
+      <td align="center" valign="middle">
+        <a href="https://www.artstation.com/artwork/EV8Lo4">Wang Jie</a>
+      </td>
+      <td align="center" valign="middle">
+        <a href="https://www.artstation.com/artwork/EV8Lo4">Vladimir Manyukhin</a>
       </td>
     </tr>
     <tr>
       <td align="center" valign="middle">
         <a href="https://www.artstation.com/artwork/Yeg6aY">
           <img width="128px" height="50px" src="./.github/media/home banner previews/Cyber Neon City by Laury Guintrand.jpg">
-          <div align="center" valign="middle">
-            Laury Guintrand
-          </div>
         </a>
       </td>
       <td align="center" valign="middle">
         <a href="https://www.artstation.com/artwork/OorWZk">
           <img width="128px" height="50px" src="./.github/media/home banner previews/INCREASE by Sweeper3d (Austin Richey).jpg">
-          <div align="center" valign="middle">
-            Sweeper3d
-          </div>
         </a>
+      </td>
+    </tr>
+    <tr>
+      <td align="center" valign="middle">
+        <a href="https://www.artstation.com/artwork/Yeg6aY">Laury Guintrand</a>
+      </td>
+      <td align="center" valign="middle">
+        <a href="https://www.artstation.com/artwork/OorWZk">Sweeper3d</a>
       </td>
     </tr>
   </tbody>
