@@ -86,12 +86,11 @@ export async function fetchBlockDevicesExtraData () {
   try {
     getBlockDevicesExtraData()
       .then((data) => {
-        const extraDeviceDataFormatted = data
-          .map(drive => {
-            drive.MediaType = state.driveMemoryTypes[drive.MediaType]
-            return drive
-          })
-        state.extraDeviceData = extraDeviceDataFormatted
+        const extraDeviceDataFormatted = data?.map?.(drive => {
+          drive.MediaType = state.driveMemoryTypes[drive.MediaType]
+          return drive
+        })
+        state.extraDeviceData = extraDeviceDataFormatted || []
       })
   }
   catch (error) {}
