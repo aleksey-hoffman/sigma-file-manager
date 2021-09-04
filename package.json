@@ -48,7 +48,7 @@
     "fast-sort": "^3.0.2",
     "fluent-ffmpeg": "^2.1.2",
     "fs-extra": "^10.0.0",
-    "fswin": "^3.21.903",
+    "fswin": "^3.21.107",
     "get-port": "^5.1.1",
     "hash-wasm": "^4.7.0",
     "idle-js": "^1.2.0",
