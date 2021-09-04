@@ -22,19 +22,19 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       <!-- card::overlays -->
       <div
         class="overlay--drag-over"
-        v-if="['dir', 'file', 'userDir', 'drive'].includes(type)"
         :class="{'is-visible': showDragOverOverlay(item)}"
+        v-if="['dir', 'file', 'userDir', 'drive'].includes(type)"
       ></div>
 
       <div
         class="overlay--storage-bar--vertical-line"
-        v-if="showStorageBar({type: 'vertical'})"
+        v-if="showStorageBar({item, type: 'vertical'})"
         :style="getStorageBarStyles({item, type: 'vertical'})"
       ></div>
 
       <div
         class="overlay--storage-bar--horizontal-line"
-        v-if="showStorageBar({type: 'horizontal'})"
+        v-if="showStorageBar({item, type: 'horizontal'})"
         :style="getStorageBarStyles({item, type: 'horizontal'})"
       ></div>
 
@@ -63,7 +63,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           </div>
         </div>
 
-        <!-- card::thumb: {type: system-dir} -->
+        <!-- card::thumb: {type: user-dir} -->
         <div
           class="basic-item-card__thumb__inner"
           v-if="type === 'userDir'"
@@ -109,7 +109,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               :value="`${item.percentUsed}`"
               size="40"
               width="2"
-              :color="getStorageBarColor({item, type: 'circular'})"
+              :color="getStorageBarColors({item, type: 'circular'}).color"
             >
               <div 
                 class="basic-item-card__progress__text"
@@ -136,7 +136,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         </div>
       </div>
 
-      <!-- card::content: {type: system-dir} -->
+      <!-- card::content: {type: user-dir} -->
       <div
         class="basic-item-card__content"
         v-if="type === 'userDir'"
@@ -151,27 +151,32 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       </div>
 
       <!-- card::content: {type: (drive|dir)} -->
-      <div
-        v-if="type === 'drive'"
-        class="basic-item-card__content"
-      >
-        <div class="basic-item-card__content__line-1">
-          {{item.titleSummary}}
-        </div>
+      <transition name="fade-in" mode="out-in">
+        <div
+          class="basic-item-card__content"
+          v-if="type === 'drive'"
+          :key="item.titleSummary"
+        >
+            <div>
+              <div class="basic-item-card__content__line-1">
+                {{item.titleSummary}}
+              </div>
+            </div>
+          <v-progress-linear
+            v-if="item.percentUsed"
+            v-show="driveCardShowProgress && driveCardProgressType === 'linearHorizontalCentered'"
+            :value="`${item.percentUsed}`"
+            height="3"
+            :background-color="getStorageBarColors({item, type: 'linear'}).bgColor"
+            :color="getStorageBarColors({item, type: 'linear'}).color"
+            style="margin-top: 2px; margin-bottom: 4px"
+          ></v-progress-linear>
 
-        <v-progress-linear
-          v-show="driveCardShowProgress && driveCardProgressType === 'linearHorizontalCentered'"
-          :value="`${item.percentUsed}`"
-          height="3"
-          :background-color="$utils.getCSSVar('--bg-color-2')"
-          :color="getStorageBarColor({item, type: 'circular'})"
-          style="margin-top: 2px; margin-bottom: 4px"
-        ></v-progress-linear>
-
-        <div class="basic-item-card__content__line-2">
-          {{item.infoSummary}}
+          <div class="basic-item-card__content__line-2">
+            {{item.infoSummary}}
+          </div>
         </div>
-      </div>
+      </transition>
 
       <!-- card::actions -->
       <div
@@ -195,13 +200,12 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 </template>
 
 <script>
-import { mapFields } from 'vuex-map-fields'
+import {mapFields} from 'vuex-map-fields'
 
 export default {
   props: {
     items: Array,
     actions: Array,
-    category: String,
     type: String,
     icon: String,
     lines: String
@@ -217,6 +221,9 @@ export default {
   },
   methods: {
     showStorageBar (params) {
+      if (!params.item.percentUsed) {
+        return false
+      }
       if (params.type === 'vertical') {
         return this.type === 'drive' &&
           this.driveCardShowProgress &&
@@ -241,20 +248,9 @@ export default {
           this.inputState.pointer.hoveredItem.path === item.mount
       }
     },
-    getThumbIcon (drive) {
-      if (drive.type === 'rom') {
-        return 'fas fa-compact-disc'
-      }
-      else if (drive.removable) {
-        return 'fab fa-usb'
-      }
-      else {
-        return 'far fa-hdd'
-      }
-    },
     isLowAvailableStorageSpace (item) {
-      const lessThan10GBLeft = item.size.free < (10 * 1024 * 1024 * 1024)
-      return lessThan10GBLeft
+      const threshold = 10 * 1024 * 1024 * 1024 // 10GB
+      return item?.size?.free < threshold
     },
     getStorageBarStyles (params) {
       const width = `width: ${params.item.percentUsed}%`
@@ -269,13 +265,26 @@ export default {
         : width
       return `${color}; ${selectedDirection}`
     },
-    getStorageBarColor (params) {
-      const colorRed = 'rgb(244, 67, 54, 0.18)'
-      const colorTeal = 'rgb(0, 150, 136, 0.15)'
+    getStorageBarColors (params) {
+      let colorMap = {
+        circular: {
+          background: 'rgb(255, 255, 255, 0.02)', 
+          red: 'rgb(244, 67, 54, 0.18)', 
+          teal: 'rgb(0, 150, 136, 0.35)'
+        },
+        linear: {
+          background: 'rgb(0, 0, 0, 0.1)', 
+          red: 'rgb(244, 67, 54, 0.18)', 
+          teal: 'rgb(0, 150, 136, 0.25)'
+        },
+      }
       const color = this.isLowAvailableStorageSpace(params.item)
-        ? colorRed
-        : colorTeal
-      return color
+        ? colorMap[params.type].red
+        : colorMap[params.type].teal
+      return {
+        color,
+        bgColor: colorMap[params.type].background
+      }
     },
     handleClick (params) {
       if (this.navigatorOpenDirItemWithSingleClick) {
@@ -286,18 +295,29 @@ export default {
       this.handleClickAction(params)
     },
     handleClickAction (params) {
-      if (['file', 'dir', 'userDir'].includes(this.type)) {
-        this.$store.dispatch('OPEN_DIR_ITEM_FROM_PATH', params.item.path)
-      }
-      else if (this.type === 'drive') {
-        this.$store.dispatch('LOAD_DIR', {path: params.item.mount})
-      }
+      this.$store.dispatch('OPEN_DIR_ITEM_FROM_PATH', params.item.path)
     }
   }
 }
 </script>
 
 <style scoped>
+.overlay--storage-bar--vertical-line {
+  z-index: 1;
+  position: absolute;
+  bottom: 0;
+  width: 6px;
+  height: 100%;
+}
+
+.overlay--storage-bar--horizontal-line {
+  z-index: 1;
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 4px;
+}
+
 .basic-item-card__container {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -309,39 +329,20 @@ export default {
   grid-auto-rows: 64px;
 }
 
-.basic-item-card__progress--circular__text {
-  color: var(--color-6);
-  font-size: 12px;
-}
-
-.overlay--storage-bar--vertical-line {
-  position: absolute;
-  width: 6px;
-  height: 100%;
-  bottom: 0;
-  z-index: 1;
-}
-
-.overlay--storage-bar--horizontal-line {
-  position: absolute;
-  width: 100%;
-  height: 4px;
-  bottom: 0;
-  z-index: 1;
-}
-
 .basic-item-card {
+  z-index: 1;
   position: relative;
   display: grid;
   grid-template-columns: 64px 1fr;
   gap: 0px;
   align-items: center;
   padding-right: 12px;
-  color: var(--color-6);
   overflow: hidden;  /* clip overlay--storage-bar */
   border-radius: 8px;
   transition: all 0.3s ease-in-out;
+  color: var(--color-6);
   background-color: var(--bg-color-1);
+  /* background-color: rgb(var(--bg-color-1-value), 0.7); */
   /* flat style */
   box-shadow: 0px 3px 12px rgb(0, 0, 0, 0.1),
               0px 1px 4px rgb(0,0,0,0.05);
@@ -349,7 +350,6 @@ export default {
   /* box-shadow: 0px 9px 18px rgba(0, 0, 0, 0.1),
             0px -9px 18px rgba(255, 255, 255, 0.03),
             4px 4px 8px -4px rgba(255, 255, 255, 0.04) inset; */
-  z-index: 1;
 }
 
 .basic-item-card[cursor="pointer"] {
@@ -357,11 +357,17 @@ export default {
 }
 
 .basic-item-card:hover {
+  z-index: 2;
+  /* flat style */
+  transform: scale(1.04);
   box-shadow: 0px 22px 48px rgb(0,0,0,0.3),
               0px 1px 4px rgb(0,0,0,0.1);
-  transform: scale(1.04);
+  /* neumorphic style */
+  /* transform: scale(1);
+  box-shadow: -3px -14px 14px 2px rgb(255 255 255 / 2%) inset,
+    2px 3px 4px 1px rgb(0 0 0 / 20%) inset; */
+
   transition: all 0.1s; /* Override "enter" transition timing */
-  z-index: 2;
 }
 
 .basic-item-card__thumb {
@@ -391,18 +397,27 @@ export default {
 }
 
 .basic-item-card__content__line-2 {
-  font-size: 13px;
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 1;
   overflow: hidden;
+  font-size: 13px;
+}
+
+.basic-item-card__progress__text {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 2px;
+  color: var(--color-6);
+  font-size: 12px;
 }
 
 .basic-item-card__actions
   .v-icon {
+    z-index: 2;
     opacity: 0;
     color: var(--dir-item-card-icon-color) !important;
-    z-index: 2;
   }
 
 .basic-item-card:hover

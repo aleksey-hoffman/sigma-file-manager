@@ -10,9 +10,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     </div>
     <basic-item-card-iterator
       :items="drives"
-      category="drive"
       type="drive"
-      icon="mdi-file-outline"
       lines="2"
     ></basic-item-card-iterator>
   </div>
