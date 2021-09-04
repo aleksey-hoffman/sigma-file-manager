@@ -495,7 +495,7 @@ export default {
       if (itemMimeDescription === 'image') {
         mediaNode = new Image()
         await this.setImageMedia(mediaNode)
-        this.$store.dispatch('GENERATE_THUMBNAIL', {item: this.lastSelectedDirItem})
+        // this.$store.dispatch('GENERATE_THUMBNAIL', {item: this.lastSelectedDirItem})
       }
       else if (itemMimeDescription === 'audio') {
         mediaNode = new Audio()
