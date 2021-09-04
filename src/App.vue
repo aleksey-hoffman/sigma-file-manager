@@ -1886,10 +1886,12 @@ button.v-btn.v-btn--disabled
 .v-list-item.v-list-item--active {
   color: var(--color-5) !important;
   background-color: var(--highlight-color-6) !important;
+  font-size: 14px;
 }
 
-.v-list-item:not(.v-list-item--active):not(.v-list-item--disabled) {
+#app .theme--light.v-list-item:not(.v-list-item--active):not(.v-list-item--disabled) {
   color: var(--color-5) !important;
+  font-size: 14px;
 }
 
 .v-list-item__mask {
