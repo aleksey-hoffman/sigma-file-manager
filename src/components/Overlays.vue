@@ -276,7 +276,7 @@ export default {
     //   return dropTargetItems
     // },
     handleLocalDragOverEvent (dragEvent) {
-      console.log('handleLocalDragOverEvent', dragEvent)
+      // console.log('handleLocalDragOverEvent', dragEvent)
     },
     handleGlobalDragOverEvent (dragEvent) {
       if (!this.drag.dirItemInbound.value) {
@@ -307,7 +307,7 @@ export default {
     },
     handlerDropActions (dropEvent) {
       return new Promise((resolve, reject) => {
-        console.log(this.inboundDragOverlayIsVisible, this.currentDragTarget, dropEvent)
+        // console.log(this.inboundDragOverlayIsVisible, this.currentDragTarget, dropEvent)
         // Avoid triggering when overlay is not shown
         // if (!this.inboundDragOverlayIsVisible) {
         //   reject()
@@ -532,7 +532,7 @@ export default {
       this.resetMouseMoveEventValues()
     },
     mouseMoveHandler (mousemoveEvent) {
-      console.log('mouseMoveHandler', mousemoveEvent)
+      // console.log('mouseMoveHandler', mousemoveEvent)
       if (this.inputState.pointer.button1) {
         // TODO:
         // - if cursor is over selected item,
