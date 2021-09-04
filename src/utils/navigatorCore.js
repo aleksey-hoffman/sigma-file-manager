@@ -182,9 +182,17 @@ async function getDirItemCount (dirItemData) {
   }
 }
 
-function updateData (dirItemData) {
+async function updateData (dirItemData) {
   if (dirItemData.type === 'directory' || dirItemData.type === 'directory-symlink') {
     dirItemData.stat.size = null
+  }
+  if (dirItemData.isInaccessible) {
+    if (utils.platform === 'win32') {
+      dirItemData.stat.size = dirItemData.attributes.SIZE
+      dirItemData.stat.birthtime = dirItemData.attributes.CREATION_TIME
+      dirItemData.stat.mtime = dirItemData.attributes.LAST_WRITE_TIME
+      dirItemData.stat.ctime = dirItemData.attributes.LAST_ACCESS_TIME
+    }
   }
 }
 
@@ -246,7 +254,7 @@ async function isFile (dirItemData, stat) {
 
 function isHidden (dirItemData) {
   return utils.platform === 'win32' 
-    ? fsWin.getAttributesSync(dirItemData.path).IS_HIDDEN 
+    ? dirItemData.attributes.IS_HIDDEN
     : utils.unixHiddenFileRegex.test(dirItemData.path)
 }
 
