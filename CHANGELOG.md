@@ -1,10 +1,68 @@
 # CHANGELOG
 
-## v1.3.0 (2021-08-14)
+# Release Notes: v1.4.0 (2021-09-04)
 
-# Release Notes for v1.3.0:
+This release improves resource usage, brings a few new features, and a lot of fixes:
 
-# Release Notes:
+- 1 new major feature
+- 1 new minor feature
+- 18 improvements
+- 7 fixes
+
+##  Milestones
+🔼 **by v2.0.0 (December 2021) | (Goal: 3 of 20):** Add 20 more new major features
+
+## Download
+You can find the download link for your system in the **Asset** section below.
+
+This release contains only Windows build. MacOS and Linux builds will be added in v1.5 update (in a few days).
+
+## New major features
+- 574787c: **Feature**: added support for cloud drives (OneDrive, Google Drive, etc.).
+
+## New minor features
+- 8401af7: **UX**: new setting: the date format can now be customized. Currently available numeric: `23.05.2021` and short format: `23 May 2021`. It adapts to the local format automatically. For example, in Japan it will be displayed as `2021/5/23` or `2021年5月23日`
+
+## Big improvements
+- 92a6fd5:  **UX / optimization**: the background manager for home banner will now display small artwork previews instead of loading original images. This reduced memory usage peaks from `700 MB` to `150 MB`,
+
+## Other improvements
+- 0d09def: **UX**: Window transparency effect can now be customized for every page independently.
+- ec1e54e: **UX**: Window transparency effect: added settings to control parallax effect.
+- ea1c8e9: **UI**: Window transparency effect: added 2 settings to control effect visibility
+- 621c886: **UI**: Home banner: added "glow" effect.
+- 9b2faf8: **UX**: Upgrade video downloader. It can now extract more video URLs.
+- 520789d: **UI**: Info panel: improved performance, added visual improvements, added file status (if offline) and file mime.
+- 4b3dd1b: **UX**: Drive cards will now display drive memory type (SSD or HDD).
+- ec3f1a4: **UI**: Added new artwork "Slum by Vladimir Manyukhin (animated by Aleksey Hoffman)".
+- 7084aae: **UI**: Added new artwork "INCREASE by Sweeper3d (Austin Richey)".
+- b9b0664: **UI**: Added new artwork "Cyber Neon City by Laury Guintrand".
+- b9b0664: **UI**: Added new artwork "Lip Sync by Han Yang".
+- 7802ac8, 5a657e4: **UI**: Slightly improved notifications.
+- 590fb02: **UI**: Inaccessible files will now display at least basic info like size and date it was modified and created.
+- 05d1786: **UX**: the time of file creation / change will now be displayed along with the date.
+- 05d1786: **UX**: the date and time of file creation / change will now be displayed in local format:
+**Japan**: 2021年5月23日 23:16
+**USA**: May 23, 2021, 11:16 PM
+**Russia**: 23 мая 2021 г., 23:16
+**Germany**: 23. Mai 2021, 23:16
+- b2e210a: **UX**: the app will now show permissions dialog before activating the local share feature for the first time to make sure user understands why the app is asking network permissions.
+- ce9a70e: Update dependencies (security fixes)
+- A few other small improvements
+
+## Big fixes
+- 99f5792: **Fix**: Local network sharing feature is now working properly.
+- 4b3dd1b: **Fix**: Drive labels containing non-ASCII characters are now displayed properly.
+- 195d683: **Fix**: Window transparency effect now works on all screen sizes.
+- 6281a45: **Fix**: the "get size" button in the info panel will now work properly and show the directory size.
+
+## Other fixes
+- 28766c1: **Fix**: the error during launch where the app couldn't get the paths to user directories (`~/pictures`, `~/documents`, etc).
+- 728a1b2: **Fix**: the page scroll position will now be restored on all pages.
+- 1176d7d: **Fix**:  `Linux`: tray icon will no longer duplicate on every page reload and tray menu update.
+- A few other small fixes
+
+# Release Notes: v1.3.0 (2021-08-14)
 
 This release improves stability, performance, and also brings a few new features:
 
