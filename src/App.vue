@@ -366,6 +366,14 @@ export default {
       const shouldFocus = this.focusMainWindowOnDriveConnected
       if (previousDataExists && driveCountIncreased && shouldFocus) {
         electron.ipcRenderer.send('focus-main-app-window')
+        this.$eventHub.$emit('notification', {
+          action: 'update-by-type',
+          type: 'drive::connected',
+          timeout: 3000,
+          colorStatus: 'green',
+          title: 'Drive was connected',
+          closeButton: true,
+        })
       }
     },
     async extractAppBinaries () {
