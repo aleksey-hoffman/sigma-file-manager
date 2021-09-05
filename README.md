@@ -352,7 +352,7 @@ If you like their art, consider supporting their work. You can find their suppor
         <a href="https://www.artstation.com/artwork/lVJXXe">Alena Aenami</a>
       </td>
       <td align="center" valign="middle">
-        <a href="https://www.artstation.com/artwork/EV8Lo4">Wang Jie</a>
+        <a href="https://www.artstation.com/artwork/vY18O">Wang Jie</a>
       </td>
       <td align="center" valign="middle">
         <a href="https://www.artstation.com/artwork/B11xvD">Vladimir Manyukhin</a>
@@ -385,7 +385,7 @@ If you like their art, consider supporting their work. You can find their suppor
 
 #### ⚡ Requirements:
 
-- **Memory (RAM):** minimum: ~100 MB, average: ~300 MB;
+- **Memory (RAM):** minimum: ~100 MB, average: ~400 MB;
 - **Storage:** minimum: ~200 MB;
 - **OS:** 64-bit: Windows, MacOS, Linux;
 
