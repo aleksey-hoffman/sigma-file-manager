@@ -404,13 +404,8 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <script>
 import { mapFields } from 'vuex-map-fields'
-import { search, test as searchTest } from '../utils/search.js'
 import { mapState } from 'vuex'
-const fs = require('fs')
 const PATH = require('path')
-const readline = require('readline')
-const byline = require('byline')
-const sysInfo = require('systeminformation')
 const lodash = require('../utils/lodash.min.js')
 
 export default {
