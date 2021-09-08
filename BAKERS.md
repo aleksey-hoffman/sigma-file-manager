@@ -2,10 +2,6 @@
 
 These wonderful people and companies are currently funding this project. Thanks to them I can keep improving this app, they are the reason good quality free software can exist.
 
-<h4 style="margin: 32px 0px;">
-  <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/blob/main/BAKERS.md">Full list of supporters →</a>
-</h4>
-
 ### SPONSORS - LEVEL 2
 Become the first supporter
 
@@ -44,7 +40,7 @@ Become the first supporter
   <a href="https://github.com/theoob" title="Tony Kelly">
     <b>~ Tony Kelly</b>
   </a>
-  <a href="https://github.com/theoob" title="Tony Kelly">
+  <a href="https://github.com/julienripet" title="Julien Ripet">
     <b>~ Julien Ripet ~</b>
   </a>
 </div>
