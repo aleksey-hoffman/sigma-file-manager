@@ -24,7 +24,7 @@ Become the first supporter
     </tr>
     <tr>
       <td align="center" valign="middle">
-        <a href="https://www.photoancestry.com/" title="Houston Photo Restoration">⭐Houston Photo Restoration</a>
+        <a href="https://www.photoancestry.com/" title="Houston Photo Restoration">⭐ Houston Photo Restoration</a>
       </td>
     </tr>
   </tbody>
@@ -38,10 +38,19 @@ Become the first supporter
   </a>
 </div>
 
+### THOUGHTFUL SUPPORTERS
+
+<div>
+  <a href="https://github.com/theoob" title="Tony Kelly">
+    <b>~ Tony Kelly ~</b>
+  </a>
+</div>
+
+
 
 ## Join
 
-#### 🎉 Supporter goal: 2 of 300 people joined
+#### 🎉 Supporter goal: 4 of 300 people joined
 
 See the list of rewards and consider joining our community on Patreon:
 
