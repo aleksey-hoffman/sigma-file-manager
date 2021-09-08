@@ -42,10 +42,12 @@ Become the first supporter
 
 <div>
   <a href="https://github.com/theoob" title="Tony Kelly">
-    <b>~ Tony Kelly ~</b>
+    <b>~ Tony Kelly</b>
+  </a>
+  <a href="https://github.com/theoob" title="Tony Kelly">
+    <b>~ Julien Ripet ~</b>
   </a>
 </div>
-
 
 
 ## Join
