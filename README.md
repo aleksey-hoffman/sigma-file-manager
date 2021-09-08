@@ -157,16 +157,18 @@ Become the first supporter
 
 <div>
   <a href="https://github.com/theoob" title="Tony Kelly">
-    <b>~ Tony Kelly ~</b>
+    <b>~ Tony Kelly</b>
+  </a>
+  <a href="https://github.com/julienripet" title="Julien Ripet">
+    <b>~ Julien Ripet ~</b>
   </a>
 </div>
 
+<br>
 
 <h4 style="margin: 32px 0px;">
   <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/blob/main/BAKERS.md">See the full list of supporters →</a>
 </h4>
-
-<br>
 
 ## Join
 
