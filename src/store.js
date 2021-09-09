@@ -530,8 +530,8 @@ export default new Vuex.Store({
           pointerButtons: {
             button3: {
               onMouseUpEvent: {
-                title: 'Open previous page in history',
-                action: 'default'
+                title: 'Navigator: open previous directory in history',
+                action: 'LOAD_PREVIOUS_HISTORY_PATH'
               },
               onMouseUpEventItems: [
                 {
@@ -546,8 +546,8 @@ export default new Vuex.Store({
             },
             button4: {
               onMouseUpEvent: {
-                title: 'Open next page in history',
-                action: 'default'
+                title: 'Navigator: open next directory in history',
+                action: 'LOAD_NEXT_HISTORY_PATH'
               },
               onMouseUpEventItems: [
                 {

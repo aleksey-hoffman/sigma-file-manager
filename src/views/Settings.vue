@@ -989,7 +989,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   icon: {
                     name: 'mdi-mouse'
                   },
-                  title: 'Pointer buttons'
+                  title: 'Mouse buttons'
                 }"
               >
                 <template v-slot:content>
@@ -1002,7 +1002,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     :items="pointerButton3onMouseUpEventItems"
                     return-object
                     item-text="title"
-                    label="Pointer button 3: up event"
+                    label="Mouse button 3"
                     style="max-width: 400px"
                   ></v-select>
                   
@@ -1011,7 +1011,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     :items="pointerButton4onMouseUpEventItems"
                     return-object
                     item-text="title"
-                    label="Pointer button 4: up event"
+                    label="Mouse button 4"
                     style="max-width: 400px"
                   ></v-select>
                 </template>
