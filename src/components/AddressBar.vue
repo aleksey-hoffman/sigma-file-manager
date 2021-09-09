@@ -5,7 +5,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <template>
   <v-layout
-    style="height: 42px"
+    class="address-bar"
     align-center
   >
     <!-- address-bar::menu:actions -->
@@ -50,20 +50,22 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     <!-- address-bar::parts -->
     <v-layout
       id="address-bar__parts-container"
-      class="address-bar__parts-container custom-scrollbar mr-4"
-      style="height: 100%"
+      class="address-bar__parts-container custom-scrollbar"
+      :class="{'highlight': $store.state.inputState.ctrl}"
+      @click.ctrl="$store.dispatch('OPEN_ADDRESS_BAR_EDITOR')"
       align-center
     >
       <div v-for="(part, index) in addressParts" :key="`address-part-${index}`">
         <v-layout align-center>
           <div
-            @click="$store.dispatch('LOAD_DIR', { path: part.path })"
+            @click.exact="$store.dispatch('LOAD_DIR', { path: part.path })"
             text depressed small
-            class="address-bar__part text-none mx-2"
+            class="address-bar__part text-none"
             :class="{
               'grey--text text--darken-1': part.isLast,
               'cursor-pointer': !part.isLast
             }"
+            :disabled="part.isLast"
           >{{part.base}}
           </div>
           <div v-if="!part.isLast">/</div>
@@ -98,8 +100,12 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             </v-btn>
           </v-layout>
           <div class="px-2 mt-2 tooltip__shortcut">
-            Shortcuts: [Tab] or [Shift + Tab] to autocomplete
-            and iterate directory items; [Enter] to open the path
+            Shortcuts: <span class="inline-code--light" style="padding: 1px 8px;">Tab</span> 
+            or 
+            <span class="inline-code--light" style="padding: 1px 8px;">Shift + Tab</span> 
+            to autocomplete and iterate directory items; 
+            <span class="inline-code--light" style="padding: 1px 8px;">Enter</span> 
+            to open the path
           </div>
         </v-card>
       </div>
@@ -312,11 +318,44 @@ export default {
 </script>
 
 <style scoped>
+.address-bar {
+  height: 100%;
+  max-height: 38px;
+  width: 100%;
+}
+
 .address-bar__parts-container {
   white-space: nowrap;
+  height: 100%;
+  margin-bottom: 2px;
+  margin-right: 6px;
+  padding-top: 2px
+}
+
+.address-bar__parts-container.highlight:hover {
+  background-color: var(--bg-color-1);
+  cursor: pointer;
+  transition: 0.2s ease;
 }
 
 .address-bar__part {
+  padding: 2px 6px;
+  margin: 0 4px;
   color: var(--color-6) !important;
 }
+
+.address-bar__parts-container:not(.highlight) 
+  .address-bar__part:not([disabled]):hover {
+    color: var(--color-1);
+    background-color: var(--highlight-color-4);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: 0.2s ease;
+  }
+
+.address-bar__parts-container.highlight:hover
+  * {
+    cursor: pointer;
+    opacity: 0.8;
+  }
 </style>
