@@ -121,10 +121,6 @@ Several more major features / improvements are already in development and will b
 
 These wonderful people and companies are currently funding this project. Thanks to them I can keep improving this app, they are the reason good quality free software can exist.
 
-<!-- <h4 style="margin: 32px 0px;">
-  <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/blob/main/BAKERS.md">Full list of supporters →</a>
-</h4> -->
-
 ## Sponsors - level 2
 Become the first supporter
 
@@ -157,11 +153,26 @@ Become the first supporter
   </a>
 </div>
 
+## Thoughtful supporters
+
+<div>
+  <a href="https://github.com/theoob" title="Tony Kelly">
+    <b>~ Tony Kelly</b>
+  </a>
+  <a href="https://github.com/julienripet" title="Julien Ripet">
+    <b>~ Julien Ripet ~</b>
+  </a>
+</div>
+
 <br>
+
+<h4 style="margin: 32px 0px;">
+  <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/blob/main/BAKERS.md">See the full list of supporters →</a>
+</h4>
 
 ## Join
 
-#### 🎉 Supporter goal: 2 of 30 people joined
+#### 🎉 Supporter goal: 4 of 30 people joined
 
 Supporters get rewards for supporting this project on Patreon:
 

@@ -2,10 +2,6 @@
 
 These wonderful people and companies are currently funding this project. Thanks to them I can keep improving this app, they are the reason good quality free software can exist.
 
-<h4 style="margin: 32px 0px;">
-  <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/blob/main/BAKERS.md">Full list of supporters →</a>
-</h4>
-
 ### SPONSORS - LEVEL 2
 Become the first supporter
 
@@ -24,7 +20,7 @@ Become the first supporter
     </tr>
     <tr>
       <td align="center" valign="middle">
-        <a href="https://www.photoancestry.com/" title="Houston Photo Restoration">⭐Houston Photo Restoration</a>
+        <a href="https://www.photoancestry.com/" title="Houston Photo Restoration">⭐ Houston Photo Restoration</a>
       </td>
     </tr>
   </tbody>
@@ -38,10 +34,21 @@ Become the first supporter
   </a>
 </div>
 
+### THOUGHTFUL SUPPORTERS
+
+<div>
+  <a href="https://github.com/theoob" title="Tony Kelly">
+    <b>~ Tony Kelly</b>
+  </a>
+  <a href="https://github.com/julienripet" title="Julien Ripet">
+    <b>~ Julien Ripet ~</b>
+  </a>
+</div>
+
 
 ## Join
 
-#### 🎉 Supporter goal: 2 of 300 people joined
+#### 🎉 Supporter goal: 4 of 300 people joined
 
 See the list of rewards and consider joining our community on Patreon:
 

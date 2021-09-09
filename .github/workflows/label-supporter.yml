@@ -14,7 +14,8 @@ jobs:
           ${{ 
             contains(
               fromJson('[
-                ""
+                "theoob",
+                "julienripet"
               ]'), 
               github.actor
             ) 
