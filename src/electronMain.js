@@ -542,7 +542,7 @@ function createTrayMenu () {
     ? 'logo-20x20.png'
     : 'logo-32x32.png'
     tray = new electron.Tray(PATH.join(__static, 'icons', trayIcon))
-    tray.setToolTip(`Sigma file manager v${appVersion}`)
+    tray.setToolTip(`Sigma File Manager v${appVersion}`)
     tray.setContextMenu(getTrayMenu())
     tray.on('click', () => {
     tray.popUpContextMenu()
@@ -552,43 +552,48 @@ function createTrayMenu () {
 function getTrayMenu () {
   const contextMenu = electron.Menu.buildFromTemplate([
     {
-      label: `Sigma file manager v${appVersion}`,
+      label: `SIGMA FILE MANAGER v${appVersion}`,
       enabled: false
     },
-    { type: 'separator' },
     {
-      label: 'Open the app window',
-      accelerator: globalShortcuts.toggleApp
-        ? globalShortcuts.toggleApp.shortcut
-        : '',
+      type: 'separator'
+    },
+    {
+      label: 'GLOBAL SHORTCUTS',
+      enabled: false
+    },
+    {
+      label: 'Toggle window visibility',
+      accelerator: globalShortcuts?.toggleApp?.shortcut || '',
+      click: () => {
+        global.toggleApp({type: 'tray'})
+      }
+    },
+    {
+      label: 'Create new note',
+      accelerator: globalShortcuts?.newNote?.shortcut || '',
+      click: () => newNote()
+    },
+    {
+      type: 'separator'
+    },
+    {
+      label: 'APP ACTIONS',
+      enabled: false
+    },
+    {
+      label: 'Open window',
+      accelerator: globalShortcuts?.toggleApp?.shortcut || '',
       click: () => global.focusApp()
     },
     {
-      label: 'Reload the app window',
+      label: 'Reload window',
       accelerator: 'Ctrl + Shift + R',
-      click: () => windows.main.reload()
+      click: () => windows.main?.reload()
     },
     {
-      label: 'Close the app',
+      label: 'Quit',
       click: () => electron.app.quit()
-    },
-    { type: 'separator' },
-    {
-      label: 'Global shortcuts',
-      enabled: false
-    },
-    { type: 'separator' },
-    {
-      label: 'Create new note',
-      accelerator: globalShortcuts.newNote
-        ? globalShortcuts.newNote.shortcut
-        : '',
-      click: () => newNote()
-    },
-    { type: 'separator' },
-    {
-      label: 'Support the app and get rewards',
-      click: () => electron.shell.openExternal(externalLinks.githubReadmeSupportSectionLink)
     }
   ])
   return contextMenu
@@ -649,17 +654,27 @@ global.focusApp = (options = {}) => {
   }
 }
 
-global.toggleApp = (options) => {
-  // If window exists, focus it
-  if (windows.main !== null) {
-    if (windows.main.isFocused()) {
-      windows.main.minimize()
+global.toggleApp = (options = {}) => {
+  if (windows.main) {
+    if (options.type === 'tray') {
+      if (windows.main.isMinimized()) {
+        windows.main.show()
+        windows.main.focus()
+      }
+      else {
+        windows.main.minimize()
+      }
     }
     else {
-      global.focusApp(options)
+      if (windows.main.isMinimized() || !windows.main.isFocused()) {
+        windows.main.show()
+        windows.main.focus()
+      }
+      else {
+        windows.main.minimize()
+      }
     }
   }
-  // If window doesn't exist, create it
   else {
     createMainWindow()
   }
