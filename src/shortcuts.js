@@ -149,7 +149,6 @@ export default {
     iconSize: '20px',
     action: {
       name: 'CLOSE_CURRENT_TAB',
-      options: 'selected'
     },
     shortcut: 'Ctrl + W',
     description: 'Close current tab / window'

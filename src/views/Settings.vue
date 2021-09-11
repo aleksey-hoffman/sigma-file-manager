@@ -896,6 +896,31 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               </section-settings>
             </v-tab-item>
 
+            <!-- tab::tabs & workspaces -->
+            <v-tab-item transition="fade-in" reverse-transition="fade-in">
+              <!-- section::window-controls -->
+              <section-settings
+                class="content-area__content-card__section"
+                :header="{
+                  icon: {
+                    name: 'mdi-tab',
+                  },
+                  title: 'Tabs'
+                }"
+              >
+                <template v-slot:content>
+                  <div class="text--sub-title-1 mt-2">
+                    Options
+                  </div>
+                  <v-switch
+                    class="my-0"
+                    v-model="closeAppWindowWhenLastWorkspaceTabIsClosed"
+                    label="Close app window when all current workspace tabs are closed"
+                  ></v-switch>
+                </template>
+              </section-settings>
+            </v-tab-item>
+
             <!-- tab::input -->
             <v-tab-item transition="fade-in" reverse-transition="fade-in">
               <section-settings
@@ -1420,6 +1445,7 @@ export default {
       settingsTabs: [
         { text: 'General' },
         { text: 'UI appearance' },
+        { text: 'Tabs & workspaces' },
         { text: 'Input' },
         { text: 'Search' },
         { text: 'Data & storage' },
@@ -1450,6 +1476,7 @@ export default {
       windowCloseButtonAction: 'storageData.settings.windowCloseButtonAction',
       themeType: 'storageData.settings.theme.type',
       navigatorLayout: 'storageData.settings.navigatorLayout',
+      closeAppWindowWhenLastWorkspaceTabIsClosed: 'storageData.settings.navigator.tabs.closeAppWindowWhenLastWorkspaceTabIsClosed',
       navigatorShowHiddenDirItems: 'storageData.settings.navigator.showHiddenDirItems',
       navigatorOpenDirItemWithSingleClick: 'storageData.settings.navigator.openDirItemWithSingleClick',
       dirItemHoverEffect: 'storageData.settings.dirItemHoverEffect',

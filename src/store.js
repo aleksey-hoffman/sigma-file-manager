@@ -405,6 +405,9 @@ export default new Vuex.Store({
           showHiddenDirItems: false,
           openDirItemWithSingleClick: false,
           openDirItemSecondClickDelay: 500,
+          tabs: {
+            closeAppWindowWhenLastWorkspaceTabIsClosed: false
+          }
         },
         tips: [
           {
@@ -2750,6 +2753,9 @@ export default new Vuex.Store({
         dispatch('DESELECT_ALL_DIR_ITEMS')
       }
     },
+    CLOSE_APP_WINDOW (store) {
+      electron.ipcRenderer.send('handle:close-app', store.state.storageData.settings.windowCloseButtonAction)
+    },
     CLOSE_ALL_TABS_IN_CURRENT_WORKSPACE ({ commit, dispatch, getters }) {
       let tabs = [...getters.selectedWorkspace.tabs]
       tabs = []
@@ -2761,15 +2767,21 @@ export default new Vuex.Store({
       if (currentDirTab) {
         store.dispatch('CLOSE_TAB', currentDirTab)
       }
-      if (tabs.length === 0) {
-        eventHub.$emit('notification', {
-          action: 'update-by-type',
-          type: 'current-workspace-has-no-tabs',
-          timeout: 3000,
-          type: '',
-          closeButton: true,
-          title: 'Current workspace has no tabs'
-        }) 
+      if (store.getters.selectedWorkspace.tabs.length === 0) {
+        // Close app window if needed
+        if (store.state.storageData.settings.navigator.tabs.closeAppWindowWhenLastWorkspaceTabIsClosed) {
+          store.dispatch('CLOSE_APP_WINDOW')
+        }
+        else {
+          eventHub.$emit('notification', {
+            action: 'update-by-type',
+            type: 'current-workspace-has-no-tabs',
+            timeout: 3000,
+            type: '',
+            closeButton: true,
+            title: 'Current workspace has no tabs'
+          })
+        }
       }
     },
     CLOSE_TAB (store, tab) {
