@@ -137,6 +137,23 @@ export default {
     shortcut: 'Ctrl + T',
     description: 'New tab in current workspace'
   },
+  closeCurrentTab: {
+    isGlobal: false,
+    isReadOnly: false,
+    conditions: {
+      dirItemIsSelected: true,
+      dialogIsOpened: false
+    },
+    routes: ['navigator'],
+    icon: 'mdi-tab-remove',
+    iconSize: '20px',
+    action: {
+      name: 'CLOSE_CURRENT_TAB',
+      options: 'selected'
+    },
+    shortcut: 'Ctrl + W',
+    description: 'Close current tab / window'
+  },
   scrollTop: {
     isGlobal: false,
     isReadOnly: false,

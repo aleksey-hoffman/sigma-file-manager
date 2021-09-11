@@ -2755,15 +2755,44 @@ export default new Vuex.Store({
       tabs = []
       dispatch('SET_TABS', tabs)
     },
-    CLOSE_TAB ({ state, commit, dispatch, getters }, tab) {
-      let tabs = [...getters.selectedWorkspace.tabs]
+    CLOSE_CURRENT_TAB (store) {
+      let tabs = [...store.getters.selectedWorkspace.tabs]
+      const currentDirTab = tabs.find(item => item.path === store.state.navigatorView.currentDir.path)
+      if (currentDirTab) {
+        store.dispatch('CLOSE_TAB', currentDirTab)
+      }
+      if (tabs.length === 0) {
+        eventHub.$emit('notification', {
+          action: 'update-by-type',
+          type: 'current-workspace-has-no-tabs',
+          timeout: 3000,
+          type: '',
+          closeButton: true,
+          title: 'Current workspace has no tabs'
+        }) 
+      }
+    },
+    CLOSE_TAB (store, tab) {
+      if (!tab?.path) {return}
+      let tabs = [...store.getters.selectedWorkspace.tabs]
       const tabIndex = tabs.findIndex(item => item.path === tab.path)
       const tabExists = tabIndex !== -1
       // Remove tab
       if (tabExists) {
         tabs.splice(tabIndex, 1)
+        store.dispatch('SET_TABS', tabs)
+        new Notification({
+          name: 'tabRemoved', 
+          format: {
+            tabPath: tab.path
+          }
+        })
+        // Switch tab
+        const currentDirTabIndex = tabs.findIndex(item => item.path === store.state.navigatorView.currentDir.path)
+        if (currentDirTabIndex === -1 && tabs.length > 0) {
+          store.dispatch('SWITCH_TAB', tabs.length)
+        }
       }
-      dispatch('SET_TABS', tabs)
     },
     ADD_TAB ({ state, commit, dispatch, getters }) {
       let item = state.navigatorView.selectedDirItems.getLast()

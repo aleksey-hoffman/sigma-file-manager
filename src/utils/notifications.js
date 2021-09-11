@@ -97,6 +97,14 @@ class Notification {
 				title: 'Rename undone',
 				message: ''
 			},
+			tabRemoved: {
+				action: 'update-by-type',
+				type: 'tab-removed',
+				timeout: 3000,
+				closeButton: true,
+				title: 'Removed tab from current workspace',
+				message: `{{tabPath}}`
+			},
 		}
 	
 		this.data = this.notifications[params.name]
