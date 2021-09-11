@@ -68,12 +68,7 @@ function lockSingleAppInstance () {
   } 
   else {
     electron.app.on('second-instance', (event, commandLine, workingDirectory) => {
-      if (windows.main) {
-        if (windows.main.isMinimized()) {
-          windows.main.restore()
-        }
-        windows.main.focus()
-      }
+      global.focusApp()
     })
   }
 }
