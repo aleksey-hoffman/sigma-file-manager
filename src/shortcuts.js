@@ -169,6 +169,18 @@ export default {
     shortcut: 'Ctrl + Shift + W',
     description: 'Close all tabs in current workspace / close app window'
   },
+  closeAppWindow: {
+    isGlobal: false,
+    isReadOnly: false,
+    routes: ['all'],
+    icon: 'mdi-close-box-outline',
+    iconSize: '20px',
+    action: {
+      name: 'CLOSE_APP_WINDOW',
+    },
+    shortcut: 'Ctrl + Q',
+    description: 'Close app window'
+  },
   scrollTop: {
     isGlobal: false,
     isReadOnly: false,
