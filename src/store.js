@@ -2817,14 +2817,21 @@ export default new Vuex.Store({
         }
       }
     },
-    ADD_TAB (store) {
-      let item = store.state.navigatorView.selectedDirItems.getLast()
+    ADD_TAB (store, params) {
+      let item = params?.item 
+        ? params?.item
+        : store.state.navigatorView.selectedDirItems.getLast()
+      let isDirectory = item.type.includes('directory')
+
+      if (!isDirectory) {return}
+      
       let tabs = [...store.getters.selectedWorkspace.tabs]
       let newTab = {
         name: item.name,
         path: item.path
       }
       const tabIndex = store.getters.selectedWorkspace.tabs.findIndex(tab => tab.path === newTab.path)
+
       if (tabIndex === -1) {
         tabs.push(newTab)
         store.dispatch('SET_TABS', tabs)

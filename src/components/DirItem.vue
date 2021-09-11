@@ -8,6 +8,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     @mousedown="handleDirItemMouseDown($event, source, index)"
     @mouseenter="handleDirItemMouseEnter($event, source)"
     @mouseleave="handleDirItemMouseLeave($event, source)"
+    @mousedown.middle="handleDirItemMiddleMouseDown($event, source)"
     :id="`item-index-${index}`"
     :data-item-id="source.id"
     :index="index"
@@ -708,7 +709,11 @@ export default {
       if (this.isDirItemSelected(item)) {
         this.$store.dispatch('DESELECT_DIR_ITEM', item)
       }
-    }
+    },
+    handleDirItemMiddleMouseDown (event, item) {
+      event.preventDefault()
+      this.$store.dispatch('ADD_TAB', {item})
+    },
   }
 }
 </script>
