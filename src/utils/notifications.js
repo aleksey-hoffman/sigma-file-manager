@@ -76,7 +76,6 @@ class Notification {
 				timeout: 6000,
 				closeButton: true,
 				title: 'Failed to rename item',
-				message: `<b>Error:</b> {{error}}`
 			},
 			renameFailedAlreadyExists: {
 				action: 'add',
@@ -105,11 +104,31 @@ class Notification {
 				title: 'Removed tab from current workspace',
 				message: `{{tabPath}}`
 			},
+			tabAdded: {
+				action: 'update-by-type',
+				type: 'tab-added',
+				timeout: 3000,
+				closeButton: true,
+				title: 'Tab added to current workspace',
+				message: `
+					Shortcut to open:
+					{{tabShortcut}}
+				`
+			},
+			tabIsAlreadyOpened: {
+				action: 'update-by-type',
+				type: 'tab-added',
+				timeout: 5000,
+				closeButton: true,
+				title: 'Tab for this directory is already opened',
+				message: `
+					Position: {{tabIndex}}
+				`
+			},
 			closedAllTabsInCurrentWorkspace: {
 				action: 'update-by-type',
 				type: 'closed-all-tabs-in-current-workspace',
 				timeout: 3000,
-				type: '',
 				closeButton: true,
 				title: 'Closed all tabs in current workspace'
 			},
@@ -117,14 +136,25 @@ class Notification {
 				action: 'update-by-type',
 				type: 'current-workspace-has-no-tabs',
 				timeout: 3000,
-				type: '',
 				closeButton: true,
 				title: 'Current workspace has no tabs'
-			}
+			},
+			errorCannotAddToArchive: {
+				action: 'update-by-type',
+				type: 'error:archiver:add',
+				timeout: 5000,
+				title: 'Error: cannot add data to the archive'
+			},
+			archiveWasCreated: {
+				action: 'update-by-type',
+				type: 'archiver:add',
+				timeout: 5000,
+				title: 'Archive was created'
+			},
 		}
 	
 		this.data = this.notifications[params.name]
-		if (params.format) {
+		if (params.format || params.error || params.props) {
 			this.update(params)
 		}
 		else {
@@ -142,7 +172,7 @@ class Notification {
 		}
 		if (params.error) {
 			this.data.message = `
-				<b>Error:</b><br>${params.error}
+				<b>Error:</b> ${params.error}
 			`
 		}
 		if (params.props) {

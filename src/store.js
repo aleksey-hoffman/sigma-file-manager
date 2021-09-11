@@ -2756,8 +2756,8 @@ export default new Vuex.Store({
     CLOSE_APP_WINDOW (store) {
       electron.ipcRenderer.send('handle:close-app', store.state.storageData.settings.windowCloseButtonAction)
     },
-    CLOSE_ALL_TABS_IN_CURRENT_WORKSPACE ({ commit, dispatch, getters }) {
-      let tabs = [...getters.selectedWorkspace.tabs]
+    CLOSE_ALL_TABS_IN_CURRENT_WORKSPACE (store) {
+      let tabs = [...store.getters.selectedWorkspace.tabs]
       if (tabs.length === 0) {
         new Notification({
           name: 'currentWorkspaceHasNoTabs'
@@ -2765,7 +2765,7 @@ export default new Vuex.Store({
       }
       else {
         tabs = []
-        dispatch('SET_TABS', tabs)
+        store.dispatch('SET_TABS', tabs)
         // Close app window if needed
         if (store.state.storageData.settings.navigator.tabs.closeAppWindowWhenLastWorkspaceTabIsClosed) {
           store.dispatch('CLOSE_APP_WINDOW')
@@ -2817,41 +2817,33 @@ export default new Vuex.Store({
         }
       }
     },
-    ADD_TAB ({ state, commit, dispatch, getters }) {
-      let item = state.navigatorView.selectedDirItems.getLast()
-      let tabs = [...getters.selectedWorkspace.tabs]
+    ADD_TAB (store) {
+      let item = store.state.navigatorView.selectedDirItems.getLast()
+      let tabs = [...store.getters.selectedWorkspace.tabs]
       let newTab = {
         name: item.name,
         path: item.path
       }
-      const tabIndex = getters.selectedWorkspace.tabs.findIndex(tab => tab.path === newTab.path)
+      const tabIndex = store.getters.selectedWorkspace.tabs.findIndex(tab => tab.path === newTab.path)
       if (tabIndex === -1) {
         tabs.push(newTab)
-        dispatch('SET_TABS', tabs)
-        eventHub.$emit('notification', {
-          action: 'add',
-          timeout: 3000,
-          type: '',
-          closeButton: true,
-          title: 'Tab added to current workspace',
-          message: `
-            Shortcut to open:
-            ${state.storageData.settings.shortcuts.switchTab.shortcut.replace('[1 - 9]', tabs.length)}
-          `
+        store.dispatch('SET_TABS', tabs)
+        new Notification({
+          name: 'tabAdded', 
+          format: {
+            tabShortcut: store.state.storageData.settings.shortcuts.switchTab.shortcut
+              .replace('[1 - 9]', tabs.length)
+          }
         })
       }
       else {
-        eventHub.$emit('notification', {
-          action: 'add',
-          timeout: 5000,
-          type: '',
-          closeButton: true,
-          title: 'Tab for this directory is already opened',
-          message: `Position: ${tabIndex + 1}`
+        new Notification({
+          name: 'tabIsAlreadyOpened', 
+          format: {
+            tabIndex: tabIndex + 1
+          }
         })
-        setTimeout(() => {
-          state.menus.tabs = true
-        }, 1000)
+        store.state.menus.tabs = true
       }
     },
     SET_TABS (store, tabs) {
@@ -3024,20 +3016,14 @@ export default new Vuex.Store({
         }
       )
       appBinExtractStream.on('error', (error) => {
-        eventHub.$emit('notification', {
-          action: 'update-by-type',
-          type: 'archiver:add',
-          timeout: 5000,
-          title: 'Error: cannot add data to the archive',
-          message: error
+        new Notification({
+          name: 'errorCannotAddToArchive', 
+          error
         })
       })
       appBinExtractStream.on('end', () => {
-        eventHub.$emit('notification', {
-          action: 'update-by-type',
-          type: 'archiver:add',
-          timeout: 5000,
-          title: 'Archive was created',
+        new Notification({
+          name: 'archiveWasCreated', 
           message: params.dest
         })
       })
@@ -5067,9 +5053,7 @@ export default new Vuex.Store({
               else {
                 new Notification({
                   name: 'renameFailedError', 
-                  format: {
-                    error
-                  }
+                  error
                 })
               }
             })
