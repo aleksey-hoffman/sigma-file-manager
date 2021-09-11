@@ -545,8 +545,11 @@ function createTrayMenu () {
     tray.setToolTip(`Sigma File Manager v${appVersion}`)
     tray.setContextMenu(getTrayMenu())
     tray.on('click', () => {
-    tray.popUpContextMenu()
-  })
+      global.focusApp()
+    })
+    tray.on('right-click', () => {
+      tray.popUpContextMenu()
+    })
 }
 
 function getTrayMenu () {
