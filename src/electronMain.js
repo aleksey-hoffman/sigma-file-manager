@@ -353,11 +353,11 @@ function initIPCListeners () {
   })
 
   electron.ipcMain.on('focus-main-app-window', (event) => {
-    global.focusApp({ type: 'code' })
+    global.focusApp()
   })
 
   electron.ipcMain.on('toggle-main-app-window', (event) => {
-    global.toggleApp({ type: 'code' })
+    global.toggleApp()
   })
 
   electron.ipcMain.on('handle:close-app', (event, action) => {
@@ -627,31 +627,15 @@ global.newNote = () => {
   windows.main.webContents.send('open-new-note')
 }
 
-global.focusApp = (options = {}) => {
-  // If window exists, focus it
-  if (windows.main !== null) {
-    // Notes:
-    // - Using a workaround because of https://github.com/electron/electron/issues/2867
-    //   When triggered programmatically (not from a global shortcut),
-    //   the function windows.main.show() might not show the window by itself.
-    // - Hide window (from taskbar) before focusing so that it doesn't switch to 
-    //   another virtual screen if the app was opened there
-    if (options.type === 'code') {
-      windows.main.hide()
-      setTimeout(() => {
-        windows.main.setAlwaysOnTop(true)
-        windows.main.show()
-        windows.main.setAlwaysOnTop(false)
-      }, 100)
-    }
-    else {
-      windows.main.hide()
-      setTimeout(() => {
-        windows.main.show()
-      }, 100)
-    }
+global.focusApp = () => {
+  if (windows.main) {
+    // Hide window (from taskbar) before focusing so that it doesn't switch to 
+    // another virtual screen if the app was opened there
+    windows.main.hide()
+    setTimeout(() => {
+      windows.main.show()
+    }, 100)
   }
-  // If window doesn't exist, create it
   else {
     createMainWindow()
   }
@@ -661,8 +645,7 @@ global.toggleApp = (options = {}) => {
   if (windows.main) {
     if (options.type === 'tray') {
       if (windows.main.isMinimized()) {
-        windows.main.show()
-        windows.main.focus()
+        global.focusApp()
       }
       else {
         windows.main.minimize()
@@ -670,8 +653,7 @@ global.toggleApp = (options = {}) => {
     }
     else {
       if (windows.main.isMinimized() || !windows.main.isFocused()) {
-        windows.main.show()
-        windows.main.focus()
+        global.focusApp()
       }
       else {
         windows.main.minimize()
