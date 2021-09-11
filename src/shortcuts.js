@@ -151,7 +151,7 @@ export default {
       name: 'CLOSE_CURRENT_TAB',
     },
     shortcut: 'Ctrl + W',
-    description: 'Close current tab / window'
+    description: 'Close current tab / close app window'
   },
   closeAllTabsInCurrentWorkspace: {
     isGlobal: false,

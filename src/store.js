@@ -2758,21 +2758,23 @@ export default new Vuex.Store({
     },
     CLOSE_ALL_TABS_IN_CURRENT_WORKSPACE ({ commit, dispatch, getters }) {
       let tabs = [...getters.selectedWorkspace.tabs]
-      tabs = []
-      dispatch('SET_TABS', tabs)
-      // Close app window if needed
-      if (store.state.storageData.settings.navigator.tabs.closeAppWindowWhenLastWorkspaceTabIsClosed) {
-        store.dispatch('CLOSE_APP_WINDOW')
+      if (tabs.length === 0) {
+        new Notification({
+          name: 'currentWorkspaceHasNoTabs'
+        })
       }
       else {
-        eventHub.$emit('notification', {
-          action: 'update-by-type',
-          type: 'closed-all-tabs-in-current-workspace',
-          timeout: 3000,
-          type: '',
-          closeButton: true,
-          title: 'Closed all tabs in current workspace'
-        })
+        tabs = []
+        dispatch('SET_TABS', tabs)
+        // Close app window if needed
+        if (store.state.storageData.settings.navigator.tabs.closeAppWindowWhenLastWorkspaceTabIsClosed) {
+          store.dispatch('CLOSE_APP_WINDOW')
+        }
+        else {
+          new Notification({
+            name: 'closedAllTabsInCurrentWorkspace'
+          })
+        }
       }
     },
     CLOSE_CURRENT_TAB (store) {
@@ -2787,13 +2789,8 @@ export default new Vuex.Store({
           store.dispatch('CLOSE_APP_WINDOW')
         }
         else {
-          eventHub.$emit('notification', {
-            action: 'update-by-type',
-            type: 'current-workspace-has-no-tabs',
-            timeout: 3000,
-            type: '',
-            closeButton: true,
-            title: 'Current workspace has no tabs'
+          new Notification({
+            name: 'currentWorkspaceHasNoTabs'
           })
         }
       }

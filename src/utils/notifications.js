@@ -105,6 +105,22 @@ class Notification {
 				title: 'Removed tab from current workspace',
 				message: `{{tabPath}}`
 			},
+			closedAllTabsInCurrentWorkspace: {
+				action: 'update-by-type',
+				type: 'closed-all-tabs-in-current-workspace',
+				timeout: 3000,
+				type: '',
+				closeButton: true,
+				title: 'Closed all tabs in current workspace'
+			},
+			currentWorkspaceHasNoTabs: {
+				action: 'update-by-type',
+				type: 'current-workspace-has-no-tabs',
+				timeout: 3000,
+				type: '',
+				closeButton: true,
+				title: 'Current workspace has no tabs'
+			}
 		}
 	
 		this.data = this.notifications[params.name]
