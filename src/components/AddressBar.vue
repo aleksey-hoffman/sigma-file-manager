@@ -51,14 +51,14 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     <v-layout
       id="address-bar__parts-container"
       class="address-bar__parts-container custom-scrollbar"
-      :class="{'highlight': $store.state.inputState.ctrl}"
-      @click.ctrl="$store.dispatch('OPEN_ADDRESS_BAR_EDITOR')"
+      @click="$store.dispatch('OPEN_ADDRESS_BAR_EDITOR')"
       align-center
     >
       <div v-for="(part, index) in addressParts" :key="`address-part-${index}`">
         <v-layout align-center>
           <div
-            @click.exact="$store.dispatch('LOAD_DIR', { path: part.path })"
+            @click.exact.stop="$store.dispatch('LOAD_DIR', {path: part.path})"
+            @contextmenu="toggleDirContextMenu({event: $event, part})"
             text depressed small
             class="address-bar__part text-none"
             :class="{
@@ -312,6 +312,15 @@ export default {
         }, 50)
       }
       catch (error) {}
+    },
+    async toggleDirContextMenu (params) {
+      let dirItem = await this.$store.dispatch('FETCH_DIR_ITEM_INFO', params.part.path)
+      await this.$store.dispatch('REPLACE_SELECTED_DIR_ITEMS', [dirItem])
+      await this.$store.dispatch('SET_CONTEXT_MENU', {
+        value: 'toggle',
+        x: params.event.clientX,
+        y: params.event.clientY
+      })
     }
   }
 }
@@ -345,7 +354,7 @@ export default {
 }
 
 .address-bar__parts-container:not(.highlight) 
-  .address-bar__part:not([disabled]):hover {
+  .address-bar__part:hover {
     color: var(--color-1);
     background-color: var(--highlight-color-4);
     border-radius: 4px;
