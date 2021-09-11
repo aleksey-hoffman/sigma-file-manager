@@ -153,6 +153,22 @@ export default {
     shortcut: 'Ctrl + W',
     description: 'Close current tab / window'
   },
+  closeAllTabsInCurrentWorkspace: {
+    isGlobal: false,
+    isReadOnly: false,
+    conditions: {
+      dirItemIsSelected: true,
+      dialogIsOpened: false
+    },
+    routes: ['navigator'],
+    icon: 'mdi-tab-remove',
+    iconSize: '20px',
+    action: {
+      name: 'CLOSE_ALL_TABS_IN_CURRENT_WORKSPACE',
+    },
+    shortcut: 'Ctrl + Shift + W',
+    description: 'Close all tabs in current workspace / close app window'
+  },
   scrollTop: {
     isGlobal: false,
     isReadOnly: false,

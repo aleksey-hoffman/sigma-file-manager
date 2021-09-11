@@ -2760,6 +2760,20 @@ export default new Vuex.Store({
       let tabs = [...getters.selectedWorkspace.tabs]
       tabs = []
       dispatch('SET_TABS', tabs)
+      // Close app window if needed
+      if (store.state.storageData.settings.navigator.tabs.closeAppWindowWhenLastWorkspaceTabIsClosed) {
+        store.dispatch('CLOSE_APP_WINDOW')
+      }
+      else {
+        eventHub.$emit('notification', {
+          action: 'update-by-type',
+          type: 'closed-all-tabs-in-current-workspace',
+          timeout: 3000,
+          type: '',
+          closeButton: true,
+          title: 'Closed all tabs in current workspace'
+        })
+      }
     },
     CLOSE_CURRENT_TAB (store) {
       let tabs = [...store.getters.selectedWorkspace.tabs]
