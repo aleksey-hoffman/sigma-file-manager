@@ -231,7 +231,10 @@ export default {
   display: flex;
   align-items: center;
   width: 200px;
-  background-color: rgb(255, 255, 255, 0.025);
+  height: 34px;
+  margin-bottom: 1px;
+  padding-top: 1px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .filter-field

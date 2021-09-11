@@ -54,23 +54,28 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       @click="$store.dispatch('OPEN_ADDRESS_BAR_EDITOR')"
       align-center
     >
-      <div v-for="(part, index) in addressParts" :key="`address-part-${index}`">
-        <v-layout align-center>
-          <div
-            @click.exact.stop="$store.dispatch('LOAD_DIR', {path: part.path})"
-            @contextmenu="toggleDirContextMenu({event: $event, part})"
-            text depressed small
-            class="address-bar__part text-none"
-            :class="{
-              'grey--text text--darken-1': part.isLast,
-              'cursor-pointer': !part.isLast
-            }"
-            :disabled="part.isLast"
-          >{{part.base}}
-          </div>
-          <div v-if="!part.isLast">/</div>
-        </v-layout>
-      </div>
+      <v-layout
+        class="address-bar__parts-container__inner"
+        align-center
+      >
+        <div v-for="(part, index) in addressParts" :key="`address-part-${index}`">
+          <v-layout align-center>
+            <div
+              @click.exact.stop="$store.dispatch('LOAD_DIR', {path: part.path})"
+              @contextmenu="toggleDirContextMenu({event: $event, part})"
+              text depressed small
+              class="address-bar__part text-none"
+              :class="{
+                'grey--text text--darken-1': part.isLast,
+                'cursor-pointer': !part.isLast
+              }"
+              :disabled="part.isLast"
+            >{{part.base}}
+            </div>
+            <div v-if="!part.isLast">/</div>
+          </v-layout>
+        </div>
+      </v-layout>
     </v-layout>
 
     <!-- address-bar::input -->
@@ -329,7 +334,7 @@ export default {
 <style scoped>
 .address-bar {
   height: 100%;
-  max-height: 38px;
+  max-height: 48px;
   width: 100%;
 }
 
@@ -341,15 +346,29 @@ export default {
   padding-top: 2px
 }
 
-.address-bar__parts-container.highlight:hover {
-  background-color: var(--bg-color-1);
+.address-bar__parts-container:hover {
   cursor: pointer;
-  transition: 0.2s ease;
+}
+
+.address-bar__parts-container__inner {
+  height: 34px;
+  width: 100%;
+  min-width: fit-content;
+  margin-bottom: 1px;
+  padding-top: 1px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: 0.1s ease;
+}
+
+.address-bar__parts-container__inner:hover {
+  background-color: var(--bg-color-1);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: 0.1s ease;
 }
 
 .address-bar__part {
-  padding: 2px 6px;
-  margin: 0 4px;
+  padding: 0 6px;
+  margin-bottom: 1px;
   color: var(--color-6) !important;
 }
 
@@ -357,9 +376,8 @@ export default {
   .address-bar__part:hover {
     color: var(--color-1);
     background-color: var(--highlight-color-4);
-    border-radius: 4px;
     cursor: pointer;
-    transition: 0.2s ease;
+    transition: 0.1s ease;
   }
 
 .address-bar__parts-container.highlight:hover
