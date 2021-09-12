@@ -93,21 +93,25 @@ Built-in archiver allows you to compress files into archives and extract existin
   - **Packing / unpacking:** 7z, XZ, BZIP2, GZIP, TAR, ZIP, WIM.
   - **Unpacking only:** AR, ARJ, CAB, CHM, CPIO, CramFS, DMG, EXT, FAT, GPT, HFS, IHEX, ISO, LZH, LZMA, MBR, MSI, NSIS, NTFS, QCOW2, RAR, RPM, SquashFS, UDF, UEFI, VDI, VHD, VMDK, WIM, XAR, Z.
 
-#### FEATURE #16 | QUICK VIEW
-
-This feature allows you to quickly open selected files in a preview window, rather than an external program (which usually takes longer). Quick view window can be opened with `Space` shortcut or from the context menu. Supported file types: images, videos, audio, PDF, most plain text formats.
-
-#### FEATURE #17 | AUTO UPDATES
+#### FEATURE #16 | AUTO UPDATES
 
 The app updates itself automatically. It will let you decide if and when you want to download and install an update.
 
-#### FEATURE #18 | CUSTOMIZABLE, WELL THOUGHT-OUT, MODERN DESIGN
+#### FEATURE #17 | CUSTOMIZABLE, WELL THOUGHT-OUT, MODERN DESIGN
 
 This app is designed to pack lots of advanced features, without sacrificing customizable, minimalistic, modern design and usability. This idea propogates all the way to the smallest features of the app.
 
-#### FEATURE #19 | COMMUNITY PARTICIPATION
+#### FEATURE #18 | COMMUNITY PARTICIPATION
 
 Anyone can join this community, participate in the development of this app, and learn in the process.
+
+#### FEATURE #19 | QUICK VIEW
+
+This feature allows you to quickly open selected files in a preview window, rather than an external program (which usually takes longer). Quick view window can be opened with `Space` shortcut or from the context menu. Supported file types: images, videos, audio, PDF, most plain text formats.
+
+#### FEATURE #20 | WINDOW TRANSPARENCY EFFECTS
+
+The window transparency effect in this app is one of the key components of my Neoinfusive design style. The effect propagates through all elements of the app, adding color and infusing them with a unique, customizable, modern, unified look. It allows you to put any image / video to the background and customize blur / opacity / parallax settings. I spent only 2 days developing it, so it's not perfect yet, but it's already infinitely more customizable and, as the result, subjectively prettier than the transparency effects of the design styles developed by Trillion dollar companies (e.g. Fluent design, MacOS Vibrancy), so there's that.
 
 #### MANY MORE FEATURES ARE COMING
 
@@ -121,10 +125,12 @@ Several more major features / improvements are already in development and will b
 
 These wonderful people and companies are currently funding this project. Thanks to them I can keep improving this app, they are the reason good quality free software can exist.
 
-## Sponsors - level 2
+![Patreon-progress-goal](https://user-images.githubusercontent.com/61761672/133000478-9666f7e2-d0b9-40f1-b140-4b026ee00a99.png)
+
+## Sponsors - tier 2
 Become the first supporter
 
-## Sponsors - level 1
+## Sponsors - tier 1
 Become the first supporter
 
 ## Generous supporters
@@ -172,20 +178,9 @@ Become the first supporter
 
 ## Join
 
-#### 🎉 Supporter goal: 4 of 30 people joined
+#### 🎉 Supporter goal: 4 of 500 people joined
 
-Supporters get rewards for supporting this project on Patreon:
-
-- Your issues (feature requests) will have higher priority and a `supporter 💖` label;
-- You will be able to vote and decide which features should be prioritized;
-- You will get to see Patreon-only posts, and screenshots showcasing new features during development;
-- Your name and the link to your project / website will be displayed on this page;
-- You will get access to a private Discord where you can learn, get advice, get help, have fun, and just chat with me and other community members;
-- Also, thanks to your support, you and everyone else will be getting new features in the app more frequently.
-
-If you like the app, consider supporting my work by joining our community on Patreon. I have a lot of awesome things in development for you guys, but the luck of funding makes it really difficult to create anything.
-
-Check out the full list of rewards on Patreon:
+Supporters get rewards for supporting this project on Patreon. Check out the list of rewards:
 
 <a target="_blank" href="https://patreon.com/sigma_file_manager">
   <img
@@ -397,7 +392,7 @@ If you like their art, consider supporting their work. You can find their suppor
 #### ⚡ Requirements:
 
 - **Memory (RAM):** minimum: ~100 MB, average: ~400 MB;
-- **Storage:** minimum: ~200 MB;
+- **Storage:** minimum: ~370 MB;
 - **OS:** 64-bit: Windows, MacOS, Linux;
 
 <table>
@@ -500,7 +495,7 @@ There's a fun secret hidden somewhere in the app. See if you can find it. Hint: 
 
 ✅ **by v1.3.0 (Augest 2021):** new feature, improvements, and fixes;
 
-⬜ **by v1.4.0 (September 2021):** new feature, improvements, and fixes;
+✅ **by v1.4.0 (September 2021):** new feature, improvements, and fixes;
 
 ⬜ **by v1.5.0 (September 2021):** new feature, improvements, and fixes. Localize the app to 10+ most popular languages;
 
