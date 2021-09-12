@@ -930,16 +930,16 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   icon: {
                     name: 'mdi-tab',
                   },
-                  title: 'History'
+                  title: 'Navigator history'
                 }"
               >
                 <template v-slot:content>
                   <div class="text--sub-title-1 mt-2">
-                    Navigator history style
+                    History navigation style
                   </div>
                   <v-radio-group
                     class="py-0 mt-0"
-                    v-model="navigatorHistoryStyleSelected"
+                    v-model="navigatorhistoryNavigationStyleSelected"
                     hide-details
                   >
                     <v-tooltip bottom max-width="400px">
@@ -1560,7 +1560,7 @@ export default {
       themeType: 'storageData.settings.theme.type',
       navigatorLayout: 'storageData.settings.navigatorLayout',
       closeAppWindowWhenLastWorkspaceTabIsClosed: 'storageData.settings.navigator.tabs.closeAppWindowWhenLastWorkspaceTabIsClosed',
-      navigatorHistoryStyleSelected: 'storageData.settings.navigator.historyStyle.selected',
+      navigatorhistoryNavigationStyleSelected: 'storageData.settings.navigator.historyNavigationStyle.selected',
       navigatorShowHiddenDirItems: 'storageData.settings.navigator.showHiddenDirItems',
       navigatorOpenDirItemWithSingleClick: 'storageData.settings.navigator.openDirItemWithSingleClick',
       dirItemHoverEffect: 'storageData.settings.dirItemHoverEffect',

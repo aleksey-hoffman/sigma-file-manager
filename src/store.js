@@ -408,7 +408,7 @@ export default new Vuex.Store({
           tabs: {
             closeAppWindowWhenLastWorkspaceTabIsClosed: false
           },
-          historyStyle: {
+          historyNavigationStyle: {
             selected: 'sigma-default',
             list: [
               'sigma-default',
@@ -1452,7 +1452,7 @@ export default new Vuex.Store({
       historyItemsRaw.push(options.path)
       // Add path to "no-consecutive-dups" list
       if (!pathMatchesLastHistoryPath) {
-        if (store.state.storageData.settings.navigator.historyStyle.selected === 'sigma-default') {
+        if (store.state.storageData.settings.navigator.historyNavigationStyle.selected === 'sigma-default') {
           if (options.goForwardInHistory) {return}
           else if (options.goBackwardInHistory) {
             historyItems.push(options.path)
@@ -1462,7 +1462,7 @@ export default new Vuex.Store({
             state.navigatorView.history.currentIndex = historyItems.length - 1
           }
         }
-        if (store.state.storageData.settings.navigator.historyStyle.selected === 'traditional') {
+        if (store.state.storageData.settings.navigator.historyNavigationStyle.selected === 'traditional') {
           if (options.goForwardInHistory) {return}
           else if (options.goBackwardInHistory) {return}
           else {
