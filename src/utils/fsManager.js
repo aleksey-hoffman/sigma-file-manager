@@ -175,7 +175,6 @@ function getCommand (params) {
     else if (params.command === 'create-link') {
       let argDirectory = params.isDirectory ? '/d' : ''
       let argLinkType = ''
-      if (params.linkType === 'hard-link') {argLinkType = '/h'}
       if (params.linkType === 'symlink') {argLinkType = ''}
 
       const commandArgs = [

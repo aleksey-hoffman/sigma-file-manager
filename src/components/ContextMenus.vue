@@ -416,10 +416,7 @@ export default {
               destPath: srcPath
             }
             let linkModifier = this.linkModifier
-            if (linkModifier === 'hard-link') {
-              params.title = 'Create hard link'
-            }
-            else if (linkModifier === 'windows-link') {
+            if (linkModifier === 'windows-link') {
               params.title = 'Create Windows link (.lnk)'
               params.destPath = `${srcPath}.lnk`
             }
@@ -429,14 +426,7 @@ export default {
             this.$store.dispatch('SHOW_CONFIRMATION_DIALOG_MAKE_LINK', params)
               .then(result => {
                 let destPath = result.data.inputs[0].model
-                if (linkModifier === 'hard-link') {
-                  this.$store.dispatch('MAKE_DIR_ITEM_LINK', {
-                    linkType: 'hard-link',
-                    srcPath,
-                    destPath
-                  })
-                }
-                else if (linkModifier === 'windows-link') {
+                if (linkModifier === 'windows-link') {
                   this.$store.dispatch('MAKE_DIR_ITEM_LINK', {
                     linkType: 'windows-link',
                     srcPath,
@@ -665,10 +655,7 @@ export default {
       return itemsFilteredByDisallowed
     },
     linkModifier () {
-      if (this.inputState.shift) {
-        return 'hard-link'
-      }
-      else if (this.inputState.alt) {
+      if (this.inputState.alt) {
         return 'windows-link'
       }
       else {
@@ -677,11 +664,9 @@ export default {
     },
     linkActionIcon () {
       if (process.platform === 'win32') {
-        return this.linkModifier === 'hard-link'
-          ? 'mdi-link-plus'
-          : this.linkModifier === 'windows-link'
-            ? 'mdi-link-box-variant-outline'
-            : 'mdi-link-variant-plus'
+        return this.linkModifier === 'windows-link'
+          ? 'mdi-link-box-variant-outline'
+          : 'mdi-link-variant-plus'
       }
       else {
         return this.linkModifier === 'hard-link'
@@ -694,10 +679,6 @@ export default {
         modifierList: [
           {
             title: 'Create symbolic link',
-          },
-          {
-            title: 'Hard link',
-            modifier: 'Shift'
           }
         ]
       }  
