@@ -407,6 +407,13 @@ export default new Vuex.Store({
           openDirItemSecondClickDelay: 500,
           tabs: {
             closeAppWindowWhenLastWorkspaceTabIsClosed: false
+          },
+          historyStyle: {
+            selected: 'sigma-default',
+            list: [
+              'sigma-default',
+              'traditional',
+            ]
           }
         },
         tips: [
@@ -1436,7 +1443,7 @@ export default new Vuex.Store({
       const value = utils.getDeepProperty(state, key)
       utils.setDeepProperty(state, key.split('.'), !value)
     },
-    ADD_TO_HISTORY (state, options) {
+    UPDATE_NAVIGATOR_HISTORY (state, options) {
       let historyItems = state.navigatorView.history.items
       let historyItemsRaw = state.navigatorView.history.itemsRaw
       let lastHistoryElement = historyItems[historyItems.length - 1]
@@ -1444,9 +1451,26 @@ export default new Vuex.Store({
       // Add path to "raw" list
       historyItemsRaw.push(options.path)
       // Add path to "no-consecutive-dups" list
-      if (!pathMatchesLastHistoryPath && !options.skipHistory) {
-        historyItems.push(options.path)
-        state.navigatorView.history.currentIndex = historyItems.length - 1
+      if (!pathMatchesLastHistoryPath) {
+        if (store.state.storageData.settings.navigator.historyStyle.selected === 'sigma-default') {
+          if (options.goForwardInHistory) {return}
+          else if (options.goBackwardInHistory) {
+            historyItems.push(options.path)
+          }
+          else {
+            historyItems.push(options.path)
+            state.navigatorView.history.currentIndex = historyItems.length - 1
+          }
+        }
+        if (store.state.storageData.settings.navigator.historyStyle.selected === 'traditional') {
+          if (options.goForwardInHistory) {return}
+          else if (options.goBackwardInHistory) {return}
+          else {
+            historyItems.splice(state.navigatorView.history.currentIndex + 1, historyItems.length - 1)
+            historyItems.push(options.path)
+            state.navigatorView.history.currentIndex = historyItems.length - 1
+          }
+        }
       }
     },
     SET_WORKSPACES (state, workspaces) {
@@ -2911,7 +2935,7 @@ export default new Vuex.Store({
         method: 'startWatchingCurrentDir',
         params: options.path
       })
-      store.commit('ADD_TO_HISTORY', options)
+      store.commit('UPDATE_NAVIGATOR_HISTORY', options)
       store.dispatch('ADD_TO_DIR_ITEMS_TIMELINE', dirInfo.path)
       store.dispatch('SORT_DIR_ITEMS')
       store.dispatch('CLEAR_FILTER_FIELD')
@@ -3269,28 +3293,22 @@ export default new Vuex.Store({
         store.state.globalSearch.widget = true
       }
     },
-    LOAD_PREVIOUS_HISTORY_PATH ({ state, commit, dispatch, getters }) {
+    async LOAD_PREVIOUS_HISTORY_PATH ({ state, commit, dispatch, getters }) {
       const historyItems = state.navigatorView.history.items
       const currentHistoryIndex = state.navigatorView.history.currentIndex
       const previousHistoryPath = historyItems[currentHistoryIndex - 1]
       if (currentHistoryIndex > 0) {
-        dispatch('LOAD_DIR', { path: previousHistoryPath, skipHistory: true })
-        dispatch('SET', {
-          key: 'navigatorView.history.currentIndex',
-          value: currentHistoryIndex - 1
-        })
+        await dispatch('LOAD_DIR', {path: previousHistoryPath, goBackwardInHistory: true})
+        state.navigatorView.history.currentIndex = currentHistoryIndex - 1
       }
     },
-    LOAD_NEXT_HISTORY_PATH ({ state, commit, dispatch, getters }) {
+    async LOAD_NEXT_HISTORY_PATH ({ state, commit, dispatch, getters }) {
       const historyItems = state.navigatorView.history.items
       const currentHistoryIndex = state.navigatorView.history.currentIndex
       const nextHistoryPath = historyItems[currentHistoryIndex + 1]
       if (currentHistoryIndex < historyItems.length - 1) {
-        dispatch('LOAD_DIR', { path: nextHistoryPath, skipHistory: true })
-        dispatch('SET', {
-          key: 'navigatorView.history.currentIndex',
-          value: currentHistoryIndex + 1
-        })
+        await dispatch('LOAD_DIR', {path: nextHistoryPath, goForwardInHistory: true})
+        state.navigatorView.history.currentIndex = currentHistoryIndex + 1
       }
     },
     GO_UP_DIRECTORY ({ state, commit, dispatch, getters }) {

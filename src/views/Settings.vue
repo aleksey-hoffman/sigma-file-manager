@@ -921,6 +921,88 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               </section-settings>
             </v-tab-item>
 
+            <!-- tab::navigation -->
+            <v-tab-item transition="fade-in" reverse-transition="fade-in">
+              <!-- section::window-controls -->
+              <section-settings
+                class="content-area__content-card__section"
+                :header="{
+                  icon: {
+                    name: 'mdi-tab',
+                  },
+                  title: 'History'
+                }"
+              >
+                <template v-slot:content>
+                  <div class="text--sub-title-1 mt-2">
+                    Navigator history style
+                  </div>
+                  <v-radio-group
+                    class="py-0 mt-0"
+                    v-model="navigatorHistoryStyleSelected"
+                    hide-details
+                  >
+                    <v-tooltip bottom max-width="400px">
+                      <template v-slot:activator="{ on }">
+                        <v-radio
+                          v-on="on"
+                          label="Sigma default"
+                          value="sigma-default"
+                        ></v-radio>
+                      </template>
+                      <span>
+                        This custom Sigma history style allows you to get back to previously opened paths,
+                        even after inserting a new path into the history while navigating the history stack.
+                        <br><b>Example:</b>
+                        <br>- Open directory <span class="inline-code--light py-0">"/user"</span>
+                        <br>- Open directory <span class="inline-code--light py-0">"/user/pictures"</span>
+                        <br>- Open directory <span class="inline-code--light py-0">"/user/pictures/screenshots"</span>
+                        <br>If you now go back to directory 
+                        <span class="inline-code--light py-0">"/user/pictures"</span> 
+                        and then go back again to 
+                        <span class="inline-code--light py-0">"/user"</span> 
+                        and then open 
+                        <span class="inline-code--light py-0">"/user/videos"</span>, 
+                        you will still be able to go back in history to the previous directories by pressing
+                        "go back" or "go forward" button.
+                      </span>
+                    </v-tooltip>
+
+                    <v-tooltip bottom max-width="400px">
+                      <template v-slot:activator="{ on }">
+                        <v-radio
+                          v-on="on"
+                          label="Traditional"
+                          value="traditional"
+                        ></v-radio>
+                      </template>
+                      <span>
+                        This is a traditional history style, used in vast majority of apps. 
+                        It overwrites all succeding paths when you insert a new path anywhere other than the end, 
+                        which means once you go back in history and open some other directory, all succedding entries will be gone.
+                        <br><b>Example:</b>
+                        <br>- Open directory <span class="inline-code--light py-0">"/user"</span>
+                        <br>- Open directory <span class="inline-code--light py-0">"/user/pictures"</span>
+                        <br>- Open directory <span class="inline-code--light py-0">"/user/pictures/screenshots"</span>
+                        <br>If you now go back to directory 
+                        <span class="inline-code--light py-0">"/user/pictures"</span> 
+                        and then go back again to 
+                        <span class="inline-code--light py-0">"/user"</span> 
+                        and then open 
+                        <span class="inline-code--light py-0">"/user/videos"</span>, 
+                        you will NOT be able to go back in history to the previous directories by pressing
+                        "go back" or "go forward" button, because
+                        they were overwritten and the history now only has 2 directories: 
+                        <span class="inline-code--light py-0">"/user"</span> 
+                        and 
+                        <span class="inline-code--light py-0">"/user/videos"</span>.
+                      </span>
+                    </v-tooltip>
+                  </v-radio-group>
+                </template>
+              </section-settings>
+            </v-tab-item>
+
             <!-- tab::input -->
             <v-tab-item transition="fade-in" reverse-transition="fade-in">
               <section-settings
@@ -1446,6 +1528,7 @@ export default {
         { text: 'General' },
         { text: 'UI appearance' },
         { text: 'Tabs & workspaces' },
+        { text: 'Navigation' },
         { text: 'Input' },
         { text: 'Search' },
         { text: 'Data & storage' },
@@ -1477,6 +1560,7 @@ export default {
       themeType: 'storageData.settings.theme.type',
       navigatorLayout: 'storageData.settings.navigatorLayout',
       closeAppWindowWhenLastWorkspaceTabIsClosed: 'storageData.settings.navigator.tabs.closeAppWindowWhenLastWorkspaceTabIsClosed',
+      navigatorHistoryStyleSelected: 'storageData.settings.navigator.historyStyle.selected',
       navigatorShowHiddenDirItems: 'storageData.settings.navigator.showHiddenDirItems',
       navigatorOpenDirItemWithSingleClick: 'storageData.settings.navigator.openDirItemWithSingleClick',
       dirItemHoverEffect: 'storageData.settings.dirItemHoverEffect',
