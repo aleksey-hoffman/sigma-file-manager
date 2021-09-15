@@ -409,6 +409,12 @@ If you like their art, consider supporting their work. You can find their suppor
   </thead>
   <tbody>
     <tr>
+      <td>Windows winget</td>
+      <td>
+        <code>winget install sigma</code>
+      </td>
+    </tr>
+    <tr>
       <td>Windows</td>
       <td>
         <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/releases/">
@@ -425,7 +431,7 @@ If you like their art, consider supporting their work. You can find their suppor
       </td>
     </tr>
     <tr>
-      <td>Linux (any) portable</td>
+      <td>Linux Debian portable</td>
       <td>
         <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/releases/">
           Sigma-File-Manager-Linux.AppImage
