@@ -69,13 +69,13 @@ function getCommand (params) {
     if (params.command === 'set-utf-8-encoding') {
       return '[System.Console]::OutputEncoding = [System.Console]::InputEncoding = [System.Text.Encoding]::UTF8'
     }
-    if (params.command === 'drive-info') {
+    if (params.command === 'get-drive-info') {
       return [
         'get-ciminstance -ClassName Win32_LogicalDisk',
         '| convertTo-csv | convertFrom-csv | convertTo-json'
       ].join(' ')
     }
-    if (params.command === 'extra-drive-info') {
+    if (params.command === 'get-extra-drive-info') {
       return `(Get-CimInstance Win32_Diskdrive -Filter "Partitions>0" | ForEach-Object {
         $disk = Get-CimInstance
           -ClassName MSFT_PhysicalDisk
@@ -290,20 +290,46 @@ async function setUTF8encoding () {
 * @returns {array}
 */
 async function getDriveInfo () {
-  let data = await execCommand({
-    command: getCommand({command: 'drive-info'})
-  })
-  return JSON.parse(data.join(''))
+  try {
+    let data = await execCommand({
+      command: getCommand({command: 'get-drive-info'})
+    })
+    return parseJSONStringArray(data)
+  }
+  catch (error) {
+    return []
+  }
 }
 
 /**
 * @returns {array}
 */
 async function getExtraDriveInfo () {
-  let data = await execCommand({
-    command: getCommand({command: 'extra-drive-info'})
-  })
-  return JSON.parse(data.join(''))
+  try {
+    let data = await execCommand({
+      command: getCommand({command: 'get-extra-drive-info'})
+    })
+    return parseJSONStringArray(data)
+  }
+  catch (error) {
+    return []
+  }
+}
+
+/**
+* @param {string[]} data
+* @returns {array}
+*/
+function parseJSONStringArray (data) {
+  try {
+    let dataFormatted = JSON.parse(data.join(''))
+    return Array.isArray(dataFormatted)
+      ? dataFormatted
+      : [dataFormatted]
+  }
+  catch (error) {
+    return []
+  }
 }
 
 /**
