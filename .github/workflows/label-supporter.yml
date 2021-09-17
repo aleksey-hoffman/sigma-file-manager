@@ -35,7 +35,8 @@ jobs:
           ${{ 
             contains(
               fromJson('[
-                "andyundso"
+                "andyundso",
+                "exploitacious"
               ]'), 
               github.actor
             ) 
