@@ -16,7 +16,10 @@ jobs:
             fromJson('[
               "aleksey-hoffman",
               "photoancestry",
-              "andyundso"
+              "andyundso",
+              "theoob",
+              "julienripet",
+              "exploitacious"
             ]'), 
             github.actor
           ) 
