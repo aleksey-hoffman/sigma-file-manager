@@ -426,7 +426,7 @@ export default new Vuex.Store({
         adminPromptItems: ['built-in', 'pkexec'],
         appUpdates: {
           autoCheck: true,
-          autoDownload: true,
+          autoDownload: false,
           autoInstall: false,
         },
         globalSearch: {
