@@ -222,12 +222,13 @@ export default new Vuex.Store({
     },
     sorting: {
       order: 'ascending',
-      selectedType: { name: 'name', title: 'By name' },
+      selectedType: {name: 'name', title: 'By name'},
       types: [
-        { name: 'name', title: 'By name' },
-        { name: 'size', title: 'By file size & item count' },
-        { name: 'modified', title: 'By date | modified' },
-        { name: 'created', title: 'By date | created' },
+        {name: 'name', title: 'By name'},
+        {name: 'size', title: 'By file size & item count'},
+        {name: 'date-modified-contents', title: 'By date modified contents'},
+        {name: 'date-modified-meta', title: 'By date modified meta'},
+        {name: 'date-created', title: 'By date created'},
         // TODO: finish in v1.2.0
         // Should request to turn on the 'storeDirItemOpenCount'
         // { name: 'popularity', title: 'By popularity' },
@@ -1536,12 +1537,17 @@ export default new Vuex.Store({
                 : dirItem.dirItemCount
             })
       }
-      else if (sortingType.name === 'modified') {
+      else if (sortingType.name === 'date-modified-contents') {
         state.navigatorView.dirItems = order === 'ascending'
           ? naturalSort(state.navigatorView.dirItems).asc(dirItem => Math.round(dirItem.stat.mtimeMs))
           : naturalSort(state.navigatorView.dirItems).desc(dirItem => Math.round(dirItem.stat.mtimeMs))
       }
-      else if (sortingType.name === 'created') {
+      else if (sortingType.name === 'date-modified-meta') {
+        state.navigatorView.dirItems = order === 'ascending'
+          ? naturalSort(state.navigatorView.dirItems).asc(dirItem => Math.round(dirItem.stat.ctimeMs))
+          : naturalSort(state.navigatorView.dirItems).desc(dirItem => Math.round(dirItem.stat.ctimeMs))
+      }
+      else if (sortingType.name === 'date-created') {
         state.navigatorView.dirItems = order === 'ascending'
           ? naturalSort(state.navigatorView.dirItems).asc(dirItem => Math.round(dirItem.stat.birthtimeMs))
           : naturalSort(state.navigatorView.dirItems).desc(dirItem => Math.round(dirItem.stat.birthtimeMs))
