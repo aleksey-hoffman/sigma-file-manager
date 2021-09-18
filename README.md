@@ -125,7 +125,7 @@ Several more major features / improvements are already in development and will b
 
 These wonderful people and companies are currently funding this project. Thanks to them I can keep improving this app, they are the reason good quality free software can exist.
 
-![Patreon-progress-goal](https://user-images.githubusercontent.com/61761672/133000478-9666f7e2-d0b9-40f1-b140-4b026ee00a99.png)
+![Patreon-progress-goal](https://user-images.githubusercontent.com/61761672/133787919-838742af-a238-47de-832b-9fe215f4ec03.png)
 
 ## Sponsors - tier 2
 Become the first supporter
@@ -134,12 +134,13 @@ Become the first supporter
 Become the first supporter
 
 ## Generous supporters
+
 <table>
   <tbody>
     <tr>
       <td align="center" valign="middle">
         <a href="https://www.photoancestry.com/" title="Houston Photo Restoration">
-          <img width="64px" height="64px" src="https://www.photoancestry.com/images/photo-restoration-houston.png">
+          <img width="128px"  src="https://www.photoancestry.com/images/fpbanner_poster_.png">
         </a>
       </td>
     </tr>
@@ -153,11 +154,24 @@ Become the first supporter
 
 ## Grateful supporters
 
-<div>
-  <a href="https://github.com/andyundso" title="Andy Pfister">
-    <b>~ Andy Pfister ~</b>
-  </a>
-</div>
+<table>
+  <tbody>
+    <tr>
+      <td align="center" valign="middle">
+        <a href="https://github.com/andyundso" title="Andy Pfister">
+          <img valign="middle" width="36px" src="https://avatars.githubusercontent.com/u/7010698?v=4">
+          Andy Pfister
+        </a>
+      </td>
+      <td align="center" valign="middle">
+        <a href="https://github.com/exploitacious" title="Alex Ivantsov">
+          <img valign="middle" width="36px" src="https://avatars.githubusercontent.com/u/75740078?v=4">
+          Alex Ivantsov
+        </a>
+      </td>
+    </tr>
+  </tbody>
+</table>
 
 ## Thoughtful supporters
 
@@ -178,7 +192,7 @@ Become the first supporter
 
 ## Join
 
-#### 🎉 Supporter goal: 4 of 500 people joined
+#### 🎉 Supporter goal: 5 of 500 people joined
 
 Supporters get rewards for supporting this project on Patreon. Check out the list of rewards:
 
