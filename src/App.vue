@@ -124,6 +124,7 @@ export default {
       this.checkForAppUpdateInstalled()
       this.initDirWatcherWorker()
       this.initEventHubListeners()
+      electron.ipcRenderer.invoke('main-window-loaded')
     }
     catch (error) {
       electron.ipcRenderer.send('show:errorWindow', {
@@ -219,6 +220,10 @@ export default {
       })
     },
     initIPCListeners () {
+      electron.ipcRenderer.on('open-global-search', (event, data) => {
+        this.$store.dispatch('TOGGLE_GLOBAL_SEARCH')
+      })
+
       electron.ipcRenderer.on('store:action', (event, data) => {
         this.$store.dispatch(data.action, data.params)
       })

@@ -21,6 +21,16 @@ export default {
     shortcut: 'Ctrl + Shift + Space',
     description: 'Open / close the app window'
   },
+  openGlobalSearch: {
+    isGlobal: true,
+    isReadOnly: false,
+    conditions: {},
+    routes: ['all'],
+    icon: 'mdi-magnify',
+    action: {name: 'openGlobalSearch'},
+    shortcut: 'Alt + Ctrl + Shift + F',
+    description: 'Open global search'
+  },
   newNote: {
     isGlobal: true,
     isReadOnly: false,

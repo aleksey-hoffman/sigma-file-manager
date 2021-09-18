@@ -41,6 +41,9 @@ const windows = {
   trashManager: null,
   quickViewWindow: null
 }
+const windowLoadedCallbacks = {
+  mainWindow: []
+}
 const globalShortcuts = {}
 let storageData
 let tray
@@ -296,7 +299,20 @@ function createUtilWindow (fileName) {
   })
 }
 
+function runWindowLoadedCallbacks () {
+  for (const window in windowLoadedCallbacks) {
+    windowLoadedCallbacks[window].forEach(callback => {
+      callback()
+    })
+  }
+}
+
 function initIPCListeners () {
+  electron.ipcMain.handle('main-window-loaded', async (event) => {
+    runWindowLoadedCallbacks()
+  })
+
+  electron.ipcMain.handle('get-app-storage-data', async (event) => {
   electron.ipcMain.on('compute-request:trashDirItems', (event, payload) => {
     if (payload.items.length === 0) {
       throw Error(`
@@ -563,9 +579,12 @@ function getTrayMenu () {
     {
       label: 'Toggle window visibility',
       accelerator: globalShortcuts?.toggleApp?.shortcut || '',
-      click: () => {
-        global.toggleApp({type: 'tray'})
-      }
+      click: () => global.toggleApp({type: 'tray'})
+    },
+    {
+      label: 'Open global search',
+      accelerator: globalShortcuts?.openGlobalSearch?.shortcut || '',
+      click: () => global.openGlobalSearch()
     },
     {
       label: 'Create new note',
@@ -657,6 +676,22 @@ global.toggleApp = (options = {}) => {
   }
   else {
     createMainWindow()
+  }
+}
+
+global.openGlobalSearch = () => {
+  if (windows.main) {
+    if (!windows.main.isFocused()) {
+      global.focusApp()
+    }
+    windows.main.webContents.send('open-global-search')
+  }
+  else {
+    global.focusApp()
+    windowLoadedCallbacks.mainWindow.push(() => {
+      global.focusApp()
+      windows.main.webContents.send('open-global-search')
+    })
   }
 }
 
