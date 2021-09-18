@@ -134,7 +134,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
         <!-- card::date-->
         <div class="dir-item-card__date">
-          {{getLocalDateTime({stat: 'ctime'})}}
+          {{getSortColumnValue('date')}}
         </div>
 
         <!-- {type: (directory|directory-symlink)} -->
@@ -371,6 +371,22 @@ export default {
     }
   },
   methods: {
+    getSortColumnValue (columnName) {
+      if (columnName === 'date') {
+        if (this.selectedSortingType.name === 'date-modified-contents') {
+          return this.getLocalDateTime({stat: 'mtime'})
+        }
+        else if (this.selectedSortingType.name === 'date-modified-meta') {
+          return this.getLocalDateTime({stat: 'ctime'})
+        }
+        else if (this.selectedSortingType.name === 'date-created') {
+          return this.getLocalDateTime({stat: 'birthtime'})
+        }
+      }
+      else {
+        return ''
+      }
+    },
     getLocalDateTime (params) {
       return this.$utils.getLocalDateTime(
         this.source.stat[params.stat], 
