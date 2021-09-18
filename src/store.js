@@ -430,8 +430,8 @@ export default new Vuex.Store({
           autoInstall: false,
         },
         globalSearch: {
-          disallowedPaths: ['C:/Windows', '**/node_modules'],
-          disallowedPathsItems: ['C:/Windows', '**/node_modules'],
+          disallowedPaths: ['C:/Windows', '**/node_modules/**'],
+          disallowedPathsItems: ['C:/Windows', '**/node_modules/**'],
         },
         globalSearchScanWasInterrupted: false,
         globalSearchScanDepth: 10,

@@ -7,25 +7,25 @@ const through2 = require('through2')
 const readdirp = require('readdirp')
 const micromatch = require('micromatch')
 
-class Walk {
+class DriveWalker {
   constructor (root, maxDepth, disallowedPaths) {
     this.root = root
     this.maxDepth = maxDepth
     this.disallowedPaths = disallowedPaths.map(path => {
       return PATH.normalize(path).replace(/\\/g, '/')
     })
-    this.init()
   }
 
   init () {
     const classScope = this
     const readStream = readdirp(this.root, {
       type: 'files_directories',
-      lstat: true,
+      lstat: false,
       depth: this.maxDepth || undefined
     })
+
     const lineTransformer = through2.obj(function (data, enc, next) {
-      const fullPath = data.fullPath
+      const fullPath = data.fullPath.replace(/\\/g, '/')
       if (!micromatch.isMatch(fullPath, classScope.disallowedPaths)) {
         this.push(`${fullPath}\n`)
       }
@@ -37,4 +37,6 @@ class Walk {
   }
 }
 
-module.exports = { Walk }
+module.exports = {
+  DriveWalker
+}

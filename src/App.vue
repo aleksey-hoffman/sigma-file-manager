@@ -32,7 +32,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 console.time('time::App.vue::Imports')
 import { mapGetters } from 'vuex'
 import { mapFields } from 'vuex-map-fields'
-import { Walk } from './utils/driveWalker.js'
+import { DriveWalker } from './utils/driveWalker.js'
 import GlobalSearchWorker from 'worker-loader!./workers/globalSearchWorker.js'
 import DirWatcherWorker from 'worker-loader!./workers/dirWatcherWorker.js'
 import TimeUtils from './utils/timeUtils.js'
@@ -580,7 +580,7 @@ export default {
         if (driveIsMounted) {
           task.props.driveCount++
           task.props.scans[index] = {}
-          task.props.scans[index].readStream = new Walk(
+          task.props.scans[index].readStream = new DriveWalker(
             searchDataFile.mount,
             this.globalSearchScanDepth,
             this.globalSearchDisallowedPaths
