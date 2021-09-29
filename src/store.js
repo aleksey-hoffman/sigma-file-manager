@@ -13,7 +13,7 @@ import TimeUtils from './utils/timeUtils.js'
 import * as fsManager from './utils/fsManager'
 import { getField, updateField } from 'vuex-map-fields'
 import {readFile, readFileSync, writeFile, writeFileSync} from 'atomically'
-import Notification from './utils/notifications.js'
+import * as notifications from './utils/notifications.js'
 const electron = require('electron')
 const electronRemote = require('@electron/remote')
 const fsExtra = require('fs-extra')
@@ -2474,45 +2474,18 @@ export default new Vuex.Store({
       // Condition: route is allowed
       const condition4Fullfilled = payload.routes[0] === 'all' ||
         payload.routes.includes(router.currentRoute.name)
+
       if (alertOnConditionUnfullfilled && !condition1Fullfilled) {
-        eventHub.$emit('notification', {
-          action: 'update-by-type',
-          type: 'action-failed',
-          timeout: 3000,
-          closeButton: true,
-          title: 'Action failed',
-          message: 'Action is not allowed when input field is active'
-        })
+        notifications.emit({name: 'actionNotAllowedWhenInputFieldIsActive'})
       }
       else if (alertOnConditionUnfullfilled && !condition2Fullfilled) {
-        eventHub.$emit('notification', {
-          action: 'update-by-type',
-          type: 'action-failed',
-          timeout: 3000,
-          closeButton: true,
-          title: 'Action failed',
-          message: 'Action is not allowed when a dialog is opened'
-        })
+        notifications.emit({name: 'actionNotAllowedWhenDialogIsOpened'})
       }
       else if (alertOnConditionUnfullfilled && !condition3Fullfilled) {
-        eventHub.$emit('notification', {
-          action: 'update-by-type',
-          type: 'action-failed',
-          timeout: 3000,
-          closeButton: true,
-          title: 'Action failed',
-          message: 'No directory items are selected'
-        })
+        notifications.emit({name: 'actionFailedNoDirItemsSelected'})
       }
       else if (alertOnConditionUnfullfilled && !condition4Fullfilled) {
-        eventHub.$emit('notification', {
-          action: 'update-by-type',
-          type: 'action-failed',
-          timeout: 3000,
-          closeButton: true,
-          title: 'Action failed',
-          message: 'Action is not allowed on this page'
-        })
+        notifications.emit({name: 'actionNotAllowedOnThisPage'})
       }
       return condition1Fullfilled &&
         condition2Fullfilled &&
@@ -2706,11 +2679,11 @@ export default new Vuex.Store({
           key: 'storageData.settings.UIZoomLevel',
           value: newZoomFactor
         })
-        eventHub.$emit('notification', {
-          action: 'update-by-type',
-          type: 'ui-zoom:change',
-          timeout: 2000,
-          title: `UI scale changed: ${(newZoomFactor * 100).toFixed(0)}%`
+        notifications.emit({
+          name: 'increaseUIZoom', 
+          props: {
+            newZoomFactor: (newZoomFactor * 100).toFixed(0)
+          }
         })
       }
     },
@@ -2723,11 +2696,11 @@ export default new Vuex.Store({
           key: 'storageData.settings.UIZoomLevel',
           value: newZoomFactor
         })
-        eventHub.$emit('notification', {
-          action: 'update-by-type',
-          type: 'ui-zoom:change',
-          timeout: 2000,
-          title: `UI scale changed: ${(newZoomFactor * 100).toFixed(0)}%`
+        notifications.emit({
+          name: 'decreaseUIZoom', 
+          props: {
+            newZoomFactor: (newZoomFactor * 100).toFixed(0)
+          }
         })
       }
     },
@@ -2737,12 +2710,7 @@ export default new Vuex.Store({
         key: 'storageData.settings.UIZoomLevel',
         value: 1.0
       })
-      eventHub.$emit('notification', {
-        action: 'update-by-type',
-        type: 'ui-zoom:change',
-        timeout: 2000,
-        title: `UI scale changed: 100%`
-      })
+      notifications.emit({name: 'resetUIZoom'})
     },
     TOGGLE ({ commit }, key) {
       commit('TOGGLE', key)
@@ -2789,9 +2757,7 @@ export default new Vuex.Store({
     CLOSE_ALL_TABS_IN_CURRENT_WORKSPACE (store) {
       let tabs = [...store.getters.selectedWorkspace.tabs]
       if (tabs.length === 0) {
-        new Notification({
-          name: 'currentWorkspaceHasNoTabs'
-        })
+        notifications.emit({name: 'currentWorkspaceHasNoTabs'})
       }
       else {
         tabs = []
@@ -2801,9 +2767,7 @@ export default new Vuex.Store({
           store.dispatch('CLOSE_APP_WINDOW')
         }
         else {
-          new Notification({
-            name: 'closedAllTabsInCurrentWorkspace'
-          })
+          notifications.emit({name: 'closedAllTabsInCurrentWorkspace'})
         }
       }
     },
@@ -2819,9 +2783,7 @@ export default new Vuex.Store({
           store.dispatch('CLOSE_APP_WINDOW')
         }
         else {
-          new Notification({
-            name: 'currentWorkspaceHasNoTabs'
-          })
+          notifications.emit({name: 'currentWorkspaceHasNoTabs'})
         }
       }
     },
@@ -2834,9 +2796,9 @@ export default new Vuex.Store({
       if (tabExists) {
         tabs.splice(tabIndex, 1)
         store.dispatch('SET_TABS', tabs)
-        new Notification({
+        notifications.emit({
           name: 'tabRemoved', 
-          format: {
+          props: {
             tabPath: tab.path
           }
         })
@@ -2865,18 +2827,18 @@ export default new Vuex.Store({
       if (tabIndex === -1) {
         tabs.push(newTab)
         store.dispatch('SET_TABS', tabs)
-        new Notification({
+        notifications.emit({
           name: 'tabAdded', 
-          format: {
+          props: {
             tabShortcut: store.state.storageData.settings.shortcuts.switchTab.shortcut
               .replace('[1 - 9]', tabs.length)
           }
         })
       }
       else {
-        new Notification({
+        notifications.emit({
           name: 'tabIsAlreadyOpened', 
-          format: {
+          props: {
             tabIndex: tabIndex + 1
           }
         })
@@ -2970,12 +2932,11 @@ export default new Vuex.Store({
           ...params
         })
         if (params.emitNotification) {
-          eventHub.$emit('notification', {
-            action: 'update-by-type',
-            type: 'navigator:reload',
-            timeout: 2000,
-            title: 'Directory reloaded',
-            message: `<b>Directory:</b> ${store.state.navigatorView.currentDir.path}`
+          notifications.emit({
+            name: 'directoryWasReloaded', 
+            props: {
+              currentDirPath: store.state.navigatorView.currentDir.path
+            }
           })
         }
       }
@@ -3033,9 +2994,17 @@ export default new Vuex.Store({
     * @param {string[]} params.source
     */
     ADD_TO_ARCHIVE (store, params) {
+      let archiveState = {
+        isCanceled: false,
+        error: false
+      }
+      let notification = {}
+      let hashID = utils.getHash()
+      
       if (params.source === 'target-items') {
         params.source = store.state.contextMenus.dirItem.targetItemsStats.dirItemsPaths
       }
+
       if (params.dest) {
         params.dest = utils.getUniquePath(params.dest)
       }
@@ -3044,7 +3013,8 @@ export default new Vuex.Store({
         const uniqueDestPath = utils.getUniquePath(PATH.join(parsed.dir, 'Archive.zip'))
         params.dest = uniqueDestPath
       }
-      const appBinExtractStream = node7z.add(
+
+      const archiveStream = node7z.add(
         params.dest,
         params.source,
         {
@@ -3052,17 +3022,52 @@ export default new Vuex.Store({
           $progress: true
         }
       )
-      appBinExtractStream.on('error', (error) => {
-        new Notification({
-          name: 'errorCannotAddToArchive', 
+
+      archiveStream.on('error', (error) => {
+        archiveState.error = true
+        notifications.emit({
+          name: 'archiveAddDataError', 
           error
         })
       })
-      appBinExtractStream.on('end', () => {
-        new Notification({
-          name: 'archiveWasCreated', 
-          message: params.dest
+      
+      archiveStream.on('progress', (progress) => {
+        notification = notifications.emit({
+          name: 'archiveCreationProgress', 
+          props: {
+            hashID,
+            progress,
+            params,
+            archiveStream,
+            archiveState
+          }
         })
+      })
+      
+      archiveStream.on('end', () => {
+        if (!archiveState.error) {
+          if (!archiveState.isCanceled) {
+            setTimeout(() => {
+              console.log('progress, params', notification.progress, params)
+              notification.update({
+                name: 'archiveWasCreated',
+                props: {
+                  progress: notification.progress,
+                  params,
+                  hashID
+                }
+              })
+            }, 1000)
+          }
+          else {
+            notification.update({
+              name: 'archiveCreationCanceled',
+              props: {
+                hashID
+              }
+            })
+          }
+        }
       })
     },
     /**
@@ -3070,6 +3075,13 @@ export default new Vuex.Store({
     * @param {string} params.source
     */
     EXTRACT_ARCHIVE (store, params) {
+      let archiveState = {
+        isCanceled: false,
+        error: false
+      }
+      let notification = {}
+      let hashID = utils.getHash()
+      
       if (params.source === 'target-items') {
         params.source = store.state.contextMenus.dirItem.targetItemsStats.dirItemsPaths[0]
       }
@@ -3080,27 +3092,7 @@ export default new Vuex.Store({
         params.dest = dest
       }
 
-      const hash = utils.getHash()
-
-      let state = {
-        isCanceled: false,
-        error: false
-      }
-
-      let notification = {
-        progress: {
-          percent: 0,
-          fileCount: 0,
-          file: ''
-        },
-        action: 'update-by-type',
-        hash,
-        type: `archiver:extract-progress-${hash}`,
-        colorStatus: 'blue',
-        timeout: 0,
-      }
-
-      const appBinExtractStream = node7z.extractFull(
+      const archiveStream = node7z.extractFull(
         params.source,
         params.dest,
         {
@@ -3109,55 +3101,49 @@ export default new Vuex.Store({
         }
       )
 
-      appBinExtractStream.on('error', (error) => {
-        state.error = true
-        eventHub.$emit('notification', {
-          action: 'update-by-type',
-          type: 'archiver:extract-error',
-          colorStatus: 'red',
-          timeout: 5000,
-          title: 'Error: cannot extract the archive',
-          message: error
+      archiveStream.on('error', (error) => {
+        archiveState.error = true
+        notifications.emit({
+          name: 'archiveExtractionError', 
+          error
         })
       })
-
-      appBinExtractStream.on('progress', (progress) => {
-        notification.progress = progress
-        notification.title = 'Extracting archive'
-        notification.message = `
-          ${notification.progress.percent}% • 
-          ${notification.progress.fileCount} files
-          <br><b>Archive:</b> ${params.source}
-        `
-        notification.actionButtons = [
-          {
-            title: 'cancel',
-            onClick: () => {
-              appBinExtractStream._childProcess.kill()
-              state.isCanceled = true
-            }
+      
+      archiveStream.on('progress', (progress) => {
+        notification = notifications.emit({
+          name: 'archiveExtractionProgress', 
+          props: {
+            hashID,
+            progress,
+            params,
+            archiveStream,
+            archiveState
           }
-        ]
-        eventHub.$emit('notification', notification)
+        })
       })
-
-      appBinExtractStream.on('end', () => {
-        notification.timeout = 5000
-        notification.actionButtons = []
-        notification.message = `
-          Done • ${notification.progress.fileCount} files
-          <br><b>Destination:</b> ${params.dest}
-        `
-        if (!state.error) {
-          if (!state.isCanceled) {
-            notification.colorStatus = 'teal'
-            notification.title = 'Archive was extracted'
-            eventHub.$emit('notification', notification)
+      
+      archiveStream.on('end', () => {
+        if (!archiveState.error) {
+          if (!archiveState.isCanceled) {
+            setTimeout(() => {
+              console.log('progress, params', notification.progress, params)
+              notification.update({
+                name: 'archiveWasExtracted',
+                props: {
+                  progress: notification.progress,
+                  params,
+                  hashID
+                }
+              })
+            }, 1000)
           }
           else {
-            notification.colorStatus = 'red'
-            notification.title = 'Archive extraction canceled',
-            eventHub.$emit('notification', notification)
+            notification.update({
+              name: 'archiveExtractionCanceled',
+              props: {
+                hashID
+              }
+            })
           }
         }
       })
@@ -3998,19 +3984,8 @@ export default new Vuex.Store({
         key: 'storageData.notes.items',
         value: state.storageData.notes.items
       })
-      eventHub.$emit('notification', {
-        action: 'add',
-        actionButtons: [
-          {
-            title: 'Undo',
-            action: 'undoTrashNote',
-            closesNotification: true
-          }
-        ],
-        closeButton: true,
-        timeout: 10000,
-        title: 'Note has been trashed',
-        message: 'Switch to "trashed notes" list to see all trashed notes'
+      notifications.emit({
+        name: 'noteWasTrashed'
       })
     },
     RESTORE_NOTE_FROM_TRASH ({ state, commit, dispatch, getters }, note) {
@@ -4360,17 +4335,16 @@ export default new Vuex.Store({
       }
       store.state.contextMenus[params.type].targetItemsStats = data
     },
-    SET_PINNED (store, payload) {
+    async SET_PINNED (store, payload) {
       let items = payload ? payload : store.getters.selectedDirItems
       let pinnedItems = utils.cloneDeep(store.state.storageData.pinned.items)
       const allSelectedArePinned = checkAllSelectedArePinned()
       let itemCounter = 0
-      let notificationParams = {}
       let itemToAdd = {}
       let itemPropertiesToStore = ['path']
 
       processItems()
-      setStorage()
+      await setStorage()
       setNotification()
 
       function checkAllSelectedArePinned () {
@@ -4383,13 +4357,9 @@ export default new Vuex.Store({
       function processItems () {
         if (allSelectedArePinned) {
           removeItems()
-          notificationParams.type = 'success:removedFromPinned'
-          notificationParams.title = `Removed ${itemCounter} items from pinned`
         }
         else {
           setItems()
-          notificationParams.type = 'success:addedToPinned'
-          notificationParams.title = `Added ${itemCounter} items to pinned`
         }
       }
 
@@ -4422,16 +4392,25 @@ export default new Vuex.Store({
       }
 
       function setNotification () {
-        eventHub.$emit('notification', {
-          action: 'update-by-type',
-          type: notificationParams.type,
-          timeout: 2000,
-          closeButton: true,
-          title: notificationParams.title,
-        })
+        if (allSelectedArePinned) {
+          notifications.emit({
+            name: 'removedFromPinnedSuccess', 
+            props: {
+              itemCounter
+            }
+          })
+        }
+        else {
+          notifications.emit({
+            name: 'addedToPinnedSuccess', 
+            props: {
+              itemCounter
+            }
+          })
+        }
       }
 
-      function setStorage () {
+      async function setStorage () {
         store.dispatch('SET', {
           key: 'storageData.pinned.items',
           value: pinnedItems
@@ -4441,9 +4420,8 @@ export default new Vuex.Store({
     /**
     * @param {array<object>} payload
     */
-    SET_PROTECTED (store, payload) {
+    async SET_PROTECTED (store, payload) {
       let itemCounter = 0
-      let notificationParams = {}
       let itemToAdd = {}
       let itemPropertiesToStore = ['path']
 
@@ -4454,14 +4432,12 @@ export default new Vuex.Store({
       })
 
       processItems()
-      setStorage()
+      await setStorage()
       setNotification()
 
       function processItems () {
         if (everySelectedIsProtected) {
           removeItems()
-          notificationParams.type = 'success:removedFromPinned'
-          notificationParams.title = `Removed ${itemCounter} items from protected`
           // Set permissions
           // const permissions = {
           //   owner: 7,
@@ -4472,8 +4448,6 @@ export default new Vuex.Store({
         }
         else {
           setItems()
-          notificationParams.type = 'success:addedToProtected'
-          notificationParams.title = `Added ${itemCounter} items to protected`
           // Set permissions
           // const permissions = {
           //   owner: 4,
@@ -4513,16 +4487,25 @@ export default new Vuex.Store({
       }
 
       function setNotification () {
-        eventHub.$emit('notification', {
-          action: 'update-by-type',
-          type: notificationParams.type,
-          timeout: 2000,
-          closeButton: true,
-          title: notificationParams.title,
-        })
+        if (everySelectedIsProtected) {
+          notifications.emit({
+            name: 'removedFromProtectedSuccess', 
+            props: {
+              itemCounter
+            }
+          })
+        }
+        else {
+          notifications.emit({
+            name: 'addedToProtectedSuccess', 
+            props: {
+              itemCounter
+            }
+          })
+        }
       }
 
-      function setStorage () {
+      async function setStorage () {
         store.dispatch('SET', {
           key: 'storageData.protected.items',
           value: protectedItems
@@ -4532,22 +4515,14 @@ export default new Vuex.Store({
     async SET_DIR_ITEM_PERMISSIONS (store, params) {
       try {
         await fsManager.changeMode(params)
-        eventHub.$emit('notification', {
-          action: 'update-by-type',
-          type: 'success:setDirItemPermissions',
-          timeout: 3000,
-          closeButton: true,
-          title: `Permissions were changed`,
+        notifications.emit({
+          name: 'setDirItemPermissionsSuccess'
         })
       }
       catch (error) {
-        eventHub.$emit('notification', {
-          action: 'update-by-type',
-          type: 'error:setDirItemPermissions',
-          timeout: 3000,
-          closeButton: true,
-          title: `Failed to change permissions`,
-          message: `${error}`
+        notifications.emit({
+          name: 'setDirItemPermissionsFailure',
+          error
         })
       }
     },
@@ -4861,7 +4836,7 @@ export default new Vuex.Store({
         ...params
       }
 
-      let notification = new Notification({name: 'copyDirItemsInProgress'})
+      let notification = notifications.emit({name: 'copyDirItemsInProgress'})
       showInProgressNotification()
       await copyItems(params)
       
@@ -4920,10 +4895,20 @@ export default new Vuex.Store({
 
       function showSuccessNotification () {
         if (params.operation === 'move') {
-          notification.update({name: 'moveDirItemsSuccess', format: {items: params.items.length}})
+          notification.update({
+            name: 'moveDirItemsSuccess', 
+            props: {
+              items: params.items.length
+            }
+          })
         }
         else if (params.operation === 'copy') {
-          notification.update({name: 'copyDirItemsSuccess', format: {items: params.items.length}})
+          notification.update({
+            name: 'copyDirItemsSuccess', 
+            props: {
+              items: params.items.length
+            }
+          })
         }
       }
       
@@ -5328,34 +5313,17 @@ export default new Vuex.Store({
         }
       })
     },
-    HANDLE_APP_UPDATE_UNAVAILABLE ({ state, commit, dispatch, getters }, payload) {
-      const { latestVersion, notifyUnavailable } = payload
+    HANDLE_APP_UPDATE_UNAVAILABLE (store, payload) {
+      const {latestVersion, notifyUnavailable} = payload
 
       if (notifyUnavailable) {
-        eventHub.$emit('notification', {
-          action: 'update-by-type',
-          type: 'update:unavailable',
-          timeout: 5000,
-          colorStatus: 'blue',
-          isPinned: true,
-          removeWhenHidden: false,
-          title: 'No updates available',
-          message: `
-            <b>Current version:</b> ${state.appVersion}
-            <br><b>Latest version:</b> ${latestVersion}
-          `,
-          closeButton: true,
-          actionButtons: [
-            {
-              title: 'Project page',
-              action: '',
-              extrnalLink: state.appPaths.githubRepoLink,
-              onClick: () => {
-                utils.openLink(state.appPaths.githubRepoLink)
-              },
-              closesNotification: false
-            }
-          ]
+        notifications.emit({
+          name: 'updateUnavailable', 
+          props: {
+            state: store.state,
+            utils,
+            latestVersion
+          }
         })
       }
     },
@@ -5402,50 +5370,18 @@ export default new Vuex.Store({
         actionButtons
       })
     },
-    HANDLE_APP_UPDATE_DOWNLOADED ({ state, commit, dispatch, getters }, payload) {
-      const { latestVersion, info } = payload
-      // Remove 'progress' notification
-      eventHub.$emit('notification', {
-        action: 'hide',
-        hashID: info.hashID
-      })
-
-      const actionButtons = [
-        {
-          title: 'install update',
-          action: '',
-          onClick: () => {
-            dispatch('OPEN_FILE', `${state.appPaths.updateDownloadDir}/${info.filename}`)
-          },
-          closesNotification: true
-        },
-        {
-          title: 'show in directory',
-          action: 'showDownloadedFile',
-          closesNotification: false,
-          onClick: () => {
-            dispatch('SHOW_DIR_ITEM_IN_DIRECTORY', { dir: info.dir, itemPath: info.filePath })
-          }
+    HANDLE_APP_UPDATE_DOWNLOADED (store, params) {
+      const {latestVersion, info} = params
+      notifications.hideByHashID(info.hashID)
+      notifications.emit({
+        name: 'updateWasDownloaded', 
+        props: {
+          store, 
+          latestVersion, 
+          info
         }
-      ]
-
-      // Push 'update was downloaded' notification
-      eventHub.$emit('notification', {
-        action: 'add',
-        type: 'update:downloaded',
-        colorStatus: 'blue',
-        isPinned: true,
-        isUpdate: true,
-        removeWhenHidden: false,
-        timeout: 0,
-        title: `Update downloaded: v${latestVersion}`,
-        message: 'Press install to close the app and update it',
-        closeButton: true,
-        actionButtons
       })
-
-      // Remove "update-available" item from notifications list
-      state.notifications = state.notifications.filter(item => item.type !== 'update-available')
+      store.state.notifications = store.state.notifications.filter(item => item.type !== 'update-available')
     },
     DOWNLOAD_APP_UPDATE (store, params) {
       electron.ipcRenderer.send('download-file', {

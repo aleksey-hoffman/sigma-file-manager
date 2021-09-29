@@ -110,6 +110,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             </v-layout>
 
             <v-progress-linear
+              class="mb-2"
               v-show="showProgressBar"
               :value="notification.progress.percentDone"
               height="4"
