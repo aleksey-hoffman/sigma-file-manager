@@ -554,14 +554,15 @@ This is how and why "Sigma file manager" was created. It all started from a simp
 
 **Open-source projects:**
 
-- **Electron:** Makes it possible to create cross-platform apps for desktop platforms.
-- **Vue.js:** A wonderful JS framework that speeds up web development.
-- **VSCode:** One of the best code editors that significantly simplifies the development process.
-- **Vuetify:** Material components library that speeds up UI development.
-- **Templarian/MaterialDesign:** Provides beautiful, community created, free icons.
-- **ytdl-org/youtube-dl:** Allows the app to download videos from a URL link using Python.
-- **FFMPEG:** Allows the app to convert and edit audio/video/images and get the media info.
-- **7-zip.org:** Allows the app to work with archives (compress/decompress directories and files).
+- **[Electron](https://github.com/electron/electron):** Makes it possible to create cross-platform apps for desktop platforms.
+- **[Vue.js](https://github.com/vuejs/vue):** A wonderful JS framework that speeds up web development.
+- **[VSCode](https://github.com/microsoft/vscode/):** One of the best code editors that significantly simplifies the development process.
+- **[Vuetify](https://github.com/vuetifyjs/vuetify):** Material components library that speeds up UI development.
+- **[Templarian/MaterialDesign](https://github.com/Templarian/MaterialDesign):** Provides beautiful, community created, free icons.
+- **[ytdl-org/youtube-dl](https://github.com/ytdl-org/youtube-dl):** Allows the app to download videos from a URL link using Python.
+- **[FFMPEG](https://ffmpeg.org/):** Allows the app to convert and edit audio/video/images and get the media info.
+- **[7-zip.org](https://7-zip.org):** Allows the app to work with archives (compress/decompress directories and files).
+- **[xxoo/node-fswin](https://github.com/xxoo/node-fswin):** Windows OS native API bindings for Node.js.
 
 # For developers
 
@@ -569,7 +570,7 @@ Developers, feel free to optimize and improve the app. Make sure to create a new
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) file for help, if you are new to contributing code.
 
-You will need Node.js <= `v15.14.0` installed.
+You will need Node.js <= `v15.14.0` and `Visual Studio build tools` (Windows only) installed.
 
 To open the project on the dev server, run the following commands:
 
