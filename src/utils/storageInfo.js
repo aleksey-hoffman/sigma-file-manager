@@ -83,17 +83,15 @@ async function getOneDrive () {
 }
 
 export async function fetchBlockDevicesExtraData () {
-  try {
-    getBlockDevicesExtraData()
-      .then((data) => {
-        const extraDeviceDataFormatted = data?.map?.(drive => {
-          drive.MediaType = state.driveMemoryTypes[drive.MediaType]
-          return drive
-        })
-        state.extraDeviceData = extraDeviceDataFormatted || []
+  getBlockDevicesExtraData()
+    .then((data) => {
+      const extraDeviceDataFormatted = data?.map?.(drive => {
+        drive.MediaType = state.driveMemoryTypes[drive.MediaType]
+        return drive
       })
-  }
-  catch (error) {}
+      state.extraDeviceData = extraDeviceDataFormatted || []
+    })
+    .catch((error) => {console.log(error)})
 }
 
 export async function getBlockDevicesExtraData () {

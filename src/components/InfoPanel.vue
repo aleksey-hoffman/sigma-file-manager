@@ -194,8 +194,7 @@ export default {
       'lastSelectedDirItem'
     ]),
     ...mapFields({
-      inputState: 'storageData.settings.infoPanels.navigatorView',
-      placeholders: 'storageData.settings.infoPanels.navigatorView',
+      inputState: 'inputState',
       navigatorViewInfoPanel: 'storageData.settings.infoPanels.navigatorView',
       autoCalculateDirSize: 'storageData.settings.autoCalculateDirSize',
     }),
@@ -237,8 +236,6 @@ export default {
     previewIcon () {
       const type = this.lastSelectedDirItem?.type
       const itemMimeDescription = this.lastSelectedDirItem?.mime.mimeDescription
-      if (!type) {return ''}
-
       const icon = {
         name: '',
         size: '56px',

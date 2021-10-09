@@ -21,7 +21,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         >
         <div class="content-area__header__content">
           <div class="content-area__header__text">
-            <b>"Sigma file manager"</b> is a free, open source, advanced,
+            <strong>"Sigma File Manager"</strong> is a free, open source, advanced,
             modern file manager app, licensed under GNU GPLv3 or later.
             <br>Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           </div>
@@ -325,10 +325,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                         </div>
                       </template>
                       <span>
-                        <b>
+                        <strong>
                           When the app main window is closed, all features will remain active and
                           trigger without a delay (features like global shortcuts, auto updating, etc).
-                        </b>
+                        </strong>
                       </span>
                     </v-tooltip>
 
@@ -350,26 +350,26 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                         <p>
                           When the app main window is closed:
                         </p>
-                        <b>
+                        <strong>
                           <v-icon color="teal">mdi-circle-medium</v-icon>
                           The following features will remain active:
-                        </b>
+                        </strong>
                         <div class="ml-4 my-2">
                           - Auto updating
                         </div>
 
-                        <b>
+                        <strong>
                           <v-icon color="orange">mdi-circle-medium</v-icon>
                           The following features will work with limitations. The app will take some time to load back into memory:
-                        </b>
+                        </strong>
                         <div class="ml-4 my-2">
                           - Global shortcuts: will trigger with a delay, the app will take some time to load.
                         </div>
 
-                        <b>
+                        <strong>
                           <v-icon color="red">mdi-circle-medium</v-icon>
                           The following features will not work:
-                        </b>
+                        </strong>
                         <div class="ml-4 my-2">
                           - Drive scan. Drives are scanned periodically to ensure features like global search can be used without a delay.
                         </div>
@@ -827,13 +827,13 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     </template>
                     <span>
                       <div>
-                        <b>Warning:</b> this is a computationally intensive feature,
+                        <strong>Warning:</strong> this is a computationally intensive feature,
                         so it's recommended to turn it on only on computers with a
                         powerful CPU and an SSD. It's also recommended to disable
                         it on laptops, since it increases battery usage.
                       </div>
                       <div class="mt-2">
-                        <b>Description:</b> When you open or select a directory,
+                        <strong>Description:</strong> When you open or select a directory,
                         the app will automatically calculate and display its full size.
                       </div>
                       <div class="mt-2">
@@ -953,7 +953,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                       <span>
                         This custom Sigma history style allows you to get back to previously opened paths,
                         even after inserting a new path into the history while navigating the history stack.
-                        <br><b>Example:</b>
+                        <br><strong>Example:</strong>
                         <br>- Open directory <span class="inline-code--light py-0">"/user"</span>
                         <br>- Open directory <span class="inline-code--light py-0">"/user/pictures"</span>
                         <br>- Open directory <span class="inline-code--light py-0">"/user/pictures/screenshots"</span>
@@ -980,7 +980,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                         This is a traditional history style, used in vast majority of apps. 
                         It overwrites all succeding paths when you insert a new path anywhere other than the end, 
                         which means once you go back in history and open some other directory, all succedding entries will be gone.
-                        <br><b>Example:</b>
+                        <br><strong>Example:</strong>
                         <br>- Open directory <span class="inline-code--light py-0">"/user"</span>
                         <br>- Open directory <span class="inline-code--light py-0">"/user/pictures"</span>
                         <br>- Open directory <span class="inline-code--light py-0">"/user/pictures/screenshots"</span>
@@ -1512,11 +1512,13 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 </template>
 
 <script>
-import { mapFields } from 'vuex-map-fields'
+import {mapFields} from 'vuex-map-fields'
 import SectionSettings from '../components/SectionSettings.vue'
 
 export default {
-  components: { SectionSettings },
+  components: {
+    SectionSettings
+  },
   name: 'settings',
   data () {
     return {
@@ -1525,14 +1527,14 @@ export default {
       },
       settingsSelectedTab: 0,
       settingsTabs: [
-        { text: 'General' },
-        { text: 'UI appearance' },
-        { text: 'Tabs & workspaces' },
-        { text: 'Navigation' },
-        { text: 'Input' },
-        { text: 'Search' },
-        { text: 'Data & storage' },
-        { text: 'Stats' }
+        {text: 'General'},
+        {text: 'UI appearance'},
+        {text: 'Tabs & workspaces'},
+        {text: 'Navigation'},
+        {text: 'Input'},
+        {text: 'Search'},
+        {text: 'Data & storage'},
+        {text: 'Stats'}
       ],
       suggestedGlobalSearchScanDepthItems: [3, 4, 5, 6, 7, 8, 9, 10]
     }
@@ -1671,6 +1673,8 @@ export default {
       }
       else if (!value) {
         this.$store.dispatch('STOP_APP_UPDATER')
+        this.autoDownloadAppUpdates = false
+        this.autoInstallAppUpdates = false 
       }
     },
     storeDirItemOpenEvent (newValue) {
@@ -1679,12 +1683,6 @@ export default {
           key: 'storageData.stats.dirItemsTimeline',
           value: []
         })  
-      }
-    },
-    autoCheckForAppUpdates (newValue) {
-      if (!newValue) {
-        this.autoDownloadAppUpdates = false
-        this.autoInstallAppUpdates = false 
       }
     }
   },

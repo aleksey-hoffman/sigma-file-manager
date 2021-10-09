@@ -15,7 +15,7 @@ let data = {
 let backgroundItems = getBackgroundItems()
 setWindowTransparencyEffectData(backgroundItems)
 
-function setWindowTransparencyEffectData () {
+function setWindowTransparencyEffectData (backgroundItems) {
   data.windowTransparencyEffectData.background.selected = getSelectedBackground(backgroundItems)
   data.windowTransparencyEffectData.background.items = backgroundItems
 }

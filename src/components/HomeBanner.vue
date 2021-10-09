@@ -12,7 +12,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       `height: ${homeBannerHeight + 'vh' || '50vh'}`
     "
   >
-    <div class="media-banner__media-container"></div>
+    <div 
+      class="media-banner__media-container" 
+      @click="handleClickDinoGameButton()"
+    ></div>
 
     <!-- home-banner::color-gradient-overlay -->
     <div
@@ -37,6 +40,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     <div
       class="media-banner__overlay"
       v-if="homeBannerOverlaySelectedItem.name === 'overlayFade'"
+      @click="handleClickDinoGameButton()"
       position="bottom"
       :overlayType="homeBannerOverlaySelectedItem.name"
       :style="{
@@ -49,6 +53,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     <div
       class="media-banner__overlay"
       v-if="homeBannerOverlaySelectedItem.name === 'maskFade'"
+      @click="handleClickDinoGameButton()"
       position="bottom"
       :overlayType="homeBannerOverlaySelectedItem.name"
       :style="{
@@ -56,13 +61,6 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           homeBannerOverlaySelectedItem.params.bottomMaskHeight
       }"
     ></div>
-
-    <button
-      class="hidden-game-button"
-      @click="handleClickHiddenButton(homeBannerSelectedMedia)"
-      tabindex="-1"
-      focusable="false"
-    ></button>
 
     <!-- home-banner::bottom-actions-container -->
     <v-layout align-center class="media-banner__inner__container--left">
@@ -256,9 +254,8 @@ export default {
       mediaGlowNode.setAttribute('muted', true)
       this.appendMedia(mediaGlowNode, {opacityEnd: 0.3})
     },
-    handleClickHiddenButton (homeBannerSelectedMedia) {
-      const isDinoImage = homeBannerSelectedMedia.fileNameBase === 'Land before Wi-Fi by Dana Franklin.jpg'
-      if (isDinoImage) {
+    handleClickDinoGameButton () {
+      if (this.homeBannerSelectedMedia.fileNameBase === 'Land before Wi-Fi by Dana Franklin.jpg') {
         electron.ipcRenderer.send('open-hidden-game')
       }
     }
@@ -410,27 +407,4 @@ export default {
   opacity: 0.3;
 }
 
-.hidden-game-button {
-  position: absolute;
-  left: 25vw;
-  top: 10vh;
-  background: transparent;
-  width: 20vw;
-  height: 35vh;
-  min-width: 200px;
-  min-height: 250px;
-  cursor: default;
-  user-select: none;
-  z-index: 2;
-}
-
-.hidden-game-button:focus {
-  outline: none;
-}
-
-@media (max-width: 500px) {
-  .hidden-game-button {
-    left: 15vw;
-  }
-}
 </style>

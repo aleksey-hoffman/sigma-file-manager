@@ -20,12 +20,7 @@ let lastWatchedPath = ''
 self.addEventListener('message', (event) => {
   if (event.data.action === 'init-dir-watch') {
     state.cancelled = false
-    try {
-      initDirWatch(event)
-    }
-    catch (error) {
-      throw Error(error)
-    }
+    initDirWatch(event)
   }
 })
 
@@ -36,11 +31,11 @@ async function initDirWatch (event) {
   // in turn calls this function when some change is detected and re-inits the watcher,
   // which re-scans the directory. There's no need to re-init the watcher if it's already
   // watching the specified directory.
-  if (lastWatchedPath === event.data.path) { return }
+  if (lastWatchedPath === event.data.path) {return}
   lastWatchedPath = event.data.path
   eventDebouncer = new TimeUtils()
   const dirPath = event.data.path
-  resetWatcher()
+  await resetWatcher()
   initWatcher(dirPath, eventDebouncer)
 }
 

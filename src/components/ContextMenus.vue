@@ -240,16 +240,12 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 </template>
 
 <script>
-import { mapFields } from 'vuex-map-fields'
-import { shell } from 'electron'
+import {mapFields} from 'vuex-map-fields'
+import {shell} from 'electron'
 const childProcess = require('child_process')
 const PATH = require('path')
 
 export default {
-  data () {
-    return {
-    }
-  },
   mounted () {
     // Init listeners
     this.$eventHub.$on('openInTerminal', () => {

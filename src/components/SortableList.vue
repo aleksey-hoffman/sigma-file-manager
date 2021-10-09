@@ -223,8 +223,8 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 </template>
 
 <script>
-import { mapFields } from 'vuex-map-fields'
-import { Container, Draggable } from 'vue-smooth-dnd'
+import {mapFields} from 'vuex-map-fields'
+import {Container, Draggable} from 'vue-smooth-dnd'
 
 export default {
   components: {

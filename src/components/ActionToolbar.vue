@@ -359,8 +359,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 </template>
 
 <script>
-import { mapFields } from 'vuex-map-fields'
-import { mapState } from 'vuex'
+import {mapFields} from 'vuex-map-fields'
 
 export default {
   data () {

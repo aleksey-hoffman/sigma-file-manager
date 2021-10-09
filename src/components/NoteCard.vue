@@ -279,13 +279,15 @@ export default {
   name: 'NoteCard',
   props: ['note'],
   computed: {
-    noteGroups () { return this.$store.state.storageData.notes.groups },
-    noteColors () { return this.$store.state.storageData.notes.colors }
+    noteGroups () {return this.$store.state.storageData.notes.groups},
+    noteColors () {return this.$store.state.storageData.notes.colors}
   },
   methods: {
     noteStyle (note) {
       if (note.color.title === 'transparent') {
-        return '--shadow-color: transparent'
+        return {
+          '--shadow-color': 'transparent'
+        }
       }
       else {
         return {
@@ -367,6 +369,10 @@ export default {
 
 .note-card__content {
   padding: 0px 16px;
+  height: calc(100% - 36px);
+  overflow: hidden;
+  word-wrap: break-word;
+  font-size: 14px !important;
 }
 
 .note-card__content
@@ -375,13 +381,6 @@ export default {
     margin: 8px 0px;
     box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
   }
-
-.note-card__content {
-  height: calc(100% - 36px);
-  overflow: hidden;
-  word-wrap: break-word;
-  font-size: 14px !important;
-}
 
 .note-card__content
   h1 {

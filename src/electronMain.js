@@ -313,6 +313,9 @@ function initIPCListeners () {
   })
 
   electron.ipcMain.handle('get-app-storage-data', async (event) => {
+    return storageData
+  })
+
   electron.ipcMain.on('compute-request:trashDirItems', (event, payload) => {
     if (payload.items.length === 0) {
       throw Error(`

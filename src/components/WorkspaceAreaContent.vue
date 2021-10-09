@@ -19,8 +19,8 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 </template>
 
 <script>
-import { mapFields } from 'vuex-map-fields'
-import { mapGetters, mapState } from 'vuex'
+import {mapFields} from 'vuex-map-fields'
+import {mapState} from 'vuex'
 import itemFilter from '../utils/itemFilter'
 
 const lodash = require('../utils/lodash.min.js')

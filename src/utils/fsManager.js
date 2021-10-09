@@ -11,7 +11,10 @@
 // 1 — execute
 // 0 — no permissions
 
+const electron = require('electron')
 const fs = require('fs')
+const fsExtra = require('fs-extra')
+const PATH = require('path')
 const childProcess = require('child_process')
 const CLI = require('../processes/reusableCli.js')
 const reusableCli = new CLI()
@@ -21,6 +24,64 @@ const state = {
 }
 const SID = {
   everyone: '*S-1-1-0'
+}
+
+async function trashFSItems (params) {
+  return new Promise((resolve, reject) => {
+    electron.ipcRenderer.send('compute-request:trashDirItems', {items: params.items})
+    electron.ipcRenderer.once('compute-request-reply:trashDirItems', (event, data) => {
+      resolve({
+        removedItems: data.trashedItems,
+        notRemovedItems: data.notTrashedItems
+      })
+    })
+  })
+}
+
+async function deleteFSItems (params) {
+  async function initResolveRemove () {
+    const results = []
+    for (const item of params.items) {
+      const path = PATH.normalize(item.path)
+      let resolveResults = await resolveRemove(path)
+      results.push(resolveResults)
+    }
+    return results
+  }
+
+  async function resolveRemove (path) {
+    try {
+      await fsExtra.remove(path)
+      return {
+        path,
+        status: 'fulfilled'
+      }
+    }
+    catch (error) {
+      return {
+        path,
+        status: 'rejected',
+        error
+      }
+    }
+  }
+
+  function getFilteredResults (results) {
+    let removedItems = results
+      .filter(item => item.status === 'fulfilled')
+      .map(item => item.path.replace(/\\/g, '/'))
+  
+    let notRemovedItems = results
+      .filter(item => item.status === 'rejected')
+      .map(item => item.path.replace(/\\/g, '/')) 
+  
+    return {
+      removedItems,
+      notRemovedItems
+    }
+  }
+
+  return getFilteredResults(await initResolveRemove()) 
 }
 
 // Note: exec only at one place so only 1 CLI is spawned
@@ -267,7 +328,7 @@ function getCommand (params) {
 * @param {string} params.command
 * @returns {boolean}
 */
-function execCommand (params) {
+async function execCommand (params) {
   return new Promise((resolve, reject) => {
     reusableCli.exec({
       process: state.cliProcess,
@@ -636,6 +697,8 @@ function changeMode (params) {
 }
 
 export {
+  trashFSItems,
+  deleteFSItems,
   initCliProcess,
   changeMode,
   getDriveInfo,

@@ -1,0 +1,312 @@
+.v-application--is-ltr
+  .v-input--selection-controls__input {
+    margin-right: 12px;
+  }
+
+#app
+  .v-navigation-drawer,
+#app
+  .window-toolbar__header-container,
+#app
+  .v-toolbar,
+#app
+  .v-footer,
+#app
+  .v-main {
+    transition: 0.5s ease !important;
+  }
+
+#app.layout-no-transition
+  .v-navigation-drawer,
+#app.layout-no-transition
+  .window-toolbar__header-container,
+#app.layout-no-transition
+  .v-toolbar,
+#app.layout-no-transition
+  .v-footer,
+#app.layout-no-transition
+  .v-main {
+    transition: 0s ease !important;
+  }
+
+.v-menu__content {
+  box-shadow: var(--context-menu-shadow) !important;
+  z-index: 10;
+}
+
+.v-menu__content .v-list {
+  background: var(--context-menu-bg-color) !important;
+  border-radius: 0 !important;
+}
+
+.v-list-item__action:first-child,
+.v-list-item__icon:first-child {
+  margin-right: 16px !important;
+}
+
+.v-list-item__title {
+  font-size: 14px !important;
+  color: var(--color-6) !important;
+}
+
+.v-list-item
+  .v-icon {
+    color: var(--color-6) !important;
+  }
+
+.v-menu__content
+  .v-list-item:not(.inactive)
+    .v-list-item__content,
+.v-menu__content
+  .v-list-item:not(.inactive)
+    .v-list-item__title,
+.v-menu__content
+  .v-list-item:not(.inactive)
+    .v-icon {
+      color: var(--color-6) !important;
+    }
+
+.v-menu__content
+  .v-list-item:not(.inactive):hover {
+    background-color: var(--context-menu-bg-color_hover);
+  }
+
+.v-menu__content
+  .v-divider {
+    border-color: var(--divider-color-1) !important;
+  }
+
+.v-menu__content
+  .v-list-item[is-active='true'] {
+    background-color: var(--list-menu-bg-color_active) !important;
+  }
+
+.v-list-item
+  .v-list-item__subtitle {
+    color: var(--color-7) !important;
+  }
+
+.v-input--radio-group--column
+  .v-input--radio-group__input {
+    /* Fix for: tooltips are centered to the container because input items
+      stretch to the whole width of the container */
+    align-items: flex-start;
+  }
+  
+.v-list {
+  padding: 0px !important;
+  color: var(--color-6) !important;
+}
+  
+.v-card {
+  background-color: var(--bg-color-1) !important
+}
+  
+.v-card__text {
+  color: unset !important;
+}
+
+.v-toolbar__content {
+  padding: 0px !important;
+}
+
+.v-btn.v-btn--icon.v-size--default {
+  width: var(--window-toolbar-height) !important;
+  height: var(--window-toolbar-height) !important;
+}
+
+#app 
+  button.v-btn.v-btn--disabled
+    .v-btn__content,
+#app 
+  button.v-btn.v-btn--disabled
+    .v-btn__content
+      i.v-icon {
+        color: var(--color-7) !important;
+      }
+
+#app 
+  .v-btn.v-btn--icon {
+    color: var(--color-6) !important;
+  }
+
+#app 
+  .v-badge__badge[size="16"] {
+    border-radius: 16px !important;
+    font-size: 12px !important;
+    height: 16px !important;
+    width: 16px !important;
+    min-width: 16px !important;
+    padding-top: 0px !important;
+  }
+
+#app 
+  .v-list-item.v-list-item--active {
+    color: var(--color-5) !important;
+    background-color: var(--highlight-color-6) !important;
+    font-size: 14px;
+  }
+
+#app 
+  .theme--light.v-list-item:not(.v-list-item--active):not(.v-list-item--disabled) {
+    color: var(--color-5) !important;
+    font-size: 14px;
+  }
+
+#app 
+  .v-list-item__mask {
+    background: var(--list-item-mask-color) !important;
+    padding: 4px 2px;
+  }
+
+#app
+  .v-messages {
+    color: var(--color-7);
+  }
+
+#app 
+  .v-badge__badge[size="16"] 
+    .v-icon {
+      height: 0 !important;
+    }
+
+.theme--light.v-btn.v-btn--disabled {
+  opacity: 0.5;
+}
+
+.theme--light.v-btn.v-btn--disabled
+  .v-icon.css-override {
+    color: var(--icon-color-2) !important;
+  }
+    
+.v-input 
+  .v-messages {
+    font-size: 14px;
+  }
+
+.v-input:not(.v-input--is-disabled)
+  input,
+.v-input:not(.v-input--is-disabled)
+  textarea {
+    color: var(--color-5) !important;
+  }
+
+.v-input
+  .v-label {
+    color: var(--radio-text-color-1) !important;
+  }
+
+.v-input--is-label-active
+  .v-input--switch__track {
+    background: var(--input_active-track-color-1) !important;
+  }
+
+.v-input--is-label-active
+  .v-input--switch__thumb {
+    background: var(--input_active-thumb-color-1) !important;
+  }
+
+.v-input--switch__track {
+  background: var(--input-track-color-1) !important;
+}
+
+.v-input--switch__thumb {
+  background: var(--input-thumb-color-1) !important;
+}
+
+.v-text-field__slot
+  label.v-label--active {
+    color: var(--color-1) !important;
+  }
+
+.v-text-field__slot {
+  caret-color: var(--color-1) !important
+}
+
+.theme--light.v-text-field >
+  .v-input__control >
+    .v-input__slot:before {
+        border-color: var(--color-8) !important;
+    }
+
+.v-input.v-input--is-focused
+  * {
+    color: var(--color-5) !important;
+  }
+
+.v-input.v-input--is-focused
+  .v-messages__message {
+    color: var(--color-5) !important;
+  }
+
+.v-input.error--text
+  .v-messages__message {
+    color: #ef5350 !important;
+  }
+
+.v-input.v-input--is-disabled
+  input {
+    color: var(--color-7) !important;
+  }
+
+.v-chip--select.v-chip
+  * {
+    color: var(--color-5) !important;
+  }
+
+.v-chip.v-chip--active {
+  background: var(--highlight-color-2) !important;
+}
+
+.v-chip:not(.v-chip--active) {
+  background: var(--highlight-color-3) !important;
+}
+
+.v-input.v-input--is-label-active.v-text-field.v-select
+  * {
+    color: var(--color-6) !important;
+  }
+
+.v-input.v-text-field
+  .v-label {
+    color: var(--color-7) !important;
+  }
+
+.v-input.v-text-field.v-input--is-focused
+  .v-label {
+    color: var(--color-5) !important;
+  }
+  
+.v-input.theme--light.v-input--selection-controls
+  .v-input--selection-controls__input
+    * {
+      color: var(--key-color-1) !important;
+    }
+
+.v-input.theme--light.v-input--selection-controls
+  .v-input--selection-controls__input
+    i.mdi-radiobox-blank {
+      color: var(--color-7) !important;
+    }
+
+#app
+  .v-input__slider
+    .v-slider__thumb,
+#app
+  .v-input__slider
+    .v-slider__thumb-container-fill {
+      color: var(--key-color-1);
+      background: var(--key-color-1);
+      background-color: var(--key-color-1)
+    }
+
+#app
+  .v-input__slider
+    .v-slider__track-background,
+#app
+  .v-input__slider
+    .v-slider__track-fill {
+      color: var(--highlight-color-2);
+      background: var(--highlight-color-2);
+      background-color: var(--highlight-color-2)
+    }

@@ -90,16 +90,45 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
         <div 
           class="notification__item__message" 
+          v-if="notification.message"
           v-html="notification.message"
         ></div>
 
-        <div v-if="notification.type === 'progress:download-file'">
+        <div 
+          class="notification__item__message-content" 
+          v-if="notification.content"
+        >
+          <div
+            v-for="(contentItem, index) in notification.content"
+            :key="'notification-content-' + index"
+          >
+            <div 
+              class="dialog-card__html"
+              v-if="contentItem.type === 'html'"
+              v-html="contentItem.value"
+            ></div>
+
+            <div 
+              class="notification__item__message-content__list custom-scrollbar" 
+              v-if="contentItem.type === 'list'"
+            >
+              <div 
+                v-for="(listItem, index) in contentItem.value"
+                :key="'notification-content-listItem' + index"
+              >
+                {{listItem}}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div v-if="notification.type === 'fileDownload'">
           <div class="notification__item__progress">
             <div 
               class="notification__item__progress__filename"
               v-if="notification.progress.filename" 
             >
-              <b>File name:</b>
+              <strong>File name:</strong>
               {{notification.progress.filename}}
             </div>
             <v-layout class="mb-1">
@@ -280,6 +309,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
+  margin-bottom: 8px;
 }
 
 .notification__item__color-indicator {
@@ -321,14 +351,21 @@ export default {
 
 .notification__item__title {
   color: #bdbdbd;
-  font-size: 18px;
+  font-size: 16px;
 }
 
 .notification__item__message {
-  margin-top: 2px;
   margin-bottom: 8px;
   color: #9e9e9e;
   font-size: 14px;
+}
+
+.notification__item__message-content__list {
+  max-height: 100px;
+  margin: 12px 0;
+  padding: 8px 12px;
+  border-radius: 4px;
+  background-color: rgba(var(--bg-color-2-value), 0.5);
 }
 
 .notification__item__progress__filename {

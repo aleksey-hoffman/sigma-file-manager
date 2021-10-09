@@ -117,15 +117,11 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 </template>
 
 <script>
-import { mapFields } from 'vuex-map-fields'
+import {mapFields} from 'vuex-map-fields'
 import itemFilter from '../utils/itemFilter'
 
 export default {
   name: 'notes',
-  data () {
-    return {
-    }
-  },
   beforeRouteLeave (to, from, next) {
     this.$store.dispatch('SAVE_ROUTE_SCROLL_POSITION', {
       toRoute: to,

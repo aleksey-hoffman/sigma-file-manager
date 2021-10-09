@@ -141,10 +141,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 </template>
 
 <script>
-import { mapFields } from 'vuex-map-fields'
+import {mapGetters} from 'vuex'
+import {mapFields} from 'vuex-map-fields'
 import TimeUtils from '../utils/timeUtils.js'
 import ThumbWorker from 'worker-loader!../workers/thumbWorker.js'
-import { mapGetters } from 'vuex'
 
 export default {
   props: {

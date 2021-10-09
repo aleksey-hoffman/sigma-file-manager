@@ -8,7 +8,6 @@ import Vuex from 'vuex'
 import { createNewSortInstance } from 'fast-sort'
 import router from './router.js'
 import utils from './utils/utils'
-import localizeUtils from './utils/localizeUtils'
 import TimeUtils from './utils/timeUtils.js'
 import * as fsManager from './utils/fsManager'
 import { getField, updateField } from 'vuex-map-fields'
@@ -897,14 +896,12 @@ export default new Vuex.Store({
         ip: '',
         port: '',
         address: '',
-        server: null,
         item: {}
       },
       fileShare: {
         ip: '',
         port: '',
         address: '',
-        server: null,
         type: 'stream',
         item: {}
       }
@@ -1960,7 +1957,7 @@ export default new Vuex.Store({
     */
     ADD_TASK (store, task) {
       if (task.name === undefined) {
-        return new Error('ADD_TASK: property task.name is required')
+        throw new Error('ADD_TASK: property task.name is required')
       }
       store.state.tasks.push(task)
       return task
@@ -3186,18 +3183,10 @@ export default new Vuex.Store({
     },
     OPEN_DIR_ITEM (store, item) {
       if (item.isInaccessible) {
-        eventHub.$emit('notification', {
-          action: 'update-by-type',
-          type: 'copyValue',
-          timeout: 7000,
-          title: 'Cannot open this item',
-          message: `
-            <b>Reason:</b> item has immutable or read-only attributes.
-            <br>You can reset item permissions in the "permissions" menu.
-          `
-        })
+        notifications.emit({name: 'cannotOpenDirItem'})
         return
       }
+
       if (item.type === 'file' || item.type === 'file-symlink') {
         store.dispatch('OPEN_FILE', item.path)
       }
@@ -3216,22 +3205,15 @@ export default new Vuex.Store({
       const path = PATH.normalize(osClipboardText)
       fs.access(path, fs.constants.F_OK, (error) => {
         if (error) {
-          eventHub.$emit('notification', {
-            action: 'update-by-type',
-            type: 'open-os-clipboard-path',
-            timeout: 6000,
-            title: 'Cannot open the path in the clipboard',
-            message: '<b>Reason:</b> path does not exist on the drive.'
-          })
+          notifications.emit({name: 'cannotOpenPathFromClipboard'})
         }
         else {
-          store.dispatch('LOAD_DIR', { path: osClipboardText })
-          eventHub.$emit('notification', {
-            action: 'update-by-type',
-            type: 'open-os-clipboard-path',
-            timeout: 2000,
-            title: 'Opened path from clipboard',
-            message: osClipboardText
+          store.dispatch('LOAD_DIR', {path: osClipboardText})
+          notifications.emit({
+            name: 'openedPathFromClipboard',
+            props: {
+              osClipboardText
+            }
           })
         }
       })
@@ -3326,13 +3308,7 @@ export default new Vuex.Store({
         key: 'storageData.settings.externalPrograms.items',
         value: items
       })
-      eventHub.$emit('notification', {
-        action: 'add',
-        timeout: 3000,
-        type: '',
-        closeButton: true,
-        title: 'Success: program was added'
-      })
+      notifications.emit({name: 'programWasAdded'})
     },
     EDIT_EXTERNAL_PROGRAM ({ state, commit, dispatch, getters }, updatedProgram) {
       const items = state.storageData.settings.externalPrograms.items
@@ -3343,13 +3319,7 @@ export default new Vuex.Store({
         key: 'storageData.settings.externalPrograms.items',
         value: items
       })
-      eventHub.$emit('notification', {
-        action: 'add',
-        timeout: 3000,
-        type: '',
-        closeButton: true,
-        title: 'Success: program was edited'
-      })
+      notifications.emit({name: 'programWasEdited'})
     },
     DELETE_EXTERNAL_PROGRAM ({ state, commit, dispatch, getters }, programToDelete) {
       const items = state.storageData.settings.externalPrograms.items
@@ -3360,13 +3330,7 @@ export default new Vuex.Store({
         key: 'storageData.settings.externalPrograms.items',
         value: items
       })
-      eventHub.$emit('notification', {
-        action: 'add',
-        timeout: 3000,
-        type: '',
-        closeButton: true,
-        title: 'Success: program was deleted'
-      })
+      notifications.emit({name: 'programWasDeleted'})
     },
     CLEAR_DIR_ITEMS_TIMELINE ({ state, commit, dispatch, getters }) {
       let undoData = utils.cloneDeep(state.storageData.stats.dirItemsTimeline)
@@ -3574,382 +3538,299 @@ export default new Vuex.Store({
         ...params
       })
     },
-    ENSURE_DIR_ITEMS_SAFE_TO_DELETE ({ state, commit, dispatch, getters }, payload) {
-      const { operation, items } = payload
-      // TODO:
-      // Instead of checking currentDir, check PATH.parse(item).dir instead,
-      // in case it's possible to delete an item while not being located in currentDir.
+    async TRASH_SELECTED_DIR_ITEMS (store) {
+      await store.dispatch('TRASH_DIR_ITEMS', {items: store.getters.selectedDirItems})
+    },
+    async DELETE_SELECTED_DIR_ITEMS (store) {
+      await store.dispatch('DELETE_DIR_ITEMS', {items: store.getters.selectedDirItems})
+    },
+    async TRASH_DIR_ITEMS (store, params) {
+      let defaultOptions = {
+        skipSafeCheck: false,
+        silent: false,
+        allowUndo: false,
+        operation: 'trash'
+      }
+      params.options = {...defaultOptions, ...params.options}
+      
+      try {
+        await store.dispatch('HANDLE_REMOVE_DIR_ITEMS', params)
+      }
+      catch (error) {
+        await store.dispatch('HANDLE_REMOVE_DIR_ITEMS_ERROR', {...params, ...error})
+      }
+    },
+    async DELETE_DIR_ITEMS (store, params) {
+      let defaultOptions = {
+        skipSafeCheck: false,
+        silent: false,
+        allowUndo: false,
+        operation: 'delete'
+      }
+      params.options = {...defaultOptions, ...params.options}
+      params = utils.cloneDeep(params)
+
+      try {
+        await store.dispatch('HANDLE_REMOVE_DIR_ITEMS', params)
+      }
+      catch (error) {
+        await store.dispatch('HANDLE_REMOVE_DIR_ITEMS_ERROR', {...params, ...error})
+      }
+    },
+    async HANDLE_REMOVE_DIR_ITEMS_ERROR (store, params) {
+      if (params.error.status !== 'cancel') {
+        let notificationName = params.options.operation === 'trash'
+          ? 'trashItemsError'
+          : 'deleteItemsError'
+        
+        notifications.emit({
+          name: notificationName, 
+          error: params.error
+        })
+      }
+    },
+    async HANDLE_REMOVE_DIR_ITEMS (store, params) {
+      async function removeDirItems (params) {
+        try {
+          if (params.options.skipSafeCheck) {
+            await initRemoveDirItems(params)
+          }
+          else {
+            params.items = await getItems(params)
+            await initRemoveDirItems(params)
+          }
+        }
+        catch (error) {
+          throw error
+        }
+      }
+      
+      async function getItems (params) {
+        return await store.dispatch('ENSURE_DIR_ITEMS_SAFE_TO_DELETE',  {
+          operation: params.options.operation, 
+          items: params.items
+        }) || [] 
+      }
+
+      async function initRemoveDirItems (params) {
+        try {
+          if (params.items.length > 0) {
+            let result = []
+            if (params.options.operation === 'trash') {
+              result = await fsManager.trashFSItems(params)
+            }
+            else if (params.options.operation === 'delete') {
+              result = await fsManager.deleteFSItems(params)
+            }
+            await store.dispatch('REMOVE_DIR_ITEMS_POST_ACTIONS', {result, params})
+          }
+        }
+        catch (error) {
+          throw error
+        }
+      }
+
+      await removeDirItems(params)
+    },
+    ENSURE_DIR_ITEMS_SAFE_TO_DELETE (store, payload) {
+      let {operation, items} = payload
       return new Promise((resolve, reject) => {
-        // Clone edit targets so they don't change during the operation
-        const editTargets = utils.cloneDeep(items)
-        const currentDirPath = state.navigatorView.currentDir.path
-        const includesCurrentDir = editTargets.some(item => item.path === currentDirPath)
-        const protectedItems = getDirItemsFromSavedList({
-          items: editTargets,
-          list: state.storageData.protected.items
-        })
+        items = utils.cloneDeep(items)
+        const currentDirPath = store.state.navigatorView.currentDir.path
+        const includesCurrentDir = items.some(item => item.path === currentDirPath)
         const currentDirIsRoot = PATH.parse(currentDirPath).base === ''
-        const includesItemLocatedInRoot = editTargets.some(item => {
-          const itemDir = PATH.parse(item.path).dir
-          const dirOfItemDirIsRoot = PATH.parse(itemDir).base === ''
-          return dirOfItemDirIsRoot
+        const includesItemLocatedInRoot = checkIncludesItemLocatedInRoot(items)
+        const protectedEditTargetItems = getDirItemsFromSavedList({
+          items,
+          list: store.state.storageData.protected.items
         })
 
-        confirmAll()
-          .then((result) => { resolve(result) })
-          .catch((result) => { resolve(result) })
-
-        // Make sure all conformations were approved
         async function confirmAll () {
           try {
-            // Resolve the last result, the editTargets are all the same
-            let resultConfirmDeleteFromDrive = await confirmDeleteFromDrive(editTargets)
-            let resultCheckIfDirItemsIncludeRootDir = await checkIfDirItemsIncludeRootDir(resultConfirmDeleteFromDrive.editTargets)
-            let resultCheckIfDirItemsLocatedInRoot = await checkIfDirItemsLocatedInRoot(resultCheckIfDirItemsIncludeRootDir.editTargets)
-            let resultCheckIfDirItemsProtected = await checkIfDirItemsProtected(resultCheckIfDirItemsLocatedInRoot.editTargets)
-            return resultCheckIfDirItemsProtected.editTargets
+            let result = await handleTargetItemsIncludesCurrentDir(items)
+            result = await confirmDeleteFromDrive(items)
+            result = await checkDirItemsIncludeRootDir(result.items)
+            result = await checkDirItemsLocatedInRoot(result.items)
+            result = await checkDirItemsProtected(result.items)
+            return result.items
           }
           catch (error) {
             reject([])
           }
         }
 
-        function confirmDeleteFromDrive (editTargets) {
+        function checkIncludesItemLocatedInRoot (items) {
+          return items.some(item => {
+            const itemDir = PATH.parse(item.path).dir
+            const itemDirIsRoot = PATH.parse(itemDir).base === ''
+            return itemDirIsRoot
+          })
+        }
+
+        function confirmDeleteFromDrive (items) {
           return new Promise((resolve, reject) => {
-            const editTargetsList = editTargets.map(item => item.path).join('<br>')
-            // If operation === 'delete', confirm
+            const itemsList = items.map(item => item.path).join('<br>')
             if (operation === 'delete') {
-              // Configure conformationDialog data
-              const data = {
-                height: '250px',
-                title: 'Attention: deleting items from drive',
-                message: `
-                  This operation will permanently delete ${editTargets.length} items from your computer:
-                  <br>
-                  ${editTargetsList}
-                `,
-                closeButton: {
-                  onClick: () => {
-                    resolve({ status: 'cancel' })
-                    state.dialogs.conformationDialog.value = false
-                  }
-                },
-                buttons: [
-                  {
-                    text: 'cancel',
-                    onClick: () => {
-                      reject()
-                      state.dialogs.conformationDialog.value = false
-                    }
-                  },
-                  {
-                    text: 'confirm delete',
-                    onClick: () => {
-                      resolve({ status: 'delete-all', editTargets })
-                      state.dialogs.conformationDialog.value = false
-                    }
-                  }
-                ]
-              }
-              state.dialogs.conformationDialog.data = data
-              state.dialogs.conformationDialog.value = true
+              dialogs.showDialog(store, {
+                name: 'deleteDirItems',
+                items,
+                itemsList
+              })
+                .then((items) => resolve(items))
+                .catch(error => reject(error))
             }
             else {
-              resolve({ status: 'delete-all', editTargets })
+              resolve({status: '', items})
             }
           })
         }
 
-        function checkIfDirItemsIncludeRootDir (editTargets) {
+        function checkDirItemsIncludeRootDir (items) {
           return new Promise((resolve, reject) => {
-            // If some selected dir items is root directory
             if (currentDirIsRoot && includesCurrentDir) {
-              eventHub.$emit('notification', {
-                action: 'update-by-type',
-                type: 'dirItemCannotBeDeleted',
-                icon: 'mdi-trash-can-outline',
-                timeout: 3000,
-                title: 'You cannot delete drive\'s root directory'
-              })
+              notifications.emit({name: 'cannotDeleteDriveRootDir'})
               reject()
             }
             else {
-              resolve({ status: 'delete-all', editTargets })
+              resolve({status: '', items})
             }
           })
         }
 
-        function checkIfDirItemsProtected (editTargets) {
+        function checkDirItemsProtected (items) {
           return new Promise((resolve, reject) => {
-            // If some selected dir items are protected
-            if (protectedItems.length > 0) {
-              // Configure conformationDialog data
-              const data = {
-                title: 'Attention: deleting protected items',
-                message: `
-                  Selected items contain ${protectedItems.length} protected items
-                `,
-                closeButton: {
-                  onClick: () => {
-                    reject()
-                  }
-                },
-                buttons: [
-                  {
-                    text: 'cancel',
-                    onClick: () => {
-                      reject()
-                    }
-                  },
-                  {
-                    text: 'delete unprotected',
-                    onClick: () => {
-                      const unprotectedItems = [...editTargets].filter(item => {
-                        return !state.storageData.protected.items.some(protectedItem => {
-                          return protectedItem.path === item.path
-                        })
-                      })
-                      resolve({ status: 'delete-unprotected', editTargets: unprotectedItems })
-                    }
-                  },
-                  {
-                    text: 'delete all',
-                    onClick: () => {
-                      resolve({ status: 'delete-all', editTargets })
-                    }
-                  }
-                ]
+            if (protectedEditTargetItems.length > 0) {
+              if (operation === 'trash') {
+                dialogs.showDialog(store, {
+                  name: 'trashDirItemsContainsProtected',
+                  items,
+                  protectedEditTargetItems
+                })
+                  .then((items) => resolve(items))
+                  .catch(error => reject(error))
               }
-              state.dialogs.conformationDialog.data = data
-              state.dialogs.conformationDialog.value = true
+              else if (operation === 'delete') {
+                dialogs.showDialog(store, {
+                  name: 'deleteDirItemsContainsProtected',
+                  items,
+                  protectedEditTargetItems
+                })
+                  .then((items) => resolve(items))
+                  .catch(error => reject(error))
+              }
             }
             else {
-              resolve({ status: 'delete-all', editTargets })
+              resolve({status: '', items})
             }
           })
         }
 
-        function checkIfDirItemsLocatedInRoot (editTargets) {
+        function checkDirItemsLocatedInRoot (items) {
           return new Promise((resolve, reject) => {
-            // If some selected dir items are located in root
             if (includesItemLocatedInRoot) {
-              // Configure conformationDialog data
-              const data = {
-                height: '250px',
-                title: 'Attention: deleting items in drive root',
-                message: `
-                  You are about to delete a file / directory located
-                  in the root of a drive. Make sure these are your personal files and you are not deleting
-                  any system files, otherwise your computer might become unusable.
-                `,
-                closeButton: {
-                  onClick: () => {
-                    reject({ status: 'failure:cancel', editTargets })
-                    state.dialogs.conformationDialog.value = false
-                  }
-                },
-                buttons: [
-                  {
-                    text: 'cancel',
-                    onClick: () => {
-                      reject({ status: 'failure:cancel', editTargets })
-                      state.dialogs.conformationDialog.value = false
-                    }
-                  },
-                  {
-                    text: 'confirm delete',
-                    onClick: () => {
-                      resolve({ status: 'success:confirm-delete', editTargets })
-                      state.dialogs.conformationDialog.value = false
-                    }
-                  }
-                ]
-              }
-              state.dialogs.conformationDialog.data = data
-              state.dialogs.conformationDialog.value = true
+              dialogs.showDialog(store, {
+                name: 'deleteDirItemsIncludesItemLocatedInRoot',
+                items
+              })
+                .then((items) => resolve(items))
+                .catch(error => reject(error))
             }
             else {
-              resolve({ status: 'delete-all', editTargets })
+              resolve({status: '', items})
             }
           })
         }
+
+        function containsCurrentDir (dirItems) {
+          return dirItems.some(dirItem => dirItem.path === store.state.navigatorView.currentDir.path)
+        }
+
+        function handleTargetItemsIncludesCurrentDir (items) {
+          return new Promise((resolve, reject) => {
+            if (containsCurrentDir(items)) {
+              const itemsList = items.map(item => item.path).join('<br>')
+              dialogs.showDialog(store, {
+                name: 'deleteDirItemsIncludesCurrentDir',
+                items,
+                itemsList
+              })
+                .then((items) => resolve(items))
+                .catch(error => {console.log(error); reject(error)})
+            }
+            else {
+              resolve({status: '', items})
+            }
+          })
+        }
+
+        confirmAll()
+          .then((result) => resolve(result))
+          .catch(error => reject(error))
       })
     },
-    async TRASH_SELECTED ({ state, commit, dispatch, getters }, payload) {
-      let itemsToTrash = getters.selectedDirItems
-      dispatch('ENSURE_DIR_ITEMS_SAFE_TO_DELETE',  { operation: 'trash', items: itemsToTrash })
-        .then((editTargets) => {
-          if (editTargets.length === 0) {
-            return false
-          }
-          else {
-            electron.ipcRenderer.send('compute-request:trashDirItems', { items: editTargets })
-            electron.ipcRenderer.once('compute-request-reply:trashDirItems', (event, data) => {
-              dispatch('REMOVE_FROM_PROTECTED', {
-                items: editTargets,
-                options: {
-                  silent: false,
-                  allowUndo: false
-                }
-              })
-              dispatch('REMOVE_FROM_PINNED', {
-                items: editTargets,
-                options: {
-                  silent: false,
-                  allowUndo: false
-                }
-              })
-              dispatch('CLEAR_FS_CLIPBOARD')
-              dispatch('DESELECT_ALL_DIR_ITEMS')
-              let areAllItemsTrashed = editTargets.every(item => data.trashedItems.includes(item.path))
-              if (areAllItemsTrashed) {
-                eventHub.$emit('notification', {
-                  action: 'update-by-type',
-                  type: 'successItemsTrashed',
-                  colorStatus: 'green',
-                  timeout: 5000,
-                  title: `Sent
-                  ${data.trashedItems.length}
-                  ${localizeUtils.pluralize(data.trashedItems.length, 'item')}
-                  to trash`,
-                })
-              }
-              else {
-                eventHub.$emit('notification', {
-                  action: 'update-by-type',
-                  type: 'failureItemsTrashed',
-                  icon: 'mdi-tab',
-                  colorStatus: 'red',
-                  timeout: 5000,
-                  title: `Failed to send
-                          ${data.notTrashedItems.length}
-                          ${localizeUtils.pluralize(data.notTrashedItems.length, 'item')}
-                          to trash:`,
-                  message: data.notTrashedItems.join('<br>'),
-                })
-              }
+    async REMOVE_DIR_ITEMS_POST_ACTIONS (store, payload) {
+      let {result, params} = payload
 
-              dispatch('RELOAD_DIR', {
-                scrollTop: false,
-                selectCurrentDir: false
-              })
-            })
+      async function init () {
+        let allItemsWereRemoved = params.items.every(item => result.removedItems.includes(item.path.replace(/\\/g, '/')))
+        params.removedItems = result.removedItems
+        params.notRemovedItems = result.notRemovedItems
 
-            // await trash(getters.selectedDirItemsPaths)
-            // Check if it was trashed
-            // let itemsAmount = getters.selectedDirItemsPaths.length
-            // let trashedItems = []
-            // let notTrashedItems = []
-            // let promises = []
-            // getters.selectedDirItemsPaths.forEach(path => {
-            //   let promiseToCheck = fs.promises.access(path, fs.constants.F_OK)
-            //     .then(() => {
-            //       notTrashedItems.push(path)
-            //     })
-            //     .catch((error) => {
-            //       trashedItems.push(path)
-            //     })
-            //   promises.push(promiseToCheck)
-            // })
-            // Promise.all(promises)
-            //   .then(() => {
-            //     // eventHub.$emit('notification', {
-            //     //   action: 'update-by-type',
-            //     //   type: 'successItemsTrashed',
-            //     //   icon: 'mdi-tab',
-            //     //   timeout: 3000,
-            //     //   title: `Trashed ${itemsAmount} ${localizeUtils.pluralize(itemsAmount, 'item')}`
-            //     // })
-            //   })
+        postActions(params)
+
+        if (allItemsWereRemoved) {
+          handleAllDirItemsWereDeleted(params)
+        }
+        else {
+          handleNotAllDirItemsWereDeleted(params)
+        }
+      }
+      
+      function postActions (params) {
+        let paramsClone = utils.cloneDeep(params)
+        store.dispatch('REMOVE_FROM_PROTECTED', paramsClone)
+        store.dispatch('REMOVE_FROM_PINNED', paramsClone)
+        store.dispatch('CLEAR_FS_CLIPBOARD')
+        store.dispatch('DESELECT_ALL_DIR_ITEMS')
+        store.dispatch('RELOAD_DIR', {
+          scrollTop: false,
+          selectCurrentDir: false
+        })
+      }
+
+      function handleAllDirItemsWereDeleted (params) {
+        let notificationName = params.options.operation === 'trash'
+          ? 'trashItemsSuccess'
+          : 'deleteItemsSuccess'
+          
+        notifications.emit({
+          name: notificationName, 
+          props: {
+            removedItems: params.removedItems
           }
         })
-        .catch((error) => {})
-    },
-    /**
-    * payload: {
-    *   items {Array}
-    *   options: {
-    *     skipSafeCheck {Boolean}
-    *   }
-    * }
-    */
-    INIT_DELETE_SELECTED ({ state, commit, dispatch, getters }, payload) {
-      dispatch('DELETE_DIR_ITEMS', { items: getters.selectedDirItems })
-    },
-    /**
-    * @param {object} payload
-    * @param {array<object>} payload.items
-    */
-    DELETE_DIR_ITEMS ({ state, commit, dispatch, getters }, payload) {
-      payload.options = payload.options ?? {}
-      let defaultOptions = {
-        skipSafeCheck: false,
-        silent: false,
-        allowUndo: false
       }
-      let options = { ...defaultOptions, ...payload.options }
-      const items = payload.items
-      if (options.skipSafeCheck) {
-        initDeleteDirItems({items, options})
-      }
-      else {
-        dispatch('ENSURE_DIR_ITEMS_SAFE_TO_DELETE', { operation: 'delete', items })
-          .then(() => {
-            initDeleteDirItems({items, options})
-          })
-      }
-
-      function initDeleteDirItems (params) {
-        deleteDirItems(params)
-          .then(() => {
-            dispatch('REMOVE_FROM_PROTECTED', params)
-            dispatch('REMOVE_FROM_PINNED', params)
-            dispatch('CLEAR_FS_CLIPBOARD')
-            dispatch('DESELECT_ALL_DIR_ITEMS')
-            dispatch('RELOAD_DIR', {
-              scrollTop: false,
-              selectCurrentDir: false
-            })
-          })
-      }
-
-      async function deleteDirItems(params) {
-        return new Promise((resolve, reject) => {
-          // Delete dir items
-          const promises = []
-          params.items.forEach(item => {
-            const path = PATH.normalize(item.path)
-            promises.push(fsExtra.remove(path))
-          })
-          Promise.all(promises)
-            .then(() => {
-              resolve()
-              if (!params.options.silent) {
-                eventHub.$emit('notification', {
-                  action: 'update-by-type',
-                  type: 'successItemsDeleted',
-                  icon: 'mdi-tab',
-                  colorStatus: 'green',
-                  timeout: 3000,
-                  title: `Deleted ${params.items.length} ${localizeUtils.pluralize(params.items.length, 'item')}`
-                })
-              }
-            })
-            .catch((error) => {
-              reject()
-              if (!params.options.silent) {
-                eventHub.$emit('notification', {
-                  action: 'update-by-type',
-                  type: 'successItemsDeleted',
-                  icon: 'mdi-tab',
-                  colorStatus: 'red',
-                  timeout: 3000,
-                  title: `Failed to delete some items`,
-                  message: error
-                })
-              }
-            })
+      
+      function handleNotAllDirItemsWereDeleted (params) {
+        let notificationName = params.options.operation === 'trash'
+          ? 'trashItemsFailure'
+          : 'deleteItemsFailure'
+      
+        notifications.emit({
+          name: notificationName, 
+          props: {
+            items: params.items,
+            removedItems: params.removedItems,
+            notRemovedItems: params.notRemovedItems
+          }
         })
+      }
+
+      try {
+        await init()
+      }
+      catch (error) {
+        throw error
       }
     },
     async INIT_NEW_DIR_ITEM ({ state, commit, dispatch, getters }, payload) {
@@ -5224,7 +5105,7 @@ export default new Vuex.Store({
         task.readStream.pipe(task.writeStream)
           .on('error', (error) => {
             notificationConfig.title = `Failed to ${payload.operation} the file`
-            notificationConfig.message = `<b>Destination path:</b><br>${destPath}<br><b>Error:</b><br>${error}`
+            notificationConfig.message = `<strong>Destination path:</strong><br>${destPath}<br><strong>Error:</strong><br>${error}`
             notificationConfig.percentDone = undefined
             notificationConfig.timeout = 0
             notificationConfig.icon = 'mdi-alert-circle-outline'
@@ -5238,7 +5119,7 @@ export default new Vuex.Store({
               if (progress.isCanceled) {
                 notificationConfig.actionButtons = []
                 notificationConfig.title = 'Item transfer was canceled'
-                notificationConfig.message = `<b>Destination path:</b><br>${destPath}`
+                notificationConfig.message = `<strong>Destination path:</strong><br>${destPath}`
                 notificationConfig.timeout = 5000
                 progress.isDone = true
               }
@@ -5258,7 +5139,7 @@ export default new Vuex.Store({
                 notificationConfig.title = operation === 'move'
                   ? 'Item was moved'
                   : 'Item was copied'
-                notificationConfig.message = `<b>Destination path:</b><br>${destPath}`
+                notificationConfig.message = `<strong>Destination path:</strong><br>${destPath}`
                 notificationConfig.timeout = 5000
                 progress.isDone = true
               }
@@ -5363,8 +5244,8 @@ export default new Vuex.Store({
         timeout: 0,
         title: 'App update available',
         message: `
-          <b>Current version:</b> ${state.appVersion}
-          <br><b>Latest version:</b> ${latestVersion}
+          <strong>Current version:</strong> ${state.appVersion}
+          <br><strong>Latest version:</strong> ${latestVersion}
         `,
         closeButton: true,
         actionButtons

@@ -6,6 +6,21 @@ const fswin = require('fswin')
 const PATH = require('path')
 const fs = require('fs')
 
+async function getDirItemTotalSize (paths) {
+  let totalSize = 0
+  for (const path of paths) {
+    const pathStat = fs.statSync(path)
+    if (pathStat.isFile()) {
+      totalSize += pathStat.size
+    }
+    else {
+      const dirSize = await getDirSize(path)
+      totalSize += dirSize
+    }
+  }
+  return totalSize
+}
+
 async function getDirSize (path) {
   const trammelGetSize = require('trammel')
 
@@ -65,6 +80,7 @@ function getFilesRecursively (dir) {
 }
 
 module.exports = {
+  getDirItemTotalSize,
   getDirSize,
   getDirSizeOnDisk
 }

@@ -403,8 +403,9 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 </template>
 
 <script>
-import { mapFields } from 'vuex-map-fields'
-import { mapState } from 'vuex'
+import {mapFields} from 'vuex-map-fields'
+import {mapState} from 'vuex'
+
 const PATH = require('path')
 const lodash = require('../utils/lodash.min.js')
 
@@ -677,14 +678,13 @@ export default {
         }
       })
     },
-    async fetchItemInfoForSearchResults (list) {
+    async fetchItemInfoForSearchResults (dirItemlist) {
       const formatted = []
-      for (let index = 0; index < list.length; index++) {
-        const item = list[index]
+      for (const dirItem of dirItemlist) {
         try {
-          const formattedItem = await this.$store.dispatch('FETCH_DIR_ITEM_INFO', item.path)
-          formattedItem.score = item.score
-          formattedItem.dir = PATH.parse(item.path).dir.replace(/\\/g, '/')
+          const formattedItem = await this.$store.dispatch('FETCH_DIR_ITEM_INFO', dirItem.path)
+          formattedItem.score = dirItem.score
+          formattedItem.dir = PATH.parse(dirItem.path).dir.replace(/\\/g, '/')
           formatted.push(formattedItem)
         }
         catch (error) {}

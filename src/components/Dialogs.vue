@@ -241,40 +241,42 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               
               <h3>Keyboard item navigation</h3>
               <div>
-                <li>
-                  To move selection to the next item press
-                  <span class="inline-code--light">{{shortcuts.navigateDirDown.shortcut}}</span>
-                  or
-                  <span class="inline-code--light">{{shortcuts.navigateDirRight.shortcut}}</span>
-                  (grid layout only) 
-                </li>
-                <li>
-                  To move selection to the previous item press
-                  <span class="inline-code--light">{{shortcuts.navigateDirUp.shortcut}}</span>
-                  or
-                  <span class="inline-code--light">{{shortcuts.navigateDirLeft.shortcut}}</span> 
-                  (grid layout only) 
-                </li>
-                <li>
-                  To open current directory press
-                  <span class="inline-code--light">{{shortcuts.openSelectedDirectory.shortcut}}</span>
-                </li>
-                <li>
-                  To quit current directory press
-                  <span class="inline-code--light">{{shortcuts.quitSelectedDirectory.shortcut}}</span>
-                </li>
-                <li>
-                  Go to previous directory in history
-                  <span class="inline-code--light">{{shortcuts.goToPreviousDirectory.shortcut}}</span>
-                </li>
-                <li>
-                  Go to next directory in history
-                  <span class="inline-code--light">{{shortcuts.goToNextDirectory.shortcut}}</span>
-                </li>
-                <li>
-                  Go up directory
-                  <span class="inline-code--light">{{shortcuts.goUpDirectory.shortcut}}</span>
-                </li>
+                <ul>
+                  <li>
+                    To move selection to the next item press
+                    <span class="inline-code--light">{{shortcuts.navigateDirDown.shortcut}}</span>
+                    or
+                    <span class="inline-code--light">{{shortcuts.navigateDirRight.shortcut}}</span>
+                    (grid layout only) 
+                  </li>
+                  <li>
+                    To move selection to the previous item press
+                    <span class="inline-code--light">{{shortcuts.navigateDirUp.shortcut}}</span>
+                    or
+                    <span class="inline-code--light">{{shortcuts.navigateDirLeft.shortcut}}</span> 
+                    (grid layout only) 
+                  </li>
+                  <li>
+                    To open current directory press
+                    <span class="inline-code--light">{{shortcuts.openSelectedDirectory.shortcut}}</span>
+                  </li>
+                  <li>
+                    To quit current directory press
+                    <span class="inline-code--light">{{shortcuts.quitSelectedDirectory.shortcut}}</span>
+                  </li>
+                  <li>
+                    Go to previous directory in history
+                    <span class="inline-code--light">{{shortcuts.goToPreviousDirectory.shortcut}}</span>
+                  </li>
+                  <li>
+                    Go to next directory in history
+                    <span class="inline-code--light">{{shortcuts.goToNextDirectory.shortcut}}</span>
+                  </li>
+                  <li>
+                    Go up directory
+                    <span class="inline-code--light">{{shortcuts.goUpDirectory.shortcut}}</span>
+                  </li>
+                </ul>
               </div>
             </v-tab-item>
 
@@ -353,7 +355,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   </li>
                 </ul>
                 <div class="mt-4">
-                  ⚠ <b>Warning</b>
+                  ⚠ <strong>Warning</strong>
                   <br>
                   Use with caution. The "Advanced mode" and "Immutable mode" are still in early development.
                   The feature hasn't been thoroughly tested yet. Theoretically it can lock
@@ -375,16 +377,16 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               <h3>Features</h3>
               <ul>
                 <li>
-                  <b>Quick navigation:</b>
+                  <strong>Quick navigation:</strong>
                   it will automatically open the directories,
                   as you type their address (manually or with autocomplete)
                 </li>
                 <li>
-                  <b>Quick file opening:</b>
+                  <strong>Quick file opening:</strong>
                   to open the specified file, press enter
                 </li>
                 <li>
-                  <b>Autocomplete:</b>
+                  <strong>Autocomplete:</strong>
                   press
                   <span class="inline-code--light">tab</span>
                   or
@@ -392,11 +394,11 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   to autocomplete / iterate directory item names.
                 </li>
                 <li>
-                  <b>Quotes not needed:</b>
+                  <strong>Quotes not needed:</strong>
                   names that have spaces in them don't need to be wrapped with quotes
                 </li>
                 <li>
-                  <b>Follows standards:</b>
+                  <strong>Follows standards:</strong>
                   on Windows OS, all backward slashes
                   <span class="inline-code--light">\</span>
                   are automatically converted to forward slashes
@@ -577,7 +579,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             A shortcut is a combination of:
             <br>- 1-4 modifier keys: [Ctrl, Alt, Shift, Meta]
             <br>- 1 regular key
-            <br><b>Examples:</b>
+            <br><strong>Examples:</strong>
             <br>Ctrl + Shift + Space
             <br>Ctrl + F1
             <br>Meta + Esc
@@ -735,7 +737,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     >
       <template v-slot:content>
         <div class="mb-4">
-          <!-- ⚠ <b>Warning:</b> experimental feature, use with caution. -->
+          <!-- ⚠ <strong>Warning:</strong> experimental feature, use with caution. -->
           ⚠ Experimental, unfinished feature.
         </div>
         <div>
@@ -1895,9 +1897,11 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           </template>
           <span>
             Make sure your network is set up properly:
-            <li>You should allow the app access to your network in your Firewall</li>
-            <li>This device should be discoverable on the network (connected to private profile)</li>
-            <li>Your WIFI router should have the "client isolation" feature turned off.</li>
+            <ul>
+              <li>You should allow the app access to your network in your Firewall</li>
+              <li>This device should be discoverable on the network (connected to private profile)</li>
+              <li>Your WIFI router should have the "client isolation" feature turned off.</li>
+            </ul>
           </span>
         </v-tooltip>
       </template>
@@ -2426,85 +2430,6 @@ export default {
       }
       catch (error) {}
     },
-    handleShortcutChange (event, shortcutName, shortcut) {
-      event.preventDefault()
-
-      // Handle "Enter" key event
-      const noModifiersPressed =
-        !event.ctrlKey &&
-        !event.altKey &&
-        !event.shiftKey &&
-        !event.metaKey
-
-      if (event.code === 'Enter' && noModifiersPressed) {
-        document.activeElement.blur()
-        return
-      }
-
-      // Reset tempData
-      this.tempData.selectedShortcut.modifiers = []
-      this.tempData.selectedShortcut.regularKey = ''
-      this.tempData.selectedShortcut.readable = ''
-      this.tempData.selectedShortcut.value = ''
-
-      // Set data
-      this.tempData.selectedShortcut.initialValue = shortcut.shortcut
-
-      const keyIsAlphaNum = (event.keyCode >= 48 && event.keyCode <= 90)
-      const keyIsBetweenF1andF12 = (event.keyCode >= 112 && event.keyCode <= 123)
-      const allowedChars = [
-        'Backquote', 'Space', 'Enter', 'Minus', 'Equal', 'Backspace',
-        'Escape', 'PageUp', 'PageDown', 'Home', 'End', 'Delete',
-        'Tab', 'BracketLeft', 'BracketRight', 'Backslash', 'Semicolon',
-        'Quote', 'Period', 'Slash', 'Comma'
-      ]
-
-      if (event.ctrlKey) {
-        this.tempData.selectedShortcut.modifiers.push('Ctrl')
-      }
-      if (event.altKey) {
-        this.tempData.selectedShortcut.modifiers.push('Alt')
-      }
-      if (event.shiftKey) {
-        this.tempData.selectedShortcut.modifiers.push('Shift')
-      }
-      if (event.metaKey) {
-        this.tempData.selectedShortcut.modifiers.push('Meta')
-      }
-      if (keyIsAlphaNum || keyIsBetweenF1andF12 || allowedChars.includes(event.code)) {
-        this.tempData.selectedShortcut.regularKey = event.code
-          .replace(/\s/g, '')
-          .replace('Key', '')
-          .replace('Digit', '')
-          .replace(/Backquote/g, '~')
-          .replace(/Backtick/g, '~')
-          .replace(/Equal/g, '=')
-          .replace(/Plus/g, '+')
-          .replace(/Minus/g, '-')
-      }
-
-      const modifiers = this.tempData.selectedShortcut.modifiers
-      const regularKey = this.tempData.selectedShortcut.regularKey
-
-      const formattedModifiers = modifiers.length === 0
-        ? 'Click here & hold shortcut keys'
-        : modifiers.join('+')
-
-      const formattedToReadable = modifiers.length === 0
-        ? `${formattedModifiers}`
-        : `${formattedModifiers}+${keyIsAlphaNum || keyIsBetweenF1andF12 ? regularKey.toUpperCase() : regularKey}`
-
-      this.tempData.selectedShortcut.readable = formattedToReadable.replace(/\+/g, ' + ')
-      this.tempData.selectedShortcut.value = formattedToReadable
-
-      if (modifiers.length !== 0 && regularKey.length !== 0) {
-        this.tempData.selectedShortcut.isAcceptable = true
-        this.setShortcut(name)
-      }
-      else {
-        this.tempData.selectedShortcut.isAcceptable = false
-      }
-    },
     initCreateArchive () {
       if (!this.dialogs.archiverDialog.data.isValid) {return}
       this.$store.dispatch('ADD_TO_ARCHIVE', {
@@ -2688,7 +2613,7 @@ export default {
       const items = this.$utils.cloneDeep(this.dialogs.workspaceEditorDialog.data.items)
       // Set the new items without the specified workspace and without the new workspace
       // But do not filter out the new workspace from the selection list
-      this.dialogs.workspaceEditorDialog.data.items = items.filter(listItem => !(listItem.id === item.id))
+      this.dialogs.workspaceEditorDialog.data.items = items.filter(listItem => listItem.id !== item.id)
       this.$store.dispatch('SET', {
         key: 'storageData.workspaces.items',
         value: this.dialogs.workspaceEditorDialog.data.items.filter(listItem => !listItem.isTemplate)
@@ -2908,18 +2833,10 @@ export default {
   border-bottom: 1px solid var(--divider-color-1);
 }
 
-.shortcut-list__item-description {
-
-}
-
 .shortcut-list__item-shortcut {
   border-left: 1px solid var(--divider-color-1);
   padding: 8px;
   font-size: 14px;
-  /* text-align: right; */
-}
-
-.shortcut-list__item-actions {
 }
 
 .program-icon-set__container {

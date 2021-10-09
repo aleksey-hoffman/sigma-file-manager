@@ -257,9 +257,8 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 </template>
 
 <script>
-import { mapGetters, mapState } from 'vuex'
-import { mapFields } from 'vuex-map-fields'
-import Filehasher from '../utils/fileHasher.js'
+import {mapGetters, mapState} from 'vuex'
+import {mapFields} from 'vuex-map-fields'
 
 const fs = require('fs')
 const PATH = require('path')
@@ -888,55 +887,63 @@ export default {
     opacity: 1;
   }
 
-[data-layout="list"][data-type="directory"] .dir-item-card,
-[data-layout="list"][data-type="directory-symlink"] .dir-item-card,
-[data-layout="list"][data-type="file"] .dir-item-card,
-[data-layout="list"][data-type="file-symlink"] .dir-item-card {
-  height: 48px;
-  margin: 0px 36px;
-  padding: 0px;
-}
+[data-layout="list"][data-type="directory"]
+  .dir-item-card,
+[data-layout="list"][data-type="directory-symlink"]
+  .dir-item-card,
+[data-layout="list"][data-type="file"]
+  .dir-item-card,
+[data-layout="list"][data-type="file-symlink"]
+  .dir-item-card {
+    height: 48px;
+    margin: 0px 36px;
+    padding: 0px;
+  }
 
-[data-layout="list"][data-type="directory"] .dir-item-card__content-container,
-[data-layout="list"][data-type="directory-symlink"] .dir-item-card__content-container,
-[data-layout="list"][data-type="file"] .dir-item-card__content-container,
-[data-layout="list"][data-type="file-symlink"] .dir-item-card__content-container {
-  display: grid;
-  grid-template-columns: 48px 4.5fr 3fr 1fr 24px 48px;
-  gap: 16px;
-  border-bottom: 1px solid var(--dir-item-card-border-3);
-  /* Set the element height to 48px, otherwise
-    the bottom border increases the height to 49px */
-  height: 48px;
-}
+[data-layout="list"][data-type="directory"]
+  .dir-item-card__content-container,
+[data-layout="list"][data-type="directory-symlink"]
+  .dir-item-card__content-container,
+[data-layout="list"][data-type="file"]
+  .dir-item-card__content-container,
+[data-layout="list"][data-type="file-symlink"]
+  .dir-item-card__content-container {
+    display: grid;
+    grid-template-columns: 48px 4.5fr 3fr 1fr 24px 48px;
+    gap: 16px;
+    border-bottom: 1px solid var(--dir-item-card-border-3);
+    /* Set the element height to 48px, otherwise
+      the bottom border increases the height to 49px */
+    height: 48px;
+  }
 
-[data-layout="grid"][data-type="directory"] .dir-item-card,
-[data-layout="grid"][data-type="directory-symlink"] .dir-item-card {
-  height: 64px;
-}
+[data-layout="grid"][data-type="directory"]
+  .dir-item-card,
+[data-layout="grid"][data-type="directory-symlink"]
+  .dir-item-card {
+    height: 64px;
+  }
 
-[data-layout="grid"][data-type="file"] .dir-item-card,
-[data-layout="grid"][data-type="file-symlink"] .dir-item-card {
-  height: 158px;
-}
-
-[data-layout="grid"][data-type="directory"] .dir-item-card__content-container,
-[data-layout="grid"][data-type="directory-symlink"] .dir-item-card__content-container {
-  display: grid;
-  grid-template-columns: 64px 1fr 48px;
-  gap: 0px;
-  box-shadow: 0px 4px 16px rgb(0, 0, 0, 0.1);
-  /* border: 1px solid var(--dir-item-card-border-3) !important; */
-  border: 0px solid transparent !important;
-  background-color: var(--bg-color-1);
-  border-radius: 8px;
-  height: 64px;
-}
+[data-layout="grid"][data-type="directory"]
+  .dir-item-card__content-container,
+[data-layout="grid"][data-type="directory-symlink"]
+  .dir-item-card__content-container {
+    display: grid;
+    grid-template-columns: 64px 1fr 48px;
+    gap: 0px;
+    box-shadow: 0px 4px 16px rgb(0, 0, 0, 0.1);
+    /* border: 1px solid var(--dir-item-card-border-3) !important; */
+    border: 0px solid transparent !important;
+    background-color: var(--bg-color-1);
+    border-radius: 8px;
+    height: 64px;
+  }
 
 [data-layout="grid"][data-type="file"]
   .dir-item-card,
 [data-layout="grid"][data-type="file-symlink"]
   .dir-item-card {
+    height: 158px;
     border: 0px solid transparent !important;
     background-color: var(--bg-color-1);
   }

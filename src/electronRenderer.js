@@ -49,6 +49,7 @@ import UpdatingComponent from './components/UpdatingComponent.vue'
 import SectionSettings from './components/SectionSettings.vue'
 import WindowEffects from './components/WindowEffects.vue'
 import HomeBanner from './components/HomeBanner.vue'
+import FsLocalServerManager from './components/FsLocalServerManager.vue'
 
 // Register components
 Vue.component('window-toolbar', WindowToolbar)
@@ -84,6 +85,7 @@ Vue.component('updating-component', UpdatingComponent)
 Vue.component('section-settings', SectionSettings)
 Vue.component('window-effects', WindowEffects)
 Vue.component('home-banner', HomeBanner)
+Vue.component('fs-local-server-manager', FsLocalServerManager)
 
 const localize = require('./utils/localize')
 require('overlayscrollbars/css/OverlayScrollbars.css')

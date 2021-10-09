@@ -134,8 +134,8 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 </template>
 
 <script>
-import { mapFields } from 'vuex-map-fields'
-import { mapGetters } from 'vuex'
+import {mapFields} from 'vuex-map-fields'
+import {mapGetters} from 'vuex'
 
 export default {
   name: 'navigator',
@@ -248,9 +248,6 @@ export default {
   border-left: 1px solid var(--dir-item-card-border);
 }
 
-.workspace__area__name {
-}
-
 .workspace__area {
   display: grid;
   grid-template-rows: 48px 1fr;
@@ -280,10 +277,6 @@ export default {
     var(--action-toolbar-height) -
     var(--workspace-area-toolbar-height)
   );
-}
-
-.info-panel__preview-container {
-
 }
 
 .info-panel__media-preview {

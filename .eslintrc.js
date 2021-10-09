@@ -16,7 +16,7 @@ module.exports = {
   rules: {
     'no-console': 'off',
     'no-debugger': 'off',
-    'brace-style': [2, 'stroustrup', { allowSingleLine: true }],
+    'brace-style': [2, 'stroustrup', {allowSingleLine: true}],
     'vue/valid-v-on': 'warn',
     'vue/no-side-effects-in-computed-properties': 'warn',
     'vue/no-unused-components': 'warn',

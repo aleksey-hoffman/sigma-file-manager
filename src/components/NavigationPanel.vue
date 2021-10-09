@@ -176,8 +176,8 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               </v-layout>
             </template>
             <span>
-              <div> {{drive.titleSummary}} </div>
-              <div> {{drive.infoSummary}} </div>
+              <div>{{drive.titleSummary}}</div>
+              <div>{{drive.infoSummary}}</div>
             </span>
           </v-tooltip>
         </div>
@@ -187,19 +187,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 </template>
 
 <script>
-import { mapFields } from 'vuex-map-fields'
-import { mapGetters } from 'vuex'
+import {mapFields} from 'vuex-map-fields'
+import {mapGetters} from 'vuex'
 
 export default {
-  data () {
-    return {
-    }
-  },
-  mounted () {
-
-  },
-  beforeDestroy () {
-  },
   computed: {
     ...mapGetters([
       'homeBannerSelectedMedia',
@@ -216,14 +207,10 @@ export default {
       currentDir: 'navigatorView.currentDir'
     })
   },
-  methods: {
-
-  }
 }
 </script>
 
 <style>
-
 .nav-panel img,
 .nav-panel video {
   position: fixed;
@@ -310,9 +297,7 @@ export default {
   background-color: var(--nav-panel-indicator-color);
 }
 
-/* Divider */
 .nav-panel__divider {
   border-bottom: 1px solid var(--divider-color-1);
 }
-
 </style>

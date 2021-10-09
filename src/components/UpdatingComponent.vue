@@ -17,14 +17,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 </template>
 
 <script>
-import { mapFields } from 'vuex-map-fields'
+import {mapFields} from 'vuex-map-fields'
 
 export default {
   props: ['component'],
-  data () {
-    return {
-    }
-  },
   computed: {
     ...mapFields({
       lastScanTimeElapsed: 'globalSearch.lastScanTimeElapsed'
@@ -32,7 +28,3 @@ export default {
   }
 }
 </script>
-
-<style>
-
-</style>

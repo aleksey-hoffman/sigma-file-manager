@@ -425,7 +425,7 @@ export default {
               title: 'Download failed',
               message: `
                 Possible reasons: link has expired; download is forbidden.
-                <br><b>URL:</b> 
+                <br><strong>URL:</strong> 
                 <br>${url}
               `
             })

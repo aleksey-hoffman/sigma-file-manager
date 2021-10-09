@@ -1,0 +1,106 @@
+#app {
+  --nav-panel-width: 48px;
+  --nav-panel-active-indicator-width: 4px;
+  --nav-panel-icon-width: calc(
+    var(--nav-panel-width) -
+    (var(--nav-panel-active-indicator-width) * 2)
+  );
+  --scrollbar-width: 14px;
+  --window-toolbar-height: 32px;
+  --action-toolbar-height: 42px;
+  --workspace-area-toolbar-height: 48px;
+  --header-height: calc(
+    var(--window-toolbar-height) +
+    var(--action-toolbar-height)
+  );
+}
+
+#app[data-theme-type="light"] {}
+
+#app[data-theme-type="dark"] {
+  --main-color-1: rgba(47, 52, 68);
+  --key-color-1: #607d8b;
+  --key-color-1-darker-1: rgb(55, 68, 88);
+  --highlight-color-1: rgba(255, 255, 255, 0.3);
+  --highlight-color-2: rgba(255, 255, 255, 0.2);
+  --highlight-color-3: rgba(255, 255, 255, 0.1);
+  --highlight-color-4: rgba(255, 255, 255, 0.05);
+  --highlight-color-5: rgba(255, 255, 255, 0.01);
+  --bg-color-1-value: 36, 38, 44;
+  --bg-color-2-value: 29, 31, 37;
+  --bg-color-3-value: 47, 52, 68;
+  --bg-color-1: rgb(var(--bg-color-1-value));
+  --bg-color-2: rgb(var(--bg-color-2-value));
+  --bg-color-3: rgb(var(--bg-color-3-value));
+  --color-1: #fafafa;
+  --color-2: #f5f5f5;
+  --color-3: #eeeeee;
+  --color-4: #e0e0e0;
+  --color-5: #bdbdbd;
+  --color-6: #9e9e9e;
+  --color-7: #757575;
+  --color-8: #616161;
+  --color-1-alt-1: rgb(96, 125, 139, 0.5);
+  --code-bg-color: rgb(0, 0, 0, 0.1);
+  --table-color: #616161;
+  --icon-color-1: #546e7a;
+  --icon-color-2: #9e9e9e;
+  --icon-color-3: #607d8b;
+  --icon_active-color-1: rgb(96, 125, 139, 0.2);
+  --title-color-1: #9e9e9e;
+  --sub-title-color-1: #757575;
+  --sub-title-color-2: #9e9e9e;
+  --button-bg-color-1: rgb(255, 255, 255, 0.05);
+  --button-color-1: rgb(255, 255, 255, 0.4);
+  --button-bg-color-2: rgb(96, 125, 139, 0.4);
+  --button-color-2: rgb(255, 255, 255, 0.7);
+  --radio-bg-color-1: rgb(255, 255, 255, 0.4);
+  --radio-text-color-1: rgb(255, 255, 255, 0.4);
+  --input-bg-color-1: rgb(255, 255, 255, 0.4);
+  --input_active-track-color-1: var(--key-color-1-darker-1);
+  --input_active-thumb-color-1: var(--key-color-1);
+  --input-track-color-1: rgba(24, 26, 32);
+  --input-thumb-color-1: var(--color-6);
+  --divider-color-1: #202020;
+  --divider-color-2: #333;
+  --shadow-1: -6px 8px 24px rgb(0, 0, 0, 0.2),
+              -1px 1px 4px rgb(0,0,0,0.05);
+  --shadow-2: 6px 8px 24px rgb(0, 0, 0, 0.1),
+              1px 1px 4px rgb(0,0,0,0.05);
+  --shadow-2__hover: 8px 12px 36px rgb(0, 0, 0, 0.2),
+              1px 1px 4px rgb(0,0,0,0.05);
+  --shadow-x3: -6px 8px 24px rgb(0, 0, 0, 0.2),
+              -1px 1px 4px rgb(0,0,0,0.05);
+  --shadow-x4: -6px 8px 24px rgb(0, 0, 0, 0.2),
+              -1px 1px 4px rgb(0,0,0,0.05);
+  --shadow-x4_hover: -16px 20px 48px rgb(0,0,0,0.3);
+  --scrollbar-color: rgb(56, 58, 64, 0.5);
+  --app-content-bg-color: var(--bg-color-2);
+  --info-panel-preview-container-bg-color: #37474f;
+  --info-panel-preview-container-color: #607d8b;
+  --nav-panel-color-1: #9e9e9e;
+  --nav-panel-color_hover: rgb(120, 144, 156, 0.15);
+  --nav-panel-icon-color-1: #78909c;
+  --nav-panel-indicator-color: #455a64;
+  --nav-panel-item-bg-color_active:rgb(120, 144, 156, 0.05);
+  --info-panel-bg-color: var(--bg-color-2);
+  --info-panel-shadow: 0px 4px 48px rgb(0,0,0,0.05),
+                      0px 4px 2px rgb(0,0,0,0.3);
+  --info-panel-title-bg-color: #bdbdbd;
+  --note-color-bar-opacity: 0.5;
+  --context-menu-shadow: -4px 8px 12px rgb(0,0,0,0.05),
+                        -10px 20px 76px rgb(0,0,0,0.4);
+  --context-menu-bg-color: var(--bg-color-1);
+  --context-menu-bg-color_hover: rgb(255, 255, 255, 0.03);
+  --list-menu-bg-color_active: rgb(69, 90, 100, 0.2);
+  --dir-item-card-bg: transparent;
+  --dir-item-card-border: #111;
+  --dir-item-card-border-2: rgb(255, 255, 255, 0.4);
+  --dir-item-card-border-3: rgb(255, 255, 255, 0.08);
+  --dir-item-card-checkbox-color: rgb(159, 168, 218, 0.6);
+  --dir-item-card-icon-color: #9e9e9e;
+  --toggle-btn-bg-color: #333;
+  --list-item-mask-color: rgb(255, 255, 255, 0.6);
+  --blockquote-bg: rgb(232, 234, 246, 0.05);
+  --blockquote-border: rgba(56, 124, 170, 0.384);
+}

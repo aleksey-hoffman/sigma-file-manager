@@ -88,8 +88,8 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <script>
 import electron from 'electron'
-import { mapFields } from 'vuex-map-fields'
-import { mapGetters } from 'vuex'
+import {mapFields} from 'vuex-map-fields'
+import {mapGetters} from 'vuex'
 const electronRemote = require('@electron/remote')
 
 export default {

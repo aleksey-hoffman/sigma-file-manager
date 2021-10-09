@@ -693,13 +693,14 @@ NOTES:
 </template>
 
 <script>
-import { mapFields } from 'vuex-map-fields'
+import {mapFields} from 'vuex-map-fields'
+import {colors} from '../utils/colors.js'
 import Filehasher from '../utils/fileHasher.js'
 import TimeUtils from '../utils/timeUtils.js'
 import katex from 'katex'
 import 'katex/dist/katex.min.css'
-import { colors } from '../utils/colors.js'
-const { ipcRenderer } = require('electron')
+
+const {ipcRenderer} = require('electron')
 const fs = require('fs')
 const PATH = require('path')
 
@@ -751,7 +752,7 @@ export default {
       templates: [
         {
           title: 'template 1',
-          content: '<b>Template 1 content:</b> test'
+          content: '<strong>Template 1 content:</strong> test'
         },
         {
           title: 'template 2',
@@ -1634,6 +1635,7 @@ export default {
   rgb(255, 255, 255) and caret-color when you delete some text in-between strings */
   background-color: var(--bg-color-1);
   caret-color: var(--color-6);
+  font-size: 16px !important;
 }
 
 .text-editor__content:focus {
@@ -1701,10 +1703,6 @@ export default {
   input[type="checkbox"]:checked + label {
     color: var(--color-6);
   }
-
-.text-editor__content {
-  font-size: 16px !important;
-}
 
 .text-editor__content
   code:after,
