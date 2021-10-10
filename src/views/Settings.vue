@@ -403,27 +403,6 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
             <!-- tab::ui-appearance -->
             <v-tab-item transition="fade-in" reverse-transition="fade-in">
-              <!-- TODO: finish when light theme is added -->
-              <!-- <section-settings
-                class="content-area__content-card__section"
-                :header="{
-                  icon: {
-                    name: 'mdi-contrast-box'
-                  },
-                  title: 'Theme'
-                }"
-              >
-                <template v-slot:content>
-                  <div class="text--sub-title-1 mt-2">
-                    Theme type
-                  </div>
-                  <v-radio-group v-model="themeType" hide-details class="py-0 mt-0">
-                    <v-radio label="Light" value="light"></v-radio>
-                    <v-radio label="Dark" value="dark"></v-radio>
-                  </v-radio-group>
-                </template>
-              </section-settings> -->
-
               <section-settings
                 class="content-area__content-card__section"
                 :header="{
@@ -610,6 +589,44 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     label="Background glow effect"
                     hide-details
                   ></v-switch>
+                </template>
+              </section-settings>
+
+              <section-settings
+                class="content-area__content-card__section"
+                :header="{
+                  icon: {
+                    name: 'mdi-palette'
+                  },
+                  title: 'Theme'
+                }"
+              >
+                <template v-slot:content>
+                  <div class="text--sub-title-1 mt-2">
+                    Theme type
+                  </div>
+
+                  <v-radio-group
+                    class="py-0 mt-0"
+                    v-model="themeType"
+                    hide-details
+                  >
+                    <v-radio
+                      label="Dark"
+                      value="dark"
+                    ></v-radio>
+
+                    <v-radio
+                      label="Light filter"
+                      value="light-filter"
+                    ></v-radio>
+
+                    <v-radio
+                      label="Light (in development)"
+                      value="light"
+                      disabled
+                    ></v-radio>
+                  </v-radio-group>
                 </template>
               </section-settings>
 

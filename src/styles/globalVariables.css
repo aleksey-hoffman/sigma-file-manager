@@ -17,7 +17,8 @@
 
 #app[data-theme-type="light"] {}
 
-#app[data-theme-type="dark"] {
+#app[data-theme-type="dark"],
+#app[data-theme-type="light-filter"] {
   --main-color-1: rgba(47, 52, 68);
   --key-color-1: #607d8b;
   --key-color-1-darker-1: rgb(55, 68, 88);

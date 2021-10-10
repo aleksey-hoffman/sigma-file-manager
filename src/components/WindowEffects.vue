@@ -9,19 +9,11 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       class="overlay--window-transparency-effect__media" 
       v-if="currentPageEffects.windowTransparencyEffect.background.type === 'image'"
       :src="$storeUtils.getSafePath(currentPageEffects.windowTransparencyEffect.background.path)"
-      :style="{
-        'filter': `blur(${currentPageEffects.windowTransparencyEffect.blur}px)`,
-        'opacity': currentPageEffects.windowTransparencyEffect.opacity / 100
-      }"
     >
     <video
       class="overlay--window-transparency-effect__media" 
       v-if="currentPageEffects.windowTransparencyEffect.background.type === 'video'"
       :src="$storeUtils.getSafePath(currentPageEffects.windowTransparencyEffect.background.path)"
-      :style="{
-        'filter': `blur(${currentPageEffects.windowTransparencyEffect.blur}px)`,
-        'opacity': currentPageEffects.windowTransparencyEffect.opacity / 100
-      }"
       autoplay loop muted
     />
   </div>
@@ -60,6 +52,15 @@ export default {
     },
     'UIZoomLevel' () {
       this.transformMedia()
+    },
+    'currentPageEffects.windowTransparencyEffect.blur' () {
+      this.setOverlayCSS()
+    },
+    'currentPageEffects.windowTransparencyEffect.opacity' () {
+      this.setOverlayCSS()
+    },
+    themeType () {
+      this.setOverlayCSS()
     }
   },
   computed: {
@@ -73,6 +74,7 @@ export default {
       windowTransparencyEffectBlur: 'storageData.settings.windowTransparencyEffect.options.selectedPage.blur',
       windowTransparencyEffectOpacity: 'storageData.settings.windowTransparencyEffect.options.selectedPage.opacity',
       UIZoomLevel: 'storageData.settings.UIZoomLevel',
+      themeType: 'storageData.settings.theme.type',
     }),
     currentPageEffects () {
       try {
@@ -120,6 +122,18 @@ export default {
     }
   },
   methods: {
+    setOverlayCSS () {
+      let overlayNode = document.querySelector('.overlay--window-transparency-effect__media')
+      let blur = `${this.currentPageEffects.windowTransparencyEffect.blur}px`
+      let opacity = this.currentPageEffects.windowTransparencyEffect.opacity / 100
+      let invertInverse = this.themeType === 'light-filter' ? 1 : 0
+      let hueRotateInverse = this.themeType === 'light-filter' ? '180deg' : '0deg'
+        
+      overlayNode.style.setProperty('--blur', blur)
+      overlayNode.style.setProperty('--visual-filter-invert-inverse', invertInverse)
+      overlayNode.style.setProperty('--visual-filter-hue-rotate-inverse', hueRotateInverse)
+      overlayNode.style.opacity = opacity
+    },
     initIPCListeners () {
       electron.ipcRenderer.on('main-window-move', (event, data) => {
         this.handleWindowTransform()
@@ -170,7 +184,10 @@ export default {
   pointer-events: none;
   position: fixed;
   object-fit: cover;
-  filter: blur(56px);
+  filter: 
+    blur(var(--blur)) 
+    invert(var(--visual-filter-invert-inverse)) 
+    hue-rotate(var(--visual-filter-hue-rotate-inverse));
   opacity: 0.1;
   transition: transform 0.1s;
 }

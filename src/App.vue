@@ -6,6 +6,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <template>
   <v-app 
     :data-theme-type="themeType" 
+    :route-name="$route.name" 
     :display-accent-color-backgrounds="displayAccentColorBackgrounds" 
   >
     <window-toolbar/>
@@ -89,7 +90,10 @@ export default {
       else {
         this.$store.dispatch('DEHIGHLIGHT_ALL_DIR_ITEMS')
       }
-    }
+    },
+    themeType () {
+      this.setCSSAttributes('visual-filters')
+    },
   },
   created () {
     this.$store.dispatch('CLONE_STATE')
@@ -200,6 +204,19 @@ export default {
     },
   },
   methods: {
+    setCSSAttributes (name) {
+      if (name === 'visual-filters') {
+        let htmlNode = document.querySelector('html')
+        let invertInverse = this.themeType === 'light-filter' ? 1 : 0
+        let hueRotateInverse = this.themeType === 'light-filter' ? '180deg' : '0deg'
+
+        htmlNode.style.setProperty('--visual-filter-invert', this.themeType === 'light-filter' ? 1 : 0)
+        htmlNode.style.setProperty('--visual-filter-hue-rotate', this.themeType === 'light-filter' ? '180deg' : '0deg')
+
+        htmlNode.style.setProperty('--visual-filter-invert-inverse', invertInverse)
+        htmlNode.style.setProperty('--visual-filter-hue-rotate-inverse', hueRotateInverse)
+      }
+    },
     initEventHubListeners () {
       this.$eventHub.$on('app:method', payload => {
         this[payload.method](payload.params)
@@ -1139,6 +1156,25 @@ export default {
 @import url('./styles/globalTransitions.css');
 @import url('./styles/scrollbars.css');
 
+html {
+  overflow: hidden !important;
+  filter:
+    invert(var(--visual-filter-invert)) 
+    hue-rotate(var(--visual-filter-hue-rotate)) 
+}
+
+img,
+picture,
+video,
+.media-banner__inner__container--left,
+.overlay--window-transparency-effect__media,
+#app[route-name='home'] 
+  .window-toolbar__item {
+    filter: 
+      invert(var(--visual-filter-invert-inverse)) 
+      hue-rotate(var(--visual-filter-hue-rotate-inverse)) 
+  }
+
 #app,
 .v-application,
 .theme--light.v-card {
@@ -1156,10 +1192,6 @@ code,
 pre {
   font-family: "Lucida Console", Monaco, monospace !important;
   font-size: 18px;
-}
-
-html {
-  overflow: hidden !important;
 }
 
 .app-content {
