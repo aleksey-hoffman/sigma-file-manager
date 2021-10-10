@@ -170,13 +170,9 @@
       height: 0 !important;
     }
 
-.theme--light.v-btn.v-btn--disabled {
-  opacity: 0.5;
-}
-
-.theme--light.v-btn.v-btn--disabled
-  .v-icon.css-override {
-    color: var(--icon-color-2) !important;
+#app 
+  .v-btn.v-btn--disabled {
+    opacity: 0.6;
   }
     
 .v-input 

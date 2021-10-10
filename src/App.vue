@@ -1217,19 +1217,23 @@ video,
 .v-application,
 .theme--light.v-card {
   color: var(--color-6) !important;
-  font-family: 'Roboto-Regular',
-                /* Fix for: some emoji not
-                being displayed properly */
-                'Segoe UI Emoji',
-                'Apple Color Emoji',
-                'Droid Sans Fallback',
-                'Noto Color Emoji';
+  font-family: 
+    'Roboto-Regular',
+    /* Fix for: some emoji not being displayed properly */
+    'Segoe UI Emoji',
+    'Apple Color Emoji',
+    'Droid Sans Fallback',
+    'Noto Color Emoji';
 }
 
 code,
 pre {
   font-family: "Lucida Console", Monaco, monospace !important;
   font-size: 18px;
+}
+
+i {
+  font-style: unset;
 }
 
 .app-content {
@@ -1241,61 +1245,6 @@ pre {
   .v-icon {
     color: var(--icon-color-2);
   }
-
-/* Helpers */
-.fade-mask--top-and-bottom {
-  mask: linear-gradient(transparent, black 10%, black 90%, transparent 100%);
-}
-
-.fade-mask--top {
-  mask: linear-gradient(to bottom, transparent 0%, black var(--fade-mask-top));
-}
-
-.fade-mask--bottom {
-  mask: linear-gradient(to top, transparent 0%, black var(--fade-mask-bottom));
-}
-
-.fade-mask--bottom--10 {
-  mask-image: linear-gradient(to top, transparent 0%, black 10%);
-}
-
-.fade-mask--bottom--15 {
-  mask-image: linear-gradient(to top, transparent 0%, black 15%);
-}
-
-.fade-mask--bottom--25 {
-  mask-image: linear-gradient(to top, transparent 0%, black 25%);
-}
-
-.fade-mask--bottom--35 {
-  mask-image: linear-gradient(to top, transparent 0%, black 35%);
-}
-
-.inline-code--light {
-  border-radius: 4px;
-  background: rgb(255, 255, 255, 0.1);
-  padding: 3px 6px;
-}
-
-.code-block {
-  width: 100%;
-  overflow-y: auto;
-  padding: 8px 12px;
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 8px;
-}
-
-*[shadow~="left"][shadow~="x4"] {
-  box-shadow: var(--shadow-x4);
-}
-
-*[shadow~="left"][shadow~="x4"]:hover {
-  box-shadow: var(--shadow-x4_hover);
-}
-
-*[shadow="x3"] {
-  box-shadow: var(--shadow-x3) !important;
-}
 
 .v-overlay--active,
 .v-overlay__scrim {
@@ -1343,35 +1292,6 @@ pre {
   color: var(--color-6);
 }
 
-/* Note: this method doesn't break alignment inside grid */
-.truncate-line {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* Note: this method breaks alignment inside grid */
-.line-clamp-1 {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 1;
-  overflow: hidden;
-}
-
-.line-clamp-2 {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  overflow: hidden;
-}
-
-.line-clamp-3 {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
-  overflow: hidden;
-}
-
 .v-list-item__action:last-of-type:not(:only-child) {
   margin-left: 4px !important;
 }
@@ -1399,22 +1319,10 @@ pre {
   background: var(--context-menu-bg-color) !important;
 }
 
-.divider-color-1 {
-  border-color: var(--divider-color-1) !important;
-}
-
-.divider-color-2 {
-  border-color: var(--divider-color-2) !important;
-}
-
 .qr-code {
   height: 96px;
   width: 96px;
   flex-shrink: 0;
-}
-
-i {
-  font-style: unset;
 }
 
 #window-toolbar
@@ -1505,21 +1413,6 @@ i {
 .dir-item__checkbox[data-selected="true"] {
   pointer-events: unset;
   opacity: 1;
-}
-
-.custom-divider {
-  padding: 18px 0px;
-  border-top: 1px solid;
-  width: 100%;
-  border-width: thin;
-  border-color: var(--highlight-color-2)
-}
-
-.custom-divider[vertical] {
-  margin: 0px 4px;
-  height: 20px;
-  width: 2px;
-  background-color: var(--highlight-color-2)
 }
 
 .content-area {

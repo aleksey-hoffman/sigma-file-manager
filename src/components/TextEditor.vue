@@ -666,7 +666,10 @@ NOTES:
         className: 'os-theme-minimal-light',
         scrollbars: { autoHide: 'move' }
       }"
-      class="sticky-scroller__condtent text-editor__content-container fade-mask--bottom--10"
+      class="sticky-scroller__condtent text-editor__content-container fade-mask--bottom"
+      :style="{
+        '--fade-mask-bottom': '15%'
+      }"
     >
       <span @click.right.exact="showNoteEditorContextMenu">
         <div v-show="showSourceCode" class="text-editor__source-code-container">
