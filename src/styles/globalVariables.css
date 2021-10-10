@@ -63,6 +63,7 @@
   --input-thumb-color-1: var(--color-6);
   --divider-color-1: #202020;
   --divider-color-2: #333;
+  --divider-color-4: rgba(255, 255, 255, 0.1);
   --shadow-1: -6px 8px 24px rgb(0, 0, 0, 0.2),
               -1px 1px 4px rgb(0,0,0,0.05);
   --shadow-2: 6px 8px 24px rgb(0, 0, 0, 0.1),

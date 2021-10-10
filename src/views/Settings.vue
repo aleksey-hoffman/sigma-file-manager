@@ -695,6 +695,16 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     class="mt-0 pt-0"
                   ></v-switch> -->
                   <div class="text--sub-title-1 mt-2">
+                    Accent color
+                  </div>
+
+                  <v-switch
+                    v-model="displayAccentColorBackgrounds"
+                    label="Display accent color backgrounds"
+                    class="mt-0 pt-0"
+                  ></v-switch>
+
+                  <div class="text--sub-title-1 mt-2">
                     Dashboard options
                   </div>
 
@@ -1695,6 +1705,7 @@ export default {
       shortcuts: 'storageData.settings.shortcuts',
       UIZoomLevel: 'storageData.settings.UIZoomLevel',
       toolbarColorItems: 'storageData.settings.theme.toolbarColorItems',
+      displayAccentColorBackgrounds: 'storageData.settings.displayAccentColorBackgrounds',
       dashboardTimeline: 'storageData.settings.dashboard.tabs.timeline.show',
       scanInProgress: 'globalSearch.scanInProgress',
       openDirItemSecondClickDelay: 'storageData.settings.navigator.openDirItemSecondClickDelay',

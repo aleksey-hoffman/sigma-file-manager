@@ -6,6 +6,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <template>
   <v-app 
     :data-theme-type="themeType" 
+    :display-accent-color-backgrounds="displayAccentColorBackgrounds" 
   >
     <window-toolbar/>
     <action-toolbar/>
@@ -184,6 +185,7 @@ export default {
       storageDataSettings: 'storageData.settings',
       themeType: 'storageData.settings.theme.type',
       overlayInboundDrag: 'overlays.inboundDrag',
+      displayAccentColorBackgrounds: 'storageData.settings.displayAccentColorBackgrounds',
     }),
     globalSearchScanWasInterrupted: {
       get () {

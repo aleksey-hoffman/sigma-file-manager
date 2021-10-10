@@ -1069,6 +1069,12 @@ export default {
     background-color: rgb(159, 168, 218, 0.1);
   }
 
+#app:not([display-accent-color-backgrounds])
+  [data-layout="list"]
+    .dir-item-card__thumb-container  {
+      background-color: transparent;
+    }
+
 [data-layout="grid"][data-type="directory"]
   .dir-item-card__thumb-container,
 [data-layout="grid"][data-type="directory-symlink"]

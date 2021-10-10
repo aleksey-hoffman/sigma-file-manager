@@ -594,7 +594,7 @@ export default {
 
 .info-panel
   .v-divider {
-    background-color: var(--divider-color-2) !important;
+    background-color: var(--divider-color-4) !important;
   }
 
 .info-panel__preview-container {
@@ -602,7 +602,13 @@ export default {
   width: 280px;
   height: 158px;
   background-color: var(--info-panel-preview-container-bg-color);
+  border-bottom: 1px solid var(--divider-color-4);
 }
+
+#app:not([display-accent-color-backgrounds])
+  .info-panel__preview-container {
+    background-color: transparent;
+  }
 
 .info-panel__preview-container__media-container * {
   position: absolute;
