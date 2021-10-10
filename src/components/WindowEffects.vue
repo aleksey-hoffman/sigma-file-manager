@@ -61,7 +61,13 @@ export default {
     },
     themeType () {
       this.setOverlayCSS()
-    }
+    },
+    visualFiltersApplyFiltersToMediaElements () {
+      this.setOverlayCSS()
+    },
+    visualFiltersContrastValue () {
+      this.setOverlayCSS()
+    },
   },
   computed: {
     ...mapFields({
@@ -75,6 +81,8 @@ export default {
       windowTransparencyEffectOpacity: 'storageData.settings.windowTransparencyEffect.options.selectedPage.opacity',
       UIZoomLevel: 'storageData.settings.UIZoomLevel',
       themeType: 'storageData.settings.theme.type',
+      visualFiltersApplyFiltersToMediaElements: 'storageData.settings.visualFilters.applyFiltersToMediaElements',
+      visualFiltersContrastValue: 'storageData.settings.visualFilters.contrast.value',
     }),
     currentPageEffects () {
       try {
@@ -128,10 +136,14 @@ export default {
       let opacity = this.currentPageEffects.windowTransparencyEffect.opacity / 100
       let invertInverse = this.themeType === 'light-filter' ? 1 : 0
       let hueRotateInverse = this.themeType === 'light-filter' ? '180deg' : '0deg'
+      let contrastInverse = this.visualFiltersApplyFiltersToMediaElements
+        ? this.visualFiltersContrastValue
+        : 1 + (1 - this.visualFiltersContrastValue)
         
       overlayNode.style.setProperty('--blur', blur)
       overlayNode.style.setProperty('--visual-filter-invert-inverse', invertInverse)
       overlayNode.style.setProperty('--visual-filter-hue-rotate-inverse', hueRotateInverse)
+      overlayNode.style.setProperty('--visual-filter-contrast-inverse', contrastInverse)
       overlayNode.style.opacity = opacity
     },
     initIPCListeners () {
@@ -187,7 +199,8 @@ export default {
   filter: 
     blur(var(--blur)) 
     invert(var(--visual-filter-invert-inverse)) 
-    hue-rotate(var(--visual-filter-hue-rotate-inverse));
+    hue-rotate(var(--visual-filter-hue-rotate-inverse))
+    contrast(var(--visual-filter-contrast-inverse));
   opacity: 0.1;
   transition: transform 0.1s;
 }

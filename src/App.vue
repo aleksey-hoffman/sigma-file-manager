@@ -94,6 +94,12 @@ export default {
     themeType () {
       this.setCSSAttributes('visual-filters')
     },
+    visualFiltersApplyFiltersToMediaElements () {
+      this.setCSSAttributes('visual-filters')
+    },
+    visualFiltersContrastValue () {
+      this.setCSSAttributes('visual-filters')
+    },
   },
   created () {
     this.$store.dispatch('CLONE_STATE')
@@ -190,6 +196,8 @@ export default {
       themeType: 'storageData.settings.theme.type',
       overlayInboundDrag: 'overlays.inboundDrag',
       displayAccentColorBackgrounds: 'storageData.settings.displayAccentColorBackgrounds',
+      visualFiltersApplyFiltersToMediaElements: 'storageData.settings.visualFilters.applyFiltersToMediaElements',
+      visualFiltersContrastValue: 'storageData.settings.visualFilters.contrast.value',
     }),
     globalSearchScanWasInterrupted: {
       get () {
@@ -209,12 +217,17 @@ export default {
         let htmlNode = document.querySelector('html')
         let invertInverse = this.themeType === 'light-filter' ? 1 : 0
         let hueRotateInverse = this.themeType === 'light-filter' ? '180deg' : '0deg'
+        let contrastInverse = this.visualFiltersApplyFiltersToMediaElements
+          ? this.visualFiltersContrastValue
+          : 1 + (1 - this.visualFiltersContrastValue)
 
         htmlNode.style.setProperty('--visual-filter-invert', this.themeType === 'light-filter' ? 1 : 0)
         htmlNode.style.setProperty('--visual-filter-hue-rotate', this.themeType === 'light-filter' ? '180deg' : '0deg')
+        htmlNode.style.setProperty('--visual-filter-contrast', this.visualFiltersContrastValue)
 
         htmlNode.style.setProperty('--visual-filter-invert-inverse', invertInverse)
         htmlNode.style.setProperty('--visual-filter-hue-rotate-inverse', hueRotateInverse)
+        htmlNode.style.setProperty('--visual-filter-contrast-inverse', contrastInverse)
       }
     },
     initEventHubListeners () {
@@ -1161,6 +1174,7 @@ html {
   filter:
     invert(var(--visual-filter-invert)) 
     hue-rotate(var(--visual-filter-hue-rotate)) 
+    contrast(var(--visual-filter-contrast)) 
 }
 
 img,
@@ -1168,11 +1182,13 @@ picture,
 video,
 .media-banner__inner__container--left,
 .overlay--window-transparency-effect__media,
+#loading-screen__container,
 #app[route-name='home'] 
   .window-toolbar__item {
     filter: 
       invert(var(--visual-filter-invert-inverse)) 
       hue-rotate(var(--visual-filter-hue-rotate-inverse)) 
+      contrast(var(--visual-filter-contrast-inverse)) 
   }
 
 #app,

@@ -633,6 +633,14 @@ export default new Vuex.Store({
             }
           }
         },
+        visualFilters: {
+          applyFiltersToMediaElements: false,
+          contrast: {
+            value: '1',
+            min: '0.9',
+            max: '1.2',
+          },
+        },
         theme: {
           type: 'dark',
           toolbarColorOptions: {

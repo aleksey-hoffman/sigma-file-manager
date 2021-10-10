@@ -634,6 +634,41 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 class="content-area__content-card__section"
                 :header="{
                   icon: {
+                    name: 'mdi-image-filter-black-white'
+                  },
+                  title: 'Visual filters'
+                }"
+              >
+                <template v-slot:content>
+                  <div class="text--sub-title-1 mt-2">
+                    Filters
+                  </div>
+
+                  <v-switch
+                    class="mt-4 pt-0"
+                    v-model="visualFiltersApplyFiltersToMediaElements"
+                    label="Apply filters to media elements (images, videos)"
+                  ></v-switch>
+
+                  <div class="mt-4">Contrast: {{Math.round(visualFiltersContrastValue * 100)}}%</div>
+
+                  <v-slider
+                    class="align-center"
+                    v-model="visualFiltersContrastValue"
+                    :min="visualFiltersContrast.min"
+                    :max="visualFiltersContrast.max"
+                    step="0.01"
+                    hide-details
+                    style="max-width: 250px"
+                  ></v-slider>
+
+                </template>
+              </section-settings>
+      
+              <section-settings
+                class="content-area__content-card__section"
+                :header="{
+                  icon: {
                     name: 'mdi-animation-play-outline'
                   },
                   title: 'Animations'
@@ -1606,6 +1641,9 @@ export default {
       windowTransparencyEffectDataBackgroundSelected: 'storageData.settings.windowTransparencyEffect.options.selectedPage.background',
       homeBannerMediaGlowEffectValue: 'storageData.settings.visualEffects.homeBannerMediaGlowEffect.value',
       animationsOnRouteChangeMediaBannerIn: 'storageData.settings.animations.onRouteChangeMediaBannerIn',
+      visualFiltersApplyFiltersToMediaElements: 'storageData.settings.visualFilters.applyFiltersToMediaElements',
+      visualFiltersContrast: 'storageData.settings.visualFilters.contrast',
+      visualFiltersContrastValue: 'storageData.settings.visualFilters.contrast.value',
       dateTimeMonth: 'storageData.settings.dateTime.month',
       pointerButton3onMouseUpEvent: 'storageData.settings.input.pointerButtons.button3.onMouseUpEvent',
       pointerButton3onMouseUpEventItems: 'storageData.settings.input.pointerButtons.button3.onMouseUpEventItems',
