@@ -57,6 +57,7 @@
   --button-color-2: rgb(255, 255, 255, 0.7);
   --radio-bg-color-1: rgb(255, 255, 255, 0.4);
   --radio-text-color-1: rgb(255, 255, 255, 0.4);
+  --radio-text-color-1--disabled: rgb(255, 255, 255, 0.2);
   --input-bg-color-1: rgb(255, 255, 255, 0.4);
   --input_active-track-color-1: var(--key-color-1-darker-1);
   --input_active-thumb-color-1: var(--key-color-1);

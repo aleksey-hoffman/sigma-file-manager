@@ -196,6 +196,12 @@
     color: var(--radio-text-color-1) !important;
   }
 
+.v-input
+  .v-radio--is-disabled
+    .v-label {
+      color: var(--radio-text-color-1--disabled) !important;
+    }
+
 .v-input--is-label-active
   .v-input--switch__track {
     background: var(--input_active-track-color-1) !important;
@@ -288,6 +294,13 @@
     i.mdi-radiobox-blank {
       color: var(--color-7) !important;
     }
+
+.v-input.v-input--selection-controls
+  .v-radio--is-disabled
+    .v-input--selection-controls__input
+      i.mdi-radiobox-blank {
+        color: var(--radio-text-color-1--disabled) !important;
+      }
 
 #app
   .v-input__slider
