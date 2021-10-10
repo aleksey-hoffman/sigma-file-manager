@@ -673,6 +673,18 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     hide-details
                     style="max-width: 250px"
                   ></v-slider>
+                  
+                  <div class="mt-4">Saturation: {{Math.round(visualFiltersSaturationValue * 100)}}%</div>
+
+                  <v-slider
+                    class="align-center"
+                    v-model="visualFiltersSaturationValue"
+                    :min="visualFiltersSaturation.min"
+                    :max="visualFiltersSaturation.max"
+                    step="0.05"
+                    hide-details
+                    style="max-width: 250px"
+                  ></v-slider>
                 </template>
               </section-settings>
       
@@ -1657,6 +1669,8 @@ export default {
       visualFiltersContrastValue: 'storageData.settings.visualFilters.contrast.value',
       visualFiltersBrightness: 'storageData.settings.visualFilters.brightness',
       visualFiltersBrightnessValue: 'storageData.settings.visualFilters.brightness.value',
+      visualFiltersSaturation: 'storageData.settings.visualFilters.saturation',
+      visualFiltersSaturationValue: 'storageData.settings.visualFilters.saturation.value',
       dateTimeMonth: 'storageData.settings.dateTime.month',
       pointerButton3onMouseUpEvent: 'storageData.settings.input.pointerButtons.button3.onMouseUpEvent',
       pointerButton3onMouseUpEventItems: 'storageData.settings.input.pointerButtons.button3.onMouseUpEventItems',

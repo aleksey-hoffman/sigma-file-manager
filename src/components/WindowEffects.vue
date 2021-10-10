@@ -71,6 +71,9 @@ export default {
     visualFiltersBrightnessValue () {
       this.setOverlayCSS()
     },
+    visualFiltersSaturationValue () {
+      this.setOverlayCSS()
+    },
   },
   computed: {
     ...mapFields({
@@ -87,6 +90,7 @@ export default {
       visualFiltersApplyFiltersToMediaElements: 'storageData.settings.visualFilters.applyFiltersToMediaElements',
       visualFiltersContrastValue: 'storageData.settings.visualFilters.contrast.value',
       visualFiltersBrightnessValue: 'storageData.settings.visualFilters.brightness.value',
+      visualFiltersSaturationValue: 'storageData.settings.visualFilters.saturation.value',
     }),
     currentPageEffects () {
       try {
@@ -146,12 +150,16 @@ export default {
       let brightnessInverse = this.visualFiltersApplyFiltersToMediaElements
         ? this.visualFiltersBrightnessValue
         : 1 + (1 - this.visualFiltersBrightnessValue)
+      let saturationInverse = this.visualFiltersApplyFiltersToMediaElements
+        ? this.visualFiltersSaturationValue
+        : 1 + (1 - this.visualFiltersSaturationValue)
         
       overlayNode.style.setProperty('--blur', blur)
       overlayNode.style.setProperty('--visual-filter-invert-inverse', invertInverse)
       overlayNode.style.setProperty('--visual-filter-hue-rotate-inverse', hueRotateInverse)
       overlayNode.style.setProperty('--visual-filter-contrast-inverse', contrastInverse)
       overlayNode.style.setProperty('--visual-filter-brightness-inverse', brightnessInverse)
+      overlayNode.style.setProperty('--visual-filter-saturation-inverse', saturationInverse)
       overlayNode.style.opacity = opacity
     },
     initIPCListeners () {
@@ -209,7 +217,8 @@ export default {
     invert(var(--visual-filter-invert-inverse)) 
     hue-rotate(var(--visual-filter-hue-rotate-inverse))
     contrast(var(--visual-filter-contrast-inverse))
-    brightness(var(--visual-filter-brightness-inverse));
+    brightness(var(--visual-filter-brightness-inverse))
+    saturate(var(--visual-filter-saturation-inverse));
   opacity: 0.1;
   transition: transform 0.1s;
 }

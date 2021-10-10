@@ -645,6 +645,11 @@ export default new Vuex.Store({
             min: '1',
             max: '1.2',
           },
+          saturation: {
+            value: '1',
+            min: '0',
+            max: '2',
+          },
         },
         theme: {
           type: 'dark',
