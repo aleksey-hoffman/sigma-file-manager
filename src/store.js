@@ -637,7 +637,12 @@ export default new Vuex.Store({
           applyFiltersToMediaElements: false,
           contrast: {
             value: '1',
-            min: '0.9',
+            min: '1',
+            max: '1.2',
+          },
+          brightness: {
+            value: '1',
+            min: '1',
             max: '1.2',
           },
         },

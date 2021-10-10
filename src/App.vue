@@ -100,6 +100,9 @@ export default {
     visualFiltersContrastValue () {
       this.setCSSAttributes('visual-filters')
     },
+    visualFiltersBrightnessValue () {
+      this.setCSSAttributes('visual-filters')
+    },
   },
   created () {
     this.$store.dispatch('CLONE_STATE')
@@ -198,6 +201,7 @@ export default {
       displayAccentColorBackgrounds: 'storageData.settings.displayAccentColorBackgrounds',
       visualFiltersApplyFiltersToMediaElements: 'storageData.settings.visualFilters.applyFiltersToMediaElements',
       visualFiltersContrastValue: 'storageData.settings.visualFilters.contrast.value',
+      visualFiltersBrightnessValue: 'storageData.settings.visualFilters.brightness.value',
     }),
     globalSearchScanWasInterrupted: {
       get () {
@@ -220,14 +224,19 @@ export default {
         let contrastInverse = this.visualFiltersApplyFiltersToMediaElements
           ? this.visualFiltersContrastValue
           : 1 + (1 - this.visualFiltersContrastValue)
+        let brightnessInverse = this.visualFiltersApplyFiltersToMediaElements
+          ? this.visualFiltersBrightnessValue
+          : 1 + (1 - this.visualFiltersBrightnessValue)
 
         htmlNode.style.setProperty('--visual-filter-invert', this.themeType === 'light-filter' ? 1 : 0)
         htmlNode.style.setProperty('--visual-filter-hue-rotate', this.themeType === 'light-filter' ? '180deg' : '0deg')
         htmlNode.style.setProperty('--visual-filter-contrast', this.visualFiltersContrastValue)
+        htmlNode.style.setProperty('--visual-filter-brightness', this.visualFiltersBrightnessValue)
 
         htmlNode.style.setProperty('--visual-filter-invert-inverse', invertInverse)
         htmlNode.style.setProperty('--visual-filter-hue-rotate-inverse', hueRotateInverse)
         htmlNode.style.setProperty('--visual-filter-contrast-inverse', contrastInverse)
+        htmlNode.style.setProperty('--visual-filter-brightness-inverse', brightnessInverse)
       }
     },
     initEventHubListeners () {
@@ -1175,6 +1184,7 @@ html {
     invert(var(--visual-filter-invert)) 
     hue-rotate(var(--visual-filter-hue-rotate)) 
     contrast(var(--visual-filter-contrast)) 
+    brightness(var(--visual-filter-brightness))
 }
 
 img,
@@ -1189,6 +1199,7 @@ video,
       invert(var(--visual-filter-invert-inverse)) 
       hue-rotate(var(--visual-filter-hue-rotate-inverse)) 
       contrast(var(--visual-filter-contrast-inverse)) 
+      brightness(var(--visual-filter-brightness-inverse))
   }
 
 #app,

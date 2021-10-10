@@ -662,6 +662,17 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     style="max-width: 250px"
                   ></v-slider>
 
+                  <div class="mt-4">Brightness: {{Math.round(visualFiltersBrightnessValue * 100)}}%</div>
+
+                  <v-slider
+                    class="align-center"
+                    v-model="visualFiltersBrightnessValue"
+                    :min="visualFiltersBrightness.min"
+                    :max="visualFiltersBrightness.max"
+                    step="0.01"
+                    hide-details
+                    style="max-width: 250px"
+                  ></v-slider>
                 </template>
               </section-settings>
       
@@ -1644,6 +1655,8 @@ export default {
       visualFiltersApplyFiltersToMediaElements: 'storageData.settings.visualFilters.applyFiltersToMediaElements',
       visualFiltersContrast: 'storageData.settings.visualFilters.contrast',
       visualFiltersContrastValue: 'storageData.settings.visualFilters.contrast.value',
+      visualFiltersBrightness: 'storageData.settings.visualFilters.brightness',
+      visualFiltersBrightnessValue: 'storageData.settings.visualFilters.brightness.value',
       dateTimeMonth: 'storageData.settings.dateTime.month',
       pointerButton3onMouseUpEvent: 'storageData.settings.input.pointerButtons.button3.onMouseUpEvent',
       pointerButton3onMouseUpEventItems: 'storageData.settings.input.pointerButtons.button3.onMouseUpEventItems',
