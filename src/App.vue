@@ -1332,50 +1332,6 @@ i {
     padding: 0px 8px 0px 8px !important;
   }
 
-.v-btn.button-1 {
-  background: var(--button-bg-color-1) !important;
-  color: var(--button-color-1) !important;
-  box-shadow: none;
-}
-
-.v-btn.button-2 {
-  background: var(--button-bg-color-2) !important;
-  color: var(--button-color-2) !important;
-  box-shadow: none;
-}
-
-.text--title-1 {
-  font-size: 28px;
-  color: var(--title-color-1);
-}
-
-.text--title-2 {
-  font-size: 20px;
-  color: var(--title-color-1);
-}
-
-.text--sub-title-1 {
-  font-size: 14px;
-  margin-bottom: 8px;
-  color: var(--sub-title-color-1);
-  text-transform: uppercase;
-  user-select: none;
-}
-
-.text--sub-title-2 {
-  font-size: 14px;
-  margin-bottom: 8px;
-  color: var(--color-5);
-}
-
-.content__description {
-  font-size: 16px;
-  margin-bottom: 8px;
-  line-height: 1.5;
-  word-break: break-word;
-  color: var(--sub-title-color-1);
-}
-
 .overlay--drag-over {
   position: absolute;
   width: 100%;
