@@ -1,5 +1,6 @@
 #app {
   --nav-panel-width: 48px;
+  --nav-panel-width-expanded: 278px;
   --nav-panel-active-indicator-width: 4px;
   --nav-panel-icon-width: calc(
     var(--nav-panel-width) -

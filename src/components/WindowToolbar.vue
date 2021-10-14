@@ -14,7 +14,9 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       <div
         class="window-toolbar__header-container"
         @click="navigationPanelMiniVariant = !navigationPanelMiniVariant"
-        :style="!navigationPanelMiniVariant ? 'width: 278px' : 'width: 64px'"
+        :style="!navigationPanelMiniVariant 
+          ? 'width: var(--nav-panel-width-expanded)' 
+          : 'width: var(--nav-panel-width)'"
         v-ripple
         align-center
       >

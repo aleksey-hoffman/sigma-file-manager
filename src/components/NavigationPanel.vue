@@ -5,11 +5,13 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <template>
   <v-navigation-drawer
-    v-model="navigationPanelModel"
-    :mini-variant="navigationPanelMiniVariant"
-    touchless app permanent floating mini-variant-width="64" width="280"
     id="nav-panel"
     class="nav-panel"
+    v-model="navigationPanelModel"
+    :mini-variant="navigationPanelMiniVariant"
+    touchless app permanent floating
+    mini-variant-width="48"
+    width="280"
   >
     <v-layout column fill-height class="unselectable">
       <v-layout column class="nav-panel__main-content custom-scrollbar">
