@@ -513,7 +513,23 @@ export default {
       this.renderedItemsizes = this.renderedItems.map(item => item.height)
       this.allItemSizes = this.items.map(item => item.height)
       this.totalHeight = this.items.reduce((a, b) => a + (b.height || 0), 0)
-    }
+      this.appendPropertyIsInViewport(dirItemNodes)
+    },
+    appendPropertyIsInViewport (dirItemNodes) {
+      dirItemNodes.forEach(async (node) => {
+        const isInViewport = await this.isHTMLNodeInViewport(node)
+        node.dataset.isInViewport = isInViewport
+      })
+    },
+    isHTMLNodeInViewport (domElement) {
+      return new Promise(resolve => {
+        const observer = new IntersectionObserver(([entry]) => {
+          resolve(entry.intersectionRatio > 0)
+          observer.disconnect()
+        })
+        observer.observe(domElement)
+      })
+    },
   }
 }
 </script>
