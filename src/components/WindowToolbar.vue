@@ -9,6 +9,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     :style="{'background': windowToolbarBackgroundColor}"
     app flat clipped-right clipped-left height="32px"
   >
+    <div class="window-toolbar__drag-region"></div>
     <div class="window-toolbar__content-container">
       <div
         class="window-toolbar__header-container"
@@ -336,6 +337,16 @@ export default {
 #window-toolbar {
   transition: background-color 0.1s;
   z-index: 10;
+}
+
+.window-toolbar__drag-region {
+  top: 4px;
+  left: 4px;
+  display: block;
+  position: absolute;
+  width: calc(100% - 8px);
+  height: calc(100% - 4px);
+  z-index: -1;
   -webkit-app-region: drag;
 }
 
