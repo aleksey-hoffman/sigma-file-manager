@@ -1329,7 +1329,11 @@ i {
   .window-toolbar__content--main,
 #action-toolbar
   .v-toolbar__content {
-    padding: 0px 8px 0px 8px !important;
+    padding: 
+      0px 
+      var(--window-toolbar-padding-right) 
+      0px 
+      var(--window-toolbar-padding-left) !important;
   }
 
 .overlay--drag-over {

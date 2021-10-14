@@ -80,6 +80,44 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               </span>
             </v-tooltip>
           </template>
+
+          <template v-if="item.type === 'window-controls-group'">
+            <div class="window-controls-group">
+              <div 
+                v-for="(item, index) in item.items"
+                :key="'window-controls-group-item-' + index"
+              >
+                <v-tooltip bottom min-width="100px">
+                  <template v-slot:activator="{ on }">
+                    <button
+                      class="window-toolbar__item window-controls-group__item"
+                      v-on="on"
+                      @click="item.onClick()"
+                      icon
+                    >
+                      <v-icon
+                        :color="windowToolbarFontColor"
+                        :size="item.icon.size"
+                      >
+                        {{item.icon.name}}
+                      </v-icon>
+                    </button>
+                  </template>
+                  <span>
+                    <div
+                      class="tooltip__description"
+                      v-html="item.tooltip.description"
+                    ></div>
+                    <div
+                      class="tooltip__shortcut"
+                      v-show="[undefined, true].includes(item.tooltip.shortutIfCondition)"
+                      v-html="item.tooltip.shortcut"
+                    ></div>
+                  </span>
+                </v-tooltip>
+              </div>
+            </div>
+          </template>
         </div>
       </v-layout>
     </div>
@@ -225,47 +263,52 @@ export default {
             onClick: () => this.$store.dispatch('SCROLL_TOP_CONTENT_AREA')
           },
           {
-            type: 'menu-button',
-            icon: {
-              size: '18px',
-              name: 'mdi-minus'
-            },
-            tooltip: {
-              description: 'Minimize window',
-              shortcut: this.shortcuts.toggleApp.shortcut
-            },
-            onClick: () => this.minimizeWindow()
+            type: 'window-controls-group',
+            items: [
+              {
+                type: 'window-controls',
+                icon: {
+                  size: '18px',
+                  name: 'mdi-minus'
+                },
+                tooltip: {
+                  description: 'Minimize window',
+                  shortcut: this.shortcuts.toggleApp.shortcut
+                },
+                onClick: () => this.minimizeWindow()
+              },
+              {
+                type: 'window-controls',
+                icon: {
+                  size: '16px',
+                  name: 'mdi-aspect-ratio'
+                },
+                tooltip: {
+                  description: 'Toggle window size',
+                  shortcut: this.shortcuts.windowPosition.shortcut[this.systemInfo.platform]
+                },
+                onClick: () => this.maximizeWindow()
+              },
+              {
+                type: 'window-controls',
+                icon: {
+                  size: '18px',
+                  name: 'mdi-close'
+                },
+                tooltip: {
+                  description: `
+                    Close window:
+                    <br>Action: ${this.windowCloseButtonActionDescription}
+                  `,
+                  shortcut: `
+                    Toggle window: ${this.shortcuts.toggleApp.shortcut}
+                  `,
+                  shortutIfCondition: this.windowCloseButtonAction !== 'closeApp'
+                },
+                onClick: () => this.closeWindow()
+              }
+            ]
           },
-          {
-            type: 'menu-button',
-            icon: {
-              size: '16px',
-              name: 'mdi-aspect-ratio'
-            },
-            tooltip: {
-              description: 'Toggle window size',
-              shortcut: this.shortcuts.windowPosition.shortcut[this.systemInfo.platform]
-            },
-            onClick: () => this.maximizeWindow()
-          },
-          {
-            type: 'menu-button',
-            icon: {
-              size: '18px',
-              name: 'mdi-close'
-            },
-            tooltip: {
-              description: `
-                Close window:
-                <br>Action: ${this.windowCloseButtonActionDescription}
-              `,
-              shortcut: `
-                Toggle window: ${this.shortcuts.toggleApp.shortcut}
-              `,
-              shortutIfCondition: this.windowCloseButtonAction !== 'closeApp'
-            },
-            onClick: () => this.closeWindow()
-          }
         ]
       }
     }
@@ -331,5 +374,26 @@ export default {
 .window-toolbar__item {
   -webkit-app-region: no-drag;
   user-select: none;
+}
+
+.window-controls-group {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: calc(-1 * var(--window-toolbar-padding-right));
+}
+
+.window-controls-group__item {
+  height: var(--window-toolbar-height);
+  width: 42px;
+}
+
+.window-controls-group__item:hover {
+  background-color: var(--highlight-color-4);
+}
+
+.window-controls-group__item:focus {
+  outline: none;
+  background-color: var(--highlight-color-4);
 }
 </style>

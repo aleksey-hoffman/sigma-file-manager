@@ -7,6 +7,8 @@
   );
   --scrollbar-width: 14px;
   --window-toolbar-height: 32px;
+  --window-toolbar-padding-right: 8px; 
+  --window-toolbar-padding-left: 8px; 
   --action-toolbar-height: 42px;
   --workspace-area-toolbar-height: 48px;
   --header-height: calc(
