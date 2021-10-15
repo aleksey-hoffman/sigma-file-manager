@@ -50,10 +50,8 @@ export default {
     routes: ['all'],
     icon: 'mdi-pound',
     action: {
-      name: 'TOGGLE_DIALOG',
-      options: {
-        dialogName: 'shortcutsDialog'
-      }
+      name: 'TOGGLE_APP_GUIDE',
+      options: 'stortcuts'
     },
     shortcut: 'Backtick',
     description: 'Display shortcut list'

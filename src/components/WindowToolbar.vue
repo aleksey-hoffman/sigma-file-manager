@@ -204,18 +204,6 @@ export default {
           {
             type: 'menu-button',
             icon: {
-              size: '20px',
-              name: 'mdi-pound'
-            },
-            tooltip: {
-              description: 'Shortcut list',
-              shortcut: this.shortcuts.shortcutsDialog.shortcut
-            },
-            onClick: () => { this.dialogs.shortcutsDialog.value = true }
-          },
-          {
-            type: 'menu-button',
-            icon: {
               size: '18px',
               name: 'mdi-comment-question-outline'
             },

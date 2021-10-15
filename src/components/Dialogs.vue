@@ -106,6 +106,54 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             v-model="dialogs.guideDialog.data.guideTabsSelected"
             class="tab-view__header__content mb-6"
           >
+            <!-- tab:shorcuts -->
+            <v-tab-item transition="fade-in" reverse-transition="fade-in">
+              <div class="text--title-1 mb-1">
+                {{getGuideTitle(dialogs.guideDialog.data.guideTabsSelected)}}
+              </div>
+              <v-divider class="divider-color-2 mb-4"></v-divider>
+
+              <shortcut-list/>
+
+              <h3>About</h3>
+              <p>
+                Most actions within the app can be performed with shortcuts (different keyboard key combinations).
+                Even the app itself can be opened / focused with a global (system wide) customizable shortcut.
+              </p>
+              <p>
+                This feature lets you work more efficiently and makes the process more enjoyable
+                (e.g. you can instantly open the app and create a new note with just 1 shortcut).
+              </p>
+              <p>
+                Press
+                <span class="inline-code--light mx-1">
+                  {{shortcuts.shortcutsDialog.shortcut}}
+                </span>
+                button on the keyboard or the
+                <v-icon class="mx-1" size="18px">mdi-pound</v-icon>
+                button in the top toolbar to show the full list of shortcuts.
+              </p>
+              <div class="text--title-2 mt-2">Examples</div>
+              <div class="text--sub-title-1 mt-2">Focus app</div>
+              When this app is not focused, press
+              <span class="inline-code--light mx-1">
+                {{shortcuts.toggleApp.shortcut}}
+              </span>
+              to focus it (bring it to the foreground). Press the shortcut again to hide the app.
+              <div class="text--sub-title-1 mt-6">Create new note</div>
+              Press
+              <span class="inline-code--light mx-1">
+                {{shortcuts.newNote.shortcut}}
+              </span>
+              to focus this app, immidiately create a new note, and open the note editor for you.
+              <div class="text--sub-title-1 mt-6">Switch tab</div>
+              When this app is focused and you have some tabs opened in the current workspace, press
+              <span class="inline-code--light mx-1">
+                {{shortcuts.switchTab.shortcut}}
+              </span>
+              to open specified tab.
+            </v-tab-item>
+
             <!-- tab:introduction -->
             <v-tab-item transition="fade-in" reverse-transition="fade-in">
               <div class="text--title-1 mb-1">
@@ -280,50 +328,6 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               </div>
             </v-tab-item>
 
-            <!-- tab:shorcuts -->
-            <v-tab-item transition="fade-in" reverse-transition="fade-in">
-              <div class="text--title-1 mb-1">
-                {{getGuideTitle(dialogs.guideDialog.data.guideTabsSelected)}}
-              </div>
-              <v-divider class="divider-color-2 mb-4"></v-divider>
-              <p>
-                Most actions within the app can be performed with shortcuts (different keyboard key combinations).
-                Even the app itself can be opened / focused with a global (system wide) customizable shortcut.
-              </p>
-              <p>
-                This feature lets you work more efficiently and makes the process more enjoyable
-                (e.g. you can instantly open the app and create a new note with just 1 shortcut).
-              </p>
-              <p>
-                Press
-                <span class="inline-code--light mx-1">
-                  {{shortcuts.shortcutsDialog.shortcut}}
-                </span>
-                button on the keyboard or the
-                <v-icon class="mx-1" size="18px">mdi-pound</v-icon>
-                button in the top toolbar to show the full list of shortcuts.
-              </p>
-              <div class="text--title-2 mt-2">Examples</div>
-              <div class="text--sub-title-1 mt-2">Focus app</div>
-              When this app is not focused, press
-              <span class="inline-code--light mx-1">
-                {{shortcuts.toggleApp.shortcut}}
-              </span>
-              to focus it (bring it to the foreground). Press the shortcut again to hide the app.
-              <div class="text--sub-title-1 mt-6">Create new note</div>
-              Press
-              <span class="inline-code--light mx-1">
-                {{shortcuts.newNote.shortcut}}
-              </span>
-              to focus this app, immidiately create a new note, and open the note editor for you.
-              <div class="text--sub-title-1 mt-6">Switch tab</div>
-              When this app is focused and you have some tabs opened in the current workspace, press
-              <span class="inline-code--light mx-1">
-                {{shortcuts.switchTab.shortcut}}
-              </span>
-              to open specified tab.
-            </v-tab-item>
-
             <!-- tab:data-protection -->
             <v-tab-item transition="fade-in" reverse-transition="fade-in">
               <div class="text--title-1 mb-1">
@@ -426,102 +430,6 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               More guides will be added in future updates
             </v-tab-item>
           </v-tabs-items>
-        </div>
-      </template>
-    </dialog-generator>
-
-    <!-- dialog::shortcutsDialog -->
-    <dialog-generator
-      :dialog="dialogs.shortcutsDialog"
-      :closeButton="{
-        onClick: () => closeDialog('shortcutsDialog'),
-      }"
-      title="Shortcuts"
-      maxWidth="700px"
-      height="85vh"
-    >
-      <template v-slot:content>
-        <div class="mb-10">
-          <div class="text--sub-title-1 mb-0">
-            Global shortcuts | system scope
-          </div>
-          <div class="mt-2 mb-4 settings-card__description">
-            Global shortcuts will trigger actions even when the app is not focused.
-          </div>
-          <div
-            v-for="(shortcut, index) in globalShortcutsList"
-            class="shortcut-list__item"
-            :key="'shortcut-' + index"
-          >
-            <v-icon :size="shortcut.iconSize || '22px'" class="">
-              {{shortcut.icon}}
-            </v-icon>
-            <div class="shortcut-list__item-description">
-              {{shortcut.description}}
-            </div>
-            <div class="shortcut-list__item-shortcut">
-              {{shortcutFiltered(shortcut.shortcut)}}
-            </div>
-            <div class="shortcut-list__item-actions">
-              <v-menu offset-y>
-                <template v-slot:activator="{ on, attrs }">
-                  <v-btn
-                    v-on="on"
-                    v-bind="attrs"
-                    icon
-                  ><v-icon size="20px">mdi-dots-vertical</v-icon>
-                  </v-btn>
-                </template>
-                <v-list>
-                  <v-list-item
-                    @click="
-                      dialogs.shortcutEditorDialog.data.shortcut = shortcut.shortcut,
-                      dialogs.shortcutEditorDialog.data.shortcutName = index,
-                      dialogs.shortcutEditorDialog.value = true
-                    "
-                  >
-                    <v-list-item-action>
-                      <v-icon size="20px">mdi-pencil-outline</v-icon>
-                    </v-list-item-action>
-                    <v-list-item-title>Change shortcut</v-list-item-title>
-                  </v-list-item>
-                  <v-list-item
-                    @click="$store.dispatch('RESET_SHORTCUT', index)"
-                  >
-                    <v-list-item-action>
-                      <v-icon size="20px">mdi-backup-restore</v-icon>
-                    </v-list-item-action>
-                    <v-list-item-title>Reset shortcut</v-list-item-title>
-                  </v-list-item>
-                </v-list>
-              </v-menu>
-            </div>
-          </div>
-
-          <div class="text--sub-title-1 mt-6 mb-0">
-            Local shortcuts | app scope
-          </div>
-          <div class="pb-8">
-            <div
-              v-for="(shortcut, index) in localShortcutsList"
-              :key="'shortcut-' + index"
-            >
-              <div
-                class="shortcut-list__item"
-                v-if="shortcutFiltered(shortcut.shortcut)"
-              >
-                <v-icon :size="shortcut.iconSize || '22px'">
-                  {{shortcut.icon}}
-                </v-icon>
-                <div class="shortcut-list__item-description">
-                  {{shortcut.description}}
-                </div>
-                <div class="shortcut-list__item-shortcut">
-                  {{shortcutFiltered(shortcut.shortcut)}}
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       </template>
     </dialog-generator>
@@ -840,7 +748,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           <!-- button:learn-more -->
           <v-btn
             class="button-1 mt-4"
-            @click="$store.dispatch('OPEN_APP_GUIDE', 'Data protection')"
+            @click="$store.dispatch('OPEN_APP_GUIDE', 'data-protection')"
             small
           >
             Learn more
@@ -2127,18 +2035,6 @@ export default {
     targetItemsStats () {
       return this.$store.state.contextMenus.dirItem.targetItemsStats
     },
-    globalShortcutsList () {
-      return this.$utils.filterObject(
-        this.shortcuts,
-        ([key, value]) => value.isGlobal
-      )
-    },
-    localShortcutsList () {
-      return this.$utils.filterObject(
-        this.shortcuts,
-        ([key, value]) => !value.isGlobal
-      )
-    },
     defaultHomeBannerItems () {
       return this.homeBanner.items.filter(item => !item.isCustom)
     },
@@ -2527,10 +2423,6 @@ export default {
       this.dialogs.newDirItemDialog.data.error = pathValidationData.error
       this.dialogs.newDirItemDialog.data.isValid = pathValidationData.isValid
     },
-    shortcutFiltered (shortcut) {
-      if (typeof shortcut === 'string') { return shortcut }
-      else { return shortcut[this.systemInfo.platform] }
-    },
     updateWorkspaceEditorDialogProps () {
       // Update selectedAction so it's synced with the input fields
       this.dialogs.workspaceEditorDialog.data.selectedAction = this.dialogs
@@ -2820,23 +2712,6 @@ export default {
 #background-drop-area .background-drop-area__description {
   color: var(--color-7);
   font-size: 16px;
-}
-
-.shortcut-list__item {
-  /* margin: 16px 0px; */
-  display: grid;
-  grid-template-columns: 16px 1fr 0.5fr 32px;
-  min-height: 32px;
-  padding: 8px 0px;
-  gap: 24px;
-  align-items: center;
-  border-bottom: 1px solid var(--divider-color-1);
-}
-
-.shortcut-list__item-shortcut {
-  border-left: 1px solid var(--divider-color-1);
-  padding: 8px;
-  font-size: 14px;
 }
 
 .program-icon-set__container {

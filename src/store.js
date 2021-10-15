@@ -952,14 +952,14 @@ export default new Vuex.Store({
       guideDialog: {
         value: false,
         data: {
-          guideTabsSelected: 1,
+          guideTabsSelected: 0,
           guideTabs: [
-            {text: 'Introduction'},
-            {text: 'Navigator tips'},
-            {text: 'Shortcuts'},
-            {text: 'Data protection'},
-            {text: 'Address bar'},
-            {text: 'COMING SOON'},
+            {name: 'shortcuts', text: 'Shortcuts'},
+            {name: 'introduction', text: 'Introduction'},
+            {name: 'navigator-tips', text: 'Navigator tips'},
+            {name: 'data-protection', text: 'Data protection'},
+            {name: 'address-bar', text: 'Address bar'},
+            {name: 'coming-soon', text: 'COMING SOON'},
           ],
         }
       },
@@ -4476,9 +4476,17 @@ export default new Vuex.Store({
       }
     },
     OPEN_APP_GUIDE (store, title) {
-      let index = store.state.dialogs.guideDialog.data.guideTabs.findIndex(item => item.text === title)
+      let index = store.state.dialogs.guideDialog.data.guideTabs.findIndex(item => item.name === title)
       store.state.dialogs.guideDialog.data.guideTabsSelected = index
       store.state.dialogs.guideDialog.value = true
+    },
+    TOGGLE_APP_GUIDE (store, title) {
+      if (store.state.dialogs.guideDialog.value) {
+        store.state.dialogs.guideDialog.value = false
+      }
+      else {
+        store.dispatch('OPEN_APP_GUIDE', title) 
+      }
     },
     MAKE_DIR_ITEM_LINK (store, params = {}) {
       let defaultParams = {
