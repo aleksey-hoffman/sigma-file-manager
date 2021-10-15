@@ -1002,6 +1002,23 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               </section-settings>
             </v-tab-item>
 
+            <!-- tab::shortcuts -->
+            <v-tab-item transition="fade-in" reverse-transition="fade-in">
+              <section-settings
+                class="content-area__content-card__section"
+                :header="{
+                  icon: {
+                    name: 'mdi-pound',
+                  },
+                  title: 'Shortcuts'
+                }"
+              >
+                <template v-slot:content>
+                  <shortcut-list/>
+                </template>
+              </section-settings>
+            </v-tab-item>
+
             <!-- tab::tabs & workspaces -->
             <v-tab-item transition="fade-in" reverse-transition="fade-in">
               <!-- section::window-controls -->
@@ -1635,6 +1652,7 @@ export default {
       settingsTabs: [
         {text: 'General'},
         {text: 'UI appearance'},
+        {text: 'Shortcuts'},
         {text: 'Tabs & workspaces'},
         {text: 'Navigation'},
         {text: 'Input'},
