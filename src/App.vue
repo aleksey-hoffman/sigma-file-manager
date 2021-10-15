@@ -1325,17 +1325,6 @@ i {
   flex-shrink: 0;
 }
 
-#window-toolbar
-  .window-toolbar__content--main,
-#action-toolbar
-  .v-toolbar__content {
-    padding: 
-      0px 
-      var(--window-toolbar-padding-right) 
-      0px 
-      var(--window-toolbar-padding-left) !important;
-  }
-
 .overlay--drag-over {
   position: absolute;
   width: 100%;

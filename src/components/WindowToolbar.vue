@@ -195,28 +195,29 @@ export default {
     windowToolbar () {
       return {
         items: [
+           {
+            type: 'menu-button',
+            icon: {
+              size: '18px',
+              name: 'mdi-message-question-outline'
+            },
+            tooltip: {
+              description: 'App guide'
+            },
+            onClick: () => {this.dialogs.guideDialog.value = true}
+          },
           {
             type: 'workspaces-menu'
           },
           {
             type: 'tabs-menu'
           },
-          {
-            type: 'menu-button',
-            icon: {
-              size: '18px',
-              name: 'mdi-comment-question-outline'
-            },
-            tooltip: {
-              description: 'App guide'
-            },
-            onClick: () => { this.dialogs.guideDialog.value = true }
-          },
-          {
-            type: 'notification-menu'
           },
           {
             type: 'spacer'
+          },
+          {
+            type: 'notification-menu'
           },
           // TODO: finish in v1.X
           // {
@@ -317,6 +318,18 @@ export default {
   z-index: 10;
 }
 
+#window-toolbar
+  .window-toolbar__content--main {
+    display: flex;
+    align-items: center;
+    gap: var(--toolbar-item-gap);
+    padding: 
+      0px 
+      var(--window-toolbar-padding-right) 
+      0px 
+      var(--window-toolbar-padding-left) !important;
+  }
+
 .window-toolbar__drag-region {
   top: 4px;
   left: 4px;
@@ -333,13 +346,6 @@ export default {
   align-items: center;
   width: auto;
   min-width: 100%;
-}
-
-.window-toolbar__content--main {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
 }
 
 .window-toolbar__content--main__flex {
@@ -374,7 +380,7 @@ export default {
 
 .window-controls-group__item {
   height: var(--window-toolbar-height);
-  width: 42px;
+  width: 46px;
 }
 
 .window-controls-group__item:hover {

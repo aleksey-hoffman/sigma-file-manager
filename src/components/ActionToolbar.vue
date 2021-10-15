@@ -21,8 +21,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           class="action-toolbar__item"
           icon
         >
-          <v-icon class="action-toolbar__icon" size="22px">
-            mdi-plus
+          <v-icon 
+            class="action-toolbar__icon" 
+            size="22px"
+          >mdi-plus
           </v-icon>
         </v-btn>
       </template>
@@ -47,8 +49,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             active-class="toggle--active"
             icon small
           >
-            <v-icon class="action-toolbar__icon" size="20px">
-              mdi-square-edit-outline
+            <v-icon 
+              class="action-toolbar__icon" 
+              size="20px"
+            >mdi-square-edit-outline
             </v-icon>
           </v-btn>
         </template>
@@ -66,8 +70,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             active-class="toggle--active"
             icon small
           >
-            <v-icon class="action-toolbar__icon" size="20px">
-              mdi-trash-can-outline
+            <v-icon 
+              class="action-toolbar__icon" 
+              size="20px"
+            >mdi-trash-can-outline
             </v-icon>
           </v-btn>
         </template>
@@ -86,7 +92,11 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               class="action-toolbar__item"
               icon
             >
-              <v-icon class="action-toolbar__icon">mdi-plus</v-icon>
+              <v-icon 
+                class="action-toolbar__icon" 
+                size="22px"
+              >mdi-plus
+              </v-icon>
             </v-btn>
           </template>
           <span>New directory / file</span>
@@ -119,10 +129,14 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               class="action-toolbar__item"
               icon
             >
-              <v-icon class="action-toolbar__icon" size="20px">mdi-sort</v-icon>
+              <v-icon 
+                class="action-toolbar__icon" 
+                size="18px"
+              >mdi-sort
+              </v-icon>
             </v-btn>
           </template>
-          <span>Sorting options</span>
+          <span>Global sorting options</span>
         </v-tooltip>
       </template>
       <v-card class="unselectable">
@@ -214,7 +228,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             active-class="toggle--active"
             icon small
           >
-            <v-icon class="action-toolbar__icon" size="22px">
+            <v-icon 
+              class="action-toolbar__icon"
+              size="20px"
+            >
               mdi-view-list
             </v-icon>
           </v-btn>
@@ -230,7 +247,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             active-class="toggle--active"
             icon small
           >
-            <v-icon class="action-toolbar__icon" size="22px">
+            <v-icon 
+              class="action-toolbar__icon"
+              size="20px"
+            >
               mdi-view-module
             </v-icon>
           </v-btn>
@@ -250,7 +270,11 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               class="action-toolbar__item"
               icon
             >
-              <v-icon class="action-toolbar__icon" size="32px">mdi-menu-down</v-icon>
+              <v-icon 
+                class="action-toolbar__icon"
+                size="32px"
+              >mdi-menu-down
+              </v-icon>
             </v-btn>
           </template>
           <span>App quick actions</span>
@@ -279,7 +303,11 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               class="action-toolbar__item"
               icon
             >
-              <v-icon class="action-toolbar__icon" size="20px">mdi-link-variant</v-icon>
+              <v-icon 
+                class="action-toolbar__icon"
+                size="20px"
+              >mdi-link-variant
+              </v-icon>
             </v-btn>
           </template>
           <span>App related links</span>
@@ -308,7 +336,11 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               class="action-toolbar__item"
               icon
             >
-              <v-icon size="20px" class="action-toolbar__icon">mdi-folder-outline</v-icon>
+              <v-icon 
+                class="action-toolbar__icon"
+                size="20px" 
+              >mdi-folder-outline
+              </v-icon>
             </v-btn>
           </template>
           <span>App directories</span>
@@ -347,8 +379,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           class="action-toolbar__item"
           icon
         >
-          <v-icon class="action-toolbar__icon" size="22px">
-            mdi-information-outline
+          <v-icon 
+            class="action-toolbar__icon" 
+            size="18px"
+          >mdi-dock-right
           </v-icon>
         </v-btn>
       </template>
@@ -493,6 +527,18 @@ export default {
   outline: 1px solid var(--divider-color-1)
 }
 
+#action-toolbar
+  .v-toolbar__content {
+    display: flex;
+    align-items: center;
+    gap: var(--toolbar-item-gap);
+    padding: 
+      0px 
+      var(--window-toolbar-padding-right) 
+      0px 
+      var(--window-toolbar-padding-left) !important;
+  }
+
 .action-toolbar__icon {
   color: var(--icon-color-2) !important;
 }
@@ -509,13 +555,8 @@ export default {
   border-color: var(--divider-color-2) !important
 }
 
-.action-toolbar__item {
-  margin: 0px 4px !important;
-}
-
 .v-btn-toggle.dir-item-layout-toggle {
-  margin: 0px 8px;
-  background: transparent !important
+  background: transparent !important;
 }
 
 .action-toolbar__toggle-button {
@@ -528,14 +569,30 @@ export default {
   opacity: 1 !important;
 }
 
-/* Increased specificity to override Vuetify styles */
-#app .action-toolbar__toggle-button.toggle--active {
-  box-shadow:
-    0px 2px 32px rgb(0, 0, 0, 0.1),
-    0px 2px 6px rgb(0, 0, 0, 0.2) !important;
-  border-bottom: 1px solid var(--icon-color-1) !important;
-  border-radius: 0;
-}
+#app 
+  .action-toolbar__toggle-button.toggle--active 
+    .v-btn__content {
+      position: relative;  
+    }
+
+#app 
+  .action-toolbar__toggle-button.toggle--active 
+    .v-btn__content::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 100%;
+      height: 1px;
+      box-shadow: 0 0 6px #0e6f9688;
+      background-color: var(--nav-panel-indicator-color);
+    }
+
+#app 
+  .action-toolbar__toggle-button 
+    * {
+      border-radius: 0 !important;
+    }
 
 .action-toolbar__toggle-button
   .v-icon {

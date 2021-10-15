@@ -11,7 +11,7 @@
   --window-toolbar-padding-right: 8px; 
   --window-toolbar-padding-left: 8px; 
   --action-toolbar-height: 42px;
-  --workspace-area-toolbar-height: 48px;
+  --toolbar-item-gap: 8px;
   --header-height: calc(
     var(--window-toolbar-height) +
     var(--action-toolbar-height)

@@ -256,9 +256,10 @@ export default {
 }
 
 .workspace-area__header {
-  /* padding: 8px 24px;
-  background-color: rgb(255, 255, 255, 0.02); */
-
+  display: flex;
+  align-items: center;
+  gap: var(--toolbar-item-gap);
+  height: var(--workspace-area-toolbar-height);
   margin: 0px;
   margin-bottom: 0px;
   padding: 0 8px;

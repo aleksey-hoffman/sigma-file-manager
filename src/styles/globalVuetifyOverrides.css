@@ -116,6 +116,21 @@
 }
 
 #app 
+  .v-btn-toggle:not(.v-btn-toggle--group) 
+    .v-btn {
+      border-color: transparent !important;
+    }
+
+#app 
+  .v-toolbar__content > 
+    .v-btn.v-btn--icon:last-child, 
+#app 
+  .v-toolbar__extension >
+    .v-btn.v-btn--icon:last-child {
+      margin-right: unset;
+    }
+
+#app 
   button.v-btn.v-btn--disabled
     .v-btn__content,
 #app 
