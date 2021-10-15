@@ -131,12 +131,28 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               >
                 <div class="nav-panel__item__indicator"></div>
                 <div class="nav-panel__item__icon-container">
-                  <v-icon 
-                    class="nav-panel__item__icon"
-                    :size="$utils.getDriveIcon(drive).size" 
+                  <v-badge
+                    :value="showNavPanelDriveLetterOverlay(drive)"
+                    color="var(--nav-panel-drive-overlay-bg-color)"
+                    overlap bottom left 
+                    offset-x="12px" 
+                    offset-y="10px"
                   >
-                    {{$utils.getDriveIcon(drive).icon}}
-                  </v-icon>
+                    <v-icon 
+                      class="nav-panel__item__icon"
+                      :size="$utils.getDriveIcon(drive).size" 
+                    >
+                      {{$utils.getDriveIcon(drive).icon}}
+                    </v-icon>
+                    <template v-slot:badge>
+                      <div 
+                        v-if="showNavPanelDriveLetterOverlay(drive)" 
+                        style="color: var(--nav-panel-drive-overlay-color)"
+                      >
+                        {{navPanelDriveLetterOverlayContent(drive)}}
+                      </div>
+                    </template>
+                  </v-badge>
                 </div>
                 <transition name="slide-fade-left">
                   <div v-if="!navigationPanelMiniVariant">
@@ -206,9 +222,22 @@ export default {
       navigationPanelMiniVariant: 'navigationPanel.miniVariant',
       navigationPanelItems: 'navigationPanel.items',
       homeBannerValue: 'storageData.settings.homeBanner.value',
-      currentDir: 'navigatorView.currentDir'
+      currentDir: 'navigatorView.currentDir',
+      navPanelDriveLetterOverlay: 'storageData.settings.overlays.navPanelDriveLetterOverlay.value',
     })
   },
+  methods: {
+    showNavPanelDriveLetterOverlay (drive) {
+      return this.$utils.platform === 'win32'
+        ? this.navPanelDriveLetterOverlay && !drive.mount.includes('OneDrive')
+        : false
+    },
+    navPanelDriveLetterOverlayContent (drive) {
+      return this.$utils.platform === 'win32'
+        ? drive.mount.replace(':/', '')
+        : ''
+    }
+  }
 }
 </script>
 

@@ -750,6 +750,27 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 </template>
               </section-settings>
 
+              <template v-if="$utils.platform === 'win32'">
+                <section-settings
+                  class="content-area__content-card__section"
+                  :header="{
+                    icon: {
+                      name: 'mdi-layers-outline'
+                    },
+                    title: 'Overlays'
+                  }"
+                >
+                  <template v-slot:content>
+                    <v-switch
+                      v-model="navPanelDriveLetterOverlayValue"
+                      label="Navigation panel | drive letter overlay"
+                      class="mt-0 pt-0"
+                      hide-details
+                    ></v-switch>
+                  </template>
+                </section-settings>
+              </template>
+
               <section-settings
                 class="content-area__content-card__section"
                 :header="{
@@ -1672,6 +1693,7 @@ export default {
       visualFiltersSaturation: 'storageData.settings.visualFilters.saturation',
       visualFiltersSaturationValue: 'storageData.settings.visualFilters.saturation.value',
       dateTimeMonth: 'storageData.settings.dateTime.month',
+      navPanelDriveLetterOverlayValue: 'storageData.settings.overlays.navPanelDriveLetterOverlay.value',
       pointerButton3onMouseUpEvent: 'storageData.settings.input.pointerButtons.button3.onMouseUpEvent',
       pointerButton3onMouseUpEventItems: 'storageData.settings.input.pointerButtons.button3.onMouseUpEventItems',
       pointerButton4onMouseUpEvent: 'storageData.settings.input.pointerButtons.button4.onMouseUpEvent',

@@ -533,6 +533,11 @@ export default new Vuex.Store({
             value: true
           },
         },
+        overlays: {
+          navPanelDriveLetterOverlay: {
+            value: false
+          }
+        },
         animations: {
           onRouteChangeMediaBannerIn: true
         },

@@ -89,6 +89,8 @@
   --nav-panel-icon-color-1: #78909c;
   --nav-panel-indicator-color: #455a64;
   --nav-panel-item-bg-color_active:rgb(120, 144, 156, 0.05);
+  --nav-panel-drive-overlay-bg-color: var(--bg-color-1);
+  --nav-panel-drive-overlay-color: #bdbdbd;
   --info-panel-bg-color: var(--bg-color-2);
   --info-panel-shadow: 0px 4px 48px rgb(0,0,0,0.05),
                       0px 4px 2px rgb(0,0,0,0.3);
