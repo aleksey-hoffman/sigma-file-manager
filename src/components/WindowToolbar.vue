@@ -242,18 +242,6 @@ export default {
           //   onClick: () => undefined
           // },
           {
-            type: 'menu-button',
-            icon: {
-              size: '26px',
-              name: 'mdi-chevron-up'
-            },
-            tooltip: {
-              description: 'Scroll top',
-              shortcut: this.shortcuts.scrollTop.shortcut
-            },
-            onClick: () => this.$store.dispatch('SCROLL_TOP_CONTENT_AREA')
-          },
-          {
             type: 'window-controls-group',
             items: [
               {
