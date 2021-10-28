@@ -177,10 +177,13 @@ Become the first supporter
 
 <div>
   <a href="https://github.com/theoob" title="Tony Kelly">
-    <b>~ Tony Kelly</b>
+    <b>Tony Kelly</b>
   </a>
-  <a href="https://github.com/julienripet" title="Julien Ripet">
-    <b>~ Julien Ripet ~</b>
+  ~ <a href="https://github.com/julienripet" title="Julien Ripet">
+    <b>Julien Ripet</b>
+  </a>
+  ~ <a href="https://github.com/valentimarco" title="Marco Valenti">
+    <b>Marco Valenti</b>
   </a>
 </div>
 
