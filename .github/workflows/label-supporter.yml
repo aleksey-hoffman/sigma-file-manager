@@ -15,7 +15,8 @@ jobs:
             contains(
               fromJson('[
                 "theoob",
-                "julienripet"
+                "julienripet",
+                "valentimarco"
               ]'), 
               github.actor
             ) 
