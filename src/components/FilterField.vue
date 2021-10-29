@@ -249,6 +249,12 @@ export default {
     border: 0px solid #b0bec5;
     caret-color: var(--color-6);
     outline: none;
+    transition: background-color 0.1s ease;
+  }
+
+.filter-field
+  input:hover {
+    background-color: var(--bg-color-1);
   }
 
 .filter-field
