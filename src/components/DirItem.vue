@@ -336,6 +336,7 @@ export default {
       cursorLeftWindow: 'drag.cursorLeftWindow',
       inboundDragOverlay: 'overlays.inboundDrag',
       dirItemDragOverlay: 'overlays.dirItemDrag',
+      selectedSortingType: 'sorting.selectedType',
 
       drag: 'drag'
     }),

@@ -212,7 +212,6 @@ export default {
           {
             type: 'tabs-menu'
           },
-          },
           {
             type: 'spacer'
           },
