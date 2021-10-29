@@ -74,6 +74,11 @@ export default {
     visualFiltersSaturationValue () {
       this.setOverlayCSS()
     },
+    windowTransparencyEffectDataBackgroundSelected () {
+      this.$nextTick(() => {
+        this.setOverlayCSS()
+      })
+    },
   },
   computed: {
     ...mapFields({
@@ -85,6 +90,7 @@ export default {
       windowTransparencyEffectOptionsPages: 'storageData.settings.windowTransparencyEffect.options.pages',
       windowTransparencyEffectBlur: 'storageData.settings.windowTransparencyEffect.options.selectedPage.blur',
       windowTransparencyEffectOpacity: 'storageData.settings.windowTransparencyEffect.options.selectedPage.opacity',
+      windowTransparencyEffectDataBackgroundSelected: 'storageData.settings.windowTransparencyEffect.options.selectedPage.background',
       UIZoomLevel: 'storageData.settings.UIZoomLevel',
       themeType: 'storageData.settings.theme.type',
       visualFiltersApplyFiltersToMediaElements: 'storageData.settings.visualFilters.applyFiltersToMediaElements',
