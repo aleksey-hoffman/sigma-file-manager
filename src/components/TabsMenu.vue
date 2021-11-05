@@ -7,7 +7,6 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
   <basic-menu
     v-model="menus.tabs"
     :menuButton="{
-      class: 'window-toolbar__item',
       tooltip: {
         description: 'Tabs',
         shortcut: shortcuts.switchTab.shortcut
@@ -15,16 +14,21 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     }"
     :header="{
       title: 'Workspace tabs',
-      icon: {
-        name: 'mdi-tab',
-        size: '18px',
-        color: iconColor
-      },
       buttons: [
         {
           icon: {
+            name: 'mdi-plus',
+            size: '24px'
+          },
+          tooltip: {
+            description: 'New tab in current workspace'
+          },
+          onClick: () => $store.dispatch('ADD_TAB')
+        },
+        {
+          icon: {
             name: 'mdi-close-box-multiple-outline',
-            size: '22px'
+            size: '20px'
           },
           tooltip: {
             description: 'Close all tabs in current workspace'
@@ -34,6 +38,15 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       ]
     }"
   >
+    <template v-slot:activator>
+      <button class="window-toolbar__item button--menu">
+        <v-icon
+          :color="iconColor"
+          size="18px"
+        >mdi-tab
+        </v-icon>
+      </button>
+    </template>
     <template v-slot:content>
       <sortable-list
         source="tabs"

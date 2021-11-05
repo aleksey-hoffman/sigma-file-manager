@@ -7,7 +7,6 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
   <basic-menu
     v-model="menus.workspaces"
     :menuButton="{
-      class: 'window-toolbar__item',
       tooltip: {
         description: 'Workspaces',
         shortcut: shortcuts.switchWorkspace.shortcut
@@ -15,12 +14,17 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     }"
     :header="{
       title: 'Workspaces',
-      icon: {
-        name: `mdi-numeric-${selectedWorkspace.id + 1}-box-multiple-outline`,
-        size: '18px',
-        color: iconColor
-      },
       buttons: [
+        {
+          icon: {
+            name: 'mdi-plus',
+            size: '24px'
+          },
+          tooltip: {
+            description: 'New workspace'
+          },
+          onClick: () => $store.state.dialogs.workspaceEditorDialog.value = true
+        },
         {
           icon: {
             name: 'mdi-pencil-outline',
@@ -34,6 +38,16 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       ]
     }"
   >
+    <template v-slot:activator>
+      <button class="window-toolbar__item button--menu"
+      >
+        <v-icon
+          :color="iconColor"
+          size="18px"
+        >mdi-vector-arrange-below
+        </v-icon>
+      </button>
+    </template>
     <template v-slot:content>
       <sortable-list
         source="workspaces"

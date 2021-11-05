@@ -8,7 +8,6 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     v-if="hiddenNotifications.length > 0"
     v-model="menus.workspaces.value"
     :menuButton="{
-      class: 'window-toolbar__item',
       tooltip: {
         description: 'Notifications',
       }
@@ -18,14 +17,23 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       color: 'blue'
     }"
     :header="{
-      title: 'Notifications',
-      icon: {
-        name: `mdi-bell-outline`,
-        size: '20px',
-        color: iconColor
-      },
+      title: 'Notifications'
     }"
   >
+    <template v-slot:activator>
+      <v-btn 
+        class="window-toolbar__item"
+        :retain-focus-on-click="false"
+        icon 
+        small
+      >
+        <v-icon
+          :color="iconColor"
+          size="20px"
+        >mdi-bell-outline
+        </v-icon>
+      </v-btn>
+    </template>
     <template v-slot:content>
       <div
         class="notification__container"
