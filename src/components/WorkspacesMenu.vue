@@ -80,10 +80,16 @@ export default {
     ...mapFields({
       menus: 'menus',
       workspaces: 'storageData.workspaces',
-      shortcuts: 'storageData.settings.shortcuts'
+      shortcuts: 'storageData.settings.shortcuts',
+      showTitleInToolbar: 'storageData.settings.navigator.workspaces.showTitleInToolbar'
     }),
     workspaceButtonText () {
-      return this.workspaces.items.find(workspace => workspace.isSelected).id + 1
+      if (this.showTitleInToolbar) {
+        return this.workspaces.items.find(workspace => workspace.isSelected).name
+      }
+      else {
+        return this.workspaces.items.find(workspace => workspace.isSelected).id + 1
+      }
     }
   }
 }

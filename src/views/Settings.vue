@@ -1021,7 +1021,28 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
             <!-- tab::tabs & workspaces -->
             <v-tab-item transition="fade-in" reverse-transition="fade-in">
-              <!-- section::window-controls -->
+              <!-- section::workspaces -->
+              <section-settings
+                class="content-area__content-card__section"
+                :header="{
+                  icon: {
+                    name: 'mdi-vector-arrange-below',
+                  },
+                  title: 'Workspaces'
+                }"
+              >
+                <template v-slot:content>
+                  <div class="text--sub-title-1 mt-2">
+                    Workspaces menu
+                  </div>
+                  <v-switch
+                    class="my-0"
+                    v-model="showWorkspaceTitleInToolbar"
+                    label="Show workspace title in window toolbar"
+                  ></v-switch>
+                </template>
+              </section-settings>
+
               <section-settings
                 class="content-area__content-card__section"
                 :header="{
@@ -1685,6 +1706,7 @@ export default {
       windowCloseButtonAction: 'storageData.settings.windowCloseButtonAction',
       themeType: 'storageData.settings.theme.type',
       navigatorLayout: 'storageData.settings.navigatorLayout',
+      showWorkspaceTitleInToolbar: 'storageData.settings.navigator.workspaces.showTitleInToolbar',
       closeAppWindowWhenLastWorkspaceTabIsClosed: 'storageData.settings.navigator.tabs.closeAppWindowWhenLastWorkspaceTabIsClosed',
       navigatorhistoryNavigationStyleSelected: 'storageData.settings.navigator.historyNavigationStyle.selected',
       navigatorShowHiddenDirItems: 'storageData.settings.navigator.showHiddenDirItems',
