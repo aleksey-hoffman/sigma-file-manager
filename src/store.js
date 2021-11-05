@@ -375,7 +375,7 @@ export default new Vuex.Store({
             id: 0,
             isPrimary: true,
             isSelected: true,
-            name: 'Primary workspace',
+            name: 'Primary',
             lastOpenedDir: appPaths.userDataRoot,
             defaultPath: appPaths.userDataRoot,
             tabs: [],
