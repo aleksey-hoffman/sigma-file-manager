@@ -50,6 +50,25 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           <template v-if="item.type === 'tabs-menu'">
             <tabs-menu :iconColor="windowToolbarFontColor"/>
           </template>
+
+          <template v-if="item.type === 'tabs-menu-add'">
+            <v-tooltip bottom>
+              <template v-slot:activator="{ on }">
+                <v-btn
+                  class="window-toolbar__item"
+                  v-on="on"
+                  @click="$store.dispatch('ADD_TAB')"
+                  icon
+                >
+                  <v-icon size="22px">
+                    mdi-plus
+                  </v-icon>
+                </v-btn>
+              </template>
+              <span>New tab in current workspace</span>
+            </v-tooltip>
+          </template>
+
           <template v-if="item.type === 'notification-menu'">
             <notification-menu :iconColor="windowToolbarFontColor"/>
           </template>
@@ -211,6 +230,9 @@ export default {
           },
           {
             type: 'tabs-menu'
+          },
+          {
+            type: 'tabs-menu-add'
           },
           {
             type: 'spacer'
