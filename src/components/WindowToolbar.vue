@@ -51,7 +51,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             <tabs-menu :iconColor="windowToolbarFontColor"/>
           </template>
 
-          <template v-if="item.type === 'tabs-menu-add'">
+          <template v-if="item.type === 'tabs-menu-add' && $route.name === 'navigator'">
             <v-tooltip bottom>
               <template v-slot:activator="{ on }">
                 <v-btn
