@@ -45,6 +45,13 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           size="18px"
         >mdi-tab
         </v-icon>
+
+        <div 
+          class="button--menu__counter" 
+          :style="{color: iconColor}"
+        >
+          {{tabsButtonText}}
+        </div>
       </button>
     </template>
     <template v-slot:content>
@@ -58,7 +65,8 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 </template>
 
 <script>
-import { mapFields } from 'vuex-map-fields'
+import {mapGetters} from 'vuex'
+import {mapFields} from 'vuex-map-fields'
 
 export default {
   props: {
@@ -68,7 +76,16 @@ export default {
     ...mapFields({
       menus: 'menus',
       shortcuts: 'storageData.settings.shortcuts'
-    })
+    }),
+    ...mapGetters([
+      'selectedWorkspace'
+    ]),
+    tabsButtonText () {
+      let tabIndex = this.selectedWorkspace.tabs.findIndex(tab => {
+        return tab.path === this.$store.state.navigatorView.currentDir.path
+      }) + 1 || '-'
+      return tabIndex
+    }
   }
 }
 </script>
