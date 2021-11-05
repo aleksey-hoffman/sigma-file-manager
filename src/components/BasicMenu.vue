@@ -118,6 +118,7 @@ export default {
   align-items: center;
   justify-content: center;
   height: 24px;
+  max-width: 160px;
   padding-right: 6px;
   color: var(--color-6);
   border: 1px solid rgb(255, 255, 255, 0.15);
@@ -132,6 +133,11 @@ export default {
 
 .button--menu__counter {
   user-select: none;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 14px;
+  padding-top: 2px;
 }
 
 .button--menu:hover {
