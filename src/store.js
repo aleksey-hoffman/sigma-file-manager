@@ -405,6 +405,9 @@ export default new Vuex.Store({
           showHiddenDirItems: false,
           openDirItemWithSingleClick: false,
           openDirItemSecondClickDelay: 500,
+          workspaces: {
+            showTitleInToolbar: false
+          },
           tabs: {
             closeAppWindowWhenLastWorkspaceTabIsClosed: false
           },
