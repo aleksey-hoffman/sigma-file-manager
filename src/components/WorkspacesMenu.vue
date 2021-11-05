@@ -46,6 +46,13 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           size="18px"
         >mdi-vector-arrange-below
         </v-icon>
+
+        <div 
+          class="button--menu__counter" 
+          :style="{color: iconColor}"
+        >
+          {{workspaceButtonText}}
+        </div>
       </button>
     </template>
     <template v-slot:content>
@@ -74,7 +81,10 @@ export default {
       menus: 'menus',
       workspaces: 'storageData.workspaces',
       shortcuts: 'storageData.settings.shortcuts'
-    })
+    }),
+    workspaceButtonText () {
+      return this.workspaces.items.find(workspace => workspace.isSelected).id + 1
+    }
   }
 }
 </script>
