@@ -666,7 +666,7 @@ export default {
     },
     routes: ['all'],
     icon: 'mdi-trash-can-outline',
-    action: {name: 'TRASH_SELECTED'},
+    action: {name: 'TRASH_SELECTED_DIR_ITEMS'},
     shortcut: 'Delete',
     description: 'Move selected items to trash'
   },
@@ -679,7 +679,7 @@ export default {
     },
     routes: ['all'],
     icon: 'mdi-eraser',
-    action: {name: 'INIT_DELETE_SELECTED'},
+    action: {name: 'DELETE_SELECTED_DIR_ITEMS'},
     shortcut: 'Shift + Delete',
     description: 'Delete selected items from drive'
   },
