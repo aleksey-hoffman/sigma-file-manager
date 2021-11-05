@@ -362,6 +362,14 @@ export default {
   -webkit-app-region: drag;
 }
 
+#app[is-window-maximized]
+  .window-toolbar__drag-region {
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: var(--window-toolbar-height);
+  }
+
 .window-toolbar__content-container {
   display: flex;
   align-items: center;
@@ -370,8 +378,15 @@ export default {
 }
 
 .window-toolbar__content--main__flex {
+  height: calc(var(--window-toolbar-height) - 8px);
   width: -webkit-fill-available;
+  -webkit-app-region: drag;
 }
+
+#app[is-window-maximized] 
+  .window-toolbar__content--main__flex {
+    height: var(--window-toolbar-height);
+  }
 
 .window-toolbar__header-container {
   display: grid !important;

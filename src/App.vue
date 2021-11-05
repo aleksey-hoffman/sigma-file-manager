@@ -4,10 +4,11 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <template>
-  <v-app 
+  <v-app
     :data-theme-type="themeType" 
     :route-name="$route.name" 
     :display-accent-color-backgrounds="displayAccentColorBackgrounds" 
+    :is-window-maximized="windowsMainStateIsMaximized"
   >
     <window-toolbar/>
     <action-toolbar/>
@@ -206,6 +207,7 @@ export default {
       visualFiltersContrastValue: 'storageData.settings.visualFilters.contrast.value',
       visualFiltersBrightnessValue: 'storageData.settings.visualFilters.brightness.value',
       visualFiltersSaturationValue: 'storageData.settings.visualFilters.saturation.value',
+      windowsMainStateIsMaximized: 'windows.main.state.isMaximized',
     }),
     globalSearchScanWasInterrupted: {
       get () {
@@ -272,6 +274,14 @@ export default {
 
       electron.ipcRenderer.on('window:blur', (event) => {
         this.windowBlurHandler()
+      })
+
+      electron.ipcRenderer.on('window-event:maximize', (event) => {
+        this.windowsMainStateIsMaximized = true
+      })
+
+      electron.ipcRenderer.on('window-event:unmaximize', (event) => {
+        this.windowsMainStateIsMaximized = false
       })
 
       electron.ipcRenderer.on('load:webview::failed', (event, data) => {

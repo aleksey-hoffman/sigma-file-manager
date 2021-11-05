@@ -102,6 +102,13 @@ export default new Vuex.Store({
     scheduler: {
       storageOperations: [],
     },
+    windows: {
+      main: {
+        state: {
+          isMaximized: false
+        }
+      }
+    },
     notifications: [],
     drives: [],
     drivesPreviousData: [],

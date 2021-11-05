@@ -232,6 +232,12 @@ function initWindowListeners (name) {
     windows.main.on('closed', () => {
       windows.main = null
     })
+    windows.main.on('maximize', () => {
+      windows.main.webContents.send('window-event:maximize')
+    })
+    windows.main.on('unmaximize', () => {
+      windows.main.webContents.send('window-event:unmaximize')
+    })
   }
   else if (name === 'quickViewWindow') {
     // Init listeners
