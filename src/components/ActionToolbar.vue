@@ -510,7 +510,7 @@ export default {
   methods: {
     toggleInfoPanel () {
       if (this.$route.name === 'navigator') {
-        this.navigatorViewInfoPanel = !this.navigatorViewInfoPanel
+        this.navigatorViewInfoPanel.value = !this.navigatorViewInfoPanel.value
       }
     }
   }
