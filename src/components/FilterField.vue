@@ -42,7 +42,6 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         <div class="filter-field__menu-button">
           <v-menu
             offset-y
-            min-width="300px"
             :close-on-content-click="false"
           >
             <template v-slot:activator="{ on: menu }">
@@ -63,30 +62,41 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             <v-card class="unselectable">
               <v-list class="inactive">
                 <v-list-item class="inactive">
-                  <v-list-item-content class="text--sub-title-1 ma-0">
+                  <v-list-item-content>
                     <v-list-item-title>
-                      Filter options
+                      <div class="text--sub-title-1 ma-0">
+                        Filter options
+                      </div>
                     </v-list-item-title>
                   </v-list-item-content>
                 </v-list-item>
 
                 <v-divider></v-divider>
 
-                <v-list-item class="px-5" dense>
+                <v-list-item 
+                  class="px-5" 
+                  @click="filterQueryOptionGlob = !filterQueryOptionGlob"
+                  dense
+                >
                   <v-switch
-                    v-model="filterQueryOptionGlob"
+                    class="my-3 pt-0"
+                    :value="filterQueryOptionGlob"
                     label="Glob filtering"
+                    hide-details
                   ></v-switch>
                 </v-list-item>
 
                 <v-list-item
                   class="px-5"
                   v-if="$route.name !== 'notes'"
+                  @click="navigatorShowHiddenDirItems = !navigatorShowHiddenDirItems"
                   dense
                 >
                   <v-switch
-                    v-model="navigatorShowHiddenDirItems"
+                    class="my-3 pt-0"
+                    :value="navigatorShowHiddenDirItems"
                     label="Show Hidden Items"
+                    hide-details
                   ></v-switch>
                 </v-list-item>
 
@@ -98,7 +108,8 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                       Filter prefixes
                     </v-list-item-title>
                     <v-list-item-subtitle>
-                      Add a prefix to the start to filter by specific property.
+                      Add a prefix to the start to filter by specific property. 
+                      <br>For example: "size: MB", "items: 15", "date-m: 2021"
                     </v-list-item-subtitle>
                   </v-list-item-content>
                 </v-list-item>
