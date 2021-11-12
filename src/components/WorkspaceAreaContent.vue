@@ -106,7 +106,7 @@ export default {
       const itemMinWidth = 280
       const infoPanelWidth = 280
       const gapSize = 24
-      const infoPanelCurrentWidth = this.navigatorViewInfoPanel ? infoPanelWidth : 0
+      const infoPanelCurrentWidth = this.navigatorViewInfoPanel.value ? infoPanelWidth : 0
       const container = document.querySelector('#workspace-area__content')
       let containerWidth = this.windowSize.x - navMenuWidth - infoPanelCurrentWidth
 
