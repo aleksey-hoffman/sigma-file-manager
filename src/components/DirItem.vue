@@ -20,6 +20,9 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     :data-file-type="$utils.getFileType(source.realPath).mimeDescription"
     :data-item-hover-is-paused="status.itemHover.isPaused"
     :data-hover-effect="dirItemHoverEffect"
+    :in-fs-clipboard="dirItemIsInFsClipboard"
+    :fs-clipboard-type="fsClipboard.type"
+    :is-selected="isDirItemSelected(source)"
     data-two-line="false"
     class="dir-item-card dir-item-node"
     :class="{
@@ -33,25 +36,6 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       align-center
       v-ripple
     >
-      <!-- card::overlays -->
-      <div class="dir-item-card__overlay-container">
-        <div
-          v-if="isDirItemSelected(source)"
-          class="dir-item-card__overlay--selected"
-        ></div>
-        <div
-          :class="{'is-visible': source.isHighlighted}"
-          class="dir-item-card__overlay--highlighted"
-        ></div>
-        <div
-          class="dir-item-card__overlay--hover"
-        ></div>
-        <div
-          :class="{'is-visible': showDragOverOverlay(source)}"
-          class="overlay--drag-over"
-        ></div>
-      </div>
-
       <!-- card::thumb-container -->
       <v-layout
         :data-item-real-path="`${source.realPath}`"
@@ -253,6 +237,29 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         </v-icon>
       </div>
     </v-layout>
+    
+    <!-- card::overlays -->
+    <div class="dir-item-card__overlay-container">
+      <div
+        v-if="isDirItemSelected(source)"
+        class="dir-item-card__overlay dir-item-card__overlay--selected"
+      ></div>
+      <div
+        v-if="dirItemIsInFsClipboard"
+        class="dir-item-card__overlay dir-item-card__overlay--fs-clipboard"
+      ></div>
+      <div
+        :class="{'is-visible': source.isHighlighted}"
+        class="dir-item-card__overlay dir-item-card__overlay--highlighted"
+      ></div>
+      <div
+        class="dir-item-card__overlay dir-item-card__overlay--hover"
+      ></div>
+      <div
+        :class="{'is-visible': showDragOverOverlay(source)}"
+        class="dir-item-card__overlay overlay--drag-over"
+      ></div>
+    </div>
   </div>
 </template>
 
@@ -337,6 +344,7 @@ export default {
       inboundDragOverlay: 'overlays.inboundDrag',
       dirItemDragOverlay: 'overlays.dirItemDrag',
       selectedSortingType: 'sorting.selectedType',
+      fsClipboard: 'navigatorView.clipboard.fs',
 
       drag: 'drag'
     }),
@@ -368,6 +376,9 @@ export default {
       else {
         return {}
       }
+    },
+    dirItemIsInFsClipboard () {
+      return this.fsClipboard.items.some(item => item.path === this.source.path)
     }
   },
   methods: {
@@ -735,6 +746,11 @@ export default {
 </script>
 
 <style>
+.dir-item-card {
+  --green-highlight-color-value: 75, 200, 140;
+  --red-highlight-color-value: 200, 50, 80;
+}
+
 @keyframes outline-pulse-animation {
   0% { outline-color: rgb(159, 168, 218, 0.4); }
   50% { outline-color: rgb(255, 255, 255, 0.1); }
@@ -757,7 +773,6 @@ export default {
   gap: 24px;
 }
 
-/* OVERLAYS */
 .dir-item-card__overlay-container {
   position: absolute;
   top: 0;
@@ -767,34 +782,93 @@ export default {
   height: 100%;
 }
 
-.dir-item-card__overlay--selected {
-  pointer-events: none;
+.dir-item-card__overlay {
+  z-index: 1;
   position: absolute;
   width: 100%;
   height: 100%;
-  background-color: rgb(159, 168, 218, 0.05);
-  z-index: 2;
-  /* border: 2px dashed rgb(159, 168, 218, 0.3); */
-  outline: 2px solid rgb(159, 168, 218, 0.2);
   outline-offset: -2px;
+  pointer-events: none;
 }
+
+.dir-item-card__overlay--selected {
+  background-color: rgb(159, 168, 218, 0.05);
+  outline: 1px solid rgb(159, 168, 218, 0.2);
+  outline-offset: -1px;
+}
+
+.dir-item-card[in-fs-clipboard][fs-clipboard-type="copy"]
+  .dir-item-card__overlay--selected {
+    opacity: 0;
+  }
+
+.dir-item-card[in-fs-clipboard][fs-clipboard-type="move"]
+  .dir-item-card__overlay--selected {
+    opacity: 0;
+  }
+  
+.dir-item-card[in-fs-clipboard]:not([is-selected])[fs-clipboard-type="copy"]
+  .dir-item-card__overlay--fs-clipboard {
+    background-color: rgba(var(--green-highlight-color-value), 0.03);
+    outline: 2px dotted rgba(var(--green-highlight-color-value), 0.2);
+    background-image: repeating-linear-gradient(
+      -45deg, 
+      rgba(var(--green-highlight-color-value), 0.1) 0, 
+      rgba(var(--green-highlight-color-value), 0.1) 2px, 
+      transparent 0, 
+      transparent 50%
+    );
+    background-repeat: repeat;
+    background-size: 16px 16px;
+  }
+
+.dir-item-card[in-fs-clipboard]:not([is-selected])[fs-clipboard-type="move"]
+  .dir-item-card__overlay--fs-clipboard {
+    background-color: rgba(var(--red-highlight-color-value), 0.02);
+    outline: 2px dotted rgba(var(--red-highlight-color-value), 0.4);
+    background-image: repeating-linear-gradient(
+      -45deg, 
+      rgba(var(--red-highlight-color-value), 0.2) 0, 
+      rgba(var(--red-highlight-color-value), 0.2) 2px, 
+      transparent 0, 
+      transparent 50%
+    );
+    background-repeat: repeat;
+    background-size: 16px 16px;
+  }
+
+.dir-item-card[in-fs-clipboard][is-selected][fs-clipboard-type="copy"]
+  .dir-item-card__overlay--fs-clipboard {
+    background-color: rgba(var(--green-highlight-color-value), 0.03);
+    outline: 2px dotted rgba(var(--green-highlight-color-value), 0.2);
+  }
+
+.dir-item-card[in-fs-clipboard][is-selected][fs-clipboard-type="move"]
+  .dir-item-card__overlay--fs-clipboard {
+    background-color: rgba(var(--red-highlight-color-value), 0.04);
+    outline: 2px dotted rgba(var(--red-highlight-color-value), 0.5);
+  }
+
+.dir-item-card[data-layout="grid"][data-file-type="image"][in-fs-clipboard][is-selected][fs-clipboard-type="copy"]
+  .dir-item-card__overlay--fs-clipboard {
+    background-color: rgba(var(--green-highlight-color-value), 0.2);
+    outline: 2px dotted rgba(var(--green-highlight-color-value), 0.2);
+  }
+
+.dir-item-card[data-layout="grid"][data-file-type="image"][in-fs-clipboard][is-selected][fs-clipboard-type="move"]
+  .dir-item-card__overlay--fs-clipboard {
+    background-color: rgba(var(--red-highlight-color-value), 0.2);
+    outline: 2px dotted rgba(var(--red-highlight-color-value), 0.5);
+  }
 
 [data-layout="grid"][data-file-type="image"]
   .dir-item-card__overlay--selected {
     background-color: rgb(159, 168, 218, 0.2);
-    outline: 2px solid rgb(159, 168, 218, 0.5);
   }
 
 .dir-item-card__overlay--highlighted {
-  pointer-events: none;
-  position: absolute;
-  width: 100%;
-  height: 100%;
   background-color: rgb(159, 168, 218, 0.05);
-  z-index: 1;
-  /* border: 2px dashed rgb(159, 168, 218, 0.3); */
   outline: 2px solid rgb(159, 168, 218, 0.3);
-  outline-offset: -2px;
   transition: all 0.3s;
   opacity: 0;
 }
@@ -806,16 +880,10 @@ export default {
 }
 
 .dir-item-card__overlay--hover {
-  pointer-events: none;
-  position: absolute;
-  width: 100%;
-  height: 100%;
   background-color: var(--highlight-color-5);
-  z-index: 1;
   opacity: 0;
 }
 
-/* CARD CONTAINER */
 [data-layout="list"][data-type="directory"].dir-item-card__container,
 [data-layout="list"][data-type="directory-symlink"].dir-item-card__container {
   display: grid;
@@ -1003,7 +1071,7 @@ export default {
     position: absolute;
     bottom: 0;
     left: 0;
-    height: 60%;
+    height: 100%;
     width: 100%;
     z-index: 0;
   }
