@@ -938,6 +938,7 @@ export default {
   height: 36px;
   margin: 0px !important;
   padding: 0px 0px;
+  border-bottom: 1px solid var(--dir-item-card-border-3);
 }
 
 .dir-item-card:hover {
