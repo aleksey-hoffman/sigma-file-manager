@@ -2,6 +2,11 @@
   .v-input--selection-controls__input {
     margin-right: 12px;
   }
+  
+#app 
+  .v-icon {
+    color: var(--icon-color-2);
+  }
 
 #app
   .v-navigation-drawer,
@@ -29,15 +34,19 @@
     transition: 0s ease !important;
   }
 
-.v-menu__content {
-  box-shadow: var(--context-menu-shadow) !important;
-  z-index: 10;
-}
+#app 
+  .v-menu__content {
+    z-index: 10;
+    background-color: var(--context-menu-bg-color);
+    box-shadow: var(--context-menu-shadow);
+  }
 
-.v-menu__content .v-list {
-  background: var(--context-menu-bg-color) !important;
-  border-radius: 0 !important;
-}
+#app 
+  .v-menu__content 
+    .v-list {
+      background-color: var(--context-menu-bg-color);
+      border-radius: 0;
+    }
 
 .v-list-item__action:first-child,
 .v-list-item__icon:first-child {

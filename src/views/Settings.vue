@@ -472,14 +472,19 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                       </v-layout>
                       
                       <v-layout align-center>
-                        <v-select
+                        <v-autocomplete
                           v-model="windowTransparencyEffectDataBackgroundSelected"
                           :items="windowTransparencyEffectDataBackgroundItems"
                           item-text="fileNameBase"
-                          return-object
                           label="Overlay background"
+                          :menu-props="{
+                            contentClass: 'custom-scrollbar',
+                            offsetY: true
+                          }"
+                          attach
+                          return-object
                           style="max-width: 400px"
-                        ></v-select>
+                        ></v-autocomplete>
                         
                         <v-tooltip bottom>
                           <template v-slot:activator="{ on }">
@@ -1357,6 +1362,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     :items="globalSearchAutoScanIntervalItems"
                     :label="`Auto scan period ${disabledInDev}`"
                     :disabled="scanInProgress"
+                    :menu-props="{
+                      contentClass: 'custom-scrollbar',
+                      offsetY: true
+                    }"
                     style="max-width: 200px"
                   >
                     <template v-slot:selection="{ item }">
@@ -1375,13 +1384,17 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   >
                     <template v-slot:activator="{ on }">
                       <div v-on="on" style="display: inline-block;">
-                        <v-combobox
+                        <v-select
                           class="mt-0"
                           v-model="globalSearchScanDepth"
                           :items="suggestedGlobalSearchScanDepthItems"
                           :disabled="scanInProgress"
                           @blur="handleBlurGlobalSearchScanDepth"
                           label="Scan depth"
+                          :menu-props="{
+                            contentClass: 'custom-scrollbar',
+                            offsetY: true
+                          }"
                           style="max-width: 200px"
                         >
                           <template v-slot:selection>
@@ -1390,7 +1403,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                           <template v-slot:item="{item}">
                             {{item}} directories
                           </template>
-                        </v-combobox>
+                        </v-select>
                       </div>
                     </template>
                     <span>

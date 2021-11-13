@@ -51,8 +51,14 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           {{itemClipboardDescription}}
         </div>
 
-        <v-menu top offset-y>
-          <template v-slot:activator="{ on }">
+        <v-menu 
+          v-if="fsClipboard.type === 'copy'"
+          v-model="clipboardMenuValue" 
+          :close-on-content-click="false"
+          top 
+          offset-y 
+        >
+          <template v-slot:activator="{on}">
             <v-btn
               class="clipboard-toolbar__button"
               v-on="on"
@@ -66,15 +72,37 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               </div>
             </v-btn>
           </template>
-          <v-list dense max-width="300" max-height="280">
+          <v-list
+            class="custom-scrollbar"
+            width="300"
+            height="280"
+            dense
+          >
+            <v-list-item>
+              <v-text-field 
+                class="pt-0 mb-2"
+                v-model="clipboardMenuFilter"
+                label="Filter"
+                single-line
+                hide-details
+              ></v-text-field>
+            </v-list-item>
             <v-list-item
-              v-for="(item, index) in fsClipboard.items"
+              v-for="(item, index) in fsClipboardItemsFiltered"
               :key="index"
             >
               <v-list-item-content>
                 <v-list-item-title>{{item.name}}</v-list-item-title>
                 <v-list-item-subtitle>{{item.path}}</v-list-item-subtitle>
               </v-list-item-content>
+              <v-list-item-avatar>
+                <v-btn
+                  @click="removeDirItemFromFsClipboard(item)"
+                  small
+                  icon
+                ><v-icon size="18px">mdi-close</v-icon>
+                </v-btn>
+              </v-list-item-avatar>
             </v-list-item>
           </v-list>
         </v-menu>
@@ -116,8 +144,14 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           {{itemClipboardDescription}}
         </div>
 
-        <v-menu top offset-y>
-          <template v-slot:activator="{ on }">
+        <v-menu 
+          v-if="fsClipboard.type === 'move'"
+          v-model="clipboardMenuValue" 
+          :close-on-content-click="false"
+          top 
+          offset-y 
+        >
+          <template v-slot:activator="{on}">
             <v-btn
               class="clipboard-toolbar__button"
               v-on="on"
@@ -131,26 +165,48 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               </div>
             </v-btn>
           </template>
-          <v-list dense max-width="300" max-height="280">
+          <v-list
+            class="custom-scrollbar"
+            width="300"
+            height="280"
+            dense
+          >
+            <v-list-item>
+              <v-text-field 
+                class="pt-0 mb-2"
+                v-model="clipboardMenuFilter"
+                label="Filter"
+                single-line
+                hide-details
+              ></v-text-field>
+            </v-list-item>
             <v-list-item
-              v-for="(item, index) in fsClipboard.items"
+              v-for="(item, index) in fsClipboardItemsFiltered"
               :key="index"
             >
               <v-list-item-content>
                 <v-list-item-title>{{item.name}}</v-list-item-title>
                 <v-list-item-subtitle>{{item.path}}</v-list-item-subtitle>
               </v-list-item-content>
+              <v-list-item-avatar>
+                <v-btn
+                  @click="removeDirItemFromFsClipboard(item)"
+                  small
+                  icon
+                ><v-icon size="18px">mdi-close</v-icon>
+                </v-btn>
+              </v-list-item-avatar>
             </v-list-item>
           </v-list>
         </v-menu>
 
-        <v-tooltip top :disabled="!movePreparedDirItemsIsDisabled">
-          <template v-slot:activator="{ on }">
+        <v-tooltip top :disabled="!canMoveClipboardItems">
+          <template v-slot:activator="{on}">
             <div v-on="on">
               <v-btn
                 class="clipboard-toolbar__button"
                 v-if="fsClipboard.items.length !== 0"
-                :disabled="movePreparedDirItemsIsDisabled"
+                :disabled="canMoveClipboardItems"
                 @click="$store.dispatch('PASTE_FS_CLIPBOARD_DIR_ITEMS')"
                 :text="$vuetify.breakpoint.mdAndUp"
                 :icon="$vuetify.breakpoint.smAndDown"
@@ -189,6 +245,22 @@ import {mapFields} from 'vuex-map-fields'
 const PATH = require('path')
 
 export default {
+  data () {
+    return {
+      clipboardMenuValue: false,
+      clipboardMenuFilter: '',
+    }
+  },
+  watch: {
+    'fsClipboard.items' () {
+      if (this.fsClipboard.items.length === 0) {
+        this.clipboardMenuValue = false
+      }
+    },
+    clipboardMenuValue () {
+      this.clipboardMenuFilter = ''
+    }
+  },
   computed: {
     ...mapFields({
       currentDir: 'navigatorView.currentDir',
@@ -228,7 +300,10 @@ export default {
       const itemWord = this.$localizeUtils.pluralize(itemLength, 'item')
       return `${type}: ${itemLength} ${itemWord}`
     },
-    movePreparedDirItemsIsDisabled () {
+    fsClipboardItemsFiltered () {
+      return this.fsClipboard.items.filter(item => item.name.includes(this.clipboardMenuFilter))
+    },
+    canMoveClipboardItems () {
       return this.fsClipboard.items.some(item => {
         return this.currentDir.path === PATH.parse(item.path).dir
       })
@@ -242,6 +317,10 @@ export default {
     },
     discardFsClipboardItems () {
       this.$store.dispatch('CLEAR_FS_CLIPBOARD')
+    },
+    removeDirItemFromFsClipboard (item) {
+      let itemIndex = this.fsClipboard.items.findIndex(listItem => listItem.path === item.path)
+      this.fsClipboard.items.splice(itemIndex, 1)
     }
   }
 }
