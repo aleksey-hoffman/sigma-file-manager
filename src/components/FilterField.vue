@@ -7,6 +7,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
   <div>
     <div class="filter-field">
       <input
+        class="filter-field__input"
         ref="filterField"
         v-model="filterQuery"
         @focus="$store.dispatch('SET', {
@@ -141,7 +142,7 @@ import {mapFields} from 'vuex-map-fields'
 export default {
   mounted () {
     this.$eventHub.$on('focusFilter', () => {
-      if (document.querySelector('.filter-field') === document.activeElement) {
+      if (document.querySelector('.filter-field__input') === document.activeElement) {
         this.$refs.filterField.blur()
       }
       else {

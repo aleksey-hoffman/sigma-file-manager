@@ -319,7 +319,7 @@ export default {
     icon: 'mdi-filter-variant',
     action: {name: 'TOGGLE_FILTER_FOCUS'},
     shortcut: 'Ctrl + F',
-    description: 'Focus filter field'
+    description: 'Focus / unfocus filter field'
   },
   toggleGlobalSearch: {
     isGlobal: false,
