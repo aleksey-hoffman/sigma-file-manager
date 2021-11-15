@@ -84,7 +84,8 @@ export default {
       filterQuery: 'filterField.view.navigator.query',
       filterOptions: 'filterField.view.navigator.options',
       currentDir: 'navigatorView.currentDir',
-      dirItemsInfoIsFetched: 'navigatorView.dirItemsInfoIsFetched'
+      dirItemsInfoIsFetched: 'navigatorView.dirItemsInfoIsFetched',
+      showDirItemKindDividers: 'storageData.settings.navigator.showDirItemKindDividers',
     }),
     contentAreaHeight () {
       const contentAreaHeight = this.windowSize.y -
@@ -144,14 +145,14 @@ export default {
         isSpacer: true,
         path: 'top-spacer',
         type: 'top-spacer',
-        height: 8,
+        height: this.showDirItemKindDividers ? 2 : 16,
         marginBottom: 0
       }]
       const bottomSpacer = [{
         isSpacer: true,
         path: 'bottom-spacer',
         type: 'bottom-spacer',
-        height: 8,
+        height: this.showDirItemKindDividers ? 2 : 16,
         marginBottom: 0
       }]
       data.directoryRowsFormatted = directoryDirItemsAsRows.map(row => {
@@ -208,12 +209,20 @@ export default {
           ...bottomSpacer
         ]
       }
-      else {
+      else if (this.showDirItemKindDividers) {
         results = [
           ...topSpacer,
           ...directoryDivider,
           ...data.directoryRowsFormatted,
           ...fileDivider,
+          ...data.fileRowsFormatted,
+          ...bottomSpacer
+        ]
+      }
+      else {
+        results = [
+          ...topSpacer,
+          ...data.directoryRowsFormatted,
           ...data.fileRowsFormatted,
           ...bottomSpacer
         ]
@@ -261,9 +270,9 @@ export default {
       const otherFilesDirItems = this.otherFilesDirItems
       const topSpacer = [{
         isSpacer: true,
-        path: 'bottom-spacer',
-        type: 'bottom-spacer',
-        height: 8,
+        path: 'top-spacer',
+        type: 'top-spacer',
+        height: 2,
         marginBottom: 0
       }]
       const bottomSpacer = [{
@@ -283,12 +292,20 @@ export default {
           ...otherFilesDirItems
         ]
       }
-      else {
+      else if (this.showDirItemKindDividers) {
         results = [
           ...topSpacer,
           ...directoryDivider,
           ...directoryDirItems,
           ...fileDivider,
+          ...fileDirItems,
+          ...bottomSpacer
+        ]
+      }
+      else {
+        results = [
+          ...topSpacer,
+          ...directoryDirItems,
           ...fileDirItems,
           ...bottomSpacer
         ]

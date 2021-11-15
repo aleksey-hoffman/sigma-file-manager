@@ -409,6 +409,7 @@ export default new Vuex.Store({
           localShare: true,
         },
         navigator: {
+          showDirItemKindDividers: true,
           showHiddenDirItems: false,
           openDirItemWithSingleClick: false,
           openDirItemSecondClickDelay: 500,
