@@ -152,3 +152,18 @@
 *[shadow="x3"] {
   box-shadow: var(--shadow-x3) !important;
 }
+
+.indicator--bottom {
+  position: relative;
+}
+
+.indicator--bottom[indicator-is-active]::after {
+  content: "";
+  width: 16px;
+  position: absolute;
+  bottom: -5px;
+  left: calc(50% - 8px);
+  height: 2px;
+  background-color: var(--nav-panel-indicator-color);
+  box-shadow: 0 0px 6px #0e6f96;
+}
