@@ -1223,6 +1223,16 @@ video,
       saturate(var(--visual-filter-saturation-inverse));
   }
 
+.media-banner__media-item-glow {
+  filter: 
+    invert(var(--visual-filter-invert-inverse)) 
+    hue-rotate(var(--visual-filter-hue-rotate-inverse)) 
+    contrast(var(--visual-filter-contrast-inverse)) 
+    brightness(var(--visual-filter-brightness-inverse))
+    saturate(var(--visual-filter-saturation-inverse))
+    blur(32px);
+}
+
 #app,
 .v-application,
 .theme--light.v-card {

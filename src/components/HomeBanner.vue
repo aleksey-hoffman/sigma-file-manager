@@ -401,7 +401,6 @@ export default {
 
 .media-banner__media-item-glow {
   top: 28px !important;
-  filter: blur(32px);
   z-index: -1 !important;
   box-shadow: none !important;
   opacity: 0.3;
