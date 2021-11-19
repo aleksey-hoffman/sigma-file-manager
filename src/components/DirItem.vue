@@ -63,8 +63,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               style="height: 22px;"
             >{{getThumbIcon(source)}}
             </v-icon>
-            <div class="dir-item-card__ext">
-              {{$utils.getExt(source.path)}}
+            <div class="dir-item-card__ext-container">
+              <div class="dir-item-card__ext">
+                {{$utils.getExt(source.path)}}
+              </div>
             </div>
           </v-layout>
         </v-layout>
@@ -1183,11 +1185,15 @@ export default {
   text-overflow: ellipsis;
 }
 
+.dir-item-card__ext-container {
+  padding: 0 8px;
+}
+
 .dir-item-card__ext {
-  font-size: 12px;
   width: 100%;
-  padding: 0px 6px;
   text-align: center;
+  font-size: 12px;
+  text-overflow: clip;
 }
 
 .dir-item-card__item-count,
