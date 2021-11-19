@@ -1801,6 +1801,10 @@ export default {
       appPropertiesOpenAtLogin: 'storageData.settings.appProperties.openAtLogin',
       appPropertiesOpenAsHidden: 'storageData.settings.appProperties.openAsHidden',
       homeBannerValue: 'storageData.settings.homeBanner.value',
+      displayAccentColorBackgrounds: 'storageData.settings.displayAccentColorBackgrounds',
+      dashboardTimeline: 'storageData.settings.dashboard.tabs.timeline.show',
+      openDirItemSecondClickDelay: 'storageData.settings.navigator.openDirItemSecondClickDelay',
+      windowTransparencyEffect: 'storageData.settings.windowTransparencyEffect',
     }
     const objects = {}
     for (const [modelKey, modelValue] of Object.entries(models)) {
@@ -1895,11 +1899,7 @@ export default {
       shortcuts: 'storageData.settings.shortcuts',
       UIZoomLevel: 'storageData.settings.UIZoomLevel',
       toolbarColorItems: 'storageData.settings.theme.toolbarColorItems',
-      displayAccentColorBackgrounds: 'storageData.settings.displayAccentColorBackgrounds',
-      dashboardTimeline: 'storageData.settings.dashboard.tabs.timeline.show',
       scanInProgress: 'globalSearch.scanInProgress',
-      openDirItemSecondClickDelay: 'storageData.settings.navigator.openDirItemSecondClickDelay',
-      windowTransparencyEffect: 'storageData.settings.windowTransparencyEffect',
     }),
     validatedOpenDirItemSecondClickDelay: {
       get () {
