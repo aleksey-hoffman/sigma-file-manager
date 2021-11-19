@@ -172,19 +172,6 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               <slot name="actions"></slot>
             </div>
           </template>
-
-          <template v-if="item.name === 'selected' && item.isChecked">
-            <!-- card::checkbox -->
-            <!-- Note: using v-if to improve performance -->
-            <div
-              class="dir-item-card__checkbox"
-              v-if="isDirItemSelected(source)"
-            >
-              <v-icon @mousedown.stop="handleDirItemCheckboxMouseDown($event, source)">
-                mdi-check-box-outline
-              </v-icon>
-            </div>
-          </template>
         </div>
       </template>
 
@@ -281,17 +268,6 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       
         <div class="dir-item-card__actions">
           <slot name="actions"></slot>
-        </div>
-
-        <!-- card::checkbox -->
-        <!-- Note: using v-if to improve performance -->
-        <div
-          class="dir-item-card__checkbox"
-          v-if="isDirItemSelected(source)"
-        >
-          <v-icon @mousedown.stop="handleDirItemCheckboxMouseDown($event, source)">
-            mdi-check-box-outline
-          </v-icon>
         </div>
       </template>
     </v-layout>
@@ -786,11 +762,6 @@ export default {
       this.inputState.pointer.hover.itemType = ''
       this.inputState.pointer.hover.item = {}
     },
-    handleDirItemCheckboxMouseDown (event, item) {
-      if (this.isDirItemSelected(item)) {
-        this.$store.dispatch('DESELECT_DIR_ITEM', item)
-      }
-    },
     handleDirItemMiddleMouseDown (event, item) {
       event.preventDefault()
       this.$store.dispatch('ADD_TAB', {item})
@@ -801,14 +772,15 @@ export default {
 
 <style>
 .dir-item-card {
+  --blue-highlight-color-value: 159, 168, 218;
   --green-highlight-color-value: 75, 200, 140;
   --red-highlight-color-value: 200, 50, 80;
 }
 
 @keyframes outline-pulse-animation {
-  0% { outline-color: rgb(159, 168, 218, 0.4); }
-  50% { outline-color: rgb(255, 255, 255, 0.1); }
-  100% { outline-color: rgb(159, 168, 218, 0.4); }
+  0% {outline-color: rgb(var(--blue-highlight-color-value), 0.4);}
+  50% {outline-color: rgb(255, 255, 255, 0.1);}
+  100% {outline-color: rgb(var(--blue-highlight-color-value), 0.4);}
 }
 
 .dir-item-row-grid[type="directory"],
@@ -846,10 +818,23 @@ export default {
 }
 
 .dir-item-card__overlay--selected {
-  background-color: rgb(159, 168, 218, 0.05);
-  outline: 1px solid rgb(159, 168, 218, 0.2);
+  background-color: rgb(var(--blue-highlight-color-value), 0.05);
+  outline: 1px solid rgb(var(--blue-highlight-color-value), 0.2);
   outline-offset: -1px;
 }
+
+[data-layout="grid"]
+  .dir-item-card__overlay--selected {
+    background-color: rgb(var(--blue-highlight-color-value), 0.08);
+    outline: 1px solid rgb(var(--blue-highlight-color-value), 0.4);
+    outline-offset: 0;
+  }
+
+[data-layout="grid"][data-file-type="image"]
+  .dir-item-card__overlay--selected {
+    background-color: rgb(var(--blue-highlight-color-value), 0.3);
+    outline: 1px solid rgb(var(--blue-highlight-color-value), 0.5);
+  }
 
 .dir-item-card[in-fs-clipboard][fs-clipboard-type="copy"]
   .dir-item-card__overlay--selected {
@@ -915,14 +900,9 @@ export default {
     outline: 2px dotted rgba(var(--red-highlight-color-value), 0.5);
   }
 
-[data-layout="grid"][data-file-type="image"]
-  .dir-item-card__overlay--selected {
-    background-color: rgb(159, 168, 218, 0.2);
-  }
-
 .dir-item-card__overlay--highlighted {
-  background-color: rgb(159, 168, 218, 0.05);
-  outline: 2px solid rgb(159, 168, 218, 0.3);
+  background-color: rgb(var(--blue-highlight-color-value), 0.05);
+  outline: 2px solid rgb(var(--blue-highlight-color-value), 0.3);
   transition: all 0.3s;
   opacity: 0;
 }
@@ -1340,28 +1320,5 @@ img.dir-item-card__thumb {
   .dir-item-card__actions {
     opacity: 1;
     transition: all 0.3s;
-  }
-
-.dir-item-card__checkbox {
-  /* position: absolute; */
-  right: 0;
-  justify-self: center;
-  z-index: 3;
-}
-
-.dir-item-card__checkbox
-  .v-icon {
-    color: var(--dir-item-card-checkbox-color) !important;
-  }
-
-[data-layout="grid"][data-type="file"]
-  .dir-item-card__checkbox,
-[data-layout="grid"][data-type="file-symlink"]
-  .dir-item-card__checkbox {
-    position: absolute;
-    bottom: 8px;
-    right: 8px;
-    padding: 0px;
-    text-shadow: 0 1px 4px rgb(0, 0, 0, 0.5);
   }
 </style>
