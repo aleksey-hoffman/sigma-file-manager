@@ -51,6 +51,9 @@ import WindowEffects from './components/WindowEffects.vue'
 import HomeBanner from './components/HomeBanner.vue'
 import FsLocalServerManager from './components/FsLocalServerManager.vue'
 import ShortcutList from './components/ShortcutList.vue'
+import SortingHeader from './components/SortingHeader.vue'
+import SortingMenu from './components/SortingMenu.vue'
+import SortingColumnMenu from './components/SortingColumnMenu.vue'
 
 // Register components
 Vue.component('window-toolbar', WindowToolbar)
@@ -88,6 +91,9 @@ Vue.component('window-effects', WindowEffects)
 Vue.component('home-banner', HomeBanner)
 Vue.component('fs-local-server-manager', FsLocalServerManager)
 Vue.component('shortcut-list', ShortcutList)
+Vue.component('sorting-header', SortingHeader)
+Vue.component('sorting-menu', SortingMenu)
+Vue.component('sorting-column-menu', SortingColumnMenu)
 
 const localize = require('./utils/localize')
 require('overlayscrollbars/css/OverlayScrollbars.css')

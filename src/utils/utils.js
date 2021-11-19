@@ -423,6 +423,9 @@ export default {
       }
     }
   },
+  toTitleCase (string) {
+    return string.charAt(0).toLocaleUpperCase() + string.substr(1)
+  },
   prettyBytes (bytes, decimals) {
     if (isNaN(parseInt(bytes))) return 'unknown'
     if (bytes === 0) return '0 Bytes'

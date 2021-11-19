@@ -967,6 +967,25 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     label="Show dividers between files and directories"
                     hide-details
                   ></v-switch>
+                  
+                  <div class="text--sub-title-1 mt-4">
+                    Sorting element display type
+                  </div>
+
+                  <v-radio-group
+                    class="py-0 mt-0"
+                    v-model="navigatorSortingElementDisplayType"
+                    hide-details
+                  >
+                    <v-radio
+                      label="Show sorting icon"
+                      value="icon"
+                    ></v-radio>
+                    <v-radio
+                      label="Show sorting bar"
+                      value="bar"
+                    ></v-radio>
+                  </v-radio-group>
 
                    <!-- TODO: finish in v1.x(see TODO in ActionToolbar.vue) -->
                   <!-- <div class="text--sub-title-1 mt-2">
@@ -1731,6 +1750,7 @@ export default {
       windowCloseButtonAction: 'storageData.settings.windowCloseButtonAction',
       themeType: 'storageData.settings.theme.type',
       showDirItemKindDividers: 'storageData.settings.navigator.showDirItemKindDividers',
+      navigatorSortingElementDisplayType: 'storageData.settings.navigator.sorting.elementDisplayType',
       navigatorLayout: 'storageData.settings.navigatorLayout',
       showWorkspaceTitleInToolbar: 'storageData.settings.navigator.workspaces.showTitleInToolbar',
       closeAppWindowWhenLastWorkspaceTabIsClosed: 'storageData.settings.navigator.tabs.closeAppWindowWhenLastWorkspaceTabIsClosed',

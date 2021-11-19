@@ -228,16 +228,65 @@ export default new Vuex.Store({
     },
     sorting: {
       order: 'ascending',
-      selectedType: {name: 'name', title: 'By name'},
+      selectedType: {
+        name: 'name', 
+        title: 'name',
+        shortTitle: 'name',
+        width: 'minmax(64px, 2fr)',
+        isChecked: true,
+      },
       types: [
-        {name: 'name', title: 'By name'},
-        {name: 'size', title: 'By file size & item count'},
-        {name: 'date-modified-contents', title: 'By date modified contents'},
-        {name: 'date-modified-meta', title: 'By date modified meta'},
-        {name: 'date-created', title: 'By date created'},
+        {
+          name: 'name',
+          title: 'name',
+          shortTitle: 'name',
+          width: 'minmax(64px, 2fr)',
+          isChecked: true,
+        },
+        {
+          name: 'date-modified-contents', 
+          title: 'date modified contents',
+          shortTitle: 'modified contents',
+          width: 'minmax(64px, 1.6fr)',
+          isChecked: true,
+        },
+        {
+          name: 'date-modified-meta', 
+          title: 'date modified meta',
+          shortTitle: 'modified meta',
+          width: 'minmax(64px, 1.6fr)',
+          isChecked: false,
+        },
+        {
+          name: 'date-created', 
+          title: 'date created',
+          shortTitle: 'created',
+          width: 'minmax(64px, 1.6fr)',
+          isChecked: false,
+        },
+        {
+          name: 'size',
+          title: 'items / size',
+          shortTitle: 'items / size',
+          width: 'minmax(64px, 0.8fr)',
+          isChecked: true,
+        },
         // TODO: finish in v1.2.0
         // Should request to turn on the 'storeDirItemOpenCount'
-        // { name: 'popularity', title: 'By popularity' },
+        // { 
+        //   name: 'popularity', 
+        //   title: 'popularity',
+        //   shortTitle: 'popularity',
+        //   width: 'minmax(64px, 1fr)',
+        //   isChecked: false,
+        // },
+        {
+          name: 'status', 
+          title: 'status',
+          shortTitle: 'status',
+          width: '64px',
+          isChecked: true,
+        },
       ]
     },
     navigatorView: {
@@ -413,6 +462,9 @@ export default new Vuex.Store({
           showHiddenDirItems: false,
           openDirItemWithSingleClick: false,
           openDirItemSecondClickDelay: 500,
+          sorting: {
+            elementDisplayType: 'bar'
+          },
           workspaces: {
             showTitleInToolbar: false
           },
@@ -1173,6 +1225,14 @@ export default new Vuex.Store({
         }
       }
       return shortcutsList
+    },
+    sortingHeaderGridColumnTemplate: state => {
+      let menuIconWidth = '48px'
+      let gridColumnTemplate = state.sorting.types
+        .filter(item => item.isChecked)
+        .map(item => item.width)
+      gridColumnTemplate.unshift(menuIconWidth)
+      return gridColumnTemplate
     },
     someDialogIsOpened: state => {
       return Object.values(state.dialogs).some(dialog => {

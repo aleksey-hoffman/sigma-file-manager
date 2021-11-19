@@ -111,6 +111,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             <filter-field/>
           </v-layout>
 
+          <sorting-header v-if="navigatorSortingElementDisplayType === 'bar'"/>
           <global-search v-show="globalSearchWidget"/>
           <div v-if="filterQuery.length > 0" class="content__description">
             <v-btn
@@ -160,6 +161,7 @@ export default {
     })
   },
   async mounted () {
+    this.setSortingTypes()
     this.$nextTick(() => {
       this.$store.dispatch('ROUTE_MOUNTED_HOOK_CALLBACK', {
         route: 'navigator'
@@ -212,7 +214,10 @@ export default {
       currentDir: 'navigatorView.currentDir',
       dirItemsInfoIsFetched: 'navigatorView.dirItemsInfoIsFetched',
       pinnedItems: 'storageData.pinned.items',
-      protectedItems: 'storageData.protected.items'
+      sortingOrder: 'sorting.order',
+      selectedSortingType: 'sorting.selectedType',
+      sortingTypes: 'sorting.types',
+      navigatorSortingElementDisplayType: 'storageData.settings.navigator.sorting.elementDisplayType',
     })
   },
   methods: {
@@ -226,7 +231,24 @@ export default {
             y: payload.clientY
           })
         })
-    }
+    },
+    setSortingTypes () {
+      let sortingTypesClone = this.sortingTypes.map(displayedType => {
+        displayedType.onClick = (item) => this.handleSortHeaderItemClick(item)
+        displayedType.type = 'sort'
+        return displayedType
+      })
+
+      this.sortingTypes = sortingTypesClone
+    },
+    handleSortHeaderItemClick (item) {
+      if (this.selectedSortingType.name === item.name) {
+        this.$store.dispatch('TOGGLE_SORTING_ORDER')
+      }
+      else {
+        this.$store.dispatch('SET_SORTING_TYPE', item)
+      }
+    },
   }
 }
 </script>

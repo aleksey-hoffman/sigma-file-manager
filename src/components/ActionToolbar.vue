@@ -119,71 +119,19 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     </v-menu>
 
     <!-- button::sorting-menu -->
-    <v-menu offset-y min-width="300px" :close-on-content-click="false">
-      <template v-slot:activator="{ on: menu }">
-        <v-tooltip bottom>
-          <template v-slot:activator="{ on: tooltip }">
-            <v-btn
-              v-on="{ ...tooltip, ...menu }"
-              v-show="['navigator'].includes($route.name)"
-              class="action-toolbar__item"
-              icon
-            >
-              <v-icon 
-                class="action-toolbar__icon" 
-                size="18px"
-              >mdi-sort
-              </v-icon>
-            </v-btn>
-          </template>
-          <span>Global sorting options</span>
-        </v-tooltip>
+    <sorting-menu 
+      v-if="['navigator'].includes($route.name) && navigatorSortingElementDisplayType === 'icon'"
+    >
+      <template v-slot:activator="{menuActivatorOnProp}">
+        <v-btn 
+          class="action-toolbar__item"  
+          v-on="menuActivatorOnProp"
+          icon
+        >
+          <v-icon size="18px">mdi-sort</v-icon>
+        </v-btn>
       </template>
-      <v-card class="unselectable">
-        <v-list dense>
-          <v-list-item class="inactive">
-            <v-list-item-content class="pl-1">
-              <v-list-item-title>
-                Sorting options
-              </v-list-item-title>
-              <v-list-item-subtitle>
-                Changes affect all directories
-              </v-list-item-subtitle>
-            </v-list-item-content>
-          </v-list-item>
-          <v-divider></v-divider>
-          <v-list-item @click="$store.dispatch('TOGGLE_SORTING_ORDER')">
-            <v-icon class="mr-4">
-              {{sortingOrder === 'descending' ? 'mdi-chevron-down' : 'mdi-chevron-up'}}
-            </v-icon>
-            <v-list-item-content>
-              <span>
-                {{sortingOrder === 'descending'
-                  ? 'Descending order'
-                  : 'Ascending order'
-               }}
-              </span>
-            </v-list-item-content>
-          </v-list-item>
-          <v-divider></v-divider>
-          <v-list-item
-            v-for="(sortingType, index) in sortingTypes"
-            @click="$store.dispatch('SET_SORTING_TYPE', sortingType)"
-            :key="index"
-          >
-            <v-icon class="mr-4">
-              {{selectedSortingType.name === sortingType.name
-                ? 'mdi-check-circle-outline'
-                : 'mdi-circle-outline'
-             }}
-            </v-icon>
-            <v-list-item-content>
-              <span>{{sortingType.title}}</span>
-            </v-list-item-content>
-          </v-list-item>
-        </v-list>
-      </v-card>
-    </v-menu>
+    </sorting-menu>
 
     <!-- TODO: finish in v1.1.0
       - Curently dir item range selection doesn't work properly
@@ -426,7 +374,8 @@ export default {
       sortingTypes: 'sorting.types',
       homeBannerValue: 'storageData.settings.homeBanner.value',
       currentDir: 'navigatorView.currentDir',
-      navigatorViewInfoPanel: 'storageData.settings.infoPanels.navigatorView'
+      navigatorViewInfoPanel: 'storageData.settings.infoPanels.navigatorView',
+      navigatorSortingElementDisplayType: 'storageData.settings.navigator.sorting.elementDisplayType',
     }),
     navigatorLayout: {
       get () {

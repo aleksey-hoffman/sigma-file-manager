@@ -5,11 +5,16 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <template>
   <div
+    :id="`item-index-${index}`"
+    class="dir-item-card dir-item-node"
+    :class="{
+      'drop-target drag-target': type && type.includes('directory'),
+      'drag-target': type && type.includes('file')
+    }"
     @mousedown="handleDirItemMouseDown($event, source, index)"
     @mouseenter="handleDirItemMouseEnter($event, source)"
     @mouseleave="handleDirItemMouseLeave($event, source)"
     @mousedown.middle="handleDirItemMiddleMouseDown($event, source)"
-    :id="`item-index-${index}`"
     :data-item-id="source.id"
     :index="index"
     :data-selected="isDirItemSelected(source)"
@@ -24,40 +29,34 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     :fs-clipboard-type="fsClipboard.type"
     :is-selected="isDirItemSelected(source)"
     data-two-line="false"
-    class="dir-item-card dir-item-node"
-    :class="{
-      'drop-target drag-target': type && type.includes('directory'),
-      'drag-target': type && type.includes('file')
-    }"
     :cursor="navigatorOpenDirItemWithSingleClick && !inputState.alt ? 'pointer' : 'default'"
   >
     <v-layout
       class="dir-item-card__content-container"
       align-center
       v-ripple
+      :style="getCardContentContainerStyles"
     >
-      <!-- card::thumb-container -->
-      <v-layout
-        :data-item-real-path="`${source.realPath}`"
-        class="dir-item-card__thumb-container"
-        align-center justify-center
-      >
-        <!-- card::thumb: {type: directory} -->
-        <v-icon
-          v-if="type.includes('directory')"
-          class="dir-item-card__icon"
-          size="28px"
-        >{{getThumbIcon(source)}}
-        </v-icon>
-
-        <!-- card::thumb: {type: file && !isImage} -->
-        <!-- Will be inserted when it enters viewport bounds (intersectionObserver) -->
-        <!-- && $utils.getFileType(source.realPath).mimeDescription !== 'image' -->
+      <template v-if="specifiedNavigatorLayout === 'list'">
+        <!-- card::thumb-container -->
         <v-layout
-          v-if="type.includes('file')"
-          column
+          class="dir-item-card__content-container__item dir-item-card__thumb-container"
+          :data-item-real-path="`${source.realPath}`"
+          align-center justify-center
         >
-          <template v-if="specifiedNavigatorLayout === 'list'">
+          <!-- card::thumb: {type: directory} -->
+          <v-icon
+            class="dir-item-card__icon"
+            v-if="type.includes('directory')"
+            size="28px"
+          >{{getThumbIcon(source)}}
+          </v-icon>
+
+          <!-- card::thumb: {type: file && !isImage} -->
+          <v-layout
+            v-if="type.includes('file')"
+            column
+          >
             <v-icon
               class="dir-item-card__icon pt-1"
               size="22px"
@@ -67,98 +66,155 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             <div class="dir-item-card__ext">
               {{$utils.getExt(source.path)}}
             </div>
-          </template>
-
-          <template v-if="specifiedNavigatorLayout === 'grid'">
-            <v-icon
-              class="dir-item-card__icon"
-              size="48px"
-            >{{getThumbIcon(source)}}
-            </v-icon>
-          </template>
+          </v-layout>
         </v-layout>
-      </v-layout>
 
-      <!-- {layout: 'list'} -->
-      <template v-if="specifiedNavigatorLayout === 'list'">
-        <!-- card::name-->
-        <div class="dir-item-card__name">
-          <!-- card::name::line-1-->
-          <div class="dir-item-card__name__line-1">
-            <span
-              class="inline-code--light mr-2"
-              v-if="showScore"
+        <div
+          class="dir-item-card__content-container__item"
+          v-for="(item, index) in sortingTypes"
+          :key="'dir-item-card__content-container__item-' + index"
+          :style="{display: item.isChecked ? 'flex' : 'none'}"
+        > 
+          <template v-if="item.name === 'name'">
+            <div class="dir-item-card__name">
+              <div class="dir-item-card__name__line-1">
+                <span
+                  class="inline-code--light mr-2"
+                  v-if="showScore"
+                >
+                  score: {{source.score}}
+                </span>
+                <v-tooltip bottom>
+                  <template v-slot:activator="{ on }">
+                    <v-icon
+                      v-on="on"
+                      v-show="source.isInaccessible"
+                      color="red"
+                      size="12px"
+                    >
+                      mdi-circle-medium
+                    </v-icon>
+                  </template>
+                  <span>Item is inaccessible</span>
+                </v-tooltip>
+                {{source.name}}
+              </div>
+
+              <!-- card::name::line-2-->
+              <div
+                class="dir-item-card__name__line-2"
+                v-if="showDir && source.dir !== source.path"
+              >
+                {{source.dir}}
+              </div>
+            </div>
+          </template>
+
+          <template v-if="item.name === 'date-created' && item.isChecked">
+            <div class="dir-item-card__date">
+              {{getLocalDateTime({stat: 'birthtime'})}}
+            </div>
+          </template>
+          
+          <template v-if="item.name === 'date-modified-meta' && item.isChecked">
+            <div class="dir-item-card__date">
+              {{getLocalDateTime({stat: 'ctime'})}}
+            </div>
+          </template>
+          
+          <template v-if="item.name === 'date-modified-contents' && item.isChecked">
+            <div class="dir-item-card__date">
+              {{getLocalDateTime({stat: 'mtime'})}}
+            </div>
+          </template>
+          
+          <template v-if="item.name === 'size' && item.isChecked">
+            <!-- {type: (directory|directory-symlink)} -->
+            <!-- card::item-count -->
+            <div
+              class="dir-item-card__item-count"
+              v-if="type === 'directory' || type === 'directory-symlink'"
+            >{{source.dirItemCount}} {{$localizeUtils.pluralize(source.dirItemCount, 'item')}}
+            </div>
+
+            <!-- {type: (file|file-symlink)} -->
+            <!-- card::item-count -->
+            <div
+              class="dir-item-card__item-count"
+              v-else-if="type === 'file' || type === 'file-symlink'"
             >
-              score: {{source.score}}
-            </span>
-            <v-tooltip bottom>
-              <template v-slot:activator="{ on }">
-                <v-icon
-                  v-on="on"
-                  v-show="source.isInaccessible"
-                  color="red"
-                  size="12px"
-                >
-                  mdi-circle-medium
-                </v-icon>
-              </template>
-              <span>Item is inaccessible</span>
-            </v-tooltip>
-            {{source.name}}
-          </div>
+              {{$utils.prettyBytes(source.stat.size, 1)}}
+            </div>
+          </template>
 
-          <!-- card::name::line-2-->
-          <div
-            class="dir-item-card__name__line-2"
-            v-if="showDir && source.dir !== source.path"
-          >
-            {{source.dir}}
-          </div>
-        </div>
+          <template v-if="item.name === 'status' && item.isChecked">
+            <div class="dir-item-card__item-offline-status">
+              <div v-if="offlineStatus.status">
+                <v-tooltip bottom>
+                  <template v-slot:activator="{ on }">
+                    <v-icon
+                      v-on="on"
+                      color="var(--color-6)"
+                      size="12px"
+                    >
+                      {{offlineStatus.icon}}
+                    </v-icon>
+                  </template>
+                  <span>{{offlineStatus.tooltip}}</span>
+                </v-tooltip>
+              </div>
+              <div v-else></div>
+            </div>
 
-        <!-- card::date-->
-        <div class="dir-item-card__date">
-          {{getSortColumnValue('date')}}
-        </div>
+            <div class="dir-item-card__actions">
+              <slot name="actions"></slot>
+            </div>
+          </template>
 
-        <!-- {type: (directory|directory-symlink)} -->
-        <!-- card::item-count -->
-        <div
-          v-if="type === 'directory' || type === 'directory-symlink'"
-          class="dir-item-card__item-count"
-        >{{source.dirItemCount}} {{$localizeUtils.pluralize(source.dirItemCount, 'item')}}
-        </div>
-
-        <!-- {type: (file|file-symlink)} -->
-        <!-- card::item-count -->
-        <div
-          v-else-if="type === 'file' || type === 'file-symlink'"
-          class="dir-item-card__item-count"
-        >
-          {{$utils.prettyBytes(source.stat.size, 1)}}
-        </div>
-        
-        <div class="dir-item-card__item-offline-status">
-          <div v-if="offlineStatus.status">
-            <v-tooltip bottom>
-              <template v-slot:activator="{ on }">
-                <v-icon
-                  v-on="on"
-                  color="var(--color-6)"
-                  size="12px"
-                >
-                  {{offlineStatus.icon}}
-                </v-icon>
-              </template>
-              <span>{{offlineStatus.tooltip}}</span>
-            </v-tooltip>
-          </div>
-          <div v-else></div>
+          <template v-if="item.name === 'selected' && item.isChecked">
+            <!-- card::checkbox -->
+            <!-- Note: using v-if to improve performance -->
+            <div
+              class="dir-item-card__checkbox"
+              v-if="isDirItemSelected(source)"
+            >
+              <v-icon @mousedown.stop="handleDirItemCheckboxMouseDown($event, source)">
+                mdi-check-box-outline
+              </v-icon>
+            </div>
+          </template>
         </div>
       </template>
 
       <!-- {layout: 'grid'} -->
       <template v-if="specifiedNavigatorLayout === 'grid'">
+        <!-- card::thumb-container -->
+        <v-layout
+          class="dir-item-card__thumb-container"
+          :data-item-real-path="`${source.realPath}`"
+          align-center justify-center
+        >
+          <!-- card::thumb: {type: directory} -->
+          <v-icon
+            class="dir-item-card__icon"
+            v-if="type.includes('directory')"
+            size="28px"
+          >{{getThumbIcon(source)}}
+          </v-icon>
+
+          <!-- card::thumb: {type: file && !isImage} -->
+          <v-layout
+            v-if="type.includes('file')"
+            column
+          >
+            <v-icon
+              class="dir-item-card__icon"
+              size="48px"
+            >{{getThumbIcon(source)}}
+            </v-icon>
+          </v-layout>
+        </v-layout>
+        
         <!-- {type: (directory|directory-symlink)} -->
         <v-layout column v-if="type === 'directory' || type === 'directory-symlink'">
           <!-- card::name -->
@@ -187,8 +243,8 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
         <!-- {type: (file|file-symlink)} -->
         <v-layout
-          v-else-if="type === 'file' || type === 'file-symlink'"
           class="dir-item-card__description-container"
+          v-else-if="type === 'file' || type === 'file-symlink'"
           :data-path="source.path"
           justify-center column
         >
@@ -220,44 +276,44 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             </div>
           </div>
         </v-layout>
+      
+        <div class="dir-item-card__actions">
+          <slot name="actions"></slot>
+        </div>
+
+        <!-- card::checkbox -->
+        <!-- Note: using v-if to improve performance -->
+        <div
+          class="dir-item-card__checkbox"
+          v-if="isDirItemSelected(source)"
+        >
+          <v-icon @mousedown.stop="handleDirItemCheckboxMouseDown($event, source)">
+            mdi-check-box-outline
+          </v-icon>
+        </div>
       </template>
-
-      <div class="dir-item-card__actions">
-        <slot name="actions"></slot>
-      </div>
-
-      <!-- card::checkbox -->
-      <!-- Note: using v-if to improve performance -->
-      <div
-        v-if="isDirItemSelected(source)"
-        class="dir-item-card__checkbox"
-      >
-        <v-icon @mousedown.stop="handleDirItemCheckboxMouseDown($event, source)">
-          mdi-check-box-outline
-        </v-icon>
-      </div>
     </v-layout>
     
     <!-- card::overlays -->
     <div class="dir-item-card__overlay-container">
       <div
-        v-if="isDirItemSelected(source)"
         class="dir-item-card__overlay dir-item-card__overlay--selected"
+        v-if="isDirItemSelected(source)"
       ></div>
       <div
-        v-if="dirItemIsInFsClipboard"
         class="dir-item-card__overlay dir-item-card__overlay--fs-clipboard"
+        v-if="dirItemIsInFsClipboard"
       ></div>
       <div
-        :class="{'is-visible': source.isHighlighted}"
         class="dir-item-card__overlay dir-item-card__overlay--highlighted"
+        :class="{'is-visible': source.isHighlighted}"
       ></div>
       <div
         class="dir-item-card__overlay dir-item-card__overlay--hover"
       ></div>
       <div
-        :class="{'is-visible': showDragOverOverlay(source)}"
         class="dir-item-card__overlay overlay--drag-over"
+        :class="{'is-visible': showDragOverOverlay(source)}"
       ></div>
     </div>
   </div>
@@ -323,7 +379,8 @@ export default {
     }),
     ...mapGetters([
       'selectedDirItems',
-      'selectedDirItemsPaths'
+      'selectedDirItemsPaths',
+      'sortingHeaderGridColumnTemplate'
     ]),
     ...mapFields({
       thumbsInProcessing: 'thumbsInProcessing',
@@ -345,6 +402,7 @@ export default {
       dirItemDragOverlay: 'overlays.dirItemDrag',
       selectedSortingType: 'sorting.selectedType',
       fsClipboard: 'navigatorView.clipboard.fs',
+      sortingTypes: 'sorting.types',
 
       drag: 'drag'
     }),
@@ -379,25 +437,19 @@ export default {
     },
     dirItemIsInFsClipboard () {
       return this.fsClipboard.items.some(item => item.path === this.source.path)
-    }
-  },
-  methods: {
-    getSortColumnValue (columnName) {
-      if (columnName === 'date') {
-        if (this.selectedSortingType.name === 'date-modified-contents') {
-          return this.getLocalDateTime({stat: 'mtime'})
-        }
-        else if (this.selectedSortingType.name === 'date-modified-meta') {
-          return this.getLocalDateTime({stat: 'ctime'})
-        }
-        else if (this.selectedSortingType.name === 'date-created') {
-          return this.getLocalDateTime({stat: 'birthtime'})
+    },
+    getCardContentContainerStyles () {
+      if (this.specifiedNavigatorLayout === 'list') {
+        return {
+          'grid-template-columns': this.sortingHeaderGridColumnTemplate.join(' ')
         }
       }
       else {
-        return ''
+        return {}
       }
     },
+  },
+  methods: {
     getLocalDateTime (params) {
       return this.$utils.getLocalDateTime(
         this.source.stat[params.stat], 
@@ -979,13 +1031,38 @@ export default {
 [data-layout="list"][data-type="file-symlink"]
   .dir-item-card__content-container {
     display: grid;
-    grid-template-columns: 48px 4.5fr 3fr 1fr 24px 48px;
-    gap: 16px;
     border-bottom: 1px solid var(--dir-item-card-border-3);
     /* Set the element height to 48px, otherwise
       the bottom border increases the height to 49px */
     height: 48px;
   }
+
+[data-layout="list"][data-type="directory"]
+  .dir-item-card__content-container__item,
+[data-layout="list"][data-type="directory-symlink"]
+  .dir-item-card__content-container__item,
+[data-layout="list"][data-type="file"]
+  .dir-item-card__content-container__item,
+[data-layout="list"][data-type="file-symlink"]
+  .dir-item-card__content-container__item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 
+      var(--workspace-area-sorting-header-item-v-padding) 
+      var(--workspace-area-sorting-header-item-h-padding);
+  }
+
+.dir-item-card[data-layout="list"]
+  .dir-item-card__content-container__item:nth-child(2) {
+    justify-content: flex-start;
+  }
+
+[data-layout="list"]
+  .dir-item-card__content-container__item:not(:nth-child(2))
+    .dir-item-card__name {
+      text-align: center;
+    }
 
 [data-layout="grid"][data-type="directory"]
   .dir-item-card,
@@ -1087,6 +1164,17 @@ export default {
   overflow: hidden;
   text-overflow: ellipsis;
   font-size: 14px;
+}
+
+.dir-item-card__name {
+  display: flex;
+  flex-direction: column;
+}
+
+.dir-item-card__name__line-1 {
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .dir-item-card__ext {
