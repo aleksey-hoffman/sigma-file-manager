@@ -1054,8 +1054,14 @@ export default {
   }
 
 .dir-item-card[data-layout="list"]
+  .dir-item-card__content-container__item:nth-child(1) {
+    padding: 0;
+  }
+
+.dir-item-card[data-layout="list"]
   .dir-item-card__content-container__item:nth-child(2) {
     justify-content: flex-start;
+    padding: 0 var(--workspace-area-sorting-header-item-2-h-padding);
   }
 
 [data-layout="list"]

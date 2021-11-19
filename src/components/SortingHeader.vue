@@ -177,6 +177,14 @@ export default {
   text-overflow: ellipsis;
 }
 
+.sorting-header__item:nth-child(2)
+  .sorting-header__item__title {
+    padding: 
+      var(--workspace-area-sorting-header-item-v-padding) 
+      var(--workspace-area-sorting-header-item-2-h-padding);
+    padding-top: 4px;
+  }
+
 .sorting-header__item[is-selected][sorting-order='ascending']
   .sorting-header__item__title::after,
 .sorting-header__item[is-selected][sorting-order='descending']

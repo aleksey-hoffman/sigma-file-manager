@@ -16,6 +16,7 @@
   --workspace-area-sorting-header-height: 36px;
   --workspace-area-sorting-header-item-v-padding: 2px;
   --workspace-area-sorting-header-item-h-padding: 8px;
+  --workspace-area-sorting-header-item-2-h-padding: 14px;
   --header-height: calc(
     var(--window-toolbar-height) +
     var(--action-toolbar-height)
