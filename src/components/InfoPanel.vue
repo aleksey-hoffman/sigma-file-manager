@@ -602,7 +602,6 @@ export default {
   width: 280px;
   height: 158px;
   background-color: var(--info-panel-preview-container-bg-color);
-  border-bottom: 1px solid var(--divider-color-4);
 }
 
 #app:not([display-accent-color-backgrounds])
