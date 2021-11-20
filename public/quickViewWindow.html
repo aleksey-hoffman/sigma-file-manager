@@ -142,7 +142,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       function renderOtherFileTypeNode (data) {
         let webviewNode = document.createElement('webview')
         webviewNode.setAttribute('id', 'content-webview')
-        webviewNode.setAttribute('partition', 'quickView')
+        webviewNode.setAttribute('partition', 'persist:quickView')
         webviewNode.setAttribute('src', sharedUtils.getUrlSafePath(data.path))
         contentContainerNode.appendChild(webviewNode)
       }

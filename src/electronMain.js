@@ -131,7 +131,7 @@ function createQuickViewWindow () {
     minWidth: 300,
     minHeight: 200,
     webPreferences: {
-      partition: 'quickView',
+      partition: 'persist:quickView',
       webviewTag: true,
       enableRemoteModule: true,
       contextIsolation: !process.env.ELECTRON_NODE_INTEGRATION,
