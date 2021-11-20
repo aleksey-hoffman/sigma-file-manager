@@ -552,7 +552,7 @@ export default {
             })
           },
           closesMenu: true,
-          icon: 'mdi-folder-search-outline',
+          icon: 'mdi-folder-network-outline',
           iconSize: '18px'
         },
         {
@@ -565,7 +565,7 @@ export default {
             })
           },
           closesMenu: true,
-          icon: 'mdi-share-variant',
+          icon: 'mdi-access-point-network',
           iconSize: '18px'
         },
         {
