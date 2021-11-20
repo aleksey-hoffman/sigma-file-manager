@@ -315,7 +315,7 @@ export default {
 }
 
 .nav-panel__item.active-route .nav-panel__item__icon {
-  color: var(--icon-color-3) !important;
+  color: var(--icon-color-1) !important;
 }
 
 .nav-panel__item.active-route .nav-panel__item__title {

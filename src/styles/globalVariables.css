@@ -1,7 +1,7 @@
 #app {
   --nav-panel-width: 48px;
   --nav-panel-width-expanded: 278px;
-  --nav-panel-active-indicator-width: 4px;
+  --nav-panel-active-indicator-width: 2px;
   --nav-panel-icon-width: calc(
     var(--nav-panel-width) -
     (var(--nav-panel-active-indicator-width) * 2)
@@ -28,7 +28,8 @@
 #app[data-theme-type="dark"],
 #app[data-theme-type="light-filter"] {
   --main-color-1: rgba(47, 52, 68);
-  --key-color-1: #607d8b;
+  --key-color-1: rgb(79, 104, 115);
+  --key-color-1-value: 79, 104, 115;
   --key-color-1-darker-1: rgb(55, 68, 88);
   --highlight-color-1: rgba(255, 255, 255, 0.3);
   --highlight-color-2: rgba(255, 255, 255, 0.2);
@@ -52,9 +53,8 @@
   --color-1-alt-1: rgb(96, 125, 139, 0.5);
   --code-bg-color: rgb(0, 0, 0, 0.1);
   --table-color: #616161;
-  --icon-color-1: #546e7a;
+  --icon-color-1: rgb(var(--key-color-1-value), 1);
   --icon-color-2: #9e9e9e;
-  --icon-color-3: #607d8b;
   --icon_active-color-1: rgb(96, 125, 139, 0.2);
   --title-color-1: #9e9e9e;
   --sub-title-color-1: #757575;
@@ -87,12 +87,11 @@
   --shadow-x4_hover: -16px 20px 48px rgb(0,0,0,0.3);
   --scrollbar-color: rgb(56, 58, 64, 0.5);
   --app-content-bg-color: var(--bg-color-2);
-  --info-panel-preview-container-bg-color: #37474f;
   --info-panel-preview-container-color: #607d8b;
   --nav-panel-color-1: #9e9e9e;
   --nav-panel-color_hover: rgb(120, 144, 156, 0.15);
   --nav-panel-icon-color-1: #78909c;
-  --nav-panel-indicator-color: #455a64;
+  --nav-panel-indicator-color: rgb(var(--key-color-1-value), 0.8);
   --nav-panel-item-bg-color_active:rgb(120, 144, 156, 0.05);
   --nav-panel-drive-overlay-bg-color: var(--bg-color-1);
   --nav-panel-drive-overlay-color: #bdbdbd;

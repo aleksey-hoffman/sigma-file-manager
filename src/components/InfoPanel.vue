@@ -601,7 +601,7 @@ export default {
   position: relative;
   width: 280px;
   height: 158px;
-  background-color: var(--info-panel-preview-container-bg-color);
+  background-color: rgb(var(--key-color-1-value), 0.5);
 }
 
 #app:not([display-accent-color-backgrounds])

@@ -1216,7 +1216,7 @@ export default {
   .dir-item-card__thumb-container {
     width: 48px;
     height: 48px;
-    background-color: rgb(159, 168, 218, 0.1);
+    background-color: rgb(var(--key-color-1-value), 0.3);
   }
 
 #app:not([display-accent-color-backgrounds])

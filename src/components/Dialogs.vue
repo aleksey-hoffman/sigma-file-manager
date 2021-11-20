@@ -2723,7 +2723,7 @@ export default {
 .program-icon-set__container
   .v-btn[isSelected] {
     background-color: var(--highlight-color-3);
-    border: 1px solid var(--icon-color-3);
+    border: 1px solid var(--icon-color-1);
     border-radius: 4px;
   }
 
@@ -2736,6 +2736,6 @@ export default {
 .program-icon-set__container
   .v-btn[isSelected]
     .v-icon {
-      color: var(--icon-color-3) !important;
+      color: var(--icon-color-1) !important;
     }
 </style>
