@@ -78,7 +78,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           :style="{display: item.isChecked ? 'flex' : 'none'}"
         > 
           <template v-if="item.name === 'name'">
-            <div class="dir-item-card__name">
+            <div 
+              class="dir-item-card__name"
+              :style="{'--name-column-max-width': navigatorNameColumnMaxWidth}"
+            >
               <div class="dir-item-card__name__line-1">
                 <span
                   class="inline-code--light mr-2"
@@ -381,6 +384,7 @@ export default {
       selectedSortingType: 'sorting.selectedType',
       fsClipboard: 'navigatorView.clipboard.fs',
       sortingTypes: 'sorting.types',
+      navigatorNameColumnMaxWidth: 'storageData.settings.navigator.nameColumnMaxWidth',
 
       drag: 'drag'
     }),
@@ -1051,6 +1055,18 @@ export default {
     .dir-item-card__name {
       text-align: center;
     }
+
+.dir-item-card[data-layout="list"]
+  .dir-item-card__name {
+    width: var(--name-column-max-width, 50%);
+  }
+
+@media (max-width: 800px) {
+  .dir-item-card[data-layout="list"]
+    .dir-item-card__name {
+      width: 100%;
+    }
+}
 
 [data-layout="grid"][data-type="directory"]
   .dir-item-card,

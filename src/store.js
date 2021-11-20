@@ -462,6 +462,7 @@ export default new Vuex.Store({
           showHiddenDirItems: false,
           openDirItemWithSingleClick: false,
           openDirItemSecondClickDelay: 500,
+          nameColumnMaxWidth: '50%',
           sorting: {
             elementDisplayType: 'bar'
           },

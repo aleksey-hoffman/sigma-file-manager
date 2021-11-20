@@ -1034,6 +1034,23 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                       value="highlight"
                     ></v-radio>
                   </v-radio-group>
+
+                  <div class="text--sub-title-1 mt-4">
+                    Navigator item list
+                  </div>
+
+                  <p>
+                    <b>OCD | 'Name' column max width:</b> 
+                    files with disproportionately long names make the file list look messy,
+                    so it's recommended to set the name column max width to a lower value, 
+                    like 50%, to make it look more organized
+                  </p>
+
+                  <v-text-field
+                    v-model="navigatorNameColumnMaxWidth"
+                    label="'Name' column max width (CSS value)"
+                    style="max-width: 400px"
+                  ></v-text-field>
                 </template>
               </section-settings>
             </v-tab-item>
@@ -1758,6 +1775,7 @@ export default {
       navigatorShowHiddenDirItems: 'storageData.settings.navigator.showHiddenDirItems',
       navigatorOpenDirItemWithSingleClick: 'storageData.settings.navigator.openDirItemWithSingleClick',
       dirItemHoverEffect: 'storageData.settings.dirItemHoverEffect',
+      navigatorNameColumnMaxWidth: 'storageData.settings.navigator.nameColumnMaxWidth',
       windowTransparencyEffectValue: 'storageData.settings.windowTransparencyEffect.value',
       windowTransparencyEffectLessProminentOnHomePage: 'storageData.settings.windowTransparencyEffect.lessProminentOnHomePage',
       windowTransparencyEffectPreviewEffect: 'storageData.settings.windowTransparencyEffect.previewEffect',
