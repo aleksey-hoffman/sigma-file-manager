@@ -28,8 +28,8 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               <div class="context-menu__toolbar">
                 <v-tooltip
                   v-for="(item, index) in filteredList(toolbarItems)"
-                  :key="'toolbar-item-' + index"
                   open-delay="200"
+                  :key="'toolbar-item-' + index"
                   max-width="300px"
                   bottom
                 >
@@ -96,22 +96,46 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
             <!-- context-menu::main-view::list -->
             <v-list dense>
-              <v-list-item
+              <v-tooltip
                 v-for="(item, index) in filteredList(menuItems)"
                 :key="'menu-item-' + index"
-                @click.stop="runOnClickEvent(item)"
+                :disabled="!item.tooltip"
+                open-delay="200"
+                bottom
               >
-                <v-list-item-icon>
-                  <v-icon :size="item.iconSize">
-                    {{item.icon}}
-                  </v-icon>
-                </v-list-item-icon>
-                <v-list-item-content>
-                  <v-list-item-title>
-                    {{item.title}}
-                  </v-list-item-title>
-                </v-list-item-content>
-              </v-list-item>
+                <template v-slot:activator="{on}">
+                  <v-list-item
+                    v-on="on"
+                    @click.stop="runOnClickEvent(item)"
+                  >
+                    <v-list-item-icon>
+                      <v-icon :size="item.iconSize">
+                        {{item.icon}}
+                      </v-icon>
+                    </v-list-item-icon>
+                    <v-list-item-content>
+                      <v-list-item-title>
+                        {{item.title}}
+                      </v-list-item-title>
+                    </v-list-item-content>
+                  </v-list-item>
+                </template>
+                <span v-if="item.tooltip">
+                  <div 
+                    class="tooltip__shortcut-list-item"
+                    v-for="(shortcutItem, index) in item.tooltip.shortcutList"
+                    :key="`shortcut-list-item-${index}`"
+                  >
+                    <div class="tooltip__shortcut-list-item__title tooltip__description">
+                      {{shortcutItem.title}}
+                    </div>
+                    <span 
+                      class="tooltip__shortcut-list__shortcut inline-code--light" 
+                      v-html="shortcutItem.shortcut"
+                    ></span>
+                  </div>
+                </span>
+              </v-tooltip>
             </v-list>
           </div>
 
@@ -254,10 +278,6 @@ export default {
 
     this.$eventHub.$on('openInTerminalAsAdmin', () => {
       this.$store.dispatch('OPEN_SELECTED_IN_TERMINAL', { asAdmin: true })
-    })
-
-    this.$eventHub.$on('openWithQuickView', () => {
-      this.$store.dispatch('OPEN_WITH_QUICK_VIEW')
     })
 
     this.$eventHub.$on('openInNativeFileManager', () => {
@@ -491,6 +511,25 @@ export default {
           closesMenu: false,
           icon: 'mdi-subdirectory-arrow-right',
           iconSize: '20px'
+        },
+        {
+          title: 'Quick view',
+          selectionType: ['single'],
+          targetTypes: ['file', 'file-symlink'],
+          onClick: () => {
+            this.$store.dispatch('OPEN_WITH_QUICK_VIEW')
+          },
+          closesMenu: true,
+          icon: 'mdi-text-box-search-outline',
+          iconSize: '18px',
+          tooltip: {
+            shortcutList: [
+              {
+                title: 'Preview file in a separate window',
+                shortcut: this.shortcuts.openWithQuickView.shortcut
+              }
+            ]
+          }
         },
         {
           title: 'New tab',

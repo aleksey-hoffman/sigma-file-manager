@@ -741,17 +741,6 @@ export default new Vuex.Store({
             askForArguments: false
           },
           defaultItems: [
-             {
-              name: 'Quick view',
-              action: () => {
-                eventHub.$emit('openWithQuickView')
-              },
-              readonly: true,
-              path: '',
-              icon: 'mdi-card-search-outline',
-              askForArguments: false,
-              targetTypes: ['file', 'file-symlink'],
-            },
             {
               name: 'Default file manager',
               action: () => {

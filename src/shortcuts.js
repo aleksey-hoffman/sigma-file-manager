@@ -75,7 +75,7 @@ export default {
     },
     preventDefaultType: '!inputFieldIsActive',
     routes: ['navigator', 'dashboard', 'home'],
-    icon: 'mdi-card-search-outline',
+    icon: 'mdi-text-box-search-outline',
     action: {name: 'OPEN_WITH_QUICK_VIEW'}, 
     shortcut: 'Space',
     description: `Open / close selected file in Quick View window. Supported: images, videos, audio, PDF, plain text`
