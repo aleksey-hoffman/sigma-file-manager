@@ -65,7 +65,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         sharedUtils = require('./src/utils/sharedUtils.js')
       }
 
-      let currentWindow = electron.remote.getCurrentWindow()
+      let currentWindow = require('@electron/remote').getCurrentWindow()
       let contentContainerNode = document.querySelector('#content-container')
       let state = {
         isCanceled: false
