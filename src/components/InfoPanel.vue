@@ -210,6 +210,9 @@ export default {
     },
     itemDescription () {
       let type = this.lastSelectedDirItem?.type || ''
+      let dirItemCount = this.lastSelectedDirItem?.type === 'directory'
+        ? ` • ${this.lastSelectedDirItem?.dirItemCount} items`
+        : ''
       let inaccessible = this.lastSelectedDirItem?.isInaccessible
         ? ' • Inaccessible'
         : ''
@@ -222,8 +225,8 @@ export default {
       let itemMimeDescription = this.itemMimeDescription
         ? ` • ${this.itemMimeDescription}`
         : ''
-      let description = this.$localize.get(`text_${type.replace(/-/g,'_')}`)
-      return `${description}${itemMimeDescription}${isOffline}${keepOnDevice}${inaccessible}`
+      let description = this.$localize.get(`text_${type.replace(/-/g, '_')}`)
+      return `${description}${dirItemCount}${itemMimeDescription}${isOffline}${keepOnDevice}${inaccessible}`
     },
     itemType () {
       return this.lastSelectedDirItem?.type || ''  
