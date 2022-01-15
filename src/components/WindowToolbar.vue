@@ -34,8 +34,12 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         </transition>
       </div>
 
-      <v-layout class="window-toolbar__content--main">
-
+      <v-layout
+        class="window-toolbar__content--main"
+        :style="{
+          'grid-template-columns': gridTemplateColumnsStyle
+        }"
+      >
         <!-- item-iterator -->
         <div
           v-for="(item, index) in windowToolbar.items"
@@ -47,33 +51,21 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           <template v-if="item.type === 'workspaces-menu'">
             <workspaces-menu :iconColor="windowToolbarFontColor"/>
           </template>
+
           <template v-if="item.type === 'tabs-menu'">
             <tabs-menu :iconColor="windowToolbarFontColor"/>
           </template>
 
-          <template v-if="item.type === 'tabs-menu-add' && $route.name === 'navigator'">
-            <v-tooltip bottom>
-              <template v-slot:activator="{ on }">
-                <v-btn
-                  class="window-toolbar__item"
-                  v-on="on"
-                  @click="$store.dispatch('ADD_TAB')"
-                  icon
-                >
-                  <v-icon size="22px">
-                    mdi-plus
-                  </v-icon>
-                </v-btn>
-              </template>
-              <span>New tab in current workspace</span>
-            </v-tooltip>
+          <template v-if="showNavigatorTabBar(item) && item.breakpoint && $vuetify.breakpoint[item.breakpoint]">
+            <navigator-tab-bar/>
           </template>
 
-          <template v-if="item.type === 'notification-menu'">
+          <template v-if="item.type === 'notification-menu' && item.ifCondition">
             <notification-menu :iconColor="windowToolbarFontColor"/>
           </template>
+
           <template v-if="item.type === 'menu-button'">
-            <v-tooltip bottom>
+            <v-tooltip bottom min-width="100px">
               <template v-slot:activator="{ on }">
                 <v-btn
                   class="window-toolbar__item"
@@ -105,7 +97,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
           <template v-if="item.type === 'window-controls-group'">
             <div class="window-controls-group">
-              <div 
+              <div
                 v-for="(item, index) in item.items"
                 :key="'window-controls-group-item-' + index"
               >
@@ -155,13 +147,13 @@ const electronRemote = require('@electron/remote')
 export default {
   data () {
     return {
-      window: electronRemote.getCurrentWindow()
+      window: electronRemote.getCurrentWindow(),
     }
   },
   computed: {
     ...mapGetters([
       'systemInfo',
-      'windowToolbarFontColor'
+      'windowToolbarFontColor',
     ]),
     ...mapFields({
       shortcuts: 'storageData.settings.shortcuts',
@@ -170,9 +162,11 @@ export default {
       navigationPanelMiniVariant: 'navigationPanel.miniVariant',
       homeBannerValue: 'storageData.settings.homeBanner.value',
       windowCloseButtonAction: 'storageData.settings.windowCloseButtonAction',
-      homeBannerOverlaySelectedItem: 'storageData.settings.homeBanner.overlay.selectedItem'
+      homeBannerOverlaySelectedItem: 'storageData.settings.homeBanner.overlay.selectedItem',
+      navigatorTabLayout: 'storageData.settings.navigator.tabs.layout',
+      notifications: 'notifications',
     }),
-    toolbarColor () { return this.$store.state.storageData.settings.theme.toolbarColor },
+    toolbarColor () {return this.$store.state.storageData.settings.theme.toolbarColor},
     windowToolbarFontColor () {
       // Force white icons on transparent toolbars
       if (this.toolbarIsTransparent) {
@@ -211,34 +205,64 @@ export default {
         return 'Close the app'
       }
     },
+    hiddenNotifications () {
+      return [
+        ...this.notifications.filter(item => item.isHidden && item.isPinned),
+        ...this.notifications.filter(item => item.isHidden && !item.isPinned),
+      ]
+    },
+    gridTemplateColumnsStyle () {
+      return this.windowToolbar.items.map(item => {
+        if (item.ifCondition === false) {
+          return '0'
+        }
+
+        if (item.breakpoint) {
+          return this.$vuetify.breakpoint[item.breakpoint]
+            ? item.width
+            : '0'
+        }
+        else {
+          return item.width
+        }
+      }).join(' ')
+    },
     windowToolbar () {
       return {
         items: [
-           {
+          {
             type: 'menu-button',
+            width: '32px',
             icon: {
               size: '18px',
-              name: 'mdi-message-question-outline'
+              name: 'mdi-message-question-outline',
             },
             tooltip: {
-              description: 'App guide'
+              description: 'App guide',
             },
-            onClick: () => {this.dialogs.guideDialog.value = true}
+            onClick: () => {this.dialogs.guideDialog.value = true},
           },
           {
-            type: 'workspaces-menu'
+            type: 'workspaces-menu',
+            width: '48px',
           },
           {
-            type: 'tabs-menu'
+            type: 'tabs-menu',
+            width: '48px',
           },
           {
-            type: 'tabs-menu-add'
+            type: 'navigator-tab-bar',
+            width: 'minmax(300px, 50%)',
+            breakpoint: 'mdAndUp',
           },
           {
-            type: 'spacer'
+            type: 'spacer',
+            width: 'minmax(64px, 1fr)',
           },
           {
-            type: 'notification-menu'
+            type: 'notification-menu',
+            ifCondition: this.hiddenNotifications.length > 0,
+            width: '32px',
           },
           // TODO: finish in v1.X
           // {
@@ -265,36 +289,37 @@ export default {
           // },
           {
             type: 'window-controls-group',
+            width: '128px',
             items: [
               {
                 type: 'window-controls',
                 icon: {
                   size: '18px',
-                  name: 'mdi-minus'
+                  name: 'mdi-minus',
                 },
                 tooltip: {
                   description: 'Minimize window',
-                  shortcut: this.shortcuts.toggleApp.shortcut
+                  shortcut: this.shortcuts.toggleApp.shortcut,
                 },
-                onClick: () => this.minimizeWindow()
+                onClick: () => this.minimizeWindow(),
               },
               {
                 type: 'window-controls',
                 icon: {
                   size: '16px',
-                  name: 'mdi-aspect-ratio'
+                  name: 'mdi-aspect-ratio',
                 },
                 tooltip: {
                   description: 'Toggle window size',
-                  shortcut: this.shortcuts.windowPosition.shortcut[this.systemInfo.platform]
+                  shortcut: this.shortcuts.windowPosition.shortcut[this.systemInfo.platform],
                 },
-                onClick: () => this.maximizeWindow()
+                onClick: () => this.maximizeWindow(),
               },
               {
                 type: 'window-controls',
                 icon: {
                   size: '18px',
-                  name: 'mdi-close'
+                  name: 'mdi-close',
                 },
                 tooltip: {
                   description: `
@@ -304,17 +329,24 @@ export default {
                   shortcut: `
                     Toggle window: ${this.shortcuts.toggleApp.shortcut}
                   `,
-                  shortutIfCondition: this.windowCloseButtonAction !== 'closeApp'
+                  shortutIfCondition: this.windowCloseButtonAction !== 'closeApp',
                 },
-                onClick: () => this.closeWindow()
-              }
-            ]
+                onClick: () => this.closeWindow(),
+              },
+            ],
           },
-        ]
+        ],
       }
-    }
+    },
+  },
+  watch: {
   },
   methods: {
+    showNavigatorTabBar (item) {
+      return item.type === 'navigator-tab-bar' &&
+      this.$route.name === 'navigator' &&
+      this.navigatorTabLayout === 'compact-vertical-and-traditional-horizontal'
+    },
     minimizeWindow () {
       this.window.minimize()
     },
@@ -328,8 +360,8 @@ export default {
     },
     closeWindow () {
       electron.ipcRenderer.send('handle:close-app', this.windowCloseButtonAction)
-    }
-  }
+    },
+  },
 }
 </script>
 
@@ -344,21 +376,23 @@ export default {
     display: flex;
     align-items: center;
     gap: var(--toolbar-item-gap);
-    padding: 
-      0px 
-      var(--window-toolbar-padding-right) 
-      0px 
+    padding:
+      0px
+      var(--window-toolbar-padding-right)
+      0px
       var(--window-toolbar-padding-left) !important;
+    display: grid;
+    width: calc(100vw - 301px);
   }
 
 .window-toolbar__drag-region {
+  z-index: -1;
   top: 4px;
   left: 4px;
   display: block;
   position: absolute;
   width: calc(100% - 8px);
   height: calc(100% - 4px);
-  z-index: -1;
   -webkit-app-region: drag;
 }
 
@@ -375,6 +409,7 @@ export default {
   align-items: center;
   width: auto;
   min-width: 100%;
+  flex-shrink: 0;
 }
 
 .window-toolbar__content--main__flex {
@@ -383,7 +418,7 @@ export default {
   -webkit-app-region: drag;
 }
 
-#app[is-window-maximized] 
+#app[is-window-maximized]
   .window-toolbar__content--main__flex {
     height: var(--window-toolbar-height);
   }

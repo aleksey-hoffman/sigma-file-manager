@@ -51,6 +51,9 @@ import WindowEffects from './components/WindowEffects.vue'
 import HomeBanner from './components/HomeBanner.vue'
 import FsLocalServerManager from './components/FsLocalServerManager.vue'
 import ShortcutList from './components/ShortcutList.vue'
+import NavigatorTab from './components/NavigatorTab.vue'
+import NavigatorTabBar from './components/NavigatorTabBar.vue'
+import DragSortableList from './components/DragSortableList.vue'
 import SortingHeader from './components/SortingHeader.vue'
 import SortingMenu from './components/SortingMenu.vue'
 import SortingColumnMenu from './components/SortingColumnMenu.vue'
@@ -91,6 +94,9 @@ Vue.component('window-effects', WindowEffects)
 Vue.component('home-banner', HomeBanner)
 Vue.component('fs-local-server-manager', FsLocalServerManager)
 Vue.component('shortcut-list', ShortcutList)
+Vue.component('navigator-tab', NavigatorTab)
+Vue.component('navigator-tab-bar', NavigatorTabBar)
+Vue.component('drag-sortable-list', DragSortableList)
 Vue.component('sorting-header', SortingHeader)
 Vue.component('sorting-menu', SortingMenu)
 Vue.component('sorting-column-menu', SortingColumnMenu)

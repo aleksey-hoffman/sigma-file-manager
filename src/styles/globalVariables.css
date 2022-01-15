@@ -71,6 +71,12 @@
   --input_active-thumb-color-1: var(--key-color-1);
   --input-track-color-1: rgba(24, 26, 32);
   --input-thumb-color-1: var(--color-6);
+  --navigator-tab-color: var(--color-6);
+  --navigator-tab-color-active: var(--color-6);
+  --navigator-tab-bg-color: rgb(255,255,255,0.03);
+  --navigator-tab-bg-color-active: transparent;
+  --navigator-tab-bg-color-hover: rgba(255, 255, 255, 0.06);
+  --navigator-tab-border-color: rgb(255, 255, 255, 0.1);
   --divider-color-1: #202020;
   --divider-color-2: #333;
   --divider-color-4: rgba(255, 255, 255, 0.1);
@@ -86,6 +92,8 @@
               -1px 1px 4px rgb(0,0,0,0.05);
   --shadow-x4_hover: -16px 20px 48px rgb(0,0,0,0.3);
   --scrollbar-color: rgb(56, 58, 64, 0.5);
+  --scrollbar-color-lighter-1: rgba(98, 102, 112, 0.2);
+  --scrollbar-color-lighter-1-hover: rgba(98, 102, 112, 0.3);
   --app-content-bg-color: var(--bg-color-2);
   --info-panel-preview-container-color: #607d8b;
   --nav-panel-color-1: #9e9e9e;

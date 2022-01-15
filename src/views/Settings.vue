@@ -1107,6 +1107,49 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               >
                 <template v-slot:content>
                   <div class="text--sub-title-1 mt-2">
+                    Tab behavior
+                  </div>
+                  <v-radio-group
+                    class="py-0 mt-0"
+                    v-model="navigatorTabBehavior"
+                    hide-details
+                  >
+                    <v-tooltip bottom max-width="300px">
+                      <template v-slot:activator="{ on }">
+                        <v-radio
+                           v-on="on"
+                          label="Immutable"
+                          value="immutable"
+                        ></v-radio>
+                      </template>
+                      <span>If enabled, tabs behave as pinned directories rather than traditional tabs</span>
+                    </v-tooltip>
+                    <v-radio
+                      label="Traditional (in development)"
+                      value="traditional"
+                      disabled
+                    ></v-radio>
+                  </v-radio-group>
+
+                  <div class="text--sub-title-1 mt-2">
+                    Tab layout
+                  </div>
+                  <v-radio-group
+                    class="py-0 mt-0"
+                    v-model="navigatorTabLayout"
+                    hide-details
+                  >
+                    <v-radio
+                      label="Compact vertical"
+                      value="compact-vertical"
+                    ></v-radio>
+                    <v-radio
+                      label="Compact vertical + traditional horizontal"
+                      value="compact-vertical-and-traditional-horizontal"
+                    ></v-radio>
+                  </v-radio-group>
+
+                  <div class="text--sub-title-1 mt-2">
                     Options
                   </div>
                   <v-switch
@@ -1770,6 +1813,8 @@ export default {
       navigatorSortingElementDisplayType: 'storageData.settings.navigator.sorting.elementDisplayType',
       navigatorLayout: 'storageData.settings.navigatorLayout',
       showWorkspaceTitleInToolbar: 'storageData.settings.navigator.workspaces.showTitleInToolbar',
+      navigatorTabBehavior: 'storageData.settings.navigator.tabs.tabBehavior',
+      navigatorTabLayout: 'storageData.settings.navigator.tabs.layout',
       closeAppWindowWhenLastWorkspaceTabIsClosed: 'storageData.settings.navigator.tabs.closeAppWindowWhenLastWorkspaceTabIsClosed',
       navigatorhistoryNavigationStyleSelected: 'storageData.settings.navigator.historyNavigationStyle.selected',
       navigatorShowHiddenDirItems: 'storageData.settings.navigator.showHiddenDirItems',

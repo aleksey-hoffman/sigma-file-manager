@@ -470,7 +470,14 @@ export default new Vuex.Store({
             showTitleInToolbar: false
           },
           tabs: {
-            closeAppWindowWhenLastWorkspaceTabIsClosed: false
+            closeAppWindowWhenLastWorkspaceTabIsClosed: false,
+            tabBehavior: 'immutable',
+            tabBehaviorList: ['immutable', 'traditional'],
+            layout: 'compact-vertical',
+            layoutVariants: [
+              'compact-vertical',
+              'compact-vertical-and-traditional-horizontal',
+            ]  
           },
           historyNavigationStyle: {
             selected: 'sigma-default',
@@ -2926,6 +2933,12 @@ export default new Vuex.Store({
         })
         store.state.menus.tabs = true
       }
+
+      // Scroll tab container
+      setTimeout(() => {
+        let tabIteratorContainerElement = document.querySelector('.tab-bar-container')
+        tabIteratorContainerElement.scrollLeft = tabIteratorContainerElement.scrollWidth
+      }, 0)
     },
     SET_TABS (store, tabs) {
       store.getters.selectedWorkspace.tabs = tabs

@@ -55,7 +55,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               v-for="(button, index) in header.buttons"
               :key="'header-button-' + index"
             >
-              <v-tooltip bottom>
+              <v-tooltip
+                v-if="[undefined, true].includes(button.ifCondition)"
+                bottom
+              >
                 <template v-slot:activator="{ on: tooltip }">
                   <v-btn
                     v-on="tooltip"

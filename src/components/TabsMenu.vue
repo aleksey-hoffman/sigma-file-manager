@@ -23,6 +23,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           tooltip: {
             description: 'New tab in current workspace'
           },
+          ifCondition: $route.name === 'navigator',
           onClick: () => $store.dispatch('ADD_TAB')
         },
         {

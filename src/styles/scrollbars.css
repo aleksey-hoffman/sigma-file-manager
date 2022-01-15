@@ -40,13 +40,25 @@ html::-webkit-scrollbar,
 .custom-scrollbar::-webkit-scrollbar-thumb:vertical:hover,
 .custom-scrollbar::-webkit-scrollbar-thumb:horizontal:hover {
   background-color: var(--scrollbar-color);
-  border: 1px solid transparent
+  border: 4px solid transparent;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:vertical:active,
 .custom-scrollbar::-webkit-scrollbar-thumb:horizontal:active {
   background-color: var(--scrollbar-color);
-  border: 1px solid transparent
+  border: 1px solid transparent;
+}
+
+.custom-scrollbar--lighter-1:hover::-webkit-scrollbar-thumb:vertical,
+.custom-scrollbar--lighter-1:hover::-webkit-scrollbar-thumb:horizontal {
+  background-color: var(--scrollbar-color-lighter-1);
+}
+
+.custom-scrollbar--lighter-1::-webkit-scrollbar-thumb:vertical:hover,
+.custom-scrollbar--lighter-1::-webkit-scrollbar-thumb:horizontal:hover,
+.custom-scrollbar--lighter-1::-webkit-scrollbar-thumb:vertical:active,
+.custom-scrollbar--lighter-1::-webkit-scrollbar-thumb:horizontal:active {
+  background-color: var(--scrollbar-color-lighter-1-hover);
 }
 
 .nav-panel__main-content {
