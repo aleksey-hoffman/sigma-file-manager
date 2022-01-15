@@ -192,6 +192,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               <!-- section::updates -->
               <section-settings
                 class="content-area__content-card__section"
+                v-if="$utils.isWindowsStore"
                 :header="{
                   icon: {
                     name: 'mdi-progress-upload',

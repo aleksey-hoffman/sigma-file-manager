@@ -31,6 +31,7 @@ catch (error) {}
 export default {
   env: process.env.NODE_ENV,
   platform: process.platform,
+  isWindowsStore: process.isWindowsStore,
   unixHiddenFileRegex: /(^|[\/\\])\../,
   getSrc (relativePath) {
     return process.env.NODE_ENV === 'production'

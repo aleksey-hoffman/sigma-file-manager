@@ -458,7 +458,7 @@ async function fetchAppStorageData () {
 }
 
 async function initAppUpdater () {
-  if ([true, undefined].includes(storageData['storageData.settings.appUpdates.autoCheck'])) {
+  if (!process.windowsStore && [true, undefined].includes(storageData['storageData.settings.appUpdates.autoCheck'])) {
     await checkAppUpdates()
   }
 }
