@@ -37,10 +37,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             {{$localize.get('text_user_directories')}}
           </div>
 
-          <basic-item-card-iterator
-            :items="userDirs"
-            type="userDir"
-          ></basic-item-card-iterator>
+          <user-dirs-section/>
         </div>
 
         <!-- section:drives -->

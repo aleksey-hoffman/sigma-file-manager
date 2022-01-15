@@ -36,7 +36,6 @@ import SortableList from './components/SortableList.vue'
 import DirItem from './components/DirItem.vue'
 import DirItemRow from './components/DirItemRow.vue'
 import ContextMenus from './components/ContextMenus.vue'
-import BasicItemCardIterator from './components/BasicItemCardIterator.vue'
 import WorkspaceAreaContent from './components/WorkspaceAreaContent.vue'
 import VirtualWorkspaceAreaContent from './components/VirtualWorkspaceAreaContent.vue'
 import AddressBar from './components/AddressBar.vue'
@@ -44,7 +43,10 @@ import InfoPanel from './components/InfoPanel.vue'
 import GlobalSearch from './components/GlobalSearch.vue'
 import FilterField from './components/FilterField.vue'
 import MediaIterator from './components/MediaIterator.vue'
-import DriveCardsIterator from './components/DriveCardsIterator.vue'
+import ItemCard from './components/ItemCard.vue'
+import ItemCardGrid from './components/ItemCardGrid.vue'
+import DeviceSection from './components/DeviceSection.vue'
+import UserDirsSection from './components/UserDirsSection.vue'
 import UpdatingComponent from './components/UpdatingComponent.vue'
 import SectionSettings from './components/SectionSettings.vue'
 import WindowEffects from './components/WindowEffects.vue'
@@ -79,7 +81,6 @@ Vue.component('sortable-list', SortableList)
 Vue.component('dir-item', DirItem)
 Vue.component('dir-item-row', DirItemRow)
 Vue.component('context-menus', ContextMenus)
-Vue.component('basic-item-card-iterator', BasicItemCardIterator)
 Vue.component('workspace-area-content', WorkspaceAreaContent)
 Vue.component('virtual-workspace-area-content', VirtualWorkspaceAreaContent)
 Vue.component('address-bar', AddressBar)
@@ -87,7 +88,10 @@ Vue.component('info-panel', InfoPanel)
 Vue.component('global-search', GlobalSearch)
 Vue.component('filter-field', FilterField)
 Vue.component('media-iterator', MediaIterator)
-Vue.component('drive-cards-iterator', DriveCardsIterator)
+Vue.component('device-section', DeviceSection)
+Vue.component('user-dirs-section', UserDirsSection)
+Vue.component('item-card', ItemCard)
+Vue.component('item-card-grid', ItemCardGrid)
 Vue.component('updating-component', UpdatingComponent)
 Vue.component('section-settings', SectionSettings)
 Vue.component('window-effects', WindowEffects)

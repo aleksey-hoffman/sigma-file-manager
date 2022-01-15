@@ -8,11 +8,18 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     <div v-if="drives.length === 0">
       No drives found
     </div>
-    <basic-item-card-iterator
-      :items="drives"
-      type="drive"
-      lines="2"
-    ></basic-item-card-iterator>
+
+    <item-card-grid
+      :lines="2"
+    >
+      <item-card
+        v-for="(drive, index) in drives"
+        :key="'device-card-' + index"
+        :item="drive"
+        :lines="2"
+        targetType="drive"
+      ></item-card>
+    </item-card-grid>
   </div>
 </template>
 
@@ -22,8 +29,8 @@ import {mapFields} from 'vuex-map-fields'
 export default {
   computed: {
     ...mapFields({
-      drives: 'drives'
-    })
-  }
+      drives: 'drives',
+    }),
+  },
 }
 </script>
