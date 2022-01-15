@@ -13,6 +13,7 @@ import * as fsManager from './utils/fsManager'
 import { getField, updateField } from 'vuex-map-fields'
 import {readFile, readFileSync, writeFile, writeFileSync} from 'atomically'
 import * as notifications from './utils/notifications.js'
+import MediaInfoWorker from 'worker-loader!./workers/mediaInfoWorker.js'
 const electron = require('electron')
 const electronRemote = require('@electron/remote')
 const fsExtra = require('fs-extra')
@@ -86,6 +87,7 @@ export default new Vuex.Store({
     workers: {
       globalSearchWorkers: [],
       dirWatcherWorker: null,
+      mediaInfoWorker: null,
     },
     childProcesses: {
       localDirectoryShareServer: null,
@@ -4221,6 +4223,21 @@ export default new Vuex.Store({
         if (store.state.storageData.settings.autoCalculateDirSize && !isRootDir) {
           store.dispatch('FETCH_DIR_SIZE', {item, options: {timeout: 1000}}).then(() => resolve())
         }
+      })
+    },
+    GET_MEDIA_FILE_INFO (store, params) {
+      return new Promise((resolve, reject) => {
+        if (!store.state.workers.mediaInfoWorker) {
+          store.state.workers.mediaInfoWorker = new MediaInfoWorker()
+        }
+        store.state.workers.mediaInfoWorker.onmessage = (event) => {
+          resolve(event)
+        }
+        store.state.workers.mediaInfoWorker.postMessage({
+          action: 'get-info',
+          path: params.path,
+          appPaths: store.state.appPaths
+        })
       })
     },
     SET_GLOBAL_SEARCH_DISALOWED_PATHS ({ state, commit, dispatch, getters }, value) {

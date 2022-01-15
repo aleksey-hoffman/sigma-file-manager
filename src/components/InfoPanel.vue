@@ -136,29 +136,36 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             class="info-panel__properties__item fade-in-500ms"
             column
           >
-            <!-- property-title -->
-            <div
-              class="info-panel__properties__item__title"
-              v-html="item.title"
-            >:
-            </div>
+            <template v-if="item.type === 'separator'">
+              <div class="info-panel__properties__item--separator">
+                <v-icon size="20px">mdi-information-outline</v-icon>
+                {{item.title}}
+              </div>
+            </template>
 
-            <!-- property-value -->
-            <v-tooltip
-              :disabled="item.tooltip.length === 0"
-              bottom max-width="250px" offset-overflow
-            >
-              <template v-slot:activator="{on}">
-                <div
-                  v-on="on"
-                  @click="handleClickPropertyValue({event: $event, item})"
-                  class="info-panel__properties__item__value"
-                  :class="{'cursor-pointer': inputState.ctrl}"
-                >{{item.value}}
-                </div>
-              </template>
-              <span v-html="item.tooltip"></span>
-            </v-tooltip>
+            <template v-if="item.type !== 'separator'">
+              <div
+                class="info-panel__properties__item__title"
+                v-html="item.title"
+              >:
+              </div>
+
+              <v-tooltip
+                :disabled="!item.tooltip || item.tooltip.length === 0"
+                bottom max-width="250px" offset-overflow
+              >
+                <template v-slot:activator="{on}">
+                  <div
+                    v-on="on"
+                    @click="handleClickPropertyValue({event: $event, item})"
+                    class="info-panel__properties__item__value"
+                    :class="{'cursor-pointer highlighted-box-on-hover': inputState.ctrl}"
+                  >{{item.value}}
+                  </div>
+                </template>
+                <span v-html="item.tooltip"></span>
+              </v-tooltip>
+            </template>
           </v-layout>
         </div>
       </div>
@@ -406,7 +413,7 @@ export default {
       }
 
       // Define main properties
-      const properties = [
+      let properties = [
         {
           propName: 'path',
           title: this.$localize.get('text_path'),
@@ -463,14 +470,31 @@ export default {
         propName: 'realPath',
         title: this.$localize.get('text_real_path'),
         value: item.realPath,
-        tooltip: copyPathTooltip
+        tooltip: copyPathTooltip,
       }
       if (item.path !== item.realPath) {
         properties.splice(1, 0, realPath)
       }
 
+      // Append media info properties
+      if (this.shouldFetchMediaPreview) {
+        this.fetchMediaInfo()
+          .then((data) => {
+            if (data.length > 0) {
+              properties.push({
+                type: 'separator',
+                title: this.$localize.get('media_info'),
+              })
+            }
+
+            data.forEach(prop => {
+              properties.push(prop)
+            })
+          })
+      }
+
       return {
-        properties
+        properties,
       }
     },
     async fetchPreview () {
@@ -485,6 +509,180 @@ export default {
       else {
         this.fetchNonMediaPreview()
       }
+    },
+    formatValue (params) {
+      if (params.property === 'duration') {
+        return this.$utils.getFormattedTime({
+          time: params.propertyValue,
+          unit: 'seconds',
+          format: 'HH:mm:ss',
+        })
+      }
+      else if (params.property === 'avg_frame_rate') {
+        if (typeof params.propertyValue === 'string') {
+          let splitValue = params.propertyValue.split('/')
+          return Number(`${Number(splitValue[0]) / Number(splitValue[1])}`).toFixed(3)
+        }
+        else {
+          return params.propertyValue
+        }
+      }
+      else if (params.property === 'bit_rate') {
+        return `${this.$utils.prettyBytes(Number(params.propertyValue), 1)} / ${this.$localize.get('sec', {capitalize: false})}`
+      }
+      else {
+        return params.propertyValue
+      }
+    },
+    formatMediaInfo (data) {
+      if (!data) {return []}
+
+      const itemMimeDescription = this.lastSelectedDirItem?.mime.mimeDescription
+      let dataFormatted = []
+      if (itemMimeDescription === 'image') {
+        let displayedImageStreamProperties = [
+          'width',
+          'height',
+          'bits_per_raw_sample',
+          'color_space',
+          'pix_fmt',
+          'chroma_location',
+        ]
+        displayedImageStreamProperties.forEach(property => {
+          if (data.streams[0]) {
+            dataFormatted.push({
+              propName: property,
+              title: this.$localize.get(property),
+              value: this.formatValue({property, propertyValue: data.streams[0][property]}),
+            })
+          }
+        })
+      }
+      else if (itemMimeDescription === 'audio') {
+        let displayedAudioFormatProperties = [
+          'duration',
+          'bit_rate',
+        ]
+        let displayedAudioFormatTagsProperties = [
+          'encoder',
+        ]
+        let displayedAudioStreamProperties = [
+          'channel_layout',
+          'channels',
+          'sample_rate',
+        ]
+        let displayedAudioStreamTagsProperties = [
+          'encoder',
+        ]
+        displayedAudioFormatProperties.forEach(property => {
+          if (data.format) {
+            dataFormatted.push({
+              propName: property,
+              title: this.$localize.get(property),
+              value: this.formatValue({property, propertyValue: data.format[property]}),
+            })
+          }
+        })
+        displayedAudioFormatTagsProperties.forEach(property => {
+          if (data.format.tags) {
+            dataFormatted.push({
+              propName: property,
+              title: this.$localize.get(property),
+              value: this.formatValue({property, propertyValue: data.format.tags[property]}),
+            })
+          }
+        })
+        data.streams.forEach((stream, index) => {
+          displayedAudioStreamProperties.forEach(property => {
+            dataFormatted.push({
+              propName: property,
+              title: `${this.$localize.get('stream')} ${index + 1} • ${this.$localize.get(property)}`,
+              value: this.formatValue({property, propertyValue: stream[property]}),
+            })
+          })
+          displayedAudioStreamTagsProperties.forEach(property => {
+            dataFormatted.push({
+              propName: property,
+              title: `${this.$localize.get('stream')} ${index + 1} • ${this.$localize.get(property)}`,
+              value: this.formatValue({property, propertyValue: stream.tags[property]}),
+            })
+          })
+        })
+      }
+      else if (itemMimeDescription === 'video') {
+        let displayedVideoFormatProperties = [
+          'duration',
+          'bit_rate',
+        ]
+        let displayedVideoFormatTagsProperties = [
+          'encoder',
+        ]
+        let displayedVideoStreamProperties = [
+          'codec_name',
+          'codec_tag_string',
+          'width',
+          'height',
+          'display_aspect_ratio',
+          'avg_frame_rate',
+          'bits_per_raw_sample',
+          'bit_rate',
+          'chroma_location',
+          'has_b_frames',
+          'pix_fmt',
+          'profile',
+          'closed_captions',
+          'channel_layout',
+          'channels',
+          'sample_rate',
+        ]
+        let displayedVideoStreamTagsProperties = [
+          'encoder',
+        ]
+        displayedVideoFormatProperties.forEach(property => {
+          if (data.format) {
+            dataFormatted.push({
+              propName: property,
+              title: this.$localize.get(property),
+              value: this.formatValue({property, propertyValue: data.format[property]}),
+            })
+          }
+        })
+        displayedVideoFormatTagsProperties.forEach(property => {
+          if (data.format.tags) {
+            dataFormatted.push({
+              propName: property,
+              title: this.$localize.get(property),
+              value: this.formatValue({property, propertyValue: data.format.tags[property]}),
+            })
+          }
+        })
+        data.streams.forEach((stream, index) => {
+          displayedVideoStreamProperties.forEach(property => {
+            dataFormatted.push({
+              propName: property,
+              title: `${this.$localize.get('stream')} ${index + 1} • ${this.$localize.get(property)}`,
+              value: this.formatValue({property, propertyValue: stream[property]}),
+            })
+          })
+          displayedVideoStreamTagsProperties.forEach(property => {
+            dataFormatted.push({
+              propName: property,
+              title: `${this.$localize.get('stream')} ${index + 1} • ${this.$localize.get(property)}`,
+              value: this.formatValue({property, propertyValue: stream.tags[property]}),
+            })
+          })
+        })
+      }
+
+      return dataFormatted.filter(item => item.value !== undefined)
+    },
+    async fetchMediaInfo () {
+      return new Promise((resolve, reject) => {
+        this.$store.dispatch('GET_MEDIA_FILE_INFO', {
+          path: this.lastSelectedDirItem.realPath,
+        })
+          .then(event => resolve(this.formatMediaInfo(event.data.metadata)))
+      })
     },
     async fetchMediaPreview () {
       const itemMimeDescription = this.lastSelectedDirItem?.mime.mimeDescription
@@ -696,6 +894,24 @@ export default {
 .info-panel__properties
   .v-btn {
     height: 24px !important;
+  }
+
+.info-panel__properties__item--separator {
+  display: flex;
+  align-items: center;
+  padding: 8px 4px;
+  color: var(--color-7);
+  background-color: var(--highlight-color-5);
+  border-radius: 4px;
+  font-size: 14px;
+  text-transform: uppercase;
+  user-select: none;
+}
+
+.info-panel__properties__item--separator
+  .v-icon {
+    margin-right: 12px;
+    color: var(--color-7) !important;
   }
 
 .info-panel__properties__item__title {

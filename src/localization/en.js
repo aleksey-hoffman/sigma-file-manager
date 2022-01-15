@@ -4,7 +4,7 @@
 
 const description = {
   name: 'English',
-  locale: 'en'
+  locale: 'en',
 }
 
 const data = {
@@ -56,10 +56,33 @@ const data = {
   text_cancel: 'cancel',
   text_clear_list_message: 'item list has been cleared',
   text_workspace_added: 'workspace has been added',
-  text_allow_global_search_message: 'Global search lets you quickly find any file / directory on your computer.<br>It periodically scans your drives and generates data files (maps) so it can find your files quickly.<br>The files that were created after the last scan will not be found since they won\'t be in the data files, so it\'s recommended to choose a more frequent auto scan period.'
+  text_allow_global_search_message: 'Global search lets you quickly find any file / directory on your computer.<br>It periodically scans your drives and generates data files (maps) so it can find your files quickly.<br>The files that were created after the last scan will not be found since they won\'t be in the data files, so it\'s recommended to choose a more frequent auto scan period.',
+  min: 'min',
+  sec: 'sec',
+  media_info: 'Media info',
+  stream: 'stream',
+  bits_per_raw_sample: 'bits per raw sample',
+  color_space: 'color space',
+  pix_fmt: 'pixel format',
+  chroma_location: 'chroma location',
+  bit_rate: 'bit rate',
+  duration: 'duration',
+  encoder: 'encoder',
+  channel_layout: 'channel layout',
+  channels: 'channels',
+  sample_rate: 'sample rate',
+  avg_frame_rate: 'frame rate',
+  codec_name: 'codec name',
+  codec_tag_string: 'codec tag string',
+  width: 'width',
+  height: 'height',
+  display_aspect_ratio: 'display aspect ratio',
+  has_b_frames: 'has b frames',
+  profile: 'profile',
+  closed_captions: 'closed captions',
 }
 
 export {
   description,
-  data
+  data,
 }
