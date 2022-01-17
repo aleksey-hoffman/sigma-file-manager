@@ -136,6 +136,7 @@ export default new Vuex.Store({
       options: {
         includeFiles: true,
         includeDirectories: true,
+        includeRecent: true,
         selectedDrives: [],
         allDrivesSelected: true,
         exactMatch: false,

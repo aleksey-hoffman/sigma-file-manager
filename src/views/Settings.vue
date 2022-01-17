@@ -1708,15 +1708,61 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 }"
               >
                 <template v-slot:description>
-                  If enabled, the app will store some event data of your interactions with
-                  directories / files, for example, when and how many times they were opened.
-                  <br>The statistics data is stored in the file called "stats.json"
-                  located in the app directory.
-                  <br>This data is needed for features like "timeline" to work.
+                  <p>
+                    If enabled, the app will store some event data of your interactions with
+                    directories / files, for example, when and how many times they were opened.
+                  </p>
+                  <p>
+                    This data is used by features like "timeline" and "search".
+                  </p>
                 </template>
                 <template v-slot:content>
+                  <div class="text--sub-title-1">
+                    Statistics storing
+                  </div>
+
+                  <div
+                    class="setting-container"
+                    @mouseenter="handleMouseEnterSetting({
+                      settingName: 'storeDirItemOpenEvent',
+                      title: 'Store the list of opened directory items'
+                    })"
+                  >
+                    <v-switch
+                      v-model="storeDirItemOpenEvent"
+                      label="Store the list of opened directory items"
+                      hide-details
+                    ></v-switch>
+                  </div>
+
+                  <div
+                    class="setting-container"
+                    @mouseenter="handleMouseEnterSetting({
+                      settingName: 'storeDirItemOpenCount',
+                      title: 'Store the amount of times a directory item was opened'
+                    })"
+                  >
+                    <v-switch
+                      v-if="storeDirItemOpenEvent"
+                      v-model="storeDirItemOpenCount"
+                      label="Store the amount of times a directory item was opened"
+                      hide-details
+                    ></v-switch>
+                  </div>
+
+                  <v-switch
+                    v-if="storeDirItemOpenEvent"
+                    v-model="storeDirItemOpenDate"
+                    label="Store the date of opening a directory item"
+                    hide-details
+                  ></v-switch>
+
+                  <p class="mt-6">
+                    The statistics data is stored in the file called "stats.json"
+                    located in the app directory.
+                  </p>
                   <v-btn
-                    class="button-1 my-4"
+                    class="button-1 mb-2"
                     @click="$store.dispatch('LOAD_DIR', { path: appPaths.storageDirectories.appStorage })"
                     depressed
                     small
@@ -1726,30 +1772,6 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     </v-icon>
                     Open file location
                   </v-btn>
-
-                  <div class="text--sub-title-1">
-                    Timeline
-                  </div>
-
-                  <v-switch
-                    v-model="storeDirItemOpenEvent"
-                    label="Store the list of opened directory items"
-                    hide-details
-                  ></v-switch>
-
-                  <v-switch
-                    v-if="storeDirItemOpenEvent"
-                    v-model="storeDirItemOpenCount"
-                    label="Store the amount of times a directory item was opened"
-                    hide-details
-                  ></v-switch>
-
-                  <v-switch
-                    v-if="storeDirItemOpenEvent"
-                    v-model="storeDirItemOpenDate"
-                    label="Store the date of opening a directory item"
-                    hide-details
-                  ></v-switch>
                 </template>
               </section-settings>
             </v-tab-item>
