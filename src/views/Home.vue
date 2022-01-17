@@ -83,7 +83,6 @@ export default {
   },
   computed: {
     ...mapFields({
-      userDirs: 'appPaths.userDirs',
       homeBannerValue: 'storageData.settings.homeBanner.value',
       homeBannerIsOffscreen: 'homeBannerIsOffscreen',
     }),

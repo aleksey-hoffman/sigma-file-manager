@@ -152,7 +152,7 @@ export default {
       homeBannerSelectedItem: 'storageData.settings.homeBanner.selectedItem'
     }),
     ...mapState({
-      appPaths: state => state.appPaths
+      appPaths: state => state.storageData.settings.appPaths
     })
   },
   methods: {

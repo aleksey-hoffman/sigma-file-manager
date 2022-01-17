@@ -270,7 +270,7 @@ export default {
   computed: {
     ...mapFields({
       dirItems: 'navigatorView.dirItems',
-      appPaths: 'appPaths',
+      appPaths: 'storageData.settings.appPaths',
       windowSize: 'windowSize',
       currentDir: 'navigatorView.currentDir'
     }),

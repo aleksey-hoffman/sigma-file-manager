@@ -19,6 +19,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     <dialogs v-if="appIsLoaded"/>
     <window-effects/>
     <fs-local-server-manager/>
+    <context-menus/>
 
     <!-- app-content-area -->
     <v-main class="app-content">
@@ -165,13 +166,12 @@ export default {
       inputState: 'inputState',
       contextMenus: 'contextMenus',
       dialogs: 'dialogs',
-      appPaths: 'appPaths',
+      appPaths: 'storageData.settings.appPaths',
       detectedLocale: 'detectedLocale',
       currentDir: 'navigatorView.currentDir',
       navigatorRouteIsLoaded: 'navigatorRouteIsLoaded',
       navigationPanel: 'navigationPanel',
-      appStorageGlobalSearchData: 'appPaths.storageDirectories.appStorageGlobalSearchData',
-      globalSearchDataFiles: 'appPaths.globalSearchDataFiles',
+      appStorageGlobalSearchData: 'storageData.settings.appPaths.storageDirectories.appStorageGlobalSearchData',
       routeScrollPosition: 'routeScrollPosition',
       lastRecordedAppVersion: 'storageData.settings.lastRecordedAppVersion',
       shortcuts: 'storageData.settings.shortcuts',
@@ -484,8 +484,8 @@ export default {
         const fileObject = this.appPaths.globalSearchDataFiles.find(object => object.mount === drive.mount)
         if (!fileObject) {
           this.$store.commit('PUSH', {
-            key: 'appPaths.globalSearchDataFiles',
-            value: searchDataFileObject
+            key: 'storageData.settings.appPaths.globalSearchDataFiles',
+            value: searchDataFileObject,
           })
         }
         // Check if file already exists, otherwise create it

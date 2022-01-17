@@ -365,7 +365,7 @@ export default {
   },
   computed: {
     ...mapFields({
-      appPaths: 'appPaths',
+      appPaths: 'storageData.settings.appPaths',
       shortcuts: 'storageData.settings.shortcuts',
       groupDirItems: 'storageData.settings.groupDirItems',
       currentNotesList: 'currentNotesList',

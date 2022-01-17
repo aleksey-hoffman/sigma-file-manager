@@ -13,9 +13,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       :position-y="contextMenus.dirItem.y"
       :close-on-content-click="false"
       offset-y
+      offset-overflow
       absolute
     >
-      <div class="context-menu__container">
+      <div class="context-menu__container fade-in-1s">
         <transition
           :name="contextMenus.dirItem.subMenu.value
             ? 'context-sub-menu-transition'
@@ -23,7 +24,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           mode="out-in"
         >
           <div key="mainMenu" v-if="!contextMenus.dirItem.subMenu.value">
-            <v-list dense>
+            <v-list
+              v-if="toolbarItems.length > 0"
+              dense
+            >
               <!-- context-menu::main-view::toolbar -->
               <div class="context-menu__toolbar">
                 <v-tooltip
@@ -46,8 +50,8 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                       </v-icon>
                     </v-btn>
                   </template>
-                  <span v-if="item.tooltip.shortcutList">
-                    <div 
+                  <span v-if="item.tooltip && item.tooltip.shortcutList">
+                    <div
                       class="tooltip__shortcut-list-item"
                       v-for="(shortcutItem, index) in item.tooltip.shortcutList"
                       :key="`shortcut-list-item-${index}`"
@@ -55,28 +59,28 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                       <div class="tooltip__shortcut-list-item__title tooltip__description">
                         {{shortcutItem.title}}
                       </div>
-                      <span 
-                        class="tooltip__shortcut-list__shortcut inline-code--light" 
+                      <span
+                        class="tooltip__shortcut-list__shortcut inline-code--light"
                         v-html="shortcutItem.shortcut"
                       ></span>
                     </div>
                   </span>
 
-                  <span v-else-if="item.tooltip.modifierList">
-                    <div 
+                  <span v-if="item.tooltip && item.tooltip.modifierList">
+                    <div
                       class="tooltip__modifier-list-item"
                       v-for="(modifierItem, index) in item.tooltip.modifierList"
                       :key="`modifier-list-item-${index}`"
                     >
                       <div class="tooltip__modifier-list-item__title tooltip__description">
-                        <span 
-                          class="tooltip__modifier-list__modifier inline-code--light" 
+                        <span
+                          class="tooltip__modifier-list__modifier inline-code--light"
                           v-if="modifierItem.modifier"
                           v-html="modifierItem.modifier"
                         ></span>
                         {{modifierItem.title}}
                       </div>
-                      <div 
+                      <div
                         class="tooltip__modifier-list__title tooltip__description"
                         v-if="!modifierItem.modifier"
                       >
@@ -84,15 +88,18 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                       </div>
                     </div>
                   </span>
-                  
-                  <span v-else>
+
+                  <span v-if="item.tooltip && !item.tooltip.shortcutList && !item.tooltip.modifierList">
                     <div class="tooltip__description">{{item.tooltip.title}}</div>
                     <div class="tooltip__shortcut" v-html="item.tooltip.text"></div>
                   </span>
                 </v-tooltip>
               </div>
             </v-list>
-            <v-divider></v-divider>
+
+            <v-divider
+              v-if="toolbarItems.length > 0"
+            ></v-divider>
 
             <!-- context-menu::main-view::list -->
             <v-list dense>
@@ -120,8 +127,8 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     </v-list-item-content>
                   </v-list-item>
                 </template>
-                <span v-if="item.tooltip">
-                  <div 
+                <span v-if="item.tooltip && item.tooltip.shortcutList">
+                  <div
                     class="tooltip__shortcut-list-item"
                     v-for="(shortcutItem, index) in item.tooltip.shortcutList"
                     :key="`shortcut-list-item-${index}`"
@@ -129,8 +136,8 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     <div class="tooltip__shortcut-list-item__title tooltip__description">
                       {{shortcutItem.title}}
                     </div>
-                    <span 
-                      class="tooltip__shortcut-list__shortcut inline-code--light" 
+                    <span
+                      class="tooltip__shortcut-list__shortcut inline-code--light"
                       v-html="shortcutItem.shortcut"
                     ></span>
                   </div>
@@ -273,11 +280,11 @@ export default {
   mounted () {
     // Init listeners
     this.$eventHub.$on('openInTerminal', () => {
-      this.$store.dispatch('OPEN_SELECTED_IN_TERMINAL', { asAdmin: false })
+      this.$store.dispatch('OPEN_SELECTED_IN_TERMINAL', {asAdmin: false})
     })
 
     this.$eventHub.$on('openInTerminalAsAdmin', () => {
-      this.$store.dispatch('OPEN_SELECTED_IN_TERMINAL', { asAdmin: true })
+      this.$store.dispatch('OPEN_SELECTED_IN_TERMINAL', {asAdmin: true})
     })
 
     this.$eventHub.$on('openInNativeFileManager', () => {
@@ -296,7 +303,7 @@ export default {
       if (!value) {
         this.contextMenus.dirItem.subMenu.value = false
       }
-    }
+    },
   },
   computed: {
     ...mapFields({
@@ -307,7 +314,7 @@ export default {
       pinnedItems: 'storageData.pinned.items',
       protectedItems: 'storageData.protected.items',
       externalProgramsDefaultItems: 'storageData.settings.externalPrograms.defaultItems',
-      externalProgramsCustomItems: 'storageData.settings.externalPrograms.items'
+      externalProgramsCustomItems: 'storageData.settings.externalPrograms.items',
     }),
     targetItems () {
       return this.$store.state.contextMenus.dirItem.targetItems
@@ -315,7 +322,7 @@ export default {
     targetItemsStats () {
       return this.$store.state.contextMenus.dirItem.targetItemsStats
     },
-    toolbarItems () {
+    dirItemToolbarItems () {
       return [
         {
           title: 'protect',
@@ -333,8 +340,8 @@ export default {
               If enabled, the item will be added to the protected list. 
               It will be protected from being modified / deleted from within this app only.
               Other apps can still modify / delete it.
-            `
-          }
+            `,
+          },
         },
         {
           title: 'pin',
@@ -347,9 +354,9 @@ export default {
           icon: 'mdi-pin-outline',
           iconSize: '20px',
           tooltip: {
-            title: 'Add to pinned', 
-            text: 'Pinned items can be found on the dashboard page'
-          }
+            title: 'Add to pinned',
+            text: 'Pinned items can be found on the dashboard page',
+          },
         },
         {
           title: 'rename',
@@ -366,10 +373,10 @@ export default {
             shortcutList: [
               {
                 title: 'Rename selected',
-                shortcut: this.shortcuts.renameSelected.shortcut
-              }
-            ]
-          }
+                shortcut: this.shortcuts.renameSelected.shortcut,
+              },
+            ],
+          },
         },
         {
           title: 'move',
@@ -386,14 +393,14 @@ export default {
             shortcutList: [
               {
                 title: 'Set selected items for moving',
-                shortcut: this.shortcuts.setDirItemsForMoving.shortcut
+                shortcut: this.shortcuts.setDirItemsForMoving.shortcut,
               },
               {
                 title: 'Add selected items for moving',
-                shortcut: this.shortcuts.addDirItemsForMoving.shortcut
-              }
-            ]
-          }
+                shortcut: this.shortcuts.addDirItemsForMoving.shortcut,
+              },
+            ],
+          },
         },
         {
           title: 'copy',
@@ -410,14 +417,14 @@ export default {
             shortcutList: [
               {
                 title: 'Set selected items for copying',
-                shortcut: this.shortcuts.setDirItemsForCopying.shortcut
+                shortcut: this.shortcuts.setDirItemsForCopying.shortcut,
               },
               {
                 title: 'Add selected items for copying',
-                shortcut: this.shortcuts.addDirItemsForCopying.shortcut
-              }
-            ]
-          }
+                shortcut: this.shortcuts.addDirItemsForCopying.shortcut,
+              },
+            ],
+          },
         },
         {
           title: 'link',
@@ -429,7 +436,7 @@ export default {
             let srcPath = this.targetItems[0].path
             let params = {
               title: '',
-              destPath: srcPath
+              destPath: srcPath,
             }
             let linkModifier = this.linkModifier
             if (linkModifier === 'windows-link') {
@@ -446,14 +453,14 @@ export default {
                   this.$store.dispatch('MAKE_DIR_ITEM_LINK', {
                     linkType: 'windows-link',
                     srcPath,
-                    destPath
+                    destPath,
                   })
                 }
                 else {
                   this.$store.dispatch('MAKE_DIR_ITEM_LINK', {
                     linkType: 'symlink',
                     srcPath,
-                    destPath
+                    destPath,
                   })
                 }
               })
@@ -461,7 +468,7 @@ export default {
           closesMenu: true,
           icon: this.linkActionIcon,
           iconSize: '22px',
-          tooltip: this.linkActionTooltip
+          tooltip: this.linkActionTooltip,
         },
         {
           title: 'trash',
@@ -485,20 +492,32 @@ export default {
             shortcutList: [
               {
                 title: this.shortcuts.trashSelected.description,
-                shortcut: this.shortcuts.trashSelected.shortcut
+                shortcut: this.shortcuts.trashSelected.shortcut,
               },
               {
                 title: this.shortcuts.deleteSelected.description,
-                shortcut: this.shortcuts.deleteSelected.shortcut
-              }
-            ]
-          }
-        }
+                shortcut: this.shortcuts.deleteSelected.shortcut,
+              },
+            ],
+          },
+        },
       ]
     },
-    menuItems () {
+    toolbarItems () {
+      if (this.contextMenus.dirItem.targetType === 'userDir') {
+        return []
+      }
+      else if (this.contextMenus.dirItem.targetType === 'drive') {
+        return []
+      }
+      else {
+        return this.dirItemToolbarItems
+      }
+    },
+    dirItemMenuItems () {
       return [
         {
+          name: 'open-with',
           title: 'Open with',
           selectionType: ['single', 'multiple'],
           targetTypes: ['directory', 'file', 'file-symlink', 'directory-symlink'],
@@ -510,9 +529,10 @@ export default {
           },
           closesMenu: false,
           icon: 'mdi-subdirectory-arrow-right',
-          iconSize: '20px'
+          iconSize: '20px',
         },
         {
+          name: 'quick-view',
           title: 'Quick view',
           selectionType: ['single'],
           targetTypes: ['file', 'file-symlink'],
@@ -525,13 +545,15 @@ export default {
           tooltip: {
             shortcutList: [
               {
+                name: 'review file in a separate window',
                 title: 'Preview file in a separate window',
-                shortcut: this.shortcuts.openWithQuickView.shortcut
-              }
-            ]
-          }
+                shortcut: this.shortcuts.openWithQuickView.shortcut,
+              },
+            ],
+          },
         },
         {
+          name: 'new-tab',
           title: 'New tab',
           selectionType: ['single'],
           targetTypes: ['directory', 'directory-symlink'],
@@ -540,35 +562,53 @@ export default {
           },
           closesMenu: true,
           icon: 'mdi-tab',
-          iconSize: '18px'
+          iconSize: '18px',
         },
         {
+          name: 'edit-tags',
+          title: 'Edit tags',
+          selectionType: ['single', 'multiple'],
+          targetTypes: ['file', 'directory', 'file-symlink', 'directory-symlink'],
+          onClick: () => {
+            this.contextMenus.dirItem.subMenu.target = 'edit-tags'
+            this.contextMenus.dirItem.subMenu.title = 'Edit tags'
+            this.contextMenus.dirItem.subMenu.value = true
+            this.adjustMenuPositionToSubMenu()
+          },
+          closesMenu: false,
+          icon: 'mdi-tag-text-outline',
+          iconSize: '18px',
+        },
+        {
+          name: 'share-directory-with-local-devices',
           title: 'Share directory with local devices',
           targetTypes: ['directory', 'directory-symlink'],
           selectionType: ['single'],
           onClick: () => {
-            this.$eventHub.$emit('app:method', {
-              method: 'initLocalDirectoryShare'
+            this.$eventHub.$emit('fsLocalServerManager:method', {
+              method: 'initLocalDirectoryShare',
             })
           },
           closesMenu: true,
           icon: 'mdi-folder-network-outline',
-          iconSize: '18px'
+          iconSize: '18px',
         },
         {
+          name: 'share-file-with-local-devices',
           title: 'Share file with local devices',
           targetTypes: ['file'],
           selectionType: ['single'],
           onClick: () => {
-            this.$eventHub.$emit('app:method', {
-              method: 'initLocalFileShare'
+            this.$eventHub.$emit('fsLocalServerManager:method', {
+              method: 'initLocalFileShare',
             })
           },
           closesMenu: true,
           icon: 'mdi-access-point-network',
-          iconSize: '18px'
+          iconSize: '18px',
         },
         {
+          name: 'compress-to-archive',
           title: 'Compress to archive',
           targetTypes: ['file', 'directory', 'file-symlink', 'directory-symlink'],
           selectionType: ['single', 'multiple'],
@@ -578,9 +618,10 @@ export default {
           },
           closesMenu: true,
           icon: 'mdi-cube-outline',
-          iconSize: '20px'
+          iconSize: '20px',
         },
         {
+          name: 'extract-archive',
           title: 'Extract archive',
           targetTypes: ['file'],
           selectionType: ['single'],
@@ -590,22 +631,24 @@ export default {
           },
           closesMenu: true,
           icon: 'mdi-package-variant',
-          iconSize: '20px'
+          iconSize: '20px',
         },
         {
+          name: 'permissions',
           title: 'Permissions',
           targetTypes: ['file', 'directory'],
           selectionType: ['single'],
           onClick: () => {
-            this.$store.dispatch('INIT_FETCH_CONTEXT_MENU_TARGET_ITEMS', { type: 'dirItem' })
+            this.$store.dispatch('INIT_FETCH_CONTEXT_MENU_TARGET_ITEMS', {type: 'dirItem'})
             this.dialogs.dirItemPermissionManagerDialog.value = true
           },
           closesMenu: true,
           icon: 'mdi-lock-outline',
-          iconSize: '18px'
-        }
+          iconSize: '18px',
+        },
         // TODO: finish in v1.2.0
         // {
+        //   name: 'convert-or-edit-image',
         //   title: 'Convert or edit image',
         //   targetTypes: ['file'],
         //   allowedFilesTypes: ['image'],
@@ -619,6 +662,7 @@ export default {
         //   iconSize: '23px'
         // },
         // {
+        //   name: 'convert-or-edit-audio',
         //   title: 'Convert or edit audio',
         //   targetTypes: ['file'],
         //   allowedFilesTypes: ['audio'],
@@ -632,6 +676,7 @@ export default {
         //   iconSize: '23px'
         // },
         // {
+        //   name: 'convert-or-edit-video',
         //   title: 'Convert or edit video',
         //   targetTypes: ['file'],
         //   allowedFilesTypes: ['video'],
@@ -645,6 +690,7 @@ export default {
         //   iconSize: '23px'
         // },
         // {
+        //   name: 'calculate-hash',
         //   title: 'Calculate hash',
         //   selectionType: ['single'],
         //   targetTypes: ['file', 'file-symlink'],
@@ -657,6 +703,39 @@ export default {
         //   iconSize: '22px'
         // }
       ]
+    },
+    menuItems () {
+      if (this.contextMenus.dirItem.targetType === 'userDir') {
+        return [
+          ...this.dirItemMenuItems,
+          ...[
+            {
+              title: 'Edit card',
+              selectionType: ['single'],
+              targetTypes: ['directory', 'file', 'file-symlink', 'directory-symlink'],
+              onClick: () => {
+                this.dialogs.userDirectoryEditorDialog.data = this.contextMenus.dirItem.targetData
+                this.dialogs.userDirectoryEditorDialog.value = true
+              },
+              closesMenu: false,
+              icon: 'mdi-pencil-outline',
+              iconSize: '20px',
+            },
+          ],
+        ]
+      }
+      else if (this.contextMenus.dirItem.targetType === 'drive') {
+        return [
+          ...this.dirItemMenuItemsDriveFiltered,
+        ]
+      }
+      else {
+        return this.dirItemMenuItems
+      }
+    },
+    dirItemMenuItemsDriveFiltered () {
+      return this.dirItemMenuItems
+        .filter(item => item.name !== 'permissions')
     },
     externalProgramsDefaultItemsFiltered () {
       const itemsFilteredByItemType = this.filterAllowedTargetTypes(this.externalProgramsDefaultItems)
@@ -714,13 +793,13 @@ export default {
         modifierList: [
           {
             title: 'Create symbolic link',
-          }
-        ]
-      }  
+          },
+        ],
+      }
       if (process.platform === 'win32') {
         tooltip.modifierList.push({
           title: 'Windows link (.lnk)',
-          modifier: 'Alt'
+          modifier: 'Alt',
         })
       }
       return tooltip
@@ -840,7 +919,7 @@ export default {
         }
         this.$eventHub.$emit('app:method', {
           method: method,
-          params: item.onClick.params
+          params: item.onClick.params,
         })
       }
       if (item.closesMenu) {
@@ -873,14 +952,14 @@ export default {
               timeout: 8000,
               closeButton: true,
               title: 'Error: couldn\'t open the program:',
-              message: error
+              message: error,
             })
           }
-        }
+        },
       )
       this.contextMenus.dirItem.value = false
-    }
-  }
+    },
+  },
 }
 </script>
 

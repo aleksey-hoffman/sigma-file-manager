@@ -61,10 +61,6 @@
 .context-menu-transition-enter,
 .context-menu-transition-leave-to {
   opacity: 0;
-  transform:
-    scale(0.1)
-    /* Prevent tooltip showing up during animation*/
-    translateX(16px);
 }
 
 .context-sub-menu-transition-enter-active {

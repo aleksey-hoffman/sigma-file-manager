@@ -147,6 +147,7 @@ export default {
   },
   computed: {
     ...mapFields({
+      appPaths: 'storageData.settings.appPaths',
       inputState: 'inputState',
       driveCardProgressType: 'storageData.settings.driveCard.progressType',
       driveCardShowProgress: 'storageData.settings.driveCard.showProgress',
@@ -226,11 +227,15 @@ export default {
         this.handleItemCardOnClick(params)
       }
     },
-    itemCardOnRightClick (params) {
+    async itemCardOnRightClick (params) {
+      let dirItem = await this.$store.dispatch('FETCH_DIR_ITEM_INFO', params.item.path)
+      this.$store.dispatch('DESELECT_ALL_DIR_ITEMS')
+      this.$store.dispatch('ADD_TO_SELECTED_DIR_ITEMS', dirItem)
       this.$store.dispatch('SET_CONTEXT_MENU', {
         x: params.event.clientX,
         y: params.event.clientY,
         targetType: this.targetType,
+        targetData: {item: params.item, dirItem, userDirs: this.appPaths.userDirs},
       })
     },
     itemCardOnDoubleClick (params) {

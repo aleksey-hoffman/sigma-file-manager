@@ -1958,7 +1958,7 @@ export default {
     ...mapFields({
       defaultData: 'defaultData',
       appVersion: 'appVersion',
-      appPaths: 'appPaths',
+      appPaths: 'storageData.settings.appPaths',
       windowSize: 'windowSize',
       shortcuts: 'storageData.settings.shortcuts',
       UIZoomLevel: 'storageData.settings.UIZoomLevel',

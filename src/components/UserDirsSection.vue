@@ -29,7 +29,7 @@ import {mapFields} from 'vuex-map-fields'
 export default {
   computed: {
     ...mapFields({
-      userDirs: 'appPaths.userDirs',
+      userDirs: 'storageData.settings.appPaths.userDirs',
     }),
   },
 }

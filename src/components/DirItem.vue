@@ -356,7 +356,7 @@ export default {
   computed: {
     ...mapState({
       navigatorLayout: state => state.storageData.settings.navigatorLayout,
-      appPaths: state => state.appPaths
+      appPaths: state => state.storageData.settings.appPaths,
     }),
     ...mapGetters([
       'selectedDirItems',

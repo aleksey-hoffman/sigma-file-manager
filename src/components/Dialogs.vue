@@ -937,6 +937,62 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       </template>
     </dialog-generator>
 
+    <!-- dialog::userDirectoryEditorDialog -->
+    <dialog-generator
+      :dialog="dialogs.userDirectoryEditorDialog"
+      :closeButton="{
+        onClick: () => closeDialog('userDirectoryEditorDialog'),
+      }"
+      title="User directory editor"
+      height="unset"
+    >
+      <template v-slot:content>
+        <v-text-field
+          v-model="dialogs.userDirectoryEditorDialog.data.item.name"
+          label="Directory name"
+        ></v-text-field>
+
+        <v-text-field
+          v-model="dialogs.userDirectoryEditorDialog.data.item.path"
+          label="Directory path"
+        ></v-text-field>
+
+        <v-layout align-center>
+          <v-text-field
+            v-model="dialogs.userDirectoryEditorDialog.data.item.icon"
+            label="Icon name (should start with 'mdi-')"
+          ></v-text-field>
+
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on }">
+              <v-btn
+                class="button-1 ml-2"
+                v-on="on"
+                @click="$utils.openLink('https://materialdesignicons.com/')"
+                depressed
+                small
+              >Open icon list
+              </v-btn>
+            </template>
+            <span>
+              <v-layout align-center>
+                <v-icon class="mr-3" size="16px">
+                  mdi-open-in-new
+                </v-icon>
+                {{'https://materialdesignicons.com/'}}
+              </v-layout>
+            </span>
+          </v-tooltip>
+        </v-layout>
+
+        <v-layout align-center>
+          <div class="mr-2">Icon preview:</div>
+          <v-icon>{{dialogs.userDirectoryEditorDialog.data.item.icon}}</v-icon>
+        </v-layout>
+
+      </template>
+    </dialog-generator>
+
     <!-- dialog::workspaceEditorDialog -->
     <dialog-generator
       :dialog="dialogs.workspaceEditorDialog"
@@ -1859,6 +1915,15 @@ export default {
     this.noteChangeHandlerDebounce = new TimeUtils()
   },
   watch: {
+    'dialogs.userDirectoryEditorDialog.data': {
+      handler (value) {
+        this.$store.dispatch('SET', {
+          key: 'storageData.settings.appPaths.userDirs',
+          value: this.dialogs.userDirectoryEditorDialog.data.userDirs,
+        })
+      },
+      deep: true,
+    },
     'dialogs.mathEditorDialog.value' (value) {
       if (value) {
         setTimeout(() => {
@@ -2006,7 +2071,7 @@ export default {
     ...mapState({
       appVersion: state => state.appVersion,
       windowSize: state => state.windowSize,
-      appPaths: state => state.appPaths,
+      appPaths: state => state.storageData.settings.appPaths,
       shortcuts: state => state.storageData.settings.shortcuts,
       appActionHistory: state => state.appActionHistory,
       dialogs: state => state.dialogs,

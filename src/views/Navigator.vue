@@ -5,7 +5,6 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <template>
   <div id="navigator-route">
-    <context-menus/>
     <info-panel/>
     <!-- content-area -->
     <div

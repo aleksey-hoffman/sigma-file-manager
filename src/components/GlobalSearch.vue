@@ -463,14 +463,13 @@ export default {
       globalSearchCompressSearchData: state => state.storageData.settings.compressSearchData
     }),
     ...mapFields({
-      appPaths: 'appPaths',
+      appPaths: 'storageData.settings.appPaths',
       inputState: 'inputState',
       drives: 'drives',
       dirItems: 'navigatorView.dirItems',
       globalSearch: 'globalSearch',
       query: 'globalSearch.query',
       widget: 'globalSearch.widget',
-      globalSearchDataFiles: 'appPaths.globalSearchDataFiles',
       scanInProgress: 'globalSearch.scanInProgress',
       searchScanWasInterrupted: 'storageData.settings.globalSearchScanWasInterrupted',
       searchInProgress: 'globalSearch.searchInProgress',
@@ -612,7 +611,7 @@ export default {
     },
     cancelSearchAllDrives (params) {
       this.resetSearchData(params)
-      this.globalSearchDataFiles.forEach(file => {
+      this.appPaths.globalSearchDataFiles.forEach(file => {
         this.$eventHub.$emit('app:method', {
           method: 'initGlobalSearchWorkerAction',
           params: {
@@ -657,7 +656,7 @@ export default {
     startSearch () {
       this.searchInProgress = true
       this.searchStartTime = Date.now()
-      this.globalSearchDataFiles.forEach(file => {
+      this.appPaths.globalSearchDataFiles.forEach(file => {
         const drive = this.optionSelectedDrives.some(drive => drive.mount === file.mount)
         if (drive) {
           const searchObject = {

@@ -459,6 +459,7 @@ export default new Vuex.Store({
           appLaunch: true,
           localShare: true,
         },
+        appPaths,
         navigator: {
           showDirItemKindDividers: true,
           showHiddenDirItems: false,
@@ -930,6 +931,8 @@ export default new Vuex.Store({
         value: false,
         x: null,
         y: null,
+        targetData: {},
+        targetType: 'dirItem',
         targetItems: [],
         targetItemsStats: {},
         subMenu: {
@@ -1115,6 +1118,10 @@ export default new Vuex.Store({
       },
       homeBannerOverlayDialog: {
         value: false
+      },
+      userDirectoryEditorDialog: {
+        value: false,
+        data: {}
       },
       workspaceEditorDialog: {
         value: false,
@@ -1946,7 +1953,7 @@ export default new Vuex.Store({
     */
     READ_STORAGE_FILE ({ state, commit, dispatch, getters }, fileName) {
       return new Promise((resolve, reject) => {
-        const filePath = `${state.appPaths.storageDirectories.appStorage}/${fileName}`
+        const filePath = `${state.storageData.settings.appPaths.storageDirectories.appStorage}/${fileName}`
         fs.promises.readFile(filePath, {encoding: 'utf-8'})
           .then((data) => {
             data = JSON.parse(data)
@@ -1963,7 +1970,7 @@ export default new Vuex.Store({
     //   - ✅ File is not corrupted (can happen when multiple processes are writing at the same time);
     async WRITE_STORAGE_FILE ({ state, commit, dispatch, getters }, payload) {
       let { fileName, properties, data } = payload
-      const filePath = `${state.appPaths.storageDirectories.appStorage}/${fileName}`
+      const filePath = `${state.storageData.settings.appPaths.storageDirectories.appStorage}/${fileName}`
       // Update storage data in memory.
       // If key is provided, update its value,
       // otherwise set the value as file's root property
@@ -1981,7 +1988,7 @@ export default new Vuex.Store({
       }
     },
     async WRITE_DEFAULT_STORAGE_FILE ({ state, commit,dispatch, getters }, payload) {
-      const filePath = `${state.appPaths.storageDirectories.appStorage}/${payload.fileName}`
+      const filePath = `${state.storageData.settings.appPaths.storageDirectories.appStorage}/${payload.fileName}`
       const defaultData = {}
       try {
         const formattedData = JSON.stringify(defaultData, null, 2)
@@ -2026,7 +2033,7 @@ export default new Vuex.Store({
     },
     async DELETE_APP_FILE (store, payload) {
       try {
-        const appStorageDir = store.state.appPaths.storageDirectories.appStorage
+        const appStorageDir = store.state.storageData.settings.appPaths.storageDirectories.appStorage
         const appStorageFileName = payload.fileName
         const normalizedPath = PATH.normalize(`${appStorageDir}/${appStorageFileName}`)
         await fs.promises.access(normalizedPath, fs.constants.F_OK)
@@ -2269,7 +2276,7 @@ export default new Vuex.Store({
       await processItems()
 
       async function copyFileToAppStorage (file) {
-        const destination = PATH.join(state.appPaths.storageDirectories.appStorageHomeBannerMedia, file.name)
+        const destination = PATH.join(state.storageData.settings.appPaths.storageDirectories.appStorageHomeBannerMedia, file.name)
         await fs.promises.copyFile(file.path, destination)
         return {file, destination}
       }
@@ -2330,7 +2337,7 @@ export default new Vuex.Store({
       function handleProcessM3U8 () {
         // Method 1: using .spawn() | Problem: doesn't download videos till the end
         // let process = childProcess.spawn('ffmpeg', payload.command, {
-        //   cwd: state.appPaths.binFFMPEG,
+        //   cwd: state.storageData.settings.appPaths.binFFMPEG,
         //   shell: true
         // })
         // Method 2: using .exec()
@@ -2939,7 +2946,9 @@ export default new Vuex.Store({
       // Scroll tab container
       setTimeout(() => {
         let tabIteratorContainerElement = document.querySelector('.tab-bar-container')
-        tabIteratorContainerElement.scrollLeft = tabIteratorContainerElement.scrollWidth
+        if (tabIteratorContainerElement) {
+          tabIteratorContainerElement.scrollLeft = tabIteratorContainerElement.scrollWidth
+        }
       }, 0)
     },
     SET_TABS (store, tabs) {
@@ -3040,7 +3049,7 @@ export default new Vuex.Store({
     },
     async LOAD_DIR_ITEMS ({ state, commit, dispatch, getters }, path) {
       if (path === '') {
-        path = state.appPaths.home
+        path = state.storageData.settings.appPaths.home
       }
       dispatch('SET', {
         key: 'navigatorView.dirItemsInfoIsFetched',
@@ -3115,7 +3124,7 @@ export default new Vuex.Store({
         params.dest,
         params.source,
         {
-          $bin: store.state.appPaths.bin7Zip,
+          $bin: store.state.storageData.settings.appPaths.bin7Zip,
           $progress: true
         }
       )
@@ -3193,7 +3202,7 @@ export default new Vuex.Store({
         params.source,
         params.dest,
         {
-          $bin: store.state.appPaths.bin7Zip,
+          $bin: store.state.storageData.settings.appPaths.bin7Zip,
           $progress: true
         }
       )
@@ -3268,7 +3277,7 @@ export default new Vuex.Store({
     },
     async FETCH_DIR_ITEM_INFO ({ state, commit, getters }, path) {
       if (path === '' || !path) {
-        path = state.appPaths.home
+        path = state.storageData.settings.appPaths.home
       }
       const navigatorLayoutItemHeight = state.storageData.settings.navigatorLayoutItemHeight
       const dirInfo = await navigatorCore.getDirItemInfo(path, navigatorLayoutItemHeight)
@@ -4236,7 +4245,7 @@ export default new Vuex.Store({
         store.state.workers.mediaInfoWorker.postMessage({
           action: 'get-info',
           path: params.path,
-          appPaths: store.state.appPaths
+          appPaths: store.state.storageData.settings.appPaths
         })
       })
     },
@@ -4256,7 +4265,14 @@ export default new Vuex.Store({
     SET_CONTEXT_MENU (store, payload) {
       // Note: clone selected items to avoid modifying items that were selected after
       // the context menu was opened (e.g. accidentally pressed shortcuts, unexpected app bugs, etc.)
-      store.state.contextMenus.dirItem.targetItems = utils.cloneDeep(store.getters.selectedDirItems)
+      if (payload.targetType === 'userDir') {
+        store.state.contextMenus.dirItem.targetItems = utils.cloneDeep([payload.targetData.dirItem])
+      }
+      else {
+        store.state.contextMenus.dirItem.targetItems = utils.cloneDeep(store.getters.selectedDirItems)
+      }
+      store.state.contextMenus.dirItem.targetData = payload.targetData
+      store.state.contextMenus.dirItem.targetType = payload.targetType
       if ((payload.value === 'toggle' || payload.value === false) && !payload.x && !payload.y) {
         store.state.contextMenus.dirItem.value = false
       }
@@ -5282,7 +5298,7 @@ export default new Vuex.Store({
         ...params
       }
       appUpdater.init({
-        repo: state.appPaths.githubRepo,
+        repo: state.storageData.settings.appPaths.githubRepo,
         currentVersion: state.appVersion,
         onUpdateAvailable: (payload) => {
           dispatch('HANDLE_APP_UPDATE_AVAILABLE', payload)
@@ -5308,7 +5324,7 @@ export default new Vuex.Store({
                 title: 'See all releases',
                 action: '',
                 onClick: () => {
-                  utils.openLink(state.appPaths.githubLatestRelease)
+                  utils.openLink(state.storageData.settings.appPaths.githubLatestRelease)
                 },
                 closesNotification: true
               }
@@ -5351,7 +5367,7 @@ export default new Vuex.Store({
           title: 'See what\'s new',
           action: '',
           onClick: () => {
-            utils.openLink(state.appPaths.githubChangelogLink)
+            utils.openLink(state.storageData.settings.appPaths.githubChangelogLink)
           },
           closesNotification: false
         }
@@ -5390,7 +5406,7 @@ export default new Vuex.Store({
     DOWNLOAD_APP_UPDATE (store, params) {
       electron.ipcRenderer.send('download-file', {
         url: params.downloadLink,
-        dir: store.state.appPaths.updateDownloadDir,
+        dir: store.state.storageData.settings.appPaths.updateDownloadDir,
         hashID: utils.getHash(),
         size: params.size,
         isUpdate: true
@@ -5402,7 +5418,7 @@ export default new Vuex.Store({
             action: 'hide',
             hashID: info.hashID
           })
-          store.dispatch('OPEN_FILE', `${store.state.appPaths.updateDownloadDir}/${info.filename}`)
+          store.dispatch('OPEN_FILE', `${store.state.storageData.settings.appPaths.updateDownloadDir}/${info.filename}`)
         }
         else {
           store.dispatch('HANDLE_APP_UPDATE_DOWNLOADED', {latestVersion: params.latestVersion, info})
@@ -5442,7 +5458,7 @@ export default new Vuex.Store({
             title: 'See what\'s new',
             action: '',
             onClick: () => {
-              utils.openLink(state.appPaths.githubChangelogLink)
+              utils.openLink(state.storageData.settings.appPaths.githubChangelogLink)
             },
             closesNotification: true
           }

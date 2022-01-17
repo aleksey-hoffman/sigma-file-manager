@@ -820,8 +820,8 @@ export default {
   },
   computed: {
     ...mapFields({
-      appPaths: 'appPaths',
-      dialogs: 'dialogs'
+      appPaths: 'storageData.settings.appPaths',
+      dialogs: 'dialogs',
     }),
     isEmpty () {
       return this.charCount === null || this.charCount === 0
