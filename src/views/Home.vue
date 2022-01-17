@@ -47,7 +47,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           </div>
 
           <div class="content-area--home-route__section">
-            <drive-cards-iterator/>
+            <device-section/>
           </div>
         </div>
       </div>
