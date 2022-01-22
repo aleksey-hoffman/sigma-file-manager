@@ -125,7 +125,7 @@ Several more major features / improvements are already in development and will b
 
 These wonderful people and companies are currently funding this project. Thanks to them I can keep improving this app, they are the reason good quality free software can exist.
 
-![Patreon-progress-goal](https://user-images.githubusercontent.com/61761672/133787919-838742af-a238-47de-832b-9fe215f4ec03.png)
+![Patreon-progress-goal](https://user-images.githubusercontent.com/61761672/150617701-729655d6-63a3-4644-b064-9eb99d9be9a4.png)
 
 ## Sponsors - tier 2
 Become the first supporter
