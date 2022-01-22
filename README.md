@@ -9,7 +9,7 @@ Designed, developed, and maintained by [Aleksey Hoffman](https://github.com/alek
 
 💗 Thanks to everyone who have been sharing this project with others!
 
-<img src="./.github/media/main.jpg">
+<img src="./.github/media/main.png">
 
 <i>Artwork in the image: [Futuristic Japanese Palanquin by Julien Gauthier](https://www.artstation.com/artwork/EV8Lo4)</i>
 
