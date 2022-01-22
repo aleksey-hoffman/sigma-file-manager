@@ -7,6 +7,8 @@
 
 Designed, developed, and maintained by [Aleksey Hoffman](https://github.com/aleksey-hoffman) | [Twitter](https://twitter.com/hoffman_aleksey)
 
+💗 Thanks to everyone who have been sharing this project with others!
+
 <img src="./.github/media/main.png">
 
 <i>Artwork in the image: [Futuristic Japanese Palanquin by Julien Gauthier](https://www.artstation.com/artwork/EV8Lo4)</i>
@@ -15,117 +17,72 @@ Designed, developed, and maintained by [Aleksey Hoffman](https://github.com/alek
 
 See the "Download" section below.
 
+### Goal
+
+Create the best existing intelligent file manager & productivity app that will significantly speed up your workflow, provide you with advanced tools, and keep your data safe.
+
+`Done 19 of 100` major features.
+
 # Features
 
-The list of major features:
+#### The list of major features:
 
-#### FEATURE #1 | SMART GLOBAL SEARCH
+- **SMART GLOBAL SEARCH:** feature allows you to find any file / directory on your computer in just a few seconds. It also implements a typo correction system, allowing you to find files even when the search query includes typos, wrong case, wrong word order, missing words, missing symbols, and missing file extension.
 
-The search system in this app allows you to quickly find any file / directory on your computer in just a few seconds. For example, to find a file called `"2019 - Document Name.txt"`, you can type something like `"documen 2019"` (with typos, wrong case, wrong word order, missing words, missing symbols, and missing file extension) and the app will quickly find it for you (searches take about 1 second per 50 GB of data on medium tier computers).
+- **TABS:** feature allows you to quickly switch between multiple directories with a click or a shortcut.
 
-#### FEATURE #2 | TABS
+- **WORKSPACES:** feature allows you to create separate workspaces with their own tabs and pre-defined actions, allowing you to quickly switch between them. Actions can perform different operations, e.g. open a website, run a script, open a file in a specific program, etc.
 
-Tabs allow you to quickly switch between multiple directories with a click or a shortcut: `Alt + [0-9]`.
+- **ADVANCED WIRELESS FILE SHARING:** share a directory or stream any file to your local devices wirelessly without installing any apps. It works on any device with a modern web browser (smart TVs, mobile devices, laptops, virtual machines, etc).
 
-#### FEATURE #3 | WORKSPACES
+- **ADDRESS BAR:** lets you quickly navigate directories with your keyboard. It autocompletes file names and automatically opens directories as you type.
 
-Workspaces greatly increase your productivity by allowing you to quickly switch between separate workflows, which is especially useful when you work on multiple projects at the same time. Each workspace has its own set of tabs and its own actions. Actions can perform different operations, e.g. open a website, run a script, open a file in a specific program, etc.
+- **ITEM FILTER:** allows you to filter out items from the list to quickly find the one you need. It supports advanced glob patterns and property prefixes.
 
-#### FEATURE #4 | ADVANCED WIRELESS FILE SHARING
+- **ADVANCED FILE DOWNLOADER:** stream / download any file from the internet just by dragging it (or its URL link) onto the app. It supports all file types, including videos from video services like Youtube and video streams (with or without auth tokens / URL timestamps).
 
-This feature allows you to wirelessly share a directory or stream any file to your local devices (connected to your network) in 2 clicks without installing any apps. It works on any device with a modern web browser (smart TVs, mobile devices, laptops, virtual machines, etc).
+- **SMART DRAG & DROP:** allows you to easily download files from the internet, and provides a comfortable way of copying / moving local files.
 
-**Note:** make sure to allow the app access to the network in Firewall when prompted.
+- **SHORTCUTS:** most actions within the app can be performed with shortcuts. You can also create global (system wide) shortcuts for some actions like opening / hiding the app or opening the app and instantly creating a new note.
 
-#### FEATURE #5 | ADDRESS BAR
+- **CUSTOMIZABLE HOME PAGE BANNER:** The home page of the app has a unique, recognizable feature - a customizable media background (banner). You can set a custom image / video or choose one of the built-in artworks (kindly provided to me by different artists) and personalize the app to your liking.
 
-Address bar lets you quickly navigate directories with your keyboard. It autocompletes file names and automatically opens directories as you type.
+- **NOTES:** Advanced note editor in this app allows you to create featureful notes and store them in one convenient, quickly accessible place.
 
-#### FEATURE #6 | ITEM FILTER
+- **DASHBOARD:** Dashboard page provides a quick access to pinned / protected / tagged items, and the timeline.
 
-Item filter allows you to quickly filter out items (notes / files / directories) from the list so you don't have to scroll through hundreds of items trying to find the one you need. It supports advanced glob patterns and property prefixes (for specifying exact properties you want to filter).
+- **FILE PROTECTION:** This feature allows you to protect any file / directory / note from being modified / renamed / moved / deleted.
 
->**Note:** It doesn't use the global search's typo correction algorithm yet. I will added in the future updates.
+- **INFO PANEL:** displays useful information about currently selected file / directory and the file preview for media files: audio, video, images (including animated gifs, apng, webp, and many other formats).
 
-#### FEATURE #7 | ADVANCED FILE DOWNLOADER
+- **ARCHIVER:** tuilt-in archiver allows you to compress files into archives and extract existing archives. It supports all most popular formats. See the list of formats on the <a href="https://github.com/aleksey-hoffman/sigma-file-manager/wiki/Features">"features" wiki page</a>
 
-This feature allows you to stream / download any file from the internet just by dragging it (or its link) onto the app.
+- **AUTO UPDATES:** the app updates itself automatically. It will let you decide if and when you want to download and install an update.
 
-It supports all file types, including videos and video streams (with or without auth tokens / URL timestamps).
+- **COMMUNITY PARTICIPATION:** tnyone can join this community, participate in the development of this app, and learn in the process.
 
-**Warning:** do not abuse this feature. If you download a lot of content from certain services, consider supporting them in some way, at least by disabling your ad blocker on their website or even buying their premium subscriptions to support both the service and the content creators on it. Otherwise, we won't have nice things like free education, entertainment, communities, creative freedom and other great things that these platforms provide us with.
+- **QUICK VIEW:** allows you to quickly open selected files in a preview window, rather than an external program by pressing `Space` button. It supports images, videos, audio, PDF, most plain text formats.
 
-#### FEATURE #8 | SMART DRAG & DROP
+- **INFUSIVE DESIGN:** this app implements my custom, modern, beautiful, minimalistic, customizable, design system called "Infusive design".
 
-The drag & drop feature is designed to simplify data transfers. It not only allows you to easily download files from the internet, it also provides a very comfortable way of transferring local files both within the app itself and other apps.
-
-#### FEATURE #9 | SHORTCUTS
-
-Most actions within the app can be performed with shortcuts. Even the app itself can be opened / closed with a global (system wide) customizable shortcut. This feature helps you work more efficiently and makes the process more enjoyable (e.g. you can instantly open the app and create a new note with just 1 shortcut).
-
-#### FEATURE #10 | CUSTOMIZABLE HOME PAGE BANNER
-
-The home page of the app has a unique, recognizable feature - a customizable media background (banner). You can set a custom image / video or choose one of the built-in artworks (kindly provided to me by the artists) and personalize the app to your liking.
-
-#### FEATURE #11 | NOTES
-
-Advanced note editor in this app allows you to create featureful notes and store them in one convenient, quickly accessible place.
-
-#### FEATURE #12 | DASHBOARD
-
-Dashboard page provides a quick access to pinned / protected / tagged items, and the timeline.
-
-#### FEATURE #13 | FILE PROTECTION
-
-This feature allows you to protect any file / directory / note from being modified / renamed / moved / deleted.
-
-#### FEATURE #14 | INFO PANEL
-
-Info panel displays useful information about the currently selected file / directory:
-
-- Properties like "size", "path", "symlink path", "permissions", etc.;
-
-- File preview for media files: audio, video, images (including animated gifs, apng, webp, and many other formats);
-
-#### FEATURE #15 | ARCHIVER
-
-Built-in archiver allows you to compress files into archives and extract existing archives. It supports all most popular formats:
-  - **Packing / unpacking:** 7z, XZ, BZIP2, GZIP, TAR, ZIP, WIM.
-  - **Unpacking only:** AR, ARJ, CAB, CHM, CPIO, CramFS, DMG, EXT, FAT, GPT, HFS, IHEX, ISO, LZH, LZMA, MBR, MSI, NSIS, NTFS, QCOW2, RAR, RPM, SquashFS, UDF, UEFI, VDI, VHD, VMDK, WIM, XAR, Z.
-
-#### FEATURE #16 | AUTO UPDATES
-
-The app updates itself automatically. It will let you decide if and when you want to download and install an update.
-
-#### FEATURE #17 | CUSTOMIZABLE, WELL THOUGHT-OUT, MODERN DESIGN
-
-This app is designed to pack lots of advanced features, without sacrificing customizable, minimalistic, modern design and usability. This idea propogates all the way to the smallest features of the app.
-
-#### FEATURE #18 | COMMUNITY PARTICIPATION
-
-Anyone can join this community, participate in the development of this app, and learn in the process.
-
-#### FEATURE #19 | QUICK VIEW
-
-This feature allows you to quickly open selected files in a preview window, rather than an external program (which usually takes longer). Quick view window can be opened with `Space` shortcut or from the context menu. Supported file types: images, videos, audio, PDF, most plain text formats.
-
-#### FEATURE #20 | WINDOW TRANSPARENCY EFFECTS
-
-The window transparency effect in this app is one of the key components of my Neoinfusive design style. The effect propagates through all elements of the app, adding color and infusing them with a unique, customizable, modern, unified look. It allows you to put any image / video to the background and customize blur / opacity / parallax settings. I spent only 2 days developing it, so it's not perfect yet, but it's already infinitely more customizable and, as the result, subjectively prettier than the transparency effects of the design styles developed by Trillion dollar companies (e.g. Fluent design, MacOS Vibrancy), so there's that.
+- **WINDOW TRANSPARENCY EFFECTS:** is one of the key components of "Infusive design". This effect "infuses" all elements of the app with a customizable, modern, unified look and provides infinite beautiful, unique design customization options.
 
 #### MANY MORE FEATURES ARE COMING
 
 Several more major features / improvements are already in development and will be added in the next updates. 
 
-[Learn more about the features on this wiki page →](https://github.com/aleksey-hoffman/sigma-file-manager/wiki/Features)
+#### MORE INFO
+<a href="https://github.com/aleksey-hoffman/sigma-file-manager/wiki/Features">DETAILED FEATURE DESCRIPTION (WIKI) →</a>
 
-[See features in development →](https://github.com/aleksey-hoffman/sigma-file-manager/discussions/31)
+<a href="https://github.com/aleksey-hoffman/sigma-file-manager/discussions/31">FEATURES IN DEVELOPMENT →</a>
 
 # Supporters
 
-These wonderful people and companies are currently funding this project. Thanks to them I can keep improving this app, they are the reason good quality free software can exist.
+This app is free but is needs supporters to stay alive and to keep improving. Please consider supporting it on Patreon with a few $ per month.
 
-![Patreon-progress-goal](https://user-images.githubusercontent.com/61761672/133787919-838742af-a238-47de-832b-9fe215f4ec03.png)
+The people and companies show below are currently funding this project. Thanks to them I can keep working on this app, they are the reason good quality free software can exist.
+
+![Patreon-progress-goal](https://user-images.githubusercontent.com/61761672/150617701-729655d6-63a3-4644-b064-9eb99d9be9a4.png)
 
 ## Sponsors - tier 2
 Become the first supporter
@@ -160,13 +117,13 @@ Become the first supporter
       <td align="center" valign="middle">
         <a href="https://github.com/andyundso" title="Andy Pfister">
           <img valign="middle" width="36px" src="https://avatars.githubusercontent.com/u/7010698?v=4">
-          Andy Pfister
+          ⭐ Andy Pfister
         </a>
       </td>
       <td align="center" valign="middle">
         <a href="https://github.com/exploitacious" title="Alex Ivantsov">
           <img valign="middle" width="36px" src="https://avatars.githubusercontent.com/u/75740078?v=4">
-          Alex Ivantsov
+          ⭐ Alex Ivantsov
         </a>
       </td>
     </tr>
@@ -177,10 +134,10 @@ Become the first supporter
 
 <div>
   <a href="https://github.com/theoob" title="Tony Kelly">
-    <b>Tony Kelly</b>
+    <b>⭐ Tony Kelly</b>
   </a>
   ~ <a href="https://github.com/julienripet" title="Julien Ripet">
-    <b>Julien Ripet</b>
+    <b>⭐ Julien Ripet</b>
   </a>
   ~ <a href="https://github.com/valentimarco" title="Marco Valenti">
     <b>Marco Valenti</b>
@@ -213,7 +170,7 @@ Supporters get rewards for supporting this project on Patreon. Check out the lis
 - "3+ months" supporters will have the ⭐ badge displayed next to their name.
 - The funding will be used for:
   - Fund the development of this project;
-  - Fund the development of my other big research project: advanced tools / algorithms that will help scientists speed up development of new medications and treatments for diseases, reducing the time need to find a new medication from 10 years (current average) to just a few months, and hopefully help humanity get rid of diseases;
+  - Fund the development of my other big projects. Right now, I'm working in collaboration with a few universities on advanced tools / algorithms that will help scientists speed up development of new medications and treatments for diseases, reducing the time need to find a new medication from 10 years (current average) to just a few months, and hopefully help humanity get rid of diseases (the project will be open-sourced in a few months);
   - Support other open-source and open-content creators (developers, educators, digital artists, etc);
 
 # Contributors - open-content creators
@@ -412,6 +369,10 @@ If you like their art, consider supporting their work. You can find their suppor
 - **Storage:** minimum: ~370 MB;
 - **OS:** 64-bit: Windows, MacOS, Linux;
 
+If you're running the app on the integrated GPU, the RAM usage will increase during video playback. Videos playing in the background (e.g. on the home page) are the main reason to high memory usage. You can reduce memory usage by choosing a static image for the "Windows transparency effect" and the home banner.
+
+#### 📎 Download links:
+
 <table>
   <thead>
     <tr>
@@ -421,63 +382,75 @@ If you like their art, consider supporting their work. You can find their suppor
   </thead>
   <tbody>
     <tr>
-      <td>Windows winget</td>
+      <td>Windows (via winget)</td>
       <td>
         <code>winget install sigma</code>
       </td>
     </tr>
     <tr>
-      <td>Windows</td>
+      <td>Windows (via Microsoft store)</td>
       <td>
-        <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/releases/">
-          Sigma-File-Manager-Windows.exe
+        <a target="_blank" href="https://www.microsoft.com/store/productId/9N7W62ND0NF9">
+          Microsoft store
         </a>
       </td>
     </tr>
     <tr>
+      <td>Windows</td>
+      <td>
+        <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/releases/download/v1.4.0/Sigma-File-Manager-1.4.0-Windows-Setup.exe">
+          Download installable app (exe)
+        </a>
+      </td>
+    </tr>
+    <tr>
+      <td>Linux and MacOS links will be added soon. If you know how, you can build the app from the source code yourself</td>
+      <td>
+        Coming soon
+      </td>
+    </tr>
+    <!-- <tr>
       <td>MacOS portable</td>
       <td>
-        <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/releases/">
-          Sigma-File-Manager-MacOS.pkg
+        <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/releases/download/v1.4.0/Sigma-File-Manager-1.4.0-Windows-Setup.exe">
+          Download installable app (pkg)
         </a>
       </td>
     </tr>
     <tr>
       <td>Linux Debian portable</td>
       <td>
-        <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/releases/">
-          Sigma-File-Manager-Linux.AppImage
+        <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/releases/download/v1.4.0/Sigma-File-Manager-1.4.0-Windows-Setup.exe">
+          Download portable app (AppImage)
         </a>
       </td>
     </tr>
-    <!-- <tr>
-      <td>Linux (Ubuntu)</td>
+    <tr>
+      <td>Linux (Ubuntu via Snap store)</td>
       <td>
         <a target="_blank" href="https://github.com/d2phap/ImageGlass/releases/latest/download/Sigma_file_manager_v1.0.0_Linux.AppImage">
-          Get from Software store (snap store)
+          Snap store
+        </a>
+      </td>
+    </tr>
+    <tr>
+      <td>Linux utility for integrating AppImages into the system (launcher, dock)</td>
+      <td>
+        <a target="_blank" href="https://github.com/TheAssassin/AppImageLauncher">
+          AppImageLauncher
         </a>
       </td>
     </tr> -->
-    <tr>
-      <td>Other releases</td>
-      <td>
-        <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/releases">
-          See all releases
-        </a>
-      </td>
-    </tr>
-    <tr>
-      <td>Utility for integrating AppImages into the system (launcher, dock)</td>
-      <td>
-        <a target="_blank" href="https://github.com/TheAssassin/AppImageLauncher">
-          AppImageLauncher (for Linux only)
-        </a>
-      </td>
-    </tr>
   </tbody>
 </table>
 
 [![Github All Releases](https://img.shields.io/github/downloads/aleksey-hoffman/sigma-file-manager/total.svg)]()
+
+#### What's new:
+
+<a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/releases">
+  SEE WHAT CHANGED IN THIS VERSION →
+</a>
 
 #### ⚠ Warnings:
 
@@ -520,11 +493,11 @@ There's a fun secret hidden somewhere in the app. See if you can find it. Hint: 
 
 ✅ **by v1.4.0 (September 2021):** new feature, improvements, and fixes;
 
-⬜ **by v1.5.0 (September 2021):** new feature, improvements, and fixes. Localize the app to 10+ most popular languages;
+⬜ **by v1.5.0:** new feature, improvements, and fixes. Localize the app to 10+ most popular languages;
 
 ⬜ ...
 
-⬜ **by v2.0.0 (December 2021):** (2/20) Add 20 more new major features;
+⬜ **by v2.0.0:** (3/20) Add 20 more new major features;
 
 ⬜ **End goal:** improve the app to the point of becoming the best file manager and one the most useful productivity apps. This milestone will be considered to be achieved when at least 3 reputable independent sources (reviewers / platforms) decide that the app has achieved all of the following titles:
   - ⬜ (0/3 sources) the best productivity impact;
@@ -536,6 +509,33 @@ There's a fun secret hidden somewhere in the app. See if you can find it. Hint: 
   - ⬜ (0/3 sources) is one of top 3 desktop productivity apps;
 
 **Links to reviews:** none yet.
+
+# Become my student
+
+**Slots taken**: `5 / 25` people.
+
+**TL;DR**: 8 hours of online lessons with shared screens will teach you most basic programming concepts, how you to design and build basic web app, how to work with Git, how to learn quickly, and a few other important things; ~200 hours and you will learn most of the concepts and get enough practice to build more complex apps and allow you to get a good paying job in the industry.
+
+
+I'm available for personal tutoring (programming, design, web and app development, general industry knowledge). I can teach you how to code, design, and think, answer all your questions, share my experience, tips, and best practices, explain which tools to use and why, and teach you everything you will need to know to become a professional Junior grade UI designer and Junior software engineer in just under `200 hours`, which is much faster than most universities with their outdated, boring, disconnected from reality, inefficient, 4 years long bachelor curriculums, that mostly train you how to pass tests, rather than how to think.
+
+**What you will get out of it**:
+
+1. **Specialization**: Junior grade UI and UX designer (median yearly salary: ~$80,000);
+2. **Specialization**: Junior grade web developer (median yearly salary: ~$70,000);
+3. **Specialization**: Junior grade desktop app developer (median yearly salary: ~$90,000);
+4. **Specialization basics**: You will learn the basics of mobile app and game development;
+5. **Potential specializations**: if you keep learning you will be able to reach Middle or even Senior grade level and get much higher salary;
+5. **Potentialy more interesting job**: these lessons might interest you in things you never even thought about, like game development, which might be more interesting than your current job;
+6. **Future skills**: You will get the skills needed for the era of automation, and be ready to change your job when it gets automated or in case you just want to change the work field;
+7. **General knowledge**: You will learn general knowledge about different systems, for example, what programs (tools) to use for different tasks (coding, design, game dev), how the internet functions, how do we make computers do what we tell them, how we create artificial intelligence, etc.
+8. 🎁 **Supporter rewards**: as a bonus, you will also get all rewards of the "Generous supporter" tier on the Patreon page of my Sigma File Manager app for as long as you are attending the lessons: https://www.patreon.com/sigma_file_manager
+
+**Tutoring rate**: $5 - $25 / hour. Depends on the amount of people in the group:
+- 1 person: $25 / hour; 
+- 5 people group: $5 / hour per person;
+
+You can stop at any point, if you feel it's not for you.
 
 # The app background story
 
@@ -571,23 +571,7 @@ This is how and why "Sigma file manager" was created. It all started from a simp
 
 Developers, feel free to optimize and improve the app. Make sure to create a new issue or a discussion before implementing changes, so we can discuss the changes first.
 
-See [CONTRIBUTING.md](./CONTRIBUTING.md) file for help, if you are new to contributing code.
-
-You will need Node.js <= `v15.14.0` and `Visual Studio build tools` (Windows only) installed.
-
-To open the project on the dev server, run the following commands:
-
-```
-cd ./sigma-file-manager && npm install && npm run electron:serve
-```
-
-To build the project for your current platform, run the following commands:
-
-```
-npm run electron:build
-```
-
-The build can be configured in the `./vue.config.js` file
+See [CONTRIBUTING.md](./CONTRIBUTING.md) file for more info.
 
 # License
 
