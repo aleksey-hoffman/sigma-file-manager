@@ -537,6 +537,8 @@ I'm available for personal tutoring (programming, design, web and app developmen
 
 You can stop at any point, if you feel it's not for you.
 
+**Contacts**: you can contact me via the email specified on [my profile page](https://github.com/aleksey-hoffman)
+
 # The app background story
 
 Even though I've spent 3000+ hours developing this app, I decided to make it free and open-source because open-source is more than just a way to share your work, it has larger impact on the development of our society than you think.
