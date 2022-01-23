@@ -387,14 +387,14 @@ If you're running the app on the integrated GPU, the RAM usage will increase dur
         <code>winget install sigma</code>
       </td>
     </tr>
-    <tr>
+    <!-- <tr>
       <td>Windows (via Microsoft store)</td>
       <td>
         <a target="_blank" href="https://www.microsoft.com/store/productId/9N7W62ND0NF9">
           Microsoft store
         </a>
       </td>
-    </tr>
+    </tr> -->
     <tr>
       <td>Windows</td>
       <td>
