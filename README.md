@@ -21,7 +21,7 @@ See the "Download" section below.
 
 Create the best existing intelligent file manager & productivity app that will significantly speed up your workflow, provide you with advanced tools, and keep your data safe.
 
-`Done 19 of 100` major features.
+`Done 20 of 100` major features.
 
 # Features
 
@@ -59,7 +59,7 @@ Create the best existing intelligent file manager & productivity app that will s
 
 - **AUTO UPDATES:** the app updates itself automatically. It will let you decide if and when you want to download and install an update.
 
-- **COMMUNITY PARTICIPATION:** tnyone can join this community, participate in the development of this app, and learn in the process.
+- **COMMUNITY PARTICIPATION:** unlike closed-sourced apps, you participate in the development of this app (request features, vote each features should be prioritized, participate in discussions, modify code of the app yourself).
 
 - **QUICK VIEW:** allows you to quickly open selected files in a preview window, rather than an external program by pressing `Space` button. It supports images, videos, audio, PDF, most plain text formats.
 
