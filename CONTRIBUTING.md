@@ -35,11 +35,19 @@ First, install the Node.js version specified in the notes below, setup your git 
 git clone https://github.com/aleksey-hoffman/sigma-file-manager.git
 ```
 
-2. Install the dependencies:
+2. Install the dependencies and start dev server:
 
 ```
-npm install
+cd ./sigma-file-manager && npm install && npm run electron:serve
 ```
+
+To build the project for your current platform, run this command:
+
+```
+npm run electron:build
+```
+
+The build can be configured in the `./vue.config.js` file
 
 3. Create a new branch for your feature / fix with a meaningful name:
 ```
