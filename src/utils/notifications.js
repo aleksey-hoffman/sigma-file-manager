@@ -11,6 +11,28 @@ const eventHub = require('./eventHub').eventHub
 */
 function getNotification (params) {
   let notifications = {
+    copyTextToClipboard: {
+      action: 'update-by-type',
+      type: 'copyTextToClipboard',
+      timeout: 2000,
+      closeButton: true,
+      icon: 'mdi-clipboard-text-multiple-outline',
+      title: params?.props?.title,
+      message: params?.props?.message,
+    },
+    copyTextToClipboardError: {
+      action: 'update-by-type',
+      type: 'copyTextToClipboardError',
+      timeout: 5000,
+      closeButton: true,
+      colorStatus: 'red',
+      icon: 'mdi-clipboard-text-multiple-outline',
+      title: 'Error during copying',
+      message: `
+        Cannot copy specified value as text.
+        <br>Data type: <span class="inline-code--light">${typeof params?.props?.text}</span>
+      `,
+    },
     copyDirItemsInProgress: {
       action: 'update-by-hash',
       hashID: sharedUtils.getHash(),

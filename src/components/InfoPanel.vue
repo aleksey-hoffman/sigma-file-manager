@@ -746,7 +746,8 @@ export default {
           text: params.item.value,
           asPath: isPath,
           pathSlashes: 'single-backward',
-          title
+          wrapWithQuotes: params.event.shiftKey,
+          title,
         })
       }
       else if (params.event.ctrlKey && params.event.altKey) {
@@ -754,7 +755,8 @@ export default {
           text: params.item.value,
           asPath: isPath,
           pathSlashes: 'double-backward',
-          title
+          wrapWithQuotes: params.event.shiftKey,
+          title,
         })
       }
     },

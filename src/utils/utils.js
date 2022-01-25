@@ -3,6 +3,7 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 import * as localize from './localize.js'
+import * as notifications from './notifications.js'
 const dayjsCustomParseFormat = require('dayjs/plugin/customParseFormat')
 const dayjsDuration = require('dayjs/plugin/duration')
 const dayjs = require('dayjs')
@@ -153,33 +154,61 @@ export default {
     return array.reduce((a, b) => a + b, 0) / array.length
   },
   copyToClipboard (params) {
-    if (params.asPath) {
-      if (this.platform === 'win32') {
-        if (params.pathSlashes === 'single-backward') {
-          const processedPath = `"${params.text.replace(/\//g, '\\')}"`
-          params.text = processedPath
-          params.message = processedPath
-        }
-        else if (params.pathSlashes === 'double-backward') {
-          const processedPath = `"${params.text.replace(/\//g, '\\\\')}"`
-          params.text = processedPath
-          params.message = processedPath
-        }
-      }
-      else {
-        params.message = `"${params.text}"`
-      }
+    let moduleScope = this
+    let data = {
+      title: getDataTitle(params),
+      text: getDataText(params),
+      message: getDataMessage(params),
     }
-    electron.clipboard.writeText(params.text)
-    eventHub.$emit('notification', {
-      action: 'update-by-type',
-      type: 'copy-to-clipboard',
-      timeout: 2000,
-      closeButton: true,
-      icon: 'mdi-clipboard-text-multiple-outline',
-      title: params.title ?? 'Text was copied to clipboard',
-      message: params.message
-    })
+
+    function getDataTitle (params) {
+      return params.asPath
+        ? 'Path was copied to clipboard'
+        : params.title ?? 'Text was copied to clipboard'
+    }
+
+    function getDataText (params) {
+      let text = ''
+      if (params.asPath) {
+        if (moduleScope.platform === 'win32') {
+          if (params.pathSlashes === 'single-backward') {
+            text = `${params.text.replace(/\//g, '\\')}`
+          }
+          else if (params.pathSlashes === 'double-backward') {
+            text = `${params.text.replace(/\//g, '\\\\')}`
+          }
+        }
+        else {
+          text = params.text
+        }
+      }
+      return params.wrapWithQuotes ? `"${text}"` : text
+    }
+
+    function getDataMessage (params) {
+      return params.asPath
+        ? params.text
+        : params.message
+    }
+
+    try {
+      electron.clipboard.writeText(data.text)
+      notifications.emit({
+        name: 'copyTextToClipboard',
+        props: {
+          title: data.title,
+          message: data.message ?? data.text,
+        },
+      })
+    }
+    catch (error) {
+      notifications.emit({
+        name: 'copyTextToClipboardError',
+        props: {
+          text: data.text,
+        },
+      })
+    }
   },
   /** Encode URL, replacing all URL-unsafe 
   * characters (except slash) with hex representation

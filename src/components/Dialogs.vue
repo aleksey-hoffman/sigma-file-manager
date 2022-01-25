@@ -949,12 +949,12 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       <template v-slot:content>
         <v-text-field
           v-model="dialogs.userDirectoryEditorDialog.data.item.name"
-          label="Directory name"
+          label="Title"
         ></v-text-field>
 
         <v-text-field
           v-model="dialogs.userDirectoryEditorDialog.data.item.path"
-          label="Directory path"
+          label="Path to directory or file"
         ></v-text-field>
 
         <v-layout align-center>
