@@ -1122,6 +1122,8 @@ export default new Vuex.Store({
       },
       userDirectoryEditorDialog: {
         value: false,
+        dataIsValid: true,
+        initialData: {},
         data: {}
       },
       workspaceEditorDialog: {

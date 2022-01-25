@@ -950,11 +950,15 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         <v-text-field
           v-model="dialogs.userDirectoryEditorDialog.data.item.name"
           label="Directory name"
+          autofocus
         ></v-text-field>
 
         <v-text-field
           v-model="dialogs.userDirectoryEditorDialog.data.item.path"
           label="Directory path"
+          :hint="userDirectoryEditorDialogPathIsValid.error"
+          :error="!userDirectoryEditorDialogPathIsValid.value"
+          :persistent-hint="!userDirectoryEditorDialogPathIsValid.value"
         ></v-text-field>
 
         <v-layout align-center>
@@ -1917,12 +1921,21 @@ export default {
   watch: {
     'dialogs.userDirectoryEditorDialog.data': {
       handler (value) {
-        this.$store.dispatch('SET', {
-          key: 'storageData.settings.appPaths.userDirs',
-          value: this.dialogs.userDirectoryEditorDialog.data.userDirs,
-        })
+        if (this.userDirectoryEditorDialogDataIsValid) {
+          this.dialogs.userDirectoryEditorDialog.dataIsValid = true
+          this.$store.dispatch('SET', {
+            key: 'storageData.settings.appPaths.userDirs',
+            value: this.dialogs.userDirectoryEditorDialog.data.userDirs,
+          })
+        }
+        else {
+          this.dialogs.userDirectoryEditorDialog.dataIsValid = false
+        }
       },
       deep: true,
+    },
+    'dialogs.userDirectoryEditorDialog.value' (value) {
+      this.setupDialogDataRestore({value, dialogName: 'userDirectoryEditorDialog'})
     },
     'dialogs.mathEditorDialog.value' (value) {
       if (value) {
@@ -2236,6 +2249,32 @@ export default {
         this.programEditorDialogProgramPathIsValid.value &&
         this.dialogs.programEditorDialog.data.selectedProgram.targetTypes.length > 0
     },
+    userDirectoryEditorDialogDataIsValid () {
+      return this.userDirectoryEditorDialogPathIsValid.value
+    },
+    userDirectoryEditorDialogPathIsValid () {
+      const path = this.dialogs.userDirectoryEditorDialog.data.item.path
+      const pathIsEmpty = path?.length === 0
+      const pathExists = !pathIsEmpty && fs.existsSync(path)
+      if (pathIsEmpty) {
+        return {
+          value: false,
+          error: 'Path cannot be empty',
+        }
+      }
+      if (!pathExists) {
+        return {
+          value: false,
+          error: 'Path does not exist',
+        }
+      }
+      else {
+        return {
+          value: true,
+          error: '',
+        }
+      }
+    },
     newDirItemPath () {
       return PATH.posix.join(this.currentDir.path, this.dialogs.newDirItemDialog.data.name)
     },
@@ -2263,6 +2302,19 @@ export default {
     }
   },
   methods: {
+    setupDialogDataRestore (params) {
+      if (params.value) {
+        this.$nextTick(() => {
+          this.dialogs[params.dialogName].initialData = this.$utils.cloneDeep(this.dialogs[params.dialogName].data)
+        })
+      }
+      else if (!params.value) {
+        if (!this.dialogs[params.dialogName].dataIsValid) {
+          this.dialogs[params.dialogName].data = this.$utils.cloneDeep(this.dialogs[params.dialogName].initialData)
+          this.dialogs.userDirectoryEditorDialog.dataIsValid = true
+        }
+      }
+    },
     closeDialog (dialogName, params) {
       const defaultParams = {
         resetData: true
