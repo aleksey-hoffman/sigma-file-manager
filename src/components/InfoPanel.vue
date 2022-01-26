@@ -393,26 +393,37 @@ export default {
       const isDirItemProtected = this.$store.state.storageData.protected.items
         .some(listItem => listItem.path === item.path)
       const copyShortcut = 'Ctrl + LClick'
+      const copyWithSecondSlashShortcut = 'Ctrl + Alt + LClick'
+      const copyWithQuotesShortcut = 'Ctrl + Shift + LClick'
 
       let copyPathTooltip
       if (this.$sharedUtils.platform === 'win32') {
         copyPathTooltip = `
           <div>
             <span class="inline-code--light">${copyShortcut}</span> 
-              - copy path with 
-              <span class="inline-code--light">\\</span> 
-              slashes
+              - copy path
           </div>
           <div>
-            <span class="inline-code--light">Ctrl + Alt + LClick</span> 
-              - copy path with 
-              <span class="inline-code--light">\\\\</span> 
-              slashes
+            <span class="inline-code--light">${copyWithSecondSlashShortcut}</span> 
+              - copy path | add second slash 
+          </div>
+          <div>
+            <span class="inline-code--light">${copyWithQuotesShortcut}</span> 
+              - copy path | wrap with quotes
           </div>
         `
       }
       else {
-        copyPathTooltip = `${this.$localize.get('tooltip_text_to_copy')}: ${copyShortcut}`
+        copyPathTooltip = `
+          <div>
+            <span class="inline-code--light">${copyShortcut}</span> 
+              - copy path
+          </div>
+          <div>
+            <span class="inline-code--light">${copyWithQuotesShortcut}</span> 
+              - copy path | wrap with quotes
+          </div>
+        `
       }
 
       // Define main properties
@@ -736,29 +747,13 @@ export default {
       mediaContainerNode.replaceChildren(mediaNode)
     },
     handleClickPropertyValue (params) {
-      const isPath = ['path', 'realPath'].includes(params.item.propName)
-      let title
-      if (isPath) {
-        title = 'Path was copied to clipboard'
-      }
-      if (params.event.ctrlKey && !params.event.altKey) {
-        this.$utils.copyToClipboard({
-          text: params.item.value,
-          asPath: isPath,
-          pathSlashes: 'single-backward',
-          wrapWithQuotes: params.event.shiftKey,
-          title,
-        })
-      }
-      else if (params.event.ctrlKey && params.event.altKey) {
-        this.$utils.copyToClipboard({
-          text: params.item.value,
-          asPath: isPath,
-          pathSlashes: 'double-backward',
-          wrapWithQuotes: params.event.shiftKey,
-          title,
-        })
-      }
+      const asPath = ['path', 'realPath'].includes(params.item.propName)
+
+      this.$utils.copyToClipboard({
+        text: params.item.value,
+        asPath,
+        event: params.event,
+      })
     },
     showInfoPanel () {
       if (this.navigatorViewInfoPanel.value) {

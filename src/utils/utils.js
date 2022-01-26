@@ -171,10 +171,10 @@ export default {
       let text = ''
       if (params.asPath) {
         if (moduleScope.platform === 'win32') {
-          if (params.pathSlashes === 'single-backward') {
+          if (params.event.ctrlKey && !params.event.altKey) {
             text = `${params.text.replace(/\//g, '\\')}`
           }
-          else if (params.pathSlashes === 'double-backward') {
+          else if (params.event.ctrlKey && params.event.altKey) {
             text = `${params.text.replace(/\//g, '\\\\')}`
           }
         }
@@ -182,7 +182,7 @@ export default {
           text = params.text
         }
       }
-      return params.wrapWithQuotes ? `"${text}"` : text
+      return params.event.shiftKey ? `"${text}"` : text
     }
 
     function getDataMessage (params) {
