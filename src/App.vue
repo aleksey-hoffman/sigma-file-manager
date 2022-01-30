@@ -60,6 +60,8 @@ export default {
     $route (to, from) {
       this.contextMenus.dirItem.value = false
       this.$store.dispatch('TERMINATE_ALL_FETCH_DIR_SIZE')
+      // Unload items to improve UI responsiveness
+      this.$store.state.navigatorView.dirItems = []
       if (to.name === 'home') {
         this.preventHomeViewLayoutTransition()
         this.animateHomeBannerIn()
@@ -1043,7 +1045,7 @@ export default {
         let appThumbDirSizeLimitReadable = this.$utils.prettyBytes(appThumbDirSizeLimitInBytes)
         let appThumbDirSizeLimitExceeded = appThumbDirSizeInBytes > appThumbDirSizeLimitInBytes
         if (appThumbDirSizeLimitExceeded) {
-          let dirent = await this.$store.dispatch('FETCH_DIR_ITEM_INFO', appStorageNavigatorThumbsDirPath)
+          let dirent = await this.$store.dispatch('GET_DIR_ITEM_INFO', appStorageNavigatorThumbsDirPath)
           await this.$store.dispatch('DELETE_DIR_ITEMS', {
             items: [dirent],
             options: {

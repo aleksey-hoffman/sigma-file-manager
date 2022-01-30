@@ -20,12 +20,12 @@ const fsExtra = require('fs-extra')
 const sharedUtils = require('./utils/sharedUtils')
 const eventHub = require('./utils/eventHub').eventHub
 const localize = require('./utils/localize')
+const fsCore = require('./utils/fsCore.js')
 const os = require('os')
 const fs = require('fs')
 const PATH = require('path')
 const childProcess = require('child_process')
 const node7z = require('node-7z')
-const navigatorCore = require('./utils/navigatorCore')
 const externalLinks = require('./utils/externalLinks')
 const SigmaAppUpdater = require('./utils/sigmaAppUpdater.js')
 const getSystemRulesForPaths = require('./utils/systemRules').paths
@@ -295,7 +295,9 @@ export default new Vuex.Store({
     navigatorView: {
       info: {},
       visibleDirItems: [],
+      dirItemsTasks: [],
       dirItemsInfoIsFetched: false,
+      dirItemsInfoIsPartiallyFetched: false,
       timeSinceLoadDirItems: 0,
       currentDir: {},
       dirItems: [],
@@ -2040,7 +2042,7 @@ export default new Vuex.Store({
         const appStorageFileName = payload.fileName
         const normalizedPath = PATH.normalize(`${appStorageDir}/${appStorageFileName}`)
         await fs.promises.access(normalizedPath, fs.constants.F_OK)
-        let item = await store.dispatch('FETCH_DIR_ITEM_INFO', normalizedPath)
+        let item = await store.dispatch('GET_DIR_ITEM_INFO', normalizedPath)
         await store.dispatch('DELETE_DIR_ITEMS', {
           items: [item],
           options: { skipSafeCheck: true }
@@ -2115,7 +2117,7 @@ export default new Vuex.Store({
         for (let index = 0; index < payload.items.length; index++) {
           const path = payload.items[index]
           if (typeof path === 'string') {
-            let item = await dispatch('FETCH_DIR_ITEM_INFO', path)
+            let item = await dispatch('GET_DIR_ITEM_INFO', path)
             newItems.push(item)
           }
         }
@@ -2131,7 +2133,7 @@ export default new Vuex.Store({
       if (payload.items !== undefined) {
         for (let index = 0; index < payload.items.length; index++) {
           const item = payload.items[index]
-          let itemObjectData = await dispatch('FETCH_DIR_ITEM_INFO', item.path)
+          let itemObjectData = await dispatch('GET_DIR_ITEM_INFO', item.path)
           newItems.push({...item, ...itemObjectData})
         }
       }
@@ -2641,7 +2643,7 @@ export default new Vuex.Store({
     SWITCH_ROUTE ({ state, commit, dispatch }, item) {
       if (item.to === '/navigator') {
         const someDirLoaded = Object.keys(state.navigatorView.currentDir).length !== 0
-        if (!someDirLoaded) {
+        if (!someDirLoaded || state.navigatorView.dirItems.length === 0) {
           dispatch('LOAD_DIR', { path: '' })
         }
       }
@@ -2989,9 +2991,6 @@ export default new Vuex.Store({
     LOAD_ROUTE (store, routeName) {
       router.push(routeName).catch((error) => {})
     },
-    // TODO:
-    // performance: instead of fetching all dir items,
-    // fetch info for single item when it becomes visible (intersectionObserver)
     async LOAD_DIR (store, options) {
       store.dispatch('ADD_ACTION_TO_HISTORY', { action: 'store.js::LOAD_DIR()' })
       options = {
@@ -3007,7 +3006,8 @@ export default new Vuex.Store({
 
       store.dispatch('SET_NAVIGATOR_STATE')
       store.dispatch('LOAD_ROUTE', 'navigator')
-      let {dirInfo} = await store.dispatch('LOAD_DIR_ITEMS', options.path)
+      store.dispatch('CLEAR_FILTER_FIELD')
+      let {dirInfo} = await store.dispatch('LOAD_DIR_ITEMS', options)
       eventHub.$emit('app:method', {
         method: 'startWatchingCurrentDir',
         params: options.path
@@ -3015,15 +3015,11 @@ export default new Vuex.Store({
       store.commit('UPDATE_NAVIGATOR_HISTORY', options)
       store.dispatch('ADD_TO_DIR_ITEMS_TIMELINE', dirInfo.path)
       store.dispatch('SORT_DIR_ITEMS')
-      store.dispatch('CLEAR_FILTER_FIELD')
       store.dispatch('SET_STATS')
       await store.dispatch('RESTORE_NAVIGATOR_STATE')
       store.dispatch('AUTO_FOCUS_FILTER')
       if (options.scrollTop) {
         store.dispatch('SCROLL_TOP_CONTENT_AREA', {behavior: 'auto'})
-      }
-      if (options.selectCurrentDir) {
-        store.dispatch('REPLACE_SELECTED_DIR_ITEMS', [dirInfo])
       }
     },
     RELOAD_DIR (store, params) {
@@ -3050,30 +3046,22 @@ export default new Vuex.Store({
         }
       }
     },
-    async LOAD_DIR_ITEMS ({ state, commit, dispatch, getters }, path) {
-      if (path === '') {
-        path = state.storageData.settings.appPaths.home
+    async LOAD_DIR_ITEMS (store, params) {
+      if (params.path === '') {
+        params.path = store.state.storageData.settings.appPaths.home
       }
-      dispatch('SET', {
-        key: 'navigatorView.dirItemsInfoIsFetched',
-        value: false
-      })
+     
       try {
-        const dirInfo = await dispatch('FETCH_DIR_ITEM_INFO', path)
-        dispatch('SET', {
+        const dirInfo = await store.dispatch('GET_DIR_ITEM_INFO', params.path)
+        store.dispatch('SET', {
           key: 'navigatorView.currentDir',
           value: dirInfo
         })
-        const dirItems = await dispatch('FETCH_DIR_ITEMS', path)
-        dispatch('SET', {
-          key: 'navigatorView.dirItems',
-          value: dirItems
-        })
-        dispatch('SET', {
-          key: 'navigatorView.dirItemsInfoIsFetched',
-          value: true
-        })
-        return { dirInfo, dirItems }
+        if (params.selectCurrentDir) {
+          store.dispatch('REPLACE_SELECTED_DIR_ITEMS', [dirInfo])
+        }
+        await store.dispatch('FETCH_DIR_ITEMS', {path: params.path})
+        return {dirInfo}
       }
       catch (error) {
         throw Error(error)
@@ -3274,24 +3262,76 @@ export default new Vuex.Store({
     },
      async FOCUS_DIR_ITEM (store, params) {
       if (params.focusPath) {
-        const dirInfo = await store.dispatch('FETCH_DIR_ITEM_INFO', params.focusPath)
+        const dirInfo = await store.dispatch('GET_DIR_ITEM_INFO', params.focusPath)
         await store.dispatch('REPLACE_SELECTED_DIR_ITEMS', [dirInfo])
       }
     },
-    async FETCH_DIR_ITEM_INFO ({ state, commit, getters }, path) {
+    async GET_DIR_ITEM_INFO (store, path) {
       if (path === '' || !path) {
-        path = state.storageData.settings.appPaths.home
+        path = store.state.storageData.settings.appPaths.home
       }
-      const navigatorLayoutItemHeight = state.storageData.settings.navigatorLayoutItemHeight
-      const dirInfo = await navigatorCore.getDirItemInfo(path, navigatorLayoutItemHeight)
-      return dirInfo
+      return fsCore.getDirItemInfo(
+        path, 
+        store.state.storageData.settings.navigatorLayoutItemHeight
+      )
     },
-    async FETCH_DIR_ITEMS ({ state, commit, getters }, path) {
-      console.time('time::FETCH_DIR_ITEMS')
-      const navigatorLayoutItemHeight = state.storageData.settings.navigatorLayoutItemHeight
-      const dirItems = await navigatorCore.getDirItems(path, navigatorLayoutItemHeight)
-      console.timeEnd('time::FETCH_DIR_ITEMS')
-      return dirItems
+    async GET_DIR_ITEMS (store, params) {
+      return new Promise((resolve, reject) => {
+        electron.ipcRenderer.invoke('get-dir-items', {
+          ...params, 
+          itemHeight: store.state.storageData.settings.navigatorLayoutItemHeight
+        })
+          .then((data) => {resolve(data)})
+          .catch((error) => {
+            notifications.emit({
+              name: 'cannotFetchDirItems',
+              props: {
+                error
+              }
+            })
+            reject(error)
+          })
+      })
+    },
+    async FETCH_DIR_ITEMS (store, params) {
+      let hashID = utils.getHash()
+      let task = {hashID, allItemsFetched: false}
+
+      store.state.navigatorView.dirItemsInfoIsPartiallyFetched = false
+      store.state.navigatorView.dirItemsInfoIsFetched = false
+      store.state.navigatorView.dirItemsTasks = []
+      store.state.navigatorView.dirItems = []
+      store.state.navigatorView.dirItemsTasks.push(task)
+
+      async function setPartialDirItems () {
+        const {dirItems: partialDirItems, allItemsFetched} = await store.dispatch('GET_DIR_ITEMS', {...params, preload: true, hashID})
+        task.allItemsFetched = allItemsFetched
+        if (getTaskIndex(task) !== -1) {
+          store.state.navigatorView.dirItems = partialDirItems
+        }
+        if (task.allItemsFetched) {
+          store.state.navigatorView.dirItemsTasks.splice(getTaskIndex(task), 1)
+        }
+        store.state.navigatorView.dirItemsInfoIsPartiallyFetched = true
+      }
+      
+      async function setDirItems () {
+        if (!task.allItemsFetched && getTaskIndex(task) !== -1) {
+          const {dirItems} = await store.dispatch('GET_DIR_ITEMS', {...params, hashID})
+          if (getTaskIndex(task) !== -1) {
+            store.state.navigatorView.dirItems = dirItems
+            store.state.navigatorView.dirItemsTasks.splice(getTaskIndex(task), 1)
+          }
+        }
+        store.state.navigatorView.dirItemsInfoIsFetched = true
+      }
+      
+      function getTaskIndex (task) {
+        return store.state.navigatorView.dirItemsTasks.findIndex(taskListItem => taskListItem.hashID === task.hashID)
+      }
+
+      await setPartialDirItems()
+      await setDirItems()
     },
     OPEN_DIR_ITEM (store, item) {
       if (item.isInaccessible) {
@@ -3307,7 +3347,7 @@ export default new Vuex.Store({
       }
     },
     OPEN_DIR_ITEM_FROM_PATH (store, path) {
-      store.dispatch('FETCH_DIR_ITEM_INFO', path)
+      store.dispatch('GET_DIR_ITEM_INFO', path)
         .then((item) => {
           store.dispatch('OPEN_DIR_ITEM', item)
         })
@@ -4836,7 +4876,7 @@ export default new Vuex.Store({
       })
     },
     async CHECK_DIR_ITEMS_NAME_CONFLICTS (store, params) {
-      const dirItems = await store.dispatch('FETCH_DIR_ITEMS', params.directory)
+      const dirItems = await store.dispatch('GET_DIR_ITEMS', params.directory)
       const conflictedPaths = []
       dirItems.forEach(dirItem => {
         const nameIsConflicting = params.items.some(item => {
@@ -5127,7 +5167,7 @@ export default new Vuex.Store({
       }
       payload = { ...defaultOptions, ...payload }
       try {
-        const item = await dispatch('FETCH_DIR_ITEM_INFO', payload.path)
+        const item = await dispatch('GET_DIR_ITEM_INFO', payload.path)
         const uniqueDestPath = await dispatch('GET_UNIQUE_PATH', {
           path: payload.path,
           directory: payload.directory
@@ -5669,7 +5709,6 @@ export default new Vuex.Store({
         // For that it either should store both path and realPath in the tab object
         // or the LOAD_DIR action should check if the path is a symlink and
         // if so, load the realPath instead
-        await dispatch('LOAD_DIR', { path: tabItem.path })
         eventHub.$emit('notification', {
           action: 'update-by-type',
           type: 'switchTab',
@@ -5678,6 +5717,7 @@ export default new Vuex.Store({
           title: `Tab | ${tabItem.name}`,
           message: `Path: ${tabItem.path}`
         })
+        await dispatch('LOAD_DIR', { path: tabItem.path })
       }
     },
     async SWITCH_WORKSPACE ({ state, commit, dispatch, getters }, specifiedWorkspace) {

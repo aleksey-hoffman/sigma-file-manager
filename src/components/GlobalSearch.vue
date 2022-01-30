@@ -532,7 +532,7 @@ export default {
     }),
     formattedSearchResults () {
       return [...this.searchResults].forEach(item => {
-        this.$store.dispatch('FETCH_DIR_ITEM_INFO', item.path)
+        this.$store.dispatch('GET_DIR_ITEM_INFO', item.path)
           .then((formattedItem) => {
             return formattedItem
           })
@@ -740,7 +740,7 @@ export default {
       const formatted = []
       for (const dirItem of dirItemlist) {
         try {
-          const formattedItem = await this.$store.dispatch('FETCH_DIR_ITEM_INFO', dirItem.path)
+          const formattedItem = await this.$store.dispatch('GET_DIR_ITEM_INFO', dirItem.path)
           formattedItem.score = dirItem.score
           formattedItem.dir = PATH.parse(dirItem.path).dir.replace(/\\/g, '/')
           formatted.push(formattedItem)

@@ -228,7 +228,7 @@ export default {
       }
     },
     async itemCardOnRightClick (params) {
-      let dirItem = await this.$store.dispatch('FETCH_DIR_ITEM_INFO', params.item.path)
+      let dirItem = await this.$store.dispatch('GET_DIR_ITEM_INFO', params.item.path)
       this.$store.dispatch('DESELECT_ALL_DIR_ITEMS')
       this.$store.dispatch('ADD_TO_SELECTED_DIR_ITEMS', dirItem)
       this.$store.dispatch('SET_CONTEXT_MENU', {

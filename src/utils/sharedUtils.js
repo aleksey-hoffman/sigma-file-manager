@@ -11,6 +11,15 @@ const supportedFormats = require('./supportedFormats.js')
 module.exports = {
   env: process.env.NODE_ENV,
   platform: process.platform,
+  unixHiddenFileRegex: /(^|[\/\\])\../,
+  winFSstatusAttributes: {
+    offline: '5248544',
+    keepOnDevice: '525344',
+    reparsePoint: 'ReparsePoint',
+  },
+  isObjectEmpty (obj) {
+    return obj && Object.keys(obj).length === 0 && obj.constructor === Object
+  },
   getHash (length = 32) {
     let hashID = ''
     const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
@@ -19,7 +28,7 @@ module.exports = {
     }
     return hashID
   },
-  /** Encode URL, replacing all URL-unsafe 
+  /** Encode URL, replacing all URL-unsafe
   * characters (except slash) with hex representation
   * @param {string} path
   * @returns {string}
@@ -76,7 +85,7 @@ module.exports = {
   normalizePath (path) {
     if (!path || path === '') {return ''}
     if (['linux', 'darwin'].includes(process.platform)) {
-      // Add '/' to index 0. Node fs throws ENOENT error 
+      // Add '/' to index 0. Node fs throws ENOENT error
       // if path doesn't start with '/'
       if (path[0] !== '/') {
         path = `/${path}`
@@ -84,10 +93,25 @@ module.exports = {
     }
     return path
   },
+  toCamelCase (string) {
+    return string.toLowerCase().replace(/([-_][a-z])/ig, ($1) => {
+      return $1.toUpperCase()
+        .replace('-', '')
+        .replace('_', '')
+    })
+  },
+  toCamelCaseObjectKeys (object) {
+    let newObject = {}
+    for (const key of Object.keys(object)) {
+      let camelCaseKey = this.toCamelCase(key)
+      newObject[camelCaseKey] = object[key]
+    }
+    return newObject
+  },
   getFileType (path, type = 'file') {
     let data = {
-      mime: '', 
-      mimeDescription: ''
+      mime: '',
+      mimeDescription: '',
     }
     if (type === 'file' || type === 'extension') {
       if (type === 'extension') {
@@ -114,5 +138,5 @@ module.exports = {
       }
     }
     return data
-  }
+  },
 }

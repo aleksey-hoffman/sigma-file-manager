@@ -394,23 +394,18 @@ export default {
         : this.navigatorLayout
     },
     offlineStatus () {
-      let winFSstatusAttributes = {
-        offline: '5248544',
-        keepOnDevice: '525344',
-        reparsePoint: 'ReparsePoint'
-      }
-      if (this.source.status.includes('offline')) {
+      if (this.source.fsAttributes.isOffline) {
         return {
           status: 'offline',
           icon: 'mdi-cloud-outline',
-          tooltip: 'Offline item (size on drive is 0)'
+          tooltip: 'Offline item (size on drive is 0)',
         }
       }
-      else if (this.source?.fsAttributes?.includes?.('525344')) {
+      else if (this.source?.fsAttributes.keepOnDevice) {
         return {
           status: 'keepOnDevice',
           icon: 'mdi-cloud-download',
-          tooltip: 'Keep on device'
+          tooltip: 'Keep on device',
         }
       }
       else {

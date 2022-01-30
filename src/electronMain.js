@@ -23,6 +23,7 @@ const externalLinks = require('./utils/externalLinks.js')
 const appVersion = electron.app.getVersion()
 const appUpdater = new SigmaAppUpdater()
 const storageReader = new StorageReader()
+const {Worker} = require('worker_threads')
 
 // TODO: remove '@electron/remote' module and migrate to ipcRenderer.invoke
 require('@electron/remote/main').initialize()
@@ -314,6 +315,14 @@ function runWindowLoadedCallbacks () {
 }
 
 function initIPCListeners () {
+  electron.ipcMain.handle('get-dir-items', async (event, params) => {
+    return new Promise((resolve, reject) => {
+      const worker = new Worker('./src/workers/fsCoreWorker.js', {workerData: params})
+      worker.on('message', (params) => {resolve(params)})
+      worker.on('error', (error) => {reject(error)})
+    })
+  })
+
   electron.ipcMain.handle('main-window-loaded', async (event) => {
     runWindowLoadedCallbacks()
   })

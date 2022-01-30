@@ -216,10 +216,10 @@ export default {
       let inaccessible = this.lastSelectedDirItem?.isInaccessible
         ? ' • Inaccessible'
         : ''
-      let isOffline = this.lastSelectedDirItem?.status.includes('offline')
+      let isOffline = this.lastSelectedDirItem?.fsAttributes.isOffline
         ? ' • Offline'
         : ''
-      let keepOnDevice = this.lastSelectedDirItem?.fsAttributes?.includes?.('525344')
+      let keepOnDevice = this.lastSelectedDirItem?.fsAttributes.keepOnDevice
         ? ' • Keep on device'
         : ''
       let itemMimeDescription = this.itemMimeDescription
@@ -323,10 +323,9 @@ export default {
       }
     },
     shouldFetchMediaPreview () {
-      const itemMimeDescription = this.lastSelectedDirItem?.mime.mimeDescription
       const isInaccessible = this.lastSelectedDirItem?.isInaccessible
-      const itemIsOffline = this.lastSelectedDirItem?.sizeOnDisk === 0
-      const isMediaType = ['image', 'audio', 'video'].includes(itemMimeDescription)
+      const itemIsOffline = this.lastSelectedDirItem?.fsAttributes.isOffline
+      const isMediaType = this.lastSelectedDirItem.isMediaType
       return (!isInaccessible && !itemIsOffline) || !isMediaType
     },
     formattedInfoPanelAudioDuration () {
@@ -512,8 +511,7 @@ export default {
       }
     },
     async fetchPreview () {
-      const itemMimeDescription = this.lastSelectedDirItem?.mime.mimeDescription
-      const isMediaType = ['image', 'audio', 'video'].includes(itemMimeDescription)
+      const isMediaType = this.lastSelectedDirItem.isMediaType
       this.clearMediaContainer()
       if (!this.shouldFetchMediaPreview) {return}
 

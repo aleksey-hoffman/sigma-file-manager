@@ -390,7 +390,7 @@ export default {
       catch (error) {}
     },
     async toggleDirContextMenu (params) {
-      let dirItem = await this.$store.dispatch('FETCH_DIR_ITEM_INFO', params.part.path)
+      let dirItem = await this.$store.dispatch('GET_DIR_ITEM_INFO', params.part.path)
       await this.$store.dispatch('REPLACE_SELECTED_DIR_ITEMS', [dirItem])
       await this.$store.dispatch('SET_CONTEXT_MENU', {
         value: 'toggle',

@@ -11,6 +11,15 @@ const eventHub = require('./eventHub').eventHub
 */
 function getNotification (params) {
   let notifications = {
+    cannotFetchDirItems: {
+      action: 'update-by-type',
+      type: 'cannotFetchDirItems',
+      timeout: 5000,
+      closeButton: true,
+      colorStatus: 'red',
+      title: 'Cannot fetch directory items',
+      message: params?.props?.error,
+    },
     copyTextToClipboard: {
       action: 'update-by-type',
       type: 'copyTextToClipboard',
