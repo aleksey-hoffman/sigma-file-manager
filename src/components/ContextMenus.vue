@@ -125,6 +125,15 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                         {{item.title}}
                       </v-list-item-title>
                     </v-list-item-content>
+                    <v-list-item-icon>
+                      <v-icon
+                        v-if="item.subMenu"
+                        size="24px"
+                        is-sub-menu
+                      >
+                        mdi-chevron-right
+                      </v-icon>
+                    </v-list-item-icon>
                   </v-list-item>
                 </template>
                 <span v-if="item.tooltip && item.tooltip.shortcutList">
@@ -519,6 +528,7 @@ export default {
         {
           name: 'open-with',
           title: 'Open with',
+          subMenu: 'open-with',
           selectionType: ['single', 'multiple'],
           targetTypes: ['directory', 'file', 'file-symlink', 'directory-symlink'],
           onClick: () => {

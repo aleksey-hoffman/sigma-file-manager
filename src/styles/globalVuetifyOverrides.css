@@ -76,6 +76,12 @@
     }
 
 .v-menu__content
+  .v-list-item:not(.inactive)
+    .v-icon[is-sub-menu] {
+      color: var(--color-8) !important;
+    }
+
+.v-menu__content
   .v-list-item:not(.inactive):hover {
     background-color: var(--context-menu-bg-color_hover);
   }
