@@ -1123,6 +1123,26 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 }"
               >
                 <template #content>
+                  <shortcut-list />
+                </template>
+              </section-settings>
+            </v-tab-item>
+
+            <!-- tab::Performance -->
+            <v-tab-item
+              transition="fade-in"
+              reverse-transition="fade-in"
+            >
+              <section-settings
+                class="content-area__content-card__section"
+                :header="{
+                  icon: {
+                    name: 'mdi-expansion-card-variant',
+                  },
+                  title: 'GPU / System memory'
+                }"
+              >
+                <template #content>
                 </template>
               </section-settings>
             </v-tab-item>
@@ -1905,6 +1925,7 @@ export default {
         {text: 'General'},
         {text: 'UI appearance'},
         {text: 'Shortcuts'},
+        {text: 'Performance'},
         {text: 'Tabs & workspaces'},
         {text: 'Navigation'},
         {text: 'Input'},
