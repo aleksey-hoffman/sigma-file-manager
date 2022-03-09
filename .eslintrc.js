@@ -1,17 +1,17 @@
 module.exports = {
   root: true,
   env: {
-    node: true
+    node: true,
   },
   extends: [
-    'plugin:vue/essential',
-    '@vue/standard'
+    'plugin:vue/recommended',
+    '@vue/standard',
   ],
   parserOptions: {
-    parser: 'babel-eslint'
+    parser: 'babel-eslint',
   },
   plugins: [
-    'only-warn'
+    'only-warn',
   ],
   rules: {
     'no-console': 'off',
@@ -45,10 +45,39 @@ module.exports = {
     'operator-linebreak': 'warn',
     'camelcase': 'warn',
     'no-global-assign': 'warn',
-    'comma-dangle': 'warn',
+    'comma-dangle': ['error', 'always-multiline'],
     'padded-blocks': 'warn',
     'space-before-function-paren': 'warn',
     'indent': 'warn',
-    'no-unreachable': 'warn'
-  }
+    'no-unreachable': 'warn',
+    'object-curly-spacing': ['error', 'never', {'arraysInObjects': true}],
+    'block-spacing': ['error', 'never'],
+    'semi': ['error', 'never'],
+    'vue/max-attributes-per-line': ['error', {
+      'singleline': {
+        'max': 1,
+      },
+      'multiline': {
+        'max': 1,
+      },
+    }],
+    'vue/html-indent': ['error', 2, {
+      'attribute': 1,
+      'baseIndent': 1,
+      'closeBracket': 0,
+      'alignAttributesVertically': true,
+      'ignores': [],
+    }],
+    'vue/html-self-closing': ['error', {
+      'html': {
+        'void': 'always',
+        'normal': 'always',
+        'component': 'always',
+      },
+    }],
+    'vue/no-v-html': 'off',
+    'vue/mustache-interpolation-spacing': ['error', 'never'],
+    'vue/component-definition-name-casing': ['error', 'kebab-case'],
+    'vue/order-in-components': 'off',
+  },
 }
