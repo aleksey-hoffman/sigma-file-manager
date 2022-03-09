@@ -6,45 +6,45 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <template>
   <div id="settings-view">
     <div
-      class="content-area custom-scrollbar"
       id="content-area--settings-view"
+      class="content-area custom-scrollbar"
     >
       <div class="content-area__title">
         {{$localize.get('page_settings_title')}}
       </div>
-      <v-divider class="my-3"></v-divider>
+      <v-divider class="my-3" />
 
       <div class="content-area__header">
         <img
           :src="$storeUtils.getSafePath(appPaths.public + '/icons/logo-1024x1024.png')"
           width="87px"
-        >
+        />
         <div class="content-area__header__content">
           <div class="content-area__header__text">
             <strong>"Sigma File Manager"</strong> is a free, open source, advanced,
             modern file manager app, licensed under GNU GPLv3 or later.
-            <br>Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
+            <br />Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           </div>
           <div
-            class="content-area__header__buttons"
             v-if="$vuetify.breakpoint.mdAndUp"
+            class="content-area__header__buttons"
           >
             <v-tooltip
               v-for="(item, index) in headerButtons"
               :key="'header-button-' + index"
               bottom
             >
-              <template v-slot:activator="{ on }">
+              <template #activator="{ on }">
                 <v-btn
-                  v-on="on"
-                  @click="$utils.openLink(item.link)"
                   class="content-area__header__buttons__item button-1"
                   depressed
                   small
+                  v-on="on"
+                  @click="$utils.openLink(item.link)"
                 >
                   <v-icon
-                    class="mr-2"
                     v-if="item.icon"
+                    class="mr-2"
                     size="16px"
                   >
                     {{item.icon}}
@@ -54,7 +54,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               </template>
               <span>
                 <v-layout align-center>
-                  <v-icon class="mr-3" size="16px">
+                  <v-icon
+                    class="mr-3"
+                    size="16px"
+                  >
                     mdi-open-in-new
                   </v-icon>
                   {{item.link}}
@@ -64,12 +67,12 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           </div>
         </div>
       </div>
-
+      
       <div class="content-area__content-card">
         <div class="tab-view">
           <v-tabs
-            class="tab-view__header"
             v-model="settingsSelectedTab"
+            class="tab-view__header"
             show-arrows="mobile"
             :vertical="windowSize.x > 700"
             :height="windowSize.x > 700 ? '' : '42'"
@@ -83,13 +86,17 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           </v-tabs>
 
           <v-tabs-items
-            class="tab-view__header__content"
             v-model="settingsSelectedTab"
+            class="tab-view__header__content"
           >
             <!-- tab::general -->
-            <v-tab-item transition="fade-in" reverse-transition="fade-in">
+            <v-tab-item
+              transition="fade-in"
+              reverse-transition="fade-in"
+            >
               <!-- section::Language -->
               <section-settings
+                v-if="showSection('language')"
                 class="content-area__content-card__section"
                 :header="{
                   icon: {
@@ -98,28 +105,30 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   title: $localize.get('settings_language_title')
                 }"
               >
-                <template v-slot:content>
+                <template #content>
                   <v-menu offset-y>
-                    <template v-slot:activator="{ on }">
+                    <template #activator="{ on }">
                       <v-btn
                         class="button-1 mt-2"
-                        v-on="on"
                         small
                         depressed
+                        v-on="on"
                       >
                         {{selectedLanguage.name}} - {{selectedLanguage.locale}}
-                        <v-icon class="ml-2">mdi-menu-down</v-icon>
+                        <v-icon class="ml-2">
+                          mdi-menu-down
+                        </v-icon>
                       </v-btn>
                     </template>
                     <v-list dense>
                       <v-list-item
                         v-for="(language, index) in availableLanguages"
                         :key="index"
+                        :is-active="language.locale === selectedLanguage.locale"
                         @click="$store.dispatch('SET', {
                           key: 'storageData.localization.selectedLanguage',
                           value: language
                         })"
-                        :is-active="language.locale === selectedLanguage.locale"
                       >
                         <v-list-item-content>
                           <v-list-item-title>
@@ -142,6 +151,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
               <!-- section::ui-zoom -->
               <section-settings
+                v-if="showSection('ui-scaling')"
                 class="content-area__content-card__section"
                 :header="{
                   icon: {
@@ -151,7 +161,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   title: $localize.get('settings_ui_zoom_title')
                 }"
               >
-                <template v-slot:content>
+                <template #content>
                   <div class="text--sub-title-1 mt-2">
                     {{$localize.get('settings_ui_zoom_options_title')}}
                     {{UIZoomLevelInPercents}}%
@@ -165,16 +175,20 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                       bottom
                       offset-overflow
                     >
-                      <template v-slot:activator="{ on }">
+                      <template #activator="{ on }">
                         <v-btn
                           class="button-1 mr-3"
-                          v-on="on"
-                          @click="item.onClick()"
                           small
                           depressed
+                          v-on="on"
+                          @click="item.onClick()"
                         >
-                          <v-icon v-if="item.icon">{{item.icon}}</v-icon>
-                          <div v-if="item.buttonText">{{item.buttonText}}</div>
+                          <v-icon v-if="item.icon">
+                            {{item.icon}}
+                          </v-icon>
+                          <div v-if="item.buttonText">
+                            {{item.buttonText}}
+                          </div>
                         </v-btn>
                       </template>
                       <span>
@@ -191,8 +205,8 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
               <!-- section::updates -->
               <section-settings
-                class="content-area__content-card__section"
                 v-if="$utils.isWindowsStore"
+                class="content-area__content-card__section"
                 :header="{
                   icon: {
                     name: 'mdi-progress-upload',
@@ -200,35 +214,40 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   title: 'App updates'
                 }"
               >
-                <template v-slot:description>
+                <template #description>
                   <div class="text--sub-title-1 mt-2">
                     Current version: {{appVersion}}
                   </div>
                 </template>
-                <template v-slot:content>
+                <template #content>
                   <div class="mb-4">
                     <v-btn
                       class="button-1 mr-2"
-                      @click="$store.dispatch('INIT_APP_UPDATER', {notifyUnavailable: true})"
                       depressed
                       small
-                    >Check for updates now
+                      @click="$store.dispatch('INIT_APP_UPDATER', {notifyUnavailable: true})"
+                    >
+                      Check for updates now
                     </v-btn>
 
                     <v-tooltip bottom>
-                      <template v-slot:activator="{ on }">
+                      <template #activator="{ on }">
                         <v-btn
                           class="button-1"
-                          v-on="on"
-                          @click="$utils.openLink(appPaths.githubAllReleases)"
                           depressed
                           small
-                        >See all releases
+                          v-on="on"
+                          @click="$utils.openLink(appPaths.githubAllReleases)"
+                        >
+                          See all releases
                         </v-btn>
                       </template>
                       <span>
                         <v-layout align-center>
-                          <v-icon class="mr-3" size="16px">
+                          <v-icon
+                            class="mr-3"
+                            size="16px"
+                          >
                             mdi-open-in-new
                           </v-icon>
                           {{appPaths.githubAllReleases}}
@@ -244,21 +263,21 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     v-model="autoCheckForAppUpdates"
                     label="Check for updates automatically"
                     hide-details
-                  ></v-switch>
+                  />
 
                   <v-switch
                     v-if="autoCheckForAppUpdates"
                     v-model="autoDownloadAppUpdates"
                     label="Download updates automatically"
                     hide-details
-                  ></v-switch>
+                  />
 
                   <v-switch
                     v-if="autoCheckForAppUpdates && autoDownloadAppUpdates"
                     v-model="autoInstallAppUpdates"
                     label="Install updates automatically"
                     hide-details
-                  ></v-switch>
+                  />
                 </template>
               </section-settings>
 
@@ -272,7 +291,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   title: 'App properties'
                 }"
               >
-                <template v-slot:content>
+                <template #content>
                   <div class="text--sub-title-1 mt-2">
                     Startup behavior
                   </div>
@@ -281,13 +300,13 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     v-model="appPropertiesOpenAtLogin"
                     label="Launch app on system login"
                     hide-details
-                  ></v-switch>
+                  />
 
                   <v-switch
                     v-model="appPropertiesOpenAsHidden"
                     label="Launch app in hidden state"
                     hide-details
-                  ></v-switch>
+                  />
                 </template>
               </section-settings>
 
@@ -301,14 +320,14 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   title: 'Window controls'
                 }"
               >
-                <template v-slot:content>
+                <template #content>
                   <div class="text--sub-title-1 mt-2">
                     Window "close" button action
                   </div>
 
                   <v-radio-group
-                    class="py-0 mt-4"
                     v-model="windowCloseButtonAction"
+                    class="py-0 mt-4"
                     hide-details
                   >
                     <v-tooltip
@@ -317,12 +336,15 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                       max-width="450"
                       offset-overflow
                     >
-                      <template v-slot:activator="{ on }">
-                        <div class="mb-4" v-on="on">
+                      <template #activator="{ on }">
+                        <div
+                          class="mb-4"
+                          v-on="on"
+                        >
                           <v-radio
                             label="Minimize to tray and keep in memory (recommended)"
                             value="minimizeAppToTray"
-                          ></v-radio>
+                          />
                         </div>
                       </template>
                       <span>
@@ -339,12 +361,15 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                       max-width="450"
                       offset-overflow
                     >
-                      <template v-slot:activator="{ on }">
-                        <div class="mb-4" v-on="on">
+                      <template #activator="{ on }">
+                        <div
+                          class="mb-4"
+                          v-on="on"
+                        >
                           <v-radio
                             label="Minimize to tray and minimize memory usage"
                             value="closeMainWindow"
-                          ></v-radio>
+                          />
                         </div>
                       </template>
                       <span>
@@ -385,12 +410,12 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                       max-width="450"
                       offset-overflow
                     >
-                      <template v-slot:activator="{ on }">
+                      <template #activator="{ on }">
                         <div v-on="on">
                           <v-radio
                             label="Close the app completely"
                             value="closeApp"
-                          ></v-radio>
+                          />
                         </div>
                       </template>
                       <span>
@@ -403,7 +428,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             </v-tab-item>
 
             <!-- tab::ui-appearance -->
-            <v-tab-item transition="fade-in" reverse-transition="fade-in">
+            <v-tab-item
+              transition="fade-in"
+              reverse-transition="fade-in"
+            >
               <section-settings
                 class="content-area__content-card__section"
                 :header="{
@@ -413,16 +441,16 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   title: 'Visual effects'
                 }"
               >
-                <template v-slot:content>
+                <template #content>
                   <div class="text--sub-title-1 mt-2">
                     Window transparency effect
                   </div>
                   <v-switch
-                    class="mt-0 pt-0 d-inline-flex"
                     v-model="windowTransparencyEffectValue"
+                    class="mt-0 pt-0 d-inline-flex"
                     label="Display window transparency effect"
                     hide-details
-                  ></v-switch>
+                  />
 
                   <v-expand-transition>
                     <div v-if="windowTransparencyEffect.value">
@@ -431,14 +459,14 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                       </div>
                       <v-layout align-center>
                         <v-slider
-                          class="align-center"
                           v-model="windowTransparencyEffectBlur"
+                          class="align-center"
                           max="100"
                           min="0"
                           step="1"
                           hide-details
                           style="max-width: 250px"
-                        ></v-slider>
+                        />
                       </v-layout>
 
                       <div class="mt-2">
@@ -446,32 +474,32 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                       </div>
                       <v-layout align-center>
                         <v-slider
-                          class="align-center"
                           v-model="windowTransparencyEffectOpacity"
+                          class="align-center"
                           max="20"
                           min="0"
                           step="1"
                           hide-details
                           style="max-width: 250px"
-                        ></v-slider>
+                        />
                       </v-layout>
-                      
+
                       <div class="mt-2">
-                        Overlay parallax distance: 
+                        Overlay parallax distance:
                         {{windowTransparencyEffectParallaxDistance}}
                       </div>
                       <v-layout align-center>
                         <v-slider
-                          class="align-center"
                           v-model="windowTransparencyEffectParallaxDistance"
+                          class="align-center"
                           max="10"
                           min="0"
                           step="1"
                           hide-details
                           style="max-width: 250px"
-                        ></v-slider>
+                        />
                       </v-layout>
-                      
+
                       <v-layout align-center>
                         <v-autocomplete
                           v-model="windowTransparencyEffectDataBackgroundSelected"
@@ -485,18 +513,23 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                           attach
                           return-object
                           style="max-width: 400px"
-                        ></v-autocomplete>
-                        
+                        />
+
                         <v-tooltip bottom>
-                          <template v-slot:activator="{ on }">
+                          <template #activator="{ on }">
                             <v-btn
                               class="button-1 ml-3"
-                              v-on="on"
-                              @click="setNextWindowTransparencyEffectBackground()"
                               depressed
                               small
+                              v-on="on"
+                              @click="setNextWindowTransparencyEffectBackground()"
                             >
-                              <v-icon size="18px" color="">mdi-autorenew</v-icon>
+                              <v-icon
+                                size="18px"
+                                color=""
+                              >
+                                mdi-autorenew
+                              </v-icon>
                             </v-btn>
                           </template>
                           <span>Select next background</span>
@@ -505,43 +538,47 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
                       <div>
                         <v-switch
-                          class="d-inline-flex mt-0 pt-0"
                           v-model="windowTransparencyEffectLessProminentOnHomePage"
+                          class="d-inline-flex mt-0 pt-0"
                           label="Make effect less prominent on home page"
-                        ></v-switch>
+                        />
                       </div>
 
                       <div>
                         <v-switch
-                          class="d-inline-flex mt-0 pt-0"
                           v-model="windowTransparencyEffectSameSettingsOnAllPages"
+                          class="d-inline-flex mt-0 pt-0"
                           label="Use the same settings for all pages"
-                        ></v-switch>
+                        />
                       </div>
 
                       <v-expand-transition>
                         <div v-if="!windowTransparencyEffectSameSettingsOnAllPages">
                           <div>
                             <v-switch
-                              class="d-inline-flex mt-0 pt-0"
                               v-model="windowTransparencyEffectPreviewEffect"
+                              class="d-inline-flex mt-0 pt-0"
                             >
-                              <template v-slot:label>
-                                <v-tooltip bottom max-width="400px">
-                                  <template v-slot:activator="{ on }">
+                              <template #label>
+                                <v-tooltip
+                                  bottom
+                                  max-width="400px"
+                                >
+                                  <template #activator="{ on }">
                                     <v-icon
-                                      v-on="on"
                                       v-show="
-                                        windowTransparencyEffectPreviewEffect && 
-                                        windowTransparencyEffectOptionsSelectedPage.name !== 'settings'
+                                        windowTransparencyEffectPreviewEffect &&
+                                          windowTransparencyEffectOptionsSelectedPage.name !== 'settings'
                                       "
                                       color="red"
-                                    >mdi-circle-medium
+                                      v-on="on"
+                                    >
+                                      mdi-circle-medium
                                     </v-icon>
                                     Preview effect for selected page
                                   </template>
                                   <span>
-                                    Disable after you finish customizing selected page to 
+                                    Disable after you finish customizing selected page to
                                     see the effects for "settings" page
                                   </span>
                                 </v-tooltip>
@@ -550,15 +587,15 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                           </div>
 
                           <v-select
-                            class="mt-2"
                             v-model="windowTransparencyEffectOptionsSelectedPage"
+                            class="mt-2"
                             :items="windowTransparencyEffectOptionsPages"
                             item-text="title"
                             return-object
                             label="Page to customize"
                             style="max-width: 400px"
                           >
-                            <template v-slot:selection="{item}">
+                            <template #selection="{item}">
                               <v-icon class="mr-4">
                                 {{item.icon}}
                               </v-icon>
@@ -567,7 +604,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                               </div>
                             </template>
 
-                            <template v-slot:item="{item}">
+                            <template #item="{item}">
                               <v-icon class="mr-4">
                                 {{item.icon}}
                               </v-icon>
@@ -578,8 +615,8 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                           </v-select>
 
                           <div>
-                            - Select page from the list and adjust settings to save. 
-                            <br>- The preview of the effect will be displayed on this page until you visit another page.
+                            - Select page from the list and adjust settings to save.
+                            <br />- The preview of the effect will be displayed on this page until you visit another page.
                           </div>
                         </div>
                       </v-expand-transition>
@@ -590,11 +627,11 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     Home banner effects
                   </div>
                   <v-switch
-                    class="mt-0 pt-0 d-inline-flex"
                     v-model="homeBannerMediaGlowEffectValue"
+                    class="mt-0 pt-0 d-inline-flex"
                     label="Background glow effect"
                     hide-details
-                  ></v-switch>
+                  />
                 </template>
               </section-settings>
 
@@ -607,31 +644,31 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   title: 'Theme'
                 }"
               >
-                <template v-slot:content>
+                <template #content>
                   <div class="text--sub-title-1 mt-2">
                     Theme type
                   </div>
 
                   <v-radio-group
-                    class="py-0 mt-0"
                     v-model="themeType"
+                    class="py-0 mt-0"
                     hide-details
                   >
                     <v-radio
                       label="Dark"
                       value="dark"
-                    ></v-radio>
+                    />
 
                     <v-radio
                       label="Light filter"
                       value="light-filter"
-                    ></v-radio>
+                    />
 
                     <v-radio
                       label="Light (in development)"
                       value="light"
                       disabled
-                    ></v-radio>
+                    />
                   </v-radio-group>
                 </template>
               </section-settings>
@@ -645,55 +682,61 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   title: 'Visual filters'
                 }"
               >
-                <template v-slot:content>
+                <template #content>
                   <div class="text--sub-title-1 mt-2">
                     Filters
                   </div>
 
                   <v-switch
-                    class="mt-4 pt-0"
                     v-model="visualFiltersApplyFiltersToMediaElements"
+                    class="mt-4 pt-0"
                     label="Apply filters to media elements (images, videos)"
-                  ></v-switch>
+                  />
 
-                  <div class="mt-4">Contrast: {{Math.round(visualFiltersContrastValue * 100)}}%</div>
+                  <div class="mt-4">
+                    Contrast: {{Math.round(visualFiltersContrastValue * 100)}}%
+                  </div>
 
                   <v-slider
-                    class="align-center"
                     v-model="visualFiltersContrastValue"
+                    class="align-center"
                     :min="visualFiltersContrast.min"
                     :max="visualFiltersContrast.max"
                     step="0.01"
                     hide-details
                     style="max-width: 250px"
-                  ></v-slider>
+                  />
 
-                  <div class="mt-4">Brightness: {{Math.round(visualFiltersBrightnessValue * 100)}}%</div>
+                  <div class="mt-4">
+                    Brightness: {{Math.round(visualFiltersBrightnessValue * 100)}}%
+                  </div>
 
                   <v-slider
-                    class="align-center"
                     v-model="visualFiltersBrightnessValue"
+                    class="align-center"
                     :min="visualFiltersBrightness.min"
                     :max="visualFiltersBrightness.max"
                     step="0.01"
                     hide-details
                     style="max-width: 250px"
-                  ></v-slider>
-                  
-                  <div class="mt-4">Saturation: {{Math.round(visualFiltersSaturationValue * 100)}}%</div>
+                  />
+
+                  <div class="mt-4">
+                    Saturation: {{Math.round(visualFiltersSaturationValue * 100)}}%
+                  </div>
 
                   <v-slider
-                    class="align-center"
                     v-model="visualFiltersSaturationValue"
+                    class="align-center"
                     :min="visualFiltersSaturation.min"
                     :max="visualFiltersSaturation.max"
                     step="0.05"
                     hide-details
                     style="max-width: 250px"
-                  ></v-slider>
+                  />
                 </template>
               </section-settings>
-      
+
               <section-settings
                 class="content-area__content-card__section"
                 :header="{
@@ -703,18 +746,18 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   title: 'Animations'
                 }"
               >
-                <template v-slot:content>
+                <template #content>
                   <div class="text--sub-title-1 mt-2">
                     Home page animations
                   </div>
 
                   <v-switch
-                    class="mt-0 pt-0"
                     v-model="animationsOnRouteChangeMediaBannerIn"
+                    class="mt-0 pt-0"
                     label="Home banner animation"
                     hint="Setting will apply on the next page change"
                     persistent-hint
-                  ></v-switch>
+                  />
                 </template>
               </section-settings>
 
@@ -727,28 +770,28 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   title: 'Date / time'
                 }"
               >
-                <template v-slot:content>
+                <template #content>
                   <div class="text--sub-title-1 mt-2">
                     Month format
                   </div>
 
                   <v-radio-group
-                    class="py-0 mt-0"
                     v-model="dateTimeMonth"
+                    class="py-0 mt-0"
                     hide-details
                   >
                     <v-radio
                       label="Numeric"
                       value="numeric"
-                    ></v-radio>
+                    />
                     <v-radio
                       label="Short"
                       value="short"
-                    ></v-radio>
+                    />
                   </v-radio-group>
 
                   <div class="mt-2">
-                    Example: 
+                    Example:
                     <span class="inline-code--light">
                       {{localDateTimeExample}}
                     </span>
@@ -766,13 +809,13 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     title: 'Overlays'
                   }"
                 >
-                  <template v-slot:content>
+                  <template #content>
                     <v-switch
                       v-model="navPanelDriveLetterOverlayValue"
                       label="Navigation panel | drive letter overlay"
                       class="mt-0 pt-0"
                       hide-details
-                    ></v-switch>
+                    />
                   </template>
                 </section-settings>
               </template>
@@ -786,7 +829,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   title: 'UI elements'
                 }"
               >
-                <template v-slot:content>
+                <template #content>
                   <div class="text--sub-title-1 mt-2">
                     Accent color
                   </div>
@@ -795,7 +838,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     v-model="displayAccentColorBackgrounds"
                     label="Display accent color backgrounds"
                     class="mt-0 pt-0"
-                  ></v-switch>
+                  />
 
                   <div class="text--sub-title-1 mt-2">
                     Dashboard options
@@ -805,7 +848,8 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     v-model="dashboardTimeline"
                     label="Show timeline"
                     class="mt-0 pt-0"
-                  ></v-switch>
+                  />
+
                   <div class="text--sub-title-1 mt-2">
                     Home page cards
                   </div>
@@ -814,13 +858,13 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     v-model="showUserNameOnUserHomeDir"
                     label="Show user name on 'home directory' card"
                     class="mt-0 pt-0"
-                  ></v-switch>
+                  />
 
                   <v-switch
                     v-model="driveCardShowProgress"
                     label="Show drive space indicator"
                     class="mt-0 pt-0"
-                  ></v-switch>
+                  />
 
                   <div v-show="driveCardShowProgress">
                     <div class="text--sub-title-1 mt-2">
@@ -828,26 +872,26 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     </div>
 
                     <v-radio-group
-                      class="py-0 mt-0"
                       v-model="driveCardProgressType"
+                      class="py-0 mt-0"
                       hide-details
                     >
                       <v-radio
                         label="Linear | vertical"
                         value="linearVertical"
-                      ></v-radio>
+                      />
                       <v-radio
                         label="Linear | horizontal"
                         value="linearHorizontal"
-                      ></v-radio>
+                      />
                       <v-radio
                         label="Linear | horizontal | centered"
                         value="linearHorizontalCentered"
-                      ></v-radio>
+                      />
                       <v-radio
                         label="Circular"
                         value="circular"
-                      ></v-radio>
+                      />
                     </v-radio-group>
                   </div>
                 </template>
@@ -862,20 +906,24 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   title: 'Home page media banner'
                 }"
               >
-                <template v-slot:content>
+                <template #content>
                   <div class="text--sub-title-1 mt-2">
                     Banner options
                   </div>
 
-                  <v-radio-group v-model="homeBannerValue" hide-details class="py-0 mt-0">
+                  <v-radio-group
+                    v-model="homeBannerValue"
+                    hide-details
+                    class="py-0 mt-0"
+                  >
                     <v-radio
                       label="Display media banner"
                       :value="true"
-                    ></v-radio>
+                    />
                     <v-radio
                       label="Hide media banner"
                       :value="false"
-                    ></v-radio>
+                    />
                   </v-radio-group>
                 </template>
               </section-settings>
@@ -889,21 +937,21 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   title: 'Info panel'
                 }"
               >
-                <template v-slot:description>
+                <template #description>
                   Info panel is located on the navigator page.
-                  <br>It displays information about the last selected item.
+                  <br />It displays information about the last selected item.
                 </template>
-                <template v-slot:content>
+                <template #content>
                   <div class="text--sub-title-1 mt-2">
                     Info panel options
                   </div>
 
                   <v-switch
-                    class="mt-0 pt-0"
                     v-model="navigatorViewInfoPanel"
+                    class="mt-0 pt-0"
                     label="Show info panel"
                     hide-details
-                  ></v-switch>
+                  />
 
                   <v-tooltip
                     bottom
@@ -911,17 +959,21 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     max-width="400px"
                     offset-overflow
                   >
-                    <template v-slot:activator="{ on }">
-                      <div v-on="on" style="display: inline-block;">
+                    <template #activator="{ on }">
+                      <div
+                        style="display: inline-block;"
+                        v-on="on"
+                      >
                         <v-switch
                           v-model="autoCalculateDirSize"
                           hide-details
                         >
-                          <template v-slot:label>
+                          <template #label>
                             <v-icon
                               v-show="autoCalculateDirSize"
                               color="red"
-                            >mdi-circle-medium
+                            >
+                              mdi-circle-medium
                             </v-icon>
                             Calculate directory size automatically
                           </template>
@@ -957,38 +1009,38 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   title: 'Navigator'
                 }"
               >
-                <template v-slot:content>
+                <template #content>
                   <div class="text--sub-title-1 mt-2">
                     Dividers / Titles
                   </div>
 
                   <v-switch
-                    class="mt-0 pt-0"
                     v-model="showDirItemKindDividers"
+                    class="mt-0 pt-0"
                     label="Show dividers between files and directories"
                     hide-details
-                  ></v-switch>
-                  
+                  />
+
                   <div class="text--sub-title-1 mt-4">
                     Sorting element display type
                   </div>
 
                   <v-radio-group
-                    class="py-0 mt-0"
                     v-model="navigatorSortingElementDisplayType"
+                    class="py-0 mt-0"
                     hide-details
                   >
                     <v-radio
                       label="Show sorting icon"
                       value="icon"
-                    ></v-radio>
+                    />
                     <v-radio
                       label="Show sorting bar"
                       value="bar"
-                    ></v-radio>
+                    />
                   </v-radio-group>
 
-                   <!-- TODO: finish in v1.x(see TODO in ActionToolbar.vue) -->
+                  <!-- TODO: finish in v1.x(see TODO in ActionToolbar.vue) -->
                   <!-- <div class="text--sub-title-1 mt-2">
                     Directory navigator options
                   </div>
@@ -1003,18 +1055,18 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   </div>
 
                   <v-radio-group
-                    class="py-0 mt-0"
                     v-model="navigatorLayout"
+                    class="py-0 mt-0"
                     hide-details
                   >
                     <v-radio
                       label="List layout"
                       value="list"
-                    ></v-radio>
+                    />
                     <v-radio
                       label="Grid layout"
                       value="grid"
-                    ></v-radio>
+                    />
                   </v-radio-group>
 
                   <div class="text--sub-title-1 mt-4">
@@ -1022,18 +1074,18 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   </div>
 
                   <v-radio-group
-                    class="py-0 mt-0"
                     v-model="dirItemHoverEffect"
+                    class="py-0 mt-0"
                     hide-details
                   >
                     <v-radio
                       label="Scale"
                       value="scale"
-                    ></v-radio>
+                    />
                     <v-radio
                       label="Highlight"
                       value="highlight"
-                    ></v-radio>
+                    />
                   </v-radio-group>
 
                   <div class="text--sub-title-1 mt-4">
@@ -1041,9 +1093,9 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   </div>
 
                   <p>
-                    <b>OCD | 'Name' column max width:</b> 
+                    <b>OCD | 'Name' column max width:</b>
                     files with disproportionately long names make the file list look messy,
-                    so it's recommended to set the name column max width to a lower value, 
+                    so it's recommended to set the name column max width to a lower value,
                     like 50%, to make it look more organized
                   </p>
 
@@ -1051,13 +1103,16 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     v-model="navigatorNameColumnMaxWidth"
                     label="'Name' column max width (CSS value)"
                     style="max-width: 400px"
-                  ></v-text-field>
+                  />
                 </template>
               </section-settings>
             </v-tab-item>
 
             <!-- tab::shortcuts -->
-            <v-tab-item transition="fade-in" reverse-transition="fade-in">
+            <v-tab-item
+              transition="fade-in"
+              reverse-transition="fade-in"
+            >
               <section-settings
                 class="content-area__content-card__section"
                 :header="{
@@ -1067,14 +1122,16 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   title: 'Shortcuts'
                 }"
               >
-                <template v-slot:content>
-                  <shortcut-list/>
+                <template #content>
                 </template>
               </section-settings>
             </v-tab-item>
 
             <!-- tab::tabs & workspaces -->
-            <v-tab-item transition="fade-in" reverse-transition="fade-in">
+            <v-tab-item
+              transition="fade-in"
+              reverse-transition="fade-in"
+            >
               <!-- section::workspaces -->
               <section-settings
                 class="content-area__content-card__section"
@@ -1085,15 +1142,15 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   title: 'Workspaces'
                 }"
               >
-                <template v-slot:content>
+                <template #content>
                   <div class="text--sub-title-1 mt-2">
                     Workspaces menu
                   </div>
                   <v-switch
-                    class="my-0"
                     v-model="showWorkspaceTitleInToolbar"
+                    class="my-0"
                     label="Show workspace title in window toolbar"
-                  ></v-switch>
+                  />
                 </template>
               </section-settings>
 
@@ -1106,22 +1163,25 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   title: 'Tabs'
                 }"
               >
-                <template v-slot:content>
+                <template #content>
                   <div class="text--sub-title-1 mt-2">
                     Tab behavior
                   </div>
                   <v-radio-group
-                    class="py-0 mt-0"
                     v-model="navigatorTabBehavior"
+                    class="py-0 mt-0"
                     hide-details
                   >
-                    <v-tooltip bottom max-width="300px">
-                      <template v-slot:activator="{ on }">
+                    <v-tooltip
+                      bottom
+                      max-width="300px"
+                    >
+                      <template #activator="{ on }">
                         <v-radio
-                           v-on="on"
                           label="Immutable"
                           value="immutable"
-                        ></v-radio>
+                          v-on="on"
+                        />
                       </template>
                       <span>If enabled, tabs behave as pinned directories rather than traditional tabs</span>
                     </v-tooltip>
@@ -1129,41 +1189,44 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                       label="Traditional (in development)"
                       value="traditional"
                       disabled
-                    ></v-radio>
+                    />
                   </v-radio-group>
 
                   <div class="text--sub-title-1 mt-2">
                     Tab layout
                   </div>
                   <v-radio-group
-                    class="py-0 mt-0"
                     v-model="navigatorTabLayout"
+                    class="py-0 mt-0"
                     hide-details
                   >
                     <v-radio
                       label="Compact vertical"
                       value="compact-vertical"
-                    ></v-radio>
+                    />
                     <v-radio
                       label="Compact vertical + traditional horizontal"
                       value="compact-vertical-and-traditional-horizontal"
-                    ></v-radio>
+                    />
                   </v-radio-group>
 
                   <div class="text--sub-title-1 mt-2">
                     Options
                   </div>
                   <v-switch
-                    class="my-0"
                     v-model="closeAppWindowWhenLastWorkspaceTabIsClosed"
+                    class="my-0"
                     label="Close app window when all current workspace tabs are closed"
-                  ></v-switch>
+                  />
                 </template>
               </section-settings>
             </v-tab-item>
 
             <!-- tab::navigation -->
-            <v-tab-item transition="fade-in" reverse-transition="fade-in">
+            <v-tab-item
+              transition="fade-in"
+              reverse-transition="fade-in"
+            >
               <!-- section::window-controls -->
               <section-settings
                 class="content-area__content-card__section"
@@ -1174,68 +1237,74 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   title: 'Navigator history'
                 }"
               >
-                <template v-slot:content>
+                <template #content>
                   <div class="text--sub-title-1 mt-2">
                     History navigation style
                   </div>
                   <v-radio-group
-                    class="py-0 mt-0"
                     v-model="navigatorhistoryNavigationStyleSelected"
+                    class="py-0 mt-0"
                     hide-details
                   >
-                    <v-tooltip bottom max-width="400px">
-                      <template v-slot:activator="{ on }">
+                    <v-tooltip
+                      bottom
+                      max-width="400px"
+                    >
+                      <template #activator="{ on }">
                         <v-radio
-                          v-on="on"
                           label="Sigma default"
                           value="sigma-default"
-                        ></v-radio>
+                          v-on="on"
+                        />
                       </template>
                       <span>
                         This custom Sigma history style allows you to get back to previously opened paths,
                         even after inserting a new path into the history while navigating the history stack.
-                        <br><strong>Example:</strong>
-                        <br>- Open directory <span class="inline-code--light py-0">"/user"</span>
-                        <br>- Open directory <span class="inline-code--light py-0">"/user/pictures"</span>
-                        <br>- Open directory <span class="inline-code--light py-0">"/user/pictures/screenshots"</span>
-                        <br>If you now go back to directory 
-                        <span class="inline-code--light py-0">"/user/pictures"</span> 
-                        and then go back again to 
-                        <span class="inline-code--light py-0">"/user"</span> 
-                        and then open 
-                        <span class="inline-code--light py-0">"/user/videos"</span>, 
+                        <br /><strong>Example:</strong>
+                        <br />- Open directory <span class="inline-code--light py-0">"/user"</span>
+                        <br />- Open directory <span class="inline-code--light py-0">"/user/pictures"</span>
+                        <br />- Open directory <span class="inline-code--light py-0">"/user/pictures/screenshots"</span>
+                        <br />If you now go back to directory
+                        <span class="inline-code--light py-0">"/user/pictures"</span>
+                        and then go back again to
+                        <span class="inline-code--light py-0">"/user"</span>
+                        and then open
+                        <span class="inline-code--light py-0">"/user/videos"</span>,
                         you will still be able to go back in history to the previous directories by pressing
                         "go back" or "go forward" button.
                       </span>
                     </v-tooltip>
 
-                    <v-tooltip bottom max-width="400px">
-                      <template v-slot:activator="{ on }">
+                    <v-tooltip
+                      bottom
+                      max-width="400px"
+                    >
+                      <template #activator="{ on }">
                         <v-radio
-                          v-on="on"
                           label="Traditional"
                           value="traditional"
-                        ></v-radio>
+                          v-on="on"
+                        />
                       </template>
                       <span>
-                        This is a traditional history style, used in vast majority of apps. 
-                        It overwrites all succeding paths when you insert a new path anywhere other than the end, 
+                        This is a traditional history style, used in vast majority of apps.
+                        It overwrites all succeding paths when you insert a new path anywhere other than the end,
                         which means once you go back in history and open some other directory, all succedding entries will be gone.
-                        <br><strong>Example:</strong>
-                        <br>- Open directory <span class="inline-code--light py-0">"/user"</span>
-                        <br>- Open directory <span class="inline-code--light py-0">"/user/pictures"</span>
-                        <br>- Open directory <span class="inline-code--light py-0">"/user/pictures/screenshots"</span>
-                        <br>If you now go back to directory 
-                        <span class="inline-code--light py-0">"/user/pictures"</span> 
-                        and then go back again to 
-                        <span class="inline-code--light py-0">"/user"</span> 
-                        and then open 
-                        <span class="inline-code--light py-0">"/user/videos"</span>, 
+                        <br /><strong>Example:</strong>
+                        <br />- Open directory <span class="inline-code--light py-0">"/user"</span>
+                        <br />- Open directory <span class="inline-code--light py-0">"/user/pictures"</span>
+                        <br />- Open directory <span class="inline-code--light py-0">"/user/pictures/screenshots"</span>
+                        <br />If you now go back to directory
+                        <span class="inline-code--light py-0">"/user/pictures"</span>
+                        and then go back again to
+                        <span class="inline-code--light py-0">"/user"</span>
+                        and then open
+                        <span class="inline-code--light py-0">"/user/videos"</span>,
                         you will NOT be able to go back in history to the previous directories by pressing
                         "go back" or "go forward" button, because
-                        they were overwritten and the history now only has 2 directories: 
-                        <span class="inline-code--light py-0">"/user"</span> 
-                        and 
+                        they were overwritten and the history now only has 2 directories:
+                        <span class="inline-code--light py-0">"/user"</span>
+                        and
                         <span class="inline-code--light py-0">"/user/videos"</span>.
                       </span>
                     </v-tooltip>
@@ -1245,7 +1314,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             </v-tab-item>
 
             <!-- tab::input -->
-            <v-tab-item transition="fade-in" reverse-transition="fade-in">
+            <v-tab-item
+              transition="fade-in"
+              reverse-transition="fade-in"
+            >
               <section-settings
                 class="content-area__content-card__section"
                 :header="{
@@ -1255,7 +1327,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   title: 'Navigator'
                 }"
               >
-                <template v-slot:content>
+                <template #content>
                   <div>
                     <div class="text--sub-title-1 mt-2">
                       Directory items
@@ -1263,21 +1335,21 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
                     <div class="mb-5">
                       <v-switch
-                        class="my-0"
                         v-model="navigatorShowHiddenDirItems"
+                        class="my-0"
                         label="Show Hidden Items"
-                      ></v-switch>
+                      />
 
                       <v-switch
-                        class="my-0"
                         v-model="navigatorOpenDirItemWithSingleClick"
+                        class="my-0"
                         label="Open with single click"
                         hide-details
-                      ></v-switch>
+                      />
 
-                      <div 
-                        class="mt-3"
+                      <div
                         v-show="navigatorOpenDirItemWithSingleClick"
+                        class="mt-3"
                       >
                         Hold <span class="inline-code--light">Alt</span> button to select the item without opening it
                       </div>
@@ -1291,7 +1363,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                         :error="!checkedOpenDirItemSecondClickDelay.isValid"
                         :hint="checkedOpenDirItemSecondClickDelay.error"
                         style="max-width: 200px"
-                      ></v-text-field>
+                      />
                     </div>
                   </div>
                 </template>
@@ -1306,7 +1378,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   title: 'Input elements'
                 }"
               >
-                <template v-slot:content>
+                <template #content>
                   <div>
                     <div class="text--sub-title-1 mt-2">
                       Filter options
@@ -1322,11 +1394,11 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                       Helpers
                     </div>
                     <v-switch
-                      class="my-0"
                       v-model="spellcheck"
+                      class="my-0"
                       label="Spellcheck"
                       hide-details
-                    ></v-switch>
+                    />
                   </div>
                 </template>
               </section-settings>
@@ -1340,7 +1412,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   title: 'Mouse buttons'
                 }"
               >
-                <template v-slot:content>
+                <template #content>
                   <div class="text--sub-title-1 mt-2">
                     Button actions
                   </div>
@@ -1352,8 +1424,8 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     item-text="title"
                     label="Mouse button 3"
                     style="max-width: 400px"
-                  ></v-select>
-                  
+                  />
+
                   <v-select
                     v-model="pointerButton4onMouseUpEvent"
                     :items="pointerButton4onMouseUpEventItems"
@@ -1361,13 +1433,16 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     item-text="title"
                     label="Mouse button 4"
                     style="max-width: 400px"
-                  ></v-select>
+                  />
                 </template>
               </section-settings>
             </v-tab-item>
 
             <!-- tab::search-->
-            <v-tab-item transition="fade-in" reverse-transition="fade-in">
+            <v-tab-item
+              transition="fade-in"
+              reverse-transition="fade-in"
+            >
               <section-settings
                 class="content-area__content-card__section"
                 :header="{
@@ -1378,7 +1453,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   title: 'Global search'
                 }"
               >
-                <template v-slot:content>
+                <template #content>
                   <div class="text--sub-title-1 mt-2">
                     Quick actions
                   </div>
@@ -1386,13 +1461,16 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   <div class="button-container">
                     <v-btn
                       class="button-1"
+                      depressed
+                      small
                       @click="$eventHub.$emit('app:method', {
                         method: 'initGlobalSearchDataScan'
                       })"
-                      depressed
-                      small
                     >
-                      <v-icon class="mr-2" small>
+                      <v-icon
+                        class="mr-2"
+                        small
+                      >
                         mdi-refresh
                       </v-icon>
                       re-scan drives
@@ -1400,13 +1478,16 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
                     <v-btn
                       class="button-1"
+                      depressed
+                      small
                       @click="$store.dispatch('LOAD_DIR', {
                         path: appPaths.storageDirectories.appStorageGlobalSearchData
                       })"
-                      depressed
-                      small
                     >
-                      <v-icon class="mr-2" small>
+                      <v-icon
+                        class="mr-2"
+                        small
+                      >
                         mdi-folder-outline
                       </v-icon>
                       Open search data directory
@@ -1416,14 +1497,14 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   <div
                     class="mt-4"
                     v-html="$localize.get('text_allow_global_search_message')"
-                  ></div>
+                  />
 
                   <div>
                     <div class="text--sub-title-1 mt-2">
                       Search data
                     </div>
 
-                    <updating-component :component="'lastScanTimeElapsed'"/>
+                    <updating-component :component="'lastScanTimeElapsed'" />
                     <!-- TODO:  -->
                     <!-- <v-text-field
                       class="mt-4"
@@ -1460,10 +1541,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     }"
                     style="max-width: 200px"
                   >
-                    <template v-slot:selection="{ item }">
+                    <template #selection="{ item }">
                       {{$utils.formatTime(item, 'ms', 'auto')}}
                     </template>
-                    <template v-slot:item="{ item }">
+                    <template #item="{ item }">
                       {{$utils.formatTime(item, 'ms', 'auto')}}
                     </template>
                   </v-select>
@@ -1474,25 +1555,28 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     max-width="400px"
                     offset-overflow
                   >
-                    <template v-slot:activator="{ on }">
-                      <div v-on="on" style="display: inline-block;">
+                    <template #activator="{ on }">
+                      <div
+                        style="display: inline-block;"
+                        v-on="on"
+                      >
                         <v-select
-                          class="mt-0"
                           v-model="globalSearchScanDepth"
+                          class="mt-0"
                           :items="suggestedGlobalSearchScanDepthItems"
                           :disabled="scanInProgress"
-                          @blur="handleBlurGlobalSearchScanDepth"
                           label="Scan depth"
                           :menu-props="{
                             contentClass: 'custom-scrollbar',
                             offsetY: true
                           }"
                           style="max-width: 200px"
+                          @blur="handleBlurGlobalSearchScanDepth"
                         >
-                          <template v-slot:selection>
+                          <template #selection>
                             {{globalSearchScanDepth}} directories
                           </template>
-                          <template v-slot:item="{item}">
+                          <template #item="{item}">
                             {{item}} directories
                           </template>
                         </v-select>
@@ -1511,24 +1595,25 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                       max-width="400px"
                       offset-overflow
                     >
-                      <template v-slot:activator="{ on }">
+                      <template #activator="{ on }">
                         <div
                           class="d-inline-flex"
                           v-on="on"
                         >
                           <v-switch
-                            class="mt-0"
                             v-model="globalSearchCompressSearchData"
+                            class="mt-0"
                             :disabled="scanInProgress"
                             @change="$eventHub.$emit('app:method', {
                               method: 'initGlobalSearchDataScan'
                             })"
                           >
-                            <template v-slot:label>
+                            <template #label>
                               <v-icon
                                 v-show="!globalSearchCompressSearchData"
                                 color="red"
-                              >mdi-circle-medium
+                              >
+                                mdi-circle-medium
                               </v-icon>
                               Compress search data
                             </template>
@@ -1550,7 +1635,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     multiple
                     style="max-width: 400px"
                   >
-                    <template v-slot:prepend-item>
+                    <template #prepend-item>
                       <v-list-item>
                         <v-list-item-content>
                           <v-list-item-title>
@@ -1560,33 +1645,35 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                         </v-list-item-content>
                       </v-list-item>
                     </template>
-                    <template v-slot:item="{item}">
+                    <template #item="{item}">
                       <v-list-item @click.stop="toggleGlobalSearchDisallowedPathItem(item)">
                         <v-list-item-action>
                           <v-icon>
                             {{globalSearchDisallowedPaths.includes(item)
                               ? 'mdi-check-box-outline'
-                              : 'mdi-checkbox-blank-outline'
-                            }}
+                              : 'mdi-checkbox-blank-outline'}}
                           </v-icon>
                         </v-list-item-action>
                         <v-list-item-content>
                           <v-list-item-title>
-                           {{item}}
+                            {{item}}
                           </v-list-item-title>
                         </v-list-item-content>
                         <v-list-item-action>
                           <v-btn
-                            @click.stop="removeItemFromGlobalSearchDisallowedPathsItems(item)"
                             icon
+                            @click.stop="removeItemFromGlobalSearchDisallowedPathsItems(item)"
                           >
                             <v-icon>mdi-close</v-icon>
                           </v-btn>
                         </v-list-item-action>
                       </v-list-item>
                     </template>
-                    <template v-slot:selection="{item, index}">
-                      <v-chip v-if="index < 2" small>
+                    <template #selection="{item, index}">
+                      <v-chip
+                        v-if="index < 2"
+                        small
+                      >
                         <span>{{item}}</span>
                       </v-chip>
                       <span
@@ -1606,9 +1693,12 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                       mdi-circle-medium
                     </v-icon>
                     Estimated data scan time:
-                    <span class="ml-1" style="font-size: 14px;">
-                    {{estimatedGlobalSearchScanTime.time}}
-                    (per 1 TB drive)
+                    <span
+                      class="ml-1"
+                      style="font-size: 14px;"
+                    >
+                      {{estimatedGlobalSearchScanTime.time}}
+                      (per 1 TB drive)
                     </span>
                   </div>
                   <div>
@@ -1616,9 +1706,12 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                       mdi-circle-medium
                     </v-icon>
                     Estimated search time:
-                    <span class="ml-1" style="font-size: 14px;">
-                    1 sec — {{estimatedGlobalSearchTime.time}}
-                    (per 1 TB drive per search word) | depends on file location
+                    <span
+                      class="ml-1"
+                      style="font-size: 14px;"
+                    >
+                      1 sec — {{estimatedGlobalSearchTime.time}}
+                      (per 1 TB drive per search word) | depends on file location
                     </span>
                   </div>
                 </template>
@@ -1626,7 +1719,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             </v-tab-item>
 
             <!-- tab::data-and-storage -->
-            <v-tab-item transition="fade-in" reverse-transition="fade-in">
+            <v-tab-item
+              transition="fade-in"
+              reverse-transition="fade-in"
+            >
               <section-settings
                 class="content-area__content-card__section"
                 :header="{
@@ -1636,7 +1732,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   title: 'Reminder'
                 }"
               >
-                <template v-slot:description>
+                <template #description>
                   It's recommended to regularly backup (copy)
                   all your important files to an external drive
                   (which is not connected to your computer most of the time),
@@ -1653,12 +1749,12 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   title: 'Drive detection'
                 }"
               >
-                <template v-slot:content>
+                <template #content>
                   <v-checkbox
                     v-model="focusMainWindowOnDriveConnected"
                     label="Focus the app when a drive is connected"
                     hide-details
-                  ></v-checkbox>
+                  />
                 </template>
               </section-settings>
 
@@ -1671,12 +1767,12 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   title: 'Image thumbnails'
                 }"
               >
-                <template v-slot:description>
+                <template #description>
                   Every time you open a directory, the app generates a small thumbnail for every image
                   and stores it in the app drectory. This image caching technique improves app performance.
                   When the specified limit is reached, all thumbnails are deleted.
                 </template>
-                <template v-slot:content>
+                <template #content>
                   <div class="text--sub-title-1">
                     Thumbnail storage limit
                   </div>
@@ -1684,20 +1780,23 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   <div>Limit: {{thumbnailStorageLimit}} MB</div>
 
                   <v-slider
-                    class="align-center"
                     v-model="thumbnailStorageLimit"
+                    class="align-center"
                     max="1000"
                     min="10"
                     step="10"
                     hide-details
                     style="max-width: 250px"
-                  ></v-slider>
+                  />
                 </template>
               </section-settings>
             </v-tab-item>
 
             <!-- tab:stats -->
-            <v-tab-item transition="fade-in" reverse-transition="fade-in">
+            <v-tab-item
+              transition="fade-in"
+              reverse-transition="fade-in"
+            >
               <section-settings
                 class="content-area__content-card__section"
                 :header="{
@@ -1707,7 +1806,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   title: 'Directory item statistics'
                 }"
               >
-                <template v-slot:description>
+                <template #description>
                   <p>
                     If enabled, the app will store some event data of your interactions with
                     directories / files, for example, when and how many times they were opened.
@@ -1716,38 +1815,32 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     This data is used by features like "timeline" and "search".
                   </p>
                 </template>
-                <template v-slot:content>
+                <template #content>
                   <div class="text--sub-title-1">
                     Statistics storing
                   </div>
 
                   <div
                     class="setting-container"
-                    @mouseenter="handleMouseEnterSetting({
-                      settingName: 'storeDirItemOpenEvent',
-                      title: 'Store the list of opened directory items'
-                    })"
+                    @mouseenter="handleMouseEnterSetting({name: 'storeDirItemOpenEvent'})"
                   >
                     <v-switch
                       v-model="storeDirItemOpenEvent"
                       label="Store the list of opened directory items"
                       hide-details
-                    ></v-switch>
+                    />
                   </div>
 
                   <div
                     class="setting-container"
-                    @mouseenter="handleMouseEnterSetting({
-                      settingName: 'storeDirItemOpenCount',
-                      title: 'Store the amount of times a directory item was opened'
-                    })"
+                    @mouseenter="handleMouseEnterSetting({name: 'storeDirItemOpenCount'})"
                   >
                     <v-switch
                       v-if="storeDirItemOpenEvent"
                       v-model="storeDirItemOpenCount"
                       label="Store the amount of times a directory item was opened"
                       hide-details
-                    ></v-switch>
+                    />
                   </div>
 
                   <v-switch
@@ -1755,7 +1848,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     v-model="storeDirItemOpenDate"
                     label="Store the date of opening a directory item"
                     hide-details
-                  ></v-switch>
+                  />
 
                   <p class="mt-6">
                     The statistics data is stored in the file called "stats.json"
@@ -1763,11 +1856,14 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   </p>
                   <v-btn
                     class="button-1 mb-2"
-                    @click="$store.dispatch('LOAD_DIR', { path: appPaths.storageDirectories.appStorage })"
                     depressed
                     small
+                    @click="$store.dispatch('LOAD_DIR', { path: appPaths.storageDirectories.appStorage })"
                   >
-                    <v-icon class="mr-2" small>
+                    <v-icon
+                      class="mr-2"
+                      small
+                    >
                       mdi-folder-outline
                     </v-icon>
                     Open file location
@@ -1787,14 +1883,22 @@ import {mapFields} from 'vuex-map-fields'
 import SectionSettings from '../components/SectionSettings.vue'
 
 export default {
+  name: 'settings',
   components: {
     SectionSettings
+    SectionSettings,
   },
-  name: 'settings',
+  beforeRouteLeave (to, from, next) {
+    this.$store.dispatch('SAVE_ROUTE_SCROLL_POSITION', {
+      toRoute: to,
+      fromRoute: from,
+    })
+    next()
+  },
   data () {
     return {
       githubProjectData: {
-        stars: 0
+        stars: 0,
       },
       settingsSelectedTab: 0,
       settingsTabs: [
@@ -1806,17 +1910,61 @@ export default {
         {text: 'Input'},
         {text: 'Search'},
         {text: 'Data & storage'},
-        {text: 'Stats'}
+        {text: 'Stats'},
       ],
-      suggestedGlobalSearchScanDepthItems: [3, 4, 5, 6, 7, 8, 9, 10]
+      suggestedGlobalSearchScanDepthItems: [3, 4, 5, 6, 7, 8, 9, 10],
     }
   },
-  beforeRouteLeave (to, from, next) {
-    this.$store.dispatch('SAVE_ROUTE_SCROLL_POSITION', {
-      toRoute: to,
-      fromRoute: from
-    })
-    next()
+  watch: {
+    windowTransparencyEffectOptionsSelectedPage: {
+      handler () {
+        let pageIndex = this.windowTransparencyEffectOptionsPages.findIndex(page => {
+          return page.name === this.windowTransparencyEffectOptionsSelectedPage.name
+        })
+        let clone = this.$utils.cloneDeep(this.windowTransparencyEffectOptionsPages)
+        clone[pageIndex] = this.windowTransparencyEffectOptionsSelectedPage
+        this.windowTransparencyEffectOptionsPages = clone
+        // Turn on preview automatically
+        if (!this.windowTransparencyEffectPreviewEffect) {
+          this.windowTransparencyEffectPreviewEffect = true
+        }
+      },
+      deep: true,
+    },
+    windowTransparencyEffectSameSettingsOnAllPages (newValue) {
+      if (newValue) {
+        this.windowTransparencyEffectOptionsSelectedPage = this.windowTransparencyEffectOptionsPages.find(page => {
+          return page.name === ''
+        })
+      }
+    },
+    settingsSelectedTab (value) {
+      this.lastOpenedSettingsTabValue = value
+    },
+    globalSearchDisallowedPaths () {
+      this.globalSearchDisallowedPathsItems = [...new Set([
+        ...this.globalSearchDisallowedPathsItems,
+        ...this.globalSearchDisallowedPaths,
+      ])]
+    },
+    autoCheckForAppUpdates (value) {
+      if (value) {
+        this.$store.dispatch('INIT_APP_UPDATER')
+      }
+      else if (!value) {
+        this.$store.dispatch('STOP_APP_UPDATER')
+        this.autoDownloadAppUpdates = false
+        this.autoInstallAppUpdates = false
+      }
+    },
+    storeDirItemOpenEvent (newValue) {
+      if (!newValue) {
+        this.$store.dispatch('SET', {
+          key: 'storageData.stats.dirItemsTimeline',
+          value: [],
+        })
+      }
+    },
   },
   beforeCreate () {
     const models = {
@@ -1901,19 +2049,19 @@ export default {
         set (value) {
           this.$store.dispatch('SET', {
             key: modelValue,
-            value
+            value,
           })
-        }
+        },
       }
     }
     this.$options.computed = {
       ...this.$options.computed,
-      ...objects
+      ...objects,
     }
   },
   activated () {
     this.$store.dispatch('ROUTE_ACTIVATED_HOOK_CALLBACK', {
-      route: 'settings'
+      route: 'settings',
     })
   },
   created () {
@@ -1921,60 +2069,9 @@ export default {
   },
   mounted () {
     this.$store.dispatch('ROUTE_MOUNTED_HOOK_CALLBACK', {
-      route: 'settings'
+      route: 'settings',
     })
     this.fetchGithubProjectData()
-  },
-  watch: {
-    windowTransparencyEffectOptionsSelectedPage: {
-      handler () {
-        let pageIndex = this.windowTransparencyEffectOptionsPages.findIndex(page => {
-          return page.name === this.windowTransparencyEffectOptionsSelectedPage.name
-        })
-        let clone = this.$utils.cloneDeep(this.windowTransparencyEffectOptionsPages)
-        clone[pageIndex] = this.windowTransparencyEffectOptionsSelectedPage
-        this.windowTransparencyEffectOptionsPages = clone
-        // Turn on preview automatically
-        if (!this.windowTransparencyEffectPreviewEffect) {
-          this.windowTransparencyEffectPreviewEffect = true
-        }
-      },
-      deep: true
-    },
-    windowTransparencyEffectSameSettingsOnAllPages (newValue) {
-      if (newValue) {
-        this.windowTransparencyEffectOptionsSelectedPage = this.windowTransparencyEffectOptionsPages.find(page => {
-          return page.name === ''
-        })
-      }
-    },
-    settingsSelectedTab (value) {
-      this.lastOpenedSettingsTabValue = value
-    },
-    globalSearchDisallowedPaths () {
-      this.globalSearchDisallowedPathsItems = [...new Set([
-        ...this.globalSearchDisallowedPathsItems,
-        ...this.globalSearchDisallowedPaths
-      ])]
-    },
-    autoCheckForAppUpdates (value) {
-      if (value) {
-        this.$store.dispatch('INIT_APP_UPDATER')
-      }
-      else if (!value) {
-        this.$store.dispatch('STOP_APP_UPDATER')
-        this.autoDownloadAppUpdates = false
-        this.autoInstallAppUpdates = false 
-      }
-    },
-    storeDirItemOpenEvent (newValue) {
-      if (!newValue) {
-        this.$store.dispatch('SET', {
-          key: 'storageData.stats.dirItemsTimeline',
-          value: []
-        })  
-      }
-    }
   },
   computed: {
     ...mapFields({
@@ -1997,30 +2094,30 @@ export default {
         if (this.checkedOpenDirItemSecondClickDelay.isValid) {
           this.$store.dispatch('SET', {
             key: 'storageData.settings.navigator.openDirItemSecondClickDelay',
-            value
+            value,
           })
         }
-      }
+      },
     },
     headerButtons () {
       return [
         {
           title: 'Project page',
-          link: this.appPaths.githubRepoLink
+          link: this.appPaths.githubRepoLink,
         },
         {
           title: 'Requests & issues',
-          link: this.appPaths.githubIssuesLink
+          link: this.appPaths.githubIssuesLink,
         },
         {
           title: 'Discussions',
-          link: this.appPaths.githubDiscussionsLink
+          link: this.appPaths.githubDiscussionsLink,
         },
         {
           title: `Star | ${this.githubProjectData.stars}`,
           icon: 'mdi-star-outline',
-          link: this.appPaths.githubRepoLink
-        }
+          link: this.appPaths.githubRepoLink,
+        },
       ]
     },
     UIButtons () {
@@ -2029,26 +2126,26 @@ export default {
           title: this.$localize.get('tooltip_button_ui_zoom_decrease_title'),
           shortcut: this.shortcuts.zoomDecrease.shortcut,
           icon: 'mdi-minus',
-          onClick: () => this.$store.dispatch('DECREASE_UI_ZOOM')
+          onClick: () => this.$store.dispatch('DECREASE_UI_ZOOM'),
         },
         {
           title: this.$localize.get('tooltip_button_ui_zoom_increase_title'),
           shortcut: this.shortcuts.zoomIncrease.shortcut,
           icon: 'mdi-plus',
-          onClick: () => this.$store.dispatch('INCREASE_UI_ZOOM')
+          onClick: () => this.$store.dispatch('INCREASE_UI_ZOOM'),
         },
         {
           title: this.$localize.get('tooltip_button_ui_zoom_reset_title'),
           shortcut: this.shortcuts.zoomReset.shortcut,
           buttonText: this.$localize.get('settings_ui_zoom_button_reset'),
-          onClick: () => this.$store.dispatch('RESET_UI_ZOOM')
+          onClick: () => this.$store.dispatch('RESET_UI_ZOOM'),
         },
         {
           title: this.$localize.get('tooltip_button_full_screen_title'),
           shortcut: this.shortcuts.fullScreen.shortcut,
           icon: 'mdi-fullscreen',
-          onClick: () => this.$utils.toggleFullscreen()
-        }
+          onClick: () => this.$utils.toggleFullscreen(),
+        },
       ]
     },
     globalSearchDisallowedPaths: {
@@ -2057,7 +2154,7 @@ export default {
       },
       set (value) {
         this.$store.dispatch('SET_GLOBAL_SEARCH_DISALOWED_PATHS', value)
-      }
+      },
     },
     UIZoomLevelInPercents () {
       return (this.UIZoomLevel * 100).toFixed(0)
@@ -2074,7 +2171,7 @@ export default {
         timePerDepth: 0.8,
         colorTreshold: 120,
         complexity: this.globalSearchScanDepth ** 2,
-        compressionMultiplier: this.globalSearchCompressSearchData ? 2 : 1
+        compressionMultiplier: this.globalSearchCompressSearchData ? 2 : 1,
       })
     },
     estimatedGlobalSearchTime () {
@@ -2082,7 +2179,7 @@ export default {
         timePerDepth: 2,
         colorTreshold: 60,
         complexity: this.globalSearchScanDepth * 2.5,
-        compressionMultiplier: 1
+        compressionMultiplier: 1,
       })
     },
     checkedOpenDirItemSecondClickDelay () {
@@ -2095,7 +2192,7 @@ export default {
           isValid: false,
           error: 'The value should be in range 200 - 1000 (ms)',
           minValue,
-          maxValue
+          maxValue,
         }
       }
       else {
@@ -2103,16 +2200,16 @@ export default {
           isValid: true,
           error: '',
           minValue,
-          maxValue
+          maxValue,
         }
       }
     },
     localDateTimeExample () {
       return this.$utils.getLocalDateTime(
-        Date.now(), 
-        this.$store.state.storageData.settings.dateTime
+        Date.now(),
+        this.$store.state.storageData.settings.dateTime,
       )
-    }
+    },
   },
   methods: {
     getSearchTimeEstimates (params) {
@@ -2125,7 +2222,7 @@ export default {
         : 'teal'
       return {
         time: this.$utils.prettyTime(totalTimeInSeconds),
-        color
+        color,
       }
     },
     fetchGithubProjectData () {
@@ -2139,7 +2236,7 @@ export default {
     handleBlurGlobalSearchScanDepth () {
       this.globalSearchScanDepth = Math.max(3, this.globalSearchScanDepth)
       this.$eventHub.$emit('app:method', {
-        method: 'initGlobalSearchDataScan'
+        method: 'initGlobalSearchDataScan',
       })
     },
     toggleGlobalSearchDisallowedPathItem (item) {
