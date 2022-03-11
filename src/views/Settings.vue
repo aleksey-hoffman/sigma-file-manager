@@ -2541,4 +2541,17 @@ export default {
     .v-window {
       border-right: 1px solid var(--divider-color-2);
     }
+
+#settings-view
+  .settings-section__content {
+    padding: 12px 16px;
+    background-color: rgb(200, 200, 255, 0.04);
+    border-radius: 8px;
+    transition: all 0.1s ease;
+  }
+
+#settings-view
+  .settings-section__content:hover {
+    background-color: rgb(220, 220, 255, 0.05);
+  }
 </style>
