@@ -2549,9 +2549,4 @@ export default {
     border-radius: 8px;
     transition: all 0.1s ease;
   }
-
-#settings-view
-  .settings-section__content:hover {
-    background-color: rgb(220, 220, 255, 0.05);
-  }
 </style>
