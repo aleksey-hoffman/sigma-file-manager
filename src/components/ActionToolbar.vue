@@ -337,6 +337,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       <span>Toggle info panel</span>
     </v-tooltip>
 
+    <filter-field v-show="['settings'].includes($route.name)" />
   </v-app-bar>
 </template>
 

@@ -4,7 +4,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <template>
-  <div id="settings-view">
+  <div
+    id="settings-view"
+    :filter-is-empty="filterQuery === ''"
+  >
     <div
       id="content-area--settings-view"
       class="content-area custom-scrollbar"
@@ -67,10 +70,11 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           </div>
         </div>
       </div>
-      
+
       <div class="content-area__content-card">
         <div class="tab-view">
           <v-tabs
+            v-if="filterQuery === ''"
             v-model="settingsSelectedTab"
             class="tab-view__header"
             show-arrows="mobile"
@@ -89,10 +93,30 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             v-model="settingsSelectedTab"
             class="tab-view__header__content"
           >
-            <!-- tab::general -->
-            <v-tab-item
-              transition="fade-in"
-              reverse-transition="fade-in"
+            <div
+              v-show="filterQuery !== ''"
+              class="text--sub-title-1 ml-4 mt-4"
+            >
+              Filtered settings
+              <v-btn
+                small
+                class="ml-4 button-1"
+                @click="filterQuery = ''"
+              >
+                <v-icon
+                  size="16px"
+                  class="mr-2"
+                >
+                  mdi-backspace-outline
+                </v-icon>
+                Clear filter
+              </v-btn>
+            </div>
+
+            <div
+              v-show="settingsSelectedTab === 0 || filterQuery !== ''"
+              class="fade-in-500ms"
+              tab="general"
             >
               <!-- section::Language -->
               <section-settings
@@ -205,18 +229,18 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
               <!-- section::updates -->
               <section-settings
-                v-if="$utils.isWindowsStore"
+                v-if="showSection('updates') && !$utils.isWindowsStore"
                 class="content-area__content-card__section"
                 :header="{
                   icon: {
                     name: 'mdi-progress-upload',
                   },
-                  title: 'App updates'
+                  title: $localize.get('app_updates')
                 }"
               >
                 <template #description>
                   <div class="text--sub-title-1 mt-2">
-                    Current version: {{appVersion}}
+                    {{$localize.get('current_version')}}: {{appVersion}}
                   </div>
                 </template>
                 <template #content>
@@ -227,7 +251,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                       small
                       @click="$store.dispatch('INIT_APP_UPDATER', {notifyUnavailable: true})"
                     >
-                      Check for updates now
+                      {{$localize.get('check_updates_now')}}
                     </v-btn>
 
                     <v-tooltip bottom>
@@ -283,12 +307,13 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
               <!-- section::app properties -->
               <section-settings
+                v-if="showSection('app-properties')"
                 class="content-area__content-card__section"
                 :header="{
                   icon: {
                     name: 'mdi-tune',
                   },
-                  title: 'App properties'
+                  title: $localize.get('app_properties')
                 }"
               >
                 <template #content>
@@ -312,6 +337,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
               <!-- section::window-controls -->
               <section-settings
+                v-if="showSection('window-controls')"
                 class="content-area__content-card__section"
                 :header="{
                   icon: {
@@ -425,14 +451,15 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   </v-radio-group>
                 </template>
               </section-settings>
-            </v-tab-item>
+            </div>
 
-            <!-- tab::ui-appearance -->
-            <v-tab-item
-              transition="fade-in"
-              reverse-transition="fade-in"
+            <div
+              v-show="settingsSelectedTab === 1 || filterQuery !== ''"
+              class="fade-in-500ms"
+              tab="ui-appearance"
             >
               <section-settings
+                v-if="showSection('visual-effects')"
                 class="content-area__content-card__section"
                 :header="{
                   icon: {
@@ -636,6 +663,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               </section-settings>
 
               <section-settings
+                v-if="showSection('theme')"
                 class="content-area__content-card__section"
                 :header="{
                   icon: {
@@ -674,6 +702,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               </section-settings>
 
               <section-settings
+                v-if="showSection('visual-filters')"
                 class="content-area__content-card__section"
                 :header="{
                   icon: {
@@ -738,6 +767,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               </section-settings>
 
               <section-settings
+                v-if="showSection('animations')"
                 class="content-area__content-card__section"
                 :header="{
                   icon: {
@@ -762,6 +792,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               </section-settings>
 
               <section-settings
+                v-if="showSection('date-time')"
                 class="content-area__content-card__section"
                 :header="{
                   icon: {
@@ -801,6 +832,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
               <template v-if="$utils.platform === 'win32'">
                 <section-settings
+                  v-if="showSection('overlays')"
                   class="content-area__content-card__section"
                   :header="{
                     icon: {
@@ -821,6 +853,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               </template>
 
               <section-settings
+                v-if="showSection('ui-elements')"
                 class="content-area__content-card__section"
                 :header="{
                   icon: {
@@ -898,6 +931,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               </section-settings>
 
               <section-settings
+                v-if="showSection('home-page-media-banner')"
                 class="content-area__content-card__section"
                 :header="{
                   icon: {
@@ -929,6 +963,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               </section-settings>
 
               <section-settings
+                v-if="showSection('info-panel')"
                 class="content-area__content-card__section"
                 :header="{
                   icon: {
@@ -1001,6 +1036,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               </section-settings>
 
               <section-settings
+                v-if="showSection('navigator')"
                 class="content-area__content-card__section"
                 :header="{
                   icon: {
@@ -1106,14 +1142,15 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   />
                 </template>
               </section-settings>
-            </v-tab-item>
+            </div>
 
-            <!-- tab::shortcuts -->
-            <v-tab-item
-              transition="fade-in"
-              reverse-transition="fade-in"
+            <div
+              v-show="settingsSelectedTab === 2 || filterQuery !== ''"
+              class="fade-in-500ms"
+              tab="shortcuts"
             >
               <section-settings
+                v-if="showSection('shortcuts')"
                 class="content-area__content-card__section"
                 :header="{
                   icon: {
@@ -1126,14 +1163,15 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   <shortcut-list />
                 </template>
               </section-settings>
-            </v-tab-item>
+            </div>
 
-            <!-- tab::Performance -->
-            <v-tab-item
-              transition="fade-in"
-              reverse-transition="fade-in"
+            <div
+              v-show="settingsSelectedTab === 3 || filterQuery !== ''"
+              class="fade-in-500ms"
+              tab="performance"
             >
               <section-settings
+                v-if="showSection('gpu-system-memory')"
                 class="content-area__content-card__section"
                 :header="{
                   icon: {
@@ -1145,15 +1183,15 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 <template #content>
                 </template>
               </section-settings>
-            </v-tab-item>
+            </div>
 
-            <!-- tab::tabs & workspaces -->
-            <v-tab-item
-              transition="fade-in"
-              reverse-transition="fade-in"
+            <div
+              v-show="settingsSelectedTab === 4 || filterQuery !== ''"
+              class="fade-in-500ms"
+              tab="tabs-and-workspaces"
             >
-              <!-- section::workspaces -->
               <section-settings
+                v-if="showSection('workspaces')"
                 class="content-area__content-card__section"
                 :header="{
                   icon: {
@@ -1175,6 +1213,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               </section-settings>
 
               <section-settings
+                v-if="showSection('tabs')"
                 class="content-area__content-card__section"
                 :header="{
                   icon: {
@@ -1240,15 +1279,15 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   />
                 </template>
               </section-settings>
-            </v-tab-item>
+            </div>
 
-            <!-- tab::navigation -->
-            <v-tab-item
-              transition="fade-in"
-              reverse-transition="fade-in"
+            <div
+              v-show="settingsSelectedTab === 5 || filterQuery !== ''"
+              class="fade-in-500ms"
+              tab="navigation"
             >
-              <!-- section::window-controls -->
               <section-settings
+                v-if="showSection('navigator-history')"
                 class="content-area__content-card__section"
                 :header="{
                   icon: {
@@ -1331,14 +1370,15 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   </v-radio-group>
                 </template>
               </section-settings>
-            </v-tab-item>
+            </div>
 
-            <!-- tab::input -->
-            <v-tab-item
-              transition="fade-in"
-              reverse-transition="fade-in"
+            <div
+              v-show="settingsSelectedTab === 6 || filterQuery !== ''"
+              class="fade-in-500ms"
+              tab="input"
             >
               <section-settings
+                v-if="showSection('input-navigator')"
                 class="content-area__content-card__section"
                 :header="{
                   icon: {
@@ -1390,6 +1430,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               </section-settings>
 
               <section-settings
+                v-if="showSection('input-elements')"
                 class="content-area__content-card__section"
                 :header="{
                   icon: {
@@ -1424,6 +1465,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               </section-settings>
 
               <section-settings
+                v-if="showSection('mouse-buttons')"
                 class="content-area__content-card__section"
                 :header="{
                   icon: {
@@ -1456,14 +1498,15 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   />
                 </template>
               </section-settings>
-            </v-tab-item>
+            </div>
 
-            <!-- tab::search-->
-            <v-tab-item
-              transition="fade-in"
-              reverse-transition="fade-in"
+            <div
+              v-show="settingsSelectedTab === 7 || filterQuery !== ''"
+              class="fade-in-500ms"
+              tab="search"
             >
               <section-settings
+                v-if="showSection('global-search')"
                 class="content-area__content-card__section"
                 :header="{
                   icon: {
@@ -1736,31 +1779,38 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   </div>
                 </template>
               </section-settings>
-            </v-tab-item>
+            </div>
 
-            <!-- tab::data-and-storage -->
-            <v-tab-item
-              transition="fade-in"
-              reverse-transition="fade-in"
+            <div
+              v-show="settingsSelectedTab === 8 || filterQuery !== ''"
+              class="fade-in-500ms"
+              tab="data-and-storage"
             >
               <section-settings
+                v-if="showSection('data-backup-reminder')"
                 class="content-area__content-card__section"
                 :header="{
                   icon: {
                     name: 'mdi-information-outline'
                   },
-                  title: 'Reminder'
+                  title: 'Reminder: data backup'
                 }"
               >
-                <template #description>
-                  It's recommended to regularly backup (copy)
-                  all your important files to an external drive
-                  (which is not connected to your computer most of the time),
-                  so if something goes wrong, you don't lose important files.
+                <template #content>
+                  <p>
+                    It's recommended to regularly backup (copy)
+                    all your important files to an external drive
+                    (which is not connected to your computer most of the time),
+                    so if something goes wrong, you don't lose important files.
+                  </p>
+                  <p>
+                    The auto-backup feature will be added in one of the next versions of the app
+                  </p>
                 </template>
               </section-settings>
 
               <section-settings
+                v-if="showSection('drive-detection')"
                 class="content-area__content-card__section"
                 :header="{
                   icon: {
@@ -1774,11 +1824,13 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     v-model="focusMainWindowOnDriveConnected"
                     label="Focus the app when a drive is connected"
                     hide-details
+                    class="mt-0"
                   />
                 </template>
               </section-settings>
 
               <section-settings
+                v-if="showSection('image-thumbnails')"
                 class="content-area__content-card__section"
                 :header="{
                   icon: {
@@ -1810,14 +1862,16 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   />
                 </template>
               </section-settings>
-            </v-tab-item>
+            </div>
 
             <!-- tab:stats -->
-            <v-tab-item
-              transition="fade-in"
-              reverse-transition="fade-in"
+            <div
+              v-show="settingsSelectedTab === 9 || filterQuery !== ''"
+              class="fade-in-500ms"
+              tab="general"
             >
               <section-settings
+                v-if="showSection('directory-item-statistics')"
                 class="content-area__content-card__section"
                 :header="{
                   icon: {
@@ -1890,7 +1944,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   </v-btn>
                 </template>
               </section-settings>
-            </v-tab-item>
+            </div>
           </v-tabs-items>
         </div>
       </div>
@@ -1901,6 +1955,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <script>
 import {mapFields} from 'vuex-map-fields'
 import SectionSettings from '../components/SectionSettings.vue'
+import itemFilter from '../utils/itemFilter'
 
 export default {
   name: 'settings',
@@ -2089,6 +2144,7 @@ export default {
     this.settingsSelectedTab = this.lastOpenedSettingsTabValue
   },
   mounted () {
+    this.fetchSettingsDataMap()
     this.$store.dispatch('ROUTE_MOUNTED_HOOK_CALLBACK', {
       route: 'settings',
     })
@@ -2104,6 +2160,8 @@ export default {
       UIZoomLevel: 'storageData.settings.UIZoomLevel',
       toolbarColorItems: 'storageData.settings.theme.toolbarColorItems',
       scanInProgress: 'globalSearch.scanInProgress',
+      settingsDataMap: 'settingsView.settingsDataMap',
+      filterQuery: 'filterField.view.settings.query',
     }),
     validatedOpenDirItemSecondClickDelay: {
       get () {
@@ -2231,8 +2289,135 @@ export default {
         this.$store.state.storageData.settings.dateTime,
       )
     },
+    filteredSettings () {
+      return itemFilter({
+        filterQuery: this.filterQuery,
+        items: this.settingsDataMap,
+        filterProperties: this.$store.state.filterField.view[this.$route.name].filterProperties,
+        filterQueryOptions: this.$store.state.filterField.view[this.$route.name].options,
+      })
+    },
   },
   methods: {
+    fetchSettingsDataMap () {
+      this.settingsDataMap = [
+        {
+          sectionName: 'language',
+          tags: this.$localize.get('language_tags'),
+        },
+        {
+          sectionName: 'ui-scaling',
+          tags: this.$localize.get('ui_scaling_tags'),
+        },
+        {
+          sectionName: 'updates',
+          tags: this.$localize.get('updates_tags'),
+        },
+        {
+          sectionName: 'app-properties',
+          tags: this.$localize.get('app_properties_tags'),
+        },
+        {
+          sectionName: 'window-controls',
+          tags: this.$localize.get('window_controls_tags'),
+        },
+        {
+          sectionName: 'visual-effects',
+          tags: this.$localize.get('visual_effects_tags'),
+        },
+        {
+          sectionName: 'theme',
+          tags: this.$localize.get('theme_tags'),
+        },
+        {
+          sectionName: 'visual-filters',
+          tags: this.$localize.get('visual_filters_tags'),
+        },
+        {
+          sectionName: 'animations',
+          tags: this.$localize.get('animations_tags'),
+        },
+        {
+          sectionName: 'date-time',
+          tags: this.$localize.get('date_time_tags'),
+        },
+        {
+          sectionName: 'overlays',
+          tags: this.$localize.get('overlays_tags'),
+        },
+        {
+          sectionName: 'ui-elements',
+          tags: this.$localize.get('ui_elements_tags'),
+        },
+        {
+          sectionName: 'home-page-media-banner',
+          tags: this.$localize.get('home_page_media_banner_tags'),
+        },
+        {
+          sectionName: 'info-panel',
+          tags: this.$localize.get('info_panel_tags'),
+        },
+        {
+          sectionName: 'navigator',
+          tags: this.$localize.get('navigator_tags'),
+        },
+        {
+          sectionName: 'shortcuts',
+          tags: this.$localize.get('shortcuts_tags'),
+        },
+        {
+          sectionName: 'gpu-system-memory',
+          tags: this.$localize.get('gpu_system_memory_tags'),
+        },
+        {
+          sectionName: 'workspaces',
+          tags: this.$localize.get('workspaces_tags'),
+        },
+        {
+          sectionName: 'tabs',
+          tags: this.$localize.get('tabs_tags'),
+        },
+        {
+          sectionName: 'navigator-history',
+          tags: this.$localize.get('navigator_history_tags'),
+        },
+        {
+          sectionName: 'input-navigator',
+          tags: this.$localize.get('input_navigator_tags'),
+        },
+        {
+          sectionName: 'input-elements',
+          tags: this.$localize.get('input_elements_tags'),
+        },
+        {
+          sectionName: 'mouse-buttons',
+          tags: this.$localize.get('mouse_buttons_tags'),
+        },
+        {
+          sectionName: 'global-search',
+          tags: this.$localize.get('global_search_tags'),
+        },
+        {
+          sectionName: 'data-backup-reminder',
+          tags: this.$localize.get('data_backup_reminder_tags'),
+        },
+        {
+          sectionName: 'drive-detection',
+          tags: this.$localize.get('drive_detection_tags'),
+        },
+        {
+          sectionName: 'image-thumbnails',
+          tags: this.$localize.get('image_thumbnails_tags'),
+        },
+        {
+          sectionName: 'directory-item-statistics',
+          tags: this.$localize.get('directory_item_statistics_tags'),
+        },
+      ]
+    },
+    showSection (sectionName) {
+      return this.filteredSettings.some(item => item.sectionName === sectionName)
+    },
     getSearchTimeEstimates (params) {
       const searchScanTimePerDepthLevelInSeconds = params.timePerDepth
       const totalTimeInSeconds = searchScanTimePerDepthLevelInSeconds *
@@ -2340,4 +2525,20 @@ export default {
   .content-area__content-card__section:not(:last-child) {
     border-bottom: 1px solid var(--divider-color-2);
   }
+
+#settings-view
+  .tab-view {
+    grid-template-columns: 1fr minmax(100px, 1fr);
+  }
+
+#settings-view[filter-is-empty]
+  .tab-view {
+    grid-template-columns: 230px 1fr minmax(100px, 1fr);
+  }
+
+#settings-view
+  .tab-view
+    .v-window {
+      border-right: 1px solid var(--divider-color-2);
+    }
 </style>

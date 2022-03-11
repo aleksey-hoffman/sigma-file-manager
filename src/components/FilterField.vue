@@ -4,133 +4,137 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <template>
-  <div>
-    <div class="filter-field">
-      <input
-        class="filter-field__input"
-        ref="filterField"
-        v-model="filterQuery"
-        @focus="$store.dispatch('SET', {
-          key: 'focusedField',
-          value: 'filter'
-        })"
-        @blur="$store.dispatch('SET', {
-          key: 'focusedField',
-          value: ''
-        })"
-        @keydown.esc.stop="clearQuery()"
-        placeholder="Filter"
-        type="text"
-        maxlength="64"
-      >
+  <div
+    v-if="$store.state.filterField.view[$route.name]"
+    class="filter-field"
+  >
+    <input
+      ref="filterField"
+      v-model="filterQuery"
+      class="filter-field__input"
+      placeholder="Filter"
+      type="text"
+      maxlength="64"
+      @focus="$store.dispatch('SET', {
+        key: 'focusedField',
+        value: 'filter'
+      })"
+      @blur="$store.dispatch('SET', {
+        key: 'focusedField',
+        value: ''
+      })"
+      @keydown.esc.stop="clearQuery()"
+    />
 
-      <div
-        class="filter-field__buttons"
-        :class="{'visible': filterQuery.length > 0}"
-      >
-        <div class="filter-field__clear-button">
-          <v-btn
-            @click="clearQuery()"
-            small
-            icon
-          >
-            <v-icon size="18px">
-              mdi-backspace-outline
-            </v-icon>
-          </v-btn>
-        </div>
+    <div
+      class="filter-field__buttons"
+      :class="{'visible': filterQuery.length > 0}"
+    >
+      <div class="filter-field__clear-button">
+        <v-btn
+          small
+          icon
+          @click="clearQuery()"
+        >
+          <v-icon size="18px">
+            mdi-backspace-outline
+          </v-icon>
+        </v-btn>
+      </div>
 
-        <div class="filter-field__menu-button">
-          <v-menu
-            offset-y
-            :close-on-content-click="false"
-          >
-            <template v-slot:activator="{ on: menu }">
-              <v-tooltip bottom>
-                <template v-slot:activator="{ on: tooltip }">
-                  <v-btn
-                    v-on="{ ...tooltip, ...menu }"
-                    icon
-                  >
-                    <v-icon>
-                      mdi-filter-variant
-                    </v-icon>
-                  </v-btn>
-                </template>
-                <span>Filter options</span>
-              </v-tooltip>
-            </template>
-            <v-card class="unselectable">
-              <v-list class="inactive">
-                <v-list-item class="inactive">
-                  <v-list-item-content>
-                    <v-list-item-title>
-                      <div class="text--sub-title-1 ma-0">
-                        Filter options
-                      </div>
-                    </v-list-item-title>
-                  </v-list-item-content>
-                </v-list-item>
-
-                <v-divider></v-divider>
-
-                <v-list-item 
-                  class="px-5" 
-                  @click="filterQueryOptionGlob = !filterQueryOptionGlob"
-                  dense
+      <div class="filter-field__menu-button">
+        <v-menu
+          offset-y
+          :close-on-content-click="false"
+        >
+          <template #activator="{ on: menu }">
+            <v-tooltip bottom>
+              <template #activator="{ on: tooltip }">
+                <v-btn
+                  icon
+                  v-on="{ ...tooltip, ...menu }"
                 >
-                  <v-switch
-                    class="my-3 pt-0"
-                    :value="filterQueryOptionGlob"
-                    label="Glob filtering"
-                    hide-details
-                  ></v-switch>
-                </v-list-item>
+                  <v-icon>
+                    mdi-filter-variant
+                  </v-icon>
+                </v-btn>
+              </template>
+              <span>Filter options</span>
+            </v-tooltip>
+          </template>
+          <v-card class="unselectable">
+            <v-list class="inactive">
+              <v-list-item class="inactive">
+                <v-list-item-content>
+                  <v-list-item-title>
+                    <div class="text--sub-title-1 ma-0">
+                      Filter options
+                    </div>
+                  </v-list-item-title>
+                </v-list-item-content>
+              </v-list-item>
 
-                <v-list-item
-                  class="px-5"
-                  v-if="$route.name !== 'notes'"
-                  @click="navigatorShowHiddenDirItems = !navigatorShowHiddenDirItems"
-                  dense
-                >
-                  <v-switch
-                    class="my-3 pt-0"
-                    :value="navigatorShowHiddenDirItems"
-                    label="Show Hidden Items"
-                    hide-details
-                  ></v-switch>
-                </v-list-item>
+              <v-divider />
 
-                <v-divider></v-divider>
+              <v-list-item
+                class="px-5"
+                dense
+                @click="filterQueryOptionGlob = !filterQueryOptionGlob"
+              >
+                <v-switch
+                  class="my-3 pt-0"
+                  :value="filterQueryOptionGlob"
+                  label="Glob filtering"
+                  hide-details
+                />
+              </v-list-item>
 
-                <v-list-item three-line class="inactive">
-                  <v-list-item-content>
-                    <v-list-item-title class="text--sub-title-1 ma-0">
-                      Filter prefixes
-                    </v-list-item-title>
-                    <v-list-item-subtitle>
-                      Add a prefix to the start to filter by specific property. 
-                      <br>For example: "size: MB", "items: 15", "date-m: 2021"
-                    </v-list-item-subtitle>
-                  </v-list-item-content>
-                </v-list-item>
+              <v-list-item
+                v-if="$route.name !== 'notes'"
+                class="px-5"
+                dense
+                @click="navigatorShowHiddenDirItems = !navigatorShowHiddenDirItems"
+              >
+                <v-switch
+                  class="my-3 pt-0"
+                  :value="navigatorShowHiddenDirItems"
+                  label="Show Hidden Items"
+                  hide-details
+                />
+              </v-list-item>
 
-                <v-list-item
-                  v-for="(item, index) in filterProperties"
-                  :key="'item-' + index"
-                  dense
-                >
-                  <v-list-item-content>
-                    <v-list-item-title>
-                      <span class="inline-code--light">{{item.prefix}}</span> 
-                      {{item.title}}
-                    </v-list-item-title>
-                  </v-list-item-content>
-                </v-list-item>
-              </v-list>
-            </v-card>
-          </v-menu>
-        </div>
+              <v-divider />
+
+              <v-list-item
+                three-line
+                class="inactive"
+              >
+                <v-list-item-content>
+                  <v-list-item-title class="text--sub-title-1 ma-0">
+                    Filter prefixes
+                  </v-list-item-title>
+                  <v-list-item-subtitle>
+                    Add a prefix to the start to filter by specific property.
+                    <br />For example: "size: MB", "items: 15", "date-m: 2021"
+                  </v-list-item-subtitle>
+                </v-list-item-content>
+              </v-list-item>
+
+              <v-list-item
+                v-for="(item, index) in filterProperties"
+                :key="'item-' + index"
+                dense
+              >
+                <v-list-item-content>
+                  <v-list-item-title>
+                    <span class="inline-code--light">{{item.prefix}}</span>
+                    {{item.title}}
+                  </v-list-item-title>
+                </v-list-item-content>
+              </v-list-item>
+            </v-list>
+          </v-card>
+        </v-menu>
       </div>
     </div>
   </div>
@@ -157,6 +161,7 @@ export default {
     ...mapFields({
       notesItems: 'storageData.notes.items',
       dirItems: 'navigatorView.dirItems',
+      settingsDataMap: 'settingsView.settingsDataMap',
       focusedField: 'focusedField',
     }),
     navigatorShowHiddenDirItems: {
@@ -166,9 +171,9 @@ export default {
       set (value) {
         this.$store.dispatch('SET', {
           key: 'storageData.settings.navigator.showHiddenDirItems',
-          value: value
+          value: value,
         })
-      }
+      },
     },
     filterQuery: {
       get () {
@@ -177,9 +182,9 @@ export default {
       set (value) {
         this.$store.dispatch('SET', {
           key: `filterField.view.${this.$route.name}.query`,
-          value: value
+          value: value,
         })
-      }
+      },
     },
     filterQueryMatchedItems: {
       get () {
@@ -188,9 +193,9 @@ export default {
       set (value) {
         this.$store.dispatch('SET', {
           key: `filterField.view.${this.$route.name}.matchedItems`,
-          value: value
+          value: value,
         })
-      }
+      },
     },
     filterQueryOptions: {
       get () {
@@ -199,9 +204,9 @@ export default {
       set (value) {
         this.$store.dispatch('SET', {
           key: `filterField.view.${this.$route.name}.options`,
-          value: value
+          value: value,
         })
-      }
+      },
     },
     filterQueryOptionGlob: {
       get () {
@@ -210,9 +215,9 @@ export default {
       set (value) {
         this.$store.dispatch('SET', {
           key: `filterField.view.${this.$route.name}.options.glob`,
-          value: value
+          value: value,
         })
-      }
+      },
     },
     filterProperties () {
       return this.$store.state.filterField.view[this.$route.name].filterProperties
@@ -243,6 +248,7 @@ export default {
   display: flex;
   align-items: center;
   width: 200px;
+  flex-shrink: 0;
   height: 34px;
   margin-bottom: 1px;
   padding-top: 1px;

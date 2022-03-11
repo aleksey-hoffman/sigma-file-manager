@@ -226,6 +226,20 @@ export default new Vuex.Store({
               property: 'path',
             }
           ]
+        },
+        settings: {
+          query: '',
+          options: {
+            glob: false
+          },
+          filterProperties: [
+            {
+              name: 'tags',
+              title: 'setting tags',
+              prefix: 'tags:',
+              property: 'tags',
+            },
+          ]
         }
       }
     },
@@ -291,6 +305,9 @@ export default new Vuex.Store({
           isChecked: true,
         },
       ]
+    },
+    settingsView: {
+      settingsDataMap: []
     },
     navigatorView: {
       info: {},
