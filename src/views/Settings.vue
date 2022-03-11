@@ -2528,12 +2528,12 @@ export default {
 
 #settings-view
   .tab-view {
-    grid-template-columns: 1fr minmax(100px, 1fr);
+    grid-template-columns: 1fr;
   }
 
 #settings-view[filter-is-empty]
   .tab-view {
-    grid-template-columns: 230px 1fr minmax(100px, 1fr);
+    grid-template-columns: 230px 1fr;
   }
 
 #settings-view
@@ -2545,7 +2545,7 @@ export default {
 #settings-view
   .settings-section__content {
     padding: 12px 16px;
-    background-color: rgb(200, 200, 255, 0.04);
+    background-color: rgb(200, 200, 230, 0.04);
     border-radius: 8px;
     transition: all 0.1s ease;
   }
