@@ -102,6 +102,7 @@ module.exports = {
   },
   toCamelCaseObjectKeys (object) {
     let newObject = {}
+    if (!object) {return {}}
     for (const key of Object.keys(object)) {
       let camelCaseKey = this.toCamelCase(key)
       newObject[camelCaseKey] = object[key]

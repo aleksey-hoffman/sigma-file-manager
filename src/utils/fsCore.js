@@ -19,7 +19,7 @@ const preloadCount = 100
 * @returns {object}
 */
 async function getDirItemInfo (path, itemHeight) {
-  const nameBase = PATH.parse(path).base
+  const nameBase = PATH.parse(path).base || path
   return await fetchDirItemData(path, nameBase, itemHeight)
 }
 
@@ -294,6 +294,7 @@ function getSizeOnDisk (dirItem) {
 function updateFSAttributes (dirItem) {
   if (process.platform === 'win32') {
     fsWin.find(dirItem.path, (data) => {
+      if (data.length === 0) {return}
       dirItem.fsAttributes = sharedUtils.toCamelCaseObjectKeys(data[0])
       // Decode RAW attributes and add readable props
       for (const [key, value] of Object.entries(dirItem.fsAttributes)) {
