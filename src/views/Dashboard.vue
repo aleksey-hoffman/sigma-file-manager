@@ -10,13 +10,14 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       class="content-area custom-scrollbar"
     >
       <v-layout
-        align-center justify-space-between
+        align-center
+        justify-space-between
         class="mb-4"
       >
         <div class="text--title-1">
           Dashboard
         </div>
-        <filter-field ref="filterField"/>
+        <filter-field ref="filterField" />
       </v-layout>
 
       <v-tabs
@@ -29,26 +30,42 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           v-show="tab.show"
           :key="index"
         >
-          <v-icon size="18" class="mr-2">{{tab.icon}}</v-icon>
+          <v-icon
+            size="18"
+            class="mr-2"
+          >
+            {{tab.icon}}
+          </v-icon>
           {{tab.title}}
         </v-tab>
       </v-tabs>
-      <v-divider class="divider-color-2 mb-4"></v-divider>
+      <v-divider class="divider-color-2 mb-4" />
 
-      <v-tabs-items v-model="dashboardSelectedTab" class="mb-6">
+      <v-tabs-items
+        v-model="dashboardSelectedTab"
+        class="mb-6"
+      >
         <!-- tab-item:pinned -->
         <v-tab-item>
           <v-menu offset-y>
-            <template v-slot:activator="{ on: menu, attrs }">
-              <v-tooltip bottom :disabled="attrs['aria-expanded'] === 'true'">
-                <template v-slot:activator="{ on: tooltip }">
-                   <v-btn
-                    v-on="{ ...tooltip, ...menu }"
+            <template #activator="{ on: menu, attrs }">
+              <v-tooltip
+                bottom
+                :disabled="attrs['aria-expanded'] === 'true'"
+              >
+                <template #activator="{ on: tooltip }">
+                  <v-btn
                     v-bind="attrs"
                     class="button-1 mb-4"
                     small
+                    v-on="{ ...tooltip, ...menu }"
                   >
-                    <v-icon size="22px" class="mr-3">mdi-menu-down</v-icon>
+                    <v-icon
+                      size="22px"
+                      class="mr-3"
+                    >
+                      mdi-menu-down
+                    </v-icon>
                     Options
                   </v-btn>
                 </template>
@@ -60,7 +77,12 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 @click="$store.dispatch('CLEAR_PINNED')"
               >
                 <v-list-item-action>
-                  <v-icon class="ml-2" size="16px">mdi-close</v-icon>
+                  <v-icon
+                    class="ml-2"
+                    size="16px"
+                  >
+                    mdi-close
+                  </v-icon>
                 </v-list-item-action>
                 <v-list-item-title>Remove all from this list</v-list-item-title>
               </v-list-item>
@@ -75,24 +97,25 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             layout="list"
             :index="index"
             :type="item.type"
-            :showDir="true"
-            :thumbLoadingIsPaused="false"
-            :forceThumbLoad="false"
+            :show-dir="true"
+            :thumb-loading-is-paused="false"
+            :force-thumb-load="false"
             :status="{
               itemHover: {
                 isPaused: false
               }
             }"
           >
-            <template v-slot:actions>
+            <template #actions>
               <v-btn icon>
                 <v-icon
                   @dblclick.prevent.stop=""
                   @click.prevent.stop="$store.dispatch(
                     'REMOVE_FROM_PINNED',
-                  { items: [item] }
+                    { items: [item] }
                   )"
-                >mdi-close
+                >
+                  mdi-close
                 </v-icon>
               </v-btn>
             </template>
@@ -106,24 +129,25 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             layout="list"
             :index="index"
             :type="item.type"
-            :showDir="true"
-            :thumbLoadingIsPaused="false"
-            :forceThumbLoad="false"
+            :show-dir="true"
+            :thumb-loading-is-paused="false"
+            :force-thumb-load="false"
             :status="{
               itemHover: {
                 isPaused: false
               }
             }"
           >
-            <template v-slot:actions>
+            <template #actions>
               <v-btn icon>
                 <v-icon
                   @dblclick.prevent.stop=""
                   @click.prevent.stop="$store.dispatch(
                     'REMOVE_FROM_PINNED',
-                  { items: [item] }
+                    { items: [item] }
                   )"
-                >mdi-close
+                >
+                  mdi-close
                 </v-icon>
               </v-btn>
             </template>
@@ -143,16 +167,24 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         <!-- tab-item:protected -->
         <v-tab-item>
           <v-menu offset-y>
-            <template v-slot:activator="{ on: menu, attrs }">
-              <v-tooltip bottom :disabled="attrs['aria-expanded'] === 'true'">
-                <template v-slot:activator="{ on: tooltip }">
+            <template #activator="{ on: menu, attrs }">
+              <v-tooltip
+                bottom
+                :disabled="attrs['aria-expanded'] === 'true'"
+              >
+                <template #activator="{ on: tooltip }">
                   <v-btn
-                    v-on="{ ...tooltip, ...menu }"
                     v-bind="attrs"
                     class="button-1 mb-4"
                     small
+                    v-on="{ ...tooltip, ...menu }"
                   >
-                    <v-icon size="22px" class="mr-3">mdi-menu-down</v-icon>
+                    <v-icon
+                      size="22px"
+                      class="mr-3"
+                    >
+                      mdi-menu-down
+                    </v-icon>
                     Options
                   </v-btn>
                 </template>
@@ -164,7 +196,12 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 @click="$store.dispatch('CLEAR_PROTECTED')"
               >
                 <v-list-item-action>
-                  <v-icon class="ml-2" size="16px">mdi-close</v-icon>
+                  <v-icon
+                    class="ml-2"
+                    size="16px"
+                  >
+                    mdi-close
+                  </v-icon>
                 </v-list-item-action>
                 <v-list-item-title>Remove all from this list</v-list-item-title>
               </v-list-item>
@@ -179,24 +216,25 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             layout="list"
             :index="index"
             :type="item.type"
-            :showDir="true"
-            :thumbLoadingIsPaused="false"
-            :forceThumbLoad="false"
+            :show-dir="true"
+            :thumb-loading-is-paused="false"
+            :force-thumb-load="false"
             :status="{
               itemHover: {
                 isPaused: false
               }
             }"
           >
-            <template v-slot:actions>
+            <template #actions>
               <v-btn icon>
                 <v-icon
                   @dblclick.prevent.stop=""
                   @click.prevent.stop="$store.dispatch(
                     'REMOVE_FROM_PROTECTED',
-                  { items: [item] }
+                    { items: [item] }
                   )"
-                >mdi-close
+                >
+                  mdi-close
                 </v-icon>
               </v-btn>
             </template>
@@ -210,24 +248,25 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             layout="list"
             :index="index"
             :type="item.type"
-            :showDir="true"
-            :thumbLoadingIsPaused="false"
-            :forceThumbLoad="false"
+            :show-dir="true"
+            :thumb-loading-is-paused="false"
+            :force-thumb-load="false"
             :status="{
               itemHover: {
                 isPaused: false
               }
             }"
           >
-            <template v-slot:actions>
+            <template #actions>
               <v-btn icon>
                 <v-icon
                   @dblclick.prevent.stop=""
                   @click.prevent.stop="$store.dispatch(
                     'REMOVE_FROM_PROTECTED',
-                  { items: [item] }
+                    { items: [item] }
                   )"
-                >mdi-close
+                >
+                  mdi-close
                 </v-icon>
               </v-btn>
             </template>
@@ -247,17 +286,25 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         <!-- tab-item:timeline -->
         <v-tab-item v-show="dashboard.tabs.timeline.show">
           <v-menu offset-y>
-            <template v-slot:activator="{ on: menu, attrs }">
-              <v-tooltip bottom :disabled="attrs['aria-expanded'] === 'true'">
-                <template v-slot:activator="{ on: tooltip }">
+            <template #activator="{ on: menu, attrs }">
+              <v-tooltip
+                bottom
+                :disabled="attrs['aria-expanded'] === 'true'"
+              >
+                <template #activator="{ on: tooltip }">
                   <v-btn
-                    class="button-1 mb-4"
                     v-show="stats.storeDirItemOpenEvent"
-                    v-on="{ ...tooltip, ...menu }"
+                    class="button-1 mb-4"
                     v-bind="attrs"
                     small
+                    v-on="{ ...tooltip, ...menu }"
                   >
-                    <v-icon size="22px" class="mr-3">mdi-menu-down</v-icon>
+                    <v-icon
+                      size="22px"
+                      class="mr-3"
+                    >
+                      mdi-menu-down
+                    </v-icon>
                     Options
                   </v-btn>
                 </template>
@@ -269,7 +316,12 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 @click="$store.dispatch('CLEAR_DIR_ITEMS_TIMELINE')"
               >
                 <v-list-item-action>
-                  <v-icon class="ml-2" size="16px">mdi-close</v-icon>
+                  <v-icon
+                    class="ml-2"
+                    size="16px"
+                  >
+                    mdi-close
+                  </v-icon>
                 </v-list-item-action>
                 <v-list-item-title>Remove all from this list</v-list-item-title>
               </v-list-item>
@@ -291,16 +343,16 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               layout="list"
               :index="index"
               :type="item.type"
-              :showDir="true"
-              :thumbLoadingIsPaused="false"
-              :forceThumbLoad="false"
+              :show-dir="true"
+              :thumb-loading-is-paused="false"
+              :force-thumb-load="false"
               :status="{
                 itemHover: {
                   isPaused: false
                 }
               }"
             >
-              <template v-slot:actions>
+              <template #actions>
                 <v-btn icon>
                   <v-icon
                     @dblclick.prevent.stop=""
@@ -308,7 +360,8 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                       'REMOVE_FROM_DIR_ITEMS_TIMELINE',
                       {items: [item]}
                     )"
-                  >mdi-close
+                  >
+                    mdi-close
                   </v-icon>
                 </v-btn>
               </template>
@@ -318,15 +371,16 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           <!-- no-data -->
           <div v-show="!stats.storeDirItemOpenEvent">
             <div>
-              This feature is disabled. 
-              <br>The app doesn't store statistics of your interactions with directories / files.
-              <br>Enable the option called <span class="inline-code--light">"Store the list of opened directory items"</span> in the "Stats" section of settings:
+              This feature is disabled.
+              <br />The app doesn't store statistics of your interactions with directories / files.
+              <br />Enable the option called <span class="inline-code--light">"Store the list of opened directory items"</span> in the "Stats" section of settings:
             </div>
             <v-btn
               class="button-1 mt-4"
-              @click="$router.push('settings')"
               small
-            >Open settings
+              @click="$router.push('settings')"
+            >
+              Open settings
             </v-btn>
           </div>
 
@@ -356,25 +410,25 @@ export default {
       fetchedData: {
         pinnedItems: [],
         protectedItems: [],
-        dirItemsTimeline: []
-      }
+        dirItemsTimeline: [],
+      },
     }
   },
   beforeRouteLeave (to, from, next) {
     this.$store.dispatch('SAVE_ROUTE_SCROLL_POSITION', {
       toRoute: to,
-      fromRoute: from
+      fromRoute: from,
     })
     next()
   },
   activated () {
     this.$store.dispatch('ROUTE_ACTIVATED_HOOK_CALLBACK', {
-      route: 'dashboard'
+      route: 'dashboard',
     })
   },
   async mounted () {
     this.$store.dispatch('ROUTE_MOUNTED_HOOK_CALLBACK', {
-      route: 'dashboard'
+      route: 'dashboard',
     })
     await this.fetchDataObjects()
   },
@@ -387,7 +441,7 @@ export default {
     },
     dirItemsTimeline () {
       this.fetchDataObjects()
-    }
+    },
   },
   computed: {
     ...mapFields({
@@ -400,7 +454,7 @@ export default {
       dashboard: 'storageData.settings.dashboard',
       filterQuery: 'filterField.view.dashboard.query',
       dashboardSelectedTab: 'storageData.settings.dashboard.selectedTab',
-      navigatorShowHiddenDirItems: 'storageData.settings.navigator.showHiddenDirItems'
+      navigatorShowHiddenDirItems: 'storageData.settings.navigator.showHiddenDirItems',
     }),
     pinnedItemsMatchingFilter () {
       return this.getItemsMatchingFilter(this.fetchedData.pinnedItems)
@@ -428,7 +482,7 @@ export default {
         value.items = this.getItemsMatchingFilter(value.items)
       }
       return clonedGroups
-    }
+    },
   },
   methods: {
     getItemsMatchingFilter (items) {
@@ -437,14 +491,14 @@ export default {
         items,
         filterHiddenItems: this.navigatorShowHiddenDirItems,
         filterProperties: this.$store.state.filterField.view[this.$route.name].filterProperties,
-        filterQueryOptions: this.$store.state.filterField.view[this.$route.name].options
+        filterQueryOptions: this.$store.state.filterField.view[this.$route.name].options,
       })
     },
     async fetchItemDataObject (data) {
       try {
         return await this.$store.dispatch(
           'CONVERT_OBJECTS_TO_DATA_OBJECTS',
-          { items: data }
+          {items: data},
         )
       }
       catch (error) {
@@ -474,7 +528,7 @@ export default {
         else {
           groups[itemOpenDate] = {
             title: itemOpenDate,
-            items: [item]
+            items: [item],
           }
         }
       })
@@ -486,10 +540,7 @@ export default {
         item.dir = PATH.parse(item.path).dir.replace(/\\/g, '/')
         return item
       })
-    }
-  }
+    },
+  },
 }
 </script>
-
-<style>
-</style>
