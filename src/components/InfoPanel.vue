@@ -6,64 +6,76 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <template>
   <div>
     <v-navigation-drawer
-      class="info-panel"
       v-if="$vuetify.breakpoint.mdAndUp"
       v-model="navigatorViewInfoPanel.value"
-      app clipped floating right stateless touchless width="280"
+      class="info-panel"
+      app
+      clipped
+      floating
+      right
+      stateless
+      touchless
+      width="280"
     >
       <div class="info-panel__preview-container">
         <div class="info-panel__preview-container__info-overlay">
           <v-icon
             class="info-panel__preview-container__info-overlay__item-type-icon"
             :class="previewIcon.class"
-            @click="previewIcon.onClick()"
             :size="previewIcon.size"
             :aria-label="previewIcon.ariaLabel"
             :data-icon="previewIcon.dataIcon"
-          >{{previewIcon.name}}
+            @click="previewIcon.onClick()"
+          >
+            {{previewIcon.name}}
           </v-icon>
 
-          <div 
-            class="info-panel__preview-container__info-overlay__item-ext"
+          <div
             v-show="['file', 'file-symlink'].includes(itemType)"
+            class="info-panel__preview-container__info-overlay__item-ext"
             v-html="itemExt"
-          ></div>
-          
-          <div 
-            class="info-panel__preview-container__info-overlay__audio-duration"
+          />
+
+          <div
             v-show="itemMimeDescription === 'audio'"
-          >{{formattedInfoPanelAudioDuration}}
+            class="info-panel__preview-container__info-overlay__audio-duration"
+          >
+            {{formattedInfoPanelAudioDuration}}
           </div>
         </div>
-        <div class="info-panel__preview-container__media-container"></div>
+        <div class="info-panel__preview-container__media-container" />
       </div>
 
       <div class="info-panel__info-container">
-        <v-layout class="info-panel__header" column>
+        <v-layout
+          class="info-panel__header"
+          column
+        >
           <!-- info-container::header::title -->
           <v-tooltip bottom>
-            <template v-slot:activator="{on}">
+            <template #activator="{on}">
               <div
+                class="info-panel__header__title"
+                :class="{'cursor-pointer': inputState.ctrl}"
                 v-on="on"
                 @click.ctrl="$utils.copyToClipboard({
                   text: itemTitle
                 })"
-                class="info-panel__header__title"
-                :class="{'cursor-pointer': inputState.ctrl}"
-              >{{itemTitle}}
+              >
+                {{itemTitle}}
               </div>
             </template>
             <span>To copy: Ctrl + LClick</span>
           </v-tooltip>
 
           <!-- info-container::header::description -->
-          <div 
+          <div
             class="info-panel__header__sub-title"
             v-html="itemDescription"
-          ></div>
+          />
         </v-layout>
 
-        <v-divider class="my-3"></v-divider>
+        <v-divider class="my-3" />
 
         <!-- info-container::properties -->
         <div class="info-panel__properties custom-scrollbar">
@@ -82,20 +94,20 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               <div>
                 <v-btn
                   v-show="itemInfoSizeButton.show"
-                  @click.exact="handleItemInfoSizeButtonClick()"
                   class="info-panel__properties__item__value mb-0 button-2 fade-in-1s"
                   style="max-height: 20px;"
                   x-small
+                  @click.exact="handleItemInfoSizeButtonClick()"
                 >
                   <div
-                    class="fade-in-1s"
                     v-show="showGetDirSizeBtn"
+                    class="fade-in-1s"
                   >
                     {{itemInfoSizeButton.title}}
                   </div>
                   <div
-                    class="fade-in-1s"
                     v-show="showCancelGetDirSizeBtn"
+                    class="fade-in-1s"
                   >
                     <v-progress-circular
                       class="mr-2 fade-in-1s"
@@ -103,7 +115,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                       :color="$utils.getCSSVar('--color-6')"
                       size="12"
                       width="2"
-                    ></v-progress-circular>
+                    />
                     {{itemInfoSizeButton.title}}
                   </div>
                 </v-btn>
@@ -111,15 +123,15 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
               <!-- property:size -->
               <v-tooltip bottom>
-                <template v-slot:activator="{on}">
+                <template #activator="{on}">
                   <div
-                    v-on="on"
                     v-show="!showGetDirSizeBtn && !showCancelGetDirSizeBtn"
+                    class="info-panel__properties__item__value"
+                    :class="{'cursor-pointer': inputState.ctrl}"
+                    v-on="on"
                     @click.ctrl="$utils.copyToClipboard({
                       text: $utils.prettyBytes(lastSelectedDirItem.stat.size, 1)
                     })"
-                    class="info-panel__properties__item__value"
-                    :class="{'cursor-pointer': inputState.ctrl}"
                   >
                     {{getSize}}
                   </div>
@@ -138,7 +150,9 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           >
             <template v-if="item.type === 'separator'">
               <div class="info-panel__properties__item--separator">
-                <v-icon size="20px">mdi-information-outline</v-icon>
+                <v-icon size="20px">
+                  mdi-information-outline
+                </v-icon>
                 {{item.title}}
               </div>
             </template>
@@ -147,23 +161,27 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               <div
                 class="info-panel__properties__item__title"
                 v-html="item.title"
-              >:
+              >
+                :
               </div>
 
               <v-tooltip
                 :disabled="!item.tooltip || item.tooltip.length === 0"
-                bottom max-width="250px" offset-overflow
+                bottom
+                max-width="400px"
+                offset-overflow
               >
-                <template v-slot:activator="{on}">
+                <template #activator="{on}">
                   <div
+                    class="info-panel__properties__item__value"
+                    :class="{'cursor-pointer': inputState.ctrl}"
                     v-on="on"
                     @click="handleClickPropertyValue({event: $event, item})"
-                    class="info-panel__properties__item__value"
-                    :class="{'cursor-pointer highlighted-box-on-hover': inputState.ctrl}"
-                  >{{item.value}}
+                  >
+                    {{item.value}}
                   </div>
                 </template>
-                <span v-html="item.tooltip"></span>
+                <span v-html="item.tooltip" />
               </v-tooltip>
             </template>
           </v-layout>
@@ -182,7 +200,7 @@ export default {
     return {
       infoPanelAudioIsPlaying: false,
       infoPanelAudioDuration: 0,
-      itemInfoSizeButtonState: 'idle'
+      itemInfoSizeButtonState: 'idle',
     }
   },
   created () {
@@ -193,12 +211,12 @@ export default {
       this.$nextTick(() => {
         this.updateInfoPanelData()
       })
-    }
+    },
   },
   computed: {
     ...mapGetters([
       'selectedDirItems',
-      'lastSelectedDirItem'
+      'lastSelectedDirItem',
     ]),
     ...mapFields({
       inputState: 'inputState',
@@ -229,13 +247,13 @@ export default {
       return `${description}${dirItemCount}${itemMimeDescription}${isOffline}${keepOnDevice}${inaccessible}`
     },
     itemType () {
-      return this.lastSelectedDirItem?.type || ''  
+      return this.lastSelectedDirItem?.type || ''
     },
     itemMimeDescription () {
-      return this.lastSelectedDirItem?.mime.mimeDescription || ''  
+      return this.lastSelectedDirItem?.mime.mimeDescription || ''
     },
     itemTitle () {
-      return this.lastSelectedDirItem?.name || ''  
+      return this.lastSelectedDirItem?.name || ''
     },
     itemSizeTitle () {
       let type = this.lastSelectedDirItem?.type || ''
@@ -249,7 +267,7 @@ export default {
       const icon = {
         name: '',
         size: '56px',
-        class: 'info-panel__media-preview__icon'
+        class: 'info-panel__media-preview__icon',
       }
 
       if (type === 'directory') {
@@ -313,7 +331,7 @@ export default {
     getSize () {
       try {
         const sizeOnDisk = this.lastSelectedDirItem?.sizeOnDisk === 0
-          ? ` • 0 bytes on disk`
+          ? ' • 0 bytes on disk'
           : ''
         const size = this.$utils.prettyBytes(this.lastSelectedDirItem?.stat?.size, 1)
         return `${size}${sizeOnDisk}`
@@ -332,9 +350,9 @@ export default {
       return this.$utils.getFormattedTime({
         time: this.infoPanelAudioDuration,
         unit: 'seconds',
-        format: 'HH:mm:ss'
+        format: 'HH:mm:ss',
       })
-    }
+    },
   },
   methods: {
     async handleItemInfoSizeButtonClick () {
@@ -344,7 +362,7 @@ export default {
         this.itemInfoSizeButtonState = 'idle'
       }
       else {
-        this.itemInfoSizeButtonState = 'idle' 
+        this.itemInfoSizeButtonState = 'idle'
         this.$store.dispatch('TERMINATE_ALL_FETCH_DIR_SIZE')
       }
     },
@@ -431,31 +449,31 @@ export default {
           propName: 'path',
           title: this.$localize.get('text_path'),
           value: item.path,
-          tooltip: copyPathTooltip
+          tooltip: copyPathTooltip,
         },
         {
           propName: 'dateCreated',
           title: this.$localize.get('text_created'),
           value: this.$utils.getLocalDateTime(item.stat.birthtime, this.$store.state.storageData.settings.dateTime),
-          tooltip: `${this.$localize.get('tooltip_text_to_copy')}: ${copyShortcut}`
+          tooltip: `${this.$localize.get('tooltip_text_to_copy')}: ${copyShortcut}`,
         },
         {
           propName: 'dateModified',
           title: this.$localize.get('text_modified'),
           value: this.$utils.getLocalDateTime(item.stat.mtime, this.$store.state.storageData.settings.dateTime),
-          tooltip: `${this.$localize.get('tooltip_text_to_copy')}: ${copyShortcut}`
+          tooltip: `${this.$localize.get('tooltip_text_to_copy')}: ${copyShortcut}`,
         },
         {
           propName: 'dateChanged',
           title: this.$localize.get('text_changed'),
           value: this.$utils.getLocalDateTime(item.stat.ctime, this.$store.state.storageData.settings.dateTime),
-          tooltip: `${this.$localize.get('tooltip_text_to_copy')}: ${copyShortcut}`
+          tooltip: `${this.$localize.get('tooltip_text_to_copy')}: ${copyShortcut}`,
         },
         {
           propName: 'permissions',
           title: this.$localize.get('text_mode'),
           value: permissions,
-          tooltip: `${this.$localize.get('tooltip_text_to_copy')}: ${copyShortcut}`
+          tooltip: `${this.$localize.get('tooltip_text_to_copy')}: ${copyShortcut}`,
         },
         {
           propName: 'protected',
@@ -466,7 +484,7 @@ export default {
           tooltip: `
             Protected items cannot be modified or deleted (from within this app only). 
             Protected items can be found on the dashboard page.
-          `
+          `,
         },
         {
           propName: 'pinned',
@@ -474,8 +492,8 @@ export default {
           value: isDirItemPinned
             ? this.$localize.get('text_yes')
             : this.$localize.get('text_no'),
-          tooltip: 'Pinned items can be found on the dashboard page'
-        }
+          tooltip: 'Pinned items can be found on the dashboard page',
+        },
       ]
 
       // Append conditional properties
@@ -547,10 +565,11 @@ export default {
       }
     },
     formatMediaInfo (data) {
-      if (!data) {return []}
+      if (!data || !this.lastSelectedDirItem) {return []}
 
-      const itemMimeDescription = this.lastSelectedDirItem?.mime.mimeDescription
+      const itemMimeDescription = this.lastSelectedDirItem.mime.mimeDescription
       let dataFormatted = []
+
       if (itemMimeDescription === 'image') {
         let displayedImageStreamProperties = [
           'width',
@@ -774,8 +793,8 @@ export default {
         this.infoPanelAudioIsPlaying = false
         media.pause()
       }
-    }
-  }
+    },
+  },
 }
 </script>
 
@@ -921,6 +940,7 @@ export default {
 }
 
 .info-panel__properties__item__value {
+  width: fit-content;
   margin-bottom: 8px;
   color: var(--color-7);
   font-size: 14px;
