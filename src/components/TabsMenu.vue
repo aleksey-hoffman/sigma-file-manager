@@ -6,7 +6,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <template>
   <basic-menu
     v-model="menus.tabs"
-    :menuButton="{
+    :menu-button="{
       tooltip: {
         description: 'Tabs',
         shortcut: shortcuts.switchTab.shortcut
@@ -39,28 +39,29 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       ]
     }"
   >
-    <template v-slot:activator>
+    <template #activator>
       <button class="window-toolbar__item button--menu">
         <v-icon
           :color="iconColor"
           size="18px"
-        >mdi-tab
+        >
+          mdi-tab
         </v-icon>
 
-        <div 
-          class="button--menu__counter" 
+        <div
+          class="button--menu__counter"
           :style="{color: iconColor}"
         >
           {{tabsButtonText}}
         </div>
       </button>
     </template>
-    <template v-slot:content>
+    <template #content>
       <sortable-list
         source="tabs"
-        itemName="tab"
-        noData="Current workspace has no tabs"
-      ></sortable-list>
+        item-name="tab"
+        no-data="Current workspace has no tabs"
+      />
     </template>
   </basic-menu>
 </template>
@@ -71,22 +72,25 @@ import {mapFields} from 'vuex-map-fields'
 
 export default {
   props: {
-    iconColor: String
+    iconColor: {
+      type: String,
+      default: '#fff',
+    },
   },
   computed: {
     ...mapFields({
       menus: 'menus',
-      shortcuts: 'storageData.settings.shortcuts'
+      shortcuts: 'storageData.settings.shortcuts',
     }),
     ...mapGetters([
-      'selectedWorkspace'
+      'selectedWorkspace',
     ]),
     tabsButtonText () {
       let tabIndex = this.selectedWorkspace.tabs.findIndex(tab => {
         return tab.path === this.$store.state.navigatorView.currentDir.path
       }) + 1 || '-'
       return tabIndex
-    }
-  }
+    },
+  },
 }
 </script>

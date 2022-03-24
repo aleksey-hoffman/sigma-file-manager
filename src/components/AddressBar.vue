@@ -8,25 +8,29 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     class="address-bar"
     align-center
   >
-    <v-layout 
+    <v-layout
       class="address-bar__inner"
-      align-center 
+      align-center
     >
       <!-- address-bar::menu:actions -->
       <v-menu offset-y>
-        <template v-slot:activator="{on: menu, attrs}">
-          <v-tooltip bottom :disabled="attrs['aria-expanded'] === 'true'">
-            <template v-slot:activator="{on: tooltip}">
+        <template #activator="{on: menu, attrs}">
+          <v-tooltip
+            bottom
+            :disabled="attrs['aria-expanded'] === 'true'"
+          >
+            <template #activator="{on: tooltip}">
               <transition name="fade-in-1s">
                 <v-btn
                   class="action-toolbar__button fade-in-1s"
-                  v-on="{...tooltip, ...menu}"
                   icon
+                  v-on="{...tooltip, ...menu}"
                 >
                   <v-icon
                     class="action-toolbar__icon"
                     size="20px"
-                  >mdi-wrap-disabled
+                  >
+                    mdi-wrap-disabled
                   </v-icon>
                 </v-btn>
               </transition>
@@ -34,35 +38,45 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             <span>Address bar actions</span>
           </v-tooltip>
         </template>
-        <v-list class="pa-0" dense>
+        <v-list
+          class="pa-0"
+          dense
+        >
           <v-list-item
             v-for="(item, index) in addressBarMenuItems"
             :key="index"
             @click="addressBarMenuHandler(item.action)"
           >
             <v-list-item-action class="pr-0">
-              <v-icon size="16px">{{item.icon}}</v-icon>
+              <v-icon size="16px">
+                {{item.icon}}
+              </v-icon>
             </v-list-item-action>
             <v-list-item-content>
-              <v-list-item-title class="subheading">{{item.title}}</v-list-item-title>
-              <v-list-item-subtitle class="subheading">{{item.shortcut}}</v-list-item-subtitle>
+              <v-list-item-title class="subheading">
+                {{item.title}}
+              </v-list-item-title>
+              <v-list-item-subtitle class="subheading">
+                {{item.shortcut}}
+              </v-list-item-subtitle>
             </v-list-item-content>
           </v-list-item>
         </v-list>
       </v-menu>
 
       <v-tooltip bottom>
-        <template v-slot:activator="{on}">
+        <template #activator="{on}">
           <v-btn
             class="action-toolbar__button fade-in-1s"
+            icon
             v-on="on"
             @click="$store.dispatch('OPEN_ADDRESS_BAR_EDITOR')"
-            icon
           >
             <v-icon
               class="action-toolbar__icon"
               size="16px"
-            >mdi-cursor-text
+            >
+              mdi-cursor-text
             </v-icon>
           </v-btn>
         </template>
@@ -73,14 +87,17 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       <v-layout
         id="address-bar__parts-container"
         class="address-bar__parts-container custom-scrollbar"
-        @click="$store.dispatch('OPEN_ADDRESS_BAR_EDITOR')"
         align-center
+        @click="$store.dispatch('OPEN_ADDRESS_BAR_EDITOR')"
       >
         <v-layout
           class="address-bar__parts-container__inner"
           align-center
         >
-          <div v-for="(part, index) in addressParts" :key="`address-part-${index}`">
+          <div
+            v-for="(part, index) in addressParts"
+            :key="`address-part-${index}`"
+          >
             <v-layout align-center>
               <div
                 class="address-bar__part text-none"
@@ -88,16 +105,21 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   'grey--text text--darken-1': part.isLast,
                   'cursor-pointer': !part.isLast
                 }"
+                text
+                depressed
+                small
+                :disabled="part.isLast"
                 @click.exact.stop="$store.dispatch('LOAD_DIR', {path: part.path})"
                 @contextmenu="toggleDirContextMenu({event: $event, part})"
-                text depressed small
-                :disabled="part.isLast"
-              >{{part.base}}
+              >
+                {{part.base}}
               </div>
               <div
-                class="address-bar__part-divider" 
                 v-if="!part.isLast"
-              >/</div>
+                class="address-bar__part-divider"
+              >
+                /
+              </div>
             </v-layout>
           </div>
         </v-layout>
@@ -107,61 +129,78 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       <transition name="slide-fade-down-300ms">
         <div
           v-show="addressBarEditor"
-          style="position: absolute; top: 1px; left: 0px; width: 100%; z-index: 8"
           v-click-outside="{
             handler: handleAddressBarEditorClickOutside,
             include: addressBarEditorClickOutsideIncludedNodes
           }"
+          style="position: absolute; top: 1px; left: 0px; width: 100%; z-index: 8"
         >
-          <v-card class="px-2 pt-2 pb-3" shadow="x3">
+          <v-card
+            class="px-2 pt-2 pb-3"
+            shadow="x3"
+          >
             <v-layout class="pl-2 py-0">
               <v-text-field
-                class="mt-0 pt-0"
                 v-model="query"
+                class="mt-0 pt-0"
+                autofocus
+                single-line
+                hide-details
+                label="Enter valid path to a file / directory."
                 @input="handleQueryInput()"
                 @focus="$store.state.focusedField = 'address-bar'"
                 @blur="$store.state.focusedField = ''"
                 @keydown.enter="openQueryPath()"
                 @keydown.tab.prevent.stop="cycleAutocompleteList($event)"
-                autofocus single-line hide-details
-                label="Enter valid path to a file / directory."
-              ></v-text-field>
+              />
 
               <v-tooltip bottom>
-                <template v-slot:activator="{on}">
+                <template #activator="{on}">
                   <v-btn
                     class="ml-2"
+                    icon
                     v-on="on"
                     @click="closeAddressBarEditorOnClickOutside = !closeAddressBarEditorOnClickOutside"
-                    icon
                   >
-                    <div 
+                    <div
                       class="indicator--bottom"
                       :indicator-is-active="closeAddressBarEditorOnClickOutside"
                     >
-                      <v-icon size="18px">mdi-pin-outline</v-icon>
+                      <v-icon size="18px">
+                        mdi-pin-outline
+                      </v-icon>
                     </div>
                   </v-btn>
                 </template>
                 <span>
-                  {{closeAddressBarEditorOnClickOutside ? 'Enabled' : 'Disabled'}} | 
+                  {{closeAddressBarEditorOnClickOutside ? 'Enabled' : 'Disabled'}} |
                   Keep address bar editor opened when clicking outside
                 </span>
               </v-tooltip>
 
               <v-btn
                 class="ml-2"
-                @click="addressBarEditor = false"
                 icon
-              ><v-icon>mdi-close</v-icon>
+                @click="addressBarEditor = false"
+              >
+                <v-icon>mdi-close</v-icon>
               </v-btn>
             </v-layout>
             <div class="px-2 mt-2 tooltip__shortcut">
-              <span class="inline-code--light" style="padding: 1px 8px;">Tab</span> 
-              or 
-              <span class="inline-code--light" style="padding: 1px 8px;">Shift + Tab</span> 
-              to autocomplete and iterate directory items; 
-              <span class="inline-code--light" style="padding: 1px 8px;">Enter</span> 
+              <span
+                class="inline-code--light"
+                style="padding: 1px 8px;"
+              >Tab</span>
+              or
+              <span
+                class="inline-code--light"
+                style="padding: 1px 8px;"
+              >Shift + Tab</span>
+              to autocomplete and iterate directory items;
+              <span
+                class="inline-code--light"
+                style="padding: 1px 8px;"
+              >Enter</span>
               to open the path
             </div>
           </v-card>
@@ -199,16 +238,16 @@ export default {
     },
     addressParts () {
       this.scrollAddressBarRight()
-    }
+    },
   },
-  mounted() {
+  mounted () {
     this.enableDualAxisScroll()
   },
   computed: {
     ...mapFields({
       currentDir: 'navigatorView.currentDir',
       addressBarEditor: 'addressBarEditor',
-      shortcuts: 'storageData.settings.shortcuts'
+      shortcuts: 'storageData.settings.shortcuts',
     }),
     addressBarMenuItems () {
       return [
@@ -216,20 +255,20 @@ export default {
           title: 'Edit address',
           action: 'OPEN_ADDRESS_BAR_EDITOR',
           shortcut: this.shortcuts.focusAddressBar.shortcut,
-          icon: 'mdi-cursor-text'
+          icon: 'mdi-cursor-text',
         },
         {
           title: 'Copy path to clipboard',
           action: 'COPY_CURRENT_DIR_PATH',
           shortcut: this.shortcuts.copyCurrentDirPath.shortcut,
-          icon: 'far fa-copy'
+          icon: 'far fa-copy',
         },
         {
           title: 'Open copied path',
           action: 'OPEN_DIR_PATH_FROM_OS_CLIPBOARD',
           shortcut: this.shortcuts.openCopiedPath.shortcut,
-          icon: 'far fa-clipboard'
-        }
+          icon: 'far fa-clipboard',
+        },
       ]
     },
     addressParts () {
@@ -259,7 +298,7 @@ export default {
       catch (error) {
         return []
       }
-    }
+    },
   },
   methods: {
     handleAddressBarEditorClickOutside () {
@@ -285,7 +324,7 @@ export default {
             closeButton: true,
             timeout: 3000,
             title: 'Path cannot be opened',
-            message: error
+            message: error,
           })
         }
         else {
@@ -382,7 +421,7 @@ export default {
           if (addressBarScrollContainerNode) {
             addressBarScrollContainerNode.scrollTo({
               left: 1000,
-              behavior: 'smooth'
+              behavior: 'smooth',
             })
           }
         }, 50)
@@ -395,10 +434,10 @@ export default {
       await this.$store.dispatch('SET_CONTEXT_MENU', {
         value: 'toggle',
         x: params.event.clientX,
-        y: params.event.clientY
+        y: params.event.clientY,
       })
-    }
-  }
+    },
+  },
 }
 </script>
 
@@ -452,7 +491,7 @@ export default {
   padding-top: 2px;
 }
 
-.address-bar__parts-container:not(.highlight) 
+.address-bar__parts-container:not(.highlight)
   .address-bar__part:hover {
     color: var(--color-1);
     background-color: var(--highlight-color-4);
