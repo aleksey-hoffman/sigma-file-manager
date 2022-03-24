@@ -18,10 +18,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       </div>
     </div>
     <div class="settings-section__description">
-      <slot name="description"></slot>
+      <slot name="description" />
     </div>
     <div class="settings-section__content">
-      <slot name="content"></slot>
+      <slot name="content" />
     </div>
   </div>
 </template>
@@ -29,12 +29,15 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <script>
 export default {
   props: {
-    header: Object
+    header: {
+      type: Object,
+      default: () => ({}),
+    },
   },
   data () {
     return {
     }
-  }
+  },
 }
 </script>
 
@@ -56,9 +59,6 @@ export default {
 }
 
 .settings-section {
-  /* display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 0px 128px; */
   padding: 32px 8px;
 }
 

@@ -11,10 +11,6 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       'drop-target drag-target': type && type.includes('directory'),
       'drag-target': type && type.includes('file')
     }"
-    @mousedown="handleDirItemMouseDown($event, source, index)"
-    @mouseenter="handleDirItemMouseEnter($event, source)"
-    @mouseleave="handleDirItemMouseLeave($event, source)"
-    @mousedown.middle="handleDirItemMiddleMouseDown($event, source)"
     :data-item-id="source.id"
     :index="index"
     :data-selected="isDirItemSelected(source)"
@@ -30,11 +26,15 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     :is-selected="isDirItemSelected(source)"
     data-two-line="false"
     :cursor="navigatorOpenDirItemWithSingleClick && !inputState.alt ? 'pointer' : 'default'"
+    @mousedown="handleDirItemMouseDown($event, source, index)"
+    @mouseenter="handleDirItemMouseEnter($event, source)"
+    @mouseleave="handleDirItemMouseLeave($event, source)"
+    @mousedown.middle="handleDirItemMiddleMouseDown($event, source)"
   >
     <v-layout
+      v-ripple
       class="dir-item-card__content-container"
       align-center
-      v-ripple
       :style="getCardContentContainerStyles"
     >
       <template v-if="specifiedNavigatorLayout === 'list'">
@@ -42,14 +42,16 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         <v-layout
           class="dir-item-card__content-container__item dir-item-card__thumb-container"
           :data-item-real-path="`${source.realPath}`"
-          align-center justify-center
+          align-center
+          justify-center
         >
           <!-- card::thumb: {type: directory} -->
           <v-icon
-            class="dir-item-card__icon"
             v-if="type.includes('directory')"
+            class="dir-item-card__icon"
             size="28px"
-          >{{getThumbIcon(source)}}
+          >
+            {{getThumbIcon(source)}}
           </v-icon>
 
           <!-- card::thumb: {type: file && !isImage} -->
@@ -61,7 +63,8 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               class="dir-item-card__icon pt-1"
               size="22px"
               style="height: 22px;"
-            >{{getThumbIcon(source)}}
+            >
+              {{getThumbIcon(source)}}
             </v-icon>
             <div class="dir-item-card__ext-container">
               <div class="dir-item-card__ext">
@@ -72,30 +75,30 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         </v-layout>
 
         <div
-          class="dir-item-card__content-container__item"
           v-for="(item, index) in sortingTypes"
           :key="'dir-item-card__content-container__item-' + index"
+          class="dir-item-card__content-container__item"
           :style="{display: item.isChecked ? 'flex' : 'none'}"
-        > 
+        >
           <template v-if="item.name === 'name'">
-            <div 
+            <div
               class="dir-item-card__name"
               :style="{'--name-column-max-width': navigatorNameColumnMaxWidth}"
             >
               <div class="dir-item-card__name__line-1">
                 <span
-                  class="inline-code--light mr-2"
                   v-if="showScore"
+                  class="inline-code--light mr-2"
                 >
                   score: {{source.score}}
                 </span>
                 <v-tooltip bottom>
-                  <template v-slot:activator="{ on }">
+                  <template #activator="{ on }">
                     <v-icon
-                      v-on="on"
                       v-show="source.isInaccessible"
                       color="red"
                       size="12px"
+                      v-on="on"
                     >
                       mdi-circle-medium
                     </v-icon>
@@ -107,8 +110,8 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
               <!-- card::name::line-2-->
               <div
-                class="dir-item-card__name__line-2"
                 v-if="showDir && source.dir !== source.path"
+                class="dir-item-card__name__line-2"
               >
                 {{source.dir}}
               </div>
@@ -120,33 +123,34 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               {{getLocalDateTime({stat: 'birthtime'})}}
             </div>
           </template>
-          
+
           <template v-if="item.name === 'date-modified-meta' && item.isChecked">
             <div class="dir-item-card__date">
               {{getLocalDateTime({stat: 'ctime'})}}
             </div>
           </template>
-          
+
           <template v-if="item.name === 'date-modified-contents' && item.isChecked">
             <div class="dir-item-card__date">
               {{getLocalDateTime({stat: 'mtime'})}}
             </div>
           </template>
-          
+
           <template v-if="item.name === 'size' && item.isChecked">
             <!-- {type: (directory|directory-symlink)} -->
             <!-- card::item-count -->
             <div
-              class="dir-item-card__item-count"
               v-if="type === 'directory' || type === 'directory-symlink'"
-            >{{source.dirItemCount}} {{$localizeUtils.pluralize(source.dirItemCount, 'item')}}
+              class="dir-item-card__item-count"
+            >
+              {{source.dirItemCount}} {{$localizeUtils.pluralize(source.dirItemCount, 'item')}}
             </div>
 
             <!-- {type: (file|file-symlink)} -->
             <!-- card::item-count -->
             <div
-              class="dir-item-card__item-count"
               v-else-if="type === 'file' || type === 'file-symlink'"
+              class="dir-item-card__item-count"
             >
               {{$utils.prettyBytes(source.stat.size, 1)}}
             </div>
@@ -156,11 +160,11 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             <div class="dir-item-card__item-offline-status">
               <div v-if="offlineStatus.status">
                 <v-tooltip bottom>
-                  <template v-slot:activator="{ on }">
+                  <template #activator="{ on }">
                     <v-icon
-                      v-on="on"
                       color="var(--color-6)"
                       size="12px"
+                      v-on="on"
                     >
                       {{offlineStatus.icon}}
                     </v-icon>
@@ -168,11 +172,11 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   <span>{{offlineStatus.tooltip}}</span>
                 </v-tooltip>
               </div>
-              <div v-else></div>
+              <div v-else />
             </div>
 
             <div class="dir-item-card__actions">
-              <slot name="actions"></slot>
+              <slot name="actions" />
             </div>
           </template>
         </div>
@@ -184,14 +188,16 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         <v-layout
           class="dir-item-card__thumb-container"
           :data-item-real-path="`${source.realPath}`"
-          align-center justify-center
+          align-center
+          justify-center
         >
           <!-- card::thumb: {type: directory} -->
           <v-icon
-            class="dir-item-card__icon"
             v-if="type.includes('directory')"
+            class="dir-item-card__icon"
             size="28px"
-          >{{getThumbIcon(source)}}
+          >
+            {{getThumbIcon(source)}}
           </v-icon>
 
           <!-- card::thumb: {type: file && !isImage} -->
@@ -202,22 +208,26 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             <v-icon
               class="dir-item-card__icon"
               size="48px"
-            >{{getThumbIcon(source)}}
+            >
+              {{getThumbIcon(source)}}
             </v-icon>
           </v-layout>
         </v-layout>
-        
+
         <!-- {type: (directory|directory-symlink)} -->
-        <v-layout column v-if="type === 'directory' || type === 'directory-symlink'">
+        <v-layout
+          v-if="type === 'directory' || type === 'directory-symlink'"
+          column
+        >
           <!-- card::name -->
           <div class="dir-item-card__name">
             <v-tooltip bottom>
-              <template v-slot:activator="{ on }">
+              <template #activator="{ on }">
                 <v-icon
-                  v-on="on"
                   v-show="source.isInaccessible"
                   color="red"
                   size="12px"
+                  v-on="on"
                 >
                   mdi-circle-medium
                 </v-icon>
@@ -235,24 +245,25 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
         <!-- {type: (file|file-symlink)} -->
         <v-layout
-          class="dir-item-card__description-container"
           v-else-if="type === 'file' || type === 'file-symlink'"
+          class="dir-item-card__description-container"
           :data-path="source.path"
-          justify-center column
+          justify-center
+          column
         >
-          <div class="dir-item-card__overlay"></div>
+          <div class="dir-item-card__overlay" />
 
           <div class="dir-item-card__bottom-container">
             <!-- card::name -->
             <div class="dir-item-card__name">
               <v-tooltip bottom>
-                <template v-slot:activator="{ on }">
+                <template #activator="{ on }">
                   <v-icon
-                    v-on="on"
                     v-show="source.isInaccessible"
                     color="red"
                     size="12px"
                     style="margin-left: -16px"
+                    v-on="on"
                   >
                     mdi-circle-medium
                   </v-icon>
@@ -268,34 +279,34 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             </div>
           </div>
         </v-layout>
-      
+
         <div class="dir-item-card__actions">
-          <slot name="actions"></slot>
+          <slot name="actions" />
         </div>
       </template>
     </v-layout>
-    
+
     <!-- card::overlays -->
     <div class="dir-item-card__overlay-container">
       <div
-        class="dir-item-card__overlay dir-item-card__overlay--selected"
         v-if="isDirItemSelected(source)"
-      ></div>
+        class="dir-item-card__overlay dir-item-card__overlay--selected"
+      />
       <div
-        class="dir-item-card__overlay dir-item-card__overlay--fs-clipboard"
         v-if="dirItemIsInFsClipboard"
-      ></div>
+        class="dir-item-card__overlay dir-item-card__overlay--fs-clipboard"
+      />
       <div
         class="dir-item-card__overlay dir-item-card__overlay--highlighted"
         :class="{'is-visible': source.isHighlighted}"
-      ></div>
+      />
       <div
         class="dir-item-card__overlay dir-item-card__overlay--hover"
-      ></div>
+      />
       <div
         class="dir-item-card__overlay overlay--drag-over"
         :class="{'is-visible': showDragOverOverlay(source)}"
-      ></div>
+      />
     </div>
   </div>
 </template>
@@ -310,21 +321,36 @@ const PATH = require('path')
 export default {
   name: 'dir-item',
   props: {
-    index: Number,
+    index: {
+      type: Number,
+      default: 0,
+    },
     source: {
       type: Object,
       default () {
         return {}
-      }
+      },
     },
-    type: String,
-    layout: String,
-    status: Object,
+    type: {
+      type: String,
+      default: '',
+    },
+    layout: {
+      type: String,
+      default: '',
+    },
+    status: {
+      type: Object,
+      default: () => ({}),
+    },
     thumbLoadingIsPaused: Boolean,
     forceThumbLoad: Boolean,
     showScore: Boolean,
     showDir: Boolean,
-    thumbLoadSchedule: Array
+    thumbLoadSchedule: {
+      type: Array,
+      default: () => ([]),
+    },
   },
   data () {
     return {
@@ -339,8 +365,8 @@ export default {
         clickedItemIsSelected: false,
         noneItemsSelected: false,
         singleItemSelected: false,
-        multipleItemsSelected: false
-      }
+        multipleItemsSelected: false,
+      },
     }
   },
   mounted () {
@@ -348,10 +374,9 @@ export default {
   },
   beforeDestroy () {
     try {
-      this.$emit('removeFromThumbLoadSchedule', { item: this.source })
+      this.$emit('removeFromThumbLoadSchedule', {item: this.source})
     }
-    catch (error) { 
-    }
+    catch (error) {}
   },
   computed: {
     ...mapState({
@@ -361,12 +386,12 @@ export default {
     ...mapGetters([
       'selectedDirItems',
       'selectedDirItemsPaths',
-      'sortingHeaderGridColumnTemplate'
+      'sortingHeaderGridColumnTemplate',
     ]),
     ...mapFields({
-      thumbsInProcessing: 'thumbsInProcessing',
-      currentDir: 'navigatorView.currentDir',
       inputState: 'inputState',
+      currentDir: 'navigatorView.currentDir',
+      thumbsInProcessing: 'thumbsInProcessing',
       openDirItemSecondClickDelay: 'storageData.settings.navigator.openDirItemSecondClickDelay',
       navigatorOpenDirItemWithSingleClick: 'storageData.settings.navigator.openDirItemWithSingleClick',
       dirItemHoverEffect: 'storageData.settings.dirItemHoverEffect',
@@ -386,7 +411,7 @@ export default {
       sortingTypes: 'sorting.types',
       navigatorNameColumnMaxWidth: 'storageData.settings.navigator.nameColumnMaxWidth',
 
-      drag: 'drag'
+      drag: 'drag',
     }),
     specifiedNavigatorLayout () {
       return this.layout
@@ -418,7 +443,7 @@ export default {
     getCardContentContainerStyles () {
       if (this.specifiedNavigatorLayout === 'list') {
         return {
-          'grid-template-columns': this.sortingHeaderGridColumnTemplate.join(' ')
+          'grid-template-columns': this.sortingHeaderGridColumnTemplate.join(' '),
         }
       }
       else {
@@ -429,8 +454,8 @@ export default {
   methods: {
     getLocalDateTime (params) {
       return this.$utils.getLocalDateTime(
-        this.source.stat[params.stat], 
-        this.$store.state.storageData.settings.dateTime
+        this.source.stat[params.stat],
+        this.$store.state.storageData.settings.dateTime,
       )
     },
     async loadThumbHandler (path) {
@@ -473,13 +498,13 @@ export default {
       if (!params.options.skipTransition) {
         params.dirItemNode.animate(
           [
-            { opacity: 0, transform: 'translateY(10px)' },
-            { opacity: 1, transform: 'translateY(0px)' }
+            {opacity: 0, transform: 'translateY(10px)'},
+            {opacity: 1, transform: 'translateY(0px)'},
           ],
           {
             easing: 'ease',
-            duration: 500
-          }
+            duration: 500,
+          },
         )
       }
     },
@@ -512,7 +537,7 @@ export default {
       return new Promise((resolve, reject) => {
         // Check if thumb dir exists. If not, create it
         if (!fs.existsSync(this.appPaths.storageDirectories.appStorageNavigatorThumbs)) {
-          fs.mkdirSync(this.appPaths.storageDirectories.appStorageNavigatorThumbs, { recursive: true })
+          fs.mkdirSync(this.appPaths.storageDirectories.appStorageNavigatorThumbs, {recursive: true})
         }
         // Parse image path
         const parsedFileName = PATH.parse(dirItemRealPath)
@@ -556,25 +581,25 @@ export default {
         if (this.specifiedNavigatorLayout === 'list') {
           image.animate(
             [
-              { opacity: 0, transform: 'translateY(4px)' },
-              { opacity: 1, transform: 'translateY(0px)' }
+              {opacity: 0, transform: 'translateY(4px)'},
+              {opacity: 1, transform: 'translateY(0px)'},
             ],
             {
               easing: 'ease',
-              duration: 2000
-            }
+              duration: 2000,
+            },
           )
         }
         else if (this.specifiedNavigatorLayout === 'grid') {
           image.animate(
             [
-              { opacity: 0 },
-              { opacity: 1 }
+              {opacity: 0},
+              {opacity: 1},
             ],
             {
               easing: 'ease',
-              duration: 2000
-            }
+              duration: 2000,
+            },
           )
         }
         image.decode()
@@ -608,7 +633,7 @@ export default {
           thumbPath,
           onEnd: () => {
             resolve()
-          }
+          },
         })
       })
     },
@@ -616,10 +641,10 @@ export default {
       return this.selectedDirItemsPaths.includes(item.path)
     },
     showDragOverOverlay (item) {
-      const isItemHovered = this.inputState.pointer.hoveredItem.path === item.path
-      const isOfTypeDirItem = ['dirItem'].includes(this.dragTargetType)
-      const dirItemIsOverlapped = isItemHovered && (isOfTypeDirItem || this.drag.dirItemInbound.value)
-      return dirItemIsOverlapped
+      const isItemHovered = this.inputState.pointer.overlappedDropTargetItem.path === item.path
+      const isOfTypeDirItem = ['dirItem'].includes(this.inputState.drag.itemType)
+      const isDirItemOverlapped = isItemHovered && (isOfTypeDirItem || this.inputState.drag.dirItemInbound.value)
+      return isDirItemOverlapped
     },
     getThumbIcon (item) {
       const mimeDescription = this.$utils.getFileType(item.path).mimeDescription
@@ -669,7 +694,7 @@ export default {
         downCoordY,
         clickedItemIsSelected,
         singleItemSelected,
-        multipleItemsSelected
+        multipleItemsSelected,
       } = this.mouseDown
 
       if (!this.dirItemDragMoveTresholdReached) {
@@ -722,13 +747,13 @@ export default {
           }
           this.$store.dispatch('SET_CONTEXT_MENU', {
             x: downCoordX,
-            y: downCoordY
+            y: downCoordY,
           })
         }
       }
     },
     handleMouseDownActions () {
-      const { item, leftClick, clickedItemIsSelected } = this.mouseDown
+      const {item, leftClick, clickedItemIsSelected} = this.mouseDown
       const isSelectingNotSelectedDirItem = leftClick &&
         !clickedItemIsSelected &&
         !this.inputState.ctrl &&
@@ -748,13 +773,13 @@ export default {
       // to move the cursor outside the element after mouseDown but before mouseUp
       document.addEventListener('mouseup', (mouseupEvent) => {
         this.handleMouseUpActions()
-      }, { once: true })
+      }, {once: true})
     },
     handleDirItemMouseEnter (event, item) {
       this.inputState.pointer.hover.itemType = 'dirItem'
       this.inputState.pointer.hover.item = item
       this.$store.dispatch('HANDLE_HIGHLIGHT_DIR_ITEM_RANGE', {
-        hoveredItem: item
+        hoveredItem: item,
       })
     },
     handleDirItemMouseLeave (event, item) {
@@ -765,7 +790,7 @@ export default {
       event.preventDefault()
       this.$store.dispatch('ADD_TAB', {item})
     },
-  }
+  },
 }
 </script>
 
@@ -844,16 +869,16 @@ export default {
   .dir-item-card__overlay--selected {
     opacity: 0;
   }
-  
+
 .dir-item-card[in-fs-clipboard]:not([is-selected])[fs-clipboard-type="copy"]
   .dir-item-card__overlay--fs-clipboard {
     background-color: rgba(var(--green-highlight-color-value), 0.03);
     outline: 2px dotted rgba(var(--green-highlight-color-value), 0.2);
     background-image: repeating-linear-gradient(
-      -45deg, 
-      rgba(var(--green-highlight-color-value), 0.1) 0, 
-      rgba(var(--green-highlight-color-value), 0.1) 2px, 
-      transparent 0, 
+      -45deg,
+      rgba(var(--green-highlight-color-value), 0.1) 0,
+      rgba(var(--green-highlight-color-value), 0.1) 2px,
+      transparent 0,
       transparent 50%
     );
     background-repeat: repeat;
@@ -865,10 +890,10 @@ export default {
     background-color: rgba(var(--red-highlight-color-value), 0.02);
     outline: 2px dotted rgba(var(--red-highlight-color-value), 0.4);
     background-image: repeating-linear-gradient(
-      -45deg, 
-      rgba(var(--red-highlight-color-value), 0.2) 0, 
-      rgba(var(--red-highlight-color-value), 0.2) 2px, 
-      transparent 0, 
+      -45deg,
+      rgba(var(--red-highlight-color-value), 0.2) 0,
+      rgba(var(--red-highlight-color-value), 0.2) 2px,
+      transparent 0,
       transparent 50%
     );
     background-repeat: repeat;
@@ -1029,8 +1054,8 @@ export default {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 
-      var(--workspace-area-sorting-header-item-v-padding) 
+    padding:
+      var(--workspace-area-sorting-header-item-v-padding)
       var(--workspace-area-sorting-header-item-h-padding);
   }
 
@@ -1222,7 +1247,6 @@ export default {
     color: var(--color-6) !important;
   }
 
-/* CARD THUMB */
 [data-layout="list"]
   .dir-item-card__thumb-container {
     width: 48px;
