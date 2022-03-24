@@ -918,7 +918,8 @@ export default {
   align-items: center;
   padding: 8px 4px;
   color: var(--color-7);
-  background-color: var(--highlight-color-5);
+  border-top: 1px solid var(--highlight-color-4);
+  border-bottom: 1px solid var(--highlight-color-4);
   border-radius: 4px;
   font-size: 14px;
   text-transform: uppercase;
