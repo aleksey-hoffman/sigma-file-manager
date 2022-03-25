@@ -7,17 +7,20 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
   <v-app-bar
     id="window-toolbar"
     :style="{'background': windowToolbarBackgroundColor}"
-    app flat clipped-right clipped-left height="32px"
+    app
+    flat
+    clipped-right
+    clipped-left
+    height="32px"
   >
-    <div class="window-toolbar__drag-region"></div>
+    <div class="window-toolbar__drag-region" />
     <div class="window-toolbar__content-container">
       <div
-        class="window-toolbar__header-container"
-        @click="navigationPanelMiniVariant = !navigationPanelMiniVariant"
-        :style="!navigationPanelMiniVariant 
-          ? 'width: var(--nav-panel-width-expanded)' 
-          : 'width: var(--nav-panel-width)'"
         v-ripple
+        class="window-toolbar__header-container"
+        :style="!navigationPanelMiniVariant
+          ? 'width: var(--nav-panel-width-expanded)'
+          : 'width: var(--nav-panel-width)'"
         align-center
       >
         <div class="nav-panel__item__icon-container pl-1">
@@ -28,7 +31,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         <transition name="slide-fade-left">
           <div v-if="!navigationPanelMiniVariant">
             <div class="nav-panel__item__title">
-              Sigma file manager
+              Sigma File Manager
             </div>
           </div>
         </transition>
@@ -49,29 +52,32 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           }"
         >
           <template v-if="item.type === 'workspaces-menu'">
-            <workspaces-menu :iconColor="windowToolbarFontColor"/>
+            <workspaces-menu :icon-color="windowToolbarFontColor" />
           </template>
 
           <template v-if="item.type === 'tabs-menu'">
-            <tabs-menu :iconColor="windowToolbarFontColor"/>
+            <tabs-menu :icon-color="windowToolbarFontColor" />
           </template>
 
           <template v-if="showNavigatorTabBar(item) && item.breakpoint && $vuetify.breakpoint[item.breakpoint]">
-            <navigator-tab-bar/>
+            <navigator-tab-bar />
           </template>
 
           <template v-if="item.type === 'notification-menu' && item.ifCondition">
-            <notification-menu :iconColor="windowToolbarFontColor"/>
+            <notification-menu :icon-color="windowToolbarFontColor" />
           </template>
 
           <template v-if="item.type === 'menu-button'">
-            <v-tooltip bottom min-width="100px">
-              <template v-slot:activator="{ on }">
+            <v-tooltip
+              bottom
+              min-width="100px"
+            >
+              <template #activator="{ on }">
                 <v-btn
                   class="window-toolbar__item"
+                  icon
                   v-on="on"
                   @click="item.onClick()"
-                  icon
                 >
                   <v-icon
                     :color="windowToolbarFontColor"
@@ -85,12 +91,12 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 <div
                   class="tooltip__description"
                   v-html="item.tooltip.description"
-                ></div>
+                />
                 <div
-                  class="tooltip__shortcut"
                   v-show="[undefined, true].includes(item.tooltip.shortutIfCondition)"
+                  class="tooltip__shortcut"
                   v-html="item.tooltip.shortcut"
-                ></div>
+                />
               </span>
             </v-tooltip>
           </template>
@@ -101,13 +107,16 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 v-for="(item, index) in item.items"
                 :key="'window-controls-group-item-' + index"
               >
-                <v-tooltip bottom min-width="100px">
-                  <template v-slot:activator="{ on }">
+                <v-tooltip
+                  bottom
+                  min-width="100px"
+                >
+                  <template #activator="{ on }">
                     <button
                       class="window-toolbar__item window-controls-group__item"
+                      icon
                       v-on="on"
                       @click="item.onClick()"
-                      icon
                     >
                       <v-icon
                         :color="windowToolbarFontColor"
@@ -121,12 +130,12 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     <div
                       class="tooltip__description"
                       v-html="item.tooltip.description"
-                    ></div>
+                    />
                     <div
-                      class="tooltip__shortcut"
                       v-show="[undefined, true].includes(item.tooltip.shortutIfCondition)"
+                      class="tooltip__shortcut"
                       v-html="item.tooltip.shortcut"
-                    ></div>
+                    />
                   </span>
                 </v-tooltip>
               </div>
