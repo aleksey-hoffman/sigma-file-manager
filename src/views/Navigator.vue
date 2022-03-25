@@ -5,28 +5,35 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <template>
   <div id="navigator-route">
-    <info-panel/>
-    <!-- content-area -->
+    <info-panel />
     <div
+      id="content-area"
       :clipboard-toolbar-visible="clipboardToolbarIsVisible"
       class="content-area"
-      id="content-area"
     >
-      <!-- workspace-area -->
-      <div class="workspace__area__container" columns_1>
+      <div
+        class="workspace__area__container"
+        columns_1
+      >
         <div class="workspace__area">
           <!-- workspace-area::toolbar -->
-          <v-layout align-center class="workspace-area__header">
+          <v-layout
+            align-center
+            class="workspace-area__header"
+          >
             <!-- button::current-directory-context-menu -->
             <v-tooltip bottom>
-              <template v-slot:activator="{ on }">
+              <template #activator="{ on }">
                 <v-btn
+                  icon
+                  class="workspace-area-toolbar__item"
                   v-on="on"
                   @click="toggleCurrentDirContextMenu($event)"
-                  icon
-                  class="action-toolbar__item"
                 >
-                  <v-icon class="action-toolbar__icon" size="32px">
+                  <v-icon
+                    class="action-toolbar__icon"
+                    size="32px"
+                  >
                     mdi-menu-down
                   </v-icon>
                 </v-btn>
@@ -36,14 +43,17 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
             <!-- button::go-backward-in-history -->
             <v-tooltip bottom>
-              <template v-slot:activator="{ on }">
+              <template #activator="{ on }">
                 <v-btn
+                  icon
+                  class="workspace-area-toolbar__item"
                   v-on="on"
                   @click="$store.dispatch('LOAD_PREVIOUS_HISTORY_PATH')"
-                  icon
-                  class="action-toolbar__item"
                 >
-                  <v-icon class="action-toolbar__icon" size="20px">
+                  <v-icon
+                    class="action-toolbar__icon"
+                    size="20px"
+                  >
                     mdi-arrow-left
                   </v-icon>
                 </v-btn>
@@ -53,14 +63,17 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
             <!-- button::go-forward-in-history -->
             <v-tooltip bottom>
-              <template v-slot:activator="{ on }">
+              <template #activator="{ on }">
                 <v-btn
+                  icon
+                  class="workspace-area-toolbar__item"
                   v-on="on"
                   @click="$store.dispatch('LOAD_NEXT_HISTORY_PATH')"
-                  icon
-                  class="action-toolbar__item"
                 >
-                  <v-icon class="action-toolbar__icon" size="20px">
+                  <v-icon
+                    class="action-toolbar__icon"
+                    size="20px"
+                  >
                     mdi-arrow-right
                   </v-icon>
                 </v-btn>
@@ -70,14 +83,17 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
             <!-- button::go-up-directory -->
             <v-tooltip bottom>
-              <template v-slot:activator="{ on }">
+              <template #activator="{ on }">
                 <v-btn
+                  icon
+                  class="workspace-area-toolbar__item"
                   v-on="on"
                   @click="$store.dispatch('GO_UP_DIRECTORY')"
-                  icon
-                  class="action-toolbar__item"
                 >
-                  <v-icon class="action-toolbar__icon" size="20px">
+                  <v-icon
+                    class="action-toolbar__icon"
+                    size="20px"
+                  >
                     mdi-arrow-up
                   </v-icon>
                 </v-btn>
@@ -87,17 +103,20 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
             <!-- button::reload -->
             <v-tooltip bottom>
-              <template v-slot:activator="{ on }">
+              <template #activator="{ on }">
                 <v-btn
-                  v-on="on"
-                  @click="$store.dispatch('LOAD_DIR', {
-                    path: currentDir.path,
-                    scrollTop: false
-                  })"
                   icon
-                  class="action-toolbar__item"
+                  class="workspace-area-toolbar__item"
+                  v-on="on"
+                  @click="$store.dispatch('RELOAD_DIR', {
+                    scrollTop: false,
+                    emitNotification: true
+                  })"
                 >
-                  <v-icon class="action-toolbar__icon" size="20px">
+                  <v-icon
+                    class="action-toolbar__icon"
+                    size="20px"
+                  >
                     mdi-refresh
                   </v-icon>
                 </v-btn>
@@ -105,28 +124,34 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               <span>Reload current directory</span>
             </v-tooltip>
 
-            <address-bar/>
-            <v-spacer/>
-            <filter-field/>
+            <address-bar />
+            <v-spacer />
+            <filter-field />
           </v-layout>
 
-          <sorting-header v-if="navigatorSortingElementDisplayType === 'bar'"/>
-          <global-search v-show="globalSearchWidget"/>
-          <div v-if="filterQuery.length > 0" class="content__description">
+          <sorting-header v-if="navigatorSortingElementDisplayType === 'bar'" />
+
+          <div
+            v-if="filterQuery.length > 0"
+            class="content__description"
+          >
             <v-btn
-              @click="filterQuery = ''"
               small
               class="mt-5 mx-6 button-1"
+              @click="filterQuery = ''"
             >
               <v-icon
                 size="16px"
                 class="mr-2"
-              >mdi-backspace-outline
+              >
+                mdi-backspace-outline
               </v-icon>
               Clear filter
             </v-btn>
           </div>
-          <workspace-area-content/>
+
+          <global-search v-show="globalSearchWidget" />
+          <workspace-area-content />
         </div>
       </div>
     </div>
@@ -144,32 +169,15 @@ export default {
       processedDirItemsIndexes: [],
       dirItemAwaitsSecondClick: false,
       dirItemAwaitsSecondClickTimeout: null,
-      dirItemSecondClickDelay: 500
+      dirItemSecondClickDelay: 500,
     }
   },
   beforeRouteLeave (to, from, next) {
     this.$store.dispatch('SAVE_ROUTE_SCROLL_POSITION', {
       toRoute: to,
-      fromRoute: from
+      fromRoute: from,
     })
     next()
-  },
-  activated () {
-    this.$store.dispatch('ROUTE_ACTIVATED_HOOK_CALLBACK', {
-      route: 'navigator'
-    })
-  },
-  async mounted () {
-    this.setSortingTypes()
-    this.$nextTick(() => {
-      this.$store.dispatch('ROUTE_MOUNTED_HOOK_CALLBACK', {
-        route: 'navigator'
-      })
-      this.navigatorRouteIsLoaded = true
-    })
-  },
-  beforeDestroy () {
-    this.navigatorRouteIsLoaded = false
   },
   watch: {
     // dirItemsInfoIsFetched (value) {
@@ -191,14 +199,34 @@ export default {
     },
     'navigatorView.selectedDirItems' (value) {
       this.contextMenus.dirItem.value = false
-    }
+    },
+  },
+  activated () {
+    this.$store.dispatch('ROUTE_ACTIVATED_HOOK_CALLBACK', {
+      route: 'navigator',
+    })
+  },
+  async mounted () {
+    setTimeout(() => {
+      this.renderWorkspaceArea = true
+    }, 300)
+    this.setSortingTypes()
+    this.$nextTick(() => {
+      this.$store.dispatch('ROUTE_MOUNTED_HOOK_CALLBACK', {
+        route: 'navigator',
+      })
+      this.navigatorRouteIsLoaded = true
+    })
+  },
+  beforeDestroy () {
+    this.navigatorRouteIsLoaded = false
   },
   computed: {
     ...mapGetters([
       'selectedWorkspace',
       'selectedDirItems',
       'clipboardToolbarIsVisible',
-      'isOnlyCurrentDirItemSelected'
+      'isOnlyCurrentDirItemSelected',
     ]),
     ...mapFields({
       focusedField: 'focusedField',
@@ -217,7 +245,7 @@ export default {
       selectedSortingType: 'sorting.selectedType',
       sortingTypes: 'sorting.types',
       navigatorSortingElementDisplayType: 'storageData.settings.navigator.sorting.elementDisplayType',
-    })
+    }),
   },
   methods: {
     toggleCurrentDirContextMenu (payload) {
@@ -227,7 +255,7 @@ export default {
           this.$store.dispatch('SET_CONTEXT_MENU', {
             value: 'toggle',
             x: payload.clientX,
-            y: payload.clientY
+            y: payload.clientY,
           })
         })
     },
@@ -248,7 +276,7 @@ export default {
         this.$store.dispatch('SET_SORTING_TYPE', item)
       }
     },
-  }
+  },
 }
 </script>
 
@@ -256,13 +284,11 @@ export default {
 .workspace__area__container[columns_2] {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  /* gap: 20px; */
 }
 
 .workspace__area__container[columns_1] {
   display: grid;
   grid-template-columns: 1fr;
-  /* gap: 20px; */
 }
 
 .workspace__area:nth-child(2) {
@@ -271,8 +297,7 @@ export default {
 
 .workspace__area {
   display: grid;
-  grid-template-rows: 48px 1fr;
-  /* gap: 20px; */
+  grid-template-rows: 48px 38px 1fr;
 
 }
 
