@@ -158,6 +158,9 @@ export default {
   data () {
     return {
       window: electronRemote.getCurrentWindow(),
+      animationTiming: {
+        navigationPanel: 500,
+      },
     }
   },
   computed: {
@@ -363,32 +366,28 @@ export default {
     toggleNavigationPanel () {
       this.navigationPanelMiniVariant = !this.navigationPanelMiniVariant
     },
+    /** This function optimizes rendering performance (20FPS => 60FPS)
+    * by disabling shadows during layout transition
+    */
     toggleShadow () {
-      // This function optimizes rendering performance:
-      // 20-30FPS => 60FPS
+      this.removeShadow()
+      setTimeout(() => {
+        this.addShadow()
+      }, this.animationTiming.navigationPanel)
+    },
+    removeShadow () {
       let cards = document.querySelectorAll('.item-card')
       cards.forEach(card => {
-        card.style.transition = 'none'
-        card.style.boxShadow = 'none'
+        card.setAttribute('optimized', true)
+        card.setAttribute('optimized', true)
       })
-      this.addShadow()
     },
     addShadow () {
-      setTimeout(() => {
-        let cards = document.querySelectorAll('.item-card')
-        cards.forEach(card => {
-          card.style.cssText = `
-            0px -2px 8px rgba(255, 255, 255, 0.025),
-            0px -16px 20px rgba(255, 255, 255, 0.015),
-            0px 1px 2.2px rgba(0, 0, 0, 0.022),
-            0px 2.4px 5.3px rgba(0, 0, 0, 0.032),
-            0px 4.5px 10px rgba(0, 0, 0, 0.04),
-            0px 8px 17.9px rgba(0, 0, 0, 0.048),
-            0px 15px 33.4px rgba(0, 0, 0, 0.058),
-            0px 36px 80px rgba(0, 0, 0, 0.08);
-          `
-        })
-      }, 500)
+      let cards = document.querySelectorAll('.item-card')
+      cards.forEach(card => {
+        card.removeAttribute('optimized')
+        card.removeAttribute('optimized')
+      })
     },
     minimizeWindow () {
       this.window.minimize()

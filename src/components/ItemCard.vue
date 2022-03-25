@@ -5,48 +5,49 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <template>
   <div
+    v-ripple
     class="item-card drop-target"
+    :lines="lines"
+    :cursor="navigatorOpenDirItemWithSingleClick ? 'pointer' : 'default'"
+    design="neoinfusive-flat-glow"
     @click="itemCardOnClick({event: $event, item})"
     @contextmenu="itemCardOnRightClick({event: $event, item})"
     @dblclick="itemCardOnDoubleClick({event: $event, item})"
-    :lines="lines"
-    :cursor="navigatorOpenDirItemWithSingleClick ? 'pointer' : 'default'"
-    design="neoinfusive-extruded"
-    v-ripple
   >
     <div
+      v-if="['dir', 'file', 'userDir', 'drive'].includes(targetType)"
       class="overlay--drag-over"
       :class="{'is-visible': showDragOverOverlay(item)}"
-      v-if="['dir', 'file', 'userDir', 'drive'].includes(targetType)"
-    ></div>
+    />
 
     <div
-      class="overlay--storage-bar--vertical-line"
       v-if="showStorageBar({item, type: 'vertical'})"
+      class="overlay--storage-bar--vertical-line"
       :style="getStorageBarStyles({item, type: 'vertical'})"
-    ></div>
+    />
 
     <div
-      class="overlay--storage-bar--horizontal-line"
       v-if="showStorageBar({item, type: 'horizontal'})"
+      class="overlay--storage-bar--horizontal-line"
       :style="getStorageBarStyles({item, type: 'horizontal'})"
-    ></div>
+    />
 
     <div class="item-card__thumb">
       <div
-        class="item-card__thumb__inner"
         v-if="targetType === 'userDir'"
+        class="item-card__thumb__inner"
       >
         <v-icon
           class="item-card__icon"
           size="22px"
-        >{{item.icon}}
+        >
+          {{item.icon}}
         </v-icon>
       </div>
 
       <div
-        class="item-card__thumb__inner"
         v-if="targetType === 'drive'"
+        class="item-card__thumb__inner"
       >
         <template
           v-if="!driveCardShowProgress || driveCardProgressType !== 'circular'"
@@ -54,25 +55,27 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           <v-icon
             class="item-card__icon mt-1"
             :size="$utils.getDriveIcon(item).size"
-          >{{$utils.getDriveIcon(item).icon}}
+          >
+            {{$utils.getDriveIcon(item).icon}}
           </v-icon>
           <div
-            class="item-card__progress__text"
             v-if="item.percentUsed"
+            class="item-card__progress__text"
           >
             {{item.percentUsed}}%
           </div>
         </template>
 
         <template
-          class="item-card__progress--circular"
           v-if="driveCardShowProgress && driveCardProgressType === 'circular'"
+          class="item-card__progress--circular"
         >
           <v-icon
-            class="item-card__icon mt-1"
             v-if="!item.percentUsed"
+            class="item-card__icon mt-1"
             :size="$utils.getDriveIcon(item).size"
-          >{{$utils.getDriveIcon(item).icon}}
+          >
+            {{$utils.getDriveIcon(item).icon}}
           </v-icon>
           <v-progress-circular
             v-if="item.percentUsed"
@@ -82,8 +85,8 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             :color="getStorageBarColors({item, type: 'circular'}).color"
           >
             <div
-              class="item-card__progress__text"
               v-if="item.percentUsed"
+              class="item-card__progress__text"
             >
               {{item.percentUsed}}%
             </div>
@@ -98,12 +101,14 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           {{item.name}}
           {{item.name === 'Home directory' && showUserNameOnUserHomeDir
             ? `| ${$utils.getPathBase(item.path)}`
-            : ''
-          }}
+            : ''}}
         </div>
       </div>
 
-      <transition name="fade-in" mode="out-in">
+      <transition
+        name="fade-in"
+        mode="out-in"
+      >
         <div
           v-if="targetType === 'drive'"
           :key="item.titleSummary"
@@ -122,7 +127,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             :background-color="getStorageBarColors({item, type: 'linear'}).bgColor"
             :color="getStorageBarColors({item, type: 'linear'}).color"
             style="margin-top: 2px; margin-bottom: 4px"
-          ></v-progress-linear>
+          />
 
           <div class="item-card__content__line-2">
             {{item.infoSummary}}
@@ -138,8 +143,14 @@ import {mapFields} from 'vuex-map-fields'
 
 export default {
   props: {
-    item: Object,
-    targetType: String,
+    item: {
+      type: Object,
+      default: () => ({}),
+    },
+    targetType: {
+      type: String,
+      default: '',
+    },
     lines: {
       type: Number,
       default: 1,
@@ -276,7 +287,7 @@ export default {
   overflow: hidden;  /* clip overlay--storage-bar */
   color: var(--color-6);
   border-radius: 8px;
-  transition: all 0.3s ease-in-out;
+  transition: var(--item-card-transition);
 }
 
 .item-card:hover {
@@ -288,44 +299,30 @@ export default {
   cursor: pointer;
 }
 
+.item-card[optimized] {
+  box-shadow: none;
+  transition: none;
+}
+
 .item-card[design="neoinfusive-extruded"] {
-  background-color: rgba(var(--bg-color-1-value), 0.4);
-  box-shadow:
-    0px -2px 8px rgba(255, 255, 255, 0.025),
-    0px -16px 20px rgba(255, 255, 255, 0.015),
-
-    0px 1px 2.2px rgba(0, 0, 0, 0.022),
-    0px 2.4px 5.3px rgba(0, 0, 0, 0.032),
-    0px 4.5px 10px rgba(0, 0, 0, 0.04),
-    0px 8px 17.9px rgba(0, 0, 0, 0.048),
-    0px 15px 33.4px rgba(0, 0, 0, 0.058),
-    0px 36px 80px rgba(0, 0, 0, 0.08)
-  ;
-
-/*    0px -0.4px 0.6px rgba(255, 255, 255, 0.003),
-      0px -1.1px 1.3px rgba(255, 255, 255, 0.004),
-      0px -2px 2.5px rgba(255, 255, 255, 0.005),
-      0px -3.6px 4.5px rgba(255, 255, 255, 0.006),
-      0px -6.7px 8.4px rgba(255, 255, 255, 0.007),
-      0px -16px 20px rgba(255, 255, 255, 0.01), */
-
-    /* 0px 2px 8px rgba(0, 0, 0, 0.1),
-    0px 16px 64px rgba(0, 0, 0, 0.2); */
+  background-color: var(--item-card-color--neoinfusive-extruded-1);
+  box-shadow: var(--item-card-shadow--neoinfusive-extruded-1);
   border: 1px solid rgba(255, 255, 255, 0.0);
 }
 
 .item-card[design="neoinfusive-extruded"]:hover {
-  background: rgba(0, 0, 0, 0);
-  border: 1px solid var(--neoinfusive-translucent-alt-1);
+  background-color: rgba(0, 0, 0, 0);
+  border: 1px solid var(--item-card-color--neoinfusive-extruded-1);
   box-shadow: none;
 }
 
-.item-card[design="neoinfusive-flat"] {
-  background-color: var(--neoinfusive-translucent-alt-1);
+.item-card[design="neoinfusive-flat-glow"] {
+  background-color: var(--item-card-color--neoinfusive-flat-glow-1);
+  box-shadow: var(--item-card-shadow--neoinfusive-extruded);
 }
 
-.item-card[design="neoinfusive-flat"]:hover {
-  box-shadow: var(--neoinfusive-translucent-shadow-onhover-alt-1);
+.item-card[design="neoinfusive-flat-glow"]:hover {
+  box-shadow: var(--item-card-shadow-onhover--neoinfusive-flat-glow-1);
   transform: scale(1.04);
 }
 

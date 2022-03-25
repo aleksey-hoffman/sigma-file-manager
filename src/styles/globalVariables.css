@@ -27,6 +27,31 @@
 
 #app[data-theme-type="dark"],
 #app[data-theme-type="light-filter"] {
+  --item-card-color--neoinfusive-flat-glow-1: rgb(255, 255, 255, 0.02);
+  --item-card-shadow--neoinfusive-flat-glow-1: none;
+  --item-card-shadow-onhover--neoinfusive-flat-glow-1:
+    0px 1px 4px rgb(255, 255, 255, 0.05),
+    0px 22px 48px rgb(255, 255, 255, 0.02);
+  --item-card-color--neoinfusive-extruded-1: rgba(var(--bg-color-1-value), 0.4);
+  --item-card-shadow--neoinfusive-extruded-1: 
+    0px -2px 8px rgba(255, 255, 255, 0.025),
+    0px -16px 20px rgba(255, 255, 255, 0.015),
+    0px 1px 2.2px rgba(0, 0, 0, 0.022),
+    0px 2.4px 5.3px rgba(0, 0, 0, 0.032),
+    0px 4.5px 10px rgba(0, 0, 0, 0.04),
+    0px 8px 17.9px rgba(0, 0, 0, 0.048),
+    0px 15px 33.4px rgba(0, 0, 0, 0.058),
+    0px 36px 80px rgba(0, 0, 0, 0.08); 
+  --item-card-shadow--neoinfusive-extruded-2: 
+    0px -0.4px 0.6px rgba(255, 255, 255, 0.003),
+    0px -1.1px 1.3px rgba(255, 255, 255, 0.004),
+    0px -2px 2.5px rgba(255, 255, 255, 0.005),
+    0px -3.6px 4.5px rgba(255, 255, 255, 0.006),
+    0px -6.7px 8.4px rgba(255, 255, 255, 0.007),
+    0px -16px 20px rgba(255, 255, 255, 0.01),
+    0px 2px 8px rgba(0, 0, 0, 0.1),
+    0px 16px 64px rgba(0, 0, 0, 0.2);
+  --item-card-transition: all 0.3s ease-in-out;
   --main-color-1: rgba(47, 52, 68);
   --key-color-1: rgb(79, 104, 115);
   --key-color-1-value: 79, 104, 115;
