@@ -7,9 +7,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
   <div id="navigator-route">
     <info-panel />
     <div
+      v-if="renderContentArea"
       id="content-area"
       :clipboard-toolbar-visible="clipboardToolbarIsVisible"
-      class="content-area"
+      class="content-area fade-in-500ms"
     >
       <div
         class="workspace__area__container"
@@ -166,6 +167,7 @@ export default {
   name: 'navigator',
   data () {
     return {
+      renderContentArea: false,
       processedDirItemsIndexes: [],
       dirItemAwaitsSecondClick: false,
       dirItemAwaitsSecondClickTimeout: null,
@@ -208,8 +210,8 @@ export default {
   },
   async mounted () {
     setTimeout(() => {
-      this.renderWorkspaceArea = true
-    }, 300)
+      this.renderContentArea = true
+    }, 350)
     this.setSortingTypes()
     this.$nextTick(() => {
       this.$store.dispatch('ROUTE_MOUNTED_HOOK_CALLBACK', {
