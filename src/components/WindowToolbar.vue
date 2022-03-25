@@ -22,6 +22,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           ? 'width: var(--nav-panel-width-expanded)'
           : 'width: var(--nav-panel-width)'"
         align-center
+        @click="toggleNavigationPanel()"
       >
         <div class="nav-panel__item__icon-container pl-1">
           <v-icon class="nav-panel__item__icon window-toolbar__item">
@@ -349,12 +350,45 @@ export default {
     },
   },
   watch: {
+    navigationPanelMiniVariant () {
+      this.toggleShadow()
+    },
   },
   methods: {
     showNavigatorTabBar (item) {
       return item.type === 'navigator-tab-bar' &&
       this.$route.name === 'navigator' &&
       this.navigatorTabLayout === 'compact-vertical-and-traditional-horizontal'
+    },
+    toggleNavigationPanel () {
+      this.navigationPanelMiniVariant = !this.navigationPanelMiniVariant
+    },
+    toggleShadow () {
+      // This function optimizes rendering performance:
+      // 20-30FPS => 60FPS
+      let cards = document.querySelectorAll('.item-card')
+      cards.forEach(card => {
+        card.style.transition = 'none'
+        card.style.boxShadow = 'none'
+      })
+      this.addShadow()
+    },
+    addShadow () {
+      setTimeout(() => {
+        let cards = document.querySelectorAll('.item-card')
+        cards.forEach(card => {
+          card.style.cssText = `
+            0px -2px 8px rgba(255, 255, 255, 0.025),
+            0px -16px 20px rgba(255, 255, 255, 0.015),
+            0px 1px 2.2px rgba(0, 0, 0, 0.022),
+            0px 2.4px 5.3px rgba(0, 0, 0, 0.032),
+            0px 4.5px 10px rgba(0, 0, 0, 0.04),
+            0px 8px 17.9px rgba(0, 0, 0, 0.048),
+            0px 15px 33.4px rgba(0, 0, 0, 0.058),
+            0px 36px 80px rgba(0, 0, 0, 0.08);
+          `
+        })
+      }, 500)
     },
     minimizeWindow () {
       this.window.minimize()
