@@ -864,14 +864,23 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               >
                 <template #content>
                   <div class="text--sub-title-1 mt-2">
-                    Accent color
+                    Directory item icon background color
                   </div>
 
-                  <v-switch
-                    v-model="displayAccentColorBackgrounds"
-                    label="Display accent color backgrounds"
-                    class="mt-0 pt-0"
-                  />
+                  <v-radio-group
+                    v-model="dirItemBackground"
+                    class="py-0 mt-0 mb-6"
+                    hide-details
+                  >
+                    <v-radio
+                      label="None"
+                      value="none"
+                    />
+                    <v-radio
+                      label="Minimal"
+                      value="minimal"
+                    />
+                  </v-radio-group>
 
                   <div class="text--sub-title-1 mt-2">
                     Dashboard options
@@ -2111,7 +2120,7 @@ export default {
       appPropertiesOpenAtLogin: 'storageData.settings.appProperties.openAtLogin',
       appPropertiesOpenAsHidden: 'storageData.settings.appProperties.openAsHidden',
       homeBannerValue: 'storageData.settings.homeBanner.value',
-      displayAccentColorBackgrounds: 'storageData.settings.displayAccentColorBackgrounds',
+      dirItemBackground: 'storageData.settings.dirItemBackground',
       dashboardTimeline: 'storageData.settings.dashboard.tabs.timeline.show',
       openDirItemSecondClickDelay: 'storageData.settings.navigator.openDirItemSecondClickDelay',
       windowTransparencyEffect: 'storageData.settings.windowTransparencyEffect',

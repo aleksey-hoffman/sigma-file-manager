@@ -1251,10 +1251,10 @@ export default {
   .dir-item-card__thumb-container {
     width: 48px;
     height: 48px;
-    background-color: rgb(var(--key-color-1-value), 0.3);
+    background-color: rgba(255, 255, 255, 0.04);
   }
 
-#app:not([display-accent-color-backgrounds])
+#app[dir-item-background="none"]
   [data-layout="list"]
     .dir-item-card__thumb-container  {
       background-color: transparent;

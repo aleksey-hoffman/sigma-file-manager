@@ -816,10 +816,10 @@ export default {
   position: relative;
   width: 280px;
   height: 158px;
-  background-color: rgb(var(--key-color-1-value), 0.5);
+  background-color: rgba(255, 255, 255, 0.02);
 }
 
-#app:not([display-accent-color-backgrounds])
+#app[dir-item-background="none"]
   .info-panel__preview-container {
     background-color: transparent;
   }

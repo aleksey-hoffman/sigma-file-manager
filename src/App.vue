@@ -7,7 +7,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
   <v-app
     :data-theme-type="themeType" 
     :route-name="$route.name" 
-    :display-accent-color-backgrounds="displayAccentColorBackgrounds" 
+    :dir-item-background="dirItemBackground"
     :is-window-maximized="windowsMainStateIsMaximized"
   >
     <window-toolbar/>
@@ -204,7 +204,7 @@ export default {
       storageDataSettings: 'storageData.settings',
       themeType: 'storageData.settings.theme.type',
       overlayInboundDrag: 'overlays.inboundDrag',
-      displayAccentColorBackgrounds: 'storageData.settings.displayAccentColorBackgrounds',
+      dirItemBackground: 'storageData.settings.dirItemBackground',
       visualFiltersApplyFiltersToMediaElements: 'storageData.settings.visualFilters.applyFiltersToMediaElements',
       visualFiltersContrastValue: 'storageData.settings.visualFilters.contrast.value',
       visualFiltersBrightnessValue: 'storageData.settings.visualFilters.brightness.value',
