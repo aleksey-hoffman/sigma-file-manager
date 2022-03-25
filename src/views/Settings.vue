@@ -883,6 +883,25 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   </v-radio-group>
 
                   <div class="text--sub-title-1 mt-2">
+                    Item card design
+                  </div>
+
+                  <v-radio-group
+                    v-model="itemCardDesign"
+                    class="py-0 mt-0 mb-6"
+                    hide-details
+                  >
+                    <v-radio
+                      label="Neoinfusive-extruded"
+                      value="neoinfusive-extruded"
+                    />
+                    <v-radio
+                      label="Neoinfusive-flat-glow"
+                      value="neoinfusive-flat-glow"
+                    />
+                  </v-radio-group>
+
+                  <div class="text--sub-title-1 mt-2">
                     Dashboard options
                   </div>
 
@@ -2121,6 +2140,7 @@ export default {
       appPropertiesOpenAsHidden: 'storageData.settings.appProperties.openAsHidden',
       homeBannerValue: 'storageData.settings.homeBanner.value',
       dirItemBackground: 'storageData.settings.dirItemBackground',
+      itemCardDesign: 'storageData.settings.itemCardDesign',
       dashboardTimeline: 'storageData.settings.dashboard.tabs.timeline.show',
       openDirItemSecondClickDelay: 'storageData.settings.navigator.openDirItemSecondClickDelay',
       windowTransparencyEffect: 'storageData.settings.windowTransparencyEffect',

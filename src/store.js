@@ -679,6 +679,7 @@ export default new Vuex.Store({
         dirItemHoverEffect: 'scale',
         thumbnailStorageLimit: 100,
         dirItemBackground: 'minimal',
+        itemCardDesign: 'neoinfusive-flat-glow',
         autoCalculateDirSize: false,
         lastOpenedSettingsTab: 0,
         groupDirItems: false,

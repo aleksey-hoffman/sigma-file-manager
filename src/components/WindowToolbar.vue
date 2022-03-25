@@ -352,11 +352,6 @@ export default {
       }
     },
   },
-  watch: {
-    navigationPanelMiniVariant () {
-      this.toggleShadow()
-    },
-  },
   methods: {
     showNavigatorTabBar (item) {
       return item.type === 'navigator-tab-bar' &&
@@ -364,7 +359,10 @@ export default {
       this.navigatorTabLayout === 'compact-vertical-and-traditional-horizontal'
     },
     toggleNavigationPanel () {
-      this.navigationPanelMiniVariant = !this.navigationPanelMiniVariant
+      this.toggleShadow()
+      this.$nextTick(() => {
+        this.navigationPanelMiniVariant = !this.navigationPanelMiniVariant
+      })
     },
     /** This function optimizes rendering performance (20FPS => 60FPS)
     * by disabling shadows during layout transition

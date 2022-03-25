@@ -9,7 +9,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     class="item-card drop-target"
     :lines="lines"
     :cursor="navigatorOpenDirItemWithSingleClick ? 'pointer' : 'default'"
-    design="neoinfusive-flat-glow"
+    :design="itemCardDesign"
     @click="itemCardOnClick({event: $event, item})"
     @contextmenu="itemCardOnRightClick({event: $event, item})"
     @dblclick="itemCardOnDoubleClick({event: $event, item})"
@@ -164,6 +164,7 @@ export default {
       driveCardShowProgress: 'storageData.settings.driveCard.showProgress',
       showUserNameOnUserHomeDir: 'storageData.settings.showUserNameOnUserHomeDir',
       navigatorOpenDirItemWithSingleClick: 'storageData.settings.navigator.openDirItemWithSingleClick',
+      itemCardDesign: 'storageData.settings.itemCardDesign',
     }),
   },
   methods: {
@@ -300,8 +301,8 @@ export default {
 }
 
 .item-card[optimized] {
-  box-shadow: none;
-  transition: none;
+  box-shadow: none !important;
+  transition: none !important;
 }
 
 .item-card[design="neoinfusive-extruded"] {
