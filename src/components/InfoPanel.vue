@@ -176,7 +176,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     class="info-panel__properties__item__value"
                     :class="{'cursor-pointer': inputState.ctrl}"
                     v-on="on"
-                    @click="handleClickPropertyValue({event: $event, item})"
+                    @click.ctrl="handleClickPropertyValue({event: $event, item})"
                   >
                     {{item.value}}
                   </div>
