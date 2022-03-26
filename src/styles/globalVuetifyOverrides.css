@@ -21,6 +21,11 @@
     transition: 0.5s ease !important;
   }
 
+#app[route-name="navigator"]:not([preserve-transition])
+  .v-main {
+    transition: 0s !important;
+  }
+
 #app.layout-no-transition
   .v-navigation-drawer,
 #app.layout-no-transition

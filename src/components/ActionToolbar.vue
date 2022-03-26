@@ -497,6 +497,11 @@ export default {
   methods: {
     toggleInfoPanel () {
       if (this.$route.name === 'navigator') {
+        let appLayoutElement = document.querySelector('#app')
+        appLayoutElement.setAttribute('preserve-transition', true)
+        setTimeout(() => {
+          appLayoutElement.removeAttribute('preserve-transition')
+        }, 500)
         this.navigatorViewInfoPanel.value = !this.navigatorViewInfoPanel.value
       }
     },
