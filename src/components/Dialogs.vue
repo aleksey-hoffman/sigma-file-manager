@@ -59,7 +59,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       :dialog="dialogs.conformationDialog"
       :persistent="true"
       :closeButton="{
-        onClick: () => closeDialog('conformationDialog'),
+        onClick: () => handleConformationDialogCloseButton()
       }"
       :inputs="dialogs.conformationDialog.data.inputs"
       :actionButtons="dialogs.conformationDialog.data.buttons"
@@ -106,7 +106,55 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             v-model="dialogs.guideDialog.data.guideTabsSelected"
             class="tab-view__header__content mb-6"
           >
-            <!-- tab:early-development -->
+            <!-- tab:shorcuts -->
+            <v-tab-item transition="fade-in" reverse-transition="fade-in">
+              <div class="text--title-1 mb-1">
+                {{getGuideTitle(dialogs.guideDialog.data.guideTabsSelected)}}
+              </div>
+              <v-divider class="divider-color-2 mb-4"></v-divider>
+
+              <shortcut-list/>
+
+              <h3>About</h3>
+              <p>
+                Most actions within the app can be performed with shortcuts (different keyboard key combinations).
+                Even the app itself can be opened / focused with a global (system wide) customizable shortcut.
+              </p>
+              <p>
+                This feature lets you work more efficiently and makes the process more enjoyable
+                (e.g. you can instantly open the app and create a new note with just 1 shortcut).
+              </p>
+              <p>
+                Press
+                <span class="inline-code--light mx-1">
+                  {{shortcuts.shortcutsDialog.shortcut}}
+                </span>
+                button on the keyboard or the
+                <v-icon class="mx-1" size="18px">mdi-pound</v-icon>
+                button in the top toolbar to show the full list of shortcuts.
+              </p>
+              <div class="text--title-2 mt-2">Examples</div>
+              <div class="text--sub-title-1 mt-2">Focus app</div>
+              When this app is not focused, press
+              <span class="inline-code--light mx-1">
+                {{shortcuts.toggleApp.shortcut}}
+              </span>
+              to focus it (bring it to the foreground). Press the shortcut again to hide the app.
+              <div class="text--sub-title-1 mt-6">Create new note</div>
+              Press
+              <span class="inline-code--light mx-1">
+                {{shortcuts.newNote.shortcut}}
+              </span>
+              to focus this app, immidiately create a new note, and open the note editor for you.
+              <div class="text--sub-title-1 mt-6">Switch tab</div>
+              When this app is focused and you have some tabs opened in the current workspace, press
+              <span class="inline-code--light mx-1">
+                {{shortcuts.switchTab.shortcut}}
+              </span>
+              to open specified tab.
+            </v-tab-item>
+
+            <!-- tab:introduction -->
             <v-tab-item transition="fade-in" reverse-transition="fade-in">
               <div class="text--title-1 mb-1">
                {{getGuideTitle(dialogs.guideDialog.data.guideTabsSelected)}} 🐒
@@ -214,48 +262,69 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               </ul>
             </v-tab-item>
 
-            <!-- tab:shorcuts -->
+            <!-- tab:navigator tips -->
             <v-tab-item transition="fade-in" reverse-transition="fade-in">
               <div class="text--title-1 mb-1">
                 {{getGuideTitle(dialogs.guideDialog.data.guideTabsSelected)}}
               </div>
               <v-divider class="divider-color-2 mb-4"></v-divider>
-              <p>
-                Most actions within the app can be performed with shortcuts (different keyboard key combinations).
-                Even the app itself can be opened / focused with a global (system wide) customizable shortcut.
-              </p>
-              <p>
-                This feature lets you work more efficiently and makes the process more enjoyable
-                (e.g. you can instantly open the app and create a new note with just 1 shortcut).
-              </p>
-              <p>
-                Press the
-                <span class="inline-code--light mx-1">
-                  {{shortcuts.shortcutsDialog.shortcut}}
-                </span>
-                key on the keyboard or the
-                <v-icon class="mx-1" size="18px">mdi-pound</v-icon>
-                button in the top toolbar to show the full list of shortcuts.
-              </p>
-              <div class="text--title-2 mt-2">Examples</div>
-              <div class="text--sub-title-1 mt-2">Focus app</div>
-              When this app is not focused, press
-              <span class="inline-code--light mx-1">
-                {{shortcuts.toggleApp.shortcut}}
-              </span>
-              to focus it (bring it to the foreground). Press the shortcut again to hide the app.
-              <div class="text--sub-title-1 mt-6">Create new note</div>
-              Press
-              <span class="inline-code--light mx-1">
-                {{shortcuts.newNote.shortcut}}
-              </span>
-              to focus this app, immidiately create a new note, and open the note editor for you.
-              <div class="text--sub-title-1 mt-6">Switch tab</div>
-              When this app is focused and you have some tabs opened in the current workspace, press
-              <span class="inline-code--light mx-1">
-                {{shortcuts.switchTab.shortcut}}
-              </span>
-              to open specified tab.
+              <h3>Range item selection</h3>
+              <div>
+                To select multiple directory items, 
+                <span class="inline-code--light">Hold [Shift] + LClick</span>
+                to select the <span class="inline-code--light">start</span> 
+                item, then move the cursor to the 
+                <span class="inline-code--light">end</span> item and 
+                press <span class="inline-code--light">LClick</span> on it to select the range.
+              </div>
+              <img class="mt-4" src="../assets/guide/navigator-list-highlight-1.png">
+             
+              <h3>Single item selection</h3>
+              <div>
+                To select a single directory item, press
+                <span class="inline-code--light">Ctrl + LClick</span>
+                on the item to select it.
+              </div>
+              
+              <h3>Keyboard item navigation</h3>
+              <div>
+                <ul>
+                  <li>
+                    To move selection to the next item press
+                    <span class="inline-code--light">{{shortcuts.navigateDirDown.shortcut}}</span>
+                    or
+                    <span class="inline-code--light">{{shortcuts.navigateDirRight.shortcut}}</span>
+                    (grid layout only) 
+                  </li>
+                  <li>
+                    To move selection to the previous item press
+                    <span class="inline-code--light">{{shortcuts.navigateDirUp.shortcut}}</span>
+                    or
+                    <span class="inline-code--light">{{shortcuts.navigateDirLeft.shortcut}}</span> 
+                    (grid layout only) 
+                  </li>
+                  <li>
+                    To open current directory press
+                    <span class="inline-code--light">{{shortcuts.openSelectedDirectory.shortcut}}</span>
+                  </li>
+                  <li>
+                    To quit current directory press
+                    <span class="inline-code--light">{{shortcuts.quitSelectedDirectory.shortcut}}</span>
+                  </li>
+                  <li>
+                    Go to previous directory in history
+                    <span class="inline-code--light">{{shortcuts.goToPreviousDirectory.shortcut}}</span>
+                  </li>
+                  <li>
+                    Go to next directory in history
+                    <span class="inline-code--light">{{shortcuts.goToNextDirectory.shortcut}}</span>
+                  </li>
+                  <li>
+                    Go up directory
+                    <span class="inline-code--light">{{shortcuts.goUpDirectory.shortcut}}</span>
+                  </li>
+                </ul>
+              </div>
             </v-tab-item>
 
             <!-- tab:data-protection -->
@@ -289,7 +358,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   </li>
                 </ul>
                 <div class="mt-4">
-                  ⚠ <b>Warning</b>
+                  ⚠ <strong>Warning</strong>
                   <br>
                   Use with caution. The "Advanced mode" and "Immutable mode" are still in early development.
                   The feature hasn't been thoroughly tested yet. Theoretically it can lock
@@ -311,16 +380,16 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               <h3>Features</h3>
               <ul>
                 <li>
-                  <b>Quick navigation:</b>
+                  <strong>Quick navigation:</strong>
                   it will automatically open the directories,
                   as you type their address (manually or with autocomplete)
                 </li>
                 <li>
-                  <b>Quick file opening:</b>
+                  <strong>Quick file opening:</strong>
                   to open the specified file, press enter
                 </li>
                 <li>
-                  <b>Autocomplete:</b>
+                  <strong>Autocomplete:</strong>
                   press
                   <span class="inline-code--light">tab</span>
                   or
@@ -328,11 +397,11 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   to autocomplete / iterate directory item names.
                 </li>
                 <li>
-                  <b>Quotes not needed:</b>
+                  <strong>Quotes not needed:</strong>
                   names that have spaces in them don't need to be wrapped with quotes
                 </li>
                 <li>
-                  <b>Follows standards:</b>
+                  <strong>Follows standards:</strong>
                   on Windows OS, all backward slashes
                   <span class="inline-code--light">\</span>
                   are automatically converted to forward slashes
@@ -351,70 +420,6 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               <img src="../assets/guide/address-bar-2.png">
             </v-tab-item>
 
-            <!-- tab:navigator tips -->
-            <v-tab-item transition="fade-in" reverse-transition="fade-in">
-              <div class="text--title-1 mb-1">
-                {{getGuideTitle(dialogs.guideDialog.data.guideTabsSelected)}}
-              </div>
-              <v-divider class="divider-color-2 mb-4"></v-divider>
-
-              <h3>Range item selection</h3>
-              <div>
-                To select multiple directory items, 
-                <span class="inline-code--light">Hold [Shift] + LClick</span>
-                to select the <span class="inline-code--light">start</span> 
-                item, then move the cursor to the 
-                <span class="inline-code--light">end</span> item and 
-                press <span class="inline-code--light">LClick</span> on it to select the range.
-              </div>
-              <img class="mt-4" src="../assets/guide/navigator-list-highlight-1.png">
-             
-              <h3>Single item selection</h3>
-              <div>
-                To select a single directory item, press
-                <span class="inline-code--light">Ctrl + LClick</span>
-                on the item to select it.
-              </div>
-              
-              <h3>Keyboard item navigation</h3>
-              <div>
-                <li>
-                  To move selection to the next item press
-                  <span class="inline-code--light">{{shortcuts.navigateDirDown.shortcut}}</span>
-                  or
-                  <span class="inline-code--light">{{shortcuts.navigateDirRight.shortcut}}</span>
-                  (grid layout only) 
-                </li>
-                <li>
-                  To move selection to the previous item press
-                  <span class="inline-code--light">{{shortcuts.navigateDirUp.shortcut}}</span>
-                  or
-                  <span class="inline-code--light">{{shortcuts.navigateDirLeft.shortcut}}</span> 
-                  (grid layout only) 
-                </li>
-                <li>
-                  To open current directory press
-                  <span class="inline-code--light">{{shortcuts.openSelectedDirectory.shortcut}}</span>
-                </li>
-                <li>
-                  To quit current directory press
-                  <span class="inline-code--light">{{shortcuts.quitSelectedDirectory.shortcut}}</span>
-                </li>
-                <li>
-                  Go to previous directory in history
-                  <span class="inline-code--light">{{shortcuts.goToPreviousDirectory.shortcut}}</span>
-                </li>
-                <li>
-                  Go to next directory in history
-                  <span class="inline-code--light">{{shortcuts.goToNextDirectory.shortcut}}</span>
-                </li>
-                <li>
-                  Go up directory
-                  <span class="inline-code--light">{{shortcuts.goUpDirectory.shortcut}}</span>
-                </li>
-              </div>
-            </v-tab-item>
-
             <!-- tab:coming soon -->
             <v-tab-item transition="fade-in" reverse-transition="fade-in">
               <div class="text--title-1 mb-1">
@@ -424,103 +429,6 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               More guides will be added in future updates
             </v-tab-item>
           </v-tabs-items>
-        </div>
-      </template>
-    </dialog-generator>
-
-    <!-- dialog::shortcutsDialog -->
-    <dialog-generator
-      :dialog="dialogs.shortcutsDialog"
-      :closeButton="{
-        onClick: () => closeDialog('shortcutsDialog'),
-      }"
-      title="Shortcuts"
-      maxWidth="700px"
-      height="85vh"
-    >
-      <template v-slot:content>
-        <div class="mb-10">
-          <div class="text--sub-title-1 mb-0">
-            Global shortcuts | system scope
-          </div>
-          <div class="mt-2 mb-4 settings-card__description">
-            Global shortcuts will trigger actions even when the app is not focused.
-            If another open app is using the same global shortcut, it might not trigger, in this case try changing the shortcut.
-          </div>
-          <div
-            v-for="(shortcut, index) in globalShortcutsList"
-            class="shortcut-list__item"
-            :key="'shortcut-' + index"
-          >
-            <v-icon :size="shortcut.size" class="">
-              {{shortcut.icon}}
-            </v-icon>
-            <div class="shortcut-list__item-description">
-              {{shortcut.description}}
-            </div>
-            <div class="shortcut-list__item-shortcut">
-              {{shortcutFiltered(shortcut.shortcut)}}
-            </div>
-            <div class="shortcut-list__item-actions">
-              <v-menu offset-y>
-                <template v-slot:activator="{ on, attrs }">
-                  <v-btn
-                    v-on="on"
-                    v-bind="attrs"
-                    icon
-                  ><v-icon size="20px">mdi-dots-vertical</v-icon>
-                  </v-btn>
-                </template>
-                <v-list>
-                  <v-list-item
-                    @click="
-                      dialogs.shortcutEditorDialog.data.shortcut = shortcut.shortcut,
-                      dialogs.shortcutEditorDialog.data.shortcutName = index,
-                      dialogs.shortcutEditorDialog.value = true
-                    "
-                  >
-                    <v-list-item-action>
-                      <v-icon size="20px">mdi-pencil-outline</v-icon>
-                    </v-list-item-action>
-                    <v-list-item-title>Change shortcut</v-list-item-title>
-                  </v-list-item>
-                  <v-list-item
-                    @click="$store.dispatch('RESET_SHORTCUT', index)"
-                  >
-                    <v-list-item-action>
-                      <v-icon size="20px">mdi-backup-restore</v-icon>
-                    </v-list-item-action>
-                    <v-list-item-title>Reset shortcut</v-list-item-title>
-                  </v-list-item>
-                </v-list>
-              </v-menu>
-            </div>
-          </div>
-
-          <div class="text--sub-title-1 mt-6 mb-0">
-            Local shortcuts | app scope
-          </div>
-          <div class="pb-8">
-            <div
-              v-for="(shortcut, index) in localShortcutsList"
-              :key="'shortcut-' + index"
-            >
-              <div
-                class="shortcut-list__item"
-                v-if="shortcutFiltered(shortcut.shortcut)"
-              >
-                <v-icon :size="shortcut.size">
-                  {{shortcut.icon}}
-                </v-icon>
-                <div class="shortcut-list__item-description">
-                  {{shortcut.description}}
-                </div>
-                <div class="shortcut-list__item-shortcut">
-                  {{shortcutFiltered(shortcut.shortcut)}}
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       </template>
     </dialog-generator>
@@ -578,7 +486,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             A shortcut is a combination of:
             <br>- 1-4 modifier keys: [Ctrl, Alt, Shift, Meta]
             <br>- 1 regular key
-            <br><b>Examples:</b>
+            <br><strong>Examples:</strong>
             <br>Ctrl + Shift + Space
             <br>Ctrl + F1
             <br>Meta + Esc
@@ -736,7 +644,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     >
       <template v-slot:content>
         <div class="mb-4">
-          <!-- ⚠ <b>Warning:</b> experimental feature, use with caution. -->
+          <!-- ⚠ <strong>Warning:</strong> experimental feature, use with caution. -->
           ⚠ Experimental, unfinished feature.
         </div>
         <div>
@@ -839,7 +747,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           <!-- button:learn-more -->
           <v-btn
             class="button-1 mt-4"
-            @click="$store.dispatch('OPEN_APP_GUIDE', 'Data protection')"
+            @click="$store.dispatch('OPEN_APP_GUIDE', 'data-protection')"
             small
           >
             Learn more
@@ -880,7 +788,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     >
       <template v-slot:content>
         <!-- iterator::custom-media::title -->
-        <div class="text--sub-title-1">
+        <div class="text--sub-title-1 mb-4">
           Custom backgrounds
         </div>
         
@@ -915,13 +823,13 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         ></media-iterator>
 
         <!-- iterator::default-media::title -->
-        <div class="text--sub-title-1 ma-0 mr-2">
+        <div class="text--sub-title-1 mb-2">
           Default backgrounds
         </div>
 
         <div class="mb-4">
-          The artworks below are created by different artists.
-          You can see their other work by clicking the link icon on the preview
+          The artworks provided by different artists.
+          Hover previews to see the links to their profiles and other details.
         </div>
 
         <!-- iterator::default-media -->
@@ -1025,6 +933,66 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             label="Bottom mask height (CSS units)"
           ></v-text-field>
         </template>
+      </template>
+    </dialog-generator>
+
+    <!-- dialog::userDirectoryEditorDialog -->
+    <dialog-generator
+      :dialog="dialogs.userDirectoryEditorDialog"
+      :closeButton="{
+        onClick: () => closeDialog('userDirectoryEditorDialog'),
+      }"
+      title="User directory editor"
+      height="unset"
+    >
+      <template v-slot:content>
+        <v-text-field
+          v-model="dialogs.userDirectoryEditorDialog.data.item.name"
+          label="Directory name"
+          autofocus
+        ></v-text-field>
+
+        <v-text-field
+          v-model="dialogs.userDirectoryEditorDialog.data.item.path"
+          label="Directory path"
+          :hint="userDirectoryEditorDialogPathIsValid.error"
+          :error="!userDirectoryEditorDialogPathIsValid.value"
+          :persistent-hint="!userDirectoryEditorDialogPathIsValid.value"
+        ></v-text-field>
+
+        <v-layout align-center>
+          <v-text-field
+            v-model="dialogs.userDirectoryEditorDialog.data.item.icon"
+            label="Icon name (should start with 'mdi-')"
+          ></v-text-field>
+
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on }">
+              <v-btn
+                class="button-1 ml-2"
+                v-on="on"
+                @click="$utils.openLink('https://materialdesignicons.com/')"
+                depressed
+                small
+              >Open icon list
+              </v-btn>
+            </template>
+            <span>
+              <v-layout align-center>
+                <v-icon class="mr-3" size="16px">
+                  mdi-open-in-new
+                </v-icon>
+                {{'https://materialdesignicons.com/'}}
+              </v-layout>
+            </span>
+          </v-tooltip>
+        </v-layout>
+
+        <v-layout align-center>
+          <div class="mr-2">Icon preview:</div>
+          <v-icon>{{dialogs.userDirectoryEditorDialog.data.item.icon}}</v-icon>
+        </v-layout>
+
       </template>
     </dialog-generator>
 
@@ -1838,14 +1806,12 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             readonly single-line hide-details
           ></v-text-field>
           <v-btn
-            @click="$store.dispatch(
-              'COPY_TEXT_TO_CLIPBOARD',
-              {
-                text: dialogs.localShareManagerDialog.data.shareType === 'file'
-                  ? `${localServer.fileShare.address}`
-                  : `${localServer.directoryShare.address}`
-              }
-            )"
+            @click="$utils.copyToClipboard({
+              text: dialogs.localShareManagerDialog.data.shareType === 'file'
+                ? `${localServer.fileShare.address}`
+                : `${localServer.directoryShare.address}`,
+              title: 'Address was copied to clipboard'
+            })"
             small depressed
             class="button-1 ml-3"
           >copy
@@ -1898,9 +1864,11 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           </template>
           <span>
             Make sure your network is set up properly:
-            <li>You should allow the app access to your network in your Firewall</li>
-            <li>This device should be discoverable on the network (connected to private profile)</li>
-            <li>Your WIFI router should have the "client isolation" feature turned off.</li>
+            <ul>
+              <li>You should allow the app access to your network in your Firewall</li>
+              <li>This device should be discoverable on the network (connected to private profile)</li>
+              <li>Your WIFI router should have the "client isolation" feature turned off.</li>
+            </ul>
           </span>
         </v-tooltip>
       </template>
@@ -1950,6 +1918,24 @@ export default {
     this.noteChangeHandlerDebounce = new TimeUtils()
   },
   watch: {
+    'dialogs.userDirectoryEditorDialog.data': {
+      handler (value) {
+        if (this.userDirectoryEditorDialogDataIsValid) {
+          this.dialogs.userDirectoryEditorDialog.dataIsValid = true
+          this.$store.dispatch('SET', {
+            key: 'storageData.settings.appPaths.userDirs',
+            value: this.dialogs.userDirectoryEditorDialog.data.userDirs,
+          })
+        }
+        else {
+          this.dialogs.userDirectoryEditorDialog.dataIsValid = false
+        }
+      },
+      deep: true,
+    },
+    'dialogs.userDirectoryEditorDialog.value' (value) {
+      this.setupDialogDataRestore({value, dialogName: 'userDirectoryEditorDialog'})
+    },
     'dialogs.mathEditorDialog.value' (value) {
       if (value) {
         setTimeout(() => {
@@ -2097,7 +2083,7 @@ export default {
     ...mapState({
       appVersion: state => state.appVersion,
       windowSize: state => state.windowSize,
-      appPaths: state => state.appPaths,
+      appPaths: state => state.storageData.settings.appPaths,
       shortcuts: state => state.storageData.settings.shortcuts,
       appActionHistory: state => state.appActionHistory,
       dialogs: state => state.dialogs,
@@ -2125,18 +2111,6 @@ export default {
     },
     targetItemsStats () {
       return this.$store.state.contextMenus.dirItem.targetItemsStats
-    },
-    globalShortcutsList () {
-      return this.$utils.filterObject(
-        this.shortcuts,
-        ([key, value]) => value.isGlobal
-      )
-    },
-    localShortcutsList () {
-      return this.$utils.filterObject(
-        this.shortcuts,
-        ([key, value]) => !value.isGlobal
-      )
     },
     defaultHomeBannerItems () {
       return this.homeBanner.items.filter(item => !item.isCustom)
@@ -2274,6 +2248,32 @@ export default {
         this.programEditorDialogProgramPathIsValid.value &&
         this.dialogs.programEditorDialog.data.selectedProgram.targetTypes.length > 0
     },
+    userDirectoryEditorDialogDataIsValid () {
+      return this.userDirectoryEditorDialogPathIsValid.value
+    },
+    userDirectoryEditorDialogPathIsValid () {
+      const path = this.dialogs.userDirectoryEditorDialog.data.item.path
+      const pathIsEmpty = path?.length === 0
+      const pathExists = !pathIsEmpty && fs.existsSync(path)
+      if (pathIsEmpty) {
+        return {
+          value: false,
+          error: 'Path cannot be empty',
+        }
+      }
+      if (!pathExists) {
+        return {
+          value: false,
+          error: 'Path does not exist',
+        }
+      }
+      else {
+        return {
+          value: true,
+          error: '',
+        }
+      }
+    },
     newDirItemPath () {
       return PATH.posix.join(this.currentDir.path, this.dialogs.newDirItemDialog.data.name)
     },
@@ -2301,6 +2301,19 @@ export default {
     }
   },
   methods: {
+    setupDialogDataRestore (params) {
+      if (params.value) {
+        this.$nextTick(() => {
+          this.dialogs[params.dialogName].initialData = this.$utils.cloneDeep(this.dialogs[params.dialogName].data)
+        })
+      }
+      else if (!params.value) {
+        if (!this.dialogs[params.dialogName].dataIsValid) {
+          this.dialogs[params.dialogName].data = this.$utils.cloneDeep(this.dialogs[params.dialogName].initialData)
+          this.dialogs.userDirectoryEditorDialog.dataIsValid = true
+        }
+      }
+    },
     closeDialog (dialogName, params) {
       const defaultParams = {
         resetData: true
@@ -2380,13 +2393,18 @@ export default {
           action: 'add',
           timeout: 0,
           closeButton: true,
-          title: 'Success | error template was generated',
+          colorStatus: 'green',
+          title: 'Error template link was generated',
+          message: 'Open the link in your browser to continue',
           actionButtons: [
             {
               title: 'Copy link',
               action: '',
               onClick: () => {
-                this.$utils.copyToClipboard(link)
+                this.$utils.copyToClipboard({
+                  text: link,
+                  title: 'Link was copied to clipboard'
+                })
               },
               closesNotification: false
             },
@@ -2414,93 +2432,15 @@ export default {
     getGuideTitle (index) {
       return this.dialogs?.guideDialog?.data?.guideTabs?.[index]?.text || ''
     },
-    handleConformationDialogButton (button) {
+    handleConformationDialogCloseButton () {
       try {
-        if (button.onClick) {
-          button.onClick()
-          this.closeDialog('conformationDialog')
+        let closeButton = this.dialogs.conformationDialog.data.closeButton
+        if (closeButton.onClick) {
+          closeButton.onClick()
         }
+        this.closeDialog('conformationDialog')
       }
       catch (error) {}
-    },
-    handleShortcutChange (event, shortcutName, shortcut) {
-      event.preventDefault()
-
-      // Handle "Enter" key event
-      const noModifiersPressed =
-        !event.ctrlKey &&
-        !event.altKey &&
-        !event.shiftKey &&
-        !event.metaKey
-
-      if (event.code === 'Enter' && noModifiersPressed) {
-        document.activeElement.blur()
-        return
-      }
-
-      // Reset tempData
-      this.tempData.selectedShortcut.modifiers = []
-      this.tempData.selectedShortcut.regularKey = ''
-      this.tempData.selectedShortcut.readable = ''
-      this.tempData.selectedShortcut.value = ''
-
-      // Set data
-      this.tempData.selectedShortcut.initialValue = shortcut.shortcut
-
-      const keyIsAlphaNum = (event.keyCode >= 48 && event.keyCode <= 90)
-      const keyIsBetweenF1andF12 = (event.keyCode >= 112 && event.keyCode <= 123)
-      const allowedChars = [
-        'Backquote', 'Space', 'Enter', 'Minus', 'Equal', 'Backspace',
-        'Escape', 'PageUp', 'PageDown', 'Home', 'End', 'Delete',
-        'Tab', 'BracketLeft', 'BracketRight', 'Backslash', 'Semicolon',
-        'Quote', 'Period', 'Slash', 'Comma'
-      ]
-
-      if (event.ctrlKey) {
-        this.tempData.selectedShortcut.modifiers.push('Ctrl')
-      }
-      if (event.altKey) {
-        this.tempData.selectedShortcut.modifiers.push('Alt')
-      }
-      if (event.shiftKey) {
-        this.tempData.selectedShortcut.modifiers.push('Shift')
-      }
-      if (event.metaKey) {
-        this.tempData.selectedShortcut.modifiers.push('Meta')
-      }
-      if (keyIsAlphaNum || keyIsBetweenF1andF12 || allowedChars.includes(event.code)) {
-        this.tempData.selectedShortcut.regularKey = event.code
-          .replace(/\s/g, '')
-          .replace('Key', '')
-          .replace('Digit', '')
-          .replace(/Backquote/g, '~')
-          .replace(/Backtick/g, '~')
-          .replace(/Equal/g, '=')
-          .replace(/Plus/g, '+')
-          .replace(/Minus/g, '-')
-      }
-
-      const modifiers = this.tempData.selectedShortcut.modifiers
-      const regularKey = this.tempData.selectedShortcut.regularKey
-
-      const formattedModifiers = modifiers.length === 0
-        ? 'Click here & hold shortcut keys'
-        : modifiers.join('+')
-
-      const formattedToReadable = modifiers.length === 0
-        ? `${formattedModifiers}`
-        : `${formattedModifiers}+${keyIsAlphaNum || keyIsBetweenF1andF12 ? regularKey.toUpperCase() : regularKey}`
-
-      this.tempData.selectedShortcut.readable = formattedToReadable.replace(/\+/g, ' + ')
-      this.tempData.selectedShortcut.value = formattedToReadable
-
-      if (modifiers.length !== 0 && regularKey.length !== 0) {
-        this.tempData.selectedShortcut.isAcceptable = true
-        this.setShortcut(name)
-      }
-      else {
-        this.tempData.selectedShortcut.isAcceptable = false
-      }
     },
     initCreateArchive () {
       if (!this.dialogs.archiverDialog.data.isValid) {return}
@@ -2599,10 +2539,6 @@ export default {
       this.dialogs.newDirItemDialog.data.error = pathValidationData.error
       this.dialogs.newDirItemDialog.data.isValid = pathValidationData.isValid
     },
-    shortcutFiltered (shortcut) {
-      if (typeof shortcut === 'string') { return shortcut }
-      else { return shortcut[this.systemInfo.platform] }
-    },
     updateWorkspaceEditorDialogProps () {
       // Update selectedAction so it's synced with the input fields
       this.dialogs.workspaceEditorDialog.data.selectedAction = this.dialogs
@@ -2673,9 +2609,10 @@ export default {
         this.dialogs.workspaceEditorDialog.data.selected = items.find(item => item.isTemplate)
         this.$eventHub.$emit('notification', {
           action: 'add',
+          colorStatus: 'green',
           timeout: 3000,
           closeButton: true,
-          title: 'Success | workspace changes were saved'
+          title: 'Workspace changes were saved'
         })
       }
       this.closeDialog('workspaceEditorDialog')
@@ -2684,7 +2621,7 @@ export default {
       const items = this.$utils.cloneDeep(this.dialogs.workspaceEditorDialog.data.items)
       // Set the new items without the specified workspace and without the new workspace
       // But do not filter out the new workspace from the selection list
-      this.dialogs.workspaceEditorDialog.data.items = items.filter(listItem => !(listItem.id === item.id))
+      this.dialogs.workspaceEditorDialog.data.items = items.filter(listItem => listItem.id !== item.id)
       this.$store.dispatch('SET', {
         key: 'storageData.workspaces.items',
         value: this.dialogs.workspaceEditorDialog.data.items.filter(listItem => !listItem.isTemplate)
@@ -2699,9 +2636,10 @@ export default {
       })
       this.$eventHub.$emit('notification', {
         action: 'add',
+        colorStatus: 'green',
         timeout: 3000,
         closeButton: true,
-        title: 'Success | workspace was deleted',
+        title: 'Workspace was deleted',
         message: item.name
       })
     },
@@ -2892,31 +2830,6 @@ export default {
   font-size: 16px;
 }
 
-.shortcut-list__item {
-  /* margin: 16px 0px; */
-  display: grid;
-  grid-template-columns: 16px 1fr 0.5fr 32px;
-  min-height: 32px;
-  padding: 8px 0px;
-  gap: 24px;
-  align-items: center;
-  border-bottom: 1px solid var(--divider-color-1);
-}
-
-.shortcut-list__item-description {
-
-}
-
-.shortcut-list__item-shortcut {
-  border-left: 1px solid var(--divider-color-1);
-  padding: 8px;
-  font-size: 14px;
-  /* text-align: right; */
-}
-
-.shortcut-list__item-actions {
-}
-
 .program-icon-set__container {
   display: flex;
   flex-wrap: wrap;
@@ -2926,7 +2839,7 @@ export default {
 .program-icon-set__container
   .v-btn[isSelected] {
     background-color: var(--highlight-color-3);
-    border: 1px solid var(--icon-color-3);
+    border: 1px solid var(--icon-color-1);
     border-radius: 4px;
   }
 
@@ -2939,6 +2852,6 @@ export default {
 .program-icon-set__container
   .v-btn[isSelected]
     .v-icon {
-      color: var(--icon-color-3) !important;
+      color: var(--icon-color-1) !important;
     }
 </style>

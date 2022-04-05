@@ -13,7 +13,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     paused: {{thumbLoadingIsPaused}} |
     offsetY: {{offsetY}} |
     thumbLoadSchedule.length: {{thumbLoadSchedule.length}} |
-    visibleItemSizes: {{visibleItemSizes}}
+    renderedItemsizes: {{renderedItemsizes}}
     allItemSizes: {{allItemSizes}} -->
 
     <div
@@ -29,7 +29,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         fade-mask--bottom
       "
       :style="{
-        '--fade-mask-bottom': `${bottomFadeMaskValue}%`,
+        '--fade-mask-bottom': `${bottomFadeMaskHeightCurrentValue}%`,
       }"
       ref="root"
     >
@@ -37,7 +37,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         <div class="viewport" ref="viewport" :style="viewportStyle">
           <div
             class="dir-item mx-6"
-            v-for="(item, index) in visibleItems"
+            v-for="(item, index) in renderedItems"
             :key="item.name"
             :style="{ height: item.height }"
           >
@@ -74,8 +74,6 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               :forceThumbLoad="forceThumbLoad"
               :status="status"
               :thumbLoadSchedule="thumbLoadSchedule"
-              :visibleItems="visibleItems"
-              :previousVisibleItems="previousVisibleItems"
               @addToThumbLoadSchedule="addToThumbLoadSchedule"
               @removeFromThumbLoadSchedule="removeFromThumbLoadSchedule"
               :ref="'dirItem' + item.positionIndex"
@@ -108,6 +106,9 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         unselectable
         fade-mask--bottom
       "
+      :style="{
+        '--fade-mask-bottom': `${bottomFadeMaskHeightCurrentValue}%`,
+      }"
       ref="root"
     >
       <div  class="viewport-container" ref="viewportContainer" :style="viewportContainerStyle" style="padding: 0px 24px">
@@ -117,7 +118,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             <template >
               <dir-item-row
                 class="dir-item"
-                v-for="row in visibleItems"
+                v-for="row in renderedItems"
                 :key="`dir-item-row-${row.positionIndex}`"
                 :ref="'dirItemRow' + row.positionIndex"
                 :row="row"
@@ -141,10 +142,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 </template>
 
 <script>
-import { mapFields } from 'vuex-map-fields'
+import {mapGetters} from 'vuex'
+import {mapFields} from 'vuex-map-fields'
 import TimeUtils from '../utils/timeUtils.js'
 import ThumbWorker from 'worker-loader!../workers/thumbWorker.js'
-import { mapGetters } from 'vuex'
 
 export default {
   props: {
@@ -165,14 +166,15 @@ export default {
       dirItemNodes: [],
       scrollTop: 0,
       bottomReached: false,
-      bottomFadeMaskValue: 10,
+      bottomFadeMaskHeightCurrentValue: 10,
+      bottomFadeMaskHeight: 10, 
       totalHeight: 0,
       initialItems: 0,
       bufferItems: 2,
       rowHeight: 48,
       rootHeight: 600,
-      previousVisibleItems: [],
-      visibleItemSizes: [],
+      previousRenderedItems: [],
+      renderedItemsizes: [],
       allItemSizes: [],
       loadedDirItems: [],
       firstItemIsLoaded: false,
@@ -206,7 +208,7 @@ export default {
     // this.initMutationObserver()
     setTimeout(() => {
       this.setValues()
-      this.previousVisibleItems = this.visibleItems
+      this.previousRenderedItems = this.renderedItems
     }, 100)
   },
   updated () {
@@ -230,25 +232,25 @@ export default {
     bottomReached (value) {
       if (value) {
         this.animateRange({
-          start: 10,
+          start: this.bottomFadeMaskHeight,
           end: 0,
           steps: 25,
           stepDuration: 1,
-          target: 'bottomFadeMaskValue'
+          target: 'bottomFadeMaskHeightCurrentValue'
         })
       }
       else {
         this.animateRange({
           start: 0,
-          end: 10,
+          end: this.bottomFadeMaskHeight,
           steps: 25,
           stepDuration: 1,
-          target: 'bottomFadeMaskValue'
+          target: 'bottomFadeMaskHeightCurrentValue'
         })
       }
     },
-    visibleItems (newValue, oldValue) {
-      this.previousVisibleItems = this.visibleItems
+    renderedItems (newValue, oldValue) {
+      this.previousRenderedItems = this.renderedItems
       if (newValue.length !== oldValue.length) {
         this.setValues()
       }
@@ -268,20 +270,20 @@ export default {
   computed: {
     ...mapFields({
       dirItems: 'navigatorView.dirItems',
-      appPaths: 'appPaths',
+      appPaths: 'storageData.settings.appPaths',
       windowSize: 'windowSize',
       currentDir: 'navigatorView.currentDir'
     }),
     ...mapGetters([
       'clipboardToolbarIsVisible'
     ]),
-    visibleItems () {
+    renderedItems () {
       return this.items.slice(
         this.amountScrolledItems,
-        this.amountScrolledItems + this.amountVisibleItems
+        this.amountScrolledItems + this.amountRenderedItems
       )
     },
-    amountVisibleItems () {
+    amountRenderedItems () {
       let itemHeightSum = 0
       let amountItemsFillRootHeight = 0
       this.allItemSizes.forEach(itemHeight => {
@@ -328,9 +330,6 @@ export default {
         transform: `translateY(${this.offsetY}px)`
       }
     }
-    // bottomFadeMaskValue () {
-    //   return this.bottomReached ? '0%' : '10%'
-    // }
   },
   methods: {
     addToLoadedList (path) {
@@ -414,11 +413,16 @@ export default {
       return new Promise((resolve, reject) => {
         this.thumbLoadIsLocked = true
         this.generateImageThumb(payload.item.path, payload.item.realPath, payload.thumbPath)
-          .then(() => {
-            resolve()
+          .then((event) => {
             this.thumbLoadIsLocked = false
             this.removeFromThumbLoadSchedule(payload)
-            payload.onEnd()
+            if (event.data.result === 'error') {
+              payload?.onError?.()
+            }
+            else {
+              payload?.onEnd?.()
+            }
+            resolve()
             if (this.thumbLoadSchedule.length > 0) {
               this.handleThumbLoad(this.thumbLoadSchedule[0])
             }
@@ -426,13 +430,6 @@ export default {
       })
     },
     addToThumbLoadSchedule (payload) {
-      // TODO:
-      // Currently, if ffmpeg cannot generate a thumb for the file
-      // it throws an error and stops generating thumbs for all
-      // succeeding thumbs in the dir (because the worker gets destroyed, perhaps?)
-      // The files that were causing the problem (already fixed):
-      // ['image/svg+xml']
-
       this.thumbLoadSchedule.push(payload)
       if (!this.thumbLoadIsLocked && !payload.item.isInaccessible) {
         this.handleThumbLoad(payload)
@@ -454,7 +451,7 @@ export default {
           appPaths: this.appPaths
         })
         this.thumbWorker.onmessage = (event) => {
-          resolve()
+          resolve(event)
         }
       })
     },
@@ -505,22 +502,34 @@ export default {
       }, 250)
     },
     setValues () {
-      /** Returns the height of the element content (including margin)
-      * @param {HTMLElement} element
-      * @returns {Number}
-      */
-      if (!this.$refs.root) { return }
-      // const nodes = this.$refs.viewportContainer.querySelectorAll('.dir-item')
+      if (!this.$refs.root) {return}
+
       const nodes = document.querySelectorAll('.dir-item')
       const dirItemNodes = document.querySelectorAll('.dir-item-node')
       this.nodes = nodes
       this.dirItemNodes = dirItemNodes
       this.scrollTop = this.$refs.root.scrollTop
       this.rootHeight = this.$refs.root.clientHeight
-      this.visibleItemSizes = this.visibleItems.map(item => item.height)
+      this.renderedItemsizes = this.renderedItems.map(item => item.height)
       this.allItemSizes = this.items.map(item => item.height)
       this.totalHeight = this.items.reduce((a, b) => a + (b.height || 0), 0)
-    }
+      this.appendPropertyIsInViewport(dirItemNodes)
+    },
+    appendPropertyIsInViewport (dirItemNodes) {
+      dirItemNodes.forEach(async (node) => {
+        const isInViewport = await this.isHTMLNodeInViewport(node)
+        node.dataset.isInViewport = isInViewport
+      })
+    },
+    isHTMLNodeInViewport (domElement) {
+      return new Promise(resolve => {
+        const observer = new IntersectionObserver(([entry]) => {
+          resolve(entry.intersectionRatio > 0)
+          observer.disconnect()
+        })
+        observer.observe(domElement)
+      })
+    },
   }
 }
 </script>
@@ -528,8 +537,6 @@ export default {
 <style>
 .root {
   overflow-x: hidden;
-  /* flex: 1 1 auto; */
-  /* height: 100%;  */
   height: calc(
     100vh -
     var(--window-toolbar-height) -
@@ -539,12 +546,7 @@ export default {
 }
 
 .viewport-container {
-  /* background: #fefefe; */
   min-height: 100%;
   overflow: hidden;
-}
-
-.dir-item {
-  /* border: 1px solid rgba(255, 255, 255, 0.1) */
 }
 </style>

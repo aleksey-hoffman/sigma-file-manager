@@ -7,7 +7,6 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
   <basic-menu
     v-model="menus.workspaces"
     :menuButton="{
-      class: 'window-toolbar__item',
       tooltip: {
         description: 'Workspaces',
         shortcut: shortcuts.switchWorkspace.shortcut
@@ -15,12 +14,17 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     }"
     :header="{
       title: 'Workspaces',
-      icon: {
-        name: `mdi-numeric-${selectedWorkspace.id + 1}-box-multiple-outline`,
-        size: '18px',
-        color: iconColor
-      },
       buttons: [
+        {
+          icon: {
+            name: 'mdi-plus',
+            size: '24px'
+          },
+          tooltip: {
+            description: 'New workspace'
+          },
+          onClick: () => $store.state.dialogs.workspaceEditorDialog.value = true
+        },
         {
           icon: {
             name: 'mdi-pencil-outline',
@@ -34,6 +38,23 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       ]
     }"
   >
+    <template v-slot:activator>
+      <button class="window-toolbar__item button--menu"
+      >
+        <v-icon
+          :color="iconColor"
+          size="18px"
+        >mdi-vector-arrange-below
+        </v-icon>
+
+        <div 
+          class="button--menu__counter" 
+          :style="{color: iconColor}"
+        >
+          {{workspaceButtonText}}
+        </div>
+      </button>
+    </template>
     <template v-slot:content>
       <sortable-list
         source="workspaces"
@@ -45,8 +66,8 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
-import { mapFields } from 'vuex-map-fields'
+import {mapGetters} from 'vuex'
+import {mapFields} from 'vuex-map-fields'
 
 export default {
   props: {
@@ -59,8 +80,17 @@ export default {
     ...mapFields({
       menus: 'menus',
       workspaces: 'storageData.workspaces',
-      shortcuts: 'storageData.settings.shortcuts'
-    })
+      shortcuts: 'storageData.settings.shortcuts',
+      showTitleInToolbar: 'storageData.settings.navigator.workspaces.showTitleInToolbar'
+    }),
+    workspaceButtonText () {
+      if (this.showTitleInToolbar) {
+        return this.workspaces.items.find(workspace => workspace.isSelected).name
+      }
+      else {
+        return this.workspaces.items.find(workspace => workspace.isSelected).id + 1
+      }
+    }
   }
 }
 </script>

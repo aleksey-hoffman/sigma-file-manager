@@ -12,7 +12,6 @@ process.on('message', (event) => {
   if (event.action === 'start-server') {
     serveFile(event)
   }
-  // process.send(JSON.stringify(event))
 })
 
 /** Self-distruct the process if it stops receiving reset signals
@@ -32,17 +31,17 @@ function serveFile (payload) {
     fileShareType,
     fileSharePort
   } = payload
+
   expressServer.get('/', (request, response, next) => {
-    // Stream (display) file
     if (fileShareType === 'stream') {
       response.sendFile(path)
     }
-    // Push download
     else if (fileShareType === 'download') {
       response.download(path, (error) => {
         if (error) { throw error }
       })
     }
   })
+  
   expressServer.listen(fileSharePort)
 }

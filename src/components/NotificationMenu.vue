@@ -5,10 +5,9 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <template>
   <basic-menu
-    v-if="showNotificationBadge"
+    v-if="hiddenNotifications.length > 0"
     v-model="menus.workspaces.value"
     :menuButton="{
-      class: 'window-toolbar__item',
       tooltip: {
         description: 'Notifications',
       }
@@ -18,56 +17,40 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       color: 'blue'
     }"
     :header="{
-      title: 'Notifications',
-      icon: {
-        name: `mdi-bell-outline`,
-        size: '20px',
-        color: iconColor
-      },
+      title: 'Notifications'
     }"
   >
+    <template v-slot:activator>
+      <v-btn 
+        class="window-toolbar__item"
+        :retain-focus-on-click="false"
+        icon 
+        small
+      >
+        <v-icon
+          :color="iconColor"
+          size="20px"
+        >mdi-bell-outline
+        </v-icon>
+      </v-btn>
+    </template>
     <template v-slot:content>
       <div
-        class="notifications__item"
-        v-for="(item, index) in notifications"
-        :key="'item-' + index"
+        class="notification__container"
       >
-        <div class="notifications__item__content">
-          <div class="notifications__item__content__title-row">
-            <div
-              class="notifications__item__content__title-row__title"
-              v-if="item.title"
-              v-html="item.title"
-              :colorStatus="item.colorStatus"
-            ></div>
-          </div>
-          <div
-            class="notifications__item__content__description-row"
-            v-if="item.message"
-            v-html="item.message"
-          ></div>
-        </div>
-        <div
-          class="notifications__item__actions"
-          v-if="item.actionButtons"
-        >
-          <v-btn
-            class="button-1 mr-3"
-            v-for="(actionButtonItem, index) in item.actionButtons"
-            :key="'item-' + index"
-            @click="() => {actionButtonItem.onClick()}"
-            x-small
-          >
-            {{actionButtonItem.title}}
-          </v-btn>
-        </div>
+        <notification-card
+          v-for="notification in hiddenNotifications"
+          :key="'notification-' + notification.cardHashID"
+          :notification="notification"
+          location="menu"
+        ></notification-card>
       </div>
     </template>
   </basic-menu>
 </template>
 
 <script>
-import { mapFields } from 'vuex-map-fields'
+import {mapFields} from 'vuex-map-fields'
 
 export default {
   props: {
@@ -78,45 +61,21 @@ export default {
       menus: 'menus',
       notifications: 'notifications'
     }),
+    hiddenNotifications () {
+      return [
+        ...this.notifications.filter(item => item.isHidden && item.isPinned),
+        ...this.notifications.filter(item => item.isHidden && !item.isPinned)
+      ]
+    },
     showNotificationBadge () {
-      return this.notifications.length > 0
+      return this.notifications.some(item => item.isUpdate)
     }
   }
 }
 </script>
 
-<style>
-.notifications__item {
-  padding: 14px 24px;
-  background-color: var(--context-menu-bg-color);
-  border-bottom: 1px solid var(--divider-color-1);
-}
-
-.notifications__item__content__title-row {
-  display: flex;
-  align-items: center;
-  font-size: 18px;
-}
-
-.notifications__item__content__title-row__title[colorStatus="green"]:before {
-  content: "";
-  top: 0;
-  left: 0;
-  margin-right: 8px;
-  border-left: 3px solid #009688;
-}
-
-.notifications__item__content__description-row {
-  font-size: 14px;
-}
-
-.notifications__item__content
-  .v-icon {
-    color: var(--icon-color-2) !important;
-    margin-right: 12px;
-  }
-
-.notifications__item__actions {
-  margin-top: 8px;
+<style scoped>
+.notification__container {
+  background-color: var(--bg-color-1);
 }
 </style>

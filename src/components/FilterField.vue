@@ -4,118 +4,149 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <template>
-  <div>
-    <div class="filter-field">
-      <input
-        ref="filterField"
-        v-model="filterQuery"
-        @focus="$store.dispatch('SET', {
-          key: 'focusedField',
-          value: 'filter'
-        })"
-        @blur="$store.dispatch('SET', {
-          key: 'focusedField',
-          value: ''
-        })"
-        @keydown.esc.stop="clearQuery()"
-        placeholder="Filter"
-        type="text"
-        maxlength="64"
-      >
+  <div
+    v-if="$store.state.filterField.view[$route.name]"
+    class="filter-field"
+  >
+    <input
+      ref="filterField"
+      v-model="filterQuery"
+      class="filter-field__input"
+      placeholder="Filter"
+      type="text"
+      maxlength="64"
+      @focus="$store.dispatch('SET', {
+        key: 'focusedField',
+        value: 'filter'
+      })"
+      @blur="$store.dispatch('SET', {
+        key: 'focusedField',
+        value: ''
+      })"
+      @keydown.esc.stop="clearQuery()"
+    />
 
-      <div
-        class="filter-field__buttons"
-        :class="{'visible': filterQuery.length > 0}"
-      >
-        <div class="filter-field__clear-button">
-          <v-btn
-            @click="clearQuery()"
-            small
-            icon
-          >
-            <v-icon size="18px">
-              mdi-backspace-outline
-            </v-icon>
-          </v-btn>
-        </div>
+    <div
+      class="filter-field__buttons"
+      :class="{'visible': filterQuery.length > 0}"
+    >
+      <div class="filter-field__clear-button">
+        <v-btn
+          small
+          icon
+          @click="clearQuery()"
+        >
+          <v-icon size="18px">
+            mdi-backspace-outline
+          </v-icon>
+        </v-btn>
+      </div>
 
-        <div class="filter-field__menu-button">
-          <v-menu
-            offset-y
-            min-width="300px"
-            :close-on-content-click="false"
-          >
-            <template v-slot:activator="{ on: menu }">
-              <v-tooltip bottom>
-                <template v-slot:activator="{ on: tooltip }">
-                  <v-btn
-                    v-on="{ ...tooltip, ...menu }"
-                    icon
-                  >
-                    <v-icon>
-                      mdi-filter-variant
-                    </v-icon>
-                  </v-btn>
-                </template>
-                <span>Filter options</span>
-              </v-tooltip>
-            </template>
-            <v-card class="unselectable">
-              <v-list class="inactive">
-                <v-list-item class="inactive">
-                  <v-list-item-content class="text--sub-title-1 ma-0">
-                    <v-list-item-title>
-                      Filter options
-                    </v-list-item-title>
-                  </v-list-item-content>
-                </v-list-item>
-
-                <v-divider></v-divider>
-
-                <v-list-item class="px-5" dense>
-                  <v-switch
-                    v-model="filterQueryOptionGlob"
-                    label="Glob filtering"
-                  ></v-switch>
-                </v-list-item>
-
-                <v-divider></v-divider>
-
-                <v-list-item class="inactive">
-                  <v-list-item-content class="text--sub-title-1 ma-0">
-                    <v-list-item-title>
-                      Filter prefixes
-                    </v-list-item-title>
-                  </v-list-item-content>
-                </v-list-item>
-
-                <v-list-item
-                  v-for="(item, index) in filterProperties"
-                  :key="'item-' + index"
-                  dense
+      <div class="filter-field__menu-button">
+        <v-menu
+          offset-y
+          :close-on-content-click="false"
+        >
+          <template #activator="{ on: menu }">
+            <v-tooltip bottom>
+              <template #activator="{ on: tooltip }">
+                <v-btn
+                  icon
+                  v-on="{ ...tooltip, ...menu }"
                 >
-                  <v-list-item-content>
-                    <v-list-item-title>
-                      {{item.prefix}} [{{item.title}}]
-                    </v-list-item-title>
-                  </v-list-item-content>
-                </v-list-item>
-              </v-list>
-            </v-card>
-          </v-menu>
-        </div>
+                  <v-icon>
+                    mdi-filter-variant
+                  </v-icon>
+                </v-btn>
+              </template>
+              <span>Filter options</span>
+            </v-tooltip>
+          </template>
+          <v-card class="unselectable">
+            <v-list class="inactive">
+              <v-list-item class="inactive">
+                <v-list-item-content>
+                  <v-list-item-title>
+                    <div class="text--sub-title-1 ma-0">
+                      Filter options
+                    </div>
+                  </v-list-item-title>
+                </v-list-item-content>
+              </v-list-item>
+
+              <v-divider />
+
+              <v-list-item
+                class="px-5"
+                dense
+                @click="filterQueryOptionGlob = !filterQueryOptionGlob"
+              >
+                <v-switch
+                  class="my-3 pt-0"
+                  :value="filterQueryOptionGlob"
+                  label="Glob filtering"
+                  hide-details
+                />
+              </v-list-item>
+
+              <v-list-item
+                v-if="$route.name !== 'notes'"
+                class="px-5"
+                dense
+                @click="navigatorShowHiddenDirItems = !navigatorShowHiddenDirItems"
+              >
+                <v-switch
+                  class="my-3 pt-0"
+                  :value="navigatorShowHiddenDirItems"
+                  label="Show Hidden Items"
+                  hide-details
+                />
+              </v-list-item>
+
+              <v-divider />
+
+              <v-list-item
+                three-line
+                class="inactive"
+              >
+                <v-list-item-content>
+                  <v-list-item-title class="text--sub-title-1 ma-0">
+                    Filter prefixes
+                  </v-list-item-title>
+                  <v-list-item-subtitle>
+                    Add a prefix to the start to filter by specific property.
+                    <br />For example: "size: MB", "items: 15", "date-m: 2021"
+                  </v-list-item-subtitle>
+                </v-list-item-content>
+              </v-list-item>
+
+              <v-list-item
+                v-for="(item, index) in filterProperties"
+                :key="'item-' + index"
+                dense
+              >
+                <v-list-item-content>
+                  <v-list-item-title>
+                    <span class="inline-code--light">{{item.prefix}}</span>
+                    {{item.title}}
+                  </v-list-item-title>
+                </v-list-item-content>
+              </v-list-item>
+            </v-list>
+          </v-card>
+        </v-menu>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import { mapFields } from 'vuex-map-fields'
+import {mapFields} from 'vuex-map-fields'
 
 export default {
   mounted () {
     this.$eventHub.$on('focusFilter', () => {
-      if (document.querySelector('.filter-field') === document.activeElement) {
+      if (document.querySelector('.filter-field__input') === document.activeElement) {
         this.$refs.filterField.blur()
       }
       else {
@@ -130,8 +161,20 @@ export default {
     ...mapFields({
       notesItems: 'storageData.notes.items',
       dirItems: 'navigatorView.dirItems',
-      focusedField: 'focusedField'
+      settingsDataMap: 'settingsView.settingsDataMap',
+      focusedField: 'focusedField',
     }),
+    navigatorShowHiddenDirItems: {
+      get () {
+        return this.$store.state.storageData.settings.navigator.showHiddenDirItems
+      },
+      set (value) {
+        this.$store.dispatch('SET', {
+          key: 'storageData.settings.navigator.showHiddenDirItems',
+          value: value,
+        })
+      },
+    },
     filterQuery: {
       get () {
         return this.$store.state.filterField.view[this.$route.name].query
@@ -139,9 +182,9 @@ export default {
       set (value) {
         this.$store.dispatch('SET', {
           key: `filterField.view.${this.$route.name}.query`,
-          value: value
+          value: value,
         })
-      }
+      },
     },
     filterQueryMatchedItems: {
       get () {
@@ -150,9 +193,9 @@ export default {
       set (value) {
         this.$store.dispatch('SET', {
           key: `filterField.view.${this.$route.name}.matchedItems`,
-          value: value
+          value: value,
         })
-      }
+      },
     },
     filterQueryOptions: {
       get () {
@@ -161,9 +204,9 @@ export default {
       set (value) {
         this.$store.dispatch('SET', {
           key: `filterField.view.${this.$route.name}.options`,
-          value: value
+          value: value,
         })
-      }
+      },
     },
     filterQueryOptionGlob: {
       get () {
@@ -172,9 +215,9 @@ export default {
       set (value) {
         this.$store.dispatch('SET', {
           key: `filterField.view.${this.$route.name}.options.glob`,
-          value: value
+          value: value,
         })
-      }
+      },
     },
     filterProperties () {
       return this.$store.state.filterField.view[this.$route.name].filterProperties
@@ -205,7 +248,11 @@ export default {
   display: flex;
   align-items: center;
   width: 200px;
-  background-color: rgb(255, 255, 255, 0.025);
+  flex-shrink: 0;
+  height: 34px;
+  margin-bottom: 1px;
+  padding-top: 1px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .filter-field
@@ -220,6 +267,12 @@ export default {
     border: 0px solid #b0bec5;
     caret-color: var(--color-6);
     outline: none;
+    transition: background-color 0.1s ease;
+  }
+
+.filter-field
+  input:hover {
+    background-color: var(--bg-color-1);
   }
 
 .filter-field

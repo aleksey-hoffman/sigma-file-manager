@@ -11,6 +11,6 @@ export default {
     if (!path) {
       throw Error('getSafePath(): path is undefined')
     }
-    return `${store.state.appPaths.fileProtocol}://${path}`
-  }
+    return `${store.state.storageData.settings.appPaths.fileProtocol}://${path}`
+  },
 }

@@ -11,7 +11,10 @@
 // 1 — execute
 // 0 — no permissions
 
+const electron = require('electron')
 const fs = require('fs')
+const fsExtra = require('fs-extra')
+const PATH = require('path')
 const childProcess = require('child_process')
 const CLI = require('../processes/reusableCli.js')
 const reusableCli = new CLI()
@@ -21,6 +24,64 @@ const state = {
 }
 const SID = {
   everyone: '*S-1-1-0'
+}
+
+async function trashFSItems (params) {
+  return new Promise((resolve, reject) => {
+    electron.ipcRenderer.send('compute-request:trashDirItems', {items: params.items})
+    electron.ipcRenderer.once('compute-request-reply:trashDirItems', (event, data) => {
+      resolve({
+        removedItems: data.trashedItems,
+        notRemovedItems: data.notTrashedItems
+      })
+    })
+  })
+}
+
+async function deleteFSItems (params) {
+  async function initResolveRemove () {
+    const results = []
+    for (const item of params.items) {
+      const path = PATH.normalize(item.path)
+      let resolveResults = await resolveRemove(path)
+      results.push(resolveResults)
+    }
+    return results
+  }
+
+  async function resolveRemove (path) {
+    try {
+      await fsExtra.remove(path)
+      return {
+        path,
+        status: 'fulfilled'
+      }
+    }
+    catch (error) {
+      return {
+        path,
+        status: 'rejected',
+        error
+      }
+    }
+  }
+
+  function getFilteredResults (results) {
+    let removedItems = results
+      .filter(item => item.status === 'fulfilled')
+      .map(item => item.path.replace(/\\/g, '/'))
+  
+    let notRemovedItems = results
+      .filter(item => item.status === 'rejected')
+      .map(item => item.path.replace(/\\/g, '/')) 
+  
+    return {
+      removedItems,
+      notRemovedItems
+    }
+  }
+
+  return getFilteredResults(await initResolveRemove()) 
 }
 
 // Note: exec only at one place so only 1 CLI is spawned
@@ -44,25 +105,65 @@ async function initCliProcess () {
     params.shell = '/bin/sh'
     params.args = []
   }
-
+  
   reusableCli.init(
     params,
     (spawnedCliProcess) => {
       state.cliProcess = spawnedCliProcess
+      if (process.platform === 'win32') {
+        setUTF8encoding()
+      }
     }
   )
 }
 
 function getCommand (params) {
   if (process.platform === 'win32') {
+    // Format path
+    if (params.path) {
+      params.path = params.path.replace(/\//g, '\\')
+    }
+    // Get command
     if (params.command === 'sudo') {
-      if (params.adminPrompt === 'built-in') {
-        // return `echo -e "${params.sudoPassword}\n" | sudo -S`
-        return `echo ${params.sudoPassword} | sudo -S`
-      }
-      else if (params.adminPrompt === 'pkexec') {
-        return 'pkexec'
-      }
+      return '-Verb RunAs'
+    }
+    if (params.command === 'set-utf-8-encoding') {
+      return '[System.Console]::OutputEncoding = [System.Console]::InputEncoding = [System.Text.Encoding]::UTF8'
+    }
+    if (params.command === 'get-drive-info') {
+      return [
+        'get-ciminstance -ClassName Win32_LogicalDisk',
+        '| convertTo-csv | convertFrom-csv | convertTo-json'
+      ].join(' ')
+    }
+    if (params.command === 'get-extra-drive-info') {
+      return `(Get-CimInstance Win32_Diskdrive -Filter "Partitions>0" | ForEach-Object {
+        $disk = Get-CimInstance
+          -ClassName MSFT_PhysicalDisk
+          -Namespace root\\Microsoft\\Windows\\Storage
+          -Filter "SerialNumber='$($_.SerialNumber.trim())'";
+    
+        foreach ($partition in $_ | Get-CimAssociatedInstance -ResultClassName Win32_DiskPartition) {
+            foreach ($logicaldisk in $partition | Get-CimAssociatedInstance -ResultClassName Win32_LogicalDisk) {
+                [PSCustomObject]@{
+                    Disk          = $_.DeviceID;
+                    DiskModel     = $_.Model;
+                    DiskSize      = $_.Size;
+                    HealthStatus  = $disk.HealthStatus;
+                    BusType       = $disk.BusType;
+                    DiskType      = $_.MediaType;
+                    MediaType     = $disk.MediaType;
+                    Partition     = $partition.Name;
+                    PartitionSize = $partition.Size;
+                    VolumeName    = $logicaldisk.VolumeName;
+                    DriveLetter   = $logicaldisk.DeviceID;
+                    VolumeSize    = $logicaldisk.Size;
+                    FreeSpace     = $logicaldisk.FreeSpace;
+                }
+            }
+          }
+        }) | convertTo-csv | convertFrom-csv | convertTo-json
+      `.replace(/\n/g, ' ')
     }
     // Note: all commands on win32 are executed with powershell.
     // it doesn't have support for operators like &&.
@@ -81,6 +182,9 @@ function getCommand (params) {
     }
     else if (params.command === 'get-owner') {
       return `(Get-Acl "${params.path}").owner`
+    }
+    else if (params.command === 'get-fs-attributes') {
+      return `(Get-Item "${params.path}").Attributes`
     }
     else if (params.command === 'get-item-stats') {
       return `Get-Item -Path "${params.path}" | ConvertTo-Csv | ConvertFrom-Csv | ConvertTo-Json`
@@ -120,6 +224,37 @@ function getCommand (params) {
       // let sudoArg = getCommand({command: 'sudo'})
       // return `${sudoArg} '/c icacls "${params.dirItem.path}" /grant "${SID.everyone}:(F)"'`
       return `icacls "${params.dirItem.path}" /grant "${SID.everyone}:(F)"`
+    }
+    else if (params.command === 'create-windows-link') {
+      return [
+        '$WshShell = New-Object -comObject WScript.Shell',
+        `$Shortcut = $WshShell.CreateShortcut("${params.destPath}")`,
+        `$Shortcut.TargetPath = "${params.srcPath}"`,
+        '$Shortcut.Save()'
+      ].join(';')
+    }
+    else if (params.command === 'create-link') {
+      let argDirectory = params.isDirectory ? '/d' : ''
+      let argLinkType = ''
+      if (params.linkType === 'symlink') {argLinkType = ''}
+
+      const commandArgs = [
+        '/c',
+        'mklink',
+        `${argDirectory}`,
+        `${argLinkType}`,
+        `""${params.uniqueDestPath}""`,
+        `""${params.srcPath}"" `
+      ].filter(item => item !== '')
+
+      const innerCommand = `"${commandArgs.join(' ')}"`
+      const command = [
+        '-command', 
+        'Start-Process cmd', 
+        innerCommand, 
+        '-Verb RunAs'
+      ]
+      return command
     }
   }
   else if (process.platform === 'linux') {
@@ -173,6 +308,19 @@ function getCommand (params) {
       const sudoArg = getCommand({ ...params, command: 'sudo' })
       return `${sudoArg} chattr -i "${params.dirItem.path}" ${resetSudoPassword}`
     }
+    else if (params.command === 'create-link') {
+      let argLinkType = ''
+      if (params.linkType === 'hard-link') {argLinkType = ''}
+      if (params.linkType === 'symlink') {argLinkType = '-s'}
+      const commandArgs = [
+        'sudo', 
+        'ln', 
+        argLinkType, 
+        params.srcPath, 
+        params.uniqueDestPath
+      ].filter(item => item !== '')
+      return commandArgs
+    }
   }
 }
 
@@ -180,7 +328,7 @@ function getCommand (params) {
 * @param {string} params.command
 * @returns {boolean}
 */
-function execCommand (params) {
+async function execCommand (params) {
   return new Promise((resolve, reject) => {
     reusableCli.exec({
       process: state.cliProcess,
@@ -188,6 +336,61 @@ function execCommand (params) {
       onFinish: (result) => resolve(result)
     })
   })
+}
+
+/**
+* @returns void
+*/
+async function setUTF8encoding () {
+  execCommand({
+    command: getCommand({command: 'set-utf-8-encoding'})
+  })
+}
+
+/**
+* @returns {array}
+*/
+async function getDriveInfo () {
+  try {
+    let data = await execCommand({
+      command: getCommand({command: 'get-drive-info'})
+    })
+    return parseJSONStringArray(data)
+  }
+  catch (error) {
+    return []
+  }
+}
+
+/**
+* @returns {array}
+*/
+async function getExtraDriveInfo () {
+  try {
+    let data = await execCommand({
+      command: getCommand({command: 'get-extra-drive-info'})
+    })
+    return parseJSONStringArray(data)
+  }
+  catch (error) {
+    return []
+  }
+}
+
+/**
+* @param {string[]} data
+* @returns {array}
+*/
+function parseJSONStringArray (data) {
+  try {
+    let dataFormatted = JSON.parse(data.join(''))
+    return Array.isArray(dataFormatted)
+      ? dataFormatted
+      : [dataFormatted]
+  }
+  catch (error) {
+    return []
+  }
 }
 
 /**
@@ -209,7 +412,6 @@ async function getType (params) {
   const typeIsHardlink = await isHardlink(params)
   const typeIsSymlink = await isSymlink(params)
   const typeIsFile = await isFile(params)
-  console.log('getType', typeIsFile, typeIsSymlink, params)
   if (typeIsFile) {
     if (typeIsSymlink) {
       return 'file-symlink'
@@ -231,6 +433,25 @@ async function getType (params) {
     else {
       return 'directory'
     }
+  }
+}
+
+/**
+* @param {string} params.path
+* @returns {string}
+*/
+async function getFSAttributes (params) {
+  try {
+    let data = await execCommand({
+      command: getCommand({
+        path: params.path,
+        command: 'get-fs-attributes'
+      })
+    })
+    return data[0].split(',').map(item => item.trim())
+  }
+  catch (error) {
+    return []
   }
 }
 
@@ -340,7 +561,6 @@ async function isFile (params) {
     }),
     ...params
   })
-  console.log('isFile', typeIsFile, typeIsFile === 'True', params)
   return typeIsFile[0] === 'True'
 }
 
@@ -477,8 +697,12 @@ function changeMode (params) {
 }
 
 export {
+  trashFSItems,
+  deleteFSItems,
   initCliProcess,
   changeMode,
+  getDriveInfo,
+  getExtraDriveInfo,
   resetPermissions,
   getDirItemOwner,
   isDirItemImmutable,
@@ -489,5 +713,6 @@ export {
   isFile,
   isDirectory,
   getType,
+  getFSAttributes,
   getCommand
 }

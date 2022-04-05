@@ -1,0 +1,69 @@
+name: Label supporter
+
+on:
+  issues:
+    types: [opened, edited]
+
+jobs:
+  add_label_tier_1:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-ecosystem/action-add-labels@v1.1.0
+        if: 
+          ${{ 
+            contains(
+              fromJson('[
+                "theoob",
+                "julienripet",
+                "valentimarco"
+              ]'), 
+              github.actor
+            ) 
+          }}
+        with:
+          github_token: ${{ github.token }}
+          labels: |
+            supporter 💖
+            priority +1
+            
+  add_label_tier_2:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-ecosystem/action-add-labels@v1.1.0
+        if: 
+          ${{ 
+            contains(
+              fromJson('[
+                "andyundso",
+                "exploitacious"
+              ]'), 
+              github.actor
+            ) 
+          }}
+        with:
+          github_token: ${{ github.token }}
+          labels: |
+            supporter 💖
+            priority +2
+            
+  add_label_tier_3:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-ecosystem/action-add-labels@v1.1.0
+        if: 
+          ${{ 
+            contains(
+              fromJson('[
+                "photoancestry"
+              ]'), 
+              github.actor
+            ) 
+          }}
+        with:
+          github_token: ${{ github.token }}
+          labels: |
+            supporter 💖
+            priority +3

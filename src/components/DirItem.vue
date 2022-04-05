@@ -5,9 +5,12 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <template>
   <div
-    @mousedown="handleDirItemMouseDown($event, source, index)"
-    @mouseover="handleDirItemMouseOver($event, source)"
     :id="`item-index-${index}`"
+    class="dir-item-card dir-item-node"
+    :class="{
+      'drop-target drag-target': type && type.includes('directory'),
+      'drag-target': type && type.includes('file')
+    }"
     :data-item-id="source.id"
     :index="index"
     :data-selected="isDirItemSelected(source)"
@@ -18,153 +21,213 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     :data-file-type="$utils.getFileType(source.realPath).mimeDescription"
     :data-item-hover-is-paused="status.itemHover.isPaused"
     :data-hover-effect="dirItemHoverEffect"
+    :in-fs-clipboard="dirItemIsInFsClipboard"
+    :fs-clipboard-type="fsClipboard.type"
+    :is-selected="isDirItemSelected(source)"
     data-two-line="false"
-    class="dir-item-card dir-item-node"
-    :class="{
-      'drop-target drag-target': type && type.includes('directory'),
-      'drag-target': type && type.includes('file')
-    }"
     :cursor="navigatorOpenDirItemWithSingleClick && !inputState.alt ? 'pointer' : 'default'"
+    @mousedown="handleDirItemMouseDown($event, source, index)"
+    @mouseenter="handleDirItemMouseEnter($event, source)"
+    @mouseleave="handleDirItemMouseLeave($event, source)"
+    @mousedown.middle="handleDirItemMiddleMouseDown($event, source)"
   >
     <v-layout
+      v-ripple
       class="dir-item-card__content-container"
       align-center
-      v-ripple
+      :style="getCardContentContainerStyles"
     >
-      <!-- card::overlays -->
-      <div class="dir-item-card__overlay-container">
-        <div
-          v-if="isDirItemSelected(source)"
-          class="dir-item-card__overlay--selected"
-        ></div>
-        <div
-          :class="{'is-visible': source.isHighlighted}"
-          class="dir-item-card__overlay--highlighted"
-        ></div>
-        <div
-          class="dir-item-card__overlay--hover"
-        ></div>
-        <div
-          :class="{'is-visible': showDragOverOverlay(source)}"
-          class="overlay--drag-over"
-        ></div>
-      </div>
-
-      <!-- card::thumb-container -->
-      <v-layout
-        :data-item-real-path="`${source.realPath}`"
-        class="dir-item-card__thumb-container"
-        align-center justify-center
-      >
-        <!-- card::thumb: {type: directory} -->
-        <v-icon
-          v-if="type.includes('directory')"
-          class="dir-item-card__icon"
-          size="28px"
-        >{{getThumbIcon(source)}}
-        </v-icon>
-
-        <!-- card::thumb: {type: file && !isImage} -->
-        <!-- Will be inserted when it enters viewport bounds (intersectionObserver) -->
-        <!-- && $utils.getFileType(source.realPath).mimeDescription !== 'image' -->
+      <template v-if="specifiedNavigatorLayout === 'list'">
+        <!-- card::thumb-container -->
         <v-layout
-          v-if="type.includes('file')"
-          column
+          class="dir-item-card__content-container__item dir-item-card__thumb-container"
+          :data-item-real-path="`${source.realPath}`"
+          align-center
+          justify-center
         >
-          <template v-if="specifiedNavigatorLayout === 'list'">
+          <!-- card::thumb: {type: directory} -->
+          <v-icon
+            v-if="type.includes('directory')"
+            class="dir-item-card__icon"
+            size="28px"
+          >
+            {{getThumbIcon(source)}}
+          </v-icon>
+
+          <!-- card::thumb: {type: file && !isImage} -->
+          <v-layout
+            v-if="type.includes('file')"
+            column
+          >
             <v-icon
               class="dir-item-card__icon pt-1"
               size="22px"
               style="height: 22px;"
-            >{{getThumbIcon(source)}}
+            >
+              {{getThumbIcon(source)}}
             </v-icon>
-            <div class="dir-item-card__ext">
-              {{$utils.getExt(source.path)}}
+            <div class="dir-item-card__ext-container">
+              <div class="dir-item-card__ext">
+                {{$utils.getExt(source.path)}}
+              </div>
+            </div>
+          </v-layout>
+        </v-layout>
+
+        <div
+          v-for="(item, index) in sortingTypes"
+          :key="'dir-item-card__content-container__item-' + index"
+          class="dir-item-card__content-container__item"
+          :style="{display: item.isChecked ? 'flex' : 'none'}"
+        >
+          <template v-if="item.name === 'name'">
+            <div
+              class="dir-item-card__name"
+              :style="{'--name-column-max-width': navigatorNameColumnMaxWidth}"
+            >
+              <div class="dir-item-card__name__line-1">
+                <span
+                  v-if="showScore"
+                  class="inline-code--light mr-2"
+                >
+                  score: {{source.score}}
+                </span>
+                <v-tooltip bottom>
+                  <template #activator="{ on }">
+                    <v-icon
+                      v-show="source.isInaccessible"
+                      color="red"
+                      size="12px"
+                      v-on="on"
+                    >
+                      mdi-circle-medium
+                    </v-icon>
+                  </template>
+                  <span>Item is inaccessible</span>
+                </v-tooltip>
+                {{source.name}}
+              </div>
+
+              <!-- card::name::line-2-->
+              <div
+                v-if="showDir && source.dir !== source.path"
+                class="dir-item-card__name__line-2"
+              >
+                {{source.dir}}
+              </div>
             </div>
           </template>
 
-          <template v-if="specifiedNavigatorLayout === 'grid'">
-            <v-icon
-              class="dir-item-card__icon"
-              size="48px"
-            >{{getThumbIcon(source)}}
-            </v-icon>
+          <template v-if="item.name === 'date-created' && item.isChecked">
+            <div class="dir-item-card__date">
+              {{getLocalDateTime({stat: 'birthtime'})}}
+            </div>
           </template>
-        </v-layout>
-      </v-layout>
 
-      <!-- {layout: 'list'} -->
-      <template v-if="specifiedNavigatorLayout === 'list'">
-        <!-- card::name-->
-        <div class="dir-item-card__name">
-          <!-- card::name::line-1-->
-          <div class="dir-item-card__name__line-1">
-            <span
-              class="inline-code--light mr-2"
-              v-if="showScore"
+          <template v-if="item.name === 'date-modified-meta' && item.isChecked">
+            <div class="dir-item-card__date">
+              {{getLocalDateTime({stat: 'ctime'})}}
+            </div>
+          </template>
+
+          <template v-if="item.name === 'date-modified-contents' && item.isChecked">
+            <div class="dir-item-card__date">
+              {{getLocalDateTime({stat: 'mtime'})}}
+            </div>
+          </template>
+
+          <template v-if="item.name === 'size' && item.isChecked">
+            <!-- {type: (directory|directory-symlink)} -->
+            <!-- card::item-count -->
+            <div
+              v-if="type === 'directory' || type === 'directory-symlink'"
+              class="dir-item-card__item-count"
             >
-              score: {{source.score}}
-            </span>
-            <v-tooltip bottom>
-              <template v-slot:activator="{ on }">
-                <v-icon
-                  v-on="on"
-                  v-show="source.isInaccessible"
-                  color="red"
-                  size="12px"
-                >
-                  mdi-circle-medium
-                </v-icon>
-              </template>
-              <span>Item is inaccessible</span>
-            </v-tooltip>
-            {{source.name}}
-          </div>
+              {{source.dirItemCount}} {{$localizeUtils.pluralize(source.dirItemCount, 'item')}}
+            </div>
 
-          <!-- card::name::line-2-->
-          <div
-            class="dir-item-card__name__line-2"
-            v-if="showDir && source.dir !== source.path"
-          >
-            {{source.dir}}
-          </div>
-        </div>
+            <!-- {type: (file|file-symlink)} -->
+            <!-- card::item-count -->
+            <div
+              v-else-if="type === 'file' || type === 'file-symlink'"
+              class="dir-item-card__item-count"
+            >
+              {{$utils.prettyBytes(source.stat.size, 1)}}
+            </div>
+          </template>
 
-        <!-- card::date-->
-        <div class="dir-item-card__date">
-          {{$utils.formatDateTime(source.stat.ctime, 'D MMM YYYY')}}
-        </div>
+          <template v-if="item.name === 'status' && item.isChecked">
+            <div class="dir-item-card__item-offline-status">
+              <div v-if="offlineStatus.status">
+                <v-tooltip bottom>
+                  <template #activator="{ on }">
+                    <v-icon
+                      color="var(--color-6)"
+                      size="12px"
+                      v-on="on"
+                    >
+                      {{offlineStatus.icon}}
+                    </v-icon>
+                  </template>
+                  <span>{{offlineStatus.tooltip}}</span>
+                </v-tooltip>
+              </div>
+              <div v-else />
+            </div>
 
-        <!-- {type: (directory|directory-symlink)} -->
-        <!-- card::item-count -->
-        <div
-          v-if="type === 'directory' || type === 'directory-symlink'"
-          class="dir-item-card__item-count"
-        >{{source.dirItemCount}} {{$localizeUtils.pluralize(source.dirItemCount, 'item')}}
-        </div>
-
-        <!-- {type: (file|file-symlink)} -->
-        <!-- card::item-count -->
-        <div
-          v-else-if="type === 'file' || type === 'file-symlink'"
-          class="dir-item-card__item-count"
-        >{{$utils.prettyBytes(source.stat.size, 1)}}
+            <div class="dir-item-card__actions">
+              <slot name="actions" />
+            </div>
+          </template>
         </div>
       </template>
 
       <!-- {layout: 'grid'} -->
       <template v-if="specifiedNavigatorLayout === 'grid'">
+        <!-- card::thumb-container -->
+        <v-layout
+          class="dir-item-card__thumb-container"
+          :data-item-real-path="`${source.realPath}`"
+          align-center
+          justify-center
+        >
+          <!-- card::thumb: {type: directory} -->
+          <v-icon
+            v-if="type.includes('directory')"
+            class="dir-item-card__icon"
+            size="28px"
+          >
+            {{getThumbIcon(source)}}
+          </v-icon>
+
+          <!-- card::thumb: {type: file && !isImage} -->
+          <v-layout
+            v-if="type.includes('file')"
+            column
+          >
+            <v-icon
+              class="dir-item-card__icon"
+              size="48px"
+            >
+              {{getThumbIcon(source)}}
+            </v-icon>
+          </v-layout>
+        </v-layout>
+
         <!-- {type: (directory|directory-symlink)} -->
-        <v-layout column v-if="type === 'directory' || type === 'directory-symlink'">
+        <v-layout
+          v-if="type === 'directory' || type === 'directory-symlink'"
+          column
+        >
           <!-- card::name -->
           <div class="dir-item-card__name">
             <v-tooltip bottom>
-              <template v-slot:activator="{ on }">
+              <template #activator="{ on }">
                 <v-icon
-                  v-on="on"
                   v-show="source.isInaccessible"
                   color="red"
                   size="12px"
+                  v-on="on"
                 >
                   mdi-circle-medium
                 </v-icon>
@@ -185,21 +248,22 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           v-else-if="type === 'file' || type === 'file-symlink'"
           class="dir-item-card__description-container"
           :data-path="source.path"
-          justify-center column
+          justify-center
+          column
         >
-          <div class="dir-item-card__overlay"></div>
+          <div class="dir-item-card__overlay" />
 
           <div class="dir-item-card__bottom-container">
             <!-- card::name -->
             <div class="dir-item-card__name">
               <v-tooltip bottom>
-                <template v-slot:activator="{ on }">
+                <template #activator="{ on }">
                   <v-icon
-                    v-on="on"
                     v-show="source.isInaccessible"
                     color="red"
                     size="12px"
                     style="margin-left: -16px"
+                    v-on="on"
                   >
                     mdi-circle-medium
                   </v-icon>
@@ -215,30 +279,41 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             </div>
           </div>
         </v-layout>
+
+        <div class="dir-item-card__actions">
+          <slot name="actions" />
+        </div>
       </template>
+    </v-layout>
 
-      <div class="dir-item-card__actions">
-        <slot name="actions"></slot>
-      </div>
-
-      <!-- card::checkbox -->
-      <!-- Note: using v-if to improve performance -->
+    <!-- card::overlays -->
+    <div class="dir-item-card__overlay-container">
       <div
         v-if="isDirItemSelected(source)"
-        class="dir-item-card__checkbox"
-      >
-        <v-icon @mousedown.stop="handleDirItemCheckboxMouseDown($event, source)">
-          mdi-check-box-outline
-        </v-icon>
-      </div>
-    </v-layout>
+        class="dir-item-card__overlay dir-item-card__overlay--selected"
+      />
+      <div
+        v-if="dirItemIsInFsClipboard"
+        class="dir-item-card__overlay dir-item-card__overlay--fs-clipboard"
+      />
+      <div
+        class="dir-item-card__overlay dir-item-card__overlay--highlighted"
+        :class="{'is-visible': source.isHighlighted}"
+      />
+      <div
+        class="dir-item-card__overlay dir-item-card__overlay--hover"
+      />
+      <div
+        class="dir-item-card__overlay overlay--drag-over"
+        :class="{'is-visible': showDragOverOverlay(source)}"
+      />
+    </div>
   </div>
 </template>
 
 <script>
-import { mapGetters, mapState } from 'vuex'
-import { mapFields } from 'vuex-map-fields'
-import Filehasher from '../utils/fileHasher.js'
+import {mapGetters, mapState} from 'vuex'
+import {mapFields} from 'vuex-map-fields'
 
 const fs = require('fs')
 const PATH = require('path')
@@ -246,21 +321,36 @@ const PATH = require('path')
 export default {
   name: 'dir-item',
   props: {
-    index: Number,
+    index: {
+      type: Number,
+      default: 0,
+    },
     source: {
       type: Object,
       default () {
         return {}
-      }
+      },
     },
-    type: String,
-    layout: String,
-    status: Object,
+    type: {
+      type: String,
+      default: '',
+    },
+    layout: {
+      type: String,
+      default: '',
+    },
+    status: {
+      type: Object,
+      default: () => ({}),
+    },
     thumbLoadingIsPaused: Boolean,
     forceThumbLoad: Boolean,
     showScore: Boolean,
     showDir: Boolean,
-    thumbLoadSchedule: Array
+    thumbLoadSchedule: {
+      type: Array,
+      default: () => ([]),
+    },
   },
   data () {
     return {
@@ -275,8 +365,8 @@ export default {
         clickedItemIsSelected: false,
         noneItemsSelected: false,
         singleItemSelected: false,
-        multipleItemsSelected: false
-      }
+        multipleItemsSelected: false,
+      },
     }
   },
   mounted () {
@@ -284,23 +374,24 @@ export default {
   },
   beforeDestroy () {
     try {
-      this.$emit('removeFromThumbLoadSchedule', { item: this.source })
+      this.$emit('removeFromThumbLoadSchedule', {item: this.source})
     }
-    catch (error) { console.log(error) }
+    catch (error) {}
   },
   computed: {
     ...mapState({
       navigatorLayout: state => state.storageData.settings.navigatorLayout,
-      appPaths: state => state.appPaths
+      appPaths: state => state.storageData.settings.appPaths,
     }),
     ...mapGetters([
       'selectedDirItems',
-      'selectedDirItemsPaths'
+      'selectedDirItemsPaths',
+      'sortingHeaderGridColumnTemplate',
     ]),
     ...mapFields({
-      thumbsInProcessing: 'thumbsInProcessing',
-      currentDir: 'navigatorView.currentDir',
       inputState: 'inputState',
+      currentDir: 'navigatorView.currentDir',
+      thumbsInProcessing: 'thumbsInProcessing',
       openDirItemSecondClickDelay: 'storageData.settings.navigator.openDirItemSecondClickDelay',
       navigatorOpenDirItemWithSingleClick: 'storageData.settings.navigator.openDirItemWithSingleClick',
       dirItemHoverEffect: 'storageData.settings.dirItemHoverEffect',
@@ -315,16 +406,58 @@ export default {
       cursorLeftWindow: 'drag.cursorLeftWindow',
       inboundDragOverlay: 'overlays.inboundDrag',
       dirItemDragOverlay: 'overlays.dirItemDrag',
+      selectedSortingType: 'sorting.selectedType',
+      fsClipboard: 'navigatorView.clipboard.fs',
+      sortingTypes: 'sorting.types',
+      navigatorNameColumnMaxWidth: 'storageData.settings.navigator.nameColumnMaxWidth',
 
-      drag: 'drag'
+      drag: 'drag',
     }),
     specifiedNavigatorLayout () {
       return this.layout
         ? this.layout
         : this.navigatorLayout
-    }
+    },
+    offlineStatus () {
+      if (this.source.fsAttributes.isOffline) {
+        return {
+          status: 'offline',
+          icon: 'mdi-cloud-outline',
+          tooltip: 'Offline item (size on drive is 0)',
+        }
+      }
+      else if (this.source?.fsAttributes.keepOnDevice) {
+        return {
+          status: 'keepOnDevice',
+          icon: 'mdi-cloud-download',
+          tooltip: 'Keep on device',
+        }
+      }
+      else {
+        return {}
+      }
+    },
+    dirItemIsInFsClipboard () {
+      return this.fsClipboard.items.some(item => item.path === this.source.path)
+    },
+    getCardContentContainerStyles () {
+      if (this.specifiedNavigatorLayout === 'list') {
+        return {
+          'grid-template-columns': this.sortingHeaderGridColumnTemplate.join(' '),
+        }
+      }
+      else {
+        return {}
+      }
+    },
   },
   methods: {
+    getLocalDateTime (params) {
+      return this.$utils.getLocalDateTime(
+        this.source.stat[params.stat],
+        this.$store.state.storageData.settings.dateTime,
+      )
+    },
     async loadThumbHandler (path) {
       if (this.source.path === path) {
         await this.loadThumb()
@@ -365,25 +498,19 @@ export default {
       if (!params.options.skipTransition) {
         params.dirItemNode.animate(
           [
-            { opacity: 0, transform: 'translateY(10px)' },
-            { opacity: 1, transform: 'translateY(0px)' }
+            {opacity: 0, transform: 'translateY(10px)'},
+            {opacity: 1, transform: 'translateY(0px)'},
           ],
           {
             easing: 'ease',
-            duration: 500
-          }
+            duration: 500,
+          },
         )
       }
     },
     async addThumb (dirItemThumbContainer, dirItemRealPath, dirItemFileType, dirItemNode) {
       return new Promise((resolve, reject) => {
-        const itemType = this.$utils.getFileType(dirItemRealPath)
-        const disallowedMimes = [
-          'image/svg+xml',
-          'image/heic',
-          'image/vnd.adobe.photoshop'
-        ]
-        if (dirItemFileType === 'image' && !disallowedMimes.includes(itemType.mime)) {
+        if (dirItemFileType === 'image') {
           this.fetchImageThumb(dirItemThumbContainer, dirItemRealPath, dirItemNode)
             .then(() => {
               resolve()
@@ -410,7 +537,7 @@ export default {
       return new Promise((resolve, reject) => {
         // Check if thumb dir exists. If not, create it
         if (!fs.existsSync(this.appPaths.storageDirectories.appStorageNavigatorThumbs)) {
-          fs.mkdirSync(this.appPaths.storageDirectories.appStorageNavigatorThumbs, { recursive: true })
+          fs.mkdirSync(this.appPaths.storageDirectories.appStorageNavigatorThumbs, {recursive: true})
         }
         // Parse image path
         const parsedFileName = PATH.parse(dirItemRealPath)
@@ -450,29 +577,29 @@ export default {
         const image = new Image()
         // image.style.position = 'absolute'
         image.classList.add('dir-item-card__thumb')
-        image.setAttribute('src', this.$storeUtils.getSafePath(this.$utils.getUrlSafePath(thumbPath)))
+        image.setAttribute('src', this.$storeUtils.getSafePath(this.$sharedUtils.getUrlSafePath(thumbPath)))
         if (this.specifiedNavigatorLayout === 'list') {
           image.animate(
             [
-              { opacity: 0, transform: 'translateY(4px)' },
-              { opacity: 1, transform: 'translateY(0px)' }
+              {opacity: 0, transform: 'translateY(4px)'},
+              {opacity: 1, transform: 'translateY(0px)'},
             ],
             {
               easing: 'ease',
-              duration: 2000
-            }
+              duration: 2000,
+            },
           )
         }
         else if (this.specifiedNavigatorLayout === 'grid') {
           image.animate(
             [
-              { opacity: 0 },
-              { opacity: 1 }
+              {opacity: 0},
+              {opacity: 1},
             ],
             {
               easing: 'ease',
-              duration: 2000
-            }
+              duration: 2000,
+            },
           )
         }
         image.decode()
@@ -506,7 +633,7 @@ export default {
           thumbPath,
           onEnd: () => {
             resolve()
-          }
+          },
         })
       })
     },
@@ -514,10 +641,10 @@ export default {
       return this.selectedDirItemsPaths.includes(item.path)
     },
     showDragOverOverlay (item) {
-      const isItemHovered = this.inputState.pointer.hoveredItem.path === item.path
-      const isOfTypeDirItem = ['dirItem'].includes(this.dragTargetType)
-      const dirItemIsOverlapped = isItemHovered && (isOfTypeDirItem || this.drag.dirItemInbound.value)
-      return dirItemIsOverlapped
+      const isItemHovered = this.inputState.pointer.overlappedDropTargetItem.path === item.path
+      const isOfTypeDirItem = ['dirItem'].includes(this.inputState.drag.itemType)
+      const isDirItemOverlapped = isItemHovered && (isOfTypeDirItem || this.inputState.drag.dirItemInbound.value)
+      return isDirItemOverlapped
     },
     getThumbIcon (item) {
       const mimeDescription = this.$utils.getFileType(item.path).mimeDescription
@@ -567,7 +694,7 @@ export default {
         downCoordY,
         clickedItemIsSelected,
         singleItemSelected,
-        multipleItemsSelected
+        multipleItemsSelected,
       } = this.mouseDown
 
       if (!this.dirItemDragMoveTresholdReached) {
@@ -620,13 +747,13 @@ export default {
           }
           this.$store.dispatch('SET_CONTEXT_MENU', {
             x: downCoordX,
-            y: downCoordY
+            y: downCoordY,
           })
         }
       }
     },
     handleMouseDownActions () {
-      const { item, leftClick, clickedItemIsSelected } = this.mouseDown
+      const {item, leftClick, clickedItemIsSelected} = this.mouseDown
       const isSelectingNotSelectedDirItem = leftClick &&
         !clickedItemIsSelected &&
         !this.inputState.ctrl &&
@@ -646,35 +773,38 @@ export default {
       // to move the cursor outside the element after mouseDown but before mouseUp
       document.addEventListener('mouseup', (mouseupEvent) => {
         this.handleMouseUpActions()
-      }, { once: true })
+      }, {once: true})
     },
-    handleDirItemMouseOver (event, item) {
-      const someItemIsSelected = this.selectedDirItemsPaths.length !== 0
-      const currentDirIsSelected = this.selectedDirItemsPaths.includes(this.currentDir.path)
-      const isDraggingDirItem = this.dragDisplayDirItemDragOverlay
-      const shouldHighlightDirItems = !this.dirItemDragOverlay &&
-        this.inputState.shift &&
-        someItemIsSelected &&
-        !currentDirIsSelected &&
-        !isDraggingDirItem
-      if (shouldHighlightDirItems) {
-        this.$store.dispatch('HIGHLIGHT_DIR_ITEM_RANGE', { hoveredItem: item })
-      }
+    handleDirItemMouseEnter (event, item) {
+      this.inputState.pointer.hover.itemType = 'dirItem'
+      this.inputState.pointer.hover.item = item
+      this.$store.dispatch('HANDLE_HIGHLIGHT_DIR_ITEM_RANGE', {
+        hoveredItem: item,
+      })
     },
-    handleDirItemCheckboxMouseDown (event, item) {
-      if (this.isDirItemSelected(item)) {
-        this.$store.dispatch('DESELECT_DIR_ITEM', item)
-      }
-    }
-  }
+    handleDirItemMouseLeave (event, item) {
+      this.inputState.pointer.hover.itemType = ''
+      this.inputState.pointer.hover.item = {}
+    },
+    handleDirItemMiddleMouseDown (event, item) {
+      event.preventDefault()
+      this.$store.dispatch('ADD_TAB', {item})
+    },
+  },
 }
 </script>
 
 <style>
+.dir-item-card {
+  --blue-highlight-color-value: 159, 168, 218;
+  --green-highlight-color-value: 75, 200, 140;
+  --red-highlight-color-value: 200, 50, 80;
+}
+
 @keyframes outline-pulse-animation {
-  0% { outline-color: rgb(159, 168, 218, 0.4); }
-  50% { outline-color: rgb(255, 255, 255, 0.1); }
-  100% { outline-color: rgb(159, 168, 218, 0.4); }
+  0% {outline-color: rgb(var(--blue-highlight-color-value), 0.4);}
+  50% {outline-color: rgb(255, 255, 255, 0.1);}
+  100% {outline-color: rgb(var(--blue-highlight-color-value), 0.4);}
 }
 
 .dir-item-row-grid[type="directory"],
@@ -693,7 +823,6 @@ export default {
   gap: 24px;
 }
 
-/* OVERLAYS */
 .dir-item-card__overlay-container {
   position: absolute;
   top: 0;
@@ -703,34 +832,101 @@ export default {
   height: 100%;
 }
 
-.dir-item-card__overlay--selected {
-  pointer-events: none;
+.dir-item-card__overlay {
+  z-index: 1;
   position: absolute;
   width: 100%;
   height: 100%;
-  background-color: rgb(159, 168, 218, 0.05);
-  z-index: 2;
-  /* border: 2px dashed rgb(159, 168, 218, 0.3); */
-  outline: 2px solid rgb(159, 168, 218, 0.2);
   outline-offset: -2px;
+  pointer-events: none;
 }
+
+.dir-item-card__overlay--selected {
+  background-color: rgb(var(--blue-highlight-color-value), 0.05);
+  outline: 1px solid rgb(var(--blue-highlight-color-value), 0.2);
+  outline-offset: -1px;
+}
+
+[data-layout="grid"]
+  .dir-item-card__overlay--selected {
+    background-color: rgb(var(--blue-highlight-color-value), 0.08);
+    outline: 1px solid rgb(var(--blue-highlight-color-value), 0.4);
+    outline-offset: 0;
+  }
 
 [data-layout="grid"][data-file-type="image"]
   .dir-item-card__overlay--selected {
-    background-color: rgb(159, 168, 218, 0.2);
-    outline: 2px solid rgb(159, 168, 218, 0.5);
+    background-color: rgb(var(--blue-highlight-color-value), 0.3);
+    outline: 1px solid rgb(var(--blue-highlight-color-value), 0.5);
+  }
+
+.dir-item-card[in-fs-clipboard][fs-clipboard-type="copy"]
+  .dir-item-card__overlay--selected {
+    opacity: 0;
+  }
+
+.dir-item-card[in-fs-clipboard][fs-clipboard-type="move"]
+  .dir-item-card__overlay--selected {
+    opacity: 0;
+  }
+
+.dir-item-card[in-fs-clipboard]:not([is-selected])[fs-clipboard-type="copy"]
+  .dir-item-card__overlay--fs-clipboard {
+    background-color: rgba(var(--green-highlight-color-value), 0.03);
+    outline: 2px dotted rgba(var(--green-highlight-color-value), 0.2);
+    background-image: repeating-linear-gradient(
+      -45deg,
+      rgba(var(--green-highlight-color-value), 0.1) 0,
+      rgba(var(--green-highlight-color-value), 0.1) 2px,
+      transparent 0,
+      transparent 50%
+    );
+    background-repeat: repeat;
+    background-size: 16px 16px;
+  }
+
+.dir-item-card[in-fs-clipboard]:not([is-selected])[fs-clipboard-type="move"]
+  .dir-item-card__overlay--fs-clipboard {
+    background-color: rgba(var(--red-highlight-color-value), 0.02);
+    outline: 2px dotted rgba(var(--red-highlight-color-value), 0.4);
+    background-image: repeating-linear-gradient(
+      -45deg,
+      rgba(var(--red-highlight-color-value), 0.2) 0,
+      rgba(var(--red-highlight-color-value), 0.2) 2px,
+      transparent 0,
+      transparent 50%
+    );
+    background-repeat: repeat;
+    background-size: 16px 16px;
+  }
+
+.dir-item-card[in-fs-clipboard][is-selected][fs-clipboard-type="copy"]
+  .dir-item-card__overlay--fs-clipboard {
+    background-color: rgba(var(--green-highlight-color-value), 0.03);
+    outline: 2px dotted rgba(var(--green-highlight-color-value), 0.2);
+  }
+
+.dir-item-card[in-fs-clipboard][is-selected][fs-clipboard-type="move"]
+  .dir-item-card__overlay--fs-clipboard {
+    background-color: rgba(var(--red-highlight-color-value), 0.04);
+    outline: 2px dotted rgba(var(--red-highlight-color-value), 0.5);
+  }
+
+.dir-item-card[data-layout="grid"][data-file-type="image"][in-fs-clipboard][is-selected][fs-clipboard-type="copy"]
+  .dir-item-card__overlay--fs-clipboard {
+    background-color: rgba(var(--green-highlight-color-value), 0.2);
+    outline: 2px dotted rgba(var(--green-highlight-color-value), 0.2);
+  }
+
+.dir-item-card[data-layout="grid"][data-file-type="image"][in-fs-clipboard][is-selected][fs-clipboard-type="move"]
+  .dir-item-card__overlay--fs-clipboard {
+    background-color: rgba(var(--red-highlight-color-value), 0.2);
+    outline: 2px dotted rgba(var(--red-highlight-color-value), 0.5);
   }
 
 .dir-item-card__overlay--highlighted {
-  pointer-events: none;
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  background-color: rgb(159, 168, 218, 0.05);
-  z-index: 1;
-  /* border: 2px dashed rgb(159, 168, 218, 0.3); */
-  outline: 2px solid rgb(159, 168, 218, 0.3);
-  outline-offset: -2px;
+  background-color: rgb(var(--blue-highlight-color-value), 0.05);
+  outline: 2px solid rgb(var(--blue-highlight-color-value), 0.3);
   transition: all 0.3s;
   opacity: 0;
 }
@@ -742,16 +938,10 @@ export default {
 }
 
 .dir-item-card__overlay--hover {
-  pointer-events: none;
-  position: absolute;
-  width: 100%;
-  height: 100%;
   background-color: var(--highlight-color-5);
-  z-index: 1;
   opacity: 0;
 }
 
-/* CARD CONTAINER */
 [data-layout="list"][data-type="directory"].dir-item-card__container,
 [data-layout="list"][data-type="directory-symlink"].dir-item-card__container {
   display: grid;
@@ -806,6 +996,7 @@ export default {
   height: 36px;
   margin: 0px !important;
   padding: 0px 0px;
+  border-bottom: 1px solid var(--dir-item-card-border-3);
 }
 
 .dir-item-card:hover {
@@ -824,55 +1015,106 @@ export default {
     opacity: 1;
   }
 
-[data-layout="list"][data-type="directory"] .dir-item-card,
-[data-layout="list"][data-type="directory-symlink"] .dir-item-card,
-[data-layout="list"][data-type="file"] .dir-item-card,
-[data-layout="list"][data-type="file-symlink"] .dir-item-card {
-  height: 48px;
-  margin: 0px 36px;
-  padding: 0px;
+[data-layout="list"][data-type="directory"]
+  .dir-item-card,
+[data-layout="list"][data-type="directory-symlink"]
+  .dir-item-card,
+[data-layout="list"][data-type="file"]
+  .dir-item-card,
+[data-layout="list"][data-type="file-symlink"]
+  .dir-item-card {
+    height: 48px;
+    margin: 0px 36px;
+    padding: 0px;
+  }
+
+[data-layout="list"][data-type="directory"]
+  .dir-item-card__content-container,
+[data-layout="list"][data-type="directory-symlink"]
+  .dir-item-card__content-container,
+[data-layout="list"][data-type="file"]
+  .dir-item-card__content-container,
+[data-layout="list"][data-type="file-symlink"]
+  .dir-item-card__content-container {
+    display: grid;
+    border-bottom: 1px solid var(--dir-item-card-border-3);
+    /* Set the element height to 48px, otherwise
+      the bottom border increases the height to 49px */
+    height: 48px;
+  }
+
+[data-layout="list"][data-type="directory"]
+  .dir-item-card__content-container__item,
+[data-layout="list"][data-type="directory-symlink"]
+  .dir-item-card__content-container__item,
+[data-layout="list"][data-type="file"]
+  .dir-item-card__content-container__item,
+[data-layout="list"][data-type="file-symlink"]
+  .dir-item-card__content-container__item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding:
+      var(--workspace-area-sorting-header-item-v-padding)
+      var(--workspace-area-sorting-header-item-h-padding);
+  }
+
+.dir-item-card[data-layout="list"]
+  .dir-item-card__content-container__item:nth-child(1) {
+    padding: 0;
+  }
+
+.dir-item-card[data-layout="list"]
+  .dir-item-card__content-container__item:nth-child(2) {
+    justify-content: flex-start;
+    padding: 0 var(--workspace-area-sorting-header-item-2-h-padding);
+  }
+
+[data-layout="list"]
+  .dir-item-card__content-container__item:not(:nth-child(2))
+    .dir-item-card__name {
+      text-align: center;
+    }
+
+.dir-item-card[data-layout="list"]
+  .dir-item-card__name {
+    width: var(--name-column-max-width, 50%);
+  }
+
+@media (max-width: 800px) {
+  .dir-item-card[data-layout="list"]
+    .dir-item-card__name {
+      width: 100%;
+    }
 }
 
-[data-layout="list"][data-type="directory"] .dir-item-card__content-container,
-[data-layout="list"][data-type="directory-symlink"] .dir-item-card__content-container,
-[data-layout="list"][data-type="file"] .dir-item-card__content-container,
-[data-layout="list"][data-type="file-symlink"] .dir-item-card__content-container {
-  display: grid;
-  grid-template-columns: 48px 4fr 3fr 1fr 48px;
-  gap: 16px;
-  border-bottom: 1px solid var(--dir-item-card-border-3);
-  /* Set the element height to 48px, otherwise
-    the bottom border increases the height to 49px */
-  height: 48px;
-}
+[data-layout="grid"][data-type="directory"]
+  .dir-item-card,
+[data-layout="grid"][data-type="directory-symlink"]
+  .dir-item-card {
+    height: 64px;
+  }
 
-[data-layout="grid"][data-type="directory"] .dir-item-card,
-[data-layout="grid"][data-type="directory-symlink"] .dir-item-card {
-  height: 64px;
-}
-
-[data-layout="grid"][data-type="file"] .dir-item-card,
-[data-layout="grid"][data-type="file-symlink"] .dir-item-card {
-  height: 158px;
-}
-
-[data-layout="grid"][data-type="directory"] .dir-item-card__content-container,
-[data-layout="grid"][data-type="directory-symlink"] .dir-item-card__content-container {
-  display: grid;
-  grid-template-columns: 64px 1fr 48px;
-  gap: 0px;
-  box-shadow: 0px 4px 16px rgb(0, 0, 0, 0.1);
-  /* border: 1px solid var(--dir-item-card-border-3) !important; */
-  border: 0px solid transparent !important;
-  background-color: var(--bg-color-1);
-  border-radius: 8px;
-  height: 64px;
-}
+[data-layout="grid"][data-type="directory"]
+  .dir-item-card__content-container,
+[data-layout="grid"][data-type="directory-symlink"]
+  .dir-item-card__content-container {
+    display: grid;
+    grid-template-columns: 64px 1fr 48px;
+    gap: 0px;
+    box-shadow: 0px 4px 16px rgb(0, 0, 0, 0.1);
+    /* border: 1px solid var(--dir-item-card-border-3) !important; */
+    border: 0px solid transparent !important;
+    background-color: var(--bg-color-1);
+    border-radius: 8px;
+    height: 64px;
+  }
 
 [data-layout="grid"][data-type="file"]
   .dir-item-card,
 [data-layout="grid"][data-type="file-symlink"]
   .dir-item-card {
+    height: 158px;
     border: 0px solid transparent !important;
     background-color: var(--bg-color-1);
   }
@@ -931,7 +1173,7 @@ export default {
     position: absolute;
     bottom: 0;
     left: 0;
-    height: 60%;
+    height: 100%;
     width: 100%;
     z-index: 0;
   }
@@ -948,11 +1190,26 @@ export default {
   font-size: 14px;
 }
 
-.dir-item-card__ext {
-  font-size: 12px;
+.dir-item-card__name {
+  display: flex;
+  flex-direction: column;
+}
+
+.dir-item-card__name__line-1 {
   width: 100%;
-  padding: 0px 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dir-item-card__ext-container {
+  padding: 0 8px;
+}
+
+.dir-item-card__ext {
+  width: 100%;
   text-align: center;
+  font-size: 12px;
+  text-overflow: clip;
 }
 
 .dir-item-card__item-count,
@@ -990,13 +1247,18 @@ export default {
     color: var(--color-6) !important;
   }
 
-/* CARD THUMB */
 [data-layout="list"]
   .dir-item-card__thumb-container {
     width: 48px;
     height: 48px;
-    background-color: rgb(159, 168, 218, 0.1);
+    background-color: rgba(255, 255, 255, 0.04);
   }
+
+#app[dir-item-background="none"]
+  [data-layout="list"]
+    .dir-item-card__thumb-container  {
+      background-color: transparent;
+    }
 
 [data-layout="grid"][data-type="directory"]
   .dir-item-card__thumb-container,
@@ -1093,28 +1355,5 @@ img.dir-item-card__thumb {
   .dir-item-card__actions {
     opacity: 1;
     transition: all 0.3s;
-  }
-
-.dir-item-card__checkbox {
-  /* position: absolute; */
-  right: 0;
-  justify-self: center;
-  z-index: 3;
-}
-
-.dir-item-card__checkbox
-  .v-icon {
-    color: var(--dir-item-card-checkbox-color) !important;
-  }
-
-[data-layout="grid"][data-type="file"]
-  .dir-item-card__checkbox,
-[data-layout="grid"][data-type="file-symlink"]
-  .dir-item-card__checkbox {
-    position: absolute;
-    bottom: 8px;
-    right: 8px;
-    padding: 0px;
-    text-shadow: 0 1px 4px rgb(0, 0, 0, 0.5);
   }
 </style>

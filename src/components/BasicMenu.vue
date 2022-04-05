@@ -9,31 +9,24 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       :value="value"
       @change="$emit('input', value)"
       offset-y
-      min-width="300px"
       :close-on-content-click="false"
       style="overflow: hidden"
     >
-      <template v-slot:activator="{ on: menu, attrs }">
+      <template v-slot:activator="{on: menu, attrs}">
         <v-tooltip bottom :disabled="attrs['aria-expanded'] === 'true'">
-          <template v-slot:activator="{ on: tooltip }">
-            <v-btn
-              v-on="{ ...tooltip, ...menu }"
-              icon
-              :retain-focus-on-click="false"
-              :class="menuButton.class"
+          <template v-slot:activator="{on: tooltip}">
+            <v-badge
+              :value="notificationBadge.value"
+              :color="notificationBadge.color"
+              dot overlap bottom
             >
-              <v-badge
-                :value="notificationBadge.value"
-                :color="notificationBadge.color"
-                dot overlap bottom
+              <div 
+                class="button--menu__icon-container"
+                v-on="{...tooltip, ...menu}"
               >
-                <v-icon
-                  :color="header.icon.color"
-                  :size="header.icon.size"
-                >{{header.icon.name}}
-                </v-icon>
-              </v-badge>
-            </v-btn>
+                <slot name="activator"></slot>
+              </div>
+            </v-badge>
           </template>
           <span>
             <div
@@ -48,7 +41,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         </v-tooltip>
       </template>
 
-      <div class="menu-container">
+      <div class="menu-container" style="width: 400px">
         <v-list class="inactive">
           <v-list-item dense class="inactive">
             <v-list-item-content>
@@ -62,7 +55,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               v-for="(button, index) in header.buttons"
               :key="'header-button-' + index"
             >
-              <v-tooltip bottom>
+              <v-tooltip
+                v-if="[undefined, true].includes(button.ifCondition)"
+                bottom
+              >
                 <template v-slot:activator="{ on: tooltip }">
                   <v-btn
                     v-on="tooltip"
@@ -106,17 +102,53 @@ export default {
       }
     },
     header: Object
-  },
-  data () {
-    return {
-    }
   }
 }
 </script>
 
 <style>
 .menu-container {
+  width: 100%;
   overflow: hidden;
-  width: 100%
+}
+
+.button--menu__icon-container {
+  -webkit-app-region: no-drag;
+}
+
+.button--menu {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 24px;
+  max-width: 160px;
+  padding-right: 6px;
+  color: var(--color-6);
+  border: 1px solid rgb(255, 255, 255, 0.15);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.button--menu 
+  .v-icon {
+    padding: 0 8px;
+  }
+
+.button--menu__counter {
+  user-select: none;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 14px;
+  padding-top: 2px;
+}
+
+.button--menu:hover {
+  background-color: var(--highlight-color-4);
+}
+
+.button--menu:focus {
+  background-color: var(--highlight-color-4);
+  outline: none;
 }
 </style>

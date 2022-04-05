@@ -3,10 +3,14 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 import * as localize from './localize.js'
-const customParseFormat = require('dayjs/plugin/customParseFormat')
+import * as notifications from './notifications.js'
+const dayjsCustomParseFormat = require('dayjs/plugin/customParseFormat')
+const dayjsDuration = require('dayjs/plugin/duration')
 const dayjs = require('dayjs')
-dayjs.extend(customParseFormat)
+dayjs.extend(dayjsCustomParseFormat)
+dayjs.extend(dayjsDuration)
 const ColorUtils = require('./colorUtils.js')
+const supportedFormats = require('./supportedFormats.js')
 const { createXXHash64 } = require('hash-wasm')
 const eventHub = require('./eventHub').eventHub
 const PATH = require('path')
@@ -18,7 +22,7 @@ const electronRemote = require('@electron/remote')
 const getSystemRulesForPaths = require('./systemRules').paths
 const systemRulesForPaths = getSystemRulesForPaths()
 const mainWindow = electronRemote.getCurrentWindow()
-const detectedLocale = electronRemote.app.getLocale().toLowerCase()
+const detectedLocale = electronRemote?.app?.getLocale()?.toLowerCase() || 'en'
 
 const colorUtils = new ColorUtils()
 
@@ -27,6 +31,46 @@ catch (error) {}
 
 export default {
   env: process.env.NODE_ENV,
+  platform: process.platform,
+  isWindowsStore: process.isWindowsStore,
+  unixHiddenFileRegex: /(^|[\/\\])\../,
+  getSrc (relativePath) {
+    return process.env.NODE_ENV === 'production'
+      ? PATH.join(__dirname, relativePath)
+      : PATH.join(relativePath)
+  },
+  getDriveIcon (drive) {
+    if (drive.type === 'cloud') {
+      return {
+        icon: 'mdi-cloud-outline',
+        size: '22px'
+      }
+    }
+    else if (['rom', 'cd'].includes(drive.type)) {
+      return {
+        icon: 'fas fa-compact-disc',
+        size: '20px'
+      }
+    }
+    else if (drive.type === 'removable') {
+      return {
+        icon: 'fab fa-usb',
+        size: '20px'
+      }
+    }
+    else if (drive.type === 'network') {
+      return {
+        icon: 'mdi-folder-network-outline',
+        size: '22px'
+      }
+    }
+    else {
+      return {
+        icon: 'far fa-hdd',
+        size: '20px'
+      }
+    }
+  },
   openLink (link) {
     electron.shell.openExternal(link)
   },
@@ -109,21 +153,77 @@ export default {
   getAverage (array) {
     return array.reduce((a, b) => a + b, 0) / array.length
   },
-  copyToClipboard (string) {
-    electron.clipboard.writeText(string)
-    eventHub.$emit('notification', {
-      action: 'add',
-      timeout: 2000,
-      closeButton: true,
-      icon: 'mdi-clipboard-text-multiple-outline',
-      title: 'Text was copied to clipboard'
-    })
+  copyToClipboard (params) {
+    let moduleScope = this
+    let data = {
+      title: getDataTitle(params),
+      text: getDataText(params),
+      message: getDataMessage(params),
+    }
+
+    function getDataTitle (params) {
+      return params.asPath
+        ? 'Path was copied to clipboard'
+        : params.title ?? 'Text was copied to clipboard'
+    }
+
+    function getDataText (params) {
+      let text = ''
+      if (params.asPath) {
+        if (moduleScope.platform === 'win32') {
+          if (params.event.ctrlKey && !params.event.altKey) {
+            text = `${params.text.replace(/\//g, '\\')}`
+          }
+          else if (params.event.ctrlKey && params.event.altKey) {
+            text = `${params.text.replace(/\//g, '\\\\')}`
+          }
+        }
+        else {
+          text = params.text
+        }
+      }
+      return params.event.shiftKey ? `"${text}"` : text
+    }
+
+    function getDataMessage (params) {
+      return params.asPath
+        ? params.text
+        : params.message
+    }
+
+    try {
+      electron.clipboard.writeText(data.text)
+      notifications.emit({
+        name: 'copyTextToClipboard',
+        props: {
+          title: data.title,
+          message: data.message ?? data.text,
+        },
+      })
+    }
+    catch (error) {
+      notifications.emit({
+        name: 'copyTextToClipboardError',
+        props: {
+          text: data.text,
+        },
+      })
+    }
   },
+  /** Encode URL, replacing all URL-unsafe 
+  * characters (except slash) with hex representation
+  * @param {string} path
+  * @returns {string}
+  */
   getUrlSafePath (path) {
-    const safePath = path
-      .replace(/#/g, '%23')
-      .replace(/'/g, '%27')
-    return safePath
+    let colonCharPlacholder = `PLACEHOLDER-${this.getHash()}`
+    return path
+      .replace(/\\/g, '/')
+      .replace(/:/g, colonCharPlacholder)
+      .split('/')
+      .map(pathItem => encodeURIComponent(pathItem))
+      .join('/')
+      .replace(new RegExp(colonCharPlacholder, 'g'), ':')
   },
   /** Returns the width of specified HTML node content (without padding)
   * @param {HTMLElement} node
@@ -148,7 +248,6 @@ export default {
       }
     }
     catch (error) {
-      console.log('error: getContentAreaNode():', error)
     }
   },
   wait (ms) {
@@ -354,6 +453,9 @@ export default {
       }
     }
   },
+  toTitleCase (string) {
+    return string.charAt(0).toLocaleUpperCase() + string.substr(1)
+  },
   prettyBytes (bytes, decimals) {
     if (isNaN(parseInt(bytes))) return 'unknown'
     if (bytes === 0) return '0 Bytes'
@@ -398,6 +500,9 @@ export default {
       else { return minutes }
     }
   },
+  getFormattedTime (params) {
+    return dayjs.duration(params.time, params.unit).format(params.format)
+  },
   getTimeDiff (newer, older, format) {
     const milliseconds = newer - older
     const seconds = Math.floor(milliseconds / 1000)
@@ -413,6 +518,24 @@ export default {
   formatDateTime (date, format) {
     if (!date) { return 'unknown' }
     return dayjs(date).locale(detectedLocale).format(format)
+  },
+  getLocalDateTime (date, options = {}) {
+    try {
+      return new Intl.DateTimeFormat(detectedLocale, {
+        ...{
+          year: 'numeric',
+          month: 'numeric',
+          day: 'numeric',
+          hour: 'numeric',
+          minute: 'numeric'
+        },
+        ...options
+      })
+      .format(date)
+    }
+    catch (error) {
+      return 'unknown'
+    }
   },
   getCSSProperty (property, element = '#app') {
     const node = document.querySelector(element)
@@ -508,7 +631,7 @@ export default {
       const isVideo = mime.includes('video/')
       const isAudio = mime.includes('audio/')
       const isText = mime.includes('text/')
-      const isArchive = mime.includes('/x-7z') || mime.includes('/zip') || mime.includes('/x-tar')
+      const isArchive = supportedFormats.includes({type: 'archive', ext})
       let mimeDescription
       if (isImage) { mimeDescription = 'image' }
       else if (isVideo) { mimeDescription = 'video' }

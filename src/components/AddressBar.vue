@@ -5,110 +5,213 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <template>
   <v-layout
-    style="height: 42px"
+    class="address-bar"
     align-center
   >
-    <!-- address-bar::menu:actions -->
-    <v-menu offset-y>
-      <template v-slot:activator="{ on: menu, attrs }">
-        <v-tooltip bottom :disabled="attrs['aria-expanded'] === 'true'">
-          <template v-slot:activator="{ on: tooltip }">
-            <transition name="fade-in-1s">
-              <v-btn
-                v-on="{ ...tooltip, ...menu }"
-                class="action-toolbar__button fade-in-1s"
-                icon
-              >
-                <v-icon
-                  size="20px"
-                  class="action-toolbar__icon"
-                >mdi-wrap-disabled
-                </v-icon>
-              </v-btn>
-            </transition>
-          </template>
-          <span>Address bar actions</span>
-        </v-tooltip>
-      </template>
-      <v-list dense class="pa-0">
-        <v-list-item
-          v-for="(item, index) in addressBarMenuItems"
-          :key="index"
-          @click="addressBarMenuHandler(item.action)"
-        >
-          <v-list-item-action class="pr-0">
-            <v-icon size="16px">{{item.icon}}</v-icon>
-          </v-list-item-action>
-          <v-list-item-content>
-            <v-list-item-title class="subheading">{{item.title}}</v-list-item-title>
-            <v-list-item-subtitle class="subheading">{{item.shortcut}}</v-list-item-subtitle>
-          </v-list-item-content>
-        </v-list-item>
-      </v-list>
-    </v-menu>
-
-    <!-- address-bar::parts -->
     <v-layout
-      id="address-bar__parts-container"
-      class="address-bar__parts-container custom-scrollbar mr-4"
-      style="height: 100%"
+      class="address-bar__inner"
       align-center
     >
-      <div v-for="(part, index) in addressParts" :key="`address-part-${index}`">
-        <v-layout align-center>
-          <div
-            @click="$store.dispatch('LOAD_DIR', { path: part.path })"
-            text depressed small
-            class="address-bar__part text-none mx-2"
-            :class="{
-              'grey--text text--darken-1': part.isLast,
-              'cursor-pointer': !part.isLast
-            }"
-          >{{part.base}}
-          </div>
-          <div v-if="!part.isLast">/</div>
-        </v-layout>
-      </div>
-    </v-layout>
+      <!-- address-bar::menu:actions -->
+      <v-menu offset-y>
+        <template #activator="{on: menu, attrs}">
+          <v-tooltip
+            bottom
+            :disabled="attrs['aria-expanded'] === 'true'"
+          >
+            <template #activator="{on: tooltip}">
+              <transition name="fade-in-1s">
+                <v-btn
+                  class="action-toolbar__button fade-in-1s"
+                  icon
+                  v-on="{...tooltip, ...menu}"
+                >
+                  <v-icon
+                    class="action-toolbar__icon"
+                    size="20px"
+                  >
+                    mdi-wrap-disabled
+                  </v-icon>
+                </v-btn>
+              </transition>
+            </template>
+            <span>Address bar actions</span>
+          </v-tooltip>
+        </template>
+        <v-list
+          class="pa-0"
+          dense
+        >
+          <v-list-item
+            v-for="(item, index) in addressBarMenuItems"
+            :key="index"
+            @click="addressBarMenuHandler(item.action)"
+          >
+            <v-list-item-action class="pr-0">
+              <v-icon size="16px">
+                {{item.icon}}
+              </v-icon>
+            </v-list-item-action>
+            <v-list-item-content>
+              <v-list-item-title class="subheading">
+                {{item.title}}
+              </v-list-item-title>
+              <v-list-item-subtitle class="subheading">
+                {{item.shortcut}}
+              </v-list-item-subtitle>
+            </v-list-item-content>
+          </v-list-item>
+        </v-list>
+      </v-menu>
 
-    <!-- address-bar::input -->
-    <transition name="slide-fade-down-300ms">
-      <div
-        v-show="addressBarEditor"
-        style="position: absolute; top: 1px; left: 0px; width: 100%; z-index: 8"
+      <v-tooltip bottom>
+        <template #activator="{on}">
+          <v-btn
+            class="action-toolbar__button fade-in-1s"
+            icon
+            v-on="on"
+            @click="$store.dispatch('OPEN_ADDRESS_BAR_EDITOR')"
+          >
+            <v-icon
+              class="action-toolbar__icon"
+              size="16px"
+            >
+              mdi-cursor-text
+            </v-icon>
+          </v-btn>
+        </template>
+        <span>Edit address</span>
+      </v-tooltip>
+
+      <!-- address-bar::parts -->
+      <v-layout
+        id="address-bar__parts-container"
+        class="address-bar__parts-container custom-scrollbar"
+        align-center
+        @click="$store.dispatch('OPEN_ADDRESS_BAR_EDITOR')"
       >
-        <v-card class="px-2 pt-2 pb-3" shadow="x3">
-          <v-layout class="pl-2 py-0">
-            <v-text-field
-              @input="handleQueryInput()"
-              v-model="query"
-              @focus="$store.state.focusedField = 'address-bar'"
-              @blur="$store.state.focusedField = ''"
-              @keydown.enter="openQueryPath()"
-              @keydown.tab.prevent.stop="cycleAutocompleteList($event)"
-              autofocus single-line hide-details
-              label="Enter valid path to a file / directory."
-              class="mt-0 pt-0"
-            ></v-text-field>
-            <v-btn
-              @click="addressBarEditor = false"
-              icon
-              class="ml-2"
-            ><v-icon>mdi-close</v-icon>
-            </v-btn>
-          </v-layout>
-          <div class="px-2 mt-2 tooltip__shortcut">
-            Shortcuts: [Tab] or [Shift + Tab] to autocomplete
-            and iterate directory items; [Enter] to open the path
+        <v-layout
+          class="address-bar__parts-container__inner"
+          align-center
+        >
+          <div
+            v-for="(part, index) in addressParts"
+            :key="`address-part-${index}`"
+          >
+            <v-layout align-center>
+              <div
+                class="address-bar__part text-none"
+                :class="{
+                  'grey--text text--darken-1': part.isLast,
+                  'cursor-pointer': !part.isLast
+                }"
+                text
+                depressed
+                small
+                :disabled="part.isLast"
+                @click.exact.stop="$store.dispatch('LOAD_DIR', {path: part.path})"
+                @contextmenu="toggleDirContextMenu({event: $event, part})"
+              >
+                {{part.base}}
+              </div>
+              <div
+                v-if="!part.isLast"
+                class="address-bar__part-divider"
+              >
+                /
+              </div>
+            </v-layout>
           </div>
-        </v-card>
-      </div>
-    </transition>
+        </v-layout>
+      </v-layout>
+
+      <!-- address-bar::input -->
+      <transition name="slide-fade-down-300ms">
+        <div
+          v-show="addressBarEditor"
+          v-click-outside="{
+            handler: handleAddressBarEditorClickOutside,
+            include: addressBarEditorClickOutsideIncludedNodes
+          }"
+          style="position: absolute; top: 1px; left: 0px; width: 100%; z-index: 8"
+        >
+          <v-card
+            class="px-2 pt-2 pb-3"
+            shadow="x3"
+          >
+            <v-layout class="pl-2 py-0">
+              <v-text-field
+                v-model="query"
+                class="mt-0 pt-0"
+                autofocus
+                single-line
+                hide-details
+                label="Enter valid path to a file / directory."
+                @input="handleQueryInput()"
+                @focus="$store.state.focusedField = 'address-bar'"
+                @blur="$store.state.focusedField = ''"
+                @keydown.enter="openQueryPath()"
+                @keydown.tab.prevent.stop="cycleAutocompleteList($event)"
+              />
+
+              <v-tooltip bottom>
+                <template #activator="{on}">
+                  <v-btn
+                    class="ml-2"
+                    icon
+                    v-on="on"
+                    @click="closeAddressBarEditorOnClickOutside = !closeAddressBarEditorOnClickOutside"
+                  >
+                    <div
+                      class="indicator--bottom"
+                      :indicator-is-active="closeAddressBarEditorOnClickOutside"
+                    >
+                      <v-icon size="18px">
+                        mdi-pin-outline
+                      </v-icon>
+                    </div>
+                  </v-btn>
+                </template>
+                <span>
+                  {{closeAddressBarEditorOnClickOutside ? 'Enabled' : 'Disabled'}} |
+                  Keep address bar editor opened when clicking outside
+                </span>
+              </v-tooltip>
+
+              <v-btn
+                class="ml-2"
+                icon
+                @click="addressBarEditor = false"
+              >
+                <v-icon>mdi-close</v-icon>
+              </v-btn>
+            </v-layout>
+            <div class="px-2 mt-2 tooltip__shortcut">
+              <span
+                class="inline-code--light"
+                style="padding: 1px 8px;"
+              >Tab</span>
+              or
+              <span
+                class="inline-code--light"
+                style="padding: 1px 8px;"
+              >Shift + Tab</span>
+              to autocomplete and iterate directory items;
+              <span
+                class="inline-code--light"
+                style="padding: 1px 8px;"
+              >Enter</span>
+              to open the path
+            </div>
+          </v-card>
+        </div>
+      </transition>
+    </v-layout>
   </v-layout>
 </template>
 
 <script>
-import { mapFields } from 'vuex-map-fields'
+import {mapFields} from 'vuex-map-fields'
 const fs = require('fs')
 const PATH = require('path')
 
@@ -121,26 +224,7 @@ export default {
       selectedSuggestionIndex: -1,
       autocompleteList: [],
       autocompleteListMatchedItems: [],
-      addressBarMenuItems: [
-        {
-          title: 'Type in address manually',
-          action: 'OPEN_ADDRESS_BAR_EDITOR',
-          shortcut: 'Ctrl + /',
-          icon: 'mdi-cursor-text'
-        },
-        {
-          title: 'Copy path to clipboard',
-          action: 'COPY_CURRENT_DIR_PATH',
-          shortcut: 'Ctrl + Comma',
-          icon: 'far fa-copy'
-        },
-        {
-          title: 'Open copied path',
-          action: 'OPEN_DIR_PATH_FROM_OS_CLIPBOARD',
-          shortcut: 'Ctrl + Dot',
-          icon: 'far fa-clipboard'
-        }
-      ]
+      closeAddressBarEditorOnClickOutside: true,
     }
   },
   watch: {
@@ -154,13 +238,39 @@ export default {
     },
     addressParts () {
       this.scrollAddressBarRight()
-    }
+    },
+  },
+  mounted () {
+    this.enableDualAxisScroll()
   },
   computed: {
     ...mapFields({
       currentDir: 'navigatorView.currentDir',
-      addressBarEditor: 'addressBarEditor'
+      addressBarEditor: 'addressBarEditor',
+      shortcuts: 'storageData.settings.shortcuts',
     }),
+    addressBarMenuItems () {
+      return [
+        {
+          title: 'Edit address',
+          action: 'OPEN_ADDRESS_BAR_EDITOR',
+          shortcut: this.shortcuts.focusAddressBar.shortcut,
+          icon: 'mdi-cursor-text',
+        },
+        {
+          title: 'Copy path to clipboard',
+          action: 'COPY_CURRENT_DIR_PATH',
+          shortcut: this.shortcuts.copyCurrentDirPath.shortcut,
+          icon: 'far fa-copy',
+        },
+        {
+          title: 'Open copied path',
+          action: 'OPEN_DIR_PATH_FROM_OS_CLIPBOARD',
+          shortcut: this.shortcuts.openCopiedPath.shortcut,
+          icon: 'far fa-clipboard',
+        },
+      ]
+    },
     addressParts () {
       try {
         const formattedList = []
@@ -188,9 +298,23 @@ export default {
       catch (error) {
         return []
       }
-    }
+    },
   },
   methods: {
+    handleAddressBarEditorClickOutside () {
+      if (!this.closeAddressBarEditorOnClickOutside) {
+        this.addressBarEditor = false
+      }
+    },
+    addressBarEditorClickOutsideIncludedNodes () {
+      return [document.querySelector('.address-bar')]
+    },
+    enableDualAxisScroll () {
+      const scrollContainer = document.querySelector('.address-bar__parts-container')
+      scrollContainer.addEventListener('wheel', (event) => {
+        scrollContainer.scrollLeft += event.deltaY
+      })
+    },
     openQueryPath (options = {}) {
       fs.access(this.query, fs.constants.F_OK, (error) => {
         if (error) {
@@ -200,14 +324,14 @@ export default {
             closeButton: true,
             timeout: 3000,
             title: 'Path cannot be opened',
-            message: error
+            message: error,
           })
         }
         else {
           try {
             const pathIsFile = fs.statSync(this.query).isFile()
             // Don't open files when path is opened automatically
-            if (options.openOnInputUpdate && pathIsFile) { return }
+            if (options.openOnInputUpdate && pathIsFile) {return}
             this.$store.dispatch('OPEN_DIR_ITEM_FROM_PATH', this.query)
           }
           catch (error) {}
@@ -248,7 +372,7 @@ export default {
       if (matchedPath) {
         this.query = this.autocompleteListMatchedItems[this.selectedSuggestionIndex]
       }
-      this.openQueryPath({ openOnInputUpdate: true })
+      this.openQueryPath({openOnInputUpdate: true})
     },
     addressBarMenuHandler (action) {
       this.$store.dispatch(action)
@@ -282,9 +406,9 @@ export default {
             this.autocompleteList = paths
             this.autocompleteListMatchedItems = paths
             this.selectedSuggestionIndex = -1
-            this.openQueryPath({ openOnInputUpdate: true })
+            this.openQueryPath({openOnInputUpdate: true})
             // If path exists, automatically add slash at the end
-            // if (!this.query.endsWith('/') && this.query.length > this.previousQuery.length) { this.query += '/' }
+            // if (!this.query.endsWith('/') && this.query.length > this.previousQuery.length) {this.query += '/'}
           }
           catch (error) {}
         }
@@ -293,24 +417,93 @@ export default {
     scrollAddressBarRight () {
       try {
         setTimeout(() => {
-          document.querySelector('#address-bar__parts-container').scrollTo({
-            left: 1000,
-            behavior: 'smooth'
-          })
+          let addressBarScrollContainerNode = document.querySelector('#address-bar__parts-container')
+          if (addressBarScrollContainerNode) {
+            addressBarScrollContainerNode.scrollTo({
+              left: 1000,
+              behavior: 'smooth',
+            })
+          }
         }, 50)
       }
       catch (error) {}
-    }
-  }
+    },
+    async toggleDirContextMenu (params) {
+      let dirItem = await this.$store.dispatch('GET_DIR_ITEM_INFO', params.part.path)
+      await this.$store.dispatch('REPLACE_SELECTED_DIR_ITEMS', [dirItem])
+      await this.$store.dispatch('SET_CONTEXT_MENU', {
+        value: 'toggle',
+        x: params.event.clientX,
+        y: params.event.clientY,
+      })
+    },
+  },
 }
 </script>
 
 <style scoped>
+.address-bar {
+  height: 100%;
+  max-height: 48px;
+  width: 100%;
+}
+
+.address-bar__inner {
+  height: 34px;
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: 0.1s ease;
+}
+
+.address-bar__inner:hover {
+  background-color: var(--bg-color-1);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: 0.1s ease;
+}
+
 .address-bar__parts-container {
   white-space: nowrap;
+  height: 48px;
+  margin-bottom: 3px;
+  margin-right: 6px;
+  padding-top: 3px
+}
+
+.address-bar__parts-container:hover {
+  cursor: pointer;
+}
+
+.address-bar__parts-container__inner {
+  height: 34px;
+  width: 100%;
+  min-width: fit-content;
+  margin-bottom: 1px;
+  padding: 0 4px;
 }
 
 .address-bar__part {
+  padding: 0 6px;
+  padding-top: 2px;
   color: var(--color-6) !important;
 }
+
+.address-bar__part-divider {
+  padding-top: 2px;
+}
+
+.address-bar__parts-container:not(.highlight)
+  .address-bar__part:hover {
+    color: var(--color-1);
+    background-color: var(--highlight-color-4);
+    cursor: pointer;
+    transition: 0.1s ease;
+    display: flex;
+    align-items: center;
+  }
+
+.address-bar__parts-container.highlight:hover
+  * {
+    cursor: pointer;
+    opacity: 0.8;
+  }
 </style>

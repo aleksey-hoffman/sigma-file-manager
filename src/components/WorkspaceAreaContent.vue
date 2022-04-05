@@ -19,8 +19,8 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 </template>
 
 <script>
-import { mapFields } from 'vuex-map-fields'
-import { mapGetters, mapState } from 'vuex'
+import {mapFields} from 'vuex-map-fields'
+import {mapState} from 'vuex'
 import itemFilter from '../utils/itemFilter'
 
 const lodash = require('../utils/lodash.min.js')
@@ -79,11 +79,13 @@ export default {
       dirItems: 'navigatorView.dirItems',
       navigatorRouteIsLoaded: 'navigatorRouteIsLoaded',
       navigatorViewInfoPanel: 'storageData.settings.infoPanels.navigatorView',
+      navigatorShowHiddenDirItems: 'storageData.settings.navigator.showHiddenDirItems',
       globalSearchWidget: 'globalSearch.widget',
       filterQuery: 'filterField.view.navigator.query',
       filterOptions: 'filterField.view.navigator.options',
       currentDir: 'navigatorView.currentDir',
-      dirItemsInfoIsFetched: 'navigatorView.dirItemsInfoIsFetched'
+      dirItemsInfoIsFetched: 'navigatorView.dirItemsInfoIsFetched',
+      showDirItemKindDividers: 'storageData.settings.navigator.showDirItemKindDividers',
     }),
     contentAreaHeight () {
       const contentAreaHeight = this.windowSize.y -
@@ -105,7 +107,7 @@ export default {
       const itemMinWidth = 280
       const infoPanelWidth = 280
       const gapSize = 24
-      const infoPanelCurrentWidth = this.navigatorViewInfoPanel ? infoPanelWidth : 0
+      const infoPanelCurrentWidth = this.navigatorViewInfoPanel.value ? infoPanelWidth : 0
       const container = document.querySelector('#workspace-area__content')
       let containerWidth = this.windowSize.x - navMenuWidth - infoPanelCurrentWidth
 
@@ -116,7 +118,7 @@ export default {
         // to avoid item card clipping when it's hovered (scaled).
         containerWidth = this.$utils.getNodeContentWidth(container.firstChild)
       }
-      
+
       // TODO: Refactor: move all properties to data object
       data.gridColumnAmount = this.getGridColumnAmount({containerWidth, itemMinWidth})
 
@@ -143,14 +145,14 @@ export default {
         isSpacer: true,
         path: 'top-spacer',
         type: 'top-spacer',
-        height: 8,
+        height: this.showDirItemKindDividers ? 2 : 16,
         marginBottom: 0
       }]
       const bottomSpacer = [{
         isSpacer: true,
         path: 'bottom-spacer',
         type: 'bottom-spacer',
-        height: 8,
+        height: this.showDirItemKindDividers ? 2 : 16,
         marginBottom: 0
       }]
       data.directoryRowsFormatted = directoryDirItemsAsRows.map(row => {
@@ -207,12 +209,20 @@ export default {
           ...bottomSpacer
         ]
       }
-      else {
+      else if (this.showDirItemKindDividers) {
         results = [
           ...topSpacer,
           ...directoryDivider,
           ...data.directoryRowsFormatted,
           ...fileDivider,
+          ...data.fileRowsFormatted,
+          ...bottomSpacer
+        ]
+      }
+      else {
+        results = [
+          ...topSpacer,
+          ...data.directoryRowsFormatted,
           ...data.fileRowsFormatted,
           ...bottomSpacer
         ]
@@ -260,9 +270,9 @@ export default {
       const otherFilesDirItems = this.otherFilesDirItems
       const topSpacer = [{
         isSpacer: true,
-        path: 'bottom-spacer',
-        type: 'bottom-spacer',
-        height: 8,
+        path: 'top-spacer',
+        type: 'top-spacer',
+        height: 2,
         marginBottom: 0
       }]
       const bottomSpacer = [{
@@ -282,12 +292,20 @@ export default {
           ...otherFilesDirItems
         ]
       }
-      else {
+      else if (this.showDirItemKindDividers) {
         results = [
           ...topSpacer,
           ...directoryDivider,
           ...directoryDirItems,
           ...fileDivider,
+          ...fileDirItems,
+          ...bottomSpacer
+        ]
+      }
+      else {
+        results = [
+          ...topSpacer,
+          ...directoryDirItems,
           ...fileDirItems,
           ...bottomSpacer
         ]
@@ -352,6 +370,7 @@ export default {
       return itemFilter({
         filterQuery: this.filterQuery,
         items,
+        filterHiddenItems: !this.navigatorShowHiddenDirItems,
         filterProperties: this.$store.state.filterField.view[this.$route.name].filterProperties,
         filterQueryOptions: this.$store.state.filterField.view[this.$route.name].options
       })

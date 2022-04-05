@@ -13,7 +13,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           dir-item--spacer
           unselectable
         "
-        :style="{ height: `${row.height}px` }"
+        :style="{height: `${row.height}px`}"
       ></div>
     </template>
 
@@ -54,14 +54,14 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           dir-item--spacer
           unselectable
         "
-        :style="{ height: `${row.height}px` }"
+        :style="{height: `${row.height}px`}"
       ></div>
     </template>
   </div>
 </template>
 
 <script>
-import { mapGetters, mapState } from 'vuex'
+import {mapGetters, mapState} from 'vuex'
 
 export default {
   name: 'dir-item-row',

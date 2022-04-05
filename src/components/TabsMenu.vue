@@ -6,8 +6,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <template>
   <basic-menu
     v-model="menus.tabs"
-    :menuButton="{
-      class: 'window-toolbar__item',
+    :menu-button="{
       tooltip: {
         description: 'Tabs',
         shortcut: shortcuts.switchTab.shortcut
@@ -15,16 +14,22 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     }"
     :header="{
       title: 'Workspace tabs',
-      icon: {
-        name: 'mdi-tab',
-        size: '18px',
-        color: iconColor
-      },
       buttons: [
         {
           icon: {
+            name: 'mdi-plus',
+            size: '24px'
+          },
+          tooltip: {
+            description: 'New tab in current workspace'
+          },
+          ifCondition: $route.name === 'navigator',
+          onClick: () => $store.dispatch('ADD_TAB')
+        },
+        {
+          icon: {
             name: 'mdi-close-box-multiple-outline',
-            size: '22px'
+            size: '20px'
           },
           tooltip: {
             description: 'Close all tabs in current workspace'
@@ -34,28 +39,58 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       ]
     }"
   >
-    <template v-slot:content>
+    <template #activator>
+      <button class="window-toolbar__item button--menu">
+        <v-icon
+          :color="iconColor"
+          size="18px"
+        >
+          mdi-tab
+        </v-icon>
+
+        <div
+          class="button--menu__counter"
+          :style="{color: iconColor}"
+        >
+          {{tabsButtonText}}
+        </div>
+      </button>
+    </template>
+    <template #content>
       <sortable-list
         source="tabs"
-        itemName="tab"
-        noData="Current workspace has no tabs"
-      ></sortable-list>
+        item-name="tab"
+        no-data="Current workspace has no tabs"
+      />
     </template>
   </basic-menu>
 </template>
 
 <script>
-import { mapFields } from 'vuex-map-fields'
+import {mapGetters} from 'vuex'
+import {mapFields} from 'vuex-map-fields'
 
 export default {
   props: {
-    iconColor: String
+    iconColor: {
+      type: String,
+      default: '#fff',
+    },
   },
   computed: {
     ...mapFields({
       menus: 'menus',
-      shortcuts: 'storageData.settings.shortcuts'
-    })
-  }
+      shortcuts: 'storageData.settings.shortcuts',
+    }),
+    ...mapGetters([
+      'selectedWorkspace',
+    ]),
+    tabsButtonText () {
+      let tabIndex = this.selectedWorkspace.tabs.findIndex(tab => {
+        return tab.path === this.$store.state.navigatorView.currentDir.path
+      }) + 1 || '-'
+      return tabIndex
+    },
+  },
 }
 </script>

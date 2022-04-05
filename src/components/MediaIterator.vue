@@ -42,6 +42,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               v-on="on"
               v-if="item.sourceLink"
               @click.stop="$utils.openLink(item.sourceLink)"
+              :is-selected="item.path === homeBannerSelectedItem.path"
               icon
               class="media-picker__item-icon--source-link"
             >
@@ -57,6 +58,33 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 mdi-open-in-new
               </v-icon>
               {{item.sourceLink}}
+            </v-layout>
+          </span>
+        </v-tooltip>
+
+        <!-- item::button:support-link -->
+        <v-tooltip bottom>
+          <template v-slot:activator="{ on }">
+            <v-btn
+              v-on="on"
+              v-if="item.supportLink"
+              @click.stop="$utils.openLink(item.supportLink)"
+              :is-selected="item.path === homeBannerSelectedItem.path"
+              icon
+              class="media-picker__item-icon--support-link"
+            >
+              <v-icon
+              >mdi-heart-outline
+              </v-icon>
+            </v-btn>
+          </template>
+          <span>
+            Support this artist
+            <v-layout align-center>
+              <v-icon class="mr-3" size="16px">
+                mdi-open-in-new
+              </v-icon>
+              {{item.supportLink}}
             </v-layout>
           </span>
         </v-tooltip>
@@ -92,8 +120,8 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 </template>
 
 <script>
-import { mapFields } from 'vuex-map-fields'
-import { mapState } from 'vuex'
+import {mapFields} from 'vuex-map-fields'
+import {mapState} from 'vuex'
 const fs = require('fs')
 const PATH = require('path')
 const ffmpeg = require('fluent-ffmpeg')
@@ -124,7 +152,7 @@ export default {
       homeBannerSelectedItem: 'storageData.settings.homeBanner.selectedItem'
     }),
     ...mapState({
-      appPaths: state => state.appPaths
+      appPaths: state => state.storageData.settings.appPaths
     })
   },
   methods: {
@@ -242,15 +270,21 @@ export default {
       let element
       if (elementType === 'image') {
         element = new Image()
-        element.setAttribute('src', this.$storeUtils.getSafePath(this.$utils.getUrlSafePath(path)))
+        element.setAttribute('src', this.getSrcPath(path))
       }
       else if (elementType === 'video') {
         element = document.createElement('video')
-        element.setAttribute('src', this.$storeUtils.getSafePath(this.$utils.getUrlSafePath(path)) + '#t=0.5')
+        element.setAttribute('src', this.getSrcPath(path) + '#t=0.5')
       }
       element.classList.add('media-picker__item-thumb')
       element.classList.add('fade-in-1s')
       return element
+    },
+    getSrcPath (path) {
+      if (this.type === 'default') {
+        path = path.replace('home banner', 'home banner previews')
+      }
+      return this.$storeUtils.getSafePath(this.$sharedUtils.getUrlSafePath(path))
     },
     appendThumb (target, thumbPath) {
       const image = this.createElement('image', target, thumbPath)
@@ -277,7 +311,6 @@ export default {
       ffmpeg(path)
         .size(size)
         .on('error', (error) => {
-          console.log(error)
         })
         .on('end', () => {
           this.appendThumb(target, thumbPath)
@@ -334,6 +367,7 @@ export default {
 
 .v-btn.media-picker__item-icon--selected,
 .v-btn.media-picker__item-icon--source-link,
+.v-btn.media-picker__item-icon--support-link,
 .v-btn.media-picker__item-icon--remove {
   z-index: 2;
   padding: 18px;
@@ -342,11 +376,13 @@ export default {
 
 .v-btn.media-picker__item-icon--selected .v-icon,
 .v-btn.media-picker__item-icon--source-link .v-icon,
+.v-btn.media-picker__item-icon--support-link .v-icon,
 .v-btn.media-picker__item-icon--remove .v-icon {
   color: var(--color-2) !important;
 }
 
-.v-btn.media-picker__item-icon--source-link {
+.v-btn.media-picker__item-icon--source-link,
+.v-btn.media-picker__item-icon--support-link {
   opacity: 0;
 }
 
@@ -362,7 +398,11 @@ export default {
   }
 
 .media-picker__item:hover
-  .media-picker__item-icon--source-link {
+  .media-picker__item-icon--source-link,
+.media-picker__item:hover
+  .media-picker__item-icon--support-link,
+.media-picker__item-icon--source-link[is-selected],
+.media-picker__item-icon--support-link[is-selected] {
     opacity: 1;
   }
 

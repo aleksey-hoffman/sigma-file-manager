@@ -164,19 +164,16 @@ export default {
       return this.drag.dirItemInbound.value && isValidDropTarget
     },
     currentDragTarget () {
+      const navigatorDirTarget = this.$route.name === 'navigator' &&
+        this.inputState.ctrl
       const navigatorCurrentDirTarget = this.$route.name === 'navigator' &&
         !this.inputState.ctrl
       const homePageBannerCustomMediaUploadTarget = this.$route.name === 'home' &&
         this.dialogs.homeBannerPickerDialog.value
-      if (navigatorCurrentDirTarget) {
-        return 'navigatorCurrentDirTarget'
-      }
-      else if (homePageBannerCustomMediaUploadTarget) {
-        return 'homePageBannerCustomMediaUploadTarget'
-      }
-      else {
-        return ''
-      }
+      if (navigatorCurrentDirTarget) {return 'navigatorCurrentDirTarget'}
+      else if (navigatorDirTarget) {return 'navigatorDirTarget'}
+      else if (homePageBannerCustomMediaUploadTarget) {return 'homePageBannerCustomMediaUploadTarget'}
+      else {return ''}
     },
     inboundDragOverlayText () {
       if (this.currentDragTarget === 'navigatorCurrentDirTarget') {
@@ -279,7 +276,7 @@ export default {
     //   return dropTargetItems
     // },
     handleLocalDragOverEvent (dragEvent) {
-      console.log('handleLocalDragOverEvent', dragEvent)
+      // console.log('handleLocalDragOverEvent', dragEvent)
     },
     handleGlobalDragOverEvent (dragEvent) {
       if (!this.drag.dirItemInbound.value) {
@@ -310,7 +307,7 @@ export default {
     },
     handlerDropActions (dropEvent) {
       return new Promise((resolve, reject) => {
-        console.log(this.inboundDragOverlayIsVisible, this.currentDragTarget, dropEvent)
+        // console.log(this.inboundDragOverlayIsVisible, this.currentDragTarget, dropEvent)
         // Avoid triggering when overlay is not shown
         // if (!this.inboundDragOverlayIsVisible) {
         //   reject()
@@ -320,37 +317,45 @@ export default {
           this.$store.dispatch('HANDLE_HOME_PAGE_BACKGROUND_ITEM_DROP', dropEvent)
             .then(() => resolve())
         }
-        else if (this.currentDragTarget === 'navigatorCurrentDirTarget') {
-          this.handleTargetDrop(dropEvent, 'navigatorCurrentDirTarget')
+        else if (['navigatorDirTarget', 'navigatorCurrentDirTarget'].includes(this.currentDragTarget)) {
+          this.handleTargetDrop(dropEvent, this.currentDragTarget)
             .then(() => resolve())
         }
       })
     },
     handleTargetDrop (dropEvent, target) {
       return new Promise((resolve, reject) => {
-        if (this.inputState.pointer.hoveredItem.path === '') { resolve() }
+        if (this.inputState.pointer.hoveredItem.path === '') { 
+          resolve()
+          return
+        }
         if (!this.dragStartedInsideWindow) {
           console.log(dropEvent.dataTransfer.items)
           const promises = []
 
           // Handle transfer type: local file / directory
           const localItems = dropEvent.dataTransfer.files
-          localItems.forEach(item => {
-            promises.push(
-              this.handleLocalItemTransfer(dropEvent.dataTransfer, item)
-            )
-          })
+          
+          if (dropEvent.dataTransfer.items) {
+            if (dropEvent.dataTransfer.items[0].kind === 'file') {
+              for (const file of dropEvent.dataTransfer.files) {
+                promises.push(
+                  this.handleLocalItemTransfer(dropEvent.dataTransfer, file)
+                )
+              }
+            }
+          }
 
           // Handle transfer type: URL / external file / HTML
           const transferItem = { data: {} }
-          dropEvent.dataTransfer.items.forEach(item => {
+          for (const item of dropEvent.dataTransfer.items) {
             if (item.kind === 'string' && item.type === 'text/plain') {
               transferItem.data.plain = dropEvent.dataTransfer.getData('text/plain')
             }
             if (item.kind === 'string' && item.type === 'text/html') {
               transferItem.data.html = dropEvent.dataTransfer.getData('text/html')
             }
-          })
+          }
           console.log('text/plain', dropEvent.dataTransfer.getData('text/plain'))
           console.log('text/html', dropEvent.dataTransfer.getData('text/html'))
 
@@ -420,7 +425,7 @@ export default {
               title: 'Download failed',
               message: `
                 Possible reasons: link has expired; download is forbidden.
-                <br><b>URL:</b> 
+                <br><strong>URL:</strong> 
                 <br>${url}
               `
             })
@@ -527,7 +532,7 @@ export default {
       this.resetMouseMoveEventValues()
     },
     mouseMoveHandler (mousemoveEvent) {
-      console.log('mouseMoveHandler', mousemoveEvent)
+      // console.log('mouseMoveHandler', mousemoveEvent)
       if (this.inputState.pointer.button1) {
         // TODO:
         // - if cursor is over selected item,

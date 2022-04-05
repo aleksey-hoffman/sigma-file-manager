@@ -20,25 +20,30 @@ const downloadManager = require('./utils/downloadManager')
 const SigmaAppUpdater = require('./utils/sigmaAppUpdater.js')
 const StorageReader = require('./utils/storageReader.js')
 const externalLinks = require('./utils/externalLinks.js')
-const sharedUtils = require('./utils/sharedUtils.js').default
 const appVersion = electron.app.getVersion()
 const appUpdater = new SigmaAppUpdater()
 const storageReader = new StorageReader()
+const {Worker} = require('worker_threads')
 
 // TODO: remove '@electron/remote' module and migrate to ipcRenderer.invoke
 require('@electron/remote/main').initialize()
 
 global.mainProcessProps = {
-  safeFileProtocolName: 'sigma-file-manager'
+  safeFileProtocolName: 'sigma-file-manager',
+  env: process.env
 }
 
 // Keep global references to prevent garbage collection
+const singleAppInstance = electron.app.requestSingleInstanceLock()
 const windows = {
   main: null,
   hiddenGame: null,
   errorWindow: null,
   trashManager: null,
   quickViewWindow: null
+}
+const windowLoadedCallbacks = {
+  mainWindow: []
 }
 const globalShortcuts = {}
 let storageData
@@ -56,25 +61,40 @@ electron.protocol.registerSchemesAsPrivileged([
   }
 ])
 
+lockSingleAppInstance()
 setAppProperties()
 initIPCListeners()
 initAppListeners()
 
+function lockSingleAppInstance () {
+  if (!singleAppInstance && process.env.NODE_ENV === 'production') {
+    electron.app.quit()
+  } 
+  else {
+    electron.app.on('second-instance', (event, commandLine, workingDirectory) => {
+      global.focusApp()
+    })
+  }
+}
+
 function setAppProperties () {
-  // Temporary disable until native modules like 'node-diskusage'
-  // are updated (to become context-aware or loaded via N-API)
+  // Temporary override. The default value sometimes breaks window loading on reload
+  // For example, on settings reset. https://github.com/electron/electron/issues/30710
   electron.app.allowRendererProcessReuse = false
-  // Handle system login
-  electron.app.setLoginItemSettings({
-    openAtLogin: true
-  })
   electron.app.setAppUserModelId('com.alekseyhoffman.sigma-file-manager')
+}
+
+function setCustomizedAppProperties (params) {
+  electron.app.setLoginItemSettings({
+    openAtLogin: params.openAtLogin
+  })
 }
 
 function createMainWindow () {
   windows.main = new electron.BrowserWindow({
     title: 'Sigma file manager',
     icon: PATH.join(__static, '/icons/logo-1024x1024.png'),
+    show: !storageData['storageData.settings.appProperties.openAsHidden'],
     width: 1280,
     height: 720,
     minWidth: 500,
@@ -112,6 +132,7 @@ function createQuickViewWindow () {
     minWidth: 300,
     minHeight: 200,
     webPreferences: {
+      partition: 'persist:quickView',
       webviewTag: true,
       enableRemoteModule: true,
       contextIsolation: !process.env.ELECTRON_NODE_INTEGRATION,
@@ -173,6 +194,7 @@ function loadWindow (windowName) {
   else if (windowName === 'quickViewWindow') {
     filePath = 'quickViewWindow.html'
     developmentPath = `file://${__static}/quickViewWindow.html`
+    productionPath = `file://${__static}/quickViewWindow.html`
   }
   // Get window URL
   if (!developmentPath) {
@@ -196,6 +218,11 @@ function loadWindow (windowName) {
 
 function initWindowListeners (name) {
   if (name === 'main') {
+    windows.main.on('move', () => {
+      windows.main.webContents.send('main-window-move', {
+        position: windows.main.getPosition()
+      })
+    })
     windows.main.on('focus', () => {
       windows.main.setSkipTaskbar(false)
       windows.main.webContents.send('window:focus')
@@ -206,9 +233,17 @@ function initWindowListeners (name) {
     windows.main.on('closed', () => {
       windows.main = null
     })
+    windows.main.on('maximize', () => {
+      windows.main.webContents.send('window-event:maximize')
+    })
+    windows.main.on('unmaximize', () => {
+      windows.main.webContents.send('window-event:unmaximize')
+    })
   }
   else if (name === 'quickViewWindow') {
     // Init listeners
+    // Note: this listener is used to detect unsupported by Chromium files that cannot be displayed.
+    // Unsupported files trigger will-download event.
     windows.quickViewWindow.webContents.session.once('will-download', _willDownloadHandler)
     windows.quickViewWindow.once('close', () => {
       // Remove listener to avoid multiple listeners
@@ -220,7 +255,6 @@ function initWindowListeners (name) {
     })
     function _willDownloadHandler (event, item, webContents) {
       event.preventDefault()
-      console.log('main::load:webview::failed')
       const fileURL = item.getURL()
       windows.quickViewWindow.webContents.send('load:webview::cancel')
       windows.main.webContents.send('load:webview::failed', {path: fileURL})
@@ -272,7 +306,31 @@ function createUtilWindow (fileName) {
   })
 }
 
+function runWindowLoadedCallbacks () {
+  for (const window in windowLoadedCallbacks) {
+    windowLoadedCallbacks[window].forEach(callback => {
+      callback()
+    })
+  }
+}
+
 function initIPCListeners () {
+  electron.ipcMain.handle('get-dir-items', async (event, params) => {
+    return new Promise((resolve, reject) => {
+      const worker = new Worker('./src/workers/fsCoreWorker.js', {workerData: params})
+      worker.on('message', (params) => {resolve(params)})
+      worker.on('error', (error) => {reject(error)})
+    })
+  })
+
+  electron.ipcMain.handle('main-window-loaded', async (event) => {
+    runWindowLoadedCallbacks()
+  })
+
+  electron.ipcMain.handle('get-app-storage-data', async (event) => {
+    return storageData
+  })
+
   electron.ipcMain.on('compute-request:trashDirItems', (event, payload) => {
     if (payload.items.length === 0) {
       throw Error(`
@@ -324,11 +382,11 @@ function initIPCListeners () {
   })
 
   electron.ipcMain.on('focus-main-app-window', (event) => {
-    global.focusApp({ type: 'code' })
+    global.focusApp()
   })
 
   electron.ipcMain.on('toggle-main-app-window', (event) => {
-    global.toggleApp({ type: 'code' })
+    global.toggleApp()
   })
 
   electron.ipcMain.on('handle:close-app', (event, action) => {
@@ -366,7 +424,7 @@ function initIPCListeners () {
       shortcut: data.shortcut
     }
     // Update global shortcuts in tray menu
-    createTrayMenu()
+    tray.setContextMenu(getTrayMenu())
   })
 
   electron.ipcMain.on('window:drag-out', (event, paths) => {
@@ -409,7 +467,7 @@ async function fetchAppStorageData () {
 }
 
 async function initAppUpdater () {
-  if (storageData['storageData.settings.appUpdates.autoCheck']) {
+  if (!process.windowsStore && [true, undefined].includes(storageData['storageData.settings.appUpdates.autoCheck'])) {
     await checkAppUpdates()
   }
 }
@@ -420,8 +478,7 @@ async function checkAppUpdates () {
     currentVersion: appVersion,
     onUpdateAvailable: (payload) => {
       showNativeNotificationUpdateAvailable(payload)
-      showBuiltInNotificationUpdateAvailable(payload)
-      // handleAutoUpdate(payload)
+      handleAutoUpdate(payload)
     }
   })
 }
@@ -429,7 +486,7 @@ async function checkAppUpdates () {
 function showNativeNotificationUpdateAvailable (payload) {
   const notificationParams = {
     title: 'Update available',
-    body: `Sigma file manager v${payload.latestVersion}`
+    body: `Sigma File Manager v${payload.latestVersion}`
   }
   const updateNotification = new electron.Notification(notificationParams)
   updateNotification.on('click', () => {
@@ -438,13 +495,38 @@ function showNativeNotificationUpdateAvailable (payload) {
   updateNotification.show()
 }
 
-function showBuiltInNotificationUpdateAvailable (payload) {
+async function handleAutoUpdate (payload) {
+  const autoDownload = [true, undefined].includes(storageData['storageData.settings.appUpdates.autoDownload'])
+  const autoInstall = [true, undefined].includes(storageData['storageData.settings.appUpdates.autoInstall'])
+  if (autoDownload) {
+    if (autoInstall) {
+      payload.autoInstall = true
+      initUpdateAction({
+        payload, 
+        action: 'DOWNLOAD_APP_UPDATE'
+      })
+    }
+    else {
+      initUpdateAction({
+        payload, 
+        action: 'DOWNLOAD_APP_UPDATE'
+      })
+    }
+  }
+  else {
+    initUpdateAction({
+      payload, 
+      action: 'HANDLE_APP_UPDATE_AVAILABLE'
+    })
+  }
+}
+
+async function initUpdateAction (params) {
   // Delay to make sure App.vue is loaded
   setTimeout(() => {
-     // windows.main.webContents.send('check-app-updates')
     windows.main.webContents.send('store:action', {
-      action: 'HANDLE_APP_UPDATE_AVAILABLE',
-      params: payload
+      action: params.action,
+      params: params.payload
     })
   }, 5000)
 }
@@ -463,34 +545,6 @@ function openFileInQuickViewWindow (path) {
     _load()
   }
 }
-
-// TODO: finish update auto install
-// async function handleAutoUpdate (payload) {
-//   const autoDownload = storageData['storageData.settings.appUpdates.autoDownload']
-//   const askBeforeAutoInstall = storageData['storageData.settings.appUpdates.askBeforeAutoInstall']
-//   const autoInstall = storageData['storageData.settings.appUpdates.autoInstall']
-//   if (autoDownload) {
-//     const updateFileData = await downloadUpdate(payload)
-//     // if (!askBeforeAutoInstall && autoInstall) {
-//     //   installUpdate(updateFileData)
-//     // }
-//   }
-// }
-
-// async function downloadUpdate (payload) {
-//   return new Promise((resolve, reject) => {
-//     setTimeout(() => {
-//       windows.main.webContents.send('store:action', {
-//         action: 'DOWNLOAD_APP_UPDATE',
-//         params: payload
-//       })
-//     }, 6000)
-//   })
-// }
-
-// function installUpdate (updateFileData) {
-//   console.log('install', updateFileData)
-// }
 
 async function downloadFile (payload) {
   const resultInfo = await downloadManager.download(windows.main, {
@@ -516,53 +570,68 @@ function createTrayMenu () {
   const trayIcon = process.platform === 'darwin'
     ? 'logo-20x20.png'
     : 'logo-32x32.png'
-  tray = new electron.Tray(PATH.join(__static, 'icons', trayIcon))
+    tray = new electron.Tray(PATH.join(__static, 'icons', trayIcon))
+    tray.setToolTip(`Sigma File Manager v${appVersion}`)
+    tray.setContextMenu(getTrayMenu())
+    tray.on('click', () => {
+      global.focusApp()
+    })
+    tray.on('right-click', () => {
+      tray.popUpContextMenu()
+    })
+}
+
+function getTrayMenu () {
   const contextMenu = electron.Menu.buildFromTemplate([
     {
-      label: `Sigma file manager v${appVersion}`,
+      label: `SIGMA FILE MANAGER v${appVersion}`,
       enabled: false
     },
-    { type: 'separator' },
     {
-      label: 'Open the app window',
-      accelerator: globalShortcuts.toggleApp
-        ? globalShortcuts.toggleApp.shortcut
-        : '',
+      type: 'separator'
+    },
+    {
+      label: 'GLOBAL SHORTCUTS',
+      enabled: false
+    },
+    {
+      label: 'Toggle window visibility',
+      accelerator: globalShortcuts?.toggleApp?.shortcut || '',
+      click: () => global.toggleApp({type: 'tray'})
+    },
+    {
+      label: 'Open global search',
+      accelerator: globalShortcuts?.openGlobalSearch?.shortcut || '',
+      click: () => global.openGlobalSearch()
+    },
+    {
+      label: 'Create new note',
+      accelerator: globalShortcuts?.newNote?.shortcut || '',
+      click: () => newNote()
+    },
+    {
+      type: 'separator'
+    },
+    {
+      label: 'APP ACTIONS',
+      enabled: false
+    },
+    {
+      label: 'Open window',
+      accelerator: globalShortcuts?.toggleApp?.shortcut || '',
       click: () => global.focusApp()
     },
     {
-      label: 'Reload the app window',
+      label: 'Reload window',
       accelerator: 'Ctrl + Shift + R',
-      click: () => windows.main.reload()
+      click: () => windows.main?.reload()
     },
     {
-      label: 'Close the app',
+      label: 'Quit',
       click: () => electron.app.quit()
-    },
-    { type: 'separator' },
-    {
-      label: 'Global shortcuts',
-      enabled: false
-    },
-    { type: 'separator' },
-    {
-      label: 'Create new note',
-      accelerator: globalShortcuts.newNote
-        ? globalShortcuts.newNote.shortcut
-        : '',
-      click: () => newNote()
-    },
-    { type: 'separator' },
-    {
-      label: 'Support the app and get rewards',
-      click: () => electron.shell.openExternal(externalLinks.githubReadmeSupportSectionLink)
     }
   ])
-  tray.setToolTip(`Sigma file manager v${appVersion}`)
-  tray.setContextMenu(contextMenu)
-  tray.on('click', () => {
-    tray.popUpContextMenu()
-  })
+  return contextMenu
 }
 
 function disableAppMenu () {
@@ -590,49 +659,63 @@ global.newNote = () => {
   windows.main.webContents.send('open-new-note')
 }
 
-global.focusApp = (options = {}) => {
-  // If window exists, focus it
-  if (windows.main !== null) {
-    // Notes:
-    // - Using a workaround because of https://github.com/electron/electron/issues/2867
-    //   When triggered programmatically (not from a global shortcut),
-    //   the function windows.main.show() might not show the window by itself.
-    // - Hide window (from taskbar) before focusing so that it doesn't switch to 
-    //   another virtual screen if the app was opened there
-    if (options.type === 'code') {
-      windows.main.hide()
-      setTimeout(() => {
-        windows.main.setAlwaysOnTop(true)
-        windows.main.show()
-        windows.main.setAlwaysOnTop(false)
-      }, 100)
-    }
-    else {
-      windows.main.hide()
-      setTimeout(() => {
-        windows.main.show()
-      }, 100)
-    }
+global.focusApp = () => {
+  if (windows.main) {
+    // Hide window (from taskbar) before focusing so that it doesn't switch to 
+    // another virtual screen if the app was opened there
+    windows.main.hide()
+    setTimeout(() => {
+      windows.main.show()
+    }, 100)
   }
-  // If window doesn't exist, create it
   else {
     createMainWindow()
   }
 }
 
-global.toggleApp = (options) => {
-  // If window exists, focus it
-  if (windows.main !== null) {
-    if (windows.main.isFocused()) {
-      windows.main.minimize()
+global.toggleApp = (options = {}) => {
+  if (windows.main) {
+    if (options.type === 'tray') {
+      if (windows.main.isMinimized()) {
+        global.focusApp()
+      }
+      else {
+        windows.main.minimize()
+      }
     }
     else {
-      global.focusApp(options)
+      if (windows.main.isMinimized() || !windows.main.isFocused()) {
+        global.focusApp()
+      }
+      else {
+        windows.main.minimize()
+      }
     }
   }
-  // If window doesn't exist, create it
   else {
     createMainWindow()
+  }
+}
+
+global.openGlobalSearch = () => {
+  if (windows.main) {
+    if (!windows.main.isFocused()) {
+      global.focusApp()
+    }
+    windows.main.webContents.send('open-global-search')
+  }
+  else {
+    global.focusApp()
+    windowLoadedCallbacks.mainWindow.push(() => {
+      global.focusApp()
+      windows.main.webContents.send('open-global-search')
+    })
+  }
+}
+
+function getCustomizedAppProperties (storageData) {
+  return {
+    openAtLogin: storageData['storageData.settings.appProperties.openAtLogin'] ?? true
   }
 }
 
@@ -663,6 +746,7 @@ function initAppListeners () {
     // initialization and is ready to create browser windows.
     // Some APIs can only be used after this event occurs.
     storageData = await fetchAppStorageData()
+    setCustomizedAppProperties(getCustomizedAppProperties(storageData))
     disableAppMenu()
     registerSafeFileProtocol()
     createMainWindow()

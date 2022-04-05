@@ -10,48 +10,57 @@
 // SCREEN~1 - Screenshots
 
 const PATH = require('path')
+const fs = require('fs')
 const electron = require('electron')
 
 const electronRemote = process.type === 'browser'
   ? electron
   : require('@electron/remote')
 
+const env = process.type === 'browser'
+  ? process.env
+  : electronRemote.getGlobal('mainProcessProps').env
+
 const userData = electronRemote.app.getPath('userData')
-const home = electronRemote.app.getPath('home')
-const desktop = electronRemote.app.getPath('desktop')
-const downloads = electronRemote.app.getPath('downloads')
-const documents = electronRemote.app.getPath('documents')
-const pictures = electronRemote.app.getPath('pictures')
-const screenshots = PATH.join(pictures, 'Screenshots')
-const videos = electronRemote.app.getPath('videos')
-const music = electronRemote.app.getPath('music')
+const home = getUserDirPath('home')
+const desktop = getUserDirPath('desktop')
+const downloads = getUserDirPath('downloads')
+const documents = getUserDirPath('documents')
+const pictures = getUserDirPath('pictures')
+const screenshots = getUserDirPath('screenshots')
+const videos = getUserDirPath('videos')
+const music = getUserDirPath('music')
+const oneDrive = getUserDirPath('oneDrive')
 
 const userDataRoot = PATH.parse(userData).root.replace(/\\/g, '/')
 const resources = process.env.NODE_ENV === 'production'
   ? `${process.resourcesPath}/app.asar/resources`
   : PATH.join(__static, 'resources')
-const bin = PATH.join(resources, process.platform, 'bin')
 const appStorage = PATH.join(userData, 'app storage')
 const appStorageMedia = PATH.join(appStorage, 'media')
 const homeBannerMedia = PATH.join(resources, 'media', 'home banner')
+const resourcesBin = PATH.join(resources, process.platform, 'bin')
 const appStorageBin = PATH.join(appStorage, 'bin')
 const appStorageHomeBannerMedia = PATH.join(appStorage, 'media', 'home banner')
 const appStorageNotesMedia = PATH.join(appStorage, 'media', 'notes')
 const appStorageGlobalSearchData = PATH.join(appStorage, 'search data')
 const appStorageNavigatorThumbs = PATH.join(appStorage, 'media', 'thumbnails')
+const bin = process.env.NODE_ENV === 'production'
+  ? appStorageBin
+  : resourcesBin
 
-const FFMPEG = PATH.join(appStorageBin, 'ffmpeg', 'bin')
-const youtubeDl = PATH.join(appStorageBin, 'youtube-dl')
-const sevenZip = PATH.join(appStorageBin, '7-zip')
+const FFMPEG = PATH.join(bin, 'ffmpeg', 'bin')
+const youtubeDl = PATH.join(bin, 'youtube-dl')
+const sevenZip = PATH.join(bin, '7-zip')
 
-let systemDirs
+let userDirs
 let bin7Zip
 let binYoutubeDl
 
 if (process.platform === 'win32') {
-  bin7Zip = PATH.join(sevenZip, '7za.exe')
+  bin7Zip = PATH.join(sevenZip, '7z.exe')
   binYoutubeDl = PATH.join(youtubeDl, 'youtube-dl.exe')
-  systemDirs = [
+  userDirs = [
     { name: 'Home directory', icon: 'mdi-folder-account-outline', path: home },
     { name: 'Desktop', icon: 'mdi-aspect-ratio', path: desktop },
     { name: 'Downloads', icon: 'mdi-download', path: downloads },
@@ -65,7 +74,7 @@ if (process.platform === 'win32') {
 else if (process.platform === 'linux') {
   bin7Zip = PATH.join(sevenZip, '7zz')
   binYoutubeDl = PATH.join(youtubeDl, 'youtube-dl')
-  systemDirs = [
+  userDirs = [
     { name: 'Home directory', icon: 'mdi-folder-account-outline', path: home },
     { name: 'Desktop', icon: 'mdi-aspect-ratio', path: desktop },
     { name: 'Downloads', icon: 'mdi-download', path: downloads },
@@ -78,7 +87,7 @@ else if (process.platform === 'linux') {
 else if (process.platform === 'darwin') {
   bin7Zip = PATH.join(sevenZip, '7zz')
   binYoutubeDl = PATH.join(youtubeDl, 'youtube-dl')
-  systemDirs = [
+  userDirs = [
     { name: 'Home directory', icon: 'mdi-folder-account-outline', path: home },
     { name: 'Desktop', icon: 'mdi-aspect-ratio', path: desktop },
     { name: 'Downloads', icon: 'mdi-download', path: downloads },
@@ -134,7 +143,7 @@ const appPaths = {
   storageFiles,
   storageDirectories,
   resources,
-  systemDirs,
+  userDirs,
   homeBannerMedia,
   userData,
   userDataRoot,
@@ -146,12 +155,39 @@ const appPaths = {
   screenshots,
   videos,
   music,
+  oneDrive,
   binCompressed,
+  resourcesBin,
   bin,
   bin7Zip,
   binFFMPEG,
   binFFPROBE,
   binYoutubeDl
+}
+
+function getUserDirPath (dirName) {
+  if (dirName === 'screenshots') {
+    let screenshotsDir = PATH.join(pictures, 'Screenshots')
+    try {
+      fs.statSync(screenshotsDir)
+      return screenshotsDir
+    }
+    catch (error) {
+      return pictures
+    }
+  }
+  else if (dirName === 'oneDrive') {
+    return env.OneDrive
+  }
+  
+  try {
+    return electronRemote.app.getPath(dirName)
+  }
+  catch (error) {
+    let dirNameFormatted = dirName[0].toUpperCase() + dirName.slice(1) 
+    let userDir = env.USERPROFILE || env.HOME
+    return PATH.join(userDir, dirNameFormatted)
+  }
 }
 
 module.exports = appPaths

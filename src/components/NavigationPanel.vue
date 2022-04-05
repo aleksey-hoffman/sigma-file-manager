@@ -5,11 +5,13 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <template>
   <v-navigation-drawer
-    v-model="navigationPanelModel"
-    :mini-variant="navigationPanelMiniVariant"
-    touchless app permanent floating mini-variant-width="64" width="280"
     id="nav-panel"
     class="nav-panel"
+    v-model="navigationPanelModel"
+    :mini-variant="navigationPanelMiniVariant"
+    touchless app permanent floating
+    mini-variant-width="48"
+    width="280"
   >
     <v-layout column fill-height class="unselectable">
       <v-layout column class="nav-panel__main-content custom-scrollbar">
@@ -123,19 +125,47 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             <template v-slot:activator="{ on }">
               <v-layout
                 v-on="on"
-                @click="$store.dispatch('OPEN_DIR_ITEM_FROM_PATH', drive.mount)"
+                @click="$store.dispatch('OPEN_DIR_ITEM_FROM_PATH', drive.path)"
                 class="nav-panel__item"
                 align-center v-ripple
               >
                 <div class="nav-panel__item__indicator"></div>
                 <div class="nav-panel__item__icon-container">
-                  <v-icon size="20px" class="nav-panel__item__icon">
-                    {{drive.removable ? 'fab fa-usb' : 'far fa-hdd'}}
-                  </v-icon>
+                  <v-badge
+                    :value="showNavPanelDriveLetterOverlay(drive)"
+                    color="var(--nav-panel-drive-overlay-bg-color)"
+                    overlap bottom left 
+                    offset-x="12px" 
+                    offset-y="10px"
+                  >
+                    <v-icon 
+                      class="nav-panel__item__icon"
+                      :size="$utils.getDriveIcon(drive).size" 
+                    >
+                      {{$utils.getDriveIcon(drive).icon}}
+                    </v-icon>
+                    <template v-slot:badge>
+                      <div 
+                        v-if="showNavPanelDriveLetterOverlay(drive)" 
+                        style="color: var(--nav-panel-drive-overlay-color)"
+                      >
+                        {{navPanelDriveLetterOverlayContent(drive)}}
+                      </div>
+                    </template>
+                  </v-badge>
                 </div>
                 <transition name="slide-fade-left">
                   <div v-if="!navigationPanelMiniVariant">
-                    <div class="nav-panel__item__title mb-1">
+                    <div 
+                      class="nav-panel__item__title"
+                      v-if="drive.type === 'cloud'"
+                    >
+                      {{drive.titleSummary}}
+                    </div>
+                    <div 
+                      class="nav-panel__item__title mb-1"
+                      v-else
+                    >
                       <v-layout align-center>
                         <div class="nav-panel__item__title__mount">
                           <span
@@ -147,10 +177,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                         </div>
                         <v-spacer></v-spacer>
                         <div class="caption">
-                          {{$utils.prettyBytes(drive.size.free, 1)}} left
+                          {{drive.size.free && $utils.prettyBytes(drive.size.free, 1)}} left
                         </div>
                       </v-layout>
-                      <div>
+                      <div v-if="drive.percentUsed">
                         <v-progress-linear
                           :value="`${drive.percentUsed}`"
                           height="4"
@@ -164,8 +194,8 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               </v-layout>
             </template>
             <span>
-              <div> {{drive.titleSummary}} </div>
-              <div> {{drive.infoSummary}} </div>
+              <div>{{drive.titleSummary}}</div>
+              <div>{{drive.infoSummary}}</div>
             </span>
           </v-tooltip>
         </div>
@@ -175,19 +205,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 </template>
 
 <script>
-import { mapFields } from 'vuex-map-fields'
-import { mapGetters } from 'vuex'
+import {mapFields} from 'vuex-map-fields'
+import {mapGetters} from 'vuex'
 
 export default {
-  data () {
-    return {
-    }
-  },
-  mounted () {
-
-  },
-  beforeDestroy () {
-  },
   computed: {
     ...mapGetters([
       'homeBannerSelectedMedia',
@@ -201,17 +222,26 @@ export default {
       navigationPanelMiniVariant: 'navigationPanel.miniVariant',
       navigationPanelItems: 'navigationPanel.items',
       homeBannerValue: 'storageData.settings.homeBanner.value',
-      currentDir: 'navigatorView.currentDir'
+      currentDir: 'navigatorView.currentDir',
+      navPanelDriveLetterOverlay: 'storageData.settings.overlays.navPanelDriveLetterOverlay.value',
     })
   },
   methods: {
-
+    showNavPanelDriveLetterOverlay (drive) {
+      return this.$utils.platform === 'win32'
+        ? this.navPanelDriveLetterOverlay && !drive.mount.includes('OneDrive')
+        : false
+    },
+    navPanelDriveLetterOverlayContent (drive) {
+      return this.$utils.platform === 'win32'
+        ? drive.mount.replace(':/', '')
+        : ''
+    }
   }
 }
 </script>
 
 <style>
-
 .nav-panel img,
 .nav-panel video {
   position: fixed;
@@ -285,7 +315,7 @@ export default {
 }
 
 .nav-panel__item.active-route .nav-panel__item__icon {
-  color: var(--icon-color-3) !important;
+  color: var(--icon-color-1) !important;
 }
 
 .nav-panel__item.active-route .nav-panel__item__title {
@@ -298,9 +328,7 @@ export default {
   background-color: var(--nav-panel-indicator-color);
 }
 
-/* Divider */
 .nav-panel__divider {
   border-bottom: 1px solid var(--divider-color-1);
 }
-
 </style>

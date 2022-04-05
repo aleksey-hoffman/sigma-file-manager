@@ -59,8 +59,8 @@ class SigmaAppUpdater {
 
   getExt () {
     if (process.platform === 'win32') { return 'exe' }
-    else if (process.platform === 'darwin') { return 'dmg' }
-    else if (process.platform === 'linux') { return 'deb' }
+    else if (process.platform === 'darwin') { return 'pkg' }
+    else if (process.platform === 'linux') { return 'AppImage' }
   }
 
   getLatestReleaseData (data, params) {

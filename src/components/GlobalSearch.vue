@@ -194,7 +194,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             <!-- widget::results -->
             <div
               class="widget__info-container__results my-4"
-              v-show="searchResults.length === 0"
+              v-show="searchResultsRecentDirItems.length === 0 && searchResults.length === 0"
               style="display: flex; align-items: center; justify-content: center; flex-direction: column"
             >
               <v-icon size="48px">mdi-magnify</v-icon>
@@ -204,7 +204,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             <!-- widget::results -->
             <div
               class="widget__info-container__results"
-              v-show="query.length > 0 && searchResults.length > 0"
+              v-show="query.length > 0 && (searchResultsRecentDirItems.length > 0 || searchResults.length > 0)"
             >
               <!-- dir-items-container -->
               <div
@@ -223,6 +223,31 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   'height': '100%',
                 }"
               >
+                <div
+                  class="mb-6"
+                  v-if="optionIncludeRecent && storeDirItemOpenEvent && searchResultsRecentDirItems.length > 0"
+                >
+                  <div class="text--sub-title-1 ml-6">Recent items</div>
+                  <dir-item
+                    v-show="optionIncludeDirectories && item.type.includes('directory') || optionIncludeFiles && item.type.includes('file')"
+                    v-for="(item, index) in searchResultsRecentDirItems"
+                    :key="`recent-dir-item-${item.path}`"
+                    :source="item"
+                    :index="index"
+                    :type="item.type"
+                    :showDir="true"
+                    :showScore="!true"
+                    :thumbLoadingIsPaused="false"
+                    :forceThumbLoad="false"
+                    :status="{
+                      itemHover: {
+                        isPaused: false
+                      }
+                    }"
+                  ></dir-item>
+                </div>
+
+                <div class="text--sub-title-1 ml-6">Global items</div>
                 <div v-show="!showDirectoriesOnTop">
                   <dir-item
                     v-show="optionIncludeDirectories && item.type.includes('directory') || optionIncludeFiles && item.type.includes('file')"
@@ -329,8 +354,6 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
             <div>
               <div class="text--sub-title-1">Results</div>
-
-              <!-- input-checkbox::show-directories -->
               <v-checkbox
                 class="mt-2"
                 v-model="optionIncludeDirectories"
@@ -338,13 +361,31 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 hide-details
               ></v-checkbox>
 
-              <!-- input-checkbox::files -->
               <v-checkbox
                 class="mt-1"
                 v-model="optionIncludeFiles"
                 label="Show files"
                 hide-details
               ></v-checkbox>
+
+              <v-tooltip
+                bottom
+                :disabled="storeDirItemOpenEvent"
+              >
+                <template v-slot:activator="{ on }">
+                  <div v-on="on">
+                    <v-checkbox
+                      class="mt-2"
+                      v-model="optionIncludeRecent"
+                      :disabled="!storeDirItemOpenEvent"
+                      label="Show recent"
+                      hide-details
+                    ></v-checkbox>
+                  </div>
+                </template>
+                <span>Statistics storing is disabled</span>
+              </v-tooltip>
+
             </div>
 
             <div>
@@ -403,14 +444,11 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 </template>
 
 <script>
-import { mapFields } from 'vuex-map-fields'
-import { search, test as searchTest } from '../utils/search.js'
-import { mapState } from 'vuex'
-const fs = require('fs')
+import {mapFields} from 'vuex-map-fields'
+import {mapState} from 'vuex'
+import {search} from '../utils/search.js'
+
 const PATH = require('path')
-const readline = require('readline')
-const byline = require('byline')
-const sysInfo = require('systeminformation')
 const lodash = require('../utils/lodash.min.js')
 
 export default {
@@ -431,6 +469,7 @@ export default {
       readInterface: null,
       debounceTimeout: null,
       searchResults: [],
+      searchResultsRecentDirItems: [],
       searchTasks: [],
       searchInfo: [],
       searchResultsItemsAmount: 50,
@@ -467,21 +506,23 @@ export default {
       globalSearchCompressSearchData: state => state.storageData.settings.compressSearchData
     }),
     ...mapFields({
-      appPaths: 'appPaths',
+      appPaths: 'storageData.settings.appPaths',
       inputState: 'inputState',
       drives: 'drives',
       dirItems: 'navigatorView.dirItems',
       globalSearch: 'globalSearch',
       query: 'globalSearch.query',
       widget: 'globalSearch.widget',
-      globalSearchDataFiles: 'appPaths.globalSearchDataFiles',
       scanInProgress: 'globalSearch.scanInProgress',
       searchScanWasInterrupted: 'storageData.settings.globalSearchScanWasInterrupted',
       searchInProgress: 'globalSearch.searchInProgress',
       lastScanTimeElapsed: 'globalSearch.lastScanTimeElapsed',
       lastSearchScanTime: 'storageData.settings.time.lastSearchScan',
+      storeDirItemOpenEvent: 'storageData.settings.stats.storeDirItemOpenEvent',
       optionIncludeFiles: 'globalSearch.options.includeFiles',
       optionIncludeDirectories: 'globalSearch.options.includeDirectories',
+      optionIncludeRecent: 'globalSearch.options.includeRecent',
+      optionIncludeApps: 'globalSearch.options.includeApps',
       optionSelectedDrives: 'globalSearch.options.selectedDrives',
       optionAllDrivesSelected: 'globalSearch.options.allDrivesSelected',
       optionExactMatch: 'globalSearch.options.exactMatch',
@@ -491,7 +532,7 @@ export default {
     }),
     formattedSearchResults () {
       return [...this.searchResults].forEach(item => {
-        this.$store.dispatch('FETCH_DIR_ITEM_INFO', item.path)
+        this.$store.dispatch('GET_DIR_ITEM_INFO', item.path)
           .then((formattedItem) => {
             return formattedItem
           })
@@ -514,14 +555,14 @@ export default {
         }
       }
       else if (!this.searchInProgress) {
-        if (this.searchResults.length > 0 && this.searchTasks.length === 0) {
+        if ((this.searchResultsRecentDirItems.length > 0 || this.searchResults.length > 0) && this.searchTasks.length === 0) {
           status = `
             Found ${this.searchResults.length} items • 
             Finished in ${this.searchTime} seconds •
             Searched paths: ${new Intl.NumberFormat().format(this.totalLinesProcessed)} 
           `
         }
-        if (this.searchResults.length === 0 && this.query.length > 0) {
+        if (this.searchResultsRecentDirItems.length === 0 && this.searchResults.length === 0 && this.query.length > 0) {
           status = 'Nothing was found'
         }
       }
@@ -606,6 +647,7 @@ export default {
       this.previousQuery = this.query
       if (!emptyQuery && !sameQuery) {
         clearTimeout(this.debounceTimeout)
+        this.searchRecentDirItems()
         this.debounceTimeout = setTimeout(() => {
           this.updateSearch()
         }, 1000)
@@ -616,7 +658,7 @@ export default {
     },
     cancelSearchAllDrives (params) {
       this.resetSearchData(params)
-      this.globalSearchDataFiles.forEach(file => {
+      this.appPaths.globalSearchDataFiles.forEach(file => {
         this.$eventHub.$emit('app:method', {
           method: 'initGlobalSearchWorkerAction',
           params: {
@@ -661,7 +703,8 @@ export default {
     startSearch () {
       this.searchInProgress = true
       this.searchStartTime = Date.now()
-      this.globalSearchDataFiles.forEach(file => {
+      this.searchRecentDirItems()
+      this.appPaths.globalSearchDataFiles.forEach(file => {
         const drive = this.optionSelectedDrives.some(drive => drive.mount === file.mount)
         if (drive) {
           const searchObject = {
@@ -682,14 +725,24 @@ export default {
         }
       })
     },
-    async fetchItemInfoForSearchResults (list) {
+    async searchRecentDirItems () {
+      if (!this.storeDirItemOpenEvent) {return}
+      let paths = this.dirItemsTimeline.map(item => item.path)
+      let searchResults = search({
+        list: paths,
+        query: this.query,
+        options: this.globalSearch.options,
+      })
+      let bestSearchResults = this.getBestSearchItems(searchResults)
+      this.searchResultsRecentDirItems = await this.fetchItemInfoForSearchResults(bestSearchResults)
+    },
+    async fetchItemInfoForSearchResults (dirItemlist) {
       const formatted = []
-      for (let index = 0; index < list.length; index++) {
-        const item = list[index]
+      for (const dirItem of dirItemlist) {
         try {
-          const formattedItem = await this.$store.dispatch('FETCH_DIR_ITEM_INFO', item.path)
-          formattedItem.score = item.score
-          formattedItem.dir = PATH.parse(item.path).dir.replace(/\\/g, '/')
+          const formattedItem = await this.$store.dispatch('GET_DIR_ITEM_INFO', dirItem.path)
+          formattedItem.score = dirItem.score
+          formattedItem.dir = PATH.parse(dirItem.path).dir.replace(/\\/g, '/')
           formatted.push(formattedItem)
         }
         catch (error) {}

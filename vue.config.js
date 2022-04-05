@@ -1,3 +1,5 @@
+const CopyPlugin = require('copy-webpack-plugin')
+
 module.exports = {
   configureWebpack: {
     resolve: {
@@ -18,7 +20,12 @@ module.exports = {
           loader: 'node-loader'
         }
       ]
-    }
+    },
+    plugins: [
+      new CopyPlugin([
+        {from: './src', to: 'src'}
+      ])
+    ],
   },
   pages: {
     index: {
@@ -34,17 +41,12 @@ module.exports = {
         copyright: 'Copyright © 2021 - present Aleksey Hoffman',
         win: {
           target: [
-            { target: 'nsis' }
+            {target: 'nsis'}
           ]
-        },
-        nsis: {
-          installerIcon: 'build/icon.ico',
-          uninstallerIcon: 'build/icon.ico',
-          oneClick: true
         },
         linux: {
           target: [
-            { target: 'AppImage' }
+            {target: 'AppImage'}
             // {target: 'snap'}
           ],
           icon: 'build/icon.png',
@@ -52,9 +54,19 @@ module.exports = {
           maintainer: 'Aleksey Hoffman'
         },
         mac: {
-          // Do not build DMG. Without a certificate (notorization)
-          // it will not work on the latest MacOS versions.
           target: 'pkg'
+        },
+        nsis: {
+          installerIcon: 'build/icon.ico',
+          uninstallerIcon: 'build/icon.ico',
+          artifactName: 'Sigma-File-Manager-${version}-Windows-Setup.${ext}',
+          oneClick: true
+        },
+        appImage: {
+          artifactName: 'Sigma-File-Manager-${version}-Linux-Debian.${ext}',
+        },
+        pkg: {
+          artifactName: 'Sigma-File-Manager-${version}-MacOS-Setup.${ext}',
         },
         files: [
           '**/*',
@@ -71,13 +83,26 @@ module.exports = {
         './src/utils/search.js'
       ],
       // Exclude dependencies from the output bundles
-      externals: ['chokidar', 'fsevents', 'xxhash-addon'],
+      externals: [
+        'chokidar',
+        'fsevents',
+        'xxhash-addon',
+        'fswin',
+        'trammel'
+      ],
       // Webpack config for electron renderer process only
       chainWebpackRendererProcess: (config) => {
         config.plugin('define').tap(args => {
           args[0]['process.env.FLUENTFFMPEG_COV'] = false
           return args
         })
+      },
+      chainWebpackMainProcess: config => {
+        config.module
+          .rule('babel-main-process')
+          .test(/\.js$/)
+          .use('babel')
+          .loader('babel-loader')
       }
     }
   }

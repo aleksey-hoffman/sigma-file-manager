@@ -8,20 +8,26 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     v-show="showActionToolbar"
     id="action-toolbar"
     class="action-toolbar fade-in-500ms"
-    app flat clipped-right height="42px"
+    app
+    flat
+    clipped-right
+    height="42px"
   >
-    <home-banner-menu/>
+    <home-banner-menu />
     <!-- button::new-note -->
     <v-tooltip bottom>
-      <template v-slot:activator="{ on }">
+      <template #activator="{ on }">
         <v-btn
           v-show="['notes'].includes($route.name)"
-          v-on="on"
-          @click="$store.dispatch('OPEN_NOTE_EDITOR', { type: 'new' })"
           class="action-toolbar__item"
           icon
+          v-on="on"
+          @click="$store.dispatch('OPEN_NOTE_EDITOR', { type: 'new' })"
         >
-          <v-icon class="action-toolbar__icon" size="22px">
+          <v-icon
+            class="action-toolbar__icon"
+            size="22px"
+          >
             mdi-plus
           </v-icon>
         </v-btn>
@@ -34,20 +40,25 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       v-show="['notes'].includes($route.name)"
       v-model="currentNotesList"
       class="dir-item-layout-toggle"
-      dense mandatory
+      dense
+      mandatory
     >
       <!-- toggle-button::existing-notes -->
       <v-tooltip bottom>
-        <template v-slot:activator="{ on }">
+        <template #activator="{ on }">
           <v-btn
-            v-on="on"
-            @click="$store.dispatch('SET', {key: 'currentNotesList', value: 'existing'})"
             value="existing"
             class="action-toolbar__item action-toolbar__toggle-button"
             active-class="toggle--active"
-            icon small
+            icon
+            small
+            v-on="on"
+            @click="$store.dispatch('SET', {key: 'currentNotesList', value: 'existing'})"
           >
-            <v-icon class="action-toolbar__icon" size="20px">
+            <v-icon
+              class="action-toolbar__icon"
+              size="20px"
+            >
               mdi-square-edit-outline
             </v-icon>
           </v-btn>
@@ -57,16 +68,20 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
       <!-- toggle-button::trashed-notes -->
       <v-tooltip bottom>
-        <template v-slot:activator="{ on }">
+        <template #activator="{ on }">
           <v-btn
-            v-on="on"
-            @click="$store.dispatch('SET', {key: 'currentNotesList', value: 'trashed'})"
             value="trashed"
             class="action-toolbar__item action-toolbar__toggle-button"
             active-class="toggle--active"
-            icon small
+            icon
+            small
+            v-on="on"
+            @click="$store.dispatch('SET', {key: 'currentNotesList', value: 'trashed'})"
           >
-            <v-icon class="action-toolbar__icon" size="20px">
+            <v-icon
+              class="action-toolbar__icon"
+              size="20px"
+            >
               mdi-trash-can-outline
             </v-icon>
           </v-btn>
@@ -77,16 +92,21 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
     <!-- button::new-dir-item -->
     <v-menu offset-y>
-      <template v-slot:activator="{ on: menu }">
+      <template #activator="{ on: menu }">
         <v-tooltip bottom>
-          <template v-slot:activator="{ on: tooltip }">
+          <template #activator="{ on: tooltip }">
             <v-btn
               v-show="['navigator'].includes($route.name)"
-              v-on="{ ...tooltip, ...menu }"
               class="action-toolbar__item"
               icon
+              v-on="{ ...tooltip, ...menu }"
             >
-              <v-icon class="action-toolbar__icon">mdi-plus</v-icon>
+              <v-icon
+                class="action-toolbar__icon"
+                size="22px"
+              >
+                mdi-plus
+              </v-icon>
             </v-btn>
           </template>
           <span>New directory / file</span>
@@ -96,10 +116,13 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         <v-list-item
           v-for="(item, index) in newDirItemMenu"
           :key="index"
+          two-line
+          dense
           @click="$store.dispatch('INIT_NEW_DIR_ITEM', item)"
-          two-line dense
         >
-          <div class="mr-4"><v-icon>{{item.icon}}</v-icon></div>
+          <div class="mr-4">
+            <v-icon>{{item.icon}}</v-icon>
+          </div>
           <v-list-item-content>
             <v-list-item-title>{{item.title}}</v-list-item-title>
             <v-list-item-subtitle>{{shortcuts[item.shortcut].shortcut}}</v-list-item-subtitle>
@@ -109,67 +132,21 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     </v-menu>
 
     <!-- button::sorting-menu -->
-    <v-menu offset-y min-width="300px" :close-on-content-click="false">
-      <template v-slot:activator="{ on: menu }">
-        <v-tooltip bottom>
-          <template v-slot:activator="{ on: tooltip }">
-            <v-btn
-              v-on="{ ...tooltip, ...menu }"
-              v-show="['navigator'].includes($route.name)"
-              class="action-toolbar__item"
-              icon
-            >
-              <v-icon class="action-toolbar__icon" size="20px">mdi-sort</v-icon>
-            </v-btn>
-          </template>
-          <span>Sorting options</span>
-        </v-tooltip>
+    <sorting-menu
+      v-if="['navigator'].includes($route.name) && navigatorSortingElementDisplayType === 'icon'"
+    >
+      <template #activator="{menuActivatorOnProp}">
+        <v-btn
+          class="action-toolbar__item"
+          icon
+          v-on="menuActivatorOnProp"
+        >
+          <v-icon size="18px">
+            mdi-sort
+          </v-icon>
+        </v-btn>
       </template>
-      <v-card class="unselectable">
-        <v-list dense>
-          <v-list-item class="inactive">
-            <v-list-item-content class="pl-1">
-              <v-list-item-title>
-                Sorting options
-              </v-list-item-title>
-              <v-list-item-subtitle>
-                Changes affect all directories
-              </v-list-item-subtitle>
-            </v-list-item-content>
-          </v-list-item>
-          <v-divider></v-divider>
-          <v-list-item @click="$store.dispatch('TOGGLE_SORTING_ORDER')">
-            <v-icon class="mr-4">
-              {{sortingOrder === 'descending' ? 'mdi-chevron-down' : 'mdi-chevron-up'}}
-            </v-icon>
-            <v-list-item-content>
-              <span>
-                {{sortingOrder === 'descending'
-                  ? 'Descending order'
-                  : 'Ascending order'
-               }}
-              </span>
-            </v-list-item-content>
-          </v-list-item>
-          <v-divider></v-divider>
-          <v-list-item
-            v-for="(sortingType, index) in sortingTypes"
-            @click="$store.dispatch('SET_SORTING_TYPE', sortingType)"
-            :key="index"
-          >
-            <v-icon class="mr-4">
-              {{selectedSortingType.name === sortingType.name
-                ? 'mdi-check-circle-outline'
-                : 'mdi-circle-outline'
-             }}
-            </v-icon>
-            <v-list-item-content>
-              <span>{{sortingType.title}}</span>
-            </v-list-item-content>
-          </v-list-item>
-        </v-list>
-      </v-card>
-    </v-menu>
+    </sorting-menu>
 
     <!-- TODO: finish in v1.1.0
       - Curently dir item range selection doesn't work properly
@@ -203,18 +180,23 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       v-show="['navigator'].includes($route.name)"
       v-model="navigatorLayout"
       class="dir-item-layout-toggle"
-      dense mandatory
+      dense
+      mandatory
     >
       <v-tooltip bottom>
-        <template v-slot:activator="{ on }">
+        <template #activator="{ on }">
           <v-btn
-            v-on="on"
             value="list"
             class="action-toolbar__item action-toolbar__toggle-button"
             active-class="toggle--active"
-            icon small
+            icon
+            small
+            v-on="on"
           >
-            <v-icon class="action-toolbar__icon" size="22px">
+            <v-icon
+              class="action-toolbar__icon"
+              size="20px"
+            >
               mdi-view-list
             </v-icon>
           </v-btn>
@@ -222,15 +204,19 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         <span>List layout</span>
       </v-tooltip>
       <v-tooltip bottom>
-        <template v-slot:activator="{ on }">
+        <template #activator="{ on }">
           <v-btn
-            v-on="on"
             value="grid"
             class="action-toolbar__item action-toolbar__toggle-button"
             active-class="toggle--active"
-            icon small
+            icon
+            small
+            v-on="on"
           >
-            <v-icon class="action-toolbar__icon" size="22px">
+            <v-icon
+              class="action-toolbar__icon"
+              size="20px"
+            >
               mdi-view-module
             </v-icon>
           </v-btn>
@@ -241,16 +227,24 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
     <!-- menu::app-quick-actions -->
     <v-menu offset-y>
-      <template v-slot:activator="{ on: menu, attrs }">
-        <v-tooltip bottom :disabled="attrs['aria-expanded'] === 'true'">
-          <template v-slot:activator="{ on: tooltip }">
+      <template #activator="{ on: menu, attrs }">
+        <v-tooltip
+          bottom
+          :disabled="attrs['aria-expanded'] === 'true'"
+        >
+          <template #activator="{ on: tooltip }">
             <v-btn
               v-show="['settings'].includes($route.name)"
-              v-on="{ ...tooltip, ...menu }"
               class="action-toolbar__item"
               icon
+              v-on="{ ...tooltip, ...menu }"
             >
-              <v-icon class="action-toolbar__icon" size="32px">mdi-menu-down</v-icon>
+              <v-icon
+                class="action-toolbar__icon"
+                size="32px"
+              >
+                mdi-menu-down
+              </v-icon>
             </v-btn>
           </template>
           <span>App quick actions</span>
@@ -262,7 +256,9 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           :key="index"
           @click="item.action"
         >
-          <div class="mr-4"><v-icon>{{item.icon}}</v-icon></div>
+          <div class="mr-4">
+            <v-icon>{{item.icon}}</v-icon>
+          </div>
           <v-list-item-title>{{item.title}}</v-list-item-title>
         </v-list-item>
       </v-list>
@@ -270,16 +266,24 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
     <!-- menu::app-related-links -->
     <v-menu offset-y>
-      <template v-slot:activator="{ on: menu, attrs}">
-        <v-tooltip bottom :disabled="attrs['aria-expanded'] === 'true'">
-          <template v-slot:activator="{ on: tooltip }">
+      <template #activator="{ on: menu, attrs}">
+        <v-tooltip
+          bottom
+          :disabled="attrs['aria-expanded'] === 'true'"
+        >
+          <template #activator="{ on: tooltip }">
             <v-btn
               v-show="['settings'].includes($route.name)"
-              v-on="{ ...tooltip, ...menu }"
               class="action-toolbar__item"
               icon
+              v-on="{ ...tooltip, ...menu }"
             >
-              <v-icon class="action-toolbar__icon" size="20px">mdi-link-variant</v-icon>
+              <v-icon
+                class="action-toolbar__icon"
+                size="20px"
+              >
+                mdi-link-variant
+              </v-icon>
             </v-btn>
           </template>
           <span>App related links</span>
@@ -291,7 +295,9 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           :key="index"
           @click="item.action"
         >
-          <div class="mr-4"><v-icon>{{item.icon}}</v-icon></div>
+          <div class="mr-4">
+            <v-icon>{{item.icon}}</v-icon>
+          </div>
           <v-list-item-title>{{item.title}}</v-list-item-title>
         </v-list-item>
       </v-list>
@@ -299,16 +305,24 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
     <!-- menu::app-directories -->
     <v-menu offset-y>
-      <template v-slot:activator="{ on: menu, attrs }">
-        <v-tooltip bottom :disabled="attrs['aria-expanded'] === 'true'">
-          <template v-slot:activator="{ on: tooltip }">
+      <template #activator="{ on: menu, attrs }">
+        <v-tooltip
+          bottom
+          :disabled="attrs['aria-expanded'] === 'true'"
+        >
+          <template #activator="{ on: tooltip }">
             <v-btn
               v-show="['settings'].includes($route.name)"
-              v-on="{ ...tooltip, ...menu }"
               class="action-toolbar__item"
               icon
+              v-on="{ ...tooltip, ...menu }"
             >
-              <v-icon size="20px" class="action-toolbar__icon">mdi-folder-outline</v-icon>
+              <v-icon
+                class="action-toolbar__icon"
+                size="20px"
+              >
+                mdi-folder-outline
+              </v-icon>
             </v-btn>
           </template>
           <span>App directories</span>
@@ -320,7 +334,9 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           :key="index"
           @click="$store.dispatch('LOAD_DIR', { path: item.link })"
         >
-          <div class="mr-4"><v-icon>{{item.icon}}</v-icon></div>
+          <div class="mr-4">
+            <v-icon>{{item.icon}}</v-icon>
+          </div>
           <v-list-item-title>{{item.title}}</v-list-item-title>
         </v-list-item>
       </v-list>
@@ -329,38 +345,41 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       v-show="['navigator'].includes($route.name)"
       class="action-toolbar__divider mx-2"
       vertical
-    ></v-divider>
-    <v-spacer></v-spacer>
+    />
+    <v-spacer />
     <v-divider
       v-show="['navigator'].includes($route.name)"
       class="action-toolbar__divider mx-2"
       vertical
-    ></v-divider>
+    />
 
     <!-- button:info-panel -->
     <v-tooltip bottom>
-      <template v-slot:activator="{ on }">
+      <template #activator="{ on }">
         <v-btn
           v-show="['navigator'].includes($route.name)"
-          v-on="on"
-          @click="toggleInfoPanel()"
           class="action-toolbar__item"
           icon
+          v-on="on"
+          @click="toggleInfoPanel()"
         >
-          <v-icon class="action-toolbar__icon" size="22px">
-            mdi-information-outline
+          <v-icon
+            class="action-toolbar__icon"
+            size="18px"
+          >
+            mdi-dock-right
           </v-icon>
         </v-btn>
       </template>
       <span>Toggle info panel</span>
     </v-tooltip>
 
+    <filter-field v-show="['settings'].includes($route.name)" />
   </v-app-bar>
 </template>
 
 <script>
-import { mapFields } from 'vuex-map-fields'
-import { mapState } from 'vuex'
+import {mapFields} from 'vuex-map-fields'
 
 export default {
   data () {
@@ -370,21 +389,21 @@ export default {
           title: 'New directory',
           icon: 'mdi-folder-plus-outline',
           type: 'directory',
-          shortcut: 'newDirectory'
+          shortcut: 'newDirectory',
         },
         {
           title: 'New file',
           icon: 'mdi-file-plus-outline',
           type: 'file',
-          shortcut: 'newFile'
-        }
+          shortcut: 'newFile',
+        },
       ],
-      deletedNotesView: 'notes'
+      deletedNotesView: 'notes',
     }
   },
   computed: {
     ...mapFields({
-      appPaths: 'appPaths',
+      appPaths: 'storageData.settings.appPaths',
       shortcuts: 'storageData.settings.shortcuts',
       groupDirItems: 'storageData.settings.groupDirItems',
       currentNotesList: 'currentNotesList',
@@ -393,7 +412,8 @@ export default {
       sortingTypes: 'sorting.types',
       homeBannerValue: 'storageData.settings.homeBanner.value',
       currentDir: 'navigatorView.currentDir',
-      navigatorViewInfoPanel: 'storageData.settings.infoPanels.navigatorView'
+      navigatorViewInfoPanel: 'storageData.settings.infoPanels.navigatorView',
+      navigatorSortingElementDisplayType: 'storageData.settings.navigator.sorting.elementDisplayType',
     }),
     navigatorLayout: {
       get () {
@@ -402,14 +422,14 @@ export default {
       set (value) {
         this.$store.dispatch('SET', {
           key: 'storageData.settings.navigatorLayout',
-          value
+          value,
         })
         // Reload dir to update item 'height' property
         this.$store.dispatch('LOAD_DIR', {
           path: this.currentDir.path,
-          scrollTop: false
+          scrollTop: false,
         })
-      }
+      },
     },
     quickActions () {
       return [
@@ -418,8 +438,8 @@ export default {
           icon: 'mdi-restore-alert',
           action: () => {
             this.$store.dispatch('RESET_APP_SETTINGS')
-          }
-        }
+          },
+        },
       ]
     },
     appExternalLinks () {
@@ -429,28 +449,28 @@ export default {
           icon: 'mdi-github',
           action: () => {
             this.$utils.openLink(
-              `https://github.com/${this.appPaths.githubRepo}`
+              `https://github.com/${this.appPaths.githubRepo}`,
             )
-          }
+          },
         },
         {
           title: 'Request feature',
           icon: 'mdi-github',
           action: () => {
             this.$utils.openLink(
-              this.appPaths.githubIssueTemplateFeatureRequest
+              this.appPaths.githubIssueTemplateFeatureRequest,
             )
-          }
+          },
         },
         {
           title: 'Report problem',
           icon: 'mdi-github',
           action: () => {
             this.$utils.openLink(
-              this.appPaths.githubIssueTemplateProblemReport
+              this.appPaths.githubIssueTemplateProblemReport,
             )
-          }
-        }
+          },
+        },
       ]
     },
     appDirectories () {
@@ -459,28 +479,33 @@ export default {
           title: 'App directory',
           icon: 'mdi-folder-outline',
           link: this.appPaths.storageDirectories.appStorage,
-          linkType: 'local'
+          linkType: 'local',
         },
         {
           title: 'App media directory',
           icon: 'mdi-folder-outline',
           link: this.appPaths.storageDirectories.appStorageMedia,
-          linkType: 'local'
-        }
+          linkType: 'local',
+        },
       ]
     },
     showActionToolbar () {
       return this.$route.name !== 'home' ||
         (this.$route.name === 'home' && this.homeBannerValue === false)
-    }
+    },
   },
   methods: {
     toggleInfoPanel () {
       if (this.$route.name === 'navigator') {
-        this.navigatorViewInfoPanel = !this.navigatorViewInfoPanel
+        let appLayoutElement = document.querySelector('#app')
+        appLayoutElement.setAttribute('preserve-transition', true)
+        setTimeout(() => {
+          appLayoutElement.removeAttribute('preserve-transition')
+        }, 500)
+        this.navigatorViewInfoPanel.value = !this.navigatorViewInfoPanel.value
       }
-    }
-  }
+    },
+  },
 }
 </script>
 
@@ -493,6 +518,18 @@ export default {
   border-bottom: 1px solid var(--divider-color-1); */
   outline: 1px solid var(--divider-color-1)
 }
+
+#action-toolbar
+  .v-toolbar__content {
+    display: flex;
+    align-items: center;
+    gap: var(--toolbar-item-gap);
+    padding:
+      0px
+      var(--window-toolbar-padding-right)
+      0px
+      var(--window-toolbar-padding-left) !important;
+  }
 
 .action-toolbar__icon {
   color: var(--icon-color-2) !important;
@@ -510,13 +547,8 @@ export default {
   border-color: var(--divider-color-2) !important
 }
 
-.action-toolbar__item {
-  margin: 0px 4px !important;
-}
-
 .v-btn-toggle.dir-item-layout-toggle {
-  margin: 0px 8px;
-  background: transparent !important
+  background: transparent !important;
 }
 
 .action-toolbar__toggle-button {
@@ -529,14 +561,30 @@ export default {
   opacity: 1 !important;
 }
 
-/* Increased specificity to override Vuetify styles */
-#app .action-toolbar__toggle-button.toggle--active {
-  box-shadow:
-    0px 2px 32px rgb(0, 0, 0, 0.1),
-    0px 2px 6px rgb(0, 0, 0, 0.2) !important;
-  border-bottom: 1px solid var(--icon-color-1) !important;
-  border-radius: 0;
-}
+#app
+  .action-toolbar__toggle-button.toggle--active
+    .v-btn__content {
+      position: relative;
+    }
+
+#app
+  .action-toolbar__toggle-button.toggle--active
+    .v-btn__content::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 100%;
+      height: 1px;
+      box-shadow: 0 0 6px #0e6f9688;
+      background-color: var(--nav-panel-indicator-color);
+    }
+
+#app
+  .action-toolbar__toggle-button
+    * {
+      border-radius: 0 !important;
+    }
 
 .action-toolbar__toggle-button
   .v-icon {

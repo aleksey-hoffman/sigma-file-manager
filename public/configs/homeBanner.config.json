@@ -31,6 +31,31 @@
       "sourceLink": "https://pixabay.com/videos/starry-sky-seis-am-schlern-14955"
     },
     {
+      "positionY": 10,
+      "fileNameBase": "Out of time by Alena Aenami.jpg",
+      "sourceLink": "https://www.artstation.com/artwork/mD3XvZ",
+      "supportLink": "https://www.patreon.com/aenamiart"
+    },
+    {
+      "positionY": 30,
+      "fileNameBase": "Serenity by Alena Aenami.jpg",
+      "sourceLink": "https://www.artstation.com/artwork/reodm",
+      "supportLink": "https://www.patreon.com/aenamiart"
+    },
+    {
+      "fileNameBase": "Wait by Alena Aenami.jpg",
+      "sourceLink": "https://www.artstation.com/artwork/lVJXXe",
+      "supportLink": "https://www.patreon.com/aenamiart"
+    },
+    {
+      "fileNameBase": "Dragon's Nest by Klaus Pillon.jpg",
+      "sourceLink": "https://www.artstation.com/artwork/KrrA9"
+    },
+    {
+      "fileNameBase": "The City Before The Wall by Klaus Pillon.jpg",
+      "sourceLink": "https://www.artstation.com/artwork/glyNx"
+    },
+    {
       "fileNameBase": "Discovered planet by Darius Kalinauskas.jpg",
       "sourceLink": "https://www.artstation.com/artwork/XkP2l"
     },
@@ -46,6 +71,30 @@
       "positionY": 80,
       "fileNameBase": "Maffei 2 by Vadim Sadovski.jpg",
       "sourceLink": "https://www.artstation.com/artwork/wgGRX"
+    },
+    {
+      "fileNameBase": "Ice Cave by Wang Jie.jpg",
+      "sourceLink": "https://www.artstation.com/artwork/vY18O"
+    },
+    {
+      "positionY": 10,
+      "fileNameBase": "Slum by Vladimir Manyukhin (animated by Aleksey Hoffman).mp4",
+      "sourceLink": "https://www.artstation.com/artwork/B11xvD"
+    },
+    {
+      "positionY": 10,
+      "fileNameBase": "Lip Sync by Han Yang.jpg",
+      "sourceLink": "https://www.artstation.com/artwork/B1rvwA"
+    },
+    {
+      "positionY": 85,
+      "fileNameBase": "Cyber Neon City by Laury Guintrand.jpg",
+      "sourceLink": "https://www.artstation.com/artwork/Yeg6aY"
+    },
+    {
+      "fileNameBase": "INCREASE by Sweeper3d (Austin Richey).jpg",
+      "sourceLink": "https://www.artstation.com/artwork/OorWZk",
+      "supportLink": "https://www.patreon.com/Sweeper3D"
     }
   ]
 }
