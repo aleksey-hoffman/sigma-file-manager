@@ -25,6 +25,6 @@ jobs:
           ) 
         }}
       with:
-        message: Consider supporting the developer on Patreon to increase priority of all your issues, get access to private discord and other rewards.
+        message: Consider supporting the developer to increase priority of all your issues and get other rewards.
           <br>**Patreon page:** https://www.patreon.com/sigma_file_manager
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
