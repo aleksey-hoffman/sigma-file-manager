@@ -19,7 +19,8 @@ jobs:
               "andyundso",
               "theoob",
               "julienripet",
-              "exploitacious"
+              "exploitacious",
+              "HarkTu"
             ]'), 
             github.actor
           ) 
