@@ -5,7 +5,7 @@
 
 "Sigma File Manager" is a free, open-source, quickly evolving, modern file manager (explorer / finder) app for Windows, MacOS, and Linux.
 
-Designed, developed, and maintained by [Aleksey Hoffman](https://github.com/aleksey-hoffman) | [Twitter](https://twitter.com/hoffman_aleksey)
+Designed, developed, and maintained by [Aleksey Hoffman](https://github.com/aleksey-hoffman) | [Twitter](https://twitter.com/hoffman_aleksey) | [Reddit](https://www.reddit.com/user/AlekseyHoffman)
 
 💗 Thanks to everyone who have been sharing this project with others!
 
@@ -142,6 +142,9 @@ Become the first supporter
   ~ <a href="https://github.com/valentimarco" title="Marco Valenti">
     <b>Marco Valenti</b>
   </a>
+  ~ <a href="https://github.com/HarkTu" title="Shtiliyan Karamfilov">
+    <b>Shtiliyan Karamfilov</b>
+  </a>
 </div>
 
 <br>
@@ -154,7 +157,7 @@ Become the first supporter
 
 #### 🎉 Supporter goal: 5 of 500 people joined
 
-Supporters get rewards for supporting this project on Patreon. Check out the list of rewards:
+Check out the list of rewards you will get for supporting this project:
 
 <a target="_blank" href="https://patreon.com/sigma_file_manager">
   <img
