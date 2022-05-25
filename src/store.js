@@ -472,7 +472,11 @@ export default new Vuex.Store({
           lastSearchScan: null
         },
         dateTime: {
-          month: 'short'
+          month: 'short',
+          properties: {
+            showSeconds: false,
+            showMilliseconds: false,
+          }
         },
         lastRecordedAppVersion: null,
         firstTimeActions: {

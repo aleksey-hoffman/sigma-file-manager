@@ -527,7 +527,9 @@ export default {
           month: 'numeric',
           day: 'numeric',
           hour: 'numeric',
-          minute: 'numeric'
+          minute: 'numeric',
+          second: options.properties.showSeconds ? 'numeric' : undefined,
+          fractionalSecondDigits: options.properties.showMilliseconds ? 3 : undefined,
         },
         ...options
       })

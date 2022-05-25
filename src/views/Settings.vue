@@ -802,6 +802,13 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 }"
               >
                 <template #content>
+                  <div class="mt-2">
+                    Date / time preview:
+                    <span class="inline-code--light">
+                      {{localDateTimeExample}}
+                    </span>
+                  </div>
+
                   <div class="text--sub-title-1 mt-2">
                     Month format
                   </div>
@@ -821,12 +828,20 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     />
                   </v-radio-group>
 
-                  <div class="mt-2">
-                    Example:
-                    <span class="inline-code--light">
-                      {{localDateTimeExample}}
-                    </span>
+                  <div class="text--sub-title-1 mt-2">
+                    Displayed date properties
                   </div>
+                  <v-switch
+                    v-model="dateTimePropertiesShowSeconds"
+                    class="mt-0 pt-0"
+                    label="Show seconds"
+                  />
+
+                  <v-switch
+                    v-model="dateTimePropertiesShowMilliseconds"
+                    class="mt-0 pt-0"
+                    label="Show milliseconds"
+                  />
                 </template>
               </section-settings>
 
@@ -2069,6 +2084,16 @@ export default {
         })
       }
     },
+    dateTimePropertiesShowSeconds (value) {
+      if (!value) {
+        this.dateTimePropertiesShowMilliseconds = false
+      }
+    },
+    dateTimePropertiesShowMilliseconds (value) {
+      if (value) {
+        this.dateTimePropertiesShowSeconds = true
+      }
+    },
   },
   beforeCreate () {
     const models = {
@@ -2117,6 +2142,8 @@ export default {
       visualFiltersSaturation: 'storageData.settings.visualFilters.saturation',
       visualFiltersSaturationValue: 'storageData.settings.visualFilters.saturation.value',
       dateTimeMonth: 'storageData.settings.dateTime.month',
+      dateTimePropertiesShowSeconds: 'storageData.settings.dateTime.properties.showSeconds',
+      dateTimePropertiesShowMilliseconds: 'storageData.settings.dateTime.properties.showMilliseconds',
       navPanelDriveLetterOverlayValue: 'storageData.settings.overlays.navPanelDriveLetterOverlay.value',
       pointerButton3onMouseUpEvent: 'storageData.settings.input.pointerButtons.button3.onMouseUpEvent',
       pointerButton3onMouseUpEventItems: 'storageData.settings.input.pointerButtons.button3.onMouseUpEventItems',
