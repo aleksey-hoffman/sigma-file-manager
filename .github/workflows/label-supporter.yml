@@ -16,7 +16,8 @@ jobs:
               fromJson('[
                 "theoob",
                 "julienripet",
-                "valentimarco"
+                "valentimarco",
+                "HarkTu"
               ]'), 
               github.actor
             ) 
