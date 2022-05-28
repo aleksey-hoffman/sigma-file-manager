@@ -3,7 +3,7 @@
   &nbsp;&nbsp;Sigma File Manager
  </h1>
 
-"Sigma File Manager" is a free, open-source, quickly evolving, modern file manager (explorer / finder) app for Windows, MacOS, and Linux.
+"Sigma File Manager" is a free, open-source, quickly evolving, modern file manager (explorer / finder) app for Windows, and Linux.
 
 Designed, developed, and maintained by [Aleksey Hoffman](https://github.com/aleksey-hoffman) | [Twitter](https://twitter.com/hoffman_aleksey) | [Reddit](https://www.reddit.com/user/AlekseyHoffman)
 
@@ -370,7 +370,7 @@ If you like their art, consider supporting their work. You can find their suppor
 
 - **Memory (RAM):** minimum: ~100 MB, average: ~400 MB;
 - **Storage:** minimum: ~370 MB;
-- **OS:** 64-bit: Windows, MacOS, Linux;
+- **OS:** 64-bit: Windows, Linux;
 
 If you're running the app on the integrated GPU, the RAM usage will increase during video playback. Videos playing in the background (e.g. on the home page) are the main reason to high memory usage. You can reduce memory usage by choosing a static image for the "Windows transparency effect" and the home banner.
 
@@ -407,19 +407,12 @@ If you're running the app on the integrated GPU, the RAM usage will increase dur
       </td>
     </tr>
     <tr>
-      <td>Linux and MacOS links will be added soon. If you know how, you can build the app from the source code yourself</td>
+      <td>Linux and links will be added soon. If you know how, you can build the app from the source code yourself</td>
       <td>
         Coming soon
       </td>
     </tr>
-    <!-- <tr>
-      <td>MacOS portable</td>
-      <td>
-        <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/releases/download/v1.4.0/Sigma-File-Manager-1.4.0-Windows-Setup.exe">
-          Download installable app (pkg)
-        </a>
-      </td>
-    </tr>
+    <!-- 
     <tr>
       <td>Linux Debian portable</td>
       <td>
@@ -554,7 +547,7 @@ Relying on donations is no doubt a less profitable model, but I think it's bette
 
 By creating this app, I also wanted to show every beginner that no project is too big for your skills - all you need to do is just start making it, work hard on it every day, learn in the process, and simply don't stop until you create something really good. That's the secret to creating something great.
 
-This app is an example of what dedication can do for you - when I started this project I could barely code, and in just 2 years of work with budget of $0, the dedication allowed me to create an app, which in version 1.0 in some aspects can already compete with apps like MacOS "Finder" and Windows "File Explorer" which has been in development for 24+ years by a trillion dollars worth company's team of many highly paid professional developers and designers each of whom has specialized skills, experience, all the resources, tools, and computing power in the world, including super computers, AI algorithms, neural networks, the ability to employ any specialist in the world, and the enormous amounts of data. And despite not having any of this, you can still make a competitive product, if you just start making it and keep working on it. But as I said earlier, this is only possible in the world where we build upon each other's work, rather than hiding our work and experience from each other behind patents and copyrights.
+This app is an example of what dedication can do for you - when I started this project I could barely code, and in just 2 years of work with budget of $0, the dedication allowed me to create an app, which in version 1.0 in some aspects can already compete with apps like Windows "File Explorer" which has been in development for 24+ years by a trillion dollars worth company's team of many highly paid professional developers and designers each of whom has specialized skills, experience, all the resources, tools, and computing power in the world, including super computers, AI algorithms, neural networks, the ability to employ any specialist in the world, and the enormous amounts of data. And despite not having any of this, you can still make a competitive product, if you just start making it and keep working on it. But as I said earlier, this is only possible in the world where we build upon each other's work, rather than hiding our work and experience from each other behind patents and copyrights.
 
 This is how and why "Sigma file manager" was created. It all started from a simple idea of making a concept design, but thanks to other open-source developers, who also decided to share their work with the world, I was able to turn this idea into a quickly evolving app with great potential. Building something for others also gave me a lot of ideas for more impactful projects, some of which are already in development.
 
