@@ -5,16 +5,22 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <template>
   <div>
-    <virtual-workspace-area-content
-      v-if="navigatorLayout === 'list'"
-      layout="list"
-      :items="formattedDirItems"
-    />
-    <virtual-workspace-area-content
-      v-if="navigatorLayout === 'grid'"
-      layout="grid"
-      :items="formattedDirItemsRows"
-    />
+    <WorkspaceAreaLoader />
+    <div
+      v-show="dirItemsInfoIsPartiallyFetched || dirItemsInfoIsFetched"
+      class="fade-in-200ms"
+    >
+      <virtual-workspace-area-content
+        v-if="navigatorLayout === 'list'"
+        layout="list"
+        :items="formattedDirItems"
+      />
+      <virtual-workspace-area-content
+        v-if="navigatorLayout === 'grid'"
+        layout="grid"
+        :items="formattedDirItemsRows"
+      />
+    </div>
   </div>
 </template>
 
@@ -22,10 +28,14 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 import {mapFields} from 'vuex-map-fields'
 import {mapState} from 'vuex'
 import itemFilter from '../utils/itemFilter'
+import WorkspaceAreaLoader from './WorkspaceArea/components/WorkspaceLoader/index.vue'
 
 const lodash = require('../utils/lodash.min.js')
 
 export default {
+  components: {
+    WorkspaceAreaLoader,
+  },
   data () {
     return {
       status: {
@@ -84,6 +94,7 @@ export default {
       filterQuery: 'filterField.view.navigator.query',
       filterOptions: 'filterField.view.navigator.options',
       currentDir: 'navigatorView.currentDir',
+      dirItemsInfoIsPartiallyFetched: 'navigatorView.dirItemsInfoIsPartiallyFetched',
       dirItemsInfoIsFetched: 'navigatorView.dirItemsInfoIsFetched',
       showDirItemKindDividers: 'storageData.settings.navigator.showDirItemKindDividers',
     }),
@@ -391,36 +402,32 @@ export default {
       this.scroll.lastPosition = this.scroll.newPosition
       return this.scroll.delta
     },
+    getDirItemGroupTitleDescription (itemCount) {
+      const itemWord = this.$localizeUtils.pluralize(itemCount, 'item')
+      return this.dirItemsInfoIsFetched ? `${itemCount} ${itemWord}` : `Loading ${itemWord}`
+    },
     getDirItemGroupTitle (type) {
       if (type === 'directory') {
         const itemCount = this.directoryDirItems.length
-        const itemWord = this.$localizeUtils.pluralize(itemCount, 'item')
-        return `Directories | ${itemCount} ${itemWord}`
+        return `Directories | ${this.getDirItemGroupTitleDescription(itemCount)}`
       }
       else if (type === 'file') {
         const itemCount = this.fileDirItems.length
-        const itemWord = this.$localizeUtils.pluralize(itemCount, 'item')
-        return `Files | ${itemCount} ${itemWord}`
+        return `Files | ${this.getDirItemGroupTitleDescription(itemCount)}`
       }
       else if (type === 'image-files') {
         const itemCount = this.imageFilesDirItems.length
-        const itemWord = this.$localizeUtils.pluralize(itemCount, 'item')
-        return `Images | ${itemCount} ${itemWord}`
+        return `Images | ${this.getDirItemGroupTitleDescription(itemCount)}`
       }
       else if (type === 'video-files') {
         const itemCount = this.videoFilesDirItems.length
-        const itemWord = this.$localizeUtils.pluralize(itemCount, 'item')
-        return `Videos | ${itemCount} ${itemWord}`
+        return `Videos | ${this.getDirItemGroupTitleDescription(itemCount)}`
       }
       else if (type === 'other-files') {
         const itemCount = this.otherFilesDirItems.length
-        const itemWord = this.$localizeUtils.pluralize(itemCount, 'item')
-        return `Other | ${itemCount} ${itemWord}`
+        return `Other | ${this.getDirItemGroupTitleDescription(itemCount)}`
       }
-    }
-  }
+    },
+  },
 }
 </script>
-
-<style>
-</style>

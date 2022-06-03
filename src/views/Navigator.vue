@@ -294,8 +294,7 @@ export default {
 
 .workspace__area {
   display: grid;
-  grid-template-rows: 48px 38px 1fr;
-
+  grid-template-rows: 48px 36px 1fr;
 }
 
 .workspace-area__header {
