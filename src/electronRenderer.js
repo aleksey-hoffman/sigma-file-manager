@@ -18,7 +18,7 @@ import { OverlayScrollbarsPlugin } from 'overlayscrollbars-vue'
 // Import components globally, without lazy loading
 import WindowToolbar from './components/WindowToolbar.vue'
 import ActionToolbar from './components/ActionToolbar.vue'
-import ClipboardToolbar from './components/ClipboardToolbar.vue'
+import ClipboardToolbar from './components/ClipboardToolbar/index.vue'
 import NavigationPanel from './components/NavigationPanel.vue'
 import NoteCard from './components/NoteCard.vue'
 import TextEditor from './components/TextEditor.vue'

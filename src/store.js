@@ -93,6 +93,7 @@ export default new Vuex.Store({
       localDirectoryShareServer: null,
       localFileShareServer: null,
       directorySize: null,
+      getItemsSize: null,
     },
     throttles: {
       windowResizeHandler: null
@@ -326,6 +327,8 @@ export default new Vuex.Store({
         itemsRaw: [],
       },
       clipboard: {
+        isGettingSize: false,
+        clipboardItemSize: 0,
         fs: {
           type: '',
           items: []
@@ -5834,6 +5837,104 @@ export default new Vuex.Store({
         store.state.childProcesses.directorySize.kill()
       }
       catch (error) {}
+    },
+    async GET_ITEMS_SIZE (store, payload) {
+      return new Promise((resolve, reject) => {
+        const taskHashID = utils.getHash()
+        store.dispatch('ADD_TASK', {
+          name: 'process::get-items-size',
+          hashID: taskHashID,
+          props: {
+            items: payload.items,
+            options: payload.options,
+            timeoutObject: null
+          }
+        })
+          .then((task) => {
+            store.dispatch('INIT_GET_ITEMS_SIZE_PROCESS', task)
+              .then((data) => {
+                resolve(data)
+                store.dispatch('REMOVE_TASK', task)
+              })
+          })
+      })
+    },
+    INIT_GET_ITEMS_SIZE_PROCESS (store, task) {
+      return new Promise((resolve, reject) => {
+        try {store.state.childProcesses.getItemsSize.kill()}
+        catch (error) {}
+        // Schedule task cancelling, if needed
+        clearTimeout(task.props.timeoutObject)
+        if (task.props.options.timeout) {
+          task.props.timeoutObject = setTimeout(() => {
+            try {store.state.childProcesses.getItemsSize.kill()}
+            catch (error) {}
+            resolve({size: null})
+          }, task.props.options.timeout)
+        }
+        store.state.childProcesses.getItemsSize = childProcess.fork(
+          utils.getSrc('./src/processes/directorySizeProcess.js'),
+          { silent: true }
+        )
+        store.state.childProcesses.getItemsSize.on('message', data => {
+          clearTimeout(task.props.timeoutObject)
+          // Delay setting data to avoid the unpleasant flash when
+          // placeholder is removed almost immidiatelly after being set
+          // setTimeout(() => {
+            resolve(data)
+          // }, 200)
+        })
+        store.state.childProcesses.getItemsSize.send({items: task.props.items})
+      })
+    },
+    async START_BACKGROUND_DIR_ITEM_SIZE_WORKER (store, payload) {
+      return new Promise((resolve, reject) => {
+        const taskHashID = utils.getHash()
+        store.dispatch('ADD_TASK', {
+          name: 'process::background-dir-item-size-worker',
+          hashID: taskHashID,
+          props: {
+            items: payload.items,
+            options: payload.options || {},
+            timeoutObject: null
+          }
+        })
+          .then((task) => {
+            store.dispatch('INIT_BACKGROUND_DIR_ITEM_SIZE_WORKER_PROCESS', task)
+              .then((data) => {
+                resolve(data)
+                store.dispatch('REMOVE_TASK', task)
+              })
+          })
+      })
+    },
+    INIT_BACKGROUND_DIR_ITEM_SIZE_WORKER_PROCESS (store, task) {
+      return new Promise((resolve, reject) => {
+        try {store.state.childProcesses.backgroundDirSizeWorker.kill()}
+        catch (error) {}
+        // Schedule task cancelling, if needed
+        clearTimeout(task.props.timeoutObject)
+        if (task.props.options.timeout) {
+          task.props.timeoutObject = setTimeout(() => {
+            try {store.state.childProcesses.backgroundDirSizeWorker.kill()}
+            catch (error) {}
+            resolve({size: null})
+          }, task.props.options.timeout)
+        }
+        store.state.childProcesses.backgroundDirSizeWorker = childProcess.fork(
+          utils.getSrc('./src/processes/directorySizeProcess.js'),
+          { silent: true }
+        )
+        store.state.childProcesses.backgroundDirSizeWorker.on('message', data => {
+          clearTimeout(task.props.timeoutObject)
+          // Delay setting data to avoid the unpleasant flash when
+          // placeholder is removed almost immidiatelly after being set
+          setTimeout(() => {
+            resolve(data)
+          }, 200)
+        })
+        store.state.childProcesses.backgroundDirSizeWorker.send({items: task.props.items})
+      })
     },
     async FETCH_DIR_SIZE (store, payload) {
       return new Promise((resolve, reject) => {
