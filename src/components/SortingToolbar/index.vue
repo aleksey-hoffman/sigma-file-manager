@@ -4,39 +4,44 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <template>
-  <div>
+  <div
+    v-if="navigatorSortingElementDisplayType === 'toolbar'"
+    class="sorting-header"
+  >
     <!-- navigator-layout:grid -->
     <div
-      class="sorting-header"
       v-if="navigatorLayout === 'grid'"
+      class="sorting-header__inner"
       :navigator-layout="navigatorLayout"
       :style="{
         'grid-template-columns': '48px minmax(10px, max-content)'
       }"
     >
-      <sorting-menu>
-        <template v-slot:activator="{menuActivatorOnProp}">
-          <div 
-            class="sorting-header__item"  
-            v-on="menuActivatorOnProp" 
+      <SortingMenu>
+        <template #activator="{menuActivatorOnProp}">
+          <div
+            class="sorting-header__item"
             is-sort-icon
+            v-on="menuActivatorOnProp"
           >
-            <v-icon size="18px">mdi-sort</v-icon>
+            <v-icon size="18px">
+              mdi-sort
+            </v-icon>
           </div>
         </template>
-      </sorting-menu>
+      </SortingMenu>
 
       <div
         class="sorting-header__item"
-        @click="selectedSortingHeaderType.onClick(selectedSortingHeaderType)"
         :is-selected="selectedSortingType.name === selectedSortingHeaderType.name"
         :sorting-order="sortingOrder"
+        @click="selectedSortingHeaderType.onClick(selectedSortingHeaderType)"
       >
-        <sorting-column-menu
-        :sortingType="selectedSortingHeaderType"
+        <SortingColumnMenu
+          :sorting-type="selectedSortingHeaderType"
         >
-          <template v-slot:activator="{menuActivatorOnProp}">
-            <div 
+          <template #activator="{menuActivatorOnProp}">
+            <div
               class="sorting-header__item__inner"
               @contextmenu.prevent="menuActivatorOnProp.click"
             >
@@ -45,47 +50,49 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               </div>
             </div>
           </template>
-        </sorting-column-menu>
+        </SortingColumnMenu>
       </div>
     </div>
 
     <!-- navigator-layout:list -->
-    <div 
-      class="sorting-header" 
+    <div
       v-if="navigatorLayout === 'list'"
+      class="sorting-header__inner"
       :navigator-layout="navigatorLayout"
       :style="{
         'grid-template-columns': sortingHeaderGridColumnTemplate.join(' ')
       }"
     >
-      <sorting-menu>
-        <template v-slot:activator="{menuActivatorOnProp}">
-          <div 
-            class="sorting-header__item"  
-            v-on="menuActivatorOnProp" 
+      <SortingMenu>
+        <template #activator="{menuActivatorOnProp}">
+          <div
+            class="sorting-header__item"
             is-sort-icon
+            v-on="menuActivatorOnProp"
           >
-            <v-icon size="18px">mdi-sort</v-icon>
+            <v-icon size="18px">
+              mdi-sort
+            </v-icon>
           </div>
         </template>
-      </sorting-menu>
+      </SortingMenu>
 
       <div
-        class="sorting-header__item"
         v-for="(sortingType, index) in sortingTypes"
         :key="'item-' + index"
-        @click="sortingType.onClick(sortingType)"
+        class="sorting-header__item"
         :is-selected="selectedSortingType.name === sortingType.name"
         :sorting-order="sortingOrder"
         :style="{
           'display': sortingType.isChecked ? 'inline-flex' : 'none'
         }"
-      > 
-        <sorting-column-menu
-          :sortingType="sortingType"
+        @click="sortingType.onClick(sortingType)"
+      >
+        <SortingColumnMenu
+          :sorting-type="sortingType"
         >
-          <template v-slot:activator="{menuActivatorOnProp}">
-            <div 
+          <template #activator="{menuActivatorOnProp}">
+            <div
               class="sorting-header__item__inner"
               @contextmenu.prevent="menuActivatorOnProp.click"
             >
@@ -94,7 +101,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               </div>
             </div>
           </template>
-        </sorting-column-menu>
+        </SortingColumnMenu>
       </div>
     </div>
   </div>
@@ -103,31 +110,64 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <script>
 import {mapGetters} from 'vuex'
 import {mapFields} from 'vuex-map-fields'
+import SortingMenu from './SortingMenu.vue'
+import SortingColumnMenu from './SortingColumnMenu.vue'
 
 export default {
+  components: {
+    SortingMenu,
+    SortingColumnMenu,
+  },
+  mounted () {
+    this.setSortingTypes()
+  },
   computed: {
     ...mapFields({
       sortingOrder: 'sorting.order',
       selectedSortingType: 'sorting.selectedType',
       sortingTypes: 'sorting.types',
       navigatorLayout: 'storageData.settings.navigatorLayout',
+      navigatorSortingElementDisplayType: 'storageData.settings.navigator.sorting.elementDisplayType',
     }),
     ...mapGetters([
-      'sortingHeaderGridColumnTemplate'
+      'sortingHeaderGridColumnTemplate',
     ]),
     selectedSortingHeaderType () {
       return this.sortingTypes.find(item => this.selectedSortingType.name === item.name)
     },
-  }
+  },
+  methods: {
+    setSortingTypes () {
+      let sortingTypesClone = this.sortingTypes.map(displayedType => {
+        displayedType.onClick = (item) => this.handleSortHeaderItemClick(item)
+        displayedType.type = 'sort'
+        return displayedType
+      })
+      this.sortingTypes = sortingTypesClone
+    },
+    handleSortHeaderItemClick (item) {
+      if (this.selectedSortingType.name === item.name) {
+        this.$store.dispatch('TOGGLE_SORTING_ORDER')
+      }
+      else {
+        this.$store.dispatch('SET_SORTING_TYPE', item)
+      }
+    },
+  },
 }
 </script>
 
 <style>
 .sorting-header {
+  height: var(--workspace-area-sorting-header-height);
+  user-select: none;
+}
+
+.sorting-header__inner {
   display: grid;
   border-bottom: 1px solid var(--dir-item-card-border-3);
   align-items: center;
-  height: var(--workspace-area-sorting-header-height);
+  height: 100%;
   padding: 0 24px;
   color: var(--color-7);
   font-size: 12px;
@@ -149,7 +189,7 @@ export default {
   width: 100%;
 }
 
-.sorting-header__item:not(:nth-child(1)):not(:nth-child(2)) 
+.sorting-header__item:not(:nth-child(1)):not(:nth-child(2))
   .sorting-header__item__inner {
     justify-content: center;
   }
@@ -168,8 +208,8 @@ export default {
   display: flex;
   align-items: center;
   width: fit-content;
-  padding: 
-    var(--workspace-area-sorting-header-item-v-padding) 
+  padding:
+    var(--workspace-area-sorting-header-item-v-padding)
     var(--workspace-area-sorting-header-item-h-padding);
   padding-top: 4px;
   white-space: nowrap;
@@ -179,8 +219,8 @@ export default {
 
 .sorting-header__item:nth-child(2)
   .sorting-header__item__title {
-    padding: 
-      var(--workspace-area-sorting-header-item-v-padding) 
+    padding:
+      var(--workspace-area-sorting-header-item-v-padding)
       var(--workspace-area-sorting-header-item-2-h-padding);
     padding-top: 4px;
   }
@@ -205,8 +245,9 @@ export default {
     bottom: 0px;
   }
 
-.sorting-header 
-  .v-icon {
-    color: var(--highlight-color-1) !important;
-  }
+#app
+  .sorting-header
+    .v-icon {
+      color: var(--highlight-color-1);
+    }
 </style>

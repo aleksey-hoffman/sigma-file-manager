@@ -19,7 +19,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     :data-layout="specifiedNavigatorLayout"
     :data-type="type"
     :data-file-type="$utils.getFileType(source.realPath).mimeDescription"
-    :data-item-hover-is-paused="status.itemHover.isPaused"
+    :data-item-hover-is-paused="itemHoverIsPaused"
     :data-hover-effect="dirItemHoverEffect"
     :in-fs-clipboard="dirItemIsInFsClipboard"
     :fs-clipboard-type="fsClipboard.type"
@@ -339,17 +339,17 @@ export default {
       type: String,
       default: '',
     },
-    status: {
-      type: Object,
-      default: () => ({}),
+    itemHoverIsPaused: {
+      type: Boolean,
+      default: false,
     },
-    thumbLoadingIsPaused: Boolean,
-    forceThumbLoad: Boolean,
-    showScore: Boolean,
-    showDir: Boolean,
-    thumbLoadSchedule: {
-      type: Array,
-      default: () => ([]),
+    showScore: {
+      type: Boolean,
+      default: false,
+    },
+    showDir: {
+      type: Boolean,
+      default: false,
     },
   },
   data () {
@@ -374,7 +374,7 @@ export default {
   },
   beforeDestroy () {
     try {
-      this.$emit('removeFromThumbLoadSchedule', {item: this.source})
+      this.$emit('removeFromThumbLoadingSchedule', {item: this.source})
     }
     catch (error) {}
   },
@@ -628,7 +628,7 @@ export default {
     },
     async generateImageThumb (dirItemThumbContainer, thumbPath, dirItemRealPath, dirItemNode) {
       return new Promise((resolve, reject) => {
-        this.$emit('addToThumbLoadSchedule', {
+        this.$emit('addToThumbLoadingSchedule', {
           item: this.source,
           thumbPath,
           onEnd: () => {

@@ -36,11 +36,7 @@ import SortableList from './components/SortableList.vue'
 import DirItem from './components/DirItem.vue'
 import DirItemRow from './components/DirItemRow.vue'
 import ContextMenus from './components/ContextMenus.vue'
-import WorkspaceAreaContent from './components/WorkspaceAreaContent.vue'
-import VirtualWorkspaceAreaContent from './components/VirtualWorkspaceAreaContent.vue'
 import AddressBar from './components/AddressBar.vue'
-import InfoPanel from './components/InfoPanel.vue'
-import GlobalSearch from './components/GlobalSearch.vue'
 import FilterField from './components/FilterField.vue'
 import MediaIterator from './components/MediaIterator.vue'
 import ItemCard from './components/ItemCard.vue'
@@ -56,9 +52,6 @@ import ShortcutList from './components/ShortcutList.vue'
 import NavigatorTab from './components/NavigatorTab.vue'
 import NavigatorTabBar from './components/NavigatorTabBar.vue'
 import DragSortableList from './components/DragSortableList.vue'
-import SortingHeader from './components/SortingHeader.vue'
-import SortingMenu from './components/SortingMenu.vue'
-import SortingColumnMenu from './components/SortingColumnMenu.vue'
 
 // Register components
 Vue.component('window-toolbar', WindowToolbar)
@@ -81,11 +74,7 @@ Vue.component('sortable-list', SortableList)
 Vue.component('dir-item', DirItem)
 Vue.component('dir-item-row', DirItemRow)
 Vue.component('context-menus', ContextMenus)
-Vue.component('workspace-area-content', WorkspaceAreaContent)
-Vue.component('virtual-workspace-area-content', VirtualWorkspaceAreaContent)
 Vue.component('address-bar', AddressBar)
-Vue.component('info-panel', InfoPanel)
-Vue.component('global-search', GlobalSearch)
 Vue.component('filter-field', FilterField)
 Vue.component('media-iterator', MediaIterator)
 Vue.component('device-section', DeviceSection)
@@ -101,9 +90,6 @@ Vue.component('shortcut-list', ShortcutList)
 Vue.component('navigator-tab', NavigatorTab)
 Vue.component('navigator-tab-bar', NavigatorTabBar)
 Vue.component('drag-sortable-list', DragSortableList)
-Vue.component('sorting-header', SortingHeader)
-Vue.component('sorting-menu', SortingMenu)
-Vue.component('sorting-column-menu', SortingColumnMenu)
 
 const localize = require('./utils/localize')
 require('overlayscrollbars/css/OverlayScrollbars.css')

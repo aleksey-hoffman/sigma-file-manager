@@ -4,7 +4,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <template>
-  <div class="dir-item-row-grid" :type="row.items ? row.items[0].type : row.type">
+  <div
+    class="dir-item-row-grid"
+    :type="row.items ? row.items[0].type : row.type"
+  >
     <!-- row::top-spacer-->
     <template v-if="row.type === 'top-spacer'">
       <div
@@ -14,7 +17,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           unselectable
         "
         :style="{height: `${row.height}px`}"
-      ></div>
+      />
     </template>
 
     <!-- row::divider -->
@@ -22,7 +25,8 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       <div
         :key="`dir-item-${row.path}`"
         class="dir-item-node dir-item--divider unselectable text--sub-title-1"
-      >{{row.title}}
+      >
+        {{row.title}}
       </div>
     </template>
 
@@ -31,19 +35,16 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       <dir-item
         v-for="(item, index) in row.items"
         :key="`dir-item-${item.path}`"
+        :ref="'dirItem' + item.positionIndex"
         :source="item"
         :index="index"
         :height="item.height"
         :type="item.type"
-        :forceThumbLoad="forceThumbLoad"
-        :status="status"
-        :thumbLoadSchedule="thumbLoadSchedule"
-        :thumbLoadingIsPaused="thumbLoadingIsPaused"
-        @addToThumbLoadSchedule="$emit('addToThumbLoadSchedule', $event)"
-        @removeFromThumbLoadSchedule="$emit('removeFromThumbLoadSchedule', $event)"
-        :ref="'dirItem' + item.positionIndex"
+        :item-hover-is-paused="itemHoverIsPaused"
         :row-type="row.type"
-      ></dir-item>
+        @addToThumbLoadingSchedule="$emit('addToThumbLoadingSchedule', $event)"
+        @removeFromThumbLoadingSchedule="$emit('removeFromThumbLoadingSchedule', $event)"
+      />
     </template>
 
     <!-- row::bottom-spacer -->
@@ -55,7 +56,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           unselectable
         "
         :style="{height: `${row.height}px`}"
-      ></div>
+      />
     </template>
   </div>
 </template>
@@ -66,30 +67,32 @@ import {mapGetters, mapState} from 'vuex'
 export default {
   name: 'dir-item-row',
   props: {
-    rowIndex: Number,
-    row: Object,
-    type: String,
-    forceThumbLoad: Boolean,
-    status: Object,
-    thumbLoadSchedule: Array,
-    thumbLoadingIsPaused: Boolean
-  },
-  data () {
-    return {
-      dirItemAwaitsSecondClick: false,
-      dirItemAwaitsSecondClickTimeout: null,
-      dirItemSecondClickDelay: 500
-    }
+    rowIndex: {
+      type: Number,
+      default: 0,
+    },
+    row: {
+      type: Object,
+      default: () => ({}),
+    },
+    type: {
+      type: String,
+      default: '',
+    },
+    itemHoverIsPaused: {
+      type: Boolean,
+      default: false,
+    },
   },
   computed: {
     ...mapState({
-      navigatorLayout: state => state.storageData.settings.navigatorLayout
+      navigatorLayout: state => state.storageData.settings.navigatorLayout,
     }),
     ...mapGetters([
       'selectedDirItems',
-      'selectedDirItemsPaths'
-    ])
-  }
+      'selectedDirItemsPaths',
+    ]),
+  },
 }
 </script>
 

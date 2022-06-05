@@ -10,108 +10,121 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       class="content-area custom-scrollbar"
       style="overflow-x: hidden"
     >
-      <div v-if="currentNotesList === 'trashed'">
-        <v-layout align-start>
-          <div class="text--title-1">
-            Trashed notes
-          </div>
-        </v-layout>
-
-        <div v-show="!trashedNotesListIsEmpty">
-          Trashed notes are automatically deleted from the drive 7 days after being trashed
+      <v-layout
+        class="mb-4"
+        align-center
+        justify-space-between
+      >
+        <div class="text--title-1">
+          {{currentNotesList === 'trashed'
+            ? 'Trashed notes'
+            : 'Notes'}}
         </div>
+        <filter-field />
+      </v-layout>
 
-        <v-btn
-          v-show="!trashedNotesListIsEmpty"
-          @click="$store.dispatch('DELETE_ALL_NOTES_IN_TRASH')"
-          small
-          class="my-2 button-1"
-        >
-          <v-icon size="18px" class="mr-2">
-            mdi-trash-can-outline
-          </v-icon>
-          Delete all trashed
-        </v-btn>
-
-        <div class="note-group__container">
-          <div v-show="trashedNotesListIsEmpty" class="content__description">
-            No trashed notes
-          </div>
-          <div class="note-card__container">
-            <note-card
-              v-for="note in filteredDeletedNotes"
-              :key="note.hashID"
-              :note="note"
-            ></note-card>
-          </div>
-        </div>
+      <div v-if="!renderContent">
+        Loading notes
+        <v-progress-circular
+          indeterminate
+          color="blue-grey"
+        />
       </div>
 
-      <div v-if="currentNotesList === 'existing'">
-        <v-layout
-          align-center justify-space-between
-          class="mb-4"
-        >
-          <div class="text--title-1">
-            Notes
+      <div
+        v-if="renderContent"
+        class="fade-in-1s"
+      >
+        <div v-if="currentNotesList === 'trashed'">
+          <div v-show="!trashedNotesListIsEmpty">
+            Trashed notes are automatically deleted from the drive 7 days after being trashed
           </div>
-          <filter-field/>
-        </v-layout>
 
-        <div v-if="notesListIsEmpty" class="content__description">
-          No notes
-        </div>
-
-        <div v-if="filterQuery.length > 0" class="content__description">
           <v-btn
-            @click="filterQuery = ''"
+            v-show="!trashedNotesListIsEmpty"
             small
             class="my-2 button-1"
+            @click="$store.dispatch('DELETE_ALL_NOTES_IN_TRASH')"
           >
-            <v-icon size="18px" class="mr-2">
-              mdi-close
+            <v-icon
+              size="18px"
+              class="mr-2"
+            >
+              mdi-trash-can-outline
             </v-icon>
-            Clear filter
+            Delete all trashed
           </v-btn>
-        </div>
 
-        <div class="note-group__container">
-          <div v-show="ungroupedNotes.length > 0" class="text--sub-title-1">
-            Ungrouped notes
-          </div>
-          <div class="note-card__container">
-            <note-card
-              v-for="note in ungroupedNotes"
-              :key="note.hashID"
-              :note="note"
-            ></note-card>
-          </div>
-
-          <div
-            v-show="showNoteGroup(group)"
-            v-for="group in noteGroups"
-            :key="group.value"
-          >
-            <div class="text--sub-title-1">
-              {{`GROUP | ${group.name}`}}
+          <div class="note-group__container">
+            <div
+              v-show="trashedNotesListIsEmpty"
+              class="content__description"
+            >
+              No trashed notes
             </div>
-
-            <v-divider class="divider-color-2"></v-divider>
-
             <div class="note-card__container">
               <note-card
-                v-show="note.group === group.value"
-                v-for="note in filteredExistingNotes"
+                v-for="note in filteredDeletedNotes"
                 :key="note.hashID"
                 :note="note"
-              >
-              </note-card>
+              />
+            </div>
+          </div>
+        </div>
+
+        <div v-if="currentNotesList === 'existing'">
+          <div
+            v-if="notesListIsEmpty"
+            class="content__description"
+          >
+            No notes
+          </div>
+
+          <FilterClearButton
+            v-if="filterQuery.length > 0"
+            :filter-query="filterQuery"
+            class="mb-4"
+            @click="filterQuery = ''"
+          />
+
+          <div class="note-group__container">
+            <div
+              v-show="ungroupedNotes.length > 0"
+              class="text--sub-title-1"
+            >
+              Ungrouped notes
+            </div>
+            <div class="note-card__container">
+              <note-card
+                v-for="note in ungroupedNotes"
+                :key="note.hashID"
+                :note="note"
+              />
             </div>
 
+            <div
+              v-for="group in noteGroups"
+              v-show="showNoteGroup(group)"
+              :key="group.value"
+            >
+              <div class="text--sub-title-1">
+                {{`GROUP | ${group.name}`}}
+              </div>
+
+              <v-divider class="divider-color-2" />
+
+              <div class="note-card__container">
+                <note-card
+                  v-for="note in filteredExistingNotes"
+                  v-show="note.group === group.value"
+                  :key="note.hashID"
+                  :note="note"
+                />
+              </div>
+            </div>
           </div>
         </div>
       </div>
-
     </div>
   </div>
 </template>
@@ -119,24 +132,36 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <script>
 import {mapFields} from 'vuex-map-fields'
 import itemFilter from '../utils/itemFilter'
+import FilterClearButton from '@/components/FilterClearButton/index.vue'
 
 export default {
   name: 'notes',
+  components: {
+    FilterClearButton,
+  },
   beforeRouteLeave (to, from, next) {
     this.$store.dispatch('SAVE_ROUTE_SCROLL_POSITION', {
       toRoute: to,
-      fromRoute: from
+      fromRoute: from,
     })
     next()
   },
+  data () {
+    return {
+      renderContent: false,
+    }
+  },
   activated () {
     this.$store.dispatch('ROUTE_ACTIVATED_HOOK_CALLBACK', {
-      route: 'notes'
+      route: 'notes',
     })
   },
   mounted () {
+    setTimeout(() => {
+      this.renderContent = true
+    }, 100)
     this.$store.dispatch('ROUTE_MOUNTED_HOOK_CALLBACK', {
-      route: 'notes'
+      route: 'notes',
     })
   },
   computed: {
@@ -144,7 +169,7 @@ export default {
       notes: 'storageData.notes.items',
       noteGroups: 'storageData.notes.groups',
       filterQuery: 'filterField.view.notes.query',
-      currentNotesList: 'currentNotesList'
+      currentNotesList: 'currentNotesList',
     }),
     notesListIsEmpty () {
       return [...this.notes.filter(note => !note.isTrashed)].length === 0
@@ -167,7 +192,7 @@ export default {
     },
     filteredDeletedNotes () {
       return this.filteredNotes.filter(note => note.isTrashed)
-    }
+    },
   },
   methods: {
     getItemsMatchingFilter (items) {
@@ -175,7 +200,7 @@ export default {
         filterQuery: this.filterQuery,
         items,
         filterProperties: this.$store.state.filterField.view[this.$route.name].filterProperties,
-        filterQueryOptions: this.$store.state.filterField.view[this.$route.name].options
+        filterQueryOptions: this.$store.state.filterField.view[this.$route.name].options,
       })
     },
     showNoteGroup (group) {
@@ -186,7 +211,7 @@ export default {
       this.notes = this.applyDrag(this.notes, dropResult)
     },
     applyDrag (arr, dragResult) {
-      const { removedIndex, addedIndex, payload } = dragResult
+      const {removedIndex, addedIndex, payload} = dragResult
       if (removedIndex === null && addedIndex === null) return arr
 
       const result = [...arr]
@@ -201,7 +226,7 @@ export default {
       }
 
       return result
-    }
-  }
+    },
+  },
 }
 </script>

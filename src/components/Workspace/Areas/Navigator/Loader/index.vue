@@ -4,9 +4,9 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <template>
-  <div class="workspace-area__loader">
+  <div class="workspace__area-loader">
     <div v-if="!dirItemsInfoIsFetched">
-      <div class="workspace-area__loader-line fade-in-1s">
+      <div class="workspace__area-loader-line fade-in-1s">
         <v-progress-linear
           indeterminate
           color="var(--key-color-1)"
@@ -30,11 +30,11 @@ export default {
 </script>
 
 <style>
-.workspace-area__loader {
+.workspace__area-loader {
   position: relative;
 }
 
-.workspace-area__loader-line {
+.workspace__area-loader-line {
   position: absolute;
   top: 0;
   left: 0;

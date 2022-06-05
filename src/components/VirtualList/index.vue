@@ -4,41 +4,36 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <template>
-  <div>
-    <!-- debug-info -->
-    <!-- scrollTop: {{scrollTop.toFixed(2)}} |
-    total height: {{totalHeight}} |
-    root height: {{rootHeight}} |
-    amountScrolledItems {{amountScrolledItems}} |
-    paused: {{thumbLoadingIsPaused}} |
-    offsetY: {{offsetY}} |
-    thumbLoadSchedule.length: {{thumbLoadSchedule.length}} |
-    renderedItemsizes: {{renderedItemsizes}}
-    allItemSizes: {{allItemSizes}} -->
-
+  <div
+    ref="rootContainer"
+    class="
+      virtual-list__root-container
+      main-content-container
+      custom-scrollbar
+      drag-drop-container
+      unselectable
+      fade-mask--bottom
+    "
+    :style="{
+      '--fade-mask-bottom': `${bottomFadeMaskHeightCurrentValue}%`,
+    }"
+    :sorting-display-type="navigatorSortingElementDisplayType"
+  >
     <div
-      v-if="layout === 'list'"
-      id="workspace-area__content"
-      class="
-        root
-        workspace-area__content
-        main-content-container
-        custom-scrollbar
-        drag-drop-container
-        unselectable
-        fade-mask--bottom
-      "
-      :style="{
-        '--fade-mask-bottom': `${bottomFadeMaskHeightCurrentValue}%`,
-      }"
-      ref="root"
+      ref="viewportContainer"
+      class="virtual-list__viewport-container"
+      :style="viewportContainerStyle"
     >
-      <div  class="viewport-container" ref="viewportContainer" :style="viewportContainerStyle">
-        <div class="viewport" ref="viewport" :style="viewportStyle">
+      <div
+        ref="viewport"
+        class="virtual-list__viewport"
+        :style="viewportStyle"
+      >
+        <template v-if="layout === 'list'">
           <div
-            class="dir-item mx-6"
             v-for="(item, index) in renderedItems"
             :key="item.name"
+            class="dir-item mx-6"
             :style="{ height: item.height }"
           >
             <!-- item:top-spacer -->
@@ -50,34 +45,32 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   unselectable
                 "
                 :style="{ height: `${item.height}px` }"
-              ></div>
+              />
             </template>
 
             <!-- item:divider -->
             <div
-              class="dir-item-node dir-item--divider unselectable text--sub-title-1"
               v-if="['directory-divider', 'file-divider'].includes(item.type)"
               :key="`dir-item-${item.path}`"
+              class="dir-item-node dir-item--divider unselectable text--sub-title-1"
               :height="item.height"
-            >{{item.title}}
+            >
+              {{item.title}}
             </div>
 
             <!-- item:['directory', 'directory-symlink', 'file', 'file-symlink'] -->
             <dir-item
               v-if="['directory', 'directory-symlink', 'file', 'file-symlink'].includes(item.type)"
               :key="`dir-item-${item.path}`"
+              :ref="'dirItem' + item.positionIndex"
               :source="item"
               :index="index"
               :height="item.height"
               :type="item.type"
-              :thumbLoadingIsPaused="thumbLoadingIsPaused"
-              :forceThumbLoad="forceThumbLoad"
-              :status="status"
-              :thumbLoadSchedule="thumbLoadSchedule"
-              @addToThumbLoadSchedule="addToThumbLoadSchedule"
-              @removeFromThumbLoadSchedule="removeFromThumbLoadSchedule"
-              :ref="'dirItem' + item.positionIndex"
-            ></dir-item>
+              :item-hover-is-paused="status.itemHover.isPaused"
+              @addToThumbLoadingSchedule="addToThumbLoadingSchedule"
+              @removeFromThumbLoadingSchedule="removeFromThumbLoadingSchedule"
+            />
 
             <!-- item:bottom-spacer -->
             <template v-if="item.type === 'bottom-spacer'">
@@ -88,54 +81,29 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   unselectable
                 "
                 :style="{ height: `${item.height}px` }"
-              ></div>
+              />
             </template>
           </div>
-        </div>
-      </div>
-    </div>
+        </template>
 
-    <div
-      v-if="layout === 'grid'"
-      id="workspace-area__content"
-      class="
-        root
-        custom-scrollbar
-        main-content-container
-        drag-drop-container
-        unselectable
-        fade-mask--bottom
-      "
-      :style="{
-        '--fade-mask-bottom': `${bottomFadeMaskHeightCurrentValue}%`,
-      }"
-      ref="root"
-    >
-      <div  class="viewport-container" ref="viewportContainer" :style="viewportContainerStyle" style="padding: 0px 24px">
-        <div class="viewport" ref="viewport" :style="viewportStyle">
+        <template v-else>
           <div class="dir-item-row-grid">
-            <!-- item:row -->
-            <template >
-              <dir-item-row
-                class="dir-item"
-                v-for="row in renderedItems"
-                :key="`dir-item-row-${row.positionIndex}`"
-                :ref="'dirItemRow' + row.positionIndex"
-                :row="row"
-                :type="row.type"
-                :thumbLoadingIsPaused="thumbLoadingIsPaused"
-                :forceThumbLoad="forceThumbLoad"
-                :status="status"
-                :thumbLoadSchedule="thumbLoadSchedule"
-                @addToThumbLoadSchedule="addToThumbLoadSchedule"
-                @removeFromThumbLoadSchedule="removeFromThumbLoadSchedule"
-                :style="{
-                  'margin-bottom': `${row.marginBottom}px`
-                }"
-              ></dir-item-row>
-            </template>
+            <dir-item-row
+              v-for="row in renderedItems"
+              :key="`dir-item-row-${row.positionIndex}`"
+              :ref="'dirItemRow' + row.positionIndex"
+              class="dir-item"
+              :row="row"
+              :type="row.type"
+              :item-hover-is-paused="status.itemHover.isPaused"
+              :style="{
+                'margin-bottom': `${row.marginBottom}px`
+              }"
+              @addToThumbLoadingSchedule="addToThumbLoadingSchedule"
+              @removeFromThumbLoadingSchedule="removeFromThumbLoadingSchedule"
+            />
           </div>
-        </div>
+        </template>
       </div>
     </div>
   </div>
@@ -144,35 +112,63 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <script>
 import {mapGetters} from 'vuex'
 import {mapFields} from 'vuex-map-fields'
-import TimeUtils from '../utils/timeUtils.js'
-import ThumbWorker from 'worker-loader!../workers/thumbWorker.js'
+import TimeUtils from '@/utils/timeUtils.js'
+import ThumbWorker from 'worker-loader!@/workers/thumbWorker.js'
 
 export default {
   props: {
-    items: Array,
-    layout: String
+    items: {
+      type: Array,
+      default: () => ([]),
+    },
+    layout: {
+      type: String,
+      default: '',
+    },
+    getScrollStatus: {
+      type: Boolean,
+      default: false,
+    },
+    calculateScrollSpeed: {
+      type: Boolean,
+      default: false,
+    },
   },
   data () {
     return {
       status: {
         itemHover: {
-          isPaused: false
-        }
+          isPaused: false,
+        },
+        thumbLoading: {
+          isPaused: false,
+          isForced: false,
+          isLocked: false,
+          schedule: [],
+        },
+        scroll: {
+          stopTimeout: null,
+          currentPosition: 0,
+          previousPosition: 0,
+          delta: 0,
+          direction: '',
+          speed: 0,
+          speedHistorySize: 10,
+          speedHistory: [],
+          bottomReached: false,
+        },
       },
-      // workspaceArea: {
       mutationObserver: null,
       initialized: false,
       nodes: [],
       dirItemNodes: [],
-      scrollTop: 0,
-      bottomReached: false,
       bottomFadeMaskHeightCurrentValue: 10,
-      bottomFadeMaskHeight: 10, 
+      bottomFadeMaskHeight: 10,
       totalHeight: 0,
       initialItems: 0,
       bufferItems: 2,
       rowHeight: 48,
-      rootHeight: 600,
+      rootContainerHeight: 600,
       previousRenderedItems: [],
       renderedItemsizes: [],
       allItemSizes: [],
@@ -183,27 +179,20 @@ export default {
       topSpacerSize: 0,
       bottomSpacerSize: 0,
       throttle: null,
-      scrollStopTimeout: null,
-      thumbLoadingIsPaused: false,
-      forceThumbLoad: false,
-      thumbLoadSchedule: [],
-      thumbLoadIsLocked: false,
       thumbWorker: null,
-      // isScrolling: false,
-      // isScrollingTimeout: null,
-      // },
       setValuesTimeouts: {
-        currentDirPath: null
-      }
+        currentDirPath: null,
+      },
     }
   },
   mounted () {
+    this.setItemsSizeProperties()
     this.thumbWorker = new ThumbWorker()
     this.throttle = new TimeUtils()
-    this.$refs.root.addEventListener(
+    this.$refs.rootContainer.addEventListener(
       'scroll',
       this.scrollHandler,
-      { passive: true }
+      {passive: true},
     )
     // this.initMutationObserver()
     setTimeout(() => {
@@ -211,32 +200,28 @@ export default {
       this.previousRenderedItems = this.renderedItems
     }, 100)
   },
-  updated () {
-    // NOTE:
-    // Do not call this.setValues() here because
-    // it will cause infinite update cycle
-  },
   beforeDestroy () {
     // Remove timeouts to avoid memory leaks and errors from setValues()
     clearTimeout(this.setValuesTimeouts.currentDirPath)
-    this.$refs.root.removeEventListener(
+    this.$refs.rootContainer.removeEventListener(
       'scroll',
       this.scrollHandler,
-      { passive: true }
+      {passive: true},
     )
   },
   watch: {
-    items (value) {
+    items () {
+      this.setItemsSizeProperties()
       this.setValues()
     },
-    bottomReached (value) {
+    'status.scroll.bottomReached' (value) {
       if (value) {
         this.animateRange({
           start: this.bottomFadeMaskHeight,
           end: 0,
           steps: 25,
           stepDuration: 1,
-          target: 'bottomFadeMaskHeightCurrentValue'
+          target: 'bottomFadeMaskHeightCurrentValue',
         })
       }
       else {
@@ -245,7 +230,7 @@ export default {
           end: this.bottomFadeMaskHeight,
           steps: 25,
           stepDuration: 1,
-          target: 'bottomFadeMaskHeightCurrentValue'
+          target: 'bottomFadeMaskHeightCurrentValue',
         })
       }
     },
@@ -261,44 +246,45 @@ export default {
           this.setValues()
         }, 100)
       },
-      deep: true
+      deep: true,
     },
     windowSize () {
       this.setValues()
-    }
+    },
   },
   computed: {
     ...mapFields({
       dirItems: 'navigatorView.dirItems',
       appPaths: 'storageData.settings.appPaths',
       windowSize: 'windowSize',
-      currentDir: 'navigatorView.currentDir'
+      currentDir: 'navigatorView.currentDir',
+      navigatorSortingElementDisplayType: 'storageData.settings.navigator.sorting.elementDisplayType',
     }),
     ...mapGetters([
-      'clipboardToolbarIsVisible'
+      'clipboardToolbarIsVisible',
     ]),
     renderedItems () {
       return this.items.slice(
         this.amountScrolledItems,
-        this.amountScrolledItems + this.amountRenderedItems
+        this.amountScrolledItems + this.amountRenderedItems,
       )
     },
     amountRenderedItems () {
       let itemHeightSum = 0
-      let amountItemsFillRootHeight = 0
+      let amountItemsFillRootContainerHeight = 0
       this.allItemSizes.forEach(itemHeight => {
-        if (itemHeightSum < this.rootHeight) {
+        if (itemHeightSum < this.rootContainerHeight) {
           itemHeightSum += itemHeight
-          amountItemsFillRootHeight += 1
+          amountItemsFillRootContainerHeight += 1
         }
       })
-      return amountItemsFillRootHeight + this.bufferItems
+      return amountItemsFillRootContainerHeight + this.bufferItems
     },
     amountScrolledItems () {
       let sum = 0
       let counter = 0
       this.allItemSizes.forEach(item => {
-        if (sum <= this.scrollTop) {
+        if (sum <= this.status.scroll.currentPosition) {
           sum += item
           counter += 1
         }
@@ -310,11 +296,11 @@ export default {
       return this.allItemSizes
         .slice(
           0,
-          this.amountScrolledItems
+          this.amountScrolledItems,
         )
         .reduce((a, b) => a + b, 0)
 
-      // return this.scrollTop
+      // return this.status.scroll.currentPosition
     },
     viewportContainerStyle () {
       let height = this.totalHeight
@@ -322,16 +308,21 @@ export default {
         height += 36
       }
       return {
-        height: `${height}px`
+        height: `${height}px`,
+        padding: this.layout === 'grid' ? '0px 24px' : '0',
       }
     },
     viewportStyle () {
       return {
-        transform: `translateY(${this.offsetY}px)`
+        transform: `translateY(${this.offsetY}px)`,
       }
-    }
+    },
   },
   methods: {
+    setItemsSizeProperties () {
+      this.allItemSizes = this.items.map(item => item.height)
+      this.totalHeight = this.items.reduce((a, b) => a + (b.height || 0), 0)
+    },
     addToLoadedList (path) {
       this.loadedDirItems.push(path)
     },
@@ -346,15 +337,15 @@ export default {
         steps: 10,
         stepDuration: 500,
         timingFunction: 'linear',
-        target: null
+        target: null,
       }
-      props = { ...defaultProps, ...props }
-      const { start, end, steps, stepDuration, timingFunction, target } = props
+      props = {...defaultProps, ...props}
+      const {start, end, steps, stepDuration, timingFunction, target} = props
       const interpolatedList = this.interpolateChange({
         start,
         end,
         steps,
-        stepDuration
+        stepDuration,
       })
       let step = 0
       const interval = setInterval(() => {
@@ -373,19 +364,19 @@ export default {
         end: 10,
         steps: 10,
         stepDuration: 500,
-        timingFunction: 'linear'
+        timingFunction: 'linear',
       }
-      props = { ...defaultProps, ...props }
-      const { start, end, steps, stepDuration, timingFunction } = props
+      props = {...defaultProps, ...props}
+      const {start, end, steps, stepDuration, timingFunction} = props
       const parts = this.splitIntoEqualParts({
         start,
         end,
-        steps
+        steps,
       })
       return parts
     },
     splitIntoEqualParts (props) {
-      let { start, end, steps } = props
+      let {start, end, steps} = props
       const result = []
       if (start === end) {
         return [start]
@@ -411,11 +402,11 @@ export default {
     },
     async handleThumbLoad (payload) {
       return new Promise((resolve, reject) => {
-        this.thumbLoadIsLocked = true
+        this.status.thumbLoading.isLocked = true
         this.generateImageThumb(payload.item.path, payload.item.realPath, payload.thumbPath)
           .then((event) => {
-            this.thumbLoadIsLocked = false
-            this.removeFromThumbLoadSchedule(payload)
+            this.status.thumbLoading.isLocked = false
+            this.removeFromThumbLoadingSchedule(payload)
             if (event.data.result === 'error') {
               payload?.onError?.()
             }
@@ -423,22 +414,22 @@ export default {
               payload?.onEnd?.()
             }
             resolve()
-            if (this.thumbLoadSchedule.length > 0) {
-              this.handleThumbLoad(this.thumbLoadSchedule[0])
+            if (this.status.thumbLoading.schedule.length > 0) {
+              this.handleThumbLoad(this.status.thumbLoading.schedule[0])
             }
           })
       })
     },
-    addToThumbLoadSchedule (payload) {
-      this.thumbLoadSchedule.push(payload)
-      if (!this.thumbLoadIsLocked && !payload.item.isInaccessible) {
+    addToThumbLoadingSchedule (payload) {
+      this.status.thumbLoading.schedule.push(payload)
+      if (!this.status.thumbLoading.isLocked && !payload.item.isInaccessible) {
         this.handleThumbLoad(payload)
       }
     },
-    removeFromThumbLoadSchedule (payload) {
-      const index = this.thumbLoadSchedule.findIndex(object => object.item.path === payload.item.path)
+    removeFromThumbLoadingSchedule (payload) {
+      const index = this.status.thumbLoading.schedule.findIndex(object => object.item.path === payload.item.path)
       if (index !== -1) {
-        this.thumbLoadSchedule.splice(index, 1)
+        this.status.thumbLoading.schedule.splice(index, 1)
       }
     },
     async generateImageThumb (dirItemPath, dirItemRealPath, thumbPath) {
@@ -448,7 +439,7 @@ export default {
           layout: this.layout,
           dirItemRealPath: dirItemRealPath,
           thumbPath: thumbPath,
-          appPaths: this.appPaths
+          appPaths: this.appPaths,
         })
         this.thumbWorker.onmessage = (event) => {
           resolve(event)
@@ -458,7 +449,7 @@ export default {
     getAmountScrolledItems () {
       let counter = 0
       let sum = 0
-      while (sum <= this.scrollTop) {
+      while (sum <= this.status.scroll.currentPosition) {
         sum = this.allItemSizes
           .slice(0, counter + 1)
           .reduce((a, b) => a + b, 0) // sum array values
@@ -481,39 +472,62 @@ export default {
     //     }
     //   }
     // },
+    setScrollStatus (element) {
+      this.status.scroll.previousPosition = this.status.scroll.currentPosition
+      this.status.scroll.currentPosition = element.scrollTop
+      if (this.getScrollStatus) {
+        this.status.scroll.delta = this.status.scroll.currentPosition - this.status.scroll.previousPosition
+        this.status.scroll.direction = this.status.scroll.delta > 0 ? 'down' : 'up'
+        if (this.calculateScrollSpeed) {
+          this.recordScrollSpeedHistory(this.status.scroll.delta)
+          const speedSum = Math.abs((this.status.scroll.speedHistory).reduce((a, b) => a + b, 0))
+          this.status.scroll.speed = speedSum / this.status.scroll.speedHistory.length
+        }
+      }
+    },
+    recordScrollSpeedHistory (scrollSpeed) {
+      if (this.status.scroll.speedHistory.length > this.status.scroll.speedHistorySize) {
+        this.status.scroll.speedHistory.splice(0, 1)
+      }
+      this.status.scroll.speedHistory.push(scrollSpeed)
+    },
     scrollHandler (event) {
+      this.status.itemHover.isPaused = true
+      this.setScrollStatus(this.$refs.rootContainer)
       this.handleScrollStart()
       this.setValues()
       this.handleScrollStop()
-      this.bottomReached = Math.ceil(this.scrollTop + this.rootHeight) >= this.totalHeight
+      this.status.scroll.bottomReached = Math.ceil(this.status.scroll.currentPosition + this.rootContainerHeight) >= this.totalHeight
+      this.$emit('scroll', {
+        event,
+        status: this.status.scroll,
+      })
     },
     handleScrollStart () {
-      this.forceThumbLoad = false
-      this.thumbLoadingIsPaused = true
+      this.status.thumbLoading.isForced = false
+      this.status.thumbLoading.isPaused = true
       this.status.itemHover.isPaused = true
     },
     handleScrollStop () {
-      // Watch for 'scroll stop':
-      clearTimeout(this.scrollStopTimeout)
-      this.scrollStopTimeout = setTimeout(() => {
-        this.forceThumbLoad = true
-        this.thumbLoadingIsPaused = false
+      clearTimeout(this.status.scroll.stopTimeout)
+      this.status.scroll.stopTimeout = setTimeout(() => {
+        this.status.thumbLoading.isForced = true
+        this.status.thumbLoading.isPaused = false
         this.status.itemHover.isPaused = false
+        this.status.scroll.speedHistory = []
       }, 250)
     },
     setValues () {
-      if (!this.$refs.root) {return}
-
+      if (!this.$refs.rootContainer) {return}
       const nodes = document.querySelectorAll('.dir-item')
       const dirItemNodes = document.querySelectorAll('.dir-item-node')
       this.nodes = nodes
       this.dirItemNodes = dirItemNodes
-      this.scrollTop = this.$refs.root.scrollTop
-      this.rootHeight = this.$refs.root.clientHeight
+      this.status.scroll.currentPosition = this.$refs.rootContainer.scrollTop
+      this.rootContainerHeight = this.$refs.rootContainer.clientHeight
       this.renderedItemsizes = this.renderedItems.map(item => item.height)
-      this.allItemSizes = this.items.map(item => item.height)
-      this.totalHeight = this.items.reduce((a, b) => a + (b.height || 0), 0)
       this.appendPropertyIsInViewport(dirItemNodes)
+      document.querySelector('.virtual-list__viewport').dataset.allItemSizes = this.allItemSizes
     },
     appendPropertyIsInViewport (dirItemNodes) {
       dirItemNodes.forEach(async (node) => {
@@ -530,13 +544,15 @@ export default {
         observer.observe(domElement)
       })
     },
-  }
+  },
 }
 </script>
 
 <style>
-.root {
+.virtual-list__root-container {
   overflow-x: hidden;
+  height: 100%;
+  flex: 1;
   height: calc(
     100vh -
     var(--window-toolbar-height) -
@@ -545,7 +561,17 @@ export default {
   );
 }
 
-.viewport-container {
+.virtual-list__root-container[sorting-display-type="toolbar"] {
+  height: calc(
+    100vh -
+    var(--window-toolbar-height) -
+    var(--action-toolbar-height) -
+    var(--workspace-area-toolbar-height) -
+    var(--workspace-area-sorting-header-height)
+  );
+}
+
+.virtual-list__viewport-container {
   min-height: 100%;
   overflow: hidden;
 }

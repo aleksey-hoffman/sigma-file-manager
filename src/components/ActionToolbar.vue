@@ -131,8 +131,8 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       </v-list>
     </v-menu>
 
-    <!-- button::sorting-menu -->
-    <sorting-menu
+    <!-- button::SortingMenu -->
+    <SortingMenu
       v-if="['navigator'].includes($route.name) && navigatorSortingElementDisplayType === 'icon'"
     >
       <template #activator="{menuActivatorOnProp}">
@@ -146,7 +146,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           </v-icon>
         </v-btn>
       </template>
-    </sorting-menu>
+    </SortingMenu>
 
     <!-- TODO: finish in v1.1.0
       - Curently dir item range selection doesn't work properly
@@ -380,8 +380,12 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <script>
 import {mapFields} from 'vuex-map-fields'
+import SortingMenu from './SortingToolbar/SortingMenu.vue'
 
 export default {
+  components: {
+    SortingMenu,
+  },
   data () {
     return {
       newDirItemMenu: [

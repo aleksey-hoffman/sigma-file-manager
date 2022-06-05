@@ -95,22 +95,16 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           >
             <div
               v-show="filterQuery !== ''"
-              class="text--sub-title-1 ml-4 mt-4"
+              class="ml-4 mt-4"
             >
-              Filtered settings
-              <v-btn
-                small
-                class="ml-4 button-1"
+              <div class="text--sub-title-1">
+                Filtered settings
+              </div>
+              <FilterClearButton
+                :filter-query="filterQuery"
+                class="mb-4"
                 @click="filterQuery = ''"
-              >
-                <v-icon
-                  size="16px"
-                  class="mr-2"
-                >
-                  mdi-backspace-outline
-                </v-icon>
-                Clear filter
-              </v-btn>
+              />
             </div>
 
             <div
@@ -1114,8 +1108,8 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                       value="icon"
                     />
                     <v-radio
-                      label="Show sorting bar"
-                      value="bar"
+                      label="Show sorting toolbar"
+                      value="toolbar"
                     />
                   </v-radio-group>
 
@@ -1999,12 +1993,14 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 import {mapFields} from 'vuex-map-fields'
 import SectionSettings from '../components/SectionSettings.vue'
 import itemFilter from '../utils/itemFilter'
+import FilterClearButton from '@/components/FilterClearButton/index.vue'
 
 export default {
   name: 'settings',
   components: {
     SectionSettings
     SectionSettings,
+    FilterClearButton,
   },
   beforeRouteLeave (to, from, next) {
     this.$store.dispatch('SAVE_ROUTE_SCROLL_POSITION', {

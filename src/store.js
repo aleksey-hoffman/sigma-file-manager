@@ -494,7 +494,7 @@ export default new Vuex.Store({
           openDirItemSecondClickDelay: 500,
           nameColumnMaxWidth: '50%',
           sorting: {
-            elementDisplayType: 'bar'
+            elementDisplayType: 'toolbar'
           },
           workspaces: {
             showTitleInToolbar: false

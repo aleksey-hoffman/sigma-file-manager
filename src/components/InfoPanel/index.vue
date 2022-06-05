@@ -855,6 +855,17 @@ export default {
   font-size: 14px;
 }
 
+.info-panel__media-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  outline: none;
+}
+
+.info-panel__media-preview__icon {
+  color: var(--dir-item-card-icon-color) !important;
+}
+
 .info-panel__media-preview__play {
   z-index: 1;
   cursor: pointer;
