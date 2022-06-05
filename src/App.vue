@@ -663,7 +663,7 @@ export default {
           this.$eventHub.$emit('app:method', {
             method: 'initGlobalSearchDataScan'
           })
-          noЯtifications.emit({name: 'searchFileIsDamaged'})
+          notifications.emit({name: 'searchFileIsDamaged'})
           reject(new Error('One of the search files is damaged'))
         }
         else {

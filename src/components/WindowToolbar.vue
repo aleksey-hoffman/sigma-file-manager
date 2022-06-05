@@ -358,15 +358,20 @@ export default {
       this.$route.name === 'navigator' &&
       this.navigatorTabLayout === 'compact-vertical-and-traditional-horizontal'
     },
+    toggleAnimations () {
+      if (this.$route.name === 'navigator') {
+        let appLayoutElement = document.querySelector('#app')
+        appLayoutElement.setAttribute('preserve-transition', true)
+        setTimeout(() => {
+          appLayoutElement.removeAttribute('preserve-transition')
+        }, 500)
+      }
+    },
     toggleNavigationPanel () {
       this.toggleShadow()
-      this.$nextTick(() => {
-        this.navigationPanelMiniVariant = !this.navigationPanelMiniVariant
-      })
+      this.toggleAnimations()
+      this.navigationPanelMiniVariant = !this.navigationPanelMiniVariant
     },
-    /** This function optimizes rendering performance (20FPS => 60FPS)
-    * by disabling shadows during layout transition
-    */
     toggleShadow () {
       this.removeShadow()
       setTimeout(() => {
@@ -377,13 +382,11 @@ export default {
       let cards = document.querySelectorAll('.item-card')
       cards.forEach(card => {
         card.setAttribute('optimized', true)
-        card.setAttribute('optimized', true)
       })
     },
     addShadow () {
       let cards = document.querySelectorAll('.item-card')
       cards.forEach(card => {
-        card.removeAttribute('optimized')
         card.removeAttribute('optimized')
       })
     },
