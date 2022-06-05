@@ -157,9 +157,7 @@ export default {
     })
   },
   mounted () {
-    setTimeout(() => {
-      this.renderContent = true
-    }, 100)
+    this.initRenderContent()
     this.$store.dispatch('ROUTE_MOUNTED_HOOK_CALLBACK', {
       route: 'notes',
     })
@@ -195,6 +193,11 @@ export default {
     },
   },
   methods: {
+    initRenderContent () {
+      setTimeout(() => {
+        this.renderContent = true
+      }, 100)
+    },
     getItemsMatchingFilter (items) {
       return itemFilter({
         filterQuery: this.filterQuery,
