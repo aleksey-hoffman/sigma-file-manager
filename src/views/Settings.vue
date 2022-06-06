@@ -1998,7 +1998,6 @@ import FilterClearButton from '@/components/FilterClearButton/index.vue'
 export default {
   name: 'settings',
   components: {
-    SectionSettings
     SectionSettings,
     FilterClearButton,
   },

@@ -983,30 +983,33 @@ export default new Vuex.Store({
         button1: false,
         button2: false,
         button3: false,
-        hoveredItem: {
-          path: '',
-          id: ''
+        isMoving: false,
+        overlappedDropTargetItem: {
+          path: ''
         },
+        lastMousedownEvent: {}
       },
+      drag: {
+        itemType: '',
+        items: [],
+        moveCoordX: null,
+        moveCoordY: null,
+        moveActivationTreshold: 16,
+        moveActivationTresholdReached: false,
+        leftWindow: false,
+        watchingOverlap: false,
+        startedInsideWindow: null,
+        dirItemInbound: {
+          value: false
+        },
+        dirItemOutbound: {
+          value: false
+        }
+      }
     },
     overlays: {
       inboundDrag: false,
       dirItemDrag: false
-    },
-    drag: {
-      targetType: '',
-      cursorIsMoving: false,
-      mouseIsMoving: false,
-      moveTreshold: 16,
-      moveTresholdReached: false,
-      cursorLeftWindow: false,
-      watchingItemOverlap: false,
-      dirItemInbound: {
-        value: false
-      },
-      dirItemOutbound: {
-        value: false
-      },
     },
     localServer: {
       directoryShare: {
