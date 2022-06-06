@@ -1423,7 +1423,7 @@ export default new Vuex.Store({
       return isRoot ? parsed.root : parsed.name
     },
     itemDragIsActive: state => {
-      return state.drag.dirItemInbound.value || state.drag.dirItemOutbound.value
+      return state.inputState.drag.dirItemInbound.value || state.inputState.drag.dirItemOutbound.value
     },
     primaryWorkspace: state => {
       return state.storageData.workspaces.items.find(workspace => workspace.isPrimary)
@@ -2854,7 +2854,7 @@ export default new Vuex.Store({
       // Hide inboundDrag overlay
       if (state.overlays.inboundDrag) {
         dispatch('SET', {
-          key: 'drag.dirItemInbound.value',
+          key: 'inputState.drag.dirItemInbound.value',
           value: false
         })
       }

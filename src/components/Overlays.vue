@@ -124,7 +124,7 @@ export default {
         this.dirItemDragOverlay = false
       }
     },
-    'drag.dirItemInbound.value' (value) {
+    'inputState.dirItemInbound.value' (value) {
       if (!value) {
         this.resetMouseMoveEventValues()
       }
@@ -137,13 +137,14 @@ export default {
       visibleDirItems: 'navigatorView.visibleDirItems',
       drag: 'drag',
 
-      dragTargetType: 'drag.targetType',
-      dragEventCursorIsMoving: 'drag.cursorIsMoving',
-      dragEventWatchingItemOverlap: 'drag.watchingItemOverlap',
-      dragStartedInsideWindow: 'drag.startedInsideWindow',
-      dirItemDragMoveTresholdReached: 'drag.moveTresholdReached',
-      dragMoveTreshold: 'drag.moveTreshold',
-      cursorLeftWindow: 'drag.cursorLeftWindow',
+      dirItemInbound: 'inputState.drag.dirItemInbound',
+      dragItemType: 'inputState.drag.itemType',
+      dragEventCursorIsMoving: 'inputState.drag.cursorIsMoving',
+      dragEventWatchingOverlap: 'inputState.drag.watchingOverlap',
+      dragStartedInsideWindow: 'inputState.drag.startedInsideWindow',
+      dirItemDragMoveTresholdReached: 'inputState.drag.moveActivationTresholdReached',
+      dragMoveTreshold: 'inputState.drag.moveActivationTreshold',
+      cursorLeftWindow: 'inputState.drag.cursorLeftWindow',
       inboundDragOverlay: 'overlays.inboundDrag',
       dirItemDragOverlay: 'overlays.dirItemDrag'
     }),
@@ -161,7 +162,7 @@ export default {
         'homePageBannerCustomMediaUploadTarget'
       ]
       const isValidDropTarget = allowedInboundDragOverlayTargets.includes(this.currentDragTarget)
-      return this.drag.dirItemInbound.value && isValidDropTarget
+      return this.dirItemInbound.value && isValidDropTarget
     },
     currentDragTarget () {
       const navigatorDirTarget = this.$route.name === 'navigator' &&
@@ -203,7 +204,7 @@ export default {
     },
     stopDragWatcher () {
       this.dragEventWatchingItemOverlap = false
-      this.drag.dirItemInbound.value = false
+      this.dirItemInbound.value = false
       this.dragEventCursorIsMoving = false
       this.handleMouseUpActions()
       this.resetMouseMoveEventValues()
@@ -231,7 +232,7 @@ export default {
         this.dragDropTargetItemsContainer = document.querySelectorAll('.drag-drop-container')
         this.dragDropTargetItemsContainer.forEach(node => {
           if (node.firstChild) {
-            const targets = node.firstChild.querySelectorAll('.drop-target')
+            const targets = node.querySelectorAll('.drop-target')
             targets.forEach(targetNode => {
               dropTargetItems.push(targetNode)
             })
@@ -252,7 +253,7 @@ export default {
         this.dragDropTargetItemsContainer = document.querySelectorAll('.drag-drop-container')
         this.dragDropTargetItemsContainer.forEach(node => {
           if (node.firstChild) {
-            const targets = node.firstChild.querySelectorAll('.drag-target')
+            const targets = node.querySelectorAll('.drag-target')
             targets.forEach(targetNode => {
               dropTargetItems.push(targetNode)
             })
@@ -279,8 +280,8 @@ export default {
       // console.log('handleLocalDragOverEvent', dragEvent)
     },
     handleGlobalDragOverEvent (dragEvent) {
-      if (!this.drag.dirItemInbound.value) {
-        this.drag.dirItemInbound.value = true
+      if (!this.dirItemInbound.value) {
+        this.dirItemInbound.value = true
       }
       // this.dragEventCursorIsMoving = true
       // if (!this.inboundDragOverlay) {
@@ -489,7 +490,7 @@ export default {
       if (cursorLeftWindow) {
         // Note: delay to prevent mouseenter event collsion on dragleave and drag-cancel
         setTimeout(() => {
-          this.drag.dirItemInbound.value = false
+          this.dirItemInbound.value = false
         }, 100)
       }
     },
@@ -526,8 +527,8 @@ export default {
     },
     mouseUpHandler (mouseupEvent) {
       this.inputState.pointer.button1 = false
-      this.dragTargetType = ''
-      this.drag.dirItemInbound.value = false
+      this.dragItemType = ''
+      this.dirItemInbound.value = false
       this.handleMouseUpActions()
       this.resetMouseMoveEventValues()
     },
@@ -556,7 +557,7 @@ export default {
     },
     dragStarted (mousemoveEvent) {
       // Calculate if cursor moved beyond treshold
-      if (this.mouseDown.leftClick && this.dragTargetType === 'dirItem') {
+      if (this.mouseDown.leftClick && this.dragItemType === 'dirItem') {
         this.mouseDown.moveCoordX = mousemoveEvent.clientX
         this.mouseDown.moveCoordY = mousemoveEvent.clientY
         const distanceX = Math.abs(this.mouseDown.downCoordX - mousemoveEvent.clientX)
