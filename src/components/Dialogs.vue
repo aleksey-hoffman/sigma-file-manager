@@ -780,38 +780,33 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     <!-- dialog::homeBannerPickerDialog -->
     <dialog-generator
       :dialog="dialogs.homeBannerPickerDialog"
-      :closeButton="{
+      :close-button="{
         onClick: () => closeDialog('homeBannerPickerDialog'),
       }"
       title="Home page background manager"
-      maxWidth="90vw"
+      max-width="90vw"
       height="85vh"
     >
-      <template v-slot:content>
-        <!-- iterator::custom-media::title -->
+      <template #title>
+        <info-tag
+          v-if="homeBannerSelectedItem.type === 'video'"
+          text="High resource usage"
+          class="ml-4"
+        >
+          <template #tooltip>
+            <v-icon color="red">
+              mdi-circle-small
+            </v-icon>
+            Video backgrounds use much more memory than images.
+            To offload resources from RAM to GPU memory, set the app to run on dedicated GPU.
+          </template>
+        </info-tag>
+      </template>
+
+      <template #content>
         <div class="text--sub-title-1 mb-4">
           Custom backgrounds
         </div>
-        
-        <!-- TODO:
-          - Move to media-iterator to index 0 of the custom items container
-        -->
-        <!-- iterator::custom-media::drop-area -->
-        <v-layout
-          id="background-drop-area"
-          column align-center justify-center
-          @drop="$store.dispatch('HANDLE_HOME_PAGE_BACKGROUND_ITEM_DROP', $event)"
-        >
-          <div class="background-drop-area__title">
-            Drag & Drop
-          </div>
-          <div class="background-drop-area__description">
-            custom image or video here
-          </div>
-          <div class="background-drop-area__description">
-             Accepts: file, path, URL
-          </div>
-        </v-layout>
 
         <!-- iterator::custom-media -->
         <media-iterator
@@ -821,7 +816,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           :options="{
             loadOnce: true
           }"
-        ></media-iterator>
+        />
 
         <!-- iterator::default-media::title -->
         <div class="text--sub-title-1 mb-2">
@@ -829,8 +824,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         </div>
 
         <div class="mb-4">
-          The artworks provided by different artists.
-          Hover previews to see the links to their profiles and other details.
+          <p>
+            The artworks provided by different artists.
+            Hover previews to see the links to their profiles and other details.
+          </p>
         </div>
 
         <!-- iterator::default-media -->
@@ -841,7 +838,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           :options="{
             loadOnce: true
           }"
-        ></media-iterator>
+        />
       </template>
     </dialog-generator>
 
@@ -1878,11 +1875,12 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 </template>
 
 <script>
-import { mapState, mapGetters } from 'vuex'
+import {mapState, mapGetters} from 'vuex'
 import TimeUtils from '../utils/timeUtils.js'
-
+import InfoTag from './InfoTag/index.vue'
 import katex from 'katex'
 import 'katex/dist/katex.min.css'
+
 const electronRemote = require('@electron/remote')
 const currentWindow = electronRemote.getCurrentWindow()
 const PATH = require('path')
@@ -1891,6 +1889,9 @@ const fs = require('fs')
 const os = require('os')
 
 export default {
+  components: {
+    InfoTag,
+  },
   data () {
     return {
       dialogsResetData: {},

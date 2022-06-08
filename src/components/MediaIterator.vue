@@ -4,31 +4,55 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <template>
-  <div class="media-picker__container">
+  <div
+    class="media-picker__container"
+    :no-custom-items="items.length === 0"
+  >
     <!-- item -->
+    <v-layout
+      v-if="type === 'custom'"
+      column
+      class="media-picker__drop-area"
+      align-center
+      justify-center
+      @drop="$store.dispatch('HANDLE_HOME_PAGE_BACKGROUND_ITEM_DROP', $event)"
+    >
+      <div class="media-picker__drop-area-title">
+        Drag & Drop
+      </div>
+      <div class="media-picker__drop-area-description">
+        custom image or video here
+      </div>
+      <div class="media-picker__drop-area-description">
+        Accepts: file, path, URL
+      </div>
+    </v-layout>
+
     <div
-      v-for="(item, index) in items"
+      v-for="item in items"
       :key="item.id"
-      @click="$store.dispatch('SET_HOME_BANNER_BACKGROUND', item)"
       class="media-picker__item"
       :data-selected="item.path === homeBannerSelectedItem.path"
       :data-path="item.path"
+      @click="$store.dispatch('SET_HOME_BANNER_BACKGROUND', item)"
     >
-      <div class="progress">LOADING</div>
-      <div class="media-picker__item-thumb-container"></div>
+      <div class="progress">
+        LOADING
+      </div>
+      <div class="media-picker__item-thumb-container" />
       <div class="media-picker__item-icon-container">
         <!-- item::icon:selected -->
         <v-tooltip bottom>
-          <template v-slot:activator="{ on }">
+          <template #activator="{ on }">
             <v-btn
-              v-on="on"
               v-show="item.path === homeBannerSelectedItem.path"
-              @click.stop=""
               icon
               class="media-picker__item-icon--selected"
+              v-on="on"
+              @click.stop=""
             >
-              <v-icon
-              >mdi-checkbox-marked-outline
+              <v-icon>
+                mdi-checkbox-marked-outline
               </v-icon>
             </v-btn>
           </template>
@@ -37,24 +61,27 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
         <!-- item::button:source-link -->
         <v-tooltip bottom>
-          <template v-slot:activator="{ on }">
+          <template #activator="{ on }">
             <v-btn
-              v-on="on"
               v-if="item.sourceLink"
-              @click.stop="$utils.openLink(item.sourceLink)"
               :is-selected="item.path === homeBannerSelectedItem.path"
               icon
               class="media-picker__item-icon--source-link"
+              v-on="on"
+              @click.stop="$utils.openLink(item.sourceLink)"
             >
-              <v-icon
-              >mdi-link-variant
+              <v-icon>
+                mdi-link-variant
               </v-icon>
             </v-btn>
           </template>
           <span>
             See more artworks from this artist
             <v-layout align-center>
-              <v-icon class="mr-3" size="16px">
+              <v-icon
+                class="mr-3"
+                size="16px"
+              >
                 mdi-open-in-new
               </v-icon>
               {{item.sourceLink}}
@@ -64,24 +91,27 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
         <!-- item::button:support-link -->
         <v-tooltip bottom>
-          <template v-slot:activator="{ on }">
+          <template #activator="{ on }">
             <v-btn
-              v-on="on"
               v-if="item.supportLink"
-              @click.stop="$utils.openLink(item.supportLink)"
               :is-selected="item.path === homeBannerSelectedItem.path"
               icon
               class="media-picker__item-icon--support-link"
+              v-on="on"
+              @click.stop="$utils.openLink(item.supportLink)"
             >
-              <v-icon
-              >mdi-heart-outline
+              <v-icon>
+                mdi-heart-outline
               </v-icon>
             </v-btn>
           </template>
           <span>
             Support this artist
             <v-layout align-center>
-              <v-icon class="mr-3" size="16px">
+              <v-icon
+                class="mr-3"
+                size="16px"
+              >
                 mdi-open-in-new
               </v-icon>
               {{item.supportLink}}
@@ -91,16 +121,16 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
         <!-- item::button:remove -->
         <v-tooltip bottom>
-          <template v-slot:activator="{ on }">
+          <template #activator="{ on }">
             <v-btn
               v-if="type === 'custom'"
-              v-on="on"
-              @click.stop="$store.dispatch('DELETE_HOME_PAGE_BACKGROUND', item)"
               icon
               class="media-picker__item-icon--remove"
+              v-on="on"
+              @click.stop="$store.dispatch('DELETE_HOME_PAGE_BACKGROUND', item)"
             >
-              <v-icon
-              >mdi-trash-can-outline
+              <v-icon>
+                mdi-trash-can-outline
               </v-icon>
             </v-btn>
           </template>
@@ -109,7 +139,9 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       </div>
 
       <v-layout
-        column align-center justify-center
+        column
+        align-center
+        justify-center
         class="media-picker__item-overlay--description"
       >
         <div>{{$utils.getPathPart(item.fileNameBase, 'name')}}</div>
@@ -128,13 +160,22 @@ const ffmpeg = require('fluent-ffmpeg')
 
 export default {
   props: {
-    items: Array,
-    type: String,
-    options: Object
+    items: {
+      type: Array,
+      default: () => ([]),
+    },
+    type: {
+      type: String,
+      default: '',
+    },
+    options: {
+      type: Object,
+      default: () => ({}),
+    },
   },
   data () {
     return {
-      itemObserver: null
+      itemObserver: null,
     }
   },
   mounted () {
@@ -149,11 +190,11 @@ export default {
   },
   computed: {
     ...mapFields({
-      homeBannerSelectedItem: 'storageData.settings.homeBanner.selectedItem'
+      homeBannerSelectedItem: 'storageData.settings.homeBanner.selectedItem',
     }),
     ...mapState({
-      appPaths: state => state.storageData.settings.appPaths
-    })
+      appPaths: state => state.storageData.settings.appPaths,
+    }),
   },
   methods: {
     initEventHubListeners () {
@@ -174,7 +215,7 @@ export default {
       // Init intersection observer
       const options = {
         rootMargin: '200px 0px',
-        threshold: 0
+        threshold: 0,
       }
       this.itemObserver = new IntersectionObserver(this.itemObserverHandler, options)
 
@@ -211,9 +252,9 @@ export default {
       const itemType = this.$utils.getFileType(path)
       if (itemType.mimeDescription === 'image') {
         // TODO: temporarily removed the ability to generate thumbs for default media
-        // because FFMPEG cannot access images inside asar. 
+        // because FFMPEG cannot access images inside asar.
         // Need to move the default images to appStorage.
-        // Using original full res images instead 
+        // Using original full res images instead
         if (this.type === 'default') {
           const image = this.createElement('image', target, path)
           this.replaceThumb(target, image)
@@ -247,7 +288,7 @@ export default {
     async fetchImageThumbnail (target, path) {
       // Check if thumb dir exists. If not, create it
       if (!fs.existsSync(this.appPaths.storageDirectories.appStorageNavigatorThumbs)) {
-        fs.mkdirSync(this.appPaths.storageDirectories.appStorageNavigatorThumbs, { recursive: true })
+        fs.mkdirSync(this.appPaths.storageDirectories.appStorageNavigatorThumbs, {recursive: true})
       }
       // Parse image path
       const parsedFileName = PATH.parse(path)
@@ -316,15 +357,36 @@ export default {
           this.appendThumb(target, thumbPath)
         })
         .save(thumbPath)
-    }
-  }
+    },
+  },
 }
 </script>
 
 <style>
-.media-picker__container .progress {
-  position: absolute;
+.media-picker__drop-area {
+  width: 100%;
+  height: 100%;
+  padding: 16px;
+  margin-bottom: 24px;
+  outline: 3px dashed var(--color-6);
+  outline-offset: -3px;
+  user-select: none;
 }
+
+.media-picker__drop-area-title {
+  color: var(--color-6);
+  font-size: 20px;
+}
+
+.media-picker__drop-area-description {
+  color: var(--color-7);
+  font-size: 16px;
+}
+
+.media-picker__container
+  .progress {
+    position: absolute;
+  }
 
 .media-picker__container {
   display: grid;
@@ -332,6 +394,10 @@ export default {
   grid-auto-rows: 128px;
   gap: 32px;
   margin-bottom: 32px;
+}
+
+.media-picker__container[no-custom-items="true"] {
+  grid-template-columns: 1fr;
 }
 
 .media-picker__item {

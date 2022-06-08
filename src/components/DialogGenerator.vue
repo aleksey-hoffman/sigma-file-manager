@@ -22,9 +22,18 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           <v-card-title class="sticky-scroller__header unselectable">
             <v-layout justify-space-between>
               <!-- dialog::title -->
-              <div class="dialog-card__title">
-                {{title}}
-              </div>
+              <v-layout align-center>
+                <v-icon
+                  v-if="titleIcon"
+                  class="mr-2"
+                >
+                  {{titleIcon}}
+                </v-icon>
+                <div class="dialog-card__title">
+                  {{title}}
+                </div>
+                <slot name="title" />
+              </v-layout>
               <!-- dialog::close-button -->
               <v-btn @click="closeButton.onClick()" icon>
                 <v-icon>{{closeButton.icon || 'mdi-close'}}</v-icon>
@@ -93,6 +102,7 @@ export default {
   props: {
     dialog: Object,
     title: String,
+    titleIcon: String,
     height: String,
     maxWidth: String,
     fadeMaskBottom: String,
