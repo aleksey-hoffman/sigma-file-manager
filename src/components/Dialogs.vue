@@ -268,7 +268,6 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 {{getGuideTitle(dialogs.guideDialog.data.guideTabsSelected)}}
               </div>
               <v-divider class="divider-color-2 mb-4"></v-divider>
-
               <h3>Range item selection</h3>
               <div>
                 To select multiple directory items, 
@@ -341,7 +340,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 The protection is achieved by setting certain file attributes to 'deny' state. It does not encrypt the data. Protected files can still be read / modified when the attributes are removed.
               </p>
               <p>
-                It's a good way to prevent yourself and different apps from accidentaly / purposefully modifying important files. It might even help to protect your data from unsophisticate malicious software.
+                It's a good way to prevent yourself and different apps from accidentaly / purposefully modifying important files. It might even help to protect your data from unsophisticated malicious software.
               </p>
 
               <h3>Modes</h3>
@@ -355,7 +354,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     "Advanced mode" is targeted for advanced users. It allows you to manually set different attributes for specified items.
                   </li>
                   <li>
-                    "Immutable mode" is a quick way to protect a file / dreictory by making it immutable. When enabled, the system will set all attributes of the specified file / directory to 'denied' state, and make it immutable (which means programs will not be able to read / write / modify / delete it without reseting the attributes).
+                    "Immutable mode" is a quick way to protect a file / directory by making it immutable. When enabled, the system will set all attributes of the specified file / directory to 'denied' state, and make it immutable (which means programs will not be able to read / write / modify / delete it without reseting the attributes).
                   </li>
                 </ul>
                 <div class="mt-4">
