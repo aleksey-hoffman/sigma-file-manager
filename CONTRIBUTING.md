@@ -12,7 +12,7 @@ After a review, I will merge the changes into the project, if the changes are be
 
 Create a new issue or a discussion and describe the feature / fix / changes you want to implement so we can discuss it first.
 
-### Contributing method 1
+### Method 1
 
 Go to the [main project page](https://github.com/aleksey-hoffman/sigma-file-manager), press `.` (dot) button on your keyboard. Github will open an online code editor and allow you to modify any file and commit the changes.
 
@@ -21,7 +21,7 @@ Go to the [main project page](https://github.com/aleksey-hoffman/sigma-file-mana
 1. Implement your changes into the code.
 2. Commit the code changes with a short descriptive message, for example: "improved navigator list layout"
 
-### Contributing method 2
+### Method 2
 
 If you are new to contributing code, try the `method 1` instead or, if you want to learn and try this more advanced method, watch several video tutorials about "Git" and look up a few "beginner guides to contributing to a GitHub project", then practice working with branches and committing / pushing changes to your own test repository, make sure you understand what you are doing. Then you can download the project, implement the changes locally and then push them to this project:
 
@@ -38,13 +38,13 @@ git clone https://github.com/aleksey-hoffman/sigma-file-manager.git
 2. Install the dependencies and start dev server:
 
 ```
-cd ./sigma-file-manager && npm install && npm run electron:serve
+cd ./sigma-file-manager && npm install && npm run dev
 ```
 
 To build the project for your current platform, run this command:
 
 ```
-npm run electron:build
+npm run build
 ```
 
 The build can be configured in the `./vue.config.js` file
