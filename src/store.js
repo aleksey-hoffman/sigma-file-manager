@@ -72,6 +72,7 @@ export default new Vuex.Store({
       instance: null,
       idleTreshold: 1000 * 30,
     },
+    supportedFormats: supportedFormats.formats,
     intervals: {
       lastSearchScanTimeElapsed: null,
       driveListFetchIntervalTime: 1000,
@@ -983,28 +984,25 @@ export default new Vuex.Store({
         button1: false,
         button2: false,
         button3: false,
-        isMoving: false,
+        lastMousedownEvent: {},
+        lastMousedownMoveEvent: {
+          clientX: 0,
+          clientY: 0,
+        }
+      },
+      drag: {
+        type: '', // String(''|local|inbound|outbound)
+        targetType: '', // String(''|existing-path|url|html|text)
+        dirItems: [],
+        dropTargetItems: [],
+        moveActivationTreshold: 16,
+        moveActivationTresholdReached: false,
+        isStarted: false,
+        isInsideWindow: false,
+        startedInsideWindow: false,
         overlappedDropTargetItem: {
           path: ''
         },
-        lastMousedownEvent: {}
-      },
-      drag: {
-        itemType: '',
-        items: [],
-        moveCoordX: null,
-        moveCoordY: null,
-        moveActivationTreshold: 16,
-        moveActivationTresholdReached: false,
-        leftWindow: false,
-        watchingOverlap: false,
-        startedInsideWindow: null,
-        dirItemInbound: {
-          value: false
-        },
-        dirItemOutbound: {
-          value: false
-        }
       }
     },
     overlays: {
@@ -1203,6 +1201,14 @@ export default new Vuex.Store({
           formula: '',
           framework: '',
           addFormula: () => {}
+        }
+      },
+      downloadTypeSelector: {
+        value: false,
+        data: {
+          fadeMaskBottom: '0%',
+          downloadFileButton: () => {},
+          downloadImageButton: () => {},
         }
       },
       externalDownloadDialog: {
@@ -1421,9 +1427,6 @@ export default new Vuex.Store({
       const parsed = PATH.parse(state.navigatorView.currentDir.path)
       const isRoot = parsed.base === ''
       return isRoot ? parsed.root : parsed.name
-    },
-    itemDragIsActive: state => {
-      return state.inputState.drag.dirItemInbound.value || state.inputState.drag.dirItemOutbound.value
     },
     primaryWorkspace: state => {
       return state.storageData.workspaces.items.find(workspace => workspace.isPrimary)
@@ -2304,7 +2307,7 @@ export default new Vuex.Store({
     */
     INIT_ITEM_TRANSFER ({ state, commit, dispatch, getters }, payload) {
     },
-    async HANDLE_HOME_PAGE_BACKGROUND_ITEM_DROP ({ state, commit, dispatch, getters }, event) {
+    async homePageBackgroundDrop ({ state, dispatch }, event) {
       // TODO: use universal downloaing / copy method instead
       await processItems()
 
@@ -2854,8 +2857,8 @@ export default new Vuex.Store({
       // Hide inboundDrag overlay
       if (state.overlays.inboundDrag) {
         dispatch('SET', {
-          key: 'inputState.drag.dirItemInbound.value',
-          value: false
+          key: 'inputState.drag.type',
+          value: ''
         })
       }
       // Hide drag overlay
@@ -4842,10 +4845,11 @@ export default new Vuex.Store({
     SHOW_CONFIRMATION_DIALOG_PASTE_DIR_ITEMS (store, params) {
       return new Promise((resolve, reject) => {
         const data = {
-          title: 'Files with that name already exist',
+          title: 'Name conflict',
           message: `
+            <div>Files with that name already exist in the destination directory</div>
             <ul>
-              ${params.conflictedPaths.map(path => `<li>${path}</li>`).join('')}
+              ${params.conflictingDirItems.map(item => `<li>${utils.prettyBytes(item.stat.size)} - ${item.path}</li>`).join('')}
             </ul>
           `,
           closeButton: {
@@ -4903,90 +4907,117 @@ export default new Vuex.Store({
         store.state.dialogs.conformationDialog.value = true
       })
     },
-    async CHECK_DIR_ITEMS_NAME_CONFLICTS (store, params) {
-      const dirItems = await store.dispatch('GET_DIR_ITEMS', params.directory)
-      const conflictedPaths = []
-      dirItems.forEach(dirItem => {
-        const nameIsConflicting = params.items.some(item => {
-          const srcAndDestPathsAreSame = item.path === dirItem.path
-          return item.name === dirItem.name && !srcAndDestPathsAreSame
+    async getTransferConflictingDirItems (store, params) {
+      const {dirItems} = await store.dispatch('GET_DIR_ITEMS', {path: params.directory})
+      const conflictingDirItems = []
+      if (dirItems.forEach) {
+        dirItems.forEach(dirItem => {
+          const nameIsConflicting = params.items.some(item => {
+            const srcAndDestPathsAreSame = item.path === dirItem.path
+            return item.name === dirItem.name && !srcAndDestPathsAreSame
+          })
+          if (nameIsConflicting) {
+            conflictingDirItems.push(dirItem)
+          }
         })
-        if (nameIsConflicting) {
-          conflictedPaths.push(dirItem.path)
-        }
-      })
-      return conflictedPaths
-    },
-    async COPY_DIR_ITEMS (store, params) {
-      params = {
-        ...{
-          operation: 'copy',
-          overwrite: false
-        }, 
-        ...params
       }
-
-      let notification = notifications.emit({name: 'copyDirItemsInProgress'})
+      return conflictingDirItems
+    },
+    /** 
+    * @param {string('copy' | 'move')} params.operation
+    * @returns void
+    */
+    async transferDirItems (store, params) {
+      let notification = {}
       showInProgressNotification()
       await copyItems(params)
-      
+
       async function copyItems (params) {
         try {
           params.items = await store.dispatch('ENSURE_ALL_ITEMS_DATA_OBJECTS', params.items)
-          const conflictedPaths = await store.dispatch('CHECK_DIR_ITEMS_NAME_CONFLICTS', {
+          const conflictingDirItems = await store.dispatch('getTransferConflictingDirItems', {
             directory: params.directory,
             items: params.items
           })
           
-          if (conflictedPaths.length > 0) {
-            showConformationDialog(conflictedPaths)
+          if (conflictingDirItems.length > 0) {
+            await showConformationDialog(conflictingDirItems)
           }
           else {
-            initCopyProcess({overwrite: false})
+            await initCopyProcess(params)
           }
-        } 
+        }
         catch (error) {
           handleCopyError(error)
         }
       }
-  
-      async function showConformationDialog (conflictedPaths) {
+
+      async function showConformationDialog (conflictingDirItems) {
         const conformationResult = await store.dispatch('SHOW_CONFIRMATION_DIALOG_PASTE_DIR_ITEMS', {
-          conflictedPaths
+          conflictingDirItems
         })
         if (conformationResult === 'replace-all') {
-          initCopyProcess({overwrite: true})
+          initCopyProcess({...params, ...{overwrite: true}})
         }
         else if (conformationResult === 'auto-rename') {
-          initCopyProcess({overwrite: false})
+          initCopyProcess(params)
         }
         else if (conformationResult === 'cancel') {
           cancelTransfer()
         }
       }
-  
+
       async function cancelTransfer () {
         notification.hide()
       }
-       
-      async function initCopyProcess (options) {
-        await store.dispatch('INIT_COPY_DIR_ITEMS_PROCESS', {
-          items: params.items,
-          directory: params.directory,
-          overwrite: options.overwrite ?? false,
-          operation: params.operation
+      
+      async function initCopyProcess (params) {
+        let promises = []
+        params.items.forEach(item => {
+          const parsedItemPath = PATH.parse(item.path)
+          const sourcePath = PATH.normalize(item.path)
+          const destPath = getDestPath({parsedItemPath, sourcePath, ...params})
+          promises.push(startWriteProcess({sourcePath, destPath, ...params}))
         })
-        resolveTransfer()
+        await Promise.all(promises)
+        onTransferSuccess()
       }
-       
+
+      function getDestPath (params) {
+        let destPath = PATH.normalize(PATH.join(params.directory, params.parsedItemPath.base))
+        if (!params.overwrite || (destPath === params.sourcePath)) {
+          destPath = utils.getUniquePath(destPath)
+        }
+        return destPath
+      }
+
+      async function startWriteProcess (params) {
+        let options = {
+          overwrite: params.overwrite ?? false,
+          recursive: true
+        }
+        if (params.operation === 'move') {
+          await fsExtra.move(params.sourcePath, params.destPath, options)
+        }
+        else if (params.operation === 'copy') {
+          await fsExtra.copy(params.sourcePath, params.destPath, options)
+        }
+      }
+      
       function handleCopyError (error) {
-        notification.update({name: 'transferDirItemsError', error})
+        notification.update({
+          name: 'transferDirItemsError', 
+          title: params.operation === 'move' 
+            ? 'Move: error'
+            : 'Copy: error', 
+          props: {error}}
+        )
       }
 
       function showSuccessNotification () {
         if (params.operation === 'move') {
           notification.update({
-            name: 'moveDirItemsSuccess', 
+            name: 'moveDirItemsSuccess',
             props: {
               items: params.items.length
             }
@@ -4994,118 +5025,36 @@ export default new Vuex.Store({
         }
         else if (params.operation === 'copy') {
           notification.update({
-            name: 'copyDirItemsSuccess', 
+            name: 'copyDirItemsSuccess',
             props: {
               items: params.items.length
             }
           })
         }
       }
-      
+
       function showInProgressNotification () {
         if (params.operation === 'move') {
-          notification.update({name: 'moveDirItemsInProgress'})
+          notification = notifications.emit({name: 'moveDirItemsInProgress'})
         }
         else if (params.operation === 'copy') {
-          notification.update({name: 'copyDirItemsInProgress'})
+          notification = notifications.emit({name: 'copyDirItemsInProgress'})
         }
       }
 
-      function resolveTransfer () {
+      function onTransferSuccess () {
         showSuccessNotification()
-        store.dispatch('RELOAD_DIR', {
-          scrollTop: false
-        })
+        store.dispatch('RELOAD_DIR', {scrollTop: false})
         store.dispatch('CLEAR_FS_CLIPBOARD')
       }
     },
-    INIT_COPY_DIR_ITEMS_PROCESS (store, payload) {
-      return new Promise((resolve, reject) => {
-        let promises = []
-        payload.items.forEach(item => {
-          const parsedItemPath = PATH.parse(item.path)
-          const sourcePath = PATH.normalize(item.path)
-          const destPath = getDestPath(payload, parsedItemPath, sourcePath)
-          promises.push(startWriteProcess({sourcePath, destPath, payload}))
-        })
-        Promise.allSettled(promises).then(() => resolve())
-
-        function getDestPath (payload, parsedItemPath, sourcePath) {
-          let destPath = PATH.normalize(PATH.join(payload.directory, parsedItemPath.base))
-          if (!payload.overwrite || (destPath === sourcePath)) {
-            destPath = utils.getUniquePath(destPath)
-          }
-          return destPath
-        }
-
-        function startWriteProcess (params) {
-          return new Promise((resolve, reject) => {
-            if (params.payload.operation === 'move') {
-              store.dispatch('MOVE_ITEM', {
-                sourcePath: params.sourcePath,
-                destPath: params.destPath,
-                overwrite: params.payload.overwrite
-              }).then(() => resolve())
-            }
-            else if (params.payload.operation === 'copy') {
-              store.dispatch('COPY_ITEM', {
-                sourcePath: params.sourcePath,
-                destPath: params.destPath,
-                overwrite: params.payload.overwrite
-              }).then(() => resolve())
-            }
-          })
-        }
-      })
+    async moveDirItems ({dispatch}, params) {
+      params.operation = 'move'
+      await dispatch('transferDirItems', params)
     },
-    async MOVE_ITEM (store, payload) {
-      return new Promise((resolve, reject) => {
-        let options = {
-          overwrite: payload.overwrite,
-          recursive: true
-        }
-        fsExtra.move(payload.sourcePath, payload.destPath, options, error => {
-          if (error) {
-            store.dispatch('HANDLE_DIR_ITEM_TRANSFER_ERROR', {
-              title: 'Some items were not moved',
-              message: error
-            })
-          }
-          resolve()
-        })
-      })
-    },
-    async COPY_ITEM (store, payload) {
-      return new Promise((resolve, reject) => {
-        let options = {
-          overwrite: payload.overwrite,
-          recursive: true
-        }
-        fsExtra.copy(payload.sourcePath, payload.destPath, options, error => {
-          if (error) {
-            store.dispatch('HANDLE_DIR_ITEM_TRANSFER_ERROR', {
-              title: 'Some items were not copied',
-              message: error
-            })
-          }
-          resolve()
-        })
-      })
-    },
-    async HANDLE_DIR_ITEM_TRANSFER_ERROR (store, params) {
-      eventHub.$emit('notification', {
-        action: 'update-by-type',
-        type: 'update:unavailable',
-        timeout: 5000,
-        colorStatus: 'red',
-        title: params.title,
-        message: params.message,
-        closeButton: true,
-      })
-    },
-    async MOVE_DIR_ITEMS ({ state, commit, dispatch, getters }, payload) {
-      payload.operation = 'move'
-      await dispatch('COPY_DIR_ITEMS', payload)
+    async copyDirItems ({dispatch}, params) {
+      params.operation = 'copy'
+      await dispatch('transferDirItems', params)
     },
     async RENAME_DIR_ITEM (store, payload) {
       const { oldPath, newPath, newName, oldName } = payload

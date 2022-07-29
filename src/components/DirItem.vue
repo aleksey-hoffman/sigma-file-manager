@@ -11,25 +11,24 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       'drop-target drag-target': type && type.includes('directory'),
       'drag-target': type && type.includes('file')
     }"
-    :data-item-id="source.id"
+    :data-item-id="dirItem.id"
     :index="index"
-    :data-selected="isDirItemSelected(source)"
-    :data-item-path="`${source.path}`"
-    :data-item-real-path="`${source.realPath}`"
+    :data-item-path="`${dirItem.path}`"
+    :data-item-real-path="`${dirItem.realPath}`"
     :data-layout="specifiedNavigatorLayout"
     :data-type="type"
-    :data-file-type="$utils.getFileType(source.realPath).mimeDescription"
+    :data-file-type="$utils.getFileType(dirItem.realPath).mimeDescription"
     :data-item-hover-is-paused="itemHoverIsPaused"
     :data-hover-effect="dirItemHoverEffect"
     :in-fs-clipboard="dirItemIsInFsClipboard"
     :fs-clipboard-type="fsClipboard.type"
-    :is-selected="isDirItemSelected(source)"
+    :is-selected="isDirItemSelected(dirItem)"
     data-two-line="false"
     :cursor="navigatorOpenDirItemWithSingleClick && !inputState.alt ? 'pointer' : 'default'"
-    @mousedown="handleDirItemMouseDown($event, source, index)"
-    @mouseenter="handleDirItemMouseEnter($event, source)"
-    @mouseleave="handleDirItemMouseLeave($event, source)"
-    @mousedown.middle="handleDirItemMiddleMouseDown($event, source)"
+    @mousedown="handleDirItemMouseDown($event, dirItem, index)"
+    @mouseenter="handleDirItemMouseEnter($event, dirItem)"
+    @mouseleave="handleDirItemMouseLeave($event, dirItem)"
+    @mousedown.middle="handleDirItemMiddleMouseDown($event, dirItem)"
   >
     <v-layout
       v-ripple
@@ -41,7 +40,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         <!-- card::thumb-container -->
         <v-layout
           class="dir-item-card__content-container__item dir-item-card__thumb-container"
-          :data-item-real-path="`${source.realPath}`"
+          :data-item-real-path="`${dirItem.realPath}`"
           align-center
           justify-center
         >
@@ -51,7 +50,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             class="dir-item-card__icon"
             size="28px"
           >
-            {{getThumbIcon(source)}}
+            {{getThumbIcon(dirItem)}}
           </v-icon>
 
           <!-- card::thumb: {type: file && !isImage} -->
@@ -64,11 +63,11 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               size="22px"
               style="height: 22px;"
             >
-              {{getThumbIcon(source)}}
+              {{getThumbIcon(dirItem)}}
             </v-icon>
             <div class="dir-item-card__ext-container">
               <div class="dir-item-card__ext">
-                {{$utils.getExt(source.path)}}
+                {{$utils.getExt(dirItem.path)}}
               </div>
             </div>
           </v-layout>
@@ -90,12 +89,12 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   v-if="showScore"
                   class="inline-code--light mr-2"
                 >
-                  score: {{source.score}}
+                  score: {{dirItem.score}}
                 </span>
                 <v-tooltip bottom>
                   <template #activator="{ on }">
                     <v-icon
-                      v-show="source.isInaccessible"
+                      v-show="dirItem.isInaccessible"
                       color="red"
                       size="12px"
                       v-on="on"
@@ -105,15 +104,15 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   </template>
                   <span>Item is inaccessible</span>
                 </v-tooltip>
-                {{source.name}}
+                {{dirItem.name}}
               </div>
 
               <!-- card::name::line-2-->
               <div
-                v-if="showDir && source.dir !== source.path"
+                v-if="showDir && dirItem.dir !== dirItem.path"
                 class="dir-item-card__name__line-2"
               >
-                {{source.dir}}
+                {{dirItem.dir}}
               </div>
             </div>
           </template>
@@ -143,7 +142,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               v-if="type === 'directory' || type === 'directory-symlink'"
               class="dir-item-card__item-count"
             >
-              {{source.dirItemCount}} {{$localizeUtils.pluralize(source.dirItemCount, 'item')}}
+              {{dirItem.dirItemCount}} {{$localizeUtils.pluralize(dirItem.dirItemCount, 'item')}}
             </div>
 
             <!-- {type: (file|file-symlink)} -->
@@ -152,7 +151,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               v-else-if="type === 'file' || type === 'file-symlink'"
               class="dir-item-card__item-count"
             >
-              {{$utils.prettyBytes(source.stat.size, 1)}}
+              {{$utils.prettyBytes(dirItem.stat.size, 1)}}
             </div>
           </template>
 
@@ -187,7 +186,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         <!-- card::thumb-container -->
         <v-layout
           class="dir-item-card__thumb-container"
-          :data-item-real-path="`${source.realPath}`"
+          :data-item-real-path="`${dirItem.realPath}`"
           align-center
           justify-center
         >
@@ -197,7 +196,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             class="dir-item-card__icon"
             size="28px"
           >
-            {{getThumbIcon(source)}}
+            {{getThumbIcon(dirItem)}}
           </v-icon>
 
           <!-- card::thumb: {type: file && !isImage} -->
@@ -209,7 +208,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               class="dir-item-card__icon"
               size="48px"
             >
-              {{getThumbIcon(source)}}
+              {{getThumbIcon(dirItem)}}
             </v-icon>
           </v-layout>
         </v-layout>
@@ -224,7 +223,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             <v-tooltip bottom>
               <template #activator="{ on }">
                 <v-icon
-                  v-show="source.isInaccessible"
+                  v-show="dirItem.isInaccessible"
                   color="red"
                   size="12px"
                   v-on="on"
@@ -234,12 +233,12 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               </template>
               <span>Item is inaccessible</span>
             </v-tooltip>
-            {{source.name}}
+            {{dirItem.name}}
           </div>
 
           <!-- card::item-count -->
           <div class="dir-item-card__item-count">
-            {{source.dirItemCount}} {{$localizeUtils.pluralize(source.dirItemCount, 'item')}}
+            {{dirItem.dirItemCount}} {{$localizeUtils.pluralize(dirItem.dirItemCount, 'item')}}
           </div>
         </v-layout>
 
@@ -247,7 +246,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         <v-layout
           v-else-if="type === 'file' || type === 'file-symlink'"
           class="dir-item-card__description-container"
-          :data-path="source.path"
+          :data-path="dirItem.path"
           justify-center
           column
         >
@@ -259,7 +258,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               <v-tooltip bottom>
                 <template #activator="{ on }">
                   <v-icon
-                    v-show="source.isInaccessible"
+                    v-show="dirItem.isInaccessible"
                     color="red"
                     size="12px"
                     style="margin-left: -16px"
@@ -270,12 +269,12 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 </template>
                 <span>Item is inaccessible</span>
               </v-tooltip>
-              {{source.name}}
+              {{dirItem.name}}
             </div>
 
             <!-- card::item-count -->
             <div class="dir-item-card__item-count">
-              {{$utils.getExt(source.path)}} | {{$utils.prettyBytes(source.stat.size, 1)}}
+              {{$utils.getExt(dirItem.path)}} | {{$utils.prettyBytes(dirItem.stat.size, 1)}}
             </div>
           </div>
         </v-layout>
@@ -289,7 +288,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     <!-- card::overlays -->
     <div class="dir-item-card__overlay-container">
       <div
-        v-if="isDirItemSelected(source)"
+        v-if="isDirItemSelected(dirItem)"
         class="dir-item-card__overlay dir-item-card__overlay--selected"
       />
       <div
@@ -298,14 +297,14 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       />
       <div
         class="dir-item-card__overlay dir-item-card__overlay--highlighted"
-        :class="{'is-visible': source.isHighlighted}"
+        :class="{'is-visible': dirItem.isHighlighted}"
       />
       <div
         class="dir-item-card__overlay dir-item-card__overlay--hover"
       />
       <div
         class="dir-item-card__overlay overlay--drag-over"
-        :class="{'is-visible': showDragOverOverlay(source)}"
+        :class="{'is-visible': showDragOverOverlay(dirItem)}"
       />
     </div>
   </div>
@@ -317,6 +316,7 @@ import {mapFields} from 'vuex-map-fields'
 
 const fs = require('fs')
 const PATH = require('path')
+const electron = require('electron')
 
 export default {
   name: 'dir-item',
@@ -325,11 +325,9 @@ export default {
       type: Number,
       default: 0,
     },
-    source: {
+    dirItem: {
       type: Object,
-      default () {
-        return {}
-      },
+      default: () => ({}),
     },
     type: {
       type: String,
@@ -371,10 +369,12 @@ export default {
   },
   mounted () {
     this.loadThumb()
+    this.$eventHub.$on('cancel:drag', this.resetValues)
   },
   beforeDestroy () {
+    this.$eventHub.$off('cancel:drag', this.resetValues)
     try {
-      this.$emit('removeFromThumbLoadingSchedule', {item: this.source})
+      this.$emit('removeFromThumbLoadingSchedule', {item: this.dirItem})
     }
     catch (error) {}
   },
@@ -390,6 +390,7 @@ export default {
     ]),
     ...mapFields({
       inputState: 'inputState',
+      showDirItemDragOverlay: 'overlays.dirItemDrag',
       currentDir: 'navigatorView.currentDir',
       thumbsInProcessing: 'thumbsInProcessing',
       openDirItemSecondClickDelay: 'storageData.settings.navigator.openDirItemSecondClickDelay',
@@ -397,37 +398,23 @@ export default {
       dirItemHoverEffect: 'storageData.settings.dirItemHoverEffect',
       visibleDirItems: 'navigatorView.visibleDirItems',
       dirItemsInfoIsFetched: 'navigatorView.dirItemsInfoIsFetched',
-      dirItemInbound: 'inputState.drag.dirItemInbound',
-      dragItemType: 'inputState.drag.itemType',
-      dragEventCursorIsMoving: 'inputState.drag.cursorIsMoving',
-      dragEventWatchingOverlap: 'inputState.drag.watchingOverlap',
-      dragStartedInsideWindow: 'inputState.drag.startedInsideWindow',
-      dirItemDragMoveTresholdReached: 'inputState.drag.moveActivationTresholdReached',
-      dragMoveTreshold: 'inputState.drag.moveActivationTreshold',
-      cursorLeftWindow: 'inputState.drag.cursorLeftWindow',
-      inboundDragOverlay: 'overlays.inboundDrag',
-      dirItemDragOverlay: 'overlays.dirItemDrag',
       selectedSortingType: 'sorting.selectedType',
       fsClipboard: 'navigatorView.clipboard.fs',
       sortingTypes: 'sorting.types',
       navigatorNameColumnMaxWidth: 'storageData.settings.navigator.nameColumnMaxWidth',
-
-      drag: 'drag',
     }),
     specifiedNavigatorLayout () {
-      return this.layout
-        ? this.layout
-        : this.navigatorLayout
+      return this.layout || this.navigatorLayout
     },
     offlineStatus () {
-      if (this.source.fsAttributes.isOffline) {
+      if (this.dirItem.fsAttributes.isOffline) {
         return {
           status: 'offline',
           icon: 'mdi-cloud-outline',
           tooltip: 'Offline item (size on drive is 0)',
         }
       }
-      else if (this.source?.fsAttributes.keepOnDevice) {
+      else if (this.dirItem?.fsAttributes.keepOnDevice) {
         return {
           status: 'keepOnDevice',
           icon: 'mdi-cloud-download',
@@ -439,7 +426,7 @@ export default {
       }
     },
     dirItemIsInFsClipboard () {
-      return this.fsClipboard.items.some(item => item.path === this.source.path)
+      return this.fsClipboard.items.some(item => item.path === this.dirItem.path)
     },
     getCardContentContainerStyles () {
       if (this.specifiedNavigatorLayout === 'list') {
@@ -453,19 +440,29 @@ export default {
     },
   },
   methods: {
+    resetValues () {
+      window.removeEventListener('mousemove', this.handleMouseMove)
+      window.removeEventListener('mouseup', this.handleMouseUp)
+      window.removeEventListener('mouseout', this.handleMouseOut)
+      window.removeEventListener('blur', this.handleWindowBlur)
+      this.showDirItemDragOverlay = false
+      this.inputState.drag.moveActivationTresholdReached = false
+      this.inputState.drag.isStarted = false
+      this.inputState.drag.type = ''
+    },
     getLocalDateTime (params) {
       return this.$utils.getLocalDateTime(
-        this.source.stat[params.stat],
+        this.dirItem.stat[params.stat],
         this.$store.state.storageData.settings.dateTime,
       )
     },
     async loadThumbHandler (path) {
-      if (this.source.path === path) {
+      if (this.dirItem.path === path) {
         await this.loadThumb()
       }
     },
     async loadSkippedThumbs () {
-      const dirItem = document.querySelector(`div[data-item-real-path="${this.source.realPath}"].dir-item-card`)
+      const dirItem = document.querySelector(`div[data-item-real-path="${this.dirItem.realPath}"].dir-item-card`)
       if (dirItem) {
         const dirItemThumbContainer = dirItem.querySelector('.dir-item-card__thumb-container')
         const dirItemFileType = dirItem.dataset.fileType
@@ -479,8 +476,8 @@ export default {
     async loadThumb (options = {}) {
       return new Promise((resolve, reject) => {
         const virtuallyLoadedDirItems = document.querySelectorAll('.dir-item-card')
-        // const dirItem = specifiedDirItem ?? document.querySelector(`div[data-item-path="${this.source.realPath}"].dir-item-card`)
-        const dirItemNode = document.querySelector(`div[data-item-real-path="${this.source.realPath}"].dir-item-card`)
+        // const dirItem = specifiedDirItem ?? document.querySelector(`div[data-item-path="${this.dirItem.realPath}"].dir-item-card`)
+        const dirItemNode = document.querySelector(`div[data-item-real-path="${this.dirItem.realPath}"].dir-item-card`)
         if (dirItemNode) {
           const dirItemIndex = parseInt(dirItemNode.getAttribute('index'))
           const dirItemThumbContainer = dirItemNode.querySelector('.dir-item-card__thumb-container')
@@ -540,15 +537,11 @@ export default {
         if (!fs.existsSync(this.appPaths.storageDirectories.appStorageNavigatorThumbs)) {
           fs.mkdirSync(this.appPaths.storageDirectories.appStorageNavigatorThumbs, {recursive: true})
         }
-        // Parse image path
         const parsedFileName = PATH.parse(dirItemRealPath)
-        const fileExt = parsedFileName.ext
         const fileNameBase = parsedFileName.base
-        const fileSize = this.source.stat.size
-        const fileDateModified = this.source.stat.mtimeMs
+        const fileSize = this.dirItem.stat.size
+        const fileDateModified = this.dirItem.stat.mtimeMs
         const thumbPath = this.getThumbPath(fileSize, fileNameBase, fileDateModified)
-
-        // If thumb already exist, append it, otherwise generate it
         if (fs.existsSync(thumbPath)) {
           this.appendImageThumb(dirItemThumbContainer, thumbPath, dirItemRealPath, dirItemNode)
             .then(() => {
@@ -630,7 +623,7 @@ export default {
     async generateImageThumb (dirItemThumbContainer, thumbPath, dirItemRealPath, dirItemNode) {
       return new Promise((resolve, reject) => {
         this.$emit('addToThumbLoadingSchedule', {
-          item: this.source,
+          item: this.dirItem,
           thumbPath,
           onEnd: () => {
             resolve()
@@ -638,17 +631,16 @@ export default {
         })
       })
     },
-    isDirItemSelected (item) {
-      return this.selectedDirItemsPaths.includes(item.path)
+    isDirItemSelected (dirItem) {
+      return this.selectedDirItemsPaths.includes(dirItem.path)
     },
-    showDragOverOverlay (item) {
-      const isItemHovered = this.inputState.pointer.overlappedDropTargetItem.path === item.path
-      const isOfTypeDirItem = ['dirItem'].includes(this.inputState.drag.itemType)
-      const isDirItemOverlapped = isItemHovered && (isOfTypeDirItem || this.inputState.drag.dirItemInbound.value)
-      return isDirItemOverlapped
+    showDragOverOverlay (dirItem) {
+      return this.inputState.drag.type !== '' &&
+        this.inputState.drag.moveActivationTresholdReached &&
+        this.inputState.drag.overlappedDropTargetItem.path === dirItem.path
     },
-    getThumbIcon (item) {
-      const mimeDescription = this.$utils.getFileType(item.path).mimeDescription
+    getThumbIcon (dirItem) {
+      const mimeDescription = this.$utils.getFileType(dirItem.path).mimeDescription
       if (mimeDescription === 'video') {
         return 'mdi-play-circle-outline'
       }
@@ -658,35 +650,68 @@ export default {
       else if (mimeDescription === 'image') {
         return 'mdi-image-outline'
       }
-      else if (item.type === 'file') {
+      else if (dirItem.type === 'file') {
         return 'mdi-file-outline'
       }
-      else if (item.type === 'file-symlink') {
+      else if (dirItem.type === 'file-symlink') {
         return 'mdi-file-move-outline'
       }
-      else if (item.type === 'directory') {
+      else if (dirItem.type === 'directory') {
         return 'mdi-folder-outline'
       }
-      else if (item.type === 'directory-symlink') {
+      else if (dirItem.type === 'directory-symlink') {
         return 'mdi-folder-move-outline'
       }
     },
-    handleDirItemMouseDown (event, item, index) {
-      this.dragTargetType = 'dirItem'
-      this.mouseDown.item = item
+    handleDirItemMouseDown (event, dirItem, index) {
+      this.inputState.drag.type = 'local'
+      this.inputState.drag.dirItems = this.selectedDirItems
+      this.mouseDown.item = dirItem
       this.mouseDown.leftClick = event.button === 0
       this.mouseDown.rightClick = event.button === 2
       this.mouseDown.downCoordX = event.clientX
       this.mouseDown.downCoordY = event.clientY
-      this.mouseDown.clickedItemIsSelected = this.isDirItemSelected(item)
+      this.mouseDown.clickedItemIsSelected = this.isDirItemSelected(dirItem)
       this.mouseDown.noneItemsSelected = this.selectedDirItems.length === 0
       this.mouseDown.singleItemSelected = this.selectedDirItems.length === 1
       this.mouseDown.multipleItemsSelected = this.selectedDirItems.length > 1
-
       this.handleMouseDownActions()
-      this.handleDirItemMouseUp()
+      window.addEventListener('mouseup', this.handleMouseUp)
+      window.addEventListener('mousemove', this.handleMouseMove)
+      window.addEventListener('mouseout', this.handleMouseOut)
+      window.addEventListener('blur', this.handleWindowBlur)
+      this.inputState.pointer.lastMousedownEvent = event
     },
-    handleMouseUpActions () {
+    handleMouseMove (mousemoveEvent) {
+      this.inputState.drag.type = 'local'
+      this.inputState.drag.isStarted = true
+      this.inputState.drag.moveActivationTresholdReached = this.isMoveActivationTresholdReached(mousemoveEvent)
+      this.inputState.pointer.lastMousedownMoveEvent.clientX = mousemoveEvent.clientX
+      this.inputState.pointer.lastMousedownMoveEvent.clientY = mousemoveEvent.clientY
+    },
+    handleMouseUp () {
+      this.showDirItemDragOverlay = false
+      this.handleMouseMoveUpActions()
+      this.handleMouseMoveUpDragActions()
+      this.resetValues()
+    },
+    handleMouseOut (event) {
+      const wentBeyondLeftWindowBorder = event.clientX <= 0
+      const wentBeyondTopWindowBorder = event.clientY <= 0
+      const wentBeyondRightWindowBorder = event.clientX >= window.innerWidth
+      const wentBeyondBottomWindowBorder = event.clientY >= window.innerHeight
+      this.inputState.drag.isInsideWindow = !(wentBeyondLeftWindowBorder ||
+        wentBeyondTopWindowBorder ||
+        wentBeyondRightWindowBorder ||
+        wentBeyondBottomWindowBorder)
+      if (!this.inputState.drag.isInsideWindow) {
+        this.initOutboundDirItemDrag()
+      }
+    },
+    handleWindowBlur () {
+      this.initOutboundDirItemDrag()
+    },
+    handleMouseMoveUpActions () {
       const {
         item,
         leftClick,
@@ -698,7 +723,7 @@ export default {
         multipleItemsSelected,
       } = this.mouseDown
 
-      if (!this.dirItemDragMoveTresholdReached) {
+      if (!this.inputState.drag.moveActivationTresholdReached) {
         // Handle pointer_btn_1_up
         if ((this.inputState.ctrl || this.inputState.shift) && leftClick) {
           if (clickedItemIsSelected) {
@@ -727,11 +752,7 @@ export default {
                 this.dirItemAwaitsSecondClick = false
               }, this.openDirItemSecondClickDelay)
             }
-            if ((multipleItemsSelected || singleItemSelected) && !clickedItemIsSelected) {
-              // this.$store.dispatch('DESELECT_ALL_DIR_ITEMS')
-              // this.$store.dispatch('ADD_TO_SELECTED_DIR_ITEMS', item)
-            }
-            else if (multipleItemsSelected && clickedItemIsSelected) {
+            if (multipleItemsSelected && clickedItemIsSelected) {
               this.$store.dispatch('DESELECT_ALL_DIR_ITEMS')
               this.$store.dispatch('ADD_TO_SELECTED_DIR_ITEMS', item)
             }
@@ -753,6 +774,29 @@ export default {
         }
       }
     },
+    async handleMouseMoveUpDragActions () {
+      if (this.inputState.drag.moveActivationTresholdReached) {
+        const dropTargetPath = this.inputState.drag.overlappedDropTargetItem.path
+        const overlappedSomeDropTargetItem = dropTargetPath !== ''
+        if (overlappedSomeDropTargetItem) {
+          const dropTargetItemIsDirectory = fs.statSync(dropTargetPath).isDirectory()
+          if (dropTargetItemIsDirectory) {
+            if (this.inputState.shift) {
+              await this.$store.dispatch('copyDirItems', {
+                items: this.selectedDirItems,
+                directory: dropTargetPath,
+              })
+            }
+            else {
+              await this.$store.dispatch('moveDirItems', {
+                items: this.selectedDirItems,
+                directory: dropTargetPath,
+              })
+            }
+          }
+        }
+      }
+    },
     handleMouseDownActions () {
       const {item, leftClick, clickedItemIsSelected} = this.mouseDown
       const isSelectingNotSelectedDirItem = leftClick &&
@@ -769,19 +813,14 @@ export default {
         this.$store.dispatch('SELECT_DIR_ITEM_RANGE', item)
       }
     },
-    handleDirItemMouseUp () {
-      // Creating a global listener to make it possible
-      // to move the cursor outside the element after mouseDown but before mouseUp
-      document.addEventListener('mouseup', (mouseupEvent) => {
-        this.handleMouseUpActions()
-      }, {once: true})
-    },
     handleDirItemMouseEnter (event, item) {
-      this.inputState.pointer.hover.itemType = 'dirItem'
-      this.inputState.pointer.hover.item = item
-      this.$store.dispatch('HANDLE_HIGHLIGHT_DIR_ITEM_RANGE', {
-        hoveredItem: item,
-      })
+      if (!this.inputState.drag.isStarted) {
+        this.inputState.pointer.hover.itemType = 'dirItem'
+        this.inputState.pointer.hover.item = item
+        this.$store.dispatch('HANDLE_HIGHLIGHT_DIR_ITEM_RANGE', {
+          hoveredItem: item,
+        })
+      }
     },
     handleDirItemMouseLeave (event, item) {
       this.inputState.pointer.hover.itemType = ''
@@ -790,6 +829,20 @@ export default {
     handleDirItemMiddleMouseDown (event, item) {
       event.preventDefault()
       this.$store.dispatch('ADD_TAB', {item})
+    },
+    initOutboundDirItemDrag () {
+      this.inputState.drag.type = 'outbound'
+      if (this.inputState.drag.dirItems.length > 0) {
+        const diritemsPaths = this.inputState.drag.dirItems.map(item => item.path)
+        electron.ipcRenderer.send('window:drag-out', diritemsPaths)
+      }
+      this.resetValues()
+    },
+    isMoveActivationTresholdReached (mousemoveEvent) {
+      const distanceX = Math.abs(this.inputState.pointer.lastMousedownEvent.clientX - mousemoveEvent.clientX)
+      const distanceY = Math.abs(this.inputState.pointer.lastMousedownEvent.clientY - mousemoveEvent.clientY)
+      return distanceX > this.inputState.drag.moveActivationTreshold ||
+             distanceY > this.inputState.drag.moveActivationTreshold
     },
   },
 }

@@ -1717,6 +1717,8 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       </template>
     </dialog-generator>
 
+    <download-type-selector-dialog />
+
     <!-- dialog::externalDownloadDialog -->
     <dialog-generator
       :dialog="dialogs.externalDownloadDialog"
@@ -1880,6 +1882,7 @@ import TimeUtils from '../utils/timeUtils.js'
 import InfoTag from './InfoTag/index.vue'
 import katex from 'katex'
 import 'katex/dist/katex.min.css'
+import DownloadTypeSelectorDialog from '@/components/dialogs/DownloadTypeSelector.vue'
 
 const electronRemote = require('@electron/remote')
 const currentWindow = electronRemote.getCurrentWindow()
@@ -1891,6 +1894,7 @@ const os = require('os')
 export default {
   components: {
     InfoTag,
+    DownloadTypeSelectorDialog,
   },
   data () {
     return {
@@ -2762,7 +2766,7 @@ export default {
         }
         if (this.dialogs.externalDownloadDialog.data.source === 'youtube') {
           let format = 'bestvideo+bestaudio/best'
-          destPathRaw = `"${PATH.join(directory, '/%(title)s.%(ext)s')}"`
+          destPathRaw = `${PATH.join(directory, '/%(title)s.%(ext)s')}`
           fileName = ''
           path = ''
 

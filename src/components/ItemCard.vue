@@ -10,6 +10,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     :lines="lines"
     :cursor="navigatorOpenDirItemWithSingleClick ? 'pointer' : 'default'"
     :design="itemCardDesign"
+    :data-item-path="`${item.path}`"
     @click="itemCardOnClick({event: $event, item})"
     @contextmenu="itemCardOnRightClick({event: $event, item})"
     @dblclick="itemCardOnDoubleClick({event: $event, item})"
@@ -186,15 +187,10 @@ export default {
         return false
       }
     },
-    showDragOverOverlay (item) {
-      if (this.targetType === 'dir' || this.targetType === 'file' || this.targetType === 'userDir') {
-        return this.$store.getters.itemDragIsActive &&
-          this.inputState.pointer.overlappedDropTargetItem.path === item.path
-      }
-      if (this.targetType === 'drive') {
-        return this.$store.getters.itemDragIsActive &&
-          this.inputState.pointer.overlappedDropTargetItem.path === item.mount
-      }
+    showDragOverOverlay (dirItem) {
+      return this.inputState.drag.type !== '' &&
+        this.inputState.drag.moveActivationTresholdReached &&
+        this.inputState.drag.overlappedDropTargetItem.path === dirItem.path
     },
     isLowAvailableStorageSpace (item) {
       const threshold = 10 * 1024 ** 3 // 10GB

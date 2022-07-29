@@ -63,7 +63,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               v-if="['directory', 'directory-symlink', 'file', 'file-symlink'].includes(item.type)"
               :key="`dir-item-${item.path}`"
               :ref="'dirItem' + item.positionIndex"
-              :source="item"
+              :dir-item="item"
               :index="index"
               :height="item.height"
               :type="item.type"

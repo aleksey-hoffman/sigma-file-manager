@@ -32,7 +32,7 @@ function registerListener (win, options) {
     const getQueueProgress = () => receivedBytes / totalBytes
 
     const listener = (event, item, webContents) => {
-      item.hashID = options.hashID
+      item.hashID = options.hashID || sharedUtils.getHash()
       queue.add(item)
       totalBytes += item.getTotalBytes()
       let previousReceivedBytes = 0

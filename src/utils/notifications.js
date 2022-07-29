@@ -11,6 +11,15 @@ const eventHub = require('./eventHub').eventHub
 */
 function getNotification (params) {
   let notifications = {
+    error: {
+      action: 'update-by-type',
+      type: 'error',
+      timeout: 8000,
+      closeButton: true,
+      colorStatus: 'red',
+      title: 'Error occured',
+      message: params?.props?.error,
+    },
     cannotFetchDirItems: {
       action: 'update-by-type',
       type: 'cannotFetchDirItems',
@@ -46,52 +55,55 @@ function getNotification (params) {
       action: 'update-by-hash',
       hashID: sharedUtils.getHash(),
       type: 'copyDirItemsInProgress',
-      icon: 'mdi-progress-clock',
+      loader: true,
       colorStatus: 'blue',
       closeButton: true,
       timeout: 0,
-      title: 'In progress: copying items'
+      title: 'Copying items',
     },
     copyDirItemsSuccess: {
       action: 'update-by-hash',
       hashID: sharedUtils.getHash(),
       type: 'copyDirItemsSuccess',
+      loader: false,
       colorStatus: 'green',
       icon: '',
       closeButton: true,
       timeout: 3000,
-      title: `Copied ${params?.props?.items} items`
+      title: `Copied ${params?.props?.items} items`,
     },
     moveDirItemsInProgress: {
       action: 'update-by-hash',
       hashID: sharedUtils.getHash(),
       type: 'moveDirItemsInProgress',
-      icon: 'mdi-progress-clock',
+      loader: true,
       colorStatus: 'blue',
       closeButton: true,
       timeout: 0,
-      title: 'In progress: moving items'
+      title: 'Moving items',
     },
     moveDirItemsSuccess: {
       action: 'update-by-hash',
       hashID: sharedUtils.getHash(),
       type: 'moveDirItemsSuccess',
+      loader: false,
       colorStatus: 'green',
       icon: '',
       closeButton: true,
       timeout: 3000,
-      title: `Moved ${params?.props?.items} items`
+      title: `Moved ${params?.props?.items} items`,
     },
     transferDirItemsError: {
       action: 'update-by-hash',
       hashID: sharedUtils.getHash(),
       type: 'transferDirItemsError',
       icon: 'mdi-progress-close',
+      loader: false,
       colorStatus: 'red',
       closeButton: true,
-      timeout: 5000,
-      title: 'Error during transfer',
-      error: params?.props?.error
+      timeout: 0,
+      title: params?.title,
+      message: params?.props?.error,
     },
     renameFailedNoLongerExists: {
       action: 'add',

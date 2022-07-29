@@ -93,7 +93,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           <dir-item
             v-for="(item, index) in filteredPinnedItemsDirectories"
             :key="`pinned-directory-item-${item.path}`"
-            :source="item"
+            :dir-item="item"
             layout="list"
             :index="index"
             :type="item.type"
@@ -125,7 +125,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           <dir-item
             v-for="(item, index) in filteredPinnedItemsFiles"
             :key="`pinned-file-item-${item.path}`"
-            :source="item"
+            :dir-item="item"
             layout="list"
             :index="index"
             :type="item.type"
@@ -212,7 +212,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           <dir-item
             v-for="(item, index) in filteredProtectedItemsDirectories"
             :key="`protected-directory-item-${item.path}`"
-            :source="item"
+            :dir-item="item"
             layout="list"
             :index="index"
             :type="item.type"
@@ -244,7 +244,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           <dir-item
             v-for="(item, index) in filteredProtectedItemsFiles"
             :key="`protected-file-item-${item.path}`"
-            :source="item"
+            :dir-item="item"
             layout="list"
             :index="index"
             :type="item.type"
@@ -339,7 +339,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             <dir-item
               v-for="(item, index) in groupItem.items"
               :key="`dir-items-timeline-group-item-${index}`"
-              :source="item"
+              :dir-item="item"
               layout="list"
               :index="index"
               :type="item.type"

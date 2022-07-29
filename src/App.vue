@@ -1355,12 +1355,12 @@ i {
   border: 2px dashed rgb(255, 255, 255, 0.5);
   border-radius: inherit;
   opacity: 0;
-  transition: all 1s;
+  transition: all 0.5s ease;
 }
 
 .overlay--drag-over.is-visible {
   opacity: 1;
-  transition: all 0.1s;
+  transition: all 0s;
 }
 
 .list-item__checkbox {
@@ -1381,7 +1381,7 @@ i {
   transition: all 0.5s;
 }
 
-.dir-item__checkbox[data-selected="true"] {
+.dir-item__checkbox[is-selected="true"] {
   pointer-events: unset;
   opacity: 1;
 }

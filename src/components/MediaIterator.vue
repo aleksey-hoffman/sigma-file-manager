@@ -15,7 +15,6 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       class="media-picker__drop-area"
       align-center
       justify-center
-      @drop="$store.dispatch('HANDLE_HOME_PAGE_BACKGROUND_ITEM_DROP', $event)"
     >
       <div class="media-picker__drop-area-title">
         Drag & Drop
@@ -24,7 +23,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         custom image or video here
       </div>
       <div class="media-picker__drop-area-description">
-        Accepts: file, path, URL
+        Accepts: file (image, video)
       </div>
     </v-layout>
 
@@ -32,7 +31,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       v-for="item in items"
       :key="item.id"
       class="media-picker__item"
-      :data-selected="item.path === homeBannerSelectedItem.path"
+      :is-selected="item.path === homeBannerSelectedItem.path"
       :data-path="item.path"
       @click="$store.dispatch('SET_HOME_BANNER_BACKGROUND', item)"
     >
@@ -322,9 +321,6 @@ export default {
       return element
     },
     getSrcPath (path) {
-      if (this.type === 'default') {
-        path = path.replace('home banner', 'home banner previews')
-      }
       return this.$storeUtils.getSafePath(this.$sharedUtils.getUrlSafePath(path))
     },
     appendThumb (target, thumbPath) {
@@ -492,7 +488,7 @@ export default {
 }
 
 .media-picker__item:hover .media-picker__item-overlay--description,
-.media-picker__item[data-selected] .media-picker__item-overlay--description {
+.media-picker__item[is-selected] .media-picker__item-overlay--description {
   opacity: 1;
   cursor: pointer;
 }
