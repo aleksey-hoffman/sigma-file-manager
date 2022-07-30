@@ -937,18 +937,19 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     <!-- dialog::userDirectoryEditorDialog -->
     <dialog-generator
       :dialog="dialogs.userDirectoryEditorDialog"
-      :closeButton="{
+      :close-button="{
         onClick: () => closeDialog('userDirectoryEditorDialog'),
       }"
       title="User directory editor"
       height="unset"
+      fade-mask-bottom="0%"
     >
-      <template v-slot:content>
+      <template #content>
         <v-text-field
-          v-model="dialogs.userDirectoryEditorDialog.data.item.name"
-          label="Directory name"
+          v-model="dialogs.userDirectoryEditorDialog.data.item.title"
+          label="Directory title"
           autofocus
-        ></v-text-field>
+        />
 
         <v-text-field
           v-model="dialogs.userDirectoryEditorDialog.data.item.path"
@@ -956,28 +957,32 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           :hint="userDirectoryEditorDialogPathIsValid.error"
           :error="!userDirectoryEditorDialogPathIsValid.value"
           :persistent-hint="!userDirectoryEditorDialogPathIsValid.value"
-        ></v-text-field>
+        />
 
         <v-layout align-center>
           <v-text-field
             v-model="dialogs.userDirectoryEditorDialog.data.item.icon"
             label="Icon name (should start with 'mdi-')"
-          ></v-text-field>
+          />
 
           <v-tooltip bottom>
-            <template v-slot:activator="{ on }">
+            <template #activator="{ on }">
               <v-btn
                 class="button-1 ml-2"
-                v-on="on"
-                @click="$utils.openLink('https://materialdesignicons.com/')"
                 depressed
                 small
-              >Open icon list
+                v-on="on"
+                @click="$utils.openLink('https://materialdesignicons.com/')"
+              >
+                Open icon list
               </v-btn>
             </template>
             <span>
               <v-layout align-center>
-                <v-icon class="mr-3" size="16px">
+                <v-icon
+                  class="mr-3"
+                  size="16px"
+                >
                   mdi-open-in-new
                 </v-icon>
                 {{'https://materialdesignicons.com/'}}

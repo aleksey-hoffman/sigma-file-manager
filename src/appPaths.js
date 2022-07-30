@@ -2,8 +2,8 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-// TODO: 
-// resolve names of system directories automatically 
+// TODO:
+// resolve names of system directories automatically
 // so they would work in all system locales:
 // On windwos they have short names:
 // WALLPA~1 - Wallpapers
@@ -61,40 +61,40 @@ if (process.platform === 'win32') {
   bin7Zip = PATH.join(sevenZip, '7z.exe')
   binYoutubeDl = PATH.join(youtubeDl, 'youtube-dl.exe')
   userDirs = [
-    { name: 'Home directory', icon: 'mdi-folder-account-outline', path: home },
-    { name: 'Desktop', icon: 'mdi-aspect-ratio', path: desktop },
-    { name: 'Downloads', icon: 'mdi-download', path: downloads },
-    { name: 'Documents', icon: 'mdi-text-box-multiple-outline', path: documents },
-    { name: 'Screenshots', icon: 'mdi-image-size-select-large', path: screenshots },
-    { name: 'Pictures', icon: 'mdi-image-multiple-outline', path: pictures },
-    { name: 'Videos', icon: 'mdi-play-circle-outline', path: videos },
-    { name: 'Music', icon: 'mdi-music', path: music }
+    {name: 'home', title: 'Home', icon: 'mdi-folder-account-outline', path: home},
+    {name: 'desktop', title: 'Desktop', icon: 'mdi-aspect-ratio', path: desktop},
+    {name: 'downloads', title: 'Downloads', icon: 'mdi-download', path: downloads},
+    {name: 'documents', title: 'Documents', icon: 'mdi-text-box-multiple-outline', path: documents},
+    {name: 'screenshots', title: 'Screenshots', icon: 'mdi-image-size-select-large', path: screenshots},
+    {name: 'pictures', title: 'Pictures', icon: 'mdi-image-multiple-outline', path: pictures},
+    {name: 'videos', title: 'Videos', icon: 'mdi-play-circle-outline', path: videos},
+    {name: 'music', title: 'Music', icon: 'mdi-music', path: music},
   ]
 }
 else if (process.platform === 'linux') {
   bin7Zip = PATH.join(sevenZip, '7zz')
   binYoutubeDl = PATH.join(youtubeDl, 'youtube-dl')
   userDirs = [
-    { name: 'Home directory', icon: 'mdi-folder-account-outline', path: home },
-    { name: 'Desktop', icon: 'mdi-aspect-ratio', path: desktop },
-    { name: 'Downloads', icon: 'mdi-download', path: downloads },
-    { name: 'Documents', icon: 'mdi-text-box-multiple-outline', path: documents },
-    { name: 'Pictures', icon: 'mdi-image-multiple-outline', path: pictures },
-    { name: 'Videos', icon: 'mdi-play-circle-outline', path: videos },
-    { name: 'Music', icon: 'mdi-music', path: music }
+    {name: 'home', title: 'Home', icon: 'mdi-folder-account-outline', path: home},
+    {name: 'desktop', title: 'Desktop', icon: 'mdi-aspect-ratio', path: desktop},
+    {name: 'downloads', title: 'Downloads', icon: 'mdi-download', path: downloads},
+    {name: 'documents', title: 'Documents', icon: 'mdi-text-box-multiple-outline', path: documents},
+    {name: 'pictures', title: 'Pictures', icon: 'mdi-image-multiple-outline', path: pictures},
+    {name: 'videos', title: 'Videos', icon: 'mdi-play-circle-outline', path: videos},
+    {name: 'music', title: 'Music', icon: 'mdi-music', path: music},
   ]
 }
 else if (process.platform === 'darwin') {
   bin7Zip = PATH.join(sevenZip, '7zz')
   binYoutubeDl = PATH.join(youtubeDl, 'youtube-dl')
   userDirs = [
-    { name: 'Home directory', icon: 'mdi-folder-account-outline', path: home },
-    { name: 'Desktop', icon: 'mdi-aspect-ratio', path: desktop },
-    { name: 'Downloads', icon: 'mdi-download', path: downloads },
-    { name: 'Documents', icon: 'mdi-text-box-multiple-outline', path: documents },
-    { name: 'Pictures', icon: 'mdi-image-multiple-outline', path: pictures },
-    { name: 'Videos', icon: 'mdi-play-circle-outline', path: videos },
-    { name: 'Music', icon: 'mdi-music', path: music }
+    {name: 'home', title: 'Home', icon: 'mdi-folder-account-outline', path: home},
+    {name: 'desktop', title: 'Desktop', icon: 'mdi-aspect-ratio', path: desktop},
+    {name: 'downloads', title: 'Downloads', icon: 'mdi-download', path: downloads},
+    {name: 'documents', title: 'Documents', icon: 'mdi-text-box-multiple-outline', path: documents},
+    {name: 'pictures', title: 'Pictures', icon: 'mdi-image-multiple-outline', path: pictures},
+    {name: 'videos', title: 'Videos', icon: 'mdi-play-circle-outline', path: videos},
+    {name: 'music', title: 'Music', icon: 'mdi-music', path: music},
   ]
 }
 
@@ -105,28 +105,28 @@ const binFFPROBE = PATH.join(FFMPEG, process.platform === 'win32' ? 'ffprobe.exe
 const storageFiles = {
   settings: {
     fileName: 'settings.json',
-    defaultData: {}
+    defaultData: {},
   },
   pinned: {
     fileName: 'pinned.json',
-    defaultData: {}
+    defaultData: {},
   },
   protected: {
     fileName: 'protected.json',
-    defaultData: {}
+    defaultData: {},
   },
   notes: {
     fileName: 'notes.json',
-    defaultData: {}
+    defaultData: {},
   },
   stats: {
     fileName: 'stats.json',
-    defaultData: {}
+    defaultData: {},
   },
   workspaces: {
     fileName: 'workspaces.json',
-    defaultData: {}
-  }
+    defaultData: {},
+  },
 }
 
 const storageDirectories = {
@@ -136,7 +136,7 @@ const storageDirectories = {
   appStorageHomeBannerMedia,
   appStorageNotesMedia,
   appStorageGlobalSearchData,
-  appStorageNavigatorThumbs
+  appStorageNavigatorThumbs,
 }
 
 const appPaths = {
@@ -162,7 +162,7 @@ const appPaths = {
   bin7Zip,
   binFFMPEG,
   binFFPROBE,
-  binYoutubeDl
+  binYoutubeDl,
 }
 
 function getUserDirPath (dirName) {
@@ -179,12 +179,12 @@ function getUserDirPath (dirName) {
   else if (dirName === 'oneDrive') {
     return env.OneDrive
   }
-  
+
   try {
     return electronRemote.app.getPath(dirName)
   }
   catch (error) {
-    let dirNameFormatted = dirName[0].toUpperCase() + dirName.slice(1) 
+    let dirNameFormatted = dirName[0].toUpperCase() + dirName.slice(1)
     let userDir = env.USERPROFILE || env.HOME
     return PATH.join(userDir, dirNameFormatted)
   }

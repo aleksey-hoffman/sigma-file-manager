@@ -99,10 +99,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     <div class="item-card__content">
       <div v-if="targetType === 'userDir'">
         <div class="item-card__content__line-1">
-          {{item.name}}
-          {{item.name === 'Home directory' && showUserNameOnUserHomeDir
-            ? `| ${$utils.getPathBase(item.path)}`
-            : ''}}
+          {{item.title}}
         </div>
       </div>
 
@@ -163,7 +160,6 @@ export default {
       inputState: 'inputState',
       driveCardProgressType: 'storageData.settings.driveCard.progressType',
       driveCardShowProgress: 'storageData.settings.driveCard.showProgress',
-      showUserNameOnUserHomeDir: 'storageData.settings.showUserNameOnUserHomeDir',
       navigatorOpenDirItemWithSingleClick: 'storageData.settings.navigator.openDirItemWithSingleClick',
       itemCardDesign: 'storageData.settings.itemCardDesign',
     }),
@@ -239,11 +235,12 @@ export default {
       let dirItem = await this.$store.dispatch('GET_DIR_ITEM_INFO', params.item.path)
       this.$store.dispatch('DESELECT_ALL_DIR_ITEMS')
       this.$store.dispatch('ADD_TO_SELECTED_DIR_ITEMS', dirItem)
+      const sourceUserDirItem = this.appPaths.userDirs.find(userDirItem => userDirItem.name === params.item.name)
       this.$store.dispatch('SET_CONTEXT_MENU', {
         x: params.event.clientX,
         y: params.event.clientY,
         targetType: this.targetType,
-        targetData: {item: params.item, dirItem, userDirs: this.appPaths.userDirs},
+        targetData: {item: sourceUserDirItem, dirItem, userDirs: this.appPaths.userDirs},
       })
     },
     itemCardOnDoubleClick (params) {

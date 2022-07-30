@@ -13,12 +13,12 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       :lines="1"
     >
       <item-card
-        v-for="(userDir, index) in userDirs"
+        v-for="(userDir, index) in userDirsFormatted"
         :key="'userDir-card-' + index"
         :item="userDir"
         :lines="1"
-        targetType="userDir"
-      ></item-card>
+        target-type="userDir"
+      />
     </item-card-grid>
   </div>
 </template>
@@ -30,7 +30,16 @@ export default {
   computed: {
     ...mapFields({
       userDirs: 'storageData.settings.appPaths.userDirs',
+      showUserNameOnUserHomeDir: 'storageData.settings.showUserNameOnUserHomeDir',
     }),
+    userDirsFormatted () {
+      return this.$utils.cloneDeep(this.userDirs).map(item => {
+        if (item.name === 'home' && this.showUserNameOnUserHomeDir) {
+          item.title = `${item.title} | ${this.$utils.getPathBase(item.path)}`
+        }
+        return item
+      })
+    },
   },
 }
 </script>
