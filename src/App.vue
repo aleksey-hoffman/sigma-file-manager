@@ -863,8 +863,9 @@ export default {
             else {
               updatedValue = storageValue
             }
-            // Update store. Write updated settings back to the storage file
-            if (Object.keys(updatedValue).length !== 0) {
+            // Update store and write updated settings back to the storage file
+            const isEmptyObject = this.$utils.getDataType(updatedValue) === 'object' && Object.keys(updatedValue).length !== 0
+            if (!isEmptyObject) {
               await this.$store.dispatch('SET', {
                 key: storageKey,
                 value: updatedValue,
