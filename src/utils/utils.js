@@ -103,9 +103,35 @@ export default {
       !Array.isArray(value) &&
       value.constructor.name !== 'Array'
 
-    if (isObject) { return 'object' }
-    else if (isArray) { return 'array' }
-    else { return typeof value }
+    if (isObject) {return 'object'}
+    else if (isArray) {return 'array'}
+    else {return typeof value}
+  },
+  objectsHaveSameKeys (...objects) {
+    const allKeys = objects.reduce((keys, object) => keys.concat(Object.keys(object)), [])
+    const union = new Set(allKeys)
+    return objects.every(object => union.size === Object.keys(object).length)
+  },
+  deepObjectsHaveSameKeys (o1, o2) {
+    if (o1 === null && o2 === null) {return true}
+
+    const o1keys = o1 === null ? new Set() : new Set(Object.keys(o1))
+    const o2keys = o2 === null ? new Set() : new Set(Object.keys(o2))
+
+    if (o1keys.size !== o2keys.size) {return false}
+
+    for (const key of o1keys) {
+      if (!o2keys.has(key)) {return false}
+      const v1 = o1[key]
+      const v2 = o2[key]
+      const t1 = typeof v1
+      const t2 = typeof v2
+      if (t1 === 'object') {
+        if (t2 === 'object' && !this.deepObjectsHaveSameKeys(v1, v2)) {return false}
+      }
+      else if (t2 === 'object') {return false}
+    }
+    return true
   },
   capitalize (string) {
     return string.replace(/^\p{CWU}/u, char => char.toUpperCase())

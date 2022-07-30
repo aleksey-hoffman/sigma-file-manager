@@ -2034,6 +2034,17 @@ export default new Vuex.Store({
         throw Error(error)
       }
     },
+    async deleteKeyFromStorageFile ({state}, params) {
+      const filePath = `${state.storageData.settings.appPaths.storageDirectories.appStorage}/${params.fileName}`
+      try {
+        delete params.data[params.key]
+        const formattedData = JSON.stringify(params.data, null, 2)
+        await writeFile(filePath, formattedData, {fsyncWait: false, encoding: 'utf8'})
+      }
+      catch (error) {
+        throw Error(error)
+      }
+    },
     SYNC_SETTINGS ({ state, commit, dispatch, getters }, payload) {
       if (payload.key === 'storageData.settings.navigatorLayout') {
         if (payload.value === 'list') {

@@ -824,27 +824,55 @@ export default {
     */
     async writeStorageDataToStore (payload, data) {
       try {
-        for (let [key, value] of Object.entries(data)) {
-          const propertyInStore = this.$utils.getDeepProperty(this.$store.state, key)
-          if (propertyInStore !== undefined) {
+        for (let [storageKey, storageValue] of Object.entries(data)) {
+          const storeValue = this.$utils.getDeepProperty(this.$store.state, storageKey)
+          if (storeValue !== undefined) {
             // Merge storage value with store value if it's an object,
             // otherwise overwrite the value in store.
             // This will prevent errors, when new object properties are added with updates
             let updatedValue = {}
-            if (this.$utils.getDataType(value) === 'object' && this.$utils.getDataType(propertyInStore) === 'object') {
-              updatedValue = Object.assign({}, propertyInStore, value)
+            let isObject = this.$utils.getDataType(storageValue) === 'object' &&
+              this.$utils.getDataType(storeValue) === 'object'
+            let isObjectArray = this.$utils.getDataType(storageValue) === 'array' &&
+              this.$utils.getDataType(storeValue) === 'array' &&
+              storeValue.every((item) => this.$utils.getDataType(item) === 'object')
+
+            if (isObject) {
+              // Join without overwriting storage values
+              updatedValue = Object.assign({}, storeValue, storageValue)
+            }
+            else if (isObjectArray) {
+              try {
+                let allKeysAreSame = true
+                storeValue.forEach((item, index) => {
+                  const isObject = this.$utils.getDataType(item) === 'object' && this.$utils.getDataType(storageValue[index]) === 'object'
+                  if (isObject) {
+                    allKeysAreSame = this.$utils.objectsHaveSameKeys(item, storageValue[index])
+                  }
+                })
+                if (!allKeysAreSame) {
+                  await this.$store.dispatch('deleteKeyFromStorageFile', {
+                    key: storageKey,
+                    data,
+                    fileName: payload.fileName,
+                  })
+                }
+              }
+              catch (error) {}
             }
             else {
-              updatedValue = value
+              updatedValue = storageValue
             }
             // Update store. Write updated settings back to the storage file
-            await this.$store.dispatch('SET', {
-              key,
-              value: updatedValue,
-              options: {
-                updateStorage: payload.fileName === 'settings.json'
-              }
-            })
+            if (Object.keys(updatedValue).length !== 0) {
+              await this.$store.dispatch('SET', {
+                key: storageKey,
+                value: updatedValue,
+                options: {
+                  updateStorage: payload.fileName === 'settings.json',
+                },
+              })
+            }
           }
         }
       }
