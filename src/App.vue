@@ -5,28 +5,28 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <template>
   <v-app
-    :data-theme-type="themeType" 
-    :route-name="$route.name" 
+    :data-theme-type="themeType"
+    :route-name="$route.name"
     :dir-item-background="dirItemBackground"
     :is-window-maximized="windowsMainStateIsMaximized"
   >
-    <window-toolbar/>
-    <action-toolbar/>
-    <navigation-panel/>
-    <notification-manager/>
-    <overlays/>
-    <clipboard-toolbar/>
-    <dialogs v-if="appIsLoaded"/>
-    <window-effects/>
-    <fs-local-server-manager/>
-    <context-menus/>
+    <window-toolbar />
+    <action-toolbar />
+    <navigation-panel />
+    <notification-manager />
+    <overlays />
+    <clipboard-toolbar />
+    <dialogs v-if="appIsLoaded" />
+    <window-effects />
+    <fs-local-server-manager />
+    <context-menus />
 
     <!-- app-content-area -->
     <v-main class="app-content">
-      <keep-alive 
+      <keep-alive
         :include="['home', 'settings']"
       >
-        <router-view/>
+        <router-view />
       </keep-alive>
     </v-main>
   </v-app>
@@ -55,7 +55,7 @@ const zlib = require('zlib')
 console.timeEnd('time::App.vue::Imports')
 
 export default {
-  name: 'App',
+  name: 'app',
   watch: {
     $route (to, from) {
       this.contextMenus.dirItem.value = false
@@ -75,7 +75,7 @@ export default {
     },
     'contextMenus.dirItem.value' (value) {
       if (value) {
-        this.$store.dispatch('INIT_FETCH_CONTEXT_MENU_TARGET_ITEMS', { type: 'dirItem' })
+        this.$store.dispatch('INIT_FETCH_CONTEXT_MENU_TARGET_ITEMS', {type: 'dirItem'})
       }
     },
     selectedDirItems (value) {
@@ -113,13 +113,13 @@ export default {
   },
   created () {
     this.$store.dispatch('CLONE_STATE')
-    this.$store.dispatch('ADD_ACTION_TO_HISTORY', { action: 'App.vue::created()' })
+    this.$store.dispatch('ADD_ACTION_TO_HISTORY', {action: 'App.vue::created()'})
     this.initWindowErrorHandler()
     this.initWindowResizeListener()
     this.extractAppBinaries()
   },
   async mounted () {
-    this.$store.dispatch('ADD_ACTION_TO_HISTORY', { action: 'App.vue::mounted()' })
+    this.$store.dispatch('ADD_ACTION_TO_HISTORY', {action: 'App.vue::mounted()'})
     try {
       await this.initAllStorageFiles()
       await this.fetchStorageDevices()
@@ -144,7 +144,7 @@ export default {
     catch (error) {
       electron.ipcRenderer.send('show:errorWindow', {
         title: 'An error occured during loading',
-        error
+        error,
       })
       this.removeLoadingScreen()
     }
@@ -159,7 +159,7 @@ export default {
       'someDialogIsOpened',
       'selectedWorkspace',
       'computedShortcuts',
-      'isCursorInsideATextField'
+      'isCursorInsideATextField',
     ]),
     ...mapFields({
       appVersion: 'appVersion',
@@ -218,9 +218,9 @@ export default {
       set (value) {
         this.$store.dispatch('SET', {
           key: 'storageData.settings.globalSearchScanWasInterrupted',
-          value
+          value,
         })
-      }
+      },
     },
   },
   methods: {
@@ -267,11 +267,11 @@ export default {
       })
 
       electron.ipcRenderer.on('check-app-updates', (event) => {
-        this.$store.dispatch('INIT_APP_UPDATER', { notifyUnavailable: true })
+        this.$store.dispatch('INIT_APP_UPDATER', {notifyUnavailable: true})
       })
 
       electron.ipcRenderer.on('open-new-note', (event) => {
-        this.$store.dispatch('OPEN_NOTE_EDITOR', { type: 'new' })
+        this.$store.dispatch('OPEN_NOTE_EDITOR', {type: 'new'})
       })
 
       electron.ipcRenderer.on('window:blur', (event) => {
@@ -344,7 +344,7 @@ export default {
     initWindowErrorHandler () {
       window.addEventListener('error', (event) => {
         const disallowedErrors = [
-          'ResizeObserver loop limit exceeded'
+          'ResizeObserver loop limit exceeded',
         ]
         if (!disallowedErrors.includes(event.message)) {
           const hashID = this.$utils.getHash()
@@ -365,14 +365,14 @@ export default {
                   this.dialogs.errorDialog.data.routeName = this.$route.name
                   this.dialogs.errorDialog.value = true
                 },
-                closesNotification: true
+                closesNotification: true,
               },
               {
                 title: 'Ignore',
                 onClick: () => {},
-                closesNotification: true
-              }
-            ]
+                closesNotification: true,
+              },
+            ],
           })
         }
       })
@@ -398,8 +398,8 @@ export default {
         }
         catch (error) {
           await fsExtra.copy(
-            this.appPaths.resourcesBin, 
-            this.appPaths.storageDirectories.appStorageBin
+            this.appPaths.resourcesBin,
+            this.appPaths.storageDirectories.appStorageBin,
           )
           if (process.platform !== 'win32') {
             this.getAppStorageBinDirPermissions()
@@ -414,8 +414,8 @@ export default {
           notifications.emit({
             name: 'getAppStorageBinDirPermissionsError',
             props: {
-              error
-            }
+              error,
+            },
           })
         }
       })
@@ -443,10 +443,10 @@ export default {
     setWindowSize () {
       this.$store.dispatch('SET', {
         key: 'windowSize',
-        value: { x: window.innerWidth, y: window.innerHeight },
+        value: {x: window.innerWidth, y: window.innerHeight},
         options: {
-          updateStorage: false
-        }
+          updateStorage: false,
+        },
       })
     },
     initWindowResizeListener () {
@@ -454,7 +454,7 @@ export default {
       window.addEventListener('resize', (event) => {
         this.$store.state.throttles.windowResizeHandler.throttle(() => {
           this.setWindowSize()
-        }, { time: 250 })
+        }, {time: 250})
       })
     },
     initIntervals () {
@@ -463,11 +463,11 @@ export default {
         const lastSearchScanTimeElapsed = this.$utils.getTimeDiff(
           Date.now(),
           this.lastSearchScanTime,
-          'ms'
+          'ms',
         )
         this.$store.dispatch('SET', {
           key: 'globalSearch.lastScanTimeElapsed',
-          value: lastSearchScanTimeElapsed
+          value: lastSearchScanTimeElapsed,
         })
       }, 1000)
     },
@@ -481,7 +481,7 @@ export default {
         const searchDataFilePath = `${this.appPaths.storageDirectories.appStorageGlobalSearchData}/search_data_${index}.txt`
         const searchDataFileObject = {
           mount: drive.mount,
-          path: searchDataFilePath
+          path: searchDataFilePath,
         }
         const fileObject = this.appPaths.globalSearchDataFiles.find(object => object.mount === drive.mount)
         if (!fileObject) {
@@ -527,8 +527,8 @@ export default {
             driveCount: 0,
             scannedDriveCount: 0,
             scannedDrives: [],
-            updateInterval: null
-          }
+            updateInterval: null,
+          },
         })
           .then((task) => resolve(task))
       })
@@ -568,9 +568,9 @@ export default {
                     task.props.scannedDrives = []
                     task.props.updateInterval = null
                   },
-                  closesNotification: true
-                }
-              ]
+                  closesNotification: true,
+                },
+              ],
             }
             this.$eventHub.$emit('notification', notification)
             this.initGlobalSearchDataScanUpdateInterval(task, notification)
@@ -587,7 +587,7 @@ export default {
           task.props.scans[index].readStream = new DriveWalker(
             searchDataFile.mount,
             this.globalSearchScanDepth,
-            this.globalSearchDisallowedPaths
+            this.globalSearchDisallowedPaths,
           )
           task.props.scans[index].writeStream = fs.createWriteStream(searchDataFile.path)
           if (this.globalSearchCompressSearchData) {
@@ -633,7 +633,7 @@ export default {
       const minutesElapsed = this.$utils.getTimeDiff(
         Date.now(),
         this.lastSearchScanTime,
-        'minutes'
+        'minutes',
       )
       const scanIsDue = minutesElapsed >= this.globalSearchAutoScanIntervalTime
       if (scanIsDue) {
@@ -643,7 +643,7 @@ export default {
     async setTimeLastSearchScan () {
       return await this.$store.dispatch('SET', {
         key: 'storageData.settings.time.lastSearchScan',
-        value: Date.now()
+        value: Date.now(),
       })
     },
     preventHomeViewLayoutTransition () {
@@ -661,7 +661,7 @@ export default {
         if (this.globalSearchScanWasInterrupted) {
           // Re-scan search data
           this.$eventHub.$emit('app:method', {
-            method: 'initGlobalSearchDataScan'
+            method: 'initGlobalSearchDataScan',
           })
           notifications.emit({name: 'searchFileIsDamaged'})
           reject(new Error('One of the search files is damaged'))
@@ -679,7 +679,7 @@ export default {
           workerObject.worker.onerror = (error) => {
             if (error.message === 'Uncaught Error: unexpected end of file') {
               this.$eventHub.$emit('app:method', {
-                method: 'initGlobalSearchDataScan'
+                method: 'initGlobalSearchDataScan',
               })
               notifications.emit({name: 'searchFileIsDamaged'})
             }
@@ -709,7 +709,7 @@ export default {
         else {
           let newWorkerObject = {
             mount: params.mount,
-            worker: new GlobalSearchWorker()
+            worker: new GlobalSearchWorker(),
           }
           this.$store.state.workers.globalSearchWorkers.push(newWorkerObject)
           this.execGlobalSearchWorkerAction(params, newWorkerObject)
@@ -730,25 +730,20 @@ export default {
       await this.initAllStorageFiles()
       this.$store.dispatch('RELOAD_DIR', {
         scrollTop: false,
-        selectCurrentDir: false
+        selectCurrentDir: false,
       })
     },
     initDirWatcherWorker () {
       this.$store.state.workers.dirWatcherWorker = new DirWatcherWorker()
-      try {
-        this.$store.state.workers.dirWatcherWorker.onmessage = (event) => {
-          this.handleChokidarEvent(event.data.data)
-        }
-        this.$store.state.workers.dirWatcherWorker.onerror = (error) => {
-          throw Error(error)
-        }
+      this.$store.state.workers.dirWatcherWorker.onmessage = (event) => {
+        this.handleChokidarEvent(event.data.data)
       }
-      catch (error) {
-        throw Error(error)
+      this.$store.state.workers.dirWatcherWorker.onerror = (error) => {
+        throw error
       }
     },
     async startWatchingCurrentDir (path) {
-      this.$store.state.workers.dirWatcherWorker.postMessage({ action: 'init-dir-watch', path })
+      this.$store.state.workers.dirWatcherWorker.postMessage({action: 'init-dir-watch', path})
     },
     handleFirstAppLaunch () {
       // TODO:
@@ -774,111 +769,87 @@ export default {
     openWithExternalProgram (app) {
       this.$store.commit('OPEN_WITH_CUSTOM_APP', app)
     },
-    initAllStorageFiles () {
-      return new Promise((resolve, reject) => {
-        const promises = []
-        for (const [key, value] of Object.entries(this.storageData)) {
-          promises.push(this.initStorageFile(value))
-        }
-        Promise.allSettled(promises)
-          .then(() => {
-            this.$store.dispatch('ADD_ACTION_TO_HISTORY', { action: 'App.vue::initAllStorageFiles()' })
-            resolve()
-          })
-          .catch((error) => {
-            throw Error(error)
-          })
-      })
+    async initAllStorageFiles () {
+      const promises = []
+      for (const [key, value] of Object.entries(this.storageData)) {
+        promises.push(this.initStorageFile(value))
+      }
+      await Promise.allSettled(promises)
+      this.$store.dispatch('ADD_ACTION_TO_HISTORY', {action: 'App.vue::initAllStorageFiles()'})
     },
-    initStorageFile (payload) {
-      return new Promise((resolve, reject) => {
-        const filePath = PATH.join(this.appPaths.storageDirectories.appStorage, payload.fileName)
-        const fileExists = fs.existsSync(filePath)
-        // If file doesn't exist, initizlize it and set data from store
-        if (!fileExists) {
-          this.writeDefaultStorageData(payload)
-            .then(() => resolve())
-            .catch((error) => reject(error))
-        }
-        // If file exists, get it and override each property in the store
-        else if (fileExists) {
-          this.fetchAppStorageData(payload)
-            .then(() => resolve())
-            .catch((error) => reject(error))
-        }
-      })
+    async initStorageFile (payload) {
+      const filePath = PATH.join(this.appPaths.storageDirectories.appStorage, payload.fileName)
+      const fileExists = fs.existsSync(filePath)
+      // If file doesn't exist, initizlize it and set data from store
+      if (!fileExists) {
+        await this.writeDefaultStorageData(payload)
+      }
+      // If file exists, get it and override each property in the store
+      else if (fileExists) {
+        await this.fetchAppStorageData(payload)
+      }
     },
     async fetchAppStorageData (payload) {
-      try {
-        let data = await this.$store.dispatch('READ_STORAGE_FILE', payload.fileName)
-        data = this.processAppStorageData(payload, data)
-        await this.writeStorageDataToStore(payload, data)
-      }
-      catch (error) {
-        throw Error(error)
-      }
+      let data = await this.$store.dispatch('READ_STORAGE_FILE', payload.fileName)
+      data = this.processAppStorageData(payload, data)
+      await this.writeStorageDataToStore(payload, data)
     },
     /**
     * @param {object} params.payload
     * @param {object} params.data
     */
     async writeStorageDataToStore (payload, data) {
-      try {
-        for (let [storageKey, storageValue] of Object.entries(data)) {
-          const storeValue = this.$utils.getDeepProperty(this.$store.state, storageKey)
-          if (storeValue !== undefined) {
-            // Merge storage value with store value if it's an object,
-            // otherwise overwrite the value in store.
-            // This will prevent errors, when new object properties are added with updates
-            let updatedValue = {}
-            let isObject = this.$utils.getDataType(storageValue) === 'object' &&
+      for (let [storageKey, storageValue] of Object.entries(data)) {
+        const storeValue = this.$utils.getDeepProperty(this.$store.state, storageKey)
+        if (storeValue !== undefined) {
+          // Merge storage value with store value if it's an object,
+          // otherwise overwrite the value in store.
+          // This will prevent errors, when new object properties are added with updates
+          let updatedValue = {}
+          let isObject = this.$utils.getDataType(storageValue) === 'object' &&
               this.$utils.getDataType(storeValue) === 'object'
-            let isObjectArray = this.$utils.getDataType(storageValue) === 'array' &&
+          let isObjectArray = this.$utils.getDataType(storageValue) === 'array' &&
               this.$utils.getDataType(storeValue) === 'array' &&
               storeValue.every((item) => this.$utils.getDataType(item) === 'object')
 
-            if (isObject) {
-              // Join without overwriting storage values
-              updatedValue = Object.assign({}, storeValue, storageValue)
-            }
-            else if (isObjectArray) {
-              try {
-                let allKeysAreSame = true
-                storeValue.forEach((item, index) => {
-                  const isObject = this.$utils.getDataType(item) === 'object' && this.$utils.getDataType(storageValue[index]) === 'object'
-                  if (isObject) {
-                    allKeysAreSame = this.$utils.objectsHaveSameKeys(item, storageValue[index])
-                  }
-                })
-                if (!allKeysAreSame) {
-                  await this.$store.dispatch('deleteKeyFromStorageFile', {
-                    key: storageKey,
-                    data,
-                    fileName: payload.fileName,
-                  })
+          if (isObject) {
+            // Join without overwriting storage values
+            updatedValue = Object.assign({}, storeValue, storageValue)
+          }
+          else if (isObjectArray) {
+            try {
+              let allKeysAreSame = true
+              storeValue.forEach((item, index) => {
+                const isObject = this.$utils.getDataType(item) === 'object' && this.$utils.getDataType(storageValue[index]) === 'object'
+                if (isObject) {
+                  allKeysAreSame = this.$utils.objectsHaveSameKeys(item, storageValue[index])
                 }
-              }
-              catch (error) {}
-            }
-            else {
-              updatedValue = storageValue
-            }
-            // Update store and write updated settings back to the storage file
-            const isEmptyObject = this.$utils.getDataType(updatedValue) === 'object' && Object.keys(updatedValue).length !== 0
-            if (!isEmptyObject) {
-              await this.$store.dispatch('SET', {
-                key: storageKey,
-                value: updatedValue,
-                options: {
-                  updateStorage: payload.fileName === 'settings.json',
-                },
               })
+              if (!allKeysAreSame) {
+                await this.$store.dispatch('deleteKeyFromStorageFile', {
+                  key: storageKey,
+                  data,
+                  fileName: payload.fileName,
+                })
+              }
             }
+            catch (error) {}
+          }
+          else {
+            updatedValue = storageValue
+          }
+          // Update store and write updated settings back to the storage file
+          const isEmptyObject = this.$utils.getDataType(updatedValue) === 'object' && Object.keys(updatedValue).length !== 0
+          if (!isEmptyObject) {
+            await this.$store.dispatch('SET', {
+              key: storageKey,
+              value: updatedValue,
+              options: {
+                updateStorage: payload.fileName === 'settings.json',
+              },
+            })
           }
         }
-      }
-      catch (error) {
-        throw Error(error)
       }
     },
     /**
@@ -889,14 +860,9 @@ export default {
     * @return {object} data
     */
     processAppStorageData (payload, data) {
-      try {
-        data = this.processStorageData(payload, data)
-        data = this.formatAppStorageData(payload, data)
-        return data
-      }
-      catch (error) {
-        throw Error(error)
-      }
+      data = this.processStorageData(payload, data)
+      data = this.formatAppStorageData(payload, data)
+      return data
     },
     formatAppStorageData (payload, data) {
       // if (payload.fileName === 'settings.json') {
@@ -957,14 +923,9 @@ export default {
       return data
     },
     async writeDefaultStorageData (payload) {
-      try {
-        this.$store.dispatch('WRITE_DEFAULT_STORAGE_FILE', {
-          fileName: payload.fileName
-        })
-      }
-      catch (error) {
-        throw Error(error)
-      }
+      this.$store.dispatch('WRITE_DEFAULT_STORAGE_FILE', {
+        fileName: payload.fileName,
+      })
     },
     transitionOutLoadingScreen () {
       const loadingScreenContainerNode = document.querySelector('#loading-animation__container')
@@ -973,14 +934,14 @@ export default {
         loadingScreenContainerNode.style.opacity = '0'
         loadingScreenContainerNode.animate(
           [
-            { opacity: 1, transform: 'scale(1)' },
-            { opacity: 0, transform: 'scale(0.8)' }
+            {opacity: 1, transform: 'scale(1)'},
+            {opacity: 0, transform: 'scale(0.8)'},
           ],
           {
             easing: 'ease',
             duration: 500,
-            fill: 'forwards'
-          }
+            fill: 'forwards',
+          },
         )
         this.animateHomeBannerIn()
       }
@@ -1033,7 +994,7 @@ export default {
           electron.ipcRenderer.send('set-global-shortcut', {
             name: key,
             shortcut: this.shortcuts[key].shortcut,
-            previousShortcut: this.shortcuts[key].shortcut
+            previousShortcut: this.shortcuts[key].shortcut,
           })
         }
       }
@@ -1048,11 +1009,10 @@ export default {
         onIdle: () => this.handleAppIdleState(),
         onActive: () => this.handleAppActiveState(),
         keepTracking: true,
-        startAtIdle: false
+        startAtIdle: false,
       }).start()
     },
     handleAppIdleState () {
-      console.log('APP STATUS: IDLE')
       this.appStatus.state = 'idle'
       // Do not stop drive list watcher when "focusMainWindowOnDriveConnected" is true
       // it will stop working when the drive watcher is stopped
@@ -1062,7 +1022,6 @@ export default {
       this.handleThumbCacheRemoval()
     },
     handleAppActiveState () {
-      console.log('APP STATUS: ACTIVE')
       this.appStatus.state = 'active'
       this.initStorageDevicesWatcher()
     },
@@ -1079,14 +1038,14 @@ export default {
             items: [dirent],
             options: {
               skipSafeCheck: true,
-              silent: true
-            }
+              silent: true,
+            },
           })
           notifications.emit({
             name: 'removeAppThumbsDirSuccess',
             props: {
-              thumbDirSizeLimit: appThumbDirSizeLimitReadable
-            }
+              thumbDirSizeLimit: appThumbDirSizeLimitReadable,
+            },
           })
         }
       }
@@ -1096,8 +1055,8 @@ export default {
           name: 'removeAppThumbsDirError',
           props: {
             thumbDirPath: appStorageNavigatorThumbsDirPath,
-            error
-          }
+            error,
+          },
         })
       }
     },
@@ -1122,13 +1081,8 @@ export default {
       clearInterval(this.$store.state.intervals.driveListFetchInterval)
     },
     async fetchStorageDevices () {
-      try {
-        this.drivesPreviousData = this.$utils.cloneDeep(this.drives)
-        this.drives = await getStorageDevices()
-      }
-      catch (error) {
-        throw Error(error)
-      }
+      this.drivesPreviousData = this.$utils.cloneDeep(this.drives)
+      this.drives = await getStorageDevices()
     },
     bindMouseKeyEvents () {
       window.addEventListener('mouseup', this.mouseupHandler)
@@ -1197,7 +1151,7 @@ export default {
             mousetrap.bind(routeShortcuts, (event) => {
               const index = parseInt(event.code.replace('Digit', ''))
               value.action.options = this.navigationPanel.items[index - 1]
-              this.$store.dispatch('SHORTCUT_ACTION', { event, value })
+              this.$store.dispatch('SHORTCUT_ACTION', {event, value})
             }, 'keydown')
           }
           else {
@@ -1209,14 +1163,14 @@ export default {
                 shortcut = ['ctrl++', 'ctrl+=']
               }
               mousetrap.bind(shortcut, (event) => {
-                this.$store.dispatch('SHORTCUT_ACTION', { event, value })
+                this.$store.dispatch('SHORTCUT_ACTION', {event, value})
               }, value.eventName ?? 'keydown')
             }
           }
         }
       }
-    }
-  }
+    },
+  },
 }
 </script>
 
