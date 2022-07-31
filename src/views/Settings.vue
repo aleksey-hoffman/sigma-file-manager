@@ -2001,13 +2001,6 @@ export default {
     SectionSettings,
     FilterClearButton,
   },
-  beforeRouteLeave (to, from, next) {
-    this.$store.dispatch('SAVE_ROUTE_SCROLL_POSITION', {
-      toRoute: to,
-      fromRoute: from,
-    })
-    next()
-  },
   data () {
     return {
       githubProjectData: {
