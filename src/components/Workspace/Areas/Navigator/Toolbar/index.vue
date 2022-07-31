@@ -14,6 +14,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       :icon-class="item.iconClass"
       :tooltip="item.tooltip"
       :on-click="item.onClick"
+      :route-name="item.routeName"
     />
   </div>
 </template>
@@ -82,6 +83,7 @@ export default {
         },
         {
           component: 'filter-field',
+          routeName: 'navigator',
         },
       ]
     },

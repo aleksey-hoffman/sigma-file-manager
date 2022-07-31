@@ -346,8 +346,8 @@ export default {
         filterQuery: this.filterQuery,
         items,
         filterHiddenItems: !this.navigatorShowHiddenDirItems,
-        filterProperties: this.$store.state.filterField.view[this.$route.name].filterProperties,
-        filterQueryOptions: this.$store.state.filterField.view[this.$route.name].options,
+        filterProperties: this.$store.state.filterField.view.navigator.filterProperties,
+        filterQueryOptions: this.$store.state.filterField.view.navigator.options,
       })
     },
     getDirItemGroupTitleDescription (itemCount) {

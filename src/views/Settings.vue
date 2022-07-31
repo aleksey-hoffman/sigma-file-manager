@@ -2340,8 +2340,8 @@ export default {
       return itemFilter({
         filterQuery: this.filterQuery,
         items: this.settingsDataMap,
-        filterProperties: this.$store.state.filterField.view[this.$route.name].filterProperties,
-        filterQueryOptions: this.$store.state.filterField.view[this.$route.name].options,
+        filterProperties: this.$store.state.filterField.view.settings.filterProperties,
+        filterQueryOptions: this.$store.state.filterField.view.settings.options,
       })
     },
   },

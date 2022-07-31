@@ -20,7 +20,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             ? 'Trashed notes'
             : 'Notes'}}
         </div>
-        <filter-field />
+        <filter-field route-name="notes" />
       </v-layout>
 
       <div v-if="!renderContent">
@@ -191,8 +191,8 @@ export default {
       return itemFilter({
         filterQuery: this.filterQuery,
         items,
-        filterProperties: this.$store.state.filterField.view[this.$route.name].filterProperties,
-        filterQueryOptions: this.$store.state.filterField.view[this.$route.name].options,
+        filterProperties: this.$store.state.filterField.view.notes.filterProperties,
+        filterQueryOptions: this.$store.state.filterField.view.notes.options,
       })
     },
     showNoteGroup (group) {

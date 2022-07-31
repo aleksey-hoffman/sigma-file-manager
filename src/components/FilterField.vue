@@ -5,7 +5,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <template>
   <div
-    v-if="$store.state.filterField.view[$route.name]"
+    v-if="routeName"
     class="filter-field"
   >
     <input
@@ -90,7 +90,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               </v-list-item>
 
               <v-list-item
-                v-if="$route.name !== 'notes'"
+                v-if="routeName !== 'notes'"
                 class="px-5"
                 dense
                 @click="navigatorShowHiddenDirItems = !navigatorShowHiddenDirItems"
@@ -144,15 +144,24 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 import {mapFields} from 'vuex-map-fields'
 
 export default {
+  props: {
+    routeName: {
+      type: String,
+      default: '',
+    },
+  },
   mounted () {
-    this.$eventHub.$on('focusFilter', () => {
-      if (document.querySelector('.filter-field__input') === document.activeElement) {
-        this.$refs.filterField.blur()
-      }
-      else {
-        this.$refs.filterField.focus()
-      }
-    })
+    if (this.$refs.filterField) {
+      window.addEventListener('keydown', this.keydownHandler)
+      this.$eventHub.$on('focusFilter', () => {
+        if (document.querySelector('.filter-field__input') === document.activeElement) {
+          this.$refs.filterField.blur()
+        }
+        else {
+          this.$refs.filterField.focus()
+        }
+      })
+    }
   },
   beforeDestroy () {
     this.$eventHub.$off('focusFilter')
@@ -177,50 +186,50 @@ export default {
     },
     filterQuery: {
       get () {
-        return this.$store.state.filterField.view[this.$route.name].query
+        return this.$store.state.filterField.view[this.routeName].query
       },
       set (value) {
         this.$store.dispatch('SET', {
-          key: `filterField.view.${this.$route.name}.query`,
+          key: `filterField.view.${this.routeName}.query`,
           value: value,
         })
       },
     },
     filterQueryMatchedItems: {
       get () {
-        return this.$store.state.filterField.view[this.$route.name].matchedItems
+        return this.$store.state.filterField.view[this.routeName].matchedItems
       },
       set (value) {
         this.$store.dispatch('SET', {
-          key: `filterField.view.${this.$route.name}.matchedItems`,
+          key: `filterField.view.${this.routeName}.matchedItems`,
           value: value,
         })
       },
     },
     filterQueryOptions: {
       get () {
-        return this.$store.state.filterField.view[this.$route.name].options
+        return this.$store.state.filterField.view[this.routeName].options
       },
       set (value) {
         this.$store.dispatch('SET', {
-          key: `filterField.view.${this.$route.name}.options`,
+          key: `filterField.view.${this.routeName}.options`,
           value: value,
         })
       },
     },
     filterQueryOptionGlob: {
       get () {
-        return this.$store.state.filterField.view[this.$route.name].options.glob
+        return this.$store.state.filterField.view[this.routeName].options.glob
       },
       set (value) {
         this.$store.dispatch('SET', {
-          key: `filterField.view.${this.$route.name}.options.glob`,
+          key: `filterField.view.${this.routeName}.options.glob`,
           value: value,
         })
       },
     },
     filterProperties () {
-      return this.$store.state.filterField.view[this.$route.name].filterProperties
+      return this.$store.state.filterField.view[this.routeName].filterProperties
     },
     getItems () {
       let items = []

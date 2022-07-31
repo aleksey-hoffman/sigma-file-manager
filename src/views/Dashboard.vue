@@ -17,7 +17,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         <div class="text--title-1">
           Dashboard
         </div>
-        <filter-field ref="filterField" />
+        <filter-field route-name="dashboard" />
       </v-layout>
 
       <v-tabs
@@ -479,8 +479,8 @@ export default {
         filterQuery: this.filterQuery,
         items,
         filterHiddenItems: this.navigatorShowHiddenDirItems,
-        filterProperties: this.$store.state.filterField.view[this.$route.name].filterProperties,
-        filterQueryOptions: this.$store.state.filterField.view[this.$route.name].options,
+        filterProperties: this.$store.state.filterField.view.dashboard.filterProperties,
+        filterQueryOptions: this.$store.state.filterField.view.dashboard.options,
       })
     },
     async fetchItemDataObject (data) {
