@@ -139,28 +139,17 @@ export default {
   components: {
     FilterClearButton,
   },
-  beforeRouteLeave (to, from, next) {
-    this.$store.dispatch('SAVE_ROUTE_SCROLL_POSITION', {
-      toRoute: to,
-      fromRoute: from,
-    })
-    next()
-  },
   data () {
     return {
       renderContent: false,
     }
   },
   activated () {
-    this.$store.dispatch('ROUTE_ACTIVATED_HOOK_CALLBACK', {
-      route: 'notes',
-    })
+    this.$store.dispatch('routeOnActivated', this.$route.name)
   },
   mounted () {
     this.initRenderContent()
-    this.$store.dispatch('ROUTE_MOUNTED_HOOK_CALLBACK', {
-      route: 'notes',
-    })
+    this.$store.dispatch('routeOnMounted', this.$route.name)
   },
   computed: {
     ...mapFields({

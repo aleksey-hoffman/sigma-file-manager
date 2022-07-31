@@ -2187,18 +2187,14 @@ export default {
     }
   },
   activated () {
-    this.$store.dispatch('ROUTE_ACTIVATED_HOOK_CALLBACK', {
-      route: 'settings',
-    })
+    this.$store.dispatch('routeOnActivated', this.$route.name)
   },
   created () {
     this.settingsSelectedTab = this.lastOpenedSettingsTabValue
   },
   mounted () {
+    this.$store.dispatch('routeOnMounted', this.$route.name)
     this.fetchSettingsDataMap()
-    this.$store.dispatch('ROUTE_MOUNTED_HOOK_CALLBACK', {
-      route: 'settings',
-    })
     this.fetchGithubProjectData()
   },
   computed: {

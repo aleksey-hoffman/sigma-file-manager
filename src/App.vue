@@ -174,7 +174,7 @@ export default {
       navigatorRouteIsLoaded: 'navigatorRouteIsLoaded',
       navigationPanel: 'navigationPanel',
       appStorageGlobalSearchData: 'storageData.settings.appPaths.storageDirectories.appStorageGlobalSearchData',
-      routeScrollPosition: 'routeScrollPosition',
+      routeScrollPosition: 'storageData.settings.routeScrollPosition',
       lastRecordedAppVersion: 'storageData.settings.lastRecordedAppVersion',
       shortcuts: 'storageData.settings.shortcuts',
       globalSearchScanDepth: 'storageData.settings.globalSearchScanDepth',

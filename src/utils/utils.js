@@ -274,6 +274,7 @@ export default {
       }
     }
     catch (error) {
+      console.log(error)
     }
   },
   wait (ms) {

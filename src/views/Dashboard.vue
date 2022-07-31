@@ -414,22 +414,11 @@ export default {
       },
     }
   },
-  beforeRouteLeave (to, from, next) {
-    this.$store.dispatch('SAVE_ROUTE_SCROLL_POSITION', {
-      toRoute: to,
-      fromRoute: from,
-    })
-    next()
-  },
   activated () {
-    this.$store.dispatch('ROUTE_ACTIVATED_HOOK_CALLBACK', {
-      route: 'dashboard',
-    })
+    this.$store.dispatch('routeOnActivated', this.$route.name)
   },
   async mounted () {
-    this.$store.dispatch('ROUTE_MOUNTED_HOOK_CALLBACK', {
-      route: 'dashboard',
-    })
+    this.$store.dispatch('routeOnMounted', this.$route.name)
     await this.fetchDataObjects()
   },
   watch: {

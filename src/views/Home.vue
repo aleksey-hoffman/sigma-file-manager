@@ -60,26 +60,15 @@ import {mapFields} from 'vuex-map-fields'
 
 export default {
   name: 'home',
-  beforeRouteLeave (to, from, next) {
-    this.$store.dispatch('SAVE_ROUTE_SCROLL_POSITION', {
-      toRoute: to,
-      fromRoute: from
-    })
-    next()
-  },
   activated () {
-    this.$store.dispatch('ROUTE_ACTIVATED_HOOK_CALLBACK', {
-      route: 'home'
-    })
+    this.$store.dispatch('routeOnActivated', this.$route.name)
     const video = document.querySelector('#media-banner__video')
     const videoGlow = document.querySelector('#media-banner__glow')
     if (video) { video.play() }
     if (videoGlow) { videoGlow.play() }
   },
   mounted () {
-    this.$store.dispatch('ROUTE_MOUNTED_HOOK_CALLBACK', {
-      route: 'home'
-    })
+    this.$store.dispatch('routeOnMounted', this.$route.name)
   },
   computed: {
     ...mapFields({

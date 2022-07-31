@@ -48,6 +48,7 @@ const appPaths = {
 
 // Init class instances
 let storageThrottle = new TimeUtils()
+let routeScrollEventThrottle = new TimeUtils()
 let appUpdater = new SigmaAppUpdater()
 let colorUtils = new ColorUtils()
 fsManager.initCliProcess()
@@ -99,6 +100,15 @@ export default new Vuex.Store({
     throttles: {
       windowResizeHandler: null
     },
+    eventListeners: {
+      scroll: {
+        home: null,
+        navigator: null,
+        dashboard: null,
+        notes: null,
+        settings: null,
+      }
+    },
     placeholders: {
       calculatingDirSize: 'Calculating...'
     },
@@ -116,7 +126,6 @@ export default new Vuex.Store({
     notifications: [],
     drives: [],
     drivesPreviousData: [],
-    routeScrollPosition: {},
     clipboardToolbar: false,
     appIsLoaded: false,
     navigatorRouteIsLoaded: false,
@@ -483,6 +492,14 @@ export default new Vuex.Store({
           }
         },
         lastRecordedAppVersion: null,
+        routeScrollPosition: {
+          home: 0,
+          navigator: 0,
+          dashboard: 0,
+          notes: 0,
+          settings: 0,
+        },
+        useHighPerformanceGpu: false,
         firstTimeActions: {
           appLaunch: true,
           localShare: true,
@@ -2568,37 +2585,58 @@ export default new Vuex.Store({
         })
       }
     },
-    ROUTE_MOUNTED_HOOK_CALLBACK (store, params) {
-      store.dispatch('RESTORE_ROUTE_SCROLL_POSITION', params)
+    routeOnActivated ({dispatch}, routeName) {
+      dispatch('restoreRouteScrollPosition', routeName)
     },
-    ROUTE_ACTIVATED_HOOK_CALLBACK (store, params) {
-      store.dispatch('RESTORE_ROUTE_SCROLL_POSITION', params)
+    routeOnMounted ({dispatch}, routeName) {
+      dispatch('restoreRouteScrollPosition', routeName)
+      dispatch('initScrollListener', routeName)
     },
-    RESTORE_ROUTE_SCROLL_POSITION  (store, params) {
-      const historyItems = store.state.navigatorView.history.items
+    restoreRouteScrollPosition  ({state}, routeName) {
+      const historyItems = state.navigatorView.history.items
       const secondFromEndHistoryPath = historyItems[historyItems.length - 2]
-      const returnedBackToSameNavigatorDir = params.route === 'navigator' &&
+      const returnedBackToSameNavigatorDir = routeName === 'navigator' &&
         (
-          secondFromEndHistoryPath === store.state.navigatorView.currentDir.path || 
+          secondFromEndHistoryPath === state.navigatorView.currentDir.path ||
           secondFromEndHistoryPath === undefined
         )
-      const shouldRestoreScroll = params.route !== 'navigator' || returnedBackToSameNavigatorDir
-      
+      const shouldRestoreScroll = routeName !== 'navigator' || returnedBackToSameNavigatorDir
+
       if (shouldRestoreScroll) {
-        const scrollArea = utils.getContentAreaNode(params.route)
-        const savedScrollPosition = store.state.routeScrollPosition[params.route]
+        const scrollContainerElement = utils.getContentAreaNode(routeName)
+        const savedScrollPosition = state.storageData.settings.routeScrollPosition[routeName]
         if (savedScrollPosition) {
-          scrollArea.scroll({
+          scrollContainerElement.scroll({
             top: savedScrollPosition,
             behavior: 'auto'
           })
         }
       }
     },
-    SAVE_ROUTE_SCROLL_POSITION  (store, params) {
-      const scrollArea = utils.getContentAreaNode(params.fromRoute.name)
-      const scrollAreaPosition = scrollArea?.scrollTop || 0
-      store.state.routeScrollPosition[params.fromRoute.name] = scrollAreaPosition
+    saveRouteScrollPosition  ({state, dispatch}, params) {
+      state.storageData.settings.routeScrollPosition[params.routeName] = params.scrollPosition
+      dispatch('SET', {
+        key: 'storageData.settings.routeScrollPosition',
+        value: state.storageData.settings.routeScrollPosition
+      })
+    },
+    initScrollListener ({state, dispatch}, routeName) {
+      const scrollContainerElement = utils.getContentAreaNode(routeName)
+      if (scrollContainerElement) {
+        state.eventListeners.scroll[routeName] = () => {
+          routeScrollEventThrottle.throttle(() => {
+            const scrollContainerElementScrollPosition = scrollContainerElement?.scrollTop || 0
+            dispatch('saveRouteScrollPosition', {
+              routeName,
+              scrollPosition: scrollContainerElementScrollPosition
+            })
+          }, {time: 1000})
+        }
+        if (state.eventListeners.scroll[routeName]) {
+          scrollContainerElement.removeEventListener('scroll', state.eventListeners.scroll[routeName])
+        }
+        scrollContainerElement.addEventListener('scroll', state.eventListeners.scroll[routeName])
+      }
     },
     CHECK_CONDITIONS ({ commit,dispatch, getters }, payload) {
       const defaultOptions = {
