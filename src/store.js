@@ -4332,7 +4332,7 @@ export default new Vuex.Store({
       commit('DESELECT_DIR_ITEM', { getters, specifiedItem })
     },
     SELECT_ALL_DIR_ITEMS ({ state, commit, dispatch, getters }) {
-      state.navigatorView.selectedDirItems = state.navigatorView.dirItems
+      state.navigatorView.selectedDirItems = state.navigatorView.filteredDirItems
     },
     DESELECT_ALL_DIR_ITEMS ({ state, commit, dispatch, getters }) {
       state.navigatorView.selectedDirItems = []
