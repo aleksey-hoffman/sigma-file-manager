@@ -47,6 +47,7 @@ export default {
     ...mapFields({
       windowSize: 'windowSize',
       dirItems: 'navigatorView.dirItems',
+      filteredDirItems: 'navigatorView.filteredDirItems',
       navigatorViewInfoPanel: 'storageData.settings.infoPanels.navigatorView',
       navigatorShowHiddenDirItems: 'storageData.settings.navigator.showHiddenDirItems',
       filterQuery: 'filterField.view.navigator.query',
@@ -298,16 +299,13 @@ export default {
       console.timeEnd('time::formattedDirItems')
       return results
     },
-    dirItemsMatchingFilter () {
-      return this.getItemsMatchingFilter(this.dirItems)
-    },
     directoryDirItems () {
-      return [...this.dirItemsMatchingFilter.filter(item => {
+      return [...this.getItemsMatchingFilter(this.dirItems).filter(item => {
         return item.type === 'directory' || item.type === 'directory-symlink'
       })]
     },
     fileDirItems () {
-      return [...this.dirItemsMatchingFilter.filter(item => {
+      return [...this.getItemsMatchingFilter(this.dirItems).filter(item => {
         return item.type === 'file' || item.type === 'file-symlink'
       })]
     },
@@ -342,13 +340,14 @@ export default {
       return Math.floor(params.containerWidth / params.itemMinWidth)
     },
     getItemsMatchingFilter (items) {
-      return itemFilter({
+      this.filteredDirItems = itemFilter({
         filterQuery: this.filterQuery,
         items,
         filterHiddenItems: !this.navigatorShowHiddenDirItems,
         filterProperties: this.$store.state.filterField.view.navigator.filterProperties,
         filterQueryOptions: this.$store.state.filterField.view.navigator.options,
       })
+      return this.filteredDirItems
     },
     getDirItemGroupTitleDescription (itemCount) {
       const itemWord = this.$localizeUtils.pluralize(itemCount, 'item')

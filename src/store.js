@@ -330,6 +330,7 @@ export default new Vuex.Store({
       timeSinceLoadDirItems: 0,
       currentDir: {},
       dirItems: [],
+      filteredDirItems: [],
       selectedDirItems: [],
       previouslySelectedDirItems: [],
       history: {
