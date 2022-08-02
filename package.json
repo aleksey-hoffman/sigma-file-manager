@@ -37,7 +37,6 @@
     "@mdi/font": "^5.9.55",
     "7zip-bin": "^5.1.1",
     "atomically": "^1.7.0",
-    "chokidar": "^3.5.2",
     "core-js": "^3.14.0",
     "dayjs": "^1.10.5",
     "diskusage": "github:aleksey-hoffman/node-diskusage",
@@ -55,6 +54,7 @@
     "mime-types": "^2.1.31",
     "mousetrap": "^1.6.5",
     "node-7z": "^2.1.2",
+    "node-watch": "^0.7.3",
     "overlayscrollbars": "^1.13.1",
     "overlayscrollbars-vue": "^0.2.2",
     "qrcode": "^1.4.4",
@@ -69,6 +69,7 @@
     "vuetify": "^2.5.3",
     "vuex": "^3.6.2",
     "vuex-map-fields": "^1.4.1",
+    "watcher": "^1.2.0",
     "xxhash-addon": "^1.4.0"
   },
   "devDependencies": {

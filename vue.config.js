@@ -84,7 +84,6 @@ module.exports = {
       ],
       // Exclude dependencies from the output bundles
       externals: [
-        'chokidar',
         'fsevents',
         'xxhash-addon',
         'fswin',

@@ -3089,7 +3089,7 @@ export default new Vuex.Store({
       store.dispatch('CLEAR_FILTER_FIELD')
       let {dirInfo} = await store.dispatch('LOAD_DIR_ITEMS', options)
       eventHub.$emit('app:method', {
-        method: 'startWatchingCurrentDir',
+        method: 'postDirWatcherWorker',
         params: options.path
       })
       store.commit('UPDATE_NAVIGATOR_HISTORY', options)
@@ -3154,7 +3154,7 @@ export default new Vuex.Store({
     },
     AUTO_FOCUS_FILTER (store) {
       // TODO:
-      // - Needs an option to ignore dir updates triggered by Chokidar
+      // - Needs an option to ignore dir updates triggered by dir watcher
       // - Manual refresh would not focus the field.
 
       // Focus filter on directory change

@@ -3,28 +3,22 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 // Note:
-// Use Chokidar only in a web worker. When used in the renderer / main,
-// it blocks the main thread and makes UI stutter when depth > 0
+// Use only in a web worker / child process to avoid blocking UI
 
-// TODO:
-// Perhaps replace Chokidar with fabiospampinato/watcher
+import TimeUtils from '@/utils/timeUtils.js'
+const Watcher = require('watcher')
 
-import TimeUtils from '../utils/timeUtils.js'
-const chokidar = require('chokidar')
-
-const state = { cancelled: false }
 let eventDebouncer = null
-let dirWatcher = null
-let lastWatchedPath = ''
+let watcher = null
+let lastWatchedPath = null
 
 self.addEventListener('message', (event) => {
-  if (event.data.action === 'init-dir-watch') {
-    state.cancelled = false
-    initDirWatch(event)
+  if (event.data.action === 'init') {
+    init(event)
   }
 })
 
-async function initDirWatch (event) {
+async function init (event) {
   // If specified path is the same as the last one, do not re-init the watcher.
   // It will create an infinite loop:
   // This function emits the update that reloads the navigator page, which
@@ -34,52 +28,32 @@ async function initDirWatch (event) {
   if (lastWatchedPath === event.data.path) {return}
   lastWatchedPath = event.data.path
   eventDebouncer = new TimeUtils()
-  const dirPath = event.data.path
+  const path = event.data.path
   await resetWatcher()
-  initWatcher(dirPath, eventDebouncer)
+  initWatcher(path, eventDebouncer)
 }
 
 async function resetWatcher () {
   try {
-    await dirWatcher.close()
-    dirWatcher = null
+    await watcher.close()
+    watcher = null
   }
   catch (error) {}
 }
 
-function initWatcher (dirPath, eventDebouncer) {
-  dirWatcher = chokidar
-    .watch(dirPath, {
-      ignorePermissionErrors: true,
-      ignored: [
-        '**/$RECYCLE.BIN',
-        '.**'
-      ],
-      ignoreInitial: true,
-      // Watch 1 nested directory to get updates,
-      // when the directory contents are modifed
-      depth: 1,
-      awaitWriteFinish: {
-        pollInterval: 200
-      }
+function initWatcher (path, eventDebouncer) {
+  watcher = new Watcher(path, {depth: 1, ignoreInitial: true})
+  let updatedBatch = []
+
+  watcher.on('all', (eventName, path) => {
+    updatedBatch.push({
+      action: 'change',
+      eventName,
+      path,
     })
-    .on('all', (event, path) => {
-      // Bug: when watching a drive root dir (e.g. `C:/`),
-      // the first time an event occurs, chokidar re-scans the whole tree and
-      // emits a few hundred events, one for every path. Use debounce to avoid the issue
-      eventDebouncer.debounce(() => {
-        self.postMessage({
-          action: 'info-update',
-          data: {
-            chokidarEvent: 'all',
-            dirPath,
-            path
-          }
-        })
-      }, { time: 1000 })
-    })
-    .on('ready', () => {
-    })
-    .on('error', (error) => {
-    })
+    eventDebouncer.throttle(() => {
+      self.postMessage(updatedBatch)
+      updatedBatch = []
+    }, {time: 1000})
+  })
 }

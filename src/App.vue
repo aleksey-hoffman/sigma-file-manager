@@ -725,7 +725,7 @@ export default {
           console.log(error)
         })
     },
-    async handleChokidarEvent (data) {
+    async handleDirWatcherEvent () {
       // Remove outdated data from storage files
       await this.initAllStorageFiles()
       this.$store.dispatch('RELOAD_DIR', {
@@ -736,10 +736,12 @@ export default {
     initDirWatcherWorker () {
       this.$store.state.workers.dirWatcherWorker = new DirWatcherWorker()
       this.$store.state.workers.dirWatcherWorker.onmessage = (event) => {
-        this.handleChokidarEvent(event.data.data)
+        this.handleDirWatcherEvent()
       }
-      this.$store.state.workers.dirWatcherWorker.onerror = (error) => {
-        throw error
+    },
+    postDirWatcherWorker (path) {
+      this.$store.state.workers.dirWatcherWorker?.postMessage({action: 'init', path})
+    },
       }
     },
     async startWatchingCurrentDir (path) {
