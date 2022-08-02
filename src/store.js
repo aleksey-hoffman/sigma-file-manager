@@ -3072,35 +3072,37 @@ export default new Vuex.Store({
       router.push(routeName).catch((error) => {})
     },
     async LOAD_DIR (store, options) {
-      store.dispatch('ADD_ACTION_TO_HISTORY', { action: 'store.js::LOAD_DIR()' })
-      options = {
-        ...{
-          path: '/',
-          skipHistory: false,
-          scrollTop: true,
-          selectCurrentDir: true
-        },
-        ...options
-      }
-      options.path = sharedUtils.normalizePath(options.path)
+      loadDirThrottle.throttle(async () => {
+        store.dispatch('ADD_ACTION_TO_HISTORY', { action: 'store.js::LOAD_DIR()' })
+        options = {
+          ...{
+            path: '/',
+            skipHistory: false,
+            scrollTop: true,
+            selectCurrentDir: true
+          },
+          ...options
+        }
+        options.path = sharedUtils.normalizePath(options.path)
 
-      store.dispatch('SET_NAVIGATOR_STATE')
-      store.dispatch('LOAD_ROUTE', 'navigator')
-      store.dispatch('CLEAR_FILTER_FIELD')
-      let {dirInfo} = await store.dispatch('LOAD_DIR_ITEMS', options)
-      eventHub.$emit('app:method', {
-        method: 'postDirWatcherWorker',
-        params: options.path
-      })
-      store.commit('UPDATE_NAVIGATOR_HISTORY', options)
-      store.dispatch('ADD_TO_DIR_ITEMS_TIMELINE', dirInfo.path)
-      store.dispatch('SORT_DIR_ITEMS')
-      store.dispatch('SET_STATS')
-      await store.dispatch('RESTORE_NAVIGATOR_STATE')
-      store.dispatch('AUTO_FOCUS_FILTER')
-      if (options.scrollTop) {
-        store.dispatch('SCROLL_TOP_CONTENT_AREA', {behavior: 'auto'})
-      }
+        store.dispatch('SET_NAVIGATOR_STATE')
+        store.dispatch('LOAD_ROUTE', 'navigator')
+        store.dispatch('CLEAR_FILTER_FIELD')
+        let {dirInfo} = await store.dispatch('LOAD_DIR_ITEMS', options)
+        eventHub.$emit('app:method', {
+          method: 'postDirWatcherWorker',
+          params: options.path
+        })
+        store.commit('UPDATE_NAVIGATOR_HISTORY', options)
+        store.dispatch('ADD_TO_DIR_ITEMS_TIMELINE', dirInfo.path)
+        store.dispatch('SORT_DIR_ITEMS')
+        store.dispatch('SET_STATS')
+        await store.dispatch('RESTORE_NAVIGATOR_STATE')
+        store.dispatch('AUTO_FOCUS_FILTER')
+        if (options.scrollTop) {
+          store.dispatch('SCROLL_TOP_CONTENT_AREA', {behavior: 'auto'})
+        }
+      }, {time: 1000})
     },
     RELOAD_DIR (store, params) {
       params = {
