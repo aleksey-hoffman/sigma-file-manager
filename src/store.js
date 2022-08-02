@@ -48,6 +48,7 @@ const appPaths = {
 
 // Init class instances
 let storageThrottle = new TimeUtils()
+let loadDirThrottle = new TimeUtils()
 let routeScrollEventThrottle = new TimeUtils()
 let appUpdater = new SigmaAppUpdater()
 let colorUtils = new ColorUtils()
