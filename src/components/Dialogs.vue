@@ -2784,7 +2784,7 @@ export default {
           }
 
           command = [
-            `"${this.appPaths.binYoutubeDl}"`,
+            `"${this.appPaths.binYtdlp}"`,
             `--ffmpeg-location "${this.appPaths.binFFMPEG}"`,
             `-f ${format}`,
             `-o "${destPathRaw}"`,
@@ -2792,7 +2792,7 @@ export default {
           ].join(' ').replace(/\n/g, ' ')
 
           commandForFileName = [
-            `"${this.appPaths.binYoutubeDl}"`,
+            `"${this.appPaths.binYtdlp}"`,
             '--get-filename',
             `-f ${format}`,
             `-o "${destPathRaw}"`,

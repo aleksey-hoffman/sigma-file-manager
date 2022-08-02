@@ -50,16 +50,16 @@ const bin = process.env.NODE_ENV === 'production'
   : resourcesBin
 
 const FFMPEG = PATH.join(bin, 'ffmpeg', 'bin')
-const youtubeDl = PATH.join(bin, 'youtube-dl')
+const ytdlp = PATH.join(bin, 'yt-dlp')
 const sevenZip = PATH.join(bin, '7-zip')
 
 let userDirs
 let bin7Zip
-let binYoutubeDl
+let binYtdlp
 
 if (process.platform === 'win32') {
   bin7Zip = PATH.join(sevenZip, '7z.exe')
-  binYoutubeDl = PATH.join(youtubeDl, 'youtube-dl.exe')
+  binYtdlp = PATH.join(ytdlp, 'yt-dlp.exe')
   userDirs = [
     {name: 'home', title: 'Home', icon: 'mdi-folder-account-outline', path: home},
     {name: 'desktop', title: 'Desktop', icon: 'mdi-aspect-ratio', path: desktop},
@@ -73,7 +73,7 @@ if (process.platform === 'win32') {
 }
 else if (process.platform === 'linux') {
   bin7Zip = PATH.join(sevenZip, '7zz')
-  binYoutubeDl = PATH.join(youtubeDl, 'youtube-dl')
+  binYtdlp = PATH.join(ytdlp, 'yt-dlp_linux')
   userDirs = [
     {name: 'home', title: 'Home', icon: 'mdi-folder-account-outline', path: home},
     {name: 'desktop', title: 'Desktop', icon: 'mdi-aspect-ratio', path: desktop},
@@ -86,7 +86,7 @@ else if (process.platform === 'linux') {
 }
 else if (process.platform === 'darwin') {
   bin7Zip = PATH.join(sevenZip, '7zz')
-  binYoutubeDl = PATH.join(youtubeDl, 'youtube-dl')
+  binYtdlp = PATH.join(ytdlp, 'yt-dlp')
   userDirs = [
     {name: 'home', title: 'Home', icon: 'mdi-folder-account-outline', path: home},
     {name: 'desktop', title: 'Desktop', icon: 'mdi-aspect-ratio', path: desktop},
@@ -162,7 +162,7 @@ const appPaths = {
   bin7Zip,
   binFFMPEG,
   binFFPROBE,
-  binYoutubeDl,
+  binYtdlp,
 }
 
 function getUserDirPath (dirName) {

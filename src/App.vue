@@ -394,7 +394,7 @@ export default {
         try {
           await fs.promises.access(this.appPaths.bin7Zip, fs.constants.F_OK)
           await fs.promises.access(this.appPaths.binFFMPEG, fs.constants.F_OK)
-          await fs.promises.access(this.appPaths.binYoutubeDl, fs.constants.F_OK)
+          await fs.promises.access(this.appPaths.binYtdlp, fs.constants.F_OK)
         }
         catch (error) {
           await fsExtra.copy(
