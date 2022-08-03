@@ -750,9 +750,11 @@ export default {
       this.$store.state.workers.dirWatcherWorker?.postMessage({action: 'init', path})
     },
     initOneDriveWatcherWorker () {
-      this.$store.state.workers.oneDriveWatcherWorker = new OneDriveWatcherWorker()
-      this.$store.state.workers.oneDriveWatcherWorker.onmessage = () => {
-        this.fetchOneDrive()
+      if (process.platform === 'win32') {
+        this.$store.state.workers.oneDriveWatcherWorker = new OneDriveWatcherWorker()
+        this.$store.state.workers.oneDriveWatcherWorker.onmessage = () => {
+          this.fetchOneDrive()
+        }
       }
     },
     postOneDriveWatcherWorker () {
