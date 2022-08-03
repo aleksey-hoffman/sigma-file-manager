@@ -6,6 +6,7 @@
 
 import utils from './utils'
 import * as fsManager from './fsManager.js'
+import TimeUtils from '@/utils/timeUtils.js'
 
 const fs = require('fs')
 const PATH = require('path')
@@ -14,6 +15,7 @@ const diskusage = require('diskusage')
 const fsInfo = require('./fsInfo.js')
 const appPaths = require('../appPaths.js')
 
+let getOneDriveThrottle = new TimeUtils()
 let state = {
   extraDeviceData: [],
   driveList: [],
@@ -37,11 +39,7 @@ let state = {
 export async function getStorageDevices () {
   try {
     let blockDevices = await getBlockDevices()
-    let oneDrive = await getOneDrive()
-    let storageDevices = [
-      ...blockDevices, 
-      ...oneDrive
-    ]
+    let storageDevices = [...blockDevices]
     state.previousDriveList = [...state.driveList]
     state.driveList = blockDevices
     handleDriveListChange()
@@ -60,26 +58,30 @@ function handleDriveListChange () {
   }
 }
 
-async function getOneDrive () {
-  let path = appPaths.oneDrive
-  if (path) {
-    let oneDriveItemList = await fs.promises.readdir(path)
-    let size = await fsInfo.getDirSize(path)
-    let sizeOnDisk = await fsInfo.getDirSizeOnDisk(path)
-    let formattedSizeOnDisk = utils.prettyBytes(sizeOnDisk, 1)
-    let formattedSizeTotal = utils.prettyBytes(size, 1)
-    return [{
-      type: 'cloud',
-      path,
-      mount: path,
-      infoSummary: `Used: ${formattedSizeTotal} • Locally: ${formattedSizeOnDisk}`,
-      titleSummary: 'OneDrive',
-      isEmpty: oneDriveItemList.length === 0
-    }]
-  }
-  else {
-    return []
-  }
+export async function getOneDrive () {
+  return new Promise((resolve) => {
+    getOneDriveThrottle.throttle(async () => {
+      let path = appPaths.oneDrive
+      if (path) {
+        let oneDriveItemList = await fs.promises.readdir(path)
+        let size = await fsInfo.getDirSize(path)
+        let sizeOnDisk = await fsInfo.getDirSizeOnDisk(path)
+        let formattedSizeOnDisk = utils.prettyBytes(sizeOnDisk, 1)
+        let formattedSizeTotal = utils.prettyBytes(size, 1)
+        resolve([{
+          type: 'cloud',
+          path,
+          mount: path,
+          infoSummary: `Used: ${formattedSizeTotal} • Locally: ${formattedSizeOnDisk}`,
+          titleSummary: 'OneDrive',
+          isEmpty: oneDriveItemList.length === 0,
+        }])
+      }
+      else {
+        resolve([])
+      }
+    }, {time: 2000})
+  })
 }
 
 export async function fetchBlockDevicesExtraData () {

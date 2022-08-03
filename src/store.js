@@ -90,6 +90,7 @@ export default new Vuex.Store({
     workers: {
       globalSearchWorkers: [],
       dirWatcherWorker: null,
+      oneDriveWatcherWorker: null,
       mediaInfoWorker: null,
     },
     childProcesses: {
@@ -127,6 +128,9 @@ export default new Vuex.Store({
     notifications: [],
     drives: [],
     drivesPreviousData: [],
+    storageDevicesData: {
+      oneDrive: []
+    },
     clipboardToolbar: false,
     appIsLoaded: false,
     navigatorRouteIsLoaded: false,

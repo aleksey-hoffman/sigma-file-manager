@@ -39,8 +39,9 @@ import {mapFields} from 'vuex-map-fields'
 import {DriveWalker} from './utils/driveWalker.js'
 import GlobalSearchWorker from 'worker-loader!./workers/globalSearchWorker.js'
 import DirWatcherWorker from 'worker-loader!./workers/dirWatcherWorker.js'
+import OneDriveWatcherWorker from 'worker-loader!./workers/oneDriveWatcherWorker.js'
 import TimeUtils from './utils/timeUtils.js'
-import {getStorageDevices} from './utils/storageInfo.js'
+import {getStorageDevices, getOneDrive} from './utils/storageInfo.js'
 import idleJs from 'idle-js'
 import * as notifications from './utils/notifications.js'
 
@@ -123,6 +124,7 @@ export default {
     try {
       await this.initAllStorageFiles()
       await this.fetchStorageDevices()
+      this.fetchOneDrive()
       this.handleFirstAppLaunch()
       this.initIPCListeners()
       this.setUIzoom()
@@ -138,6 +140,8 @@ export default {
       this.removeLoadingScreen()
       this.checkForAppUpdateInstalled()
       this.initDirWatcherWorker()
+      this.initOneDriveWatcherWorker()
+      this.postOneDriveWatcherWorker()
       this.initEventHubListeners()
       electron.ipcRenderer.invoke('main-window-loaded')
     }
@@ -194,6 +198,7 @@ export default {
       globalSearchScanInProgress: 'globalSearch.scanInProgress',
       drives: 'drives',
       drivesPreviousData: 'drivesPreviousData',
+      storageDevicesData: 'storageDevicesData',
       storageData: 'storageData',
       storageDataDirItemsTimeline: 'storageData.stats.dirItemsTimeline',
       storageDataNotes: 'storageData.notes',
@@ -380,8 +385,10 @@ export default {
     handleConnectedDriveActions (drives) {
       const previousDataExists = this.drivesPreviousData.length > 0
       const driveCountIncreased = drives.length > this.drivesPreviousData.length
+      const cloudDriveConnected = drives.map(drive => drive.type === 'cloud').length >
+        this.drivesPreviousData.map(drive => drive.type === 'cloud').length
       const shouldFocus = this.focusMainWindowOnDriveConnected
-      if (previousDataExists && driveCountIncreased && shouldFocus) {
+      if (previousDataExists && driveCountIncreased && shouldFocus && !cloudDriveConnected) {
         electron.ipcRenderer.send('focus-main-app-window')
         notifications.emit({name: 'driveWasConnected'})
       }
@@ -742,10 +749,15 @@ export default {
     postDirWatcherWorker (path) {
       this.$store.state.workers.dirWatcherWorker?.postMessage({action: 'init', path})
     },
+    initOneDriveWatcherWorker () {
+      this.$store.state.workers.oneDriveWatcherWorker = new OneDriveWatcherWorker()
+      this.$store.state.workers.oneDriveWatcherWorker.onmessage = () => {
+        this.fetchOneDrive()
       }
     },
-    async startWatchingCurrentDir (path) {
-      this.$store.state.workers.dirWatcherWorker.postMessage({action: 'init-dir-watch', path})
+    postOneDriveWatcherWorker () {
+      this.$store.state.workers.oneDriveWatcherWorker?.postMessage({action: 'init', paths: [this.appPaths.oneDrive] })
+    },
     },
     handleFirstAppLaunch () {
       // TODO:
@@ -1087,8 +1099,24 @@ export default {
       clearInterval(this.$store.state.intervals.driveListFetchInterval)
     },
     async fetchStorageDevices () {
-      this.drivesPreviousData = this.$utils.cloneDeep(this.drives)
-      this.drives = await getStorageDevices()
+      try {
+        const drives = await getStorageDevices()
+        this.drivesPreviousData = this.$utils.cloneDeep(this.drives)
+        this.drives = [...drives, ...this.storageDevicesData.oneDrive]
+      }
+      catch (error) {
+        notifications.emit({name: 'errorGettingStorageDeviceData', props: {error}})
+      }
+    },
+    async fetchOneDrive () {
+      try {
+        this.storageDevicesData.oneDrive = await getOneDrive()
+        this.drivesPreviousData = this.$utils.cloneDeep(this.drives)
+        this.drives = [...this.drives, ...this.storageDevicesData.oneDrive]
+      }
+      catch (error) {
+        notifications.emit({name: 'errorGettingOneDriveData', props: {error}})
+      }
     },
     bindMouseKeyEvents () {
       window.addEventListener('mouseup', this.mouseupHandler)
