@@ -758,7 +758,6 @@ export default {
     postOneDriveWatcherWorker () {
       this.$store.state.workers.oneDriveWatcherWorker?.postMessage({action: 'init', paths: [this.appPaths.oneDrive] })
     },
-    },
     handleFirstAppLaunch () {
       // TODO:
       // In production, some store properties resolve after this method
