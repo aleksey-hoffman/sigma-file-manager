@@ -4789,10 +4789,9 @@ export default new Vuex.Store({
       const dirItemsToPaste = store.state.navigatorView.clipboard.fs.items
       const type = store.state.navigatorView.clipboard.fs.type
       if (type === 'move') {
-        await store.dispatch('MOVE_DIR_ITEMS', {
+        await store.dispatch('moveDirItems', {
           items: dirItemsToPaste,
           directory: params.directory,
-          operation: type,
           options: {
             skipSafeCheck: true,
             silent: true
@@ -4800,10 +4799,9 @@ export default new Vuex.Store({
         })
       }
       else {
-        await store.dispatch('COPY_DIR_ITEMS', {
+        await store.dispatch('copyDirItems', {
           items: dirItemsToPaste,
           directory: params.directory,
-          operation: type
         })
       }
       store.dispatch('CLEAR_FS_CLIPBOARD')
