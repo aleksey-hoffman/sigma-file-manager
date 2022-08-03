@@ -6,8 +6,8 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <template>
   <div>
     <v-menu
-      v-model="contextMenus.dirItem.value"
       id="context-menu--navigator"
+      v-model="contextMenus.dirItem.value"
       transition="context-menu-transition"
       :position-x="contextMenus.dirItem.x"
       :position-y="contextMenus.dirItem.y"
@@ -23,7 +23,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             : 'context-sub-menu-transition-reversed'"
           mode="out-in"
         >
-          <div key="mainMenu" v-if="!contextMenus.dirItem.subMenu.value">
+          <div
+            v-if="!contextMenus.dirItem.subMenu.value"
+            key="mainMenu"
+          >
             <v-list
               v-if="toolbarItems.length > 0"
               dense
@@ -32,19 +35,21 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               <div class="context-menu__toolbar">
                 <v-tooltip
                   v-for="(item, index) in filteredList(toolbarItems)"
-                  open-delay="200"
                   :key="'toolbar-item-' + index"
+                  open-delay="200"
                   max-width="300px"
                   bottom
                 >
-                  <template v-slot:activator="{ on }">
-                    <v-btn v-on="on"
-                      @click.stop="runOnClickEvent(item)"
+                  <template #activator="{ on }">
+                    <v-btn
                       class="context-menu__button"
                       :active="item.isActive"
-                      icon small
+                      icon
+                      small
+                      v-on="on"
+                      @click.stop="runOnClickEvent(item)"
                     >
-                      <div class="indicator"></div>
+                      <div class="indicator" />
                       <v-icon :size="item.iconSize">
                         {{filteredIcon(item)}}
                       </v-icon>
@@ -52,9 +57,9 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   </template>
                   <span v-if="item.tooltip && item.tooltip.shortcutList">
                     <div
-                      class="tooltip__shortcut-list-item"
                       v-for="(shortcutItem, index) in item.tooltip.shortcutList"
                       :key="`shortcut-list-item-${index}`"
+                      class="tooltip__shortcut-list-item"
                     >
                       <div class="tooltip__shortcut-list-item__title tooltip__description">
                         {{shortcutItem.title}}
@@ -62,27 +67,27 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                       <span
                         class="tooltip__shortcut-list__shortcut inline-code--light"
                         v-html="shortcutItem.shortcut"
-                      ></span>
+                      />
                     </div>
                   </span>
 
                   <span v-if="item.tooltip && item.tooltip.modifierList">
                     <div
-                      class="tooltip__modifier-list-item"
                       v-for="(modifierItem, index) in item.tooltip.modifierList"
                       :key="`modifier-list-item-${index}`"
+                      class="tooltip__modifier-list-item"
                     >
                       <div class="tooltip__modifier-list-item__title tooltip__description">
                         <span
-                          class="tooltip__modifier-list__modifier inline-code--light"
                           v-if="modifierItem.modifier"
+                          class="tooltip__modifier-list__modifier inline-code--light"
                           v-html="modifierItem.modifier"
-                        ></span>
+                        />
                         {{modifierItem.title}}
                       </div>
                       <div
-                        class="tooltip__modifier-list__title tooltip__description"
                         v-if="!modifierItem.modifier"
+                        class="tooltip__modifier-list__title tooltip__description"
                       >
                         Modifiers:
                       </div>
@@ -91,7 +96,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
                   <span v-if="item.tooltip && !item.tooltip.shortcutList && !item.tooltip.modifierList">
                     <div class="tooltip__description">{{item.tooltip.title}}</div>
-                    <div class="tooltip__shortcut" v-html="item.tooltip.text"></div>
+                    <div
+                      class="tooltip__shortcut"
+                      v-html="item.tooltip.text"
+                    />
                   </span>
                 </v-tooltip>
               </div>
@@ -99,7 +107,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
             <v-divider
               v-if="toolbarItems.length > 0"
-            ></v-divider>
+            />
 
             <!-- context-menu::main-view::list -->
             <v-list dense>
@@ -110,7 +118,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 open-delay="200"
                 bottom
               >
-                <template v-slot:activator="{on}">
+                <template #activator="{on}">
                   <v-list-item
                     v-on="on"
                     @click.stop="runOnClickEvent(item)"
@@ -138,9 +146,9 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 </template>
                 <span v-if="item.tooltip && item.tooltip.shortcutList">
                   <div
-                    class="tooltip__shortcut-list-item"
                     v-for="(shortcutItem, index) in item.tooltip.shortcutList"
                     :key="`shortcut-list-item-${index}`"
+                    class="tooltip__shortcut-list-item"
                   >
                     <div class="tooltip__shortcut-list-item__title tooltip__description">
                       {{shortcutItem.title}}
@@ -148,27 +156,35 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     <span
                       class="tooltip__shortcut-list__shortcut inline-code--light"
                       v-html="shortcutItem.shortcut"
-                    ></span>
+                    />
                   </div>
                 </span>
               </v-tooltip>
             </v-list>
           </div>
 
-          <div key="subMenu" v-if="contextMenus.dirItem.subMenu.value">
+          <div
+            v-if="contextMenus.dirItem.subMenu.value"
+            key="subMenu"
+          >
             <v-list dense>
               <!-- context-menu::sub-view::toolbar -->
-              <div class="context-menu__toolbar" sub-menu>
+              <div
+                class="context-menu__toolbar"
+                sub-menu
+              >
                 <v-tooltip
                   open-delay="200"
                   max-width="300px"
                   bottom
                 >
-                  <template v-slot:activator="{ on }">
-                    <v-btn v-on="on"
-                      @click.stop="contextMenus.dirItem.subMenu.value = false"
+                  <template #activator="{ on }">
+                    <v-btn
                       class="context-menu__button"
-                      icon small
+                      icon
+                      small
+                      v-on="on"
+                      @click.stop="contextMenus.dirItem.subMenu.value = false"
                     >
                       <v-icon>
                         mdi-arrow-left
@@ -179,31 +195,33 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     <div class="tooltip__description">Go back to main menu</div>
                   </span>
                 </v-tooltip>
-                <v-spacer></v-spacer>
+                <v-spacer />
                 <div>
                   {{contextMenus.dirItem.subMenu.title}}
                 </div>
-                <v-tooltip bottom>
-                  <template v-slot:activator="{ on }">
-                    <v-btn
-                      v-on="on"
-                      @click="
-                        contextMenus.dirItem.value = false,
-                        $store.state.dialogs.programEditorDialog.value = true
-                      "
-                      style="right: -6px"
-                      icon
-                    >
-                      <v-icon size="18px">
-                        mdi-pencil-outline
-                      </v-icon>
-                    </v-btn>
-                  </template>
-                  <span>Open program editor</span>
-                </v-tooltip>
+                <div v-if="contextMenus.dirItem.subMenu.target === 'open-with'">
+                  <v-tooltip bottom>
+                    <template #activator="{ on }">
+                      <v-btn
+                        style="right: -6px"
+                        icon
+                        v-on="on"
+                        @click="
+                          contextMenus.dirItem.value = false,
+                          $store.state.dialogs.programEditorDialog.value = true
+                        "
+                      >
+                        <v-icon size="18px">
+                          mdi-pencil-outline
+                        </v-icon>
+                      </v-btn>
+                    </template>
+                    <span>Open program editor</span>
+                  </v-tooltip>
+                </div>
               </div>
             </v-list>
-            <v-divider></v-divider>
+            <v-divider />
 
             <!-- context-menu::sub-view::list -->
             <div v-if="contextMenus.dirItem.subMenu.target === 'open-with'">
@@ -217,7 +235,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 >
                   <v-list-item-title style="font-size: 15px">
                     <v-layout align-center>
-                      <v-icon size="24px" class="mr-4">
+                      <v-icon
+                        size="24px"
+                        class="mr-4"
+                      >
                         mdi-plus
                       </v-icon>
                       Add program
@@ -229,9 +250,9 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               <v-list dense>
                 <!-- context-menu::sub-view::list:open-with:default-programs -->
                 <v-list-item
-                  class="menu-item--open-with"
                   v-for="program in externalProgramsDefaultItemsFiltered"
                   :key="program.title"
+                  class="menu-item--open-with"
                   @click="handleDefaultExternalProgramAction(program)"
                 >
                   <v-list-item-icon>
@@ -244,9 +265,9 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
                 <!-- context-menu::sub-view::list:open-with:custom-programs -->
                 <v-list-item
-                  class="menu-item--open-with"
                   v-for="program in externalProgramsCustomItemsFiltered"
                   :key="program.title"
+                  class="menu-item--open-with"
                   @click="handleCustomExternalProgramAction(program)"
                 >
                   <v-list-item-icon>
@@ -258,15 +279,18 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   <div class="menu-item--open-with__button">
                     <v-btn
                       v-show="!program.readonly"
+                      class="mr-0"
+                      icon
+                      small
                       @click.stop="
                         contextMenus.dirItem.value = false,
                         dialogs.programEditorDialog.specifiedHashID = program.hashID
                         dialogs.programEditorDialog.value = true
                       "
-                      class="mr-0"
-                      icon small
                     >
-                      <v-icon size="20px">mdi-pencil-outline</v-icon>
+                      <v-icon size="20px">
+                        mdi-pencil-outline
+                      </v-icon>
                     </v-btn>
                   </div>
                 </v-list-item>
@@ -532,10 +556,7 @@ export default {
           selectionType: ['single', 'multiple'],
           targetTypes: ['directory', 'file', 'file-symlink', 'directory-symlink'],
           onClick: () => {
-            this.contextMenus.dirItem.subMenu.target = 'open-with'
-            this.contextMenus.dirItem.subMenu.title = 'Open with'
-            this.contextMenus.dirItem.subMenu.value = true
-            this.adjustMenuPositionToSubMenu()
+            this.openSubMenu('open-with')
           },
           closesMenu: false,
           icon: 'mdi-subdirectory-arrow-right',
@@ -564,7 +585,7 @@ export default {
         },
         {
           name: 'new-tab',
-          title: 'New tab',
+          title: 'Open in new tab',
           selectionType: ['single'],
           targetTypes: ['directory', 'directory-symlink'],
           onClick: () => {
@@ -572,21 +593,6 @@ export default {
           },
           closesMenu: true,
           icon: 'mdi-tab',
-          iconSize: '18px',
-        },
-        {
-          name: 'edit-tags',
-          title: 'Edit tags',
-          selectionType: ['single', 'multiple'],
-          targetTypes: ['file', 'directory', 'file-symlink', 'directory-symlink'],
-          onClick: () => {
-            this.contextMenus.dirItem.subMenu.target = 'edit-tags'
-            this.contextMenus.dirItem.subMenu.title = 'Edit tags'
-            this.contextMenus.dirItem.subMenu.value = true
-            this.adjustMenuPositionToSubMenu()
-          },
-          closesMenu: false,
-          icon: 'mdi-tag-text-outline',
           iconSize: '18px',
         },
         {
@@ -898,6 +904,15 @@ export default {
         })
         return hasAllowedTypes
       })
+    },
+    openSubMenu (name) {
+      let title = ''
+      if (name === 'open-with') {title = 'Open with'}
+      else if (name === 'edit-tags') {title = 'Edit tags'}
+      this.contextMenus.dirItem.subMenu.target = name
+      this.contextMenus.dirItem.subMenu.title = title
+      this.contextMenus.dirItem.subMenu.value = true
+      this.adjustMenuPositionToSubMenu()
     },
     adjustMenuPositionToSubMenu () {
       // Wait for submenu transition to finish and then reposition the menu
