@@ -6,7 +6,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <template>
   <v-tooltip
     top
-    :disabled="!(fsClipboard.type === 'move' && !pasteItemsState.enabled)"
+    :disabled="!((fsClipboard.type === 'move' || fsClipboard.type === 'copy') && !pasteItemsState.enabled)"
   >
     <template #activator="{on}">
       <div v-on="on">
@@ -54,13 +54,15 @@ export default {
       fsClipboard: 'navigatorView.clipboard.fs',
     }),
     pasteItemsState () {
-      if (this.fsClipboard.type === 'move') {
-        const enabled = !this.fsClipboard.items.some(item => {
+      if (this.fsClipboard.type === 'move' || this.fsClipboard.type === 'copy') {
+        const dirItselfIsSelected = this.fsClipboard.length === 1 && this.fsClipboard[0] === this.currentDir.path
+        const someDirItemIsAlreadyInDestDir = !this.fsClipboard.items.some(item => {
           return this.currentDir.path === PATH.parse(item.path).dir
         })
+        const enabled = !someDirItemIsAlreadyInDestDir && !dirItselfIsSelected
         return {
           enabled,
-          tooltipText: enabled ? 'Paste items to this directory' : 'Dir items are already located in this directory',
+          tooltipText: enabled ? 'Paste items to this directory' : 'Prepared dir items are already located in this directory',
         }
       }
       else {
