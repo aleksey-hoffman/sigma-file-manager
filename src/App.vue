@@ -833,11 +833,13 @@ export default {
           }
           else if (isObjectArray) {
             try {
-              let allKeysAreSame = true
+              let allKeysAreSame = false
               storeValue.forEach((item, index) => {
-                const isObject = this.$utils.getDataType(item) === 'object' && this.$utils.getDataType(storageValue[index]) === 'object'
-                if (isObject) {
+                try {
                   allKeysAreSame = this.$utils.objectsHaveSameKeys(item, storageValue[index])
+                }
+                catch (error) {
+                  allKeysAreSame = false
                 }
               })
               if (!allKeysAreSame) {
