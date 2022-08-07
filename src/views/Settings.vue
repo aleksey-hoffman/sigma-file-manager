@@ -1094,6 +1094,20 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     hide-details
                   />
 
+                  <div class="text--sub-title-1 mt-2">
+                    Sorting type
+                  </div>
+                  <div class="mb-2">
+                    If enabled, the selected sorting type will be applied after app reload
+                  </div>
+
+                  <v-switch
+                    v-model="saveNavigatorSorting"
+                    class="mt-0 pt-0"
+                    label="Save sorting type"
+                    hide-details
+                  />
+
                   <div class="text--sub-title-1 mt-4">
                     Sorting element display type
                   </div>
@@ -2098,6 +2112,7 @@ export default {
       windowCloseButtonAction: 'storageData.settings.windowCloseButtonAction',
       themeType: 'storageData.settings.theme.type',
       showDirItemKindDividers: 'storageData.settings.navigator.showDirItemKindDividers',
+      saveNavigatorSorting: 'storageData.settings.sorting.saveNavigatorSorting',
       navigatorSortingElementDisplayType: 'storageData.settings.navigator.sorting.elementDisplayType',
       navigatorLayout: 'storageData.settings.navigatorLayout',
       showWorkspaceTitleInToolbar: 'storageData.settings.navigator.workspaces.showTitleInToolbar',

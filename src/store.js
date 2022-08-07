@@ -259,69 +259,6 @@ export default new Vuex.Store({
         }
       }
     },
-    sorting: {
-      order: 'ascending',
-      selectedType: {
-        name: 'name', 
-        title: 'name',
-        shortTitle: 'name',
-        width: 'minmax(64px, 2fr)',
-        isChecked: true,
-      },
-      types: [
-        {
-          name: 'name',
-          title: 'name',
-          shortTitle: 'name',
-          width: 'minmax(64px, 2fr)',
-          isChecked: true,
-        },
-        {
-          name: 'date-modified-contents', 
-          title: 'date modified contents',
-          shortTitle: 'modified contents',
-          width: 'minmax(64px, 1.6fr)',
-          isChecked: true,
-        },
-        {
-          name: 'date-modified-meta', 
-          title: 'date modified meta',
-          shortTitle: 'modified meta',
-          width: 'minmax(64px, 1.6fr)',
-          isChecked: false,
-        },
-        {
-          name: 'date-created', 
-          title: 'date created',
-          shortTitle: 'created',
-          width: 'minmax(64px, 1.6fr)',
-          isChecked: false,
-        },
-        {
-          name: 'size',
-          title: 'items / size',
-          shortTitle: 'items / size',
-          width: 'minmax(64px, 0.8fr)',
-          isChecked: true,
-        },
-        // TODO: finish in v1.2.0
-        // Should request to turn on the 'storeDirItemOpenCount'
-        // { 
-        //   name: 'popularity', 
-        //   title: 'popularity',
-        //   shortTitle: 'popularity',
-        //   width: 'minmax(64px, 1fr)',
-        //   isChecked: false,
-        // },
-        {
-          name: 'status', 
-          title: 'status',
-          shortTitle: 'status',
-          width: '64px',
-          isChecked: true,
-        },
-      ]
-    },
     settingsView: {
       settingsDataMap: []
     },
@@ -934,6 +871,70 @@ export default new Vuex.Store({
             ]
           },
         },
+        sorting: {
+          saveNavigatorSorting: false,
+          order: 'ascending',
+          selectedType: {
+            name: 'name',
+            title: 'name',
+            shortTitle: 'name',
+            width: 'minmax(64px, 2fr)',
+            isChecked: true,
+          },
+          types: [
+            {
+              name: 'name',
+              title: 'name',
+              shortTitle: 'name',
+              width: 'minmax(64px, 2fr)',
+              isChecked: true,
+            },
+            {
+              name: 'date-modified-contents',
+              title: 'date modified contents',
+              shortTitle: 'modified contents',
+              width: 'minmax(64px, 1.6fr)',
+              isChecked: true,
+            },
+            {
+              name: 'date-modified-meta',
+              title: 'date modified meta',
+              shortTitle: 'modified meta',
+              width: 'minmax(64px, 1.6fr)',
+              isChecked: false,
+            },
+            {
+              name: 'date-created',
+              title: 'date created',
+              shortTitle: 'created',
+              width: 'minmax(64px, 1.6fr)',
+              isChecked: false,
+            },
+            {
+              name: 'size',
+              title: 'items / size',
+              shortTitle: 'items / size',
+              width: 'minmax(64px, 0.8fr)',
+              isChecked: true,
+            },
+            // TODO: finish in v1.2.0
+            // Should request to turn on the 'storeDirItemOpenCount'
+            // {
+            //   name: 'popularity',
+            //   title: 'popularity',
+            //   shortTitle: 'popularity',
+            //   width: 'minmax(64px, 1fr)',
+            //   isChecked: false,
+            // },
+            {
+              name: 'status',
+              title: 'status',
+              shortTitle: 'status',
+              width: '64px',
+              isChecked: true,
+            },
+          ]
+        },
       }
     },
     navigationPanel: {
@@ -1382,7 +1383,7 @@ export default new Vuex.Store({
     },
     sortingHeaderGridColumnTemplate: state => {
       let menuIconWidth = '48px'
-      let gridColumnTemplate = state.sorting.types
+      let gridColumnTemplate = state.storageData.settings.sorting.types
         .filter(item => item.isChecked)
         .map(item => item.width)
       gridColumnTemplate.unshift(menuIconWidth)
@@ -1748,19 +1749,9 @@ export default new Vuex.Store({
       note.dateTrashed = null
       note.dateWillBeDeleted = null
     },
-    SET_SORTING_TYPE (state, sortingType) {
-      const types = state.sorting.types
-      state.sorting.selectedType = sortingType
-    },
-    TOGGLE_SORTING_ORDER (state) {
-      const order = state.sorting.order
-      state.sorting.order = order === 'ascending'
-        ? 'descending'
-        : 'ascending'
-    },
     SORT_DIR_ITEMS (state) {
-      const order = state.sorting.order
-      const sortingType = state.sorting.selectedType
+      const order = state.storageData.settings.sorting.order
+      const sortingType = state.storageData.settings.sorting.selectedType
 
       if (sortingType.name === 'name') {
         state.navigatorView.dirItems = order === 'ascending'
@@ -4423,12 +4414,33 @@ export default new Vuex.Store({
     SORT_DIR_ITEMS ({ state, commit, dispatch, getters }) {
       commit('SORT_DIR_ITEMS')
     },
-    SET_SORTING_TYPE ({ state, commit, dispatch, getters }, sortingType) {
-      commit('SET_SORTING_TYPE', sortingType)
+    SET_SORTING_TYPE ({state, dispatch}, sortingType) {
+      if (state.storageData.settings.sorting.saveNavigatorSorting) {
+        dispatch('SET', {
+          key: 'storageData.settings.sorting.selectedType',
+          value: sortingType
+        })
+      }
+      else {
+        state.storageData.settings.sorting.selectedType = sortingType
+      }
       dispatch('SORT_DIR_ITEMS')
     },
-    TOGGLE_SORTING_ORDER ({ state, commit, dispatch, getters }) {
-      commit('TOGGLE_SORTING_ORDER')
+    TOGGLE_SORTING_ORDER ({state, dispatch}) {
+      const order = state.storageData.settings.sorting.order
+      if (state.storageData.settings.sorting.saveNavigatorSorting) {
+        dispatch('SET', {
+          key: 'storageData.settings.sorting.order',
+          value: order === 'ascending'
+            ? 'descending'
+            : 'ascending'
+        })
+      }
+      else {
+        state.storageData.settings.sorting.order = order === 'ascending'
+          ? 'descending'
+          : 'ascending'
+      }
       dispatch('SORT_DIR_ITEMS')
     },
     UPDATE_DIR_ITEM_SELECTION_HISTORY (store) {

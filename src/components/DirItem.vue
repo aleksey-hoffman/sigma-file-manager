@@ -398,9 +398,9 @@ export default {
       dirItemHoverEffect: 'storageData.settings.dirItemHoverEffect',
       visibleDirItems: 'navigatorView.visibleDirItems',
       dirItemsInfoIsFetched: 'navigatorView.dirItemsInfoIsFetched',
-      selectedSortingType: 'sorting.selectedType',
+      selectedSortingType: 'storageData.settings.sorting.selectedType',
       fsClipboard: 'navigatorView.clipboard.fs',
-      sortingTypes: 'sorting.types',
+      sortingTypes: 'storageData.settings.sorting.types',
       navigatorNameColumnMaxWidth: 'storageData.settings.navigator.nameColumnMaxWidth',
     }),
     specifiedNavigatorLayout () {

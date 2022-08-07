@@ -84,9 +84,9 @@ import {mapFields} from 'vuex-map-fields'
 export default {
   computed: {
     ...mapFields({
-      sortingOrder: 'sorting.order',
-      selectedSortingType: 'sorting.selectedType',
-      sortingTypes: 'sorting.types',
+      sortingOrder: 'storageData.settings.sorting.order',
+      selectedSortingType: 'storageData.settings.sorting.selectedType',
+      sortingTypes: 'storageData.settings.sorting.types',
     }),
   }
 }
