@@ -218,9 +218,9 @@ function getNotification (params) {
     archiveExtractionError: {
       action: 'update-by-type',
       type: 'archiveExtractionError',
-      timeout: 2000,
-      title: 'Error: cannot extract archive',
-      error: params?.props?.error
+      timeout: 8000,
+      title: 'Extract archive: error',
+      message: params?.props?.error,
     },
     archiveExtractionCanceled: {
       action: 'update-by-hash',
@@ -247,10 +247,10 @@ function getNotification (params) {
       timeout: 5000,
       actionButtons: [],
       colorStatus: 'green',
-      title: 'Archive was created',
+      title: 'Create archive: success',
       message: `
         Done • ${params?.props?.progress?.fileCount} files
-        <br><strong>Destination:</strong> ${params?.props?.params?.dest}
+        <br><strong>Destination path:</strong> ${params?.props?.params?.destPath}
       `,
     },
     archiveWasExtracted: {
@@ -260,10 +260,10 @@ function getNotification (params) {
       timeout: 5000,
       actionButtons: [],
       colorStatus: 'green',
-      title: 'Archive was extracted',
+      title: 'Extract archive: success',
       message: `
         Done • ${params?.props?.progress?.fileCount} files
-        <br><strong>Destination:</strong> ${params?.props?.params?.dest}
+        <br><strong>Destination path:</strong> ${params?.props?.params?.destPath}
       `,
     },
     archiveCreationProgress: {
@@ -293,7 +293,7 @@ function getNotification (params) {
       hashID: params?.props?.hashID,
       progress: params?.props?.progress,
       timeout: 0,
-      title: 'Extracting archive',
+      title: 'Extract archive: in progress',
       message: `
         ${params?.props?.progress?.percent}% • 
         ${params?.props?.progress?.fileCount} files

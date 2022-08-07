@@ -341,8 +341,10 @@ export default {
   computed: {
     ...mapFields({
       shortcuts: 'storageData.settings.shortcuts',
+      currentDir: 'navigatorView.currentDir',
       inputState: 'inputState',
       contextMenus: 'contextMenus',
+      targetItemsStats: 'contextMenus.dirItem.targetItemsStats',
       dialogs: 'dialogs',
       pinnedItems: 'storageData.pinned.items',
       protectedItems: 'storageData.protected.items',
@@ -351,9 +353,6 @@ export default {
     }),
     targetItems () {
       return this.$store.state.contextMenus.dirItem.targetItems
-    },
-    targetItemsStats () {
-      return this.$store.state.contextMenus.dirItem.targetItemsStats
     },
     dirItemToolbarItems () {
       return [
@@ -629,8 +628,15 @@ export default {
           targetTypes: ['file', 'directory', 'file-symlink', 'directory-symlink'],
           selectionType: ['single', 'multiple'],
           onClick: () => {
-            this.dialogs.archiverDialog.data.dest.name = 'Archive'
-            this.dialogs.archiverDialog.value = true
+            const singleDirectorySelected = this.targetItemsStats.dirItems.length === 1 && this.targetItemsStats.types[0] === 'directory'
+            if (singleDirectorySelected) {
+              this.dialogs.archiveAdd.data.dest.name = this.targetItemsStats.dirItems[0].name
+            }
+            else {
+              this.dialogs.archiveAdd.data.dest.name = this.currentDir.name
+            }
+            this.dialogs.archiveAdd.data.dest.dir = this.currentDir.path
+            this.dialogs.archiveAdd.value = true
           },
           closesMenu: true,
           icon: 'mdi-cube-outline',
@@ -643,7 +649,9 @@ export default {
           selectionType: ['single'],
           allowedFilesTypes: ['archive'],
           onClick: () => {
-            this.$store.dispatch('EXTRACT_ARCHIVE', {source: 'target-items'})
+            this.$store.dispatch('showArchiveExtractDialog', {
+              sourcePath: this.targetItemsStats.dirItemsPaths[0],
+            })
           },
           closesMenu: true,
           icon: 'mdi-package-variant',

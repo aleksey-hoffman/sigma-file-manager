@@ -1095,15 +1095,101 @@ export default new Vuex.Store({
           error: ''
         }
       },
-      archiverDialog: {
+      archiveAdd: {
         value: false,
         data: {
           isValid: true,
           error: '',
           selectedFormat: 'zip',
           formats: supportedFormats.formats.fileType.archivePack,
+          setPassword: false,
+          compression: {
+            title: 'Normal',
+            value: 'x=5'
+          },
+          compressionOptions: [
+            {
+              title: 'No compression',
+              value: 'x=0'
+            },
+            {
+              title: 'Fastest',
+              value: 'x=1'
+            },
+            {
+              title: 'Fast',
+              value: 'x=3'
+            },
+            {
+              title: 'Normal',
+              value: 'x=5'
+            },
+            {
+              title: 'Maximum',
+              value: 'x=7'
+            },
+            {
+              title: 'Ultra',
+              value: 'x=9'
+            },
+          ],
+          options: {
+            deleteFilesAfter: false,
+            password: '',
+            method: []
+          },
           dest: {
-            name: ''
+            name: '',
+            dir: '',
+            path: ''
+          }
+        }
+      },
+      archiveExtract: {
+        value: false,
+        data: {
+          isValid: true,
+          error: '',
+          isGettingStats: false,
+          isEncrypted: false,
+          password: '',
+          destPath: '',
+          archiveData: {
+            physicalSize: {
+              title: 'Physical Size',
+              value: '',
+              readableValue: '',
+            },
+            size: {
+              title: 'Size',
+              value: '',
+              readableValue: '',
+            },
+            packedSize: {
+              title: 'Packed Size',
+              value: '',
+              readableValue: '',
+            },
+            encrypted: {
+              title: 'Encrypted',
+              value: '',
+              readableValue: '',
+            },
+            method: {
+              title: 'Method',
+              value: '',
+              readableValue: '',
+            },
+            characteristics: {
+              title: 'Characteristics',
+              value: '',
+              readableValue: '',
+            },
+          },
+          dest: {
+            name: '',
+            dir: '',
+            path: ''
           }
         }
       },
@@ -3175,50 +3261,47 @@ export default new Vuex.Store({
       }
     },
     /**
-    * @param {string} params.dest
-    * @param {string[]} params.source
+    * @param {string[]} params.sourcePath
+    * @param {string} params.destPath
     */
-    ADD_TO_ARCHIVE (store, params) {
+    addToArchive ({state}, params) {
       let archiveState = {
         isCanceled: false,
         error: false
       }
       let notification = {}
       let hashID = utils.getHash()
-      
-      if (params.source === 'target-items') {
-        params.source = store.state.contextMenus.dirItem.targetItemsStats.dirItemsPaths
-      }
 
-      if (params.dest) {
-        params.dest = utils.getUniquePath(params.dest)
+      if (params.destPath) {
+        params.destPath = utils.getUniquePath(params.destPath)
       }
-      else if (!params.dest) {
-        const parsed = PATH.parse(params.source[0])
+      else if (!params.destPath) {
+        const parsed = PATH.parse(params.sourcePath[0])
         const uniqueDestPath = utils.getUniquePath(PATH.join(parsed.dir, 'Archive.zip'))
-        params.dest = uniqueDestPath
+        params.destPath = uniqueDestPath
       }
 
       const archiveStream = node7z.add(
-        params.dest,
-        params.source,
+        params.destPath,
+        params.sourcePath,
         {
-          $bin: store.state.storageData.settings.appPaths.bin7Zip,
-          $progress: true
+          $bin: state.storageData.settings.appPaths.bin7Zip,
+          $progress: true,
+          ...params.options
         }
       )
 
       archiveStream.on('error', (error) => {
         archiveState.error = true
         notifications.emit({
-          name: 'archiveAddDataError', 
+          name: 'archiveAddDataError',
           error
         })
       })
-      
+
       archiveStream.on('progress', (progress) => {
         notification = notifications.emit({
-          name: 'archiveCreationProgress', 
+          name: 'archiveCreationProgress',
           props: {
             hashID,
             progress,
@@ -3228,12 +3311,11 @@ export default new Vuex.Store({
           }
         })
       })
-      
+
       archiveStream.on('end', () => {
         if (!archiveState.error) {
           if (!archiveState.isCanceled) {
             setTimeout(() => {
-              console.log('progress, params', notification.progress, params)
               notification.update({
                 name: 'archiveWasCreated',
                 props: {
@@ -3256,47 +3338,125 @@ export default new Vuex.Store({
       })
     },
     /**
-    * @param {string} params.dest
-    * @param {string} params.source
+    * @param {string} params.sourcePath
+    * @param {string} params.destPath
     */
-    EXTRACT_ARCHIVE (store, params) {
+    async showArchiveExtractDialog ({state, dispatch}, params) {
+      return new Promise(async (resolve) => {
+        state.dialogs.archiveExtract.data.isGettingStats = true
+
+        if (!params.destPath) {
+          const parsed = PATH.parse(params.sourcePath)
+          const dest = utils.getUniquePath(PATH.join(parsed.dir, parsed.name))
+          params.destPath = dest
+        }
+
+        state.dialogs.archiveExtract.data.destPath = params.destPath
+        state.dialogs.archiveExtract.value = true
+
+        const archiveTestStream = node7z.list(
+          params.sourcePath,
+          {
+            $bin: state.storageData.settings.appPaths.bin7Zip,
+            $progress: true,
+            techInfo: true,
+          }
+        )
+  
+        archiveTestStream.on('end', () => {
+          const archiveData = {
+            sourcePath: {
+              title: 'Archive path',
+              value: params.sourcePath,
+              readableValue: params.sourcePath,
+            },
+            physicalSize: {
+              title: 'Physical Size',
+              value: archiveTestStream.info.get('Physical Size'),
+              readableValue: utils.prettyBytes(archiveTestStream.info.get('Physical Size')),
+            },
+            size: {
+              title: 'Size',
+              value: archiveTestStream.info.get('Size'),
+              readableValue: utils.prettyBytes(archiveTestStream.info.get('Size')),
+            },
+            packedSize: {
+              title: 'Packed Size',
+              value: archiveTestStream.info.get('Packed Size'),
+              readableValue: utils.prettyBytes(archiveTestStream.info.get('Packed Size')),
+            },
+            encrypted: {
+              title: 'Encrypted',
+              value: archiveTestStream.info.get('Encrypted'),
+              readableValue: archiveTestStream.info.get('Encrypted') === '+' ? 'Yes' : 'No',
+            },
+            method: {
+              title: 'Method',
+              value: archiveTestStream.info.get('Method'),
+              readableValue: archiveTestStream.info.get('Method'),
+            },
+            characteristics: {
+              title: 'Characteristics',
+              value: archiveTestStream.info.get('Characteristics'),
+              readableValue: archiveTestStream.info.get('Characteristics'),
+            },
+          }
+            
+          state.dialogs.archiveExtract.data.isGettingStats = false
+          state.dialogs.archiveExtract.data.archiveData = archiveData
+          state.dialogs.archiveExtract.data.isEncrypted = archiveData.encrypted.value === '+'
+          state.dialogs.archiveExtract.data.onExtract = () => {
+            params.options = {
+              password: state.dialogs.archiveExtract.data.password
+            }
+            dispatch('extractArchive', params)
+          }
+        })
+      })
+    },
+    /**
+    * @param {string} params.sourcePath
+    * @param {string} params.destPath
+    */
+     async extractArchive ({state}, params) {
       let archiveState = {
         isCanceled: false,
         error: false
       }
       let notification = {}
       let hashID = utils.getHash()
-      
-      if (params.source === 'target-items') {
-        params.source = store.state.contextMenus.dirItem.targetItemsStats.dirItemsPaths[0]
-      }
-
-      if (!params.dest) {
-        const parsed = PATH.parse(params.source)
-        const dest = utils.getUniquePath(PATH.join(parsed.dir, parsed.name))
-        params.dest = dest
-      }
 
       const archiveStream = node7z.extractFull(
-        params.source,
-        params.dest,
+        params.sourcePath,
+        params.destPath,
         {
-          $bin: store.state.storageData.settings.appPaths.bin7Zip,
-          $progress: true
+          $bin: state.storageData.settings.appPaths.bin7Zip,
+          $progress: true,
+          techInfo: true,
+          ...params.options
         }
       )
 
       archiveStream.on('error', (error) => {
         archiveState.error = true
-        notifications.emit({
-          name: 'archiveExtractionError', 
-          error
-        })
+        notification.hide()
+        if (error.message.startsWith('Wrong password')) {
+          notification = notifications.emit({
+            name: 'archiveExtractionError',
+            props: {error: 'Wrong password'}
+          })
+        }
+        else {
+          notification = notifications.emit({
+            name: 'archiveExtractionError',
+            props: {error: error.message}
+          })
+        }
       })
-      
+
       archiveStream.on('progress', (progress) => {
         notification = notifications.emit({
-          name: 'archiveExtractionProgress', 
+          name: 'archiveExtractionProgress',
           props: {
             hashID,
             progress,
@@ -3306,12 +3466,12 @@ export default new Vuex.Store({
           }
         })
       })
-      
+
       archiveStream.on('end', () => {
         if (!archiveState.error) {
+          state.dialogs.archiveExtract.value = false
           if (!archiveState.isCanceled) {
             setTimeout(() => {
-              console.log('progress, params', notification.progress, params)
               notification.update({
                 name: 'archiveWasExtracted',
                 props: {
@@ -5853,7 +6013,7 @@ export default new Vuex.Store({
           hashID: taskHashID,
           props: {
             items: payload.items,
-            options: payload.options,
+            options: payload.options || {},
             timeoutObject: null
           }
         })

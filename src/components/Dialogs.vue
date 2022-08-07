@@ -496,60 +496,6 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       </template>
     </dialog-generator>
 
-    <!-- dialog::archiverDialog -->
-    <dialog-generator
-      :dialog="dialogs.archiverDialog"
-      :closeButton="{
-        onClick: () => closeDialog('archiverDialog'),
-      }"
-      :actionButtons="[
-        {
-          text: 'cancel',
-          onClick: () => closeDialog('archiverDialog')
-        },
-        {
-          text: 'create archive',
-          disabled: !dialogs.archiverDialog.data.isValid,
-          onClick: () =>  initCreateArchive()
-        }
-      ]"
-      title="Add selected to archive"
-      height="unset"
-    >
-      <template v-slot:content>
-        <div class="mb-4">
-          <div>
-            <span style="font-weight: bold">Archive path:</span>
-            {{newArchivePath}}
-          </div>
-          <div>
-            <span style="font-weight: bold">Items to add:</span>
-            {{targetItems.length}}
-          </div>
-        </div>
-
-        <v-select
-          label="Archive format"
-          v-model="dialogs.archiverDialog.data.selectedFormat"
-          :items="dialogs.archiverDialog.data.formats"
-        ></v-select>
-
-        <!-- input::archive-name -->
-        <v-text-field
-          v-model="dialogs.archiverDialog.data.dest.name"
-          @input="validateArchiveNameInput()"
-          @keypress.enter="initCreateArchive()"
-          label="Archive name"
-          id="renameItemDialogNameInput"
-          ref="renameItemDialogNameInput"
-          :value="dialogs.archiverDialog.data.dest.name"
-          :error="!dialogs.archiverDialog.data.isValid"
-          :hint="dialogs.archiverDialog.data.error"
-          autofocus
-        ></v-text-field>
-      </template>
-    </dialog-generator>
-
     <!-- dialog::renameDirItemDialog -->
     <dialog-generator
       :dialog="dialogs.renameDirItemDialog"
@@ -1722,6 +1668,8 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       </template>
     </dialog-generator>
 
+    <ArchiveAddDialog />
+    <ArchiveExtractDialog />
     <download-type-selector-dialog />
 
     <!-- dialog::externalDownloadDialog -->
@@ -1888,6 +1836,8 @@ import InfoTag from './InfoTag/index.vue'
 import katex from 'katex'
 import 'katex/dist/katex.min.css'
 import DownloadTypeSelectorDialog from '@/components/dialogs/DownloadTypeSelector.vue'
+import ArchiveAddDialog from '@/components/dialogs/ArchiveAdd.vue'
+import ArchiveExtractDialog from '@/components/dialogs/ArchiveExtract.vue'
 
 const electronRemote = require('@electron/remote')
 const currentWindow = electronRemote.getCurrentWindow()
@@ -1900,6 +1850,8 @@ export default {
   components: {
     InfoTag,
     DownloadTypeSelectorDialog,
+    ArchiveAddDialog,
+    ArchiveExtractDialog,
   },
   data () {
     return {
@@ -2180,12 +2132,6 @@ export default {
       })
       return log
     },
-    newArchivePath () {
-      const name = this.dialogs.archiverDialog.data.dest.name
-      const format = this.dialogs.archiverDialog.data.selectedFormat
-      const path = PATH.join(this.currentDir.path, `${name}.${format}`).replace(/\\/g, '/')
-      return path
-    },
     workspaceActionCommandHint () {
       let hint = ''
       try {
@@ -2453,14 +2399,6 @@ export default {
       }
       catch (error) {}
     },
-    initCreateArchive () {
-      if (!this.dialogs.archiverDialog.data.isValid) {return}
-      this.$store.dispatch('ADD_TO_ARCHIVE', {
-        source: 'target-items',
-        dest: this.newArchivePath
-      })
-      this.closeDialog('archiverDialog')
-    },
     initDirItemRename () {
       if (!this.dialogs.renameDirItemDialog.data.isValid) {return}
       const dir = PATH.parse(this.editTargets[0].path).dir
@@ -2524,16 +2462,6 @@ export default {
               })
             })
         })
-    },
-    validateArchiveNameInput () {
-      if (this.dialogs.archiverDialog.data.dest.name === '') {
-        this.dialogs.archiverDialog.data.error = 'Name cannot be empty'
-        this.dialogs.archiverDialog.data.isValid = false
-        return
-      }
-      const pathValidationData = this.$utils.isPathValid(this.newArchivePath)
-      this.dialogs.archiverDialog.data.error = pathValidationData.error
-      this.dialogs.archiverDialog.data.isValid = pathValidationData.isValid
     },
     validateRenameDirItemInput () {
       const parsedItemPath = PATH.parse(this.editTargets[0].path)
