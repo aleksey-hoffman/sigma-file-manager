@@ -1804,14 +1804,14 @@ export default new Vuex.Store({
         [startRangeIndex, endRangeIndex] = [endRangeIndex, startRangeIndex]
       }
       // Highlight items
-      state.navigatorView.dirItems.forEach(item => {
+      state.navigatorView.filteredDirItems.forEach(item => {
         if (startRangeIndex <= item.dirItemPositionIndex && item.dirItemPositionIndex <= endRangeIndex) {
           item.isHighlighted = true
         }
       })
     },
     DEHIGHLIGHT_ALL_DIR_ITEMS (state) {
-      state.navigatorView.dirItems.forEach(item => {
+      state.navigatorView?.filteredDirItems?.forEach(item => {
         item.isHighlighted = false
       })
     },
@@ -4492,13 +4492,13 @@ export default new Vuex.Store({
         }
       }
     },
-    DESELECT_DIR_ITEM ({ state, commit, dispatch, getters }, specifiedItem) {
-      commit('DESELECT_DIR_ITEM', { getters, specifiedItem })
+    DESELECT_DIR_ITEM ({commit, getters}, specifiedItem) {
+      commit('DESELECT_DIR_ITEM', {getters, specifiedItem})
     },
-    SELECT_ALL_DIR_ITEMS ({ state, commit, dispatch, getters }) {
+    SELECT_ALL_DIR_ITEMS ({state}) {
       state.navigatorView.selectedDirItems = state.navigatorView.filteredDirItems
     },
-    DESELECT_ALL_DIR_ITEMS ({ state, commit, dispatch, getters }) {
+    DESELECT_ALL_DIR_ITEMS ({state}) {
       state.navigatorView.selectedDirItems = []
     },
     FETCH_SELECTED_ITEMS_DATA ({ state, commit, dispatch, getters }) {
