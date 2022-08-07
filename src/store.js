@@ -5273,72 +5273,69 @@ export default new Vuex.Store({
       await dispatch('transferDirItems', params)
     },
     async RENAME_DIR_ITEM (store, payload) {
-      const { oldPath, newPath, newName, oldName } = payload
-      fs.access(newPath, fs.constants.F_OK, (error) => {
-        // If path doesn't exist, rename the item
-        if (error) {
-          fs.promises.rename(oldPath, newPath)
-            .then(() => {
-              setTimeout(() => {
-                eventHub.$emit('notification', {
-                  action: 'add',
-                  timeout: 8000,
-                  closeButton: true,
-                  title: 'Renamed 1 item',
-                  message: `<b>Was</b>: ${oldName}
-                            <br><b>Now</b>: ${newName}`,
-                  actionButtons: [
-                    {
-                      title: localize.get('text_undo'),
-                      action: '',
-                      onClick: () => {
-                        fs.promises.rename(newPath, oldPath)
-                          .then(() => {
-                            new Notification({
-                              name: 'renameSuccess', 
-                              props: {
-                                message: oldPath
-                              }
-                            })
-                          })
-                          .catch((error) => {
-                            throw Error(error)
-                          })
-                      },
-                      closesNotification: true
-                    }
-                  ]
-                })
-              }, 1000)
-              store.state.dialogs.renameDirItemDialog.value = false
+      const {oldPath, newPath, newName, oldName} = payload
+
+      fs.promises.rename(oldPath, newPath)
+        .then(() => {
+          setTimeout(() => {
+            eventHub.$emit('notification', {
+              action: 'add',
+              timeout: 8000,
+              closeButton: true,
+              title: 'Renamed 1 item',
+              message: `
+                <strong>Was</strong>: ${oldName}
+                <br><strong>Now</strong>: ${newName}
+              `,
+              actionButtons: [
+                {
+                  title: localize.get('text_undo'),
+                  action: '',
+                  onClick: () => {
+                    fs.promises.rename(newPath, oldPath)
+                      .then(() => {
+                        notifications.emit({
+                          name: 'renameSuccess',
+                          props: {
+                            message: oldPath
+                          }
+                        })
+                      })
+                      .catch((error) => {
+                        throw Error(error)
+                      })
+                  },
+                  closesNotification: true
+                }
+              ]
             })
-            .catch((error) => {
-              if (error.code === 'ENOENT') {
-                new Notification({
-                  name: 'renameFailedNoLongerExists', 
-                  format: {
-                    oldPath
-                  }
-                })
-              }
-              else {
-                new Notification({
-                  name: 'renameFailedError', 
-                  error
-                })
+          }, 1000)
+          store.state.dialogs.renameDirItemDialog.value = false
+        })
+        .catch((error) => {
+          if (error.code === 'EPERM') {
+            notifications.emit({
+              name: 'renameFailedAlreadyExistsOrLocked',
+              props: {
+                newName
               }
             })
           }
-          // If path already exists, do not rename
+          if (error.code === 'ENOENT') {
+            notifications.emit({
+              name: 'renameFailedNoLongerExists',
+              props: {
+                oldPath
+              }
+            })
+          }
           else {
-          new Notification({
-            name: 'renameFailedAlreadyExists', 
-            format: {
-              newName
-            }
-          })
-        }
-      })
+            notifications.emit({
+              name: 'renameFailedError',
+              error
+            })
+          }
+        })
     },
     async ENSURE_DRIVE_HAS_SPACE ({ state, commit, dispatch, getters }, size) {
       // TODO: Check if destination drive has enough space
