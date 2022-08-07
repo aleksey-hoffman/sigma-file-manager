@@ -3151,9 +3151,9 @@ export default new Vuex.Store({
         value: state.storageData.workspaces.items
       })
     },
-    CLEAR_FILTER_FIELD ({ state, commit, dispatch, getters }) {
+    clearFilterField ({dispatch}, routeName) {
       dispatch('SET', {
-        key: `filterField.view.${router.history.current.name}.query`,
+        key: `filterField.view.${routeName}.query`,
         value: ''
       })
     },
@@ -3179,7 +3179,6 @@ export default new Vuex.Store({
 
         store.dispatch('SET_NAVIGATOR_STATE')
         store.dispatch('LOAD_ROUTE', 'navigator')
-        store.dispatch('CLEAR_FILTER_FIELD')
         let {dirInfo} = await store.dispatch('LOAD_DIR_ITEMS', options)
         eventHub.$emit('app:method', {
           method: 'postDirWatcherWorker',

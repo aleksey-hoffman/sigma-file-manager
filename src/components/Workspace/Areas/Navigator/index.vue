@@ -30,9 +30,10 @@ export default {
     WorkspaceAreaSortingToolbar,
     WorkspaceAreaItemList,
   },
-  data () {
-    return {
-    }
+  watch: {
+    'currentDir.path' () {
+      this.$store.dispatch('clearFilterField', 'navigator')
+    },
   },
   async mounted () {
     this.$nextTick(() => {
@@ -46,6 +47,7 @@ export default {
     ...mapFields({
       navigatorRouteIsLoaded: 'navigatorRouteIsLoaded',
       filterQuery: 'filterField.view.navigator.query',
+      currentDir: 'navigatorView.currentDir',
     }),
   },
 }
