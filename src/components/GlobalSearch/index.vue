@@ -279,13 +279,6 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     :type="item.type"
                     :show-dir="true"
                     :show-score="!true"
-                    :thumb-loading-is-paused="false"
-                    :force-thumb-load="false"
-                    :status="{
-                      itemHover: {
-                        isPaused: false
-                      }
-                    }"
                   />
                 </div>
 
@@ -302,13 +295,6 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     :type="item.type"
                     :show-dir="true"
                     :show-score="true"
-                    :thumb-loading-is-paused="false"
-                    :force-thumb-load="false"
-                    :status="{
-                      itemHover: {
-                        isPaused: false
-                      }
-                    }"
                   />
                 </div>
 
@@ -323,13 +309,6 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     :type="item.type"
                     :show-dir="true"
                     :show-score="true"
-                    :thumb-loading-is-paused="false"
-                    :force-thumb-load="false"
-                    :status="{
-                      itemHover: {
-                        isPaused: false
-                      }
-                    }"
                   />
 
                   <!-- dir-items-container: {type: file} -->
@@ -342,13 +321,6 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     :type="item.type"
                     :show-dir="true"
                     :show-score="true"
-                    :thumb-loading-is-paused="false"
-                    :force-thumb-load="false"
-                    :status="{
-                      itemHover: {
-                        isPaused: false
-                      }
-                    }"
                   />
                 </div>
               </div>
@@ -582,6 +554,7 @@ export default {
       optionMatchSymbols: 'globalSearch.options.matchSymbols',
       optionIncreasedTypoTolerance: 'globalSearch.options.increasedTypoTolerance',
       globalSearchScanDepth: 'storageData.settings.globalSearchScanDepth',
+      dirItemsTimeline: 'storageData.stats.dirItemsTimeline',
     }),
     formattedSearchResults () {
       return [...this.searchResults].forEach(item => {
@@ -637,12 +610,6 @@ export default {
       }
       if (this.$refs.globalSearchInput) {
         this.$refs.globalSearchInput.focus()
-      }
-    },
-    setdropTargetItemListenerHandler (dropTargetItem) {
-      this.inputState.pointer.hoveredItem = {
-        id: dropTargetItem.id,
-        path: dropTargetItem.path,
       }
     },
     async handleGlobalSearchResults (data) {
