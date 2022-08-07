@@ -6,57 +6,74 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <template>
   <div
     class="notification__item"
-    @mouseover="pauseNotificationTimer(notification)"
-    @mouseleave="resetNotificationTimer(notification)"
     :data-hashID="notification.hashID"
     :data-type="notification.type"
     :is-hidden="notification.isHidden"
+    @mouseover="pauseNotificationTimer(notification)"
+    @mouseleave="resetNotificationTimer(notification)"
   >
     <v-progress-linear
       v-show="notification.timeout !== 0 && !notification.isHidden"
       :value="notification.timeoutData.percentsCounter"
       :color="notification.timeoutProgressColor || 'blue-grey'"
       height="2"
-    ></v-progress-linear>
+    />
 
     <div class="notification__item__content">
       <div class="notification__item__content__main">
         <div class="notification__item__content__main__header">
-          <div 
-            class="notification__item__color-indicator" 
+          <div
             v-if="notification.colorStatus !== ''"
-            :color="notification.colorStatus" 
+            class="notification__item__color-indicator"
+            :color="notification.colorStatus"
             size="18px"
-          ></div>
+          />
 
-          <div 
+          <div
+            v-show="notification.icon"
             class="notification__item__icon"
-            v-show="notification.icon" 
           >
-            <v-icon size="20px">{{notification.icon}}</v-icon>
+            <v-icon size="20px">
+              {{notification.icon}}
+            </v-icon>
           </div>
 
           <div
-            class="notification__item__title"
-            v-if="notification.title"
-            v-html="notification.title"
-            :colorStatus="notification.colorStatus"
-          ></div>
+            v-if="notification.loader"
+            class="notification__item__loader"
+          >
+            <v-progress-circular
+              v-if="notification.loader"
+              indeterminate
+              size="20"
+              width="2"
+              :background-color="$utils.getCSSVar('--bg-color-2')"
+              :color="$utils.getCSSVar('--highlight-color-1')"
+            />
+          </div>
 
-          <v-spacer></v-spacer>
+          <div
+            v-if="notification.title"
+            class="notification__item__title"
+            :colorStatus="notification.colorStatus"
+            v-html="notification.title"
+          />
+
+          <v-spacer />
 
           <!-- button:hide-notification -->
-          <v-tooltip 
+          <v-tooltip
             v-if="!notification.isHidden"
             top
           >
-            <template v-slot:activator="{on}">
+            <template #activator="{on}">
               <v-btn
-                v-on="on"
                 v-show="notification.closeButton"
-                @click="$store.dispatch('HIDE_NOTIFICATION', notification)"
-                icon small
+                icon
+                small
                 color="grey"
+                v-on="on"
+                @click="$store.dispatch('HIDE_NOTIFICATION', notification)"
               >
                 <div class="notification__item__icon--close">
                   <v-icon>mdi-close</v-icon>
@@ -65,19 +82,20 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             </template>
             <span>Hide notification</span>
           </v-tooltip>
-          
+
           <!-- button:remove-notification -->
-          <v-tooltip 
+          <v-tooltip
             v-if="notification.isHidden && notification.isStatic"
             top
           >
-            <template v-slot:activator="{on}">
+            <template #activator="{on}">
               <v-btn
-                v-on="on"
                 v-show="notification.closeButton"
-                @click="$store.dispatch('REMOVE_NOTIFICATION', notification)"
-                icon small
+                icon
+                small
                 color="grey"
+                v-on="on"
+                @click="$store.dispatch('REMOVE_NOTIFICATION', notification)"
               >
                 <div class="notification__item__icon--close">
                   <v-icon>mdi-trash-can-outline</v-icon>
@@ -88,31 +106,31 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           </v-tooltip>
         </div>
 
-        <div 
-          class="notification__item__message" 
+        <div
           v-if="notification.message"
+          class="notification__item__message"
           v-html="notification.message"
-        ></div>
+        />
 
-        <div 
-          class="notification__item__message-content" 
+        <div
           v-if="notification.content"
+          class="notification__item__message-content"
         >
           <div
             v-for="(contentItem, index) in notification.content"
             :key="'notification-content-' + index"
           >
-            <div 
-              class="dialog-card__html"
+            <div
               v-if="contentItem.type === 'html'"
+              class="dialog-card__html"
               v-html="contentItem.value"
-            ></div>
+            />
 
-            <div 
-              class="notification__item__message-content__list custom-scrollbar" 
+            <div
               v-if="contentItem.type === 'list'"
+              class="notification__item__message-content__list custom-scrollbar"
             >
-              <div 
+              <div
                 v-for="(listItem, index) in contentItem.value"
                 :key="'notification-content-listItem' + index"
               >
@@ -124,9 +142,9 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
         <div v-if="notification.type === 'fileDownload'">
           <div class="notification__item__progress">
-            <div 
+            <div
+              v-if="notification.progress.filename"
               class="notification__item__progress__filename"
-              v-if="notification.progress.filename" 
             >
               <strong>File name:</strong>
               {{notification.progress.filename}}
@@ -135,24 +153,26 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               <div
                 class="notification__item__progress__content"
                 v-html="getNotificationProgressContent(notification)"
-              ></div>
+              />
             </v-layout>
 
+            {{notification.hashID}}
+
             <v-progress-linear
-              class="mb-2"
               v-show="showProgressBar"
+              class="mb-2"
               :value="notification.progress.percentDone"
               height="4"
               :background-color="$utils.getCSSVar('--bg-color-2')"
               :color="$utils.getCSSVar('--highlight-color-1')"
-            ></v-progress-linear>
+            />
           </div>
         </div>
       </div>
 
       <div
-        class="notification__actions"
         v-show="notification.actionButtons.length !== 0"
+        class="notification__actions"
       >
         <v-tooltip
           v-for="(button, index) in notification.actionButtons"
@@ -161,20 +181,25 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           bottom
           offset-overflow
         >
-          <template v-slot:activator="{on}">
+          <template #activator="{on}">
             <v-btn
               class="button-1 mr-3"
+              small
+              depressed
               v-on="on"
               @click="handleNotificationButtonOnClickEvent(notification, button)"
-              small depressed
-            >{{button.title}}
+            >
+              {{button.title}}
             </v-btn>
           </template>
           <span>
             <div v-show="button.extrnalLink">
               <div class="tooltip__description">
                 <v-layout align-center>
-                  <v-icon class="mr-3" size="16px">
+                  <v-icon
+                    class="mr-3"
+                    size="16px"
+                  >
                     mdi-open-in-new
                   </v-icon>
                   {{button.extrnalLink}}
@@ -200,17 +225,17 @@ export default {
   props: {
     notification: Object,
     location: String,
-    scheduleNotificationForRemoval: Function
+    scheduleNotificationForRemoval: Function,
   },
   computed: {
     ...mapFields({
-      notifications: 'notifications'
+      notifications: 'notifications',
     }),
     showProgressBar () {
-      return this.notification.progress.started && 
-        this.notification.progress.percentDone > 0 && 
+      return this.notification.progress.started &&
+        this.notification.progress.percentDone > 0 &&
         !this.notification.progress.isDone
-    }
+    },
   },
   methods: {
     resetNotificationTimer (notification) {
@@ -242,7 +267,7 @@ export default {
     getNotificationProgressContent (notification) {
       const {
         started, isDone, percentDone, receivedBytes,
-        totalBytes, speed, speedIsCalculated, eta
+        totalBytes, speed, speedIsCalculated, eta,
       } = notification.progress
 
       const content = []
@@ -275,14 +300,13 @@ export default {
           ${content.join('<span class="mx-2">•</span>')}
         </div>
       `
-    }
-  }
+    },
+  },
 }
 </script>
 
 <style>
 .notification__item {
-  user-select: none;
   overflow: hidden;
   width: 400px;
   margin-bottom: 8px;
@@ -314,9 +338,9 @@ export default {
 
 .notification__item__color-indicator {
   position: relative;
-  height: 6px; 
-  width: 6px; 
-  margin-right: 10px; 
+  height: 6px;
+  width: 6px;
+  margin-right: 10px;
   border-radius: 50%;
 }
 
@@ -335,6 +359,10 @@ export default {
   box-shadow: 0 0 8px #e53935;
 }
 
+.notification__item__loader {
+  margin-right: 10px;
+}
+
 .notification__item__icon {
   display: flex;
   align-items: center;
@@ -342,9 +370,9 @@ export default {
   margin-right: 10px;
 }
 
-.notification__item__icon 
+.notification__item__icon
   .v-icon,
-.notification__item__icon--close 
+.notification__item__icon--close
   .v-icon {
     color: #bdbdbd;
   }
