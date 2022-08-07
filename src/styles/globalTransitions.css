@@ -187,6 +187,18 @@
   opacity: 0;
 }
 
+.slide-fade-up-200ms-enter-active,
+.slide-fade-up-200ms-leave-active {
+  transition: all 0.2s;
+}
+
+.slide-fade-up-200ms-enter,
+.slide-fade-up-200ms-leave-to {
+  transition: all 0.2s;
+  transform: translateY(10px);
+  opacity: 0;
+}
+
 .slide-fade-down-500ms-enter-active,
 .slide-fade-down-500ms-leave-active {
   transition: all 0.5s;

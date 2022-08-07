@@ -4,19 +4,19 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <template>
-  <transition name="slide-fade-down-300ms">
+  <transition name="slide-fade-left">
     <div
       v-show="widget"
-      class="widget"
+      class="search-widget"
     >
       <div
-        class="widget__container"
+        class="search-widget__container"
         shadow="x3"
       >
         <!-- widget::overlays -->
         <div
           v-show="scanInProgress"
-          class="widget__overlay--scan-in-progress"
+          class="search-widget__overlay--scan-in-progress"
         >
           <v-layout
             column
@@ -29,7 +29,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         </div>
         <div
           v-show="searchScanWasInterrupted && !scanInProgress"
-          class="widget__overlay--scan-in-progress"
+          class="search-widget__overlay--scan-in-progress"
         >
           <v-layout
             column
@@ -55,12 +55,12 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         </div>
 
         <!-- widget::toolbar -->
-        <div class="widget__input-container">
+        <div class="search-widget__input-container">
           <v-btn
             small
             icon
             data-action="search-icon"
-            class="widget__input__button"
+            class="search-widget__input__button"
           >
             <v-icon class="action-toolbar__icon">
               mdi-magnify
@@ -75,7 +75,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             single-line
             flat
             box
-            class="widget__input"
+            class="search-widget__input"
             @focus="$store.dispatch('SET', {
               key: 'focusedField',
               value: 'search'
@@ -87,10 +87,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             @keyup="handleInputKeyUp()"
           />
 
-          <div class="widget__input__buttons-container">
+          <div class="search-widget__input__buttons-container">
             <!-- button:clear-search-input -->
             <div
-              class="widget__input__button"
+              class="search-widget__input__button"
               data-action="clear"
               :data-visible="query.length > 0"
             >
@@ -115,7 +115,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
             <!-- button:toggle-options -->
             <div
-              class="widget__input__button"
+              class="search-widget__input__button"
               data-action="options"
             >
               <v-tooltip bottom>
@@ -143,7 +143,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
             <!-- button:close-widget -->
             <div
-              class="widget__input__button"
+              class="search-widget__input__button"
               data-action="close"
             >
               <v-tooltip bottom>
@@ -162,175 +162,182 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           </div>
         </div>
 
-        <div class="widget__main-container">
+        <div class="search-widget__main-container">
           <!-- widget::info-container -->
-          <div class="widget__info-container">
-            <div class="widget__info-container__header">
-              <div v-show="query.length === 0">
-                <v-layout
-                  align-center
-                  justify-space-between
-                  class="text--sub-title-1"
-                >
-                  Search data
-                  <!-- button:re-scan -->
-                  <v-btn
-                    class="button-1"
-                    small
-                    @click="$eventHub.$emit('app:method', {
-                      method: 'initGlobalSearchDataScan'
-                    })"
+          <transition name="slide-fade-up-200ms">
+            <div
+              v-show="!showWidgetOptions"
+              class="search-widget__info-container"
+            >
+              <div class="search-widget__info-container__header">
+                <div v-show="query.length === 0">
+                  <v-layout
+                    align-center
+                    justify-space-between
+                    class="text--sub-title-1"
                   >
-                    re-scan drives
-                  </v-btn>
-                </v-layout>
-                <v-layout>
-                  <div>
-                    <v-icon
-                      class="action-toolbar__icon mr-2"
-                      size="18px"
+                    Search data
+                    <!-- button:re-scan -->
+                    <v-btn
+                      class="button-1"
+                      small
+                      @click="$eventHub.$emit('app:method', {
+                        method: 'initGlobalSearchDataScan'
+                      })"
                     >
-                      mdi-subdirectory-arrow-right
-                    </v-icon>
-                    Scan depth: {{globalSearchScanDepth}} directories
-                  </div>
-                </v-layout>
-                <updating-component :component="'lastScanTimeElapsed'" />
-              </div>
+                      re-scan drives
+                    </v-btn>
+                  </v-layout>
+                  <v-layout>
+                    <div>
+                      <v-icon
+                        class="action-toolbar__icon mr-2"
+                        size="18px"
+                      >
+                        mdi-subdirectory-arrow-right
+                      </v-icon>
+                      Scan depth: {{globalSearchScanDepth}} directories
+                    </div>
+                  </v-layout>
+                  <updating-component :component="'lastScanTimeElapsed'" />
+                </div>
 
-              <!-- widget::search-results -->
-              <div v-show="query.length > 0">
-                <v-layout
-                  class="text--sub-title-1"
-                  align-center
-                >
-                  Search results
-                  <v-progress-circular
-                    v-if="searchInProgress"
-                    indeterminate
-                    size="18"
-                    width="2"
-                    color="primary"
-                    class="mx-3"
-                  />
-                  <v-btn
-                    v-if="searchInProgress"
-                    class="button-1"
-                    small
-                    @click="cancelSearchAllDrives({clearResults: false})"
+                <!-- widget::search-results -->
+                <div v-show="query.length > 0">
+                  <v-layout
+                    class="text--sub-title-1"
+                    align-center
                   >
-                    stop
-                  </v-btn>
-                </v-layout>
+                    Search results
+                    <v-progress-circular
+                      v-if="searchInProgress"
+                      indeterminate
+                      size="18"
+                      width="2"
+                      color="primary"
+                      class="mx-3"
+                    />
+                    <v-btn
+                      v-if="searchInProgress"
+                      class="button-1"
+                      small
+                      @click="cancelSearchAllDrives({clearResults: false})"
+                    >
+                      stop
+                    </v-btn>
+                  </v-layout>
 
-                <!-- search-results::status -->
-                <div>{{searchResultsStatus}}</div>
+                  <!-- search-results::status -->
+                  <div class="search-widget__info-container-search-results-status">
+                    {{searchResultsStatus}}
+                  </div>
+                </div>
               </div>
-            </div>
 
-            <!-- widget::results -->
-            <div
-              v-show="searchResultsRecentDirItems.length === 0 && searchResults.length === 0"
-              class="widget__info-container__results my-4"
-              style="display: flex; align-items: center; justify-content: center; flex-direction: column"
-            >
-              <v-icon size="48px">
-                mdi-magnify
-              </v-icon>
-              <div class="mt-2 text--sub-title-1">
-                Search results
-              </div>
-            </div>
-
-            <!-- widget::results -->
-            <div
-              v-show="query.length > 0 && (searchResultsRecentDirItems.length > 0 || searchResults.length > 0)"
-              class="widget__info-container__results"
-            >
-              <!-- dir-items-container -->
+              <!-- widget::results -->
               <div
-                class="
+                v-show="searchResultsRecentDirItems.length === 0 && searchResults.length === 0"
+                class="search-widget__info-container__results my-4"
+                style="display: flex; align-items: center; justify-content: center; flex-direction: column"
+              >
+                <v-icon size="48px">
+                  mdi-magnify
+                </v-icon>
+                <div class="mt-2 text--sub-title-1">
+                  Search results
+                </div>
+              </div>
+
+              <!-- widget::results -->
+              <div
+                v-show="query.length > 0 && (searchResultsRecentDirItems.length > 0 || searchResults.length > 0)"
+                class="search-widget__info-container__results"
+              >
+                <!-- dir-items-container -->
+                <div
+                  class="
                   custom-scrollbar
                   unselectable
                   drag-drop-container
                   dir-item-card__container
                   fade-mask--bottom
                 "
-                data-layout="list"
-                data-type="directory"
-                :style="{
-                  '--fade-mask-bottom': '10%',
-                  'height': '100%',
-                }"
-              >
-                <div
-                  v-if="optionIncludeRecent && storeDirItemOpenEvent && searchResultsRecentDirItems.length > 0"
-                  class="mb-6"
+                  data-layout="list"
+                  data-type="directory"
+                  :style="{
+                    '--fade-mask-bottom': '10%',
+                    'height': '100%',
+                  }"
                 >
-                  <div class="text--sub-title-1 ml-6">
-                    Recent items
+                  <div
+                    v-if="optionIncludeRecent && storeDirItemOpenEvent && searchResultsRecentDirItems.length > 0"
+                    class="mb-6"
+                  >
+                    <div class="text--sub-title-1 ml-6">
+                      Recent items
+                    </div>
+                    <dir-item
+                      v-for="(item, index) in searchResultsRecentDirItems"
+                      v-show="optionIncludeDirectories && item.type.includes('directory') || optionIncludeFiles && item.type.includes('file')"
+                      :key="`recent-dir-item-${item.path}`"
+                      :dir-item="item"
+                      :index="index"
+                      :type="item.type"
+                      :show-dir="true"
+                      :show-score="false"
+                    />
                   </div>
-                  <dir-item
-                    v-for="(item, index) in searchResultsRecentDirItems"
-                    v-show="optionIncludeDirectories && item.type.includes('directory') || optionIncludeFiles && item.type.includes('file')"
-                    :key="`recent-dir-item-${item.path}`"
-                    :dir-item="item"
-                    :index="index"
-                    :type="item.type"
-                    :show-dir="true"
-                    :show-score="!true"
-                  />
-                </div>
 
-                <div class="text--sub-title-1 ml-6">
-                  Global items
-                </div>
-                <div v-show="!showDirectoriesOnTop">
-                  <dir-item
-                    v-for="(item, index) in searchResults"
-                    v-show="optionIncludeDirectories && item.type.includes('directory') || optionIncludeFiles && item.type.includes('file')"
-                    :key="`dir-item-${item.path}`"
-                    :dir-item="item"
-                    :index="index"
-                    :type="item.type"
-                    :show-dir="true"
-                    :show-score="true"
-                  />
-                </div>
+                  <div class="text--sub-title-1 ml-6">
+                    Global items
+                  </div>
+                  <div v-show="!showDirectoriesOnTop">
+                    <dir-item
+                      v-for="(item, index) in searchResults"
+                      v-show="optionIncludeDirectories && item.type.includes('directory') || optionIncludeFiles && item.type.includes('file')"
+                      :key="`dir-item-${item.path}`"
+                      :dir-item="item"
+                      :index="index"
+                      :type="item.type"
+                      :show-dir="true"
+                      :show-score="false"
+                    />
+                  </div>
 
-                <div v-show="showDirectoriesOnTop">
-                  <!-- dir-items-container: {type: directory} -->
-                  <dir-item
-                    v-for="(item, index) in searchResultsDirectories"
-                    v-show="optionIncludeDirectories && item.type.includes('directory')"
-                    :key="`directory-dir-item-${item.path}`"
-                    :dir-item="item"
-                    :index="index"
-                    :type="item.type"
-                    :show-dir="true"
-                    :show-score="true"
-                  />
+                  <div v-show="showDirectoriesOnTop">
+                    <!-- dir-items-container: {type: directory} -->
+                    <dir-item
+                      v-for="(item, index) in searchResultsDirectories"
+                      v-show="optionIncludeDirectories && item.type.includes('directory')"
+                      :key="`directory-dir-item-${item.path}`"
+                      :dir-item="item"
+                      :index="index"
+                      :type="item.type"
+                      :show-dir="true"
+                      :show-score="true"
+                    />
 
-                  <!-- dir-items-container: {type: file} -->
-                  <dir-item
-                    v-for="(item, index) in searchResultsFiles"
-                    v-show="optionIncludeFiles && item.type.includes('file')"
-                    :key="`file-dir-item-${item.path}`"
-                    :dir-item="item"
-                    :index="index"
-                    :type="item.type"
-                    :show-dir="true"
-                    :show-score="true"
-                  />
+                    <!-- dir-items-container: {type: file} -->
+                    <dir-item
+                      v-for="(item, index) in searchResultsFiles"
+                      v-show="optionIncludeFiles && item.type.includes('file')"
+                      :key="`file-dir-item-${item.path}`"
+                      :dir-item="item"
+                      :index="index"
+                      :type="item.type"
+                      :show-dir="true"
+                      :show-score="true"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          </transition>
 
           <!-- widget::options-container -->
           <div
             v-if="showWidgetOptions"
-            class="widget__options-container custom-scrollbar fade-mask--bottom"
+            class="search-widget__options-container custom-scrollbar fade-mask--bottom"
             :style="{
               '--fade-mask-bottom': '15%'
             }"
@@ -477,7 +484,7 @@ const lodash = require('@/utils/lodash.min.js')
 export default {
   data () {
     return {
-      showWidgetOptions: true,
+      showWidgetOptions: false,
       showDirectoriesOnTop: false,
       minutesElapsedLastScan: 0,
       searchStartTime: 0,
@@ -500,6 +507,12 @@ export default {
     }
   },
   watch: {
+    scanInProgress (value) {
+      if (value) {
+        this.searchResults = []
+        this.cancelSearchAllDrives()
+      }
+    },
     query (value) {
       if (value.length === 0) {
         this.searchResults = []
@@ -782,7 +795,7 @@ export default {
 </script>
 
 <style scoped>
-.widget__overlay--scan-in-progress {
+.search-widget__overlay--scan-in-progress {
   position: absolute;
   width: 100%;
   height: 100%;
@@ -793,62 +806,70 @@ export default {
   justify-content: center;
 }
 
-.widget__container {
-  margin: 24px;
-  margin-bottom: 16px;
-  background-color: var(--bg-color-1);
+.search-widget__container {
   position: relative;
+  margin-bottom: 16px;
+  background-color: var(--highlight-color-5);
 }
 
-.widget__main-container {
-  display: flex;
-  max-height: 45vh;
+.search-widget__main-container {
+  display: block;
 }
 
-.widget__options-container {
+.search-widget__options-container {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  height: calc(
+    100vh -
+    var(--window-toolbar-height) -
+    var(--action-toolbar-height) -
+    var(--workspace-area-toolbar-height)
+  );
   padding: 16px 24px 36px 24px;
-  max-width: 300px;
-  overflow: auto;
-  border-left: 1px solid var(--divider-color-2);
+  overflow-y: auto;
 }
 
-.widget__info-container {
+.search-widget__info-container {
   /* Stretch to 100% height of the container */
-  display: flex;
-  flex-direction: column;
   width: 100%;
+  height: calc(
+    100vh -
+    var(--window-toolbar-height) -
+    var(--action-toolbar-height) -
+    var(--workspace-area-toolbar-height)
+  );
   overflow: hidden;
 }
 
-.widget__info-container__header {
-  padding: 24px;
-  padding-bottom: 12px;
+.search-widget__info-container__header {
+  padding: 16px 24px;
 }
 
-.widget__info-container__results {
+.search-widget__info-container-search-results-status {
+  font-size: 12px;
+}
+
+.search-widget__info-container__results {
   padding-bottom: 12px;
-  height: 100%;
   overflow-y: auto;
   overflow-x: hidden !important;
 }
 
-.widget__info-container__results .v-icon {
+.search-widget__info-container__results .v-icon {
   color: rgba(255,255,255,0.2) !important
 }
 
-.widget__input-container {
+.search-widget__input-container {
   background-color: rgb(255, 255, 255, 0.05);
   display: flex;
   align-items: center;
   position: relative;
 }
 
-.widget__input {
+.search-widget__input {
   width: 100%;
-  height: 42px;
+  height: var(--workspace-area-toolbar-height);
   padding-top: 0px;
   background: transparent;
   padding-left: 60px;
@@ -858,45 +879,41 @@ export default {
   caret-color: var(--color-6);
 }
 
-.widget__input__button[data-action="search-icon"] {
+.search-widget__input__button[data-action="search-icon"] {
   position: absolute;
   left: 16px;
 }
 
-.widget__input__buttons-container {
+.search-widget__input__buttons-container {
   position: absolute;
   right: 8px;
   display: flex;
   pointer-events: none;
 }
 
-.widget__input__buttons-container .widget__input__button {
+.search-widget__input__buttons-container .search-widget__input__button {
   pointer-events: initial;
   margin-right: 8px;
 }
 
-.widget__input__button[data-action="clear"] {
+.search-widget__input__button[data-action="clear"] {
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.3s;
 }
 
-.widget__input__button[data-action="clear"][data-visible="true"] {
+.search-widget__input__button[data-action="clear"][data-visible="true"] {
   opacity: 1;
   pointer-events: initial;
 }
 
-.widget__input:focus {
-  /* METHOD 2 */
-  /* padding-left: 15px;  */
-  /* border-bottom: 2px solid #b0bec5; */
+.search-widget__input:focus {
   border-width: 0 0 thin 0;
   border-color: var(--color-6);
   padding-top: 1px;
 }
 
-.widget__input::placeholder {
+.search-widget__input::placeholder {
   color: var(--color-7);
-  /* opacity: 0.5; */
 }
 </style>

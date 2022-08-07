@@ -998,20 +998,6 @@ export default {
   opacity: 0;
 }
 
-[data-layout="list"][data-type="directory"].dir-item-card__container,
-[data-layout="list"][data-type="directory-symlink"].dir-item-card__container {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 4px;
-}
-
-[data-layout="list"][data-type="file"].dir-item-card__container,
-[data-layout="list"][data-type="file-symlink"].dir-item-card__container {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 4px;
-}
-
 [data-layout="grid"][data-type="directory"].dir-item-card__container,
 [data-layout="grid"][data-type="directory-symlink"].dir-item-card__container {
   display: grid;
@@ -1071,17 +1057,9 @@ export default {
     opacity: 1;
   }
 
-[data-layout="list"][data-type="directory"]
-  .dir-item-card,
-[data-layout="list"][data-type="directory-symlink"]
-  .dir-item-card,
-[data-layout="list"][data-type="file"]
-  .dir-item-card,
-[data-layout="list"][data-type="file-symlink"]
+.search-widget__container
   .dir-item-card {
-    height: 48px;
-    margin: 0px 36px;
-    padding: 0px;
+    margin: 0 24px;
   }
 
 [data-layout="list"][data-type="directory"]
