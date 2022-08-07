@@ -4439,7 +4439,7 @@ export default new Vuex.Store({
       const isSomeDirItemSelected = store.getters.selectedDirItemsPaths.length !== 0
       const isCurrentDirSelected = store.getters.isCurrentDirItemSelected
       const isDraggingDirItem = store.state.overlays.dirItemDrag
-      const shouldHighlightDirItems = store.state.inputState.shift && 
+      const shouldHighlightDirItems = store.state.inputState.shift &&
         isSomeDirItemSelected &&
         !isDraggingDirItem &&
         !isCurrentDirSelected
@@ -4456,18 +4456,8 @@ export default new Vuex.Store({
     DEHIGHLIGHT_ALL_DIR_ITEMS ({ state, commit, dispatch, getters }) {
       commit('DEHIGHLIGHT_ALL_DIR_ITEMS')
     },
-    ADD_HIGHLIGHTED_DIR_ITEMS_TO_SELECTED (store) {
-      // Add highlighted to selected and remove duplicates
-      // that were added during range selection
-      const listToSelect = [
-        ...store.state.navigatorView.selectedDirItems,
-        ...store.getters.highlightedDirItems
-      ]
-      store.state.navigatorView.selectedDirItems = utils.getUnique(listToSelect, 'path')
-    },
-    SELECT_DIR_ITEM_RANGE ({ state, commit, dispatch, getters }, specifiedItem) {
-      dispatch('ADD_TO_SELECTED_DIR_ITEMS', specifiedItem)
-      dispatch('ADD_HIGHLIGHTED_DIR_ITEMS_TO_SELECTED')
+    SELECT_DIR_ITEM_RANGE ({state, getters}) {
+      state.navigatorView.selectedDirItems = getters.highlightedDirItems
     },
     /**
     * @param {object} params.item
