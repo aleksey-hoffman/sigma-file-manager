@@ -3,9 +3,10 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 import sharedUtils from './sharedUtils.js'
+import * as localize from './localize'
 const eventHub = require('./eventHub').eventHub
 
-/** 
+/**
 * @param {object} params
 * @returns {object}
 */
@@ -136,7 +137,7 @@ function getNotification (params) {
       message: `
         File / directory that you are renaming no longer exists:
         <br><strong>Path:</strong> ${params?.props?.oldPath}
-      `
+      `,
     },
     renameFailedError: {
       action: 'add',
@@ -144,7 +145,7 @@ function getNotification (params) {
       timeout: 6000,
       closeButton: true,
       title: 'Failed to rename item',
-      error: params?.props?.error
+      error: params?.props?.error,
     },
     renameFailedAlreadyExistsOrLocked: {
       action: 'add',
@@ -155,7 +156,7 @@ function getNotification (params) {
       message: `
         Item with that name already exists or locked by another program:
         <br>${params?.props?.newName}
-      `
+      `,
     },
     renameSuccess: {
       action: 'add',
@@ -163,7 +164,7 @@ function getNotification (params) {
       timeout: 3000,
       closeButton: true,
       title: 'Rename undone',
-      message: ''
+      message: '',
     },
     tabRemoved: {
       action: 'update-by-type',
@@ -171,7 +172,7 @@ function getNotification (params) {
       timeout: 3000,
       closeButton: true,
       title: 'Removed tab from current workspace',
-      message: `${params?.props?.tabPath}`
+      message: `${params?.props?.tabPath}`,
     },
     tabAdded: {
       action: 'update-by-type',
@@ -182,7 +183,7 @@ function getNotification (params) {
       message: `
         Shortcut to open: 
         <span class="inline-code--light">${params?.props?.tabShortcut}</span>
-      `
+      `,
     },
     tabIsAlreadyOpened: {
       action: 'update-by-type',
@@ -192,28 +193,28 @@ function getNotification (params) {
       title: 'Tab for this directory is already opened',
       message: `
         Position: ${params?.props?.tabIndex}
-      `
+      `,
     },
     closedAllTabsInCurrentWorkspace: {
       action: 'update-by-type',
       type: 'closedAllTabsInCurrentWorkspace',
       timeout: 3000,
       closeButton: true,
-      title: 'Closed all tabs in current workspace'
+      title: 'Closed all tabs in current workspace',
     },
     currentWorkspaceHasNoTabs: {
       action: 'update-by-type',
       type: 'currentWorkspaceHasNoTabs',
       timeout: 3000,
       closeButton: true,
-      title: 'Current workspace has no tabs'
+      title: 'Current workspace has no tabs',
     },
     archiveAddDataError: {
       action: 'update-by-type',
       type: 'archiveAddDataError',
       timeout: 5000,
       title: 'Error: cannot add data to the archive',
-      error: params?.props?.error
+      error: params?.props?.error,
     },
     archiveExtractionError: {
       action: 'update-by-type',
@@ -229,7 +230,7 @@ function getNotification (params) {
       timeout: 3000,
       actionButtons: [],
       colorStatus: 'red',
-      title: 'Archive extraction canceled'
+      title: 'Archive extraction canceled',
     },
     archiveCreationCanceled: {
       action: 'update-by-hash',
@@ -238,7 +239,7 @@ function getNotification (params) {
       timeout: 3000,
       actionButtons: [],
       colorStatus: 'red',
-      title: 'Archive creation canceled'
+      title: 'Archive creation canceled',
     },
     archiveWasCreated: {
       action: 'update-by-hash',
@@ -284,9 +285,9 @@ function getNotification (params) {
           onClick: () => {
             params?.props?.archiveStream?._childProcess.kill()
             params.props.archiveState.isCanceled = true
-          }
-        }
-      ]
+          },
+        },
+      ],
     },
     archiveExtractionProgress: {
       action: 'update-by-hash',
@@ -306,16 +307,16 @@ function getNotification (params) {
           onClick: () => {
             params?.props?.archiveStream?._childProcess.kill()
             params.props.archiveState.isCanceled = true
-          }
-        }
-      ]
+          },
+        },
+      ],
     },
     cannotDeleteDriveRootDir: {
       action: 'update-by-type',
       type: 'cannotDeleteDriveRootDir',
       icon: 'mdi-delete-forever-outline',
       timeout: 3000,
-      title: `You cannot delete drive's root directory`
+      title: 'You cannot delete drive\'s root directory',
     },
     trashItemsSuccess: {
       action: 'update-by-type',
@@ -323,7 +324,7 @@ function getNotification (params) {
       icon: 'mdi-trash-can-outline',
       colorStatus: 'green',
       timeout: 5000,
-      title: `All items were trashed`,
+      title: 'All items were trashed',
       message: `
         <strong>Trashed items:</strong> 
         ${params?.props?.removedItems?.length}
@@ -337,7 +338,7 @@ function getNotification (params) {
       icon: 'mdi-delete-forever-outline',
       colorStatus: 'green',
       timeout: 5000,
-      title: `All items were deleted`,
+      title: 'All items were deleted',
       message: `
         <strong>Deleted items:</strong> 
         ${params?.props?.removedItems?.length}
@@ -351,7 +352,7 @@ function getNotification (params) {
       icon: 'mdi-trash-can-outline',
       colorStatus: 'red',
       timeout: 5000,
-      title: `Error: trash items`
+      title: 'Error: trash items',
     },
     deleteItemsError: {
       action: 'update-by-type',
@@ -359,7 +360,7 @@ function getNotification (params) {
       icon: 'mdi-delete-forever-outline',
       colorStatus: 'red',
       timeout: 5000,
-      title: `Error: delete items`
+      title: 'Error: delete items',
     },
     trashItemsFailure: {
       action: 'update-by-type',
@@ -368,24 +369,32 @@ function getNotification (params) {
       colorStatus: 'red',
       timeout: 10000,
       closeButton: true,
-      title: `Failed to trash some items`,
-      message: `
-        <strong>Trashed items:</strong> 
-        <span class="inline-code--light py-0">
-          ${params?.props?.items?.length}
-          of 
-          ${params?.props?.notRemovedItems?.length}
-        </span>
-        <br><strong>Deleted items size:</strong>
-        <span class="inline-code--light py-0">
-          ${params?.props?.removedItemSize}
-        </span>
-        <br><strong>Could not trash:</strong>
-        <span class="inline-code--light py-0">
-          ${params?.props?.notRemovedItems?.length} items:
-        </span>
-        <br>${params?.props?.notRemovedItems?.join('<br>')}
-      `,
+      title: 'Failed to trash some items',
+      content: [
+        {
+          type: 'html',
+          value: `
+            <strong>Trashed items:</strong> 
+            <span class="inline-code--light py-0">
+              ${params?.props?.items?.length}
+              of 
+              ${params?.props?.notRemovedItems?.length}
+            </span>
+            <br><strong>Deleted items size:</strong>
+            <span class="inline-code--light py-0">
+              ${params?.props?.removedItemSize}
+            </span>
+            <br><strong>Could not trash:</strong>
+            <span class="inline-code--light py-0">
+              ${params?.props?.notRemovedItems?.length} items:
+            </span>
+          `,
+        },
+        {
+          type: 'list',
+          value: params?.props?.notRemovedItems,
+        },
+      ],
     },
     deleteItemsFailure: {
       action: 'update-by-type',
@@ -394,24 +403,32 @@ function getNotification (params) {
       colorStatus: 'red',
       timeout: 10000,
       closeButton: true,
-      title: `Failed to delete some items`,
-      message: `
-        <strong>Deleted items:</strong> 
-        <span class="inline-code--light py-0">
-          ${params?.props?.removedItems?.length}
-          of 
-          ${params?.props?.items?.length}
-        </span>
-        <br><strong>Deleted items size:</strong>
-        <span class="inline-code--light py-0">
-          ${params?.props?.removedItemSize}
-        </span>
-        <br><strong>Could not delete:</strong>
-        <span class="inline-code--light py-0">
-          ${params?.props?.notRemovedItems?.length} items:
-        </span>
-        <br>${params?.props?.notRemovedItems?.join('<br>')}
-      `,
+      title: 'Failed to delete some items',
+      content: [
+        {
+          type: 'html',
+          value: `
+            <strong>Deleted items:</strong> 
+            <span class="inline-code--light py-0">
+              ${params?.props?.removedItems?.length}
+              of 
+              ${params?.props?.items?.length}
+            </span>
+            <br><strong>Deleted items size:</strong>
+            <span class="inline-code--light py-0">
+              ${params?.props?.removedItemSize}
+            </span>
+            <br><strong>Could not delete:</strong>
+            <span class="inline-code--light py-0">
+              ${params?.props?.notRemovedItems?.length} items:
+            </span>
+          `,
+        },
+        {
+          type: 'list',
+          value: params?.props?.notRemovedItems,
+        },
+      ],
     },
     noteWasTrashed: {
       action: 'add',
@@ -419,13 +436,13 @@ function getNotification (params) {
         {
           title: 'Undo',
           action: 'undoTrashNote',
-          closesNotification: true
-        }
+          closesNotification: true,
+        },
       ],
       closeButton: true,
       timeout: 10000,
       title: 'Note was trashed',
-      message: 'Switch to "trashed notes" list to see all trashed notes'
+      message: 'Switch to "trashed notes" list to see all trashed notes',
     },
     removedFromPinnedSuccess: {
       action: 'update-by-type',
@@ -461,7 +478,7 @@ function getNotification (params) {
       timeout: 3000,
       closeButton: true,
       title: 'Action failed',
-      message: 'Action is not allowed when input field is active'
+      message: 'Action is not allowed when input field is active',
     },
     actionNotAllowedWhenDialogIsOpened: {
       action: 'update-by-type',
@@ -469,7 +486,7 @@ function getNotification (params) {
       timeout: 3000,
       closeButton: true,
       title: 'Action failed',
-      message: 'Action is not allowed when a dialog is opened'
+      message: 'Action is not allowed when a dialog is opened',
     },
     actionFailedNoDirItemsSelected: {
       action: 'update-by-type',
@@ -477,7 +494,7 @@ function getNotification (params) {
       timeout: 3000,
       closeButton: true,
       title: 'Action failed',
-      message: 'No directory items are selected'
+      message: 'No directory items are selected',
     },
     actionNotAllowedOnThisPage: {
       action: 'update-by-type',
@@ -485,32 +502,32 @@ function getNotification (params) {
       timeout: 3000,
       closeButton: true,
       title: 'Action failed',
-      message: 'Action is not allowed on this page'
+      message: 'Action is not allowed on this page',
     },
     increaseUIZoom: {
       action: 'update-by-type',
       type: 'UIZoomChange',
       timeout: 2000,
-      title: `UI scale changed: ${params?.props?.newZoomFactor}%`
+      title: `UI scale changed: ${params?.props?.newZoomFactor}%`,
     },
     decreaseUIZoom: {
       action: 'update-by-type',
       type: 'UIZoomChange',
       timeout: 2000,
-      title: `UI scale changed: ${params?.props?.newZoomFactor}%`
+      title: `UI scale changed: ${params?.props?.newZoomFactor}%`,
     },
     resetUIZoom: {
       action: 'update-by-type',
       type: 'UIZoomChange',
       timeout: 2000,
-      title: `UI scale changed: 100%`
+      title: 'UI scale changed: 100%',
     },
     directoryWasReloaded: {
       action: 'update-by-type',
       type: 'directoryWasReloaded',
       timeout: 2000,
       title: 'Directory was reloaded',
-      message: `<strong>Directory:</strong> ${params?.props?.currentDirPath}`
+      message: `<strong>Directory:</strong> ${params?.props?.currentDirPath}`,
     },
     setDirItemPermissionsSuccess: {
       action: 'update-by-type',
@@ -525,7 +542,7 @@ function getNotification (params) {
       timeout: 3000,
       closeButton: true,
       title: 'Failed to change permissions',
-      error: params?.props?.error
+      error: params?.props?.error,
     },
     updateUnavailable: {
       action: 'update-by-type',
@@ -548,10 +565,10 @@ function getNotification (params) {
           onClick: () => {
             params?.props?.utils.openLink(params?.props?.state?.appPaths?.githubRepoLink)
           },
-          closesNotification: false
-        }
-      ]
-    },	
+          closesNotification: false,
+        },
+      ],
+    },
     updateWasDownloaded: {
       action: 'add',
       type: 'updateWasDownloaded',
@@ -573,7 +590,7 @@ function getNotification (params) {
             let updateFilePath = `${updateFileDownloadDir}/${updateFileName}`
             params?.props?.store?.dispatch('OPEN_FILE', updateFilePath)
           },
-          closesNotification: true
+          closesNotification: true,
         },
         {
           title: 'show in directory',
@@ -581,12 +598,12 @@ function getNotification (params) {
           closesNotification: false,
           onClick: () => {
             params?.props?.store?.dispatch('SHOW_DIR_ITEM_IN_DIRECTORY', {
-              dir: params?.props?.info?.dir, 
-              itemPath: params?.props?.info?.filePath
+              dir: params?.props?.info?.dir,
+              itemPath: params?.props?.info?.filePath,
             })
-          }
-        }
-      ]
+          },
+        },
+      ],
     },
     removeAppThumbsDirSuccess: {
       action: 'update-by-type',
@@ -614,7 +631,7 @@ function getNotification (params) {
         <br>${params?.props?.thumbDirPath}
         <br><strong>Error:</strong>
         <br>${params?.props?.error}
-      `
+      `,
     },
     localFileServer: {
       action: 'update-by-type',
@@ -631,19 +648,19 @@ function getNotification (params) {
             params?.props?.stopLocalDirectoryShareServer()
             params.props.dialogs.localShareManagerDialog.value = false
           },
-          closesNotification: true
+          closesNotification: true,
         },
         {
           title: 'copy address',
           onClick: () => {
             params?.props?.utils?.copyToClipboard({
               text: params?.props?.localServer?.directoryShare?.address,
-              title: 'Address was copied to clipboard'
+              title: 'Address was copied to clipboard',
             })
           },
-          closesNotification: false
-        }
-      ]
+          closesNotification: false,
+        },
+      ],
     },
     localDirectoryServer: {
       action: 'update-by-type',
@@ -660,19 +677,19 @@ function getNotification (params) {
             params?.props?.stopLocalFileShareServer()
             params.props.dialogs.localShareManagerDialog.value = false
           },
-          closesNotification: true
+          closesNotification: true,
         },
         {
           title: 'copy address',
           onClick: () => {
             params?.props?.utils?.copyToClipboard({
               text: params?.props?.localServer?.fileShare?.address,
-              title: 'Address was copied to clipboard'
+              title: 'Address was copied to clipboard',
             })
           },
-          closesNotification: false
-        }
-      ]
+          closesNotification: false,
+        },
+      ],
     },
     quickViewFileIsNotSupported: {
       action: 'update-by-type',
@@ -680,7 +697,7 @@ function getNotification (params) {
       closeButton: true,
       timeout: 3000,
       title: 'Quick view: file is not supported',
-      message: params?.props?.data?.path?.replace('file:///', '')
+      message: params?.props?.data?.path?.replace('file:///', ''),
     },
     driveWasConnected: {
       action: 'update-by-type',
@@ -688,7 +705,7 @@ function getNotification (params) {
       timeout: 3000,
       colorStatus: 'green',
       title: 'Drive was connected',
-      closeButton: true
+      closeButton: true,
     },
     searchFileIsDamaged: {
       action: 'update-by-type',
@@ -697,7 +714,7 @@ function getNotification (params) {
       closeButton: true,
       colorStatus: 'red',
       title: 'Drive scan initiated',
-      message: 'One of the search files is damaged'
+      message: 'One of the search files is damaged',
     },
     cannotOpenDirItem: {
       action: 'update-by-type',
@@ -707,42 +724,42 @@ function getNotification (params) {
       message: `
         <strong>Reason:</strong> item has immutable or read-only attributes.
         <br>You can reset item permissions in the "permissions" menu.
-      `
+      `,
     },
     cannotOpenPathFromClipboard: {
       action: 'update-by-type',
       type: 'cannotOpenPathFromClipboard',
       timeout: 6000,
       title: 'Cannot open path from clipboard',
-      message: '<strong>Reason:</strong> path does not exist on the drive.'
+      message: '<strong>Reason:</strong> path does not exist on the drive.',
     },
     openedPathFromClipboard: {
       action: 'update-by-type',
       type: 'openedPathFromClipboard',
       timeout: 2000,
       title: 'Opened path from clipboard',
-      message: params?.props?.osClipboardText
+      message: params?.props?.osClipboardText,
     },
     programWasAdded: {
       action: 'add',
       timeout: 3000,
       closeButton: true,
       colorStatus: 'green',
-      title: 'Program was added'
+      title: 'Program was added',
     },
     programWasEdited: {
       action: 'add',
       timeout: 3000,
       closeButton: true,
       colorStatus: 'green',
-      title: 'Program was edited'
+      title: 'Program was edited',
     },
     programWasDeleted: {
       action: 'add',
       timeout: 3000,
       closeButton: true,
       colorStatus: 'green',
-      title: 'Program was deleted'
+      title: 'Program was deleted',
     },
     getAppStorageBinDirPermissionsError: {
       action: 'update-by-type',
@@ -755,7 +772,7 @@ function getNotification (params) {
         Could not get exec permissions for app binary dir. 
         Some functionality will not work until permissions are granted.
         <br><br><strong>Error</strong>: ${params?.props?.error}
-      `
+      `,
     },
     fileDownloadIsDone: {
       action: 'update-by-hash',
@@ -773,7 +790,7 @@ function getNotification (params) {
           closesNotification: true,
           onClick: () => {
             params?.props?.store.dispatch('OPEN_FILE', params?.props?.data.filePath)
-          }
+          },
         },
         {
           title: 'show in directory',
@@ -781,11 +798,11 @@ function getNotification (params) {
           closesNotification: true,
           onClick: () => {
             params?.props?.store?.dispatch('SHOW_DIR_ITEM_IN_DIRECTORY', {
-              dir: params?.props?.data.dir, 
-              itemPath: params?.props?.data.filePath
+              dir: params?.props?.data.dir,
+              itemPath: params?.props?.data.filePath,
             })
-          }
-        }
+          },
+        },
       ],
     },
     fileDownloadIsPaused: {
@@ -804,9 +821,9 @@ function getNotification (params) {
           closesNotification: false,
           onClick: () => {
             params?.props?.electron?.ipcRenderer.send('download-file:resume', {
-              hashID: params?.props?.data?.hashID
+              hashID: params?.props?.data?.hashID,
             })
-          }
+          },
         },
         {
           title: 'cancel',
@@ -814,10 +831,10 @@ function getNotification (params) {
           closesNotification: true,
           onClick: () => {
             params?.props?.electron?.ipcRenderer.send('download-file:cancel', {
-              hashID: params?.props?.data?.hashID
+              hashID: params?.props?.data?.hashID,
             })
-          }
-        }
+          },
+        },
       ],
     },
     fileDownloadIsInProgress: {
@@ -836,9 +853,9 @@ function getNotification (params) {
           closesNotification: false,
           onClick: () => {
             params?.props?.electron?.ipcRenderer.send('download-file:pause', {
-              hashID: params?.props?.data?.hashID
+              hashID: params?.props?.data?.hashID,
             })
-          }
+          },
         },
         {
           title: 'cancel',
@@ -846,14 +863,20 @@ function getNotification (params) {
           closesNotification: true,
           onClick: () => {
             params?.props?.electron?.ipcRenderer.send('download-file:cancel', {
-              hashID: params?.props?.data?.hashID
+              hashID: params?.props?.data?.hashID,
             })
-          }
-        }
+          },
+        },
       ],
     },
+    addWorkspace: {
+      action: 'add',
+      timeout: 3000,
+      closeButton: true,
+      title: localize.get('text_workspace_added'),
+    },
   }
-  return notifications[params.name]
+  return params?.name ? notifications[params.name] : {}
 }
 
 function emit (params) {
@@ -882,11 +905,11 @@ function hide (notification) {
 function hideByHashID (hashID) {
   eventHub.$emit('notification', {
     action: 'hide',
-    hashID
+    hashID,
   })
 }
 
 export {
   emit,
-  hideByHashID
+  hideByHashID,
 }
