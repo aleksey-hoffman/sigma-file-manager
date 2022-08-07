@@ -534,9 +534,11 @@ export default {
         this.cancelSearchAllDrives()
       }
     },
-    widget (newValue, oldValue) {
+    widget (newValue) {
       if (newValue && this.$refs.globalSearchInput) {
-        this.$refs.globalSearchInput.focus()
+        this.$nextTick(() => {
+          this.$refs.globalSearchInput.focus()
+        })
       }
       else {
         this.cancelSearchAllDrives()
