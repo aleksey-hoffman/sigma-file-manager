@@ -625,18 +625,22 @@ export default {
         })
         data.streams.forEach((stream, index) => {
           displayedAudioStreamProperties.forEach(property => {
-            dataFormatted.push({
-              propName: property,
-              title: `${this.$localize.get('stream')} ${index + 1} • ${this.$localize.get(property)}`,
-              value: this.formatValue({property, propertyValue: stream[property]}),
-            })
+            if (stream) {
+              dataFormatted.push({
+                propName: property,
+                title: `${this.$localize.get('stream')} ${index + 1} • ${this.$localize.get(property)}`,
+                value: this.formatValue({property, propertyValue: stream[property]}),
+              })
+            }
           })
           displayedAudioStreamTagsProperties.forEach(property => {
-            dataFormatted.push({
-              propName: property,
-              title: `${this.$localize.get('stream')} ${index + 1} • ${this.$localize.get(property)}`,
-              value: this.formatValue({property, propertyValue: stream.tags[property]}),
-            })
+            if (stream.tags) {
+              dataFormatted.push({
+                propName: property,
+                title: `${this.$localize.get('stream')} ${index + 1} • ${this.$localize.get(property)}`,
+                value: this.formatValue({property, propertyValue: stream.tags[property]}),
+              })
+            }
           })
         })
       }
@@ -689,18 +693,22 @@ export default {
         })
         data.streams.forEach((stream, index) => {
           displayedVideoStreamProperties.forEach(property => {
-            dataFormatted.push({
-              propName: property,
-              title: `${this.$localize.get('stream')} ${index + 1} • ${this.$localize.get(property)}`,
-              value: this.formatValue({property, propertyValue: stream[property]}),
-            })
+            if (stream) {
+              dataFormatted.push({
+                propName: property,
+                title: `${this.$localize.get('stream')} ${index + 1} • ${this.$localize.get(property)}`,
+                value: this.formatValue({property, propertyValue: stream[property]}),
+              })
+            }
           })
           displayedVideoStreamTagsProperties.forEach(property => {
-            dataFormatted.push({
-              propName: property,
-              title: `${this.$localize.get('stream')} ${index + 1} • ${this.$localize.get(property)}`,
-              value: this.formatValue({property, propertyValue: stream.tags[property]}),
-            })
+            if (stream.tags) {
+              dataFormatted.push({
+                propName: property,
+                title: `${this.$localize.get('stream')} ${index + 1} • ${this.$localize.get(property)}`,
+                value: this.formatValue({property, propertyValue: stream.tags[property]}),
+              })
+            }
           })
         })
       }
