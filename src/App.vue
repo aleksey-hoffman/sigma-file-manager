@@ -1253,18 +1253,17 @@ video,
     blur(32px);
 }
 
-#app,
-.v-application,
-.theme--light.v-card {
-  color: var(--color-6) !important;
-  font-family: 
-    'Roboto-Regular',
-    /* Fix for: some emoji not being displayed properly */
-    'Segoe UI Emoji',
-    'Apple Color Emoji',
-    'Droid Sans Fallback',
-    'Noto Color Emoji';
-}
+html
+  #app {
+    color: var(--color-6) !important;
+    font-family:
+      'Roboto-regular',
+      /* Fix for: some emoji not being displayed properly */
+      'Segoe UI Emoji',
+      'Apple Color Emoji',
+      'Droid Sans Fallback',
+      'Noto Color Emoji' !important;
+  }
 
 code,
 pre {
@@ -1281,7 +1280,7 @@ i {
   background-color: var(--app-content-bg-color);
 }
 
-.app-content 
+.app-content
   .v-icon {
     color: var(--icon-color-2);
   }

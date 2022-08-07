@@ -4,6 +4,11 @@
   }
   
 #app 
+  .v-card {
+    color: var(--color-6)
+  }
+
+#app 
   .v-icon {
     color: var(--icon-color-2);
   }

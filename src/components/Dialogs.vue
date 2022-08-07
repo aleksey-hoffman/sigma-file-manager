@@ -2748,27 +2748,6 @@ export default {
 </script>
 
 <style>
-#background-drop-area {
-  width: 100%;
-  height: 100px;
-  padding: 16px;
-  margin-bottom: 24px;
-  /* box-shadow: 0px 10px 36px rgb(0, 0, 0, 0.4); */
-  outline: 3px dashed var(--color-6);
-  outline-offset: -3px;
-  user-select: none;
-}
-
-#background-drop-area .background-drop-area__title {
-  color: var(--color-6);
-  font-size: 20px;
-}
-
-#background-drop-area .background-drop-area__description {
-  color: var(--color-7);
-  font-size: 16px;
-}
-
 .program-icon-set__container {
   display: flex;
   flex-wrap: wrap;
