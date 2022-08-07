@@ -30,7 +30,9 @@ export default function itemFilter (params) {
 }
 
 function fetchFilterMatches () {
-  if (!data.params.items) { return [] }
+  if (!data.params.items) {return []}
+  if (!data.params.filterQuery) {return data.params.items}
+
   const query = data.params.filterQuery.toLowerCase()
   const specifiedFilterProperty = getActivePrefix(query)
   const queryValue = query.replace(specifiedFilterProperty.prefix, '').trimStart()
