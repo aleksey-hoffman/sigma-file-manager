@@ -107,16 +107,15 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             }"
           >
             <template #actions>
-              <v-btn icon>
-                <v-icon
-                  @dblclick.prevent.stop=""
-                  @click.prevent.stop="$store.dispatch(
-                    'REMOVE_FROM_PINNED',
-                    { items: [item] }
-                  )"
-                >
-                  mdi-close
-                </v-icon>
+              <v-btn
+                icon
+                @dblclick.prevent.stop=""
+                @click.prevent.stop="$store.dispatch(
+                  'REMOVE_FROM_PINNED',
+                  { items: [item] }
+                )"
+              >
+                <v-icon>mdi-close</v-icon>
               </v-btn>
             </template>
           </dir-item>
@@ -139,16 +138,15 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             }"
           >
             <template #actions>
-              <v-btn icon>
-                <v-icon
-                  @dblclick.prevent.stop=""
-                  @click.prevent.stop="$store.dispatch(
-                    'REMOVE_FROM_PINNED',
-                    { items: [item] }
-                  )"
-                >
-                  mdi-close
-                </v-icon>
+              <v-btn
+                icon
+                @dblclick.prevent.stop=""
+                @click.prevent.stop="$store.dispatch(
+                  'REMOVE_FROM_PINNED',
+                  { items: [item] }
+                )"
+              >
+                <v-icon>mdi-close</v-icon>
               </v-btn>
             </template>
           </dir-item>
@@ -226,16 +224,15 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             }"
           >
             <template #actions>
-              <v-btn icon>
-                <v-icon
-                  @dblclick.prevent.stop=""
-                  @click.prevent.stop="$store.dispatch(
-                    'REMOVE_FROM_PROTECTED',
-                    { items: [item] }
-                  )"
-                >
-                  mdi-close
-                </v-icon>
+              <v-btn
+                icon
+                @dblclick.prevent.stop=""
+                @click.prevent.stop="$store.dispatch(
+                  'REMOVE_FROM_PROTECTED',
+                  { items: [item] }
+                )"
+              >
+                <v-icon>mdi-close</v-icon>
               </v-btn>
             </template>
           </dir-item>
@@ -258,16 +255,15 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             }"
           >
             <template #actions>
-              <v-btn icon>
-                <v-icon
-                  @dblclick.prevent.stop=""
-                  @click.prevent.stop="$store.dispatch(
-                    'REMOVE_FROM_PROTECTED',
-                    { items: [item] }
-                  )"
-                >
-                  mdi-close
-                </v-icon>
+              <v-btn
+                icon
+                @dblclick.prevent.stop=""
+                @click.prevent.stop="$store.dispatch(
+                  'REMOVE_FROM_PROTECTED',
+                  { items: [item] }
+                )"
+              >
+                <v-icon>mdi-close</v-icon>
               </v-btn>
             </template>
           </dir-item>
@@ -353,16 +349,15 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               }"
             >
               <template #actions>
-                <v-btn icon>
-                  <v-icon
-                    @dblclick.prevent.stop=""
-                    @click.prevent.stop="$store.dispatch(
-                      'REMOVE_FROM_DIR_ITEMS_TIMELINE',
-                      {items: [item]}
-                    )"
-                  >
-                    mdi-close
-                  </v-icon>
+                <v-btn
+                  icon
+                  @dblclick.prevent.stop=""
+                  @click.prevent.stop="$store.dispatch(
+                    'REMOVE_FROM_DIR_ITEMS_TIMELINE',
+                    {items: [item]}
+                  )"
+                >
+                  <v-icon>mdi-close</v-icon>
                 </v-btn>
               </template>
             </dir-item>

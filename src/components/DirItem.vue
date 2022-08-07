@@ -664,6 +664,8 @@ export default {
       }
     },
     handleDirItemMouseDown (event, dirItem, index) {
+      if (event.path.some(pathElement => pathElement.classList?.contains('dir-item-card__actions'))) {return}
+
       this.inputState.drag.type = 'local'
       this.inputState.drag.dirItems = this.selectedDirItems
       this.mouseDown.item = dirItem
