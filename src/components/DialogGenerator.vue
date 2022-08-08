@@ -8,7 +8,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     <div v-if="dialog.value">
       <v-dialog
         v-model="dialog.value"
-        :max-width="$vuetify.breakpoint.smAndDown ? '95vw' : maxWidth || 500"
+        :max-width="$vuetify.breakpoint.smAndDown ? '95vw' : maxWidth || 600"
         :persistent="persistent || false"
         :retain-focus="false"
       >
@@ -35,15 +35,21 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 <slot name="title" />
               </v-layout>
               <!-- dialog::close-button -->
-              <v-btn @click="closeButton.onClick()" icon>
+              <v-btn
+                icon
+                @click="closeButton.onClick()"
+              >
                 <v-icon>{{closeButton.icon || 'mdi-close'}}</v-icon>
               </v-btn>
             </v-layout>
           </v-card-title>
 
           <!-- dialog::content-unscrollable -->
-          <div v-if="unscrollableContent" class="dialog-card-content-container--unscrollable">
-            <slot name="unscrollable-content"></slot>
+          <div
+            v-if="unscrollableContent"
+            class="dialog-card-content-container--unscrollable"
+          >
+            <slot name="unscrollable-content" />
           </div>
 
           <!-- dialog::content -->
@@ -57,15 +63,39 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               '--fade-mask-bottom': fadeMaskBottom || '15%'
             }"
           >
-            <slot name="content"></slot>
+            <slot name="content" />
+
+            <div
+              v-for="(contentItem, index) in content"
+              :key="'conformation-dialog-content-' + index"
+            >
+              <div
+                v-if="contentItem.type === 'html'"
+                v-html="contentItem.value"
+              />
+
+              <div
+                v-if="contentItem.type === 'list'"
+                class="dialog-card__list"
+              >
+                <div
+                  v-for="(listItem, index) in contentItem.value"
+                  :key="'conformation-dialog-content-listItem' + index"
+                >
+                  {{listItem}}
+                </div>
+              </div>
+            </div>
+
             <div v-if="inputs">
               <v-text-field
-                v-model="input.model"
                 v-for="(input, index) in inputs"
                 :key="index"
+                v-model="input.model"
                 :disabled="input.disabled"
-                text small
-              ></v-text-field>
+                text
+                small
+              />
             </div>
           </overlay-scrollbars>
 
@@ -74,20 +104,22 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             v-if="showActionBar"
             class="dialog-card__actions-container px-4"
           >
-            <slot name="actions"></slot>
+            <slot name="actions" />
           </v-card-actions>
           <v-card-actions
             v-if="actionButtons"
             class="dialog-card__actions-container px-4"
           >
-            <v-spacer></v-spacer>
+            <v-spacer />
             <v-btn
               v-for="(button, index) in actionButtons"
               :key="index"
               :disabled="button.disabled"
+              text
+              small
               @click="button.onClick()"
-              text small
-            >{{button.text}}
+            >
+              {{button.text}}
             </v-btn>
           </v-card-actions>
         </v-card>
@@ -97,7 +129,8 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 </template>
 
 <script>
-import { mapState } from 'vuex'
+import {mapState} from 'vuex'
+
 export default {
   props: {
     dialog: Object,
@@ -109,28 +142,20 @@ export default {
     persistent: Boolean,
     showActionBar: Boolean,
     unscrollableContent: Boolean,
+    content: Array,
     closeButton: Object,
     actionButtons: Array,
-    inputs: Array
-  },
-  data () {
-    return {
-    }
-  },
-  mounted () {
+    inputs: Array,
   },
   computed: {
     ...mapState({
-      dialogs: state => state.dialogs
-    })
-  }
+      dialogs: state => state.dialogs,
+    }),
+  },
 }
 </script>
 
 <style>
-.dialog-card {
-}
-
 .dialog-card__actions-container {
   /* background-color: var(--bg-color-1); */
   background-color: rgb(96, 125, 139, 0.2);
@@ -173,7 +198,11 @@ export default {
   overflow-y: scroll;
 }
 
-.dialog-card-content-container--unscrollable {
+.dialog-card__list {
+  background-color: var(--highlight-color-4);
+  margin: 12px 0;
+  padding: 8px 12px;
+  border-radius: 4px;
 }
 
 .dialog-card-content-container--unscrollable {
