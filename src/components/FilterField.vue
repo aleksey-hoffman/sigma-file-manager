@@ -141,6 +141,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 </template>
 
 <script>
+import {mapGetters} from 'vuex'
 import {mapFields} from 'vuex-map-fields'
 
 export default {
@@ -164,6 +165,7 @@ export default {
     }
   },
   beforeDestroy () {
+    window.removeEventListener('keydown', this.keydownHandler)
     this.$eventHub.$off('focusFilter')
   },
   computed: {
@@ -172,7 +174,11 @@ export default {
       dirItems: 'navigatorView.dirItems',
       settingsDataMap: 'settingsView.settingsDataMap',
       focusedField: 'focusedField',
+      focusFilterOnTyping: 'storageData.settings.focusFilterOnTyping',
     }),
+    ...mapGetters([
+      'someDialogIsOpened',
+    ]),
     navigatorShowHiddenDirItems: {
       get () {
         return this.$store.state.storageData.settings.navigator.showHiddenDirItems
@@ -231,23 +237,21 @@ export default {
     filterProperties () {
       return this.$store.state.filterField.view[this.routeName].filterProperties
     },
-    getItems () {
-      let items = []
-      if (this.$route.name === 'notes') {
-        items = this.notesItems
-      }
-      if (this.$route.name === 'navigator') {
-        items = this.dirItems
-      }
-      return items
-    }
   },
   methods: {
+    keydownHandler (event) {
+      if (this.focusFilterOnTyping && !this.$utils.isCursorInsideATextField() && !this.someDialogIsOpened) {
+        const keyIsAlphaNum = (event.keyCode >= 48 && event.keyCode <= 90)
+        if (keyIsAlphaNum && !event.ctrlKey && !event.altKey && !event.shiftKey && !event.metaKey) {
+          this.$refs.filterField.focus()
+        }
+      }
+    },
     clearQuery () {
       this.filterQuery = ''
       this.$refs.filterField.blur()
-    }
-  }
+    },
+  },
 }
 </script>
 

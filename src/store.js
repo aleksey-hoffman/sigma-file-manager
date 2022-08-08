@@ -651,6 +651,7 @@ export default new Vuex.Store({
         autoCalculateDirSize: false,
         lastOpenedSettingsTab: 0,
         groupDirItems: false,
+        focusFilterOnTyping: false,
         focusFilterOnDirectoryChange: false,
         markdownShortcuts: true,
         spellcheck: true,

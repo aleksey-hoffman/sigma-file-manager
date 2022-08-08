@@ -1496,11 +1496,18 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                       Filter options
                     </div>
                     <v-switch
-                      class="my-0"
-                      v-model="focusFilterOnDirectoryChange"
-                      label="Focus filter field automatically when directory changes"
+                      v-model="focusFilterOnTyping"
+                      class="mt-0 mb-4"
+                      label="Activate item filtering when typing"
                       hide-details
-                    ></v-switch>
+                    />
+
+                    <v-switch
+                      v-model="focusFilterOnDirectoryChange"
+                      class="mt-0 mb-4"
+                      label="Activate item filtering when directory changes"
+                      hide-details
+                    />
 
                     <div class="text--sub-title-1 mt-2">
                       Helpers
@@ -2160,6 +2167,7 @@ export default {
       autoCalculateDirSize: 'storageData.settings.autoCalculateDirSize',
       lastOpenedSettingsTabValue: 'storageData.settings.lastOpenedSettingsTab',
       groupDirItems: 'storageData.settings.groupDirItems',
+      focusFilterOnTyping: 'storageData.settings.focusFilterOnTyping',
       focusFilterOnDirectoryChange: 'storageData.settings.focusFilterOnDirectoryChange',
       navigatorViewInfoPanel: 'storageData.settings.infoPanels.navigatorView',
       selectedLanguage: 'storageData.settings.localization.selectedLanguage',
