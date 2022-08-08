@@ -24,7 +24,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     <!-- app-content-area -->
     <v-main class="app-content">
       <keep-alive
-        :include="['home', 'settings']"
+        :include="['settings']"
       >
         <router-view />
       </keep-alive>
@@ -1094,7 +1094,7 @@ export default {
         this.drives = [...drives, ...this.storageDevicesData.oneDrive]
       }
       catch (error) {
-        notifications.emit({name: 'errorGettingStorageDeviceData', props: {error}})
+        console.log(error)
       }
     },
     async fetchOneDrive () {
@@ -1104,7 +1104,7 @@ export default {
         this.drives = [...this.drives, ...this.storageDevicesData.oneDrive]
       }
       catch (error) {
-        notifications.emit({name: 'errorGettingOneDriveData', props: {error}})
+        console.log(error)
       }
     },
     bindMouseKeyEvents () {
