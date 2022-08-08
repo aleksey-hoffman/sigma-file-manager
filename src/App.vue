@@ -832,14 +832,14 @@ export default {
             updatedValue = Object.assign({}, storeValue, storageValue)
           }
           else if (isObjectArray) {
-            storeValue.forEach(item => {
+            storageValue.forEach((item, index) => {
               try {
                 // Join without overwriting storage values
-                item = Object.assign({}, storeValue, storageValue)
+                item = Object.assign({}, storeValue[index], item)
               }
               catch (error) {}
             })
-            updatedValue = storeValue
+            updatedValue = storageValue
           }
           else {
             updatedValue = storageValue
