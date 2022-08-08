@@ -58,16 +58,21 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     <dialog-generator
       :dialog="dialogs.conformationDialog"
       :persistent="true"
-      :closeButton="{
+      :close-button="{
         onClick: () => handleConformationDialogCloseButton()
       }"
       :inputs="dialogs.conformationDialog.data.inputs"
-      :actionButtons="dialogs.conformationDialog.data.buttons"
+      :action-buttons="dialogs.conformationDialog.data.buttons"
       :title="dialogs.conformationDialog.data.title"
+      :title-icon="dialogs.conformationDialog.data.titleIcon"
+      :content="dialogs.conformationDialog.data.content"
       :height="dialogs.conformationDialog.data.height || 'unset'"
     >
-      <template v-slot:content>
-        <div v-html="dialogs.conformationDialog.data.message"></div>
+      <template #content>
+        <div
+          v-if="dialogs.conformationDialog.data.message"
+          v-html="dialogs.conformationDialog.data.message"
+        />
       </template>
     </dialog-generator>
 
@@ -163,8 +168,8 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               <h3>Get involved</h3>
               <p>
                 There are many ways to participate in the development of this app:
-                <br>You can publish a feature request, report a problem, open a new discussion,
-                improve the code:
+                <br />You can join the community, publish a feature request, report a problem, open a new discussion,
+                improve the code yourself on the Github page of this project:
               </p>
               <div class="button-container dialogs--guide__header__buttons mb-4">
                 <v-tooltip
@@ -202,7 +207,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               </div>
 
               <p>
-                You can also join the community, get rewards, and support the project on Patreon:
+                You can also get rewards by supporting the project:
               </p>
 
               <v-tooltip bottom>
