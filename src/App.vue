@@ -832,28 +832,14 @@ export default {
             updatedValue = Object.assign({}, storeValue, storageValue)
           }
           else if (isObjectArray) {
-            try {
-              let allKeysAreSame = false
-              storeValue.forEach((item, index) => {
-                try {
-                  allKeysAreSame = this.$utils.objectsHaveSameKeys(item, storageValue[index])
-                }
-                catch (error) {
-                  allKeysAreSame = false
-                }
-              })
-              if (!allKeysAreSame) {
-                await this.$store.dispatch('deleteKeyFromStorageFile', {
-                  key: storageKey,
-                  data,
-                  fileName: payload.fileName,
-                })
+            storeValue.forEach(item => {
+              try {
+                // Join without overwriting storage values
+                item = Object.assign({}, storeValue, storageValue)
               }
-              else {
-                updatedValue = storageValue
-              }
-            }
-            catch (error) {}
+              catch (error) {}
+            })
+            updatedValue = storeValue
           }
           else {
             updatedValue = storageValue
