@@ -4,7 +4,8 @@
 
 const PATH = require('path')
 const fs = require('fs')
-const { app } = require('electron')
+const {app} = require('electron')
+const sharedUtils = require('./sharedUtils')
 
 function getUniquePath (destPath) {
   let num = 1
