@@ -101,7 +101,6 @@ function createMainWindow () {
     minHeight: 300,
     frame: false,
     transparent: false,
-    webviewTag: true,
     webPreferences: {
       enableRemoteModule: true,
       contextIsolation: !process.env.ELECTRON_NODE_INTEGRATION,
@@ -139,6 +138,7 @@ function createQuickViewWindow () {
       nodeIntegration: process.env.ELECTRON_NODE_INTEGRATION
     }
   }) 
+  windows.quickViewWindow.setMenuBarVisibility(false)
   loadWindow('quickViewWindow')
   initWindowListeners('quickViewWindow')
 }
@@ -607,7 +607,7 @@ function getTrayMenu () {
     {
       label: 'Create new note',
       accelerator: globalShortcuts?.newNote?.shortcut || '',
-      click: () => newNote()
+      click: () => global.newNote(),
     },
     {
       type: 'separator'
@@ -632,26 +632,6 @@ function getTrayMenu () {
     }
   ])
   return contextMenu
-}
-
-function disableAppMenu () {
-  electron.Menu.setApplicationMenu(null)
-  // Fix for:
-  // Disabling app menu removes the shortcuts (accelerator) defined in the menu
-  // Redefine shortcuts manually. Bind to the currently focused window:
-  electron.app.on('web-contents-created', (webContentsCreatedEvent, webContents) => {
-    webContents.on('before-input-event', (beforeInputEvent, input) => {
-      const { code, alt, control, shift, meta } = input
-      // Shortcut: devTools
-      if (shift && control && !alt && !meta && code === 'KeyI') {
-        electron.BrowserWindow.getFocusedWindow().webContents.toggleDevTools({ mode: 'detach' })
-      }
-      // Shortcut: window reload
-      if (shift && control && !alt && !meta && code === 'KeyR') {
-        electron.BrowserWindow.getFocusedWindow().reload()
-      }
-    })
-  })
 }
 
 global.newNote = () => {
@@ -747,7 +727,6 @@ function initAppListeners () {
     // Some APIs can only be used after this event occurs.
     storageData = await fetchAppStorageData()
     setCustomizedAppProperties(getCustomizedAppProperties(storageData))
-    disableAppMenu()
     registerSafeFileProtocol()
     createMainWindow()
     createTrayMenu()
