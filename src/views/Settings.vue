@@ -1232,13 +1232,12 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   title: 'GPU / System memory'
                 }"
               >
-                <template #content>
-                </template>
+                <template #content />
               </section-settings>
             </div>
 
             <div
-              v-show="settingsSelectedTab === 4 || filterQuery !== ''"
+              v-show="settingsSelectedTab === 3 || filterQuery !== ''"
               class="fade-in-500ms"
               tab="tabs-and-workspaces"
             >
@@ -1334,7 +1333,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             </div>
 
             <div
-              v-show="settingsSelectedTab === 5 || filterQuery !== ''"
+              v-show="settingsSelectedTab === 4 || filterQuery !== ''"
               class="fade-in-500ms"
               tab="navigation"
             >
@@ -1425,7 +1424,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             </div>
 
             <div
-              v-show="settingsSelectedTab === 6 || filterQuery !== ''"
+              v-show="settingsSelectedTab === 5 || filterQuery !== ''"
               class="fade-in-500ms"
               tab="input"
             >
@@ -1560,7 +1559,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             </div>
 
             <div
-              v-show="settingsSelectedTab === 7 || filterQuery !== ''"
+              v-show="settingsSelectedTab === 6 || filterQuery !== ''"
               class="fade-in-500ms"
               tab="search"
             >
@@ -1841,7 +1840,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             </div>
 
             <div
-              v-show="settingsSelectedTab === 8 || filterQuery !== ''"
+              v-show="settingsSelectedTab === 7 || filterQuery !== ''"
               class="fade-in-500ms"
               tab="data-and-storage"
             >
@@ -1925,7 +1924,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
             <!-- tab:stats -->
             <div
-              v-show="settingsSelectedTab === 9 || filterQuery !== ''"
+              v-show="settingsSelectedTab === 8 || filterQuery !== ''"
               class="fade-in-500ms"
               tab="general"
             >
@@ -2537,8 +2536,8 @@ export default {
         nextItemIndex = currentItemIndex + 1
       }
       this.windowTransparencyEffectDataBackgroundSelected = this.windowTransparencyEffectDataBackgroundItems[nextItemIndex]
-    }
-  }
+    },
+  },
 }
 </script>
 
