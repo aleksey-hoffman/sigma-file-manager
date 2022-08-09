@@ -1954,7 +1954,6 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
                   <div
                     class="setting-container"
-                    @mouseenter="handleMouseEnterSetting({name: 'storeDirItemOpenEvent'})"
                   >
                     <v-switch
                       v-model="storeDirItemOpenEvent"
@@ -1965,7 +1964,6 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
                   <div
                     class="setting-container"
-                    @mouseenter="handleMouseEnterSetting({name: 'storeDirItemOpenCount'})"
                   >
                     <v-switch
                       v-if="storeDirItemOpenEvent"
