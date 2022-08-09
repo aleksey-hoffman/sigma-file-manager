@@ -1217,6 +1217,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             </div>
 
             <div
+              v-if="false"
               v-show="settingsSelectedTab === 3 || filterQuery !== ''"
               class="fade-in-500ms"
               tab="performance"
@@ -2032,7 +2033,7 @@ export default {
         {text: 'General'},
         {text: 'UI appearance'},
         {text: 'Shortcuts'},
-        {text: 'Performance'},
+        // {text: 'Performance'},
         {text: 'Tabs & workspaces'},
         {text: 'Navigation'},
         {text: 'Input'},
