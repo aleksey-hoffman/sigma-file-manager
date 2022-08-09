@@ -3515,22 +3515,20 @@ export default new Vuex.Store({
       )
     },
     async GET_DIR_ITEMS (store, params) {
-      return new Promise((resolve, reject) => {
-        electron.ipcRenderer.invoke('get-dir-items', {
-          ...params, 
+      try {
+        await fsCore.getDirItems({
+          ...params,
           itemHeight: store.state.storageData.settings.navigatorLayoutItemHeight
         })
-          .then((data) => {resolve(data)})
-          .catch((error) => {
-            notifications.emit({
-              name: 'cannotFetchDirItems',
-              props: {
-                error
-              }
-            })
-            reject(error)
-          })
-      })
+      }
+      catch (error) {
+        notifications.emit({
+          name: 'cannotFetchDirItems',
+          props: {
+            error
+          }
+        })
+      }
     },
     async FETCH_DIR_ITEMS (store, params) {
       let hashID = utils.getHash()
