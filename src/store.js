@@ -3185,7 +3185,7 @@ export default new Vuex.Store({
         if (options.scrollTop) {
           store.dispatch('SCROLL_TOP_CONTENT_AREA', {behavior: 'auto'})
         }
-      }, {time: 1000})
+      }, {time: 200})
     },
     RELOAD_DIR (store, params) {
       params = {
