@@ -167,7 +167,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           <transition name="slide-fade-up-200ms">
             <div
               v-show="!showWidgetOptions"
-              class="search-widget__info-container"
+              class="search-widget__info-container custom-scrollbar"
             >
               <div class="search-widget__info-container__header">
                 <div v-show="query.length === 0">
@@ -256,16 +256,13 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 <!-- dir-items-container -->
                 <div
                   class="
-                  custom-scrollbar
-                  unselectable
-                  drag-drop-container
-                  dir-item-card__container
-                  fade-mask--bottom
-                "
+                    unselectable
+                    drag-drop-container
+                    dir-item-card__container
+                  "
                   data-layout="list"
                   data-type="directory"
                   :style="{
-                    '--fade-mask-bottom': '10%',
                     'height': '100%',
                   }"
                 >
@@ -280,6 +277,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                       v-for="(item, index) in searchResultsRecentDirItems"
                       v-show="optionIncludeDirectories && item.type.includes('directory') || optionIncludeFiles && item.type.includes('file')"
                       :key="`recent-dir-item-${item.path}`"
+                      layout="list"
                       :dir-item="item"
                       :index="index"
                       :type="item.type"
@@ -296,6 +294,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                       v-for="(item, index) in searchResults"
                       v-show="optionIncludeDirectories && item.type.includes('directory') || optionIncludeFiles && item.type.includes('file')"
                       :key="`dir-item-${item.path}`"
+                      layout="list"
                       :dir-item="item"
                       :index="index"
                       :type="item.type"
@@ -310,6 +309,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                       v-for="(item, index) in searchResultsDirectories"
                       v-show="optionIncludeDirectories && item.type.includes('directory')"
                       :key="`directory-dir-item-${item.path}`"
+                      layout="list"
                       :dir-item="item"
                       :index="index"
                       :type="item.type"
@@ -322,6 +322,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                       v-for="(item, index) in searchResultsFiles"
                       v-show="optionIncludeFiles && item.type.includes('file')"
                       :key="`file-dir-item-${item.path}`"
+                      layout="list"
                       :dir-item="item"
                       :index="index"
                       :type="item.type"
@@ -839,7 +840,7 @@ export default {
     var(--action-toolbar-height) -
     var(--workspace-area-toolbar-height)
   );
-  overflow: hidden;
+  overflow-y: auto;
 }
 
 .search-widget__info-container__header {
