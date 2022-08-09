@@ -88,9 +88,9 @@ export default {
       if (value) {
         if (this.inputState.pointer.hover.itemType = 'dirItem') {
           this.$store.dispatch('HANDLE_HIGHLIGHT_DIR_ITEM_RANGE', {
-            hoveredItem: this.inputState.pointer.hover.item
+            hoveredItem: this.inputState.pointer.hover.item,
           })
-        }  
+        }
       }
       else {
         this.$store.dispatch('DEHIGHLIGHT_ALL_DIR_ITEMS')
@@ -181,6 +181,7 @@ export default {
       routeScrollPosition: 'storageData.settings.routeScrollPosition',
       lastRecordedAppVersion: 'storageData.settings.lastRecordedAppVersion',
       shortcuts: 'storageData.settings.shortcuts',
+      globalSearchIsEnabled: 'storageData.settings.globalSearchIsEnabled',
       globalSearchScanDepth: 'storageData.settings.globalSearchScanDepth',
       globalSearchDisallowedPaths: 'storageData.settings.globalSearch.disallowedPaths',
       globalSearchCompressSearchData: 'storageData.settings.compressSearchData',
@@ -295,8 +296,8 @@ export default {
         notifications.emit({
           name: 'quickViewFileIsNotSupported',
           props: {
-            data
-          }
+            data,
+          },
         })
       })
 
@@ -310,8 +311,8 @@ export default {
             props: {
               data,
               electron,
-              store: this.$store
-            }
+              store: this.$store,
+            },
           })
         }
         else {
@@ -321,8 +322,8 @@ export default {
               props: {
                 data,
                 electron,
-                store: this.$store
-              }
+                store: this.$store,
+              },
             })
           }
           else {
@@ -331,8 +332,8 @@ export default {
               props: {
                 data,
                 electron,
-                store: this.$store
-              }
+                store: this.$store,
+              },
             })
           }
         }
@@ -479,9 +480,11 @@ export default {
       }, 1000)
     },
     async initGlobalSearchDataScan () {
-      // TODO: Check if the drive has enough space on it
-      await this.initGlobalSearchDataFiles()
-      await this.startGlobalSearchDataScan()
+      if (this.globalSearchIsEnabled) {
+        // TODO: Check if the drive has enough space on it
+        await this.initGlobalSearchDataFiles()
+        await this.startGlobalSearchDataScan()
+      }
     },
     async initGlobalSearchDataFiles () {
       this.drives.forEach(async (drive, index) => {
@@ -768,7 +771,7 @@ export default {
       if (this.firstTimeActions.appLaunch) {
         this.$store.dispatch('SET', {
           key: 'storageData.settings.firstTimeActions.appLaunch',
-          value: false
+          value: false,
         })
         this.$eventHub.$emit('notification', {
           action: 'add',
@@ -777,7 +780,7 @@ export default {
           title: 'Welcome',
           message: `
             "Sigma file manager" is a free, open-source file manager app, licensed under GNU GPLv3 or later.
-          `
+          `,
         })
       }
     },
@@ -1208,9 +1211,9 @@ export default {
 html {
   overflow: hidden !important;
   filter:
-    invert(var(--visual-filter-invert)) 
-    hue-rotate(var(--visual-filter-hue-rotate)) 
-    contrast(var(--visual-filter-contrast)) 
+    invert(var(--visual-filter-invert))
+    hue-rotate(var(--visual-filter-hue-rotate))
+    contrast(var(--visual-filter-contrast))
     brightness(var(--visual-filter-brightness))
     saturate(var(--visual-filter-saturation));
 }
@@ -1221,21 +1224,21 @@ video,
 .media-banner__inner__container--left,
 .overlay--window-transparency-effect__media,
 #loading-screen__container,
-#app[route-name='home'] 
+#app[route-name='home']
   .window-toolbar__item {
-    filter: 
-      invert(var(--visual-filter-invert-inverse)) 
-      hue-rotate(var(--visual-filter-hue-rotate-inverse)) 
-      contrast(var(--visual-filter-contrast-inverse)) 
+    filter:
+      invert(var(--visual-filter-invert-inverse))
+      hue-rotate(var(--visual-filter-hue-rotate-inverse))
+      contrast(var(--visual-filter-contrast-inverse))
       brightness(var(--visual-filter-brightness-inverse))
       saturate(var(--visual-filter-saturation-inverse));
   }
 
 .media-banner__media-item-glow {
-  filter: 
-    invert(var(--visual-filter-invert-inverse)) 
-    hue-rotate(var(--visual-filter-hue-rotate-inverse)) 
-    contrast(var(--visual-filter-contrast-inverse)) 
+  filter:
+    invert(var(--visual-filter-invert-inverse))
+    hue-rotate(var(--visual-filter-hue-rotate-inverse))
+    contrast(var(--visual-filter-contrast-inverse))
     brightness(var(--visual-filter-brightness-inverse))
     saturate(var(--visual-filter-saturation-inverse))
     blur(32px);

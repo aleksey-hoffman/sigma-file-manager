@@ -15,6 +15,28 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       >
         <!-- widget::overlays -->
         <div
+          v-show="!globalSearchIsEnabled"
+          class="search-widget__overlay--scan-in-progress"
+        >
+          <v-layout
+            column
+            align-center
+            justify-center
+            class="title"
+          >
+            Global search feature is disabled
+            <v-btn
+              class="button-1 mt-4"
+              @click="$store.dispatch('SET', {
+                key: 'storageData.settings.globalSearchIsEnabled',
+                value: true
+              })"
+            >
+              Enable
+            </v-btn>
+          </v-layout>
+        </div>
+        <div
           v-show="scanInProgress"
           class="search-widget__overlay--scan-in-progress"
         >
@@ -28,7 +50,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           </v-layout>
         </div>
         <div
-          v-show="searchScanWasInterrupted && !scanInProgress"
+          v-show="searchScanWasInterrupted && !scanInProgress && globalSearchIsEnabled"
           class="search-widget__overlay--scan-in-progress"
         >
           <v-layout
@@ -70,7 +92,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             ref="globalSearchInput"
             v-model="query"
             placeholder="Search"
-            :disabled="scanInProgress"
+            :disabled="scanInProgress || !globalSearchIsEnabled"
             hide-details
             single-line
             flat
@@ -552,6 +574,7 @@ export default {
       globalSearch: 'globalSearch',
       query: 'globalSearch.query',
       widget: 'globalSearch.widget',
+      globalSearchIsEnabled: 'storageData.settings.globalSearchIsEnabled',
       scanInProgress: 'globalSearch.scanInProgress',
       searchScanWasInterrupted: 'storageData.settings.globalSearchScanWasInterrupted',
       searchInProgress: 'globalSearch.searchInProgress',

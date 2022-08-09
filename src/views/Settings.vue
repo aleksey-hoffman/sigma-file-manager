@@ -1576,6 +1576,17 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               >
                 <template #content>
                   <div class="text--sub-title-1 mt-2">
+                    Global search feature
+                  </div>
+
+                  <v-switch
+                    v-model="globalSearchIsEnabled"
+                    class="my-0"
+                    label="Enable global search feature and periodic search data scans"
+                    hide-details
+                  />
+
+                  <div class="text--sub-title-1 mt-2">
                     Quick actions
                   </div>
 
@@ -2042,6 +2053,13 @@ export default {
     }
   },
   watch: {
+    globalSearchIsEnabled (value) {
+      if (value) {
+        this.$eventHub.$emit('app:method', {
+          method: 'initGlobalSearchDataScan',
+        })
+      }
+    },
     windowTransparencyEffectOptionsSelectedPage: {
       handler () {
         let pageIndex = this.windowTransparencyEffectOptionsPages.findIndex(page => {
@@ -2107,6 +2125,7 @@ export default {
       storeDirItemOpenEvent: 'storageData.settings.stats.storeDirItemOpenEvent',
       storeDirItemOpenCount: 'storageData.settings.stats.storeDirItemOpenCount',
       storeDirItemOpenDate: 'storageData.settings.stats.storeDirItemOpenDate',
+      globalSearchIsEnabled: 'storageData.settings.globalSearchIsEnabled',
       globalSearchCompressSearchData: 'storageData.settings.compressSearchData',
       globalSearchScanDepth: 'storageData.settings.globalSearchScanDepth',
       globalSearchAutoScanIntervalTime: 'storageData.settings.globalSearchAutoScanIntervalTime',
