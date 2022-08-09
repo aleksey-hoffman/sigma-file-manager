@@ -257,7 +257,7 @@ export default {
           },
           {
             type: 'workspaces-menu',
-            width: '48px',
+            width: 'auto',
           },
           {
             type: 'tabs-menu',

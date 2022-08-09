@@ -121,7 +121,7 @@ export default {
   align-items: center;
   justify-content: center;
   height: 24px;
-  max-width: 160px;
+  max-width: 200px;
   padding-right: 6px;
   color: var(--color-6);
   border: 1px solid rgb(255, 255, 255, 0.15);
