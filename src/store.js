@@ -3516,7 +3516,7 @@ export default new Vuex.Store({
     },
     async GET_DIR_ITEMS (store, params) {
       try {
-        await fsCore.getDirItems({
+        return fsCore.getDirItems({
           ...params,
           itemHeight: store.state.storageData.settings.navigatorLayoutItemHeight
         })
