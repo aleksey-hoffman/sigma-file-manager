@@ -1592,6 +1592,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
                   <div class="button-container">
                     <v-btn
+                      v-if="globalSearchIsEnabled"
                       class="button-1"
                       depressed
                       small
@@ -1631,7 +1632,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     v-html="$localize.get('text_allow_global_search_message')"
                   />
 
-                  <div>
+                  <div v-if="globalSearchIsEnabled">
                     <div class="text--sub-title-1 mt-2">
                       Search data
                     </div>
@@ -1656,71 +1657,30 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                       </v-icon>
                       Copy path
                     </v-btn> -->
-                  </div>
 
-                  <div class="text--sub-title-1 mt-2">
-                    Search options
-                  </div>
+                    <div class="text--sub-title-1 mt-2">
+                      Search options
+                    </div>
 
-                  <v-select
-                    v-model="globalSearchAutoScanIntervalTime"
-                    :items="globalSearchAutoScanIntervalItems"
-                    :label="`Auto scan period ${disabledInDev}`"
-                    :disabled="scanInProgress"
-                    :menu-props="{
-                      contentClass: 'custom-scrollbar',
-                      offsetY: true
-                    }"
-                    style="max-width: 200px"
-                  >
-                    <template #selection="{ item }">
-                      {{$utils.formatTime(item, 'ms', 'auto')}}
-                    </template>
-                    <template #item="{ item }">
-                      {{$utils.formatTime(item, 'ms', 'auto')}}
-                    </template>
-                  </v-select>
+                    <v-select
+                      v-model="globalSearchAutoScanIntervalTime"
+                      :items="globalSearchAutoScanIntervalItems"
+                      :label="`Auto scan period ${disabledInDev}`"
+                      :disabled="scanInProgress"
+                      :menu-props="{
+                        contentClass: 'custom-scrollbar',
+                        offsetY: true
+                      }"
+                      style="max-width: 200px"
+                    >
+                      <template #selection="{ item }">
+                        {{$utils.formatTime(item, 'ms', 'auto')}}
+                      </template>
+                      <template #item="{ item }">
+                        {{$utils.formatTime(item, 'ms', 'auto')}}
+                      </template>
+                    </v-select>
 
-                  <v-tooltip
-                    bottom
-                    open-delay="300"
-                    max-width="400px"
-                    offset-overflow
-                  >
-                    <template #activator="{ on }">
-                      <div
-                        style="display: inline-block;"
-                        v-on="on"
-                      >
-                        <v-select
-                          v-model="globalSearchScanDepth"
-                          class="mt-0"
-                          :items="suggestedGlobalSearchScanDepthItems"
-                          :disabled="scanInProgress"
-                          label="Scan depth"
-                          :menu-props="{
-                            contentClass: 'custom-scrollbar',
-                            offsetY: true
-                          }"
-                          style="max-width: 200px"
-                          @blur="handleBlurGlobalSearchScanDepth"
-                        >
-                          <template #selection>
-                            {{globalSearchScanDepth}} directories
-                          </template>
-                          <template #item="{item}">
-                            {{item}} directories
-                          </template>
-                        </v-select>
-                      </div>
-                    </template>
-                    <span>
-                      Higher depth scans will increase both the scan and the search time,
-                      but will allow you to find files located in more deeply nested directories.
-                    </span>
-                  </v-tooltip>
-
-                  <div>
                     <v-tooltip
                       bottom
                       open-delay="300"
@@ -1729,122 +1689,163 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     >
                       <template #activator="{ on }">
                         <div
-                          class="d-inline-flex"
+                          style="display: inline-block;"
                           v-on="on"
                         >
-                          <v-switch
-                            v-model="globalSearchCompressSearchData"
+                          <v-select
+                            v-model="globalSearchScanDepth"
                             class="mt-0"
+                            :items="suggestedGlobalSearchScanDepthItems"
                             :disabled="scanInProgress"
-                            @change="$eventHub.$emit('app:method', {
-                              method: 'initGlobalSearchDataScan'
-                            })"
+                            label="Scan depth"
+                            :menu-props="{
+                              contentClass: 'custom-scrollbar',
+                              offsetY: true
+                            }"
+                            style="max-width: 200px"
+                            @blur="handleBlurGlobalSearchScanDepth"
                           >
-                            <template #label>
-                              <v-icon
-                                v-show="!globalSearchCompressSearchData"
-                                color="red"
-                              >
-                                mdi-circle-medium
-                              </v-icon>
-                              Compress search data
+                            <template #selection>
+                              {{globalSearchScanDepth}} directories
                             </template>
-                          </v-switch>
+                            <template #item="{item}">
+                              {{item}} directories
+                            </template>
+                          </v-select>
                         </div>
                       </template>
                       <span>
-                        Compression significantly reduces the amount of space needed for
-                        search data (up to 20 times less) but search scans take longer (~2 times).
+                        Higher depth scans will increase both the scan and the search time,
+                        but will allow you to find files located in more deeply nested directories.
                       </span>
                     </v-tooltip>
-                  </div>
 
-                  <v-combobox
-                    v-model="globalSearchDisallowedPaths"
-                    :items="globalSearchDisallowedPathsItems"
-                    label="Ignored paths"
-                    :disabled="scanInProgress"
-                    multiple
-                    style="max-width: 400px"
-                  >
-                    <template #prepend-item>
-                      <v-list-item>
-                        <v-list-item-content>
-                          <v-list-item-title>
-                            Enter a path to add to the ignored list and press
-                            <span class="inline-code--light">Enter</span>
-                          </v-list-item-title>
-                        </v-list-item-content>
-                      </v-list-item>
-                    </template>
-                    <template #item="{item}">
-                      <v-list-item @click.stop="toggleGlobalSearchDisallowedPathItem(item)">
-                        <v-list-item-action>
-                          <v-icon>
-                            {{globalSearchDisallowedPaths.includes(item)
-                              ? 'mdi-check-box-outline'
-                              : 'mdi-checkbox-blank-outline'}}
-                          </v-icon>
-                        </v-list-item-action>
-                        <v-list-item-content>
-                          <v-list-item-title>
-                            {{item}}
-                          </v-list-item-title>
-                        </v-list-item-content>
-                        <v-list-item-action>
-                          <v-btn
-                            icon
-                            @click.stop="removeItemFromGlobalSearchDisallowedPathsItems(item)"
+                    <div>
+                      <v-tooltip
+                        bottom
+                        open-delay="300"
+                        max-width="400px"
+                        offset-overflow
+                      >
+                        <template #activator="{ on }">
+                          <div
+                            class="d-inline-flex"
+                            v-on="on"
                           >
-                            <v-icon>mdi-close</v-icon>
-                          </v-btn>
-                        </v-list-item-action>
-                      </v-list-item>
-                    </template>
-                    <template #selection="{item, index}">
-                      <v-chip
-                        v-if="index < 2"
-                        small
-                      >
-                        <span>{{item}}</span>
-                      </v-chip>
-                      <span
-                        v-if="index === 2"
-                        class="grey--text caption"
-                      >
-                        (+{{globalSearchDisallowedPaths.length - 2}} others)
-                      </span>
-                    </template>
-                  </v-combobox>
+                            <v-switch
+                              v-model="globalSearchCompressSearchData"
+                              class="mt-0"
+                              :disabled="scanInProgress"
+                              @change="$eventHub.$emit('app:method', {
+                                method: 'initGlobalSearchDataScan'
+                              })"
+                            >
+                              <template #label>
+                                <v-icon
+                                  v-show="!globalSearchCompressSearchData"
+                                  color="red"
+                                >
+                                  mdi-circle-medium
+                                </v-icon>
+                                Compress search data
+                              </template>
+                            </v-switch>
+                          </div>
+                        </template>
+                        <span>
+                          Compression significantly reduces the amount of space needed for
+                          search data (up to 20 times less) but search scans take longer (~2 times).
+                        </span>
+                      </v-tooltip>
+                    </div>
 
-                  <div class="text--sub-title-1 mt-2">
-                    Time estimates
-                  </div>
-                  <div>
-                    <v-icon :color="estimatedGlobalSearchScanTime.color">
-                      mdi-circle-medium
-                    </v-icon>
-                    Estimated data scan time:
-                    <span
-                      class="ml-1"
-                      style="font-size: 14px;"
+                    <v-combobox
+                      v-model="globalSearchDisallowedPaths"
+                      :items="globalSearchDisallowedPathsItems"
+                      label="Ignored paths"
+                      :disabled="scanInProgress"
+                      multiple
+                      style="max-width: 400px"
                     >
-                      {{estimatedGlobalSearchScanTime.time}}
-                      (per 1 TB drive)
-                    </span>
-                  </div>
-                  <div>
-                    <v-icon :color="estimatedGlobalSearchTime.color">
-                      mdi-circle-medium
-                    </v-icon>
-                    Estimated search time:
-                    <span
-                      class="ml-1"
-                      style="font-size: 14px;"
-                    >
-                      1 sec — {{estimatedGlobalSearchTime.time}}
-                      (per 1 TB drive per search word) | depends on file location
-                    </span>
+                      <template #prepend-item>
+                        <v-list-item>
+                          <v-list-item-content>
+                            <v-list-item-title>
+                              Enter a path to add to the ignored list and press
+                              <span class="inline-code--light">Enter</span>
+                            </v-list-item-title>
+                          </v-list-item-content>
+                        </v-list-item>
+                      </template>
+                      <template #item="{item}">
+                        <v-list-item @click.stop="toggleGlobalSearchDisallowedPathItem(item)">
+                          <v-list-item-action>
+                            <v-icon>
+                              {{globalSearchDisallowedPaths.includes(item)
+                                ? 'mdi-check-box-outline'
+                                : 'mdi-checkbox-blank-outline'}}
+                            </v-icon>
+                          </v-list-item-action>
+                          <v-list-item-content>
+                            <v-list-item-title>
+                              {{item}}
+                            </v-list-item-title>
+                          </v-list-item-content>
+                          <v-list-item-action>
+                            <v-btn
+                              icon
+                              @click.stop="removeItemFromGlobalSearchDisallowedPathsItems(item)"
+                            >
+                              <v-icon>mdi-close</v-icon>
+                            </v-btn>
+                          </v-list-item-action>
+                        </v-list-item>
+                      </template>
+                      <template #selection="{item, index}">
+                        <v-chip
+                          v-if="index < 2"
+                          small
+                        >
+                          <span>{{item}}</span>
+                        </v-chip>
+                        <span
+                          v-if="index === 2"
+                          class="grey--text caption"
+                        >
+                          (+{{globalSearchDisallowedPaths.length - 2}} others)
+                        </span>
+                      </template>
+                    </v-combobox>
+
+                    <div class="text--sub-title-1 mt-2">
+                      Time estimates
+                    </div>
+                    <div>
+                      <v-icon :color="estimatedGlobalSearchScanTime.color">
+                        mdi-circle-medium
+                      </v-icon>
+                      Estimated data scan time:
+                      <span
+                        class="ml-1"
+                        style="font-size: 14px;"
+                      >
+                        {{estimatedGlobalSearchScanTime.time}}
+                        (per 1 TB drive)
+                      </span>
+                    </div>
+                    <div>
+                      <v-icon :color="estimatedGlobalSearchTime.color">
+                        mdi-circle-medium
+                      </v-icon>
+                      Estimated search time:
+                      <span
+                        class="ml-1"
+                        style="font-size: 14px;"
+                      >
+                        1 sec — {{estimatedGlobalSearchTime.time}}
+                        (per 1 TB drive per search word) | depends on file location
+                      </span>
+                    </div>
                   </div>
                 </template>
               </section-settings>
