@@ -25,6 +25,13 @@ Go to the [main project page](https://github.com/aleksey-hoffman/sigma-file-mana
 
 If you are new to contributing code, try the `method 1` instead or, if you want to learn and try this more advanced method, watch several video tutorials about "Git" and look up a few "beginner guides to contributing to a GitHub project", then practice working with branches and committing / pushing changes to your own test repository, make sure you understand what you are doing. Then you can download the project, implement the changes locally and then push them to this project:
 
+#### Prerequisites
+
+- Node.js version: <= `v15.14.0` (you can use tools like nvm to install and manage multiple Node versions).
+- Build tools:
+  - Windows: `Visual Studio build tools`; 
+  - Linux: `sudo apt-get install build-essential`.
+
 #### Steps
 
 First, install the Node.js version specified in the notes below, setup your git locally (for this project) or globally and set your `user.email` and `user.name`, then:
@@ -68,10 +75,6 @@ git push origin my-new-feature-name
 ## Notes:
 
 These notes are mostly relevant when you are contributing via `method 2` described above.
-
-- Node.js version: <= `v15.14.0` (you can use nvm to install and manage multiple Node versions).
-
-- Build tools: Windows: `Visual Studio build tools`; Linux: `sudo apt-get install build-essential`.
 
 - Formatter: Use Eslint formatter plugin to format the code. Disable prettier if it's enabled in your IDE.
 
