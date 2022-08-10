@@ -264,6 +264,7 @@ export default new Vuex.Store({
     },
     navigatorView: {
       info: {},
+      scrollPosition: 0,
       visibleDirItems: [],
       dirItemsTasks: [],
       dirItemsInfoIsFetched: false,
@@ -3156,7 +3157,12 @@ export default new Vuex.Store({
     LOAD_ROUTE (store, routeName) {
       router.push(routeName).catch((error) => {})
     },
+    async saveNavigatorScrollPosition (store) {
+      const contentAreaNode = utils.getContentAreaNode(router.currentRoute.name)
+      store.state.navigatorView.scrollPosition = contentAreaNode?.scrollTop || 0
+    },
     async LOAD_DIR (store, options) {
+      await store.dispatch('saveNavigatorScrollPosition')
       loadDirThrottle.throttle(async () => {
         store.dispatch('ADD_ACTION_TO_HISTORY', { action: 'store.js::LOAD_DIR()' })
         options = {
@@ -3498,6 +3504,15 @@ export default new Vuex.Store({
       const navigatorView = store.state.navigatorView
       if (navigatorView.state.currentDir.path === navigatorView.currentDir.path) {
         await store.dispatch('REPLACE_SELECTED_DIR_ITEMS', navigatorView.state.selectedDirItems)
+      }
+
+      const contentAreaNode = utils.getContentAreaNode(router.currentRoute.name)
+      if (contentAreaNode) {
+        contentAreaNode.scroll({
+          top: store.state.navigatorView.scrollPosition,
+          left: 0,
+          behavior: 'auto'
+        })
       }
     },
      async FOCUS_DIR_ITEM (store, params) {
