@@ -3194,7 +3194,7 @@ export default new Vuex.Store({
         }
       }, {time: 200})
     },
-    RELOAD_DIR (store, params) {
+    async RELOAD_DIR (store, params) {
       params = {
         ...{
           scrollTop: true,
@@ -3204,10 +3204,28 @@ export default new Vuex.Store({
         ...params 
       }
       if (router.history.current.name === 'navigator') {
-        store.dispatch('LOAD_DIR', {
-          path: store.state.navigatorView.currentDir.path,
-          ...params
-        })
+        const {dirItems} = await store.dispatch('GET_DIR_ITEMS', {path: store.state.navigatorView.currentDir.path})
+        const oldDirItems = store.state.navigatorView.dirItems
+
+        dirItems.forEach(newDirItem => {
+          const oldDirItem = oldDirItems.find(dirItem => dirItem.path === newDirItem.path)
+          if (oldDirItem) {
+            for (const key in oldDirItem) {
+              oldDirItem[key] = newDirItem[key]
+            }
+          }
+          else {
+            oldDirItems.push(newDirItem)
+          }
+        });
+        
+        oldDirItems.forEach((oldDirItem, index) => {
+          const newDirItem = dirItems.find(dirItem => dirItem.path === oldDirItem.path)
+          if (!newDirItem) {
+            store.state.navigatorView.dirItems.splice(index, 1)
+          }
+        });
+
         if (params.emitNotification) {
           notifications.emit({
             name: 'directoryWasReloaded', 
