@@ -206,6 +206,9 @@ export default {
   created () {
     this.showInfoPanel()
   },
+  mounted () {
+    this.updateInfoPanelData()
+  },
   watch: {
     'lastSelectedDirItem.path' () {
       this.$nextTick(() => {
