@@ -40,6 +40,10 @@ export default {
   },
   mounted () {
     this.initMediaTransform()
+    this.setOverlayCSS()
+    setTimeout(() => {
+      this.setOverlayCSS()
+    }, 1000)
   },
   watch: {
     'windowTransparencyEffect.options.selectedPage.background.path' () {
