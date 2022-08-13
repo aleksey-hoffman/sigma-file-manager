@@ -1,8 +1,161 @@
 # CHANGELOG
+# Release Notes: v1.5.0 (2021-08-10)
+
+- 28 new features
+- 64 improvements
+- 26 fixes
+
+## New minor features
+- 5a7e7ea | New setting: option to disable global search feature and data scans
+- a631a66 | New setting: option to open directories in new tab with `Middle click`
+- 7ab2d46 | New setting: UI 'contrast' filter
+- 9bc627f | New setting: UI 'brightness' filter
+- 3eba483 | New setting: UI 'saturation' filter
+- bf59c4e | New setting: option to display navigation panel drive letter overlay
+- 1e886e1 | New setting: option to switch history navigation type;
+- 273ff8c | New setting: option to switch to 'light filter' theme
+- 702a88c | New setting: option to display accent color backgrounds
+- c2e1328 | New setting: option to close the app window when the last workspace tab is closed
+- b792520 | New setting: option to display seconds and milliseconds
+- b5258c1 | New setting: option to change max width of name column of navigator item
+- 25629c5 | New setting: option to show dividers between files and directories
+- 43dd838 | New setting: option to show workspace title in window toolbar
+- 8a9553a | New setting: option to choose style for home page cards. Added 2 new designs: Neoinfusive-extruded, Neoinfusive-flat-glow
+- 577c0cd | New setting: option to activate item filtering when typing
+- b021aee | New setting: added "traditional horizontal" tab layout
+- 8f61753 | New feature: added filter on settings page
+- dabaa2e | New setting: option to save navigator sorting type
+- 8f61753 | New feature: add filter on settings page
+- fa919bb | UX: improved archiver design, added new functionality:
+  - Allow to specify compression level.
+  - Allow to encrypt / extract an archive with password.
+  - Allow to specify archive destination path.
+  - Add option "delete files after compression".
+  - Display archive info before extraction.
+- c08553f | UX: add modifiers to change the type of copying to clipboard: "wrap with quotes", "add second slash"
+- f7b3073 | UX: global search: show search results for recent files instantly
+- 318c680 | UX: allow to customize user directories
+- c95d9ee | UX: info panel: display directory item count
+- ca45954 | New feature: display file media properties
+- a1fcb13 | New feature: navigator sorting toolbar
+- b0fbef3 | New feature: directory items: display color overlays for copy / move operations
+
+## Major improvements
+- 318c680 | UX: add context menu to home page items
+- d8f4d43 | UI / UX: clipboard toolbar: improve design, add new functionality:
+  - Display total size of items in clipboard
+  - Improve filtering in the "show items" menu
+  - Add icons and tooltips to action buttons
+  - Adapt design to narrow window sizes
+- 4eaf7aa | UI: address bar: improve design, add new functionality:
+  - Add "Edit address" button to address bar container.
+  - Add "Pin" button to address bar editor to allow closing the editor by clicking outside of it
+  - Add ability to scroll address container with vertical axis scroll
+  - Move address bar menu button inside the address bar container.
+  - Improve styling
+  - 0f96f67 | New feature: address-bar: ability to open context menu on `Right click`
+  - 25d8eef | New feature: address-bar: ability to edit address on 'Ctrl + Click'
+  - 25d8eef | UX: address-bar: improved design
+- 8f0ecfd | UI / UX: improve design of global search component widget significantly
+- 862213c | UX / performance: navigator: improve perceived UI rendering performance
+- f121552 | UX / performance / refactor: greatly improve directory loading performance:
+  - (reverted temporarily) Offload directory info fetching to worker_threads to avoid UI freezes.
+  - Improve UI responsiveness when switching between pages.
+  - Add preload function to load a small slice of the directory items immediately.
+  - Refactor code.
+
+## Minor improvements
+- b93cf42 | UI: fix design issues of global search widget
+- cbc5b22 | UX: improve item filtering performance
+- decc53b | UI / dev: update notification card; add progress loader
+- f51d796 | UI: display custom scrollbar in menus
+- 411b63b | UX: change default windowTransparencyEffect blur value
+- 49748c5 | UX: optimize guide images
+- 426448e | UX: restore page scroll position on app reload
+- 1867a44 | UX: update yt-dlp binaries; binary clean up
+- 2db5bfe | UX: home page background manager: improve design
+- a383a2f | UI: notes: fix visual freeze on page load
+- 1343037 | UI: navigator: add loader element to indicate directory loading status
+- f9affc0 | UX / performance: navigation panel: optimize UI render performance (20fps => 60fps) in some cases
+- 9a5144a | UI: improve setting section design
+- 3f4804d | UI: improve styling of accent color backgrounds
+- 65c5733 | UI: context menu: add sub menu indicator
+- d5ee9d2 | UX: copy paths without quotes by default, add quotes modifier
+- 8bb25c6 | UI: improve accent color consistency
+- c697d6c | UI: navigator info panel: remove border from preview container
+- b6240eb | UI: context menu: change share icons
+- 4aa6648 | UX: context menu: move quick-view button to the main context menu list
+- 9287870 | UI: navigator dir item: remove checkbox, improve overlay visibility
+- 17d8130 | UI: navigator dir item: improve file extension container styles
+- 0f2f947 | UI: navigator dir item: improve spacing styles
+- a6f722e | UI: navigator: display dividers under titles
+- 487a4fd | UI / UX: menus: improve design and consistency; add filter; add item discard button
+- 059112b | UX: extend window drag area to full height in maximized state
+- b4ad52b | UI: window toolbar: improve styling of workspace button
+- e67adbe | UI: window toolbar: display current workspace name
+- cae0746 | UI: window toolbar: display current tab number
+- 98909ba | UI: window toolbar: change styling of menu buttons
+- db206d4 | UI: window toolbar: display "add new tab" button on window toolbar
+- 83021e0 | UI: filter field: improve file menu styling
+- 52cb517 | UI: filter field: add hover transition
+- ada90d2 | UI: toolbars: refactor and restructure some code
+- 1c94e15 | UI: remove scroll top button from window toolbar
+- 92eff1f | UX: add shortcuts list to settings page
+- 043ea01 | UI: move shortcuts list from window toolbar to app guide
+- 1535092 | UI: change navigation panel width from 64px to 48px
+- 6286676 | UX: increase window controls button size
+- 0ebef1d | UI: refactor some notifications
+- a5799f1 | UX: directory items will now display selected sorting type value
+- 96ec98c | UX: new sorting type: "date modified meta"
+- 4d0e243 | UX: updater: set default value of update.autoDownload to false
+- e934410 | UX: new global shortcut: "open global search"
+- bfbafb4 | UX: new shortcut: `Ctrl + Q`: close app window 
+- 04a2430 | UX: new shortcut: `Ctrl + Shift + W`: close all tabs in current workspace / close app window
+- 9e08e4e | UX: new shortcut: `Ctrl + W`: close current tab / window
+- b554e33 | UI: tray-menu: add ability to open on `Left click`
+- 93a4d87 | UI: tray-menu: improve and simplify design
+- 52cd137 | UI: navigator-workspace-toolbar : improve design and consistency
+- 9857049 | UX: input: change default actions for mouse buttons 3 and 4
+- Update dependencies
+- Small code refactor
+- A few other small improvements
+
+## Major fixes
+- 7dcc834 | Fix: directory is flashing on update
+- be9df05 | Fix: local directory share server is not closing properly and causing errors
+- 50bebf7 | Fix: some user settings don't get saved to storage
+- 6740b39 | Fix: quick view: PDF preview is not working
+- a6d4710 | Fix: large OneDrive directory causes low performance / UI freezes
+- 90af704 | Fix: settings with outdated object structure don't get applied
+- 1a51ada | Fix: navigator: filter is cleared on directory reload
+- 1f23c5b | Fix: navigator: range selection selects hidden items
+- 55c1070 | Fix: navigator: when selecting all dir items with filtering enabled, only the visible items are selected
+- 77128e3 | Fix: drag feature issues; minimal refactor
+- 0fdbd32 | Fix: showing empty drive list when only 1 drive / partition is mounted
+- ed5817c | Fix: global search: path pattern matching is not working; inits twice
+
+## Minor fixes
+- 031b0c8 | Fix: window visual effects are not applied on the first load
+- 3f0e72c | Fix: window cannot be resized from the top side and corners
+- 8744408 | Fix: shortcut: 'focusFilter' cannot unfocus the field
+- 7607a53 | Fix: visual filters are not being applied to home banner glow
+- 23877d9 | Fix: disable updater in Microsoft store build
+- 7439c41 | Fix: info panel: was copying value on click without `Ctrl` modifier
+- a5febab | Fix: directory is not loading fully sometimes
+- 066dcda | Fix: global search field autofocus is not working
+- 3d904b7 | Fix: dashboard: list item's action buttons don't work with 'single click' setting enabled
+- 1e886e1 | Fix: broken logic in history navigation
+- c4e1bb6 | Fix: small bugs in FilterField
+- 5d0ef15 | Fix: window visual effects: blur is not applied on media change
+- f783b62 | Fix: focusing app from taskbar is not working when the app window is closed
+- Refactor some code styling and structure; fix potential errors
+
+## Other changes
+- 3aaba07 | Feature: remove ability to create hard links on Windows
 
 # Release Notes: v1.4.0 (2021-09-04)
 
-This release improves resource usage, brings a few new features, and a lot of fixes:
+This release improves resource usage, brings a few new features, and a lot of improvements and fixes:
 
 - 1 new major feature
 - 1 new minor feature
@@ -12,13 +165,9 @@ This release improves resource usage, brings a few new features, and a lot of fi
 ##  Milestones
 🔼 **by v2.0.0 (December 2021) | (Goal: 3 of 20):** Add 20 more new major features
 
-## Download
-You can find the download link for your system in the **Asset** section below.
-
-This release contains only Windows build. MacOS and Linux builds will be added in v1.5 update (in a few days).
-
 ## New major features
-- 574787c: **Feature**: added support for cloud drives (OneDrive, Google Drive, etc.).
+- 574787c: **Feature**: added support for cloud drives (OneDrive, Google Drive, etc.). 
+**Edit:** If you have millions of files on OneDrive, the app will have high CPU usage and might stuck on the start screen. The issue will be fixed in the next update.
 
 ## New minor features
 - 8401af7: **UX**: new setting: the date format can now be customized. Currently available numeric: `23.05.2021` and short format: `23 May 2021`. It adapts to the local format automatically. For example, in Japan it will be displayed as `2021/5/23` or `2021年5月23日`
@@ -103,10 +252,7 @@ This release improves stability, performance, and also brings a few new features
 - **UI**: removed excessive bottom padding when the bottom clipboard toolbar is shown | d78d7e8
 - **UX**: fixed the issue with items getting added to copy / move clipboard when you select other items | 51f345a
 
-
-## v1.2.0 (2021-06-23)
-
-# Release Notes for v1.2.0:
+# Release Notes: v1.2.0 (2021-06-23):
 
 ⚠**Warning:** the app is still in early development stage, use with caution! Before using the app, it's recommended, to copy important files to your cloud storage or an external drive in case something goes wrong. Try not to use it for working with important files, until it's thoroughly tested.
 
@@ -205,7 +351,7 @@ See the full list of rewards, and consider join our community on Patreon to help
 
 <a target="_blank" href="https://patreon.com/sigma_file_manager">
   <img
-    src="https://github.com/aleksey-hoffman/sigma-file-manager/blob/main/.github/media/patreon_button.png"
+    src="https://github.com/aleksey-hoffman/sigma-file-manager/raw/main/.github/media/patreon_button.png"
     width="164px"
   />
 </a>
@@ -255,7 +401,7 @@ You can see the full list of rewards, and join our community on Patreon:
 
 <a target="_blank" href="https://patreon.com/sigma_file_manager">
   <img
-    src="https://github.com/aleksey-hoffman/sigma-file-manager/blob/main/.github/media/patreon_button.png"
+    src="https://github.com/aleksey-hoffman/sigma-file-manager/raw/main/.github/media/patreon_button.png"
     width="164px"
   />
 </a>
