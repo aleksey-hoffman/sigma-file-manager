@@ -29,8 +29,20 @@ If you are new to contributing code, try the `method 1` instead or, if you want 
 
 - Node.js version: <= `v15.14.0` (you can use tools like nvm to install and manage multiple Node versions).
 - Build tools:
-  - Windows: `Visual Studio build tools`; 
+  - Windows: any `Visual Studio build tools` (using Visual Studio installer); 
   - Linux: `sudo apt-get install build-essential`.
+
+If you're getting a gyp error On Windows, try this:
+
+Set env variable for the installed build tools directory with the build executable, for example, if you installed Visual Studio build tools **2022**, set variable `VCINSTALLDIR` with value `C:\Program Files\Microsoft Visual Studio\2022\Community\VC`
+
+If it didn't help, also install node-gyp v8.4.0 by running this command:
+
+```
+npm install node-gyp@8.4.0
+```
+
+And then follow [this guide](https://github.com/nodejs/node-gyp/blob/main/docs/Updating-npm-bundled-node-gyp.md)
 
 #### Steps
 
@@ -45,7 +57,9 @@ git clone https://github.com/aleksey-hoffman/sigma-file-manager.git
 2. Install the dependencies and start dev server:
 
 ```
-cd ./sigma-file-manager && npm install && npm run dev
+cd ./sigma-file-manager
+npm install
+npm run dev
 ```
 
 To build the project for your current platform, run this command:
