@@ -1,5 +1,5 @@
 <h1>
-  <img valign="middle" src="./.github/media/logo-1024x1024.png" width="64px">
+  <img valign="middle" src="https://github.com/aleksey-hoffman/sigma-file-manager/raw/main/.github/media/logo-1024x1024.png" width="64px">
   &nbsp;&nbsp;Sigma File Manager
  </h1>
 
@@ -65,7 +65,7 @@ Create the best existing intelligent file manager & productivity app that will s
 
 - **INFUSIVE DESIGN:** this app implements my custom, modern, beautiful, minimalistic, customizable, design system called "Infusive design".
 
-- **WINDOW TRANSPARENCY EFFECTS:** is one of the key components of "Infusive design". This effect "infuses" all elements of the app with a customizable, modern, unified look and provides infinite beautiful, unique design customization options.
+- **WINDOW TRANSPARENCY EFFECTS:** feature allows you to customize the app design and create literaly infinite amount of custom, beautiful, modern UI designs by allowing you to beautifully infuse any image / video into every element of the app UI.
 
 #### MANY MORE FEATURES ARE COMING
 
@@ -364,6 +364,18 @@ If you like their art, consider supporting their work. You can find their suppor
   </tbody>
 </table>
 
+# What's new
+
+Latest version: `1.5`:
+
+- 28 new features
+- 64 improvements
+- 26 fixes
+
+<a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/releases">
+  SEE RELEASE NOTES →
+</a>
+
 # Download
 
 #### ⚡ Requirements:
@@ -390,19 +402,22 @@ If you're running the app on the integrated GPU, the RAM usage will increase dur
         <code>winget install sigma</code>
       </td>
     </tr>
-    <!-- <tr>
+    <tr>
       <td>Windows (via Microsoft store)</td>
       <td>
-        <a target="_blank" href="https://www.microsoft.com/store/productId/9N7W62ND0NF9">
-          Microsoft store
+        ⚠ Status: in review
+        <br>Link will be added here later
+        <!-- <a target="_blank" href="https://www.microsoft.com/store/productId/9N7W62ND0NF9">
+          <img src="https://github.com/aleksey-hoffman/sigma-file-manager/raw/main/.github/media/get-from-microsoft.png" width="140px">
         </a>
+        -->
       </td>
-    </tr> -->
+    </tr>
     <tr>
-      <td>Windows</td>
+      <td>Windows (unsigned installable)</td>
       <td>
-        <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/releases/download/v1.4.0/Sigma-File-Manager-1.4.0-Windows-Setup.exe">
-          Download installable app (exe)
+        <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/releases/download/v1.5.0/Sigma-File-Manager-1.5.0-Windows-Setup.exe">
+          Installable file (.exe)
         </a>
       </td>
     </tr>
@@ -441,12 +456,6 @@ If you're running the app on the integrated GPU, the RAM usage will increase dur
 </table>
 
 [![Github All Releases](https://img.shields.io/github/downloads/aleksey-hoffman/sigma-file-manager/total.svg)]()
-
-#### What's new:
-
-<a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/releases">
-  SEE WHAT CHANGED IN THIS VERSION →
-</a>
 
 #### ⚠ Warnings:
 
@@ -560,7 +569,7 @@ This is how and why "Sigma file manager" was created. It all started from a simp
 - **[VSCode](https://github.com/microsoft/vscode/):** One of the best code editors that significantly simplifies the development process.
 - **[Vuetify](https://github.com/vuetifyjs/vuetify):** Material components library that speeds up UI development.
 - **[Templarian/MaterialDesign](https://github.com/Templarian/MaterialDesign):** Provides beautiful, community created, free icons.
-- **[ytdl-org/youtube-dl](https://github.com/ytdl-org/youtube-dl):** Allows the app to download videos from a URL link using Python.
+- **[yt-dlp](https://github.com/yt-dlp/yt-dlp):** Allows the app to download videos from a URL link using Python.
 - **[FFMPEG](https://ffmpeg.org/):** Allows the app to convert and edit audio/video/images and get the media info.
 - **[7-zip.org](https://7-zip.org):** Allows the app to work with archives (compress/decompress directories and files).
 - **[xxoo/node-fswin](https://github.com/xxoo/node-fswin):** Windows OS native API bindings for Node.js.
