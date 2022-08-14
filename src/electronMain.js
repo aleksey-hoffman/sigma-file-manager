@@ -120,11 +120,11 @@ function createMainWindow () {
 function createQuickViewWindow () {
   // Create window
   windows.quickViewWindow = new electron.BrowserWindow({
-    title: 'Sigma file manager | Quick view',
+    title: 'Sigma File Manager | Quick view',
     icon: PATH.join(__static, '/icons/logo-1024x1024.png'),
     show: false,
     // Set content size to 16:9 ratio by default since it's the most common one.
-    // Window dimensions are adjusted in the quickViewWindow.html, when the content is loaded 
+    // Window dimensions are adjusted in the quickViewWindow.html, when the content is loaded
     useContentSize: true,
     width: 1280,
     height: 720,
@@ -135,9 +135,9 @@ function createQuickViewWindow () {
       webviewTag: true,
       enableRemoteModule: true,
       contextIsolation: !process.env.ELECTRON_NODE_INTEGRATION,
-      nodeIntegration: process.env.ELECTRON_NODE_INTEGRATION
-    }
-  }) 
+      nodeIntegration: process.env.ELECTRON_NODE_INTEGRATION,
+    },
+  })
   windows.quickViewWindow.setMenuBarVisibility(false)
   loadWindow('quickViewWindow')
   initWindowListeners('quickViewWindow')

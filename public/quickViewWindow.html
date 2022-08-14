@@ -9,7 +9,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sigma file manager | Quick view</title>
+    <title>Sigma File Manager | Quick view</title>
     <style>
       body {
         padding: 0; 
@@ -33,51 +33,24 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       img {
         object-fit: contain;
       }
-
-      /* #window-toolbar {
-        height: 36px;
-        width: 100%;
-        background: #607d8b;
-        display: grid;
-        grid-template-columns: 32px 1fr 32px;
-        grid-auto-rows: 36px;
-        user-select: none;
-      }
-
-      .window-toolbar__draggable-area {
-        -webkit-app-region: drag;
-        height: 100%;
-        width: 100%;
-        user-select: none;
-      } */
     </style>
   </head>
   <body>
+    <div id="window-toolbar"></div>
     <div id="content-container"></div>
     <script type="module">
       const electron = require('electron')
-      let sharedUtils
+      let sharedUtils = process.env.NODE_ENV === 'development'
+        ? require('../src/utils/sharedUtils.js')
+        : require('./src/utils/sharedUtils.js')
 
-      if (isDev()) {
-        sharedUtils = require('../src/utils/sharedUtils.js')
-      }
-      else {
-        sharedUtils = require('./src/utils/sharedUtils.js')
-      }
-
-      let currentWindow = require('@electron/remote').getCurrentWindow()
+      let currentWindow = require('electron').remote.getCurrentWindow()
       let contentContainerNode = document.querySelector('#content-container')
       let state = {
         isCanceled: false
       }
 
       initListeners()
-
-      function isDev (fileWidth, fileHeight) {
-        // process.env.NODE_ENV is undefined in production
-        // Alternative method: require('electron').remote.app.isPackaged
-        return process.env.NODE_ENV === 'development'
-      }
 
       function adjastWindowToContentSize (fileWidth, fileHeight) {
         if (fileWidth && fileHeight && fileWidth > 0 && fileHeight > 0) {
