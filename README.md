@@ -405,12 +405,9 @@ If you're running the app on the integrated GPU, the RAM usage will increase dur
     <tr>
       <td>Windows (via Microsoft store)</td>
       <td>
-        ⚠ Status: in review
-        <br>Link will be added here later
-        <!-- <a target="_blank" href="https://www.microsoft.com/store/productId/9N7W62ND0NF9">
+         <a target="_blank" href="https://www.microsoft.com/store/productId/9N7W62ND0NF9">
           <img src="https://github.com/aleksey-hoffman/sigma-file-manager/raw/main/.github/media/get-from-microsoft.png" width="140px">
-        </a>
-        -->
+         </a>      
       </td>
     </tr>
     <tr>
