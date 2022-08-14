@@ -7,7 +7,7 @@
 
 Designed, developed, and maintained by [Aleksey Hoffman](https://github.com/aleksey-hoffman) | [Twitter](https://twitter.com/hoffman_aleksey) | [Reddit](https://www.reddit.com/user/AlekseyHoffman)
 
-💗 Thanks to everyone who have been sharing this project with others!
+Thanks to everyone who have been sharing this project with others!
 
 <img src="./.github/media/main.png">
 
