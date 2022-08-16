@@ -1307,7 +1307,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         </div>
 
         <!-- program::icon -->
-        <div class="mb-6 program-icon-set__container">
+        <div class="program-icon-set__container">
           <v-btn
             v-for="(icon, index) in externalPrograms.icons"
             :key="'icon-' + index"
@@ -2757,11 +2757,12 @@ export default {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  padding-bottom: 24px;
 }
 
 .program-icon-set__container
-  .v-btn[isSelected] {
-    background-color: var(--highlight-color-3);
+  .v-btn[is-selected="true"] {
+    background-color: var(--highlight-color-4);
     border: 1px solid var(--icon-color-1);
     border-radius: 4px;
   }
@@ -2773,7 +2774,7 @@ export default {
     }
 
 .program-icon-set__container
-  .v-btn[isSelected]
+  .v-btn[is-selected="true"]
     .v-icon {
       color: var(--icon-color-1) !important;
     }

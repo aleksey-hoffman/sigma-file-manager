@@ -60,7 +60,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             }"
             class="sticky-scroller__content fade-mask--bottom px-6 pb-4"
             :style="{
-              '--fade-mask-bottom': fadeMaskBottom || '15%'
+              '--fade-mask-bottom': fadeMaskBottom || '10%'
             }"
           >
             <slot name="content" />
