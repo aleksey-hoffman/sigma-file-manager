@@ -7,15 +7,11 @@
 
 Designed, developed, and maintained by [Aleksey Hoffman](https://github.com/aleksey-hoffman) | [Twitter](https://twitter.com/hoffman_aleksey) | [Reddit](https://www.reddit.com/user/AlekseyHoffman)
 
-💗 Thanks to everyone who have been sharing this project with others!
+Thanks to everyone who have been sharing this project with others!
 
 <img src="./.github/media/main.png">
 
 <i>Artwork in the image: [Futuristic Japanese Palanquin by Julien Gauthier](https://www.artstation.com/artwork/EV8Lo4)</i>
-
-### How to download?
-
-See the "Download" section below.
 
 ### Goal
 
@@ -78,11 +74,9 @@ Several more major features / improvements are already in development and will b
 
 # Supporters
 
-This app is free but is needs supporters to stay alive and to keep improving. Please consider supporting it on Patreon with a few $ per month.
+This app is free but is needs supporters to stay alive and to keep improving. Please consider supporting it on Boosty.
 
 The people and companies show below are currently funding this project. Thanks to them I can keep working on this app, they are the reason good quality free software can exist.
-
-![Patreon-progress-goal](https://user-images.githubusercontent.com/61761672/150617701-729655d6-63a3-4644-b064-9eb99d9be9a4.png)
 
 ## Sponsors - tier 2
 Become the first supporter
@@ -157,24 +151,19 @@ Become the first supporter
 
 #### 🎉 Supporter goal: 5 of 500 people joined
 
-Check out the list of rewards you will get for supporting this project:
+If you think my work is worth being supported, you can join me on Boosty. See the list of rewards you will get:
 
-<a target="_blank" href="https://patreon.com/sigma_file_manager">
-  <img
-    src="./.github/media/patreon_button.png"
-    width="164px"
-    style="box-shadow: 0px 6px 24px rgb(255, 66, 77, 0.2); margin: 16px 0"
-  />
+<a href="https://boosty.to/sigma-file-manager">
+  <img width="100px" src="https://github.com/aleksey-hoffman/sigma-file-manager/raw/main/.github/media/boosty-button.png">
 </a>
+
+![supporter-goal-progress](https://user-images.githubusercontent.com/61761672/184556462-803af5f2-3ad6-44fb-be54-4a923d9baf22.png)
 
 #### Additional info
 
 - Supporters are added to the list from top to bottom. The earlier you start supporting the project, the higher your name will be on the list.
 - "3+ months" supporters will have the ⭐ badge displayed next to their name.
-- The funding will be used for:
-  - Fund the development of this project;
-  - Fund the development of my other big projects. Right now, I'm working in collaboration with a few universities on advanced tools / algorithms that will help scientists speed up development of new medications and treatments for diseases, reducing the time need to find a new medication from 10 years (current average) to just a few months, and hopefully help humanity get rid of diseases (the project will be open-sourced in a few months);
-  - Support other open-source and open-content creators (developers, educators, digital artists, etc);
+- The funding will be used for funding the development of this and my other big projects. Right now, I'm also working in collaboration with a few universities on advanced tools / algorithms that will help scientists speed up development of new medications and treatments for diseases, reducing the time need to find a new medication from 10 years (current average) to just a few months, and hopefully help humanity get rid of diseases (the project will be open-sourced in a few months);
 
 # Contributors - open-content creators
 
@@ -494,15 +483,17 @@ There's a fun secret hidden somewhere in the app. See if you can find it. Hint: 
 
 ✅ **by v1.2.0 (June 2021):** new features, improvements, and fixes;
 
-✅ **by v1.3.0 (Augest 2021):** new feature, improvements, and fixes;
+✅ **by v1.3.0 (Augest 2021):** new features, improvements, and fixes;
 
-✅ **by v1.4.0 (September 2021):** new feature, improvements, and fixes;
+✅ **by v1.4.0 (September 2021):** new features, improvements, and fixes;
 
-⬜ **by v1.5.0:** new feature, improvements, and fixes. Localize the app to 10+ most popular languages;
+✅ **by v1.5.0:** new features, improvements, and fixes.
+
+⬜ **by v1.6.0:** new features, improvements, and fixes, localize the app to 10+ most popular languages;
 
 ⬜ ...
 
-⬜ **by v2.0.0:** (3/20) Add 20 more new major features;
+⬜ **by v2.0.0:** Reach the 20 major features count;
 
 ⬜ **End goal:** improve the app to the point of becoming the best file manager and one the most useful productivity apps. This milestone will be considered to be achieved when at least 3 reputable independent sources (reviewers / platforms) decide that the app has achieved all of the following titles:
   - ⬜ (0/3 sources) the best productivity impact;
@@ -517,32 +508,9 @@ There's a fun secret hidden somewhere in the app. See if you can find it. Hint: 
 
 # Become my student
 
-**Slots taken**: `5 / 25` people.
+If you want to learn to build apps like Sigma File Manager, you can become my student and learn from me online.
 
-**TL;DR**: 8 hours of online lessons with shared screens will teach you most basic programming concepts, how you to design and build basic web app, how to work with Git, how to learn quickly, and a few other important things; ~200 hours and you will learn most of the concepts and get enough practice to build more complex apps and allow you to get a good paying job in the industry.
-
-
-I'm available for personal tutoring (programming, design, web and app development, general industry knowledge). I can teach you how to code, design, and think, answer all your questions, share my experience, tips, and best practices, explain which tools to use and why, and teach you everything you will need to know to become a professional Junior grade UI designer and Junior software engineer in just under `200 hours`, which is much faster than most universities with their outdated, boring, disconnected from reality, inefficient, 4 years long bachelor curriculums, that mostly train you how to pass tests, rather than how to think.
-
-**What you will get out of it**:
-
-1. **Specialization**: Junior grade UI and UX designer (median yearly salary: ~$80,000);
-2. **Specialization**: Junior grade web developer (median yearly salary: ~$70,000);
-3. **Specialization**: Junior grade desktop app developer (median yearly salary: ~$90,000);
-4. **Specialization basics**: You will learn the basics of mobile app and game development;
-5. **Potential specializations**: if you keep learning you will be able to reach Middle or even Senior grade level and get much higher salary;
-5. **Potentialy more interesting job**: these lessons might interest you in things you never even thought about, like game development, which might be more interesting than your current job;
-6. **Future skills**: You will get the skills needed for the era of automation, and be ready to change your job when it gets automated or in case you just want to change the work field;
-7. **General knowledge**: You will learn general knowledge about different systems, for example, what programs (tools) to use for different tasks (coding, design, game dev), how the internet functions, how do we make computers do what we tell them, how we create artificial intelligence, etc.
-8. 🎁 **Supporter rewards**: as a bonus, you will also get all rewards of the "Generous supporter" tier on the Patreon page of my Sigma File Manager app for as long as you are attending the lessons: https://www.patreon.com/sigma_file_manager
-
-**Tutoring rate**: $5 - $25 / hour. Depends on the amount of people in the group:
-- 1 person: $25 / hour; 
-- 5 people group: $5 / hour per person;
-
-You can stop at any point, if you feel it's not for you.
-
-**Contacts**: you can contact me via the email specified on [my profile page](https://github.com/aleksey-hoffman)
+See more details on [my Github profile page](https://github.com/aleksey-hoffman)
 
 # The app background story
 
