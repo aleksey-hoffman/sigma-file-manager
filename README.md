@@ -397,7 +397,7 @@ Latest version: `1.5`:
     <tr>
       <td>Windows (via winget)</td>
       <td>
-        <code>winget install sigma</code>
+        <code>winget install sigma --source winget</code>
       </td>
     </tr>
     <tr>
