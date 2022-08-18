@@ -1,3 +1,14 @@
+
+# What's new in `v1.5`
+
+- 28 new features
+- 64 improvements
+- 26 fixes
+- Now available in Microsoft store
+
+<a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/releases">
+  SEE RELEASE NOTES →
+</a>
 <h1>
   <img valign="middle" src="https://github.com/aleksey-hoffman/sigma-file-manager/raw/main/.github/media/logo-1024x1024.png" width="64px">
   &nbsp;&nbsp;Sigma File Manager
@@ -353,18 +364,6 @@ If you like their art, consider supporting their work. You can find their suppor
   </tbody>
 </table>
 
-# What's new
-
-Latest version: `1.5`:
-
-- 28 new features
-- 64 improvements
-- 26 fixes
-
-<a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/releases">
-  SEE RELEASE NOTES →
-</a>
-
 # Download
 
 #### ⚡ Requirements:
@@ -372,8 +371,6 @@ Latest version: `1.5`:
 - **Memory (RAM):** minimum: ~100 MB, average: ~400 MB;
 - **Storage:** minimum: ~370 MB;
 - **OS:** 64-bit: Windows, Linux;
-
-If you're running the app on the integrated GPU, the RAM usage will increase during video playback. Videos playing in the background (e.g. on the home page) are the main reason to high memory usage. You can reduce memory usage by choosing a static image for the "Windows transparency effect" and the home banner.
 
 #### 📎 Download links:
 
@@ -387,8 +384,8 @@ If you're running the app on the integrated GPU, the RAM usage will increase dur
   <tbody>
     <tr>
       <td>Windows (via winget)</td>
-      <td>
-        <code>winget install sigma</code>
+      <td width="320px">
+        <code>winget install sigma --source winget</code>
       </td>
     </tr>
     <tr>
@@ -443,8 +440,9 @@ If you're running the app on the integrated GPU, the RAM usage will increase dur
 
 [![Github All Releases](https://img.shields.io/github/downloads/aleksey-hoffman/sigma-file-manager/total.svg)]()
 
-#### ⚠ Warnings:
+#### ⚠ Notes:
 
+- If you're running the app on the integrated GPU, the RAM usage will increase during video playback. Videos playing in the background (e.g. on the home page) are the main reason to high memory usage. You can reduce memory usage by choosing a static image for the "Windows transparency effect" and the home banner.
 - The app is still in early development (prototyping) stage. It is safe to use, it should not delete or damage any files by itself, but it's recommended to backup (copy) your important data to an external backup drive or to your cloud storage, just for good practice.
 - Expect to see some errors and performance issues in the first versions of the app. I will be fixing the problems gradually as they get reported by the users.
 - The app has not been optimized yet, RAM usage can spike and go over 1 GB during some operations. So, for now, avoid using the app on low-tier computers (i.e. computers with 4 GB of RAM or less).
@@ -486,7 +484,7 @@ There's a fun secret hidden somewhere in the app. See if you can find it. Hint: 
 
 ✅ **by v1.5.0:** new features, improvements, and fixes.
 
-⬜ **by v1.6.0:** new features, improvements, and fixes, localize the app to 10+ most popular languages;
+⬜ **by v1.6.0:** new features, improvements, and fixes, extensions support, localize the app to 10+ most popular languages;
 
 ⬜ ...
 
