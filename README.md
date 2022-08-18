@@ -364,18 +364,6 @@ If you like their art, consider supporting their work. You can find their suppor
   </tbody>
 </table>
 
-# What's new
-
-Latest version: `1.5`:
-
-- 28 new features
-- 64 improvements
-- 26 fixes
-
-<a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/releases">
-  SEE RELEASE NOTES →
-</a>
-
 # Download
 
 #### ⚡ Requirements:
@@ -396,7 +384,7 @@ Latest version: `1.5`:
   <tbody>
     <tr>
       <td>Windows (via winget)</td>
-      <td>
+      <td width="320px">
         <code>winget install sigma --source winget</code>
       </td>
     </tr>
