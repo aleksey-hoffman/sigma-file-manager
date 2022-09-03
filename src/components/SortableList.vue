@@ -257,7 +257,7 @@ export default {
           this.$store.dispatch('SET_TABS', value)
         }
         else if (this.source === 'workspaces') {
-          this.$store.dispatch('SET_WORKSPACES', value)
+          this.$store.dispatch('setWorkspaces', value)
         }
       }
     }
@@ -268,7 +268,7 @@ export default {
         this.$store.dispatch('SWITCH_TAB', index + 1)
       }
       else if (this.source === 'workspaces') {
-        this.$store.dispatch('SWITCH_WORKSPACE', item)
+        this.$store.dispatch('switchWorkspace', item)
       }
     },
     activeitem (item) {

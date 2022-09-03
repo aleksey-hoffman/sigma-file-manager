@@ -875,6 +875,47 @@ function getNotification (params) {
       closeButton: true,
       title: localize.get('text_workspace_added'),
     },
+    addWorkspaceError: {
+      action: 'add',
+      timeout: 8000,
+      closeButton: true,
+      colorStatus: 'red',
+      title: 'Add workspace: error',
+      message: params?.props?.error,
+    },
+    editWorkspaceError: {
+      action: 'add',
+      timeout: 8000,
+      closeButton: true,
+      colorStatus: 'red',
+      title: 'Edit workspace: error',
+      message: params?.props?.error,
+    },
+    deleteWorkspaceError: {
+      action: 'add',
+      timeout: 8000,
+      closeButton: true,
+      colorStatus: 'red',
+      title: 'Delete workspace: error',
+      message: params?.props?.error,
+    },
+    deleteWorkspace: {
+      action: 'add',
+      colorStatus: 'green',
+      timeout: 3000,
+      closeButton: true,
+      title: `Deleted workspace "${params?.props?.name}"`,
+    },
+    switchWorkspace: {
+      action: 'update-by-type',
+      type: 'switchWorkspace',
+      closeButton: true,
+      timeout: params?.props?.actionButtons?.length > 0 ? 8000 : 2000,
+      title: `Opened workspace "${params?.props?.name}"`,
+      actionButtons: params?.props?.actionButtons,
+      content: params?.props?.content,
+      message: `<b>Directory:</b> ${params?.props?.defaultPath}`,
+    },
   }
   return params?.name ? notifications[params.name] : {}
 }

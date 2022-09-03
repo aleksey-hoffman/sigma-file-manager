@@ -70,6 +70,12 @@
   color: var(--color-5);
 }
 
+.text--description-1 {
+  font-size: 14px;
+  margin-bottom: 12px;
+  color: var(--color-7);
+}
+
 .content__description {
   font-size: 16px;
   margin-bottom: 8px;

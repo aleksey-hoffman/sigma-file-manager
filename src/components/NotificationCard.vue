@@ -132,9 +132,38 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             >
               <div
                 v-for="(listItem, index) in contentItem.value"
-                :key="'notification-content-listItem' + index"
+                :key="'notification-content-list-item' + index"
               >
                 {{listItem}}
+              </div>
+            </div>
+
+            <div
+              v-if="contentItem.type === 'action-list'"
+              class="notification__item__message-content__action-list custom-scrollbar"
+            >
+              <div
+                v-for="(listItem, index) in contentItem.value"
+                :key="'notification-content-list-item' + index"
+                class="notification__item__message-content__action-list-item"
+              >
+                <div class="notification__item__message-content__action-list-item-text">
+                  <v-icon
+                    class="notification__item__message-content__action-list-item-icon"
+                    size="20px"
+                  >
+                    {{listItem.type.icon}}
+                  </v-icon>
+                  {{listItem.command}}
+                </div>
+                <v-btn
+                  :key="'notification-content-list-item-button' + index"
+                  class="button-1"
+                  small
+                  @click="listItem.onClick()"
+                >
+                  run
+                </v-btn>
               </div>
             </div>
           </div>
@@ -171,7 +200,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       </div>
 
       <div
-        v-show="notification.actionButtons.length !== 0"
+        v-if="notification.actionButtons && notification.actionButtons.length !== 0"
         class="notification__actions"
       >
         <v-tooltip
@@ -223,7 +252,15 @@ import {mapFields} from 'vuex-map-fields'
 
 export default {
   props: {
-    notification: Object,
+    notification: {
+      type: Object,
+      default: () => ({
+        progress: 0,
+        content: {
+          type: '', // 'html' | 'list'
+        },
+      }),
+    },
     location: String,
     scheduleNotificationForRemoval: Function,
   },
@@ -394,6 +431,31 @@ export default {
   padding: 8px 12px;
   border-radius: 4px;
   background-color: rgba(var(--bg-color-2-value), 0.5);
+}
+
+.notification__item__message-content__action-list {
+  max-height: 100px;
+  margin: 12px 0;
+}
+
+.notification__item__message-content__action-list-item {
+  border-bottom: 1px solid var(--divider-color-2);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 0;
+}
+
+.notification__item__message-content__action-list-item-text {
+  max-width: 300px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 12px;
+}
+
+.notification__item__message-content__action-list-item-icon {
+  margin-right: 8px;
 }
 
 .notification__item__progress__filename {

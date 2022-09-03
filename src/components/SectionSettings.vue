@@ -20,7 +20,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     <div class="settings-section__description">
       <slot name="description" />
     </div>
-    <div class="settings-section__content">
+    <div class="highlight-card settings-section__content">
       <slot name="content" />
     </div>
   </div>

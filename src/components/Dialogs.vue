@@ -949,199 +949,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
       </template>
     </dialog-generator>
-
-    <!-- dialog::workspaceEditorDialog -->
-    <dialog-generator
-      :dialog="dialogs.workspaceEditorDialog"
-      :closeButton="{
-        onClick: () => closeDialog('workspaceEditorDialog'),
-      }"
-      :actionButtons="[
-        {
-          text: 'cancel',
-          onClick: () => closeDialog('workspaceEditorDialog')
-        },
-        {
-          text: dialogs.workspaceEditorDialog.data.selected.isTemplate
-            ? 'Create workspace'
-            : 'Save workspace',
-          onClick: () => saveWorkspaceChanges()
-        }
-      ]"
-      title="Workspace editor"
-      fadeMaskBottom="5%"
-      height="90vh"
-      maxWidth="600px"
-    >
-      <template v-slot:content>
-        <div class="text--sub-title-1 mb-2">
-          Select & edit workspace
-        </div>
-
-        <!-- input-select:workspace-list -->
-        <v-layout align-center>
-          <v-select
-            :items="dialogs.workspaceEditorDialog.data.items"
-            v-model="dialogs.workspaceEditorDialog.data.selected"
-            @change="updateWorkspaceEditorDialogProps()"
-            item-text="name"
-            item-value="id"
-            label="Selected workspace"
-            return-object
-            class="mr-4"
-          >
-            <template v-slot:selection="{ item }">
-              <v-icon size="20px" class="mr-2">
-                {{item.isTemplate
-                    ? 'mdi-plus'
-                    : 'mdi-pencil-outline'
-               }}
-              </v-icon>
-              <span>{{item.name}}</span>
-            </template>
-            <template v-slot:item="{ item }">
-              <v-icon size="20px" class="mr-2">
-                {{item.isTemplate
-                    ? 'mdi-plus'
-                    : 'mdi-pencil-outline'
-               }}
-              </v-icon>
-              <span>{{item.isTemplate ? `Add: ${item.name}` : `Edit: ${item.name}`}}</span>
-            </template>
-          </v-select>
-
-          <v-tooltip bottom>
-            <template v-slot:activator="{ on }">
-              <v-btn
-                v-on="on"
-                @click="deleteWorkspace(dialogs.workspaceEditorDialog.data.selected)"
-                :disabled="dialogs.workspaceEditorDialog.data.selected.isTemplate
-                        || dialogs.workspaceEditorDialog.data.selected.isPrimary"
-                icon
-              >
-                <v-icon
-                  size="16px"
-                >mdi-trash-can-outline
-                </v-icon>
-              </v-btn>
-            </template>
-            <span>Delete workspace</span>
-          </v-tooltip>
-        </v-layout>
-
-        <div class="text--sub-title-1 mb-2">
-          Properties
-        </div>
-
-        <!-- workspace-property::fields -->
-        <v-text-field
-          v-if="!dialogs.workspaceEditorDialog.data.selected.isPrimary"
-          v-model="dialogs.workspaceEditorDialog.data.selected.name"
-          label="Name"
-        ></v-text-field>
-        <v-text-field
-          v-model="dialogs.workspaceEditorDialog.data.selected.defaultPath"
-          label="Default directory"
-        ></v-text-field>
-
-        <!-- workspace-property::actions -->
-        <div
-          v-if="!dialogs.workspaceEditorDialog.data.selected.isPrimary"
-          class="pb-2"
-        >
-          <div class="text--sub-title-1 mb-2">
-            Actions
-          </div>
-
-          <v-layout align-center>
-            <v-select
-              :items="dialogs.workspaceEditorDialog.data.selected.actions"
-              v-model="dialogs.workspaceEditorDialog.data.selectedAction"
-              item-text="name"
-              label="Action"
-              return-object
-              class="mr-4"
-            >
-              <template v-slot:selection="{ item }">
-                <v-icon size="20px" class="mr-2">
-                  {{item.isTemplate
-                      ? 'mdi-plus'
-                      : 'mdi-pencil-outline'
-                 }}
-                </v-icon>
-                <span>{{item.name}}</span>
-              </template>
-              <template v-slot:item="{ item }">
-                <v-icon size="20px" class="mr-2">
-                  {{item.isTemplate
-                      ? 'mdi-plus'
-                      : 'mdi-pencil-outline'
-                 }}
-                </v-icon>
-                <span>{{item.isTemplate ? `Add: ${item.name}` : `Edit: ${item.name}`}}</span>
-              </template>
-            </v-select>
-
-            <v-tooltip bottom>
-              <template v-slot:activator="{ on }">
-                <v-btn
-                  v-on="on"
-                  @click="deleteWorkspaceAction(dialogs.workspaceEditorDialog.data.selectedAction)"
-                  :disabled="dialogs.workspaceEditorDialog.data.selected.isTemplate"
-                  icon
-                >
-                  <v-icon
-                    size="16px"
-                  >mdi-trash-can-outline
-                  </v-icon>
-                </v-btn>
-              </template>
-              <span>Delete workspace action</span>
-            </v-tooltip>
-          </v-layout>
-
-          <!-- workspace-action:name -->
-          <v-text-field
-            v-model="dialogs.workspaceEditorDialog.data.selectedAction.name"
-            label="Name"
-          ></v-text-field>
-
-          <!-- workspace-action:type -->
-          <v-select
-            :items="dialogs.workspaceEditorDialog.data.actionTypes"
-            v-model="dialogs.workspaceEditorDialog.data.selectedAction.type"
-            item-text="name"
-            label="Action type"
-            return-object
-          >
-            <template v-slot:selection="{ item }">
-              <v-icon size="20px" class="mr-2">
-                {{item.isTemplate
-                    ? 'mdi-plus'
-                    : 'mdi-pencil-outline'
-               }}
-              </v-icon>
-              <span>{{item.name}}</span>
-            </template>
-            <template v-slot:item="{ item }">
-              <v-icon size="20px" class="mr-4">
-                {{item.icon}}
-              </v-icon>
-              <span>{{item.name}}</span>
-            </template>
-          </v-select>
-
-          <!-- workspace-action:command -->
-          <v-text-field
-            v-model="dialogs.workspaceEditorDialog.data.selectedAction.command"
-            label="Action command"
-            :hint="workspaceActionCommandHint"
-            persistent-hint
-            class="mb-10"
-          ></v-text-field>
-        </div>
-      </template>
-    </dialog-generator>
+    
 
     <!-- dialog::programEditorDialog -->
     <dialog-generator
@@ -1673,6 +1481,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       </template>
     </dialog-generator>
 
+    <WorkspaceEditorDialog />
     <ArchiveAddDialog />
     <ArchiveExtractDialog />
     <download-type-selector-dialog />
@@ -1841,6 +1650,7 @@ import InfoTag from './InfoTag/index.vue'
 import katex from 'katex'
 import 'katex/dist/katex.min.css'
 import DownloadTypeSelectorDialog from '@/components/dialogs/DownloadTypeSelector.vue'
+import WorkspaceEditorDialog from '@/components/dialogs/WorkspaceEditor.vue'
 import ArchiveAddDialog from '@/components/dialogs/ArchiveAdd.vue'
 import ArchiveExtractDialog from '@/components/dialogs/ArchiveExtract.vue'
 
@@ -1855,6 +1665,7 @@ export default {
   components: {
     InfoTag,
     DownloadTypeSelectorDialog,
+    WorkspaceEditorDialog,
     ArchiveAddDialog,
     ArchiveExtractDialog,
   },
@@ -1943,37 +1754,6 @@ export default {
         this.resetDialogData('newDirItemDialog')
       }
     },
-    'dialogs.workspaceEditorDialog.value' (value) {
-      if (value) {
-        // Add workspace template to the selection list
-        const workspaceTemplate = this.$utils.cloneDeep(this.workspaces.workspaceTemplate)
-        const workspaceActionTemplate = this.$utils.cloneDeep(this.workspaces.workspaceActionTemplate)
-        const actionTypes = this.$utils.cloneDeep(this.workspaces.actionTypes)
-        workspaceTemplate.isTemplate = true
-        workspaceActionTemplate.isTemplate = true
-        const items = [
-          ...[workspaceTemplate],
-          ...this.$utils.cloneDeep(this.workspaces.items)
-        ]
-        // Add workspace action template to the selection list
-        items.forEach(item => {
-          const actionItems = [
-            ...[workspaceActionTemplate],
-            ...item.actions
-          ]
-          item.actions = actionItems
-        })
-        // Select template item on the selection list, if no workspace is currently selected (active)
-        let selected = items.find(item => item.isSelected)
-        if (selected === undefined) {
-          selected = workspaceTemplate
-        }
-        this.dialogs.workspaceEditorDialog.data.items = items
-        this.dialogs.workspaceEditorDialog.data.selected = selected
-        this.dialogs.workspaceEditorDialog.data.selectedAction = selected.actions[0]
-        this.dialogs.workspaceEditorDialog.data.actionTypes = actionTypes
-      }
-    },
     'dialogs.programEditorDialog.value' (value) {
       if (value) {
         // Add program template to the selection list
@@ -2060,7 +1840,6 @@ export default {
       homeBanner: state => state.storageData.settings.homeBanner,
       homeBannerSelectedItem: state => state.storageData.settings.homeBanner.selectedItem,
       homeBannerOverlayStyleVariants: state => state.storageData.settings.homeBanner.overlay.variants,
-      workspaces: state => state.storageData.workspaces,
       externalPrograms: state => state.storageData.settings.externalPrograms,
       markdownShortcuts: state => state.storageData.settings.markdownShortcuts,
       noteEditor: state => state.noteEditor,
@@ -2136,25 +1915,6 @@ export default {
         log += `${action.readableTime} | ${action.action}\n`
       })
       return log
-    },
-    workspaceActionCommandHint () {
-      let hint = ''
-      try {
-        const typeName = this.dialogs.workspaceEditorDialog.data.selectedAction.type.name
-        if (typeName === 'open-url') {
-          hint = 'Example: https://artstation.com/search?q=landscape'
-        }
-        else if (typeName === 'open-path') {
-          hint = 'Example: C:/Program Files/Blender Foundation/Blender 2.90/blender.exe'
-        }
-        else if (typeName === 'terminal-command') {
-          hint = 'Example: py -3 E:/python_test.py'
-        }
-        return hint
-      }
-      catch (error) {
-        return hint
-      }
     },
     programEditorDialogFilteredPrograms () {
       return this.dialogs.programEditorDialog.data.programs.filter(program => !program.readonly)
@@ -2482,110 +2242,6 @@ export default {
       const pathValidationData = this.$utils.isPathValid(newPath, { canBeRootDir: false })
       this.dialogs.newDirItemDialog.data.error = pathValidationData.error
       this.dialogs.newDirItemDialog.data.isValid = pathValidationData.isValid
-    },
-    updateWorkspaceEditorDialogProps () {
-      // Update selectedAction so it's synced with the input fields
-      this.dialogs.workspaceEditorDialog.data.selectedAction = this.dialogs
-        .workspaceEditorDialog
-        .data
-        .selected
-        .actions[0]
-    },
-    saveWorkspaceChanges () {
-      // If adding new workspace
-      if (this.dialogs.workspaceEditorDialog.data.selected.isTemplate) {
-        // Modify name, if it wasn't change by user
-        const customWorkspaceNameWasChanged = this.dialogs.workspaceEditorDialog.data.selected.name !== this.workspaces.workspaceTemplate.name
-        if (!customWorkspaceNameWasChanged) {
-          const customWorkspaceIndex = this.dialogs.workspaceEditorDialog.data.items.length - 1
-          this.dialogs.workspaceEditorDialog.data.selected.name = `Custom workspace ${customWorkspaceIndex}`
-        }
-        // Clean up selected workspace
-        delete this.dialogs.workspaceEditorDialog.data.selected.isTemplate
-        // Clean up selected action
-        delete this.dialogs.workspaceEditorDialog.data.selected.actions[0].isTemplate
-        // Set action id, remove actions with empty commands
-        const workspaceCount = this.dialogs.workspaceEditorDialog.data.items.length - 1
-        const workspaceActionCount = this.dialogs.workspaceEditorDialog.data.selected.actions.length
-        this.dialogs.workspaceEditorDialog.data.selected.id = workspaceCount
-        this.dialogs.workspaceEditorDialog.data.selected.actions.forEach((action, index) => {
-          if (action.command === '') {
-            this.dialogs.workspaceEditorDialog.data.selected.actions.splice(index, 1)
-          }
-          else {
-            action.id = index
-          }
-        })
-        // Add workspace
-        this.$store.dispatch(
-          'ADD_WORKSPACE',
-          this.dialogs.workspaceEditorDialog.data.selected
-        )
-      }
-      // If editing existing workspace
-      else {
-        const items = this.dialogs.workspaceEditorDialog.data.items
-        const updatedItems = this.$utils.cloneDeep(this.dialogs.workspaceEditorDialog.data.items).filter(listItem => !listItem.isTemplate)
-        // From each workspace, remove template actions that hasn't been changed
-        updatedItems.forEach(item => {
-          item.actions = item.actions
-            .filter(action => {
-              const modifiedActionTemplate = action.isTemplate && action.name !== this.workspaces.workspaceActionTemplate.name
-              return !action.isTemplate || modifiedActionTemplate
-            })
-          // Set action id, remove actions with empty commands
-          item.actions.forEach((action, index) => {
-            if (action.command === '') {
-              item.actions.splice(index, 1)
-            }
-            else {
-              action.id = index
-              if (action.isTemplate) { delete action.isTemplate }
-            }
-          })
-        })
-        // Update workspace items
-        this.$store.dispatch('SET', {
-          key: 'storageData.workspaces.items',
-          value: updatedItems
-        })
-        // Select template workspace in the list
-        this.dialogs.workspaceEditorDialog.data.selected = items.find(item => item.isTemplate)
-        this.$eventHub.$emit('notification', {
-          action: 'add',
-          colorStatus: 'green',
-          timeout: 3000,
-          closeButton: true,
-          title: 'Workspace changes were saved'
-        })
-      }
-      this.closeDialog('workspaceEditorDialog')
-    },
-    deleteWorkspace (item) {
-      const items = this.$utils.cloneDeep(this.dialogs.workspaceEditorDialog.data.items)
-      // Set the new items without the specified workspace and without the new workspace
-      // But do not filter out the new workspace from the selection list
-      this.dialogs.workspaceEditorDialog.data.items = items.filter(listItem => listItem.id !== item.id)
-      this.$store.dispatch('SET', {
-        key: 'storageData.workspaces.items',
-        value: this.dialogs.workspaceEditorDialog.data.items.filter(listItem => !listItem.isTemplate)
-      })
-      // Select template workspace in the list
-      this.dialogs.workspaceEditorDialog.data.selected = items.find(item => item.isTemplate)
-      // Make primary workspace selected
-      this.$store.commit('UPDATE_PROPERTY_DIRECTLY', {
-        object: items.find(listItem => listItem.isPrimary),
-        key: 'isSelected',
-        value: true
-      })
-      this.$eventHub.$emit('notification', {
-        action: 'add',
-        colorStatus: 'green',
-        timeout: 3000,
-        closeButton: true,
-        title: 'Workspace was deleted',
-        message: item.name
-      })
     },
     saveProgramChanges () {
       // If adding new program

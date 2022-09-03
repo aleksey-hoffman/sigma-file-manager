@@ -1163,9 +1163,9 @@ export default {
             const workspaceShortcuts = [...Array(9)].map((_, index) => `${shortcutStaticPart}${index + 1}`)
             mousetrap.bind(workspaceShortcuts, (event) => {
               const index = parseInt(event.code.replace('Digit', ''))
-              const workspaceItem = this.storageDataWorkspaces.items[index - 1]
-              if (workspaceItem !== undefined) {
-                this.$store.dispatch('SWITCH_WORKSPACE', workspaceItem)
+              const workspace = this.storageDataWorkspaces.items[index - 1]
+              if (workspace !== undefined) {
+                this.$store.dispatch('switchWorkspace', workspace)
               }
             }, 'keydown')
           }
@@ -1411,6 +1411,13 @@ i {
   margin: 16px 0px;
   background-color: var(--bg-color-1);
   box-shadow: 0px 8px 32px rgb(0, 0, 0, 0.1);
+}
+
+.highlight-card {
+  padding: 12px 16px;
+  background-color: rgba(200, 200, 255, 0.04);
+  border-radius: 8px;
+  transition: all 0.1s ease;
 }
 
 .workspace-action__card {

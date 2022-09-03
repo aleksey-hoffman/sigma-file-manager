@@ -7,16 +7,20 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
   <v-tooltip bottom>
     <template #activator="{on}">
       <v-btn
-        icon
+        :icon="!!icon"
+        :class="buttonClass"
+        :disabled="isDisabled"
         v-on="on"
-        @click="onClick"
+        @click="onClickHandler"
       >
         <v-icon
+          v-if="icon"
           :class="iconClass"
           :size="iconSize"
         >
           {{icon}}
         </v-icon>
+        <slot />
       </v-btn>
     </template>
     <span>{{tooltip}}</span>
@@ -42,9 +46,26 @@ export default {
       type: String,
       default: '',
     },
+    buttonClass: {
+      type: String,
+      default: '',
+    },
     tooltip: {
       type: String,
       default: '',
+    },
+    isDisabled: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  emits: ['click'],
+  methods: {
+    onClickHandler () {
+      if (this.onClick) {
+        this.onClick()
+      }
+      this.$emit('click')
     },
   },
 }

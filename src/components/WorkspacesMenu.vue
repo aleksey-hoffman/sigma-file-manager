@@ -6,7 +6,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <template>
   <basic-menu
     v-model="menus.workspaces"
-    :menuButton="{
+    :menu-button="{
       tooltip: {
         description: 'Workspaces',
         shortcut: shortcuts.switchWorkspace.shortcut
@@ -14,53 +14,34 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     }"
     :header="{
       title: 'Workspaces',
-      buttons: [
-        {
-          icon: {
-            name: 'mdi-plus',
-            size: '24px'
-          },
-          tooltip: {
-            description: 'New workspace'
-          },
-          onClick: () => $store.state.dialogs.workspaceEditorDialog.value = true
-        },
-        {
-          icon: {
-            name: 'mdi-pencil-outline',
-            size: '20px'
-          },
-          tooltip: {
-            description: 'Edit workspaces'
-          },
-          onClick: () => $store.state.dialogs.workspaceEditorDialog.value = true
-        }
-      ]
+      buttons: headerButtons
     }"
   >
-    <template v-slot:activator>
-      <button class="window-toolbar__item button--menu"
+    <template #activator>
+      <button
+        class="window-toolbar__item button--menu"
       >
         <v-icon
           :color="iconColor"
           size="18px"
-        >mdi-vector-arrange-below
+        >
+          mdi-vector-arrange-below
         </v-icon>
 
-        <div 
-          class="button--menu__counter" 
+        <div
+          class="button--menu__counter"
           :style="{color: iconColor}"
         >
           {{workspaceButtonText}}
         </div>
       </button>
     </template>
-    <template v-slot:content>
+    <template #content>
       <sortable-list
         source="workspaces"
-        itemName="workspace"
-        noData="Current workspace has no tabs"
-      ></sortable-list>
+        item-name="workspace"
+        no-data="Current workspace has no tabs"
+      />
     </template>
   </basic-menu>
 </template>
@@ -71,18 +52,34 @@ import {mapFields} from 'vuex-map-fields'
 
 export default {
   props: {
-    iconColor: String
+    iconColor: String,
   },
   computed: {
     ...mapGetters([
-      'selectedWorkspace'
+      'selectedWorkspace',
     ]),
     ...mapFields({
       menus: 'menus',
       workspaces: 'storageData.workspaces',
       shortcuts: 'storageData.settings.shortcuts',
-      showTitleInToolbar: 'storageData.settings.navigator.workspaces.showTitleInToolbar'
+      showTitleInToolbar: 'storageData.settings.navigator.workspaces.showTitleInToolbar',
     }),
+    headerButtons () {
+      return [
+        {
+          icon: {
+            name: 'mdi-pencil-outline',
+            size: '20px',
+          },
+          tooltip: {
+            description: 'Edit workspaces',
+          },
+          onClick: () => {
+            this.$store.state.dialogs.workspaceEditor.value = true
+          },
+        },
+      ]
+    },
     workspaceButtonText () {
       if (this.showTitleInToolbar) {
         return this.workspaces.items.find(workspace => workspace.isSelected).name
@@ -90,7 +87,7 @@ export default {
       else {
         return this.workspaces.items.find(workspace => workspace.isSelected).id + 1
       }
-    }
-  }
+    },
+  },
 }
 </script>

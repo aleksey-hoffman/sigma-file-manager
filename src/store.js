@@ -372,45 +372,13 @@ export default new Vuex.Store({
       },
       workspaces: {
         fileName: 'workspaces.json',
-        workspaceTemplate: {
-          id: null,
-          isPrimary: false,
-          isSelected: false,
-          name: 'New workspace',
-          lastOpenedDir: appPaths.userDataRoot,
-          defaultPath: appPaths.userDataRoot,
-          tabs: [],
-          actions: []
-        },
-        workspaceActionTemplate: {
-          id: null,
-          name: 'New action',
-          type: {
-            name: 'open-url',
-            icon: 'mdi-web'
-          },
-          command: ''
-        },
-        actionTypes: [
-          {
-            name: 'open-url',
-            icon: 'mdi-web'
-          },
-          {
-            name: 'open-path',
-            icon: 'mdi-link-variant'
-          },
-          {
-            name: 'terminal-command',
-            icon: 'mdi-console'
-          }
-        ],
         items: [
           {
             id: 0,
             isPrimary: true,
             isSelected: true,
             name: 'Primary',
+            activeTabIndex: 0,
             lastOpenedDir: appPaths.userDataRoot,
             defaultPath: appPaths.userDataRoot,
             tabs: [],
@@ -1267,14 +1235,56 @@ export default new Vuex.Store({
         initialData: {},
         data: {}
       },
-      workspaceEditorDialog: {
+      workspaceEditor: {
         value: false,
-        data: {
-          items: [],
-          selected: [],
-          selectedAction: [],
-          actionTypes: []
-        }
+        workspaceItems: [],
+        selectedWorkspace: {},
+        selectedWorkspaceAction: {
+          type: {
+            name: ''
+          }
+        },
+        workspaceTemplate: {
+          id: null,
+          isPrimary: false,
+          isSelected: false,
+          name: '',
+          activeTabIndex: 0,
+          lastOpenedDir: appPaths.userDataRoot,
+          defaultPath: appPaths.userDataRoot,
+          tabs: [],
+          actions: []
+        },
+        workspaceActionTemplate: {
+          id: null,
+          name: '',
+          type: {
+            name: 'open-url',
+            icon: 'mdi-web',
+            example: 'https://artstation.com/search?query=landscape'
+          },
+          command: ''
+        },
+        workspaceActionTypes: [
+          {
+            name: 'open-url',
+            icon: 'mdi-web',
+            example: 'https://artstation.com/search?query=landscape'
+          },
+          {
+            name: 'open-path',
+            icon: 'mdi-link-variant',
+            example: 'code C:/test/README.md'
+          },
+          {
+            name: 'terminal-command',
+            icon: 'mdi-console',
+            example: `powershell -command "Start-Process cmd ' /s /k pushd \\"C:/projects/app/\\" && npm run dev'"`,
+            options: {
+              asAdmin: false
+            }
+          }
+        ],
       },
       programEditorDialog: {
         value: false,
@@ -1720,17 +1730,6 @@ export default new Vuex.Store({
           }
         }
       }
-    },
-    SET_WORKSPACES (state, workspaces) {
-      state.storageData.workspaces.items = workspaces
-    },
-    SELECT_WORKSPACE (state, specifiedWorkspace) {
-      // De-select all workspaces
-      state.storageData.workspaces.items.forEach(workspace => {
-        workspace.isSelected = false
-      })
-      // Select specified workspace
-      specifiedWorkspace.isSelected = true
     },
     DELETE_ALL_NOTES_IN_TRASH (state) {
       const notes = state.storageData.notes.items
@@ -3124,26 +3123,7 @@ export default new Vuex.Store({
     },
     SET_TABS (store, tabs) {
       store.getters.selectedWorkspace.tabs = tabs
-      store.dispatch('SYNC_WORKSPACE_STORAGE_DATA')
-    },
-    SET_WORKSPACES ({ state, commit, dispatch, getters }, workspaces) {
-      commit('SET_WORKSPACES', workspaces)
-      dispatch('SYNC_WORKSPACE_STORAGE_DATA')
-    },
-    ADD_WORKSPACE_TO_STORAGE ({ state, commit, dispatch, getters }, workspace) {
-      // Add workspace to the list of existing workspaces
-      const items = [...state.storageData.workspaces.items, ...[workspace]]
-      // Update store
-      dispatch('SET', {
-        key: 'storageData.workspaces.items',
-        value: items
-      })
-    },
-    SYNC_WORKSPACE_STORAGE_DATA ({ state, commit, dispatch, getters }) {
-      dispatch('SET', {
-        key: 'storageData.workspaces.items',
-        value: state.storageData.workspaces.items
-      })
+      store.dispatch('syncWorkspaceStorageData')
     },
     clearFilterField ({dispatch}, routeName) {
       dispatch('SET', {
@@ -3710,16 +3690,6 @@ export default new Vuex.Store({
     GO_UP_DIRECTORY ({ state, commit, dispatch, getters }) {
       const dir = PATH.parse(state.navigatorView.currentDir.path).dir
       dispatch('LOAD_DIR', { path: dir })
-    },
-    ADD_WORKSPACE ({ state, commit, dispatch, getters }, workspace) {
-      dispatch('ADD_WORKSPACE_TO_STORAGE', workspace)
-      eventHub.$emit('notification', {
-        action: 'add',
-        timeout: 3000,
-        type: '',
-        closeButton: true,
-        title: localize.get('text_workspace_added')
-      })
     },
     ADD_EXTERNAL_PROGRAM ({ state, commit, dispatch, getters }, program) {
       // Add program to the list of existing programs
@@ -5943,34 +5913,42 @@ export default new Vuex.Store({
         await dispatch('LOAD_DIR', { path: tabItem.path })
       }
     },
-    async SWITCH_WORKSPACE ({ state, commit, dispatch, getters }, specifiedWorkspace) {
-      commit('SELECT_WORKSPACE', specifiedWorkspace)
-      dispatch('SYNC_WORKSPACE_STORAGE_DATA')
-      await dispatch('LOAD_DIR', { path: specifiedWorkspace.defaultPath })
-      specifiedWorkspace.lastOpenedDir = specifiedWorkspace.defaultPath
-      router.push('navigator').catch((error) => {})
-      // Push workspace actions notification
-      const specifiedWorkspaceParsed = PATH.parse(specifiedWorkspace.defaultPath)
-      if (specifiedWorkspace.isPrimary) {
-        eventHub.$emit('notification', {
-          action: 'update-by-type',
-          type: 'switchWorkspace',
-          icon: 'mdi-vector-arrange-below',
-          timeout: 1500,
-          title: `Workspace | Primary`,
-          message: `Drive: ${specifiedWorkspaceParsed.dir}`
-        })
+    async addWorkspace ({state, dispatch}, workspace) {
+      const workspaceItems = [...state.storageData.workspaces.items, ...[workspace]]
+      try {
+        await dispatch('SET', {key: 'storageData.workspaces.items', value: workspaceItems})
+        notifications.emit({name: 'addWorkspace'})
       }
-      else if (!specifiedWorkspace.isPrimary) {
-        let actions = ''
-        specifiedWorkspace.actions.forEach(action => actions += `${action}<br>`)
+      catch (error) {
+        notifications.emit({name: 'addWorkspaceError', props: {error}})
+      }
+    },
+    async selectWorkspace ({state}, workspace) {
+      state.storageData.workspaces.items.forEach(workspace => {
+        workspace.isSelected = false
+      })
+      workspace.isSelected = true
+    },
+    async switchWorkspace ({dispatch, getters}, workspace) {
+      dispatch('selectWorkspace', workspace)
+      dispatch('syncWorkspaceStorageData')
+      await dispatch('LOAD_DIR', { path: workspace.defaultPath })
+      workspace.lastOpenedDir = workspace.defaultPath
+      if (workspace.isPrimary) {
+        notifications.emit({name: 'switchWorkspace', props: {
+          defaultPath: workspace.defaultPath,
+          name: workspace.name,
+        }})
+      }
+      else if (!workspace.isPrimary) {
         let actionButtons = []
-        if (specifiedWorkspace.actions.length > 0) {
+        let content = []
+        if (workspace.actions.length > 0) {
           actionButtons = [
             {
-              title: 'run actions',
+              title: 'run all actions',
               onClick: () => {
-                dispatch('RUN_WORKSPACE_ACTIONS')
+                dispatch('runAllWorkspaceActions')
               },
               closesNotification: true
             },
@@ -5978,32 +5956,75 @@ export default new Vuex.Store({
             // {
             //   title: 'modify & run actions',
             //   onClick: () => {
-            //     dispatch('MODIFY_AND_RUN_WORKSPACE_ACTIONS')
+            //     dispatch('MODIFY_AND_runWorkspaceActions')
             //   },
             //   closesNotification: true
             // }
           ]
+          workspace.actions.forEach(action => {
+            if (action.type.name === 'open-url') {
+              action.onClick = () => {utils.openLink(action.command)}
+            }
+            else if (action.type.name === 'open-path') {
+              action.onClick = () => {electron.shell.openPath(PATH.normalize(action.command))}
+            }
+            else if (action.type.name === 'terminal-command') {
+              action.onClick = () => {dispatch('runCommandInTerminal', action)}
+            }
+          })
+          content = [
+            {
+              type: 'action-list',
+              value: workspace.actions,
+            },
+          ]
         }
-        eventHub.$emit('notification', {
-          action: 'update-by-type',
-          type: 'switchWorkspace',
-          icon: 'mdi-vector-arrange-below',
-          timeout: 8000,
-          closeButton: true,
-          actionButtons: actionButtons,
-          title: `Workspace | ${specifiedWorkspace.name}`,
-          message: `Drive: ${specifiedWorkspaceParsed.dir}`
+        notifications.emit({name: 'switchWorkspace', props: {
+          defaultPath: workspace.defaultPath,
+          name: workspace.name,
+          content,
+          actionButtons
+        }})
+      }
+    },
+    runAllWorkspaceActions ({dispatch, getters}) {
+      getters.selectedWorkspace.actions.forEach(action => {
+        if (action.type.name === 'open-url') {
+          utils.openLink(action.command)
+        }
+        else if (action.type.name === 'open-path') {
+          electron.shell.openPath(PATH.normalize(action.command))
+        }
+        else if (action.type.name === 'terminal-command') {
+          dispatch('runCommandInTerminal', action)
+        }
+      })
+    },
+    runCommandInTerminal ({}, params) {
+      if (process.platform === 'win32') {
+        if (params?.type?.options?.asAdmin) {
+          childProcess.exec(`powershell -command "Start-Process ${params.command} -Verb RunAs"`)
+        }
+        else {
+          childProcess.exec(`start ${params.command}`)
+        }
+      }
+      else if (process.platform === 'linux') {
+        const terminalPath = '/usr/bin/gnome-terminal'
+        let terminal = childProcess.spawn(terminalPath, {cwd: item.path})
+        terminal.on('error', (error) => {
+          alert('Could not launch terminal: ', error)
         })
       }
     },
-    RUN_WORKSPACE_ACTIONS ({ state, commit, dispatch, getters }) {
-      getters.selectedWorkspace.actions.forEach(action => {
-        if (action.type.name === 'open-url') {
-          if (!action.command.startsWith('http')) {
-            action.command = `http://${action.command}`
-          }
-          utils.openLink(action.command)
-        }
+    setWorkspaces ({state, dispatch}, workspaces) {
+      state.storageData.workspaces.items = workspaces
+      dispatch('syncWorkspaceStorageData')
+    },
+    syncWorkspaceStorageData ({state, dispatch}) {
+      dispatch('SET', {
+        key: 'storageData.workspaces.items',
+        value: state.storageData.workspaces.items
       })
     },
     CANCEL_FETCH_CURRENT_DIR_SIZE (store, payload = {}) {
