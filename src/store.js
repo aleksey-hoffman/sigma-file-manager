@@ -692,6 +692,7 @@ export default new Vuex.Store({
         },
         theme: {
           type: 'dark',
+          transparentToolbars: false,
           toolbarColorOptions: {
             light: '#9e9e9e',
             dark: '#757575'

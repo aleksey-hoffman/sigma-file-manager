@@ -693,6 +693,16 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                       disabled
                     />
                   </v-radio-group>
+
+                  <div class="text--sub-title-1 mt-4">
+                    Transparent toolbars
+                  </div>
+
+                  <v-switch
+                    v-model="transparentToolbars"
+                    class="mt-4 pt-0"
+                    label="Transparent toolbars"
+                  />
                 </template>
               </section-settings>
 
@@ -2139,6 +2149,7 @@ export default {
       autoInstallAppUpdates: 'storageData.settings.appUpdates.autoInstall',
       windowCloseButtonAction: 'storageData.settings.windowCloseButtonAction',
       themeType: 'storageData.settings.theme.type',
+      transparentToolbars: 'storageData.settings.theme.transparentToolbars',
       showDirItemKindDividers: 'storageData.settings.navigator.showDirItemKindDividers',
       saveNavigatorSorting: 'storageData.settings.sorting.saveNavigatorSorting',
       navigatorSortingElementDisplayType: 'storageData.settings.navigator.sorting.elementDisplayType',

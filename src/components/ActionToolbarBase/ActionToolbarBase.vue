@@ -10,13 +10,22 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     flat
     clipped-right
     height="42px"
+    :transparent-toolbars="transparentToolbars"
   >
     <slot />
   </VAppBar>
 </template>
 
 <script>
-export default {}
+import {mapFields} from 'vuex-map-fields'
+
+export default {
+  computed: {
+    ...mapFields({
+      transparentToolbars: 'storageData.settings.theme.transparentToolbars',
+    }),
+  },
+}
 </script>
 
 <style>
@@ -31,7 +40,12 @@ export default {}
     padding: 0px;
     margin-top: var(--window-toolbar-height) !important;
     background-color: var(--bg-color-1);
-    outline: 1px solid var(--divider-color-1)
+    outline: 1px solid var(--divider-color-1);
+  }
+
+#app
+  .action-toolbar[transparent-toolbars] {
+    background-color: transparent;
   }
 
 #app

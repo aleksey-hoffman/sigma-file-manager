@@ -178,11 +178,12 @@ export default {
       homeBannerOverlaySelectedItem: 'storageData.settings.homeBanner.overlay.selectedItem',
       navigatorTabLayout: 'storageData.settings.navigator.tabs.layout',
       notifications: 'notifications',
+      transparentToolbars: 'storageData.settings.theme.transparentToolbars',
     }),
     toolbarColor () {return this.$store.state.storageData.settings.theme.toolbarColor},
     windowToolbarFontColor () {
       // Force white icons on transparent toolbars
-      if (this.toolbarIsTransparent) {
+      if (this.isHomeViewTransparentVariant) {
         if (this.homeBannerOverlaySelectedItem.name === 'none') {
           return this.$utils.getCSSVar('--color-2')
         }
@@ -194,13 +195,13 @@ export default {
         return this.$store.getters.windowToolbarFontColor
       }
     },
-    toolbarIsTransparent () {
+    isHomeViewTransparentVariant () {
       const routeIsHome = this.$route.name === 'home'
       const bannerIsShown = this.homeBannerValue
       return routeIsHome && bannerIsShown && this.homeBannerIsOffscreen
     },
     windowToolbarBackgroundColor () {
-      return this.toolbarIsTransparent
+      return this.isHomeViewTransparentVariant || this.transparentToolbars
         ? 'transparent'
         : this.toolbarColor
     },
