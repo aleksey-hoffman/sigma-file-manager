@@ -17,7 +17,6 @@ import { OverlayScrollbarsPlugin } from 'overlayscrollbars-vue'
 
 // Import components globally, without lazy loading
 import WindowToolbar from './components/WindowToolbar.vue'
-import ActionToolbar from './components/ActionToolbar.vue'
 import ClipboardToolbar from './components/ClipboardToolbar/index.vue'
 import NavigationPanel from './components/NavigationPanel.vue'
 import NoteCard from './components/NoteCard.vue'
@@ -26,7 +25,6 @@ import Dialogs from './components/Dialogs.vue'
 import DialogGenerator from './components/DialogGenerator.vue'
 import NotificationManager from './components/NotificationManager.vue'
 import Overlays from './components/Overlays.vue'
-import HomeBannerMenu from './components/HomeBannerMenu.vue'
 import WorkspacesMenu from './components/WorkspacesMenu.vue'
 import TabsMenu from './components/TabsMenu.vue'
 import BasicMenu from './components/BasicMenu.vue'
@@ -55,7 +53,6 @@ import DragSortableList from './components/DragSortableList.vue'
 
 // Register components
 Vue.component('window-toolbar', WindowToolbar)
-Vue.component('action-toolbar', ActionToolbar)
 Vue.component('clipboard-toolbar', ClipboardToolbar)
 Vue.component('navigation-panel', NavigationPanel)
 Vue.component('note-card', NoteCard)
@@ -64,7 +61,6 @@ Vue.component('dialogs', Dialogs)
 Vue.component('dialog-generator', DialogGenerator)
 Vue.component('notification-manager', NotificationManager)
 Vue.component('overlays', Overlays)
-Vue.component('home-banner-menu', HomeBannerMenu)
 Vue.component('workspaces-menu', WorkspacesMenu)
 Vue.component('tabs-menu', TabsMenu)
 Vue.component('basic-menu', BasicMenu)

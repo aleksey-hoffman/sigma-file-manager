@@ -68,7 +68,8 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         {{$localize.get('page_home_title')}}
       </div>
 
-      <home-banner-menu/>
+      <!-- menu-button::home-banner -->
+      <HomeBannerMenu />
 
       <v-tooltip right>
         <template v-slot:activator="{on: tooltip}">
@@ -97,10 +98,14 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <script>
 import {mapFields} from 'vuex-map-fields'
 import {mapGetters} from 'vuex'
+import HomeBannerMenu from '@/components/HomeBannerMenu.vue'
 
 const electron = require('electron')
 
 export default {
+  components: {
+    HomeBannerMenu,
+  },
   props: {
     setHomeBannerIsOffscreen: Function
   },

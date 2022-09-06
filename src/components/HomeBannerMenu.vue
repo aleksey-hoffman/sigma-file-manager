@@ -14,9 +14,9 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           <template v-slot:activator="{ on: tooltip }">
             <transition name="fade-in-1s">
               <v-btn
-                v-on="{ ...tooltip, ...menu }"
+                class="action-toolbar__item fade-in-1s"
                 icon
-                class="action-toolbar__item fade-in-1s mt-1"
+                v-on="{ ...tooltip, ...menu }"
               >
                 <v-icon
                   size="20px"

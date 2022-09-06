@@ -342,10 +342,8 @@ export default {
     routes: ['navigator'],
     icon: 'mdi-folder-plus-outline',
     action: {
-      name: 'INIT_NEW_DIR_ITEM',
-      options: {
-        type: 'directory'
-      }
+      name: 'showNewDirItemDialog',
+      options: 'directory',
     },
     shortcut: 'Alt + N',
     description: 'Create new directory in the current directory'
@@ -359,10 +357,8 @@ export default {
     routes: ['navigator'],
     icon: 'mdi-file-plus-outline',
     action: {
-      name: 'INIT_NEW_DIR_ITEM',
-      options: {
-        type: 'file'
-      }
+      name: 'showNewDirItemDialog',
+      options: 'file',
     },
     shortcut: 'Alt + M',
     description: 'Create new file in current directory'

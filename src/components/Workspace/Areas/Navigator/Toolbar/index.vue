@@ -21,7 +21,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <script>
 import {mapFields} from 'vuex-map-fields'
-import Button from '@/components/Button/index.vue'
+import AppButton from '@/components/AppButton/AppButton.vue'
 
 export default {
   computed: {
@@ -31,7 +31,7 @@ export default {
     toolbarComponents () {
       return [
         {
-          component: Button,
+          component: AppButton,
           icon: 'mdi-menu-down',
           iconSize: '32px',
           iconClass: 'action-toolbar__icon',
@@ -39,7 +39,7 @@ export default {
           onClick: (event) => {this.toggleCurrentDirContextMenu(event)},
         },
         {
-          component: Button,
+          component: AppButton,
           icon: 'mdi-arrow-left',
           iconSize: '20px',
           iconClass: 'action-toolbar__icon',
@@ -47,7 +47,7 @@ export default {
           onClick: () => {this.$store.dispatch('LOAD_PREVIOUS_HISTORY_PATH')},
         },
         {
-          component: Button,
+          component: AppButton,
           icon: 'mdi-arrow-right',
           iconSize: '20px',
           iconClass: 'action-toolbar__icon',
@@ -55,7 +55,7 @@ export default {
           onClick: () => {this.$store.dispatch('LOAD_NEXT_HISTORY_PATH')},
         },
         {
-          component: Button,
+          component: AppButton,
           icon: 'mdi-arrow-up',
           iconSize: '20px',
           iconClass: 'action-toolbar__icon',
@@ -63,7 +63,7 @@ export default {
           onClick: () => {this.$store.dispatch('GO_UP_DIRECTORY')},
         },
         {
-          component: Button,
+          component: AppButton,
           icon: 'mdi-refresh',
           iconSize: '20px',
           iconClass: 'action-toolbar__icon',

@@ -5,18 +5,21 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <template>
   <div id="navigator-route">
+    <ActionToolbar />
     <InfoPanel />
     <Workspace />
   </div>
 </template>
 
 <script>
+import ActionToolbar from '@/views/NavigatorView/ActionToolbar/ActionToolbar.vue'
 import InfoPanel from '@/components/InfoPanel/index.vue'
 import Workspace from '@/components/Workspace/index.vue'
 
 export default {
   name: 'navigator',
   components: {
+    ActionToolbar,
     InfoPanel,
     Workspace,
   },

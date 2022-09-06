@@ -4,7 +4,11 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <template>
-  <div id="home-route" class="main-content-container">
+  <div
+    id="home-route"
+    class="main-content-container"
+  >
+    <ActionToolbar />
     <overlay-scrollbars
       id="content-area--home-route"
       class="content-area fade-mask--bottom"
@@ -57,8 +61,12 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <script>
 import {mapFields} from 'vuex-map-fields'
+import ActionToolbar from '@/views/HomeView/ActionToolbar/ActionToolbar.vue'
 
 export default {
+  components: {
+    ActionToolbar,
+  },
   name: 'home',
   activated () {
     this.$store.dispatch('routeOnActivated', this.$route.name)
@@ -104,10 +112,6 @@ export default {
 </script>
 
 <style>
-.action-toolbar__icon[home-banner-value] {
-  color: var(--color-4) !important;
-}
-
 #home-route
   .content-area:not([show-background]) {
     padding: 0px;

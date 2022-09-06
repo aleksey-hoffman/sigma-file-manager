@@ -2169,7 +2169,7 @@ export default new Vuex.Store({
         }
       }
     },
-    async RESET_APP_SETTINGS (store) {
+    async resetAppSettings (store) {
       try {
         await store.dispatch('DELETE_APP_FILE', {
           fileName: 'settings.json'
@@ -2544,7 +2544,7 @@ export default new Vuex.Store({
         //         action: 'showDownloadedFile',
         //         closesNotification: true,
         //         onClick: () => {
-        //           dispatch('LOAD_DIR', { path: payload.directory })
+        //           dispatch('loadDir', { path: payload.directory })
         //         }
         //       }
         //     ]
@@ -2809,7 +2809,7 @@ export default new Vuex.Store({
       if (item.to === '/navigator') {
         const someDirLoaded = Object.keys(state.navigatorView.currentDir).length !== 0
         if (!someDirLoaded || state.navigatorView.dirItems.length === 0) {
-          dispatch('LOAD_DIR', { path: '' })
+          dispatch('loadDir', { path: '' })
         }
       }
       router.push(item.to).catch((error) => {})
@@ -3141,10 +3141,11 @@ export default new Vuex.Store({
       const contentAreaNode = utils.getContentAreaNode(router.currentRoute.name)
       store.state.navigatorView.scrollPosition = contentAreaNode?.scrollTop || 0
     },
-    async LOAD_DIR (store, options) {
+    async loadDir (store, options) {
       await store.dispatch('saveNavigatorScrollPosition')
       loadDirThrottle.throttle(async () => {
-        store.dispatch('ADD_ACTION_TO_HISTORY', { action: 'store.js::LOAD_DIR()' })
+        console.log('loadDir', options)
+        store.dispatch('ADD_ACTION_TO_HISTORY', { action: 'store.js::loadDir()' })
         options = {
           ...{
             path: '/',
@@ -3169,6 +3170,7 @@ export default new Vuex.Store({
         store.dispatch('SET_STATS')
         await store.dispatch('RESTORE_NAVIGATOR_STATE')
         store.dispatch('AUTO_FOCUS_FILTER')
+        console.log('loadDir 2', options)
         if (options.scrollTop) {
           store.dispatch('SCROLL_TOP_CONTENT_AREA', {behavior: 'auto'})
         }
@@ -3594,7 +3596,7 @@ export default new Vuex.Store({
         store.dispatch('OPEN_FILE', item.path)
       }
       else {
-        store.dispatch('LOAD_DIR', { path: item.realPath })
+        store.dispatch('loadDir', { path: item.realPath })
       }
     },
     OPEN_DIR_ITEM_FROM_PATH (store, path) {
@@ -3611,7 +3613,7 @@ export default new Vuex.Store({
           notifications.emit({name: 'cannotOpenPathFromClipboard'})
         }
         else {
-          store.dispatch('LOAD_DIR', {path: osClipboardText})
+          store.dispatch('loadDir', {path: osClipboardText})
           notifications.emit({
             name: 'openedPathFromClipboard',
             props: {
@@ -3622,7 +3624,7 @@ export default new Vuex.Store({
       })
     },
     SHOW_DIR_ITEM_IN_DIRECTORY (store, payload) {
-      store.dispatch('LOAD_DIR', {path: payload.dir})
+      store.dispatch('loadDir', {path: payload.dir})
         .then(() => {
           const dirItemNodes = document.querySelectorAll('.dir-item-card')
           const itemPath = payload.itemPath.replace(/\\/g, '/')
@@ -3651,7 +3653,7 @@ export default new Vuex.Store({
         })
       }
     },
-    OPEN_ADDRESS_BAR_EDITOR (store) {
+    openAddressBarEditor (store) {
       store.state.addressBarEditor = true
     },
     TOGGLE_GLOBAL_SEARCH (store) {
@@ -3674,7 +3676,7 @@ export default new Vuex.Store({
       const currentHistoryIndex = state.navigatorView.history.currentIndex
       const previousHistoryPath = historyItems[currentHistoryIndex - 1]
       if (currentHistoryIndex > 0) {
-        await dispatch('LOAD_DIR', {path: previousHistoryPath, goBackwardInHistory: true})
+        await dispatch('loadDir', {path: previousHistoryPath, goBackwardInHistory: true})
         state.navigatorView.history.currentIndex = currentHistoryIndex - 1
       }
     },
@@ -3683,13 +3685,13 @@ export default new Vuex.Store({
       const currentHistoryIndex = state.navigatorView.history.currentIndex
       const nextHistoryPath = historyItems[currentHistoryIndex + 1]
       if (currentHistoryIndex < historyItems.length - 1) {
-        await dispatch('LOAD_DIR', {path: nextHistoryPath, goForwardInHistory: true})
+        await dispatch('loadDir', {path: nextHistoryPath, goForwardInHistory: true})
         state.navigatorView.history.currentIndex = currentHistoryIndex + 1
       }
     },
     GO_UP_DIRECTORY ({ state, commit, dispatch, getters }) {
       const dir = PATH.parse(state.navigatorView.currentDir.path).dir
-      dispatch('LOAD_DIR', { path: dir })
+      dispatch('loadDir', { path: dir })
     },
     ADD_EXTERNAL_PROGRAM ({ state, commit, dispatch, getters }, program) {
       // Add program to the list of existing programs
@@ -4225,13 +4227,13 @@ export default new Vuex.Store({
         throw error
       }
     },
-    async INIT_NEW_DIR_ITEM ({ state, commit, dispatch, getters }, payload) {
-      state.dialogs.newDirItemDialog.data.type = payload.type
+    async showNewDirItemDialog ({state, dispatch}, type) {
+      state.dialogs.newDirItemDialog.data.type = type
       const allConditionsAreFulfilled = await dispatch('CHECK_CONDITIONS', {
         routes: ['all']
       })
       if (allConditionsAreFulfilled) {
-        dispatch('OPEN_DIALOG', { dialogName: 'newDirItemDialog' })
+        dispatch('OPEN_DIALOG', {dialogName: 'newDirItemDialog'})
       }
     },
     SET_DIRECTORY_SIZE ({ state, commit, dispatch, getters }, payload) {
@@ -5900,7 +5902,7 @@ export default new Vuex.Store({
       else {
         // TODO: load the item's realPath instead
         // For that it either should store both path and realPath in the tab object
-        // or the LOAD_DIR action should check if the path is a symlink and
+        // or the loadDir action should check if the path is a symlink and
         // if so, load the realPath instead
         eventHub.$emit('notification', {
           action: 'update-by-type',
@@ -5910,7 +5912,7 @@ export default new Vuex.Store({
           title: `Tab | ${tabItem.name}`,
           message: `Path: ${tabItem.path}`
         })
-        await dispatch('LOAD_DIR', { path: tabItem.path })
+        await dispatch('loadDir', { path: tabItem.path })
       }
     },
     async addWorkspace ({state, dispatch}, workspace) {
@@ -5932,7 +5934,7 @@ export default new Vuex.Store({
     async switchWorkspace ({dispatch, getters}, workspace) {
       dispatch('selectWorkspace', workspace)
       dispatch('syncWorkspaceStorageData')
-      await dispatch('LOAD_DIR', { path: workspace.defaultPath })
+      await dispatch('loadDir', { path: workspace.defaultPath })
       workspace.lastOpenedDir = workspace.defaultPath
       if (workspace.isPrimary) {
         notifications.emit({name: 'switchWorkspace', props: {

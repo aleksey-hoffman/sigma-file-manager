@@ -8,6 +8,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     id="settings-view"
     :filter-is-empty="filterQuery === ''"
   >
+    <ActionToolbar />
     <div
       id="content-area--settings-view"
       class="content-area custom-scrollbar"
@@ -1613,7 +1614,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                       class="button-1"
                       depressed
                       small
-                      @click="$store.dispatch('LOAD_DIR', {
+                      @click="$store.dispatch('loadDir', {
                         path: appPaths.storageDirectories.appStorageGlobalSearchData
                       })"
                     >
@@ -2000,7 +2001,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     class="button-1 mb-2"
                     depressed
                     small
-                    @click="$store.dispatch('LOAD_DIR', { path: appPaths.storageDirectories.appStorage })"
+                    @click="$store.dispatch('loadDir', { path: appPaths.storageDirectories.appStorage })"
                   >
                     <v-icon
                       class="mr-2"
@@ -2022,6 +2023,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <script>
 import {mapFields} from 'vuex-map-fields'
+import ActionToolbar from '@/views/SettingsView/ActionToolbar/ActionToolbar.vue'
 import SectionSettings from '../components/SectionSettings.vue'
 import itemFilter from '../utils/itemFilter'
 import FilterClearButton from '@/components/FilterClearButton/index.vue'
@@ -2031,6 +2033,7 @@ export default {
   components: {
     SectionSettings,
     FilterClearButton,
+    ActionToolbar,
   },
   data () {
     return {

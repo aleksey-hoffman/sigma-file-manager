@@ -64,31 +64,21 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         </v-list>
       </v-menu>
 
-      <v-tooltip bottom>
-        <template #activator="{on}">
-          <v-btn
-            class="action-toolbar__button fade-in-1s"
-            icon
-            v-on="on"
-            @click="$store.dispatch('OPEN_ADDRESS_BAR_EDITOR')"
-          >
-            <v-icon
-              class="action-toolbar__icon"
-              size="16px"
-            >
-              mdi-cursor-text
-            </v-icon>
-          </v-btn>
-        </template>
-        <span>Edit address</span>
-      </v-tooltip>
+      <AppButton
+        button-class="action-toolbar__button fade-in-1s"
+        icon="mdi-cursor-text"
+        icon-size="16px"
+        icon-class="action-toolbar__icon"
+        tooltip="Edit address"
+        @click="$store.dispatch('openAddressBarEditor')"
+      />
 
       <!-- address-bar::parts -->
       <v-layout
         id="address-bar__parts-container"
         class="address-bar__parts-container custom-scrollbar"
         align-center
-        @click="$store.dispatch('OPEN_ADDRESS_BAR_EDITOR')"
+        @click="$store.dispatch('openAddressBarEditor')"
       >
         <v-layout
           class="address-bar__parts-container__inner"
@@ -109,7 +99,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 depressed
                 small
                 :disabled="part.isLast"
-                @click.exact.stop="$store.dispatch('LOAD_DIR', {path: part.path})"
+                @click.exact.stop="$store.dispatch('loadDir', {path: part.path})"
                 @contextmenu="toggleDirContextMenu({event: $event, part})"
               >
                 {{part.base}}
@@ -178,13 +168,12 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 </span>
               </v-tooltip>
 
-              <v-btn
-                class="ml-2"
-                icon
+              <AppButton
+                button-class="ml-2"
+                icon="mdi-close"
+                tooltip="Close address bar editor"
                 @click="addressBarEditor = false"
-              >
-                <v-icon>mdi-close</v-icon>
-              </v-btn>
+              />
             </v-layout>
             <div class="px-2 mt-2 tooltip__shortcut">
               <span
@@ -212,10 +201,15 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <script>
 import {mapFields} from 'vuex-map-fields'
+import AppButton from '@/components/AppButton/AppButton.vue'
+
 const fs = require('fs')
 const PATH = require('path')
 
 export default {
+  components: {
+    AppButton,
+  },
   data () {
     return {
       isTruncated: false,
@@ -253,7 +247,7 @@ export default {
       return [
         {
           title: 'Edit address',
-          action: 'OPEN_ADDRESS_BAR_EDITOR',
+          action: 'openAddressBarEditor',
           shortcut: this.shortcuts.focusAddressBar.shortcut,
           icon: 'mdi-cursor-text',
         },

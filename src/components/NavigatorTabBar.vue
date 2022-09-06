@@ -9,9 +9,9 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       <div class="tab-bar">
         <drag-sortable-list
           :items="selectedWorkspace.tabs"
-          :updateItems="setTabs"
+          :update-items="setTabs"
         >
-          <template v-slot:item="{item}">
+          <template #item="{item}">
             <navigator-tab
               :tab="item"
             >
@@ -23,30 +23,25 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     </div>
 
     <template v-if="$route.name === 'navigator'">
-      <v-tooltip bottom>
-        <template v-slot:activator="{ on }">
-          <v-btn
-            class="window-toolbar__item ml-2"
-            v-on="on"
-            @click="addTabOnClick"
-            icon
-          >
-            <v-icon size="22px">
-              mdi-plus
-            </v-icon>
-          </v-btn>
-        </template>
-        <span>New tab in current workspace</span>
-      </v-tooltip>
+      <AppButton
+        button-class="window-toolbar__item ml-2"
+        icon="mdi-plus"
+        icon-size="22px"
+        tooltip="New tab in current workspace"
+        @click="addTabOnClick"
+      />
     </template>
-
   </div>
 </template>
 
 <script>
 import {mapGetters} from 'vuex'
+import AppButton from '@/components/AppButton/AppButton.vue'
 
 export default {
+  components: {
+    AppButton,
+  },
   mounted () {
     this.changeScrollPosition()
   },

@@ -5,6 +5,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <template>
   <div id="notes-route">
+    <ActionToolbar />
     <div
       id="content-area--notes-route"
       class="content-area custom-scrollbar"
@@ -133,11 +134,13 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 import {mapFields} from 'vuex-map-fields'
 import itemFilter from '../utils/itemFilter'
 import FilterClearButton from '@/components/FilterClearButton/index.vue'
+import ActionToolbar from '@/views/NotesView/ActionToolbar/ActionToolbar.vue'
 
 export default {
   name: 'notes',
   components: {
     FilterClearButton,
+    ActionToolbar,
   },
   data () {
     return {

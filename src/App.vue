@@ -7,11 +7,11 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
   <v-app
     :data-theme-type="themeType"
     :route-name="$route.name"
+    :show-action-toolbar="showActionToolbar"
     :dir-item-background="dirItemBackground"
     :is-window-maximized="windowsMainStateIsMaximized"
   >
     <window-toolbar />
-    <action-toolbar />
     <navigation-panel />
     <notification-manager />
     <overlays />
@@ -57,12 +57,18 @@ console.timeEnd('time::App.vue::Imports')
 
 export default {
   name: 'app',
+  data () {
+    return {
+      showActionToolbar: true,
+    }
+  },
   watch: {
     $route (to, from) {
       this.contextMenus.dirItem.value = false
       this.$store.dispatch('TERMINATE_ALL_FETCH_DIR_SIZE')
       // Unload items to improve UI responsiveness
       this.$store.state.navigatorView.dirItems = []
+      this.setShowActionToolbar()
       if (to.name === 'home') {
         this.preventHomeViewLayoutTransition()
         this.animateHomeBannerIn()
@@ -138,6 +144,7 @@ export default {
       this.initIntervals()
       this.transitionOutLoadingScreen()
       this.removeLoadingScreen()
+      this.setShowActionToolbar()
       this.checkForAppUpdateInstalled()
       this.initDirWatcherWorker()
       this.initOneDriveWatcherWorker()
@@ -1196,6 +1203,12 @@ export default {
         }
       }
     },
+    setShowActionToolbar () {
+      this.$nextTick(() => {
+        const actionToolbarElement = document.querySelector('.app-content .action-toolbar')
+        this.showActionToolbar = !!actionToolbarElement
+      })
+    },
   },
 }
 </script>
@@ -1267,9 +1280,14 @@ i {
 }
 
 .app-content {
-  padding-top: var(--header-height) !important;
   background-color: var(--app-content-bg-color);
+   padding-top: calc(var(--window-toolbar-height) + 14px) !important;
 }
+
+#app[show-action-toolbar]
+ .app-content {
+    padding-top: var(--header-height) !important;
+  }
 
 .app-content
   .v-icon {

@@ -52,12 +52,12 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 <span>{{newWorkspaceName(item)}}</span>
               </template>
             </v-select>
-            <Button
+            <AppButton
               icon="mdi-plus"
               tooltip="Add new workspace"
               @click="addWorkspace()"
             />
-            <Button
+            <AppButton
               icon="mdi-trash-can-outline"
               icon-size="16px"
               tooltip="Delete workspace"
@@ -125,12 +125,12 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   </template>
                 </v-select>
 
-                <Button
+                <AppButton
                   icon="mdi-plus"
                   tooltip="Add new action"
                   @click="addWorkspaceAction()"
                 />
-                <Button
+                <AppButton
                   icon="mdi-trash-can-outline"
                   icon-size="16px"
                   tooltip="Delete workspace action"
@@ -196,12 +196,12 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               </template>
             </div>
             <div v-else>
-              <Button
+              <AppButton
                 button-class="button-1"
                 @click="addWorkspaceAction()"
               >
                 Add new action
-              </Button>
+              </AppButton>
             </div>
           </div>
         </div>
@@ -214,11 +214,11 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 import {mapFields} from 'vuex-map-fields'
 import * as notifications from '@/utils/notifications.js'
 import {cloneDeep as clone} from '@/utils/lodash.min.js'
-import Button from '@/components/Button/index.vue'
+import AppButton from '@/components/AppButton/AppButton.vue'
 
 export default {
   components: {
-    Button,
+    AppButton,
   },
   watch: {
     'dialog.value' (value) {
