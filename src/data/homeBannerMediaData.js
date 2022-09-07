@@ -5,8 +5,7 @@
 const PATH = require('path')
 const fs = require('fs')
 const MIME = require('mime-types')
-const appPaths = require('./appPaths.js')
-
+const appPaths = require('@/appPaths.js')
 const defaultFiles = fs.readdirSync(appPaths.homeBannerMedia)
 const customFiles = fs.readdirSync(appPaths.storageDirectories.appStorageHomeBannerMedia)
 const mediaItemsConfig = getMediaItemsConfig()
@@ -15,19 +14,19 @@ const parsedCustomMediaItems = fetchParsedCustomMediaItems()
 const defaultMediaItem = parsedDefaultMediaItems.find(item => item.isDefault)
 const items = [...parsedDefaultMediaItems, ...parsedCustomMediaItems]
 
-function fetchParsedDefaultMediaItems() {
+function fetchParsedDefaultMediaItems () {
   return getParsedMediaItems({
-    files: defaultFiles, 
+    files: defaultFiles,
     isCustom: false,
-    path: appPaths.homeBannerMedia
+    path: appPaths.homeBannerMedia,
   })
 }
 
-function fetchParsedCustomMediaItems() {
+function fetchParsedCustomMediaItems () {
   return getParsedMediaItems({
-    files: customFiles, 
+    files: customFiles,
     isCustom: true,
-    path: appPaths.storageDirectories.appStorageHomeBannerMedia
+    path: appPaths.storageDirectories.appStorageHomeBannerMedia,
   })
 }
 
@@ -51,7 +50,7 @@ function getMediaItemData (params) {
     positionY: 50,
     fileNameBase: parsedPath.base,
     path,
-    type
+    type,
   }
   return mediaItemData
 }
@@ -61,7 +60,7 @@ function applyConfigProperties (mediaItemData) {
     return customItem.fileNameBase === mediaItemData.fileNameBase
   })
   if (configMediaItem) {
-    mediaItemData = { ...mediaItemData, ...configMediaItem }
+    mediaItemData = {...mediaItemData, ...configMediaItem}
   }
   return mediaItemData
 }
@@ -69,11 +68,11 @@ function applyConfigProperties (mediaItemData) {
 function getMediaItemsConfig () {
   const configPath = PATH.join(__static, 'configs/homeBanner.config.json')
   return JSON.parse(
-    fs.readFileSync(configPath, { encoding: 'utf8' })
+    fs.readFileSync(configPath, {encoding: 'utf8'}),
   )
 }
 
 module.exports = {
   items,
-  defaultItem: defaultMediaItem
+  defaultItem: defaultMediaItem,
 }

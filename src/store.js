@@ -41,7 +41,7 @@ const appPaths = {
   public: __static,
   fileProtocol: 'sigma-file-manager',
   updateDownloadDir: appDataPaths.downloads,
-  homeBannerMediaData: require('./homeBannerMediaData.js'),
+  homeBannerMediaData: require('./data/homeBannerMediaData.js'),
   shortcuts: require('./shortcuts.js').default,
   globalSearchDataFiles: []
 }

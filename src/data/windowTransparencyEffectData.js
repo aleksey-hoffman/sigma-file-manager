@@ -21,7 +21,7 @@ function setWindowTransparencyEffectData (backgroundItems) {
 }
 
 function getBackgroundItems () {
-  let backgroundItems = require('../homeBannerMediaData.js').items
+  let backgroundItems = require('./homeBannerMediaData.js').items
   backgroundItems = processBackgroundItems(backgroundItems)
   return backgroundItems
 }
