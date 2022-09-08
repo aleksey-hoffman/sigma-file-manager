@@ -22,9 +22,11 @@ module.exports = {
       ]
     },
     plugins: [
-      new CopyPlugin([
-        {from: './src', to: 'src'}
-      ])
+      new CopyPlugin({
+        patterns: [
+          {from: './src', to: 'src'},
+        ],
+      }),
     ],
   },
   pages: {
