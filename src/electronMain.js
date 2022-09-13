@@ -115,6 +115,7 @@ function createMainWindow () {
   openMainWindowDevTools()
   loadWindow('main')
   initWindowListeners('main')
+  require('@electron/remote/main').enable(windows.main.webContents)
 }
 
 function createQuickViewWindow () {
@@ -331,6 +332,19 @@ function initIPCListeners () {
     return storageData
   })
 
+  electron.ipcMain.handle('quick-view::set-content-size', async (event, data) => {
+    windows.quickViewWindow.setContentSize(data.width, data.height)
+    windows.quickViewWindow.center()
+  })
+
+  electron.ipcMain.handle('quick-view::show-window', () => {
+    windows.quickViewWindow.show()
+  })
+
+  electron.ipcMain.handle('quick-view::close-window', () => {
+    windows.quickViewWindow.close()
+  })
+
   electron.ipcMain.on('compute-request:trashDirItems', (event, payload) => {
     if (payload.items.length === 0) {
       throw Error(`
@@ -536,7 +550,7 @@ function openFileInQuickViewWindow (path) {
     windows.quickViewWindow.webContents.send('load:webview', {path})
   }
   if (!windows.quickViewWindow) {
-    createQuickViewWindow() 
+    createQuickViewWindow()
     windows.quickViewWindow.webContents.once('did-finish-load', () => {
       _load()
     })
