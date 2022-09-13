@@ -78,7 +78,11 @@ export default {
   height: 100%;
 }
 
-.workspace__area[show-divider="true"] {
+.workspace__area {
+  min-width: 0px;
+}
+
+.workspace__area[show-divider] {
   border-right: 1px solid var(--divider-color-2);
 }
 </style>
