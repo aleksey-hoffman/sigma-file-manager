@@ -1724,7 +1724,7 @@ export default {
     },
     'dialogs.renameDirItemDialog.value' (value) {
       if (value) {
-        this.editTargets = [this.$utils.cloneDeep(this.selectedDirItems.getLast())]
+        this.editTargets = [this.$utils.cloneDeep(this.selectedDirItems.at(-1))]
         this.dialogs.renameDirItemDialog.data.name = this.editTargets[0].name
         const parsedName = PATH.parse(this.dialogs.renameDirItemDialog.data.name)
         const isDir = fs.statSync(this.editTargets[0].path).isDirectory()

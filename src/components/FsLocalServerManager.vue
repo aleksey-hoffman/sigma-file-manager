@@ -167,20 +167,20 @@ export default {
     async setLocalDirectoryShareData () {
       this.dialogs.localShareManagerDialog.value = true
       this.dialogs.localShareManagerDialog.data.shareType = 'directory'
-      this.localServer.directoryShare.item = this.selectedDirItems.getLast()
+      this.localServer.directoryShare.item = this.selectedDirItems.at(-1)
       this.directoryShareIp = await this.getLocalIPv4()
       this.directorySharePort = await getPort({port: getPort.makeRange(55000, 55999)})
       this.localServer.directoryShare.address = `${this.directoryShareIp}:${this.directorySharePort}/ftp`
-      return this.selectedDirItems.getLast().path
+      return this.selectedDirItems.at(-1).path
     },
     async setLocalFileShareData () {
       this.dialogs.localShareManagerDialog.value = true
       this.dialogs.localShareManagerDialog.data.shareType = 'file'
-      this.localServer.fileShare.item = this.targetItems.getLast()
+      this.localServer.fileShare.item = this.targetItems.at(-1)
       this.fileShareIp = await this.getLocalIPv4()
       this.fileSharePort = await getPort({port: getPort.makeRange(56000, 56999)})
       this.localServer.fileShare.address = `${this.fileShareIp}:${this.fileSharePort}`
-      return this.targetItems.getLast().path
+      return this.targetItems.at(-1).path
     },
     async initLocalDirectoryShare () {
       try {

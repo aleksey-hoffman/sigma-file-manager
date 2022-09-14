@@ -1431,7 +1431,7 @@ export default new Vuex.Store({
       })
     },
     lastSelectedDirItem: (state, getters) => {
-      return state.navigatorView.selectedDirItems.getLast()
+      return state.navigatorView.selectedDirItems.at(-1)
     },
     isFirstDirItemSelected: (state, getters) => {
       return getters.selectedDirItems.some(item => item.path === getters.firstDirItem.path)
@@ -1445,7 +1445,7 @@ export default new Vuex.Store({
       let dirItemNodes = document.querySelectorAll('.dir-item-card')
       let selectedDirItemNode
       dirItemNodes.forEach(node => {
-        if (node.dataset.itemPath === state.navigatorView.selectedDirItems.getLast().path) {
+        if (node.dataset.itemPath === state.navigatorView.selectedDirItems.at(-1).path) {
           selectedDirItemNode = node
         }
       })
@@ -1513,7 +1513,7 @@ export default new Vuex.Store({
         }
         getters.dirItemRows.forEach((row, rowIndex) => {
           row.items.forEach((item, columnIndex) => {
-            const rowContainsItem = item.dirItemPositionIndex === state.navigatorView.selectedDirItems.getLast().dirItemPositionIndex
+            const rowContainsItem = item.dirItemPositionIndex === state.navigatorView.selectedDirItems.at(-1).dirItemPositionIndex
             if (rowContainsItem) {
               data.rowIndex = rowIndex
               data.row = row
@@ -1791,7 +1791,7 @@ export default new Vuex.Store({
       }
     },
     HIGHLIGHT_DIR_ITEM_RANGE (state, payload) {
-      let startRangeIndex = state.navigatorView.selectedDirItems.getLast().dirItemPositionIndex
+      let startRangeIndex = state.navigatorView.selectedDirItems.at(-1).dirItemPositionIndex
       let endRangeIndex = payload.hoveredItem.dirItemPositionIndex
       // Swap indexes, if needed
       if (startRangeIndex > endRangeIndex) {
@@ -1870,7 +1870,7 @@ export default new Vuex.Store({
       })
     },
     OPEN_WITH_CUSTOM_APP (state, app) {
-      const path = state.navigatorView.selectedDirItems.getLast().path
+      const path = state.navigatorView.selectedDirItems.at(-1).path
       try {
         childProcess.exec(`"${app.path}" "${path}"`)
       }
@@ -2858,7 +2858,7 @@ export default new Vuex.Store({
         }
         else if (store.state.navigatorView.selectedDirItems.length > 1) {
           store.dispatch('SELECT_DIR_ITEM', {
-            index: store.state.navigatorView.selectedDirItems.getLast().dirItemPositionIndex
+            index: store.state.navigatorView.selectedDirItems.at(-1).dirItemPositionIndex
           })
         }
         else if (store.state.navigatorView.selectedDirItems.length === 1) {
@@ -2933,7 +2933,7 @@ export default new Vuex.Store({
       }
     },
     OPEN_LAST_SELECTED_DIRITEM (store) {
-      let item = store.state.navigatorView.selectedDirItems.getLast()
+      let item = store.state.navigatorView.selectedDirItems.at(-1)
       store.dispatch('OPEN_DIR_ITEM', item)
     },
     TOGGLE_FULLSCREEN () {
@@ -3081,7 +3081,7 @@ export default new Vuex.Store({
     ADD_TAB (store, params) {
       let item = params?.item 
         ? params?.item
-        : store.state.navigatorView.selectedDirItems.getLast()
+        : store.state.navigatorView.selectedDirItems.at(-1)
       let isDirectory = item.type.includes('directory')
 
       if (!isDirectory) {return}
@@ -4894,11 +4894,11 @@ export default new Vuex.Store({
     },
     MAKE_DIR_ITEM_LINK (store, params = {}) {
       let defaultParams = {
-        srcPath: store.state.contextMenus.dirItem.targetItems.getLast().path
+        srcPath: store.state.contextMenus.dirItem.targetItems.at(-1).path
       }
       params = {...defaultParams, ...params}
       params.uniqueDestPath = utils.getUniquePath(params.destPath)
-      params.isDirectory = store.getters.selectedDirItems.getLast().type === 'directory'
+      params.isDirectory = store.getters.selectedDirItems.at(-1).type === 'directory'
       
       if (process.platform === 'win32') {
         if (params.linkType === 'windows-link') {
@@ -6031,11 +6031,11 @@ export default new Vuex.Store({
       })
     },
     CANCEL_FETCH_CURRENT_DIR_SIZE (store, payload = {}) {
-      store.dispatch('CANCEL_FETCH_DIR_SIZE', store.state.navigatorView.selectedDirItems.getLast())
+      store.dispatch('CANCEL_FETCH_DIR_SIZE', store.state.navigatorView.selectedDirItems.at(-1))
     },
     async FETCH_CURRENT_DIR_SIZE (store, payload = {}) {
       return await store.dispatch('FETCH_DIR_SIZE', {
-        item: store.state.navigatorView.selectedDirItems.getLast(),
+        item: store.state.navigatorView.selectedDirItems.at(-1),
         options: payload.options || {}
       })
     },
@@ -6164,7 +6164,7 @@ export default new Vuex.Store({
     },
     OPEN_WITH_QUICK_VIEW ({ state, commit, dispatch, getters }, payload) {
       let defaultPayload = {
-        path: state.navigatorView.selectedDirItems.getLast().path
+        path: state.navigatorView.selectedDirItems.at(-1).path
       }
       payload = {...defaultPayload, ...payload}
 
