@@ -35,6 +35,7 @@ const data = {
   theme_tags: 'theme, style, light, dark, color',
   visual_filters_tags: 'visual, filters, color, contrast, brightness, saturation, image, video, theme',
   animations_tags: 'animations, home, page',
+  fonts_tags: 'fonts, text',
   date_time_tags: 'date, time, format',
   overlays_tags: 'overlays, navigation, panel, drive, storage, letter, ui, elements, visual',
   ui_elements_tags: 'ui, elements, visual, input, accent, color, timeline, dashboard, page, recent, cards, home, drive, space, indicator, style',

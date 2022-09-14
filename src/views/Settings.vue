@@ -797,6 +797,89 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               </section-settings>
 
               <section-settings
+                v-if="showSection('fonts')"
+                class="content-area__content-card__section"
+                :header="{
+                  icon: {
+                    name: 'mdi-format-font'
+                  },
+                  title: 'Fonts'
+                }"
+              >
+                <template #content>
+                  <div class="text--sub-title-1 mt-2">
+                    Selected font
+                  </div>
+
+                  <v-layout align-center>
+                    <v-select
+                      v-model="font"
+                      :items="filteredFonts"
+                      :menu-props="{'max-width': '400px'}"
+                      return-object
+                      item-value="name"
+                      item-text="name"
+                      label="Font name"
+                      style="max-width: 400px"
+                    >
+                      <template #prepend-item>
+                        <v-list-item @mousedown.prevent>
+                          <v-text-field
+                            v-model="fontFilter"
+                            class="pt-0 mb-2"
+                            label="Filter"
+                            single-line
+                            hide-details
+                          />
+                        </v-list-item>
+                        <v-divider class="mt-2" />
+                      </template>
+                      <template #item="{item}">
+                        <v-list-item
+                          :is-active="font === item.name"
+                          @click.stop="font = item.name"
+                        >
+                          <v-list-item-content>
+                            <v-list-item-title :style="{'font-family': item.name}">
+                              {{item.name}}
+                            </v-list-item-title>
+                            <v-list-item-subtitle>
+                              {{item.type}} {{isDeafultFont(item.name) ? '(default font)' : ''}}
+                            </v-list-item-subtitle>
+                          </v-list-item-content>
+                        </v-list-item>
+                      </template>
+                      <template #selection="{item}">
+                        {{item.name}}
+                      </template>
+                    </v-select>
+
+                    <AppButton
+                      button-class="button-1 ml-2"
+                      type="button"
+                      small
+                      icon="mdi-autorenew"
+                      icon-size="18px"
+                      icon-class="action-toolbar__icon"
+                      tooltip="Re-fetch system fonts"
+                      @click="fetchSystemFonts()"
+                    />
+
+                    <AppButton
+                      button-class="button-1 ml-2"
+                      type="button"
+                      small
+                      icon="mdi-restore-alert"
+                      icon-size="18px"
+                      icon-class="action-toolbar__icon"
+                      tooltip="Reset font to default"
+                      @click="resetFont()"
+                    />
+                  </v-layout>
+                </template>
+              </section-settings>
+
+              <section-settings
                 v-if="showSection('date-time')"
                 class="content-area__content-card__section"
                 :header="{
@@ -2037,6 +2120,10 @@ import ActionToolbar from '@/views/SettingsView/ActionToolbar/ActionToolbar.vue'
 import SectionSettings from '../components/SectionSettings.vue'
 import itemFilter from '../utils/itemFilter'
 import FilterClearButton from '@/components/FilterClearButton/index.vue'
+import AppButton from '@/components/AppButton/AppButton.vue'
+import {getSystemFontsWithType} from '@/utils/getSystemFonts.js'
+
+const electron = require('electron')
 
 export default {
   name: 'settings',
@@ -2044,9 +2131,11 @@ export default {
     SectionSettings,
     FilterClearButton,
     ActionToolbar,
+    AppButton,
   },
   data () {
     return {
+      fontFilter: '',
       githubProjectData: {
         stars: 0,
       },
@@ -2183,6 +2272,7 @@ export default {
       visualFiltersBrightnessValue: 'storageData.settings.visualFilters.brightness.value',
       visualFiltersSaturation: 'storageData.settings.visualFilters.saturation',
       visualFiltersSaturationValue: 'storageData.settings.visualFilters.saturation.value',
+      font: 'storageData.settings.text.font',
       dateTimeMonth: 'storageData.settings.dateTime.month',
       dateTimePropertiesShowSeconds: 'storageData.settings.dateTime.properties.showSeconds',
       dateTimePropertiesShowMilliseconds: 'storageData.settings.dateTime.properties.showMilliseconds',
@@ -2242,6 +2332,7 @@ export default {
   },
   mounted () {
     this.$store.dispatch('routeOnMounted', this.$route.name)
+    this.fetchSystemFonts()
     this.fetchSettingsDataMap()
     this.fetchGithubProjectData()
   },
@@ -2258,7 +2349,15 @@ export default {
       searchInProgress: 'globalSearch.searchInProgress',
       settingsDataMap: 'settingsView.settingsDataMap',
       filterQuery: 'filterField.view.settings.query',
+      fonts: 'storageData.settings.text.fonts',
     }),
+    filteredFonts () {
+      const filterQuery = this.fontFilter.toLowerCase()
+      return this.fonts.filter(font => {
+        const nameMatch = font.name.toLowerCase().includes(filterQuery)
+        return nameMatch
+      })
+    },
     validatedOpenDirItemSecondClickDelay: {
       get () {
         return this.openDirItemSecondClickDelay
@@ -2395,6 +2494,23 @@ export default {
     },
   },
   methods: {
+    async fetchSystemFonts () {
+      electron.ipcRenderer.send('focus-main-app-window')
+      setTimeout(async () => {
+        const defaultFont = this.defaultData.storageData.settings.text.font
+        const systemFonts = await getSystemFontsWithType()
+        this.fonts = [...[{name: defaultFont, type: ''}], ...systemFonts]
+      }, 500)
+    },
+    resetFont () {
+      this.font = this.defaultData.storageData.settings.text.font
+    },
+    isDeafultFont (font) {
+      return font === this.defaultData.storageData.settings.text.font
+    },
+    setDateTimeLocale (locale) {
+      this.dateTimeLocale = locale
+    },
     fetchSettingsDataMap () {
       this.settingsDataMap = [
         {
@@ -2432,6 +2548,10 @@ export default {
         {
           sectionName: 'animations',
           tags: this.$localize.get('animations_tags'),
+        },
+        {
+          sectionName: 'fonts',
+          tags: this.$localize.get('fonts_tags'),
         },
         {
           sectionName: 'date-time',

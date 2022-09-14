@@ -10,6 +10,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     :show-action-toolbar="showActionToolbar"
     :dir-item-background="dirItemBackground"
     :is-window-maximized="windowsMainStateIsMaximized"
+    :style="{'--font': font}"
   >
     <window-toolbar />
     <navigation-panel />
@@ -181,6 +182,7 @@ export default {
       dialogs: 'dialogs',
       appPaths: 'storageData.settings.appPaths',
       detectedLocale: 'detectedLocale',
+      font: 'storageData.settings.text.font',
       currentDir: 'navigatorView.currentDir',
       navigatorRouteIsLoaded: 'navigatorRouteIsLoaded',
       navigationPanel: 'navigationPanel',
@@ -1262,7 +1264,7 @@ html
   #app {
     color: var(--color-6) !important;
     font-family:
-      'Roboto-regular',
+      var(--font, 'Roboto-regular'),
       /* Fix for: some emoji not being displayed properly */
       'Segoe UI Emoji',
       'Apple Color Emoji',

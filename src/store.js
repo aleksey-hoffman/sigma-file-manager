@@ -396,6 +396,10 @@ export default new Vuex.Store({
         time: {
           lastSearchScan: null
         },
+        text: {
+          font: 'Roboto-regular',
+          fonts: []
+        },
         dateTime: {
           month: 'short',
           properties: {

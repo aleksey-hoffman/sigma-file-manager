@@ -8,7 +8,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     <template #activator="{on}">
       <v-btn
         :value="value"
-        :icon="!!icon"
+        :icon="!!icon && type === 'icon'"
         :small="small"
         :class="buttonClass"
         :disabled="isDisabled"
@@ -35,6 +35,10 @@ export default {
     onClick: {
       type: Function,
       default: () => ({}),
+    },
+    type: {
+      type: String,
+      default: 'icon', // 'icon' | 'button'
     },
     icon: {
       type: String,
