@@ -1677,7 +1677,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                       v-model="globalSearchAutoScanIntervalTime"
                       :items="globalSearchAutoScanIntervalItems"
                       :label="`Auto scan period ${disabledInDev}`"
-                      :disabled="scanInProgress"
+                      :disabled="scanInProgress || searchInProgress"
                       :menu-props="{
                         contentClass: 'custom-scrollbar',
                         offsetY: true
@@ -1707,7 +1707,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                             v-model="globalSearchScanDepth"
                             class="mt-0"
                             :items="suggestedGlobalSearchScanDepthItems"
-                            :disabled="scanInProgress"
+                            :disabled="scanInProgress || searchInProgress"
                             label="Scan depth"
                             :menu-props="{
                               contentClass: 'custom-scrollbar',
@@ -1746,7 +1746,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                             <v-switch
                               v-model="globalSearchCompressSearchData"
                               class="mt-0"
-                              :disabled="scanInProgress"
+                              :disabled="scanInProgress || searchInProgress"
                               @change="$eventHub.$emit('app:method', {
                                 method: 'initGlobalSearchDataScan'
                               })"
@@ -1774,7 +1774,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                       v-model="globalSearchDisallowedPaths"
                       :items="globalSearchDisallowedPathsItems"
                       label="Ignored paths"
-                      :disabled="scanInProgress"
+                      :disabled="scanInProgress || searchInProgress"
                       multiple
                       style="max-width: 400px"
                     >
@@ -2255,6 +2255,7 @@ export default {
       UIZoomLevel: 'storageData.settings.UIZoomLevel',
       toolbarColorItems: 'storageData.settings.theme.toolbarColorItems',
       scanInProgress: 'globalSearch.scanInProgress',
+      searchInProgress: 'globalSearch.searchInProgress',
       settingsDataMap: 'settingsView.settingsDataMap',
       filterQuery: 'filterField.view.settings.query',
     }),

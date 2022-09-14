@@ -204,6 +204,7 @@ export default {
       timeSinceLoadDirItems: 'navigatorView.timeSinceLoadDirItems',
       history: 'navigatorView.history',
       globalSearchScanInProgress: 'globalSearch.scanInProgress',
+      globalSearchInProgress: 'globalSearch.searchInProgress',
       drives: 'drives',
       drivesPreviousData: 'drivesPreviousData',
       storageDevicesData: 'storageDevicesData',
@@ -487,7 +488,7 @@ export default {
       }, 1000)
     },
     async initGlobalSearchDataScan () {
-      if (this.globalSearchIsEnabled) {
+      if (this.globalSearchIsEnabled && !this.globalSearchInProgress) {
         // TODO: Check if the drive has enough space on it
         await this.initGlobalSearchDataFiles()
         await this.startGlobalSearchDataScan()

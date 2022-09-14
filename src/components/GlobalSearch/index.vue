@@ -824,7 +824,7 @@ export default {
   width: 100%;
   height: 100%;
   background-color: var(--bg-color-1);
-  z-index: 1;
+  z-index: 10;
   display: flex;
   align-items: center;
   justify-content: center;
