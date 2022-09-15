@@ -843,7 +843,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                             <v-list-item-title :style="{'font-family': item.name}">
                               {{item.name}}
                             </v-list-item-title>
-                            <v-list-item-subtitle>
+                            <v-list-item-subtitle :style="{'font-family': item.name}">
                               {{item.type}} {{isDeafultFont(item.name) ? '(default font)' : ''}}
                             </v-list-item-subtitle>
                           </v-list-item-content>
