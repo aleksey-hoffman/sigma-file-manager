@@ -850,7 +850,24 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                         </v-list-item>
                       </template>
                       <template #selection="{item}">
-                        {{item.name}}
+                        <v-layout
+                          v-if="isFetchingSystemFonts"
+                          align-center
+                        >
+                          <v-progress-circular
+                            indeterminate
+                            size="20"
+                            width="2"
+                            :background-color="$utils.getCSSVar('--bg-color-2')"
+                            :color="$utils.getCSSVar('--highlight-color-1')"
+                          />
+                          <div class="ml-2">
+                            Loading...
+                          </div>
+                        </v-layout>
+                        <div v-else>
+                          {{item.name}}
+                        </div>
                       </template>
                     </v-select>
 
@@ -2135,6 +2152,7 @@ export default {
   },
   data () {
     return {
+      isFetchingSystemFonts: false,
       fontFilter: '',
       githubProjectData: {
         stars: 0,
@@ -2496,10 +2514,12 @@ export default {
   methods: {
     async fetchSystemFonts () {
       electron.ipcRenderer.send('focus-main-app-window')
+      this.isFetchingSystemFonts = true
       setTimeout(async () => {
         const defaultFont = this.defaultData.storageData.settings.text.font
         const systemFonts = await getSystemFontsWithType()
         this.fonts = [...[{name: defaultFont, type: ''}], ...systemFonts]
+        this.isFetchingSystemFonts = false
       }, 500)
     },
     resetFont () {
