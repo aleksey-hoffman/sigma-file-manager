@@ -1442,6 +1442,16 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                         label="Show tab preview"
                         hide-details
                       />
+
+                      <div class="text--sub-title-1 mt-2">
+                        Tab storage indicator
+                      </div>
+                      <v-switch
+                        v-model="showTabStorageIndicator"
+                        class="my-0"
+                        label="Show storage indicator on navigator tab"
+                        hide-details
+                      />
                     </div>
                   </v-expand-transition>
 
@@ -2279,6 +2289,7 @@ export default {
       navigatorTabBehavior: 'storageData.settings.navigator.tabs.tabBehavior',
       navigatorTabLayout: 'storageData.settings.navigator.tabs.layout',
       showTabPreview: 'storageData.settings.navigator.tabs.showTabPreview',
+      showTabStorageIndicator: 'storageData.settings.navigator.tabs.showTabStorageIndicator',
       closeAppWindowWhenLastWorkspaceTabIsClosed: 'storageData.settings.navigator.tabs.closeAppWindowWhenLastWorkspaceTabIsClosed',
       navigatorhistoryNavigationStyleSelected: 'storageData.settings.navigator.historyNavigationStyle.selected',
       navigatorShowHiddenDirItems: 'storageData.settings.navigator.showHiddenDirItems',

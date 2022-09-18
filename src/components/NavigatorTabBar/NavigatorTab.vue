@@ -18,7 +18,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         @click.stop="tabOnClick(tab)"
       >
         <div class="navigator-tab__title">
-          <span class="navigator-tab__indicator-container">
+          <span
+            v-if="showTabStorageIndicator"
+            class="navigator-tab__indicator-container"
+          >
             {{tabIndicatorText(tab)}}
           </span>
           <span>
@@ -51,6 +54,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <script>
 import {mapGetters} from 'vuex'
+import {mapFields} from 'vuex-map-fields'
 
 export default {
   props: {
@@ -66,6 +70,7 @@ export default {
     ]),
     ...mapFields({
       showTabPreview: 'storageData.settings.navigator.tabs.showTabPreview',
+      showTabStorageIndicator: 'storageData.settings.navigator.tabs.showTabStorageIndicator',
     }),
   },
   methods: {
