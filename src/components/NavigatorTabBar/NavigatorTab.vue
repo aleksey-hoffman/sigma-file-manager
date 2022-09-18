@@ -5,10 +5,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <template>
   <div
-    class="navigator-tab"
-    @click.stop="tabOnClick(tab)"
-    :is-active="tab.path === $store.state.navigatorView.currentDir.path"
     v-ripple
+    class="navigator-tab"
+    :is-active="tab.path === $store.state.navigatorView.currentDir.path"
+    @click.stop="tabOnClick(tab)"
   >
     <div class="navigator-tab__title">
       <span class="navigator-tab__indicator-container">
@@ -19,14 +19,16 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       </span>
     </div>
 
-    <v-btn
+    <button
       class="navigator-tab__close-button"
-      @click.stop="tabCloseButtonOnClick(tab)"
       x-small
       icon
+      @click.stop="tabCloseButtonOnClick(tab)"
     >
-      <v-icon size="14px">mdi-close</v-icon>
-    </v-btn>
+      <v-icon size="14px">
+        mdi-close
+      </v-icon>
+    </button>
   </div>
 </template>
 
@@ -38,6 +40,7 @@ export default {
     tab: {
       type: Object,
       tabOnClick: Function,
+      default: () => ({}),
     },
   },
   computed: {
@@ -70,13 +73,14 @@ export default {
   position: relative;
   display: flex;
   align-items: center;
-  height: calc(var(--window-toolbar-height) - 4px);
+  height: var(--tab-height);
   min-width: 0;
   width: 100px;
   padding: 0px 8px;
   padding-right: 4px;
   color: var(--navigator-tab-color);
-  border-right: 1px solid rgb(255, 255, 255, 0.08);
+  border: 1px solid rgb(255, 255, 255, 0.06);
+  border-top: none;
   background-color: transparent;
   cursor: pointer;
   user-select: none;
@@ -122,7 +126,13 @@ export default {
 
 .navigator-tab__close-button {
   position: absolute;
-  right: 4px;
-  background-color: rgb(44, 47, 53);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  right: 0;
+  width: 24px;
+  height: 24px;
+  background-color: var(--bg-color-2);
+  border-radius: 0;
 }
 </style>

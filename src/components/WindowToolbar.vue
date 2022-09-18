@@ -61,7 +61,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           </template>
 
           <template v-if="showNavigatorTabBar(item) && item.breakpoint && $vuetify.breakpoint[item.breakpoint]">
-            <navigator-tab-bar />
+            <NavigatorTabBar />
           </template>
 
           <template v-if="item.type === 'notification-menu' && item.ifCondition">
@@ -152,9 +152,14 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 import electron from 'electron'
 import {mapFields} from 'vuex-map-fields'
 import {mapGetters} from 'vuex'
+import NavigatorTabBar from '@/components/NavigatorTabBar/NavigatorTabBar.vue'
+
 const electronRemote = require('@electron/remote')
 
 export default {
+  components: {
+    NavigatorTabBar,
+  },
   data () {
     return {
       window: electronRemote.getCurrentWindow(),

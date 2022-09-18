@@ -7,18 +7,16 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
   <div class="tab-bar-outer-container">
     <div class="tab-bar-container custom-scrollbar custom-scrollbar--lighter-1">
       <div class="tab-bar">
-        <drag-sortable-list
+        <DragSortableList
           :items="selectedWorkspace.tabs"
           :update-items="setTabs"
         >
           <template #item="{item}">
-            <navigator-tab
-              :tab="item"
-            >
+            <NavigatorTab :tab="item">
               {{item.name}}
-            </navigator-tab>
+            </NavigatorTab>
           </template>
-        </drag-sortable-list>
+        </DragSortableList>
       </div>
     </div>
 
@@ -36,11 +34,15 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <script>
 import {mapGetters} from 'vuex'
+import NavigatorTab from './NavigatorTab.vue'
 import AppButton from '@/components/AppButton/AppButton.vue'
+import DragSortableList from '@/components/DragSortableList/DragSortableList.vue'
 
 export default {
   components: {
+    NavigatorTab,
     AppButton,
+    DragSortableList,
   },
   mounted () {
     this.changeScrollPosition()

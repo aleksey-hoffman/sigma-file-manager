@@ -21,6 +21,7 @@
     var(--window-toolbar-height) +
     var(--action-toolbar-height)
   );
+  --tab-height: calc(var(--window-toolbar-height) - 4px);
 }
 
 #app[data-theme-type="light"] {}

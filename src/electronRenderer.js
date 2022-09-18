@@ -46,9 +46,6 @@ import WindowEffects from './components/WindowEffects.vue'
 import HomeBanner from './components/HomeBanner.vue'
 import FsLocalServerManager from './components/FsLocalServerManager.vue'
 import ShortcutList from './components/ShortcutList.vue'
-import NavigatorTab from './components/NavigatorTab.vue'
-import NavigatorTabBar from './components/NavigatorTabBar.vue'
-import DragSortableList from './components/DragSortableList.vue'
 
 // Register components
 Vue.component('window-toolbar', WindowToolbar)
@@ -82,9 +79,6 @@ Vue.component('window-effects', WindowEffects)
 Vue.component('home-banner', HomeBanner)
 Vue.component('fs-local-server-manager', FsLocalServerManager)
 Vue.component('shortcut-list', ShortcutList)
-Vue.component('navigator-tab', NavigatorTab)
-Vue.component('navigator-tab-bar', NavigatorTabBar)
-Vue.component('drag-sortable-list', DragSortableList)
 
 const localize = require('./utils/localize')
 require('overlayscrollbars/css/OverlayScrollbars.css')

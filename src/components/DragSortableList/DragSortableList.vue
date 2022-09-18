@@ -5,15 +5,15 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <template>
   <Container
+    v-if="items.length !== 0"
     class="drag-sortable-list--horizontal"
     drag-class="drag-sortable-list--horizontal__item--drag-active"
-    v-if="items.length !== 0"
-    @drop="onItemDrop"
     :animation-duration="250"
     :get-ghost-parent="getItemGhostParent"
     drag-handle-selector=".item-drag-handle"
     lock-axis="x"
     orientation="horizontal"
+    @drop="onItemDrop"
   >
     <Draggable
       v-for="(item, index) in items"
@@ -21,8 +21,14 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       class="drag-sortable-list--horizontal__item"
       border
     >
-      <div class="item-drag-handle" drag>
-        <slot name="item" :item="item"></slot>
+      <div
+        class="item-drag-handle"
+        drag
+      >
+        <slot
+          name="item"
+          :item="item"
+        />
       </div>
     </Draggable>
   </Container>
@@ -37,8 +43,14 @@ export default {
     Draggable,
   },
   props: {
-    items: Array,
-    updateItems: Function,
+    items: {
+      type: Array,
+      default: () => ([]),
+    },
+    updateItems: {
+      type: Function,
+      default: () => ({}),
+    },
   },
   methods: {
     getItemGhostParent () {
