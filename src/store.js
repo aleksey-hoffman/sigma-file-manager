@@ -435,6 +435,7 @@ export default new Vuex.Store({
           },
           tabs: {
             closeAppWindowWhenLastWorkspaceTabIsClosed: false,
+            showTabPreview: true,
             tabBehavior: 'immutable',
             tabBehaviorList: ['immutable', 'traditional'],
             layout: 'compact-vertical-and-traditional-horizontal',

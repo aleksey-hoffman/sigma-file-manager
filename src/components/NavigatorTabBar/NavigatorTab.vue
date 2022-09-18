@@ -4,32 +4,49 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <template>
-  <div
-    v-ripple
-    class="navigator-tab"
-    :is-active="tab.path === $store.state.navigatorView.currentDir.path"
-    @click.stop="tabOnClick(tab)"
+  <v-tooltip
+    :disabled="!showTabPreview"
+    bottom
+    max-width="200px"
   >
-    <div class="navigator-tab__title">
-      <span class="navigator-tab__indicator-container">
-        {{tabIndicatorText(tab)}}
-      </span>
-      <span>
-        {{tab.name}}
-      </span>
-    </div>
+    <template #activator="{ on }">
+      <div
+        v-ripple
+        class="navigator-tab"
+        :is-active="tab.path === $store.state.navigatorView.currentDir.path"
+        v-on="on"
+        @click.stop="tabOnClick(tab)"
+      >
+        <div class="navigator-tab__title">
+          <span class="navigator-tab__indicator-container">
+            {{tabIndicatorText(tab)}}
+          </span>
+          <span>
+            {{tab.name}}
+          </span>
+        </div>
 
-    <button
-      class="navigator-tab__close-button"
-      x-small
-      icon
-      @click.stop="tabCloseButtonOnClick(tab)"
-    >
-      <v-icon size="14px">
-        mdi-close
-      </v-icon>
-    </button>
-  </div>
+        <button
+          class="navigator-tab__close-button"
+          x-small
+          icon
+          @click.stop="tabCloseButtonOnClick(tab)"
+        >
+          <v-icon size="14px">
+            mdi-close
+          </v-icon>
+        </button>
+      </div>
+    </template>
+    <span>
+      <div class="navigator-tab__tooltip-title">
+        {{tab.name}}
+      </div>
+      <div class="navigator-tab__tooltip-subtitle">
+        {{tab.path}}
+      </div>
+    </span>
+  </v-tooltip>
 </template>
 
 <script>
@@ -47,6 +64,9 @@ export default {
     ...mapGetters([
       'selectedWorkspace',
     ]),
+    ...mapFields({
+      showTabPreview: 'storageData.settings.navigator.tabs.showTabPreview',
+    }),
   },
   methods: {
     tabIndicatorText (tab) {
@@ -134,5 +154,17 @@ export default {
   height: 24px;
   background-color: var(--bg-color-2);
   border-radius: 0;
+}
+
+.navigator-tab__tooltip-title {
+  color: var(--color-5);
+  font-size: 16px;
+  word-break: break-word;
+}
+
+.navigator-tab__tooltip-subtitle {
+  color: var(--color-7);
+  font-size: 14px;
+  word-break: break-word;
 }
 </style>

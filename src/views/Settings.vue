@@ -1431,6 +1431,20 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     />
                   </v-radio-group>
 
+                  <v-expand-transition>
+                    <div v-show="navigatorTabLayout === 'compact-vertical-and-traditional-horizontal'">
+                      <div class="text--sub-title-1 mt-2">
+                        Tab preview
+                      </div>
+                      <v-switch
+                        v-model="showTabPreview"
+                        class="my-0"
+                        label="Show tab preview"
+                        hide-details
+                      />
+                    </div>
+                  </v-expand-transition>
+
                   <div class="text--sub-title-1 mt-2">
                     Options
                   </div>
@@ -2264,6 +2278,7 @@ export default {
       showWorkspaceTitleInToolbar: 'storageData.settings.navigator.workspaces.showTitleInToolbar',
       navigatorTabBehavior: 'storageData.settings.navigator.tabs.tabBehavior',
       navigatorTabLayout: 'storageData.settings.navigator.tabs.layout',
+      showTabPreview: 'storageData.settings.navigator.tabs.showTabPreview',
       closeAppWindowWhenLastWorkspaceTabIsClosed: 'storageData.settings.navigator.tabs.closeAppWindowWhenLastWorkspaceTabIsClosed',
       navigatorhistoryNavigationStyleSelected: 'storageData.settings.navigator.historyNavigationStyle.selected',
       navigatorShowHiddenDirItems: 'storageData.settings.navigator.showHiddenDirItems',
