@@ -33,6 +33,7 @@ export default {
   env: process.env.NODE_ENV,
   platform: process.platform,
   isWindowsStore: process.isWindowsStore,
+  detectedLocale,
   unixHiddenFileRegex: /(^|[\/\\])\../,
   getSrc (relativePath) {
     return process.env.NODE_ENV === 'production'
@@ -548,19 +549,20 @@ export default {
   },
   getLocalDateTime (date, options = {}) {
     try {
-      return new Intl.DateTimeFormat(detectedLocale, {
+      return new Intl.DateTimeFormat(options.regionalFormat.code || options.regionalFormat || detectedLocale, {
         ...{
           year: 'numeric',
           month: 'numeric',
           day: 'numeric',
           hour: 'numeric',
           minute: 'numeric',
+          hour12: options.properties.hour12,
           second: options.properties.showSeconds ? 'numeric' : undefined,
           fractionalSecondDigits: options.properties.showMilliseconds ? 3 : undefined,
         },
-        ...options
+        ...options,
       })
-      .format(date)
+        .format(new Date(date))
     }
     catch (error) {
       return 'unknown'

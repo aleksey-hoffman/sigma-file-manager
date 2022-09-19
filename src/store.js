@@ -402,6 +402,9 @@ export default new Vuex.Store({
         },
         dateTime: {
           month: 'short',
+          regionalFormat: {code: 'en', name: 'English'},
+          autoDetectRegionalFormat: true,
+          hour12: false,
           properties: {
             showSeconds: false,
             showMilliseconds: false,

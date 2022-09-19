@@ -915,9 +915,77 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   </div>
 
                   <div class="text--sub-title-1 mt-2">
+                    Date / time regional format
+                  </div>
+                  <v-switch
+                    v-model="autoDetectDateTimeRegionalFormat"
+                    label="Auto detect regional format"
+                    class="mt-0 mb-2 pt-0"
+                    hide-details
+                  />
+                  <v-expand-transition>
+                    <v-layout
+                      v-if="!autoDetectDateTimeRegionalFormat"
+                      align-center
+                    >
+                      <v-select
+                        v-model="dateTimeRegionalFormat"
+                        :items="filteredDateTimeRegionalFormats"
+                        :menu-props="{'max-width': '400px'}"
+                        return-object
+                        item-value="code"
+                        item-text="name"
+                        label="Date / time regional format"
+                        style="max-width: 400px"
+                      >
+                        <template #prepend-item>
+                          <v-list-item @mousedown.prevent>
+                            <v-text-field
+                              v-model="dateTimeRegionalFormatFilter"
+                              class="pt-0 mb-2"
+                              label="Filter"
+                              single-line
+                              hide-details
+                            />
+                          </v-list-item>
+                          <v-divider class="mt-2" />
+                        </template>
+                        <template #item="{item}">
+                          <v-list-item
+                            :is-active="dateTimeRegionalFormat === item.code"
+                            @click.stop="dateTimeRegionalFormat = item.code"
+                          >
+                            <v-list-item-content>
+                              <v-list-item-title>
+                                {{item.name}}
+                              </v-list-item-title>
+                              <v-list-item-subtitle>
+                                {{item.code}}
+                              </v-list-item-subtitle>
+                            </v-list-item-content>
+                          </v-list-item>
+                        </template>
+                        <template #selection="{item}">
+                          {{item.name}}
+                        </template>
+                      </v-select>
+
+                      <AppButton
+                        button-class="button-1 ml-2"
+                        type="button"
+                        small
+                        icon="mdi-restore-alert"
+                        icon-size="18px"
+                        icon-class="action-toolbar__icon"
+                        tooltip="Reset regional format to default"
+                        @click="resetRegionalFormat()"
+                      />
+                    </v-layout>
+                  </v-expand-transition>
+
+                  <div class="text--sub-title-1 mt-2">
                     Month format
                   </div>
-
                   <v-radio-group
                     v-model="dateTimeMonth"
                     class="py-0 mt-0"
@@ -933,19 +1001,31 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     />
                   </v-radio-group>
 
+                  <div class="text--sub-title-1 mt-4">
+                    Time format
+                  </div>
+                  <v-switch
+                    v-model="dateTimeHour12"
+                    label="12-hour format"
+                    class="mt-0 mb-4 pt-0"
+                    hide-details
+                  />
+
                   <div class="text--sub-title-1 mt-2">
                     Displayed date properties
                   </div>
                   <v-switch
                     v-model="dateTimePropertiesShowSeconds"
-                    class="mt-0 pt-0"
+                    class="mt-0 mb-4 pt-0"
                     label="Show seconds"
+                    hide-details
                   />
 
                   <v-switch
                     v-model="dateTimePropertiesShowMilliseconds"
-                    class="mt-0 pt-0"
+                    class="mt-0 mb-4 pt-0"
                     label="Show milliseconds"
+                    hide-details
                   />
                 </template>
               </section-settings>
@@ -2163,6 +2243,7 @@ import itemFilter from '../utils/itemFilter'
 import FilterClearButton from '@/components/FilterClearButton/index.vue'
 import AppButton from '@/components/AppButton/AppButton.vue'
 import {getSystemFontsWithType} from '@/utils/getSystemFonts.js'
+import {regionalFormats} from '@/data/regionalFormats.js'
 
 const electron = require('electron')
 
@@ -2178,6 +2259,7 @@ export default {
     return {
       isFetchingSystemFonts: false,
       fontFilter: '',
+      dateTimeRegionalFormatFilter: '',
       githubProjectData: {
         stars: 0,
       },
@@ -2203,6 +2285,11 @@ export default {
         this.$eventHub.$emit('app:method', {
           method: 'initGlobalSearchDataScan',
         })
+      }
+    },
+    autoDetectDateTimeRegionalFormat (value) {
+      if (value) {
+        this.setAutoDetectedDateTimeRegionalFormat()
       }
     },
     windowTransparencyEffectOptionsSelectedPage: {
@@ -2318,6 +2405,9 @@ export default {
       visualFiltersSaturationValue: 'storageData.settings.visualFilters.saturation.value',
       font: 'storageData.settings.text.font',
       dateTimeMonth: 'storageData.settings.dateTime.month',
+      dateTimeHour12: 'storageData.settings.dateTime.hour12',
+      dateTimeRegionalFormat: 'storageData.settings.dateTime.regionalFormat',
+      autoDetectDateTimeRegionalFormat: 'storageData.settings.dateTime.autoDetectRegionalFormat',
       dateTimePropertiesShowSeconds: 'storageData.settings.dateTime.properties.showSeconds',
       dateTimePropertiesShowMilliseconds: 'storageData.settings.dateTime.properties.showMilliseconds',
       navPanelDriveLetterOverlayValue: 'storageData.settings.overlays.navPanelDriveLetterOverlay.value',
@@ -2376,6 +2466,7 @@ export default {
   },
   mounted () {
     this.$store.dispatch('routeOnMounted', this.$route.name)
+    this.setAutoDetectedDateTimeRegionalFormat()
     this.fetchSystemFonts()
     this.fetchSettingsDataMap()
     this.fetchGithubProjectData()
@@ -2400,6 +2491,17 @@ export default {
       return this.fonts.filter(font => {
         const nameMatch = font.name.toLowerCase().includes(filterQuery)
         return nameMatch
+      })
+    },
+    dateTimeRegionalFormats () {
+      return regionalFormats
+    },
+    filteredDateTimeRegionalFormats () {
+      const filterQuery = this.dateTimeRegionalFormatFilter.toLowerCase()
+      return this.dateTimeRegionalFormats.filter(item => {
+        const codeMatch = item.code.toLowerCase().includes(filterQuery)
+        const nameMatch = item.name.toLowerCase().includes(filterQuery)
+        return codeMatch || nameMatch
       })
     },
     validatedOpenDirItemSecondClickDelay: {
@@ -2554,8 +2656,17 @@ export default {
     isDeafultFont (font) {
       return font === this.defaultData.storageData.settings.text.font
     },
-    setDateTimeLocale (locale) {
-      this.dateTimeLocale = locale
+    resetRegionalFormat () {
+      this.dateTimeRegionalFormat = this.defaultData.storageData.settings.dateTime.regionalFormat
+    },
+    setAutoDetectedDateTimeRegionalFormat () {
+      if (this.autoDetectDateTimeRegionalFormat) {
+        const detectedLocale = this.$utils.detectedLocale.toLowerCase()
+        let foundRegionalFormat = regionalFormats.find(regionalFormat => regionalFormat.code.toLowerCase() === detectedLocale)
+        if (foundRegionalFormat) {
+          this.dateTimeRegionalFormat = foundRegionalFormat
+        }
+      }
     },
     fetchSettingsDataMap () {
       this.settingsDataMap = [
