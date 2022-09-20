@@ -299,24 +299,23 @@ export default {
 }
 
 .item-card[design="neoinfusive-extruded"] {
-  background-color: var(--item-card-color--neoinfusive-extruded-1);
-  box-shadow: var(--item-card-shadow--neoinfusive-extruded-1);
+  background-color: var(--neoinfusive-extruded-bg-color-1);
+  box-shadow: var(--neoinfusive-extruded-shadow-1);
   border: 1px solid rgba(255, 255, 255, 0.0);
 }
 
 .item-card[design="neoinfusive-extruded"]:hover {
   background-color: rgba(0, 0, 0, 0);
-  border: 1px solid var(--item-card-color--neoinfusive-extruded-1);
+  border: 1px solid var(--neoinfusive-extruded-bg-color-1);
   box-shadow: none;
 }
 
 .item-card[design="neoinfusive-flat-glow"] {
-  background-color: var(--item-card-color--neoinfusive-flat-glow-1);
-  box-shadow: var(--item-card-shadow--neoinfusive-extruded);
+  background-color: var(--neoinfusive-flat-glow-bg-color-1);
 }
 
 .item-card[design="neoinfusive-flat-glow"]:hover {
-  box-shadow: var(--item-card-shadow-onhover--neoinfusive-flat-glow-1);
+  box-shadow: var(--neoinfusive-flat-glow-shadow-1--onhover);
   transform: scale(1.04);
 }
 

@@ -1083,7 +1083,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   </v-radio-group>
 
                   <div class="text--sub-title-1 mt-2">
-                    Item card design
+                    Home page item card design
                   </div>
 
                   <v-radio-group
@@ -1092,11 +1092,11 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     hide-details
                   >
                     <v-radio
-                      label="Neoinfusive-extruded"
+                      label="Neoinfusive | extruded"
                       value="neoinfusive-extruded"
                     />
                     <v-radio
-                      label="Neoinfusive-flat-glow"
+                      label="Neoinfusive | flat-glow"
                       value="neoinfusive-flat-glow"
                     />
                   </v-radio-group>

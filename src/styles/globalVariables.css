@@ -28,13 +28,13 @@
 
 #app[data-theme-type="dark"],
 #app[data-theme-type="light-filter"] {
-  --item-card-color--neoinfusive-flat-glow-1: rgb(255, 255, 255, 0.02);
-  --item-card-shadow--neoinfusive-flat-glow-1: none;
-  --item-card-shadow-onhover--neoinfusive-flat-glow-1:
+  --neoinfusive-flat-glow-bg-color-1: rgb(255, 255, 255, 0.02);
+  --neoinfusive-flat-glow-shadow-1: none;
+  --neoinfusive-flat-glow-shadow-1--onhover:
     0px 1px 4px rgb(255, 255, 255, 0.05),
     0px 22px 48px rgb(255, 255, 255, 0.02);
-  --item-card-color--neoinfusive-extruded-1: rgba(var(--bg-color-1-value), 0.4);
-  --item-card-shadow--neoinfusive-extruded-1: 
+  --neoinfusive-extruded-bg-color-1: rgba(var(--bg-color-1-value), 0.4);
+  --neoinfusive-extruded-shadow-1: 
     0px -2px 8px rgba(255, 255, 255, 0.025),
     0px -16px 20px rgba(255, 255, 255, 0.015),
     0px 1px 2.2px rgba(0, 0, 0, 0.022),
@@ -43,7 +43,10 @@
     0px 8px 17.9px rgba(0, 0, 0, 0.048),
     0px 15px 33.4px rgba(0, 0, 0, 0.058),
     0px 36px 80px rgba(0, 0, 0, 0.08); 
-  --item-card-shadow--neoinfusive-extruded-2: 
+  --neoinfusive-extruded-shadow-1--optimized: 
+    0px -2px 8px rgba(255, 255, 255, 0.025),
+    0px 36px 80px rgba(0, 0, 0, 0.08); 
+  --neoinfusive-extruded-shadow-2: 
     0px -0.4px 0.6px rgba(255, 255, 255, 0.003),
     0px -1.1px 1.3px rgba(255, 255, 255, 0.004),
     0px -2px 2.5px rgba(255, 255, 255, 0.005),
