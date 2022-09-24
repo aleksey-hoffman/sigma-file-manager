@@ -8,25 +8,28 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     <div v-if="userDirs.length === 0">
       No user directories found
     </div>
-
-    <item-card-grid
-      :lines="1"
-    >
-      <item-card
+    <ItemCardGrid :lines="1">
+      <ItemCard
         v-for="(userDir, index) in userDirsFormatted"
-        :key="'userDir-card-' + index"
+        :key="'user-dir-card-' + index"
         :item="userDir"
         :lines="1"
-        target-type="userDir"
+        target-type="user-dir"
       />
-    </item-card-grid>
+    </ItemCardGrid>
   </div>
 </template>
 
 <script>
 import {mapFields} from 'vuex-map-fields'
+import ItemCardGrid from '@/components/ItemCardGrid/ItemCardGrid.vue'
+import ItemCard from '@/components/ItemCard/ItemCard.vue'
 
 export default {
+  components: {
+    ItemCardGrid,
+    ItemCard,
+  },
   computed: {
     ...mapFields({
       userDirs: 'storageData.settings.appPaths.userDirs',

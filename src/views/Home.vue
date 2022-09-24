@@ -40,8 +40,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           <div class="text--sub-title-1 mb-3 mt-0">
             {{$localize.get('text_user_directories')}}
           </div>
-
-          <user-dirs-section/>
+          <UserDirsSection />
         </div>
 
         <!-- section:drives -->
@@ -51,7 +50,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           </div>
 
           <div class="content-area--home-route__section">
-            <device-section/>
+            <StorageDevicesSection />
           </div>
         </div>
       </div>
@@ -62,9 +61,13 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <script>
 import {mapFields} from 'vuex-map-fields'
 import ActionToolbar from '@/views/HomeView/ActionToolbar/ActionToolbar.vue'
+import StorageDevicesSection from '@/components/StorageDevicesSection/StorageDevicesSection.vue'
+import UserDirsSection from '@/components/UserDirsSection/UserDirsSection.vue'
 
 export default {
   components: {
+    StorageDevicesSection,
+    UserDirsSection,
     ActionToolbar,
   },
   name: 'home',

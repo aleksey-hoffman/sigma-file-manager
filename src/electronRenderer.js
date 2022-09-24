@@ -36,10 +36,6 @@ import ContextMenus from './components/ContextMenus.vue'
 import AddressBar from './components/AddressBar.vue'
 import FilterField from './components/FilterField.vue'
 import MediaIterator from './components/MediaIterator.vue'
-import ItemCard from './components/ItemCard.vue'
-import ItemCardGrid from './components/ItemCardGrid.vue'
-import DeviceSection from './components/DeviceSection.vue'
-import UserDirsSection from './components/UserDirsSection.vue'
 import UpdatingComponent from './components/UpdatingComponent.vue'
 import SectionSettings from './components/SectionSettings.vue'
 import WindowEffects from './components/WindowEffects.vue'
@@ -69,10 +65,6 @@ Vue.component('context-menus', ContextMenus)
 Vue.component('address-bar', AddressBar)
 Vue.component('filter-field', FilterField)
 Vue.component('media-iterator', MediaIterator)
-Vue.component('device-section', DeviceSection)
-Vue.component('user-dirs-section', UserDirsSection)
-Vue.component('item-card', ItemCard)
-Vue.component('item-card-grid', ItemCardGrid)
 Vue.component('updating-component', UpdatingComponent)
 Vue.component('section-settings', SectionSettings)
 Vue.component('window-effects', WindowEffects)

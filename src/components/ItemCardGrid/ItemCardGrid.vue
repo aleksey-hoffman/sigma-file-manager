@@ -5,10 +5,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <template>
   <div
-    class="item-card__container"
+    class="item-card-grid"
     :lines="lines"
   >
-    <slot></slot>
+    <slot />
   </div>
 </template>
 
@@ -24,14 +24,14 @@ export default {
 </script>
 
 <style>
-.item-card__container {
+.item-card-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   grid-auto-rows: 48px;
   gap: 16px;
 }
 
-.item-card__container[lines="2"] {
+.item-card-grid[lines="2"] {
   grid-auto-rows: 64px;
 }
 </style>
