@@ -1536,6 +1536,22 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   </v-expand-transition>
 
                   <div class="text--sub-title-1 mt-2">
+                    Tab properties
+                  </div>
+                  <div>
+                    Tab width: <span class="inline-code--light">{{navigatorTabWidth}}px</span>
+                  </div>
+                  <v-slider
+                    v-model="navigatorTabWidth"
+                    class="align-center"
+                    max="300"
+                    min="50"
+                    step="10"
+                    hide-details
+                    style="max-width: 250px"
+                  />
+
+                  <div class="text--sub-title-1 mt-2">
                     Options
                   </div>
                   <v-switch
@@ -2375,6 +2391,7 @@ export default {
       showWorkspaceTitleInToolbar: 'storageData.settings.navigator.workspaces.showTitleInToolbar',
       navigatorTabBehavior: 'storageData.settings.navigator.tabs.tabBehavior',
       navigatorTabLayout: 'storageData.settings.navigator.tabs.layout',
+      navigatorTabWidth: 'storageData.settings.navigator.tabs.tabWidth',
       showTabPreview: 'storageData.settings.navigator.tabs.showTabPreview',
       showTabStorageIndicator: 'storageData.settings.navigator.tabs.showTabStorageIndicator',
       closeAppWindowWhenLastWorkspaceTabIsClosed: 'storageData.settings.navigator.tabs.closeAppWindowWhenLastWorkspaceTabIsClosed',

@@ -13,6 +13,9 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       <div
         v-ripple
         class="navigator-tab"
+        :style="{
+          '--tab-width': `${navigatorTabWidth}px`
+        }"
         :is-active="tab.path === $store.state.navigatorView.currentDir.path"
         v-on="on"
         @click.stop="tabOnClick(tab)"
@@ -71,6 +74,7 @@ export default {
     ...mapFields({
       showTabPreview: 'storageData.settings.navigator.tabs.showTabPreview',
       showTabStorageIndicator: 'storageData.settings.navigator.tabs.showTabStorageIndicator',
+      navigatorTabWidth: 'storageData.settings.navigator.tabs.tabWidth',
     }),
   },
   methods: {
@@ -100,7 +104,7 @@ export default {
   align-items: center;
   height: var(--tab-height);
   min-width: 0;
-  width: 100px;
+  width: var(--tab-width, 100px);
   padding: 0px 8px;
   padding-right: 4px;
   color: var(--navigator-tab-color);

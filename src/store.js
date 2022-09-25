@@ -440,6 +440,7 @@ export default new Vuex.Store({
             closeAppWindowWhenLastWorkspaceTabIsClosed: false,
             showTabPreview: true,
             showTabStorageIndicator: true,
+            tabWidth: 100,
             tabBehavior: 'immutable',
             tabBehaviorList: ['immutable', 'traditional'],
             layout: 'compact-vertical-and-traditional-horizontal',
