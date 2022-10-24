@@ -11,8 +11,7 @@ import utils from './utils/utils'
 import sharedUtils from './utils/sharedUtils'
 import localizeUtils from './utils/localizeUtils'
 import storeUtils from './utils/storeUtils'
-import { eventHub } from './utils/eventHub'
-import { OverlayScrollbarsPlugin } from 'overlayscrollbars-vue'
+import {i18n} from './i18n/i18n'
 
 // Import components globally, without lazy loading
 import WindowToolbar from './components/WindowToolbar.vue'
@@ -96,6 +95,7 @@ appendLicense()
 Vue.use(OverlayScrollbarsPlugin)
 
 new Vue({
+  i18n,
   router,
   store,
   vuetify,

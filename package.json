@@ -63,6 +63,7 @@
     "through2": "^4.0.2",
     "trammel": "^5.0.0",
     "vue": "^2.6.12",
+    "vue-i18n": "^8.27.2",
     "vue-router": "^3.5.1",
     "vue-smooth-dnd": "^0.8.1",
     "vuetify": "^2.6.9",
