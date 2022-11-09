@@ -13,39 +13,6 @@
 // text_many_item: 'items'
 // text_other_item: 'items'
 
-import store from '../store'
-
 export function get (key, options = {}) {
-  const selectedLocale = store.state.storageData.settings.localization.selectedLanguage.locale
-  options = {
-    locale: selectedLocale,
-    capitalize: true,
-    ...options
-  }
-
-  const englishData = require('../localization/en.js').data
-  const selectedLanguageData = require(`../localization/${options.locale}`).data
-
-  const propertyExistsInLocale = selectedLanguageData[key] !== undefined
-  const propertyExistsInEnglish = englishData[key] !== undefined
-  const propertyExistsNowhere = !propertyExistsInLocale && !propertyExistsInEnglish
-
-  if (propertyExistsInLocale) {
-    return getLocaleValue(selectedLanguageData[key], options)
-  }
-  else if (propertyExistsInEnglish) {
-    return getLocaleValue(englishData[key], options)
-  }
-  else if (propertyExistsNowhere) {
-    return key
-  }
-}
-
-function getLocaleValue (key, options) {
-  if (options.capitalize) {
-    return key.replace(/^\p{CWU}/u, char => char.toLocaleUpperCase(options.locale))
-  }
-  else {
-    return key
-  }
+  return key
 }

@@ -133,7 +133,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                         depressed
                         v-on="on"
                       >
-                        {{selectedLanguage.name}} - {{selectedLanguage.locale}}
+                        {{selectedLanguage.name}} ({{selectedLanguage.locale}})
                         <v-icon class="ml-2">
                           mdi-menu-down
                         </v-icon>
@@ -141,17 +141,14 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     </template>
                     <v-list dense>
                       <v-list-item
-                        v-for="(language, index) in availableLanguages"
+                        v-for="(language, index) in languages"
                         :key="index"
                         :is-active="language.locale === selectedLanguage.locale"
-                        @click="$store.dispatch('SET', {
-                          key: 'storageData.localization.selectedLanguage',
-                          value: language
-                        })"
+                        @click="$store.dispatch('changeLanguage', language)"
                       >
                         <v-list-item-content>
                           <v-list-item-title>
-                            {{language.name}} - {{language.locale}}
+                            {{language.name}} ({{language.locale}})
                           </v-list-item-title>
                         </v-list-item-content>
                         <v-list-item-icon>
@@ -2444,7 +2441,7 @@ export default {
       focusFilterOnDirectoryChange: 'storageData.settings.focusFilterOnDirectoryChange',
       navigatorViewInfoPanel: 'storageData.settings.infoPanels.navigatorView',
       selectedLanguage: 'storageData.settings.localization.selectedLanguage',
-      availableLanguages: 'storageData.settings.localization.availableLanguages',
+      languages: 'storageData.settings.localization.languages',
       spellcheck: 'storageData.settings.spellcheck',
       globalSearchDisallowedPathsItems: 'storageData.settings.globalSearch.disallowedPathsItems',
       appPropertiesOpenAtLogin: 'storageData.settings.appProperties.openAtLogin',

@@ -11,7 +11,7 @@ import utils from './utils/utils'
 import sharedUtils from './utils/sharedUtils'
 import localizeUtils from './utils/localizeUtils'
 import storeUtils from './utils/storeUtils'
-import {i18n} from './i18n/i18n'
+import {i18n} from './localization/i18n'
 
 // Import components globally, without lazy loading
 import WindowToolbar from './components/WindowToolbar.vue'

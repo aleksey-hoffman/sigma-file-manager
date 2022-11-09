@@ -78,6 +78,9 @@ export default {
         this.animateHomeBannerOut()
       }
     },
+    selectedLanguage (value) {
+      this.$i18n.locale = value.locale
+    },
     drives (value) {
       this.handleConnectedDriveActions(value)
     },
@@ -178,6 +181,7 @@ export default {
       appIsLoaded: 'appIsLoaded',
       appStatus: 'appStatus',
       inputState: 'inputState',
+      selectedLanguage: 'storageData.settings.localization.selectedLanguage',
       contextMenus: 'contextMenus',
       dialogs: 'dialogs',
       appPaths: 'storageData.settings.appPaths',

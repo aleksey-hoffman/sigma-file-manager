@@ -4,7 +4,8 @@
 
 import Vue from 'vue'
 import VueI18n from 'vue-i18n'
-import {locales} from './locales'
+import {locales} from './data'
+import {pluralRules} from './pluralRules'
 
 Vue.use(VueI18n)
 
@@ -12,6 +13,7 @@ export const i18n = new VueI18n({
   legacy: false,
   locale: 'en',
   messages: locales,
+  pluralRules,
   fallbackWarn: process.env.NODE_ENV === 'development',
   missingWarn: process.env.NODE_ENV === 'development',
 })

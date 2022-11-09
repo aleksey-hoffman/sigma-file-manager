@@ -7,6 +7,8 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 import { createNewSortInstance } from 'fast-sort'
 import router from './router.js'
+import {i18n} from './localization/i18n'
+import { languages, getLanguage } from './localization/data'
 import utils from './utils/utils'
 import TimeUtils from './utils/timeUtils.js'
 import * as fsManager from './utils/fsManager'
@@ -14,6 +16,7 @@ import { getField, updateField } from 'vuex-map-fields'
 import {readFile, readFileSync, writeFile, writeFileSync} from 'atomically'
 import * as notifications from './utils/notifications.js'
 import MediaInfoWorker from 'worker-loader!./workers/mediaInfoWorker.js'
+
 const electron = require('electron')
 const electronRemote = require('@electron/remote')
 const fsExtra = require('fs-extra')
@@ -639,16 +642,8 @@ export default new Vuex.Store({
         showUserNameOnUserHomeDir: true,
         shortcuts: appPaths.shortcuts,
         localization: {
-          selectedLanguage: {
-            name: 'English',
-            locale: 'en'
-          },
-          availableLanguages: [
-            {
-              name: 'English',
-              locale: 'en'
-            }
-          ]
+          selectedLanguage: getLanguage('en'),
+          languages
         },
         driveCard: {
           progressType: 'linearVertical',
@@ -2179,6 +2174,13 @@ export default new Vuex.Store({
           })
         }
       }
+    },
+    async changeLanguage ({dispatch}, language) {
+      i18n.locale = language.locale
+      dispatch('SET', {
+        key: 'storageData.settings.localization.selectedLanguage',
+        value: language,
+      })  
     },
     async resetAppSettings (store) {
       try {
