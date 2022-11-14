@@ -6,6 +6,7 @@ module.exports = {
   extends: [
     'plugin:vue/recommended',
     '@vue/standard',
+    'plugin:@intlify/vue-i18n/recommended',
   ],
   parserOptions: {
     parser: 'babel-eslint',
@@ -79,5 +80,20 @@ module.exports = {
     'vue/mustache-interpolation-spacing': ['error', 'never'],
     'vue/component-definition-name-casing': ['error', 'kebab-case'],
     'vue/order-in-components': 'off',
+    '@intlify/vue-i18n/no-raw-text': [
+      'error',
+      {
+        'ignoreNodes': ['v-icon'],
+        'ignoreText': ['(', ')', '[', ']', '{', '}', ',', '.', '...', ';', ':', '"', '\'', '+', '-', '=', '%', '@', '/', '\\', ' '],
+      },
+    ],
+    '@intlify/vue-i18n/no-missing-keys': ['error'],
+    '@intlify/vue-i18n/no-unused-keys': ['error'],
+    '@intlify/vue-i18n/valid-message-syntax': ['error'],
+  },
+  settings: {
+    'vue-i18n': {
+      localeDir: './src/localization/locales/*.{json}',
+    },
   },
 }
