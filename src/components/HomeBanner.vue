@@ -65,7 +65,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     <!-- home-banner::bottom-actions-container -->
     <v-layout align-center class="media-banner__inner__container--left">
       <div class="mr-2 media-banner__title fade-in-1s">
-        {{$localize.get('page_home_title')}}
+        {{$t('pages.homePage')}}
       </div>
 
       <!-- menu-button::home-banner -->

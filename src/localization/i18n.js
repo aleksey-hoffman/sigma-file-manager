@@ -13,7 +13,7 @@ export const i18n = new VueI18n({
   legacy: false,
   locale: 'en',
   messages: locales,
-  pluralRules,
+  pluralizationRules: pluralRules,
   fallbackWarn: process.env.NODE_ENV === 'development',
   missingWarn: process.env.NODE_ENV === 'development',
 })

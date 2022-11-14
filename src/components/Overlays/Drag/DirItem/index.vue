@@ -60,8 +60,7 @@ export default {
     overlayDescription () {
       const actionType = this.actionType === 'copy' ? 'Copy' : 'Move'
       const itemCount = this.selectedDirItems.length
-      const itemsText = this.$localizeUtils.pluralize(itemCount, 'item')
-      return `${actionType} ${itemCount} ${itemsText}`
+      return `${actionType} ${this.$tc('item', itemCount)}`
     },
   },
 }

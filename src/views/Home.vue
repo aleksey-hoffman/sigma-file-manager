@@ -32,13 +32,13 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       <!-- content-area -->
       <div id="home-route__content-area--main" class="content-area__main">
         <div class="text--title-1" v-show="!homeBannerValue">
-          {{$localize.get('page_home_title')}}
+          {{$t('pages.homePage')}}
         </div>
 
         <!-- section:user-dirs -->
         <div class="content-area__section mt-0">
           <div class="text--sub-title-1 mb-3 mt-0">
-            {{$localize.get('text_user_directories')}}
+            {{$t('userDirectories')}}
           </div>
           <UserDirsSection />
         </div>
@@ -88,10 +88,10 @@ export default {
     }),
     locationsTitle () {
       if (process.platform === 'win32') {
-        return this.$localize.get('text_drives')
+        return this.$t('drives')
       }
       else {
-        return this.$localize.get('locations')
+        return this.$t('locations')
       }
     }
   },

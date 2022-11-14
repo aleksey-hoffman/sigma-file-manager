@@ -243,7 +243,7 @@ export default {
       let itemMimeDescription = this.itemMimeDescription
         ? ` • ${this.itemMimeDescription}`
         : ''
-      let description = this.$localize.get(`text_${type.replace(/-/g, '_')}`)
+      let description = this.$t(this.$utils.toCamelCase(type))
       return `${description}${dirItemCount}${itemMimeDescription}${isOffline}${keepOnDevice}${inaccessible}`
     },
     itemType () {
@@ -258,8 +258,8 @@ export default {
     itemSizeTitle () {
       let type = this.lastSelectedDirItem?.type || ''
       return type === 'directory'
-        ? this.$localize.get('text_directory_size')
-        : this.$localize.get('text_file_size')
+        ? this.$t('directorySize')
+        : this.$t('fileSize')
     },
     previewIcon () {
       const type = this.lastSelectedDirItem?.type
@@ -318,13 +318,13 @@ export default {
       if (this.showCancelGetDirSizeBtn) {
         return {
           show,
-          title: this.$localize.get('text_cancel'),
+          title: this.$t('cancel'),
         }
       }
       else {
         return {
           show,
-          title: this.$localize.get('text_get_size'),
+          title: this.$t('getSize'),
         }
       }
     },
@@ -447,40 +447,40 @@ export default {
       let properties = [
         {
           propName: 'path',
-          title: this.$localize.get('text_path'),
+          title: this.$t('path'),
           value: item.path,
           tooltip: copyPathTooltip,
         },
         {
           propName: 'dateCreated',
-          title: this.$localize.get('text_created'),
+          title: this.$t('created'),
           value: this.$utils.getLocalDateTime(item.stat.birthtime, this.$store.state.storageData.settings.dateTime),
-          tooltip: `${this.$localize.get('tooltip_text_to_copy')}: ${copyShortcut}`,
+          tooltip: `${this.$t('toCopy')}: ${copyShortcut}`,
         },
         {
           propName: 'dateModified',
-          title: this.$localize.get('text_modified'),
+          title: this.$t('modified'),
           value: this.$utils.getLocalDateTime(item.stat.mtime, this.$store.state.storageData.settings.dateTime),
-          tooltip: `${this.$localize.get('tooltip_text_to_copy')}: ${copyShortcut}`,
+          tooltip: `${this.$t('toCopy')}: ${copyShortcut}`,
         },
         {
           propName: 'dateChanged',
-          title: this.$localize.get('text_changed'),
+          title: this.$t('changed'),
           value: this.$utils.getLocalDateTime(item.stat.ctime, this.$store.state.storageData.settings.dateTime),
-          tooltip: `${this.$localize.get('tooltip_text_to_copy')}: ${copyShortcut}`,
+          tooltip: `${this.$t('toCopy')}: ${copyShortcut}`,
         },
         {
           propName: 'permissions',
-          title: this.$localize.get('text_mode'),
+          title: this.$t('mode'),
           value: permissions,
-          tooltip: `${this.$localize.get('tooltip_text_to_copy')}: ${copyShortcut}`,
+          tooltip: `${this.$t('toCopy')}: ${copyShortcut}`,
         },
         {
           propName: 'protected',
-          title: this.$localize.get('text_protected'),
+          title: this.$t('protected'),
           value: isDirItemProtected
-            ? this.$localize.get('text_yes')
-            : this.$localize.get('text_no'),
+            ? this.$t('yes')
+            : this.$t('no'),
           tooltip: `
             Protected items cannot be modified or deleted (from within this app only). 
             Protected items can be found on the dashboard page.
@@ -488,10 +488,10 @@ export default {
         },
         {
           propName: 'pinned',
-          title: this.$localize.get('text_pinned'),
+          title: this.$t('pinned'),
           value: isDirItemPinned
-            ? this.$localize.get('text_yes')
-            : this.$localize.get('text_no'),
+            ? this.$t('yes')
+            : this.$t('no'),
           tooltip: 'Pinned items can be found on the dashboard page',
         },
       ]
@@ -499,7 +499,7 @@ export default {
       // Append conditional properties
       const realPath = {
         propName: 'realPath',
-        title: this.$localize.get('text_real_path'),
+        title: this.$t('realPath'),
         value: item.realPath,
         tooltip: copyPathTooltip,
       }
@@ -514,7 +514,7 @@ export default {
             if (data.length > 0) {
               properties.push({
                 type: 'separator',
-                title: this.$localize.get('media_info'),
+                title: this.$t('mediaInfo'),
               })
             }
 
@@ -558,7 +558,7 @@ export default {
         }
       }
       else if (params.property === 'bit_rate') {
-        return `${this.$utils.prettyBytes(Number(params.propertyValue), 1)} / ${this.$localize.get('sec', {capitalize: false})}`
+        return `${this.$utils.prettyBytes(Number(params.propertyValue), 1)} / ${this.$t('sec')}`
       }
       else {
         return params.propertyValue
@@ -583,7 +583,7 @@ export default {
           if (data.streams[0]) {
             dataFormatted.push({
               propName: property,
-              title: this.$localize.get(property),
+              title: this.$t(this.$utils.toCamelCase(property)),
               value: this.formatValue({property, propertyValue: data.streams[0][property]}),
             })
           }
@@ -609,7 +609,7 @@ export default {
           if (data.format) {
             dataFormatted.push({
               propName: property,
-              title: this.$localize.get(property),
+              title: this.$t(this.$utils.toCamelCase(property)),
               value: this.formatValue({property, propertyValue: data.format[property]}),
             })
           }
@@ -618,7 +618,7 @@ export default {
           if (data.format.tags) {
             dataFormatted.push({
               propName: property,
-              title: this.$localize.get(property),
+              title: this.$t(this.$utils.toCamelCase(property)),
               value: this.formatValue({property, propertyValue: data.format.tags[property]}),
             })
           }
@@ -628,7 +628,7 @@ export default {
             if (stream) {
               dataFormatted.push({
                 propName: property,
-                title: `${this.$localize.get('stream')} ${index + 1} • ${this.$localize.get(property)}`,
+                title: `${this.$t('stream')} ${index + 1} • ${this.$t(this.$utils.toCamelCase(property))}`,
                 value: this.formatValue({property, propertyValue: stream[property]}),
               })
             }
@@ -637,7 +637,7 @@ export default {
             if (stream.tags) {
               dataFormatted.push({
                 propName: property,
-                title: `${this.$localize.get('stream')} ${index + 1} • ${this.$localize.get(property)}`,
+                title: `${this.$t('stream')} ${index + 1} • ${this.$t(this.$utils.toCamelCase(property))}`,
                 value: this.formatValue({property, propertyValue: stream.tags[property]}),
               })
             }
@@ -677,7 +677,7 @@ export default {
           if (data.format) {
             dataFormatted.push({
               propName: property,
-              title: this.$localize.get(property),
+              title: this.$t(this.$utils.toCamelCase(property)),
               value: this.formatValue({property, propertyValue: data.format[property]}),
             })
           }
@@ -686,7 +686,7 @@ export default {
           if (data.format.tags) {
             dataFormatted.push({
               propName: property,
-              title: this.$localize.get(property),
+              title: this.$t(this.$utils.toCamelCase(property)),
               value: this.formatValue({property, propertyValue: data.format.tags[property]}),
             })
           }
@@ -696,7 +696,7 @@ export default {
             if (stream) {
               dataFormatted.push({
                 propName: property,
-                title: `${this.$localize.get('stream')} ${index + 1} • ${this.$localize.get(property)}`,
+                title: `${this.$t('stream')} ${index + 1} • ${this.$t(this.$utils.toCamelCase(property))}`,
                 value: this.formatValue({property, propertyValue: stream[property]}),
               })
             }
@@ -705,7 +705,7 @@ export default {
             if (stream.tags) {
               dataFormatted.push({
                 propName: property,
-                title: `${this.$localize.get('stream')} ${index + 1} • ${this.$localize.get(property)}`,
+                title: `${this.$t('stream')} ${index + 1} • ${this.$t(this.$utils.toCamelCase(property))}`,
                 value: this.formatValue({property, propertyValue: stream.tags[property]}),
               })
             }

@@ -14,7 +14,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       class="content-area custom-scrollbar"
     >
       <div class="content-area__title">
-        {{$localize.get('page_settings_title')}}
+        {{$t('pages.settings')}}
       </div>
       <v-divider class="my-3" />
 
@@ -25,9 +25,9 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         />
         <div class="content-area__header__content">
           <div class="content-area__header__text">
-            <strong>"Sigma File Manager"</strong> is a free, open source, advanced,
-            modern file manager app, licensed under GNU GPLv3 or later.
-            <br />Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
+            <strong>"{{$t('appName')}}"</strong>
+            {{$t('appDescription')}}
+            <br />{{$t('appCopyright')}}
           </div>
           <div
             v-if="$vuetify.breakpoint.mdAndUp"
@@ -99,7 +99,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               class="ml-4 mt-4"
             >
               <div class="text--sub-title-1">
-                Filtered settings
+                {{$t('filteredSettings')}}
               </div>
               <FilterClearButton
                 :filter-query="filterQuery"
@@ -121,7 +121,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   icon: {
                     name: 'mdi-translate'
                   },
-                  title: $localize.get('settings_language_title')
+                  title: $t('language')
                 }"
               >
                 <template #content>
@@ -159,9 +159,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                       </v-list-item>
                     </v-list>
                   </v-menu>
-                  <div class="mt-4">
-                    More languages will be added in the future updates
-                  </div>
+                  <div
+                    class="mt-4"
+                    v-html="$t('toAddNewLanguage')"
+                  />
                 </template>
               </section-settings>
 
@@ -174,12 +175,12 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     name: 'mdi-fullscreen',
                     size: '28px'
                   },
-                  title: $localize.get('settings_ui_zoom_title')
+                  title: $t('windowScaling')
                 }"
               >
                 <template #content>
                   <div class="text--sub-title-1 mt-2">
-                    {{$localize.get('settings_ui_zoom_options_title')}}
+                    {{$t('currentUiZoomLevel')}}
                     {{UIZoomLevelInPercents}}%
                   </div>
 
@@ -210,8 +211,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                       <span>
                         {{item.title}}
                         <div class="tooltip__description">
-                          {{item.title}}
-                          {{$localize.get('tooltip_button_shortcut')}} {{item.shortcut}}
+                          {{$t('shortcut')}} {{item.shortcut}}
                         </div>
                       </span>
                     </v-tooltip>
@@ -227,12 +227,12 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   icon: {
                     name: 'mdi-progress-upload',
                   },
-                  title: $localize.get('app_updates')
+                  title: $t('appUpdates')
                 }"
               >
                 <template #description>
                   <div class="text--sub-title-1 mt-2">
-                    {{$localize.get('current_version')}}: {{appVersion}}
+                    {{$t('currentVersion')}}: {{appVersion}}
                   </div>
                 </template>
                 <template #content>
@@ -243,7 +243,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                       small
                       @click="$store.dispatch('INIT_APP_UPDATER', {notifyUnavailable: true})"
                     >
-                      {{$localize.get('check_updates_now')}}
+                      {{$t('checkUpdatesNow')}}
                     </v-btn>
 
                     <v-tooltip bottom>
@@ -255,7 +255,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                           v-on="on"
                           @click="$utils.openLink(appPaths.githubAllReleases)"
                         >
-                          See all releases
+                          {{$t('seeAllReleases')}}
                         </v-btn>
                       </template>
                       <span>
@@ -272,26 +272,26 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     </v-tooltip>
                   </div>
                   <div class="text--sub-title-1 mt-2">
-                    Options
+                    {{$t('options')}}
                   </div>
 
                   <v-switch
                     v-model="autoCheckForAppUpdates"
-                    label="Check for updates automatically"
+                    :label="$t('checkForUpdatesAutomatically')"
                     hide-details
                   />
 
                   <v-switch
                     v-if="autoCheckForAppUpdates"
                     v-model="autoDownloadAppUpdates"
-                    label="Download updates automatically"
+                    :label="$t('downloadUpdatesAutomatically')"
                     hide-details
                   />
 
                   <v-switch
                     v-if="autoCheckForAppUpdates && autoDownloadAppUpdates"
                     v-model="autoInstallAppUpdates"
-                    label="Install updates automatically"
+                    :label="$t('installUpdatesAutomatically')"
                     hide-details
                   />
                 </template>
@@ -305,23 +305,23 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   icon: {
                     name: 'mdi-tune',
                   },
-                  title: $localize.get('app_properties')
+                  title: $t('appProperties')
                 }"
               >
                 <template #content>
                   <div class="text--sub-title-1 mt-2">
-                    Startup behavior
+                    {{$t('startupBehavior')}}
                   </div>
 
                   <v-switch
                     v-model="appPropertiesOpenAtLogin"
-                    label="Launch app on system login"
+                    :label="$t('launchAppOnSystemLogin')"
                     hide-details
                   />
 
                   <v-switch
                     v-model="appPropertiesOpenAsHidden"
-                    label="Launch app in hidden state"
+                    :label="$t('launchAppInHiddenState')"
                     hide-details
                   />
                 </template>
@@ -335,12 +335,12 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   icon: {
                     name: 'mdi-application-settings',
                   },
-                  title: 'Window controls'
+                  title: $t('windowControls')
                 }"
               >
                 <template #content>
                   <div class="text--sub-title-1 mt-2">
-                    Window "close" button action
+                    {{$t('windowCloseButtonAction')}}
                   </div>
 
                   <v-radio-group
@@ -1857,7 +1857,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
                   <div
                     class="mt-4"
-                    v-html="$localize.get('text_allow_global_search_message')"
+                    v-html="$t('allowGlobalSearchMessage')"
                   />
 
                   <div v-if="globalSearchIsEnabled">
@@ -2557,25 +2557,25 @@ export default {
     UIButtons () {
       return [
         {
-          title: this.$localize.get('tooltip_button_ui_zoom_decrease_title'),
+          title: this.$t('decreaseZoomLevel'),
           shortcut: this.shortcuts.zoomDecrease.shortcut,
           icon: 'mdi-minus',
           onClick: () => this.$store.dispatch('DECREASE_UI_ZOOM'),
         },
         {
-          title: this.$localize.get('tooltip_button_ui_zoom_increase_title'),
+          title: this.$t('increaseZoomLevel'),
           shortcut: this.shortcuts.zoomIncrease.shortcut,
           icon: 'mdi-plus',
           onClick: () => this.$store.dispatch('INCREASE_UI_ZOOM'),
         },
         {
-          title: this.$localize.get('tooltip_button_ui_zoom_reset_title'),
+          title: this.$t('resetZoomLevel'),
           shortcut: this.shortcuts.zoomReset.shortcut,
-          buttonText: this.$localize.get('settings_ui_zoom_button_reset'),
+          buttonText: this.$t('reset'),
           onClick: () => this.$store.dispatch('RESET_UI_ZOOM'),
         },
         {
-          title: this.$localize.get('tooltip_button_full_screen_title'),
+          title: this.$t('fullScreen'),
           shortcut: this.shortcuts.fullScreen.shortcut,
           icon: 'mdi-fullscreen',
           onClick: () => this.$utils.toggleFullscreen(),
@@ -2686,119 +2686,119 @@ export default {
       this.settingsDataMap = [
         {
           sectionName: 'language',
-          tags: this.$localize.get('language_tags'),
+          tags: this.$t('settingsTags.language'),
         },
         {
           sectionName: 'ui-scaling',
-          tags: this.$localize.get('ui_scaling_tags'),
+          tags: this.$t('settingsTags.uiScaling'),
         },
         {
           sectionName: 'updates',
-          tags: this.$localize.get('updates_tags'),
+          tags: this.$t('settingsTags.updates'),
         },
         {
           sectionName: 'app-properties',
-          tags: this.$localize.get('app_properties_tags'),
+          tags: this.$t('settingsTags.appProperties'),
         },
         {
           sectionName: 'window-controls',
-          tags: this.$localize.get('window_controls_tags'),
+          tags: this.$t('settingsTags.windowControls'),
         },
         {
           sectionName: 'visual-effects',
-          tags: this.$localize.get('visual_effects_tags'),
+          tags: this.$t('settingsTags.visualEffects'),
         },
         {
           sectionName: 'theme',
-          tags: this.$localize.get('theme_tags'),
+          tags: this.$t('settingsTags.theme'),
         },
         {
           sectionName: 'visual-filters',
-          tags: this.$localize.get('visual_filters_tags'),
+          tags: this.$t('settingsTags.visualFilters'),
         },
         {
           sectionName: 'animations',
-          tags: this.$localize.get('animations_tags'),
+          tags: this.$t('settingsTags.animations'),
         },
         {
           sectionName: 'fonts',
-          tags: this.$localize.get('fonts_tags'),
+          tags: this.$t('settingsTags.fonts'),
         },
         {
           sectionName: 'date-time',
-          tags: this.$localize.get('date_time_tags'),
+          tags: this.$t('settingsTags.dateTime'),
         },
         {
           sectionName: 'overlays',
-          tags: this.$localize.get('overlays_tags'),
+          tags: this.$t('settingsTags.overlays'),
         },
         {
           sectionName: 'ui-elements',
-          tags: this.$localize.get('ui_elements_tags'),
+          tags: this.$t('settingsTags.uiElements'),
         },
         {
           sectionName: 'home-page-media-banner',
-          tags: this.$localize.get('home_page_media_banner_tags'),
+          tags: this.$t('settingsTags.homePageMediaBanner'),
         },
         {
           sectionName: 'info-panel',
-          tags: this.$localize.get('info_panel_tags'),
+          tags: this.$t('settingsTags.infoPanel'),
         },
         {
           sectionName: 'navigator',
-          tags: this.$localize.get('navigator_tags'),
+          tags: this.$t('settingsTags.navigator'),
         },
         {
           sectionName: 'shortcuts',
-          tags: this.$localize.get('shortcuts_tags'),
+          tags: this.$t('settingsTags.shortcuts'),
         },
         {
           sectionName: 'gpu-system-memory',
-          tags: this.$localize.get('gpu_system_memory_tags'),
+          tags: this.$t('settingsTags.gpuSystemMemory'),
         },
         {
           sectionName: 'workspaces',
-          tags: this.$localize.get('workspaces_tags'),
+          tags: this.$t('settingsTags.workspaces'),
         },
         {
           sectionName: 'tabs',
-          tags: this.$localize.get('tabs_tags'),
+          tags: this.$t('settingsTags.tabs'),
         },
         {
           sectionName: 'navigator-history',
-          tags: this.$localize.get('navigator_history_tags'),
+          tags: this.$t('settingsTags.navigatorHistory'),
         },
         {
           sectionName: 'input-navigator',
-          tags: this.$localize.get('input_navigator_tags'),
+          tags: this.$t('settingsTags.inputNavigator'),
         },
         {
           sectionName: 'input-elements',
-          tags: this.$localize.get('input_elements_tags'),
+          tags: this.$t('settingsTags.inputElements'),
         },
         {
           sectionName: 'mouse-buttons',
-          tags: this.$localize.get('mouse_buttons_tags'),
+          tags: this.$t('settingsTags.mouseButtons'),
         },
         {
           sectionName: 'global-search',
-          tags: this.$localize.get('global_search_tags'),
+          tags: this.$t('settingsTags.globalSearch'),
         },
         {
           sectionName: 'data-backup-reminder',
-          tags: this.$localize.get('data_backup_reminder_tags'),
+          tags: this.$t('settingsTags.dataBackupReminder'),
         },
         {
           sectionName: 'drive-detection',
-          tags: this.$localize.get('drive_detection_tags'),
+          tags: this.$t('settingsTags.driveDetection'),
         },
         {
           sectionName: 'image-thumbnails',
-          tags: this.$localize.get('image_thumbnails_tags'),
+          tags: this.$t('settingsTags.imageThumbnails'),
         },
         {
           sectionName: 'directory-item-statistics',
-          tags: this.$localize.get('directory_item_statistics_tags'),
+          tags: this.$t('settingsTags.directoryItemStatistics'),
         },
       ]
     },

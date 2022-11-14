@@ -350,8 +350,9 @@ export default {
       return this.filteredDirItems
     },
     getDirItemGroupTitleDescription (itemCount) {
-      const itemWord = this.$localizeUtils.pluralize(itemCount, 'item')
-      return this.dirItemsInfoIsFetched ? `${itemCount} ${itemWord}` : `Loading ${itemWord}`
+      return this.dirItemsInfoIsFetched
+        ? `${this.$tc('item', itemCount)}`
+        : `${this.$t('loading')} ${this.$t('itemPlural')}`
     },
     getDirItemGroupTitle (type) {
       if (type === 'directory') {

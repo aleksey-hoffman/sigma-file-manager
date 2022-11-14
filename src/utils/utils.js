@@ -2,7 +2,6 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-import * as localize from './localize.js'
 import * as notifications from './notifications.js'
 const dayjsCustomParseFormat = require('dayjs/plugin/customParseFormat')
 const dayjsDuration = require('dayjs/plugin/duration')
@@ -136,6 +135,11 @@ export default {
   },
   capitalize (string) {
     return string.replace(/^\p{CWU}/u, char => char.toUpperCase())
+  },
+  toCamelCase (text) {
+    const replacedText = text.toLowerCase()
+      .replace(/[-_\s.]+(.)?/g, (_, character) => character ? character.toUpperCase() : '')
+    return replacedText.substring(0, 1).toLowerCase() + replacedText.substring(1)
   },
   ensureArray (payload) {
     if (Array.isArray(payload)) {
@@ -492,11 +496,6 @@ export default {
     const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
     const i = Math.floor(Math.log(bytes) / Math.log(k))
     return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i]
-  },
-  pluralize (value, word) {
-    const singular = localize.get(`text_${word}`, { capitalize: false })
-    const plural = localize.get(`text_${word}_plural`, { capitalize: false })
-    return parseInt(value) === 1 ? singular : plural
   },
   getHash (length = 32) {
     let hashID = ''

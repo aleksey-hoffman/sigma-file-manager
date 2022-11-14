@@ -3,7 +3,7 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 import sharedUtils from './sharedUtils.js'
-import * as localize from './localize'
+import {i18n} from '../localization/i18n'
 const eventHub = require('./eventHub').eventHub
 
 /**
@@ -873,7 +873,7 @@ function getNotification (params) {
       action: 'add',
       timeout: 3000,
       closeButton: true,
-      title: localize.get('text_workspace_added'),
+      title: i18n.t('workspaceAdded'),
     },
     addWorkspaceError: {
       action: 'add',

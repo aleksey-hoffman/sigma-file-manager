@@ -9,7 +9,6 @@ import store from './store'
 import vuetify from './plugins/vuetify'
 import utils from './utils/utils'
 import sharedUtils from './utils/sharedUtils'
-import localizeUtils from './utils/localizeUtils'
 import storeUtils from './utils/storeUtils'
 import {i18n} from './localization/i18n'
 
@@ -71,16 +70,13 @@ Vue.component('home-banner', HomeBanner)
 Vue.component('fs-local-server-manager', FsLocalServerManager)
 Vue.component('shortcut-list', ShortcutList)
 
-const localize = require('./utils/localize')
 require('overlayscrollbars/css/OverlayScrollbars.css')
 require('@mdi/font/css/materialdesignicons.css')
 require('@fortawesome/fontawesome-free/css/all.css')
 
 Vue.prototype.$utils = utils
 Vue.prototype.$sharedUtils = sharedUtils
-Vue.prototype.$localizeUtils = localizeUtils
 Vue.prototype.$storeUtils = storeUtils
-Vue.prototype.$localize = localize
 Vue.prototype.$eventHub = eventHub
 Vue.config.productionTip = true
 Vue.config.devtools = false

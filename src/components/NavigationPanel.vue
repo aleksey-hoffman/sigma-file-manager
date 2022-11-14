@@ -38,7 +38,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 <transition name="slide-fade-left">
                   <div v-if="!navigationPanelMiniVariant">
                     <div class="nav-panel__item__title">
-                      {{$localize.get('text_global_search_title')}}
+                      {{$t('globalSearch')}}
                     </div>
                   </div>
                 </transition>
@@ -46,7 +46,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             </template>
             <span>
               <div class="tooltip__description">
-                {{$localize.get('text_global_search_title')}}
+                {{$t('globalSearch')}}
               </div>
               <div class="tooltip__shortcut">
                 {{shortcuts.toggleGlobalSearch.shortcut}}
@@ -88,7 +88,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 <transition name="slide-fade-left">
                   <div v-if="!navigationPanelMiniVariant">
                     <div class="nav-panel__item__title">
-                      {{$localize.get(item.title)}}
+                      {{$t(item.title)}}
                     </div>
                   </div>
                 </transition>
@@ -96,7 +96,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             </template>
             <span>
               <div class="tooltip__description">
-                {{$localize.get(item.title)}}
+                {{$t(item.title)}}
               </div>
               <div class="tooltip__shortcut">
                 {{shortcuts.switchView.shortcut.replace('[1 - 9]', index + 1)}}
@@ -171,7 +171,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                           <span
                             v-if="systemInfo.platform === 'win32'"
                             class="text-uppercase caption"
-                          >{{$localize.get('text_drive')}}
+                          >{{$t('drive')}}
                           </span>
                           {{drive.mount}}
                         </div>

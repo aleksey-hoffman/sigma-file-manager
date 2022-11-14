@@ -22,7 +22,6 @@ const electronRemote = require('@electron/remote')
 const fsExtra = require('fs-extra')
 const sharedUtils = require('./utils/sharedUtils')
 const eventHub = require('./utils/eventHub').eventHub
-const localize = require('./utils/localize')
 const fsCore = require('./utils/fsCore.js')
 const os = require('os')
 const fs = require('fs')
@@ -920,29 +919,29 @@ export default new Vuex.Store({
       items: [
         {
           icon: 'mdi-apps',
-          title: 'page_home_title',
+          title: 'pages.homePage',
           to: '/'
         },
         {
           icon: 'mdi-folder-outline',
-          title: 'page_navigator_title',
+          title: 'pages.navigator',
           to: '/navigator'
         },
         {
           // icon: 'mdi-bookmark-outline',
           icon: 'mdi-bookmark-multiple-outline',
           // icon: 'mdi-account-circle-outline',
-          title: 'page_dashboard_title',
+          title: 'pages.dashboard',
           to: '/dashboard'
         },
         {
           icon: 'mdi-square-edit-outline',
-          title: 'page_notes_title',
+          title: 'pages.notes',
           to: '/notes'
         },
         {
           icon: 'mdi-cog-outline',
-          title: 'page_settings_title',
+          title: 'pages.settings',
           to: '/settings'
         }
       ]
@@ -3749,10 +3748,10 @@ export default new Vuex.Store({
         action: 'add',
         type: 'undo:clearPinned',
         icon: 'mdi-undo-variant',
-        title: localize.get('text_clear_list_message'),
+        title: i18n.t('clearListMessage'),
         actionButtons: [
           {
-            title: localize.get('text_undo'),
+            title: i18n.t('undo'),
             action: '',
             onClick: () => {
               dispatch('SET', {
@@ -3779,10 +3778,10 @@ export default new Vuex.Store({
         type: 'undo:clearPinned',
         icon: 'mdi-undo-variant',
         timeout: 10000,
-        title: localize.get('text_clear_list_message'),
+        title: i18n.t('clearListMessage'),
         actionButtons: [
           {
-            title: localize.get('text_undo'),
+            title: i18n.t('undo'),
             action: '',
             onClick: () => {
               dispatch('SET', {
@@ -3809,10 +3808,10 @@ export default new Vuex.Store({
         type: 'undo:clearProtected',
         icon: 'mdi-undo-variant',
         timeout: 10000,
-        title: localize.get('text_clear_list_message'),
+        title: i18n.t('clearListMessage'),
         actionButtons: [
           {
-            title: localize.get('text_undo'),
+            title: i18n.t('undo'),
             action: '',
             onClick: () => {
               dispatch('SET', {
@@ -3886,7 +3885,7 @@ export default new Vuex.Store({
           let actionButtons = []
           if (params.options.allowUndo) {
             actionButtons.push({
-              title: localize.get('text_undo'),
+              title: i18n.t('undo'),
               action: '',
               onClick: () => {
                 store.dispatch('SET', {
@@ -5307,7 +5306,7 @@ export default new Vuex.Store({
               `,
               actionButtons: [
                 {
-                  title: localize.get('text_undo'),
+                  title: i18n.t('undo'),
                   action: '',
                   onClick: () => {
                     fs.promises.rename(newPath, oldPath)
@@ -5477,7 +5476,7 @@ export default new Vuex.Store({
           if (progress.timePassed > 1000) {
             notificationConfig.actionButtons = [
               {
-                title: localize.get('text_cancel'),
+                title: i18n.t('cancel'),
                 action: '',
                 onClick: () => {
                   task.readStream.close()
@@ -5516,7 +5515,7 @@ export default new Vuex.Store({
                 notificationConfig.actionButtons = []
                 // notificationConfig.actionButtons = [
                 //   {
-                //     title: localize.get('text_undo'),
+                //     title: i18n.t('undo'),
                 //     action: '',
                 //     onClick: () => {
                 //       console.log(item, destPath)

@@ -46,12 +46,12 @@ export default {
       'selectedDirItems',
     ]),
     itemListDescription () {
-      const itemLength = this.clipboardToolbarType === 'selected'
+      const itemCount = this.clipboardToolbarType === 'selected'
         ? this.selectedDirItems.length
         : this.fsClipboard.items.length
-      const itemWord = this.$localizeUtils.pluralize(itemLength, 'item')
-      const longDescription = `${this.title}: ${itemLength} ${itemWord} • Total size:`
-      const shortDescription = `${itemLength} ${itemWord} • Total size:`
+      const itemCountText = this.$tc('item', itemCount)
+      const longDescription = `${this.title}: ${itemCountText} • Total size:`
+      const shortDescription = `${itemCountText} • Total size:`
       return this.$vuetify.breakpoint.mdAndUp
         ? longDescription
         : shortDescription

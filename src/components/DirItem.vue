@@ -142,7 +142,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               v-if="type === 'directory' || type === 'directory-symlink'"
               class="dir-item-card__item-count"
             >
-              {{dirItem.dirItemCount}} {{$localizeUtils.pluralize(dirItem.dirItemCount, 'item')}}
+              {{$tc('item', dirItem.dirItemCount)}}
             </div>
 
             <!-- {type: (file|file-symlink)} -->
@@ -238,7 +238,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
           <!-- card::item-count -->
           <div class="dir-item-card__item-count">
-            {{dirItem.dirItemCount}} {{$localizeUtils.pluralize(dirItem.dirItemCount, 'item')}}
+            {{$tc('item', dirItem.dirItemCount)}}
           </div>
         </v-layout>
 
