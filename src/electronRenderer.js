@@ -17,7 +17,6 @@ import WindowToolbar from './components/WindowToolbar.vue'
 import ClipboardToolbar from './components/ClipboardToolbar/index.vue'
 import NavigationPanel from './components/NavigationPanel.vue'
 import NoteCard from './components/NoteCard.vue'
-import TextEditor from './components/TextEditor.vue'
 import Dialogs from './components/Dialogs.vue'
 import DialogGenerator from './components/DialogGenerator.vue'
 import NotificationManager from './components/NotificationManager.vue'
@@ -46,7 +45,6 @@ Vue.component('window-toolbar', WindowToolbar)
 Vue.component('clipboard-toolbar', ClipboardToolbar)
 Vue.component('navigation-panel', NavigationPanel)
 Vue.component('note-card', NoteCard)
-Vue.component('text-editor', TextEditor)
 Vue.component('dialogs', Dialogs)
 Vue.component('dialog-generator', DialogGenerator)
 Vue.component('notification-manager', NotificationManager)

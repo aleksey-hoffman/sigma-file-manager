@@ -9,10 +9,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     <dialog-generator
       :dialog="dialogs.errorDialog"
       :persistent="true"
-      :closeButton="{
+      :close-button="{
         onClick: () => closeDialog('errorDialog'),
       }"
-      :actionButtons="[
+      :action-buttons="[
         {
           text: 'create template',
           onClick: () => createNewErrorIssue()
@@ -29,7 +29,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       title="Error occured"
       height="80vh"
     >
-      <template v-slot:content>
+      <template #content>
         <p>
           You can ignore the error and keep using the app, but it might not function properly until you reload it.
         </p>
@@ -79,19 +79,19 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     <!-- dialog::guideDialog -->
     <dialog-generator
       :dialog="dialogs.guideDialog"
-      :closeButton="{
+      :close-button="{
         onClick: () => closeDialog('guideDialog'),
       }"
       title="App guide"
-      maxWidth="90vw"
+      max-width="90vw"
       height="85vh"
-      fadeMaskBottom="8%"
+      fade-mask-bottom="8%"
     >
-      <template v-slot:content>
+      <template #content>
         <div class="tab-view">
           <v-tabs
-            class="tab-view__header"
             v-model="dialogs.guideDialog.data.guideTabsSelected"
+            class="tab-view__header"
             show-arrows="mobile"
             :vertical="windowSize.x > 700"
             :height="windowSize.x > 700 ? '' : '42'"
@@ -112,13 +112,16 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             class="tab-view__header__content mb-6"
           >
             <!-- tab:shorcuts -->
-            <v-tab-item transition="fade-in" reverse-transition="fade-in">
+            <v-tab-item
+              transition="fade-in"
+              reverse-transition="fade-in"
+            >
               <div class="text--title-1 mb-1">
                 {{getGuideTitle(dialogs.guideDialog.data.guideTabsSelected)}}
               </div>
-              <v-divider class="divider-color-2 mb-4"></v-divider>
+              <v-divider class="divider-color-2 mb-4" />
 
-              <shortcut-list/>
+              <shortcut-list />
 
               <h3>About</h3>
               <p>
@@ -135,23 +138,36 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   {{shortcuts.shortcutsDialog.shortcut}}
                 </span>
                 button on the keyboard or the
-                <v-icon class="mx-1" size="18px">mdi-pound</v-icon>
+                <v-icon
+                  class="mx-1"
+                  size="18px"
+                >
+                  mdi-pound
+                </v-icon>
                 button in the top toolbar to show the full list of shortcuts.
               </p>
-              <div class="text--title-2 mt-2">Examples</div>
-              <div class="text--sub-title-1 mt-2">Focus app</div>
+              <div class="text--title-2 mt-2">
+                Examples
+              </div>
+              <div class="text--sub-title-1 mt-2">
+                Focus app
+              </div>
               When this app is not focused, press
               <span class="inline-code--light mx-1">
                 {{shortcuts.toggleApp.shortcut}}
               </span>
               to focus it (bring it to the foreground). Press the shortcut again to hide the app.
-              <div class="text--sub-title-1 mt-6">Create new note</div>
+              <div class="text--sub-title-1 mt-6">
+                Create new note
+              </div>
               Press
               <span class="inline-code--light mx-1">
                 {{shortcuts.newNote.shortcut}}
               </span>
               to focus this app, immidiately create a new note, and open the note editor for you.
-              <div class="text--sub-title-1 mt-6">Switch tab</div>
+              <div class="text--sub-title-1 mt-6">
+                Switch tab
+              </div>
               When this app is focused and you have some tabs opened in the current workspace, press
               <span class="inline-code--light mx-1">
                 {{shortcuts.switchTab.shortcut}}
@@ -160,11 +176,14 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             </v-tab-item>
 
             <!-- tab:introduction -->
-            <v-tab-item transition="fade-in" reverse-transition="fade-in">
+            <v-tab-item
+              transition="fade-in"
+              reverse-transition="fade-in"
+            >
               <div class="text--title-1 mb-1">
-               {{getGuideTitle(dialogs.guideDialog.data.guideTabsSelected)}} 🐒
+                {{getGuideTitle(dialogs.guideDialog.data.guideTabsSelected)}} 🐒
               </div>
-              <v-divider class="divider-color-2 mb-4"></v-divider>
+              <v-divider class="divider-color-2 mb-4" />
               <h3>Get involved</h3>
               <p>
                 There are many ways to participate in the development of this app:
@@ -177,17 +196,17 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   :key="'header-button-' + index"
                   bottom
                 >
-                  <template v-slot:activator="{ on }">
+                  <template #activator="{ on }">
                     <v-btn
                       class="button-1"
-                      v-on="on"
-                      @click="$utils.openLink(item.link)"
                       depressed
                       small
+                      v-on="on"
+                      @click="$utils.openLink(item.link)"
                     >
                       <v-icon
-                        class="mr-2"
                         v-if="item.icon"
+                        class="mr-2"
                         size="16px"
                       >
                         {{item.icon}}
@@ -197,7 +216,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   </template>
                   <span>
                     <v-layout align-center>
-                      <v-icon class="mr-3" size="16px">
+                      <v-icon
+                        class="mr-3"
+                        size="16px"
+                      >
                         mdi-open-in-new
                       </v-icon>
                       {{item.link}}
@@ -211,20 +233,23 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               </p>
 
               <v-tooltip bottom>
-                <template v-slot:activator="{ on }">
+                <template #activator="{ on }">
                   <v-btn
                     class="button-1"
-                    v-on="on"
-                    @click="$utils.openLink(item.link)"
                     depressed
                     small
+                    v-on="on"
+                    @click="$utils.openLink(item.link)"
                   >
                     Join community
                   </v-btn>
                 </template>
                 <span>
                   <v-layout align-center>
-                    <v-icon class="mr-3" size="16px">
+                    <v-icon
+                      class="mr-3"
+                      size="16px"
+                    >
                       mdi-open-in-new
                     </v-icon>
                     {{appPaths.githubReadmeSupportSectionLink}}
@@ -268,30 +293,36 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             </v-tab-item>
 
             <!-- tab:navigator tips -->
-            <v-tab-item transition="fade-in" reverse-transition="fade-in">
+            <v-tab-item
+              transition="fade-in"
+              reverse-transition="fade-in"
+            >
               <div class="text--title-1 mb-1">
                 {{getGuideTitle(dialogs.guideDialog.data.guideTabsSelected)}}
               </div>
-              <v-divider class="divider-color-2 mb-4"></v-divider>
+              <v-divider class="divider-color-2 mb-4" />
 
               <h3>Range item selection</h3>
               <div>
-                To select multiple directory items, 
+                To select multiple directory items,
                 <span class="inline-code--light">Hold [Shift] + LClick</span>
-                to select the <span class="inline-code--light">start</span> 
-                item, then move the cursor to the 
-                <span class="inline-code--light">end</span> item and 
+                to select the <span class="inline-code--light">start</span>
+                item, then move the cursor to the
+                <span class="inline-code--light">end</span> item and
                 press <span class="inline-code--light">LClick</span> on it to select the range.
               </div>
-              <img class="mt-4" src="../assets/guide/navigator-list-highlight-1.png">
-             
+              <img
+                class="mt-4"
+                src="../assets/guide/navigator-list-highlight-1.png"
+              />
+
               <h3>Single item selection</h3>
               <div>
                 To select a single directory item, press
                 <span class="inline-code--light">Ctrl + LClick</span>
                 on the item to select it.
               </div>
-              
+
               <h3>Keyboard item navigation</h3>
               <div>
                 <ul>
@@ -300,14 +331,14 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     <span class="inline-code--light">{{shortcuts.navigateDirDown.shortcut}}</span>
                     or
                     <span class="inline-code--light">{{shortcuts.navigateDirRight.shortcut}}</span>
-                    (grid layout only) 
+                    (grid layout only)
                   </li>
                   <li>
                     To move selection to the previous item press
                     <span class="inline-code--light">{{shortcuts.navigateDirUp.shortcut}}</span>
                     or
-                    <span class="inline-code--light">{{shortcuts.navigateDirLeft.shortcut}}</span> 
-                    (grid layout only) 
+                    <span class="inline-code--light">{{shortcuts.navigateDirLeft.shortcut}}</span>
+                    (grid layout only)
                   </li>
                   <li>
                     To open current directory press
@@ -334,11 +365,14 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             </v-tab-item>
 
             <!-- tab:data-protection -->
-            <v-tab-item transition="fade-in" reverse-transition="fade-in">
+            <v-tab-item
+              transition="fade-in"
+              reverse-transition="fade-in"
+            >
               <div class="text--title-1 mb-1">
                 {{getGuideTitle(dialogs.guideDialog.data.guideTabsSelected)}}
               </div>
-              <v-divider class="divider-color-2 mb-4"></v-divider>
+              <v-divider class="divider-color-2 mb-4" />
               <p>
                 The main purpose of this feature is to provide an ability to protect important files / directories from being accessed and modified (read / write / delete / rename / etc.).
               </p>
@@ -365,7 +399,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 </ul>
                 <div class="mt-4">
                   ⚠ <strong>Warning</strong>
-                  <br>
+                  <br />
                   Use with caution. The "Advanced mode" and "Immutable mode" are still in early development.
                   The feature hasn't been thoroughly tested yet. Theoretically it can lock
                   a file / directory in a way that will make it impossible for you to ever access its contents.
@@ -376,12 +410,18 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             </v-tab-item>
 
             <!-- tab:address bar -->
-            <v-tab-item transition="fade-in" reverse-transition="fade-in">
+            <v-tab-item
+              transition="fade-in"
+              reverse-transition="fade-in"
+            >
               <div class="text--title-1 mb-1">
                 {{getGuideTitle(dialogs.guideDialog.data.guideTabsSelected)}}
               </div>
-              <v-divider class="divider-color-2 mb-4"></v-divider>
-              <img class="mt-0" src="../assets/guide/address-bar-1.png">
+              <v-divider class="divider-color-2 mb-4" />
+              <img
+                class="mt-0"
+                src="../assets/guide/address-bar-1.png"
+              />
               Address bar allows you to navigate directories and files by typing their path.
               <h3>Features</h3>
               <ul>
@@ -423,15 +463,18 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               or by pressing
               <span class="inline-code--light">Type in address manually</span>
               button in the address bar menu, which is located on the action bar on the "Navigator" page.
-              <img src="../assets/guide/address-bar-2.png">
+              <img src="../assets/guide/address-bar-2.png" />
             </v-tab-item>
 
             <!-- tab:coming soon -->
-            <v-tab-item transition="fade-in" reverse-transition="fade-in">
+            <v-tab-item
+              transition="fade-in"
+              reverse-transition="fade-in"
+            >
               <div class="text--title-1 mb-1">
                 {{getGuideTitle(dialogs.guideDialog.data.guideTabsSelected)}}
               </div>
-              <v-divider class="divider-color-2 mb-4"></v-divider>
+              <v-divider class="divider-color-2 mb-4" />
               More guides will be added in future updates
             </v-tab-item>
           </v-tabs-items>
@@ -442,10 +485,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     <!-- dialog::shortcutEditorDialog -->
     <dialog-generator
       :dialog="dialogs.shortcutEditorDialog"
-      :closeButton="{
+      :close-button="{
         onClick: () => closeDialog('shortcutEditorDialog'),
       }"
-      :actionButtons="[
+      :action-buttons="[
         {
           text: 'Cancel',
           onClick: () => closeDialog('shortcutEditorDialog')
@@ -458,44 +501,44 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               shortcutName: dialogs.shortcutEditorDialog.data.shortcutName,
               shortcut: dialogs.shortcutEditorDialog.data.shortcut
             })
-            .then(() => {
-              dialogs.shortcutEditorDialog.value = false
-            })
+              .then(() => {
+                dialogs.shortcutEditorDialog.value = false
+              })
           }
         }
       ]"
       title="Shortcut editor"
-      maxWidth="500px"
+      max-width="500px"
     >
-      <template v-slot:content>
+      <template #content>
         <v-tooltip
           bottom
           open-delay="200"
           max-width="300px"
         >
-          <template v-slot:activator="{ on }">
+          <template #activator="{ on }">
             <div v-on="on">
               <v-text-field
                 v-model="dialogs.shortcutEditorDialog.data.shortcut"
+                :error="!dialogs.shortcutEditorDialog.data.isValid"
+                :hint="dialogs.shortcutEditorDialog.data.error"
+                placeholder="Shortcut"
                 @keydown="$store.dispatch('SET_SHORTCUT_KEYDOWN_HANDLER', {
                   event: $event,
                   shortcut: dialogs.shortcutEditorDialog.data.shortcut,
                   shortcutName: dialogs.shortcutEditorDialog.data.shortcutName
                 })"
-                :error="!dialogs.shortcutEditorDialog.data.isValid"
-                :hint="dialogs.shortcutEditorDialog.data.error"
-                placeholder="Shortcut"
-              ></v-text-field>
+              />
             </div>
           </template>
           <span>
             A shortcut is a combination of:
-            <br>- 1-4 modifier keys: [Ctrl, Alt, Shift, Meta]
-            <br>- 1 regular key
-            <br><strong>Examples:</strong>
-            <br>Ctrl + Shift + Space
-            <br>Ctrl + F1
-            <br>Meta + Esc
+            <br />- 1-4 modifier keys: [Ctrl, Alt, Shift, Meta]
+            <br />- 1 regular key
+            <br /><strong>Examples:</strong>
+            <br />Ctrl + Shift + Space
+            <br />Ctrl + F1
+            <br />Meta + Esc
           </span>
         </v-tooltip>
       </template>
@@ -504,10 +547,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     <!-- dialog::renameDirItemDialog -->
     <dialog-generator
       :dialog="dialogs.renameDirItemDialog"
-      :closeButton="{
+      :close-button="{
         onClick: () => closeDialog('renameDirItemDialog'),
       }"
-      :actionButtons="[
+      :action-buttons="[
         {
           text: 'cancel',
           onClick: () => closeDialog('renameDirItemDialog')
@@ -521,7 +564,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       title="Rename item"
       height="unset"
     >
-      <template v-slot:content>
+      <template #content>
         <div>
           <span style="font-weight: bold">Current name:</span>
           {{editTargets[0].name}}
@@ -529,27 +572,27 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
         <!-- input::dir-item-new-name -->
         <v-text-field
-          v-model="dialogs.renameDirItemDialog.data.name"
-          @input="validateRenameDirItemInput()"
-          @keypress.enter="initDirItemRename()"
-          label="New name"
           id="renameItemDialogNameInput"
           ref="renameItemDialogNameInput"
+          v-model="dialogs.renameDirItemDialog.data.name"
+          label="New name"
           :value="dialogs.renameDirItemDialog.data.name"
           :error="!dialogs.renameDirItemDialog.data.isValid"
           :hint="dialogs.renameDirItemDialog.data.error"
           autofocus
-        ></v-text-field>
+          @input="validateRenameDirItemInput()"
+          @keypress.enter="initDirItemRename()"
+        />
       </template>
     </dialog-generator>
 
     <!-- dialog::newDirItemDialog -->
     <dialog-generator
       :dialog="dialogs.newDirItemDialog"
-      :closeButton="{
+      :close-button="{
         onClick: () => closeDialog('newDirItemDialog'),
       }"
-      :actionButtons="[
+      :action-buttons="[
         {
           text: 'cancel',
           onClick: () => closeDialog('newDirItemDialog')
@@ -563,7 +606,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       :title="`Create new ${dialogs.newDirItemDialog.data.type}`"
       height="unset"
     >
-      <template v-slot:content>
+      <template #content>
         <div>
           <span style="font-weight: bold">Path:</span>
           {{newDirItemPath}}
@@ -571,30 +614,30 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
         <!-- input::dir-item-name -->
         <v-text-field
-          v-model="dialogs.newDirItemDialog.data.name"
-          @input="validateNewDirItemInput()"
-          @keypress.enter="createDirItem()"
-          :label="`New ${dialogs.newDirItemDialog.data.type} name`"
           ref="newDirItemDialogNameInput"
+          v-model="dialogs.newDirItemDialog.data.name"
+          :label="`New ${dialogs.newDirItemDialog.data.type} name`"
           :value="dialogs.newDirItemDialog.data.name"
           :error="!dialogs.newDirItemDialog.data.isValid"
           :hint="dialogs.newDirItemDialog.data.error"
           autofocus
-        ></v-text-field>
+          @input="validateNewDirItemInput()"
+          @keypress.enter="createDirItem()"
+        />
       </template>
     </dialog-generator>
 
     <!-- dialog::dirItemPermissionManagerDialog -->
     <dialog-generator
       :dialog="dialogs.dirItemPermissionManagerDialog"
-      :closeButton="{
+      :close-button="{
         onClick: () => closeDialog('dirItemPermissionManagerDialog'),
       }"
       title="Permissions"
       height="unset"
-      fadeMaskBottom="0%"
+      fade-mask-bottom="0%"
     >
-      <template v-slot:content>
+      <template #content>
         <div class="mb-4">
           <!-- ⚠ <strong>Warning:</strong> experimental feature, use with caution. -->
           ⚠ Experimental, unfinished feature.
@@ -622,20 +665,25 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           </div>
         </div>
 
-
         <!-- TODO: finish in v1.1.0 -->
         <!-- input-switch::immutable -->
         <div v-if="false">
-          <v-tooltip bottom max-width="300px">
-            <template v-slot:activator="{ on }">
-              <div v-on="on" class="d-inline-flex">
+          <v-tooltip
+            bottom
+            max-width="300px"
+          >
+            <template #activator="{ on }">
+              <div
+                class="d-inline-flex"
+                v-on="on"
+              >
                 <v-switch
                   class="mb-4"
                   :value="dialogs.dirItemPermissionManagerDialog.data.permissionData.isImmutable"
-                  @change="setDirItemImmutableState()"
                   label="Immutable"
                   hide-details
-                ></v-switch>
+                  @change="setDirItemImmutableState()"
+                />
               </div>
             </template>
             <span>
@@ -655,8 +703,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               return-object
               item-text="text"
               label="Group or user"
-            >
-            </v-select>
+            />
 
             <!-- input-select::everyone -->
             <v-select
@@ -664,8 +711,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               :items="dialogs.dirItemPermissionManagerDialog.data.win32.permissions"
               label="Permissions"
               multiple
-            >
-            </v-select>
+            />
           </div>
 
           <div v-if="systemInfo.platform === 'linux'">
@@ -674,24 +720,21 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               v-model="dialogs.dirItemPermissionManagerDialog.data.permissionGroups.owner.selected"
               :items="dialogs.dirItemPermissionManagerDialog.data.permissionGroups.owner.items"
               label="Owner"
-            >
-            </v-select>
+            />
 
             <!-- input-select::group -->
             <v-select
               v-model="dialogs.dirItemPermissionManagerDialog.data.permissionGroups.group.selected"
               :items="dialogs.dirItemPermissionManagerDialog.data.permissionGroups.group.items"
               label="Group"
-            >
-            </v-select>
+            />
 
             <!-- input-select::everyone -->
             <v-select
               v-model="dialogs.dirItemPermissionManagerDialog.data.permissionGroups.everyone.selected"
               :items="dialogs.dirItemPermissionManagerDialog.data.permissionGroups.everyone.items"
               label="Everyone"
-            >
-            </v-select>
+            />
           </div>
         </div>
 
@@ -699,8 +742,8 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           <!-- button:learn-more -->
           <v-btn
             class="button-1 mt-4"
-            @click="$store.dispatch('OPEN_APP_GUIDE', 'data-protection')"
             small
+            @click="$store.dispatch('OPEN_APP_GUIDE', 'data-protection')"
           >
             Learn more
           </v-btn>
@@ -708,8 +751,8 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           <!-- button:reset-permissions -->
           <v-btn
             class="button-1 mt-4"
-            @click="$store.dispatch('RESET_DIR_ITEM_PERMISSIONS')"
             small
+            @click="$store.dispatch('RESET_DIR_ITEM_PERMISSIONS')"
           >
             reset permissions
           </v-btn>
@@ -796,38 +839,38 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     <!-- dialog::homeBannerPositionDialog -->
     <dialog-generator
       :dialog="dialogs.homeBannerPositionDialog"
-      :closeButton="{
+      :close-button="{
         onClick: () => closeDialog('homeBannerPositionDialog'),
       }"
       title="Background position"
       height="unset"
     >
-      <template v-slot:content>
+      <template #content>
         <div>Position X-axis: {{homeBannerPositionX}}%</div>
         <v-slider
           v-model="homeBannerPositionX"
           :step="5"
           :thumb-size="24"
-        ></v-slider>
+        />
         <div>Position Y-axis: {{homeBannerPositionY}}%</div>
         <v-slider
           v-model="homeBannerPositionY"
           :step="5"
           :thumb-size="24"
-        ></v-slider>
+        />
       </template>
     </dialog-generator>
 
     <!-- dialog::homeBannerHeightDialog -->
     <dialog-generator
       :dialog="dialogs.homeBannerHeightDialog"
-      :closeButton="{
+      :close-button="{
         onClick: () => closeDialog('homeBannerHeightDialog'),
       }"
       title="Background height"
       height="unset"
     >
-      <template v-slot:content>
+      <template #content>
         <div>Height: {{homeBannerHeight}}vh</div>
         <v-slider
           v-model="homeBannerHeight"
@@ -835,29 +878,29 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           :thumb-size="24"
           :min="38"
           :max="75"
-        ></v-slider>
+        />
       </template>
     </dialog-generator>
 
     <!-- dialog::homeBannerOverlayDialog -->
     <dialog-generator
       :dialog="dialogs.homeBannerOverlayDialog"
-      :closeButton="{
+      :close-button="{
         onClick: () => closeDialog('homeBannerOverlayDialog'),
       }"
       title="Background overlay"
       height="unset"
     >
-      <template v-slot:content>
+      <template #content>
         <div class="text--sub-title-1 ma-0 mr-2">
           Overlay type
         </div>
         <v-select
-          :items="$store.state.storageData.settings.homeBanner.overlay.items"
           v-model="homeBannerOverlaySelectedItem"
+          :items="$store.state.storageData.settings.homeBanner.overlay.items"
           return-object
           item-text="title"
-        ></v-select>
+        />
         <template v-if="homeBannerOverlaySelectedItem.name !== 'none'">
           <div class="text--sub-title-1 ma-0 mr-2">
             Overlay options
@@ -868,19 +911,19 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             v-if="homeBannerOverlaySelectedItem.name === 'overlayFade'"
             v-model="homeBannerOverlaySelectedItem.params.topFadeHeight"
             label="Top overlay height (CSS units)"
-          ></v-text-field>
+          />
 
           <v-text-field
             v-if="homeBannerOverlaySelectedItem.name === 'overlayFade'"
             v-model="homeBannerOverlaySelectedItem.params.bottomFadeHeight"
             label="Bottom overlay height (CSS units)"
-          ></v-text-field>
+          />
 
           <v-text-field
             v-if="homeBannerOverlaySelectedItem.name === 'maskFade'"
             v-model="homeBannerOverlaySelectedItem.params.bottomMaskHeight"
             label="Bottom mask height (CSS units)"
-          ></v-text-field>
+          />
         </template>
       </template>
     </dialog-generator>
@@ -943,22 +986,22 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         </v-layout>
 
         <v-layout align-center>
-          <div class="mr-2">Icon preview:</div>
+          <div class="mr-2">
+            Icon preview:
+          </div>
           <v-icon>{{dialogs.userDirectoryEditorDialog.data.item.icon}}</v-icon>
         </v-layout>
-
       </template>
     </dialog-generator>
-    
 
     <!-- dialog::programEditorDialog -->
     <dialog-generator
       v-if="dialogs.programEditorDialog.value"
       :dialog="dialogs.programEditorDialog"
-      :closeButton="{
+      :close-button="{
         onClick: () => closeDialog('programEditorDialog'),
       }"
-      :actionButtons="[
+      :action-buttons="[
         {
           text: 'cancel',
           onClick: () => closeDialog('programEditorDialog')
@@ -973,9 +1016,9 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       ]"
       title="External program editor"
       height="90vh"
-      maxWidth="600px"
+      max-width="600px"
     >
-      <template v-slot:content>
+      <template #content>
         <div class="text--sub-title-1 mb-2">
           Choose program
         </div>
@@ -983,30 +1026,34 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         <!-- program-list -->
         <v-layout align-center>
           <v-select
-            :items="programEditorDialogFilteredPrograms"
             v-model="dialogs.programEditorDialog.data.selectedProgram"
-            @input="programEditorProgramInputHandler"
+            :items="programEditorDialogFilteredPrograms"
             class="mr-4"
             item-text="name"
             label="Program"
             return-object
+            @input="programEditorProgramInputHandler"
           >
             <!-- program::icon:add/edit -->
-            <template v-slot:selection="{ item }">
-              <v-icon size="20px" class="mr-2">
+            <template #selection="{ item }">
+              <v-icon
+                size="20px"
+                class="mr-2"
+              >
                 {{item.isTemplate
-                    ? 'mdi-plus'
-                    : 'mdi-pencil-outline'
-               }}
+                  ? 'mdi-plus'
+                  : 'mdi-pencil-outline'}}
               </v-icon>
               <span>{{item.name}}</span>
             </template>
-            <template v-slot:item="{ item }">
-              <v-icon size="20px" class="mr-2">
+            <template #item="{ item }">
+              <v-icon
+                size="20px"
+                class="mr-2"
+              >
                 {{item.isTemplate
-                    ? 'mdi-plus'
-                    : 'mdi-pencil-outline'
-               }}
+                  ? 'mdi-plus'
+                  : 'mdi-pencil-outline'}}
               </v-icon>
               <span>{{item.isTemplate ? `Add: ${item.name}` : `Edit: ${item.name}`}}</span>
             </template>
@@ -1014,16 +1061,17 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
           <!-- program::icon:trash -->
           <v-tooltip bottom>
-            <template v-slot:activator="{ on }">
+            <template #activator="{ on }">
               <v-btn
-                v-on="on"
-                @click="deleteProgram()"
                 :disabled="dialogs.programEditorDialog.data.selectedProgram.isTemplate"
                 icon
+                v-on="on"
+                @click="deleteProgram()"
               >
                 <v-icon
                   size="16px"
-                >mdi-trash-can-outline
+                >
+                  mdi-trash-can-outline
                 </v-icon>
               </v-btn>
             </template>
@@ -1035,24 +1083,25 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         <v-layout align-center>
           <v-text-field
             v-model="dialogs.programEditorDialog.data.selectedProgram.path"
-            @input="programEditorProgramPathInputHandler"
             label="Program path"
             :error="!programEditorDialogProgramPathIsValid.value"
             :hint="programEditorDialogProgramPathIsValid.error"
             class="mr-4"
-          ></v-text-field>
+            @input="programEditorProgramPathInputHandler"
+          />
 
           <!-- program::icon:picker -->
           <v-tooltip bottom>
-            <template v-slot:activator="{ on }">
+            <template #activator="{ on }">
               <v-btn
+                icon
                 v-on="on"
                 @click="programEditorPickProgram()"
-                icon
               >
                 <v-icon
                   size="16px"
-                >mdi-eyedropper
+                >
+                  mdi-eyedropper
                 </v-icon>
               </v-btn>
             </template>
@@ -1066,7 +1115,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           label="Program name"
           :error="!programEditorDialogProgramNameIsValid.value"
           :hint="programEditorDialogProgramNameIsValid.error"
-        ></v-text-field>
+        />
 
         <div class="text--sub-title-1 mb-2">
           Program properties
@@ -1079,7 +1128,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           label="Program can open directories"
           class="mt-0"
           hide-details
-        ></v-checkbox>
+        />
 
         <!-- program-property::can-open-files -->
         <v-checkbox
@@ -1088,25 +1137,27 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           label="Program can open files"
           class="mt-2"
           hide-details
-        ></v-checkbox>
+        />
 
         <v-expand-transition>
           <div v-show="dialogs.programEditorDialog.data.selectedProgram.targetTypes.includes('file')">
-          <v-combobox
-            v-model="dialogs.programEditorDialog.data.selectedProgram.selectedAllowedFileTypes"
-            :items="dialogs.programEditorDialog.data.allowedFileTypes"
-            label="Allowed file types / extensions"
-            class="mt-6"
-            multiple hide-details
-          ></v-combobox>
+            <v-combobox
+              v-model="dialogs.programEditorDialog.data.selectedProgram.selectedAllowedFileTypes"
+              :items="dialogs.programEditorDialog.data.allowedFileTypes"
+              label="Allowed file types / extensions"
+              class="mt-6"
+              multiple
+              hide-details
+            />
 
-          <v-combobox
-            v-model="dialogs.programEditorDialog.data.selectedProgram.selectedDisallowedFileTypes"
-            :items="dialogs.programEditorDialog.data.disallowedFileTypes"
-            label="Disallowed file types / extensions"
-            class="mt-6"
-            multiple hide-details
-          ></v-combobox>
+            <v-combobox
+              v-model="dialogs.programEditorDialog.data.selectedProgram.selectedDisallowedFileTypes"
+              :items="dialogs.programEditorDialog.data.disallowedFileTypes"
+              label="Disallowed file types / extensions"
+              class="mt-6"
+              multiple
+              hide-details
+            />
           </div>
         </v-expand-transition>
 
@@ -1119,9 +1170,9 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           <v-btn
             v-for="(icon, index) in externalPrograms.icons"
             :key="'icon-' + index"
-            @click="dialogs.programEditorDialog.data.selectedProgram.icon = icon"
-            :isSelected="icon === dialogs.programEditorDialog.data.selectedProgram.icon"
+            :is-selected="icon === dialogs.programEditorDialog.data.selectedProgram.icon"
             icon
+            @click="dialogs.programEditorDialog.data.selectedProgram.icon = icon"
           >
             <v-icon size="22px">
               {{icon}}
@@ -1135,54 +1186,54 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     <dialog-generator
       :dialog="dialogs.noteEditorDialog"
       :retain-focus="!dialogs.imagePickerDialog.value && !dialogs.mathEditorDialog.value"
-      :closeButton="{
+      :close-button="{
         onClick: () => closeDialog('noteEditorDialog'),
       }"
       title="Note editor"
-      :showActionBar="true"
-      :unscrollableContent="true"
+      :show-action-bar="true"
+      :unscrollable-content="true"
       height="85vh"
-      maxWidth="85vw"
+      max-width="85vw"
     >
-      <template v-slot:unscrollable-content>
+      <template #unscrollable-content>
         <div style="height: 100%">
           <v-text-field
-            :disabled="noteEditor.openedNote.isProtected || noteEditor.openedNote.isTrashed"
-            v-model="noteEditor.openedNote.title"
-            autofocus hide-details
-            label="Note title"
             ref="titleField"
+            v-model="noteEditor.openedNote.title"
+            :disabled="noteEditor.openedNote.isProtected || noteEditor.openedNote.isTrashed"
+            autofocus
+            hide-details
+            label="Note title"
             class="mt-0 mb-2"
-          ></v-text-field>
-          <text-editor
+          />
+          <NoteEditor
             v-model="noteEditor.openedNote.content"
-            :readOnly="noteEditor.openedNote.isProtected || noteEditor.openedNote.isTrashed"
+            :read-only="noteEditor.openedNote.isProtected || noteEditor.openedNote.isTrashed"
+            :spellcheck="spellcheck"
+            :markdown-shortcuts="markdownShortcuts"
             @currentNodePath="noteEditor.currentNodePath = $event"
             @charCount="noteEditor.openedNote.charCount = $event"
-            :spellcheck="spellcheck"
-            :markdownShortcuts="markdownShortcuts"
-          ></text-editor>
+          />
         </div>
       </template>
-      <template v-slot:actions>
+      <template #actions>
         <div style="display: flex; gap: 16px">
           <!-- card::action-bar::lock-button -->
           <v-tooltip top>
-            <template v-slot:activator="{ on }">
+            <template #activator="{ on }">
               <v-btn
+                icon
                 v-on="on"
                 @click="$store.dispatch('UPDATE_NOTE_PROPERTY', {
                   key: 'isProtected',
                   value: !noteEditor.openedNote.isProtected,
                   note: noteEditor.openedNote
                 })"
-                icon
               >
                 <v-icon size="18px">
                   {{noteEditor.openedNote.isProtected
-                      ? 'mdi-shield-check-outline'
-                      : 'mdi-shield-alert-outline'
-                 }}
+                    ? 'mdi-shield-check-outline'
+                    : 'mdi-shield-alert-outline'}}
                 </v-icon>
               </v-btn>
             </template>
@@ -1199,17 +1250,24 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           </v-tooltip>
 
           <!-- card::action-bar::option-menu -->
-          <v-menu offset-y top :close-on-content-click="false">
-            <template v-slot:activator="{ on: menu, attrs }">
+          <v-menu
+            offset-y
+            top
+            :close-on-content-click="false"
+          >
+            <template #activator="{ on: menu, attrs }">
               <v-tooltip bottom>
-                <template v-slot:activator="{ on: tooltip }">
+                <template #activator="{ on: tooltip }">
                   <v-btn
                     v-bind="attrs"
-                    v-on="{ ...tooltip, ...menu }"
                     tabindex="2"
                     icon
                     :class="{ 'is-active': false }"
-                  ><v-icon size="20px">mdi-dots-vertical</v-icon>
+                    v-on="{ ...tooltip, ...menu }"
+                  >
+                    <v-icon size="20px">
+                      mdi-dots-vertical
+                    </v-icon>
                   </v-btn>
                 </template>
                 <span>Load a template</span>
@@ -1219,15 +1277,15 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               Options
             </div>
             <v-list width="380px">
-              <v-divider></v-divider>
+              <v-divider />
               <v-list-item two-line>
                 <v-switch
                   v-model="spellcheck"
                   label="Spellcheck"
                   class="my-0"
                   hide-details
-                ></v-switch>
-                <v-spacer></v-spacer>
+                />
+                <v-spacer />
                 <v-list-item-avatar>
                   <v-icon>mdi-spellcheck</v-icon>
                 </v-list-item-avatar>
@@ -1238,8 +1296,8 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   label="Convert basic markdown syntax into HTML while typing"
                   class="my-0"
                   hide-details
-                ></v-switch>
-                <v-spacer></v-spacer>
+                />
+                <v-spacer />
                 <v-list-item-avatar>
                   <v-icon>mdi-language-markdown-outline</v-icon>
                 </v-list-item-avatar>
@@ -1247,7 +1305,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             </v-list>
           </v-menu>
         </div>
-        <v-spacer></v-spacer>
+        <v-spacer />
 
         <div style="display: flex; gap: 24px">
           <!-- card::action-bar::node-path -->
@@ -1260,14 +1318,20 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           </div>
 
           <!-- card::action-bar::char counter -->
-          <div v-if="noteEditor.openedNote.charCount" class="mx-1">
+          <div
+            v-if="noteEditor.openedNote.charCount"
+            class="mx-1"
+          >
             Chars: {{noteEditor.openedNote.charCount}}
           </div>
 
           <!-- card::action-bar::dates -->
           <v-tooltip top>
-            <template v-slot:activator="{ on }">
-              <v-icon v-on="on" size="20px">
+            <template #activator="{ on }">
+              <v-icon
+                size="20px"
+                v-on="on"
+              >
                 mdi-clock-time-four-outline
               </v-icon>
             </template>
@@ -1282,13 +1346,17 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           </v-tooltip>
 
           <!-- card::action-bar::markdown-tips -->
-          <v-tooltip top max-width="300px">
-            <template v-slot:activator="{ on }">
+          <v-tooltip
+            top
+            max-width="300px"
+          >
+            <template #activator="{ on }">
               <v-icon
                 v-show="markdownShortcuts"
-                v-on="on"
                 size="26px"
-              >mdi-language-markdown-outline
+                v-on="on"
+              >
+                mdi-language-markdown-outline
               </v-icon>
             </template>
             <span>
@@ -1313,8 +1381,13 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
           <!-- card::action-bar::note-editor-tips -->
           <v-tooltip top>
-            <template v-slot:activator="{ on }">
-              <v-icon v-on="on" size="20px">mdi-help-circle-outline</v-icon>
+            <template #activator="{ on }">
+              <v-icon
+                size="20px"
+                v-on="on"
+              >
+                mdi-help-circle-outline
+              </v-icon>
             </template>
             <span>
               <div class="text--sub-title-1 my-2">
@@ -1359,10 +1432,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     <!-- dialog::imagePickerDialog -->
     <dialog-generator
       :dialog="dialogs.imagePickerDialog"
-      :closeButton="{
+      :close-button="{
         onClick: () => closeDialog('imagePickerDialog'),
       }"
-      :actionButtons="[
+      :action-buttons="[
         {
           text: 'Cancel',
           onClick: () => closeDialog('imagePickerDialog')
@@ -1373,25 +1446,25 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         }
       ]"
       title="Image picker"
-      maxWidth="50vw"
+      max-width="50vw"
     >
-      <template v-slot:content>
+      <template #content>
         <v-layout align-center>
           <v-text-field
             v-model="dialogs.imagePickerDialog.data.path"
-            @input="imagePickerPathInputHandler()"
             label="Image path"
             autofocus
             persistent-hint
             hint="Path / URL / base64 string"
-          ></v-text-field>
+            @input="imagePickerPathInputHandler()"
+          />
 
           <v-tooltip bottom>
-            <template v-slot:activator="{ on }">
+            <template #activator="{ on }">
               <v-btn
+                icon
                 v-on="on"
                 @click="imagePickerPickProgramPath()"
-                icon
               >
                 <v-icon>
                   mdi-eyedropper-variant
@@ -1401,7 +1474,11 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             <span>Pick image</span>
           </v-tooltip>
         </v-layout>
-        <v-layout wrap class="mt-2" style="gap: 64px">
+        <v-layout
+          wrap
+          class="mt-2"
+          style="gap: 64px"
+        >
           <div>
             <div class="text--sub-title-1 mt-4 mb-2">
               Float position
@@ -1410,9 +1487,18 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               v-model="dialogs.imagePickerDialog.data.float"
               class="mt-2"
             >
-              <v-radio label="Left" value="left"></v-radio>
-              <v-radio label="Right" value="right"></v-radio>
-              <v-radio label="None" value="none"></v-radio>
+              <v-radio
+                label="Left"
+                value="left"
+              />
+              <v-radio
+                label="Right"
+                value="right"
+              />
+              <v-radio
+                label="None"
+                value="none"
+              />
             </v-radio-group>
           </div>
           <div>
@@ -1424,13 +1510,13 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               label="Width"
               hide-details
               class="my-2"
-            ></v-text-field>
+            />
             <v-text-field
               v-model="dialogs.imagePickerDialog.data.height"
               label="Height"
               hide-details
               class="my-2"
-            ></v-text-field>
+            />
           </div>
         </v-layout>
       </template>
@@ -1439,10 +1525,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     <!-- dialog::mathEditorDialog -->
     <dialog-generator
       :dialog="dialogs.mathEditorDialog"
-      :closeButton="{
+      :close-button="{
         onClick: () => closeDialog('mathEditorDialog'),
       }"
-      :actionButtons="[
+      :action-buttons="[
         {
           text: 'Cancel',
           onClick: () => closeDialog('mathEditorDialog')
@@ -1455,29 +1541,31 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         }
       ]"
       :title="`Math editor | ${dialogs.mathEditorDialog.data.framework.toUpperCase()}`"
-      maxWidth="50vw"
+      max-width="50vw"
     >
-      <template v-slot:content>
+      <template #content>
         <div>
           See docs:
           <v-btn
-            @click="$utils.openLink('https://katex.org/docs/supported.html')"
-            text x-small
+            text
+            x-small
             class="button-1"
-          >Katex
+            @click="$utils.openLink('https://katex.org/docs/supported.html')"
+          >
+            Katex
           </v-btn>
         </div>
         <v-text-field
           v-model="dialogs.mathEditorDialog.data.formula"
           :label="`${dialogs.mathEditorDialog.data.framework.toUpperCase()} formula`"
-          @input="updateMathFormulaPreview()"
           autofocus
           class="mt-4"
-        ></v-text-field>
+          @input="updateMathFormulaPreview()"
+        />
         <div class="text--sub-title-1 mt-0 mb-2">
           Preview
         </div>
-        <div id="math-formula-preview"></div>
+        <div id="math-formula-preview" />
       </template>
     </dialog-generator>
 
@@ -1489,10 +1577,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     <!-- dialog::externalDownloadDialog -->
     <dialog-generator
       :dialog="dialogs.externalDownloadDialog"
-      :closeButton="{
+      :close-button="{
         onClick: () => closeDialog('externalDownloadDialog'),
       }"
-      :actionButtons="[
+      :action-buttons="[
         {
           text: 'Cancel',
           onClick: () => closeDialog('externalDownloadDialog')
@@ -1503,10 +1591,13 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         }
       ]"
       title="Download manager"
-      maxWidth="50vw"
+      max-width="50vw"
     >
-      <template v-slot:content>
-        <div class="text--sub-title-1 mt-4 mb-2" style="word-break: break-all;">
+      <template #content>
+        <div
+          class="text--sub-title-1 mt-4 mb-2"
+          style="word-break: break-all;"
+        >
           URL
         </div>
         <div>
@@ -1516,38 +1607,41 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           Options
         </div>
         <v-select
-          :items="dialogs.externalDownloadDialog.data.video.types"
           v-model="dialogs.externalDownloadDialog.data.video.selectedType"
+          :items="dialogs.externalDownloadDialog.data.video.types"
           label="Download type"
           class="mr-4"
-        ></v-select>
+        />
       </template>
     </dialog-generator>
 
     <!-- dialog::localShareManagerDialog -->
     <dialog-generator
       :dialog="dialogs.localShareManagerDialog"
-      :closeButton="{
+      :close-button="{
         onClick: () => closeDialog('localShareManagerDialog'),
       }"
       title="Local share manager"
-      maxWidth="50vw"
-      fadeMaskBottom="0%"
+      max-width="50vw"
+      fade-mask-bottom="0%"
     >
-      <template v-slot:content>
+      <template #content>
         <v-layout>
-          <v-tooltip bottom max-width="320px">
-            <template v-slot:activator="{ on }">
+          <v-tooltip
+            bottom
+            max-width="320px"
+          >
+            <template #activator="{ on }">
               <div
-                v-on="on"
                 id="qr-code"
                 class="qr-code mr-6"
-              ></div>
+                v-on="on"
+              />
             </template>
             <span>
               This is a QR code.
               If your device have a virtual assistant (Siri, Google assistant, Bixby, etc.) you can ask it to "scan a QR code" for you.
-              <br>Or you can just type the specified address manually in a web browser.
+              <br />Or you can just type the specified address manually in a web browser.
             </span>
           </v-tooltip>
           <div>
@@ -1570,18 +1664,22 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 : `${localServer.directoryShare.address}`
             "
             class="mt-0 pt-0"
-            readonly single-line hide-details
-          ></v-text-field>
+            readonly
+            single-line
+            hide-details
+          />
           <v-btn
+            small
+            depressed
+            class="button-1 ml-3"
             @click="$utils.copyToClipboard({
               text: dialogs.localShareManagerDialog.data.shareType === 'file'
                 ? `${localServer.fileShare.address}`
                 : `${localServer.directoryShare.address}`,
               title: 'Address was copied to clipboard'
             })"
-            small depressed
-            class="button-1 ml-3"
-          >copy
+          >
+            copy
           </v-btn>
         </v-layout>
 
@@ -1591,16 +1689,22 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             Share type
           </div>
           <v-radio-group
-            @change="$eventHub.$emit('app:method', {
-              method: 'initLocalFileShare'
-            })"
             v-model="localServer.fileShare.type"
             :mandatory="true"
             hide-details
             class="mt-0"
+            @change="$eventHub.$emit('app:method', {
+              method: 'initLocalFileShare'
+            })"
           >
-            <v-radio label="Stream" value="stream"></v-radio>
-            <v-radio label="Download" value="download"></v-radio>
+            <v-radio
+              label="Stream"
+              value="stream"
+            />
+            <v-radio
+              label="Download"
+              value="download"
+            />
           </v-radio-group>
         </div>
 
@@ -1623,10 +1727,19 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         </div>
 
         <v-tooltip top>
-          <template v-slot:activator="{ on }">
-            <v-layout align-center v-on="on" style="cursor: default">
+          <template #activator="{ on }">
+            <v-layout
+              align-center
+              style="cursor: default"
+              v-on="on"
+            >
               Doesn't work?
-              <v-icon class="ml-2" size="20px">mdi-information-outline</v-icon>
+              <v-icon
+                class="ml-2"
+                size="20px"
+              >
+                mdi-information-outline
+              </v-icon>
             </v-layout>
           </template>
           <span>
@@ -1653,6 +1766,7 @@ import DownloadTypeSelectorDialog from '@/components/dialogs/DownloadTypeSelecto
 import WorkspaceEditorDialog from '@/components/dialogs/WorkspaceEditor.vue'
 import ArchiveAddDialog from '@/components/dialogs/ArchiveAdd.vue'
 import ArchiveExtractDialog from '@/components/dialogs/ArchiveExtract.vue'
+import NoteEditor from '@/components/dialogs/NoteEditor.vue'
 
 const electronRemote = require('@electron/remote')
 const currentWindow = electronRemote.getCurrentWindow()
@@ -1668,6 +1782,7 @@ export default {
     WorkspaceEditorDialog,
     ArchiveAddDialog,
     ArchiveExtractDialog,
+    NoteEditor,
   },
   data () {
     return {
@@ -1675,21 +1790,21 @@ export default {
       editTargets: [],
       noteChangeHandlerDebounce: null,
       markdownActions: [
-        { action: '#space', description: '1st level headline' },
-        { action: '#(N)space', description: 'N[1-6] level headline' },
-        { action: '```space', description: 'Multiline code block' },
-        { action: '`space', description: 'Inline code block' },
-        { action: '-space', description: 'Unordered list' },
-        { action: '+space', description: 'Ordered list' },
-        { action: '*space', description: 'Italic text' },
-        { action: '**space', description: 'Bold text' },
-        { action: '~~space', description: 'Strikethrough text' },
-        { action: '__space', description: 'Underlined text' },
-        { action: '>space', description: 'Quote' },
-        { action: '---space', description: 'Divider' },
-        { action: '[ ]space', description: 'Unchecked checkbox' },
-        { action: '[x]space', description: 'Checked checkbox' }
-      ]
+        {action: '#space', description: '1st level headline'},
+        {action: '#(N)space', description: 'N[1-6] level headline'},
+        {action: '```space', description: 'Multiline code block'},
+        {action: '`space', description: 'Inline code block'},
+        {action: '-space', description: 'Unordered list'},
+        {action: '+space', description: 'Ordered list'},
+        {action: '*space', description: 'Italic text'},
+        {action: '**space', description: 'Bold text'},
+        {action: '~~space', description: 'Strikethrough text'},
+        {action: '__space', description: 'Underlined text'},
+        {action: '>space', description: 'Quote'},
+        {action: '---space', description: 'Divider'},
+        {action: '[ ]space', description: 'Unchecked checkbox'},
+        {action: '[x]space', description: 'Checked checkbox'},
+      ],
     }
   },
   mounted () {
@@ -1735,7 +1850,7 @@ export default {
           this.$refs.renameItemDialogNameInput.$refs.input.setSelectionRange(
             0,
             // Select the whole directory name to avoid partial selection of dir names containing dots
-            isDir ? parsedName.base.length : parsedName.name.length
+            isDir ? parsedName.base.length : parsedName.name.length,
           )
         })
       }
@@ -1762,7 +1877,7 @@ export default {
         const items = [
           ...[programTemplate],
           ...this.$utils.cloneDeep(this.externalPrograms.defaultItems),
-          ...this.$utils.cloneDeep(this.externalPrograms.items)
+          ...this.$utils.cloneDeep(this.externalPrograms.items),
         ]
         this.dialogs.programEditorDialog.data.programs = items
         if (this.dialogs.programEditorDialog.specifiedHashID) {
@@ -1795,14 +1910,14 @@ export default {
         this.dialogs.dirItemPermissionManagerDialog.data.permissionData.isImmutable = this.dialogs.dirItemPermissionManagerDialog.data.dirItem.isImmutable
 
         this.$store.dispatch('GET_DIR_ITEM_PERMISSION_DATA', {
-          dirItem: this.dialogs.dirItemPermissionManagerDialog.data.dirItem
+          dirItem: this.dialogs.dirItemPermissionManagerDialog.data.dirItem,
         })
           .then((dirItemPermissionData) => {
             this.dialogs.dirItemPermissionManagerDialog.data.permissionData = dirItemPermissionData
           })
 
         this.$store.dispatch('GET_DIR_ITEM_USER_DATA', {
-          dirItem: this.dialogs.dirItemPermissionManagerDialog.data.dirItem
+          dirItem: this.dialogs.dirItemPermissionManagerDialog.data.dirItem,
         })
           .then((userItems) => {
             this.dialogs.dirItemPermissionManagerDialog.data.user.unspecifiedItems.forEach(item => {
@@ -1820,12 +1935,12 @@ export default {
         this.noteChangeHandlerDebounce.throttle(() => {
           this.$store.dispatch(
             'UPDATE_NOTE',
-            newValue
+            newValue,
           )
-        }, { time: 1000 })
+        }, {time: 1000})
       },
-      deep: true
-    }
+      deep: true,
+    },
   },
   computed: {
     ...mapState({
@@ -1844,14 +1959,14 @@ export default {
       markdownShortcuts: state => state.storageData.settings.markdownShortcuts,
       noteEditor: state => state.noteEditor,
       localServer: state => state.localServer,
-      protectedItems: state => state.storageData.protected.items
+      protectedItems: state => state.storageData.protected.items,
     }),
     ...mapGetters([
       'systemInfo',
       'selectedDirItems',
       'homeBannerSelectedMedia',
       'selectedDirItemsPaths',
-      'selectedDirItemsExtensions'
+      'selectedDirItemsExtensions',
     ]),
     targetItems () {
       return this.$store.state.contextMenus.dirItem.targetItems
@@ -1866,43 +1981,43 @@ export default {
       return this.homeBanner.items.filter(item => item.isCustom)
     },
     homeBannerPositionX: {
-      get () { return this.homeBannerSelectedMedia.positionX },
+      get () {return this.homeBannerSelectedMedia.positionX},
       set (value) {
-        this.$store.dispatch('SET_HOME_BANNER_POSITION', { axis: 'x', value: value })
-      }
+        this.$store.dispatch('SET_HOME_BANNER_POSITION', {axis: 'x', value: value})
+      },
     },
     homeBannerPositionY: {
-      get () { return this.homeBannerSelectedMedia.positionY },
+      get () {return this.homeBannerSelectedMedia.positionY},
       set (value) {
-        this.$store.dispatch('SET_HOME_BANNER_POSITION', { axis: 'y', value: value })
-      }
+        this.$store.dispatch('SET_HOME_BANNER_POSITION', {axis: 'y', value: value})
+      },
     },
     homeBannerHeight: {
-      get () { return this.$store.state.storageData.settings.homeBanner.height },
+      get () {return this.$store.state.storageData.settings.homeBanner.height},
       set (value) {
         this.$store.dispatch('SET', {
           key: 'storageData.settings.homeBanner.height',
-          value: value
+          value: value,
         })
-      }
+      },
     },
     homeBannerOverlaySelectedItem: {
-      get () { return this.$store.state.storageData.settings.homeBanner.overlay.selectedItem },
+      get () {return this.$store.state.storageData.settings.homeBanner.overlay.selectedItem},
       set (value) {
         this.$store.dispatch('SET', {
           key: 'storageData.settings.homeBanner.overlay.selectedItem',
-          value: value
+          value: value,
         })
-      }
+      },
     },
     spellcheck: {
-      get () { return this.$store.state.storageData.settings.spellcheck },
+      get () {return this.$store.state.storageData.settings.spellcheck},
       set (value) {
         this.$store.dispatch('SET', {
           key: 'storageData.settings.spellcheck',
-          value
+          value,
         })
-      }
+      },
     },
     errorDialogErrorMessage () {
       const stack = this?.dialogs?.errorDialog?.data?.errorEvent?.error?.stack
@@ -1925,13 +2040,13 @@ export default {
       if (nameIsEmpty) {
         return {
           value: false,
-          error: 'Name cannot be empty'
+          error: 'Name cannot be empty',
         }
       }
       else {
         return {
           value: true,
-          error: ''
+          error: '',
         }
       }
     },
@@ -1943,25 +2058,25 @@ export default {
       if (pathIsEmpty) {
         return {
           value: false,
-          error: 'Path cannot be empty'
+          error: 'Path cannot be empty',
         }
       }
       if (!pathExists) {
         return {
           value: false,
-          error: 'Path does not exist'
+          error: 'Path does not exist',
         }
       }
       if (!pathIsFile) {
         return {
           value: false,
-          error: 'Path should be a file'
+          error: 'Path should be a file',
         }
       }
       else {
         return {
           value: true,
-          error: ''
+          error: '',
         }
       }
     },
@@ -2003,16 +2118,16 @@ export default {
       return [
         {
           title: 'Project page',
-          link: this.appPaths.githubRepoLink
+          link: this.appPaths.githubRepoLink,
         },
         {
           title: 'Requests & issues',
-          link: this.appPaths.githubIssuesLink
+          link: this.appPaths.githubIssuesLink,
         },
         {
           title: 'Discussions',
-          link: this.appPaths.githubDiscussionsLink
-        }
+          link: this.appPaths.githubDiscussionsLink,
+        },
       ]
     },
     targetItemsIncludeProtected () {
@@ -2020,7 +2135,7 @@ export default {
         return this.protectedItems.some(protectedItem => protectedItem.path === selectedItem.path)
       })
       return someItemIsProtected
-    }
+    },
   },
   methods: {
     setupDialogDataRestore (params) {
@@ -2038,9 +2153,9 @@ export default {
     },
     closeDialog (dialogName, params) {
       const defaultParams = {
-        resetData: true
+        resetData: true,
       }
-      params = { ...defaultParams, ...params }
+      params = {...defaultParams, ...params}
       if (params.resetData) {
         this.resetDialogData(dialogName)
       }
@@ -2061,7 +2176,7 @@ export default {
         }
         else {
           resolve({
-            action: 'skip'
+            action: 'skip',
           })
         }
       })
@@ -2075,7 +2190,7 @@ export default {
               dirItem: this.dialogs.dirItemPermissionManagerDialog.data.dirItem,
               value: !isImmutable,
               adminPrompt: this.storageData.settings.adminPrompt,
-              sudoPassword: result?.data?.inputs?.[0]?.model
+              sudoPassword: result?.data?.inputs?.[0]?.model,
             })
             this.dialogs.dirItemPermissionManagerDialog.data.permissionData.isImmutable = !isImmutable
           }
@@ -2101,7 +2216,7 @@ export default {
           '### App action history:',
           '```js',
           this.appActionHistoryLog,
-          '```'
+          '```',
         ].join('\n')
         // Create link
         const link = [
@@ -2109,7 +2224,7 @@ export default {
           'issues/new?',
           'labels=unhandledError&',
           `title=${encodeURIComponent(titleTemplate)}&`,
-          `body=${encodeURIComponent(bodyTemplate)}`
+          `body=${encodeURIComponent(bodyTemplate)}`,
         ].join('\n')
         this.$eventHub.$emit('notification', {
           action: 'add',
@@ -2125,10 +2240,10 @@ export default {
               onClick: () => {
                 this.$utils.copyToClipboard({
                   text: link,
-                  title: 'Link was copied to clipboard'
+                  title: 'Link was copied to clipboard',
                 })
               },
-              closesNotification: false
+              closesNotification: false,
             },
             {
               title: 'Open link in default browser',
@@ -2136,9 +2251,9 @@ export default {
               onClick: () => {
                 this.$utils.openLink(link)
               },
-              closesNotification: false
-            }
-          ]
+              closesNotification: false,
+            },
+          ],
         })
       }
       catch (error) {
@@ -2147,7 +2262,7 @@ export default {
           timeout: 5000,
           closeButton: true,
           title: 'Operation failed',
-          message: `Error during template generation:<br>${error}`
+          message: `Error during template generation:<br>${error}`,
         })
       }
     },
@@ -2175,7 +2290,7 @@ export default {
         oldPath,
         newPath,
         newName,
-        oldName
+        oldName,
       })
     },
     createDirItem () {
@@ -2193,14 +2308,14 @@ export default {
             timeout: 3000,
             closeButton: true,
             title: 'Failure: path already exists',
-            message: path
+            message: path,
           })
         })
         .catch((error) => {
           // If path doesn't exist, create it
           let promiseToCreateDirItem
           if (type === 'directory') {
-            promiseToCreateDirItem = fs.promises.mkdir(path, { recursive: true })
+            promiseToCreateDirItem = fs.promises.mkdir(path, {recursive: true})
           }
           else if (type === 'file') {
             promiseToCreateDirItem = fs.promises.writeFile(path, '')
@@ -2212,7 +2327,7 @@ export default {
                   action: 'add',
                   timeout: 3000,
                   title: `${this.$utils.capitalize(type)} was created`,
-                  message: path
+                  message: path,
                 })
               }, 1000)
               this.dialogs.newDirItemDialog.value = false
@@ -2223,7 +2338,7 @@ export default {
                 timeout: 5000,
                 closeButton: true,
                 title: `Failed to create new ${type}`,
-                message: `Error: ${error}`
+                message: `Error: ${error}`,
               })
             })
         })
@@ -2239,7 +2354,7 @@ export default {
     validateNewDirItemInput () {
       const newName = this.dialogs.newDirItemDialog.data.name
       const newPath = PATH.posix.join(this.currentDir.path, newName)
-      const pathValidationData = this.$utils.isPathValid(newPath, { canBeRootDir: false })
+      const pathValidationData = this.$utils.isPathValid(newPath, {canBeRootDir: false})
       this.dialogs.newDirItemDialog.data.error = pathValidationData.error
       this.dialogs.newDirItemDialog.data.isValid = pathValidationData.isValid
     },
@@ -2251,14 +2366,14 @@ export default {
         // Add program
         this.$store.dispatch(
           'ADD_EXTERNAL_PROGRAM',
-          this.dialogs.programEditorDialog.data.selectedProgram
+          this.dialogs.programEditorDialog.data.selectedProgram,
         )
       }
       // If editing existing program
       else {
         this.$store.dispatch(
           'EDIT_EXTERNAL_PROGRAM',
-          this.dialogs.programEditorDialog.data.selectedProgram
+          this.dialogs.programEditorDialog.data.selectedProgram,
         )
       }
       this.closeDialog('programEditorDialog')
@@ -2266,14 +2381,14 @@ export default {
     deleteProgram () {
       this.$store.dispatch(
         'DELETE_EXTERNAL_PROGRAM',
-        this.dialogs.programEditorDialog.data.selectedProgram
+        this.dialogs.programEditorDialog.data.selectedProgram,
       )
       const programTemplate = this.$utils.cloneDeep(this.externalPrograms.programTemplate)
       programTemplate.isTemplate = true
       const items = [
         ...[programTemplate],
         ...this.$utils.cloneDeep(this.externalPrograms.defaultItems),
-        ...this.$utils.cloneDeep(this.externalPrograms.items)
+        ...this.$utils.cloneDeep(this.externalPrograms.items),
       ]
       this.dialogs.programEditorDialog.data.programs = items
       this.dialogs.programEditorDialog.data.selectedProgram = programTemplate
@@ -2287,7 +2402,7 @@ export default {
       this.dialogs.programEditorDialog.data.selectedProgram.name = parsedPath.name
     },
     programEditorPickProgram () {
-      electronRemote.dialog.showOpenDialog(currentWindow, { properties: ['openFile'] }).then(result => {
+      electronRemote.dialog.showOpenDialog(currentWindow, {properties: ['openFile'] }).then(result => {
         // Parse name of selected file
         const filePath = result.filePaths[0].replace(/\\/g, '/')
         const parsedPath = PATH.parse(filePath)
@@ -2299,14 +2414,14 @@ export default {
           this.$eventHub.$emit('notification', {
             action: 'add',
             timeout: 3000,
-            title: 'Error: unable to select the program'
+            title: 'Error: unable to select the program',
           })
         })
     },
     imagePickerPathInputHandler () {
     },
     imagePickerPickProgramPath () {
-      electronRemote.dialog.showOpenDialog(currentWindow, { properties: ['openFile'] })
+      electronRemote.dialog.showOpenDialog(currentWindow, {properties: ['openFile'] })
         .then(result => {
           const filePath = result.filePaths[0]
           this.dialogs.imagePickerDialog.data.path = filePath
@@ -2317,18 +2432,19 @@ export default {
             action: 'add',
             timeout: 5000,
             title: "Error | couldn't pick an image",
-            message: "Make sure you're picking an image file"
+            message: "Make sure you're picking an image file",
           })
         })
     },
     updateMathFormulaPreview () {
       const node = document.querySelector('#math-formula-preview')
       const katexHtml = katex.renderToString(this.dialogs.mathEditorDialog.data.formula, {
-        throwOnError: false
+        throwOnError: false,
       })
       node.innerHTML = katexHtml
     },
     initExternalVideoDownload () {
+      // TODO: refactor
       const hashID = this.$utils.getHash()
       if (this.dialogs.externalDownloadDialog.data.type === 'video') {
         let command = []
@@ -2354,7 +2470,7 @@ export default {
             'copy',
             '-f',
             'matroska',
-            `"${path}"`
+            `"${path}"`,
             // 'pipe:1'
           ]
         }
@@ -2377,7 +2493,7 @@ export default {
             `--ffmpeg-location "${this.appPaths.binFFMPEG}"`,
             `-f ${format}`,
             `-o "${destPathRaw}"`,
-            `"${this.dialogs.externalDownloadDialog.data.url}"`
+            `"${this.dialogs.externalDownloadDialog.data.url}"`,
           ].join(' ').replace(/\n/g, ' ')
 
           commandForFileName = [
@@ -2385,10 +2501,9 @@ export default {
             '--get-filename',
             `-f ${format}`,
             `-o "${destPathRaw}"`,
-            `"${this.dialogs.externalDownloadDialog.data.url}"`
+            `"${this.dialogs.externalDownloadDialog.data.url}"`,
           ].join(' ').replace(/\n/g, ' ')
         }
-
 
         this.$store.dispatch('EXEC_DOWNLOAD_VIDEO', {
           command,
@@ -2399,12 +2514,12 @@ export default {
           path,
           directory,
           source: this.dialogs.externalDownloadDialog.data.source,
-          type: this.dialogs.externalDownloadDialog.data.type
+          type: this.dialogs.externalDownloadDialog.data.type,
         })
       }
       this.closeDialog('externalDownloadDialog')
-    }
-  }
+    },
+  },
 }
 </script>
 

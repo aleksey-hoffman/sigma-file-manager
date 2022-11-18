@@ -10,18 +10,24 @@ NOTES:
   Fix: Implemented a custom one. Gets triggered with UI undo / redo buttons and keyboard undo / redo shortcuts.
 -->
 <template>
-  <div id="text-editor" class="text-editor">
+  <div
+    id="note-editor"
+    class="note-editor"
+  >
     <v-menu
       v-model="noteEditorContextMenu"
       :position-x="noteEditorContextMenuX"
       :position-y="noteEditorContextMenuY"
-      absolute offset-y
+      absolute
+      offset-y
       class="z-index--top-level"
     >
       <v-list dense>
         <v-list-item @click="noteEditorOpenExternalLink('google')">
           <v-list-item-action>
-            <v-icon color="primary-lighten-2">mdi-magnify</v-icon>
+            <v-icon color="primary-lighten-2">
+              mdi-magnify
+            </v-icon>
           </v-list-item-action>
           <v-list-item-content>
             <v-list-item-title>Search selection in Google</v-list-item-title>
@@ -29,7 +35,9 @@ NOTES:
         </v-list-item>
         <v-list-item @click="noteEditorOpenExternalLink('duckduckgo')">
           <v-list-item-action>
-            <v-icon color="primary-lighten-2">mdi-magnify</v-icon>
+            <v-icon color="primary-lighten-2">
+              mdi-magnify
+            </v-icon>
           </v-list-item-action>
           <v-list-item-content>
             <v-list-item-title>Search selection in DuckDuckGo</v-list-item-title>
@@ -37,7 +45,9 @@ NOTES:
         </v-list-item>
         <v-list-item @click="textTransform('uppercase')">
           <v-list-item-action>
-            <v-icon color="primary-lighten-2">mdi-format-textbox</v-icon>
+            <v-icon color="primary-lighten-2">
+              mdi-format-textbox
+            </v-icon>
           </v-list-item-action>
           <v-list-item-content>
             <v-list-item-title>Transform selection: UPPERCASE</v-list-item-title>
@@ -45,7 +55,9 @@ NOTES:
         </v-list-item>
         <v-list-item @click="textTransform('lowercase')">
           <v-list-item-action>
-            <v-icon color="primary-lighten-2">mdi-format-textbox</v-icon>
+            <v-icon color="primary-lighten-2">
+              mdi-format-textbox
+            </v-icon>
           </v-list-item-action>
           <v-list-item-content>
             <v-list-item-title>Transform selection: lowercase</v-list-item-title>
@@ -56,38 +68,11 @@ NOTES:
 
     <template v-if="!readOnly">
       <div
-        class="text-editor__toolbar py-1 px-0"
+        class="note-editor__toolbar py-1 px-0"
       >
-        <div class="text-editor__toolbar-group">
+        <div class="note-editor__toolbar-group">
           <!-- TODO: finish in v1.2.0 -->
-          <!-- <v-menu>
-            <template v-slot:activator="{ on: menu, attrs }">
-              <v-tooltip bottom>
-                <template v-slot:activator="{ on: tooltip }">
-                  <v-btn
-                    v-bind="attrs"
-                    v-on="{ ...tooltip, ...menu }"
-                    tabindex="2"
-                    x-small text
-                    class="menubar__button"
-                    :class="{ 'is-active': false }"
-                  ><v-icon size="18px">mdi-clipboard-text-multiple-outline</v-icon>
-                  </v-btn>
-                </template>
-                <span>Load a template</span>
-              </v-tooltip>
-            </template>
-            <v-list>
-              <v-list-item
-                v-for="(template, index) in templates"
-                @click="loadTemplate(template)"
-                :key="index"
-              >
-                <v-list-item-title>{{template.title}}</v-list-item-title>
-              </v-list-item>
-            </v-list>
-          </v-menu>
-
+          <!--
           <v-tooltip bottom>
             <template v-slot:activator="{ on }">
               <v-btn
@@ -105,210 +90,314 @@ NOTES:
           </v-tooltip> -->
 
           <v-tooltip bottom>
-            <template v-slot:activator="{ on }">
+            <template #activator="{ on }">
               <v-btn
-                v-on="on"
                 tabindex="2"
-                x-small text
+                x-small
+                text
                 class="menubar__button"
                 :class="{ 'is-active': showSourceCode }"
+                v-on="on"
                 @click="showSourceCode = !showSourceCode"
               >
-                <v-icon size="18px">mdi-xml</v-icon>
+                <v-icon size="18px">
+                  mdi-xml
+                </v-icon>
               </v-btn>
             </template>
             <span>Show note source code</span>
           </v-tooltip>
         </div>
 
-        <div class="text-editor__toolbar-group">
+        <div class="note-editor__toolbar-group">
+          <v-menu
+            offset-y
+            max-width="400px"
+          >
+            <template #activator="{on: menu, attrs}">
+              <v-tooltip bottom>
+                <template #activator="{on: tooltip}">
+                  <v-btn
+                    v-bind="attrs"
+                    tabindex="2"
+                    x-small
+                    text
+                    class="menubar__button"
+                    :class="{ 'is-active': false }"
+                    v-on="{ ...tooltip, ...menu }"
+                  >
+                    <v-icon size="18px">
+                      mdi-clipboard-check-multiple-outline
+                    </v-icon>
+                  </v-btn>
+                </template>
+                <span>Load template</span>
+              </v-tooltip>
+            </template>
+            <v-list>
+              <v-list-item
+                v-for="(template, index) in templates"
+                :key="index"
+                @click="loadTemplate(template)"
+              >
+                <v-list-item-title>{{template.title}}</v-list-item-title>
+              </v-list-item>
+            </v-list>
+          </v-menu>
+
+          <v-tooltip bottom>
+            <template #activator="{on: tooltip}">
+              <v-btn
+                v-bind="attrs"
+                tabindex="2"
+                x-small
+                text
+                class="menubar__button"
+                :class="{ 'is-active': false }"
+                v-on="tooltip"
+              >
+                <v-icon size="18px">
+                  mdi-clipboard-plus-outline
+                </v-icon>
+              </v-btn>
+            </template>
+            <span>Save template</span>
+          </v-tooltip>
+        </div>
+
+        <div class="note-editor__toolbar-group">
           <v-btn
             tabindex="2"
-            x-small text
+            x-small
+            text
             class="menubar__button"
             :class="{ 'is-active': false }"
-            @click="loadHistory('backward')"
             :disabled="!historyParams.undoAvailable"
+            @click="loadHistory('backward')"
           >
-            <v-icon size="18px">mdi-undo</v-icon>
+            <v-icon size="18px">
+              mdi-undo
+            </v-icon>
           </v-btn>
 
           <v-btn
             tabindex="2"
-            x-small text
+            x-small
+            text
             class="menubar__button"
             :class="{ 'is-active': false }"
-            @click="loadHistory('forward')"
             :disabled="!historyParams.redoAvailable"
+            @click="loadHistory('forward')"
           >
-            <v-icon size="18px">mdi-redo</v-icon>
+            <v-icon size="18px">
+              mdi-redo
+            </v-icon>
           </v-btn>
 
           <v-tooltip bottom>
-            <template v-slot:activator="{ on }">
+            <template #activator="{ on }">
               <v-btn
-                v-on="on"
                 tabindex="2"
-                x-small text
+                x-small
+                text
                 class="menubar__button"
                 :class="{ 'is-active': false }"
+                v-on="on"
                 @click="command('removeFormat')"
               >
-                <v-icon size="18px">mdi-cancel</v-icon>
+                <v-icon size="18px">
+                  mdi-cancel
+                </v-icon>
               </v-btn>
             </template>
             <span>Remove formatting from selection</span>
           </v-tooltip>
 
           <v-tooltip bottom>
-            <template v-slot:activator="{ on }">
+            <template #activator="{ on }">
               <v-btn
-                v-on="on"
                 tabindex="2"
-                x-small text
+                x-small
+                text
                 class="menubar__button"
                 :class="{ 'is-active': false }"
+                v-on="on"
                 @click="minimizeStructure()"
               >
-                <v-icon size="18px">mdi-close</v-icon>
+                <v-icon size="18px">
+                  mdi-close
+                </v-icon>
               </v-btn>
             </template>
             <span>Remove all editing from selection</span>
           </v-tooltip>
         </div>
 
-        <div class="text-editor__toolbar-group">
+        <div class="note-editor__toolbar-group">
           <v-btn
             tabindex="2"
-            x-small text
+            x-small
+            text
             class="menubar__button"
             :class="{ 'is-active': isActive('P') }"
             @click="customCommand('toggle', 'P')"
           >
-            <v-icon size="18px">mdi-format-pilcrow</v-icon>
+            <v-icon size="18px">
+              mdi-format-pilcrow
+            </v-icon>
           </v-btn>
 
           <v-btn
             tabindex="2"
-            x-small text
+            x-small
+            text
             class="menubar__button"
             :class="{ 'is-active': isActive('H1') }"
             @click="customCommand('toggle', 'H1')"
           >
-            <v-icon size="18px">mdi-format-header-1</v-icon>
+            <v-icon size="18px">
+              mdi-format-header-1
+            </v-icon>
           </v-btn>
 
           <v-btn
             tabindex="2"
-            x-small text
+            x-small
+            text
             class="menubar__button"
             :class="{ 'is-active': isActive('H2') }"
             @click="customCommand('toggle', 'H2')"
           >
-            <v-icon size="18px">mdi-format-header-2</v-icon>
+            <v-icon size="18px">
+              mdi-format-header-2
+            </v-icon>
           </v-btn>
 
           <v-btn
             tabindex="2"
-            x-small text
+            x-small
+            text
             class="menubar__button"
             :class="{ 'is-active': isActive('H3') }"
             @click="customCommand('toggle', 'H3')"
           >
-            <v-icon size="18px">mdi-format-header-3</v-icon>
+            <v-icon size="18px">
+              mdi-format-header-3
+            </v-icon>
           </v-btn>
         </div>
 
-        <div class="text-editor__toolbar-group">
+        <div class="note-editor__toolbar-group">
           <v-btn
             tabindex="2"
-            x-small text
+            x-small
+            text
             class="menubar__button"
             :class="{ 'is-active': isActive('B') }"
             @click="command('bold')"
           >
-            <v-icon size="18px">mdi-format-bold</v-icon>
+            <v-icon size="18px">
+              mdi-format-bold
+            </v-icon>
           </v-btn>
 
           <v-btn
             tabindex="2"
-            x-small text
+            x-small
+            text
             class="menubar__button"
             :class="{ 'is-active': isActive('I') }"
             @click="command('italic')"
           >
-            <v-icon size="18px">mdi-format-italic</v-icon>
+            <v-icon size="18px">
+              mdi-format-italic
+            </v-icon>
           </v-btn>
 
           <v-btn
             tabindex="2"
-            x-small text
+            x-small
+            text
             class="menubar__button"
             :class="{ 'is-active': isActive('STRIKE') }"
             @click="command('strikeThrough')"
           >
-            <v-icon size="18px">mdi-format-strikethrough</v-icon>
+            <v-icon size="18px">
+              mdi-format-strikethrough
+            </v-icon>
           </v-btn>
 
           <v-btn
             tabindex="2"
-            x-small text
+            x-small
+            text
             class="menubar__button"
             :class="{ 'is-active': isActive('U') }"
             @click="command('underline')"
           >
-            <v-icon size="18px">mdi-format-underline</v-icon>
+            <v-icon size="18px">
+              mdi-format-underline
+            </v-icon>
           </v-btn>
         </div>
 
-        <div class="text-editor__toolbar-group">
+        <div class="note-editor__toolbar-group">
           <v-tooltip bottom>
-            <template v-slot:activator="{ on }">
+            <template #activator="{ on }">
               <v-btn
-                v-on="on"
                 tabindex="2"
-                x-small text
+                x-small
+                text
                 class="menubar__button"
                 :class="{ 'is-active': isActive('SUP') }"
+                v-on="on"
                 @click="command('superscript')"
               >
-                <v-icon size="18px">mdi-format-superscript</v-icon>
+                <v-icon size="18px">
+                  mdi-format-superscript
+                </v-icon>
               </v-btn>
             </template>
             <span>Turn selection into superscript</span>
           </v-tooltip>
 
           <v-tooltip bottom>
-            <template v-slot:activator="{ on }">
+            <template #activator="{ on }">
               <v-btn
-                v-on="on"
                 tabindex="2"
-                x-small text
+                x-small
+                text
                 class="menubar__button"
                 :class="{ 'is-active': isActive('SUB') }"
+                v-on="on"
                 @click="command('subscript')"
               >
-                <v-icon size="18px">mdi-format-subscript</v-icon>
+                <v-icon size="18px">
+                  mdi-format-subscript
+                </v-icon>
               </v-btn>
             </template>
             <span>Turn selection into subscript</span>
           </v-tooltip>
-
         </div>
 
-        <div class="text-editor__toolbar-group">
+        <div class="note-editor__toolbar-group">
           <v-menu offset-y>
-            <template v-slot:activator="{ on: menu, attrs }">
+            <template #activator="{ on: menu, attrs }">
               <v-tooltip bottom>
-                <template v-slot:activator="{ on: tooltip }">
+                <template #activator="{ on: tooltip }">
                   <v-btn
                     v-bind="attrs"
-                    v-on="{ ...tooltip, ...menu }"
                     tabindex="2"
-                    x-small text
+                    x-small
+                    text
                     class="menubar__button"
                     :class="{ 'is-active': isActive('color') }"
-                  ><v-icon size="18px">mdi-format-text-variant-outline</v-icon>
+                    v-on="{ ...tooltip, ...menu }"
+                  >
+                    <v-icon size="18px">
+                      mdi-format-text-variant-outline
+                    </v-icon>
                   </v-btn>
                 </template>
                 <span>Text color</span>
@@ -321,7 +410,6 @@ NOTES:
               >
                 <button
                   v-for="(color) in colorGroup"
-                  @click.prevent="command('foreColor', color)"
                   :key="'text-color-palette-color-' + color"
                   :style="{
                     'background-color': color,
@@ -329,23 +417,28 @@ NOTES:
                     'height': '16px',
                     'cursor': 'pointer'
                   }"
-                ></button>
+                  @click.prevent="command('foreColor', color)"
+                />
               </v-layout>
             </div>
           </v-menu>
 
           <v-menu offset-y>
-            <template v-slot:activator="{ on: menu, attrs }">
+            <template #activator="{ on: menu, attrs }">
               <v-tooltip bottom>
-                <template v-slot:activator="{ on: tooltip }">
+                <template #activator="{ on: tooltip }">
                   <v-btn
                     v-bind="attrs"
-                    v-on="{ ...tooltip, ...menu }"
                     tabindex="2"
-                    x-small text
+                    x-small
+                    text
                     class="menubar__button"
                     :class="{ 'is-active': isActive('highlight') }"
-                  ><v-icon size="18px">mdi-format-color-highlight</v-icon>
+                    v-on="{ ...tooltip, ...menu }"
+                  >
+                    <v-icon size="18px">
+                      mdi-format-color-highlight
+                    </v-icon>
                   </v-btn>
                 </template>
                 <span>Text highlighting</span>
@@ -358,7 +451,6 @@ NOTES:
               >
                 <button
                   v-for="(color) in colorGroup"
-                  @click.prevent="highlightNode(color)"
                   :key="'highlight-color-palette-color-' + color"
                   :style="{
                     'background-color': color,
@@ -366,126 +458,157 @@ NOTES:
                     'height': '16px',
                     'cursor': 'pointer'
                   }"
-                ></button>
+                  @click.prevent="highlightNode(color)"
+                />
               </v-layout>
             </div>
           </v-menu>
 
           <v-tooltip bottom>
-            <template v-slot:activator="{ on }">
+            <template #activator="{ on }">
               <v-btn
-                v-on="on"
                 tabindex="2"
-                x-small text
+                x-small
+                text
                 class="menubar__button"
                 :class="{ 'is-active': false }"
+                v-on="on"
                 @click="customCommand('insertHTML', 'divider')"
               >
-                <v-icon size="18px">mdi-minus</v-icon>
+                <v-icon size="18px">
+                  mdi-minus
+                </v-icon>
               </v-btn>
             </template>
             <span>Insert divider</span>
           </v-tooltip>
         </div>
 
-        <div class="text-editor__toolbar-group">
+        <div class="note-editor__toolbar-group">
           <v-btn
             tabindex="2"
-            x-small text
+            x-small
+            text
             class="menubar__button"
             :class="{ 'is-active': currentNodePath.includes('CODE') }"
             @click="customCommand('wrap', 'code')"
           >
-            <v-icon size="18px">mdi-code-tags</v-icon>
+            <v-icon size="18px">
+              mdi-code-tags
+            </v-icon>
           </v-btn>
 
           <v-btn
             tabindex="2"
-            x-small text
+            x-small
+            text
             class="menubar__button"
             :class="{ 'is-active': currentNodePath.includes('PRE') }"
             @click="wrapWith('pre')"
           >
-            <v-icon size="18px">mdi-code-braces</v-icon>
+            <v-icon size="18px">
+              mdi-code-braces
+            </v-icon>
           </v-btn>
 
           <v-btn
             tabindex="2"
-            x-small text
+            x-small
+            text
             class="menubar__button"
             :class="{ 'is-active': isActive('unorderedList') }"
             @click="command('insertUnorderedList')"
           >
-            <v-icon size="18px">mdi-order-bool-descending</v-icon>
+            <v-icon size="18px">
+              mdi-order-bool-descending
+            </v-icon>
           </v-btn>
 
           <v-btn
             tabindex="2"
-            x-small text
+            x-small
+            text
             class="menubar__button"
             :class="{ 'is-active': isActive('orderedList') }"
             @click="command('insertOrderedList')"
           >
-            <v-icon size="18px">mdi-order-numeric-ascending</v-icon>
+            <v-icon size="18px">
+              mdi-order-numeric-ascending
+            </v-icon>
           </v-btn>
         </div>
 
-        <div class="text-editor__toolbar-group">
+        <div class="note-editor__toolbar-group">
           <v-btn
             tabindex="2"
-            x-small text
+            x-small
+            text
             class="menubar__button"
             :class="{ 'is-active': selection.nodeTag === 'BLOCKQUOTE' }"
             @click="customCommand('toggle', 'BLOCKQUOTE')"
           >
-            <v-icon size="18px">mdi-format-quote-open</v-icon>
+            <v-icon size="18px">
+              mdi-format-quote-open
+            </v-icon>
           </v-btn>
         </div>
 
-        <div class="text-editor__toolbar-group">
+        <div class="note-editor__toolbar-group">
           <v-btn
             tabindex="2"
-            x-small text
+            x-small
+            text
             class="menubar__button"
             :class="{ 'is-active': false }"
             @click="command('justifyLeft')"
           >
-            <v-icon size="18px">mdi-format-align-left</v-icon>
+            <v-icon size="18px">
+              mdi-format-align-left
+            </v-icon>
           </v-btn>
 
           <v-btn
             tabindex="2"
-            x-small text
+            x-small
+            text
             class="menubar__button"
             :class="{ 'is-active': false }"
             @click="command('justifyCenter')"
           >
-            <v-icon size="18px">mdi-format-align-center</v-icon>
+            <v-icon size="18px">
+              mdi-format-align-center
+            </v-icon>
           </v-btn>
 
           <v-btn
             tabindex="2"
-            x-small text
+            x-small
+            text
             class="menubar__button"
             :class="{ 'is-active': false }"
             @click="command('justifyRight')"
           >
-            <v-icon size="18px">mdi-format-align-right</v-icon>
+            <v-icon size="18px">
+              mdi-format-align-right
+            </v-icon>
           </v-btn>
         </div>
 
-        <div class="text-editor__toolbar-group">
+        <div class="note-editor__toolbar-group">
           <v-tooltip bottom>
-            <template v-slot:activator="{ on }">
+            <template #activator="{ on }">
               <v-btn
-                v-on="on"
                 tabindex="2"
-                x-small text
+                x-small
+                text
                 class="menubar__button"
                 :class="{ 'is-active': false }"
+                v-on="on"
                 @click="outdentNode()"
               >
-                <v-icon size="18px">mdi-format-indent-decrease</v-icon>
+                <v-icon size="18px">
+                  mdi-format-indent-decrease
+                </v-icon>
               </v-btn>
             </template>
             <span>
@@ -495,16 +618,19 @@ NOTES:
           </v-tooltip>
 
           <v-tooltip bottom>
-            <template v-slot:activator="{ on }">
+            <template #activator="{ on }">
               <v-btn
-                v-on="on"
                 tabindex="2"
-                x-small text
+                x-small
+                text
                 class="menubar__button"
                 :class="{ 'is-active': false }"
+                v-on="on"
                 @click="indentNode()"
               >
-                <v-icon size="18px">mdi-format-indent-increase</v-icon>
+                <v-icon size="18px">
+                  mdi-format-indent-increase
+                </v-icon>
               </v-btn>
             </template>
             <span>
@@ -514,25 +640,31 @@ NOTES:
           </v-tooltip>
         </div>
 
-        <div class="text-editor__toolbar-group">
+        <div class="note-editor__toolbar-group">
           <v-btn
             tabindex="2"
-            x-small text
+            x-small
+            text
             class="menubar__button"
             :class="{ 'is-active': isActive('image') }"
             @click="addImage()"
           >
-            <v-icon size="18px">mdi-image</v-icon>
+            <v-icon size="18px">
+              mdi-image
+            </v-icon>
           </v-btn>
 
           <v-btn
             tabindex="2"
-            x-small text
+            x-small
+            text
             class="menubar__button"
             :class="{ 'is-active': isActive('checkbox') }"
             @click="customCommand('insertHTML', 'checkbox')"
           >
-            <v-icon size="18px">mdi-check-box-outline</v-icon>
+            <v-icon size="18px">
+              mdi-check-box-outline
+            </v-icon>
           </v-btn>
 
           <!-- TODO: finish in v1.2.0 -->
@@ -553,17 +685,24 @@ NOTES:
           </v-tooltip> -->
 
           <v-menu offset-y>
-            <template v-slot:activator="{ on: menu, attrs }">
-              <v-tooltip bottom :disabled="attrs['aria-expanded'] === 'true'">
-                <template v-slot:activator="{ on: tooltip }">
+            <template #activator="{ on: menu, attrs }">
+              <v-tooltip
+                bottom
+                :disabled="attrs['aria-expanded'] === 'true'"
+              >
+                <template #activator="{ on: tooltip }">
                   <v-btn
                     v-bind="attrs"
-                    v-on="{ ...tooltip, ...menu }"
                     tabindex="2"
-                    x-small text
+                    x-small
+                    text
                     class="menubar__button"
                     :class="{ 'is-active': isActive('math:katex') }"
-                  ><v-icon size="18px">mdi-sigma</v-icon>
+                    v-on="{ ...tooltip, ...menu }"
+                  >
+                    <v-icon size="18px">
+                      mdi-sigma
+                    </v-icon>
                   </v-btn>
                 </template>
                 <span>Math</span>
@@ -572,14 +711,13 @@ NOTES:
             <v-list>
               <v-list-item
                 v-for="(framework, index) in mathFrameworks"
-                @click="framework.onClick()"
                 :key="index"
+                @click="framework.onClick()"
               >
                 <v-list-item-title>
                   {{framework.title === 'Katex' && selection.mathKatexNode === null
-                      ? 'Add'
-                      : 'Edit'
-                 }}
+                    ? 'Add'
+                    : 'Edit'}}
                   {{framework.title}}
                   formula
                 </v-list-item-title>
@@ -589,68 +727,83 @@ NOTES:
         </div>
 
         <!-- TODO: finish in v1.1.0 -->
-        <div v-if="false" class="text-editor__toolbar-group">
+        <div
+          v-if="false"
+          class="note-editor__toolbar-group"
+        >
           <v-btn
             tabindex="2"
-            x-small text
+            x-small
+            text
             class="menubar__button"
             :class="{ 'is-active': false }"
-          ><v-icon size="20px">mdi-table</v-icon>
+          >
+            <v-icon size="20px">
+              mdi-table
+            </v-icon>
           </v-btn>
 
           <span v-if="isActive('table')">
             <v-btn
               tabindex="2"
-              x-small text
+              x-small
+              text
               class="menubar__button"
               @click="deleteTable()"
             ><v-icon size="18px">mdi-table-remove</v-icon>
             </v-btn>
             <v-btn
               tabindex="2"
-              x-small text
+              x-small
+              text
               class="menubar__button"
               @click="addColumnBefore()"
             ><v-icon size="18px">mdi-table-column-plus-after</v-icon>
             </v-btn>
             <v-btn
               tabindex="2"
-              x-small text
+              x-small
+              text
               class="menubar__button"
               @click="addColumnAfter()"
             ><v-icon size="18px">mdi-table-column-plus-before</v-icon>
             </v-btn>
             <v-btn
               tabindex="2"
-              x-small text
+              x-small
+              text
               class="menubar__button"
               @click="deleteColumn()"
             ><v-icon size="18px">mdi-table-column-remove</v-icon>
             </v-btn>
             <v-btn
               tabindex="2"
-              x-small text
+              x-small
+              text
               class="menubar__button"
               @click="addRowBefore()"
             ><v-icon size="18px">mdi-table-row-plus-after</v-icon>
             </v-btn>
             <v-btn
               tabindex="2"
-              x-small text
+              x-small
+              text
               class="menubar__button"
               @click="addRowAfter()"
             ><v-icon size="18px">mdi-table-row-plus-before</v-icon>
             </v-btn>
             <v-btn
               tabindex="2"
-              x-small text
+              x-small
+              text
               class="menubar__button"
               @click="deleteRow()"
             ><v-icon size="18px">mdi-table-row-remove</v-icon>
             </v-btn>
             <v-btn
               tabindex="2"
-              x-small text
+              x-small
+              text
               class="menubar__button"
               @click="toggleCellMerge()"
             ><v-icon size="18px">mdi-table-merge-cells</v-icon>
@@ -658,7 +811,7 @@ NOTES:
           </span>
         </div>
       </div>
-      <v-divider class="divider-color-2 mt-1"></v-divider>
+      <v-divider class="divider-color-2 mt-1" />
     </template>
 
     <overlay-scrollbars
@@ -666,30 +819,33 @@ NOTES:
         className: 'os-theme-minimal-light',
         scrollbars: { autoHide: 'move' }
       }"
-      class="sticky-scroller__condtent text-editor__content-container fade-mask--bottom"
+      class="sticky-scroller__condtent note-editor__content-container fade-mask--bottom"
       :style="{
         '--fade-mask-bottom': '15%'
       }"
     >
       <span @click.right.exact="showNoteEditorContextMenu">
-        <div v-show="showSourceCode" class="text-editor__source-code-container">
+        <div
+          v-show="showSourceCode"
+          class="note-editor__source-code-container"
+        >
           <div class="text--sub-title-1">Note source code</div>
           <pre>{{htmlNodeToMultilineString(value)}}</pre>
         </div>
         <div
+          id="note-editor__content"
           contenteditable="true"
           tabindex="0"
           placeholder="⇢"
-          id="text-editor__content"
-          class="text-editor__content"
+          class="note-editor__content"
+          :spellcheck="spellcheck"
+          :isEmpty="isEmpty"
+          :isReadOnly="readOnly"
           @focus="editorFocusHandler"
           @input="editorInputHandler"
           @keydown="editorKeydownHandler"
           @click="editorMouse1DownHandler"
-          :spellcheck="spellcheck"
-          :isEmpty="isEmpty"
-          :isReadOnly="readOnly"
-        ></div>
+        />
       </span>
     </overlay-scrollbars>
   </div>
@@ -697,9 +853,9 @@ NOTES:
 
 <script>
 import {mapFields} from 'vuex-map-fields'
-import {colors} from '../utils/colors.js'
-import Filehasher from '../utils/fileHasher.js'
-import TimeUtils from '../utils/timeUtils.js'
+import {colors} from '@/utils/colors.js'
+import Filehasher from '@/utils/fileHasher.js'
+import TimeUtils from '@/utils/timeUtils.js'
 import katex from 'katex'
 import 'katex/dist/katex.min.css'
 
@@ -718,7 +874,7 @@ export default {
         maxItemsAmount: 1000,
         maxSizeInBytes: 50 * 1024 * 1024,
         undoAvailable: false,
-        redoAvailable: false
+        redoAvailable: false,
       },
       lastAction: null,
       historyUpdateIsPaused: false,
@@ -741,7 +897,7 @@ export default {
         isAtRoot: false,
         isEnclosed: false,
         mathKatexNode: false,
-        cursorIsInEditor: false
+        cursorIsInEditor: false,
       },
       currentNode: null,
       currentNodePath: [],
@@ -755,19 +911,19 @@ export default {
       templates: [
         {
           title: 'template 1',
-          content: '<strong>Template 1 content:</strong> test'
+          content: '<strong>Template 1 content:</strong> test',
         },
         {
           title: 'template 2',
-          content: '2'
-        }
+          content: '2',
+        },
       ],
       mathFrameworks: [
         {
           title: 'Katex',
-          onClick: () => this.addMathFormula('katex')
-        }
-      ]
+          onClick: () => this.addMathFormula('katex'),
+        },
+      ],
     }
   },
   watch: {
@@ -788,7 +944,7 @@ export default {
     },
     currentNodePath (value) {
       this.$emit('currentNodePath', this.currentNodePath)
-    }
+    },
   },
   mounted () {
     this.historySetThrottle = new TimeUtils()
@@ -797,10 +953,10 @@ export default {
       if (isContenteditable) {
         const node = window.getSelection().anchorNode
         this.selection.nodeTag = node.parentNode.tagName
-        if (node.id !== 'text-editor__content') {
+        if (node.id !== 'note-editor__content') {
           this.currentNode = node.parentNode
         }
-        this.selection.cursorIsInEditor = event.target.activeElement.id === 'text-editor__content'
+        this.selection.cursorIsInEditor = event.target.activeElement.id === 'note-editor__content'
         this.currentNodePath = this.getNodePath()
       }
     }
@@ -825,14 +981,14 @@ export default {
     }),
     isEmpty () {
       return this.charCount === null || this.charCount === 0
-    }
+    },
   },
   methods: {
     initMutationObserver () {
       const config = {
         attributes: true,
         childList: true,
-        subtree: true
+        subtree: true,
       }
       this.editorMutationObserver = new MutationObserver(this.editorMutationObserverHandler)
       this.editorMutationObserver.observe(this.editor, config)
@@ -928,7 +1084,7 @@ export default {
     },
     outdentNode () {
       // Remove tab from node, skip if it's the editor root
-      if (this.selection.node.parentNode.id !== 'text-editor__content') {
+      if (this.selection.node.parentNode.id !== 'note-editor__content') {
         const lastSelectedNode = this.selection.parentNode
         this.selection.node.parentNode.innerHTML = this.selection.node.parentNode.innerHTML
           .replace('<span>&nbsp;&nbsp;&nbsp;&nbsp;</span>', '')
@@ -945,7 +1101,7 @@ export default {
       }
     },
     indentNode () {
-      if (this.selection.node.parentNode.id !== 'text-editor__content') {
+      if (this.selection.node.parentNode.id !== 'note-editor__content') {
         this.selection.node.parentNode.insertAdjacentHTML('afterBegin', '<span>&nbsp;&nbsp;&nbsp;&nbsp;</span>')
       }
     },
@@ -970,7 +1126,7 @@ export default {
       return node
     },
     initEditor () {
-      this.editor = document.querySelector('#text-editor__content')
+      this.editor = document.querySelector('#note-editor__content')
     },
     setContent () {
       this.editor.innerHTML = this.value
@@ -1002,7 +1158,7 @@ export default {
     getParentTag (node, nodeArray) {
       if (node) {
         nodeArray.push(node.tagName)
-        if (node?.parentNode?.id !== 'text-editor__content') {
+        if (node?.parentNode?.id !== 'note-editor__content') {
           const next = this.getParentTag(node.parentNode, nodeArray)
           if (next) {
             return next
@@ -1018,7 +1174,7 @@ export default {
     },
     getParentNode (node, nodeArray) {
       nodeArray.push(node)
-      if (node?.parentNode?.id !== 'text-editor__content') {
+      if (node?.parentNode?.id !== 'note-editor__content') {
         const next = this.getParentNode(node.parentNode, nodeArray)
         if (next) {
           return next
@@ -1032,7 +1188,7 @@ export default {
       this.editor.innerHTML = template.content
     },
     editorFocusHandler (event) {
-      // const editor = document.querySelector('#text-editor__content')
+      // const editor = document.querySelector('#note-editor__content')
       // if (this.value === '') {
       //   editor.innerHTML =
       // }
@@ -1047,7 +1203,7 @@ export default {
       this.selection.parentNodeStructure = node.parentNode.childNodes
       this.selection.nodeEndOffset = node.length - selection.anchorOffset
       this.selection.cursorIsAtNodeEnd = this.selection.nodeEndOffset === 0
-      this.selection.isAtRoot = node.id === 'text-editor__content' || node.parentNode.id === 'text-editor__content'
+      this.selection.isAtRoot = node.id === 'note-editor__content' || node.parentNode.id === 'note-editor__content'
       this.selection.isEnclosed = this.currentNodePath.some(pathItem => this.closureTags.includes(pathItem))
       this.selection.mathKatexNode = node.parentNode.closest('.katex')
 
@@ -1233,11 +1389,11 @@ export default {
           this.history.push(this.editor.innerHTML)
         }
         this.historyUpdateIsPaused = false
-      }, { time: 1000 })
+      }, {time: 1000})
     },
     loadHistory (direction) {
       // TODO: save cursor position (range) and restore it along with the content
-      if (this.history.length === 0) { return }
+      if (this.history.length === 0) {return}
       this.historyUpdateIsPaused = true
       if (this.historyParams.currentIndex === null) {
         this.historyParams.currentIndex = this.history.length - 1
@@ -1294,7 +1450,7 @@ export default {
       this.convertMarkdownToHtml()
 
       // If input comes from the editor's root element
-      if (event.target.id === 'text-editor__content') {
+      if (event.target.id === 'note-editor__content') {
         // this.$emit('input', event.target.innerHTML)
       }
       // If input comes from one of the input elements in the editor
@@ -1340,19 +1496,19 @@ export default {
       this.setStyle([
         {
           key: 'backgroundColor',
-          value: color + this.highlightOpacityPerc.toString(16)
+          value: color + this.highlightOpacityPerc.toString(16),
         },
         {
           key: 'padding',
-          value: '2px 8px'
+          value: '2px 8px',
         },
         {
           key: 'borderRadius',
-          value: '4px'
-        }
+          value: '4px',
+        },
       ],
       {
-        attributes: ['customHighlight']
+        attributes: ['customHighlight'],
       })
     },
     customCommand (command, value) {
@@ -1405,7 +1561,7 @@ export default {
     addImage (command) {
       const range = window.getSelection().getRangeAt(0)
       const nothingIsSelected = range === undefined
-      const editorIsSelected = range?.parentNode?.id === 'text-editor__content'
+      const editorIsSelected = range?.parentNode?.id === 'note-editor__content'
       if (nothingIsSelected || !editorIsSelected) {
         // Set cursor at the start of the editor
         const selection = window.getSelection()
@@ -1426,19 +1582,19 @@ export default {
         height: 'auto',
         loadImage: (data) => {
           this.loadImage(data, imageNode)
-        }
+        },
       }
       this.dialogs.imagePickerDialog.value = true
     },
     setImage (data, imageNode, destination) {
-      const { path, float, width, height } = data
+      const {path, float, width, height} = data
       imageNode.src = this.$storeUtils.getSafePath(destination)
       imageNode.style.float = float
       imageNode.setAttribute('width', width)
       imageNode.setAttribute('height', height)
     },
     async loadImage (data, imageNode) {
-      const { path, float, width, height } = data
+      const {path, float, width, height} = data
       const isImage = true
       const isLocal = fs.existsSync(path)
       if (isImage) {
@@ -1452,7 +1608,7 @@ export default {
           const hash = await this.hasher.gen()
           const destination = PATH.join(this.appPaths.storageDirectories.appStorageNotesMedia, `${fileName}-${hash}${fileExt}`)
           fs.copyFile(path, destination, (error) => {
-            if (error) { throw error }
+            if (error) {throw error}
             this.setImage(data, imageNode, destination)
           })
         }
@@ -1461,7 +1617,7 @@ export default {
           ipcRenderer.send('download-file', {
             url: path,
             dir: this.appPaths.storageDirectories.appStorageNotesMedia,
-            hashID: this.$utils.getHash()
+            hashID: this.$utils.getHash(),
           })
           ipcRenderer.once('download-file-done', (event, info) => {
             this.setImage(data, imageNode, info.filePath)
@@ -1471,7 +1627,7 @@ export default {
     },
     insertMathFormula (data, node) {
       const katexHtml = katex.renderToString(data.formula, {
-        throwOnError: false
+        throwOnError: false,
       })
       node.contentEditable = false
       node.spellcheck = false
@@ -1486,7 +1642,7 @@ export default {
         node = document.createElement('div')
         const range = window.getSelection().getRangeAt(0)
         const nothingIsSelected = range === undefined
-        const editorIsSelected = range?.parentNode?.id === 'text-editor__content'
+        const editorIsSelected = range?.parentNode?.id === 'note-editor__content'
         if (nothingIsSelected || !editorIsSelected) {
           // Set cursor at the start of the editor
           const selection = window.getSelection()
@@ -1511,7 +1667,7 @@ export default {
         addFormula: (data) => {
           this.insertMathFormula(data, node)
           this.dialogs.mathEditorDialog.value = false
-        }
+        },
       }
       this.dialogs.mathEditorDialog.value = true
     },
@@ -1561,7 +1717,7 @@ export default {
       document.execCommand('insertText', false, newValue)
       this.updateEditor()
     },
-  }
+  },
 }
 </script>
 
@@ -1587,19 +1743,19 @@ export default {
   outline: 2px dashed var(--key-color-1);
 }
 
-.text-editor__source-code-container pre {
+.note-editor__source-code-container pre {
   white-space: pre-wrap;
   background-color: var(--bg-color-2);
   padding: 20px;
   font-size: 14px;
 }
 
-.text-editor__toolbar-group {
+.note-editor__toolbar-group {
   border: 1px solid var(--highlight-color-3);
   border-radius: 4px;
 }
 
-.text-editor__toolbar {
+.note-editor__toolbar {
   display: flex;
   column-gap: 8px;
   row-gap: 8px;
@@ -1607,14 +1763,14 @@ export default {
   align-items: center;
 }
 
-.text-editor {
+.note-editor {
   position: relative;
   padding-bottom: 36px;
   height: 100%;
   min-height: 100%;
 }
 
-.text-editor__content
+.note-editor__content
   img {
     /* -webkit-user-drag: none  */
     max-width: 100%;
@@ -1622,13 +1778,13 @@ export default {
     box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
   }
 
-.text-editor__content-container {
+.note-editor__content-container {
   height: calc(100% - 24px);
   margin: 0px;
   padding: 0px;
 }
 
-.text-editor__content {
+.note-editor__content {
   width: 100%;
   min-height: 100%;
   height: 100%;
@@ -1641,12 +1797,12 @@ export default {
   font-size: 16px !important;
 }
 
-.text-editor__content:focus {
+.note-editor__content:focus {
   outline: none;
 }
 
 /* Placeholder */
-.text-editor__content[isEmpty]:not([isReadOnly])::before {
+.note-editor__content[isEmpty]:not([isReadOnly])::before {
   content: attr(placeholder);
   float: left;
   color: var(--highlight-color-1);
@@ -1657,7 +1813,7 @@ export default {
   /* font-style: italic; */
 }
 
-.text-editor__content
+.note-editor__content
   .selectedCell:after {
     z-index: 2;
     position: absolute;
@@ -1667,7 +1823,7 @@ export default {
     pointer-events: none;
   }
 
-.text-editor__content
+.note-editor__content
   .column-resize-handle {
     position: absolute;
     right: -2px; top: 0; bottom: 0;
@@ -1677,13 +1833,13 @@ export default {
     pointer-events: none;
   }
 
-.text-editor__content
+.note-editor__content
   .resize-cursor {
     cursor: ew-resize;
     cursor: col-resize;
   }
 
-.text-editor__content
+.note-editor__content
   hr {
     margin: 12px 0px;
     border-color: var(--divider-color-2) !important;
@@ -1692,33 +1848,33 @@ export default {
     border-width: thin;
   }
 
-.text-editor__content
+.note-editor__content
   input[type="checkbox"] {
     margin: 8px;
   }
 
-.text-editor__content
+.note-editor__content
   input[type="checkbox"] + label {
     margin: 8px;
   }
 
-.text-editor__content
+.note-editor__content
   input[type="checkbox"]:checked + label {
     color: var(--color-6);
   }
 
-.text-editor__content
+.note-editor__content
   code:after,
-.text-editor__content
+.note-editor__content
   code:before,
-.text-editor__content
+.note-editor__content
   kbd:after,
-.text-editor__content
+.note-editor__content
   kbd:before {
     content: "" !important;
   }
 
-.text-editor__content
+.note-editor__content
   code {
     padding: 2px 4px;
     display: inline-block;
@@ -1730,7 +1886,7 @@ export default {
     color: unset;
   }
 
-.text-editor__content
+.note-editor__content
   pre {
     all: unset;
     display: block;
@@ -1744,7 +1900,7 @@ export default {
     min-height: 24px;
   }
 
-.text-editor__content
+.note-editor__content
   pre
     code {
       padding: 0px 2px;
@@ -1752,7 +1908,7 @@ export default {
       color: unset;
     }
 
-.text-editor__content
+.note-editor__content
   blockquote {
     border-left: 3px solid var(--blockquote-border) !important;
     color: var(--color-7);
@@ -1763,7 +1919,7 @@ export default {
     min-height: 42px;
   }
 
-.text-editor__content
+.note-editor__content
   table {
     border-collapse: collapse;
     table-layout: fixed;
@@ -1772,19 +1928,19 @@ export default {
     margin-bottom: 16px;
   }
 
-.text-editor__content
+.note-editor__content
   table,
-.text-editor__content
+.note-editor__content
   code,
-.text-editor__content
+.note-editor__content
   pre
     p {
       margin: 0 !important;
     }
 
-.text-editor__content
+.note-editor__content
   td,
-.text-editor__content
+.note-editor__content
   th {
     min-width: 1em;
     border: 2px solid var(--table-color);
@@ -1796,49 +1952,49 @@ export default {
     text-align: left;
   }
 
-.text-editor__content
+.note-editor__content
    td > *,
-.text-editor__content
+.note-editor__content
    th > * {
     margin-bottom: 0;
   }
 
-.text-editor__content
+.note-editor__content
   .tableWrapper {
     margin-top: 1em;
     overflow-x: auto;
   }
 
-.text-editor__content
+.note-editor__content
    h1 {
     margin: 12px 0 !important;
   }
 
-.text-editor__content
+.note-editor__content
   p {
     margin: unset;
     margin-bottom: 4px !important;
   }
 
-.text-editor__content
+.note-editor__content
   li
     p {
       margin-bottom: 12px;
     }
 
-.text-editor__content
+.note-editor__content
   h2,
-.text-editor__content
+.note-editor__content
   h3,
-.text-editor__content
+.note-editor__content
   ul,
-.text-editor__content
+.note-editor__content
   ol,
-.text-editor__content
+.note-editor__content
   li,
-.text-editor__content
+.note-editor__content
   pre,
-.text-editor__content
+.note-editor__content
   code {
     margin: 8px 0 !important;
   }

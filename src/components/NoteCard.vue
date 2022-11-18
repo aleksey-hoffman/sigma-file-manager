@@ -5,24 +5,24 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <template>
   <div
+    class="note-card"
+    :style="noteStyle(note)"
     @click="$store.dispatch('OPEN_NOTE_EDITOR', {
       type: 'edit',
       note: note
     })"
-    class="note-card"
-    :style="noteStyle(note)"
-    :data-note-hashID="note.hashID"
   >
     <!-- note-card::title -->
     <v-layout
       class="note-card__title-container"
-      align-center justify-center
+      align-center
+      justify-center
     >
       <div class="note-card__title">
         {{note.title}}
       </div>
     </v-layout>
-    <v-divider class="mt-0"></v-divider>
+    <v-divider class="mt-0" />
 
     <!-- note-card::content -->
     <div
@@ -31,7 +31,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         '--fade-mask-bottom': '30%'
       }"
       v-html="note.content"
-    ></div>
+    />
 
     <!-- note-card::action-toolbar: {type: isTrashed}-->
     <div
@@ -41,13 +41,17 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     >
       <!-- note-card::action-toolbar::button:delete-note-permanently -->
       <v-tooltip bottom>
-        <template v-slot:activator="{ on }">
+        <template #activator="{ on }">
           <v-btn
+            text
+            small
+            icon
             v-on="on"
             @click="$store.dispatch('DELETE_NOTE', note)"
-            text small icon
           >
-            <v-icon size="20px">mdi-trash-can-outline</v-icon>
+            <v-icon size="20px">
+              mdi-trash-can-outline
+            </v-icon>
           </v-btn>
         </template>
         <span>
@@ -57,13 +61,17 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
       <!-- note-card::action-toolbar::button:restore-note -->
       <v-tooltip bottom>
-        <template v-slot:activator="{ on }">
+        <template #activator="{ on }">
           <v-btn
+            text
+            small
+            icon
             v-on="on"
             @click="$store.dispatch('RESTORE_NOTE_FROM_TRASH', note)"
-            text small icon
           >
-            <v-icon size="20px">mdi-undo-variant</v-icon>
+            <v-icon size="20px">
+              mdi-undo-variant
+            </v-icon>
           </v-btn>
         </template>
         <span>
@@ -74,12 +82,13 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       <!-- note-card::info-bar -->
       <div class="note-card__info-bar">
         <v-tooltip bottom>
-          <template v-slot:activator="{ on }">
+          <template #activator="{ on }">
             <div v-on="on">
               <v-icon
                 size="22px"
                 class="mr-2"
-              >mdi-progress-close
+              >
+                mdi-progress-close
               </v-icon>
               {{$utils.formatDateTime(note.dateWillBeDeleted, 'D MMM YYYY')}}
             </div>
@@ -92,28 +101,28 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     <!-- note-card::action-toolbar: {type: !isTrashed}-->
     <div
       v-show="!note.isTrashed"
-      @click.stop=""
       :stay-visible="`${note.isProtected}`"
       class="note-card__action-bar"
+      @click.stop=""
     >
       <!-- note-card::action-toolbar::toggle-button:isProtected -->
       <v-tooltip bottom>
-        <template v-slot:activator="{ on }">
+        <template #activator="{ on }">
           <v-btn
+            icon
+            small
+            :stay-visible="`${note.isProtected}`"
             v-on="on"
             @click.stop="$store.dispatch('UPDATE_NOTE_PROPERTY', {
               key: 'isProtected',
               value: !note.isProtected,
               note: note
             })"
-            icon small
-            :stay-visible="`${note.isProtected}`"
           >
             <v-icon size="18px">
               {{note.isProtected
-                  ? 'mdi-shield-check-outline'
-                  : 'mdi-shield-alert-outline'
-             }}
+                ? 'mdi-shield-check-outline'
+                : 'mdi-shield-alert-outline'}}
             </v-icon>
           </v-btn>
         </template>
@@ -130,16 +139,21 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       </v-tooltip>
 
       <!-- note-card::action-toolbar::button:change-group -->
-      <v-menu max-height="200px" top nudge-top="16px">
-        <template v-slot:activator="{ on: menu }">
+      <v-menu
+        max-height="200px"
+        top
+        nudge-top="16px"
+      >
+        <template #activator="{ on: menu }">
           <v-tooltip bottom>
-            <template v-slot:activator="{ on: tooltip }">
+            <template #activator="{ on: tooltip }">
               <v-btn
                 v-show="!note.isProtected"
-                v-on="{ ...tooltip, ...menu }"
                 stay-visible="false"
                 class="mx-1"
-                small icon
+                small
+                icon
+                v-on="{ ...tooltip, ...menu }"
               >
                 <v-icon size="22px">
                   mdi-priority-high
@@ -151,23 +165,25 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         </template>
         <v-list dense>
           <v-list-item class="inactive">
-            <div class="text--sub-title-1 unselectable mb-0">NOTE GROUPS</div>
+            <div class="text--sub-title-1 unselectable mb-0">
+              NOTE GROUPS
+            </div>
           </v-list-item>
-          <v-divider></v-divider>
+          <v-divider />
           <v-list-item
             v-for="(group, index) in noteGroups"
             :key="`${index}-${group.value}`"
+            :is-active="group.value === note.group"
             @click="$store.dispatch('UPDATE_NOTE_PROPERTY', {
               key: 'group',
               value: group.value,
               note: note
             })"
-            :is-active="group.value === note.group"
           >
             <v-list-item-title>{{group.name}}</v-list-item-title>
             <v-list-item-action v-if="group.value === note.group">
               <v-tooltip bottom>
-                <template v-slot:activator="{ on }">
+                <template #activator="{ on }">
                   <v-icon
                     v-on="on"
                     @click.stop="$store.dispatch('UPDATE_NOTE_PROPERTY', {
@@ -175,7 +191,9 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                       value: null,
                       note: note
                     })"
-                  >mdi-close</v-icon>
+                  >
+                    mdi-close
+                  </v-icon>
                 </template>
                 <span>Ungroup</span>
               </v-tooltip>
@@ -185,15 +203,20 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       </v-menu>
 
       <!-- note-card::action-toolbar::button:color-picker -->
-      <v-menu max-height="200px" top nudge-top="24px">
-        <template v-slot:activator="{ on: menu }">
+      <v-menu
+        max-height="200px"
+        top
+        nudge-top="24px"
+      >
+        <template #activator="{ on: menu }">
           <v-tooltip bottom>
-            <template v-slot:activator="{ on: tooltip }">
+            <template #activator="{ on: tooltip }">
               <v-btn
                 v-show="!note.isProtected"
-                v-on="{ ...tooltip, ...menu }"
                 stay-visible="false"
-                small icon
+                small
+                icon
+                v-on="{ ...tooltip, ...menu }"
               >
                 <v-icon size="18px">
                   mdi-circle-outline
@@ -210,43 +233,49 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             v-for="color in noteColors"
             :key="color.value"
             :style="`background-color: ${color.value}a6;`"
+            icon
+            small
+            :data-transparent="color.title === 'transparent'"
             @click="$store.dispatch('UPDATE_NOTE_PROPERTY', {
               key: 'color',
               value: color,
               note: note
             })"
-            icon small
-            :data-transparent="color.title === 'transparent'"
           >
             <v-icon
               v-show="
                 color.title === 'transparent' &&
-                color.title !== note.color.title
+                  color.title !== note.color.title
               "
               size="18px"
-            >mdi-minus
+            >
+              mdi-minus
             </v-icon>
             <v-icon
               v-show="color.title === note.color.title"
               size="16px"
-            >mdi-check
+            >
+              mdi-check
             </v-icon>
           </v-btn>
         </div>
       </v-menu>
-      <v-spacer></v-spacer>
+      <v-spacer />
 
       <!-- note-card::action-toolbar::button:move-note-to-trash -->
-       <v-tooltip bottom>
-        <template v-slot:activator="{ on }">
+      <v-tooltip bottom>
+        <template #activator="{ on }">
           <v-btn
             v-show="!note.isProtected"
-            v-on="on"
             stay-visible="false"
+            small
+            icon
+            v-on="on"
             @click="$store.dispatch('MOVE_NOTE_TO_TRASH', note)"
-            small icon
           >
-            <v-icon size="20px">mdi-trash-can-outline</v-icon>
+            <v-icon size="20px">
+              mdi-trash-can-outline
+            </v-icon>
           </v-btn>
         </template>
         <span>Move note to trash</span>
@@ -262,7 +291,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         box-shadow: 0px 0px 56px ${note.color.value};
         --bottom: 0px
       `"
-    ></div>
+    />
     <div
       v-show="note.color.title !== 'transparent'"
       class="note-card__color-bar"
@@ -270,32 +299,32 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       :style="`
         --bottom: 2px
       `"
-    ></div>
+    />
   </div>
 </template>
 
 <script>
 export default {
-  name: 'NoteCard',
+  name: 'note-card',
   props: ['note'],
   computed: {
     noteGroups () {return this.$store.state.storageData.notes.groups},
-    noteColors () {return this.$store.state.storageData.notes.colors}
+    noteColors () {return this.$store.state.storageData.notes.colors},
   },
   methods: {
     noteStyle (note) {
       if (note.color.title === 'transparent') {
         return {
-          '--shadow-color': 'transparent'
+          '--shadow-color': 'transparent',
         }
       }
       else {
         return {
-          '--shadow-color': `${note.color.value}0D`
+          '--shadow-color': `${note.color.value}0D`,
         }
       }
-    }
-  }
+    },
+  },
 }
 </script>
 
