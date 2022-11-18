@@ -55,7 +55,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           </v-btn>
         </template>
         <span>
-          Delete note permanently
+          {{$t('notes.noteCard.deleteNotePermanently')}}
         </span>
       </v-tooltip>
 
@@ -75,7 +75,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           </v-btn>
         </template>
         <span>
-          Restore note from trash list
+          {{$t('notes.noteCard.restoreNoteFromTrashList')}}
         </span>
       </v-tooltip>
 
@@ -93,7 +93,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               {{$utils.formatDateTime(note.dateWillBeDeleted, 'D MMM YYYY')}}
             </div>
           </template>
-          <span>Note will be permanently deleted on the specified date</span>
+          <span>{{$t('notes.noteCard.noteWillBeDeletedOnSpecifiedDate')}}</span>
         </v-tooltip>
       </div>
     </div>
@@ -128,12 +128,12 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         </template>
         <span>
           <div v-show="note.isProtected">
-            <div>Note protection is ON</div>
-            <div>It cannot be deleted / modified</div>
+            <div>{{$t('notes.noteCard.noteProtectionIsOn')}}</div>
+            <div>{{$t('notes.noteCard.itCannotBeDeletedModified')}}</div>
           </div>
           <div v-show="!note.isProtected">
-            <div>Note protection is OFF</div>
-            <div>It can be deleted / modified</div>
+            <div>{{$t('notes.noteCard.noteProtectionIsOff')}}</div>
+            <div>{{$t('notes.noteCard.itCanBeDeletedModified')}}</div>
           </div>
         </span>
       </v-tooltip>
@@ -160,13 +160,13 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 </v-icon>
               </v-btn>
             </template>
-            <span>Change note group</span>
+            <span>{{$t('notes.noteCard.changeNoteGroup')}}</span>
           </v-tooltip>
         </template>
         <v-list dense>
           <v-list-item class="inactive">
             <div class="text--sub-title-1 unselectable mb-0">
-              NOTE GROUPS
+              {{$t('notes.noteCard.noteGroups')}}
             </div>
           </v-list-item>
           <v-divider />
@@ -195,7 +195,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     mdi-close
                   </v-icon>
                 </template>
-                <span>Ungroup</span>
+                <span>{{$t('notes.noteCard.ungroup')}}</span>
               </v-tooltip>
             </v-list-item-action>
           </v-list-item>
@@ -223,7 +223,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 </v-icon>
               </v-btn>
             </template>
-            <span>Change color</span>
+            <span>{{$t('notes.noteCard.changeColor')}}</span>
           </v-tooltip>
         </template>
 
@@ -278,7 +278,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             </v-icon>
           </v-btn>
         </template>
-        <span>Move note to trash</span>
+        <span>{{$t('notes.noteCard.moveNoteToTrash')}}</span>
       </v-tooltip>
     </div>
 

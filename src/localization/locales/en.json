@@ -54,7 +54,9 @@
     "limit": "Limit",
     "noData": "No data",
     "actions": "Actions",
-    "options": "options"
+    "options": "options",
+    "add": "Add",
+    "edit": "Edit"
   },
   "units": {
     "px": "px",
@@ -70,7 +72,6 @@
     "openedWillBeShownHere": "Opened directory items will be shown here"
   },
   "notes": {
-    "notes": "Notes",
     "trashedNotes": "Trashed notes",
     "loadingNotes": "Loading notes",
     "trashedNotesDeletedAfter7days": "Trashed notes are automatically deleted from the drive 7 days after being trashed",
@@ -78,7 +79,42 @@
     "noTrashedNotes": "No trashed notes",
     "noNotes": "No notes",
     "ungroupedNotes": "Ungrouped notes",
-    "group": "Group"
+    "group": "Group",
+    "noteCard": {
+      "deleteNotePermanently": "Delete note permanently",
+      "restoreNoteFromTrashList": "Restore note from trash list",
+      "noteWillBeDeletedOnSpecifiedDate": "Note will be permanently deleted on the specified date",
+      "noteProtectionIsOn": "Note protection is ON",
+      "itCannotBeDeletedModified": "It cannot be deleted / modified",
+      "noteProtectionIsOff": "Note protection is OFF",
+      "itCanBeDeletedModified": "It can be deleted / modified",
+      "changeNoteGroup": "Change note group",
+      "noteGroups": "Note groups",
+      "ungroup": "Ungroup",
+      "changeColor": "Change color",
+      "moveNoteToTrash": "Move note to trash"
+    },
+    "noteEditor": {
+      "searchSelectionInGoogle": "Search selection in Google",
+      "searchSelectionInDuckDuckGo": "Search selection in DuckDuckGo",
+      "transformSelectionUppercase": "Transform selection: UPPERCASE",
+      "transformSelectionLowercase": "Transform selection: lowercase",
+      "showNoteSourceCode": "Show note source code",
+      "loadTemplate": "Load template",
+      "saveTemplate": "Save template",
+      "removeFormattingFromSelection": "Remove formatting from selection",
+      "removeAllEditingFromSelection": "Remove all editing from selection",
+      "turnSelectionIntoSuperscript": "Turn selection into superscript",
+      "turnSelectionIntoSubscript": "Turn selection into subscript",
+      "textColor": "Text color",
+      "textHighlighting": "Text highlighting",
+      "insertDivider": "Insert divider",
+      "decreaseIndentation": "Decrease indentation",
+      "increaseIndentation": "Increase indentation",
+      "math": "Math",
+      "formula": "formula",
+      "noteSourceCode": "Note source code"
+    }
   },
   "settings": {
     "windowControls": {

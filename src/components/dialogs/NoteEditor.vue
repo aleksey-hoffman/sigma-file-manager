@@ -30,7 +30,7 @@ NOTES:
             </v-icon>
           </v-list-item-action>
           <v-list-item-content>
-            <v-list-item-title>Search selection in Google</v-list-item-title>
+            <v-list-item-title>{{$t('notes.noteEditor.searchSelectionInGoogle')}}</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
         <v-list-item @click="noteEditorOpenExternalLink('duckduckgo')">
@@ -40,7 +40,7 @@ NOTES:
             </v-icon>
           </v-list-item-action>
           <v-list-item-content>
-            <v-list-item-title>Search selection in DuckDuckGo</v-list-item-title>
+            <v-list-item-title>{{$t('notes.noteEditor.searchSelectionInDuckDuckGo')}}</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
         <v-list-item @click="textTransform('uppercase')">
@@ -50,7 +50,7 @@ NOTES:
             </v-icon>
           </v-list-item-action>
           <v-list-item-content>
-            <v-list-item-title>Transform selection: UPPERCASE</v-list-item-title>
+            <v-list-item-title>{{$t('notes.noteEditor.transformSelectionUppercase')}}</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
         <v-list-item @click="textTransform('lowercase')">
@@ -60,7 +60,7 @@ NOTES:
             </v-icon>
           </v-list-item-action>
           <v-list-item-content>
-            <v-list-item-title>Transform selection: lowercase</v-list-item-title>
+            <v-list-item-title>{{$t('notes.noteEditor.transformSelectionLowercase')}}</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
       </v-list>
@@ -105,7 +105,7 @@ NOTES:
                 </v-icon>
               </v-btn>
             </template>
-            <span>Show note source code</span>
+            <span>{{$t('notes.noteEditor.showNoteSourceCode')}}</span>
           </v-tooltip>
         </div>
 
@@ -131,7 +131,7 @@ NOTES:
                     </v-icon>
                   </v-btn>
                 </template>
-                <span>Load template</span>
+                <span>{{$t('notes.noteEditor.loadTemplate')}}</span>
               </v-tooltip>
             </template>
             <v-list>
@@ -161,7 +161,7 @@ NOTES:
                 </v-icon>
               </v-btn>
             </template>
-            <span>Save template</span>
+            <span>{{$t('notes.noteEditor.saveTemplate')}}</span>
           </v-tooltip>
         </div>
 
@@ -210,7 +210,7 @@ NOTES:
                 </v-icon>
               </v-btn>
             </template>
-            <span>Remove formatting from selection</span>
+            <span>{{$t('notes.noteEditor.removeFormattingFromSelection')}}</span>
           </v-tooltip>
 
           <v-tooltip bottom>
@@ -229,7 +229,7 @@ NOTES:
                 </v-icon>
               </v-btn>
             </template>
-            <span>Remove all editing from selection</span>
+            <span>{{$t('notes.noteEditor.removeAllEditingFromSelection')}}</span>
           </v-tooltip>
         </div>
 
@@ -358,7 +358,7 @@ NOTES:
                 </v-icon>
               </v-btn>
             </template>
-            <span>Turn selection into superscript</span>
+            <span>{{$t('notes.noteEditor.turnSelectionIntoSuperscript')}}</span>
           </v-tooltip>
 
           <v-tooltip bottom>
@@ -377,7 +377,7 @@ NOTES:
                 </v-icon>
               </v-btn>
             </template>
-            <span>Turn selection into subscript</span>
+            <span>{{$t('notes.noteEditor.turnSelectionIntoSubscript')}}</span>
           </v-tooltip>
         </div>
 
@@ -400,7 +400,7 @@ NOTES:
                     </v-icon>
                   </v-btn>
                 </template>
-                <span>Text color</span>
+                <span>{{$t('notes.noteEditor.textColor')}}</span>
               </v-tooltip>
             </template>
             <div>
@@ -441,7 +441,7 @@ NOTES:
                     </v-icon>
                   </v-btn>
                 </template>
-                <span>Text highlighting</span>
+                <span>{{$t('notes.noteEditor.textHighlighting')}}</span>
               </v-tooltip>
             </template>
             <div>
@@ -480,7 +480,7 @@ NOTES:
                 </v-icon>
               </v-btn>
             </template>
-            <span>Insert divider</span>
+            <span>{{$t('notes.noteEditor.insertDivider')}}</span>
           </v-tooltip>
         </div>
 
@@ -612,7 +612,7 @@ NOTES:
               </v-btn>
             </template>
             <span>
-              Decrease indentation
+              {{$t('notes.noteEditor.decreaseIndentation')}}
               <div>Ctrl + [</div>
             </span>
           </v-tooltip>
@@ -634,7 +634,7 @@ NOTES:
               </v-btn>
             </template>
             <span>
-              Increase indentation
+              {{$t('notes.noteEditor.increaseIndentation')}}
               <div>Ctrl + ]</div>
             </span>
           </v-tooltip>
@@ -705,7 +705,7 @@ NOTES:
                     </v-icon>
                   </v-btn>
                 </template>
-                <span>Math</span>
+                <span>{{$t('notes.noteEditor.math')}}</span>
               </v-tooltip>
             </template>
             <v-list>
@@ -716,10 +716,10 @@ NOTES:
               >
                 <v-list-item-title>
                   {{framework.title === 'Katex' && selection.mathKatexNode === null
-                    ? 'Add'
-                    : 'Edit'}}
+                    ? $t('common.add')
+                    : $t('common.edit')}}
                   {{framework.title}}
-                  formula
+                  {{$t('notes.noteEditor.formula')}}
                 </v-list-item-title>
               </v-list-item>
             </v-list>
@@ -829,7 +829,7 @@ NOTES:
           v-show="showSourceCode"
           class="note-editor__source-code-container"
         >
-          <div class="text--sub-title-1">Note source code</div>
+          <div class="text--sub-title-1">{{$t('notes.noteEditor.noteSourceCode')}}</div>
           <pre>{{htmlNodeToMultilineString(value)}}</pre>
         </div>
         <div

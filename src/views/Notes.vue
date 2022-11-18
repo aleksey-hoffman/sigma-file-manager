@@ -18,14 +18,14 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       >
         <div class="text--title-1">
           {{currentNotesList === 'trashed'
-            ? 'Trashed notes'
-            : 'Notes'}}
+            ? $t('notes.trashedNotes')
+            : $t('pages.notes')}}
         </div>
         <filter-field route-name="notes" />
       </v-layout>
 
       <div v-if="!renderContent">
-        Loading notes
+        {{$t('notes.loadingNotes')}}
         <v-progress-circular
           indeterminate
           color="blue-grey"
@@ -38,7 +38,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       >
         <div v-if="currentNotesList === 'trashed'">
           <div v-show="!trashedNotesListIsEmpty">
-            Trashed notes are automatically deleted from the drive 7 days after being trashed
+            {{$t('notes.trashedNotesDeletedAfter7days')}}
           </div>
 
           <v-btn
@@ -53,7 +53,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             >
               mdi-trash-can-outline
             </v-icon>
-            Delete all trashed
+            {{$t('notes.deleteAllTrashed')}}
           </v-btn>
 
           <div class="note-group__container">
@@ -61,7 +61,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               v-show="trashedNotesListIsEmpty"
               class="content__description"
             >
-              No trashed notes
+              {{$t('notes.noTrashedNotes')}}
             </div>
             <div class="note-card__container">
               <note-card
@@ -78,7 +78,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             v-if="notesListIsEmpty"
             class="content__description"
           >
-            No notes
+            {{$t('notes.noNotes')}}
           </div>
 
           <FilterClearButton
@@ -93,7 +93,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               v-show="ungroupedNotes.length > 0"
               class="text--sub-title-1"
             >
-              Ungrouped notes
+              {{$t('notes.ungroupedNotes')}}
             </div>
             <div class="note-card__container">
               <note-card
@@ -109,7 +109,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               :key="group.value"
             >
               <div class="text--sub-title-1">
-                {{`GROUP | ${group.name}`}}
+                {{`${$t('notes.group')} | ${group.name}`}}
               </div>
 
               <v-divider class="divider-color-2" />
