@@ -45,14 +45,29 @@
   "resetZoomLevel": "Reset zoom level",
   "fullScreen": "Full screen",
   "toCopy": "To copy",
+  "removeAllFromThisList": "Remove all from this list",
+  "thisFeatureIsDisabled": "This feature is disabled",
+  "openSettings": "Open settings",
   "common": {
     "otherCount": "0 others | 1 other | {n} others | {n} others",
     "directoriesCount": "0 directories | 1 directory | {n} directories | {n} directories",
-    "limit": "Limit"
+    "limit": "Limit",
+    "noData": "No data",
+    "actions": "Actions",
+    "options": "options"
   },
   "units": {
     "px": "px",
     "mb": "MB"
+  },
+  "dashboard": {
+    "pinnedWillBeShownHere": "Pinned directory items will be shown here",
+    "protectedWillBeShownHere": "Protected directory items will be shown here",
+    "appDoesntStoreStats": "The app doesn't store statistics of your interactions with directories / files.",
+    "enableTheOptionCalled": "Enable the option called",
+    "storeTheListOfOpenedDirectoryItems": "\"Store the list of opened directory items\"",
+    "inTheStatsSectionOfSettings": "in the \"Stats\" section of settings:",
+    "openedWillBeShownHere": "Opened directory items will be shown here"
   },
   "notes": {
     "notes": "Notes",

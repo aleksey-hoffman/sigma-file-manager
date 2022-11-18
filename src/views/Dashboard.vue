@@ -15,7 +15,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         class="mb-4"
       >
         <div class="text--title-1">
-          Dashboard
+          {{$t('pages.dashboard')}}
         </div>
         <filter-field route-name="dashboard" />
       </v-layout>
@@ -66,10 +66,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     >
                       mdi-menu-down
                     </v-icon>
-                    Options
+                    {{$t('common.actions')}}
                   </v-btn>
                 </template>
-                <span>Actions</span>
+                <span>{{$t('common.actions')}}</span>
               </v-tooltip>
             </template>
             <v-list>
@@ -84,7 +84,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     mdi-close
                   </v-icon>
                 </v-list-item-action>
-                <v-list-item-title>Remove all from this list</v-list-item-title>
+                <v-list-item-title>{{$t('removeAllFromThisList')}}</v-list-item-title>
               </v-list-item>
             </v-list>
           </v-menu>
@@ -154,10 +154,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           <!-- no-data -->
           <div v-show="pinnedItems.length === 0">
             <div class="title">
-              No data
+              {{$t('common.noData')}}
             </div>
             <div>
-              Pinned directory items will be shown here
+              {{$t('dashboard.pinnedWillBeShownHere')}}
             </div>
           </div>
         </v-tab-item>
@@ -183,10 +183,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     >
                       mdi-menu-down
                     </v-icon>
-                    Options
+                    {{$t('common.actions')}}
                   </v-btn>
                 </template>
-                <span>Actions</span>
+                <span>{{$t('common.actions')}}</span>
               </v-tooltip>
             </template>
             <v-list>
@@ -201,7 +201,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     mdi-close
                   </v-icon>
                 </v-list-item-action>
-                <v-list-item-title>Remove all from this list</v-list-item-title>
+                <v-list-item-title>{{$t('removeAllFromThisList')}}</v-list-item-title>
               </v-list-item>
             </v-list>
           </v-menu>
@@ -271,10 +271,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           <!-- no-data -->
           <div v-show="protectedItems.length === 0">
             <div class="title">
-              No data
+              {{$t('common.noData')}}
             </div>
             <div>
-              Protected directory items will be shown here
+              {{$t('dashboard.protectedWillBeShownHere')}}
             </div>
           </div>
         </v-tab-item>
@@ -301,10 +301,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     >
                       mdi-menu-down
                     </v-icon>
-                    Options
+                    {{$t('common.options')}}
                   </v-btn>
                 </template>
-                <span>Actions</span>
+                <span>{{$t('common.actions')}}</span>
               </v-tooltip>
             </template>
             <v-list>
@@ -319,7 +319,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     mdi-close
                   </v-icon>
                 </v-list-item-action>
-                <v-list-item-title>Remove all from this list</v-list-item-title>
+                <v-list-item-title>{{$t('removeAllFromThisList')}}</v-list-item-title>
               </v-list-item>
             </v-list>
           </v-menu>
@@ -366,25 +366,25 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           <!-- no-data -->
           <div v-show="!stats.storeDirItemOpenEvent">
             <div>
-              This feature is disabled.
-              <br />The app doesn't store statistics of your interactions with directories / files.
-              <br />Enable the option called <span class="inline-code--light">"Store the list of opened directory items"</span> in the "Stats" section of settings:
+              {{$t('thisFeatureIsDisabled')}}.
+              <br />{{$t('dashboard.appDoesntStoreStats')}}
+              <br />{{$t('dashboard.enableTheOptionCalled')}} <span class="inline-code--light">{{$t('dashboard.storeTheListOfOpenedDirectoryItems')}}</span> {{$t('dashboard.inTheStatsSectionOfSettings')}}
             </div>
             <v-btn
               class="button-1 mt-4"
               small
               @click="$router.push('settings')"
             >
-              Open settings
+              {{$t('openSettings')}}
             </v-btn>
           </div>
 
           <div v-show="stats.storeDirItemOpenEvent && dirItemsTimeline.length === 0">
             <div class="title">
-              No data
+              {{$t('common.noData')}}
             </div>
             <div>
-              Opened directory items will be shown here
+              {{$t('dashboard.openedWillBeShownHere')}}
             </div>
           </div>
         </v-tab-item>
