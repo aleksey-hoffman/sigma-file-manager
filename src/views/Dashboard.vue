@@ -84,7 +84,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     mdi-close
                   </v-icon>
                 </v-list-item-action>
-                <v-list-item-title>{{$t('removeAllFromThisList')}}</v-list-item-title>
+                <v-list-item-title>{{$t('common.removeAllFromThisList')}}</v-list-item-title>
               </v-list-item>
             </v-list>
           </v-menu>
@@ -201,7 +201,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     mdi-close
                   </v-icon>
                 </v-list-item-action>
-                <v-list-item-title>{{$t('removeAllFromThisList')}}</v-list-item-title>
+                <v-list-item-title>{{$t('common.removeAllFromThisList')}}</v-list-item-title>
               </v-list-item>
             </v-list>
           </v-menu>
@@ -319,7 +319,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     mdi-close
                   </v-icon>
                 </v-list-item-action>
-                <v-list-item-title>{{$t('removeAllFromThisList')}}</v-list-item-title>
+                <v-list-item-title>{{$t('common.removeAllFromThisList')}}</v-list-item-title>
               </v-list-item>
             </v-list>
           </v-menu>
@@ -366,7 +366,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           <!-- no-data -->
           <div v-show="!stats.storeDirItemOpenEvent">
             <div>
-              {{$t('thisFeatureIsDisabled')}}.
+              {{$t('common.thisFeatureIsDisabled')}}.
               <br />{{$t('dashboard.appDoesntStoreStats')}}
               <br />{{$t('dashboard.enableTheOptionCalled')}} <span class="inline-code--light">{{$t('dashboard.storeTheListOfOpenedDirectoryItems')}}</span> {{$t('dashboard.inTheStatsSectionOfSettings')}}
             </div>
@@ -375,7 +375,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               small
               @click="$router.push('settings')"
             >
-              {{$t('openSettings')}}
+              {{$t('common.openSettings')}}
             </v-btn>
           </div>
 

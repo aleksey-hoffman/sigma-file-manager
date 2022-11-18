@@ -25,9 +25,9 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         />
         <div class="content-area__header__content">
           <div class="content-area__header__text">
-            <strong>"{{$t('appName')}}"</strong>
-            {{$t('appDescription')}}
-            <br />{{$t('appCopyright')}}
+            <strong>"{{$t('app.name')}}"</strong>
+            {{$t('app.description')}}
+            <br />{{$t('app.copyright')}}
           </div>
           <div
             v-if="$vuetify.breakpoint.mdAndUp"
@@ -99,7 +99,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               class="ml-4 mt-4"
             >
               <div class="text--sub-title-1">
-                {{$t('filteredSettings')}}
+                {{$t('settings.general.filteredSettings')}}
               </div>
               <FilterClearButton
                 :filter-query="filterQuery"
@@ -121,7 +121,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   icon: {
                     name: 'mdi-translate'
                   },
-                  title: $t('language')
+                  title: $t('common.language')
                 }"
               >
                 <template #content>
@@ -156,13 +156,13 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                             v-if="language.isCorrected"
                             icon="mdi-account-check-outline"
                             icon-size="18px"
-                            :tooltip="$t('isCorrectedLanguage')"
+                            :tooltip="$t('language.isCorrectedLanguage')"
                           />
                           <AppIcon
                             v-if="!language.isCorrected"
                             icon="mdi-robot-outline"
                             icon-size="16px"
-                            :tooltip="$t('isAutoTranslatedLanguage')"
+                            :tooltip="$t('language.isAutoTranslatedLanguage')"
                           />
                         </v-list-item-icon>
                       </v-list-item>
@@ -170,7 +170,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   </v-menu>
                   <div
                     class="mt-4"
-                    v-html="$t('toAddNewLanguage')"
+                    v-html="$t('settings.general.toAddNewLanguage')"
                   />
                 </template>
               </section-settings>
@@ -184,12 +184,12 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     name: 'mdi-fullscreen',
                     size: '28px'
                   },
-                  title: $t('windowScaling')
+                  title: $t('settings.general.windowScaling')
                 }"
               >
                 <template #content>
                   <div class="text--sub-title-1 mt-2">
-                    {{$t('currentUiZoomLevel')}}
+                    {{$t('settings.general.currentUiZoomLevel')}}
                     {{UIZoomLevelInPercents}}%
                   </div>
 
@@ -264,7 +264,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                           v-on="on"
                           @click="$utils.openLink(appPaths.githubAllReleases)"
                         >
-                          {{$t('seeAllReleases')}}
+                          {{$t('common.seeAllReleases')}}
                         </v-btn>
                       </template>
                       <span>
@@ -281,26 +281,26 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     </v-tooltip>
                   </div>
                   <div class="text--sub-title-1 mt-2">
-                    {{$t('options')}}
+                    {{$t('common.options')}}
                   </div>
 
                   <v-switch
                     v-model="autoCheckForAppUpdates"
-                    :label="$t('checkForUpdatesAutomatically')"
+                    :label="$t('settings.general.checkForUpdatesAutomatically')"
                     hide-details
                   />
 
                   <v-switch
                     v-if="autoCheckForAppUpdates"
                     v-model="autoDownloadAppUpdates"
-                    :label="$t('downloadUpdatesAutomatically')"
+                    :label="$t('settings.general.downloadUpdatesAutomatically')"
                     hide-details
                   />
 
                   <v-switch
                     v-if="autoCheckForAppUpdates && autoDownloadAppUpdates"
                     v-model="autoInstallAppUpdates"
-                    :label="$t('installUpdatesAutomatically')"
+                    :label="$t('settings.general.installUpdatesAutomatically')"
                     hide-details
                   />
                 </template>
@@ -319,18 +319,18 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               >
                 <template #content>
                   <div class="text--sub-title-1 mt-2">
-                    {{$t('startupBehavior')}}
+                    {{$t('settings.general.startupBehavior')}}
                   </div>
 
                   <v-switch
                     v-model="appPropertiesOpenAtLogin"
-                    :label="$t('launchAppOnSystemLogin')"
+                    :label="$t('settings.general.launchAppOnSystemLogin')"
                     hide-details
                   />
 
                   <v-switch
                     v-model="appPropertiesOpenAsHidden"
-                    :label="$t('launchAppInHiddenState')"
+                    :label="$t('settings.general.launchAppInHiddenState')"
                     hide-details
                   />
                 </template>
@@ -344,12 +344,12 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   icon: {
                     name: 'mdi-application-settings',
                   },
-                  title: $t('windowControls')
+                  title: $t('settings.general.windowControls')
                 }"
               >
                 <template #content>
                   <div class="text--sub-title-1 mt-2">
-                    {{$t('windowCloseButtonAction')}}
+                    {{$t('settings.general.windowCloseButtonAction')}}
                   </div>
 
                   <v-radio-group
@@ -831,7 +831,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                           <v-text-field
                             v-model="fontFilter"
                             class="pt-0 mb-2"
-                            :label="$t('filter')"
+                            :label="$t('common.filter')"
                             single-line
                             hide-details
                           />
@@ -866,7 +866,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                             :color="$utils.getCSSVar('--highlight-color-1')"
                           />
                           <div class="ml-2">
-                            {{$t('loadingDots')}}
+                            {{$t('common.loadingDots')}}
                           </div>
                         </v-layout>
                         <div v-else>
@@ -947,7 +947,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                             <v-text-field
                               v-model="dateTimeRegionalFormatFilter"
                               class="pt-0 mb-2"
-                              :label="$t('filter')"
+                              :label="$t('common.filter')"
                               single-line
                               hide-details
                             />
@@ -1249,10 +1249,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     </template>
                     <span>
                       <div>
-                        <strong> {{$t('warning')}}:</strong> {{$t('settings.infoPanel.intensiveFeature')}}
+                        <strong> {{$t('common.warning')}}:</strong> {{$t('settings.infoPanel.intensiveFeature')}}
                       </div>
                       <div class="mt-2">
-                        <strong> {{$t('description')}}:</strong> {{$t('settings.infoPanel.whenOpenDirectory')}}
+                        <strong> {{$t('common.description')}}:</strong> {{$t('settings.infoPanel.whenOpenDirectory')}}
                       </div>
                       <div class="mt-2">
                         {{$t('settings.infoPanel.oneSecond')}}
@@ -1395,7 +1395,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   icon: {
                     name: 'mdi-pound',
                   },
-                  title: $t('shortcutPlural')
+                  title: $t('common.shortcutPlural')
                 }"
               >
                 <template #content>
@@ -1596,6 +1596,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                         />
                       </template>
                       <span>
+                        {{$t('settings.navigatorHistory.sigmaDefaultDescription')}}
+                        <br /><strong>{{$t('common.example')}}</strong>
+                        <br />- {{$t('settings.navigatorHistory.example.openDirectory')}} <span class="inline-code--light py-0">"{{$t('settings.navigatorHistory.example.userPath')}}"</span>
+                        <br />- {{$t('settings.navigatorHistory.example.openDirectory')}} <span class="inline-code--light py-0">"{{$t('settings.navigatorHistory.example.userPicturesPath')}}"</span>
                         <br />- {{$t('settings.navigatorHistory.example.openDirectory')}} <span class="inline-code--light py-0">"{{$t('settings.navigatorHistory.example.userPicturesScreenshotsPath')}}"</span>
                         <br />{{$t('settings.navigatorHistory.example.ifYouNowGoBackToDirectory')}}
                         <span class="inline-code--light py-0">"{{$t('settings.navigatorHistory.example.userPicturesPath')}}"</span>
@@ -1619,6 +1623,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                         />
                       </template>
                       <span>
+                        {{$t('settings.navigatorHistory.traditionalDescription')}}
+                        <br /><strong>{{$t('common.example')}}</strong>
+                        <br />- {{$t('settings.navigatorHistory.example.openDirectory')}} <span class="inline-code--light py-0">"{{$t('settings.navigatorHistory.example.userPath')}}"</span>
+                        <br />- {{$t('settings.navigatorHistory.example.openDirectory')}} <span class="inline-code--light py-0">"{{$t('settings.navigatorHistory.example.userPicturesPath')}}"</span>
                         <br />- {{$t('settings.navigatorHistory.example.openDirectory')}} <span class="inline-code--light py-0">"{{$t('settings.navigatorHistory.example.userPicturesScreenshotsPath')}}"</span>
                         <br />{{$t('settings.navigatorHistory.example.ifYouNowGoBackToDirectory')}}
                         <span class="inline-code--light py-0">"{{$t('settings.navigatorHistory.example.userPicturesPath')}}"</span>
@@ -1920,10 +1928,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                             @blur="handleBlurGlobalSearchScanDepth"
                           >
                             <template #selection>
-                              {{$tc('directoriesCount', {n: globalSearchScanDepth})}}
+                              {{$tc('count.directories', {n: globalSearchScanDepth})}}
                             </template>
                             <template #item="{item}">
-                              {{$tc('directoriesCount', {n: item})}}
+                              {{$tc('count.directories', {n: item})}}
                             </template>
                           </v-select>
                         </div>
@@ -2020,7 +2028,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                           v-if="index === 2"
                           class="grey--text caption"
                         >
-                          (+{{$t('common', {n: globalSearchDisallowedPaths.length - 2})}})
+                          (+{{$t('count.other', {n: globalSearchDisallowedPaths.length - 2})}})
                         </span>
                       </template>
                     </v-combobox>
@@ -2533,25 +2541,25 @@ export default {
     UIButtons () {
       return [
         {
-          title: this.$t('decreaseZoomLevel'),
+          title: this.$t('settings.general.decreaseZoomLevel'),
           shortcut: this.shortcuts.zoomDecrease.shortcut,
           icon: 'mdi-minus',
           onClick: () => this.$store.dispatch('DECREASE_UI_ZOOM'),
         },
         {
-          title: this.$t('increaseZoomLevel'),
+          title: this.$t('settings.general.increaseZoomLevel'),
           shortcut: this.shortcuts.zoomIncrease.shortcut,
           icon: 'mdi-plus',
           onClick: () => this.$store.dispatch('INCREASE_UI_ZOOM'),
         },
         {
-          title: this.$t('resetZoomLevel'),
+          title: this.$t('settings.general.resetZoomLevel'),
           shortcut: this.shortcuts.zoomReset.shortcut,
-          buttonText: this.$t('reset'),
+          buttonText: this.$t('common.reset'),
           onClick: () => this.$store.dispatch('RESET_UI_ZOOM'),
         },
         {
-          title: this.$t('fullScreen'),
+          title: this.$t('common.fullScreen'),
           shortcut: this.shortcuts.fullScreen.shortcut,
           icon: 'mdi-fullscreen',
           onClick: () => this.$utils.toggleFullscreen(),

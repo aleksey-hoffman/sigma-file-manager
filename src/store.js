@@ -919,7 +919,7 @@ export default new Vuex.Store({
       items: [
         {
           icon: 'mdi-apps',
-          title: 'pages.homePage',
+          title: 'pages.home',
           to: '/'
         },
         {

@@ -32,7 +32,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       <!-- content-area -->
       <div id="home-route__content-area--main" class="content-area__main">
         <div class="text--title-1" v-show="!homeBannerValue">
-          {{$t('pages.homePage')}}
+          {{$t('pages.home')}}
         </div>
 
         <!-- section:user-dirs -->
@@ -88,10 +88,10 @@ export default {
     }),
     locationsTitle () {
       if (process.platform === 'win32') {
-        return this.$t('drives')
+        return this.$t('common.drives')
       }
       else {
-        return this.$t('locations')
+        return this.$t('common.locations')
       }
     }
   },
