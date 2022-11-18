@@ -11,6 +11,8 @@ export const languages = [
   {
     name: 'English',
     locale: 'en',
+    isCorrected: true,
+    isRtl: false,
   },
 ]
 

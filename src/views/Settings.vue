@@ -133,7 +133,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                         depressed
                         v-on="on"
                       >
-                        {{selectedLanguage.name}} ({{selectedLanguage.locale}})
+                        {{selectedLanguage.name}}
                         <v-icon class="ml-2">
                           mdi-menu-down
                         </v-icon>
@@ -148,13 +148,22 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                       >
                         <v-list-item-content>
                           <v-list-item-title>
-                            {{language.name}} ({{language.locale}})
+                            {{language.name}}
                           </v-list-item-title>
                         </v-list-item-content>
                         <v-list-item-icon>
-                          <v-icon v-show="language.locale === selectedLanguage.locale">
-                            mdi-check
-                          </v-icon>
+                          <AppIcon
+                            v-if="language.isCorrected"
+                            icon="mdi-account-check-outline"
+                            icon-size="18px"
+                            :tooltip="$t('isCorrectedLanguage')"
+                          />
+                          <AppIcon
+                            v-if="!language.isCorrected"
+                            icon="mdi-robot-outline"
+                            icon-size="16px"
+                            :tooltip="$t('isAutoTranslatedLanguage')"
+                          />
                         </v-list-item-icon>
                       </v-list-item>
                     </v-list>
@@ -360,15 +369,14 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                           v-on="on"
                         >
                           <v-radio
-                            label="Minimize to tray and keep in memory (recommended)"
+                            :label="$t('settings.windowControls.minimizeAppToTray.radioLabel')"
                             value="minimizeAppToTray"
                           />
                         </div>
                       </template>
                       <span>
                         <strong>
-                          When the app main window is closed, all features will remain active and
-                          trigger without a delay (features like global shortcuts, auto updating, etc).
+                          {{$t('settings.windowControls.minimizeAppToTray.description')}}
                         </strong>
                       </span>
                     </v-tooltip>
@@ -385,37 +393,38 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                           v-on="on"
                         >
                           <v-radio
-                            label="Minimize to tray and minimize memory usage"
+                            :label="$t('settings.windowControls.closeMainWindow.radioLabel')"
                             value="closeMainWindow"
                           />
                         </div>
                       </template>
                       <span>
                         <p>
-                          When the app main window is closed:
+                          {{$t('settings.windowControls.closeMainWindow.description.title')}}
                         </p>
+
                         <strong>
                           <v-icon color="teal">mdi-circle-medium</v-icon>
-                          The following features will remain active:
+                          {{$t('settings.windowControls.closeMainWindow.description.subtitle1')}}
                         </strong>
                         <div class="ml-4 my-2">
-                          - Auto updating
+                          - {{$t('settings.windowControls.closeMainWindow.description.feature1')}}
                         </div>
 
                         <strong>
                           <v-icon color="orange">mdi-circle-medium</v-icon>
-                          The following features will work with limitations. The app will take some time to load back into memory:
+                          {{$t('settings.windowControls.closeMainWindow.description.subtitle2')}}
                         </strong>
                         <div class="ml-4 my-2">
-                          - Global shortcuts: will trigger with a delay, the app will take some time to load.
+                          - {{$t('settings.windowControls.closeMainWindow.description.feature2')}}
                         </div>
 
                         <strong>
                           <v-icon color="red">mdi-circle-medium</v-icon>
-                          The following features will not work:
+                          {{$t('settings.windowControls.closeMainWindow.description.subtitle3')}}
                         </strong>
                         <div class="ml-4 my-2">
-                          - Drive scan. Drives are scanned periodically to ensure features like global search can be used without a delay.
+                          - {{$t('settings.windowControls.closeMainWindow.description.feature3')}}
                         </div>
                         <!-- TODO: finish when the backup feature is added -->
                         <!-- Auto backups. The app keeps your data safe by performing data backups automatically (if the feature is enabled). -->
@@ -431,13 +440,13 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                       <template #activator="{ on }">
                         <div v-on="on">
                           <v-radio
-                            label="Close the app completely"
+                            :label="$t('settings.windowControls.closeApp.radioLabel')"
                             value="closeApp"
                           />
                         </div>
                       </template>
                       <span>
-                        When the app main window is closed, all features stop working
+                        {{$t('settings.windowControls.closeApp.description')}}
                       </span>
                     </v-tooltip>
                   </v-radio-group>
@@ -457,12 +466,12 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   icon: {
                     name: 'mdi-animation-play-outline'
                   },
-                  title: 'Visual effects'
+                  title: $t('settings.visualEffects.title')
                 }"
               >
                 <template #content>
                   <div class="text--sub-title-1 mt-2">
-                    Window transparency effect
+                    {{$t('settings.visualEffects.windowTransparencyEffect')}}
                   </div>
                   <v-switch
                     v-model="windowTransparencyEffectValue"
@@ -474,7 +483,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   <v-expand-transition>
                     <div v-if="windowTransparencyEffect.value">
                       <div class="mt-2">
-                        Overlay blur: {{windowTransparencyEffectBlur}}px
+                        {{$t('settings.visualEffects.overlayBlur', {n: windowTransparencyEffectBlur})}}
                       </div>
                       <v-layout align-center>
                         <v-slider
@@ -489,7 +498,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                       </v-layout>
 
                       <div class="mt-2">
-                        Overlay opacity: {{windowTransparencyEffectOpacity}}%
+                        {{$t('settings.visualEffects.overlayOpacity', {n: windowTransparencyEffectOpacity})}}
                       </div>
                       <v-layout align-center>
                         <v-slider
@@ -504,8 +513,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                       </v-layout>
 
                       <div class="mt-2">
-                        Overlay parallax distance:
-                        {{windowTransparencyEffectParallaxDistance}}
+                        {{$t('settings.visualEffects.overlayParallaxDistance', {n: windowTransparencyEffectParallaxDistance})}}
                       </div>
                       <v-layout align-center>
                         <v-slider
@@ -524,7 +532,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                           v-model="windowTransparencyEffectDataBackgroundSelected"
                           :items="windowTransparencyEffectDataBackgroundItems"
                           item-text="fileNameBase"
-                          label="Overlay background"
+                          :label="$t('settings.visualEffects.overlayBackground')"
                           :menu-props="{
                             contentClass: 'custom-scrollbar',
                             offsetY: true
@@ -551,7 +559,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                               </v-icon>
                             </v-btn>
                           </template>
-                          <span>Select next background</span>
+                          <span>{{$t('settings.visualEffects.selectNextBackground')}}</span>
                         </v-tooltip>
                       </v-layout>
 
@@ -559,7 +567,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                         <v-switch
                           v-model="windowTransparencyEffectLessProminentOnHomePage"
                           class="d-inline-flex mt-0 pt-0"
-                          label="Make effect less prominent on home page"
+                          :label="$t('settings.visualEffects.makeEffectLessProminentOnHomePage')"
                         />
                       </div>
 
@@ -567,7 +575,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                         <v-switch
                           v-model="windowTransparencyEffectSameSettingsOnAllPages"
                           class="d-inline-flex mt-0 pt-0"
-                          label="Use the same settings for all pages"
+                          :label="$t('settings.visualEffects.useTheSameSettingsForAllPages')"
                         />
                       </div>
 
@@ -594,11 +602,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                                     >
                                       mdi-circle-medium
                                     </v-icon>
-                                    Preview effect for selected page
+                                    {{$t('settings.visualEffects.previewEffectForSelectedPage')}}
                                   </template>
                                   <span>
-                                    Disable after you finish customizing selected page to
-                                    see the effects for "settings" page
+                                    {{$t('settings.visualEffects.previewEffectForSelectedPageTooltip')}}
                                   </span>
                                 </v-tooltip>
                               </template>
@@ -611,7 +618,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                             :items="windowTransparencyEffectOptionsPages"
                             item-text="title"
                             return-object
-                            label="Page to customize"
+                            :label="$t('settings.visualEffects.pageToCustomize')"
                             style="max-width: 400px"
                           >
                             <template #selection="{item}">
@@ -634,8 +641,8 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                           </v-select>
 
                           <div>
-                            - Select page from the list and adjust settings to save.
-                            <br />- The preview of the effect will be displayed on this page until you visit another page.
+                            - {{$t('settings.visualEffects.pageToCustomizeDescription1')}}
+                            <br />- {{$t('settings.visualEffects.pageToCustomizeDescription2')}}
                           </div>
                         </div>
                       </v-expand-transition>
@@ -643,12 +650,12 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   </v-expand-transition>
 
                   <div class="text--sub-title-1 mt-4">
-                    Home banner effects
+                    {{$t('settings.homeBannerEffects.title')}}
                   </div>
                   <v-switch
                     v-model="homeBannerMediaGlowEffectValue"
                     class="mt-0 pt-0 d-inline-flex"
-                    label="Background glow effect"
+                    :label="$t('settings.homeBannerEffects.backgroundGlowEffect')"
                     hide-details
                   />
                 </template>
@@ -661,12 +668,12 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   icon: {
                     name: 'mdi-palette'
                   },
-                  title: 'Theme'
+                  title: $t('settings.homeBannerEffects.theme.title')
                 }"
               >
                 <template #content>
                   <div class="text--sub-title-1 mt-2">
-                    Theme type
+                    {{$t('settings.homeBannerEffects.theme.themeType')}}
                   </div>
 
                   <v-radio-group
@@ -675,30 +682,30 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     hide-details
                   >
                     <v-radio
-                      label="Dark"
+                      :label="$t('settings.homeBannerEffects.theme.themeTypeRadio.dark')"
                       value="dark"
                     />
 
                     <v-radio
-                      label="Light filter"
+                      :label="$t('settings.homeBannerEffects.theme.themeTypeRadio.lightFilter')"
                       value="light-filter"
                     />
 
                     <v-radio
-                      label="Light (in development)"
+                      :label="$t('settings.homeBannerEffects.theme.themeTypeRadio.light')"
                       value="light"
                       disabled
                     />
                   </v-radio-group>
 
                   <div class="text--sub-title-1 mt-4">
-                    Transparent toolbars
+                    {{$t('settings.transparentToolbars.title')}}
                   </div>
 
                   <v-switch
                     v-model="transparentToolbars"
                     class="mt-4 pt-0"
-                    label="Transparent toolbars"
+                    :label="$t('settings.transparentToolbars.switchLabel')"
                   />
                 </template>
               </section-settings>
@@ -710,22 +717,22 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   icon: {
                     name: 'mdi-image-filter-black-white'
                   },
-                  title: 'Visual filters'
+                  title: $t('settings.visualFilters.title')
                 }"
               >
                 <template #content>
                   <div class="text--sub-title-1 mt-2">
-                    Filters
+                    {{$t('settings.visualFilters.filters')}}
                   </div>
 
                   <v-switch
                     v-model="visualFiltersApplyFiltersToMediaElements"
                     class="mt-4 pt-0"
-                    label="Apply filters to media elements (images, videos)"
+                    :label="$t('settings.visualFilters.applyFiltersToMediaElements')"
                   />
 
                   <div class="mt-4">
-                    Contrast: {{Math.round(visualFiltersContrastValue * 100)}}%
+                    {{$t('settings.visualFilters.contrast', {n: Math.round(visualFiltersContrastValue * 100)})}}
                   </div>
 
                   <v-slider
@@ -739,7 +746,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   />
 
                   <div class="mt-4">
-                    Brightness: {{Math.round(visualFiltersBrightnessValue * 100)}}%
+                    {{$t('settings.visualFilters.brightness', {n: Math.round(visualFiltersBrightnessValue * 100)})}}
                   </div>
 
                   <v-slider
@@ -753,7 +760,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   />
 
                   <div class="mt-4">
-                    Saturation: {{Math.round(visualFiltersSaturationValue * 100)}}%
+                    {{$t('settings.visualFilters.saturation', {n: Math.round(visualFiltersSaturationValue * 100)})}}
                   </div>
 
                   <v-slider
@@ -775,19 +782,19 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   icon: {
                     name: 'mdi-animation-play-outline'
                   },
-                  title: 'Animations'
+                  title: $t('settings.animations.title')
                 }"
               >
                 <template #content>
                   <div class="text--sub-title-1 mt-2">
-                    Home page animations
+                    {{$t('settings.animations.homePageAnimations')}}
                   </div>
 
                   <v-switch
                     v-model="animationsOnRouteChangeMediaBannerIn"
                     class="mt-0 pt-0"
-                    label="Home banner animation"
-                    hint="Setting will apply on the next page change"
+                    :label="$t('settings.animations.homeBannerAnimation.title')"
+                    :hint="$t('settings.animations.homeBannerAnimation.hint')"
                     persistent-hint
                   />
                 </template>
@@ -800,12 +807,12 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   icon: {
                     name: 'mdi-format-font'
                   },
-                  title: 'Fonts'
+                  title: $t('settings.fonts.title')
                 }"
               >
                 <template #content>
                   <div class="text--sub-title-1 mt-2">
-                    Selected font
+                    {{$t('settings.fonts.selectedFont')}}
                   </div>
 
                   <v-layout align-center>
@@ -816,7 +823,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                       return-object
                       item-value="name"
                       item-text="name"
-                      label="Font name"
+                      :label="$t('settings.fonts.fontName')"
                       style="max-width: 400px"
                     >
                       <template #prepend-item>
@@ -824,7 +831,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                           <v-text-field
                             v-model="fontFilter"
                             class="pt-0 mb-2"
-                            label="Filter"
+                            :label="$t('filter')"
                             single-line
                             hide-details
                           />
@@ -841,7 +848,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                               {{item.name}}
                             </v-list-item-title>
                             <v-list-item-subtitle :style="{'font-family': item.name}">
-                              {{item.type}} {{isDeafultFont(item.name) ? '(default font)' : ''}}
+                              {{item.type}} {{isDeafultFont(item.name) ? `(${$t('settings.fonts.defaultFont')})` : ''}}
                             </v-list-item-subtitle>
                           </v-list-item-content>
                         </v-list-item>
@@ -859,7 +866,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                             :color="$utils.getCSSVar('--highlight-color-1')"
                           />
                           <div class="ml-2">
-                            Loading...
+                            {{$t('loadingDots')}}
                           </div>
                         </v-layout>
                         <div v-else>
@@ -875,7 +882,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                       icon="mdi-autorenew"
                       icon-size="18px"
                       icon-class="action-toolbar__icon"
-                      tooltip="Re-fetch system fonts"
+                      :tooltip="$t('settings.fonts.reFetchSystemFonts')"
                       @click="fetchSystemFonts()"
                     />
 
@@ -886,7 +893,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                       icon="mdi-restore-alert"
                       icon-size="18px"
                       icon-class="action-toolbar__icon"
-                      tooltip="Reset font to default"
+                      :tooltip="$t('settings.fonts.resetFontToDefault')"
                       @click="resetFont()"
                     />
                   </v-layout>
@@ -900,23 +907,23 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   icon: {
                     name: 'mdi-timetable'
                   },
-                  title: 'Date / time'
+                  title: $t('settings.dateTime.title')
                 }"
               >
                 <template #content>
                   <div class="mt-2">
-                    Date / time preview:
+                    {{$t('settings.dateTime.dateTimePreview')}}
                     <span class="inline-code--light">
                       {{localDateTimeExample}}
                     </span>
                   </div>
 
                   <div class="text--sub-title-1 mt-2">
-                    Date / time regional format
+                    {{$t('settings.dateTime.dateTimeRegionalFormat')}}
                   </div>
                   <v-switch
                     v-model="autoDetectDateTimeRegionalFormat"
-                    label="Auto detect regional format"
+                    :label="$t('settings.dateTime.autoDetectRegionalFormat')"
                     class="mt-0 mb-2 pt-0"
                     hide-details
                   />
@@ -932,7 +939,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                         return-object
                         item-value="code"
                         item-text="name"
-                        label="Date / time regional format"
+                        :label="$t('settings.dateTime.dateTimeRegionalFormat')"
                         style="max-width: 400px"
                       >
                         <template #prepend-item>
@@ -940,7 +947,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                             <v-text-field
                               v-model="dateTimeRegionalFormatFilter"
                               class="pt-0 mb-2"
-                              label="Filter"
+                              :label="$t('filter')"
                               single-line
                               hide-details
                             />
@@ -974,14 +981,14 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                         icon="mdi-restore-alert"
                         icon-size="18px"
                         icon-class="action-toolbar__icon"
-                        tooltip="Reset regional format to default"
+                        :tooltip="$t('settings.dateTime.resetRegionalFormatToDefault')"
                         @click="resetRegionalFormat()"
                       />
                     </v-layout>
                   </v-expand-transition>
 
                   <div class="text--sub-title-1 mt-2">
-                    Month format
+                    {{$t('settings.dateTime.monthFormat')}}
                   </div>
                   <v-radio-group
                     v-model="dateTimeMonth"
@@ -989,39 +996,39 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     hide-details
                   >
                     <v-radio
-                      label="Numeric"
+                      :label="$t('settings.dateTime.numeric')"
                       value="numeric"
                     />
                     <v-radio
-                      label="Short"
+                      :label="$t('settings.dateTime.short')"
                       value="short"
                     />
                   </v-radio-group>
 
                   <div class="text--sub-title-1 mt-4">
-                    Time format
+                    {{$t('settings.dateTime.timeFormat')}}
                   </div>
                   <v-switch
                     v-model="dateTimeHour12"
-                    label="12-hour format"
+                    :label="$t('settings.dateTime.12HourFormat')"
                     class="mt-0 mb-4 pt-0"
                     hide-details
                   />
 
                   <div class="text--sub-title-1 mt-2">
-                    Displayed date properties
+                    {{$t('settings.dateTime.displayedDateProperties')}}
                   </div>
                   <v-switch
                     v-model="dateTimePropertiesShowSeconds"
                     class="mt-0 mb-4 pt-0"
-                    label="Show seconds"
+                    :label="$t('settings.dateTime.showSeconds')"
                     hide-details
                   />
 
                   <v-switch
                     v-model="dateTimePropertiesShowMilliseconds"
                     class="mt-0 mb-4 pt-0"
-                    label="Show milliseconds"
+                    :label="$t('settings.dateTime.showMilliseconds')"
                     hide-details
                   />
                 </template>
@@ -1035,13 +1042,13 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     icon: {
                       name: 'mdi-layers-outline'
                     },
-                    title: 'Overlays'
+                    title: $t('settings.overlays.overlays')
                   }"
                 >
                   <template #content>
                     <v-switch
                       v-model="navPanelDriveLetterOverlayValue"
-                      label="Navigation panel | drive letter overlay"
+                      :label="$t('settings.overlays.navigationPanelDriveLetterOverlay')"
                       class="mt-0 pt-0"
                       hide-details
                     />
@@ -1056,12 +1063,12 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   icon: {
                     name: 'mdi-image-outline'
                   },
-                  title: 'UI elements'
+                  title: $t('settings.uiElements.title')
                 }"
               >
                 <template #content>
                   <div class="text--sub-title-1 mt-2">
-                    Directory item icon background color
+                    {{$t('settings.uiElements.directoryItemIconBackgroundColor')}}
                   </div>
 
                   <v-radio-group
@@ -1070,17 +1077,17 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     hide-details
                   >
                     <v-radio
-                      label="None"
+                      :label="$t('settings.uiElements.none')"
                       value="none"
                     />
                     <v-radio
-                      label="Minimal"
+                      :label="$t('settings.uiElements.minimal')"
                       value="minimal"
                     />
                   </v-radio-group>
 
                   <div class="text--sub-title-1 mt-2">
-                    Home page item card design
+                    {{$t('settings.uiElements.homePageItemCardDesign')}}
                   </div>
 
                   <v-radio-group
@@ -1089,44 +1096,44 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     hide-details
                   >
                     <v-radio
-                      label="Neoinfusive | extruded"
+                      :label="$t('settings.uiElements.neoinfusiveExtruded')"
                       value="neoinfusive-extruded"
                     />
                     <v-radio
-                      label="Neoinfusive | flat-glow"
+                      :label="$t('settings.uiElements.neoinfusiveFlatGlow')"
                       value="neoinfusive-flat-glow"
                     />
                   </v-radio-group>
 
                   <div class="text--sub-title-1 mt-2">
-                    Dashboard options
+                    {{$t('settings.uiElements.dashboardOptions')}}
                   </div>
 
                   <v-switch
                     v-model="dashboardTimeline"
-                    label="Show timeline"
+                    :label="$t('settings.uiElements.showTimeline')"
                     class="mt-0 pt-0"
                   />
 
                   <div class="text--sub-title-1 mt-2">
-                    Home page cards
+                    {{$t('settings.uiElements.homePageCards')}}
                   </div>
 
                   <v-switch
                     v-model="showUserNameOnUserHomeDir"
-                    label="Show user name on 'home directory' card"
+                    :label="$t('settings.uiElements.showUserNameOnHomeDirectoryCard')"
                     class="mt-0 pt-0"
                   />
 
                   <v-switch
                     v-model="driveCardShowProgress"
-                    label="Show drive space indicator"
+                    :label="$t('settings.uiElements.showDriveSpaceIndicator')"
                     class="mt-0 pt-0"
                   />
 
                   <div v-show="driveCardShowProgress">
                     <div class="text--sub-title-1 mt-2">
-                      Drive space indicator style
+                      {{$t('settings.uiElements.driveSpaceIndicatorStyle')}}
                     </div>
 
                     <v-radio-group
@@ -1135,19 +1142,19 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                       hide-details
                     >
                       <v-radio
-                        label="Linear | vertical"
+                        :label="$t('settings.uiElements.linearVertical')"
                         value="linearVertical"
                       />
                       <v-radio
-                        label="Linear | horizontal"
+                        :label="$t('settings.uiElements.linearHorizontal')"
                         value="linearHorizontal"
                       />
                       <v-radio
-                        label="Linear | horizontal | centered"
+                        :label="$t('settings.uiElements.linearHorizontalCentered')"
                         value="linearHorizontalCentered"
                       />
                       <v-radio
-                        label="Circular"
+                        :label="$t('settings.uiElements.circular')"
                         value="circular"
                       />
                     </v-radio-group>
@@ -1162,12 +1169,12 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   icon: {
                     name: 'mdi-image-outline'
                   },
-                  title: 'Home page media banner'
+                  title: $t('settings.homePageMediaBanner.title')
                 }"
               >
                 <template #content>
                   <div class="text--sub-title-1 mt-2">
-                    Banner options
+                    {{$t('settings.homePageMediaBanner.options')}}
                   </div>
 
                   <v-radio-group
@@ -1176,11 +1183,11 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     class="py-0 mt-0"
                   >
                     <v-radio
-                      label="Display media banner"
+                      :label="$t('settings.homePageMediaBanner.display')"
                       :value="true"
                     />
                     <v-radio
-                      label="Hide media banner"
+                      :label="$t('settings.homePageMediaBanner.hide')"
                       :value="false"
                     />
                   </v-radio-group>
@@ -1194,22 +1201,22 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   icon: {
                     name: 'mdi-information-outline'
                   },
-                  title: 'Info panel'
+                  title: $t('settings.infoPanel.title')
                 }"
               >
                 <template #description>
-                  Info panel is located on the navigator page.
-                  <br />It displays information about the last selected item.
+                  {{$t('settings.infoPanel.infoPanelIsLocated')}}
+                  <br />{{$t('settings.infoPanel.itDisplaysLastItem')}}
                 </template>
                 <template #content>
                   <div class="text--sub-title-1 mt-2">
-                    Info panel options
+                    {{$t('settings.infoPanel.options')}}
                   </div>
 
                   <v-switch
                     v-model="navigatorViewInfoPanel"
                     class="mt-0 pt-0"
-                    label="Show info panel"
+                    :label="$t('settings.infoPanel.show')"
                     hide-details
                   />
 
@@ -1235,25 +1242,20 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                             >
                               mdi-circle-medium
                             </v-icon>
-                            Calculate directory size automatically
+                            {{$t('settings.infoPanel.calculateDirectorySize')}}
                           </template>
                         </v-switch>
                       </div>
                     </template>
                     <span>
                       <div>
-                        <strong>Warning:</strong> this is a computationally intensive feature,
-                        so it's recommended to turn it on only on computers with a
-                        powerful CPU and an SSD. It's also recommended to disable
-                        it on laptops, since it increases battery usage.
+                        <strong> {{$t('warning')}}:</strong> {{$t('settings.infoPanel.intensiveFeature')}}
                       </div>
                       <div class="mt-2">
-                        <strong>Description:</strong> When you open or select a directory,
-                        the app will automatically calculate and display its full size.
+                        <strong> {{$t('description')}}:</strong> {{$t('settings.infoPanel.whenOpenDirectory')}}
                       </div>
                       <div class="mt-2">
-                        For most directories it takes less than 1 second to calculate the size.
-                        If the operation takes longer than that, it will be canceled.
+                        {{$t('settings.infoPanel.oneSecond')}}
                       </div>
                     </span>
                   </v-tooltip>
@@ -1267,37 +1269,37 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   icon: {
                     name: 'mdi-view-list'
                   },
-                  title: 'Navigator'
+                  title: $t('settings.navigator.title')
                 }"
               >
                 <template #content>
                   <div class="text--sub-title-1 mt-2">
-                    Dividers / Titles
+                    {{$t('settings.navigator.dividersTitles')}}
                   </div>
 
                   <v-switch
                     v-model="showDirItemKindDividers"
                     class="mt-0 pt-0"
-                    label="Show dividers between files and directories"
+                    :label="$t('settings.navigator.showDividersBetweenFilesAndDirectories')"
                     hide-details
                   />
 
                   <div class="text--sub-title-1 mt-2">
-                    Sorting type
+                    {{$t('settings.navigator.sortingType')}}
                   </div>
                   <div class="mb-2">
-                    If enabled, the selected sorting type will be applied after app reload
+                    {{$t('settings.navigator.ifEnabledTheSelectedSortingType')}}
                   </div>
 
                   <v-switch
                     v-model="saveNavigatorSorting"
                     class="mt-0 pt-0"
-                    label="Save sorting type"
+                    :label="$t('settings.navigator.saveSortingType')"
                     hide-details
                   />
 
                   <div class="text--sub-title-1 mt-4">
-                    Sorting element display type
+                    {{$t('settings.navigator.sortingElementDisplayType')}}
                   </div>
 
                   <v-radio-group
@@ -1306,11 +1308,11 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     hide-details
                   >
                     <v-radio
-                      label="Show sorting icon"
+                      :label="$t('settings.navigator.showSortingIcon')"
                       value="icon"
                     />
                     <v-radio
-                      label="Show sorting toolbar"
+                      :label="$t('settings.navigator.showSortingToolbar')"
                       value="toolbar"
                     />
                   </v-radio-group>
@@ -1326,7 +1328,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   ></v-switch> -->
 
                   <div class="text--sub-title-1 mt-4">
-                    Navigator view layout
+                    {{$t('settings.navigator.navigatorViewLayout')}}
                   </div>
 
                   <v-radio-group
@@ -1335,17 +1337,17 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     hide-details
                   >
                     <v-radio
-                      label="List layout"
+                      :label="$t('settings.navigator.listLayout')"
                       value="list"
                     />
                     <v-radio
-                      label="Grid layout"
+                      :label="$t('settings.navigator.gridLayout')"
                       value="grid"
                     />
                   </v-radio-group>
 
                   <div class="text--sub-title-1 mt-4">
-                    Navigator item hover effect
+                    {{$t('settings.navigator.navigatorItemHoverEffect')}}
                   </div>
 
                   <v-radio-group
@@ -1354,29 +1356,27 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     hide-details
                   >
                     <v-radio
-                      label="Scale"
+                      :label="$t('settings.navigator.scale')"
                       value="scale"
                     />
                     <v-radio
-                      label="Highlight"
+                      :label="$t('settings.navigator.highlight')"
                       value="highlight"
                     />
                   </v-radio-group>
 
                   <div class="text--sub-title-1 mt-4">
-                    Navigator item list
+                    {{$t('settings.navigator.navigatorItemList')}}
                   </div>
 
                   <p>
-                    <b>OCD | 'Name' column max width:</b>
-                    files with disproportionately long names make the file list look messy,
-                    so it's recommended to set the name column max width to a lower value,
-                    like 50%, to make it look more organized
+                    <b>{{$t('settings.navigator.ocdNameColumnMaxWidth')}}</b>
+                    {{$t('settings.navigator.filesWithDisproportionatelyLongNames')}}
                   </p>
 
                   <v-text-field
                     v-model="navigatorNameColumnMaxWidth"
-                    label="'Name' column max width (CSS value)"
+                    :label="$t('settings.navigator.nameColumnMaxWidthCssValue')"
                     style="max-width: 400px"
                   />
                 </template>
@@ -1395,7 +1395,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   icon: {
                     name: 'mdi-pound',
                   },
-                  title: 'Shortcuts'
+                  title: $t('shortcutPlural')
                 }"
               >
                 <template #content>
@@ -1436,17 +1436,17 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   icon: {
                     name: 'mdi-vector-arrange-below',
                   },
-                  title: 'Workspaces'
+                  title: $t('settings.workspaces.workspaces')
                 }"
               >
                 <template #content>
                   <div class="text--sub-title-1 mt-2">
-                    Workspaces menu
+                    {{$t('settings.workspaces.workspacesMenu')}}
                   </div>
                   <v-switch
                     v-model="showWorkspaceTitleInToolbar"
                     class="my-0"
-                    label="Show workspace title in window toolbar"
+                    :label="$t('settings.workspaces.showWorkspaceTitle')"
                   />
                 </template>
               </section-settings>
@@ -1458,12 +1458,12 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   icon: {
                     name: 'mdi-tab',
                   },
-                  title: 'Tabs'
+                  title: $t('settings.tabs.tabs')
                 }"
               >
                 <template #content>
                   <div class="text--sub-title-1 mt-2">
-                    Tab behavior
+                    {{$t('settings.tabs.tabBehavior')}}
                   </div>
                   <v-radio-group
                     v-model="navigatorTabBehavior"
@@ -1476,22 +1476,22 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     >
                       <template #activator="{ on }">
                         <v-radio
-                          label="Immutable"
+                          :label="$t('settings.tabs.immutable')"
                           value="immutable"
                           v-on="on"
                         />
                       </template>
-                      <span>If enabled, tabs behave as pinned directories rather than traditional tabs</span>
+                      <span>{{$t('settings.tabs.tabsBehaveAsPinnedDirectories')}}</span>
                     </v-tooltip>
                     <v-radio
-                      label="Traditional (in development)"
+                      :label="$t('settings.tabs.traditional')"
                       value="traditional"
                       disabled
                     />
                   </v-radio-group>
 
                   <div class="text--sub-title-1 mt-2">
-                    Tab layout
+                    {{$t('settings.tabs.tabLayout')}}
                   </div>
                   <v-radio-group
                     v-model="navigatorTabLayout"
@@ -1499,11 +1499,11 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     hide-details
                   >
                     <v-radio
-                      label="Compact vertical"
+                      :label="$t('settings.tabs.compactVertical')"
                       value="compact-vertical"
                     />
                     <v-radio
-                      label="Compact vertical + traditional horizontal"
+                      :label="$t('settings.tabs.compactVerticalTraditionalHorizontal')"
                       value="compact-vertical-and-traditional-horizontal"
                     />
                   </v-radio-group>
@@ -1511,32 +1511,32 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   <v-expand-transition>
                     <div v-show="navigatorTabLayout === 'compact-vertical-and-traditional-horizontal'">
                       <div class="text--sub-title-1 mt-2">
-                        Tab preview
+                        {{$t('settings.tabs.tabPreview')}}
                       </div>
                       <v-switch
                         v-model="showTabPreview"
                         class="my-0"
-                        label="Show tab preview"
+                        :label="$t('settings.tabs.showTabPreview')"
                         hide-details
                       />
 
                       <div class="text--sub-title-1 mt-2">
-                        Tab storage indicator
+                        {{$t('settings.tabs.tabStorageIndicator')}}
                       </div>
                       <v-switch
                         v-model="showTabStorageIndicator"
                         class="my-0"
-                        label="Show storage indicator on navigator tab"
+                        :label="$t('settings.tabs.showStorageIndicator')"
                         hide-details
                       />
                     </div>
                   </v-expand-transition>
 
                   <div class="text--sub-title-1 mt-2">
-                    Tab properties
+                    {{$t('settings.tabs.tabProperties')}}
                   </div>
                   <div>
-                    Tab width: <span class="inline-code--light">{{navigatorTabWidth}}px</span>
+                    {{$t('settings.tabs.tabWidth')}} <span class="inline-code--light">{{navigatorTabWidth}}{{$t('units.px')}}</span>
                   </div>
                   <v-slider
                     v-model="navigatorTabWidth"
@@ -1549,12 +1549,12 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   />
 
                   <div class="text--sub-title-1 mt-2">
-                    Options
+                    {{$t('settings.tabs.options')}}
                   </div>
                   <v-switch
                     v-model="closeAppWindowWhenLastWorkspaceTabIsClosed"
                     class="my-0"
-                    label="Close app window when all current workspace tabs are closed"
+                    :label="$t('settings.tabs.closeAppWindow')"
                   />
                 </template>
               </section-settings>
@@ -1572,12 +1572,12 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   icon: {
                     name: 'mdi-tab',
                   },
-                  title: 'Navigator history'
+                  title: $t('settings.navigatorHistory.title')
                 }"
               >
                 <template #content>
                   <div class="text--sub-title-1 mt-2">
-                    History navigation style
+                    {{$t('settings.navigatorHistory.historyNavigationStyle')}}
                   </div>
                   <v-radio-group
                     v-model="navigatorhistoryNavigationStyleSelected"
@@ -1590,26 +1590,20 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     >
                       <template #activator="{ on }">
                         <v-radio
-                          label="Sigma default"
+                          :label="$t('settings.navigatorHistory.sigmaDefault')"
                           value="sigma-default"
                           v-on="on"
                         />
                       </template>
                       <span>
-                        This custom Sigma history style allows you to get back to previously opened paths,
-                        even after inserting a new path into the history while navigating the history stack.
-                        <br /><strong>Example:</strong>
-                        <br />- Open directory <span class="inline-code--light py-0">"/user"</span>
-                        <br />- Open directory <span class="inline-code--light py-0">"/user/pictures"</span>
-                        <br />- Open directory <span class="inline-code--light py-0">"/user/pictures/screenshots"</span>
-                        <br />If you now go back to directory
-                        <span class="inline-code--light py-0">"/user/pictures"</span>
-                        and then go back again to
-                        <span class="inline-code--light py-0">"/user"</span>
-                        and then open
-                        <span class="inline-code--light py-0">"/user/videos"</span>,
-                        you will still be able to go back in history to the previous directories by pressing
-                        "go back" or "go forward" button.
+                        <br />- {{$t('settings.navigatorHistory.example.openDirectory')}} <span class="inline-code--light py-0">"{{$t('settings.navigatorHistory.example.userPicturesScreenshotsPath')}}"</span>
+                        <br />{{$t('settings.navigatorHistory.example.ifYouNowGoBackToDirectory')}}
+                        <span class="inline-code--light py-0">"{{$t('settings.navigatorHistory.example.userPicturesPath')}}"</span>
+                        {{$t('settings.navigatorHistory.example.andThenGoBackAgainTo')}}
+                        <span class="inline-code--light py-0">"{{$t('settings.navigatorHistory.example.userPath')}}"</span>
+                        {{$t('settings.navigatorHistory.example.andThenOpen')}}
+                        <span class="inline-code--light py-0">"{{$t('settings.navigatorHistory.example.userVideos')}}"</span>,
+                        {{$t('settings.navigatorHistory.example.sigmaDefaultExampleDescription')}}
                       </span>
                     </v-tooltip>
 
@@ -1619,31 +1613,23 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     >
                       <template #activator="{ on }">
                         <v-radio
-                          label="Traditional"
+                          :label="$t('settings.navigatorHistory.traditional')"
                           value="traditional"
                           v-on="on"
                         />
                       </template>
                       <span>
-                        This is a traditional history style, used in vast majority of apps.
-                        It overwrites all succeding paths when you insert a new path anywhere other than the end,
-                        which means once you go back in history and open some other directory, all succedding entries will be gone.
-                        <br /><strong>Example:</strong>
-                        <br />- Open directory <span class="inline-code--light py-0">"/user"</span>
-                        <br />- Open directory <span class="inline-code--light py-0">"/user/pictures"</span>
-                        <br />- Open directory <span class="inline-code--light py-0">"/user/pictures/screenshots"</span>
-                        <br />If you now go back to directory
-                        <span class="inline-code--light py-0">"/user/pictures"</span>
-                        and then go back again to
-                        <span class="inline-code--light py-0">"/user"</span>
-                        and then open
-                        <span class="inline-code--light py-0">"/user/videos"</span>,
-                        you will NOT be able to go back in history to the previous directories by pressing
-                        "go back" or "go forward" button, because
-                        they were overwritten and the history now only has 2 directories:
-                        <span class="inline-code--light py-0">"/user"</span>
-                        and
-                        <span class="inline-code--light py-0">"/user/videos"</span>.
+                        <br />- {{$t('settings.navigatorHistory.example.openDirectory')}} <span class="inline-code--light py-0">"{{$t('settings.navigatorHistory.example.userPicturesScreenshotsPath')}}"</span>
+                        <br />{{$t('settings.navigatorHistory.example.ifYouNowGoBackToDirectory')}}
+                        <span class="inline-code--light py-0">"{{$t('settings.navigatorHistory.example.userPicturesPath')}}"</span>
+                        {{$t('settings.navigatorHistory.example.andThenGoBackAgainTo')}}
+                        <span class="inline-code--light py-0">"{{$t('settings.navigatorHistory.example.userPath')}}"</span>
+                        {{$t('settings.navigatorHistory.example.andThenOpen')}}
+                        <span class="inline-code--light py-0">"{{$t('settings.navigatorHistory.example.userVideosPath')}}"</span>,
+                        {{$t('settings.navigatorHistory.example.traditionalExampleDescription')}}
+                        <span class="inline-code--light py-0">"{{$t('settings.navigatorHistory.example.userPath')}}"</span>
+                        {{$t('settings.navigatorHistory.example.and')}}
+                        <span class="inline-code--light py-0">"{{$t('settings.navigatorHistory.example.userVideosPath')}}"</span>.
                       </span>
                     </v-tooltip>
                   </v-radio-group>
@@ -1663,26 +1649,26 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   icon: {
                     name: 'mdi-folder-outline'
                   },
-                  title: 'Navigator'
+                  title: $t('settings.input.navigator')
                 }"
               >
                 <template #content>
                   <div>
                     <div class="text--sub-title-1 mt-2">
-                      Directory items
+                      {{$t('settings.input.directoryItems')}}
                     </div>
 
                     <div class="mb-5">
                       <v-switch
                         v-model="navigatorShowHiddenDirItems"
                         class="my-0"
-                        label="Show Hidden Items"
+                        :label="$t('settings.input.showHiddenItems')"
                       />
 
                       <v-switch
                         v-model="navigatorOpenDirItemWithSingleClick"
                         class="my-0"
-                        label="Open with single click"
+                        :label="$t('settings.input.openWithSingleClick')"
                         hide-details
                       />
 
@@ -1690,7 +1676,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                         v-show="navigatorOpenDirItemWithSingleClick"
                         class="mt-3"
                       >
-                        Hold <span class="inline-code--light">Alt</span> button to select the item without opening it
+                        {{$t('settings.input.hold')}} <span class="inline-code--light">Alt</span> {{$t('settings.input.buttonToSelectWithoutOpening')}}
                       </div>
                     </div>
 
@@ -1698,7 +1684,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                       <v-text-field
                         v-show="!navigatorOpenDirItemWithSingleClick"
                         v-model="validatedOpenDirItemSecondClickDelay"
-                        label="Double-click delay (ms)"
+                        :label="$t('settings.input.doubleClickDelayMs')"
                         :error="!checkedOpenDirItemSecondClickDelay.isValid"
                         :hint="checkedOpenDirItemSecondClickDelay.error"
                         style="max-width: 200px"
@@ -1715,35 +1701,35 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   icon: {
                     name: 'mdi-form-textbox'
                   },
-                  title: 'Input elements'
+                  title: $t('settings.input.inputElements')
                 }"
               >
                 <template #content>
                   <div>
                     <div class="text--sub-title-1 mt-2">
-                      Filter options
+                      {{$t('settings.input.filterOptions')}}
                     </div>
                     <v-switch
                       v-model="focusFilterOnTyping"
                       class="mt-0 mb-4"
-                      label="Activate item filtering when typing"
+                      :label="$t('settings.input.activateWhenTyping')"
                       hide-details
                     />
 
                     <v-switch
                       v-model="focusFilterOnDirectoryChange"
                       class="mt-0 mb-4"
-                      label="Activate item filtering when directory changes"
+                      :label="$t('settings.input.activateWhenDirectoryChanges')"
                       hide-details
                     />
 
                     <div class="text--sub-title-1 mt-2">
-                      Helpers
+                      {{$t('settings.input.helpers')}}
                     </div>
                     <v-switch
                       v-model="spellcheck"
                       class="my-0"
-                      label="Spellcheck"
+                      :label="$t('settings.input.spellcheck')"
                       hide-details
                     />
                   </div>
@@ -1757,12 +1743,12 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   icon: {
                     name: 'mdi-mouse'
                   },
-                  title: 'Mouse buttons'
+                  title: $t('settings.globalSearch.mouseButtons')
                 }"
               >
                 <template #content>
                   <div class="text--sub-title-1 mt-2">
-                    Button actions
+                    {{$t('settings.globalSearch.buttonActions')}}
                   </div>
 
                   <v-select
@@ -1770,7 +1756,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     :items="pointerButton3onMouseUpEventItems"
                     return-object
                     item-text="title"
-                    label="Mouse button 3"
+                    :label="$t('settings.globalSearch.mouseButton3')"
                     style="max-width: 400px"
                   />
 
@@ -1779,7 +1765,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     :items="pointerButton4onMouseUpEventItems"
                     return-object
                     item-text="title"
-                    label="Mouse button 4"
+                    :label="$t('settings.globalSearch.mouseButton4')"
                     style="max-width: 400px"
                   />
                 </template>
@@ -1799,23 +1785,23 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     name: 'mdi-magnify',
                     size: '26px'
                   },
-                  title: 'Global search'
+                  title: $t('settings.globalSearch.title')
                 }"
               >
                 <template #content>
                   <div class="text--sub-title-1 mt-2">
-                    Global search feature
+                    {{$t('settings.globalSearch.globalSearchFeature')}}
                   </div>
 
                   <v-switch
                     v-model="globalSearchIsEnabled"
                     class="my-0"
-                    label="Enable global search feature and periodic search data scans"
+                    :label="$t('settings.globalSearch.enableGlobalSearch')"
                     hide-details
                   />
 
                   <div class="text--sub-title-1 mt-2">
-                    Quick actions
+                    {{$t('settings.globalSearch.quickActions')}}
                   </div>
 
                   <div class="button-container">
@@ -1834,7 +1820,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                       >
                         mdi-refresh
                       </v-icon>
-                      re-scan drives
+                      {{$t('settings.globalSearch.reScanDrives')}}
                     </v-btn>
 
                     <v-btn
@@ -1851,7 +1837,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                       >
                         mdi-folder-outline
                       </v-icon>
-                      Open search data directory
+                      {{$t('settings.globalSearch.openSearchDataDirectory')}}
                     </v-btn>
                   </div>
 
@@ -1862,7 +1848,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
                   <div v-if="globalSearchIsEnabled">
                     <div class="text--sub-title-1 mt-2">
-                      Search data
+                      {{$t('settings.globalSearch.searchData')}}
                     </div>
 
                     <updating-component :component="'lastScanTimeElapsed'" />
@@ -1887,13 +1873,13 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     </v-btn> -->
 
                     <div class="text--sub-title-1 mt-2">
-                      Search options
+                      {{$t('settings.globalSearch.searchOptions')}}
                     </div>
 
                     <v-select
                       v-model="globalSearchAutoScanIntervalTime"
                       :items="globalSearchAutoScanIntervalItems"
-                      :label="`Auto scan period ${disabledInDev}`"
+                      :label="`${$t('settings.globalSearch.autoScanPeriod')} ${disabledInDev}`"
                       :disabled="scanInProgress || searchInProgress"
                       :menu-props="{
                         contentClass: 'custom-scrollbar',
@@ -1925,7 +1911,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                             class="mt-0"
                             :items="suggestedGlobalSearchScanDepthItems"
                             :disabled="scanInProgress || searchInProgress"
-                            label="Scan depth"
+                            :label="$t('settings.globalSearch.scanDepth')"
                             :menu-props="{
                               contentClass: 'custom-scrollbar',
                               offsetY: true
@@ -1934,17 +1920,16 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                             @blur="handleBlurGlobalSearchScanDepth"
                           >
                             <template #selection>
-                              {{globalSearchScanDepth}} directories
+                              {{$tc('directoriesCount', {n: globalSearchScanDepth})}}
                             </template>
                             <template #item="{item}">
-                              {{item}} directories
+                              {{$tc('directoriesCount', {n: item})}}
                             </template>
                           </v-select>
                         </div>
                       </template>
                       <span>
-                        Higher depth scans will increase both the scan and the search time,
-                        but will allow you to find files located in more deeply nested directories.
+                        {{$t('settings.globalSearch.higherDepthScansWillIncrease')}}
                       </span>
                     </v-tooltip>
 
@@ -1975,14 +1960,13 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                                 >
                                   mdi-circle-medium
                                 </v-icon>
-                                Compress search data
+                                {{$t('settings.globalSearch.compressSearchData')}}
                               </template>
                             </v-switch>
                           </div>
                         </template>
                         <span>
-                          Compression significantly reduces the amount of space needed for
-                          search data (up to 20 times less) but search scans take longer (~2 times).
+                          {{$t('settings.globalSearch.compressionReduces')}}
                         </span>
                       </v-tooltip>
                     </div>
@@ -1990,7 +1974,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     <v-combobox
                       v-model="globalSearchDisallowedPaths"
                       :items="globalSearchDisallowedPathsItems"
-                      label="Ignored paths"
+                      :label="$t('settings.globalSearch.ignoredPaths')"
                       :disabled="scanInProgress || searchInProgress"
                       multiple
                       style="max-width: 400px"
@@ -1999,7 +1983,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                         <v-list-item>
                           <v-list-item-content>
                             <v-list-item-title>
-                              Enter a path to add to the ignored list and press
+                              {{$t('settings.globalSearch.enterPathToAddToIgnored')}}
                               <span class="inline-code--light">Enter</span>
                             </v-list-item-title>
                           </v-list-item-content>
@@ -2008,11 +1992,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                       <template #item="{item}">
                         <v-list-item @click.stop="toggleGlobalSearchDisallowedPathItem(item)">
                           <v-list-item-action>
-                            <v-icon>
-                              {{globalSearchDisallowedPaths.includes(item)
-                                ? 'mdi-check-box-outline'
-                                : 'mdi-checkbox-blank-outline'}}
-                            </v-icon>
+                            <v-icon>{{globalSearchDisallowedPathsIcon(item)}}</v-icon>
                           </v-list-item-action>
                           <v-list-item-content>
                             <v-list-item-title>
@@ -2040,38 +2020,37 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                           v-if="index === 2"
                           class="grey--text caption"
                         >
-                          (+{{globalSearchDisallowedPaths.length - 2}} others)
+                          (+{{$t('common', {n: globalSearchDisallowedPaths.length - 2})}})
                         </span>
                       </template>
                     </v-combobox>
 
                     <div class="text--sub-title-1 mt-2">
-                      Time estimates
+                      {{$t('settings.globalSearch.timeEstimates')}}
                     </div>
                     <div>
                       <v-icon :color="estimatedGlobalSearchScanTime.color">
                         mdi-circle-medium
                       </v-icon>
-                      Estimated data scan time:
+                      {{$t('settings.globalSearch.estimatedDataScanTime')}}
                       <span
                         class="ml-1"
                         style="font-size: 14px;"
                       >
                         {{estimatedGlobalSearchScanTime.time}}
-                        (per 1 TB drive)
+                        {{$t('settings.globalSearch.per1TbDrive')}}
                       </span>
                     </div>
                     <div>
                       <v-icon :color="estimatedGlobalSearchTime.color">
                         mdi-circle-medium
                       </v-icon>
-                      Estimated search time:
+                      {{$t('settings.globalSearch.estimatedSearchTime')}}
                       <span
                         class="ml-1"
                         style="font-size: 14px;"
                       >
-                        1 sec — {{estimatedGlobalSearchTime.time}}
-                        (per 1 TB drive per search word) | depends on file location
+                        {{estimatedGlobalSearchTimeText}}
                       </span>
                     </div>
                   </div>
@@ -2091,18 +2070,15 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   icon: {
                     name: 'mdi-information-outline'
                   },
-                  title: 'Reminder: data backup'
+                  title: $t('dataBackupReminder.title')
                 }"
               >
                 <template #content>
                   <p>
-                    It's recommended to regularly backup (copy)
-                    all your important files to an external drive
-                    (which is not connected to your computer most of the time),
-                    so if something goes wrong, you don't lose important files.
+                    {{$t('dataBackupReminder.description')}}
                   </p>
                   <p>
-                    The auto-backup feature will be added in one of the next versions of the app
+                    {{$t('dataBackupReminder.autoBackupWillBeAdded')}}
                   </p>
                 </template>
               </section-settings>
@@ -2114,13 +2090,13 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   icon: {
                     name: 'fab fa-usb'
                   },
-                  title: 'Drive detection'
+                  title: $t('settings.drives.driveDetection')
                 }"
               >
                 <template #content>
                   <v-checkbox
                     v-model="focusMainWindowOnDriveConnected"
-                    label="Focus the app when a drive is connected"
+                    :label="$t('settings.drives.focusAppWhenDriveConnected')"
                     hide-details
                     class="mt-0"
                   />
@@ -2134,20 +2110,18 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   icon: {
                     name: 'mdi-image-outline'
                   },
-                  title: 'Image thumbnails'
+                  title: $t('settings.data.imageThumbnails')
                 }"
               >
                 <template #description>
-                  Every time you open a directory, the app generates a small thumbnail for every image
-                  and stores it in the app drectory. This image caching technique improves app performance.
-                  When the specified limit is reached, all thumbnails are deleted.
+                  {{$t('settings.data.everyTimeYouOpenDirectory')}}
                 </template>
                 <template #content>
                   <div class="text--sub-title-1">
-                    Thumbnail storage limit
+                    {{$t('settings.data.thumbnailStorageLimit')}}
                   </div>
 
-                  <div>Limit: {{thumbnailStorageLimit}} MB</div>
+                  <div>{{$t('common.limit')}}: {{thumbnailStorageLimit}} {{$t('units.mb')}}</div>
 
                   <v-slider
                     v-model="thumbnailStorageLimit"
@@ -2175,21 +2149,20 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   icon: {
                     name: 'mdi-crop'
                   },
-                  title: 'Directory item statistics'
+                  title: $t('settings.stats.directoryItemStatistics')
                 }"
               >
                 <template #description>
                   <p>
-                    If enabled, the app will store some event data of your interactions with
-                    directories / files, for example, when and how many times they were opened.
+                    {{$t('settings.stats.storeSomeEventData')}}
                   </p>
                   <p>
-                    This data is used by features like "timeline" and "search".
+                    {{$t('settings.stats.thisDataIsUsed')}}
                   </p>
                 </template>
                 <template #content>
                   <div class="text--sub-title-1">
-                    Statistics storing
+                    {{$t('settings.stats.statisticsStoring')}}
                   </div>
 
                   <div
@@ -2197,7 +2170,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   >
                     <v-switch
                       v-model="storeDirItemOpenEvent"
-                      label="Store the list of opened directory items"
+                      :label="$t('settings.stats.storeOpenedDirectoryItems')"
                       hide-details
                     />
                   </div>
@@ -2208,7 +2181,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     <v-switch
                       v-if="storeDirItemOpenEvent"
                       v-model="storeDirItemOpenCount"
-                      label="Store the amount of times a directory item was opened"
+                      :label="$t('settings.stats.storeAmountDirectoryItemWasOpened')"
                       hide-details
                     />
                   </div>
@@ -2216,13 +2189,12 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   <v-switch
                     v-if="storeDirItemOpenEvent"
                     v-model="storeDirItemOpenDate"
-                    label="Store the date of opening a directory item"
+                    :label="$t('settings.stats.storeTheDateOpeningDirectoryItem')"
                     hide-details
                   />
 
                   <p class="mt-6">
-                    The statistics data is stored in the file called "stats.json"
-                    located in the app directory.
+                    {{$t('settings.stats.statisticsLocationDescription')}}
                   </p>
                   <v-btn
                     class="button-1 mb-2"
@@ -2236,7 +2208,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     >
                       mdi-folder-outline
                     </v-icon>
-                    Open file location
+                    {{$t('settings.stats.openFileLocation')}}
                   </v-btn>
                 </template>
               </section-settings>
@@ -2255,6 +2227,7 @@ import SectionSettings from '../components/SectionSettings.vue'
 import itemFilter from '../utils/itemFilter'
 import FilterClearButton from '@/components/FilterClearButton/index.vue'
 import AppButton from '@/components/AppButton/AppButton.vue'
+import AppIcon from '@/components/AppIcon/AppIcon.vue'
 import {getSystemFontsWithType} from '@/utils/getSystemFonts.js'
 import {regionalFormats} from '@/data/regionalFormats.js'
 
@@ -2267,6 +2240,7 @@ export default {
     FilterClearButton,
     ActionToolbar,
     AppButton,
+    AppIcon,
   },
   data () {
     return {
@@ -2277,18 +2251,6 @@ export default {
         stars: 0,
       },
       settingsSelectedTab: 0,
-      settingsTabs: [
-        {text: 'General'},
-        {text: 'UI appearance'},
-        {text: 'Shortcuts'},
-        // {text: 'Performance'},
-        {text: 'Tabs & workspaces'},
-        {text: 'Navigation'},
-        {text: 'Input'},
-        {text: 'Search'},
-        {text: 'Data & storage'},
-        {text: 'Stats'},
-      ],
       suggestedGlobalSearchScanDepthItems: [3, 4, 5, 6, 7, 8, 9, 10],
     }
   },
@@ -2518,6 +2480,20 @@ export default {
         return codeMatch || nameMatch
       })
     },
+    settingsTabs () {
+      return [
+        {text: this.$t('settingsTabs.general')},
+        {text: this.$t('settingsTabs.uiAppearance')},
+        {text: this.$t('settingsTabs.shortcuts')},
+        // {text: this.$t('settingsTabs.performance')},
+        {text: this.$t('settingsTabs.tabsWorkspaces')},
+        {text: this.$t('settingsTabs.navigation')},
+        {text: this.$t('settingsTabs.input')},
+        {text: this.$t('settingsTabs.search')},
+        {text: this.$t('settingsTabs.dataStorage')},
+        {text: this.$t('settingsTabs.stats')},
+      ]
+    },
     validatedOpenDirItemSecondClickDelay: {
       get () {
         return this.openDirItemSecondClickDelay
@@ -2536,19 +2512,19 @@ export default {
     headerButtons () {
       return [
         {
-          title: 'Project page',
+          title: this.$t('settingsHeaderButtons.projectPage'),
           link: this.appPaths.githubRepoLink,
         },
         {
-          title: 'Requests & issues',
+          title: this.$t('settingsHeaderButtons.requestsIssues'),
           link: this.appPaths.githubIssuesLink,
         },
         {
-          title: 'Discussions',
+          title: this.$t('settingsHeaderButtons.discussions'),
           link: this.appPaths.githubDiscussionsLink,
         },
         {
-          title: `Star | ${this.githubProjectData.stars}`,
+          title: this.$t('settingsHeaderButtons.stars', {n: this.githubProjectData.stars}),
           icon: 'mdi-star-outline',
           link: this.appPaths.githubRepoLink,
         },
@@ -2616,6 +2592,12 @@ export default {
         compressionMultiplier: 1,
       })
     },
+    estimatedGlobalSearchTimeText () {
+      const minTime = `1 ${this.$t('sec')}`
+      const maxTime = `${this.estimatedGlobalSearchTime.time}`
+      const description = this.$t('settings.globalSearch.dependsOnFileLocation')
+      return `${minTime} — ${maxTime} ${description}`
+    },
     checkedOpenDirItemSecondClickDelay () {
       const value = parseInt(this.openDirItemSecondClickDelay)
       const minValue = 200
@@ -2624,7 +2606,7 @@ export default {
       if (!validValueRange) {
         return {
           isValid: false,
-          error: 'The value should be in range 200 - 1000 (ms)',
+          error: this.$t('settings.input.valueRangeFrom200To1000ms'),
           minValue,
           maxValue,
         }
@@ -2654,6 +2636,11 @@ export default {
     },
   },
   methods: {
+    globalSearchDisallowedPathsIcon (item) {
+      return this.globalSearchDisallowedPaths.includes(item)
+        ? 'mdi-check-box-outline'
+        : 'mdi-checkbox-blank-outline'
+    },
     async fetchSystemFonts () {
       electron.ipcRenderer.send('focus-main-app-window')
       this.isFetchingSystemFonts = true

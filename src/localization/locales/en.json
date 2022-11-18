@@ -11,6 +11,8 @@
     "extensions": "Extensions"
   },
   "language": "Language",
+  "isCorrectedLanguage": "Translation was reviewed and corrected by a native language speaker",
+  "isAutoTranslatedLanguage": "Auto-translated. Needs to be reviewed and corrected by a native language speaker",
   "globalSearch": "Global search",
   "drive": "Drive",
   "drives": "Drives",
@@ -18,7 +20,7 @@
   "windowScaling": "Window scaling",
   "currentUiZoomLevel": "Current UI zoom level: ",
   "filteredSettings": "Filtered settings",
-  "toAddNewLanguage": "You can add a new language on the project page on Github.<br>See the instructions in the discussions",
+  "toAddNewLanguage": "You can add a new language or edit existing language on the project page on Github.<br>See the instructions in the discussions",
   "seeAllReleases": "See all releases",
   "options": "Options",
   "checkForUpdatesAutomatically": "Check for updates automatically",
@@ -31,12 +33,331 @@
   "launchAppInHiddenState": "Launch app in hidden state",
   "reset": "Reset",
   "loading": "Loading",
+  "loadingDots": "Loading...",
+  "filter": "Filter",
+  "warning": "Warning",
+  "example": "Example:",
+  "description": "Description",
   "shortcut": "Shortcut",
+  "shortcutPlural": "Shortcuts",
   "decreaseZoomLevel": "Decrease zoom level",
   "increaseZoomLevel": "Increase zoom level",
   "resetZoomLevel": "Reset zoom level",
   "fullScreen": "Full screen",
   "toCopy": "To copy",
+  "common": {
+    "otherCount": "0 others | 1 other | {n} others | {n} others",
+    "directoriesCount": "0 directories | 1 directory | {n} directories | {n} directories",
+    "limit": "Limit"
+  },
+  "units": {
+    "px": "px",
+    "mb": "MB"
+  },
+  "notes": {
+    "notes": "Notes",
+    "trashedNotes": "Trashed notes",
+    "loadingNotes": "Loading notes",
+    "trashedNotesDeletedAfter7days": "Trashed notes are automatically deleted from the drive 7 days after being trashed",
+    "deleteAllTrashed": "Delete all trashed",
+    "noTrashedNotes": "No trashed notes",
+    "noNotes": "No notes",
+    "ungroupedNotes": "Ungrouped notes",
+    "group": "Group"
+  },
+  "settings": {
+    "windowControls": {
+      "minimizeAppToTray": {
+        "radioLabel": "Minimize to tray and keep in memory (recommended)",
+        "description": "When the app main window is closed, all features will remain active and trigger without a delay (features like global shortcuts, auto updating, etc)."
+      },
+      "closeMainWindow": {
+        "radioLabel": "Minimize to tray and minimize memory usage",
+        "description": {
+          "title": "When the app main window is closed:",
+          "subtitle1": "The following features will remain active:",
+          "feature1": "Auto updating",
+          "subtitle2": "The following features will work with limitations. The app will take some time to load back into memory:",
+          "feature2": "Global shortcuts: will trigger with a delay, the app will take some time to load.",
+          "subtitle3": "The following features will not work:",
+          "feature3": "Drive scan. Drives are scanned periodically to ensure features like global search can be used without a delay."
+        }
+      },
+      "closeApp": {
+        "radioLabel": "Close the app completely",
+        "description": "When the app main window is closed, all features stop working"
+      }
+    },
+    "visualEffects": {
+      "title": "Visual effects",
+      "windowTransparencyEffect": "Window transparency effect",
+      "overlayBlur": "Overlay blur: {n}@:units.px",
+      "overlayOpacity": "Overlay opacity: {n}%",
+      "overlayParallaxDistance": "Overlay parallax distance: {n}",
+      "overlayBackground": "Overlay background",
+      "selectNextBackground": "Select next background",
+      "makeEffectLessProminentOnHomePage": "Make effect less prominent on home page",
+      "useTheSameSettingsForAllPages": "Use the same settings for all pages",
+      "previewEffectForSelectedPage": "Preview effect for selected page",
+      "previewEffectForSelectedPageTooltip": "Disable after you finish customizing selected page to see the effects for \"settings\" page",
+      "pageToCustomize": "Page to customize",
+      "pageToCustomizeDescription1": "Select page from the list and adjust settings to save.",
+      "pageToCustomizeDescription2": "The preview of the effect will be displayed on this page until you visit another page."
+    },
+    "homeBannerEffects": {
+      "title": "Home banner effects",
+      "backgroundGlowEffect": "Background glow effect",
+      "theme": {
+        "title": "Theme",
+        "themeType": "Theme type",
+        "themeTypeRadio": {
+          "dark": "Dark",
+          "lightFilter": "Light filter",
+          "light": "Light (in development)"
+        }
+      }
+    },
+    "transparentToolbars": {
+      "title": "Transparent toolbars",
+      "switchLabel": "Transparent toolbars"
+    },
+    "visualFilters": {
+      "title": "Visual filters",
+      "filters": "Filters",
+      "applyFiltersToMediaElements": "Apply filters to media elements (images, videos)",
+      "contrast": "Contrast: {n}%",
+      "brightness": "Brightness: {n}%",
+      "saturation": "Saturation: {n}%"
+    },
+    "animations": {
+      "title": "Animations",
+      "homePageAnimations": "Home page animations",
+      "homeBannerAnimation": {
+        "title": "Home banner animation",
+        "hint": "Setting will apply on the next page change"
+      }
+    },
+    "fonts": {
+      "title": "Fonts",
+      "selectedFont": "Selected font",
+      "fontName": "Font name",
+      "defaultFont": "default font",
+      "reFetchSystemFonts": "Re-fetch system fonts",
+      "resetFontToDefault": "Reset font to default"
+    },
+    "dateTime": {
+      "dateTime": "Date / time",
+      "dateTimePreview": "Date / time preview:",
+      "dateTimeRegionalFormat": "Date / time regional format",
+      "autoDetectRegionalFormat": "Auto detect regional format",
+      "resetRegionalFormatToDefault": "Reset regional format to default",
+      "monthFormat": "Month format",
+      "numeric": "Numeric",
+      "short": "Short",
+      "timeFormat": "Time format",
+      "12HourFormat": "12-hour format",
+      "displayedDateProperties": "Displayed date properties",
+      "showSeconds": "Show seconds",
+      "showMilliseconds": "Show milliseconds"
+    },
+    "overlays": {
+      "overlays": "Overlays",
+      "navigationPanelDriveLetterOverlay": "Navigation panel | drive letter overlay"
+    },
+    "uiElements": {
+      "title": "UI elements",
+      "directoryItemIconBackgroundColor": "Directory item icon background color",
+      "none": "None",
+      "minimal": "Minimal",
+      "homePageItemCardDesign": "Home page item card design",
+      "neoinfusiveExtruded": "Neoinfusive | extruded",
+      "neoinfusiveFlatGlow": "Neoinfusive | flat-glow",
+      "dashboardOptions": "Dashboard options",
+      "showTimeline": "Show timeline",
+      "homePageCards": "Home page cards",
+      "showUserNameOnHomeDirectoryCard": "Show user name on 'home directory' card",
+      "showDriveSpaceIndicator": "Show drive space indicator",
+      "driveSpaceIndicatorStyle": "Drive space indicator style",
+      "linearVertical": "Linear | vertical",
+      "linearHorizontal": "Linear | horizontal",
+      "linearHorizontalCentered": "Linear | horizontal | centered",
+      "circular": "Circular"
+    },
+    "homePageMediaBanner": {
+      "title": "Home page media banner",
+      "options": "Banner options",
+      "display": "Display media banner",
+      "hide": "Hide media banner"
+    },
+    "infoPanel": {
+      "title": "Info panel",
+      "infoPanelIsLocated": "Info panel is located on the navigator page.",
+      "itDisplaysLastItem": "It displays information about the last selected item.",
+      "options": "Info panel options",
+      "show": "Show info panel",
+      "calculateDirectorySize": "Calculate directory size automatically",
+      "intensiveFeature": "this is a computationally intensive feature, so it's recommended to turn it on only on computers with a powerful CPU and an SSD. It's also recommended to disable it on laptops, since it increases battery usage.",
+      "whenOpenDirectory": "When you open or select a directory, the app will automatically calculate and display its full size.",
+      "oneSecond": "For most directories it takes less than 1 second to calculate the size. If the operation takes longer than that, it will be canceled."
+    },
+    "navigator": {
+      "title": "Navigator",
+      "dividersTitles": "Dividers / Titles",
+      "showDividersBetweenFilesAndDirectories": "Show dividers between files and directories",
+      "sortingType": "Sorting type",
+      "ifEnabledTheSelectedSortingType": "If enabled, the selected sorting type will be applied after app reload",
+      "saveSortingType": "Save sorting type",
+      "sortingElementDisplayType": "Sorting element display type",
+      "showSortingIcon": "Show sorting icon",
+      "showSortingToolbar": "Show sorting toolbar",
+      "navigatorViewLayout": "Navigator view layout",
+      "listLayout": "List layout",
+      "gridLayout": "Grid layout",
+      "navigatorItemHoverEffect": "Navigator item hover effect",
+      "scale": "Scale",
+      "highlight": "Highlight",
+      "navigatorItemList": "Navigator item list",
+      "ocdNameColumnMaxWidth": "OCD | 'Name' column max width:",
+      "filesWithDisproportionatelyLongNames": "files with disproportionately long names make the file list look messy, so it's recommended to set the name column max width to a lower value, like 50%, to make it look more organized",
+      "nameColumnMaxWidthCssValue": "'Name' column max width (CSS value)"
+    },
+    "performance": {
+      "gpuSystemMemory": "GPU / System memory",
+      "options": "Options",
+      "useHighPerformanceGpu": "Use high-performance GPU",
+      "ifEnabled": "If enabled:",
+      "theAppPerformanceMightIncrease": "The app performance might increase",
+      "theAppSystemMemoryRamUsage": "The app system memory (RAM) usage will decrease significantly (will be offloaded to GPU memory)"
+    },
+    "workspaces": {
+      "workspaces": "Workspaces",
+      "workspacesMenu": "Workspaces menu",
+      "showWorkspaceTitle": "Show workspace title in window toolbar"
+    },
+    "tabs": {
+      "tabs": "Tabs",
+      "tabBehavior": "Tab behavior",
+      "immutable": "Immutable",
+      "tabsBehaveAsPinnedDirectories": "If enabled, tabs behave as pinned directories rather than traditional tabs",
+      "traditional": "Traditional (in development)",
+      "tabLayout": "Tab layout",
+      "compactVertical": "Compact vertical",
+      "compactVerticalTraditionalHorizontal": "Compact vertical + traditional horizontal",
+      "tabPreview": "Tab preview",
+      "showTabPreview": "Show tab preview",
+      "tabStorageIndicator": "Tab storage indicator",
+      "showStorageIndicator": "Show storage indicator on navigator tab",
+      "tabProperties": "Tab properties",
+      "tabWidth": "Tab width:",
+      "options": "Options",
+      "closeAppWindow": "Close app window when all current workspace tabs are closed"
+    },
+    "navigatorHistory": {
+      "title": "Navigator history",
+      "historyNavigationStyle": "History navigation style",
+      "sigmaDefault": "Sigma default",
+      "sigmaDefaultDescription": "This custom Sigma history style allows you to get back to previously opened paths, even after inserting a new path into the history while navigating the history stack.",
+      "traditional": "Traditional",
+      "traditionalDescription": "This is a traditional history style, used in vast majority of apps. It overwrites all succeding paths when you insert a new path anywhere other than the end, which means once you go back in history and open some other directory, all succedding entries will be gone.",
+      "user": "/user",
+      "and": "and",
+      "userVideos": "/user/videos",
+      "example": {
+        "openDirectory": "Open directory",
+        "userPath": "/user",
+        "userPicturesPath": "/user/pictures",
+        "userPicturesScreenshotsPath": "/user/pictures/screenshots",
+        "ifYouNowGoBackToDirectory": "If you now go back to directory",
+        "andThenGoBackAgainTo": "and then go back again to",
+        "andThenOpen": "and then open",
+        "userVideosPath": "/user/videos",
+        "sigmaDefaultExampleDescription": "you will still be able to go back in history to the previous directories by pressing \"go back\" or \"go forward\" button.",
+        "traditionalExampleDescription": "you will NOT be able to go back in history to the previous directories by pressing \"go back\" or \"go forward\" button, because they were overwritten and the history now only has 2 directories:"
+      }
+    },
+    "input": {
+      "navigator": "Navigator",
+      "directoryItems": "Directory items",
+      "showHiddenItems": "Show Hidden Items",
+      "openWithSingleClick": "Open with single click",
+      "hold": "Hold",
+      "buttonToSelectWithoutOpening": "button to select the item without opening it",
+      "doubleClickDelayMs": "Double-click delay (ms)",
+      "inputElements": "Input elements",
+      "filterOptions": "Filter options",
+      "activateWhenTyping": "Activate item filtering when typing",
+      "activateWhenDirectoryChanges": "Activate item filtering when directory changes",
+      "helpers": "Helpers",
+      "spellcheck": "Spellcheck",
+      "valueRangeFrom200To1000ms'": "The value should be in range 200 - 1000 (ms)"
+    },
+    "mouseButtons": {
+      "mouseButtons": "Mouse buttons",
+      "buttonActions": "Button actions",
+      "mouseButton3": "Mouse button 3",
+      "mouseButton4": "Mouse button 4"
+    },
+    "globalSearch": {
+      "title": "Global search",
+      "globalSearchFeature": "Global search feature",
+      "enableGlobalSearch": "Enable global search feature and periodic search data scans",
+      "quickActions": "Quick actions",
+      "reScanDrives": "re-scan drives",
+      "openSearchDataDirectory": "Open search data directory",
+      "searchData": "Search data",
+      "searchOptions": "Search options",
+      "autoScanPeriod": "Auto scan period",
+      "scanDepth": "Scan depth",
+      "higherDepthScansWillIncrease": "Higher depth scans will increase both the scan and the search time, but will allow you to find files located in more deeply nested directories.",
+      "compressSearchData": "Compress search data",
+      "compressionReduces": "Compression significantly reduces the amount of space needed for search data (up to 20 times less) but search scans take longer (~2 times).",
+      "ignoredPaths": "Ignored paths",
+      "enterPathToAddToIgnored": "Enter a path to add to the ignored list and press",
+      "timeEstimates": "Time estimates",
+      "estimatedDataScanTime": "Estimated data scan time:",
+      "per1TbDrive": "(per 1 TB drive)",
+      "estimatedSearchTime": "Estimated search time:",
+      "dependsOnFileLocation": "(per 1 TB drive per search word) | depends on file location"
+    },
+    "drives": {
+      "driveDetection": "Drive detection",
+      "focusAppWhenDriveConnected": "Focus the app when a drive is connected"
+    },
+    "data": {
+      "imageThumbnails": "Image thumbnails",
+      "everyTimeYouOpenDirectory": "Every time you open a directory, the app generates a small thumbnail for every image and stores it in the app drectory. This image caching technique improves app performance. When the specified limit is reached, all thumbnails are deleted.",
+      "thumbnailStorageLimit": "Thumbnail storage limit"
+    },
+    "stats": {
+      "directoryItemStatistics": "Directory item statistics",
+      "storeSomeEventData": "If enabled, the app will store some event data of your interactions with directories / files, for example, when and how many times they were opened.",
+      "thisDataIsUsed": "This data is used by features like \"timeline\" and \"search\".",
+      "statisticsStoring": "Statistics storing",
+      "storeOpenedDirectoryItems": "Store the list of opened directory items",
+      "storeAmountDirectoryItemWasOpened": "Store the amount of times a directory item was opened",
+      "storeTheDateOpeningDirectoryItem": "Store the date of opening a directory item",
+      "statisticsLocationDescription": "The statistics data is stored in the file called \"stats.json\" located in the app directory.",
+      "openFileLocation": "Open file location"
+    }
+  },
+  "settingsHeaderButtons": {
+    "projectPage": "Project page",
+    "requestsIssues": "Requests & issues",
+    "discussions": "Discussions",
+    "stars": "Star | {n}"
+  },
+  "settingsTabs": {
+    "general": "General",
+    "uiAppearance": "UI appearance",
+    "shortcuts": "Shortcuts",
+    "performance": "Performance",
+    "tabsWorkspaces": "Tabs & workspaces",
+    "navigation": "Navigation",
+    "input": "Input",
+    "search": "Search",
+    "dataStorage": "Data & storage",
+    "stats": "Stats"
+  },
   "settingsTags": {
     "language": "language",
     "uiScaling": "ui, scaling, scale, size, zoom, interface, font, magnify",
@@ -68,6 +389,11 @@
     "imageThumbnails": "image, picture, thumbnails, limit, storage, resources, usage, performance",
     "directoryItemStatistics": "directory, item, statistics, stats, data, storage, usage"
   },
+  "dataBackupReminder": {
+    "title": "Reminder: data backup",
+    "description": "It's recommended to regularly backup (copy) all your important files to an external drive (which is not connected to your most of the time), so if something goes wrong, you don't lose important files.",
+    "autoBackupWillBeAdded": "The auto-backup feature will be added in one of the next versions of the app"
+  },
   "appProperties": "App properties",
   "appUpdates": "App updates",
   "checkUpdatesNow": "Check for updates now",
@@ -77,7 +403,7 @@
   "file": "File",
   "fileSymlink": "File-symlink",
   "directorySymlink": "Directory-symlink",
-  "item": "0 items | {n} item | {n} items | {n} items",
+  "item": "0 items | 1 item | {n} items | {n} items",
   "itemPlural": "items",
   "size": "Size",
   "fileSize": "File size",
@@ -123,5 +449,59 @@
   "displayAspectRatio": "display aspect ratio",
   "hasBFrames": "has b frames",
   "profile": "profile",
-  "closedCaptions": "closed captions"
+  "closedCaptions": "closed captions",
+  "shortcuts": {
+    "openCloseTheAppWindow": "Open / close the app window",
+    "openGlobalSearch": "Open global search",
+    "openTheAppWindowCreateANewNote": "Open the app window & create a new note",
+    "displayShortcutList": "Display shortcut list",
+    "closeOpenedDialogOverlay": "Close opened dialog / overlay; dismiss items prepared for copying or moving, deselect items",
+    "openCloseSelectedFileInQuickView": "Open / close selected file in Quick View window. Supported: images, videos, audio, PDF, plain text",
+    "toggleFullScreen": "Toggle full screen",
+    "uiZoomIncrease": "UI zoom increase",
+    "uiZoomDecrease": "UI zoom decrease",
+    "uiZoomReset": "UI zoom reset",
+    "newTabInCurrentWorkspace": "New tab in current workspace",
+    "closeCurrentTab": "Close current tab / close app window",
+    "closeAllTabsInCurrentWorkspace": "Close all tabs in current workspace / close app window",
+    "closeAppWindow": "Close app window",
+    "scrollPageToTheTop": "Scroll page to the top",
+    "switchBetweenTabs": "Switch between tabs",
+    "switchBetweenWorkspaces": "Switch between workspaces",
+    "switchBetweenViews": "Switch between views",
+    "toggleAddressBar": "Toggle address bar",
+    "copyCurrentDirectoryPathToClipboard": "Copy current directory path to clipboard",
+    "openCopiedPath": "Open copied path",
+    "openCurrentDirInTerminal": "Open current dir in terminal",
+    "openCurrentDirInTerminalAsAdmin": "Open current dir in terminal as admin",
+    "focusUnfocusFilterField": "Focus / unfocus filter field",
+    "showHideGlobalSearch": "Show / hide global search",
+    "createNewDirectoryInTheCurrentDirectory": "Create new directory in the current directory",
+    "createNewFileInCurrentDirectory": "Create new file in current directory",
+    "renameSelectedItems": "Rename selected items",
+    "reloadCurrentDirectory": "Reload current directory",
+    "openLastSelectedDirectoryItem": "Open last selected directory item",
+    "enterSelectedDirectory": "Enter selected directory",
+    "quitCurrentDirectory": "Quit current directory",
+    "selectDirectoryItemInTheDirectionUp": "Select directory item in the direction: up",
+    "selectDirectoryItemInTheDirectionLeft": "Select directory item in the direction: left",
+    "selectDirectoryItemInTheDirectionDown": "Select directory item in the direction: down",
+    "selectDirectoryItemInTheDirectionRight": "Select directory item in the direction: right",
+    "goToPreviousDirectoryInHistory": "Go to previous directory in history",
+    "goToNextDirectoryInHistory": "Go to next directory in history",
+    "goUpDirectory": "Go up directory",
+    "selectDeselectItemInTheCurrentDirectory": "Select / deselect item in the current directory",
+    "selectDeselectItemRangeInTheCurrentDirectory": "Select / deselect item range in the current directory",
+    "selectAllItemsInCurrentDirectory": "Select all items in current directory",
+    "setSelectedItemsForCopying": "Set selected items for copying (replaces current list)",
+    "addSelectedItemsForCopying": "Add selected items for copying. Allows to copy items from multiple directories at once",
+    "setSelectedItemsForMoving": "Set selected items for moving",
+    "addSelectedItemsForMoving": "Add selected items for moving. Allows to move items from multiple directories at once",
+    "transferPreparedForCopying": "Transfer prepared for copying / moving items to current directory",
+    "moveSelectedItemsToTrash": "Move selected items to trash",
+    "deleteSelectedItemsFromDrive": "Delete selected items from drive",
+    "quickWindowPositioning": "Quick window positioning",
+    "displaySystemEmojiAndSymbolPicker": "Display system emoji and symbol picker",
+    "displaySystemClipboard": "Display system clipboard (must be turned on in system settings)"
+  }
 }
