@@ -4,25 +4,17 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <template>
-  <div id="notes-route">
+  <div id="notes-view">
     <ActionToolbar />
-    <div
-      id="content-area--notes-route"
-      class="content-area custom-scrollbar"
-      style="overflow-x: hidden"
+    <AppViewContent
+      :title="currentNotesList === 'trashed'
+        ? $t('notes.trashedNotes')
+        : $t('pages.notes')
+      "
     >
-      <v-layout
-        class="mb-4"
-        align-center
-        justify-space-between
-      >
-        <div class="text--title-1">
-          {{currentNotesList === 'trashed'
-            ? $t('notes.trashedNotes')
-            : $t('pages.notes')}}
-        </div>
-        <filter-field route-name="notes" />
-      </v-layout>
+      <template #title-end>
+        <FilterField route-name="notes" />
+      </template>
 
       <div v-if="!renderContent">
         {{$t('notes.loadingNotes')}}
@@ -64,7 +56,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               {{$t('notes.noTrashedNotes')}}
             </div>
             <div class="note-card__container">
-              <note-card
+              <NoteCard
                 v-for="note in filteredDeletedNotes"
                 :key="note.hashID"
                 :note="note"
@@ -96,7 +88,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               {{$t('notes.ungroupedNotes')}}
             </div>
             <div class="note-card__container">
-              <note-card
+              <NoteCard
                 v-for="note in ungroupedNotes"
                 :key="note.hashID"
                 :note="note"
@@ -115,7 +107,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               <v-divider class="divider-color-2" />
 
               <div class="note-card__container">
-                <note-card
+                <NoteCard
                   v-for="note in filteredExistingNotes"
                   v-show="note.group === group.value"
                   :key="note.hashID"
@@ -126,21 +118,27 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           </div>
         </div>
       </div>
-    </div>
+    </AppViewContent>
   </div>
 </template>
 
 <script>
 import {mapFields} from 'vuex-map-fields'
-import itemFilter from '../utils/itemFilter'
+import itemFilter from '@/utils/itemFilter'
 import FilterClearButton from '@/components/FilterClearButton/index.vue'
-import ActionToolbar from '@/views/NotesView/ActionToolbar/ActionToolbar.vue'
+import ActionToolbar from '@/views/NotesView/ActionToolbar.vue'
+import NoteCard from '@/views/NotesView/NoteCard.vue'
+import AppViewContent from '@/components/AppViewContent/AppViewContent.vue'
+import FilterField from '@/components/FilterField.vue'
 
 export default {
   name: 'notes',
   components: {
     FilterClearButton,
     ActionToolbar,
+    NoteCard,
+    AppViewContent,
+    FilterField,
   },
   data () {
     return {

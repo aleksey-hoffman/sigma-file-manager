@@ -22,7 +22,6 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     <fs-local-server-manager />
     <context-menus />
 
-    <!-- app-content-area -->
     <v-main class="app-content">
       <keep-alive
         :include="['settings']"

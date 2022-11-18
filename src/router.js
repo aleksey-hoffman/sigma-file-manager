@@ -38,8 +38,8 @@ const routes = [
     name: 'notes',
     component: () => import(
       /* webpackChunkName: "lazy-loaded-notes" */
-      './views/Notes.vue'
-    )
+      './views/NotesView/NotesView.vue'
+    ),
   },
   {
     path: '/settings',
