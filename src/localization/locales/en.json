@@ -19,7 +19,7 @@
   },
   "common": {
     "active": "Active",
-    "close": "close",
+    "close": "Close",
     "globalSearch": "Global search",
     "drive": "Drive",
     "drives": "Drives",
@@ -45,6 +45,10 @@
     "edit": "Edit",
     "enabled": "Enabled",
     "disabled": "Disabled",
+    "enable": "Enable",
+    "search": "Search",
+    "stop": "stop",
+    "results": "Results",
     "tab": "Tab",
     "or": "or",
     "pathCannotBeOpened": "Path cannot be opened",
@@ -65,7 +69,8 @@
   },
   "count": {
     "other": "0 others | 1 other | {n} others | {n} others",
-    "directories": "0 directories | 1 directory | {n} directories | {n} directories"
+    "directories": "0 directories | 1 directory | {n} directories | {n} directories",
+    "drivesSelected": "0 drives selected | 1 drive selected | {n} drives selected | {n} drives selected"
   },
   "units": {
     "px": "px",
@@ -92,12 +97,10 @@
   },
   "globalSearch": {
     "globalSearchDisabled": "Global search feature is disabled",
-    "enable": "Enable",
     "driveScanInProgress": "Drive scan is in progress",
     "driveScanInterrupted": "Drive scan was interrupted.",
     "searchDataIncomplete": "Search data is incomplete",
     "reScanDrives": "re-scan drives",
-    "search": "Search",
     "clearSearchField": "Clear search field",
     "hideOptions": "Hide options",
     "showOptions": "Show options",
@@ -105,13 +108,9 @@
     "searchData": "Search data",
     "scanDepth": "Scan depth",
     "searchResults": "Search results",
-    "stop": "stop",
     "recentItems": "Recent items",
     "globalItems": "Global items",
-    "drives": "Drives",
-    "results": "Results",
     "statsStoringDisabled": "Statistics storing is disabled",
-    "options": "Options",
     "onlyNamesMatchQuery": "Only the names that match query exactly will be found.",
     "caseDoesntMatter": "The case doesn't matter. All words are transformed to lowercase.",
     "increasedTypoTolerance": "Increased typo tolerance",
@@ -123,7 +122,15 @@
     "showRecent": "Show recent",
     "showApps": "Show apps",
     "matchSymbols": "Match symbols",
-    "matchSearchQueryExactly": "Match search query exactly"
+    "matchSearchQueryExactly": "Match search query exactly",
+    "noDrivesSelected": "No drives selected",
+    "selectAtLeastOneDrive": "Select at least 1 drive for searching",
+    "searchStats": {
+      "found": "Found {n} items | Found {n} items | Found {n} items | Found {n} items",
+      "finished": "Finished in {n} seconds",
+      "searched": "Searched {n} paths",
+      "nothingFound": "Nothing was found"
+    }
   },
   "home": {
     "mediaBannerOptions": "Media banner options",
@@ -419,7 +426,6 @@
       "showStorageIndicator": "Show storage indicator on navigator tab",
       "tabProperties": "Tab properties",
       "tabWidth": "Tab width:",
-      "options": "Options",
       "closeAppWindow": "Close app window when all current workspace tabs are closed"
     },
     "navigatorHistory": {
