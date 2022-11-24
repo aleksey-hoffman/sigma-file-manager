@@ -41,7 +41,9 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         @click="item.onClick"
       >
         <div class="mr-4">
-          <v-icon>{{item.icon}}</v-icon>
+          <v-icon :size="item.iconSize || '18px'">
+            {{item.icon}}
+          </v-icon>
         </div>
 
         <v-list-item-content v-if="item.subtitle">

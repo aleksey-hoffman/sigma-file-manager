@@ -13,63 +13,20 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       align-center
     >
       <!-- address-bar::menu:actions -->
-      <v-menu offset-y>
-        <template #activator="{on: menu, attrs}">
-          <v-tooltip
-            bottom
-            :disabled="attrs['aria-expanded'] === 'true'"
-          >
-            <template #activator="{on: tooltip}">
-              <transition name="fade-in-1s">
-                <v-btn
-                  class="action-toolbar__button fade-in-1s"
-                  icon
-                  v-on="{...tooltip, ...menu}"
-                >
-                  <v-icon
-                    class="action-toolbar__icon"
-                    size="20px"
-                  >
-                    mdi-wrap-disabled
-                  </v-icon>
-                </v-btn>
-              </transition>
-            </template>
-            <span>Address bar actions</span>
-          </v-tooltip>
-        </template>
-        <v-list
-          class="pa-0"
-          dense
-        >
-          <v-list-item
-            v-for="(item, index) in addressBarMenuItems"
-            :key="index"
-            @click="addressBarMenuHandler(item.action)"
-          >
-            <v-list-item-action class="pr-0">
-              <v-icon size="16px">
-                {{item.icon}}
-              </v-icon>
-            </v-list-item-action>
-            <v-list-item-content>
-              <v-list-item-title class="subheading">
-                {{item.title}}
-              </v-list-item-title>
-              <v-list-item-subtitle class="subheading">
-                {{item.shortcut}}
-              </v-list-item-subtitle>
-            </v-list-item-content>
-          </v-list-item>
-        </v-list>
-      </v-menu>
+      <AppMenuButton
+        button-class="action-toolbar__item"
+        icon="mdi-wrap-disabled"
+        icon-class="action-toolbar__icon"
+        :tooltip="$t('addressBar.addressBarActions')"
+        :menu-items="addressBarMenuItems"
+      />
 
       <AppButton
         button-class="action-toolbar__button fade-in-1s"
         icon="mdi-cursor-text"
         icon-size="16px"
         icon-class="action-toolbar__icon"
-        tooltip="Edit address"
+        :tooltip="$t('addressBar.editAddress')"
         @click="$store.dispatch('openAddressBarEditor')"
       />
 
@@ -136,7 +93,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 autofocus
                 single-line
                 hide-details
-                label="Enter valid path to a file / directory."
+                :label="$t('addressBar.enterValidPath')"
                 @input="handleQueryInput()"
                 @focus="$store.state.focusedField = 'address-bar'"
                 @blur="$store.state.focusedField = ''"
@@ -163,15 +120,15 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   </v-btn>
                 </template>
                 <span>
-                  {{closeAddressBarEditorOnClickOutside ? 'Enabled' : 'Disabled'}} |
-                  Keep address bar editor opened when clicking outside
+                  {{closeAddressBarEditorOnClickOutside ? $t('common.enabled') : $t('common.disabled')}} |
+                  {{$t('addressBar.keepEditorOpened')}}
                 </span>
               </v-tooltip>
 
               <AppButton
                 button-class="ml-2"
                 icon="mdi-close"
-                tooltip="Close address bar editor"
+                tooltip="$t('addressBar.closeEditor')"
                 @click="addressBarEditor = false"
               />
             </v-layout>
@@ -179,18 +136,18 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               <span
                 class="inline-code--light"
                 style="padding: 1px 8px;"
-              >Tab</span>
-              or
+              >{{$t('common.tab')}}</span>
+              {{$t('common.or')}}
               <span
                 class="inline-code--light"
                 style="padding: 1px 8px;"
               >Shift + Tab</span>
-              to autocomplete and iterate directory items;
+              {{$t('addressBar.toAutocomplete')}};
               <span
                 class="inline-code--light"
                 style="padding: 1px 8px;"
               >Enter</span>
-              to open the path
+              {{$t('addressBar.toOpenThePath')}}
             </div>
           </v-card>
         </div>
@@ -202,6 +159,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <script>
 import {mapFields} from 'vuex-map-fields'
 import AppButton from '@/components/AppButton/AppButton.vue'
+import AppMenuButton from '@/components/AppMenuButton/AppMenuButton.vue'
 
 const fs = require('fs')
 const PATH = require('path')
@@ -209,6 +167,7 @@ const PATH = require('path')
 export default {
   components: {
     AppButton,
+    AppMenuButton,
   },
   data () {
     return {
@@ -246,22 +205,28 @@ export default {
     addressBarMenuItems () {
       return [
         {
-          title: 'Edit address',
+          title: this.$t('addressBar.editAddress'),
           action: 'openAddressBarEditor',
-          shortcut: this.shortcuts.focusAddressBar.shortcut,
+          subtitle: this.shortcuts.focusAddressBar.shortcut,
           icon: 'mdi-cursor-text',
+          iconSize: '18px',
+          onClick: () => {this.addressBarMenuHandler('openAddressBarEditor')},
         },
         {
-          title: 'Copy path to clipboard',
+          title: this.$t('addressBar.copyPathToClipboard'),
           action: 'COPY_CURRENT_DIR_PATH',
-          shortcut: this.shortcuts.copyCurrentDirPath.shortcut,
+          subtitle: this.shortcuts.copyCurrentDirPath.shortcut,
           icon: 'far fa-copy',
+          iconSize: '18px',
+          onClick: () => {this.addressBarMenuHandler('COPY_CURRENT_DIR_PATH')},
         },
         {
-          title: 'Open copied path',
+          title: this.$t('addressBar.openCopiedPath'),
           action: 'OPEN_DIR_PATH_FROM_OS_CLIPBOARD',
-          shortcut: this.shortcuts.openCopiedPath.shortcut,
+          subtitle: this.shortcuts.openCopiedPath.shortcut,
           icon: 'far fa-clipboard',
+          iconSize: '18px',
+          onClick: () => {this.addressBarMenuHandler('OPEN_DIR_PATH_FROM_OS_CLIPBOARD')},
         },
       ]
     },
@@ -317,7 +282,7 @@ export default {
             type: 'address-bar:open-path',
             closeButton: true,
             timeout: 3000,
-            title: 'Path cannot be opened',
+            title: this.$t('common.pathCannotBeOpened'),
             message: error,
           })
         }

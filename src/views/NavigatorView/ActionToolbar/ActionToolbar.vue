@@ -11,7 +11,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       icon="mdi-plus"
       icon-size="22px"
       icon-class="action-toolbar__icon"
-      tooltip="New directory / file"
+      :tooltip="$t('navigator.newDirectoryFile')"
       :menu-items="newDirItemMenuItems"
       :menu-item-attributes="{'two-line': true, dense: true}"
     />
@@ -42,7 +42,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         'action-toolbar__icon': !groupDirItems,
         'action-toolbar__icon--active': groupDirItems
       }"
-      :tooltip="`Group files by type | ${groupDirItems ? 'ON' : 'OFF'}`"
+      :tooltip="$t('navigator.groupFilesByType')"
       @click="groupDirItems = !groupDirItems"
     /> -->
     <!-- button-toggle::navigator-layout -->
@@ -58,7 +58,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         icon-size="20px"
         icon-class="action-toolbar__icon"
         value="list"
-        tooltip="List layout"
+        :tooltip="$t('common.listLayout')"
         small
       />
       <AppButton
@@ -67,7 +67,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         icon-size="20px"
         icon-class="action-toolbar__icon"
         value="grid"
-        tooltip="Grid layout"
+        :tooltip="$t('common.gridLayout')"
         small
       />
     </VBtnToggle>
@@ -90,7 +90,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       icon="mdi-dock-right"
       icon-size="18px"
       icon-class="action-toolbar__icon"
-      tooltip="Toggle info panel"
+      :tooltip="$t('navigator.toggleInfoPanel')"
       @click="toggleInfoPanel()"
     />
   </ActionToolbarBase>
@@ -121,7 +121,7 @@ export default {
     newDirItemMenuItems () {
       return [
         {
-          title: 'New directory',
+          title: this.$t('navigator.newDirectory'),
           subtitle: this.shortcuts.newDirectory.shortcut,
           icon: 'mdi-folder-plus-outline',
           type: 'directory',
@@ -131,7 +131,7 @@ export default {
           },
         },
         {
-          title: 'New file',
+          title: this.$t('navigator.newFile'),
           subtitle: this.shortcuts.newFile.shortcut,
           icon: 'mdi-file-plus-outline',
           type: 'file',

@@ -65,7 +65,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 {{itemTitle}}
               </div>
             </template>
-            <span>To copy: Ctrl + LClick</span>
+            <span>{{$t('common.toCopy')}}: Ctrl + LClick</span>
           </v-tooltip>
 
           <!-- info-container::header::description -->
@@ -136,7 +136,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     {{getSize}}
                   </div>
                 </template>
-                <span>To copy: Ctrl + LClick</span>
+                <span>{{$t('common.toCopy')}}: Ctrl + LClick</span>
               </v-tooltip>
             </v-layout>
           </v-layout>
@@ -232,13 +232,13 @@ export default {
         ? ` • ${this.lastSelectedDirItem?.dirItemCount} items`
         : ''
       let inaccessible = this.lastSelectedDirItem?.isInaccessible
-        ? ' • Inaccessible'
+        ? ` • ${this.$t('common.inaccessible')}`
         : ''
       let isOffline = this.lastSelectedDirItem?.fsAttributes.isOffline
-        ? ' • Offline'
+        ? ` • ${this.$t('common.offline')}`
         : ''
       let keepOnDevice = this.lastSelectedDirItem?.fsAttributes.keepOnDevice
-        ? ' • Keep on device'
+        ? ` • ${this.$t('common.keepOnDevice')}`
         : ''
       let itemMimeDescription = this.itemMimeDescription
         ? ` • ${this.itemMimeDescription}`
@@ -331,13 +331,13 @@ export default {
     getSize () {
       try {
         const sizeOnDisk = this.lastSelectedDirItem?.sizeOnDisk === 0
-          ? ' • 0 bytes on disk'
+          ? ` • 0 ${this.$t('common.bytesOnDisk')}`
           : ''
         const size = this.$utils.prettyBytes(this.lastSelectedDirItem?.stat?.size, 1)
         return `${size}${sizeOnDisk}`
       }
       catch (error) {
-        return 'unknown'
+        return this.$t('common.unknown')
       }
     },
     shouldFetchMediaPreview () {
@@ -418,15 +418,15 @@ export default {
         copyPathTooltip = `
           <div>
             <span class="inline-code--light">${copyShortcut}</span> 
-              - copy path
+              - ${this.$t('common.copyPath')}
           </div>
           <div>
             <span class="inline-code--light">${copyWithSecondSlashShortcut}</span> 
-              - copy path | add second slash 
+              - ${this.$t('common.copyPathAddSecondSlash')}
           </div>
           <div>
             <span class="inline-code--light">${copyWithQuotesShortcut}</span> 
-              - copy path | wrap with quotes
+              - ${this.$t('common.copyPathWrapWithQuotes')}
           </div>
         `
       }
@@ -434,16 +434,15 @@ export default {
         copyPathTooltip = `
           <div>
             <span class="inline-code--light">${copyShortcut}</span> 
-              - copy path
+              - ${this.$t('common.copyPath')}
           </div>
           <div>
             <span class="inline-code--light">${copyWithQuotesShortcut}</span> 
-              - copy path | wrap with quotes
+              - ${this.$t('common.copyPathWrapWithQuotes')}
           </div>
         `
       }
 
-      // Define main properties
       let properties = [
         {
           propName: 'path',
@@ -481,10 +480,7 @@ export default {
           value: isDirItemProtected
             ? this.$t('yes')
             : this.$t('no'),
-          tooltip: `
-            Protected items cannot be modified or deleted (from within this app only). 
-            Protected items can be found on the dashboard page.
-          `,
+          tooltip: this.$t('navigator.protectedCannotBeModified'),
         },
         {
           propName: 'pinned',
@@ -492,7 +488,7 @@ export default {
           value: isDirItemPinned
             ? this.$t('yes')
             : this.$t('no'),
-          tooltip: 'Pinned items can be found on the dashboard page',
+          tooltip: this.$t('navigator.pinnedItemsOnDashboard'),
         },
       ]
 

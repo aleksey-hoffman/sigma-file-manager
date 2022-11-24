@@ -10,7 +10,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       icon="mdi-plus"
       icon-size="22px"
       icon-class="action-toolbar__icon"
-      tooltip="New note"
+      :tooltip="$t('notes.newNote')"
       @click="$store.dispatch('OPEN_NOTE_EDITOR', {type: 'new'})"
     />
 
@@ -28,7 +28,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         icon-size="20px"
         icon-class="action-toolbar__icon"
         value="existing"
-        tooltip="Existing notes"
+        :tooltip="$t('notes.existingNotes')"
         small
         @click="$store.dispatch('SET', {key: 'currentNotesList', value: 'existing'})"
       />
@@ -40,7 +40,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         icon-size="20px"
         icon-class="action-toolbar__icon"
         value="trashed"
-        tooltip="Trashed notes"
+        :tooltip="$t('notes.trashedNotes')"
         small
         @click="$store.dispatch('SET', {key: 'currentNotesList', value: 'trashed'})"
       />

@@ -89,7 +89,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   v-if="showScore"
                   class="inline-code--light mr-2"
                 >
-                  score: {{dirItem.score}}
+                  {{$t('navigator.dirItem.score')}}: {{dirItem.score}}
                 </span>
                 <v-tooltip bottom>
                   <template #activator="{ on }">
@@ -102,7 +102,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                       mdi-circle-medium
                     </v-icon>
                   </template>
-                  <span>Item is inaccessible</span>
+                  <span>{{$t('navigator.dirItem.itemIsInaccessible')}}</span>
                 </v-tooltip>
                 {{dirItem.name}}
               </div>
@@ -231,7 +231,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   mdi-circle-medium
                 </v-icon>
               </template>
-              <span>Item is inaccessible</span>
+              <span>{{$t('navigator.dirItem.itemIsInaccessible')}}</span>
             </v-tooltip>
             {{dirItem.name}}
           </div>
@@ -267,7 +267,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     mdi-circle-medium
                   </v-icon>
                 </template>
-                <span>Item is inaccessible</span>
+                <span>{{$t('navigator.dirItem.itemIsInaccessible')}}</span>
               </v-tooltip>
               {{dirItem.name}}
             </div>

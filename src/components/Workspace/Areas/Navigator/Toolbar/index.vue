@@ -35,7 +35,7 @@ export default {
           icon: 'mdi-menu-down',
           iconSize: '32px',
           iconClass: 'action-toolbar__icon',
-          tooltip: 'Current directory context menu',
+          tooltip: this.$t('navigator.currentDirectoryContextMenu'),
           onClick: (event) => {this.toggleCurrentDirContextMenu(event)},
         },
         {
@@ -43,7 +43,7 @@ export default {
           icon: 'mdi-arrow-left',
           iconSize: '20px',
           iconClass: 'action-toolbar__icon',
-          tooltip: 'History | open previous directory',
+          tooltip: this.$t('navigator.historyOpenPreviousDirectory'),
           onClick: () => {this.$store.dispatch('LOAD_PREVIOUS_HISTORY_PATH')},
         },
         {
@@ -51,7 +51,7 @@ export default {
           icon: 'mdi-arrow-right',
           iconSize: '20px',
           iconClass: 'action-toolbar__icon',
-          tooltip: 'History | open next directory',
+          tooltip: this.$t('navigator.historyOpenNextDirectory'),
           onClick: () => {this.$store.dispatch('LOAD_NEXT_HISTORY_PATH')},
         },
         {
@@ -59,7 +59,7 @@ export default {
           icon: 'mdi-arrow-up',
           iconSize: '20px',
           iconClass: 'action-toolbar__icon',
-          tooltip: 'Go up directory',
+          tooltip: this.$t('navigator.goUpDirectory'),
           onClick: () => {this.$store.dispatch('GO_UP_DIRECTORY')},
         },
         {
@@ -67,7 +67,7 @@ export default {
           icon: 'mdi-refresh',
           iconSize: '20px',
           iconClass: 'action-toolbar__icon',
-          tooltip: 'Reload current directory',
+          tooltip: this.$t('navigator.reloadCurrentDirectory'),
           onClick: () => {
             this.$store.dispatch('RELOAD_DIR', {
               scrollTop: false,

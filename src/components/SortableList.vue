@@ -56,7 +56,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               </v-list-item-content>
             </template>
             <span>
-              Shortcut:
+              {{$t('common.shortcut')}}:
               {{shortcuts.switchWorkspace.shortcut.replace('[1 - 9]', index + 1)}}
             </span>
           </v-tooltip>
@@ -75,7 +75,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   >mdi-circle-outline
                   </v-icon>
                 </template>
-                <span>Active {{itemName}}</span>
+                <span>{{$t('common.active')}} {{itemName}}</span>
               </v-tooltip>
             </v-layout>
           </v-list-item-action>
@@ -126,12 +126,12 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     {{item.name}}
                   </v-list-item-title>
                   <v-list-item-subtitle>
-                    Drive {{$utils.getPathRoot(item.path)}}
+                    {{$t('common.drive')}} {{$utils.getPathRoot(item.path)}}
                   </v-list-item-subtitle>
                 </v-list-item-content>
               </template>
               <span>
-                Shortcut:
+                {{$t('common.shortcut')}}:
                 {{shortcuts.switchTab.shortcut.replace('[1 - 9]', index + 1)}}
               </span>
             </v-tooltip>
@@ -150,7 +150,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     >mdi-circle-outline
                     </v-icon>
                   </template>
-                  <span>Active {{itemName}}</span>
+                  <span>{{$t('common.active')}} {{itemName}}</span>
                 </v-tooltip>
 
                 <v-tooltip bottom z-index="15">
@@ -168,7 +168,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                       </v-icon>
                     </v-btn>
                   </template>
-                  <span>Close {{itemName}}</span>
+                  <span>{{$t('common.close')}} {{itemName}}</span>
                 </v-tooltip>
               </v-layout>
             </v-list-item-action>
@@ -191,7 +191,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 </v-list-item-content>
               </template>
               <span>
-                Shortcut:
+                {{$t('common.shortcut')}}:
                 {{shortcuts.switchWorkspace.shortcut.replace('[1 - 9]', index + 1)}}
               </span>
             </v-tooltip>
@@ -210,7 +210,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     >mdi-circle-outline
                     </v-icon>
                   </template>
-                  <span>Active {{itemName}}</span>
+                  <span>{{$t('common.active')}} {{itemName}}</span>
                 </v-tooltip>
               </v-layout>
             </v-list-item-action>

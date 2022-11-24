@@ -8,12 +8,12 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     v-model="menus.workspaces"
     :menu-button="{
       tooltip: {
-        description: 'Workspaces',
+        description: $t('workspaces.title'),
         shortcut: shortcuts.switchWorkspace.shortcut
       }
     }"
     :header="{
-      title: 'Workspaces',
+      title: $t('workspaces.title'),
       buttons: headerButtons
     }"
   >
@@ -40,7 +40,6 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       <sortable-list
         source="workspaces"
         item-name="workspace"
-        no-data="Current workspace has no tabs"
       />
     </template>
   </basic-menu>
@@ -72,7 +71,7 @@ export default {
             size: '20px',
           },
           tooltip: {
-            description: 'Edit workspaces',
+            description: this.$t('workspaces.editWorkspaces'),
           },
           onClick: () => {
             this.$store.state.dialogs.workspaceEditor.value = true

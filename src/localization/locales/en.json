@@ -13,11 +13,13 @@
     "extensions": "Extensions"
   },
   "language": {
+    "language": "Language",
     "isCorrectedLanguage": "Translation was reviewed and corrected by a native language speaker",
     "isAutoTranslatedLanguage": "Auto-translated. Needs to be reviewed and corrected by a native language speaker"
   },
   "common": {
-    "language": "Language",
+    "active": "Active",
+    "close": "close",
     "globalSearch": "Global search",
     "drive": "Drive",
     "drives": "Drives",
@@ -41,8 +43,25 @@
     "options": "Options",
     "add": "Add",
     "edit": "Edit",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "tab": "Tab",
+    "or": "or",
+    "pathCannotBeOpened": "Path cannot be opened",
     "removeAllFromThisList": "Remove all from this list",
-    "thisFeatureIsDisabled": "This feature is disabled"
+    "thisFeatureIsDisabled": "This feature is disabled",
+    "listLayout": "List layout",
+    "gridLayout": "Grid layout",
+    "scale": "Scale",
+    "highlight": "Highlight",
+    "inaccessible": "Inaccessible",
+    "offline": "Offline",
+    "keepOnDevice": "Keep on device",
+    "bytesOnDisk": "bytes on disk",
+    "unknown": "unknown",
+    "copyPath": "copy path",
+    "copyPathAddSecondSlash": "copy path | add second slash ",
+    "copyPathWrapWithQuotes": "copy path | wrap with quotes"
   },
   "count": {
     "other": "0 others | 1 other | {n} others | {n} others",
@@ -51,6 +70,88 @@
   "units": {
     "px": "px",
     "mb": "MB"
+  },
+  "tabs": {
+    "workspaceTabs": "Workspace tabs",
+    "newTabInCurrentWorkspace": "New tab in current workspace",
+    "closeAllTabsInCurrentWorkspace": "Close all tabs in current workspace",
+    "noTabsInCurrentWorkspace": "No tabs in current workspace"
+  },
+  "workspaces": {
+    "title": "Workspaces",
+    "editWorkspaces": "Edit workspaces"
+  },
+  "filter": {
+    "filterOptions": "Filter options",
+    "filter": "Filter",
+    "globFiltering": "Glob filtering",
+    "showHiddenItems": "Show Hidden Items",
+    "filterPrefixes": "Filter prefixes",
+    "addPrefix": "Add a prefix to the start to filter by specific property.",
+    "sizeExample": "For example: \"size: MB\", \"items: 15\", \"date-m: 2021\""
+  },
+  "globalSearch": {
+    "globalSearchDisabled": "Global search feature is disabled",
+    "enable": "Enable",
+    "driveScanInProgress": "Drive scan is in progress",
+    "driveScanInterrupted": "Drive scan was interrupted.",
+    "searchDataIncomplete": "Search data is incomplete",
+    "reScanDrives": "re-scan drives",
+    "search": "Search",
+    "clearSearchField": "Clear search field",
+    "hideOptions": "Hide options",
+    "showOptions": "Show options",
+    "closeGlobalSearch": "Close global search",
+    "searchData": "Search data",
+    "scanDepth": "Scan depth",
+    "searchResults": "Search results",
+    "stop": "stop",
+    "recentItems": "Recent items",
+    "globalItems": "Global items",
+    "drives": "Drives",
+    "results": "Results",
+    "statsStoringDisabled": "Statistics storing is disabled",
+    "options": "Options",
+    "onlyNamesMatchQuery": "Only the names that match query exactly will be found.",
+    "caseDoesntMatter": "The case doesn't matter. All words are transformed to lowercase.",
+    "increasedTypoTolerance": "Increased typo tolerance",
+    "showDirectoriesOnTop": "Show directories on top",
+    "searchAllDrives": "Search all drives",
+    "selectDrives": "Select drives",
+    "showDirectories": "Show directories",
+    "showFiles": "Show files",
+    "showRecent": "Show recent",
+    "showApps": "Show apps",
+    "matchSymbols": "Match symbols",
+    "matchSearchQueryExactly": "Match search query exactly"
+  },
+  "home": {
+    "mediaBannerOptions": "Media banner options",
+    "displayMediaBanner": "Display media banner",
+    "hideMediaBanner": "Hide media banner",
+    "backgroundManager": "Background manager",
+    "backgroundPosition": "Background position",
+    "backgroundHeight": "Background height",
+    "backgroundOverlay": "Background overlay",
+    "setDefaultBackground": "Set default background"
+  },
+  "navigator": {
+    "newDirectoryFile": "New directory / file",
+    "toggleInfoPanel": "Toggle info panel",
+    "newDirectory": "New directory",
+    "newFile": "New file",
+    "currentDirectoryContextMenu": "Current directory context menu",
+    "historyOpenPreviousDirectory": "History | open previous directory",
+    "historyOpenNextDirectory": "History | open next directory",
+    "goUpDirectory": "Go up directory",
+    "reloadCurrentDirectory": "Reload current directory",
+    "protectedCannotBeModified": "Protected items cannot be modified or deleted (from within this app only). Protected items can be found on the dashboard page.",
+    "pinnedItemsOnDashboard": "Pinned items can be found on the dashboard page",
+    "groupFilesByType": "Group files by type",
+    "dirItem": {
+      "score": "score",
+      "itemIsInaccessible": "Item is inaccessible"
+    }
   },
   "dashboard": {
     "pinnedWillBeShownHere": "Pinned directory items will be shown here",
@@ -62,6 +163,8 @@
     "openedWillBeShownHere": "Opened directory items will be shown here"
   },
   "notes": {
+    "newNote": "New note",
+    "existingNotes": "Existing notes",
     "trashedNotes": "Trashed notes",
     "loadingNotes": "Loading notes",
     "trashedNotesDeletedAfter7days": "Trashed notes are automatically deleted from the drive 7 days after being trashed",
@@ -108,6 +211,9 @@
   },
   "settings": {
     "general": {
+      "appQuickActions": "App quick actions",
+      "appDirectories": "App directories",
+      "appRelatedLinks": "App related links",
       "windowScaling": "Window scaling",
       "currentUiZoomLevel": "Current UI zoom level: ",
       "filteredSettings": "Filtered settings",
@@ -196,7 +302,7 @@
       }
     },
     "fonts": {
-      "title": "Fonts",
+      "fonts": "Fonts",
       "selectedFont": "Selected font",
       "fontName": "Font name",
       "defaultFont": "default font",
@@ -258,6 +364,17 @@
       "whenOpenDirectory": "When you open or select a directory, the app will automatically calculate and display its full size.",
       "oneSecond": "For most directories it takes less than 1 second to calculate the size. If the operation takes longer than that, it will be canceled."
     },
+    "addressBar": {
+      "addressBarActions": "Address bar actions",
+      "editAddress": "Edit address",
+      "enterValidPath": "Enter valid path to a file / directory.",
+      "keepEditorOpened": "Keep address bar editor opened when clicking outside",
+      "closeEditor": "Close address bar editor",
+      "toAutocomplete": "to autocomplete and iterate directory items",
+      "toOpenThePath": "to open the path",
+      "copyPathToClipboard": "Copy path to clipboard",
+      "openCopiedPath": "Open copied path"
+    },
     "navigator": {
       "title": "Navigator",
       "dividersTitles": "Dividers / Titles",
@@ -269,11 +386,7 @@
       "showSortingIcon": "Show sorting icon",
       "showSortingToolbar": "Show sorting toolbar",
       "navigatorViewLayout": "Navigator view layout",
-      "listLayout": "List layout",
-      "gridLayout": "Grid layout",
       "navigatorItemHoverEffect": "Navigator item hover effect",
-      "scale": "Scale",
-      "highlight": "Highlight",
       "navigatorItemList": "Navigator item list",
       "ocdNameColumnMaxWidth": "OCD | 'Name' column max width:",
       "filesWithDisproportionatelyLongNames": "files with disproportionately long names make the file list look messy, so it's recommended to set the name column max width to a lower value, like 50%, to make it look more organized",
@@ -281,7 +394,6 @@
     },
     "performance": {
       "gpuSystemMemory": "GPU / System memory",
-      "options": "Options",
       "useHighPerformanceGpu": "Use high-performance GPU",
       "ifEnabled": "If enabled:",
       "theAppPerformanceMightIncrease": "The app performance might increase",
@@ -317,9 +429,6 @@
       "sigmaDefaultDescription": "This custom Sigma history style allows you to get back to previously opened paths, even after inserting a new path into the history while navigating the history stack.",
       "traditional": "Traditional",
       "traditionalDescription": "This is a traditional history style, used in vast majority of apps. It overwrites all succeding paths when you insert a new path anywhere other than the end, which means once you go back in history and open some other directory, all succedding entries will be gone.",
-      "user": "/user",
-      "and": "and",
-      "userVideos": "/user/videos",
       "example": {
         "openDirectory": "Open directory",
         "userPath": "/user",
@@ -328,6 +437,7 @@
         "ifYouNowGoBackToDirectory": "If you now go back to directory",
         "andThenGoBackAgainTo": "and then go back again to",
         "andThenOpen": "and then open",
+        "and": "and",
         "userVideosPath": "/user/videos",
         "sigmaDefaultExampleDescription": "you will still be able to go back in history to the previous directories by pressing \"go back\" or \"go forward\" button.",
         "traditionalExampleDescription": "you will NOT be able to go back in history to the previous directories by pressing \"go back\" or \"go forward\" button, because they were overwritten and the history now only has 2 directories:"
@@ -342,7 +452,6 @@
       "buttonToSelectWithoutOpening": "button to select the item without opening it",
       "doubleClickDelayMs": "Double-click delay (ms)",
       "inputElements": "Input elements",
-      "filterOptions": "Filter options",
       "activateWhenTyping": "Activate item filtering when typing",
       "activateWhenDirectoryChanges": "Activate item filtering when directory changes",
       "helpers": "Helpers",

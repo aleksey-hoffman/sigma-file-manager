@@ -5,7 +5,6 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <template>
   <ActionToolbarBase v-show="showActionToolbar">
-    <!-- menu-button::home-banner -->
     <HomeBannerMenu />
   </ActionToolbarBase>
 </template>

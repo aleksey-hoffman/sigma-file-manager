@@ -12,7 +12,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       ref="filterField"
       v-model="filterQuery"
       class="filter-field__input"
-      placeholder="Filter"
+      :placeholder="$t('filter.filter')"
       type="text"
       maxlength="64"
       @focus="$store.dispatch('SET', {
@@ -59,7 +59,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   </v-icon>
                 </v-btn>
               </template>
-              <span>Filter options</span>
+              <span>{{$t('filter.filterOptions')}}</span>
             </v-tooltip>
           </template>
           <v-card class="unselectable">
@@ -68,7 +68,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 <v-list-item-content>
                   <v-list-item-title>
                     <div class="text--sub-title-1 ma-0">
-                      Filter options
+                      {{$t('filter.filterOptions')}}
                     </div>
                   </v-list-item-title>
                 </v-list-item-content>
@@ -84,7 +84,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 <v-switch
                   class="my-3 pt-0"
                   :value="filterQueryOptionGlob"
-                  label="Glob filtering"
+                  :label="$t('filter.globFiltering')"
                   hide-details
                 />
               </v-list-item>
@@ -98,7 +98,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 <v-switch
                   class="my-3 pt-0"
                   :value="navigatorShowHiddenDirItems"
-                  label="Show Hidden Items"
+                  :label="$t('filter.showHiddenItems')"
                   hide-details
                 />
               </v-list-item>
@@ -111,11 +111,11 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               >
                 <v-list-item-content>
                   <v-list-item-title class="text--sub-title-1 ma-0">
-                    Filter prefixes
+                    {{$t('filter.filterPrefixes')}}
                   </v-list-item-title>
                   <v-list-item-subtitle>
-                    Add a prefix to the start to filter by specific property.
-                    <br />For example: "size: MB", "items: 15", "date-m: 2021"
+                    {{$t('filter.addPrefix')}}
+                    <br />{{$t('filter.sizeExample')}}
                   </v-list-item-subtitle>
                 </v-list-item-content>
               </v-list-item>

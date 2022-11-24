@@ -8,12 +8,12 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     v-model="menus.tabs"
     :menu-button="{
       tooltip: {
-        description: 'Tabs',
+        description: $t('tabs.workspaceTabs'),
         shortcut: shortcuts.switchTab.shortcut
       }
     }"
     :header="{
-      title: 'Workspace tabs',
+      title: $t('tabs.workspaceTabs'),
       buttons: [
         {
           icon: {
@@ -21,7 +21,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             size: '24px'
           },
           tooltip: {
-            description: 'New tab in current workspace'
+            description: $t('tabs.newTabInCurrentWorkspace')
           },
           ifCondition: $route.name === 'navigator',
           onClick: () => $store.dispatch('ADD_TAB')
@@ -32,7 +32,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             size: '20px'
           },
           tooltip: {
-            description: 'Close all tabs in current workspace'
+            description: $t('tabs.closeAllTabsInCurrentWorkspace')
           },
           onClick: () => $store.dispatch('CLOSE_ALL_TABS_IN_CURRENT_WORKSPACE')
         }
@@ -60,7 +60,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       <sortable-list
         source="tabs"
         item-name="tab"
-        no-data="Current workspace has no tabs"
+        :no-data="$t('tabs.noTabsInCurrentWorkspace')"
       />
     </template>
   </basic-menu>

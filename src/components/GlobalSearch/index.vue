@@ -24,7 +24,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             justify-center
             class="title"
           >
-            Global search feature is disabled
+            {{$t('globalSearch.globalSearchDisabled')}}
             <v-btn
               class="button-1 mt-4"
               @click="$store.dispatch('SET', {
@@ -32,7 +32,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 value: true
               })"
             >
-              Enable
+              {{$t('common.enable')}}
             </v-btn>
           </v-layout>
         </div>
@@ -46,7 +46,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             justify-center
             class="title"
           >
-            Drive scan is in progress
+            {{$t('globalSearch.driveScanInProgress')}}
           </v-layout>
         </div>
         <div
@@ -59,10 +59,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             justify-center
           >
             <div class="title">
-              Drive scan was interrupted.
+              {{$t('globalSearch.driveScanInterrupted')}}
             </div>
             <div>
-              Search data is incomplete
+              {{$t('globalSearch.searchDataIncomplete')}}
             </div>
             <v-btn
               small
@@ -71,7 +71,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 method: 'initGlobalSearchDataScan'
               })"
             >
-              re-scan drives
+              {{$t('globalSearch.reScanDrives')}}
             </v-btn>
           </v-layout>
         </div>
@@ -91,7 +91,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           <input
             ref="globalSearchInput"
             v-model="query"
-            placeholder="Search"
+            :placeholder="$t('common.search')"
             :disabled="scanInProgress || !globalSearchIsEnabled"
             hide-details
             single-line
@@ -131,7 +131,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     </v-icon>
                   </v-btn>
                 </template>
-                <span>Clear search field</span>
+                <span>{{$t('globalSearch.clearSearchField')}}</span>
               </v-tooltip>
             </div>
 
@@ -157,8 +157,8 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 </template>
                 <span>
                   {{showWidgetOptions
-                    ? 'Hide options'
-                    : 'Show options'}}
+                    ? $t('globalSearch.hideOptions')
+                    : $t('globalSearch.showOptions')}}
                 </span>
               </v-tooltip>
             </div>
@@ -178,7 +178,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     <v-icon>mdi-close</v-icon>
                   </v-btn>
                 </template>
-                <span>Close global search</span>
+                <span>{{$t('globalSearch.closeGlobalSearch')}}</span>
               </v-tooltip>
             </div>
           </div>
@@ -198,7 +198,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     justify-space-between
                     class="text--sub-title-1"
                   >
-                    Search data
+                    {{$t('globalSearch.searchData')}}
                     <!-- button:re-scan -->
                     <v-btn
                       class="button-1"
@@ -207,7 +207,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                         method: 'initGlobalSearchDataScan'
                       })"
                     >
-                      re-scan drives
+                      {{$t('globalSearch.reScanDrives')}}
                     </v-btn>
                   </v-layout>
                   <v-layout>
@@ -218,7 +218,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                       >
                         mdi-subdirectory-arrow-right
                       </v-icon>
-                      Scan depth: {{globalSearchScanDepth}} directories
+                      {{$t('globalSearch.scanDepth')}}: {{$t('count.directories', {n: globalSearchScanDepth})}}
                     </div>
                   </v-layout>
                   <updating-component :component="'lastScanTimeElapsed'" />
@@ -230,7 +230,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     class="text--sub-title-1"
                     align-center
                   >
-                    Search results
+                    {{$t('globalSearch.searchResults')}}
                     <v-progress-circular
                       v-if="searchInProgress"
                       indeterminate
@@ -245,7 +245,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                       small
                       @click="cancelSearchAllDrives({clearResults: false})"
                     >
-                      stop
+                      {{$t('common.stop')}}
                     </v-btn>
                   </v-layout>
 
@@ -266,7 +266,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   mdi-magnify
                 </v-icon>
                 <div class="mt-2 text--sub-title-1">
-                  Search results
+                  {{$t('globalSearch.searchResults')}}
                 </div>
               </div>
 
@@ -293,7 +293,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     class="mb-6"
                   >
                     <div class="text--sub-title-1 ml-6">
-                      Recent items
+                      {{$t('globalSearch.recentItems')}}
                     </div>
                     <dir-item
                       v-for="(item, index) in searchResultsRecentDirItems"
@@ -309,7 +309,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   </div>
 
                   <div class="text--sub-title-1 ml-6">
-                    Global items
+                    {{$t('globalSearch.globalItems')}}
                   </div>
                   <div v-show="!showDirectoriesOnTop">
                     <dir-item
@@ -367,14 +367,14 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           >
             <div>
               <div class="text--sub-title-1">
-                Drives
+                {{$t('common.drives')}}
               </div>
 
               <!-- input-switch::search-all-drives -->
               <v-switch
                 v-model="optionAllDrivesSelected"
                 class="mt-1 mb-2"
-                label="Search all drives"
+                :label="$t('globalSearch.searchAllDrives')"
                 hide-details
                 @change="selectAllDrives()"
               />
@@ -384,7 +384,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 v-if="!optionAllDrivesSelected"
                 v-model="optionSelectedDrives"
                 :items="drives"
-                label="Select drives"
+                :label="$t('globalSearch.selectDrives')"
                 item-text="titleSummary"
                 menu-props="offsetY"
                 return-object
@@ -396,7 +396,8 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   <span
                     v-if="index === 0"
                     class="grey--text caption"
-                  >{{optionSelectedDrives.length}} drives selected
+                  >
+                    {{$t('count.drivesSelected', {n: optionSelectedDrives.length})}}
                   </span>
                 </template>
               </v-select>
@@ -404,19 +405,19 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
             <div>
               <div class="text--sub-title-1">
-                Results
+                {{$t('common.results')}}
               </div>
               <v-checkbox
                 v-model="optionIncludeDirectories"
                 class="mt-2"
-                label="Show directories"
+                :label="$t('globalSearch.showDirectories')"
                 hide-details
               />
 
               <v-checkbox
                 v-model="optionIncludeFiles"
                 class="mt-1"
-                label="Show files"
+                :label="$t('globalSearch.showFiles')"
                 hide-details
               />
 
@@ -430,25 +431,26 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                       v-model="optionIncludeRecent"
                       class="mt-2"
                       :disabled="!storeDirItemOpenEvent"
-                      label="Show recent"
+                      :label="$t('globalSearch.showRecent')"
                       hide-details
                     />
                   </div>
                 </template>
-                <span>Statistics storing is disabled</span>
+                <span>{{$t('globalSearch.statsStoringDisabled')}}</span>
               </v-tooltip>
+                :label="$t('globalSearch.showApps')"
             </div>
 
             <div>
               <div class="text--sub-title-1">
-                Options
+                {{$t('common.options')}}
               </div>
 
               <!-- input-checkbox::match-symbols -->
               <v-checkbox
                 v-model="optionMatchSymbols"
                 class="mt-2"
-                label="Match symbols"
+                :label="$t('globalSearch.matchSymbols')"
                 hide-details
                 @change="handleOptionValueChange()"
               />
@@ -460,15 +462,15 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     <v-checkbox
                       v-model="optionExactMatch"
                       class="mt-2"
-                      label="Match search query exactly"
+                      :label="$t('globalSearch.matchSearchQueryExactly')"
                       hide-details
                       @change="handleOptionValueChange()"
                     />
                   </div>
                 </template>
                 <span>
-                  Only the names that match query exactly will be found.
-                  <br />The case doesn't matter. All words are transformed to lowercase.
+                  {{$t('globalSearch.onlyNamesMatchQuery')}}
+                  <br />{{$t('globalSearch.caseDoesntMatter')}}
                 </span>
               </v-tooltip>
 
@@ -476,7 +478,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               <v-checkbox
                 v-model="optionIncreasedTypoTolerance"
                 class="mt-2"
-                label="Increased typo tolerance"
+                :label="$t('globalSearch.increasedTypoTolerance')"
                 hide-details
                 @change="handleOptionValueChange()"
               />
@@ -485,7 +487,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               <v-switch
                 v-model="showDirectoriesOnTop"
                 class="mt-4 mb-2"
-                label="Show directories on top"
+                :label="$t('globalSearch.showDirectoriesOnTop')"
                 hide-details
               />
             </div>
@@ -620,13 +622,13 @@ export default {
       else if (!this.searchInProgress) {
         if ((this.searchResultsRecentDirItems.length > 0 || this.searchResults.length > 0) && this.searchTasks.length === 0) {
           status = `
-            Found ${this.searchResults.length} items • 
-            Finished in ${this.searchTime} seconds •
-            Searched paths: ${new Intl.NumberFormat().format(this.totalLinesProcessed)} 
+            ${this.$tc('globalSearch.searchStats.found', this.searchResults.length)} • 
+            ${this.$t('globalSearch.searchStats.finished', {n: this.searchTime})} •
+            ${this.$t('globalSearch.searchStats.searched', {n: new Intl.NumberFormat().format(this.totalLinesProcessed)})} 
           `
         }
         if (this.searchResultsRecentDirItems.length === 0 && this.searchResults.length === 0 && this.query.length > 0) {
-          status = 'Nothing was found'
+          status = this.$t('globalSearch.searchStats.nothingFound')
         }
       }
       return status
@@ -746,8 +748,8 @@ export default {
           type: 'alert:global-search-no-drives-selected',
           closeButton: true,
           timeout: 2000,
-          title: 'No drives selected',
-          message: 'Select at least 1 drive for searching',
+          title: this.$t('globalSearch.searchStats.noDrivesSelected'),
+          message: this.$t('globalSearch.searchStats.selectAtLeastOneDrive'),
         })
         this.showWidgetOptions = true
         return

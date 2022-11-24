@@ -12,7 +12,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       icon="mdi-menu-down"
       icon-size="32px"
       icon-class="action-toolbar__icon"
-      tooltip="App quick actions"
+      :tooltip="$t('settings.general.appQuickActions')"
       :menu-items="quickActions"
     />
     <!-- menu-button::app-directories -->
@@ -22,7 +22,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       icon="mdi-folder-outline"
       icon-size="20px"
       icon-class="action-toolbar__icon"
-      tooltip="App directories"
+      :tooltip="$t('settings.general.appDirectories')"
       :menu-items="appDirectories"
     />
     <!-- menu-button::app-related-links -->
@@ -32,7 +32,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       icon="mdi-link-variant"
       icon-size="20px"
       icon-class="action-toolbar__icon"
-      tooltip="App related links"
+      :tooltip="$t('settings.general.appRelatedLinks')"
       :menu-items="appExternalLinks"
     />
     <VSpacer />

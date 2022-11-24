@@ -121,7 +121,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   icon: {
                     name: 'mdi-translate'
                   },
-                  title: $t('common.language')
+                  title: $t('language.language')
                 }"
               >
                 <template #content>
@@ -807,7 +807,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   icon: {
                     name: 'mdi-format-font'
                   },
-                  title: $t('settings.fonts.title')
+                  title: $t('settings.fonts.fonts')
                 }"
               >
                 <template #content>
@@ -907,7 +907,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   icon: {
                     name: 'mdi-timetable'
                   },
-                  title: $t('settings.dateTime.title')
+                  title: $t('settings.dateTime.dateTime')
                 }"
               >
                 <template #content>
@@ -1337,11 +1337,11 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     hide-details
                   >
                     <v-radio
-                      :label="$t('settings.navigator.listLayout')"
+                      :label="$t('common.listLayout')"
                       value="list"
                     />
                     <v-radio
-                      :label="$t('settings.navigator.gridLayout')"
+                      :label="$t('common.gridLayout')"
                       value="grid"
                     />
                   </v-radio-group>
@@ -1356,11 +1356,11 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     hide-details
                   >
                     <v-radio
-                      :label="$t('settings.navigator.scale')"
+                      :label="$t('common.scale')"
                       value="scale"
                     />
                     <v-radio
-                      :label="$t('settings.navigator.highlight')"
+                      :label="$t('common.highlight')"
                       value="highlight"
                     />
                   </v-radio-group>
@@ -1549,7 +1549,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   />
 
                   <div class="text--sub-title-1 mt-2">
-                    {{$t('settings.tabs.options')}}
+                    {{$t('common.options')}}
                   </div>
                   <v-switch
                     v-model="closeAppWindowWhenLastWorkspaceTabIsClosed"
@@ -1606,7 +1606,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                         {{$t('settings.navigatorHistory.example.andThenGoBackAgainTo')}}
                         <span class="inline-code--light py-0">"{{$t('settings.navigatorHistory.example.userPath')}}"</span>
                         {{$t('settings.navigatorHistory.example.andThenOpen')}}
-                        <span class="inline-code--light py-0">"{{$t('settings.navigatorHistory.example.userVideos')}}"</span>,
+                        <span class="inline-code--light py-0">"{{$t('settings.navigatorHistory.example.userVideosPath')}}"</span>,
                         {{$t('settings.navigatorHistory.example.sigmaDefaultExampleDescription')}}
                       </span>
                     </v-tooltip>
@@ -1715,7 +1715,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 <template #content>
                   <div>
                     <div class="text--sub-title-1 mt-2">
-                      {{$t('settings.input.filterOptions')}}
+                      {{$t('filter.filterOptions')}}
                     </div>
                     <v-switch
                       v-model="focusFilterOnTyping"
@@ -1751,12 +1751,12 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   icon: {
                     name: 'mdi-mouse'
                   },
-                  title: $t('settings.globalSearch.mouseButtons')
+                  title: $t('settings.mouseButtons.mouseButtons')
                 }"
               >
                 <template #content>
                   <div class="text--sub-title-1 mt-2">
-                    {{$t('settings.globalSearch.buttonActions')}}
+                    {{$t('settings.mouseButtons.buttonActions')}}
                   </div>
 
                   <v-select
@@ -1764,7 +1764,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     :items="pointerButton3onMouseUpEventItems"
                     return-object
                     item-text="title"
-                    :label="$t('settings.globalSearch.mouseButton3')"
+                    :label="$t('settings.mouseButtons.mouseButton3')"
                     style="max-width: 400px"
                   />
 
@@ -1773,7 +1773,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     :items="pointerButton4onMouseUpEventItems"
                     return-object
                     item-text="title"
-                    :label="$t('settings.globalSearch.mouseButton4')"
+                    :label="$t('settings.mouseButtons.mouseButton4')"
                     style="max-width: 400px"
                   />
                 </template>
