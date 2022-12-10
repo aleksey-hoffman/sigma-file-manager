@@ -10,6 +10,8 @@ import vuetify from './plugins/vuetify'
 import utils from './utils/utils'
 import sharedUtils from './utils/sharedUtils'
 import storeUtils from './utils/storeUtils'
+import {eventHub} from './utils/eventHub'
+import {OverlayScrollbarsPlugin} from 'overlayscrollbars-vue'
 import {i18n} from './localization/i18n'
 
 // Import components globally, without lazy loading
@@ -95,5 +97,5 @@ new Vue({
   mounted () {
     // Fix for blank screen in production builds
     this.$router.push('/').catch((error) => {})
-  }
+  },
 }).$mount('#app')
