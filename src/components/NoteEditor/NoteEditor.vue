@@ -148,7 +148,6 @@ NOTES:
           <v-tooltip bottom>
             <template #activator="{on: tooltip}">
               <v-btn
-                v-bind="attrs"
                 tabindex="2"
                 x-small
                 text
@@ -819,10 +818,7 @@ NOTES:
         className: 'os-theme-minimal-light',
         scrollbars: { autoHide: 'move' }
       }"
-      class="sticky-scroller__condtent note-editor__content-container fade-mask--bottom"
-      :style="{
-        '--fade-mask-bottom': '15%'
-      }"
+      class="sticky-scroller__condtent note-editor__content-container"
     >
       <span @click.right.exact="showNoteEditorContextMenu">
         <div
@@ -836,7 +832,6 @@ NOTES:
           id="note-editor__content"
           contenteditable="true"
           tabindex="0"
-          placeholder="⇢"
           class="note-editor__content"
           :spellcheck="spellcheck"
           :isEmpty="isEmpty"
@@ -1728,8 +1723,8 @@ export default {
 
 .menubar__button {
   color: var(--icon-color-2) !important;
-  margin: 2px 0px;
-  height: 24px !important;
+  margin: 0px;
+  height: 26px !important;
 }
 
 .menubar__button.is-active {
@@ -1765,7 +1760,7 @@ export default {
 
 .note-editor {
   position: relative;
-  padding-bottom: 36px;
+  padding-bottom: 0;
   height: 100%;
   min-height: 100%;
 }
@@ -1779,7 +1774,7 @@ export default {
   }
 
 .note-editor__content-container {
-  height: calc(100% - 24px);
+  height: calc(100% - 32px);
   margin: 0px;
   padding: 0px;
 }
@@ -1792,7 +1787,7 @@ export default {
   /* Fix for:
   Contenteditable is automatically adding a span with background-color:
   rgb(255, 255, 255) and caret-color when you delete some text in-between strings */
-  background-color: var(--bg-color-1);
+  background-color: rgb(48, 46, 55, 0.42);
   caret-color: var(--color-6);
   font-size: 16px !important;
 }

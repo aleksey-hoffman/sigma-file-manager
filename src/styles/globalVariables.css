@@ -60,6 +60,7 @@
   --key-color-1: rgb(79, 104, 115);
   --key-color-1-value: 79, 104, 115;
   --key-color-1-darker-1: rgb(55, 68, 88);
+  --key-color-1-translucent: rgb(96, 125, 139, 0.2);
   --highlight-color-1: rgba(255, 255, 255, 0.3);
   --highlight-color-2: rgba(255, 255, 255, 0.2);
   --highlight-color-3: rgba(255, 255, 255, 0.1);

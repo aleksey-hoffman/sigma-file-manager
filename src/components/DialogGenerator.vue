@@ -102,13 +102,13 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           <!-- dialog::actions -->
           <v-card-actions
             v-if="showActionBar"
-            class="dialog-card__actions-container px-4"
+            class="dialog-card__action-toolbar dialog-card__action-toolbar--transparent px-4"
           >
             <slot name="actions" />
           </v-card-actions>
           <v-card-actions
             v-if="actionButtons"
-            class="dialog-card__actions-container px-4"
+            class="dialog-card__action-toolbar dialog-card__action-toolbar--transparent px-4"
           >
             <v-spacer />
             <v-btn
@@ -156,27 +156,27 @@ export default {
 </script>
 
 <style>
-.dialog-card__actions-container {
-  /* background-color: var(--bg-color-1); */
-  background-color: rgb(96, 125, 139, 0.2);
-  /* Note:
-    Prevent contenteditable being overlapped by action toolbar */
-  z-index: 2;
+.dialog-card__action-toolbar {
+  background-color: var(--key-color-1-translucent);
   width: 100%;
 }
 
-.dialog-card__actions-container
+.dialog-card__action-toolbar--transparent {
+  background-color: transparent;
+}
+
+.dialog-card__action-toolbar
   .v-btn {
     color: var(--color-4) !important;
   }
 
-.dialog-card__actions-container
+.dialog-card__action-toolbar
   .v-btn.v-btn--disabled.v-btn--flat.v-btn--text {
     color: var(--color-5) !important;
   }
 
 .dialog--note-editor
-  .dialog-card__actions-container {
+  .dialog-card__action-toolbar {
     height: 36px !important;
   }
 
