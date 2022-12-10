@@ -23,6 +23,9 @@
     "js"
   ],
   "main": "background.js",
+  "engines": {
+    "node": "15.14.0"
+  },
   "scripts": {
     "lint": "vue-cli-service lint",
     "build": "vue-cli-service electron:build",
