@@ -85,17 +85,19 @@ Several more major features / improvements are already in development and will b
 
 # Supporters
 
-This app is free but is needs supporters to stay alive and to keep improving. Please consider supporting it on Boosty.
+This app is free but is needs supporters to stay alive and to keep improving. Please consider supporting it.
 
 The people and companies show below are currently funding this project. Thanks to them I can keep working on this app, they are the reason good quality free software can exist.
 
-## Sponsors - tier 2
+## Level-2 sponsor
+
 Become the first supporter
 
-## Sponsors - tier 1
+## Level-1 sponsor
+
 Become the first supporter
 
-## Generous supporters
+## Level-4 supporter
 
 <table>
   <tbody>
@@ -114,7 +116,7 @@ Become the first supporter
   </tbody>
 </table>
 
-## Grateful supporters
+## Level-3 supporter
 
 <table>
   <tbody>
@@ -135,7 +137,7 @@ Become the first supporter
   </tbody>
 </table>
 
-## Thoughtful supporters
+## Level-2 supporter
 
 <div>
   <a href="https://github.com/theoob" title="Tony Kelly">
@@ -160,15 +162,36 @@ Become the first supporter
 
 ## Join
 
-#### 🎉 Supporter goal: 5 of 500 people joined
-
-If you think my work is worth being supported, you can join me on Boosty. See the list of rewards you will get:
-
-<a href="https://boosty.to/sigma-file-manager">
-  <img width="100px" src="https://github.com/aleksey-hoffman/sigma-file-manager/raw/main/.github/media/boosty-button.png">
-</a>
-
 ![supporter-goal-progress](https://user-images.githubusercontent.com/61761672/184556462-803af5f2-3ad6-44fb-be54-4a923d9baf22.png)
+
+If you think my work is worth being supported, you can support me with crypto:
+
+<table>
+  <thead>
+    <tr>
+      <th>Crypto network</th>
+      <th>Address</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>BTC</td>
+      <td width="320px">
+        <code>bc1qv5ujcuwjsk505qjhd3sptcf3xpvjktqjxj0wrc</code>
+      </td>
+    </tr>
+    <tr>
+      <td>USDT (Tron TRC-20)</td>
+      <td width="320px">
+        <code>TN3hFLmjY2eXR149yKMq1qZQotmZbTGV4a</code>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+###№ The rewards
+
+See the rewards you will get for supporting my work on [this page](https://github.com/aleksey-hoffman/sigma-file-manager/wiki/Supporter-rewards)
 
 #### Additional info
 
