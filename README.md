@@ -91,11 +91,11 @@ The people and companies show below are currently funding this project. Thanks t
 
 ## Level-2 sponsor
 
-Become the first supporter
+[Become the first sponsor](https://github.com/aleksey-hoffman/sigma-file-manager/wiki/Supporter-rewards)
 
 ## Level-1 sponsor
 
-Become the first supporter
+[Become the first sponsor](https://github.com/aleksey-hoffman/sigma-file-manager/wiki/Supporter-rewards)
 
 ## Level-4 supporter
 
@@ -160,8 +160,6 @@ Become the first supporter
   <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/blob/main/BAKERS.md">See the full list of supporters →</a>
 </h4>
 
-## Join
-
 ![supporter-goal-progress](https://user-images.githubusercontent.com/61761672/184556462-803af5f2-3ad6-44fb-be54-4a923d9baf22.png)
 
 If you think my work is worth being supported, you can support me with crypto:
@@ -189,7 +187,7 @@ If you think my work is worth being supported, you can support me with crypto:
   </tbody>
 </table>
 
-###№ The rewards
+#### The rewards
 
 See the rewards you will get for supporting my work on [this page](https://github.com/aleksey-hoffman/sigma-file-manager/wiki/Supporter-rewards)
 
