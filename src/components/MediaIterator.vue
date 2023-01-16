@@ -8,7 +8,6 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     class="media-picker__container"
     :no-custom-items="items.length === 0"
   >
-    <!-- item -->
     <v-layout
       v-if="type === 'custom'"
       column
@@ -17,13 +16,13 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       justify-center
     >
       <div class="media-picker__drop-area-title">
-        Drag & Drop
+        {{$t('drag.dragDrop')}}
       </div>
       <div class="media-picker__drop-area-description">
-        custom image or video here
+        {{$t('drag.customImageOrVideoHere')}}
       </div>
       <div class="media-picker__drop-area-description">
-        Accepts: file (image, video)
+        {{$t('drag.acceptsFileImageVideo')}}
       </div>
     </v-layout>
 
@@ -36,7 +35,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       @click="$store.dispatch('SET_HOME_BANNER_BACKGROUND', item)"
     >
       <div class="progress">
-        LOADING
+        {{$t('common.loading')}}
       </div>
       <div class="media-picker__item-thumb-container" />
       <div class="media-picker__item-icon-container">
@@ -55,7 +54,9 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               </v-icon>
             </v-btn>
           </template>
-          <span>Selected</span>
+          <span>
+            {{$t('common.selected')}}
+          </span>
         </v-tooltip>
 
         <!-- item::button:source-link -->
@@ -75,7 +76,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             </v-btn>
           </template>
           <span>
-            See more artworks from this artist
+            {{$t('mediaManager.seeMoreArtworksFromThisArtist')}}
             <v-layout align-center>
               <v-icon
                 class="mr-3"
@@ -105,7 +106,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             </v-btn>
           </template>
           <span>
-            Support this artist
+            {{$t('mediaManager.supportThisArtist')}}
             <v-layout align-center>
               <v-icon
                 class="mr-3"
@@ -133,7 +134,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               </v-icon>
             </v-btn>
           </template>
-          <span>Delete file</span>
+          <span>{{$t('mediaManager.deleteFile')}}</span>
         </v-tooltip>
       </div>
 
@@ -144,7 +145,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         class="media-picker__item-overlay--description"
       >
         <div>{{$utils.getPathPart(item.fileNameBase, 'name')}}</div>
-        <div>Type: {{item.type}}</div>
+        <div>{{$t('common.type')}}: {{getItemTypeText(item.type)}}</div>
       </v-layout>
     </div>
   </div>
@@ -196,6 +197,14 @@ export default {
     }),
   },
   methods: {
+    getItemTypeText (type) {
+      if (!type) {
+        return ''
+      }
+      return type === 'image'
+        ? this.$t('common.image')
+        : this.$t('common.video')
+    },
     initEventHubListeners () {
       this.$eventHub.$on('media-iterator:method', this.mediaIteratorMethodHandler)
     },
