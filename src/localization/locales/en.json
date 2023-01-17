@@ -19,8 +19,12 @@
   },
   "common": {
     "active": "Active",
+    "selected": "Selected",
     "close": "Close",
     "globalSearch": "Global search",
+    "type": "Type",
+    "image": "Image",
+    "video": "Video",
     "drive": "Drive",
     "drives": "Drives",
     "locations": "Locations",
@@ -566,6 +570,16 @@
     "title": "Reminder: data backup",
     "description": "It's recommended to regularly backup (copy) all your important files to an external drive (which is not connected to your most of the time), so if something goes wrong, you don't lose important files.",
     "autoBackupWillBeAdded": "The auto-backup feature will be added in one of the next versions of the app"
+  },
+  "drag": {
+    "dragDrop": "Drag & Drop",
+    "customImageOrVideoHere": "custom image or video here",
+    "acceptsFileImageVideo": "Accepts: file (image, video)"
+  },
+  "mediaManager": {
+    "seeMoreArtworksFromThisArtist": "See more artworks from this artist",
+    "supportThisArtist": "Support this artist",
+    "deleteFile": "Delete file"
   },
   "appProperties": "App properties",
   "appUpdates": "App updates",
