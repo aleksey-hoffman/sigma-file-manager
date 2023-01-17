@@ -6,17 +6,17 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <template>
   <div>
     <div class="text--sub-title-1 mb-0">
-      Global shortcuts | system scope
+      {{$t('shortcutsUI.globalShortcutsSystemScope')}}
     </div>
     <div class="mt-2 mb-4 settings-card__description">
-      Global shortcuts will trigger actions even when the app is not focused.
+      {{$t('shortcutsUI.globalShortcutsTriggerActionsWhenNotFocused')}}
     </div>
     <div
       v-for="(shortcut, index) in globalShortcutsList"
-      class="shortcut-list__item"
       :key="'shortcut-' + index"
+      class="shortcut-list__item"
     >
-      <v-icon :size="shortcut.iconSize || '22px'" class="">
+      <v-icon :size="shortcut.iconSize || '22px'">
         {{shortcut.icon}}
       </v-icon>
       <div class="shortcut-list__item-description">
@@ -27,12 +27,15 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       </div>
       <div class="shortcut-list__item-actions">
         <v-menu offset-y>
-          <template v-slot:activator="{ on, attrs }">
+          <template #activator="{ on, attrs }">
             <v-btn
-              v-on="on"
               v-bind="attrs"
               icon
-            ><v-icon size="20px">mdi-dots-vertical</v-icon>
+              v-on="on"
+            >
+              <v-icon size="20px">
+                mdi-dots-vertical
+              </v-icon>
             </v-btn>
           </template>
           <v-list>
@@ -44,17 +47,25 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               "
             >
               <v-list-item-action>
-                <v-icon size="20px">mdi-pencil-outline</v-icon>
+                <v-icon size="20px">
+                  mdi-pencil-outline
+                </v-icon>
               </v-list-item-action>
-              <v-list-item-title>Change shortcut</v-list-item-title>
+              <v-list-item-title>
+                {{$t('shortcutsUI.changeShortcut')}}
+              </v-list-item-title>
             </v-list-item>
             <v-list-item
               @click="$store.dispatch('RESET_SHORTCUT', index)"
             >
               <v-list-item-action>
-                <v-icon size="20px">mdi-backup-restore</v-icon>
+                <v-icon size="20px">
+                  mdi-backup-restore
+                </v-icon>
               </v-list-item-action>
-              <v-list-item-title>Reset shortcut</v-list-item-title>
+              <v-list-item-title>
+                {{$t('shortcutsUI.resetShortcut')}}
+              </v-list-item-title>
             </v-list-item>
           </v-list>
         </v-menu>
@@ -62,7 +73,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     </div>
 
     <div class="text--sub-title-1 mt-6 mb-0">
-      Local shortcuts | app scope
+      {{$t('shortcutsUI.localShortcutsAppScope')}}
     </div>
     <div class="pb-2">
       <div
@@ -70,8 +81,8 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         :key="'shortcut-' + index"
       >
         <div
-          class="shortcut-list__item"
           v-if="shortcutFiltered(shortcut.shortcut)"
+          class="shortcut-list__item"
         >
           <v-icon :size="shortcut.iconSize || '22px'">
             {{shortcut.icon}}
@@ -104,13 +115,13 @@ export default {
     globalShortcutsList () {
       return this.$utils.filterObject(
         this.shortcuts,
-        ([key, value]) => value.isGlobal
+        ([key, value]) => value.isGlobal,
       )
     },
     localShortcutsList () {
       return this.$utils.filterObject(
         this.shortcuts,
-        ([key, value]) => !value.isGlobal
+        ([key, value]) => !value.isGlobal,
       )
     },
   },
@@ -119,7 +130,7 @@ export default {
       if (typeof shortcut === 'string') {return shortcut}
       else {return shortcut[this.systemInfo.platform]}
     },
-  }
+  },
 }
 </script>
 

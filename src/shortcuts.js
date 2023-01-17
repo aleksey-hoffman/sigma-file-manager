@@ -537,7 +537,7 @@ export default {
       dialogIsOpened: false,
     },
     routes: ['all'],
-    icon: 'mdi-check-box-multiple-outline',
+    icon: 'mdi-checkbox-multiple-outline',
     action: {name: 'selectDirItem'},
     shortcut: 'Ctrl + LeftClick',
     description: i18n.t('shortcuts.selectDeselectItemInTheCurrentDirectory'),

@@ -71,6 +71,9 @@
     "copyPathAddSecondSlash": "copy path | add second slash ",
     "copyPathWrapWithQuotes": "copy path | wrap with quotes"
   },
+  "placeholders": {
+    "noDrivesFound": "No drives found"
+  },
   "count": {
     "other": "0 others | 1 other | {n} others | {n} others",
     "directories": "0 directories | 1 directory | {n} directories | {n} directories",
@@ -659,6 +662,13 @@
   "hasBFrames": "has b frames",
   "profile": "profile",
   "closedCaptions": "closed captions",
+  "shortcutsUI": {
+    "globalShortcutsSystemScope": "Global shortcuts (system scope)",
+    "globalShortcutsTriggerActionsWhenNotFocused": "Global shortcuts will trigger actions even when the app is not focused.",
+    "changeShortcut": "Change shortcut",
+    "resetShortcut": "Reset shortcut",
+    "localShortcutsAppScope": "Local shortcuts (app scope)"
+  },
   "shortcuts": {
     "openCloseTheAppWindow": "Open / close the app window",
     "openGlobalSearch": "Open global search",

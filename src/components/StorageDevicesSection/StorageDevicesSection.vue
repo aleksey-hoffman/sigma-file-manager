@@ -6,7 +6,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <template>
   <div>
     <div v-if="drives.length === 0">
-      No drives found
+      {{$t('placeholders.noDrivesFound')}}
     </div>
     <ItemCardGrid :lines="2">
       <ItemCard
