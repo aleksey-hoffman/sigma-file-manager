@@ -730,5 +730,28 @@
     "quickWindowPositioning": "Quick window positioning",
     "displaySystemEmojiAndSymbolPicker": "Display system emoji and symbol picker",
     "displaySystemClipboard": "Display system clipboard (must be turned on in system settings)"
+  },
+  "dialogs": {
+    "errorDialog": {
+      "errorOccured": "Error occured",
+      "createTemplate": "create template",
+      "reloadApp": "reload app",
+      "ignore": "ignore",
+      "youCanIgnoreError": "You can ignore the error and keep using the app, but it might not function properly until you reload it.",
+      "reportError": "Report the error",
+      "ifYouHaveGithub": "If you have a Github account, you can report this error to get it fixed:",
+      "pressButtonToCreateIssueAutomatically": "Press the button below to create the issue template automatically;",
+      "openGeneratedLink": "Open the generated link in your browser;",
+      "reviewTemplate": "Review the template and make sure the error doesn't contain any personal information (e.g. your user name);",
+      "publishIssue": "Publish the issue by pressing \"Submit new issue\" button there",
+      "error": "Error",
+      "errorTemplateLinkWasGenerated": "Error template link was generated",
+      "openTheLinkInYourBrowserToContinue": "Open the link in your browser to continue",
+      "copyLink": "Copy link",
+      "linkWasCopiedToClipboard": "Link was copied to clipboard",
+      "openLinkInDefaultBrowser": "Open link in default browser",
+      "operationFailed": "Operation failed",
+      "errorDuringTemplateGeneration": "Error during template generation"
+    }
   }
 }

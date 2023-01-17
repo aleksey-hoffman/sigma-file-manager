@@ -5,54 +5,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <template>
   <div>
-    <!-- dialog::errorDialog -->
-    <dialog-generator
-      :dialog="dialogs.errorDialog"
-      :persistent="true"
-      :close-button="{
-        onClick: () => closeDialog('errorDialog'),
-      }"
-      :action-buttons="[
-        {
-          text: 'create template',
-          onClick: () => createNewErrorIssue()
-        },
-        {
-          text: 'reload app',
-          onClick: () => $utils.reloadMainWindow()
-        },
-        {
-          text: 'ignore',
-          onClick: () => closeDialog('errorDialog')
-        }
-      ]"
-      title="Error occured"
-      height="80vh"
-    >
-      <template #content>
-        <p>
-          You can ignore the error and keep using the app, but it might not function properly until you reload it.
-        </p>
-        <div class="text--sub-title-1">
-          Report the error
-        </div>
-        <p>
-          If you have a Github account, you can report this error to get it fixed:
-        </p>
-        <ul>
-          <li>Press the button below to create the issue template automatically;</li>
-          <li>Open the generated link in your browser;</li>
-          <li>Review the template and make sure the error doesn't contain any personal information (e.g. your user name);</li>
-          <li>Publish the issue by pressing "Submit new issue" button there</li>
-        </ul>
-        <div class="text--sub-title-1">
-          Error
-        </div>
-        <div class="code-block mb-8">
-          {{errorDialogErrorMessage}}
-        </div>
-      </template>
-    </dialog-generator>
+    <ErrorDialog />
 
     <!-- dialog::conformationDialog -->
     <dialog-generator
@@ -1516,6 +1469,7 @@ import {mapState, mapGetters} from 'vuex'
 import InfoTag from './InfoTag/index.vue'
 import katex from 'katex'
 import 'katex/dist/katex.min.css'
+import ErrorDialog from '@/components/dialogs/ErrorDialog.vue'
 import DownloadTypeSelectorDialog from '@/components/dialogs/DownloadTypeSelectorDialog.vue'
 import WorkspaceEditorDialog from '@/components/dialogs/WorkspaceEditorDialog.vue'
 import ArchiveCompressionDialog from '@/components/dialogs/ArchiveCompressionDialog.vue'
@@ -1525,13 +1479,12 @@ import NoteEditorDialog from '@/components/dialogs/NoteEditorDialog.vue'
 const electronRemote = require('@electron/remote')
 const currentWindow = electronRemote.getCurrentWindow()
 const PATH = require('path')
-const sysInfo = require('systeminformation')
 const fs = require('fs')
-const os = require('os')
 
 export default {
   components: {
     InfoTag,
+    ErrorDialog,
     DownloadTypeSelectorDialog,
     WorkspaceEditorDialog,
     ArchiveCompressionDialog,
@@ -1671,7 +1624,6 @@ export default {
       windowSize: state => state.windowSize,
       appPaths: state => state.storageData.settings.appPaths,
       shortcuts: state => state.storageData.settings.shortcuts,
-      appActionHistory: state => state.appActionHistory,
       dialogs: state => state.dialogs,
       currentDir: state => state.navigatorView.currentDir,
       storageData: state => state.storageData,
@@ -1730,18 +1682,6 @@ export default {
           value: value,
         })
       },
-    },
-    errorDialogErrorMessage () {
-      const stack = this?.dialogs?.errorDialog?.data?.errorEvent?.error?.stack
-      const message = this?.dialogs?.errorDialog?.data?.errorEvent?.message
-      return stack ?? message ?? 'No error message'
-    },
-    appActionHistoryLog () {
-      let log = ''
-      this.appActionHistory.forEach(action => {
-        log += `${action.readableTime} | ${action.action}\n`
-      })
-      return log
     },
     programEditorDialogFilteredPrograms () {
       return this.dialogs.programEditorDialog.data.programs.filter(program => !program.readonly)
@@ -1907,76 +1847,6 @@ export default {
             this.dialogs.dirItemPermissionManagerDialog.data.permissionData.isImmutable = !isImmutable
           }
         })
-    },
-    async createNewErrorIssue () {
-      // Generate Github issue template
-      try {
-        const titleTemplate = '[Auto-generated problem report] unhandled error'
-        const bodyTemplate = [
-          '## System info:',
-          `- **App version**: ${this.appVersion}`,
-          `- **App page**: ${this.dialogs.errorDialog.data.routeName ?? 'unknown'}`,
-          `- **Operating System**: ${os.arch()}, ${process.platform}, ${os.release()}`,
-          `- **Free memory**: ${this.$utils.prettyBytes((await sysInfo.mem()).free, 1) ?? 'unknown'}`,
-          '## Problem:',
-          '### Error:',
-          '```js',
-          // Automatically wrap the line after every 90 chars
-          `${this.errorDialogErrorMessage.replace(/(.{1,90})/g, '$1\n')
-          }`,
-          '```',
-          '### App action history:',
-          '```js',
-          this.appActionHistoryLog,
-          '```',
-        ].join('\n')
-        // Create link
-        const link = [
-          `https://www.github.com/${this.appPaths.githubRepo}/`,
-          'issues/new?',
-          'labels=unhandledError&',
-          `title=${encodeURIComponent(titleTemplate)}&`,
-          `body=${encodeURIComponent(bodyTemplate)}`,
-        ].join('\n')
-        this.$eventHub.$emit('notification', {
-          action: 'add',
-          timeout: 0,
-          closeButton: true,
-          colorStatus: 'green',
-          title: 'Error template link was generated',
-          message: 'Open the link in your browser to continue',
-          actionButtons: [
-            {
-              title: 'Copy link',
-              action: '',
-              onClick: () => {
-                this.$utils.copyToClipboard({
-                  text: link,
-                  title: 'Link was copied to clipboard',
-                })
-              },
-              closesNotification: false,
-            },
-            {
-              title: 'Open link in default browser',
-              action: '',
-              onClick: () => {
-                this.$utils.openLink(link)
-              },
-              closesNotification: false,
-            },
-          ],
-        })
-      }
-      catch (error) {
-        this.$eventHub.$emit('notification', {
-          action: 'add',
-          timeout: 5000,
-          closeButton: true,
-          title: 'Operation failed',
-          message: `Error during template generation:<br>${error}`,
-        })
-      }
     },
     getGuideTitle (index) {
       return this.dialogs?.guideDialog?.data?.guideTabs?.[index]?.text || ''
