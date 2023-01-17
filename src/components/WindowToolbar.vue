@@ -32,7 +32,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         <transition name="slide-fade-left">
           <div v-if="!navigationPanelMiniVariant">
             <div class="nav-panel__item__title">
-              Sigma File Manager
+              {{$t('app.name')}}
             </div>
           </div>
         </transition>

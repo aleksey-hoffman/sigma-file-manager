@@ -6,7 +6,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <template>
   <div>
     <div v-if="userDirs.length === 0">
-      No user directories found
+      {{$t('placeholders.noUserDirectoriesFound')}}
     </div>
     <ItemCardGrid :lines="1">
       <ItemCard

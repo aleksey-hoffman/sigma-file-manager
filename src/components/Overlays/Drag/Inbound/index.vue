@@ -26,7 +26,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         {{overlayData.modeInstructions}}
       </div>
       <div class="overlay--inbound-drag__sub-title">
-        Hit [Esc] button or click here to cancel
+        {{$t('drag.hitButtonToCancel')}}
       </div>
     </div>
   </transition>
@@ -52,23 +52,21 @@ export default {
         let title = ''
         if (this.inputState.drag.targetType === 'existing-path') {
           title = this.inputState.shift
-            ? 'Drop here to copy into the current directory'
-            : 'Drop here to move into the current directory'
+            ? this.$t('drag.dropHereToCopyIntoTheCurrentDirectory')
+            : this.$t('drag.dropHereToMoveIntoTheCurrentDirectory')
         }
         else {
-          title = this.inputState.shift
-            ? 'Drop here to download into the current directory'
-            : 'Drop here to download into the current directory'
+          title = this.$t('drag.dropHereToDownloadIntoTheCurrentDirectory')
         }
         return {
           title,
-          modeInstructions: 'Hold CTRL for selective drop mode',
+          modeInstructions: this.$t('drag.holdCtrlForSelectiveDropMode'),
         }
       }
       else if (this.overlappedDropTarget === 'homePageBanner::customMedia') {
         return {
-          title: 'Drop here to copy file and add custom media',
-          allowedTypes: 'file, path, URL',
+          title: this.$t('drag.dropHereToCopyFileAndAddCustomMedia'),
+          allowedTypes: this.$t('drag.filePathUrl'),
           modeInstructions: '',
         }
       }

@@ -72,7 +72,8 @@
     "copyPathWrapWithQuotes": "copy path | wrap with quotes"
   },
   "placeholders": {
-    "noDrivesFound": "No drives found"
+    "noDrivesFound": "No drives found",
+    "noUserDirectoriesFound": "No user directories found"
   },
   "count": {
     "other": "0 others | 1 other | {n} others | {n} others",
@@ -575,9 +576,16 @@
     "autoBackupWillBeAdded": "The auto-backup feature will be added in one of the next versions of the app"
   },
   "drag": {
+    "hitButtonToCancel": "Hit [Esc] button or click here to cancel",
     "dragDrop": "Drag & Drop",
     "customImageOrVideoHere": "custom image or video here",
-    "acceptsFileImageVideo": "Accepts: file (image, video)"
+    "acceptsFileImageVideo": "Accepts: file (image, video)",
+    "dropHereToCopyIntoTheCurrentDirectory": "Drop here to copy into the current directory",
+    "dropHereToMoveIntoTheCurrentDirectory": "Drop here to move into the current directory",
+    "dropHereToDownloadIntoTheCurrentDirectory": "Drop here to download into the current directory",
+    "holdCtrlForSelectiveDropMode": "Hold CTRL for selective drop mode",
+    "dropHereToCopyFileAndAddCustomMedia": "Drop here to copy file and add custom media",
+    "filePathUrl": "file, path, URL"
   },
   "mediaManager": {
     "seeMoreArtworksFromThisArtist": "See more artworks from this artist",
