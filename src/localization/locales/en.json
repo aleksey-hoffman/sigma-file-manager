@@ -581,6 +581,28 @@
     "supportThisArtist": "Support this artist",
     "deleteFile": "Delete file"
   },
+  "sorting": {
+    "options": "Sorting options",
+    "descendingOrder": "Descending order",
+    "ascendingOrder": "Ascending order",
+    "columnType": "Column type",
+    "typeTitles": {
+      "name": "Name",
+      "dateModifiedContents": "Date modified contents",
+      "dateModifiedMeta": "Date modified meta",
+      "dateCreated": "Date created",
+      "itemsSize": "Items / size",
+      "status": "Status"
+    },
+    "typeShortTitles": {
+      "name": "Name",
+      "dateModifiedContents": "Modified contents",
+      "dateModifiedMeta": "Modified meta",
+      "dateCreated": "Created",
+      "itemsSize": "Items / size",
+      "status": "Status"
+    }
+  },
   "appProperties": "App properties",
   "appUpdates": "App updates",
   "checkUpdatesNow": "Check for updates now",

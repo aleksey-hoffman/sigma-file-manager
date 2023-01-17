@@ -46,7 +46,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               @contextmenu.prevent="menuActivatorOnProp.click"
             >
               <div class="sorting-header__item__title">
-                {{selectedSortingHeaderType.shortTitle}}
+                {{$t(selectedSortingHeaderType.shortTitle)}}
               </div>
             </div>
           </template>
@@ -97,7 +97,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               @contextmenu.prevent="menuActivatorOnProp.click"
             >
               <div class="sorting-header__item__title">
-                {{sortingType.shortTitle}}
+                {{$t(sortingType.shortTitle)}}
               </div>
             </div>
           </template>

@@ -4,19 +4,22 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <template>
-  <v-menu 
+  <v-menu
     :close-on-content-click="false"
-    offset-y 
+    offset-y
   >
-    <template v-slot:activator="{on}">
-      <slot name="activator" :menuActivatorOnProp="on"></slot>
+    <template #activator="{on}">
+      <slot
+        name="activator"
+        :menuActivatorOnProp="on"
+      />
     </template>
     <v-list dense>
       <v-list-item class="inactive">
         <v-list-item-content>
           <v-list-item-title>
             <div class="text--sub-title-1 ma-0">
-              Column type
+              {{$t('sorting.columnType')}}
             </div>
           </v-list-item-title>
         </v-list-item-content>
@@ -28,15 +31,16 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         @click="setColumnSortingType(sortingType, menuSortingType)"
       >
         <v-list-item-title>
-          {{$utils.toTitleCase(menuSortingType.title)}}
+          {{$t(menuSortingType.title)}}
         </v-list-item-title>
-        
+
         <v-list-item-icon>
-          <v-icon 
-            class="mr-4"
+          <v-icon
             v-if="sortingType.name === menuSortingType.name"
+            class="mr-4"
             size="10px"
-          >mdi-circle-outline
+          >
+            mdi-circle-outline
           </v-icon>
         </v-list-item-icon>
       </v-list-item>
@@ -49,11 +53,11 @@ import {mapFields} from 'vuex-map-fields'
 
 export default {
   props: {
-    sortingType: Object
+    sortingType: Object,
   },
   data () {
     return {
-      clickedColumnItemIndex: null
+      clickedColumnItemIndex: null,
     }
   },
   computed: {
@@ -76,7 +80,7 @@ export default {
       this.sortingTypes.splice(replaceItemIndex, 1, clickedColumnItem)
       this.clickedColumnItemIndex = replaceItemIndex
       this.$store.dispatch('SET_SORTING_TYPE', menuSortingType)
-    }
-  }
+    },
+  },
 }
 </script>

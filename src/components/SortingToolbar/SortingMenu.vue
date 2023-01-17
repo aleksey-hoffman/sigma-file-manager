@@ -22,7 +22,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               />
             </div>
           </template>
-          <span>Sorting options</span>
+          <span>{{$t('sorting.options')}}</span>
         </v-tooltip>
       </template>
       <v-list dense>
@@ -30,7 +30,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           <v-list-item-content>
             <v-list-item-title>
               <div class="text--sub-title-1 ma-0">
-                Sorting options
+                {{$t('sorting.options')}}
               </div>
             </v-list-item-title>
           </v-list-item-content>
@@ -40,15 +40,11 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
         <v-list-item @click="$store.dispatch('TOGGLE_SORTING_ORDER')">
           <v-icon class="mr-4">
-            {{sortingOrder === 'descending'
-              ? 'mdi-chevron-down'
-              : 'mdi-chevron-up'}}
+            {{sortingOrderIcon}}
           </v-icon>
           <v-list-item-content>
             <span>
-              {{sortingOrder === 'descending'
-                ? 'Descending order'
-                : 'Ascending order'}}
+              {{sortingOrderTitle}}
             </span>
           </v-list-item-content>
         </v-list-item>
@@ -72,7 +68,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           </v-list-item-action>
 
           <v-list-item-title>
-            {{$utils.toTitleCase(sortingType.title)}}
+            {{$t(sortingType.title)}}
           </v-list-item-title>
 
           <v-list-item-icon>
@@ -100,6 +96,16 @@ export default {
       selectedSortingType: 'storageData.settings.sorting.selectedType',
       sortingTypes: 'storageData.settings.sorting.types',
     }),
+    sortingOrderIcon () {
+      return this.sortingOrder === 'descending'
+        ? 'mdi-chevron-down'
+        : 'mdi-chevron-up'
+    },
+    sortingOrderTitle () {
+      return this.sortingOrder === 'descending'
+        ? this.$t('sorting.descendingOrder')
+        : this.$t('sorting.ascendingOrder')
+    },
   },
 }
 </script>
