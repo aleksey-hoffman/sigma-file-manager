@@ -74,7 +74,7 @@ export default {
             description: this.$t('workspaces.editWorkspaces'),
           },
           onClick: () => {
-            this.$store.state.dialogs.workspaceEditor.value = true
+            this.$store.state.dialogs.workspaceEditorDialog.value = true
           },
         },
       ]

@@ -39,7 +39,6 @@ import SectionSettings from './components/SectionSettings.vue'
 import WindowEffects from './components/WindowEffects.vue'
 import HomeBanner from './components/HomeBanner.vue'
 import FsLocalServerManager from './components/FsLocalServerManager.vue'
-import ShortcutList from './components/ShortcutList.vue'
 
 // Register components
 Vue.component('window-toolbar', WindowToolbar)
@@ -66,7 +65,6 @@ Vue.component('section-settings', SectionSettings)
 Vue.component('window-effects', WindowEffects)
 Vue.component('home-banner', HomeBanner)
 Vue.component('fs-local-server-manager', FsLocalServerManager)
-Vue.component('shortcut-list', ShortcutList)
 
 require('overlayscrollbars/css/OverlayScrollbars.css')
 require('@mdi/font/css/materialdesignicons.css')

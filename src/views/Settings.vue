@@ -1399,7 +1399,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 }"
               >
                 <template #content>
-                  <shortcut-list />
+                  <ShortcutList />
                 </template>
               </section-settings>
             </div>
@@ -2236,6 +2236,7 @@ import itemFilter from '../utils/itemFilter'
 import FilterClearButton from '@/components/FilterClearButton/index.vue'
 import AppButton from '@/components/AppButton/AppButton.vue'
 import AppIcon from '@/components/AppIcon/AppIcon.vue'
+import ShortcutList from '@/components/ShortcutList.vue'
 import {getSystemFontsWithType} from '@/utils/getSystemFonts.js'
 import {regionalFormats} from '@/data/regionalFormats.js'
 
@@ -2249,6 +2250,7 @@ export default {
     ActionToolbar,
     AppButton,
     AppIcon,
+    ShortcutList,
   },
   data () {
     return {

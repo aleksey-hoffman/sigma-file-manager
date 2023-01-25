@@ -5,11 +5,11 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <template>
   <dialog-generator
-    :dialog="dialogs.downloadTypeSelector"
+    :dialog="dialogs.downloadTypeSelectorDialog"
     :close-button="{
-      onClick: () => dialogs.downloadTypeSelector.value = false
+      onClick: () => dialogs.downloadTypeSelectorDialog.value = false
     }"
-    title="Select download type"
+    :title="$t('dialogs.downloadTypeSelectorDialog.selectDownloadType')"
     max-width="50vw"
     class="dialog"
   >
@@ -44,19 +44,19 @@ export default {
     buttons () {
       return [
         {
-          title: 'Download URL page',
+          title: this.$t('dialogs.downloadTypeSelectorDialog.downloadUrlPage'),
           icon: 'mdi-file-document-outline',
           onClick: () => {
-            this.dialogs.downloadTypeSelector.data.downloadFileButton()
-            this.dialogs.downloadTypeSelector.value = false
+            this.dialogs.downloadTypeSelectorDialog.data.downloadFileButton()
+            this.dialogs.downloadTypeSelectorDialog.value = false
           },
         },
         {
-          title: 'Download URL image',
+          title: this.$t('dialogs.downloadTypeSelectorDialog.downloadUrlImage'),
           icon: 'mdi-file-image-outline',
           onClick: () => {
-            this.dialogs.downloadTypeSelector.data.downloadImageButton()
-            this.dialogs.downloadTypeSelector.value = false
+            this.dialogs.downloadTypeSelectorDialog.data.downloadImageButton()
+            this.dialogs.downloadTypeSelectorDialog.value = false
           },
         },
       ]

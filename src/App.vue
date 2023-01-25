@@ -290,7 +290,7 @@ export default {
       })
 
       electron.ipcRenderer.on('open-new-note', (event) => {
-        this.$store.dispatch('OPEN_NOTE_EDITOR', {type: 'new'})
+        this.$store.dispatch('openNoteEditor', {type: 'new', delay: 300})
       })
 
       electron.ipcRenderer.on('window:blur', (event) => {
@@ -1458,7 +1458,7 @@ i {
 
 .tab-view {
   display: grid;
-  grid-template-columns: 230px 1fr;
+  grid-template-columns: 260px 1fr;
   background-color: var(--bg-color-1);
 }
 @media (max-width: 700px) {
@@ -1484,7 +1484,7 @@ i {
         .v-tab {
           width: 100%;
           justify-content: flex-start;
-          padding-left: 24px;
+          padding-left: 20px;
         }
   }
 

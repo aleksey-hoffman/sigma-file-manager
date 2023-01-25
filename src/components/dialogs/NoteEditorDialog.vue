@@ -8,9 +8,9 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     :dialog="dialogs.noteEditorDialog"
     :retain-focus="!dialogs.imagePickerDialog.value && !dialogs.mathEditorDialog.value"
     :close-button="{
-      onClick: () => closeDialog('noteEditorDialog'),
+      onClick: () => $store.dispatch('closeDialog', {name: 'noteEditorDialog'}),
     }"
-    title="Note editor"
+    :title="$t('dialogs.noteEditorDialog.noteEditor')"
     :show-action-bar="true"
     :unscrollable-content="true"
     height="85vh"
@@ -24,7 +24,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           :disabled="noteEditor.openedNote.isProtected || noteEditor.openedNote.isTrashed"
           autofocus
           hide-details
-          label="Note title"
+          :label="$t('dialogs.noteEditorDialog.noteTitle')"
           class="mt-0 mb-2"
         />
         <NoteEditor
@@ -52,20 +52,18 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               })"
             >
               <v-icon size="18px">
-                {{noteEditor.openedNote.isProtected
-                  ? 'mdi-shield-check-outline'
-                  : 'mdi-shield-alert-outline'}}
+                {{protectedNoteIcon}}
               </v-icon>
             </v-btn>
           </template>
           <span>
             <div v-show="noteEditor.openedNote.isProtected">
-              <div>Note protection: ON</div>
-              <div>Note cannot be deleted / modified</div>
+              <div>{{$t('dialogs.noteEditorDialog.noteProtectionOn')}}</div>
+              <div>{{$t('dialogs.noteEditorDialog.noteCannotBeDeletedModified')}}</div>
             </div>
             <div v-show="!noteEditor.openedNote.isProtected">
-              <div>Note protection: OFF</div>
-              <div>Note can be deleted / modified</div>
+              <div>{{$t('dialogs.noteEditorDialog.noteProtectionOff')}}</div>
+              <div>{{$t('dialogs.noteEditorDialog.noteCanBeDeletedModified')}}</div>
             </div>
           </span>
         </v-tooltip>
@@ -91,18 +89,18 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   </v-icon>
                 </v-btn>
               </template>
-              <span>Load a template</span>
+              <span>{{$t('dialogs.noteEditorDialog.loadATemplate')}}</span>
             </v-tooltip>
           </template>
           <div class="text--sub-title-1 ma-4 mb-2">
-            Options
+            {{$t('dialogs.noteEditorDialog.options')}}
           </div>
           <v-list width="380px">
             <v-divider />
             <v-list-item two-line>
               <v-switch
                 v-model="spellcheck"
-                label="Spellcheck"
+                :label="$t('dialogs.noteEditorDialog.spellcheck')"
                 class="my-0"
                 hide-details
               />
@@ -114,7 +112,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             <v-list-item two-line>
               <v-switch
                 v-model="markdownShortcuts"
-                label="Convert basic markdown syntax into HTML while typing"
+                :label="$t('dialogs.noteEditorDialog.convertMarkdownWhileTyping')"
                 class="my-0"
                 hide-details
               />
@@ -135,7 +133,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           class="mx-1 line-clamp-1"
           style="max-width: 300px"
         >
-          Structure: {{noteEditor.currentNodePath.join(' / ')}}
+          {{$t('dialogs.noteEditorDialog.structure')}}: {{noteEditor.currentNodePath.join(' / ')}}
         </div>
 
         <!-- card::action-bar::char counter -->
@@ -143,7 +141,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           v-if="noteEditor.openedNote.charCount"
           class="mx-1"
         >
-          Chars: {{noteEditor.openedNote.charCount}}
+          {{$t('dialogs.noteEditorDialog.chars')}}: {{noteEditor.openedNote.charCount}}
         </div>
 
         <!-- card::action-bar::dates -->
@@ -158,10 +156,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           </template>
           <span>
             <div class="mr-3">
-              Created: {{$utils.formatDateTime(noteEditor.openedNote.dateCreated, 'D MMM YYYY')}}
+              {{$t('dialogs.noteEditorDialog.created')}}: {{$utils.formatDateTime(noteEditor.openedNote.dateCreated, 'D MMM YYYY')}}
             </div>
             <div class="mr-3">
-              Modified: {{$utils.formatDateTime(noteEditor.openedNote.dateModified, 'D MMM YYYY')}}
+              {{$t('dialogs.noteEditorDialog.modified')}}: {{$utils.formatDateTime(noteEditor.openedNote.dateModified, 'D MMM YYYY')}}
             </div>
           </span>
         </v-tooltip>
@@ -182,10 +180,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           </template>
           <span>
             <div class="text--sub-title-1 my-2">
-              Markdown shortcuts
+              {{$t('dialogs.noteEditorDialog.markdownShortcuts')}}
             </div>
             <div>
-              With the cursor on a new line, type specified sequence to add the corresponding element.
+              {{$t('dialogs.noteEditorDialog.withTheCursorOnANewLineType')}}
             </div>
             <div
               v-for="(markdownAction, index) in markdownActions"
@@ -212,37 +210,17 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           </template>
           <span>
             <div class="text--sub-title-1 my-2">
-              Tips
+              {{$t('dialogs.noteEditorDialog.tips')}}
             </div>
-            <div class="my-2">
+            <div
+              v-for="(item, index) in noteEditorTips"
+              :key="'item-' + index"
+              class="my-2"
+            >
               <span class="inline-code--light mr-2">
-                Right mouse button
+                {{item.shortcut}}
               </span>
-              will select the word and show options
-            </div>
-            <div class="my-2">
-              <span class="inline-code--light mr-2">
-                Ctrl + Shift + V
-              </span>
-              paste copied data without formatting
-            </div>
-            <div class="my-2">
-              <span class="inline-code--light mr-2">
-                Enter
-              </span>
-              escape block; add new line
-            </div>
-            <div class="my-2">
-              <span class="inline-code--light mr-2">
-                Shift + Enter
-              </span>
-              escape block
-            </div>
-            <div class="my-2">
-              <span class="inline-code--light mr-2">
-                ArrowRight
-              </span>
-              escape block (when end is reached)
+              {{item.shortcutDescription}}
             </div>
           </span>
         </v-tooltip>
@@ -263,22 +241,6 @@ export default {
   data () {
     return {
       noteChangeHandlerDebounce: null,
-      markdownActions: [
-        {action: '#space', description: '1st level headline'},
-        {action: '#(N)space', description: 'N[1-6] level headline'},
-        {action: '```space', description: 'Multiline code block'},
-        {action: '`space', description: 'Inline code block'},
-        {action: '-space', description: 'Unordered list'},
-        {action: '+space', description: 'Ordered list'},
-        {action: '*space', description: 'Italic text'},
-        {action: '**space', description: 'Bold text'},
-        {action: '~~space', description: 'Strikethrough text'},
-        {action: '__space', description: 'Underlined text'},
-        {action: '>space', description: 'Quote'},
-        {action: '---space', description: 'Divider'},
-        {action: '[ ]space', description: 'Unchecked checkbox'},
-        {action: '[x]space', description: 'Checked checkbox'},
-      ],
     }
   },
   watch: {
@@ -302,9 +264,15 @@ export default {
   computed: {
     ...mapState({
       dialogs: state => state.dialogs,
+      dialog: state => state.dialogs.noteEditorDialog,
       noteEditor: state => state.noteEditor,
       markdownShortcuts: state => state.storageData.settings.markdownShortcuts,
     }),
+    protectedNoteIcon () {
+      return this.noteEditor.openedNote.isProtected
+        ? 'mdi-shield-check-outline'
+        : 'mdi-shield-alert-outline'
+    },
     spellcheck: {
       get () {return this.$store.state.storageData.settings.spellcheck},
       set (value) {
@@ -313,6 +281,48 @@ export default {
           value,
         })
       },
+    },
+    markdownActions () {
+      return [
+        {action: '#space', description: this.$t('dialogs.noteEditorDialog.1stLevelHeadline')},
+        {action: '#(N)space', description: this.$t('dialogs.noteEditorDialog.n1to6LevelHeadline')},
+        {action: '```space', description: this.$t('dialogs.noteEditorDialog.multilineCodeBlock')},
+        {action: '`space', description: this.$t('dialogs.noteEditorDialog.inlineCodeBlock')},
+        {action: '-space', description: this.$t('dialogs.noteEditorDialog.unorderedList')},
+        {action: '+space', description: this.$t('dialogs.noteEditorDialog.orderedList')},
+        {action: '*space', description: this.$t('dialogs.noteEditorDialog.italicText')},
+        {action: '**space', description: this.$t('dialogs.noteEditorDialog.boldText')},
+        {action: '~~space', description: this.$t('dialogs.noteEditorDialog.strikethroughText')},
+        {action: '__space', description: this.$t('dialogs.noteEditorDialog.underlinedText')},
+        {action: '>space', description: this.$t('dialogs.noteEditorDialog.quote')},
+        {action: '---space', description: this.$t('dialogs.noteEditorDialog.divider')},
+        {action: '[ ]space', description: this.$t('dialogs.noteEditorDialog.uncheckedCheckbox')},
+        {action: '[x]space', description: this.$t('dialogs.noteEditorDialog.checkedCheckbox')},
+      ]
+    },
+    noteEditorTips () {
+      return [
+        {
+          shortcut: this.$t('dialogs.noteEditorDialog.rightMouseButton'),
+          shortcutDescription: this.$t('dialogs.noteEditorDialog.willSelectTheWordAndShowOptions'),
+        },
+        {
+          shortcut: 'Ctrl + Shift + V',
+          shortcutDescription: this.$t('dialogs.noteEditorDialog.pasteCopiedDataWithoutFormatting'),
+        },
+        {
+          shortcut: 'Enter',
+          shortcutDescription: this.$t('dialogs.noteEditorDialog.escapeBlockAddNewLine'),
+        },
+        {
+          shortcut: 'Shift + Enter',
+          shortcutDescription: this.$t('dialogs.noteEditorDialog.escapeBlock'),
+        },
+        {
+          shortcut: 'ArrowRight',
+          shortcutDescription: this.$t('dialogs.noteEditorDialog.escapeBlockWhenEndIsReached'),
+        },
+      ]
     },
   },
 }

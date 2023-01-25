@@ -14,7 +14,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         :key="'user-dir-card-' + index"
         :item="userDir"
         :lines="1"
-        target-type="user-dir"
+        target-type="userDir"
       />
     </ItemCardGrid>
   </div>

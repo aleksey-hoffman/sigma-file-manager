@@ -8,7 +8,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     :dialog="dialog"
     :persistent="true"
     :close-button="{
-      onClick: () => closeDialog(),
+      onClick: () => $store.dispatch('closeDialog', {name: 'errorDialog'}),
     }"
     :action-buttons="[
       {
@@ -21,7 +21,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       },
       {
         text: $t('dialogs.errorDialog.ignore'),
-        onClick: () => closeDialog()
+        onClick: () => $store.dispatch('closeDialog', {name: 'errorDialog'})
       }
     ]"
     :title="$t('dialogs.errorDialog.errorOccured')"
@@ -43,7 +43,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         <li>{{$t('dialogs.errorDialog.reviewTemplate')}}</li>
         <li>{{$t('dialogs.errorDialog.publishIssue')}}</li>
       </ul>
-      <div class="text--sub-title-1">
+      <div class="text--sub-title-1 mt-3">
         {{$t('dialogs.errorDialog.error')}}
       </div>
       <div class="code-block mb-8">
@@ -81,9 +81,6 @@ export default {
     },
   },
   methods: {
-    closeDialog () {
-      this.dialog.value = false
-    },
     async createNewErrorIssue () {
       try {
         const title = '[Auto-generated problem report] unhandled error'

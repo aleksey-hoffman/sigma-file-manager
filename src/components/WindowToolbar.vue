@@ -259,7 +259,7 @@ export default {
             tooltip: {
               description: 'App guide',
             },
-            onClick: () => {this.dialogs.guideDialog.value = true},
+            onClick: () => {this.dialogs.appGuideDialog.value = true},
           },
           {
             type: 'workspaces-menu',

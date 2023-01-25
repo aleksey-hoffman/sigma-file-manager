@@ -7,33 +7,33 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
   <dialog-generator
     :dialog="dialog"
     :close-button="{
-      onClick: () => closeDialog()
+      onClick: () => $store.dispatch('closeDialog', {name: 'archiveAdd'})
     }"
     :action-buttons="[
       {
-        text: 'cancel',
-        onClick: () => closeDialog()
+        text: $t('cancel'),
+        onClick: () => $store.dispatch('closeDialog', {name: 'archiveAdd'})
       },
       {
-        text: 'create archive',
+        text: $t('dialogs.archiveCompressionDialog.createArchive'),
         disabled: !dialog.data.isValid,
         onClick: () => initCreateArchive()
       }
     ]"
-    title="Archive selected items"
+    :title="$t('dialogs.archiveCompressionDialog.archiveSelectedItems')"
     height="unset"
     fade-mask-bottom="0%"
   >
     <template #content>
       <v-select
         v-model="dialog.data.selectedFormat"
-        label="Archive format"
+        :label="$t('dialogs.archiveCompressionDialog.archiveFormat')"
         :items="dialog.data.formats"
       />
 
       <v-text-field
         v-model="dialog.data.dest.path"
-        label="Destination path"
+        :label="$t('dialogs.archiveCompressionDialog.destinationPath')"
         :value="dialog.data.dest.path"
         :error="!dialog.data.isValid"
         :hint="dialog.data.error"
@@ -45,7 +45,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
       <v-select
         v-model="dialog.data.compression"
-        label="Compression"
+        :label="$t('dialogs.archiveCompressionDialog.compression')"
         item-text="title"
         return-object
         :items="dialog.data.compressionOptions"
@@ -53,7 +53,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
       <v-checkbox
         v-model="dialog.data.setPassword"
-        label="Encrypt with password"
+        :label="$t('dialogs.archiveCompressionDialog.encryptWithPassword')"
         dense
         hide-details
       />
@@ -62,13 +62,13 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         v-if="dialog.data.setPassword"
         ref="archiveDialogPasswordInput"
         v-model="dialog.data.options.password"
-        label="Password"
+        :label="$t('password')"
         @keypress.enter="initCreateArchive()"
       />
 
       <v-checkbox
         v-model="dialog.data.options.deleteFilesAfter"
-        label="Delete files after"
+        :label="$t('dialogs.archiveCompressionDialog.deleteFilesAfter')"
         dense
         hide-details
       />
@@ -76,7 +76,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       <div class="mt-4">
         <div class="dialog__prop-list-item">
           <div class="dialog__prop-list-item-title">
-            Items to add:
+            {{$t('dialogs.archiveCompressionDialog.itemsToAdd')}}:
           </div>
           <div class="dialog__prop-list-item-description">
             {{targetItems.length}}
@@ -122,9 +122,6 @@ export default {
     }),
   },
   methods: {
-    closeDialog () {
-      this.dialog.value = false
-    },
     validations () {
       return {
         archiveName: this.validateArchivePath(),
@@ -132,7 +129,7 @@ export default {
     },
     validateArchivePath () {
       if (this.dialog.data.dest.name === '') {
-        this.dialog.data.error = 'Name cannot be empty'
+        this.dialog.data.error = this.$t('dialogs.archiveCompressionDialog.nameCannotBeEmpty')
         this.dialog.data.isValid = false
         return
       }
@@ -148,7 +145,7 @@ export default {
         destPath: this.dialog.data.dest.path,
         options: this.dialog.data.options,
       })
-      this.closeDialog()
+      this.$store.dispatch('closeDialog', {name: 'archiveAdd'})
     },
     processParams () {
       const pathEndsWithExt = this.dialog.data.dest.path.endsWith(`.${this.dialog.data.selectedFormat}`)

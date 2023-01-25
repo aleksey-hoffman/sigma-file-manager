@@ -7,7 +7,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
   <div
     class="note-card"
     :style="noteStyle(note)"
-    @click="$store.dispatch('OPEN_NOTE_EDITOR', {
+    @click="$store.dispatch('openNoteEditor', {
       type: 'edit',
       note: note
     })"

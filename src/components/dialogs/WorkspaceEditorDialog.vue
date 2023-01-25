@@ -7,10 +7,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
   <dialog-generator
     :dialog="dialog"
     :close-button="{
-      onClick: () => closeDialog(),
+      onClick: () => $store.dispatch('closeDialog', {name: 'workspaceEditorDialog'}),
     }"
     :action-buttons="dialogActionButtons"
-    title="Workspace editor"
+    :title="$t('dialogs.workspaceEditorDialog.workspaceEditor')"
     fade-mask-bottom="5%"
     height="90vh"
     max-width="600px"
@@ -20,7 +20,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         <!-- workspace_selector -->
         <div class="workspace-editor-dialog__section">
           <div class="text--sub-title-1 mb-2">
-            Select workspace to edit
+            {{$t('dialogs.workspaceEditorDialog.selectWorkspaceToEdit')}}
           </div>
           <div class="workspace-editor-dialog__flex-block">
             <v-select
@@ -28,7 +28,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               :items="dialog.workspaceItems"
               item-text="name"
               item-value="id"
-              label="Selected workspace"
+              :label="$t('dialogs.workspaceEditorDialog.selectedWorkspace')"
               return-object
               class="mr-4"
               @change="updateDialogProps()"
@@ -54,13 +54,13 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             </v-select>
             <AppButton
               icon="mdi-plus"
-              tooltip="Add new workspace"
+              :tooltip="$t('dialogs.workspaceEditorDialog.addNewWorkspace')"
               @click="addWorkspace()"
             />
             <AppButton
               icon="mdi-trash-can-outline"
               icon-size="16px"
-              tooltip="Delete workspace"
+              :tooltip="$t('dialogs.workspaceEditorDialog.deleteWorkspace')"
               :disabled="!isEditing || dialog.selectedWorkspace.isPrimary"
               @click="deleteWorkspace(dialog.selectedWorkspace)"
             />
@@ -70,16 +70,16 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         <!-- workspace_properties -->
         <div class="highlight-card workspace-editor-dialog__section">
           <div class="text--sub-title-1 mb-2">
-            Workspace properties
+            {{$t('dialogs.workspaceEditorDialog.workspaceProperties')}}
           </div>
           <v-text-field
             v-if="!dialog.selectedWorkspace.isPrimary"
             v-model="dialog.selectedWorkspace.name"
-            label="Workspace name"
+            :label="$t('dialogs.workspaceEditorDialog.workspaceName')"
           />
           <v-text-field
             v-model="dialog.selectedWorkspace.defaultPath"
-            label="Workspace default directory"
+            :label="$t('dialogs.workspaceEditorDialog.workspaceDefaultDirectory')"
           />
         </div>
 
@@ -90,10 +90,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         >
           <div class="pb-2">
             <div class="text--sub-title-1 mb-2">
-              Workspace launch actions
+              {{$t('dialogs.workspaceEditorDialog.workspaceLaunchActions')}}
             </div>
             <div class="mb-4 text--description-1">
-              You can trigger these actions when you switch to this workspace
+              {{$t('dialogs.workspaceEditorDialog.youCanTriggerTheseActions')}}
             </div>
             <div v-if="dialog.selectedWorkspace.actions && dialog.selectedWorkspace.actions.length > 0">
               <div class="workspace-editor-dialog__flex-block">
@@ -101,7 +101,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   v-model="dialog.selectedWorkspaceAction"
                   :items="dialog.selectedWorkspace.actions"
                   item-text="name"
-                  label="Selected action"
+                  :label="$t('dialogs.workspaceEditorDialog.selectedAction')"
                   return-object
                   class="mr-4"
                 >
@@ -127,13 +127,13 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
                 <AppButton
                   icon="mdi-plus"
-                  tooltip="Add new action"
+                  :tooltip="$t('dialogs.workspaceEditorDialog.addNewAction')"
                   @click="addWorkspaceAction()"
                 />
                 <AppButton
                   icon="mdi-trash-can-outline"
                   icon-size="16px"
-                  tooltip="Delete workspace action"
+                  :tooltip="$t('dialogs.workspaceEditorDialog.deleteWorkspaceAction')"
                   :disabled="dialog.selectedWorkspaceAction.id === null"
                   @click="deleteWorkspaceAction(dialog.selectedWorkspaceAction)"
                 />
@@ -141,7 +141,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               <!-- workspace_actions::name -->
               <v-text-field
                 v-model="dialog.selectedWorkspaceAction.name"
-                label="Action name"
+                :label="$t('dialogs.workspaceEditorDialog.actionName')"
               />
 
               <!-- workspace_actions::type -->
@@ -149,7 +149,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 v-model="dialog.selectedWorkspaceAction.type"
                 :items="dialog.workspaceActionTypes"
                 item-text="name"
-                label="Action type"
+                :label="$t('dialogs.workspaceEditorDialog.actionType')"
                 return-object
               >
                 <template #selection="{ item: actionItem }">
@@ -175,11 +175,11 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               <!-- workspace_actions::command -->
               <v-text-field
                 v-model="dialog.selectedWorkspaceAction.command"
-                label="Action command"
+                :label="$t('dialogs.workspaceEditorDialog.actionCommand')"
               />
 
               <div class="text--sub-title-1">
-                Command example:
+                {{$t('dialogs.workspaceEditorDialog.commandExample')}}:
               </div>
               <div class="workspace-editor-dialog__command-example">
                 {{dialog.selectedWorkspaceAction.type.example}}
@@ -189,7 +189,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 <v-switch
                   v-if="dialog.selectedWorkspaceAction.type.options"
                   v-model="dialog.selectedWorkspaceAction.type.options.asAdmin"
-                  label="Run command as admin"
+                  :label="$t('dialogs.workspaceEditorDialog.runCommandAsAdmin')"
                   class="mt-4 mb-2"
                   hide-details
                 />
@@ -200,7 +200,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 button-class="button-1"
                 @click="addWorkspaceAction()"
               >
-                Add new action
+                {{$t('dialogs.workspaceEditorDialog.addNewAction')}}
               </AppButton>
             </div>
           </div>
@@ -229,7 +229,7 @@ export default {
   },
   computed: {
     ...mapFields({
-      dialog: 'dialogs.workspaceEditor',
+      dialog: 'dialogs.workspaceEditorDialog',
       workspaces: 'storageData.workspaces',
     }),
     isEditing () {
@@ -239,26 +239,23 @@ export default {
       return [
         {
           vIf: true,
-          text: 'cancel',
-          onClick: () => this.closeDialog(),
+          text: this.$t('dialogs.workspaceEditorDialog.cancel'),
+          onClick: () => this.$store.dispatch('closeDialog', {name: 'workspaceEditorDialog'}),
         },
         {
           vIf: !this.isEditing,
-          text: 'Create workspace',
+          text: this.$t('dialogs.workspaceEditorDialog.createWorkspace'),
           onClick: () => this.createWorkspaceButton(),
         },
         {
           vIf: this.isEditing,
-          text: 'Save changes',
+          text: this.$t('dialogs.workspaceEditorDialog.saveChanges'),
           onClick: () => this.saveChangesButton(),
         },
       ].filter(item => item.vIf)
     },
   },
   methods: {
-    closeDialog () {
-      this.dialog.value = false
-    },
     initDialogData () {
       const workspaceTemplate = clone(this.dialog.workspaceTemplate)
       const workspaceActionTypes = clone(this.dialog.workspaceActionTypes)
@@ -273,12 +270,12 @@ export default {
       }
     },
     newWorkspaceName (item) {
-      let name = item.name || 'New workspace'
-      return item.id === null ? `Add: ${name}` : `Edit: ${name}`
+      let name = item.name || this.$t('dialogs.workspaceEditorDialog.newWorkspace')
+      return item.id === null ? `${this.$t('common.add')}: ${name}` : `${this.$t('common.edit')}: ${name}`
     },
     newWorkspaceActionName (item) {
-      let name = item.name || 'New action'
-      return item.id === null ? `Add: ${name}` : `Edit: ${name}`
+      let name = item.name || this.$t('dialogs.workspaceEditorDialog.newAction')
+      return item.id === null ? `${this.$t('common.add')}: ${name}` : `${this.$t('common.edit')}: ${name}`
     },
     getWorkspaceTypeIcon (item) {
       return item.id === null ? 'mdi-plus' : 'mdi-pencil-outline'
@@ -296,7 +293,7 @@ export default {
           action.id = index
         })
         await this.$store.dispatch('addWorkspace', this.dialog.selectedWorkspace)
-        this.closeDialog()
+        this.$store.dispatch('closeDialog', {name: 'workspaceEditorDialog'})
       }
       catch (error) {
         notifications.emit({name: 'addWorkspaceError', props: {error}})
@@ -311,7 +308,7 @@ export default {
           })
         })
         await this.updateWorkspaceStorage(updatedWorkspaceItems)
-        this.closeDialog()
+        this.$store.dispatch('closeDialog', {name: 'workspaceEditorDialog'})
       }
       catch (error) {
         notifications.emit({name: 'editWorkspaceError', props: {error}})

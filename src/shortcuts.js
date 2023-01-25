@@ -52,7 +52,7 @@ export default {
     routes: ['all'],
     icon: 'mdi-pound',
     action: {
-      name: 'TOGGLE_APP_GUIDE',
+      name: 'toggleAppGuide',
       options: 'stortcuts',
     },
     shortcut: 'Backtick',

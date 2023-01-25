@@ -3,16 +3,20 @@ License: GNU GPLv3 or later. See the license file in the project root for more i
 Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
-<template></template>
+<template>
+  <div />
+</template>
 
 <script>
 import {mapGetters} from 'vuex'
 import {mapFields} from 'vuex-map-fields'
 import * as notifications from '../utils/notifications.js'
+
 const childProcess = require('child_process')
 const getPort = require('get-port')
 const net = require('net')
 const qrCode = require('qrcode')
+
 let express
 let expressServer
 
@@ -42,40 +46,40 @@ export default {
   methods: {
     async showFirstTimeLocalSharePermissionsDialog () {
       return new Promise((resolve, reject) => {
-        this.$store.dispatch('CONFORMATION_DIALOG', {
+        this.$store.dispatch('confirmationDialog', {
           data: {
-            title: 'Firewall permissions',
+            title: this.$t('dialogs.confirmationDialog.localSharingFirewall.firewallPermissions'),
             message: `
-              <p>The "Local sharing" feature allows you to share files between computers on your local network.</p>
-              <p>To use local sharing, you need to allow the app access to your network when prompted.</p>
+              <p>${this.$t('dialogs.confirmationDialog.localSharingFirewall.localSharingFeatureAllows')}</p>
+              <p>${this.$t('dialogs.confirmationDialog.localSharingFirewall.toUseLocalSharing')}</p>
             `,
             closeButton: {
               onClick: () => {
                 resolve({action: 'cancel'})
-                this.$store.state.dialogs.conformationDialog.value = false
-              }
+                this.$store.state.dialogs.confirmationDialog.value = false
+              },
             },
             buttons: [
               {
-                text: 'cancel',
+                text: this.$t('cancel'),
                 onClick: () => {
                   resolve({action: 'cancel'})
-                  this.$store.state.dialogs.conformationDialog.value = false
-                }
+                  this.$store.state.dialogs.confirmationDialog.value = false
+                },
               },
               {
-                text: 'ok',
+                text: this.$t('ok'),
                 onClick: () => {
                   resolve({action: 'ok'})
-                  this.$store.state.dialogs.conformationDialog.value = false
+                  this.$store.state.dialogs.confirmationDialog.value = false
                   this.$store.dispatch('SET', {
                     key: 'storageData.settings.firstTimeActions.localShare',
-                    value: false
+                    value: false,
                   })
-                }
+                },
               },
-            ]
-          }
+            ],
+          },
         })
       })
     },
@@ -83,7 +87,7 @@ export default {
       if (this.firstTimeActions.localShare) {
         const result = await this.showFirstTimeLocalSharePermissionsDialog()
         if (result.action === 'cancel') {
-          throw 'cancel'
+          throw Error('cancel')
         }
       }
     },
@@ -108,7 +112,7 @@ export default {
     scheduleLocalDirectoryShareServerSelfDistruct () {
       try {
         this.$store.state.childProcesses.localDirectoryShareServer.send({
-          action: 'reset-signal::self-distruct'
+          action: 'reset-signal::self-distruct',
         })
       }
       catch (error) {}
@@ -116,7 +120,7 @@ export default {
       this.$store.state.intervals.localDirectoryShareServerSelfDistruction = setInterval(() => {
         try {
           this.$store.state.childProcesses.localDirectoryShareServer.send({
-            action: 'reset-signal::self-distruct'
+            action: 'reset-signal::self-distruct',
           })
         }
         catch (error) {}
@@ -125,7 +129,7 @@ export default {
     scheduleLocalFileShareServerSelfDistruct () {
       try {
         this.$store.state.childProcesses.localFileShareServer.send({
-          action: 'reset-signal::self-distruct'
+          action: 'reset-signal::self-distruct',
         })
       }
       catch (error) {}
@@ -133,7 +137,7 @@ export default {
       this.$store.state.intervals.localFileShareServerSelfDistruction = setInterval(() => {
         try {
           this.$store.state.childProcesses.localFileShareServer.send({
-            action: 'reset-signal::self-distruct'
+            action: 'reset-signal::self-distruct',
           })
         }
         catch (error) {}
@@ -141,26 +145,26 @@ export default {
     },
     initLocalFileShareServerProcess (path) {
       this.$store.state.childProcesses.localFileShareServer = childProcess.fork(
-        this.$utils.getSrc('./src/workers/localFileShareServerWorker.js')
+        this.$utils.getSrc('./src/workers/localFileShareServerWorker.js'),
       )
       this.$store.state.childProcesses.localFileShareServer.send({
         action: 'start-server',
         path,
         fileShareType: this.fileShareType,
-        fileSharePort: this.fileSharePort
+        fileSharePort: this.fileSharePort,
       })
       this.scheduleLocalFileShareServerSelfDistruct()
     },
     initLocalDirectoryShareServerProcess (path) {
       this.$store.state.childProcesses.localDirectoryShareServer = childProcess.fork(
-        this.$utils.getSrc('./src/workers/localDirectoryShareServerWorker.js')
+        this.$utils.getSrc('./src/workers/localDirectoryShareServerWorker.js'),
       )
       this.$store.state.childProcesses.localDirectoryShareServer.send({
         action: 'start-server',
         path,
         __static: __static,
         utils: this.$utils,
-        directorySharePort: this.directorySharePort
+        directorySharePort: this.directorySharePort,
       })
       this.scheduleLocalDirectoryShareServerSelfDistruct()
     },
@@ -195,7 +199,7 @@ export default {
             dialogs: this.dialogs,
             utils: this.$utils,
             localServer: this.localServer,
-          }
+          },
         })
       }
       catch (error) {
@@ -217,7 +221,7 @@ export default {
             dialogs: this.dialogs,
             utils: this.$utils,
             localServer: this.localServer,
-          }
+          },
         })
       }
       catch (error) {
@@ -246,7 +250,7 @@ export default {
     serveDirectoryLocally (path) {
       this.generateQrCode({
         container: document.querySelector('#qr-code'),
-        content: this.localServer.directoryShare.address
+        content: this.localServer.directoryShare.address,
       })
       this.importExpress()
       this.initLocalDirectoryShareServerProcess(path)
@@ -254,7 +258,7 @@ export default {
     serveFilesLocally (path) {
       this.generateQrCode({
         container: document.querySelector('#qr-code'),
-        content: `${this.fileShareIp}:${this.fileSharePort}`
+        content: `${this.fileShareIp}:${this.fileSharePort}`,
       })
       this.importExpress()
       this.initLocalFileShareServerProcess(path)
@@ -264,7 +268,7 @@ export default {
         errorCorrectionLevel: 'H',
         margin: 2,
         width: 96,
-        height: 96
+        height: 96,
       }
       options = {...defaultOptions, ...options}
       qrCode.toCanvas(options.content, options, (error, canvas) => {
@@ -275,6 +279,6 @@ export default {
         options.container.appendChild(canvas)
       })
     },
-  }
+  },
 }
 </script>

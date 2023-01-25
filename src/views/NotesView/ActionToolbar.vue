@@ -11,7 +11,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       icon-size="22px"
       icon-class="action-toolbar__icon"
       :tooltip="$t('notes.newNote')"
-      @click="$store.dispatch('OPEN_NOTE_EDITOR', {type: 'new'})"
+      @click="$store.dispatch('openNoteEditor', {type: 'new'})"
     />
 
     <!-- button-toggle::notes -->

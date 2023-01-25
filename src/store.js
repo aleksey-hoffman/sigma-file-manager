@@ -1024,12 +1024,13 @@ export default new Vuex.Store({
         item: {}
       }
     },
+    dialogsDefaultData: {},
     dialogs: {
       errorDialog: {
         value: false,
         data: {}
       },
-      conformationDialog: {
+      confirmationDialog: {
         value: false,
         data: {
           title: '',
@@ -1043,17 +1044,19 @@ export default new Vuex.Store({
           ]
         }
       },
-      guideDialog: {
+      appGuideDialog: {
         value: false,
         data: {
           guideTabsSelected: 0,
           guideTabs: [
-            {name: 'shortcuts', text: 'Shortcuts'},
-            {name: 'introduction', text: 'Introduction'},
-            {name: 'navigator-tips', text: 'Navigator tips'},
-            {name: 'data-protection', text: 'Data protection'},
-            {name: 'address-bar', text: 'Address bar'},
-            {name: 'coming-soon', text: 'COMING SOON'},
+            {name: 'shortcuts', icon: 'mdi-pound', text: 'dialogs.appGuideDialog.nav.shortcuts'},
+            {name: 'introduction', icon: 'mdi-human-greeting-variant', text: 'dialogs.appGuideDialog.nav.introduction'},
+            {name: 'feature-overview', icon: 'mdi-list-box-outline', text: 'dialogs.appGuideDialog.nav.featureOverview'},
+            {name: 'media-downloading', icon: 'mdi-download', text: 'dialogs.appGuideDialog.nav.mediaDownloading'},
+            {name: 'navigator-tips', icon: 'mdi-folder-outline', text: 'dialogs.appGuideDialog.nav.navigatorTips'},
+            {name: 'data-protection', icon: 'mdi-lock-outline', text: 'dialogs.appGuideDialog.nav.dataProtection'},
+            {name: 'address-bar', icon: 'mdi-form-textbox', text: 'dialogs.appGuideDialog.nav.addressBar'},
+            {name: 'coming-soon', text: 'dialogs.appGuideDialog.nav.comingSoon'},
           ],
         }
       },
@@ -1240,7 +1243,7 @@ export default new Vuex.Store({
         initialData: {},
         data: {}
       },
-      workspaceEditor: {
+      workspaceEditorDialog: {
         value: false,
         workspaceItems: [],
         selectedWorkspace: {},
@@ -1331,12 +1334,12 @@ export default new Vuex.Store({
           addFormula: () => {}
         }
       },
-      downloadTypeSelector: {
+      downloadTypeSelectorDialog: {
         value: false,
         data: {
           fadeMaskBottom: '0%',
-          downloadFileButton: () => {},
-          downloadImageButton: () => {},
+          downloadFileButton: () => { },
+          downloadImageButton: () => { },
         }
       },
       externalDownloadDialog: {
@@ -1345,8 +1348,12 @@ export default new Vuex.Store({
           url: '',
           directory: '',
           video: {
-            selectedType: 'Video with audio',
-            types: ['Video with audio', 'Video only', 'Audio only'],
+            selectedType: {name: 'videoWithAudio', title: 'dialogs.externalDownloadDialog.videoWithAudio'},
+            types: [
+              {name: 'videoWithAudio', title: 'dialogs.externalDownloadDialog.videoWithAudio'},
+              {name: 'videoOnly', title: 'dialogs.externalDownloadDialog.videoOnly'},
+              {name: 'audioOnly', title: 'dialogs.externalDownloadDialog.audioOnly'}
+            ],
             quality: '720p',
             videoFormat: '',
             qualityItems: ['240p', '360p', '480p', '720p', '1080p', '1440p', '2160p'],
@@ -2801,6 +2808,20 @@ export default new Vuex.Store({
       if (!specifiedDialog.value) {
         specifiedDialog.value = true
       }
+    },
+    closeDialog ({state, dispatch}, params = {}) {
+      const defaultParams = {
+        resetData: true,
+      }
+      params = {...defaultParams, ...params}
+
+      if (params.resetData) {
+        dispatch('resetDialog', params)
+      }
+      state.dialogs[params.name].value = false
+    },
+    resetDialog ({state}, params) {
+      state.dialogs[params.name].data = utils.cloneDeep(state.dialogsDefaultData[params.name].data)
     },
     TOGGLE_ADDRESS_BAR ({ state, commit, dispatch }) {
       // If previous page was not 'navigator', set 'addressBarEditor' to 'true'
@@ -4329,11 +4350,16 @@ export default new Vuex.Store({
         value: note
       })
     },
-    OPEN_NOTE_EDITOR ({ state, commit, dispatch, getters }, payload) {
-      router.push('notes').catch((error) => {})
+    openNoteEditor ({state, dispatch}, params) {
+      const defaultParams = {
+        delay: 0
+      }
+      params = {...defaultParams, ...params}
+
+      router.push('notes').catch((error) => { })
       state.currentNotesList = 'existing'
       setTimeout(() => {
-        if (payload.type === 'new') {
+        if (params.type === 'new') {
           // Set default note properties
           let openedNote = utils.cloneDeep(state.noteEditor.defaultNote)
           // Update some properties
@@ -4344,14 +4370,14 @@ export default new Vuex.Store({
           // Add note
           dispatch('ADD_NOTE', openedNote)
         }
-        else if (payload.type === 'edit') {
+        else if (params.type === 'edit') {
           dispatch('SET', {
             key: 'noteEditor.openedNote',
-            value: payload.note
+            value: params.note
           })
         }
         state.dialogs.noteEditorDialog.value = true
-      }, 500)
+      }, params.delay)
     },
     ADD_HOME_BANNER_BACKGROUND (store, mediaItem) {
       const mediaItems = store.state.storageData.settings.homeBanner.items
@@ -4890,17 +4916,17 @@ export default new Vuex.Store({
         })
       }
     },
-    OPEN_APP_GUIDE (store, title) {
-      let index = store.state.dialogs.guideDialog.data.guideTabs.findIndex(item => item.name === title)
-      store.state.dialogs.guideDialog.data.guideTabsSelected = index
-      store.state.dialogs.guideDialog.value = true
+    openAppGuide (store, title) {
+      let index = store.state.dialogs.appGuideDialog.data.guideTabs.findIndex(item => item.name === title)
+      store.state.dialogs.appGuideDialog.data.guideTabsSelected = index
+      store.state.dialogs.appGuideDialog.value = true
     },
-    TOGGLE_APP_GUIDE (store, title) {
-      if (store.state.dialogs.guideDialog.value) {
-        store.state.dialogs.guideDialog.value = false
+    toggleAppGuide (store, title) {
+      if (store.state.dialogs.appGuideDialog.value) {
+        store.state.dialogs.appGuideDialog.value = false
       }
       else {
-        store.dispatch('OPEN_APP_GUIDE', title) 
+        store.dispatch('openAppGuide', title)
       }
     },
     MAKE_DIR_ITEM_LINK (store, params = {}) {
@@ -4984,10 +5010,10 @@ export default new Vuex.Store({
       }
       store.dispatch('CLEAR_FS_CLIPBOARD')
     },
-    CONFORMATION_DIALOG (store, params) {
+    confirmationDialog (store, params) {
       return new Promise((resolve, reject) => {
-        store.state.dialogs.conformationDialog.data = params.data
-        store.state.dialogs.conformationDialog.value = true
+        store.state.dialogs.confirmationDialog.data = params.data
+        store.state.dialogs.confirmationDialog.value = true
       })
     },
     SUDO_PASSWORD_PROMPT (store) {
@@ -4995,7 +5021,7 @@ export default new Vuex.Store({
       // The entered sudo password can potentially stay in memory
       // Or leak out in some other way.
       return new Promise((resolve, reject) => {
-        store.dispatch('CONFORMATION_DIALOG', {
+        store.dispatch('confirmationDialog', {
           data: {
             title: 'Authentication required',
             message: `This operation requires admin rights`,
@@ -5008,25 +5034,25 @@ export default new Vuex.Store({
             closeButton: {
               onClick: () => {
                 resolve('cancel')
-                store.state.dialogs.conformationDialog.data = {}
-                store.state.dialogs.conformationDialog.value = false
+                store.state.dialogs.confirmationDialog.data = {}
+                store.state.dialogs.confirmationDialog.value = false
               }
             },
             buttons: [
               {
-                text: 'cancel',
+                text: i18n.t('cancel'),
                 onClick: () => {
                   resolve('cancel')
-                  store.state.dialogs.conformationDialog.data = {}
-                  store.state.dialogs.conformationDialog.value = false
+                  store.state.dialogs.confirmationDialog.data = {}
+                  store.state.dialogs.confirmationDialog.value = false
                 }
               },
               {
                 text: 'enter',
                 onClick: () => {
-                  resolve({action: 'enter', data: store.state.dialogs.conformationDialog.data})
-                  store.state.dialogs.conformationDialog.data = {}
-                  store.state.dialogs.conformationDialog.value = false
+                  resolve({ action: 'enter', data: store.state.dialogs.confirmationDialog.data })
+                  store.state.dialogs.confirmationDialog.data = {}
+                  store.state.dialogs.confirmationDialog.value = false
                 }
               },
             ]
@@ -5036,7 +5062,7 @@ export default new Vuex.Store({
     },
     SHOW_CONFIRMATION_DIALOG_MAKE_LINK (store, params) {
       return new Promise((resolve, reject) => {
-        store.dispatch('CONFORMATION_DIALOG', {
+        store.dispatch('confirmationDialog', {
           data: {
             title: params.title,
             message: `Specify link destination path`,
@@ -5049,25 +5075,25 @@ export default new Vuex.Store({
             closeButton: {
               onClick: () => {
                 resolve('cancel')
-                store.state.dialogs.conformationDialog.data = {}
-                store.state.dialogs.conformationDialog.value = false
+                store.state.dialogs.confirmationDialog.data = {}
+                store.state.dialogs.confirmationDialog.value = false
               }
             },
             buttons: [
               {
-                text: 'cancel',
+                text: i18n.t('cancel'),
                 onClick: () => {
                   resolve('cancel')
-                  store.state.dialogs.conformationDialog.data = {}
-                  store.state.dialogs.conformationDialog.value = false
+                  store.state.dialogs.confirmationDialog.data = {}
+                  store.state.dialogs.confirmationDialog.value = false
                 }
               },
               {
                 text: 'create',
                 onClick: () => {
-                  resolve({action: 'create', data: store.state.dialogs.conformationDialog.data})
-                  store.state.dialogs.conformationDialog.data = {}
-                  store.state.dialogs.conformationDialog.value = false
+                  resolve({ action: 'create', data: store.state.dialogs.confirmationDialog.data })
+                  store.state.dialogs.confirmationDialog.data = {}
+                  store.state.dialogs.confirmationDialog.value = false
                 }
               },
             ]
@@ -5087,15 +5113,15 @@ export default new Vuex.Store({
           `,
           closeButton: {
             onClick: () => {
-              store.state.dialogs.conformationDialog.value = false
+              store.state.dialogs.confirmationDialog.value = false
               resolve('cancel')
             }
           },
           buttons: [
             {
-              text: 'cancel',
+              text: i18n.t('cancel'),
               onClick: () => {
-                store.state.dialogs.conformationDialog.value = false
+                store.state.dialogs.confirmationDialog.value = false
                 resolve('cancel')
               }
             },
@@ -5103,7 +5129,7 @@ export default new Vuex.Store({
               text: 'replace all',
               onClick: () => {
                 resolve('replace-all')
-                store.state.dialogs.conformationDialog.value = false
+                store.state.dialogs.confirmationDialog.value = false
                 // const unprotectedItems = [...editTargets].filter(item => {
                 //   return !state.storageData.protected.items.some(protectedItem => {
                 //     return protectedItem.path === item.path
@@ -5116,7 +5142,7 @@ export default new Vuex.Store({
               text: 'Auto rename',
               onClick: () => {
                 resolve('auto-rename')
-                store.state.dialogs.conformationDialog.value = false
+                store.state.dialogs.confirmationDialog.value = false
                 // resolve({ status: 'success:delete-all', editTargets })
                 // dispatch('REMOVE_FROM_PROTECTED', {
                 //   items: editTargets,
@@ -5136,8 +5162,8 @@ export default new Vuex.Store({
             }
           ]
         }
-        store.state.dialogs.conformationDialog.data = data
-        store.state.dialogs.conformationDialog.value = true
+        store.state.dialogs.confirmationDialog.data = data
+        store.state.dialogs.confirmationDialog.value = true
       })
     },
     async getTransferConflictingDirItems (store, params) {
@@ -5174,7 +5200,7 @@ export default new Vuex.Store({
           })
           
           if (conflictingDirItems.length > 0) {
-            await showConformationDialog(conflictingDirItems)
+            await showConfirmationDialog(conflictingDirItems)
           }
           else {
             await initCopyProcess(params)
@@ -5185,7 +5211,7 @@ export default new Vuex.Store({
         }
       }
 
-      async function showConformationDialog (conflictingDirItems) {
+      async function showConfirmationDialog (conflictingDirItems) {
         const conformationResult = await store.dispatch('SHOW_CONFIRMATION_DIALOG_PASTE_DIR_ITEMS', {
           conflictingDirItems
         })

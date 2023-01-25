@@ -7,20 +7,20 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
   <dialog-generator
     :dialog="dialog"
     :close-button="{
-      onClick: () => closeDialog()
+      onClick: () => $store.dispatch('closeDialog', {name: 'archiveExtract'})
     }"
     :action-buttons="[
       {
-        text: 'cancel',
-        onClick: () => closeDialog()
+        text: $t('cancel'),
+        onClick: () => $store.dispatch('closeDialog', {name: 'archiveExtract'})
       },
       {
-        text: 'extract archive',
+        text: $t('dialogs.archiveExtractionDialog.extractArchive'),
         disabled: !dialog.data.isValid,
         onClick: () => initExtractArchive()
       }
     ]"
-    title="Extract archive"
+    :title="$t('dialogs.archiveExtractionDialog.extractArchive')"
     height="unset"
     fade-mask-bottom="0%"
   >
@@ -31,7 +31,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         v-model="dialog.data.password"
         :error="!validations.archivePassword.isValid"
         autofocus
-        label="Password"
+        :label="$t('password')"
         @keypress.enter="initExtractArchive()"
       />
 
@@ -39,7 +39,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         ref="archiveExtractDialogDestPathInput"
         v-model="dialog.data.destPath"
         autofocus
-        label="Destination path"
+        :label="$t('dialogs.archiveExtractionDialog.destinationPath')"
         @keypress.enter="initExtractArchive()"
       />
 
@@ -54,7 +54,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           color="primary"
           class="mr-3"
         />
-        Getting stats
+        {{$t('dialogs.archiveExtractionDialog.gettingStats')}}
       </div>
       <div
         v-else
@@ -102,12 +102,9 @@ export default {
     },
   },
   methods: {
-    closeDialog () {
-      this.dialog.value = false
-    },
     validateArchivePassword () {
       if (this.dialog.data.isEncrypted && this.dialog.data.password === '') {
-        this.dialog.data.error = 'Enter password'
+        this.dialog.data.error = this.$t('enterPassword')
         this.dialog.data.isValid = false
       }
       else {

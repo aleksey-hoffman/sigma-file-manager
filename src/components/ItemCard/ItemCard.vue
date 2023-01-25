@@ -16,7 +16,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     @dblclick="itemCardOnDoubleClick({event: $event, item})"
   >
     <div
-      v-if="['dir', 'file', 'user-dir', 'drive'].includes(targetType)"
+      v-if="['dir', 'file', 'userDir', 'drive'].includes(targetType)"
       class="overlay--drag-over"
       :class="{'is-visible': showDragOverOverlay(item)}"
     />
@@ -35,7 +35,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
     <div class="item-card__thumb">
       <div
-        v-if="targetType === 'user-dir'"
+        v-if="targetType === 'userDir'"
         class="item-card__thumb__inner"
       >
         <v-icon
@@ -97,7 +97,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     </div>
 
     <div class="item-card__content">
-      <div v-if="targetType === 'user-dir'">
+      <div v-if="targetType === 'userDir'">
         <div class="item-card__content__line-1">
           {{item.title}}
         </div>

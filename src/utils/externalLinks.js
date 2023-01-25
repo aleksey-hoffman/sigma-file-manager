@@ -31,5 +31,5 @@ module.exports = {
   githubIssueTemplateFeatureRequest,
   githubAllReleases,
   githubLatestRelease,
-  githubReadmeSupportSectionLink
+  githubReadmeSupportSectionLink,
 }

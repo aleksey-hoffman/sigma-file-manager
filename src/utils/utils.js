@@ -199,7 +199,7 @@ export default {
     }
 
     function getDataText (params) {
-      let text = ''
+      let text = params.text || ''
       if (params.asPath) {
         if (moduleScope.platform === 'win32') {
           if (params.event.ctrlKey && !params.event.altKey) {
@@ -209,11 +209,9 @@ export default {
             text = `${params.text.replace(/\//g, '\\\\')}`
           }
         }
-        else {
-          text = params.text
-        }
+        return params.event.shiftKey ? `"${text}"` : text
       }
-      return params.event.shiftKey ? `"${text}"` : text
+      return text
     }
 
     function getDataMessage (params) {
