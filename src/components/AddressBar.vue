@@ -17,7 +17,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         button-class="action-toolbar__item"
         icon="mdi-wrap-disabled"
         icon-class="action-toolbar__icon"
-        :tooltip="$t('addressBar.addressBarActions')"
+        :tooltip="$t('settings.addressBar.addressBarActions')"
         :menu-items="addressBarMenuItems"
       />
 
@@ -26,7 +26,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         icon="mdi-cursor-text"
         icon-size="16px"
         icon-class="action-toolbar__icon"
-        :tooltip="$t('addressBar.editAddress')"
+        :tooltip="$t('settings.addressBar.editAddress')"
         @click="$store.dispatch('openAddressBarEditor')"
       />
 
@@ -93,7 +93,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 autofocus
                 single-line
                 hide-details
-                :label="$t('addressBar.enterValidPath')"
+                :label="$t('settings.addressBar.enterValidPath')"
                 @input="handleQueryInput()"
                 @focus="$store.state.focusedField = 'address-bar'"
                 @blur="$store.state.focusedField = ''"
@@ -121,14 +121,14 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 </template>
                 <span>
                   {{closeAddressBarEditorOnClickOutside ? $t('common.enabled') : $t('common.disabled')}} |
-                  {{$t('addressBar.keepEditorOpened')}}
+                  {{$t('settings.addressBar.keepEditorOpened')}}
                 </span>
               </v-tooltip>
 
               <AppButton
                 button-class="ml-2"
                 icon="mdi-close"
-                tooltip="$t('addressBar.closeEditor')"
+                :tooltip="$t('settings.addressBar.closeEditor')"
                 @click="addressBarEditor = false"
               />
             </v-layout>
@@ -136,18 +136,18 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               <span
                 class="inline-code--light"
                 style="padding: 1px 8px;"
-              >{{$t('common.tab')}}</span>
+              >{{addressBarShortcuts.autocompleteForward}}</span>
               {{$t('common.or')}}
               <span
                 class="inline-code--light"
                 style="padding: 1px 8px;"
-              >Shift + Tab</span>
-              {{$t('addressBar.toAutocomplete')}};
+              >{{addressBarShortcuts.autocompleteBackward}}</span>
+              {{$t('settings.addressBar.toAutocomplete')}};
               <span
                 class="inline-code--light"
                 style="padding: 1px 8px;"
-              >Enter</span>
-              {{$t('addressBar.toOpenThePath')}}
+              >{{addressBarShortcuts.openPath}}</span>
+              {{$t('settings.addressBar.toOpenThePath')}}
             </div>
           </v-card>
         </div>
@@ -178,6 +178,11 @@ export default {
       autocompleteList: [],
       autocompleteListMatchedItems: [],
       closeAddressBarEditorOnClickOutside: true,
+      addressBarShortcuts: {
+        autocompleteForward: 'Tab',
+        autocompleteBackward: 'Shift + Tab',
+        openPath: 'Enter',
+      },
     }
   },
   watch: {
@@ -205,7 +210,7 @@ export default {
     addressBarMenuItems () {
       return [
         {
-          title: this.$t('addressBar.editAddress'),
+          title: this.$t('settings.addressBar.editAddress'),
           action: 'openAddressBarEditor',
           subtitle: this.shortcuts.focusAddressBar.shortcut,
           icon: 'mdi-cursor-text',
@@ -213,7 +218,7 @@ export default {
           onClick: () => {this.addressBarMenuHandler('openAddressBarEditor')},
         },
         {
-          title: this.$t('addressBar.copyPathToClipboard'),
+          title: this.$t('settings.addressBar.copyPathToClipboard'),
           action: 'COPY_CURRENT_DIR_PATH',
           subtitle: this.shortcuts.copyCurrentDirPath.shortcut,
           icon: 'far fa-copy',
@@ -221,7 +226,7 @@ export default {
           onClick: () => {this.addressBarMenuHandler('COPY_CURRENT_DIR_PATH')},
         },
         {
-          title: this.$t('addressBar.openCopiedPath'),
+          title: this.$t('settings.addressBar.openCopiedPath'),
           action: 'OPEN_DIR_PATH_FROM_OS_CLIPBOARD',
           subtitle: this.shortcuts.openCopiedPath.shortcut,
           icon: 'far fa-clipboard',
