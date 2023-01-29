@@ -4,6 +4,11 @@
     "description": "is a free, open source, advanced, modern file manager app, licensed under GNU GPLv3 or later.",
     "copyright": "Copyright © 2021 - present Aleksey Hoffman. All rights reserved."
   },
+  "units": {
+    "px": "px",
+    "vh": "vh",
+    "mb": "MB"
+  },
   "pages": {
     "home": "Home page",
     "navigator": "Navigator",
@@ -25,11 +30,6 @@
     "other": "0 others | 1 other | {n} others | {n} others",
     "directories": "0 directories | 1 directory | {n} directories | {n} directories",
     "drivesSelected": "0 drives selected | 1 drive selected | {n} drives selected | {n} drives selected"
-  },
-  "units": {
-    "px": "px",
-    "vh": "vh",
-    "mb": "MB"
   },
   "tabs": {
     "workspaceTabs": "Workspace tabs",
