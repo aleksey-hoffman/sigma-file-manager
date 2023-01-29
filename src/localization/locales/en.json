@@ -398,7 +398,7 @@
       "sigmaDefault": "Sigma default",
       "sigmaDefaultDescription": "This custom Sigma history style allows you to get back to previously opened paths, even after inserting a new path into the history while navigating the history stack.",
       "traditional": "Traditional",
-      "traditionalDescription": "This is a traditional history style, used in vast majority of apps. It overwrites all succeding paths when you insert a new path anywhere other than the end, which means once you go back in history and open some other directory, all succedding entries will be gone.",
+      "traditionalDescription": "This is a traditional history style, used in the vast majority of apps. It overwrites all succeeding paths when you insert a new path anywhere other than the end, which means once you go back in history and open some other directory, all succeeding entries will be gone.",
       "example": {
         "openDirectory": "Open directory",
         "userPath": "/user",
@@ -426,7 +426,7 @@
       "activateWhenDirectoryChanges": "Activate item filtering when directory changes",
       "helpers": "Helpers",
       "spellcheck": "Spellcheck",
-      "valueRangeFrom200To1000ms'": "The value should be in range 200 - 1000 (ms)"
+      "valueRangeFrom200To1000ms": "The value should be in range 200 - 1000 (ms)"
     },
     "mouseButtons": {
       "mouseButtons": "Mouse buttons",
@@ -921,7 +921,7 @@
         "focusAppInstruction": "to focus it (bring it to the foreground). Press the shortcut again to hide the app.",
         "createNewNoteInfo": "Create new note",
         "createNewNoteShortcut": "Press",
-        "createNewNoteInstruction": "to focus this app, immidiately create a new note, and open the note editor for you.",
+        "createNewNoteInstruction": "to focus this app, immediately create a new note, and open the note editor for you.",
         "switchTabInfo": "Switch tab",
         "switchTabShortcut": "When this app is focused and you have some tabs opened in the current workspace, press",
         "switchTabInstruction": "to open specified tab."
@@ -973,11 +973,11 @@
       "dataProtection": {
         "mainPurpose": "The main purpose of this feature is to provide an ability to protect important files / directories from being accessed and modified (read / write / delete / rename / etc.).",
         "protectionIsAchieved": "The protection is achieved by setting certain file attributes to 'deny' state. It does not encrypt the data. Protected files can still be read / modified when the attributes are removed.",
-        "goodWayToPreventYourself": "It's a good way to prevent yourself and different apps from accidentaly / purposefully modifying important files. It might even help to protect your data from unsophisticate malicious software.",
+        "goodWayToPreventYourself": "It's a good way to prevent yourself and different apps from accidentally / purposefully modifying important files. It might even help to protect your data from unsophisticated malicious software.",
         "modes": "Modes",
         "simpleMode": "\"Simple mode\" protects specified items (files / directories) from modification only from within this app. The items can still be read and modified from any other program.",
         "advancedMode": "\"Advanced mode\" is targeted for advanced users. It allows you to manually set different attributes for specified items.",
-        "immutableMode": "\"Immutable mode\" is a quick way to protect a file / dreictory by making it immutable. When enabled, the system will set all attributes of the specified file / directory to 'denied' state, and make it immutable (which means programs will not be able to read / write / modify / delete it without reseting the attributes).",
+        "immutableMode": "\"Immutable mode\" is a quick way to protect a file / directory by making it immutable. When enabled, the system will set all attributes of the specified file / directory to 'denied' state, and make it immutable (which means programs will not be able to read / write / modify / delete it without resetting the attributes).",
         "warning": "Warning",
         "useWithCaution": "Use with caution. The \"Advanced mode\" and \"Immutable mode\" are still in early development. The feature hasn't been thoroughly tested yet. Theoretically it can lock a file / directory in a way that will make it impossible for you to ever access its contents. Make sure to test this feature on some test files / directories before using it on important data. And report the problems if you find any by creating a issue on the project's Github page."
       },
@@ -996,7 +996,7 @@
         "followsStandards": "Follows standards",
         "onWindowsOsAllBackwardSlashes": "on Windows OS, all backward slashes",
         "areAutomaticallyConverted": "are automatically converted to forward slashes",
-        "toProvideSeamless": "to provide a seamless standartized workflow",
+        "toProvideSeamless": "to provide a seamless standardized workflow",
         "whereToFindIt": "Where to find it",
         "addressBarCanBeOpened": "Address bar can be opened from any page with the shortcut",
         "orByPressing": "or by pressing",
