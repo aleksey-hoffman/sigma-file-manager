@@ -376,7 +376,7 @@ function getNotification (params) {
           value: `
             <strong>${i18n.t('notifications.trashedItems')}:</strong> 
             <span class="inline-code--light py-0">
-              ${i18n.t('notifications.removedNItemsOfTotal', {removedAmount: params?.props?.items?.length, totalAmount: params?.props?.notRemovedItems?.length})}
+              ${i18n.t('notifications.removedNItemsOfTotal', {removedAmount: params?.props?.notRemovedItems?.length, totalAmount: params?.props?.items?.length})}
             </span>
             <br><strong>${i18n.t('notifications.deletedItemsSize')}:</strong>
             <span class="inline-code--light py-0">
@@ -408,7 +408,7 @@ function getNotification (params) {
           value: `
             <strong>${i18n.t('notifications.deletedItems')}:</strong> 
             <span class="inline-code--light py-0">
-              ${i18n.t('notifications.removedItemsAmount')}
+              ${i18n.t('notifications.removedNItemsOfTotal', {removedAmount: params?.props?.removedItems?.length, totalAmount: params?.props?.items?.length})}
             </span>
             <br><strong>${i18n.t('notifications.deletedItemsSize')}:</strong>
             <span class="inline-code--light py-0">

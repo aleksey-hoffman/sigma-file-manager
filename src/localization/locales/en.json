@@ -1051,7 +1051,6 @@
     "removedNItemsOfTotal": "{removedAmount} of {totalAmount}",
     "couldNotTrash": "Could not trash",
     "failedToDeleteSomeItems": "Failed to delete some items",
-    "removedItemsAmount": "${params?.props?.removedItems?.length} of ${params?.props?.items?.length}",
     "couldNotDelete": "Could not delete",
     "noteWasTrashed": "Note was trashed",
     "switchToTrashedNotesList": "Switch to \"trashed notes\" list to see all trashed notes",
