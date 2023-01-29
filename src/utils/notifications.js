@@ -18,7 +18,7 @@ function getNotification (params) {
       timeout: 8000,
       closeButton: true,
       colorStatus: 'red',
-      title: 'Error occured',
+      title: i18n.t('errorOccured'),
       message: params?.props?.error,
     },
     cannotFetchDirItems: {
@@ -27,7 +27,7 @@ function getNotification (params) {
       timeout: 5000,
       closeButton: true,
       colorStatus: 'red',
-      title: 'Cannot fetch directory items',
+      title: i18n.t('notifications.cannotFetchDirectoryItems'),
       message: params?.props?.error,
     },
     copyTextToClipboard: {
@@ -46,10 +46,10 @@ function getNotification (params) {
       closeButton: true,
       colorStatus: 'red',
       icon: 'mdi-clipboard-text-multiple-outline',
-      title: 'Error during copying',
+      title: i18n.t('notifications.errorDuringCopying'),
       message: `
-        Cannot copy specified value as text.
-        <br>Data type: <span class="inline-code--light">${typeof params?.props?.text}</span>
+        ${i18n.t('notifications.cannotCopySpecifiedValueAsText')}
+        <br>${i18n.t('dataType')}: <span class="inline-code--light">${typeof params?.props?.text}</span>
       `,
     },
     copyDirItemsInProgress: {
@@ -60,7 +60,7 @@ function getNotification (params) {
       colorStatus: 'blue',
       closeButton: true,
       timeout: 0,
-      title: 'Copying items',
+      title: i18n.t('notifications.copyingItems'),
     },
     copyDirItemsSuccess: {
       action: 'update-by-hash',
@@ -71,7 +71,7 @@ function getNotification (params) {
       icon: '',
       closeButton: true,
       timeout: 3000,
-      title: `Copied ${params?.props?.items} items`,
+      title: i18n.tc('notifications.copiedNItems', params?.props?.items),
     },
     moveDirItemsInProgress: {
       action: 'update-by-hash',
@@ -81,7 +81,7 @@ function getNotification (params) {
       colorStatus: 'blue',
       closeButton: true,
       timeout: 0,
-      title: 'Moving items',
+      title: i18n.t('notifications.movingItems'),
     },
     moveDirItemsSuccess: {
       action: 'update-by-hash',
@@ -92,7 +92,7 @@ function getNotification (params) {
       icon: '',
       closeButton: true,
       timeout: 3000,
-      title: `Moved ${params?.props?.items} items`,
+      title: i18n.tc('notifications.movedNItems', params?.props?.items),
     },
     transferDirItemsError: {
       action: 'update-by-hash',
@@ -114,7 +114,7 @@ function getNotification (params) {
       colorStatus: 'red',
       closeButton: true,
       timeout: 5000,
-      title: 'Error: cannot get storage devices',
+      title: i18n.t('notifications.errorCannotGetStorageDevices'),
       message: params?.props?.error,
     },
     errorGettingOneDriveData: {
@@ -125,7 +125,7 @@ function getNotification (params) {
       colorStatus: 'red',
       closeButton: true,
       timeout: 5000,
-      title: 'Error: cannot get OneDrive data',
+      title: i18n.t('notifications.errorCannotGetOneDriveData'),
       message: params?.props?.error,
     },
     renameFailedNoLongerExists: {
@@ -133,10 +133,10 @@ function getNotification (params) {
       colorStatus: 'red',
       timeout: 6000,
       closeButton: true,
-      title: 'Failed to rename item',
+      title: i18n.t('notifications.failedToRenameItem'),
       message: `
-        File / directory that you are renaming no longer exists:
-        <br><strong>Path:</strong> ${params?.props?.oldPath}
+        ${i18n.t('notifications.fileDirectoryRenamingNoLongerExists')}:
+        <br><strong>${i18n.t('path')}:</strong> ${params?.props?.oldPath}
       `,
     },
     renameFailedError: {
@@ -144,7 +144,7 @@ function getNotification (params) {
       colorStatus: 'red',
       timeout: 6000,
       closeButton: true,
-      title: 'Failed to rename item',
+      title: i18n.t('notifications.failedToRenameItem'),
       error: params?.props?.error,
     },
     renameFailedAlreadyExistsOrLocked: {
@@ -152,9 +152,9 @@ function getNotification (params) {
       colorStatus: 'red',
       timeout: 5000,
       closeButton: true,
-      title: 'Failed to rename item',
+      title: i18n.t('notifications.failedToRenameItem'),
       message: `
-        Item with that name already exists or locked by another program:
+        ${i18n.t('notifications.fileNameAlreadyExistsOrLocked')}:
         <br>${params?.props?.newName}
       `,
     },
@@ -163,7 +163,7 @@ function getNotification (params) {
       colorStatus: 'green',
       timeout: 3000,
       closeButton: true,
-      title: 'Rename undone',
+      title: i18n.t('notifications.renameUndone'),
       message: '',
     },
     tabRemoved: {
@@ -171,7 +171,7 @@ function getNotification (params) {
       type: 'tabRemoved',
       timeout: 3000,
       closeButton: true,
-      title: 'Removed tab from current workspace',
+      title: i18n.t('notifications.removedTabFromCurrentWorkspace'),
       message: `${params?.props?.tabPath}`,
     },
     tabAdded: {
@@ -179,9 +179,9 @@ function getNotification (params) {
       type: 'tabAdded',
       timeout: 3000,
       closeButton: true,
-      title: 'Tab added to current workspace',
+      title: i18n.t('notifications.tabAddedToCurrentWorkspace'),
       message: `
-        Shortcut to open: 
+        ${i18n.t('notifications.shortcutToOpen')}: 
         <span class="inline-code--light">${params?.props?.tabShortcut}</span>
       `,
     },
@@ -190,9 +190,9 @@ function getNotification (params) {
       type: 'tabIsAlreadyOpened',
       timeout: 5000,
       closeButton: true,
-      title: 'Tab for this directory is already opened',
+      title: i18n.t('notifications.tabForThisDirectoryIsAlreadyOpened'),
       message: `
-        Position: ${params?.props?.tabIndex}
+        ${i18n.t('position')}: ${params?.props?.tabIndex}
       `,
     },
     closedAllTabsInCurrentWorkspace: {
@@ -200,27 +200,27 @@ function getNotification (params) {
       type: 'closedAllTabsInCurrentWorkspace',
       timeout: 3000,
       closeButton: true,
-      title: 'Closed all tabs in current workspace',
+      title: i18n.t('notifications.closedAllTabsInCurrentWorkspace'),
     },
     currentWorkspaceHasNoTabs: {
       action: 'update-by-type',
       type: 'currentWorkspaceHasNoTabs',
       timeout: 3000,
       closeButton: true,
-      title: 'Current workspace has no tabs',
+      title: i18n.t('notifications.currentWorkspaceHasNoTabs'),
     },
     archiveAddDataError: {
       action: 'update-by-type',
       type: 'archiveAddDataError',
       timeout: 5000,
-      title: 'Error: cannot add data to the archive',
+      title: i18n.t('notifications.errorCannotAddDataToTheArchive'),
       error: params?.props?.error,
     },
     archiveExtractionError: {
       action: 'update-by-type',
       type: 'archiveExtractionError',
       timeout: 8000,
-      title: 'Extract archive: error',
+      title: i18n.t('notifications.extractArchiveError'),
       message: params?.props?.error,
     },
     archiveExtractionCanceled: {
@@ -230,7 +230,7 @@ function getNotification (params) {
       timeout: 3000,
       actionButtons: [],
       colorStatus: 'red',
-      title: 'Archive extraction canceled',
+      title: i18n.t('notifications.archiveExtractionCanceled'),
     },
     archiveCreationCanceled: {
       action: 'update-by-hash',
@@ -239,7 +239,7 @@ function getNotification (params) {
       timeout: 3000,
       actionButtons: [],
       colorStatus: 'red',
-      title: 'Archive creation canceled',
+      title: i18n.t('notifications.archiveCreationCanceled'),
     },
     archiveWasCreated: {
       action: 'update-by-hash',
@@ -248,10 +248,10 @@ function getNotification (params) {
       timeout: 5000,
       actionButtons: [],
       colorStatus: 'green',
-      title: 'Create archive: success',
+      title: i18n.t('notifications.createArchiveSuccess'),
       message: `
-        Done • ${params?.props?.progress?.fileCount} files
-        <br><strong>Destination path:</strong> ${params?.props?.params?.destPath}
+        ${i18n.t('done')} • ${i18n.tc('nFiles', params?.props?.progress?.fileCount)}
+        <br><strong>${i18n.t('destinationPath')}:</strong> ${params?.props?.params?.destPath}
       `,
     },
     archiveWasExtracted: {
@@ -261,10 +261,10 @@ function getNotification (params) {
       timeout: 5000,
       actionButtons: [],
       colorStatus: 'green',
-      title: 'Extract archive: success',
+      title: i18n.t('notifications.extractArchiveSuccess'),
       message: `
-        Done • ${params?.props?.progress?.fileCount} files
-        <br><strong>Destination path:</strong> ${params?.props?.params?.destPath}
+        ${i18n.t('done')} • ${i18n.tc('nFiles', params?.props?.progress?.fileCount)}
+        <br><strong>${i18n.t('destinationPath')}:</strong> ${params?.props?.params?.destPath}
       `,
     },
     archiveCreationProgress: {
@@ -272,16 +272,16 @@ function getNotification (params) {
       hashID: params?.props?.hashID,
       progress: params?.props?.progress,
       timeout: 0,
-      title: 'Creating archive',
+      title: i18n.t('notifications.creatingArchive'),
       message: `
         ${params?.props?.progress?.percent}% • 
-        ${params?.props?.progress?.fileCount} files
-        <br><strong>Source:</strong> ${params?.props?.params?.source}
-        <br><strong>Destination:</strong> ${params?.props?.params?.dest}
+        ${i18n.tc('nFiles', params?.props?.progress?.fileCount)}
+        <br><strong>${i18n.t('sourcePath')}:</strong> ${params?.props?.params?.source}
+        <br><strong>${i18n.t('destinationPath')}:</strong> ${params?.props?.params?.dest}
       `,
       actionButtons: [
         {
-          title: 'cancel',
+          title: i18n.t('cancel'),
           onClick: () => {
             params?.props?.archiveStream?._childProcess.kill()
             params.props.archiveState.isCanceled = true
@@ -294,16 +294,16 @@ function getNotification (params) {
       hashID: params?.props?.hashID,
       progress: params?.props?.progress,
       timeout: 0,
-      title: 'Extract archive: in progress',
+      title: i18n.t('notifications.extractArchiveInProgress'),
       message: `
         ${params?.props?.progress?.percent}% • 
-        ${params?.props?.progress?.fileCount} files
-        <br><strong>Source:</strong> ${params?.props?.params?.source}
-        <br><strong>Destination:</strong> ${params?.props?.params?.dest}
+        ${i18n.tc('nFiles', params?.props?.progress?.fileCount)}
+        <br><strong>${i18n.t('sourcePath')}:</strong> ${params?.props?.params?.source}
+        <br><strong>${i18n.t('destinationPath')}:</strong> ${params?.props?.params?.dest}
       `,
       actionButtons: [
         {
-          title: 'cancel',
+          title: i18n.t('cancel'),
           onClick: () => {
             params?.props?.archiveStream?._childProcess.kill()
             params.props.archiveState.isCanceled = true
@@ -316,7 +316,7 @@ function getNotification (params) {
       type: 'cannotDeleteDriveRootDir',
       icon: 'mdi-delete-forever-outline',
       timeout: 3000,
-      title: 'You cannot delete drive\'s root directory',
+      title: i18n.t('notifications.youCannotDeleteDriveSRootDirectory'),
     },
     trashItemsSuccess: {
       action: 'update-by-type',
@@ -324,11 +324,11 @@ function getNotification (params) {
       icon: 'mdi-trash-can-outline',
       colorStatus: 'green',
       timeout: 5000,
-      title: 'All items were trashed',
+      title: i18n.t('notifications.allItemsWereTrashed'),
       message: `
-        <strong>Trashed items:</strong> 
+        <strong>${i18n.t('notifications.trashedItems')}:</strong> 
         ${params?.props?.removedItems?.length}
-        <br><strong>Trashed items size:</strong> 
+        <br><strong>${i18n.t('notifications.trashedItemsSize')}:</strong> 
         ${params?.props?.removedItemsSize}
       `,
     },
@@ -338,11 +338,11 @@ function getNotification (params) {
       icon: 'mdi-delete-forever-outline',
       colorStatus: 'green',
       timeout: 5000,
-      title: 'All items were deleted',
+      title: i18n.t('notifications.allItemsWereDeleted'),
       message: `
-        <strong>Deleted items:</strong> 
+        <strong>${i18n.t('notifications.deletedItems')}:</strong> 
         ${params?.props?.removedItems?.length}
-        <br><strong>Deleted items size:</strong> 
+        <br><strong>${i18n.t('notifications.deletedItemsSize')}:</strong> 
         ${params?.props?.removedItemsSize}
       `,
     },
@@ -352,7 +352,7 @@ function getNotification (params) {
       icon: 'mdi-trash-can-outline',
       colorStatus: 'red',
       timeout: 5000,
-      title: 'Error: trash items',
+      title: i18n.t('notifications.errorTrashItems'),
     },
     deleteItemsError: {
       action: 'update-by-type',
@@ -360,7 +360,7 @@ function getNotification (params) {
       icon: 'mdi-delete-forever-outline',
       colorStatus: 'red',
       timeout: 5000,
-      title: 'Error: delete items',
+      title: i18n.t('notifications.errorDeleteItems'),
     },
     trashItemsFailure: {
       action: 'update-by-type',
@@ -369,24 +369,22 @@ function getNotification (params) {
       colorStatus: 'red',
       timeout: 10000,
       closeButton: true,
-      title: 'Failed to trash some items',
+      title: i18n.t('notifications.failedToTrashSomeItems'),
       content: [
         {
           type: 'html',
           value: `
-            <strong>Trashed items:</strong> 
+            <strong>${i18n.t('notifications.trashedItems')}:</strong> 
             <span class="inline-code--light py-0">
-              ${params?.props?.items?.length}
-              of 
-              ${params?.props?.notRemovedItems?.length}
+              ${i18n.t('notifications.removedNItemsOfTotal', {removedAmount: params?.props?.items?.length, totalAmount: params?.props?.notRemovedItems?.length})}
             </span>
-            <br><strong>Deleted items size:</strong>
+            <br><strong>${i18n.t('notifications.deletedItemsSize')}:</strong>
             <span class="inline-code--light py-0">
               ${params?.props?.removedItemSize}
             </span>
-            <br><strong>Could not trash:</strong>
+            <br><strong>${i18n.t('notifications.couldNotTrash')}:</strong>
             <span class="inline-code--light py-0">
-              ${params?.props?.notRemovedItems?.length} items:
+              ${i18n.tc('item', params?.props?.notRemovedItems?.length)}:
             </span>
           `,
         },
@@ -403,24 +401,22 @@ function getNotification (params) {
       colorStatus: 'red',
       timeout: 10000,
       closeButton: true,
-      title: 'Failed to delete some items',
+      title: i18n.t('notifications.failedToDeleteSomeItems'),
       content: [
         {
           type: 'html',
           value: `
-            <strong>Deleted items:</strong> 
+            <strong>${i18n.t('notifications.deletedItems')}:</strong> 
             <span class="inline-code--light py-0">
-              ${params?.props?.removedItems?.length}
-              of 
-              ${params?.props?.items?.length}
+              ${i18n.t('notifications.removedItemsAmount')}
             </span>
-            <br><strong>Deleted items size:</strong>
+            <br><strong>${i18n.t('notifications.deletedItemsSize')}:</strong>
             <span class="inline-code--light py-0">
               ${params?.props?.removedItemSize}
             </span>
-            <br><strong>Could not delete:</strong>
+            <br><strong>${i18n.t('notifications.couldNotDelete')}:</strong>
             <span class="inline-code--light py-0">
-              ${params?.props?.notRemovedItems?.length} items:
+              ${i18n.tc('item', params?.props?.notRemovedItems?.length)}:
             </span>
           `,
         },
@@ -434,114 +430,114 @@ function getNotification (params) {
       action: 'add',
       actionButtons: [
         {
-          title: 'Undo',
+          title: i18n.t('undo'),
           action: 'undoTrashNote',
           closesNotification: true,
         },
       ],
       closeButton: true,
       timeout: 10000,
-      title: 'Note was trashed',
-      message: 'Switch to "trashed notes" list to see all trashed notes',
+      title: i18n.t('notifications.noteWasTrashed'),
+      message: i18n.t('notifications.switchToTrashedNotesList'),
     },
     removedFromPinnedSuccess: {
       action: 'update-by-type',
       type: 'removedFromPinnedSuccess',
       timeout: 2000,
       closeButton: true,
-      title: `Removed ${params?.props?.itemCounter} items from pinned`,
+      title: i18n.tc('notifications.removedNItemsFromPinned', params?.props?.itemCounter),
     },
     addedToPinnedSuccess: {
       action: 'update-by-type',
       type: 'addedToPinnedSuccess',
       timeout: 2000,
       closeButton: true,
-      title: `Added ${params?.props?.itemCounter} items to pinned`,
+      title: i18n.tc('notifications.addedNItemsToPinned', params?.props?.itemCounter),
     },
     removedFromProtectedSuccess: {
       action: 'update-by-type',
       type: 'removedFromProtectedSuccess',
       timeout: 2000,
       closeButton: true,
-      title: `Removed ${params?.props?.itemCounter} items from protected`,
+      title: i18n.tc('notifications.removedNItemsFromProtected', params?.props?.itemCounter),
     },
     addedToProtectedSuccess: {
       action: 'update-by-type',
       type: 'addedToProtectedSuccess',
       timeout: 2000,
       closeButton: true,
-      title: `Added ${params?.props?.itemCounter} items to protected`,
+      title: i18n.tc('notifications.addedNItemsToProtected', params?.props?.itemCounter),
     },
     actionNotAllowedWhenInputFieldIsActive: {
       action: 'update-by-type',
       type: 'actionFailed',
       timeout: 3000,
       closeButton: true,
-      title: 'Action failed',
-      message: 'Action is not allowed when input field is active',
+      title: i18n.t('notifications.actionFailed'),
+      message: i18n.t('notifications.actionIsNotAllowedWhenInputFieldIsActive'),
     },
     actionNotAllowedWhenDialogIsOpened: {
       action: 'update-by-type',
       type: 'actionFailed',
       timeout: 3000,
       closeButton: true,
-      title: 'Action failed',
-      message: 'Action is not allowed when a dialog is opened',
+      title: i18n.t('notifications.actionFailed'),
+      message: i18n.t('notifications.actionIsNotAllowedWhenADialogIsOpened'),
     },
     actionFailedNoDirItemsSelected: {
       action: 'update-by-type',
       type: 'actionFailed',
       timeout: 3000,
       closeButton: true,
-      title: 'Action failed',
-      message: 'No directory items are selected',
+      title: i18n.t('notifications.actionFailed'),
+      message: i18n.t('notifications.noDirectoryItemsAreSelected'),
     },
     actionNotAllowedOnThisPage: {
       action: 'update-by-type',
       type: 'actionFailed',
       timeout: 3000,
       closeButton: true,
-      title: 'Action failed',
-      message: 'Action is not allowed on this page',
+      title: i18n.t('notifications.actionFailed'),
+      message: i18n.t('notifications.actionIsNotAllowedOnThisPage'),
     },
     increaseUIZoom: {
       action: 'update-by-type',
       type: 'UIZoomChange',
       timeout: 2000,
-      title: `UI scale changed: ${params?.props?.newZoomFactor}%`,
+      title: `${i18n.t('notifications.uiScaleChanged')}: ${params?.props?.newZoomFactor}%`,
     },
     decreaseUIZoom: {
       action: 'update-by-type',
       type: 'UIZoomChange',
       timeout: 2000,
-      title: `UI scale changed: ${params?.props?.newZoomFactor}%`,
+      title: `${i18n.t('notifications.uiScaleChanged')}: ${params?.props?.newZoomFactor}%`,
     },
     resetUIZoom: {
       action: 'update-by-type',
       type: 'UIZoomChange',
       timeout: 2000,
-      title: 'UI scale changed: 100%',
+      title: `${i18n.t('notifications.uiScaleChanged')}: 100%`,
     },
     directoryWasReloaded: {
       action: 'update-by-type',
       type: 'directoryWasReloaded',
       timeout: 2000,
-      title: 'Directory was reloaded',
-      message: `<strong>Directory:</strong> ${params?.props?.currentDirPath}`,
+      title: i18n.t('notifications.directoryWasReloaded'),
+      message: `<strong>${i18n.t('directory')}:</strong> ${params?.props?.currentDirPath}`,
     },
     setDirItemPermissionsSuccess: {
       action: 'update-by-type',
       type: 'setDirItemPermissionsSuccess',
       timeout: 3000,
       closeButton: true,
-      title: 'Permissions were changed',
+      title: i18n.t('notifications.permissionsWereChanged'),
     },
     setDirItemPermissionsFailure: {
       action: 'update-by-type',
       type: 'setDirItemPermissionsFailure',
       timeout: 3000,
       closeButton: true,
-      title: 'Failed to change permissions',
+      title: i18n.t('notifications.failedToChangePermissions'),
       error: params?.props?.error,
     },
     updateUnavailable: {
@@ -551,15 +547,15 @@ function getNotification (params) {
       colorStatus: 'blue',
       isPinned: true,
       removeWhenHidden: false,
-      title: 'No updates available',
+      title: i18n.t('notifications.noUpdatesAvailable'),
       message: `
-        <strong>Current version:</strong> ${params?.props?.state?.appVersion}
-        <br><strong>Latest version:</strong> ${params?.props?.latestVersion}
+        <strong>${i18n.t('currentVersion')}:</strong> ${params?.props?.state?.appVersion}
+        <br><strong>${i18n.t('latestVersion')}:</strong> ${params?.props?.latestVersion}
       `,
       closeButton: true,
       actionButtons: [
         {
-          title: 'Project page',
+          title: i18n.t('projectGithubButtons.projectPage'),
           action: '',
           extrnalLink: params?.props?.state?.appPaths?.githubRepoLink,
           onClick: () => {
@@ -577,12 +573,12 @@ function getNotification (params) {
       isUpdate: true,
       removeWhenHidden: false,
       timeout: 0,
-      title: `Update downloaded: v${params?.props?.latestVersion}`,
-      message: 'Press install to close the app and update it',
+      title: `${i18n.t('notifications.updateDownloaded')}: v${params?.props?.latestVersion}`,
+      message: i18n.t('notifications.pressInstallToCloseTheAppAndUpdateIt'),
       closeButton: true,
       actionButtons: [
         {
-          title: 'install update',
+          title: i18n.t('installUpdate'),
           action: '',
           onClick: () => {
             let updateFileDownloadDir = params?.props?.store?.state?.appPaths?.updateDownloadDir
@@ -593,7 +589,7 @@ function getNotification (params) {
           closesNotification: true,
         },
         {
-          title: 'show in directory',
+          title: i18n.t('showInDirectory'),
           action: 'showDownloadedFile',
           closesNotification: false,
           onClick: () => {
@@ -611,10 +607,10 @@ function getNotification (params) {
       timeout: 20000,
       colorStatus: 'green',
       closeButton: true,
-      title: 'Storage limit for image thumbnails was reached',
+      title: i18n.t('notifications.storageLimitForImageThumbnailsWasReached'),
       message: `
-        All previously created image thumbnails were deleted. 
-        <strong>Thumbnail storage limit:</strong> ${params?.props?.thumbDirSizeLimit}
+        ${i18n.t('notifications.allPreviouslyCreatedImageThumbnailsWereDeleted')} 
+        <strong>${i18n.t('notifications.thumbnailStorageLimit')}:</strong> ${params?.props?.thumbDirSizeLimit}
       `,
     },
     removeAppThumbsDirError: {
@@ -623,13 +619,13 @@ function getNotification (params) {
       timeout: 20000,
       colorStatus: 'red',
       closeButton: true,
-      title: 'Storage limit for image thumbnails was reached',
+      title: i18n.t('notifications.storageLimitForImageThumbnailsWasReached'),
       message: `
-        Error: could not delete existing image thumbnails.
-        <br>You can try to delete them manually:
-        <br><strong>Thumbnail directory:</strong> 
+        ${i18n.t('notifications.errorCouldNotDeleteExistingImageThumbnails')}
+        <br>${i18n.t('notifications.youCanTryToDeleteThemManually')}:
+        <br><strong>${i18n.t('notifications.thumbnailDirectory')}:</strong> 
         <br>${params?.props?.thumbDirPath}
-        <br><strong>Error:</strong>
+        <br><strong>${i18n.t('error')}:</strong>
         <br>${params?.props?.error}
       `,
     },
@@ -639,11 +635,11 @@ function getNotification (params) {
       closeButton: false,
       timeout: 0,
       colorStatus: 'green',
-      title: 'Directory is now accessible from local devices',
-      message: `Address: ${params?.props?.localServer?.directoryShare?.address}`,
+      title: i18n.t('notifications.directoryIsNowAccessibleFromLocalDevices'),
+      message: `${i18n.t('address')}: ${params?.props?.localServer?.directoryShare?.address}`,
       actionButtons: [
         {
-          title: 'stop server',
+          title: i18n.t('stopServer'),
           onClick: () => {
             params?.props?.stopLocalDirectoryShareServer()
             params.props.dialogs.localShareManagerDialog.value = false
@@ -651,7 +647,7 @@ function getNotification (params) {
           closesNotification: true,
         },
         {
-          title: 'copy address',
+          title: i18n.t('copyAddress'),
           onClick: () => {
             params?.props?.utils?.copyToClipboard({
               text: params?.props?.localServer?.directoryShare?.address,
@@ -668,11 +664,11 @@ function getNotification (params) {
       closeButton: false,
       timeout: 0,
       colorStatus: 'green',
-      title: 'Local file share is active',
-      message: `Address: ${params?.props?.localServer?.fileShare?.address}`,
+      title: i18n.t('notifications.localFileShareIsActive'),
+      message: `${i18n.t('address')}: ${params?.props?.localServer?.fileShare?.address}`,
       actionButtons: [
         {
-          title: 'stop server',
+          title: i18n.t('stopServer'),
           onClick: () => {
             params?.props?.stopLocalFileShareServer()
             params.props.dialogs.localShareManagerDialog.value = false
@@ -680,11 +676,11 @@ function getNotification (params) {
           closesNotification: true,
         },
         {
-          title: 'copy address',
+          title: i18n.t('copyAddress'),
           onClick: () => {
             params?.props?.utils?.copyToClipboard({
               text: params?.props?.localServer?.fileShare?.address,
-              title: 'Address was copied to clipboard',
+              title: i18n.t('localShareManagerDialog.addressCopiedToClipboard'),
             })
           },
           closesNotification: false,
@@ -696,7 +692,7 @@ function getNotification (params) {
       type: 'quickViewFileIsNotSupported',
       closeButton: true,
       timeout: 3000,
-      title: 'Quick view: file is not supported',
+      title: i18n.t('notifications.quickViewFileIsNotSupported'),
       message: params?.props?.data?.path?.replace('file:///', ''),
     },
     driveWasConnected: {
@@ -704,7 +700,7 @@ function getNotification (params) {
       type: 'driveWasConnected',
       timeout: 3000,
       colorStatus: 'green',
-      title: 'Drive was connected',
+      title: i18n.t('notifications.driveWasConnected'),
       closeButton: true,
     },
     searchFileIsDamaged: {
@@ -713,31 +709,31 @@ function getNotification (params) {
       timeout: 8000,
       closeButton: true,
       colorStatus: 'red',
-      title: 'Drive scan initiated',
-      message: 'One of the search files is damaged',
+      title: i18n.t('notifications.driveScanInitiated'),
+      message: i18n.t('notifications.oneOfTheSearchFilesIsDamaged'),
     },
     cannotOpenDirItem: {
       action: 'update-by-type',
       type: 'cannotOpenDirItem',
       timeout: 7000,
-      title: 'Cannot open this item',
+      title: i18n.t('notifications.cannotOpenThisItem'),
       message: `
-        <strong>Reason:</strong> item has immutable or read-only attributes.
-        <br>You can reset item permissions in the "permissions" menu.
+        <strong>${i18n.t('reason')}:</strong> ${i18n.t('notifications.itemHasImmutableOrReadOnly')}
+        <br>${i18n.t('notifications.youCanResetItemPermissions')}
       `,
     },
     cannotOpenPathFromClipboard: {
       action: 'update-by-type',
       type: 'cannotOpenPathFromClipboard',
       timeout: 6000,
-      title: 'Cannot open path from clipboard',
-      message: '<strong>Reason:</strong> path does not exist on the drive.',
+      title: i18n.t('notifications.cannotOpenPathFromClipboard'),
+      message: `<strong>${i18n.t('reason')}:</strong> ${i18n.t('notifications.pathDoesNotExistOnTheDrive')}`,
     },
     openedPathFromClipboard: {
       action: 'update-by-type',
       type: 'openedPathFromClipboard',
       timeout: 2000,
-      title: 'Opened path from clipboard',
+      title: i18n.t('notifications.openedPathFromClipboard'),
       message: params?.props?.osClipboardText,
     },
     programWasAdded: {
@@ -745,21 +741,21 @@ function getNotification (params) {
       timeout: 3000,
       closeButton: true,
       colorStatus: 'green',
-      title: 'Program was added',
+      title: i18n.t('notifications.programWasAdded'),
     },
     programWasEdited: {
       action: 'add',
       timeout: 3000,
       closeButton: true,
       colorStatus: 'green',
-      title: 'Program was edited',
+      title: i18n.t('notifications.programWasEdited'),
     },
     programWasDeleted: {
       action: 'add',
       timeout: 3000,
       closeButton: true,
       colorStatus: 'green',
-      title: 'Program was deleted',
+      title: i18n.t('notifications.programWasDeleted'),
     },
     getAppStorageBinDirPermissionsError: {
       action: 'update-by-type',
@@ -767,11 +763,10 @@ function getNotification (params) {
       timeout: 0,
       closeButton: true,
       colorStatus: 'red',
-      title: 'Shell command failed',
+      title: i18n.t('notifications.shellCommandFailed'),
       message: `
-        Could not get exec permissions for app binary dir. 
-        Some functionality will not work until permissions are granted.
-        <br><br><strong>Error</strong>: ${params?.props?.error}
+        ${i18n.t('notifications.couldNotGetAppBinsExecPermissions')}
+        <br><br><strong>${i18n.t('error')}</strong>: ${params?.props?.error}
       `,
     },
     fileDownloadIsDone: {
@@ -780,12 +775,14 @@ function getNotification (params) {
       type: 'fileDownload',
       closeButton: true,
       timeout: 0,
-      title: `Downloading ${params?.props?.data?.isUpdate ? 'update' : 'file'} • done`,
+      title: i18n.t('done') + params?.props?.data?.isUpdate
+        ? i18n.t('notifications.downloadingUpdate')
+        : i18n.t('notifications.downloadingFile'),
       message: '',
       progress: params?.props?.data,
       actionButtons: [
         {
-          title: 'open file',
+          title: i18n.t('openFile'),
           action: 'openDownloadedFile',
           closesNotification: true,
           onClick: () => {
@@ -793,7 +790,7 @@ function getNotification (params) {
           },
         },
         {
-          title: 'show in directory',
+          title: i18n.t('showInDirectory'),
           action: 'showDownloadedFile',
           closesNotification: true,
           onClick: () => {
@@ -811,12 +808,14 @@ function getNotification (params) {
       type: 'fileDownload',
       closeButton: true,
       timeout: 0,
-      title: `Downloading ${params?.props?.data?.isUpdate ? 'update' : 'file'} • paused`,
+      title: i18n.t('paused') + params?.props?.data?.isUpdate
+        ? i18n.t('notifications.downloadingUpdate')
+        : i18n.t('notifications.downloadingFile'),
       message: '',
       progress: params?.props?.data,
       actionButtons: [
         {
-          title: 'resume',
+          title: i18n.t('resume'),
           action: 'resumeDownloading',
           closesNotification: false,
           onClick: () => {
@@ -826,7 +825,7 @@ function getNotification (params) {
           },
         },
         {
-          title: 'cancel',
+          title: i18n.t('cancel'),
           action: 'cancelDownload',
           closesNotification: true,
           onClick: () => {
@@ -843,12 +842,14 @@ function getNotification (params) {
       type: 'fileDownload',
       closeButton: true,
       timeout: 0,
-      title: `Downloading ${params?.props?.data?.isUpdate ? 'update' : 'file'} • in progress`,
+      title: i18n.t('inProgress') + params?.props?.data?.isUpdate
+        ? i18n.t('notifications.downloadingUpdate')
+        : i18n.t('notifications.downloadingFile'),
       message: '',
       progress: params?.props?.data,
       actionButtons: [
         {
-          title: 'pause',
+          title: i18n.t('pause'),
           action: 'pauseDownloading',
           closesNotification: false,
           onClick: () => {
@@ -858,7 +859,7 @@ function getNotification (params) {
           },
         },
         {
-          title: 'cancel',
+          title: i18n.t('cancel'),
           action: 'cancelDownload',
           closesNotification: true,
           onClick: () => {
@@ -873,14 +874,14 @@ function getNotification (params) {
       action: 'add',
       timeout: 3000,
       closeButton: true,
-      title: i18n.t('workspaceAdded'),
+      title: i18n.t('notifications.workspaceAdded'),
     },
     addWorkspaceError: {
       action: 'add',
       timeout: 8000,
       closeButton: true,
       colorStatus: 'red',
-      title: 'Add workspace: error',
+      title: i18n.t('notifications.addWorkspaceError'),
       message: params?.props?.error,
     },
     editWorkspaceError: {
@@ -888,7 +889,7 @@ function getNotification (params) {
       timeout: 8000,
       closeButton: true,
       colorStatus: 'red',
-      title: 'Edit workspace: error',
+      title: i18n.t('notifications.editWorkspaceError'),
       message: params?.props?.error,
     },
     deleteWorkspaceError: {
@@ -896,7 +897,7 @@ function getNotification (params) {
       timeout: 8000,
       closeButton: true,
       colorStatus: 'red',
-      title: 'Delete workspace: error',
+      title: i18n.t('notifications.deleteWorkspaceError'),
       message: params?.props?.error,
     },
     deleteWorkspace: {
@@ -904,17 +905,17 @@ function getNotification (params) {
       colorStatus: 'green',
       timeout: 3000,
       closeButton: true,
-      title: `Deleted workspace "${params?.props?.name}"`,
+      title: i18n.t('notifications.deletedWorkspaceName', {name: params?.props?.name}),
     },
     switchWorkspace: {
       action: 'update-by-type',
       type: 'switchWorkspace',
       closeButton: true,
       timeout: params?.props?.actionButtons?.length > 0 ? 8000 : 2000,
-      title: `Opened workspace "${params?.props?.name}"`,
+      title: i18n.t('notifications.openedWorkspaceName', {name: params?.props?.name}),
       actionButtons: params?.props?.actionButtons,
       content: params?.props?.content,
-      message: `<b>Directory:</b> ${params?.props?.defaultPath}`,
+      message: `<b>${i18n.t('directory')}:</b> ${params?.props?.defaultPath}`,
     },
   }
   return params?.name ? notifications[params.name] : {}

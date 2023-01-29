@@ -120,7 +120,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   </v-btn>
                 </template>
                 <span>
-                  {{closeAddressBarEditorOnClickOutside ? $t('common.enabled') : $t('common.disabled')}} |
+                  {{closeAddressBarEditorOnClickOutside ? $t('enabled') : $t('disabled')}} |
                   {{$t('settings.addressBar.keepEditorOpened')}}
                 </span>
               </v-tooltip>
@@ -137,7 +137,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 class="inline-code--light"
                 style="padding: 1px 8px;"
               >{{addressBarShortcuts.autocompleteForward}}</span>
-              {{$t('common.or')}}
+              {{$t('or')}}
               <span
                 class="inline-code--light"
                 style="padding: 1px 8px;"
@@ -287,7 +287,7 @@ export default {
             type: 'address-bar:open-path',
             closeButton: true,
             timeout: 3000,
-            title: this.$t('common.pathCannotBeOpened'),
+            title: this.$t('pathCannotBeOpened'),
             message: error,
           })
         }

@@ -27,12 +27,12 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             v-show="$vuetify.breakpoint.mdAndUp"
             class="ml-2"
           >
-            Menu
+            {{$t('menu')}}
           </div>
         </v-btn>
       </div>
     </template>
-    <span>Context menu</span>
+    <span>{{$t('contextMenu')}}</span>
   </v-tooltip>
 </template>
 

@@ -35,7 +35,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       @click="$store.dispatch('SET_HOME_BANNER_BACKGROUND', item)"
     >
       <div class="progress">
-        {{$t('common.loading')}}
+        {{$t('loading')}}
       </div>
       <div class="media-picker__item-thumb-container" />
       <div class="media-picker__item-icon-container">
@@ -55,7 +55,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             </v-btn>
           </template>
           <span>
-            {{$t('common.selected')}}
+            {{$t('selected')}}
           </span>
         </v-tooltip>
 
@@ -145,7 +145,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         class="media-picker__item-overlay--description"
       >
         <div>{{$utils.getPathPart(item.fileNameBase, 'name')}}</div>
-        <div>{{$t('common.type')}}: {{getItemTypeText(item.type)}}</div>
+        <div>{{$t('type')}}: {{getItemTypeText(item.type)}}</div>
       </v-layout>
     </div>
   </div>
@@ -203,7 +203,7 @@ export default {
       }
       return type === 'image'
         ? this.$t('common.image')
-        : this.$t('common.video')
+        : this.$t('video')
     },
     initEventHubListeners () {
       this.$eventHub.$on('media-iterator:method', this.mediaIteratorMethodHandler)

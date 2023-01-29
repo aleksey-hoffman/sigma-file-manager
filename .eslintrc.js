@@ -41,7 +41,7 @@ module.exports = {
     'import/no-webpack-loader-syntax': 'warn',
     'no-mixed-operators': 'warn',
     'no-useless-catch': 'warn',
-    'no-useless-escape': 'warn',
+    'no-useless-escape': 'off',
     'no-return-assign': 'warn',
     'operator-linebreak': 'warn',
     'camelcase': 'warn',

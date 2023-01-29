@@ -264,7 +264,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                           v-on="on"
                           @click="$utils.openLink(appPaths.githubAllReleases)"
                         >
-                          {{$t('common.seeAllReleases')}}
+                          {{$t('seeAllReleases')}}
                         </v-btn>
                       </template>
                       <span>
@@ -281,7 +281,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     </v-tooltip>
                   </div>
                   <div class="text--sub-title-1 mt-2">
-                    {{$t('common.options')}}
+                    {{$t('options')}}
                   </div>
 
                   <v-switch
@@ -831,7 +831,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                           <v-text-field
                             v-model="fontFilter"
                             class="pt-0 mb-2"
-                            :label="$t('common.filter')"
+                            :label="$t('filter.filter')"
                             single-line
                             hide-details
                           />
@@ -866,7 +866,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                             :color="$utils.getCSSVar('--highlight-color-1')"
                           />
                           <div class="ml-2">
-                            {{$t('common.loadingDots')}}
+                            {{$t('loadingDots')}}
                           </div>
                         </v-layout>
                         <div v-else>
@@ -947,7 +947,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                             <v-text-field
                               v-model="dateTimeRegionalFormatFilter"
                               class="pt-0 mb-2"
-                              :label="$t('common.filter')"
+                              :label="$t('filter')"
                               single-line
                               hide-details
                             />
@@ -1249,10 +1249,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     </template>
                     <span>
                       <div>
-                        <strong> {{$t('common.warning')}}:</strong> {{$t('settings.infoPanel.intensiveFeature')}}
+                        <strong> {{$t('warning')}}:</strong> {{$t('settings.infoPanel.intensiveFeature')}}
                       </div>
                       <div class="mt-2">
-                        <strong> {{$t('common.description')}}:</strong> {{$t('settings.infoPanel.whenOpenDirectory')}}
+                        <strong> {{$t('description')}}:</strong> {{$t('settings.infoPanel.whenOpenDirectory')}}
                       </div>
                       <div class="mt-2">
                         {{$t('settings.infoPanel.oneSecond')}}
@@ -1337,11 +1337,11 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     hide-details
                   >
                     <v-radio
-                      :label="$t('common.listLayout')"
+                      :label="$t('listLayout')"
                       value="list"
                     />
                     <v-radio
-                      :label="$t('common.gridLayout')"
+                      :label="$t('gridLayout')"
                       value="grid"
                     />
                   </v-radio-group>
@@ -1356,11 +1356,11 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     hide-details
                   >
                     <v-radio
-                      :label="$t('common.scale')"
+                      :label="$t('scale')"
                       value="scale"
                     />
                     <v-radio
-                      :label="$t('common.highlight')"
+                      :label="$t('highlight')"
                       value="highlight"
                     />
                   </v-radio-group>
@@ -1395,7 +1395,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   icon: {
                     name: 'mdi-pound',
                   },
-                  title: $t('common.shortcutPlural')
+                  title: $t('shortcutPlural')
                 }"
               >
                 <template #content>
@@ -1549,7 +1549,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   />
 
                   <div class="text--sub-title-1 mt-2">
-                    {{$t('common.options')}}
+                    {{$t('options')}}
                   </div>
                   <v-switch
                     v-model="closeAppWindowWhenLastWorkspaceTabIsClosed"
@@ -1597,7 +1597,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                       </template>
                       <span>
                         {{$t('settings.navigatorHistory.sigmaDefaultDescription')}}
-                        <br /><strong>{{$t('common.example')}}</strong>
+                        <br /><strong>{{$t('example')}}</strong>
                         <br />- {{$t('settings.navigatorHistory.example.openDirectory')}} <span class="inline-code--light py-0">"{{$t('settings.navigatorHistory.example.userPath')}}"</span>
                         <br />- {{$t('settings.navigatorHistory.example.openDirectory')}} <span class="inline-code--light py-0">"{{$t('settings.navigatorHistory.example.userPicturesPath')}}"</span>
                         <br />- {{$t('settings.navigatorHistory.example.openDirectory')}} <span class="inline-code--light py-0">"{{$t('settings.navigatorHistory.example.userPicturesScreenshotsPath')}}"</span>
@@ -1624,7 +1624,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                       </template>
                       <span>
                         {{$t('settings.navigatorHistory.traditionalDescription')}}
-                        <br /><strong>{{$t('common.example')}}</strong>
+                        <br /><strong>{{$t('example')}}</strong>
                         <br />- {{$t('settings.navigatorHistory.example.openDirectory')}} <span class="inline-code--light py-0">"{{$t('settings.navigatorHistory.example.userPath')}}"</span>
                         <br />- {{$t('settings.navigatorHistory.example.openDirectory')}} <span class="inline-code--light py-0">"{{$t('settings.navigatorHistory.example.userPicturesPath')}}"</span>
                         <br />- {{$t('settings.navigatorHistory.example.openDirectory')}} <span class="inline-code--light py-0">"{{$t('settings.navigatorHistory.example.userPicturesScreenshotsPath')}}"</span>
@@ -2129,7 +2129,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     {{$t('settings.data.thumbnailStorageLimit')}}
                   </div>
 
-                  <div>{{$t('common.limit')}}: {{thumbnailStorageLimit}} {{$t('units.mb')}}</div>
+                  <div>{{$t('limit')}}: {{thumbnailStorageLimit}} {{$t('units.mb')}}</div>
 
                   <v-slider
                     v-model="thumbnailStorageLimit"
@@ -2522,19 +2522,19 @@ export default {
     headerButtons () {
       return [
         {
-          title: this.$t('settingsHeaderButtons.projectPage'),
+          title: this.$t('projectGithubButtons.projectPage'),
           link: this.appPaths.githubRepoLink,
         },
         {
-          title: this.$t('settingsHeaderButtons.requestsIssues'),
+          title: this.$t('projectGithubButtons.requestsIssues'),
           link: this.appPaths.githubIssuesLink,
         },
         {
-          title: this.$t('settingsHeaderButtons.discussions'),
+          title: this.$t('projectGithubButtons.discussions'),
           link: this.appPaths.githubDiscussionsLink,
         },
         {
-          title: this.$t('settingsHeaderButtons.stars', {n: this.githubProjectData.stars}),
+          title: this.$t('projectGithubButtons.stars', {n: this.githubProjectData.stars}),
           icon: 'mdi-star-outline',
           link: this.appPaths.githubRepoLink,
         },
@@ -2557,11 +2557,11 @@ export default {
         {
           title: this.$t('settings.general.resetZoomLevel'),
           shortcut: this.shortcuts.zoomReset.shortcut,
-          buttonText: this.$t('common.reset'),
+          buttonText: this.$t('reset'),
           onClick: () => this.$store.dispatch('RESET_UI_ZOOM'),
         },
         {
-          title: this.$t('common.fullScreen'),
+          title: this.$t('fullScreen'),
           shortcut: this.shortcuts.fullScreen.shortcut,
           icon: 'mdi-fullscreen',
           onClick: () => this.$utils.toggleFullscreen(),

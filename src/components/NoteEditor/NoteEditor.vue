@@ -715,8 +715,8 @@ NOTES:
               >
                 <v-list-item-title>
                   {{framework.title === 'Katex' && selection.mathKatexNode === null
-                    ? $t('common.add')
-                    : $t('common.edit')}}
+                    ? $t('add')
+                    : $t('edit')}}
                   {{framework.title}}
                   {{$t('notes.noteEditor.formula')}}
                 </v-list-item-title>

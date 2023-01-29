@@ -65,7 +65,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 {{itemTitle}}
               </div>
             </template>
-            <span>{{$t('common.toCopy')}}: Ctrl + LClick</span>
+            <span>{{$t('toCopy')}}: Ctrl + LClick</span>
           </v-tooltip>
 
           <!-- info-container::header::description -->
@@ -136,7 +136,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     {{getSize}}
                   </div>
                 </template>
-                <span>{{$t('common.toCopy')}}: Ctrl + LClick</span>
+                <span>{{$t('toCopy')}}: Ctrl + LClick</span>
               </v-tooltip>
             </v-layout>
           </v-layout>
@@ -232,13 +232,13 @@ export default {
         ? ` • ${this.lastSelectedDirItem?.dirItemCount} items`
         : ''
       let inaccessible = this.lastSelectedDirItem?.isInaccessible
-        ? ` • ${this.$t('common.inaccessible')}`
+        ? ` • ${this.$t('inaccessible')}`
         : ''
       let isOffline = this.lastSelectedDirItem?.fsAttributes.isOffline
-        ? ` • ${this.$t('common.offline')}`
+        ? ` • ${this.$t('offline')}`
         : ''
       let keepOnDevice = this.lastSelectedDirItem?.fsAttributes.keepOnDevice
-        ? ` • ${this.$t('common.keepOnDevice')}`
+        ? ` • ${this.$t('keepOnDevice')}`
         : ''
       let itemMimeDescription = this.itemMimeDescription
         ? ` • ${this.itemMimeDescription}`
@@ -331,13 +331,13 @@ export default {
     getSize () {
       try {
         const sizeOnDisk = this.lastSelectedDirItem?.sizeOnDisk === 0
-          ? ` • 0 ${this.$t('common.bytesOnDisk')}`
+          ? ` • 0 ${this.$t('bytesOnDisk')}`
           : ''
         const size = this.$utils.prettyBytes(this.lastSelectedDirItem?.stat?.size, 1)
         return `${size}${sizeOnDisk}`
       }
       catch (error) {
-        return this.$t('common.unknown')
+        return this.$t('unknown')
       }
     },
     shouldFetchMediaPreview () {
@@ -418,15 +418,15 @@ export default {
         copyPathTooltip = `
           <div>
             <span class="inline-code--light">${copyShortcut}</span> 
-              - ${this.$t('common.copyPath')}
+              - ${this.$t('copyPath')}
           </div>
           <div>
             <span class="inline-code--light">${copyWithSecondSlashShortcut}</span> 
-              - ${this.$t('common.copyPathAddSecondSlash')}
+              - ${this.$t('copyPathAddSecondSlash')}
           </div>
           <div>
             <span class="inline-code--light">${copyWithQuotesShortcut}</span> 
-              - ${this.$t('common.copyPathWrapWithQuotes')}
+              - ${this.$t('copyPathWrapWithQuotes')}
           </div>
         `
       }
@@ -434,11 +434,11 @@ export default {
         copyPathTooltip = `
           <div>
             <span class="inline-code--light">${copyShortcut}</span> 
-              - ${this.$t('common.copyPath')}
+              - ${this.$t('copyPath')}
           </div>
           <div>
             <span class="inline-code--light">${copyWithQuotesShortcut}</span> 
-              - ${this.$t('common.copyPathWrapWithQuotes')}
+              - ${this.$t('copyPathWrapWithQuotes')}
           </div>
         `
       }
@@ -454,25 +454,25 @@ export default {
           propName: 'dateCreated',
           title: this.$t('created'),
           value: this.$utils.getLocalDateTime(item.stat.birthtime, this.$store.state.storageData.settings.dateTime),
-          tooltip: `${this.$t('common.toCopy')}: ${copyShortcut}`,
+          tooltip: `${this.$t('toCopy')}: ${copyShortcut}`,
         },
         {
           propName: 'dateModified',
           title: this.$t('modified'),
           value: this.$utils.getLocalDateTime(item.stat.mtime, this.$store.state.storageData.settings.dateTime),
-          tooltip: `${this.$t('common.toCopy')}: ${copyShortcut}`,
+          tooltip: `${this.$t('toCopy')}: ${copyShortcut}`,
         },
         {
           propName: 'dateChanged',
           title: this.$t('changed'),
           value: this.$utils.getLocalDateTime(item.stat.ctime, this.$store.state.storageData.settings.dateTime),
-          tooltip: `${this.$t('common.toCopy')}: ${copyShortcut}`,
+          tooltip: `${this.$t('toCopy')}: ${copyShortcut}`,
         },
         {
           propName: 'permissions',
           title: this.$t('mode'),
           value: permissions,
-          tooltip: `${this.$t('common.toCopy')}: ${copyShortcut}`,
+          tooltip: `${this.$t('toCopy')}: ${copyShortcut}`,
         },
         {
           propName: 'protected',

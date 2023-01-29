@@ -80,7 +80,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 </div>
               </v-btn>
             </template>
-            <span>Hide notification</span>
+            <span>{{$t('notifications.hideNotification')}}</span>
           </v-tooltip>
 
           <!-- button:remove-notification -->
@@ -102,7 +102,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 </div>
               </v-btn>
             </template>
-            <span>Remove notification</span>
+            <span>{{$t('notifications.removeNotification')}}</span>
           </v-tooltip>
         </div>
 
@@ -162,7 +162,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   small
                   @click="listItem.onClick()"
                 >
-                  run
+                  {{$t('run')}}
                 </v-btn>
               </div>
             </div>
@@ -175,7 +175,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               v-if="notification.progress.filename"
               class="notification__item__progress__filename"
             >
-              <strong>File name:</strong>
+              <strong>{{$t('notifications.fileName')}}:</strong>
               {{notification.progress.filename}}
             </div>
             <v-layout class="mb-1">

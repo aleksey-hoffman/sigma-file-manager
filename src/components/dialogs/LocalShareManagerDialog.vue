@@ -66,7 +66,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             title: $t('dialogs.localShareManagerDialog.addressCopiedToClipboard')
           })"
         >
-          {{$t('common.copy')}}
+          {{$t('copy')}}
         </v-btn>
       </v-layout>
 

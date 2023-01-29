@@ -88,10 +88,10 @@ export default {
     }),
     locationsTitle () {
       if (process.platform === 'win32') {
-        return this.$t('common.drives')
+        return this.$t('drives')
       }
       else {
-        return this.$t('common.locations')
+        return this.$t('locations')
       }
     }
   },

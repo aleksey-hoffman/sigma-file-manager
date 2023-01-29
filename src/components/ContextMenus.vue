@@ -89,7 +89,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                         v-if="!modifierItem.modifier"
                         class="tooltip__modifier-list__title tooltip__description"
                       >
-                        Modifiers:
+                        {{$t('contextMenus.dirItem.modifiers')}}:
                       </div>
                     </div>
                   </span>
@@ -192,7 +192,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     </v-btn>
                   </template>
                   <span>
-                    <div class="tooltip__description">Go back to main menu</div>
+                    <div class="tooltip__description">{{$t('contextMenus.dirItem.goBackToMainMenu')}}</div>
                   </span>
                 </v-tooltip>
                 <v-spacer />
@@ -216,7 +216,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                         </v-icon>
                       </v-btn>
                     </template>
-                    <span>Open program editor</span>
+                    <span>{{$t('contextMenus.dirItem.openProgramEditor')}}</span>
                   </v-tooltip>
                 </div>
               </div>
@@ -241,7 +241,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                       >
                         mdi-plus
                       </v-icon>
-                      Add program
+                      {{$t('contextMenus.dirItem.addProgram')}}
                     </v-layout>
                   </v-list-item-title>
                 </v-list-item>
@@ -367,12 +367,8 @@ export default {
           icon: 'mdi-shield-alert-outline',
           iconSize: '20px',
           tooltip: {
-            title: 'Protect item',
-            text: `
-              If enabled, the item will be added to the protected list. 
-              It will be protected from being modified / deleted from within this app only.
-              Other apps can still modify / delete it.
-            `,
+            title: this.$t('contextMenus.dirItem.protectItem'),
+            text: this.$t('contextMenus.dirItem.protectedListDescription'),
           },
         },
         {
@@ -386,8 +382,8 @@ export default {
           icon: 'mdi-pin-outline',
           iconSize: '20px',
           tooltip: {
-            title: 'Add to pinned',
-            text: 'Pinned items can be found on the dashboard page',
+            title: this.$t('contextMenus.dirItem.addToPinned'),
+            text: this.$t('contextMenus.dirItem.pinnedItemsLocation'),
           },
         },
         {
@@ -404,7 +400,7 @@ export default {
           tooltip: {
             shortcutList: [
               {
-                title: 'Rename selected',
+                title: this.$t('contextMenus.dirItem.renameSelected'),
                 shortcut: this.shortcuts.renameSelected.shortcut,
               },
             ],
@@ -424,11 +420,11 @@ export default {
           tooltip: {
             shortcutList: [
               {
-                title: 'Set selected items for moving',
+                title: this.$t('contextMenus.dirItem.setSelectedItemsForMoving'),
                 shortcut: this.shortcuts.setDirItemsForMoving.shortcut,
               },
               {
-                title: 'Add selected items for moving',
+                title: this.$t('contextMenus.dirItem.addSelectedItemsForMoving'),
                 shortcut: this.shortcuts.addDirItemsForMoving.shortcut,
               },
             ],
@@ -448,11 +444,11 @@ export default {
           tooltip: {
             shortcutList: [
               {
-                title: 'Set selected items for copying',
+                title: this.$t('contextMenus.dirItem.setSelectedItemsForCopying'),
                 shortcut: this.shortcuts.setDirItemsForCopying.shortcut,
               },
               {
-                title: 'Add selected items for copying',
+                title: this.$t('contextMenus.dirItem.addSelectedItemsForCopying'),
                 shortcut: this.shortcuts.addDirItemsForCopying.shortcut,
               },
             ],
@@ -472,11 +468,11 @@ export default {
             }
             let linkModifier = this.linkModifier
             if (linkModifier === 'windows-link') {
-              params.title = 'Create Windows link (.lnk)'
+              params.title = this.$t('contextMenus.dirItem.createWindowsLinkLnk')
               params.destPath = `${srcPath}.lnk`
             }
             else {
-              params.title = 'Create symlink'
+              params.title = this.$t('contextMenus.dirItem.createSymlink')
             }
             this.$store.dispatch('SHOW_CONFIRMATION_DIALOG_MAKE_LINK', params)
               .then(result => {
@@ -550,7 +546,7 @@ export default {
       return [
         {
           name: 'open-with',
-          title: 'Open with',
+          title: this.$t('contextMenus.dirItem.openWith'),
           subMenu: 'open-with',
           selectionType: ['single', 'multiple'],
           targetTypes: ['directory', 'file', 'file-symlink', 'directory-symlink'],
@@ -563,7 +559,7 @@ export default {
         },
         {
           name: 'quick-view',
-          title: 'Quick view',
+          title: this.$t('contextMenus.dirItem.quickView'),
           selectionType: ['single'],
           targetTypes: ['file', 'file-symlink'],
           onClick: () => {
@@ -575,8 +571,8 @@ export default {
           tooltip: {
             shortcutList: [
               {
-                name: 'review file in a separate window',
-                title: 'Preview file in a separate window',
+                name: this.$t('contextMenus.dirItem.reviewFileInASeparateWindow'),
+                title: this.$t('contextMenus.dirItem.previewFileInASeparateWindow'),
                 shortcut: this.shortcuts.openWithQuickView.shortcut,
               },
             ],
@@ -584,7 +580,7 @@ export default {
         },
         {
           name: 'new-tab',
-          title: 'Open in new tab',
+          title: this.$t('contextMenus.dirItem.openInNewTab'),
           selectionType: ['single'],
           targetTypes: ['directory', 'directory-symlink'],
           onClick: () => {
@@ -596,7 +592,7 @@ export default {
         },
         {
           name: 'share-directory-with-local-devices',
-          title: 'Share directory with local devices',
+          title: this.$t('contextMenus.dirItem.shareDirectoryWithLocalDevices'),
           targetTypes: ['directory', 'directory-symlink'],
           selectionType: ['single'],
           onClick: () => {
@@ -610,7 +606,7 @@ export default {
         },
         {
           name: 'share-file-with-local-devices',
-          title: 'Share file with local devices',
+          title: this.$t('contextMenus.dirItem.shareFileWithLocalDevices'),
           targetTypes: ['file'],
           selectionType: ['single'],
           onClick: () => {
@@ -624,7 +620,7 @@ export default {
         },
         {
           name: 'compress-to-archive',
-          title: 'Compress to archive',
+          title: this.$t('contextMenus.dirItem.compressToArchive'),
           targetTypes: ['file', 'directory', 'file-symlink', 'directory-symlink'],
           selectionType: ['single', 'multiple'],
           onClick: () => {
@@ -644,7 +640,7 @@ export default {
         },
         {
           name: 'extract-archive',
-          title: 'Extract archive',
+          title: this.$t('contextMenus.dirItem.extractArchive'),
           targetTypes: ['file'],
           selectionType: ['single'],
           allowedFilesTypes: ['archive'],
@@ -659,7 +655,7 @@ export default {
         },
         {
           name: 'permissions',
-          title: 'Permissions',
+          title: this.$t('contextMenus.dirItem.permissions'),
           targetTypes: ['file', 'directory'],
           selectionType: ['single'],
           onClick: () => {
@@ -816,13 +812,13 @@ export default {
       let tooltip = {
         modifierList: [
           {
-            title: 'Create symbolic link',
+            title: this.$t('contextMenus.dirItem.createSymbolicLink'),
           },
         ],
       }
       if (process.platform === 'win32') {
         tooltip.modifierList.push({
-          title: 'Windows link (.lnk)',
+          title: this.$t('contextMenus.dirItem.windowsLinkLnk'),
           modifier: 'Alt',
         })
       }
@@ -915,8 +911,8 @@ export default {
     },
     openSubMenu (name) {
       let title = ''
-      if (name === 'open-with') {title = 'Open with'}
-      else if (name === 'edit-tags') {title = 'Edit tags'}
+      if (name === 'open-with') {title = this.$t('contextMenus.dirItem.openWith')}
+      else if (name === 'edit-tags') {title = this.$t('contextMenus.dirItem.editTags')}
       this.contextMenus.dirItem.subMenu.target = name
       this.contextMenus.dirItem.subMenu.title = title
       this.contextMenus.dirItem.subMenu.value = true
@@ -984,7 +980,7 @@ export default {
               type: 'error:search-file-problem',
               timeout: 8000,
               closeButton: true,
-              title: 'Error: couldn\'t open the program:',
+              title: `${this.$t('contextMenus.dirItem.errorOpenProgram')}:`,
               message: error,
             })
           }

@@ -16,7 +16,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       >
         mdi-backspace-outline
       </v-icon>
-      Clear filter
+      {{$t('filter.clearFilter')}}
     </v-btn>
   </div>
 </template>

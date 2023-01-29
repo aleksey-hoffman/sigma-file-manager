@@ -387,7 +387,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 <strong>{{$t('dialogs.appGuideDialog.addressBar.autocomplete')}}:</strong>
                 {{$t('dialogs.appGuideDialog.addressBar.press')}}
                 <span class="inline-code--light">tab</span>
-                {{$t('common.or')}}
+                {{$t('or')}}
                 <span class="inline-code--light">Shift + tab</span>
                 {{$t('dialogs.appGuideDialog.addressBar.toAutocompleteIterate')}}
               </li>

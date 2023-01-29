@@ -38,7 +38,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 <transition name="slide-fade-left">
                   <div v-if="!navigationPanelMiniVariant">
                     <div class="nav-panel__item__title">
-                      {{$t('common.globalSearch')}}
+                      {{$t('globalSearch.globalSearch')}}
                     </div>
                   </div>
                 </transition>
@@ -46,7 +46,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             </template>
             <span>
               <div class="tooltip__description">
-                {{$t('common.globalSearch')}}
+                {{$t('globalSearch.globalSearch')}}
               </div>
               <div class="tooltip__shortcut">
                 {{shortcuts.toggleGlobalSearch.shortcut}}
@@ -171,13 +171,13 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                           <span
                             v-if="systemInfo.platform === 'win32'"
                             class="text-uppercase caption"
-                          >{{$t('common.drive')}}
+                          >{{$t('drive')}}
                           </span>
                           {{drive.mount}}
                         </div>
                         <v-spacer></v-spacer>
                         <div class="caption">
-                          {{drive.size.free && $utils.prettyBytes(drive.size.free, 1)}} left
+                          {{drive.size.free && $utils.prettyBytes(drive.size.free, 1)}} {{$t('spaceLeft')}}
                         </div>
                       </v-layout>
                       <div v-if="drive.percentUsed">

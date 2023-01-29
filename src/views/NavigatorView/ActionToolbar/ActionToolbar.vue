@@ -58,7 +58,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         icon-size="20px"
         icon-class="action-toolbar__icon"
         value="list"
-        :tooltip="$t('common.listLayout')"
+        :tooltip="$t('listLayout')"
         small
       />
       <AppButton
@@ -67,7 +67,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         icon-size="20px"
         icon-class="action-toolbar__icon"
         value="grid"
-        :tooltip="$t('common.gridLayout')"
+        :tooltip="$t('gridLayout')"
         small
       />
     </VBtnToggle>

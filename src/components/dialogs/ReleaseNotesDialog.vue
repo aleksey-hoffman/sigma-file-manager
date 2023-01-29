@@ -16,7 +16,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
   >
     <template #content>
       <div class="text--sub-title-1">
-        {{$t('common.version')}}: {{dialog.data.appVersion}}
+        {{$t('version')}}: {{dialog.data.appVersion}}
       </div>
       <div v-html="dialog.data.html" />
     </template>

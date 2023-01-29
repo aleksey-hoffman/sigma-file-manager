@@ -7,10 +7,13 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
   <div>
     <div v-if="component === 'lastScanTimeElapsed'">
       <div>
-        <v-icon class="action-toolbar__icon mr-2" size="18px">
+        <v-icon
+          class="action-toolbar__icon mr-2"
+          size="18px"
+        >
           mdi-magnify-scan
         </v-icon>
-        Last scan: {{Math.floor(lastScanTimeElapsed / 1000 / 60)}} minutes ago.
+        {{$t('globalSearch.lastScan')}}: {{Math.floor(lastScanTimeElapsed / 1000 / 60)}} {{$t('globalSearch.minutesAgo')}}.
       </div>
     </div>
   </div>
@@ -23,8 +26,8 @@ export default {
   props: ['component'],
   computed: {
     ...mapFields({
-      lastScanTimeElapsed: 'globalSearch.lastScanTimeElapsed'
-    })
-  }
+      lastScanTimeElapsed: 'globalSearch.lastScanTimeElapsed',
+    }),
+  },
 }
 </script>

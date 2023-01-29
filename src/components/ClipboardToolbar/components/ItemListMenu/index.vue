@@ -31,11 +31,11 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               v-show="$vuetify.breakpoint.mdAndUp"
               class="ml-2"
             >
-              show items
+              {{$t('showItems')}}
             </div>
           </v-btn>
         </template>
-        <span>Show items</span>
+        <span>{{$t('showItems')}}</span>
       </v-tooltip>
     </template>
     <v-list
@@ -48,14 +48,14 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         <v-text-field
           v-model="clipboardMenuFilterQuery"
           class="pt-0 mb-2"
-          label="Filter"
+          :label="$t('filter.filter')"
           single-line
           hide-details
         />
       </v-list-item>
       <v-list-item
         v-if="items.length > maxVisibleItemCount"
-        class="inactive unselectable"
+        :class="$t('clipboard.inactiveUnselectable')"
       >
         <v-list-item-content>
           <v-list-item-title>
@@ -68,7 +68,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       </v-list-item>
       <v-list-item
         v-else-if="items.length <= maxVisibleItemCount && clipboardMenuFilterQuery"
-        class="inactive unselectable"
+        :class="$t('clipboard.inactiveUnselectable')"
       >
         <v-list-item-content>
           <v-list-item-subtitle>
@@ -156,10 +156,10 @@ export default {
     },
     title () {
       const displayedItemCount = Math.min(this.itemsFiltered.length, this.maxVisibleItemCount)
-      return `Showing ${displayedItemCount} of ${this.items.length} items`
+      return this.$t('clipboard.showingNOfItems', {showingAmount: displayedItemCount, itemsAmount: this.items.length})
     },
     subtitle () {
-      return `Matched ${this.itemsFiltered.length} of ${this.items.length} items`
+      return this.$t('clipboard.matchedNOfItems', {matchedAmount: this.itemsFiltered.length, itemsAmount: this.items.length})
     },
   },
   methods: {

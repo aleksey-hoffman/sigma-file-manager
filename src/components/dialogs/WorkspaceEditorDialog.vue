@@ -271,11 +271,11 @@ export default {
     },
     newWorkspaceName (item) {
       let name = item.name || this.$t('dialogs.workspaceEditorDialog.newWorkspace')
-      return item.id === null ? `${this.$t('common.add')}: ${name}` : `${this.$t('common.edit')}: ${name}`
+      return item.id === null ? `${this.$t('add')}: ${name}` : `${this.$t('edit')}: ${name}`
     },
     newWorkspaceActionName (item) {
       let name = item.name || this.$t('dialogs.workspaceEditorDialog.newAction')
-      return item.id === null ? `${this.$t('common.add')}: ${name}` : `${this.$t('common.edit')}: ${name}`
+      return item.id === null ? `${this.$t('add')}: ${name}` : `${this.$t('edit')}: ${name}`
     },
     getWorkspaceTypeIcon (item) {
       return item.id === null ? 'mdi-plus' : 'mdi-pencil-outline'

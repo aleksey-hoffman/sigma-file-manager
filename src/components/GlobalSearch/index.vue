@@ -32,7 +32,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 value: true
               })"
             >
-              {{$t('common.enable')}}
+              {{$t('enable')}}
             </v-btn>
           </v-layout>
         </div>
@@ -91,7 +91,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           <input
             ref="globalSearchInput"
             v-model="query"
-            :placeholder="$t('common.search')"
+            :placeholder="$t('search')"
             :disabled="scanInProgress || !globalSearchIsEnabled"
             hide-details
             single-line
@@ -245,7 +245,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                       small
                       @click="cancelSearchAllDrives({clearResults: false})"
                     >
-                      {{$t('common.stop')}}
+                      {{$t('stop')}}
                     </v-btn>
                   </v-layout>
 
@@ -367,7 +367,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           >
             <div>
               <div class="text--sub-title-1">
-                {{$t('common.drives')}}
+                {{$t('drives')}}
               </div>
 
               <!-- input-switch::search-all-drives -->
@@ -405,7 +405,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
             <div>
               <div class="text--sub-title-1">
-                {{$t('common.results')}}
+                {{$t('results')}}
               </div>
               <v-checkbox
                 v-model="optionIncludeDirectories"
@@ -443,7 +443,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
             <div>
               <div class="text--sub-title-1">
-                {{$t('common.options')}}
+                {{$t('options')}}
               </div>
 
               <!-- input-checkbox::match-symbols -->

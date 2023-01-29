@@ -303,8 +303,8 @@ export default {
         : 'mdi-pencil-outline'
     },
     addEditDescription (item) {
-      const addDescription = `${this.$t('common.add')}: ${item.name}`
-      const editDescription = `${this.$t('common.edit')}: ${item.name}`
+      const addDescription = `${this.$t('add')}: ${item.name}`
+      const editDescription = `${this.$t('edit')}: ${item.name}`
       return item.isTemplate ? addDescription : editDescription
     },
     saveProgramChanges () {

@@ -352,28 +352,28 @@ export default {
     getDirItemGroupTitleDescription (itemCount) {
       return this.dirItemsInfoIsFetched
         ? `${this.$tc('item', itemCount)}`
-        : `${this.$t('common.loading')} ${this.$t('itemPlural')}`
+        : `${this.$t('loading')} ${this.$t('itemPlural')}`
     },
     getDirItemGroupTitle (type) {
       if (type === 'directory') {
         const itemCount = this.directoryDirItems.length
-        return `Directories | ${this.getDirItemGroupTitleDescription(itemCount)}`
+        return `${this.$t('directories')} | ${this.getDirItemGroupTitleDescription(itemCount)}`
       }
       else if (type === 'file') {
         const itemCount = this.fileDirItems.length
-        return `Files | ${this.getDirItemGroupTitleDescription(itemCount)}`
+        return `${this.$t('files')} | ${this.getDirItemGroupTitleDescription(itemCount)}`
       }
       else if (type === 'image-files') {
         const itemCount = this.imageFilesDirItems.length
-        return `Images | ${this.getDirItemGroupTitleDescription(itemCount)}`
+        return `${this.$t('images')} | ${this.getDirItemGroupTitleDescription(itemCount)}`
       }
       else if (type === 'video-files') {
         const itemCount = this.videoFilesDirItems.length
-        return `Videos | ${this.getDirItemGroupTitleDescription(itemCount)}`
+        return `${this.$t('videos')} | ${this.getDirItemGroupTitleDescription(itemCount)}`
       }
       else if (type === 'other-files') {
         const itemCount = this.otherFilesDirItems.length
-        return `Other | ${this.getDirItemGroupTitleDescription(itemCount)}`
+        return `${this.$t('other')} | ${this.getDirItemGroupTitleDescription(itemCount)}`
       }
     },
   },

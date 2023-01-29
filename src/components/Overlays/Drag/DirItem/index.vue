@@ -24,7 +24,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         </div>
       </div>
       <div class="overlay--item-drag__subtitle">
-        Hold [Shift] to change mode
+        {{$t('holdShiftToChangeMode')}}
       </div>
     </div>
   </transition>
@@ -58,7 +58,7 @@ export default {
       return this.actionType === 'copy' ? 'far fa-copy' : 'mdi-content-duplicate'
     },
     overlayDescription () {
-      const actionType = this.actionType === 'copy' ? 'Copy' : 'Move'
+      const actionType = this.actionType === 'copy' ? this.$t('copy') : this.$t('move')
       const itemCount = this.selectedDirItems.length
       return `${actionType} ${this.$tc('item', itemCount)}`
     },
