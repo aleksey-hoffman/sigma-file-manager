@@ -2917,7 +2917,7 @@ export default {
 
 #settings-view[filter-is-empty]
   .tab-view {
-    grid-template-columns: 230px 1fr;
+    grid-template-columns: 280px 1fr;
   }
 
 #settings-view
