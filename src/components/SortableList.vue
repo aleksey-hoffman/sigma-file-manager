@@ -48,10 +48,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   {{item.name}}
                 </v-list-item-title>
                 <v-list-item-subtitle v-if="item.tabs !== undefined">
-                  {{`Tabs: ${item.tabs.length}`}}
+                  {{`${$t('tabs.tabs')}: ${item.tabs.length}`}}
                 </v-list-item-subtitle>
                 <v-list-item-subtitle v-if="item.actions !== undefined && !item.isPrimary">
-                  {{`Actions: ${item.actions.length}`}}
+                  {{`${$t('actions')}: ${item.actions.length}`}}
                 </v-list-item-subtitle>
               </v-list-item-content>
             </template>
@@ -183,10 +183,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     {{item.name}}
                   </v-list-item-title>
                   <v-list-item-subtitle v-if="item.tabs !== undefined">
-                    {{`Tabs: ${item.tabs.length}`}}
+                    {{`${$t('tabs.tabs')}: ${item.tabs.length}`}}
                   </v-list-item-subtitle>
                   <v-list-item-subtitle v-if="item.actions !== undefined && !item.isPrimary">
-                    {{`Actions: ${item.actions.length}`}}
+                    {{`${$t('actions')}: ${item.actions.length}`}}
                   </v-list-item-subtitle>
                 </v-list-item-content>
               </template>

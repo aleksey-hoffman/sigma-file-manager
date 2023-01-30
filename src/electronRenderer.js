@@ -77,12 +77,13 @@ Vue.prototype.$eventHub = eventHub
 Vue.config.productionTip = true
 Vue.config.devtools = false
 
-function appendLicense () {
+function execDevTasks () {
   if (process.env.NODE_ENV === 'development') {
     require('./appendLicense.js')
+    require('./devUtils/syncLocalization.js')
   }
 }
-appendLicense()
+execDevTasks()
 
 Vue.use(OverlayScrollbarsPlugin)
 
