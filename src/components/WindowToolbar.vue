@@ -212,16 +212,16 @@ export default {
     },
     windowCloseButtonActionDescription () {
       if (this.windowCloseButtonAction === 'minimizeAppToTray') {
-        return 'Minimize to tray and keep in memory'
+        return this.$t('settings.windowControls.minimizeAppToTray.radioLabel')
       }
       else if (this.windowCloseButtonAction === 'closeMainWindow') {
-        return 'Minimize to tray and minimize memory usage'
+        return this.$t('settings.windowControls.closeMainWindow.radioLabel')
       }
       else if (this.windowCloseButtonAction === 'closeApp') {
-        return 'Close the app'
+        return this.$t('settings.windowControls.closeApp.radioLabel')
       }
       else {
-        return 'Close the app'
+        return this.$t('settings.windowControls.closeApp.radioLabel')
       }
     },
     hiddenNotifications () {
@@ -257,7 +257,7 @@ export default {
               name: 'mdi-message-question-outline',
             },
             tooltip: {
-              description: 'App guide',
+              description: this.$t('dialogs.appGuideDialog.appGuide'),
             },
             onClick: () => {this.dialogs.appGuideDialog.value = true},
           },
@@ -317,7 +317,7 @@ export default {
                   name: 'mdi-minus',
                 },
                 tooltip: {
-                  description: 'Minimize window',
+                  description: this.$t('window.minimizeWindow'),
                   shortcut: this.shortcuts.toggleApp.shortcut,
                 },
                 onClick: () => this.minimizeWindow(),
@@ -329,7 +329,7 @@ export default {
                   name: 'mdi-aspect-ratio',
                 },
                 tooltip: {
-                  description: 'Toggle window size',
+                  description: this.$t('window.toggleWindowSize'),
                   shortcut: this.shortcuts.windowPosition.shortcut[this.systemInfo.platform],
                 },
                 onClick: () => this.maximizeWindow(),
@@ -342,11 +342,11 @@ export default {
                 },
                 tooltip: {
                   description: `
-                    Close window:
-                    <br>Action: ${this.windowCloseButtonActionDescription}
+                    ${this.$t('window.closeWindow')}:
+                    <br>${this.$t('action')}: ${this.windowCloseButtonActionDescription}
                   `,
                   shortcut: `
-                    Toggle window: ${this.shortcuts.toggleApp.shortcut}
+                    ${this.$t('window.toggleWindow')}: ${this.shortcuts.toggleApp.shortcut}
                   `,
                   shortutIfCondition: this.windowCloseButtonAction !== 'closeApp',
                 },

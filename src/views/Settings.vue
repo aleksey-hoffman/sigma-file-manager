@@ -476,7 +476,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   <v-switch
                     v-model="windowTransparencyEffectValue"
                     class="mt-0 pt-0 d-inline-flex"
-                    label="Display window transparency effect"
+                    :label="$t('settings.visualEffects.windowTransparencyEffect')"
                     hide-details
                   />
 
@@ -947,7 +947,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                             <v-text-field
                               v-model="dateTimeRegionalFormatFilter"
                               class="pt-0 mb-2"
-                              :label="$t('filter')"
+                              :label="$t('filter.filter')"
                               single-line
                               hide-details
                             />
@@ -1928,10 +1928,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                             @blur="handleBlurGlobalSearchScanDepth"
                           >
                             <template #selection>
-                              {{$tc('count.directories', {n: globalSearchScanDepth})}}
+                              {{$tc('count.directories', globalSearchScanDepth)}}
                             </template>
                             <template #item="{item}">
-                              {{$tc('count.directories', {n: item})}}
+                              {{$tc('count.directories', item)}}
                             </template>
                           </v-select>
                         </div>
@@ -2648,7 +2648,7 @@ export default {
   methods: {
     globalSearchDisallowedPathsIcon (item) {
       return this.globalSearchDisallowedPaths.includes(item)
-        ? 'mdi-check-box-outline'
+        ? 'mdi-checkbox-outline'
         : 'mdi-checkbox-blank-outline'
     },
     async fetchSystemFonts () {

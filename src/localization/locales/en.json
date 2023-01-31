@@ -31,11 +31,28 @@
     "directories": "0 directories | 1 directory | {n} directories | {n} directories",
     "drivesSelected": "0 drives selected | 1 drive selected | {n} drives selected | {n} drives selected"
   },
+  "window": {
+    "minimizeWindow": "Minimize window",
+    "toggleWindowSize": "Toggle window size",
+    "closeWindow": "Close window",
+    "toggleWindow": "Toggle window"
+  },
+  "trayMenu": {
+    "globalShortcuts": "GLOBAL SHORTCUTS",
+    "toggleWindowVisibility": "Toggle window visibility",
+    "openGlobalSearch": "Open global search",
+    "createNewNote": "Create new note",
+    "appActions": "APP ACTIONS",
+    "openWindow": "Open window",
+    "reloadWindow": "Reload window",
+    "quit": "Quit"
+  },
   "tabs": {
     "workspaceTabs": "Workspace tabs",
     "newTabInCurrentWorkspace": "New tab in current workspace",
     "closeAllTabsInCurrentWorkspace": "Close all tabs in current workspace",
-    "noTabsInCurrentWorkspace": "No tabs in current workspace"
+    "noTabsInCurrentWorkspace": "No tabs in current workspace",
+    "tabs": "Tabs"
   },
   "workspaces": {
     "title": "Workspaces",
@@ -49,7 +66,18 @@
     "showHiddenItems": "Show Hidden Items",
     "filterPrefixes": "Filter prefixes",
     "addPrefix": "Add a prefix to the start to filter by specific property.",
-    "sizeExample": "For example: \"size: MB\", \"items: 15\", \"date-m: 2021\""
+    "sizeExample": "For example: \"size: MB\", \"items: 15\", \"date-m: 2021\"",
+    "prefixes": {
+      "itemName": "item name",
+      "directoryItemCount": "directory item count",
+      "fileSize": "file size",
+      "dateMetaModified": "date meta modified",
+      "noteTitle": "note title",
+      "noteContent": "note content",
+      "noteGroup": "note group",
+      "itemPath": "item path",
+      "settingTags": "setting tags"
+    }
   },
   "globalSearch": {
     "globalSearch": "Global search",
@@ -338,8 +366,8 @@
       "closeEditor": "Close address bar editor",
       "toAutocomplete": "to autocomplete and iterate directory items",
       "toOpenThePath": "to open the path",
-      "copyPathToClipboard": "Copy path to clipboard",
-      "openCopiedPath": "Open copied path"
+      "copyPathToClipboard": "Copy path",
+      "openCopiedPath": "Paste and open copied path"
     },
     "clipboard": {
       "inactiveUnselectable": "inactive unselectable",
@@ -943,7 +971,7 @@
       },
       "mediaDownloading": {
         "videoDownloading": "Video downloading",
-        "mostActionsWithShortcuts": ""
+        "mostActionsWithShortcuts": "-"
       },
       "navigatorTips": {
         "rangeItemSelection": "Range item selection",
@@ -1093,7 +1121,12 @@
     "editWorkspaceError": "Error: edit workspace",
     "deleteWorkspaceError": "Error: delete workspace",
     "deletedWorkspaceName": "Deleted workspace: {name}",
-    "openedWorkspaceName": "Opened workspace: {name}"
+    "openedWorkspaceName": "Opened workspace: {name}",
+    "quickViewFileIsNotSupported": "Quick view: file is not supported",
+    "driveWasConnected": "Drive was connected",
+    "driveScanInitiated": "Drive scan initiated",
+    "oneOfTheSearchFilesIsDamaged": "One of the search files is damaged",
+    "workspaceAdded": "Workspace added"
   },
   "contextMenus": {
     "dirItem": {
@@ -1153,11 +1186,14 @@
   "contextMenu": "Context menu",
   "copy": "Copy",
   "toCopy": "To copy",
+  "move": "Move",
+  "toMove": "To move",
   "seeAllReleases": "See all releases",
   "openSettings": "Open settings",
   "showItems": "show items",
   "limit": "Limit",
   "noData": "No data",
+  "action": "Action",
   "actions": "Actions",
   "options": "Options",
   "add": "Add",
@@ -1222,8 +1258,9 @@
   "modified": "Modified contents",
   "changed": "Modified meta",
   "protected": "Protected",
-  "protectedWin32": "Protected (within this app)",
   "pinned": "Pinned",
+  "timeline": "Timeline",
+  "protectedWin32": "Protected (within this app)",
   "mode": "Permissions",
   "yes": "Yes",
   "no": "No",
@@ -1252,7 +1289,6 @@
   "stopServer": "Stop server",
   "copyAddress": "Copy address",
   "clearListMessage": "item list has been cleared",
-  "workspaceAdded": "workspace has been added",
   "allowGlobalSearchMessage": "Global search lets you quickly find any file / directory on your computer.<br>It periodically scans your drives and generates data files (maps) so it can find your files quickly.<br>The files that were created after the last scan will not be found since they won't be in the data files, so it's recommended to choose a more frequent auto scan period.",
   "experimentalFeature": "unfinished experimental feature",
   "min": "min",
@@ -1280,5 +1316,7 @@
   "displayAspectRatio": "display aspect ratio",
   "hasBFrames": "has b frames",
   "profile": "profile",
-  "closedCaptions": "closed captions"
+  "closedCaptions": "closed captions",
+  "protectedItemsShort": "Protected",
+  "pinnedItemsShort": "Pinned"
 }

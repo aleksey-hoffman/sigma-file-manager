@@ -3,7 +3,7 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 import sharedUtils from './sharedUtils.js'
-import {i18n} from '../localization/i18n'
+import {i18n} from '../localization'
 const eventHub = require('./eventHub').eventHub
 
 /**

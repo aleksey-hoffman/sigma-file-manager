@@ -438,7 +438,6 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 </template>
                 <span>{{$t('globalSearch.statsStoringDisabled')}}</span>
               </v-tooltip>
-                :label="$t('globalSearch.showApps')"
             </div>
 
             <div>

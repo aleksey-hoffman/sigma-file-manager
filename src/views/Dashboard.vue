@@ -36,7 +36,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           >
             {{tab.icon}}
           </v-icon>
-          {{tab.title}}
+          {{$t(tab.title)}}
         </v-tab>
       </v-tabs>
       <v-divider class="divider-color-2 mb-4" />
@@ -301,7 +301,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     >
                       mdi-menu-down
                     </v-icon>
-                    {{$t('options')}}
+                    {{$t('actions')}}
                   </v-btn>
                 </template>
                 <span>{{$t('actions')}}</span>

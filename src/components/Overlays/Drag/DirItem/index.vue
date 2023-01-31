@@ -24,7 +24,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         </div>
       </div>
       <div class="overlay--item-drag__subtitle">
-        {{$t('holdShiftToChangeMode')}}
+        {{$t('drag.holdShiftToChangeMode')}}
       </div>
     </div>
   </transition>

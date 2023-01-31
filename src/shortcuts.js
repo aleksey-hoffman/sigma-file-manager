@@ -2,7 +2,7 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-import {i18n} from './localization/i18n'
+import {i18n} from './localization'
 
 // Allowed property values:
 // conditions: {
@@ -21,7 +21,7 @@ export default {
     icon: 'mdi-application',
     action: {name: 'toggleApp'},
     shortcut: 'Ctrl + Shift + Space',
-    description: i18n.t('shortcuts.openCloseTheAppWindow'),
+    description: 'shortcuts.openCloseTheAppWindow',
   },
   openGlobalSearch: {
     isGlobal: true,
@@ -31,7 +31,7 @@ export default {
     icon: 'mdi-magnify',
     action: {name: 'openGlobalSearch'},
     shortcut: 'Alt + Ctrl + Shift + F',
-    description: i18n.t('shortcuts.openGlobalSearch'),
+    description: 'shortcuts.openGlobalSearch',
   },
   newNote: {
     isGlobal: true,
@@ -41,7 +41,7 @@ export default {
     icon: 'mdi-square-edit-outline',
     action: {name: 'newNote'},
     shortcut: 'Alt + Shift + N',
-    description: i18n.t('shortcuts.openTheAppWindowCreateANewNote'),
+    description: 'shortcuts.openTheAppWindowCreateANewNote',
   },
   shortcutsDialog: {
     isGlobal: false,
@@ -56,7 +56,7 @@ export default {
       options: 'stortcuts',
     },
     shortcut: 'Backtick',
-    description: i18n.t('shortcuts.displayShortcutList'),
+    description: 'shortcuts.displayShortcutList',
   },
   escapeAction: {
     isGlobal: false,
@@ -66,7 +66,7 @@ export default {
     icon: 'mdi-close',
     action: {name: 'ESCAPE_BUTTON_HANDLER'},
     shortcut: 'Esc',
-    description: i18n.t('shortcuts.closeOpenedDialogOverlay'),
+    description: 'shortcuts.closeOpenedDialogOverlay',
   },
   openWithQuickView: {
     isGlobal: false,
@@ -80,7 +80,7 @@ export default {
     icon: 'mdi-text-box-search-outline',
     action: {name: 'OPEN_WITH_QUICK_VIEW'},
     shortcut: 'Space',
-    description: i18n.t('shortcuts.openCloseSelectedFileInQuickView'),
+    description: 'shortcuts.openCloseSelectedFileInQuickView',
   },
   fullScreen: {
     isGlobal: false,
@@ -91,7 +91,7 @@ export default {
     iconSize: '26px',
     action: {name: 'TOGGLE_FULLSCREEN'},
     shortcut: 'F11',
-    description: i18n.t('shortcuts.toggleFullScreen'),
+    description: 'shortcuts.toggleFullScreen',
   },
   zoomIncrease: {
     isGlobal: false,
@@ -104,7 +104,7 @@ export default {
     iconSize: '26px',
     action: {name: 'INCREASE_UI_ZOOM'},
     shortcut: 'Ctrl + Plus',
-    description: i18n.t('shortcuts.uiZoomIncrease'),
+    description: 'shortcuts.uiZoomIncrease',
   },
   zoomDecrease: {
     isGlobal: false,
@@ -116,7 +116,7 @@ export default {
     iconSize: '26px',
     action: {name: 'DECREASE_UI_ZOOM'},
     shortcut: 'Ctrl + Minus',
-    description: i18n.t('shortcuts.uiZoomDecrease'),
+    description: 'shortcuts.uiZoomDecrease',
   },
   zoomReset: {
     isGlobal: false,
@@ -128,7 +128,7 @@ export default {
     iconSize: '26px',
     action: {name: 'RESET_UI_ZOOM'},
     shortcut: 'Ctrl + 0',
-    description: i18n.t('shortcuts.uiZoomReset'),
+    description: 'shortcuts.uiZoomReset',
   },
   openInNewTab: {
     isGlobal: false,
@@ -145,7 +145,7 @@ export default {
       options: 'selected',
     },
     shortcut: 'Ctrl + T',
-    description: i18n.t('shortcuts.newTabInCurrentWorkspace'),
+    description: 'shortcuts.newTabInCurrentWorkspace',
   },
   closeCurrentTab: {
     isGlobal: false,
@@ -161,7 +161,7 @@ export default {
       name: 'CLOSE_CURRENT_TAB',
     },
     shortcut: 'Ctrl + W',
-    description: i18n.t('shortcuts.closeCurrentTab'),
+    description: 'shortcuts.closeCurrentTab',
   },
   closeAllTabsInCurrentWorkspace: {
     isGlobal: false,
@@ -177,7 +177,7 @@ export default {
       name: 'CLOSE_ALL_TABS_IN_CURRENT_WORKSPACE',
     },
     shortcut: 'Ctrl + Shift + W',
-    description: i18n.t('shortcuts.closeAllTabsInCurrentWorkspace'),
+    description: 'shortcuts.closeAllTabsInCurrentWorkspace',
   },
   closeAppWindow: {
     isGlobal: false,
@@ -189,7 +189,7 @@ export default {
       name: 'CLOSE_APP_WINDOW',
     },
     shortcut: 'Ctrl + Q',
-    description: i18n.t('shortcuts.closeAppWindow'),
+    description: 'shortcuts.closeAppWindow',
   },
   scrollTop: {
     isGlobal: false,
@@ -204,7 +204,7 @@ export default {
       name: 'SCROLL_TOP_CONTENT_AREA',
     },
     shortcut: 'Shift + T',
-    description: i18n.t('shortcuts.scrollPageToTheTop'),
+    description: 'shortcuts.scrollPageToTheTop',
   },
   switchTab: {
     isGlobal: false,
@@ -215,7 +215,7 @@ export default {
     iconSize: '20px',
     action: {name: 'switchTab'},
     shortcut: 'Alt + [1 - 9]',
-    description: i18n.t('shortcuts.switchBetweenTabs'),
+    description: 'shortcuts.switchBetweenTabs',
   },
   switchWorkspace: {
     isGlobal: false,
@@ -225,7 +225,7 @@ export default {
     icon: 'mdi-vector-arrange-below',
     action: {name: 'switchWorkspace'},
     shortcut: 'Alt + Shift + [1 - 9]',
-    description: i18n.t('shortcuts.switchBetweenWorkspaces'),
+    description: 'shortcuts.switchBetweenWorkspaces',
   },
   switchView: {
     isGlobal: false,
@@ -238,7 +238,7 @@ export default {
     icon: 'mdi-arrange-send-backward',
     action: {name: 'SWITCH_ROUTE'},
     shortcut: 'Shift + [1 - 9]',
-    description: i18n.t('shortcuts.switchBetweenViews'),
+    description: 'shortcuts.switchBetweenViews',
   },
   focusAddressBar: {
     isGlobal: false,
@@ -253,7 +253,7 @@ export default {
       options: 'addressBarEditor',
     },
     shortcut: 'Ctrl + /',
-    description: i18n.t('shortcuts.toggleAddressBar'),
+    description: 'shortcuts.toggleAddressBar',
   },
   copyCurrentDirPath: {
     isGlobal: false,
@@ -262,7 +262,7 @@ export default {
     icon: 'mdi-link-variant',
     action: {name: 'COPY_CURRENT_DIR_PATH'},
     shortcut: 'Ctrl + <',
-    description: i18n.t('shortcuts.copyCurrentDirectoryPathToClipboard'),
+    description: 'shortcuts.copyCurrentDirectoryPathToClipboard',
   },
   openCopiedPath: {
     isGlobal: false,
@@ -273,7 +273,7 @@ export default {
       name: 'OPEN_DIR_PATH_FROM_OS_CLIPBOARD',
     },
     shortcut: 'Ctrl + >',
-    description: i18n.t('shortcuts.openCopiedPath'),
+    description: 'shortcuts.openCopiedPath',
   },
   openTerminal: {
     isGlobal: false,
@@ -291,7 +291,7 @@ export default {
       },
     },
     shortcut: 'Alt + T',
-    description: i18n.t('shortcuts.openCurrentDirInTerminal'),
+    description: 'shortcuts.openCurrentDirInTerminal',
   },
   openTerminalAsAdmin: {
     isGlobal: false,
@@ -309,7 +309,7 @@ export default {
       },
     },
     shortcut: 'Alt + Shift + T',
-    description: i18n.t('shortcuts.openCurrentDirInTerminalAsAdmin'),
+    description: 'shortcuts.openCurrentDirInTerminalAsAdmin',
   },
   focusFilter: {
     isGlobal: false,
@@ -321,7 +321,7 @@ export default {
     icon: 'mdi-filter-variant',
     action: {name: 'TOGGLE_FILTER_FOCUS'},
     shortcut: 'Ctrl + F',
-    description: i18n.t('shortcuts.focusUnfocusFilterField'),
+    description: 'shortcuts.focusUnfocusFilterField',
   },
   toggleGlobalSearch: {
     isGlobal: false,
@@ -333,7 +333,7 @@ export default {
     icon: 'mdi-magnify',
     action: {name: 'TOGGLE_GLOBAL_SEARCH'},
     shortcut: 'Ctrl + Shift + F',
-    description: i18n.t('shortcuts.showHideGlobalSearch'),
+    description: 'shortcuts.showHideGlobalSearch',
   },
   newDirectory: {
     isGlobal: false,
@@ -348,7 +348,7 @@ export default {
       options: 'directory',
     },
     shortcut: 'Alt + N',
-    description: i18n.t('shortcuts.createNewDirectoryInTheCurrentDirectory'),
+    description: 'shortcuts.createNewDirectoryInTheCurrentDirectory',
   },
   newFile: {
     isGlobal: false,
@@ -363,7 +363,7 @@ export default {
       options: 'file',
     },
     shortcut: 'Alt + M',
-    description: i18n.t('shortcuts.createNewFileInCurrentDirectory'),
+    description: 'shortcuts.createNewFileInCurrentDirectory',
   },
   renameSelected: {
     isGlobal: false,
@@ -383,7 +383,7 @@ export default {
       },
     },
     shortcut: 'F2',
-    description: i18n.t('shortcuts.renameSelectedItems'),
+    description: 'shortcuts.renameSelectedItems',
   },
   reloadDirectory: {
     isGlobal: false,
@@ -401,7 +401,7 @@ export default {
       },
     },
     shortcut: 'F5',
-    description: i18n.t('shortcuts.reloadCurrentDirectory'),
+    description: 'shortcuts.reloadCurrentDirectory',
   },
   openSelectedDirItem: {
     isGlobal: false,
@@ -413,7 +413,7 @@ export default {
     icon: 'mdi-open-in-app',
     action: {name: 'OPEN_LAST_SELECTED_DIRITEM'},
     shortcut: 'Enter',
-    description: i18n.t('shortcuts.openLastSelectedDirectoryItem'),
+    description: 'shortcuts.openLastSelectedDirectoryItem',
   },
   openSelectedDirectory: {
     isGlobal: false,
@@ -425,7 +425,7 @@ export default {
     icon: 'mdi-subdirectory-arrow-right',
     action: {name: 'OPEN_LAST_SELECTED_DIRITEM'},
     shortcut: 'Alt + E',
-    description: i18n.t('shortcuts.enterSelectedDirectory'),
+    description: 'shortcuts.enterSelectedDirectory',
   },
   quitSelectedDirectory: {
     isGlobal: false,
@@ -437,7 +437,7 @@ export default {
     icon: 'mdi-subdirectory-arrow-left',
     action: {name: 'GO_UP_DIRECTORY'},
     shortcut: 'Alt + Q',
-    description: i18n.t('shortcuts.quitCurrentDirectory'),
+    description: 'shortcuts.quitCurrentDirectory',
   },
   navigateDirUp: {
     isGlobal: false,
@@ -450,7 +450,7 @@ export default {
     iconSize: '26px',
     action: {name: 'NAVIGATE_DIR_UP'},
     shortcut: 'Alt + W',
-    description: i18n.t('shortcuts.selectDirectoryItemInTheDirectionUp'),
+    description: 'shortcuts.selectDirectoryItemInTheDirectionUp',
   },
   navigateDirLeft: {
     isGlobal: false,
@@ -463,7 +463,7 @@ export default {
     iconSize: '26px',
     action: {name: 'NAVIGATE_DIR_LEFT'},
     shortcut: 'Alt + A',
-    description: i18n.t('shortcuts.selectDirectoryItemInTheDirectionLeft'),
+    description: 'shortcuts.selectDirectoryItemInTheDirectionLeft',
   },
   navigateDirDown: {
     isGlobal: false,
@@ -476,7 +476,7 @@ export default {
     iconSize: '26px',
     action: {name: 'NAVIGATE_DIR_DOWN'},
     shortcut: 'Alt + S',
-    description: i18n.t('shortcuts.selectDirectoryItemInTheDirectionDown'),
+    description: 'shortcuts.selectDirectoryItemInTheDirectionDown',
   },
   navigateDirRight: {
     isGlobal: false,
@@ -489,7 +489,7 @@ export default {
     iconSize: '26px',
     action: {name: 'NAVIGATE_DIR_RIGHT'},
     shortcut: 'Alt + D',
-    description: i18n.t('shortcuts.selectDirectoryItemInTheDirectionRight'),
+    description: 'shortcuts.selectDirectoryItemInTheDirectionRight',
   },
   goToPreviousDirectory: {
     isGlobal: false,
@@ -502,7 +502,7 @@ export default {
     icon: 'mdi-arrow-left',
     action: {name: 'LOAD_PREVIOUS_HISTORY_PATH'},
     shortcut: 'Alt + Left',
-    description: i18n.t('shortcuts.goToPreviousDirectoryInHistory'),
+    description: 'shortcuts.goToPreviousDirectoryInHistory',
   },
   goToNextDirectory: {
     isGlobal: false,
@@ -515,7 +515,7 @@ export default {
     icon: 'mdi-arrow-right',
     action: {name: 'LOAD_NEXT_HISTORY_PATH'},
     shortcut: 'Alt + Right',
-    description: i18n.t('shortcuts.goToNextDirectoryInHistory'),
+    description: 'shortcuts.goToNextDirectoryInHistory',
   },
   goUpDirectory: {
     isGlobal: false,
@@ -528,7 +528,7 @@ export default {
     icon: 'mdi-arrow-up',
     action: {name: 'GO_UP_DIRECTORY'},
     shortcut: 'Alt + Up',
-    description: i18n.t('shortcuts.goUpDirectory'),
+    description: 'shortcuts.goUpDirectory',
   },
   selectDirItem: {
     isGlobal: false,
@@ -540,7 +540,7 @@ export default {
     icon: 'mdi-checkbox-multiple-outline',
     action: {name: 'selectDirItem'},
     shortcut: 'Ctrl + LeftClick',
-    description: i18n.t('shortcuts.selectDeselectItemInTheCurrentDirectory'),
+    description: 'shortcuts.selectDeselectItemInTheCurrentDirectory',
   },
   selectDirItemRange: {
     isGlobal: false,
@@ -552,7 +552,7 @@ export default {
     icon: 'mdi-priority-low',
     action: {name: 'selectDirItemRange'},
     shortcut: 'Shift + LeftClick',
-    description: i18n.t('shortcuts.selectDeselectItemRangeInTheCurrentDirectory'),
+    description: 'shortcuts.selectDeselectItemRangeInTheCurrentDirectory',
   },
   selectAllDirItems: {
     isGlobal: false,
@@ -566,7 +566,7 @@ export default {
     icon: 'mdi-select-all',
     action: {name: 'SELECT_ALL_DIR_ITEMS'},
     shortcut: 'Ctrl + A',
-    description: i18n.t('shortcuts.selectAllItemsInCurrentDirectory'),
+    description: 'shortcuts.selectAllItemsInCurrentDirectory',
   },
   setDirItemsForCopying: {
     isGlobal: false,
@@ -584,7 +584,7 @@ export default {
       },
     },
     shortcut: 'Ctrl + C',
-    description: i18n.t('shortcuts.setSelectedItemsForCopying'),
+    description: 'shortcuts.setSelectedItemsForCopying',
   },
   addDirItemsForCopying: {
     isGlobal: false,
@@ -602,7 +602,7 @@ export default {
       },
     },
     shortcut: 'Ctrl + Shift + C',
-    description: i18n.t('shortcuts.addSelectedItemsForCopying'),
+    description: 'shortcuts.addSelectedItemsForCopying',
   },
   setDirItemsForMoving: {
     isGlobal: false,
@@ -620,7 +620,7 @@ export default {
       },
     },
     shortcut: 'Ctrl + X',
-    description: i18n.t('shortcuts.setSelectedItemsForMoving'),
+    description: 'shortcuts.setSelectedItemsForMoving',
   },
   addDirItemsForMoving: {
     isGlobal: false,
@@ -638,7 +638,7 @@ export default {
       },
     },
     shortcut: 'Ctrl + Shift + X',
-    description: i18n.t('shortcuts.addSelectedItemsForMoving'),
+    description: 'shortcuts.addSelectedItemsForMoving',
   },
   pasteSelectedDirItems: {
     isGlobal: false,
@@ -653,7 +653,7 @@ export default {
       name: 'PASTE_FS_CLIPBOARD_DIR_ITEMS',
     },
     shortcut: 'Ctrl + V',
-    description: i18n.t('shortcuts.transferPreparedForCopying'),
+    description: 'shortcuts.transferPreparedForCopying',
   },
   trashSelected: {
     isGlobal: false,
@@ -666,7 +666,7 @@ export default {
     icon: 'mdi-trash-can-outline',
     action: {name: 'TRASH_SELECTED_DIR_ITEMS'},
     shortcut: 'Delete',
-    description: i18n.t('shortcuts.moveSelectedItemsToTrash'),
+    description: 'shortcuts.moveSelectedItemsToTrash',
   },
   deleteSelected: {
     isGlobal: false,
@@ -679,7 +679,7 @@ export default {
     icon: 'mdi-eraser',
     action: {name: 'DELETE_SELECTED_DIR_ITEMS'},
     shortcut: 'Shift + Delete',
-    description: i18n.t('shortcuts.deleteSelectedItemsFromDrive'),
+    description: 'shortcuts.deleteSelectedItemsFromDrive',
   },
   windowPosition: {
     isGlobal: false,
@@ -687,7 +687,7 @@ export default {
     conditions: {},
     routes: ['all'],
     icon: 'mdi-axis-arrow',
-    description: i18n.t('shortcuts.quickWindowPositioning'),
+    description: 'shortcuts.quickWindowPositioning',
     action: {name: 'windowPosition'},
     shortcut: {
       win32: 'Meta + [Left | Right | Up]',
@@ -702,7 +702,7 @@ export default {
     },
     routes: ['all'],
     icon: 'mdi-emoticon-outline',
-    description: i18n.t('shortcuts.displaySystemEmojiAndSymbolPicker'),
+    description: 'shortcuts.displaySystemEmojiAndSymbolPicker',
     action: {name: 'emoji'},
     shortcut: {
       win32: 'Meta + Dot',
@@ -717,7 +717,7 @@ export default {
     },
     routes: ['all'],
     icon: 'mdi-clipboard-text-play-outline',
-    description: i18n.t('shortcuts.displaySystemClipboard'),
+    description: 'shortcuts.displaySystemClipboard',
     action: {name: 'clipboard'},
     shortcut: {win32: 'Meta + V'},
   },

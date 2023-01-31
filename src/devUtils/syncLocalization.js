@@ -15,7 +15,7 @@ async function syncFiles () {
       otherLocaleData = addMissingKeys(locales.en, locales[locale])
       otherLocaleData = removeUneededKeys(locales.en, locales[locale])
       const otherLocalePath = path.join(localeDirPath, `${locale}.json`)
-      fs.writeFileSync(otherLocalePath, JSON.stringify(otherLocaleData, null, '\t'))
+      fs.writeFileSync(otherLocalePath, JSON.stringify(otherLocaleData, null, 2))
     }
   }
 }

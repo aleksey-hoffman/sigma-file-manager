@@ -12,7 +12,7 @@ import sharedUtils from './utils/sharedUtils'
 import storeUtils from './utils/storeUtils'
 import {eventHub} from './utils/eventHub'
 import {OverlayScrollbarsPlugin} from 'overlayscrollbars-vue'
-import {i18n} from './localization/i18n'
+import {i18n} from './localization'
 
 // Import components globally, without lazy loading
 import WindowToolbar from './components/WindowToolbar.vue'

@@ -128,7 +128,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 <v-list-item-content>
                   <v-list-item-title>
                     <span class="inline-code--light">{{item.prefix}}</span>
-                    {{item.title}}
+                    - {{$t(item.title)}}
                   </v-list-item-title>
                 </v-list-item-content>
               </v-list-item>

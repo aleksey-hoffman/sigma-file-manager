@@ -18,7 +18,7 @@
 
 Designed, developed, and maintained by [Aleksey Hoffman](https://github.com/aleksey-hoffman) | [Twitter](https://twitter.com/hoffman_aleksey) | [Reddit](https://www.reddit.com/user/AlekseyHoffman)
 
-Thanks to everyone who have been sharing this project with others!
+Thanks to everyone who has been sharing this project with others!
 
 <img src="./.github/media/main.png">
 
@@ -56,23 +56,25 @@ Create the best existing intelligent file manager & productivity app that will s
 
 - **NOTES:** Advanced note editor in this app allows you to create featureful notes and store them in one convenient, quickly accessible place.
 
-- **DASHBOARD:** Dashboard page provides a quick access to pinned / protected / tagged items, and the timeline.
+- **DASHBOARD:** Dashboard page provides quick access to pinned / protected / tagged items, and the timeline.
 
 - **FILE PROTECTION:** This feature allows you to protect any file / directory / note from being modified / renamed / moved / deleted.
 
 - **INFO PANEL:** displays useful information about currently selected file / directory and the file preview for media files: audio, video, images (including animated gifs, apng, webp, and many other formats).
 
-- **ARCHIVER:** tuilt-in archiver allows you to compress files into archives and extract existing archives. It supports all most popular formats. See the list of formats on the <a href="https://github.com/aleksey-hoffman/sigma-file-manager/wiki/Features">"features" wiki page</a>
+- **ARCHIVER:** built-in archiver allows you to compress files into archives and extract existing archives. It supports all most popular formats. See the list of formats on the <a href="https://github.com/aleksey-hoffman/sigma-file-manager/wiki/Features">"features" wiki page</a>
 
 - **AUTO UPDATES:** the app updates itself automatically. It will let you decide if and when you want to download and install an update.
 
-- **COMMUNITY PARTICIPATION:** unlike closed-sourced apps, you participate in the development of this app (request features, vote each features should be prioritized, participate in discussions, modify code of the app yourself).
+- **COMMUNITY PARTICIPATION:** unlike closed-sourced apps, you participate in the development of this app (request features, vote which features should be prioritized, participate in discussions, modify code of the app yourself).
 
 - **QUICK VIEW:** allows you to quickly open selected files in a preview window, rather than an external program by pressing `Space` button. It supports images, videos, audio, PDF, most plain text formats.
 
 - **INFUSIVE DESIGN:** this app implements my custom, modern, beautiful, minimalistic, customizable, design system called "Infusive design".
 
-- **WINDOW TRANSPARENCY EFFECTS:** feature allows you to customize the app design and create literaly infinite amount of custom, beautiful, modern UI designs by allowing you to beautifully infuse any image / video into every element of the app UI.
+- **WINDOW TRANSPARENCY EFFECTS:** feature allows you to customize the app design and create literally infinite amount of custom, beautiful, modern UI designs by allowing you to beautifully infuse any image / video into every element of the app UI.
+
+- **LOCALIZATION:** the app interface can be displayed in any language. The languages can be edited, and new languages can be added by the community.
 
 #### MANY MORE FEATURES ARE COMING
 
@@ -85,9 +87,9 @@ Several more major features / improvements are already in development and will b
 
 # Supporters
 
-This app is free but is needs supporters to stay alive and to keep improving. Please consider supporting it.
+This app is free but it needs supporters to stay alive and to keep improving. Please consider supporting it.
 
-The people and companies show below are currently funding this project. Thanks to them I can keep working on this app, they are the reason good quality free software can exist.
+The people and companies shown below are currently funding this project. Thanks to them I can keep working on this app, they are the reason good quality free software can exist.
 
 ## Level-2 sponsor
 
@@ -463,7 +465,7 @@ If you like their art, consider supporting their work. You can find their suppor
 
 #### ⚠ Notes:
 
-- If you're running the app on the integrated GPU, the RAM usage will increase during video playback. Videos playing in the background (e.g. on the home page) are the main reason to high memory usage. You can reduce memory usage by choosing a static image for the "Windows transparency effect" and the home banner.
+- If you're running the app on the integrated GPU, the RAM usage will increase during video playback. Videos playing in the background (e.g. on the home page) are the main reason for high memory usage. You can reduce memory usage by choosing a static image for the "Windows transparency effect" and the home banner.
 - The app is still in early development (prototyping) stage. It is safe to use, it should not delete or damage any files by itself, but it's recommended to backup (copy) your important data to an external backup drive or to your cloud storage, just for good practice.
 - Expect to see some errors and performance issues in the first versions of the app. I will be fixing the problems gradually as they get reported by the users.
 - The app has not been optimized yet, RAM usage can spike and go over 1 GB during some operations. So, for now, avoid using the app on low-tier computers (i.e. computers with 4 GB of RAM or less).
@@ -499,13 +501,13 @@ There's a fun secret hidden somewhere in the app. See if you can find it. Hint: 
 
 ✅ **by v1.2.0 (June 2021):** new features, improvements, and fixes;
 
-✅ **by v1.3.0 (Augest 2021):** new features, improvements, and fixes;
+✅ **by v1.3.0 (August 2021):** new features, improvements, and fixes;
 
 ✅ **by v1.4.0 (September 2021):** new features, improvements, and fixes;
 
 ✅ **by v1.5.0:** new features, improvements, and fixes.
 
-⬜ **by v1.6.0:** new features, improvements, and fixes, extensions support, localize the app to 10+ most popular languages;
+✅ **by v1.6.0:** new features, improvements, and fixes, extensions support, localize the app to 10+ most popular languages;
 
 ⬜ ...
 
@@ -530,7 +532,7 @@ See more details on [my Github profile page](https://github.com/aleksey-hoffman)
 
 # The app background story
 
-Even though I've spent 3000+ hours developing this app, I decided to make it free and open-source because open-source is more than just a way to share your work, it has larger impact on the development of our society than you think.
+Even though I've spent 3000+ hours developing this app, I decided to make it free and open-source because open-source is more than just a way to share your work, it has a larger impact on the development of our society than you think.
 
 When we create close-sourced, overly-copyrighted products, and hide our work behind paywalls and patents, with the primary goal of enriching yourself, we slow down our development.
 

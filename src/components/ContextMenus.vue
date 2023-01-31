@@ -519,11 +519,11 @@ export default {
           tooltip: {
             shortcutList: [
               {
-                title: this.shortcuts.trashSelected.description,
+                title: this.$t('shortcuts.moveSelectedItemsToTrash'),
                 shortcut: this.shortcuts.trashSelected.shortcut,
               },
               {
-                title: this.shortcuts.deleteSelected.description,
+                title: this.$t('shortcuts.deleteSelectedItemsFromDrive'),
                 shortcut: this.shortcuts.deleteSelected.shortcut,
               },
             ],

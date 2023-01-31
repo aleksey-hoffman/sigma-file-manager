@@ -79,6 +79,7 @@ export default {
     },
     selectedLanguage (value) {
       this.$i18n.locale = value.locale
+      this.updateTrayLocalization()
     },
     drives (value) {
       this.handleConnectedDriveActions(value)
@@ -359,6 +360,9 @@ export default {
       this.bindMouseKeyEvents()
       this.bindGeneralKeyEvents()
       this.bindGeneralMousetrapEvents()
+    },
+    updateTrayLocalization () {
+      electron.ipcRenderer.invoke('update-tray-localization', this.$t('trayMenu'))
     },
     initWindowErrorHandler () {
       window.addEventListener('error', (event) => {

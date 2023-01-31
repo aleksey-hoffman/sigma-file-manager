@@ -202,7 +202,7 @@ export default {
         return ''
       }
       return type === 'image'
-        ? this.$t('common.image')
+        ? this.$t('image')
         : this.$t('video')
     },
     initEventHubListeners () {
@@ -375,6 +375,7 @@ export default {
   margin-bottom: 24px;
   outline: 3px dashed var(--color-6);
   outline-offset: -3px;
+  text-align: center;
   user-select: none;
 }
 

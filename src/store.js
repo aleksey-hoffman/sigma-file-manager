@@ -7,7 +7,7 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 import { createNewSortInstance } from 'fast-sort'
 import router from './router.js'
-import {i18n} from './localization/i18n'
+import {i18n} from './localization'
 import { languages, getLanguage } from './localization/data'
 import utils from './utils/utils'
 import TimeUtils from './utils/timeUtils.js'
@@ -173,19 +173,19 @@ export default new Vuex.Store({
           filterProperties: [
             {
               name: 'name',
-              title: 'item name',
+              title: 'filter.prefixes.itemName',
               prefix: 'name:',
               property: 'name',
             },
             {
               name: 'itemCount',
-              title: 'directory item count',
+              title: 'filter.prefixes.directoryItemCount',
               prefix: 'items:',
               property: 'dirItemCount',
             },
             {
               name: 'fileSize',
-              title: 'file size',
+              title: 'filter.prefixes.fileSize',
               prefix: 'size:',
               property: 'stat.size',
               isDeepProperty: true,
@@ -195,7 +195,7 @@ export default new Vuex.Store({
             },
             {
               name: 'dateMetaModified',
-              title: 'date meta modified',
+              title: 'filter.prefixes.dateMetaModified',
               prefix: 'date-m:',
               property: 'stat.ctime',
               isDeepProperty: true,
@@ -213,19 +213,19 @@ export default new Vuex.Store({
           filterProperties: [
             {
               name: 'title',
-              title: 'note title',
+              title: 'filter.prefixes.noteTitle',
               prefix: 'title:',
               property: 'title',
             },
             {
               name: 'content',
-              title: 'note content',
+              title: 'filter.prefixes.noteContent',
               prefix: 'content:',
               property: 'content',
             },
             {
               name: 'group',
-              title: 'note group',
+              title: 'filter.prefixes.noteGroup',
               prefix: 'group:',
               property: 'group',
             },
@@ -239,7 +239,7 @@ export default new Vuex.Store({
           filterProperties: [
             {
               name: 'path',
-              title: 'item path',
+              title: 'filter.prefixes.itemPath',
               prefix: 'path:',
               property: 'path',
             }
@@ -253,7 +253,7 @@ export default new Vuex.Store({
           filterProperties: [
             {
               name: 'tags',
-              title: 'setting tags',
+              title: 'filter.prefixes.settingTags',
               prefix: 'tags:',
               property: 'tags',
             },
@@ -652,20 +652,20 @@ export default new Vuex.Store({
           selectedTab: null,
           tabs: {
             pinned: {
-              title: 'Pinned',
+              title: 'pinnedItemsShort',
               show: true,
               icon: 'mdi-pin-outline'
             },
             protected: {
-              title: 'Protected',
+              title: 'protectedItemsShort',
               show: true,
               icon: 'mdi-shield-check-outline'
             },
             timeline: {
-              title: 'Timeline',
+              title: 'timeline',
               show: true,
               icon: 'mdi-timeline-clock-outline'
-             }
+            }
           }
         },
         infoPanels: {

@@ -20,7 +20,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         {{shortcut.icon}}
       </v-icon>
       <div class="shortcut-list__item-description">
-        {{shortcut.description}}
+        {{$t(shortcut.description)}}
       </div>
       <div class="shortcut-list__item-shortcut">
         {{shortcutFiltered(shortcut.shortcut)}}
@@ -88,7 +88,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             {{shortcut.icon}}
           </v-icon>
           <div class="shortcut-list__item-description">
-            {{shortcut.description}}
+            {{$t(shortcut.description)}}
           </div>
           <div class="shortcut-list__item-shortcut">
             {{shortcutFiltered(shortcut.shortcut)}}

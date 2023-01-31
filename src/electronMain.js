@@ -48,6 +48,7 @@ const windowLoadedCallbacks = {
 const globalShortcuts = {}
 let storageData
 let tray
+let trayData = {labels: {}}
 
 // Scheme must be registered before the app is ready
 electron.protocol.registerSchemesAsPrivileged([
@@ -332,6 +333,11 @@ function initIPCListeners () {
     return storageData
   })
 
+  electron.ipcMain.handle('update-tray-localization', async (_, data) => {
+    trayData.labels = data
+    tray.setContextMenu(getTrayMenu())
+  })
+
   electron.ipcMain.handle('quick-view::set-content-size', async (event, data) => {
     windows.quickViewWindow.setContentSize(data.width, data.height)
     windows.quickViewWindow.center()
@@ -599,51 +605,51 @@ function getTrayMenu () {
   const contextMenu = electron.Menu.buildFromTemplate([
     {
       label: `SIGMA FILE MANAGER v${appVersion}`,
-      enabled: false
+      enabled: false,
     },
     {
-      type: 'separator'
+      type: 'separator',
     },
     {
-      label: 'GLOBAL SHORTCUTS',
-      enabled: false
+      label: trayData.labels.globalShortcuts || 'GLOBAL SHORTCUTS',
+      enabled: false,
     },
     {
-      label: 'Toggle window visibility',
+      label: trayData.labels.toggleWindowVisibility || 'Toggle window visibility',
       accelerator: globalShortcuts?.toggleApp?.shortcut || '',
-      click: () => global.toggleApp({type: 'tray'})
+      click: () => global.toggleApp({type: 'tray'}),
     },
     {
-      label: 'Open global search',
+      label: trayData.labels.openGlobalSearch || 'Open global search',
       accelerator: globalShortcuts?.openGlobalSearch?.shortcut || '',
-      click: () => global.openGlobalSearch()
+      click: () => global.openGlobalSearch(),
     },
     {
-      label: 'Create new note',
+      label: trayData.labels.createNewNote || 'Create new note',
       accelerator: globalShortcuts?.newNote?.shortcut || '',
       click: () => global.newNote(),
     },
     {
-      type: 'separator'
+      type: 'separator',
     },
     {
-      label: 'APP ACTIONS',
-      enabled: false
+      label: trayData.labels.appActions || 'APP ACTIONS',
+      enabled: false,
     },
     {
-      label: 'Open window',
+      label: trayData.labels.openWindow || 'Open window',
       accelerator: globalShortcuts?.toggleApp?.shortcut || '',
-      click: () => global.focusApp()
+      click: () => global.focusApp(),
     },
     {
-      label: 'Reload window',
+      label: trayData.labels.reloadWindow || 'Reload window',
       accelerator: 'Ctrl + Shift + R',
-      click: () => windows.main?.reload()
+      click: () => windows.main?.reload(),
     },
     {
-      label: 'Quit',
-      click: () => electron.app.quit()
-    }
+      label: trayData.labels.quit || 'Quit',
+      click: () => electron.app.quit(),
+    },
   ])
   return contextMenu
 }
