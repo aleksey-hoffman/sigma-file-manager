@@ -6,30 +6,41 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <template>
   <v-navigation-drawer
     id="nav-panel"
-    class="nav-panel"
     v-model="navigationPanelModel"
+    class="nav-panel"
     :mini-variant="navigationPanelMiniVariant"
-    touchless app permanent floating
+    touchless
+    app
+    permanent
+    floating
     mini-variant-width="48"
     width="280"
   >
-    <v-layout column fill-height class="unselectable">
-      <v-layout column class="nav-panel__main-content custom-scrollbar">
+    <v-layout
+      column
+      fill-height
+      class="unselectable"
+    >
+      <v-layout
+        column
+        class="nav-panel__main-content custom-scrollbar"
+      >
         <!-- list::global-search -->
         <div>
           <v-tooltip
             right
             :disabled="!navigationPanelMiniVariant"
           >
-            <template v-slot:activator="{ on }">
+            <template #activator="{ on }">
               <v-layout
-                v-on="on"
-                @click="$store.dispatch('TOGGLE_GLOBAL_SEARCH')"
-                align-center v-ripple
+                v-ripple
+                align-center
                 class="nav-panel__item --search"
                 :class="{'active-route': globalSearchWidget }"
+                v-on="on"
+                @click="$store.dispatch('TOGGLE_GLOBAL_SEARCH')"
               >
-                <div class="nav-panel__item__indicator"></div>
+                <div class="nav-panel__item__indicator" />
                 <div class="nav-panel__item__icon-container">
                   <v-icon class="nav-panel__item__icon">
                     mdi-magnify
@@ -60,8 +71,8 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           :class="{
             'opacity-1': navigationPanelMiniVariant === false,
             'opacity-0': navigationPanelMiniVariant === true
-          }">
-        </div>
+          }"
+        />
 
         <!-- list::navigation-views -->
         <div>
@@ -71,19 +82,20 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             right
             :disabled="!navigationPanelMiniVariant"
           >
-            <template v-slot:activator="{ on }">
+            <template #activator="{ on }">
               <v-layout
-                v-on="on"
-                @click="$store.dispatch('SWITCH_ROUTE', item)"
+                v-ripple
                 class="nav-panel__item"
                 :class="{'active-route': $route.path === item.to}"
-                align-center v-ripple
+                align-center
+                v-on="on"
+                @click="$store.dispatch('SWITCH_ROUTE', item)"
               >
-                <div class="nav-panel__item__indicator"></div>
+                <div class="nav-panel__item__indicator" />
                 <div class="nav-panel__item__icon-container">
-                <v-icon class="nav-panel__item__icon">
-                  {{item.icon}}
-                </v-icon>
+                  <v-icon class="nav-panel__item__icon">
+                    {{item.icon}}
+                  </v-icon>
                 </div>
                 <transition name="slide-fade-left">
                   <div v-if="!navigationPanelMiniVariant">
@@ -105,139 +117,43 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           </v-tooltip>
         </div>
 
-        <v-spacer></v-spacer>
+        <v-spacer />
 
         <div
           class="nav-panel__divider"
           :class="{
             'opacity-1': navigationPanelMiniVariant === false,
             'opacity-0': navigationPanelMiniVariant === true
-          }">
-        </div>
-
-        <!-- list::storage-devices -->
-        <div class="mb-2">
-          <v-tooltip
-            v-for="(drive, index) in drives"
-            :key="`${index}-${drive.mount}`"
-            right
-          >
-            <template v-slot:activator="{ on }">
-              <v-layout
-                v-on="on"
-                @click="$store.dispatch('OPEN_DIR_ITEM_FROM_PATH', drive.path)"
-                class="nav-panel__item"
-                align-center v-ripple
-              >
-                <div class="nav-panel__item__indicator"></div>
-                <div class="nav-panel__item__icon-container">
-                  <v-badge
-                    :value="showNavPanelDriveLetterOverlay(drive)"
-                    color="var(--nav-panel-drive-overlay-bg-color)"
-                    overlap bottom left 
-                    offset-x="12px" 
-                    offset-y="10px"
-                  >
-                    <v-icon 
-                      class="nav-panel__item__icon"
-                      :size="$utils.getDriveIcon(drive).size" 
-                    >
-                      {{$utils.getDriveIcon(drive).name}}
-                    </v-icon>
-                    <template v-slot:badge>
-                      <div 
-                        v-if="showNavPanelDriveLetterOverlay(drive)" 
-                        style="color: var(--nav-panel-drive-overlay-color)"
-                      >
-                        {{navPanelDriveLetterOverlayContent(drive)}}
-                      </div>
-                    </template>
-                  </v-badge>
-                </div>
-                <transition name="slide-fade-left">
-                  <div v-if="!navigationPanelMiniVariant">
-                    <div 
-                      class="nav-panel__item__title"
-                      v-if="drive.type === 'cloud'"
-                    >
-                      {{drive.titleSummary}}
-                    </div>
-                    <div 
-                      class="nav-panel__item__title mb-1"
-                      v-else
-                    >
-                      <v-layout align-center>
-                        <div class="nav-panel__item__title__mount">
-                          <span
-                            v-if="systemInfo.platform === 'win32'"
-                            class="text-uppercase caption"
-                          >{{$t('drive')}}
-                          </span>
-                          {{drive.mount}}
-                        </div>
-                        <v-spacer></v-spacer>
-                        <div class="caption">
-                          {{drive.size.free && $utils.prettyBytes(drive.size.free, 1)}} {{$t('spaceLeft')}}
-                        </div>
-                      </v-layout>
-                      <div v-if="drive.percentUsed">
-                        <v-progress-linear
-                          :value="`${drive.percentUsed}`"
-                          height="4"
-                          :background-color="$utils.getCSSVar('--bg-color-2')"
-                          :color="$utils.getCSSVar('--color-1-alt-1')"
-                        ></v-progress-linear>
-                      </div>
-                    </div>
-                  </div>
-                </transition>
-              </v-layout>
-            </template>
-            <span>
-              <div>{{drive.titleSummary}}</div>
-              <div>{{drive.infoSummary}}</div>
-            </span>
-          </v-tooltip>
-        </div>
+          }"
+        />
+        <StorageDeviceList />
       </v-layout>
     </v-layout>
- </v-navigation-drawer>
+  </v-navigation-drawer>
 </template>
 
 <script>
 import {mapFields} from 'vuex-map-fields'
 import {mapGetters} from 'vuex'
+import StorageDeviceList from '@/components/StorageDeviceList/StorageDeviceList.vue'
 
 export default {
+  components: {
+    StorageDeviceList,
+  },
   computed: {
     ...mapGetters([
       'homeBannerSelectedMedia',
-      'systemInfo'
+      'systemInfo',
     ]),
     ...mapFields({
       shortcuts: 'storageData.settings.shortcuts',
-      drives: 'drives',
       globalSearchWidget: 'globalSearch.widget',
       navigationPanelModel: 'navigationPanel.model',
       navigationPanelMiniVariant: 'navigationPanel.miniVariant',
       navigationPanelItems: 'navigationPanel.items',
-      homeBannerValue: 'storageData.settings.homeBanner.value',
-      currentDir: 'navigatorView.currentDir',
-      navPanelDriveLetterOverlay: 'storageData.settings.overlays.navPanelDriveLetterOverlay.value',
-    })
+    }),
   },
-  methods: {
-    showNavPanelDriveLetterOverlay (drive) {
-      return this.$utils.platform === 'win32'
-        ? this.navPanelDriveLetterOverlay && !drive.mount.includes('OneDrive')
-        : false
-    },
-    navPanelDriveLetterOverlayContent (drive) {
-      return this.$utils.platform === 'win32'
-        ? drive.mount.replace(':/', '')
-        : ''
-    }
-  }
 }
 </script>
 
@@ -299,13 +215,6 @@ export default {
   overflow: hidden;
   white-space: nowrap;
   color: var(--nav-panel-color-1);
-}
-
-.nav-panel__item__title__mount {
-  width: 120px;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
 }
 
 /* Active state */

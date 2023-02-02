@@ -40,6 +40,10 @@ export default {
       ? PATH.join(__dirname, relativePath)
       : PATH.join(relativePath)
   },
+  isStorageDeviceLowFreeSpace (drive) {
+    const thresholdPercent = 20
+    return drive?.size?.percentUsed < thresholdPercent || false
+  },
   getDriveSummary (drive) {
     if (!drive.size || !drive.fsType) {return ''}
     const freeSize = this.prettyBytes(drive.size.free, 1)

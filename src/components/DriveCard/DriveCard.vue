@@ -15,20 +15,24 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         v-if="showStorageBar('vertical')"
         class="item-card__progress--vertical"
         :class="{
-          'item-card__progress-glow--green': !isLowAvailableStorageSpace(),
-          'item-card__progress-glow--red': isLowAvailableStorageSpace()
+          'item-card__progress--vertical--green item-card__progress-glow--green': !isLowFreeSpace,
+          'item-card__progress--vertical--red item-card__progress-glow--red': isLowFreeSpace,
         }"
-        :style="getStorageBarStyles('vertical')"
+        :style="[
+          `height: ${drive.percentUsed}%`
+        ]"
       />
 
       <div
         v-if="showStorageBar('horizontal')"
         class="item-card__progress--horizontal"
         :class="{
-          'item-card__progress-glow--green': !isLowAvailableStorageSpace(),
-          'item-card__progress-glow--red': isLowAvailableStorageSpace()
+          'item-card__progress-glow--green': !isLowFreeSpace,
+          'item-card__progress-glow--red': isLowFreeSpace
         }"
-        :style="getStorageBarStyles('horizontal')"
+        :style="[
+          `width: ${drive.percentUsed}%`
+        ]"
       />
 
       <template #preview>
@@ -62,8 +66,8 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           <div
             class="drive-card__progress--circular"
             :class="{
-              'drive-card__progress--circular--green': !isLowAvailableStorageSpace(),
-              'drive-card__progress--circular--red': isLowAvailableStorageSpace()
+              'drive-card__progress--circular--green': !isLowFreeSpace,
+              'drive-card__progress--circular--red': isLowFreeSpace
             }"
           >
             <v-progress-circular
@@ -71,7 +75,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               :value="`${drive.percentUsed}`"
               size="40"
               width="2"
-              :color="getStorageBarColors('circular').color"
+              :color="$utils.getCSSVar(isLowFreeSpace ? '--progress-bar-overlay-color-red' : '--progress-bar-overlay-color-green')"
             >
               <div
                 v-if="drive.percentUsed"
@@ -85,21 +89,11 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       </template>
 
       <template #line-1-footer>
-        <div
+        <StorageDeviceProgressBar
           v-if="showStorageBar('linear')"
+          :storage-device="drive"
           class="item-card__progress--horizontal-centered"
-          :class="{
-            'item-card__progress--horizontal-centered--green': !isLowAvailableStorageSpace(),
-            'item-card__progress--horizontal-centered--red': isLowAvailableStorageSpace()
-          }"
-        >
-          <v-progress-linear
-            :value="`${drive.percentUsed}`"
-            height="2"
-            :background-color="getStorageBarColors('linear').bgColor"
-            :color="getStorageBarColors('linear').color"
-          />
-        </div>
+        />
       </template>
     </ItemCard>
   </div>
@@ -108,6 +102,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <script>
 import {mapFields} from 'vuex-map-fields'
 import ItemCard from '@/components/ItemCard/ItemCard.vue'
+import StorageDeviceProgressBar from '@/components/StorageDeviceProgressBar/StorageDeviceProgressBar.vue'
 
 export default {
   props: {
@@ -135,6 +130,7 @@ export default {
   },
   components: {
     ItemCard,
+    StorageDeviceProgressBar,
   },
   computed: {
     ...mapFields({
@@ -145,6 +141,9 @@ export default {
       navigatorOpenDirItemWithSingleClick: 'storageData.settings.navigator.openDirItemWithSingleClick',
       itemCardDesign: 'storageData.settings.itemCardDesign',
     }),
+    isLowFreeSpace () {
+      return this.$utils.isStorageDeviceLowFreeSpace(this.drive)
+    },
   },
   methods: {
     showStorageBar (type) {
@@ -162,44 +161,6 @@ export default {
       }
       else {
         return false
-      }
-    },
-    isLowAvailableStorageSpace () {
-      const thresholdPercent = 20
-      return this.drive?.size?.percentUsed < thresholdPercent
-    },
-    getStorageBarStyles (type) {
-      const width = `width: ${this.drive.percentUsed}%`
-      const height = `height: ${this.drive.percentUsed}%`
-      const colorRed = 'background-color: rgb(244, 67, 54, 0.18)'
-      const colorTeal = 'background-color: rgb(0, 150, 136, 0.15)'
-      const color = this.isLowAvailableStorageSpace()
-        ? colorRed
-        : colorTeal
-      const selectedDirection = type === 'vertical'
-        ? height
-        : width
-      return `${color}; ${selectedDirection}`
-    },
-    getStorageBarColors (type) {
-      let colorMap = {
-        circular: {
-          background: 'rgb(255, 255, 255, 0.02)',
-          red: 'rgb(244, 67, 54, 0.18)',
-          teal: 'rgb(0, 150, 136, 0.35)',
-        },
-        linear: {
-          background: 'rgb(0, 0, 0, 0.1)',
-          red: 'rgb(244, 67, 54, 0.18)',
-          teal: 'rgb(0, 150, 136, 0.25)',
-        },
-      }
-      const color = this.isLowAvailableStorageSpace()
-        ? colorMap[type].red
-        : colorMap[type].teal
-      return {
-        color,
-        bgColor: colorMap[type].background,
       }
     },
   },
@@ -223,12 +184,20 @@ export default {
   height: 4px;
 }
 
+.item-card__progress--vertical--green {
+  background-color: var(--progress-bar-overlay-color-green);
+}
+
+.item-card__progress--vertical--red {
+  background-color: var(--progress-bar-overlay-color-red);
+}
+
 .item-card__progress-glow--green {
-  box-shadow: 0px 0px 20px 6px rgb(0, 150, 136, 0.10);
+  box-shadow: var(--progress-bar-shadow-green);
 }
 
 .item-card__progress-glow--red {
-  box-shadow: 0px 0px 20px 6px rgb(244, 67, 54, 0.10);
+  box-shadow: var(--progress-bar-shadow-red);
 }
 
 .item-card__progress--horizontal-centered {
@@ -236,32 +205,9 @@ export default {
   margin-bottom: 4px;
 }
 
-.item-card__progress--horizontal-centered
-  .v-progress-linear {
-    overflow: unset;
-  }
-
-.item-card__progress--horizontal-centered
-  .v-progress-linear
-    .v-progress-linear__background {
-      background-color: rgb(255, 255, 255, 0.05) !important;
-    }
-
-.item-card__progress--horizontal-centered--green
-  .v-progress-linear
-    .v-progress-linear__determinate {
-      box-shadow: 0px 0px 20px 6px rgb(0, 150, 136, 0.10);
-    }
-
-.item-card__progress--horizontal-centered--red
-  .v-progress-linear
-    .v-progress-linear__determinate {
-      box-shadow: 0px 0px 20px 6px rgb(244, 67, 54, 0.10);
-    }
-
 .drive-card__progress--circular
   .v-progress-circular__underlay {
-    stroke: rgb(255, 255, 255, 0.05);
+    stroke: var(--progress-bar-underlay-color);
   }
 
 .drive-card__progress--circular
