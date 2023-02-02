@@ -18,21 +18,17 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           'item-card__progress--vertical--green item-card__progress-glow--green': !isLowFreeSpace,
           'item-card__progress--vertical--red item-card__progress-glow--red': isLowFreeSpace,
         }"
-        :style="[
-          `height: ${drive.percentUsed}%`
-        ]"
+        :style="`height: ${drive.percentUsed}%`"
       />
 
       <div
         v-if="showStorageBar('horizontal')"
         class="item-card__progress--horizontal"
         :class="{
-          'item-card__progress-glow--green': !isLowFreeSpace,
-          'item-card__progress-glow--red': isLowFreeSpace
+          'item-card__progress--horizontal--green item-card__progress-glow--green': !isLowFreeSpace,
+          'item-card__progress--horizontal--red item-card__progress-glow--red': isLowFreeSpace
         }"
-        :style="[
-          `width: ${drive.percentUsed}%`
-        ]"
+        :style="`width: ${drive.percentUsed}%`"
       />
 
       <template #preview>
@@ -168,20 +164,28 @@ export default {
 </script>
 
 <style>
-.item-card__progress--vertical {
-  z-index: 1;
-  position: absolute;
-  bottom: 0;
-  width: 4px;
-  height: 100%;
-}
-
 .item-card__progress--horizontal {
   z-index: 1;
   position: absolute;
   bottom: 0;
   width: 100%;
   height: 4px;
+}
+
+.item-card__progress--horizontal--green {
+  background-color: var(--progress-bar-overlay-color-green);
+}
+
+.item-card__progress--horizontal--red {
+  background-color: var(--progress-bar-overlay-color-red);
+}
+
+.item-card__progress--vertical {
+  z-index: 1;
+  position: absolute;
+  bottom: 0;
+  width: 4px;
+  height: 100%;
 }
 
 .item-card__progress--vertical--green {
