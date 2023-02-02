@@ -47,6 +47,16 @@
     "reloadWindow": "Pencereyi yeniden yükle",
     "quit": "Çık"
   },
+  "userDirs": {
+    "home": "Ev",
+    "desktop": "Masaüstü",
+    "downloads": "İndirmeler",
+    "documents": "Belgeler",
+    "screenshots": "Ekran görüntüleri",
+    "pictures": "Resimler",
+    "videos": "Videolar",
+    "music": "Müzik"
+  },
   "tabs": {
     "workspaceTabs": "Çalışma alanı sekmeleri",
     "newTabInCurrentWorkspace": "Mevcut çalışma alanında yeni sekme",
@@ -1319,5 +1329,6 @@
   "profile": "profil",
   "closedCaptions": "altyazılar",
   "protectedItemsShort": "Korumalı",
-  "pinnedItemsShort": "Ekli"
+  "pinnedItemsShort": "Ekli",
+  "freeOf": "ücretsiz olarak"
 }

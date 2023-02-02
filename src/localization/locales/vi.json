@@ -47,6 +47,16 @@
     "reloadWindow": "Cửa sổ tải lại",
     "quit": "bỏ"
   },
+  "userDirs": {
+    "home": "Nhà",
+    "desktop": "máy tính để bàn",
+    "downloads": "Tải xuống",
+    "documents": "Các tài liệu",
+    "screenshots": "Ảnh chụp màn hình",
+    "pictures": "Những bức ảnh",
+    "videos": "Video",
+    "music": "Âm nhạc"
+  },
   "tabs": {
     "workspaceTabs": "Tab không gian làm việc",
     "newTabInCurrentWorkspace": "Tab mới trong không gian làm việc hiện tại",
@@ -1319,5 +1329,6 @@
   "profile": "Hồ sơ",
   "closedCaptions": "phụ đề chi tiết",
   "protectedItemsShort": "được bảo vệ",
-  "pinnedItemsShort": "Đính kèm"
+  "pinnedItemsShort": "Đính kèm",
+  "freeOf": "miễn phí của"
 }

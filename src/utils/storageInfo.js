@@ -277,7 +277,7 @@ function getDriveInfoSummary (drive, percentUsed) {
   const freeSize = utils.prettyBytes(drive.size.free, 1)
   const totalSize = utils.prettyBytes(drive.size.total, 1)
   const fsType = drive.fsType.toUpperCase()
-  return `${freeSize} left of ${totalSize} • ${fsType}`
+  return `${freeSize} free of ${totalSize} • ${fsType}`
 }
 
 function getDriveInfoMiniSummary (drive) {
@@ -285,5 +285,5 @@ function getDriveInfoMiniSummary (drive) {
   const freeSize = utils.prettyBytes(drive.size.free, 1)
   const totalSize = utils.prettyBytes(drive.size.total, 1)
   const fsType = drive.fsType.toUpperCase()
-  return `${mount} • ${freeSize} left of ${totalSize} • ${fsType}`
+  return `${mount} • ${freeSize} free of ${totalSize} • ${fsType}`
 }

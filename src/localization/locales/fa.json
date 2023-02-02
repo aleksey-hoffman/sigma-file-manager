@@ -47,6 +47,16 @@
     "reloadWindow": "بارگیری مجدد پنجره",
     "quit": "ترک کردن"
   },
+  "userDirs": {
+    "home": "صفحه اصلی",
+    "desktop": "دسکتاپ",
+    "downloads": "دانلودها",
+    "documents": "اسناد",
+    "screenshots": "اسکرین شات ها",
+    "pictures": "تصاویر",
+    "videos": "فیلم های",
+    "music": "موسیقی"
+  },
   "tabs": {
     "workspaceTabs": "برگه های فضای کار",
     "newTabInCurrentWorkspace": "برگه جدید در فضای کاری فعلی",
@@ -1319,5 +1329,6 @@
   "profile": "مشخصات",
   "closedCaptions": "زیرنویس‌های بسته",
   "protectedItemsShort": "حفاظت شده",
-  "pinnedItemsShort": "پیوست شده است"
+  "pinnedItemsShort": "پیوست شده است",
+  "freeOf": "رایگان از"
 }

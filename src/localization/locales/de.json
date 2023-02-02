@@ -47,6 +47,16 @@
     "reloadWindow": "Fenster neu laden",
     "quit": "beenden"
   },
+  "userDirs": {
+    "home": "Startseite",
+    "desktop": "Schreibtisch",
+    "downloads": "Herunterladen",
+    "documents": "Dokumente",
+    "screenshots": "Screenshots",
+    "pictures": "Bilder",
+    "videos": "Videos",
+    "music": "Musik"
+  },
   "tabs": {
     "workspaceTabs": "Arbeitsbereich-Registerkarten",
     "newTabInCurrentWorkspace": "Neuer Tab im aktuellen Arbeitsbereich",
@@ -1319,5 +1329,6 @@
   "profile": "Profil",
   "closedCaptions": "Untertitel",
   "protectedItemsShort": "Geschützt",
-  "pinnedItemsShort": "Befestigt"
+  "pinnedItemsShort": "Befestigt",
+  "freeOf": "frei von"
 }

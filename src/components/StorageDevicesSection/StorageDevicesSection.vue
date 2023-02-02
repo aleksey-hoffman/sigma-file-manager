@@ -7,11 +7,11 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
   <div>
     <NoData
       title="placeholders.noDrivesFound"
-      :show="drives.length === 0"
+      :show="drivesFormatted.length === 0"
     />
     <ItemGrid :lines="2">
       <DriveCard
-        v-for="(drive, index) in drives"
+        v-for="(drive, index) in drivesFormatted"
         :key="'device-card-' + index"
         :drive="drive"
       />
@@ -35,6 +35,12 @@ export default {
     ...mapFields({
       drives: 'drives',
     }),
+    drivesFormatted () {
+      return this.$utils.cloneDeep(this.drives).map(drive => {
+        drive.infoSummary = this.$utils.getDriveSummary(drive)
+        return drive
+      })
+    },
   },
 }
 </script>

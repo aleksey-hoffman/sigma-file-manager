@@ -3,6 +3,7 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 import * as notifications from './notifications.js'
+import {i18n} from '@/localization'
 const dayjsCustomParseFormat = require('dayjs/plugin/customParseFormat')
 const dayjsDuration = require('dayjs/plugin/duration')
 const dayjs = require('dayjs')
@@ -38,6 +39,12 @@ export default {
     return process.env.NODE_ENV === 'production'
       ? PATH.join(__dirname, relativePath)
       : PATH.join(relativePath)
+  },
+  getDriveSummary (drive) {
+    if (!drive.size || !drive.fsType) {return ''}
+    const freeSize = this.prettyBytes(drive.size.free, 1)
+    const totalSize = this.prettyBytes(drive.size.total, 1)
+    return `${freeSize} ${i18n.t('freeOf')} ${totalSize}`
   },
   getDriveIcon (drive) {
     if (drive.type === 'cloud') {

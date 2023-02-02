@@ -47,6 +47,16 @@
     "reloadWindow": "Перезагрузить окно",
     "quit": "Выйти"
   },
+  "userDirs": {
+    "home": "Пользователь",
+    "desktop": "Рабочий стол",
+    "downloads": "Загрузки",
+    "documents": "Документы",
+    "screenshots": "Скриншоты",
+    "pictures": "Фотографии",
+    "videos": "Видео",
+    "music": "Музыка"
+  },
   "tabs": {
     "workspaceTabs": "Вкладки",
     "newTabInCurrentWorkspace": "Новая вкладка в текущем рабочем пространстве",
@@ -512,13 +522,13 @@
     "stars": "Звезды | {n}"
   },
   "settingsTabs": {
-    "general": "Общий",
+    "general": "Общие",
     "uiAppearance": "Внешний вид интерфейса",
     "shortcuts": "Шорткаты",
-    "performance": "Спектакль",
+    "performance": "Производительность",
     "tabsWorkspaces": "Вкладки и рабочие пространства",
     "navigation": "Навигация",
-    "input": "Вход",
+    "input": "Ввод",
     "search": "Поиск",
     "dataStorage": "Хранилище данных",
     "stats": "Статистика"
@@ -1319,5 +1329,6 @@
   "profile": "профиль",
   "closedCaptions": "субтитры",
   "protectedItemsShort": "Защищенные",
-  "pinnedItemsShort": "Прикрепленные"
+  "pinnedItemsShort": "Прикрепленные",
+  "freeOf": "свободно из"
 }

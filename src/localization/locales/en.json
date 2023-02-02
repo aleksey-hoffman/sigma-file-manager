@@ -47,6 +47,16 @@
     "reloadWindow": "Reload window",
     "quit": "Quit"
   },
+  "userDirs": {
+    "home": "Home",
+    "desktop": "Desktop",
+    "downloads": "Downloads",
+    "documents": "Documents",
+    "screenshots": "Screenshots",
+    "pictures": "Pictures",
+    "videos": "Videos",
+    "music": "Music"
+  },
   "tabs": {
     "workspaceTabs": "Workspace tabs",
     "newTabInCurrentWorkspace": "New tab in current workspace",
@@ -1319,5 +1329,6 @@
   "profile": "profile",
   "closedCaptions": "closed captions",
   "protectedItemsShort": "Protected",
-  "pinnedItemsShort": "Pinned"
+  "pinnedItemsShort": "Pinned",
+  "freeOf": "free of"
 }

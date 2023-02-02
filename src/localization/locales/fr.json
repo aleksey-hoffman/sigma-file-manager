@@ -47,6 +47,16 @@
     "reloadWindow": "Recharger la fenêtre",
     "quit": "Quitter"
   },
+  "userDirs": {
+    "home": "Accueil",
+    "desktop": "Bureau",
+    "downloads": "Téléchargements",
+    "documents": "Documents",
+    "screenshots": "Captures d'écran",
+    "pictures": "Photos",
+    "videos": "Vidéos",
+    "music": "Musique"
+  },
   "tabs": {
     "workspaceTabs": "Onglets de l'espace de travail",
     "newTabInCurrentWorkspace": "Nouvel onglet dans l'espace de travail actuel",
@@ -1319,5 +1329,6 @@
   "profile": "profil",
   "closedCaptions": "sous-titres",
   "protectedItemsShort": "Protégé",
-  "pinnedItemsShort": "Attaché"
+  "pinnedItemsShort": "Attaché",
+  "freeOf": "gratuit de"
 }

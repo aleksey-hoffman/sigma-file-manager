@@ -39,7 +39,10 @@ export default {
     userDirsFormatted () {
       return this.$utils.cloneDeep(this.userDirs).map(item => {
         if (item.name === 'home' && this.showUserNameOnUserHomeDir) {
-          item.title = `${item.title} | ${this.$utils.getPathBase(item.path)}`
+          item.title = `${this.$t(item.title)} | ${this.$utils.getPathBase(item.path)}`
+        }
+        else {
+          item.title = this.$t(item.title)
         }
         return item
       })

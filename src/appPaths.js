@@ -53,49 +53,36 @@ const FFMPEG = PATH.join(bin, 'ffmpeg', 'bin')
 const ytdlp = PATH.join(bin, 'yt-dlp')
 const sevenZip = PATH.join(bin, '7-zip')
 
-let userDirs
-let bin7Zip
-let binYtdlp
+let defaultUserDirs = [
+  {name: 'home', title: 'userDirs.home', icon: 'mdi-folder-account-outline', path: home},
+  {name: 'desktop', title: 'userDirs.desktop', icon: 'mdi-aspect-ratio', path: desktop},
+  {name: 'downloads', title: 'userDirs.downloads', icon: 'mdi-download', path: downloads},
+  {name: 'documents', title: 'userDirs.documents', icon: 'mdi-text-box-multiple-outline', path: documents},
+  {name: 'pictures', title: 'userDirs.pictures', icon: 'mdi-image-multiple-outline', path: pictures},
+  {name: 'videos', title: 'userDirs.videos', icon: 'mdi-play-circle-outline', path: videos},
+  {name: 'music', title: 'userDirs.music', icon: 'mdi-music', path: music},
+]
+let screenshotsDir = {name: 'screenshots', title: 'userDirs.screenshots', icon: 'mdi-image-size-select-large', path: screenshots}
+
+let userDirs = []
+let bin7Zip = ''
+let binYtdlp = ''
 
 if (process.platform === 'win32') {
   bin7Zip = PATH.join(sevenZip, '7z.exe')
   binYtdlp = PATH.join(ytdlp, 'yt-dlp.exe')
-  userDirs = [
-    {name: 'home', title: 'Home', icon: 'mdi-folder-account-outline', path: home},
-    {name: 'desktop', title: 'Desktop', icon: 'mdi-aspect-ratio', path: desktop},
-    {name: 'downloads', title: 'Downloads', icon: 'mdi-download', path: downloads},
-    {name: 'documents', title: 'Documents', icon: 'mdi-text-box-multiple-outline', path: documents},
-    {name: 'screenshots', title: 'Screenshots', icon: 'mdi-image-size-select-large', path: screenshots},
-    {name: 'pictures', title: 'Pictures', icon: 'mdi-image-multiple-outline', path: pictures},
-    {name: 'videos', title: 'Videos', icon: 'mdi-play-circle-outline', path: videos},
-    {name: 'music', title: 'Music', icon: 'mdi-music', path: music},
-  ]
+  defaultUserDirs.splice(4, 0, screenshotsDir)
+  userDirs = defaultUserDirs
 }
 else if (process.platform === 'linux') {
   bin7Zip = PATH.join(sevenZip, '7zz')
   binYtdlp = PATH.join(ytdlp, 'yt-dlp_linux')
-  userDirs = [
-    {name: 'home', title: 'Home', icon: 'mdi-folder-account-outline', path: home},
-    {name: 'desktop', title: 'Desktop', icon: 'mdi-aspect-ratio', path: desktop},
-    {name: 'downloads', title: 'Downloads', icon: 'mdi-download', path: downloads},
-    {name: 'documents', title: 'Documents', icon: 'mdi-text-box-multiple-outline', path: documents},
-    {name: 'pictures', title: 'Pictures', icon: 'mdi-image-multiple-outline', path: pictures},
-    {name: 'videos', title: 'Videos', icon: 'mdi-play-circle-outline', path: videos},
-    {name: 'music', title: 'Music', icon: 'mdi-music', path: music},
-  ]
+  userDirs = defaultUserDirs
 }
 else if (process.platform === 'darwin') {
   bin7Zip = PATH.join(sevenZip, '7zz')
   binYtdlp = PATH.join(ytdlp, 'yt-dlp')
-  userDirs = [
-    {name: 'home', title: 'Home', icon: 'mdi-folder-account-outline', path: home},
-    {name: 'desktop', title: 'Desktop', icon: 'mdi-aspect-ratio', path: desktop},
-    {name: 'downloads', title: 'Downloads', icon: 'mdi-download', path: downloads},
-    {name: 'documents', title: 'Documents', icon: 'mdi-text-box-multiple-outline', path: documents},
-    {name: 'pictures', title: 'Pictures', icon: 'mdi-image-multiple-outline', path: pictures},
-    {name: 'videos', title: 'Videos', icon: 'mdi-play-circle-outline', path: videos},
-    {name: 'music', title: 'Music', icon: 'mdi-music', path: music},
-  ]
+  userDirs = defaultUserDirs
 }
 
 const binCompressed = PATH.join(bin, 'compressed.zip')

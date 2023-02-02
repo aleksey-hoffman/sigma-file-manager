@@ -47,6 +47,16 @@
     "reloadWindow": "ウィンドウのリロード",
     "quit": "「やめる」"
   },
+  "userDirs": {
+    "home": "ホーム",
+    "desktop": "デスクトップ",
+    "downloads": "ダウンロード",
+    "documents": "ドキュメント",
+    "screenshots": "スクリーンショット",
+    "pictures": "写真",
+    "videos": "ビデオ",
+    "music": "音楽"
+  },
   "tabs": {
     "workspaceTabs": "ワークスペースタブ",
     "newTabInCurrentWorkspace": "現在のワークスペースの新しいタブ",
@@ -1319,5 +1329,6 @@
   "profile": "プロフィール",
   "closedCaptions": "字幕",
   "protectedItemsShort": "保護された",
-  "pinnedItemsShort": "添付"
+  "pinnedItemsShort": "添付",
+  "freeOf": "から自由である"
 }

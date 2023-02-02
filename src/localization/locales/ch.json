@@ -47,6 +47,16 @@
     "reloadWindow": "重新加载窗口",
     "quit": "退出"
   },
+  "userDirs": {
+    "home": "首页",
+    "desktop": "桌面电脑",
+    "downloads": "下载",
+    "documents": "文件",
+    "screenshots": "屏幕截图",
+    "pictures": "图片",
+    "videos": "视频",
+    "music": "音乐"
+  },
   "tabs": {
     "workspaceTabs": "工作区选项卡",
     "newTabInCurrentWorkspace": "当前工作区中的新选项卡",
@@ -1319,5 +1329,6 @@
   "profile": "轮廓",
   "closedCaptions": "隐藏式字幕",
   "protectedItemsShort": "受保护",
-  "pinnedItemsShort": "随附的"
+  "pinnedItemsShort": "随附的",
+  "freeOf": "自由于"
 }
