@@ -32,7 +32,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       class="media-picker__item"
       :is-selected="item.path === homeBannerSelectedItem.path"
       :data-path="item.path"
-      @click="$store.dispatch('SET_HOME_BANNER_BACKGROUND', item)"
+      @click="$store.dispatch('setHomeBannerBackground', item)"
     >
       <div class="progress">
         {{$t('loading')}}

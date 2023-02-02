@@ -137,7 +137,9 @@
     "backgroundPosition": "موقعیت پس زمینه",
     "backgroundHeight": "ارتفاع پس زمینه",
     "backgroundOverlay": "پوشش پس زمینه",
-    "setDefaultBackground": "تنظیم پس زمینه پیش فرض"
+    "setDefaultBackground": "تنظیم پس زمینه پیش فرض",
+    "setNextBackground": "تنظیم زمینه بعدی",
+    "setPreviousBackground": "تنظیم زمینه قبلی"
   },
   "navigator": {
     "newDirectoryFile": "دایرکتوری / فایل جدید",

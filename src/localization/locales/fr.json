@@ -137,7 +137,9 @@
     "backgroundPosition": "Position en arrière-plan",
     "backgroundHeight": "Hauteur de fond",
     "backgroundOverlay": "Superposition d'arrière-plan",
-    "setDefaultBackground": "Définir l'arrière-plan par défaut"
+    "setDefaultBackground": "Définir l'arrière-plan par défaut",
+    "setNextBackground": "Définir le fond d'écran suivant",
+    "setPreviousBackground": "Définir le fond d'écran précédent"
   },
   "navigator": {
     "newDirectoryFile": "Nouveau répertoire/fichier",

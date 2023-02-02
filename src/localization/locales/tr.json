@@ -137,7 +137,9 @@
     "backgroundPosition": "Arka plan konumu",
     "backgroundHeight": "Arka plan yüksekliği",
     "backgroundOverlay": "Arka plan kaplaması",
-    "setDefaultBackground": "Varsayılan arka planı ayarla"
+    "setDefaultBackground": "Varsayılan arka planı ayarla",
+    "setNextBackground": "Sonraki Arka Planı Ayarla",
+    "setPreviousBackground": "Önceki Arka Planı Ayarla"
   },
   "navigator": {
     "newDirectoryFile": "Yeni dizin / dosya",

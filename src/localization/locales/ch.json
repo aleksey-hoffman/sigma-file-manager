@@ -137,7 +137,9 @@
     "backgroundPosition": "背景位置",
     "backgroundHeight": "背景高度",
     "backgroundOverlay": "背景叠加",
-    "setDefaultBackground": "设置默认背景"
+    "setDefaultBackground": "设置默认背景",
+    "setNextBackground": "设置下一个背景",
+    "setPreviousBackground": "设置上一个背景"
   },
   "navigator": {
     "newDirectoryFile": "新建目录/文件",

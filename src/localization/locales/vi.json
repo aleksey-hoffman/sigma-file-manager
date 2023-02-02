@@ -137,7 +137,9 @@
     "backgroundPosition": "Vị trí nền",
     "backgroundHeight": "Chiều cao nền",
     "backgroundOverlay": "Lớp phủ nền",
-    "setDefaultBackground": "Đặt nền mặc định"
+    "setDefaultBackground": "Đặt nền mặc định",
+    "setNextBackground": "Thiết lập hình nền tiếp theo",
+    "setPreviousBackground": "Thiết lập hình nền trước đó"
   },
   "navigator": {
     "newDirectoryFile": "Thư mục/tệp mới",

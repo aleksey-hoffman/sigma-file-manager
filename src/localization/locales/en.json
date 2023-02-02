@@ -137,7 +137,9 @@
     "backgroundPosition": "Background position",
     "backgroundHeight": "Background height",
     "backgroundOverlay": "Background overlay",
-    "setDefaultBackground": "Set default background"
+    "setDefaultBackground": "Set default background",
+    "setNextBackground": "Set next background",
+    "setPreviousBackground": "Set previous background"
   },
   "navigator": {
     "newDirectoryFile": "New directory / file",

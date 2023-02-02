@@ -137,7 +137,9 @@
     "backgroundPosition": "Posición de fondo",
     "backgroundHeight": "Altura de fondo",
     "backgroundOverlay": "Superposición de fondo",
-    "setDefaultBackground": "Establecer fondo predeterminado"
+    "setDefaultBackground": "Establecer fondo predeterminado",
+    "setNextBackground": "Establecer siguiente fondo",
+    "setPreviousBackground": "Establecer fondo anterior"
   },
   "navigator": {
     "newDirectoryFile": "Nuevo directorio/archivo",

@@ -4388,6 +4388,7 @@ export default new Vuex.Store({
           method: 'observeDirItems',
           params: {}
         })
+        store.dispatch('setHomeBannerBackground', mediaItem)
       }, 200)
     },
     DELETE_HOME_PAGE_BACKGROUND (store, item) {
@@ -4410,25 +4411,43 @@ export default new Vuex.Store({
           silent: true
         }
       })
-      store.dispatch('RESET_HOME_BANNER_BACKGROUND')
+      store.dispatch('resetHomeBannerBackground')
     },
-    RESET_HOME_BANNER_BACKGROUND ({ state, commit, dispatch }) {
+    resetHomeBannerBackground ({state, dispatch}) {
       const mediaItems = state.storageData.settings.homeBanner.items
       const defaultMediaItem = mediaItems.find(item => item.isDefault)
-      dispatch('SET_HOME_BANNER_BACKGROUND', defaultMediaItem)
+      dispatch('setHomeBannerBackground', defaultMediaItem)
     },
-    SET_NEXT_HOME_BANNER_BACKGROUND ({ state, commit, dispatch }) {
+    setPreviousHomeBannerBackground ({dispatch}) {
+      dispatch("setClosestHomeBannerBackground", -1)
+    },
+    setNextHomeBannerBackground ({dispatch}) {
+      dispatch("setClosestHomeBannerBackground", 1)
+    },
+    setClosestHomeBannerBackground ({state, dispatch}, direction) {
       const mediaItems = state.storageData.settings.homeBanner.items
       const selectedItem = state.storageData.settings.homeBanner.selectedItem
       const selectedItemIndex = mediaItems.findIndex(item => item.path === selectedItem.path)
-      if (selectedItemIndex === mediaItems.length - 1) {
-        dispatch('SET_HOME_BANNER_BACKGROUND', mediaItems[0])
+      const firstItem = selectedItemIndex === 0
+      const lastItem = selectedItemIndex === mediaItems.length - 1
+      if (direction === -1) {
+        if (firstItem) {
+          dispatch('setHomeBannerBackground', mediaItems[mediaItems.length - 1])
+        }
+        else {
+          dispatch('setHomeBannerBackground', mediaItems[selectedItemIndex - 1])
+        }
       }
-      else {
-        dispatch('SET_HOME_BANNER_BACKGROUND', mediaItems[selectedItemIndex + 1])
-      }
+      else if (direction === 1) {
+        if (lastItem) {
+          dispatch('setHomeBannerBackground', mediaItems[0])
+        }
+        else {
+          dispatch('setHomeBannerBackground', mediaItems[selectedItemIndex + 1])
+        }
+      } 
     },
-    SET_HOME_BANNER_BACKGROUND ({ state, commit, dispatch, getters }, mediaItem) {
+    setHomeBannerBackground ({dispatch}, mediaItem) {
       const data = {
         key: 'storageData.settings.homeBanner.selectedItem',
         value: mediaItem

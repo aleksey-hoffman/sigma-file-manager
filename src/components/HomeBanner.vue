@@ -68,8 +68,22 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         {{$t('pages.home')}}
       </div>
 
-      <!-- menu-button::home-banner -->
       <HomeBannerMenu />
+      <AppButton
+        button-class="home-banner__icon fade-in-1s"
+        icon="mdi-autorenew"
+        icon-size="20px"
+        icon-class="action-toolbar__icon"
+        :icon-props="{'home-banner-value': homeBannerValue}"
+        :tooltip="$t('home.setNextBackground')"
+        :tooltip-shortcuts="[
+          {
+            value: 'Alt',
+            description: $t('home.setPreviousBackground')
+          }
+        ]"
+        @click="switchBannerBackground"
+      />
 
       <v-tooltip right>
         <template v-slot:activator="{on: tooltip}">
@@ -99,12 +113,14 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 import {mapFields} from 'vuex-map-fields'
 import {mapGetters} from 'vuex'
 import HomeBannerMenu from '@/components/HomeBannerMenu.vue'
+import AppButton from '@/components/AppButton/AppButton.vue'
 
 const electron = require('electron')
 
 export default {
   components: {
     HomeBannerMenu,
+    AppButton,
   },
   props: {
     setHomeBannerIsOffscreen: Function
@@ -146,6 +162,7 @@ export default {
       'homeBannerSelectedOverlay'
     ]),
     ...mapFields({
+      inputState: 'inputState',
       homeBannerValue: 'storageData.settings.homeBanner.value',
       homeBannerHeight: 'storageData.settings.homeBanner.height',
       homeBannerOverlaySelectedItem: 'storageData.settings.homeBanner.overlay.selectedItem',
@@ -157,6 +174,14 @@ export default {
     }
   },
   methods: {
+    switchBannerBackground () {
+      if (this.inputState.alt) {
+        this.$store.dispatch('setPreviousHomeBannerBackground')
+      }
+      else {
+        this.$store.dispatch('setNextHomeBannerBackground')
+      }
+    },
     async setBannerMedia () {
       let type = this.homeBannerSelectedMedia.type
       let mediaContainerNode = document.querySelector('.media-banner__media-container')

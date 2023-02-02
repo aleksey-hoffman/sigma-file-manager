@@ -137,7 +137,9 @@
     "backgroundPosition": "Hintergrundposition",
     "backgroundHeight": "Hintergrundhöhe",
     "backgroundOverlay": "Hintergrundüberlagerung",
-    "setDefaultBackground": "Standardhintergrund festlegen"
+    "setDefaultBackground": "Standardhintergrund festlegen",
+    "setNextBackground": "Nächsten Hintergrund festlegen",
+    "setPreviousBackground": "Vorherigen Hintergrund festlegen"
   },
   "navigator": {
     "newDirectoryFile": "Neues Verzeichnis / Datei",

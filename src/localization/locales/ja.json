@@ -137,7 +137,9 @@
     "backgroundPosition": "背景位置",
     "backgroundHeight": "背景の高さ",
     "backgroundOverlay": "背景オーバーレイ",
-    "setDefaultBackground": "デフォルトの背景を設定"
+    "setDefaultBackground": "デフォルトの背景を設定",
+    "setNextBackground": "次のバックグラウンドを設定",
+    "setPreviousBackground": "前のバックグラウンドを設定"
   },
   "navigator": {
     "newDirectoryFile": "新しいディレクトリ/ファイル",

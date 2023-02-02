@@ -19,13 +19,27 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           v-if="icon"
           :class="iconClass"
           :size="iconSize"
+          v-bind="iconProps"
         >
           {{icon}}
         </v-icon>
         <slot />
       </v-btn>
     </template>
-    <span>{{tooltip}}</span>
+    <span>
+      <div>
+        {{tooltip}}
+      </div>
+      <div v-if="tooltipShortcuts">
+        <div
+          v-for="(shortcut, index) in tooltipShortcuts"
+          :key="index"
+        >
+          <span class="inline-code--light">{{shortcut.value}}</span>
+          - {{shortcut.description}}
+        </div>
+      </div>
+    </span>
   </v-tooltip>
 </template>
 
@@ -59,6 +73,21 @@ export default {
     tooltip: {
       type: String,
       default: '',
+    },
+    tooltipShortcuts: {
+      type: Array,
+      default: () => {
+        return [
+          {
+            value: '',
+            description: '',
+          },
+        ]
+      },
+    },
+    iconProps: {
+      type: Object,
+      default: () => ({}),
     },
     isDisabled: {
       type: Boolean,

@@ -137,7 +137,9 @@
     "backgroundPosition": "Фоновое положение",
     "backgroundHeight": "Высота фона",
     "backgroundOverlay": "Наложение фона",
-    "setDefaultBackground": "Установить фон по умолчанию"
+    "setDefaultBackground": "Установить фон по умолчанию",
+    "setNextBackground": "Установить следующий фон",
+    "setPreviousBackground": "Установить предыдущий фон"
   },
   "navigator": {
     "newDirectoryFile": "Новая папка / файл",

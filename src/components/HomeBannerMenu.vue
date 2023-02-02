@@ -7,7 +7,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
   <AppMenuButton
     button-class="action-toolbar__item"
     icon="mdi-tune"
-    icon-size="22px"
+    icon-size="20px"
     :icon-class="{
       'home-banner__icon': !homeBannerValue,
       'home-banner__icon--banner-enabled': homeBannerValue
@@ -67,7 +67,7 @@ export default {
         {
           title: this.$t('home.setDefaultBackground'),
           icon: 'mdi-undo-variant',
-          onClick: () => {this.$store.dispatch('RESET_HOME_BANNER_BACKGROUND')},
+          onClick: () => {this.$store.dispatch('resetHomeBannerBackground')},
         },
       ]
     },
