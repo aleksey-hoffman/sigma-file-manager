@@ -142,7 +142,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                       class="nav-panel__item__icon"
                       :size="$utils.getDriveIcon(drive).size" 
                     >
-                      {{$utils.getDriveIcon(drive).icon}}
+                      {{$utils.getDriveIcon(drive).name}}
                     </v-icon>
                     <template v-slot:badge>
                       <div 

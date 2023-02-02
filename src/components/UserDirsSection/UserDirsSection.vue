@@ -5,30 +5,31 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <template>
   <div>
-    <div v-if="userDirs.length === 0">
-      {{$t('placeholders.noUserDirectoriesFound')}}
-    </div>
-    <ItemCardGrid :lines="1">
-      <ItemCard
+    <NoData
+      title="placeholders.noUserDirectoriesFound"
+      :show="userDirsFormatted.length === 0"
+    />
+    <ItemGrid :lines="1">
+      <UserDirCard
         v-for="(userDir, index) in userDirsFormatted"
         :key="'user-dir-card-' + index"
-        :item="userDir"
-        :lines="1"
-        target-type="userDir"
+        :user-dir="userDir"
       />
-    </ItemCardGrid>
+    </ItemGrid>
   </div>
 </template>
 
 <script>
 import {mapFields} from 'vuex-map-fields'
-import ItemCardGrid from '@/components/ItemCardGrid/ItemCardGrid.vue'
-import ItemCard from '@/components/ItemCard/ItemCard.vue'
+import NoData from '@/components/NoData/NoData.vue'
+import ItemGrid from '@/components/ItemGrid/ItemGrid.vue'
+import UserDirCard from '@/components/UserDirCard/UserDirCard.vue'
 
 export default {
   components: {
-    ItemCardGrid,
-    ItemCard,
+    NoData,
+    ItemGrid,
+    UserDirCard,
   },
   computed: {
     ...mapFields({

@@ -1160,7 +1160,8 @@
       "ejectDrive": "Eject Drive",
       "createSymbolicLink": "ایجاد پیوند نمادین",
       "windowsLinkLnk": "پیوند ویندوز (.lnk)",
-      "errorOpenProgram": "خطا: برنامه باز نشد"
+      "errorOpenProgram": "خطا: برنامه باز نشد",
+      "editCard": "ویرایش کارت"
     }
   },
   "version": "نسخه",

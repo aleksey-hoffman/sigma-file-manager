@@ -5,30 +5,31 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <template>
   <div>
-    <div v-if="drives.length === 0">
-      {{$t('placeholders.noDrivesFound')}}
-    </div>
-    <ItemCardGrid :lines="2">
-      <ItemCard
+    <NoData
+      title="placeholders.noDrivesFound"
+      :show="drives.length === 0"
+    />
+    <ItemGrid :lines="2">
+      <DriveCard
         v-for="(drive, index) in drives"
         :key="'device-card-' + index"
-        :item="drive"
-        :lines="2"
-        target-type="drive"
+        :drive="drive"
       />
-    </ItemCardGrid>
+    </ItemGrid>
   </div>
 </template>
 
 <script>
 import {mapFields} from 'vuex-map-fields'
-import ItemCardGrid from '@/components/ItemCardGrid/ItemCardGrid.vue'
-import ItemCard from '@/components/ItemCard/ItemCard.vue'
+import NoData from '@/components/NoData/NoData.vue'
+import ItemGrid from '@/components/ItemGrid/ItemGrid.vue'
+import DriveCard from '@/components/DriveCard/DriveCard.vue'
 
 export default {
   components: {
-    ItemCardGrid,
-    ItemCard,
+    NoData,
+    ItemGrid,
+    DriveCard,
   },
   computed: {
     ...mapFields({

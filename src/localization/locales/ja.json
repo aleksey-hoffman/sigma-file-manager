@@ -1160,7 +1160,8 @@
       "ejectDrive": "ドライブを取り出す",
       "createSymbolicLink": "シンボリックリンクを作成",
       "windowsLinkLnk": "Windows リンク (.lnk)",
-      "errorOpenProgram": "「エラー: プログラムを開けませんでした」"
+      "errorOpenProgram": "「エラー: プログラムを開けませんでした」",
+      "editCard": "カードを編集"
     }
   },
   "version": "バージョン",

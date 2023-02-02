@@ -71,7 +71,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 </template>
 
 <script>
-import {mapState} from 'vuex'
+import {mapFields} from 'vuex-map-fields'
 
 const fs = require('fs')
 
@@ -93,8 +93,9 @@ export default {
     },
   },
   computed: {
-    ...mapState({
-      dialog: state => state.dialogs.userDirectoryEditorDialog,
+    ...mapFields({
+      dialog: 'dialogs.userDirectoryEditorDialog',
+      userDirs: 'storageData.settings.appPaths.userDirs',
     }),
     dialogIsValid () {
       return this.pathIsValid.value
@@ -128,10 +129,7 @@ export default {
     handleDialogDataChange () {
       if (this.dialogIsValid) {
         this.dialog.dataIsValid = true
-        this.$store.dispatch('SET', {
-          key: 'storageData.settings.appPaths.userDirs',
-          value: this.dialog.data.userDirs,
-        })
+        this.$store.dispatch('updateUserDir', {userDir: this.dialog.data.item})
       }
       else {
         this.dialog.dataIsValid = false
@@ -143,17 +141,7 @@ export default {
           this.dialog.initialData = this.$utils.cloneDeep(this.dialog.data)
         })
       }
-      else if (!dialogValue) {
-        if (!this.dialog.dataIsValid) {
-          this.dialog.data = this.$utils.cloneDeep(this.dialog.initialData)
-          this.dialog.dataIsValid = true
-        }
-      }
     },
   },
 }
 </script>
-
-<style scoped>
-
-</style>

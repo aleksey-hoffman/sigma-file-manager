@@ -1160,7 +1160,8 @@
       "ejectDrive": "Laufwerk auswerfen",
       "createSymbolicLink": "Symbolischen Link erstellen",
       "windowsLinkLnk": "Windows-Link (.lnk)",
-      "errorOpenProgram": "Fehler: Programm konnte nicht geöffnet werden"
+      "errorOpenProgram": "Fehler: Programm konnte nicht geöffnet werden",
+      "editCard": "Karte bearbeiten"
     }
   },
   "version": "Ausführung",

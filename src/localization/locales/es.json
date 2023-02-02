@@ -1160,7 +1160,8 @@
       "ejectDrive": "Expulsar unidad",
       "createSymbolicLink": "Crear enlace simbólico",
       "windowsLinkLnk": "Enlace de Windows (.lnk)",
-      "errorOpenProgram": "Error: no se pudo abrir el programa"
+      "errorOpenProgram": "Error: no se pudo abrir el programa",
+      "editCard": "Editar tarjeta"
     }
   },
   "version": "Versión",

@@ -1160,7 +1160,8 @@
       "ejectDrive": "Đẩy ổ đĩa",
       "createSymbolicLink": "Tạo liên kết tượng trưng",
       "windowsLinkLnk": "Liên kết Windows (.lnk)",
-      "errorOpenProgram": "Lỗi: không thể mở chương trình"
+      "errorOpenProgram": "Lỗi: không thể mở chương trình",
+      "editCard": "Chỉnh sửa thẻ"
     }
   },
   "version": "Phiên bản",

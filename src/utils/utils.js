@@ -42,32 +42,32 @@ export default {
   getDriveIcon (drive) {
     if (drive.type === 'cloud') {
       return {
-        icon: 'mdi-cloud-outline',
-        size: '22px'
+        name: 'mdi-cloud-outline',
+        size: '22px',
       }
     }
     else if (['rom', 'cd'].includes(drive.type)) {
       return {
-        icon: 'fas fa-compact-disc',
-        size: '20px'
+        name: 'fas fa-compact-disc',
+        size: '20px',
       }
     }
     else if (drive.type === 'removable') {
       return {
-        icon: 'fab fa-usb',
-        size: '20px'
+        name: 'fab fa-usb',
+        size: '20px',
       }
     }
     else if (drive.type === 'network') {
       return {
-        icon: 'mdi-folder-network-outline',
-        size: '22px'
+        name: 'mdi-folder-network-outline',
+        size: '22px',
       }
     }
     else {
       return {
-        icon: 'far fa-hdd',
-        size: '20px'
+        name: 'far fa-hdd',
+        size: '20px',
       }
     }
   },

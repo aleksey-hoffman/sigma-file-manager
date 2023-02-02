@@ -730,7 +730,7 @@ export default {
           ...this.dirItemMenuItems,
           ...[
             {
-              title: 'Edit card',
+              title: this.$t('contextMenus.dirItem.editCard'),
               selectionType: ['single'],
               targetTypes: ['directory', 'file', 'file-symlink', 'directory-symlink'],
               onClick: () => {

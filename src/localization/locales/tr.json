@@ -1160,7 +1160,8 @@
       "ejectDrive": "Sürücüyü çıkar",
       "createSymbolicLink": "Sembolik bağlantı oluştur",
       "windowsLinkLnk": "Windows bağlantısı (.lnk)",
-      "errorOpenProgram": "Hata: program açılamadı"
+      "errorOpenProgram": "Hata: program açılamadı",
+      "editCard": "Kartı Düzenle"
     }
   },
   "version": "Sürüm",

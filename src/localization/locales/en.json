@@ -1160,7 +1160,8 @@
       "ejectDrive": "Eject drive",
       "createSymbolicLink": "Create symbolic link",
       "windowsLinkLnk": "Windows link (.lnk)",
-      "errorOpenProgram": "Error: couldn't open the program"
+      "errorOpenProgram": "Error: couldn't open the program",
+      "editCard": "Edit card"
     }
   },
   "version": "Version",

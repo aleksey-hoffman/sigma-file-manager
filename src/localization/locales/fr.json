@@ -1160,7 +1160,8 @@
       "ejectDrive": "Éjecter le lecteur",
       "createSymbolicLink": "Créer un lien symbolique",
       "windowsLinkLnk": "Lien Windows (.lnk)",
-      "errorOpenProgram": "Erreur : impossible d'ouvrir le programme"
+      "errorOpenProgram": "Erreur : impossible d'ouvrir le programme",
+      "editCard": "Modifier la carte"
     }
   },
   "version": "Version",

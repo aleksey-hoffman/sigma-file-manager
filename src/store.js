@@ -4592,6 +4592,28 @@ export default new Vuex.Store({
         value: normalisedList
       })
     },
+    async updateUserDir ({state, dispatch}, {userDir}) {
+      const userDirs = state.storageData.settings.appPaths.userDirs
+      const modifiedUserDirIndex = userDirs.findIndex(originalItem => originalItem.name === userDir.name)
+      if (modifiedUserDirIndex !== -1) {
+        userDirs.splice(modifiedUserDirIndex, 1, userDir) 
+        dispatch('SET', {
+          key: 'storageData.settings.appPaths.userDirs',
+          value: userDirs,
+        })
+      }
+    },
+    async openItemContextMenu ({dispatch}, {path, item, x, y, targetType}) {
+      let dirItem = await dispatch('GET_DIR_ITEM_INFO', path)
+      dispatch('DESELECT_ALL_DIR_ITEMS')
+      dispatch('ADD_TO_SELECTED_DIR_ITEMS', dirItem)
+      dispatch('SET_CONTEXT_MENU', {
+        x,
+        y,
+        targetType,
+        targetData: {item, dirItem},
+      })
+    },
     // Context menu actions
     /**
     * @param {array<object>} payload

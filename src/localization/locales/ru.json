@@ -338,7 +338,7 @@
       "driveSpaceIndicatorStyle": "Стиль индикатора места на диске",
       "linearVertical": "Линейный | вертикальный",
       "linearHorizontal": "Линейный | горизонтальный",
-      "linearHorizontalCentered": "Линейная | горизонтальная | по центру",
+      "linearHorizontalCentered": "Линейный | горизонтальный | по центру",
       "circular": "Круговой"
     },
     "homePageMediaBanner": {
@@ -694,7 +694,7 @@
       }
     },
     "userDirectoryEditorDialog": {
-      "userDirectoryEditor": "Редактор пользовательского папки",
+      "userDirectoryEditor": "Редактор пользовательской папки",
       "directoryTitle": "Название папки",
       "directoryPath": "Путь к папке",
       "iconName": "Имя значка (должно начинаться с 'mdi-')",
@@ -1160,7 +1160,8 @@
       "ejectDrive": "Извлечь диск",
       "createSymbolicLink": "Создать символическую ссылку",
       "windowsLinkLnk": "Ссылка на Windows (.lnk)",
-      "errorOpenProgram": "Ошибка: не удалось открыть программу"
+      "errorOpenProgram": "Ошибка: не удалось открыть программу",
+      "editCard": "Редактировать карточку"
     }
   },
   "version": "Версия",

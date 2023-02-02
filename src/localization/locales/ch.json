@@ -1160,7 +1160,8 @@
       "ejectDrive": "弹出驱动器",
       "createSymbolicLink": "创建符号链接",
       "windowsLinkLnk": "Windows 链接 (.lnk)",
-      "errorOpenProgram": "错误：无法打开程序"
+      "errorOpenProgram": "错误：无法打开程序",
+      "editCard": "Edit card"
     }
   },
   "version": "版本",
