@@ -161,9 +161,15 @@ export default {
   right: 0;
   width: 24px;
   height: 24px;
-  background-color: var(--bg-color-2);
   border-radius: 0;
+  transition: background-color 0.5s ease;
 }
+
+.navigator-tab:hover
+  .navigator-tab__close-button {
+    background-color: var(--highlight-color-4);
+    transition: background-color 0.5s ease;
+  }
 
 .navigator-tab__tooltip-title {
   color: var(--color-5);
