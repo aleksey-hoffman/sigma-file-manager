@@ -384,6 +384,7 @@ export default {
       appPaths: state => state.storageData.settings.appPaths,
     }),
     ...mapGetters([
+      'selectedWorkspace',
       'selectedDirItems',
       'selectedDirItemsPaths',
       'sortingHeaderGridColumnTemplate',
