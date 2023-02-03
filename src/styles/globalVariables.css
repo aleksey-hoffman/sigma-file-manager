@@ -27,6 +27,7 @@
   --progress-bar-overlay-color-red: rgb(244, 67, 54, 0.18);
   --progress-bar-shadow-green: 0px 0px 20px 6px rgb(0, 150, 136, 0.10);
   --progress-bar-shadow-red: 0px 0px 20px 6px rgb(244, 67, 54, 0.10);
+  --clipboard-toolbar-height: 36px;
 }
 
 #app[data-theme-type="light"] {}

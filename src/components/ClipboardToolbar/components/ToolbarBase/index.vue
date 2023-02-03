@@ -6,10 +6,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <template>
   <v-footer
     class="clipboard-toolbar"
+    :height="$utils.getCSSVar('--clipboard-toolbar-height')"
     fixed
     inset
     app
-    height="36px"
   >
     <div class="clipboard-toolbar__content fade-in-1s">
       <slot name="content" />

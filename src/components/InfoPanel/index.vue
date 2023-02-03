@@ -78,7 +78,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         <v-divider class="my-3" />
 
         <!-- info-container::properties -->
-        <div class="info-panel__properties custom-scrollbar">
+        <div
+          class="info-panel__properties custom-scrollbar"
+          :bottom-toolbar-padding="clipboardToolbarIsVisible"
+        >
           <!-- info-container::properties::size -->
           <v-layout
             class="info-panel__properties__item"
@@ -217,6 +220,7 @@ export default {
     ...mapGetters([
       'selectedDirItems',
       'lastSelectedDirItem',
+      'clipboardToolbarIsVisible',
     ]),
     ...mapFields({
       inputState: 'inputState',
@@ -805,7 +809,6 @@ export default {
 <style>
 .info-panel {
   top: var(--header-height) !important;
-  padding-bottom: var(--window-toolbar-height) !important;
   background-color: var(--info-panel-bg-color) !important;
   overflow: hidden !important;
   box-shadow: var(--info-panel-shadow);
@@ -916,6 +919,11 @@ export default {
   );
   color: var(--color-1);
   -webkit-mask-image: linear-gradient(180deg, #fff 85%,transparent);
+  transition: padding 1s ease;
+}
+
+.info-panel__properties[bottom-toolbar-padding] {
+  padding-bottom: var(--clipboard-toolbar-height);
 }
 
 .info-panel__properties__item {

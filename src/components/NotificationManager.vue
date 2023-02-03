@@ -6,9 +6,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <template>
   <div
     class="notification__container"
-    :class="{
-      'notification__container--raised': $store.state.clipboardToolbar
-    }"
+    :bottom-toolbar-padding="clipboardToolbarIsVisible"
   >
     <transition-group name="notification-transition">
       <notification-card
@@ -24,6 +22,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <script>
 import {mapFields} from 'vuex-map-fields'
+import {mapGetters} from 'vuex'
 import TimeUtils from '../utils/timeUtils.js'
 
 export default {
@@ -39,6 +38,9 @@ export default {
     })
   },
   computed: {
+    ...mapGetters([
+      'clipboardToolbarIsVisible',
+    ]),
     ...mapFields({
       navigationPanelMiniVariant: 'navigationPanel.miniVariant',
       notifications: 'notifications'
@@ -186,8 +188,8 @@ export default {
   transition: all 0.5s;
 }
 
-.notification__container--raised {
-  bottom: 36px;
+.notification__container[bottom-toolbar-padding] {
+  bottom: var(--clipboard-toolbar-height);
 }
 
 .notification-transition-enter-active {

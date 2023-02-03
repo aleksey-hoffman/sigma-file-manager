@@ -133,7 +133,6 @@ export default new Vuex.Store({
     storageDevicesData: {
       oneDrive: []
     },
-    clipboardToolbar: false,
     appIsLoaded: false,
     navigatorRouteIsLoaded: false,
     invalidPathChars: systemRulesForPaths.invalidPathChars,
@@ -1593,7 +1592,7 @@ export default new Vuex.Store({
       return state.storageData.workspaces.items.find(workspace => workspace.isSelected)
     },
     clipboardToolbarIsVisible: (state, getters) => {
-      return getters.selectedDirItems.length > 1
+      return getters.selectedDirItems.length > 1 || state.navigatorView.clipboard.fs.items.length > 0
     },
     highlightedDirItems: (state, getters) => {
       return state.navigatorView.dirItems.filter(item => item.isHighlighted)

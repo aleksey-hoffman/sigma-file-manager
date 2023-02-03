@@ -35,9 +35,6 @@ export default {
     'fsClipboard.items' () {
       this.getClipboardItemSize()
     },
-    showClipboardToolbar (value) {
-      this.$store.state.clipboardToolbar = value
-    },
   },
   computed: {
     ...mapFields({
