@@ -77,12 +77,7 @@ export default {
     tooltipShortcuts: {
       type: Array,
       default: () => {
-        return [
-          {
-            value: '',
-            description: '',
-          },
-        ]
+        return []
       },
     },
     iconProps: {
