@@ -26,14 +26,14 @@ let state = {
     '3': 'fixed',
     '4': 'network',
     '5': 'cd',
-    '6': 'RAM'
+    '6': 'RAM',
   },
   driveMemoryTypes: {
     '1': '',
     '3': 'HDD',
     '4': 'SSD',
-    '5': 'SCM'
-  }
+    '5': 'SCM',
+  },
 }
 
 export async function getStorageDevices () {
@@ -44,7 +44,7 @@ export async function getStorageDevices () {
     state.driveList = blockDevices
     handleDriveListChange()
     return storageDevices
-  } 
+  }
   catch (error) {
     console.error(error)
     return []
@@ -59,29 +59,43 @@ function handleDriveListChange () {
 }
 
 export async function getOneDrive () {
-  return new Promise((resolve) => {
-    getOneDriveThrottle.throttle(async () => {
-      let path = appPaths.oneDrive
-      if (path) {
-        let oneDriveItemList = await fs.promises.readdir(path)
-        let size = await fsInfo.getDirSize(path)
-        let sizeOnDisk = await fsInfo.getDirSizeOnDisk(path)
-        let formattedSizeOnDisk = utils.prettyBytes(sizeOnDisk, 1)
-        let formattedSizeTotal = utils.prettyBytes(size, 1)
-        resolve([{
-          type: 'cloud',
-          path,
-          mount: path,
-          infoSummary: `Used: ${formattedSizeTotal} • Locally: ${formattedSizeOnDisk}`,
-          titleSummary: 'OneDrive',
-          isEmpty: oneDriveItemList.length === 0,
-        }])
-      }
-      else {
-        resolve([])
-      }
-    }, {time: 2000})
-  })
+  let path = appPaths.oneDrive
+  if (path) {
+    return [{
+      type: 'cloud',
+      subtype: 'one-drive',
+      path,
+      mount: path,
+      titleSummary: 'OneDrive',
+    }]
+  }
+  else {
+    return []
+  }
+}
+
+export async function getOneDriveSize () {
+  let path = appPaths.oneDrive
+  if (path) {
+    let basicData = await getOneDrive()
+    let oneDriveItemList = await fs.promises.readdir(path)
+    let size = await fsInfo.getDirSize(path)
+    let sizeOnDisk = await fsInfo.getDirSizeOnDisk(path)
+    let formattedSizeOnDisk = utils.prettyBytes(sizeOnDisk, 1)
+    let formattedSizeTotal = utils.prettyBytes(size, 1)
+    return {
+      ...basicData,
+      size,
+      sizeOnDisk,
+      formattedSizeOnDisk,
+      formattedSizeTotal,
+      infoSummary: `Used: ${formattedSizeTotal} • Locally: ${formattedSizeOnDisk}`,
+      isEmpty: oneDriveItemList.length === 0,
+    }
+  }
+  else {
+    return {}
+  }
 }
 
 export async function fetchBlockDevicesExtraData () {
@@ -102,7 +116,7 @@ export async function getBlockDevicesExtraData () {
       fsManager.getExtraDriveInfo().then((data) => resolve(data))
     }
     else {
-      return [] 
+      return []
     }
   })
 }
@@ -117,7 +131,7 @@ async function getBlockDevicesData () {
     }
     else if (process.platform === 'darwin') {
       return await sysInfo.blockDevices()
-    }  
+    }
   }
   catch (error) {
     return []
@@ -163,7 +177,7 @@ function getDriveType (device) {
     return state.driveTypes[device.driveType] || ''
   }
   else if (process.platform === 'linux') {
-    if (device.removable  && device.type === 'rom') {
+    if (device.removable && device.type === 'rom') {
       return 'rom'
     }
     else {
@@ -171,7 +185,7 @@ function getDriveType (device) {
     }
   }
   else if (process.platform === 'darwin') {
-    if (device.removable  && device.type === 'rom') {
+    if (device.removable && device.type === 'rom') {
       return 'rom'
     }
     else {
@@ -256,8 +270,9 @@ function formatDrivesData (drives) {
 function getDriveTitleSummary (drive) {
   if (process.platform === 'win32') {
     let mount = drive.mount.replace(':/', ':')
-    if (drive.memoryType)  {
-      return `${mount} • ${drive.label} • ${drive.memoryType}`
+    if (drive.memoryType) {
+      const fsType = drive.fsType.toUpperCase()
+      return `${mount} • ${drive.label} • ${drive.memoryType} • ${fsType}`
     }
     else {
       return `${mount} • ${drive.label}`

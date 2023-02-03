@@ -1116,7 +1116,10 @@ export default {
       try {
         this.storageDevicesData.oneDrive = await getOneDrive()
         this.drivesPreviousData = this.$utils.cloneDeep(this.drives)
-        this.drives = [...this.drives, ...this.storageDevicesData.oneDrive]
+        const newDrives = [...this.drives, ...this.storageDevicesData.oneDrive]
+        const drivePaths = newDrives.map(drive => drive.path)
+        const uniqueDrivePaths = [...new Set(drivePaths)]
+        this.drives = uniqueDrivePaths.map(path => newDrives.find(obj => obj.path === path))
       }
       catch (error) {
         console.log(error)
