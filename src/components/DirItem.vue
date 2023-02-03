@@ -82,7 +82,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           <template v-if="item.name === 'name'">
             <div
               class="dir-item-card__name"
-              :style="{'--name-column-max-width': navigatorNameColumnMaxWidth}"
+              :style="{'--name-column-max-width': navigatorNameColumnMaxWidthFormatted}"
             >
               <div class="dir-item-card__name__line-1">
                 <span
@@ -403,6 +403,11 @@ export default {
       sortingTypes: 'storageData.settings.sorting.types',
       navigatorNameColumnMaxWidth: 'storageData.settings.navigator.nameColumnMaxWidth',
     }),
+    navigatorNameColumnMaxWidthFormatted () {
+      return this.selectedWorkspace.panes.items.length > 1
+        ? '100%'
+        : this.navigatorNameColumnMaxWidth
+    },
     specifiedNavigatorLayout () {
       return this.layout || this.navigatorLayout
     },

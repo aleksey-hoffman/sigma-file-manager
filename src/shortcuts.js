@@ -331,7 +331,7 @@ export default {
     },
     routes: ['all'],
     icon: 'mdi-magnify',
-    action: {name: 'TOGGLE_GLOBAL_SEARCH'},
+    action: {name: 'toggleGlobalSearch'},
     shortcut: 'Ctrl + Shift + F',
     description: 'shortcuts.showHideGlobalSearch',
   },

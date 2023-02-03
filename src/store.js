@@ -384,7 +384,19 @@ export default new Vuex.Store({
             lastOpenedDir: appPaths.userDataRoot,
             defaultPath: appPaths.userDataRoot,
             tabs: [],
-            actions: []
+            actions: [],
+            panes: {
+              items: [
+                {
+                  row: 1,
+                  column: 1,
+                  isSelected: true,
+                  width: '1fr',
+                  type: 'navigator',
+                  currentDir: ''
+                }
+              ]  
+            },
           }
         ]
       },
@@ -1261,7 +1273,18 @@ export default new Vuex.Store({
           lastOpenedDir: appPaths.userDataRoot,
           defaultPath: appPaths.userDataRoot,
           tabs: [],
-          actions: []
+          actions: [],
+          panes: {
+            layout: [
+              {
+                row: 1,
+                column: 1,
+                isSelected: true,
+                width: '1fr',
+                type: 'navigator'
+              }
+            ]  
+          },
         },
         workspaceActionTemplate: {
           id: null,
@@ -3689,19 +3712,26 @@ export default new Vuex.Store({
     openAddressBarEditor (store) {
       store.state.addressBarEditor = true
     },
-    TOGGLE_GLOBAL_SEARCH (store) {
-      if (router.history.current.name === 'navigator') {
-        store.state.globalSearch.widget = !store.state.globalSearch.widget
+    toggleGlobalSearch ({state, dispatch}) {
+      if (state.globalSearch.widget) {
+        state.globalSearch.widget = false
+        dispatch('closePaneType', 'search');
       }
       else {
-        const someDirLoaded = Object.keys(store.state.navigatorView.currentDir).length !== 0
-        if (!someDirLoaded) {
-          store.dispatch('OPEN_DIR_ITEM_FROM_PATH', '')
+        if (router.history.current.name === 'navigator') {
+          state.globalSearch.widget = !state.globalSearch.widget
         }
         else {
-          router.push('navigator').catch((error) => {})
+          const someDirLoaded = Object.keys(state.navigatorView.currentDir).length !== 0
+          if (!someDirLoaded) {
+            dispatch('OPEN_DIR_ITEM_FROM_PATH', '')
+          }
+          else {
+            router.push('navigator').catch((error) => { })
+          }
+          state.globalSearch.widget = true
         }
-        store.state.globalSearch.widget = true
+        dispatch('splitPaneHorizontallyLeft', { row: 1, type: 'search' });
       }
     },
     async LOAD_PREVIOUS_HISTORY_PATH ({ state, commit, dispatch, getters }) {
@@ -4378,6 +4408,55 @@ export default new Vuex.Store({
         }
         state.dialogs.noteEditorDialog.value = true
       }, params.delay)
+    },
+    splitPaneHorizontallyLeft ({getters}, pane) {
+      const panes = getters.selectedWorkspace.panes
+      const lastPaneIndex = panes.items.length - 1
+      panes.items[lastPaneIndex].column += 1
+      panes.items.splice(lastPaneIndex, 0, {
+        row: pane.row,
+        column: panes.items[lastPaneIndex].column - 1,
+        width: '1fr',
+        type: pane.type,
+      })
+    },
+    splitPaneHorizontallyRight ({getters}, pane) {
+      const panes = getters.selectedWorkspace.panes
+      const lastPaneIndex = panes.items.length
+      panes.items.splice(lastPaneIndex + 1, 0, {
+        row: pane.row,
+        column: panes.items[lastPaneIndex].column + 1,
+        width: '1fr',
+        type: pane.type,
+      })
+    },
+    splitPaneVerticallyUp ({getters}, pane) {
+      const panes = getters.selectedWorkspace.panes
+      const lastPaneIndex = panes.items.findIndex(p => p.column === pane.column)
+      panes.items.splice(lastPaneIndex, 0, {
+        row: lastPaneIndex,
+        column: pane.column,
+        width: '1fr',
+        type: pane.type,
+      })
+    },
+    splitPaneVerticallyDown ({getters}, pane) {
+      const panes = getters.selectedWorkspace.panes
+      const lastPaneIndex = panes.items.findIndex(p => p.column === pane.column)
+      panes.items.splice(lastPaneIndex + 1, 0, {
+        row: lastPaneIndex + 1,
+        column: pane.column,
+        width: '1fr',
+        type: pane.type,
+      })
+    },
+    closePane ({getters}, pane) {
+      const panes = getters.selectedWorkspace.panes
+      panes.items = panes.items.filter(p => p.row !== pane.row || p.column !== pane.column)
+    },
+    closePaneType ({getters}, paneType) {
+      const panes = getters.selectedWorkspace.panes
+      panes.items = panes.items.filter(p => p.type !== paneType)
     },
     ADD_HOME_BANNER_BACKGROUND (store, mediaItem) {
       const mediaItems = store.state.storageData.settings.homeBanner.items

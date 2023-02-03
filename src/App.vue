@@ -279,7 +279,7 @@ export default {
     },
     initIPCListeners () {
       electron.ipcRenderer.on('open-global-search', (event, data) => {
-        this.$store.dispatch('TOGGLE_GLOBAL_SEARCH')
+        this.$store.dispatch('toggleGlobalSearch')
       })
 
       electron.ipcRenderer.on('store:action', (event, data) => {

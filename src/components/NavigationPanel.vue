@@ -38,7 +38,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 class="nav-panel__item --search"
                 :class="{'active-route': globalSearchWidget }"
                 v-on="on"
-                @click="$store.dispatch('TOGGLE_GLOBAL_SEARCH')"
+                @click="$store.dispatch('toggleGlobalSearch')"
               >
                 <div class="nav-panel__item__indicator" />
                 <div class="nav-panel__item__icon-container">
