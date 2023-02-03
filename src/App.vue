@@ -849,22 +849,17 @@ export default {
 
           if (isObject) {
             // Join without overwriting storage values
-            updatedValue = Object.assign({}, storeValue, storageValue)
+            updatedValue = {...storeValue, ...storageValue}
           }
           else if (isObjectArray) {
-            storageValue.forEach((item, index) => {
-              try {
-                // Join without overwriting storage values
-                item = Object.assign({}, storeValue[index], item)
-              }
-              catch (error) {}
+            updatedValue = storageValue.map((item, index) => {
+              // Join without overwriting storage values
+              return {...storeValue[index], ...item}
             })
-            updatedValue = storageValue
           }
           else {
             updatedValue = storageValue
           }
-
           // Update store and write updated settings back to the storage file
           const isEmptyObject = this.$utils.getDataType(updatedValue) === 'object' && Object.keys(updatedValue).length === 0
           if (!isEmptyObject) {
