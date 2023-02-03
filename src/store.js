@@ -4410,6 +4410,7 @@ export default new Vuex.Store({
     },
     splitPaneHorizontallyLeft ({getters}, pane) {
       const panes = getters.selectedWorkspace.panes
+      if (!panes) {return}
       const lastPaneIndex = panes.items.length - 1
       panes.items[lastPaneIndex].column += 1
       panes.items.splice(lastPaneIndex, 0, {
@@ -4421,6 +4422,7 @@ export default new Vuex.Store({
     },
     splitPaneHorizontallyRight ({getters}, pane) {
       const panes = getters.selectedWorkspace.panes
+      if (!panes) {return}
       const lastPaneIndex = panes.items.length
       panes.items.splice(lastPaneIndex + 1, 0, {
         row: pane.row,
@@ -4431,6 +4433,7 @@ export default new Vuex.Store({
     },
     splitPaneVerticallyUp ({getters}, pane) {
       const panes = getters.selectedWorkspace.panes
+      if (!panes) {return}
       const lastPaneIndex = panes.items.findIndex(p => p.column === pane.column)
       panes.items.splice(lastPaneIndex, 0, {
         row: lastPaneIndex,
@@ -4441,6 +4444,7 @@ export default new Vuex.Store({
     },
     splitPaneVerticallyDown ({getters}, pane) {
       const panes = getters.selectedWorkspace.panes
+      if (!panes) {return}
       const lastPaneIndex = panes.items.findIndex(p => p.column === pane.column)
       panes.items.splice(lastPaneIndex + 1, 0, {
         row: lastPaneIndex + 1,
@@ -4451,10 +4455,12 @@ export default new Vuex.Store({
     },
     closePane ({getters}, pane) {
       const panes = getters.selectedWorkspace.panes
+      if (!panes) {return}
       panes.items = panes.items.filter(p => p.row !== pane.row || p.column !== pane.column)
     },
     closePaneType ({getters}, paneType) {
       const panes = getters.selectedWorkspace.panes
+      if (!panes) {return}
       panes.items = panes.items.filter(p => p.type !== paneType)
     },
     ADD_HOME_BANNER_BACKGROUND (store, mediaItem) {

@@ -405,7 +405,7 @@ export default {
       navigatorNameColumnMaxWidth: 'storageData.settings.navigator.nameColumnMaxWidth',
     }),
     navigatorNameColumnMaxWidthFormatted () {
-      return this.selectedWorkspace.panes.items.length > 1
+      return this.selectedWorkspace.panes?.items?.length > 1
         ? '100%'
         : this.navigatorNameColumnMaxWidth
     },
