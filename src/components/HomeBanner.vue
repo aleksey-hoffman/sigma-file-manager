@@ -84,27 +84,6 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         ]"
         @click="switchBannerBackground"
       />
-
-      <v-tooltip right>
-        <template v-slot:activator="{on: tooltip}">
-          <transition name="fade-in-1s">
-            <v-btn
-              class="action-toolbar__item fade-in-1s mt-1"
-              v-on="tooltip"
-              @click="$store.dispatch('SET_NEXT_HOME_BANNER_BACKGROUND')"
-              icon
-            >
-              <v-icon
-                size="20px"
-                class="action-toolbar__icon"
-                :home-banner-value="homeBannerValue"
-              >mdi-autorenew
-              </v-icon>
-            </v-btn>
-          </transition>
-        </template>
-        <span>Set next background</span>
-      </v-tooltip>
     </v-layout>
   </div>
 </template>
