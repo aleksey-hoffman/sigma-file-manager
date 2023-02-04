@@ -134,6 +134,7 @@ export default {
     try {
       await this.initAllStorageFiles()
       await this.fetchStorageDevices()
+      this.setCSSAttributes('visual-filters')
       this.fetchOneDrive()
       this.handleFirstAppLaunch()
       this.initIPCListeners()
