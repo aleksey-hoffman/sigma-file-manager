@@ -268,22 +268,22 @@ function formatDrivesData (drives) {
 }
 
 function getDriveTitleSummary (drive) {
+  const fsType = drive.fsType.toUpperCase()
   if (process.platform === 'win32') {
-    let mount = drive.mount.replace(':/', ':')
+    const mount = drive.mount.replace(':/', ':')
     if (drive.memoryType) {
-      const fsType = drive.fsType.toUpperCase()
       return `${mount} • ${drive.label} • ${drive.memoryType} • ${fsType}`
     }
     else {
-      return `${mount} • ${drive.label}`
+      return `${mount} • ${drive.label} • ${fsType}`
     }
   }
   else {
     if (drive.label) {
-      return `${drive.label}`
+      return `${drive.label} • ${fsType}`
     }
     else {
-      return `${drive.mount}`
+      return `${drive.mount} • ${fsType}`
     }
   }
 }
@@ -291,14 +291,12 @@ function getDriveTitleSummary (drive) {
 function getDriveInfoSummary (drive, percentUsed) {
   const freeSize = utils.prettyBytes(drive.size.free, 1)
   const totalSize = utils.prettyBytes(drive.size.total, 1)
-  const fsType = drive.fsType.toUpperCase()
-  return `${freeSize} free of ${totalSize} • ${fsType}`
+  return `${freeSize} free of ${totalSize}`
 }
 
 function getDriveInfoMiniSummary (drive) {
   const mount = drive.mount
   const freeSize = utils.prettyBytes(drive.size.free, 1)
   const totalSize = utils.prettyBytes(drive.size.total, 1)
-  const fsType = drive.fsType.toUpperCase()
-  return `${mount} • ${freeSize} free of ${totalSize} • ${fsType}`
+  return `${mount} • ${freeSize} free of ${totalSize}`
 }
