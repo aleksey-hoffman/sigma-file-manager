@@ -28,7 +28,7 @@ Thanks to everyone who has been sharing this project with others!
 
 Create the best existing intelligent file manager & productivity app that will significantly speed up your workflow, provide you with advanced tools, and keep your data safe.
 
-`Done 20 of 100` major features.
+`Done 21 of 100` major features.
 
 # Features
 
