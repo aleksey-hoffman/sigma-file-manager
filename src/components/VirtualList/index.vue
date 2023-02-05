@@ -319,6 +319,18 @@ export default {
     },
   },
   methods: {
+    scrollToItem (path) {
+      const targetItemIndex = this.items.find(item => item.path === path)?.positionIndex
+      if (targetItemIndex) {
+        this.scrollToIndex(targetItemIndex)
+      }
+    },
+    scrollToIndex (index) {
+      this.$refs.rootContainer.scrollTop = this.getIndexTopOffset(index)
+    },
+    getIndexTopOffset (index) {
+      return this.items.slice(0, index).reduce((a, b) => a + (b.height || 0), 0)
+    },
     setItemsSizeProperties () {
       this.allItemSizes = this.items.map(item => item.height)
       this.totalHeight = this.items.reduce((a, b) => a + (b.height || 0), 0)

@@ -392,7 +392,8 @@ export default new Vuex.Store({
                   isSelected: true,
                   width: '1fr',
                   type: 'navigator',
-                  currentDir: ''
+                  currentDir: '',
+                  virtualListRef: null
                 }
               ]  
             },
@@ -1274,13 +1275,14 @@ export default new Vuex.Store({
           tabs: [],
           actions: [],
           panes: {
-            layout: [
+            items: [
               {
                 row: 1,
                 column: 1,
                 isSelected: true,
                 width: '1fr',
-                type: 'navigator'
+                type: 'navigator',
+                virtualListRef: null
               }
             ]  
           },
@@ -2695,8 +2697,7 @@ export default new Vuex.Store({
                 action: 'showDownloadedFile',
                 closesNotification: true,
                 onClick: () => {
-                  const dir = PATH.parse(payload.filename).dir
-                  dispatch('SHOW_DIR_ITEM_IN_DIRECTORY', { dir: payload.directory, itemPath: payload.filename })
+                  dispatch('showDirItemInDirectory', {path: payload.fileName})
                 }
               }
             ]
@@ -3570,9 +3571,9 @@ export default new Vuex.Store({
         })
       }
     },
-     async FOCUS_DIR_ITEM (store, params) {
-      if (params.focusPath) {
-        const dirInfo = await store.dispatch('GET_DIR_ITEM_INFO', params.focusPath)
+    async focusDirItem (store, params) {
+      if (params.path) {
+        const dirInfo = await store.dispatch('GET_DIR_ITEM_INFO', params.path)
         await store.dispatch('REPLACE_SELECTED_DIR_ITEMS', [dirInfo])
       }
     },
@@ -3581,7 +3582,7 @@ export default new Vuex.Store({
         path = store.state.storageData.settings.appPaths.home
       }
       return fsCore.getDirItemInfo(
-        path, 
+        path,
         store.state.storageData.settings.navigatorLayoutItemHeight
       )
     },
@@ -3678,19 +3679,21 @@ export default new Vuex.Store({
         }
       })
     },
-    SHOW_DIR_ITEM_IN_DIRECTORY (store, payload) {
-      store.dispatch('loadDir', {path: payload.dir})
-        .then(() => {
-          const dirItemNodes = document.querySelectorAll('.dir-item-card')
-          const itemPath = payload.itemPath.replace(/\\/g, '/')
-          dirItemNodes.forEach(node => {
-            const itemExists = node.getAttribute('data-item-path') === itemPath
-            if (itemExists) {
-              itemNodeToHighlight.scrollIntoView(true)
-              dispatch('FOCUS_DIR_ITEM', {focusPath: itemPath})
-            }
-          })
-        })
+    async showDirItemInDirectory ({getters, dispatch}, params) {
+      if (!params.path) {return}
+      
+      const parsedPath = PATH.parse(params.path)
+
+      if (router.currentRoute.name !== 'navigator') {
+        await dispatch('loadDir', {path: parsedPath.dir})
+      }
+      
+      const path = params.path.replace(/\\/g, '/')
+      
+      const workspaceVirtualListRef = getters.selectedWorkspace?.panes?.items?.[0]?.virtualListRef
+      if (workspaceVirtualListRef) {
+        workspaceVirtualListRef.scrollToItem(path) 
+      }
     },
     COPY_CURRENT_DIR_PATH (store) {
       const path = store.state.navigatorView.currentDir.path
@@ -5383,6 +5386,7 @@ export default new Vuex.Store({
         showSuccessNotification()
         store.dispatch('RELOAD_DIR', {scrollTop: false})
         store.dispatch('CLEAR_FS_CLIPBOARD')
+        store.dispatch('showDirItemInDirectory', {path: params.items[0].path})
       }
     },
     async moveDirItems ({dispatch}, params) {

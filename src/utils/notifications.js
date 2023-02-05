@@ -591,9 +591,8 @@ function getNotification (params) {
           action: 'showDownloadedFile',
           closesNotification: false,
           onClick: () => {
-            params?.props?.store?.dispatch('SHOW_DIR_ITEM_IN_DIRECTORY', {
-              dir: params?.props?.info?.dir,
-              itemPath: params?.props?.info?.filePath,
+            params?.props?.store?.dispatch('showDirItemInDirectory', {
+              path: params?.props?.info?.filePath,
             })
           },
         },
@@ -792,9 +791,8 @@ function getNotification (params) {
           action: 'showDownloadedFile',
           closesNotification: true,
           onClick: () => {
-            params?.props?.store?.dispatch('SHOW_DIR_ITEM_IN_DIRECTORY', {
-              dir: params?.props?.data.dir,
-              itemPath: params?.props?.data.filePath,
+            params?.props?.store?.dispatch('showDirItemInDirectory', {
+              path: params?.props?.data.filePath,
             })
           },
         },
