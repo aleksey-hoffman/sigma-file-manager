@@ -352,7 +352,7 @@ export default {
     getDirItemGroupTitleDescription (itemCount) {
       return this.dirItemsInfoIsFetched
         ? `${this.$tc('item', itemCount)}`
-        : `${this.$t('loading')} ${this.$t('itemPlural')}`
+        : `${this.$t('loading')} ${this.$t('items')}`
     },
     getDirItemGroupTitle (type) {
       if (type === 'directory') {

@@ -1057,12 +1057,10 @@ export default {
         let appThumbDirSizeLimitExceeded = appThumbDirSizeInBytes > appThumbDirSizeLimitInBytes
         if (appThumbDirSizeLimitExceeded) {
           let dirent = await this.$store.dispatch('GET_DIR_ITEM_INFO', appStorageNavigatorThumbsDirPath)
-          await this.$store.dispatch('DELETE_DIR_ITEMS', {
+          await this.$store.dispatch('deleteDirItems', {
             items: [dirent],
-            options: {
-              skipSafeCheck: true,
-              silent: true,
-            },
+            safeCheck: false,
+            silent: true,
           })
           notifications.emit({
             name: 'removeAppThumbsDirSuccess',

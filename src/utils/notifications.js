@@ -324,12 +324,11 @@ function getNotification (params) {
       icon: 'mdi-trash-can-outline',
       colorStatus: 'green',
       timeout: 5000,
-      title: i18n.t('notifications.allItemsWereTrashed'),
-      message: `
-        <strong>${i18n.t('notifications.trashedItems')}:</strong> 
-        ${params?.props?.removedItems?.length}
-        <br><strong>${i18n.t('notifications.trashedItemsSize')}:</strong> 
-        ${params?.props?.removedItemsSize}
+      title: `
+      ${i18n.t('notifications.trashedNItemsOfTotal', {
+        removedAmount: params?.props?.removedItems?.length,
+        totalAmount: params?.props?.items?.length,
+      })}
       `,
     },
     deleteItemsSuccess: {
@@ -338,12 +337,11 @@ function getNotification (params) {
       icon: 'mdi-delete-forever-outline',
       colorStatus: 'green',
       timeout: 5000,
-      title: i18n.t('notifications.allItemsWereDeleted'),
-      message: `
-        <strong>${i18n.t('notifications.deletedItems')}:</strong> 
-        ${params?.props?.removedItems?.length}
-        <br><strong>${i18n.t('notifications.deletedItemsSize')}:</strong> 
-        ${params?.props?.removedItemsSize}
+      title: `
+      ${i18n.t('notifications.deletedNItemsOfTotal', {
+        removedAmount: params?.props?.removedItems?.length,
+        totalAmount: params?.props?.items?.length,
+      })}
       `,
     },
     trashItemsError: {

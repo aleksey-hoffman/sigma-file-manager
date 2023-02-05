@@ -2212,7 +2212,7 @@ export default new Vuex.Store({
     },
     async resetAppSettings (store) {
       try {
-        await store.dispatch('DELETE_APP_FILE', {
+        await store.dispatch('deleteAppFile', {
           fileName: 'settings.json'
         })
         utils.reloadMainWindow()
@@ -2221,16 +2221,16 @@ export default new Vuex.Store({
         throw Error(error)
       }
     },
-    async DELETE_APP_FILE (store, payload) {
+    async deleteAppFile (store, payload) {
       try {
         const appStorageDir = store.state.storageData.settings.appPaths.storageDirectories.appStorage
         const appStorageFileName = payload.fileName
         const normalizedPath = PATH.normalize(`${appStorageDir}/${appStorageFileName}`)
         await fs.promises.access(normalizedPath, fs.constants.F_OK)
         let item = await store.dispatch('GET_DIR_ITEM_INFO', normalizedPath)
-        await store.dispatch('DELETE_DIR_ITEMS', {
+        await store.dispatch('deleteDirItems', {
           items: [item],
-          options: { skipSafeCheck: true }
+          safeCheck: false
         })
       }
       catch (error) {
@@ -3883,10 +3883,8 @@ export default new Vuex.Store({
         items: [],
         storageItems: [],
         storageItemsKey: '',
-        options: {
-          silent: false,
-          allowUndo: true,
-        }
+        silent: false,
+        allowUndo: true,
       }
       params = { ...defaultParams, ...params }
 
@@ -3910,15 +3908,15 @@ export default new Vuex.Store({
       function setParams () {
         if (params.storageItemsKey === 'storageData.pinned.items') {
           const unpinnedCount = undoData.length - filteredItems.length
-          notificationCondition = !params.options.silent && unpinnedCount > 0
+          notificationCondition = !params.silent && unpinnedCount > 0
           notificationParams.title = `Removed ${params.items.length} items from pinned`
         }
         else if (params.storageItemsKey === 'storageData.protected.items') {
-          notificationCondition = !params.options.silent
+          notificationCondition = !params.silent
           notificationParams.title = `Removed ${params.items.length} items from protected`
         }
         else if (params.storageItemsKey === 'storageData.stats.dirItemsTimeline') {
-          notificationCondition = !params.options.silent
+          notificationCondition = !params.silent
           notificationParams.title = `Removed ${params.items.length} items from timeline`
         }
       }
@@ -3933,7 +3931,7 @@ export default new Vuex.Store({
       function addNotification () {
         if (notificationCondition) {
           let actionButtons = []
-          if (params.options.allowUndo) {
+          if (params.allowUndo) {
             actionButtons.push({
               title: i18n.t('undo'),
               action: '',
@@ -3950,7 +3948,7 @@ export default new Vuex.Store({
             action: 'add',
             type: `undo:${params.storageItemsKey}`,
             icon: 'mdi-undo-variant',
-            timeout: params.options.allowUndo ? 8000 : 4000,
+            timeout: params.allowUndo ? 8000 : 4000,
             title: notificationParams.title,
             actionButtons,
             onNotificationRemove: () => {undoData = null}
@@ -3994,102 +3992,107 @@ export default new Vuex.Store({
         ...params
       })
     },
-    async TRASH_SELECTED_DIR_ITEMS (store) {
-      await store.dispatch('TRASH_DIR_ITEMS', {items: store.getters.selectedDirItems})
+    async trashSelectedDirItems ({getters, dispatch}) {
+      await dispatch('trashDirItems', {items: getters.selectedDirItems})
     },
-    async DELETE_SELECTED_DIR_ITEMS (store) {
-      await store.dispatch('DELETE_DIR_ITEMS', {items: store.getters.selectedDirItems})
+    async deleteSelectedDirItems ({getters, dispatch}) {
+      await dispatch('deleteDirItems', {items: getters.selectedDirItems})
     },
-    async TRASH_DIR_ITEMS (store, params) {
-      let defaultOptions = {
-        skipSafeCheck: false,
+    async trashDirItems ({dispatch}, params) {
+      let defaultParams = {
+        safeCheck: true,
         silent: false,
         allowUndo: false,
         operation: 'trash'
       }
-      params.options = {...defaultOptions, ...params.options}
-      
+      params = utils.cloneDeep({...defaultParams, ...params})
+
       try {
-        await store.dispatch('HANDLE_REMOVE_DIR_ITEMS', params)
+        await dispatch('handleRemoveDirItems', params)
       }
       catch (error) {
-        await store.dispatch('HANDLE_REMOVE_DIR_ITEMS_ERROR', {...params, ...error})
+        console.error(error)
+        await dispatch('handleRemoveDirItemsError', {...params, error})
       }
     },
-    async DELETE_DIR_ITEMS (store, params) {
-      let defaultOptions = {
-        skipSafeCheck: false,
+    async deleteDirItems ({dispatch}, params) {
+      let defaultParams = {
+        safeCheck: true,
         silent: false,
         allowUndo: false,
         operation: 'delete'
       }
-      params.options = {...defaultOptions, ...params.options}
-      params = utils.cloneDeep(params)
+      params = utils.cloneDeep({...defaultParams, ...params})
 
       try {
-        await store.dispatch('HANDLE_REMOVE_DIR_ITEMS', params)
+        await dispatch('handleRemoveDirItems', params)
       }
       catch (error) {
-        await store.dispatch('HANDLE_REMOVE_DIR_ITEMS_ERROR', {...params, ...error})
+        console.error(error)
+        await dispatch('handleRemoveDirItemsError', {...params, error})
       }
     },
-    async HANDLE_REMOVE_DIR_ITEMS_ERROR (store, params) {
+    async handleRemoveDirItemsError (_, params) {
       if (params.error.status !== 'cancel') {
-        let notificationName = params.options.operation === 'trash'
-          ? 'trashItemsError'
-          : 'deleteItemsError'
-        
         notifications.emit({
-          name: notificationName, 
+          name: params.operation === 'trash' ? 'trashItemsError' : 'deleteItemsError',
           error: params.error
         })
       }
     },
-    async HANDLE_REMOVE_DIR_ITEMS (store, params) {
+    async handleRemoveDirItems (store, params) {
       async function removeDirItems (params) {
-        try {
-          if (params.options.skipSafeCheck) {
-            await initRemoveDirItems(params)
-          }
-          else {
-            params.items = await getItems(params)
-            await initRemoveDirItems(params)
-          }
+        if (!params.safeCheck) {
+          params.items = await getRemovableItems(params)
         }
-        catch (error) {
-          throw error
-        }
+        const result = await initRemoveDirItems(params)
+        return result
       }
-      
-      async function getItems (params) {
-        return await store.dispatch('ENSURE_DIR_ITEMS_SAFE_TO_DELETE',  {
-          operation: params.options.operation, 
+
+      async function getRemovableItems (params) {
+        return await store.dispatch('getRemovableItems', {
+          operation: params.operation,
           items: params.items
-        }) || [] 
+        }) || []
       }
 
       async function initRemoveDirItems (params) {
-        try {
-          if (params.items.length > 0) {
-            let result = []
-            if (params.options.operation === 'trash') {
-              result = await fsManager.trashFSItems(params)
+        if (params.items.length > 0) {
+          if (params.operation === 'trash') {
+            let {removedItems, notRemovedItems} = await electron.ipcRenderer.invoke('trash-dir-items', params)
+            return {
+              removedItems,
+              notRemovedItems,
             }
-            else if (params.options.operation === 'delete') {
-              result = await fsManager.deleteFSItems(params)
+          }
+          else if (params.operation === 'delete') {
+            if (params.items.length > 0) {
+              let removedItems = []
+              let notRemovedItems = []
+              const trashPromises = params.items.map(async item => {
+                try {
+                  await fsExtra.remove(PATH.normalize(item.path))
+                  removedItems.push(item.path.replace(/\\/g, '/'))
+                }
+                catch (error) {
+                  notRemovedItems.push(item.path.replace(/\\/g, '/'))
+                }
+              })
+              await Promise.all(trashPromises)
+              return {
+                removedItems, 
+                notRemovedItems
+              }
             }
-            await store.dispatch('REMOVE_DIR_ITEMS_POST_ACTIONS', {result, params})
           }
         }
-        catch (error) {
-          throw error
-        }
       }
-
-      await removeDirItems(params)
+      
+      let result = await removeDirItems(params)
+      await store.dispatch('removeDirItemsPostActions', {...result, ...params})
     },
-    ENSURE_DIR_ITEMS_SAFE_TO_DELETE (store, payload) {
-      let {operation, items} = payload
+    getRemovableItems (store, payload) {
+      let { operation, items } = payload
       return new Promise((resolve, reject) => {
         items = utils.cloneDeep(items)
         const currentDirPath = store.state.navigatorView.currentDir.path
@@ -4136,7 +4139,7 @@ export default new Vuex.Store({
                 .catch(error => reject(error))
             }
             else {
-              resolve({status: '', items})
+              resolve({ status: '', items })
             }
           })
         }
@@ -4144,11 +4147,11 @@ export default new Vuex.Store({
         function checkDirItemsIncludeRootDir (items) {
           return new Promise((resolve, reject) => {
             if (currentDirIsRoot && includesCurrentDir) {
-              notifications.emit({name: 'cannotDeleteDriveRootDir'})
+              notifications.emit({ name: 'cannotDeleteDriveRootDir' })
               reject()
             }
             else {
-              resolve({status: '', items})
+              resolve({ status: '', items })
             }
           })
         }
@@ -4176,7 +4179,7 @@ export default new Vuex.Store({
               }
             }
             else {
-              resolve({status: '', items})
+              resolve({ status: '', items })
             }
           })
         }
@@ -4192,7 +4195,7 @@ export default new Vuex.Store({
                 .catch(error => reject(error))
             }
             else {
-              resolve({status: '', items})
+              resolve({ status: '', items })
             }
           })
         }
@@ -4211,10 +4214,10 @@ export default new Vuex.Store({
                 itemsList
               })
                 .then((items) => resolve(items))
-                .catch(error => {console.log(error); reject(error)})
+                .catch(error => { console.log(error); reject(error) })
             }
             else {
-              resolve({status: '', items})
+              resolve({ status: '', items })
             }
           })
         }
@@ -4224,70 +4227,24 @@ export default new Vuex.Store({
           .catch(error => reject(error))
       })
     },
-    async REMOVE_DIR_ITEMS_POST_ACTIONS (store, payload) {
-      let {result, params} = payload
-
+    async removeDirItemsPostActions (store, params) {
       async function init () {
-        let allItemsWereRemoved = params.items.every(item => result.removedItems.includes(item.path.replace(/\\/g, '/')))
-        params.removedItems = result.removedItems
-        params.notRemovedItems = result.notRemovedItems
-
+        notifications.emit({
+          name: params.operation === 'trash' ? 'trashItemsSuccess' : 'deleteItemsSuccess',
+          props: params
+        })
         postActions(params)
-
-        if (allItemsWereRemoved) {
-          handleAllDirItemsWereDeleted(params)
-        }
-        else {
-          handleNotAllDirItemsWereDeleted(params)
-        }
       }
-      
+
       function postActions (params) {
         let paramsClone = utils.cloneDeep(params)
         store.dispatch('REMOVE_FROM_PROTECTED', paramsClone)
         store.dispatch('REMOVE_FROM_PINNED', paramsClone)
         store.dispatch('CLEAR_FS_CLIPBOARD')
         store.dispatch('DESELECT_ALL_DIR_ITEMS')
-        store.dispatch('RELOAD_DIR', {
-          scrollTop: false,
-          selectCurrentDir: false
-        })
       }
 
-      function handleAllDirItemsWereDeleted (params) {
-        let notificationName = params.options.operation === 'trash'
-          ? 'trashItemsSuccess'
-          : 'deleteItemsSuccess'
-          
-        notifications.emit({
-          name: notificationName, 
-          props: {
-            removedItems: params.removedItems
-          }
-        })
-      }
-      
-      function handleNotAllDirItemsWereDeleted (params) {
-        let notificationName = params.options.operation === 'trash'
-          ? 'trashItemsFailure'
-          : 'deleteItemsFailure'
-      
-        notifications.emit({
-          name: notificationName, 
-          props: {
-            items: params.items,
-            removedItems: params.removedItems,
-            notRemovedItems: params.notRemovedItems
-          }
-        })
-      }
-
-      try {
-        await init()
-      }
-      catch (error) {
-        throw error
-      }
+      await init()
     },
     async showNewDirItemDialog ({state, dispatch}, type) {
       state.dialogs.newDirItemDialog.data.type = type
@@ -4488,12 +4445,10 @@ export default new Vuex.Store({
         store.state.dialogs.homeBannerPickerDialog.value = true
       }, 200)
       // Delete from storage
-      store.dispatch('DELETE_DIR_ITEMS', {
+      store.dispatch('deleteDirItems', {
         items: [item],
-        options: {
-          skipSafeCheck: true,
-          silent: true
-        }
+        safeCheck: false,
+        silent: true
       })
       store.dispatch('resetHomeBannerBackground')
     },
@@ -5121,10 +5076,8 @@ export default new Vuex.Store({
         await store.dispatch('moveDirItems', {
           items: dirItemsToPaste,
           directory: params.directory,
-          options: {
-            skipSafeCheck: true,
-            silent: true
-          }
+          safeCheck: false,
+          silent: true,
         })
       }
       else {

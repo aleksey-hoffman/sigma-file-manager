@@ -505,10 +505,10 @@ export default {
           isActive: false,
           onClick: () => {
             if (this.inputState.shift) {
-              this.$store.dispatch('DELETE_SELECTED_DIR_ITEMS')
+              this.$store.dispatch('deleteSelectedDirItems')
             }
             else {
-              this.$store.dispatch('TRASH_SELECTED_DIR_ITEMS')
+              this.$store.dispatch('trashSelectedDirItems')
             }
           },
           closesMenu: true,

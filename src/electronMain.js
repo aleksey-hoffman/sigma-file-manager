@@ -39,8 +39,7 @@ const windows = {
   main: null,
   hiddenGame: null,
   errorWindow: null,
-  trashManager: null,
-  quickViewWindow: null
+  quickViewWindow: null,
 }
 const windowLoadedCallbacks = {
   mainWindow: []
@@ -187,9 +186,6 @@ function loadWindow (windowName) {
   else if (windowName === 'hiddenGame') {
     filePath = 'game/index.html'
   }
-  else if (windowName === 'trashManager') {
-    filePath = 'trashManagerWindow.html'
-  }
   else if (windowName === 'errorWindow') {
     filePath = 'errorWindow.html'
   }
@@ -270,32 +266,14 @@ function initWindowListeners (name) {
 
 function createUtilWindow (fileName) {
   return new Promise((resolve, reject) => {
-    if (fileName === 'trashManagerWindow') {
-      windows.trashManager = new electron.BrowserWindow({
-        width: 200,
-        height: 200,
-        show: false,
-        webPreferences: {
-          contextIsolation: !process.env.ELECTRON_NODE_INTEGRATION,
-          nodeIntegration: process.env.ELECTRON_NODE_INTEGRATION
-        }
-      })
-      loadWindow('trashManager')
-      windows.trashManager.on('closed', () => {
-        windows.trashManager = null
-      })
-      windows.trashManager.webContents.on('did-finish-load', () => {
-        resolve()
-      })
-    }
-    else if (fileName === 'errorWindow') {
+    if (fileName === 'errorWindow') {
       windows.errorWindow = new electron.BrowserWindow({
         width: 800,
         height: 500,
         webPreferences: {
           contextIsolation: !process.env.ELECTRON_NODE_INTEGRATION,
-          nodeIntegration: process.env.ELECTRON_NODE_INTEGRATION
-        }
+          nodeIntegration: process.env.ELECTRON_NODE_INTEGRATION,
+        },
       })
       loadWindow('errorWindow')
       windows.errorWindow.on('closed', () => {
@@ -351,19 +329,21 @@ function initIPCListeners () {
     windows.quickViewWindow.close()
   })
 
-  electron.ipcMain.on('compute-request:trashDirItems', (event, payload) => {
-    if (payload.items.length === 0) {
-      throw Error(`
-        electron.ipcMain.on('compute-request:trashDirItems')::
-        payload.items should contain more than 0 paths
-      `)
-    }
-    else {
-      createUtilWindow('trashManagerWindow')
-        .then(() => {
-          windows.trashManager.webContents
-            .send('compute:trashDirItems', payload.items)
-        })
+  electron.ipcMain.handle('trash-dir-items', async (_, params) => {
+    if (params.items.length > 0) {
+      let removedItems = []
+      let notRemovedItems = []
+      const trashPromises = params.items.map(async item => {
+        try {
+          await electron.shell.trashItem(PATH.normalize(item.path))
+          removedItems.push(item.path.replace(/\\/g, '/'))
+        }
+        catch (error) {
+          notRemovedItems.push(item.path.replace(/\\/g, '/'))
+        }
+      })
+      await Promise.all(trashPromises)
+      return {removedItems, notRemovedItems}
     }
   })
 
@@ -377,16 +357,8 @@ function initIPCListeners () {
       })
   })
 
-  electron.ipcMain.on('compute-reply:trashDirItems', (event, data) => {
-    windows.main.webContents
-      .send('compute-request-reply:trashDirItems', data)
-    if (windows.trashManager) {
-      windows.trashManager.close()
-    }
-  })
-
   electron.ipcMain.on('download-file', async (event, params) => {
-    downloadFile({ event, params })
+    downloadFile({event, params})
   })
 
   electron.ipcMain.on('download-file:resume', (event, payload) => {
