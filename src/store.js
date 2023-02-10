@@ -2697,7 +2697,7 @@ export default new Vuex.Store({
                 action: 'showDownloadedFile',
                 closesNotification: true,
                 onClick: () => {
-                  dispatch('showDirItemInDirectory', {path: payload.fileName})
+                  dispatch('setDirItemInView', {path: payload.fileName})
                 }
               }
             ]
@@ -3679,11 +3679,22 @@ export default new Vuex.Store({
         }
       })
     },
-    async showDirItemInDirectory ({getters, dispatch}, params) {
+    async setDirItemInView ({dispatch}, params) {
+      setTimeout(() => {
+        dispatch('SORT_DIR_ITEMS')
+        setTimeout(async () => {
+          await dispatch('scrollDirItemIntoView', params)
+          let dirItem = await dispatch('GET_DIR_ITEM_INFO', params.path)
+          dispatch('DESELECT_ALL_DIR_ITEMS')
+          dispatch('ADD_TO_SELECTED_DIR_ITEMS', dirItem)
+        }, 250)
+      }, 250)
+    },
+    async scrollDirItemIntoView ({getters, dispatch}, params) {
       if (!params.path) {return}
       
       const parsedPath = PATH.parse(params.path)
-
+      
       if (router.currentRoute.name !== 'navigator') {
         await dispatch('loadDir', {path: parsedPath.dir})
       }
@@ -3691,13 +3702,11 @@ export default new Vuex.Store({
       const path = params.path.replace(/\\/g, '/')
       
       const workspaceVirtualListRef = getters.selectedWorkspace?.panes?.items?.[0]?.virtualListRef
-      if (workspaceVirtualListRef) {
-        workspaceVirtualListRef.scrollToItem(path) 
-      }
+      workspaceVirtualListRef?.scrollToItem(path) 
     },
     COPY_CURRENT_DIR_PATH (store) {
       const path = store.state.navigatorView.currentDir.path
-      store.dispatch('COPY_DIR_PATH_TO_CLIPBOARD', {path})
+      store.dispatch('COPY_DIR_PATH_TO_CLIPBOARD', { path })
     },
     COPY_DIR_PATH_TO_CLIPBOARD (store, params = {}) {
       if (params.path) {
@@ -5279,7 +5288,7 @@ export default new Vuex.Store({
             directory: params.directory,
             items: params.items
           })
-          
+
           if (conflictingDirItems.length > 0) {
             await showConfirmationDialog(conflictingDirItems)
           }
@@ -5297,7 +5306,7 @@ export default new Vuex.Store({
           conflictingDirItems
         })
         if (conformationResult === 'replace-all') {
-          initCopyProcess({...params, ...{overwrite: true}})
+          initCopyProcess({ ...params, ...{ overwrite: true } })
         }
         else if (conformationResult === 'auto-rename') {
           initCopyProcess(params)
@@ -5310,17 +5319,19 @@ export default new Vuex.Store({
       async function cancelTransfer () {
         notification.hide()
       }
-      
+
       async function initCopyProcess (params) {
+        let destPaths = []
         let promises = []
         params.items.forEach(item => {
           const parsedItemPath = PATH.parse(item.path)
           const sourcePath = PATH.normalize(item.path)
-          const destPath = getDestPath({parsedItemPath, sourcePath, ...params})
-          promises.push(startWriteProcess({sourcePath, destPath, ...params}))
+          const destPath = getDestPath({ parsedItemPath, sourcePath, ...params })
+          destPaths.push(destPath)
+          promises.push(startWriteProcess({ sourcePath, destPath, ...params }))
         })
         await Promise.all(promises)
-        onTransferSuccess()
+        onTransferSuccess({...params, destPaths})
       }
 
       function getDestPath (params) {
@@ -5382,11 +5393,11 @@ export default new Vuex.Store({
         }
       }
 
-      function onTransferSuccess () {
+      async function onTransferSuccess (params) {
         showSuccessNotification()
-        store.dispatch('RELOAD_DIR', {scrollTop: false})
+        store.dispatch('RELOAD_DIR', { scrollTop: false })
         store.dispatch('CLEAR_FS_CLIPBOARD')
-        store.dispatch('showDirItemInDirectory', {path: params.items[0].path})
+        store.dispatch('setDirItemInView', {path: params.destPaths[0]})
       }
     },
     async moveDirItems ({dispatch}, params) {

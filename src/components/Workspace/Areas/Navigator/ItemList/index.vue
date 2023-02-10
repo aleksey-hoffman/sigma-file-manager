@@ -12,11 +12,13 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     >
       <VirtualList
         v-if="navigatorLayout === 'list'"
+        ref="navigatorVirtualListOfTypeList"
         layout="list"
         :items="formattedDirItems"
       />
       <VirtualList
         v-if="navigatorLayout === 'grid'"
+        ref="navigatorVirtualListOfTypeGrid"
         layout="grid"
         :items="formattedDirItemsRows"
       />
@@ -26,7 +28,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <script>
 import {mapFields} from 'vuex-map-fields'
-import {mapState} from 'vuex'
+import {mapGetters, mapState} from 'vuex'
 import itemFilter from '@/utils/itemFilter'
 import VirtualList from '@/components/VirtualList/index.vue'
 import WorkspaceAreaLoader from '../Loader/index.vue'
@@ -38,7 +40,21 @@ export default {
     WorkspaceAreaLoader,
     VirtualList,
   },
+  watch: {
+    navigatorLayout () {
+      this.setVirtualListRef()
+    },
+    currentDir () {
+      this.setVirtualListRef()
+    },
+  },
+  mounted () {
+    this.setVirtualListRef()
+  },
   computed: {
+    ...mapGetters([
+      'selectedWorkspace',
+    ]),
     ...mapState({
       navigatorLayout: state => state.storageData.settings.navigatorLayout,
       navigatorLayoutItemHeight: state => state.storageData.settings.navigatorLayoutItemHeight,
@@ -55,6 +71,7 @@ export default {
       dirItemsInfoIsPartiallyFetched: 'navigatorView.dirItemsInfoIsPartiallyFetched',
       dirItemsInfoIsFetched: 'navigatorView.dirItemsInfoIsFetched',
       showDirItemKindDividers: 'storageData.settings.navigator.showDirItemKindDividers',
+      currentDir: 'navigatorView.currentDir',
     }),
     contentAreaHeight () {
       const contentAreaHeight = this.windowSize.y -
@@ -330,6 +347,16 @@ export default {
     },
   },
   methods: {
+    setVirtualListRef () {
+      this.$nextTick(() => {
+        if (this.navigatorLayout === 'list') {
+          this.selectedWorkspace.panes.items[0].virtualListRef = this.$refs.navigatorVirtualListOfTypeList
+        }
+        else if (this.navigatorLayout === 'grid') {
+          this.selectedWorkspace.panes.items[0].virtualListRef = this.$refs.navigatorVirtualListOfTypeGrid
+        }
+      })
+    },
     setNavigatorViewInfo (data) {
       this.$store.dispatch('SET', {
         key: 'navigatorView.info',

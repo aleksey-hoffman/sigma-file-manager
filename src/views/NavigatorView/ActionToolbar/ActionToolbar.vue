@@ -117,6 +117,7 @@ export default {
       navigatorViewInfoPanel: 'storageData.settings.infoPanels.navigatorView',
       navigatorSortingElementDisplayType: 'storageData.settings.navigator.sorting.elementDisplayType',
       groupDirItems: 'storageData.settings.groupDirItems',
+      currentDir: 'navigatorView.currentDir',
     }),
     newDirItemMenuItems () {
       return [
@@ -152,7 +153,7 @@ export default {
           value,
         })
         // Reload dir to update item 'height' property
-        this.$store.dispatch('LOAD_DIR', {
+        this.$store.dispatch('loadDir', {
           path: this.currentDir.path,
           scrollTop: false,
         })

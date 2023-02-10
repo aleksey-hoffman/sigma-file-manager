@@ -320,7 +320,11 @@ export default {
   },
   methods: {
     scrollToItem (path) {
-      const targetItemIndex = this.items.find(item => item.path === path)?.positionIndex
+      const isGrid = this.items.some(item => item.type === 'directory-row')
+      const targetItemIndex = isGrid
+        ? this.items.find(item => item?.items?.find(rowItem => rowItem.path === path))?.positionIndex
+        : this.items.find(item => item.path === path)?.positionIndex
+
       if (targetItemIndex) {
         this.scrollToIndex(targetItemIndex)
       }
