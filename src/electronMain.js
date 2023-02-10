@@ -248,9 +248,7 @@ function initWindowListeners (name) {
       // Without it, a duplicate listener is created every time the windows is closed
       windows.quickViewWindow.webContents.session.removeListener('will-download', _willDownloadHandler)
     })
-    windows.quickViewWindow.once('closed', () => {
-      createQuickViewWindow()
-    })
+    windows.quickViewWindow.once('closed', () => createQuickViewWindow)
     function _willDownloadHandler (event, item, webContents) {
       event.preventDefault()
       const fileURL = item.getURL()
@@ -262,6 +260,10 @@ function initWindowListeners (name) {
       windows.quickViewWindow.close()
     }
   }
+}
+
+function removeWindowListeners () {
+  windows.quickViewWindow.removeListener('closed', () => createQuickViewWindow)
 }
 
 function createUtilWindow (fileName) {
@@ -727,14 +729,7 @@ function initAppListeners () {
   })
 
   electron.app.on('before-quit', () => {
-    // Make sure all processes are terminated
-    // Otherwise some keep running on app.quit()
-    for (let window in windows) {
-      windows[window] = null
-    }
-    if (tray !== null) {
-      tray.destroy()
-    }
+    removeWindowListeners()
   })
 
   electron.app.on('will-quit', () => {
