@@ -2703,7 +2703,7 @@ export default new Vuex.Store({
             ]
             progress.isDone = true
             progress.eta = 0
-            notificationData.timeout = 3000
+            notificationData.timeout = 0
             notificationData.title = 'File was downloaded'
             notificationData.message = ''
             notificationData.actionButtons = actionButtons
