@@ -21,6 +21,8 @@ import TimeUtils from '@/utils/timeUtils.js'
 const electron = require('electron')
 const electronRemote = require('@electron/remote')
 const request = require('request')
+const fs = require('fs')
+const PATH = require('path')
 const supportedFormats = require('@/utils/supportedFormats.js')
 
 export default {
@@ -255,7 +257,20 @@ export default {
     },
     async handleInboundDrop (dropEvent) {
       try {
-        if (dropEvent.dataTransfer.items[0].kind === 'string') {
+        let isUrlFile = false
+        try {
+          for (const file of dropEvent.dataTransfer.files) {
+            if (typeof file.path === 'string' && fs.existsSync(file.path) && PATH.parse(file.path).ext === '.url') {
+              isUrlFile = true
+            }
+          }
+        }
+        catch (error) {}
+
+        if (isUrlFile) {
+          await this.handleInboundDropFile(dropEvent)
+        }
+        else if (dropEvent.dataTransfer.items[0].kind === 'string') {
           await this.handleInboundDropString(dropEvent)
         }
         else if (dropEvent.dataTransfer.items[0].kind === 'file') {
