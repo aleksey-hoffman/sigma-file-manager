@@ -809,16 +809,20 @@ export default {
       const {item, leftClick, clickedItemIsSelected} = this.mouseDown
       const isSelectingNotSelectedDirItem = leftClick &&
         !clickedItemIsSelected &&
-        !this.inputState.ctrl &&
-        !this.inputState.shift
+        !this.inputState.ctrl
       const isSelectingDirItemRange = leftClick && this.inputState.shift
       // Handle pointer_btn_1_down
-      if (isSelectingNotSelectedDirItem) {
+      if (isSelectingDirItemRange) {
+        this.inputState.pointer.hover.itemType = 'dirItem'
+        this.inputState.pointer.hover.item = item
+        this.$store.dispatch('HANDLE_HIGHLIGHT_DIR_ITEM_RANGE', {
+          hoveredItem: item,
+        })
+        this.$store.dispatch('SELECT_DIR_ITEM_RANGE', item)
+      }
+      else if (isSelectingNotSelectedDirItem) {
         this.$store.dispatch('DESELECT_ALL_DIR_ITEMS')
         this.$store.dispatch('ADD_TO_SELECTED_DIR_ITEMS', item)
-      }
-      else if (isSelectingDirItemRange) {
-        this.$store.dispatch('SELECT_DIR_ITEM_RANGE', item)
       }
     },
     handleDirItemMouseEnter (event, item) {
