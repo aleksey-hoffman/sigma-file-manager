@@ -5306,13 +5306,13 @@ export default new Vuex.Store({
           conflictingDirItems
         })
         if (conformationResult === 'replace-all') {
-          initCopyProcess({ ...params, ...{ overwrite: true } })
+          await initCopyProcess({ ...params, ...{ overwrite: true } })
         }
         else if (conformationResult === 'auto-rename') {
-          initCopyProcess(params)
+          await initCopyProcess(params)
         }
         else if (conformationResult === 'cancel') {
-          cancelTransfer()
+          await cancelTransfer()
         }
       }
 
@@ -5330,7 +5330,7 @@ export default new Vuex.Store({
           destPaths.push(destPath)
           promises.push(startWriteProcess({ sourcePath, destPath, ...params }))
         })
-        await Promise.all(promises)
+        await Promise.all(promises).catch(error => {throw error})
         onTransferSuccess({...params, destPaths})
       }
 
@@ -5354,15 +5354,15 @@ export default new Vuex.Store({
           await fsExtra.copy(params.sourcePath, params.destPath, options)
         }
       }
-      
+
       function handleCopyError (error) {
         notification.update({
-          name: 'transferDirItemsError', 
-          title: params.operation === 'move' 
+          name: 'transferDirItemsError',
+          title: params.operation === 'move'
             ? 'Move: error'
-            : 'Copy: error', 
-          props: {error}}
-        )
+            : 'Copy: error',
+          props: { error }
+        })
       }
 
       function showSuccessNotification () {
