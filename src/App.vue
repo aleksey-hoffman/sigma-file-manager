@@ -488,7 +488,7 @@ export default {
           key: 'globalSearch.lastScanTimeElapsed',
           value: lastSearchScanTimeElapsed,
         })
-      }, 1000)
+      }, 60000)
     },
     async initGlobalSearchDataScan () {
       if (this.globalSearchIsEnabled && !this.globalSearchInProgress) {
