@@ -861,7 +861,7 @@ export default {
               key: storageKey,
               value: updatedValue,
               options: {
-                updateStorage: payload.fileName === 'settings.json',
+                updateStorage: payload.fileName === 'settings.json' || payload.fileName === 'workspaces.json',
               },
             })
           }
