@@ -51,7 +51,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     >
                       <div class="indicator" />
                       <v-icon :size="item.iconSize">
-                        {{filteredIcon(item)}}
+                        {{item.icon}}
                       </v-icon>
                     </v-btn>
                   </template>
@@ -351,6 +351,16 @@ export default {
       externalProgramsDefaultItems: 'storageData.settings.externalPrograms.defaultItems',
       externalProgramsCustomItems: 'storageData.settings.externalPrograms.items',
     }),
+    someItemIsPinned () {
+      return this.targetItems.every(selectedItem => {
+        return this.pinnedItems.some(pinnedItem => pinnedItem.path === selectedItem.path)
+      })
+    },
+    someItemIsProtected () {
+      return this.targetItems.every(selectedItem => {
+        return this.protectedItems.some(protectedItem => protectedItem.path === selectedItem.path)
+      })
+    },
     targetItems () {
       return this.$store.state.contextMenus.dirItem.targetItems
     },
@@ -360,7 +370,7 @@ export default {
           title: 'protect',
           selectionType: ['single', 'multiple'],
           targetTypes: ['directory', 'file', 'file-symlink', 'directory-symlink'],
-          isActive: false,
+          isActive: this.someItemIsProtected,
           onClick: () => {
             this.$store.dispatch('SET_PROTECTED')
           },
@@ -375,7 +385,7 @@ export default {
           title: 'pin',
           selectionType: ['single', 'multiple'],
           targetTypes: ['directory', 'file', 'file-symlink', 'directory-symlink'],
-          isActive: false,
+          isActive: this.someItemIsPinned,
           onClick: () => {
             this.$store.dispatch('SET_PINNED')
           },
@@ -832,25 +842,6 @@ export default {
       const itemsFilteredByAllowedFileType = this.filterAllowedFileTypes(itemsFilteredByItemType)
       const itemsFilteredByDisallowedFileType = this.filterDisallowedFileTypes(itemsFilteredByAllowedFileType)
       return itemsFilteredByDisallowedFileType
-    },
-    filteredIcon (item) {
-      if (item.title === 'pin') {
-        const someItemIsPinned = this.targetItems.every(selectedItem => {
-          return this.pinnedItems.some(pinnedItem => pinnedItem.path === selectedItem.path)
-        })
-        item.isActive = someItemIsPinned
-        return item.icon
-      }
-      else if (item.title === 'protect') {
-        const someItemIsProtected = this.targetItems.every(selectedItem => {
-          return this.protectedItems.some(protectedItem => protectedItem.path === selectedItem.path)
-        })
-        item.isActive = someItemIsProtected
-        return item.icon
-      }
-      else {
-        return item.icon
-      }
     },
     filterItemSelectionType (list) {
       const filtered = list.filter(menuItem => {
