@@ -526,6 +526,8 @@ export default {
       searchResultsRecentDirItems: [],
       searchTasks: [],
       searchInfo: [],
+      recentSearchResultsScoreTreshold: 0.5,
+      recentSearchResultsItemsAmount: 5,
       searchResultsItemsAmount: 50,
       searchResultsUpdateInterval: 3000,
     }
@@ -791,7 +793,8 @@ export default {
         query: this.query,
         options: this.globalSearch.options,
       })
-      let bestSearchResults = this.getBestSearchItems(searchResults)
+      let bestSearchResults = this.getBestSearchItems(searchResults, this.recentSearchResultsItemsAmount)
+        .filter(item => item.score > this.recentSearchResultsScoreTreshold)
       this.searchResultsRecentDirItems = await this.fetchItemInfoForSearchResults(bestSearchResults)
     },
     async fetchItemInfoForSearchResults (dirItemlist) {
@@ -807,10 +810,10 @@ export default {
       }
       return formatted
     },
-    getBestSearchItems (array) {
+    getBestSearchItems (array, amount) {
       return array
         .sort((a, b) => parseFloat(b.score) - parseFloat(a.score))
-        .slice(0, this.searchResultsItemsAmount) // get the best N items
+        .slice(0, amount || this.searchResultsItemsAmount) // get the best N items
     },
     sort (array, key) {
       return array.sort((a, b) => parseFloat(b[key]) - parseFloat(a[key]))
