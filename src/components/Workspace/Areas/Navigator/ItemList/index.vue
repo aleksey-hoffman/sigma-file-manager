@@ -72,6 +72,7 @@ export default {
       dirItemsInfoIsFetched: 'navigatorView.dirItemsInfoIsFetched',
       showDirItemKindDividers: 'storageData.settings.navigator.showDirItemKindDividers',
       currentDir: 'navigatorView.currentDir',
+      refs: 'refs',
     }),
     contentAreaHeight () {
       const contentAreaHeight = this.windowSize.y -
@@ -350,10 +351,10 @@ export default {
     setVirtualListRef () {
       this.$nextTick(() => {
         if (this.navigatorLayout === 'list') {
-          this.selectedWorkspace.panes.items[0].virtualListRef = this.$refs.navigatorVirtualListOfTypeList
+          this.refs.navigator.panes[0].virtualListRef = this.$refs.navigatorVirtualListOfTypeList
         }
         else if (this.navigatorLayout === 'grid') {
-          this.selectedWorkspace.panes.items[0].virtualListRef = this.$refs.navigatorVirtualListOfTypeGrid
+          this.refs.navigator.panes[0].virtualListRef = this.$refs.navigatorVirtualListOfTypeGrid
         }
       })
     },

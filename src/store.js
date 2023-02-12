@@ -113,6 +113,17 @@ export default new Vuex.Store({
         settings: null,
       }
     },
+    refs: {
+      navigator: {
+        panes: [
+          {
+            row: 1,
+            column: 1,
+            virtualListRef: null
+          }
+        ]
+      }
+    },
     placeholders: {
       calculatingDirSize: 'Calculating...'
     },
@@ -393,7 +404,6 @@ export default new Vuex.Store({
                   width: '1fr',
                   type: 'navigator',
                   currentDir: '',
-                  virtualListRef: null
                 }
               ]  
             },
@@ -1282,7 +1292,6 @@ export default new Vuex.Store({
                 isSelected: true,
                 width: '1fr',
                 type: 'navigator',
-                virtualListRef: null
               }
             ]  
           },
@@ -3690,7 +3699,7 @@ export default new Vuex.Store({
         }, 250)
       }, 250)
     },
-    async scrollDirItemIntoView ({getters, dispatch}, params) {
+    async scrollDirItemIntoView ({state, dispatch}, params) {
       if (!params.path) {return}
       
       const parsedPath = PATH.parse(params.path)
@@ -3701,7 +3710,7 @@ export default new Vuex.Store({
       
       const path = params.path.replace(/\\/g, '/')
       
-      const workspaceVirtualListRef = getters.selectedWorkspace?.panes?.items?.[0]?.virtualListRef
+      const workspaceVirtualListRef = state.refs.navigator.panes[0].virtualListRef
       workspaceVirtualListRef?.scrollToItem(path) 
     },
     COPY_CURRENT_DIR_PATH (store) {
