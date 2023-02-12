@@ -26,6 +26,6 @@ jobs:
           ) 
         }}
       with:
-        message: Consider supporting the developer to increase priority of all your issues and get other rewards.
-          <br>**Patreon page:** https://www.patreon.com/sigma_file_manager
+        message: Consider supporting the developer to increase priority of all your issues and get other rewards
+          <br>https://github.com/aleksey-hoffman/sigma-file-manager/wiki/Supporter-rewards
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
