@@ -4063,21 +4063,27 @@ export default new Vuex.Store({
     },
     async handleRemoveDirItems (store, params) {
       async function removeDirItems (params) {
-        if (!params.safeCheck) {
-          params.items = await getRemovableItems(params)
+        if (params.safeCheck) {
+          params.items = await chooseItemsToRemove(params)
         }
         const result = await initRemoveDirItems(params)
         return result
       }
 
-      async function getRemovableItems (params) {
-        return await store.dispatch('getRemovableItems', {
+      async function chooseItemsToRemove (params) {
+        return await store.dispatch('chooseItemsToRemove', {
           operation: params.operation,
           items: params.items
         }) || []
       }
 
       async function initRemoveDirItems (params) {
+        if (params.items.length === 0) {
+          return {
+            removedItems: [],
+            notRemovedItems: [],
+          }
+        }
         if (params.items.length > 0) {
           if (params.operation === 'trash') {
             let {removedItems, notRemovedItems} = await electron.ipcRenderer.invoke('trash-dir-items', params)
@@ -4112,7 +4118,7 @@ export default new Vuex.Store({
       let result = await removeDirItems(params)
       await store.dispatch('removeDirItemsPostActions', {...result, ...params})
     },
-    getRemovableItems (store, payload) {
+    chooseItemsToRemove (store, payload) {
       let { operation, items } = payload
       return new Promise((resolve, reject) => {
         items = utils.cloneDeep(items)
