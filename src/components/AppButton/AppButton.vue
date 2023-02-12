@@ -99,11 +99,11 @@ export default {
   },
   emits: ['click'],
   methods: {
-    onClickHandler () {
+    onClickHandler (event) {
       if (this.onClick) {
-        this.onClick()
+        this.onClick(event)
       }
-      this.$emit('click')
+      this.$emit('click', event)
     },
   },
 }
