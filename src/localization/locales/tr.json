@@ -982,8 +982,18 @@
         "notOptimizedYet": "Uygulama henüz optimize edilmedi, örneğin büyük resimler içeren bir dizinde gezinirken RAM kullanımı bazı durumlarda artabilir ve 1 GB'ın üzerine çıkabilir. Bu nedenle, şimdilik uygulamayı düşük katmanlı olarak kullanmaktan kaçının. bilgisayarlar (ör. 4 GB veya daha az RAM'e sahip bilgisayarlar)."
       },
       "mediaDownloading": {
-        "videoDownloading": "Video indirme",
-        "mostActionsWithShortcuts": "-"
+        "videos": {
+          "videoDownloading": "Video indirme",
+          "thisFeatureLetsYou": "Bu özellik, internetten herhangi bir dosyayı (veya bağlantısını) uygulamaya sürükleyerek kolayca indirmenize veya indirmenize olanak tanır. Neredeyse tüm dosya biçimleriyle çalışır.",
+          "downloadingVideosFromAUrl": "Bir URL'den video indirme:",
+          "justDragAndDrop": "Video sayfasının URL'sini uygulamaya sürükleyip bırakın ve indirmek istediğiniz biçimi seçin. Şu anda yalnızca YouTube desteklenmektedir, ancak gelecekte daha fazla web sitesi eklenecektir.",
+          "downloadingVideosFromADirectLink": "Doğrudan bir bağlantıdan (herhangi bir web sitesinden) video indirme:",
+          "toDownloadAVideo": "Bir videoyu indirmek için, doğrudan bağlantısını uygulamaya sürükleyip bırakmanız yeterlidir. Doğrudan bağlantı, doğrudan video dosyasını gösterir (ör. https://example.com/video.mp4). Not: videoyu şuradan izleyebiliyorsanız: tarayıcınızda yeni bir sekmede açtığınızda doğrudan bir bağlantıdır.",
+          "pleaseKeepInMind": "Lütfen bazı korunan videoların bağlantılarında ek parametreler olduğunu unutmayın, bu nedenle bu parametreler dahil tüm bağlantının seçildiğinden emin olun. Ancak, parametrelerin bir geçerlilik süresi olduğu sürece bu bağlantıların aktif kalmayacağını unutmayın. tarih.",
+          "downloadingVideoStreams": "Video akışları indiriliyor:",
+          "videoStreamsCanBeDownloaded": "Video akışları, doğrudan bağlantılarla aynı şekilde indirilebilir. Akış bağlantılarında, kimlik doğrulama belirteçleri ve zaman damgaları olabilir veya olmayabilir ve bunlar şu şekilde görünebilir:",
+          "warning": "Uyarı: Lütfen bu özelliği sorumlu bir şekilde kullanın. Belirli bir hizmetten çok fazla içerik indiriyorsanız, web sitelerinde reklam engelleyicinizi devre dışı bırakmak veya premium abonelik satın almak gibi bir şekilde desteklemeyi düşünün. Bu, hem hizmete hem de hizmete yardımcı olacaktır. Bu platformları desteklemezsek, sonunda ücretsiz eğitime, eğlenceye, yaratıcı özgürlüğe ve bize sağladıkları diğer avantajlara erişimi kaybedebiliriz."
+        }
       },
       "navigatorTips": {
         "rangeItemSelection": "Aralık öğesi seçimi",

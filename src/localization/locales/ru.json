@@ -982,8 +982,18 @@
         "notOptimizedYet": "Приложение еще не оптимизировано, использование ОЗУ может резко увеличиться и в некоторых случаях превысить 1 ГБ, например, когда вы просматриваете папка, содержащий большие изображения. Поэтому на данный момент избегайте использования приложения на низком уровне. компьютеры (т. е. компьютеры с 4 ГБ ОЗУ или меньше)"
       },
       "mediaDownloading": {
-        "videoDownloading": "Скачивание видео",
-        "mostActionsWithShortcuts": "-"
+        "videos": {
+          "videoDownloading": "Video downloading",
+          "thisFeatureLetsYou": "This feature lets you easily stream or download any file from the internet by simply dragging it (or its link) into the app. It works with almost all file formats.",
+          "downloadingVideosFromAUrl": "Downloading videos from a URL:",
+          "justDragAndDrop": "Just drag and drop the URL of the video page into the app and choose the format you want to download. Currently, only YouTube is supported, but more websites will be added in the future.",
+          "downloadingVideosFromADirectLink": "Downloading videos from a direct link (any website):",
+          "toDownloadAVideo": "To download a video, simply drag and drop its direct link into the app. A direct link points directly to the video file (e.g. https://example.com/video.mp4). Note: if you can watch the video by opening it in a new tab in your browser, it's a direct link.",
+          "pleaseKeepInMind": "Please keep in mind that some protected videos have additional parameters in their link, so make sure to select the whole link, including these parameters. However, keep in mind that these links won't stay active for long as the parameters have an expiration date.",
+          "downloadingVideoStreams": "Downloading video streams:",
+          "videoStreamsCanBeDownloaded": "Video streams can be downloaded the same way as direct links. Stream links can have or without authentication tokens and timestamps, and they may look like this:",
+          "warning": "Warning: Please use this feature responsibly. If you are downloading a lot of content from a certain service, consider supporting it in some way, like disabling your ad-blocker on their website or purchasing a premium subscription. This will help both the service and the content creators. If we don't support these platforms, we may eventually lose the access to free education, entertainment, creative freedom, and other benefits they provide us with."
+        }
       },
       "navigatorTips": {
         "rangeItemSelection": "Выбор позиции ассортимента",

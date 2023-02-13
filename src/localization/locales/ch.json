@@ -982,8 +982,18 @@
         "notOptimizedYet": "该应用程序尚未优化,在某些情况下,RAM 使用量可能会飙升并超过 1 GB,例如,当您滚动浏览包含大图像的目录时。因此,目前,请避免在低层级上使用该应用程序计算机（即具有 4 GB 或更少 RAM 的计算机）。"
       },
       "mediaDownloading": {
-        "videoDownloading": "视频下载",
-        "mostActionsWithShortcuts": "-"
+        "videos": {
+          "videoDownloading": "视频下载",
+          "thisFeatureLetsYou": "此功能使您可以轻松地从互联网上流式传输或下载任何文件，只需将文件（或其链接）拖到应用程序中即可。它适用于几乎所有文件格式。",
+          "downloadingVideosFromAUrl": "从 URL 下载视频：",
+          "justDragAndDrop": "只需将视频页面的网址拖放到应用程序中，然后选择您要下载的格式即可。目前仅支持YouTube，但未来会添加更多网站。",
+          "downloadingVideosFromADirectLink": "从直接链接（任何网站）下载视频：",
+          "toDownloadAVideo": "要下载视频，只需将其直接链接拖放到应用程序中即可。直接链接直接指向视频文件（例如 https://example.com/video.mp4）。注意：如果您可以通过以下方式观看视频在浏览器的新选项卡中打开它，这是一个直接链接。",
+          "pleaseKeepInMind": "请记住，一些受保护的视频在其链接中有额外的参数，因此请确保选择整个链接，包括这些参数。但是，请记住，这些链接不会在参数过期时保持活动状态日期。",
+          "downloadingVideoStreams": "正在下载视频流：",
+          "videoStreamsCanBeDownloaded": "可以像直接链接一样下载视频流。流链接可以有或没有身份验证令牌和时间戳，它们可能如下所示：",
+          "warning": "警告：请负责任地使用此功能。如果您从某项服务下载大量内容，请考虑以某种方式支持它，例如在他们的网站上禁用广告拦截器或购买高级订阅。这将有助于服务和内容创作者。如果我们不支持这些平台，我们最终可能会失去获得免费教育、娱乐、创作自由以及它们为我们提供的其他好处的机会。"
+        }
       },
       "navigatorTips": {
         "rangeItemSelection": "范围项目选择",

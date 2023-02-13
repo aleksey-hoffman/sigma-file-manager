@@ -982,8 +982,18 @@
         "notOptimizedYet": "Ứng dụng chưa được tối ưu hóa, mức sử dụng RAM có thể tăng đột biến và vượt quá 1 GB trong một số trường hợp, chẳng hạn như khi bạn cuộn qua một thư mục chứa hình ảnh lớn. Vì vậy, hiện tại, hãy tránh sử dụng ứng dụng ở cấp độ thấp máy tính (tức là máy tính có RAM 4 GB trở xuống)."
       },
       "mediaDownloading": {
-        "videoDownloading": "Tải xuống video",
-        "mostActionsWithShortcuts": "-"
+        "videos": {
+          "videoDownloading": "Tải xuống video",
+          "thisFeatureLetsYou": "Tính năng này cho phép bạn dễ dàng truyền trực tuyến hoặc tải xuống bất kỳ tệp nào từ internet bằng cách kéo tệp đó (hoặc liên kết của tệp đó) vào ứng dụng. Tính năng này hoạt động với hầu hết mọi định dạng tệp.",
+          "downloadingVideosFromAUrl": "Đang tải xuống video từ một URL:",
+          "justDragAndDrop": "Chỉ cần kéo và thả URL của trang video vào ứng dụng và chọn định dạng bạn muốn tải xuống. Hiện tại, chỉ YouTube được hỗ trợ, nhưng nhiều trang web sẽ được thêm vào trong tương lai.",
+          "downloadingVideosFromADirectLink": "Đang tải xuống video từ một liên kết trực tiếp (bất kỳ trang web nào):",
+          "toDownloadAVideo": "Để tải xuống video, chỉ cần kéo và thả liên kết trực tiếp của video đó vào ứng dụng. Liên kết trực tiếp trỏ trực tiếp đến tệp video (ví dụ: https://example.com/video.mp4). Lưu ý: nếu bạn có thể xem video bằng cách mở nó trong một tab mới trong trình duyệt của bạn, đó là một liên kết trực tiếp.",
+          "pleaseKeepInMind": "Xin lưu ý rằng một số video được bảo vệ có các tham số bổ sung trong liên kết của chúng, vì vậy hãy đảm bảo chọn toàn bộ liên kết, bao gồm các tham số này. Tuy nhiên, hãy nhớ rằng các liên kết này sẽ không hoạt động lâu vì các tham số đã hết hạn ngày.",
+          "downloadingVideoStreams": "Đang tải xuống luồng video:",
+          "videoStreamsCanBeDownloaded": "Luồng video có thể được tải xuống giống như cách liên kết trực tiếp. Liên kết luồng có thể có hoặc không có mã thông báo xác thực và dấu thời gian và chúng có thể giống như sau:",
+          "warning": "Cảnh báo: Vui lòng sử dụng tính năng này một cách có trách nhiệm. Nếu bạn đang tải xuống nhiều nội dung từ một dịch vụ nhất định, hãy cân nhắc hỗ trợ dịch vụ đó theo một cách nào đó, chẳng hạn như vô hiệu hóa trình chặn quảng cáo của bạn trên trang web của họ hoặc mua một gói đăng ký cao cấp. Điều này sẽ giúp ích cho cả dịch vụ và những người sáng tạo nội dung. Nếu chúng tôi không hỗ trợ các nền tảng này, cuối cùng chúng tôi có thể mất quyền truy cập vào giáo dục miễn phí, giải trí, tự do sáng tạo và các lợi ích khác mà chúng mang lại cho chúng tôi."
+        }
       },
       "navigatorTips": {
         "rangeItemSelection": "Lựa chọn mục phạm vi",

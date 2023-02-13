@@ -982,8 +982,18 @@
         "notOptimizedYet": "La aplicación aún no se ha optimizado, el uso de RAM puede aumentar y superar 1 GB en algunos casos, por ejemplo, cuando se desplaza por un directorio que contiene imágenes grandes. Por lo tanto, por ahora, evite usar la aplicación en niveles bajos. computadoras (es decir, computadoras con 4 GB de RAM o menos)."
       },
       "mediaDownloading": {
-        "videoDownloading": "Descarga de videos",
-        "mostActionsWithShortcuts": "-"
+        "videos": {
+          "videoDownloading": "Descarga de videos",
+          "thisFeatureLetsYou": "Esta característica le permite transmitir o descargar fácilmente cualquier archivo de Internet simplemente arrastrándolo (o su enlace) a la aplicación. Funciona con casi todos los formatos de archivo",
+          "downloadingVideosFromAUrl": "Descargando videos desde una URL:",
+          "justDragAndDrop": "Simplemente arrastre y suelte la URL de la página del video en la aplicación y elija el formato que desea descargar. Actualmente, solo se admite YouTube, pero se agregarán más sitios web en el futuro",
+          "downloadingVideosFromADirectLink": "Descargando videos desde un enlace directo (cualquier sitio web):",
+          "toDownloadAVideo": "Para descargar un video, simplemente arrastre y suelte su enlace directo en la aplicación. Un enlace directo apunta directamente al archivo de video (por ejemplo, https://example.com/video.mp4). Nota: si puede ver el video al abrirlo en una nueva pestaña en tu navegador, es un enlace directo.",
+          "pleaseKeepInMind": "Tenga en cuenta que algunos videos protegidos tienen parámetros adicionales en su enlace, así que asegúrese de seleccionar todo el enlace, incluidos estos parámetros. Sin embargo, tenga en cuenta que estos enlaces no permanecerán activos por mucho tiempo ya que los parámetros vencen fecha.",
+          "downloadingVideoStreams": "Descargando secuencias de video:",
+          "videoStreamsCanBeDownloaded": "Las transmisiones de video se pueden descargar de la misma manera que los enlaces directos. Los enlaces de transmisión pueden tener o no tokens de autenticación y marcas de tiempo, y pueden tener este aspecto:",
+          "warning": "Advertencia: use esta función de manera responsable. Si está descargando una gran cantidad de contenido de un determinado servicio, considere apoyarlo de alguna manera, como deshabilitar su bloqueador de anuncios en su sitio web o comprar una suscripción premium. Esto ayudará tanto al servicio y los creadores de contenido. Si no apoyamos estas plataformas, eventualmente podemos perder el acceso a la educación gratuita, el entretenimiento, la libertad creativa y otros beneficios que nos brindan"
+        }
       },
       "navigatorTips": {
         "rangeItemSelection": "Selección de elemento de rango",

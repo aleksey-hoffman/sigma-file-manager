@@ -982,8 +982,18 @@
         "notOptimizedYet": "L'application n'a pas encore été optimisée, l'utilisation de la RAM peut grimper et dépasser 1 Go dans certains cas, par exemple, lorsque vous faites défiler un répertoire contenant de grandes images. Donc, pour l'instant, évitez d'utiliser l'application sur des niveaux inférieurs. ordinateurs (c'est-à-dire des ordinateurs avec 4 Go de RAM ou moins)."
       },
       "mediaDownloading": {
-        "videoDownloading": "Téléchargement vidéo",
-        "mostActionsWithShortcuts": "-"
+        "videos": {
+          "videoDownloading": "Téléchargement vidéo",
+          "thisFeatureLetsYou": "Cette fonctionnalité vous permet de diffuser ou de télécharger facilement n'importe quel fichier sur Internet en le faisant simplement glisser (ou son lien) dans l'application. Il fonctionne avec presque tous les formats de fichiers.",
+          "downloadingVideosFromAUrl": "Télécharger des vidéos à partir d'une URL :",
+          "justDragAndDrop": "Faites simplement glisser et déposez l'URL de la page vidéo dans l'application et choisissez le format que vous souhaitez télécharger. Actuellement, seul YouTube est pris en charge, mais d'autres sites Web seront ajoutés à l'avenir.",
+          "downloadingVideosFromADirectLink": "Télécharger des vidéos à partir d'un lien direct (n'importe quel site Web) :",
+          "toDownloadAVideo": "Pour télécharger une vidéo, faites simplement glisser et déposez son lien direct dans l'application. Un lien direct pointe directement vers le fichier vidéo (par exemple, https://example.com/video.mp4). Remarque : si vous pouvez regarder la vidéo en en l'ouvrant dans un nouvel onglet de votre navigateur, c'est un lien direct.",
+          "pleaseKeepInMind": "Veuillez garder à l'esprit que certaines vidéos protégées ont des paramètres supplémentaires dans leur lien, alors assurez-vous de sélectionner l'intégralité du lien, y compris ces paramètres. Cependant, gardez à l'esprit que ces liens ne resteront pas actifs tant que les paramètres auront une date d'expiration. date.",
+          "downloadingVideoStreams": "Téléchargement de flux vidéo :",
+          "videoStreamsCanBeDownloaded": "Les flux vidéo peuvent être téléchargés de la même manière que les liens directs. Les liens de flux peuvent avoir ou sans jetons d'authentification et horodatages, et ils peuvent ressembler à ceci :",
+          "warning": "Avertissement : veuillez utiliser cette fonctionnalité de manière responsable. Si vous téléchargez beaucoup de contenu à partir d'un certain service, envisagez de le soutenir d'une manière ou d'une autre, comme désactiver votre bloqueur de publicités sur leur site Web ou acheter un abonnement premium. Cela aidera à la fois le service et les créateurs de contenu. Si nous ne soutenons pas ces plates-formes, nous pourrions éventuellement perdre l'accès à l'éducation gratuite, au divertissement, à la liberté de création et aux autres avantages qu'elles nous offrent. "
+        }
       },
       "navigatorTips": {
         "rangeItemSelection": "Sélection de l'élément de gamme",

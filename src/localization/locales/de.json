@@ -982,8 +982,18 @@
         "notOptimizedYet": "Die App wurde noch nicht optimiert, die RAM-Nutzung kann in einigen Fällen sprunghaft ansteigen und 1 GB überschreiten, beispielsweise wenn Sie durch ein Verzeichnis mit großen Bildern scrollen. Vermeiden Sie es daher vorerst, die App auf niedriger Ebene zu verwenden Computer (d. h. Computer mit 4 GB RAM oder weniger)."
       },
       "mediaDownloading": {
-        "videoDownloading": "Video-Download",
-        "mostActionsWithShortcuts": "-"
+        "videos": {
+          "videoDownloading": "Video-Download",
+          "thisFeatureLetsYou": "Mit dieser Funktion können Sie ganz einfach jede Datei aus dem Internet streamen oder herunterladen, indem Sie sie (oder ihren Link) einfach in die App ziehen. Sie funktioniert mit fast allen Dateiformaten.",
+          "downloadingVideosFromAUrl": "Herunterladen von Videos von einer URL:",
+          "justDragAndDrop": "Ziehen Sie einfach die URL der Videoseite in die App und legen Sie sie dort ab, und wählen Sie das Format aus, das Sie herunterladen möchten. Derzeit wird nur YouTube unterstützt, aber in Zukunft werden weitere Websites hinzugefügt.",
+          "downloadingVideosFromADirectLink": "Herunterladen von Videos von einem direkten Link (beliebige Website):",
+          "toDownloadAVideo": "Um ein Video herunterzuladen, ziehen Sie einfach den direkten Link in die App und legen Sie ihn dort ab. Ein direkter Link verweist direkt auf die Videodatei (z. B. https://example.com/video.mp4). Hinweis: Wenn Sie das Video ansehen können, per Wenn Sie es in einem neuen Tab in Ihrem Browser öffnen, ist es ein direkter Link.",
+          "pleaseKeepInMind": "Bitte bedenken Sie, dass einige geschützte Videos zusätzliche Parameter in ihrem Link haben, also stellen Sie sicher, dass Sie den gesamten Link auswählen, einschließlich dieser Parameter. Beachten Sie jedoch, dass diese Links nicht so lange aktiv bleiben, wie die Parameter ein Ablaufdatum haben Datum.",
+          "downloadingVideoStreams": "Videostreams werden heruntergeladen:",
+          "videoStreamsCanBeDownloaded": "Videostreams können genauso heruntergeladen werden wie direkte Links. Stream-Links können Authentifizierungstoken und Zeitstempel haben oder ohne, und sie können so aussehen:",
+          "warning": "Warnung: Bitte verwenden Sie diese Funktion verantwortungsbewusst. Wenn Sie viele Inhalte von einem bestimmten Dienst herunterladen, sollten Sie erwägen, ihn auf irgendeine Weise zu unterstützen, z. B. Ihren Werbeblocker auf der Website zu deaktivieren oder ein Premium-Abonnement zu erwerben. Dies hilft beiden Diensten und die Ersteller von Inhalten. Wenn wir diese Plattformen nicht unterstützen, verlieren wir möglicherweise den Zugang zu kostenloser Bildung, Unterhaltung, kreativer Freiheit und anderen Vorteilen, die sie uns bieten."
+        }
       },
       "navigatorTips": {
         "rangeItemSelection": "Sortimentsauswahl",

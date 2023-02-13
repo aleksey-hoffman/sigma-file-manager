@@ -240,10 +240,23 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             </div>
             <v-divider class="divider-color-2 mb-4" />
 
-            <h3>{{$t('dialogs.appGuideDialog.mediaDownloading.videoDownloading')}}</h3>
+            <img
+              class="mt-4"
+              src="src/assets/guide/video-downloading.jpg"
+            />
+            <h3>{{$t('dialogs.appGuideDialog.mediaDownloading.videos.videoDownloading')}}</h3>
+            <p>{{$t('dialogs.appGuideDialog.mediaDownloading.videos.thisFeatureLetsYou')}}</p>
+            <p>{{$t('dialogs.appGuideDialog.mediaDownloading.videos.downloadingVideosFromAUrl')}}</p>
+            <p>{{$t('dialogs.appGuideDialog.mediaDownloading.videos.justDragAndDrop')}}</p>
+            <p>{{$t('dialogs.appGuideDialog.mediaDownloading.videos.downloadingVideosFromADirectLink')}}</p>
+            <p>{{$t('dialogs.appGuideDialog.mediaDownloading.videos.toDownloadAVideo')}}</p>
+            <p>{{$t('dialogs.appGuideDialog.mediaDownloading.videos.pleaseKeepInMind')}}</p>
+            <p>{{$t('dialogs.appGuideDialog.mediaDownloading.videos.downloadingVideoStreams')}}</p>
             <p>
-              {{$t('dialogs.appGuideDialog.mediaDownloading.mostActionsWithShortcuts')}}
+              {{$t('dialogs.appGuideDialog.mediaDownloading.videos.videoStreamsCanBeDownloaded')}}
+              <br /><span class="inline-code--light">{{streamLinkExample}}</span>
             </p>
+            <p>{{$t('dialogs.appGuideDialog.mediaDownloading.videos.warning')}}</p>
           </v-tab-item>
 
           <!-- tab:navigator tips -->
@@ -462,6 +475,9 @@ export default {
           link: this.appPaths.githubDiscussionsLink,
         },
       ]
+    },
+    streamLinkExample () {
+      return 'https://example.com/video.ts?sessionid=[ID]&wmsAuthSign=[TOKEN]'
     },
   },
   methods: {
