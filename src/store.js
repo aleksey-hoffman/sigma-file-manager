@@ -1073,7 +1073,7 @@ export default new Vuex.Store({
           guideTabs: [
             {name: 'shortcuts', icon: 'mdi-pound', text: 'dialogs.appGuideDialog.nav.shortcuts'},
             {name: 'introduction', icon: 'mdi-human-greeting-variant', text: 'dialogs.appGuideDialog.nav.introduction'},
-            {name: 'feature-overview', icon: 'mdi-list-box-outline', text: 'dialogs.appGuideDialog.nav.featureOverview'},
+            // {name: 'feature-overview', icon: 'mdi-list-box-outline', text: 'dialogs.appGuideDialog.nav.featureOverview'},
             {name: 'media-downloading', icon: 'mdi-download', text: 'dialogs.appGuideDialog.nav.mediaDownloading'},
             {name: 'navigator-tips', icon: 'mdi-folder-outline', text: 'dialogs.appGuideDialog.nav.navigatorTips'},
             {name: 'data-protection', icon: 'mdi-lock-outline', text: 'dialogs.appGuideDialog.nav.dataProtection'},
