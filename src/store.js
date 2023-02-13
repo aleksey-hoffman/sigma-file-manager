@@ -5060,29 +5060,31 @@ export default new Vuex.Store({
         )
       }
     },
-    SET_TO_FS_CLIPBOARD (store, params) {
+    SET_TO_FS_CLIPBOARD ({state, getters}, params) {
+      if (getters.someDialogIsOpened) {return}
       const defaultParams = {
-        items: store.getters.selectedDirItems
+        items: getters.selectedDirItems
       }
-      params = {...defaultParams, ...params}
+      params = { ...defaultParams, ...params }
       params.items = utils.cloneDeep(params.items)
       // Set clipboard data
-      store.state.navigatorView.clipboard.fs.type = params.type
-      store.state.navigatorView.clipboard.fs.items = params.items
+      state.navigatorView.clipboard.fs.type = params.type
+      state.navigatorView.clipboard.fs.items = params.items
     },
-    ADD_TO_FS_CLIPBOARD (store, params) {
+    ADD_TO_FS_CLIPBOARD ({state, getters}, params) {
+      if (getters.someDialogIsOpened) {return}
       const defaultParams = {
-        items: store.getters.selectedDirItems
+        items: getters.selectedDirItems
       }
-      params = {...defaultParams, ...params}
+      params = { ...defaultParams, ...params }
       params.items = utils.cloneDeep(params.items)
       // Set clipboard data
-      store.state.navigatorView.clipboard.fs.type = params.type
+      state.navigatorView.clipboard.fs.type = params.type
       params.items.forEach(item => {
-        const itemAlreadyAdded = store.state.navigatorView.clipboard.fs.items
+        const itemAlreadyAdded = state.navigatorView.clipboard.fs.items
           .some(clipboardItem => clipboardItem.path === item.path)
         if (!itemAlreadyAdded) {
-          store.state.navigatorView.clipboard.fs.items.push(item)
+          state.navigatorView.clipboard.fs.items.push(item)
         }
       })
     },
