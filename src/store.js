@@ -15,6 +15,7 @@ import * as fsManager from './utils/fsManager'
 import { getField, updateField } from 'vuex-map-fields'
 import {readFile, readFileSync, writeFile, writeFileSync} from 'atomically'
 import * as notifications from './utils/notifications.js'
+import dialogs from './utils/dialogs.js'
 import MediaInfoWorker from 'worker-loader!./workers/mediaInfoWorker.js'
 
 const electron = require('electron')
@@ -4119,28 +4120,26 @@ export default new Vuex.Store({
     chooseItemsToRemove (store, payload) {
       let { operation, items } = payload
       return new Promise((resolve, reject) => {
-        items = utils.cloneDeep(items)
+        let itemsClone = utils.cloneDeep(items)
         const currentDirPath = store.state.navigatorView.currentDir.path
-        const includesCurrentDir = items.some(item => item.path === currentDirPath)
+        const includesCurrentDir = itemsClone.some(item => item.path === currentDirPath)
         const currentDirIsRoot = PATH.parse(currentDirPath).base === ''
-        const includesItemLocatedInRoot = checkIncludesItemLocatedInRoot(items)
+        const includesItemLocatedInRoot = checkIncludesItemLocatedInRoot(itemsClone)
         const protectedEditTargetItems = getDirItemsFromSavedList({
-          items,
+          items: itemsClone,
           list: store.state.storageData.protected.items
         })
+        confirmAll(itemsClone)
+          .then((result) => resolve(result))
+          .catch(error => reject(error))
 
-        async function confirmAll () {
-          try {
-            let result = await handleTargetItemsIncludesCurrentDir(items)
-            result = await confirmDeleteFromDrive(items)
-            result = await checkDirItemsIncludeRootDir(result.items)
-            result = await checkDirItemsLocatedInRoot(result.items)
-            result = await checkDirItemsProtected(result.items)
-            return result.items
-          }
-          catch (error) {
-            reject([])
-          }
+        async function confirmAll (items) {
+          let result = await handleTargetItemsIncludesCurrentDir(items)
+          result = await confirmDeleteFromDrive(items)
+          result = await checkDirItemsIncludeRootDir(result.items)
+          result = await checkDirItemsLocatedInRoot(result.items)
+          result = await checkDirItemsProtected(result.items)
+          return result.items
         }
 
         function checkIncludesItemLocatedInRoot (items) {
@@ -4246,10 +4245,6 @@ export default new Vuex.Store({
             }
           })
         }
-
-        confirmAll()
-          .then((result) => resolve(result))
-          .catch(error => reject(error))
       })
     },
     async removeDirItemsPostActions (store, params) {
