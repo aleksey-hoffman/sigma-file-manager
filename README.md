@@ -572,3 +572,4 @@ Sigma file manager is licensed under [GNU GPLv3 or later](./LICENSE.md).
 
 Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
   
+This project is tested with BrowserStack.
