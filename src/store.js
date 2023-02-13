@@ -3209,7 +3209,7 @@ export default new Vuex.Store({
     async loadDir (store, options) {
       await store.dispatch('saveNavigatorScrollPosition')
       loadDirThrottle.throttle(async () => {
-        console.log('loadDir', options)
+
         store.dispatch('ADD_ACTION_TO_HISTORY', { action: 'store.js::loadDir()' })
         options = {
           ...{
@@ -3235,7 +3235,6 @@ export default new Vuex.Store({
         store.dispatch('SET_STATS')
         await store.dispatch('RESTORE_NAVIGATOR_STATE')
         store.dispatch('AUTO_FOCUS_FILTER')
-        console.log('loadDir 2', options)
         if (options.scrollTop) {
           store.dispatch('SCROLL_TOP_CONTENT_AREA', {behavior: 'auto'})
         }
