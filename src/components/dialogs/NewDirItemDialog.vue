@@ -60,7 +60,7 @@ export default {
         })
       }
       else {
-        this.$store.dispatch('resetDialogData', {name: 'newDirItemDialog'})
+        this.$store.dispatch('resetDialog', {name: 'newDirItemDialog'})
       }
     },
   },

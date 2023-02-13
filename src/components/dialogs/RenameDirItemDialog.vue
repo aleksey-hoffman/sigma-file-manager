@@ -77,7 +77,7 @@ export default {
         })
       }
       else {
-        this.$store.dispatch('resetDialogData', {name: 'renameDirItemDialog'})
+        this.$store.dispatch('resetDialog', {name: 'renameDirItemDialog'})
       }
     },
   },
