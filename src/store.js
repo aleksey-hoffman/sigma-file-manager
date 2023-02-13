@@ -5460,6 +5460,7 @@ export default new Vuex.Store({
                 }
               ]
             })
+            store.dispatch('setDirItemInView', {path: newPath})
           }, 1000)
           store.state.dialogs.renameDirItemDialog.value = false
         })
