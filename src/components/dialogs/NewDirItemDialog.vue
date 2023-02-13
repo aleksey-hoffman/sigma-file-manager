@@ -119,6 +119,7 @@ export default {
                     : this.$t('dialogs.newDirItemDialog.newFileCreated'),
                   message: path,
                 })
+                this.$store.dispatch('setDirItemInView', {path})
               }, 1000)
               this.dialog.value = false
             })
