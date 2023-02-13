@@ -3722,7 +3722,6 @@ export default new Vuex.Store({
         utils.copyToClipboard({
           text: params.path,
           title: 'Path was copied to clipboard',
-          asPath: true,
           pathSlashes: sharedUtils.platform === 'win32'
             ? 'single-backward'
             : ''

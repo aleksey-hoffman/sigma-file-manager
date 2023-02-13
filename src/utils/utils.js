@@ -211,7 +211,7 @@ export default {
 
     function getDataText (params) {
       let text = params.text || ''
-      if (params.asPath) {
+      if (params.asPath && params.event) {
         if (moduleScope.platform === 'win32') {
           if (params.event.ctrlKey && !params.event.altKey) {
             text = `${params.text.replace(/\//g, '\\')}`
