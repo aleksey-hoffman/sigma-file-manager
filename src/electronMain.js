@@ -242,28 +242,31 @@ function initWindowListeners (name) {
     // Init listeners
     // Note: this listener is used to detect unsupported by Chromium files that cannot be displayed.
     // Unsupported files trigger will-download event.
-    windows.quickViewWindow.webContents.session.once('will-download', _willDownloadHandler)
+    windows.quickViewWindow.webContents.session.once('will-download', quickViewWindowOnWillDownload)
     windows.quickViewWindow.once('close', () => {
       // Remove listener to avoid multiple listeners
       // Without it, a duplicate listener is created every time the windows is closed
-      windows.quickViewWindow.webContents.session.removeListener('will-download', _willDownloadHandler)
+      windows.quickViewWindow.webContents.session.removeListener('will-download', quickViewWindowOnWillDownload)
     })
-    windows.quickViewWindow.once('closed', () => createQuickViewWindow)
-    function _willDownloadHandler (event, item, webContents) {
-      event.preventDefault()
-      const fileURL = item.getURL()
-      windows.quickViewWindow.webContents.send('load:webview::cancel')
-      windows.main.webContents.send('load:webview::failed', {path: fileURL})
-      // Note: close the window even if file is not supported and window.show()
-      // wasn't called, in order to reset the listeners. Otherwise, unsupported
-      // files will break the window for all consecutive runs by throwing an error
-      windows.quickViewWindow.close()
-    }
+    windows.quickViewWindow.once('closed', createQuickViewWindow)
   }
 }
 
+function quickViewWindowOnWillDownload (event, item, webContents) {
+  event.preventDefault()
+  const fileURL = item.getURL()
+  windows.quickViewWindow.webContents.send('load:webview::cancel')
+  windows.main.webContents.send('load:webview::failed', {path: fileURL})
+  // Note: close the window even if file is not supported and window.show()
+  // wasn't called, in order to reset the listeners. Otherwise, unsupported
+  // files will break the window for all consecutive runs by throwing an error
+  windows.quickViewWindow.close()
+}
+
 function removeWindowListeners () {
-  windows.quickViewWindow.removeListener('closed', () => createQuickViewWindow)
+  windows.quickViewWindow.removeListener('closed', createQuickViewWindow)
+}
+
 }
 
 function createUtilWindow (fileName) {
@@ -526,17 +529,15 @@ async function initUpdateAction (params) {
 }
 
 function openFileInQuickViewWindow (path) {
-  function _load () {
-    windows.quickViewWindow.webContents.send('load:webview', {path})
-  }
-  if (!windows.quickViewWindow) {
+  const windowIsOpened = !windows.quickViewWindow?.isDestroyed() && windows.quickViewWindow?.isFocusable()
+  if (!windows.quickViewWindow || !windowIsOpened) {
     createQuickViewWindow()
     windows.quickViewWindow.webContents.once('did-finish-load', () => {
-      _load()
+      windows.quickViewWindow.webContents.send('load:webview', {path})
     })
   }
   else {
-    _load()
+    windows.quickViewWindow.webContents.send('load:webview', {path})
   }
 }
 
