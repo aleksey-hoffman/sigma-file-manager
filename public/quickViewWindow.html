@@ -19,12 +19,28 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       height: 100vh;
     }
 
-    #content-container,
+    #content-container {
+      width: 100%;
+      height: 100%;
+    }
+
     webview,
     video,
     img {
       width: 100%;
       height: 100%;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      webview {
+        background-color: rgb(36, 38, 44);
+      }
+    }
+
+    @media (prefers-color-scheme: light) {
+      webview {
+        background-color: white;
+      }
     }
 
     video {
@@ -101,7 +117,8 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       videoNode.addEventListener('resize', event => {
         let fileWidth = videoNode.videoWidth
         let fileHeight = videoNode.videoHeight
-        adjastWindowToContentSize(fileWidth, fileHeight)
+        adjastWindowToContentSize(fileWidth + 24, fileHeight)
+        setBodyNodeMediaStyles()
       }, false)
     }
 
@@ -113,7 +130,14 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         let fileWidth = imageNode.naturalWidth
         let fileHeight = imageNode.naturalHeight
         adjastWindowToContentSize(fileWidth, fileHeight)
+        setBodyNodeMediaStyles()
       }, false)
+    }
+
+    function setBodyNodeMediaStyles () {
+      document.querySelector('body').style.width = 'auto'
+      document.querySelector('body').style.height = 'auto'
+      document.querySelector('body').style.overflow = 'hidden'
     }
 
     function renderOtherFileTypeNode (data) {
