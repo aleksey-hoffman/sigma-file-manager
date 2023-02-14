@@ -742,6 +742,7 @@ export default {
       }
     },
     updateSearch () {
+      if (this.scanInProgress) {return}
       this.cancelSearchAllDrives()
       if (this.optionSelectedDrives.length === 0) {
         this.$eventHub.$emit('notification', {
