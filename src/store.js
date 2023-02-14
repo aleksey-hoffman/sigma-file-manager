@@ -513,7 +513,7 @@ export default new Vuex.Store({
           1000 * 60 * 720
         ],
         globalSearchIsEnabled: false,
-        compressSearchData: true,
+        compressSearchData: false,
         windowCloseButtonAction: 'minimizeAppToTray',
         stats: {
           storeDirItemOpenEvent: true,
