@@ -822,11 +822,10 @@ export default new Vuex.Store({
           items: appPaths.homeBannerMediaData.items,
           overlay: {
             selectedItem: {
-              title: 'Overlay fade',
-              name: 'overlayFade',
+              title: 'Mask fade',
+              name: 'maskFade',
               params: {
-                topFadeHeight: '128px',
-                bottomFadeHeight: '128px'
+                bottomMaskHeight: '200px'
               }
             },
             items: [

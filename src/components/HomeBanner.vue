@@ -386,7 +386,7 @@ export default {
 [show-background="true"]
   .media-banner__overlay[position="bottom"][overlayType="maskFade"] {
     top: unset;
-    bottom: 0px;
+    bottom: -1px;
     background: linear-gradient(
       to bottom,
       hsla(225, 12%, 13%, 0) 0%,
