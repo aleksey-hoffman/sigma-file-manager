@@ -267,8 +267,6 @@ function removeWindowListeners () {
   windows.quickViewWindow.removeListener('closed', createQuickViewWindow)
 }
 
-}
-
 function createUtilWindow (fileName) {
   return new Promise((resolve, reject) => {
     if (fileName === 'errorWindow') {
