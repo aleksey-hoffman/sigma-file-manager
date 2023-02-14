@@ -4,33 +4,35 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <template>
-  <dialog-generator
-    :dialog="dialog"
-    :close-button="{
-      onClick: () => $store.dispatch('closeDialog', {name: 'homeBannerPositionDialog'}),
-    }"
+  <v-bottom-sheet
+    v-model="dialog.value"
+    hide-overlay
+    inset
+    max-width="600px"
     title="Background position"
-    height="unset"
   >
-    <template #content>
+    <v-card
+      class="dialog-card pa-8"
+    >
       <div>{{$t('dialogs.homeBannerPositionDialog.positionXAxis')}}: {{homeBannerPositionX}}%</div>
       <v-slider
         v-model="homeBannerPositionX"
-        :step="5"
+        :step="1"
         :thumb-size="24"
       />
       <div>{{$t('dialogs.homeBannerPositionDialog.positionYAxis')}}: {{homeBannerPositionY}}%</div>
       <v-slider
         v-model="homeBannerPositionY"
-        :step="5"
+        :step="1"
         :thumb-size="24"
       />
-    </template>
-  </dialog-generator>
+    </v-card>
+  </v-bottom-sheet>
 </template>
 
 <script>
 import {mapGetters, mapState} from 'vuex'
+import {mapFields} from 'vuex-map-fields'
 
 export default {
   computed: {
@@ -40,7 +42,9 @@ export default {
     ...mapState({
       appVersion: state => state.appVersion,
       appPaths: state => state.storageData.settings.appPaths,
-      dialog: state => state.dialogs.homeBannerPositionDialog,
+    }),
+    ...mapFields({
+      dialog: 'dialogs.homeBannerPositionDialog',
     }),
     homeBannerPositionX: {
       get () {return this.homeBannerSelectedMedia.positionX},

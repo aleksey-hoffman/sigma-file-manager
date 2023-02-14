@@ -138,7 +138,8 @@ export default {
   computed: {
     ...mapGetters([
       'homeBannerSelectedMedia',
-      'homeBannerSelectedOverlay'
+      'homeBannerSelectedOverlay',
+      'someDialogIsOpened',
     ]),
     ...mapFields({
       inputState: 'inputState',
@@ -146,6 +147,7 @@ export default {
       homeBannerHeight: 'storageData.settings.homeBanner.height',
       homeBannerOverlaySelectedItem: 'storageData.settings.homeBanner.overlay.selectedItem',
       homeBannerMediaGlowEffectValue: 'storageData.settings.visualEffects.homeBannerMediaGlowEffect.value',
+      animations: 'storageData.settings.animations',
     }),
     displayGlowEffect () {
       return this.homeBannerOverlaySelectedItem.name !== 'maskFade' && 
@@ -182,43 +184,46 @@ export default {
     appendMedia (mediaNode, options = {}) {
       let mediaContainerNode = document.querySelector('.media-banner__media-container')
       mediaContainerNode?.appendChild(mediaNode)
-      
+      this.animateMedia(mediaNode, options)
+    },
+    animateMedia (mediaNode, options = {}) {
+      if (!this.animations.onRouteChangeMediaBannerIn || this.someDialogIsOpened) {return}
       mediaNode.style.opacity = '0'
       mediaNode.style.objectPosition = '50% 50%'
 
       this.$nextTick(() => {
         mediaNode.animate(
           [
-            { 
-              objectPosition: `50% 50%`
+            {
+              objectPosition: '50% 50%',
             },
-            { 
+            {
               objectPosition: `
-                ${this.homeBannerSelectedMedia.positionX}% 
+                ${this.homeBannerSelectedMedia.positionX}%
                 ${this.homeBannerSelectedMedia.positionY}%
-              ` 
-            }
+              `,
+            },
           ],
           {
             easing: 'ease',
             duration: 2000,
-            fill: 'forwards'
-          }
+            fill: 'forwards',
+          },
         )
         mediaNode.animate(
           [
-            { 
-              opacity: options.opacityStart ? options.opacityStart : 0, 
+            {
+              opacity: options.opacityStart ? options.opacityStart : 0,
             },
-            { 
-              opacity: options.opacityEnd ? options.opacityEnd : 1, 
-            }
+            {
+              opacity: options.opacityEnd ? options.opacityEnd : 1,
+            },
           ],
           {
             easing: 'ease',
             duration: 1000,
-            fill: 'forwards'
-          }
+            fill: 'forwards',
+          },
         )
       })
     },

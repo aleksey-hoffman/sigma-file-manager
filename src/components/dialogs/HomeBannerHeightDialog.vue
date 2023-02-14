@@ -4,15 +4,14 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <template>
-  <dialog-generator
-    :dialog="dialog"
-    :close-button="{
-      onClick: () => $store.dispatch('closeDialog', {name: 'homeBannerHeightDialog'}),
-    }"
+  <v-bottom-sheet
+    v-model="dialog.value"
+    hide-overlay
+    inset
+    max-width="600px"
     :title="$t('home.backgroundHeight')"
-    height="unset"
   >
-    <template #content>
+    <v-card class="dialog-card pa-8">
       <div>{{$t('height')}}: {{homeBannerHeight}}{{$t('units.vh')}}</div>
       <v-slider
         v-model="homeBannerHeight"
@@ -21,8 +20,8 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         :min="38"
         :max="75"
       />
-    </template>
-  </dialog-generator>
+    </v-card>
+  </v-bottom-sheet>
 </template>
 
 <script>

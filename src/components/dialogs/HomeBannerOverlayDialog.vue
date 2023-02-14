@@ -4,15 +4,16 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <template>
-  <dialog-generator
-    :dialog="dialog"
-    :close-button="{
-      onClick: () => $store.dispatch('closeDialog', {name: 'homeBannerOverlayDialog'}),
-    }"
+  <v-bottom-sheet
+    v-model="dialog.value"
+    hide-overlay
+    inset
+    max-width="600px"
     :title="$t('home.backgroundOverlay')"
-    height="unset"
   >
-    <template #content>
+    <v-card
+      class="dialog-card pa-8"
+    >
       <div class="text--sub-title-1 ma-0 mr-2">
         {{$t('dialogs.homeBannerOverlayDialog.overlayType')}}
       </div>
@@ -46,8 +47,8 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           :label="$t('dialogs.homeBannerOverlayDialog.bottomMaskHeight')"
         />
       </template>
-    </template>
-  </dialog-generator>
+    </v-card>
+  </v-bottom-sheet>
 </template>
 
 <script>
