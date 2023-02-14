@@ -1,14 +1,13 @@
 {
   "items": [
     {
-      "fileNameBase": "Futuristic Japanese Palanquin by Julien Gauthier.jpg",
-      "sourceLink": "https://www.artstation.com/artwork/EV8Lo4"
+      "isDefault": true,
+      "positionY": 40,
+      "fileNameBase": "Glowing Chinese city in mountains by Aleksey Hoffman.jpg"
     },
     {
-      "isDefault": true,
-      "positionY": 30,
-      "fileNameBase": "Traditional Chinese city in mountains by Aleksey Hoffman.jpg",
-      "sourceLink": ""
+      "fileNameBase": "Futuristic Japanese Palanquin by Julien Gauthier.jpg",
+      "sourceLink": "https://www.artstation.com/artwork/EV8Lo4"
     },
     {
       "fileNameBase": "The Legends of Star dust by Ahmed Teilab.jpg",
