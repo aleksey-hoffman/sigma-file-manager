@@ -521,7 +521,7 @@ function getNotification (params) {
       type: 'directoryWasReloaded',
       timeout: 2000,
       title: i18n.t('notifications.directoryWasReloaded'),
-      message: `<strong>${i18n.t('directory')}:</strong> ${params?.props?.currentDirPath}`,
+      message: params?.props?.currentDirPath,
     },
     setDirItemPermissionsSuccess: {
       action: 'update-by-type',
