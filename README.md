@@ -397,6 +397,8 @@ If you like their art, consider supporting their work. You can find their suppor
 
 #### 📎 Download links:
 
+You can install the app in one of these ways:
+
 <table>
   <thead>
     <tr>
@@ -417,20 +419,30 @@ If you like their art, consider supporting their work. You can find their suppor
         <a target="_blank" href="https://www.microsoft.com/store/productId/9N7W62ND0NF9">
           <img src="https://github.com/aleksey-hoffman/sigma-file-manager/raw/main/.github/media/get-from-microsoft.png" width="140px">
         </a>
+        <br>⌛v1.6.0 is under review
       </td>
     </tr>
     <tr>
       <td>Windows (unsigned installable)</td>
       <td>
-        <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/releases/download/v1.5.0/Sigma-File-Manager-1.5.0-Windows-Setup.exe">
+        <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/releases/download/v1.6.0/Sigma-File-Manager-1.6.0-Windows-Setup.exe">
           Installable file (.exe)
         </a>
       </td>
     </tr>
     <tr>
-      <td>Linux and links will be added soon. If you know how, you can build the app from the source code yourself</td>
+      <td>Debian (Ubuntu) portable app | experimental</td>
       <td>
-        Coming soon
+        <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/releases/download/v1.6.0/Sigma-File-Manager-1.6.0-Linux-Debian.AppImage">
+          AppImage
+        </a>
+      </td>
+    </tr>
+    <tr>
+      <td>If there's no compiled binary for your Linux dist, you can build the app from the source code yourself, using <code>Node v15.14.0</code>
+      </td>
+      <td>
+        <code>npm run build</code>
       </td>
     </tr>
     <!-- 
@@ -460,6 +472,20 @@ If you like their art, consider supporting their work. You can find their suppor
     </tr> -->
   </tbody>
 </table>
+
+### Info
+This app is primarily developed for Windows because it has the largest user base. The Linux builds get a lot less development time. They are less stable and have more issues. When this project has enough supporters, I will be able to spend more time on Linux builds.
+
+#### Windows | Installation notes
+
+It's recommended to install the app via the Microsoft store.
+If you decide to install the `Installable file (.exe)` instead, you might see a security warning during installation. If you see the warning prompt, click **"More Info"** and then **"Run Anyway"**. 
+
+#### Ubuntu 22.04 LTS | Installation notes
+
+<a target="_blank" href="https://itsfoss.com/cant-run-appimage-ubuntu/">
+  Running AppImage applications in Ubuntu 22.04 LTS
+</a>
 
 [![Github All Releases](https://img.shields.io/github/downloads/aleksey-hoffman/sigma-file-manager/total.svg)]()
 
