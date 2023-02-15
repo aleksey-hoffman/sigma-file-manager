@@ -220,7 +220,9 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                       <span>
                         {{item.title}}
                         <div class="tooltip__description">
-                          {{$t('shortcut')}} {{item.shortcut}}
+                          <span class="inline-code--light">
+                            {{item.shortcut}}
+                          </span>
                         </div>
                       </span>
                     </v-tooltip>
