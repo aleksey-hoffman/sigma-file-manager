@@ -662,7 +662,7 @@ NOTES:
             @click="customCommand('insertHTML', 'checkbox')"
           >
             <v-icon size="18px">
-              mdi-check-box-outline
+              mdi-checkbox-outline
             </v-icon>
           </v-btn>
 
