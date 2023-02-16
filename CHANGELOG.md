@@ -1,63 +1,62 @@
 # CHANGELOG
 # Release Notes: v1.6.0 (2023-02-15)
 
-# Release Notes:
-- 1 new major features
+- 1 new major feature
 - 6 new features
 - 11 improvements
 - 12 fixes
 
 ## New major features
-- New feature: Localization, added 9 most popular languages. 
-  >**Note for contributors**: To add / edit a language, follow [these instructions](https://github.com/aleksey-hoffman/sigma-file-manager/discussions/196);
+- **Localization:** Added ability to change UI language. Added 9 most popular languages.
+  >**Note for contributors**: Detailed instructions for adding/editing a language are available at https://github.com/aleksey-hoffman/sigma-file-manager/discussions/196.
 
 ## New minor features
-- New feature: option to make toolbars transparent;
-- New feature: option to change font;
-- New feature: option to display navigator tab preview;
-- New feature: option to display storage indicator on navigator tab;
-- New feature: option to choose date / time regional format;
-- New feature: option to change navigator tab width;
+- **UI design:** Added option to make toolbars transparent;
+- **Fonts:** Added option to change font;
+- **Tabs:** Added option to display navigator tab preview;
+- **Tabs:** Added option to display storage indicator on navigator tab;
+- **Tabs:** Added option to change navigator tab width;
+- **Date/time format:** Added option to choose date / time regional format;
 
 ## Improvements
-- UX: copied / moved / created / renamed files will now be scrolled into view and selected automatically;
-- UX: drag & drop: .url links are treated as files;
-- UX: increase max possible search scan depth from 10 to 15;
-- UX: disable copy / move operations when a modal window is opened;
-- UI: improved and unified design for drive cards on both home page and nav panel;
-- UX: home banner: added ability to easily set previous home media from the home page via switch button (by pressing `Alt + Click`);
-- UX: search: improved "Recent items" list design;
-- UX: search: improved list item design to fit in more text;
-- UX: navgator: dir items will only get highlighted when selecting dir item range, not just by pressing `Shift`;
-- UX: new guide: video downloading;
-- Other small improvements;
+- **Navigator:** Improved user experience for file management tasks such as copying, moving, creating, and renaming files. Now files will be scrolled into view and selected automatically;
+- **Navigator:** The copy / move operations will now be disabled when any modal window is opened to avoid accidental file transfer actions;
+- **Drag & drop:** The `.url` link-files are now treated as files;
+- **UI design:** Improved and unified design for drive cards on both home page and nav panel;
+- **Home banner:** Added ability to easily set previous home media from the home page via switch button (by pressing `Alt + Click`);
+- **Search:** Increase max possible search scan depth from 10 to 15;
+- **Search:** Improved "Recent items" list design;
+- **Search:** Improved list item design to fit in more text;
+- **Navigator:** Dir items will now only get highlighted when selecting dir item range, not just when pressing `Shift`;
+- **New guide:** Added video downloading guide.
+- **Other improvements:** Various small improvements;
 
 ## Major fixes
-- Fix: fixed broken functionality and improved workspaces feature in general;
-- Fix: QuickView is not working in production build;
-- Fix: QuickView: issue with media size and background colors:
-  - Fix media size issue on Win 11 (scrollbars and videos jumps);
-  - Fix text files showing white text on white background on dark theme;
-- Fix: app is not exiting properly;
-- Fix: 'end of file' error during interrupted search data scan;
-- Fix: home banner: fix animations, improve props adjustment UX;
-- Fix: OneDrive duplicate cards;
+- **App:** Fixed the issue with the app not exiting properly;
+- **Workspaces:** Fixed broken functionality and improved feature in general;
+- **QuickView:** Fixed the issue with QuickView not working in production build;
+- **QuickView:** Fixed issues with media size and background colors:
+  - Fixed media size issue on Win 11 (scrollbars and videos jumps);
+  - Fixed text files showing white text on white background on dark theme;
+- **Search:** Fixed 'end of file' error during interrupted search data scan;
+- **Home banner:** Fixed animations, improved props adjustment UX;
+- **Cards:** Fixed duplicate OneDrive cards issue;
 
 ## Minor fixes
-- Fix: navigator list goes outside container with long address bar;
-- Fix: broken styles in external program editor dialog;
-- Fix: visual filters not showing on the home page on first launch;
-- Fix: context menu: active status for protected and pinned sometimes doesn't update;
+- **Navigator:** Fixed the issue with navigator list stretching outside container when navigating directories with long address path;
+- **Context menu:** Fixed the issue with active status for protected and pinned items not updating sometimes;
+- **Styles:** Fixed broken styles in external program editor;
+- **Styles:** Fixed visual filters not showing on the home page on first launch;
 
 ## Other changes
-- UI: added new default home banner image;
-- UX: search data compression setting is disabled by default, to avoid potential 'end of file' error;
-- UI: home banner: changed default overlay type to "mask-overlay";
-- UX: use traditional horizontal tab layout by default;
+- **Home banner:** Added new default home banner image;
+- **Search:** Search data compression setting is disabled by default, to avoid potential 'end of file' error;
+- **Home banner:** Changed default overlay type to "mask-overlay";
+- **Tabs:** Use traditional horizontal tab layout by default;
 
-## Dev
-- Updated dependencies;
-- Code refactor;
+## Development
+- **Dependencies:** Updated code dependencies.
+- **Code refactor:** Various code refactoring.
 
 # Release Notes: v1.5.0 (2022-08-10)
 
