@@ -220,7 +220,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           </v-tab-item>
 
           <!-- tab:featureOverview -->
-          <v-tab-item
+          <!-- <v-tab-item
             transition="fade-in"
             reverse-transition="fade-in"
           >
@@ -228,7 +228,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
               {{getGuideTitle(dialog.data.guideTabsSelected)}}
             </div>
             <v-divider class="divider-color-2 mb-4" />
-          </v-tab-item>
+          </v-tab-item> -->
 
           <!-- tab:media-downloading -->
           <v-tab-item
