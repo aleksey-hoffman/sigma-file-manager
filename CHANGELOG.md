@@ -4,7 +4,7 @@
 - 1 new major feature
 - 6 new features
 - 11 improvements
-- 12 fixes
+- 13 fixes
 
 ## New major features
 - **Localization:** Added ability to change UI language. Added 9 most popular languages.
@@ -39,6 +39,7 @@
   - Fixed media size issue on Win 11 (scrollbars and videos jumps);
   - Fixed text files showing white text on white background on dark theme;
 - **Search:** Fixed 'end of file' error during interrupted search data scan;
+- **Navigator:** adding multiple items to protected / pinned list is now working properly;
 - **Home banner:** Fixed animations, improved props adjustment UX;
 - **Cards:** Fixed duplicate OneDrive cards issue;
 

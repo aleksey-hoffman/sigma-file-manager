@@ -1,9 +1,10 @@
 
-# What's new in `v1.5`
+# What's new in `v1.6`
 
-- 28 new features
-- 64 improvements
-- 26 fixes
+- 1 new major feature
+- 6 new features
+- 11 improvements
+- 13 fixes
 - Now available in Microsoft store
 
 <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/releases">

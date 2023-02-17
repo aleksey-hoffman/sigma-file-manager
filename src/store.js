@@ -4783,13 +4783,11 @@ export default new Vuex.Store({
     async SET_PINNED (store, payload) {
       let items = payload ? payload : store.getters.selectedDirItems
       let pinnedItems = utils.cloneDeep(store.state.storageData.pinned.items)
+      let newPinnedItems = []
       const allSelectedArePinned = checkAllSelectedArePinned()
       let itemCounter = 0
-      let itemToAdd = {}
-      let itemPropertiesToStore = ['path']
 
       processItems()
-      await setStorage()
       setNotification()
 
       function checkAllSelectedArePinned () {
@@ -4816,23 +4814,25 @@ export default new Vuex.Store({
             pinnedItems.splice(index, 1)
           }
         })
+        store.dispatch('SET', {
+          key: 'storageData.pinned.items',
+          value: pinnedItems
+        })
       }
 
       function setItems () {
         items.forEach(item => {
-          const dirItemIspinned = store.state.storageData.pinned.items
+          const dirItemIsPinned = store.state.storageData.pinned.items
             .some(pinnedItem => pinnedItem.path === item.path)
-          if (!dirItemIspinned) {
-            itemCounter++
-            addItemProperties(item)
-            pinnedItems.unshift(itemToAdd)
+          if (!dirItemIsPinned) {
+            newPinnedItems.unshift({
+              path: item.path
+            })
           }
         })
-      }
-
-      function addItemProperties (item) {
-        itemPropertiesToStore.forEach(propertyKey => {
-          itemToAdd[propertyKey] = item[propertyKey]
+        store.dispatch('SET', {
+          key: 'storageData.pinned.items',
+          value: [...newPinnedItems, ...pinnedItems]
         })
       }
 
@@ -4849,17 +4849,10 @@ export default new Vuex.Store({
           notifications.emit({
             name: 'addedToPinnedSuccess', 
             props: {
-              itemCounter
+              itemCounter: newPinnedItems.length
             }
           })
         }
-      }
-
-      async function setStorage () {
-        store.dispatch('SET', {
-          key: 'storageData.pinned.items',
-          value: pinnedItems
-        })
       }
     },
     /**
@@ -4867,17 +4860,14 @@ export default new Vuex.Store({
     */
     async SET_PROTECTED (store, payload) {
       let itemCounter = 0
-      let itemToAdd = {}
-      let itemPropertiesToStore = ['path']
-
       let items = payload || store.getters.selectedDirItems
+      let newProtectedItems = []
       let protectedItems = utils.cloneDeep(store.state.storageData.protected.items)
       const everySelectedIsProtected = items.every(item => {
         return store.state.storageData.protected.items.some(protectedItem => protectedItem.path === item.path)
       })
 
       processItems()
-      await setStorage()
       setNotification()
 
       function processItems () {
@@ -4911,6 +4901,10 @@ export default new Vuex.Store({
             protectedItems.splice(index, 1)
           }
         })
+        store.dispatch('SET', {
+          key: 'storageData.protected.items',
+          value: protectedItems
+        })
       }
 
       function setItems () {
@@ -4918,16 +4912,14 @@ export default new Vuex.Store({
           const dirItemIsProtected = store.state.storageData.protected.items
             .some(protectedItem => protectedItem.path === item.path)
           if (!dirItemIsProtected) {
-            itemCounter++
-            addItemProperties(item)
-            protectedItems.unshift(itemToAdd)
+            newProtectedItems.unshift({
+              path: item.path
+            })
           }
         })
-      }
-
-      function addItemProperties (item) {
-        itemPropertiesToStore.forEach(propertyKey => {
-          itemToAdd[propertyKey] = item[propertyKey]
+        store.dispatch('SET', {
+          key: 'storageData.protected.items',
+          value: [...newProtectedItems, ...protectedItems]
         })
       }
 
@@ -4944,17 +4936,10 @@ export default new Vuex.Store({
           notifications.emit({
             name: 'addedToProtectedSuccess', 
             props: {
-              itemCounter
+              itemCounter: newProtectedItems.length
             }
           })
         }
-      }
-
-      async function setStorage () {
-        store.dispatch('SET', {
-          key: 'storageData.protected.items',
-          value: protectedItems
-        })
       }
     },
     async SET_DIR_ITEM_PERMISSIONS (store, params) {
