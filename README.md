@@ -412,6 +412,7 @@ You can install the app in one of these ways:
       <td>Windows (via winget)</td>
       <td width="320px">
         <code>winget install sigma --source winget</code>
+        <br>⌛v1.6.0 is under review
       </td>
     </tr>
     <tr>
@@ -420,7 +421,6 @@ You can install the app in one of these ways:
         <a target="_blank" href="https://www.microsoft.com/store/productId/9N7W62ND0NF9">
           <img src="https://github.com/aleksey-hoffman/sigma-file-manager/raw/main/.github/media/get-from-microsoft.png" width="140px">
         </a>
-        <br>⌛v1.6.0 is under review
       </td>
     </tr>
     <tr>
