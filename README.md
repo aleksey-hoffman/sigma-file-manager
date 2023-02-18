@@ -412,7 +412,6 @@ You can install the app in one of these ways:
       <td>Windows (via winget)</td>
       <td width="320px">
         <code>winget install sigma --source winget</code>
-        <br>⌛v1.6.0 is under review
       </td>
     </tr>
     <tr>
