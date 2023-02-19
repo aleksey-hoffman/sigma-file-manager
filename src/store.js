@@ -2863,21 +2863,21 @@ export default new Vuex.Store({
       // - toggle address bar with the shortcut again
       // - address bar will be closed because it was already opened before
       if (router.currentRoute.name !== 'navigator') {
-        dispatch('SWITCH_ROUTE', { to: '/navigator' })
+        dispatch('switchRoute', { to: '/navigator' })
         dispatch('SET', { key: 'addressBarEditor', value: true })
       }
       else {
         dispatch('TOGGLE', 'addressBarEditor')
       }
     },
-    SWITCH_ROUTE ({ state, commit, dispatch }, item) {
-      if (item.to === '/navigator') {
-        const someDirLoaded = Object.keys(state.navigatorView.currentDir).length !== 0
-        if (!someDirLoaded || state.navigatorView.dirItems.length === 0) {
-          dispatch('loadDir', { path: '' })
-        }
+    switchRoute ({state, dispatch}, route) {
+      if (route.to === '/navigator') {
+        router.push(route.to).catch((error) => { })
+        dispatch('loadDir', {path: state.navigatorView?.currentDir?.path})
       }
-      router.push(item.to).catch((error) => {})
+      else {
+        router.push(route.to).catch((error) => { })
+      }
     },
     NAVIGATE_DIR_UP (store) {
       // Layout: grid

@@ -89,7 +89,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 :class="{'active-route': $route.path === item.to}"
                 align-center
                 v-on="on"
-                @click="$store.dispatch('SWITCH_ROUTE', item)"
+                @click="$store.dispatch('switchRoute', item)"
               >
                 <div class="nav-panel__item__indicator" />
                 <div class="nav-panel__item__icon-container">

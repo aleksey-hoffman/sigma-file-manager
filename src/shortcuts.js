@@ -236,7 +236,7 @@ export default {
     },
     routes: ['all'],
     icon: 'mdi-arrange-send-backward',
-    action: {name: 'SWITCH_ROUTE'},
+    action: {name: 'switchRoute'},
     shortcut: 'Shift + [1 - 9]',
     description: 'shortcuts.switchBetweenViews',
   },
