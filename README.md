@@ -1,3 +1,7 @@
+# Latest news
+
+- Version 1.6.0 was released.
+- Sub-Reddit community [SigmaFileManager](https://www.reddit.com/r/SigmaFileManager) was created. This is where I will post all the updates, polls, progress, image and video previews of new / modified features, tips, etc. Check it out!
 
 # What's new in `v1.6`
 
