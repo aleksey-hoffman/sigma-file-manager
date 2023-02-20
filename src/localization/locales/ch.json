@@ -613,7 +613,8 @@
   },
   "errors": {
     "error": "错误",
-    "errorPathAlreadyExists": "错误：路径已经存在"
+    "errorPathAlreadyExists": "错误：路径已经存在",
+    "cannotOpenPath": "Error: cannot open the path"
   },
   "shortcutsUI": {
     "globalShortcutsSystemScope": "全局快捷方式（系统范围）",

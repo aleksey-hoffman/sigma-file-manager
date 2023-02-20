@@ -613,7 +613,8 @@
   },
   "errors": {
     "error": "Hata",
-    "errorPathAlreadyExists": "Hata: yol zaten mevcut"
+    "errorPathAlreadyExists": "Hata: yol zaten mevcut",
+    "cannotOpenPath": "Error: cannot open the path"
   },
   "shortcutsUI": {
     "globalShortcutsSystemScope": "Global kısayollar (sistem kapsamı)",

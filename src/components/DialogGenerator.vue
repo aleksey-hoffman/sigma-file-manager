@@ -11,6 +11,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         :max-width="$vuetify.breakpoint.smAndDown ? '95vw' : maxWidth || 600"
         :persistent="persistent || false"
         :retain-focus="false"
+        @keydown.enter="onEnterKey"
       >
         <v-card
           class="dialog-card sticky-scroller__container"
@@ -129,7 +130,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 </template>
 
 <script>
-import {mapState} from 'vuex'
+import {mapFields} from 'vuex-map-fields'
 
 export default {
   props: {
@@ -147,10 +148,28 @@ export default {
     actionButtons: Array,
     inputs: Array,
   },
+  watch: {
+    'dialog.value' (newValue) {
+      if (newValue) {
+        this.$store.dispatch('disableActions', ['loadDir', 'openFile'])
+      }
+      else {
+        setTimeout(() => {
+          this.$store.dispatch('enableActions', ['loadDir', 'openFile'])
+        }, 100)
+      }
+    },
+  },
   computed: {
-    ...mapState({
-      dialogs: state => state.dialogs,
+    ...mapFields({
+      dialogs: 'dialogs',
     }),
+  },
+  methods: {
+    async onEnterKey () {
+      const enterShortcutHandlerButton = this.dialog.data.buttons.find(item => item.shortcut === 'enter')
+      await enterShortcutHandlerButton?.onClick?.()
+    },
   },
 }
 </script>

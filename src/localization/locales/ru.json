@@ -613,7 +613,8 @@
   },
   "errors": {
     "error": "Ошибка",
-    "errorPathAlreadyExists": "Ошибка: путь уже существует"
+    "errorPathAlreadyExists": "Ошибка: путь уже существует",
+    "cannotOpenPath": "Error: cannot open the path"
   },
   "shortcutsUI": {
     "globalShortcutsSystemScope": "Глобальные шорткаты (в системе)",

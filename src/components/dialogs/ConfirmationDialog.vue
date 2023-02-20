@@ -8,7 +8,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     :dialog="dialog"
     :persistent="true"
     :close-button="{
-      onClick: () => onClickCloseButton()
+      onClick: () => closeButtonOnClick()
     }"
     :inputs="dialog.data.inputs"
     :action-buttons="dialog.data.buttons"
@@ -36,7 +36,7 @@ export default {
     }),
   },
   methods: {
-    onClickCloseButton () {
+    closeButtonOnClick () {
       this.dialog?.data?.closeButton?.onClick?.()
       this.$store.dispatch('closeDialog', {name: 'confirmationDialog'})
     },

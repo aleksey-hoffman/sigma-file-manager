@@ -582,7 +582,7 @@ function getNotification (params) {
             let updateFileDownloadDir = params?.props?.store?.state?.appPaths?.updateDownloadDir
             let updateFileName = params?.props?.info?.filename
             let updateFilePath = `${updateFileDownloadDir}/${updateFileName}`
-            params?.props?.store?.dispatch('OPEN_FILE', updateFilePath)
+            params?.props?.store?.dispatch('openFile', updateFilePath)
           },
           closesNotification: true,
         },
@@ -709,6 +709,13 @@ function getNotification (params) {
       title: i18n.t('notifications.driveScanInitiated'),
       message: i18n.t('notifications.oneOfTheSearchFilesIsDamaged'),
     },
+    cannotOpenPath: {
+      action: 'update-by-type',
+      type: 'cannotOpenPath',
+      timeout: 7000,
+      title: i18n.t('errors.cannotOpenPath'),
+      message: params?.props?.error,
+    },
     cannotOpenDirItem: {
       action: 'update-by-type',
       type: 'cannotOpenDirItem',
@@ -783,7 +790,7 @@ function getNotification (params) {
           action: 'openDownloadedFile',
           closesNotification: true,
           onClick: () => {
-            params?.props?.store.dispatch('OPEN_FILE', params?.props?.data.filePath)
+            params?.props?.store.dispatch('openFile', params?.props?.data.filePath)
           },
         },
         {

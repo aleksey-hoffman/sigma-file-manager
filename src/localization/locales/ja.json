@@ -613,7 +613,8 @@
   },
   "errors": {
     "error": "エラー",
-    "errorPathAlreadyExists": "エラー: パスは既に存在します"
+    "errorPathAlreadyExists": "エラー: パスは既に存在します",
+    "cannotOpenPath": "Error: cannot open the path"
   },
   "shortcutsUI": {
     "globalShortcutsSystemScope": "グローバル ショートカット (システム スコープ)",

@@ -613,7 +613,8 @@
   },
   "errors": {
     "error": "خطا",
-    "errorPathAlreadyExists": "خطا: مسیر از قبل وجود دارد"
+    "errorPathAlreadyExists": "خطا: مسیر از قبل وجود دارد",
+    "cannotOpenPath": "Error: cannot open the path"
   },
   "shortcutsUI": {
     "globalShortcutsSystemScope": "میانبرهای جهانی (حوزه سیستم)",

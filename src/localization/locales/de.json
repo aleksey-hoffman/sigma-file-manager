@@ -613,7 +613,8 @@
   },
   "errors": {
     "error": "Fehler",
-    "errorPathAlreadyExists": "Fehler: Pfad existiert bereits"
+    "errorPathAlreadyExists": "Fehler: Pfad existiert bereits",
+    "cannotOpenPath": "Error: cannot open the path"
   },
   "shortcutsUI": {
     "globalShortcutsSystemScope": "Globale Verknüpfungen (Systembereich)",

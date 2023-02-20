@@ -20,6 +20,8 @@ async function showDialog (store, params) {
         },
         buttons: [
           {
+            type: 'cancel',
+            shortcut: 'esc',
             text: 'cancel',
             onClick: () => {
               reject({status: 'cancel'})
@@ -62,6 +64,8 @@ async function showDialog (store, params) {
         },
         buttons: [
           {
+            type: 'cancel',
+            shortcut: 'esc',
             text: 'cancel',
             onClick: () => {
               reject({status: 'cancel'})
@@ -69,6 +73,8 @@ async function showDialog (store, params) {
             },
           },
           {
+            type: 'confirm',
+            shortcut: 'enter',
             text: 'delete unprotected',
             onClick: () => {
               const unprotectedEditTargetItems = [...params?.items].filter(item => {
@@ -107,6 +113,8 @@ async function showDialog (store, params) {
         },
         buttons: [
           {
+            type: 'cancel',
+            shortcut: 'esc',
             text: 'cancel',
             onClick: () => {
               reject({status: 'cancel'})
@@ -114,7 +122,9 @@ async function showDialog (store, params) {
             },
           },
           {
-            text: 'confirm delete',
+            type: 'confirm',
+            shortcut: 'enter',
+            text: 'delete',
             onClick: () => {
               resolve({status: 'success:confirm-delete', items: params?.items})
               store.state.dialogs.confirmationDialog.value = false
@@ -147,6 +157,8 @@ async function showDialog (store, params) {
         },
         buttons: [
           {
+            type: 'cancel',
+            shortcut: 'esc',
             text: 'cancel',
             onClick: () => {
               reject({status: 'cancel'})
@@ -154,7 +166,9 @@ async function showDialog (store, params) {
             },
           },
           {
-            text: 'confirm delete',
+            type: 'confirm',
+            shortcut: 'enter',
+            text: 'delete',
             onClick: () => {
               resolve({status: 'delete-all', items: params?.items})
               store.state.dialogs.confirmationDialog.value = false
@@ -189,6 +203,8 @@ async function showDialog (store, params) {
         },
         buttons: [
           {
+            type: 'cancel',
+            shortcut: 'esc',
             text: 'cancel',
             onClick: () => {
               reject({status: 'cancel'})
@@ -196,7 +212,9 @@ async function showDialog (store, params) {
             },
           },
           {
-            text: 'confirm delete',
+            type: 'confirm',
+            shortcut: 'enter',
+            text: 'delete',
             onClick: () => {
               resolve({status: 'delete-all', items: params?.items})
               store.state.dialogs.confirmationDialog.value = false
@@ -223,6 +241,8 @@ async function showDialog (store, params) {
         },
         buttons: [
           {
+            type: 'cancel',
+            shortcut: 'esc',
             text: 'cancel',
             onClick: () => {
               reject({status: 'cancel'})
@@ -230,7 +250,9 @@ async function showDialog (store, params) {
             },
           },
           {
-            text: 'confirm delete',
+            type: 'confirm',
+            shortcut: 'enter',
+            text: 'delete',
             onClick: () => {
               resolve({status: 'delete-all', items: params?.items})
               store.state.dialogs.confirmationDialog.value = false

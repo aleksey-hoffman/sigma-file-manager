@@ -613,7 +613,8 @@
   },
   "errors": {
     "error": "Erreur",
-    "errorPathAlreadyExists": "Erreur : le chemin existe déjà"
+    "errorPathAlreadyExists": "Erreur : le chemin existe déjà",
+    "cannotOpenPath": "Error: cannot open the path"
   },
   "shortcutsUI": {
     "globalShortcutsSystemScope": "Raccourcis globaux (portée système)",

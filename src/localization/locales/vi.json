@@ -613,7 +613,8 @@
   },
   "errors": {
     "error": "Lỗi",
-    "errorPathAlreadyExists": "Lỗi: đường dẫn đã tồn tại"
+    "errorPathAlreadyExists": "Lỗi: đường dẫn đã tồn tại",
+    "cannotOpenPath": "Error: cannot open the path"
   },
   "shortcutsUI": {
     "globalShortcutsSystemScope": "Phím tắt chung (phạm vi hệ thống)",

@@ -993,6 +993,10 @@ export default new Vuex.Store({
         }
       },
     },
+    disabledActions: {
+      loadDir: false,
+      openFile: false
+    },
     inputState: {
       alt: false,
       ctrl: false,
@@ -3206,39 +3210,54 @@ export default new Vuex.Store({
       const contentAreaNode = utils.getContentAreaNode(router.currentRoute.name)
       store.state.navigatorView.scrollPosition = contentAreaNode?.scrollTop || 0
     },
-    async loadDir (store, options) {
-      await store.dispatch('saveNavigatorScrollPosition')
+    disableActions ({state}, actions) {
+      actions.forEach(action => {
+        state.disabledActions[action] = true
+      });
+    },
+    enableActions ({state}, actions) {
+      actions.forEach(action => {
+        state.disabledActions[action] = false 
+      });
+    },
+    async loadDir ({state, commit, dispatch}, options) {
+      if (state.disabledActions.loadDir) {return}
+      await dispatch('saveNavigatorScrollPosition')
       loadDirThrottle.throttle(async () => {
-
-        store.dispatch('ADD_ACTION_TO_HISTORY', { action: 'store.js::loadDir()' })
-        options = {
-          ...{
-            path: '/',
-            skipHistory: false,
-            scrollTop: true,
-            selectCurrentDir: true
-          },
-          ...options
+        try {
+          dispatch('ADD_ACTION_TO_HISTORY', { action: 'store.js::loadDir()' })
+          options = {
+            ...{
+              path: '/',
+              skipHistory: false,
+              scrollTop: true,
+              selectCurrentDir: true
+            },
+            ...options
+          }
+          options.path = sharedUtils.normalizePath(options.path)
+          
+          dispatch('SET_NAVIGATOR_STATE')
+          dispatch('LOAD_ROUTE', 'navigator')
+          let { dirInfo } = await dispatch('LOAD_DIR_ITEMS', options)
+          eventHub.$emit('app:method', {
+            method: 'postDirWatcherWorker',
+            params: options.path
+          })
+          commit('UPDATE_NAVIGATOR_HISTORY', options)
+          dispatch('ADD_TO_DIR_ITEMS_TIMELINE', dirInfo.path)
+          dispatch('SORT_DIR_ITEMS')
+          dispatch('SET_STATS')
+          await dispatch('RESTORE_NAVIGATOR_STATE')
+          dispatch('AUTO_FOCUS_FILTER')
+          if (options.scrollTop) {
+            dispatch('SCROLL_TOP_CONTENT_AREA', { behavior: 'auto' })
+          }
         }
-        options.path = sharedUtils.normalizePath(options.path)
-
-        store.dispatch('SET_NAVIGATOR_STATE')
-        store.dispatch('LOAD_ROUTE', 'navigator')
-        let {dirInfo} = await store.dispatch('LOAD_DIR_ITEMS', options)
-        eventHub.$emit('app:method', {
-          method: 'postDirWatcherWorker',
-          params: options.path
-        })
-        store.commit('UPDATE_NAVIGATOR_HISTORY', options)
-        store.dispatch('ADD_TO_DIR_ITEMS_TIMELINE', dirInfo.path)
-        store.dispatch('SORT_DIR_ITEMS')
-        store.dispatch('SET_STATS')
-        await store.dispatch('RESTORE_NAVIGATOR_STATE')
-        store.dispatch('AUTO_FOCUS_FILTER')
-        if (options.scrollTop) {
-          store.dispatch('SCROLL_TOP_CONTENT_AREA', {behavior: 'auto'})
+        catch (error) {
+          notifications.emit({ name: 'cannotOpenPath', props: {error} })
         }
-      }, {time: 200})
+      }, { time: 200 })
     },
     async RELOAD_DIR (store, params) {
       params = {
@@ -3303,10 +3322,15 @@ export default new Vuex.Store({
         throw Error(error)
       }
     },
-    OPEN_FILE ({ state, commit, dispatch, getters }, path) {
-      // Open in the default external program
-      electron.shell.openPath(PATH.normalize(path))
-      dispatch('ADD_TO_DIR_ITEMS_TIMELINE', path)
+    openFile ({state, dispatch}, path) {
+      if (state.disabledActions.openFile) {return}
+      try {
+        electron.shell.openPath(PATH.normalize(path))
+        dispatch('ADD_TO_DIR_ITEMS_TIMELINE', path)
+      }
+      catch (error) {
+        notifications.emit({ name: 'cannotOpenPath', props: {error} })
+      }
     },
     AUTO_FOCUS_FILTER (store) {
       // TODO:
@@ -3657,7 +3681,7 @@ export default new Vuex.Store({
       }
 
       if (item.type === 'file' || item.type === 'file-symlink') {
-        store.dispatch('OPEN_FILE', item.path)
+        store.dispatch('openFile', item.path)
       }
       else {
         store.dispatch('loadDir', { path: item.realPath })
@@ -5781,7 +5805,7 @@ export default new Vuex.Store({
             action: 'hide',
             hashID: info.hashID
           })
-          store.dispatch('OPEN_FILE', `${store.state.storageData.settings.appPaths.updateDownloadDir}/${info.filename}`)
+          store.dispatch('openFile', `${store.state.storageData.settings.appPaths.updateDownloadDir}/${info.filename}`)
         }
         else {
           store.dispatch('HANDLE_APP_UPDATE_DOWNLOADED', {latestVersion: params.latestVersion, info})
