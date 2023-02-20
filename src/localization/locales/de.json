@@ -20,7 +20,7 @@
   "language": {
     "language": "Sprache",
     "isCorrectedLanguage": "Die Übersetzung wurde von einem Muttersprachler überprüft und korrigiert.",
-    "isAutoTranslatedLanguage": "Auto-Übersetzung. Muss von einem Muttersprachler überprüft und korrigiert werden"
+    "isAutoTranslatedLanguage": "Automatische Übersetzung. Diese muss von einem Muttersprachler überprüft und korrigiert werden."
   },
   "placeholders": {
     "noDrivesFound": "Keine Laufwerke gefunden",
@@ -49,7 +49,7 @@
   },
   "userDirs": {
     "home": "Startseite",
-    "desktop": "Arbeitsfläche",
+    "desktop": "Desktop",
     "downloads": "Herunterladen",
     "documents": "Dokumente",
     "screenshots": "Screenshots",
@@ -75,17 +75,17 @@
     "globFiltering": "Glob-Filterung",
     "showHiddenItems": "Ausgeblendete Elemente anzeigen",
     "filterPrefixes": "Präfixe filtern",
-    "addPrefix": "Fügen Sie dem Anfang ein Präfix hinzu, um nach einer bestimmten Eigenschaft zu filtern.",
+    "addPrefix": "Fügen Sie dem Anfang einen Präfix hinzu, um nach einer bestimmten Eigenschaft zu filtern.",
     "sizeExample": "Zum Beispiel: \"size: MB\", \"items: 15\", \"date-m: 2021\"",
     "prefixes": {
-      "itemName": "Artikelname",
+      "itemName": "Elementname",
       "directoryItemCount": "Anzahl der Verzeichniseinträge",
       "fileSize": "Dateigröße",
       "dateMetaModified": "Datum Meta geändert",
       "noteTitle": "Titel der Notiz",
       "noteContent": "Inhalt notieren",
       "noteGroup": "Notizgruppe",
-      "itemPath": "Artikelpfad",
+      "itemPath": "Elementpfad",
       "settingTags": "Tags setzen"
     }
   },
@@ -103,8 +103,8 @@
     "searchData": "Daten suchen",
     "scanDepth": "Scantiefe",
     "searchResults": "Suchergebnisse",
-    "recentItems": "Letzte Artikel",
-    "globalItems": "Globale Artikel",
+    "recentItems": "Letztes Element",
+    "globalItems": "Globale Elemente",
     "statsStoringDisabled": "Statistikspeicherung ist deaktiviert",
     "onlyNamesMatchQuery": "Nur die Namen, die genau mit der Abfrage übereinstimmen, werden gefunden.",
     "caseDoesntMatter": "Die Groß-/Kleinschreibung spielt keine Rolle. Alle Wörter werden in Kleinbuchstaben umgewandelt.",
@@ -123,7 +123,7 @@
     "lastScan": "Letzter Scan",
     "minutesAgo": "Vor ein paar Minuten",
     "searchStats": {
-      "found": "{n} Artikel gefunden | {n} Artikel gefunden | {n} Artikel gefunden | {n} Artikel gefunden",
+      "found": "{n} Elemente gefunden | {n} Elemente gefunden | {n} Elemente gefunden | {n} Elemente gefunden",
       "finished": "Fertig in {n} Sekunden",
       "searched": "Durchsuchte {n} Pfade",
       "nothingFound": "Es wurde nichts gefunden"
@@ -171,22 +171,22 @@
   "notes": {
     "newNote": "Neue Notiz",
     "existingNotes": "Vorhandene Notizen",
-    "trashedNotes": "Weggeworfene Notizen",
+    "trashedNotes": "Verworfene Notizen",
     "loadingNotes": "Notizen werden geladen",
-    "trashedNotesDeletedAfter7days": "Gelöschte Notizen werden 7 Tage nach dem Löschen automatisch vom Laufwerk gelöscht",
-    "deleteAllTrashed": "Alle Papierkörbe löschen",
+    "trashedNotesDeletedAfter7days": "Verworfene Notizen werden 7 Tage nach dem Löschen automatisch vom Laufwerk gelöscht",
+    "deleteAllTrashed": "Alle Papierkörbe leeren",
     "noTrashedNotes": "Keine verworfenen Notizen",
     "noNotes": "Keine Notizen",
     "ungroupedNotes": "Nicht gruppierte Notizen",
     "group": "Gruppe",
     "noteCard": {
       "deleteNotePermanently": "Notiz dauerhaft löschen",
-      "restoreNoteFromTrashList": "Notiz aus Papierkorb wiederherstellen",
+      "restoreNoteFromTrashList": "Notiz aus dem Papierkorb wiederherstellen",
       "noteWillBeDeletedOnSpecifiedDate": "Notiz wird am angegebenen Datum dauerhaft gelöscht",
-      "noteProtectionIsOn": "Notenschutz ist EIN",
-      "itCannotBeDeletedModified": "Es kann nicht gelöscht / geändert werden",
+      "noteProtectionIsOn": "Notenschutz ist AN",
+      "itCannotBeDeletedModified": "Es kann nicht gelöscht / modifiziert werden",
       "noteProtectionIsOff": "Notenschutz ist AUS",
-      "itCanBeDeletedModified": "Es kann gelöscht / geändert werden",
+      "itCanBeDeletedModified": "Es kann gelöscht / modifiziert werden",
       "changeNoteGroup": "Notizgruppe ändern",
       "noteGroups": "Notizgruppen",
       "ungroup": "Gruppierung aufheben",
@@ -316,7 +316,7 @@
       "resetFontToDefault": "Schriftart auf Standard zurücksetzen"
     },
     "dateTime": {
-      "dateTime": "Terminzeit",
+      "dateTime": "Datum / Uhrzeit",
       "dateTimePreview": "Datums-/Zeitvorschau:",
       "dateTimeRegionalFormat": "Datum / Uhrzeit Regionalformat",
       "autoDetectRegionalFormat": "Regionsformat automatisch erkennen",
@@ -383,8 +383,8 @@
     },
     "clipboard": {
       "inactiveUnselectable": "inaktiv nicht wählbar",
-      "showingNOfItems": "Zeige {showingAmount} von {itemsAmount} Artikeln",
-      "matchedNOfItems": "Übereinstimmung mit {matchedAmount} von {itemsAmount} Artikeln"
+      "showingNOfItems": "Zeige {showingAmount} von {itemsAmount} Elementen",
+      "matchedNOfItems": "Übereinstimmung mit {matchedAmount} von {itemsAmount} Elementen"
     },
     "navigator": {
       "title": "Navigator",
@@ -398,7 +398,7 @@
       "showSortingToolbar": "Sortiersymbolleiste anzeigen",
       "navigatorViewLayout": "Layout der Navigatoransicht",
       "navigatorItemHoverEffect": "Hover-Effekt für Navigationselemente",
-      "navigatorItemList": "Navigator Artikelliste",
+      "navigatorItemList": "Navigator Elementliste",
       "ocdNameColumnMaxWidth": "OCD | Maximale Spaltenbreite 'Name':",
       "filesWithDisproportionatelyLongNames": "Dateien mit unverhältnismäßig langen Namen lassen die Dateiliste chaotisch aussehen, daher wird empfohlen, die maximale Breite der Namensspalte auf einen niedrigeren Wert zu setzen, z. B. 50 %, damit sie organisierter aussieht",
       "nameColumnMaxWidthCssValue": "Maximale Breite der Spalte 'Name' (CSS-Wert)"
@@ -449,7 +449,7 @@
         "andThenOpen": "und dann öffnen",
         "and": "und",
         "userVideosPath": "/Benutzer/Videos",
-        "sigmaDefaultExampleDescription": "Sie können immer noch im Verlauf zu den vorherigen Verzeichnissen zurückkehren, indem Sie die Schaltfläche \"Zurück\" oder \"Vorwärts\" drücken.",
+        "sigmaDefaultExampleDescription": "Sie können im Verlauf immer noch zu den vorherigen Verzeichnissen zurückkehren, indem Sie die Schaltfläche \"Zurück\" oder \"Vorwärts\" drücken.",
         "traditionalExampleDescription": "Sie können im Verlauf NICHT zu den vorherigen Verzeichnissen zurückkehren, indem Sie die Schaltflächen \"Zurück\" oder \"Vorwärts\" drücken, da diese überschrieben wurden und der Verlauf jetzt nur noch 2 Verzeichnisse enthält:"
       }
     },
@@ -462,8 +462,8 @@
       "buttonToSelectWithoutOpening": "Schaltfläche zum Auswählen des Elements, ohne es zu öffnen",
       "doubleClickDelayMs": "Doppelklick-Verzögerung (ms)",
       "inputElements": "Eingabeelemente",
-      "activateWhenTyping": "Artikelfilterung beim Tippen aktivieren",
-      "activateWhenDirectoryChanges": "Artikelfilterung bei Verzeichniswechsel aktivieren",
+      "activateWhenTyping": "Elementfilterung beim Tippen aktivieren",
+      "activateWhenDirectoryChanges": "Elementfilterung bei Verzeichniswechsel aktivieren",
       "helpers": "Helfer",
       "spellcheck": "Rechtschreibprüfung",
       "valueRangeFrom200To1000ms": "Der Wert sollte im Bereich 200 - 1000 (ms) liegen"
@@ -501,9 +501,9 @@
       "focusAppWhenDriveConnected": "Fokussieren Sie die App, wenn ein Laufwerk verbunden ist"
     },
     "data": {
-      "imageThumbnails": "Miniaturbilder",
+      "imageThumbnails": "Vorschau-Bilder",
       "everyTimeYouOpenDirectory": "Jedes Mal, wenn Sie ein Verzeichnis öffnen, generiert die App ein kleines Miniaturbild für jedes Bild und speichert es im App-Verzeichnis. Diese Bild-Caching-Technik verbessert die App-Leistung. Wenn das angegebene Limit erreicht ist, werden alle Miniaturbilder gelöscht.",
-      "thumbnailStorageLimit": "Miniaturspeicherlimit"
+      "thumbnailStorageLimit": "Vorschau-Speicher-Limit"
     },
     "stats": {
       "directoryItemStatistics": "Verzeichniseintragsstatistik",
@@ -564,7 +564,7 @@
     "dataBackupReminder": "Daten, Speicherung, Sicherung",
     "driveDetection": "Laufwerk, USB, Speicher, Festplatte, Gerät, Erkennung, Verbindung",
     "imageThumbnails": "Bild, Bild, Thumbnails, Limit, Speicherplatz, Ressourcen, Nutzung, Leistung",
-    "directoryItemStatistics": "Verzeichnis, Artikel, Statistiken, Statistiken, Daten, Speicherung, Nutzung"
+    "directoryItemStatistics": "Verzeichnis, Element, Statistiken, Statistiken, Daten, Speicherung, Nutzung"
   },
   "dataBackupReminder": {
     "title": "Erinnerung: Datensicherung",
@@ -598,8 +598,8 @@
       "name": "Name",
       "dateModifiedContents": "Datum geänderter Inhalt",
       "dateModifiedMeta": "Datum der Meta-Änderung",
-      "dateCreated": "Datum erstellt",
-      "itemsSize": "Artikel / Größe",
+      "dateCreated": "Erstellungsdatum",
+      "itemsSize": "Element / Größe",
       "status": "Status"
     },
     "typeShortTitles": {
@@ -607,7 +607,7 @@
       "dateModifiedContents": "Geänderte Inhalte",
       "dateModifiedMeta": "Modifiziertes Meta",
       "dateCreated": "Erstellt",
-      "itemsSize": "Artikel / Größe",
+      "itemsSize": "Element / Größe",
       "status": "Status"
     }
   },
@@ -915,7 +915,7 @@
     },
     "archiveCompressionDialog": {
       "createArchive": "Archiv erstellen",
-      "archiveSelectedItems": "Ausgewählte Artikel archivieren",
+      "archiveSelectedItems": "Ausgewählte Elemente archivieren",
       "archiveFormat": "Archivformat",
       "destinationPath": "Zielpfad",
       "compression": "Kompression",
@@ -1003,7 +1003,7 @@
         "start": "Anfang",
         "itemThenMoveTheCursor": "Element, dann bewege den Cursor auf das",
         "end": "Ende",
-        "itemAnd": "Artikel und",
+        "itemAnd": "Element und",
         "press": "Drücken Sie",
         "onItToSelectTheRange": "darauf, um den Bereich auszuwählen.",
         "singleItemSelection": "Einzelpostenauswahl",
@@ -1089,8 +1089,8 @@
     "creatingArchive": "Ein Archiv erstellen",
     "extractArchiveInProgress": "Archiv extrahieren: in Bearbeitung",
     "youCannotDeleteDriveSRootDirectory": "Sie können das Stammverzeichnis des Laufwerks nicht löschen",
-    "allItemsWereTrashed": "Alle Artikel wurden entsorgt",
-    "trashedItems": "Weggeworfene Gegenstände",
+    "allItemsWereTrashed": "Alle Elemente wurden entsorgt",
+    "trashedItems": "Verworfene Gegenstände",
     "trashedItemsSize": "Größe des Papierkorbs",
     "allItemsWereDeleted": "Alle Elemente wurden gelöscht",
     "deletedItems": "Gelöschte Elemente",
@@ -1098,11 +1098,11 @@
     "errorTrashItems": "Fehler: Elemente im Papierkorb",
     "errorDeleteItems": "Fehler: Elemente löschen",
     "failedToTrashSomeItems": "Einige Elemente konnten nicht entsorgt werden",
-    "trashed": "Weggeworfen",
+    "trashed": "Verworfen",
     "deleted": "Gelöscht",
     "removedNItemsOfTotal": "{removedAmount} von {totalAmount}",
-    "trashedNItemsOfTotal": "{removedAmount} von {totalAmount} Artikel weggeworfen",
-    "deletedNItemsOfTotal": "{removedAmount} von {totalAmount} Artikeln gelöscht",
+    "trashedNItemsOfTotal": "{removedAmount} von {totalAmount} Elementen verworfen",
+    "deletedNItemsOfTotal": "{removedAmount} von {totalAmount} Elementen gelöscht",
     "couldNotTrash": "Konnte nicht entsorgen",
     "failedToDeleteSomeItems": "Einige Elemente konnten nicht gelöscht werden",
     "couldNotDelete": "Konnte nicht gelöscht werden",
@@ -1111,7 +1111,7 @@
     "removedNItemsFromPinned": "0 Elemente von angeheftet entfernt | 1 Element von angeheftet entfernt | {n} Elemente von angeheftet entfernt | {n} Elemente von angeheftet entfernt",
     "addedNItemsToPinned": "0 Elemente zu angeheftet hinzugefügt | 1 Element zu angeheftet hinzugefügt | {n} Elemente zu angeheftet hinzugefügt | {n} Elemente zu angeheftet hinzugefügt",
     "removedNItemsFromProtected": "0 Elemente von geschützt entfernt | 1 Element von geschützt entfernt | {n} Elemente von geschützt entfernt | {n} Elemente von geschützt entfernt",
-    "addedNItemsToProtected": "0 Artikel zu geschützt hinzugefügt | 1 Artikel zu geschützt hinzugefügt | {n} Artikel zu geschützt hinzugefügt | {n} Artikel zu geschützt hinzugefügt",
+    "addedNItemsToProtected": "0 Elemente zu geschützt hinzugefügt | 1 Element zu geschützt hinzugefügt | {n} Elemente zu geschützt hinzugefügt | {n} Elemente zu geschützt hinzugefügt",
     "actionFailed": "Aktion: fehlgeschlagen",
     "actionIsNotAllowedWhenInputFieldIsActive": "Aktion ist nicht erlaubt, wenn Eingabefeld aktiv ist",
     "actionIsNotAllowedWhenADialogIsOpened": "Aktion ist nicht erlaubt, wenn ein Dialog geöffnet wird",
@@ -1217,7 +1217,7 @@
   "toMove": "Umziehen",
   "seeAllReleases": "Alle Veröffentlichungen anzeigen",
   "openSettings": "Einstellungen öffnen",
-  "showItems": "Artikel anzeigen",
+  "showItems": "Elemente anzeigen",
   "limit": "Grenze",
   "noData": "Keine Daten",
   "action": "Handlung",
@@ -1270,11 +1270,11 @@
   "done": "Getan",
   "paused": "Pausiert",
   "inProgress": "In Bearbeitung",
-  "item": "0 Artikel | 1 Artikel | {n} Artikel | {n} Artikel",
+  "item": "0 Elemente | 1 Element | {n} Elemente | {n} Elemente",
   "nFiles": "0 Dateien | 1 Datei | {n} Dateien | {n} Dateien",
   "destinationPath": "Zielpfad",
   "sourcePath": "Quellpfad",
-  "items": "Artikel",
+  "items": "Elemente",
   "size": "Größe",
   "fileSize": "Dateigröße",
   "directorySize": "Verzeichnisgröße",
@@ -1315,13 +1315,13 @@
   "installUpdate": "Installiere Update",
   "stopServer": "Server stoppen",
   "copyAddress": "Adresse kopieren",
-  "clearListMessage": "Artikelliste wurde gelöscht",
+  "clearListMessage": "Elementeliste wurde gelöscht",
   "allowGlobalSearchMessage": "Mit der globalen Suche können Sie schnell jede Datei / jedes Verzeichnis auf Ihrem Computer finden.<br>Sie scannt regelmäßig Ihre Laufwerke und generiert Datendateien (Maps), damit sie Ihre Dateien schnell finden kann.<br>Die Dateien, die nach dem letzten Scan erstellt wurden werden nicht gefunden, da sie nicht in den Datendateien enthalten sind, daher wird empfohlen, einen häufigeren automatischen Scanzeitraum zu wählen.",
   "experimentalFeature": "unvollendetes experimentelles Feature",
-  "min": "Mindest",
-  "sec": "sek",
+  "min": "Min",
+  "sec": "Sek",
   "mediaInfo": "Medieninformation",
-  "stream": "Strom",
+  "stream": "Datenstream",
   "bitsPerRawSample": "Bits pro Rohprobe",
   "colorSpace": "Farbraum",
   "pixFmt": "Pixelformat",
@@ -1345,6 +1345,6 @@
   "profile": "Profil",
   "closedCaptions": "Untertitel",
   "protectedItemsShort": "Geschützt",
-  "pinnedItemsShort": "Befestigt",
+  "pinnedItemsShort": "Angeheftet",
   "freeOf": "frei von"
 }
