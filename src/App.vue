@@ -1184,7 +1184,7 @@ export default {
             mousetrap.bind(routeShortcuts, (event) => {
               const index = parseInt(event.code.replace('Digit', ''))
               value.action.options = this.navigationPanel.items[index - 1]
-              this.$store.dispatch('SHORTCUT_ACTION', {event, value})
+              this.$store.dispatch('shortcutAction', {event, shortcutName: key, shortcut: value})
             }, 'keydown')
           }
           else {
@@ -1196,7 +1196,7 @@ export default {
                 shortcut = ['ctrl++', 'ctrl+=']
               }
               mousetrap.bind(shortcut, (event) => {
-                this.$store.dispatch('SHORTCUT_ACTION', {event, value})
+                this.$store.dispatch('shortcutAction', {event, shortcutName: key, shortcut: value})
               }, value.eventName ?? 'keydown')
             }
           }

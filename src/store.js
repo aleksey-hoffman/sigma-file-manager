@@ -993,10 +993,7 @@ export default new Vuex.Store({
         }
       },
     },
-    disabledActions: {
-      loadDir: false,
-      openFile: false
-    },
+    disabledShortcuts: [],
     inputState: {
       alt: false,
       ctrl: false,
@@ -2815,19 +2812,21 @@ export default new Vuex.Store({
         condition3Fullfilled &&
         condition4Fullfilled
     },
-    async SHORTCUT_ACTION ({ commit,dispatch, getters }, payload) {
-      const { event, value } = payload
-      const allConditionsAreFulfilled = await dispatch('CHECK_CONDITIONS', value)
+    async shortcutAction ({state, dispatch}, params) {
+      const { event, shortcutName, shortcut } = params
+      if (state.disabledShortcuts.includes(shortcutName)) {return}
+
+      const allConditionsAreFulfilled = await dispatch('CHECK_CONDITIONS', shortcut)
       // Handle preventDefault
-      if (value.preventDefaultType === 'always') {
+      if (shortcut.preventDefaultType === 'always') {
         event.preventDefault()
       }
-      else if (value.preventDefaultType === '!inputFieldIsActive' && !utils.isCursorInsideATextField()) {
+      else if (shortcut.preventDefaultType === '!inputFieldIsActive' && !utils.isCursorInsideATextField()) {
         event.preventDefault()
       }
       // Handle action if all conditions are fulfilled
       if (allConditionsAreFulfilled) {
-        dispatch(value.action.name, value.action.options)
+        dispatch(shortcut.action.name, shortcut.action.options)
       }
     },
     TOGGLE_DIALOG ({ state, commit, dispatch, getters }, payload) {
@@ -3000,7 +2999,7 @@ export default new Vuex.Store({
         }
       }
     },
-    OPEN_LAST_SELECTED_DIRITEM (store) {
+    openLastSelectedDiritem (store) {
       let item = store.state.navigatorView.selectedDirItems.at(-1)
       store.dispatch('OPEN_DIR_ITEM', item)
     },
@@ -3210,18 +3209,22 @@ export default new Vuex.Store({
       const contentAreaNode = utils.getContentAreaNode(router.currentRoute.name)
       store.state.navigatorView.scrollPosition = contentAreaNode?.scrollTop || 0
     },
-    disableActions ({state}, actions) {
-      actions.forEach(action => {
-        state.disabledActions[action] = true
+    disableShortcuts ({state}, shortcuts) {
+      shortcuts.forEach(shortcut => {
+        if (!state.disabledShortcuts.includes(shortcut)) {
+          state.disabledShortcuts.push(shortcut)
+        }
       });
     },
-    enableActions ({state}, actions) {
-      actions.forEach(action => {
-        state.disabledActions[action] = false 
+    enableShortcuts ({state}, shortcuts) {
+      shortcuts.forEach(shortcut => {
+        let disabledShortcutIndex = state.disabledShortcuts.findIndex(disabledShortcut => disabledShortcut === shortcut)
+        if (disabledShortcutIndex !== -1) {
+          state.disabledShortcuts.splice(disabledShortcutIndex, 1)
+        }
       });
     },
     async loadDir ({state, commit, dispatch}, options) {
-      if (state.disabledActions.loadDir) {return}
       await dispatch('saveNavigatorScrollPosition')
       loadDirThrottle.throttle(async () => {
         try {
@@ -3323,7 +3326,6 @@ export default new Vuex.Store({
       }
     },
     openFile ({state, dispatch}, path) {
-      if (state.disabledActions.openFile) {return}
       try {
         electron.shell.openPath(PATH.normalize(path))
         dispatch('ADD_TO_DIR_ITEMS_TIMELINE', path)

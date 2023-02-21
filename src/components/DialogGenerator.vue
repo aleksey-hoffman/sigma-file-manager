@@ -151,11 +151,11 @@ export default {
   watch: {
     'dialog.value' (newValue) {
       if (newValue) {
-        this.$store.dispatch('disableActions', ['loadDir', 'openFile'])
+        this.$store.dispatch('disableShortcuts', ['openSelectedDirItem', 'openSelectedDirectory'])
       }
       else {
         setTimeout(() => {
-          this.$store.dispatch('enableActions', ['loadDir', 'openFile'])
+          this.$store.dispatch('enableShortcuts', ['openSelectedDirItem', 'openSelectedDirectory'])
         }, 100)
       }
     },
