@@ -77,7 +77,7 @@ export const languages = [
   {
     name: '中文 (zhōngwén)',
     locale: 'ch',
-    isCorrected: false,
+    isCorrected: true,
     isRtl: false,
   },
   {

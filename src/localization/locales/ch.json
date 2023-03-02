@@ -20,7 +20,7 @@
   "language": {
     "language": "语言",
     "isCorrectedLanguage": "翻译由母语人士审阅和纠正",
-    "isAutoTranslatedLanguage": "翻译由母语人士审阅和纠正"
+    "isAutoTranslatedLanguage": "自动翻译的，需要母语人士审阅和纠正"
   },
   "placeholders": {
     "noDrivesFound": "未找到驱动器",
@@ -466,7 +466,7 @@
       "activateWhenDirectoryChanges": "目录更改时激活项目过滤",
       "helpers": "助手",
       "spellcheck": "拼写检查",
-      "valueRangeFrom200To1000ms": "该值应在 200 - 1000（毫秒）范围内"
+      "valueRangeFrom200To1000ms": "该值应在 200 ~ 1000（毫秒）范围内"
     },
     "mouseButtons": {
       "mouseButtons": "鼠标按钮",
@@ -552,7 +552,7 @@
     "homePageMediaBanner": "主页、页面、媒体、横幅、背景、图像、视频",
     "infoPanel": "信息、面板、目录、大小、性能、信息、细节、属性",
     "navigator": "设计、用户界面、导航器、分隔线、标题、排序、视图、布局、列表、网格、项目、文件、目录、悬停、缩放、突出显示、强迫症",
-    "shortcuts": "捷径",
+    "shortcuts": "快捷键",
     "gpuSystemMemory": "GPU,系统,内存,RAM,性能",
     "workspaces": "工作区",
     "tabs": "标签,布局",
@@ -606,7 +606,7 @@
       "name": "名称",
       "dateModifiedContents": "修改内容",
       "dateModifiedMeta": "修改后的元",
-      "dateCreated": "创建",
+      "dateCreated": "创建日期",
       "itemsSize": "项目/尺寸",
       "status": "状态"
     }
@@ -696,7 +696,7 @@
       "copyLink": "复制链接",
       "linkWasCopiedToClipboard": "链接已复制到剪贴板",
       "openLinkInDefaultBrowser": "在默认浏览器中打开链接",
-      "operationFailed": "手术失败",
+      "operationFailed": "操作失败",
       "errorDuringTemplateGeneration": "生成模板时出错"
     },
     "confirmationDialog": {
@@ -710,7 +710,7 @@
       "userDirectoryEditor": "用户目录编辑器",
       "directoryTitle": "目录标题",
       "directoryPath": "目录路径",
-      "iconName": "图标名称（应以'mdi-'开头）",
+      "iconName": "图标名称（应以 'mdi-' 开头）",
       "openIconList": "打开图标列表",
       "iconPreview": "图标预览",
       "pathCannotBeEmpty": "路径不能为空",
@@ -727,7 +727,7 @@
       "immutable": "不可变",
       "ifEnabledImmutable": "如果启用，该项目将变得不可变（任何应用程序都无法读取/修改/删除）。",
       "groupOrUser": "组或用户",
-      "group": "团体",
+      "group": "组",
       "everyone": "任何人",
       "learnMore": "了解更多",
       "resetPermissions": "重置权限",
@@ -880,7 +880,7 @@
     "shortcutEditorDialog": {
       "changeShortcut": "更改快捷键",
       "shortcutEditor": "快捷键编辑器",
-      "shortcut": "捷径",
+      "shortcut": "快捷键",
       "shortcutIsACombination": "快捷键是组合",
       "modifierKeys": "1-4 个修饰键：[Ctrl、Alt、Shift、Meta]",
       "regularKey": "1个普通键",
@@ -940,7 +940,7 @@
         "discussions": "讨论"
       },
       "nav": {
-        "shortcuts": "捷径",
+        "shortcuts": "快捷键",
         "introduction": "介绍",
         "featureOverview": "功能概述",
         "mediaDownloading": "媒体下载",
@@ -1142,7 +1142,7 @@
     "programWasAdded": "程序已添加",
     "programWasEdited": "程序已编辑",
     "programWasDeleted": "程序被删除",
-    "shellCommandFailed": "外壳命令失败",
+    "shellCommandFailed": "shell 命令失败",
     "couldNotGetAppBinsExecPermissions": "无法获得应用程序二进制目录的执行权限。在授予权限之前，某些功能将无法使用。",
     "addWorkspaceError": "错误：添加工作区",
     "editWorkspaceError": "错误：编辑工作区",
@@ -1207,8 +1207,8 @@
   "warning": "警告",
   "example": "例子：",
   "description": "描述",
-  "shortcut": "捷径",
-  "shortcutPlural": "捷径",
+  "shortcut": "快捷键",
+  "shortcutPlural": "快捷键",
   "fullScreen": "全屏",
   "menu": "菜单",
   "contextMenu": "上下文菜单",
@@ -1241,7 +1241,7 @@
   "thisFeatureIsDisabled": "此功能已禁用",
   "listLayout": "列表布局",
   "gridLayout": "网格布局",
-  "scale": "规模",
+  "scale": "浮动",
   "highlight": "高亮",
   "inaccessible": "无法访问",
   "offline": "离线",
