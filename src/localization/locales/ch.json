@@ -1,7 +1,7 @@
 {
   "app": {
     "name": "Sigma File Manager",
-    "description": "是一个免费的、开源的、先进的、现代的文件管理器应用程序,在GNU GPLv3或更高版本下授权。",
+    "description": "是一个免费、开源、先进、现代的文件管理器应用程序，在 GNU GPLv3 或更高版本下授权。",
     "copyright": "Copyright © 2021 - 当今时代 Aleksey Hoffman. 保留所有权利。"
   },
   "units": {
@@ -15,16 +15,16 @@
     "dashboard": "仪表板",
     "notes": "笔记",
     "settings": "设置",
-    "extensions": "延伸功能"
+    "extensions": "拓展功能"
   },
   "language": {
     "language": "语言",
     "isCorrectedLanguage": "翻译由母语人士审阅和纠正",
-    "isAutoTranslatedLanguage": "自动翻译的。需要由讲母语的人审阅和改正"
+    "isAutoTranslatedLanguage": "自动翻译的，需要母语人士审阅和纠正"
   },
   "placeholders": {
-    "noDrivesFound": "找不到驱动器",
-    "noUserDirectoriesFound": "没有找到用户目录"
+    "noDrivesFound": "未找到驱动器",
+    "noUserDirectoriesFound": "未找到用户目录"
   },
   "count": {
     "other": "另外 0 人 | 1 人 | {n} 人 | {n} 人",
@@ -38,7 +38,7 @@
     "toggleWindow": "切换窗口"
   },
   "trayMenu": {
-    "globalShortcuts": "全局快捷方式",
+    "globalShortcuts": "全局快捷键",
     "toggleWindowVisibility": "切换窗口可见性",
     "openGlobalSearch": "打开全局搜索",
     "createNewNote": "创建新笔记",
@@ -49,20 +49,20 @@
   },
   "userDirs": {
     "home": "首页",
-    "desktop": "桌面电脑",
+    "desktop": "桌面",
     "downloads": "下载",
     "documents": "文件",
-    "screenshots": "屏幕截图",
+    "screenshots": "截图",
     "pictures": "图片",
     "videos": "视频",
     "music": "音乐"
   },
   "tabs": {
     "workspaceTabs": "工作区选项卡",
-    "newTabInCurrentWorkspace": "当前工作区中的新选项卡",
+    "newTabInCurrentWorkspace": "在当前工作区中的新建选项卡",
     "closeAllTabsInCurrentWorkspace": "关闭当前工作区中的所有选项卡",
     "noTabsInCurrentWorkspace": "当前工作区没有标签",
-    "tabs": "Tabs"
+    "tabs": "选项卡"
   },
   "workspaces": {
     "title": "工作区",
@@ -75,25 +75,25 @@
     "globFiltering": "全局过滤",
     "showHiddenItems": "显示隐藏的项目",
     "filterPrefixes": "过滤前缀",
-    "addPrefix": "在开头添加前缀以按特定属性进行过滤。",
+    "addPrefix": "在开头添加前缀以过滤特定的属性。",
     "sizeExample": "例如：\"size: MB\", \"items: 15\", \"date-m: 2021\"",
     "prefixes": {
-      "itemName": "物品名称",
-      "directoryItemCount": "目录项计数",
+      "itemName": "名称",
+      "directoryItemCount": "目录数",
       "fileSize": "文件大小",
-      "dateMetaModified": "日期元修改",
+      "dateMetaModified": "修改日期",
       "noteTitle": "笔记标题",
       "noteContent": "笔记内容",
-      "noteGroup": "笔记组",
-      "itemPath": "项目路径",
+      "noteGroup": "笔记分组",
+      "itemPath": "路径",
       "settingTags": "设置标签"
     }
   },
   "globalSearch": {
     "globalSearch": "全局搜索",
     "globalSearchDisabled": "全局搜索功能已禁用",
-    "driveScanInProgress": "正在进行驱动器扫描",
-    "driveScanInterrupted": "驱动器扫描被中断。",
+    "driveScanInProgress": "正在扫描驱动器",
+    "driveScanInterrupted": "驱动器扫描已中止",
     "searchDataIncomplete": "搜索数据不完整",
     "reScanDrives": "重新扫描驱动器",
     "clearSearchField": "清除搜索字段",
@@ -104,11 +104,11 @@
     "scanDepth": "扫描深度",
     "searchResults": "搜索结果",
     "recentItems": "最近的项目",
-    "globalItems": "全球项目",
-    "statsStoringDisabled": "禁用统计存储",
-    "onlyNamesMatchQuery": "只会找到与查询完全匹配的名称。",
-    "caseDoesntMatter": "大小写无关紧要。所有单词都转换为小写。",
-    "increasedTypoTolerance": "增加错字容忍度",
+    "globalItems": "全局项目",
+    "statsStoringDisabled": "禁用存储统计",
+    "onlyNamesMatchQuery": "只找到与查询完全匹配的名称。",
+    "caseDoesntMatter": "忽略大小写",
+    "increasedTypoTolerance": "增加错字容错率",
     "showDirectoriesOnTop": "在顶部显示目录",
     "searchAllDrives": "搜索所有驱动器",
     "selectDrives": "选择驱动器",
@@ -144,12 +144,12 @@
   "navigator": {
     "newDirectoryFile": "新建目录/文件",
     "toggleInfoPanel": "切换信息面板",
-    "newDirectory": "新目录",
-    "newFile": "新文件",
+    "newDirectory": "新建目录",
+    "newFile": "新建文件",
     "currentDirectoryContextMenu": "当前目录上下文菜单",
     "historyOpenPreviousDirectory": "历史 | 打开上一个目录",
     "historyOpenNextDirectory": "历史 | 打开下一个目录",
-    "goUpDirectory": "上目录",
+    "goUpDirectory": "返回上级目录",
     "reloadCurrentDirectory": "重新加载当前目录",
     "protectedCannotBeModified": "无法修改或删除受保护的项目（仅在此应用程序内）。可在仪表板页面上找到受保护的项目。",
     "pinnedItemsOnDashboard": "可以在仪表板页面上找到固定的项目",
@@ -160,8 +160,8 @@
     }
   },
   "dashboard": {
-    "pinnedWillBeShownHere": "固定的目录项目将显示在这里",
-    "protectedWillBeShownHere": "受保护的目录项将显示在这里",
+    "pinnedWillBeShownHere": "固定的项目将显示在这里",
+    "protectedWillBeShownHere": "受保护的目录将显示在这里",
     "appDoesntStoreStats": "该应用程序不存储您与目录/文件交互的统计信息。",
     "enableTheOptionCalled": "启用名为的选项",
     "storeTheListOfOpenedDirectoryItems": "\"存储打开的目录项列表\"",
@@ -169,28 +169,28 @@
     "openedWillBeShownHere": "打开的目录项将显示在这里"
   },
   "notes": {
-    "newNote": "新笔记",
+    "newNote": "新建笔记",
     "existingNotes": "现有笔记",
-    "trashedNotes": "垃圾笔记",
+    "trashedNotes": "已删除的笔记",
     "loadingNotes": "加载笔记",
-    "trashedNotesDeletedAfter7days": "垃圾笔记在被删除 7 天后会自动从驱动器中删除",
-    "deleteAllTrashed": "删除所有垃圾",
-    "noTrashedNotes": "没有垃圾笔记",
+    "trashedNotesDeletedAfter7days": "已删除的笔记在被删除 7 天后会自动从驱动器中删除",
+    "deleteAllTrashed": "删除所有已删除的笔记",
+    "noTrashedNotes": "没有已删除的笔记",
     "noNotes": "没有笔记",
     "ungroupedNotes": "未分组的笔记",
-    "group": "团体",
+    "group": "分组",
     "noteCard": {
       "deleteNotePermanently": "永久删除笔记",
-      "restoreNoteFromTrashList": "从垃圾列表中恢复笔记",
-      "noteWillBeDeletedOnSpecifiedDate": "注释将在指定日期永久删除",
-      "noteProtectionIsOn": "注意保护已开启",
+      "restoreNoteFromTrashList": "恢复笔记",
+      "noteWillBeDeletedOnSpecifiedDate": "此笔记将在该日期永久删除",
+      "noteProtectionIsOn": "笔记保护已开启",
       "itCannotBeDeletedModified": "不能删除/修改",
-      "noteProtectionIsOff": "注意保护已关闭",
+      "noteProtectionIsOff": "笔记保护已关闭",
       "itCanBeDeletedModified": "可以删除/修改",
-      "changeNoteGroup": "更改音符组",
-      "noteGroups": "音符组",
+      "changeNoteGroup": "更改笔记分组",
+      "noteGroups": "笔记分组",
       "ungroup": "取消分组",
-      "changeColor": "换颜色",
+      "changeColor": "更换颜色",
       "moveNoteToTrash": "将笔记移至垃圾桶"
     },
     "noteEditor": {
@@ -198,12 +198,12 @@
       "searchSelectionInDuckDuckGo": "在 DuckDuckGo 中搜索选择",
       "transformSelectionUppercase": "转换选择：大写",
       "transformSelectionLowercase": "转换选择：小写",
-      "showNoteSourceCode": "显示笔记源代码",
+      "showNoteSourceCode": "显示笔记源码",
       "loadTemplate": "加载模板",
       "saveTemplate": "保存模板",
-      "removeFormattingFromSelection": "从选择中删除格式",
-      "removeAllEditingFromSelection": "从选择中删除所有编辑",
-      "turnSelectionIntoSuperscript": "将选择变为上标",
+      "removeFormattingFromSelection": "从选区中删除格式",
+      "removeAllEditingFromSelection": "从选区中删除所有编辑",
+      "turnSelectionIntoSuperscript": "将选区变为上标",
       "turnSelectionIntoSubscript": "将选区转为下标",
       "textColor": "文字颜色",
       "textHighlighting": "文字高亮",
@@ -212,7 +212,7 @@
       "increaseIndentation": "增加缩进",
       "math": "数学",
       "formula": "公式",
-      "noteSourceCode": "注意源代码"
+      "noteSourceCode": "笔记源码"
     }
   },
   "settings": {
@@ -239,7 +239,7 @@
     "windowControls": {
       "minimizeAppToTray": {
         "radioLabel": "最小化到托盘并保存在内存中（推荐）",
-        "description": "当应用程序主窗口关闭时,所有功能将保持活动状态并立即触发（全局快捷方式、自动更新等功能）"
+        "description": "当应用程序主窗口关闭时，所有功能将保持活动状态并立即触发（全局快捷键、自动更新等功能）"
       },
       "closeMainWindow": {
         "radioLabel": "最小化到托盘并最小化内存使用",
@@ -248,14 +248,14 @@
           "subtitle1": "以下功能将保持活动状态：",
           "feature1": "自动更新",
           "subtitle2": "以下功能会受到限制。该应用程序需要一些时间才能加载回内存：",
-          "feature2": "全局快捷方式：将延迟触发,应用程序需要一些时间来加载。",
+          "feature2": "全局快捷键：将延迟触发，应用程序需要一些时间来加载。",
           "subtitle3": "以下功能将不起作用：",
           "feature3": "驱动器扫描。定期扫描驱动器以确保可以立即使用全局搜索等功能。"
         }
       },
       "closeApp": {
         "radioLabel": "完全关闭应用程序",
-        "description": "当应用程序主窗口关闭时,所有功能都停止工作"
+        "description": "当应用程序主窗口关闭时，所有功能都停止工作"
       }
     },
     "visualEffects": {
@@ -272,7 +272,7 @@
       "previewEffectForSelectedPageTooltip": "完成自定义所选页面后禁用以查看\"设置\"页面的效果",
       "pageToCustomize": "自定义页面",
       "pageToCustomizeDescription1": "从列表中选择页面并调整设置以保存。",
-      "pageToCustomizeDescription2": "效果预览将显示在该页面上,直到您访问另一个页面。"
+      "pageToCustomizeDescription2": "效果预览将显示在该页面上，直到您访问另一个页面。"
     },
     "homeBannerEffects": {
       "title": "主页横幅效果",
@@ -281,9 +281,9 @@
         "title": "主题",
         "themeType": "主题类型",
         "themeTypeRadio": {
-          "dark": "黑暗的",
-          "lightFilter": "滤光片",
-          "light": "光（开发中）"
+          "dark": "暗色",
+          "lightFilter": "滤光",
+          "light": "亮色（开发中）"
         }
       }
     },
@@ -316,7 +316,7 @@
       "resetFontToDefault": "将字体重置为默认值"
     },
     "dateTime": {
-      "dateTime": "约会时间",
+      "dateTime": "日期时间",
       "dateTimePreview": "日期/时间预览：",
       "dateTimeRegionalFormat": "日期/时间区域格式",
       "autoDetectRegionalFormat": "自动检测区域格式",
@@ -337,7 +337,7 @@
     "uiElements": {
       "title": "用户界面元素",
       "directoryItemIconBackgroundColor": "目录项图标背景颜色",
-      "none": "没有任何",
+      "none": "无",
       "minimal": "最小",
       "homePageItemCardDesign": "主页项目卡片设计",
       "neoinfusiveExtruded": "Neoinfusive | 挤压",
@@ -348,9 +348,9 @@
       "showUserNameOnHomeDirectoryCard": "在'主目录'卡上显示用户名",
       "showDriveSpaceIndicator": "显示驱动器空间指示器",
       "driveSpaceIndicatorStyle": "驱动器空间指示器样式",
-      "linearVertical": "线性 | 垂直",
-      "linearHorizontal": "线性 | 水平",
-      "linearHorizontalCentered": "线性 | 水平 | 居中",
+      "linearVertical": "线 | 垂直 | 左侧",
+      "linearHorizontal": "线 | 水平 | 底部",
+      "linearHorizontalCentered": "线 | 水平 | 居中",
       "circular": "圆"
     },
     "homePageMediaBanner": {
@@ -366,9 +366,9 @@
       "options": "信息面板选项",
       "show": "显示信息面板",
       "calculateDirectorySize": "自动计算目录大小",
-      "intensiveFeature": "这是一项计算密集型功能,因此建议仅在具有强大 CPU 和 SSD 的计算机上打开它。还建议在笔记本电脑上禁用它,因为它会增加电池使用量。",
-      "whenOpenDirectory": "当您打开或选择目录时,应用程序会自动计算并显示其完整大小。",
-      "oneSecond": "对于大多数目录来说,计算大小的时间少于 1 秒。如果操作时间超过此时间,它将被取消。"
+      "intensiveFeature": "这是一项计算密集型功能，因此建议仅在具有高性能的 CPU 和 SSD 的计算机上打开，建议在笔记本电脑上禁用，因为该功能会增加电池消耗。",
+      "whenOpenDirectory": "当您打开或选择目录时，应用程序会自动计算并显示目录完整大小。",
+      "oneSecond": "对于大多数目录来说，计算大小的时间少于 1 秒。如果计算时间超出此时间，它将被取消。"
     },
     "addressBar": {
       "addressBarActions": "地址栏操作",
@@ -382,33 +382,33 @@
       "openCopiedPath": "打开复制的路径"
     },
     "clipboard": {
-      "inactiveUnselectable": "不活动的不可选择",
-      "showingNOfItems": "显示 {showingAmount} 个项目,共 {itemsAmount} 个项目",
-      "matchedNOfItems": "匹配了 {matchedAmount} 个项目,共 {itemsAmount} 个项目"
+      "inactiveUnselectable": "不可选择不活动的",
+      "showingNOfItems": "显示 {showingAmount} 个项目，共 {itemsAmount} 个项目",
+      "matchedNOfItems": "匹配了 {matchedAmount} 个项目，共 {itemsAmount} 个项目"
     },
     "navigator": {
-      "title": "航海家",
+      "title": "导航",
       "dividersTitles": "分隔符/标题",
       "showDividersBetweenFilesAndDirectories": "显示文件和目录之间的分隔线",
       "sortingType": "排序类型",
-      "ifEnabledTheSelectedSortingType": "如果启用,选定的排序类型将在应用程序重新加载后应用",
+      "ifEnabledTheSelectedSortingType": "如果启用，选定的排序类型将在应用程序重新加载后应用",
       "saveSortingType": "保存排序类型",
       "sortingElementDisplayType": "排序元素显示类型",
       "showSortingIcon": "显示排序图标",
       "showSortingToolbar": "显示排序工具栏",
-      "navigatorViewLayout": "导航器视图布局",
-      "navigatorItemHoverEffect": "Navigator item hover effect",
-      "navigatorItemList": "导航器项目列表",
+      "navigatorViewLayout": "导航视图布局",
+      "navigatorItemHoverEffect": "导航悬浮效果",
+      "navigatorItemList": "导航项目列表",
       "ocdNameColumnMaxWidth": "OCD | '名称' 列最大宽度：",
-      "filesWithDisproportionatelyLongNames": "名称过长的文件会使文件列表看起来很乱,因此建议将名称列的最大宽度设置为较低的值,例如 50%,以使其看起来更有条理",
+      "filesWithDisproportionatelyLongNames": "名称过长的文件会使文件列表看起来很乱，因此建议将名称列的最大宽度设置为较低的值，例如 50%，以使其看起来更有条理",
       "nameColumnMaxWidthCssValue": "'名称'列最大宽度（CSS 值）"
     },
     "performance": {
       "gpuSystemMemory": "GPU / 系统内存",
-      "useHighPerformanceGpu": "使用高性能GPU",
+      "useHighPerformanceGpu": "使用高性能 GPU",
       "ifEnabled": "如果启用：",
       "theAppPerformanceMightIncrease": "应用程序性能可能会提高",
-      "theAppSystemMemoryRamUsage": "应用程序系统内存 (RAM) 使用率将显着降低（将卸载到 GPU 内存）"
+      "theAppSystemMemoryRamUsage": "应用程序系统内存 (RAM) 使用率将显着降低（将负载到 GPU 内存）"
     },
     "workspaces": {
       "workspaces": "工作区",
@@ -419,7 +419,7 @@
       "tabs": "标签",
       "tabBehavior": "选项卡行为",
       "immutable": "不可变",
-      "tabsBehaveAsPinnedDirectories": "如果启用,选项卡将作为固定目录而不是传统选项卡",
+      "tabsBehaveAsPinnedDirectories": "如果启用，选项卡将作为固定目录而不是传统选项卡",
       "traditional": "传统（开发中）",
       "tabLayout": "选项卡布局",
       "compactVertical": "紧凑型垂直",
@@ -433,12 +433,12 @@
       "closeAppWindow": "关闭所有当前工作区选项卡时关闭应用程序窗口"
     },
     "navigatorHistory": {
-      "title": "航海家历史",
+      "title": "导航历史",
       "historyNavigationStyle": "历史导航风格",
-      "sigmaDefault": "西格玛默认值",
-      "sigmaDefaultDescription": "这种自定义 Sigma 历史样式允许您返回到以前打开的路径,即使在浏览历史堆栈时将新路径插入历史之后也是如此。",
-      "traditional": "传统的",
-      "traditionalDescription": "这是一种传统的历史记录样式,用于绝大多数应用程序。当您在末尾以外的任何地方插入新路径时,它会覆盖所有后续路径,这意味着一旦您返回历史记录并打开其他目录,所有后续条目都会走吧。",
+      "sigmaDefault": "默认 sigma",
+      "sigmaDefaultDescription": "这种自定义 Sigma 历史样式允许您返回到以前打开的路径，即使在浏览历史堆栈时将新路径插入历史之后也是如此。",
+      "traditional": "传统",
+      "traditionalDescription": "这是一种传统的历史记录样式，用于绝大多数应用程序。当您在末尾以外的任何地方插入新路径时，它会覆盖所有后续路径，这意味着一旦您返回历史记录并打开其他目录，所有后续条目都会走吧。",
       "example": {
         "openDirectory": "打开目录",
         "userPath": "/用户",
@@ -450,23 +450,23 @@
         "and": "和",
         "userVideosPath": "/用户/视频",
         "sigmaDefaultExampleDescription": "您仍然可以通过按 \"返回\" 或 \"前进\" 按钮在历史记录中返回到以前的目录。",
-        "traditionalExampleDescription": "您将无法通过按 \"返回\" 或 \"前进\" 按钮在历史记录中返回到以前的目录,因为它们已被覆盖并且历史记录现在只有 2 个目录："
+        "traditionalExampleDescription": "您将无法通过按 \"返回\" 或 \"前进\" 按钮在历史记录中返回到以前的目录，因为它们已被覆盖并且历史记录现在只有 2 个目录："
       }
     },
     "input": {
-      "navigator": "航海家",
-      "directoryItems": "目录项",
-      "showHiddenItems": "显示隐藏的项目",
+      "navigator": "导航",
+      "directoryItems": "目录",
+      "showHiddenItems": "显示隐藏的目录",
       "openWithSingleClick": "单击打开",
-      "hold": "抓住",
-      "buttonToSelectWithoutOpening": "无需打开即可选择项目的按钮",
+      "hold": "按住",
+      "buttonToSelectWithoutOpening": "可多选项目而不打开",
       "doubleClickDelayMs": "双击延迟（毫秒）",
       "inputElements": "输入元素",
       "activateWhenTyping": "键入时激活项目过滤",
       "activateWhenDirectoryChanges": "目录更改时激活项目过滤",
-      "helpers": "帮手",
+      "helpers": "助手",
       "spellcheck": "拼写检查",
-      "valueRangeFrom200To1000ms": "该值应在 200 - 1000（毫秒）范围内"
+      "valueRangeFrom200To1000ms": "该值应在 200 ~ 1000（毫秒）范围内"
     },
     "mouseButtons": {
       "mouseButtons": "鼠标按钮",
@@ -478,36 +478,36 @@
       "title": "全局搜索",
       "globalSearchFeature": "全局搜索功能",
       "enableGlobalSearch": "启用全局搜索功能和定期搜索数据扫描",
-      "quickActions": "快速行动",
+      "quickActions": "快速操作",
       "reScanDrives": "重新扫描驱动器",
       "openSearchDataDirectory": "打开搜索数据目录",
       "searchData": "搜索数据",
       "searchOptions": "搜索选项",
       "autoScanPeriod": "自动扫描周期",
       "scanDepth": "扫描深度",
-      "higherDepthScansWillIncrease": "更高深度的扫描会增加扫描和搜索时间,但可以让您找到位于更深嵌套目录中的文件。",
+      "higherDepthScansWillIncrease": "更高深度的扫描会增加扫描和搜索时间，但可以让您找到位于更深嵌套目录中的文件。",
       "compressSearchData": "压缩搜索数据",
-      "compressionReduces": "压缩显着减少了搜索数据所需的空间量（最多减少 20 倍）,但搜索扫描需要更长的时间（~2 倍）。",
+      "compressionReduces": "压缩显着减少了搜索数据所需的空间量（最多减少 20 倍），但搜索扫描需要更长的时间（~2 倍）。",
       "ignoredPaths": "忽略的路径",
       "enterPathToAddToIgnored": "输入要添加到忽略列表的路径并按",
-      "timeEstimates": "时间估计",
+      "timeEstimates": "估计时间",
       "estimatedDataScanTime": "预计数据扫描时间：",
-      "per1TbDrive": "（每 1 TB 驱动器）",
+      "per1TbDrive": "（每 1 TB 驱动）",
       "estimatedSearchTime": "预计搜索时间：",
-      "dependsOnFileLocation": "（每个搜索词每 1 TB 驱动器）| 取决于文件位置"
+      "dependsOnFileLocation": "（每个搜索词每 1 TB 驱动）| 取决于文件位置"
     },
     "drives": {
       "driveDetection": "驱动检测",
-      "focusAppWhenDriveConnected": "连接驱动器时聚焦应用程序"
+      "focusAppWhenDriveConnected": "连接驱动时聚焦到应用程序"
     },
     "data": {
       "imageThumbnails": "图像缩略图",
-      "everyTimeYouOpenDirectory": "每次打开目录时,应用程序都会为每个图像生成一个小缩略图并将其存储在应用程序目录中。这种图像缓存技术可提高应用程序性能。达到指定限制时,将删除所有缩略图。",
+      "everyTimeYouOpenDirectory": "每次打开目录时，应用程序都会为每个图像生成一个小缩略图并将其存储在应用程序目录中。这种图像缓存技术可提高应用程序性能。达到指定限制时，将删除所有缩略图。",
       "thumbnailStorageLimit": "缩略图存储限制"
     },
     "stats": {
       "directoryItemStatistics": "目录项统计",
-      "storeSomeEventData": "如果启用,该应用程序将存储您与目录/文件交互的一些事件数据,例如,它们被打开的时间和次数。",
+      "storeSomeEventData": "如果启用，该应用程序将存储您与目录/文件交互的一些事件数据，例如,它们被打开的时间和次数。",
       "thisDataIsUsed": "这些数据被 \"timeline\" 和 \"search\" 等功能使用。",
       "statisticsStoring": "统计存储",
       "storeOpenedDirectoryItems": "存储打开的目录项列表",
@@ -519,15 +519,15 @@
   },
   "projectGithubButtons": {
     "projectPage": "项目页面",
-    "requestsIssues": "请求和问题",
+    "requestsIssues": "报告问题",
     "discussions": "讨论",
-    "stars": "星 | {n}"
+    "stars": "Star | {n}"
   },
   "settingsTabs": {
-    "general": "一般的",
-    "uiAppearance": "用户界面外观",
-    "shortcuts": "捷径",
-    "performance": "表现",
+    "general": "常规",
+    "uiAppearance": "UI 外观",
+    "shortcuts": "快捷键",
+    "performance": "性能",
     "tabsWorkspaces": "选项卡和工作区",
     "navigation": "导航",
     "input": "输入",
@@ -537,7 +537,7 @@
   },
   "settingsTags": {
     "language": "语言",
-    "uiScaling": "ui, scaling, scale, size, zoom, interface, font, magnify",
+    "uiScaling": "ui, scaling, scale， size, zoom, interface, font, magnify",
     "updates": "更新,版本,应用程序",
     "appProperties": "启动,启动,启动,登录",
     "windowControls": "窗口、控件、最小化、关闭、恢复、隐藏、托盘、内存、内存、应用程序、性能",
@@ -550,9 +550,9 @@
     "overlays": "叠加层、导航、面板、驱动器、存储、字母、用户界面、元素、视觉",
     "uiElements": "ui、元素、视觉、输入、重音、颜色、时间线、仪表板、页面、最近、卡片、主页、驱动器、空间、指示器、样式",
     "homePageMediaBanner": "主页、页面、媒体、横幅、背景、图像、视频",
-    "infoPanel": "info, panel, directory, size, performance, information, details, properties",
+    "infoPanel": "信息、面板、目录、大小、性能、信息、细节、属性",
     "navigator": "设计、用户界面、导航器、分隔线、标题、排序、视图、布局、列表、网格、项目、文件、目录、悬停、缩放、突出显示、强迫症",
-    "shortcuts": "捷径",
+    "shortcuts": "快捷键",
     "gpuSystemMemory": "GPU,系统,内存,RAM,性能",
     "workspaces": "工作区",
     "tabs": "标签,布局",
@@ -568,7 +568,7 @@
   },
   "dataBackupReminder": {
     "title": "提醒：数据备份",
-    "description": "建议定期将所有重要文件备份（复制）到外部驱动器（大部分时间未连接到您的驱动器）,这样即使出现问题,您也不会丢失重要文件。",
+    "description": "建议定期将所有重要文件备份（复制）到外部驱动器（大部分时间未连接到您的驱动器），这样即使出现问题，您也不会丢失重要文件。",
     "autoBackupWillBeAdded": "自动备份功能将添加到应用程序的下一个版本中"
   },
   "drag": {
@@ -585,50 +585,50 @@
     "filePathUrl": "文件、路径、URL"
   },
   "mediaManager": {
-    "seeMoreArtworksFromThisArtist": "查看这位艺术家的更多作品",
-    "supportThisArtist": "支持这位艺术家",
+    "seeMoreArtworksFromThisArtist": "查看该艺术家的更多作品",
+    "supportThisArtist": "支持该艺术家",
     "deleteFile": "删除文件"
   },
   "sorting": {
     "options": "排序选项",
-    "descendingOrder": "降序排列",
+    "descendingOrder": "降序",
     "ascendingOrder": "升序",
     "columnType": "列类型",
     "typeTitles": {
       "name": "名称",
       "dateModifiedContents": "日期修改内容",
-      "dateModifiedMeta": "日期修改元",
+      "dateModifiedMeta": "日期修改元数据",
       "dateCreated": "创建日期",
       "itemsSize": "项目/尺寸",
-      "status": "地位"
+      "status": "状态"
     },
     "typeShortTitles": {
       "name": "名称",
       "dateModifiedContents": "修改内容",
       "dateModifiedMeta": "修改后的元",
-      "dateCreated": "创建",
+      "dateCreated": "创建日期",
       "itemsSize": "项目/尺寸",
-      "status": "地位"
+      "status": "状态"
     }
   },
   "errors": {
     "error": "错误",
     "errorPathAlreadyExists": "错误：路径已经存在",
-    "cannotOpenPath": "Error: cannot open the path"
+    "cannotOpenPath": "错误：无法打开该路径"
   },
   "shortcutsUI": {
-    "globalShortcutsSystemScope": "全局快捷方式（系统范围）",
-    "globalShortcutsTriggerActionsWhenNotFocused": "即使应用程序未获得焦点,全局快捷方式也会触发操作。",
-    "changeShortcut": "更改快捷方式",
-    "resetShortcut": "重置快捷方式",
-    "localShortcutsAppScope": "本地快捷方式（应用范围）"
+    "globalShortcutsSystemScope": "全局快捷键（系统范围）",
+    "globalShortcutsTriggerActionsWhenNotFocused": "即使应用程序未获得焦点，全局快捷键也会触发操作。",
+    "changeShortcut": "更改快捷键",
+    "resetShortcut": "重置快捷键",
+    "localShortcutsAppScope": "本地快捷键（应用范围）"
   },
   "shortcuts": {
     "openCloseTheAppWindow": "打开/关闭应用程序窗口",
     "openGlobalSearch": "打开全局搜索",
     "openTheAppWindowCreateANewNote": "打开应用程序窗口并创建一个新笔记",
-    "displayShortcutList": "显示快捷方式列表",
-    "closeOpenedDialogOverlay": "关闭打开的对话框/覆盖；关闭准备复制或移动的项目,取消选择项目",
+    "displayShortcutList": "显示快捷键列表",
+    "closeOpenedDialogOverlay": "关闭打开的对话框/覆盖；关闭准备复制或移动的项目，取消选择项目",
     "openCloseSelectedFileInQuickView": "在快速查看窗口中打开/关闭所选文件。支持：图像、视频、音频、PDF、纯文本",
     "toggleFullScreen": "切换全屏",
     "uiZoomIncrease": "用户界面缩放增加",
@@ -647,7 +647,7 @@
     "openCopiedPath": "打开复制的路径",
     "openCurrentDirInTerminal": "在终端打开当前目录",
     "openCurrentDirInTerminalAsAdmin": "以管理员身份在终端中打开当前目录",
-    "focusUnfocusFilterField": "聚焦/不聚焦过滤场",
+    "focusUnfocusFilterField": "聚焦/不聚焦过滤字段",
     "showHideGlobalSearch": "显示/隐藏全局搜索",
     "createNewDirectoryInTheCurrentDirectory": "在当前目录下新建目录",
     "createNewFileInCurrentDirectory": "在当前目录创建新文件",
@@ -656,13 +656,13 @@
     "openLastSelectedDirectoryItem": "打开最后选择的目录项",
     "enterSelectedDirectory": "进入选择的目录",
     "quitCurrentDirectory": "退出当前目录",
-    "selectDirectoryItemInTheDirectionUp": "选择目录项方向：向上",
-    "selectDirectoryItemInTheDirectionLeft": "向左方向选择目录项",
-    "selectDirectoryItemInTheDirectionDown": "选择目录项方向：向下",
-    "selectDirectoryItemInTheDirectionRight": "向右方向选择目录项",
+    "selectDirectoryItemInTheDirectionUp": "向上选择目录",
+    "selectDirectoryItemInTheDirectionLeft": "向左选择目录",
+    "selectDirectoryItemInTheDirectionDown": "向下选择目录",
+    "selectDirectoryItemInTheDirectionRight": "向右选择目录",
     "goToPreviousDirectoryInHistory": "转到历史记录中的上一个目录",
     "goToNextDirectoryInHistory": "转到历史记录中的下一个目录",
-    "goUpDirectory": "上目录",
+    "goUpDirectory": "返回上级目录",
     "selectDeselectItemInTheCurrentDirectory": "选择/取消选择当前目录中的项目",
     "selectDeselectItemRangeInTheCurrentDirectory": "选择/取消选择当前目录中的项目范围",
     "selectAllItemsInCurrentDirectory": "选择当前目录下的所有项目",
@@ -683,9 +683,9 @@
       "createTemplate": "创建模板",
       "reloadApp": "重新加载应用程序",
       "ignore": "忽略",
-      "youCanIgnoreError": "您可以忽略该错误并继续使用该应用程序,但在您重新加载之前它可能无法正常运行。",
+      "youCanIgnoreError": "您可以忽略该错误并继续使用该应用程序，但在您重新加载之前它可能无法正常运行。",
       "reportError": "报告错误",
-      "ifYouHaveGithub": "如果你有 Github 账号,你可以报告这个错误来修复它：",
+      "ifYouHaveGithub": "如果你有 Github 账号，你可以报告这个错误来修复它：",
       "pressButtonToCreateIssueAutomatically": "按下面的按钮自动创建问题模板；",
       "openGeneratedLink": "在浏览器中打开生成的链接；",
       "reviewTemplate": "检查模板并确保错误不包含任何个人信息（例如您的用户名）；",
@@ -696,21 +696,21 @@
       "copyLink": "复制链接",
       "linkWasCopiedToClipboard": "链接已复制到剪贴板",
       "openLinkInDefaultBrowser": "在默认浏览器中打开链接",
-      "operationFailed": "手术失败",
+      "operationFailed": "操作失败",
       "errorDuringTemplateGeneration": "生成模板时出错"
     },
     "confirmationDialog": {
       "localSharingFirewall": {
         "firewallPermissions": "防火墙权限",
         "localSharingFeatureAllows": "\"本地共享\"功能允许您在本地网络上的设备之间共享文件。",
-        "toUseLocalSharing": "要使用本地共享,您需要在出现提示时允许该应用访问您的网络。"
+        "toUseLocalSharing": "要使用本地共享，您需要在出现提示时允许该应用访问您的网络。"
       }
     },
     "userDirectoryEditorDialog": {
       "userDirectoryEditor": "用户目录编辑器",
       "directoryTitle": "目录标题",
       "directoryPath": "目录路径",
-      "iconName": "图标名称（应以'mdi-'开头）",
+      "iconName": "图标名称（应以 'mdi-' 开头）",
       "openIconList": "打开图标列表",
       "iconPreview": "图标预览",
       "pathCannotBeEmpty": "路径不能为空",
@@ -720,15 +720,15 @@
       "permissions": "权限",
       "warning": "警告",
       "warningDescription": "实验性功能。谨慎使用。",
-      "path": "小路",
+      "path": "路径",
       "owner": "所有者",
       "readOnly": "只读",
       "protectedAppScope": "受保护（应用范围）",
       "immutable": "不可变",
-      "ifEnabledImmutable": "如果启用,该项目将变得不可变（任何应用程序都无法读取/修改/删除）。",
+      "ifEnabledImmutable": "如果启用，该项目将变得不可变（任何应用程序都无法读取/修改/删除）。",
       "groupOrUser": "组或用户",
-      "group": "团体",
-      "everyone": "每个人",
+      "group": "组",
+      "everyone": "任何人",
       "learnMore": "了解更多",
       "resetPermissions": "重置权限",
       "takeOwnership": "取得所有权"
@@ -748,21 +748,21 @@
     "homeBannerPickerDialog": {
       "homePageBackgroundManager": "首页后台管理器",
       "highResourceUsage": "高资源使用率",
-      "videoBackgroundsUse": "视频背景使用的内存比图像多得多。要将资源从 RAM 卸载到 GPU 内存,请将应用程序设置为在专用 GPU 上运行。",
+      "videoBackgroundsUse": "视频背景使用的内存比图像多得多。要将资源从 RAM 卸载到 GPU 内存，请将应用程序设置为在专用 GPU 上运行。",
       "customBackgrounds": "自定义背景",
       "defaultBackgrounds": "默认背景",
       "artworksProvided": "不同艺术家提供的艺术作品。将鼠标悬停在预览上以查看指向他们的个人资料和其他详细信息的链接。"
     },
     "homeBannerPositionDialog": {
       "positionXAxis": "定位X轴",
-      "positionYAxis": "位置Y轴"
+      "positionYAxis": "定位Y轴"
     },
     "imagePickerDialog": {
       "cancel": "取消",
       "addImage": "添加图片",
       "imagePicker": "图像选择器",
       "imagePath": "图像路径",
-      "pathUrlBase64String": "路径/URL/base64字符串",
+      "pathUrlBase64String": "路径 / URL / base64 字符串",
       "pickImage": "选择图像",
       "floatPosition": "浮动位置",
       "dimensions": "方面",
@@ -780,11 +780,11 @@
       "localShareManager": "本地共享管理器",
       "scanQRCore": "扫描此二维码打开地址",
       "typeAddressManually": "或在网络浏览器中手动输入指定地址。",
-      "toSeeSharedFiles": "要查看共享文件,请在任何本地设备（连接到同一网络）上的 Web 浏览器的 URL 栏中输入指定地址。",
+      "toSeeSharedFiles": "要查看共享文件，请在任何本地设备（连接到同一网络）上的 Web 浏览器的 URL 栏中输入指定地址。",
       "localServerAddress": "本地服务器地址",
       "addressCopiedToClipboard": "地址已复制到剪贴板",
       "shareType": "共享类型",
-      "stream": "溪流",
+      "stream": "流",
       "sharedFile": "共享文件",
       "sharedDirectory": "共享目录",
       "doesnTWork": "不起作用？",
@@ -798,23 +798,23 @@
       "editFormula": "编辑公式",
       "mathEditor": "数学编辑器",
       "seeDocs": "查看文档",
-      "katex": "贯注",
+      "katex": "KaTeX",
       "formula": "公式",
-      "preview": "预习"
+      "preview": "预览"
     },
     "newDirItemDialog": {
-      "failedToCreateNewDirectory": "创建新目录失败",
-      "failedToCreateNewFile": "创建新文件失败",
-      "newDirectoryCreated": "创建新目录",
-      "newFileCreated": "已创建新文件"
+      "failedToCreateNewDirectory": "创建目录失败",
+      "failedToCreateNewFile": "创建文件失败",
+      "newDirectoryCreated": "已创建目录",
+      "newFileCreated": "已创建文件"
     },
     "noteEditorDialog": {
       "noteEditor": "笔记编辑器",
       "noteTitle": "笔记标题",
-      "noteProtectionOn": "音符保护：开启",
-      "noteCannotBeDeletedModified": "备注不能删除/修改",
-      "noteProtectionOff": "音符保护：关闭",
-      "noteCanBeDeletedModified": "备注可以删除/修改",
+      "noteProtectionOn": "笔记保护：开启",
+      "noteCannotBeDeletedModified": "笔记不能删除/修改",
+      "noteProtectionOff": "笔记保护：关闭",
+      "noteCanBeDeletedModified": "笔记可以删除/修改",
       "loadATemplate": "加载模板",
       "options": "选项",
       "spellcheck": "拼写检查",
@@ -823,15 +823,15 @@
       "chars": "字符",
       "created": "创建",
       "modified": "修改的",
-      "markdownShortcuts": "降价快捷方式",
-      "withTheCursorOnANewLineType": "将光标放在新行上,键入指定的序列以添加相应的元素。",
-      "tips": "尖端",
+      "markdownShortcuts": "Markdown 快捷键",
+      "withTheCursorOnANewLineType": "将光标放在新行上，键入指定的序列以添加相应的元素。",
+      "tips": "提示",
       "rightMouseButton": "鼠标右键",
       "willSelectTheWordAndShowOptions": "将选择单词并显示选项",
       "pasteCopiedDataWithoutFormatting": "粘贴复制的数据而不格式化",
       "escapeBlockAddNewLine": "转义块；添加新行",
-      "escapeBlock": "逃生块",
-      "escapeBlockWhenEndIsReached": "逃生块（到达终点时）",
+      "escapeBlock": "从块中脱离",
+      "escapeBlockWhenEndIsReached": "从块中脱离（在末行时）",
       "1stLevelHeadline": "一级标题",
       "n1to6LevelHeadline": "N[1-6]级标题",
       "multilineCodeBlock": "多行代码块",
@@ -856,7 +856,7 @@
       "removeProgramFromTheList": "从列表中删除程序",
       "programPath": "程序路径",
       "pickAProgram": "选择一个程序",
-      "programName": "节目名称",
+      "programName": "程序名称",
       "programProperties": "程序属性",
       "programCanOpenDirectories": "程序可以打开目录",
       "programCanOpenFiles": "程序可以打开文件",
@@ -866,7 +866,7 @@
       "pathCannotBeEmpty": "路径不能为空",
       "pathDoesNotExist": "路径不存在",
       "pathShouldBeAFile": "路径应该是一个文件",
-      "nameCannotBeEmpty": "姓名不能为空",
+      "nameCannotBeEmpty": "名称不能为空",
       "errorUnableToSelectTheProgram": "错误：无法选择程序"
     },
     "releaseNotesDialog": {
@@ -874,32 +874,32 @@
     },
     "renameDirItemDialog": {
       "renameItem": "重命名项目",
-      "currentName": "现名",
-      "newName": "新名字"
+      "currentName": "当前名称",
+      "newName": "新的名称"
     },
     "shortcutEditorDialog": {
-      "changeShortcut": "更改快捷方式",
-      "shortcutEditor": "快捷方式编辑器",
-      "shortcut": "捷径",
-      "shortcutIsACombination": "快捷方式是组合",
-      "modifierKeys": "1-4 个修改键：[Ctrl、Alt、Shift、Meta]",
-      "regularKey": "1个普通钥匙",
+      "changeShortcut": "更改快捷键",
+      "shortcutEditor": "快捷键编辑器",
+      "shortcut": "快捷键",
+      "shortcutIsACombination": "快捷键是组合",
+      "modifierKeys": "1-4 个修饰键：[Ctrl、Alt、Shift、Meta]",
+      "regularKey": "1个普通键",
       "examples": "例子",
       "ctrlShiftSpace": "Ctrl + Shift + 空格键",
       "ctrlF1": "Ctrl + F1",
-      "metaEsc": "目标+ Esc"
+      "metaEsc": "Meta + Esc"
     },
     "workspaceEditorDialog": {
       "workspaceEditor": "工作区编辑器",
       "selectWorkspaceToEdit": "选择要编辑的工作区",
       "selectedWorkspace": "选定的工作区",
-      "addNewWorkspace": "添加新工作区",
+      "addNewWorkspace": "添加工作区",
       "deleteWorkspace": "删除工作区",
       "workspaceProperties": "工作区属性",
       "workspaceName": "工作区名称",
       "workspaceDefaultDirectory": "工作区默认目录",
       "workspaceLaunchActions": "工作区启动操作",
-      "youCanTriggerTheseActions": "当你切换到这个工作区时,你可以触发这些动作",
+      "youCanTriggerTheseActions": "当你切换到这个工作区时，你可以触发这些动作",
       "selectedAction": "选择的动作",
       "addNewAction": "添加新动作",
       "deleteWorkspaceAction": "删除工作区动作",
@@ -923,7 +923,7 @@
       "encryptWithPassword": "用密码加密",
       "deleteFilesAfter": "之后删除文件",
       "itemsToAdd": "要添加的项目",
-      "nameCannotBeEmpty": "姓名不能为空"
+      "nameCannotBeEmpty": "名称不能为空"
     },
     "archiveExtractionDialog": {
       "extractArchive": "提取档案",
@@ -932,7 +932,7 @@
     },
     "appGuideDialog": {
       "appGuide": "应用指南",
-      "comingSoon": "快来了",
+      "comingSoon": "即将到来",
       "moreGuidesWillBeAdded": "更多指南将在未来的更新中添加",
       "guideHeaderButtons": {
         "projectPage": "项目页面",
@@ -940,47 +940,47 @@
         "discussions": "讨论"
       },
       "nav": {
-        "shortcuts": "捷径",
+        "shortcuts": "快捷键",
         "introduction": "介绍",
         "featureOverview": "功能概述",
         "mediaDownloading": "媒体下载",
         "navigatorTips": "导航提示",
         "dataProtection": "数据保护",
         "addressBar": "地址栏",
-        "comingSoon": "快来了"
+        "comingSoon": "即将到来"
       },
       "shortcuts": {
         "about": "关于",
-        "shortcutsInfo": "应用程序中的大多数操作都可以使用快捷方式（不同的键盘组合键）执行。甚至应用程序本身也可以使用全局（系统范围）可自定义的快捷方式打开/聚焦。",
-        "efficiencyBenefit": "此功能可让您更高效地工作并使过程更愉快（例如,您可以立即打开应用程序并仅使用 1 个快捷方式创建新笔记）。",
+        "shortcutsInfo": "应用程序中的大多数操作都可以使用快捷键（不同的键盘组合键）执行。甚至应用程序本身也可以使用全局（系统范围）可自定义的快捷键打开/聚焦。",
+        "efficiencyBenefit": "此功能可让您更高效地工作并使过程更愉快（例如，您可以立即打开应用程序并仅使用 1 个快捷键创建新笔记）。",
         "press": "按",
         "keyboardButton": "键盘上的按钮或",
         "toolbarButton": "顶部工具栏中的按钮显示完整的快捷方式列表。",
         "examples": "例子",
         "focusAppInfo": "焦点应用程序",
-        "focusAppShortcut": "当此应用程序未获得焦点时,请按",
-        "focusAppInstruction": "聚焦它（将它带到前台）。再次按快捷方式隐藏应用程序。",
+        "focusAppShortcut": "当此应用程序未获得焦点时，请按",
+        "focusAppInstruction": "聚焦它（将它带到前台）。再次按快捷键隐藏应用程序。",
         "createNewNoteInfo": "创建新笔记",
         "createNewNoteShortcut": "按",
-        "createNewNoteInstruction": "聚焦此应用程序,立即创建一个新笔记,并为您打开笔记编辑器。",
+        "createNewNoteInstruction": "聚焦此应用程序，立即创建一个新笔记，并为您打开笔记编辑器。",
         "switchTabInfo": "切换标签",
-        "switchTabShortcut": "当此应用程序获得焦点并且您在当前工作区中打开了一些选项卡时,请按",
+        "switchTabShortcut": "当此应用程序获得焦点并且您在当前工作区中打开了一些选项卡时，请按",
         "switchTabInstruction": "打开指定的标签页。"
       },
       "introduction": {
         "getInvolved": "参与其中",
         "participationWays": "有多种方式可以参与此应用程序的开发：",
-        "participationOptions": "您可以加入社区,发布功能请求,报告问题,开启新的讨论,在这个项目的 Github 页面上自己改进代码",
+        "participationOptions": "您可以加入社区，发布功能请求，报告问题，开启新的讨论，在这个项目的 Github 页面上自己改进代码",
         "rewards": "您也可以通过支持项目获得奖励",
         "joinCommunity": "加入社区",
         "potentialErrors": "潜在错误",
-        "earlyDevelopment": "该应用程序目前处于早期开发（原型设计）阶段,因此预计会出现下面列出的问题。",
-        "errorReporting": "如果应用程序遇到错误,它会自动生成报告（链接）,向您展示,并提议将其发布到 Github 上的项目页面上。",
+        "earlyDevelopment": "该应用程序目前处于早期开发（原型设计）阶段，因此预计会出现下面列出的问题。",
+        "errorReporting": "如果应用程序遇到错误，它会自动生成报告（链接），向您展示，并提议将其发布到 Github 上的项目页面上。",
         "potentialProblems": "潜在问题",
         "nextUpdatesMightOverwrite": "下一次更新可能会覆盖（删除）应用程序的某些用户设置（如快捷方式、固定项目等）。因此您可能需要在每年的开发阶段多次设置这些设置。",
         "expectToSeeSomeErrors": "预计在应用程序的第一个版本中会出现一些错误和性能问题。我将在用户报告这些问题后逐步解决这些问题。",
-        "notThoroughlyTestedYet": "该应用程序尚未经过全面测试。它不会自行删除或损坏您计算机上的任何数据（应用程序设置除外）,但建议您将所有重要数据备份到外部备份驱动器（驱动器大多数时候与计算机断开连接）或在安装和使用此应用程序之前连接到云存储。",
-        "notOptimizedYet": "该应用程序尚未优化,在某些情况下,RAM 使用量可能会飙升并超过 1 GB,例如,当您滚动浏览包含大图像的目录时。因此,目前,请避免在低层级上使用该应用程序计算机（即具有 4 GB 或更少 RAM 的计算机）。"
+        "notThoroughlyTestedYet": "该应用程序尚未经过全面测试。它不会自行删除或损坏您计算机上的任何数据（应用程序设置除外），但建议您将所有重要数据备份到外部备份驱动器（驱动器大多数时候与计算机断开连接）或在安装和使用此应用程序之前连接到云存储。",
+        "notOptimizedYet": "该应用程序尚未优化，在某些情况下，RAM 使用量可能会飙升并超过 1 GB，例如，当您滚动浏览包含大图像的目录时。因此，目前，请避免在低层级上使用该应用程序计算机（即具有 4 GB 或更少 RAM 的计算机）。"
       },
       "mediaDownloading": {
         "videos": {
@@ -998,68 +998,68 @@
       },
       "navigatorTips": {
         "rangeItemSelection": "范围项目选择",
-        "toSelectMultipleDirectoryItems": "选择多个目录项,",
-        "hold": "抓住",
+        "toSelectMultipleDirectoryItems": "选择多个目录项，",
+        "hold": "按住",
         "toSelectThe": "选择",
         "start": "开始",
-        "itemThenMoveTheCursor": "项目,然后将光标移动到",
+        "itemThenMoveTheCursor": "项目，然后将光标移动到",
         "end": "结尾",
         "itemAnd": "项目和",
-        "press": "按",
+        "press": "按住",
         "onItToSelectTheRange": "在上面选择范围。",
         "singleItemSelection": "单项选择",
-        "toSelectASingleDirectoryItemPress": "要选择单个目录项,请按",
+        "toSelectASingleDirectoryItemPress": "要选择单个目录项，请按",
         "onTheItemToSelectIt": "在项目上选择它。",
         "keyboardItemNavigation": "键盘项目导航",
-        "toMoveSelectionToNextItem": "要将选择移动到下一个项目,请按",
+        "toMoveSelectionToNextItem": "要将选择移动到下一个项目，请按",
         "or": "或者",
         "gridLayoutOnly": "（仅限网格布局）",
-        "toMoveSelectionToPreviousItem": "要将选择移动到上一个项目,请按",
+        "toMoveSelectionToPreviousItem": "要将选择移动到上一个项目，请按",
         "toOpenCurrentDirectoryPress": "打开当前目录按",
         "toQuitCurrentDirectoryPress": "退出当前目录按",
         "goToPreviousDirectoryInHistory": "转到历史记录中的上一个目录",
         "goToNextDirectoryInHistory": "转到历史记录中的下一个目录",
-        "goUpDirectory": "上目录"
+        "goUpDirectory": "返回上级目录"
       },
       "dataProtection": {
         "mainPurpose": "此功能的主要目的是提供一种保护重要文件/目录不被访问和修改（读/写/删除/重命名/等）的能力。",
-        "protectionIsAchieved": "保护是通过将某些文件属性设置为‘拒绝’状态来实现的。它不会加密数据。当属性被删除时,受保护的文件仍然可以被读取/修改。",
+        "protectionIsAchieved": "保护是通过将某些文件属性设置为‘拒绝’状态来实现的。它不会加密数据。当属性被删除时，受保护的文件仍然可以被读取/修改。",
         "goodWayToPreventYourself": "这是防止您自己和其他应用程序意外/有意修改重要文件的好方法。它甚至可能有助于保护您的数据免受简单恶意软件的侵害。",
         "modes": "模式",
         "simpleMode": "\"简单模式\" 保护指定的项目（文件/目录）仅在此应用程序内不被修改。这些项目仍然可以从任何其他程序读取和修改。",
         "advancedMode": "\"高级模式\"针对高级用户。它允许您手动为特定项目设置不同的属性。",
-        "immutableMode": "\"Immutable mode\"是一种通过使文件/目录不可变来保护文件/目录的快速方法。启用后,系统会将指定文件/目录的所有属性设置为'拒绝'状态,并使其不可变（这意味着如果不重置属性,程序将无法读取/写入/修改/删除它。)",
+        "immutableMode": "\"Immutable mode\"是一种通过使文件/目录不可变来保护文件/目录的快速方法。启用后，系统会将指定文件/目录的所有属性设置为'拒绝'状态，并使其不可变（这意味着如果不重置属性，程序将无法读取/写入/修改/删除它。)",
         "warning": "警告",
-        "useWithCaution": "谨慎使用。\"高级模式\"和\"不可变模式\"仍处于早期开发阶段。该功能尚未经过彻底测试。理论上它可以以某种方式锁定文件/目录你不可能访问它的内容。确保在对重要数据使用它之前在一些测试文件/目录上测试这个特性。如果你发现任何问题,请在项目的 Github 页面上创建一个问题来报告问题。"
+        "useWithCaution": "谨慎使用。\"高级模式\"和\"不可变模式\"仍处于早期开发阶段。该功能尚未经过彻底测试。理论上它可以以某种方式锁定文件/目录你不可能访问它的内容。确保在对重要数据使用它之前在一些测试文件/目录上测试这个特性。如果你发现任何问题，请在项目的 Github 页面上创建一个问题来报告问题。"
       },
       "addressBar": {
         "addressBarAllows": "地址栏允许您通过键入路径来导航目录和文件。",
         "features": "特征",
         "quickNavigation": "快速导航",
-        "itWillAutomaticallyOpen": "它会自动打开目录,当你输入他们的地址（手动或自动完成）",
+        "itWillAutomaticallyOpen": "它会自动打开目录，当你输入他们的地址（手动或自动完成）",
         "quickFileOpening": "快速打开文件",
-        "toOpenTheSpecifiedFile": "打开指定文件,按回车键",
-        "autocomplete": "自动完成",
+        "toOpenTheSpecifiedFile": "按回车键打开指定文件",
+        "autocomplete": "自动补全",
         "press": "按",
         "toAutocompleteIterate": "自动完成/迭代目录项名称。",
-        "quotesNotNeeded": "不需要报价",
+        "quotesNotNeeded": "不需要引用",
         "namesThatHaveSpaces": "名称中有空格的不需要用引号引起来",
         "followsStandards": "遵循标准",
-        "onWindowsOsAllBackwardSlashes": "在 Windows 操作系统上,所有反斜杠",
+        "onWindowsOsAllBackwardSlashes": "在 Windows 操作系统上，所有反斜杠",
         "areAutomaticallyConverted": "自动转换为正斜杠",
         "toProvideSeamless": "提供无缝的标准化工作流程",
         "whereToFindIt": "在哪里可以找到它",
         "addressBarCanBeOpened": "可以使用快捷方式从任何页面打开地址栏",
         "orByPressing": "或按",
         "typeInAddressManually": "手动输入地址",
-        "buttonInTheAddressBarMenu": "地址栏菜单中的按钮,位于\"导航器\"页面的操作栏上。"
+        "buttonInTheAddressBarMenu": "地址栏菜单中的按钮，位于\"导航器\"页面的操作栏上。"
       }
     }
   },
   "notifications": {
     "hideNotification": "隐藏通知",
     "removeNotification": "删除通知",
-    "fileName": "文档名称",
+    "fileName": "文件名称",
     "downloadingUpdate": "下载更新",
     "downloadingFile": "下载文件",
     "cannotFetchDirectoryItems": "无法获取目录项",
@@ -1091,12 +1091,12 @@
     "extractArchiveInProgress": "提取档案：进行中",
     "youCannotDeleteDriveSRootDirectory": "您不能删除驱动器的根目录",
     "allItemsWereTrashed": "所有物品都被丢弃",
-    "trashedItems": "垃圾物品",
-    "trashedItemsSize": "垃圾项目大小",
+    "trashedItems": "已删除物品",
+    "trashedItemsSize": "已删除项目大小",
     "allItemsWereDeleted": "所有项目都被删除",
     "deletedItems": "删除的项目",
     "deletedItemsSize": "删除的项目大小",
-    "errorTrashItems": "错误：垃圾项目",
+    "errorTrashItems": "错误：已删除的项目",
     "errorDeleteItems": "错误：删除项目",
     "failedToTrashSomeItems": "无法丢弃某些物品",
     "trashed": "垃圾桶",
@@ -1113,7 +1113,7 @@
     "addedNItemsToPinned": "已将 0 项添加到固定 | 已添加 1 项已固定 | 已添加 {n} 项已固定 | 已添加 {n} 项已固定",
     "removedNItemsFromProtected": "从受保护中删除了 0 个项目|从受保护中删除了 1 个项目|从受保护中删除了 {n} 个项目|从受保护中删除了 {n} 个项目",
     "addedNItemsToProtected": "添加 0 个项目到受保护 | 添加 1 个项目到受保护 | 添加 {n} 个项目到受保护 | 添加 {n} 个项目到受保护",
-    "actionFailed": "行动失败",
+    "actionFailed": "操作失败",
     "actionIsNotAllowedWhenInputFieldIsActive": "输入字段处于活动状态时不允许执行操作",
     "actionIsNotAllowedWhenADialogIsOpened": "打开对话框时不允许执行操作",
     "noDirectoryItemsAreSelected": "没有选择目录项",
@@ -1142,8 +1142,8 @@
     "programWasAdded": "程序已添加",
     "programWasEdited": "程序已编辑",
     "programWasDeleted": "程序被删除",
-    "shellCommandFailed": "外壳命令失败",
-    "couldNotGetAppBinsExecPermissions": "无法获得应用程序二进制目录的执行权限。在授予权限之前,某些功能将无法使用。",
+    "shellCommandFailed": "shell 命令失败",
+    "couldNotGetAppBinsExecPermissions": "无法获得应用程序二进制目录的执行权限。在授予权限之前，某些功能将无法使用。",
     "addWorkspaceError": "错误：添加工作区",
     "editWorkspaceError": "错误：编辑工作区",
     "deleteWorkspaceError": "错误：删除工作区",
@@ -1163,8 +1163,8 @@
       "addProgram": "添加程序",
       "colorTags": "颜色标签",
       "protectItem": "保护物品",
-      "protectedListDescription": "如果启用,该项目将被添加到受保护列表中。它将受到保护,仅在该应用程序内不会被修改/删除。其他应用程序仍然可以修改/删除它。",
-      "addToPinned": "添加到固定",
+      "protectedListDescription": "如果启用，该项目将被添加到受保护列表中。它将受到保护，仅在该应用程序内不会被修改/删除。其他应用程序仍然可以修改/删除它。",
+      "addToPinned": "添加到仪表板页面上固定",
       "pinnedItemsLocation": "可以在仪表板页面上找到固定的项目",
       "renameSelected": "重命名选择",
       "setSelectedItemsForMoving": "设置要移动的选定项目",
@@ -1188,18 +1188,18 @@
       "createSymbolicLink": "创建符号链接",
       "windowsLinkLnk": "Windows 链接 (.lnk)",
       "errorOpenProgram": "错误：无法打开程序",
-      "editCard": "Edit card"
+      "editCard": "编辑卡片"
     }
   },
   "version": "版本",
-  "active": "积极的",
+  "active": "有效",
   "selected": "选择",
   "close": "关闭",
   "type": "类型",
   "image": "图片",
   "video": "视频",
-  "drive": "驾驶",
-  "drives": "驱动器",
+  "drive": "驱动",
+  "drives": "驱动",
   "locations": "位置",
   "reset": "重置",
   "loading": "加载中",
@@ -1207,8 +1207,8 @@
   "warning": "警告",
   "example": "例子：",
   "description": "描述",
-  "shortcut": "捷径",
-  "shortcutPlural": "捷径",
+  "shortcut": "快捷键",
+  "shortcutPlural": "快捷键",
   "fullScreen": "全屏",
   "menu": "菜单",
   "contextMenu": "上下文菜单",
@@ -1221,29 +1221,29 @@
   "showItems": "显示项目",
   "limit": "限制",
   "noData": "没有数据",
-  "action": "行动",
-  "actions": "行动",
+  "action": "操作",
+  "actions": "操作",
   "options": "选项",
   "add": "添加",
   "edit": "编辑",
   "enabled": "启用",
   "disabled": "禁用",
-  "enable": "使能够",
+  "enable": "启用",
   "search": "搜索",
   "stop": "停止",
   "results": "结果",
   "tab": "标签",
   "or": "或者",
-  "run": "跑步",
-  "spaceLeft": "剩下",
+  "run": "运行",
+  "spaceLeft": "剩余",
   "pathCannotBeOpened": "无法打开路径",
   "removeAllFromThisList": "从此列表中删除所有",
   "thisFeatureIsDisabled": "此功能已禁用",
   "listLayout": "列表布局",
   "gridLayout": "网格布局",
-  "scale": "规模",
-  "highlight": "强调",
-  "inaccessible": "人迹罕至",
+  "scale": "浮动",
+  "highlight": "高亮",
+  "inaccessible": "无法访问",
   "offline": "离线",
   "keepOnDevice": "保持在设备上",
   "bytesOnDisk": "磁盘上的字节数",
@@ -1268,7 +1268,7 @@
   "showInDirectory": "在目录中显示",
   "fileSymlink": "文件符号链接",
   "directorySymlink": "目录符号链接",
-  "done": "完毕",
+  "done": "完成",
   "paused": "暂停",
   "inProgress": "进行中",
   "item": "0 项 | 1 项 | {n} 项 | {n} 项",
@@ -1276,11 +1276,11 @@
   "destinationPath": "目标路径",
   "sourcePath": "来源路径",
   "items": "项目",
-  "size": "尺寸",
+  "size": "大小",
   "fileSize": "文件大小",
   "directorySize": "目录大小",
   "getSize": "获取大小",
-  "path": "小路",
+  "path": "路径",
   "realPath": "链接目标路径",
   "created": "创建",
   "modified": "修改内容",
@@ -1290,8 +1290,8 @@
   "timeline": "时间线",
   "protectedWin32": "受保护（在此应用程序内）",
   "mode": "权限",
-  "yes": "是的",
-  "no": "不",
+  "yes": "是",
+  "no": "否",
   "readOnly": "只读",
   "password": "密码",
   "enterPassword": "输入密码",
@@ -1304,8 +1304,8 @@
   "undo": "撤消",
   "pause": "暂停",
   "cancel": "取消",
-  "ok": "行",
-  "save": "救",
+  "ok": "确定",
+  "save": "保存",
   "create": "创建",
   "createNew": "创建新的",
   "new": "新的",
@@ -1317,35 +1317,35 @@
   "stopServer": "停止服务器",
   "copyAddress": "复制地址",
   "clearListMessage": "物品清单已清空",
-  "allowGlobalSearchMessage": "全局搜索可让您快速找到计算机上的任何文件/目录。<br>它会定期扫描您的驱动器并生成数据文件（映射）,以便快速找到您的文件。<br>上次扫描后创建的文件不会被发现,因为它们不会在数据文件中,所以建议选择更频繁的自动扫描周期。",
-  "experimentalFeature": "未完成的实验特征",
+  "allowGlobalSearchMessage": "全局搜索可让您快速找到计算机上的任何文件/目录。<br>它会定期扫描您的驱动器并生成数据文件（映射），以便快速找到您的文件。<br>上次扫描后创建的文件不会被发现，因为它们不会在数据文件中，所以建议选择更频繁的自动扫描周期。",
+  "experimentalFeature": "未完成的实验特性",
   "min": "分钟",
   "sec": "秒",
   "mediaInfo": "媒体信息",
-  "stream": "溪流",
+  "stream": "流",
   "bitsPerRawSample": "每个原始样本的位数",
   "colorSpace": "色彩空间",
   "pixFmt": "像素格式",
   "chromaLocation": "色度位置",
   "bitRate": "比特率",
-  "duration": "期间",
+  "duration": "时长",
   "encoder": "编码器",
-  "channelLayout": "渠道布局",
-  "channels": "渠道",
+  "channelLayout": "频道布局",
+  "channels": "频道",
   "sampleRate": "采样率",
-  "avgFrameRate": "帧率",
+  "avgFrameRate": "平均码率",
   "codecName": "编解码器名称",
   "codecTagString": "编解码器标签字符串",
   "width": "宽度",
   "height": "高度",
-  "left": "剩下",
-  "right": "正确的",
-  "none": "没有任何",
+  "left": "左",
+  "right": "右",
+  "none": "无",
   "displayAspectRatio": "显示纵横比",
-  "hasBFrames": "有b帧",
-  "profile": "轮廓",
-  "closedCaptions": "隐藏式字幕",
+  "hasBFrames": "存在 B 帧",
+  "profile": "简介",
+  "closedCaptions": "内嵌字幕",
   "protectedItemsShort": "受保护",
-  "pinnedItemsShort": "随附的",
+  "pinnedItemsShort": "固定的",
   "freeOf": "自由于"
 }
