@@ -107,7 +107,7 @@ Consider supporting the developer on Patreon (monthly, with [rewards](https://pa
       <td width="320px">
         <a target="_blank" href="https://patreon.com/sigma_file_manager">
           <img
-            src="./.github/media/patreon_button.png"
+            src="https://raw.githubusercontent.com/aleksey-hoffman/sigma-file-manager/main/.github/media/patreon_button.png"
             width="164px"
             style="box-shadow: 0px 6px 24px rgb(255, 66, 77, 0.2); margin: 16px 0"
           />
