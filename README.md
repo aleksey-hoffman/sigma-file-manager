@@ -1,7 +1,7 @@
 # Latest news
 
 - Version 1.6.0 was released.
-- Started rewriting the app codebase and moving away from Electron to make it much more efficient.
+- Started rewriting the app codebase and moving away from Electron. Once finished, the app will become faster and much more capable.
 - Reddit community [r/SigmaFileManager](https://www.reddit.com/r/SigmaFileManager) was created. This is where I will post all the updates, polls, progress, image and video previews of new / modified features, tips, etc. Check it out and post some cool ideas!
 
 # What's new in `v1.6`
@@ -28,8 +28,6 @@ Designed, developed, and maintained by [Aleksey Hoffman](https://github.com/alek
 Thanks to everyone who has been sharing this project with others!
 
 <img src="./.github/media/main.png">
-
-<i>Artwork in the image: [Futuristic Japanese Palanquin by Julien Gauthier](https://www.artstation.com/artwork/EV8Lo4)</i>
 
 # Goal
 
@@ -94,30 +92,28 @@ Several more major features / improvements are already in development and will b
 
 # Supporters
 
-This app is free but it needs supporters to stay alive and to keep improving. Please consider supporting it.
-
-![supporter-goal-progress](https://user-images.githubusercontent.com/61761672/184556462-803af5f2-3ad6-44fb-be54-4a923d9baf22.png)
-
-Support the project on Patreon:
-
-<a target="_blank" href="https://patreon.com/sigma_file_manager">
-  <img
-    src="./.github/media/patreon_button.png"
-    width="164px"
-    style="box-shadow: 0px 6px 24px rgb(255, 66, 77, 0.2); margin: 16px 0"
-  />
-</a>
-
-Or with crypto:
+Consider supporting the developer on Patreon (monthly, with [rewards](https://patreon.com/sigma_file_manager)) or via crypto:
 
 <table>
   <thead>
     <tr>
-      <th>Crypto network</th>
+      <th>Platform</th>
       <th>Address</th>
     </tr>
   </thead>
   <tbody>
+    <tr>
+      <td>Patreon</td>
+      <td width="320px">
+        <a target="_blank" href="https://patreon.com/sigma_file_manager">
+          <img
+            src="./.github/media/patreon_button.png"
+            width="164px"
+            style="box-shadow: 0px 6px 24px rgb(255, 66, 77, 0.2); margin: 16px 0"
+          />
+        </a>
+      </td>
+    </tr>
     <tr>
       <td>BTC</td>
       <td width="320px">
@@ -133,15 +129,7 @@ Or with crypto:
   </tbody>
 </table>
 
-#### The rewards
-
-See the rewards you will get for supporting my work on [this page](https://github.com/aleksey-hoffman/sigma-file-manager/wiki/Supporter-rewards)
-
-## Level-2 sponsor
-
-[Become the first sponsor](https://github.com/aleksey-hoffman/sigma-file-manager/wiki/Supporter-rewards)
-
-## Level-1 sponsor
+## Sponsor
 
 [Become the first sponsor](https://github.com/aleksey-hoffman/sigma-file-manager/wiki/Supporter-rewards)
 
@@ -150,15 +138,14 @@ See the rewards you will get for supporting my work on [this page](https://githu
 <table>
   <tbody>
     <tr>
-      <td align="center" valign="middle">
+       <td align="center" valign="middle">
         <a href="https://www.photoancestry.com/" title="Houston Photo Restoration">
           <img width="128px"  src="https://www.photoancestry.com/images/fpbanner_poster_.png">
         </a>
       </td>
-    </tr>
-    <tr>
-      <td align="center" valign="middle">
-        <a href="https://www.photoancestry.com/" title="Houston Photo Restoration">⭐ Houston Photo Restoration</a>
+      <td>
+       <a href="https://www.photoancestry.com/" title="Houston Photo Restoration">photoancestry.com</a>
+       <p>Houston's #1 Photo Restoration Service</p>
       </td>
     </tr>
   </tbody>
@@ -171,14 +158,14 @@ See the rewards you will get for supporting my work on [this page](https://githu
     <tr>
       <td align="center" valign="middle">
         <a href="https://github.com/andyundso" title="Andy Pfister">
-          <img valign="middle" width="36px" src="https://avatars.githubusercontent.com/u/7010698?v=4">
-          ⭐ Andy Pfister
+          <img valign="middle" width="48px" src="https://avatars.githubusercontent.com/u/7010698?v=4">
+          Andy Pfister
         </a>
       </td>
       <td align="center" valign="middle">
         <a href="https://github.com/exploitacious" title="Alex Ivantsov">
-          <img valign="middle" width="36px" src="https://avatars.githubusercontent.com/u/75740078?v=4">
-          ⭐ Alex Ivantsov
+          <img valign="middle" width="48px" src="https://avatars.githubusercontent.com/u/75740078?v=4">
+          Alex Ivantsov
         </a>
       </td>
     </tr>
@@ -189,10 +176,10 @@ See the rewards you will get for supporting my work on [this page](https://githu
 
 <div>
   <a href="https://github.com/theoob" title="Tony Kelly">
-    <b>⭐ Tony Kelly</b>
+    <b>Tony Kelly</b>
   </a>
   ~ <a href="https://github.com/julienripet" title="Julien Ripet">
-    <b>⭐ Julien Ripet</b>
+    <b>Julien Ripet</b>
   </a>
   ~ <a href="https://github.com/valentimarco" title="Marco Valenti">
     <b>Marco Valenti</b>
@@ -208,11 +195,7 @@ See the rewards you will get for supporting my work on [this page](https://githu
   <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/blob/main/BAKERS.md">See the full list of supporters →</a>
 </h4>
 
-#### Additional info
-
-- Supporters are added to the list from top to bottom. The earlier you start supporting the project, the higher your name will be on the list.
-- "3+ months" supporters will have the ⭐ badge displayed next to their name.
-- The funding will be used for funding the development of this and my other big projects. Right now, I'm also working in collaboration with a few universities on advanced tools / algorithms that will help scientists speed up development of new medications and treatments for diseases, reducing the time need to find a new medication from 10 years (current average) to just a few months, and hopefully help humanity get rid of diseases (the project will be open-sourced in a few months);
+The funding will be used for funding the development of this and my other big projects. Right now, I'm also working in collaboration with a few universities on advanced tools / algorithms that will help scientists speed up development of new medications and treatments for diseases, reducing the time need to find a new medication from 10 years (current average) to just a few months, and hopefully help humanity get rid of diseases (the project will be open-sourced in a few months);
 
 # Download
 
@@ -236,7 +219,7 @@ You can install the app in one of these ways:
   <tbody>
     <tr>
       <td>Windows (via winget)</td>
-      <td width="320px">
+      <td width="580px">
         <code>winget install --id=AlekseyHoffman.Sigma-File-Manager --source winget</code>
       </td>
     </tr>
@@ -300,7 +283,7 @@ You can install the app in one of these ways:
 </table>
 
 ### Info
-This app is primarily developed for Windows because it has the largest user base. The Linux builds get a lot less development time. They are less stable and have more issues. When this project has enough supporters, I will be able to spend more time on Linux builds.
+This app is primarily developed for Windows. The Linux builds get a lot less development time. They are less stable and have more issues. With more supporters, I will be able to spend more time on Linux builds.
 
 #### Windows | Installation notes
 
@@ -378,26 +361,9 @@ There's a fun secret hidden somewhere in the app. See if you can find it. Hint: 
 
 # Become my student
 
-If you want to learn to build apps like Sigma File Manager, you can become my student and learn from me online.
+If you want to quickly learn how to build web and desktop apps like Sigma File Manager, I can teach you.
 
 See more details on [my Github profile page](https://github.com/aleksey-hoffman)
-
-# The app background story
-
-Even though I've spent 3000+ hours developing this app, I decided to make it free and open-source because open-source is more than just a way to share your work, it has a larger impact on the development of our society than you think.
-
-When we create close-sourced, overly-copyrighted products, and hide our work behind paywalls and patents, with the primary goal of enriching yourself, we slow down our development.
-
-As history has shown us, when we share our knowledge with each other freely and build upon each other's work, we increase the rate of our technological development, which improves well-being of everyone as a result. Science is the greatest example of what shared collaborative work can do for us. This is why open-source and open-content concepts are so important. Projects like this wouldn't be possible without it.
-
-Relying on donations is no doubt a less profitable model, but I think it's better when the people who use your work are the ones who determine how much support you receive. This is how we incentivize and motivate creators to improve, to make better, more useful, more enriching products / artworks / software / technologies.
-
-By creating this app, I also wanted to show every beginner that no project is too big for your skills - all you need to do is just start making it, work hard on it every day, learn in the process, and simply don't stop until you create something really good. That's the secret to creating something great.
-
-This app is an example of what dedication can do for you - when I started this project I could barely code, and in just 2 years of work with budget of $0, the dedication allowed me to create an app, which in version 1.0 in some aspects can already compete with apps like Windows "File Explorer" which has been in development for 24+ years by a trillion dollars worth company's team of many highly paid professional developers and designers each of whom has specialized skills, experience, all the resources, tools, and computing power in the world, including super computers, AI algorithms, neural networks, the ability to employ any specialist in the world, and the enormous amounts of data. And despite not having any of this, you can still make a competitive product, if you just start making it and keep working on it. But as I said earlier, this is only possible in the world where we build upon each other's work, rather than hiding our work and experience from each other behind patents and copyrights.
-
-This is how and why "Sigma file manager" was created. It all started from a simple idea of making a concept design, but thanks to other open-source developers, who also decided to share their work with the world, I was able to turn this idea into a quickly evolving app with great potential. Building something for others also gave me a lot of ideas for more impactful projects, some of which are already in development.
-
 
 # Contributors - open-content creators
 
