@@ -219,7 +219,7 @@ You can install the app in one of these ways:
   <tbody>
     <tr>
       <td>Windows (via winget)</td>
-      <td width="580px">
+      <td width="320px">
         <code>winget install --id=AlekseyHoffman.Sigma-File-Manager --source winget</code>
       </td>
     </tr>
