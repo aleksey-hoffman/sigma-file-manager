@@ -1054,6 +1054,50 @@
         "typeInAddressManually": "アドレスを手動で入力",
         "buttonInTheAddressBarMenu": "\"Navigator\"ページのアクションバーにあるアドレスバーメニューのボタン."
       }
+    },
+    "trashCurrentDir": {
+      "title": "Trashing current directory",
+      "description": "Selected items include the currently opened directory.",
+      "confirm": "Confirm, if this was intentional and you want to send it to trash.",
+      "trash": "Trash"
+    },
+    "trashProtected": {
+      "title": "Trashing protected",
+      "description": "Selected items include {count} protected items.",
+      "confirm": "Confirm, if you want to send them to trash.",
+      "trashUnprotected": "Trash unprotected",
+      "trashAll": "Trash all"
+    },
+    "deleteProtected": {
+      "title": "Deleting protected",
+      "description": "Selected items include {count} protected items.",
+      "confirm": "Confirm, if you want to delete them.",
+      "deleteUnprotected": "Delete unprotected",
+      "deleteAll": "Delete all"
+    },
+    "deleteIrreversibly": {
+      "title": "Deleting from drive",
+      "description": "This operation will permanently delete {count} items from your computer.",
+      "confirm": "Confirm, if you understand this cannot be undone.",
+      "delete": "Delete"
+    },
+    "deleteCurrentDir": {
+      "title": "Deleting current directory",
+      "description": "Selected items include the currently opened directory.",
+      "confirm": "Confirm, if this was intentional and you want to delete it.",
+      "delete": "Delete"
+    },
+    "deleteInRoot": {
+      "title": "Deleting root items",
+      "description": "Deleting system files in storage root might break the computer's operating system.",
+      "confirm": "Confirm, if you know what you are deleting.",
+      "delete": "Delete"
+    },
+    "trashInRoot": {
+      "title": "Trashing root items",
+      "description": "Deleting system files in storage root might break the computer's operating system.",
+      "confirm": "Confirm, if you know what you are deleting.",
+      "trash": "Trash"
     }
   },
   "notifications": {
@@ -1104,6 +1148,8 @@
     "removedNItemsOfTotal": "{totalAmount} の {removedAmount}",
     "trashedNItemsOfTotal": "{totalAmount} アイテムのうち {removedAmount} アイテムがごみ箱に入りました",
     "deletedNItemsOfTotal": "{totalAmount} アイテムのうち {removedAmount} アイテムが削除されました",
+    "trashedNItems": "{totalAmount} アイテムがごみ箱に入りました",
+    "deletedNItems": "{totalAmount} アイテムが削除されました",
     "couldNotTrash": "ゴミ箱に移動できませんでした",
     "failedToDeleteSomeItems": "いくつかのアイテムを削除できませんでした",
     "couldNotDelete": "削除できませんでした",
@@ -1347,5 +1393,7 @@
   "closedCaptions": "字幕",
   "protectedItemsShort": "保護された",
   "pinnedItemsShort": "添付",
-  "freeOf": "から自由である"
+  "freeOf": "から自由である",
+  "terminal": "Terminal",
+  "conflict": "Conflict"
 }

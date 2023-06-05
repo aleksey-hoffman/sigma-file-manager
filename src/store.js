@@ -10,6 +10,8 @@ import router from './router.js'
 import {i18n} from './localization'
 import { languages, getLanguage } from './localization/data'
 import utils from './utils/utils'
+import deleteDirItems from './actions/fs/deleteDirItems.js'
+import trashDirItems from './actions/fs/trashDirItems.js'
 import TimeUtils from './utils/timeUtils.js'
 import * as fsManager from './utils/fsManager'
 import { getField, updateField } from 'vuex-map-fields'
@@ -3796,7 +3798,7 @@ export default new Vuex.Store({
         state.navigatorView.history.currentIndex = currentHistoryIndex + 1
       }
     },
-    GO_UP_DIRECTORY ({ state, commit, dispatch, getters }) {
+    goUpDirectory ({state, dispatch}) {
       const dir = PATH.parse(state.navigatorView.currentDir.path).dir
       dispatch('loadDir', { path: dir })
     },
@@ -4037,259 +4039,11 @@ export default new Vuex.Store({
         ...params
       })
     },
-    async trashSelectedDirItems ({getters, dispatch}) {
-      await dispatch('trashDirItems', {items: getters.selectedDirItems})
+    async trashSelectedDirItems (store) {
+      trashDirItems(store, {items: store.getters.selectedDirItems})
     },
-    async deleteSelectedDirItems ({getters, dispatch}) {
-      await dispatch('deleteDirItems', {items: getters.selectedDirItems})
-    },
-    async trashDirItems ({dispatch}, params) {
-      let defaultParams = {
-        safeCheck: true,
-        silent: false,
-        allowUndo: false,
-        operation: 'trash'
-      }
-      params = utils.cloneDeep({...defaultParams, ...params})
-
-      try {
-        await dispatch('handleRemoveDirItems', params)
-      }
-      catch (error) {
-        console.error(error)
-        await dispatch('handleRemoveDirItemsError', {...params, error})
-      }
-    },
-    async deleteDirItems ({dispatch}, params) {
-      let defaultParams = {
-        safeCheck: true,
-        silent: false,
-        allowUndo: false,
-        operation: 'delete'
-      }
-      params = utils.cloneDeep({...defaultParams, ...params})
-
-      try {
-        await dispatch('handleRemoveDirItems', params)
-      }
-      catch (error) {
-        console.error(error)
-        await dispatch('handleRemoveDirItemsError', {...params, error})
-      }
-    },
-    async handleRemoveDirItemsError (_, params) {
-      if (params.error.status !== 'cancel') {
-        notifications.emit({
-          name: params.operation === 'trash' ? 'trashItemsError' : 'deleteItemsError',
-          error: params.error
-        })
-      }
-    },
-    async handleRemoveDirItems (store, params) {
-      async function removeDirItems (params) {
-        if (params.safeCheck) {
-          params.items = await chooseItemsToRemove(params)
-        }
-        const result = await initRemoveDirItems(params)
-        return result
-      }
-
-      async function chooseItemsToRemove (params) {
-        return await store.dispatch('chooseItemsToRemove', {
-          operation: params.operation,
-          items: params.items
-        }) || []
-      }
-
-      async function initRemoveDirItems (params) {
-        if (params.items.length === 0) {
-          return {
-            removedItems: [],
-            notRemovedItems: [],
-          }
-        }
-        if (params.items.length > 0) {
-          if (params.operation === 'trash') {
-            let {removedItems, notRemovedItems} = await electron.ipcRenderer.invoke('trash-dir-items', params)
-            return {
-              removedItems,
-              notRemovedItems,
-            }
-          }
-          else if (params.operation === 'delete') {
-            if (params.items.length > 0) {
-              let removedItems = []
-              let notRemovedItems = []
-              const trashPromises = params.items.map(async item => {
-                try {
-                  await fsExtra.remove(PATH.normalize(item.path))
-                  removedItems.push(item.path.replace(/\\/g, '/'))
-                }
-                catch (error) {
-                  notRemovedItems.push(item.path.replace(/\\/g, '/'))
-                }
-              })
-              await Promise.all(trashPromises)
-              return {
-                removedItems, 
-                notRemovedItems
-              }
-            }
-          }
-        }
-      }
-      
-      let result = await removeDirItems(params)
-      await store.dispatch('removeDirItemsPostActions', {...result, ...params})
-    },
-    chooseItemsToRemove (store, payload) {
-      let { operation, items } = payload
-      return new Promise((resolve, reject) => {
-        let itemsClone = utils.cloneDeep(items)
-        const currentDirPath = store.state.navigatorView.currentDir.path
-        const includesCurrentDir = itemsClone.some(item => item.path === currentDirPath)
-        const currentDirIsRoot = PATH.parse(currentDirPath).base === ''
-        const includesItemLocatedInRoot = checkIncludesItemLocatedInRoot(itemsClone)
-        const protectedEditTargetItems = getDirItemsFromSavedList({
-          items: itemsClone,
-          list: store.state.storageData.protected.items
-        })
-        confirmAll(itemsClone)
-          .then((result) => resolve(result))
-          .catch(error => reject(error))
-
-        async function confirmAll (items) {
-          let result = await handleTargetItemsIncludesCurrentDir(items)
-          result = await confirmDeleteFromDrive(items)
-          result = await checkDirItemsIncludeRootDir(result.items)
-          result = await checkDirItemsLocatedInRoot(result.items)
-          result = await checkDirItemsProtected(result.items)
-          return result.items
-        }
-
-        function checkIncludesItemLocatedInRoot (items) {
-          return items.some(item => {
-            const itemDir = PATH.parse(item.path).dir
-            const itemDirIsRoot = PATH.parse(itemDir).base === ''
-            return itemDirIsRoot
-          })
-        }
-
-        function confirmDeleteFromDrive (items) {
-          return new Promise((resolve, reject) => {
-            const itemsList = items.map(item => item.path).join('<br>')
-            if (operation === 'delete') {
-              dialogs.showDialog(store, {
-                name: 'deleteDirItems',
-                items,
-                itemsList
-              })
-                .then((items) => resolve(items))
-                .catch(error => reject(error))
-            }
-            else {
-              resolve({ status: '', items })
-            }
-          })
-        }
-
-        function checkDirItemsIncludeRootDir (items) {
-          return new Promise((resolve, reject) => {
-            if (currentDirIsRoot && includesCurrentDir) {
-              notifications.emit({ name: 'cannotDeleteDriveRootDir' })
-              reject()
-            }
-            else {
-              resolve({ status: '', items })
-            }
-          })
-        }
-
-        function checkDirItemsProtected (items) {
-          return new Promise((resolve, reject) => {
-            if (protectedEditTargetItems.length > 0) {
-              if (operation === 'trash') {
-                dialogs.showDialog(store, {
-                  name: 'trashDirItemsContainsProtected',
-                  items,
-                  protectedEditTargetItems
-                })
-                  .then((items) => resolve(items))
-                  .catch(error => reject(error))
-              }
-              else if (operation === 'delete') {
-                dialogs.showDialog(store, {
-                  name: 'deleteDirItemsContainsProtected',
-                  items,
-                  protectedEditTargetItems
-                })
-                  .then((items) => resolve(items))
-                  .catch(error => reject(error))
-              }
-            }
-            else {
-              resolve({ status: '', items })
-            }
-          })
-        }
-
-        function checkDirItemsLocatedInRoot (items) {
-          return new Promise((resolve, reject) => {
-            if (includesItemLocatedInRoot) {
-              dialogs.showDialog(store, {
-                name: 'deleteDirItemsIncludesItemLocatedInRoot',
-                items
-              })
-                .then((items) => resolve(items))
-                .catch(error => reject(error))
-            }
-            else {
-              resolve({ status: '', items })
-            }
-          })
-        }
-
-        function containsCurrentDir (dirItems) {
-          return dirItems.some(dirItem => dirItem.path === store.state.navigatorView.currentDir.path)
-        }
-
-        function handleTargetItemsIncludesCurrentDir (items) {
-          return new Promise((resolve, reject) => {
-            if (containsCurrentDir(items)) {
-              const itemsList = items.map(item => item.path).join('<br>')
-              dialogs.showDialog(store, {
-                name: 'deleteDirItemsIncludesCurrentDir',
-                items,
-                itemsList
-              })
-                .then((items) => resolve(items))
-                .catch(error => { console.log(error); reject(error) })
-            }
-            else {
-              resolve({ status: '', items })
-            }
-          })
-        }
-      })
-    },
-    async removeDirItemsPostActions (store, params) {
-      async function init () {
-        notifications.emit({
-          name: params.operation === 'trash' ? 'trashItemsSuccess' : 'deleteItemsSuccess',
-          props: params
-        })
-        postActions(params)
-      }
-
-      function postActions (params) {
-        let paramsClone = utils.cloneDeep(params)
-        store.dispatch('REMOVE_FROM_PROTECTED', paramsClone)
-        store.dispatch('REMOVE_FROM_PINNED', paramsClone)
-        store.dispatch('CLEAR_FS_CLIPBOARD')
-        store.dispatch('DESELECT_ALL_DIR_ITEMS')
-      }
-
-      await init()
+    async deleteSelectedDirItems (store) {
+      deleteDirItems(store, {items: store.getters.selectedDirItems})
     },
     async showNewDirItemDialog ({state, dispatch}, type) {
       state.dialogs.newDirItemDialog.data.type = type

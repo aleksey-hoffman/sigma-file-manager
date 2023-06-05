@@ -19,6 +19,12 @@
   display: none !important;
 }
 
+.v-btn.text {
+  background: transparent !important;
+  color: var(--button-color-1) !important;
+  box-shadow: none;
+}
+
 .v-btn.button-1 {
   background: var(--button-bg-color-1) !important;
   color: var(--button-color-1) !important;

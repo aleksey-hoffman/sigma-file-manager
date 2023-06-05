@@ -1054,6 +1054,50 @@
         "typeInAddressManually": "Type in address manually",
         "buttonInTheAddressBarMenu": "button in the address bar menu, which is located on the action bar on the \"Navigator\" page."
       }
+    },
+    "trashCurrentDir": {
+      "title": "Trashing current directory",
+      "description": "Selected items include the currently opened directory.",
+      "confirm": "Confirm, if this was intentional and you want to send it to trash.",
+      "trash": "Trash"
+    },
+    "trashProtected": {
+      "title": "Trashing protected",
+      "description": "Selected items include {count} protected items.",
+      "confirm": "Confirm, if you want to send them to trash.",
+      "trashUnprotected": "Trash unprotected",
+      "trashAll": "Trash all"
+    },
+    "trashInRoot": {
+      "title": "Trashing root items",
+      "description": "Deleting system files in storage root might break the computer's operating system.",
+      "confirm": "Confirm, if you know what you are deleting.",
+      "trash": "Trash"
+    },
+    "deleteProtected": {
+      "title": "Deleting protected",
+      "description": "Selected items include {count} protected items.",
+      "confirm": "Confirm, if you want to delete them.",
+      "deleteUnprotected": "Delete unprotected",
+      "deleteAll": "Delete all"
+    },
+    "deleteIrreversibly": {
+      "title": "Deleting from drive",
+      "description": "This operation will permanently delete {count} items from your computer.",
+      "confirm": "Confirm, if you understand this cannot be undone.",
+      "delete": "Delete"
+    },
+    "deleteCurrentDir": {
+      "title": "Deleting current directory",
+      "description": "Selected items include the currently opened directory.",
+      "confirm": "Confirm, if this was intentional and you want to delete it.",
+      "delete": "Delete"
+    },
+    "deleteInRoot": {
+      "title": "Deleting root items",
+      "description": "Deleting system files in storage root might break the computer's operating system.",
+      "confirm": "Confirm, if you know what you are deleting.",
+      "delete": "Delete"
     }
   },
   "notifications": {
@@ -1104,6 +1148,8 @@
     "removedNItemsOfTotal": "{removedAmount} of {totalAmount}",
     "trashedNItemsOfTotal": "Trashed {removedAmount} of {totalAmount} items",
     "deletedNItemsOfTotal": "Deleted {removedAmount} of {totalAmount} items",
+    "trashedNItems": "Trashed {totalAmount} items",
+    "deletedNItems": "Deleted {totalAmount} items",
     "couldNotTrash": "Could not trash",
     "failedToDeleteSomeItems": "Failed to delete some items",
     "couldNotDelete": "Could not delete",
@@ -1347,5 +1393,6 @@
   "closedCaptions": "closed captions",
   "protectedItemsShort": "Protected",
   "pinnedItemsShort": "Pinned",
-  "freeOf": "free of"
+  "freeOf": "free of",
+  "conflict": "Conflict"
 }

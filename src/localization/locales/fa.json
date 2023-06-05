@@ -1054,6 +1054,50 @@
         "typeInAddressManually": "آدرس را به صورت دستی تایپ کنید",
         "buttonInTheAddressBarMenu": "دکمه در منوی نوار آدرس، که در نوار اقدام در صفحه \"Navigator\" قرار دارد."
       }
+    },
+    "trashCurrentDir": {
+      "title": "Trashing current directory",
+      "description": "Selected items include the currently opened directory.",
+      "confirm": "Confirm, if this was intentional and you want to send it to trash.",
+      "trash": "Trash"
+    },
+    "trashProtected": {
+      "title": "Trashing protected",
+      "description": "Selected items include {count} protected items.",
+      "confirm": "Confirm, if you want to send them to trash.",
+      "trashUnprotected": "Trash unprotected",
+      "trashAll": "Trash all"
+    },
+    "deleteProtected": {
+      "title": "Deleting protected",
+      "description": "Selected items include {count} protected items.",
+      "confirm": "Confirm, if you want to delete them.",
+      "deleteUnprotected": "Delete unprotected",
+      "deleteAll": "Delete all"
+    },
+    "deleteIrreversibly": {
+      "title": "Deleting from drive",
+      "description": "This operation will permanently delete {count} items from your computer.",
+      "confirm": "Confirm, if you understand this cannot be undone.",
+      "delete": "Delete"
+    },
+    "deleteCurrentDir": {
+      "title": "Deleting current directory",
+      "description": "Selected items include the currently opened directory.",
+      "confirm": "Confirm, if this was intentional and you want to delete it.",
+      "delete": "Delete"
+    },
+    "deleteInRoot": {
+      "title": "Deleting root items",
+      "description": "Deleting system files in storage root might break the computer's operating system.",
+      "confirm": "Confirm, if you know what you are deleting.",
+      "delete": "Delete"
+    },
+    "trashInRoot": {
+      "title": "Trashing root items",
+      "description": "Deleting system files in storage root might break the computer's operating system.",
+      "confirm": "Confirm, if you know what you are deleting.",
+      "trash": "Trash"
     }
   },
   "notifications": {
@@ -1104,6 +1148,8 @@
     "removedNItemsOfTotal": "{removedAmount} از {totalAmount}",
     "trashedNItemsOfTotal": "{removedAmount} از {totalAmount} آیتم در زباله شد",
     "deletedNItemsOfTotal": "{removedAmount} از {totalAmount} آیتم حذف شد",
+    "trashedNItems": "{totalAmount} آیتم در زباله شد",
+    "deletedNItems": "{totalAmount} آیتم حذف شد",
     "couldNotTrash": "حذف زباله ها ممکن نیست",
     "failedToDeleteSomeItems": "برخی موارد حذف نشد",
     "couldNotDelete": "حذف نشد",
@@ -1347,5 +1393,7 @@
   "closedCaptions": "زیرنویس‌های بسته",
   "protectedItemsShort": "حفاظت شده",
   "pinnedItemsShort": "پیوست شده است",
-  "freeOf": "رایگان از"
+  "freeOf": "رایگان از",
+  "terminal": "Terminal",
+  "conflict": "Conflict"
 }

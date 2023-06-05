@@ -60,7 +60,7 @@ export default {
           iconSize: '20px',
           iconClass: 'action-toolbar__icon',
           tooltip: this.$t('navigator.goUpDirectory'),
-          onClick: () => {this.$store.dispatch('GO_UP_DIRECTORY')},
+          onClick: () => {this.$store.dispatch('goUpDirectory')},
         },
         {
           component: AppButton,

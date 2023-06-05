@@ -325,7 +325,7 @@ function getNotification (params) {
       colorStatus: 'green',
       timeout: 5000,
       title: `
-      ${i18n.t('notifications.trashedNItemsOfTotal', {
+      ${i18n.t('notifications.trashedNItems', {
         removedAmount: params?.props?.removedItems?.length,
         totalAmount: params?.props?.items?.length,
       })}
@@ -338,7 +338,7 @@ function getNotification (params) {
       colorStatus: 'green',
       timeout: 5000,
       title: `
-      ${i18n.t('notifications.deletedNItemsOfTotal', {
+      ${i18n.t('notifications.deletedNItems', {
         removedAmount: params?.props?.removedItems?.length,
         totalAmount: params?.props?.items?.length,
       })}

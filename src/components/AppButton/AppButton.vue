@@ -4,7 +4,11 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <template>
-  <v-tooltip bottom>
+  <v-tooltip
+    bottom
+    :disabled="!tooltip"
+    class="app-button"
+  >
     <template #activator="{on}">
       <v-btn
         :value="value"
@@ -24,6 +28,12 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           {{icon}}
         </v-icon>
         <slot />
+        <span
+          v-if="shortcut"
+          class="app-button__shortcut"
+        >
+          - {{shortcut}}
+        </span>
       </v-btn>
     </template>
     <span>
@@ -68,9 +78,13 @@ export default {
     },
     buttonClass: {
       type: [String, Object],
-      default: '',
+      default: 'text', // 'text' | 'button-1' | 'button-2'
     },
     tooltip: {
+      type: String,
+      default: '',
+    },
+    shortcut: {
       type: String,
       default: '',
     },
@@ -108,3 +122,12 @@ export default {
   },
 }
 </script>
+
+<style>
+.app-button__shortcut {
+  margin-left: 2px;
+  color: var(--color-7);
+  font-size: 12px;
+  text-transform: capitalize;
+}
+</style>

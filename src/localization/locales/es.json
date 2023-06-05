@@ -1054,6 +1054,50 @@
         "typeInAddressManually": "Escriba la dirección manualmente",
         "buttonInTheAddressBarMenu": "botón en el menú de la barra de direcciones, que se encuentra en la barra de acción en la página \"Navegador\"."
       }
+    },
+    "trashCurrentDir": {
+      "title": "Trashing current directory",
+      "description": "Selected items include the currently opened directory.",
+      "confirm": "Confirm, if this was intentional and you want to send it to trash.",
+      "trash": "Trash"
+    },
+    "trashProtected": {
+      "title": "Trashing protected",
+      "description": "Selected items include {count} protected items.",
+      "confirm": "Confirm, if you want to send them to trash.",
+      "trashUnprotected": "Trash unprotected",
+      "trashAll": "Trash all"
+    },
+    "deleteProtected": {
+      "title": "Deleting protected",
+      "description": "Selected items include {count} protected items.",
+      "confirm": "Confirm, if you want to delete them.",
+      "deleteUnprotected": "Delete unprotected",
+      "deleteAll": "Delete all"
+    },
+    "deleteIrreversibly": {
+      "title": "Deleting from drive",
+      "description": "This operation will permanently delete {count} items from your computer.",
+      "confirm": "Confirm, if you understand this cannot be undone.",
+      "delete": "Delete"
+    },
+    "deleteCurrentDir": {
+      "title": "Deleting current directory",
+      "description": "Selected items include the currently opened directory.",
+      "confirm": "Confirm, if this was intentional and you want to delete it.",
+      "delete": "Delete"
+    },
+    "deleteInRoot": {
+      "title": "Deleting root items",
+      "description": "Deleting system files in storage root might break the computer's operating system.",
+      "confirm": "Confirm, if you know what you are deleting.",
+      "delete": "Delete"
+    },
+    "trashInRoot": {
+      "title": "Trashing root items",
+      "description": "Deleting system files in storage root might break the computer's operating system.",
+      "confirm": "Confirm, if you know what you are deleting.",
+      "trash": "Trash"
     }
   },
   "notifications": {
@@ -1102,6 +1146,8 @@
     "removedNItemsOfTotal": "{removedAmount} de {totalAmount}",
     "trashedNItemsOfTotal": "Eliminados {removedAmount} de {totalAmount} elementos",
     "deletedNItemsOfTotal": "Borrados {removedAmount} de {totalAmount} elementos",
+    "trashedNItems": "Eliminados {totalAmount} elementos",
+    "deletedNItems": "Borrados {totalAmount} elementos",
     "trashed": "Eliminado",
     "deleted": "Borrado",
     "couldNotTrash": "No se pudo desechar",
@@ -1347,5 +1393,6 @@
   "closedCaptions": "subtítulos",
   "protectedItemsShort": "Protegido",
   "pinnedItemsShort": "Adjunto",
-  "freeOf": "libre de"
+  "freeOf": "libre de",
+  "conflict": "Conflict"
 }

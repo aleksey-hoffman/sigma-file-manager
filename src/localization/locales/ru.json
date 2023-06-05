@@ -1054,6 +1054,50 @@
         "typeInAddressManually": "Введите адрес вручную",
         "buttonInTheAddressBarMenu": "кнопка в меню адресной строки, которое находится на панели действий на странице \"Навигатор\"."
       }
+    },
+    "trashCurrentDir": {
+      "title": "Trashing current directory",
+      "description": "Selected items include the currently opened directory.",
+      "confirm": "Confirm, if this was intentional and you want to send it to trash.",
+      "trash": "Trash"
+    },
+    "trashProtected": {
+      "title": "Trashing protected",
+      "description": "Selected items include {count} protected items.",
+      "confirm": "Confirm, if you want to send them to trash.",
+      "trashUnprotected": "Trash unprotected",
+      "trashAll": "Trash all"
+    },
+    "deleteProtected": {
+      "title": "Deleting protected",
+      "description": "Selected items include {count} protected items.",
+      "confirm": "Confirm, if you want to delete them.",
+      "deleteUnprotected": "Delete unprotected",
+      "deleteAll": "Delete all"
+    },
+    "deleteIrreversibly": {
+      "title": "Deleting from drive",
+      "description": "This operation will permanently delete {count} items from your computer.",
+      "confirm": "Confirm, if you understand this cannot be undone.",
+      "delete": "Delete"
+    },
+    "deleteCurrentDir": {
+      "title": "Deleting current directory",
+      "description": "Selected items include the currently opened directory.",
+      "confirm": "Confirm, if this was intentional and you want to delete it.",
+      "delete": "Delete"
+    },
+    "deleteInRoot": {
+      "title": "Deleting root items",
+      "description": "Deleting system files in storage root might break the computer's operating system.",
+      "confirm": "Confirm, if you know what you are deleting.",
+      "delete": "Delete"
+    },
+    "trashInRoot": {
+      "title": "Trashing root items",
+      "description": "Deleting system files in storage root might break the computer's operating system.",
+      "confirm": "Confirm, if you know what you are deleting.",
+      "trash": "Trash"
     }
   },
   "notifications": {
@@ -1104,6 +1148,8 @@
     "removedNItemsOfTotal": "{removedAmount} из {totalAmount}",
     "trashedNItemsOfTotal": "Перемещено в корзину {removedAmount} из {totalAmount} элементов",
     "deletedNItemsOfTotal": "Удалено {removedAmount} из {totalAmount} элементов",
+    "trashedNItems": "Перемещено в корзину {totalAmount} элементов",
+    "deletedNItems": "Удалено {totalAmount} элементов",
     "couldNotTrash": "Не мог мусорить",
     "failedToDeleteSomeItems": "Не удалось удалить некоторые элементы",
     "couldNotDelete": "Не удалось удалить",
@@ -1347,5 +1393,7 @@
   "closedCaptions": "субтитры",
   "protectedItemsShort": "Защищенные",
   "pinnedItemsShort": "Прикрепленные",
-  "freeOf": "свободно из"
+  "freeOf": "свободно из",
+  "terminal": "Terminal",
+  "conflict": "Conflict"
 }

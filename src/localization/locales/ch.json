@@ -1054,6 +1054,50 @@
         "typeInAddressManually": "手动输入地址",
         "buttonInTheAddressBarMenu": "地址栏菜单中的按钮,位于\"导航器\"页面的操作栏上。"
       }
+    },
+    "trashCurrentDir": {
+      "title": "正在删除当前目录",
+      "description": "选中的项目包括当前打开的目录。",
+      "confirm": "如果这是您的意图并且您想把它放入垃圾桶，请确认。",
+      "trash": "删除"
+    },
+    "trashProtected": {
+      "title": "正在删除受保护的项目",
+      "description": "选中的项目包括 {count} 个受保护的项目。",
+      "confirm": "如果您想将它们放入垃圾桶，请确认。",
+      "trashUnprotected": "删除未受保护的",
+      "trashAll": "全部删除"
+    },
+    "trashInRoot": {
+      "title": "正在删除根项目",
+      "description": "在存储根中删除系统文件可能会破坏计算机的操作系统。",
+      "confirm": "如果您知道您正在删除什么，请确认。",
+      "trash": "删除"
+    },
+    "deleteProtected": {
+      "title": "正在删除受保护的项目",
+      "description": "选中的项目包括 {count} 个受保护的项目。",
+      "confirm": "如果您想删除它们，请确认。",
+      "deleteUnprotected": "删除未受保护的",
+      "deleteAll": "全部删除"
+    },
+    "deleteIrreversibly": {
+      "title": "从驱动器中删除",
+      "description": "此操作将永久性地从您的计算机中删除 {count} 个项目。",
+      "confirm": "如果您了解此操作无法撤消，请确认。",
+      "delete": "删除"
+    },
+    "deleteCurrentDir": {
+      "title": "正在删除当前目录",
+      "description": "选中的项目包括当前打开的目录。",
+      "confirm": "如果这是您的意图并且您想删除它，请确认。",
+      "delete": "删除"
+    },
+    "deleteInRoot": {
+      "title": "正在删除根项目",
+      "description": "在存储根中删除系统文件可能会破坏计算机的操作系统。",
+      "confirm": "如果您知道您正在删除什么，请确认。",
+      "delete": "删除"
     }
   },
   "notifications": {
@@ -1104,6 +1148,8 @@
     "removedNItemsOfTotal": "{removedAmount} 的 {totalAmount}",
     "trashedNItemsOfTotal": "垃圾桶 {removedAmount} 的 {totalAmount} 项目",
     "deletedNItemsOfTotal": "已删除 {removedAmount} 的 {totalAmount} 项目",
+    "trashedNItems": "垃圾桶 {totalAmount} 项目",
+    "deletedNItems": "已删除 {totalAmount} 项目",
     "couldNotTrash": "无法丢弃",
     "failedToDeleteSomeItems": "无法删除某些项目",
     "couldNotDelete": "无法删除",
@@ -1347,5 +1393,6 @@
   "closedCaptions": "隐藏式字幕",
   "protectedItemsShort": "受保护",
   "pinnedItemsShort": "随附的",
-  "freeOf": "自由于"
+  "freeOf": "自由于",
+  "conflict": "冲突"
 }

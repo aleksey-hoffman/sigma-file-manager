@@ -1054,6 +1054,50 @@
         "typeInAddressManually": "Nhập địa chỉ theo cách thủ công",
         "buttonInTheAddressBarMenu": "nút trong menu thanh địa chỉ nằm trên thanh hành động trên trang \"Navigator\"."
       }
+    },
+    "trashCurrentDir": {
+      "title": "Trashing current directory",
+      "description": "Selected items include the currently opened directory.",
+      "confirm": "Confirm, if this was intentional and you want to send it to trash.",
+      "trash": "Trash"
+    },
+    "trashProtected": {
+      "title": "Trashing protected",
+      "description": "Selected items include {count} protected items.",
+      "confirm": "Confirm, if you want to send them to trash.",
+      "trashUnprotected": "Trash unprotected",
+      "trashAll": "Trash all"
+    },
+    "deleteProtected": {
+      "title": "Deleting protected",
+      "description": "Selected items include {count} protected items.",
+      "confirm": "Confirm, if you want to delete them.",
+      "deleteUnprotected": "Delete unprotected",
+      "deleteAll": "Delete all"
+    },
+    "deleteIrreversibly": {
+      "title": "Deleting from drive",
+      "description": "This operation will permanently delete {count} items from your computer.",
+      "confirm": "Confirm, if you understand this cannot be undone.",
+      "delete": "Delete"
+    },
+    "deleteCurrentDir": {
+      "title": "Deleting current directory",
+      "description": "Selected items include the currently opened directory.",
+      "confirm": "Confirm, if this was intentional and you want to delete it.",
+      "delete": "Delete"
+    },
+    "deleteInRoot": {
+      "title": "Deleting root items",
+      "description": "Deleting system files in storage root might break the computer's operating system.",
+      "confirm": "Confirm, if you know what you are deleting.",
+      "delete": "Delete"
+    },
+    "trashInRoot": {
+      "title": "Trashing root items",
+      "description": "Deleting system files in storage root might break the computer's operating system.",
+      "confirm": "Confirm, if you know what you are deleting.",
+      "trash": "Trash"
     }
   },
   "notifications": {
@@ -1104,6 +1148,8 @@
     "removedNItemsOfTotal": "{removedAmount} của {totalAmount}",
     "trashedNItemsOfTotal": "Đã xóa vào thùng rác {removedAmount} trong số {totalAmount} mục",
     "deletedNItemsOfTotal": "Đã xóa {removedAmount} trong số {totalAmount} mục",
+    "trashedNItems": "Đã xóa vào thùng rác {totalAmount} mục",
+    "deletedNItems": "Đã xóa {totalAmount} mục",
     "couldNotTrash": "Không thể đổ rác",
     "failedToDeleteSomeItems": "Không thể xóa một số mục",
     "couldNotDelete": "Không thể xóa",
@@ -1347,5 +1393,7 @@
   "closedCaptions": "phụ đề chi tiết",
   "protectedItemsShort": "được bảo vệ",
   "pinnedItemsShort": "Đính kèm",
-  "freeOf": "miễn phí của"
+  "freeOf": "miễn phí của",
+  "terminal": "Terminal",
+  "conflict": "Conflict"
 }

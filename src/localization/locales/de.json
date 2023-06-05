@@ -1054,6 +1054,50 @@
         "typeInAddressManually": "Adresse manuell eingeben",
         "buttonInTheAddressBarMenu": "Schaltfläche im Adressleistenmenü, das sich in der Aktionsleiste auf der Seite \"Navigator\" befindet."
       }
+    },
+    "trashCurrentDir": {
+      "title": "Aktuelles Verzeichnis in den Papierkorb verschieben",
+      "description": "Ausgewählte Elemente beinhalten das aktuell geöffnete Verzeichnis.",
+      "confirm": "Bestätigen Sie, wenn dies beabsichtigt war und Sie es in den Papierkorb verschieben möchten.",
+      "trash": "Papierkorb"
+    },
+    "trashProtected": {
+      "title": "Geschützte Elemente in den Papierkorb verschieben",
+      "description": "Ausgewählte Elemente beinhalten {count} geschützte Elemente.",
+      "confirm": "Bestätigen Sie, wenn Sie diese in den Papierkorb verschieben möchten.",
+      "trashUnprotected": "Ungeschützte Elemente in den Papierkorb verschieben",
+      "trashAll": "Alles in den Papierkorb verschieben"
+    },
+    "trashInRoot": {
+      "title": "Elemente im Root-Verzeichnis in den Papierkorb verschieben",
+      "description": "Das Löschen von Systemdateien im Speicherroot kann das Betriebssystem des Computers beschädigen.",
+      "confirm": "Bestätigen Sie, wenn Sie wissen, was Sie löschen.",
+      "trash": "Papierkorb"
+    },
+    "deleteProtected": {
+      "title": "Geschützte Elemente löschen",
+      "description": "Ausgewählte Elemente beinhalten {count} geschützte Elemente.",
+      "confirm": "Bestätigen Sie, wenn Sie diese löschen möchten.",
+      "deleteUnprotected": "Ungeschützte Elemente löschen",
+      "deleteAll": "Alles löschen"
+    },
+    "deleteIrreversibly": {
+      "title": "Vom Laufwerk löschen",
+      "description": "Diese Operation wird {count} Elemente dauerhaft von Ihrem Computer löschen.",
+      "confirm": "Bestätigen Sie, wenn Sie verstehen, dass dies nicht rückgängig gemacht werden kann.",
+      "delete": "Löschen"
+    },
+    "deleteCurrentDir": {
+      "title": "Aktuelles Verzeichnis löschen",
+      "description": "Ausgewählte Elemente beinhalten das aktuell geöffnete Verzeichnis.",
+      "confirm": "Bestätigen Sie, wenn dies beabsichtigt war und Sie es löschen möchten.",
+      "delete": "Löschen"
+    },
+    "deleteInRoot": {
+      "title": "Elemente im Root-Verzeichnis löschen",
+      "description": "Das Löschen von Systemdateien im Speicherroot kann das Betriebssystem des Computers beschädigen.",
+      "confirm": "Bestätigen Sie, wenn Sie wissen, was Sie löschen.",
+      "delete": "Löschen"
     }
   },
   "notifications": {
@@ -1104,6 +1148,8 @@
     "removedNItemsOfTotal": "{removedAmount} von {totalAmount}",
     "trashedNItemsOfTotal": "{removedAmount} von {totalAmount} Elementen verworfen",
     "deletedNItemsOfTotal": "{removedAmount} von {totalAmount} Elementen gelöscht",
+    "trashedNItems": "{totalAmount} Elementen verworfen",
+    "deletedNItems": "{totalAmount} Elementen gelöscht",
     "couldNotTrash": "Konnte nicht entsorgen",
     "failedToDeleteSomeItems": "Einige Elemente konnten nicht gelöscht werden",
     "couldNotDelete": "Konnte nicht gelöscht werden",
@@ -1347,5 +1393,7 @@
   "closedCaptions": "Untertitel",
   "protectedItemsShort": "Geschützt",
   "pinnedItemsShort": "Angeheftet",
-  "freeOf": "frei von"
+  "freeOf": "frei von",
+  "conflict": "Konflikt"
+  "conflict": "Conflict"
 }

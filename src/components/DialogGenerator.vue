@@ -11,7 +11,6 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
         :max-width="$vuetify.breakpoint.smAndDown ? '95vw' : maxWidth || 600"
         :persistent="persistent || false"
         :retain-focus="false"
-        @keydown.enter="onEnterKey"
       >
         <v-card
           class="dialog-card sticky-scroller__container"
@@ -66,28 +65,6 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           >
             <slot name="content" />
 
-            <div
-              v-for="(contentItem, index) in content"
-              :key="'conformation-dialog-content-' + index"
-            >
-              <div
-                v-if="contentItem.type === 'html'"
-                v-html="contentItem.value"
-              />
-
-              <div
-                v-if="contentItem.type === 'list'"
-                class="dialog-card__list"
-              >
-                <div
-                  v-for="(listItem, index) in contentItem.value"
-                  :key="'conformation-dialog-content-listItem' + index"
-                >
-                  {{listItem}}
-                </div>
-              </div>
-            </div>
-
             <div v-if="inputs">
               <v-text-field
                 v-for="(input, index) in inputs"
@@ -111,17 +88,21 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             v-if="actionButtons"
             class="dialog-card__action-toolbar dialog-card__action-toolbar--transparent px-4"
           >
+            <slot name="footer" />
             <v-spacer />
-            <v-btn
+            <AppButton
               v-for="(button, index) in actionButtons"
               :key="index"
               :disabled="button.disabled"
+              :shortcut="button.shortcut"
+              type="button"
+              button-class="text"
               text
               small
               @click="button.onClick()"
             >
               {{button.text}}
-            </v-btn>
+            </AppButton>
           </v-card-actions>
         </v-card>
       </v-dialog>
@@ -130,7 +111,11 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 </template>
 
 <script>
+import {mapGetters} from 'vuex'
 import {mapFields} from 'vuex-map-fields'
+import AppButton from '@/components/AppButton/AppButton.vue'
+
+const mousetrap = require('mousetrap')
 
 export default {
   props: {
@@ -148,14 +133,28 @@ export default {
     actionButtons: Array,
     inputs: Array,
   },
+  components: {
+    AppButton,
+  },
+  data () {
+    return {
+      shortcutsTimeout: null,
+    }
+  },
   watch: {
     'dialog.value' (newValue) {
       if (newValue) {
+        this.bindDialogShortcuts()
+        this.shortcutsTimeout?.clearTimeout?.()
         this.$store.dispatch('disableShortcuts', ['openSelectedDirItem', 'openSelectedDirectory'])
       }
       else {
-        setTimeout(() => {
-          this.$store.dispatch('enableShortcuts', ['openSelectedDirItem', 'openSelectedDirectory'])
+        this.shortcutsTimeout?.clearTimeout?.()
+        this.shortcutsTimeout = setTimeout(() => {
+          if (!this.someDialogIsOpened) {
+            this.bindGlobalShortcuts()
+            this.$store.dispatch('enableShortcuts', ['openSelectedDirItem', 'openSelectedDirectory'])
+          }
         }, 100)
       }
     },
@@ -164,11 +163,41 @@ export default {
     ...mapFields({
       dialogs: 'dialogs',
     }),
+    ...mapGetters([
+      'someDialogIsOpened',
+    ]),
+    dialogShortcuts () {
+      const enter = 'enter'
+      const shiftEnter = 'shift+enter'
+      return [
+        {
+          shortcut: enter,
+          onKeydown: () => this.onDialogShortcutKeydown(enter),
+        },
+        {
+          shortcut: shiftEnter,
+          onKeydown: () => this.onDialogShortcutKeydown(shiftEnter),
+        },
+      ]
+    },
   },
   methods: {
-    async onEnterKey () {
-      const enterShortcutHandlerButton = this.dialog.data.buttons.find(item => item.shortcut === 'enter')
-      await enterShortcutHandlerButton?.onClick?.()
+    async onDialogShortcutKeydown (shortcut) {
+      this.dialog.data.buttons.find(button => button.shortcut === shortcut)?.onClick?.()
+    },
+    bindGlobalShortcuts () {
+      mousetrap.reset()
+      this.$eventHub.$emit('app:method', {
+        method: 'bindGeneralMousetrapEvents',
+      })
+    },
+    bindDialogShortcuts () {
+      mousetrap.reset()
+      this.dialogShortcuts.forEach(shortcut => {
+        mousetrap.bind(shortcut.shortcut, (event) => {
+          shortcut.onKeydown()
+        }, 'keydown')
+      })
     },
   },
 }
@@ -176,8 +205,14 @@ export default {
 
 <style>
 .dialog-card__action-toolbar {
-  background-color: var(--key-color-1-translucent);
   width: 100%;
+  background-color: var(--key-color-1-translucent);
+}
+
+@media all and (width <= 700px) {
+  .dialog-card__action-toolbar {
+    display: block;
+  }
 }
 
 .dialog-card__action-toolbar--transparent {
@@ -187,6 +222,7 @@ export default {
 .dialog-card__action-toolbar
   .v-btn {
     color: var(--color-4) !important;
+    margin-left: 4px;
   }
 
 .dialog-card__action-toolbar
@@ -218,10 +254,28 @@ export default {
 }
 
 .dialog-card__list {
-  background-color: var(--highlight-color-4);
   margin: 12px 0;
-  padding: 8px 12px;
   border-radius: 4px;
+}
+
+.dialog-card__list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 2px 0;
+  padding: 6px 10px;
+  background-color: var(--highlight-color-4);
+  border-radius: 4px;
+}
+
+.dialog-card__list-item-title {
+  color: var(--color-5);
+  font-size: 14px;
+}
+
+.dialog-card__list-item-subtitle {
+  color: var(--color-6);
+  font-size: 10px;
 }
 
 .dialog-card-content-container--unscrollable {
