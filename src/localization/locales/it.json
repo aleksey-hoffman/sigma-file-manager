@@ -3,41 +3,41 @@
     "name": "Sigma File Manager",
     "description": "è un'app di file manager libera, open source, avanzata e moderna, con licenza GNU GPLv3 o successiva.",
     "copyright": "Copyright © 2021 - ad oggi, Aleksey Hoffman. Tutti i diritti riservati."
-   },
-   "units": {
+  },
+  "units": {
     "px": "px",
     "vh": "vh",
     "mb": "MB"
-   },
-   "pages": {
+  },
+  "pages": {
     "home": "Pagina iniziale",
     "navigator": "Navigatore",
     "dashboard": "Dashboard",
     "notes": "Note",
     "settings": "Impostazioni",
     "extensions": "Estensioni"
-   },
-   "language": {
+  },
+  "language": {
     "language": "Lingua",
     "isCorrectedLanguage": "La traduzione è stata rivista e corretta da un madrelingua",
     "isAutoTranslatedLanguage": "Tradotto automaticamente. Deve essere rivisto e corretto da un madrelingua"
-   },
-   "placeholders": {
+  },
+  "placeholders": {
     "noDrivesFound": "Nessuna unità trovata",
     "noUserDirectoriesFound": "Nessuna cartella utente trovata"
-   },
-   "count": {
+  },
+  "count": {
     "other": "0 altri | 1 altro | {n} altri | {n} altri",
     "directories": "0 cartelle | 1 cartella | {n} cartelle | {n} cartelle",
     "drivesSelected": "0 unità selezionate | 1 unità selezionata | {n} unità selezionate  | {n} unità selezionate"
-   },
-   "window": {
+  },
+  "window": {
     "minimizeWindow": "Riduci a icona la finestra",
     "toggleWindowSize": "Attiva/disattiva la dimensione della finestra",
     "closeWindow": "Chiudi finestra",
     "toggleWindow": "Attiva/disattiva la finestra"
-   },
-   "trayMenu": {
+  },
+  "trayMenu": {
     "globalShortcuts": "SCORCIATOIE GLOBALI",
     "toggleWindowVisibility": "Attiva/disattiva la visibilità della finestra",
     "openGlobalSearch": "Apri la ricerca globale",
@@ -46,8 +46,8 @@
     "openWindow": "Apri finestra",
     "reloadWindow": "Ricarica finestra",
     "quit": "Esci"
-   },
-   "userDirs": {
+  },
+  "userDirs": {
     "home": "Home",
     "desktop": "Desktop",
     "downloads": "Download",
@@ -56,19 +56,19 @@
     "pictures": "Immagini",
     "videos": "Video",
     "music": "Musica"
-   },
-   "tabs": {
+  },
+  "tabs": {
     "workspaceTabs": "Schede dell'area di lavoro",
     "newTabInCurrentWorkspace": "Nuova scheda nell'area di lavoro corrente",
     "closeAllTabsInCurrentWorkspace": "Chiudi tutte le schede nell'area di lavoro corrente",
     "noTabsInCurrentWorkspace": "Nessuna scheda nell'area di lavoro corrente",
     "tabs": "Schede"
-   },
-   "workspaces": {
+  },
+  "workspaces": {
     "title": "Aree di lavoro",
     "editWorkspaces": "Modifica aree di lavoro"
-   },
-   "filter": {
+  },
+  "filter": {
     "filter": "Filtro",
     "clearFilter": "Cancella filtro",
     "filterOptions": "Opzioni filtri",
@@ -78,18 +78,18 @@
     "addPrefix": "Aggiungi un prefisso all'inizio per filtrare in base a una proprietà specifica.",
     "sizeExample": "Per esempio: \"dimensione: MB\", \"elementi: 15\", \"data-m: 2021\"",
     "prefixes": {
-     "itemName": "nome dell'oggetto",
-     "directoryItemCount": "Conteggio degli elementi della cartella",
-     "fileSize": "dimensione del file",
-     "dateMetaModified": "data della modifica del meta",
-     "noteTitle": "titolo della nota",
-     "noteContent": "contenuto della nota",
-     "noteGroup": "gruppo della nota",
-     "itemPath": "percorso dell'oggetto",
-     "settingTags": "tag delle impostazioni"
+      "itemName": "nome dell'oggetto",
+      "directoryItemCount": "Conteggio degli elementi della cartella",
+      "fileSize": "dimensione del file",
+      "dateMetaModified": "data della modifica del meta",
+      "noteTitle": "titolo della nota",
+      "noteContent": "contenuto della nota",
+      "noteGroup": "gruppo della nota",
+      "itemPath": "percorso dell'oggetto",
+      "settingTags": "tag delle impostazioni"
     }
-   },
-   "globalSearch": {
+  },
+  "globalSearch": {
     "globalSearch": "Ricerca globale",
     "globalSearchDisabled": "La funzione di ricerca globale è disabilitata",
     "driveScanInProgress": "La scansione dell'unità è in corso",
@@ -123,10 +123,10 @@
     "lastScan": "ultima scansione",
     "minutesAgo": "minuti fa",
     "searchStats": {
-     "found": "Trovati {n} elementi | Trovati {n} elementi | Trovati {n} elementi | Trovati {n} elementi",
-     "finished": "Finito in {n} secondi",
-     "searched": "Cercato in {n} persorsi",
-     "nothingFound": "Non è stato trovato nulla"
+      "found": "Trovati {n} elementi | Trovati {n} elementi | Trovati {n} elementi | Trovati {n} elementi",
+      "finished": "Finito in {n} secondi",
+      "searched": "Cercato in {n} persorsi",
+      "nothingFound": "Non è stato trovato nulla"
     }
   },
   "home": {
@@ -613,7 +613,8 @@
   },
   "errors": {
     "error": "Errore",
-    "errorPathAlreadyExists": "Errore: il percorso è già esistente"
+    "errorPathAlreadyExists": "Errore: il percorso è già esistente",
+    "cannotOpenPath": "Errore: impossibile aprire il percorso"
   },
   "shortcutsUI": {
     "globalShortcutsSystemScope": "Scorciatoie globali (sistema)",
@@ -695,7 +696,8 @@
       "linkWasCopiedToClipboard": "Il collegamento è stato copiato negli appunti",
       "openLinkInDefaultBrowser": "Apri il collegamento nel browser predefinito di sistema",
       "operationFailed": "Operazione non riuscita",
-      "errorDuringTemplateGeneration": "Errore durante la generazione del modello"
+      "errorDuringTemplateGeneration": "Errore durante la generazione del modello",
+      "reportError": "Segnala l'errore"
     },
     "confirmationDialog": {
       "localSharingFirewall": {
@@ -1052,6 +1054,50 @@
         "typeInAddressManually": "Digita l'indirizzo manualmente",
         "buttonInTheAddressBarMenu": "il tasto nel menu della barra degli indirizzi, che si trova nella barra delle azioni della pagina \"Navigatore\"."
       }
+    },
+    "trashCurrentDir": {
+      "title": "Spostamento della directory corrente nel cestino",
+      "description": "Gli elementi selezionati includono la directory attualmente aperta.",
+      "confirm": "Conferma, se questo è stato intenzionale e vuoi inviarlo nel cestino.",
+      "trash": "Cestino"
+    },
+    "trashProtected": {
+      "title": "Spostamento dei file protetti nel cestino",
+      "description": "Gli elementi selezionati includono {count} elementi protetti.",
+      "confirm": "Conferma, se vuoi inviarli nel cestino.",
+      "trashUnprotected": "Spostare nel cestino gli elementi non protetti",
+      "trashAll": "Spostare tutti nel cestino"
+    },
+    "trashInRoot": {
+      "title": "Spostamento dei file radice nel cestino",
+      "description": "L'eliminazione dei file di sistema nella radice dello storage potrebbe danneggiare il sistema operativo del computer.",
+      "confirm": "Conferma, se sai cosa stai eliminando.",
+      "trash": "Cestino"
+    },
+    "deleteProtected": {
+      "title": "Eliminazione dei file protetti",
+      "description": "Gli elementi selezionati includono {count} elementi protetti.",
+      "confirm": "Conferma, se vuoi eliminarli.",
+      "deleteUnprotected": "Elimina gli elementi non protetti",
+      "deleteAll": "Elimina tutti"
+    },
+    "deleteIrreversibly": {
+      "title": "Eliminazione dal disco",
+      "description": "Questa operazione eliminerà definitivamente {count} elementi dal tuo computer.",
+      "confirm": "Conferma, se capisci che questa operazione non può essere annullata.",
+      "delete": "Elimina"
+    },
+    "deleteCurrentDir": {
+      "title": "Eliminazione della directory corrente",
+      "description": "Gli elementi selezionati includono la directory attualmente aperta.",
+      "confirm": "Conferma, se questo è stato intenzionale e vuoi eliminarlo.",
+      "delete": "Elimina"
+    },
+    "deleteInRoot": {
+      "title": "Eliminazione dei file radice",
+      "description": "L'eliminazione dei file di sistema nella radice dello storage potrebbe danneggiare il sistema operativo del computer.",
+      "confirm": "Conferma, se sai cosa stai eliminando.",
+      "delete": "Elimina"
     }
   },
   "notifications": {
@@ -1151,7 +1197,9 @@
     "driveWasConnected": "L'unità è stata collegata",
     "driveScanInitiated": "Scansione dell'unità avviata",
     "oneOfTheSearchFilesIsDamaged": "Uno dei file di ricerca è danneggiato",
-    "workspaceAdded": "Spazio di lavoro aggiunto"
+    "workspaceAdded": "Spazio di lavoro aggiunto",
+    "trashedNItems": "Spostati nel cestino {totalAmount} elementi",
+    "deletedNItems": "Eliminati {totalAmount} elementi"
   },
   "contextMenus": {
     "dirItem": {
@@ -1345,5 +1393,6 @@
   "closedCaptions": "sottotitoli codificati",
   "protectedItemsShort": "Protetti",
   "pinnedItemsShort": "Appuntati",
-  "freeOf": "libero da"
+  "freeOf": "libero da",
+  "conflict": "Conflitto"
 }

@@ -11,6 +11,7 @@ import ja from './locales/ja.json'
 import fa from './locales/fa.json'
 import ch from './locales/ch.json'
 import vi from './locales/vi.json'
+import it from './locales/it.json'
 
 export const locales = {
   en,
@@ -23,6 +24,7 @@ export const locales = {
   fa,
   ch,
   vi,
+  it,
 }
 
 export const languages = [
@@ -84,6 +86,12 @@ export const languages = [
     name: 'tiếng việt (㗂越)',
     locale: 'vi',
     isCorrected: false,
+    isRtl: false,
+  },
+  {
+    name: 'Italiano',
+    locale: 'it',
+    isCorrected: true,
     isRtl: false,
   },
 ]
