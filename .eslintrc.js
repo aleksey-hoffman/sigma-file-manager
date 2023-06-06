@@ -4,6 +4,7 @@ module.exports = {
     node: true,
   },
   extends: [
+    'eslint:recommended',
     'plugin:vue/recommended',
     '@vue/standard',
     'plugin:@intlify/vue-i18n/recommended',
@@ -38,7 +39,7 @@ module.exports = {
     'no-multiple-empty-lines': 'warn',
     'no-trailing-spaces': 'warn',
     'handle-callback-err': 'warn',
-    'import/no-webpack-loader-syntax': 'warn',
+    'import/no-webpack-loader-syntax': 'off',
     'no-mixed-operators': 'warn',
     'no-useless-catch': 'warn',
     'no-useless-escape': 'off',
