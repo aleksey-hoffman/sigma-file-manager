@@ -1393,5 +1393,7 @@
   "closedCaptions": "内嵌字幕",
   "protectedItemsShort": "受保护",
   "pinnedItemsShort": "固定的",
-  "freeOf": "自由于"
+  "freeOf": "自由于",
+  "terminal": "终端",
+  "conflict": "冲突"
 }

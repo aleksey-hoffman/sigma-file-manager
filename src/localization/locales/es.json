@@ -1394,5 +1394,6 @@
   "protectedItemsShort": "Protegido",
   "pinnedItemsShort": "Adjunto",
   "freeOf": "libre de",
-  "conflict": "Conflict"
+  "terminal": "Terminal",
+  "conflict": "Conflicto"
 }
