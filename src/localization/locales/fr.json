@@ -515,6 +515,18 @@
       "storeTheDateOpeningDirectoryItem": "Mémoriser la date d'ouverture d'une rubrique du répertoire",
       "statisticsLocationDescription": "Les données statistiques sont stockées dans le fichier appelé \"stats.json\" situé dans le répertoire de l'application.",
       "openFileLocation": "Lieu de fichier ouvert"
+    },
+    "advanced": {
+      "advancedSettings": "Paramètres avancés",
+      "description": "Ces paramètres sont principalement destinés aux programmeurs et aux utilisateurs avancés",
+      "terminal": {
+        "description": "Terminal pour ouvrir des répertoires",
+        "adminDescription": "Terminal administrateur pour ouvrir des répertoires"
+      },
+      "shell": {
+        "description": "Shell pour ouvrir des répertoires",
+        "adminDescription": "Shell administrateur pour ouvrir des répertoires"
+      }
     }
   },
   "projectGithubButtons": {
@@ -533,7 +545,8 @@
     "input": "Contribution",
     "search": "Rechercher",
     "dataStorage": "Stockage de données",
-    "stats": "Statistiques"
+    "stats": "Statistiques",
+    "advanced": "Avancé"
   },
   "settingsTags": {
     "language": "Langue",
@@ -564,7 +577,8 @@
     "dataBackupReminder": "données, stockage, sauvegarde",
     "driveDetection": "lecteur, usb, stockage, disque, périphérique, détection, connexion",
     "imageThumbnails": "image, image, vignettes, limite, stockage, ressources, utilisation, performances",
-    "directoryItemStatistics": "répertoire, élément, statistiques, statistiques, données, stockage, utilisation"
+    "directoryItemStatistics": "répertoire, élément, statistiques, statistiques, données, stockage, utilisation",
+    "advanced": "avancé, pro, développeur, terminal, shell"
   },
   "dataBackupReminder": {
     "title": "Rappel : sauvegarde des données",
@@ -1199,7 +1213,8 @@
     "driveWasConnected": "Le lecteur était connecté",
     "driveScanInitiated": "Analyse du lecteur lancée",
     "oneOfTheSearchFilesIsDamaged": "L'un des fichiers de recherche est endommagé",
-    "workspaceAdded": "L'espace de travail a été ajouté"
+    "workspaceAdded": "L'espace de travail a été ajouté",
+    "failedToFetchInstalledTerminals": "Échec de la récupération des terminaux installés"
   },
   "contextMenus": {
     "dirItem": {

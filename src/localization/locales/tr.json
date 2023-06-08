@@ -515,6 +515,18 @@
       "storeTheDateOpeningDirectoryItem": "Bir dizin öğesinin açılma tarihini sakla",
       "statisticsLocationDescription": "İstatistik verileri, uygulama dizininde bulunan \"stats.json\" adlı dosyada saklanır.",
       "openFileLocation": "Dosya konumunu aç"
+    },
+    "advanced": {
+      "advancedSettings": "Gelişmiş Ayarlar",
+      "description": "Bu ayarlar, başlıca programcılar ve ileri düzey kullanıcılar içindir",
+      "terminal": {
+        "description": "Dizinleri açmak için terminal",
+        "adminDescription": "Dizinleri açmak için yönetici terminali"
+      },
+      "shell": {
+        "description": "Dizinleri açmak için shell",
+        "adminDescription": "Dizinleri açmak için yönetici shell"
+      }
     }
   },
   "projectGithubButtons": {
@@ -533,7 +545,8 @@
     "input": "Giriş",
     "search": "Arama",
     "dataStorage": "Veri depolama",
-    "stats": "İstatistikler"
+    "stats": "İstatistikler",
+    "advanced": "Gelişmiş"
   },
   "settingsTags": {
     "language": "dil",
@@ -564,7 +577,8 @@
     "dataBackupReminder": "veri, depolama, yedekleme",
     "driveDetection": "sürücü, usb, depolama, disk, cihaz, algılama, bağlantı",
     "imageThumbnails": "resim, resim, küçük resimler, sınır, depolama, kaynaklar, kullanım, performans",
-    "directoryItemStatistics": "dizin, öğe, istatistikler, istatistikler, veri, depolama, kullanım"
+    "directoryItemStatistics": "dizin, öğe, istatistikler, istatistikler, veri, depolama, kullanım",
+    "advanced": "gelişmiş, pro, geliştirici, terminal, kabuk"
   },
   "dataBackupReminder": {
     "title": "Hatırlatma: veri yedekleme",
@@ -1199,7 +1213,8 @@
     "driveWasConnected": "Sürücü bağlandı",
     "driveScanInitiated": "Sürücü taraması başlatıldı",
     "oneOfTheSearchFilesIsDamaged": "Arama dosyalarından biri hasarlı",
-    "workspaceAdded": "Çalışma alanı eklendi"
+    "workspaceAdded": "Çalışma alanı eklendi",
+    "failedToFetchInstalledTerminals": "Yüklü terminaller alınamadı"
   },
   "contextMenus": {
     "dirItem": {

@@ -515,6 +515,18 @@
       "storeTheDateOpeningDirectoryItem": "Lưu trữ ngày mở một mục thư mục",
       "statisticsLocationDescription": "Dữ liệu thống kê được lưu trữ trong tệp có tên \"stats.json\" nằm trong thư mục ứng dụng.",
       "openFileLocation": "Mở vị trí file"
+    },
+    "advanced": {
+      "advancedSettings": "Cài đặt nâng cao",
+      "description": "Những cài đặt này chủ yếu dành cho lập trình viên và người dùng nâng cao",
+      "terminal": {
+        "description": "Terminal để mở thư mục",
+        "adminDescription": "Terminal quản trị để mở thư mục"
+      },
+      "shell": {
+        "description": "Shell để mở thư mục",
+        "adminDescription": "Shell quản trị để mở thư mục"
+      }
     }
   },
   "projectGithubButtons": {
@@ -533,7 +545,8 @@
     "input": "Đầu vào",
     "search": "Tìm kiếm",
     "dataStorage": "Dữ liệu & lưu trữ",
-    "stats": "Số liệu thống kê"
+    "stats": "Số liệu thống kê",
+    "advanced": "Nâng cao"
   },
   "settingsTags": {
     "language": "ngôn ngữ",
@@ -564,7 +577,8 @@
     "dataBackupReminder": "dữ liệu, lưu trữ, sao lưu",
     "driveDetection": "ổ đĩa, usb, lưu trữ, đĩa, thiết bị, phát hiện, kết nối",
     "imageThumbnails": "hình ảnh, hình ảnh, hình thu nhỏ, giới hạn, lưu trữ, tài nguyên, cách sử dụng, hiệu suất",
-    "directoryItemStatistics": "thư mục, mục, thống kê, thống kê, dữ liệu, lưu trữ, sử dụng"
+    "directoryItemStatistics": "thư mục, mục, thống kê, thống kê, dữ liệu, lưu trữ, sử dụng",
+    "advanced": "nâng cao, chuyên nghiệp, nhà phát triển, đầu cuối, shell"
   },
   "dataBackupReminder": {
     "title": "Lời nhắc: sao lưu dữ liệu",
@@ -1199,7 +1213,8 @@
     "driveWasConnected": "Ổ đĩa đã được kết nối",
     "driveScanInitiated": "Đã bắt đầu quét ổ đĩa",
     "oneOfTheSearchFilesIsDamaged": "Một trong các tệp tìm kiếm bị hỏng",
-    "workspaceAdded": "Không gian làm việc đã được thêm vào"
+    "workspaceAdded": "Không gian làm việc đã được thêm vào",
+    "failedToFetchInstalledTerminals": "Không thể tải các terminal đã cài đặt"
   },
   "contextMenus": {
     "dirItem": {

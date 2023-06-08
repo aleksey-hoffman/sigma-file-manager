@@ -515,6 +515,18 @@
       "storeTheDateOpeningDirectoryItem": "Store the date of opening a directory item",
       "statisticsLocationDescription": "The statistics data is stored in the file called \"stats.json\" located in the app directory.",
       "openFileLocation": "Open file location"
+    },
+    "advanced": {
+      "advancedSettings": "Advanced settings",
+      "description": "These settings are primarily for programmers and advanced users",
+      "terminal": {
+        "description": "Terminal for opening directories",
+        "adminDescription": "Admin terminal for opening directories"
+      },
+      "shell": {
+        "description": "Shell for opening directories",
+        "adminDescription": "Admin shell for opening directories"
+      }
     }
   },
   "projectGithubButtons": {
@@ -533,7 +545,8 @@
     "input": "Input",
     "search": "Search",
     "dataStorage": "Data & storage",
-    "stats": "Stats"
+    "stats": "Stats",
+    "advanced": "Advanced"
   },
   "settingsTags": {
     "language": "language",
@@ -564,7 +577,8 @@
     "dataBackupReminder": "data, storage, backup",
     "driveDetection": "drive, usb, storage, disk, device, detection, connection",
     "imageThumbnails": "image, picture, thumbnails, limit, storage, resources, usage, performance",
-    "directoryItemStatistics": "directory, item, statistics, stats, data, storage, usage"
+    "directoryItemStatistics": "directory, item, statistics, stats, data, storage, usage",
+    "advanced": "advanced, pro, developer, terminal, shell"
   },
   "dataBackupReminder": {
     "title": "Reminder: data backup",
@@ -1199,7 +1213,8 @@
     "driveWasConnected": "Drive was connected",
     "driveScanInitiated": "Drive scan initiated",
     "oneOfTheSearchFilesIsDamaged": "One of the search files is damaged",
-    "workspaceAdded": "Workspace added"
+    "workspaceAdded": "Workspace added",
+    "failedToFetchInstalledTerminals": "Failed to fetch installed terminals"
   },
   "contextMenus": {
     "dirItem": {

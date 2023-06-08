@@ -515,6 +515,18 @@
       "storeTheDateOpeningDirectoryItem": "ذخیره تاریخ باز کردن یک آیتم دایرکتوری",
       "statisticsLocationDescription": "داده های آمار در فایلی به نام \"stats.json\" واقع در فهرست برنامه ذخیره می شوند.",
       "openFileLocation": "باز کردن مکان فایل"
+    },
+    "advanced": {
+      "advancedSettings": "تنظیمات پیشرفته",
+      "description": "این تنظیمات بیشتر برای برنامه نویسان و کاربران پیشرفته است",
+      "terminal": {
+        "description": "ترمینال برای باز کردن دایرکتوری ها",
+        "adminDescription": "ترمینال ادمین برای باز کردن دایرکتوری ها"
+      },
+      "shell": {
+        "description": "شل برای باز کردن دایرکتوری ها",
+        "adminDescription": "شل ادمین برای باز کردن دایرکتوری ها"
+      }
     }
   },
   "projectGithubButtons": {
@@ -533,7 +545,8 @@
     "input": "ورودی",
     "search": "جستجو کردن",
     "dataStorage": "داده ها و ذخیره سازی",
-    "stats": "آمار"
+    "stats": "آمار",
+    "advanced": "پیشرفته"
   },
   "settingsTags": {
     "language": "زبان",
@@ -564,7 +577,8 @@
     "dataBackupReminder": "داده، ذخیره سازی، پشتیبان گیری",
     "driveDetection": "درایو، usb، ذخیره سازی، دیسک، دستگاه، تشخیص، اتصال",
     "imageThumbnails": "تصویر، تصویر، ریز عکسها، محدودیت، ذخیره سازی، منابع، استفاده، عملکرد",
-    "directoryItemStatistics": "دایرکتوری، آیتم، آمار، آمار، داده، ذخیره سازی، استفاده"
+    "directoryItemStatistics": "دایرکتوری، آیتم، آمار، آمار، داده، ذخیره سازی، استفاده",
+    "advanced": "پیشرفته، حرفه ای، توسعه دهنده، ترمینال، شل"
   },
   "dataBackupReminder": {
     "title": "یادآوری: پشتیبان گیری از داده ها",
@@ -1199,7 +1213,8 @@
     "driveWasConnected": "درایو متصل شد",
     "driveScanInitiated": "اسکن درایو آغاز شد",
     "oneOfTheSearchFilesIsDamaged": "یکی از فایل های جستجو آسیب دیده است",
-    "workspaceAdded": "فضای کاری اضافه شد"
+    "workspaceAdded": "فضای کاری اضافه شد",
+    "failedToFetchInstalledTerminals": "دریافت ترمینال‌های نصب شده با خطا مواجه شد"
   },
   "contextMenus": {
     "dirItem": {

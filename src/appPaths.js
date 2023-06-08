@@ -32,6 +32,7 @@ const videos = getUserDirPath('videos')
 const music = getUserDirPath('music')
 const oneDrive = getUserDirPath('oneDrive')
 
+const systemLocalAppData = process.platform === 'win32' ? env.LOCALAPPDATA : env.HOME
 const userDataRoot = PATH.parse(userData).root.replace(/\\/g, '/')
 const resources = process.env.NODE_ENV === 'production'
   ? `${process.resourcesPath}/app.asar/resources`
@@ -132,6 +133,7 @@ const appPaths = {
   resources,
   userDirs,
   homeBannerMedia,
+  systemLocalAppData,
   userData,
   userDataRoot,
   home,

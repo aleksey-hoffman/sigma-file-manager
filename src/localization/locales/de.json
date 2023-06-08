@@ -515,6 +515,18 @@
       "storeTheDateOpeningDirectoryItem": "Speichern Sie das Datum des Öffnens eines Verzeichniseintrags",
       "statisticsLocationDescription": "Die Statistikdaten werden in der Datei namens \"stats.json\" gespeichert, die sich im App-Verzeichnis befindet.",
       "openFileLocation": "Dateispeicherort öffnen"
+    },
+    "advanced": {
+      "advancedSettings": "Erweiterte Einstellungen",
+      "description": "Diese Einstellungen sind hauptsächlich für Programmierer und fortgeschrittene Benutzer",
+      "terminal": {
+        "description": "Terminal zum Öffnen von Verzeichnissen",
+        "adminDescription": "Admin-Terminal zum Öffnen von Verzeichnissen"
+      },
+      "shell": {
+        "description": "Shell zum Öffnen von Verzeichnissen",
+        "adminDescription": "Admin-Shell zum Öffnen von Verzeichnissen"
+      }
     }
   },
   "projectGithubButtons": {
@@ -533,7 +545,8 @@
     "input": "Eingang",
     "search": "Suche",
     "dataStorage": "Datenspeicher",
-    "stats": "Statistiken"
+    "stats": "Statistiken",
+    "advanced": "Erweitert"
   },
   "settingsTags": {
     "language": "Sprache",
@@ -564,7 +577,8 @@
     "dataBackupReminder": "Daten, Speicherung, Sicherung",
     "driveDetection": "Laufwerk, USB, Speicher, Festplatte, Gerät, Erkennung, Verbindung",
     "imageThumbnails": "Bild, Bild, Thumbnails, Limit, Speicherplatz, Ressourcen, Nutzung, Leistung",
-    "directoryItemStatistics": "Verzeichnis, Element, Statistiken, Statistiken, Daten, Speicherung, Nutzung"
+    "directoryItemStatistics": "Verzeichnis, Element, Statistiken, Statistiken, Daten, Speicherung, Nutzung",
+    "advanced": "erweitert, Pro, Entwickler, Terminal, Shell"
   },
   "dataBackupReminder": {
     "title": "Erinnerung: Datensicherung",
@@ -1199,7 +1213,8 @@
     "driveWasConnected": "Laufwerk wurde angeschlossen",
     "driveScanInitiated": "Laufwerksscan eingeleitet",
     "oneOfTheSearchFilesIsDamaged": "Eine der Suchdateien ist beschädigt",
-    "workspaceAdded": "Arbeitsbereich wurde hinzugefügt"
+    "workspaceAdded": "Arbeitsbereich wurde hinzugefügt",
+    "failedToFetchInstalledTerminals": "Fehler beim Abrufen installierter Terminals"
   },
   "contextMenus": {
     "dirItem": {

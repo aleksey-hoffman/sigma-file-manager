@@ -920,6 +920,12 @@ function getNotification (params) {
       content: params?.props?.content,
       message: `<b>${i18n.t('directory')}:</b> ${params?.props?.defaultPath}`,
     },
+    failedToFetchInstalledTerminals: {
+      action: 'update-by-type',
+      closeButton: true,
+      title: i18n.t('notifications.failedToFetchInstalledTerminals'),
+      message: params?.props?.error,
+    },
   }
   return params?.name ? notifications[params.name] : {}
 }

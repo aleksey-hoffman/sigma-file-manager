@@ -515,6 +515,18 @@
       "storeTheDateOpeningDirectoryItem": "存储打开目录项的日期",
       "statisticsLocationDescription": "统计数据存储在应用程序目录中名为 \"stats.json\" 的文件中。",
       "openFileLocation": "打开文件所在位置"
+    },
+    "advanced": {
+      "advancedSettings": "高级设置",
+      "description": "这些设置主要适用于程序员和高级用户",
+      "terminal": {
+        "description": "打开目录的终端",
+        "adminDescription": "打开目录的管理员终端"
+      },
+      "shell": {
+        "description": "打开目录的Shell",
+        "adminDescription": "打开目录的管理员Shell"
+      }
     }
   },
   "projectGithubButtons": {
@@ -533,7 +545,8 @@
     "input": "输入",
     "search": "搜索",
     "dataStorage": "数据存储",
-    "stats": "统计"
+    "stats": "统计",
+    "advanced": "高级"
   },
   "settingsTags": {
     "language": "语言",
@@ -564,7 +577,8 @@
     "dataBackupReminder": "数据、存储、备份",
     "driveDetection": "驱动器、USB、存储、磁盘、设备、检测、连接",
     "imageThumbnails": "图像、图片、缩略图、限制、存储、资源、使用、性能",
-    "directoryItemStatistics": "目录、项目、统计、统计、数据、存储、使用"
+    "directoryItemStatistics": "目录、项目、统计、统计、数据、存储、使用",
+    "advanced": "高级，专业，开发者，终端，壳"
   },
   "dataBackupReminder": {
     "title": "提醒：数据备份",
@@ -1199,7 +1213,8 @@
     "driveWasConnected": "驱动器已连接",
     "driveScanInitiated": "驱动器扫描已启动",
     "oneOfTheSearchFilesIsDamaged": "其中一个搜索文件被损坏",
-    "workspaceAdded": "工作区已被添加"
+    "workspaceAdded": "工作区已被添加",
+    "failedToFetchInstalledTerminals": "无法获取已安装的终端"
   },
   "contextMenus": {
     "dirItem": {

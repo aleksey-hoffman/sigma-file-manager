@@ -44,6 +44,7 @@ import TimeUtils from './utils/timeUtils.js'
 import {getStorageDevices, getOneDrive} from './utils/storageInfo.js'
 import idleJs from 'idle-js'
 import * as notifications from './utils/notifications.js'
+import {fetchInstalledTerminals} from '@/actions/fs/platformTerminals'
 
 const electron = require('electron')
 const PATH = require('path')
@@ -148,6 +149,7 @@ export default {
       this.initOneDriveWatcherWorker()
       this.postOneDriveWatcherWorker()
       this.initEventHubListeners()
+      this.fetchInstalledTerminals()
       electron.ipcRenderer.invoke('main-window-loaded')
     }
     catch (error) {
@@ -349,6 +351,14 @@ export default {
     },
     checkForAppUpdateInstalled () {
       this.$store.dispatch('CHECK_IF_UPDATE_INSTALLED')
+    },
+    fetchInstalledTerminals () {
+      try {
+        fetchInstalledTerminals(this.$store)
+      }
+      catch (error) {
+        notifications.emit({name: 'failedToFetchInstalledTerminals', props: {error}})
+      }
     },
     bindKeyEvents () {
       this.bindMouseKeyEvents()

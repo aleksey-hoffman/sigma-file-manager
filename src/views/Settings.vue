@@ -2150,7 +2150,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             <div
               v-show="settingsSelectedTab === 8 || filterQuery !== ''"
               class="fade-in-500ms"
-              tab="general"
+              tab="stats"
             >
               <section-settings
                 v-if="showSection('directory-item-statistics')"
@@ -2223,6 +2223,71 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 </template>
               </section-settings>
             </div>
+
+            <!-- tab:advanced -->
+            <div
+              v-show="$utils.platform === 'win32' && (settingsSelectedTab === 9 || filterQuery !== '')"
+              class="fade-in-500ms"
+              tab="advanced"
+            >
+              <section-settings
+                v-if="showSection('advanced')"
+                class="content-area__content-card__section"
+                :header="{
+                  icon: {
+                    name: 'mdi-xml'
+                  },
+                  title: $t('settings.advanced.advancedSettings')
+                }"
+              >
+                <template #description>
+                  <p>
+                    {{$t('settings.advanced.description')}}
+                  </p>
+                </template>
+                <template #content>
+                  <div class="text--sub-title-1">
+                    {{$t('terminal')}}
+                  </div>
+
+                  <p class="mt-6">
+                    {{$t('settings.advanced.terminal.description')}}
+                  </p>
+                  <AppMenu
+                    :title="selectedTerminal.title"
+                    :menu-items="installedTerminalOptions"
+                  />
+
+                  <template v-if="selectedTerminal.shellOptions">
+                    <p class="mt-6">
+                      {{$t('settings.advanced.shell.description')}}
+                    </p>
+                    <AppMenu
+                      :title="selectedTerminal.selectedShell.title"
+                      :menu-items="installedTerminalShellOptions"
+                    />
+                  </template>
+
+                  <p class="mt-6">
+                    {{$t('settings.advanced.terminal.adminDescription')}}
+                  </p>
+                  <AppMenu
+                    :title="selectedAdminTerminal.title"
+                    :menu-items="installedAdminTerminalOptions"
+                  />
+
+                  <template v-if="selectedAdminTerminal.shellOptions">
+                    <p class="mt-6">
+                      {{$t('settings.advanced.shell.adminDescription')}}
+                    </p>
+                    <AppMenu
+                      :title="selectedAdminTerminal.selectedAdminShell.title"
+                      :menu-items="installedAdminTerminalShellOptions"
+                    />
+                  </template>
+                </template>
+              </section-settings>
+            </div>
           </v-tabs-items>
         </div>
       </div>
@@ -2239,8 +2304,10 @@ import FilterClearButton from '@/components/FilterClearButton/index.vue'
 import AppButton from '@/components/AppButton/AppButton.vue'
 import AppIcon from '@/components/AppIcon/AppIcon.vue'
 import ShortcutList from '@/components/ShortcutList.vue'
+import AppMenu from '@/components/AppMenu/AppMenu.vue'
 import {getSystemFontsWithType} from '@/utils/getSystemFonts.js'
 import {regionalFormats} from '@/data/regionalFormats.js'
+import {setSelectedTerminal, setSelectedShell, setSelectedAdminTerminal, setSelectedAdminShell} from '@/actions/fs/platformTerminals'
 
 const electron = require('electron')
 
@@ -2251,6 +2318,7 @@ export default {
     FilterClearButton,
     ActionToolbar,
     AppButton,
+    AppMenu,
     AppIcon,
     ShortcutList,
   },
@@ -2426,6 +2494,9 @@ export default {
       dashboardTimeline: 'storageData.settings.dashboard.tabs.timeline.show',
       openDirItemSecondClickDelay: 'storageData.settings.navigator.openDirItemSecondClickDelay',
       windowTransparencyEffect: 'storageData.settings.windowTransparencyEffect',
+      terminalOptions: 'storageData.settings.terminal.terminalOptions',
+      selectedTerminal: 'storageData.settings.terminal.selectedTerminal',
+      selectedAdminTerminal: 'storageData.settings.terminal.selectedAdminTerminal',
     }
     const objects = {}
     for (const [modelKey, modelValue] of Object.entries(models)) {
@@ -2504,7 +2575,44 @@ export default {
         {text: this.$t('settingsTabs.search')},
         {text: this.$t('settingsTabs.dataStorage')},
         {text: this.$t('settingsTabs.stats')},
+        {text: this.$t('settingsTabs.advanced')},
       ]
+    },
+    installedTerminalOptions () {
+      return window.structuredClone(this.terminalOptions)
+        .filter(terminal => terminal.isInstalled)
+        .map(item => {
+          item.onClick = () => {setSelectedTerminal(this.$store, item)}
+          return item
+        })
+    },
+    installedTerminalShellOptions () {
+      if (!this.selectedTerminal.shellOptions) {
+        return []
+      }
+      return this.selectedTerminal.shellOptions
+        .map(item => {
+          item.onClick = () => {setSelectedShell(this.$store, item)}
+          return item
+        })
+    },
+    installedAdminTerminalOptions () {
+      return window.structuredClone(this.terminalOptions)
+        .filter(terminal => terminal.isInstalled)
+        .map(item => {
+          item.onClick = () => {setSelectedAdminTerminal(this.$store, item)}
+          return item
+        })
+    },
+    installedAdminTerminalShellOptions () {
+      if (!this.selectedAdminTerminal.shellOptions) {
+        return []
+      }
+      return this.selectedAdminTerminal.shellOptions
+        .map(item => {
+          item.onClick = () => {setSelectedAdminShell(this.$store, item)}
+          return item
+        })
     },
     validatedOpenDirItemSecondClickDelay: {
       get () {
@@ -2798,6 +2906,10 @@ export default {
         {
           sectionName: 'directory-item-statistics',
           tags: this.$t('settingsTags.directoryItemStatistics'),
+        },
+        {
+          sectionName: 'advanced',
+          tags: this.$t('settingsTags.advanced'),
         },
       ]
     },

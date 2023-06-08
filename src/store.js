@@ -12,6 +12,7 @@ import { languages, getLanguage } from './localization/data'
 import utils from './utils/utils'
 import deleteDirItems from './actions/fs/deleteDirItems.js'
 import trashDirItems from './actions/fs/trashDirItems.js'
+import {terminal} from './actions/fs/platformTerminals.js'
 import TimeUtils from './utils/timeUtils.js'
 import * as fsManager from './utils/fsManager'
 import { getField, updateField } from 'vuex-map-fields'
@@ -522,6 +523,7 @@ export default new Vuex.Store({
           storeDirItemOpenCount: true,
           storeDirItemOpenDate: true,
         },
+        terminal,
         UIZoomLevel: 1,
         windowTransparencyEffect: {
           value: true,
@@ -1887,17 +1889,45 @@ export default new Vuex.Store({
       })
     },
     OPEN_SELECTED_IN_TERMINAL (state, payload) {
+      const selectedTerminal = state.storageData.settings.terminal.selectedTerminal
+      const selectedShell = state.storageData.settings.terminal.selectedTerminal.selectedShell
+      
       payload.selectedDirItems.forEach(item => {
         if (process.platform === 'win32') {
-          const path = item.path.replace(/([!@#$%^&*()_+])/g, '\"$1\"')
+          let selectedTerminalCommand = ''
           if (payload.asAdmin) {
             try {
-              childProcess.exec(`powershell -command "Start-Process cmd '/k cd /d \\"${path}\\"' -Verb RunAs"`)
+              if (selectedTerminal.name === 'cmd') {
+                const cmdArgs = ['/k', 'cd', '/d', `\\"${item.path}\\"`].join(' ')
+                selectedTerminalCommand = `powershell -Command "Start-Process cmd -ArgumentList '${cmdArgs}' -Verb RunAs"`;
+              }
+              else if (selectedTerminal.name === 'powershell') {
+                const psCommand = `$Path = '${item.path}'; Set-Location -LiteralPath $Path;`
+                const encodedCommand = Buffer.from(psCommand, 'utf16le').toString('base64');
+                const psArgs = ['-NoExit', '-NoLogo', '-EncodedCommand', encodedCommand].join(' ')
+                selectedTerminalCommand = `powershell -Command "Start-Process powershell -ArgumentList '${psArgs}' -Verb RunAs"`;
+              }
+              else if (selectedTerminal.name === 'wt') {
+                const shell = selectedShell ? ` -p \\"${selectedShell.title}\\"` : ''
+                const wtArgs = ['new-tab', '-d', `\\"${item.path}\\"${shell}`].join(' ')
+                selectedTerminalCommand = `powershell -Command "Start-Process wt -ArgumentList '${wtArgs}' -Verb RunAs"`;
+              }
+              childProcess.exec(selectedTerminalCommand)
             } catch (error) { }
-          }
+          } 
           else {
             try {
-              childProcess.exec(`start cmd /k cd /d \"${item.path}\"`)
+              if (selectedTerminal.name === 'cmd') {
+                selectedTerminalCommand = `start cmd /k cd /d "${item.path}"`
+              }
+              else if (selectedTerminal.name === 'powershell') {
+                selectedTerminalCommand = `start powershell -NoExit -Command "Set-Location -LiteralPath '${item.path}'"`
+              }
+              else if (selectedTerminal.name === 'wt') {
+                const shell = selectedShell ? ` -p "${selectedShell.title}"` : ''
+                selectedTerminalCommand = `start wt new-tab -d "${item.path}"${shell}`
+              }
+              childProcess.exec(selectedTerminalCommand)
             } catch (error) { }
           }
         }

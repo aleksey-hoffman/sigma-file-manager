@@ -515,6 +515,18 @@
       "storeTheDateOpeningDirectoryItem": "Memorizza la data di apertura di un elemento della cartella",
       "statisticsLocationDescription": "I dati delle statistiche sono memorizzati nel file \"stats.json\" che si trova nella cartella dell'app",
       "openFileLocation": "Apri il percorso del file"
+    },
+    "advanced": {
+      "advancedSettings": "Impostazioni avanzate",
+      "description": "Queste impostazioni sono principalmente per programmatori e utenti avanzati",
+      "terminal": {
+        "description": "Terminale per aprire le directory",
+        "adminDescription": "Terminale admin per aprire le directory"
+      },
+      "shell": {
+        "description": "Shell per aprire le directory",
+        "adminDescription": "Shell admin per aprire le directory"
+      }
     }
   },
   "projectGithubButtons": {
@@ -533,7 +545,8 @@
     "input": "Input",
     "search": "Ricerca",
     "dataStorage": "Dati & archiviazione",
-    "stats": "Statistiche"
+    "stats": "Statistiche",
+    "advanced": "Avanzate"
   },
   "settingsTags": {
     "language": "lingua",
@@ -564,7 +577,8 @@
     "dataBackupReminder": "dati, archiviazione, backup",
     "driveDetection": "unità, usb, archiviazione, disco, dispositivo, rilevamento, connessione",
     "imageThumbnails": "immagine, foto, miniature, limite, archiviazione, risorse, utilizzo, prestazioni",
-    "directoryItemStatistics": "cartella, elemento, statistiche, stat., dati, archiviazione, utilizzo"
+    "directoryItemStatistics": "cartella, elemento, statistiche, stat., dati, archiviazione, utilizzo",
+    "advanced": "avanzato, pro, sviluppatore, terminale, shell"
   },
   "dataBackupReminder": {
     "title": "Promemoria: backup dei dati",
@@ -1199,7 +1213,8 @@
     "oneOfTheSearchFilesIsDamaged": "Uno dei file di ricerca è danneggiato",
     "workspaceAdded": "Spazio di lavoro aggiunto",
     "trashedNItems": "Spostati nel cestino {totalAmount} elementi",
-    "deletedNItems": "Eliminati {totalAmount} elementi"
+    "deletedNItems": "Eliminati {totalAmount} elementi",
+    "failedToFetchInstalledTerminals": "Impossibile recuperare i terminali installati"
   },
   "contextMenus": {
     "dirItem": {

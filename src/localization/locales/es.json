@@ -515,6 +515,18 @@
       "storeTheDateOpeningDirectoryItem": "Almacenar la fecha de apertura de un elemento del directorio",
       "statisticsLocationDescription": "Los datos estadísticos se almacenan en el archivo llamado \"stats.json\" ubicado en el directorio de la aplicación.",
       "openFileLocation": "Abrir localización de archivo"
+    },
+    "advanced": {
+      "advancedSettings": "Configuraciones avanzadas",
+      "description": "Estas configuraciones son principalmente para programadores y usuarios avanzados",
+      "terminal": {
+        "description": "Terminal para abrir directorios",
+        "adminDescription": "Terminal de administrador para abrir directorios"
+      },
+      "shell": {
+        "description": "Shell para abrir directorios",
+        "adminDescription": "Shell de administrador para abrir directorios"
+      }
     }
   },
   "projectGithubButtons": {
@@ -533,7 +545,8 @@
     "input": "Aporte",
     "search": "Buscar",
     "dataStorage": "Almacenamiento de datos",
-    "stats": "Estadísticas"
+    "stats": "Estadísticas",
+    "advanced": "Avanzado"
   },
   "settingsTags": {
     "language": "idioma",
@@ -564,7 +577,8 @@
     "dataBackupReminder": "datos, almacenamiento, copia de seguridad",
     "driveDetection": "unidad, usb, almacenamiento, disco, dispositivo, detección, conexión",
     "imageThumbnails": "imagen, imagen, miniaturas, límite, almacenamiento, recursos, uso, rendimiento",
-    "directoryItemStatistics": "directorio, elemento, estadísticas, estadísticas, datos, almacenamiento, uso"
+    "directoryItemStatistics": "directorio, elemento, estadísticas, estadísticas, datos, almacenamiento, uso",
+    "advanced": "avanzado, pro, desarrollador, terminal, shell"
   },
   "dataBackupReminder": {
     "title": "Recordatorio: copia de seguridad de datos",
@@ -1199,7 +1213,8 @@
     "driveWasConnected": "La unidad estaba conectada",
     "driveScanInitiated": "Escaneo de unidad iniciado",
     "oneOfTheSearchFilesIsDamaged": "Uno de los archivos de búsqueda está dañado",
-    "workspaceAdded": "Se ha añadido el espacio de trabajo"
+    "workspaceAdded": "Se ha añadido el espacio de trabajo",
+    "failedToFetchInstalledTerminals": "Error al buscar los terminales instalados"
   },
   "contextMenus": {
     "dirItem": {

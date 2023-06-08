@@ -515,6 +515,18 @@
       "storeTheDateOpeningDirectoryItem": "ディレクトリアイテムを開いた日付を保存する",
       "statisticsLocationDescription": "統計データは、アプリ ディレクトリにある \"stats.json\" というファイルに保存されます。",
       "openFileLocation": "開いているファイルの場所"
+    },
+    "advanced": {
+      "advancedSettings": "詳細設定",
+      "description": "これらの設定は主にプログラマーや上級ユーザー向けです",
+      "terminal": {
+        "description": "ディレクトリを開くためのターミナル",
+        "adminDescription": "ディレクトリを開くための管理者用ターミナル"
+      },
+      "shell": {
+        "description": "ディレクトリを開くためのシェル",
+        "adminDescription": "ディレクトリを開くための管理者用シェル"
+      }
     }
   },
   "projectGithubButtons": {
@@ -533,7 +545,8 @@
     "input": "入力",
     "search": "探す",
     "dataStorage": "データストレージ",
-    "stats": "統計"
+    "stats": "統計",
+    "advanced": "詳細"
   },
   "settingsTags": {
     "language": "言語",
@@ -564,7 +577,8 @@
     "dataBackupReminder": "データ、ストレージ、バックアップ",
     "driveDetection": "ドライブ、USB、ストレージ、ディスク、デバイス、検出、接続",
     "imageThumbnails": "画像、画像、サムネイル、制限、ストレージ、リソース、使用状況、パフォーマンス",
-    "directoryItemStatistics": "ディレクトリ、アイテム、統計、統計、データ、ストレージ、使用"
+    "directoryItemStatistics": "ディレクトリ、アイテム、統計、統計、データ、ストレージ、使用",
+    "advanced": "アドバンスド, プロ, 開発者, ターミナル, シェル"
   },
   "dataBackupReminder": {
     "title": "リマインダー: データのバックアップ",
@@ -1199,7 +1213,8 @@
     "driveWasConnected": "ドライブが接続されました",
     "driveScanInitiated": "ドライブ スキャンが開始されました",
     "oneOfTheSearchFilesIsDamaged": "検索ファイルの 1 つが破損しています",
-    "workspaceAdded": "ワークスペースが追加されました"
+    "workspaceAdded": "ワークスペースが追加されました",
+    "failedToFetchInstalledTerminals": "インストールされた端末の取得に失敗しました"
   },
   "contextMenus": {
     "dirItem": {
