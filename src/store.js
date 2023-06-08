@@ -1891,24 +1891,26 @@ export default new Vuex.Store({
     OPEN_SELECTED_IN_TERMINAL (state, payload) {
       const selectedTerminal = state.storageData.settings.terminal.selectedTerminal
       const selectedShell = state.storageData.settings.terminal.selectedTerminal.selectedShell
+      const selectedAdminTerminal = state.storageData.settings.terminal.selectedAdminTerminal
+      const selectedAdminShell = state.storageData.settings.terminal.selectedAdminTerminal.selectedAdminShell
       
       payload.selectedDirItems.forEach(item => {
         if (process.platform === 'win32') {
           let selectedTerminalCommand = ''
           if (payload.asAdmin) {
             try {
-              if (selectedTerminal.name === 'cmd') {
+              if (selectedAdminTerminal.name === 'cmd') {
                 const cmdArgs = ['/k', 'cd', '/d', `\\"${item.path}\\"`].join(' ')
                 selectedTerminalCommand = `powershell -Command "Start-Process cmd -ArgumentList '${cmdArgs}' -Verb RunAs"`;
               }
-              else if (selectedTerminal.name === 'powershell') {
+              else if (selectedAdminTerminal.name === 'powershell') {
                 const psCommand = `$Path = '${item.path}'; Set-Location -LiteralPath $Path;`
                 const encodedCommand = Buffer.from(psCommand, 'utf16le').toString('base64');
                 const psArgs = ['-NoExit', '-NoLogo', '-EncodedCommand', encodedCommand].join(' ')
                 selectedTerminalCommand = `powershell -Command "Start-Process powershell -ArgumentList '${psArgs}' -Verb RunAs"`;
               }
-              else if (selectedTerminal.name === 'wt') {
-                const shell = selectedShell ? ` -p \\"${selectedShell.title}\\"` : ''
+              else if (selectedAdminTerminal.name === 'wt') {
+                const shell = selectedAdminShell ? ` -p \\"${selectedAdminShell.title}\\"` : ''
                 const wtArgs = ['new-tab', '-d', `\\"${item.path}\\"${shell}`].join(' ')
                 selectedTerminalCommand = `powershell -Command "Start-Process wt -ArgumentList '${wtArgs}' -Verb RunAs"`;
               }
