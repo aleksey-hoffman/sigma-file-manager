@@ -548,16 +548,15 @@ export default {
         const fileSize = this.dirItem.stat.size
         const fileDateModified = this.dirItem.stat.mtimeMs
         const thumbPath = this.getThumbPath(fileSize, fileNameBase, fileDateModified)
-        if (fs.existsSync(thumbPath)) {
-          this.appendImageThumb(dirItemThumbContainer, thumbPath, dirItemRealPath, dirItemNode)
-            .then(() => {
-              resolve()
-            })
+        const isThumb = PATH.normalize(PATH.parse(dirItemRealPath).dir) === PATH.normalize(this.appPaths.storageDirectories.appStorageNavigatorThumbs)
+
+        if (isThumb || fs.existsSync(thumbPath)) {
+          this.appendImageThumb(dirItemThumbContainer, isThumb ? dirItemRealPath : thumbPath, dirItemNode).then(() => resolve())
         }
         else {
           this.generateImageThumb(dirItemThumbContainer, thumbPath, dirItemRealPath, dirItemNode)
             .then(() => {
-              this.appendImageThumb(dirItemThumbContainer, thumbPath, dirItemRealPath, dirItemNode)
+              this.appendImageThumb(dirItemThumbContainer, thumbPath, dirItemNode)
                 .then(() => {
                   resolve()
                 })
@@ -572,7 +571,7 @@ export default {
         ? `${thumbDir}/48x48_${fileSize}_${fileDateModified}_${fileNameBase}`.replace(/\\/g, '/')
         : `${thumbDir}/280x158_${fileSize}_${fileDateModified}_${fileNameBase}`.replace(/\\/g, '/')
     },
-    async appendImageThumb (dirItemThumbContainer, thumbPath, dirItemRealPath, dirItemNode) {
+    async appendImageThumb (dirItemThumbContainer, thumbPath, dirItemNode) {
       return new Promise((resolve, reject) => {
         const image = new Image()
         // image.style.position = 'absolute'
