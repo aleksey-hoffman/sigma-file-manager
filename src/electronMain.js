@@ -16,13 +16,12 @@
 const createProtocol = require('vue-cli-plugin-electron-builder/lib').createProtocol
 const electron = require('electron')
 const PATH = require('path')
+const fs = require('fs')
 const downloadManager = require('./utils/downloadManager')
 const SigmaAppUpdater = require('./utils/sigmaAppUpdater.js')
-const StorageReader = require('./utils/storageReader.js')
 const externalLinks = require('./utils/externalLinks.js')
 const appVersion = electron.app.getVersion()
 const appUpdater = new SigmaAppUpdater()
-const storageReader = new StorageReader()
 const {Worker} = require('worker_threads')
 
 // TODO: remove '@electron/remote' module and migrate to ipcRenderer.invoke
@@ -78,10 +77,24 @@ function lockSingleAppInstance () {
 }
 
 function setAppProperties () {
+  changeAppPaths()
   // Temporary override. The default value sometimes breaks window loading on reload
-  // For example, on settings reset. https://github.com/electron/electron/issues/30710
+  // For example, on settings reset. https://github.com/electron/electron/issues/30710/
   electron.app.allowRendererProcessReuse = false
   electron.app.setAppUserModelId('com.alekseyhoffman.sigma-file-manager')
+}
+
+function changeAppPaths () {
+  const userData = PATH.join(electron.app.getPath('home'), '.sigma-file-manager')
+  try {
+    fs.mkdirSync(userData, {recursive: true})
+  }
+  catch (error) {
+    console.log(error)
+  }
+  finally {
+    electron.app.setPath('userData', userData)
+  }
 }
 
 function setCustomizedAppProperties (params) {
@@ -458,7 +471,15 @@ function registerSafeFileProtocol () {
 }
 
 async function fetchAppStorageData () {
-  return await storageReader.get('settings.json')
+  const StorageReader = require('./utils/storageReader.js')
+  const storageReader = new StorageReader()
+  try {
+    const settings = await storageReader.get('settings.json')
+    return settings
+  }
+  catch (error) {
+    return {}
+  }
 }
 
 async function initAppUpdater () {

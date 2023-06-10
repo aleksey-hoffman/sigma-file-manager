@@ -3,59 +3,59 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 const fs = require('fs')
-const PATH = require('path')
-const electron = require('electron')
+const path = require('path')
 const appPaths = require('../appPaths')
 
 class StorageReader {
   async initStorageDirectories () {
-    return new Promise((resolve, reject) => {
-      const directoriesToInit = appPaths.storageDirectories
-      const promises = []
-      for (const [key, path] of Object.entries(directoriesToInit)) {
-        // Attempt to create directory. Don't do anything if it's already created
-        promises.push(fs.promises.mkdir(path, {recursive: true}))
+    const directoriesToInit = appPaths.storageDirectories
+    for (const directory of Object.values(directoriesToInit)) {
+      try {
+        await fs.promises.mkdir(directory, {recursive: true})
       }
-      Promise.allSettled(promises).then(() => resolve())
-    })
+      catch (error) {
+        if (error.code !== 'EEXIST') { // Ignore the error if the directory already exists
+          console.error(`Error creating directory: ${error.message}`)
+        }
+      }
+    }
   }
 
   async initStorageFiles () {
     const filesToInit = appPaths.storageFiles
-    for (const [key, fileData] of Object.entries(filesToInit)) {
-      const filePath = `${appPaths.storageDirectories.appStorage}/${fileData.fileName}`
+    for (const fileData of Object.values(filesToInit)) {
+      const filePath = path.join(appPaths.storageDirectories.appStorage, fileData.fileName)
       const formattedData = JSON.stringify(fileData.defaultData, null, 2)
       try {
         await fs.promises.access(filePath, fs.F_OK)
       }
       catch (error) {
-        await fs.promises.writeFile(filePath, formattedData, { encoding: 'utf-8' })
+        try {
+          await fs.promises.writeFile(filePath, formattedData, {encoding: 'utf-8'})
+        }
+        catch (error) {
+          console.error(`Error writing file: ${error.message}`)
+        }
       }
     }
   }
 
-  /** Get property value from app storage file
-  * @param {string} storageFileName
-  * @param {string} key
-  */
+  /**
+   * Get property value from app storage file
+   * @param {string} storageFileName
+   * @param {string} key
+   */
   async get (storageFileName, key) {
     await this.initStorageDirectories()
     await this.initStorageFiles()
+    const filePath = path.join(appPaths.storageDirectories.appStorage, storageFileName)
     try {
-      const userDataDirPath = electron.app.getPath('userData')
-      const appStorageDirName = 'app storage'
-      const filePath = PATH.join(userDataDirPath, appStorageDirName, storageFileName)
-      let data = await fs.promises.readFile(filePath, { encoding: 'utf-8' })
-      data = JSON.parse(data)
-      if (key) {
-        return data[key]
-      }
-      else {
-        return data
-      }
+      const data = JSON.parse(await fs.promises.readFile(filePath, {encoding: 'utf-8'}))
+      return key ? data[key] : data
     }
     catch (error) {
-      throw new Error(error)
+      console.error(`Error reading file: ${error.message}`)
+      throw error
     }
   }
 }
