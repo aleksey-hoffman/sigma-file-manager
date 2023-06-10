@@ -20,6 +20,7 @@ const fs = require('fs')
 const downloadManager = require('./utils/downloadManager')
 const SigmaAppUpdater = require('./utils/sigmaAppUpdater.js')
 const externalLinks = require('./utils/externalLinks.js')
+const copyOldUserData = require('./utils/copyOldUserData.js').default
 const appVersion = electron.app.getVersion()
 const appUpdater = new SigmaAppUpdater()
 const {Worker} = require('worker_threads')
@@ -85,12 +86,16 @@ function setAppProperties () {
 }
 
 function changeAppPaths () {
+  const oldUserData = electron.app.getPath('userData')
   const userData = PATH.join(electron.app.getPath('home'), '.sigma-file-manager')
+
   try {
-    fs.mkdirSync(userData, {recursive: true})
+    fs.accessSync(userData, fs.constants.F_OK)
   }
   catch (error) {
-    console.log(error)
+    fs.mkdirSync(userData, {recursive: true})
+    // Move over old user data only if the directory doesn't exist yet
+    copyOldUserData(oldUserData, userData)
   }
   finally {
     electron.app.setPath('userData', userData)
