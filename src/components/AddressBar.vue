@@ -44,6 +44,9 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           <div
             v-for="(part, index) in addressParts"
             :key="`address-part-${index}`"
+            class="drop-target"
+            :data-item-path="part.path"
+            data-type="directory"
           >
             <v-layout align-center>
               <div
