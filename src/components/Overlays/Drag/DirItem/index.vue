@@ -68,7 +68,7 @@ export default {
 
 <style>
 .overlay--item-drag {
-  z-index: 5;
+  z-index: 10;
   position: fixed;
   gap: 16px;
   padding: 6px 24px;

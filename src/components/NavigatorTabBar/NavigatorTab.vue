@@ -12,11 +12,13 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     <template #activator="{ on }">
       <div
         v-ripple
-        class="navigator-tab"
+        class="navigator-tab drop-target"
         :style="{
           '--tab-width': `${navigatorTabWidth}px`
         }"
         :is-active="tab.path === $store.state.navigatorView.currentDir.path"
+        :data-item-path="tab.path"
+        data-type="directory"
         v-on="on"
         @click.stop="tabOnClick(tab)"
       >
