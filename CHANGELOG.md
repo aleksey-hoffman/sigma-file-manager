@@ -1,5 +1,6 @@
 # CHANGELOG
 # Release Notes: v1.7.0 (2023-06-11)
+![image](https://github.com/aleksey-hoffman/sigma-file-manager/assets/61761672/0add2b10-a59f-4cd8-9e3d-f98a57e9589e)
 
 - 4 new features
 - 9 improvements
@@ -40,6 +41,7 @@
 - **Code refactor:** Various code refactoring.
 
 # Release Notes: v1.6.0 (2023-02-15)
+![image](https://github.com/aleksey-hoffman/sigma-file-manager/assets/61761672/180dbbb5-0948-4893-a8d8-9a7d6a088c22)
 
 - 1 new major feature
 - 6 new features
