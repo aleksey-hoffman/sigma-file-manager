@@ -2762,14 +2762,18 @@ export default {
         : 'mdi-checkbox-blank-outline'
     },
     async fetchSystemFonts () {
-      electron.ipcRenderer.send('focus-main-app-window')
-      this.isFetchingSystemFonts = true
-      setTimeout(async () => {
-        const defaultFont = this.defaultData.storageData.settings.text.font
-        const systemFonts = await getSystemFontsWithType()
-        this.fonts = [...[{name: defaultFont, type: ''}], ...systemFonts]
-        this.isFetchingSystemFonts = false
-      }, 500)
+      try {
+        this.isFetchingSystemFonts = true
+        setTimeout(async () => {
+          const defaultFont = this.defaultData.storageData.settings.text.font
+          const systemFonts = await getSystemFontsWithType()
+          this.fonts = [...[{name: defaultFont, type: ''}], ...systemFonts]
+          this.isFetchingSystemFonts = false
+        }, 500)
+      }
+      catch (error) {
+        console.log(error)
+      }
     },
     resetFont () {
       this.font = this.defaultData.storageData.settings.text.font
