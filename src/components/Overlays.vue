@@ -32,6 +32,16 @@ export default {
   },
   data () {
     return {
+      edgeScroll: {
+        lastYPosInContainer: null,
+        lastYPosInContainerPrev: null,
+        isScrolling: false,
+        scrollIntervalId: null,
+        scrollInterval: 20,
+        scrollEdgeHeight: 100,
+        scrollMaxSpeed: 50,
+        baseScrollSpeed: 5,
+      },
       dragIsCanceledOrOutsideWindow: false,
       dragOverEventThrottle: null,
       allowedInboundDragDropTargets: [
@@ -109,6 +119,9 @@ export default {
       window.removeEventListener('mousemove', this.handleMouseMove)
       window.removeEventListener('mouseup', this.handleMouseUp)
       this.setShowInboundDragOverlay()
+      this.edgeScroll.isScrolling = false
+      clearInterval(this.edgeScroll.scrollIntervalId)
+      this.edgeScroll.scrollIntervalId = null
     },
     initEventListeners () {
       // NOTE: 'dragover' event is required for 'drop' event to work
@@ -130,10 +143,12 @@ export default {
       this.inputState.pointer.button3 = mousedownEvent.which === 3
       this.inputState.pointer.lastMousedownEvent = mousedownEvent
       this.inputState.drag.startedInsideWindow = true
+      this.lastYPosInContainerPrev = mousedownEvent.clientY
       window.addEventListener('mousemove', this.handleMouseMove)
       window.addEventListener('mouseup', this.handleMouseUp)
     },
     handleMouseMove (mousemoveEvent) {
+      this.handleEdgeScroll(mousemoveEvent)
       this.fetchDropTargetItems()
       this.setShowInboundDragOverlay()
       this.inputState.drag.dirItems = this.selectedDirItems
@@ -144,6 +159,56 @@ export default {
           this.inputState.drag.dropTargetItems,
           mousemoveEvent,
         )
+      }
+    },
+    checkEdgeScrollSpeed () {
+      const scrollContainerElement = this.$utils.getContentAreaNode('navigator')
+      if (!scrollContainerElement) {return}
+
+      const {scrollTop, clientHeight, scrollHeight} = scrollContainerElement
+
+      const distanceToTop = scrollTop
+      const distanceToBottom = scrollHeight - clientHeight - scrollTop
+
+      let scrollSpeed = 0
+
+      if (this.edgeScroll.lastYPosInContainer < this.edgeScroll.scrollEdgeHeight && distanceToTop > 0) {
+        let t = this.edgeScroll.lastYPosInContainer / this.edgeScroll.scrollEdgeHeight
+        t = 1 - (--t * t * t + 1)
+        scrollSpeed = this.edgeScroll.baseScrollSpeed * t
+        scrollSpeed = Math.min(scrollSpeed, this.edgeScroll.scrollMaxSpeed)
+        scrollContainerElement.scrollTop -= scrollSpeed
+      }
+      else if (this.edgeScroll.lastYPosInContainer > clientHeight - this.edgeScroll.scrollEdgeHeight && distanceToBottom > 0) {
+        let t = (clientHeight - this.edgeScroll.lastYPosInContainer) / this.edgeScroll.scrollEdgeHeight
+        t = 1 - (--t * t * t + 1)
+        scrollSpeed = this.edgeScroll.baseScrollSpeed * t
+        scrollSpeed = Math.min(scrollSpeed, this.edgeScroll.scrollMaxSpeed)
+        scrollContainerElement.scrollTop += scrollSpeed
+      }
+      else {
+        this.edgeScroll.isScrolling = false
+        clearInterval(this.edgeScroll.scrollIntervalId)
+        this.edgeScroll.scrollIntervalId = null
+      }
+
+      this.edgeScroll.lastYPosInContainerPrev = this.edgeScroll.lastYPosInContainer
+    },
+    handleEdgeScroll (mousemoveEvent) {
+      const scrollContainerElement = this.$utils.getContentAreaNode('navigator')
+      if (!scrollContainerElement) {return}
+
+      this.edgeScroll.lastYPosInContainer = mousemoveEvent.clientY - scrollContainerElement.getBoundingClientRect().top
+
+      if (!this.edgeScroll.isScrolling) {
+        this.edgeScroll.isScrolling = true
+        this.edgeScroll.scrollIntervalId = setInterval(this.checkEdgeScrollSpeed, this.edgeScroll.scrollInterval)
+
+        scrollContainerElement.addEventListener('mouseleave', () => {
+          this.edgeScroll.isScrolling = false
+          clearInterval(this.edgeScroll.scrollIntervalId)
+          this.edgeScroll.scrollIntervalId = null
+        }, {once: true})
       }
     },
     async handleDrop (dropEvent) {
