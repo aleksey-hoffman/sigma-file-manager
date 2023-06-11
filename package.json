@@ -1,7 +1,7 @@
 {
   "name": "sigma-file-manager",
   "productName": "Sigma file manager",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "private": true,
   "license": "GPL-3.0-or-later",
   "author": "Aleksey Hoffman",
