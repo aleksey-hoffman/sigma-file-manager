@@ -65,6 +65,9 @@ export default {
   },
   watch: {
     $route (to, from) {
+      if (from.name === 'navigator') {
+        this.$store.dispatch('saveNavigatorScrollPosition')
+      }
       this.contextMenus.dirItem.value = false
       this.$store.dispatch('TERMINATE_ALL_FETCH_DIR_SIZE')
       // Unload items to improve UI responsiveness

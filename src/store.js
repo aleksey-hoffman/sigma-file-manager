@@ -2910,7 +2910,7 @@ export default new Vuex.Store({
     switchRoute ({state, dispatch}, route) {
       if (route.to === '/navigator') {
         router.push(route.to).catch((error) => { })
-        dispatch('loadDir', {path: state.navigatorView?.currentDir?.path})
+        dispatch('loadDir', {path: state.navigatorView?.currentDir?.path, scrollTop: false})
       }
       else {
         router.push(route.to).catch((error) => { })
@@ -3240,7 +3240,7 @@ export default new Vuex.Store({
       router.push(routeName).catch((error) => {})
     },
     async saveNavigatorScrollPosition (store) {
-      const contentAreaNode = utils.getContentAreaNode(router.currentRoute.name)
+      const contentAreaNode = utils.getContentAreaNode('navigator')
       store.state.navigatorView.scrollPosition = contentAreaNode?.scrollTop || 0
     },
     disableShortcuts ({state}, shortcuts) {
@@ -3259,7 +3259,6 @@ export default new Vuex.Store({
       });
     },
     async loadDir ({state, commit, dispatch}, options) {
-      await dispatch('saveNavigatorScrollPosition')
       loadDirThrottle.throttle(async () => {
         try {
           dispatch('ADD_ACTION_TO_HISTORY', { action: 'store.js::loadDir()' })
