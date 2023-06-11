@@ -1,4 +1,44 @@
 # CHANGELOG
+# Release Notes: v1.7.0 (2023-06-11)
+
+- 4 new features
+- 9 improvements
+- 5 fixes
+
+## New minor features
+- **Terminal:** option to select terminals and shells for opening directories.
+- **Drag & drop:** selected items can now be drag-and-droped to any part of the address bar.
+- **Drag & drop:** selected items can now be drag-and-droped into a tab.
+- **Drag & drop:** added edge scrolling for draggable items. When dragging items, the navigator will now automatically scroll when the cursor gets closer to the top / bottom edge.
+
+## Improvements
+- **Dialogs**: improved item deletion dialogs:
+  - Action buttons now display shortcuts
+  - Actions in conformation dialog can now be done via keyboard
+  - After deleting the current directory, the app will automatically go up one directory
+  - Protected items are now marked with an indicator
+  - Improved dialog design and translations
+- **Localization:** `German` language reviewed and updated by native speakers (thanks to @minisbett, @ToMoReKe, @phreakadelle2k).
+- **Localization:** `Chinese` language reviewed and updated by native speakers (thanks to @Pandaft).
+- **Localization:** `Italian` language added (thanks to @Alixey).
+- **UX**: Conformation prompts can now be submitted with `Enter` shortcut.
+
+## Major fixes
+- **Images**: the image thumbnails are now working in Windows Store build.
+
+## Minor fixes
+- **File downloading:** updated dependencies to fix the problem with downloading some videos.
+- **Navigator:** navigator page will now restore the opened directory scroll position, after switching pages and going back to navigator page.
+- **Images**: the app will no longer create an infinite loop by generating image thumbnails for images located in the app thumbnail storage directory.
+- **UI:** window is no longer jumping when opening settings page.
+
+## Other changes
+- **User settings**: changed default `userData` directory to `env.home`.
+
+## Development
+- **Dependencies:** Updated code dependencies.
+- **Code refactor:** Various code refactoring.
+
 # Release Notes: v1.6.0 (2023-02-15)
 
 - 1 new major feature
