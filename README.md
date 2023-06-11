@@ -1,16 +1,14 @@
 # Latest news
 
-1. Version 1.6.0 was released.
+1. Version 1.7.0 was released.
 2. Started creating [Sigma File Manager Next (v2.0)](https://github.com/aleksey-hoffman/sigma-file-manager/discussions/226). Rewriting the app codebase with newer, better technologies (Rust, Vue 3, Typescript), as well as improving code quality and moving away from Electron.js. Once finished, the app will become faster, more capable, and better in every other way.
 3. Reddit community [r/SigmaFileManager](https://www.reddit.com/r/SigmaFileManager) was created. This is where I will post all the updates, polls, progress, image and video previews of new / modified features, tips, etc. Check it out and post some cool ideas!
 
-# What's new in `v1.6`
+# What's new in `v1.7`
 
-- 1 new major feature
-- 6 new features
-- 11 improvements
-- 13 fixes
-- Now available in Microsoft store
+- 4 new features
+- 9 improvements
+- 5 fixes
 
 <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/releases">
   SEE RELEASE NOTES →
@@ -234,7 +232,7 @@ You can install the app in one of these ways:
     <tr>
       <td>Windows (unsigned installable)</td>
       <td>
-        <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/releases/download/v1.6.0/Sigma-File-Manager-1.6.0-Windows-Setup.exe">
+        <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/releases/download/v1.7.0/Sigma-File-Manager-1.7.0-Windows-Setup.exe">
           Installable file (.exe)
         </a>
       </td>
@@ -242,7 +240,7 @@ You can install the app in one of these ways:
     <tr>
       <td>Debian (Ubuntu) portable app | experimental</td>
       <td>
-        <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/releases/download/v1.6.0/Sigma-File-Manager-1.6.0-Linux-Debian.AppImage">
+        <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/releases/download/v1.7.0/Sigma-File-Manager-1.7.0-Linux-Debian.AppImage">
           AppImage
         </a>
       </td>
