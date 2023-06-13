@@ -423,19 +423,12 @@ export default {
       // and other modules cannot access it from within app.asar
       const isEnvProduction = process.env.NODE_ENV === 'production'
       if (isEnvProduction) {
-        try {
-          await fs.promises.access(this.appPaths.bin7Zip, fs.constants.F_OK)
-          await fs.promises.access(this.appPaths.binFFMPEG, fs.constants.F_OK)
-          await fs.promises.access(this.appPaths.binYtdlp, fs.constants.F_OK)
-        }
-        catch (error) {
-          await fsExtra.copy(
-            this.appPaths.resourcesBin,
-            this.appPaths.storageDirectories.appStorageBin,
-          )
-          if (process.platform !== 'win32') {
-            this.getAppStorageBinDirPermissions()
-          }
+        await fsExtra.copy(
+          this.appPaths.resourcesBin,
+          this.appPaths.storageDirectories.appStorageBin,
+        )
+        if (process.platform !== 'win32') {
+          this.getAppStorageBinDirPermissions()
         }
       }
     },
