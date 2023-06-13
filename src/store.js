@@ -1889,10 +1889,10 @@ export default new Vuex.Store({
       })
     },
     OPEN_SELECTED_IN_TERMINAL (state, payload) {
-      const selectedTerminal = state.storageData.settings.terminal.selectedTerminal
-      const selectedShell = state.storageData.settings.terminal.selectedTerminal.selectedShell
-      const selectedAdminTerminal = state.storageData.settings.terminal.selectedAdminTerminal
-      const selectedAdminShell = state.storageData.settings.terminal.selectedAdminTerminal.selectedAdminShell
+      const selectedTerminal = state.storageData.settings.terminal?.selectedTerminal
+      const selectedShell = state.storageData.settings.terminal?.selectedTerminal.selectedShell
+      const selectedAdminTerminal = state.storageData.settings.terminal?.selectedAdminTerminal
+      const selectedAdminShell = state.storageData.settings.terminal?.selectedAdminTerminal.selectedAdminShell
       
       payload.selectedDirItems.forEach(item => {
         if (process.platform === 'win32') {
