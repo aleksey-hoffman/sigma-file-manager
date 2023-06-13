@@ -356,11 +356,13 @@ export default {
       this.$store.dispatch('CHECK_IF_UPDATE_INSTALLED')
     },
     fetchInstalledTerminals () {
-      try {
-        fetchInstalledTerminals(this.$store)
-      }
-      catch (error) {
-        notifications.emit({name: 'failedToFetchInstalledTerminals', props: {error}})
+      if (this.$sharedUtils.platform === 'win32') {
+        try {
+          fetchInstalledTerminals(this.$store)
+        }
+        catch (error) {
+          notifications.emit({name: 'failedToFetchInstalledTerminals', props: {error}})
+        }
       }
     },
     bindKeyEvents () {
