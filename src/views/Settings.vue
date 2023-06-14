@@ -2308,6 +2308,7 @@ import AppMenu from '@/components/AppMenu/AppMenu.vue'
 import {getSystemFontsWithType} from '@/utils/getSystemFonts.js'
 import {regionalFormats} from '@/data/regionalFormats.js'
 import {setSelectedTerminal, setSelectedShell, setSelectedAdminTerminal, setSelectedAdminShell} from '@/actions/fs/platformTerminals'
+import {i18n} from '@/localization'
 
 const electron = require('electron')
 
@@ -2793,127 +2794,132 @@ export default {
         }
       }
     },
+    fetchSettingsDataMapTags (message) {
+      let searchableLocales = [...new Set(['en', i18n.locale])]
+      let translations = searchableLocales.map(locale => this.$t(message, locale))
+      return translations.join(', ')
+    },
     fetchSettingsDataMap () {
       this.settingsDataMap = [
         {
           sectionName: 'language',
-          tags: this.$t('settingsTags.language'),
+          tags: this.fetchSettingsDataMapTags('settingsTags.language'),
         },
         {
           sectionName: 'ui-scaling',
-          tags: this.$t('settingsTags.uiScaling'),
+          tags: this.fetchSettingsDataMapTags('settingsTags.uiScaling'),
         },
         {
           sectionName: 'updates',
-          tags: this.$t('settingsTags.updates'),
+          tags: this.fetchSettingsDataMapTags('settingsTags.updates'),
         },
         {
           sectionName: 'app-properties',
-          tags: this.$t('settingsTags.appProperties'),
+          tags: this.fetchSettingsDataMapTags('settingsTags.appProperties'),
         },
         {
           sectionName: 'window-controls',
-          tags: this.$t('settingsTags.windowControls'),
+          tags: this.fetchSettingsDataMapTags('settingsTags.windowControls'),
         },
         {
           sectionName: 'visual-effects',
-          tags: this.$t('settingsTags.visualEffects'),
+          tags: this.fetchSettingsDataMapTags('settingsTags.visualEffects'),
         },
         {
           sectionName: 'theme',
-          tags: this.$t('settingsTags.theme'),
+          tags: this.fetchSettingsDataMapTags('settingsTags.theme'),
         },
         {
           sectionName: 'visual-filters',
-          tags: this.$t('settingsTags.visualFilters'),
+          tags: this.fetchSettingsDataMapTags('settingsTags.visualFilters'),
         },
         {
           sectionName: 'animations',
-          tags: this.$t('settingsTags.animations'),
+          tags: this.fetchSettingsDataMapTags('settingsTags.animations'),
         },
         {
           sectionName: 'fonts',
-          tags: this.$t('settingsTags.fonts'),
+          tags: this.fetchSettingsDataMapTags('settingsTags.fonts'),
         },
         {
           sectionName: 'date-time',
-          tags: this.$t('settingsTags.dateTime'),
+          tags: this.fetchSettingsDataMapTags('settingsTags.dateTime'),
         },
         {
           sectionName: 'overlays',
-          tags: this.$t('settingsTags.overlays'),
+          tags: this.fetchSettingsDataMapTags('settingsTags.overlays'),
         },
         {
           sectionName: 'ui-elements',
-          tags: this.$t('settingsTags.uiElements'),
+          tags: this.fetchSettingsDataMapTags('settingsTags.uiElements'),
         },
         {
           sectionName: 'home-page-media-banner',
-          tags: this.$t('settingsTags.homePageMediaBanner'),
+          tags: this.fetchSettingsDataMapTags('settingsTags.homePageMediaBanner'),
         },
         {
           sectionName: 'info-panel',
-          tags: this.$t('settingsTags.infoPanel'),
+          tags: this.fetchSettingsDataMapTags('settingsTags.infoPanel'),
         },
         {
           sectionName: 'navigator',
-          tags: this.$t('settingsTags.navigator'),
+          tags: this.fetchSettingsDataMapTags('settingsTags.navigator'),
         },
         {
           sectionName: 'shortcuts',
-          tags: this.$t('settingsTags.shortcuts'),
+          tags: this.fetchSettingsDataMapTags('settingsTags.shortcuts'),
         },
         {
           sectionName: 'gpu-system-memory',
-          tags: this.$t('settingsTags.gpuSystemMemory'),
+          tags: this.fetchSettingsDataMapTags('settingsTags.gpuSystemMemory'),
         },
         {
           sectionName: 'workspaces',
-          tags: this.$t('settingsTags.workspaces'),
+          tags: this.fetchSettingsDataMapTags('settingsTags.workspaces'),
         },
         {
           sectionName: 'tabs',
-          tags: this.$t('settingsTags.tabs'),
+          tags: this.fetchSettingsDataMapTags('settingsTags.tabs'),
         },
         {
           sectionName: 'navigator-history',
-          tags: this.$t('settingsTags.navigatorHistory'),
+          tags: this.fetchSettingsDataMapTags('settingsTags.navigatorHistory'),
         },
         {
           sectionName: 'input-navigator',
-          tags: this.$t('settingsTags.inputNavigator'),
+          tags: this.fetchSettingsDataMapTags('settingsTags.inputNavigator'),
         },
         {
           sectionName: 'input-elements',
-          tags: this.$t('settingsTags.inputElements'),
+          tags: this.fetchSettingsDataMapTags('settingsTags.inputElements'),
         },
         {
           sectionName: 'mouse-buttons',
-          tags: this.$t('settingsTags.mouseButtons'),
+          tags: this.fetchSettingsDataMapTags('settingsTags.mouseButtons'),
         },
         {
           sectionName: 'global-search',
-          tags: this.$t('settingsTags.globalSearch'),
+          tags: this.fetchSettingsDataMapTags('settingsTags.globalSearch'),
         },
         {
           sectionName: 'data-backup-reminder',
-          tags: this.$t('settingsTags.dataBackupReminder'),
+          tags: this.fetchSettingsDataMapTags('settingsTags.dataBackupReminder'),
         },
         {
           sectionName: 'drive-detection',
-          tags: this.$t('settingsTags.driveDetection'),
+          tags: this.fetchSettingsDataMapTags('settingsTags.driveDetection'),
         },
         {
           sectionName: 'image-thumbnails',
-          tags: this.$t('settingsTags.imageThumbnails'),
+          tags: this.fetchSettingsDataMapTags('settingsTags.imageThumbnails'),
         },
         {
           sectionName: 'directory-item-statistics',
-          tags: this.$t('settingsTags.directoryItemStatistics'),
+          tags: this.fetchSettingsDataMapTags('settingsTags.directoryItemStatistics'),
         },
         {
           sectionName: 'advanced',
-          tags: this.$t('settingsTags.advanced'),
+          tags: this.fetchSettingsDataMapTags('settingsTags.advanced'),
         },
       ]
     },
