@@ -1,2 +1,2 @@
-version: ffmpeg-n4.4-18-gc813f5e343-linux64-lgpl-shared-4.4
+version: N-111059-gd78bffbf3d-20230611 Latest Auto-Build (2023-06-11 12:48)
 source: https://github.com/BtbN/FFmpeg-Builds
