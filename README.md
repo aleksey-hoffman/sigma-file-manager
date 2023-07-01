@@ -1,6 +1,6 @@
 # Latest news
 
-1. Version 1.7.0 was released.
+1. Version 1.7.0 was released. Video review: https://www.youtube.com/watch?v=ZQy754HOM7Y
 2. Started creating [Sigma File Manager Next (v2.0)](https://github.com/aleksey-hoffman/sigma-file-manager/discussions/226). Rewriting the app codebase with newer, better technologies (Rust, Vue 3, Typescript), as well as improving code quality and moving away from Electron.js. Once finished, the app will become faster, more capable, and better in every other way.
 3. Reddit community [r/SigmaFileManager](https://www.reddit.com/r/SigmaFileManager) was created. This is where I will post all the updates, polls, progress, image and video previews of new / modified features, tips, etc. Check it out and post some cool ideas!
 
