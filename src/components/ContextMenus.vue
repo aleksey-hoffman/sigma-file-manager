@@ -986,6 +986,7 @@ export default {
 <style>
 .context-menu__container {
   min-width: 220px;
+  overflow: hidden;
 }
 
 .context-menu__toolbar {
