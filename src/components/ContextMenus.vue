@@ -16,7 +16,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       offset-overflow
       absolute
     >
-      <div class="context-menu__container fade-in-1s">
+      <div class="context-menu__container">
         <transition
           :name="contextMenus.dirItem.showSubMenu
             ? 'context-sub-menu-transition'

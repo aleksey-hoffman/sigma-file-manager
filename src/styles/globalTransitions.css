@@ -51,11 +51,11 @@
 }
 
 .context-menu-transition-enter-active {
-  transition: all 0.2s ease;
+  transition: all 0s;
 }
 
 .context-menu-transition-leave-active {
-  transition: all 0s;
+  transition: all 0.3s;
 }
 
 .context-menu-transition-enter,
