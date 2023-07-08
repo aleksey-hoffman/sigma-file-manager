@@ -990,11 +990,8 @@ export default new Vuex.Store({
         targetType: 'dirItem',
         targetItems: [],
         targetItemsStats: {},
-        subMenu: {
-          value: false,
-          target: '',
-          title: ''
-        }
+        showSubMenu: false,
+        subMenu: {}
       },
     },
     disabledShortcuts: [],

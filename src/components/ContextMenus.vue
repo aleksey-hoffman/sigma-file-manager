@@ -18,13 +18,13 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     >
       <div class="context-menu__container fade-in-1s">
         <transition
-          :name="contextMenus.dirItem.subMenu.value
+          :name="contextMenus.dirItem.showSubMenu
             ? 'context-sub-menu-transition'
             : 'context-sub-menu-transition-reversed'"
           mode="out-in"
         >
           <div
-            v-if="!contextMenus.dirItem.subMenu.value"
+            v-if="!contextMenus.dirItem.showSubMenu"
             key="mainMenu"
           >
             <v-list
@@ -135,7 +135,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     </v-list-item-content>
                     <v-list-item-icon>
                       <v-icon
-                        v-if="item.subMenu"
+                        v-if="item.type === 'sub-menu'"
                         size="24px"
                         is-sub-menu
                       >
@@ -164,7 +164,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
           </div>
 
           <div
-            v-if="contextMenus.dirItem.subMenu.value"
+            v-if="contextMenus.dirItem.showSubMenu"
             key="subMenu"
           >
             <v-list dense>
@@ -184,7 +184,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                       icon
                       small
                       v-on="on"
-                      @click.stop="contextMenus.dirItem.subMenu.value = false"
+                      @click.stop="closeSubMenu"
                     >
                       <v-icon>
                         mdi-arrow-left
@@ -199,7 +199,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 <div>
                   {{contextMenus.dirItem.subMenu.title}}
                 </div>
-                <div v-if="contextMenus.dirItem.subMenu.target === 'open-with'">
+                <div v-if="contextMenus.dirItem.subMenu.name === 'open-with'">
                   <v-tooltip bottom>
                     <template #activator="{ on }">
                       <v-btn
@@ -224,7 +224,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
             <v-divider />
 
             <!-- context-menu::sub-view::list -->
-            <div v-if="contextMenus.dirItem.subMenu.target === 'open-with'">
+            <div v-if="contextMenus.dirItem.subMenu.name === 'open-with'">
               <v-list dense>
                 <v-list-item
                   class="item--add__button"
@@ -334,7 +334,7 @@ export default {
   watch: {
     'contextMenus.dirItem.value' (value) {
       if (!value) {
-        this.contextMenus.dirItem.subMenu.value = false
+        this.closeSubMenu()
       }
     },
   },
@@ -556,16 +556,16 @@ export default {
       return [
         {
           name: 'open-with',
+          type: 'sub-menu',
           title: this.$t('contextMenus.dirItem.openWith'),
-          subMenu: 'open-with',
           selectionType: ['single', 'multiple'],
           targetTypes: ['directory', 'file', 'file-symlink', 'directory-symlink'],
-          onClick: () => {
-            this.openSubMenu('open-with')
-          },
           closesMenu: false,
           icon: 'mdi-subdirectory-arrow-right',
           iconSize: '20px',
+          onClick: () => {
+            this.openSubMenu('open-with')
+          },
         },
         {
           name: 'quick-view',
@@ -676,62 +676,6 @@ export default {
           icon: 'mdi-lock-outline',
           iconSize: '18px',
         },
-        // TODO: finish in v1.2.0
-        // {
-        //   name: 'convert-or-edit-image',
-        //   title: 'Convert or edit image',
-        //   targetTypes: ['file'],
-        //   allowedFilesTypes: ['image'],
-        //   selectionType: ['single'],
-        //   onClick: {
-        //     method: 'convertOrEditImage',
-        //     params: {}
-        //   },
-        //   closesMenu: true,
-        //   icon: 'mdi-swap-horizontal',
-        //   iconSize: '23px'
-        // },
-        // {
-        //   name: 'convert-or-edit-audio',
-        //   title: 'Convert or edit audio',
-        //   targetTypes: ['file'],
-        //   allowedFilesTypes: ['audio'],
-        //   selectionType: ['single'],
-        //   onClick: {
-        //     method: 'convertOrEditAudio',
-        //     params: {}
-        //   },
-        //   closesMenu: true,
-        //   icon: 'mdi-swap-horizontal',
-        //   iconSize: '23px'
-        // },
-        // {
-        //   name: 'convert-or-edit-video',
-        //   title: 'Convert or edit video',
-        //   targetTypes: ['file'],
-        //   allowedFilesTypes: ['video'],
-        //   selectionType: ['single'],
-        //   onClick: {
-        //     method: 'convertOrEditVideo',
-        //     params: {}
-        //   },
-        //   closesMenu: true,
-        //   icon: 'mdi-swap-horizontal',
-        //   iconSize: '23px'
-        // },
-        // {
-        //   name: 'calculate-hash',
-        //   title: 'Calculate hash',
-        //   selectionType: ['single'],
-        //   targetTypes: ['file', 'file-symlink'],
-        //   onClick: {
-        //     method: 'calculateHash',
-        //     params: {}
-        //   },
-        //   closesMenu: true,
-        //   icon: 'mdi-memory',
-        //   iconSize: '22px'
-        // }
       ]
     },
     menuItems () {
@@ -901,13 +845,15 @@ export default {
       })
     },
     openSubMenu (name) {
-      let title = ''
-      if (name === 'open-with') {title = this.$t('contextMenus.dirItem.openWith')}
-      else if (name === 'edit-tags') {title = this.$t('contextMenus.dirItem.editTags')}
-      this.contextMenus.dirItem.subMenu.target = name
-      this.contextMenus.dirItem.subMenu.title = title
-      this.contextMenus.dirItem.subMenu.value = true
-      this.adjustMenuPositionToSubMenu()
+      const subMenu = this.dirItemMenuItems.find(item => item.name === name)
+      if (subMenu) {
+        this.contextMenus.dirItem.subMenu = subMenu
+        this.contextMenus.dirItem.showSubMenu = true
+        this.adjustMenuPositionToSubMenu()
+      }
+    },
+    closeSubMenu () {
+      this.contextMenus.dirItem.showSubMenu = false
     },
     adjustMenuPositionToSubMenu () {
       // Wait for submenu transition to finish and then reposition the menu
