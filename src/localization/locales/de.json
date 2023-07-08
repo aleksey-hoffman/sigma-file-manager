@@ -1222,7 +1222,7 @@
       "goBackToMainMenu": "Zurück zum Hauptmenü",
       "openProgramEditor": "Programmeditor öffnen",
       "addProgram": "Programm hinzufügen",
-      "colorTags": "Farbmarken",
+      "tags": "Tags",
       "protectItem": "Element schützen",
       "protectedListDescription": "Wenn aktiviert, wird das Element zur geschützten Liste hinzugefügt. Es wird nur innerhalb dieser App vor Änderung/Löschung geschützt. Andere Apps können es weiterhin ändern/löschen.",
       "addToPinned": "Zu angeheftet hinzufügen",

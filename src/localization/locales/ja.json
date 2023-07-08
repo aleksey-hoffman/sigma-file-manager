@@ -1222,7 +1222,7 @@
       "goBackToMainMenu": "メインメニューに戻る",
       "openProgramEditor": "プログラムエディタを開く",
       "addProgram": "プログラムを追加",
-      "colorTags": "カラータグ",
+      "tags": "タグ",
       "protectItem": "「アイテムを守る」",
       "protectedListDescription": "有効にすると、アイテムは保護リストに追加されます。このアプリ内からのみ変更/削除されないように保護されます。他のアプリは引き続き変更/削除できます。",
       "addToPinned": "固定に追加",

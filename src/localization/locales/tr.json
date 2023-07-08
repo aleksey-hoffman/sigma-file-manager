@@ -1222,7 +1222,7 @@
       "goBackToMainMenu": "Ana menüye dön",
       "openProgramEditor": "Program düzenleyiciyi aç",
       "addProgram": "Program ekle",
-      "colorTags": "Renk etiketleri",
+      "tags": "Etiketler",
       "protectItem": "Öğeyi koru",
       "protectedListDescription": "Etkinleştirilirse, öğe korumalı listeye eklenecektir. Yalnızca bu uygulama içinden değiştirilmeye/silinmeye karşı korunacaktır. Diğer uygulamalar yine de öğeyi değiştirebilir/silebilir.",
       "addToPinned": "Sabitlenenlere ekle",

@@ -1222,7 +1222,7 @@
       "goBackToMainMenu": "Quay lại menu chính",
       "openProgramEditor": "Mở trình chỉnh sửa chương trình",
       "addProgram": "Thêm chương trình",
-      "colorTags": "Thẻ màu",
+      "tags": "Thẻ",
       "protectItem": "Bảo vệ vật phẩm",
       "protectedListDescription": "Nếu được bật, mục sẽ được thêm vào danh sách được bảo vệ. Mục này sẽ được bảo vệ khỏi bị sửa đổi/xóa chỉ trong ứng dụng này. Các ứng dụng khác vẫn có thể sửa đổi/xóa mục đó.",
       "addToPinned": "Thêm vào đã ghim",

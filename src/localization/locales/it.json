@@ -1222,7 +1222,7 @@
       "goBackToMainMenu": "Torna al menu principale",
       "openProgramEditor": "Aprire l'editor del programma",
       "addProgram": "Aggiungi programma",
-      "colorTags": "Tag colore",
+      "tags": "Tag",
       "protectItem": "Progetti elemento",
       "protectedListDescription": "Se abilitato, l'elemento verrà aggiunto all'elenco protetto. Sarà protetto dalla modifica / eliminazione solo da questa applicazione. Altre app possono comunque modificarlo / eliminarlo",
       "addToPinned": "Aggiungi agli appuntati",

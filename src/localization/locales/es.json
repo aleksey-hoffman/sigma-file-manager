@@ -1222,7 +1222,7 @@
       "goBackToMainMenu": "Volver al menú principal",
       "openProgramEditor": "Abrir editor de programas",
       "addProgram": "Añadir programa",
-      "colorTags": "Etiquetas de colores",
+      "tags": "Etiquetas",
       "protectItem": "Proteger elemento",
       "protectedListDescription": "Si está habilitado, el elemento se agregará a la lista protegida. Estará protegido para que no se modifique o elimine solo desde esta aplicación. Otras aplicaciones aún pueden modificarlo o eliminarlo",
       "addToPinned": "Añadir a anclado",

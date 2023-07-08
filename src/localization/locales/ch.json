@@ -1222,7 +1222,7 @@
       "goBackToMainMenu": "返回主菜单",
       "openProgramEditor": "打开程序编辑器",
       "addProgram": "添加程序",
-      "colorTags": "颜色标签",
+      "tags": "标签",
       "protectItem": "保护物品",
       "protectedListDescription": "如果启用，该项目将被添加到受保护列表中。它将受到保护，仅在该应用程序内不会被修改/删除。其他应用程序仍然可以修改/删除它。",
       "addToPinned": "添加到仪表板页面上固定",

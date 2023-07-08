@@ -1222,7 +1222,7 @@
       "goBackToMainMenu": "Go back to main menu",
       "openProgramEditor": "Open program editor",
       "addProgram": "Add program",
-      "colorTags": "Color tags",
+      "tags": "Tags",
       "protectItem": "Protect item",
       "protectedListDescription": "If enabled, the item will be added to the protected list. It will be protected from being modified / deleted from within this app only. Other apps can still modify / delete it.",
       "addToPinned": "Add to pinned",
