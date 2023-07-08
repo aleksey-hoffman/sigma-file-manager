@@ -91,10 +91,9 @@ export default {
   methods: {
     toggleCurrentDirContextMenu (payload) {
       this.$store.dispatch('DESELECT_ALL_DIR_ITEMS')
-      this.$store.dispatch('ADD_TO_SELECTED_DIR_ITEMS', this.currentDir)
+      this.$store.dispatch('REPLACE_SELECTED_DIR_ITEMS', [this.currentDir])
         .then(() => {
           this.$store.dispatch('SET_CONTEXT_MENU', {
-            value: 'toggle',
             x: payload.clientX,
             y: payload.clientY,
           })

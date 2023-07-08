@@ -4517,11 +4517,6 @@ export default new Vuex.Store({
       if ((payload.value === 'toggle' || payload.value === false) && !payload.x && !payload.y) {
         store.state.contextMenus.dirItem.value = false
       }
-      else if (payload.value === 'toggle') {
-        store.state.contextMenus.dirItem.x = payload.x
-        store.state.contextMenus.dirItem.y = payload.y
-        store.state.contextMenus.dirItem.value = !store.state.contextMenus.dirItem.value
-      }
       else if (payload.value === false) {
         store.state.contextMenus.dirItem.value = false
       }
@@ -4537,7 +4532,7 @@ export default new Vuex.Store({
           setTimeout(() => {
             store.state.contextMenus.dirItem.value = true
           }, 0)
-        }, contextMenuWasOpened ? 100 : 0)
+        }, contextMenuWasOpened ? 300 : 0)
       }
     },
     INIT_FETCH_CONTEXT_MENU_TARGET_ITEMS (store, params) {

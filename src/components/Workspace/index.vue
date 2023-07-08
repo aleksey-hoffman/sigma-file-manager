@@ -28,15 +28,6 @@ export default {
     SearchWorkspaceArea,
     NavigatorWorkspaceArea,
   },
-  watch: {
-    selectedDirItems () {
-      if (this.isOnlyCurrentDirItemSelected) {
-        this.$store.dispatch('SET_CONTEXT_MENU', {
-          value: false,
-        })
-      }
-    },
-  },
   computed: {
     ...mapFields({
       globalSearchWidget: 'globalSearch.widget',
