@@ -588,9 +588,9 @@
   "drag": {
     "hitButtonToCancel": "点击 [Esc] 按钮或点击此处取消",
     "holdShiftToChangeMode": "按住 [Shift] 改变模式",
-    "dragDrop": "拖放",
-    "customImageOrVideoHere": "此处自定义图像或视频",
-    "acceptsFileImageVideo": "接受：文件（图片、视频）",
+    "dragDrop": "拖放文件或点击此处",
+    "customImageOrVideoHere": "以添加自定义背景",
+    "acceptsFileImageVideo": "接受：本地图像和视频文件",
     "dropHereToCopyIntoTheCurrentDirectory": "拖放到这里复制到当前目录",
     "dropHereToMoveIntoTheCurrentDirectory": "拖放到这里进入当前目录",
     "dropHereToDownloadIntoTheCurrentDirectory": "拖放到这里下载到当前目录",

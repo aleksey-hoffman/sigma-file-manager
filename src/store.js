@@ -2271,7 +2271,7 @@ export default new Vuex.Store({
         const normalizedPath = PATH.normalize(`${appStorageDir}/${appStorageFileName}`)
         await fs.promises.access(normalizedPath, fs.constants.F_OK)
         let item = await store.dispatch('GET_DIR_ITEM_INFO', normalizedPath)
-        await store.dispatch('deleteDirItems', {
+        deleteDirItems(store, {
           items: [item],
           safeCheck: false
         })
@@ -2525,9 +2525,17 @@ export default new Vuex.Store({
 
       async function processItems () {
         // Handle local file transfer
-        if (event.dataTransfer.items) {
+        if (event.dataTransfer?.items) {
           if (event.dataTransfer.items[0].kind === 'file') {
             for (const file of event.dataTransfer.files) {
+              let params = await copyFileToAppStorage(file)
+              await addHomeBackground(params)
+            }
+          }
+        }
+        else if (event.target.files) {
+          for (const file of event.target.files) {
+            if (file?.type?.startsWith?.('image') || file?.type?.startsWith?.('video')) {
               let params = await copyFileToAppStorage(file)
               await addHomeBackground(params)
             }
@@ -4272,7 +4280,7 @@ export default new Vuex.Store({
         store.state.dialogs.homeBannerPickerDialog.value = true
       }, 200)
       // Delete from storage
-      store.dispatch('deleteDirItems', {
+      deleteDirItems(store, {
         items: [item],
         safeCheck: false,
         silent: true

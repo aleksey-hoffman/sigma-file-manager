@@ -588,9 +588,9 @@
   "drag": {
     "hitButtonToCancel": "Nhấn nút [Esc] hoặc nhấp vào đây để hủy",
     "holdShiftToChangeMode": "Giữ [Shift] để thay đổi chế độ",
-    "dragDrop": "Kéo thả",
-    "customImageOrVideoHere": "hình ảnh hoặc video tùy chỉnh tại đây",
-    "acceptsFileImageVideo": "Chấp nhận: tệp (hình ảnh, video)",
+    "dragDrop": "Thả tệp hoặc nhấp vào đây",
+    "customImageOrVideoHere": "để thêm hình nền tùy chỉnh",
+    "acceptsFileImageVideo": "Chấp nhận: các tệp hình ảnh và video cục bộ",
     "dropHereToCopyIntoTheCurrentDirectory": "Thả vào đây để sao chép vào thư mục hiện tại",
     "dropHereToMoveIntoTheCurrentDirectory": "Thả vào đây để di chuyển vào thư mục hiện tại",
     "dropHereToDownloadIntoTheCurrentDirectory": "Thả vào đây để tải xuống thư mục hiện tại",

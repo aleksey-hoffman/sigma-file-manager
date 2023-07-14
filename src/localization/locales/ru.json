@@ -588,9 +588,9 @@
   "drag": {
     "hitButtonToCancel": "Нажмите кнопку [Esc] или щелкните здесь для отмены",
     "holdShiftToChangeMode": "Удерживайте [Shift], чтобы изменить режим",
-    "dragDrop": "Перетащите",
-    "customImageOrVideoHere": "изображение или видео сюда",
-    "acceptsFileImageVideo": "Принимает: файл (изображение, видео)",
+    "dragDrop": "Бросьте файлы или нажмите здесь",
+    "customImageOrVideoHere": "чтобы добавить пользовательские фоны",
+    "acceptsFileImageVideo": "Принимает: локальные файлы изображений и видео",
     "dropHereToCopyIntoTheCurrentDirectory": "Перетащите сюда, чтобы скопировать в текущий папка",
     "dropHereToMoveIntoTheCurrentDirectory": "Перетащите сюда, чтобы перейти в текущий папка",
     "dropHereToDownloadIntoTheCurrentDirectory": "Перетащите сюда, чтобы загрузить в текущий папка",

@@ -14,6 +14,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       class="media-picker__drop-area"
       align-center
       justify-center
+      @click="showMediaPicker"
     >
       <div class="media-picker__drop-area-title">
         {{$t('drag.dragDrop')}}
@@ -24,6 +25,12 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
       <div class="media-picker__drop-area-description">
         {{$t('drag.acceptsFileImageVideo')}}
       </div>
+      <input
+        ref="mediaPickerDropAreaInput"
+        type="file"
+        multiple
+        @change="onMediaInputChange"
+      />
     </v-layout>
 
     <div
@@ -197,6 +204,12 @@ export default {
     }),
   },
   methods: {
+    showMediaPicker () {
+      this.$refs.mediaPickerDropAreaInput.click()
+    },
+    onMediaInputChange (event) {
+      this.$store.dispatch('homePageBackgroundDrop', event)
+    },
     getItemTypeText (type) {
       if (!type) {
         return ''
@@ -369,6 +382,7 @@ export default {
 
 <style>
 .media-picker__drop-area {
+  position: relative;
   width: 100%;
   height: 100%;
   padding: 16px;
@@ -377,6 +391,11 @@ export default {
   outline-offset: -3px;
   text-align: center;
   user-select: none;
+  cursor: pointer;
+}
+
+.media-picker__drop-area:hover {
+  background-color: var(--highlight-color-4);
 }
 
 .media-picker__drop-area-title {
@@ -388,6 +407,11 @@ export default {
   color: var(--color-7);
   font-size: 16px;
 }
+
+.media-picker__drop-area
+  input {
+    display: none;
+  }
 
 .media-picker__container
   .progress {

@@ -588,9 +588,9 @@
   "drag": {
     "hitButtonToCancel": "Premi il tasto [Esc] o clicca qui per annullare",
     "holdShiftToChangeMode": "Tieni premuto il tasto [Shift] per cambiare modalità",
-    "dragDrop": "Drag & Drop",
-    "customImageOrVideoHere": "immagine o video personalizzato qui",
-    "acceptsFileImageVideo": "Accetta: file (immagine, video)",
+    "dragDrop": "Rilascia i file o clicca qui",
+    "customImageOrVideoHere": "per aggiungere sfondi personalizzati",
+    "acceptsFileImageVideo": "Accetta: file di immagini e video locali",
     "dropHereToCopyIntoTheCurrentDirectory": "Rilascia qui per copiare nella cartella attuale",
     "dropHereToMoveIntoTheCurrentDirectory": "Rilascia qui per spostarti nella cartella attuale",
     "dropHereToDownloadIntoTheCurrentDirectory": "Rilascia qui per scaricare nella cartella attuale",

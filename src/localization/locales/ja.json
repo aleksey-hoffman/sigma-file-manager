@@ -588,9 +588,9 @@
   "drag": {
     "hitButtonToCancel": "[Esc] ボタンを押すか、ここをクリックしてキャンセルします",
     "holdShiftToChangeMode": "[Shift] を押してモードを変更",
-    "dragDrop": "ドラッグドロップ",
-    "customImageOrVideoHere": "カスタム画像または動画はこちら",
-    "acceptsFileImageVideo": "受け入れます: ファイル (画像、動画)",
+    "dragDrop": "ファイルをドロップするか、ここをクリック",
+    "customImageOrVideoHere": "カスタム背景を追加するため",
+    "acceptsFileImageVideo": "受け入れる：ローカルの画像とビデオファイル",
     "dropHereToCopyIntoTheCurrentDirectory": "ここにドロップして現在のディレクトリにコピーします",
     "dropHereToMoveIntoTheCurrentDirectory": "ここにドロップして現在のディレクトリに移動",
     "dropHereToDownloadIntoTheCurrentDirectory": "現在のディレクトリにダウンロードするには、ここにドロップしてください",

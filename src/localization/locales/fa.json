@@ -588,9 +588,9 @@
   "drag": {
     "hitButtonToCancel": "دکمه [Esc] را بزنید یا برای لغو اینجا کلیک کنید",
     "holdShiftToChangeMode": "برای تغییر حالت، [Shift] را نگه دارید",
-    "dragDrop": "کشیدن و رها کردن",
-    "customImageOrVideoHere": "تصویر یا ویدئوی سفارشی در اینجا",
-    "acceptsFileImageVideo": "می پذیرد: فایل (تصویر، ویدئو)",
+    "dragDrop": "فایل ها را رها کنید یا اینجا را کلیک کنید",
+    "customImageOrVideoHere": "برای اضافه کردن پس زمینه های سفارشی",
+    "acceptsFileImageVideo": "پذیرفتن: فایل های تصویر و ویدیوی محلی",
     "dropHereToCopyIntoTheCurrentDirectory": "برای کپی کردن در فهرست فعلی، اینجا را رها کنید",
     "dropHereToMoveIntoTheCurrentDirectory": "برای انتقال به فهرست فعلی، اینجا را رها کنید",
     "dropHereToDownloadIntoTheCurrentDirectory": "برای دانلود در فهرست فعلی اینجا را رها کنید",

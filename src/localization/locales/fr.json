@@ -588,9 +588,9 @@
   "drag": {
     "hitButtonToCancel": "Appuyez sur le bouton [Esc] ou cliquez ici pour annuler",
     "holdShiftToChangeMode": "Maintenez [Shift] pour changer de mode",
-    "dragDrop": "Glisser-déposer",
-    "customImageOrVideoHere": "image ou vidéo personnalisée ici",
-    "acceptsFileImageVideo": "Accepte : fichier (image, vidéo)",
+    "dragDrop": "Déposez des fichiers ou cliquez ici",
+    "customImageOrVideoHere": "pour ajouter des arrière-plans personnalisés",
+    "acceptsFileImageVideo": "Accepte: fichiers d'images et de vidéos locaux",
     "dropHereToCopyIntoTheCurrentDirectory": "Déposer ici pour copier dans le répertoire courant",
     "dropHereToMoveIntoTheCurrentDirectory": "Déposez ici pour vous déplacer dans le répertoire courant",
     "dropHereToDownloadIntoTheCurrentDirectory": "Déposer ici pour télécharger dans le répertoire courant",

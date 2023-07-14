@@ -588,9 +588,9 @@
   "drag": {
     "hitButtonToCancel": "Klicken Sie auf die Schaltfläche [Esc] oder klicken Sie hier, um abzubrechen",
     "holdShiftToChangeMode": "Halten Sie [Shift] gedrückt, um den Modus zu ändern",
-    "dragDrop": "Ziehen und loslassen",
-    "customImageOrVideoHere": "benutzerdefiniertes Bild oder Video hier",
-    "acceptsFileImageVideo": "Akzeptiert: Datei (Bild, Video)",
+    "dragDrop": "Dateien ablegen oder hier klicken",
+    "customImageOrVideoHere": "um benutzerdefinierte Hintergründe hinzuzufügen",
+    "acceptsFileImageVideo": "Akzeptiert: lokale Bild- und Videodateien",
     "dropHereToCopyIntoTheCurrentDirectory": "Hier ablegen, um in das aktuelle Verzeichnis zu kopieren",
     "dropHereToMoveIntoTheCurrentDirectory": "Hier ablegen, um in das aktuelle Verzeichnis zu wechseln",
     "dropHereToDownloadIntoTheCurrentDirectory": "Hier ablegen, um in das aktuelle Verzeichnis herunterzuladen",

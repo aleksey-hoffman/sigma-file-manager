@@ -588,9 +588,9 @@
   "drag": {
     "hitButtonToCancel": "[Esc] düğmesine basın veya iptal etmek için buraya tıklayın",
     "holdShiftToChangeMode": "Modu değiştirmek için [Shift]'e basılı tutun",
-    "dragDrop": "Sürükle bırak",
-    "customImageOrVideoHere": "özel resim veya video burada",
-    "acceptsFileImageVideo": "Kabul eder: dosya (resim, video)",
+    "dragDrop": "Dosyaları bırakın veya burayı tıklayın",
+    "customImageOrVideoHere": "özel arka planlar eklemek için",
+    "acceptsFileImageVideo": "Kabul eder: yerel resim ve video dosyaları",
     "dropHereToCopyIntoTheCurrentDirectory": "Geçerli dizine kopyalamak için buraya bırakın",
     "dropHereToMoveIntoTheCurrentDirectory": "Geçerli dizine gitmek için buraya bırakın",
     "dropHereToDownloadIntoTheCurrentDirectory": "Mevcut dizine indirmek için buraya bırakın",
