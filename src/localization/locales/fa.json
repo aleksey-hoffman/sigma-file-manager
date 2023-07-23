@@ -20,7 +20,12 @@
   "language": {
     "language": "زبان",
     "isCorrectedLanguage": "ترجمه توسط یک متکلم به زبان مادری بررسی و تصحیح شد",
-    "isAutoTranslatedLanguage": "ترجمه خودکار نیاز به بررسی و تصحیح توسط یک متکلم به زبان مادری دارد"
+    "isAutoTranslatedLanguage": "ترجمه خودکار نیاز به بررسی و تصحیح توسط یک متکلم به زبان مادری دارد",
+    "loadRemoteTranslations": "بارگیری ترجمه های از راه دور",
+    "autoFetch": "به روزرسانی خودکار ترجمه",
+    "fetchLatestTranslationsTitle": "بازیابی خودکار آخرین ترجمه ها از مخزن پروژه",
+    "autoFetchTranslationsOnAppLoad": "هر زمان که برنامه از حالت بسته کامل باز می شود",
+    "autoFetchTranslationsPeriodically": "دوره ای (هر ساعت)"
   },
   "placeholders": {
     "noDrivesFound": "هیچ درایوی پیدا نشد",

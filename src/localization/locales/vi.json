@@ -20,7 +20,12 @@
   "language": {
     "language": "Ngôn ngữ",
     "isCorrectedLanguage": "Bản dịch đã được xem xét và sửa chữa bởi một người bản ngữ",
-    "isAutoTranslatedLanguage": "Tự động dịch. Cần được xem xét và sửa chữa bởi một người nói ngôn ngữ bản địa"
+    "isAutoTranslatedLanguage": "Tự động dịch. Cần được xem xét và sửa chữa bởi một người nói ngôn ngữ bản địa",
+    "loadRemoteTranslations": "Tải bản dịch từ xa",
+    "autoFetch": "Cập nhật dịch tự động",
+    "fetchLatestTranslationsTitle": "Tự động tải các bản dịch mới nhất từ kho dự án",
+    "autoFetchTranslationsOnAppLoad": "Mỗi khi ứng dụng được mở từ trạng thái đóng hoàn toàn",
+    "autoFetchTranslationsPeriodically": "Định kỳ (mỗi giờ)"
   },
   "placeholders": {
     "noDrivesFound": "Không tìm thấy ổ đĩa",

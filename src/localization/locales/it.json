@@ -20,7 +20,12 @@
   "language": {
     "language": "Lingua",
     "isCorrectedLanguage": "La traduzione è stata rivista e corretta da un madrelingua",
-    "isAutoTranslatedLanguage": "Tradotto automaticamente. Deve essere rivisto e corretto da un madrelingua"
+    "isAutoTranslatedLanguage": "Tradotto automaticamente. Deve essere rivisto e corretto da un madrelingua",
+    "loadRemoteTranslations": "Carica le traduzioni remote",
+    "autoFetch": "Aggiornamenti automatici delle traduzioni",
+    "fetchLatestTranslationsTitle": "Recupera automaticamente le ultime traduzioni dal repository del progetto",
+    "autoFetchTranslationsOnAppLoad": "Ogni volta che l'app viene aperta da uno stato completamente chiuso",
+    "autoFetchTranslationsPeriodically": "Periodicamente (ogni ora)"
   },
   "placeholders": {
     "noDrivesFound": "Nessuna unità trovata",

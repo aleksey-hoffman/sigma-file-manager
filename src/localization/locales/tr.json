@@ -20,7 +20,12 @@
   "language": {
     "language": "Dil",
     "isCorrectedLanguage": "Çeviri ana dili İngilizce olan bir kişi tarafından gözden geçirilmiş ve düzeltilmiştir",
-    "isAutoTranslatedLanguage": "Otomatik çevrilmiştir. Ana dili İngilizce olan biri tarafından gözden geçirilmeli ve düzeltilmelidir"
+    "isAutoTranslatedLanguage": "Otomatik çevrilmiştir. Ana dili İngilizce olan biri tarafından gözden geçirilmeli ve düzeltilmelidir",
+    "loadRemoteTranslations": "Uzaktan çevirileri yükle",
+    "autoFetch": "Otomatik çeviri güncellemeleri",
+    "fetchLatestTranslationsTitle": "En son çevirileri proje depo alanından otomatik olarak al",
+    "autoFetchTranslationsOnAppLoad": "Uygulama tamamen kapalı durumdan açıldığında her seferinde",
+    "autoFetchTranslationsPeriodically": "Periyodik olarak (her saat)"
   },
   "placeholders": {
     "noDrivesFound": "Sürücü bulunamadı",

@@ -20,7 +20,12 @@
   "language": {
     "language": "言語",
     "isCorrectedLanguage": "翻訳はネイティブスピーカーによるレビューと修正を受けました",
-    "isAutoTranslatedLanguage": "自動翻訳されました。ネイティブスピーカーによるレビューと訂正が必要です"
+    "isAutoTranslatedLanguage": "自動翻訳されました。ネイティブスピーカーによるレビューと訂正が必要です",
+    "loadRemoteTranslations": "リモート翻訳をロードする",
+    "autoFetch": "自動翻訳更新",
+    "fetchLatestTranslationsTitle": "プロジェクトリポジトリから最新の翻訳を自動的に取得する",
+    "autoFetchTranslationsOnAppLoad": "アプリが完全に閉じた状態から開かれるたびに",
+    "autoFetchTranslationsPeriodically": "定期的に（毎時間）"
   },
   "placeholders": {
     "noDrivesFound": "ドライブが見つかりません",

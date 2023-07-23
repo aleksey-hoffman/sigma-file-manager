@@ -128,7 +128,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                   <v-menu offset-y>
                     <template #activator="{ on }">
                       <v-btn
-                        class="button-1 mt-2"
+                        class="button-1 mr-2"
                         small
                         depressed
                         v-on="on"
@@ -168,6 +168,36 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                       </v-list-item>
                     </v-list>
                   </v-menu>
+
+                  <AppButton
+                    button-class="button-1"
+                    type="button"
+                    small
+                    icon="mdi-cloud-download-outline"
+                    :tooltip="$t('language.loadRemoteTranslations')"
+                    @click="loadRemoteTranslations"
+                  />
+
+                  <div class="text--sub-title-1 mt-4">
+                    {{$t('language.autoFetch')}}
+                  </div>
+
+                  <div>
+                    {{$t('language.fetchLatestTranslationsTitle')}}
+                  </div>
+
+                  <v-switch
+                    v-model="autoFetchTranslationsOnAppLoad"
+                    :label="$t('language.autoFetchTranslationsOnAppLoad')"
+                    hide-details
+                  />
+
+                  <v-switch
+                    v-model="autoFetchTranslationsPeriodically"
+                    :label="$t('language.autoFetchTranslationsPeriodically')"
+                    hide-details
+                  />
+
                   <div
                     class="mt-4"
                     v-html="$t('settings.general.toAddNewLanguage')"
@@ -2309,6 +2339,7 @@ import {getSystemFontsWithType} from '@/utils/getSystemFonts.js'
 import {regionalFormats} from '@/data/regionalFormats.js'
 import {setSelectedTerminal, setSelectedShell, setSelectedAdminTerminal, setSelectedAdminShell} from '@/actions/fs/platformTerminals'
 import {i18n} from '@/localization'
+import {loadRemoteTranslations} from '@/actions/i18n/i18n'
 
 const electron = require('electron')
 
@@ -2485,6 +2516,8 @@ export default {
       navigatorViewInfoPanel: 'storageData.settings.infoPanels.navigatorView',
       selectedLanguage: 'storageData.settings.localization.selectedLanguage',
       languages: 'storageData.settings.localization.languages',
+      autoFetchTranslationsOnAppLoad: 'storageData.settings.localization.autoFetch.onAppLoad',
+      autoFetchTranslationsPeriodically: 'storageData.settings.localization.autoFetch.periodically',
       spellcheck: 'storageData.settings.spellcheck',
       globalSearchDisallowedPathsItems: 'storageData.settings.globalSearch.disallowedPathsItems',
       appPropertiesOpenAtLogin: 'storageData.settings.appProperties.openAtLogin',
@@ -2757,6 +2790,9 @@ export default {
     },
   },
   methods: {
+    loadRemoteTranslations () {
+      loadRemoteTranslations()
+    },
     globalSearchDisallowedPathsIcon (item) {
       return this.globalSearchDisallowedPaths.includes(item)
         ? 'mdi-checkbox-outline'

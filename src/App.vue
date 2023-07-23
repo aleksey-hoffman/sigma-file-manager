@@ -45,6 +45,7 @@ import {getStorageDevices, getOneDrive} from './utils/storageInfo.js'
 import idleJs from 'idle-js'
 import * as notifications from './utils/notifications.js'
 import {fetchInstalledTerminals} from '@/actions/fs/platformTerminals'
+import {loadRemoteTranslations} from '@/actions/i18n/i18n'
 
 const electron = require('electron')
 const PATH = require('path')
@@ -153,6 +154,7 @@ export default {
       this.postOneDriveWatcherWorker()
       this.initEventHubListeners()
       this.fetchInstalledTerminals()
+      this.loadRemoteTranslations()
       electron.ipcRenderer.invoke('main-window-loaded')
     }
     catch (error) {
@@ -229,6 +231,8 @@ export default {
       visualFiltersBrightnessValue: 'storageData.settings.visualFilters.brightness.value',
       visualFiltersSaturationValue: 'storageData.settings.visualFilters.saturation.value',
       windowsMainStateIsMaximized: 'windows.main.state.isMaximized',
+      autoFetchTranslationsOnAppLoad: 'storageData.settings.localization.autoFetch.onAppLoad',
+      autoFetchTranslationsPeriodically: 'storageData.settings.localization.autoFetch.periodically',
     }),
     globalSearchScanWasInterrupted: {
       get () {
@@ -365,6 +369,11 @@ export default {
         }
       }
     },
+    loadRemoteTranslations () {
+      if (this.autoFetchTranslationsOnAppLoad) {
+        loadRemoteTranslations()
+      }
+    },
     bindKeyEvents () {
       this.bindMouseKeyEvents()
       this.bindGeneralKeyEvents()
@@ -485,6 +494,9 @@ export default {
       })
     },
     initIntervals () {
+      const ONE_MINUTE = 60000
+      const ONE_HOUR = 600000
+
       this.$store.state.intervals.lastSearchScanTimeElapsed = setInterval(() => {
         // Update time elapsed since last search scan
         const lastSearchScanTimeElapsed = this.$utils.getTimeDiff(
@@ -496,7 +508,13 @@ export default {
           key: 'globalSearch.lastScanTimeElapsed',
           value: lastSearchScanTimeElapsed,
         })
-      }, 60000)
+      }, ONE_MINUTE)
+
+      this.$store.state.intervals.autoFetchTranslations = setInterval(() => {
+        if (this.autoFetchTranslationsPeriodically) {
+          loadRemoteTranslations()
+        }
+      }, ONE_HOUR)
     },
     async initGlobalSearchDataScan () {
       if (this.globalSearchIsEnabled && !this.globalSearchInProgress) {

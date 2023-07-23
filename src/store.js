@@ -83,6 +83,7 @@ export default new Vuex.Store({
     supportedFormats: supportedFormats.formats,
     intervals: {
       lastSearchScanTimeElapsed: null,
+      autoFetchTranslations: null,
       driveListFetchIntervalTime: 1000,
       driveListFetchInterval: null,
       globalSearchDataWatcher: null,
@@ -669,7 +670,11 @@ export default new Vuex.Store({
         shortcuts: appPaths.shortcuts,
         localization: {
           selectedLanguage: getLanguage('en'),
-          languages
+          languages,
+          autoFetch: {
+            onAppLoad: false,
+            periodically: true
+          }
         },
         driveCard: {
           progressType: 'linearVertical',

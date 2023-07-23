@@ -17,6 +17,7 @@ const githubIssueTemplateFeatureRequest = `https://github.com/${githubRepo}/issu
 const githubAllReleases = `https://github.com/${githubRepo}/releases`
 const githubLatestRelease = `https://github.com/${githubRepo}/releases/latest`
 const githubReadmeSupportSectionLink = `https://github.com/${githubRepo}#supporters`
+const githubLocalesLink = `https://raw.githubusercontent.com/${githubRepo}/main/src/localization/locales`
 
 module.exports = {
   githubRepo,
@@ -32,4 +33,5 @@ module.exports = {
   githubAllReleases,
   githubLatestRelease,
   githubReadmeSupportSectionLink,
+  githubLocalesLink,
 }

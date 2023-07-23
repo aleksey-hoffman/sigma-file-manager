@@ -20,7 +20,12 @@
   "language": {
     "language": "Sprache",
     "isCorrectedLanguage": "Die Übersetzung wurde von einem Muttersprachler überprüft und korrigiert.",
-    "isAutoTranslatedLanguage": "Automatische Übersetzung. Diese muss von einem Muttersprachler überprüft und korrigiert werden."
+    "isAutoTranslatedLanguage": "Automatische Übersetzung. Diese muss von einem Muttersprachler überprüft und korrigiert werden.",
+    "loadRemoteTranslations": "Remote-Übersetzungen laden",
+    "autoFetch": "Automatische Übersetzungsaktualisierungen",
+    "fetchLatestTranslationsTitle": "Neueste Übersetzungen automatisch vom Projektrepository abrufen",
+    "autoFetchTranslationsOnAppLoad": "Jedes Mal, wenn die App aus dem vollständig geschlossenen Zustand geöffnet wird",
+    "autoFetchTranslationsPeriodically": "Periodisch (jede Stunde)"
   },
   "placeholders": {
     "noDrivesFound": "Keine Laufwerke gefunden",

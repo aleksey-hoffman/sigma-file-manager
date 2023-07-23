@@ -20,7 +20,12 @@
   "language": {
     "language": "Language",
     "isCorrectedLanguage": "Translation was reviewed and corrected by a native language speaker",
-    "isAutoTranslatedLanguage": "Auto-translated. Needs to be reviewed and corrected by a native language speaker"
+    "isAutoTranslatedLanguage": "Auto-translated. Needs to be reviewed and corrected by a native language speaker",
+    "loadRemoteTranslations": "Load remote translations",
+    "autoFetch": "Auto translation updates",
+    "fetchLatestTranslationsTitle": "Fetch latest translations automatically from the project repository",
+    "autoFetchTranslationsOnAppLoad": "Every time the app is opened from fully closed state",
+    "autoFetchTranslationsPeriodically": "Periodically (every hour)"
   },
   "placeholders": {
     "noDrivesFound": "No drives found",
