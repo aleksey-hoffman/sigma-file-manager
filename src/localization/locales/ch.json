@@ -11,7 +11,7 @@
   },
   "pages": {
     "home": "主页",
-    "navigator": "导航仪",
+    "navigator": "导航",
     "dashboard": "仪表板",
     "notes": "笔记",
     "settings": "设置",
@@ -555,7 +555,7 @@
   },
   "settingsTags": {
     "language": "语言",
-    "uiScaling": "ui, scaling, scale， size, zoom, interface, font, magnify",
+    "uiScaling": "ui, scaling, scale, size, zoom, interface, font, magnify",
     "updates": "更新,版本,应用程序",
     "appProperties": "启动,启动,启动,登录",
     "windowControls": "窗口、控件、最小化、关闭、恢复、隐藏、托盘、内存、内存、应用程序、性能",
@@ -901,7 +901,7 @@
       "shortcutEditor": "快捷键编辑器",
       "shortcut": "快捷键",
       "shortcutIsACombination": "快捷键是组合",
-      "modifierKeys": "1-4 个修饰键：[Ctrl、Alt、Shift、Meta]",
+      "modifierKeys": "1-4 个功能键：[Ctrl、Alt、Shift、Meta]",
       "regularKey": "1个普通键",
       "examples": "例子",
       "ctrlShiftSpace": "Ctrl + Shift + 空格键",
@@ -1413,7 +1413,7 @@
   "closedCaptions": "内嵌字幕",
   "protectedItemsShort": "受保护",
   "pinnedItemsShort": "固定的",
-  "freeOf": "自由于",
+  "freeOf": "可用，共",
   "terminal": "终端",
   "conflict": "冲突"
 }
