@@ -196,7 +196,7 @@
       "noteGroups": "笔记分组",
       "ungroup": "取消分组",
       "changeColor": "更换颜色",
-      "moveNoteToTrash": "将笔记移至垃圾桶"
+      "moveNoteToTrash": "将笔记移至回收站"
     },
     "noteEditor": {
       "searchSelectionInGoogle": "在谷歌中搜索选择",
@@ -1077,13 +1077,13 @@
     "trashCurrentDir": {
       "title": "正在删除当前目录",
       "description": "选中的项目包括当前打开的目录。",
-      "confirm": "如果这是您的意图并且您想把它放入垃圾桶，请确认。",
+      "confirm": "如果这是您的意图并且您想把它放入回收站，请确认。",
       "trash": "删除"
     },
     "trashProtected": {
       "title": "正在删除受保护的项目",
       "description": "选中的项目包括 {count} 个受保护的项目。",
-      "confirm": "如果您想将它们放入垃圾桶，请确认。",
+      "confirm": "如果您想将它们放入回收站，请确认。",
       "trashUnprotected": "删除未受保护的",
       "trashAll": "全部删除"
     },
@@ -1162,12 +1162,12 @@
     "errorTrashItems": "错误：已删除的项目",
     "errorDeleteItems": "错误：删除项目",
     "failedToTrashSomeItems": "无法丢弃某些物品",
-    "trashed": "垃圾桶",
+    "trashed": "已放入回收站",
     "deleted": "已删除",
     "removedNItemsOfTotal": "{removedAmount} 的 {totalAmount}",
-    "trashedNItemsOfTotal": "垃圾桶 {removedAmount} 的 {totalAmount} 项目",
+    "trashedNItemsOfTotal": "已将 {totalAmount} 项目中的 {removedAmount} 个放入回收站",
     "deletedNItemsOfTotal": "已删除 {removedAmount} 的 {totalAmount} 项目",
-    "trashedNItems": "垃圾桶 {totalAmount} 项目",
+    "trashedNItems": "已将 {totalAmount} 个项目放入回收站",
     "deletedNItems": "已删除 {totalAmount} 项目",
     "couldNotTrash": "无法丢弃",
     "failedToDeleteSomeItems": "无法删除某些项目",
