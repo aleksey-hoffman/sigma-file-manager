@@ -1,3 +1,8 @@
+> [!NOTE]
+>
+> [Version 1:](https://github.com/aleksey-hoffman/sigma-file-manager) currently not maintained<br>
+> [Version 2:](https://github.com/aleksey-hoffman/sigma-file-manager/tree/v2) active development
+
 # Latest news
 
 1. Version 1.7.0 was released. Video review: https://www.youtube.com/watch?v=ZQy754HOM7Y
@@ -21,9 +26,10 @@
 
 "Sigma File Manager" is a free, open-source, quickly evolving, modern file manager (explorer / finder) app for Windows and Linux.
 
-Designed, developed, and maintained by [Aleksey Hoffman](https://github.com/aleksey-hoffman) | [Twitter](https://twitter.com/sigma__dev) | [Reddit](https://www.reddit.com/r/SigmaFileManager) | [Telegram](https://t.me/sigma_devs) | [YouTube](https://www.youtube.com/@sigma-dev)
+Designed, developed, and maintained by [Aleksey Hoffman](https://github.com/aleksey-hoffman)
 
-Thanks to everyone who has been sharing this project with others!
+Community links: [Reddit](https://www.reddit.com/r/SigmaFileManager) | [YouTube](https://www.youtube.com/@sigma-dev) | [X (Twitter)](https://twitter.com/sigma__dev) | [Telegram](https://t.me/sigma_devs)
+<br>Thanks to everyone who has been sharing this project with others!
 
 <img src="./.github/media/main.png">
 
