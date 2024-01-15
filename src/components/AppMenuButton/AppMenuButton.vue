@@ -3,128 +3,138 @@ License: GNU GPLv3 or later. See the license file in the project root for more i
 Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
+<script setup lang="ts">
+import {Icon} from '@iconify/vue';
+import {mergeProps} from 'vue';
+
+interface Props {
+  type?: 'icon' | 'button';
+  icon?: string;
+  iconSize?: string;
+  iconClass?: string | object;
+  buttonClass?: string | object;
+  tooltip?: string;
+  tooltipShortcuts?: Array<{ value: string; description: string }>;
+  iconProps?: Record<string, unknown>;
+  isDisabled?: boolean;
+  value?: string;
+  size?: string | number;
+
+  menuItems?: Array<{
+    title: string;
+    subtitle: string;
+    icon: string;
+    iconSize: string;
+    onClick: () => void;
+  }>;
+  menuItemAttributes?: {
+    twoLine?: boolean;
+    dense?: boolean;
+  };
+}
+
+interface Emits {
+  (event: 'click', value: MouseEvent): void;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  tooltipShortcuts: () => [],
+  iconProps: () => ({}),
+  type: 'icon',
+  icon: '',
+  iconSize: '20px',
+  iconClass: '',
+  buttonClass: '',
+  tooltip: '',
+  value: '',
+  isDisabled: false,
+  size: 32,
+
+  menuItems: () => ([]),
+  menuItemAttributes: () => ({})
+});
+
+const emit = defineEmits<Emits>();
+
+const menuButtonOnClick = (event: MouseEvent) => {
+  emit('click', event);
+};
+
+</script>
+
 <template>
-  <v-menu offset-y>
-    <template #activator="{on: onMenu, attrs}">
-      <v-tooltip
-        bottom
-        :disabled="attrs['aria-expanded'] === 'true'"
+  <VMenu offset-y>
+    <template #activator="{ props: menuProps }">
+      <VTooltip
+        location="bottom"
       >
-        <template #activator="{on: onTooltip}">
-          <v-btn
-            :value="value"
-            :icon="!!icon"
-            :small="small"
-            :class="buttonClass"
-            :disabled="isDisabled"
-            v-on="{...onTooltip, ...onMenu}"
-            @click="onClickHandler"
+        <template #activator="{ props: tooltipProps }">
+          <VBtn
+            :value="props.value"
+            :icon="!!props.icon && props.type === 'icon'"
+            :size="props.size"
+            :class="props.buttonClass"
+            :disabled="props.isDisabled"
+            v-bind="mergeProps(menuProps, tooltipProps)"
+            @click="menuButtonOnClick"
           >
-            <v-icon
-              v-if="icon"
-              :class="iconClass"
-              :size="iconSize"
-            >
-              {{icon}}
-            </v-icon>
+            <Icon
+              v-if="props.icon"
+              :icon="props.icon"
+              :class="props.iconClass"
+              v-bind="props.iconProps"
+              :style="`font-size: ${props.iconSize}`"
+            />
             <slot />
-          </v-btn>
+          </VBtn>
         </template>
-        <span>{{tooltip}}</span>
-      </v-tooltip>
+        <span>
+          <div>
+            {{ props.tooltip }}
+          </div>
+          <div v-if="props.tooltipShortcuts">
+            <div
+              v-for="(shortcut, index) in props.tooltipShortcuts"
+              :key="index"
+            >
+              <span class="inline-code--light">{{ shortcut.value }}</span>
+              - {{ shortcut.description }}
+            </div>
+          </div>
+        </span>
+      </VTooltip>
     </template>
-    <v-list dense>
-      <v-list-item
-        v-for="(item, index) in menuItems"
+    <VList
+      v-if="props.menuItems"
+      dense
+    >
+      <VListItem
+        v-for="(item, index) in props.menuItems"
         :key="index"
-        v-bind="menuItemAttributes"
+        v-bind="props.menuItemAttributes"
         @click="item.onClick"
       >
         <div class="mr-4">
-          <v-icon :size="item.iconSize || '18px'">
-            {{item.icon}}
-          </v-icon>
+          <Icon
+            v-if="item.icon"
+            :icon="item.icon"
+            :style="`font-size: ${item.iconSize || '18px'}`"
+          />
         </div>
 
-        <v-list-item-content v-if="item.subtitle">
-          <v-list-item-title>
-            {{item.title}}
-          </v-list-item-title>
-          <v-list-item-subtitle>
-            {{item.subtitle}}
-          </v-list-item-subtitle>
-        </v-list-item-content>
+        <template v-if="item.subtitle">
+          <VListItemTitle>
+            {{ item.title }}
+          </VListItemTitle>
+          <VListItemSubtitle>
+            {{ item.subtitle }}
+          </VListItemSubtitle>
+        </template>
 
-        <v-list-item-title v-else>
-          {{item.title}}
-        </v-list-item-title>
-      </v-list-item>
-    </v-list>
-  </v-menu>
+        <VListItemTitle v-else>
+          {{ item.title }}
+        </VListItemTitle>
+      </VListItem>
+    </VList>
+  </VMenu>
 </template>
-
-<script>
-export default {
-  props: {
-    onClick: {
-      type: Function,
-      default: () => ({}),
-    },
-    icon: {
-      type: String,
-      default: '',
-    },
-    iconSize: {
-      type: String,
-      default: '20px',
-    },
-    iconClass: {
-      type: [String, Object],
-      default: '',
-    },
-    buttonClass: {
-      type: [String, Object],
-      default: '',
-    },
-    tooltip: {
-      type: String,
-      default: '',
-    },
-    isDisabled: {
-      type: Boolean,
-      default: false,
-    },
-    value: {
-      type: String,
-      default: '',
-    },
-    small: {
-      type: Boolean,
-      default: false,
-    },
-    menuItems: {
-      type: Array,
-      default: () => ([
-        {
-          onClick: () => ({}),
-          icon: '',
-          title: '',
-        },
-      ]),
-    },
-    menuItemAttributes: {
-      type: Object,
-      default: () => ({}),
-    },
-  },
-  emits: ['click'],
-  methods: {
-    onClickHandler () {
-      if (this.onClick) {
-        this.onClick()
-      }
-      this.$emit('click')
-    },
-  },
-}
-</script>

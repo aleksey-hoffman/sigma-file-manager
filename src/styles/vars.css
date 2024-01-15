@@ -1,0 +1,99 @@
+@layer base {
+  :root {
+    --nav-panel-width-value: 48;
+    --nav-panel-width: calc(var(--nav-panel-width-value) * 1px);
+    --window-toolbar-height-value: 32;
+    --window-toolbar-height: calc(var(--window-toolbar-height-value) * 1px);
+    --action-toolbar-height-value: 42;
+    --action-toolbar-height: calc(var(--action-toolbar-height-value) * 1px);
+    --navigator-toolbar-height: 48px;
+    --info-panel-width-value: 280;
+    --info-panel-width: calc(var(--info-panel-width-value) * 1px);
+    --info-panel-preview-height: 158px;
+    --info-panel-header-height: 32px;
+    --info-panel-sub-header-height: 16px;
+    --info-panel-properties-header-height: 36px;
+    --navigator-sorting-header-height: 36px;
+    --tab-height: calc(var(--window-toolbar-height) - 4px);
+    --control-button-width: 46px;
+    --dir-entry-card-transition: all 0.3s ease-in-out;
+  }
+
+  :root:has(.v-application[theme-type="dark"]) {
+    --light-value: 255 255 255;
+    --dark-value: 0 0 0;
+    --color-lighter-4: rgb(238 238 238);
+    --color-lighter-3: rgb(224 224 224);
+    --color-lighter-2: rgb(184 184 184);
+    --color-lighter-1: rgb(196 196 196);
+    --color: rgb(160 160 160);
+    --color-darker-1: rgb(144 144 144);
+    --color-darker-2: rgb(128 128 128);
+    --color-darker-3: rgb(117 117 117);
+    --color-darker-4: rgb(97 97 97);
+    --bg-color-value: 36 38 44;
+    --bg-color: rgb(var(--bg-color-value) / 100%);
+    --bg-color-darker-1-value: 29 31 37;
+    --bg-color-darker-1: rgb(var(--bg-color-darker-1-value) / 100%);
+    --key-color-value: 14 130 150;
+    --key-color: rgb(var(--key-color-value) / 100%);
+    --route-content-bg-color: var(--bg-color-darker-1);
+    --window-toolbar-bg-color: rgb(44 47 53);
+    --action-toolbar-bg-color: transparent;
+    --button-bg-color: var(--highlight-color-opacity-20);
+    --button-1-bg-color: var(--highlight-color-opacity-30);
+    --control-button-bg-color: transparent;
+    --control-button-bg-color-hover: rgb(var(--dark-value) / 20%);
+    --icon-color: rgb(150 150 150 / 100%);
+    --sub-title-color: rgb(117 117 117 / 100%);
+    --divider-color: rgb(var(--light-value) / 5%);
+    --divider-color-lighter-1: rgb(var(--light-value) / 8%);
+    --border-color: rgb(var(--light-value) / 5%);
+    --border-color-lighter-1: rgb(var(--light-value) / 8%);
+    --highlight-color-opacity-30: rgb(var(--light-value) / 30%);
+    --highlight-color-opacity-20: rgb(var(--light-value) / 20%);
+    --highlight-color-opacity-10: rgb(var(--light-value) / 10%);
+    --highlight-color-opacity-5: rgb(var(--light-value) / 5%);
+    --highlight-color-opacity-1: rgb(var(--light-value) / 1%);
+    --scrollbar-color: rgb(var(--light-value) / 5%);
+    --scrollbar-color-lighter-1: rgb(var(--light-value) / 8%);
+    --scrollbar-color-lighter-2: rgb(var(--light-value) / 15%);
+    --tab-color: var(--color);
+    --tab-color-active: var(--color);
+    --tab-bg-color: var(--window-toolbar-bg-color);
+    --tab-bg-color-active: var(--window-toolbar-bg-color);
+    --tab-bg-color-hover: rgb(var(--light-value) / 6%);
+    --tab-close-button-color: var(--window-toolbar-bg-color);
+    --tab-border-color: rgb(var(--light-value) / 10%);
+    --nav-panel-bg-color: transparent;
+    --info-panel-bg-color: var(--bg-color-darker-1);
+    --info-panel-shadow: 0px 4px 48px rgb(0 0 0 / 5%),
+      0px 4px 2px rgb(0 0 0 / 30%);
+    --infusive-flat-glow-bg-color: rgb(var(--light-value) / 2%);
+    --infusive-flat-glow-shadow: none;
+    --infusive-flat-glow-shadow-onhover:
+      0px 1px 4px rgb(var(--light-value) / 5%),
+      0px 22px 48px rgb(var(--light-value) / 2%);
+    --infusive-extruded-bg-color: rgb(var(--bg-color-value) / 4%);
+    --infusive-extruded-shadow: 
+      0px -2px 8px rgb(var(--light-value) / 2.5%),
+      0px -16px 20px rgb(var(--light-value) / 1.5%),
+      0px 1px 2.2px rgb(var(--dark-value) / 2.2%),
+      0px 2.4px 5.3px rgb(var(--dark-value) / 3.2%),
+      0px 4.5px 10px rgb(var(--dark-value) / 4%),
+      0px 8px 17.9px rgb(var(--dark-value) / 4.8%),
+      0px 15px 33.4px rgb(var(--dark-value) / 5.8%),
+      0px 36px 80px rgb(var(--dark-value) / 8%); 
+    --infusive-extruded-shadow-optimized: 
+      0px -2px 8px rgb(var(--light-value) / 2.5%),
+      0px 36px 80px rgb(var(--dark-value) / 8%);
+  }
+
+  :root:has(.v-application[theme-type="light"]) {
+    --color: #333333;
+    --window-toolbar-bg-color: transparent;
+    --action-toolbar-bg-color: transparent;
+    --control-button-bg-color: transparent;
+    --control-button-bg-color-hover: rgb(var(--dark-value) / 20%);
+  }
+}

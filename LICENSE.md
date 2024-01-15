@@ -16,18 +16,6 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>
 
-# REDISTRIBUTED BINARIES:
-
-Sigma file manager redistributes the following third-party binaries:
-
-## 7-ZIP:
-This program uses parts of the 7-Zip program (to create / extract archives). 
-7-Zip is an open-source program licensed under the GNU LGPL license. 
-Source code for 7-zip can be found at www.7-zip.org
-
-## FFMPEG:
-FFmpeg is licensed under the LGPL-2.1-or-later.
-
 # THE PROJECT LICENSE:
 GNU GENERAL PUBLIC LICENSE
 Version 3, 29 June 2007

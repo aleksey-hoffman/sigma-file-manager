@@ -1,2 +1,0 @@
-version: N-111059-gd78bffbf3d-20230611 Latest Auto-Build (2023-06-11 12:48)
-source: https://github.com/BtbN/FFmpeg-Builds

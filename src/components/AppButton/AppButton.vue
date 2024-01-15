@@ -3,131 +3,106 @@ License: GNU GPLv3 or later. See the license file in the project root for more i
 Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
+<script setup lang="ts">
+import {Icon} from '@iconify/vue';
+
+interface Props {
+  type?: 'icon' | 'button';
+  icon?: string;
+  iconSize?: string;
+  iconClass?: string | object;
+  buttonClass?: string | object;
+  tooltip?: string;
+  tooltipShortcuts?: Array<{ value: string; description: string }>;
+  iconProps?: Record<string, unknown>;
+  isDisabled?: boolean;
+  value?: string;
+  size?: 'x-small' | 'small' | 'default' | 'large' | 'x-large' | number;
+}
+
+interface Emits {
+  (event: 'click', value: MouseEvent): void;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  tooltipShortcuts: () => [],
+  iconProps: () => ({}),
+  type: 'icon',
+  icon: '',
+  iconSize: '20px',
+  iconClass: '',
+  buttonClass: '',
+  tooltip: '',
+  value: '',
+  isDisabled: false,
+  size: 'small'
+});
+
+const emit = defineEmits<Emits>();
+
+const onClickHandler = (event: MouseEvent) => {
+  emit('click', event);
+};
+</script>
+
 <template>
-  <v-tooltip
-    bottom
-    :disabled="!tooltip"
-    class="app-button"
+  <VTooltip
+    location="bottom"
+    :disabled="!props.tooltip"
   >
-    <template #activator="{on}">
-      <v-btn
-        :value="value"
-        :icon="!!icon && type === 'icon'"
-        :small="small"
-        :class="buttonClass"
-        :disabled="isDisabled"
-        v-on="on"
+    <template #activator="{ props: tooltipProps }">
+      <VBtn
+        :value="props.value"
+        :icon="!!props.icon && props.type === 'icon'"
+        :size="props.size"
+        :class="props.buttonClass"
+        :disabled="props.isDisabled"
+        variant="tonal"
+        color="transparent"
+        rounded="xs"
+        v-bind="tooltipProps"
         @click="onClickHandler"
       >
-        <v-icon
-          v-if="icon"
-          :class="iconClass"
-          :size="iconSize"
-          v-bind="iconProps"
-        >
-          {{icon}}
-        </v-icon>
+        <Icon
+          v-if="!!props.icon && props.type === 'icon'"
+          :icon="props.icon"
+          :class="props.iconClass"
+          v-bind="props.iconProps"
+          :style="`font-size: ${props.iconSize}`"
+        />
         <slot />
-        <span
-          v-if="shortcut"
-          class="app-button__shortcut"
-        >
-          - {{shortcut}}
-        </span>
-      </v-btn>
+      </VBtn>
     </template>
     <span>
       <div>
-        {{tooltip}}
+        {{ props.tooltip }}
       </div>
-      <div v-if="tooltipShortcuts">
+      <div v-if="props.tooltipShortcuts">
         <div
-          v-for="(shortcut, index) in tooltipShortcuts"
+          v-for="(shortcut, index) in props.tooltipShortcuts"
           :key="index"
         >
-          <span class="inline-code--light">{{shortcut.value}}</span>
-          - {{shortcut.description}}
+          <span class="inline-code--light">{{ shortcut.value }}</span>
+          - {{ shortcut.description }}
         </div>
       </div>
     </span>
-  </v-tooltip>
+  </VTooltip>
 </template>
 
-<script>
-export default {
-  props: {
-    onClick: {
-      type: Function,
-      default: () => ({}),
-    },
-    type: {
-      type: String,
-      default: 'icon', // 'icon' | 'button'
-    },
-    icon: {
-      type: String,
-      default: '',
-    },
-    iconSize: {
-      type: String,
-      default: '20px',
-    },
-    iconClass: {
-      type: [String, Object],
-      default: '',
-    },
-    buttonClass: {
-      type: [String, Object],
-      default: 'text', // 'text' | 'button-1' | 'button-2'
-    },
-    tooltip: {
-      type: String,
-      default: '',
-    },
-    shortcut: {
-      type: String,
-      default: '',
-    },
-    tooltipShortcuts: {
-      type: Array,
-      default: () => {
-        return []
-      },
-    },
-    iconProps: {
-      type: Object,
-      default: () => ({}),
-    },
-    isDisabled: {
-      type: Boolean,
-      default: false,
-    },
-    value: {
-      type: String,
-      default: '',
-    },
-    small: {
-      type: Boolean,
-      default: false,
-    },
-  },
-  emits: ['click'],
-  methods: {
-    onClickHandler (event) {
-      if (this.onClick) {
-        this.onClick(event)
-      }
-      this.$emit('click', event)
-    },
-  },
-}
-</script>
-
 <style>
-.app-button__shortcut {
-  margin-left: 2px;
-  color: var(--color-7);
-  font-size: 12px;
-  text-transform: capitalize;
-}
+#app
+  .v-btn {
+    border-radius: 4px;
+  }
+
+#app
+  .v-btn:hover {
+    color: var(--button-bg-color) !important;
+  }
+
+#app
+  .v-btn.button-1 {
+    color: var(--button-1-bg-color) !important;
+  }
 </style>
