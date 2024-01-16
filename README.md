@@ -27,13 +27,17 @@ When running on proprietary Nvidia drivers, you may encounter different visual i
 
 ### Setup the project locally
 
-1. Clone the project
-2. Install `Node v20` or newer
-3. Install dependencies:
+1. Switch to `Node v20` or newer
+2. Clone the project
+3. Change branch to v2
 ```
-cd sigma-file-manager && npm i
+cd sigma-file-manager && checkout v2
 ```
-4. Install Rust and other required libs. Then relaunch the terminal if needed. Instructions:
+4. Install dependencies:
+```
+npm i
+```
+5. Install Rust and other required libs. Then relaunch the terminal if needed. Instructions:
 
 - [For Windows](https://tauri.app/v1/guides/getting-started/prerequisites/#setting-up-windows)
 - [For Linux](https://tauri.app/v1/guides/getting-started/prerequisites/#setting-up-linux)
