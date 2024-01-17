@@ -41,9 +41,9 @@ npm i
 - [For Linux](https://tauri.app/v1/guides/getting-started/prerequisites/#setting-up-linux)
 - [For MacOS](https://tauri.app/v1/guides/getting-started/prerequisites/#setting-up-macos)
 
-### Run the project
+### Run the app
 
-#### Dev server
+#### Dev
 
 ```
 npm run tauri:dev
@@ -53,6 +53,12 @@ Or the following, if you see any visual issues on Linux
 
 ```
 npm run tauri:dev:webkit-igpu
+```
+
+#### Create build
+
+```
+npm run tauri:build
 ```
 
 ## Known issues
@@ -65,10 +71,4 @@ To run the AppImage build on a Linux system with unsupported drivers, run the ap
 
 ```
 env WEBKIT_DISABLE_COMPOSITING_MODE=1 ./sigma-file-manager-v2_2.0.0-alpha.1_amd64.AppImage
-```
-
-#### Production build
-
-```
-npm run tauri:build
 ```
