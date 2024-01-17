@@ -17,11 +17,9 @@ Community links: [Reddit](https://www.reddit.com/r/SigmaFileManager) | [YouTube]
 
 <img src="./.github/media/main.png">
 
-## Known issues
-
-### Linux
-
-When running on proprietary Nvidia drivers, you may encounter different visual issues.
+## Download
+> [!WARNING]
+> For developers only. Not ready for users yet.
 
 ## For developers
 
@@ -56,6 +54,13 @@ Or the following, if you see any visual issues on Linux
 ```
 npm run tauri:dev:webkit-igpu
 ```
+
+## Known issues
+
+### Linux
+
+When running on proprietary Nvidia drivers, you may encounter different visual issues.
+
 
 #### Production build
 
