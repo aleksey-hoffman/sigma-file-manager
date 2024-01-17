@@ -18,8 +18,8 @@ Community links: [Reddit](https://www.reddit.com/r/SigmaFileManager) | [YouTube]
 <img src="./.github/media/main.png">
 
 ## Download
-> [!WARNING]
-> For developers only. Not ready for users yet.
+
+[All releases](https://github.com/aleksey-hoffman/sigma-file-manager/releases)
 
 ## For developers
 
@@ -59,8 +59,13 @@ npm run tauri:dev:webkit-igpu
 
 ### Linux
 
-When running on proprietary Nvidia drivers, you may encounter different visual issues.
+When running on proprietary Nvidia (or unsupported) drivers, you may encounter different visual issues.
 
+To run the AppImage build on a Linux system with unsupported drivers, run the app with the compositing flag, for example:
+
+```
+env WEBKIT_DISABLE_COMPOSITING_MODE=1 ./sigma-file-manager-v2_2.0.0-alpha.1_amd64.AppImage
+```
 
 #### Production build
 
