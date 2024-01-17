@@ -19,7 +19,7 @@ Community links: [Reddit](https://www.reddit.com/r/SigmaFileManager) | [YouTube]
 
 ## Download
 
-[All releases](https://github.com/aleksey-hoffman/sigma-file-manager/releases)
+[See releases](https://github.com/aleksey-hoffman/sigma-file-manager/releases)
 
 ## For developers
 
