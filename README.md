@@ -97,50 +97,18 @@ Several more major features / improvements are already in development and will b
 
 # Supporters
 
-Consider supporting my work:
+Consider supporting the project on Patreon:
 
-<table>
-  <thead>
-    <tr>
-      <th>Platform</th>
-      <th>Address</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>Patreon (monthly, with <a target="_blank" href="https://patreon.com/sigma_file_manager">rewards</a>)</td>
-      <td width="320px">
-        <a target="_blank" href="https://patreon.com/sigma_file_manager">
-          <img
-            src="https://raw.githubusercontent.com/aleksey-hoffman/sigma-file-manager/main/.github/media/patreon_button.png"
-            width="164px"
-            style="box-shadow: 0px 6px 24px rgb(255, 66, 77, 0.2); margin: 16px 0"
-          />
-        </a>
-      </td>
-    </tr>
-    <tr>
-      <td>Buymeacoffee</td>
-      <td width="320px">
-        <a href="https://www.buymeacoffee.com/alekseyhoffman" target="_blank">
-          <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" width="164px">
-        </a>
-      </td>
-    </tr>
-    <tr>
-      <td>BTC</td>
-      <td width="320px">
-        <code>bc1qv5ujcuwjsk505qjhd3sptcf3xpvjktqjxj0wrc</code>
-      </td>
-    </tr>
-    <tr>
-      <td>USDT (Tron TRC-20)</td>
-      <td width="320px">
-        <code>TN3hFLmjY2eXR149yKMq1qZQotmZbTGV4a</code>
-      </td>
-    </tr>
-  </tbody>
-</table>
+<a target="_blank" href="https://patreon.com/sigma_file_manager">
+  <img
+    src="https://raw.githubusercontent.com/aleksey-hoffman/sigma-file-manager/main/.github/media/patreon_button.png"
+    width="164px"
+  />
+</a>
+<br>
+<a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/wiki/Support-and-rewards">
+  See other methods
+</a>
 
 ### Sponsor
 
@@ -161,52 +129,7 @@ Consider supporting my work:
   </tbody>
 </table>
 
-### Level-4 supporter
-
-<table>
-  <tbody>
-    <tr>
-       <td align="center" valign="middle">
-        <a href="https://www.photoancestry.com/" title="Houston Photo Restoration">
-          <img width="128px" src="https://www.photoancestry.com/images/fpbanner_poster_.png">
-        </a>
-      </td>
-      <td>
-       <a href="https://www.photoancestry.com/" title="Houston Photo Restoration">photoancestry.com</a>
-       <p>Houston's #1 Photo Restoration Service</p>
-      </td>
-    </tr>
-  </tbody>
-</table>
-
-### Level-3 supporter
-
-<table>
-  <tbody>
-    <tr>
-      <td align="center" valign="middle">
-        <a href="https://github.com/andyundso" title="Andy Pfister">
-          <img valign="middle" width="48px" src="https://avatars.githubusercontent.com/u/7010698?v=4">
-          Andy Pfister
-        </a>
-      </td>
-      <td align="center" valign="middle">
-        <a href="https://github.com/exploitacious" title="Alex Ivantsov">
-          <img valign="middle" width="48px" src="https://avatars.githubusercontent.com/u/75740078?v=4">
-          Alex Ivantsov
-        </a>
-      </td>
-    </tr>
-  </tbody>
-</table>
-
-<br>
-
-<h4 style="margin: 32px 0px;">
-  <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/blob/main/BAKERS.md">See the full list of supporters →</a>
-</h4>
-
-The funding will be used for funding the development of this and my other big projects. Right now, I'm also working in collaboration with a few universities on advanced tools / algorithms that will help scientists speed up development of new medications and treatments for diseases, reducing the time need to find a new medication from 10 years (current average) to just a few months, and hopefully help humanity get rid of diseases (the project will be open-sourced in a few months);
+The funding will be used for funding the development of this and my other big projects. I'm also working in collaboration with a few universities on a project that will help scientists speed up development of new medications and treatments for diseases, reducing the time need to find a new medication from 10 years (current average) to just a few months, and hopefully help humanity get rid of diseases (the project will be open-sourced later);
 
 # Download
 
