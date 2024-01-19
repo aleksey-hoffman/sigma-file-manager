@@ -141,11 +141,25 @@ Consider supporting my work:
   </tbody>
 </table>
 
-## Sponsor
+### Sponsor
 
-[Become the first sponsor](https://github.com/aleksey-hoffman/sigma-file-manager/wiki/Supporter-rewards)
+<table>
+  <tbody>
+    <tr>
+        <td>
+            <a href="https://hover.com" target="_blank">
+              <img width="128px" align="center" src="https://github.com/aleksey-hoffman/sigma-file-manager/raw/main/.github/media/hover-logo-svg-vector.svg">
+            </a>
+        </td>
+        <td>
+          Hover is a popular service where you buy domain names for your website. I've been using it personally and can recommend it.
+          <br>Use my Hover link, and we'll both get $2 off their domains: https://hover.com/UywpvNe0
+        </td>
+    </tr>
+  </tbody>
+</table>
 
-## Level-4 supporter
+### Level-4 supporter
 
 <table>
   <tbody>
@@ -163,7 +177,7 @@ Consider supporting my work:
   </tbody>
 </table>
 
-## Level-3 supporter
+### Level-3 supporter
 
 <table>
   <tbody>
@@ -183,23 +197,6 @@ Consider supporting my work:
     </tr>
   </tbody>
 </table>
-
-## Level-2 supporter
-
-<div>
-  <a href="https://github.com/theoob" title="Tony Kelly">
-    <b>Tony Kelly</b>
-  </a>
-  ~ <a href="https://github.com/julienripet" title="Julien Ripet">
-    <b>Julien Ripet</b>
-  </a>
-  ~ <a href="https://github.com/valentimarco" title="Marco Valenti">
-    <b>Marco Valenti</b>
-  </a>
-  ~ <a href="https://github.com/HarkTu" title="Shtiliyan Karamfilov">
-    <b>Shtiliyan Karamfilov</b>
-  </a>
-</div>
 
 <br>
 
