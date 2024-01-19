@@ -146,15 +146,16 @@ Consider supporting my work:
 <table>
   <tbody>
     <tr>
-        <td>
-            <a href="https://hover.com" target="_blank">
-              <img width="128px" align="center" src="https://github.com/aleksey-hoffman/sigma-file-manager/raw/main/.github/media/hover-logo-svg-vector.svg">
-            </a>
-        </td>
-        <td>
-          Hover is a popular service where you buy domain names for your website. I've been using it personally and can recommend it.
-          <br>Use my Hover link, and we'll both get $2 off their domains: https://hover.com/UywpvNe0
-        </td>
+      <td>
+          <a href="https://hover.com/UywpvNe0" target="_blank">
+            <img width="128px" align="center" src="https://github.com/aleksey-hoffman/sigma-file-manager/raw/main/.github/media/hover-logo-svg-vector.svg">
+          </a>
+      </td>
+      <td>
+        Hover is a popular service where you buy domain names for your website. 
+        <br>I've been using it personally and can recommend it.
+        <br>Use my Hover link, and we'll both get $2 off their domains: https://hover.com/UywpvNe0
+      </td>
     </tr>
   </tbody>
 </table>
@@ -166,7 +167,7 @@ Consider supporting my work:
     <tr>
        <td align="center" valign="middle">
         <a href="https://www.photoancestry.com/" title="Houston Photo Restoration">
-          <img width="128px"  src="https://www.photoancestry.com/images/fpbanner_poster_.png">
+          <img width="128px" src="https://www.photoancestry.com/images/fpbanner_poster_.png">
         </a>
       </td>
       <td>
