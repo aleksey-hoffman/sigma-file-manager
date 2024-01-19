@@ -17,6 +17,41 @@ Community links: [Reddit](https://www.reddit.com/r/SigmaFileManager) | [YouTube]
 
 <img src="./.github/media/main.png">
 
+
+# Supporters
+
+Consider supporting the project on Patreon:
+
+<a target="_blank" href="https://patreon.com/sigma_file_manager">
+  <img
+    src="https://raw.githubusercontent.com/aleksey-hoffman/sigma-file-manager/main/.github/media/patreon_button.png"
+    width="164px"
+  />
+</a>
+<br>
+<a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/wiki/Support-and-rewards">
+  See other methods
+</a>
+
+### Sponsor
+
+<table>
+  <tbody>
+    <tr>
+      <td>
+          <a href="https://hover.com/UywpvNe0" target="_blank">
+            <img width="128px" align="center" src="https://github.com/aleksey-hoffman/sigma-file-manager/raw/main/.github/media/hover-logo-svg-vector.svg">
+          </a>
+      </td>
+      <td>
+        Hover is a popular service where you buy domain names for your website. 
+        <br>I've been using it personally and can recommend it.
+        <br>Use my Hover link, and we'll both get $2 off their domains: https://hover.com/UywpvNe0
+      </td>
+    </tr>
+  </tbody>
+</table>
+
 ## Download
 
 [See releases](https://github.com/aleksey-hoffman/sigma-file-manager/releases)
