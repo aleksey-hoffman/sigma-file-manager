@@ -5,9 +5,10 @@
 
 # Latest news
 
-1. Version 1.7.0 was released. Video review: https://www.youtube.com/watch?v=ZQy754HOM7Y
-2. Started creating [Sigma File Manager Next (v2.0)](https://github.com/aleksey-hoffman/sigma-file-manager/discussions/226). Rewriting the app codebase with newer, better technologies (Rust, Vue 3, Typescript), as well as improving code quality and moving away from Electron.js. Once finished, the app will become faster, more capable, and better in every other way.
-3. Reddit community [r/SigmaFileManager](https://www.reddit.com/r/SigmaFileManager) was created. This is where I will post all the updates, polls, progress, image and video previews of new / modified features, tips, etc. Check it out and post some cool ideas!
+- Version 2.0.0-alpha.1 was released.
+- Version 1.7.0 was released. Video review: https://www.youtube.com/watch?v=ZQy754HOM7Y
+- Started creating [Sigma File Manager Next (v2.0)](https://github.com/aleksey-hoffman/sigma-file-manager/discussions/226). Rewriting the app codebase with newer, better technologies (Rust, Vue 3, Typescript), as well as improving code quality and moving away from Electron.js. Once finished, the app will become faster, more capable, and better in every other way.
+- Reddit community [r/SigmaFileManager](https://www.reddit.com/r/SigmaFileManager) was created. This is where I will post all the updates, polls, progress, image and video previews of new / modified features, tips, etc. Check it out and post some cool ideas!
 
 # What's new in `v1.7`
 
@@ -209,6 +210,8 @@ The funding will be used for funding the development of this and my other big pr
 
 # Download
 
+[![Github All Releases](https://img.shields.io/github/downloads/aleksey-hoffman/sigma-file-manager/total.svg)]()
+
 #### ⚡ Requirements:
 
 - **Memory (RAM):** minimum: ~100 MB, average: ~400 MB;
@@ -306,8 +309,6 @@ If you decide to install the `Installable file (.exe)` instead, you might see a 
   Running AppImage applications in Ubuntu 22.04 LTS
 </a>
 
-[![Github All Releases](https://img.shields.io/github/downloads/aleksey-hoffman/sigma-file-manager/total.svg)]()
-
 #### ⚠ Notes:
 
 - If you're running the app on the integrated GPU, the RAM usage will increase during video playback. Videos playing in the background (e.g. on the home page) are the main reason for high memory usage. You can reduce memory usage by choosing a static image for the "Windows transparency effect" and the home banner.
@@ -317,12 +318,7 @@ If you decide to install the `Installable file (.exe)` instead, you might see a 
 
 #### 💬 Get notified
 
-You can follow me on <a href="https://twitter.com/hoffman_aleksey" target="_blank">Twitter</a> if you want to:
-
-- Get updates on this app, see screenshots of features in development
-- Learn about my new projects
-- See some memes about programming
-- Or just read my thoughts on different things
+Community links: [Reddit](https://www.reddit.com/r/SigmaFileManager) | [YouTube](https://www.youtube.com/@sigma-dev) | [X (Twitter)](https://twitter.com/sigma__dev) | [Telegram](https://t.me/sigma_devs)
 
 If you can also click the "watch" button on top of the page if you want to get notified when I publish a new release, or someone opens a new discussion / issue.
 
