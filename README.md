@@ -1,7 +1,7 @@
 > [!NOTE]
 >
-> [Version 1 (current page):](https://github.com/aleksey-hoffman/sigma-file-manager) development is paused<br>
-> [Version 2:](https://github.com/aleksey-hoffman/sigma-file-manager/tree/v2) development is active
+> [Sigma File Manager (current page):](https://github.com/aleksey-hoffman/sigma-file-manager) development is paused<br>
+> [Sigma File Manager v2.0:](https://github.com/aleksey-hoffman/sigma-file-manager/tree/v2) development is active
 
 # Latest news
 
