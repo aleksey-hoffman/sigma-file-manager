@@ -1,6 +1,6 @@
 name: Feature Request
 labels: ["enhancement"]
-description: Feature request
+description: Suggest a feature or improvement idea for the app
 body:
   - type: textarea
     id: description
