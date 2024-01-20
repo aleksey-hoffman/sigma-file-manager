@@ -2,14 +2,6 @@ name: Problem Report
 description: Create a problem report to help improve the app
 labels: [bug]
 body:
-- type: checkboxes
-  attributes:
-    label: Is there an existing issue for this?
-    description: Please search [opened issues](https://github.com/aleksey-hoffman/sigma-file-manager/issues) to see if an issue already exists for this problem.
-    options:
-    - label: I have searched the opened issues
-      required: true
-      
 - type: textarea
   attributes:
     label: Problem description
@@ -26,7 +18,6 @@ body:
   validations:
     required: false
     
-body:
 - type: input
   id: os
   attributes:
