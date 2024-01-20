@@ -6,7 +6,7 @@ body:
     attributes:
       label: Description
       description: Suggest a feature or improvement idea for the app
-      value: ""
+      value: "Suggestion"
     validations:
       required: true
   - type: dropdown
