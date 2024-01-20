@@ -1,5 +1,4 @@
 name: Feature Request
-description: Suggest a feature or improvement idea for the app
 labels: ["enhancement"]
 body:
   - type: markdown
@@ -10,6 +9,7 @@ body:
     id: description
     attributes:
       label: Description
+      description: Suggest a feature or improvement idea for the app
     validations:
       required: true
   - type: dropdown
@@ -23,3 +23,8 @@ body:
       default: 1
     validations:
       required: true
+  - type: markdown
+    attributes:
+      value: |
+        Join our Patreon community to increase the priority of all your requests! |
+        Check it out here: https://patreon.com/sigma_file_manager
