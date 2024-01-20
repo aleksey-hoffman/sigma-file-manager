@@ -9,6 +9,7 @@ body:
       description: Suggest a feature or improvement idea for the app
     validations:
       required: true
+      
   - type: dropdown
     id: version
     attributes:
@@ -20,10 +21,9 @@ body:
       default: 1
     validations:
       required: true
+      
   - type: markdown
     attributes:
       value: |
         Join our Patreon community to increase the priority of all your requests!
-  - type: markdown
-    attributes: 
-      value: Patreon
+        Patreon: [https://patreon.com/sigma_file_manager](https://patreon.com/sigma_file_manager)
