@@ -25,6 +25,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        ### Notes
+        
+        #### Notes
         Join our Patreon community to increase the priority of all your requests!
         Patreon: [https://patreon.com/sigma_file_manager](https://patreon.com/sigma_file_manager)
