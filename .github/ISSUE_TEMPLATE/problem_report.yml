@@ -7,7 +7,7 @@ body:
     label: Problem description
     description: A clear & concise description of what you're experiencing.
   validations:
-    required: false
+    required: true
     
 - type: textarea
   attributes:
@@ -16,7 +16,7 @@ body:
     value: |
       1. 
   validations:
-    required: false
+    required: true
     
 - type: input
   id: os
