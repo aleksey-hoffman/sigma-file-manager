@@ -31,8 +31,8 @@ body:
   id: os
   attributes:
     label: Operating system
-    description: Specify the operating system you are running the app on
-    placeholder: For example: Windows 11, MacOS Ventura, etc.
+    description: "Specify the operating system you are running the app on"
+    placeholder: "For example: Windows 11, MacOS Ventura, etc."
   validations:
     required: true
     
