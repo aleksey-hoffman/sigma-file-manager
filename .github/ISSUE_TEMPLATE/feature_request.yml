@@ -1,15 +1,12 @@
 name: Feature Request
 labels: ["enhancement"]
 body:
-  - type: markdown
-    attributes:
-      value: |
-        Suggest a feature or improvement idea for the app
   - type: textarea
     id: description
     attributes:
       label: Description
       description: Suggest a feature or improvement idea for the app
+      value: ""
     validations:
       required: true
   - type: dropdown
