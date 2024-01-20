@@ -9,12 +9,14 @@ body:
     options:
     - label: I have searched the opened issues
       required: true
+      
 - type: textarea
   attributes:
     label: Problem description
     description: A clear & concise description of what you're experiencing.
   validations:
     required: false
+    
 - type: textarea
   attributes:
     label: Steps to reproduce
@@ -23,15 +25,25 @@ body:
       1. 
   validations:
     required: false
-- type: textarea
+    
+body:
+- type: input
+  id: os
   attributes:
-    label: Environment
-    description: |
-      Examples:
-        - **OS**: Windows 10
-        - **App version**: 1.0.0
-    value: |
-        - OS: 
-        - App version: 
+    label: Operating system
+    description: Specify the operating system you are running the app on
+    placeholder: For example: Windows 11, MacOS Ventura, etc.
   validations:
-    required: false
+    required: true
+    
+- type: dropdown
+  id: version
+  attributes:
+    label: App version
+    description: What version of the app this request is for?
+    options:
+      - v1
+      - v2
+    default: 1
+  validations:
+    required: true
