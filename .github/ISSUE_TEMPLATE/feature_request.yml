@@ -25,7 +25,9 @@ body:
       required: true
   - type: markdown
     attributes:
-      value: Join our Patreon community to increase the priority of all your requests!
+      value: | 
+        Join our Patreon community to increase the priority of all your requests!
   - type: markdown
-    attributes:
-      value: Patreon: https://patreon.com/sigma_file_manager
+    attributes: 
+      value: |
+        Patreon: https://patreon.com/sigma_file_manager
