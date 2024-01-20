@@ -19,7 +19,3 @@ body:
       default: 1
     validations:
       required: true
-  - type: markdown
-    attributes:
-      value: |
-        Join our Patreon community to increase the priority of all your requests!
