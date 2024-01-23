@@ -10,7 +10,7 @@ import {ActionToolbar} from '@/components/ActionToolbar';
 <template>
   <ActionToolbar />
   <div class="settings-page">
-    Settings
+    {{ $t('pages.settings') }}
   </div>
 </template>
 

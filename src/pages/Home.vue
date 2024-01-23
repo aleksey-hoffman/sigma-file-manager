@@ -10,7 +10,7 @@ import {HomeActionToolbar} from '@/components/HomeActionToolbar';
 <template>
   <HomeActionToolbar />
   <div class="home-page">
-    Home
+    {{ $t('pages.home') }}
   </div>
 </template>
 

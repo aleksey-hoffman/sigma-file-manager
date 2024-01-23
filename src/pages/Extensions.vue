@@ -10,7 +10,7 @@ import {ExtensionsActionToolbar} from '@/components/ExtensionsActionToolbar';
 <template>
   <ExtensionsActionToolbar />
   <div class="extensions-page">
-    Extensions
+    {{ $t('pages.extensions') }}
   </div>
 </template>
 

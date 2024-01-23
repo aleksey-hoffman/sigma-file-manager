@@ -10,7 +10,7 @@ import {DashboardActionToolbar} from '@/components/DashboardActionToolbar';
 <template>
   <DashboardActionToolbar />
   <div class="dashboard-page">
-    Dashboard
+    {{ $t('pages.dashboard') }}
   </div>
 </template>
 
