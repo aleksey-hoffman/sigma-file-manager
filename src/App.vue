@@ -5,13 +5,13 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <script setup lang="ts">
 import {listen} from '@tauri-apps/api/event';
-import {WindowToolbar} from '@/components/WindowToolbar';
-import {NavPanel} from '@/components/NavPanel';
-import {RouterView} from '@/components/RouterView';
-import {useUserSettingsStore} from '@/stores/storage/userSettings';
+import {NavSidebar} from '@/components/app/nav-sidebar';
+import {RouterView} from '@/components/app/router-view';
+import {WindowToolbar} from '@/components/app/window-toolbar';
+import {useUserPathsStore} from '@/stores/storage/user-paths';
+import {useUserSettingsStore} from '@/stores/storage/user-settings';
 import {useWorkspacesStore} from '@/stores/storage/workspaces';
-import {useUserPathsStore} from '@/stores/storage/userPaths';
-import {disableWebViewFeatures} from '@/utils/disableWebViewFeatures';
+import {disableWebViewFeatures} from '@/utils/disable-web-view-features';
 
 const userSettingsStore = useUserSettingsStore();
 const workspacesStore = useWorkspacesStore();
@@ -34,7 +34,7 @@ init();
 <template>
   <VApp :theme-type="userSettingsStore.userSettings.theme.type">
     <WindowToolbar />
-    <NavPanel />
+    <NavSidebar />
     <RouterView />
   </VApp>
 </template>

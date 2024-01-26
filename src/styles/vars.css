@@ -6,7 +6,7 @@
     --window-toolbar-height: calc(var(--window-toolbar-height-value) * 1px);
     --action-toolbar-height-value: 42;
     --action-toolbar-height: calc(var(--action-toolbar-height-value) * 1px);
-    --navigator-toolbar-height: 48px;
+    --workspace-toolbar-height: 48px;
     --info-panel-width-value: 280;
     --info-panel-width: calc(var(--info-panel-width-value) * 1px);
     --info-panel-preview-height: 158px;
@@ -16,7 +16,7 @@
     --navigator-sorting-header-height: 36px;
     --tab-height: calc(var(--window-toolbar-height) - 4px);
     --control-button-width: 46px;
-    --dir-entry-card-transition: all 0.3s ease-in-out;
+    --dir-entry-transition: all 0.3s ease-in-out;
   }
 
   :root:has(.v-application[theme-type="dark"]) {

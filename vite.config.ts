@@ -1,10 +1,10 @@
-import {fileURLToPath} from 'url';
-import {defineConfig} from 'vite';
 import {resolve, dirname} from 'path';
+import {fileURLToPath} from 'url';
 import vuePlugin from '@vitejs/plugin-vue';
+import {defineConfig} from 'vite';
 import eslintPlugin from 'vite-plugin-eslint';
-import vuetifyPlugin from 'vite-plugin-vuetify';
 import stylelintPlugin from 'vite-plugin-stylelint';
+import vuetifyPlugin from 'vite-plugin-vuetify';
 // import {run} from 'vite-plugin-run';
 
 export default defineConfig({

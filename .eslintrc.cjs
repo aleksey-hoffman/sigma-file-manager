@@ -8,21 +8,45 @@ module.exports = {
     sourceType: 'module'
   },
   plugins: [
-    '@typescript-eslint'
+    '@typescript-eslint',
+    'import'
   ],
   extends: [
     'plugin:@typescript-eslint/recommended',
     'plugin:vue/vue3-recommended',
     'eslint:recommended',
+    'plugin:import/recommended',
+    'plugin:import/typescript',
     'plugin:@intlify/vue-i18n/recommended',
     '@vue/typescript/recommended'
   ],
   rules: {
+    'import/no-unresolved': 'off',
+    'import/order': [
+      'error',
+      {
+        groups: [
+          'builtin',
+          'external',
+          'internal',
+          ['sibling', 'parent'],
+          'index',
+          'unknown',
+          'type'
+        ],
+        'newlines-between': 'never',
+        alphabetize: {
+          order: 'asc',
+          caseInsensitive: true
+        }
+      }
+    ],
     curly: ['error', 'all'],
     semi: ['error', 'always'],
     eqeqeq: ['error', 'smart'],
     quotes: ['error', 'single'],
     indent: ['error', 2],
+    'comma-spacing': ['error', {'after': true}],
     'no-console': 'off',
     'no-debugger': 'warn',
     'no-tabs': 'error',
@@ -38,6 +62,7 @@ module.exports = {
     'object-shorthand': ['error', 'always'],
     'prefer-const': 'off',
     'func-style': ['error', 'declaration', {'allowArrowFunctions': true}],
+    '@typescript-eslint/consistent-type-imports': ['error'],
     '@typescript-eslint/no-shadow': 'error',
     '@typescript-eslint/array-type': ['error', {
       default: 'array-simple'

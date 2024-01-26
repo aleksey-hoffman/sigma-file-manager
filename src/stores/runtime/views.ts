@@ -2,10 +2,10 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-import {ref} from 'vue';
 import {defineStore} from 'pinia';
-import {routes} from '@/router/routes';
+import {ref} from 'vue';
 import {useI18n} from 'vue-i18n';
+import {routes} from '@/router/routes';
 
 export const useViewsStore = defineStore('views', () => {
   const i18n = useI18n();

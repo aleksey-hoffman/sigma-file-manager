@@ -2,18 +2,17 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-import type {LocalizationLanguage} from '@/types/userSettings';
-
-import en from './messages/en.json';
-import ru from './messages/ru.json';
-import es from './messages/es.json';
-import de from './messages/de.json';
-import fr from './messages/fr.json';
-import tr from './messages/tr.json';
-import ja from './messages/ja.json';
-import fa from './messages/fa.json';
 import ch from './messages/ch.json';
+import de from './messages/de.json';
+import en from './messages/en.json';
+import es from './messages/es.json';
+import fa from './messages/fa.json';
+import fr from './messages/fr.json';
+import ja from './messages/ja.json';
+import ru from './messages/ru.json';
+import tr from './messages/tr.json';
 import vi from './messages/vi.json';
+import type {LocalizationLanguage} from '@/types/user-settings';
 
 export const messages = {
   en,

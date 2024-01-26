@@ -2,11 +2,11 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-import {createApp} from 'vue';
 import {createPinia} from 'pinia';
+import {createApp} from 'vue';
 import App from './App.vue';
-import router from './router';
 import vuetify from './plugins/vuetify';
+import router from './router';
 import {i18n} from '@/localization';
 
 const app = createApp(App);

@@ -4,7 +4,7 @@
 
 import {createI18n} from 'vue-i18n';
 import {messages} from './data';
-import {pluralRules} from './pluralRules';
+import {pluralRules} from './plural-rules';
 
 export const i18n = createI18n({
   locale: 'en',

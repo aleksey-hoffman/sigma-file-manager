@@ -2,18 +2,18 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-import {defineStore} from 'pinia';
-import {invoke} from '@tauri-apps/api/tauri';
 import {basename} from '@tauri-apps/api/path';
-import {ref, watch, computed, ComputedRef} from 'vue';
-import {useUserPathsStore} from '@/stores/storage/userPaths';
-import {useNavigatorStore} from '@/stores/runtime/navigator';
-import uniqueId from '@/utils/uniqueId';
-import clone from '@/utils/clone';
+import {invoke} from '@tauri-apps/api/tauri';
+import {defineStore} from 'pinia';
+import {ref, watch, computed} from 'vue';
 import {useRouter} from 'vue-router';
-
-import type {DirEntry} from '@/types/dirEntry';
+import {useNavigatorStore} from '@/stores/runtime/navigator';
+import {useUserPathsStore} from '@/stores/storage/user-paths';
+import clone from '@/utils/clone';
+import uniqueId from '@/utils/unique-id';
+import type {DirEntry} from '@/types/dir-entry';
 import type {Workspace, Tab, TabGroup} from '@/types/workspaces';
+import type {ComputedRef} from 'vue';
 
 export const useWorkspacesStore = defineStore('workspaces', () => {
   const userPathsStore = useUserPathsStore();
