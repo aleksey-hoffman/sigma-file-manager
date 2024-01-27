@@ -17,15 +17,9 @@ interface Props {
   hoverEnabled?: boolean;
 }
 
-interface Emits {
-  (event: 'update:modelValue', value: string): void;
-}
-
 const props = withDefaults(defineProps<Props>(), {
   hoverEnabled: true
 });
-
-const emit = defineEmits<Emits>();
 
 const cardDesign = ref('infusive-flat-glow');
 </script>

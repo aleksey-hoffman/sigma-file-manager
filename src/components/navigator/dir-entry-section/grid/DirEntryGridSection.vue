@@ -228,9 +228,9 @@ const bottomSpacerEntry = computed(() => (
   }] satisfies VirtualEntryItem[]
 ));
 
-function sortedDirEntries(dirEntries: DirEntry[]) {
-  return dirEntries;
-}
+// function sortedDirEntries(dirEntries: DirEntry[]) {
+//   return dirEntries;
+// }
 
 function filteredDirEntries(dirEntries: DirEntry[]) {
   return filterNavigatorView({

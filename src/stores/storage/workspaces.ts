@@ -35,9 +35,9 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
     }
   ]);
 
-  const primaryWorkspace: ComputedRef<Workspace | undefined> = computed(() => (
-    workspaces.value?.find(workspace => workspace.isPrimary)
-  ));
+  // const primaryWorkspace: ComputedRef<Workspace | undefined> = computed(() => (
+  //   workspaces.value?.find(workspace => workspace.isPrimary)
+  // ));
 
   const currentWorkspace: ComputedRef<Workspace | undefined> = computed(() => (
     workspaces.value?.find(workspace => workspace.isCurrent)
@@ -51,9 +51,9 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
     currentTabGroup?.value?.[currentWorkspace?.value?.currentTabIndex || 0]
   ));
 
-  const allTabs = computed(() => (
-    currentWorkspace.value?.tabGroups.flat()
-  ));
+  // const allTabs = computed(() => (
+  //   currentWorkspace.value?.tabGroups.flat()
+  // ));
 
   watch(() => currentWorkspace?.value?.tabGroups?.length, value => {
     if (value === 0) {

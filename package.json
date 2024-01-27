@@ -45,8 +45,8 @@
     "prepare": "husky"
   },
   "lint-staged": {
-    "*.{vue,js,jsx,cjs,mjs,ts,tsx,cts,mts}": "lint",
-    "*.{css,scss,vue}": "stylelint"
+    "src/**/*.{vue,js,jsx,cjs,mjs,ts,tsx,cts,mts}": "npx eslint",
+    "src/**/*.{css,scss,vue}": "npx stylelint"
   },
   "dependencies": {
     "@tauri-apps/api": "^1.5.3",
