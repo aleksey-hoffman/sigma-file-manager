@@ -30,7 +30,6 @@ const topReached = ref<boolean>(false);
 const bottomReached = ref<boolean>(false);
 
 watch(bottomReached, newValue => {
-  console.log('bottomReached');
   if (newValue) {
     animateRange({
       start: bottomFadeMaskHeight.value,
