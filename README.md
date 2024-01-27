@@ -143,6 +143,14 @@ npm run tauri:dev:webkit-igpu
 npm run tauri:build
 ```
 
+### Pull changes
+
+The code base is updated frequently, so make sure you pull the changes and install dependencies before running or building the app to make sure you are running the latest code:
+
+```
+git checkout v2 && git pull && npm i
+```
+
 ## Known issues
 
 ### Linux
