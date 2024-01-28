@@ -28,8 +28,7 @@
   ],
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc && vite build",
-    "build-ignore-ts": "vite build",
+    "build": "npm run types:check && vite build",
     "preview": "vite preview",
     "tauri": "tauri",
     "tauri:dev": "tauri dev",
@@ -40,6 +39,7 @@
     "cargo-build": "cd ./src-tauri && cargo build",
     "lint": "eslint --fix --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts src/",
     "stylelint": "npx stylelint --fix src/**/*.css",
+    "types:check": "vue-tsc --noEmit -p tsconfig.json",
     "sync-i18n": "npx tsx ./scripts/sync-i18n.js",
     "sync-license": "npx tsx ./scripts/sync-license.js",
     "prepare": "husky"

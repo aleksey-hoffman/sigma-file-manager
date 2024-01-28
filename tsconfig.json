@@ -12,10 +12,11 @@
     "esModuleInterop": true,
     "sourceMap": true,
     "strict": true,
+    "skipLibCheck": true,
     "paths": {
       "@/*": ["./src/*"]
     },
-    "lib": ["esnext", "dom"]
+    "lib": ["esnext", "dom"],
   },
   "include": ["**/*.json", "**/*.ts", "**/*.d.ts", "**/*.tsx", "**/*.vue", "**/*.vue.ts"],
   "exclude": ["./src-tauri"]

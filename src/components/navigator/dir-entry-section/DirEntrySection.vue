@@ -21,6 +21,7 @@ const props = defineProps<Props>();
 
 const userSettingsStore = useUserSettingsStore();
 
+// @ts-expect-error lib types don't match
 const [initialize] = useOverlayScrollbars({options: overlayScrollbarsOptions, defer: false});
 
 const rootRef = ref<HTMLElement | null>(null);
