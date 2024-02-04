@@ -219,12 +219,12 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
   }
 
   async function loadTabGroupDirEntries(tabGroup: TabGroup) {
-    tabGroup.forEach(async (tab: Tab) => {
+    await Promise.all(tabGroup.map(async (tab: Tab) => {
       if (tab.type === 'directory') {
         const dirEntries = await getDirEntries({path: tab.path});
         tab.dirEntries = dirEntries;
       }
-    });
+    }));
   }
 
   async function openTabGroup(tabGroup: TabGroup) {
