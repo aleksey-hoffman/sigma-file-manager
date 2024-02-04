@@ -23,6 +23,13 @@ export const useNavigatorStore = defineStore('navigator', () => {
     }
   });
 
+  async function updateInfoPanel(dirEntry: DirEntry | null | undefined) {
+    if (!dirEntry) {
+      return;
+    }
+    setInfoPanelData(dirEntry);
+  }
+
   async function setInfoPanelData(dirEntry: DirEntry) {
     runtime.value.navigator.infoPanel.properties = [
       {
@@ -54,6 +61,6 @@ export const useNavigatorStore = defineStore('navigator', () => {
 
   return {
     runtime,
-    setInfoPanelData
+    updateInfoPanel
   };
 });

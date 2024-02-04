@@ -10,10 +10,9 @@ export type Workspace = {
   isCurrent: boolean;
   name: string;
   actions: TabAction[];
-  selectedDirEntry: DirEntry | null;
   tabGroups: TabGroup[];
-  currentTabGroupIndex: number | null;
-  currentTabIndex: number | null;
+  currentTabGroupIndex: number;
+  currentTabIndex: number;
 };
 
 export type Tab = {
@@ -24,6 +23,7 @@ export type Tab = {
   paneWidth: number;
   filterQuery: string;
   dirEntries: DirEntry[];
+  selectedDirEntries: DirEntry[];
 };
 
 export type TabGroup = Tab[];

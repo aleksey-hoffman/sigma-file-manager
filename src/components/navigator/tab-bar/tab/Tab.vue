@@ -25,13 +25,12 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<Emits>();
 
 const workspacesStore = useWorkspacesStore();
-const {loadTabGroup} = workspacesStore;
 
 const showTabPreview = ref<boolean>(true);
 const navigatorTabWidth = ref<number>(100);
 
 const isActive = computed(() => (
-  props.tabGroup[0].id === workspacesStore.currentTab?.id
+  props.tabGroup?.[0]?.id === workspacesStore.currentTab?.id
 ));
 
 const tabName = computed(() => {
@@ -44,8 +43,8 @@ const tabName = computed(() => {
   }
 });
 
-function tabOnClick (tabGroup: Tab[]) {
-  loadTabGroup(tabGroup);
+function tabOnClick(tabGroup: Tab[]) {
+  workspacesStore.openTabGroup(tabGroup);
 }
 </script>
 
@@ -58,6 +57,7 @@ function tabOnClick (tabGroup: Tab[]) {
   >
     <template #activator="{ props: tooltipProps }">
       <div
+        v-if="tabGroup.length"
         v-ripple
         class="tab"
         :style="{
