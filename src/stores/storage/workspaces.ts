@@ -13,7 +13,7 @@ import clone from '@/utils/clone';
 import uniqueId from '@/utils/unique-id';
 import type {DirEntry} from '@/types/dir-entry';
 import type {Workspace, Tab, TabGroup} from '@/types/workspaces';
-import type {ComputedRef, WritableComputedRef} from 'vue';
+import type {ComputedRef} from 'vue';
 
 export const useWorkspacesStore = defineStore('workspaces', () => {
   const userPathsStore = useUserPathsStore();
@@ -43,16 +43,16 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
     currentWorkspace.value?.tabGroups?.length && currentWorkspace.value?.tabGroups?.length || 0
   ));
 
-  const currentTabSelectedDirEntries: WritableComputedRef<DirEntry[]> = computed({
-    get() {
-      return currentTab.value?.selectedDirEntries || [];
-    },
-    set(value) {
-      if (currentTab.value) {
-        currentTab.value.selectedDirEntries = value;
-      }
-    }
-  });
+  // const currentTabSelectedDirEntries: WritableComputedRef<DirEntry[]> = computed({
+  //   get() {
+  //     return currentTab.value?.selectedDirEntries || [];
+  //   },
+  //   set(value) {
+  //     if (currentTab.value) {
+  //       currentTab.value.selectedDirEntries = value;
+  //     }
+  //   }
+  // });
 
   const tabs: ComputedRef<Tab[]> = computed(() => (
     currentWorkspace.value?.tabGroups?.flat() || []
@@ -235,14 +235,15 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
       }
       setCurrentTabGroupIndex(tabGroupIndex);
       await loadTabGroupDirEntries(tabGroup);
-      updateInfoPanel();
+      updateInfoPanel(tabGroup);
     } catch (error: any) {
       throw Error(`Could not open tab: ${error.message}`);
     }
   }
 
-  async function updateInfoPanel() {
-    await navigatorStore.updateInfoPanel(currentTabSelectedDirEntries.value.at(-1));
+  async function updateInfoPanel(tabGroup) {
+    const dirEntry = await getDirEntry({path: tabGroup[0].path});
+    await navigatorStore.updateInfoPanel(dirEntry);
   }
 
   // async function selectDirEntry(path?: string, dirEntry?: DirEntry) {
