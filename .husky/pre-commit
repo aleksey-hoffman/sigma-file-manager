@@ -1,1 +1,3 @@
+npm run sync-i18n 
+npm run sync-license 
 npx lint-staged
