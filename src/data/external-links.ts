@@ -24,7 +24,7 @@ const githubLatestRelease = `${githubRepoLink}/releases/latest`;
 const githubReadmeSupportSectionLink = `${githubRepoLink}#supporters`;
 const githubLocalesLink = `${githubRawApiUrl}/${githubFullRepoName}/${githubMainBranch}/src/localization/locales`;
 
-module.exports = {
+export default {
   githubRepo,
   githubUserLink,
   githubRepoLink,
