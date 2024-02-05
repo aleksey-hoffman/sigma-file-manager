@@ -1,40 +1,74 @@
-# Supporters
+# Support
 
-These wonderful people and companies are currently funding this project. Thanks to them I can keep improving this app, they are the reason good quality free software can exist.
+Consider supporting the project on Patreon:
 
-### SPONSORS - LEVEL 2
-Become the first supporter
+<a target="_blank" href="https://patreon.com/sigma_file_manager">
+  <img
+    src="https://raw.githubusercontent.com/aleksey-hoffman/sigma-file-manager/main/.github/media/patreon_button.png"
+    width="164px"
+  />
+</a>
+<br>
+<a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/wiki/Support-and-rewards">
+  See other methods
+</a>
 
-### SPONSORS - LEVEL 1
-Become the first supporter
+### Sponsors
 
-### GENEROUS SUPPORTERS
 <table>
   <tbody>
     <tr>
-      <td align="center" valign="middle">
-        <a href="https://www.photoancestry.com/" title="Houston Photo Restoration">
-          <img width="80px" height="80px" src="https://www.photoancestry.com/images/photo-restoration-houston.png">
-        </a>
+      <td>
+          <a href="https://hover.com/UywpvNe0" target="_blank">
+            <img width="128px" align="center" src="https://github.com/aleksey-hoffman/sigma-file-manager/raw/main/.github/media/hover-logo-svg-vector.svg">
+          </a>
       </td>
-    </tr>
-    <tr>
-      <td align="center" valign="middle">
-        <a href="https://www.photoancestry.com/" title="Houston Photo Restoration">⭐ Houston Photo Restoration</a>
+      <td>
+        <b>Hover is a popular service where you buy domain names for your website.</b>
+        <br>Use my <a href="https://hover.com/UywpvNe0" target="_blank">Hover link</a> and we'll both get $2 off their domains.
       </td>
     </tr>
   </tbody>
 </table>
 
-### GRATEFUL SUPPORTERS
+<table>
+  <tbody>
+    <tr>
+      <td>
+          <a href="https://www.photoancestry.com" target="_blank">
+            <img width="128px" align="center" src="https://www.photoancestry.com/images/fpbanner_poster_.png">
+          </a>
+      </td>
+      <td>
+        <b>Houston's #1 Photo Restoration Service</b>
+        <br><a href="https://www.photoancestry.com" target="_blank">photoancestry.com</a>
+      </td>
+    </tr>
+  </tbody>
+</table>
 
-<div>
-  <a href="https://github.com/andyundso" title="Andy Pfister">
-    <b>~ Andy Pfister ~</b>
-  </a>
-</div>
+### Supporters
 
-### THOUGHTFUL SUPPORTERS
+<table>
+  <tbody>
+    <tr>
+      <td align="center" valign="middle">
+        <a href="https://github.com/andyundso" title="Andy Pfister">
+          <img valign="middle" width="48px" src="https://avatars.githubusercontent.com/u/7010698?v=4">
+          Andy Pfister
+        </a>
+      </td>
+      <td align="center" valign="middle">
+        <a href="https://github.com/exploitacious" title="Alex Ivantsov">
+          <img valign="middle" width="48px" src="https://avatars.githubusercontent.com/u/75740078?v=4">
+          Alex Ivantsov
+        </a>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+### Previous supporters
 
 <div>
   <a href="https://github.com/theoob" title="Tony Kelly">
@@ -47,24 +81,3 @@ Become the first supporter
     <b>Marco Valenti</b>
   </a>
 </div>
-
-## Join
-
-#### 🎉 Supporter goal: 4 of 300 people joined
-
-See the list of rewards and consider joining our community on Patreon:
-
-<a target="_blank" href="https://patreon.com/sigma_file_manager">
-  <img
-    src="./.github/media/patreon_button.png"
-    width="164px"
-    style="box-shadow: 0px 6px 24px rgb(255, 66, 77, 0.2); margin: 16px 0"
-  />
-</a>
-
-- Supporters are added to the list from top to bottom. The earlier you start supporting the project, the higher your name will be on the list.
-- "3+ months" supporters will have the ⭐ badge displayed next to their name.
-- The funding will be used for:
-  - Fund the development of this project;
-  - Fund the development of my other big research project: advanced tools / algorithms that will help scientists speed up development of new medications and treatments for diseases, reducing the time need to find a new medication from 10 years (current average) to just a few months, and hopefully help humanity get rid of diseases;
-  - Support other open-source and open-content creators (developers, educators, digital artists, etc);
