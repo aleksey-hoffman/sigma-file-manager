@@ -3,14 +3,14 @@
 > [Sigma File Manager (current page):](https://github.com/aleksey-hoffman/sigma-file-manager) development is paused<br>
 > [Sigma File Manager v2.0:](https://github.com/aleksey-hoffman/sigma-file-manager/tree/v2) development is active
 
-# Latest news
+## Latest news
 
 - Version 2.0.0-alpha.1 was released.
 - Version 1.7.0 was released. Video review: https://www.youtube.com/watch?v=ZQy754HOM7Y
 - Started creating [Sigma File Manager Next (v2.0)](https://github.com/aleksey-hoffman/sigma-file-manager/discussions/226). Rewriting the app codebase with newer, better technologies (Rust, Vue 3, Typescript), as well as improving code quality and moving away from Electron.js. Once finished, the app will become faster, more capable, and better in every other way.
 - Reddit community [r/SigmaFileManager](https://www.reddit.com/r/SigmaFileManager) was created. This is where I will post all the updates, polls, progress, image and video previews of new / modified features, tips, etc. Check it out and post some cool ideas!
 
-# What's new in `v1.7`
+## What's new in `v1.7`
 
 - 4 new features
 - 9 improvements
@@ -29,18 +29,20 @@
 
 Designed, developed, and maintained by [Aleksey Hoffman](https://github.com/aleksey-hoffman)
 
-Community links: [Discord](https://discord.gg/sxZTztFVwX) | [Reddit](https://www.reddit.com/r/SigmaFileManager) | [YouTube](https://www.youtube.com/@sigma-dev) | [X (Twitter)](https://twitter.com/sigma__dev) | [Telegram](https://t.me/sigma_devs)
-<br>Thanks to everyone who has been sharing this project with others!
-
 <img src="./.github/media/main.png">
 
-# Goal
+
+## Community links
+[Discord](https://discord.gg/sxZTztFVwX) | [Reddit](https://www.reddit.com/r/SigmaFileManager) | [YouTube](https://www.youtube.com/@sigma-dev) | [X (Twitter)](https://twitter.com/sigma__dev) | [Telegram](https://t.me/sigma_devs)
+<br>Thanks to everyone who has been sharing this project with others!
+
+## Goal
 
 Create the best existing intelligent file manager & productivity app that will significantly speed up your workflow, provide you with advanced tools, and keep your data safe.
 
 `Done 21 of 100` major features.
 
-# Features
+## Features
 
 #### The list of major features:
 
@@ -95,7 +97,7 @@ Several more major features / improvements are already in development and will b
 
 <a href="https://github.com/aleksey-hoffman/sigma-file-manager/discussions/31">FEATURES IN DEVELOPMENT →</a>
 
-# Supporters
+## Supporters
 
 Consider supporting the project on Patreon:
 
@@ -173,7 +175,7 @@ Consider supporting the project on Patreon:
 
 The funding will be used for funding the development of this and my other big projects. I'm also working in collaboration with a few universities on a project that will help scientists speed up development of new medications and treatments for diseases, reducing the time need to find a new medication from 10 years (current average) to just a few months, and hopefully help humanity get rid of diseases (the project will be open-sourced later);
 
-# Download
+## Download
 
 [![Github All Releases](https://img.shields.io/github/downloads/aleksey-hoffman/sigma-file-manager/total.svg)]()
 
@@ -291,7 +293,7 @@ If you can also click the "watch" button on top of the page if you want to get n
 
 There's a fun secret hidden somewhere in the app. See if you can find it. Hint: only the dinosaur knows about it.
 
-# Project links
+## Project links
 
 - <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/issues/new?template=Feature_request.md">Create feature request</a>
 - <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/issues/new?template=Problem_report.md">Create problem report</a>
@@ -299,7 +301,7 @@ There's a fun secret hidden somewhere in the app. See if you can find it. Hint: 
 - <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/blob/main/CHANGELOG.md">See changelog</a>
 - <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/discussions/31">See features in development</a>
 
-# Milestones
+## Milestones
 
 ✅ **v1.0.0 (May 25 2021):** publish the app;
 
@@ -330,13 +332,13 @@ There's a fun secret hidden somewhere in the app. See if you can find it. Hint: 
 
 **Links to reviews:** none yet.
 
-# Become my student
+## Become my student
 
 If you want to quickly learn how to build web and desktop apps like Sigma File Manager, I can teach you.
 
 See more details on [my Github profile page](https://github.com/aleksey-hoffman)
 
-# Contributors - open-content creators
+## Contributors - open-content creators
 
 #### Artworks used in the app
 
@@ -524,7 +526,7 @@ If you like their art, consider supporting their work. You can find their suppor
   </tbody>
 </table>
 
-# Special thanks
+## Special thanks
 
 **Open-source projects:**
 
@@ -538,13 +540,13 @@ If you like their art, consider supporting their work. You can find their suppor
 - **[7-zip.org](https://7-zip.org):** Allows the app to work with archives (compress/decompress directories and files).
 - **[xxoo/node-fswin](https://github.com/xxoo/node-fswin):** Windows OS native API bindings for Node.js.
 
-# For developers
+## For developers
 
 Developers, feel free to optimize and improve the app. Make sure to create a new issue or a discussion before implementing changes, so we can discuss the changes first.
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) file for more info.
 
-# License
+## License
 
 Sigma file manager is licensed under [GNU GPLv3 or later](./LICENSE.md).
 
