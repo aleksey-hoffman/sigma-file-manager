@@ -29,7 +29,7 @@
 
 Designed, developed, and maintained by [Aleksey Hoffman](https://github.com/aleksey-hoffman)
 
-Community links: [Reddit](https://www.reddit.com/r/SigmaFileManager) | [YouTube](https://www.youtube.com/@sigma-dev) | [X (Twitter)](https://twitter.com/sigma__dev) | [Telegram](https://t.me/sigma_devs)
+Community links: [Discord](https://discord.gg/sxZTztFVwX) | [Reddit](https://www.reddit.com/r/SigmaFileManager) | [YouTube](https://www.youtube.com/@sigma-dev) | [X (Twitter)](https://twitter.com/sigma__dev) | [Telegram](https://t.me/sigma_devs)
 <br>Thanks to everyone who has been sharing this project with others!
 
 <img src="./.github/media/main.png">
