@@ -12,13 +12,13 @@
 
 Designed, developed, and maintained by [Aleksey Hoffman](https://github.com/aleksey-hoffman)
 
-Community links: [Reddit](https://www.reddit.com/r/SigmaFileManager) | [YouTube](https://www.youtube.com/@sigma-dev) | [X (Twitter)](https://twitter.com/sigma__dev) | [Telegram](https://t.me/sigma_devs)
-<br>Thanks to everyone who has been sharing this project with others!
-
 <img src="./.github/media/main.png">
 
+## Community links
+[Discord](https://discord.gg/sxZTztFVwX) | [Reddit](https://www.reddit.com/r/SigmaFileManager) | [YouTube](https://www.youtube.com/@sigma-dev) | [X (Twitter)](https://twitter.com/sigma__dev) | [Telegram](https://t.me/sigma_devs)
+<br>Thanks to everyone who has been sharing this project with others!
 
-# Supporters
+## Supporters
 
 Consider supporting the project on Patreon:
 
@@ -33,7 +33,7 @@ Consider supporting the project on Patreon:
   See other methods
 </a>
 
-### Sponsor
+### Sponsors
 
 <table>
   <tbody>
@@ -44,33 +44,30 @@ Consider supporting the project on Patreon:
           </a>
       </td>
       <td>
-        Hover is a popular service where you buy domain names for your website. 
-        <br>I've been using it personally and can recommend it.
-        <br>Use my Hover link, and we'll both get $2 off their domains: https://hover.com/UywpvNe0
+        <b>Hover is a popular service where you buy domain names for your website.</b>
+        <br>Use my <a href="https://hover.com/UywpvNe0" target="_blank">Hover link</a> and we'll both get $2 off their domains.
       </td>
     </tr>
   </tbody>
 </table>
-
-### Level-4 supporter
 
 <table>
   <tbody>
     <tr>
-       <td align="center" valign="middle">
-        <a href="https://www.photoancestry.com/" title="Houston Photo Restoration">
-          <img width="128px" src="https://www.photoancestry.com/images/fpbanner_poster_.png">
-        </a>
+      <td>
+          <a href="https://www.photoancestry.com" target="_blank">
+            <img width="128px" align="center" src="https://www.photoancestry.com/images/fpbanner_poster_.png">
+          </a>
       </td>
       <td>
-       <a href="https://www.photoancestry.com/" title="Houston Photo Restoration">photoancestry.com</a>
-       <p>Houston's #1 Photo Restoration Service</p>
+        <b>Houston's #1 Photo Restoration Service</b>
+        <br><a href="https://www.photoancestry.com" target="_blank">photoancestry.com</a>
       </td>
     </tr>
   </tbody>
 </table>
 
-### Level-3 supporter
+### Supporters
 
 <table>
   <tbody>

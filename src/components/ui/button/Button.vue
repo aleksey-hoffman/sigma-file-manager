@@ -5,6 +5,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <script setup lang="ts">
 import {Icon} from '@iconify/vue';
+import {computed, useSlots} from 'vue';
 
 interface Props {
   type?: 'icon' | 'button';
@@ -40,15 +41,19 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<Emits>();
 
-const onClickHandler = (event: MouseEvent) => {
+const slots = useSlots();
+
+const isTooltipEnabled = computed(() => props.tooltip || slots.tooltip);
+
+function onClickHandler (event: MouseEvent) {
   emit('click', event);
-};
+}
 </script>
 
 <template>
   <VTooltip
     location="bottom"
-    :disabled="!props.tooltip"
+    :disabled="!isTooltipEnabled"
   >
     <template #activator="{ props: tooltipProps }">
       <VBtn
@@ -73,20 +78,22 @@ const onClickHandler = (event: MouseEvent) => {
         <slot />
       </VBtn>
     </template>
-    <span>
-      <div>
-        {{ props.tooltip }}
+    <div v-if="props.tooltip">
+      {{ props.tooltip }}
+    </div>
+    <slot
+      v-if="slots.tooltip"
+      name="tooltip"
+    />
+    <div v-if="props.tooltipShortcuts">
+      <div
+        v-for="(shortcut, index) in props.tooltipShortcuts"
+        :key="index"
+      >
+        <span class="inline-code--light">{{ shortcut.value }}</span>
+        - {{ shortcut.description }}
       </div>
-      <div v-if="props.tooltipShortcuts">
-        <div
-          v-for="(shortcut, index) in props.tooltipShortcuts"
-          :key="index"
-        >
-          <span class="inline-code--light">{{ shortcut.value }}</span>
-          - {{ shortcut.description }}
-        </div>
-      </div>
-    </span>
+    </div>
   </VTooltip>
 </template>
 
