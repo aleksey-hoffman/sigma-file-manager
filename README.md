@@ -108,7 +108,7 @@ The funding will be used for funding the development of this and my other big pr
 2. Clone the project
 3. Change branch to v2
 ```
-cd sigma-file-manager && checkout v2
+cd sigma-file-manager && git checkout v2
 ```
 4. Install dependencies:
 ```
