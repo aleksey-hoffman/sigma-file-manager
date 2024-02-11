@@ -8,6 +8,7 @@ import {Icon} from '@iconify/vue';
 import {reactive, computed, onMounted} from 'vue';
 import {useI18n} from 'vue-i18n';
 import {useRouter} from 'vue-router';
+import Button from '@/components/ui/button/Button.vue';
 import externalLinks from '@/data/external-links';
 
 const router = useRouter();
@@ -62,83 +63,78 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="content-area__title">
+  <div class="settings__content-area-title">
     {{ $t('pages.settings') }}
-    <VDivider class="my-3" />
   </div>
-  <div class="settings-page-header">
+  <div class="settings__page-header">
     <img
-      class="settings-page-header__logo"
+      class="settings__logo"
       src="@/assets/icons/logo-1024x1024.png"
       alt="Sigma File Manager Logo"
       width="87px"
     >
-    <div class="content-area__header__content">
+    <div class="settings__content-area-header-content">
       <strong>"{{ $t('app.name') }}"</strong>
       {{ $t('app.description') }}
       <br>
       {{ $t('app.copyright') }}
 
-      <div class="content-area__header__buttons">
-        <VTooltip
+      <div class="settings__content-area-header-buttons">
+        <template
           v-for="(item, index) in headerButtons"
           :key="'header-button-' + index"
-          location="bottom"
         >
-          <template #activator="{ props }">
-            <VBtn
-              class="content-area__header__buttons__item button-1"
-              variant="flat"
-              small
-              v-bind="props"
-              @click="router.push(item.link)"
-            >
-              <Icon
-                v-if="item.icon"
-                class="mr-2"
-                size="16px"
-                :icon="item.icon"
-              />
-              {{ item.title }}
-            </VBtn>
-          </template>
-          <span>
-            <VLayout align-center>
-              <Icon
-                class="mr-3"
-                size="16px"
-                icon="mdi-open-in-new"
-              />
-              {{ item.link }}
-            </VLayout>
-          </span>
-        </VTooltip>
+          <Button
+            icon-class="mr-3"
+            :icon="item.icon"
+            @click="router.push(item.link)"
+          >
+            <template #tooltip>
+              <div class="settings__buttons_tooltip">
+                <Icon
+                  class="mr-3"
+                  size="16px"
+                  icon="mdi-open-in-new"
+                />
+                {{ item.link }}
+              </div>
+            </template>
+            {{ item.title }}
+          </Button>
+        </template>
       </div>
     </div>
   </div>
 </template>
 
-<style scoped>
-.content-area__title {
+<style>
+.settings__content-area-title {
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--divider-color);
   font-size: 28px;
 }
 
-.settings-page-header {
+.settings__page-header {
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  margin-bottom: 30px;
+  margin-top: 30px;
   gap: 48px;
 }
 
-.content-area__header__content {
+.settings__content-area-header-content {
   margin-left: 50px;
 }
 
-.content-area__header__buttons {
+.settings__content-area-header-buttons {
   display: flex;
   align-items: center;
   margin-top: 20px;
   gap: 12px;
+}
+
+.settings__buttons_tooltip {
+  display: flex;
+  align-items: center;
 }
 </style>
