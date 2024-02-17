@@ -1,36 +1,3 @@
-.cursor-pointer {
-  cursor: pointer;
-  user-select: none;
-}
-
-.unselectable {
-  user-select: none;
-}
-
-.opacity-1 {
-  opacity: 1;
-}
-
-.opacity-0 {
-  opacity: 0;
-}
-
-.is-hidden {
-  display: none !important;
-}
-
-.v-btn.button-1 {
-  background: var(--button-bg-color-1) !important;
-  box-shadow: none;
-  color: var(--button-color-1) !important;
-}
-
-.v-btn.button-2 {
-  background: var(--button-bg-color-2) !important;
-  box-shadow: none;
-  color: var(--button-color-2) !important;
-}
-
 .custom-divider {
   width: 100%;
   padding: 18px 0;
@@ -82,14 +49,6 @@
   font-size: 16px;
   line-height: 1.5;
   word-break: break-word;
-}
-
-.divider-color-1 {
-  border-color: var(--divider-color-1) !important;
-}
-
-.divider-color-2 {
-  border-color: var(--divider-color-2) !important;
 }
 
 /* Note: this method doesn't break alignment inside grid */

@@ -39,15 +39,6 @@ const windowToolbarBackgroundColor = computed(() => (
       class="window-toolbar-drag-layer"
     />
     <div class="window-toolbar-action-layer">
-      <div
-        class="nav-panel__menu-icon"
-        :style="{ 'width': getVar('nav-panel-width') }"
-      >
-        <img
-          src="file:///src/assets/icons/logo-32x32.png"
-          width="18px"
-        >
-      </div>
       <TabBar v-if="route.name === 'navigator'" />
       <VSpacer />
       <WindowToolbarControls />
@@ -63,15 +54,6 @@ const windowToolbarBackgroundColor = computed(() => (
   align-items: center;
   background: var(--window-toolbar-bg-color);
   transition: background-color 0.2s ease;
-}
-
-.nav-panel__menu-icon {
-  display: flex;
-  width: auto;
-  height: 32px;
-  align-items: center;
-  justify-content: center;
-  border-radius: 4px;
 }
 
 .window-toolbar-drag-layer {
