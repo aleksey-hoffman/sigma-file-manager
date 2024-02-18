@@ -23,6 +23,7 @@ async function initMainProcessListeners() {
 
 async function init() {
   await userPathsStore.init();
+  await userSettingsStore.init();
   disableWebViewFeatures();
   initMainProcessListeners();
   workspacesStore.preloadDefaultTab();
