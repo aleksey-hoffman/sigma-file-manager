@@ -92,12 +92,12 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
     }
   }
 
-  async function changeLanguage(newLanguage: LocalizationLanguage) {
+  async function setLanguage(newLanguage: LocalizationLanguage) {
     userSettings.value.language = newLanguage;
     await setUserSettingsStorage('language', newLanguage);
   }
 
-  async function changeTheme() {
+  async function setTheme() {
     userSettings.value.theme = userSettings.value.theme === 'dark' ? 'light' : 'dark';
     appTheme.global.name.value = appTheme.global.name.value === 'dark' ? 'light' : 'dark';
     await setUserSettingsStorage('theme', userSettings.value.theme);
@@ -118,8 +118,8 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
     userSettingsDefault,
     init,
     setUserSettingsStorage,
-    changeLanguage,
-    changeTheme,
+    setLanguage,
+    setTheme,
     toggleInfoPanel
   };
 });
