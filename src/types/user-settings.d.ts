@@ -17,9 +17,7 @@ export type LocalizationLanguage = {
   isRtl: boolean;
 }
 
-export type Theme = {
-  type: 'light' | 'dark';
-}
+export type Theme = 'light' | 'dark' | 'system';
 
 export type DateTime = {
   month: 'short' | 'long';

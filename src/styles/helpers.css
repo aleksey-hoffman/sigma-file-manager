@@ -13,44 +13,6 @@
   background-color: var(--highlight-color-2);
 }
 
-.text--title-1 {
-  color: var(--title-color-1);
-  font-size: 28px;
-}
-
-.text--title-2 {
-  color: var(--title-color-1);
-  font-size: 20px;
-}
-
-.text--sub-title-1 {
-  margin-bottom: 8px;
-  color: var(--sub-title-color-1);
-  font-size: 14px;
-  text-transform: uppercase;
-  user-select: none;
-}
-
-.text--sub-title-2 {
-  margin-bottom: 8px;
-  color: var(--color-5);
-  font-size: 14px;
-}
-
-.text--description-1 {
-  margin-bottom: 12px;
-  color: var(--color-7);
-  font-size: 14px;
-}
-
-.content__description {
-  margin-bottom: 8px;
-  color: var(--sub-title-color-1);
-  font-size: 16px;
-  line-height: 1.5;
-  word-break: break-word;
-}
-
 /* Note: this method doesn't break alignment inside grid */
 .truncate-line {
   overflow: hidden;
@@ -81,24 +43,24 @@
 }
 
 .fade-mask--top-and-bottom {
-  /* -webkit-mask-image: linear-gradient(180deg, #FFFFFF 85%,transparent); */
+  -webkit-mask: linear-gradient(180deg, #FFFFFF 85%,transparent);
   mask: linear-gradient(transparent, black 10%, black 90%, transparent 100%);
 }
 
 .fade-mask--top {
-  /* -webkit-mask-image: linear-gradient(180deg, #FFFFFF 85%,transparent); */
+  -webkit-mask: linear-gradient(180deg, #FFFFFF 85%,transparent);
   mask: linear-gradient(to bottom, transparent 0%, black var(--fade-mask-top));
 }
 
 .fade-mask--bottom {
-  /* -webkit-mask-image: linear-gradient(180deg, #FFFFFF 85%,transparent); */
-  mask: linear-gradient(to top, transparent 0%, black var(--fade-mask-bottom));
+  -webkit-mask: linear-gradient(to top, transparent 0%, black var(--fade-mask-bottom, 10%));
+  mask: linear-gradient(to top, transparent 0%, black var(--fade-mask-bottom, 10%));
 }
 
-.inline-code--light {
+.code-inline {
   padding: 3px 6px;
   border-radius: 4px;
-  background: rgb(255 255 255 / 10%);
+  background: hsl(var(--primary) / 5%);
 }
 
 .code-block {
@@ -107,19 +69,4 @@
   border-radius: 8px;
   background: rgb(0 0 0 / 20%);
   overflow-y: auto;
-}
-
-.indicator--bottom {
-  position: relative;
-}
-
-.indicator--bottom[indicator-is-active]::after {
-  position: absolute;
-  bottom: -5px;
-  left: calc(50% - 8px);
-  width: 16px;
-  height: 2px;
-  background-color: var(--nav-panel-indicator-color);
-  box-shadow: 0 0 6px #0E6F96;
-  content: "";
 }

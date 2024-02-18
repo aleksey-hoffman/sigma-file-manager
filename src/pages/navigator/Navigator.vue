@@ -38,6 +38,5 @@ initInfoPanel();
 <style>
 .navigator-page {
   height: 100%;
-  background-color: var(--bg-color-darker-1);
 }
 </style>

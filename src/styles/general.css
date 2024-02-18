@@ -3,18 +3,14 @@ html {
 }
 
 .iconify {
-  color: var(--icon-color);
+  color: hsl(var(--foreground) / 50%);
 }
 
 .sub-title {
   margin-bottom: 8px;
-  color: var(--sub-title-color);
+  color: rgb(117 117 117 / 100%);
   font-size: 14px;
   text-transform: uppercase;
   user-select: none;
 }
   
-.fade-mask--bottom {
-  -webkit-mask: linear-gradient(to top, transparent 0%, black var(--fade-mask-bottom, 10%));
-  mask: linear-gradient(to top, transparent 0%, black var(--fade-mask-bottom, 10%));
-}
