@@ -21,9 +21,7 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
       isCorrected: true,
       isRtl: false
     },
-    theme: {
-      type: 'dark'
-    },
+    theme: 'dark',
     transparentToolbars: false,
     dateTime: {
       month: 'short',
@@ -100,9 +98,9 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
   }
 
   async function changeTheme() {
-    userSettings.value.theme.type = userSettings.value.theme.type === 'dark' ? 'light' : 'dark';
+    userSettings.value.theme = userSettings.value.theme === 'dark' ? 'light' : 'dark';
     appTheme.global.name.value = appTheme.global.name.value === 'dark' ? 'light' : 'dark';
-    await setUserSettingsStorage('theme', userSettings.value.theme.type);
+    await setUserSettingsStorage('theme', userSettings.value.theme);
   }
 
   async function toggleInfoPanel() {

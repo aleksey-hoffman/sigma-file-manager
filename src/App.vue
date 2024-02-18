@@ -33,7 +33,7 @@ init();
 </script>
 
 <template>
-  <VApp :theme-type="userSettingsStore.userSettings.theme.type">
+  <VApp :theme-type="userSettingsStore.userSettings.theme">
     <WindowToolbar />
     <NavSidebar />
     <RouterView />
