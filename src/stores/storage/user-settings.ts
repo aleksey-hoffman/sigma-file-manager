@@ -115,11 +115,10 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
     await loadUserSettings();
   }
 
-  init();
-
   return {
     userSettings,
     userSettingsDefault,
+    init,
     setUserSettingsStorage,
     changeLanguage,
     changeTheme,
