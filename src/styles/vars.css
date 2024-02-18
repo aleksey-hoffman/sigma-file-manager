@@ -1,7 +1,8 @@
 @layer base {
   :root {
-    --nav-panel-width-value: 48;
-    --nav-panel-width: calc(var(--nav-panel-width-value) * 1px);
+    --radius: 0.75rem;
+    --nav-sidebar-width-value: 48;
+    --nav-sidebar-width: calc(var(--nav-sidebar-width-value) * 1px);
     --window-toolbar-height-value: 32;
     --window-toolbar-height: calc(var(--window-toolbar-height-value) * 1px);
     --action-toolbar-height-value: 42;
@@ -17,9 +18,54 @@
     --tab-height: calc(var(--window-toolbar-height) - 4px);
     --control-button-width: 46px;
     --dir-entry-transition: all 0.3s ease-in-out;
+    --slate-50: #f8fafc;
+    --slate-100: #f1f5f9;
+    --slate-200: #e2e8f0;
+    --slate-300: #cbd5e1;
+    --slate-400: #94a3b8;
+    --slate-500: #64748b;
+    --slate-600: #475569;
+    --slate-700: #334155;
+    --slate-800: #1e293b;
+    --slate-900: #0f172a;
+    --slate-950: #020617;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-300: #d1d5db;
+    --gray-400: #9ca3af;
+    --gray-500: #6b7280;
+    --gray-600: #4b5563;
+    --gray-700: #374151;
+    --gray-800: #1f2937;
+    --gray-900: #111827;
+    --gray-950: #030712;
   }
 
-  :root:has(.v-application[theme-type="dark"]) {
+  .light {
+    --background: 0 0% 100%;
+    --background-2: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+  }
+
+  .dark {
     --light-value: 255 255 255;
     --dark-value: 0 0 0;
     --color-lighter-4: rgb(238 238 238);
@@ -42,10 +88,6 @@
     --action-toolbar-bg-color: transparent;
     --button-bg-color: var(--highlight-color-opacity-20);
     --button-1-bg-color: var(--highlight-color-opacity-30);
-    --control-button-bg-color: transparent;
-    --control-button-bg-color-hover: rgb(var(--dark-value) / 20%);
-    --icon-color: rgb(150 150 150 / 100%);
-    --sub-title-color: rgb(117 117 117 / 100%);
     --divider-color: rgb(var(--light-value) / 5%);
     --divider-color-lighter-1: rgb(var(--light-value) / 8%);
     --border-color: rgb(var(--light-value) / 5%);
@@ -87,13 +129,25 @@
     --infusive-extruded-shadow-optimized: 
       0px -2px 8px rgb(var(--light-value) / 2.5%),
       0px 36px 80px rgb(var(--dark-value) / 8%);
-  }
-
-  :root:has(.v-application[theme-type="light"]) {
-    --color: #333333;
-    --window-toolbar-bg-color: transparent;
-    --action-toolbar-bg-color: transparent;
-    --control-button-bg-color: transparent;
-    --control-button-bg-color-hover: rgb(var(--dark-value) / 20%);
+    --background: 225 10% 15.69%;
+    --background-2: 225 12.12% 12.94%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9;
   }
 }

@@ -14,18 +14,18 @@ const viewsStore = useViewsStore();
 </script>
 
 <template>
-  <div class="nav-panel">
+  <div class="nav-sidebar">
     <VNavigationDrawer
       rail
-      :rail-width="getVar('nav-panel-width-value')"
+      :rail-width="getVar('nav-sidebar-width-value')"
       floating
       permanent
     >
-      <div class="nav-panel__item-container">
+      <div class="nav-sidebar__item-container">
         <div
           v-for="(item, index) in viewsStore.views"
           :key="index"
-          class="nav-panel__item"
+          class="nav-sidebar__item"
           :value="item.name"
           :is-active="item.name === router.currentRoute.value.name"
           @click="router.push({ name: item.name })"
@@ -33,7 +33,7 @@ const viewsStore = useViewsStore();
           <Icon
             :icon="item.icon"
             width="22"
-            class="nav-panel__item-icon"
+            class="nav-sidebar__item-icon"
           />
         </div>
       </div>
@@ -42,12 +42,12 @@ const viewsStore = useViewsStore();
 </template>
 
 <style>
-.nav-panel
+.nav-sidebar
   .v-navigation-drawer {
-    background: var(--nav-panel-bg-color);
+    background: var(--nav-sidebar-bg-color);
   }
 
-.nav-panel__item {
+.nav-sidebar__item {
   display: flex;
   width: auto;
   height: 48px;
@@ -58,30 +58,30 @@ const viewsStore = useViewsStore();
 }
 
 .v-navigation-drawer__content
-  .nav-panel__item-container
-    .nav-panel__item:first-child {
+  .nav-sidebar__item-container
+    .nav-sidebar__item:first-child {
       height: var(--action-toolbar-height);
     }
 
-.nav-panel__item:hover {
+.nav-sidebar__item:hover {
   background: var(--highlight-color-opacity-5);
 }
 
-.nav-panel__item[is-active="true"] {
+.nav-sidebar__item[is-active="true"] {
   background: var(--highlight-color-opacity-10);
 }
 
-.nav-panel__item-icon {
+.nav-sidebar__item-icon {
   width: 24px;
 }
 
-.nav-panel__item-icon-container {
+.nav-sidebar__item-icon-container {
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.nav-panel
+.nav-sidebar
   .v-list-item__prepend {
     display: flex;
     width: 100%;
@@ -90,7 +90,7 @@ const viewsStore = useViewsStore();
     justify-content: center;
   }
 
-.nav-panel
+.nav-sidebar
   .v-list-item__content {
     margin-left: 12px;
   }
