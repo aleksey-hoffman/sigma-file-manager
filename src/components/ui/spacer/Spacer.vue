@@ -7,5 +7,12 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 </script>
 
 <template>
-  <VSpacer />
+  <div class="ui-spacer" />
 </template>
+
+<style>
+.ui-spacer {
+  display: flex;
+  flex: 1;
+}
+</style>

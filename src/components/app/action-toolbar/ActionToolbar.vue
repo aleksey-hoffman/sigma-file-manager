@@ -4,28 +4,22 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import getVar from '@/utils/get-var';
 </script>
 
 <template>
-  <VAppBar
-    class="action-toolbar"
-    flat
-    :height="getVar('action-toolbar-height-value')"
-  >
+  <div class="action-toolbar">
     <slot />
-  </VAppBar>
+  </div>
 </template>
 
 <style>
-#app
-  .action-toolbar {
-    position: relative;
-    z-index: 10;
-    display: flex;
-    min-height: var(--action-toolbar-height);
-    align-items: center;
-    padding: 0 12px;
-    background: var(--action-toolbar-bg-color);
-  }
+.action-toolbar {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  height: var(--action-toolbar-height);
+  align-items: center;
+  padding: 0 12px;
+  background: var(--action-toolbar-bg-color);
+}
 </style>

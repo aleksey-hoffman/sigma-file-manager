@@ -8,7 +8,14 @@ import {RouterView} from 'vue-router';
 </script>
 
 <template>
-  <VMain class="router-view">
+  <div class="router-view">
     <RouterView />
-  </VMain>
+  </div>
 </template>
+
+<style>
+.router-view {
+  width: 100%;
+  height: 100%;
+}
+</style>

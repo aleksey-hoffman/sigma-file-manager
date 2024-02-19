@@ -8,6 +8,7 @@ import {computed} from 'vue';
 import {useRoute} from 'vue-router';
 import {WindowToolbarControls} from '@/components/app/window-toolbar';
 import {TabBar} from '@/components/navigator/tab-bar';
+import {Spacer} from '@/components/ui/spacer';
 import getVar from '@/utils/get-var';
 
 const route = useRoute();
@@ -28,11 +29,9 @@ const windowToolbarBackgroundColor = computed(() => (
 </script>
 
 <template>
-  <VAppBar
-    :height="getVar('window-toolbar-height-value')"
+  <div
     class="window-toolbar"
     :style="{ 'background': windowToolbarBackgroundColor }"
-    flat
   >
     <div
       data-tauri-drag-region
@@ -40,19 +39,20 @@ const windowToolbarBackgroundColor = computed(() => (
     />
     <div class="window-toolbar-action-layer">
       <TabBar v-if="route.name === 'navigator'" />
-      <VSpacer />
+      <Spacer />
       <WindowToolbarControls />
     </div>
-  </VAppBar>
+  </div>
 </template>
 
 <style>
-#app .window-toolbar {
+.window-toolbar {
   position: relative;
   z-index: 10;
   display: flex;
+  height: var(--window-toolbar-height);
   align-items: center;
-  background: var(--window-toolbar-bg-color);
+  background: transparent;
   transition: background-color 0.2s ease;
 }
 

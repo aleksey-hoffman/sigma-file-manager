@@ -4,7 +4,6 @@ import vuePlugin from '@vitejs/plugin-vue';
 import {defineConfig} from 'vite';
 import eslintPlugin from 'vite-plugin-eslint';
 import stylelintPlugin from 'vite-plugin-stylelint';
-import vuetifyPlugin from 'vite-plugin-vuetify';
 // import {run} from 'vite-plugin-run';
 
 export default defineConfig({
@@ -34,7 +33,6 @@ export default defineConfig({
         defineModel: true
       }
     }),
-    vuetifyPlugin({autoImport: true}),
     stylelintPlugin({fix: true}),
     eslintPlugin({
       fix: true,

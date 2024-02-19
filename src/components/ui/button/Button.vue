@@ -96,20 +96,3 @@ function onClickHandler (event: MouseEvent) {
     </div>
   </VTooltip>
 </template>
-
-<style>
-#app
-  .v-btn {
-    border-radius: 4px;
-  }
-
-#app
-  .v-btn:hover {
-    color: var(--button-bg-color) !important;
-  }
-
-#app
-  .v-btn.button-1 {
-    color: var(--button-1-bg-color) !important;
-  }
-</style>

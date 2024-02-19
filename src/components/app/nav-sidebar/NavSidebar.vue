@@ -7,7 +7,6 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 import {Icon} from '@iconify/vue';
 import {useRouter} from 'vue-router';
 import {useViewsStore} from '@/stores/runtime/views';
-import getVar from '@/utils/get-var';
 
 const router = useRouter();
 const viewsStore = useViewsStore();
@@ -15,37 +14,30 @@ const viewsStore = useViewsStore();
 
 <template>
   <div class="nav-sidebar">
-    <VNavigationDrawer
-      rail
-      :rail-width="getVar('nav-sidebar-width-value')"
-      floating
-      permanent
-    >
-      <div class="nav-sidebar__item-container">
-        <div
-          v-for="(item, index) in viewsStore.views"
-          :key="index"
-          class="nav-sidebar__item"
-          :value="item.name"
-          :is-active="item.name === router.currentRoute.value.name"
-          @click="router.push({ name: item.name })"
-        >
-          <Icon
-            :icon="item.icon"
-            width="22"
-            class="nav-sidebar__item-icon"
-          />
-        </div>
+    <div class="nav-sidebar__item-container">
+      <div
+        v-for="(item, index) in viewsStore.views"
+        :key="index"
+        class="nav-sidebar__item"
+        :value="item.name"
+        :is-active="item.name === router.currentRoute.value.name"
+        @click="router.push({ name: item.name })"
+      >
+        <Icon
+          :icon="item.icon"
+          width="22"
+          class="nav-sidebar__item-icon"
+        />
       </div>
-    </VNavigationDrawer>
+    </div>
   </div>
 </template>
 
 <style>
-.nav-sidebar
-  .v-navigation-drawer {
-    background: var(--nav-sidebar-bg-color);
-  }
+.nav-sidebar {
+  width: var(--nav-sidebar-width);
+  background: var(--nav-sidebar-bg-color);
+}
 
 .nav-sidebar__item {
   display: flex;
@@ -57,11 +49,10 @@ const viewsStore = useViewsStore();
   cursor: pointer;
 }
 
-.v-navigation-drawer__content
-  .nav-sidebar__item-container
-    .nav-sidebar__item:first-child {
-      height: var(--action-toolbar-height);
-    }
+.nav-sidebar__item-container
+  .nav-sidebar__item:first-child {
+    height: var(--action-toolbar-height);
+  }
 
 .nav-sidebar__item:hover {
   background: var(--highlight-color-opacity-5);
@@ -82,7 +73,7 @@ const viewsStore = useViewsStore();
 }
 
 .nav-sidebar
-  .v-list-item__prepend {
+  .nav-sidebar-item__prepend {
     display: flex;
     width: 100%;
     height: 100%;
@@ -91,7 +82,7 @@ const viewsStore = useViewsStore();
   }
 
 .nav-sidebar
-  .v-list-item__content {
+  .nav-sidebar-item__content {
     margin-left: 12px;
   }
 </style>

@@ -1,12 +1,9 @@
 @layer base {
   :root {
     --radius: 0.75rem;
-    --nav-sidebar-width-value: 48;
-    --nav-sidebar-width: calc(var(--nav-sidebar-width-value) * 1px);
-    --window-toolbar-height-value: 32;
-    --window-toolbar-height: calc(var(--window-toolbar-height-value) * 1px);
-    --action-toolbar-height-value: 42;
-    --action-toolbar-height: calc(var(--action-toolbar-height-value) * 1px);
+    --nav-sidebar-width: 48px;
+    --window-toolbar-height: 32px;
+    --action-toolbar-height: 42px;
     --workspace-toolbar-height: 48px;
     --info-panel-width-value: 280;
     --info-panel-width: calc(var(--info-panel-width-value) * 1px);
