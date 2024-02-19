@@ -38,15 +38,15 @@
     "cargo-update": "cd ./src-tauri && cargo update",
     "cargo-build": "cd ./src-tauri && cargo build",
     "lint": "eslint --fix --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts src/",
-    "stylelint": "npx stylelint --fix src/**/*.css",
+    "stylelint": "npx stylelint --fix --ext .css,.scss,.vue src/",
     "types:check": "vue-tsc --noEmit -p tsconfig.json",
     "sync-i18n": "npx tsx ./scripts/sync-i18n.js",
     "sync-license": "npx tsx ./scripts/sync-license.js",
     "prepare": "husky"
   },
   "lint-staged": {
-    "src/**/*.{vue,js,jsx,cjs,mjs,ts,tsx,cts,mts}": "npx eslint",
-    "src/**/*.{css,scss,vue}": "npx stylelint"
+    "src/**/*.{vue,js,jsx,cjs,mjs,ts,tsx,cts,mts}": "npx eslint --fix",
+    "src/**/*.{css,scss,vue}": "npx stylelint --fix"
   },
   "dependencies": {
     "@tauri-apps/api": "^1.5.3",
@@ -96,7 +96,6 @@
     "typescript": "^5.3.3",
     "vite": "^5.0.12",
     "vite-plugin-eslint": "^1.8.1",
-    "vite-plugin-run": "^0.5.1",
     "vite-plugin-stylelint": "^5.3.1",
     "vue-tsc": "^1.8.27"
   }

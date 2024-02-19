@@ -4,7 +4,6 @@ import vuePlugin from '@vitejs/plugin-vue';
 import {defineConfig} from 'vite';
 import eslintPlugin from 'vite-plugin-eslint';
 import stylelintPlugin from 'vite-plugin-stylelint';
-// import {run} from 'vite-plugin-run';
 
 export default defineConfig({
   server: {
@@ -36,28 +35,7 @@ export default defineConfig({
     stylelintPlugin({fix: true}),
     eslintPlugin({
       fix: true,
-      include: ['src/**/*.{js, ts, d.ts, jsx, tsx, vue, vue.ts}']
+      include: ['src/**/*.{js,ts,d.ts,jsx,tsx,vue,vue.ts}']
     })
-    // TODO: throwing ENOENT error on Linux
-    // run([
-    //   {
-    //     name: 'sync-i18n',
-    //     pattern: ['src/localization/messages/**/*'],
-    //     run: ['sync-i18n'],
-    //     delay: 200
-    //   },
-    //   {
-    //     name: 'sync-license',
-    //     pattern: ['src/**/*.{vue, html, js, ts}'],
-    //     run: ['sync-license'],
-    //     delay: 200
-    //   },
-    //   {
-    //     name: 'sync-license-tauri',
-    //     pattern: ['src-tauri/**/*.{rs}'],
-    //     run: ['sync-license'],
-    //     delay: 200
-    //   }
-    // ])
   ]
 });
