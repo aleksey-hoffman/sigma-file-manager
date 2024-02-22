@@ -1,5 +1,4 @@
-import {resolve, dirname} from 'path';
-import {fileURLToPath} from 'url';
+import {fileURLToPath, URL} from 'node:url';
 import vuePlugin from '@vitejs/plugin-vue';
 import {defineConfig} from 'vite';
 import eslintPlugin from 'vite-plugin-eslint';
@@ -14,24 +13,21 @@ export default defineConfig({
     __VUE_I18N_LEGACY_API__: false
   },
   resolve: {
-    extensions: ['.mjs', '.js', '.ts', '.vue', '.json', '.scss'],
-    alias: {'@': resolve(dirname(fileURLToPath(import.meta.url)), 'src')}
+    alias: {
+      '@': fileURLToPath(new URL('./src', import.meta.url))
+    }
   },
-  publicDir: resolve('./src/public'),
+  publicDir: './src/public',
   clearScreen: false,
   envPrefix: ['VITE_', '_TAURI'],
   build: {
     target: ['es2021', 'chrome100', 'safari13'],
     minify: !process.env.TAURI_DEBUG ? 'esbuild' : false,
     sourcemap: !!process.env.TAURI_DEBUG,
-    outDir: resolve('./dist')
+    outDir: './dist'
   },
   plugins: [
-    vuePlugin({
-      script: {
-        defineModel: true
-      }
-    }),
+    vuePlugin(),
     stylelintPlugin({fix: true}),
     eslintPlugin({
       fix: true,
