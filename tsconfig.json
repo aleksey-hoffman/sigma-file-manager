@@ -4,8 +4,8 @@
   "exclude": ["./src-tauri"],
   "compilerOptions": {
     "baseUrl": "./",
-    "target": "esnext",
-    "module": "esnext",
+    "target": "ESNext",
+    "module": "ESNext",
     "moduleResolution": "bundler",
     "jsx": "preserve",
     "noEmit": true,
