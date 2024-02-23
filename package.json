@@ -28,7 +28,7 @@
   ],
   "scripts": {
     "dev": "vite",
-    "build": "npm run types:check && vite build",
+    "build": "npm run ts:check && vite build",
     "preview": "vite preview",
     "tauri": "tauri",
     "tauri:dev": "tauri dev",
@@ -39,14 +39,18 @@
     "cargo-build": "cd ./src-tauri && cargo build",
     "lint": "eslint --fix --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts src/",
     "stylelint": "npx stylelint --fix --ext .css,.scss,.vue src/",
-    "types:check": "vue-tsc --noEmit -p tsconfig.json",
+    "ts:check": "vue-tsc --noEmit -p tsconfig.json",
     "sync-i18n": "npx tsx ./scripts/sync-i18n.js",
     "sync-license": "npx tsx ./scripts/sync-license.js",
     "prepare": "husky"
   },
   "lint-staged": {
-    "src/**/*.{vue,js,jsx,cjs,mjs,ts,tsx,cts,mts}": "npx eslint --fix",
-    "src/**/*.{css,scss,vue}": "npx stylelint --fix"
+    "src/**/*.{vue,js,jsx,cjs,mjs,ts,tsx,cts,mts}": [
+      "eslint --fix"
+    ],
+    "src/**/*.{css,scss,vue}": [
+      "stylelint --fix"
+    ]
   },
   "dependencies": {
     "@tauri-apps/api": "^1.5.3",
