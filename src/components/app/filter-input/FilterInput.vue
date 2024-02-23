@@ -193,7 +193,7 @@ function onActivatorClick() {
   right: 0;
   display: flex;
   align-items: center;
-  background-color: var(--background-2);
+  background-color: var(--background-lighten);
   gap: 4px;
   transition: background-color 0.3s ease;
 }

@@ -36,7 +36,7 @@ const viewsStore = useViewsStore();
 <style>
 .nav-sidebar {
   width: var(--nav-sidebar-width);
-  background: var(--nav-sidebar-bg-color);
+  background-color: var(--background-lighten);
 }
 
 .nav-sidebar__item {
@@ -45,7 +45,7 @@ const viewsStore = useViewsStore();
   height: 48px;
   align-items: center;
   justify-content: center;
-  background: transparent;
+  background-color: transparent;
   cursor: pointer;
 }
 
@@ -55,11 +55,11 @@ const viewsStore = useViewsStore();
   }
 
 .nav-sidebar__item:hover {
-  background: var(--highlight-color-opacity-5);
+  background-color: hsl(var(--light) / 5%);
 }
 
 .nav-sidebar__item[is-active="true"] {
-  background: var(--highlight-color-opacity-10);
+  background-color: hsl(var(--light) / 10%);
 }
 
 .nav-sidebar__item-icon {

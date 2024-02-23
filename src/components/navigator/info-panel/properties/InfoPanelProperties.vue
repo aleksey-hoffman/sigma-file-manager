@@ -89,8 +89,8 @@ function propertyValueOnClick (params) {
   align-items: center;
   padding: 8px 4px;
   border-radius: 4px;
-  border-top: 1px solid var(--highlight-color-4);
-  border-bottom: 1px solid var(--highlight-color-4);
+  border-top: 1px solid hsl(var(--light) / 5%);
+  border-bottom: 1px solid hsl(var(--light) / 5%);
   color: var(--color-7);
   font-size: 14px;
   text-transform: uppercase;

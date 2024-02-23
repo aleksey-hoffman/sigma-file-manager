@@ -73,7 +73,7 @@ const mediaType = computed(() => props.dirEntry?.mime?.split('/')[0]);
   overflow: hidden;
   width: 100%;
   height: 100%;
-  background-color: var(--highlight-color-opacity-5);
+  background-color: hsl(var(--light) / 5%);
   transition: var(--dir-entry-transition);
   user-select: none;
 }

@@ -4,39 +4,39 @@
   .os-scrollbar-handle {
     border-radius: 0;
     margin-right: 8px;
-    background: var(--scrollbar-color);
+    background-color: hsl(var(--light) / 5%);
   }
 
 .os-theme-dark.os-scrollbar-vertical 
   .os-scrollbar-handle:hover {
     width: 12px;
-    background: var(--scrollbar-color-lighter-1);
+    background-color: hsl(var(--light) / 8%);
   }
 
 .os-theme-dark.os-scrollbar-vertical 
   .os-scrollbar-handle:active {
     width: 16px;
-    background: var(--scrollbar-color-lighter-2);
+    background-color: hsl(var(--light) / 15%);
   }
 
 .os-theme-dark.os-scrollbar-horizontal 
   .os-scrollbar-handle:hover {
     height: 12px;
-    background: var(--scrollbar-color-lighter-1);
+    background-color: hsl(var(--light) / 8%);
   }
 
 .os-theme-dark.os-scrollbar-horizontal 
   .os-scrollbar-handle:active {
     height: 16px;
-    background: var(--scrollbar-color-lighter-2);
+    background-color: hsl(var(--light) / 15%);
   }
 
 .os-theme-dark.os-theme-dark--lighten
   .os-scrollbar-handle {
-    background: var(--scrollbar-color-lighter-1);
+    background-color: hsl(var(--light) / 8%);
   }
 
 .os-theme-dark.os-theme-dark--lighten-2
   .os-scrollbar-handle {
-    background: var(--scrollbar-color-lighter-2);
+    background-color: hsl(var(--light) / 15%);
   }

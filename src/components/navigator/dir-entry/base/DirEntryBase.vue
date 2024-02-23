@@ -119,7 +119,7 @@ const props = withDefaults(defineProps<Props>(), {
 }
 
 .dir-entry-base__overlay--hover {
-  background-color: var(--highlight-color-opacity-5);
+  background-color: hsl(var(--light) / 5%);
   opacity: 0;
 }
 </style>

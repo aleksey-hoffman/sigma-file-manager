@@ -58,14 +58,14 @@ const cardDesign = ref('infusive-flat-glow');
 <style>
 .dir-entry-grid-dir {
   position: relative;
-  color: var(--color-darker-2);
+  color: var(--grey-500);
   transition: var(--dir-entry-transition);
   user-select: none;
 }
 
 .dir-entry-grid-dir
   .dir-entry-base {
-    background-color: rgb(255 255 255 / 2%);
+    background-color: var(--background-lighten);
   }
 
 .dir-entry-grid-dir
@@ -94,7 +94,7 @@ const cardDesign = ref('infusive-flat-glow');
 .dir-entry-grid-dir__content-title {
   overflow: hidden;
   max-width: 90%;
-  color: var(--color-darker-2);
+  color: var(--grey-400);
   font-size: 14px;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -103,7 +103,7 @@ const cardDesign = ref('infusive-flat-glow');
 .dir-entry-grid-dir__content-description {
   overflow: hidden;
   max-width: 90%;
-  color: var(--color-darker-4);
+  color: var(--grey-500);
   font-size: 14px;
   text-overflow: ellipsis;
   white-space: nowrap;
