@@ -1,3 +1,5 @@
+@import url('overlayscrollbars/styles/overlayscrollbars.css');
+
 .os-theme-dark 
   .os-scrollbar-handle {
     border-radius: 0;
