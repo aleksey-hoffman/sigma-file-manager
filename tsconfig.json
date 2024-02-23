@@ -1,4 +1,7 @@
 {
+  "extends": "@vue/tsconfig/tsconfig.dom.json",
+  "include": ["**/*.ts", "**/*.d.ts", "**/*.json", "./src/**/*"],
+  "exclude": ["./src-tauri"],
   "compilerOptions": {
     "baseUrl": "./",
     "target": "esnext",
@@ -19,7 +22,5 @@
     "paths": {
       "@/*": ["./src/*"]
     },
-  },
-  "include": ["**/*.json", "**/*.ts", "**/*.d.ts", "**/*.tsx", "**/*.vue", "**/*.vue.ts"],
-  "exclude": ["./src-tauri"]
+  }
 }
