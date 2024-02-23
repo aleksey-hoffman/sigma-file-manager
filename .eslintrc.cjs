@@ -1,6 +1,9 @@
+/* eslint-env node */
 module.exports = {
+  root: true,
   env: {
-    node: true
+    browser: true,
+    es2024: true
   },
   parser: 'vue-eslint-parser',
   parserOptions: {
@@ -8,17 +11,15 @@ module.exports = {
     sourceType: 'module'
   },
   plugins: [
-    '@typescript-eslint',
     'import'
   ],
   extends: [
-    'plugin:@typescript-eslint/recommended',
     'plugin:vue/vue3-recommended',
     'eslint:recommended',
     'plugin:import/recommended',
     'plugin:import/typescript',
     'plugin:@intlify/vue-i18n/recommended',
-    '@vue/typescript/recommended'
+    '@vue/eslint-config-typescript'
   ],
   rules: {
     'import/no-unresolved': 'off',
