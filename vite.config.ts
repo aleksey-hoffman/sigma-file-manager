@@ -1,7 +1,6 @@
 import {fileURLToPath, URL} from 'node:url';
 import vuePlugin from '@vitejs/plugin-vue';
 import {defineConfig} from 'vite';
-import eslintPlugin from 'vite-plugin-eslint';
 import stylelintPlugin from 'vite-plugin-stylelint';
 
 export default defineConfig({
@@ -28,10 +27,6 @@ export default defineConfig({
   },
   plugins: [
     vuePlugin(),
-    stylelintPlugin({fix: true}),
-    eslintPlugin({
-      fix: true,
-      include: ['src/**/*.{js,ts,d.ts,jsx,tsx,vue,vue.ts}']
-    })
+    stylelintPlugin({fix: true})
   ]
 });
