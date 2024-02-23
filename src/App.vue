@@ -23,6 +23,7 @@ async function initMainProcessListeners() {
 
 async function init() {
   await userPathsStore.init();
+  await userSettingsStore.init();
   disableWebViewFeatures();
   initMainProcessListeners();
   workspacesStore.preloadDefaultTab();
@@ -32,24 +33,25 @@ init();
 </script>
 
 <template>
-  <VApp :theme-type="userSettingsStore.userSettings.theme.type">
+  <NavSidebar />
+  <div class="app-main">
     <WindowToolbar />
-    <NavSidebar />
     <RouterView />
-  </VApp>
+  </div>
 </template>
 
 <style>
 @import url("./styles/index.css");
 
-.v-main,
-.v-app,
 #app {
+  display: flex;
   height: 100vh;
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground)/ 50%);
 }
 
-.v-main
-  .router-view {
-    height: 100vh;
-  }
+.app-main {
+  width: 100%;
+  height: 100%;
+}
 </style>

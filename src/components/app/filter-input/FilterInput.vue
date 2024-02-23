@@ -172,7 +172,7 @@ function onActivatorClick() {
   }
 
 .filter-input__box:hover {
-  background-color: var(--bg-color);
+  background-color: var(--background);
 }
 
 
@@ -193,13 +193,13 @@ function onActivatorClick() {
   right: 0;
   display: flex;
   align-items: center;
-  background-color: var(--bg-color-darker-1);
+  background-color: var(--background-2);
   gap: 4px;
   transition: background-color 0.3s ease;
 }
 
 .filter-input__box:hover
   .filter-input__buttons {
-    background-color: var(--bg-color);
+    background-color: var(--background);
   }
 </style>

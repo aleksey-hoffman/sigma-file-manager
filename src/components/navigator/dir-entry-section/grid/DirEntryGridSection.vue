@@ -13,7 +13,7 @@ import uniqueId from '@/utils/unique-id';
 import {filterNavigatorView} from '@/utils/view-filter';
 import type {DirEntry, Divider, Spacer} from '@/types/dir-entry';
 import type {Tab} from '@/types/workspaces';
-import type {VirtualEntry} from 'sigma-scrollkit/types/shared';
+import type {VirtualEntry} from 'sigma-scrollkit';
 import type {Ref, Component} from 'vue';
 
 interface Props {

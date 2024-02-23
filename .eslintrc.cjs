@@ -1,6 +1,9 @@
+/* eslint-env node */
 module.exports = {
+  root: true,
   env: {
-    node: true
+    browser: true,
+    es2024: true
   },
   parser: 'vue-eslint-parser',
   parserOptions: {
@@ -8,17 +11,15 @@ module.exports = {
     sourceType: 'module'
   },
   plugins: [
-    '@typescript-eslint',
     'import'
   ],
   extends: [
-    'plugin:@typescript-eslint/recommended',
     'plugin:vue/vue3-recommended',
     'eslint:recommended',
     'plugin:import/recommended',
     'plugin:import/typescript',
     'plugin:@intlify/vue-i18n/recommended',
-    '@vue/typescript/recommended'
+    '@vue/eslint-config-typescript'
   ],
   rules: {
     'import/no-unresolved': 'off',
@@ -79,12 +80,16 @@ module.exports = {
     }],
     '@typescript-eslint/no-explicit-any': ['warn'],
     '@typescript-eslint/brace-style': ['error'],
-    '@typescript-eslint/no-unused-vars': 'error',
+    '@typescript-eslint/no-unused-vars': 'warn',
     'vue/html-indent': 'error',
     'vue/require-default-prop': 'off',
     'vue/multi-word-component-names': 'off',
     'vue/component-api-style': ['error', ['script-setup', 'composition']],
-    'vue/component-name-in-template-casing': ['error', 'PascalCase', {'registeredComponentsOnly': false, ignores: ['i18n-t']}],
+    'vue/component-name-in-template-casing': ['error', 'PascalCase', {
+      'registeredComponentsOnly': false,
+      // Allow namespaced component names, e.g. <Foo.Bar />
+      ignores: ['/^[A-Z][a-zA-Z]*(\\.[A-Z][a-zA-Z]*)*$/']
+    }],
     'vue/max-attributes-per-line': 'error',
     'vue/object-curly-spacing': ['error', 'always'],
     'vue/component-tags-order': ['error', {

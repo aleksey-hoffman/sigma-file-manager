@@ -97,7 +97,7 @@ const menuButtonOnClick = (event: MouseEvent) => {
               v-for="(shortcut, index) in props.tooltipShortcuts"
               :key="index"
             >
-              <span class="inline-code--light">{{ shortcut.value }}</span>
+              <span class="code-inline">{{ shortcut.value }}</span>
               - {{ shortcut.description }}
             </div>
           </div>

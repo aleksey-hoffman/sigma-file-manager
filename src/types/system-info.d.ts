@@ -8,27 +8,18 @@ export interface SystemStats {
   host_name: string;
   kernel_version: string;
   os_version: string;
-}
-
-export interface CpuStats {
-  cpu_brand: string;
-  cpu_threads: number;
+  total_memory: number;
+  available_memory: number;
+  used_memory: number;
 }
 
 export interface StorageStats {
-  type: string;
+  kind: string;
   name: string;
   file_system: string;
   mount_point: string;
-  s_mount_point: string;
   total_space: number;
   available_space: number;
   used_space: number;
   is_removable: boolean;
-}
-
-export interface MemoryStats {
-  total_space: number;
-  available_space: number;
-  used_space: number;
 }

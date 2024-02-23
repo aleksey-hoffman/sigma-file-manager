@@ -11,7 +11,6 @@ mod dev;
 mod fs_api;
 mod listeners;
 mod media_processor;
-mod memory_info;
 mod storage_info;
 mod system_info;
 mod system_tray;
@@ -25,7 +24,6 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             system_info::get_system_stats,
             storage_info::get_storage_stats,
-            memory_info::get_memory_stats,
             fs_api::get_dir_paths,
             fs_api::get_dir_entries,
             fs_api::get_dir_entry,

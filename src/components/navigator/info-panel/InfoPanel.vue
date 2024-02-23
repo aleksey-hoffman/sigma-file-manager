@@ -6,23 +6,19 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <script setup lang="ts">
 import {InfoPanelHeader, InfoPanelPreview, InfoPanelProperties} from '@/components/navigator/info-panel';
 import {useUserSettingsStore} from '@/stores/storage/user-settings';
-import getVar from '@/utils/get-var';
 
 const userSettingsStore = useUserSettingsStore();
 </script>
 
 <template>
-  <VNavigationDrawer
-    v-model="userSettingsStore.userSettings.navigator.infoPanel.show"
-    location="right"
-    permanent
+  <div
+    v-if="userSettingsStore.userSettings.navigator.infoPanel.show"
     class="navigator-info-panel"
-    :width="getVar('info-panel-width-value')"
   >
     <InfoPanelPreview />
     <InfoPanelHeader />
     <InfoPanelProperties />
-  </VNavigationDrawer>
+  </div>
 </template>
 
 <style>

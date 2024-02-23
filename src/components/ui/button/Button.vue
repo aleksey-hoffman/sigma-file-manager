@@ -90,26 +90,9 @@ function onClickHandler (event: MouseEvent) {
         v-for="(shortcut, index) in props.tooltipShortcuts"
         :key="index"
       >
-        <span class="inline-code--light">{{ shortcut.value }}</span>
+        <span class="code-inline">{{ shortcut.value }}</span>
         - {{ shortcut.description }}
       </div>
     </div>
   </VTooltip>
 </template>
-
-<style>
-#app
-  .v-btn {
-    border-radius: 4px;
-  }
-
-#app
-  .v-btn:hover {
-    color: var(--button-bg-color) !important;
-  }
-
-#app
-  .v-btn.button-1 {
-    color: var(--button-1-bg-color) !important;
-  }
-</style>

@@ -3,16 +3,14 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 use serde::Serialize;
-use std::path::PathBuf;
-use sysinfo::{DiskExt, System, SystemExt};
+use sysinfo::Disks;
 
 #[derive(Clone, Serialize)]
 pub struct DiskStats {
-    disk_type: String,
+    kind: String,
     name: String,
     file_system: String,
     mount_point: String,
-    s_mount_point: String,
     total_space: u64,
     available_space: u64,
     used_space: u64,
@@ -22,15 +20,13 @@ pub struct DiskStats {
 lazy_static::lazy_static! {
   pub static ref STORAGE_STATS: Vec<DiskStats> = {
     let mut storage_stats = Vec::new();
-    let sys = System::new_all();
-    for disk in sys.disks() {
-        let mount_point: PathBuf = disk.mount_point().into();
+    let disks = Disks::new_with_refreshed_list();
+    for disk in disks.list() {
         let stats = DiskStats {
-            disk_type: format!("{:?}", disk.type_()),
+            kind: format!("{:?}", disk.kind()),
             name: disk.name().to_string_lossy().to_string(),
-            file_system: String::from_utf8_lossy(disk.file_system()).to_string(),
-            mount_point: mount_point.to_string_lossy().to_string(),
-            s_mount_point: disk.mount_point().to_string_lossy().to_string(),
+            file_system: disk.file_system().to_string_lossy().to_string(),
+            mount_point: disk.mount_point().to_string_lossy().to_string(),
             total_space: disk.total_space(),
             available_space: disk.available_space(),
             used_space: disk.total_space() - disk.available_space(),

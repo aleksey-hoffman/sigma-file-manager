@@ -8,6 +8,7 @@ import {computed} from 'vue';
 import {useRoute} from 'vue-router';
 import {WindowToolbarControls} from '@/components/app/window-toolbar';
 import {TabBar} from '@/components/navigator/tab-bar';
+import {Spacer} from '@/components/ui/spacer';
 import getVar from '@/utils/get-var';
 
 const route = useRoute();
@@ -28,50 +29,31 @@ const windowToolbarBackgroundColor = computed(() => (
 </script>
 
 <template>
-  <VAppBar
-    :height="getVar('window-toolbar-height-value')"
+  <div
     class="window-toolbar"
     :style="{ 'background': windowToolbarBackgroundColor }"
-    flat
   >
     <div
       data-tauri-drag-region
       class="window-toolbar-drag-layer"
     />
     <div class="window-toolbar-action-layer">
-      <div
-        class="nav-panel__menu-icon"
-        :style="{ 'width': getVar('nav-panel-width') }"
-      >
-        <img
-          src="file:///src/assets/icons/logo-32x32.png"
-          width="18px"
-        >
-      </div>
       <TabBar v-if="route.name === 'navigator'" />
-      <VSpacer />
+      <Spacer />
       <WindowToolbarControls />
     </div>
-  </VAppBar>
+  </div>
 </template>
 
 <style>
-#app .window-toolbar {
+.window-toolbar {
   position: relative;
   z-index: 10;
   display: flex;
+  height: var(--window-toolbar-height);
   align-items: center;
-  background: var(--window-toolbar-bg-color);
+  background: transparent;
   transition: background-color 0.2s ease;
-}
-
-.nav-panel__menu-icon {
-  display: flex;
-  width: auto;
-  height: 32px;
-  align-items: center;
-  justify-content: center;
-  border-radius: 4px;
 }
 
 .window-toolbar-drag-layer {

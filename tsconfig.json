@@ -1,23 +1,26 @@
 {
+  "extends": "@vue/tsconfig/tsconfig.dom.json",
+  "include": ["**/*.ts", "**/*.d.ts", "**/*.json", "./src/**/*"],
+  "exclude": ["./src-tauri"],
   "compilerOptions": {
     "baseUrl": "./",
-    "outDir": "./dist",
-    "target": "esnext",
-    "module": "esnext",
-    "moduleResolution": "node",
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
     "jsx": "preserve",
+    "noEmit": true,
+    "allowJs": true,
     "noImplicitAny": false,
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
     "esModuleInterop": true,
-    "sourceMap": true,
     "strict": true,
     "skipLibCheck": true,
+    "composite": true,
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
     "paths": {
       "@/*": ["./src/*"]
     },
-    "lib": ["esnext", "dom"],
-  },
-  "include": ["**/*.json", "**/*.ts", "**/*.d.ts", "**/*.tsx", "**/*.vue", "**/*.vue.ts"],
-  "exclude": ["./src-tauri"]
+  }
 }

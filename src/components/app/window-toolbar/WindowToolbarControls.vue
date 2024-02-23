@@ -57,11 +57,11 @@ const controlButtons = ref([
   height: 100%;
   align-items: center;
   justify-content: center;
-  background-color: var(--control-button-bg-color);
+  background-color: transparent;
   cursor: pointer;
 }
 
 .window-toolbar-control-button:hover {
-  background-color: var(--control-button-bg-color-hover);
+  background-color: hsl(var(--primary) / 5%);
 }
 </style>

@@ -6,12 +6,9 @@ import cloneDeep from 'lodash.clonedeep';
 import {defineStore} from 'pinia';
 import {Store as Storage} from 'tauri-plugin-store-api';
 import {ref} from 'vue';
-import {useTheme} from 'vuetify';
-import type {UserSettings, LocalizationLanguage} from '@/types/user-settings';
+import type {UserSettings, LocalizationLanguage, Theme} from '@/types/user-settings';
 
 export const useUserSettingsStore = defineStore('userSettings', () => {
-  const appTheme = useTheme();
-
   const userSettingsStorage = ref<Storage | null>(null);
   const userSettingsDefault = ref<UserSettings | null>();
   const userSettings = ref<UserSettings>({
@@ -21,9 +18,7 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
       isCorrected: true,
       isRtl: false
     },
-    theme: {
-      type: 'dark'
-    },
+    theme: 'dark',
     transparentToolbars: false,
     dateTime: {
       month: 'short',
@@ -94,15 +89,28 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
     }
   }
 
-  async function changeLanguage(newLanguage: LocalizationLanguage) {
+  async function setLanguage(newLanguage: LocalizationLanguage) {
     userSettings.value.language = newLanguage;
     await setUserSettingsStorage('language', newLanguage);
   }
 
-  async function changeTheme() {
-    userSettings.value.theme.type = userSettings.value.theme.type === 'dark' ? 'light' : 'dark';
-    appTheme.global.name.value = appTheme.global.name.value === 'dark' ? 'light' : 'dark';
-    await setUserSettingsStorage('theme', userSettings.value.theme.type);
+  async function setTheme(theme?: Theme) {
+    userSettings.value.theme = theme ?? 'dark';
+    const root = window.document.documentElement;
+
+    root.classList.remove('light', 'dark');
+
+    if (userSettings.value.theme === 'system') {
+      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)')
+        .matches
+        ? 'dark'
+        : 'light';
+      root.classList.add(systemTheme);
+    }
+
+    root.classList.add(userSettings.value.theme);
+
+    await setUserSettingsStorage('theme', userSettings.value.theme);
   }
 
   async function toggleInfoPanel() {
@@ -113,16 +121,16 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
   async function init() {
     await initUserSettings();
     await loadUserSettings();
+    setTheme();
   }
-
-  init();
 
   return {
     userSettings,
     userSettingsDefault,
+    init,
     setUserSettingsStorage,
-    changeLanguage,
-    changeTheme,
+    setLanguage,
+    setTheme,
     toggleInfoPanel
   };
 });
