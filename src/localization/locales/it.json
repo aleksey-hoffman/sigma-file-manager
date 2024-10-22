@@ -541,7 +541,7 @@
     "stars": "Stella | {n}"
   },
   "settingsTabs": {
-    "general": "Generalw",
+    "general": "Generale",
     "uiAppearance": "Aspetto UI",
     "shortcuts": "Scorciatoie",
     "performance": "Prestazioni",
@@ -1228,7 +1228,7 @@
       "openProgramEditor": "Aprire l'editor del programma",
       "addProgram": "Aggiungi programma",
       "tags": "Tag",
-      "protectItem": "Progetti elemento",
+      "protectItem": "Proteggi elemento",
       "protectedListDescription": "Se abilitato, l'elemento verrà aggiunto all'elenco protetto. Sarà protetto dalla modifica / eliminazione solo da questa applicazione. Altre app possono comunque modificarlo / eliminarlo",
       "addToPinned": "Aggiungi agli appuntati",
       "pinnedItemsLocation": "Gli elementi appuntati si trovano nella pagina della dashboard",
