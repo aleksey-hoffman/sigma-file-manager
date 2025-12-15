@@ -20,7 +20,12 @@
   "language": {
     "language": "Ngôn ngữ",
     "isCorrectedLanguage": "Bản dịch đã được xem xét và sửa chữa bởi một người bản ngữ",
-    "isAutoTranslatedLanguage": "Tự động dịch. Cần được xem xét và sửa chữa bởi một người nói ngôn ngữ bản địa"
+    "isAutoTranslatedLanguage": "Tự động dịch. Cần được xem xét và sửa chữa bởi một người nói ngôn ngữ bản địa",
+    "loadRemoteTranslations": "Tải bản dịch từ xa",
+    "autoFetch": "Cập nhật dịch tự động",
+    "fetchLatestTranslationsTitle": "Tự động tải các bản dịch mới nhất từ kho dự án",
+    "autoFetchTranslationsOnAppLoad": "Mỗi khi ứng dụng được mở từ trạng thái đóng hoàn toàn",
+    "autoFetchTranslationsPeriodically": "Định kỳ (mỗi giờ)"
   },
   "placeholders": {
     "noDrivesFound": "Không tìm thấy ổ đĩa",
@@ -157,8 +162,7 @@
     "dirItem": {
       "score": "điểm",
       "itemIsInaccessible": "Mục không thể truy cập được"
-    },
-    "toggleSplitView": "Chuyển đổi chế độ xem chia đôi"
+    }
   },
   "dashboard": {
     "pinnedWillBeShownHere": "Các mục thư mục được ghim sẽ được hiển thị ở đây",
@@ -341,8 +345,8 @@
       "none": "Không có",
       "minimal": "Tối thiểu",
       "homePageItemCardDesign": "Thiết kế thẻ mục trang chủ",
-      "infusiveExtruded": "Hiện tượng tiêm | hình bóng",
-      "infusiveFlatGlow": "Hiện tượng tiêm | mặt phẳng",
+      "neoinfusiveExtruded": "tân truyền | ép đùn",
+      "neoinfusiveFlatGlow": "Neoinfusive | phát sáng phẳng",
       "dashboardOptions": "Tùy chọn bảng điều khiển",
       "showTimeline": "Hiển thị dòng thời gian",
       "homePageCards": "Thẻ trang chủ",
@@ -516,6 +520,18 @@
       "storeTheDateOpeningDirectoryItem": "Lưu trữ ngày mở một mục thư mục",
       "statisticsLocationDescription": "Dữ liệu thống kê được lưu trữ trong tệp có tên \"stats.json\" nằm trong thư mục ứng dụng.",
       "openFileLocation": "Mở vị trí file"
+    },
+    "advanced": {
+      "advancedSettings": "Cài đặt nâng cao",
+      "description": "Những cài đặt này chủ yếu dành cho lập trình viên và người dùng nâng cao",
+      "terminal": {
+        "description": "Terminal để mở thư mục",
+        "adminDescription": "Terminal quản trị để mở thư mục"
+      },
+      "shell": {
+        "description": "Shell để mở thư mục",
+        "adminDescription": "Shell quản trị để mở thư mục"
+      }
     }
   },
   "projectGithubButtons": {
@@ -534,7 +550,8 @@
     "input": "Đầu vào",
     "search": "Tìm kiếm",
     "dataStorage": "Dữ liệu & lưu trữ",
-    "stats": "Số liệu thống kê"
+    "stats": "Số liệu thống kê",
+    "advanced": "Nâng cao"
   },
   "settingsTags": {
     "language": "ngôn ngữ",
@@ -565,7 +582,8 @@
     "dataBackupReminder": "dữ liệu, lưu trữ, sao lưu",
     "driveDetection": "ổ đĩa, usb, lưu trữ, đĩa, thiết bị, phát hiện, kết nối",
     "imageThumbnails": "hình ảnh, hình ảnh, hình thu nhỏ, giới hạn, lưu trữ, tài nguyên, cách sử dụng, hiệu suất",
-    "directoryItemStatistics": "thư mục, mục, thống kê, thống kê, dữ liệu, lưu trữ, sử dụng"
+    "directoryItemStatistics": "thư mục, mục, thống kê, thống kê, dữ liệu, lưu trữ, sử dụng",
+    "advanced": "nâng cao, chuyên nghiệp, nhà phát triển, đầu cuối, shell"
   },
   "dataBackupReminder": {
     "title": "Lời nhắc: sao lưu dữ liệu",
@@ -575,9 +593,9 @@
   "drag": {
     "hitButtonToCancel": "Nhấn nút [Esc] hoặc nhấp vào đây để hủy",
     "holdShiftToChangeMode": "Giữ [Shift] để thay đổi chế độ",
-    "dragDrop": "Kéo thả",
-    "customImageOrVideoHere": "hình ảnh hoặc video tùy chỉnh tại đây",
-    "acceptsFileImageVideo": "Chấp nhận: tệp (hình ảnh, video)",
+    "dragDrop": "Thả tệp hoặc nhấp vào đây",
+    "customImageOrVideoHere": "để thêm hình nền tùy chỉnh",
+    "acceptsFileImageVideo": "Chấp nhận: các tệp hình ảnh và video cục bộ",
     "dropHereToCopyIntoTheCurrentDirectory": "Thả vào đây để sao chép vào thư mục hiện tại",
     "dropHereToMoveIntoTheCurrentDirectory": "Thả vào đây để di chuyển vào thư mục hiện tại",
     "dropHereToDownloadIntoTheCurrentDirectory": "Thả vào đây để tải xuống thư mục hiện tại",
@@ -597,17 +615,17 @@
     "columnType": "Loại cột",
     "typeTitles": {
       "name": "Tên",
-      "dateModified": "Ngày sửa đổi",
-      "dateAccessed": "Ngày truy cập",
+      "dateModifiedContents": "Ngày sửa đổi nội dung",
+      "dateModifiedMeta": "Ngày sửa đổi meta",
       "dateCreated": "Ngày tạo",
       "itemsSize": "Mặt hàng / kích thước",
       "status": "Tình trạng"
     },
     "typeShortTitles": {
       "name": "Tên",
-      "dateModified": "Đã sửa đổi",
-      "dateAccessed": "Đã truy cập",
-      "dateCreated": "Đã tạo",
+      "dateModifiedContents": "Nội dung đã sửa đổi",
+      "dateModifiedMeta": "Meta đã sửa đổi",
+      "dateCreated": "Tạo",
       "itemsSize": "Mặt hàng / kích thước",
       "status": "Tình trạng"
     }
@@ -822,6 +840,8 @@
       "convertMarkdownWhileTyping": "Chuyển đổi cú pháp đánh dấu cơ bản thành HTML trong khi nhập",
       "structure": "Cấu trúc",
       "chars": "Ký tự",
+      "created": "Tạo",
+      "modified": "Đã sửa đổi",
       "markdownShortcuts": "Phím tắt đánh dấu",
       "withTheCursorOnANewLineType": "Với con trỏ trên một dòng mới, hãy nhập trình tự đã chỉ định để thêm phần tử tương ứng.",
       "tips": "Lời khuyên",
@@ -1053,6 +1073,50 @@
         "typeInAddressManually": "Nhập địa chỉ theo cách thủ công",
         "buttonInTheAddressBarMenu": "nút trong menu thanh địa chỉ nằm trên thanh hành động trên trang \"Navigator\"."
       }
+    },
+    "trashCurrentDir": {
+      "title": "Trashing current directory",
+      "description": "Selected items include the currently opened directory.",
+      "confirm": "Confirm, if this was intentional and you want to send it to trash.",
+      "trash": "Trash"
+    },
+    "trashProtected": {
+      "title": "Trashing protected",
+      "description": "Selected items include {count} protected items.",
+      "confirm": "Confirm, if you want to send them to trash.",
+      "trashUnprotected": "Trash unprotected",
+      "trashAll": "Trash all"
+    },
+    "deleteProtected": {
+      "title": "Deleting protected",
+      "description": "Selected items include {count} protected items.",
+      "confirm": "Confirm, if you want to delete them.",
+      "deleteUnprotected": "Delete unprotected",
+      "deleteAll": "Delete all"
+    },
+    "deleteIrreversibly": {
+      "title": "Deleting from drive",
+      "description": "This operation will permanently delete {count} items from your computer.",
+      "confirm": "Confirm, if you understand this cannot be undone.",
+      "delete": "Delete"
+    },
+    "deleteCurrentDir": {
+      "title": "Deleting current directory",
+      "description": "Selected items include the currently opened directory.",
+      "confirm": "Confirm, if this was intentional and you want to delete it.",
+      "delete": "Delete"
+    },
+    "deleteInRoot": {
+      "title": "Deleting root items",
+      "description": "Deleting system files in storage root might break the computer's operating system.",
+      "confirm": "Confirm, if you know what you are deleting.",
+      "delete": "Delete"
+    },
+    "trashInRoot": {
+      "title": "Trashing root items",
+      "description": "Deleting system files in storage root might break the computer's operating system.",
+      "confirm": "Confirm, if you know what you are deleting.",
+      "trash": "Trash"
     }
   },
   "notifications": {
@@ -1103,6 +1167,8 @@
     "removedNItemsOfTotal": "{removedAmount} của {totalAmount}",
     "trashedNItemsOfTotal": "Đã xóa vào thùng rác {removedAmount} trong số {totalAmount} mục",
     "deletedNItemsOfTotal": "Đã xóa {removedAmount} trong số {totalAmount} mục",
+    "trashedNItems": "Đã xóa vào thùng rác {totalAmount} mục",
+    "deletedNItems": "Đã xóa {totalAmount} mục",
     "couldNotTrash": "Không thể đổ rác",
     "failedToDeleteSomeItems": "Không thể xóa một số mục",
     "couldNotDelete": "Không thể xóa",
@@ -1152,7 +1218,8 @@
     "driveWasConnected": "Ổ đĩa đã được kết nối",
     "driveScanInitiated": "Đã bắt đầu quét ổ đĩa",
     "oneOfTheSearchFilesIsDamaged": "Một trong các tệp tìm kiếm bị hỏng",
-    "workspaceAdded": "Không gian làm việc đã được thêm vào"
+    "workspaceAdded": "Không gian làm việc đã được thêm vào",
+    "failedToFetchInstalledTerminals": "Không thể tải các terminal đã cài đặt"
   },
   "contextMenus": {
     "dirItem": {
@@ -1160,7 +1227,7 @@
       "goBackToMainMenu": "Quay lại menu chính",
       "openProgramEditor": "Mở trình chỉnh sửa chương trình",
       "addProgram": "Thêm chương trình",
-      "colorTags": "Thẻ màu",
+      "tags": "Thẻ",
       "protectItem": "Bảo vệ vật phẩm",
       "protectedListDescription": "Nếu được bật, mục sẽ được thêm vào danh sách được bảo vệ. Mục này sẽ được bảo vệ khỏi bị sửa đổi/xóa chỉ trong ứng dụng này. Các ứng dụng khác vẫn có thể sửa đổi/xóa mục đó.",
       "addToPinned": "Thêm vào đã ghim",
@@ -1281,6 +1348,9 @@
   "getSize": "Nhận kích thước",
   "path": "Đường dẫn",
   "realPath": "Liên kết đường dẫn mục tiêu",
+  "created": "Tạo",
+  "modified": "Nội dung đã sửa đổi",
+  "changed": "Meta đã sửa đổi",
   "protected": "Được bảo vệ",
   "pinned": "Đã ghim",
   "timeline": "Mốc thời gian",
@@ -1343,5 +1413,7 @@
   "closedCaptions": "phụ đề chi tiết",
   "protectedItemsShort": "được bảo vệ",
   "pinnedItemsShort": "Đính kèm",
-  "freeOf": "miễn phí của"
+  "freeOf": "miễn phí của",
+  "terminal": "Đầu cuối",
+  "conflict": "Xung đột"
 }

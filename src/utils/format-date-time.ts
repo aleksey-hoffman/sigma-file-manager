@@ -6,18 +6,47 @@ import dayjs from 'dayjs';
 import dayjsCustomParseFormat from 'dayjs/plugin/customParseFormat';
 import dayjsDuration from 'dayjs/plugin/duration';
 
+import 'dayjs/locale/en';
+import 'dayjs/locale/ru';
+import 'dayjs/locale/es';
+import 'dayjs/locale/de';
+import 'dayjs/locale/fr';
+import 'dayjs/locale/tr';
+import 'dayjs/locale/ja';
+import 'dayjs/locale/fa';
+import 'dayjs/locale/zh-cn';
+import 'dayjs/locale/vi';
+
+import type { languages } from '@/localization/data';
+
 dayjs.extend(dayjsCustomParseFormat);
 dayjs.extend(dayjsDuration);
 
-export default async function formatDateTime (date: Date, format: string, locale = 'en'): Promise<string> {
+type AppLocale = (typeof languages)[number]['locale'];
+
+const localeMapping: Record<AppLocale, string> = {
+  en: 'en',
+  ru: 'ru',
+  es: 'es',
+  de: 'de',
+  fr: 'fr',
+  tr: 'tr',
+  ja: 'ja',
+  fa: 'fa',
+  ch: 'zh-cn',
+  vi: 'vi',
+};
+
+export default function formatDateTime(date: Date, format: string, locale: AppLocale = 'en'): string {
   if (!date) {
     return '';
   }
 
   try {
-    let _locale = await import(`dayjs/locale/${locale}`);
-    return dayjs(date).locale(_locale).format(format);
-  } catch (error) {
+    const dayjsLocale = localeMapping[locale] || 'en';
+    return dayjs(date).locale(dayjsLocale).format(format);
+  }
+  catch (error) {
     return '';
   }
 }

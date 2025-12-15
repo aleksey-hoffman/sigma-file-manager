@@ -20,7 +20,12 @@
   "language": {
     "language": "Idioma",
     "isCorrectedLanguage": "La traducción fue revisada y corregida por un hablante nativo",
-    "isAutoTranslatedLanguage": "Traducción automática. Necesita ser revisada y corregida por un hablante nativo de la lengua."
+    "isAutoTranslatedLanguage": "Traducción automática. Necesita ser revisada y corregida por un hablante nativo de la lengua.",
+    "loadRemoteTranslations": "Cargar traducciones remotas",
+    "autoFetch": "Actualizaciones automáticas de traducción",
+    "fetchLatestTranslationsTitle": "Obtener automáticamente las últimas traducciones del repositorio del proyecto",
+    "autoFetchTranslationsOnAppLoad": "Cada vez que la aplicación se abre desde un estado completamente cerrado",
+    "autoFetchTranslationsPeriodically": "Periódicamente (cada hora)"
   },
   "placeholders": {
     "noDrivesFound": "No se encontraron unidades",
@@ -157,8 +162,7 @@
     "dirItem": {
       "score": "puntaje",
       "itemIsInaccessible": "El artículo es inaccesible"
-    },
-    "toggleSplitView": "Alternar vista dividida"
+    }
   },
   "dashboard": {
     "pinnedWillBeShownHere": "Los elementos del directorio anclados se mostrarán aquí",
@@ -341,8 +345,8 @@
       "none": "Ninguno",
       "minimal": "Mínimo",
       "homePageItemCardDesign": "Diseño de tarjeta de elemento de página de inicio",
-      "infusiveExtruded": "Infusivo | cóncavo",
-      "infusiveFlatGlow": "Infusivo | plano",
+      "neoinfusiveExtruded": "Neoinfusivo | extruido",
+      "neoinfusiveFlatGlow": "Neoinfusivo | brillo plano",
       "dashboardOptions": "Opciones del panel",
       "showTimeline": "Mostrar línea de tiempo",
       "homePageCards": "Tarjetas de la página de inicio",
@@ -516,6 +520,18 @@
       "storeTheDateOpeningDirectoryItem": "Almacenar la fecha de apertura de un elemento del directorio",
       "statisticsLocationDescription": "Los datos estadísticos se almacenan en el archivo llamado \"stats.json\" ubicado en el directorio de la aplicación.",
       "openFileLocation": "Abrir localización de archivo"
+    },
+    "advanced": {
+      "advancedSettings": "Configuraciones avanzadas",
+      "description": "Estas configuraciones son principalmente para programadores y usuarios avanzados",
+      "terminal": {
+        "description": "Terminal para abrir directorios",
+        "adminDescription": "Terminal de administrador para abrir directorios"
+      },
+      "shell": {
+        "description": "Shell para abrir directorios",
+        "adminDescription": "Shell de administrador para abrir directorios"
+      }
     }
   },
   "projectGithubButtons": {
@@ -534,7 +550,8 @@
     "input": "Aporte",
     "search": "Buscar",
     "dataStorage": "Almacenamiento de datos",
-    "stats": "Estadísticas"
+    "stats": "Estadísticas",
+    "advanced": "Avanzado"
   },
   "settingsTags": {
     "language": "idioma",
@@ -565,7 +582,8 @@
     "dataBackupReminder": "datos, almacenamiento, copia de seguridad",
     "driveDetection": "unidad, usb, almacenamiento, disco, dispositivo, detección, conexión",
     "imageThumbnails": "imagen, imagen, miniaturas, límite, almacenamiento, recursos, uso, rendimiento",
-    "directoryItemStatistics": "directorio, elemento, estadísticas, estadísticas, datos, almacenamiento, uso"
+    "directoryItemStatistics": "directorio, elemento, estadísticas, estadísticas, datos, almacenamiento, uso",
+    "advanced": "avanzado, pro, desarrollador, terminal, shell"
   },
   "dataBackupReminder": {
     "title": "Recordatorio: copia de seguridad de datos",
@@ -575,9 +593,9 @@
   "drag": {
     "hitButtonToCancel": "Presione el botón [Esc] o haga clic aquí para cancelar",
     "holdShiftToChangeMode": "Mantén presionado [Shift] para cambiar de modo",
-    "dragDrop": "Arrastrar y soltar",
-    "customImageOrVideoHere": "imagen o video personalizado aquí",
-    "acceptsFileImageVideo": "Acepta: archivo (imagen, video)",
+    "dragDrop": "Suelta archivos o haz clic aquí",
+    "customImageOrVideoHere": "para agregar fondos personalizados",
+    "acceptsFileImageVideo": "Acepta: archivos de imagen y video locales",
     "dropHereToCopyIntoTheCurrentDirectory": "Soltar aquí para copiar en el directorio actual",
     "dropHereToMoveIntoTheCurrentDirectory": "Soltar aquí para pasar al directorio actual",
     "dropHereToDownloadIntoTheCurrentDirectory": "Suelte aquí para descargar en el directorio actual",
@@ -597,16 +615,16 @@
     "columnType": "Tipo de columna",
     "typeTitles": {
       "name": "Nombre",
-      "dateModified": "Fecha modificada",
-      "dateAccessed": "Fecha de acceso",
-      "dateCreated": "Fecha de creación",
+      "dateModifiedContents": "Fecha de modificación del contenido",
+      "dateModifiedMeta": "Meta metafecha de modificación",
+      "dateCreated": "Fecha de creacion",
       "itemsSize": "Artículos / tamaño",
       "status": "Estado"
     },
     "typeShortTitles": {
       "name": "Nombre",
-      "dateModified": "Modificado",
-      "dateAccessed": "Accedido",
+      "dateModifiedContents": "Contenidos modificados",
+      "dateModifiedMeta": "Meta modificado",
       "dateCreated": "Creado",
       "itemsSize": "Artículos / tamaño",
       "status": "Estado"
@@ -822,6 +840,8 @@
       "convertMarkdownWhileTyping": "Convierta la sintaxis básica de rebajas en HTML mientras escribe",
       "structure": "Estructura",
       "chars": "caracteres",
+      "created": "Creado",
+      "modified": "Modificado",
       "markdownShortcuts": "Atajos de Markdown",
       "withTheCursorOnANewLineType": "Con el cursor en una nueva línea, escriba la secuencia especificada para agregar el elemento correspondiente.",
       "tips": "Consejos",
@@ -1053,6 +1073,50 @@
         "typeInAddressManually": "Escriba la dirección manualmente",
         "buttonInTheAddressBarMenu": "botón en el menú de la barra de direcciones, que se encuentra en la barra de acción en la página \"Navegador\"."
       }
+    },
+    "trashCurrentDir": {
+      "title": "Trashing current directory",
+      "description": "Selected items include the currently opened directory.",
+      "confirm": "Confirm, if this was intentional and you want to send it to trash.",
+      "trash": "Trash"
+    },
+    "trashProtected": {
+      "title": "Trashing protected",
+      "description": "Selected items include {count} protected items.",
+      "confirm": "Confirm, if you want to send them to trash.",
+      "trashUnprotected": "Trash unprotected",
+      "trashAll": "Trash all"
+    },
+    "deleteProtected": {
+      "title": "Deleting protected",
+      "description": "Selected items include {count} protected items.",
+      "confirm": "Confirm, if you want to delete them.",
+      "deleteUnprotected": "Delete unprotected",
+      "deleteAll": "Delete all"
+    },
+    "deleteIrreversibly": {
+      "title": "Deleting from drive",
+      "description": "This operation will permanently delete {count} items from your computer.",
+      "confirm": "Confirm, if you understand this cannot be undone.",
+      "delete": "Delete"
+    },
+    "deleteCurrentDir": {
+      "title": "Deleting current directory",
+      "description": "Selected items include the currently opened directory.",
+      "confirm": "Confirm, if this was intentional and you want to delete it.",
+      "delete": "Delete"
+    },
+    "deleteInRoot": {
+      "title": "Deleting root items",
+      "description": "Deleting system files in storage root might break the computer's operating system.",
+      "confirm": "Confirm, if you know what you are deleting.",
+      "delete": "Delete"
+    },
+    "trashInRoot": {
+      "title": "Trashing root items",
+      "description": "Deleting system files in storage root might break the computer's operating system.",
+      "confirm": "Confirm, if you know what you are deleting.",
+      "trash": "Trash"
     }
   },
   "notifications": {
@@ -1101,6 +1165,8 @@
     "removedNItemsOfTotal": "{removedAmount} de {totalAmount}",
     "trashedNItemsOfTotal": "Eliminados {removedAmount} de {totalAmount} elementos",
     "deletedNItemsOfTotal": "Borrados {removedAmount} de {totalAmount} elementos",
+    "trashedNItems": "Eliminados {totalAmount} elementos",
+    "deletedNItems": "Borrados {totalAmount} elementos",
     "trashed": "Eliminado",
     "deleted": "Borrado",
     "couldNotTrash": "No se pudo desechar",
@@ -1152,7 +1218,8 @@
     "driveWasConnected": "La unidad estaba conectada",
     "driveScanInitiated": "Escaneo de unidad iniciado",
     "oneOfTheSearchFilesIsDamaged": "Uno de los archivos de búsqueda está dañado",
-    "workspaceAdded": "Se ha añadido el espacio de trabajo"
+    "workspaceAdded": "Se ha añadido el espacio de trabajo",
+    "failedToFetchInstalledTerminals": "Error al buscar los terminales instalados"
   },
   "contextMenus": {
     "dirItem": {
@@ -1160,7 +1227,7 @@
       "goBackToMainMenu": "Volver al menú principal",
       "openProgramEditor": "Abrir editor de programas",
       "addProgram": "Añadir programa",
-      "colorTags": "Etiquetas de colores",
+      "tags": "Etiquetas",
       "protectItem": "Proteger elemento",
       "protectedListDescription": "Si está habilitado, el elemento se agregará a la lista protegida. Estará protegido para que no se modifique o elimine solo desde esta aplicación. Otras aplicaciones aún pueden modificarlo o eliminarlo",
       "addToPinned": "Añadir a anclado",
@@ -1281,6 +1348,9 @@
   "getSize": "Obtener tamaño",
   "path": "Camino",
   "realPath": "Ruta de destino del enlace",
+  "created": "Creado",
+  "modified": "Contenidos modificados",
+  "changed": "Meta modificado",
   "protected": "Protegido",
   "pinned": "fijado",
   "timeline": "Cronología",
@@ -1343,5 +1413,7 @@
   "closedCaptions": "subtítulos",
   "protectedItemsShort": "Protegido",
   "pinnedItemsShort": "Adjunto",
-  "freeOf": "libre de"
+  "freeOf": "libre de",
+  "terminal": "Terminal",
+  "conflict": "Conflicto"
 }

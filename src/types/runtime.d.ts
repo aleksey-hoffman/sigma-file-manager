@@ -4,11 +4,11 @@
 
 export type Runtime = {
   navigator: Navigator;
-}
+};
 
 export type Navigator = {
   infoPanel: NavigatorInfoPanel;
-}
+};
 
 export type NavigatorInfoPanel = {
   properties: NavigatorInfoPanelProperty[];

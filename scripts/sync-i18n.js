@@ -2,13 +2,13 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-import {messages} from 'src/localization/data';
+import { messages } from 'src/localization/data';
 import fs from 'node:fs';
 import path from 'node:path';
 
 const localeDirPath = path.resolve('src/localization/messages');
 
-async function syncFiles () {
+async function syncFiles() {
   for (const locale in messages) {
     if (locale !== 'en') {
       let otherLocaleData = messages[locale];
@@ -17,9 +17,11 @@ async function syncFiles () {
       const otherLocalePath = path.join(localeDirPath, `${locale}.json`);
 
       let currentState = {};
+
       try {
         currentState = JSON.parse(fs.readFileSync(otherLocalePath, 'utf8'));
-      } catch (error) {
+      }
+      catch (error) {
         console.error(`Error reading file ${otherLocalePath}:`, error);
       }
 
@@ -30,25 +32,29 @@ async function syncFiles () {
   }
 }
 
-function addMissingKeys (enLocale, otherLocale) {
+function addMissingKeys(enLocale, otherLocale) {
   for (const key in enLocale) {
     if (!otherLocale[key]) {
       otherLocale[key] = enLocale[key];
-    } else if (typeof enLocale[key] === 'object') {
+    }
+    else if (typeof enLocale[key] === 'object') {
       addMissingKeys(enLocale[key], otherLocale[key]);
     }
   }
+
   return otherLocale;
 }
 
-function removeUneededKeys (enLocale, otherLocale) {
+function removeUneededKeys(enLocale, otherLocale) {
   for (const key in otherLocale) {
     if (!enLocale[key]) {
       delete otherLocale[key];
-    } else if (typeof otherLocale[key] === 'object') {
+    }
+    else if (typeof otherLocale[key] === 'object') {
       removeUneededKeys(enLocale[key], otherLocale[key]);
     }
   }
+
   return otherLocale;
 }
 

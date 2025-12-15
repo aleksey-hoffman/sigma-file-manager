@@ -1,183 +1,42 @@
 {
-  "$schema": "../node_modules/@tauri-apps/cli/schema.json",
+  "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
+  "productName": "sigma-file-manager",
+  "version": "0.1.0",
+  "identifier": "com.sigma-file-manager.app",
   "build": {
-    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist",
+    "devUrl": "http://localhost:1420",
     "beforeDevCommand": "npm run dev",
-    "devPath": "http://localhost:5180",
-    "distDir": "../dist"
+    "beforeBuildCommand": "npm run build"
   },
-  "package": {
-    "productName": "Sigma File Manager v2",
-    "version": "../package.json"
-  },
-  "tauri": {
-    "bundle": {
-      "active": true,
-      "identifier": "com.alekseyhoffman.sigma-file-manager-v2",
-      "category": "Productivity",
-      "copyright": "Copyright © 2021 - present Aleksey Hoffman",
-      "shortDescription": "File manager",
-      "longDescription": "\"Sigma File Manager\" is a free, open-source, quickly evolving, modern file manager (explorer / browser) app for Windows and Linux.",
-      "icon": [
-        "icons/32x32.png",
-        "icons/128x128.png",
-        "icons/128x128@2x.png",
-        "icons/icon.icns",
-        "icons/icon.ico"
-      ],
-      "resources": [],
-      "externalBin": [],
-      "targets": [
-        "nsis",
-        "deb",
-        "appimage",
-        "app",
-        "dmg",
-        "updater"
-      ],
-      "windows": {
-        "certificateThumbprint": null,
-        "digestAlgorithm": "sha256",
-        "timestampUrl": "",
-        "nsis": {
-          "installerIcon": "icons/icon.ico"
-        }
-      },
-      "deb": {
-        "depends": []
-      },
-      "macOS": {
-        "entitlements": null,
-        "exceptionDomain": "",
-        "frameworks": [],
-        "providerShortName": null,
-        "signingIdentity": null
-      }
-    },
-    "security": {
-      "csp": null
-    },
-    "allowlist": {
-      "all": false,
-      "app": {
-        "all": false,
-        "hide": true,
-        "show": true
-      },
-      "clipboard": {
-        "all": false,
-        "readText": true,
-        "writeText": true
-      },
-      "dialog": {
-        "all": false,
-        "ask": true,
-        "confirm": true,
-        "message": true,
-        "open": true,
-        "save": true
-      },
-      "fs": {
-        "all": false,
-        "copyFile": true,
-        "createDir": true,
-        "exists": true,
-        "readDir": true,
-        "readFile": true,
-        "removeDir": true,
-        "removeFile": true,
-        "renameFile": true,
-        "scope": [
-          "**"
-        ],
-        "writeFile": true
-      },
-      "globalShortcut": {
-        "all": true
-      },
-      "http": {
-        "all": false,
-        "request": true,
-        "scope": []
-      },
-      "notification": {
-        "all": true
-      },
-      "os": {
-        "all": true
-      },
-      "path": {
-        "all": true
-      },
-      "process": {
-        "all": false,
-        "exit": true,
-        "relaunch": true
-      },
-      "protocol": {
-        "all": false,
-        "asset": true,
-        "assetScope": [
-          "**"
-        ]
-      },
-      "shell": {
-        "all": false,
-        "execute": true,
-        "open": true,
-        "scope": [],
-        "sidecar": true
-      },
-      "window": {
-        "all": false,
-        "center": true,
-        "close": true,
-        "create": true,
-        "hide": true,
-        "maximize": true,
-        "minimize": true,
-        "print": true,
-        "requestUserAttention": true,
-        "setAlwaysOnTop": true,
-        "setClosable": true,
-        "setCursorGrab": true,
-        "setCursorIcon": true,
-        "setCursorPosition": true,
-        "setCursorVisible": true,
-        "setDecorations": true,
-        "setFocus": true,
-        "setFullscreen": true,
-        "setIcon": true,
-        "setIgnoreCursorEvents": true,
-        "setMaxSize": true,
-        "setMaximizable": true,
-        "setMinSize": true,
-        "setMinimizable": true,
-        "setPosition": true,
-        "setResizable": true,
-        "setSize": true,
-        "setSkipTaskbar": true,
-        "setTitle": true,
-        "show": true,
-        "startDragging": true,
-        "unmaximize": true,
-        "unminimize": true
-      }
-    },
+  "app": {
     "windows": [
       {
-        "title": "Sigma File Manager v2",
+        "label": "main",
+        "title": "sigma-file-manager",
         "width": 1280,
         "height": 720,
         "minWidth": 500,
         "minHeight": 300,
-        "fullscreen": false,
         "resizable": true,
-        "decorations": false
+        "fullscreen": false,
+        "decorations": false,
+        "shadow": true
       }
     ],
-    "systemTray": {
-      "iconPath": "icons/icon.png"
+    "security": {
+      "csp": null
     }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ]
   }
 }

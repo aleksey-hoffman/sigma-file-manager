@@ -2,37 +2,41 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-import Home from '@/pages/home';
+import HomePage from '@/modules/home/pages/home.vue';
+import {
+  BlocksIcon, FolderClosedIcon, HomeIcon, LayoutDashboardIcon, SettingsIcon, XIcon,
+} from 'lucide-vue-next';
+import type { RouteRecordRaw } from 'vue-router';
 
-export const routes = [
+export const routes: Array<RouteRecordRaw & { icon: typeof XIcon }> = [
   {
     path: '/',
     name: 'home',
-    icon: 'material-symbols:grid-on-sharp',
-    component: Home
+    icon: HomeIcon,
+    component: HomePage,
   },
   {
     path: '/navigator',
     name: 'navigator',
-    icon: 'material-symbols:folder-outline-rounded',
-    component: () => import('@/pages/navigator')
+    icon: FolderClosedIcon,
+    component: () => import('@/modules/navigator/pages/navigator.vue'),
   },
   {
     path: '/dashboard',
     name: 'dashboard',
-    icon: 'mdi-bookmark-multiple-outline',
-    component: () => import('@/pages/dashboard')
+    icon: LayoutDashboardIcon,
+    component: () => import('@/modules/dashboard/pages/dashboard.vue'),
   },
   {
     path: '/settings',
     name: 'settings',
-    icon: 'carbon:settings',
-    component: () => import('@/pages/settings')
+    icon: SettingsIcon,
+    component: () => import('@/modules/settings/pages/settings.vue'),
   },
   {
     path: '/extensions',
     name: 'extensions',
-    icon: 'mdi:view-grid-plus-outline',
-    component: () => import('@/pages/extensions')
-  }
+    icon: BlocksIcon,
+    component: () => import('@/modules/extensions/pages/extensions.vue'),
+  },
 ];

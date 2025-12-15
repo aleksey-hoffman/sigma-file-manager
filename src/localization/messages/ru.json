@@ -20,7 +20,12 @@
   "language": {
     "language": "Язык",
     "isCorrectedLanguage": "Перевод был проверен и исправлен носителем языка",
-    "isAutoTranslatedLanguage": "Автоперевод. Нуждается в проверке и исправлении носителем языка"
+    "isAutoTranslatedLanguage": "Автоперевод. Нуждается в проверке и исправлении носителем языка",
+    "loadRemoteTranslations": "Загрузить удаленные переводы",
+    "autoFetch": "Автоматические обновления переводов",
+    "fetchLatestTranslationsTitle": "Автоматическое получение последних переводов из репозитория проекта",
+    "autoFetchTranslationsOnAppLoad": "Каждый раз при открытии приложения с полностью закрытого состояния",
+    "autoFetchTranslationsPeriodically": "Периодически (каждый час)"
   },
   "placeholders": {
     "noDrivesFound": "Диски не найдены",
@@ -157,8 +162,7 @@
     "dirItem": {
       "score": "Оценка",
       "itemIsInaccessible": "Элемент недоступен"
-    },
-    "toggleSplitView": "Переключить вид разделения"
+    }
   },
   "dashboard": {
     "pinnedWillBeShownHere": "Здесь будут отображаться закрепленные элементы",
@@ -341,8 +345,8 @@
       "none": "Нет",
       "minimal": "Минимальный",
       "homePageItemCardDesign": "Дизайн карточек элементов на главной странице",
-      "infusiveExtruded": "Инфузивный | выпуклый",
-      "infusiveFlatGlow": "Инфузивный | плоский",
+      "neoinfusiveExtruded": "Неоинфузионный | экструдированный",
+      "neoinfusiveFlatGlow": "Неоинфузионный | плоское свечение",
       "dashboardOptions": "Параметры панели",
       "showTimeline": "Показать временную шкалу",
       "homePageCards": "Карточки главной страницы",
@@ -516,6 +520,18 @@
       "storeTheDateOpeningDirectoryItem": "Сохранить дату открытия элемента справочника",
       "statisticsLocationDescription": "Данные статистики хранятся в файле \"stats.json\", расположенном в папке приложения.",
       "openFileLocation": "Открыть местонахождение файла"
+    },
+    "advanced": {
+      "advancedSettings": "Расширенные настройки",
+      "description": "Эти настройки предназначены в основном для программистов и опытных пользователей",
+      "terminal": {
+        "description": "Терминал для открытия директорий",
+        "adminDescription": "Админ терминал для открытия директорий"
+      },
+      "shell": {
+        "description": "Оболочка для открытия директорий",
+        "adminDescription": "Админ оболочка для открытия директорий"
+      }
     }
   },
   "projectGithubButtons": {
@@ -534,7 +550,8 @@
     "input": "Ввод",
     "search": "Поиск",
     "dataStorage": "Хранилище данных",
-    "stats": "Статистика"
+    "stats": "Статистика",
+    "advanced": "Расширенные"
   },
   "settingsTags": {
     "language": "язык",
@@ -565,7 +582,8 @@
     "dataBackupReminder": "данные, хранилище, резервное копирование",
     "driveDetection": "диск, usb, хранилище, диск, устройство, обнаружение, подключение",
     "imageThumbnails": "изображение, картинка, эскизы, ограничение, хранилище, ресурсы, использование, производительность",
-    "directoryItemStatistics": "папка, элемент, статистика, статистика, данные, хранение, использование"
+    "directoryItemStatistics": "папка, элемент, статистика, статистика, данные, хранение, использование",
+    "advanced": "расширенный, профессиональный, разработчик, терминал, оболочка"
   },
   "dataBackupReminder": {
     "title": "Напоминание: резервное копирование данных",
@@ -575,9 +593,9 @@
   "drag": {
     "hitButtonToCancel": "Нажмите кнопку [Esc] или щелкните здесь для отмены",
     "holdShiftToChangeMode": "Удерживайте [Shift], чтобы изменить режим",
-    "dragDrop": "Перетащите",
-    "customImageOrVideoHere": "изображение или видео сюда",
-    "acceptsFileImageVideo": "Принимает: файл (изображение, видео)",
+    "dragDrop": "Бросьте файлы или нажмите здесь",
+    "customImageOrVideoHere": "чтобы добавить пользовательские фоны",
+    "acceptsFileImageVideo": "Принимает: локальные файлы изображений и видео",
     "dropHereToCopyIntoTheCurrentDirectory": "Перетащите сюда, чтобы скопировать в текущий папка",
     "dropHereToMoveIntoTheCurrentDirectory": "Перетащите сюда, чтобы перейти в текущий папка",
     "dropHereToDownloadIntoTheCurrentDirectory": "Перетащите сюда, чтобы загрузить в текущий папка",
@@ -597,17 +615,17 @@
     "columnType": "Тип столбца",
     "typeTitles": {
       "name": "Имя",
-      "dateModified": "Дата изменения",
-      "dateAccessed": "Дата доступа",
+      "dateModifiedContents": "Дата изменения содержимого",
+      "dateModifiedMeta": "Дата изменения метаданных",
       "dateCreated": "Дата создания",
       "itemsSize": "Количество/размер",
       "status": "Статус"
     },
     "typeShortTitles": {
       "name": "Имя",
-      "dateModified": "Изменено",
-      "dateAccessed": "Доступ",
-      "dateCreated": "Создано",
+      "dateModifiedContents": "Изменение содержимого",
+      "dateModifiedMeta": "Изменение мета",
+      "dateCreated": "Созданно",
       "itemsSize": "Количество/размер",
       "status": "Статус"
     }
@@ -822,6 +840,8 @@
       "convertMarkdownWhileTyping": "Преобразование базового синтаксиса markdown в HTML при наборе текста",
       "structure": "Стрктура",
       "chars": "Символов",
+      "created": "Созданно",
+      "modified": "Модифицированно",
       "markdownShortcuts": "Шорткаты markdown",
       "withTheCursorOnANewLineType": "Установив курсор на новую строку, введите указанную последовательность, чтобы добавить соответствующий элемент.",
       "tips": "Советы",
@@ -1053,6 +1073,50 @@
         "typeInAddressManually": "Введите адрес вручную",
         "buttonInTheAddressBarMenu": "кнопка в меню адресной строки, которое находится на панели действий на странице \"Навигатор\"."
       }
+    },
+    "trashCurrentDir": {
+      "title": "Trashing current directory",
+      "description": "Selected items include the currently opened directory.",
+      "confirm": "Confirm, if this was intentional and you want to send it to trash.",
+      "trash": "Trash"
+    },
+    "trashProtected": {
+      "title": "Trashing protected",
+      "description": "Selected items include {count} protected items.",
+      "confirm": "Confirm, if you want to send them to trash.",
+      "trashUnprotected": "Trash unprotected",
+      "trashAll": "Trash all"
+    },
+    "deleteProtected": {
+      "title": "Deleting protected",
+      "description": "Selected items include {count} protected items.",
+      "confirm": "Confirm, if you want to delete them.",
+      "deleteUnprotected": "Delete unprotected",
+      "deleteAll": "Delete all"
+    },
+    "deleteIrreversibly": {
+      "title": "Deleting from drive",
+      "description": "This operation will permanently delete {count} items from your computer.",
+      "confirm": "Confirm, if you understand this cannot be undone.",
+      "delete": "Delete"
+    },
+    "deleteCurrentDir": {
+      "title": "Deleting current directory",
+      "description": "Selected items include the currently opened directory.",
+      "confirm": "Confirm, if this was intentional and you want to delete it.",
+      "delete": "Delete"
+    },
+    "deleteInRoot": {
+      "title": "Deleting root items",
+      "description": "Deleting system files in storage root might break the computer's operating system.",
+      "confirm": "Confirm, if you know what you are deleting.",
+      "delete": "Delete"
+    },
+    "trashInRoot": {
+      "title": "Trashing root items",
+      "description": "Deleting system files in storage root might break the computer's operating system.",
+      "confirm": "Confirm, if you know what you are deleting.",
+      "trash": "Trash"
     }
   },
   "notifications": {
@@ -1103,6 +1167,8 @@
     "removedNItemsOfTotal": "{removedAmount} из {totalAmount}",
     "trashedNItemsOfTotal": "Перемещено в корзину {removedAmount} из {totalAmount} элементов",
     "deletedNItemsOfTotal": "Удалено {removedAmount} из {totalAmount} элементов",
+    "trashedNItems": "Перемещено в корзину {totalAmount} элементов",
+    "deletedNItems": "Удалено {totalAmount} элементов",
     "couldNotTrash": "Не мог мусорить",
     "failedToDeleteSomeItems": "Не удалось удалить некоторые элементы",
     "couldNotDelete": "Не удалось удалить",
@@ -1152,7 +1218,8 @@
     "driveWasConnected": "Диск подключен",
     "driveScanInitiated": "Начато сканирование диска",
     "oneOfTheSearchFilesIsDamaged": "Один из файлов поиска поврежден",
-    "workspaceAdded": "Рабочее пространство добавлено"
+    "workspaceAdded": "Рабочее пространство добавлено",
+    "failedToFetchInstalledTerminals": "Не удалось получить установленные терминалы"
   },
   "contextMenus": {
     "dirItem": {
@@ -1160,7 +1227,7 @@
       "goBackToMainMenu": "Вернуться в главное меню",
       "openProgramEditor": "Открыть редактор программ",
       "addProgram": "Добавить программу",
-      "colorTags": "Цветные метки",
+      "tags": "Теги",
       "protectItem": "Защитить элемент",
       "protectedListDescription": "Если включено, элемент будет добавлен в защищенный список. Он будет защищен от изменения/удаления только из этого приложения. Другие приложения все еще могут изменять/удалять его.",
       "addToPinned": "Добавить в закрепленное",
@@ -1281,6 +1348,9 @@
   "getSize": "Получить размер",
   "path": "Путь",
   "realPath": "Связать целевой путь",
+  "created": "Созданно",
+  "modified": "Изменение содержимого",
+  "changed": "Изменение мета",
   "protected": "Защищенно",
   "pinned": "Прикрепленный",
   "timeline": "История",
@@ -1343,5 +1413,7 @@
   "closedCaptions": "субтитры",
   "protectedItemsShort": "Защищенные",
   "pinnedItemsShort": "Прикрепленные",
-  "freeOf": "свободно из"
+  "freeOf": "свободно из",
+  "terminal": "Терминал",
+  "conflict": "Конфликт"
 }

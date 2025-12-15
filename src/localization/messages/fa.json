@@ -20,7 +20,12 @@
   "language": {
     "language": "زبان",
     "isCorrectedLanguage": "ترجمه توسط یک متکلم به زبان مادری بررسی و تصحیح شد",
-    "isAutoTranslatedLanguage": "ترجمه خودکار نیاز به بررسی و تصحیح توسط یک متکلم به زبان مادری دارد"
+    "isAutoTranslatedLanguage": "ترجمه خودکار نیاز به بررسی و تصحیح توسط یک متکلم به زبان مادری دارد",
+    "loadRemoteTranslations": "بارگیری ترجمه های از راه دور",
+    "autoFetch": "به روزرسانی خودکار ترجمه",
+    "fetchLatestTranslationsTitle": "بازیابی خودکار آخرین ترجمه ها از مخزن پروژه",
+    "autoFetchTranslationsOnAppLoad": "هر زمان که برنامه از حالت بسته کامل باز می شود",
+    "autoFetchTranslationsPeriodically": "دوره ای (هر ساعت)"
   },
   "placeholders": {
     "noDrivesFound": "هیچ درایوی پیدا نشد",
@@ -157,8 +162,7 @@
     "dirItem": {
       "score": "نمره",
       "itemIsInaccessible": "مورد غیر قابل دسترسی است"
-    },
-    "toggleSplitView": "تغییر نمای تقسیم شده"
+    }
   },
   "dashboard": {
     "pinnedWillBeShownHere": "اقلام دایرکتوری پین شده در اینجا نشان داده خواهند شد",
@@ -341,8 +345,8 @@
       "none": "هیچ یک",
       "minimal": "حداقل",
       "homePageItemCardDesign": "طراحی کارت آیتم صفحه اصلی",
-      "infusiveExtruded": "انفوسیو | محتل",
-      "infusiveFlatGlow": "انفوسیو | صاف",
+      "neoinfusiveExtruded": "نئواینفیوزیو | اکسترود شده",
+      "neoinfusiveFlatGlow": "Neoinfusive | Flat-light",
       "dashboardOptions": "گزینه های داشبورد",
       "showTimeline": "نمایش جدول زمانی",
       "homePageCards": "کارت های صفحه اصلی",
@@ -516,6 +520,18 @@
       "storeTheDateOpeningDirectoryItem": "ذخیره تاریخ باز کردن یک آیتم دایرکتوری",
       "statisticsLocationDescription": "داده های آمار در فایلی به نام \"stats.json\" واقع در فهرست برنامه ذخیره می شوند.",
       "openFileLocation": "باز کردن مکان فایل"
+    },
+    "advanced": {
+      "advancedSettings": "تنظیمات پیشرفته",
+      "description": "این تنظیمات بیشتر برای برنامه نویسان و کاربران پیشرفته است",
+      "terminal": {
+        "description": "ترمینال برای باز کردن دایرکتوری ها",
+        "adminDescription": "ترمینال ادمین برای باز کردن دایرکتوری ها"
+      },
+      "shell": {
+        "description": "شل برای باز کردن دایرکتوری ها",
+        "adminDescription": "شل ادمین برای باز کردن دایرکتوری ها"
+      }
     }
   },
   "projectGithubButtons": {
@@ -534,7 +550,8 @@
     "input": "ورودی",
     "search": "جستجو کردن",
     "dataStorage": "داده ها و ذخیره سازی",
-    "stats": "آمار"
+    "stats": "آمار",
+    "advanced": "پیشرفته"
   },
   "settingsTags": {
     "language": "زبان",
@@ -565,7 +582,8 @@
     "dataBackupReminder": "داده، ذخیره سازی، پشتیبان گیری",
     "driveDetection": "درایو، usb، ذخیره سازی، دیسک، دستگاه، تشخیص، اتصال",
     "imageThumbnails": "تصویر، تصویر، ریز عکسها، محدودیت، ذخیره سازی، منابع، استفاده، عملکرد",
-    "directoryItemStatistics": "دایرکتوری، آیتم، آمار، آمار، داده، ذخیره سازی، استفاده"
+    "directoryItemStatistics": "دایرکتوری، آیتم، آمار، آمار، داده، ذخیره سازی، استفاده",
+    "advanced": "پیشرفته، حرفه ای، توسعه دهنده، ترمینال، شل"
   },
   "dataBackupReminder": {
     "title": "یادآوری: پشتیبان گیری از داده ها",
@@ -575,9 +593,9 @@
   "drag": {
     "hitButtonToCancel": "دکمه [Esc] را بزنید یا برای لغو اینجا کلیک کنید",
     "holdShiftToChangeMode": "برای تغییر حالت، [Shift] را نگه دارید",
-    "dragDrop": "کشیدن و رها کردن",
-    "customImageOrVideoHere": "تصویر یا ویدئوی سفارشی در اینجا",
-    "acceptsFileImageVideo": "می پذیرد: فایل (تصویر، ویدئو)",
+    "dragDrop": "فایل ها را رها کنید یا اینجا را کلیک کنید",
+    "customImageOrVideoHere": "برای اضافه کردن پس زمینه های سفارشی",
+    "acceptsFileImageVideo": "پذیرفتن: فایل های تصویر و ویدیوی محلی",
     "dropHereToCopyIntoTheCurrentDirectory": "برای کپی کردن در فهرست فعلی، اینجا را رها کنید",
     "dropHereToMoveIntoTheCurrentDirectory": "برای انتقال به فهرست فعلی، اینجا را رها کنید",
     "dropHereToDownloadIntoTheCurrentDirectory": "برای دانلود در فهرست فعلی اینجا را رها کنید",
@@ -597,16 +615,16 @@
     "columnType": "نوع ستون",
     "typeTitles": {
       "name": "نام",
-      "dateModified": "تاریخ اصلاح",
-      "dateAccessed": "تاریخ دسترسی",
+      "dateModifiedContents": "تاریخ اصلاح مطالب",
+      "dateModifiedMeta": "تاریخ تغییر متای",
       "dateCreated": "تاریخ ایجاد",
       "itemsSize": "اقلام / اندازه",
       "status": "وضعیت"
     },
     "typeShortTitles": {
       "name": "نام",
-      "dateModified": "اصلاح شده",
-      "dateAccessed": "دسترسی",
+      "dateModifiedContents": "مطالب اصلاح شده",
+      "dateModifiedMeta": "متای اصلاح شده",
       "dateCreated": "ایجاد شده",
       "itemsSize": "اقلام / اندازه",
       "status": "وضعیت"
@@ -822,6 +840,8 @@
       "convertMarkdownWhileTyping": "تبدیل نحو اولیه نشانه گذاری به HTML در حین تایپ",
       "structure": "ساختار",
       "chars": "شخصیت ها",
+      "created": "ایجاد شده",
+      "modified": "اصلاح شده",
       "markdownShortcuts": "میانبرهای علامت گذاری",
       "withTheCursorOnANewLineType": "با مکان نما در یک خط جدید، دنباله مشخص شده را تایپ کنید تا عنصر مربوطه را اضافه کنید.",
       "tips": "نکات",
@@ -1053,6 +1073,50 @@
         "typeInAddressManually": "آدرس را به صورت دستی تایپ کنید",
         "buttonInTheAddressBarMenu": "دکمه در منوی نوار آدرس، که در نوار اقدام در صفحه \"Navigator\" قرار دارد."
       }
+    },
+    "trashCurrentDir": {
+      "title": "Trashing current directory",
+      "description": "Selected items include the currently opened directory.",
+      "confirm": "Confirm, if this was intentional and you want to send it to trash.",
+      "trash": "Trash"
+    },
+    "trashProtected": {
+      "title": "Trashing protected",
+      "description": "Selected items include {count} protected items.",
+      "confirm": "Confirm, if you want to send them to trash.",
+      "trashUnprotected": "Trash unprotected",
+      "trashAll": "Trash all"
+    },
+    "deleteProtected": {
+      "title": "Deleting protected",
+      "description": "Selected items include {count} protected items.",
+      "confirm": "Confirm, if you want to delete them.",
+      "deleteUnprotected": "Delete unprotected",
+      "deleteAll": "Delete all"
+    },
+    "deleteIrreversibly": {
+      "title": "Deleting from drive",
+      "description": "This operation will permanently delete {count} items from your computer.",
+      "confirm": "Confirm, if you understand this cannot be undone.",
+      "delete": "Delete"
+    },
+    "deleteCurrentDir": {
+      "title": "Deleting current directory",
+      "description": "Selected items include the currently opened directory.",
+      "confirm": "Confirm, if this was intentional and you want to delete it.",
+      "delete": "Delete"
+    },
+    "deleteInRoot": {
+      "title": "Deleting root items",
+      "description": "Deleting system files in storage root might break the computer's operating system.",
+      "confirm": "Confirm, if you know what you are deleting.",
+      "delete": "Delete"
+    },
+    "trashInRoot": {
+      "title": "Trashing root items",
+      "description": "Deleting system files in storage root might break the computer's operating system.",
+      "confirm": "Confirm, if you know what you are deleting.",
+      "trash": "Trash"
     }
   },
   "notifications": {
@@ -1103,6 +1167,8 @@
     "removedNItemsOfTotal": "{removedAmount} از {totalAmount}",
     "trashedNItemsOfTotal": "{removedAmount} از {totalAmount} آیتم در زباله شد",
     "deletedNItemsOfTotal": "{removedAmount} از {totalAmount} آیتم حذف شد",
+    "trashedNItems": "{totalAmount} آیتم در زباله شد",
+    "deletedNItems": "{totalAmount} آیتم حذف شد",
     "couldNotTrash": "حذف زباله ها ممکن نیست",
     "failedToDeleteSomeItems": "برخی موارد حذف نشد",
     "couldNotDelete": "حذف نشد",
@@ -1152,7 +1218,8 @@
     "driveWasConnected": "درایو متصل شد",
     "driveScanInitiated": "اسکن درایو آغاز شد",
     "oneOfTheSearchFilesIsDamaged": "یکی از فایل های جستجو آسیب دیده است",
-    "workspaceAdded": "فضای کاری اضافه شد"
+    "workspaceAdded": "فضای کاری اضافه شد",
+    "failedToFetchInstalledTerminals": "دریافت ترمینال‌های نصب شده با خطا مواجه شد"
   },
   "contextMenus": {
     "dirItem": {
@@ -1160,7 +1227,7 @@
       "goBackToMainMenu": "بازگشت به منوی اصلی",
       "openProgramEditor": "ویرایشگر برنامه باز",
       "addProgram": "افزودن برنامه",
-      "colorTags": "برچسب های رنگی",
+      "tags": "برچسب ها",
       "protectItem": "محافظت از آیتم",
       "protectedListDescription": "اگر فعال باشد، مورد به لیست محافظت شده اضافه می شود. از تغییر/حذف شدن فقط از داخل این برنامه محافظت می شود. سایر برنامه ها همچنان می توانند آن را اصلاح یا حذف کنند.",
       "addToPinned": "افزودن به پین ​​شده",
@@ -1281,6 +1348,9 @@
   "getSize": "دریافت اندازه",
   "path": "مسیر",
   "realPath": "پیوند مسیر هدف",
+  "created": "ایجاد شده",
+  "modified": "مطالب اصلاح شده",
+  "changed": "متای اصلاح شده",
   "protected": "حفاظت شده",
   "pinned": "پین شده",
   "timeline": "جدول زمانی",
@@ -1343,5 +1413,7 @@
   "closedCaptions": "زیرنویس‌های بسته",
   "protectedItemsShort": "حفاظت شده",
   "pinnedItemsShort": "پیوست شده است",
-  "freeOf": "رایگان از"
+  "freeOf": "رایگان از",
+  "terminal": "ترمینال",
+  "conflict": "تضاد"
 }

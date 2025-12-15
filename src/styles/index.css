@@ -1,7 +1,2 @@
-@import url("./modern-normalize-reset.css");
-@import url("./tailwind-reset.css");
-@import url("./general.css");
-@import url("./helpers.css");
-@import url("./transitions.css");
-@import url("./scrollbars.css");
-@import url("./vars.css");
+@import "./vars.css";
+@import "./main.css";

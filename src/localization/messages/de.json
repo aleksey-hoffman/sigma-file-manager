@@ -20,7 +20,12 @@
   "language": {
     "language": "Sprache",
     "isCorrectedLanguage": "Die Übersetzung wurde von einem Muttersprachler überprüft und korrigiert.",
-    "isAutoTranslatedLanguage": "Automatische Übersetzung. Diese muss von einem Muttersprachler überprüft und korrigiert werden."
+    "isAutoTranslatedLanguage": "Automatische Übersetzung. Diese muss von einem Muttersprachler überprüft und korrigiert werden.",
+    "loadRemoteTranslations": "Remote-Übersetzungen laden",
+    "autoFetch": "Automatische Übersetzungsaktualisierungen",
+    "fetchLatestTranslationsTitle": "Neueste Übersetzungen automatisch vom Projektrepository abrufen",
+    "autoFetchTranslationsOnAppLoad": "Jedes Mal, wenn die App aus dem vollständig geschlossenen Zustand geöffnet wird",
+    "autoFetchTranslationsPeriodically": "Periodisch (jede Stunde)"
   },
   "placeholders": {
     "noDrivesFound": "Keine Laufwerke gefunden",
@@ -157,8 +162,7 @@
     "dirItem": {
       "score": "Punktzahl",
       "itemIsInaccessible": "Element ist nicht verfügbar"
-    },
-    "toggleSplitView": "Geteilte Ansicht umschalten"
+    }
   },
   "dashboard": {
     "pinnedWillBeShownHere": "Angeheftete Verzeichniseinträge werden hier angezeigt",
@@ -341,8 +345,8 @@
       "none": "Keiner",
       "minimal": "Minimal",
       "homePageItemCardDesign": "Kartendesign für Startseitenartikel",
-      "infusiveExtruded": "Infusive | konvex",
-      "infusiveFlatGlow": "Infusive | flach",
+      "neoinfusiveExtruded": "Neoinfusiv | extrudiert",
+      "neoinfusiveFlatGlow": "Neoinfusiv | flach leuchtend",
       "dashboardOptions": "Dashboard-Optionen",
       "showTimeline": "Zeitleiste anzeigen",
       "homePageCards": "Homepage-Karten",
@@ -516,6 +520,18 @@
       "storeTheDateOpeningDirectoryItem": "Speichern Sie das Datum des Öffnens eines Verzeichniseintrags",
       "statisticsLocationDescription": "Die Statistikdaten werden in der Datei namens \"stats.json\" gespeichert, die sich im App-Verzeichnis befindet.",
       "openFileLocation": "Dateispeicherort öffnen"
+    },
+    "advanced": {
+      "advancedSettings": "Erweiterte Einstellungen",
+      "description": "Diese Einstellungen sind hauptsächlich für Programmierer und fortgeschrittene Benutzer",
+      "terminal": {
+        "description": "Terminal zum Öffnen von Verzeichnissen",
+        "adminDescription": "Admin-Terminal zum Öffnen von Verzeichnissen"
+      },
+      "shell": {
+        "description": "Shell zum Öffnen von Verzeichnissen",
+        "adminDescription": "Admin-Shell zum Öffnen von Verzeichnissen"
+      }
     }
   },
   "projectGithubButtons": {
@@ -534,7 +550,8 @@
     "input": "Eingang",
     "search": "Suche",
     "dataStorage": "Datenspeicher",
-    "stats": "Statistiken"
+    "stats": "Statistiken",
+    "advanced": "Erweitert"
   },
   "settingsTags": {
     "language": "Sprache",
@@ -565,7 +582,8 @@
     "dataBackupReminder": "Daten, Speicherung, Sicherung",
     "driveDetection": "Laufwerk, USB, Speicher, Festplatte, Gerät, Erkennung, Verbindung",
     "imageThumbnails": "Bild, Bild, Thumbnails, Limit, Speicherplatz, Ressourcen, Nutzung, Leistung",
-    "directoryItemStatistics": "Verzeichnis, Element, Statistiken, Statistiken, Daten, Speicherung, Nutzung"
+    "directoryItemStatistics": "Verzeichnis, Element, Statistiken, Statistiken, Daten, Speicherung, Nutzung",
+    "advanced": "erweitert, Pro, Entwickler, Terminal, Shell"
   },
   "dataBackupReminder": {
     "title": "Erinnerung: Datensicherung",
@@ -575,9 +593,9 @@
   "drag": {
     "hitButtonToCancel": "Klicken Sie auf die Schaltfläche [Esc] oder klicken Sie hier, um abzubrechen",
     "holdShiftToChangeMode": "Halten Sie [Shift] gedrückt, um den Modus zu ändern",
-    "dragDrop": "Ziehen und loslassen",
-    "customImageOrVideoHere": "benutzerdefiniertes Bild oder Video hier",
-    "acceptsFileImageVideo": "Akzeptiert: Datei (Bild, Video)",
+    "dragDrop": "Dateien ablegen oder hier klicken",
+    "customImageOrVideoHere": "um benutzerdefinierte Hintergründe hinzuzufügen",
+    "acceptsFileImageVideo": "Akzeptiert: lokale Bild- und Videodateien",
     "dropHereToCopyIntoTheCurrentDirectory": "Hier ablegen, um in das aktuelle Verzeichnis zu kopieren",
     "dropHereToMoveIntoTheCurrentDirectory": "Hier ablegen, um in das aktuelle Verzeichnis zu wechseln",
     "dropHereToDownloadIntoTheCurrentDirectory": "Hier ablegen, um in das aktuelle Verzeichnis herunterzuladen",
@@ -597,16 +615,16 @@
     "columnType": "Spaltentyp",
     "typeTitles": {
       "name": "Name",
-      "dateModified": "Änderungsdatum",
-      "dateAccessed": "Zugriffsdatum",
+      "dateModifiedContents": "Datum geänderter Inhalt",
+      "dateModifiedMeta": "Datum der Meta-Änderung",
       "dateCreated": "Erstellungsdatum",
       "itemsSize": "Element / Größe",
       "status": "Status"
     },
     "typeShortTitles": {
       "name": "Name",
-      "dateModified": "Geändert",
-      "dateAccessed": "Zugegriffen",
+      "dateModifiedContents": "Geänderte Inhalte",
+      "dateModifiedMeta": "Modifiziertes Meta",
       "dateCreated": "Erstellt",
       "itemsSize": "Element / Größe",
       "status": "Status"
@@ -822,6 +840,8 @@
       "convertMarkdownWhileTyping": "Grundlegende Markdown-Syntax während der Eingabe in HTML umwandeln",
       "structure": "Struktur",
       "chars": "Zeichen",
+      "created": "Erstellt",
+      "modified": "Geändert",
       "markdownShortcuts": "Markdown-Shortcuts",
       "withTheCursorOnANewLineType": "Mit dem Cursor in einer neuen Zeile geben Sie die angegebene Sequenz ein, um das entsprechende Element hinzuzufügen.",
       "tips": "Tipps",
@@ -1053,6 +1073,50 @@
         "typeInAddressManually": "Adresse manuell eingeben",
         "buttonInTheAddressBarMenu": "Schaltfläche im Adressleistenmenü, das sich in der Aktionsleiste auf der Seite \"Navigator\" befindet."
       }
+    },
+    "trashCurrentDir": {
+      "title": "Aktuelles Verzeichnis in den Papierkorb verschieben",
+      "description": "Ausgewählte Elemente beinhalten das aktuell geöffnete Verzeichnis.",
+      "confirm": "Bestätigen Sie, wenn dies beabsichtigt war und Sie es in den Papierkorb verschieben möchten.",
+      "trash": "Papierkorb"
+    },
+    "trashProtected": {
+      "title": "Geschützte Elemente in den Papierkorb verschieben",
+      "description": "Ausgewählte Elemente beinhalten {count} geschützte Elemente.",
+      "confirm": "Bestätigen Sie, wenn Sie diese in den Papierkorb verschieben möchten.",
+      "trashUnprotected": "Ungeschützte Elemente in den Papierkorb verschieben",
+      "trashAll": "Alles in den Papierkorb verschieben"
+    },
+    "trashInRoot": {
+      "title": "Elemente im Root-Verzeichnis in den Papierkorb verschieben",
+      "description": "Das Löschen von Systemdateien im Speicherroot kann das Betriebssystem des Computers beschädigen.",
+      "confirm": "Bestätigen Sie, wenn Sie wissen, was Sie löschen.",
+      "trash": "Papierkorb"
+    },
+    "deleteProtected": {
+      "title": "Geschützte Elemente löschen",
+      "description": "Ausgewählte Elemente beinhalten {count} geschützte Elemente.",
+      "confirm": "Bestätigen Sie, wenn Sie diese löschen möchten.",
+      "deleteUnprotected": "Ungeschützte Elemente löschen",
+      "deleteAll": "Alles löschen"
+    },
+    "deleteIrreversibly": {
+      "title": "Vom Laufwerk löschen",
+      "description": "Diese Operation wird {count} Elemente dauerhaft von Ihrem Computer löschen.",
+      "confirm": "Bestätigen Sie, wenn Sie verstehen, dass dies nicht rückgängig gemacht werden kann.",
+      "delete": "Löschen"
+    },
+    "deleteCurrentDir": {
+      "title": "Aktuelles Verzeichnis löschen",
+      "description": "Ausgewählte Elemente beinhalten das aktuell geöffnete Verzeichnis.",
+      "confirm": "Bestätigen Sie, wenn dies beabsichtigt war und Sie es löschen möchten.",
+      "delete": "Löschen"
+    },
+    "deleteInRoot": {
+      "title": "Elemente im Root-Verzeichnis löschen",
+      "description": "Das Löschen von Systemdateien im Speicherroot kann das Betriebssystem des Computers beschädigen.",
+      "confirm": "Bestätigen Sie, wenn Sie wissen, was Sie löschen.",
+      "delete": "Löschen"
     }
   },
   "notifications": {
@@ -1103,6 +1167,8 @@
     "removedNItemsOfTotal": "{removedAmount} von {totalAmount}",
     "trashedNItemsOfTotal": "{removedAmount} von {totalAmount} Elementen verworfen",
     "deletedNItemsOfTotal": "{removedAmount} von {totalAmount} Elementen gelöscht",
+    "trashedNItems": "{totalAmount} Elementen verworfen",
+    "deletedNItems": "{totalAmount} Elementen gelöscht",
     "couldNotTrash": "Konnte nicht entsorgen",
     "failedToDeleteSomeItems": "Einige Elemente konnten nicht gelöscht werden",
     "couldNotDelete": "Konnte nicht gelöscht werden",
@@ -1152,7 +1218,8 @@
     "driveWasConnected": "Laufwerk wurde angeschlossen",
     "driveScanInitiated": "Laufwerksscan eingeleitet",
     "oneOfTheSearchFilesIsDamaged": "Eine der Suchdateien ist beschädigt",
-    "workspaceAdded": "Arbeitsbereich wurde hinzugefügt"
+    "workspaceAdded": "Arbeitsbereich wurde hinzugefügt",
+    "failedToFetchInstalledTerminals": "Fehler beim Abrufen installierter Terminals"
   },
   "contextMenus": {
     "dirItem": {
@@ -1160,7 +1227,7 @@
       "goBackToMainMenu": "Zurück zum Hauptmenü",
       "openProgramEditor": "Programmeditor öffnen",
       "addProgram": "Programm hinzufügen",
-      "colorTags": "Farbmarken",
+      "tags": "Tags",
       "protectItem": "Element schützen",
       "protectedListDescription": "Wenn aktiviert, wird das Element zur geschützten Liste hinzugefügt. Es wird nur innerhalb dieser App vor Änderung/Löschung geschützt. Andere Apps können es weiterhin ändern/löschen.",
       "addToPinned": "Zu angeheftet hinzufügen",
@@ -1281,6 +1348,9 @@
   "getSize": "Größe ermitteln",
   "path": "Pfad",
   "realPath": "Zielpfad verknüpfen",
+  "created": "Erstellt",
+  "modified": "Geänderte Inhalte",
+  "changed": "Modifiziertes Meta",
   "protected": "Geschützt",
   "pinned": "angeheftet",
   "timeline": "Zeitleiste",
@@ -1343,5 +1413,7 @@
   "closedCaptions": "Untertitel",
   "protectedItemsShort": "Geschützt",
   "pinnedItemsShort": "Angeheftet",
-  "freeOf": "frei von"
+  "freeOf": "frei von",
+  "terminal": "Terminal",
+  "conflict": "Konflikt"
 }

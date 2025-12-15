@@ -2,7 +2,7 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-import type {DirEntry} from '@/types/dir-entry';
+import type { DirEntry } from '@/types/dir-entry';
 
 export type Workspace = {
   id: number;

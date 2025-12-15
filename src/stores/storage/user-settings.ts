@@ -3,20 +3,25 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 import cloneDeep from 'lodash.clonedeep';
-import {defineStore} from 'pinia';
-import {Store as Storage} from 'tauri-plugin-store-api';
-import {ref} from 'vue';
-import type {UserSettings, LocalizationLanguage, Theme} from '@/types/user-settings';
+import { defineStore } from 'pinia';
+import { LazyStore } from '@tauri-apps/plugin-store';
+import { ref, watch } from 'vue';
+import type { UserSettings, LocalizationLanguage, UserSettingsPath, UserSettingsValue } from '@/types/user-settings';
+import { useTheme } from './use/use-theme';
+import { useUserPathsStore } from './user-paths';
+import { i18n } from '@/localization';
 
 export const useUserSettingsStore = defineStore('userSettings', () => {
-  const userSettingsStorage = ref<Storage | null>(null);
+  const userPathsStore = useUserPathsStore();
+
+  const userSettingsStorage = ref<LazyStore | null>(null);
   const userSettingsDefault = ref<UserSettings | null>();
   const userSettings = ref<UserSettings>({
     language: {
       name: 'English',
       locale: 'en',
       isCorrected: true,
-      isRtl: false
+      isRtl: false,
     },
     theme: 'dark',
     transparentToolbars: false,
@@ -24,55 +29,64 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
       month: 'short',
       regionalFormat: {
         code: 'en',
-        name: 'English'
+        name: 'English',
       },
       autoDetectRegionalFormat: true,
       hour12: false,
       properties: {
         showSeconds: false,
-        showMilliseconds: false
-      }
+        showMilliseconds: false,
+      },
     },
     navigator: {
       layout: {
         type: {
           title: 'gridLayout',
-          name: 'grid'
+          name: 'grid',
         },
         dirItemOptions: {
           title: {
-            height: 32
+            height: 32,
           },
           directory: {
-            height: 48
+            height: 48,
           },
           file: {
-            height: 48
-          }
-        }
+            height: 48,
+          },
+        },
       },
       infoPanel: {
-        show: false
-      }
-    }
+        show: false,
+      },
+    },
+  });
+
+  const { setTheme } = useTheme(userSettings.value.theme);
+
+  watch(() => userSettings.value.theme, (value) => {
+    setTheme(value);
   });
 
   async function loadUserSettings() {
     try {
-      let settings = await userSettingsStorage.value?.entries();
-      settings?.forEach(entry => {
-        userSettings[entry[0]] = entry[1];
+      const settings = await userSettingsStorage.value?.entries();
+      settings?.forEach((entry) => {
+        (userSettings.value as Record<string, unknown>)[entry[0]] = entry[1];
       });
-    } catch (error) {
+    }
+    catch (error) {
       console.error('Failed to load user settings:', error);
     }
   }
 
   async function initUserSettings() {
     if (!userSettingsStorage.value) {
-      userSettingsStorage.value = new Storage('user-data/user-settings.json');
+      userSettingsStorage.value = await new LazyStore(userPathsStore.customPaths.appUserDataSettingsDir);
+
       await userSettingsStorage.value.save();
     }
+
     if (!userSettingsDefault.value) {
       userSettingsDefault.value = cloneDeep(userSettings.value);
     }
@@ -84,8 +98,9 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
         await userSettingsStorage.value.set(key, value);
         await userSettingsStorage.value.save();
       }
-    } catch (error) {
-      console.error(`Failed to save to storage: ${key}: ${value}`);
+    }
+    catch (error: unknown) {
+      console.error(`Failed to save to storage: ${key}: ${value}`, error);
     }
   }
 
@@ -94,23 +109,12 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
     await setUserSettingsStorage('language', newLanguage);
   }
 
-  async function setTheme(theme?: Theme) {
-    userSettings.value.theme = theme ?? 'dark';
-    const root = window.document.documentElement;
+  async function initTheme() {
+    setTheme(userSettings.value.theme);
+  }
 
-    root.classList.remove('light', 'dark');
-
-    if (userSettings.value.theme === 'system') {
-      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)')
-        .matches
-        ? 'dark'
-        : 'light';
-      root.classList.add(systemTheme);
-    }
-
-    root.classList.add(userSettings.value.theme);
-
-    await setUserSettingsStorage('theme', userSettings.value.theme);
+  async function initLanguage() {
+    i18n.global.locale.value = userSettings.value.language.locale as typeof i18n.global.locale.value;
   }
 
   async function toggleInfoPanel() {
@@ -118,19 +122,32 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
     await setUserSettingsStorage('navigator.infoPanel.show', userSettings.value.navigator.infoPanel.show);
   }
 
+  async function set<P extends UserSettingsPath>(key: P, value: UserSettingsValue<P>) {
+    const keys = key.split('.');
+    let current: Record<string, unknown> = userSettings.value as Record<string, unknown>;
+
+    for (let i = 0; i < keys.length - 1; i++) {
+      current = current[keys[i]] as Record<string, unknown>;
+    }
+
+    current[keys[keys.length - 1]] = value;
+    await setUserSettingsStorage(key, value);
+  }
+
   async function init() {
     await initUserSettings();
     await loadUserSettings();
-    setTheme();
+    initTheme();
+    initLanguage();
   }
 
   return {
     userSettings,
     userSettingsDefault,
     init,
+    set,
     setUserSettingsStorage,
     setLanguage,
-    setTheme,
-    toggleInfoPanel
+    toggleInfoPanel,
   };
 });

@@ -1,37 +1,27 @@
 [package]
-version = "2.0.0-alpha.1"
-name = "sigma-file-manager-v2"
+name = "sigma-file-manager"
 description = "Sigma File Manager v2"
-authors = ["Aleksey Hoffman"]
+version = "2.0.0-alpha.1"
 license = "GPL-3.0-or-later"
+authors = ["Aleksey Hoffman"]
 repository = "https://github.com/aleksey-hoffman/sigma-file-manager/tree/v2"
 edition = "2021"
-rust-version = "1.75"
+rust-version = "1.87.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[lib]
+name = "sigma_file_manager_tauri_v2_own_frontend_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
 [build-dependencies]
-tauri-build = { version = "1.5.1", features = [] }
+tauri-build = { version = "2.3.0", features = [] }
 
 [dependencies]
-tauri = { version = "1.5.4", features = [ "window-unminimize", "fs-create-dir", "window-center", "clipboard-write-text", "shell-execute", "shell-open", "window-maximize", "window-set-min-size", "window-set-content-protected", "dialog-save", "os-all", "window-set-always-on-top", "window-set-closable", "window-set-cursor-grab", "window-set-icon", "window-create", "fs-remove-dir", "window-set-focus", "process-exit", "window-close", "fs-exists", "app-hide", "app-show", "window-set-minimizable", "window-start-dragging", "window-set-skip-taskbar", "window-set-maximizable", "window-set-cursor-position", "window-print", "http-request", "window-set-position", "fs-read-file", "window-set-resizable", "window-set-decorations", "protocol-asset", "process-relaunch", "fs-rename-file", "window-set-size", "process-relaunch-dangerous-allow-symlink-macos", "dialog-ask", "fs-read-dir", "window-request-user-attention", "window-set-max-size", "global-shortcut-all", "window-hide", "path-all", "shell-sidecar", "fs-remove-file", "window-minimize", "fs-write-file", "fs-copy-file", "clipboard-read-text", "window-show", "notification-all", "window-unmaximize", "window-set-cursor-visible", "window-set-title", "window-set-cursor-icon", "dialog-message", "window-set-fullscreen", "window-set-ignore-cursor-events", "dialog-open", "dialog-confirm", "devtools", "system-tray"] }
-serde_json = "1.0.95"
-serde = { version = "1.0.159", features = ["derive"] }
-sysinfo = "0.30.5"
-systemstat = "0.2.3"
-lazy_static = "1.4.0"
-mime_guess = "2.0.4"
-chrono = "0.4.23"
-tauri-plugin-store = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
-
-[target.'cfg(windows)'.dependencies]
-winapi = "0.3.9"
-winreg = "0.52.0"
-
-[features]
-# by default Tauri runs in production mode
-# when `tauri dev` runs it is executed with `cargo run --no-default-features` if `devPath` is an URL
-default = ["custom-protocol"]
-# this feature is used for production builds where `devPath` points to the filesystem
-# DO NOT remove this
-custom-protocol = ["tauri/custom-protocol"]
+serde_json = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+log = "0.4"
+tauri = { version = "2.6.1", features = ["tray-icon", "image-png"] }
+tauri-plugin-log = "2"
+tauri-plugin-store = "2"
+tauri-plugin-opener = "2.5.0"

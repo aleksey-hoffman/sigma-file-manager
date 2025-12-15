@@ -1,77 +1,86 @@
-@layer base {
-  :root {
-    /* Mods */
-    --radius: 0.75rem;
+:root {
+  /* Sizes */
+  --nav-sidebar-width: 42px;
+  --window-toolbar-height: 48px;
+  --action-toolbar-height: 42px;
+  --workspace-toolbar-height: 48px;
+  --info-panel-width-value: 280;
+  --info-panel-width: calc(var(--info-panel-width-value) * 1px);
+  --info-panel-preview-height: 158px;
+  --info-panel-header-height: 32px;
+  --info-panel-sub-header-height: 16px;
+  --info-panel-properties-header-height: 36px;
+  --navigator-sorting-header-height: 36px;
+  --tab-height: calc(var(--window-toolbar-height) - 16px);
+  --control-button-width: 46px;
+  --dir-entry-transition: all 0.3s ease-in-out;
+  /* SIGMA-UI */
+  /* General */
+  --backdrop-filter-blur: 32px;
+  --radius: 0.5rem;
+  --radius-full: 9999px;
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-xs: min(calc(var(--radius) / 2.5), 6px);
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", monospace;
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02),
+    0 12px 24px rgba(0, 0, 0, 0.05);
+}
 
-    /* Sizes */
-    --nav-sidebar-width: 48px;
-    --window-toolbar-height: 32px;
-    --action-toolbar-height: 42px;
-    --workspace-toolbar-height: 48px;
-    --info-panel-width-value: 280;
-    --info-panel-width: calc(var(--info-panel-width-value) * 1px);
-    --info-panel-preview-height: 158px;
-    --info-panel-header-height: 32px;
-    --info-panel-sub-header-height: 16px;
-    --info-panel-properties-header-height: 36px;
-    --navigator-sorting-header-height: 36px;
-    --tab-height: calc(var(--window-toolbar-height) - 4px);
-    --control-button-width: 46px;
-    --dir-entry-transition: all 0.3s ease-in-out;
+:root {
+  --light: 0 0% 100%;
+  --dark: 0 0% 0%;
+  --window-toolbar: 220 11% 19%;
+  --background-2: 225 10% 16%;
+  --background-3: 225 12% 13%;
+  --window-toolbar: 220 11% 19%;
+  --icon: 0 0% 62%;
+  /* SIGMA-UI */
+  --background: 0 0% 100%;
+  --foreground: 224 71.4% 4.1%;
+  --muted: 220 14.3% 95.9%;
+  --muted-foreground: 220 8.9% 46.1%;
+  --popover: 0 0% 100% / 10%;
+  --popover-foreground: 224 71.4% 4.1%;
+  --card: 0 0% 100% / 10%;
+  --card-foreground: 224 71.4% 4.1%;
+  --border: 220 13% 91%;
+  --input: 0 0% 100%;
+  --primary: 220.9 39.3% 11%;
+  --primary-foreground: 210 20% 98%;
+  --secondary: 220 14.3% 95.9%;
+  --secondary-foreground: 220.9 39.3% 11%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 210 20% 98%;
+  --ring: 224 71.4% 4.1%;
+}
 
-    /* Colors */
-    --grey-50: #fafafa;
-    --grey-100: #f4f4f5;
-    --grey-200: #e4e4e7;
-    --grey-300: #d4d4d8;
-    --grey-400: #a1a1aa;
-    --grey-500: #71717a;
-    --grey-600: #52525b;
-    --grey-700: #3f3f46;
-    --grey-800: #27272a;
-    --grey-900: #18181b;
-    --grey-950: #09090b;
-  }
-
-  .light {
-    --light: 0 0% 100%;
-    --dark: 0 0% 0%;
-    --background: 0 0% 100%;
-    --background-lighten: hsl(from hsl(var(--background)) h s calc(l + 2%));
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --primary: 189, 83%, 32%;
-    --primary-foreground: 210 40% 98%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
-  }
-
-  .dark {
-    /* 
-    --tab-color: var(--color);
-    --tab-color-active: var(--color);
-    --tab-bg-color: var(--window-toolbar-bg-color);
-    --tab-bg-color-active: var(--window-toolbar-bg-color);
-    --tab-bg-color-hover: rgb(var(--light-value) / 6%);
-    --tab-close-button-color: var(--window-toolbar-bg-color);
-    --tab-border-color: rgb(var(--light-value) / 10%); 
-    */
-    --light: 0 0% 100%;
-    --dark: 0 0% 0%;
-    --background: 225 12% 15.7%;
-    --background-lighten: hsl(from hsl(var(--background)) h s calc(l + 2%));
-    --foreground: 210 10% 80%;
-    --card: 222.2 84% 4.9%;
-    --primary: 189, 83%, 32%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 48%;
-  }
+.dark {
+  --light: 0 0% 100%;
+  --dark: 0 0% 0%;
+  --background-2: 225 10% 16%;
+  --background-3: 225 12% 13%;
+  --window-toolbar: 220 11% 19%;
+  --icon: 0 0% 62%;
+  /* SIGMA-UI */
+  --background: 225 10% 16%;
+  --foreground: 0 0% 75%;
+  --muted: 225 10% 20%;
+  --muted-foreground: 0 0% 62%;
+  --popover: 225 10% 16% / 20%;
+  --popover-foreground: 210 20% 98%;
+  --card: 225 10% 16% / 80%;
+  --card-foreground: 210 20% 98%;
+  --border: 225 10% 20%;
+  --input: 225 10% 16% / 50%;
+  --primary: 198 19% 38%;
+  --primary-foreground: 220.9 39.3% 11%;
+  --secondary: 222 10% 18%;
+  --secondary-foreground: 0 0% 60%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 210 20% 98%;
+  --ring: 216 12.2% 83.9%;
 }

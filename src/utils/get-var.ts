@@ -10,5 +10,6 @@ export default function getVar(varName: string) {
     const value = getComputedStyle(rootNode).getPropertyValue(processedVarName);
     return value.trim();
   }
+
   return '';
 }

@@ -12,7 +12,7 @@ import ja from './messages/ja.json';
 import ru from './messages/ru.json';
 import tr from './messages/tr.json';
 import vi from './messages/vi.json';
-import type {LocalizationLanguage} from '@/types/user-settings';
+import type { LocalizationLanguage } from '@/types/user-settings';
 
 export const messages = {
   en,
@@ -24,7 +24,7 @@ export const messages = {
   ja,
   fa,
   ch,
-  vi
+  vi,
 };
 
 export const languages: LocalizationLanguage[] = [
@@ -32,64 +32,64 @@ export const languages: LocalizationLanguage[] = [
     name: 'English',
     locale: 'en',
     isCorrected: true,
-    isRtl: false
+    isRtl: false,
   },
   {
     name: 'Русский',
     locale: 'ru',
     isCorrected: false,
-    isRtl: false
+    isRtl: false,
   },
   {
     name: 'Español',
     locale: 'es',
     isCorrected: false,
-    isRtl: false
+    isRtl: false,
   },
   {
     name: 'Deutsch',
     locale: 'de',
     isCorrected: false,
-    isRtl: false
+    isRtl: false,
   },
   {
     name: 'Français',
     locale: 'fr',
     isCorrected: false,
-    isRtl: false
+    isRtl: false,
   },
   {
     name: 'Türkçe',
     locale: 'tr',
     isCorrected: false,
-    isRtl: false
+    isRtl: false,
   },
   {
     name: '日本語 (nihongo)',
     locale: 'ja',
     isCorrected: false,
-    isRtl: false
+    isRtl: false,
   },
   {
     name: 'فارسى (fārsī)',
     locale: 'fa',
     isCorrected: false,
-    isRtl: true
+    isRtl: true,
   },
   {
     name: '中文 (zhōngwén)',
     locale: 'ch',
     isCorrected: false,
-    isRtl: false
+    isRtl: false,
   },
   {
     name: 'tiếng việt (㗂越)',
     locale: 'vi',
     isCorrected: false,
-    isRtl: false
-  }
-];
+    isRtl: false,
+  },
+] as const;
 
-export function getLanguage (locale: string) {
+export function getLanguage(locale: string) {
   return languages.find(item => item.locale === locale);
 }

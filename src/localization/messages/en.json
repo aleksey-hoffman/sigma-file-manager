@@ -20,7 +20,12 @@
   "language": {
     "language": "Language",
     "isCorrectedLanguage": "Translation was reviewed and corrected by a native language speaker",
-    "isAutoTranslatedLanguage": "Auto-translated. Needs to be reviewed and corrected by a native language speaker"
+    "isAutoTranslatedLanguage": "Auto-translated. Needs to be reviewed and corrected by a native language speaker",
+    "loadRemoteTranslations": "Load remote translations",
+    "autoFetch": "Auto translation updates",
+    "fetchLatestTranslationsTitle": "Fetch latest translations automatically from the project repository",
+    "autoFetchTranslationsOnAppLoad": "Every time the app is opened from fully closed state",
+    "autoFetchTranslationsPeriodically": "Periodically (every hour)"
   },
   "placeholders": {
     "noDrivesFound": "No drives found",
@@ -157,8 +162,7 @@
     "dirItem": {
       "score": "score",
       "itemIsInaccessible": "Item is inaccessible"
-    },
-    "toggleSplitView": "Toggle split view"
+    }
   },
   "dashboard": {
     "pinnedWillBeShownHere": "Pinned directory items will be shown here",
@@ -341,8 +345,8 @@
       "none": "None",
       "minimal": "Minimal",
       "homePageItemCardDesign": "Home page item card design",
-      "infusiveExtruded": "Infusive | convex",
-      "infusiveFlatGlow": "Infusive | flat",
+      "neoinfusiveExtruded": "Neoinfusive | extruded",
+      "neoinfusiveFlatGlow": "Neoinfusive | flat-glow",
       "dashboardOptions": "Dashboard options",
       "showTimeline": "Show timeline",
       "homePageCards": "Home page cards",
@@ -516,6 +520,18 @@
       "storeTheDateOpeningDirectoryItem": "Store the date of opening a directory item",
       "statisticsLocationDescription": "The statistics data is stored in the file called \"stats.json\" located in the app directory.",
       "openFileLocation": "Open file location"
+    },
+    "advanced": {
+      "advancedSettings": "Advanced settings",
+      "description": "These settings are primarily for programmers and advanced users",
+      "terminal": {
+        "description": "Terminal for opening directories",
+        "adminDescription": "Admin terminal for opening directories"
+      },
+      "shell": {
+        "description": "Shell for opening directories",
+        "adminDescription": "Admin shell for opening directories"
+      }
     }
   },
   "projectGithubButtons": {
@@ -534,7 +550,8 @@
     "input": "Input",
     "search": "Search",
     "dataStorage": "Data & storage",
-    "stats": "Stats"
+    "stats": "Stats",
+    "advanced": "Advanced"
   },
   "settingsTags": {
     "language": "language",
@@ -565,7 +582,8 @@
     "dataBackupReminder": "data, storage, backup",
     "driveDetection": "drive, usb, storage, disk, device, detection, connection",
     "imageThumbnails": "image, picture, thumbnails, limit, storage, resources, usage, performance",
-    "directoryItemStatistics": "directory, item, statistics, stats, data, storage, usage"
+    "directoryItemStatistics": "directory, item, statistics, stats, data, storage, usage",
+    "advanced": "advanced, pro, developer, terminal, shell"
   },
   "dataBackupReminder": {
     "title": "Reminder: data backup",
@@ -575,9 +593,9 @@
   "drag": {
     "hitButtonToCancel": "Hit [Esc] button or click here to cancel",
     "holdShiftToChangeMode": "Hold [Shift] to change mode",
-    "dragDrop": "Drag & Drop",
-    "customImageOrVideoHere": "custom image or video here",
-    "acceptsFileImageVideo": "Accepts: file (image, video)",
+    "dragDrop": "Drop files or click here",
+    "customImageOrVideoHere": "to add custom backgrounds",
+    "acceptsFileImageVideo": "Accepts: local image and video files",
     "dropHereToCopyIntoTheCurrentDirectory": "Drop here to copy into the current directory",
     "dropHereToMoveIntoTheCurrentDirectory": "Drop here to move into the current directory",
     "dropHereToDownloadIntoTheCurrentDirectory": "Drop here to download into the current directory",
@@ -597,16 +615,16 @@
     "columnType": "Column type",
     "typeTitles": {
       "name": "Name",
-      "dateModified": "Date modified",
-      "dateAccessed": "Date accessed",
+      "dateModifiedContents": "Date modified contents",
+      "dateModifiedMeta": "Date modified meta",
       "dateCreated": "Date created",
       "itemsSize": "Items / size",
       "status": "Status"
     },
     "typeShortTitles": {
       "name": "Name",
-      "dateModified": "Modified",
-      "dateAccessed": "Accessed",
+      "dateModifiedContents": "Modified contents",
+      "dateModifiedMeta": "Modified meta",
       "dateCreated": "Created",
       "itemsSize": "Items / size",
       "status": "Status"
@@ -822,6 +840,8 @@
       "convertMarkdownWhileTyping": "Convert basic markdown syntax into HTML while typing",
       "structure": "Structure",
       "chars": "Chars",
+      "created": "Created",
+      "modified": "Modified",
       "markdownShortcuts": "Markdown shortcuts",
       "withTheCursorOnANewLineType": "With the cursor on a new line, type specified sequence to add the corresponding element.",
       "tips": "Tips",
@@ -1053,6 +1073,50 @@
         "typeInAddressManually": "Type in address manually",
         "buttonInTheAddressBarMenu": "button in the address bar menu, which is located on the action bar on the \"Navigator\" page."
       }
+    },
+    "trashCurrentDir": {
+      "title": "Trashing current directory",
+      "description": "Selected items include the currently opened directory.",
+      "confirm": "Confirm, if this was intentional and you want to send it to trash.",
+      "trash": "Trash"
+    },
+    "trashProtected": {
+      "title": "Trashing protected",
+      "description": "Selected items include {count} protected items.",
+      "confirm": "Confirm, if you want to send them to trash.",
+      "trashUnprotected": "Trash unprotected",
+      "trashAll": "Trash all"
+    },
+    "trashInRoot": {
+      "title": "Trashing root items",
+      "description": "Deleting system files in storage root might break the computer's operating system.",
+      "confirm": "Confirm, if you know what you are deleting.",
+      "trash": "Trash"
+    },
+    "deleteProtected": {
+      "title": "Deleting protected",
+      "description": "Selected items include {count} protected items.",
+      "confirm": "Confirm, if you want to delete them.",
+      "deleteUnprotected": "Delete unprotected",
+      "deleteAll": "Delete all"
+    },
+    "deleteIrreversibly": {
+      "title": "Deleting from drive",
+      "description": "This operation will permanently delete {count} items from your computer.",
+      "confirm": "Confirm, if you understand this cannot be undone.",
+      "delete": "Delete"
+    },
+    "deleteCurrentDir": {
+      "title": "Deleting current directory",
+      "description": "Selected items include the currently opened directory.",
+      "confirm": "Confirm, if this was intentional and you want to delete it.",
+      "delete": "Delete"
+    },
+    "deleteInRoot": {
+      "title": "Deleting root items",
+      "description": "Deleting system files in storage root might break the computer's operating system.",
+      "confirm": "Confirm, if you know what you are deleting.",
+      "delete": "Delete"
     }
   },
   "notifications": {
@@ -1103,6 +1167,8 @@
     "removedNItemsOfTotal": "{removedAmount} of {totalAmount}",
     "trashedNItemsOfTotal": "Trashed {removedAmount} of {totalAmount} items",
     "deletedNItemsOfTotal": "Deleted {removedAmount} of {totalAmount} items",
+    "trashedNItems": "Trashed {totalAmount} items",
+    "deletedNItems": "Deleted {totalAmount} items",
     "couldNotTrash": "Could not trash",
     "failedToDeleteSomeItems": "Failed to delete some items",
     "couldNotDelete": "Could not delete",
@@ -1152,7 +1218,8 @@
     "driveWasConnected": "Drive was connected",
     "driveScanInitiated": "Drive scan initiated",
     "oneOfTheSearchFilesIsDamaged": "One of the search files is damaged",
-    "workspaceAdded": "Workspace added"
+    "workspaceAdded": "Workspace added",
+    "failedToFetchInstalledTerminals": "Failed to fetch installed terminals"
   },
   "contextMenus": {
     "dirItem": {
@@ -1160,7 +1227,7 @@
       "goBackToMainMenu": "Go back to main menu",
       "openProgramEditor": "Open program editor",
       "addProgram": "Add program",
-      "colorTags": "Color tags",
+      "tags": "Tags",
       "protectItem": "Protect item",
       "protectedListDescription": "If enabled, the item will be added to the protected list. It will be protected from being modified / deleted from within this app only. Other apps can still modify / delete it.",
       "addToPinned": "Add to pinned",
@@ -1281,6 +1348,9 @@
   "getSize": "Get size",
   "path": "Path",
   "realPath": "Link target path",
+  "created": "Created",
+  "modified": "Modified contents",
+  "changed": "Modified meta",
   "protected": "Protected",
   "pinned": "Pinned",
   "timeline": "Timeline",
@@ -1343,5 +1413,7 @@
   "closedCaptions": "closed captions",
   "protectedItemsShort": "Protected",
   "pinnedItemsShort": "Pinned",
-  "freeOf": "free of"
+  "freeOf": "free of",
+  "terminal": "Terminal",
+  "conflict": "Conflict"
 }

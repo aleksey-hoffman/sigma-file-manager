@@ -1,0 +1,17 @@
+{
+  "$schema": "https://sigma-ui.dev/schema.json",
+  "styleSystem": "css",
+  "tsConfigPath": "./tsconfig.json",
+  "setupTailwind": false,
+  "framework": "vite",
+  "cssPath": "src/assets/index.css",
+  "baseColor": "frosted-glass",
+  "tailwind": {
+    "config": ""
+  },
+  "aliases": {
+    "utils": "",
+    "components": "@/components/ui"
+  },
+  "generatePreflight": true
+}

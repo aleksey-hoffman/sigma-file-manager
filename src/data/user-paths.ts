@@ -24,7 +24,7 @@ import {
   resourceDir,
   runtimeDir,
   templateDir,
-  videoDir
+  videoDir,
 } from '@tauri-apps/api/path';
 
 export interface UserPaths {
@@ -50,6 +50,12 @@ export interface UserPaths {
   runtimeDir: string;
   templateDir: string;
   videoDir: string;
+}
+
+export interface CustomPaths {
+  appUserDataDir: string;
+  appUserDataSettingsName: string;
+  appUserDataSettingsDir: string;
 }
 
 export interface UserPathsFunctions {
@@ -99,5 +105,5 @@ export const userPathsFunctions: UserPathsFunctions = {
   resourceDir,
   runtimeDir,
   templateDir,
-  videoDir
+  videoDir,
 };

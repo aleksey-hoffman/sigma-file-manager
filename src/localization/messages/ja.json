@@ -20,7 +20,12 @@
   "language": {
     "language": "言語",
     "isCorrectedLanguage": "翻訳はネイティブスピーカーによるレビューと修正を受けました",
-    "isAutoTranslatedLanguage": "自動翻訳されました。ネイティブスピーカーによるレビューと訂正が必要です"
+    "isAutoTranslatedLanguage": "自動翻訳されました。ネイティブスピーカーによるレビューと訂正が必要です",
+    "loadRemoteTranslations": "リモート翻訳をロードする",
+    "autoFetch": "自動翻訳更新",
+    "fetchLatestTranslationsTitle": "プロジェクトリポジトリから最新の翻訳を自動的に取得する",
+    "autoFetchTranslationsOnAppLoad": "アプリが完全に閉じた状態から開かれるたびに",
+    "autoFetchTranslationsPeriodically": "定期的に（毎時間）"
   },
   "placeholders": {
     "noDrivesFound": "ドライブが見つかりません",
@@ -157,8 +162,7 @@
     "dirItem": {
       "score": "スコア",
       "itemIsInaccessible": "アイテムにアクセスできません"
-    },
-    "toggleSplitView": "分割ビューの切り替え"
+    }
   },
   "dashboard": {
     "pinnedWillBeShownHere": "ピン留めされたディレクトリ アイテムがここに表示されます",
@@ -341,8 +345,8 @@
       "none": "なし",
       "minimal": "最小限",
       "homePageItemCardDesign": "「ホームページアイテムカードデザイン」",
-      "infusiveExtruded": "インフューシブ | 凹凸",
-      "infusiveFlatGlow": "インフューシブ | 平面",
+      "neoinfusiveExtruded": "Neoinfusive | 押し出された",
+      "neoinfusiveFlatGlow": "Neoinfusive | flat-glow",
       "dashboardOptions": "ダッシュボードのオプション",
       "showTimeline": "タイムラインを表示",
       "homePageCards": "ホームページカード",
@@ -516,6 +520,18 @@
       "storeTheDateOpeningDirectoryItem": "ディレクトリアイテムを開いた日付を保存する",
       "statisticsLocationDescription": "統計データは、アプリ ディレクトリにある \"stats.json\" というファイルに保存されます。",
       "openFileLocation": "開いているファイルの場所"
+    },
+    "advanced": {
+      "advancedSettings": "詳細設定",
+      "description": "これらの設定は主にプログラマーや上級ユーザー向けです",
+      "terminal": {
+        "description": "ディレクトリを開くためのターミナル",
+        "adminDescription": "ディレクトリを開くための管理者用ターミナル"
+      },
+      "shell": {
+        "description": "ディレクトリを開くためのシェル",
+        "adminDescription": "ディレクトリを開くための管理者用シェル"
+      }
     }
   },
   "projectGithubButtons": {
@@ -534,7 +550,8 @@
     "input": "入力",
     "search": "探す",
     "dataStorage": "データストレージ",
-    "stats": "統計"
+    "stats": "統計",
+    "advanced": "詳細"
   },
   "settingsTags": {
     "language": "言語",
@@ -565,7 +582,8 @@
     "dataBackupReminder": "データ、ストレージ、バックアップ",
     "driveDetection": "ドライブ、USB、ストレージ、ディスク、デバイス、検出、接続",
     "imageThumbnails": "画像、画像、サムネイル、制限、ストレージ、リソース、使用状況、パフォーマンス",
-    "directoryItemStatistics": "ディレクトリ、アイテム、統計、統計、データ、ストレージ、使用"
+    "directoryItemStatistics": "ディレクトリ、アイテム、統計、統計、データ、ストレージ、使用",
+    "advanced": "アドバンスド, プロ, 開発者, ターミナル, シェル"
   },
   "dataBackupReminder": {
     "title": "リマインダー: データのバックアップ",
@@ -575,9 +593,9 @@
   "drag": {
     "hitButtonToCancel": "[Esc] ボタンを押すか、ここをクリックしてキャンセルします",
     "holdShiftToChangeMode": "[Shift] を押してモードを変更",
-    "dragDrop": "ドラッグドロップ",
-    "customImageOrVideoHere": "カスタム画像または動画はこちら",
-    "acceptsFileImageVideo": "受け入れます: ファイル (画像、動画)",
+    "dragDrop": "ファイルをドロップするか、ここをクリック",
+    "customImageOrVideoHere": "カスタム背景を追加するため",
+    "acceptsFileImageVideo": "受け入れる：ローカルの画像とビデオファイル",
     "dropHereToCopyIntoTheCurrentDirectory": "ここにドロップして現在のディレクトリにコピーします",
     "dropHereToMoveIntoTheCurrentDirectory": "ここにドロップして現在のディレクトリに移動",
     "dropHereToDownloadIntoTheCurrentDirectory": "現在のディレクトリにダウンロードするには、ここにドロップしてください",
@@ -597,17 +615,17 @@
     "columnType": "列タイプ",
     "typeTitles": {
       "name": "名前",
-      "dateModified": "更新日",
-      "dateAccessed": "アクセス日",
+      "dateModifiedContents": "コンテンツの変更日",
+      "dateModifiedMeta": "日付変更メタ",
       "dateCreated": "作成日",
       "itemsSize": "アイテム/サイズ",
       "status": "スターテス"
     },
     "typeShortTitles": {
       "name": "名前",
-      "dateModified": "更新",
-      "dateAccessed": "アクセス",
-      "dateCreated": "作成",
+      "dateModifiedContents": "変更された内容",
+      "dateModifiedMeta": "変更されたメタ",
+      "dateCreated": "作成した",
       "itemsSize": "アイテム/サイズ",
       "status": "スターテス"
     }
@@ -822,6 +840,8 @@
       "convertMarkdownWhileTyping": "入力中に基本的なマークダウン構文を HTML に変換",
       "structure": "構造",
       "chars": "チャーズ",
+      "created": "作成した",
+      "modified": "変更された",
       "markdownShortcuts": "マークダウンのショートカット",
       "withTheCursorOnANewLineType": "新しい行にカーソルを置き、指定されたシーケンスを入力して、対応する要素を追加します。",
       "tips": "チップ",
@@ -1053,6 +1073,50 @@
         "typeInAddressManually": "アドレスを手動で入力",
         "buttonInTheAddressBarMenu": "\"Navigator\"ページのアクションバーにあるアドレスバーメニューのボタン."
       }
+    },
+    "trashCurrentDir": {
+      "title": "Trashing current directory",
+      "description": "Selected items include the currently opened directory.",
+      "confirm": "Confirm, if this was intentional and you want to send it to trash.",
+      "trash": "Trash"
+    },
+    "trashProtected": {
+      "title": "Trashing protected",
+      "description": "Selected items include {count} protected items.",
+      "confirm": "Confirm, if you want to send them to trash.",
+      "trashUnprotected": "Trash unprotected",
+      "trashAll": "Trash all"
+    },
+    "deleteProtected": {
+      "title": "Deleting protected",
+      "description": "Selected items include {count} protected items.",
+      "confirm": "Confirm, if you want to delete them.",
+      "deleteUnprotected": "Delete unprotected",
+      "deleteAll": "Delete all"
+    },
+    "deleteIrreversibly": {
+      "title": "Deleting from drive",
+      "description": "This operation will permanently delete {count} items from your computer.",
+      "confirm": "Confirm, if you understand this cannot be undone.",
+      "delete": "Delete"
+    },
+    "deleteCurrentDir": {
+      "title": "Deleting current directory",
+      "description": "Selected items include the currently opened directory.",
+      "confirm": "Confirm, if this was intentional and you want to delete it.",
+      "delete": "Delete"
+    },
+    "deleteInRoot": {
+      "title": "Deleting root items",
+      "description": "Deleting system files in storage root might break the computer's operating system.",
+      "confirm": "Confirm, if you know what you are deleting.",
+      "delete": "Delete"
+    },
+    "trashInRoot": {
+      "title": "Trashing root items",
+      "description": "Deleting system files in storage root might break the computer's operating system.",
+      "confirm": "Confirm, if you know what you are deleting.",
+      "trash": "Trash"
     }
   },
   "notifications": {
@@ -1103,6 +1167,8 @@
     "removedNItemsOfTotal": "{totalAmount} の {removedAmount}",
     "trashedNItemsOfTotal": "{totalAmount} アイテムのうち {removedAmount} アイテムがごみ箱に入りました",
     "deletedNItemsOfTotal": "{totalAmount} アイテムのうち {removedAmount} アイテムが削除されました",
+    "trashedNItems": "{totalAmount} アイテムがごみ箱に入りました",
+    "deletedNItems": "{totalAmount} アイテムが削除されました",
     "couldNotTrash": "ゴミ箱に移動できませんでした",
     "failedToDeleteSomeItems": "いくつかのアイテムを削除できませんでした",
     "couldNotDelete": "削除できませんでした",
@@ -1152,7 +1218,8 @@
     "driveWasConnected": "ドライブが接続されました",
     "driveScanInitiated": "ドライブ スキャンが開始されました",
     "oneOfTheSearchFilesIsDamaged": "検索ファイルの 1 つが破損しています",
-    "workspaceAdded": "ワークスペースが追加されました"
+    "workspaceAdded": "ワークスペースが追加されました",
+    "failedToFetchInstalledTerminals": "インストールされた端末の取得に失敗しました"
   },
   "contextMenus": {
     "dirItem": {
@@ -1160,7 +1227,7 @@
       "goBackToMainMenu": "メインメニューに戻る",
       "openProgramEditor": "プログラムエディタを開く",
       "addProgram": "プログラムを追加",
-      "colorTags": "カラータグ",
+      "tags": "タグ",
       "protectItem": "「アイテムを守る」",
       "protectedListDescription": "有効にすると、アイテムは保護リストに追加されます。このアプリ内からのみ変更/削除されないように保護されます。他のアプリは引き続き変更/削除できます。",
       "addToPinned": "固定に追加",
@@ -1281,6 +1348,9 @@
   "getSize": "サイズを取得",
   "path": "道",
   "realPath": "リンク先パス",
+  "created": "作成した",
+  "modified": "変更された内容",
+  "changed": "変更されたメタ",
   "protected": "保護",
   "pinned": "ピン留め",
   "timeline": "タイムライン",
@@ -1343,5 +1413,7 @@
   "closedCaptions": "字幕",
   "protectedItemsShort": "保護された",
   "pinnedItemsShort": "添付",
-  "freeOf": "から自由である"
+  "freeOf": "から自由である",
+  "terminal": "ターミナル",
+  "conflict": "コンフリクト"
 }

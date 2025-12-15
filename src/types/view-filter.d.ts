@@ -2,7 +2,7 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-import type {DirEntry} from '@/types/dir-entry';
+import type { DirEntry } from '@/types/dir-entry';
 
 export type ViewFilterProperty = {
   name: string;
@@ -10,43 +10,43 @@ export type ViewFilterProperty = {
   prefix: string;
   itemPropertyPath: string;
   isDeepProperty?: boolean;
-  processing?: (propertyValue: any) => any;
-}
+  processing?: (propertyValue: string) => string;
+};
 
 export type NavigatorViewFilterParams = {
   options: {
     glob: boolean;
   };
   properties: ViewFilterProperty[];
-}
+};
 
 export type NotesViewFilterParams = {
   options: {
     glob: boolean;
   };
   properties: ViewFilterProperty[];
-}
+};
 
 export type DashboardViewFilterParams = {
   options: {
     glob: boolean;
   };
   properties: ViewFilterProperty[];
-}
+};
 
 export type SettingsViewFilterParams = {
   options: {
     glob: boolean;
   };
   properties: ViewFilterProperty[];
-}
+};
 
 export type ExtensionsViewFilterParams = {
   options: {
     glob: boolean;
   };
   properties: ViewFilterProperty[];
-}
+};
 
 export type ViewFilter = {
   navigator: NavigatorViewFilterParams;
@@ -54,13 +54,13 @@ export type ViewFilter = {
   dashboard: DashboardViewFilterParams;
   settings: SettingsViewFilterParams;
   extensions: ExtensionsViewFilterParams;
-}
+};
 
 export type ViewFilterName = 'navigator' | 'notes' | 'dashboard' | 'settings' | 'extensions';
 
 export type FilterNavigatorViewParams = NavigatorViewFilterParams & {
   items: DirEntry[];
   showHiddenItems: boolean;
-}
+};
 
-export type FilterNavigatorViewResult = DirEntry[]
+export type FilterNavigatorViewResult = DirEntry[];

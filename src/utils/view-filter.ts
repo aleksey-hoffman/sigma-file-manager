@@ -2,10 +2,10 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-import {minimatch} from 'minimatch';
-import type {ViewFilterProperty, FilterNavigatorViewParams, FilterNavigatorViewResult} from '@/types/view-filter';
+import { minimatch } from 'minimatch';
+import type { ViewFilterProperty, FilterNavigatorViewParams, FilterNavigatorViewResult } from '@/types/view-filter';
 
-export function filterNavigatorView(params: {query: string} & FilterNavigatorViewParams): FilterNavigatorViewResult {
+export function filterNavigatorView(params: { query: string } & FilterNavigatorViewParams): FilterNavigatorViewResult {
   if (!params.items || params.items.length === 0) {
     return [];
   }
@@ -17,12 +17,15 @@ export function filterNavigatorView(params: {query: string} & FilterNavigatorVie
   let queryPrefix: string | undefined;
   let queryValue: string;
   const queryParts = params.query.split(':').map(str => str.trim());
+
   if (queryParts.length === 1) {
     queryValue = queryParts[0];
-  } else if (queryParts.length === 2) {
+  }
+  else if (queryParts.length === 2) {
     queryPrefix = queryParts[0];
     queryValue = queryParts[1];
-  } else {
+  }
+  else {
     return params.items;
   }
 
@@ -35,17 +38,17 @@ export function filterNavigatorView(params: {query: string} & FilterNavigatorVie
 function getFiltered(
   params: FilterNavigatorViewParams,
   propertiesToSearch: ViewFilterProperty[],
-  queryValue: string
+  queryValue: string,
 ): FilterNavigatorViewResult {
   const matchedItems: FilterNavigatorViewResult = [];
 
-  params.items.forEach(item => {
+  params.items.forEach((item) => {
     if (!params.showHiddenItems && item.is_hidden) {
       return;
     }
 
     if (
-      propertiesToSearch.some(propertyToSearch => {
+      propertiesToSearch.some((propertyToSearch) => {
         const propertyValue = getPropertyValue(item, propertyToSearch);
 
         if (propertyValue) {
@@ -82,7 +85,8 @@ function getPropertyValue(item: unknown, property: ViewFilterProperty): unknown 
     if (property.processing) {
       propertyValue = property.processing(propertyValue);
     }
-  } else {
+  }
+  else {
     propertyValue = (item as Record<string, unknown>)[property.itemPropertyPath];
   }
 
@@ -103,7 +107,7 @@ function processItemProperty(params: FilterNavigatorViewParams, itemProperty: an
   return processedItemProperty.toLowerCase();
 }
 
-function convertHTMLtoText (html: string): string {
+function convertHTMLtoText(html: string): string {
   const DOMparser = new DOMParser();
   const virtualDoc = DOMparser.parseFromString(html, 'text/html');
   html = virtualDoc.body.innerText.replace(/\\|\//g, '');
@@ -116,10 +120,12 @@ function propertyMatchesQuery(params: FilterNavigatorViewParams, itemProperty: s
   if (params.options.glob) {
     if (processedQueryValue.length === 0) {
       return true;
-    } else {
+    }
+    else {
       return minimatch(itemProperty, processedQueryValue);
     }
-  } else {
+  }
+  else {
     return itemProperty.includes(processedQueryValue);
   }
 }

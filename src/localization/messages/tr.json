@@ -20,7 +20,12 @@
   "language": {
     "language": "Dil",
     "isCorrectedLanguage": "Çeviri ana dili İngilizce olan bir kişi tarafından gözden geçirilmiş ve düzeltilmiştir",
-    "isAutoTranslatedLanguage": "Otomatik çevrilmiştir. Ana dili İngilizce olan biri tarafından gözden geçirilmeli ve düzeltilmelidir"
+    "isAutoTranslatedLanguage": "Otomatik çevrilmiştir. Ana dili İngilizce olan biri tarafından gözden geçirilmeli ve düzeltilmelidir",
+    "loadRemoteTranslations": "Uzaktan çevirileri yükle",
+    "autoFetch": "Otomatik çeviri güncellemeleri",
+    "fetchLatestTranslationsTitle": "En son çevirileri proje depo alanından otomatik olarak al",
+    "autoFetchTranslationsOnAppLoad": "Uygulama tamamen kapalı durumdan açıldığında her seferinde",
+    "autoFetchTranslationsPeriodically": "Periyodik olarak (her saat)"
   },
   "placeholders": {
     "noDrivesFound": "Sürücü bulunamadı",
@@ -157,8 +162,7 @@
     "dirItem": {
       "score": "Puan",
       "itemIsInaccessible": "Öğeye erişilemiyor"
-    },
-    "toggleSplitView": "Bölünmüş görünümü değiştir"
+    }
   },
   "dashboard": {
     "pinnedWillBeShownHere": "Sabitlenmiş dizin öğeleri burada gösterilecek",
@@ -341,8 +345,8 @@
       "none": "Hiçbiri",
       "minimal": "En az",
       "homePageItemCardDesign": "Ana sayfa öğe kartı tasarımı",
-      "infusiveExtruded": "Enjeksyonlu | kabartma",
-      "infusiveFlatGlow": "Enjeksyonlu | düz",
+      "neoinfusiveExtruded": "Neoinfüzyonlu | kalıptan çekilmiş",
+      "neoinfusiveFlatGlow": "Neoinfusive | düz parlama",
       "dashboardOptions": "Pano seçenekleri",
       "showTimeline": "Zaman çizelgesini göster",
       "homePageCards": "Ana sayfa kartları",
@@ -516,6 +520,18 @@
       "storeTheDateOpeningDirectoryItem": "Bir dizin öğesinin açılma tarihini sakla",
       "statisticsLocationDescription": "İstatistik verileri, uygulama dizininde bulunan \"stats.json\" adlı dosyada saklanır.",
       "openFileLocation": "Dosya konumunu aç"
+    },
+    "advanced": {
+      "advancedSettings": "Gelişmiş Ayarlar",
+      "description": "Bu ayarlar, başlıca programcılar ve ileri düzey kullanıcılar içindir",
+      "terminal": {
+        "description": "Dizinleri açmak için terminal",
+        "adminDescription": "Dizinleri açmak için yönetici terminali"
+      },
+      "shell": {
+        "description": "Dizinleri açmak için shell",
+        "adminDescription": "Dizinleri açmak için yönetici shell"
+      }
     }
   },
   "projectGithubButtons": {
@@ -534,7 +550,8 @@
     "input": "Giriş",
     "search": "Arama",
     "dataStorage": "Veri depolama",
-    "stats": "İstatistikler"
+    "stats": "İstatistikler",
+    "advanced": "Gelişmiş"
   },
   "settingsTags": {
     "language": "dil",
@@ -565,7 +582,8 @@
     "dataBackupReminder": "veri, depolama, yedekleme",
     "driveDetection": "sürücü, usb, depolama, disk, cihaz, algılama, bağlantı",
     "imageThumbnails": "resim, resim, küçük resimler, sınır, depolama, kaynaklar, kullanım, performans",
-    "directoryItemStatistics": "dizin, öğe, istatistikler, istatistikler, veri, depolama, kullanım"
+    "directoryItemStatistics": "dizin, öğe, istatistikler, istatistikler, veri, depolama, kullanım",
+    "advanced": "gelişmiş, pro, geliştirici, terminal, kabuk"
   },
   "dataBackupReminder": {
     "title": "Hatırlatma: veri yedekleme",
@@ -575,9 +593,9 @@
   "drag": {
     "hitButtonToCancel": "[Esc] düğmesine basın veya iptal etmek için buraya tıklayın",
     "holdShiftToChangeMode": "Modu değiştirmek için [Shift]'e basılı tutun",
-    "dragDrop": "Sürükle bırak",
-    "customImageOrVideoHere": "özel resim veya video burada",
-    "acceptsFileImageVideo": "Kabul eder: dosya (resim, video)",
+    "dragDrop": "Dosyaları bırakın veya burayı tıklayın",
+    "customImageOrVideoHere": "özel arka planlar eklemek için",
+    "acceptsFileImageVideo": "Kabul eder: yerel resim ve video dosyaları",
     "dropHereToCopyIntoTheCurrentDirectory": "Geçerli dizine kopyalamak için buraya bırakın",
     "dropHereToMoveIntoTheCurrentDirectory": "Geçerli dizine gitmek için buraya bırakın",
     "dropHereToDownloadIntoTheCurrentDirectory": "Mevcut dizine indirmek için buraya bırakın",
@@ -597,16 +615,16 @@
     "columnType": "Sütun tipi",
     "typeTitles": {
       "name": "İsim",
-      "dateModified": "Değiştirme tarihi",
-      "dateAccessed": "Erişim tarihi",
-      "dateCreated": "Oluşturma tarihi",
+      "dateModifiedContents": "Tarih değiştirilen içerikler",
+      "dateModifiedMeta": "Tarih değiştirilen meta",
+      "dateCreated": "Tarih oluşturuldu",
       "itemsSize": "Öğeler / boyut",
       "status": "Durum"
     },
     "typeShortTitles": {
       "name": "İsim",
-      "dateModified": "Değiştirildi",
-      "dateAccessed": "Erişildi",
+      "dateModifiedContents": "Değiştirilmiş içerik",
+      "dateModifiedMeta": "Değiştirilmiş meta",
       "dateCreated": "Oluşturuldu",
       "itemsSize": "Öğeler / boyut",
       "status": "Durum"
@@ -822,6 +840,8 @@
       "convertMarkdownWhileTyping": "Yazarken temel işaretleme sözdizimini HTML'ye dönüştür",
       "structure": "Yapı",
       "chars": "Karakterler",
+      "created": "Oluşturuldu",
+      "modified": "Değiştirilmiş",
       "markdownShortcuts": "İşaretleme kısayolları",
       "withTheCursorOnANewLineType": "İmleç yeni bir satırdayken, karşılık gelen öğeyi eklemek için belirtilen sırayı yazın.",
       "tips": "İpuçları",
@@ -1053,6 +1073,50 @@
         "typeInAddressManually": "Adresi manuel olarak girin",
         "buttonInTheAddressBarMenu": "\"Gezgin\" sayfasındaki eylem çubuğunda bulunan adres çubuğu menüsündeki düğme."
       }
+    },
+    "trashCurrentDir": {
+      "title": "Trashing current directory",
+      "description": "Selected items include the currently opened directory.",
+      "confirm": "Confirm, if this was intentional and you want to send it to trash.",
+      "trash": "Trash"
+    },
+    "trashProtected": {
+      "title": "Trashing protected",
+      "description": "Selected items include {count} protected items.",
+      "confirm": "Confirm, if you want to send them to trash.",
+      "trashUnprotected": "Trash unprotected",
+      "trashAll": "Trash all"
+    },
+    "deleteProtected": {
+      "title": "Deleting protected",
+      "description": "Selected items include {count} protected items.",
+      "confirm": "Confirm, if you want to delete them.",
+      "deleteUnprotected": "Delete unprotected",
+      "deleteAll": "Delete all"
+    },
+    "deleteIrreversibly": {
+      "title": "Deleting from drive",
+      "description": "This operation will permanently delete {count} items from your computer.",
+      "confirm": "Confirm, if you understand this cannot be undone.",
+      "delete": "Delete"
+    },
+    "deleteCurrentDir": {
+      "title": "Deleting current directory",
+      "description": "Selected items include the currently opened directory.",
+      "confirm": "Confirm, if this was intentional and you want to delete it.",
+      "delete": "Delete"
+    },
+    "deleteInRoot": {
+      "title": "Deleting root items",
+      "description": "Deleting system files in storage root might break the computer's operating system.",
+      "confirm": "Confirm, if you know what you are deleting.",
+      "delete": "Delete"
+    },
+    "trashInRoot": {
+      "title": "Trashing root items",
+      "description": "Deleting system files in storage root might break the computer's operating system.",
+      "confirm": "Confirm, if you know what you are deleting.",
+      "trash": "Trash"
     }
   },
   "notifications": {
@@ -1103,6 +1167,8 @@
     "removedNItemsOfTotal": "{removedAmount} nin {totalAmount}",
     "trashedNItemsOfTotal": "{totalAmount} Öğeden {removedAmount} Öğe Çöp Kutusuna Atıldı",
     "deletedNItemsOfTotal": "{totalAmount} Öğeden {removedAmount} Öğe Silindi",
+    "trashedNItems": "{totalAmount} Öğe Çöp Kutusuna Atıldı",
+    "deletedNItems": "{totalAmount} Öğe Silindi",
     "couldNotTrash": "Çöp kutusuna atılamadı",
     "failedToDeleteSomeItems": "Bazı öğeler silinemedi",
     "couldNotDelete": "Silinemedi",
@@ -1152,7 +1218,8 @@
     "driveWasConnected": "Sürücü bağlandı",
     "driveScanInitiated": "Sürücü taraması başlatıldı",
     "oneOfTheSearchFilesIsDamaged": "Arama dosyalarından biri hasarlı",
-    "workspaceAdded": "Çalışma alanı eklendi"
+    "workspaceAdded": "Çalışma alanı eklendi",
+    "failedToFetchInstalledTerminals": "Yüklü terminaller alınamadı"
   },
   "contextMenus": {
     "dirItem": {
@@ -1160,7 +1227,7 @@
       "goBackToMainMenu": "Ana menüye dön",
       "openProgramEditor": "Program düzenleyiciyi aç",
       "addProgram": "Program ekle",
-      "colorTags": "Renk etiketleri",
+      "tags": "Etiketler",
       "protectItem": "Öğeyi koru",
       "protectedListDescription": "Etkinleştirilirse, öğe korumalı listeye eklenecektir. Yalnızca bu uygulama içinden değiştirilmeye/silinmeye karşı korunacaktır. Diğer uygulamalar yine de öğeyi değiştirebilir/silebilir.",
       "addToPinned": "Sabitlenenlere ekle",
@@ -1281,6 +1348,9 @@
   "getSize": "Boyut al",
   "path": "Yol",
   "realPath": "Hedef yolunu bağla",
+  "created": "Oluşturuldu",
+  "modified": "Değiştirilmiş içerik",
+  "changed": "Değiştirilmiş meta",
   "protected": "Korumalı",
   "pinned": "Sabitlendi",
   "timeline": "Zaman çizelgesi",
@@ -1343,5 +1413,7 @@
   "closedCaptions": "altyazılar",
   "protectedItemsShort": "Korumalı",
   "pinnedItemsShort": "Ekli",
-  "freeOf": "ücretsiz olarak"
+  "freeOf": "ücretsiz olarak",
+  "terminal": "Terminal",
+  "conflict": "Çatışma"
 }

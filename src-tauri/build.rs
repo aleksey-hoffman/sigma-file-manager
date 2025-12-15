@@ -3,5 +3,5 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 fn main() {
-  tauri_build::build()
+    tauri_build::build()
 }

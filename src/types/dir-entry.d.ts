@@ -6,7 +6,7 @@ export type ExtendedVirtualEntry = {
   type: 'dirs' | 'files' | 'dirs-divider' | 'files-divider' | 'top-spacer' | 'bottom-spacer';
   items: DirEntry[] | Divider[] | Spacer[];
   fullWidth?: boolean;
-}
+};
 
 export type DirEntry = {
   name: string;
@@ -22,15 +22,15 @@ export type DirEntry = {
   is_dir: boolean;
   is_symlink: boolean;
   is_hidden: boolean;
-}
+};
 
 export type Divider = {
   title: string;
   type: string;
-}
+};
 
 export type Spacer = {
   type: string;
   showScrollTopButton?: boolean;
-  props?: {[key: string]: unknown};
-}
+  props?: { [key: string]: unknown };
+};
