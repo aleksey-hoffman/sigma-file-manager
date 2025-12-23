@@ -38,6 +38,7 @@
     "@vueuse/core": "^13.9.0",
     "class-variance-authority": "^0.7.1",
     "dayjs": "^1.11.13",
+    "esbuild": "^0.27.2",
     "lodash.clonedeep": "^4.5.0",
     "lucide-vue-next": "^0.525.0",
     "pinia": "^3.0.3",
