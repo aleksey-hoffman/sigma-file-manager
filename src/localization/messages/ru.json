@@ -67,8 +67,14 @@
     "newTabInCurrentWorkspace": "Новая вкладка в текущем рабочем пространстве",
     "closeAllTabsInCurrentWorkspace": "Закрыть все вкладки в текущем рабочем пространстве",
     "noTabsInCurrentWorkspace": "Нет вкладок в текущем рабочем пространстве",
-    "tabs": "Вкладки"
+    "tabs": "Вкладки",
+    "newTab": "Новая вкладка",
+    "tabActions": "Действия с вкладками",
+    "closeTab": "Закрыть вкладку",
+    "closeOtherTabs": "Закрыть другие вкладки",
+    "closeAllTabs": "Закрыть все вкладки"
   },
+  "splitView": "Разделённый вид",
   "workspaces": {
     "title": "Рабочие пространства",
     "editWorkspaces": "Редактировать рабочие пространства"
@@ -241,6 +247,15 @@
       "increaseZoomLevel": "Увеличить масштаб",
       "resetZoomLevel": "Сбросить уровень масштабирования"
     },
+    "actions": {
+      "appDirectories": "Директории приложения",
+      "externalLinks": "Внешние ссылки",
+      "openAppDataDirectory": "Открыть директорию данных приложения",
+      "openAppConfigDirectory": "Открыть директорию конфигурации приложения",
+      "openAppLogDirectory": "Открыть директорию логов приложения",
+      "changelog": "История изменений",
+      "allReleases": "Все релизы"
+    },
     "windowControls": {
       "minimizeAppToTray": {
         "radioLabel": "Свернуть в трей и сохранить в памяти (рекомендуется)",
@@ -384,7 +399,8 @@
       "toAutocomplete": "для автозаполнения и перебора элементов папки",
       "toOpenThePath": "открыть путь",
       "copyPathToClipboard": "Копировать путь",
-      "openCopiedPath": "Вставить и открыть скопированный путь"
+      "openCopiedPath": "Вставить и открыть скопированный путь",
+      "noMatchingDirectories": "Нет подходящих каталогов"
     },
     "clipboard": {
       "inactiveUnselectable": "неактивный невыбираемый",
@@ -401,7 +417,8 @@
       "sortingElementDisplayType": "Тип отображения сортирующего элемента",
       "showSortingIcon": "Показать значок сортировки",
       "showSortingToolbar": "Показать панель инструментов сортировки",
-      "navigatorViewLayout": "Макет представления навигатора",
+      "navigatorViewLayout": "Макет",
+      "navigatorOptions": "Параметры навигатора",
       "navigatorItemHoverEffect": "Эффект наведения на элемент навигатора",
       "navigatorItemList": "Список элементов навигатора",
       "ocdNameColumnMaxWidth": "OCD | Максимальная ширина столбца \"Имя\":",
@@ -1276,6 +1293,11 @@
   "shortcut": "Шорткат",
   "shortcutPlural": "Шорткаты",
   "fullScreen": "Полноэкранный",
+  "system": "Система",
+  "extension": "Расширение",
+  "accessed": "Доступ",
+  "symlink": "Символическая ссылка",
+  "hidden": "Скрытый",
   "menu": "Меню",
   "contextMenu": "Контекстное меню",
   "copy": "Копировать",
@@ -1415,5 +1437,35 @@
   "pinnedItemsShort": "Прикрепленные",
   "freeOf": "свободно из",
   "terminal": "Терминал",
-  "conflict": "Конфликт"
+  "conflict": "Конфликт",
+  "fileBrowser": {
+    "goBack": "Назад",
+    "goForward": "Вперёд",
+    "goUp": "Вверх",
+    "goHome": "Домой",
+    "refresh": "Обновить",
+    "enterPath": "Введите путь...",
+    "quickSearch": "Быстрый поиск",
+    "searchThisDirectory": "Поиск в этой папке...",
+    "name": "Имя",
+    "size": "Размер",
+    "modified": "Изменён",
+    "folders": "Папки",
+    "images": "Изображения",
+    "videos": "Видео",
+    "video": "Видео",
+    "otherFiles": "Другие файлы",
+    "itemCount": "{count} элементов",
+    "itemsTotal": "{count} элементов",
+    "showingFiltered": "Показано {filtered} из {total} элементов",
+    "actions": {
+      "rename": "Переименовать",
+      "copy": "Копировать",
+      "cut": "Вырезать",
+      "delete": "Удалить",
+      "openWith": "Открыть с помощью...",
+      "quickView": "Быстрый просмотр",
+      "share": "Поделиться"
+    }
+  }
 }

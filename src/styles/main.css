@@ -1,5 +1,17 @@
 @import "./preflight.css";
 
+.shortcut {
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  margin-left: 8px;
+  background-color: hsl(var(--foreground) / 15%);
+  color: hsl(var(--foreground) / 80%);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
 @layer base {
   /* Override preflight default hover cursor for buttons and button-like elements */
   button:not(:disabled),
@@ -12,65 +24,69 @@
   }
 
   body {
+    overflow: hidden;
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
-    overflow: hidden;
   }
 
   .sr-only {
     position: absolute;
+    overflow: hidden;
     width: 1px;
     height: 1px;
     padding: 0;
+    border-width: 0;
     margin: -1px;
-    overflow: hidden;
     clip: rect(0, 0, 0, 0);
     white-space: nowrap;
-    border-width: 0;
   }
 
-  @keyframes fade-in {
+  @keyframes sigma-ui-fade-in {
     from {
       opacity: 0;
     }
+
     to {
       opacity: 1;
     }
   }
 
-  @keyframes spin {
+  @keyframes sigma-ui-spin {
     from {
       transform: rotate(0deg);
     }
+
     to {
       transform: rotate(360deg);
     }
   }
 
-  @keyframes collapsible-down {
+  @keyframes sigma-ui-collapsible-down {
     from {
       height: 0;
     }
+
     to {
       height: var(--reka-collapsible-content-height);
     }
   }
 
-  @keyframes collapsible-up {
+  @keyframes sigma-ui-collapsible-up {
     from {
       height: var(--reka-collapsible-content-height);
     }
+
     to {
       height: 0;
     }
   }
 
   .animate-fade-in {
-    animation: fade-in 0.5s ease;
+    animation: sigma-ui-fade-in 0.5s ease;
   }
 
   .animate-spin {
-    animation: spin 1s linear infinite;
+    animation: sigma-ui-spin 1s linear infinite;
   }
 
   .fade-slide-top-enter-active,
@@ -80,8 +96,8 @@
 
   .fade-slide-top-enter-from,
   .fade-slide-top-leave-to {
-    opacity: 0;
     filter: blur(4px);
+    opacity: 0;
     transform: translateY(8px);
   }
 }

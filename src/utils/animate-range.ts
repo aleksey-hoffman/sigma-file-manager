@@ -2,8 +2,27 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-export default function animateRange(params) {
-  const defaultParams = {
+import type { Ref } from 'vue';
+
+interface AnimateRangeParams {
+  start?: number;
+  end?: number;
+  steps?: number;
+  stepDuration?: number;
+  timingFunction?: string;
+  target: Ref<number> | null;
+}
+
+interface InterpolateParams {
+  start: number;
+  end: number;
+  steps: number;
+  stepDuration: number;
+  timingFunction: string;
+}
+
+export default function animateRange(params: AnimateRangeParams) {
+  const defaultParams: InterpolateParams & { target: null } = {
     start: 0,
     end: 10,
     steps: 10,
@@ -11,39 +30,42 @@ export default function animateRange(params) {
     timingFunction: 'linear',
     target: null,
   };
-  params = {
+  const mergedParams = {
     ...defaultParams,
     ...params,
   };
-  const interpolatedList = interpolateChange(params);
+  const interpolatedList = interpolateChange(mergedParams);
   let step = 0;
   const interval = setInterval(() => {
     if (step < interpolatedList.length) {
-      params.target.value = interpolatedList[step];
+      if (mergedParams.target) {
+        mergedParams.target.value = interpolatedList[step];
+      }
+
       step += 1;
     }
     else {
       clearInterval(interval);
     }
-  }, params.stepDuration);
+  }, mergedParams.stepDuration);
 }
 
-function interpolateChange(params) {
-  const defaultParams = {
+function interpolateChange(params: Partial<InterpolateParams>): number[] {
+  const defaultParams: InterpolateParams = {
     start: 0,
     end: 10,
     steps: 10,
     stepDuration: 10,
     timingFunction: 'linear',
   };
-  params = {
+  const mergedParams = {
     ...defaultParams,
     ...params,
   };
-  return splitIntoEqualParts(params);
+  return splitIntoEqualParts(mergedParams);
 }
 
-function splitIntoEqualParts(params) {
+function splitIntoEqualParts(params: InterpolateParams): number[] {
   let { start, end } = params;
   const { steps } = params;
   const result: number[] = [];

@@ -6,7 +6,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <script setup lang="ts">
 import { SelectLabel, type SelectLabelProps } from 'reka-ui';
 
-const props = defineProps<SelectLabelProps>();
+defineProps<SelectLabelProps>();
 </script>
 
 <template>

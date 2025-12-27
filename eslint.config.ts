@@ -5,6 +5,7 @@ import pluginVitest from '@vitest/eslint-plugin';
 import pluginOxlint from 'eslint-plugin-oxlint';
 import pluginStylistic from '@stylistic/eslint-plugin';
 import checkFile from 'eslint-plugin-check-file';
+import pluginVueI18n from '@intlify/eslint-plugin-vue-i18n';
 
 export default defineConfigWithVueTs(
   globalIgnores(['**/dist/**', '**/dist-ssr/**', '**/coverage/**', 'src-tauri/**']),
@@ -24,6 +25,17 @@ export default defineConfigWithVueTs(
       'check-file': checkFile,
     },
     rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['../*'],
+              message: 'Use alias imports (@/) instead of relative parent imports (../)',
+            },
+          ],
+        },
+      ],
       'func-style': ['error', 'declaration', { allowTypeAnnotation: true }],
       'vue/max-attributes-per-line': 'error',
       'vue/multi-word-component-names': 'off',
@@ -80,8 +92,61 @@ export default defineConfigWithVueTs(
     },
     settings: {
       'vue-i18n': {
-        localeDir: 'localization/messages',
+        localeDir: './src/localization/messages/*.json',
       },
+    },
+  },
+  {
+    files: ['src/**/*.vue'],
+    plugins: {
+      '@intlify/vue-i18n': pluginVueI18n,
+    },
+    rules: {
+      '@intlify/vue-i18n/no-raw-text': [
+        'error',
+        {
+          ignoreNodes: ['v-icon'],
+          ignoreText: [
+            '(',
+            ')',
+            '(+',
+            '[',
+            ']',
+            '{',
+            '}',
+            ',',
+            '.',
+            '...',
+            ';',
+            ':',
+            '"',
+            '\'',
+            '+',
+            '-',
+            '=',
+            '%',
+            '@',
+            '|',
+            '/',
+            '\\',
+            ' ',
+            '—',
+            'Alt',
+            'Ctrl',
+            'Shift',
+            'Meta',
+            'Enter',
+            '⚠',
+            'Esc',
+            'Tab',
+            'Shift+Tab',
+            'Ctrl+F',
+            'Ctrl+Shift+G',
+            'Ctrl+P',
+            '↑↓',
+          ],
+        },
+      ],
     },
   },
 );

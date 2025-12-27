@@ -36,27 +36,41 @@ export const useUserPathsStore = defineStore('userPaths', () => {
   const customPaths = ref<CustomPaths>({
     appUserDataDir: '',
     appUserDataSettingsName: '',
-    appUserDataSettingsDir: '',
+    appUserDataSettingsPath: '',
+    appUserDataWorkspacesName: '',
+    appUserDataWorkspacesPath: '',
   });
 
-  async function init() {
-    const promises = Object.keys(userPathsFunctions).map(async (key) => {
-      try {
-        userPaths.value[key as keyof UserPaths] = await userPathsFunctions[key as keyof UserPathsFunctions]();
-      }
-      catch (error) {
-        userPaths.value[key as keyof UserPaths] = '';
-      }
-    });
-    await Promise.allSettled(promises);
+  const platformSpecificPaths = new Set(['runtimeDir', 'fontDir', 'executableDir', 'templateDir']);
 
-    setCustomPaths();
+  async function init() {
+    try {
+      const promises = Object.keys(userPathsFunctions).map(async (key) => {
+        try {
+          userPaths.value[key as keyof UserPaths] = await userPathsFunctions[key as keyof UserPathsFunctions]();
+        }
+        catch {
+          if (!platformSpecificPaths.has(key)) {
+            console.warn(`Failed to resolve path for ${key}`);
+          }
+
+          userPaths.value[key as keyof UserPaths] = '';
+        }
+      });
+      await Promise.allSettled(promises);
+      setCustomPaths();
+    }
+    catch (error) {
+      console.error('Failed to initialize user paths:', error);
+    }
   }
 
   function setCustomPaths() {
     customPaths.value.appUserDataDir = `${userPaths.value.appDataDir}/user-data`;
     customPaths.value.appUserDataSettingsName = 'user-settings.json';
-    customPaths.value.appUserDataSettingsDir = `${customPaths.value.appUserDataDir}/${customPaths.value.appUserDataSettingsName}`;
+    customPaths.value.appUserDataSettingsPath = `${customPaths.value.appUserDataDir}/${customPaths.value.appUserDataSettingsName}`;
+    customPaths.value.appUserDataWorkspacesName = 'workspaces.json';
+    customPaths.value.appUserDataWorkspacesPath = `${customPaths.value.appUserDataDir}/${customPaths.value.appUserDataWorkspacesName}`;
   }
 
   return {

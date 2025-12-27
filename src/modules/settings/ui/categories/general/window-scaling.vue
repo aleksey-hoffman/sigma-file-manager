@@ -10,9 +10,9 @@ import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { ref, onMounted } from 'vue';
 import { getCurrentWebview } from '@tauri-apps/api/webview';
 import { getCurrentWindow } from '@tauri-apps/api/window';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useI18n } from 'vue-i18n';
-import { FullscreenIcon } from 'lucide-vue-next';
+import { FullscreenIcon, MinusIcon, PlusIcon } from 'lucide-vue-next';
 
 const webview = getCurrentWebview();
 const currentWindow = getCurrentWindow();
@@ -76,7 +76,7 @@ async function toggleFullscreen() {
           :disabled="currentZoomFactor <= 0.6"
           class="zoom-btn"
         >
-          −
+          <MinusIcon :size="16" />
         </Button>
         <Button
           variant="outline"
@@ -85,32 +85,30 @@ async function toggleFullscreen() {
           :disabled="currentZoomFactor >= 1.5"
           class="zoom-btn"
         >
-          +
+          <PlusIcon :size="16" />
         </Button>
         <Button
           variant="outline"
           @click="resetZoom"
           class="zoom-reset"
         >
-          RESET
+          {{ t('reset') }}
         </Button>
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger>
-              <Button
-                variant="outline"
-                size="icon"
-                @click="toggleFullscreen"
-                class="zoom-btn"
-              >
-                ⛶
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Add to library</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger>
+            <Button
+              variant="outline"
+              size="icon"
+              @click="toggleFullscreen"
+              class="zoom-btn"
+            >
+              <FullscreenIcon :size="16" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>{{ t('fullScreen') }}</p>
+          </TooltipContent>
+        </Tooltip>
       </div>
     </div>
   </SettingsItem>

@@ -9,7 +9,6 @@ import { useAppStore } from '@/stores/runtime/app';
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
@@ -30,32 +29,30 @@ const appStore = useAppStore();
       </div>
     </div>
     <div class="nav-sidebar-items">
-      <TooltipProvider
+      <Tooltip
         v-for="(item, index) in appStore.pages"
         :key="index"
         :delay-duration="0"
       >
-        <Tooltip>
-          <TooltipTrigger as-child>
-            <Button
-              class="nav-sidebar-item"
-              size="icon"
-              :value="item.name"
-              :is-active="item.name === router.currentRoute.value.name"
-              @click="router.push({ name: item.name })"
-            >
-              <component
-                :is="item.icon"
-                :size="18"
-                class="nav-sidebar-item-icon"
-              />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent side="right">
-            {{ item.title }}
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+        <TooltipTrigger as-child>
+          <Button
+            class="nav-sidebar-item"
+            size="icon"
+            :value="item.name"
+            :is-active="item.name === router.currentRoute.value.name"
+            @click="router.push({ name: item.name })"
+          >
+            <component
+              :is="item.icon"
+              :size="18"
+              class="nav-sidebar-item-icon"
+            />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent side="right">
+          {{ item.title }}
+        </TooltipContent>
+      </Tooltip>
     </div>
   </div>
 </template>

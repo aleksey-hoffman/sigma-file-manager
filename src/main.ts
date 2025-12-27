@@ -18,6 +18,6 @@ app.use(router);
 app.use(i18n);
 app.use(VWave, {
   cancellationPeriod: 0,
-  color: 'hsl(198deg 19% 38%)',
+  color: 'hsl(var(--primary))',
 });
 app.mount('#app');

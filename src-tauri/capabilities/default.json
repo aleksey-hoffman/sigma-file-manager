@@ -16,6 +16,14 @@
     "core:tray:default",
     "store:default",
     {
+      "identifier": "opener:allow-open-path",
+      "allow": [
+        {
+          "path": "**"
+        }
+      ]
+    },
+    {
       "identifier": "opener:allow-open-url",
       "allow": [
         {

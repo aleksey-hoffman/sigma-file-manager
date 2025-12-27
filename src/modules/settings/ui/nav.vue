@@ -5,7 +5,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <script setup lang="ts">
 import { SettingsNavItem } from '@/modules/settings';
-import { useSettingsStore } from '../stores/store';
+import { useSettingsStore } from '@/stores/runtime/settings';
 
 const settingsStore = useSettingsStore();
 </script>

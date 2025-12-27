@@ -129,7 +129,6 @@ export const useSettingsStore = defineStore('settings', () => {
 
     const searchTerm = search.value.toLowerCase();
 
-    // When searching, show ALL matching sections regardless of current tab
     return allSettingsSections.filter((section) => {
       const title = t(section.titleKey).toLowerCase();
       const tags = t(section.tags).toLowerCase();
@@ -158,9 +157,5 @@ export const useSettingsStore = defineStore('settings', () => {
     currentTabSections,
     setCurrentTab,
     clearSearch,
-    // Legacy aliases for backward compatibility
-    allSettings: allSettingsSections,
-    filteredSettings: filteredSections,
-    currentTabSettings: currentTabSections,
   };
 });

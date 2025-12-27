@@ -22,8 +22,6 @@ import {
   ComboboxList,
   ComboboxTrigger,
 } from '@/components/ui/combobox';
-import externalLinks from '@/data/external-links';
-import { openUrl } from '@tauri-apps/plugin-opener';
 
 const { locale, t } = useI18n();
 const userSettingsStore = useUserSettingsStore();
@@ -43,18 +41,6 @@ const selectedLanguage = computed({
     :title="t('language.language')"
     :icon="LanguagesIcon"
   >
-    <template #description>
-      <p class="language-info">
-        You can add / edit a language on
-        <a
-          :href="externalLinks.githubLanguageInstructionsLink"
-          class="language-link"
-          @click.prevent="openUrl(externalLinks.githubLanguageInstructionsLink)"
-        >
-          Github
-        </a>
-      </p>
-    </template>
     <div class="language-section">
       <Combobox
         v-model="selectedLanguage"
@@ -79,12 +65,12 @@ const selectedLanguage = computed({
             </span>
             <ComboboxInput
               class="language-combobox__input"
-              placeholder="Search..."
+              :placeholder="t('search')"
             />
           </div>
 
           <ComboboxEmpty>
-            No language found.
+            {{ t('noData') }}
           </ComboboxEmpty>
 
           <ComboboxGroup>
@@ -111,23 +97,6 @@ const selectedLanguage = computed({
   display: flex;
   flex-direction: column;
   gap: 1rem;
-}
-
-.language-info {
-  margin: 0;
-  color: hsl(var(--muted-foreground));
-  font-size: 0.875rem;
-  line-height: 1.4;
-}
-
-.language-link {
-  color: hsl(var(--primary));
-  cursor: pointer;
-  text-decoration: underline;
-}
-
-.language-link:hover {
-  opacity: 0.8;
 }
 
 .language-combobox__trigger {

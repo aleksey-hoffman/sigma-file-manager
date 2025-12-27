@@ -3,10 +3,10 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 export type Runtime = {
-  navigator: Navigator;
+  navigator: RuntimeNavigator;
 };
 
-export type Navigator = {
+export type RuntimeNavigator = {
   infoPanel: NavigatorInfoPanel;
 };
 

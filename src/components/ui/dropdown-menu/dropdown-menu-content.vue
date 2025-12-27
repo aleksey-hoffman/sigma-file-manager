@@ -55,14 +55,14 @@ const forwarded = useForwardPropsEmits(props, emits);
 }
 
 .sigma-ui-dropdown-menu-content[data-state="open"] {
-  animation: fade-in 200ms ease-out;
+  animation: sigma-ui-dropdown-menu-fade-in 200ms ease-out;
 }
 
 .sigma-ui-dropdown-menu-content[data-state="closed"] {
-  animation: fade-out 100ms ease-in forwards;
+  animation: sigma-ui-dropdown-menu-fade-out 100ms ease-in forwards;
 }
 
-@keyframes fade-in {
+@keyframes sigma-ui-dropdown-menu-fade-in {
   from {
     opacity: 0;
     transform: scale(0.95);
@@ -74,7 +74,7 @@ const forwarded = useForwardPropsEmits(props, emits);
   }
 }
 
-@keyframes fade-out {
+@keyframes sigma-ui-dropdown-menu-fade-out {
   from {
     opacity: 1;
     transform: scale(1);

@@ -67,8 +67,14 @@
     "newTabInCurrentWorkspace": "在当前工作区中的新建选项卡",
     "closeAllTabsInCurrentWorkspace": "关闭当前工作区中的所有选项卡",
     "noTabsInCurrentWorkspace": "当前工作区没有标签",
-    "tabs": "选项卡"
+    "tabs": "选项卡",
+    "newTab": "新标签页",
+    "tabActions": "标签操作",
+    "closeTab": "关闭标签",
+    "closeOtherTabs": "关闭其他标签",
+    "closeAllTabs": "关闭所有标签"
   },
+  "splitView": "分屏视图",
   "workspaces": {
     "title": "工作区",
     "editWorkspaces": "编辑工作区"
@@ -241,6 +247,15 @@
       "increaseZoomLevel": "增加缩放级别",
       "resetZoomLevel": "重置缩放级别"
     },
+    "actions": {
+      "appDirectories": "应用程序目录",
+      "externalLinks": "外部链接",
+      "openAppDataDirectory": "打开应用数据目录",
+      "openAppConfigDirectory": "打开应用配置目录",
+      "openAppLogDirectory": "打开应用日志目录",
+      "changelog": "更新日志",
+      "allReleases": "所有版本"
+    },
     "windowControls": {
       "minimizeAppToTray": {
         "radioLabel": "最小化到托盘并保存在内存中（推荐）",
@@ -384,7 +399,8 @@
       "toAutocomplete": "自动完成和迭代目录项",
       "toOpenThePath": "打开路径",
       "copyPathToClipboard": "复制路径到剪贴板",
-      "openCopiedPath": "打开复制的路径"
+      "openCopiedPath": "打开复制的路径",
+      "noMatchingDirectories": "没有匹配的目录"
     },
     "clipboard": {
       "inactiveUnselectable": "不可选择不活动的",
@@ -401,7 +417,8 @@
       "sortingElementDisplayType": "排序元素显示类型",
       "showSortingIcon": "显示排序图标",
       "showSortingToolbar": "显示排序工具栏",
-      "navigatorViewLayout": "导航视图布局",
+      "navigatorViewLayout": "布局",
+      "navigatorOptions": "导航器选项",
       "navigatorItemHoverEffect": "导航悬浮效果",
       "navigatorItemList": "导航项目列表",
       "ocdNameColumnMaxWidth": "OCD | '名称' 列最大宽度：",
@@ -1276,6 +1293,11 @@
   "shortcut": "快捷键",
   "shortcutPlural": "快捷键",
   "fullScreen": "全屏",
+  "system": "系统",
+  "extension": "扩展名",
+  "accessed": "访问",
+  "symlink": "符号链接",
+  "hidden": "隐藏",
   "menu": "菜单",
   "contextMenu": "上下文菜单",
   "copy": "复制",
@@ -1415,5 +1437,35 @@
   "pinnedItemsShort": "固定的",
   "freeOf": "自由于",
   "terminal": "终端",
-  "conflict": "冲突"
+  "conflict": "冲突",
+  "fileBrowser": {
+    "goBack": "返回",
+    "goForward": "前进",
+    "goUp": "向上",
+    "goHome": "主页",
+    "refresh": "刷新",
+    "enterPath": "输入路径...",
+    "quickSearch": "快速搜索",
+    "searchThisDirectory": "搜索此目录...",
+    "name": "名称",
+    "size": "大小",
+    "modified": "修改时间",
+    "folders": "文件夹",
+    "images": "图片",
+    "videos": "视频",
+    "video": "视频",
+    "otherFiles": "其他文件",
+    "itemCount": "{count} 个项目",
+    "itemsTotal": "{count} 个项目",
+    "showingFiltered": "显示 {total} 中的 {filtered} 个项目",
+    "actions": {
+      "rename": "重命名",
+      "copy": "复制",
+      "cut": "剪切",
+      "delete": "删除",
+      "openWith": "打开方式...",
+      "quickView": "快速查看",
+      "share": "分享"
+    }
+  }
 }

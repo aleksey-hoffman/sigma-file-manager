@@ -14,7 +14,9 @@
   --tab-height: calc(var(--window-toolbar-height) - 16px);
   --control-button-width: 46px;
   --dir-entry-transition: all 0.3s ease-in-out;
+
   /* SIGMA-UI */
+
   /* General */
   --backdrop-filter-blur: 32px;
   --radius: 0.5rem;
@@ -24,20 +26,19 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-xs: min(calc(var(--radius) / 2.5), 6px);
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+  --font-mono: ui-monospace, sfmono-regular, menlo, monaco, consolas, "Liberation Mono",
     "Courier New", monospace;
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02),
-    0 12px 24px rgba(0, 0, 0, 0.05);
-}
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 2%), 0 2px 4px -1px rgb(0 0 0 / 2%),
+    0 12px 24px rgb(0 0 0 / 5%);
 
-:root {
+  /* Light theme */
   --light: 0 0% 100%;
   --dark: 0 0% 0%;
-  --window-toolbar: 220 11% 19%;
   --background-2: 225 10% 16%;
   --background-3: 225 12% 13%;
   --window-toolbar: 220 11% 19%;
   --icon: 0 0% 62%;
+
   /* SIGMA-UI */
   --background: 0 0% 100%;
   --foreground: 224 71.4% 4.1%;
@@ -65,6 +66,7 @@
   --background-3: 225 12% 13%;
   --window-toolbar: 220 11% 19%;
   --icon: 0 0% 62%;
+
   /* SIGMA-UI */
   --background: 225 10% 16%;
   --foreground: 0 0% 75%;

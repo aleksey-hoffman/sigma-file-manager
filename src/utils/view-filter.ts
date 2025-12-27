@@ -51,7 +51,7 @@ function getFiltered(
       propertiesToSearch.some((propertyToSearch) => {
         const propertyValue = getPropertyValue(item, propertyToSearch);
 
-        if (propertyValue) {
+        if (propertyValue !== undefined && propertyValue !== null) {
           const processedItemProperty = processItemProperty(params, propertyValue, propertyToSearch.itemPropertyPath);
           return propertyMatchesQuery(params, processedItemProperty, queryValue);
         }
@@ -76,29 +76,35 @@ function getPropertiesToSearch(params: FilterNavigatorViewParams, prefixProperty
   return propertiesToSearch;
 }
 
-function getPropertyValue(item: unknown, property: ViewFilterProperty): unknown {
-  let propertyValue;
+function getPropertyValue(item: Record<string, unknown>, property: ViewFilterProperty): unknown {
+  let propertyValue: unknown;
 
   if (property.isDeepProperty) {
-    propertyValue = getDeepPropertyValue(property.itemPropertyPath, item as Record<string, unknown>);
+    propertyValue = getDeepPropertyValue(property.itemPropertyPath, item);
 
-    if (property.processing) {
+    if (property.processing && typeof propertyValue === 'string') {
       propertyValue = property.processing(propertyValue);
     }
   }
   else {
-    propertyValue = (item as Record<string, unknown>)[property.itemPropertyPath];
+    propertyValue = item[property.itemPropertyPath];
   }
 
   return propertyValue;
 }
 
-function getDeepPropertyValue(objectPath: string, object: any): any {
-  return objectPath.split('.').reduce((obj, index) => obj[index], object);
+function getDeepPropertyValue(objectPath: string, object: Record<string, unknown>): unknown {
+  return objectPath.split('.').reduce<unknown>((currentObj, key) => {
+    if (currentObj && typeof currentObj === 'object' && key in currentObj) {
+      return (currentObj as Record<string, unknown>)[key];
+    }
+
+    return undefined;
+  }, object);
 }
 
-function processItemProperty(params: FilterNavigatorViewParams, itemProperty: any, itemPropertyName: string): string {
-  let processedItemProperty = JSON.stringify(itemProperty) || '';
+function processItemProperty(params: FilterNavigatorViewParams, itemProperty: unknown, itemPropertyName: string): string {
+  let processedItemProperty = JSON.stringify(itemProperty) ?? '';
 
   if (itemPropertyName === 'content' && params.options.glob) {
     processedItemProperty = convertHTMLtoText(processedItemProperty);
@@ -110,8 +116,7 @@ function processItemProperty(params: FilterNavigatorViewParams, itemProperty: an
 function convertHTMLtoText(html: string): string {
   const DOMparser = new DOMParser();
   const virtualDoc = DOMparser.parseFromString(html, 'text/html');
-  html = virtualDoc.body.innerText.replace(/\\|\//g, '');
-  return html;
+  return virtualDoc.body.innerText.replace(/\\|\//g, '');
 }
 
 function propertyMatchesQuery(params: FilterNavigatorViewParams, itemProperty: string, queryValue: string): boolean {

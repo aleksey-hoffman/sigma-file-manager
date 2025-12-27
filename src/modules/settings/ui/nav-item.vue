@@ -5,7 +5,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
-import { useSettingsStore } from '../stores/store';
+import { useSettingsStore } from '@/stores/runtime/settings';
 import { computed } from 'vue';
 
 type Props = {

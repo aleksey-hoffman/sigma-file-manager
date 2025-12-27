@@ -67,8 +67,14 @@
     "newTabInCurrentWorkspace": "現在のワークスペースの新しいタブ",
     "closeAllTabsInCurrentWorkspace": "現在のワークスペースのすべてのタブを閉じる",
     "noTabsInCurrentWorkspace": "現在のワークスペースにはタブがありません",
-    "tabs": "Tabs"
+    "tabs": "Tabs",
+    "newTab": "新しいタブ",
+    "tabActions": "タブ操作",
+    "closeTab": "タブを閉じる",
+    "closeOtherTabs": "他のタブを閉じる",
+    "closeAllTabs": "すべてのタブを閉じる"
   },
+  "splitView": "分割表示",
   "workspaces": {
     "title": "ワークスペース",
     "editWorkspaces": "ワークスペースを編集する"
@@ -241,6 +247,15 @@
       "increaseZoomLevel": "ズームレベルを上げる",
       "resetZoomLevel": "ズームレベルをリセット"
     },
+    "actions": {
+      "appDirectories": "アプリディレクトリ",
+      "externalLinks": "外部リンク",
+      "openAppDataDirectory": "アプリデータディレクトリを開く",
+      "openAppConfigDirectory": "アプリ設定ディレクトリを開く",
+      "openAppLogDirectory": "アプリログディレクトリを開く",
+      "changelog": "変更履歴",
+      "allReleases": "すべてのリリース"
+    },
     "windowControls": {
       "minimizeAppToTray": {
         "radioLabel": "トレイに最小化してメモリに保存する (推奨)",
@@ -384,7 +399,8 @@
       "toAutocomplete": "ディレクトリ項目をオートコンプリートして繰り返す",
       "toOpenThePath": "「道を開く」",
       "copyPathToClipboard": "パスをクリップボードにコピー",
-      "openCopiedPath": "コピーしたパスを開く"
+      "openCopiedPath": "コピーしたパスを開く",
+      "noMatchingDirectories": "一致するディレクトリがありません"
     },
     "clipboard": {
       "inactiveUnselectable": "非アクティブ選択不可",
@@ -401,7 +417,8 @@
       "sortingElementDisplayType": "並べ替え要素の表示タイプ",
       "showSortingIcon": "並べ替えアイコンを表示",
       "showSortingToolbar": "並べ替えツールバーを表示",
-      "navigatorViewLayout": "ナビゲータービューのレイアウト",
+      "navigatorViewLayout": "レイアウト",
+      "navigatorOptions": "ナビゲーターオプション",
       "navigatorItemHoverEffect": "「ナビゲーターアイテムのホバー効果」",
       "navigatorItemList": "ナビゲーターアイテム一覧",
       "ocdNameColumnMaxWidth": "OCD | '名前' 列の最大幅:",
@@ -1276,6 +1293,11 @@
   "shortcut": "ショートカット",
   "shortcutPlural": "ショートカット",
   "fullScreen": "全画面表示",
+  "system": "システム",
+  "extension": "拡張子",
+  "accessed": "アクセス",
+  "symlink": "シンボリックリンク",
+  "hidden": "隠し",
   "menu": "メニュー",
   "contextMenu": "コンテキストメニュー",
   "copy": "コピー",
@@ -1415,5 +1437,35 @@
   "pinnedItemsShort": "添付",
   "freeOf": "から自由である",
   "terminal": "ターミナル",
-  "conflict": "コンフリクト"
+  "conflict": "コンフリクト",
+  "fileBrowser": {
+    "goBack": "戻る",
+    "goForward": "進む",
+    "goUp": "上へ",
+    "goHome": "ホーム",
+    "refresh": "更新",
+    "enterPath": "パスを入力...",
+    "quickSearch": "クイック検索",
+    "searchThisDirectory": "このディレクトリを検索...",
+    "name": "名前",
+    "size": "サイズ",
+    "modified": "更新日時",
+    "folders": "フォルダー",
+    "images": "画像",
+    "videos": "動画",
+    "video": "動画",
+    "otherFiles": "その他のファイル",
+    "itemCount": "{count} 項目",
+    "itemsTotal": "{count} 項目",
+    "showingFiltered": "{total} 中 {filtered} 件を表示",
+    "actions": {
+      "rename": "名前を変更",
+      "copy": "コピー",
+      "cut": "切り取り",
+      "delete": "削除",
+      "openWith": "アプリで開く...",
+      "quickView": "クイックビュー",
+      "share": "共有"
+    }
+  }
 }

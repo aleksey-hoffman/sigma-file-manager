@@ -4,17 +4,15 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import { useTemplateRef } from 'vue';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
-import { useSettingsStore } from '../stores/store';
+import { useSettingsStore } from '@/stores/runtime/settings';
 import { useI18n } from 'vue-i18n';
 import { SearchIcon } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
 
 const settingsStore = useSettingsStore();
 const { t } = useI18n();
-const searchInputRef = useTemplateRef<HTMLInputElement>('searchInputRef');
 </script>
 
 <template>
@@ -40,7 +38,6 @@ const searchInputRef = useTemplateRef<HTMLInputElement>('searchInputRef');
         class="settings-search-popover"
       >
         <Input
-          ref="searchInputRef"
           v-model="settingsStore.search"
           type="text"
           :placeholder="t('search')"

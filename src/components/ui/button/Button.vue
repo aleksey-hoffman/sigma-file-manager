@@ -164,10 +164,10 @@ withDefaults(defineProps<Props>(), {
   width: 1rem;
   height: 1rem;
   margin-right: 0.5rem;
-  animation: spin 1s linear infinite;
+  animation: sigma-ui-button-spin 1s linear infinite;
 }
 
-@keyframes spin {
+@keyframes sigma-ui-button-spin {
   from {
     transform: rotate(0deg);
   }

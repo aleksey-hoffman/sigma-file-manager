@@ -40,6 +40,7 @@
     "dayjs": "^1.11.13",
     "lodash.clonedeep": "^4.5.0",
     "lucide-vue-next": "^0.525.0",
+    "minimatch": "^10.1.1",
     "pinia": "^3.0.3",
     "reka-ui": "^2.6.0",
     "tailwindcss": "^4.1.11",
@@ -47,9 +48,11 @@
     "vue": "^3.5.17",
     "vue-i18n": "^11.1.9",
     "vue-router": "^4.5.1",
+    "vue-sonner": "^2.0.9",
     "vue3-smooth-dnd": "^0.0.6"
   },
   "devDependencies": {
+    "@intlify/eslint-plugin-vue-i18n": "^4.1.0",
     "@stylistic/eslint-plugin": "^5.1.0",
     "@tauri-apps/cli": "^2.6.2",
     "@tsconfig/node22": "^22.0.2",

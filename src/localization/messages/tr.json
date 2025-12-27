@@ -67,8 +67,14 @@
     "newTabInCurrentWorkspace": "Mevcut çalışma alanında yeni sekme",
     "closeAllTabsInCurrentWorkspace": "Geçerli çalışma alanındaki tüm sekmeleri kapat",
     "noTabsInCurrentWorkspace": "Geçerli çalışma alanında sekme yok",
-    "tabs": "Tabs"
+    "tabs": "Tabs",
+    "newTab": "Yeni sekme",
+    "tabActions": "Sekme işlemleri",
+    "closeTab": "Sekmeyi kapat",
+    "closeOtherTabs": "Diğer sekmeleri kapat",
+    "closeAllTabs": "Tüm sekmeleri kapat"
   },
+  "splitView": "Bölünmüş görünüm",
   "workspaces": {
     "title": "Çalışma Alanları",
     "editWorkspaces": "Çalışma alanlarını düzenle"
@@ -241,6 +247,15 @@
       "increaseZoomLevel": "Yakınlaştırma seviyesini artır",
       "resetZoomLevel": "Zoom seviyesini sıfırla"
     },
+    "actions": {
+      "appDirectories": "Uygulama dizinleri",
+      "externalLinks": "Harici bağlantılar",
+      "openAppDataDirectory": "Uygulama veri dizinini aç",
+      "openAppConfigDirectory": "Uygulama yapılandırma dizinini aç",
+      "openAppLogDirectory": "Uygulama günlük dizinini aç",
+      "changelog": "Değişiklik günlüğü",
+      "allReleases": "Tüm sürümler"
+    },
     "windowControls": {
       "minimizeAppToTray": {
         "radioLabel": "Tepsiye küçült ve bellekte tut (önerilen)",
@@ -384,7 +399,8 @@
       "toAutocomplete": "dizin öğelerini otomatik tamamlamak ve yinelemek için",
       "toOpenThePath": "yolu açmak",
       "copyPathToClipboard": "Yolu panoya kopyala",
-      "openCopiedPath": "Kopyalanan yolu aç"
+      "openCopiedPath": "Kopyalanan yolu aç",
+      "noMatchingDirectories": "Eşleşen dizin yok"
     },
     "clipboard": {
       "inactiveUnselectable": "etkin değil seçilemez",
@@ -401,7 +417,8 @@
       "sortingElementDisplayType": "Sıralama öğesi görüntüleme türü",
       "showSortingIcon": "Sıralama simgesini göster",
       "showSortingToolbar": "Sıralama araç çubuğunu göster",
-      "navigatorViewLayout": "Gezgin görünüm düzeni",
+      "navigatorViewLayout": "Düzen",
+      "navigatorOptions": "Gezgin seçenekleri",
       "navigatorItemHoverEffect": "Gezgin öğesi vurgulu efekti",
       "navigatorItemList": "Gezgin öğe listesi",
       "ocdNameColumnMaxWidth": "OCD | 'Ad' sütunu maksimum genişliği:",
@@ -1276,6 +1293,11 @@
   "shortcut": "Kısayol",
   "shortcutPlural": "Kısayollar",
   "fullScreen": "Tam ekran",
+  "system": "Sistem",
+  "extension": "Uzantı",
+  "accessed": "Erişildi",
+  "symlink": "Sembolik bağlantı",
+  "hidden": "Gizli",
   "menu": "Menü",
   "contextMenu": "Bağlam menüsü",
   "copy": "Kopyala",
@@ -1415,5 +1437,35 @@
   "pinnedItemsShort": "Ekli",
   "freeOf": "ücretsiz olarak",
   "terminal": "Terminal",
-  "conflict": "Çatışma"
+  "conflict": "Çatışma",
+  "fileBrowser": {
+    "goBack": "Geri",
+    "goForward": "İleri",
+    "goUp": "Yukarı",
+    "goHome": "Ana Sayfa",
+    "refresh": "Yenile",
+    "enterPath": "Yol girin...",
+    "quickSearch": "Hızlı arama",
+    "searchThisDirectory": "Bu dizinde ara...",
+    "name": "Ad",
+    "size": "Boyut",
+    "modified": "Değiştirilme",
+    "folders": "Klasörler",
+    "images": "Resimler",
+    "videos": "Videolar",
+    "video": "Video",
+    "otherFiles": "Diğer dosyalar",
+    "itemCount": "{count} öğe",
+    "itemsTotal": "{count} öğe",
+    "showingFiltered": "{total} öğeden {filtered} tanesi gösteriliyor",
+    "actions": {
+      "rename": "Yeniden adlandır",
+      "copy": "Kopyala",
+      "cut": "Kes",
+      "delete": "Sil",
+      "openWith": "Birlikte aç...",
+      "quickView": "Hızlı görünüm",
+      "share": "Paylaş"
+    }
+  }
 }

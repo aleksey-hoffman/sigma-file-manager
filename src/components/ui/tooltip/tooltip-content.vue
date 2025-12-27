@@ -13,6 +13,7 @@ defineOptions({
 });
 
 const props = withDefaults(defineProps<TooltipContentProps>(), {
+  side: 'bottom',
   sideOffset: 4,
 });
 
@@ -40,7 +41,7 @@ const forwarded = useForwardPropsEmits(props, emits);
   padding: 0.375rem 0.75rem;
   border: 1px solid hsl(var(--border));
   border-radius: var(--radius-md);
-  animation: tooltip-in 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  animation: sigma-ui-tooltip-in 150ms cubic-bezier(0.16, 1, 0.3, 1);
   backdrop-filter: blur(var(--backdrop-filter-blur));
   background-color: hsl(var(--popover));
   box-shadow: 0 2px 4px rgb(0 0 0 / 10%);
@@ -49,26 +50,26 @@ const forwarded = useForwardPropsEmits(props, emits);
 }
 
 .sigma-ui-tooltip-content[data-side="bottom"] {
-  animation: tooltip-in-bottom 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  animation: sigma-ui-tooltip-in-bottom 150ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .sigma-ui-tooltip-content[data-side="top"] {
-  animation: tooltip-in-top 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  animation: sigma-ui-tooltip-in-top 150ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .sigma-ui-tooltip-content[data-side="left"] {
-  animation: tooltip-in-left 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  animation: sigma-ui-tooltip-in-left 150ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .sigma-ui-tooltip-content[data-side="right"] {
-  animation: tooltip-in-right 150ms cubic-bezier(0.16, 1, 0.3, 1);
+  animation: sigma-ui-tooltip-in-right 150ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .sigma-ui-tooltip-content[data-state="closed"] {
-  animation: tooltip-out 250ms cubic-bezier(0.16, 1, 0.3, 1);
+  animation: sigma-ui-tooltip-out 250ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-@keyframes tooltip-in {
+@keyframes sigma-ui-tooltip-in {
   from {
     opacity: 0;
     transform: scale(0.95);
@@ -80,7 +81,7 @@ const forwarded = useForwardPropsEmits(props, emits);
   }
 }
 
-@keyframes tooltip-out {
+@keyframes sigma-ui-tooltip-out {
   from {
     opacity: 1;
     transform: scale(1);
@@ -92,7 +93,7 @@ const forwarded = useForwardPropsEmits(props, emits);
   }
 }
 
-@keyframes tooltip-in-bottom {
+@keyframes sigma-ui-tooltip-in-bottom {
   from {
     opacity: 0;
     transform: translateY(-0.5rem);
@@ -104,7 +105,7 @@ const forwarded = useForwardPropsEmits(props, emits);
   }
 }
 
-@keyframes tooltip-in-top {
+@keyframes sigma-ui-tooltip-in-top {
   from {
     opacity: 0;
     transform: translateY(0.5rem);
@@ -116,7 +117,7 @@ const forwarded = useForwardPropsEmits(props, emits);
   }
 }
 
-@keyframes tooltip-in-left {
+@keyframes sigma-ui-tooltip-in-left {
   from {
     opacity: 0;
     transform: translateX(0.5rem);
@@ -128,7 +129,7 @@ const forwarded = useForwardPropsEmits(props, emits);
   }
 }
 
-@keyframes tooltip-in-right {
+@keyframes sigma-ui-tooltip-in-right {
   from {
     opacity: 0;
     transform: translateX(-0.5rem);

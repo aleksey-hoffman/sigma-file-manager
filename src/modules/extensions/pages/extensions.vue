@@ -4,10 +4,13 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 </script>
 
 <template>
   <div class="extensions-page">
-    Extensions
+    {{ t('pages.extensions') }}
   </div>
 </template>

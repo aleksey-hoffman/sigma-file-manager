@@ -6,7 +6,7 @@ import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
-import toLocalTime from '@/utils/to-local-time';
+import { toLocalTime } from '@/utils/date-time';
 import type { DirEntry } from '@/types/dir-entry';
 import type { Runtime } from '@/types/runtime';
 

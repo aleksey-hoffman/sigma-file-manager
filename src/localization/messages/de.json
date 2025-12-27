@@ -67,8 +67,14 @@
     "newTabInCurrentWorkspace": "Neuer Tab im aktuellen Arbeitsbereich",
     "closeAllTabsInCurrentWorkspace": "Alle Tabs im aktuellen Arbeitsbereich schließen",
     "noTabsInCurrentWorkspace": "Keine Registerkarten im aktuellen Arbeitsbereich",
-    "tabs": "Tabs"
+    "tabs": "Tabs",
+    "newTab": "Neuer Tab",
+    "tabActions": "Tab-Aktionen",
+    "closeTab": "Tab schließen",
+    "closeOtherTabs": "Andere Tabs schließen",
+    "closeAllTabs": "Alle Tabs schließen"
   },
+  "splitView": "Geteilte Ansicht",
   "workspaces": {
     "title": "Arbeitsplätze",
     "editWorkspaces": "Arbeitsbereiche bearbeiten"
@@ -241,6 +247,15 @@
       "increaseZoomLevel": "Zoomstufe erhöhen",
       "resetZoomLevel": "Zoomstufe zurücksetzen"
     },
+    "actions": {
+      "appDirectories": "App-Verzeichnisse",
+      "externalLinks": "Externe Links",
+      "openAppDataDirectory": "App-Datenverzeichnis öffnen",
+      "openAppConfigDirectory": "App-Konfigurationsverzeichnis öffnen",
+      "openAppLogDirectory": "App-Protokollverzeichnis öffnen",
+      "changelog": "Änderungsprotokoll",
+      "allReleases": "Alle Versionen"
+    },
     "windowControls": {
       "minimizeAppToTray": {
         "radioLabel": "In Ablage minimieren und im Speicher behalten (empfohlen)",
@@ -384,7 +399,8 @@
       "toAutocomplete": "Verzeichniseinträge automatisch vervollständigen und iterieren",
       "toOpenThePath": "den Weg öffnen",
       "copyPathToClipboard": "Pfad in die Zwischenablage kopieren",
-      "openCopiedPath": "Kopierpfad öffnen"
+      "openCopiedPath": "Kopierpfad öffnen",
+      "noMatchingDirectories": "Keine passenden Verzeichnisse"
     },
     "clipboard": {
       "inactiveUnselectable": "inaktiv nicht wählbar",
@@ -401,7 +417,8 @@
       "sortingElementDisplayType": "Anzeigetyp Sortierelement",
       "showSortingIcon": "Sortiersymbol anzeigen",
       "showSortingToolbar": "Sortiersymbolleiste anzeigen",
-      "navigatorViewLayout": "Layout der Navigatoransicht",
+      "navigatorViewLayout": "Layout",
+      "navigatorOptions": "Navigator-Optionen",
       "navigatorItemHoverEffect": "Hover-Effekt für Navigationselemente",
       "navigatorItemList": "Navigator Elementliste",
       "ocdNameColumnMaxWidth": "OCD | Maximale Spaltenbreite 'Name':",
@@ -1276,6 +1293,11 @@
   "shortcut": "Abkürzung",
   "shortcutPlural": "Abkürzungen",
   "fullScreen": "Ganzer Bildschirm",
+  "system": "System",
+  "extension": "Dateiendung",
+  "accessed": "Zugegriffen",
+  "symlink": "Symbolischer Link",
+  "hidden": "Versteckt",
   "menu": "Menü",
   "contextMenu": "Kontextmenü",
   "copy": "Kopieren",
@@ -1415,5 +1437,35 @@
   "pinnedItemsShort": "Angeheftet",
   "freeOf": "frei von",
   "terminal": "Terminal",
-  "conflict": "Konflikt"
+  "conflict": "Konflikt",
+  "fileBrowser": {
+    "goBack": "Zurück",
+    "goForward": "Vorwärts",
+    "goUp": "Nach oben",
+    "goHome": "Startseite",
+    "refresh": "Aktualisieren",
+    "enterPath": "Pfad eingeben...",
+    "quickSearch": "Schnellsuche",
+    "searchThisDirectory": "Dieses Verzeichnis durchsuchen...",
+    "name": "Name",
+    "size": "Größe",
+    "modified": "Geändert",
+    "folders": "Ordner",
+    "images": "Bilder",
+    "videos": "Videos",
+    "video": "Video",
+    "otherFiles": "Andere Dateien",
+    "itemCount": "{count} Elemente",
+    "itemsTotal": "{count} Elemente",
+    "showingFiltered": "Zeige {filtered} von {total} Elementen",
+    "actions": {
+      "rename": "Umbenennen",
+      "copy": "Kopieren",
+      "cut": "Ausschneiden",
+      "delete": "Löschen",
+      "openWith": "Öffnen mit...",
+      "quickView": "Schnellansicht",
+      "share": "Teilen"
+    }
+  }
 }

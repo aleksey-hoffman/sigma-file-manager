@@ -4,24 +4,34 @@
 
 import { basename } from '@tauri-apps/api/path';
 import { invoke } from '@tauri-apps/api/core';
+import { LazyStore } from '@tauri-apps/plugin-store';
 import { defineStore } from 'pinia';
 import { ref, watch, computed } from 'vue';
+import { useDebounceFn } from '@vueuse/core';
 import { useRouter } from 'vue-router';
 import { useNavigatorStore } from '@/stores/runtime/navigator';
 import { useUserPathsStore } from '@/stores/storage/user-paths';
+import { UI_CONSTANTS } from '@/constants';
 import clone from '@/utils/clone';
 import uniqueId from '@/utils/unique-id';
 import type { DirEntry } from '@/types/dir-entry';
 import type { Workspace, Tab, TabGroup } from '@/types/workspaces';
 import type { ComputedRef } from 'vue';
+import {
+  migrateWorkspacesStorage,
+  parseWorkspaces,
+  WORKSPACES_SCHEMA_VERSION,
+  WORKSPACES_SCHEMA_VERSION_KEY,
+} from '@/stores/schemas/workspaces';
 
 export const useWorkspacesStore = defineStore('workspaces', () => {
   const userPathsStore = useUserPathsStore();
   const navigatorStore = useNavigatorStore();
   const router = useRouter();
 
+  const workspacesStorage = ref<LazyStore | null>(null);
+  const isInitialized = ref(false);
   const workspaces = ref<Workspace[]>(createDefaultWorkspaces());
-  const workspaceMaxPaneCount = 2;
 
   const primaryWorkspace: ComputedRef<Workspace | null> = computed(() => (
     workspaces.value?.find(workspace => workspace.isPrimary) || null
@@ -42,17 +52,6 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
   const tabGroupCount: ComputedRef<number> = computed(() => (
     (currentWorkspace.value?.tabGroups?.length && currentWorkspace.value?.tabGroups?.length) || 0
   ));
-
-  // const currentTabSelectedDirEntries: WritableComputedRef<DirEntry[]> = computed({
-  //   get() {
-  //     return currentTab.value?.selectedDirEntries || [];
-  //   },
-  //   set(value) {
-  //     if (currentTab.value) {
-  //       currentTab.value.selectedDirEntries = value;
-  //     }
-  //   }
-  // });
 
   const tabs: ComputedRef<Tab[]> = computed(() => (
     currentWorkspace.value?.tabGroups?.flat() || []
@@ -76,7 +75,7 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
       ));
   }
 
-  function createDefaultWorkspaces() {
+  function createDefaultWorkspaces(): Workspace[] {
     return [
       {
         id: 0,
@@ -87,21 +86,22 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
         tabGroups: [],
         currentTabGroupIndex: 0,
         currentTabIndex: 0,
-      } satisfies Workspace,
+      },
     ];
   }
 
-  async function createNewTab(path?: string) {
-    return ref({
+  async function createNewTab(path?: string): Promise<Tab> {
+    const tabPath = path || userPathsStore.userPaths.homeDir;
+    return {
       id: uniqueId(),
-      name: await basename(path || userPathsStore.userPaths.homeDir),
-      path: path || userPathsStore.userPaths.homeDir,
+      name: await basename(tabPath),
+      path: tabPath,
       type: 'directory',
       paneWidth: 100,
       filterQuery: '',
       dirEntries: [],
       selectedDirEntries: [],
-    } satisfies Tab);
+    };
   }
 
   async function preloadDefaultTab() {
@@ -134,6 +134,36 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
         initialClosingTabGroupIndex,
       });
     }
+  }
+
+  async function closeAllTabGroups() {
+    if (!currentWorkspace.value) {
+      return;
+    }
+
+    const newTab = await createNewTab();
+    const newTabGroup = [newTab];
+    currentWorkspace.value.tabGroups = [newTabGroup];
+    currentWorkspace.value.currentTabGroupIndex = 0;
+    currentWorkspace.value.currentTabIndex = 0;
+    await openTabGroup(newTabGroup);
+  }
+
+  function closeOtherTabGroups(keepTabGroup?: Tab[]) {
+    if (!currentWorkspace.value) {
+      return;
+    }
+
+    const tabGroupToKeep = keepTabGroup || currentTabGroup.value;
+
+    if (!tabGroupToKeep) {
+      return;
+    }
+
+    const tabGroupCopy = [...tabGroupToKeep];
+    currentWorkspace.value.tabGroups = [tabGroupCopy];
+    currentWorkspace.value.currentTabGroupIndex = 0;
+    currentWorkspace.value.currentTabIndex = 0;
   }
 
   function setCurrentTabGroupAfterClosing(params: {
@@ -182,7 +212,7 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
 
   async function addNewTabGroup(path?: string) {
     const newTab = await createNewTab(path);
-    const newTabGroup = [newTab.value];
+    const newTabGroup = [newTab];
     addTabGroup(newTabGroup);
     return newTabGroup;
   }
@@ -253,8 +283,9 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
       await loadTabGroupDirEntries(tabGroup);
       updateInfoPanel(tabGroup);
     }
-    catch (error: any) {
-      throw Error(`Could not open tab: ${error.message}`);
+    catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      throw Error(`Could not open tab: ${errorMessage}`);
     }
   }
 
@@ -262,17 +293,6 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
     const dirEntry = await getDirEntry({ path: tabGroup[0].path });
     await navigatorStore.updateInfoPanel(dirEntry);
   }
-
-  // async function selectDirEntry(path?: string, dirEntry?: DirEntry) {
-  //   let dirEntryResult: DirEntry | null | undefined = dirEntry;
-  //   if (path) {
-  //     dirEntryResult = await getDirEntry({path});
-  //   }
-  //   if (!dirEntryResult) {
-  //     return;
-  //   }
-  //   currentTabSelectedDirEntries.value = [dirEntryResult];
-  // }
 
   function checkTabGroupExists(tabGroup: TabGroup) {
     return tabGroup.some(tab => tabs.value.some((_tab: Tab) => _tab.id === tab.id));
@@ -287,7 +307,7 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
       const dirEntry = await invoke('get_dir_entry', { path: params.path }) satisfies DirEntry;
       return dirEntry;
     }
-    catch (error) {
+    catch {
       return null;
     }
   }
@@ -297,7 +317,7 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
       const dirEntries = await invoke('get_dir_entries', { path: params.path }) satisfies DirEntry[];
       return dirEntries;
     }
-    catch (error) {
+    catch {
       return [];
     }
   }
@@ -327,7 +347,7 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
   }
 
   function enableSplitView(tabGroup: TabGroup) {
-    const maxPaneCountReached = tabGroup.length >= workspaceMaxPaneCount;
+    const maxPaneCountReached = tabGroup.length >= UI_CONSTANTS.WORKSPACE_MAX_PANE_COUNT;
 
     if (tabGroup && !maxPaneCountReached) {
       splitTabGroup(tabGroup);
@@ -347,6 +367,103 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
     });
   }
 
+  async function initStorage() {
+    try {
+      if (!workspacesStorage.value) {
+        workspacesStorage.value = new LazyStore(userPathsStore.customPaths.appUserDataWorkspacesPath);
+        await workspacesStorage.value.save();
+      }
+    }
+    catch (error) {
+      console.error('Failed to initialize workspaces storage:', error);
+    }
+  }
+
+  async function loadWorkspaces() {
+    try {
+      const storedWorkspacesValue = await workspacesStorage.value?.get<unknown>('workspaces');
+      const storedCurrentTabGroupIndex = await workspacesStorage.value?.get<number>('currentTabGroupIndex');
+      const storedWorkspaces = storedWorkspacesValue ? parseWorkspaces(storedWorkspacesValue) : null;
+
+      if (!storedWorkspaces) {
+        return false;
+      }
+
+      workspaces.value = storedWorkspaces;
+
+      if (typeof storedCurrentTabGroupIndex === 'number' && Number.isFinite(storedCurrentTabGroupIndex)) {
+        setCurrentTabGroupIndex(storedCurrentTabGroupIndex);
+      }
+
+      return true;
+    }
+    catch (error) {
+      console.error('Failed to load workspaces:', error);
+      return false;
+    }
+  }
+
+  async function saveWorkspaces() {
+    try {
+      if (workspacesStorage.value && isInitialized.value) {
+        const workspacesToSave = workspaces.value.map(workspace => ({
+          ...workspace,
+          tabGroups: workspace.tabGroups.map(tabGroup =>
+            tabGroup.map(tab => ({
+              ...tab,
+              dirEntries: [],
+              selectedDirEntries: [],
+            })),
+          ),
+        }));
+
+        await workspacesStorage.value.set(WORKSPACES_SCHEMA_VERSION_KEY, WORKSPACES_SCHEMA_VERSION);
+        await workspacesStorage.value.set('workspaces', workspacesToSave);
+        await workspacesStorage.value.set('currentTabGroupIndex', currentWorkspace.value?.currentTabGroupIndex ?? 0);
+        await workspacesStorage.value.save();
+      }
+    }
+    catch (error) {
+      console.error('Failed to save workspaces:', error);
+    }
+  }
+
+  const debouncedSaveWorkspaces = useDebounceFn(saveWorkspaces, UI_CONSTANTS.WORKSPACE_SAVE_DEBOUNCE_MS);
+
+  watch(
+    () => workspaces.value,
+    () => {
+      debouncedSaveWorkspaces();
+    },
+    { deep: true },
+  );
+
+  async function init() {
+    try {
+      await initStorage();
+
+      if (workspacesStorage.value) {
+        await migrateWorkspacesStorage(workspacesStorage.value);
+      }
+
+      const loaded = await loadWorkspaces();
+
+      if (!loaded) {
+        await preloadDefaultTab();
+      }
+
+      isInitialized.value = true;
+
+      if (currentTabGroup.value) {
+        await openTabGroup(currentTabGroup.value);
+      }
+    }
+    catch (error) {
+      console.error('Failed to initialize workspaces:', error);
+      isInitialized.value = true;
+    }
+  }
+
   return {
     workspaces,
     primaryWorkspace,
@@ -354,12 +471,15 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
     tabs,
     currentTabGroup,
     currentTab,
+    init,
     addNewTabGroup,
     openNewTabGroup,
     preloadDefaultTab,
     getDirEntry,
     openTabGroup,
     closeTabGroup,
+    closeAllTabGroups,
+    closeOtherTabGroups,
     setTabs,
     toggleSplitView,
     setTabFilterQuery,

@@ -67,8 +67,14 @@
     "newTabInCurrentWorkspace": "Nouvel onglet dans l'espace de travail actuel",
     "closeAllTabsInCurrentWorkspace": "Fermer tous les onglets de l'espace de travail actuel",
     "noTabsInCurrentWorkspace": "Aucun onglet dans l'espace de travail actuel",
-    "tabs": "Tabs"
+    "tabs": "Tabs",
+    "newTab": "Nouvel onglet",
+    "tabActions": "Actions d'onglet",
+    "closeTab": "Fermer l'onglet",
+    "closeOtherTabs": "Fermer les autres onglets",
+    "closeAllTabs": "Fermer tous les onglets"
   },
+  "splitView": "Vue partagée",
   "workspaces": {
     "title": "Espaces de travail",
     "editWorkspaces": "Modifier les espaces de travail"
@@ -241,6 +247,15 @@
       "increaseZoomLevel": "Augmenter le niveau de zoom",
       "resetZoomLevel": "Réinitialiser le niveau de zoom"
     },
+    "actions": {
+      "appDirectories": "Répertoires de l'application",
+      "externalLinks": "Liens externes",
+      "openAppDataDirectory": "Ouvrir le répertoire des données de l'application",
+      "openAppConfigDirectory": "Ouvrir le répertoire de configuration de l'application",
+      "openAppLogDirectory": "Ouvrir le répertoire des journaux de l'application",
+      "changelog": "Journal des modifications",
+      "allReleases": "Toutes les versions"
+    },
     "windowControls": {
       "minimizeAppToTray": {
         "radioLabel": "Réduire dans la barre d'état et conserver en mémoire (recommandé)",
@@ -384,7 +399,8 @@
       "toAutocomplete": "pour compléter automatiquement et itérer les éléments du répertoire",
       "toOpenThePath": "ouvrir le chemin",
       "copyPathToClipboard": "Copier le chemin dans le presse-papiers",
-      "openCopiedPath": "Ouvrir le chemin copié"
+      "openCopiedPath": "Ouvrir le chemin copié",
+      "noMatchingDirectories": "Aucun répertoire correspondant"
     },
     "clipboard": {
       "inactiveUnselectable": "inactif non sélectionnable",
@@ -401,7 +417,8 @@
       "sortingElementDisplayType": "Type d'affichage des éléments de tri",
       "showSortingIcon": "Afficher l'icône de tri",
       "showSortingToolbar": "Afficher la barre d'outils de tri",
-      "navigatorViewLayout": "Disposition de la vue du navigateur",
+      "navigatorViewLayout": "Disposition",
+      "navigatorOptions": "Options du navigateur",
       "navigatorItemHoverEffect": "Effet de survol de l'élément du navigateur",
       "navigatorItemList": "Liste des éléments du navigateur",
       "ocdNameColumnMaxWidth": "OCD | Largeur maximale de la colonne 'Nom' :",
@@ -1276,6 +1293,11 @@
   "shortcut": "Raccourci",
   "shortcutPlural": "Raccourcis",
   "fullScreen": "Plein écran",
+  "system": "Système",
+  "extension": "Extension",
+  "accessed": "Accédé",
+  "symlink": "Lien symbolique",
+  "hidden": "Masqué",
   "menu": "Menu",
   "contextMenu": "Menu contextuel",
   "copy": "Copie",
@@ -1415,5 +1437,35 @@
   "pinnedItemsShort": "Attaché",
   "freeOf": "libres sur",
   "terminal": "Terminal",
-  "conflict": "Conflit"
+  "conflict": "Conflit",
+  "fileBrowser": {
+    "goBack": "Retour",
+    "goForward": "Avancer",
+    "goUp": "Monter",
+    "goHome": "Accueil",
+    "refresh": "Actualiser",
+    "enterPath": "Entrer le chemin...",
+    "quickSearch": "Recherche rapide",
+    "searchThisDirectory": "Rechercher dans ce répertoire...",
+    "name": "Nom",
+    "size": "Taille",
+    "modified": "Modifié",
+    "folders": "Dossiers",
+    "images": "Images",
+    "videos": "Vidéos",
+    "video": "Vidéo",
+    "otherFiles": "Autres fichiers",
+    "itemCount": "{count} éléments",
+    "itemsTotal": "{count} éléments",
+    "showingFiltered": "Affichage de {filtered} sur {total} éléments",
+    "actions": {
+      "rename": "Renommer",
+      "copy": "Copier",
+      "cut": "Couper",
+      "delete": "Supprimer",
+      "openWith": "Ouvrir avec...",
+      "quickView": "Aperçu rapide",
+      "share": "Partager"
+    }
+  }
 }

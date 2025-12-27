@@ -23,7 +23,7 @@ const model = defineModel<string | number>();
   width: 100%;
   height: 2.5rem;
   border: 1px solid hsl(var(--border));
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   background-color: hsl(var(--input));
   font-size: 0.875rem;
   padding-block: 0.5rem;

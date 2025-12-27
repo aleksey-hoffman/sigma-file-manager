@@ -4,8 +4,9 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import { useSettingsStore } from '../stores/store';
+import { useSettingsStore, type SettingsSection } from '@/stores/runtime/settings';
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 
 import AppearanceCategory from './categories/appearance/index.vue';
 import GeneralCategory from './categories/general/index.vue';
@@ -16,6 +17,7 @@ import WindowScalingSection from './categories/general/window-scaling.vue';
 import { Button } from '@/components/ui/button';
 
 const settingsStore = useSettingsStore();
+const { t } = useI18n();
 
 const currentTabLabel = computed(() => {
   const currentTab = settingsStore.tabs.find(tab => tab.name === settingsStore.currentTab);
@@ -43,10 +45,10 @@ function getSectionComponent(sectionKey: string) {
 
 const settingsWithComponents = computed(() => {
   if (!settingsStore.search) {
-    return settingsStore.currentTabSettings;
+    return settingsStore.currentTabSections;
   }
 
-  return settingsStore.currentTabSettings.filter(setting => getSectionComponent(setting.key));
+  return settingsStore.currentTabSections.filter((section: SettingsSection) => getSectionComponent(section.key));
 });
 </script>
 
@@ -56,15 +58,8 @@ const settingsWithComponents = computed(() => {
       <div class="settings-view__title-section">
         <div>
           <h2 class="settings-view__title">
-            {{ settingsStore.search ? 'Search Results' : currentTabLabel }}
+            {{ settingsStore.search ? t('globalSearch.searchResults') : currentTabLabel }}
           </h2>
-          <p
-            v-if="settingsStore.search"
-            class="settings-view__search-info"
-          >
-            Showing {{ settingsWithComponents.length }} result{{ settingsWithComponents.length !== 1 ? 's' : '' }}
-            for "{{ settingsStore.search }}"
-          </p>
         </div>
         <Button
           v-if="settingsStore.search"
@@ -72,7 +67,7 @@ const settingsWithComponents = computed(() => {
           class="settings-view__clear-search"
           @click="settingsStore.clearSearch"
         >
-          Clear Search
+          {{ t('globalSearch.clearSearchField') }}
         </Button>
       </div>
     </div>

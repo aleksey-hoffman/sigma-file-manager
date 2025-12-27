@@ -6,7 +6,14 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <script setup lang="ts">
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { MinusIcon, SquareIcon, XIcon } from 'lucide-vue-next';
+import { useI18n } from 'vue-i18n';
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from '@/components/ui/tooltip';
 
+const { t } = useI18n();
 const appWindow = getCurrentWindow();
 
 function minimizeWindow() {
@@ -24,33 +31,54 @@ function closeWindow() {
 
 <template>
   <div class="window-actions">
-    <div
-      class="window-toolbar-button"
-      @click="minimizeWindow"
-    >
-      <MinusIcon
-        class="window-toolbar-button-icon"
-        :size="16"
-      />
-    </div>
-    <div
-      class="window-toolbar-button"
-      @click="maximizeWindow"
-    >
-      <SquareIcon
-        class="window-toolbar-button-icon"
-        :size="14"
-      />
-    </div>
-    <div
-      class="window-toolbar-button"
-      @click="closeWindow"
-    >
-      <XIcon
-        class="window-toolbar-button-icon"
-        :size="18"
-      />
-    </div>
+    <Tooltip>
+      <TooltipTrigger as-child>
+        <div
+          class="window-toolbar-button"
+          @click="minimizeWindow"
+        >
+          <MinusIcon
+            class="window-toolbar-button-icon"
+            :size="16"
+          />
+        </div>
+      </TooltipTrigger>
+      <TooltipContent>
+        {{ t('window.minimizeWindow') }}
+      </TooltipContent>
+    </Tooltip>
+    <Tooltip>
+      <TooltipTrigger as-child>
+        <div
+          class="window-toolbar-button"
+          @click="maximizeWindow"
+        >
+          <SquareIcon
+            class="window-toolbar-button-icon"
+            :size="14"
+          />
+        </div>
+      </TooltipTrigger>
+      <TooltipContent>
+        {{ t('window.toggleWindowSize') }}
+      </TooltipContent>
+    </Tooltip>
+    <Tooltip>
+      <TooltipTrigger as-child>
+        <div
+          class="window-toolbar-button"
+          @click="closeWindow"
+        >
+          <XIcon
+            class="window-toolbar-button-icon"
+            :size="18"
+          />
+        </div>
+      </TooltipTrigger>
+      <TooltipContent>
+        {{ t('window.closeWindow') }}
+      </TooltipContent>
+    </Tooltip>
   </div>
 </template>
 

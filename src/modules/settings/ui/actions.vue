@@ -4,26 +4,80 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import { useTemplateRef } from 'vue';
-import { Input } from '@/components/ui/input';
-import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
-import { useSettingsStore } from '../stores/store';
 import { useI18n } from 'vue-i18n';
-import { FolderIcon, ExternalLinkIcon, SearchIcon, LinkIcon } from 'lucide-vue-next';
+import { useRouter } from 'vue-router';
+import { openUrl } from '@tauri-apps/plugin-opener';
+import { appDataDir, appConfigDir, appLogDir } from '@tauri-apps/api/path';
+import {
+  FolderIcon,
+  ExternalLinkIcon,
+  LinkIcon,
+  FolderOpenIcon,
+  SettingsIcon,
+  FileTextIcon,
+} from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
 import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuItem,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+  DropdownMenuItem,
 } from '@/components/ui/dropdown-menu';
+import externalLinks from '@/data/external-links';
+import { useWorkspacesStore } from '@/stores/storage/workspaces';
 
-const settingsStore = useSettingsStore();
 const { t } = useI18n();
+const router = useRouter();
+const workspacesStore = useWorkspacesStore();
+
+async function navigateToDirectory(path: string) {
+  await workspacesStore.openNewTabGroup(path);
+  router.push({ name: 'navigator' });
+}
+
+async function openAppDataDirectory() {
+  const path = await appDataDir();
+  await navigateToDirectory(path);
+}
+
+async function openAppConfigDirectory() {
+  const path = await appConfigDir();
+  await navigateToDirectory(path);
+}
+
+async function openAppLogDirectory() {
+  const path = await appLogDir();
+  await navigateToDirectory(path);
+}
+
+function openProjectPage() {
+  openUrl(externalLinks.githubRepoLink);
+}
+
+function openIssuesPage() {
+  openUrl(externalLinks.githubIssuesLink);
+}
+
+function openDiscussionsPage() {
+  openUrl(externalLinks.githubDiscussionsLink);
+}
+
+function openChangelogPage() {
+  openUrl(externalLinks.githubChangelogLink);
+}
+
+function openReleasesPage() {
+  openUrl(externalLinks.githubAllReleases);
+}
 </script>
 
 <template>
   <Teleport to=".window-toolbar-primary-teleport-target">
-    <div class="animate-fade-in">
+    <div class="animate-fade-in settings-actions">
       <DropdownMenu>
-        <DropdownMenuTrigger>
+        <DropdownMenuTrigger as-child>
           <Button
             variant="ghost"
             size="icon"
@@ -34,26 +88,35 @@ const { t } = useI18n();
             />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent>
-          <DropdownMenuLabel>My Account</DropdownMenuLabel>
+        <DropdownMenuContent align="start">
+          <DropdownMenuLabel>{{ t('settings.actions.appDirectories') }}</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem>
-            <ExternalLinkIcon />
-            {{ t('projectGithubButtons.projectPage') }}
+          <DropdownMenuItem @click="openAppDataDirectory">
+            <FolderOpenIcon
+              :size="16"
+              class="settings-actions__links-menu-icon"
+            />
+            {{ t('settings.actions.openAppDataDirectory') }}
           </DropdownMenuItem>
-          <DropdownMenuItem>
-            <ExternalLinkIcon />
-            {{ t('projectGithubButtons.requestsIssues') }}
+          <DropdownMenuItem @click="openAppConfigDirectory">
+            <SettingsIcon
+              :size="16"
+              class="settings-actions__links-menu-icon"
+            />
+            {{ t('settings.actions.openAppConfigDirectory') }}
           </DropdownMenuItem>
-          <DropdownMenuItem>
-            <ExternalLinkIcon />
-            {{ t('projectGithubButtons.discussions') }}
+          <DropdownMenuItem @click="openAppLogDirectory">
+            <FileTextIcon
+              :size="16"
+              class="settings-actions__links-menu-icon"
+            />
+            {{ t('settings.actions.openAppLogDirectory') }}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
 
       <DropdownMenu>
-        <DropdownMenuTrigger>
+        <DropdownMenuTrigger as-child>
           <Button
             variant="ghost"
             size="icon"
@@ -64,20 +127,44 @@ const { t } = useI18n();
             />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent>
-          <DropdownMenuLabel>My Account</DropdownMenuLabel>
+        <DropdownMenuContent align="start">
+          <DropdownMenuLabel>{{ t('settings.actions.externalLinks') }}</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem>
-            <ExternalLinkIcon />
+          <DropdownMenuItem @click="openProjectPage">
+            <ExternalLinkIcon
+              :size="16"
+              class="settings-actions__links-menu-icon"
+            />
             {{ t('projectGithubButtons.projectPage') }}
           </DropdownMenuItem>
-          <DropdownMenuItem>
-            <ExternalLinkIcon />
+          <DropdownMenuItem @click="openIssuesPage">
+            <ExternalLinkIcon
+              :size="16"
+              class="settings-actions__links-menu-icon"
+            />
             {{ t('projectGithubButtons.requestsIssues') }}
           </DropdownMenuItem>
-          <DropdownMenuItem>
-            <ExternalLinkIcon />
+          <DropdownMenuItem @click="openDiscussionsPage">
+            <ExternalLinkIcon
+              :size="16"
+              class="settings-actions__links-menu-icon"
+            />
             {{ t('projectGithubButtons.discussions') }}
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem @click="openChangelogPage">
+            <ExternalLinkIcon
+              :size="16"
+              class="settings-actions__links-menu-icon"
+            />
+            {{ t('settings.actions.changelog') }}
+          </DropdownMenuItem>
+          <DropdownMenuItem @click="openReleasesPage">
+            <ExternalLinkIcon
+              :size="16"
+              class="settings-actions__links-menu-icon"
+            />
+            {{ t('settings.actions.allReleases') }}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -86,6 +173,11 @@ const { t } = useI18n();
 </template>
 
 <style scoped>
+.settings-actions {
+  display: flex;
+  gap: 4px;
+}
+
 .settings-actions-icon {
   stroke: hsl(var(--foreground) / 50%);
   transition: opacity 0.2s ease;
@@ -95,19 +187,12 @@ const { t } = useI18n();
   opacity: 0.7;
 }
 
-.settings-actions-input {
-  width: 100%;
-  height: 36px;
+.settings-actions__links-menu-icon {
+  margin-right: 8px;
+  stroke: hsl(var(--icon));
 }
 
-:global(.settings-actions-popover.sigma-ui-popover-content) {
-  width: 300px;
-  padding: 0;
-}
-
-@media (width <= 768px) {
-  :global(.settings-actions-popover.sigma-ui-popover-content) {
-    width: 250px;
-  }
+.settings-actions__links-menu-icon:hover {
+  opacity: 0.7;
 }
 </style>

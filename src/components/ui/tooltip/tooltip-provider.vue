@@ -4,13 +4,17 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import { TooltipProvider, type TooltipProviderProps } from 'reka-ui';
+import { TooltipProvider, type TooltipProviderProps, useForwardProps } from 'reka-ui';
 
-const props = defineProps<TooltipProviderProps>();
+const props = withDefaults(defineProps<TooltipProviderProps>(), {
+  delayDuration: 0,
+});
+
+const forwarded = useForwardProps(props);
 </script>
 
 <template>
-  <TooltipProvider v-bind="props">
+  <TooltipProvider v-bind="forwarded">
     <slot />
   </TooltipProvider>
 </template>

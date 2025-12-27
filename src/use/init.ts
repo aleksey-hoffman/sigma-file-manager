@@ -15,7 +15,7 @@ export function useInit() {
   async function init() {
     await userPathsStore.init();
     await userSettingsStore.init();
-    await workspacesStore.preloadDefaultTab();
+    await workspacesStore.init();
     disableWebViewFeatures();
   }
 

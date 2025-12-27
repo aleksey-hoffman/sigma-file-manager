@@ -5,17 +5,24 @@
 import cloneDeep from 'lodash.clonedeep';
 import { defineStore } from 'pinia';
 import { LazyStore } from '@tauri-apps/plugin-store';
-import { ref, watch } from 'vue';
+import { ref, computed } from 'vue';
 import type { UserSettings, LocalizationLanguage, UserSettingsPath, UserSettingsValue } from '@/types/user-settings';
 import { useTheme } from './use/use-theme';
 import { useUserPathsStore } from './user-paths';
 import { i18n } from '@/localization';
+import { getCurrentWebview } from '@tauri-apps/api/webview';
+import {
+  buildAllowedUserSettingsStorageKeys,
+  migrateUserSettingsStorage,
+  USER_SETTINGS_SCHEMA_VERSION_KEY,
+} from '@/stores/schemas/user-settings';
 
 export const useUserSettingsStore = defineStore('userSettings', () => {
   const userPathsStore = useUserPathsStore();
 
   const userSettingsStorage = ref<LazyStore | null>(null);
-  const userSettingsDefault = ref<UserSettings | null>();
+  const userSettingsDefault = ref<UserSettings | null>(null);
+  const allowedUserSettingsStorageKeys = ref<Set<string>>(new Set());
   const userSettings = ref<UserSettings>({
     language: {
       name: 'English',
@@ -59,36 +66,73 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
       infoPanel: {
         show: false,
       },
+      showHiddenFiles: false,
     },
+    UIZoomLevel: 1.0,
   });
 
-  const { setTheme } = useTheme(userSettings.value.theme);
-
-  watch(() => userSettings.value.theme, (value) => {
-    setTheme(value);
-  });
+  const themeSettingRef = computed(() => userSettings.value.theme);
+  const { setTheme } = useTheme(themeSettingRef);
 
   async function loadUserSettings() {
     try {
       const settings = await userSettingsStorage.value?.entries();
-      settings?.forEach((entry) => {
-        (userSettings.value as Record<string, unknown>)[entry[0]] = entry[1];
-      });
+
+      if (!settings || settings.length === 0) {
+        return;
+      }
+
+      for (const [key, value] of settings) {
+        if (key === USER_SETTINGS_SCHEMA_VERSION_KEY) {
+          continue;
+        }
+
+        if (!allowedUserSettingsStorageKeys.value.has(key)) {
+          continue;
+        }
+
+        setNestedValue(userSettings.value as Record<string, unknown>, key, value);
+      }
     }
     catch (error) {
       console.error('Failed to load user settings:', error);
     }
   }
 
-  async function initUserSettings() {
-    if (!userSettingsStorage.value) {
-      userSettingsStorage.value = await new LazyStore(userPathsStore.customPaths.appUserDataSettingsDir);
+  function setNestedValue(obj: Record<string, unknown>, path: string, value: unknown) {
+    const keys = path.split('.');
+    let current = obj;
 
-      await userSettingsStorage.value.save();
+    for (let keyIndex = 0; keyIndex < keys.length - 1; keyIndex++) {
+      const key = keys[keyIndex];
+
+      if (current[key] === undefined || typeof current[key] !== 'object') {
+        current[key] = {};
+      }
+
+      current = current[key] as Record<string, unknown>;
     }
 
-    if (!userSettingsDefault.value) {
-      userSettingsDefault.value = cloneDeep(userSettings.value);
+    current[keys[keys.length - 1]] = value;
+  }
+
+  async function initUserSettings() {
+    try {
+      if (!userSettingsStorage.value) {
+        userSettingsStorage.value = await new LazyStore(userPathsStore.customPaths.appUserDataSettingsPath);
+        await userSettingsStorage.value.save();
+      }
+
+      if (!userSettingsDefault.value) {
+        userSettingsDefault.value = cloneDeep(userSettings.value);
+      }
+
+      if (userSettingsDefault.value && allowedUserSettingsStorageKeys.value.size === 0) {
+        allowedUserSettingsStorageKeys.value = buildAllowedUserSettingsStorageKeys(userSettingsDefault.value);
+      }
+    }
+    catch (error) {
+      console.error('Failed to initialize user settings storage:', error);
     }
   }
 
@@ -109,12 +153,18 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
     await setUserSettingsStorage('language', newLanguage);
   }
 
-  async function initTheme() {
+  function initTheme() {
     setTheme(userSettings.value.theme);
   }
 
-  async function initLanguage() {
+  function initLanguage() {
     i18n.global.locale.value = userSettings.value.language.locale as typeof i18n.global.locale.value;
+  }
+
+  async function initZoom() {
+    const webview = getCurrentWebview();
+    const zoomLevel = userSettings.value.UIZoomLevel ?? 1.0;
+    await webview.setZoom(zoomLevel);
   }
 
   async function toggleInfoPanel() {
@@ -126,8 +176,8 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
     const keys = key.split('.');
     let current: Record<string, unknown> = userSettings.value as Record<string, unknown>;
 
-    for (let i = 0; i < keys.length - 1; i++) {
-      current = current[keys[i]] as Record<string, unknown>;
+    for (let keyIndex = 0; keyIndex < keys.length - 1; keyIndex++) {
+      current = current[keys[keyIndex]] as Record<string, unknown>;
     }
 
     current[keys[keys.length - 1]] = value;
@@ -136,9 +186,15 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
 
   async function init() {
     await initUserSettings();
+
+    if (userSettingsStorage.value) {
+      await migrateUserSettingsStorage(userSettingsStorage.value);
+    }
+
     await loadUserSettings();
     initTheme();
     initLanguage();
+    await initZoom();
   }
 
   return {

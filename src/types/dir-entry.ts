@@ -2,6 +2,14 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
+export interface DirContents {
+  path: string;
+  entries: DirEntry[];
+  total_count: number;
+  dir_count: number;
+  file_count: number;
+}
+
 export type ExtendedVirtualEntry = {
   type: 'dirs' | 'files' | 'dirs-divider' | 'files-divider' | 'top-spacer' | 'bottom-spacer';
   items: DirEntry[] | Divider[] | Spacer[];

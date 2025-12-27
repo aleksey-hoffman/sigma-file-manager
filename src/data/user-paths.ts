@@ -55,7 +55,9 @@ export interface UserPaths {
 export interface CustomPaths {
   appUserDataDir: string;
   appUserDataSettingsName: string;
-  appUserDataSettingsDir: string;
+  appUserDataSettingsPath: string;
+  appUserDataWorkspacesName: string;
+  appUserDataWorkspacesPath: string;
 }
 
 export interface UserPathsFunctions {

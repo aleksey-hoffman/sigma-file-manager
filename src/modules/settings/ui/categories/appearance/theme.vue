@@ -34,7 +34,7 @@ const themeOptions: {
     value: 'light',
   },
   {
-    name: 'System',
+    name: t('system'),
     value: 'system',
   },
 ];
@@ -50,7 +50,7 @@ const selectedTheme = computed({
 </script>
 
 <template>
-  <SettingsItem title="Theme">
+  <SettingsItem :title="t('settings.homeBannerEffects.theme.title')">
     <Select
       v-model="selectedTheme"
       by="value"

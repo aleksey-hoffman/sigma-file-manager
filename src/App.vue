@@ -7,6 +7,8 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 import { WindowToolbar } from './modules/window-toolbar';
 import { NavSidebar } from './modules/nav-sidebar';
 import { useInit } from './use/init';
+import { TooltipProvider } from './components/ui/tooltip';
+import { Toaster } from '@/components/ui/toaster';
 
 const { init } = useInit();
 
@@ -14,11 +16,14 @@ init();
 </script>
 
 <template>
-  <NavSidebar />
-  <div class="app-main">
-    <WindowToolbar />
-    <RouterView />
-  </div>
+  <Toaster />
+  <TooltipProvider>
+    <NavSidebar />
+    <div class="app-main">
+      <WindowToolbar />
+      <RouterView />
+    </div>
+  </TooltipProvider>
 </template>
 
 <style>

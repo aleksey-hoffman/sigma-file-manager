@@ -67,8 +67,14 @@
     "newTabInCurrentWorkspace": "Tab mới trong không gian làm việc hiện tại",
     "closeAllTabsInCurrentWorkspace": "Đóng tất cả các tab trong không gian làm việc hiện tại",
     "noTabsInCurrentWorkspace": "Không có tab nào trong không gian làm việc hiện tại",
-    "tabs": "Tabs"
+    "tabs": "Tabs",
+    "newTab": "Tab mới",
+    "tabActions": "Hành động tab",
+    "closeTab": "Đóng tab",
+    "closeOtherTabs": "Đóng các tab khác",
+    "closeAllTabs": "Đóng tất cả tab"
   },
+  "splitView": "Chế độ chia màn hình",
   "workspaces": {
     "title": "Không gian làm việc",
     "editWorkspaces": "Chỉnh sửa không gian làm việc"
@@ -241,6 +247,15 @@
       "increaseZoomLevel": "Tăng mức thu phóng",
       "resetZoomLevel": "Đặt lại mức thu phóng"
     },
+    "actions": {
+      "appDirectories": "Thư mục ứng dụng",
+      "externalLinks": "Liên kết bên ngoài",
+      "openAppDataDirectory": "Mở thư mục dữ liệu ứng dụng",
+      "openAppConfigDirectory": "Mở thư mục cấu hình ứng dụng",
+      "openAppLogDirectory": "Mở thư mục nhật ký ứng dụng",
+      "changelog": "Nhật ký thay đổi",
+      "allReleases": "Tất cả phiên bản"
+    },
     "windowControls": {
       "minimizeAppToTray": {
         "radioLabel": "Thu nhỏ vào khay và lưu trong bộ nhớ (được khuyến nghị)",
@@ -384,7 +399,8 @@
       "toAutocomplete": "để tự động hoàn thành và lặp lại các mục thư mục",
       "toOpenThePath": "để mở đường",
       "copyPathToClipboard": "Sao chép đường dẫn vào khay nhớ tạm",
-      "openCopiedPath": "Mở đường dẫn đã sao chép"
+      "openCopiedPath": "Mở đường dẫn đã sao chép",
+      "noMatchingDirectories": "Không có thư mục phù hợp"
     },
     "clipboard": {
       "inactiveUnselectable": "không hoạt động không thể chọn",
@@ -401,7 +417,8 @@
       "sortingElementDisplayType": "Loại hiển thị phần tử sắp xếp",
       "showSortingIcon": "Hiển thị biểu tượng sắp xếp",
       "showSortingToolbar": "Hiển thị thanh công cụ sắp xếp",
-      "navigatorViewLayout": "Bố cục chế độ xem điều hướng",
+      "navigatorViewLayout": "Bố cục",
+      "navigatorOptions": "Tùy chọn điều hướng",
       "navigatorItemHoverEffect": "Hiệu ứng di chuột của mục điều hướng",
       "navigatorItemList": "Danh sách mục điều hướng",
       "ocdNameColumnMaxWidth": "OCD | Độ rộng tối đa của cột 'Tên':",
@@ -1276,6 +1293,11 @@
   "shortcut": "Đường tắt",
   "shortcutPlural": "Lối tắt",
   "fullScreen": "Toàn màn hình",
+  "system": "Hệ thống",
+  "extension": "Phần mở rộng",
+  "accessed": "Đã truy cập",
+  "symlink": "Liên kết tượng trưng",
+  "hidden": "Ẩn",
   "menu": "Thực đơn",
   "contextMenu": "Danh mục",
   "copy": "Sao chép",
@@ -1415,5 +1437,35 @@
   "pinnedItemsShort": "Đính kèm",
   "freeOf": "miễn phí của",
   "terminal": "Đầu cuối",
-  "conflict": "Xung đột"
+  "conflict": "Xung đột",
+  "fileBrowser": {
+    "goBack": "Quay lại",
+    "goForward": "Tiến tới",
+    "goUp": "Lên trên",
+    "goHome": "Trang chủ",
+    "refresh": "Làm mới",
+    "enterPath": "Nhập đường dẫn...",
+    "quickSearch": "Tìm kiếm nhanh",
+    "searchThisDirectory": "Tìm trong thư mục này...",
+    "name": "Tên",
+    "size": "Kích thước",
+    "modified": "Đã sửa đổi",
+    "folders": "Thư mục",
+    "images": "Hình ảnh",
+    "videos": "Video",
+    "video": "Video",
+    "otherFiles": "Tập tin khác",
+    "itemCount": "{count} mục",
+    "itemsTotal": "{count} mục",
+    "showingFiltered": "Hiển thị {filtered} trong {total} mục",
+    "actions": {
+      "rename": "Đổi tên",
+      "copy": "Sao chép",
+      "cut": "Cắt",
+      "delete": "Xóa",
+      "openWith": "Mở bằng...",
+      "quickView": "Xem nhanh",
+      "share": "Chia sẻ"
+    }
+  }
 }

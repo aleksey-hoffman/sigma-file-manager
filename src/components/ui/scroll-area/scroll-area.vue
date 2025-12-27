@@ -13,7 +13,13 @@ import {
 
 import ScrollBar from './scroll-bar.vue';
 
-const props = defineProps<ScrollAreaRootProps>();
+interface Props extends ScrollAreaRootProps {
+  orientation?: 'vertical' | 'horizontal' | 'both';
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  orientation: 'vertical',
+});
 </script>
 
 <template>
@@ -24,7 +30,14 @@ const props = defineProps<ScrollAreaRootProps>();
     <ScrollAreaViewport class="sigma-ui-scroll-area__viewport">
       <slot />
     </ScrollAreaViewport>
-    <ScrollBar />
+    <ScrollBar
+      v-if="orientation === 'vertical' || orientation === 'both'"
+      orientation="vertical"
+    />
+    <ScrollBar
+      v-if="orientation === 'horizontal' || orientation === 'both'"
+      orientation="horizontal"
+    />
     <ScrollAreaCorner />
   </ScrollAreaRoot>
 </template>

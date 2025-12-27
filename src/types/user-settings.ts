@@ -27,7 +27,7 @@ export type UserSettings = {
   theme: Theme;
   transparentToolbars: boolean;
   dateTime: DateTime;
-  navigator: Navigator;
+  navigator: UserSettingsNavigator;
   UIZoomLevel?: number;
 };
 
@@ -54,12 +54,13 @@ export type DateTime = {
   };
 };
 
-export type Navigator = {
+export type UserSettingsNavigator = {
   layout: NavigatorLayout;
-  infoPanel: NavigatorInfoPanel;
+  infoPanel: UserSettingsNavigatorInfoPanel;
+  showHiddenFiles: boolean;
 };
 
-export type NavigatorInfoPanel = {
+export type UserSettingsNavigatorInfoPanel = {
   show: boolean;
 };
 

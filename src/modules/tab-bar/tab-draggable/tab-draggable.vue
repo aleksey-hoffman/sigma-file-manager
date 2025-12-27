@@ -4,7 +4,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import { Container, Draggable } from 'vue3-smooth-dnd';
+import { Container, Draggable, type DropResult } from 'vue3-smooth-dnd';
 
 interface Props<T> {
   items: T[];
@@ -26,11 +26,11 @@ function getItemGhostParent() {
   return document.querySelector(props.parentSelector);
 }
 
-function onDrop<T>(dropResult) {
-  emit('set', getUpdatedList(dropResult) as T[]);
+function onDrop(dropResult: DropResult) {
+  emit('set', getUpdatedList(dropResult));
 }
 
-function getUpdatedList(dropResult) {
+function getUpdatedList(dropResult: DropResult) {
   const { removedIndex, addedIndex, payload } = dropResult;
 
   if (removedIndex === null && addedIndex === null) {
@@ -94,5 +94,32 @@ function getUpdatedList(dropResult) {
 
 .item-drag-handle {
   height: var(--tab-height);
+}
+</style>
+
+<style>
+.draggable-list__item--drag-active {
+  z-index: 100;
+  backdrop-filter: blur(24px);
+  background-color: hsl(var(--background-2) / 50%);
+  cursor: grabbing;
+  opacity: 1 !important;
+}
+
+.draggable-list__item--drag-active .tab {
+  border: 1px solid hsl(var(--primary) / 50%);
+  background-color: hsl(var(--background-2) / 50%);
+  box-shadow: 0 4px 12px hsl(var(--background) / 80%);
+  cursor: grabbing;
+}
+
+.draggable-list__item .tab:active {
+  border: 1px solid hsl(var(--primary) / 50%);
+  background-color: hsl(var(--background-2) / 50%);
+  transition: border 0.5s ease;
+}
+
+.draggable-list__item {
+  padding: 0 2px;
 }
 </style>

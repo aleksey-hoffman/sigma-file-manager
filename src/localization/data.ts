@@ -8,7 +8,9 @@ import en from './messages/en.json';
 import es from './messages/es.json';
 import fa from './messages/fa.json';
 import fr from './messages/fr.json';
+import it from './messages/it.json';
 import ja from './messages/ja.json';
+import pt from './messages/pt.json';
 import ru from './messages/ru.json';
 import tr from './messages/tr.json';
 import vi from './messages/vi.json';
@@ -25,6 +27,8 @@ export const messages = {
   fa,
   ch,
   vi,
+  it,
+  pt,
 };
 
 export const languages: LocalizationLanguage[] = [
@@ -55,6 +59,18 @@ export const languages: LocalizationLanguage[] = [
   {
     name: 'Français',
     locale: 'fr',
+    isCorrected: false,
+    isRtl: false,
+  },
+  {
+    name: 'Italiano',
+    locale: 'it',
+    isCorrected: false,
+    isRtl: false,
+  },
+  {
+    name: 'Português',
+    locale: 'pt',
     isCorrected: false,
     isRtl: false,
   },
@@ -93,3 +109,20 @@ export const languages: LocalizationLanguage[] = [
 export function getLanguage(locale: string) {
   return languages.find(item => item.locale === locale);
 }
+
+export type AppLocale = (typeof languages)[number]['locale'];
+
+export const dayjsLocaleMapping: Record<AppLocale, string> = {
+  en: 'en',
+  ru: 'ru',
+  es: 'es',
+  de: 'de',
+  fr: 'fr',
+  tr: 'tr',
+  ja: 'ja',
+  fa: 'fa',
+  ch: 'zh-cn',
+  vi: 'vi',
+  it: 'it',
+  pt: 'pt',
+};

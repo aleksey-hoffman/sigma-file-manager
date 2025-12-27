@@ -53,6 +53,14 @@ const props = withDefaults(defineProps<ScrollAreaScrollbarProps>(), {
   transition: background-color 1s ease;
 }
 
+.sigma-ui-scroll-area-scrollbar[data-orientation="vertical"] .sigma-ui-scroll-area-scrollbar__thumb {
+  min-height: 50px;
+}
+
+.sigma-ui-scroll-area-scrollbar[data-orientation="horizontal"] .sigma-ui-scroll-area-scrollbar__thumb {
+  min-width: 50px;
+}
+
 .transition-fade-in-200-enter-active,
 .transition-fade-in-200-leave-active {
   transition: all 0.2s ease;

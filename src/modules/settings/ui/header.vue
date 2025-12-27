@@ -5,6 +5,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
+import logoImage from '@/assets/icons/logo-1024x1024.png';
 
 const { t } = useI18n();
 </script>
@@ -16,7 +17,7 @@ const { t } = useI18n();
     </h1>
     <div class="settings-header__content">
       <img
-        :src="'/src/assets/icons/logo-1024x1024.png'"
+        :src="logoImage"
         width="64px"
       >
       <div class="settings-header__title-section">

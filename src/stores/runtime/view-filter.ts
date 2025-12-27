@@ -4,7 +4,7 @@
 
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import formatDateTime from '@/utils/format-date-time';
+import { formatDateTime } from '@/utils/date-time';
 import toReadableBytes from '@/utils/to-readable-bytes';
 import type { ViewFilter } from '@/types/view-filter';
 

@@ -67,7 +67,12 @@
     "newTabInCurrentWorkspace": "برگه جدید در فضای کاری فعلی",
     "closeAllTabsInCurrentWorkspace": "بستن همه برگه ها در فضای کاری فعلی",
     "noTabsInCurrentWorkspace": "بدون برگه در فضای کاری فعلی",
-    "tabs": "Tabs"
+    "tabs": "برگه ها",
+    "newTab": "برگه جدید",
+    "tabActions": "عملیات برگه",
+    "closeTab": "بستن برگه",
+    "closeOtherTabs": "بستن سایر برگه ها",
+    "closeAllTabs": "بستن همه برگه ها"
   },
   "workspaces": {
     "title": "فضای کار",
@@ -241,6 +246,15 @@
       "increaseZoomLevel": "افزایش سطح زوم",
       "resetZoomLevel": "بازنشانی سطح بزرگنمایی"
     },
+    "actions": {
+      "appDirectories": "پوشه‌های برنامه",
+      "externalLinks": "پیوندهای خارجی",
+      "openAppDataDirectory": "باز کردن پوشه داده‌های برنامه",
+      "openAppConfigDirectory": "باز کردن پوشه تنظیمات برنامه",
+      "openAppLogDirectory": "باز کردن پوشه گزارش‌های برنامه",
+      "changelog": "تاریخچه تغییرات",
+      "allReleases": "همه نسخه‌ها"
+    },
     "windowControls": {
       "minimizeAppToTray": {
         "radioLabel": "به حداقل رساندن در سینی و نگهداری در حافظه (توصیه می شود)",
@@ -384,7 +398,8 @@
       "toAutocomplete": "برای تکمیل خودکار و تکرار آیتم های فهرست،",
       "toOpenThePath": "برای باز کردن راه",
       "copyPathToClipboard": "کپی مسیر به کلیپ بورد",
-      "openCopiedPath": "باز کردن مسیر کپی شده"
+      "openCopiedPath": "باز کردن مسیر کپی شده",
+      "noMatchingDirectories": "هیچ پوشه‌ای مطابقت ندارد"
     },
     "clipboard": {
       "inactiveUnselectable": "غیر فعال غیر قابل انتخاب",
@@ -401,7 +416,8 @@
       "sortingElementDisplayType": "نوع نمایش عنصر مرتب‌سازی",
       "showSortingIcon": "نمایش نماد مرتب سازی",
       "showSortingToolbar": "نمایش نوار ابزار مرتب سازی",
-      "navigatorViewLayout": "طرح نمای ناوبری",
+      "navigatorViewLayout": "چیدمان",
+      "navigatorOptions": "گزینه‌های ناوبر",
       "navigatorItemHoverEffect": "اثر شناور آیتم ناوبری",
       "navigatorItemList": "لیست آیتم های ناوبری",
       "ocdNameColumnMaxWidth": "OCD | حداکثر عرض ستون \"نام\":",
@@ -1276,6 +1292,11 @@
   "shortcut": "میانبر",
   "shortcutPlural": "میانبرها",
   "fullScreen": "تمام صفحه",
+  "system": "سیستم",
+  "extension": "پسوند",
+  "accessed": "دسترسی",
+  "symlink": "پیوند نمادین",
+  "hidden": "مخفی",
   "menu": "منو",
   "contextMenu": "منوی زمینه",
   "copy": "کپی",
@@ -1415,5 +1436,35 @@
   "pinnedItemsShort": "پیوست شده است",
   "freeOf": "رایگان از",
   "terminal": "ترمینال",
-  "conflict": "تضاد"
+  "conflict": "تضاد",
+  "fileBrowser": {
+    "goBack": "برگشت",
+    "goForward": "جلو",
+    "goUp": "بالا",
+    "goHome": "خانه",
+    "refresh": "بازخوانی",
+    "enterPath": "مسیر را وارد کنید...",
+    "quickSearch": "جستجوی سریع",
+    "searchThisDirectory": "جستجو در این پوشه...",
+    "name": "نام",
+    "size": "اندازه",
+    "modified": "تغییر یافته",
+    "folders": "پوشه‌ها",
+    "images": "تصاویر",
+    "videos": "ویدیوها",
+    "video": "ویدیو",
+    "otherFiles": "فایل‌های دیگر",
+    "itemCount": "{count} مورد",
+    "itemsTotal": "{count} مورد",
+    "showingFiltered": "نمایش {filtered} از {total} مورد",
+    "actions": {
+      "rename": "تغییر نام",
+      "copy": "کپی",
+      "cut": "برش",
+      "delete": "حذف",
+      "openWith": "باز کردن با...",
+      "quickView": "نمای سریع",
+      "share": "اشتراک‌گذاری"
+    }
+  }
 }

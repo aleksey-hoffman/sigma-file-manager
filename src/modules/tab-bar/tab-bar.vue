@@ -4,19 +4,38 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from 'vue';
+import { ref, onBeforeUnmount, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Tab, TabDraggable } from '.';
 import { Button } from '@/components/ui/button';
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from '@/components/ui/tooltip';
 import { useWorkspacesStore } from '@/stores/storage/workspaces';
 import type { Tab as TabType, TabGroup } from '@/types/workspaces';
 import { PlusIcon } from 'lucide-vue-next';
 
+const { t } = useI18n();
+
+const props = withDefaults(defineProps<{
+  teleportTarget?: string;
+  compact?: boolean;
+}>(), {
+  teleportTarget: '.window-toolbar-primary-teleport-target',
+  compact: false,
+});
+
 const workspacesStore = useWorkspacesStore();
+
+const teleportDisabled = computed(() => !props.teleportTarget);
+const teleportTo = computed(() => props.teleportTarget || 'body');
 const { openNewTabGroup, closeTabGroup, setTabs } = workspacesStore;
 
 const previewEnabled = ref(true);
+const scrollContainerRef = ref<HTMLElement | null>(null);
 let scrollDisableTimeoutId: number | null = null;
-const scrollContainerEl = ref<HTMLElement | null>(null);
 
 function handleScrollActivity() {
   previewEnabled.value = false;
@@ -30,11 +49,10 @@ function handleScrollActivity() {
   }, 200);
 }
 
-function onWheel(event: Event) {
-  const container = scrollContainerEl.value;
+function handleWheel(event: WheelEvent) {
+  const container = scrollContainerRef.value;
   if (!container) return;
-  const wheelEvent = event as WheelEvent;
-  container.scrollLeft += wheelEvent.deltaY || 0;
+  container.scrollLeft += event.deltaY || event.deltaX || 0;
   handleScrollActivity();
 }
 
@@ -42,24 +60,7 @@ function onScroll() {
   handleScrollActivity();
 }
 
-function changeScrollPosition() {
-  const scrollContainer = document.querySelector('.tab-bar__base-container') as HTMLElement | null;
-  scrollContainerEl.value = scrollContainer;
-  if (!scrollContainer) return;
-  scrollContainer.addEventListener('wheel', onWheel as EventListener);
-  scrollContainer.addEventListener('scroll', onScroll as EventListener);
-}
-
-onMounted(() => {
-  changeScrollPosition();
-});
-
 onBeforeUnmount(() => {
-  if (scrollContainerEl.value) {
-    scrollContainerEl.value.removeEventListener('wheel', onWheel as EventListener);
-    scrollContainerEl.value.removeEventListener('scroll', onScroll as EventListener);
-  }
-
   if (scrollDisableTimeoutId !== null) {
     clearTimeout(scrollDisableTimeoutId);
   }
@@ -67,9 +68,20 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <Teleport to=".window-toolbar-primary-teleport-target">
-    <div class="tab-bar animate-fade-in">
-      <div class="tab-bar__base-container">
+  <Teleport
+    :to="teleportTo"
+    :disabled="teleportDisabled"
+  >
+    <div
+      class="tab-bar animate-sigma-ui-fade-in"
+      :class="{ 'tab-bar--compact': compact }"
+    >
+      <div
+        ref="scrollContainerRef"
+        class="tab-bar__base-container"
+        @wheel.prevent="handleWheel"
+        @scroll="onScroll"
+      >
         <div class="tab-bar__base">
           <TabDraggable
             :items="workspacesStore.currentWorkspace?.tabGroups || []"
@@ -90,14 +102,21 @@ onBeforeUnmount(() => {
         </div>
       </div>
 
-      <Button
-        class="tab-bar__add-tab-button"
-        variant="ghost"
-        size="xs"
-        @click="openNewTabGroup()"
-      >
-        <PlusIcon :size="14" />
-      </Button>
+      <Tooltip>
+        <TooltipTrigger as-child>
+          <Button
+            class="tab-bar__add-tab-button"
+            variant="ghost"
+            size="xs"
+            @click="openNewTabGroup()"
+          >
+            <PlusIcon :size="14" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>
+          {{ t('tabs.newTab') }}
+        </TooltipContent>
+      </Tooltip>
     </div>
   </Teleport>
 </template>
@@ -129,5 +148,21 @@ onBeforeUnmount(() => {
 
 .tab-bar__add-tab-button {
   color: hsl(var(--muted-foreground));
+}
+
+.tab-bar--compact {
+  width: 100%;
+  height: 36px;
+  padding: 4px 0;
+}
+
+.tab-bar--compact .tab-bar__base-container {
+  overflow: auto hidden;
+  min-width: 0;
+  flex: 1;
+}
+
+.tab-bar--compact .tab-bar__base {
+  height: 28px;
 }
 </style>
