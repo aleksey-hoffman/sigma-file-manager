@@ -135,12 +135,12 @@ Consider supporting the project on Patreon:
     <tr>
       <td>
           <a href="https://www.photoancestry.com" target="_blank">
-            <img width="128px" align="center" src="https://www.photoancestry.com/images/fpbanner_poster_.png">
+            <img width="128px" align="center" src="https://scontent.flhr1-1.fna.fbcdn.net/v/t39.30808-6/312953001_778917009868126_825567050177169749_n.jpg?_nc_cat=100&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=8B5mpsDAoxgQ7kNvwH1QR8Z&_nc_oc=AdmOYI7LHxeXKEQ0T9K-rOZZICaExJVvVdsYs0GMkj6sREtG0sadKl_5oDnBYw4-_3w&_nc_zt=23&_nc_ht=scontent.flhr1-1.fna&_nc_gid=eSU0QTuVT90vmNwQVR0sWw&oh=00_AflHJMOX4220ykyfeWw6ktkZ8szN9m0m8HnxGXqH6IlSXQ&oe=6956DB34">
           </a>
       </td>
       <td>
         <b>Houston's #1 Photo Restoration Service</b>
-        <br><a href="https://www.photoancestry.com" target="_blank">photoancestry.com</a>
+        <br><a href="https://www.facebook.com/photoancestry/" target="_blank">facebook.com/photoancestry</a>
       </td>
     </tr>
   </tbody>
