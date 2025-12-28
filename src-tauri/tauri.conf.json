@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
-  "productName": "sigma-file-manager",
-  "version": "0.1.0",
+  "productName": "Sigma File Manager",
+  "version": "../package.json",
   "identifier": "com.sigma-file-manager.app",
   "build": {
     "frontendDist": "../dist",
@@ -13,7 +13,7 @@
     "windows": [
       {
         "label": "main",
-        "title": "sigma-file-manager",
+        "title": "Sigma File Manager",
         "width": 1280,
         "height": 720,
         "minWidth": 500,
@@ -28,13 +28,23 @@
       "csp": null,
       "assetProtocol": {
         "enable": true,
-        "scope": ["**"]
+        "scope": [
+          "**"
+        ]
       }
     }
   },
   "bundle": {
     "active": true,
-    "targets": "all",
+    "targets": [
+      "nsis",
+      "appimage"
+    ],
+    "windows": {
+      "nsis": {
+        "installMode": "currentUser"
+      }
+    },
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
