@@ -4,8 +4,16 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
+import { onMounted } from 'vue';
 import { SettingsHeader, SettingsContent, SettingsSearch, SettingsActions } from '@/modules/settings';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useSettingsStore } from '@/stores/runtime/settings';
+
+const settingsStore = useSettingsStore();
+
+onMounted(() => {
+  settingsStore.init();
+});
 </script>
 
 <template>

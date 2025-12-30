@@ -368,9 +368,9 @@
       "showUserNameOnHomeDirectoryCard": "「ホームディレクトリ」カードにユーザー名を表示",
       "showDriveSpaceIndicator": "ドライブ容量インジケータを表示",
       "driveSpaceIndicatorStyle": "ドライブ スペース インジケータ スタイル",
-      "linearVertical": "線形 | 垂直",
-      "linearHorizontal": "線形 | 水平",
-      "linearHorizontalCentered": "線形 | 水平 | 中央揃え",
+      "linearVertical": "線形 {'|'} 垂直",
+      "linearHorizontal": "線形 {'|'} 水平",
+      "linearHorizontalCentered": "線形 {'|'} 水平 {'|'} 中央揃え",
       "circular": "円形"
     },
     "homePageMediaBanner": {
@@ -578,6 +578,7 @@
     "windowControls": "ウィンドウ、コントロール、最小化、閉じる、復元、非表示、トレイ、メモリ、RAM、アプリ、パフォーマンス",
     "visualEffects": "ビジュアル、効果、ぼかし、不透明度、視差、オーバーレイ、背景、透明度、メディア、色、テーマ、ホーム、ページ",
     "theme": "テーマ、スタイル、ライト、ダーク、カラー",
+    "driveCard": "ドライブ、カード、スペース、インジケーター、ストレージ、プログレス、円形、線形",
     "visualFilters": "ビジュアル、フィルター、色、コントラスト、明るさ、彩度、画像、動画、テーマ",
     "animations": "アニメーション、ホーム、ページ",
     "fonts": "フォント、テキスト",
@@ -1392,6 +1393,7 @@
   "undo": "「元に戻す」",
   "pause": "一時停止",
   "cancel": "キャンセル",
+  "click": "クリック",
   "ok": "Ok",
   "save": "セーブ",
   "create": "作成",

@@ -92,9 +92,18 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
 
   async function createNewTab(path?: string): Promise<Tab> {
     const tabPath = path || userPathsStore.userPaths.homeDir;
+    let tabName: string;
+
+    try {
+      tabName = await basename(tabPath);
+    }
+    catch {
+      tabName = tabPath;
+    }
+
     return {
       id: uniqueId(),
-      name: await basename(tabPath),
+      name: tabName,
       path: tabPath,
       type: 'directory',
       paneWidth: 100,

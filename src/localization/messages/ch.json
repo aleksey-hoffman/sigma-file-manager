@@ -368,9 +368,9 @@
       "showUserNameOnHomeDirectoryCard": "在'主目录'卡上显示用户名",
       "showDriveSpaceIndicator": "显示驱动器空间指示器",
       "driveSpaceIndicatorStyle": "驱动器空间指示器样式",
-      "linearVertical": "线 | 垂直 | 左侧",
-      "linearHorizontal": "线 | 水平 | 底部",
-      "linearHorizontalCentered": "线 | 水平 | 居中",
+      "linearVertical": "线 {'|'} 垂直 {'|'} 左侧",
+      "linearHorizontal": "线 {'|'} 水平 {'|'} 底部",
+      "linearHorizontalCentered": "线 {'|'} 水平 {'|'} 居中",
       "circular": "圆"
     },
     "homePageMediaBanner": {
@@ -578,6 +578,7 @@
     "windowControls": "窗口、控件、最小化、关闭、恢复、隐藏、托盘、内存、内存、应用程序、性能",
     "visualEffects": "视觉、效果、模糊、不透明度、视差、叠加、背景、透明度、媒体、颜色、主题、主页、页面",
     "theme": "主题,风格,浅色,深色,颜色",
+    "driveCard": "驱动器, 卡片, 空间, 指示器, 存储, 进度, 圆形, 线性",
     "visualFilters": "视觉、滤镜、颜色、对比度、亮度、饱和度、图像、视频、主题",
     "animations": "动画,主页,页面",
     "fonts": "字体,文本",
@@ -1392,6 +1393,7 @@
   "undo": "撤消",
   "pause": "暂停",
   "cancel": "取消",
+  "click": "点击",
   "ok": "确定",
   "save": "保存",
   "create": "创建",

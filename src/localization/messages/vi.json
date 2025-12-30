@@ -368,9 +368,9 @@
       "showUserNameOnHomeDirectoryCard": "Hiển thị tên người dùng trên thẻ 'thư mục chính'",
       "showDriveSpaceIndicator": "Hiển thị chỉ báo dung lượng ổ đĩa",
       "driveSpaceIndicatorStyle": "Kiểu chỉ báo dung lượng ổ đĩa",
-      "linearVertical": "Tuyến tính | dọc",
-      "linearHorizontal": "Tuyến tính | ngang",
-      "linearHorizontalCentered": "Tuyến tính | ngang | chính giữa",
+      "linearVertical": "Tuyến tính {'|'} dọc",
+      "linearHorizontal": "Tuyến tính {'|'} ngang",
+      "linearHorizontalCentered": "Tuyến tính {'|'} ngang {'|'} chính giữa",
       "circular": "Dạng hình tròn"
     },
     "homePageMediaBanner": {
@@ -578,6 +578,7 @@
     "windowControls": "cửa sổ, điều khiển, thu nhỏ, đóng, khôi phục, ẩn, khay, bộ nhớ, ram, ứng dụng, hiệu suất",
     "visualEffects": "hình ảnh, hiệu ứng, làm mờ, độ mờ, thị sai, lớp phủ, nền, độ trong suốt, phương tiện, màu sắc, chủ đề, trang chủ, trang",
     "theme": "chủ đề, phong cách, ánh sáng, bóng tối, màu sắc",
+    "driveCard": "ổ đĩa, thẻ, không gian, chỉ báo, lưu trữ, tiến trình, hình tròn, tuyến tính",
     "visualFilters": "hình ảnh, bộ lọc, màu sắc, độ tương phản, độ sáng, độ bão hòa, hình ảnh, video, chủ đề",
     "animations": "hình ảnh động, trang chủ, trang",
     "fonts": "phông chữ, văn bản",
@@ -1392,6 +1393,7 @@
   "undo": "Hoàn tác",
   "pause": "tạm ngừng",
   "cancel": "Hủy bỏ",
+  "click": "Nhấp",
   "ok": "Vâng",
   "save": "Tiết kiệm",
   "create": "Tạo nên",

@@ -368,9 +368,9 @@
       "showUserNameOnHomeDirectoryCard": "Benutzernamen auf Karte \"Home-Verzeichnis\" anzeigen",
       "showDriveSpaceIndicator": "Speicherplatzanzeige anzeigen",
       "driveSpaceIndicatorStyle": "Stil der Speicherplatzanzeige",
-      "linearVertical": "Linear | Vertikal",
-      "linearHorizontal": "Linear | Horizontal",
-      "linearHorizontalCentered": "Linear | horizontal | zentriert",
+      "linearVertical": "Linear {'|'} Vertikal",
+      "linearHorizontal": "Linear {'|'} Horizontal",
+      "linearHorizontalCentered": "Linear {'|'} horizontal {'|'} zentriert",
       "circular": "Kreisförmig"
     },
     "homePageMediaBanner": {
@@ -578,6 +578,7 @@
     "windowControls": "Fenster, Steuerelemente, Minimieren, Schließen, Wiederherstellen, Ausblenden, Tray, Speicher, RAM, App, Leistung",
     "visualEffects": "visuell, Effekte, Unschärfe, Deckkraft, Parallaxe, Überlagerung, Hintergrund, Transparenz, Medien, Farbe, Thema, Startseite, Seite",
     "theme": "Thema, Stil, Licht, Dunkel, Farbe",
+    "driveCard": "Laufwerk, Karte, Platz, Indikator, Speicher, Fortschritt, kreisförmig, linear",
     "visualFilters": "visuell, Filter, Farbe, Kontrast, Helligkeit, Sättigung, Bild, Video, Thema",
     "animations": "Animationen, Startseite, Seite",
     "fonts": "Schriftarten, Text",
@@ -1392,6 +1393,7 @@
   "undo": "rückgängig machen",
   "pause": "Pause",
   "cancel": "Abbrechen",
+  "click": "Klick",
   "ok": "Ok",
   "save": "Speichern",
   "create": "Erstellen",

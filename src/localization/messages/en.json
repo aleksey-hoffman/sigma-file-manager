@@ -368,9 +368,9 @@
       "showUserNameOnHomeDirectoryCard": "Show user name on 'home directory' card",
       "showDriveSpaceIndicator": "Show drive space indicator",
       "driveSpaceIndicatorStyle": "Drive space indicator style",
-      "linearVertical": "Linear | vertical",
-      "linearHorizontal": "Linear | horizontal",
-      "linearHorizontalCentered": "Linear | horizontal | centered",
+      "linearVertical": "Linear {'|'} vertical",
+      "linearHorizontal": "Linear {'|'} horizontal",
+      "linearHorizontalCentered": "Linear {'|'} horizontal {'|'} centered",
       "circular": "Circular"
     },
     "homePageMediaBanner": {
@@ -578,6 +578,7 @@
     "windowControls": "window, controls, minimize, close, restore, hide, tray, memory, ram, app, performance",
     "visualEffects": "visual, effects, blur, opacity, parallax, overlay, background, transparency, media, color, theme, home, page",
     "theme": "theme, style, light, dark, color",
+    "driveCard": "drive, card, space, indicator, storage, disk, progress, bar, circular, linear, vertical, horizontal",
     "visualFilters": "visual, filters, color, contrast, brightness, saturation, image, video, theme",
     "animations": "animations, home, page",
     "fonts": "fonts, text",
@@ -1392,6 +1393,7 @@
   "undo": "undo",
   "pause": "pause",
   "cancel": "Cancel",
+  "click": "Click",
   "ok": "Ok",
   "save": "Save",
   "create": "Create",

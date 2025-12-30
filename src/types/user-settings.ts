@@ -29,6 +29,15 @@ export type UserSettings = {
   dateTime: DateTime;
   navigator: UserSettingsNavigator;
   UIZoomLevel?: number;
+  homeBannerIndex: number;
+  driveCard: DriveCardSettings;
+};
+
+export type DriveSpaceIndicatorStyle = 'linearVertical' | 'linearHorizontal' | 'linearHorizontalCentered' | 'circular';
+
+export type DriveCardSettings = {
+  showSpaceIndicator: boolean;
+  spaceIndicatorStyle: DriveSpaceIndicatorStyle;
 };
 
 export type LocalizationLanguage = {

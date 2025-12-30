@@ -4,13 +4,22 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
+import { computed } from 'vue';
+import { useRoute } from 'vue-router';
 import Spacer from './spacer.vue';
 import WindowActions from './window-actions.vue';
+
+const route = useRoute();
+
+const isTransparent = computed(() => {
+  return route.name === 'home';
+});
 </script>
 
 <template>
   <div
     class="window-toolbar"
+    :class="{ 'window-toolbar--transparent': isTransparent }"
   >
     <div
       data-tauri-drag-region
@@ -40,6 +49,14 @@ import WindowActions from './window-actions.vue';
   justify-content: space-between;
   background: var(--window-toolbar);
   transition: background-color 0.2s ease;
+}
+
+.window-toolbar--transparent {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  background: transparent;
 }
 
 .window-toolbar-drag-layer {

@@ -368,9 +368,9 @@
       "showUserNameOnHomeDirectoryCard": "Kullanıcı adını 'ana dizin' kartında göster",
       "showDriveSpaceIndicator": "Sürücü alanı göstergesini göster",
       "driveSpaceIndicatorStyle": "Sürücü alanı gösterge stili",
-      "linearVertical": "Doğrusal | dikey",
-      "linearHorizontal": "Doğrusal | yatay",
-      "linearHorizontalCentered": "Doğrusal | yatay | merkezli",
+      "linearVertical": "Doğrusal {'|'} dikey",
+      "linearHorizontal": "Doğrusal {'|'} yatay",
+      "linearHorizontalCentered": "Doğrusal {'|'} yatay {'|'} merkezli",
       "circular": "Dairesel"
     },
     "homePageMediaBanner": {
@@ -578,6 +578,7 @@
     "windowControls": "pencere, kontroller, simge durumuna küçült, kapat, geri yükle, gizle, tepsi, bellek, ram, uygulama, performans",
     "visualEffects": "görsel, efektler, bulanıklık, opaklık, paralaks, kaplama, arka plan, şeffaflık, medya, renk, tema, ana sayfa, sayfa",
     "theme": "tema, stil, açık, koyu, renkli",
+    "driveCard": "sürücü, kart, alan, gösterge, depolama, ilerleme, dairesel, doğrusal",
     "visualFilters": "görsel, filtreler, renk, kontrast, parlaklık, doygunluk, görüntü, video, tema",
     "animations": "animasyonlar, ana sayfa, sayfa",
     "fonts": "yazı tipleri, metin",
@@ -1392,6 +1393,7 @@
   "undo": "geri alma",
   "pause": "Duraklat",
   "cancel": "İptal",
+  "click": "Tıklama",
   "ok": "Tamam",
   "save": "Kayıt etmek",
   "create": "Oluşturmak",

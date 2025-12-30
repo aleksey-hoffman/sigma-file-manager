@@ -17,6 +17,7 @@ import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import type { Theme } from '@/types/user-settings';
 import { useI18n } from 'vue-i18n';
 import { computed } from 'vue';
+import { SunMoonIcon } from 'lucide-vue-next';
 
 const userSettingsStore = useUserSettingsStore();
 const { t } = useI18n();
@@ -50,7 +51,10 @@ const selectedTheme = computed({
 </script>
 
 <template>
-  <SettingsItem :title="t('settings.homeBannerEffects.theme.title')">
+  <SettingsItem
+    :title="t('settings.homeBannerEffects.theme.title')"
+    :icon="SunMoonIcon"
+  >
     <Select
       v-model="selectedTheme"
       by="value"

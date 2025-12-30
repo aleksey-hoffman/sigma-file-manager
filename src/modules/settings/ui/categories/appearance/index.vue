@@ -4,17 +4,26 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import ThemeSection from './theme.vue';
+import { computed } from 'vue';
+import { useSettingsStore } from '@/stores/runtime/settings';
+
+const settingsStore = useSettingsStore();
+
+const categorySections = computed(() => settingsStore.getSectionsForCategory('appearance'));
 </script>
 
 <template>
-  <div class="settings-view">
-    <ThemeSection />
+  <div class="settings-category">
+    <component
+      :is="section.component"
+      v-for="section in categorySections"
+      :key="section.key"
+    />
   </div>
 </template>
 
 <style scoped>
-.settings-view {
+.settings-category {
   display: flex;
   flex-direction: column;
   gap: 1rem;

@@ -4,16 +4,13 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import { useSettingsStore, type SettingsSection } from '@/stores/runtime/settings';
+import { useSettingsStore } from '@/stores/runtime/settings';
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import AppearanceCategory from './categories/appearance/index.vue';
 import GeneralCategory from './categories/general/index.vue';
 
-import ThemeSection from './categories/appearance/theme.vue';
-import LanguageSection from './categories/general/language.vue';
-import WindowScalingSection from './categories/general/window-scaling.vue';
 import { Button } from '@/components/ui/button';
 
 const settingsStore = useSettingsStore();
@@ -29,27 +26,9 @@ const categoryComponentMap: Record<string, unknown> = {
   appearance: AppearanceCategory,
 };
 
-const sectionComponentMap: Record<string, unknown> = {
-  theme: ThemeSection,
-  language: LanguageSection,
-  uiScaling: WindowScalingSection,
-};
-
 function getComponentForTab(tabName: string) {
   return categoryComponentMap[tabName];
 }
-
-function getSectionComponent(sectionKey: string) {
-  return sectionComponentMap[sectionKey];
-}
-
-const settingsWithComponents = computed(() => {
-  if (!settingsStore.search) {
-    return settingsStore.currentTabSections;
-  }
-
-  return settingsStore.currentTabSections.filter((section: SettingsSection) => getSectionComponent(section.key));
-});
 </script>
 
 <template>
@@ -73,18 +52,16 @@ const settingsWithComponents = computed(() => {
     </div>
 
     <div class="settings-view__content">
-      <!-- Static category when not searching -->
       <component
         v-if="!settingsStore.search && getComponentForTab(settingsStore.currentTab)"
         :is="getComponentForTab(settingsStore.currentTab)"
       />
 
-      <!-- When searching: show actual functional section components -->
       <template v-else-if="settingsStore.search">
         <component
-          v-for="setting in settingsWithComponents"
-          :key="setting.key"
-          :is="getSectionComponent(setting.key)"
+          v-for="section in settingsStore.currentTabSections"
+          :key="section.key"
+          :is="section.component"
         />
       </template>
     </div>

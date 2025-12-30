@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::Path;
 use std::time::UNIX_EPOCH;
+use sysinfo::Disks;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DirEntry {
@@ -31,6 +32,21 @@ pub struct DirContents {
     pub total_count: usize,
     pub dir_count: usize,
     pub file_count: usize,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct DriveInfo {
+    pub name: String,
+    pub path: String,
+    pub mount_point: String,
+    pub file_system: String,
+    pub drive_type: String,
+    pub total_space: u64,
+    pub available_space: u64,
+    pub used_space: u64,
+    pub percent_used: f64,
+    pub is_removable: bool,
+    pub is_read_only: bool,
 }
 
 fn is_hidden(path: &Path) -> bool {
@@ -238,36 +254,73 @@ pub fn read_dir(path: String) -> Result<DirContents, String> {
 }
 
 #[tauri::command]
-pub fn get_system_drives() -> Result<Vec<DirEntry>, String> {
-    #[cfg(windows)]
-    {
-        let mut drives: Vec<DirEntry> = Vec::new();
+pub fn get_system_drives() -> Result<Vec<DriveInfo>, String> {
+    let disks = Disks::new_with_refreshed_list();
+    let mut drives: Vec<DriveInfo> = Vec::new();
 
-        for letter in b'A'..=b'Z' {
-            let drive_path = format!("{}:\\", letter as char);
-            let path = Path::new(&drive_path);
+    for disk in disks.iter() {
+        let mount_point = disk.mount_point().to_string_lossy().to_string();
+        let path = normalize_path(&mount_point);
 
-            if path.exists() {
-                if let Some(entry) = read_entry(path) {
-                    drives.push(DirEntry {
-                        name: format!("{}:", letter as char),
-                        ..entry
-                    });
+        let total_space = disk.total_space();
+        let available_space = disk.available_space();
+        let used_space = total_space.saturating_sub(available_space);
+        let percent_used = if total_space > 0 {
+            ((used_space as f64 / total_space as f64) * 100.0).round()
+        } else {
+            0.0
+        };
+
+        let drive_type = match disk.kind() {
+            sysinfo::DiskKind::HDD => "HDD".to_string(),
+            sysinfo::DiskKind::SSD => "SSD".to_string(),
+            sysinfo::DiskKind::Unknown(_) => "Unknown".to_string(),
+        };
+
+        let name = disk.name().to_string_lossy().to_string();
+
+        let display_name = if name.is_empty() {
+            #[cfg(windows)]
+            {
+                format!("Local Disk ({})", mount_point.trim_end_matches('\\'))
+            }
+            #[cfg(not(windows))]
+            {
+                if mount_point == "/" {
+                    "Root".to_string()
+                } else {
+                    mount_point.clone()
                 }
             }
-        }
+        } else {
+            #[cfg(windows)]
+            {
+                format!("{} ({})", name, mount_point.trim_end_matches('\\'))
+            }
+            #[cfg(not(windows))]
+            {
+                name
+            }
+        };
 
-        Ok(drives)
+        drives.push(DriveInfo {
+            name: display_name,
+            path,
+            mount_point,
+            file_system: disk.file_system().to_string_lossy().to_string(),
+            drive_type,
+            total_space,
+            available_space,
+            used_space,
+            percent_used,
+            is_removable: disk.is_removable(),
+            is_read_only: disk.is_read_only(),
+        });
     }
 
-    #[cfg(not(windows))]
-    {
-        let root_path = Path::new("/");
-        match read_entry(root_path) {
-            Some(entry) => Ok(vec![entry]),
-            None => Err("Failed to read root directory".to_string()),
-        }
-    }
+    drives.sort_by(|first, second| first.path.cmp(&second.path));
+
+    Ok(drives)
 }
 
 #[tauri::command]

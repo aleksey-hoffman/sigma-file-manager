@@ -69,6 +69,11 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
       showHiddenFiles: false,
     },
     UIZoomLevel: 1.0,
+    homeBannerIndex: 0,
+    driveCard: {
+      showSpaceIndicator: true,
+      spaceIndicatorStyle: 'linearVertical',
+    },
   });
 
   const themeSettingRef = computed(() => userSettings.value.theme);

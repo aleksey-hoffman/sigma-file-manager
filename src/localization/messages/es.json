@@ -368,9 +368,9 @@
       "showUserNameOnHomeDirectoryCard": "Mostrar nombre de usuario en la tarjeta 'directorio de inicio'",
       "showDriveSpaceIndicator": "Mostrar indicador de espacio en disco",
       "driveSpaceIndicatorStyle": "Estilo de indicador de espacio de unidad",
-      "linearVertical": "Lineal | vertical",
-      "linearHorizontal": "Lineal | horizontal",
-      "linearHorizontalCentered": "Lineal | horizontal | centrado",
+      "linearVertical": "Lineal {'|'} vertical",
+      "linearHorizontal": "Lineal {'|'} horizontal",
+      "linearHorizontalCentered": "Lineal {'|'} horizontal {'|'} centrado",
       "circular": "Circular"
     },
     "homePageMediaBanner": {
@@ -578,6 +578,7 @@
     "windowControls": "ventana, controles, minimizar, cerrar, restaurar, ocultar, bandeja, memoria, RAM, aplicación, rendimiento",
     "visualEffects": "visual, efectos, desenfoque, opacidad, paralaje, superposición, fondo, transparencia, medios, color, tema, inicio, página",
     "theme": "tema, estilo, claro, oscuro, color",
+    "driveCard": "unidad, tarjeta, espacio, indicador, almacenamiento, progreso, circular, lineal",
     "visualFilters": "visual, filtros, color, contraste, brillo, saturación, imagen, video, tema",
     "animations": "animaciones, inicio, página",
     "fonts": "fuentes, texto",
@@ -1392,6 +1393,7 @@
   "undo": "deshacer",
   "pause": "pausa",
   "cancel": "Cancelar",
+  "click": "Clic",
   "ok": "OK",
   "save": "Salvar",
   "create": "Crear",

@@ -367,9 +367,9 @@
       "showUserNameOnHomeDirectoryCard": "نمایش نام کاربری در کارت \"دایرکتوری اصلی\"",
       "showDriveSpaceIndicator": "نمایش نشانگر فضای درایو",
       "driveSpaceIndicatorStyle": "سبک نشانگر فضای رانندگی",
-      "linearVertical": "خطی | عمودی",
-      "linearHorizontal": "خطی | افقی",
-      "linearHorizontalCentered": "خطی | افقی | مرکز",
+      "linearVertical": "خطی {'|'} عمودی",
+      "linearHorizontal": "خطی {'|'} افقی",
+      "linearHorizontalCentered": "خطی {'|'} افقی {'|'} مرکز",
       "circular": "گرد"
     },
     "homePageMediaBanner": {
@@ -577,6 +577,7 @@
     "windowControls": "پنجره، کنترل ها، کوچک کردن، بستن، بازیابی، پنهان کردن، سینی، حافظه، رم، برنامه، عملکرد",
     "visualEffects": "بصری، جلوه ها، تاری، کدورت، اختلاف منظر، همپوشانی، پس زمینه، شفافیت، رسانه، رنگ، تم، صفحه اصلی، صفحه",
     "theme": "موضوع، سبک، روشن، تیره، رنگ",
+    "driveCard": "درایو، کارت، فضا، نشانگر، ذخیره سازی، پیشرفت، دایره ای، خطی",
     "visualFilters": "بصری، فیلترها، رنگ، کنتراست، روشنایی، اشباع، تصویر، ویدئو، تم",
     "animations": "انیمیشن ها، صفحه اصلی، صفحه",
     "fonts": "فونت، متن",
@@ -1391,6 +1392,7 @@
   "undo": "لغو",
   "pause": "مکث",
   "cancel": "لغو",
+  "click": "کلیک",
   "ok": "خوب",
   "save": "صرفه جویی",
   "create": "ایجاد کردن",

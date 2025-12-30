@@ -66,7 +66,7 @@ function closeWindow() {
     <Tooltip>
       <TooltipTrigger as-child>
         <div
-          class="window-toolbar-button"
+          class="window-toolbar-button window-toolbar-button--red"
           @click="closeWindow"
         >
           <XIcon
@@ -104,5 +104,9 @@ function closeWindow() {
 
 .window-toolbar-button-icon {
   stroke: hsl(var(--foreground) / 50%);
+}
+
+.window-toolbar-button--red:hover {
+  background: hsl(var(--destructive) / 50%);
 }
 </style>

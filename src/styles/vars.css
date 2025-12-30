@@ -1,4 +1,12 @@
 :root {
+  /* Drive progress indicator colors */
+  --drive-progress-color-green: 174deg 100% 27%;
+  --drive-progress-color-red: 4deg 82% 58%;
+  --drive-progress-bg-green: hsl(174deg 100% 27% / 25%);
+  --drive-progress-bg-red: hsl(4deg 82% 58% / 18%);
+  --drive-progress-glow-green: 0 0 20px 6px hsl(174deg 100% 27% / 15%);
+  --drive-progress-glow-red: 0 0 20px 6px hsl(4deg 82% 58% / 15%);
+
   /* Sizes */
   --nav-sidebar-width: 42px;
   --window-toolbar-height: 48px;

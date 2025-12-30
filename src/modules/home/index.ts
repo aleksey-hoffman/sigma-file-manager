@@ -3,3 +3,5 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 export { default as HomePage } from './pages/home.vue';
+export * from './components';
+export * from './composables';
