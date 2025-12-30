@@ -1,45 +1,64 @@
-# sigma-file-manager
+> [!NOTE]
+>
+> [Sigma File Manager v2.0 (current page):](https://github.com/aleksey-hoffman/sigma-file-manager/tree/v2) development is active<br>
+> [Sigma File Manager:](https://github.com/aleksey-hoffman/sigma-file-manager) development is paused<br>
 
-This template should help get you started developing with Vue 3 in Vite.
+<h1>
+  <img valign="middle" src="https://github.com/aleksey-hoffman/sigma-file-manager/raw/main/.github/media/logo-1024x1024.png" width="64px">
+  &nbsp;&nbsp;Sigma File Manager v2
+</h1>
 
-## Recommended IDE Setup
+"Sigma File Manager" is a free, open-source, quickly evolving, modern file manager (explorer / finder) app for Windows and Linux.
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+Designed, developed, and maintained by [Aleksey Hoffman](https://github.com/aleksey-hoffman)
 
-## Type Support for `.vue` Imports in TS
+<img src="./.github/media/main.png">
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
+## Community links
+[Discord](https://discord.gg/sxZTztFVwX) | [Reddit](https://www.reddit.com/r/SigmaFileManager) | [YouTube](https://www.youtube.com/@sigma-dev) | [X (Twitter)](https://twitter.com/sigma__dev) | [Telegram](https://t.me/sigma_devs)
+<br>Thanks to everyone who has been sharing this project with others!
 
-## Customize configuration
+## Sponsors
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+<table>
+  <tbody>
+    <tr>
+      <td>
+          <a href="https://hover.com/UywpvNe0" target="_blank">
+            <img width="128px" align="center" src="https://github.com/aleksey-hoffman/sigma-file-manager/raw/main/.github/media/hover-logo-svg-vector.svg">
+          </a>
+      </td>
+      <td>
+        <b>Hover is a popular service where you buy domain names for your website.</b>
+        <br>Use my <a href="https://hover.com/UywpvNe0" target="_blank">Hover link</a> and we'll both get $2 off their domains.
+      </td>
+    </tr>
+  </tbody>
+</table>
 
-## Project Setup
+## Supporters
 
-```sh
-npm install
-```
+Become the first.
 
-### Compile and Hot-Reload for Development
+Consider supporting the project on Patreon:
 
-```sh
-npm run dev
-```
+<a target="_blank" href="https://patreon.com/sigma_file_manager">
+  <img
+    src="https://raw.githubusercontent.com/aleksey-hoffman/sigma-file-manager/main/.github/media/patreon_button.png"
+    width="164px"
+  />
+</a>
+<br>
+<a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/wiki/Support-and-rewards">
+  See other methods
+</a>
 
-### Type-Check, Compile and Minify for Production
+The funding will be used for funding the development of this and my other big projects. I'm also working in collaboration with a few universities on a project that will help scientists speed up development of new medications and treatments for diseases, reducing the time need to find a new medication from 10 years (current average) to just a few months, and hopefully help humanity get rid of diseases (the project will be open-sourced later);
 
-```sh
-npm run build
-```
+## Download
 
-### Run Unit Tests with [Vitest](https://vitest.dev/)
+[See releases](https://github.com/aleksey-hoffman/sigma-file-manager/releases)
 
-```sh
-npm run test:unit
-```
+## For developers
 
-### Lint with [ESLint](https://eslint.org/)
-
-```sh
-npm run lint
-```
+If you'd like to contribute your skills to improve this project, follow this guide: [CONTRIBUTING.md](./CONTRIBUTING.md)
