@@ -146,9 +146,11 @@
     "hideMediaBanner": "Ocultar banner de medios",
     "backgroundManager": "Administrador de fondo",
     "backgroundPosition": "Posición de fondo",
+    "backgroundZoom": "Zoom",
     "backgroundHeight": "Altura de fondo",
     "backgroundOverlay": "Superposición de fondo",
     "setDefaultBackground": "Establecer fondo predeterminado",
+    "resetBackgroundPosition": "Restablecer posición del fondo",
     "setNextBackground": "Establecer siguiente fondo",
     "setPreviousBackground": "Establecer fondo anterior"
   },

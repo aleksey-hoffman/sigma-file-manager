@@ -146,9 +146,11 @@
     "hideMediaBanner": "Hide media banner",
     "backgroundManager": "Background manager",
     "backgroundPosition": "Background position",
+    "backgroundZoom": "Zoom",
     "backgroundHeight": "Background height",
     "backgroundOverlay": "Background overlay",
     "setDefaultBackground": "Set default background",
+    "resetBackgroundPosition": "Reset background position",
     "setNextBackground": "Set next background",
     "setPreviousBackground": "Set previous background"
   },

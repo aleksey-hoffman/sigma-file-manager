@@ -146,9 +146,11 @@
     "hideMediaBanner": "隐藏媒体横幅",
     "backgroundManager": "后台管理器",
     "backgroundPosition": "背景位置",
+    "backgroundZoom": "缩放",
     "backgroundHeight": "背景高度",
     "backgroundOverlay": "背景叠加",
     "setDefaultBackground": "设置默认背景",
+    "resetBackgroundPosition": "重置背景位置",
     "setNextBackground": "设置下一个背景",
     "setPreviousBackground": "设置上一个背景"
   },

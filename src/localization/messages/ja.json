@@ -146,9 +146,11 @@
     "hideMediaBanner": "メディアバナーを隠す",
     "backgroundManager": "バックグラウンドマネージャー",
     "backgroundPosition": "背景位置",
+    "backgroundZoom": "ズーム",
     "backgroundHeight": "背景の高さ",
     "backgroundOverlay": "背景オーバーレイ",
     "setDefaultBackground": "デフォルトの背景を設定",
+    "resetBackgroundPosition": "背景位置をリセット",
     "setNextBackground": "次のバックグラウンドを設定",
     "setPreviousBackground": "前のバックグラウンドを設定"
   },

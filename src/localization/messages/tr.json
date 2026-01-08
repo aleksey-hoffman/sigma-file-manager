@@ -146,9 +146,11 @@
     "hideMediaBanner": "Medya afişini gizle",
     "backgroundManager": "Arka plan yöneticisi",
     "backgroundPosition": "Arka plan konumu",
+    "backgroundZoom": "Yakınlaştır",
     "backgroundHeight": "Arka plan yüksekliği",
     "backgroundOverlay": "Arka plan kaplaması",
     "setDefaultBackground": "Varsayılan arka planı ayarla",
+    "resetBackgroundPosition": "Arka plan konumunu sıfırla",
     "setNextBackground": "Sonraki Arka Planı Ayarla",
     "setPreviousBackground": "Önceki Arka Planı Ayarla"
   },

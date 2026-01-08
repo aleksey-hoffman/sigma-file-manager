@@ -146,9 +146,11 @@
     "hideMediaBanner": "Nascondi banner multimediale",
     "backgroundManager": "Gestore dello sfondo",
     "backgroundPosition": "Posizione dello sfondo",
+    "backgroundZoom": "Zoom",
     "backgroundHeight": "Altezza dello sfondo",
     "backgroundOverlay": "Sovrimpressione dello sfondo",
     "setDefaultBackground": "Imposta lo sfondo predefinito",
+    "resetBackgroundPosition": "Reimposta posizione dello sfondo",
     "setNextBackground": "Imposta il prossimo sfondo",
     "setPreviousBackground": "Imposta lo sfondo precedente"
   },

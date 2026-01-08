@@ -146,9 +146,11 @@
     "hideMediaBanner": "Скрыть медиабаннер",
     "backgroundManager": "Менеджер фона",
     "backgroundPosition": "Фоновое положение",
+    "backgroundZoom": "Масштаб",
     "backgroundHeight": "Высота фона",
     "backgroundOverlay": "Наложение фона",
     "setDefaultBackground": "Установить фон по умолчанию",
+    "resetBackgroundPosition": "Сбросить положение фона",
     "setNextBackground": "Установить следующий фон",
     "setPreviousBackground": "Установить предыдущий фон"
   },

@@ -22,6 +22,14 @@ export type UserSettingsPath = NestedPaths<UserSettings>;
 
 export type UserSettingsValue<P extends UserSettingsPath> = GetNestedValue<UserSettings, P>;
 
+export type HomeBannerPosition = {
+  positionX: number;
+  positionY: number;
+  zoom: number;
+};
+
+export type HomeBannerPositions = Record<number, HomeBannerPosition>;
+
 export type UserSettings = {
   language: LocalizationLanguage;
   theme: Theme;
@@ -30,6 +38,7 @@ export type UserSettings = {
   navigator: UserSettingsNavigator;
   UIZoomLevel?: number;
   homeBannerIndex: number;
+  homeBannerPositions: HomeBannerPositions;
   driveCard: DriveCardSettings;
 };
 

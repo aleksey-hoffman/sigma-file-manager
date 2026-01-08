@@ -145,9 +145,11 @@
     "hideMediaBanner": "پنهان کردن بنر رسانه",
     "backgroundManager": "مدیر پیشینه",
     "backgroundPosition": "موقعیت پس زمینه",
+    "backgroundZoom": "بزرگنمایی",
     "backgroundHeight": "ارتفاع پس زمینه",
     "backgroundOverlay": "پوشش پس زمینه",
     "setDefaultBackground": "تنظیم پس زمینه پیش فرض",
+    "resetBackgroundPosition": "بازنشانی موقعیت پس زمینه",
     "setNextBackground": "تنظیم زمینه بعدی",
     "setPreviousBackground": "تنظیم زمینه قبلی"
   },

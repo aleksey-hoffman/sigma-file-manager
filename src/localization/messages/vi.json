@@ -146,9 +146,11 @@
     "hideMediaBanner": "Ẩn biểu ngữ phương tiện",
     "backgroundManager": "Quản lý nền",
     "backgroundPosition": "Vị trí nền",
+    "backgroundZoom": "Thu phóng",
     "backgroundHeight": "Chiều cao nền",
     "backgroundOverlay": "Lớp phủ nền",
     "setDefaultBackground": "Đặt nền mặc định",
+    "resetBackgroundPosition": "Đặt lại vị trí nền",
     "setNextBackground": "Thiết lập hình nền tiếp theo",
     "setPreviousBackground": "Thiết lập hình nền trước đó"
   },

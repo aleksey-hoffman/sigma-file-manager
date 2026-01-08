@@ -146,9 +146,11 @@
     "hideMediaBanner": "Masquer la bannière média",
     "backgroundManager": "Gestionnaire de fond",
     "backgroundPosition": "Position en arrière-plan",
+    "backgroundZoom": "Zoom",
     "backgroundHeight": "Hauteur de fond",
     "backgroundOverlay": "Superposition d'arrière-plan",
     "setDefaultBackground": "Définir l'arrière-plan par défaut",
+    "resetBackgroundPosition": "Réinitialiser la position de l'arrière-plan",
     "setNextBackground": "Définir le fond d'écran suivant",
     "setPreviousBackground": "Définir le fond d'écran précédent"
   },

@@ -70,6 +70,7 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
     },
     UIZoomLevel: 1.0,
     homeBannerIndex: 0,
+    homeBannerPositions: {},
     driveCard: {
       showSpaceIndicator: true,
       spaceIndicatorStyle: 'linearVertical',

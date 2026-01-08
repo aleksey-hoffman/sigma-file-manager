@@ -146,9 +146,11 @@
     "hideMediaBanner": "Medienbanner ausblenden",
     "backgroundManager": "Hintergrundmanager",
     "backgroundPosition": "Hintergrundposition",
+    "backgroundZoom": "Zoom",
     "backgroundHeight": "Hintergrundhöhe",
     "backgroundOverlay": "Hintergrundüberlagerung",
     "setDefaultBackground": "Standardhintergrund festlegen",
+    "resetBackgroundPosition": "Hintergrundposition zurücksetzen",
     "setNextBackground": "Nächsten Hintergrund festlegen",
     "setPreviousBackground": "Vorherigen Hintergrund festlegen"
   },
