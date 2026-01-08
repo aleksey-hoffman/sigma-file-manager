@@ -9,24 +9,24 @@ import {
   HomeBanner,
   UserDirectoriesSection,
 } from '@/modules/home/components';
+import { ScrollArea } from '@/components/ui/scroll-area';
 </script>
 
 <template>
-  <div class="home-page">
+  <ScrollArea class="home-page">
     <HomeBanner />
 
     <div class="home-page__content">
       <UserDirectoriesSection />
       <DrivesSection />
     </div>
-  </div>
+  </ScrollArea>
 </template>
 
 <style>
 .home-page {
   height: 100vh;
   padding: 0;
-  overflow-y: auto;
   user-select: none;
 }
 
