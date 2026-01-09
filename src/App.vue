@@ -9,6 +9,7 @@ import { NavSidebar } from './modules/nav-sidebar';
 import { useInit } from './use/init';
 import { TooltipProvider } from './components/ui/tooltip';
 import { Toaster } from '@/components/ui/toaster';
+import { InfusionWrapper } from './components/ui/infusion';
 
 const { init } = useInit();
 
@@ -16,6 +17,7 @@ init();
 </script>
 
 <template>
+  <InfusionWrapper />
   <Toaster />
   <TooltipProvider>
     <NavSidebar />

@@ -285,6 +285,8 @@
       "windowTransparencyEffect": "Эффект прозрачности окна",
       "overlayBlur": "Размытие наложения: {n}@:units.px",
       "overlayOpacity": "Прозрачность наложения: {n}%",
+      "overlayNoise": "Шум наложения: {n}%",
+      "overlayNoiseScale": "Масштаб шума наложения: {n}",
       "overlayParallaxDistance": "Расстояние параллакса наложения: {n}",
       "overlayBackground": "Наложение фона",
       "selectNextBackground": "Выбрать следующий фон",
@@ -294,7 +296,8 @@
       "previewEffectForSelectedPageTooltip": "Отключить после завершения настройки выбранной страницы, чтобы увидеть эффекты для страницы \"настройки\"",
       "pageToCustomize": "Страница для настройки",
       "pageToCustomizeDescription1": "Выберите страницу из списка и настройте параметры для сохранения.",
-      "pageToCustomizeDescription2": "Предварительный просмотр эффекта будет отображаться на этой странице, пока вы не посетите другую страницу"
+      "pageToCustomizeDescription2": "Предварительный просмотр эффекта будет отображаться на этой странице, пока вы не посетите другую страницу",
+      "allPages": "Все страницы"
     },
     "homeBannerEffects": {
       "title": "Эффекты домашнего баннера",

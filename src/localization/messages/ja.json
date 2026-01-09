@@ -285,6 +285,8 @@
       "windowTransparencyEffect": "「ウィンドウ透明効果」",
       "overlayBlur": "オーバーレイぼかし: {n}@:units.px",
       "overlayOpacity": "オーバーレイの不透明度: {n}%",
+      "overlayNoise": "オーバーレイノイズ: {n}%",
+      "overlayNoiseScale": "オーバーレイノイズスケール: {n}",
       "overlayParallaxDistance": "オーバーレイ視差距離: {n}",
       "overlayBackground": "オーバーレイ背景",
       "selectNextBackground": "次の背景を選択",
@@ -294,7 +296,8 @@
       "previewEffectForSelectedPageTooltip": "選択したページのカスタマイズが終了したら無効にして、\"設定\" ページの効果を確認してください",
       "pageToCustomize": "カスタマイズするページ",
       "pageToCustomizeDescription1": "リストからページを選択し、設定を調整して保存します。",
-      "pageToCustomizeDescription2": "効果のプレビューは、別のページにアクセスするまでこのページに表示されます。"
+      "pageToCustomizeDescription2": "効果のプレビューは、別のページにアクセスするまでこのページに表示されます。",
+      "allPages": "すべてのページ"
     },
     "homeBannerEffects": {
       "title": "「ホームバナー効果」",

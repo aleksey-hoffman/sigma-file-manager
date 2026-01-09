@@ -285,6 +285,8 @@
       "windowTransparencyEffect": "Fenstertransparenzeffekt",
       "overlayBlur": "Unschärfe überlagern: {n}@:units.px",
       "overlayOpacity": "Overlay-Opazität: {n} %",
+      "overlayNoise": "Overlay-Rauschen: {n} %",
+      "overlayNoiseScale": "Overlay-Rauschskalierung: {n}",
       "overlayParallaxDistance": "Parallaxenabstand überlagern: {n}",
       "overlayBackground": "Hintergrund überlagern",
       "selectNextBackground": "Nächsten Hintergrund auswählen",
@@ -294,7 +296,8 @@
       "previewEffectForSelectedPageTooltip": "Nach dem Anpassen der ausgewählten Seite deaktivieren, um die Effekte für die Seite \"Einstellungen\" anzuzeigen",
       "pageToCustomize": "Seite zum Anpassen",
       "pageToCustomizeDescription1": "Wählen Sie eine Seite aus der Liste aus und passen Sie die Einstellungen zum Speichern an.",
-      "pageToCustomizeDescription2": "Die Vorschau des Effekts wird auf dieser Seite angezeigt, bis Sie eine andere Seite besuchen."
+      "pageToCustomizeDescription2": "Die Vorschau des Effekts wird auf dieser Seite angezeigt, bis Sie eine andere Seite besuchen.",
+      "allPages": "Alle Seiten"
     },
     "homeBannerEffects": {
       "title": "Home-Banner-Effekte",

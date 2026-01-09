@@ -6,7 +6,9 @@ import cloneDeep from 'lodash.clonedeep';
 import { defineStore } from 'pinia';
 import { LazyStore } from '@tauri-apps/plugin-store';
 import { ref, computed } from 'vue';
-import type { UserSettings, LocalizationLanguage, UserSettingsPath, UserSettingsValue } from '@/types/user-settings';
+import type {
+  UserSettings, LocalizationLanguage, UserSettingsPath, UserSettingsValue, InfusionPageSettings,
+} from '@/types/user-settings';
 import { useTheme } from './use/use-theme';
 import { useUserPathsStore } from './user-paths';
 import { i18n } from '@/localization';
@@ -76,7 +78,49 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
       spaceIndicatorStyle: 'linearVertical',
     },
     userDirectories: {},
+    infusion: {
+      enabled: true,
+      sameSettingsForAllPages: true,
+      selectedPageToCustomize: '',
+      pages: {
+        '': createDefaultInfusionPageSettings(),
+        'home': createDefaultInfusionPageSettingsHome(),
+        'navigator': createDefaultInfusionPageSettings(),
+        'dashboard': createDefaultInfusionPageSettings(),
+        'settings': createDefaultInfusionPageSettings(),
+        'extensions': createDefaultInfusionPageSettings(),
+      },
+    },
+    settingsCurrentTab: 'general',
   });
+
+  function createDefaultInfusionPageSettings(): InfusionPageSettings {
+    return {
+      blur: 64,
+      opacity: 15,
+      noise: 5,
+      noiseScale: 0.5,
+      background: {
+        type: 'image',
+        path: '',
+        index: 0,
+      },
+    };
+  }
+
+  function createDefaultInfusionPageSettingsHome(): InfusionPageSettings {
+    return {
+      blur: 32,
+      opacity: 5,
+      noise: 5,
+      noiseScale: 0.5,
+      background: {
+        type: 'image',
+        path: '',
+        index: 0,
+      },
+    };
+  }
 
   const themeSettingRef = computed(() => userSettings.value.theme);
   const { setTheme } = useTheme(themeSettingRef);
@@ -94,16 +138,22 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
           continue;
         }
 
-        if (!allowedUserSettingsStorageKeys.value.has(key)) {
+        const normalizedKey = normalizeStorageKeyToMemory(key);
+
+        if (!allowedUserSettingsStorageKeys.value.has(normalizedKey)) {
           continue;
         }
 
-        setNestedValue(userSettings.value as Record<string, unknown>, key, value);
+        setNestedValue(userSettings.value as Record<string, unknown>, normalizedKey, value);
       }
     }
     catch (error) {
       console.error('Failed to load user settings:', error);
     }
+  }
+
+  function normalizeStorageKeyToMemory(key: string): string {
+    return key.replace('infusion.pages.global.', 'infusion.pages..');
   }
 
   function setNestedValue(obj: Record<string, unknown>, path: string, value: unknown) {

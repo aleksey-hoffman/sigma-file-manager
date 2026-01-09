@@ -111,7 +111,7 @@ const props = defineProps<Props>();
   justify-content: space-between;
   padding: 0.875rem 1rem;
   border-top: 1px solid hsl(var(--border));
-  background-color: hsl(var(--secondary) );
+  background-color: hsl(var(--background));
   gap: 1rem 2rem;
 }
 </style>

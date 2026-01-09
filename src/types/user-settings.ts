@@ -38,6 +38,27 @@ export type UserDirectoryCustomization = {
 
 export type UserDirectoriesCustomizations = Record<string, UserDirectoryCustomization>;
 
+export type InfusionPageSettings = {
+  blur: number;
+  opacity: number;
+  noise: number;
+  noiseScale: number;
+  background: {
+    type: 'image' | 'video';
+    path: string;
+    index: number;
+  };
+};
+
+export type InfusionPage = '' | 'home' | 'navigator' | 'dashboard' | 'settings' | 'extensions';
+
+export type InfusionSettings = {
+  enabled: boolean;
+  sameSettingsForAllPages: boolean;
+  selectedPageToCustomize: InfusionPage;
+  pages: Record<InfusionPage, InfusionPageSettings>;
+};
+
 export type UserSettings = {
   language: LocalizationLanguage;
   theme: Theme;
@@ -49,6 +70,8 @@ export type UserSettings = {
   homeBannerPositions: HomeBannerPositions;
   driveCard: DriveCardSettings;
   userDirectories: UserDirectoriesCustomizations;
+  infusion: InfusionSettings;
+  settingsCurrentTab: string;
 };
 
 export type DriveSpaceIndicatorStyle = 'linearVertical' | 'linearHorizontal' | 'linearHorizontalCentered' | 'circular';

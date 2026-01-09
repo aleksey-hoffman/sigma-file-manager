@@ -285,6 +285,8 @@
       "windowTransparencyEffect": "Window transparency effect",
       "overlayBlur": "Overlay blur: {n}@:units.px",
       "overlayOpacity": "Overlay opacity: {n}%",
+      "overlayNoise": "Overlay noise: {n}%",
+      "overlayNoiseScale": "Overlay noise scale: {n}",
       "overlayParallaxDistance": "Overlay parallax distance: {n}",
       "overlayBackground": "Overlay background",
       "selectNextBackground": "Select next background",
@@ -294,7 +296,8 @@
       "previewEffectForSelectedPageTooltip": "Disable after you finish customizing selected page to see the effects for \"settings\" page",
       "pageToCustomize": "Page to customize",
       "pageToCustomizeDescription1": "Select page from the list and adjust settings to save.",
-      "pageToCustomizeDescription2": "The preview of the effect will be displayed on this page until you visit another page."
+      "pageToCustomizeDescription2": "The preview of the effect will be displayed on this page until you visit another page.",
+      "allPages": "All pages"
     },
     "homeBannerEffects": {
       "title": "Home banner effects",

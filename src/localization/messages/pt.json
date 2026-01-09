@@ -285,6 +285,8 @@
       "windowTransparencyEffect": "efeito de transparência da janela",
       "overlayBlur": "sobreposição de desfoque: {n}@:units.px",
       "overlayOpacity": "sobreposição de opacidade: {n}%",
+      "overlayNoise": "Ruído de sobreposição: {n}%",
+      "overlayNoiseScale": "Escala de ruído de sobreposição: {n}",
       "overlayParallaxDistance": "sobreposição de distância de paralaxe: {n}",
       "overlayBackground": "fundo de sobreposição",
       "selectNextBackground": "selecione Próximo plano de fundo",
@@ -294,7 +296,8 @@
       "previewEffectForSelectedPageTooltip": "Desative após terminar de personalizar a página selecionada para ver os efeitos da página de \"configurações\"",
       "pageToCustomize": "página para personalizar",
       "pageToCustomizeDescription1": "Selecione a página da lista e ajuste as configurações para salvar.",
-      "pageToCustomizeDescription2": "A visualização do efeito será mostrada nesta página até que você visite outra página"
+      "pageToCustomizeDescription2": "A visualização do efeito será mostrada nesta página até que você visite outra página",
+      "allPages": "Todas as páginas"
     },
     "homeBannerEffects": {
       "title": "Efeitos de banner inicial",

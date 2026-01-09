@@ -12,6 +12,7 @@ import {
 } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { messages } from '@/localization/data';
+import { useUserSettingsStore } from '@/stores/storage/user-settings';
 
 export interface SettingsSection {
   key: string;
@@ -106,8 +107,16 @@ function matchesAnyLocale(key: string, searchTerm: string): boolean {
 
 export const useSettingsStore = defineStore('settings', () => {
   const { t } = useI18n();
+  const userSettingsStore = useUserSettingsStore();
 
-  const currentTab = ref<string>('general');
+  const currentTab = computed({
+    get: () => userSettingsStore.userSettings.settingsCurrentTab,
+    set: (value: string) => {
+      userSettingsStore.userSettings.settingsCurrentTab = value;
+      userSettingsStore.setUserSettingsStorage('settingsCurrentTab', value);
+    },
+  });
+
   const search = ref<string>('');
   const sections = shallowRef<SettingsSection[]>([]);
   const isInitialized = ref(false);
@@ -127,11 +136,13 @@ export const useSettingsStore = defineStore('settings', () => {
       { default: WindowScalingSection },
       { default: ThemeSection },
       { default: DriveCardSection },
+      { default: VisualEffectsSection },
     ] = await Promise.all([
       import('@/modules/settings/ui/categories/general/language.vue'),
       import('@/modules/settings/ui/categories/general/window-scaling.vue'),
       import('@/modules/settings/ui/categories/appearance/theme.vue'),
       import('@/modules/settings/ui/categories/appearance/drive-card.vue'),
+      import('@/modules/settings/ui/categories/appearance/visual-effects.vue'),
     ]);
 
     sections.value = [
@@ -154,6 +165,13 @@ export const useSettingsStore = defineStore('settings', () => {
         titleKey: 'settings.homeBannerEffects.theme.title',
         tags: 'settingsTags.theme',
         component: markRaw(ThemeSection),
+        category: 'appearance',
+      },
+      {
+        key: 'visualEffects',
+        titleKey: 'settings.visualEffects.title',
+        tags: 'settingsTags.visualEffects',
+        component: markRaw(VisualEffectsSection),
         category: 'appearance',
       },
       {

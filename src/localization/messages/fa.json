@@ -284,6 +284,8 @@
       "windowTransparencyEffect": "اثر شفافیت پنجره",
       "overlayBlur": "تاری همپوشانی: {n}@:units.px",
       "overlayOpacity": "تاری همپوشانی: {n}%",
+      "overlayNoise": "نویز همپوشانی: {n}%",
+      "overlayNoiseScale": "مقیاس نویز همپوشانی: {n}",
       "overlayParallaxDistance": "فاصله اختلاف منظر همپوشانی: {n}",
       "overlayBackground": "پس زمینه روکش",
       "selectNextBackground": "انتخاب پس زمینه بعدی",
@@ -293,7 +295,8 @@
       "previewEffectForSelectedPageTooltip": "بعد از اتمام سفارشی سازی صفحه انتخابی برای دیدن جلوه های صفحه \"تنظیمات\" غیرفعال کنید",
       "pageToCustomize": "صفحه برای سفارشی کردن",
       "pageToCustomizeDescription1": "صفحه را از لیست انتخاب کنید و تنظیمات را برای ذخیره تنظیم کنید.",
-      "pageToCustomizeDescription2": "پیش نمایش افکت در این صفحه نمایش داده می شود تا زمانی که صفحه دیگری را مشاهده کنید."
+      "pageToCustomizeDescription2": "پیش نمایش افکت در این صفحه نمایش داده می شود تا زمانی که صفحه دیگری را مشاهده کنید.",
+      "allPages": "همه صفحات"
     },
     "homeBannerEffects": {
       "title": "افکت های بنر خانه",

@@ -285,6 +285,8 @@
       "windowTransparencyEffect": "Pencere şeffaflık efekti",
       "overlayBlur": "Yer paylaşımı bulanıklığı: {n}@:units.px",
       "overlayOpacity": "Yer paylaşımı opaklığı: {n}%",
+      "overlayNoise": "Yer paylaşımı gürültüsü: {n}%",
+      "overlayNoiseScale": "Yer paylaşımı gürültü ölçeği: {n}",
       "overlayParallaxDistance": "Bindirme paralaks mesafesi: {n}",
       "overlayBackground": "Bindirme arka planı",
       "selectNextBackground": "Sonraki arka planı seç",
@@ -294,7 +296,8 @@
       "previewEffectForSelectedPageTooltip": "\"ayarlar\" sayfasının etkilerini görmek için seçilen sayfayı özelleştirmeyi bitirdikten sonra devre dışı bırak",
       "pageToCustomize": "Özelleştirilecek sayfa",
       "pageToCustomizeDescription1": "Listeden sayfa seçin ve kaydetmek için ayarları yapın.",
-      "pageToCustomizeDescription2": "Efektin önizlemesi, siz başka bir sayfayı ziyaret edene kadar bu sayfada görüntülenecektir."
+      "pageToCustomizeDescription2": "Efektin önizlemesi, siz başka bir sayfayı ziyaret edene kadar bu sayfada görüntülenecektir.",
+      "allPages": "Tüm sayfalar"
     },
     "homeBannerEffects": {
       "title": "Ev banner efektleri",

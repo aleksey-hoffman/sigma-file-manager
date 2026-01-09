@@ -285,6 +285,8 @@
       "windowTransparencyEffect": "Effetto trasparenza finestra",
       "overlayBlur": "Sfocatura sovrimpressione: {n}@:unità.px",
       "overlayOpacity": "Opacità sovrimpressione: {n}%",
+      "overlayNoise": "Rumore sovrimpressione: {n}%",
+      "overlayNoiseScale": "Scala rumore sovrimpressione: {n}",
       "overlayParallaxDistance": "Distanza di parallasse in sovrimpressione: {n}",
       "overlayBackground": "Sfondo in sovrimpressione",
       "selectNextBackground": "Seleziona il prossimo sfondo",
@@ -294,7 +296,8 @@
       "previewEffectForSelectedPageTooltip": "Disabilita dopo aver terminato la personalizzazione della pagina selezionata per vedere gli effetti per la pagina \"impostazioni\"",
       "pageToCustomize": "Pagina da personalizzare",
       "pageToCustomizeDescription1": "Seleziona la pagina dalla lista e regola le impostazioni per salvare.",
-      "pageToCustomizeDescription2": "L'anteprima dell'effetto sarà visualizzata in questa pagina finché non si visiterà un'altra pagina."
+      "pageToCustomizeDescription2": "L'anteprima dell'effetto sarà visualizzata in questa pagina finché non si visiterà un'altra pagina.",
+      "allPages": "Tutte le pagine"
     },
     "homeBannerEffects": {
       "title": "Effetti banner per la home",

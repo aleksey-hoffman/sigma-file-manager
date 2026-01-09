@@ -285,6 +285,8 @@
       "windowTransparencyEffect": "Hiệu ứng trong suốt của cửa sổ",
       "overlayBlur": "Làm mờ lớp phủ: {n}@:units.px",
       "overlayOpacity": "Độ mờ của lớp phủ: {n}%",
+      "overlayNoise": "Nhiễu lớp phủ: {n}%",
+      "overlayNoiseScale": "Tỷ lệ nhiễu lớp phủ: {n}",
       "overlayParallaxDistance": "Khoảng cách thị sai lớp phủ: {n}",
       "overlayBackground": "Lớp phủ nền",
       "selectNextBackground": "Chọn nền tiếp theo",
@@ -294,7 +296,8 @@
       "previewEffectForSelectedPageTooltip": "Tắt sau khi bạn hoàn tất tùy chỉnh trang đã chọn để xem hiệu ứng cho trang \"cài đặt\"",
       "pageToCustomize": "Trang để tùy chỉnh",
       "pageToCustomizeDescription1": "Chọn trang từ danh sách và điều chỉnh cài đặt để lưu.",
-      "pageToCustomizeDescription2": "Bản xem trước của hiệu ứng sẽ được hiển thị trên trang này cho đến khi bạn truy cập trang khác."
+      "pageToCustomizeDescription2": "Bản xem trước của hiệu ứng sẽ được hiển thị trên trang này cho đến khi bạn truy cập trang khác.",
+      "allPages": "Tất cả các trang"
     },
     "homeBannerEffects": {
       "title": "Hiệu ứng biểu ngữ trang chủ",

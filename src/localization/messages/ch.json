@@ -285,6 +285,8 @@
       "windowTransparencyEffect": "窗口透明效果",
       "overlayBlur": "叠加模糊：{n}@:units.px",
       "overlayOpacity": "叠加不透明度：{n}%",
+      "overlayNoise": "叠加噪点：{n}%",
+      "overlayNoiseScale": "叠加噪点缩放：{n}",
       "overlayParallaxDistance": "叠加视差距离：{n}",
       "overlayBackground": "叠加背景",
       "selectNextBackground": "选择下一个背景",
@@ -294,7 +296,8 @@
       "previewEffectForSelectedPageTooltip": "完成自定义所选页面后禁用以查看\"设置\"页面的效果",
       "pageToCustomize": "自定义页面",
       "pageToCustomizeDescription1": "从列表中选择页面并调整设置以保存。",
-      "pageToCustomizeDescription2": "效果预览将显示在该页面上，直到您访问另一个页面。"
+      "pageToCustomizeDescription2": "效果预览将显示在该页面上，直到您访问另一个页面。",
+      "allPages": "所有页面"
     },
     "homeBannerEffects": {
       "title": "主页横幅效果",
