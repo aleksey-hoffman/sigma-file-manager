@@ -33,4 +33,3 @@ export const usePlatformStore = defineStore('platform', () => {
     init,
   };
 });
-

@@ -16,6 +16,7 @@ const style = computed(() => {
   if (props.direction === 'vertical') {
     return { height: `${props.percentUsed}%` };
   }
+
   return { width: `${props.percentUsed}%` };
 });
 </script>
@@ -58,4 +59,3 @@ const style = computed(() => {
   border-radius: 0 2px 0 0;
 }
 </style>
-

@@ -35,8 +35,8 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  'save': [name: string, title: string, path: string, icon: string | undefined];
-  'reset': [name: string];
+  save: [name: string, title: string, path: string, icon: string | undefined];
+  reset: [name: string];
 }>();
 
 const isOpen = defineModel<boolean>('open', { required: true });

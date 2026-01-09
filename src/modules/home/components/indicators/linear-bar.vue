@@ -41,4 +41,3 @@ defineProps<{
   box-shadow: var(--drive-progress-glow-red);
 }
 </style>
-

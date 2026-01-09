@@ -5,4 +5,3 @@
 export { default as CircularProgress } from './circular-progress.vue';
 export { default as LinearBar } from './linear-bar.vue';
 export { default as EdgeIndicator } from './edge-indicator.vue';
-

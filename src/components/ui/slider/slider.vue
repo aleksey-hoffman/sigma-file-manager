@@ -5,7 +5,9 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <script setup lang="ts">
 import type { SliderRootEmits, SliderRootProps } from 'reka-ui';
-import { SliderRange, SliderRoot, SliderThumb, SliderTrack, useForwardPropsEmits } from 'reka-ui';
+import {
+  SliderRange, SliderRoot, SliderThumb, SliderTrack, useForwardPropsEmits,
+} from 'reka-ui';
 
 const props = defineProps<SliderRootProps>();
 const emits = defineEmits<SliderRootEmits>();
