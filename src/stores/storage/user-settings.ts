@@ -75,6 +75,7 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
       showSpaceIndicator: true,
       spaceIndicatorStyle: 'linearVertical',
     },
+    userDirectories: {},
   });
 
   const themeSettingRef = computed(() => userSettings.value.theme);

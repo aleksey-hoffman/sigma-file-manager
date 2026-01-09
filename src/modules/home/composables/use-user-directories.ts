@@ -2,7 +2,7 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, watch } from 'vue';
 import {
   audioDir,
   desktopDir,
@@ -13,121 +13,257 @@ import {
   videoDir,
 } from '@tauri-apps/api/path';
 import type { Component } from 'vue';
-import {
-  HomeIcon,
-  MonitorIcon,
-  DownloadIcon,
-  FileTextIcon,
-  ImageIcon,
-  VideoIcon,
-  MusicIcon,
-} from 'lucide-vue-next';
+import * as LucideIcons from 'lucide-vue-next';
+import { useUserSettingsStore } from '@/stores/storage/user-settings';
+import type { UserDirectoryCustomization } from '@/types/user-settings';
+import type { UserDirectoriesCustomizations } from '@/types/user-settings';
 
 export interface UserDirectory {
   name: string;
   titleKey: string;
-  icon: Component;
+  customTitle?: string;
+  iconName: string;
+  customIconName?: string;
   path: string;
+  defaultPath: string;
 }
 
 interface UserDirectoryDefinition {
   name: string;
   titleKey: string;
-  icon: Component;
+  iconName: string;
   pathFn: () => Promise<string>;
+}
+
+export const userDirectoryIconNames = [
+  'HomeIcon',
+  'MonitorIcon',
+  'DownloadIcon',
+  'FileTextIcon',
+  'ImageIcon',
+  'VideoIcon',
+  'MusicIcon',
+  'FolderIcon',
+  'FolderOpenIcon',
+  'FileIcon',
+  'ArchiveIcon',
+  'BookIcon',
+  'BookmarkIcon',
+  'BoxIcon',
+  'BriefcaseIcon',
+  'CameraIcon',
+  'CloudIcon',
+  'CodeIcon',
+  'CoffeeIcon',
+  'CompassIcon',
+  'CpuIcon',
+  'DatabaseIcon',
+  'FilmIcon',
+  'GamepadIcon',
+  'GiftIcon',
+  'GlobeIcon',
+  'HeartIcon',
+  'InboxIcon',
+  'LayersIcon',
+  'LibraryIcon',
+  'MailIcon',
+  'MapIcon',
+  'MicIcon',
+  'PackageIcon',
+  'PaletteIcon',
+  'PenToolIcon',
+  'PhoneIcon',
+  'PieChartIcon',
+  'PrinterIcon',
+  'RadioIcon',
+  'RocketIcon',
+  'SaveIcon',
+  'ScissorsIcon',
+  'ServerIcon',
+  'SettingsIcon',
+  'ShieldIcon',
+  'ShoppingBagIcon',
+  'StarIcon',
+  'SunIcon',
+  'TerminalIcon',
+  'TruckIcon',
+  'TvIcon',
+  'UmbrellaIcon',
+  'UserIcon',
+  'WalletIcon',
+  'WifiIcon',
+  'ZapIcon',
+] as const;
+
+export type UserDirectoryIconName = typeof userDirectoryIconNames[number];
+
+export function getIconComponent(iconName: string): Component {
+  const icons = LucideIcons as Record<string, Component>;
+  return icons[iconName] || LucideIcons.FolderIcon;
 }
 
 const directoryDefinitions: UserDirectoryDefinition[] = [
   {
     name: 'home',
     titleKey: 'userDirs.home',
-    icon: HomeIcon,
+    iconName: 'HomeIcon',
     pathFn: homeDir,
   },
   {
     name: 'desktop',
     titleKey: 'userDirs.desktop',
-    icon: MonitorIcon,
+    iconName: 'MonitorIcon',
     pathFn: desktopDir,
   },
   {
     name: 'downloads',
     titleKey: 'userDirs.downloads',
-    icon: DownloadIcon,
+    iconName: 'DownloadIcon',
     pathFn: downloadDir,
   },
   {
     name: 'documents',
     titleKey: 'userDirs.documents',
-    icon: FileTextIcon,
+    iconName: 'FileTextIcon',
     pathFn: documentDir,
   },
   {
     name: 'pictures',
     titleKey: 'userDirs.pictures',
-    icon: ImageIcon,
+    iconName: 'ImageIcon',
     pathFn: pictureDir,
   },
   {
     name: 'videos',
     titleKey: 'userDirs.videos',
-    icon: VideoIcon,
+    iconName: 'VideoIcon',
     pathFn: videoDir,
   },
   {
     name: 'music',
     titleKey: 'userDirs.music',
-    icon: MusicIcon,
+    iconName: 'MusicIcon',
     pathFn: audioDir,
   },
 ];
 
+function normalizePath(path: string): string {
+  return path.replace(/\\/g, '/');
+}
+
 const userDirectories = ref<UserDirectory[]>([]);
 const isLoading = ref(false);
 const error = ref<string | null>(null);
+const defaultPaths = ref<Record<string, string>>({});
+let defaultPathsInitialized = false;
 
-async function fetchUserDirectories() {
-  isLoading.value = true;
-  error.value = null;
+export function useUserDirectories() {
+  const userSettingsStore = useUserSettingsStore();
+  const isEmpty = computed(() => userDirectories.value.length === 0 && !isLoading.value);
 
-  try {
-    const directories: UserDirectory[] = [];
+  async function initDefaultPaths() {
+    if (defaultPathsInitialized) {
+      return;
+    }
 
     for (const definition of directoryDefinitions) {
       try {
-        const path = await definition.pathFn();
-        directories.push({
-          name: definition.name,
-          titleKey: definition.titleKey,
-          icon: definition.icon,
-          path,
-        });
+        defaultPaths.value[definition.name] = normalizePath(await definition.pathFn());
       }
       catch {
         continue;
       }
     }
 
-    userDirectories.value = directories;
+    defaultPathsInitialized = true;
   }
-  catch (fetchError: unknown) {
-    const errorMessage = fetchError instanceof Error ? fetchError.message : String(fetchError);
-    error.value = errorMessage;
-    console.error('Failed to fetch user directories:', fetchError);
-  }
-  finally {
-    isLoading.value = false;
-  }
-}
 
-let initialized = false;
+  function buildUserDirectories(customizations: UserDirectoriesCustomizations): UserDirectory[] {
+    const directories: UserDirectory[] = [];
 
-export function useUserDirectories() {
-  const isEmpty = computed(() => userDirectories.value.length === 0 && !isLoading.value);
+    for (const definition of directoryDefinitions) {
+      const defaultPath = defaultPaths.value[definition.name];
+
+      if (!defaultPath) {
+        continue;
+      }
+
+      const customization = customizations[definition.name];
+      const customPath = customization?.path ? normalizePath(customization.path) : undefined;
+
+      directories.push({
+        name: definition.name,
+        titleKey: definition.titleKey,
+        customTitle: customization?.title,
+        iconName: customization?.icon || definition.iconName,
+        customIconName: customization?.icon,
+        path: customPath || defaultPath,
+        defaultPath,
+      });
+    }
+
+    return directories;
+  }
+
+  async function fetchUserDirectories() {
+    isLoading.value = true;
+    error.value = null;
+
+    try {
+      await initDefaultPaths();
+      const customizations = userSettingsStore.userSettings.userDirectories || {};
+      userDirectories.value = buildUserDirectories(customizations);
+    }
+    catch (fetchError: unknown) {
+      const errorMessage = fetchError instanceof Error ? fetchError.message : String(fetchError);
+      error.value = errorMessage;
+      console.error('Failed to fetch user directories:', fetchError);
+    }
+    finally {
+      isLoading.value = false;
+    }
+  }
+
+  watch(
+    () => userSettingsStore.userSettings.userDirectories,
+    (newCustomizations) => {
+      if (defaultPathsInitialized && newCustomizations) {
+        userDirectories.value = buildUserDirectories(newCustomizations);
+      }
+    },
+    { deep: true },
+  );
+
+  async function updateUserDirectory(name: string, customization: UserDirectoryCustomization) {
+    const currentCustomizations = { ...userSettingsStore.userSettings.userDirectories };
+
+    const normalizedCustomization: UserDirectoryCustomization = {
+      title: customization.title,
+      path: customization.path ? normalizePath(customization.path) : undefined,
+      icon: customization.icon,
+    };
+
+    if (normalizedCustomization.title || normalizedCustomization.path || normalizedCustomization.icon) {
+      currentCustomizations[name] = {
+        ...currentCustomizations[name],
+        ...normalizedCustomization,
+      };
+    }
+    else {
+      delete currentCustomizations[name];
+    }
+
+    await userSettingsStore.set('userDirectories', currentCustomizations);
+  }
+
+  async function resetUserDirectory(name: string) {
+    const currentCustomizations = { ...userSettingsStore.userSettings.userDirectories };
+    delete currentCustomizations[name];
+    await userSettingsStore.set('userDirectories', currentCustomizations);
+  }
 
   onMounted(() => {
-    if (!initialized) {
-      initialized = true;
+    if (!defaultPathsInitialized) {
       fetchUserDirectories();
     }
   });
@@ -138,5 +274,7 @@ export function useUserDirectories() {
     error,
     isEmpty,
     refresh: fetchUserDirectories,
+    updateUserDirectory,
+    resetUserDirectory,
   };
 }

@@ -55,7 +55,8 @@ const { t } = useI18n();
 }
 
 .sigma-ui-dialog-overlay[data-state="closed"] {
-  animation: sigma-ui-fade-out 0.2s ease-in;
+  animation: sigma-ui-fade-out 0.2s ease-in forwards;
+  pointer-events: none;
 }
 
 .sigma-ui-dialog-content {
@@ -80,7 +81,8 @@ const { t } = useI18n();
 }
 
 .sigma-ui-dialog-content[data-state="closed"] {
-  animation: sigma-ui-dialog-hide 0.2s ease-in;
+  animation: sigma-ui-dialog-hide 0.2s ease-in forwards;
+  pointer-events: none;
 }
 
 .sigma-ui-dialog-close {

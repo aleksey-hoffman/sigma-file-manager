@@ -4,12 +4,42 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
+import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { useUserDirectories } from '@/modules/home/composables';
+import { useUserDirectories, type UserDirectory } from '@/modules/home/composables';
 import UserDirectoryCard from './user-directory-card.vue';
+import UserDirectoryEditorDialog from './user-directory-editor-dialog.vue';
 
 const { t } = useI18n();
-const { userDirectories, isLoading, error, isEmpty, refresh } = useUserDirectories();
+const {
+  userDirectories,
+  isLoading,
+  error,
+  isEmpty,
+  refresh,
+  updateUserDirectory,
+  resetUserDirectory,
+} = useUserDirectories();
+
+const isEditorOpen = ref(false);
+const editingDirectory = ref<UserDirectory | null>(null);
+
+function handleEditDirectory(directory: UserDirectory) {
+  editingDirectory.value = directory;
+  isEditorOpen.value = true;
+}
+
+async function handleSaveDirectory(name: string, title: string, path: string, icon: string | undefined) {
+  await updateUserDirectory(name, {
+    title: title || undefined,
+    path,
+    icon,
+  });
+}
+
+async function handleResetDirectory(name: string) {
+  await resetUserDirectory(name);
+}
 </script>
 
 <template>
@@ -55,8 +85,17 @@ const { userDirectories, isLoading, error, isEmpty, refresh } = useUserDirectori
         v-for="directory in userDirectories"
         :key="directory.name"
         :directory="directory"
+        @edit="handleEditDirectory"
       />
     </div>
+
+    <UserDirectoryEditorDialog
+      v-if="isEditorOpen"
+      v-model:open="isEditorOpen"
+      :directory="editingDirectory"
+      @save="handleSaveDirectory"
+      @reset="handleResetDirectory"
+    />
   </section>
 </template>
 

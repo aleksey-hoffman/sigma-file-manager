@@ -11,10 +11,12 @@ pub fn run() {
         .plugin(tauri_plugin_store::Builder::new().build())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_os::init())
+        .plugin(tauri_plugin_dialog::init())
         .invoke_handler(tauri::generate_handler![
             dir_reader::read_dir,
             dir_reader::get_system_drives,
             dir_reader::get_parent_dir,
+            dir_reader::path_exists,
         ])
         .setup(setup_handler)
         .on_menu_event(system_tray::handle_menu_event)

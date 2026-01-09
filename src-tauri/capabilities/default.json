@@ -30,6 +30,7 @@
           "url": "https://github.com/**"
         }
       ]
-    }
+    },
+    "dialog:allow-open"
   ]
 }

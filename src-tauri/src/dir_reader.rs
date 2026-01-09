@@ -330,3 +330,8 @@ pub fn get_parent_dir(path: String) -> Option<String> {
         .and_then(|parent| parent.to_str())
         .map(|path_str| normalize_path(path_str))
 }
+
+#[tauri::command]
+pub fn path_exists(path: String) -> bool {
+    Path::new(&path).exists()
+}

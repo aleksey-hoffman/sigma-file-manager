@@ -30,6 +30,14 @@ export type HomeBannerPosition = {
 
 export type HomeBannerPositions = Record<number, HomeBannerPosition>;
 
+export type UserDirectoryCustomization = {
+  title?: string;
+  path?: string;
+  icon?: string;
+};
+
+export type UserDirectoriesCustomizations = Record<string, UserDirectoryCustomization>;
+
 export type UserSettings = {
   language: LocalizationLanguage;
   theme: Theme;
@@ -40,6 +48,7 @@ export type UserSettings = {
   homeBannerIndex: number;
   homeBannerPositions: HomeBannerPositions;
   driveCard: DriveCardSettings;
+  userDirectories: UserDirectoriesCustomizations;
 };
 
 export type DriveSpaceIndicatorStyle = 'linearVertical' | 'linearHorizontal' | 'linearHorizontalCentered' | 'circular';
