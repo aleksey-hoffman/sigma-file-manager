@@ -1,6 +1,6 @@
 {
   "name": "sigma-file-manager",
-  "version": "2.0.0-alpha.3",
+  "version": "2.0.0-alpha.4",
   "private": true,
   "type": "module",
   "engines": {
