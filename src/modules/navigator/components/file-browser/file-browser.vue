@@ -89,8 +89,11 @@ const entries = computed(() => {
   }
 
   if (filterQuery.value) {
-    const query = filterQuery.value.toLowerCase();
-    items = items.filter(item => item.name.toLowerCase().includes(query));
+    const query = filterQuery.value.trim().toLowerCase();
+
+    if (query) {
+      items = items.filter(item => item.name.toLowerCase() === query);
+    }
   }
 
   return items;
@@ -188,6 +191,8 @@ defineExpose({
   toggleFilter,
   openFilter,
   closeFilter,
+  navigateToPath,
+  openFile,
   clearSelection,
   selectAll,
   copyItems,

@@ -8,11 +8,16 @@ import { computed } from 'vue';
 import { useRoute } from 'vue-router';
 import Spacer from './spacer.vue';
 import WindowActions from './window-actions.vue';
+import { GlobalSearchToolbarButton } from '@/modules/global-search';
 
 const route = useRoute();
 
 const isTransparent = computed(() => {
   return route.name === 'home';
+});
+
+const shouldShowGlobalSearchButton = computed(() => {
+  return route.name === 'home' || route.name === 'navigator';
 });
 </script>
 
@@ -29,6 +34,7 @@ const isTransparent = computed(() => {
       <div class="window-toolbar-primary-teleport-target" />
       <Spacer class="window-toolbar-spacer" />
       <div class="window-toolbar-secondary-teleport-target" />
+      <GlobalSearchToolbarButton v-if="shouldShowGlobalSearchButton" />
       <WindowActions />
     </div>
   </div>
@@ -38,6 +44,14 @@ const isTransparent = computed(() => {
 .window-toolbar-primary-teleport-target {
   display: flex;
   max-width: 50%;
+}
+
+.window-toolbar-secondary-teleport-target {
+  display: flex;
+  max-width: 50%;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
 }
 
 .window-toolbar {

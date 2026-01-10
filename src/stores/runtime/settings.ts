@@ -139,6 +139,7 @@ export const useSettingsStore = defineStore('settings', () => {
       { default: VisualEffectsSection },
       { default: SystemIconsSection },
       { default: ShowHiddenItemsSection },
+      { default: GlobalSearchSection },
     ] = await Promise.all([
       import('@/modules/settings/ui/categories/general/language.vue'),
       import('@/modules/settings/ui/categories/general/window-scaling.vue'),
@@ -147,6 +148,7 @@ export const useSettingsStore = defineStore('settings', () => {
       import('@/modules/settings/ui/categories/appearance/visual-effects.vue'),
       import('@/modules/settings/ui/categories/appearance/system-icons.vue'),
       import('@/modules/settings/ui/categories/appearance/show-hidden-items.vue'),
+      import('@/modules/settings/ui/categories/search/global-search.vue'),
     ]);
 
     sections.value = [
@@ -198,6 +200,13 @@ export const useSettingsStore = defineStore('settings', () => {
         tags: 'settingsTags.navigator',
         component: markRaw(ShowHiddenItemsSection),
         category: 'appearance',
+      },
+      {
+        key: 'globalSearch',
+        titleKey: 'settings.globalSearch.title',
+        tags: 'settingsTags.globalSearch',
+        component: markRaw(GlobalSearchSection),
+        category: 'search',
       },
     ];
 

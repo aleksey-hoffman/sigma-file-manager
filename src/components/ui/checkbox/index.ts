@@ -2,6 +2,4 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-export * from './nav-sidebar';
-export * from './window-toolbar';
-export * from './global-search';
+export { default as Checkbox } from './checkbox.vue';

@@ -15,7 +15,9 @@ import {
   FolderOpenIcon,
   SettingsIcon,
   FileTextIcon,
+  SearchIcon,
 } from 'lucide-vue-next';
+import { join } from '@tauri-apps/api/path';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -49,6 +51,12 @@ async function openAppConfigDirectory() {
 
 async function openAppLogDirectory() {
   const path = await appLogDir();
+  await navigateToDirectory(path);
+}
+
+async function openGlobalSearchIndexDirectory() {
+  const dataDir = await appDataDir();
+  const path = await join(dataDir, 'global-search');
   await navigateToDirectory(path);
 }
 
@@ -111,6 +119,13 @@ function openReleasesPage() {
               class="settings-actions__links-menu-icon"
             />
             {{ t('settings.actions.openAppLogDirectory') }}
+          </DropdownMenuItem>
+          <DropdownMenuItem @click="openGlobalSearchIndexDirectory">
+            <SearchIcon
+              :size="16"
+              class="settings-actions__links-menu-icon"
+            />
+            {{ t('settings.actions.openGlobalSearchIndexDirectory') }}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

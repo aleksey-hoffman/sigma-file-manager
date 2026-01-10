@@ -53,6 +53,17 @@ async function refresh() {
   await fetchDrives();
 }
 
+function getDriveByPath(path: string): DriveInfo | null {
+  const normalizedPath = path.replace(/\\/g, '/').toUpperCase();
+
+  return drives.value.find((drive) => {
+    const drivePath = drive.path.replace(/\\/g, '/').toUpperCase();
+    return drivePath === normalizedPath
+      || drivePath === normalizedPath.replace(/\/$/, '')
+      || drivePath + '/' === normalizedPath;
+  }) ?? null;
+}
+
 export function useDrives() {
   onMounted(() => {
     activeSubscribers++;
@@ -77,5 +88,8 @@ export function useDrives() {
     error,
     fetchDrives,
     refresh,
+    getDriveByPath,
   };
 }
+
+export { drives as sharedDrives, getDriveByPath };

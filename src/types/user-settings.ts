@@ -65,6 +65,7 @@ export type UserSettings = {
   transparentToolbars: boolean;
   dateTime: DateTime;
   navigator: UserSettingsNavigator;
+  globalSearch: UserSettingsGlobalSearch;
   UIZoomLevel?: number;
   homeBannerIndex: number;
   homeBannerPositions: HomeBannerPositions;
@@ -72,6 +73,20 @@ export type UserSettings = {
   userDirectories: UserDirectoriesCustomizations;
   infusion: InfusionSettings;
   settingsCurrentTab: string;
+};
+
+export type UserSettingsGlobalSearch = {
+  scanDepth: number;
+  autoScanPeriodMinutes: number;
+  autoReindexWhenIdle: boolean;
+  ignoredPaths: string[];
+  selectedDriveRoots: string[];
+  parallelScan: boolean;
+  resultLimit: number;
+  includeFiles: boolean;
+  includeDirectories: boolean;
+  exactMatch: boolean;
+  typoTolerance: boolean;
 };
 
 export type DriveSpaceIndicatorStyle = 'linearVertical' | 'linearHorizontal' | 'linearHorizontalCentered' | 'circular';

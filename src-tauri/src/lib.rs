@@ -4,6 +4,7 @@
 
 mod dir_reader;
 mod file_operations;
+mod global_search;
 mod system_icons;
 mod system_tray;
 
@@ -22,6 +23,11 @@ pub fn run() {
             file_operations::copy_items,
             file_operations::move_items,
             file_operations::delete_items,
+            global_search::global_search_init,
+            global_search::global_search_get_status,
+            global_search::global_search_start_scan,
+            global_search::global_search_cancel_scan,
+            global_search::global_search_query,
             system_icons::get_system_icon,
         ])
         .setup(setup_handler)

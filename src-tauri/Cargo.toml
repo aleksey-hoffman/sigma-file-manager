@@ -34,3 +34,6 @@ file_icon_provider = "1.0.0"
 image = { version = "0.25", default-features = false, features = ["png"] }
 lru = "0.12"
 once_cell = "1.19"
+tantivy = "0.22"
+walkdir = "2.5"
+rayon = "1.10"

@@ -23,7 +23,6 @@ import {
   RefreshCwIcon,
   TextSearchIcon,
   XIcon,
-  SearchIcon,
 } from 'lucide-vue-next';
 import AddressBar from './address-bar.vue';
 
@@ -209,22 +208,6 @@ function handleAddressBarNavigate(path: string) {
             </div>
           </PopoverContent>
         </Popover>
-      </Tooltip>
-      <Tooltip>
-        <TooltipTrigger as-child>
-          <Button
-            variant="ghost"
-            size="icon"
-            class="file-browser-toolbar__filter-button"
-            :class="{ 'file-browser-toolbar__filter-button--active': filterQuery }"
-          >
-            <SearchIcon class="file-browser-toolbar__icon" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>
-          {{ t('globalSearch.globalSearch') }}
-          <kbd class="shortcut">Ctrl+Shift+G</kbd>
-        </TooltipContent>
       </Tooltip>
     </div>
   </div>

@@ -10,6 +10,7 @@ import { useI18n } from 'vue-i18n';
 
 import AppearanceCategory from './categories/appearance/index.vue';
 import GeneralCategory from './categories/general/index.vue';
+import SearchCategory from './categories/search/index.vue';
 
 import { Button } from '@/components/ui/button';
 
@@ -24,6 +25,7 @@ const currentTabLabel = computed(() => {
 const categoryComponentMap: Record<string, unknown> = {
   general: GeneralCategory,
   appearance: AppearanceCategory,
+  search: SearchCategory,
 };
 
 function getComponentForTab(tabName: string) {

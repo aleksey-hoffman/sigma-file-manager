@@ -451,8 +451,8 @@ const groupedEntries = computed<GroupedEntries>(() => {
 
 .file-browser-grid-view__overlay {
   position: absolute;
-  inset: 0;
   border-radius: 7px;
+  inset: 0;
   pointer-events: none;
 }
 
