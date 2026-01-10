@@ -3,6 +3,7 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 mod dir_reader;
+mod file_operations;
 mod system_tray;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -17,6 +18,9 @@ pub fn run() {
             dir_reader::get_system_drives,
             dir_reader::get_parent_dir,
             dir_reader::path_exists,
+            file_operations::copy_items,
+            file_operations::move_items,
+            file_operations::delete_items,
         ])
         .setup(setup_handler)
         .on_menu_event(system_tray::handle_menu_event)

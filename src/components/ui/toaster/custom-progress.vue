@@ -4,7 +4,12 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script lang="ts" setup>
+import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Button } from '@/components/ui/button';
+import { CopyIcon, FolderInputIcon, Trash2Icon } from 'lucide-vue-next';
+
+export type OperationType = 'copy' | 'move' | 'delete' | '';
 
 export type ToastItem = {
   data: {
@@ -15,6 +20,8 @@ export type ToastItem = {
     timer: number;
     actionText: string;
     cleanup: () => void;
+    operationType?: OperationType;
+    itemCount?: number;
   };
 };
 
@@ -24,13 +31,50 @@ type Emits = {
 
 const props = defineProps<ToastItem>();
 const emit = defineEmits<Emits>();
+const { t } = useI18n();
+
+const operationIcon = computed(() => {
+  switch (props.data.operationType) {
+    case 'copy':
+      return CopyIcon;
+    case 'move':
+      return FolderInputIcon;
+    case 'delete':
+      return Trash2Icon;
+    default:
+      return null;
+  }
+});
+
+const operationClass = computed(() => {
+  if (props.data.operationType === 'delete') {
+    return 'sigma-ui-toaster-progress--delete';
+  }
+
+  return '';
+});
 </script>
 
 <template>
-  <div class="sigma-ui-toaster-progress">
+  <div
+    class="sigma-ui-toaster-progress"
+    :class="operationClass"
+  >
     <div class="sigma-ui-toaster-progress__content">
       <div class="sigma-ui-toaster-progress__header">
+        <component
+          :is="operationIcon"
+          v-if="operationIcon"
+          :size="16"
+          class="sigma-ui-toaster-progress__icon"
+        />
         {{ props.data.title }}
+        <span
+          v-if="props.data.itemCount"
+          class="sigma-ui-toaster-progress__count-tag"
+        >
+          {{ t('item', props.data.itemCount) }}
+        </span>
         <div
           v-if="props.data.progress && props.data.progress < 100"
           class="sigma-ui-toaster-progress__percentage"
@@ -38,10 +82,16 @@ const emit = defineEmits<Emits>();
           {{ props.data.progress }}%
         </div>
       </div>
-      <div class="sigma-ui-toaster-progress__description">
+      <div
+        v-if="props.data.description"
+        class="sigma-ui-toaster-progress__description"
+      >
         {{ props.data.description }}
       </div>
-      <div class="sigma-ui-toaster-progress__bar">
+      <div
+        v-if="props.data.progress > 0 && props.data.progress < 100"
+        class="sigma-ui-toaster-progress__bar"
+      >
         <div
           class="sigma-ui-toaster-progress__bar-fill"
           :style="{ width: `${props.data.progress}%` }"
@@ -50,6 +100,7 @@ const emit = defineEmits<Emits>();
     </div>
     <Button
       size="xs"
+      variant="secondary"
       @click="emit('action')"
     >
       {{ props.data.actionText }}
@@ -61,14 +112,21 @@ const emit = defineEmits<Emits>();
 .sigma-ui-toaster-progress {
   display: flex;
   width: 100%;
-  align-items: flex-end;
+  box-sizing: border-box;
+  align-items: center;
   justify-content: space-between;
   padding: 1rem;
   border: 1px solid hsl(var(--border));
   border-radius: var(--radius);
-  background-color: hsl(var(--background));
+  backdrop-filter: blur(24px);
+  background-color: hsl(var(--background) / 50%);
   box-shadow: var(--shadow-md);
   gap: 1.5rem;
+  transition: backdrop-filter 160ms ease, background-color 160ms ease;
+}
+
+.sigma-ui-toaster-progress--delete .sigma-ui-toaster-progress__icon {
+  color: hsl(var(--warning));
 }
 
 .sigma-ui-toaster-progress__content {
@@ -83,6 +141,19 @@ const emit = defineEmits<Emits>();
   font-size: 0.875rem;
   font-weight: 600;
   gap: 0.5rem;
+}
+
+.sigma-ui-toaster-progress__icon {
+  flex-shrink: 0;
+  color: hsl(var(--primary));
+}
+
+.sigma-ui-toaster-progress__count-tag {
+  padding: 2px 8px;
+  border-radius: 4px;
+  background-color: hsl(var(--muted));
+  font-size: 0.75rem;
+  font-weight: 500;
 }
 
 .sigma-ui-toaster-progress__percentage {

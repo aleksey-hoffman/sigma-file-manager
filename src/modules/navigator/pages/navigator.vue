@@ -14,6 +14,8 @@ import { TabBar } from '@/modules/tab-bar';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 import { useWorkspacesStore } from '@/stores/storage/workspaces';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
+import { useClipboardStore } from '@/stores/runtime/clipboard';
+import { useDismissalLayerStore } from '@/stores/runtime/dismissal-layer';
 import { FileBrowser } from '@/modules/navigator/components/file-browser';
 import { InfoPanel } from '@/modules/navigator/components/info-panel';
 import { NavigatorToolbarActions } from '@/modules/navigator/components/navigator-toolbar-actions';
@@ -24,11 +26,13 @@ type FileBrowserInstance = InstanceType<typeof FileBrowser>;
 
 const workspacesStore = useWorkspacesStore();
 const userSettingsStore = useUserSettingsStore();
+const clipboardStore = useClipboardStore();
+const dismissalLayerStore = useDismissalLayerStore();
 
 const paneRefsMap = ref<Map<string, FileBrowserInstance>>(new Map());
 const singlePaneRef = ref<FileBrowserInstance | null>(null);
 const showInfoPanel = ref(true);
-const selectedEntry = ref<DirEntry | null>(null);
+const selectedEntries = ref<DirEntry[]>([]);
 const currentDirEntry = ref<DirEntry | null>(null);
 const smallScreenMediaQuery = window.matchMedia(`(max-width: ${UI_CONSTANTS.SMALL_SCREEN_BREAKPOINT}px)`);
 const isSmallScreen = ref(smallScreenMediaQuery.matches);
@@ -42,7 +46,13 @@ const currentLayout = computed(() => {
   return layoutName === 'compact-list' ? 'list' : layoutName;
 });
 
-const infoPanelEntry = computed(() => selectedEntry.value || currentDirEntry.value);
+const infoPanelEntry = computed(() => {
+  if (selectedEntries.value.length > 0) {
+    return selectedEntries.value[selectedEntries.value.length - 1];
+  }
+
+  return currentDirEntry.value;
+});
 
 const isSplitView = computed(() => {
   return (workspacesStore.currentTabGroup?.length ?? 0) > 1;
@@ -56,10 +66,10 @@ function handleToggleInfoPanel() {
   showInfoPanel.value = !showInfoPanel.value;
 }
 
-function handleSelectionChange(entry: DirEntry | null, activeTabId?: string) {
-  selectedEntry.value = entry;
+function handleSelectionChange(entries: DirEntry[], activeTabId?: string) {
+  selectedEntries.value = entries;
 
-  if (entry && activeTabId) {
+  if (entries.length > 0 && activeTabId) {
     paneRefsMap.value.forEach((pane, tabId) => {
       if (tabId !== activeTabId) {
         pane.clearSelection();
@@ -128,11 +138,163 @@ function handleFilterShortcut() {
   }
 }
 
+function getActivePaneRef(): FileBrowserInstance | undefined {
+  if (!isSplitView.value) {
+    return singlePaneRef.value || Array.from(paneRefsMap.value.values())[0];
+  }
+
+  return Array.from(paneRefsMap.value.values())[0];
+}
+
+function handleCopyShortcut() {
+  const pane = getActivePaneRef();
+  if (!pane) return;
+  const entries = pane.selectedEntries;
+  const entriesArray = Array.isArray(entries) ? entries : entries.value;
+
+  if (entriesArray && entriesArray.length > 0) {
+    pane.copyItems(entriesArray);
+  }
+}
+
+function handleCutShortcut() {
+  const pane = getActivePaneRef();
+  if (!pane) return;
+  const entries = pane.selectedEntries;
+  const entriesArray = Array.isArray(entries) ? entries : entries.value;
+
+  if (entriesArray && entriesArray.length > 0) {
+    pane.cutItems(entriesArray);
+  }
+}
+
+async function handlePasteShortcut() {
+  const pane = getActivePaneRef();
+
+  if (pane && clipboardStore.hasItems) {
+    await pane.pasteItems();
+  }
+}
+
+function handleSelectAllShortcut() {
+  const pane = getActivePaneRef();
+
+  if (pane) {
+    pane.selectAll();
+  }
+}
+
+async function handleDeleteShortcut(useTrash: boolean = true) {
+  const pane = getActivePaneRef();
+  if (!pane) return;
+  const entries = pane.selectedEntries;
+  const entriesArray = Array.isArray(entries) ? entries : entries.value;
+
+  if (entriesArray && entriesArray.length > 0) {
+    await pane.deleteItems(entriesArray, useTrash);
+  }
+}
+
+function clearAllSelections() {
+  selectedEntries.value = [];
+  paneRefsMap.value.forEach((pane) => {
+    pane.clearSelection();
+  });
+
+  if (singlePaneRef.value) {
+    singlePaneRef.value.clearSelection();
+  }
+}
+
+function handleEscapeKey(): boolean {
+  const hasRekaDismissableLayers = document.querySelectorAll('[data-dismissable-layer]').length > 0;
+
+  if (hasRekaDismissableLayers) {
+    return false;
+  }
+
+  if (dismissalLayerStore.hasLayers) {
+    return dismissalLayerStore.dismissTopLayer();
+  }
+
+  if (clipboardStore.hasItems) {
+    clipboardStore.clearClipboard();
+    return true;
+  }
+
+  if (selectedEntries.value.length > 0) {
+    clearAllSelections();
+    return true;
+  }
+
+  return false;
+}
+
+function isInputFocused(): boolean {
+  const activeElement = document.activeElement;
+  if (!activeElement) return false;
+  const tagName = activeElement.tagName.toLowerCase();
+  return tagName === 'input' || tagName === 'textarea' || (activeElement as HTMLElement).isContentEditable;
+}
+
 function handleKeydown(event: KeyboardEvent) {
-  if ((event.ctrlKey || event.metaKey) && event.key === 'f') {
+  const isCtrlOrMeta = event.ctrlKey || event.metaKey;
+  const normalizedKey = event.key.toLowerCase();
+
+  if (event.key === 'Escape') {
+    const handled = handleEscapeKey();
+
+    if (handled) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+
+    return;
+  }
+
+  if (isInputFocused()) {
+    return;
+  }
+
+  if (isCtrlOrMeta && (event.code === 'KeyF' || normalizedKey === 'f')) {
     event.preventDefault();
     event.stopPropagation();
     handleFilterShortcut();
+    return;
+  }
+
+  if (isCtrlOrMeta && (event.code === 'KeyC' || normalizedKey === 'c')) {
+    event.preventDefault();
+    event.stopPropagation();
+    handleCopyShortcut();
+    return;
+  }
+
+  if (isCtrlOrMeta && (event.code === 'KeyX' || normalizedKey === 'x')) {
+    event.preventDefault();
+    event.stopPropagation();
+    handleCutShortcut();
+    return;
+  }
+
+  if (isCtrlOrMeta && (event.code === 'KeyV' || normalizedKey === 'v')) {
+    event.preventDefault();
+    event.stopPropagation();
+    handlePasteShortcut();
+    return;
+  }
+
+  if (isCtrlOrMeta && (event.code === 'KeyA' || normalizedKey === 'a')) {
+    event.preventDefault();
+    event.stopPropagation();
+    handleSelectAllShortcut();
+    return;
+  }
+
+  if (event.key === 'Delete' || event.code === 'Delete') {
+    event.preventDefault();
+    event.stopPropagation();
+    handleDeleteShortcut(!event.shiftKey);
   }
 }
 
@@ -168,7 +330,7 @@ onUnmounted(() => {
         <InfoPanel
           v-if="showInfoPanel"
           :selected-entry="infoPanelEntry"
-          :is-current-dir="!selectedEntry && !!currentDirEntry"
+          :is-current-dir="selectedEntries.length === 0 && !!currentDirEntry"
         />
       </div>
       <ResizablePanelGroup
@@ -190,7 +352,7 @@ onUnmounted(() => {
                 :pane-index="index"
                 :layout="currentLayout"
                 class="navigator-page__pane"
-                @update:selected-entry="(entry) => handleSelectionChange(entry, tab.id)"
+                @update:selected-entries="(entries) => handleSelectionChange(entries, tab.id)"
                 @update:current-dir-entry="handleCurrentDirChange"
               />
             </ResizablePanel>
@@ -209,7 +371,7 @@ onUnmounted(() => {
               :pane-index="0"
               :layout="currentLayout"
               class="navigator-page__pane"
-              @update:selected-entry="(entry) => handleSelectionChange(entry, workspacesStore.currentTabGroup![0].id)"
+              @update:selected-entries="(entries) => handleSelectionChange(entries, workspacesStore.currentTabGroup![0].id)"
               @update:current-dir-entry="handleCurrentDirChange"
             />
           </ResizablePanel>
@@ -222,7 +384,7 @@ onUnmounted(() => {
             ref="singlePaneRef"
             :layout="currentLayout"
             class="navigator-page__pane"
-            @update:selected-entry="(entry) => handleSelectionChange(entry)"
+            @update:selected-entries="(entries) => handleSelectionChange(entries)"
             @update:current-dir-entry="handleCurrentDirChange"
           />
         </ResizablePanel>
@@ -230,7 +392,7 @@ onUnmounted(() => {
       <InfoPanel
         v-if="showInfoPanel && !isSmallScreen"
         :selected-entry="infoPanelEntry"
-        :is-current-dir="!selectedEntry && !!currentDirEntry"
+        :is-current-dir="selectedEntries.length === 0 && !!currentDirEntry"
       />
     </div>
   </div>

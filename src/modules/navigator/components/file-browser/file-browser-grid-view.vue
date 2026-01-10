@@ -5,6 +5,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import { storeToRefs } from 'pinia';
 import { useI18n } from 'vue-i18n';
 import {
   FolderIcon,
@@ -17,17 +18,30 @@ import type { GroupedEntries } from './types';
 import {
   getFileIcon, getImageSrc, formatBytes, isImageFile, isVideoFile,
 } from './utils';
+import { useClipboardStore } from '@/stores/runtime/clipboard';
 
 const props = defineProps<{
   entries: DirEntry[];
-  selectedEntry: DirEntry | null;
+  selectedEntries: DirEntry[];
+  isEntrySelected: (entry: DirEntry) => boolean;
   currentPath: string;
   getVideoThumbnail: (entry: DirEntry) => string | undefined;
 }>();
 
+const clipboardStore = useClipboardStore();
+const { clipboardItems, clipboardType } = storeToRefs(clipboardStore);
+
+const clipboardPathsMap = computed(() => {
+  const map = new Map<string, string>();
+  for (const item of clipboardItems.value) {
+    map.set(item.path, clipboardType.value || '');
+  }
+  return map;
+});
+
 const emit = defineEmits<{
-  mousedown: [entry: DirEntry];
-  mouseup: [entry: DirEntry];
+  mousedown: [entry: DirEntry, event: MouseEvent];
+  mouseup: [entry: DirEntry, event: MouseEvent];
   contextmenu: [entry: DirEntry];
 }>();
 
@@ -61,7 +75,6 @@ const groupedEntries = computed<GroupedEntries>(() => {
     others,
   };
 });
-
 </script>
 
 <template>
@@ -80,14 +93,19 @@ const groupedEntries = computed<GroupedEntries>(() => {
           v-for="entry in groupedEntries.dirs"
           :key="entry.path"
           class="file-browser-grid-view__card file-browser-grid-view__card--dir"
-          :class="{
-            'file-browser-grid-view__card--hidden': entry.is_hidden,
-            'file-browser-grid-view__card--selected': selectedEntry?.path === entry.path,
-          }"
-          @mousedown="emit('mousedown', entry)"
-          @mouseup="emit('mouseup', entry)"
+          :class="{ 'file-browser-grid-view__card--hidden': entry.is_hidden }"
+          :data-selected="isEntrySelected(entry) || undefined"
+          :data-in-clipboard="clipboardPathsMap.has(entry.path) || undefined"
+          :data-clipboard-type="clipboardPathsMap.get(entry.path) || undefined"
+          @mousedown="emit('mousedown', entry, $event)"
+          @mouseup="emit('mouseup', entry, $event)"
           @contextmenu="emit('contextmenu', entry)"
         >
+          <div class="file-browser-grid-view__overlay-container">
+            <div class="file-browser-grid-view__overlay file-browser-grid-view__overlay--selected" />
+            <div class="file-browser-grid-view__overlay file-browser-grid-view__overlay--clipboard" />
+            <div class="file-browser-grid-view__overlay file-browser-grid-view__overlay--hover" />
+          </div>
           <div class="file-browser-grid-view__card-preview">
             <FolderIcon
               :size="24"
@@ -118,14 +136,19 @@ const groupedEntries = computed<GroupedEntries>(() => {
           v-for="entry in groupedEntries.images"
           :key="entry.path"
           class="file-browser-grid-view__card file-browser-grid-view__card--file file-browser-grid-view__card--image"
-          :class="{
-            'file-browser-grid-view__card--hidden': entry.is_hidden,
-            'file-browser-grid-view__card--selected': selectedEntry?.path === entry.path,
-          }"
-          @mousedown="emit('mousedown', entry)"
-          @mouseup="emit('mouseup', entry)"
+          :class="{ 'file-browser-grid-view__card--hidden': entry.is_hidden }"
+          :data-selected="isEntrySelected(entry) || undefined"
+          :data-in-clipboard="clipboardPathsMap.has(entry.path) || undefined"
+          :data-clipboard-type="clipboardPathsMap.get(entry.path) || undefined"
+          @mousedown="emit('mousedown', entry, $event)"
+          @mouseup="emit('mouseup', entry, $event)"
           @contextmenu="emit('contextmenu', entry)"
         >
+          <div class="file-browser-grid-view__overlay-container">
+            <div class="file-browser-grid-view__overlay file-browser-grid-view__overlay--selected" />
+            <div class="file-browser-grid-view__overlay file-browser-grid-view__overlay--clipboard" />
+            <div class="file-browser-grid-view__overlay file-browser-grid-view__overlay--hover" />
+          </div>
           <div class="file-browser-grid-view__card-preview">
             <img
               :src="getImageSrc(entry)"
@@ -158,14 +181,21 @@ const groupedEntries = computed<GroupedEntries>(() => {
           class="file-browser-grid-view__card file-browser-grid-view__card--file file-browser-grid-view__card--video"
           :class="{
             'file-browser-grid-view__card--hidden': entry.is_hidden,
-            'file-browser-grid-view__card--selected': selectedEntry?.path === entry.path,
             'file-browser-grid-view__card--image': props.getVideoThumbnail(entry),
             'file-browser-grid-view__card--icon-full': !props.getVideoThumbnail(entry),
           }"
-          @mousedown="emit('mousedown', entry)"
-          @mouseup="emit('mouseup', entry)"
+          :data-selected="isEntrySelected(entry) || undefined"
+          :data-in-clipboard="clipboardPathsMap.has(entry.path) || undefined"
+          :data-clipboard-type="clipboardPathsMap.get(entry.path) || undefined"
+          @mousedown="emit('mousedown', entry, $event)"
+          @mouseup="emit('mouseup', entry, $event)"
           @contextmenu="emit('contextmenu', entry)"
         >
+          <div class="file-browser-grid-view__overlay-container">
+            <div class="file-browser-grid-view__overlay file-browser-grid-view__overlay--selected" />
+            <div class="file-browser-grid-view__overlay file-browser-grid-view__overlay--clipboard" />
+            <div class="file-browser-grid-view__overlay file-browser-grid-view__overlay--hover" />
+          </div>
           <div class="file-browser-grid-view__card-preview">
             <img
               v-if="props.getVideoThumbnail(entry)"
@@ -201,14 +231,19 @@ const groupedEntries = computed<GroupedEntries>(() => {
           v-for="entry in groupedEntries.others"
           :key="entry.path"
           class="file-browser-grid-view__card file-browser-grid-view__card--file file-browser-grid-view__card--other file-browser-grid-view__card--icon-full"
-          :class="{
-            'file-browser-grid-view__card--hidden': entry.is_hidden,
-            'file-browser-grid-view__card--selected': selectedEntry?.path === entry.path,
-          }"
-          @mousedown="emit('mousedown', entry)"
-          @mouseup="emit('mouseup', entry)"
+          :class="{ 'file-browser-grid-view__card--hidden': entry.is_hidden }"
+          :data-selected="isEntrySelected(entry) || undefined"
+          :data-in-clipboard="clipboardPathsMap.has(entry.path) || undefined"
+          :data-clipboard-type="clipboardPathsMap.get(entry.path) || undefined"
+          @mousedown="emit('mousedown', entry, $event)"
+          @mouseup="emit('mouseup', entry, $event)"
           @contextmenu="emit('contextmenu', entry)"
         >
+          <div class="file-browser-grid-view__overlay-container">
+            <div class="file-browser-grid-view__overlay file-browser-grid-view__overlay--selected" />
+            <div class="file-browser-grid-view__overlay file-browser-grid-view__overlay--clipboard" />
+            <div class="file-browser-grid-view__overlay file-browser-grid-view__overlay--hover" />
+          </div>
           <div class="file-browser-grid-view__card-preview">
             <component
               :is="getFileIcon(entry)"
@@ -272,6 +307,7 @@ const groupedEntries = computed<GroupedEntries>(() => {
 }
 
 .file-browser-grid-view__card {
+  position: relative;
   display: flex;
   overflow: hidden;
   flex-direction: column;
@@ -279,23 +315,8 @@ const groupedEntries = computed<GroupedEntries>(() => {
   border-radius: 8px;
   background: hsl(var(--background-2));
   cursor: default;
+  outline: none;
   text-align: left;
-  transition: background-color 0.15s ease-out, border-color 0.15s ease-out;
-}
-
-.file-browser-grid-view__card:hover {
-  border-color: hsl(var(--primary) / 50%);
-  background-color: hsl(var(--secondary));
-  transition: background-color 0s, border-color 0s;
-}
-
-.file-browser-grid-view__card--selected {
-  border-color: hsl(var(--primary));
-  background-color: hsl(var(--primary) / 20%);
-}
-
-.file-browser-grid-view__card--selected:hover {
-  background-color: hsl(var(--primary) / 30%);
 }
 
 .file-browser-grid-view__card--hidden {
@@ -311,6 +332,8 @@ const groupedEntries = computed<GroupedEntries>(() => {
 }
 
 .file-browser-grid-view__card--dir .file-browser-grid-view__card-preview {
+  position: relative;
+  z-index: 1;
   display: flex;
   width: auto;
   height: auto;
@@ -320,17 +343,20 @@ const groupedEntries = computed<GroupedEntries>(() => {
 }
 
 .file-browser-grid-view__card--dir .file-browser-grid-view__card-info {
+  position: relative;
+  z-index: 1;
   overflow: hidden;
   min-width: 0;
   flex: 1;
 }
 
 .file-browser-grid-view__card--file {
-  position: relative;
   height: 120px;
 }
 
 .file-browser-grid-view__card-preview {
+  position: relative;
+  z-index: 1;
   display: flex;
   width: 100%;
   height: 100%;
@@ -360,6 +386,7 @@ const groupedEntries = computed<GroupedEntries>(() => {
 
 .file-browser-grid-view__card-info--overlay {
   position: absolute;
+  z-index: 2;
   right: 0;
   bottom: 0;
   left: 0;
@@ -370,6 +397,7 @@ const groupedEntries = computed<GroupedEntries>(() => {
 
 .file-browser-grid-view__card--other .file-browser-grid-view__card-info--bottom {
   position: absolute;
+  z-index: 2;
   right: 0;
   bottom: 0;
   left: 0;
@@ -410,5 +438,86 @@ const groupedEntries = computed<GroupedEntries>(() => {
 .file-browser-grid-view__card--dir .file-browser-grid-view__card-meta {
   color: hsl(var(--muted-foreground));
   opacity: 1;
+}
+
+.file-browser-grid-view__overlay-container {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  pointer-events: none;
+}
+
+.file-browser-grid-view__overlay {
+  position: absolute;
+  inset: 0;
+  border-radius: 7px;
+  pointer-events: none;
+}
+
+.file-browser-grid-view__overlay--selected {
+  background-color: hsl(var(--primary) / 12%);
+  box-shadow: inset 0 0 0 1px hsl(var(--primary) / 50%);
+  opacity: 0;
+}
+
+.file-browser-grid-view__card[data-selected] .file-browser-grid-view__overlay--selected {
+  opacity: 1;
+}
+
+.file-browser-grid-view__card[data-in-clipboard] .file-browser-grid-view__overlay--selected {
+  opacity: 0;
+}
+
+.file-browser-grid-view__card--image[data-selected] .file-browser-grid-view__overlay--selected {
+  background-color: hsl(var(--primary) / 30%);
+}
+
+.file-browser-grid-view__overlay--clipboard {
+  opacity: 0;
+}
+
+.file-browser-grid-view__card[data-in-clipboard][data-clipboard-type="copy"] .file-browser-grid-view__overlay--clipboard {
+  background-color: hsl(var(--success) / 6%);
+  box-shadow: inset 0 0 0 2px hsl(var(--success) / 40%);
+  opacity: 1;
+}
+
+.file-browser-grid-view__card[data-in-clipboard][data-clipboard-type="move"] .file-browser-grid-view__overlay--clipboard {
+  background-color: hsl(var(--warning) / 6%);
+  box-shadow: inset 0 0 0 2px hsl(var(--warning) / 40%);
+  opacity: 1;
+}
+
+.file-browser-grid-view__card[data-selected][data-in-clipboard][data-clipboard-type="copy"] .file-browser-grid-view__overlay--clipboard {
+  background-color: hsl(var(--success) / 10%);
+  box-shadow: inset 0 0 0 2px hsl(var(--success) / 60%);
+  opacity: 1;
+}
+
+.file-browser-grid-view__card[data-selected][data-in-clipboard][data-clipboard-type="move"] .file-browser-grid-view__overlay--clipboard {
+  background-color: hsl(var(--warning) / 10%);
+  box-shadow: inset 0 0 0 2px hsl(var(--warning) / 60%);
+  opacity: 1;
+}
+
+.file-browser-grid-view__card--image[data-in-clipboard][data-clipboard-type="copy"] .file-browser-grid-view__overlay--clipboard {
+  background-color: hsl(var(--success) / 15%);
+  opacity: 1;
+}
+
+.file-browser-grid-view__card--image[data-in-clipboard][data-clipboard-type="move"] .file-browser-grid-view__overlay--clipboard {
+  background-color: hsl(var(--warning) / 15%);
+  opacity: 1;
+}
+
+.file-browser-grid-view__overlay--hover {
+  background-color: hsl(var(--foreground) / 5%);
+  opacity: 0;
+  transition: opacity 0.15s ease-out;
+}
+
+.file-browser-grid-view__card:hover .file-browser-grid-view__overlay--hover {
+  opacity: 1;
+  transition: opacity 0s;
 }
 </style>

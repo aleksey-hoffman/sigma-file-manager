@@ -92,6 +92,7 @@ const mediaSrc = computed(() => {
 <style scoped>
 .info-panel-preview {
   display: flex;
+  overflow: hidden;
   height: 180px;
   align-items: center;
   justify-content: center;

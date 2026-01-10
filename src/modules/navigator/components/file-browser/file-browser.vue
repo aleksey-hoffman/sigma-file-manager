@@ -4,10 +4,17 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import { computed, onMounted, watch, ref } from 'vue';
+import {
+  computed,
+  onMounted,
+  onUnmounted,
+  watch,
+  ref,
+} from 'vue';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ContextMenu, ContextMenuTrigger } from '@/components/ui/context-menu';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
+import { useDismissalLayerStore } from '@/stores/runtime/dismissal-layer';
 import type { DirEntry } from '@/types/dir-entry';
 import type { Tab } from '@/types/workspaces';
 import type { ContextMenuAction } from './types';
@@ -29,14 +36,16 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  'update:selectedEntry': [entry: DirEntry | null];
+  'update:selectedEntries': [entries: DirEntry[]];
   'update:currentDirEntry': [entry: DirEntry | null];
 }>();
 
 const userSettingsStore = useUserSettingsStore();
+const dismissalLayerStore = useDismissalLayerStore();
 
 const filterQuery = ref('');
 const isFilterOpen = ref(false);
+const filterDismissalLayerId = ref<string | null>(null);
 
 const {
   currentPath,
@@ -67,30 +76,6 @@ const {
   },
 );
 
-const {
-  selectedEntry,
-  contextMenu,
-  clearSelection,
-  handleEntryMouseDown,
-  handleEntryMouseUp,
-  handleEntryContextMenu,
-  closeContextMenu,
-  handleContextMenuAction,
-  resetMouseState,
-} = useFileBrowserSelection(
-  entry => emit('update:selectedEntry', entry),
-  async (entry) => {
-    if (entry.is_dir) {
-      await navigateToEntry(entry);
-    }
-    else {
-      await openFile(entry.path);
-    }
-  },
-);
-
-const { getVideoThumbnail } = useVideoThumbnails();
-
 function isHiddenFile(entry: DirEntry): boolean {
   return entry.is_hidden || entry.name.startsWith('.');
 }
@@ -111,9 +96,64 @@ const entries = computed(() => {
   return items;
 });
 
+const currentPathComputed = computed(() => currentPath.value);
+
+const {
+  selectedEntries,
+  contextMenu,
+  clearSelection,
+  isEntrySelected,
+  handleEntryMouseDown,
+  handleEntryMouseUp,
+  handleEntryContextMenu,
+  handleContextMenuAction,
+  resetMouseState,
+  selectAll,
+  removeFromSelection,
+  copyItems,
+  cutItems,
+  pasteItems,
+  deleteItems,
+} = useFileBrowserSelection(
+  entries,
+  currentPathComputed,
+  selectedItems => emit('update:selectedEntries', selectedItems),
+  async (entry) => {
+    if (entry.is_dir) {
+      await navigateToEntry(entry);
+    }
+    else {
+      await openFile(entry.path);
+    }
+  },
+  refresh,
+);
+
+const { getVideoThumbnail } = useVideoThumbnails();
+
 watch(() => props.tab?.id, async (newTabId, oldTabId) => {
   if (newTabId && newTabId !== oldTabId && props.tab?.path) {
     await readDir(props.tab.path, false);
+  }
+});
+
+watch(isFilterOpen, (isOpen) => {
+  if (isOpen) {
+    filterDismissalLayerId.value = dismissalLayerStore.registerLayer(
+      'filter',
+      () => closeFilter(),
+      100,
+    );
+  }
+  else if (filterDismissalLayerId.value) {
+    dismissalLayerStore.unregisterLayer(filterDismissalLayerId.value);
+    filterDismissalLayerId.value = null;
+  }
+});
+
+onUnmounted(() => {
+  if (filterDismissalLayerId.value) {
+    dismissalLayerStore.unregisterLayer(filterDismissalLayerId.value);
   }
 });
 
@@ -133,6 +173,14 @@ function onContextMenuAction(action: ContextMenuAction) {
   handleContextMenuAction(action);
 }
 
+function onEntryMouseDown(entry: DirEntry, event: MouseEvent) {
+  handleEntryMouseDown(entry, event);
+}
+
+function onEntryMouseUp(entry: DirEntry, event: MouseEvent) {
+  handleEntryMouseUp(entry, event);
+}
+
 onMounted(init);
 
 defineExpose({
@@ -141,6 +189,12 @@ defineExpose({
   openFilter,
   closeFilter,
   clearSelection,
+  selectAll,
+  copyItems,
+  cutItems,
+  pasteItems,
+  deleteItems,
+  selectedEntries,
 });
 </script>
 
@@ -177,7 +231,7 @@ defineExpose({
           class="file-browser__scroll-area"
           @contextmenu.self.prevent
         >
-          <ContextMenu @update:open="(open: boolean) => { if (!open) closeContextMenu(); }">
+          <ContextMenu>
             <ContextMenuTrigger as-child>
               <div
                 class="file-browser__entries-container"
@@ -186,20 +240,22 @@ defineExpose({
                 <FileBrowserGridView
                   v-if="layout === 'grid'"
                   :entries="entries"
-                  :selected-entry="selectedEntry"
+                  :selected-entries="selectedEntries"
+                  :is-entry-selected="isEntrySelected"
                   :current-path="currentPath"
                   :get-video-thumbnail="getVideoThumbnail"
-                  @mousedown="handleEntryMouseDown"
-                  @mouseup="handleEntryMouseUp"
+                  @mousedown="onEntryMouseDown"
+                  @mouseup="onEntryMouseUp"
                   @contextmenu="handleEntryContextMenu"
                 />
                 <FileBrowserListView
                   v-else
                   :entries="entries"
-                  :selected-entry="selectedEntry"
+                  :selected-entries="selectedEntries"
+                  :is-entry-selected="isEntrySelected"
                   :current-path="currentPath"
-                  @mousedown="handleEntryMouseDown"
-                  @mouseup="handleEntryMouseUp"
+                  @mousedown="onEntryMouseDown"
+                  @mouseup="onEntryMouseUp"
                   @contextmenu="handleEntryContextMenu"
                 />
               </div>
@@ -217,6 +273,13 @@ defineExpose({
     <FileBrowserStatusBar
       :dir-contents="dirContents"
       :filtered-count="entries.length"
+      :selected-count="selectedEntries.length"
+      :selected-entries="selectedEntries"
+      @select-all="selectAll"
+      @deselect-all="clearSelection"
+      @remove-from-selection="removeFromSelection"
+      @context-menu-action="onContextMenuAction"
+      @paste="pasteItems"
     />
   </div>
 </template>

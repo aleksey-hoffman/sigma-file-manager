@@ -13,6 +13,8 @@ const props = defineProps<ToasterProps>();
 <template>
   <Toaster
     v-bind="props"
+    :expand="true"
+    :gap="8"
     :toast-options="{
       ...props.toastOptions,
       unstyled: true,
@@ -33,25 +35,68 @@ const props = defineProps<ToasterProps>();
   display: flex;
   max-width: 420px;
   flex-direction: column;
-  gap: 10px;
+  gap: 6px;
   pointer-events: auto;
+}
+
+[data-sonner-toaster] {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+}
+
+[data-sonner-toaster][data-y-position='bottom'] {
+  flex-direction: column-reverse;
+}
+
+[data-sonner-toast] {
+  position: relative;
+  height: auto;
+  inset: unset;
+  opacity: 1;
+  transform: none;
+  transition: none;
+}
+
+[data-sonner-toast][data-removed='true'] {
+  opacity: 0;
+}
+
+[data-sonner-toast][data-mounted='false'] .sigma-ui-toaster-progress {
+  backdrop-filter: blur(0);
+  background-color: hsl(var(--background) / 0%);
+}
+
+[data-sonner-toast][data-expanded='false'][data-front='false'] {
+  overflow: hidden;
+}
+
+[data-sonner-toast][data-expanded='false'][data-front='false'] > * {
+  opacity: 0;
 }
 
 .sigma-ui-toast {
   display: flex;
   width: 100%;
-  align-items: center;
+  align-items: stretch;
+  padding: 0;
+  border: none;
   border-radius: var(--radius);
-  background-color: hsl(var(--background));
-  box-shadow: 0 4px 12px rgb(0 0 0 / 10%);
+  background: transparent;
   color: hsl(var(--foreground));
   cursor: default;
   gap: 0.5rem;
 }
 
+[data-sonner-toast] > * {
+  flex: 1;
+}
+
 .sigma-ui-toast[data-type="default"] {
   padding: 0.75rem 1rem;
   border: 1px solid hsl(var(--border));
+  background-color: hsl(var(--background));
+  box-shadow: 0 4px 12px rgb(0 0 0 / 10%);
 }
 
 .sigma-ui-toast[data-type="default"] [data-content] {

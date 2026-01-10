@@ -30,6 +30,7 @@ const forwardedProps = useForwardProps(props);
   border-radius: var(--radius-sm);
   cursor: default;
   font-size: 0.875rem;
+  gap: 0.625rem;
   line-height: 1.25rem;
   outline: none;
   transition: background-color 150ms ease, color 150ms ease;

@@ -12,7 +12,7 @@ export interface FileBrowserProps {
 }
 
 export interface FileBrowserEmits {
-  'update:selectedEntry': [entry: DirEntry | null];
+  'update:selectedEntries': [entries: DirEntry[]];
   'update:currentDirEntry': [entry: DirEntry | null];
 }
 
@@ -27,12 +27,15 @@ export interface NavigationState {
 }
 
 export interface SelectionState {
-  selectedEntry: DirEntry | null;
+  selectedEntries: DirEntry[];
+  lastSelectedEntry: DirEntry | null;
   mouseDownState: {
     item: DirEntry | null;
     wasSelected: boolean;
     awaitsSecondClick: boolean;
     lastMouseUpTime: number;
+    ctrlKey: boolean;
+    shiftKey: boolean;
   };
 }
 
@@ -48,7 +51,7 @@ export interface GroupedEntries {
   others: DirEntry[];
 }
 
-export type ContextMenuAction = 'rename' | 'copy' | 'cut' | 'delete' | 'open-with' | 'quick-view' | 'share' | 'open-in-new-tab';
+export type ContextMenuAction = 'rename' | 'copy' | 'cut' | 'paste' | 'delete' | 'open-with' | 'quick-view' | 'share' | 'open-in-new-tab';
 
 export type SelectionType = 'single' | 'multiple';
 export type EntryType = 'file' | 'directory';

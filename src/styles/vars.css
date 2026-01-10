@@ -65,6 +65,8 @@
   --destructive: 0 84.2% 60.2%;
   --destructive-foreground: 210 20% 98%;
   --ring: 224 71.4% 4.1%;
+  --success: 174deg 100% 27%;
+  --warning: 4deg 82% 58%;
 }
 
 .dark {
@@ -93,4 +95,6 @@
   --destructive: 0 62.8% 30.6%;
   --destructive-foreground: 210 20% 98%;
   --ring: 216 12.2% 83.9%;
+  --success: 174deg 100% 27%;
+  --warning: 4deg 82% 58%;
 }

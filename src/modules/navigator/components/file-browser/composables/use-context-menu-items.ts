@@ -23,6 +23,11 @@ const CONTEXT_MENU_ITEMS: ContextMenuItemConfig[] = [
     entryTypes: ['file', 'directory'],
   },
   {
+    action: 'paste',
+    selectionTypes: ['single', 'multiple'],
+    entryTypes: ['file', 'directory'],
+  },
+  {
     action: 'delete',
     selectionTypes: ['single', 'multiple'],
     entryTypes: ['file', 'directory'],
