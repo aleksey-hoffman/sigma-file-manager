@@ -28,16 +28,31 @@ const settingsStore = useSettingsStore();
 
 <style scoped>
 .settings-nav {
+  position: sticky;
+  top: 0;
   display: flex;
+  max-height: calc(100vh - var(--window-toolbar-height));
   flex-direction: column;
+  align-self: start;
   padding-right: 1rem;
   border-right: 1px solid hsl(var(--border));
   gap: 1rem;
+  overflow-y: auto;
 }
 
 .settings-nav__items {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+}
+
+@media (width <= 768px) {
+  .settings-nav {
+    position: static;
+    max-height: none;
+    padding-right: 0;
+    border-right: none;
+    overflow-y: visible;
+  }
 }
 </style>
