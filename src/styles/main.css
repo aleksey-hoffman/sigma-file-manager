@@ -1,17 +1,5 @@
 @import "./preflight.css";
 
-.shortcut {
-  padding: 2px 6px;
-  border-radius: var(--radius-sm);
-  margin-left: 8px;
-  background-color: hsl(var(--foreground) / 15%);
-  color: hsl(var(--foreground) / 80%);
-  font-family: inherit;
-  font-size: 12px;
-  font-weight: 500;
-  line-height: 1.5;
-}
-
 @layer base {
   /* Override preflight default hover cursor for buttons and button-like elements */
   button:not(:disabled),
@@ -41,6 +29,7 @@
     white-space: nowrap;
   }
 
+  /* Shared keyframes */
   @keyframes sigma-ui-fade-in {
     from {
       opacity: 0;
@@ -48,6 +37,40 @@
 
     to {
       opacity: 1;
+    }
+  }
+
+  @keyframes sigma-ui-fade-out {
+    from {
+      opacity: 1;
+    }
+
+    to {
+      opacity: 0;
+    }
+  }
+
+  @keyframes sigma-ui-fade-in-scale {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes sigma-ui-fade-out-scale {
+    from {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    to {
+      opacity: 0;
+      transform: scale(0.95);
     }
   }
 
@@ -81,14 +104,36 @@
     }
   }
 
+  @keyframes sigma-ui-accordion-up {
+    from {
+      height: var(--reka-accordion-content-height);
+    }
+
+    to {
+      height: 0;
+    }
+  }
+
+  @keyframes sigma-ui-accordion-down {
+    from {
+      height: 0;
+    }
+
+    to {
+      height: var(--reka-accordion-content-height);
+    }
+  }
+
+  /* CSS animations */
   .animate-fade-in {
     animation: sigma-ui-fade-in 0.5s ease;
   }
 
-  .animate-spin {
+  .animate-sigma-ui-spin {
     animation: sigma-ui-spin 1s linear infinite;
   }
 
+  /* Vue transitions */
   .fade-slide-top-enter-active,
   .fade-slide-top-leave-active {
     transition: all 0.3s ease;

@@ -1,0 +1,11 @@
+.shortcut {
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  margin-left: 8px;
+  background-color: hsl(var(--foreground) / 15%);
+  color: hsl(var(--foreground) / 80%);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.5;
+}

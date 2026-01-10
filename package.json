@@ -43,7 +43,7 @@
     "lucide-vue-next": "^0.525.0",
     "minimatch": "^10.1.1",
     "pinia": "^3.0.3",
-    "reka-ui": "^2.6.0",
+    "reka-ui": "^2.7.0",
     "tailwindcss": "^4.1.11",
     "v-wave": "^3.0.3",
     "vue": "^3.5.17",

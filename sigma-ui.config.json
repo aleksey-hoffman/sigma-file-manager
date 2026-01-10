@@ -1,7 +1,7 @@
 {
   "$schema": "https://sigma-ui.dev/schema.json",
   "styleSystem": "css",
-  "tsConfigPath": "./tsconfig.json",
+  "tsConfigPath": "tsconfig.json",
   "setupTailwind": false,
   "framework": "vite",
   "cssPath": "src/assets/index.css",
@@ -10,8 +10,9 @@
     "config": ""
   },
   "aliases": {
-    "utils": "",
+    "utils": "@/lib/utils",
     "components": "@/components/ui"
   },
-  "generatePreflight": true
+  "generatePreflight": true,
+  "componentNaming": "kebab-case"
 }
