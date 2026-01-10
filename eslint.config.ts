@@ -2,7 +2,6 @@ import { globalIgnores } from 'eslint/config';
 import { defineConfigWithVueTs, vueTsConfigs } from '@vue/eslint-config-typescript';
 import pluginVue from 'eslint-plugin-vue';
 import pluginVitest from '@vitest/eslint-plugin';
-import pluginOxlint from 'eslint-plugin-oxlint';
 import pluginStylistic from '@stylistic/eslint-plugin';
 import checkFile from 'eslint-plugin-check-file';
 import pluginVueI18n from '@intlify/eslint-plugin-vue-i18n';
@@ -18,7 +17,6 @@ export default defineConfigWithVueTs(
     ...pluginVitest.configs.recommended,
     files: ['src/**/__tests__/*'],
   },
-  ...pluginOxlint.configs['flat/recommended'],
   {
     files: ['**/*.{ts,mts,tsx,vue}'],
     plugins: {
