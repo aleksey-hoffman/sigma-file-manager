@@ -7,7 +7,6 @@ import path from 'node:path';
 import readdirp from 'readdirp';
 
 const directories = ['src', 'src-tauri'];
-const files = ['*.vue', '*.html', '*.js', '*.ts', '*.rs'];
 const htmlTypeCommentExtensions = ['.vue', '.html'];
 const lineTypeCommentExtensions = ['.js', '.ts', '.rs'];
 const SPDXIdentifier = 'SPDX-License-Identifier';

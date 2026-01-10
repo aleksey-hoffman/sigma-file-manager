@@ -5,11 +5,11 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 
-export type DismissalLayerType =
-  | 'clipboard'
-  | 'selection'
-  | 'filter'
-  | 'custom';
+export type DismissalLayerType
+  = | 'clipboard'
+    | 'selection'
+    | 'filter'
+    | 'custom';
 
 export interface DismissalLayer {
   id: string;
@@ -58,6 +58,7 @@ export const useDismissalLayerStore = defineStore('dismissalLayer', () => {
 
   function dismissTopLayer(): boolean {
     const sorted = sortedLayers.value;
+
     if (sorted.length === 0) {
       return false;
     }

@@ -69,6 +69,8 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
         show: false,
       },
       showHiddenFiles: false,
+      useSystemIconsForDirectories: false,
+      useSystemIconsForFiles: false,
     },
     UIZoomLevel: 1.0,
     homeBannerIndex: 0,

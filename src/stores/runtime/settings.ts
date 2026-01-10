@@ -137,12 +137,16 @@ export const useSettingsStore = defineStore('settings', () => {
       { default: ThemeSection },
       { default: DriveCardSection },
       { default: VisualEffectsSection },
+      { default: SystemIconsSection },
+      { default: ShowHiddenItemsSection },
     ] = await Promise.all([
       import('@/modules/settings/ui/categories/general/language.vue'),
       import('@/modules/settings/ui/categories/general/window-scaling.vue'),
       import('@/modules/settings/ui/categories/appearance/theme.vue'),
       import('@/modules/settings/ui/categories/appearance/drive-card.vue'),
       import('@/modules/settings/ui/categories/appearance/visual-effects.vue'),
+      import('@/modules/settings/ui/categories/appearance/system-icons.vue'),
+      import('@/modules/settings/ui/categories/appearance/show-hidden-items.vue'),
     ]);
 
     sections.value = [
@@ -179,6 +183,20 @@ export const useSettingsStore = defineStore('settings', () => {
         titleKey: 'settings.uiElements.showDriveSpaceIndicator',
         tags: 'settingsTags.driveCard',
         component: markRaw(DriveCardSection),
+        category: 'appearance',
+      },
+      {
+        key: 'systemIcons',
+        titleKey: 'settings.navigator.systemIcons',
+        tags: 'settingsTags.systemIcons',
+        component: markRaw(SystemIconsSection),
+        category: 'appearance',
+      },
+      {
+        key: 'showHiddenItems',
+        titleKey: 'filter.showHiddenItems',
+        tags: 'settingsTags.navigator',
+        component: markRaw(ShowHiddenItemsSection),
         category: 'appearance',
       },
     ];

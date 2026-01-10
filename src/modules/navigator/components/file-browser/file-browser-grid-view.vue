@@ -15,10 +15,9 @@ import {
 } from 'lucide-vue-next';
 import type { DirEntry } from '@/types/dir-entry';
 import type { GroupedEntries } from './types';
-import {
-  getFileIcon, getImageSrc, formatBytes, isImageFile, isVideoFile,
-} from './utils';
+import { getImageSrc, formatBytes, isImageFile, isVideoFile } from './utils';
 import { useClipboardStore } from '@/stores/runtime/clipboard';
+import FileBrowserEntryIcon from './file-browser-entry-icon.vue';
 
 const props = defineProps<{
   entries: DirEntry[];
@@ -33,9 +32,11 @@ const { clipboardItems, clipboardType } = storeToRefs(clipboardStore);
 
 const clipboardPathsMap = computed(() => {
   const map = new Map<string, string>();
+
   for (const item of clipboardItems.value) {
     map.set(item.path, clipboardType.value || '');
   }
+
   return map;
 });
 
@@ -107,7 +108,8 @@ const groupedEntries = computed<GroupedEntries>(() => {
             <div class="file-browser-grid-view__overlay file-browser-grid-view__overlay--hover" />
           </div>
           <div class="file-browser-grid-view__card-preview">
-            <FolderIcon
+            <FileBrowserEntryIcon
+              :entry="entry"
               :size="24"
               class="file-browser-grid-view__card-icon file-browser-grid-view__card-icon--folder"
             />
@@ -245,8 +247,8 @@ const groupedEntries = computed<GroupedEntries>(() => {
             <div class="file-browser-grid-view__overlay file-browser-grid-view__overlay--hover" />
           </div>
           <div class="file-browser-grid-view__card-preview">
-            <component
-              :is="getFileIcon(entry)"
+            <FileBrowserEntryIcon
+              :entry="entry"
               :size="32"
               class="file-browser-grid-view__card-icon"
             />
@@ -498,6 +500,21 @@ const groupedEntries = computed<GroupedEntries>(() => {
   background-color: hsl(var(--warning) / 10%);
   box-shadow: inset 0 0 0 2px hsl(var(--warning) / 60%);
   opacity: 1;
+}
+
+.file-browser-grid-view__card[data-selected][data-in-clipboard][data-clipboard-type="move"] .file-browser-grid-view__card-name,
+.file-browser-grid-view__card[data-selected][data-in-clipboard][data-clipboard-type="move"] .file-browser-grid-view__card-meta {
+  color: hsl(var(--warning));
+}
+
+.file-browser-grid-view__card[data-in-clipboard][data-clipboard-type="copy"] .file-browser-grid-view__card-name,
+.file-browser-grid-view__card[data-in-clipboard][data-clipboard-type="copy"] .file-browser-grid-view__card-meta {
+  color: hsl(var(--success));
+}
+
+.file-browser-grid-view__card[data-in-clipboard][data-clipboard-type="move"] .file-browser-grid-view__card-name,
+.file-browser-grid-view__card[data-in-clipboard][data-clipboard-type="move"] .file-browser-grid-view__card-meta {
+  color: hsl(var(--warning));
 }
 
 .file-browser-grid-view__card--image[data-in-clipboard][data-clipboard-type="copy"] .file-browser-grid-view__overlay--clipboard {

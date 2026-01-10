@@ -34,17 +34,25 @@ export async function migrateStorageSchema(params: {
   } = params;
 
   const storedSchemaVersionValue = await storage.get<unknown>(schemaVersionKey);
-  let storedSchemaVersion = normalizeSchemaVersion(storedSchemaVersionValue);
+  const normalizedStoredSchemaVersion = normalizeSchemaVersion(storedSchemaVersionValue);
+  let storedSchemaVersion = normalizedStoredSchemaVersion;
   storedSchemaVersion = Math.min(storedSchemaVersion, latestSchemaVersion);
+
+  let didMigrate = false;
 
   while (storedSchemaVersion < latestSchemaVersion) {
     const nextSchemaVersion = storedSchemaVersion + 1;
     await migrateStep(storage, storedSchemaVersion, nextSchemaVersion);
     storedSchemaVersion = nextSchemaVersion;
+    didMigrate = true;
   }
 
-  await storage.set(schemaVersionKey, latestSchemaVersion);
-  await storage.save();
+  const shouldPersistSchemaVersion = didMigrate || normalizedStoredSchemaVersion !== latestSchemaVersion;
+
+  if (shouldPersistSchemaVersion) {
+    await storage.set(schemaVersionKey, latestSchemaVersion);
+    await storage.save();
+  }
 }
 
 export function getString(value: unknown, fallback: string): string {

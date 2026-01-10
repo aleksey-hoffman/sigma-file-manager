@@ -50,7 +50,7 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
   ));
 
   const tabGroupCount: ComputedRef<number> = computed(() => (
-    (currentWorkspace.value?.tabGroups?.length && currentWorkspace.value?.tabGroups?.length) || 0
+    currentWorkspace.value?.tabGroups?.length || 0
   ));
 
   const tabs: ComputedRef<Tab[]> = computed(() => (

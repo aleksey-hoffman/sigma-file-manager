@@ -8,8 +8,9 @@ import { storeToRefs } from 'pinia';
 import { useI18n } from 'vue-i18n';
 import { computed } from 'vue';
 import type { DirEntry } from '@/types/dir-entry';
-import { getFileIcon, formatBytes, formatDate } from './utils';
+import { formatBytes, formatDate } from './utils';
 import { useClipboardStore } from '@/stores/runtime/clipboard';
+import FileBrowserEntryIcon from './file-browser-entry-icon.vue';
 
 defineProps<{
   entries: DirEntry[];
@@ -23,9 +24,11 @@ const { clipboardItems, clipboardType } = storeToRefs(clipboardStore);
 
 const clipboardPathsMap = computed(() => {
   const map = new Map<string, string>();
+
   for (const item of clipboardItems.value) {
     map.set(item.path, clipboardType.value || '');
   }
+
   return map;
 });
 
@@ -71,8 +74,8 @@ const { t } = useI18n();
           <div class="file-browser-list-view__overlay file-browser-list-view__overlay--hover" />
         </div>
         <div class="file-browser-list-view__entry-name">
-          <component
-            :is="getFileIcon(entry)"
+          <FileBrowserEntryIcon
+            :entry="entry"
             :size="18"
             class="file-browser-list-view__entry-icon"
             :class="{ 'file-browser-list-view__entry-icon--folder': entry.is_dir }"
@@ -99,7 +102,7 @@ const { t } = useI18n();
 
 .file-browser-list-view__header {
   position: sticky;
-  z-index: 1;
+  z-index: 2;
   top: 0;
   display: grid;
   padding: 10px 16px;
@@ -230,6 +233,24 @@ const { t } = useI18n();
   background-color: hsl(var(--warning) / 10%);
   box-shadow: inset 0 0 0 1px hsl(var(--warning) / 50%), inset 3px 0 0 0 hsl(var(--warning) / 70%);
   opacity: 1;
+}
+
+.file-browser-list-view__entry[data-selected][data-in-clipboard][data-clipboard-type="move"] .file-browser-list-view__entry-text,
+.file-browser-list-view__entry[data-selected][data-in-clipboard][data-clipboard-type="move"] .file-browser-list-view__entry-size,
+.file-browser-list-view__entry[data-selected][data-in-clipboard][data-clipboard-type="move"] .file-browser-list-view__entry-modified {
+  color: hsl(var(--warning));
+}
+
+.file-browser-list-view__entry[data-in-clipboard][data-clipboard-type="copy"] .file-browser-list-view__entry-text,
+.file-browser-list-view__entry[data-in-clipboard][data-clipboard-type="copy"] .file-browser-list-view__entry-size,
+.file-browser-list-view__entry[data-in-clipboard][data-clipboard-type="copy"] .file-browser-list-view__entry-modified {
+  color: hsl(var(--success));
+}
+
+.file-browser-list-view__entry[data-in-clipboard][data-clipboard-type="move"] .file-browser-list-view__entry-text,
+.file-browser-list-view__entry[data-in-clipboard][data-clipboard-type="move"] .file-browser-list-view__entry-size,
+.file-browser-list-view__entry[data-in-clipboard][data-clipboard-type="move"] .file-browser-list-view__entry-modified {
+  color: hsl(var(--warning));
 }
 
 .file-browser-list-view__overlay--hover {

@@ -28,9 +28,11 @@ function getParentPath(path: string): string {
   // Normalize path separators
   const normalizedPath = path.replace(/\\/g, '/');
   const lastSeparatorIndex = normalizedPath.lastIndexOf('/');
+
   if (lastSeparatorIndex <= 0) {
     return normalizedPath;
   }
+
   return normalizedPath.substring(0, lastSeparatorIndex);
 }
 
@@ -75,10 +77,12 @@ export const useClipboardStore = defineStore('clipboard', () => {
 
   function addToClipboard(type: ClipboardOperationType, items: DirEntry[]) {
     clipboardType.value = type;
+
     for (const item of items) {
       const itemAlreadyAdded = clipboardItems.value.some(
         clipboardItem => clipboardItem.path === item.path,
       );
+
       if (!itemAlreadyAdded) {
         clipboardItems.value.push({ ...item });
       }
@@ -89,6 +93,7 @@ export const useClipboardStore = defineStore('clipboard', () => {
     clipboardItems.value = clipboardItems.value.filter(
       clipboardItem => clipboardItem.path !== item.path,
     );
+
     if (clipboardItems.value.length === 0) {
       clearClipboard();
     }
@@ -113,6 +118,7 @@ export const useClipboardStore = defineStore('clipboard', () => {
     if (!sourceDirectory.value) {
       return false;
     }
+
     return normalizePath(destinationPath) === normalizePath(sourceDirectory.value);
   }
 
@@ -126,6 +132,7 @@ export const useClipboardStore = defineStore('clipboard', () => {
       if (!item.is_dir) {
         return false;
       }
+
       const normalizedItemPath = normalizePath(item.path);
       return normalizedDest.startsWith(normalizedItemPath + '/');
     });
@@ -154,16 +161,25 @@ export const useClipboardStore = defineStore('clipboard', () => {
 
   async function pasteItems(destinationPath: string): Promise<FileOperationResult> {
     if (!hasItems.value) {
-      return { success: false, error: 'No items in clipboard' };
+      return {
+        success: false,
+        error: 'No items in clipboard',
+      };
     }
 
     // Validate paste operation
     if (isDestinationInsideClipboardItem(destinationPath)) {
-      return { success: false, error: 'Cannot paste a folder into itself' };
+      return {
+        success: false,
+        error: 'Cannot paste a folder into itself',
+      };
     }
 
     if (isMoveOperation.value && isSameAsSourceDirectory(destinationPath)) {
-      return { success: false, error: 'Cannot move items to the same directory' };
+      return {
+        success: false,
+        error: 'Cannot move items to the same directory',
+      };
     }
 
     const sourcePaths = clipboardItems.value.map(item => item.path);
@@ -191,10 +207,16 @@ export const useClipboardStore = defineStore('clipboard', () => {
         return result;
       }
 
-      return { success: false, error: 'Invalid clipboard operation type' };
+      return {
+        success: false,
+        error: 'Invalid clipboard operation type',
+      };
     }
     catch (error) {
-      return { success: false, error: String(error) };
+      return {
+        success: false,
+        error: String(error),
+      };
     }
     finally {
       isOperationInProgress.value = false;

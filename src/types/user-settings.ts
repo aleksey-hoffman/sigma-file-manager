@@ -108,6 +108,8 @@ export type UserSettingsNavigator = {
   layout: NavigatorLayout;
   infoPanel: UserSettingsNavigatorInfoPanel;
   showHiddenFiles: boolean;
+  useSystemIconsForDirectories: boolean;
+  useSystemIconsForFiles: boolean;
 };
 
 export type UserSettingsNavigatorInfoPanel = {

@@ -29,3 +29,8 @@ tauri-plugin-os = "2"
 tauri-plugin-dialog = "2"
 sysinfo = "0.37"
 trash = "5.2.5"
+base64 = "0.22"
+file_icon_provider = "1.0.0"
+image = { version = "0.25", default-features = false, features = ["png"] }
+lru = "0.12"
+once_cell = "1.19"
