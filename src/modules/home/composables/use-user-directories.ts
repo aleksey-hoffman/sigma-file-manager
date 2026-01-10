@@ -98,7 +98,7 @@ export const userDirectoryIconNames = [
 export type UserDirectoryIconName = typeof userDirectoryIconNames[number];
 
 export function getIconComponent(iconName: string): Component {
-  const icons = LucideIcons as Record<string, Component>;
+  const icons = LucideIcons as unknown as Record<string, Component>;
   return icons[iconName] || LucideIcons.FolderIcon;
 }
 
