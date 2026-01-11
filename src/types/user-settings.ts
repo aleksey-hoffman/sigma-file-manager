@@ -59,6 +59,28 @@ export type InfusionSettings = {
   pages: Record<InfusionPage, InfusionPageSettings>;
 };
 
+export type ShortcutKeys = {
+  ctrl?: boolean;
+  alt?: boolean;
+  shift?: boolean;
+  meta?: boolean;
+  key: string;
+};
+
+export type ShortcutId
+  = 'toggleGlobalSearch'
+    | 'toggleFilter'
+    | 'copy'
+    | 'cut'
+    | 'paste'
+    | 'selectAll'
+    | 'delete'
+    | 'deletePermanently'
+    | 'rename'
+    | 'escape';
+
+export type UserShortcuts = Partial<Record<ShortcutId, ShortcutKeys>>;
+
 export type UserSettings = {
   language: LocalizationLanguage;
   theme: Theme;
@@ -73,6 +95,7 @@ export type UserSettings = {
   userDirectories: UserDirectoriesCustomizations;
   infusion: InfusionSettings;
   settingsCurrentTab: string;
+  shortcuts?: UserShortcuts;
 };
 
 export type UserSettingsGlobalSearch = {

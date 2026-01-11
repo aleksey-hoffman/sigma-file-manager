@@ -694,7 +694,8 @@
     "globalShortcutsTriggerActionsWhenNotFocused": "Глобальные шорткаты будут запускать действия, даже если приложение не сфокусировано.",
     "changeShortcut": "Изменить шорткат",
     "resetShortcut": "Сбросить шорткат",
-    "localShortcutsAppScope": "Локальные шорткаты (в приложении)"
+    "localShortcutsAppScope": "Локальные шорткаты (в приложении)",
+    "whenConditionTooltip": "Условия, которые должны быть выполнены для срабатывания этого шортката"
   },
   "shortcuts": {
     "openCloseTheAppWindow": "Открыть/закрыть окно приложения",
@@ -955,7 +956,7 @@
       "changeShortcut": "Изменить шорткат",
       "shortcutEditor": "Редактор шорткатов",
       "shortcut": "Шорткат",
-      "shortcutIsACombination": "Шорткат — это комбинация",
+      "pressDesiredKeyCombination": "Нажмите нужную комбинацию клавиш, затем нажмите ENTER",
       "modifierKeys": "1-4 клавиши-модификаторы: [Ctrl, Alt, Shift, Meta]",
       "regularKey": "1 обычный ключ",
       "examples": "Примеры",
@@ -1327,6 +1328,7 @@
   "drives": "Диски",
   "locations": "Места",
   "reset": "Сброс настроек",
+  "resetAll": "Сбросить все",
   "loading": "Загрузка",
   "loadingDots": "Загружается...",
   "warning": "Предупреждение",
@@ -1482,6 +1484,10 @@
   "freeOf": "свободно из",
   "terminal": "Терминал",
   "conflict": "Конфликт",
+  "command": "Команда",
+  "keybinding": "Сочетание клавиш",
+  "when": "Когда",
+  "source": "Источник",
   "fileBrowser": {
     "goBack": "Назад",
     "goForward": "Вперёд",

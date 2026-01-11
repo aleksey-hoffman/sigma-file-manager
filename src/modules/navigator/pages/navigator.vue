@@ -17,6 +17,7 @@ import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { useClipboardStore } from '@/stores/runtime/clipboard';
 import { useDismissalLayerStore } from '@/stores/runtime/dismissal-layer';
 import { useGlobalSearchStore } from '@/stores/runtime/global-search';
+import { useShortcutsStore } from '@/stores/runtime/shortcuts';
 import { FileBrowser } from '@/modules/navigator/components/file-browser';
 import { InfoPanel } from '@/modules/navigator/components/info-panel';
 import { NavigatorToolbarActions } from '@/modules/navigator/components/navigator-toolbar-actions';
@@ -34,6 +35,7 @@ const userSettingsStore = useUserSettingsStore();
 const clipboardStore = useClipboardStore();
 const dismissalLayerStore = useDismissalLayerStore();
 const globalSearchStore = useGlobalSearchStore();
+const shortcutsStore = useShortcutsStore();
 
 const paneRefsMap = ref<Map<string, FileBrowserInstance>>(new Map());
 const singlePaneRef = ref<FileBrowserInstance | null>(null);
@@ -122,6 +124,28 @@ function getSelectedEntries(pane: FileBrowserInstance): DirEntry[] {
   return [];
 }
 
+function getActivePaneRef(): FileBrowserInstance | undefined {
+  if (!isSplitView.value) {
+    return singlePaneRef.value || Array.from(paneRefsMap.value.values())[0];
+  }
+
+  return Array.from(paneRefsMap.value.values())[0];
+}
+
+async function handleGlobalSearchOpenEntry(entry: DirEntry) {
+  const pane = getActivePaneRef();
+  if (!pane) return;
+
+  if (entry.is_dir && pane.navigateToPath) {
+    await pane.navigateToPath(entry.path);
+  }
+  else if (entry.is_file && pane.openFile) {
+    await pane.openFile(entry.path);
+  }
+
+  globalSearchStore.close();
+}
+
 function handleFilterShortcut() {
   if (!isSplitView.value) {
     const pane = singlePaneRef.value || Array.from(paneRefsMap.value.values())[0];
@@ -157,28 +181,6 @@ function handleFilterShortcut() {
   else {
     secondPane.closeFilter();
   }
-}
-
-function getActivePaneRef(): FileBrowserInstance | undefined {
-  if (!isSplitView.value) {
-    return singlePaneRef.value || Array.from(paneRefsMap.value.values())[0];
-  }
-
-  return Array.from(paneRefsMap.value.values())[0];
-}
-
-async function handleGlobalSearchOpenEntry(entry: DirEntry) {
-  const pane = getActivePaneRef();
-  if (!pane) return;
-
-  if (entry.is_dir && pane.navigateToPath) {
-    await pane.navigateToPath(entry.path);
-  }
-  else if (entry.is_file && pane.openFile) {
-    await pane.openFile(entry.path);
-  }
-
-  globalSearchStore.close();
 }
 
 function handleCopyShortcut() {
@@ -217,13 +219,23 @@ function handleSelectAllShortcut() {
   }
 }
 
-async function handleDeleteShortcut(useTrash: boolean = true) {
+async function handleDeleteShortcut() {
   const pane = getActivePaneRef();
   if (!pane) return;
   const entriesArray = getSelectedEntries(pane);
 
   if (entriesArray && entriesArray.length > 0) {
-    await pane.deleteItems(entriesArray, useTrash);
+    await pane.deleteItems(entriesArray, true);
+  }
+}
+
+async function handleDeletePermanentlyShortcut() {
+  const pane = getActivePaneRef();
+  if (!pane) return;
+  const entriesArray = getSelectedEntries(pane);
+
+  if (entriesArray && entriesArray.length > 0) {
+    await pane.deleteItems(entriesArray, false);
   }
 }
 
@@ -262,81 +274,47 @@ function handleEscapeKey(): boolean {
   return false;
 }
 
-function isInputFocused(): boolean {
-  const activeElement = document.activeElement;
-  if (!activeElement) return false;
-  const tagName = activeElement.tagName.toLowerCase();
-  return tagName === 'input' || tagName === 'textarea' || (activeElement as HTMLElement).isContentEditable;
+function hasSelectedItems(): boolean {
+  return selectedEntries.value.length > 0;
 }
 
-function handleKeydown(event: KeyboardEvent) {
-  const isCtrlOrMeta = event.ctrlKey || event.metaKey;
-  const normalizedKey = event.key.toLowerCase();
+function registerShortcutHandlers() {
+  shortcutsStore.registerHandler('toggleFilter', handleFilterShortcut);
+  shortcutsStore.registerHandler('copy', handleCopyShortcut);
+  shortcutsStore.registerHandler('cut', handleCutShortcut);
+  shortcutsStore.registerHandler('paste', handlePasteShortcut);
+  shortcutsStore.registerHandler('selectAll', handleSelectAllShortcut);
+  shortcutsStore.registerHandler('delete', handleDeleteShortcut);
+  shortcutsStore.registerHandler('deletePermanently', handleDeletePermanentlyShortcut);
+  shortcutsStore.registerHandler('rename', () => {
+    const pane = getActivePaneRef();
 
-  if (event.key === 'Escape') {
-    const handled = handleEscapeKey();
-
-    if (handled) {
-      event.preventDefault();
-      event.stopPropagation();
+    if (pane && selectedEntries.value.length > 0) {
+      pane.startRename(selectedEntries.value[0]);
     }
+  }, { checkItemSelected: hasSelectedItems });
+  shortcutsStore.registerHandler('escape', handleEscapeKey);
+}
 
-    return;
-  }
-
-  if (isCtrlOrMeta && !event.shiftKey && (event.code === 'KeyF' || normalizedKey === 'f')) {
-    event.preventDefault();
-    event.stopPropagation();
-    handleFilterShortcut();
-    return;
-  }
-
-  if (isInputFocused()) {
-    return;
-  }
-
-  if (isCtrlOrMeta && (event.code === 'KeyC' || normalizedKey === 'c')) {
-    event.preventDefault();
-    event.stopPropagation();
-    handleCopyShortcut();
-    return;
-  }
-
-  if (isCtrlOrMeta && (event.code === 'KeyX' || normalizedKey === 'x')) {
-    event.preventDefault();
-    event.stopPropagation();
-    handleCutShortcut();
-    return;
-  }
-
-  if (isCtrlOrMeta && (event.code === 'KeyV' || normalizedKey === 'v')) {
-    event.preventDefault();
-    event.stopPropagation();
-    handlePasteShortcut();
-    return;
-  }
-
-  if (isCtrlOrMeta && (event.code === 'KeyA' || normalizedKey === 'a')) {
-    event.preventDefault();
-    event.stopPropagation();
-    handleSelectAllShortcut();
-    return;
-  }
-
-  if (event.key === 'Delete' || event.code === 'Delete') {
-    event.preventDefault();
-    event.stopPropagation();
-    handleDeleteShortcut(!event.shiftKey);
-  }
+function unregisterShortcutHandlers() {
+  shortcutsStore.unregisterHandler('toggleFilter');
+  shortcutsStore.unregisterHandler('copy');
+  shortcutsStore.unregisterHandler('cut');
+  shortcutsStore.unregisterHandler('paste');
+  shortcutsStore.unregisterHandler('selectAll');
+  shortcutsStore.unregisterHandler('delete');
+  shortcutsStore.unregisterHandler('deletePermanently');
+  shortcutsStore.unregisterHandler('rename');
+  shortcutsStore.unregisterHandler('escape');
 }
 
 onMounted(() => {
-  document.addEventListener('keydown', handleKeydown, { capture: true });
+  registerShortcutHandlers();
   smallScreenMediaQuery.addEventListener('change', handleSmallScreenChange);
 });
 
 onUnmounted(() => {
-  document.removeEventListener('keydown', handleKeydown, { capture: true });
+  unregisterShortcutHandlers();
   smallScreenMediaQuery.removeEventListener('change', handleSmallScreenChange);
 });
 </script>

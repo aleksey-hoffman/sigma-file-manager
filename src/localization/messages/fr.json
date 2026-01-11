@@ -694,7 +694,8 @@
     "globalShortcutsTriggerActionsWhenNotFocused": "Les raccourcis globaux déclencheront des actions même lorsque l'application n'est pas ciblée.",
     "changeShortcut": "Changer de raccourci",
     "resetShortcut": "Réinitialiser le raccourci",
-    "localShortcutsAppScope": "Raccourcis locaux (portée de l'application)"
+    "localShortcutsAppScope": "Raccourcis locaux (portée de l'application)",
+    "whenConditionTooltip": "Conditions qui doivent être remplies pour que ce raccourci se déclenche"
   },
   "shortcuts": {
     "openCloseTheAppWindow": "Ouvrir / fermer la fenêtre de l'application",
@@ -955,7 +956,7 @@
       "changeShortcut": "Changer de raccourci",
       "shortcutEditor": "Éditeur de raccourcis",
       "shortcut": "Raccourci",
-      "shortcutIsACombination": "Un raccourci est une combinaison de",
+      "pressDesiredKeyCombination": "Appuyez sur la combinaison de touches souhaitée puis appuyez sur ENTRÉE",
       "modifierKeys": "Touches de modification 1-4 : [Ctrl, Alt, Maj, Meta]",
       "regularKey": "1 clé normale",
       "examples": "Exemples",
@@ -1327,6 +1328,7 @@
   "drives": "Disques",
   "locations": "Emplacements",
   "reset": "Réinitialiser",
+  "resetAll": "Tout réinitialiser",
   "loading": "Chargement",
   "loadingDots": "Chargement...",
   "warning": "Avertissement",
@@ -1482,6 +1484,10 @@
   "freeOf": "libres sur",
   "terminal": "Terminal",
   "conflict": "Conflit",
+  "command": "Commande",
+  "keybinding": "Raccourci clavier",
+  "when": "Quand",
+  "source": "Source",
   "fileBrowser": {
     "goBack": "Retour",
     "goForward": "Avancer",

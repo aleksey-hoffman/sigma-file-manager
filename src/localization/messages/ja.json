@@ -694,7 +694,8 @@
     "globalShortcutsTriggerActionsWhenNotFocused": "グローバル ショートカットは、アプリがフォーカスされていなくてもアクションをトリガーします。",
     "changeShortcut": "ショートカットを変更",
     "resetShortcut": "ショートカットをリセット",
-    "localShortcutsAppScope": "ローカル ショートカット (アプリ スコープ)"
+    "localShortcutsAppScope": "ローカル ショートカット (アプリ スコープ)",
+    "whenConditionTooltip": "このショートカットをトリガーするために満たすべき条件"
   },
   "shortcuts": {
     "openCloseTheAppWindow": "アプリ ウィンドウを開く / 閉じる",
@@ -955,7 +956,7 @@
       "changeShortcut": "ショートカットを変更",
       "shortcutEditor": "ショートカットエディタ",
       "shortcut": "ショートカット",
-      "shortcutIsACombination": "ショートカットはの組み合わせです",
+      "pressDesiredKeyCombination": "目的のキーの組み合わせを押してから ENTER を押してください",
       "modifierKeys": "1 ～ 4 個の修飾キー: [Ctrl、Alt、Shift、Meta]",
       "regularKey": "通常のキー 1 個",
       "examples": "例",
@@ -1327,6 +1328,7 @@
   "drives": "ドライブ",
   "locations": "場所",
   "reset": "リセット",
+  "resetAll": "すべてリセット",
   "loading": "読み込み中",
   "loadingDots": "読み込んでいます...",
   "warning": "警告",
@@ -1482,6 +1484,10 @@
   "freeOf": "から自由である",
   "terminal": "ターミナル",
   "conflict": "コンフリクト",
+  "command": "コマンド",
+  "keybinding": "キーバインド",
+  "when": "条件",
+  "source": "ソース",
   "fileBrowser": {
     "goBack": "戻る",
     "goForward": "進む",

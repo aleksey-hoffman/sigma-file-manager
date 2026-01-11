@@ -694,7 +694,8 @@
   "globalShortcutsTriggerActionsWhenNotFocused": "Atalhos globais acionarão ações mesmo quando o aplicativo não estiver em foco",
   "changeShortcut": "Alterar atalho",
   "resetShortcut": "Redefinir atalho",
-  "localShortcutsAppScope": "Atalhos locais (escopo do aplicativo)"
+  "localShortcutsAppScope": "Atalhos locais (escopo do aplicativo)",
+  "whenConditionTooltip": "Condições que devem ser atendidas para que este atalho seja acionado"
 },
 "shortcuts": {
   "openCloseTheAppWindow": "Abrir/fechar a janela do aplicativo",
@@ -955,7 +956,7 @@
     "changeShortcut": "Alterar atalho",
     "shortcutEditor": "Editor de atalho",
     "shortcut": "Atalho",
-    "shortcutIsACombination": "Um atalho é uma combinação de",
+    "pressDesiredKeyCombination": "Pressione a combinação de teclas desejada e depois pressione ENTER",
     "modifierKeys": "1-4 teclas modificadoras: [Ctrl, Alt, Shift, Meta]",
     "regularKey": "1 chave normal",
     "examples": "Exemplos",
@@ -1327,6 +1328,7 @@
 "drives": "unidades",
 "locations": "Locais",
 "reset": "Reiniciar",
+"resetAll": "Reiniciar tudo",
 "loading": "Carregando",
 "loadingDots": "Carregando...",
 "warning": "Aviso",
@@ -1482,6 +1484,10 @@
 "freeOf": "livre de",
 "terminal": "Terminal",
 "conflict": "Conflito",
+"command": "Comando",
+"keybinding": "Combinação de teclas",
+"when": "Quando",
+"source": "Fonte",
 "fileBrowser": {
   "goBack": "Voltar",
   "goForward": "Avançar",

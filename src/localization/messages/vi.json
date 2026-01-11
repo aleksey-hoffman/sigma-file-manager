@@ -694,7 +694,8 @@
     "globalShortcutsTriggerActionsWhenNotFocused": "Các phím tắt chung sẽ kích hoạt hành động ngay cả khi ứng dụng không được đặt tiêu điểm.",
     "changeShortcut": "Thay đổi phím tắt",
     "resetShortcut": "Đặt lại phím tắt",
-    "localShortcutsAppScope": "Phím tắt cục bộ (phạm vi ứng dụng)"
+    "localShortcutsAppScope": "Phím tắt cục bộ (phạm vi ứng dụng)",
+    "whenConditionTooltip": "Các điều kiện phải được đáp ứng để phím tắt này kích hoạt"
   },
   "shortcuts": {
     "openCloseTheAppWindow": "Mở/đóng cửa sổ ứng dụng",
@@ -955,7 +956,7 @@
       "changeShortcut": "Thay đổi phím tắt",
       "shortcutEditor": "Trình chỉnh sửa phím tắt",
       "shortcut": "Đường tắt",
-      "shortcutIsACombination": "Phím tắt là sự kết hợp của",
+      "pressDesiredKeyCombination": "Nhấn tổ hợp phím mong muốn rồi nhấn ENTER",
       "modifierKeys": "Phím bổ trợ 1-4: [Ctrl, Alt, Shift, Meta]",
       "regularKey": "1 phím thông thường",
       "examples": "Ví dụ",
@@ -1327,6 +1328,7 @@
   "drives": "Ổ đĩa",
   "locations": "Địa điểm",
   "reset": "Cài lại",
+  "resetAll": "Cài lại tất cả",
   "loading": "Đang tải",
   "loadingDots": "Đang tải...",
   "warning": "Cảnh báo",
@@ -1482,6 +1484,10 @@
   "freeOf": "miễn phí của",
   "terminal": "Đầu cuối",
   "conflict": "Xung đột",
+  "command": "Lệnh",
+  "keybinding": "Phím tắt",
+  "when": "Khi nào",
+  "source": "Nguồn",
   "fileBrowser": {
     "goBack": "Quay lại",
     "goForward": "Tiến tới",

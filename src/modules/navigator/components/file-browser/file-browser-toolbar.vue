@@ -25,6 +25,7 @@ import {
   XIcon,
 } from 'lucide-vue-next';
 import AddressBar from './address-bar.vue';
+import { useShortcutsStore } from '@/stores/runtime/shortcuts';
 
 defineProps<{
   pathInput: string;
@@ -50,6 +51,7 @@ const emit = defineEmits<{
 }>();
 
 const { t } = useI18n();
+const shortcutsStore = useShortcutsStore();
 
 const filterInputRef = ref<InstanceType<typeof Input> | null>(null);
 
@@ -178,7 +180,7 @@ function handleAddressBarNavigate(path: string) {
           </TooltipTrigger>
           <TooltipContent>
             {{ t('fileBrowser.quickSearch') }}
-            <kbd class="shortcut">Ctrl+F</kbd>
+            <kbd class="shortcut">{{ shortcutsStore.getShortcutLabel('toggleFilter') }}</kbd>
           </TooltipContent>
           <PopoverContent
             :side="'bottom'"

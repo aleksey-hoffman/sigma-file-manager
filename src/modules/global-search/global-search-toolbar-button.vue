@@ -10,11 +10,12 @@ import { SearchIcon } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import { useGlobalSearchStore } from '@/stores/runtime/global-search';
+import { useShortcutsStore } from '@/stores/runtime/shortcuts';
 
 const { t } = useI18n();
 const globalSearchStore = useGlobalSearchStore();
+const shortcutsStore = useShortcutsStore();
 const router = useRouter();
-const globalSearchShortcut = 'Ctrl+Shift+F';
 
 function handleClick() {
   if (!globalSearchStore.isOpen) {
@@ -45,7 +46,7 @@ function handleClick() {
       </TooltipTrigger>
       <TooltipContent>
         {{ t('globalSearch.globalSearch') }}
-        <kbd class="shortcut">{{ globalSearchShortcut }}</kbd>
+        <kbd class="shortcut">{{ shortcutsStore.getShortcutLabel('toggleGlobalSearch') }}</kbd>
       </TooltipContent>
     </Tooltip>
   </div>

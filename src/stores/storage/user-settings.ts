@@ -107,6 +107,7 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
       },
     },
     settingsCurrentTab: 'general',
+    shortcuts: {},
   });
 
   function createDefaultInfusionPageSettings(): InfusionPageSettings {

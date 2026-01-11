@@ -693,7 +693,8 @@
     "globalShortcutsTriggerActionsWhenNotFocused": "میانبرهای جهانی حتی زمانی که برنامه متمرکز نشده باشد، عملکردها را فعال می کند.",
     "changeShortcut": "تغییر میانبر",
     "resetShortcut": "بازنشانی میانبر",
-    "localShortcutsAppScope": "میانبرهای محلی (حوزه برنامه)"
+    "localShortcutsAppScope": "میانبرهای محلی (حوزه برنامه)",
+    "whenConditionTooltip": "شرایطی که باید برای فعال شدن این میانبر رعایت شوند"
   },
   "shortcuts": {
     "openCloseTheAppWindow": "باز کردن / بستن پنجره برنامه",
@@ -954,7 +955,7 @@
       "changeShortcut": "تغییر میانبر",
       "shortcutEditor": "ویرایشگر میانبر",
       "shortcut": "میانبر",
-      "shortcutIsACombination": "یک میانبر ترکیبی از است",
+      "pressDesiredKeyCombination": "ترکیب کلید مورد نظر را فشار دهید و سپس ENTER را فشار دهید",
       "modifierKeys": "1-4 کلید اصلاح کننده: [Ctrl، Alt، Shift، Meta]",
       "regularKey": "1 کلید معمولی",
       "examples": "مثال ها",
@@ -1326,6 +1327,7 @@
   "drives": "درایوها",
   "locations": "موقعیت ها",
   "reset": "بازنشانی",
+  "resetAll": "بازنشانی همه",
   "loading": "بارگذاری",
   "loadingDots": "بارگذاری...",
   "warning": "هشدار",
@@ -1481,6 +1483,10 @@
   "freeOf": "رایگان از",
   "terminal": "ترمینال",
   "conflict": "تضاد",
+  "command": "فرمان",
+  "keybinding": "کلید میانبر",
+  "when": "چه زمانی",
+  "source": "منبع",
   "fileBrowser": {
     "goBack": "برگشت",
     "goForward": "جلو",

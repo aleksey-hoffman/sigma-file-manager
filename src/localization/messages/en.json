@@ -694,7 +694,8 @@
     "globalShortcutsTriggerActionsWhenNotFocused": "Global shortcuts will trigger actions even when the app is not focused.",
     "changeShortcut": "Change shortcut",
     "resetShortcut": "Reset shortcut",
-    "localShortcutsAppScope": "Local shortcuts (app scope)"
+    "localShortcutsAppScope": "Local shortcuts (app scope)",
+    "whenConditionTooltip": "Conditions that must be met for this shortcut to trigger"
   },
   "shortcuts": {
     "openCloseTheAppWindow": "Open / close the app window",
@@ -955,7 +956,7 @@
       "changeShortcut": "Change shortcut",
       "shortcutEditor": "Shortcut editor",
       "shortcut": "Shortcut",
-      "shortcutIsACombination": "A shortcut is a combination of",
+      "pressDesiredKeyCombination": "Press desired key combination and then press ENTER",
       "modifierKeys": "1-4 modifier keys: [Ctrl, Alt, Shift, Meta]",
       "regularKey": "1 regular key",
       "examples": "Examples",
@@ -1327,6 +1328,7 @@
   "drives": "Drives",
   "locations": "Locations",
   "reset": "Reset",
+  "resetAll": "Reset all",
   "loading": "Loading",
   "loadingDots": "Loading...",
   "warning": "Warning",
@@ -1482,6 +1484,10 @@
   "freeOf": "free of",
   "terminal": "Terminal",
   "conflict": "Conflict",
+  "command": "Command",
+  "keybinding": "Keybinding",
+  "when": "When",
+  "source": "Source",
   "fileBrowser": {
     "goBack": "Go back",
     "goForward": "Go forward",

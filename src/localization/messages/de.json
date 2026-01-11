@@ -694,7 +694,8 @@
     "globalShortcutsTriggerActionsWhenNotFocused": "Globale Verknüpfungen lösen Aktionen aus, auch wenn die App nicht fokussiert ist.",
     "changeShortcut": "Verknüpfung ändern",
     "resetShortcut": "Verknüpfung zurücksetzen",
-    "localShortcutsAppScope": "Lokale Verknüpfungen (Anwendungsbereich)"
+    "localShortcutsAppScope": "Lokale Verknüpfungen (Anwendungsbereich)",
+    "whenConditionTooltip": "Bedingungen, die erfüllt sein müssen, damit diese Verknüpfung ausgelöst wird"
   },
   "shortcuts": {
     "openCloseTheAppWindow": "App-Fenster öffnen / schließen",
@@ -955,7 +956,7 @@
       "changeShortcut": "Verknüpfung ändern",
       "shortcutEditor": "Shortcut-Editor",
       "shortcut": "Abkürzung",
-      "shortcutIsACombination": "Ein Shortcut ist eine Kombination aus",
+      "pressDesiredKeyCombination": "Gewünschte Tastenkombination drücken und dann ENTER drücken",
       "modifierKeys": "1-4 Zusatztasten: [Strg, Alt, Umschalt, Meta]",
       "regularKey": "1 normaler Schlüssel",
       "examples": "Beispiele",
@@ -1327,6 +1328,7 @@
   "drives": "Laufwerke",
   "locations": "Standorte",
   "reset": "Zurücksetzen",
+  "resetAll": "Alle zurücksetzen",
   "loading": "Wird geladen",
   "loadingDots": "Wird geladen...",
   "warning": "Warnung",
@@ -1482,6 +1484,10 @@
   "freeOf": "frei von",
   "terminal": "Terminal",
   "conflict": "Konflikt",
+  "command": "Befehl",
+  "keybinding": "Tastenkombination",
+  "when": "Wenn",
+  "source": "Quelle",
   "fileBrowser": {
     "goBack": "Zurück",
     "goForward": "Vorwärts",

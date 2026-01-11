@@ -11,6 +11,7 @@ import { useI18n } from 'vue-i18n';
 import AppearanceCategory from './categories/appearance/index.vue';
 import GeneralCategory from './categories/general/index.vue';
 import SearchCategory from './categories/search/index.vue';
+import ShortcutsCategory from './categories/shortcuts/index.vue';
 
 import { Button } from '@/components/ui/button';
 
@@ -26,6 +27,7 @@ const categoryComponentMap: Record<string, unknown> = {
   general: GeneralCategory,
   appearance: AppearanceCategory,
   search: SearchCategory,
+  shortcuts: ShortcutsCategory,
 };
 
 function getComponentForTab(tabName: string) {

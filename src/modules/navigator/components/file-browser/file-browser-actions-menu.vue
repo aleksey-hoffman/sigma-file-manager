@@ -19,6 +19,7 @@ import {
   PanelRightIcon,
 } from 'lucide-vue-next';
 import { useClipboardStore } from '@/stores/runtime/clipboard';
+import { useShortcutsStore } from '@/stores/runtime/shortcuts';
 import type { DirEntry } from '@/types/dir-entry';
 import type { ContextMenuAction } from './types';
 import { useContextMenuItems } from './composables/use-context-menu-items';
@@ -49,6 +50,7 @@ function handleCutClick() {
 const { t } = useI18n();
 
 const clipboardStore = useClipboardStore();
+const shortcutsStore = useShortcutsStore();
 
 const { isActionVisible } = useContextMenuItems(toRef(props, 'selectedEntries'));
 
@@ -85,7 +87,7 @@ const canPasteToSelectedDirectory = computed(() => {
       </TooltipTrigger>
       <TooltipContent>
         {{ t('fileBrowser.actions.rename') }}
-        <kbd class="shortcut">{{ t('shortcuts.f2') }}</kbd>
+        <kbd class="shortcut">{{ shortcutsStore.getShortcutLabel('rename') }}</kbd>
       </TooltipContent>
     </Tooltip>
     <Tooltip v-if="isActionVisible('copy')">
@@ -101,7 +103,7 @@ const canPasteToSelectedDirectory = computed(() => {
       <TooltipContent class="file-browser-actions-menu__tooltip">
         <div class="file-browser-actions-menu__tooltip-row">
           {{ t('fileBrowser.actions.copy') }}
-          <kbd class="shortcut">{{ t('shortcuts.ctrlC') }}</kbd>
+          <kbd class="shortcut">{{ shortcutsStore.getShortcutLabel('copy') }}</kbd>
         </div>
       </TooltipContent>
     </Tooltip>
@@ -118,7 +120,7 @@ const canPasteToSelectedDirectory = computed(() => {
       <TooltipContent class="file-browser-actions-menu__tooltip">
         <div class="file-browser-actions-menu__tooltip-row">
           {{ t('fileBrowser.actions.move') }}
-          <kbd class="shortcut">{{ t('shortcuts.ctrlX') }}</kbd>
+          <kbd class="shortcut">{{ shortcutsStore.getShortcutLabel('cut') }}</kbd>
         </div>
       </TooltipContent>
     </Tooltip>
@@ -135,7 +137,7 @@ const canPasteToSelectedDirectory = computed(() => {
       <TooltipContent class="file-browser-actions-menu__tooltip">
         <div class="file-browser-actions-menu__tooltip-row">
           {{ t('shortcuts.transferPreparedForCopying') }}
-          <kbd class="shortcut">{{ t('shortcuts.ctrlV') }}</kbd>
+          <kbd class="shortcut">{{ shortcutsStore.getShortcutLabel('paste') }}</kbd>
         </div>
       </TooltipContent>
     </Tooltip>
@@ -153,11 +155,11 @@ const canPasteToSelectedDirectory = computed(() => {
       <TooltipContent class="file-browser-actions-menu__tooltip">
         <div class="file-browser-actions-menu__tooltip-row">
           {{ t('shortcuts.moveSelectedItemsToTrash') }}
-          <kbd class="shortcut">{{ t('shortcuts.delete') }}</kbd>
+          <kbd class="shortcut">{{ shortcutsStore.getShortcutLabel('delete') }}</kbd>
         </div>
         <div class="file-browser-actions-menu__tooltip-row">
           {{ t('shortcuts.deleteSelectedItemsFromDrive') }}
-          <kbd class="shortcut">{{ t('shortcuts.shiftDelete') }}</kbd>
+          <kbd class="shortcut">{{ shortcutsStore.getShortcutLabel('deletePermanently') }}</kbd>
         </div>
       </TooltipContent>
     </Tooltip>

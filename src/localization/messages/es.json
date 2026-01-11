@@ -694,7 +694,8 @@
     "globalShortcutsTriggerActionsWhenNotFocused": "Los accesos directos globales activarán acciones incluso cuando la aplicación no esté enfocada",
     "changeShortcut": "Cambiar acceso directo",
     "resetShortcut": "Restablecer acceso directo",
-    "localShortcutsAppScope": "Accesos directos locales (alcance de la aplicación)"
+    "localShortcutsAppScope": "Accesos directos locales (alcance de la aplicación)",
+    "whenConditionTooltip": "Condiciones que deben cumplirse para que este acceso directo se active"
   },
   "shortcuts": {
     "openCloseTheAppWindow": "Abrir/cerrar la ventana de la aplicación",
@@ -955,7 +956,7 @@
       "changeShortcut": "Cambiar acceso directo",
       "shortcutEditor": "Editor de accesos directos",
       "shortcut": "Atajo",
-      "shortcutIsACombination": "Un atajo es una combinación de",
+      "pressDesiredKeyCombination": "Presione la combinación de teclas deseada y luego presione ENTER",
       "modifierKeys": "1-4 teclas modificadoras: [Ctrl, Alt, Shift, Meta]",
       "regularKey": "1 llave normal",
       "examples": "Ejemplos",
@@ -1327,6 +1328,7 @@
   "drives": "unidades",
   "locations": "Ubicaciones",
   "reset": "Reiniciar",
+  "resetAll": "Reiniciar todo",
   "loading": "Cargando",
   "loadingDots": "Cargando...",
   "warning": "Advertencia",
@@ -1482,6 +1484,10 @@
   "freeOf": "libre de",
   "terminal": "Terminal",
   "conflict": "Conflicto",
+  "command": "Comando",
+  "keybinding": "Combinación de teclas",
+  "when": "Cuando",
+  "source": "Fuente",
   "fileBrowser": {
     "goBack": "Atrás",
     "goForward": "Adelante",

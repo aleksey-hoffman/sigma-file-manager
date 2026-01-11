@@ -140,6 +140,7 @@ export const useSettingsStore = defineStore('settings', () => {
       { default: SystemIconsSection },
       { default: ShowHiddenItemsSection },
       { default: GlobalSearchSection },
+      { default: ShortcutsSection },
     ] = await Promise.all([
       import('@/modules/settings/ui/categories/general/language.vue'),
       import('@/modules/settings/ui/categories/general/window-scaling.vue'),
@@ -149,6 +150,7 @@ export const useSettingsStore = defineStore('settings', () => {
       import('@/modules/settings/ui/categories/appearance/system-icons.vue'),
       import('@/modules/settings/ui/categories/appearance/show-hidden-items.vue'),
       import('@/modules/settings/ui/categories/search/global-search.vue'),
+      import('@/modules/settings/ui/categories/shortcuts/shortcuts.vue'),
     ]);
 
     sections.value = [
@@ -207,6 +209,13 @@ export const useSettingsStore = defineStore('settings', () => {
         tags: 'settingsTags.globalSearch',
         component: markRaw(GlobalSearchSection),
         category: 'search',
+      },
+      {
+        key: 'shortcuts',
+        titleKey: 'settingsTabs.shortcuts',
+        tags: 'settingsTags.shortcuts',
+        component: markRaw(ShortcutsSection),
+        category: 'shortcuts',
       },
     ];
 

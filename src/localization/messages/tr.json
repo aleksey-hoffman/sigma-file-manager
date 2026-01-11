@@ -694,7 +694,8 @@
     "globalShortcutsTriggerActionsWhenNotFocused": "Genel kısayollar, uygulama odaklanmadığında bile eylemleri tetikler.",
     "changeShortcut": "Kısayolu değiştir",
     "resetShortcut": "Kısayolu sıfırla",
-    "localShortcutsAppScope": "Yerel kısayollar (uygulama kapsamı)"
+    "localShortcutsAppScope": "Yerel kısayollar (uygulama kapsamı)",
+    "whenConditionTooltip": "Bu kısayolun tetiklenmesi için karşılanması gereken koşullar"
   },
   "shortcuts": {
     "openCloseTheAppWindow": "Uygulama penceresini aç / kapat",
@@ -955,7 +956,7 @@
       "changeShortcut": "Kısayolu değiştir",
       "shortcutEditor": "Kısayol düzenleyici",
       "shortcut": "Kısayol",
-      "shortcutIsACombination": "Kısayol, bir kombinasyonudur",
+      "pressDesiredKeyCombination": "İstediğiniz tuş kombinasyonuna basın ve ardından ENTER'a basın",
       "modifierKeys": "1-4 değiştirici tuş: [Ctrl, Alt, Shift, Meta]",
       "regularKey": "1 normal anahtar",
       "examples": "Örnekler",
@@ -1327,6 +1328,7 @@
   "drives": "Sürücüler",
   "locations": "Yerler",
   "reset": "Sıfırla",
+  "resetAll": "Tümünü sıfırla",
   "loading": "Yükleniyor",
   "loadingDots": "Yükleniyor...",
   "warning": "Uyarı",
@@ -1482,6 +1484,10 @@
   "freeOf": "ücretsiz olarak",
   "terminal": "Terminal",
   "conflict": "Çatışma",
+  "command": "Komut",
+  "keybinding": "Tuş bağlama",
+  "when": "Ne zaman",
+  "source": "Kaynak",
   "fileBrowser": {
     "goBack": "Geri",
     "goForward": "İleri",

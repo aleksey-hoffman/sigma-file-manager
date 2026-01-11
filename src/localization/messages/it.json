@@ -694,7 +694,8 @@
     "globalShortcutsTriggerActionsWhenNotFocused": "Le scorciatoie globali attivano azioni anche quando l'app non è focalizzata.",
     "changeShortcut": "Cambia scorciatoia",
     "resetShortcut": "Reimposta scorciatoia",
-    "localShortcutsAppScope": "Scorciatoie locali (sistema)"
+    "localShortcutsAppScope": "Scorciatoie locali (sistema)",
+    "whenConditionTooltip": "Condizioni che devono essere soddisfatte affinché questa scorciatoia si attivi"
   },
   "shortcuts": {
     "openCloseTheAppWindow": "Apri / chiudi la finestra dell'app",
@@ -955,7 +956,7 @@
       "changeShortcut": "Cambia scorciatoia",
       "shortcutEditor": "Editor di scorciatoie",
       "shortcut": "Scorciatoia",
-      "shortcutIsACombination": "Una scorciatoia è una combinazione di",
+      "pressDesiredKeyCombination": "Premi la combinazione di tasti desiderata e poi premi INVIO",
       "modifierKeys": "1-4 tasti modificatori: [Ctrl, Alt, Shift, Meta]",
       "regularKey": "1 tasto regolare",
       "examples": "Esempi",
@@ -1327,6 +1328,7 @@
   "drives": "Unità",
   "locations": "Località",
   "reset": "Reimposta",
+  "resetAll": "Reimposta tutto",
   "loading": "Caricamento",
   "loadingDots": "Caricamento...",
   "warning": "Avviso",
@@ -1482,6 +1484,10 @@
   "freeOf": "libero da",
   "terminal": "Terminale",
   "conflict": "Conflitto",
+  "command": "Comando",
+  "keybinding": "Combinazione tasti",
+  "when": "Quando",
+  "source": "Fonte",
   "fileBrowser": {
     "goBack": "Indietro",
     "goForward": "Avanti",

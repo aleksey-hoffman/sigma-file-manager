@@ -4,47 +4,16 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import { onMounted, onUnmounted } from 'vue';
-import { useRouter } from 'vue-router';
 import { WindowToolbar } from './modules/window-toolbar';
 import { NavSidebar } from './modules/nav-sidebar';
 import { useInit } from './use/init';
 import { TooltipProvider } from './components/ui/tooltip';
 import { Toaster } from '@/components/ui/toaster';
 import { InfusionWrapper } from './components/ui/infusion';
-import { useGlobalSearchStore } from '@/stores/runtime/global-search';
 
 const { init } = useInit();
-const globalSearchStore = useGlobalSearchStore();
-const router = useRouter();
 
 init();
-
-function handleKeydown(event: KeyboardEvent) {
-  const isCtrlOrMeta = event.ctrlKey || event.metaKey;
-  const normalizedKey = event.key.toLowerCase();
-
-  if (isCtrlOrMeta && event.shiftKey && (event.code === 'KeyF' || normalizedKey === 'f')) {
-    event.preventDefault();
-    event.stopPropagation();
-
-    if (!globalSearchStore.isOpen) {
-      router.push({ name: 'navigator' });
-      globalSearchStore.open();
-    }
-    else {
-      globalSearchStore.close();
-    }
-  }
-}
-
-onMounted(() => {
-  document.addEventListener('keydown', handleKeydown, { capture: true });
-});
-
-onUnmounted(() => {
-  document.removeEventListener('keydown', handleKeydown, { capture: true });
-});
 </script>
 
 <template>
