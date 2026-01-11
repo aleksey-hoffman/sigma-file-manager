@@ -136,8 +136,12 @@ const { t } = useI18n();
   cursor: default;
   font-size: 13px;
   grid-template-columns: minmax(80px, 1fr) minmax(50px, 100px) minmax(60px, 140px);
-  outline: none;
   text-align: left;
+}
+
+.file-browser-list-view__entry:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: -2px;
 }
 
 .file-browser-list-view__entry--hidden {

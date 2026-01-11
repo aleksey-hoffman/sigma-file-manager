@@ -341,6 +341,11 @@ async function handleBrowse() {
     color 0.15s ease;
 }
 
+.user-directory-editor-dialog__icon-button:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
 .user-directory-editor-dialog__icon-button:hover {
   border-color: hsl(var(--border));
   background-color: hsl(var(--muted));

@@ -276,7 +276,14 @@ function closeAllTabs() {
   height: 24px;
   align-items: center;
   justify-content: center;
+  border: none;
   border-radius: var(--radius-sm);
+  background: transparent;
+}
+
+.tab__close-button:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
 }
 
 .tab__close-button:hover {

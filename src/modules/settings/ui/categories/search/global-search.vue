@@ -892,6 +892,11 @@ onUnmounted(() => {
   text-align: left;
 }
 
+.global-search-settings__drive-item:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
 .global-search-settings__drive-icon {
   flex-shrink: 0;
   color: hsl(var(--muted-foreground));

@@ -7,6 +7,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useUserDirectories, type UserDirectory } from '@/modules/home/composables';
+import { Button } from '@/components/ui/button';
 import UserDirectoryCard from './user-directory-card.vue';
 import UserDirectoryEditorDialog from './user-directory-editor-dialog.vue';
 
@@ -61,13 +62,13 @@ async function handleResetDirectory(name: string) {
       class="user-directories-section__error"
     >
       <span>{{ error }}</span>
-      <button
-        type="button"
-        class="user-directories-section__retry-button"
+      <Button
+        variant="outline"
+        size="sm"
         @click="refresh"
       >
         {{ t('navigator.reloadCurrentDirectory') }}
-      </button>
+      </Button>
     </div>
 
     <div
@@ -148,21 +149,6 @@ async function handleResetDirectory(name: string) {
   color: hsl(var(--destructive));
   font-size: 13px;
   gap: 12px;
-}
-
-.user-directories-section__retry-button {
-  padding: 6px 12px;
-  border: 1px solid hsl(var(--border));
-  border-radius: var(--radius-sm);
-  background-color: hsl(var(--background));
-  color: hsl(var(--foreground));
-  cursor: pointer;
-  font-size: 12px;
-  transition: background-color 0.15s ease;
-}
-
-.user-directories-section__retry-button:hover {
-  background-color: hsl(var(--muted));
 }
 
 .user-directories-section__empty {

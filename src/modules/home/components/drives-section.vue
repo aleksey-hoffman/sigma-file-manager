@@ -8,6 +8,7 @@ import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useDrives } from '@/modules/home/composables';
 import { usePlatformStore } from '@/stores/runtime/platform';
+import { Button } from '@/components/ui/button';
 import DriveCard from './drive-card.vue';
 
 const { t } = useI18n();
@@ -38,13 +39,13 @@ const sectionTitle = computed(() => {
       class="drives-section__error"
     >
       <span>{{ error }}</span>
-      <button
-        type="button"
-        class="drives-section__retry-button"
+      <Button
+        variant="outline"
+        size="sm"
         @click="refresh"
       >
         {{ t('navigator.reloadCurrentDirectory') }}
-      </button>
+      </Button>
     </div>
 
     <div
@@ -116,21 +117,6 @@ const sectionTitle = computed(() => {
   color: hsl(var(--destructive));
   font-size: 13px;
   gap: 12px;
-}
-
-.drives-section__retry-button {
-  padding: 6px 12px;
-  border: 1px solid hsl(var(--border));
-  border-radius: var(--radius-sm);
-  background-color: hsl(var(--background));
-  color: hsl(var(--foreground));
-  cursor: pointer;
-  font-size: 12px;
-  transition: background-color 0.15s ease;
-}
-
-.drives-section__retry-button:hover {
-  background-color: hsl(var(--muted));
 }
 
 .drives-section__empty {

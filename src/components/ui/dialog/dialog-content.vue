@@ -101,8 +101,8 @@ const { t } = useI18n();
 }
 
 .sigma-ui-dialog-close:focus {
-  box-shadow: 0 0 0 2px hsl(var(--background)), 0 0 0 4px hsl(var(--ring));
-  outline: none;
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
 }
 
 .sigma-ui-dialog-close[data-state="open"] {

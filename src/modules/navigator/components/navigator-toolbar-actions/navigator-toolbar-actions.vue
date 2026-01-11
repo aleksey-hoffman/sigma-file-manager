@@ -249,6 +249,11 @@ function handleToggleHiddenFiles(checked: boolean) {
   transition: background-color 0.15s;
 }
 
+.navigator-layout-option:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
 .navigator-layout-option:hover {
   background-color: hsl(var(--secondary));
 }

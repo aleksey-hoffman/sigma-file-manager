@@ -577,6 +577,11 @@ onUnmounted(() => {
   white-space: nowrap;
 }
 
+.address-bar__part:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
 .address-bar__part:hover:not(:disabled) {
   background-color: hsl(var(--secondary));
   color: hsl(var(--foreground));
@@ -659,9 +664,13 @@ onUnmounted(() => {
   color: hsl(var(--foreground));
   cursor: pointer;
   gap: 8px;
-  outline: none;
   text-align: left;
   transition: background-color 0.1s;
+}
+
+.address-bar__suggestion:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: -2px;
 }
 
 .address-bar__suggestion:hover {

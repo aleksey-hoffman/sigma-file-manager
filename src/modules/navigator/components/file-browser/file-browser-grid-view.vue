@@ -317,8 +317,12 @@ const groupedEntries = computed<GroupedEntries>(() => {
   border-radius: 8px;
   background: hsl(var(--background-2));
   cursor: default;
-  outline: none;
   text-align: left;
+}
+
+.file-browser-grid-view__card:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: -2px;
 }
 
 .file-browser-grid-view__card--hidden {

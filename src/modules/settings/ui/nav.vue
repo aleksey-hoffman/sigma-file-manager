@@ -43,6 +43,7 @@ const settingsStore = useSettingsStore();
 .settings-nav__items {
   display: flex;
   flex-direction: column;
+  padding: 4px;
   gap: 0.25rem;
 }
 

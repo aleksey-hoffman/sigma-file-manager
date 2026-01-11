@@ -53,17 +53,14 @@ withDefaults(defineProps<Props>(), {
   border-radius: var(--radius);
   font-size: 0.875rem;
   font-weight: 500;
-  outline: none;
   transition: background-color 0.1s ease, colors 0.2s;
   user-select: none;
   white-space: nowrap;
 }
 
 .sigma-ui-button:focus-visible {
-  box-shadow:
-    0 0 0 2px hsl(var(--background)),
-    0 0 0 4px hsl(var(--ring));
-  outline: none;
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
 }
 
 .sigma-ui-button:disabled {

@@ -519,7 +519,6 @@ onMounted(() => {
   display: flex;
   align-items: center;
   padding: 12px 16px;
-  border-bottom: 1px solid hsl(var(--border));
   gap: 12px;
 }
 
@@ -719,7 +718,7 @@ onMounted(() => {
   top: 0;
   height: var(--results-header-height);
   padding: 0 16px;
-  border-bottom: 1px solid hsl(var(--border) / 50%);
+  border-radius: var(--radius-sm);
   background-color: hsl(var(--background));
   color: hsl(var(--muted-foreground));
   font-size: 12px;
@@ -752,6 +751,11 @@ onMounted(() => {
 
 .global-search-view__drive-header:hover {
   background-color: hsl(var(--background-3));
+}
+
+.global-search-view__drive-header:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: -2px;
 }
 
 .global-search-view__drive-icon {
@@ -908,5 +912,10 @@ onMounted(() => {
 .global-search-view__entry:hover .global-search-view__overlay--hover {
   opacity: 1;
   transition: opacity 0s;
+}
+
+.global-search-view__entry:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: -2px;
 }
 </style>

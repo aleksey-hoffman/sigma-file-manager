@@ -46,8 +46,8 @@ const forwarded = useForwardPropsEmits(props, emits);
 }
 
 .sigma-ui-resizable-handle:focus-visible {
-  box-shadow: 0 0 0 1px hsl(var(--ring)), 0 0 0 2px hsl(var(--background));
-  outline: none;
+  outline: 1px solid hsl(var(--ring));
+  outline-offset: 1px;
 }
 
 .sigma-ui-resizable-handle[data-orientation="vertical"] {
