@@ -1224,6 +1224,7 @@
     "moved": "Spostato",
     "trashed": "Cestinati",
     "deleted": "Eliminati",
+    "renamed": "Rinominato",
     "removedNItemsOfTotal": "{removedAmount} su {totalAmount}",
     "trashedNItemsOfTotal": "Cestinati {removedAmount} su {totalAmount} elementi",
     "deletedNItemsOfTotal": "Eliminati {removedAmount} su {totalAmount} elementi",

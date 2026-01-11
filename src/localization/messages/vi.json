@@ -1224,6 +1224,7 @@
     "moved": "Đã di chuyển",
     "trashed": "Đã xóa vào thùng rác",
     "deleted": "Đã xóa",
+    "renamed": "Đã đổi tên",
     "removedNItemsOfTotal": "{removedAmount} của {totalAmount}",
     "trashedNItemsOfTotal": "Đã xóa vào thùng rác {removedAmount} trong số {totalAmount} mục",
     "deletedNItemsOfTotal": "Đã xóa {removedAmount} trong số {totalAmount} mục",

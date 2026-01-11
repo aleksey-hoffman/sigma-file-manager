@@ -1224,6 +1224,7 @@
     "moved": "Moved",
     "trashed": "Trashed",
     "deleted": "Deleted",
+    "renamed": "Renamed",
     "removedNItemsOfTotal": "{removedAmount} of {totalAmount}",
     "trashedNItemsOfTotal": "Trashed {removedAmount} of {totalAmount} items",
     "deletedNItemsOfTotal": "Deleted {removedAmount} of {totalAmount} items",

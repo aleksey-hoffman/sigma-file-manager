@@ -1224,6 +1224,7 @@
     "moved": "Перемещено",
     "trashed": "Удалено в корзину",
     "deleted": "Удалено",
+    "renamed": "Переименовано",
     "removedNItemsOfTotal": "{removedAmount} из {totalAmount}",
     "trashedNItemsOfTotal": "Перемещено в корзину {removedAmount} из {totalAmount} элементов",
     "deletedNItemsOfTotal": "Удалено {removedAmount} из {totalAmount} элементов",

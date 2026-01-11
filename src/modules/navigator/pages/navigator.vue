@@ -28,6 +28,7 @@ import type { DirEntry } from '@/types/dir-entry';
 type FileBrowserInstance = InstanceType<typeof FileBrowser> & {
   navigateToPath?: (path: string) => Promise<void>;
   openFile?: (path: string) => Promise<void>;
+  startRename?: (entry: DirEntry) => void;
 };
 
 const workspacesStore = useWorkspacesStore();

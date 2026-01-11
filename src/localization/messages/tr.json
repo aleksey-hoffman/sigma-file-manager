@@ -1224,6 +1224,7 @@
     "moved": "Taşındı",
     "trashed": "Çöp Kutusuna Atıldı",
     "deleted": "Silindi",
+    "renamed": "Yeniden adlandırıldı",
     "removedNItemsOfTotal": "{removedAmount} nin {totalAmount}",
     "trashedNItemsOfTotal": "{totalAmount} Öğeden {removedAmount} Öğe Çöp Kutusuna Atıldı",
     "deletedNItemsOfTotal": "{totalAmount} Öğeden {removedAmount} Öğe Silindi",

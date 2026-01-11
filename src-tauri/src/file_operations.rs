@@ -250,6 +250,58 @@ pub fn move_items(source_paths: Vec<String>, destination_path: String) -> FileOp
 }
 
 #[tauri::command]
+pub fn rename_item(source_path: String, new_name: String) -> FileOperationResult {
+    let source = Path::new(&source_path);
+
+    if !source.exists() {
+        return FileOperationResult {
+            success: false,
+            error: Some(format!("Source path does not exist: {}", source_path)),
+            copied_count: None,
+            failed_count: None,
+        };
+    }
+
+    let parent = match source.parent() {
+        Some(parent) => parent,
+        None => {
+            return FileOperationResult {
+                success: false,
+                error: Some("Cannot determine parent directory".to_string()),
+                copied_count: None,
+                failed_count: None,
+            };
+        }
+    };
+
+    let dest_path = parent.join(&new_name);
+
+    if dest_path.exists() {
+        return FileOperationResult {
+            success: false,
+            error: Some(format!("A file or folder with the name '{}' already exists", new_name)),
+            copied_count: None,
+            failed_count: None,
+        };
+    }
+
+    match fs::rename(source, &dest_path) {
+        Ok(()) => FileOperationResult {
+            success: true,
+            error: None,
+            copied_count: Some(1),
+            failed_count: Some(0),
+        },
+        Err(error) => FileOperationResult {
+            success: false,
+            error: Some(error.to_string()),
+            copied_count: None,
+            failed_count: Some(1),
+        },
+    }
+}
+
+#[tauri::command]
 pub fn delete_items(paths: Vec<String>, use_trash: bool) -> FileOperationResult {
     let mut deleted_count: u32 = 0;
     let mut failed_count: u32 = 0;

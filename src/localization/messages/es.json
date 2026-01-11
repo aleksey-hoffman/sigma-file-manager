@@ -1229,6 +1229,7 @@
   "moved": "Movido",
   "trashed": "Eliminado",
   "deleted": "Borrado",
+  "renamed": "Renombrado",
     "couldNotTrash": "No se pudo desechar",
     "failedToDeleteSomeItems": "Error al eliminar algunos elementos",
     "couldNotDelete": "No se pudo eliminar",

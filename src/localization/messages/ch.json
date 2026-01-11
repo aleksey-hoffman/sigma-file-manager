@@ -1224,6 +1224,7 @@
     "moved": "已移动",
     "trashed": "垃圾桶",
     "deleted": "已删除",
+    "renamed": "已重命名",
     "removedNItemsOfTotal": "{removedAmount} 的 {totalAmount}",
     "trashedNItemsOfTotal": "垃圾桶 {removedAmount} 的 {totalAmount} 项目",
     "deletedNItemsOfTotal": "已删除 {removedAmount} 的 {totalAmount} 项目",

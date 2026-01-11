@@ -1224,6 +1224,7 @@
     "moved": "移動しました",
     "trashed": "ごみ箱に入れられました",
     "deleted": "削除されました",
+    "renamed": "名前を変更しました",
     "removedNItemsOfTotal": "{totalAmount} の {removedAmount}",
     "trashedNItemsOfTotal": "{totalAmount} アイテムのうち {removedAmount} アイテムがごみ箱に入りました",
     "deletedNItemsOfTotal": "{totalAmount} アイテムのうち {removedAmount} アイテムが削除されました",

@@ -22,6 +22,7 @@ pub fn run() {
             dir_reader::path_exists,
             file_operations::copy_items,
             file_operations::move_items,
+            file_operations::rename_item,
             file_operations::delete_items,
             global_search::global_search_init,
             global_search::global_search_get_status,

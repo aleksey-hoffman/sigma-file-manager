@@ -1224,6 +1224,7 @@
     "moved": "Verschoben",
     "trashed": "Verworfen",
     "deleted": "Gelöscht",
+    "renamed": "Umbenannt",
     "removedNItemsOfTotal": "{removedAmount} von {totalAmount}",
     "trashedNItemsOfTotal": "{removedAmount} von {totalAmount} Elementen verworfen",
     "deletedNItemsOfTotal": "{removedAmount} von {totalAmount} Elementen gelöscht",

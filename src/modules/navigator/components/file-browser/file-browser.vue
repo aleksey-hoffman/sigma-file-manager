@@ -28,6 +28,7 @@ import FileBrowserContextMenu from './file-browser-context-menu.vue';
 import FileBrowserLoading from './file-browser-loading.vue';
 import FileBrowserError from './file-browser-error.vue';
 import FileBrowserStatusBar from './file-browser-status-bar.vue';
+import FileBrowserRenameDialog from './file-browser-rename-dialog.vue';
 
 const props = defineProps<{
   tab?: Tab;
@@ -104,6 +105,7 @@ const currentPathComputed = computed(() => currentPath.value);
 const {
   selectedEntries,
   contextMenu,
+  renameState,
   clearSelection,
   isEntrySelected,
   handleEntryMouseDown,
@@ -117,6 +119,9 @@ const {
   cutItems,
   pasteItems,
   deleteItems,
+  startRename,
+  cancelRename,
+  confirmRename,
 } = useFileBrowserSelection(
   entries,
   currentPathComputed,
@@ -133,6 +138,23 @@ const {
 );
 
 const { getVideoThumbnail } = useVideoThumbnails();
+
+const isRenameDialogOpen = computed({
+  get: () => renameState.value.isActive,
+  set: (value: boolean) => {
+    if (!value) {
+      cancelRename();
+    }
+  },
+});
+
+async function handleRenameConfirm(newName: string) {
+  await confirmRename(newName);
+}
+
+function handleRenameCancel() {
+  cancelRename();
+}
 
 watch(() => props.tab?.id, async (newTabId, oldTabId) => {
   if (newTabId && newTabId !== oldTabId && props.tab?.path) {
@@ -200,6 +222,7 @@ defineExpose({
   pasteItems,
   deleteItems,
   selectedEntries,
+  startRename,
 });
 </script>
 
@@ -285,6 +308,13 @@ defineExpose({
       @remove-from-selection="removeFromSelection"
       @context-menu-action="onContextMenuAction"
       @paste="pasteItems"
+    />
+
+    <FileBrowserRenameDialog
+      v-model:open="isRenameDialogOpen"
+      :entry="renameState.entry"
+      @confirm="handleRenameConfirm"
+      @cancel="handleRenameCancel"
     />
   </div>
 </template>

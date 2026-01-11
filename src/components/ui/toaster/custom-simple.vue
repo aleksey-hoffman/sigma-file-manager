@@ -49,8 +49,10 @@ const emit = defineEmits<Emits>();
   padding: 1rem;
   border: 1px solid hsl(var(--border));
   border-radius: var(--radius);
-  background-color: hsl(var(--background));
+  backdrop-filter: blur(24px);
+  background-color: hsl(var(--background) / 50%);
   box-shadow: var(--shadow-md);
+  transition: backdrop-filter 160ms ease, background-color 160ms ease;
 }
 
 .sigma-ui-toaster-default__title {

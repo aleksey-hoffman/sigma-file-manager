@@ -9,7 +9,7 @@ import type { DirEntry } from '@/types/dir-entry';
 import type { ContextMenuAction } from '@/modules/navigator/components/file-browser/types';
 import { useWorkspacesStore } from '@/stores/storage/workspaces';
 import { useClipboardStore, type FileOperationResult } from '@/stores/runtime/clipboard';
-import { toast, CustomProgress } from '@/components/ui/toaster';
+import { toast, CustomProgress, CustomSimple } from '@/components/ui/toaster';
 import { UI_CONSTANTS } from '@/constants';
 
 export function useFileBrowserSelection(
@@ -37,6 +37,11 @@ export function useFileBrowserSelection(
   const contextMenu = ref({
     targetEntry: null as DirEntry | null,
     selectedEntries: [] as DirEntry[],
+  });
+
+  const renameState = ref({
+    isActive: false,
+    entry: null as DirEntry | null,
   });
 
   function clearSelection() {
@@ -303,10 +308,83 @@ export function useFileBrowserSelection(
     return result.success;
   }
 
+  function startRename(entry: DirEntry) {
+    renameState.value = {
+      isActive: true,
+      entry,
+    };
+  }
+
+  function cancelRename() {
+    renameState.value = {
+      isActive: false,
+      entry: null,
+    };
+  }
+
+  async function confirmRename(newName: string): Promise<boolean> {
+    if (!renameState.value.entry || !newName.trim()) {
+      cancelRename();
+      return false;
+    }
+
+    const entry = renameState.value.entry;
+    const trimmedName = newName.trim();
+
+    if (trimmedName === entry.name) {
+      cancelRename();
+      return true;
+    }
+
+    try {
+      const result = await invoke<FileOperationResult>('rename_item', {
+        sourcePath: entry.path,
+        newName: trimmedName,
+      });
+
+      if (result.success) {
+        toast.custom(markRaw(CustomSimple), {
+          componentProps: {
+            title: t('notifications.renamed'),
+            description: '',
+          },
+        });
+        cancelRename();
+        clearSelection();
+        onRefresh();
+        return true;
+      }
+      else {
+        toast.custom(markRaw(CustomSimple), {
+          componentProps: {
+            title: t('notifications.failedToRenameItem'),
+            description: result.error || '',
+          },
+        });
+        return false;
+      }
+    }
+    catch (error) {
+      toast.custom(markRaw(CustomSimple), {
+        componentProps: {
+          title: t('notifications.failedToRenameItem'),
+          description: String(error),
+        },
+      });
+      return false;
+    }
+  }
+
   function handleContextMenuAction(action: ContextMenuAction) {
     const entries = contextMenu.value.selectedEntries;
 
     switch (action) {
+      case 'rename':
+        if (entries.length === 1) {
+          startRename(entries[0]);
+        }
+
+        break;
       case 'copy':
         if (entries.length > 0) {
           copyItems(entries);
@@ -470,6 +548,7 @@ export function useFileBrowserSelection(
     lastSelectedEntry,
     mouseDownState,
     contextMenu,
+    renameState,
     clearSelection,
     isEntrySelected,
     handleEntryMouseDown,
@@ -484,5 +563,8 @@ export function useFileBrowserSelection(
     cutItems,
     pasteItems,
     deleteItems,
+    startRename,
+    cancelRename,
+    confirmRename,
   };
 }

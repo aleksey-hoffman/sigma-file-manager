@@ -1223,6 +1223,7 @@
     "moved": "منتقل شد",
     "trashed": "در زباله شده",
     "deleted": "حذف شده",
+    "renamed": "تغییر نام داده شد",
     "removedNItemsOfTotal": "{removedAmount} از {totalAmount}",
     "trashedNItemsOfTotal": "{removedAmount} از {totalAmount} آیتم در زباله شد",
     "deletedNItemsOfTotal": "{removedAmount} از {totalAmount} آیتم حذف شد",
