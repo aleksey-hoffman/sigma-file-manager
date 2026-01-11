@@ -199,7 +199,31 @@
     "enableTheOptionCalled": "というオプションを有効にする",
     "storeTheListOfOpenedDirectoryItems": "\"開いているディレクトリ項目のリストを保存\"",
     "inTheStatsSectionOfSettings": "設定の\"統計\"セクション:",
-    "openedWillBeShownHere": "開いているディレクトリ項目がここに表示されます"
+    "openedWillBeShownHere": "開いているディレクトリ項目がここに表示されます",
+    "subtitle": "お気に入り、タグ付け、よく使うアイテムへのクイックアクセス",
+    "tabs": {
+      "favorites": "お気に入り",
+      "tagged": "タグ付き",
+      "frequent": "よく使う",
+      "history": "履歴"
+    },
+    "emptyFavorites": "お気に入りはまだありません",
+    "emptyFavoritesDescription": "ナビゲーターでファイルまたはフォルダーを右クリックし、「お気に入りに追加」を選択してください。",
+    "emptyTagged": "タグ付きアイテムはありません",
+    "emptyTaggedDescription": "タグを使用してファイルとフォルダーを整理し、素早くアクセスできるようにしましょう。",
+    "emptyFrequent": "よく使うアイテムはありません",
+    "emptyFrequentDescription": "頻繁に開くアイテムは自動的にここに表示されます。",
+    "emptyHistory": "最近の履歴はありません",
+    "emptyHistoryDescription": "最近開いたファイルとフォルダーがここに表示されます。",
+    "clearHistory": "履歴を消去",
+    "justNow": "たった今",
+    "minutesAgo": "{n}分前 | {n}分前 | {n}分前 | {n}分前",
+    "hoursAgo": "{n}時間前 | {n}時間前 | {n}時間前 | {n}時間前",
+    "daysAgo": "{n}日前 | {n}日前 | {n}日前 | {n}日前",
+    "openedCount": "{n}回開いた | {n}回開いた | {n}回開いた | {n}回開いた",
+    "actions": {
+      "clearAll": "このリストからすべて削除"
+    }
   },
   "notes": {
     "newNote": "新しいノート",
@@ -1354,6 +1378,13 @@
   "showItems": "アイテムを表示",
   "limit": "限界",
   "noData": "データなし",
+  "tags": {
+    "editTags": "タグを編集",
+    "searchTags": "タグを検索...",
+    "noTagsFound": "タグが見つかりません",
+    "createTag": "タグを作成",
+    "deleteTag": "タグを削除"
+  },
   "action": "アクション",
   "actions": "行動",
   "options": "オプション",
@@ -1536,7 +1567,9 @@
       "openWith": "アプリで開く...",
       "quickView": "クイックビュー",
       "share": "共有",
-      "openInNewTab": "新しいタブで開く"
+      "openInNewTab": "新しいタブで開く",
+      "addToFavorites": "お気に入りに追加",
+      "removeFromFavorites": "お気に入りから削除"
     }
   }
 }

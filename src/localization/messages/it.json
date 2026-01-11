@@ -199,7 +199,31 @@
     "enableTheOptionCalled": "Abilita l'opzione chiamata",
     "storeTheListOfOpenedDirectoryItems": "\"Memorizza l'elenco degli elementi delle cartelle aperte\"",
     "inTheStatsSectionOfSettings": "nella sezione \"Statistiche\" delle impostazioni:",
-    "openedWillBeShownHere": "Gli elementi aperti della cartella saranno mostrati qui"
+    "openedWillBeShownHere": "Gli elementi aperti della cartella saranno mostrati qui",
+    "subtitle": "Accesso rapido ai tuoi elementi preferiti, taggati e usati frequentemente",
+    "tabs": {
+      "favorites": "Preferiti",
+      "tagged": "Taggati",
+      "frequent": "Frequenti",
+      "history": "Cronologia"
+    },
+    "emptyFavorites": "Nessun preferito ancora",
+    "emptyFavoritesDescription": "Fai clic destro su qualsiasi file o cartella nel navigatore e seleziona \"Aggiungi ai preferiti\".",
+    "emptyTagged": "Nessun elemento taggato",
+    "emptyTaggedDescription": "Usa i tag per organizzare e categorizzare i tuoi file e cartelle per un accesso rapido.",
+    "emptyFrequent": "Nessun elemento frequente",
+    "emptyFrequentDescription": "Gli elementi che apri frequentemente appariranno qui automaticamente.",
+    "emptyHistory": "Nessuna cronologia recente",
+    "emptyHistoryDescription": "I tuoi file e cartelle aperti di recente appariranno qui.",
+    "clearHistory": "Cancella cronologia",
+    "justNow": "Proprio ora",
+    "minutesAgo": "{n} min fa | {n} min fa | {n} min fa | {n} min fa",
+    "hoursAgo": "{n} ora fa | {n} ore fa | {n} ore fa | {n} ore fa",
+    "daysAgo": "{n} giorno fa | {n} giorni fa | {n} giorni fa | {n} giorni fa",
+    "openedCount": "Aperto {n} volta | Aperto {n} volte | Aperto {n} volte | Aperto {n} volte",
+    "actions": {
+      "clearAll": "Rimuovi tutto da questa lista"
+    }
   },
   "notes": {
     "newNote": "Nuova nota",
@@ -1354,6 +1378,13 @@
   "showItems": "Mostra elementi",
   "limit": "Limite",
   "noData": "Nessun dato",
+  "tags": {
+    "editTags": "Modifica tag",
+    "searchTags": "Cerca tag...",
+    "noTagsFound": "Nessun tag trovato",
+    "createTag": "Crea tag",
+    "deleteTag": "Elimina tag"
+  },
   "action": "Azione",
   "actions": "Azioni",
   "options": "Opzioni",
@@ -1536,7 +1567,9 @@
       "openWith": "Apri con...",
       "quickView": "Anteprima rapida",
       "share": "Condividi",
-      "openInNewTab": "Apri in nuova scheda"
+      "openInNewTab": "Apri in nuova scheda",
+      "addToFavorites": "Aggiungi ai preferiti",
+      "removeFromFavorites": "Rimuovi dai preferiti"
     }
   }
 }

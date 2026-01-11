@@ -199,7 +199,31 @@
     "enableTheOptionCalled": "Enable the option called",
     "storeTheListOfOpenedDirectoryItems": "\"Store the list of opened directory items\"",
     "inTheStatsSectionOfSettings": "in the \"Stats\" section of settings:",
-    "openedWillBeShownHere": "Opened directory items will be shown here"
+    "openedWillBeShownHere": "Opened directory items will be shown here",
+    "subtitle": "Quick access to your favorite, tagged, and frequently used items",
+    "tabs": {
+      "favorites": "Favorites",
+      "tagged": "Tagged",
+      "frequent": "Frequent",
+      "history": "History"
+    },
+    "emptyFavorites": "No favorites yet",
+    "emptyFavoritesDescription": "Right-click on any file or folder in the navigator and select \"Add to favorites\" to see them here.",
+    "emptyTagged": "No tagged items",
+    "emptyTaggedDescription": "Use tags to organize and categorize your files and folders for quick access.",
+    "emptyFrequent": "No frequently used items",
+    "emptyFrequentDescription": "Items you open frequently will appear here automatically.",
+    "emptyHistory": "No recent history",
+    "emptyHistoryDescription": "Your recently opened files and folders will appear here.",
+    "clearHistory": "Clear history",
+    "justNow": "Just now",
+    "minutesAgo": "{n} min ago | {n} min ago | {n} min ago | {n} min ago",
+    "hoursAgo": "{n} hour ago | {n} hours ago | {n} hours ago | {n} hours ago",
+    "daysAgo": "{n} day ago | {n} days ago | {n} days ago | {n} days ago",
+    "openedCount": "Opened {n} time | Opened {n} times | Opened {n} times | Opened {n} times",
+    "actions": {
+      "clearAll": "Remove all from this list"
+    }
   },
   "notes": {
     "newNote": "New note",
@@ -1237,6 +1261,8 @@
     "switchToTrashedNotesList": "Switch to \"trashed notes\" list to see all trashed notes",
     "removedNItemsFromPinned": "Removed 0 items from pinned | Removed 1 item from pinned | Removed {n} items from pinned | Removed {n} items from pinned",
     "addedNItemsToPinned": "Added 0 items to pinned | Added 1 item to pinned | Added {n} items to pinned | Added {n} items to pinned",
+    "removedFromFavorites": "Removed 0 items from favorites | Removed 1 item from favorites | Removed {n} items from favorites | Removed {n} items from favorites",
+    "addedToFavorites": "Added 0 items to favorites | Added 1 item to favorites | Added {n} items to favorites | Added {n} items to favorites",
     "removedNItemsFromProtected": "Removed 0 items from protected | Removed 1 item from protected | Removed {n} items from protected | Removed {n} items from protected",
     "addedNItemsToProtected": "Added 0 items to protected | Added 1 item to protected | Added {n} items to protected | Added {n} items to protected",
     "actionFailed": "Action failed",
@@ -1354,6 +1380,13 @@
   "showItems": "Show items",
   "limit": "Limit",
   "noData": "No data",
+  "tags": {
+    "editTags": "Edit tags",
+    "searchTags": "Search tags...",
+    "noTagsFound": "No tags found",
+    "createTag": "Create tag",
+    "deleteTag": "Delete tag"
+  },
   "action": "Action",
   "actions": "Actions",
   "options": "Options",
@@ -1536,7 +1569,9 @@
       "openWith": "Open with...",
       "quickView": "Quick view",
       "share": "Share",
-      "openInNewTab": "Open in new tab"
+      "openInNewTab": "Open in new tab",
+      "addToFavorites": "Add to favorites",
+      "removeFromFavorites": "Remove from favorites"
     }
   }
 }

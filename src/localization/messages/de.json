@@ -199,7 +199,31 @@
     "enableTheOptionCalled": "Aufgerufene Option aktivieren",
     "storeTheListOfOpenedDirectoryItems": "\"Liste der geöffneten Verzeichniseinträge speichern\"",
     "inTheStatsSectionOfSettings": "im Abschnitt \"Statistiken\" der Einstellungen:",
-    "openedWillBeShownHere": "Geöffnete Verzeichniseinträge werden hier angezeigt"
+    "openedWillBeShownHere": "Geöffnete Verzeichniseinträge werden hier angezeigt",
+    "subtitle": "Schneller Zugriff auf Ihre Favoriten, markierte und häufig verwendete Elemente",
+    "tabs": {
+      "favorites": "Favoriten",
+      "tagged": "Markiert",
+      "frequent": "Häufig",
+      "history": "Verlauf"
+    },
+    "emptyFavorites": "Noch keine Favoriten",
+    "emptyFavoritesDescription": "Klicken Sie mit der rechten Maustaste auf eine Datei oder einen Ordner im Navigator und wählen Sie \"Zu Favoriten hinzufügen\".",
+    "emptyTagged": "Keine markierten Elemente",
+    "emptyTaggedDescription": "Verwenden Sie Tags, um Ihre Dateien und Ordner für schnellen Zugriff zu organisieren.",
+    "emptyFrequent": "Keine häufig verwendeten Elemente",
+    "emptyFrequentDescription": "Elemente, die Sie häufig öffnen, werden hier automatisch angezeigt.",
+    "emptyHistory": "Kein aktueller Verlauf",
+    "emptyHistoryDescription": "Ihre zuletzt geöffneten Dateien und Ordner werden hier angezeigt.",
+    "clearHistory": "Verlauf löschen",
+    "justNow": "Gerade eben",
+    "minutesAgo": "vor {n} Min. | vor {n} Min. | vor {n} Min. | vor {n} Min.",
+    "hoursAgo": "vor {n} Std. | vor {n} Std. | vor {n} Std. | vor {n} Std.",
+    "daysAgo": "vor {n} Tag | vor {n} Tagen | vor {n} Tagen | vor {n} Tagen",
+    "openedCount": "{n} Mal geöffnet | {n} Mal geöffnet | {n} Mal geöffnet | {n} Mal geöffnet",
+    "actions": {
+      "clearAll": "Alle aus dieser Liste entfernen"
+    }
   },
   "notes": {
     "newNote": "Neue Notiz",
@@ -1354,6 +1378,13 @@
   "showItems": "Elemente anzeigen",
   "limit": "Grenze",
   "noData": "Keine Daten",
+  "tags": {
+    "editTags": "Tags bearbeiten",
+    "searchTags": "Tags suchen...",
+    "noTagsFound": "Keine Tags gefunden",
+    "createTag": "Tag erstellen",
+    "deleteTag": "Tag löschen"
+  },
   "action": "Aktion",
   "actions": "Aktionen",
   "options": "Optionen",
@@ -1536,7 +1567,9 @@
       "openWith": "Öffnen mit...",
       "quickView": "Schnellansicht",
       "share": "Teilen",
-      "openInNewTab": "In neuem Tab öffnen"
+      "openInNewTab": "In neuem Tab öffnen",
+      "addToFavorites": "Zu Favoriten hinzufügen",
+      "removeFromFavorites": "Aus Favoriten entfernen"
     }
   }
 }

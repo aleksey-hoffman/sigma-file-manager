@@ -52,6 +52,16 @@ const CONTEXT_MENU_ITEMS: ContextMenuItemConfig[] = [
     selectionTypes: ['single', 'multiple'],
     entryTypes: ['directory'],
   },
+  {
+    action: 'toggle-favorite',
+    selectionTypes: ['single', 'multiple'],
+    entryTypes: ['file', 'directory'],
+  },
+  {
+    action: 'edit-tags',
+    selectionTypes: ['single', 'multiple'],
+    entryTypes: ['file', 'directory'],
+  },
 ];
 
 export function useContextMenuItems(selectedEntries: Ref<DirEntry[]>) {

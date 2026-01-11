@@ -199,7 +199,31 @@
     "enableTheOptionCalled": "Adı verilen seçeneği etkinleştirin",
     "storeTheListOfOpenedDirectoryItems": "\"Açılan dizin öğelerinin listesini sakla\"",
     "inTheStatsSectionOfSettings": "ayarların \"İstatistikler\" bölümünde:",
-    "openedWillBeShownHere": "Açılan dizin öğeleri burada gösterilecek"
+    "openedWillBeShownHere": "Açılan dizin öğeleri burada gösterilecek",
+    "subtitle": "Favorilerinize, etiketli ve sık kullanılan öğelerinize hızlı erişim",
+    "tabs": {
+      "favorites": "Favoriler",
+      "tagged": "Etiketli",
+      "frequent": "Sık Kullanılan",
+      "history": "Geçmiş"
+    },
+    "emptyFavorites": "Henüz favori yok",
+    "emptyFavoritesDescription": "Gezginde herhangi bir dosya veya klasöre sağ tıklayın ve \"Favorilere ekle\" seçeneğini seçin.",
+    "emptyTagged": "Etiketli öğe yok",
+    "emptyTaggedDescription": "Hızlı erişim için dosya ve klasörlerinizi organize etmek ve kategorize etmek için etiketler kullanın.",
+    "emptyFrequent": "Sık kullanılan öğe yok",
+    "emptyFrequentDescription": "Sık açtığınız öğeler burada otomatik olarak görünecek.",
+    "emptyHistory": "Yakın geçmiş yok",
+    "emptyHistoryDescription": "Son açtığınız dosya ve klasörler burada görünecek.",
+    "clearHistory": "Geçmişi temizle",
+    "justNow": "Az önce",
+    "minutesAgo": "{n} dk önce | {n} dk önce | {n} dk önce | {n} dk önce",
+    "hoursAgo": "{n} saat önce | {n} saat önce | {n} saat önce | {n} saat önce",
+    "daysAgo": "{n} gün önce | {n} gün önce | {n} gün önce | {n} gün önce",
+    "openedCount": "{n} kez açıldı | {n} kez açıldı | {n} kez açıldı | {n} kez açıldı",
+    "actions": {
+      "clearAll": "Tümünü bu listeden kaldır"
+    }
   },
   "notes": {
     "newNote": "Yeni not",
@@ -1354,6 +1378,13 @@
   "showItems": "Öğeleri göster",
   "limit": "Sınır",
   "noData": "Veri yok",
+  "tags": {
+    "editTags": "Etiketleri düzenle",
+    "searchTags": "Etiket ara...",
+    "noTagsFound": "Etiket bulunamadı",
+    "createTag": "Etiket oluştur",
+    "deleteTag": "Etiketi sil"
+  },
   "action": "Eylem",
   "actions": "Hareketler",
   "options": "Seçenekler",
@@ -1536,7 +1567,9 @@
       "openWith": "Birlikte aç...",
       "quickView": "Hızlı görünüm",
       "share": "Paylaş",
-      "openInNewTab": "Yeni sekmede aç"
+      "openInNewTab": "Yeni sekmede aç",
+      "addToFavorites": "Favorilere ekle",
+      "removeFromFavorites": "Favorilerden kaldır"
     }
   }
 }

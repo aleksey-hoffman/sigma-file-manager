@@ -199,7 +199,31 @@
     "enableTheOptionCalled": "Activer l'option appelée",
     "storeTheListOfOpenedDirectoryItems": "\"Mémoriser la liste des éléments de répertoire ouverts\"",
     "inTheStatsSectionOfSettings": "dans la section \"Statistiques\" des paramètres :",
-    "openedWillBeShownHere": "Les éléments de répertoire ouverts seront affichés ici"
+    "openedWillBeShownHere": "Les éléments de répertoire ouverts seront affichés ici",
+    "subtitle": "Accès rapide à vos éléments favoris, tagués et fréquemment utilisés",
+    "tabs": {
+      "favorites": "Favoris",
+      "tagged": "Tagués",
+      "frequent": "Fréquents",
+      "history": "Historique"
+    },
+    "emptyFavorites": "Pas encore de favoris",
+    "emptyFavoritesDescription": "Faites un clic droit sur n'importe quel fichier ou dossier dans le navigateur et sélectionnez \"Ajouter aux favoris\".",
+    "emptyTagged": "Aucun élément tagué",
+    "emptyTaggedDescription": "Utilisez des tags pour organiser et catégoriser vos fichiers et dossiers pour un accès rapide.",
+    "emptyFrequent": "Aucun élément fréquent",
+    "emptyFrequentDescription": "Les éléments que vous ouvrez fréquemment apparaîtront ici automatiquement.",
+    "emptyHistory": "Aucun historique récent",
+    "emptyHistoryDescription": "Vos fichiers et dossiers récemment ouverts apparaîtront ici.",
+    "clearHistory": "Effacer l'historique",
+    "justNow": "À l'instant",
+    "minutesAgo": "il y a {n} min | il y a {n} min | il y a {n} min | il y a {n} min",
+    "hoursAgo": "il y a {n} heure | il y a {n} heures | il y a {n} heures | il y a {n} heures",
+    "daysAgo": "il y a {n} jour | il y a {n} jours | il y a {n} jours | il y a {n} jours",
+    "openedCount": "Ouvert {n} fois | Ouvert {n} fois | Ouvert {n} fois | Ouvert {n} fois",
+    "actions": {
+      "clearAll": "Tout supprimer de cette liste"
+    }
   },
   "notes": {
     "newNote": "Nouveau message",
@@ -1354,6 +1378,13 @@
   "showItems": "Afficher les éléments",
   "limit": "Limite",
   "noData": "Pas de données",
+  "tags": {
+    "editTags": "Modifier les tags",
+    "searchTags": "Rechercher des tags...",
+    "noTagsFound": "Aucun tag trouvé",
+    "createTag": "Créer un tag",
+    "deleteTag": "Supprimer le tag"
+  },
   "action": "Action",
   "actions": "Actions",
   "options": "Options",
@@ -1536,7 +1567,9 @@
       "openWith": "Ouvrir avec...",
       "quickView": "Aperçu rapide",
       "share": "Partager",
-      "openInNewTab": "Ouvrir dans un nouvel onglet"
+      "openInNewTab": "Ouvrir dans un nouvel onglet",
+      "addToFavorites": "Ajouter aux favoris",
+      "removeFromFavorites": "Retirer des favoris"
     }
   }
 }

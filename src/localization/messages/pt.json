@@ -199,7 +199,31 @@
     "enableTheOptionCalled": "habilite a opção chamada",
     "storeTheListOfOpenedDirectoryItems": "\"armazenar a lista de itens de diretório abertos\"",
     "inTheStatsSectionOfSettings": "na seção \"estatísticas\" das configurações:",
-    "openedWillBeShownHere": "aberto será mostrado aqui"
+    "openedWillBeShownHere": "aberto será mostrado aqui",
+    "subtitle": "Acesso rápido aos seus itens favoritos, marcados e frequentemente usados",
+    "tabs": {
+      "favorites": "Favoritos",
+      "tagged": "Marcados",
+      "frequent": "Frequentes",
+      "history": "Histórico"
+    },
+    "emptyFavorites": "Ainda sem favoritos",
+    "emptyFavoritesDescription": "Clique com o botão direito em qualquer arquivo ou pasta no navegador e selecione \"Adicionar aos favoritos\".",
+    "emptyTagged": "Sem itens marcados",
+    "emptyTaggedDescription": "Use tags para organizar e categorizar seus arquivos e pastas para acesso rápido.",
+    "emptyFrequent": "Sem itens frequentes",
+    "emptyFrequentDescription": "Itens que você abre frequentemente aparecerão aqui automaticamente.",
+    "emptyHistory": "Sem histórico recente",
+    "emptyHistoryDescription": "Seus arquivos e pastas abertos recentemente aparecerão aqui.",
+    "clearHistory": "Limpar histórico",
+    "justNow": "Agora mesmo",
+    "minutesAgo": "há {n} min | há {n} min | há {n} min | há {n} min",
+    "hoursAgo": "há {n} hora | há {n} horas | há {n} horas | há {n} horas",
+    "daysAgo": "há {n} dia | há {n} dias | há {n} dias | há {n} dias",
+    "openedCount": "Aberto {n} vez | Aberto {n} vezes | Aberto {n} vezes | Aberto {n} vezes",
+    "actions": {
+      "clearAll": "Remover tudo desta lista"
+    }
   },
   "notes": {
     "newNote": "nova nota",
@@ -1354,6 +1378,13 @@
 "showItems": "Mostrar itens",
 "limit": "Limite",
 "noData": "Sem dados",
+  "tags": {
+    "editTags": "Editar tags",
+    "searchTags": "Pesquisar tags...",
+    "noTagsFound": "Nenhuma tag encontrada",
+    "createTag": "Criar tag",
+    "deleteTag": "Excluir tag"
+  },
 "action": "Ação",
 "actions": "Comportamento",
 "options": "Opções",
@@ -1536,7 +1567,9 @@
       "openWith": "Abrir com...",
       "quickView": "Visualização rápida",
       "share": "Compartilhar",
-      "openInNewTab": "Abrir em nova aba"
+      "openInNewTab": "Abrir em nova aba",
+      "addToFavorites": "Adicionar aos favoritos",
+      "removeFromFavorites": "Remover dos favoritos"
     }
   }
 }

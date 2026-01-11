@@ -51,7 +51,7 @@ export interface GroupedEntries {
   others: DirEntry[];
 }
 
-export type ContextMenuAction = 'rename' | 'copy' | 'cut' | 'paste' | 'delete' | 'open-with' | 'quick-view' | 'share' | 'open-in-new-tab';
+export type ContextMenuAction = 'rename' | 'copy' | 'cut' | 'paste' | 'delete' | 'open-with' | 'quick-view' | 'share' | 'open-in-new-tab' | 'toggle-favorite' | 'edit-tags';
 
 export type SelectionType = 'single' | 'multiple';
 export type EntryType = 'file' | 'directory';

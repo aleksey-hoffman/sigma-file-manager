@@ -8,6 +8,7 @@ import { invoke } from '@tauri-apps/api/core';
 import type { DirEntry } from '@/types/dir-entry';
 import type { ContextMenuAction } from '@/modules/navigator/components/file-browser/types';
 import { useWorkspacesStore } from '@/stores/storage/workspaces';
+import { useUserStatsStore } from '@/stores/storage/user-stats';
 import { useClipboardStore, type FileOperationResult } from '@/stores/runtime/clipboard';
 import { toast, CustomProgress, CustomSimple } from '@/components/ui/toaster';
 import { UI_CONSTANTS } from '@/constants';
@@ -21,6 +22,7 @@ export function useFileBrowserSelection(
 ) {
   const { t } = useI18n();
   const workspacesStore = useWorkspacesStore();
+  const userStatsStore = useUserStatsStore();
   const clipboardStore = useClipboardStore();
   const selectedEntries = ref<DirEntry[]>([]);
   const lastSelectedEntry = ref<DirEntry | null>(null);
@@ -412,9 +414,39 @@ export function useFileBrowserSelection(
         }
 
         break;
+      case 'toggle-favorite':
+        if (entries.length > 0) {
+          toggleFavorites(entries);
+        }
+
+        break;
     }
 
     closeContextMenu();
+  }
+
+  async function toggleFavorites(entries: DirEntry[]) {
+    const allAreFavorites = entries.every(entry => userStatsStore.isFavorite(entry.path));
+
+    for (const entry of entries) {
+      if (allAreFavorites) {
+        await userStatsStore.removeFromFavorites(entry.path);
+      }
+      else if (!userStatsStore.isFavorite(entry.path)) {
+        await userStatsStore.addToFavorites(entry.path);
+      }
+    }
+
+    const message = allAreFavorites
+      ? t('notifications.removedFromFavorites', entries.length)
+      : t('notifications.addedToFavorites', entries.length);
+
+    toast.custom(markRaw(CustomSimple), {
+      componentProps: {
+        title: message,
+        description: '',
+      },
+    });
   }
 
   function resetMouseState() {

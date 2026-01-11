@@ -199,7 +199,31 @@
     "enableTheOptionCalled": "启用名为的选项",
     "storeTheListOfOpenedDirectoryItems": "\"存储打开的目录项列表\"",
     "inTheStatsSectionOfSettings": "在设置的 \"Stats\" 部分：",
-    "openedWillBeShownHere": "打开的目录项将显示在这里"
+    "openedWillBeShownHere": "打开的目录项将显示在这里",
+    "subtitle": "快速访问您的收藏、标记和常用项目",
+    "tabs": {
+      "favorites": "收藏",
+      "tagged": "已标记",
+      "frequent": "常用",
+      "history": "历史"
+    },
+    "emptyFavorites": "暂无收藏",
+    "emptyFavoritesDescription": "在导航器中右键点击任何文件或文件夹，选择\"添加到收藏\"。",
+    "emptyTagged": "无标记项目",
+    "emptyTaggedDescription": "使用标签来组织和分类您的文件和文件夹以便快速访问。",
+    "emptyFrequent": "无常用项目",
+    "emptyFrequentDescription": "您经常打开的项目将自动显示在这里。",
+    "emptyHistory": "无最近历史",
+    "emptyHistoryDescription": "您最近打开的文件和文件夹将显示在这里。",
+    "clearHistory": "清除历史",
+    "justNow": "刚刚",
+    "minutesAgo": "{n}分钟前 | {n}分钟前 | {n}分钟前 | {n}分钟前",
+    "hoursAgo": "{n}小时前 | {n}小时前 | {n}小时前 | {n}小时前",
+    "daysAgo": "{n}天前 | {n}天前 | {n}天前 | {n}天前",
+    "openedCount": "已打开{n}次 | 已打开{n}次 | 已打开{n}次 | 已打开{n}次",
+    "actions": {
+      "clearAll": "从此列表中删除全部"
+    }
   },
   "notes": {
     "newNote": "新建笔记",
@@ -1354,6 +1378,13 @@
   "showItems": "显示项目",
   "limit": "限制",
   "noData": "没有数据",
+  "tags": {
+    "editTags": "编辑标签",
+    "searchTags": "搜索标签...",
+    "noTagsFound": "未找到标签",
+    "createTag": "创建标签",
+    "deleteTag": "删除标签"
+  },
   "action": "操作",
   "actions": "操作",
   "options": "选项",
@@ -1536,7 +1567,9 @@
       "openWith": "打开方式...",
       "quickView": "快速查看",
       "share": "分享",
-      "openInNewTab": "在新标签页中打开"
+      "openInNewTab": "在新标签页中打开",
+      "addToFavorites": "添加到收藏",
+      "removeFromFavorites": "从收藏中移除"
     }
   }
 }

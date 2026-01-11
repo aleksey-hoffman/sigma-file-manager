@@ -199,7 +199,31 @@
     "enableTheOptionCalled": "Bật tùy chọn có tên",
     "storeTheListOfOpenedDirectoryItems": "\"Lưu trữ danh sách các mục thư mục đã mở\"",
     "inTheStatsSectionOfSettings": "trong phần \"Thống kê\" của cài đặt:",
-    "openedWillBeShownHere": "Các mục thư mục đã mở sẽ được hiển thị ở đây"
+    "openedWillBeShownHere": "Các mục thư mục đã mở sẽ được hiển thị ở đây",
+    "subtitle": "Truy cập nhanh các mục yêu thích, được gắn thẻ và thường dùng",
+    "tabs": {
+      "favorites": "Yêu thích",
+      "tagged": "Đã gắn thẻ",
+      "frequent": "Thường dùng",
+      "history": "Lịch sử"
+    },
+    "emptyFavorites": "Chưa có mục yêu thích",
+    "emptyFavoritesDescription": "Nhấp chuột phải vào bất kỳ tệp hoặc thư mục nào trong trình duyệt và chọn \"Thêm vào yêu thích\".",
+    "emptyTagged": "Không có mục được gắn thẻ",
+    "emptyTaggedDescription": "Sử dụng thẻ để tổ chức và phân loại tệp và thư mục của bạn để truy cập nhanh.",
+    "emptyFrequent": "Không có mục thường dùng",
+    "emptyFrequentDescription": "Các mục bạn mở thường xuyên sẽ tự động xuất hiện ở đây.",
+    "emptyHistory": "Không có lịch sử gần đây",
+    "emptyHistoryDescription": "Các tệp và thư mục bạn đã mở gần đây sẽ xuất hiện ở đây.",
+    "clearHistory": "Xóa lịch sử",
+    "justNow": "Vừa xong",
+    "minutesAgo": "{n} phút trước | {n} phút trước | {n} phút trước | {n} phút trước",
+    "hoursAgo": "{n} giờ trước | {n} giờ trước | {n} giờ trước | {n} giờ trước",
+    "daysAgo": "{n} ngày trước | {n} ngày trước | {n} ngày trước | {n} ngày trước",
+    "openedCount": "Đã mở {n} lần | Đã mở {n} lần | Đã mở {n} lần | Đã mở {n} lần",
+    "actions": {
+      "clearAll": "Xóa tất cả khỏi danh sách này"
+    }
   },
   "notes": {
     "newNote": "Ghi chú mới",
@@ -1354,6 +1378,13 @@
   "showItems": "Hiển thị mục",
   "limit": "Giới hạn",
   "noData": "Không có dữ liệu",
+  "tags": {
+    "editTags": "Chỉnh sửa thẻ",
+    "searchTags": "Tìm kiếm thẻ...",
+    "noTagsFound": "Không tìm thấy thẻ",
+    "createTag": "Tạo thẻ",
+    "deleteTag": "Xóa thẻ"
+  },
   "action": "Hoạt động",
   "actions": "Hành động",
   "options": "Tùy chọn",
@@ -1536,7 +1567,9 @@
       "openWith": "Mở bằng...",
       "quickView": "Xem nhanh",
       "share": "Chia sẻ",
-      "openInNewTab": "Mở trong tab mới"
+      "openInNewTab": "Mở trong tab mới",
+      "addToFavorites": "Thêm vào yêu thích",
+      "removeFromFavorites": "Xóa khỏi yêu thích"
     }
   }
 }

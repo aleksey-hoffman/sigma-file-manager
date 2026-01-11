@@ -58,6 +58,8 @@ export interface CustomPaths {
   appUserDataSettingsPath: string;
   appUserDataWorkspacesName: string;
   appUserDataWorkspacesPath: string;
+  appUserDataStatsName: string;
+  appUserDataStatsPath: string;
 }
 
 export interface UserPathsFunctions {

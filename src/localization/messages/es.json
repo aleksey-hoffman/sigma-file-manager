@@ -199,7 +199,31 @@
     "enableTheOptionCalled": "Habilitar la opción llamada",
     "storeTheListOfOpenedDirectoryItems": "\"Almacenar la lista de elementos de directorio abiertos\"",
     "inTheStatsSectionOfSettings": "en la sección \"Estadísticas\" de la configuración:",
-    "openedWillBeShownHere": "Los elementos del directorio abiertos se mostrarán aquí"
+    "openedWillBeShownHere": "Los elementos del directorio abiertos se mostrarán aquí",
+    "subtitle": "Acceso rápido a tus elementos favoritos, etiquetados y más utilizados",
+    "tabs": {
+      "favorites": "Favoritos",
+      "tagged": "Etiquetados",
+      "frequent": "Frecuentes",
+      "history": "Historial"
+    },
+    "emptyFavorites": "Aún no hay favoritos",
+    "emptyFavoritesDescription": "Haz clic derecho en cualquier archivo o carpeta en el navegador y selecciona \"Añadir a favoritos\".",
+    "emptyTagged": "Sin elementos etiquetados",
+    "emptyTaggedDescription": "Usa etiquetas para organizar y categorizar tus archivos y carpetas para un acceso rápido.",
+    "emptyFrequent": "Sin elementos frecuentes",
+    "emptyFrequentDescription": "Los elementos que abres con frecuencia aparecerán aquí automáticamente.",
+    "emptyHistory": "Sin historial reciente",
+    "emptyHistoryDescription": "Tus archivos y carpetas abiertos recientemente aparecerán aquí.",
+    "clearHistory": "Limpiar historial",
+    "justNow": "Ahora mismo",
+    "minutesAgo": "hace {n} min | hace {n} min | hace {n} min | hace {n} min",
+    "hoursAgo": "hace {n} hora | hace {n} horas | hace {n} horas | hace {n} horas",
+    "daysAgo": "hace {n} día | hace {n} días | hace {n} días | hace {n} días",
+    "openedCount": "Abierto {n} vez | Abierto {n} veces | Abierto {n} veces | Abierto {n} veces",
+    "actions": {
+      "clearAll": "Eliminar todo de esta lista"
+    }
   },
   "notes": {
     "newNote": "Nueva nota",
@@ -1354,6 +1378,13 @@
   "showItems": "Mostrar elementos",
   "limit": "Límite",
   "noData": "Sin datos",
+  "tags": {
+    "editTags": "Editar etiquetas",
+    "searchTags": "Buscar etiquetas...",
+    "noTagsFound": "No se encontraron etiquetas",
+    "createTag": "Crear etiqueta",
+    "deleteTag": "Eliminar etiqueta"
+  },
   "action": "Acción",
   "actions": "Comportamiento",
   "options": "Opciones",
@@ -1536,7 +1567,9 @@
       "openWith": "Abrir con...",
       "quickView": "Vista rápida",
       "share": "Compartir",
-      "openInNewTab": "Abrir en nueva pestaña"
+      "openInNewTab": "Abrir en nueva pestaña",
+      "addToFavorites": "Añadir a favoritos",
+      "removeFromFavorites": "Quitar de favoritos"
     }
   }
 }

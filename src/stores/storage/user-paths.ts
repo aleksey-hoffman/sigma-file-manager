@@ -39,6 +39,8 @@ export const useUserPathsStore = defineStore('userPaths', () => {
     appUserDataSettingsPath: '',
     appUserDataWorkspacesName: '',
     appUserDataWorkspacesPath: '',
+    appUserDataStatsName: '',
+    appUserDataStatsPath: '',
   });
 
   const platformSpecificPaths = new Set(['runtimeDir', 'fontDir', 'executableDir', 'templateDir']);
@@ -71,6 +73,8 @@ export const useUserPathsStore = defineStore('userPaths', () => {
     customPaths.value.appUserDataSettingsPath = `${customPaths.value.appUserDataDir}/${customPaths.value.appUserDataSettingsName}`;
     customPaths.value.appUserDataWorkspacesName = 'workspaces.json';
     customPaths.value.appUserDataWorkspacesPath = `${customPaths.value.appUserDataDir}/${customPaths.value.appUserDataWorkspacesName}`;
+    customPaths.value.appUserDataStatsName = 'user-stats.json';
+    customPaths.value.appUserDataStatsPath = `${customPaths.value.appUserDataDir}/${customPaths.value.appUserDataStatsName}`;
   }
 
   return {

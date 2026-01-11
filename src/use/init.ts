@@ -6,6 +6,7 @@ import { onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useUserPathsStore } from '@/stores/storage/user-paths';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
+import { useUserStatsStore } from '@/stores/storage/user-stats';
 import { useWorkspacesStore } from '@/stores/storage/workspaces';
 import { usePlatformStore } from '@/stores/runtime/platform';
 import { useGlobalSearchStore } from '@/stores/runtime/global-search';
@@ -15,6 +16,7 @@ import { disableWebViewFeatures } from '@/utils/disable-web-view-features';
 export function useInit() {
   const router = useRouter();
   const userSettingsStore = useUserSettingsStore();
+  const userStatsStore = useUserStatsStore();
   const workspacesStore = useWorkspacesStore();
   const userPathsStore = useUserPathsStore();
   const platformStore = usePlatformStore();
@@ -41,6 +43,7 @@ export function useInit() {
     await platformStore.init();
     await userPathsStore.init();
     await userSettingsStore.init();
+    await userStatsStore.init();
     await workspacesStore.init();
     await globalSearchStore.initOnLaunch();
     shortcutsStore.init();
