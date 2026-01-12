@@ -1571,5 +1571,43 @@
       "addToFavorites": "添加到收藏",
       "removeFromFavorites": "从收藏中移除"
     }
+  },
+  "openWith": {
+    "title": "打开方式",
+    "selectAppTitle": "选择一个应用来打开此 {ext} 文件",
+    "loadingPrograms": "正在加载程序...",
+    "defaultApp": "默认应用",
+    "suggestedApps": "推荐应用",
+    "otherApps": "其他应用",
+    "moreOptions": "更多选项",
+    "noProgramsFound": "未找到此文件类型的关联程序",
+    "customProgram": "自定义程序",
+    "enterProgramPath": "选择其他应用或输入路径...",
+    "selectProgram": "选择程序",
+    "advancedOptions": "高级选项",
+    "arguments": "参数",
+    "argumentsHint": "附加命令行参数。使用 %1 作为文件路径的占位符。",
+    "argumentsPlaceholder": "例如 --new-window --flag",
+    "open": "打开",
+    "always": "始终使用",
+    "justOnce": "仅此一次",
+    "failedToLoadPrograms": "加载关联程序失败",
+    "failedToOpenFile": "打开文件失败",
+    "chooseAnotherApp": "选择其他应用...",
+    "customCommandWithFlags": "带参数的自定义命令...",
+    "customCommands": "自定义命令",
+    "addCustomCommand": "添加自定义命令",
+    "editCustomCommand": "编辑自定义命令",
+    "commandName": "命令名称",
+    "commandNamePlaceholder": "例如：带字幕的VLC",
+    "programPath": "程序路径",
+    "noCustomCommands": "暂无自定义命令。添加自定义命令以使用特定参数打开文件。"
+  },
+  "moreOptions": {
+    "showMoreOptions": "显示更多选项",
+    "loading": "正在加载选项...",
+    "shellExtensions": "Shell 扩展",
+    "noOptionsAvailable": "没有其他可用选项",
+    "failedToLoad": "加载选项失败"
   }
 }

@@ -1571,5 +1571,43 @@
       "addToFavorites": "お気に入りに追加",
       "removeFromFavorites": "お気に入りから削除"
     }
+  },
+  "openWith": {
+    "title": "アプリで開く",
+    "selectAppTitle": "この {ext} ファイルを開くアプリを選択",
+    "loadingPrograms": "プログラムを読み込み中...",
+    "defaultApp": "既定のアプリ",
+    "suggestedApps": "おすすめのアプリ",
+    "otherApps": "その他のアプリ",
+    "moreOptions": "その他のオプション",
+    "noProgramsFound": "このファイル形式に関連付けられたプログラムが見つかりません",
+    "customProgram": "カスタムプログラム",
+    "enterProgramPath": "別のアプリを選択またはパスを入力...",
+    "selectProgram": "プログラムを選択",
+    "advancedOptions": "詳細オプション",
+    "arguments": "引数",
+    "argumentsHint": "追加のコマンドライン引数。ファイルパスのプレースホルダーとして %1 を使用してください。",
+    "argumentsPlaceholder": "例: --new-window --flag",
+    "open": "開く",
+    "always": "常に使用",
+    "justOnce": "一度だけ",
+    "failedToLoadPrograms": "関連付けられたプログラムの読み込みに失敗しました",
+    "failedToOpenFile": "ファイルを開けませんでした",
+    "chooseAnotherApp": "別のアプリを選択...",
+    "customCommandWithFlags": "フラグ付きカスタムコマンド...",
+    "customCommands": "カスタムコマンド",
+    "addCustomCommand": "カスタムコマンドを追加",
+    "editCustomCommand": "カスタムコマンドを編集",
+    "commandName": "コマンド名",
+    "commandNamePlaceholder": "例: 字幕付きVLC",
+    "programPath": "プログラムパス",
+    "noCustomCommands": "カスタムコマンドがありません。特定のフラグでファイルを開くためのカスタムコマンドを追加してください。"
+  },
+  "moreOptions": {
+    "showMoreOptions": "その他のオプションを表示",
+    "loading": "オプションを読み込み中...",
+    "shellExtensions": "シェル拡張機能",
+    "noOptionsAvailable": "追加のオプションはありません",
+    "failedToLoad": "オプションの読み込みに失敗しました"
   }
 }

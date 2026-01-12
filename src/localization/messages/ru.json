@@ -1573,5 +1573,43 @@
       "addToFavorites": "Добавить в избранное",
       "removeFromFavorites": "Удалить из избранного"
     }
+  },
+  "openWith": {
+    "title": "Открыть с помощью",
+    "selectAppTitle": "Выберите приложение для открытия файла {ext}",
+    "loadingPrograms": "Загрузка программ...",
+    "defaultApp": "Приложение по умолчанию",
+    "suggestedApps": "Рекомендуемые приложения",
+    "otherApps": "Другие приложения",
+    "moreOptions": "Дополнительные варианты",
+    "noProgramsFound": "Не найдены связанные программы для этого типа файла",
+    "customProgram": "Другая программа",
+    "enterProgramPath": "Выбрать другое приложение или ввести путь...",
+    "selectProgram": "Выбрать программу",
+    "advancedOptions": "Дополнительные параметры",
+    "arguments": "Аргументы",
+    "argumentsHint": "Дополнительные аргументы командной строки. Используйте %1 как заполнитель для пути к файлу.",
+    "argumentsPlaceholder": "напр. --new-window --flag",
+    "open": "Открыть",
+    "always": "Всегда",
+    "justOnce": "Только сейчас",
+    "failedToLoadPrograms": "Не удалось загрузить связанные программы",
+    "failedToOpenFile": "Не удалось открыть файл",
+    "chooseAnotherApp": "Выбрать другое приложение...",
+    "customCommandWithFlags": "Пользовательская команда с флагами...",
+    "customCommands": "Пользовательские команды",
+    "addCustomCommand": "Добавить команду",
+    "editCustomCommand": "Редактировать команду",
+    "commandName": "Название команды",
+    "commandNamePlaceholder": "напр. VLC с субтитрами",
+    "programPath": "Путь к программе",
+    "noCustomCommands": "Нет пользовательских команд. Добавьте команду для открытия файлов с определёнными флагами."
+  },
+  "moreOptions": {
+    "showMoreOptions": "Показать больше опций",
+    "loading": "Загрузка опций...",
+    "shellExtensions": "Расширения оболочки",
+    "noOptionsAvailable": "Дополнительные опции недоступны",
+    "failedToLoad": "Не удалось загрузить опции"
   }
 }

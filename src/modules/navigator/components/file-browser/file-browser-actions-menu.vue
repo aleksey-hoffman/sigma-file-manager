@@ -14,7 +14,6 @@ import {
   FolderInputIcon,
   ClipboardPasteIcon,
   Trash2Icon,
-  ExternalLinkIcon,
   EyeIcon,
   Share2Icon,
   PanelRightIcon,
@@ -27,19 +26,27 @@ import type { DirEntry } from '@/types/dir-entry';
 import type { ContextMenuAction } from './types';
 import { useContextMenuItems } from './composables/use-context-menu-items';
 import { toRef, computed } from 'vue';
+import FileBrowserOpenWithSubmenu from './file-browser-open-with-submenu.vue';
+import FileBrowserMoreOptionsSubmenu from './file-browser-more-options-submenu.vue';
 
 const props = defineProps<{
   selectedEntries: DirEntry[];
   menuItemComponent: object;
   menuSeparatorComponent: object;
+  isContextMenu?: boolean;
 }>();
 
 const emit = defineEmits<{
   action: [action: ContextMenuAction];
+  openCustomDialog: [];
 }>();
 
 function emitAction(action: ContextMenuAction) {
   emit('action', action);
+}
+
+function handleOpenCustomDialog() {
+  emit('openCustomDialog');
 }
 
 function handleCopyClick() {
@@ -130,7 +137,10 @@ const canPasteToSelectedDirectory = computed(() => {
 
 <template>
   <div class="file-browser-actions-menu__quick-actions">
-    <Tooltip v-if="isActionVisible('rename')">
+    <Tooltip
+      :delay-duration="300"
+      v-if="isActionVisible('rename')"
+    >
       <TooltipTrigger as-child>
         <Button
           variant="ghost"
@@ -145,7 +155,10 @@ const canPasteToSelectedDirectory = computed(() => {
         <kbd class="shortcut">{{ shortcutsStore.getShortcutLabel('rename') }}</kbd>
       </TooltipContent>
     </Tooltip>
-    <Tooltip v-if="isActionVisible('copy')">
+    <Tooltip
+      :delay-duration="300"
+      v-if="isActionVisible('copy')"
+    >
       <TooltipTrigger as-child>
         <Button
           variant="ghost"
@@ -162,7 +175,10 @@ const canPasteToSelectedDirectory = computed(() => {
         </div>
       </TooltipContent>
     </Tooltip>
-    <Tooltip v-if="isActionVisible('cut')">
+    <Tooltip
+      :delay-duration="300"
+      v-if="isActionVisible('cut')"
+    >
       <TooltipTrigger as-child>
         <Button
           variant="ghost"
@@ -179,7 +195,10 @@ const canPasteToSelectedDirectory = computed(() => {
         </div>
       </TooltipContent>
     </Tooltip>
-    <Tooltip v-if="canPasteToSelectedDirectory">
+    <Tooltip
+      :delay-duration="300"
+      v-if="canPasteToSelectedDirectory"
+    >
       <TooltipTrigger as-child>
         <Button
           variant="ghost"
@@ -196,7 +215,10 @@ const canPasteToSelectedDirectory = computed(() => {
         </div>
       </TooltipContent>
     </Tooltip>
-    <Tooltip v-if="isActionVisible('delete')">
+    <Tooltip
+      :delay-duration="300"
+      v-if="isActionVisible('delete')"
+    >
       <TooltipTrigger as-child>
         <Button
           variant="ghost"
@@ -220,13 +242,21 @@ const canPasteToSelectedDirectory = computed(() => {
     </Tooltip>
   </div>
   <component :is="menuSeparatorComponent" />
+  <FileBrowserOpenWithSubmenu
+    v-if="isActionVisible('open-with') && isContextMenu"
+    :selected-entries="selectedEntries"
+    @open-custom-dialog="handleOpenCustomDialog"
+  />
+  <FileBrowserMoreOptionsSubmenu
+    v-if="isContextMenu"
+    :selected-entries="selectedEntries"
+  />
   <component
     :is="menuItemComponent"
-    v-if="isActionVisible('open-with')"
+    v-if="isActionVisible('open-with') && !isContextMenu"
     @select="emitAction('open-with')"
     @click="emitAction('open-with')"
   >
-    <ExternalLinkIcon :size="16" />
     <span>{{ t('fileBrowser.actions.openWith') }}</span>
   </component>
   <component
@@ -312,6 +342,6 @@ const canPasteToSelectedDirectory = computed(() => {
 }
 
 .file-browser-actions-menu__tag-selector {
-  padding: 6px 8px;
+  padding: 6px 0;
 }
 </style>

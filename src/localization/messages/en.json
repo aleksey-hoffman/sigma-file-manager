@@ -1573,5 +1573,43 @@
       "addToFavorites": "Add to favorites",
       "removeFromFavorites": "Remove from favorites"
     }
+  },
+  "openWith": {
+    "title": "Open with",
+    "selectAppTitle": "Select an app to open this {ext} file",
+    "loadingPrograms": "Loading programs...",
+    "defaultApp": "Default app",
+    "suggestedApps": "Suggested apps",
+    "otherApps": "Other apps",
+    "moreOptions": "More options",
+    "noProgramsFound": "No associated programs found for this file type",
+    "customProgram": "Custom program",
+    "enterProgramPath": "Choose another app or enter path...",
+    "selectProgram": "Select program",
+    "advancedOptions": "Advanced options",
+    "arguments": "Arguments",
+    "argumentsHint": "Additional command-line arguments. Use %1 as placeholder for the file path.",
+    "argumentsPlaceholder": "e.g. --new-window --flag",
+    "open": "Open",
+    "always": "Always",
+    "justOnce": "Just once",
+    "failedToLoadPrograms": "Failed to load associated programs",
+    "failedToOpenFile": "Failed to open file",
+    "chooseAnotherApp": "Choose another app...",
+    "customCommandWithFlags": "Custom command with flags...",
+    "customCommands": "Custom commands",
+    "addCustomCommand": "Add custom command",
+    "editCustomCommand": "Edit custom command",
+    "commandName": "Command name",
+    "commandNamePlaceholder": "e.g. VLC with subtitles",
+    "programPath": "Program path",
+    "noCustomCommands": "No custom commands yet. Add a custom command to open files with specific flags."
+  },
+  "moreOptions": {
+    "showMoreOptions": "Show more options",
+    "loading": "Loading options...",
+    "shellExtensions": "Shell extensions",
+    "noOptionsAvailable": "No additional options available",
+    "failedToLoad": "Failed to load options"
   }
 }

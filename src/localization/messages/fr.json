@@ -1571,5 +1571,43 @@
       "addToFavorites": "Ajouter aux favoris",
       "removeFromFavorites": "Retirer des favoris"
     }
+  },
+  "openWith": {
+    "title": "Ouvrir avec",
+    "selectAppTitle": "Sélectionner une app pour ouvrir ce fichier {ext}",
+    "loadingPrograms": "Chargement des programmes...",
+    "defaultApp": "App par défaut",
+    "suggestedApps": "Apps suggérées",
+    "otherApps": "Autres apps",
+    "moreOptions": "Plus d'options",
+    "noProgramsFound": "Aucun programme associé trouvé pour ce type de fichier",
+    "customProgram": "Programme personnalisé",
+    "enterProgramPath": "Choisir une autre app ou entrer le chemin...",
+    "selectProgram": "Sélectionner un programme",
+    "advancedOptions": "Options avancées",
+    "arguments": "Arguments",
+    "argumentsHint": "Arguments de ligne de commande supplémentaires. Utilisez %1 comme espace réservé pour le chemin du fichier.",
+    "argumentsPlaceholder": "ex. --new-window --flag",
+    "open": "Ouvrir",
+    "always": "Toujours",
+    "justOnce": "Une seule fois",
+    "failedToLoadPrograms": "Échec du chargement des programmes associés",
+    "failedToOpenFile": "Échec de l'ouverture du fichier",
+    "chooseAnotherApp": "Choisir une autre application...",
+    "customCommandWithFlags": "Commande personnalisée avec drapeaux...",
+    "customCommands": "Commandes personnalisées",
+    "addCustomCommand": "Ajouter une commande",
+    "editCustomCommand": "Modifier la commande",
+    "commandName": "Nom de la commande",
+    "commandNamePlaceholder": "ex. VLC avec sous-titres",
+    "programPath": "Chemin du programme",
+    "noCustomCommands": "Pas encore de commandes personnalisées. Ajoutez une commande pour ouvrir des fichiers avec des drapeaux spécifiques."
+  },
+  "moreOptions": {
+    "showMoreOptions": "Afficher plus d'options",
+    "loading": "Chargement des options...",
+    "shellExtensions": "Extensions du shell",
+    "noOptionsAvailable": "Aucune option supplémentaire disponible",
+    "failedToLoad": "Échec du chargement des options"
   }
 }

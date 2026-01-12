@@ -1571,5 +1571,43 @@
       "addToFavorites": "Zu Favoriten hinzufügen",
       "removeFromFavorites": "Aus Favoriten entfernen"
     }
+  },
+  "openWith": {
+    "title": "Öffnen mit",
+    "selectAppTitle": "App zum Öffnen dieser {ext}-Datei auswählen",
+    "loadingPrograms": "Programme werden geladen...",
+    "defaultApp": "Standard-App",
+    "suggestedApps": "Empfohlene Apps",
+    "otherApps": "Andere Apps",
+    "moreOptions": "Weitere Optionen",
+    "noProgramsFound": "Keine zugeordneten Programme für diesen Dateityp gefunden",
+    "customProgram": "Benutzerdefiniertes Programm",
+    "enterProgramPath": "Andere App wählen oder Pfad eingeben...",
+    "selectProgram": "Programm auswählen",
+    "advancedOptions": "Erweiterte Optionen",
+    "arguments": "Argumente",
+    "argumentsHint": "Zusätzliche Befehlszeilenargumente. Verwenden Sie %1 als Platzhalter für den Dateipfad.",
+    "argumentsPlaceholder": "z.B. --new-window --flag",
+    "open": "Öffnen",
+    "always": "Immer",
+    "justOnce": "Nur einmal",
+    "failedToLoadPrograms": "Fehler beim Laden der zugeordneten Programme",
+    "failedToOpenFile": "Fehler beim Öffnen der Datei",
+    "chooseAnotherApp": "Andere App wählen...",
+    "customCommandWithFlags": "Benutzerdefinierter Befehl mit Flags...",
+    "customCommands": "Benutzerdefinierte Befehle",
+    "addCustomCommand": "Befehl hinzufügen",
+    "editCustomCommand": "Befehl bearbeiten",
+    "commandName": "Befehlsname",
+    "commandNamePlaceholder": "z.B. VLC mit Untertiteln",
+    "programPath": "Programmpfad",
+    "noCustomCommands": "Noch keine benutzerdefinierten Befehle. Fügen Sie einen Befehl hinzu, um Dateien mit bestimmten Flags zu öffnen."
+  },
+  "moreOptions": {
+    "showMoreOptions": "Weitere Optionen anzeigen",
+    "loading": "Optionen werden geladen...",
+    "shellExtensions": "Shell-Erweiterungen",
+    "noOptionsAvailable": "Keine weiteren Optionen verfügbar",
+    "failedToLoad": "Optionen konnten nicht geladen werden"
   }
 }

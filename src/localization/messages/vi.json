@@ -1571,5 +1571,43 @@
       "addToFavorites": "Thêm vào yêu thích",
       "removeFromFavorites": "Xóa khỏi yêu thích"
     }
+  },
+  "openWith": {
+    "title": "Mở bằng",
+    "selectAppTitle": "Chọn một ứng dụng để mở tệp {ext} này",
+    "loadingPrograms": "Đang tải chương trình...",
+    "defaultApp": "Ứng dụng mặc định",
+    "suggestedApps": "Ứng dụng được đề xuất",
+    "otherApps": "Ứng dụng khác",
+    "moreOptions": "Tùy chọn khác",
+    "noProgramsFound": "Không tìm thấy chương trình liên kết cho loại tệp này",
+    "customProgram": "Chương trình tùy chỉnh",
+    "enterProgramPath": "Chọn ứng dụng khác hoặc nhập đường dẫn...",
+    "selectProgram": "Chọn chương trình",
+    "advancedOptions": "Tùy chọn nâng cao",
+    "arguments": "Tham số",
+    "argumentsHint": "Tham số dòng lệnh bổ sung. Sử dụng %1 làm chỗ giữ chỗ cho đường dẫn tệp.",
+    "argumentsPlaceholder": "ví dụ: --new-window --flag",
+    "open": "Mở",
+    "always": "Luôn luôn",
+    "justOnce": "Chỉ lần này",
+    "failedToLoadPrograms": "Không thể tải các chương trình liên kết",
+    "failedToOpenFile": "Không thể mở tệp",
+    "chooseAnotherApp": "Chọn ứng dụng khác...",
+    "customCommandWithFlags": "Lệnh tùy chỉnh với cờ...",
+    "customCommands": "Lệnh tùy chỉnh",
+    "addCustomCommand": "Thêm lệnh tùy chỉnh",
+    "editCustomCommand": "Chỉnh sửa lệnh tùy chỉnh",
+    "commandName": "Tên lệnh",
+    "commandNamePlaceholder": "ví dụ: VLC với phụ đề",
+    "programPath": "Đường dẫn chương trình",
+    "noCustomCommands": "Chưa có lệnh tùy chỉnh. Thêm lệnh tùy chỉnh để mở tệp với các cờ cụ thể."
+  },
+  "moreOptions": {
+    "showMoreOptions": "Hiển thị thêm tùy chọn",
+    "loading": "Đang tải tùy chọn...",
+    "shellExtensions": "Tiện ích shell",
+    "noOptionsAvailable": "Không có tùy chọn bổ sung",
+    "failedToLoad": "Không thể tải tùy chọn"
   }
 }

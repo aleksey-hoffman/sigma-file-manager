@@ -1570,5 +1570,43 @@
       "addToFavorites": "افزودن به موردعلاقه‌ها",
       "removeFromFavorites": "حذف از موردعلاقه‌ها"
     }
+  },
+  "openWith": {
+    "title": "باز کردن با",
+    "selectAppTitle": "یک برنامه برای باز کردن این فایل {ext} انتخاب کنید",
+    "loadingPrograms": "در حال بارگذاری برنامه‌ها...",
+    "defaultApp": "برنامه پیش‌فرض",
+    "suggestedApps": "برنامه‌های پیشنهادی",
+    "otherApps": "برنامه‌های دیگر",
+    "moreOptions": "گزینه‌های بیشتر",
+    "noProgramsFound": "هیچ برنامه مرتبطی برای این نوع فایل یافت نشد",
+    "customProgram": "برنامه سفارشی",
+    "enterProgramPath": "برنامه دیگر انتخاب کنید یا مسیر را وارد کنید...",
+    "selectProgram": "انتخاب برنامه",
+    "advancedOptions": "گزینه‌های پیشرفته",
+    "arguments": "آرگومان‌ها",
+    "argumentsHint": "آرگومان‌های اضافی خط فرمان. از %1 به عنوان جایگزین مسیر فایل استفاده کنید.",
+    "argumentsPlaceholder": "مثال: --new-window --flag",
+    "open": "باز کردن",
+    "always": "همیشه",
+    "justOnce": "فقط این بار",
+    "failedToLoadPrograms": "بارگذاری برنامه‌های مرتبط ناموفق بود",
+    "failedToOpenFile": "باز کردن فایل ناموفق بود",
+    "chooseAnotherApp": "انتخاب برنامه دیگر...",
+    "customCommandWithFlags": "دستور سفارشی با پرچم‌ها...",
+    "customCommands": "دستورات سفارشی",
+    "addCustomCommand": "افزودن دستور سفارشی",
+    "editCustomCommand": "ویرایش دستور سفارشی",
+    "commandName": "نام دستور",
+    "commandNamePlaceholder": "مثال: VLC با زیرنویس",
+    "programPath": "مسیر برنامه",
+    "noCustomCommands": "هنوز دستور سفارشی وجود ندارد. برای باز کردن فایل‌ها با پرچم‌های خاص، دستور سفارشی اضافه کنید."
+  },
+  "moreOptions": {
+    "showMoreOptions": "نمایش گزینه‌های بیشتر",
+    "loading": "در حال بارگذاری گزینه‌ها...",
+    "shellExtensions": "افزونه‌های شل",
+    "noOptionsAvailable": "گزینه اضافی موجود نیست",
+    "failedToLoad": "بارگذاری گزینه‌ها ناموفق بود"
   }
 }

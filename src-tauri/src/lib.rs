@@ -5,6 +5,7 @@
 mod dir_reader;
 mod file_operations;
 mod global_search;
+mod open_with;
 mod system_icons;
 mod system_tray;
 
@@ -29,6 +30,12 @@ pub fn run() {
             global_search::global_search_start_scan,
             global_search::global_search_cancel_scan,
             global_search::global_search_query,
+            open_with::get_associated_programs,
+            open_with::open_with_program,
+            open_with::open_with_default,
+            open_with::open_native_open_with_dialog,
+            open_with::get_shell_context_menu,
+            open_with::invoke_shell_context_menu_item,
             system_icons::get_system_icon,
         ])
         .setup(setup_handler)

@@ -1571,5 +1571,43 @@
       "addToFavorites": "Favorilere ekle",
       "removeFromFavorites": "Favorilerden kaldır"
     }
+  },
+  "openWith": {
+    "title": "Birlikte aç",
+    "selectAppTitle": "Bu {ext} dosyasını açmak için bir uygulama seçin",
+    "loadingPrograms": "Programlar yükleniyor...",
+    "defaultApp": "Varsayılan uygulama",
+    "suggestedApps": "Önerilen uygulamalar",
+    "otherApps": "Diğer uygulamalar",
+    "moreOptions": "Daha fazla seçenek",
+    "noProgramsFound": "Bu dosya türü için ilişkili program bulunamadı",
+    "customProgram": "Özel program",
+    "enterProgramPath": "Başka bir uygulama seç veya yol girin...",
+    "selectProgram": "Program seç",
+    "advancedOptions": "Gelişmiş seçenekler",
+    "arguments": "Argümanlar",
+    "argumentsHint": "Ek komut satırı argümanları. Dosya yolu için %1 yer tutucusunu kullanın.",
+    "argumentsPlaceholder": "örn. --new-window --flag",
+    "open": "Aç",
+    "always": "Her zaman",
+    "justOnce": "Sadece bu sefer",
+    "failedToLoadPrograms": "İlişkili programlar yüklenemedi",
+    "failedToOpenFile": "Dosya açılamadı",
+    "chooseAnotherApp": "Başka bir uygulama seç...",
+    "customCommandWithFlags": "Bayraklarla özel komut...",
+    "customCommands": "Özel komutlar",
+    "addCustomCommand": "Özel komut ekle",
+    "editCustomCommand": "Özel komutu düzenle",
+    "commandName": "Komut adı",
+    "commandNamePlaceholder": "örn. Altyazılı VLC",
+    "programPath": "Program yolu",
+    "noCustomCommands": "Henüz özel komut yok. Dosyaları belirli bayraklarla açmak için özel komut ekleyin."
+  },
+  "moreOptions": {
+    "showMoreOptions": "Daha fazla seçenek göster",
+    "loading": "Seçenekler yükleniyor...",
+    "shellExtensions": "Kabuk uzantıları",
+    "noOptionsAvailable": "Ek seçenek mevcut değil",
+    "failedToLoad": "Seçenekler yüklenemedi"
   }
 }

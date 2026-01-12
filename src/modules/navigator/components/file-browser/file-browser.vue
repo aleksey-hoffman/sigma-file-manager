@@ -29,6 +29,7 @@ import FileBrowserLoading from './file-browser-loading.vue';
 import FileBrowserError from './file-browser-error.vue';
 import FileBrowserStatusBar from './file-browser-status-bar.vue';
 import FileBrowserRenameDialog from './file-browser-rename-dialog.vue';
+import FileBrowserOpenWithDialog from './file-browser-open-with-dialog.vue';
 
 const props = defineProps<{
   tab?: Tab;
@@ -148,6 +149,25 @@ const isRenameDialogOpen = computed({
   },
 });
 
+const openWithState = ref({
+  isOpen: false,
+  entries: [] as DirEntry[],
+});
+
+function openOpenWithDialog(entries: DirEntry[]) {
+  openWithState.value = {
+    isOpen: true,
+    entries: [...entries],
+  };
+}
+
+function closeOpenWithDialog() {
+  openWithState.value = {
+    isOpen: false,
+    entries: [],
+  };
+}
+
 async function handleRenameConfirm(newName: string) {
   await confirmRename(newName);
 }
@@ -195,6 +215,13 @@ function closeFilter() {
 }
 
 function onContextMenuAction(action: ContextMenuAction) {
+  if (action === 'open-with') {
+    const entries = contextMenu.value.selectedEntries;
+    if (entries.length > 0) {
+      openOpenWithDialog(entries);
+    }
+    return;
+  }
   handleContextMenuAction(action);
 }
 
@@ -292,6 +319,7 @@ defineExpose({
               v-if="contextMenu.selectedEntries.length > 0"
               :selected-entries="contextMenu.selectedEntries"
               @action="onContextMenuAction"
+              @open-custom-dialog="openOpenWithDialog(contextMenu.selectedEntries)"
             />
           </ContextMenu>
         </ScrollArea>
@@ -315,6 +343,12 @@ defineExpose({
       :entry="renameState.entry"
       @confirm="handleRenameConfirm"
       @cancel="handleRenameCancel"
+    />
+
+    <FileBrowserOpenWithDialog
+      v-model:open="openWithState.isOpen"
+      :entries="openWithState.entries"
+      @close="closeOpenWithDialog"
     />
   </div>
 </template>

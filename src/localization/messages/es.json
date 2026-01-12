@@ -1571,5 +1571,43 @@
       "addToFavorites": "Añadir a favoritos",
       "removeFromFavorites": "Quitar de favoritos"
     }
+  },
+  "openWith": {
+    "title": "Abrir con",
+    "selectAppTitle": "Selecciona una app para abrir este archivo {ext}",
+    "loadingPrograms": "Cargando programas...",
+    "defaultApp": "App predeterminada",
+    "suggestedApps": "Apps sugeridas",
+    "otherApps": "Otras apps",
+    "moreOptions": "Más opciones",
+    "noProgramsFound": "No se encontraron programas asociados para este tipo de archivo",
+    "customProgram": "Programa personalizado",
+    "enterProgramPath": "Elegir otra app o introducir ruta...",
+    "selectProgram": "Seleccionar programa",
+    "advancedOptions": "Opciones avanzadas",
+    "arguments": "Argumentos",
+    "argumentsHint": "Argumentos adicionales de línea de comandos. Use %1 como marcador de posición para la ruta del archivo.",
+    "argumentsPlaceholder": "ej. --new-window --flag",
+    "open": "Abrir",
+    "always": "Siempre",
+    "justOnce": "Solo esta vez",
+    "failedToLoadPrograms": "Error al cargar los programas asociados",
+    "failedToOpenFile": "Error al abrir el archivo",
+    "chooseAnotherApp": "Elegir otra aplicación...",
+    "customCommandWithFlags": "Comando personalizado con flags...",
+    "customCommands": "Comandos personalizados",
+    "addCustomCommand": "Agregar comando personalizado",
+    "editCustomCommand": "Editar comando personalizado",
+    "commandName": "Nombre del comando",
+    "commandNamePlaceholder": "ej. VLC con subtítulos",
+    "programPath": "Ruta del programa",
+    "noCustomCommands": "No hay comandos personalizados aún. Agrega un comando personalizado para abrir archivos con flags específicas."
+  },
+  "moreOptions": {
+    "showMoreOptions": "Mostrar más opciones",
+    "loading": "Cargando opciones...",
+    "shellExtensions": "Extensiones del shell",
+    "noOptionsAvailable": "No hay opciones adicionales disponibles",
+    "failedToLoad": "Error al cargar las opciones"
   }
 }

@@ -19,10 +19,15 @@ defineProps<{
 
 const emit = defineEmits<{
   action: [action: ContextMenuAction];
+  openCustomDialog: [];
 }>();
 
 function handleAction(action: ContextMenuAction) {
   emit('action', action);
+}
+
+function handleOpenCustomDialog() {
+  emit('openCustomDialog');
 }
 </script>
 
@@ -32,14 +37,16 @@ function handleAction(action: ContextMenuAction) {
       :selected-entries="selectedEntries"
       :menu-item-component="ContextMenuItem"
       :menu-separator-component="ContextMenuSeparator"
+      :is-context-menu="true"
       @action="handleAction"
+      @open-custom-dialog="handleOpenCustomDialog"
     />
   </ContextMenuContent>
 </template>
 
 <style>
 .file-browser-context-menu.sigma-ui-context-menu-content {
-  width: 200px;
+  width: clamp(200px, 100%, 240px);
   padding: 8px;
 }
 </style>
