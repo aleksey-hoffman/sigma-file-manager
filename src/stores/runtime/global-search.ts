@@ -88,9 +88,9 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
     return timeSinceLastScan > staleThresholdMs;
   });
 
-  const isUserIdle = computed(() => {
+  function getIsUserIdle() {
     return (Date.now() - lastActivityTime.value) > IDLE_THRESHOLD_MS;
-  });
+  }
 
   async function getDriveRoots(): Promise<string[]> {
     const selected = userSettingsStore.userSettings.globalSearch.selectedDriveRoots;
@@ -144,7 +144,10 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
 
       startIdleDetection();
 
-      if (needsScan.value) {
+      const settings = userSettingsStore.userSettings.globalSearch;
+      const shouldRescanOnLaunch = needsScan.value || (settings.autoReindexWhenIdle && isIndexStale.value);
+
+      if (shouldRescanOnLaunch) {
         await startScan();
       }
     }
@@ -360,7 +363,7 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
     if (isScanInProgress.value) return;
     if (!isInitialized.value) return;
     if (!isIndexStale.value) return;
-    if (!isUserIdle.value) return;
+    if (!getIsUserIdle()) return;
 
     startScan();
   }
@@ -498,9 +501,9 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
     scanProgress,
     needsScan,
     isIndexStale,
-    isUserIdle,
     isInitialized,
     lastError,
+    getIsUserIdle,
     open,
     close,
     toggle,

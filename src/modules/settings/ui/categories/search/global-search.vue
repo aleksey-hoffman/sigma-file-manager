@@ -4,7 +4,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import {
   BanIcon, CheckIcon, CircleAlertIcon, ClockIcon, DatabaseIcon, FolderTreeIcon, HardDriveIcon,
@@ -32,6 +32,9 @@ const userSettingsStore = useUserSettingsStore();
 const globalSearchStore = useGlobalSearchStore();
 const { drives } = useDrives();
 
+const displayTick = ref(0);
+let displayTickIntervalId: ReturnType<typeof setInterval> | null = null;
+
 const scanDepth = computed(() => userSettingsStore.userSettings.globalSearch.scanDepth);
 const parallelScan = computed(() => userSettingsStore.userSettings.globalSearch.parallelScan);
 const autoReindexWhenIdle = computed(() => userSettingsStore.userSettings.globalSearch.autoReindexWhenIdle);
@@ -55,6 +58,7 @@ function formatRelativeTime(timestamp: number): string {
 }
 
 const lastScanRelative = computed(() => {
+  void displayTick.value;
   if (!globalSearchStore.lastScanTime) return null;
   return formatRelativeTime(globalSearchStore.lastScanTime);
 });
@@ -76,6 +80,7 @@ const selectedDriveCount = computed(() => {
 });
 
 const indexStatus = computed(() => {
+  void displayTick.value;
   if (globalSearchStore.isCommitting) return 'committing';
   if (globalSearchStore.isScanInProgress) return 'scanning';
   if (globalSearchStore.driveScanErrors.length > 0 && globalSearchStore.indexedItemCount === 0) return 'error';
@@ -175,10 +180,18 @@ async function cancelScan() {
 onMounted(() => {
   globalSearchStore.refreshStatus();
   globalSearchStore.startStatusPolling();
+  displayTickIntervalId = setInterval(() => {
+    displayTick.value++;
+  }, 30000);
 });
 
 onUnmounted(() => {
   globalSearchStore.stopStatusPolling();
+
+  if (displayTickIntervalId !== null) {
+    clearInterval(displayTickIntervalId);
+    displayTickIntervalId = null;
+  }
 });
 </script>
 
