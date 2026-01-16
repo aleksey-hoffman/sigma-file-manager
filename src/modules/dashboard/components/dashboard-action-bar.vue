@@ -67,7 +67,6 @@ function handleClearAll() {
   min-height: 36px;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 12px;
   gap: 12px;
 }
 

@@ -448,9 +448,9 @@ async function handleDeleteTag(tagId: string) {
   display: flex;
   max-width: 1200px;
   flex-direction: column;
-  padding: 32px 48px;
+  padding: 20px 32px;
   margin: 0 auto;
-  gap: 32px;
+  gap: 24px;
 }
 
 .dashboard-page__header {
@@ -475,7 +475,7 @@ async function handleDeleteTag(tagId: string) {
 .dashboard-page__tabs {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 16px;
 }
 
 .dashboard-page__tabs-list {
@@ -509,7 +509,10 @@ async function handleDeleteTag(tagId: string) {
 }
 
 .dashboard-page__tab-content {
+  display: flex;
+  flex-direction: column;
   animation: fade-in 0.2s ease-out;
+  gap: 12px;
 }
 
 @keyframes fade-in {
