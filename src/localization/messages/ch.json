@@ -9,6 +9,13 @@
     "vh": "vh",
     "mb": "MB"
   },
+  "relativeTime": {
+    "justNow": "刚刚",
+    "minutesAgo": "0分钟前 | 1分钟前 | {n}分钟前 | {n}分钟前",
+    "hoursAgo": "0小时前 | 1小时前 | {n}小时前 | {n}小时前",
+    "daysAgo": "0天前 | 1天前 | {n}天前 | {n}天前"
+  },
+  "calculatedAgo": "{time}计算",
   "pages": {
     "home": "主页",
     "navigator": "导航仪",
@@ -1444,6 +1451,7 @@
   "fileSize": "文件大小",
   "directorySize": "目录大小",
   "getSize": "获取大小",
+  "calculating": "计算中",
   "path": "路径",
   "realPath": "链接目标路径",
   "created": "创建",
@@ -1538,6 +1546,8 @@
     "video": "视频",
     "otherFiles": "其他文件",
     "itemCount": "{count} 个项目",
+    "fileCount": "0 个文件 | 1 个文件 | {count} 个文件 | {count} 个文件",
+    "directoryCount": "0 个文件夹 | 1 个文件夹 | {count} 个文件夹 | {count} 个文件夹",
     "itemsTotal": "{count} 个项目",
     "showingFiltered": "显示 {total} 中的 {filtered} 个项目",
     "selectedItems": "已选择 {count} 个项目",
@@ -1558,6 +1568,13 @@
     "cannotPasteIntoItself": "无法将文件夹粘贴到自身",
     "copyFailed": "复制失败",
     "moveFailed": "移动失败",
+    "sizeTooltip": {
+      "title": "文件夹大小图例",
+      "exact": "已计算精确大小",
+      "loading": "正在计算大小...",
+      "notCalculated": "大小未计算，或自动计算因超时被取消",
+      "note": "选择文件夹并在信息面板中点击\"获取大小\"进行完整大小计算。"
+    },
     "actions": {
       "rename": "重命名",
       "copy": "复制",

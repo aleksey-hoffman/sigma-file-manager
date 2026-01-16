@@ -9,6 +9,13 @@
     "vh": "vh",
     "mb": "MB"
   },
+  "relativeTime": {
+    "justNow": "Agora",
+    "minutesAgo": "há 0 min | há 1 min | há {n} min | há {n} min",
+    "hoursAgo": "há 0 horas | há 1 hora | há {n} horas | há {n} horas",
+    "daysAgo": "há 0 dias | há 1 dia | há {n} dias | há {n} dias"
+  },
+  "calculatedAgo": "Calculado {time}",
   "pages": {
     "home": "Página de inicio",
     "navigator": "Navegador",
@@ -1444,6 +1451,7 @@
 "fileSize": "Tamanho do arquivo",
 "directorySize": "Tamanho do diretório",
 "getSize": "Obter tamanho",
+  "calculating": "Calculando",
 "path": "Caminho",
 "realPath": "Caminho de destino do link",
 "created": "Criado",
@@ -1538,7 +1546,9 @@
   "video": "Vídeo",
   "otherFiles": "Outros arquivos",
   "itemCount": "{count} itens",
-  "itemsTotal": "{count} itens",
+    "fileCount": "0 arquivos | 1 arquivo | {count} arquivos | {count} arquivos",
+    "directoryCount": "0 pastas | 1 pasta | {count} pastas | {count} pastas",
+    "itemsTotal": "{count} itens",
   "showingFiltered": "Mostrando {filtered} de {total} itens",
   "selectedItems": "{count} itens selecionados",
   "selectAll": "Selecionar tudo",
@@ -1558,6 +1568,13 @@
     "cannotPasteIntoItself": "Não é possível colar uma pasta em si mesma",
     "copyFailed": "Falha ao copiar",
     "moveFailed": "Falha ao mover",
+    "sizeTooltip": {
+      "title": "Legenda de Tamanho de Pastas",
+      "exact": "Tamanho exato calculado",
+      "loading": "Calculando tamanho...",
+      "notCalculated": "Tamanho não calculado, ou cálculo automático cancelado devido ao limite de tempo",
+      "note": "Selecione uma pasta e clique em \"Obter tamanho\" no painel de informações para o cálculo completo."
+    },
     "actions": {
       "rename": "Renomear",
       "copy": "Copiar",

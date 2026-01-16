@@ -9,6 +9,13 @@
     "vh": "vh",
     "mb": "MB"
   },
+  "relativeTime": {
+    "justNow": "Just now",
+    "minutesAgo": "0 min ago | 1 min ago | {n} min ago | {n} min ago",
+    "hoursAgo": "0 hours ago | 1 hour ago | {n} hours ago | {n} hours ago",
+    "daysAgo": "0 days ago | 1 day ago | {n} days ago | {n} days ago"
+  },
+  "calculatedAgo": "Calculated {time}",
   "pages": {
     "home": "Home page",
     "navigator": "Navigator",
@@ -98,6 +105,19 @@
       "noteGroup": "note group",
       "itemPath": "item path",
       "settingTags": "setting tags"
+    }
+  },
+  "statusCenter": {
+    "title": "Status center",
+    "clearCompleted": "Clear completed",
+    "noOperations": "No operations",
+    "active": "active",
+    "cancelAll": "Cancel all",
+    "groups": {
+      "dir-size": "Directory size calculations",
+      "copy": "Copy operations",
+      "move": "Move operations",
+      "delete": "Delete operations"
     }
   },
   "globalSearch": {
@@ -1446,6 +1466,8 @@
   "fileSize": "File size",
   "directorySize": "Directory size",
   "getSize": "Get size",
+  "recalculate": "Recalculate",
+  "calculating": "Calculating",
   "path": "Path",
   "realPath": "Link target path",
   "created": "Created",
@@ -1540,6 +1562,8 @@
     "video": "Video",
     "otherFiles": "Other Files",
     "itemCount": "{count} items",
+    "fileCount": "0 files | 1 file | {count} files | {count} files",
+    "directoryCount": "0 folders | 1 folder | {count} folders | {count} folders",
     "itemsTotal": "{count} items",
     "showingFiltered": "Showing {filtered} of {total} items",
     "selectedItems": "{count} items selected",
@@ -1560,6 +1584,13 @@
     "cannotPasteIntoItself": "Cannot paste a folder into itself",
     "copyFailed": "Copy failed",
     "moveFailed": "Move failed",
+    "sizeTooltip": {
+      "title": "Directory Size Legend",
+      "exact": "Exact size calculated",
+      "loading": "Calculating size...",
+      "notCalculated": "Size not calculated, or auto-calculation was canceled due to time limit",
+      "note": "Select a folder and click \"Get size\" in the info panel for full size calculation."
+    },
     "actions": {
       "rename": "Rename",
       "copy": "Copy",

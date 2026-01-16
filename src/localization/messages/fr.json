@@ -9,6 +9,13 @@
     "vh": "vh",
     "mb": "MB"
   },
+  "relativeTime": {
+    "justNow": "À l'instant",
+    "minutesAgo": "il y a 0 min | il y a 1 min | il y a {n} min | il y a {n} min",
+    "hoursAgo": "il y a 0 heures | il y a 1 heure | il y a {n} heures | il y a {n} heures",
+    "daysAgo": "il y a 0 jours | il y a 1 jour | il y a {n} jours | il y a {n} jours"
+  },
+  "calculatedAgo": "Calculé {time}",
   "pages": {
     "home": "Page d'accueil",
     "navigator": "Navigateur",
@@ -1444,6 +1451,7 @@
   "fileSize": "Taille du fichier",
   "directorySize": "Taille du répertoire",
   "getSize": "Obtenir la taille",
+  "calculating": "Calcul en cours",
   "path": "Chemin",
   "realPath": "Lien chemin cible",
   "created": "Créé",
@@ -1538,6 +1546,8 @@
     "video": "Vidéo",
     "otherFiles": "Autres fichiers",
     "itemCount": "{count} éléments",
+    "fileCount": "0 fichiers | 1 fichier | {count} fichiers | {count} fichiers",
+    "directoryCount": "0 dossiers | 1 dossier | {count} dossiers | {count} dossiers",
     "itemsTotal": "{count} éléments",
     "showingFiltered": "Affichage de {filtered} sur {total} éléments",
     "selectedItems": "{count} éléments sélectionnés",
@@ -1558,6 +1568,13 @@
     "cannotPasteIntoItself": "Impossible de coller un dossier dans lui-même",
     "copyFailed": "Échec de la copie",
     "moveFailed": "Échec du déplacement",
+    "sizeTooltip": {
+      "title": "Légende Taille des Dossiers",
+      "exact": "Taille exacte calculée",
+      "loading": "Calcul de la taille...",
+      "notCalculated": "Taille non calculée, ou calcul automatique annulé en raison du délai",
+      "note": "Sélectionnez un dossier et cliquez sur \"Obtenir la taille\" dans le panneau d'info pour un calcul complet."
+    },
     "actions": {
       "rename": "Renommer",
       "copy": "Copier",

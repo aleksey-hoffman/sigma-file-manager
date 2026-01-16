@@ -4197,6 +4197,7 @@ dependencies = [
  "tauri-plugin-opener",
  "tauri-plugin-os",
  "tauri-plugin-store",
+ "tokio",
  "trash",
  "walkdir",
  "windows 0.58.0",

@@ -10,6 +10,8 @@ import { openPath } from '@tauri-apps/plugin-opener';
 import type { DirEntry, DirContents } from '@/types/dir-entry';
 import type { Tab } from '@/types/workspaces';
 import { useUserStatsStore } from '@/stores/storage/user-stats';
+import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
+import { DIR_SIZE_CONSTANTS } from '@/constants';
 
 const DIRECTORY_DWELL_TIME_MS = 3000;
 
@@ -24,6 +26,7 @@ export function useFileBrowserNavigation(
 ) {
   const { t } = useI18n();
   const userStatsStore = useUserStatsStore();
+  const dirSizesStore = useDirSizesStore();
   const currentPath = ref('');
   const dirContents = ref<DirContents | null>(null);
   const isLoading = ref(false);
@@ -133,6 +136,15 @@ export function useFileBrowserNavigation(
       nextTick(() => {
         onNavigationComplete?.(currentDirEntry.value);
       });
+
+      const dirPaths = result.entries
+        .filter(entry => entry.is_dir)
+        .slice(0, DIR_SIZE_CONSTANTS.BATCH_LIMIT)
+        .map(entry => entry.path);
+
+      if (dirPaths.length > 0) {
+        dirSizesStore.requestSizesBatch(dirPaths);
+      }
     }
     catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : String(err);

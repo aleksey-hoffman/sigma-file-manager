@@ -9,6 +9,7 @@ import { useRoute } from 'vue-router';
 import Spacer from './spacer.vue';
 import WindowActions from './window-actions.vue';
 import { GlobalSearchToolbarButton } from '@/modules/global-search';
+import { StatusCenterToolbarButton } from '@/modules/status-center';
 
 const route = useRoute();
 
@@ -18,6 +19,10 @@ const isTransparent = computed(() => {
 
 const shouldShowGlobalSearchButton = computed(() => {
   return route.name === 'home' || route.name === 'navigator';
+});
+
+const shouldShowStatusCenter = computed(() => {
+  return route.name === 'navigator';
 });
 </script>
 
@@ -34,6 +39,7 @@ const shouldShowGlobalSearchButton = computed(() => {
       <div class="window-toolbar-primary-teleport-target" />
       <Spacer class="window-toolbar-spacer" />
       <div class="window-toolbar-secondary-teleport-target" />
+      <StatusCenterToolbarButton v-if="shouldShowStatusCenter" />
       <GlobalSearchToolbarButton v-if="shouldShowGlobalSearchButton" />
       <WindowActions />
     </div>

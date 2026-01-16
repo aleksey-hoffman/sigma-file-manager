@@ -53,9 +53,9 @@ const lastLoadedPath = ref<string | null>(null);
 
 function filterMenuItems(items: ShellContextMenuItem[]): ShellContextMenuItem[] {
   return items
-    .filter((item) => item.name && !item.name.startsWith('-'))
-    .filter((item) => item.id > 0 || (item.children && item.children.length > 0))
-    .map((item) => ({
+    .filter(item => item.name && !item.name.startsWith('-'))
+    .filter(item => item.id > 0 || (item.children && item.children.length > 0))
+    .map(item => ({
       ...item,
       children: item.children ? filterMenuItems(item.children) : null,
     }));
@@ -223,8 +223,8 @@ async function invokeMenuItem(commandId: number) {
 .more-options-submenu__scroll-container {
   max-height: 400px;
   overflow-y: auto;
-  scrollbar-width: thin;
   scrollbar-color: hsl(var(--border)) transparent;
+  scrollbar-width: thin;
 }
 
 .more-options-submenu__scroll-container--nested {
@@ -240,8 +240,8 @@ async function invokeMenuItem(commandId: number) {
 }
 
 .more-options-submenu__scroll-container::-webkit-scrollbar-thumb {
-  background-color: hsl(var(--border));
   border-radius: 4px;
+  background-color: hsl(var(--border));
 }
 
 .more-options-submenu__loading {
@@ -287,11 +287,11 @@ async function invokeMenuItem(commandId: number) {
 
 .more-options-submenu__item-icon {
   display: flex;
-  align-items: center;
-  justify-content: center;
   width: 16px;
   height: 16px;
   flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
 }
 
 .more-options-submenu__item-icon-img {

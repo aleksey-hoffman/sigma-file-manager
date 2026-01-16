@@ -12,11 +12,14 @@ import {
   FileIcon,
   FileImageIcon,
   FileVideoIcon,
+  LoaderCircleIcon,
 } from 'lucide-vue-next';
 import type { DirEntry } from '@/types/dir-entry';
 import type { GroupedEntries } from './types';
 import { getImageSrc, formatBytes, isImageFile, isVideoFile } from './utils';
 import { useClipboardStore } from '@/stores/runtime/clipboard';
+import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
+import { Skeleton } from '@/components/ui/skeleton';
 import FileBrowserEntryIcon from './file-browser-entry-icon.vue';
 
 const props = defineProps<{
@@ -28,6 +31,7 @@ const props = defineProps<{
 }>();
 
 const clipboardStore = useClipboardStore();
+const dirSizesStore = useDirSizesStore();
 const { clipboardItems, clipboardType } = storeToRefs(clipboardStore);
 
 const clipboardPathsMap = computed(() => {
@@ -47,6 +51,42 @@ const emit = defineEmits<{
 }>();
 
 const { t } = useI18n();
+
+function getDirSizeDisplay(entry: DirEntry): string | null {
+  const sizeInfo = dirSizesStore.getSize(entry.path);
+  const itemCountStr = entry.item_count !== null ? t('fileBrowser.itemCount', { count: entry.item_count }) : null;
+
+  if (!sizeInfo) {
+    return itemCountStr || '—';
+  }
+
+  if (sizeInfo.status === 'Loading') {
+    if (sizeInfo.size > 0) {
+      const progressStr = formatBytes(sizeInfo.size);
+      return itemCountStr ? `${itemCountStr} · ${progressStr}` : progressStr;
+    }
+
+    return itemCountStr || null;
+  }
+
+  if (sizeInfo.status === 'Complete') {
+    const sizeStr = formatBytes(sizeInfo.size);
+    return itemCountStr ? `${itemCountStr} · ${sizeStr}` : sizeStr;
+  }
+
+  return itemCountStr || '—';
+}
+
+function shouldShowSizeSkeleton(entry: DirEntry): boolean {
+  const sizeInfo = dirSizesStore.getSize(entry.path);
+
+  return !!(sizeInfo && sizeInfo.status === 'Loading' && sizeInfo.size === 0);
+}
+
+function isDirLoadingWithProgress(entry: DirEntry): boolean {
+  const sizeInfo = dirSizesStore.getSize(entry.path);
+  return !!(sizeInfo && sizeInfo.status === 'Loading' && sizeInfo.size > 0);
+}
 
 const groupedEntries = computed<GroupedEntries>(() => {
   const dirs: DirEntry[] = [];
@@ -117,10 +157,21 @@ const groupedEntries = computed<GroupedEntries>(() => {
           <div class="file-browser-grid-view__card-info">
             <span class="file-browser-grid-view__card-name">{{ entry.name }}</span>
             <div class="file-browser-grid-view__card-meta">
-              <span
-                v-if="entry.item_count !== null"
-                class="file-browser-grid-view__card-size"
-              >{{ t('fileBrowser.itemCount', { count: entry.item_count }) }}</span>
+              <LoaderCircleIcon
+                v-if="isDirLoadingWithProgress(entry)"
+                :size="12"
+                class="file-browser-grid-view__spinner"
+              />
+              <span class="file-browser-grid-view__card-size">
+                <template v-if="getDirSizeDisplay(entry)">{{ getDirSizeDisplay(entry) }}</template>
+                <template v-if="shouldShowSizeSkeleton(entry)">
+                  <span
+                    v-if="entry.item_count !== null"
+                    class="file-browser-grid-view__separator"
+                  />
+                  <Skeleton class="file-browser-grid-view__size-skeleton" />
+                </template>
+              </span>
             </div>
           </div>
         </button>
@@ -281,11 +332,12 @@ const groupedEntries = computed<GroupedEntries>(() => {
 
 .file-browser-grid-view__section-bar {
   position: sticky;
-  z-index: 1;
+  z-index: 3;
   top: 0;
   display: flex;
   align-items: center;
   padding: 8px 12px;
+  border-radius: var(--radius-sm);
   backdrop-filter: blur(var(--backdrop-filter-blur));
   background-color: hsl(var(--secondary) / 50%);
   color: hsl(var(--muted-foreground));
@@ -305,7 +357,7 @@ const groupedEntries = computed<GroupedEntries>(() => {
 .file-browser-grid-view__grid {
   display: grid;
   gap: 12px;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
 }
 
 .file-browser-grid-view__card {
@@ -436,14 +488,45 @@ const groupedEntries = computed<GroupedEntries>(() => {
 
 .file-browser-grid-view__card-meta {
   display: flex;
+  align-items: center;
   font-size: 11px;
-  gap: 8px;
+  gap: 6px;
   opacity: 0.8;
 }
 
 .file-browser-grid-view__card--dir .file-browser-grid-view__card-meta {
   color: hsl(var(--muted-foreground));
   opacity: 1;
+}
+
+.file-browser-grid-view__spinner {
+  flex-shrink: 0;
+  animation: file-browser-grid-view-spin 1s linear infinite;
+  color: hsl(var(--muted-foreground));
+}
+
+@keyframes file-browser-grid-view-spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.file-browser-grid-view__card-size {
+  display: inline-flex;
+  align-items: center;
+}
+
+.file-browser-grid-view__separator::after {
+  content: ' · ';
+}
+
+.file-browser-grid-view__size-skeleton {
+  width: 40px;
+  height: 11px;
 }
 
 .file-browser-grid-view__overlay-container {

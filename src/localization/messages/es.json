@@ -9,6 +9,13 @@
     "vh": "vh",
     "mb": "MB"
   },
+  "relativeTime": {
+    "justNow": "Ahora mismo",
+    "minutesAgo": "hace 0 min | hace 1 min | hace {n} min | hace {n} min",
+    "hoursAgo": "hace 0 horas | hace 1 hora | hace {n} horas | hace {n} horas",
+    "daysAgo": "hace 0 días | hace 1 día | hace {n} días | hace {n} días"
+  },
+  "calculatedAgo": "Calculado {time}",
   "pages": {
     "home": "Página de inicio",
     "navigator": "Navegador",
@@ -1444,6 +1451,7 @@
   "fileSize": "Tamaño del archivo",
   "directorySize": "Tamaño del directorio",
   "getSize": "Obtener tamaño",
+  "calculating": "Calculando",
   "path": "Camino",
   "realPath": "Ruta de destino del enlace",
   "created": "Creado",
@@ -1538,6 +1546,8 @@
     "video": "Video",
     "otherFiles": "Otros archivos",
     "itemCount": "{count} elementos",
+    "fileCount": "0 archivos | 1 archivo | {count} archivos | {count} archivos",
+    "directoryCount": "0 carpetas | 1 carpeta | {count} carpetas | {count} carpetas",
     "itemsTotal": "{count} elementos",
     "showingFiltered": "Mostrando {filtered} de {total} elementos",
     "selectedItems": "{count} elementos seleccionados",
@@ -1558,6 +1568,13 @@
     "cannotPasteIntoItself": "No se puede pegar una carpeta en sí misma",
     "copyFailed": "Error al copiar",
     "moveFailed": "Error al mover",
+    "sizeTooltip": {
+      "title": "Leyenda de Tamaño de Carpetas",
+      "exact": "Tamaño exacto calculado",
+      "loading": "Calculando tamaño...",
+      "notCalculated": "Tamaño no calculado, o cálculo automático cancelado por límite de tiempo",
+      "note": "Seleccione una carpeta y haga clic en \"Obtener tamaño\" en el panel de información para el cálculo completo."
+    },
     "actions": {
       "rename": "Renombrar",
       "copy": "Copiar",

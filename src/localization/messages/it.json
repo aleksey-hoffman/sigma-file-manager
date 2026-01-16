@@ -9,6 +9,13 @@
     "vh": "vh",
     "mb": "MB"
   },
+  "relativeTime": {
+    "justNow": "Adesso",
+    "minutesAgo": "0 min fa | 1 min fa | {n} min fa | {n} min fa",
+    "hoursAgo": "0 ore fa | 1 ora fa | {n} ore fa | {n} ore fa",
+    "daysAgo": "0 giorni fa | 1 giorno fa | {n} giorni fa | {n} giorni fa"
+  },
+  "calculatedAgo": "Calcolato {time}",
   "pages": {
     "home": "Pagina iniziale",
     "navigator": "Navigatore",
@@ -1444,6 +1451,7 @@
   "fileSize": "Dimensione del file",
   "directorySize": "Dimensione della cartella",
   "getSize": "Ottieni dimensioni",
+  "calculating": "Calcolo in corso",
   "path": "Percorso",
   "realPath": "Percorso di destinazione del collegamento",
   "created": "Creato",
@@ -1538,6 +1546,8 @@
     "video": "Video",
     "otherFiles": "Altri file",
     "itemCount": "{count} elementi",
+    "fileCount": "0 file | 1 file | {count} file | {count} file",
+    "directoryCount": "0 cartelle | 1 cartella | {count} cartelle | {count} cartelle",
     "itemsTotal": "{count} elementi",
     "showingFiltered": "Visualizzazione di {filtered} su {total} elementi",
     "selectedItems": "{count} elementi selezionati",
@@ -1558,6 +1568,13 @@
     "cannotPasteIntoItself": "Impossibile incollare una cartella in se stessa",
     "copyFailed": "Copia fallita",
     "moveFailed": "Spostamento fallito",
+    "sizeTooltip": {
+      "title": "Legenda Dimensione Cartelle",
+      "exact": "Dimensione esatta calcolata",
+      "loading": "Calcolo dimensione...",
+      "notCalculated": "Dimensione non calcolata, o calcolo automatico annullato per limite di tempo",
+      "note": "Seleziona una cartella e clicca \"Ottieni dimensioni\" nel pannello info per il calcolo completo."
+    },
     "actions": {
       "rename": "Rinomina",
       "copy": "Copia",

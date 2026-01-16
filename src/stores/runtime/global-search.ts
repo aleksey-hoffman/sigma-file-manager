@@ -8,6 +8,7 @@ import { computed, ref, watch } from 'vue';
 import type { DirEntry } from '@/types/dir-entry';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { sharedDrives } from '@/modules/home/composables/use-drives';
+import { SEARCH_CONSTANTS } from '@/constants';
 
 type GlobalSearchDriveScanError = {
   drive_root: string;
@@ -266,7 +267,7 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
       const list = await invoke<Array<DirEntry & { score?: number }>>('global_search_query', {
         query: searchQuery.trim(),
         options: {
-          limit: settings.resultLimit ?? 50,
+          limit: settings.resultLimit ?? SEARCH_CONSTANTS.DEFAULT_RESULT_LIMIT,
           include_files: true,
           include_directories: true,
           exact_match: settings.exactMatch ?? false,

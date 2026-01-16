@@ -10,6 +10,7 @@ import type { ContextMenuAction } from '@/modules/navigator/components/file-brow
 import { useWorkspacesStore } from '@/stores/storage/workspaces';
 import { useUserStatsStore } from '@/stores/storage/user-stats';
 import { useClipboardStore, type FileOperationResult } from '@/stores/runtime/clipboard';
+import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
 import { toast, CustomProgress, CustomSimple } from '@/components/ui/toaster';
 import { UI_CONSTANTS } from '@/constants';
 
@@ -24,6 +25,7 @@ export function useFileBrowserSelection(
   const workspacesStore = useWorkspacesStore();
   const userStatsStore = useUserStatsStore();
   const clipboardStore = useClipboardStore();
+  const dirSizesStore = useDirSizesStore();
   const selectedEntries = ref<DirEntry[]>([]);
   const lastSelectedEntry = ref<DirEntry | null>(null);
 
@@ -277,6 +279,15 @@ export function useFileBrowserSelection(
         : t('notifications.moved');
       toastData.value.itemCount = successCount;
       toastData.value.actionText = t('close');
+
+      const pathsToInvalidate = [currentPathRef.value];
+
+      if (clipboardStore.sourceDirectory) {
+        pathsToInvalidate.push(clipboardStore.sourceDirectory);
+      }
+
+      dirSizesStore.invalidate(pathsToInvalidate);
+
       clipboardStore.clearClipboard();
       onRefresh();
 
@@ -351,6 +362,9 @@ export function useFileBrowserSelection(
             description: '',
           },
         });
+
+        dirSizesStore.invalidate([entry.path, currentPathRef.value]);
+
         cancelRename();
         clearSelection();
         onRefresh();
@@ -534,6 +548,9 @@ export function useFileBrowserSelection(
           : t('notifications.deleted');
         toastData.value.itemCount = successCount;
         toastData.value.actionText = t('close');
+
+        dirSizesStore.invalidate([currentPathRef.value, ...paths]);
+
         clearSelection();
         onRefresh();
 

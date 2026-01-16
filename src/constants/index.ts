@@ -9,6 +9,16 @@ export const UI_CONSTANTS = {
   WORKSPACE_SAVE_DEBOUNCE_MS: 500,
 } as const;
 
+export const DIR_SIZE_CONSTANTS = {
+  BATCH_LIMIT: 50,
+} as const;
+
+export const SEARCH_CONSTANTS = {
+  DEFAULT_RESULT_LIMIT: 50,
+  MIN_RESULT_LIMIT: 10,
+  MAX_RESULT_LIMIT: 500,
+} as const;
+
 export const FILE_EXTENSIONS: Record<string, readonly string[]> = {
   IMAGE: ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg', 'ico', 'tiff', 'tif'],
   VIDEO: ['mp4', 'mkv', 'avi', 'mov', 'wmv', 'flv', 'webm', 'm4v', 'mpeg', 'mpg'],

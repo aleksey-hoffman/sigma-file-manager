@@ -1408,7 +1408,7 @@ mod windows_shell_menu {
             Some(&mut bmp as *mut _ as *mut _),
         ) == 0
         {
-            DeleteDC(hdc);
+            let _ = DeleteDC(hdc);
             return None;
         }
 
@@ -1416,7 +1416,7 @@ mod windows_shell_menu {
         let height = bmp.bmHeight.abs();
 
         if width <= 0 || height <= 0 || width > 256 || height > 256 {
-            DeleteDC(hdc);
+            let _ = DeleteDC(hdc);
             return None;
         }
 
@@ -1442,7 +1442,7 @@ mod windows_shell_menu {
             DIB_RGB_COLORS,
         );
         SelectObject(hdc, old_bitmap);
-        DeleteDC(hdc);
+        let _ = DeleteDC(hdc);
 
         if result == 0 {
             return None;

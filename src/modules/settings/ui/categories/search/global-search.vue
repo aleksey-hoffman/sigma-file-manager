@@ -25,6 +25,7 @@ import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { useGlobalSearchStore } from '@/stores/runtime/global-search';
 import { useDrives } from '@/modules/home/composables/use-drives';
 import { formatBytes } from '@/modules/navigator/components/file-browser/utils';
+import { SEARCH_CONSTANTS } from '@/constants';
 
 const { t } = useI18n();
 const userSettingsStore = useUserSettingsStore();
@@ -128,7 +129,10 @@ function setParallelScan(value: boolean) {
 }
 
 function setResultLimit(value: string | number | undefined) {
-  const limit = Math.max(10, Math.min(500, Math.floor(Number(value ?? 50))));
+  const limit = Math.max(
+    SEARCH_CONSTANTS.MIN_RESULT_LIMIT,
+    Math.min(SEARCH_CONSTANTS.MAX_RESULT_LIMIT, Math.floor(Number(value ?? SEARCH_CONSTANTS.DEFAULT_RESULT_LIMIT))),
+  );
   userSettingsStore.set('globalSearch.resultLimit', limit);
 }
 

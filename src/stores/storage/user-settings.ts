@@ -18,6 +18,7 @@ import {
   migrateUserSettingsStorage,
   USER_SETTINGS_SCHEMA_VERSION_KEY,
 } from '@/stores/schemas/user-settings';
+import { SEARCH_CONSTANTS } from '@/constants';
 
 export const useUserSettingsStore = defineStore('userSettings', () => {
   const userPathsStore = useUserPathsStore();
@@ -79,7 +80,7 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
       ignoredPaths: ['/node_modules'],
       selectedDriveRoots: [],
       parallelScan: false,
-      resultLimit: 50,
+      resultLimit: SEARCH_CONSTANTS.DEFAULT_RESULT_LIMIT,
       includeFiles: true,
       includeDirectories: true,
       exactMatch: false,

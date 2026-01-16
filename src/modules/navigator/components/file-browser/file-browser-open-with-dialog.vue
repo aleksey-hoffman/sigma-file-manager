@@ -68,14 +68,6 @@ const newCommandName = ref('');
 const newCommandPath = ref('');
 const newCommandArgs = ref('');
 
-const firstEntry = computed(() => props.entries[0]);
-const fileExtension = computed(() => {
-  if (!firstEntry.value) return '';
-  const name = firstEntry.value.name;
-  const lastDot = name.lastIndexOf('.');
-  return lastDot > 0 ? name.substring(lastDot) : '';
-});
-
 function loadCustomCommands() {
   const stored = localStorage.getItem('sigma-custom-open-commands');
 

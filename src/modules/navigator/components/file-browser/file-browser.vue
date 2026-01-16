@@ -217,11 +217,14 @@ function closeFilter() {
 function onContextMenuAction(action: ContextMenuAction) {
   if (action === 'open-with') {
     const entries = contextMenu.value.selectedEntries;
+
     if (entries.length > 0) {
       openOpenWithDialog(entries);
     }
+
     return;
   }
+
   handleContextMenuAction(action);
 }
 

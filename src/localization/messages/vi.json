@@ -9,6 +9,13 @@
     "vh": "vh",
     "mb": "MB"
   },
+  "relativeTime": {
+    "justNow": "Vừa xong",
+    "minutesAgo": "0 phút trước | 1 phút trước | {n} phút trước | {n} phút trước",
+    "hoursAgo": "0 giờ trước | 1 giờ trước | {n} giờ trước | {n} giờ trước",
+    "daysAgo": "0 ngày trước | 1 ngày trước | {n} ngày trước | {n} ngày trước"
+  },
+  "calculatedAgo": "Đã tính {time}",
   "pages": {
     "home": "trang chủ",
     "navigator": "Hoa tiêu",
@@ -1444,6 +1451,7 @@
   "fileSize": "Kích thước tập tin",
   "directorySize": "Kích thước thư mục",
   "getSize": "Nhận kích thước",
+  "calculating": "Đang tính toán",
   "path": "Đường dẫn",
   "realPath": "Liên kết đường dẫn mục tiêu",
   "created": "Tạo",
@@ -1538,6 +1546,8 @@
     "video": "Video",
     "otherFiles": "Tập tin khác",
     "itemCount": "{count} mục",
+    "fileCount": "0 tệp | 1 tệp | {count} tệp | {count} tệp",
+    "directoryCount": "0 thư mục | 1 thư mục | {count} thư mục | {count} thư mục",
     "itemsTotal": "{count} mục",
     "showingFiltered": "Hiển thị {filtered} trong {total} mục",
     "selectedItems": "{count} mục đã chọn",
@@ -1558,6 +1568,13 @@
     "cannotPasteIntoItself": "Không thể dán thư mục vào chính nó",
     "copyFailed": "Sao chép thất bại",
     "moveFailed": "Di chuyển thất bại",
+    "sizeTooltip": {
+      "title": "Chú giải Kích thước Thư mục",
+      "exact": "Đã tính kích thước chính xác",
+      "loading": "Đang tính kích thước...",
+      "notCalculated": "Chưa tính kích thước, hoặc tính tự động đã bị hủy do vượt giới hạn thời gian",
+      "note": "Chọn thư mục và nhấp \"Nhận kích thước\" trong bảng thông tin để tính toán kích thước đầy đủ."
+    },
     "actions": {
       "rename": "Đổi tên",
       "copy": "Sao chép",

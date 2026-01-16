@@ -4,11 +4,15 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
+import { LoaderCircleIcon, XIcon, RefreshCwIcon } from 'lucide-vue-next';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Button } from '@/components/ui/button';
 import { useI18n } from 'vue-i18n';
-import { formatBytes, formatDate } from '@/modules/navigator/components/file-browser/utils';
+import { formatBytes, formatDate, formatRelativeTime } from '@/modules/navigator/components/file-browser/utils';
+import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
 import type { DirEntry } from '@/types/dir-entry';
+import type { RelativeTimeTranslations } from '@/modules/navigator/components/file-browser/utils';
 
 const props = defineProps<{
   selectedEntry: DirEntry | null;
@@ -16,8 +20,72 @@ const props = defineProps<{
 }>();
 
 const { t } = useI18n();
+const dirSizesStore = useDirSizesStore();
 
 const listRef = ref<HTMLElement | null>(null);
+
+const dirSizeInfo = computed(() => {
+  if (!props.selectedEntry?.is_dir) return null;
+  return dirSizesStore.getSize(props.selectedEntry.path);
+});
+
+const isDirSizeLoading = computed(() => {
+  if (!props.selectedEntry?.is_dir) return false;
+  return dirSizesStore.isLoading(props.selectedEntry.path);
+});
+
+const showGetSizeButton = computed(() => {
+  if (!props.selectedEntry?.is_dir) return false;
+  const info = dirSizeInfo.value;
+  return !info;
+});
+
+const showRecalculateButton = computed(() => {
+  if (!props.selectedEntry?.is_dir) return false;
+  const info = dirSizeInfo.value;
+  if (!info) return false;
+
+  return info.status === 'Complete';
+});
+
+const dirSizeDisplay = computed(() => {
+  const info = dirSizeInfo.value;
+  if (!info) return null;
+  if (info.status === 'Loading' && info.size > 0) return formatBytes(info.size);
+  if (info.status === 'Loading') return null;
+  if (info.status === 'Complete') return formatBytes(info.size);
+  return null;
+});
+
+const relativeTimeTranslations = computed<RelativeTimeTranslations>(() => ({
+  justNow: t('relativeTime.justNow'),
+  minutesAgo: (count: number) => t('relativeTime.minutesAgo', count),
+  hoursAgo: (count: number) => t('relativeTime.hoursAgo', count),
+  daysAgo: (count: number) => t('relativeTime.daysAgo', count),
+}));
+
+const calculatedAgo = computed(() => {
+  const info = dirSizeInfo.value;
+  if (!info) return null;
+  if (info.status === 'Loading') return null;
+  if (!info.calculatedAt) return null;
+
+  return formatRelativeTime(info.calculatedAt, relativeTimeTranslations.value);
+});
+
+async function handleGetSize() {
+  if (!props.selectedEntry?.is_dir) return;
+  await dirSizesStore.requestSizeForce(props.selectedEntry.path);
+}
+
+async function handleCancelSize() {
+  if (!props.selectedEntry?.is_dir) return;
+  await dirSizesStore.cancelSize(props.selectedEntry.path);
+}
+
+watch(() => props.selectedEntry?.path, () => {
+  // Reset state when entry changes
+}, { immediate: true });
 
 function handleHorizontalWheel(event: WheelEvent) {
   if (props.orientation !== 'horizontal') return;
@@ -129,6 +197,62 @@ const properties = computed<PropertyItem[]>(() => {
       @wheel="handleHorizontalWheel"
     >
       <div
+        v-if="selectedEntry?.is_dir"
+        class="info-panel-properties__item"
+      >
+        <div class="info-panel-properties__title">
+          {{ t('size') }}
+        </div>
+        <div class="info-panel-properties__value info-panel-properties__value--action">
+          <template v-if="isDirSizeLoading">
+            <LoaderCircleIcon
+              :size="14"
+              class="info-panel-properties__spinner"
+            />
+            <div class="info-panel-properties__size-content">
+              <span v-if="dirSizeDisplay">{{ dirSizeDisplay }}</span>
+              <span v-else>{{ t('calculating') }}...</span>
+            </div>
+            <Button
+              size="xs"
+              variant="ghost"
+              class="info-panel-properties__cancel-btn"
+              @click="handleCancelSize"
+            >
+              <XIcon :size="14" />
+            </Button>
+          </template>
+          <template v-else-if="dirSizeDisplay && !showGetSizeButton">
+            <div class="info-panel-properties__size-content">
+              <span>{{ dirSizeDisplay }}</span>
+              <span
+                v-if="calculatedAgo"
+                class="info-panel-properties__calculated-ago"
+              >{{ t('calculatedAgo', { time: calculatedAgo }) }}</span>
+            </div>
+            <Button
+              v-if="showRecalculateButton"
+              size="xs"
+              variant="ghost"
+              class="info-panel-properties__recalculate-btn"
+              :title="t('recalculate')"
+              @click="handleGetSize"
+            >
+              <RefreshCwIcon :size="12" />
+            </Button>
+          </template>
+          <Button
+            v-else-if="showGetSizeButton"
+            size="xs"
+            variant="secondary"
+            @click="handleGetSize"
+          >
+            {{ t('getSize') }}
+          </Button>
+        </div>
+      </div>
+
+      <div
         v-for="(item, index) in properties"
         :key="index"
         class="info-panel-properties__item"
@@ -203,5 +327,65 @@ const properties = computed<PropertyItem[]>(() => {
   text-overflow: ellipsis;
   white-space: nowrap;
   word-break: normal;
+}
+
+.info-panel-properties__value--action {
+  display: flex;
+  height: 38px;
+  align-items: center;
+  gap: 6px;
+}
+
+.info-panel-properties__size-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.info-panel-properties__calculated-ago {
+  color: hsl(var(--muted-foreground) / 70%);
+  font-size: 11px;
+}
+
+.info-panel-properties__spinner {
+  animation: spin 1s linear infinite;
+  color: hsl(var(--muted-foreground));
+}
+
+.info-panel-properties__cancel-btn {
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  margin-left: auto;
+  color: hsl(var(--muted-foreground));
+}
+
+.info-panel-properties__cancel-btn:hover {
+  color: hsl(var(--destructive));
+}
+
+.info-panel-properties__recalculate-btn {
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  margin-left: auto;
+  color: hsl(var(--muted-foreground));
+  opacity: 0.5;
+  transition: opacity 0.15s ease;
+}
+
+.info-panel-properties__recalculate-btn:hover {
+  color: hsl(var(--primary));
+  opacity: 1;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>

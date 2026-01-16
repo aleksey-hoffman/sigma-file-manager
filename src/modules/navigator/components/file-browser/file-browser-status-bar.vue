@@ -19,6 +19,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useClipboardStore } from '@/stores/runtime/clipboard';
+import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
 import {
   Popover,
   PopoverContent,
@@ -34,6 +35,7 @@ import {
 import type { DirContents, DirEntry } from '@/types/dir-entry';
 import type { ContextMenuAction } from './types';
 import FileBrowserActionsMenu from './file-browser-actions-menu.vue';
+import { formatBytes } from './utils';
 
 const MAX_VISIBLE_ITEMS = 100;
 
@@ -55,6 +57,7 @@ const emit = defineEmits<{
 const { t } = useI18n();
 
 const clipboardStore = useClipboardStore();
+const dirSizesStore = useDirSizesStore();
 
 const showItemsPopoverOpen = ref(false);
 const itemsFilterQuery = ref('');
@@ -76,6 +79,67 @@ const isFiltered = computed(() => props.filteredCount !== totalCount.value);
 const hasSelection = computed(() => (props.selectedCount ?? 0) > 0);
 
 const selectedEntriesArray = computed(() => props.selectedEntries ?? []);
+
+const selectionStats = computed(() => {
+  const entries = selectedEntriesArray.value;
+  if (entries.length === 0) return null;
+
+  let totalSize = 0;
+  let fileCount = 0;
+  let dirCount = 0;
+  let hasUnknownSize = false;
+
+  for (const entry of entries) {
+    if (entry.is_file) {
+      fileCount++;
+      totalSize += entry.size;
+    }
+    else if (entry.is_dir) {
+      dirCount++;
+      const dirSizeInfo = dirSizesStore.getSize(entry.path);
+
+      if (dirSizeInfo && dirSizeInfo.status === 'Complete') {
+        totalSize += dirSizeInfo.size;
+      }
+      else {
+        hasUnknownSize = true;
+      }
+    }
+  }
+
+  return {
+    totalSize,
+    fileCount,
+    dirCount,
+    hasUnknownSize,
+  };
+});
+
+const selectionSizeDisplay = computed(() => {
+  if (!selectionStats.value) return null;
+
+  const { totalSize, fileCount, dirCount, hasUnknownSize } = selectionStats.value;
+
+  const parts = [];
+
+  if (fileCount > 0) {
+    parts.push(t('fileBrowser.fileCount', { count: fileCount }));
+  }
+
+  if (dirCount > 0) {
+    parts.push(t('fileBrowser.directoryCount', { count: dirCount }));
+  }
+
+  const countStr = parts.join(', ');
+
+  // Only show size if all sizes are known, otherwise show just the counts
+  const sizeStr = hasUnknownSize ? null : formatBytes(totalSize);
+
+  return {
+    sizeStr,
+    countStr,
+  };
+});
 
 const filteredSelectedEntries = computed(() => {
   if (!itemsFilterQuery.value) {
@@ -192,6 +256,21 @@ function removeClipboardItem(entry: DirEntry) {
       <template v-if="hasSelection">
         <span class="file-browser-status-bar__selected-count">
           {{ t('fileBrowser.selectedItems', { count: selectedCount }) }}
+          <template v-if="selectionSizeDisplay">
+            <span class="file-browser-status-bar__separator">·</span>
+            <span class="file-browser-status-bar__size-info">
+              <template v-if="selectionSizeDisplay.sizeStr">
+                {{ selectionSizeDisplay.sizeStr }}
+                <span
+                  v-if="selectionSizeDisplay.countStr"
+                  class="file-browser-status-bar__count-detail"
+                >({{ selectionSizeDisplay.countStr }})</span>
+              </template>
+              <template v-else>
+                {{ selectionSizeDisplay.countStr }}
+              </template>
+            </span>
+          </template>
         </span>
         <div class="file-browser-status-bar__actions">
           <Popover v-model:open="showItemsPopoverOpen">
@@ -593,7 +672,24 @@ function removeClipboardItem(entry: DirEntry) {
 }
 
 .file-browser-status-bar__selected-count {
+  display: flex;
   flex-shrink: 0;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+
+.file-browser-status-bar__separator {
+  color: hsl(var(--muted-foreground) / 50%);
+}
+
+.file-browser-status-bar__size-info {
+  font-weight: 500;
+}
+
+.file-browser-status-bar__count-detail {
+  color: hsl(var(--muted-foreground));
+  font-weight: 400;
 }
 
 .file-browser-status-bar__actions {

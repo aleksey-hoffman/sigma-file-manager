@@ -18,6 +18,7 @@ import { useClipboardStore } from '@/stores/runtime/clipboard';
 import { useDismissalLayerStore } from '@/stores/runtime/dismissal-layer';
 import { useGlobalSearchStore } from '@/stores/runtime/global-search';
 import { useShortcutsStore } from '@/stores/runtime/shortcuts';
+import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
 import { FileBrowser } from '@/modules/navigator/components/file-browser';
 import { InfoPanel } from '@/modules/navigator/components/info-panel';
 import { NavigatorToolbarActions } from '@/modules/navigator/components/navigator-toolbar-actions';
@@ -37,6 +38,7 @@ const clipboardStore = useClipboardStore();
 const dismissalLayerStore = useDismissalLayerStore();
 const globalSearchStore = useGlobalSearchStore();
 const shortcutsStore = useShortcutsStore();
+const dirSizesStore = useDirSizesStore();
 
 const paneRefsMap = ref<Map<string, FileBrowserInstance>>(new Map());
 const singlePaneRef = ref<FileBrowserInstance | null>(null);
@@ -312,6 +314,9 @@ function unregisterShortcutHandlers() {
 onMounted(() => {
   registerShortcutHandlers();
   smallScreenMediaQuery.addEventListener('change', handleSmallScreenChange);
+
+  // Recover any in-progress directory size calculations from backend
+  dirSizesStore.recoverActiveCalculations();
 });
 
 onUnmounted(() => {

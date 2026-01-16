@@ -9,6 +9,13 @@
     "vh": "vh",
     "mb": "MB"
   },
+  "relativeTime": {
+    "justNow": "Gerade eben",
+    "minutesAgo": "0 Min. her | 1 Min. her | {n} Min. her | {n} Min. her",
+    "hoursAgo": "0 Std. her | 1 Std. her | {n} Std. her | {n} Std. her",
+    "daysAgo": "0 Tage her | 1 Tag her | {n} Tage her | {n} Tage her"
+  },
+  "calculatedAgo": "Berechnet {time}",
   "pages": {
     "home": "Startseite",
     "navigator": "Navigator",
@@ -1444,6 +1451,7 @@
   "fileSize": "Dateigröße",
   "directorySize": "Verzeichnisgröße",
   "getSize": "Größe ermitteln",
+  "calculating": "Berechnung",
   "path": "Pfad",
   "realPath": "Zielpfad verknüpfen",
   "created": "Erstellt",
@@ -1538,6 +1546,8 @@
     "video": "Video",
     "otherFiles": "Andere Dateien",
     "itemCount": "{count} Elemente",
+    "fileCount": "0 Dateien | 1 Datei | {count} Dateien | {count} Dateien",
+    "directoryCount": "0 Ordner | 1 Ordner | {count} Ordner | {count} Ordner",
     "itemsTotal": "{count} Elemente",
     "showingFiltered": "Zeige {filtered} von {total} Elementen",
     "selectedItems": "{count} Elemente ausgewählt",
@@ -1558,6 +1568,13 @@
     "cannotPasteIntoItself": "Ein Ordner kann nicht in sich selbst eingefügt werden",
     "copyFailed": "Kopieren fehlgeschlagen",
     "moveFailed": "Verschieben fehlgeschlagen",
+    "sizeTooltip": {
+      "title": "Verzeichnisgröße Legende",
+      "exact": "Exakte Größe berechnet",
+      "loading": "Größe wird berechnet...",
+      "notCalculated": "Größe nicht berechnet, oder automatische Berechnung wegen Zeitlimit abgebrochen",
+      "note": "Wählen Sie einen Ordner und klicken Sie auf \"Größe ermitteln\" im Info-Panel für die vollständige Berechnung."
+    },
     "actions": {
       "rename": "Umbenennen",
       "copy": "Kopieren",

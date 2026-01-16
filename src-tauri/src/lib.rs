@@ -3,6 +3,7 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 mod dir_reader;
+mod dir_size;
 mod file_operations;
 mod global_search;
 mod open_with;
@@ -21,6 +22,13 @@ pub fn run() {
             dir_reader::get_system_drives,
             dir_reader::get_parent_dir,
             dir_reader::path_exists,
+            dir_size::get_dir_size,
+            dir_size::get_dir_sizes_batch,
+            dir_size::get_dir_size_progress,
+            dir_size::get_active_calculations,
+            dir_size::invalidate_dir_size_cache,
+            dir_size::clear_dir_size_cache,
+            dir_size::cancel_dir_size,
             file_operations::copy_items,
             file_operations::move_items,
             file_operations::rename_item,

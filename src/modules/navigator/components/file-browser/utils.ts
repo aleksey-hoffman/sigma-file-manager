@@ -73,3 +73,26 @@ export function formatDate(timestamp: number, includeSeconds = false): string {
 
   return new Date(timestamp).toLocaleString(undefined, options);
 }
+
+export interface RelativeTimeTranslations {
+  justNow: string;
+  minutesAgo: (count: number) => string;
+  hoursAgo: (count: number) => string;
+  daysAgo: (count: number) => string;
+}
+
+export function formatRelativeTime(timestamp: number, translations: RelativeTimeTranslations): string {
+  const now = Date.now();
+  const diff = now - timestamp;
+  const seconds = Math.floor(diff / 1000);
+  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+
+  if (seconds < 60) return translations.justNow;
+  if (minutes < 60) return translations.minutesAgo(minutes);
+  if (hours < 24) return translations.hoursAgo(hours);
+  if (days < 7) return translations.daysAgo(days);
+
+  return new Date(timestamp).toLocaleDateString();
+}

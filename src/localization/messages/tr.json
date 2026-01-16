@@ -9,6 +9,13 @@
     "vh": "vh",
     "mb": "MB"
   },
+  "relativeTime": {
+    "justNow": "Az önce",
+    "minutesAgo": "0 dk önce | 1 dk önce | {n} dk önce | {n} dk önce",
+    "hoursAgo": "0 saat önce | 1 saat önce | {n} saat önce | {n} saat önce",
+    "daysAgo": "0 gün önce | 1 gün önce | {n} gün önce | {n} gün önce"
+  },
+  "calculatedAgo": "{time} hesaplandı",
   "pages": {
     "home": "Ana sayfa",
     "navigator": "Navigatör",
@@ -1444,6 +1451,7 @@
   "fileSize": "Dosya boyutu",
   "directorySize": "Dizin boyutu",
   "getSize": "Boyut al",
+  "calculating": "Hesaplanıyor",
   "path": "Yol",
   "realPath": "Hedef yolunu bağla",
   "created": "Oluşturuldu",
@@ -1538,6 +1546,8 @@
     "video": "Video",
     "otherFiles": "Diğer dosyalar",
     "itemCount": "{count} öğe",
+    "fileCount": "0 dosya | 1 dosya | {count} dosya | {count} dosya",
+    "directoryCount": "0 klasör | 1 klasör | {count} klasör | {count} klasör",
     "itemsTotal": "{count} öğe",
     "showingFiltered": "{total} öğeden {filtered} tanesi gösteriliyor",
     "selectedItems": "{count} öğe seçildi",
@@ -1558,6 +1568,13 @@
     "cannotPasteIntoItself": "Klasör kendisine yapıştırılamaz",
     "copyFailed": "Kopyalama başarısız",
     "moveFailed": "Taşıma başarısız",
+    "sizeTooltip": {
+      "title": "Klasör Boyutu Açıklaması",
+      "exact": "Tam boyut hesaplandı",
+      "loading": "Boyut hesaplanıyor...",
+      "notCalculated": "Boyut hesaplanmadı veya otomatik hesaplama zaman sınırı nedeniyle iptal edildi",
+      "note": "Klasörü seçin ve bilgi panelinde \"Boyut al\" düğmesine tıklayarak tam boyutu hesaplayın."
+    },
     "actions": {
       "rename": "Yeniden adlandır",
       "copy": "Kopyala",

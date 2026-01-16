@@ -129,6 +129,7 @@ export default defineConfigWithVueTs(
             '\\',
             ' ',
             '—',
+            '·',
             'Alt',
             'Ctrl',
             'Shift',

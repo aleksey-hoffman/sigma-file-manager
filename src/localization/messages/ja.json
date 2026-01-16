@@ -9,6 +9,13 @@
     "vh": "vh",
     "mb": "MB"
   },
+  "relativeTime": {
+    "justNow": "たった今",
+    "minutesAgo": "0分前 | 1分前 | {n}分前 | {n}分前",
+    "hoursAgo": "0時間前 | 1時間前 | {n}時間前 | {n}時間前",
+    "daysAgo": "0日前 | 1日前 | {n}日前 | {n}日前"
+  },
+  "calculatedAgo": "{time}に計算",
   "pages": {
     "home": "ホームページ",
     "navigator": "ナビゲーター",
@@ -1444,6 +1451,7 @@
   "fileSize": "ファイルサイズ",
   "directorySize": "ディレクトリサイズ",
   "getSize": "サイズを取得",
+  "calculating": "計算中",
   "path": "道",
   "realPath": "リンク先パス",
   "created": "作成した",
@@ -1538,6 +1546,8 @@
     "video": "動画",
     "otherFiles": "その他のファイル",
     "itemCount": "{count} 項目",
+    "fileCount": "0 ファイル | 1 ファイル | {count} ファイル | {count} ファイル",
+    "directoryCount": "0 フォルダ | 1 フォルダ | {count} フォルダ | {count} フォルダ",
     "itemsTotal": "{count} 項目",
     "showingFiltered": "{total} 中 {filtered} 件を表示",
     "selectedItems": "{count} 件を選択中",
@@ -1558,6 +1568,13 @@
     "cannotPasteIntoItself": "フォルダを自身に貼り付けることはできません",
     "copyFailed": "コピー失敗",
     "moveFailed": "移動失敗",
+    "sizeTooltip": {
+      "title": "フォルダサイズの凡例",
+      "exact": "正確なサイズを計算済み",
+      "loading": "サイズを計算中...",
+      "notCalculated": "サイズ未計算、または時間制限により自動計算がキャンセルされました",
+      "note": "フォルダを選択し、情報パネルの「サイズを取得」をクリックして完全なサイズを計算してください。"
+    },
     "actions": {
       "rename": "名前を変更",
       "copy": "コピー",

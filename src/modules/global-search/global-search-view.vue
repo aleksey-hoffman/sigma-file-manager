@@ -25,6 +25,7 @@ import type { DirEntry } from '@/types/dir-entry';
 import type { DriveInfo } from '@/types/drive-info';
 import { formatBytes, formatDate } from '@/modules/navigator/components/file-browser/utils';
 import FileBrowserEntryIcon from '@/modules/navigator/components/file-browser/file-browser-entry-icon.vue';
+import { SEARCH_CONSTANTS } from '@/constants';
 
 const emit = defineEmits<{
   close: [];
@@ -45,7 +46,10 @@ const exactMatch = computed(() => userSettingsStore.userSettings.globalSearch.ex
 const typoTolerance = computed(() => userSettingsStore.userSettings.globalSearch.typoTolerance);
 
 function setResultLimit(value: string | number | undefined) {
-  const limit = Math.max(10, Math.min(500, Math.floor(Number(value ?? 50))));
+  const limit = Math.max(
+    SEARCH_CONSTANTS.MIN_RESULT_LIMIT,
+    Math.min(SEARCH_CONSTANTS.MAX_RESULT_LIMIT, Math.floor(Number(value ?? SEARCH_CONSTANTS.DEFAULT_RESULT_LIMIT))),
+  );
   userSettingsStore.set('globalSearch.resultLimit', limit);
 }
 

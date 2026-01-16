@@ -9,6 +9,13 @@
     "vh": "vh",
     "mb": "MB"
   },
+  "relativeTime": {
+    "justNow": "همین الان",
+    "minutesAgo": "0 دقیقه پیش | 1 دقیقه پیش | {n} دقیقه پیش | {n} دقیقه پیش",
+    "hoursAgo": "0 ساعت پیش | 1 ساعت پیش | {n} ساعت پیش | {n} ساعت پیش",
+    "daysAgo": "0 روز پیش | 1 روز پیش | {n} روز پیش | {n} روز پیش"
+  },
+  "calculatedAgo": "محاسبه شده {time}",
   "pages": {
     "home": "صفحه نخست",
     "navigator": "ناوبر",
@@ -1443,6 +1450,7 @@
   "fileSize": "حجم فایل",
   "directorySize": "اندازه دایرکتوری",
   "getSize": "دریافت اندازه",
+  "calculating": "در حال محاسبه",
   "path": "مسیر",
   "realPath": "پیوند مسیر هدف",
   "created": "ایجاد شده",
@@ -1537,6 +1545,8 @@
     "video": "ویدیو",
     "otherFiles": "فایل‌های دیگر",
     "itemCount": "{count} مورد",
+    "fileCount": "0 فایل | 1 فایل | {count} فایل | {count} فایل",
+    "directoryCount": "0 پوشه | 1 پوشه | {count} پوشه | {count} پوشه",
     "itemsTotal": "{count} مورد",
     "showingFiltered": "نمایش {filtered} از {total} مورد",
     "selectedItems": "{count} مورد انتخاب شده",
@@ -1557,6 +1567,13 @@
     "cannotPasteIntoItself": "امکان چسباندن پوشه در خودش نیست",
     "copyFailed": "کپی ناموفق",
     "moveFailed": "انتقال ناموفق",
+    "sizeTooltip": {
+      "title": "راهنمای اندازه پوشه",
+      "exact": "اندازه دقیق محاسبه شده",
+      "loading": "در حال محاسبه اندازه...",
+      "notCalculated": "اندازه محاسبه نشده، یا محاسبه خودکار به دلیل محدودیت زمانی لغو شد",
+      "note": "پوشه را انتخاب کنید و برای محاسبه کامل اندازه روی «دریافت اندازه» در پنل اطلاعات کلیک کنید."
+    },
     "actions": {
       "rename": "تغییر نام",
       "copy": "کپی",
