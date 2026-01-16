@@ -141,6 +141,9 @@
     "noDrivesSelected": "没有选择驱动器",
     "selectAtLeastOneDrive": "选择至少 1 个驱动器进行搜索",
     "lastScan": "上次扫描",
+    "priorityIndexing": "优先索引",
+    "priorityIndexingDescription": "当您使用应用时，您最常访问和最近访问的目录会每分钟自动重新索引，以便更快地找到这些位置中新添加的文件。",
+    "lastPriorityIndex": "索引了 {count} 个项目 {time}",
     "minutesAgo": "几分钟前",
     "indexedItems": "已索引项目",
     "indexSize": "索引大小",
@@ -164,6 +167,7 @@
       "found": "找到 {n} 项 | 找到 {n} 项 | 找到 {n} 项 | 找到 {n} 项",
       "finished": "在 {n} 秒内完成",
       "searched": "已搜索 {n} 条路径",
+      "indexed": "索引于 {time}",
       "nothingFound": "什么都没找到"
     }
   },

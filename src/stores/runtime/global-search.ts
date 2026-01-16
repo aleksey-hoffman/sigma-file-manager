@@ -7,6 +7,8 @@ import { invoke } from '@tauri-apps/api/core';
 import { computed, ref, watch } from 'vue';
 import type { DirEntry } from '@/types/dir-entry';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
+import { useUserStatsStore } from '@/stores/storage/user-stats';
+import { useUserPathsStore } from '@/stores/storage/user-paths';
 import { sharedDrives } from '@/modules/home/composables/use-drives';
 import { SEARCH_CONSTANTS } from '@/constants';
 
@@ -34,6 +36,8 @@ const POLL_INTERVAL_ACTIVE_MS = 300;
 const POLL_INTERVAL_IDLE_MS = 5000;
 const IDLE_THRESHOLD_MS = 60 * 1000;
 const IDLE_CHECK_INTERVAL_MS = 10 * 1000;
+const PRIORITY_INDEX_INTERVAL_MS = 60 * 1000;
+const PRIORITY_PATHS_MAX = 20;
 
 export const useGlobalSearchStore = defineStore('globalSearch', () => {
   const isOpen = ref(false);
@@ -58,11 +62,17 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
   const debounceTimerId = ref<ReturnType<typeof setTimeout> | null>(null);
   const searchAbortController = ref<AbortController | null>(null);
   const idleCheckIntervalId = ref<ReturnType<typeof setInterval> | null>(null);
+  const priorityIndexIntervalId = ref<ReturnType<typeof setInterval> | null>(null);
   const driveChangeDebounceTimerId = ref<ReturnType<typeof setTimeout> | null>(null);
   const lastActivityTime = ref<number>(Date.now());
   const lastKnownDriveCount = ref<number>(0);
+  const lastPriorityIndexTime = ref<number>(0);
+  const lastPriorityIndexCount = ref<number>(0);
+  const isPriorityIndexing = ref(false);
 
   const userSettingsStore = useUserSettingsStore();
+  const userStatsStore = useUserStatsStore();
+  const userPathsStore = useUserPathsStore();
 
   const scanProgress = computed(() => {
     if (totalDrivesCount.value === 0) return 0;
@@ -76,7 +86,7 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
     return false;
   });
 
-  const isIndexStale = computed(() => {
+  function getIsIndexStale() {
     if (!lastScanTime.value) return true;
     if (!isIndexValid.value) return true;
     if (indexedItemCount.value === 0) return true;
@@ -86,7 +96,7 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
     const timeSinceLastScan = Date.now() - lastScanTime.value;
 
     return timeSinceLastScan > staleThresholdMs;
-  });
+  }
 
   function getIsUserIdle() {
     return (Date.now() - lastActivityTime.value) > IDLE_THRESHOLD_MS;
@@ -145,10 +155,13 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
       startIdleDetection();
 
       const settings = userSettingsStore.userSettings.globalSearch;
-      const shouldRescanOnLaunch = needsScan.value || (settings.autoReindexWhenIdle && isIndexStale.value);
+      const shouldRescanOnLaunch = needsScan.value || (settings.autoReindexWhenIdle && getIsIndexStale());
 
       if (shouldRescanOnLaunch) {
         await startScan();
+      }
+      else {
+        indexPriorityPaths();
       }
     }
     catch (error) {
@@ -183,6 +196,10 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
 
   async function startScan() {
     if (isScanInProgress.value) return;
+
+    if (isPriorityIndexing.value) {
+      await waitForPriorityIndexing();
+    }
 
     try {
       const settings = userSettingsStore.userSettings.globalSearch;
@@ -353,7 +370,21 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
   }
 
   function recordActivity() {
+    const wasIdle = getIsUserIdle();
     lastActivityTime.value = Date.now();
+
+    if (wasIdle) {
+      restartPriorityIndexInterval();
+      indexPriorityPaths();
+    }
+  }
+
+  function restartPriorityIndexInterval() {
+    if (priorityIndexIntervalId.value !== null) {
+      clearInterval(priorityIndexIntervalId.value);
+    }
+
+    priorityIndexIntervalId.value = setInterval(checkPriorityIndex, PRIORITY_INDEX_INTERVAL_MS);
   }
 
   function checkIdleReindex() {
@@ -362,10 +393,108 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
     if (!settings.autoReindexWhenIdle) return;
     if (isScanInProgress.value) return;
     if (!isInitialized.value) return;
-    if (!isIndexStale.value) return;
+    if (!getIsIndexStale()) return;
     if (!getIsUserIdle()) return;
 
     startScan();
+  }
+
+  function getPriorityPaths(): string[] {
+    const paths = new Set<string>();
+
+    const userDirs = [
+      userPathsStore.userPaths.downloadDir,
+      userPathsStore.userPaths.documentDir,
+      userPathsStore.userPaths.desktopDir,
+      userPathsStore.userPaths.pictureDir,
+      userPathsStore.userPaths.videoDir,
+      userPathsStore.userPaths.audioDir,
+    ].filter(Boolean);
+
+    for (const dirPath of userDirs) {
+      paths.add(dirPath);
+    }
+
+    const recentDirs = userStatsStore.sortedHistory
+      .filter(item => !item.isFile)
+      .slice(0, PRIORITY_PATHS_MAX)
+      .map(item => item.path);
+
+    for (const dirPath of recentDirs) {
+      paths.add(dirPath);
+    }
+
+    const frequentDirs = userStatsStore.sortedFrequentItems
+      .filter(item => !item.isFile)
+      .slice(0, PRIORITY_PATHS_MAX)
+      .map(item => item.path);
+
+    for (const dirPath of frequentDirs) {
+      paths.add(dirPath);
+    }
+
+    return Array.from(paths).slice(0, PRIORITY_PATHS_MAX);
+  }
+
+  function waitForPriorityIndexing(): Promise<void> {
+    return new Promise((resolve) => {
+      const checkInterval = setInterval(() => {
+        if (!isPriorityIndexing.value) {
+          clearInterval(checkInterval);
+          resolve();
+        }
+      }, 50);
+    });
+  }
+
+  async function indexPriorityPaths() {
+    if (isPriorityIndexing.value) return;
+    if (isScanInProgress.value) return;
+    if (!isInitialized.value) return;
+    if (!isIndexValid.value) return;
+
+    const paths = getPriorityPaths();
+    if (paths.length === 0) return;
+
+    isPriorityIndexing.value = true;
+
+    try {
+      const settings = userSettingsStore.userSettings.globalSearch;
+
+      const indexedCount = await invoke<number>('global_search_index_paths', {
+        settings: {
+          paths,
+          scan_depth: 1,
+          ignored_paths: settings.ignoredPaths,
+        },
+      });
+
+      if (indexedCount > 0) {
+        await refreshStatus();
+      }
+
+      lastPriorityIndexTime.value = Date.now();
+      lastPriorityIndexCount.value = indexedCount;
+    }
+    catch (error) {
+      lastError.value = String(error);
+    }
+    finally {
+      isPriorityIndexing.value = false;
+    }
+  }
+
+  function checkPriorityIndex() {
+    if (getIsUserIdle()) return;
+    if (isScanInProgress.value) return;
+    if (isPriorityIndexing.value) return;
+    if (!isInitialized.value) return;
+    if (!isIndexValid.value) return;
+
+    const timeSinceLastPriorityIndex = Date.now() - lastPriorityIndexTime.value;
+    if (timeSinceLastPriorityIndex < PRIORITY_INDEX_INTERVAL_MS) return;
+
+    indexPriorityPaths();
   }
 
   function startIdleDetection() {
@@ -377,12 +506,21 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
     });
 
     idleCheckIntervalId.value = setInterval(checkIdleReindex, IDLE_CHECK_INTERVAL_MS);
+
+    if (priorityIndexIntervalId.value === null) {
+      priorityIndexIntervalId.value = setInterval(checkPriorityIndex, PRIORITY_INDEX_INTERVAL_MS);
+    }
   }
 
   function stopIdleDetection() {
     if (idleCheckIntervalId.value !== null) {
       clearInterval(idleCheckIntervalId.value);
       idleCheckIntervalId.value = null;
+    }
+
+    if (priorityIndexIntervalId.value !== null) {
+      clearInterval(priorityIndexIntervalId.value);
+      priorityIndexIntervalId.value = null;
     }
 
     const activityEvents = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll', 'wheel'];
@@ -421,6 +559,10 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
 
   async function startScanWithCurrentDrives() {
     if (!isInitialized.value) return;
+
+    if (isPriorityIndexing.value) {
+      await waitForPriorityIndexing();
+    }
 
     const settings = userSettingsStore.userSettings.globalSearch;
     const selectedRoots = settings.selectedDriveRoots;
@@ -500,9 +642,12 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
     totalDrivesCount,
     scanProgress,
     needsScan,
-    isIndexStale,
+    getIsIndexStale,
     isInitialized,
     lastError,
+    isPriorityIndexing,
+    lastPriorityIndexTime,
+    lastPriorityIndexCount,
     getIsUserIdle,
     open,
     close,
@@ -518,5 +663,6 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
     search,
     startIdleDetection,
     stopIdleDetection,
+    indexPriorityPaths,
   };
 });

@@ -141,6 +141,9 @@
     "noDrivesSelected": "ドライブが選択されていません",
     "selectAtLeastOneDrive": "検索するドライブを少なくとも 1 つ選択してください",
     "lastScan": "最後のスキャン",
+    "priorityIndexing": "優先インデックス作成",
+    "priorityIndexingDescription": "アプリの使用中、最も閲覧されたディレクトリと最近のディレクトリは毎分自動的に再インデックスされるため、それらの場所に新しく追加されたファイルをより速く見つけることができます。",
+    "lastPriorityIndex": "{count}件のアイテムを{time}にインデックス作成",
     "minutesAgo": "数分前",
     "indexedItems": "インデックス済みアイテム",
     "indexSize": "インデックスサイズ",
@@ -164,6 +167,7 @@
       "found": "{n} 個のアイテムが見つかりました | {n} 個のアイテムが見つかりました | {n} 個のアイテムが見つかりました | {n} 個のアイテムが見つかりました",
       "finished": "{n} 秒で終了",
       "searched": "{n} パスを検索しました",
+      "indexed": "{time}にインデックス作成",
       "nothingFound": "「何も見つかりませんでした」"
     }
   },

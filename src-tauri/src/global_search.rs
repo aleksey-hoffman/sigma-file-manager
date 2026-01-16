@@ -891,6 +891,125 @@ pub async fn global_search_start_scan(
     Ok(())
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct IndexPathsSettings {
+    pub paths: Vec<String>,
+    pub scan_depth: usize,
+    pub ignored_paths: Vec<String>,
+}
+
+#[tauri::command]
+pub async fn global_search_index_paths(
+    app: tauri::AppHandle,
+    settings: IndexPathsSettings,
+) -> Result<u64, String> {
+    if settings.paths.is_empty() {
+        return Ok(0);
+    }
+
+    {
+        let state = GLOBAL_SEARCH_STATE
+            .read()
+            .map_err(|error| error.to_string())?;
+        if state.status.is_scan_in_progress {
+            return Err("A full scan is already in progress".to_string());
+        }
+    }
+
+    let base_dir = app
+        .path()
+        .app_data_dir()
+        .map_err(|error: tauri::Error| error.to_string())?;
+    let index_path = index_dir(&base_dir);
+
+    let (index, reader, fields) = open_or_create_index(&index_path)?;
+
+    let mut writer = index
+        .writer(50_000_000)
+        .map_err(|error| error.to_string())?;
+
+    let ignored_paths: Vec<String> = settings
+        .ignored_paths
+        .iter()
+        .map(|path| normalize_path(path))
+        .chain(builtin_ignored_paths().iter().map(|path| path.to_string()))
+        .collect();
+
+    let mut indexed_count: u64 = 0;
+    let scan_depth = settings.scan_depth.max(1);
+
+    for dir_path in &settings.paths {
+        let path = Path::new(dir_path);
+        
+        if !path.exists() || !path.is_dir() {
+            continue;
+        }
+
+        let normalized_dir = normalize_path(dir_path);
+        
+        if is_ignored_path(&normalized_dir, &ignored_paths) {
+            continue;
+        }
+
+        let prefix_term = Term::from_field_text(fields.path, &format!("{}/", normalized_dir));
+        writer.delete_term(prefix_term);
+
+        let exact_term = Term::from_field_text(fields.path, &normalized_dir);
+        writer.delete_term(exact_term);
+
+        for entry_result in WalkDir::new(path)
+            .follow_links(false)
+            .max_depth(scan_depth)
+            .into_iter()
+            .filter_entry(|entry| {
+                let path_string = entry.path().to_string_lossy().to_string();
+                let normalized = normalize_path(&path_string);
+                !is_ignored_path(&normalized, &ignored_paths)
+            })
+        {
+            let entry = match entry_result {
+                Ok(entry) => entry,
+                Err(_) => continue,
+            };
+
+            if entry.depth() == 0 {
+                continue;
+            }
+
+            let entry_path = entry.path();
+            let path_string = match entry_path.to_str() {
+                Some(path_str) => normalize_path(path_str),
+                None => continue,
+            };
+
+            if is_ignored_path(&path_string, &ignored_paths) {
+                continue;
+            }
+
+            add_path_doc(&mut writer, &fields, entry_path);
+            indexed_count += 1;
+        }
+    }
+
+    if indexed_count > 0 {
+        writer.commit().map_err(|error| error.to_string())?;
+        reader.reload().map_err(|error| error.to_string())?;
+
+        let new_total = reader.searcher().num_docs();
+        let index_size = calculate_dir_size(&index_path);
+
+        if let Ok(mut state) = GLOBAL_SEARCH_STATE.write() {
+            state.status.indexed_item_count = new_total;
+            state.status.index_size_bytes = index_size;
+            state.index = Some(index);
+            state.reader = Some(reader);
+            state.fields = Some(fields);
+        }
+    }
+
+    Ok(indexed_count)
+}
+
 #[tauri::command]
 pub async fn global_search_query(
     app: tauri::AppHandle,

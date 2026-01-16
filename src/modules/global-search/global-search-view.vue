@@ -88,6 +88,27 @@ const hasIndexData = computed(() => globalSearchStore.indexedItemCount > 0);
 const showScanProgress = computed(() => (globalSearchStore.isScanInProgress || globalSearchStore.isCommitting) && globalSearchStore.totalDrivesCount > 0);
 const isCommitting = computed(() => globalSearchStore.isCommitting);
 
+function formatRelativeTime(timestamp: number): string {
+  const now = Date.now();
+  const diff = now - timestamp;
+  const seconds = Math.floor(diff / 1000);
+  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+
+  if (seconds < 60) return t('globalSearch.relativeTime.justNow');
+  if (minutes < 60) return t('globalSearch.relativeTime.minutesAgo', minutes);
+  if (hours < 24) return t('globalSearch.relativeTime.hoursAgo', hours);
+  if (days < 7) return t('globalSearch.relativeTime.daysAgo', days);
+
+  return new Date(timestamp).toLocaleDateString();
+}
+
+const lastScanRelative = computed(() => {
+  if (!globalSearchStore.lastScanTime) return null;
+  return formatRelativeTime(globalSearchStore.lastScanTime);
+});
+
 type GroupedResults = {
   driveRoot: string;
   driveInfo: DriveInfo | null;
@@ -409,6 +430,12 @@ onMounted(() => {
           </span>
           <span class="global-search-view__empty-description">
             {{ t('globalSearch.searchStats.searched', { n: globalSearchStore.indexedItemCount.toLocaleString() }) }}
+          </span>
+          <span
+            v-if="lastScanRelative"
+            class="global-search-view__empty-description"
+          >
+            {{ t('globalSearch.searchStats.indexed', { time: lastScanRelative }) }}
           </span>
         </div>
 

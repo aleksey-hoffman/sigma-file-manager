@@ -63,6 +63,12 @@ const lastScanRelative = computed(() => {
   return formatRelativeTime(globalSearchStore.lastScanTime);
 });
 
+const lastPriorityIndexRelative = computed(() => {
+  void displayTick.value;
+  if (!globalSearchStore.lastPriorityIndexTime) return null;
+  return formatRelativeTime(globalSearchStore.lastPriorityIndexTime);
+});
+
 const formattedIndexSize = computed(() => {
   if (globalSearchStore.indexSizeBytes === 0) return '-';
   return formatBytes(globalSearchStore.indexSizeBytes);
@@ -311,6 +317,23 @@ onUnmounted(() => {
                 {{ t('globalSearch.lastScan') }}
               </span>
             </div>
+          </div>
+
+          <div class="global-search-settings__priority-index-status">
+            <div class="global-search-settings__priority-index-header">
+              <span class="global-search-settings__priority-index-title">
+                {{ t('globalSearch.priorityIndexing') }}
+              </span>
+              <span
+                v-if="lastPriorityIndexRelative"
+                class="global-search-settings__priority-index-value"
+              >
+                {{ t('globalSearch.lastPriorityIndex', { count: globalSearchStore.lastPriorityIndexCount, time: lastPriorityIndexRelative }) }}
+              </span>
+            </div>
+            <span class="global-search-settings__priority-index-description">
+              {{ t('globalSearch.priorityIndexingDescription') }}
+            </span>
           </div>
 
           <div
@@ -679,6 +702,44 @@ onUnmounted(() => {
   color: hsl(var(--muted-foreground));
   font-size: 11px;
   text-transform: uppercase;
+}
+
+.global-search-settings__priority-index-status {
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius-sm);
+  background-color: hsl(var(--card));
+  gap: 8px;
+}
+
+.global-search-settings__priority-index-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.global-search-settings__priority-index-title {
+  color: hsl(var(--foreground));
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.global-search-settings__priority-index-value {
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  background-color: hsl(var(--success) / 15%);
+  color: hsl(var(--success));
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.global-search-settings__priority-index-description {
+  color: hsl(var(--muted-foreground));
+  font-size: 12px;
+  line-height: 1.5;
 }
 
 .global-search-settings__errors {

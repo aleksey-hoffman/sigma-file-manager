@@ -141,6 +141,9 @@
     "noDrivesSelected": "Không có ổ nào được chọn",
     "selectAtLeastOneDrive": "Chọn ít nhất 1 ổ đĩa để tìm kiếm",
     "lastScan": "Quét lần cuối",
+    "priorityIndexing": "Lập chỉ mục ưu tiên",
+    "priorityIndexingDescription": "Các thư mục được xem nhiều nhất và gần đây của bạn được tự động lập chỉ mục lại mỗi phút khi bạn sử dụng ứng dụng, để các tệp mới thêm vào các vị trí đó có thể được tìm thấy nhanh hơn.",
+    "lastPriorityIndex": "Đã lập chỉ mục {count} mục {time}",
     "minutesAgo": "Vài phút trước",
     "indexedItems": "Mục đã lập chỉ mục",
     "indexSize": "Kích thước chỉ mục",
@@ -164,6 +167,7 @@
       "found": "Đã tìm thấy {n} mục | Đã tìm thấy {n} mục | Đã tìm thấy {n} mục | Đã tìm thấy {n} mục",
       "finished": "Hoàn tất sau {n} giây",
       "searched": "Đã tìm kiếm {n} đường dẫn",
+      "indexed": "Được lập chỉ mục {time}",
       "nothingFound": "Không tìm thấy gì"
     }
   },

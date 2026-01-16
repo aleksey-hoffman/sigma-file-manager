@@ -141,6 +141,9 @@
     "noDrivesSelected": "Sürücü seçilmedi",
     "selectAtLeastOneDrive": "Aramak için en az 1 sürücü seçin",
     "lastScan": "Son tarama",
+    "priorityIndexing": "Öncelikli dizinleme",
+    "priorityIndexingDescription": "En çok görüntülenen ve son kullanılan dizinleriniz, uygulamayı kullanırken her dakika otomatik olarak yeniden dizine eklenir, böylece bu konumlara yeni eklenen dosyalar daha hızlı bulunabilir.",
+    "lastPriorityIndex": "{count} öğe {time} dizine eklendi",
     "minutesAgo": "dakika önce",
     "indexedItems": "Dizine eklenen öğeler",
     "indexSize": "Dizin boyutu",
@@ -164,6 +167,7 @@
       "found": "{n} öğe bulundu | {n} öğe bulundu | {n} öğe bulundu | {n} öğe bulundu",
       "finished": "{n} saniyede tamamlandı",
       "searched": "{n} yol arandı",
+      "indexed": "{time} dizine eklendi",
       "nothingFound": "Hiçbir şey bulunamadı"
     }
   },

@@ -49,12 +49,14 @@ function getTagById(tagId: string): ItemTag | undefined {
   return tags.value.find(tag => tag.id === tagId);
 }
 
-function getItemName(path: string): string {
+function getItemName(path: string | null | undefined): string {
+  if (!path) return '';
   const segments = path.replace(/\\/g, '/').split('/').filter(Boolean);
   return segments[segments.length - 1] || path;
 }
 
-function getItemDirectory(path: string): string {
+function getItemDirectory(path: string | null | undefined): string {
+  if (!path) return '';
   const normalizedPath = path.replace(/\\/g, '/');
   const lastSlashIndex = normalizedPath.lastIndexOf('/');
   return lastSlashIndex > 0 ? normalizedPath.substring(0, lastSlashIndex) : normalizedPath;

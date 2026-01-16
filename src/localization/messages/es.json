@@ -141,6 +141,9 @@
     "noDrivesSelected": "Ninguna unidad seleccionada",
     "selectAtLeastOneDrive": "Seleccione al menos 1 unidad para buscar",
     "lastScan": "Último escaneo",
+    "priorityIndexing": "Indexación prioritaria",
+    "priorityIndexingDescription": "Sus directorios más vistos y recientes se reindexan automáticamente cada minuto mientras usa la aplicación, para que los archivos recién agregados en esas ubicaciones se puedan encontrar más rápido.",
+    "lastPriorityIndex": "Indexados {count} elementos {time}",
     "minutesAgo": "hace minutos",
     "indexedItems": "Elementos indexados",
     "indexSize": "Tamaño del índice",
@@ -164,6 +167,7 @@
       "found": "Encontrados {n} elementos | Encontrados {n} elementos | Encontrados {n} elementos | Encontrados {n} elementos",
       "finished": "Terminado en {n} segundos",
       "searched": "Se buscaron {n} rutas",
+      "indexed": "Indexado {time}",
       "nothingFound": "No se encontró nada"
     }
   },

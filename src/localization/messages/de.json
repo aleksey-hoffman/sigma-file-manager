@@ -141,6 +141,9 @@
     "noDrivesSelected": "Keine Laufwerke ausgewählt",
     "selectAtLeastOneDrive": "Mindestens 1 Laufwerk zum Suchen auswählen",
     "lastScan": "Letzter Scan",
+    "priorityIndexing": "Prioritäts-Indexierung",
+    "priorityIndexingDescription": "Ihre am häufigsten besuchten und zuletzt verwendeten Verzeichnisse werden automatisch jede Minute neu indexiert, während Sie die App verwenden, damit neu hinzugefügte Dateien an diesen Orten schneller gefunden werden können.",
+    "lastPriorityIndex": "{count} Elemente {time} indexiert",
     "minutesAgo": "Vor ein paar Minuten",
     "indexedItems": "Indizierte Elemente",
     "indexSize": "Indexgröße",
@@ -164,6 +167,7 @@
       "found": "{n} Elemente gefunden | {n} Elemente gefunden | {n} Elemente gefunden | {n} Elemente gefunden",
       "finished": "Fertig in {n} Sekunden",
       "searched": "Durchsuchte {n} Pfade",
+      "indexed": "Indexiert {time}",
       "nothingFound": "Es wurde nichts gefunden"
     }
   },
