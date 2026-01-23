@@ -12,21 +12,13 @@ const { t } = useI18n();
 
 <template>
   <div class="settings-header">
-    <h1 class="settings-header__title">
-      {{ t('pages.settings') }}
-    </h1>
-    <div class="settings-header__content">
-      <img
-        :src="logoImage"
-        width="64px"
-      >
-      <div class="settings-header__title-section">
-        <p class="settings-header__description">
-          <strong>"{{ t('app.name') }}"</strong>
-          {{ t('app.description') }}
-          <br>{{ t('app.copyright') }}
-        </p>
-      </div>
+    <img :src="logoImage">
+    <div class="settings-header__title-section">
+      <p class="settings-header__description">
+        <strong>"{{ t('app.name') }}"</strong>
+        {{ t('app.description') }}
+        <br>{{ t('app.copyright') }}
+      </p>
     </div>
   </div>
 </template>
@@ -34,28 +26,20 @@ const { t } = useI18n();
 <style scoped>
 .settings-header {
   display: flex;
-  flex-direction: column;
-  padding: 1.5rem 2rem;
-  padding-bottom: 0;
-}
-
-.settings-header__content {
-  display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1rem 0;
+  padding-bottom: 1rem;
   border-bottom: 1px solid hsl(var(--border));
   gap: 2rem;
 }
 
-.settings-header__title-section {
-  flex: 1;
+.settings-header img {
+  width: 64px;
+  height: 64px;
 }
 
-.settings-header__title {
-  color: hsl(var(--foreground));
-  font-size: 1.875rem;
-  font-weight: 700;
+.settings-header__title-section {
+  flex: 1;
 }
 
 .settings-header__description {
@@ -65,10 +49,18 @@ const { t } = useI18n();
 }
 
 @media (width <= 768px) {
-  .settings-header__content {
-    flex-direction: column;
-    align-items: stretch;
+  .settings-header {
+    font-size: 10px;
     gap: 1rem;
   }
+
+  .settings-header img {
+    width: 36px;
+    height: 36px;
+  }
+
+   .settings-header__description {
+     font-size: 0.75rem;
+   }
 }
 </style>

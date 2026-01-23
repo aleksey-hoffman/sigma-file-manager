@@ -5,10 +5,12 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <script setup lang="ts">
 import { onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { SettingsHeader, SettingsContent, SettingsSearch, SettingsActions } from '@/modules/settings';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { DefaultLayout } from '@/layouts';
 import { useSettingsStore } from '@/stores/runtime/settings';
 
+const { t } = useI18n();
 const settingsStore = useSettingsStore();
 
 onMounted(() => {
@@ -17,22 +19,19 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="settings-page">
-    <ScrollArea>
-      <SettingsActions />
-      <SettingsSearch />
-      <SettingsHeader />
-      <SettingsContent />
-    </ScrollArea>
-  </div>
+  <DefaultLayout
+    class="settings-page"
+    :title="t('pages.settings')"
+  >
+    <SettingsActions />
+    <SettingsSearch />
+    <SettingsHeader />
+    <SettingsContent />
+  </DefaultLayout>
 </template>
 
 <style scoped>
 .settings-page {
-  display: flex;
-  height: calc(100vh - var(--window-toolbar-height));
-  flex-direction: column;
   color: hsl(var(--foreground));
-  overflow-y: auto;
 }
 </style>

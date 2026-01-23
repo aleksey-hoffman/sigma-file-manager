@@ -12,11 +12,9 @@ import {
   TagIcon,
   TrendingUpIcon,
   ClockIcon,
-  FolderIcon,
-  FileIcon,
   XIcon,
 } from 'lucide-vue-next';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { DefaultLayout } from '@/layouts';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { TagSelector } from '@/components/ui/tag-selector';
@@ -24,6 +22,7 @@ import { useUserStatsStore } from '@/stores/storage/user-stats';
 import { useWorkspacesStore } from '@/stores/storage/workspaces';
 import DashboardActionBar from '@/modules/dashboard/components/dashboard-action-bar.vue';
 import DashboardEmptyState from '@/modules/dashboard/components/dashboard-empty-state.vue';
+import EntryCard from '@/modules/dashboard/components/entry-card.vue';
 import type {
   FavoriteItem,
   HistoryItem,
@@ -49,14 +48,7 @@ function getTagById(tagId: string): ItemTag | undefined {
   return tags.value.find(tag => tag.id === tagId);
 }
 
-function getItemName(path: string | null | undefined): string {
-  if (!path) return '';
-  const segments = path.replace(/\\/g, '/').split('/').filter(Boolean);
-  return segments[segments.length - 1] || path;
-}
-
-function getItemDirectory(path: string | null | undefined): string {
-  if (!path) return '';
+function getItemDirectory(path: string): string {
   const normalizedPath = path.replace(/\\/g, '/');
   const lastSlashIndex = normalizedPath.lastIndexOf('/');
   return lastSlashIndex > 0 ? normalizedPath.substring(0, lastSlashIndex) : normalizedPath;
@@ -115,10 +107,6 @@ async function removeHistoryItem(path: string, openedAt: number, event: MouseEve
   await userStatsStore.removeFromHistory(path, openedAt);
 }
 
-function isDirectory(path: string): boolean {
-  return path.endsWith('/') || !path.includes('.');
-}
-
 async function handleToggleTagOnItem(item: TaggedItem, tagId: string) {
   const hasTag = item.tagIds.includes(tagId);
 
@@ -144,334 +132,231 @@ async function handleDeleteTag(tagId: string) {
 </script>
 
 <template>
-  <ScrollArea class="dashboard-page">
-    <div class="dashboard-page__container">
-      <header class="dashboard-page__header">
-        <h1 class="dashboard-page__title">
-          {{ t('pages.dashboard') }}
-        </h1>
-        <p class="dashboard-page__subtitle">
-          {{ t('dashboard.subtitle') }}
-        </p>
-      </header>
-
-      <Tabs
-        v-model="activeTab"
-        default-value="favorites"
-        class="dashboard-page__tabs"
-      >
-        <TabsList class="dashboard-page__tabs-list">
-          <TabsTrigger
-            value="favorites"
-            class="dashboard-page__tab-trigger"
-          >
-            <StarIcon :size="16" />
-            <span>{{ t('dashboard.tabs.favorites') }}</span>
-            <span
-              v-if="favoriteItems.length > 0"
-              class="dashboard-page__tab-badge"
-            >
-              {{ favoriteItems.length }}
-            </span>
-          </TabsTrigger>
-          <TabsTrigger
-            value="tagged"
-            class="dashboard-page__tab-trigger"
-          >
-            <TagIcon :size="16" />
-            <span>{{ t('dashboard.tabs.tagged') }}</span>
-            <span
-              v-if="taggedItems.length > 0"
-              class="dashboard-page__tab-badge"
-            >
-              {{ taggedItems.length }}
-            </span>
-          </TabsTrigger>
-          <TabsTrigger
-            value="frequent"
-            class="dashboard-page__tab-trigger"
-          >
-            <TrendingUpIcon :size="16" />
-            <span>{{ t('dashboard.tabs.frequent') }}</span>
-            <span
-              v-if="frequentItems.length > 0"
-              class="dashboard-page__tab-badge"
-            >
-              {{ frequentItems.length }}
-            </span>
-          </TabsTrigger>
-          <TabsTrigger
-            value="history"
-            class="dashboard-page__tab-trigger"
-          >
-            <ClockIcon :size="16" />
-            <span>{{ t('dashboard.tabs.history') }}</span>
-            <span
-              v-if="historyItems.length > 0"
-              class="dashboard-page__tab-badge"
-            >
-              {{ historyItems.length }}
-            </span>
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent
+  <DefaultLayout
+    class="dashboard-page"
+    :title="t('pages.dashboard')"
+    :subtitle="t('dashboard.subtitle')"
+  >
+    <Tabs
+      v-model="activeTab"
+      default-value="favorites"
+      class="dashboard-page__tabs"
+    >
+      <TabsList class="dashboard-page__tabs-list">
+        <TabsTrigger
           value="favorites"
-          class="dashboard-page__tab-content"
+          class="dashboard-page__tab-trigger"
         >
-          <DashboardActionBar
-            :is-empty="favoriteItems.length === 0"
-            @clear-all="userStatsStore.clearAllFavorites()"
-          />
-          <DashboardEmptyState
-            v-if="favoriteItems.length === 0"
-            type="favorites"
-            :title="t('dashboard.emptyFavorites')"
-            :description="t('dashboard.emptyFavoritesDescription')"
-          />
-          <div
-            v-else
-            class="dashboard-page__items-grid"
+          <StarIcon :size="16" />
+          <span>{{ t('dashboard.tabs.favorites') }}</span>
+          <span
+            v-if="favoriteItems.length > 0"
+            class="dashboard-page__tab-badge"
           >
-            <button
-              v-for="item in favoriteItems"
-              :key="item.path"
-              type="button"
-              class="dashboard-item"
-              @click="openFavoriteItem(item)"
-            >
-              <div class="dashboard-item__icon">
-                <FolderIcon
-                  v-if="isDirectory(item.path)"
-                  :size="20"
-                />
-                <FileIcon
-                  v-else
-                  :size="20"
-                />
-              </div>
-              <div class="dashboard-item__content">
-                <span class="dashboard-item__name">{{ getItemName(item.path) }}</span>
-                <span class="dashboard-item__path">{{ getItemDirectory(item.path) }}</span>
-              </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                class="dashboard-item__action"
-                @click="removeFavorite(item.path, $event)"
-              >
-                <XIcon :size="14" />
-              </Button>
-            </button>
-          </div>
-        </TabsContent>
-
-        <TabsContent
+            {{ favoriteItems.length }}
+          </span>
+        </TabsTrigger>
+        <TabsTrigger
           value="tagged"
-          class="dashboard-page__tab-content"
+          class="dashboard-page__tab-trigger"
         >
-          <DashboardActionBar
-            :is-empty="taggedItems.length === 0"
-            @clear-all="userStatsStore.clearAllTagged()"
-          />
-          <DashboardEmptyState
-            v-if="taggedItems.length === 0"
-            type="tagged"
-            :title="t('dashboard.emptyTagged')"
-            :description="t('dashboard.emptyTaggedDescription')"
-          />
-          <div
-            v-else
-            class="dashboard-page__items-grid"
+          <TagIcon :size="16" />
+          <span>{{ t('dashboard.tabs.tagged') }}</span>
+          <span
+            v-if="taggedItems.length > 0"
+            class="dashboard-page__tab-badge"
           >
-            <div
-              v-for="item in taggedItems"
-              :key="item.path"
-              class="dashboard-item dashboard-item--tagged"
-            >
-              <button
-                type="button"
-                class="dashboard-item__main"
-                @click="openItem(item.path, item.isFile)"
-              >
-                <div class="dashboard-item__icon">
-                  <FolderIcon
-                    v-if="!item.isFile"
-                    :size="20"
-                  />
-                  <FileIcon
-                    v-else
-                    :size="20"
-                  />
-                </div>
-                <div class="dashboard-item__content">
-                  <span class="dashboard-item__name">{{ getItemName(item.path) }}</span>
-                  <span class="dashboard-item__path">{{ getItemDirectory(item.path) }}</span>
-                </div>
-              </button>
-              <div class="dashboard-item__tag-actions">
-                <div class="dashboard-item__tags">
-                  <span
-                    v-for="tagId in item.tagIds"
-                    :key="tagId"
-                    class="dashboard-item__tag"
-                    :style="{ backgroundColor: getTagById(tagId)?.color + '25', color: getTagById(tagId)?.color }"
-                  >
-                    {{ getTagById(tagId)?.name }}
-                  </span>
-                </div>
-                <TagSelector
-                  :tags="tags"
-                  :selected-tag-ids="item.tagIds"
-                  :allow-create="true"
-                  trigger-variant="compact"
-                  @toggle-tag="(tagId) => handleToggleTagOnItem(item, tagId)"
-                  @create-tag="(name) => handleCreateTagForItem(item, name)"
-                  @delete-tag="handleDeleteTag"
-                />
-              </div>
-            </div>
-          </div>
-        </TabsContent>
-
-        <TabsContent
+            {{ taggedItems.length }}
+          </span>
+        </TabsTrigger>
+        <TabsTrigger
           value="frequent"
-          class="dashboard-page__tab-content"
+          class="dashboard-page__tab-trigger"
         >
-          <DashboardActionBar
-            :is-empty="frequentItems.length === 0"
-            @clear-all="userStatsStore.clearAllFrequent()"
-          />
-          <DashboardEmptyState
-            v-if="frequentItems.length === 0"
-            type="frequent"
-            :title="t('dashboard.emptyFrequent')"
-            :description="t('dashboard.emptyFrequentDescription')"
-          />
-          <div
-            v-else
-            class="dashboard-page__items-list"
+          <TrendingUpIcon :size="16" />
+          <span>{{ t('dashboard.tabs.frequent') }}</span>
+          <span
+            v-if="frequentItems.length > 0"
+            class="dashboard-page__tab-badge"
           >
-            <button
-              v-for="item in frequentItems"
-              :key="item.path"
-              type="button"
-              class="dashboard-item dashboard-item--list"
-              @click="openFrequentItem(item)"
-            >
-              <div class="dashboard-item__icon">
-                <FolderIcon
-                  v-if="!item.isFile"
-                  :size="20"
-                />
-                <FileIcon
-                  v-else
-                  :size="20"
-                />
-              </div>
-              <div class="dashboard-item__content">
-                <span class="dashboard-item__name">{{ getItemName(item.path) }}</span>
-                <span class="dashboard-item__path">{{ getItemDirectory(item.path) }}</span>
-              </div>
-              <div class="dashboard-item__stats">
-                <span class="dashboard-item__count">{{ t('dashboard.openedCount', item.openCount) }}</span>
-              </div>
-            </button>
-          </div>
-        </TabsContent>
-
-        <TabsContent
+            {{ frequentItems.length }}
+          </span>
+        </TabsTrigger>
+        <TabsTrigger
           value="history"
-          class="dashboard-page__tab-content"
+          class="dashboard-page__tab-trigger"
         >
-          <DashboardActionBar
-            :is-empty="historyItems.length === 0"
-            @clear-all="userStatsStore.clearHistory()"
-          />
-          <DashboardEmptyState
-            v-if="historyItems.length === 0"
-            type="history"
-            :title="t('dashboard.emptyHistory')"
-            :description="t('dashboard.emptyHistoryDescription')"
-          />
-          <div
-            v-else
-            class="dashboard-page__items-list"
+          <ClockIcon :size="16" />
+          <span>{{ t('dashboard.tabs.history') }}</span>
+          <span
+            v-if="historyItems.length > 0"
+            class="dashboard-page__tab-badge"
           >
-            <button
-              v-for="item in historyItems"
-              :key="`${item.path}-${item.openedAt}`"
-              type="button"
-              class="dashboard-item dashboard-item--list"
-              @click="openHistoryItem(item)"
+            {{ historyItems.length }}
+          </span>
+        </TabsTrigger>
+      </TabsList>
+
+      <TabsContent
+        value="favorites"
+        class="dashboard-page__tab-content"
+      >
+        <DashboardActionBar
+          :is-empty="favoriteItems.length === 0"
+          @clear-all="userStatsStore.clearAllFavorites()"
+        />
+        <DashboardEmptyState
+          v-if="favoriteItems.length === 0"
+          type="favorites"
+          :title="t('dashboard.emptyFavorites')"
+          :description="t('dashboard.emptyFavoritesDescription')"
+        />
+        <div
+          v-else
+          class="dashboard-page__items-grid"
+        >
+          <EntryCard
+            v-for="item in favoriteItems"
+            :key="item.path"
+            :path="item.path"
+            @click="openFavoriteItem(item)"
+          >
+            <Button
+              variant="ghost"
+              size="icon"
+              class="entry-card__action"
+              @click="removeFavorite(item.path, $event)"
             >
-              <div class="dashboard-item__icon">
-                <FolderIcon
-                  v-if="!item.isFile"
-                  :size="20"
-                />
-                <FileIcon
-                  v-else
-                  :size="20"
-                />
+              <XIcon :size="14" />
+            </Button>
+          </EntryCard>
+        </div>
+      </TabsContent>
+
+      <TabsContent
+        value="tagged"
+        class="dashboard-page__tab-content"
+      >
+        <DashboardActionBar
+          :is-empty="taggedItems.length === 0"
+          @clear-all="userStatsStore.clearAllTagged()"
+        />
+        <DashboardEmptyState
+          v-if="taggedItems.length === 0"
+          type="tagged"
+          :title="t('dashboard.emptyTagged')"
+          :description="t('dashboard.emptyTaggedDescription')"
+        />
+        <div
+          v-else
+          class="dashboard-page__items-grid"
+        >
+          <EntryCard
+            v-for="item in taggedItems"
+            :key="item.path"
+            :path="item.path"
+            :is-file="item.isFile"
+            @click="openItem(item.path, item.isFile)"
+          >
+            <template #footer>
+              <div class="entry-card__tags">
+                <span
+                  v-for="tagId in item.tagIds"
+                  :key="tagId"
+                  class="entry-card__tag"
+                  :style="{ backgroundColor: getTagById(tagId)?.color + '25', color: getTagById(tagId)?.color }"
+                >
+                  {{ getTagById(tagId)?.name }}
+                </span>
               </div>
-              <div class="dashboard-item__content">
-                <span class="dashboard-item__name">{{ getItemName(item.path) }}</span>
-                <span class="dashboard-item__path">{{ getItemDirectory(item.path) }}</span>
-              </div>
-              <div class="dashboard-item__time">
-                <span>{{ formatRelativeTime(item.openedAt) }}</span>
-              </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                class="dashboard-item__action"
-                @click="removeHistoryItem(item.path, item.openedAt, $event)"
-              >
-                <XIcon :size="14" />
-              </Button>
-            </button>
-          </div>
-        </TabsContent>
-      </Tabs>
-    </div>
-  </ScrollArea>
+              <TagSelector
+                :tags="tags"
+                :selected-tag-ids="item.tagIds"
+                :allow-create="true"
+                trigger-variant="compact"
+                @toggle-tag="(tagId) => handleToggleTagOnItem(item, tagId)"
+                @create-tag="(name) => handleCreateTagForItem(item, name)"
+                @delete-tag="handleDeleteTag"
+              />
+            </template>
+          </EntryCard>
+        </div>
+      </TabsContent>
+
+      <TabsContent
+        value="frequent"
+        class="dashboard-page__tab-content"
+      >
+        <DashboardActionBar
+          :is-empty="frequentItems.length === 0"
+          @clear-all="userStatsStore.clearAllFrequent()"
+        />
+        <DashboardEmptyState
+          v-if="frequentItems.length === 0"
+          type="frequent"
+          :title="t('dashboard.emptyFrequent')"
+          :description="t('dashboard.emptyFrequentDescription')"
+        />
+        <div
+          v-else
+          class="dashboard-page__items-grid"
+        >
+          <EntryCard
+            v-for="item in frequentItems"
+            :key="item.path"
+            :path="item.path"
+            :is-file="item.isFile"
+            @click="openFrequentItem(item)"
+          >
+            <div class="entry-card__stats">
+              <span class="entry-card__badge">{{ t('dashboard.openedCount', item.openCount) }}</span>
+            </div>
+          </EntryCard>
+        </div>
+      </TabsContent>
+
+      <TabsContent
+        value="history"
+        class="dashboard-page__tab-content"
+      >
+        <DashboardActionBar
+          :is-empty="historyItems.length === 0"
+          @clear-all="userStatsStore.clearHistory()"
+        />
+        <DashboardEmptyState
+          v-if="historyItems.length === 0"
+          type="history"
+          :title="t('dashboard.emptyHistory')"
+          :description="t('dashboard.emptyHistoryDescription')"
+        />
+        <div
+          v-else
+          class="dashboard-page__items-grid"
+        >
+          <EntryCard
+            v-for="item in historyItems"
+            :key="`${item.path}-${item.openedAt}`"
+            :path="item.path"
+            :is-file="item.isFile"
+            @click="openHistoryItem(item)"
+          >
+            <span class="entry-card__time">{{ formatRelativeTime(item.openedAt) }}</span>
+            <Button
+              variant="ghost"
+              size="icon"
+              class="entry-card__action"
+              @click="removeHistoryItem(item.path, item.openedAt, $event)"
+            >
+              <XIcon :size="14" />
+            </Button>
+          </EntryCard>
+        </div>
+      </TabsContent>
+    </Tabs>
+  </DefaultLayout>
 </template>
 
 <style>
-.dashboard-page {
-  height: calc(100vh - var(--window-toolbar-height));
-  user-select: none;
-}
-
-.dashboard-page__container {
-  display: flex;
-  max-width: 1200px;
-  flex-direction: column;
-  padding: 20px 32px;
-  margin: 0 auto;
-  gap: 24px;
-}
-
-.dashboard-page__header {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.dashboard-page__title {
-  color: hsl(var(--foreground));
-  font-family: "Space Grotesk", Inter, system-ui, sans-serif;
-  font-size: 2rem;
-  font-weight: 600;
-  letter-spacing: -0.025em;
-}
-
-.dashboard-page__subtitle {
-  color: hsl(var(--muted-foreground));
-  font-size: 0.95rem;
-}
-
 .dashboard-page__tabs {
   display: flex;
   flex-direction: column;
@@ -533,162 +418,7 @@ async function handleDeleteTag(tagId: string) {
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
 }
 
-.dashboard-page__items-list {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.dashboard-item {
-  position: relative;
-  display: flex;
-  overflow: hidden;
-  align-items: center;
-  padding: 12px 16px;
-  border: none;
-  border-radius: var(--radius);
-  background-color: hsl(var(--card));
-  cursor: pointer;
-  gap: 12px;
-  text-align: left;
-  transition: all 0.15s ease;
-}
-
-.dashboard-item:hover {
-  background-color: hsl(var(--muted));
-}
-
-.dashboard-item:hover .dashboard-item__action {
-  opacity: 1;
-}
-
-.dashboard-item--list {
-  border-radius: var(--radius-sm);
-  background-color: transparent;
-}
-
-.dashboard-item--list:hover {
-  background-color: hsl(var(--muted) / 50%);
-}
-
-.dashboard-item__icon {
-  display: flex;
-  width: 40px;
-  height: 40px;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--radius-sm);
-  background-color: hsl(var(--primary) / 10%);
-  color: hsl(var(--primary));
-}
-
-.dashboard-item--list .dashboard-item__icon {
-  width: 32px;
-  height: 32px;
-}
-
-.dashboard-item__content {
-  display: flex;
-  min-width: 0;
-  flex: 1;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.dashboard-item__name {
-  overflow: hidden;
-  color: hsl(var(--foreground));
-  font-size: 0.9rem;
-  font-weight: 500;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.dashboard-item__path {
-  overflow: hidden;
-  color: hsl(var(--muted-foreground));
-  font-size: 0.8rem;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.dashboard-item__tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-}
-
-.dashboard-item__tag {
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  font-weight: 500;
-}
-
-.dashboard-item__stats {
-  display: flex;
-  flex-shrink: 0;
-  align-items: center;
-}
-
-.dashboard-item__count {
-  padding: 4px 10px;
-  border-radius: var(--radius-sm);
-  background-color: hsl(var(--muted));
-  color: hsl(var(--muted-foreground));
-  font-size: 0.8rem;
-  font-weight: 500;
-}
-
-.dashboard-item__time {
-  flex-shrink: 0;
-  color: hsl(var(--muted-foreground));
-  font-size: 0.8rem;
-}
-
-.dashboard-item__action {
-  flex-shrink: 0;
-  opacity: 0;
-  transition: opacity 0.15s ease;
-}
-
-.dashboard-item__action:hover {
-  color: hsl(var(--destructive));
-}
-
-.dashboard-item--tagged {
-  display: flex;
-  flex-direction: column;
-  padding: 0;
-  gap: 0;
-}
-
-.dashboard-item__main {
-  display: flex;
-  width: 100%;
-  align-items: center;
-  padding: 12px 16px;
-  border: none;
-  background: none;
-  cursor: pointer;
-  gap: 12px;
-  text-align: left;
-}
-
-.dashboard-item__tag-actions {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 16px 12px;
-  gap: 8px;
-}
-
 @media (width <= 768px) {
-  .dashboard-page__container {
-    padding: 24px 16px;
-  }
-
   .dashboard-page__tabs-list.sigma-ui-tabs-list {
     display: grid;
     height: auto;
@@ -709,10 +439,6 @@ async function handleDeleteTag(tagId: string) {
     min-width: 18px;
     height: 18px;
     font-size: 10px;
-  }
-
-  .dashboard-page__items-grid {
-    grid-template-columns: 1fr;
   }
 }
 </style>

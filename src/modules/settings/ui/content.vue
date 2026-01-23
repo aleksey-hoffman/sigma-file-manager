@@ -28,7 +28,6 @@ const settingsStore = useSettingsStore();
 <style scoped>
 .settings-content {
   flex: 1;
-  padding: 1.25rem 2rem;
 }
 
 .settings-content__container {
@@ -43,10 +42,6 @@ const settingsStore = useSettingsStore();
 }
 
 @media (width <= 768px) {
-  .settings-content {
-    padding: 1rem;
-  }
-
   .settings-content__inner {
     gap: 1rem;
     grid-template-columns: 1fr;
