@@ -50,6 +50,12 @@ const emit = defineEmits<{
   contextmenu: [entry: DirEntry];
 }>();
 
+function handleEntryKeydown(event: KeyboardEvent): void {
+  if (event.code === 'Space') {
+    event.preventDefault();
+  }
+}
+
 const { t } = useI18n();
 
 function getDirSizeDisplay(entry: DirEntry): string | null {
@@ -141,6 +147,7 @@ const groupedEntries = computed<GroupedEntries>(() => {
           @mousedown="emit('mousedown', entry, $event)"
           @mouseup="emit('mouseup', entry, $event)"
           @contextmenu="emit('contextmenu', entry)"
+          @keydown="handleEntryKeydown"
         >
           <div class="file-browser-grid-view__overlay-container">
             <div class="file-browser-grid-view__overlay file-browser-grid-view__overlay--selected" />
@@ -196,6 +203,7 @@ const groupedEntries = computed<GroupedEntries>(() => {
           @mousedown="emit('mousedown', entry, $event)"
           @mouseup="emit('mouseup', entry, $event)"
           @contextmenu="emit('contextmenu', entry)"
+          @keydown="handleEntryKeydown"
         >
           <div class="file-browser-grid-view__overlay-container">
             <div class="file-browser-grid-view__overlay file-browser-grid-view__overlay--selected" />
@@ -243,6 +251,7 @@ const groupedEntries = computed<GroupedEntries>(() => {
           @mousedown="emit('mousedown', entry, $event)"
           @mouseup="emit('mouseup', entry, $event)"
           @contextmenu="emit('contextmenu', entry)"
+          @keydown="handleEntryKeydown"
         >
           <div class="file-browser-grid-view__overlay-container">
             <div class="file-browser-grid-view__overlay file-browser-grid-view__overlay--selected" />
@@ -291,6 +300,7 @@ const groupedEntries = computed<GroupedEntries>(() => {
           @mousedown="emit('mousedown', entry, $event)"
           @mouseup="emit('mouseup', entry, $event)"
           @contextmenu="emit('contextmenu', entry)"
+          @keydown="handleEntryKeydown"
         >
           <div class="file-browser-grid-view__overlay-container">
             <div class="file-browser-grid-view__overlay file-browser-grid-view__overlay--selected" />
@@ -373,8 +383,7 @@ const groupedEntries = computed<GroupedEntries>(() => {
 }
 
 .file-browser-grid-view__card:focus-visible {
-  outline: 2px solid hsl(var(--ring));
-  outline-offset: -2px;
+  outline: none;
 }
 
 .file-browser-grid-view__card--hidden {

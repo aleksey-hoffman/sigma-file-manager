@@ -49,6 +49,11 @@
     "closeWindow": "Đóng cửa sổ",
     "toggleWindow": "Chuyển đổi cửa sổ"
   },
+  "quickView": {
+    "unsupportedFileType": "Loại tệp này không được hỗ trợ cho xem nhanh",
+    "noFileSelected": "Chưa chọn tệp",
+    "closeHint": "Nhấn Space hoặc Esc để đóng"
+  },
   "trayMenu": {
     "globalShortcuts": "CÁCH TẮT TOÀN CẦU",
     "toggleWindowVisibility": "Chuyển đổi chế độ hiển thị của cửa sổ",

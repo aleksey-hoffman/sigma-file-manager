@@ -49,6 +49,11 @@
     "closeWindow": "关闭窗口",
     "toggleWindow": "切换窗口"
   },
+  "quickView": {
+    "unsupportedFileType": "此文件类型不支持快速查看",
+    "noFileSelected": "未选择文件",
+    "closeHint": "按空格键或Esc键关闭"
+  },
   "trayMenu": {
     "globalShortcuts": "全局快捷键",
     "toggleWindowVisibility": "切换窗口可见性",

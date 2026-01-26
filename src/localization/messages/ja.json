@@ -49,6 +49,11 @@
     "closeWindow": "ウィンドウを閉じる",
     "toggleWindow": "ウィンドウの切り替え"
   },
+  "quickView": {
+    "unsupportedFileType": "このファイル形式はクイックビューでサポートされていません",
+    "noFileSelected": "ファイルが選択されていません",
+    "closeHint": "スペースまたはEscキーで閉じる"
+  },
   "trayMenu": {
     "globalShortcuts": "グローバル ショートカット",
     "toggleWindowVisibility": "ウィンドウの表示を切り替え",

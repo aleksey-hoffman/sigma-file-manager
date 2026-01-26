@@ -22,6 +22,20 @@
         "fullscreen": false,
         "decorations": false,
         "shadow": true
+      },
+      {
+        "label": "quick-view",
+        "title": "Sigma File Manager | Quick View",
+        "width": 1280,
+        "height": 720,
+        "minWidth": 300,
+        "minHeight": 200,
+        "resizable": true,
+        "fullscreen": false,
+        "decorations": true,
+        "shadow": true,
+        "visible": false,
+        "url": "/quick-view"
       }
     ],
     "security": {

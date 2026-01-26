@@ -15,6 +15,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { ContextMenu, ContextMenuTrigger } from '@/components/ui/context-menu';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { useDismissalLayerStore } from '@/stores/runtime/dismissal-layer';
+import { useQuickViewStore } from '@/stores/runtime/quick-view';
 import type { DirEntry } from '@/types/dir-entry';
 import type { Tab } from '@/types/workspaces';
 import type { ContextMenuAction } from './types';
@@ -44,6 +45,7 @@ const emit = defineEmits<{
 
 const userSettingsStore = useUserSettingsStore();
 const dismissalLayerStore = useDismissalLayerStore();
+const quickViewStore = useQuickViewStore();
 
 const filterQuery = ref('');
 const isFilterOpen = ref(false);
@@ -214,12 +216,30 @@ function closeFilter() {
   isFilterOpen.value = false;
 }
 
+async function quickView(entry?: DirEntry) {
+  const targetEntry = entry || selectedEntries.value[selectedEntries.value.length - 1];
+
+  if (targetEntry && targetEntry.is_file) {
+    await quickViewStore.toggleQuickView(targetEntry.path);
+  }
+}
+
 function onContextMenuAction(action: ContextMenuAction) {
   if (action === 'open-with') {
     const entries = contextMenu.value.selectedEntries;
 
     if (entries.length > 0) {
       openOpenWithDialog(entries);
+    }
+
+    return;
+  }
+
+  if (action === 'quick-view') {
+    const entries = contextMenu.value.selectedEntries;
+
+    if (entries.length > 0 && entries[0].is_file) {
+      quickView(entries[0]);
     }
 
     return;
@@ -253,6 +273,7 @@ defineExpose({
   deleteItems,
   selectedEntries,
   startRename,
+  quickView,
 });
 </script>
 

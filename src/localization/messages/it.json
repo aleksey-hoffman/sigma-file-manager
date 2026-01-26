@@ -49,6 +49,11 @@
     "closeWindow": "Chiudi finestra",
     "toggleWindow": "Attiva/disattiva la finestra"
   },
+  "quickView": {
+    "unsupportedFileType": "Questo tipo di file non è supportato per l'anteprima rapida",
+    "noFileSelected": "Nessun file selezionato",
+    "closeHint": "Premi Spazio o Esc per chiudere"
+  },
   "trayMenu": {
     "globalShortcuts": "SCORCIATOIE GLOBALI",
     "toggleWindowVisibility": "Attiva/disattiva la visibilità della finestra",

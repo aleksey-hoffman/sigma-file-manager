@@ -7,7 +7,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 import { onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { SettingsHeader, SettingsContent, SettingsSearch, SettingsActions } from '@/modules/settings';
-import { DefaultLayout } from '@/layouts';
+import { PageDefaultLayout } from '@/layouts';
 import { useSettingsStore } from '@/stores/runtime/settings';
 
 const { t } = useI18n();
@@ -19,7 +19,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <DefaultLayout
+  <PageDefaultLayout
     class="settings-page"
     :title="t('pages.settings')"
   >
@@ -27,7 +27,7 @@ onMounted(() => {
     <SettingsSearch />
     <SettingsHeader />
     <SettingsContent />
-  </DefaultLayout>
+  </PageDefaultLayout>
 </template>
 
 <style scoped>

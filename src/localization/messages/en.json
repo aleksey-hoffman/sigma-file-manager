@@ -49,6 +49,11 @@
     "closeWindow": "Close window",
     "toggleWindow": "Toggle window"
   },
+  "quickView": {
+    "unsupportedFileType": "This file type is not supported for quick view",
+    "noFileSelected": "No file selected",
+    "closeHint": "Press Space or Esc to close"
+  },
   "trayMenu": {
     "globalShortcuts": "GLOBAL SHORTCUTS",
     "toggleWindowVisibility": "Toggle window visibility",

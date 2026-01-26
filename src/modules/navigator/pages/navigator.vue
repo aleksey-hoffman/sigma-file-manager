@@ -281,6 +281,18 @@ function hasSelectedItems(): boolean {
   return selectedEntries.value.length > 0;
 }
 
+async function handleQuickViewShortcut() {
+  const pane = getActivePaneRef();
+
+  if (pane && selectedEntries.value.length > 0) {
+    const lastSelected = selectedEntries.value[selectedEntries.value.length - 1];
+
+    if (lastSelected.is_file) {
+      await pane.quickView(lastSelected);
+    }
+  }
+}
+
 function registerShortcutHandlers() {
   shortcutsStore.registerHandler('toggleFilter', handleFilterShortcut);
   shortcutsStore.registerHandler('copy', handleCopyShortcut);
@@ -297,6 +309,7 @@ function registerShortcutHandlers() {
     }
   }, { checkItemSelected: hasSelectedItems });
   shortcutsStore.registerHandler('escape', handleEscapeKey);
+  shortcutsStore.registerHandler('quickView', handleQuickViewShortcut, { checkItemSelected: hasSelectedItems });
 }
 
 function unregisterShortcutHandlers() {
@@ -309,6 +322,7 @@ function unregisterShortcutHandlers() {
   shortcutsStore.unregisterHandler('deletePermanently');
   shortcutsStore.unregisterHandler('rename');
   shortcutsStore.unregisterHandler('escape');
+  shortcutsStore.unregisterHandler('quickView');
 }
 
 onMounted(() => {

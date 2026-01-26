@@ -152,6 +152,20 @@ const DEFAULT_SHORTCUTS: ShortcutDefinition[] = [
     conditions: {},
     isReadOnly: true,
   },
+  {
+    id: 'quickView',
+    labelKey: 'shortcuts.openCloseSelectedFileInQuickView',
+    defaultKeys: {
+      key: ' ',
+    },
+    scope: 'navigator',
+    conditions: {
+      inputFieldIsActive: false,
+      dialogIsOpened: false,
+      dirItemIsSelected: true,
+    },
+    isReadOnly: false,
+  },
 ];
 
 export function formatShortcutKeys(keys: ShortcutKeys): string {
@@ -164,7 +178,10 @@ export function formatShortcutKeys(keys: ShortcutKeys): string {
 
   let keyDisplay = keys.key;
 
-  if (keyDisplay.length === 1) {
+  if (keyDisplay === ' ') {
+    keyDisplay = 'Space';
+  }
+  else if (keyDisplay.length === 1) {
     keyDisplay = keyDisplay.toUpperCase();
   }
   else if (keyDisplay === 'Delete') {
@@ -195,6 +212,7 @@ export function parseShortcutString(shortcutString: string): ShortcutKeys | null
   keys.key = lastPart.charAt(0).toUpperCase() + lastPart.slice(1);
 
   if (keys.key === 'Del') keys.key = 'Delete';
+  if (keys.key === 'Space') keys.key = ' ';
 
   return keys;
 }
@@ -209,6 +227,8 @@ function matchesShortcut(event: KeyboardEvent, keys: ShortcutKeys): boolean {
 
   const eventKey = event.key.toLowerCase();
   const expectedKey = keys.key.toLowerCase();
+
+  if (expectedKey === ' ' && event.code === 'Space') return true;
 
   return eventKey === expectedKey || event.code.toLowerCase() === `key${expectedKey}`;
 }

@@ -81,6 +81,12 @@ const emit = defineEmits<{
   contextmenu: [entry: DirEntry];
 }>();
 
+function handleEntryKeydown(event: KeyboardEvent): void {
+  if (event.code === 'Space') {
+    event.preventDefault();
+  }
+}
+
 const { t } = useI18n();
 </script>
 
@@ -151,6 +157,7 @@ const { t } = useI18n();
         @mousedown="emit('mousedown', entry, $event)"
         @mouseup="emit('mouseup', entry, $event)"
         @contextmenu="emit('contextmenu', entry)"
+        @keydown="handleEntryKeydown"
       >
         <div class="file-browser-list-view__overlay-container">
           <div class="file-browser-list-view__overlay file-browser-list-view__overlay--selected" />
@@ -243,8 +250,7 @@ const { t } = useI18n();
 }
 
 .file-browser-list-view__entry:focus-visible {
-  outline: 2px solid hsl(var(--ring));
-  outline-offset: -2px;
+  outline: none;
 }
 
 .file-browser-list-view__entry--hidden {

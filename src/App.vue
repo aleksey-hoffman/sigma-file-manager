@@ -4,41 +4,33 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import { WindowToolbar } from './modules/window-toolbar';
-import { NavSidebar } from './modules/nav-sidebar';
+import { computed } from 'vue';
+import { useRoute } from 'vue-router';
 import { useInit } from './use/init';
-import { TooltipProvider } from './components/ui/tooltip';
-import { Toaster } from '@/components/ui/toaster';
-import { InfusionWrapper } from './components/ui/infusion';
+import { WindowAppLayout, WindowQuickViewLayout } from '@/layouts';
 
+const route = useRoute();
 const { init } = useInit();
+
+const layoutComponent = computed(() => {
+  if (route.meta.layout === 'quick-view') {
+    return WindowQuickViewLayout;
+  }
+
+  return WindowAppLayout;
+});
 
 init();
 </script>
 
 <template>
-  <InfusionWrapper />
-  <Toaster />
-  <TooltipProvider>
-    <NavSidebar />
-    <div class="app-main">
-      <WindowToolbar />
-      <RouterView />
-    </div>
-  </TooltipProvider>
+  <component :is="layoutComponent" />
 </template>
 
 <style>
 #app {
   display: flex;
   height: 100vh;
-  background-color: hsl(var(--background-3));
-}
-
-.app-main {
-  position: relative;
-  width: 100%;
-  height: 100%;
   background-color: hsl(var(--background-3));
 }
 </style>

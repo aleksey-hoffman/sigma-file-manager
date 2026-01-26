@@ -49,6 +49,11 @@
     "closeWindow": "Fermer la fenêtre",
     "toggleWindow": "Basculer la fenêtre"
   },
+  "quickView": {
+    "unsupportedFileType": "Ce type de fichier n'est pas pris en charge pour l'aperçu rapide",
+    "noFileSelected": "Aucun fichier sélectionné",
+    "closeHint": "Appuyez sur Espace ou Échap pour fermer"
+  },
   "trayMenu": {
     "globalShortcuts": "RACCOURCIS GLOBAUX",
     "toggleWindowVisibility": "Basculer la visibilité de la fenêtre",

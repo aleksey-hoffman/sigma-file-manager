@@ -49,6 +49,11 @@
     "closeWindow": "Закрыть окно",
     "toggleWindow": "Переключить видимость окна"
   },
+  "quickView": {
+    "unsupportedFileType": "Этот тип файла не поддерживается для быстрого просмотра",
+    "noFileSelected": "Файл не выбран",
+    "closeHint": "Нажмите Пробел или Esc для закрытия"
+  },
   "trayMenu": {
     "globalShortcuts": "ГЛОБАЛЬНЫЕ ШОРТКАТЫ",
     "toggleWindowVisibility": "Переключить видимость окна",

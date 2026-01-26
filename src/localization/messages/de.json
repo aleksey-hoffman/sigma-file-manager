@@ -49,6 +49,11 @@
     "closeWindow": "Fenster schließen",
     "toggleWindow": "Fenster umschalten"
   },
+  "quickView": {
+    "unsupportedFileType": "Dieser Dateityp wird für die Schnellansicht nicht unterstützt",
+    "noFileSelected": "Keine Datei ausgewählt",
+    "closeHint": "Drücken Sie Leertaste oder Esc zum Schließen"
+  },
   "trayMenu": {
     "globalShortcuts": "GLOBALE VERKNÜPFUNGEN",
     "toggleWindowVisibility": "Fenstersichtbarkeit umschalten",

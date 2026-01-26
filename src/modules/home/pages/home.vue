@@ -9,27 +9,21 @@ import {
   HomeBanner,
   UserDirectoriesSection,
 } from '@/modules/home/components';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { PageHomeLayout } from '@/layouts';
 </script>
 
 <template>
-  <ScrollArea class="home-page">
+  <PageHomeLayout>
     <HomeBanner />
 
     <div class="home-page__content">
       <UserDirectoriesSection />
       <DrivesSection />
     </div>
-  </ScrollArea>
+  </PageHomeLayout>
 </template>
 
 <style>
-.home-page {
-  height: 100vh;
-  padding: 0;
-  user-select: none;
-}
-
 .home-page__content {
   display: flex;
   flex-direction: column;

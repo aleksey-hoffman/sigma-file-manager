@@ -49,6 +49,11 @@
     "closeWindow": "پنجره بسته",
     "toggleWindow": "روشن کردن پنجره"
   },
+  "quickView": {
+    "unsupportedFileType": "این نوع فایل برای نمایش سریع پشتیبانی نمی‌شود",
+    "noFileSelected": "فایلی انتخاب نشده است",
+    "closeHint": "برای بستن Space یا Esc را فشار دهید"
+  },
   "trayMenu": {
     "globalShortcuts": "میانبرهای جهانی",
     "toggleWindowVisibility": "تغییر دید پنجره",

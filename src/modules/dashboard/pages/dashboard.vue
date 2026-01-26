@@ -14,7 +14,7 @@ import {
   ClockIcon,
   XIcon,
 } from 'lucide-vue-next';
-import { DefaultLayout } from '@/layouts';
+import { PageDefaultLayout } from '@/layouts';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { TagSelector } from '@/components/ui/tag-selector';
@@ -132,7 +132,7 @@ async function handleDeleteTag(tagId: string) {
 </script>
 
 <template>
-  <DefaultLayout
+  <PageDefaultLayout
     class="dashboard-page"
     :title="t('pages.dashboard')"
     :subtitle="t('dashboard.subtitle')"
@@ -353,7 +353,7 @@ async function handleDeleteTag(tagId: string) {
         </div>
       </TabsContent>
     </Tabs>
-  </DefaultLayout>
+  </PageDefaultLayout>
 </template>
 
 <style>

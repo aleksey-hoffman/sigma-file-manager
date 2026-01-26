@@ -42,6 +42,7 @@ import {
   UserIcon,
   SettingsIcon,
   LockIcon,
+  EyeIcon,
 } from 'lucide-vue-next';
 import type { Component } from 'vue';
 import {
@@ -66,6 +67,7 @@ const shortcutIcons: Record<ShortcutId, Component> = {
   deletePermanently: Trash2Icon,
   rename: PencilIcon,
   escape: XIcon,
+  quickView: EyeIcon,
 };
 
 const isDialogOpen = ref(false);

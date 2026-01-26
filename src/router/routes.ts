@@ -8,6 +8,13 @@ import {
 } from 'lucide-vue-next';
 import type { RouteRecordRaw } from 'vue-router';
 
+export const quickViewRoute: RouteRecordRaw = {
+  path: '/quick-view',
+  name: 'quick-view',
+  component: () => import('@/modules/quick-view/pages/quick-view.vue'),
+  meta: { layout: 'quick-view' },
+};
+
 export const routes: Array<RouteRecordRaw & { icon: typeof XIcon }> = [
   {
     path: '/',

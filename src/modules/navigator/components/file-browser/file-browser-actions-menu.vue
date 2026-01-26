@@ -262,11 +262,13 @@ const canPasteToSelectedDirectory = computed(() => {
   <component
     :is="menuItemComponent"
     v-if="isActionVisible('quick-view')"
+    class="file-browser-actions-menu__item-with-shortcut"
     @select="emitAction('quick-view')"
     @click="emitAction('quick-view')"
   >
     <EyeIcon :size="16" />
     <span>{{ t('fileBrowser.actions.quickView') }}</span>
+    <kbd class="shortcut">{{ shortcutsStore.getShortcutLabel('quickView') }}</kbd>
   </component>
   <component
     :is="menuItemComponent"
@@ -343,5 +345,16 @@ const canPasteToSelectedDirectory = computed(() => {
 
 .file-browser-actions-menu__tag-selector {
   padding: 6px 0;
+}
+
+.file-browser-actions-menu__item-with-shortcut {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.file-browser-actions-menu__item-with-shortcut .shortcut {
+  margin-left: auto;
+  opacity: 0.6;
 }
 </style>

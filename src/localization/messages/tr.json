@@ -49,6 +49,11 @@
     "closeWindow": "Pencereyi kapat",
     "toggleWindow": "Pencereyi değiştir"
   },
+  "quickView": {
+    "unsupportedFileType": "Bu dosya türü hızlı görüntüleme için desteklenmiyor",
+    "noFileSelected": "Dosya seçilmedi",
+    "closeHint": "Kapatmak için Boşluk veya Esc tuşuna basın"
+  },
   "trayMenu": {
     "globalShortcuts": "GLOBAL KISAYOLLAR",
     "toggleWindowVisibility": "Pencere görünürlüğünü değiştir",

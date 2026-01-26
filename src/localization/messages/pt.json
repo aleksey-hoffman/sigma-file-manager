@@ -49,6 +49,11 @@
     "closeWindow": "Fechar a janela",
     "toggleWindow": "Alternar janela"
   },
+  "quickView": {
+    "unsupportedFileType": "Este tipo de arquivo não é suportado para visualização rápida",
+    "noFileSelected": "Nenhum arquivo selecionado",
+    "closeHint": "Pressione Espaço ou Esc para fechar"
+  },
   "trayMenu": {
     "globalShortcuts": "ACESSO DIRETO GLOBAL",
     "toggleWindowVisibility": "Alternar visibilidade da janela",
