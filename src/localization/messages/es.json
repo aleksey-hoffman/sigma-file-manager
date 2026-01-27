@@ -678,7 +678,8 @@
     "autoplay": "reproducción automática, explorador, windows, unidad, usb, automático, abrir, carpeta",
     "imageThumbnails": "imagen, imagen, miniaturas, límite, almacenamiento, recursos, uso, rendimiento",
     "directoryItemStatistics": "directorio, elemento, estadísticas, estadísticas, datos, almacenamiento, uso",
-    "advanced": "avanzado, pro, desarrollador, terminal, shell"
+    "advanced": "avanzado, pro, desarrollador, terminal, shell",
+    "whatsNew": "novedades, registro de cambios, notas de versión, versión, actualización, noticias"
   },
   "dataBackupReminder": {
     "title": "Recordatorio: copia de seguridad de datos",
@@ -1637,5 +1638,15 @@
     "shellExtensions": "Extensiones del shell",
     "noOptionsAvailable": "No hay opciones adicionales disponibles",
     "failedToLoad": "Error al cargar las opciones"
+  },
+  "changelog": {
+    "title": "Novedades",
+    "settingsTitle": "Novedades",
+    "settingsDescription": "Ver notas de versión y configurar notificaciones de actualización",
+    "showOnUpdate": "Mostrar registro de cambios al actualizar",
+    "viewChangelog": "Ver registro de cambios",
+    "current": "Actual",
+    "summary": "Resumen",
+    "selectVersion": "Seleccionar versión"
   }
 }

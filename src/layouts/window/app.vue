@@ -9,11 +9,13 @@ import { NavSidebar } from '@/modules/nav-sidebar';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Toaster } from '@/components/ui/toaster';
 import { InfusionWrapper } from '@/components/ui/infusion';
+import { ChangelogDialog } from '@/modules/changelog';
 </script>
 
 <template>
   <InfusionWrapper />
   <Toaster />
+  <ChangelogDialog />
   <TooltipProvider>
     <NavSidebar />
     <div class="app-layout__main">

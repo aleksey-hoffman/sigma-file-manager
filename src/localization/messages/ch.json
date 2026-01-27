@@ -678,7 +678,8 @@
     "autoplay": "自动播放、资源管理器、windows、驱动器、usb、自动、打开、文件夹",
     "imageThumbnails": "图像、图片、缩略图、限制、存储、资源、使用、性能",
     "directoryItemStatistics": "目录、项目、统计、统计、数据、存储、使用",
-    "advanced": "高级，专业，开发者，终端，壳"
+    "advanced": "高级，专业，开发者，终端，壳",
+    "whatsNew": "新功能, 更新日志, 版本说明, 版本, 更新, 新闻"
   },
   "dataBackupReminder": {
     "title": "提醒：数据备份",
@@ -1637,5 +1638,15 @@
     "shellExtensions": "Shell 扩展",
     "noOptionsAvailable": "没有其他可用选项",
     "failedToLoad": "加载选项失败"
+  },
+  "changelog": {
+    "title": "新功能",
+    "settingsTitle": "新功能",
+    "settingsDescription": "查看版本说明并配置更新通知",
+    "showOnUpdate": "应用更新时显示更新日志",
+    "viewChangelog": "查看更新日志",
+    "current": "当前",
+    "summary": "摘要",
+    "selectVersion": "选择版本"
   }
 }

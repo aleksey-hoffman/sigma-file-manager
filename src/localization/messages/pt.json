@@ -678,7 +678,8 @@
     "autoplay": "reprodução automática, explorador, windows, unidade, usb, automático, abrir, pasta",
     "imageThumbnails": "imagem, imagem, miniaturas, limite, armazenamento, recursos, uso, desempenho",
     "directoryItemStatistics": "diretório, item, estatísticas, estatísticas, dados, armazenamento, uso",
-    "advanced": "avançado, profissional, desenvolvedor, terminal, shell"
+    "advanced": "avançado, profissional, desenvolvedor, terminal, shell",
+    "whatsNew": "novidades, registro de alterações, notas de versão, versão, atualização, notícias"
   },
   "dataBackupReminder": {
     "title": "Lembrete: backup de dados",
@@ -1637,5 +1638,15 @@
     "shellExtensions": "Extensões do shell",
     "noOptionsAvailable": "Nenhuma opção adicional disponível",
     "failedToLoad": "Falha ao carregar opções"
+  },
+  "changelog": {
+    "title": "Novidades",
+    "settingsTitle": "Novidades",
+    "settingsDescription": "Ver notas de versão e configurar notificações de atualização",
+    "showOnUpdate": "Mostrar registro de alterações na atualização",
+    "viewChangelog": "Ver registro de alterações",
+    "current": "Atual",
+    "summary": "Resumo",
+    "selectVersion": "Selecionar versão"
   }
 }

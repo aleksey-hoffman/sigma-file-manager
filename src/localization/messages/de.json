@@ -678,7 +678,8 @@
     "autoplay": "autoplay, explorer, windows, laufwerk, usb, automatisch, öffnen, ordner",
     "imageThumbnails": "Bild, Bild, Thumbnails, Limit, Speicherplatz, Ressourcen, Nutzung, Leistung",
     "directoryItemStatistics": "Verzeichnis, Element, Statistiken, Statistiken, Daten, Speicherung, Nutzung",
-    "advanced": "erweitert, Pro, Entwickler, Terminal, Shell"
+    "advanced": "erweitert, Pro, Entwickler, Terminal, Shell",
+    "whatsNew": "neuigkeiten, änderungsprotokoll, versionshinweise, version, aktualisierung, news"
   },
   "dataBackupReminder": {
     "title": "Erinnerung: Datensicherung",
@@ -1637,5 +1638,15 @@
     "shellExtensions": "Shell-Erweiterungen",
     "noOptionsAvailable": "Keine weiteren Optionen verfügbar",
     "failedToLoad": "Optionen konnten nicht geladen werden"
+  },
+  "changelog": {
+    "title": "Neuigkeiten",
+    "settingsTitle": "Neuigkeiten",
+    "settingsDescription": "Versionshinweise anzeigen und Update-Benachrichtigungen konfigurieren",
+    "showOnUpdate": "Änderungsprotokoll bei App-Update anzeigen",
+    "viewChangelog": "Änderungsprotokoll anzeigen",
+    "current": "Aktuell",
+    "summary": "Zusammenfassung",
+    "selectVersion": "Version auswählen"
   }
 }

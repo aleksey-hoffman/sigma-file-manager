@@ -12,6 +12,7 @@ import { usePlatformStore } from '@/stores/runtime/platform';
 import { useGlobalSearchStore } from '@/stores/runtime/global-search';
 import { useShortcutsStore } from '@/stores/runtime/shortcuts';
 import { disableWebViewFeatures } from '@/utils/disable-web-view-features';
+import { useChangelog } from '@/modules/changelog';
 
 export function useInit() {
   const router = useRouter();
@@ -22,6 +23,7 @@ export function useInit() {
   const platformStore = usePlatformStore();
   const globalSearchStore = useGlobalSearchStore();
   const shortcutsStore = useShortcutsStore();
+  const { checkAndShowChangelog } = useChangelog();
 
   function registerShortcutHandlers() {
     shortcutsStore.registerHandler('toggleGlobalSearch', () => {
@@ -48,6 +50,7 @@ export function useInit() {
     await globalSearchStore.initOnLaunch();
     shortcutsStore.init();
     disableWebViewFeatures();
+    await checkAndShowChangelog();
   }
 
   onMounted(() => {

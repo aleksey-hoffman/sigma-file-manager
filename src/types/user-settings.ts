@@ -83,6 +83,11 @@ export type ShortcutId
 
 export type UserShortcuts = Partial<Record<ShortcutId, ShortcutKeys>>;
 
+export type ChangelogSettings = {
+  showOnUpdate: boolean;
+  lastSeenVersion: string;
+};
+
 export type UserSettings = {
   language: LocalizationLanguage;
   theme: Theme;
@@ -99,6 +104,7 @@ export type UserSettings = {
   settingsCurrentTab: string;
   shortcuts?: UserShortcuts;
   focusWindowOnDriveConnected: boolean;
+  changelog: ChangelogSettings;
 };
 
 export type UserSettingsGlobalSearch = {

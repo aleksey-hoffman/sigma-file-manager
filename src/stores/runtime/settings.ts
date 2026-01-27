@@ -134,6 +134,7 @@ export const useSettingsStore = defineStore('settings', () => {
     const [
       { default: LanguageSection },
       { default: WindowScalingSection },
+      { default: WhatsNewSection },
       { default: ThemeSection },
       { default: DriveCardSection },
       { default: VisualEffectsSection },
@@ -148,6 +149,7 @@ export const useSettingsStore = defineStore('settings', () => {
     ] = await Promise.all([
       import('@/modules/settings/ui/categories/general/language.vue'),
       import('@/modules/settings/ui/categories/general/window-scaling.vue'),
+      import('@/modules/settings/ui/categories/general/whats-new.vue'),
       import('@/modules/settings/ui/categories/appearance/theme.vue'),
       import('@/modules/settings/ui/categories/appearance/drive-card.vue'),
       import('@/modules/settings/ui/categories/appearance/visual-effects.vue'),
@@ -174,6 +176,13 @@ export const useSettingsStore = defineStore('settings', () => {
         titleKey: 'settings.general.windowScaling',
         tags: 'settingsTags.uiScaling',
         component: markRaw(WindowScalingSection),
+        category: 'general',
+      },
+      {
+        key: 'whatsNew',
+        titleKey: 'changelog.settingsTitle',
+        tags: 'settingsTags.whatsNew',
+        component: markRaw(WhatsNewSection),
         category: 'general',
       },
       {

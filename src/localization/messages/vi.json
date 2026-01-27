@@ -678,7 +678,8 @@
     "autoplay": "tự động phát, trình khám phá, windows, ổ đĩa, usb, tự động, mở, thư mục",
     "imageThumbnails": "hình ảnh, hình ảnh, hình thu nhỏ, giới hạn, lưu trữ, tài nguyên, cách sử dụng, hiệu suất",
     "directoryItemStatistics": "thư mục, mục, thống kê, thống kê, dữ liệu, lưu trữ, sử dụng",
-    "advanced": "nâng cao, chuyên nghiệp, nhà phát triển, đầu cuối, shell"
+    "advanced": "nâng cao, chuyên nghiệp, nhà phát triển, đầu cuối, shell",
+    "whatsNew": "tin mới, nhật ký thay đổi, ghi chú phát hành, phiên bản, cập nhật, tin tức"
   },
   "dataBackupReminder": {
     "title": "Lời nhắc: sao lưu dữ liệu",
@@ -1637,5 +1638,15 @@
     "shellExtensions": "Tiện ích shell",
     "noOptionsAvailable": "Không có tùy chọn bổ sung",
     "failedToLoad": "Không thể tải tùy chọn"
+  },
+  "changelog": {
+    "title": "Có gì mới",
+    "settingsTitle": "Có gì mới",
+    "settingsDescription": "Xem ghi chú phát hành và cấu hình thông báo cập nhật",
+    "showOnUpdate": "Hiển thị nhật ký thay đổi khi cập nhật",
+    "viewChangelog": "Xem nhật ký thay đổi",
+    "current": "Hiện tại",
+    "summary": "Tóm tắt",
+    "selectVersion": "Chọn phiên bản"
   }
 }

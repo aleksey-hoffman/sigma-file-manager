@@ -69,6 +69,7 @@ const { t } = useI18n();
   max-width: 32rem;
   padding: 1.5rem;
   border: 1px solid hsl(var(--border));
+  border-radius: var(--radius-lg);
   background-color: hsl(var(--background));
   box-shadow: var(--shadow-lg);
   gap: 1rem;
@@ -152,12 +153,6 @@ const { t } = useI18n();
   to {
     opacity: 0;
     transform: translate(-50%, -48%) scale(0.95);
-  }
-}
-
-@media (width >= 640px) {
-  .sigma-ui-dialog-content {
-    border-radius: var(--radius-lg);
   }
 }
 </style>

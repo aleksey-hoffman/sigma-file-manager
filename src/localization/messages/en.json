@@ -691,7 +691,8 @@
     "autoplay": "autoplay, explorer, windows, drive, usb, automatic, open, folder",
     "imageThumbnails": "image, picture, thumbnails, limit, storage, resources, usage, performance",
     "directoryItemStatistics": "directory, item, statistics, stats, data, storage, usage",
-    "advanced": "advanced, pro, developer, terminal, shell"
+    "advanced": "advanced, pro, developer, terminal, shell",
+    "whatsNew": "what's new, changelog, release notes, version, update, news"
   },
   "dataBackupReminder": {
     "title": "Reminder: data backup",
@@ -1653,5 +1654,15 @@
     "shellExtensions": "Shell extensions",
     "noOptionsAvailable": "No additional options available",
     "failedToLoad": "Failed to load options"
+  },
+  "changelog": {
+    "title": "What's New",
+    "settingsTitle": "What's New",
+    "settingsDescription": "View release notes and configure update notifications",
+    "showOnUpdate": "Show changelog on app update",
+    "viewChangelog": "View changelog",
+    "current": "Current",
+    "summary": "Summary",
+    "selectVersion": "Select version"
   }
 }

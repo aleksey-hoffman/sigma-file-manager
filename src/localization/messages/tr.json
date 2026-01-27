@@ -678,7 +678,8 @@
     "autoplay": "otomatik oynatma, gezgin, windows, sürücü, usb, otomatik, aç, klasör",
     "imageThumbnails": "resim, resim, küçük resimler, sınır, depolama, kaynaklar, kullanım, performans",
     "directoryItemStatistics": "dizin, öğe, istatistikler, istatistikler, veri, depolama, kullanım",
-    "advanced": "gelişmiş, pro, geliştirici, terminal, kabuk"
+    "advanced": "gelişmiş, pro, geliştirici, terminal, kabuk",
+    "whatsNew": "yenilikler, değişiklik günlüğü, sürüm notları, sürüm, güncelleme, haberler"
   },
   "dataBackupReminder": {
     "title": "Hatırlatma: veri yedekleme",
@@ -1637,5 +1638,15 @@
     "shellExtensions": "Kabuk uzantıları",
     "noOptionsAvailable": "Ek seçenek mevcut değil",
     "failedToLoad": "Seçenekler yüklenemedi"
+  },
+  "changelog": {
+    "title": "Yenilikler",
+    "settingsTitle": "Yenilikler",
+    "settingsDescription": "Sürüm notlarını görüntüle ve güncelleme bildirimlerini yapılandır",
+    "showOnUpdate": "Güncelleme sırasında değişiklik günlüğünü göster",
+    "viewChangelog": "Değişiklik günlüğünü görüntüle",
+    "current": "Mevcut",
+    "summary": "Özet",
+    "selectVersion": "Sürüm seç"
   }
 }

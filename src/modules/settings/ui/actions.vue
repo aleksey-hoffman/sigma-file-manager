@@ -16,6 +16,7 @@ import {
   SettingsIcon,
   FileTextIcon,
   SearchIcon,
+  SparklesIcon,
 } from 'lucide-vue-next';
 import { join } from '@tauri-apps/api/path';
 import { Button } from '@/components/ui/button';
@@ -27,12 +28,19 @@ import {
   DropdownMenuTrigger,
   DropdownMenuItem,
 } from '@/components/ui/dropdown-menu';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import externalLinks from '@/data/external-links';
 import { useWorkspacesStore } from '@/stores/storage/workspaces';
+import { useChangelog } from '@/modules/changelog';
 
 const { t } = useI18n();
 const router = useRouter();
 const workspacesStore = useWorkspacesStore();
+const { open: openChangelog } = useChangelog();
 
 async function navigateToDirectory(path: string) {
   await workspacesStore.openNewTabGroup(path);
@@ -84,6 +92,23 @@ function openReleasesPage() {
 <template>
   <Teleport to=".window-toolbar-primary-teleport-target">
     <div class="animate-fade-in settings-actions">
+      <Tooltip :delay-duration="0">
+        <TooltipTrigger as-child>
+          <Button
+            variant="ghost"
+            size="icon"
+            @click="openChangelog"
+          >
+            <SparklesIcon
+              :size="16"
+              class="settings-actions-icon"
+            />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>
+          {{ t('changelog.title') }}
+        </TooltipContent>
+      </Tooltip>
       <DropdownMenu>
         <DropdownMenuTrigger as-child>
           <Button
