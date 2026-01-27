@@ -13,6 +13,7 @@ import GeneralCategory from './categories/general/index.vue';
 import InputCategory from './categories/input/index.vue';
 import SearchCategory from './categories/search/index.vue';
 import ShortcutsCategory from './categories/shortcuts/index.vue';
+import StatsCategory from './categories/stats/index.vue';
 
 import { Button } from '@/components/ui/button';
 
@@ -30,6 +31,7 @@ const categoryComponentMap: Record<string, unknown> = {
   input: InputCategory,
   search: SearchCategory,
   shortcuts: ShortcutsCategory,
+  stats: StatsCategory,
 };
 
 function getComponentForTab(tabName: string) {

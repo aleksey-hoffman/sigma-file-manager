@@ -605,15 +605,9 @@
       "thumbnailStorageLimit": "Vorschau-Speicher-Limit"
     },
     "stats": {
-      "directoryItemStatistics": "Verzeichniseintragsstatistik",
-      "storeSomeEventData": "Wenn aktiviert, speichert die App einige Ereignisdaten Ihrer Interaktionen mit Verzeichnissen / Dateien, z. B. wann und wie oft sie geöffnet wurden.",
-      "thisDataIsUsed": "Diese Daten werden von Funktionen wie \"Zeitachse\" und \"Suche\" verwendet.",
-      "statisticsStoring": "Statistik speichern",
-      "storeOpenedDirectoryItems": "Liste der geöffneten Verzeichniseinträge speichern",
-      "storeAmountDirectoryItemWasOpened": "Speichern, wie oft ein Verzeichniseintrag geöffnet wurde",
-      "storeTheDateOpeningDirectoryItem": "Speichern Sie das Datum des Öffnens eines Verzeichniseintrags",
-      "statisticsLocationDescription": "Die Statistikdaten werden in der Datei namens \"stats.json\" gespeichert, die sich im App-Verzeichnis befindet.",
-      "openFileLocation": "Dateispeicherort öffnen"
+      "title": "Benutzerdaten",
+      "description": "Die App speichert Daten lokal (Tags, Favoriten, Verlauf, kürzlich geöffnete Elemente), um Funktionen wie Dashboard-Listen und Suche zu ermöglichen. Diese Daten werden im App-Verzeichnis gespeichert.",
+      "openDataDirectory": "Datenverzeichnis öffnen"
     },
     "advanced": {
       "advancedSettings": "Erweiterte Einstellungen",
@@ -675,6 +669,7 @@
     "inputElements": "Eingabe, Filtern, Typ, Typisierung, Verzeichnis, Rechtschreibprüfung",
     "mouseButtons": "Maus, Tasten, Eingaben, Aktionen",
     "globalSearch": "global, suchen, finden, suchen, filtern, scannen",
+    "stats": "Statistiken, Daten, Benutzer, Favoriten, Tags, Verlauf, kürzlich, Dashboard, Speicher",
     "dataBackupReminder": "Daten, Speicherung, Sicherung",
     "driveDetection": "Laufwerk, USB, Speicher, Festplatte, Gerät, Erkennung, Verbindung",
     "imageThumbnails": "Bild, Bild, Thumbnails, Limit, Speicherplatz, Ressourcen, Nutzung, Leistung",

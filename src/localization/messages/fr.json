@@ -605,15 +605,9 @@
       "thumbnailStorageLimit": "Limite de stockage des vignettes"
     },
     "stats": {
-      "directoryItemStatistics": "Statistiques des rubriques de l'annuaire",
-      "storeSomeEventData": "Si elle est activée, l'application stockera certaines données d'événement de vos interactions avec les répertoires/fichiers, par exemple, quand et combien de fois ils ont été ouverts.",
-      "thisDataIsUsed": "Ces données sont utilisées par des fonctionnalités telles que \"timeline\" et \"search\".",
-      "statisticsStoring": "Mémorisation des statistiques",
-      "storeOpenedDirectoryItems": "Mémoriser la liste des éléments de répertoire ouverts",
-      "storeAmountDirectoryItemWasOpened": "Mémoriser le nombre de fois qu'un élément de répertoire a été ouvert",
-      "storeTheDateOpeningDirectoryItem": "Mémoriser la date d'ouverture d'une rubrique du répertoire",
-      "statisticsLocationDescription": "Les données statistiques sont stockées dans le fichier appelé \"stats.json\" situé dans le répertoire de l'application.",
-      "openFileLocation": "Lieu de fichier ouvert"
+      "title": "Données utilisateur",
+      "description": "L'application stocke des données localement (étiquettes, favoris, historique, éléments récemment ouverts) pour activer des fonctionnalités telles que les listes du tableau de bord et la recherche. Ces données sont stockées dans le répertoire de l'application.",
+      "openDataDirectory": "Ouvrir le répertoire des données"
     },
     "advanced": {
       "advancedSettings": "Paramètres avancés",
@@ -675,6 +669,7 @@
     "inputElements": "saisie, filtrage, type, saisie, répertoire, correcteur orthographique",
     "mouseButtons": "souris, boutons, saisie, actions",
     "globalSearch": "global, chercher, trouver, regarder, filtrer, scanner",
+    "stats": "statistiques, données, utilisateur, favoris, étiquettes, historique, récent, tableau de bord, stockage",
     "dataBackupReminder": "données, stockage, sauvegarde",
     "driveDetection": "lecteur, usb, stockage, disque, périphérique, détection, connexion",
     "imageThumbnails": "image, image, vignettes, limite, stockage, ressources, utilisation, performances",

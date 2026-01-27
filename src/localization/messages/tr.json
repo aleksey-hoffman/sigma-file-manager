@@ -605,15 +605,9 @@
       "thumbnailStorageLimit": "Küçük resim saklama sınırı"
     },
     "stats": {
-      "directoryItemStatistics": "Dizin öğesi istatistikleri",
-      "storeSomeEventData": "Etkinleştirilirse, uygulama, örneğin ne zaman ve kaç kez açıldıkları gibi, dizinler/dosyalar ile etkileşimlerinizin bazı olay verilerini depolar.",
-      "thisDataIsUsed": "Bu veriler \"zaman çizelgesi\" ve \"arama\" gibi özellikler tarafından kullanılır.",
-      "statisticsStoring": "İstatistik saklama",
-      "storeOpenedDirectoryItems": "Açılan dizin öğelerinin listesini sakla",
-      "storeAmountDirectoryItemWasOpened": "Bir dizin öğesinin kaç kez açıldığını sakla",
-      "storeTheDateOpeningDirectoryItem": "Bir dizin öğesinin açılma tarihini sakla",
-      "statisticsLocationDescription": "İstatistik verileri, uygulama dizininde bulunan \"stats.json\" adlı dosyada saklanır.",
-      "openFileLocation": "Dosya konumunu aç"
+      "title": "Kullanıcı verileri",
+      "description": "Uygulama, gösterge paneli listeleri ve arama gibi özellikleri etkinleştirmek için verileri yerel olarak depolar (etiketler, favoriler, geçmiş, son açılan öğeler). Bu veriler uygulama dizininde saklanır.",
+      "openDataDirectory": "Veri dizinini aç"
     },
     "advanced": {
       "advancedSettings": "Gelişmiş Ayarlar",
@@ -675,6 +669,7 @@
     "inputElements": "giriş, filtreleme, yazma, yazma, dizin, yazım denetimi",
     "mouseButtons": "fare, düğmeler, giriş, eylemler",
     "globalSearch": "global, ara, bul, bak, filtrele, tara",
+    "stats": "istatistikler, veri, kullanıcı, favoriler, etiketler, geçmiş, son, gösterge paneli, depolama",
     "dataBackupReminder": "veri, depolama, yedekleme",
     "driveDetection": "sürücü, usb, depolama, disk, cihaz, algılama, bağlantı",
     "imageThumbnails": "resim, resim, küçük resimler, sınır, depolama, kaynaklar, kullanım, performans",

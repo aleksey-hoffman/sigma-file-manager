@@ -605,15 +605,9 @@
       "thumbnailStorageLimit": "Límite de almacenamiento de miniaturas"
     },
     "stats": {
-      "directoryItemStatistics": "Estadísticas de elementos del directorio",
-      "storeSomeEventData": "Si está habilitada, la aplicación almacenará algunos datos de eventos de sus interacciones con directorios/archivos, por ejemplo, cuándo y cuántas veces se abrieron",
-      "thisDataIsUsed": "Estos datos son utilizados por funciones como \"línea de tiempo\" y \"búsqueda\".",
-      "statisticsStoring": "Almacenamiento de estadísticas",
-      "storeOpenedDirectoryItems": "Almacenar la lista de elementos de directorio abiertos",
-      "storeAmountDirectoryItemWasOpened": "Almacenar la cantidad de veces que se abrió un elemento del directorio",
-      "storeTheDateOpeningDirectoryItem": "Almacenar la fecha de apertura de un elemento del directorio",
-      "statisticsLocationDescription": "Los datos estadísticos se almacenan en el archivo llamado \"stats.json\" ubicado en el directorio de la aplicación.",
-      "openFileLocation": "Abrir localización de archivo"
+      "title": "Datos de usuario",
+      "description": "La aplicación almacena datos localmente (etiquetas, favoritos, historial, elementos abiertos recientemente) para habilitar funciones como listas del panel y búsqueda. Estos datos se almacenan en el directorio de la aplicación.",
+      "openDataDirectory": "Abrir directorio de datos"
     },
     "advanced": {
       "advancedSettings": "Configuraciones avanzadas",
@@ -675,6 +669,7 @@
     "inputElements": "entrada, filtrado, tipo, escritura, directorio, corrector ortográfico",
     "mouseButtons": "ratón, botones, entrada, acciones",
     "globalSearch": "global, buscar, encontrar, buscar, filtrar, escanear",
+    "stats": "estadísticas, datos, usuario, favoritos, etiquetas, historial, reciente, panel, almacenamiento",
     "dataBackupReminder": "datos, almacenamiento, copia de seguridad",
     "driveDetection": "unidad, usb, almacenamiento, disco, dispositivo, detección, conexión",
     "imageThumbnails": "imagen, imagen, miniaturas, límite, almacenamiento, recursos, uso, rendimiento",

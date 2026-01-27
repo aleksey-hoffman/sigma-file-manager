@@ -605,15 +605,9 @@
       "thumbnailStorageLimit": "缩略图存储限制"
     },
     "stats": {
-      "directoryItemStatistics": "目录项统计",
-      "storeSomeEventData": "如果启用，该应用程序将存储您与目录/文件交互的一些事件数据，例如,它们被打开的时间和次数。",
-      "thisDataIsUsed": "这些数据被 \"timeline\" 和 \"search\" 等功能使用。",
-      "statisticsStoring": "统计存储",
-      "storeOpenedDirectoryItems": "存储打开的目录项列表",
-      "storeAmountDirectoryItemWasOpened": "存储目录项被打开的次数",
-      "storeTheDateOpeningDirectoryItem": "存储打开目录项的日期",
-      "statisticsLocationDescription": "统计数据存储在应用程序目录中名为 \"stats.json\" 的文件中。",
-      "openFileLocation": "打开文件所在位置"
+      "title": "用户数据",
+      "description": "应用程序在本地存储数据（标签、收藏、历史记录、最近打开的项目）以支持仪表板列表和搜索等功能。这些数据存储在应用程序目录中。",
+      "openDataDirectory": "打开数据目录"
     },
     "advanced": {
       "advancedSettings": "高级设置",
@@ -675,6 +669,7 @@
     "inputElements": "输入,过滤,类型,打字,目录,拼写检查",
     "mouseButtons": "鼠标、按钮、输入、操作",
     "globalSearch": "全局,搜索,查找,查看,过滤,扫描",
+    "stats": "统计、数据、用户、收藏、标签、历史、最近、仪表板、存储",
     "dataBackupReminder": "数据、存储、备份",
     "driveDetection": "驱动器、USB、存储、磁盘、设备、检测、连接",
     "imageThumbnails": "图像、图片、缩略图、限制、存储、资源、使用、性能",

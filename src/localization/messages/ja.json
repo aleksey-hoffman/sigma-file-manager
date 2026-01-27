@@ -605,15 +605,9 @@
       "thumbnailStorageLimit": "サムネイル保存制限"
     },
     "stats": {
-      "directoryItemStatistics": "ディレクトリ項目統計",
-      "storeSomeEventData": "有効にすると、アプリはディレクトリ/ファイルとのやり取りのイベント データを保存します。たとえば、いつ、何回開かれたかなどです。",
-      "thisDataIsUsed": "このデータは、\"タイムライン\" や \"検索\" などの機能で使用されます。",
-      "statisticsStoring": "「統計の保存」",
-      "storeOpenedDirectoryItems": "開いているディレクトリ項目のリストを保存する",
-      "storeAmountDirectoryItemWasOpened": "ディレクトリ項目が開かれた回数を保存する",
-      "storeTheDateOpeningDirectoryItem": "ディレクトリアイテムを開いた日付を保存する",
-      "statisticsLocationDescription": "統計データは、アプリ ディレクトリにある \"stats.json\" というファイルに保存されます。",
-      "openFileLocation": "開いているファイルの場所"
+      "title": "ユーザーデータ",
+      "description": "アプリはデータをローカルに保存します（タグ、お気に入り、履歴、最近開いた項目）。これにより、ダッシュボードリストや検索などの機能が有効になります。このデータはアプリディレクトリに保存されます。",
+      "openDataDirectory": "データディレクトリを開く"
     },
     "advanced": {
       "advancedSettings": "詳細設定",
@@ -675,6 +669,7 @@
     "inputElements": "入力、フィルタリング、タイプ、入力、ディレクトリ、スペルチェック",
     "mouseButtons": "マウス、ボタン、入力、アクション",
     "globalSearch": "グローバル、検索、検索、検索、フィルター、スキャン",
+    "stats": "統計、データ、ユーザー、お気に入り、タグ、履歴、最近、ダッシュボード、ストレージ",
     "dataBackupReminder": "データ、ストレージ、バックアップ",
     "driveDetection": "ドライブ、USB、ストレージ、ディスク、デバイス、検出、接続",
     "imageThumbnails": "画像、画像、サムネイル、制限、ストレージ、リソース、使用状況、パフォーマンス",

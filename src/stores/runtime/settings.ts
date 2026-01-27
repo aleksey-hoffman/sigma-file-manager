@@ -142,6 +142,7 @@ export const useSettingsStore = defineStore('settings', () => {
       { default: GlobalSearchSection },
       { default: ShortcutsSection },
       { default: FilterOnTypingSection },
+      { default: UserDataSection },
     ] = await Promise.all([
       import('@/modules/settings/ui/categories/general/language.vue'),
       import('@/modules/settings/ui/categories/general/window-scaling.vue'),
@@ -153,6 +154,7 @@ export const useSettingsStore = defineStore('settings', () => {
       import('@/modules/settings/ui/categories/search/global-search.vue'),
       import('@/modules/settings/ui/categories/shortcuts/shortcuts.vue'),
       import('@/modules/settings/ui/categories/input/filter-on-typing.vue'),
+      import('@/modules/settings/ui/categories/stats/user-data.vue'),
     ]);
 
     sections.value = [
@@ -225,6 +227,13 @@ export const useSettingsStore = defineStore('settings', () => {
         tags: 'settingsTags.inputElements',
         component: markRaw(FilterOnTypingSection),
         category: 'input',
+      },
+      {
+        key: 'userData',
+        titleKey: 'settings.stats.title',
+        tags: 'settingsTags.stats',
+        component: markRaw(UserDataSection),
+        category: 'stats',
       },
     ];
 

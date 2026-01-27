@@ -605,15 +605,9 @@
       "thumbnailStorageLimit": "Limite di memorizzazione delle miniature"
     },
     "stats": {
-      "directoryItemStatistics": "Statistiche degli elementi della cartella",
-      "storeSomeEventData": "Se abilitata, l'app memorizzerà alcuni dati sugli eventi delle interazioni con le cartella / file, ad esempio quando e quante volte sono state aperte",
-      "thisDataIsUsed": "Questi dati sono utilizzati da funzioni come \"timeline\" e \"search\".",
-      "statisticsStoring": "Memorizzazione statistiche",
-      "storeOpenedDirectoryItems": "Memorizza l'elenco degli elementi della directory aperta",
-      "storeAmountDirectoryItemWasOpened": "Memorizza il numero di volte in cui un elemento della cartella è stato aperto",
-      "storeTheDateOpeningDirectoryItem": "Memorizza la data di apertura di un elemento della cartella",
-      "statisticsLocationDescription": "I dati delle statistiche sono memorizzati nel file \"stats.json\" che si trova nella cartella dell'app",
-      "openFileLocation": "Apri il percorso del file"
+      "title": "Dati utente",
+      "description": "L'app memorizza dati localmente (etichette, preferiti, cronologia, elementi aperti di recente) per abilitare funzionalità come elenchi della dashboard e ricerca. Questi dati sono memorizzati nella cartella dell'app.",
+      "openDataDirectory": "Apri cartella dati"
     },
     "advanced": {
       "advancedSettings": "Impostazioni avanzate",
@@ -675,6 +669,7 @@
     "inputElements": "input, filtraggio, tipo, digitazione, cartella, controllo ortografico",
     "mouseButtons": "mouse, tasti, input, azioni",
     "globalSearch": "globale, ricerca, trova, visualizza, filtra, scansiona",
+    "stats": "statistiche, dati, utente, preferiti, etichette, cronologia, recente, dashboard, archiviazione",
     "dataBackupReminder": "dati, archiviazione, backup",
     "driveDetection": "unità, usb, archiviazione, disco, dispositivo, rilevamento, connessione",
     "imageThumbnails": "immagine, foto, miniature, limite, archiviazione, risorse, utilizzo, prestazioni",

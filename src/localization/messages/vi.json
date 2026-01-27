@@ -605,15 +605,9 @@
       "thumbnailStorageLimit": "Giới hạn lưu trữ hình thu nhỏ"
     },
     "stats": {
-      "directoryItemStatistics": "Thống kê mục thư mục",
-      "storeSomeEventData": "Nếu được bật, ứng dụng sẽ lưu trữ một số dữ liệu sự kiện về tương tác của bạn với các thư mục/tệp, chẳng hạn như thời gian và số lần chúng được mở.",
-      "thisDataIsUsed": "Dữ liệu này được sử dụng bởi các tính năng như \"dòng thời gian\" và \"tìm kiếm\".",
-      "statisticsStoring": "Lưu trữ thống kê",
-      "storeOpenedDirectoryItems": "Lưu trữ danh sách các mục thư mục đã mở",
-      "storeAmountDirectoryItemWasOpened": "Lưu trữ số lần một mục thư mục được mở",
-      "storeTheDateOpeningDirectoryItem": "Lưu trữ ngày mở một mục thư mục",
-      "statisticsLocationDescription": "Dữ liệu thống kê được lưu trữ trong tệp có tên \"stats.json\" nằm trong thư mục ứng dụng.",
-      "openFileLocation": "Mở vị trí file"
+      "title": "Dữ liệu người dùng",
+      "description": "Ứng dụng lưu trữ dữ liệu cục bộ (thẻ, mục yêu thích, lịch sử, các mục đã mở gần đây) để kích hoạt các tính năng như danh sách bảng điều khiển và tìm kiếm. Dữ liệu này được lưu trữ trong thư mục ứng dụng.",
+      "openDataDirectory": "Mở thư mục dữ liệu"
     },
     "advanced": {
       "advancedSettings": "Cài đặt nâng cao",
@@ -675,6 +669,7 @@
     "inputElements": "nhập, lọc, nhập, gõ, thư mục, kiểm tra chính tả",
     "mouseButtons": "chuột, nút, đầu vào, hành động",
     "globalSearch": "toàn cầu, tìm kiếm, tìm, xem, lọc, quét",
+    "stats": "thống kê, dữ liệu, người dùng, yêu thích, thẻ, lịch sử, gần đây, bảng điều khiển, lưu trữ",
     "dataBackupReminder": "dữ liệu, lưu trữ, sao lưu",
     "driveDetection": "ổ đĩa, usb, lưu trữ, đĩa, thiết bị, phát hiện, kết nối",
     "imageThumbnails": "hình ảnh, hình ảnh, hình thu nhỏ, giới hạn, lưu trữ, tài nguyên, cách sử dụng, hiệu suất",

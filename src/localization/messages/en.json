@@ -618,15 +618,9 @@
       "thumbnailStorageLimit": "Thumbnail storage limit"
     },
     "stats": {
-      "directoryItemStatistics": "Directory item statistics",
-      "storeSomeEventData": "If enabled, the app will store some event data of your interactions with directories / files, for example, when and how many times they were opened.",
-      "thisDataIsUsed": "This data is used by features like \"timeline\" and \"search\".",
-      "statisticsStoring": "Statistics storing",
-      "storeOpenedDirectoryItems": "Store the list of opened directory items",
-      "storeAmountDirectoryItemWasOpened": "Store the amount of times a directory item was opened",
-      "storeTheDateOpeningDirectoryItem": "Store the date of opening a directory item",
-      "statisticsLocationDescription": "The statistics data is stored in the file called \"stats.json\" located in the app directory.",
-      "openFileLocation": "Open file location"
+      "title": "User data",
+      "description": "The app stores data locally (tags, favorites, history, recently opened items) to enable features like dashboard lists and search. This data is stored in the app directory.",
+      "openDataDirectory": "Open data directory"
     },
     "advanced": {
       "advancedSettings": "Advanced settings",
@@ -688,6 +682,7 @@
     "inputElements": "input, filtering, type, typing, directory, spellcheck",
     "mouseButtons": "mouse, buttons, input, actions",
     "globalSearch": "global, search, find, look, filter, scan",
+    "stats": "stats, data, user, favorites, tags, history, recent, dashboard, storage",
     "dataBackupReminder": "data, storage, backup",
     "driveDetection": "drive, usb, storage, disk, device, detection, connection",
     "imageThumbnails": "image, picture, thumbnails, limit, storage, resources, usage, performance",
