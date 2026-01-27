@@ -304,6 +304,7 @@
     }
   },
   "settings": {
+    "searchSettings": "Поиск настроек",
     "general": {
       "appQuickActions": "Быстрые действия в приложении",
       "appDirectories": "Папки приложений",
@@ -772,6 +773,7 @@
     "openCurrentDirInTerminal": "Открыть текущий папка в терминале",
     "openCurrentDirInTerminalAsAdmin": "Открыть текущий папка в терминале от имени администратора",
     "focusUnfocusFilterField": "Фокусировать/расфокусировать поле фильтра",
+    "focusUnfocusSettingsSearch": "Фокусировать/расфокусировать поиск настроек",
     "showHideGlobalSearch": "Показать/скрыть глобальный поиск",
     "createNewDirectoryInTheCurrentDirectory": "Создать новый папка в текущей папке",
     "createNewFileInCurrentDirectory": "Создать новый файл в текущей папке",

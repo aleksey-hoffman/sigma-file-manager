@@ -291,6 +291,7 @@
     }
   },
   "settings": {
+    "searchSettings": "Einstellungen durchsuchen",
     "general": {
       "appQuickActions": "App-Schnellaktionen",
       "appDirectories": "App-Verzeichnisse",
@@ -759,6 +760,7 @@
     "openCurrentDirInTerminal": "Aktuelles Verzeichnis im Terminal öffnen",
     "openCurrentDirInTerminalAsAdmin": "Aktuelles Verzeichnis im Terminal als Administrator öffnen",
     "focusUnfocusFilterField": "Fokus-/Unfokus-Filterfeld",
+    "focusUnfocusSettingsSearch": "Einstellungssuche fokussieren/entfokussieren",
     "showHideGlobalSearch": "Globale Suche ein-/ausblenden",
     "createNewDirectoryInTheCurrentDirectory": "Neues Verzeichnis im aktuellen Verzeichnis erstellen",
     "createNewFileInCurrentDirectory": "Neue Datei im aktuellen Verzeichnis erstellen",

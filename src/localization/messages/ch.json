@@ -291,6 +291,7 @@
     }
   },
   "settings": {
+    "searchSettings": "搜索设置",
     "general": {
       "appQuickActions": "应用程序快速操作",
       "appDirectories": "应用程序目录",
@@ -759,6 +760,7 @@
     "openCurrentDirInTerminal": "在终端打开当前目录",
     "openCurrentDirInTerminalAsAdmin": "以管理员身份在终端中打开当前目录",
     "focusUnfocusFilterField": "聚焦/不聚焦过滤字段",
+    "focusUnfocusSettingsSearch": "聚焦/取消聚焦设置搜索",
     "showHideGlobalSearch": "显示/隐藏全局搜索",
     "createNewDirectoryInTheCurrentDirectory": "在当前目录下新建目录",
     "createNewFileInCurrentDirectory": "在当前目录创建新文件",

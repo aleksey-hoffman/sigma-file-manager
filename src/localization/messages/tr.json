@@ -291,6 +291,7 @@
     }
   },
   "settings": {
+    "searchSettings": "Ayarları ara",
     "general": {
       "appQuickActions": "Uygulama hızlı işlemleri",
       "appDirectories": "Uygulama dizinleri",
@@ -759,6 +760,7 @@
     "openCurrentDirInTerminal": "Geçerli dizini terminalde aç",
     "openCurrentDirInTerminalAsAdmin": "Geçerli dizini terminalde yönetici olarak aç",
     "focusUnfocusFilterField": "Odak / odak dışı filtre alanı",
+    "focusUnfocusSettingsSearch": "Ayar aramasını odakla / odaktan çıkar",
     "showHideGlobalSearch": "Global aramayı göster / gizle",
     "createNewDirectoryInTheCurrentDirectory": "Geçerli dizinde yeni dizin oluştur",
     "createNewFileInCurrentDirectory": "Geçerli dizinde yeni dosya oluştur",

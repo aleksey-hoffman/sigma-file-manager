@@ -291,6 +291,7 @@
     }
   },
   "settings": {
+    "searchSettings": "設定を検索",
     "general": {
       "appQuickActions": "アプリのクイックアクション",
       "appDirectories": "アプリディレクトリ",
@@ -759,6 +760,7 @@
     "openCurrentDirInTerminal": "ターミナルで現在のディレクトリを開く",
     "openCurrentDirInTerminalAsAdmin": "ターミナルで現在のディレクトリを管理者として開く",
     "focusUnfocusFilterField": "フォーカス/フォーカス解除フィルタ フィールド",
+    "focusUnfocusSettingsSearch": "設定検索のフォーカス/フォーカス解除",
     "showHideGlobalSearch": "グローバル検索の表示/非表示",
     "createNewDirectoryInTheCurrentDirectory": "現在のディレクトリに新しいディレクトリを作成",
     "createNewFileInCurrentDirectory": "現在のディレクトリに新しいファイルを作成",

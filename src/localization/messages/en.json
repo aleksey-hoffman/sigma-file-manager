@@ -304,6 +304,7 @@
     }
   },
   "settings": {
+    "searchSettings": "Search settings",
     "general": {
       "appQuickActions": "App quick actions",
       "appDirectories": "App directories",
@@ -772,6 +773,7 @@
     "openCurrentDirInTerminal": "Open current dir in terminal",
     "openCurrentDirInTerminalAsAdmin": "Open current dir in terminal as admin",
     "focusUnfocusFilterField": "Focus / unfocus filter field",
+    "focusUnfocusSettingsSearch": "Focus / unfocus settings search",
     "showHideGlobalSearch": "Show / hide global search",
     "createNewDirectoryInTheCurrentDirectory": "Create new directory in the current directory",
     "createNewFileInCurrentDirectory": "Create new file in current directory",

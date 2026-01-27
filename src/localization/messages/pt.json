@@ -291,6 +291,7 @@
     }
   },
   "settings": {
+    "searchSettings": "Pesquisar configurações",
     "general": {
       "appQuickActions": "Aplicativo de ações rápidas",
       "appDirectories": "Diretórios de aplicativos",
@@ -759,6 +760,7 @@
   "openCurrentDirInTerminal": "Abra o diretório atual no terminal",
   "openCurrentDirInTerminalAsAdmin": "Abra o diretório atual no terminal como administrador",
   "focusUnfocusFilterField": "Campo de filtro de foco/desfoco",
+  "focusUnfocusSettingsSearch": "Foco/desfoco pesquisa de configurações",
   "showHideGlobalSearch": "Mostrar/Ocultar pesquisa global",
   "createNewDirectoryInTheCurrentDirectory": "Criar novo diretório no diretório atual",
   "createNewFileInCurrentDirectory": "Criar novo arquivo no diretório atual",

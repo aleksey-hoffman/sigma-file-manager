@@ -59,6 +59,7 @@ const shortcutsStore = useShortcutsStore();
 const shortcutIcons: Record<ShortcutId, Component> = {
   toggleGlobalSearch: SearchIcon,
   toggleFilter: TextSearchIcon,
+  toggleSettingsSearch: TextSearchIcon,
   copy: CopyIcon,
   cut: FolderInputIcon,
   paste: ClipboardPasteIcon,

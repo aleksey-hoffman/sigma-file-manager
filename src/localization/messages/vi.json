@@ -291,6 +291,7 @@
     }
   },
   "settings": {
+    "searchSettings": "Tìm kiếm cài đặt",
     "general": {
       "appQuickActions": "Hành động nhanh của ứng dụng",
       "appDirectories": "Thư mục ứng dụng",
@@ -759,6 +760,7 @@
     "openCurrentDirInTerminal": "Mở thư mục hiện tại trong thiết bị đầu cuối",
     "openCurrentDirInTerminalAsAdmin": "Mở thư mục hiện tại trong thiết bị đầu cuối với tư cách quản trị viên",
     "focusUnfocusFilterField": "Trường bộ lọc lấy nét/không lấy nét",
+    "focusUnfocusSettingsSearch": "Lấy nét / không lấy nét tìm kiếm cài đặt",
     "showHideGlobalSearch": "Hiển thị / ẩn tìm kiếm toàn cầu",
     "createNewDirectoryInTheCurrentDirectory": "Tạo thư mục mới trong thư mục hiện tại",
     "createNewFileInCurrentDirectory": "Tạo tệp mới trong thư mục hiện tại",

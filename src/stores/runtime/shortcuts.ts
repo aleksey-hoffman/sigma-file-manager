@@ -19,7 +19,7 @@ export type ShortcutDefinition = {
   id: ShortcutId;
   labelKey: string;
   defaultKeys: ShortcutKeys;
-  scope: 'global' | 'navigator';
+  scope: 'global' | 'navigator' | 'settings';
   conditions: ShortcutConditions;
   isReadOnly: boolean;
 };
@@ -47,6 +47,19 @@ const DEFAULT_SHORTCUTS: ShortcutDefinition[] = [
       key: 'f',
     },
     scope: 'navigator',
+    conditions: {
+      dialogIsOpened: false,
+    },
+    isReadOnly: false,
+  },
+  {
+    id: 'toggleSettingsSearch',
+    labelKey: 'shortcuts.focusUnfocusSettingsSearch',
+    defaultKeys: {
+      ctrl: true,
+      key: 'f',
+    },
+    scope: 'settings',
     conditions: {
       dialogIsOpened: false,
     },
@@ -403,6 +416,20 @@ export const useShortcutsStore = defineStore('shortcuts', () => {
     return null;
   }
 
+  function findAllMatchingShortcuts(event: KeyboardEvent): ShortcutId[] {
+    const matchingShortcuts: ShortcutId[] = [];
+
+    for (const definition of definitions.value) {
+      const keys = getShortcutKeys(definition.id);
+
+      if (matchesShortcut(event, keys)) {
+        matchingShortcuts.push(definition.id);
+      }
+    }
+
+    return matchingShortcuts;
+  }
+
   function findConflictingShortcut(keys: ShortcutKeys, excludeShortcutId?: ShortcutId): ShortcutDefinition | null {
     const keysLabel = formatShortcutKeys(keys);
 
@@ -420,35 +447,39 @@ export const useShortcutsStore = defineStore('shortcuts', () => {
   }
 
   async function handleKeydown(event: KeyboardEvent): Promise<boolean> {
-    const shortcutId = findMatchingShortcut(event);
-    if (!shortcutId) return false;
+    const matchingShortcutIds = findAllMatchingShortcuts(event);
+    if (matchingShortcutIds.length === 0) return false;
 
-    const definition = getShortcutDefinition(shortcutId);
-    if (!definition) return false;
+    for (const shortcutId of matchingShortcutIds) {
+      const definition = getShortcutDefinition(shortcutId);
+      if (!definition) continue;
 
-    const registration = handlers.value.get(shortcutId);
-    if (!registration) return false;
+      const registration = handlers.value.get(shortcutId);
+      if (!registration) continue;
 
-    if (!checkConditions(definition, registration)) {
-      return false;
-    }
-
-    const result = registration.handler();
-
-    if (result instanceof Promise) {
-      event.preventDefault();
-      event.stopPropagation();
-      const asyncResult = await result;
-      return asyncResult !== false;
-    }
-    else {
-      if (result !== false) {
-        event.preventDefault();
-        event.stopPropagation();
+      if (!checkConditions(definition, registration)) {
+        continue;
       }
 
-      return result !== false;
+      const result = registration.handler();
+
+      if (result instanceof Promise) {
+        event.preventDefault();
+        event.stopPropagation();
+        const asyncResult = await result;
+        return asyncResult !== false;
+      }
+      else {
+        if (result !== false) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+
+        return result !== false;
+      }
     }
+
+    return false;
   }
 
   function globalKeydownHandler(event: KeyboardEvent): void {

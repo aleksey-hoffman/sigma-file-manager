@@ -70,6 +70,7 @@ export type ShortcutKeys = {
 export type ShortcutId
   = 'toggleGlobalSearch'
     | 'toggleFilter'
+    | 'toggleSettingsSearch'
     | 'copy'
     | 'cut'
     | 'paste'

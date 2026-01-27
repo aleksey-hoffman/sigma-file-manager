@@ -291,6 +291,7 @@
     }
   },
   "settings": {
+    "searchSettings": "Cerca impostazioni",
     "general": {
       "appQuickActions": "Azioni veloci dell'app",
       "appDirectories": "Cartelle dell'app",
@@ -759,6 +760,7 @@
     "openCurrentDirInTerminal": "Apri la cartella attuale nel terminale",
     "openCurrentDirInTerminalAsAdmin": "Apri la cartella attuale nel terminale come amministratore",
     "focusUnfocusFilterField": "Campo filtro focalizzato / non focalizzato",
+    "focusUnfocusSettingsSearch": "Focalizza / non focalizza ricerca impostazioni",
     "showHideGlobalSearch": "Mostra / nascondi la ricerca globale",
     "createNewDirectoryInTheCurrentDirectory": "Crea una nuova cartella nella cartella attuale",
     "createNewFileInCurrentDirectory": "Crea un nuovo file nella cartella attuale",

@@ -290,6 +290,7 @@
     }
   },
   "settings": {
+    "searchSettings": "جستجوی تنظیمات",
     "general": {
       "appQuickActions": "اقدامات سریع برنامه",
       "appDirectories": "دایرکتوری های برنامه",
@@ -758,6 +759,7 @@
     "openCurrentDirInTerminal": "باز کردن مسیر فعلی در ترمینال",
     "openCurrentDirInTerminalAsAdmin": "باز کردن dir فعلی در ترمینال به عنوان مدیر",
     "focusUnfocusFilterField": "فیلد فیلتر فوکوس / عدم تمرکز",
+    "focusUnfocusSettingsSearch": "فوکوس / عدم تمرکز جستجوی تنظیمات",
     "showHideGlobalSearch": "نمایش / پنهان کردن جستجوی جهانی",
     "createNewDirectoryInTheCurrentDirectory": "ایجاد فهرست جدید در فهرست فعلی",
     "createNewFileInCurrentDirectory": "ایجاد فایل جدید در فهرست فعلی",
