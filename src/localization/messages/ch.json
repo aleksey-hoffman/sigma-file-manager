@@ -172,9 +172,11 @@
       "found": "找到 {n} 项 | 找到 {n} 项 | 找到 {n} 项 | 找到 {n} 项",
       "finished": "在 {n} 秒内完成",
       "searched": "已搜索 {n} 条路径",
+      "searchingLevelsDeep": "搜索 {n} 层深度",
       "indexed": "索引于 {time}",
       "nothingFound": "什么都没找到"
-    }
+    },
+    "showSearchSettings": "显示搜索设置"
   },
   "home": {
     "mediaBannerOptions": "媒体横幅选项",

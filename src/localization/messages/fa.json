@@ -171,9 +171,11 @@
       "found": "{n} مورد پیدا شد | {n} مورد پیدا شد | {n} مورد پیدا شد | {n} مورد یافت شد",
       "finished": "در {n} ثانیه به پایان رسید",
       "searched": "{n} مسیرهای جستجو شده",
+      "searchingLevelsDeep": "جستجو در {n} سطح عمق",
       "indexed": "شاخص‌گذاری شده {time}",
       "nothingFound": "هیچ چیزی پیدا نشد"
-    }
+    },
+    "showSearchSettings": "نمایش تنظیمات جستجو"
   },
   "home": {
     "mediaBannerOptions": "گزینه های بنر رسانه",

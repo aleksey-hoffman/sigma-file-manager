@@ -36,6 +36,7 @@ function handleClick() {
           variant="ghost"
           size="icon"
           class="global-search-toolbar-button__button"
+          :class="{ 'global-search-toolbar-button__button--active': globalSearchStore.isOpen }"
           @click="handleClick"
         >
           <SearchIcon
@@ -60,5 +61,13 @@ function handleClick() {
 
 .global-search-toolbar-button__icon {
   stroke: hsl(var(--foreground) / 50%);
+}
+
+.global-search-toolbar-button__button--active {
+  background-color: hsl(var(--secondary));
+}
+
+.global-search-toolbar-button__button--active .global-search-toolbar-button__icon {
+  stroke: hsl(var(--primary));
 }
 </style>

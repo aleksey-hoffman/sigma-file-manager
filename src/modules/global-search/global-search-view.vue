@@ -5,9 +5,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue';
+import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import {
-  ChevronDownIcon, HardDriveIcon, LoaderCircleIcon, SearchIcon, SlidersHorizontalIcon, UsbIcon, XIcon,
+  ChevronDownIcon, HardDriveIcon, LoaderCircleIcon, SearchIcon, SettingsIcon, SlidersHorizontalIcon, UsbIcon, XIcon,
 } from 'lucide-vue-next';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -20,6 +21,7 @@ import {
 } from '@/components/ui/number-field';
 import { useGlobalSearchStore } from '@/stores/runtime/global-search';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
+import { useSettingsStore } from '@/stores/runtime/settings';
 import { getDriveByPath } from '@/modules/home/composables/use-drives';
 import type { DirEntry } from '@/types/dir-entry';
 import type { DriveInfo } from '@/types/drive-info';
@@ -32,8 +34,10 @@ const emit = defineEmits<{
   openEntry: [entry: DirEntry];
 }>();
 
+const router = useRouter();
 const globalSearchStore = useGlobalSearchStore();
 const userSettingsStore = useUserSettingsStore();
+const settingsStore = useSettingsStore();
 const { t } = useI18n();
 
 const inputRef = ref<InstanceType<typeof Input> | null>(null);
@@ -44,6 +48,12 @@ const includeFiles = computed(() => userSettingsStore.userSettings.globalSearch.
 const includeDirectories = computed(() => userSettingsStore.userSettings.globalSearch.includeDirectories);
 const exactMatch = computed(() => userSettingsStore.userSettings.globalSearch.exactMatch);
 const typoTolerance = computed(() => userSettingsStore.userSettings.globalSearch.typoTolerance);
+const scanDepth = computed(() => userSettingsStore.userSettings.globalSearch.scanDepth);
+
+function openSearchSettings() {
+  settingsStore.setCurrentTab('search');
+  router.push({ name: 'settings' });
+}
 
 function setResultLimit(value: string | number | undefined) {
   const limit = Math.max(
@@ -209,8 +219,20 @@ function clearQuery() {
   inputRef.value?.$el?.focus();
 }
 
+function focusInput() {
+  setTimeout(() => {
+    inputRef.value?.$el?.focus();
+  }, 0);
+}
+
+watch(() => globalSearchStore.isOpen, (isOpen) => {
+  if (isOpen) {
+    focusInput();
+  }
+}, { immediate: true });
+
 onMounted(() => {
-  inputRef.value?.$el?.focus();
+  focusInput();
 });
 
 </script>
@@ -258,12 +280,12 @@ onMounted(() => {
           <SlidersHorizontalIcon :size="18" />
         </Button>
         <Button
-          variant="ghost"
-          size="sm"
+          variant="outline"
+          size="icon"
           class="global-search-view__close"
           @click="handleClose"
         >
-          {{ t('close') }}
+          <XIcon :size="18" />
         </Button>
       </div>
     </div>
@@ -430,6 +452,7 @@ onMounted(() => {
           </span>
           <span class="global-search-view__empty-description">
             {{ t('globalSearch.searchStats.searched', { n: globalSearchStore.indexedItemCount.toLocaleString() }) }}
+            ({{ t('globalSearch.searchStats.searchingLevelsDeep', { n: scanDepth }) }})
           </span>
           <span
             v-if="lastScanRelative"
@@ -437,6 +460,15 @@ onMounted(() => {
           >
             {{ t('globalSearch.searchStats.indexed', { time: lastScanRelative }) }}
           </span>
+          <Button
+            variant="outline"
+            size="sm"
+            class="global-search-view__settings-button"
+            @click="openSearchSettings"
+          >
+            <SettingsIcon :size="14" />
+            {{ t('globalSearch.showSearchSettings') }}
+          </Button>
         </div>
 
         <div
@@ -549,7 +581,7 @@ onMounted(() => {
 .global-search-view__header {
   display: flex;
   align-items: center;
-  padding: 12px 16px;
+  padding: 16px 4px;
   gap: 12px;
 }
 
@@ -599,6 +631,7 @@ onMounted(() => {
   min-height: 0;
   flex: 1;
   flex-direction: column;
+  padding: 0 4px;
 }
 
 .global-search-view__scan-status {
@@ -691,6 +724,11 @@ onMounted(() => {
   font-size: 13px;
 }
 
+.global-search-view__settings-button {
+  margin-top: 8px;
+  gap: 6px;
+}
+
 .global-search-view__header-actions {
   display: flex;
   align-items: center;
@@ -709,7 +747,9 @@ onMounted(() => {
 .global-search-view__options {
   display: flex;
   padding: 12px 16px;
+  border-radius: var(--radius-sm);
   border-bottom: 1px solid hsl(var(--border));
+  margin: 0 4px 16px;
   background-color: hsl(var(--muted) / 30%);
   gap: 24px;
 }

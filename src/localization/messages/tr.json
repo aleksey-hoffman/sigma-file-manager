@@ -172,9 +172,11 @@
       "found": "{n} öğe bulundu | {n} öğe bulundu | {n} öğe bulundu | {n} öğe bulundu",
       "finished": "{n} saniyede tamamlandı",
       "searched": "{n} yol arandı",
+      "searchingLevelsDeep": "{n} seviye derinlikte arama",
       "indexed": "{time} dizine eklendi",
       "nothingFound": "Hiçbir şey bulunamadı"
-    }
+    },
+    "showSearchSettings": "Arama ayarlarını göster"
   },
   "home": {
     "mediaBannerOptions": "Medya banner seçenekleri",

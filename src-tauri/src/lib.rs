@@ -39,6 +39,7 @@ pub fn run() {
             global_search::global_search_cancel_scan,
             global_search::global_search_index_paths,
             global_search::global_search_query,
+            global_search::global_search_query_paths,
             open_with::get_associated_programs,
             open_with::open_with_program,
             open_with::open_with_default,

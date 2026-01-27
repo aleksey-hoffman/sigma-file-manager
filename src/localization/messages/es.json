@@ -172,9 +172,11 @@
       "found": "Encontrados {n} elementos | Encontrados {n} elementos | Encontrados {n} elementos | Encontrados {n} elementos",
       "finished": "Terminado en {n} segundos",
       "searched": "Se buscaron {n} rutas",
+      "searchingLevelsDeep": "buscando {n} niveles de profundidad",
       "indexed": "Indexado {time}",
       "nothingFound": "No se encontró nada"
-    }
+    },
+    "showSearchSettings": "Mostrar configuración de búsqueda"
   },
   "home": {
     "mediaBannerOptions": "Opciones de banner de medios",

@@ -63,12 +63,6 @@ const lastScanRelative = computed(() => {
   return formatRelativeTime(globalSearchStore.lastScanTime);
 });
 
-const lastPriorityIndexRelative = computed(() => {
-  void displayTick.value;
-  if (!globalSearchStore.lastPriorityIndexTime) return null;
-  return formatRelativeTime(globalSearchStore.lastPriorityIndexTime);
-});
-
 const formattedIndexSize = computed(() => {
   if (globalSearchStore.indexSizeBytes === 0) return '-';
   return formatBytes(globalSearchStore.indexSizeBytes);
@@ -317,23 +311,6 @@ onUnmounted(() => {
                 {{ t('globalSearch.lastScan') }}
               </span>
             </div>
-          </div>
-
-          <div class="global-search-settings__priority-index-status">
-            <div class="global-search-settings__priority-index-header">
-              <span class="global-search-settings__priority-index-title">
-                {{ t('globalSearch.priorityIndexing') }}
-              </span>
-              <span
-                v-if="lastPriorityIndexRelative"
-                class="global-search-settings__priority-index-value"
-              >
-                {{ t('globalSearch.lastPriorityIndex', { count: globalSearchStore.lastPriorityIndexCount, time: lastPriorityIndexRelative }) }}
-              </span>
-            </div>
-            <span class="global-search-settings__priority-index-description">
-              {{ t('globalSearch.priorityIndexingDescription') }}
-            </span>
           </div>
 
           <div

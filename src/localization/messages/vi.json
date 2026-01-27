@@ -172,9 +172,11 @@
       "found": "Đã tìm thấy {n} mục | Đã tìm thấy {n} mục | Đã tìm thấy {n} mục | Đã tìm thấy {n} mục",
       "finished": "Hoàn tất sau {n} giây",
       "searched": "Đã tìm kiếm {n} đường dẫn",
+      "searchingLevelsDeep": "tìm kiếm sâu {n} cấp",
       "indexed": "Được lập chỉ mục {time}",
       "nothingFound": "Không tìm thấy gì"
-    }
+    },
+    "showSearchSettings": "Hiển thị cài đặt tìm kiếm"
   },
   "home": {
     "mediaBannerOptions": "Tùy chọn biểu ngữ phương tiện",

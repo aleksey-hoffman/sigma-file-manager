@@ -1160,6 +1160,150 @@ pub async fn global_search_query(
     Ok(final_results)
 }
 
+#[tauri::command]
+pub async fn global_search_query_paths(
+    paths: Vec<String>,
+    query: String,
+    options: GlobalSearchQueryOptions,
+) -> Result<Vec<GlobalSearchResultEntry>, String> {
+    if paths.is_empty() || query.trim().is_empty() {
+        return Ok(Vec::new());
+    }
+
+    let normalized_query = normalize_case(&query);
+    let min_score = get_min_score_for_query_length(normalized_query.len());
+
+    let all_searchable_paths: Vec<PathBuf> = paths
+        .par_iter()
+        .flat_map(|path_string| {
+            let path = Path::new(path_string);
+            let mut collected_paths = Vec::new();
+
+            if let Ok(metadata) = std::fs::metadata(path) {
+                if metadata.is_dir() {
+                    if let Ok(entries) = std::fs::read_dir(path) {
+                        for entry_result in entries.flatten() {
+                            collected_paths.push(entry_result.path());
+                        }
+                    }
+                }
+                else {
+                    collected_paths.push(path.to_path_buf());
+                }
+            }
+
+            collected_paths
+        })
+        .collect();
+
+    let results: Vec<GlobalSearchResultEntry> = all_searchable_paths
+        .par_iter()
+        .filter_map(|path| {
+            let name = path.file_name().and_then(|n| n.to_str())?.to_string();
+
+            let name_score = calculate_similarity_score(&normalized_query, &name);
+
+            if name_score < min_score {
+                return None;
+            }
+
+            let metadata = std::fs::metadata(path).ok()?;
+
+            let is_file = metadata.is_file();
+            let is_dir = metadata.is_dir();
+
+            if !matches_type(
+                if is_file { 1 } else { 0 },
+                if is_dir { 1 } else { 0 },
+                &options,
+            ) {
+                return None;
+            }
+
+            let modified_time = metadata
+                .modified()
+                .ok()
+                .and_then(|t| t.duration_since(UNIX_EPOCH).ok())
+                .map(|duration| duration.as_millis() as u64)
+                .unwrap_or(0);
+
+            let accessed_time = metadata
+                .accessed()
+                .ok()
+                .and_then(|t| t.duration_since(UNIX_EPOCH).ok())
+                .map(|duration| duration.as_millis() as u64)
+                .unwrap_or(0);
+
+            let created_time = metadata
+                .created()
+                .ok()
+                .and_then(|t| t.duration_since(UNIX_EPOCH).ok())
+                .map(|duration| duration.as_millis() as u64)
+                .unwrap_or(0);
+
+            let size = if is_file { metadata.len() } else { 0 };
+
+            let ext = path
+                .extension()
+                .and_then(|extension| extension.to_str())
+                .map(|extension| extension.to_lowercase());
+
+            let path_string = path.to_string_lossy().to_string();
+            let normalized_path = normalize_path(&path_string);
+
+            Some(GlobalSearchResultEntry {
+                name,
+                ext,
+                path: normalized_path,
+                size,
+                item_count: None,
+                modified_time,
+                accessed_time,
+                created_time,
+                mime: None,
+                is_file,
+                is_dir,
+                is_symlink: metadata.is_symlink(),
+                is_hidden: is_hidden_path(path),
+                score: name_score,
+            })
+        })
+        .collect();
+
+    let mut sorted_results = results;
+    sorted_results.par_sort_by(|entry_a, entry_b| {
+        entry_b
+            .score
+            .partial_cmp(&entry_a.score)
+            .unwrap_or(std::cmp::Ordering::Equal)
+    });
+
+    if sorted_results.len() > options.limit {
+        sorted_results.truncate(options.limit);
+    }
+
+    Ok(sorted_results)
+}
+
+fn is_hidden_path(path: &Path) -> bool {
+    #[cfg(windows)]
+    {
+        use std::os::windows::fs::MetadataExt;
+        if let Ok(metadata) = std::fs::metadata(path) {
+            const FILE_ATTRIBUTE_HIDDEN: u32 = 0x2;
+            return (metadata.file_attributes() & FILE_ATTRIBUTE_HIDDEN) != 0;
+        }
+        false
+    }
+    #[cfg(not(windows))]
+    {
+        path.file_name()
+            .and_then(|name| name.to_str())
+            .map(|name| name.starts_with('.'))
+            .unwrap_or(false)
+    }
+}
+
 fn get_drive_root(path: &str) -> String {
     #[cfg(windows)]
     {

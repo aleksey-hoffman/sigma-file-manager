@@ -15,6 +15,7 @@
     "preview": "vite preview",
     "test:unit": "vitest",
     "build-only": "vite build",
+    "check": "run-p type-check lint",
     "type-check": "vue-tsc --build",
     "lint:eslint": "eslint . --fix",
     "lint:stylelint": "stylelint \"src/**/*.{css,vue}\" --fix",

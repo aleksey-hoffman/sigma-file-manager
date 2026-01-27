@@ -36,8 +36,6 @@ const POLL_INTERVAL_ACTIVE_MS = 300;
 const POLL_INTERVAL_IDLE_MS = 5000;
 const IDLE_THRESHOLD_MS = 60 * 1000;
 const IDLE_CHECK_INTERVAL_MS = 10 * 1000;
-const PRIORITY_INDEX_INTERVAL_MS = 60 * 1000;
-const PRIORITY_PATHS_MAX = 20;
 
 export const useGlobalSearchStore = defineStore('globalSearch', () => {
   const isOpen = ref(false);
@@ -62,13 +60,9 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
   const debounceTimerId = ref<ReturnType<typeof setTimeout> | null>(null);
   const searchAbortController = ref<AbortController | null>(null);
   const idleCheckIntervalId = ref<ReturnType<typeof setInterval> | null>(null);
-  const priorityIndexIntervalId = ref<ReturnType<typeof setInterval> | null>(null);
   const driveChangeDebounceTimerId = ref<ReturnType<typeof setTimeout> | null>(null);
   const lastActivityTime = ref<number>(Date.now());
   const lastKnownDriveCount = ref<number>(0);
-  const lastPriorityIndexTime = ref<number>(0);
-  const lastPriorityIndexCount = ref<number>(0);
-  const isPriorityIndexing = ref(false);
 
   const userSettingsStore = useUserSettingsStore();
   const userStatsStore = useUserStatsStore();
@@ -160,9 +154,6 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
       if (shouldRescanOnLaunch) {
         await startScan();
       }
-      else {
-        indexPriorityPaths();
-      }
     }
     catch (error) {
       lastError.value = String(error);
@@ -196,10 +187,6 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
 
   async function startScan() {
     if (isScanInProgress.value) return;
-
-    if (isPriorityIndexing.value) {
-      await waitForPriorityIndexing();
-    }
 
     try {
       const settings = userSettingsStore.userSettings.globalSearch;
@@ -274,33 +261,58 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
       return;
     }
 
-    if (indexedItemCount.value === 0) {
-      results.value = [];
-      return;
-    }
-
     searchAbortController.value = new AbortController();
     isSearching.value = true;
 
     try {
       const settings = userSettingsStore.userSettings.globalSearch;
-      const list = await invoke<Array<DirEntry & { score?: number }>>('global_search_query', {
-        query: searchQuery.trim(),
-        options: {
-          limit: settings.resultLimit ?? SEARCH_CONSTANTS.DEFAULT_RESULT_LIMIT,
-          include_files: true,
-          include_directories: true,
-          exact_match: settings.exactMatch ?? false,
-          typo_tolerance: settings.typoTolerance ?? true,
-          min_score_threshold: null,
-        },
-      });
+      const queryOptions = {
+        limit: settings.resultLimit ?? SEARCH_CONSTANTS.DEFAULT_RESULT_LIMIT,
+        include_files: true,
+        include_directories: true,
+        exact_match: settings.exactMatch ?? false,
+        typo_tolerance: settings.typoTolerance ?? true,
+        min_score_threshold: null,
+      };
+
+      const priorityPaths = getAllPriorityPaths();
+
+      const searchPromises: Promise<Array<DirEntry & { score?: number }>>[] = [];
+
+      if (indexedItemCount.value > 0) {
+        searchPromises.push(
+          invoke<Array<DirEntry & { score?: number }>>('global_search_query', {
+            query: searchQuery.trim(),
+            options: queryOptions,
+          }),
+        );
+      }
+      else {
+        searchPromises.push(Promise.resolve([]));
+      }
+
+      if (priorityPaths.length > 0) {
+        searchPromises.push(
+          invoke<Array<DirEntry & { score?: number }>>('global_search_query_paths', {
+            paths: priorityPaths,
+            query: searchQuery.trim(),
+            options: queryOptions,
+          }),
+        );
+      }
+      else {
+        searchPromises.push(Promise.resolve([]));
+      }
+
+      const [indexedResults, priorityResults] = await Promise.all(searchPromises);
 
       if (searchAbortController.value?.signal.aborted) {
         return;
       }
 
-      results.value = list.map(item => ({
+      const mergedResults = mergeAndDeduplicateResults(indexedResults, priorityResults);
+
+      results.value = mergedResults.map(item => ({
         name: item.name,
         ext: item.ext ?? null,
         path: item.path,
@@ -328,6 +340,36 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
       isSearching.value = false;
       searchAbortController.value = null;
     }
+  }
+
+  function mergeAndDeduplicateResults(
+    indexedResults: Array<DirEntry & { score?: number }>,
+    priorityResults: Array<DirEntry & { score?: number }>,
+  ): Array<DirEntry & { score?: number }> {
+    const seenPaths = new Map<string, DirEntry & { score?: number }>();
+
+    for (const item of priorityResults) {
+      const normalizedPath = item.path.toLowerCase();
+      seenPaths.set(normalizedPath, item);
+    }
+
+    for (const item of indexedResults) {
+      const normalizedPath = item.path.toLowerCase();
+
+      if (!seenPaths.has(normalizedPath)) {
+        seenPaths.set(normalizedPath, item);
+      }
+    }
+
+    const merged = Array.from(seenPaths.values());
+
+    merged.sort((itemA, itemB) => {
+      const scoreA = itemA.score ?? 0;
+      const scoreB = itemB.score ?? 0;
+      return scoreB - scoreA;
+    });
+
+    return merged;
   }
 
   function search() {
@@ -370,21 +412,7 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
   }
 
   function recordActivity() {
-    const wasIdle = getIsUserIdle();
     lastActivityTime.value = Date.now();
-
-    if (wasIdle) {
-      restartPriorityIndexInterval();
-      indexPriorityPaths();
-    }
-  }
-
-  function restartPriorityIndexInterval() {
-    if (priorityIndexIntervalId.value !== null) {
-      clearInterval(priorityIndexIntervalId.value);
-    }
-
-    priorityIndexIntervalId.value = setInterval(checkPriorityIndex, PRIORITY_INDEX_INTERVAL_MS);
   }
 
   function checkIdleReindex() {
@@ -399,7 +427,7 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
     startScan();
   }
 
-  function getPriorityPaths(): string[] {
+  function getAllPriorityPaths(): string[] {
     const paths = new Set<string>();
 
     const userDirs = [
@@ -415,86 +443,23 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
       paths.add(dirPath);
     }
 
-    const recentDirs = userStatsStore.sortedHistory
-      .filter(item => !item.isFile)
-      .slice(0, PRIORITY_PATHS_MAX)
-      .map(item => item.path);
-
-    for (const dirPath of recentDirs) {
-      paths.add(dirPath);
+    for (const favorite of userStatsStore.favorites) {
+      paths.add(favorite.path);
     }
 
-    const frequentDirs = userStatsStore.sortedFrequentItems
-      .filter(item => !item.isFile)
-      .slice(0, PRIORITY_PATHS_MAX)
-      .map(item => item.path);
-
-    for (const dirPath of frequentDirs) {
-      paths.add(dirPath);
+    for (const historyItem of userStatsStore.history) {
+      paths.add(historyItem.path);
     }
 
-    return Array.from(paths).slice(0, PRIORITY_PATHS_MAX);
-  }
-
-  function waitForPriorityIndexing(): Promise<void> {
-    return new Promise((resolve) => {
-      const checkInterval = setInterval(() => {
-        if (!isPriorityIndexing.value) {
-          clearInterval(checkInterval);
-          resolve();
-        }
-      }, 50);
-    });
-  }
-
-  async function indexPriorityPaths() {
-    if (isPriorityIndexing.value) return;
-    if (isScanInProgress.value) return;
-    if (!isInitialized.value) return;
-    if (!isIndexValid.value) return;
-
-    const paths = getPriorityPaths();
-    if (paths.length === 0) return;
-
-    isPriorityIndexing.value = true;
-
-    try {
-      const settings = userSettingsStore.userSettings.globalSearch;
-
-      const indexedCount = await invoke<number>('global_search_index_paths', {
-        settings: {
-          paths,
-          scan_depth: 1,
-          ignored_paths: settings.ignoredPaths,
-        },
-      });
-
-      if (indexedCount > 0) {
-        await refreshStatus();
-      }
-
-      lastPriorityIndexTime.value = Date.now();
-      lastPriorityIndexCount.value = indexedCount;
+    for (const frequentItem of userStatsStore.frequentItems) {
+      paths.add(frequentItem.path);
     }
-    catch (error) {
-      lastError.value = String(error);
+
+    for (const taggedItem of userStatsStore.taggedItems) {
+      paths.add(taggedItem.path);
     }
-    finally {
-      isPriorityIndexing.value = false;
-    }
-  }
 
-  function checkPriorityIndex() {
-    if (getIsUserIdle()) return;
-    if (isScanInProgress.value) return;
-    if (isPriorityIndexing.value) return;
-    if (!isInitialized.value) return;
-    if (!isIndexValid.value) return;
-
-    const timeSinceLastPriorityIndex = Date.now() - lastPriorityIndexTime.value;
-    if (timeSinceLastPriorityIndex < PRIORITY_INDEX_INTERVAL_MS) return;
-
-    indexPriorityPaths();
+    return Array.from(paths);
   }
 
   function startIdleDetection() {
@@ -506,21 +471,12 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
     });
 
     idleCheckIntervalId.value = setInterval(checkIdleReindex, IDLE_CHECK_INTERVAL_MS);
-
-    if (priorityIndexIntervalId.value === null) {
-      priorityIndexIntervalId.value = setInterval(checkPriorityIndex, PRIORITY_INDEX_INTERVAL_MS);
-    }
   }
 
   function stopIdleDetection() {
     if (idleCheckIntervalId.value !== null) {
       clearInterval(idleCheckIntervalId.value);
       idleCheckIntervalId.value = null;
-    }
-
-    if (priorityIndexIntervalId.value !== null) {
-      clearInterval(priorityIndexIntervalId.value);
-      priorityIndexIntervalId.value = null;
     }
 
     const activityEvents = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll', 'wheel'];
@@ -559,10 +515,6 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
 
   async function startScanWithCurrentDrives() {
     if (!isInitialized.value) return;
-
-    if (isPriorityIndexing.value) {
-      await waitForPriorityIndexing();
-    }
 
     const settings = userSettingsStore.userSettings.globalSearch;
     const selectedRoots = settings.selectedDriveRoots;
@@ -645,9 +597,6 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
     getIsIndexStale,
     isInitialized,
     lastError,
-    isPriorityIndexing,
-    lastPriorityIndexTime,
-    lastPriorityIndexCount,
     getIsUserIdle,
     open,
     close,
@@ -663,6 +612,5 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
     search,
     startIdleDetection,
     stopIdleDetection,
-    indexPriorityPaths,
   };
 });

@@ -185,9 +185,11 @@
       "found": "Found {n} items | Found {n} items | Found {n} items | Found {n} items",
       "finished": "Finished in {n} seconds",
       "searched": "Searched {n} paths",
+      "searchingLevelsDeep": "searching {n} levels deep",
       "indexed": "Indexed {time}",
       "nothingFound": "Nothing was found"
-    }
+    },
+    "showSearchSettings": "Show search settings"
   },
   "home": {
     "mediaBannerOptions": "Media banner options",
