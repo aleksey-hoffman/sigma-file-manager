@@ -598,7 +598,9 @@
     },
     "drives": {
       "driveDetection": "Sürücü algılama",
-      "focusAppWhenDriveConnected": "Bir sürücü bağlandığında uygulamaya odaklan"
+      "focusAppWhenDriveConnected": "Bir sürücü bağlandığında uygulamaya odaklan",
+      "autoplaySettings": "Otomatik Oynatma ayarları",
+      "autoplaySettingsDescription": "Bir sürücü bağlandığında Windows Gezgini'nin otomatik olarak açılıp açılmayacağını yapılandırın"
     },
     "data": {
       "imageThumbnails": "Görüntü küçük resimleri",
@@ -673,6 +675,7 @@
     "stats": "istatistikler, veri, kullanıcı, favoriler, etiketler, geçmiş, son, gösterge paneli, depolama",
     "dataBackupReminder": "veri, depolama, yedekleme",
     "driveDetection": "sürücü, usb, depolama, disk, cihaz, algılama, bağlantı",
+    "autoplay": "otomatik oynatma, gezgin, windows, sürücü, usb, otomatik, aç, klasör",
     "imageThumbnails": "resim, resim, küçük resimler, sınır, depolama, kaynaklar, kullanım, performans",
     "directoryItemStatistics": "dizin, öğe, istatistikler, istatistikler, veri, depolama, kullanım",
     "advanced": "gelişmiş, pro, geliştirici, terminal, kabuk"

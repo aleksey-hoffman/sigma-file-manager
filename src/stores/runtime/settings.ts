@@ -143,6 +143,8 @@ export const useSettingsStore = defineStore('settings', () => {
       { default: ShortcutsSection },
       { default: FilterOnTypingSection },
       { default: UserDataSection },
+      { default: DriveDetectionSection },
+      { default: AutoplaySection },
     ] = await Promise.all([
       import('@/modules/settings/ui/categories/general/language.vue'),
       import('@/modules/settings/ui/categories/general/window-scaling.vue'),
@@ -155,6 +157,8 @@ export const useSettingsStore = defineStore('settings', () => {
       import('@/modules/settings/ui/categories/shortcuts/shortcuts.vue'),
       import('@/modules/settings/ui/categories/input/filter-on-typing.vue'),
       import('@/modules/settings/ui/categories/stats/user-data.vue'),
+      import('@/modules/settings/ui/categories/storage/drive-detection.vue'),
+      import('@/modules/settings/ui/categories/storage/autoplay.vue'),
     ]);
 
     sections.value = [
@@ -234,6 +238,20 @@ export const useSettingsStore = defineStore('settings', () => {
         tags: 'settingsTags.stats',
         component: markRaw(UserDataSection),
         category: 'stats',
+      },
+      {
+        key: 'driveDetection',
+        titleKey: 'settings.drives.driveDetection',
+        tags: 'settingsTags.driveDetection',
+        component: markRaw(DriveDetectionSection),
+        category: 'storage',
+      },
+      {
+        key: 'autoplay',
+        titleKey: 'settings.drives.autoplaySettings',
+        tags: 'settingsTags.autoplay',
+        component: markRaw(AutoplaySection),
+        category: 'storage',
       },
     ];
 

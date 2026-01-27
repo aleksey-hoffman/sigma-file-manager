@@ -611,7 +611,9 @@
     },
     "drives": {
       "driveDetection": "Drive detection",
-      "focusAppWhenDriveConnected": "Focus the app when a drive is connected"
+      "focusAppWhenDriveConnected": "Focus the app when a drive is connected",
+      "autoplaySettings": "AutoPlay settings",
+      "autoplaySettingsDescription": "Configure whether Windows Explorer opens automatically when a drive is connected"
     },
     "data": {
       "imageThumbnails": "Image thumbnails",
@@ -686,6 +688,7 @@
     "stats": "stats, data, user, favorites, tags, history, recent, dashboard, storage",
     "dataBackupReminder": "data, storage, backup",
     "driveDetection": "drive, usb, storage, disk, device, detection, connection",
+    "autoplay": "autoplay, explorer, windows, drive, usb, automatic, open, folder",
     "imageThumbnails": "image, picture, thumbnails, limit, storage, resources, usage, performance",
     "directoryItemStatistics": "directory, item, statistics, stats, data, storage, usage",
     "advanced": "advanced, pro, developer, terminal, shell"

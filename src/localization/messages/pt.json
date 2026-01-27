@@ -598,7 +598,9 @@
     },
     "drives": {
       "driveDetection": "Detecção de unidade",
-      "focusAppWhenDriveConnected": "Foco no aplicativo quando uma unidade está conectada"
+      "focusAppWhenDriveConnected": "Foco no aplicativo quando uma unidade está conectada",
+      "autoplaySettings": "Configurações de reprodução automática",
+      "autoplaySettingsDescription": "Configurar se o Windows Explorer abre automaticamente quando uma unidade é conectada"
     },
     "data": {
       "imageThumbnails": "Miniaturas de imagens",
@@ -673,6 +675,7 @@
     "stats": "estatísticas, dados, usuário, favoritos, etiquetas, histórico, recente, painel, armazenamento",
     "dataBackupReminder": "dados, armazenamento, backup",
     "driveDetection": "unidade, usb, armazenamento, disco, dispositivo, detecção, conexão",
+    "autoplay": "reprodução automática, explorador, windows, unidade, usb, automático, abrir, pasta",
     "imageThumbnails": "imagem, imagem, miniaturas, limite, armazenamento, recursos, uso, desempenho",
     "directoryItemStatistics": "diretório, item, estatísticas, estatísticas, dados, armazenamento, uso",
     "advanced": "avançado, profissional, desenvolvedor, terminal, shell"

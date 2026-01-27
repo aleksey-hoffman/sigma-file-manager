@@ -598,7 +598,9 @@
     },
     "drives": {
       "driveDetection": "Phát hiện ổ đĩa",
-      "focusAppWhenDriveConnected": "Tập trung vào ứng dụng khi một ổ đĩa được kết nối"
+      "focusAppWhenDriveConnected": "Tập trung vào ứng dụng khi một ổ đĩa được kết nối",
+      "autoplaySettings": "Cài đặt tự động phát",
+      "autoplaySettingsDescription": "Cấu hình xem Windows Explorer có tự động mở khi kết nối ổ đĩa hay không"
     },
     "data": {
       "imageThumbnails": "Hình thu nhỏ của hình ảnh",
@@ -673,6 +675,7 @@
     "stats": "thống kê, dữ liệu, người dùng, yêu thích, thẻ, lịch sử, gần đây, bảng điều khiển, lưu trữ",
     "dataBackupReminder": "dữ liệu, lưu trữ, sao lưu",
     "driveDetection": "ổ đĩa, usb, lưu trữ, đĩa, thiết bị, phát hiện, kết nối",
+    "autoplay": "tự động phát, trình khám phá, windows, ổ đĩa, usb, tự động, mở, thư mục",
     "imageThumbnails": "hình ảnh, hình ảnh, hình thu nhỏ, giới hạn, lưu trữ, tài nguyên, cách sử dụng, hiệu suất",
     "directoryItemStatistics": "thư mục, mục, thống kê, thống kê, dữ liệu, lưu trữ, sử dụng",
     "advanced": "nâng cao, chuyên nghiệp, nhà phát triển, đầu cuối, shell"

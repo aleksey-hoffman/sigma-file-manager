@@ -598,7 +598,9 @@
     },
     "drives": {
       "driveDetection": "Rilevamento unità",
-      "focusAppWhenDriveConnected": "Mostra l'app in primo piano quando è collegata un'unità"
+      "focusAppWhenDriveConnected": "Mostra l'app in primo piano quando è collegata un'unità",
+      "autoplaySettings": "Impostazioni AutoPlay",
+      "autoplaySettingsDescription": "Configura se Esplora risorse si apre automaticamente quando viene collegata un'unità"
     },
     "data": {
       "imageThumbnails": "Miniature delle immagini",
@@ -673,6 +675,7 @@
     "stats": "statistiche, dati, utente, preferiti, etichette, cronologia, recente, dashboard, archiviazione",
     "dataBackupReminder": "dati, archiviazione, backup",
     "driveDetection": "unità, usb, archiviazione, disco, dispositivo, rilevamento, connessione",
+    "autoplay": "riproduzione automatica, esplora risorse, windows, unità, usb, automatico, aprire, cartella",
     "imageThumbnails": "immagine, foto, miniature, limite, archiviazione, risorse, utilizzo, prestazioni",
     "directoryItemStatistics": "cartella, elemento, statistiche, stat., dati, archiviazione, utilizzo",
     "advanced": "avanzato, pro, sviluppatore, terminale, shell"

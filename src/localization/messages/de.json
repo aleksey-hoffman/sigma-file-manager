@@ -598,7 +598,9 @@
     },
     "drives": {
       "driveDetection": "Laufwerkserkennung",
-      "focusAppWhenDriveConnected": "Fokussieren Sie die App, wenn ein Laufwerk verbunden ist"
+      "focusAppWhenDriveConnected": "Fokussieren Sie die App, wenn ein Laufwerk verbunden ist",
+      "autoplaySettings": "AutoPlay-Einstellungen",
+      "autoplaySettingsDescription": "Konfigurieren Sie, ob der Windows Explorer automatisch geöffnet wird, wenn ein Laufwerk angeschlossen wird"
     },
     "data": {
       "imageThumbnails": "Vorschau-Bilder",
@@ -673,6 +675,7 @@
     "stats": "Statistiken, Daten, Benutzer, Favoriten, Tags, Verlauf, kürzlich, Dashboard, Speicher",
     "dataBackupReminder": "Daten, Speicherung, Sicherung",
     "driveDetection": "Laufwerk, USB, Speicher, Festplatte, Gerät, Erkennung, Verbindung",
+    "autoplay": "autoplay, explorer, windows, laufwerk, usb, automatisch, öffnen, ordner",
     "imageThumbnails": "Bild, Bild, Thumbnails, Limit, Speicherplatz, Ressourcen, Nutzung, Leistung",
     "directoryItemStatistics": "Verzeichnis, Element, Statistiken, Statistiken, Daten, Speicherung, Nutzung",
     "advanced": "erweitert, Pro, Entwickler, Terminal, Shell"

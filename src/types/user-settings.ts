@@ -98,6 +98,7 @@ export type UserSettings = {
   infusion: InfusionSettings;
   settingsCurrentTab: string;
   shortcuts?: UserShortcuts;
+  focusWindowOnDriveConnected: boolean;
 };
 
 export type UserSettingsGlobalSearch = {

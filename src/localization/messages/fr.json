@@ -598,7 +598,9 @@
     },
     "drives": {
       "driveDetection": "Détection de lecteur",
-      "focusAppWhenDriveConnected": "Mettre au point l'application lorsqu'un lecteur est connecté"
+      "focusAppWhenDriveConnected": "Mettre au point l'application lorsqu'un lecteur est connecté",
+      "autoplaySettings": "Paramètres de lecture automatique",
+      "autoplaySettingsDescription": "Configurer si l'Explorateur Windows s'ouvre automatiquement lorsqu'un lecteur est connecté"
     },
     "data": {
       "imageThumbnails": "Vignettes des images",
@@ -673,6 +675,7 @@
     "stats": "statistiques, données, utilisateur, favoris, étiquettes, historique, récent, tableau de bord, stockage",
     "dataBackupReminder": "données, stockage, sauvegarde",
     "driveDetection": "lecteur, usb, stockage, disque, périphérique, détection, connexion",
+    "autoplay": "lecture automatique, explorateur, windows, lecteur, usb, automatique, ouvrir, dossier",
     "imageThumbnails": "image, image, vignettes, limite, stockage, ressources, utilisation, performances",
     "directoryItemStatistics": "répertoire, élément, statistiques, statistiques, données, stockage, utilisation",
     "advanced": "avancé, pro, développeur, terminal, shell"

@@ -598,7 +598,9 @@
     },
     "drives": {
       "driveDetection": "「ドライブ検出」",
-      "focusAppWhenDriveConnected": "ドライブが接続されているときにアプリにフォーカス"
+      "focusAppWhenDriveConnected": "ドライブが接続されているときにアプリにフォーカス",
+      "autoplaySettings": "自動再生の設定",
+      "autoplaySettingsDescription": "ドライブ接続時にWindows エクスプローラーを自動的に開くかどうかを設定"
     },
     "data": {
       "imageThumbnails": "画像のサムネイル",
@@ -673,6 +675,7 @@
     "stats": "統計、データ、ユーザー、お気に入り、タグ、履歴、最近、ダッシュボード、ストレージ",
     "dataBackupReminder": "データ、ストレージ、バックアップ",
     "driveDetection": "ドライブ、USB、ストレージ、ディスク、デバイス、検出、接続",
+    "autoplay": "自動再生、エクスプローラー、windows、ドライブ、usb、自動、開く、フォルダ",
     "imageThumbnails": "画像、画像、サムネイル、制限、ストレージ、リソース、使用状況、パフォーマンス",
     "directoryItemStatistics": "ディレクトリ、アイテム、統計、統計、データ、ストレージ、使用",
     "advanced": "アドバンスド, プロ, 開発者, ターミナル, シェル"

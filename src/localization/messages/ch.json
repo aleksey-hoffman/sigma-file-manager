@@ -598,7 +598,9 @@
     },
     "drives": {
       "driveDetection": "驱动检测",
-      "focusAppWhenDriveConnected": "连接驱动时聚焦到应用程序"
+      "focusAppWhenDriveConnected": "连接驱动时聚焦到应用程序",
+      "autoplaySettings": "自动播放设置",
+      "autoplaySettingsDescription": "配置连接驱动器时是否自动打开Windows资源管理器"
     },
     "data": {
       "imageThumbnails": "图像缩略图",
@@ -673,6 +675,7 @@
     "stats": "统计、数据、用户、收藏、标签、历史、最近、仪表板、存储",
     "dataBackupReminder": "数据、存储、备份",
     "driveDetection": "驱动器、USB、存储、磁盘、设备、检测、连接",
+    "autoplay": "自动播放、资源管理器、windows、驱动器、usb、自动、打开、文件夹",
     "imageThumbnails": "图像、图片、缩略图、限制、存储、资源、使用、性能",
     "directoryItemStatistics": "目录、项目、统计、统计、数据、存储、使用",
     "advanced": "高级，专业，开发者，终端，壳"

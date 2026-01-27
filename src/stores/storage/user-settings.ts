@@ -110,6 +110,7 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
     },
     settingsCurrentTab: 'general',
     shortcuts: {},
+    focusWindowOnDriveConnected: true,
   });
 
   function createDefaultInfusionPageSettings(): InfusionPageSettings {

@@ -10,6 +10,7 @@
     "core:default",
     "core:window:allow-close",
     "core:window:allow-minimize",
+    "core:window:allow-unminimize",
     "core:window:allow-toggle-maximize",
     "core:window:allow-start-dragging",
     "core:window:allow-set-fullscreen",
@@ -39,6 +40,9 @@
       "allow": [
         {
           "url": "https://github.com/**"
+        },
+        {
+          "url": "ms-settings:*"
         }
       ]
     },

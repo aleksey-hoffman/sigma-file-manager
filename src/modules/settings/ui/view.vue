@@ -14,6 +14,7 @@ import InputCategory from './categories/input/index.vue';
 import SearchCategory from './categories/search/index.vue';
 import ShortcutsCategory from './categories/shortcuts/index.vue';
 import StatsCategory from './categories/stats/index.vue';
+import StorageCategory from './categories/storage/index.vue';
 
 import { Button } from '@/components/ui/button';
 
@@ -32,6 +33,7 @@ const categoryComponentMap: Record<string, unknown> = {
   search: SearchCategory,
   shortcuts: ShortcutsCategory,
   stats: StatsCategory,
+  storage: StorageCategory,
 };
 
 function getComponentForTab(tabName: string) {
