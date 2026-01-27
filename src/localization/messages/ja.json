@@ -555,8 +555,8 @@
       "buttonToSelectWithoutOpening": "「アイテムを開かずに選択するボタン」",
       "doubleClickDelayMs": "ダブルクリック遅延 (ミリ秒)",
       "inputElements": "入力要素",
-      "activateWhenTyping": "入力時にアイテムのフィルタリングを有効にする",
-      "activateWhenDirectoryChanges": "ディレクトリの変更時にアイテムのフィルタリングを有効にする",
+      "activateWhenTyping": "入力時にフィルタリングを有効にする",
+      "activateWhenDirectoryChanges": "ディレクトリの変更時にフィルタリングを有効にする",
       "helpers": "ヘルパー",
       "spellcheck": "スペルチェック",
       "valueRangeFrom200To1000ms": "値は 200 ～ 1000 (ミリ秒) の範囲内である必要があります"

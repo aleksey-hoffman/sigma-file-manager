@@ -141,6 +141,7 @@ export const useSettingsStore = defineStore('settings', () => {
       { default: ShowHiddenItemsSection },
       { default: GlobalSearchSection },
       { default: ShortcutsSection },
+      { default: FilterOnTypingSection },
     ] = await Promise.all([
       import('@/modules/settings/ui/categories/general/language.vue'),
       import('@/modules/settings/ui/categories/general/window-scaling.vue'),
@@ -151,6 +152,7 @@ export const useSettingsStore = defineStore('settings', () => {
       import('@/modules/settings/ui/categories/appearance/show-hidden-items.vue'),
       import('@/modules/settings/ui/categories/search/global-search.vue'),
       import('@/modules/settings/ui/categories/shortcuts/shortcuts.vue'),
+      import('@/modules/settings/ui/categories/input/filter-on-typing.vue'),
     ]);
 
     sections.value = [
@@ -216,6 +218,13 @@ export const useSettingsStore = defineStore('settings', () => {
         tags: 'settingsTags.shortcuts',
         component: markRaw(ShortcutsSection),
         category: 'shortcuts',
+      },
+      {
+        key: 'filterOnTyping',
+        titleKey: 'settings.input.activateWhenTyping',
+        tags: 'settingsTags.inputElements',
+        component: markRaw(FilterOnTypingSection),
+        category: 'input',
       },
     ];
 

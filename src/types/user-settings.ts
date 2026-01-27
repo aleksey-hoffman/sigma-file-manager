@@ -149,6 +149,7 @@ export type UserSettingsNavigator = {
   showHiddenFiles: boolean;
   useSystemIconsForDirectories: boolean;
   useSystemIconsForFiles: boolean;
+  focusFilterOnTyping: boolean;
 };
 
 export type UserSettingsNavigatorInfoPanel = {

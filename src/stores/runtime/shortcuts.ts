@@ -34,7 +34,9 @@ const DEFAULT_SHORTCUTS: ShortcutDefinition[] = [
       key: 'f',
     },
     scope: 'global',
-    conditions: {},
+    conditions: {
+      dialogIsOpened: false,
+    },
     isReadOnly: false,
   },
   {
@@ -45,7 +47,9 @@ const DEFAULT_SHORTCUTS: ShortcutDefinition[] = [
       key: 'f',
     },
     scope: 'navigator',
-    conditions: {},
+    conditions: {
+      dialogIsOpened: false,
+    },
     isReadOnly: false,
   },
   {
@@ -58,6 +62,7 @@ const DEFAULT_SHORTCUTS: ShortcutDefinition[] = [
     scope: 'navigator',
     conditions: {
       inputFieldIsActive: false,
+      dialogIsOpened: false,
     },
     isReadOnly: false,
   },
@@ -71,6 +76,7 @@ const DEFAULT_SHORTCUTS: ShortcutDefinition[] = [
     scope: 'navigator',
     conditions: {
       inputFieldIsActive: false,
+      dialogIsOpened: false,
     },
     isReadOnly: false,
   },
@@ -84,6 +90,7 @@ const DEFAULT_SHORTCUTS: ShortcutDefinition[] = [
     scope: 'navigator',
     conditions: {
       inputFieldIsActive: false,
+      dialogIsOpened: false,
     },
     isReadOnly: false,
   },
@@ -268,8 +275,15 @@ function isInputFieldActive(): boolean {
 }
 
 function isDialogOpened(): boolean {
-  return document.querySelectorAll('[data-dismissable-layer]').length > 0
-    || document.querySelectorAll('[role="dialog"]').length > 0;
+  const dialogs = document.querySelectorAll('[role="dialog"]');
+
+  for (const dialog of dialogs) {
+    if (!dialog.classList.contains('sigma-ui-popover-content')) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 type ShortcutHandler = () => void | boolean | Promise<void | boolean>;
@@ -419,11 +433,22 @@ export const useShortcutsStore = defineStore('shortcuts', () => {
       return false;
     }
 
-    event.preventDefault();
-    event.stopPropagation();
+    const result = registration.handler();
 
-    const result = await registration.handler();
-    return result !== false;
+    if (result instanceof Promise) {
+      event.preventDefault();
+      event.stopPropagation();
+      const asyncResult = await result;
+      return asyncResult !== false;
+    }
+    else {
+      if (result !== false) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+
+      return result !== false;
+    }
   }
 
   function globalKeydownHandler(event: KeyboardEvent): void {

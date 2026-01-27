@@ -555,8 +555,8 @@
       "buttonToSelectWithoutOpening": "öğeyi açmadan seçmek için düğme",
       "doubleClickDelayMs": "Çift tıklama gecikmesi (ms)",
       "inputElements": "Giriş öğeleri",
-      "activateWhenTyping": "Yazarken öğe filtrelemeyi etkinleştir",
-      "activateWhenDirectoryChanges": "Dizin değiştiğinde öğe filtrelemeyi etkinleştir",
+      "activateWhenTyping": "Yazarken filtrelemeyi etkinleştir",
+      "activateWhenDirectoryChanges": "Dizin değiştiğinde filtrelemeyi etkinleştir",
       "helpers": "Yardımcılar",
       "spellcheck": "yazım denetimi",
       "valueRangeFrom200To1000ms": "Değer 200 - 1000 (ms) aralığında olmalıdır"

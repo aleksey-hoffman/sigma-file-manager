@@ -555,8 +555,8 @@
       "buttonToSelectWithoutOpening": "botón para seleccionar el elemento sin abrirlo",
       "doubleClickDelayMs": "Retardo de doble clic (ms)",
       "inputElements": "Elementos de entrada",
-      "activateWhenTyping": "Activar filtrado de elementos al escribir",
-      "activateWhenDirectoryChanges": "Activar filtrado de elementos cuando cambia de directorio",
+      "activateWhenTyping": "Activar filtrado al escribir",
+      "activateWhenDirectoryChanges": "Activar filtrado cuando cambia de directorio",
       "helpers": "Ayudantes",
       "spellcheck": "corrector ortográfico",
       "valueRangeFrom200To1000ms": "El valor debe estar en el rango 200 - 1000 (ms)"

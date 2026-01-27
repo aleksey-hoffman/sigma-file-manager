@@ -554,8 +554,8 @@
       "buttonToSelectWithoutOpening": "دکمه برای انتخاب مورد بدون باز کردن آن",
       "doubleClickDelayMs": "تاخیر دوبار کلیک (ms)",
       "inputElements": "عناصر ورودی",
-      "activateWhenTyping": "فعال کردن فیلتر مورد هنگام تایپ کردن",
-      "activateWhenDirectoryChanges": "فعال کردن فیلتر مورد در هنگام تغییر دایرکتوری",
+      "activateWhenTyping": "فعال کردن فیلتر هنگام تایپ کردن",
+      "activateWhenDirectoryChanges": "فعال کردن فیلتر در هنگام تغییر دایرکتوری",
       "helpers": "یاوران",
       "spellcheck": "بررسی املا",
       "valueRangeFrom200To1000ms": "مقدار باید در محدوده 200 - 1000 (ms) باشد"

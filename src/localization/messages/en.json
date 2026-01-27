@@ -568,8 +568,8 @@
       "buttonToSelectWithoutOpening": "button to select the item without opening it",
       "doubleClickDelayMs": "Double-click delay (ms)",
       "inputElements": "Input elements",
-      "activateWhenTyping": "Activate item filtering when typing",
-      "activateWhenDirectoryChanges": "Activate item filtering when directory changes",
+      "activateWhenTyping": "Activate filtering when typing",
+      "activateWhenDirectoryChanges": "Activate filtering when directory changes",
       "helpers": "Helpers",
       "spellcheck": "Spellcheck",
       "valueRangeFrom200To1000ms": "The value should be in range 200 - 1000 (ms)"

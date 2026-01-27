@@ -27,7 +27,7 @@ import {
 import AddressBar from './address-bar.vue';
 import { useShortcutsStore } from '@/stores/runtime/shortcuts';
 
-defineProps<{
+const props = defineProps<{
   pathInput: string;
   filterQuery: string;
   canGoBack: boolean;
@@ -71,6 +71,15 @@ function handleFilterQueryUpdate(value: string | number | undefined) {
 function handleAddressBarNavigate(path: string) {
   emit('update:pathInput', path);
   emit('navigateTo', path);
+}
+
+function handleFilterInteractOutside(event: Event) {
+  if (!props.filterQuery) {
+    emit('update:isFilterOpen', false);
+  }
+  else {
+    event.preventDefault();
+  }
 }
 </script>
 
@@ -188,7 +197,7 @@ function handleAddressBarNavigate(path: string) {
             class="file-browser-toolbar__filter-popover"
             @open-auto-focus="handleFilterAutoFocus"
             @close-auto-focus.prevent
-            @interact-outside.prevent
+            @interact-outside="handleFilterInteractOutside"
           >
             <div class="file-browser-toolbar__filter-input-wrapper">
               <Input

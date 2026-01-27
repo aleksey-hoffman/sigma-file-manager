@@ -568,8 +568,8 @@
       "buttonToSelectWithoutOpening": "кнопка для выбора элемента, не открывая его",
       "doubleClickDelayMs": "Задержка двойного щелчка (мс)",
       "inputElements": "Элементы ввода",
-      "activateWhenTyping": "Активировать фильтрацию элементов при вводе",
-      "activateWhenDirectoryChanges": "Активировать фильтрацию элементов при изменении папки",
+      "activateWhenTyping": "Активировать фильтрацию при вводе",
+      "activateWhenDirectoryChanges": "Активировать фильтрацию при изменении папки",
       "helpers": "Помощники",
       "spellcheck": "Spellcheck",
       "valueRangeFrom200To1000ms": "Значение должно быть в диапазоне 200–1000 (мс)"

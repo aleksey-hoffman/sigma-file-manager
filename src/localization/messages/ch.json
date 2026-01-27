@@ -555,8 +555,8 @@
       "buttonToSelectWithoutOpening": "可多选项目而不打开",
       "doubleClickDelayMs": "双击延迟（毫秒）",
       "inputElements": "输入元素",
-      "activateWhenTyping": "键入时激活项目过滤",
-      "activateWhenDirectoryChanges": "目录更改时激活项目过滤",
+      "activateWhenTyping": "键入时激活过滤",
+      "activateWhenDirectoryChanges": "目录更改时激活过滤",
       "helpers": "助手",
       "spellcheck": "拼写检查",
       "valueRangeFrom200To1000ms": "该值应在 200 ~ 1000（毫秒）范围内"

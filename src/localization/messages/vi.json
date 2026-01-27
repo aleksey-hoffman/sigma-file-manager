@@ -555,8 +555,8 @@
       "buttonToSelectWithoutOpening": "nút để chọn mục mà không cần mở",
       "doubleClickDelayMs": "Độ trễ nhấp đúp (ms)",
       "inputElements": "Yếu tố đầu vào",
-      "activateWhenTyping": "Kích hoạt tính năng lọc mục khi nhập",
-      "activateWhenDirectoryChanges": "Kích hoạt tính năng lọc mục khi thư mục thay đổi",
+      "activateWhenTyping": "Kích hoạt tính năng lọc khi nhập",
+      "activateWhenDirectoryChanges": "Kích hoạt tính năng lọc khi thư mục thay đổi",
       "helpers": "Người trợ giúp",
       "spellcheck": "kiểm tra chính tả",
       "valueRangeFrom200To1000ms": "Giá trị phải nằm trong khoảng 200 - 1000 (ms)"

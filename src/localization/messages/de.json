@@ -555,8 +555,8 @@
       "buttonToSelectWithoutOpening": "Schaltfläche zum Auswählen des Elements, ohne es zu öffnen",
       "doubleClickDelayMs": "Doppelklick-Verzögerung (ms)",
       "inputElements": "Eingabeelemente",
-      "activateWhenTyping": "Elementfilterung beim Tippen aktivieren",
-      "activateWhenDirectoryChanges": "Elementfilterung bei Verzeichniswechsel aktivieren",
+      "activateWhenTyping": "Filterung beim Tippen aktivieren",
+      "activateWhenDirectoryChanges": "Filterung bei Verzeichniswechsel aktivieren",
       "helpers": "Helfer",
       "spellcheck": "Rechtschreibprüfung",
       "valueRangeFrom200To1000ms": "Der Wert sollte im Bereich 200 - 1000 (ms) liegen"

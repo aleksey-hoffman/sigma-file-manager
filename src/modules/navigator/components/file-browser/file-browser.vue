@@ -16,6 +16,7 @@ import { ContextMenu, ContextMenuTrigger } from '@/components/ui/context-menu';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { useDismissalLayerStore } from '@/stores/runtime/dismissal-layer';
 import { useQuickViewStore } from '@/stores/runtime/quick-view';
+import { useGlobalSearchStore } from '@/stores/runtime/global-search';
 import type { DirEntry } from '@/types/dir-entry';
 import type { Tab } from '@/types/workspaces';
 import type { ContextMenuAction } from './types';
@@ -46,6 +47,7 @@ const emit = defineEmits<{
 const userSettingsStore = useUserSettingsStore();
 const dismissalLayerStore = useDismissalLayerStore();
 const quickViewStore = useQuickViewStore();
+const globalSearchStore = useGlobalSearchStore();
 
 const filterQuery = ref('');
 const isFilterOpen = ref(false);
@@ -96,7 +98,7 @@ const entries = computed(() => {
     const query = filterQuery.value.trim().toLowerCase();
 
     if (query) {
-      items = items.filter(item => item.name.toLowerCase() === query);
+      items = items.filter(item => item.name.toLowerCase().includes(query));
     }
   }
 
@@ -192,9 +194,19 @@ watch(isFilterOpen, (isOpen) => {
       100,
     );
   }
-  else if (filterDismissalLayerId.value) {
-    dismissalLayerStore.unregisterLayer(filterDismissalLayerId.value);
-    filterDismissalLayerId.value = null;
+  else {
+    if (filterDismissalLayerId.value) {
+      dismissalLayerStore.unregisterLayer(filterDismissalLayerId.value);
+      filterDismissalLayerId.value = null;
+    }
+
+    filterQuery.value = '';
+  }
+});
+
+watch(() => globalSearchStore.isOpen, (isGlobalSearchOpen) => {
+  if (isGlobalSearchOpen && isFilterOpen.value) {
+    closeFilter();
   }
 });
 
@@ -202,18 +214,70 @@ onUnmounted(() => {
   if (filterDismissalLayerId.value) {
     dismissalLayerStore.unregisterLayer(filterDismissalLayerId.value);
   }
+
+  window.removeEventListener('keydown', handleKeydownForFilter);
 });
 
 function toggleFilter() {
+  if (globalSearchStore.isOpen) {
+    return;
+  }
+
   isFilterOpen.value = !isFilterOpen.value;
 }
 
 function openFilter() {
+  if (globalSearchStore.isOpen) {
+    return;
+  }
+
   isFilterOpen.value = true;
 }
 
 function closeFilter() {
   isFilterOpen.value = false;
+  filterQuery.value = '';
+}
+
+function isCursorInsideTextField(): boolean {
+  const activeElement = document.activeElement;
+
+  if (!activeElement) {
+    return false;
+  }
+
+  const tagName = activeElement.tagName.toLowerCase();
+  const isTextInput = tagName === 'input' || tagName === 'textarea';
+  const isContentEditable = (activeElement as HTMLElement).isContentEditable;
+
+  return isTextInput || isContentEditable;
+}
+
+function handleKeydownForFilter(event: KeyboardEvent) {
+  if (!userSettingsStore.userSettings.navigator.focusFilterOnTyping) {
+    return;
+  }
+
+  if (isCursorInsideTextField()) {
+    return;
+  }
+
+  if (dismissalLayerStore.hasLayers) {
+    return;
+  }
+
+  const hasRekaDismissableLayers = document.querySelectorAll('[data-dismissable-layer]').length > 0;
+
+  if (hasRekaDismissableLayers) {
+    return;
+  }
+
+  const keyIsAlphaNum = (event.keyCode >= 48 && event.keyCode <= 90);
+  const hasModifiers = event.ctrlKey || event.altKey || event.shiftKey || event.metaKey;
+
+  if (keyIsAlphaNum && !hasModifiers) {
+    openFilter();
+  }
 }
 
 async function quickView(entry?: DirEntry) {
@@ -256,7 +320,10 @@ function onEntryMouseUp(entry: DirEntry, event: MouseEvent) {
   handleEntryMouseUp(entry, event);
 }
 
-onMounted(init);
+onMounted(() => {
+  init();
+  window.addEventListener('keydown', handleKeydownForFilter);
+});
 
 defineExpose({
   isFilterOpen,
