@@ -7,6 +7,89 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.0.0-alpha.6] - January 2025
+
+What's New window, Quick View, context menu enhancements, and new settings.
+
+### What's New window
+
+A changelog window that shows new features and improvements for each release.
+
+- Automatically appears after updates (can be disabled);
+- Browse through all releases;
+- See detailed descriptions and screenshots for each feature;
+
+### Quick View
+
+Preview files without fully opening them using a lightweight preview window.
+
+- Press `Space` or "Quick view" option in the context menu to quickly view files;
+- Close instantly with `Space` or `Escape`.
+- Supports images, videos, audio, text files, PDFs, and more;
+
+<video width="100%" mute autoplay loop controls src="./public/changelog/alpha-6/quick-view.mp4"></video>
+
+### Directory Size Calculation
+
+- The size of directories is now auto calculated;
+- You can see the total size of all directories, including all subdirectories and files, as soon as you open any directory;
+
+![Open With](./public/changelog/alpha-6/size.png)
+
+### New Context Menu Options
+
+#### Open With
+
+- Choose which application to open a file with;
+- Setup custom presets to open files in applications with flags;
+- View all compatible applications for any file type;
+- Set default applications for specific file types;
+
+![Open With](./public/changelog/alpha-6/open-with.png)
+
+#### Shell Extensions
+
+- Access Windows shell context menu items;
+- Access third-party shell extensions (7-Zip, Git, etc.);
+
+![Shell Extensions](./public/changelog/alpha-6/shell-extensions.png)
+
+### New Settings
+
+#### Drive Detection
+
+- Focuses the app when removable drives are connected (can be disabled);
+- Control Windows Explorer auto-open behavior for removable drives;
+
+#### Filter on Typing
+
+Start typing anywhere in the navigator to instantly filter items in the current directory;
+
+#### Settings Search Shortcut
+
+New keyboard shortcut for quick access to settings search;
+
+#### User Statistics Data
+
+- Added statistics settings section;
+- On dahsboard page you can see, navigate, clear history, favorites, and frequently used items;
+
+### Search Improvements
+
+Improved global search with a hybrid indexed + direct search system for more reliable and up-to-date results.
+
+- Searches now consistently take less than 1 second (~1 TB fully filled drive), no matter where the files are on your drives; 
+- When you search your "priority paths" (the ones that you open often), you get results instantly and it finds the files even if they were just created and weren't indexed yet.
+
+#### Priority paths include: 
+- User directories: Downloads, Documents, Desktop, Pictures, Videos, Music;
+- Favorites;
+- Recently opened;
+- Frequently used;
+- Tagged;
+
+---
+
 ## [2.0.0-alpha.5] - January 2025
 
 File operations, global search, and shortcut customization.
@@ -15,7 +98,7 @@ File operations, global search, and shortcut customization.
 
 Powerful full-disk search that indexes and searches files across all your drives. Features fuzzy matching to find files even with typos, automatic periodic re-indexing, priority indexing for frequently used directories, and optional parallel scanning for faster indexing.
 
-![Global Search](/changelog/alpha-5-search.png)
+![Global Search](./public/changelog/alpha-5/search.png)
 
 ### File Operations
 
@@ -37,7 +120,7 @@ Home page, visual effects, and user customization options.
 
 ### Home Page
 
-A beautiful home page featuring an animated media banner with artist credits, visual drive cards with space indicators, and quick access to common user directories like Documents, Downloads, Pictures, and more.
+A beautiful home page featuring an animated media banner, drive list, and quick access to common user directories like Documents, Downloads, Pictures, and more.
 
 ### Visual Effects
 
@@ -53,7 +136,8 @@ Fine-tune the position of your home page banner backgrounds. Adjust zoom, horizo
 
 ### Settings Improvements
 
-Settings search now works in any language, not just the current one. The app will restore the last visited settings tab on reload instead of opening the first one every time.
+- Settings search now works in any language, not just the current one;
+- The app will restore the last visited settings tab on reload instead of opening the first one every time;
 
 ---
 

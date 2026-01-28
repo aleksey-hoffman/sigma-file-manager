@@ -71,6 +71,95 @@ function toggleMobileNav() {
 function closeMobileNav() {
   isMobileNavOpen.value = false;
 }
+
+const VIDEO_MIME_TYPES: Record<string, string> = {
+  '.mp4': 'video/mp4',
+  '.webm': 'video/webm',
+  '.mov': 'video/quicktime',
+  '.ogg': 'video/ogg',
+};
+
+function getVideoMimeType(path: string): string | null {
+  const lowerPath = path.toLowerCase();
+
+  for (const [ext, mimeType] of Object.entries(VIDEO_MIME_TYPES)) {
+    if (lowerPath.endsWith(ext)) {
+      return mimeType;
+    }
+  }
+
+  return null;
+}
+
+function renderMedia(alt: string, src: string): string {
+  const resolvedSrc = src.replace(/^\.\/public/, '');
+  const mimeType = getVideoMimeType(resolvedSrc);
+
+  if (mimeType) {
+    return `<div class="changelog-dialog__feature-media-container"><video class="changelog-dialog__feature-video" controls muted loop playsinline><source src="${resolvedSrc}" type="${mimeType}"></video></div>`;
+  }
+
+  return `<div class="changelog-dialog__feature-media-container"><img src="${resolvedSrc}" alt="${alt}" class="changelog-dialog__feature-image"></div>`;
+}
+
+function renderMarkdown(text: string): string {
+  const lines = text.split('\n');
+  const result: string[] = [];
+  let inList = false;
+
+  for (const line of lines) {
+    const trimmedLine = line.trim();
+    const mediaMatch = trimmedLine.match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
+    const htmlVideoMatch = trimmedLine.match(/<video[^>]*src="([^"]+)"[^>]*>/i);
+
+    if (mediaMatch) {
+      if (inList) {
+        result.push('</ul>');
+        inList = false;
+      }
+
+      result.push(renderMedia(mediaMatch[1], mediaMatch[2]));
+    }
+    else if (htmlVideoMatch) {
+      if (inList) {
+        result.push('</ul>');
+        inList = false;
+      }
+
+      result.push(renderMedia('', htmlVideoMatch[1]));
+    }
+    else if (trimmedLine.startsWith('#### ')) {
+      if (inList) {
+        result.push('</ul>');
+        inList = false;
+      }
+
+      result.push(`<h4 class="changelog-dialog__feature-subheading">${trimmedLine.slice(5)}</h4>`);
+    }
+    else if (trimmedLine.startsWith('- ')) {
+      if (!inList) {
+        result.push('<ul class="changelog-dialog__feature-list">');
+        inList = true;
+      }
+
+      result.push(`<li>${trimmedLine.slice(2)}</li>`);
+    }
+    else if (trimmedLine) {
+      if (inList) {
+        result.push('</ul>');
+        inList = false;
+      }
+
+      result.push(`<p>${trimmedLine}</p>`);
+    }
+  }
+
+  if (inList) {
+    result.push('</ul>');
+  }
+
+  return result.join('');
+}
 </script>
 
 <template>
@@ -218,19 +307,10 @@ function closeMobileNav() {
                   <h3 class="changelog-dialog__feature-title">
                     {{ feature.title }}
                   </h3>
-                  <p class="changelog-dialog__feature-description">
-                    {{ feature.description }}
-                  </p>
                   <div
-                    v-if="feature.image"
-                    class="changelog-dialog__feature-image-container"
-                  >
-                    <img
-                      :src="feature.image"
-                      :alt="feature.title"
-                      class="changelog-dialog__feature-image"
-                    >
-                  </div>
+                    class="changelog-dialog__feature-description"
+                    v-html="renderMarkdown(feature.description)"
+                  />
                 </article>
               </div>
             </div>
@@ -477,16 +557,47 @@ function closeMobileNav() {
   line-height: 1.6;
 }
 
-.changelog-dialog__feature-image-container {
+.changelog-dialog__feature-description p {
+  margin: 0 0 0.5rem;
+}
+
+.changelog-dialog__feature-description p:last-child {
+  margin-bottom: 0;
+}
+
+.changelog-dialog__feature-subheading {
+  margin: 1rem 0 0.5rem;
+  color: hsl(var(--foreground));
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.changelog-dialog__feature-list {
+  padding-left: 1.25rem;
+  margin: 0.5rem 0;
+  list-style-type: disc;
+}
+
+.changelog-dialog__feature-list li {
+  margin-bottom: 0.25rem;
+}
+
+.changelog-dialog__feature-media-container {
   overflow: hidden;
   border: 1px solid hsl(var(--border));
   border-radius: var(--radius-lg);
+  margin: 24px;
+  box-shadow: 0 2px 24px rgb(0 0 0 / 20%);
 }
 
 .changelog-dialog__feature-image {
   width: 100%;
-  height: 240px;
   object-fit: cover;
+}
+
+.changelog-dialog__feature-video {
+  display: block;
+  width: 100%;
 }
 
 @media (width <= 768px) {
@@ -615,6 +726,10 @@ function closeMobileNav() {
 
   .changelog-dialog__feature-image {
     height: 180px;
+  }
+
+  .changelog-dialog__feature-video {
+    max-height: 280px;
   }
 }
 </style>

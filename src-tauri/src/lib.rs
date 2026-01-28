@@ -66,5 +66,14 @@ fn setup_handler(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>>
     // Initialize system tray for Tauri v2
     system_tray::setup_system_tray(&app.handle())?;
 
+    // Open devtools in production for debugging (TODO: remove after debugging)
+    #[cfg(feature = "devtools")]
+    {
+        use tauri::Manager;
+        if let Some(window) = app.get_webview_window("main") {
+            window.open_devtools();
+        }
+    }
+
     Ok(())
 }

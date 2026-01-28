@@ -10,7 +10,6 @@ import changelogContent from '@/../CHANGELOG.md?raw';
 export interface ReleaseFeature {
   title: string;
   description: string;
-  image?: string;
 }
 
 export interface Release {
@@ -85,21 +84,9 @@ function parseChangelog(markdown: string): Release[] {
 }
 
 function parseFeature(title: string, content: string): ReleaseFeature {
-  const imagePattern = /!\[([^\]]*)\]\(([^)]+)\)/;
-  const imageMatch = content.match(imagePattern);
-
-  let description = content;
-  let image: string | undefined;
-
-  if (imageMatch) {
-    image = imageMatch[2];
-    description = content.replace(imagePattern, '').trim();
-  }
-
   return {
     title,
-    description,
-    image,
+    description: content,
   };
 }
 
