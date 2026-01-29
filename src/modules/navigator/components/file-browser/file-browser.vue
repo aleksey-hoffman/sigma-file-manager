@@ -62,6 +62,7 @@ const {
   canGoBack,
   canGoForward,
   parentPath,
+  skipAnimation,
   readDir,
   navigateToPath,
   navigateToEntry,
@@ -389,6 +390,7 @@ defineExpose({
                   :selected-entries="selectedEntries"
                   :is-entry-selected="isEntrySelected"
                   :current-path="currentPath"
+                  :skip-animation="skipAnimation"
                   :get-video-thumbnail="getVideoThumbnail"
                   @mousedown="onEntryMouseDown"
                   @mouseup="onEntryMouseUp"
@@ -400,6 +402,7 @@ defineExpose({
                   :selected-entries="selectedEntries"
                   :is-entry-selected="isEntrySelected"
                   :current-path="currentPath"
+                  :skip-animation="skipAnimation"
                   @mousedown="onEntryMouseDown"
                   @mouseup="onEntryMouseUp"
                   @contextmenu="handleEntryContextMenu"

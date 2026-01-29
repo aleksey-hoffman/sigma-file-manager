@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## Unreleased
+
+### Directory Auto-Refresh
+
+- Navigator view automatically refreshes when files are created, deleted, renamed, or modified in the current directory;
+- File sizes update automatically when files are changed by external applications;
+- No need to manually reload when external applications modify directory contents;
+- Uses efficient file system watching with debouncing to avoid excessive refreshes;
+- Smart diff-based updates only change affected items, avoiding disruptive full-list animations;
+
+
 ## [2.0.0-alpha.6] - January 2025
 
 What's New window, Quick View, context menu enhancements, and new settings.

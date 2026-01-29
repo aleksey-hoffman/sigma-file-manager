@@ -4,6 +4,7 @@
 
 mod dir_reader;
 mod dir_size;
+mod dir_watcher;
 mod file_operations;
 mod global_search;
 mod open_with;
@@ -47,6 +48,9 @@ pub fn run() {
             open_with::get_shell_context_menu,
             open_with::invoke_shell_context_menu_item,
             system_icons::get_system_icon,
+            dir_watcher::watch_directory,
+            dir_watcher::unwatch_directory,
+            dir_watcher::get_watched_directories,
         ])
         .setup(setup_handler)
         .on_menu_event(system_tray::handle_menu_event)

@@ -27,6 +27,7 @@ const props = defineProps<{
   selectedEntries: DirEntry[];
   isEntrySelected: (entry: DirEntry) => boolean;
   currentPath: string;
+  skipAnimation?: boolean;
   getVideoThumbnail: (entry: DirEntry) => string | undefined;
 }>();
 
@@ -127,7 +128,8 @@ const groupedEntries = computed<GroupedEntries>(() => {
 <template>
   <div
     :key="currentPath"
-    class="file-browser-grid-view file-browser-grid-view--animate"
+    class="file-browser-grid-view"
+    :class="{ 'file-browser-grid-view--animate': !skipAnimation }"
   >
     <template v-if="groupedEntries.dirs.length > 0">
       <div class="file-browser-grid-view__section-bar">

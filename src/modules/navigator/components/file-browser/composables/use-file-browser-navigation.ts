@@ -5,6 +5,7 @@
 import { ref, computed, nextTick, onUnmounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { invoke } from '@tauri-apps/api/core';
+import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 import { homeDir, basename } from '@tauri-apps/api/path';
 import { openPath } from '@tauri-apps/plugin-opener';
 import type { DirEntry, DirContents } from '@/types/dir-entry';
@@ -13,7 +14,14 @@ import { useUserStatsStore } from '@/stores/storage/user-stats';
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
 import { DIR_SIZE_CONSTANTS } from '@/constants';
 
+interface DirChangePayload {
+  watchedPath: string;
+  changedPath: string;
+  kind: string;
+}
+
 const DIRECTORY_DWELL_TIME_MS = 3000;
+const WATCHER_DEBOUNCE_MS = 500;
 
 function normalizePath(path: string): string {
   return path.replace(/\\/g, '/');
@@ -37,6 +45,10 @@ export function useFileBrowserNavigation(
   let pendingDirectoryRecordTimer: ReturnType<typeof setTimeout> | null = null;
   let pendingDirectoryPath: string | null = null;
 
+  let watchedPath: string | null = null;
+  let dirChangeUnlisten: UnlistenFn | null = null;
+  let watcherRefreshTimer: ReturnType<typeof setTimeout> | null = null;
+
   function cancelPendingDirectoryRecord() {
     if (pendingDirectoryRecordTimer) {
       clearTimeout(pendingDirectoryRecordTimer);
@@ -58,12 +70,106 @@ export function useFileBrowserNavigation(
     }, DIRECTORY_DWELL_TIME_MS);
   }
 
+  async function startWatching(path: string) {
+    const normalizedPath = normalizePath(path);
+
+    if (watchedPath === normalizedPath) {
+      return;
+    }
+
+    await stopWatching();
+
+    try {
+      await invoke('watch_directory', { path: normalizedPath });
+      watchedPath = normalizedPath;
+
+      if (!dirChangeUnlisten) {
+        dirChangeUnlisten = await listen<DirChangePayload>('dir-change', (event) => {
+          if (event.payload.watchedPath === watchedPath) {
+            if (watcherRefreshTimer) {
+              clearTimeout(watcherRefreshTimer);
+            }
+
+            watcherRefreshTimer = setTimeout(() => {
+              if (currentPath.value && watchedPath === normalizePath(currentPath.value)) {
+                silentRefresh();
+              }
+
+              watcherRefreshTimer = null;
+            }, WATCHER_DEBOUNCE_MS);
+          }
+        });
+      }
+    }
+    catch (err) {
+      console.error('Failed to start directory watcher:', err);
+    }
+  }
+
+  async function stopWatching() {
+    if (watcherRefreshTimer) {
+      clearTimeout(watcherRefreshTimer);
+      watcherRefreshTimer = null;
+    }
+
+    if (watchedPath) {
+      try {
+        await invoke('unwatch_directory', { path: watchedPath });
+      }
+      catch (err) {
+        console.error('Failed to stop directory watcher:', err);
+      }
+
+      watchedPath = null;
+    }
+  }
+
   onUnmounted(() => {
     cancelPendingDirectoryRecord();
+    stopWatching();
+
+    if (dirChangeUnlisten) {
+      dirChangeUnlisten();
+      dirChangeUnlisten = null;
+    }
   });
 
   const canGoBack = computed(() => historyIndex.value > 0);
   const canGoForward = computed(() => historyIndex.value < history.value.length - 1);
+
+  const skipAnimation = ref(false);
+
+  async function silentRefresh(): Promise<void> {
+    if (!currentPath.value) {
+      return;
+    }
+
+    skipAnimation.value = true;
+
+    try {
+      const result = await invoke<DirContents>('read_dir', { path: currentPath.value });
+
+      dirContents.value = result;
+
+      const currentTab = tab();
+
+      if (currentTab) {
+        currentTab.dirEntries = result.entries;
+      }
+
+      const dirPaths = result.entries
+        .filter(entry => entry.is_dir)
+        .slice(0, DIR_SIZE_CONSTANTS.BATCH_LIMIT)
+        .map(entry => entry.path);
+
+      if (dirPaths.length > 0) {
+        dirSizesStore.requestSizesBatch(dirPaths);
+      }
+    }
+    catch (err) {
+      console.error('Silent refresh failed:', err);
+    }
+  }
 
   const parentPath = computed(() => {
     if (!currentPath.value) return null;
@@ -96,29 +202,36 @@ export function useFileBrowserNavigation(
   });
 
   async function readDir(path: string, addToHistory = true) {
+    skipAnimation.value = false;
     isLoading.value = true;
     error.value = null;
 
     onSelectionClear?.();
 
+    const normalizedPath = normalizePath(path);
+
+    if (watchedPath && watchedPath !== normalizedPath) {
+      await stopWatching();
+    }
+
     try {
       const result = await invoke<DirContents>('read_dir', { path });
-      const normalizedPath = normalizePath(result.path);
+      const resultNormalizedPath = normalizePath(result.path);
 
       dirContents.value = result;
-      currentPath.value = normalizedPath;
-      pathInput.value = normalizedPath;
+      currentPath.value = resultNormalizedPath;
+      pathInput.value = resultNormalizedPath;
 
       const currentTab = tab();
 
       if (currentTab) {
-        currentTab.path = normalizedPath;
+        currentTab.path = resultNormalizedPath;
 
         try {
-          currentTab.name = await basename(normalizedPath);
+          currentTab.name = await basename(resultNormalizedPath);
         }
         catch {
-          currentTab.name = normalizedPath;
+          currentTab.name = resultNormalizedPath;
         }
 
         currentTab.dirEntries = result.entries;
@@ -129,7 +242,7 @@ export function useFileBrowserNavigation(
           history.value.splice(historyIndex.value + 1);
         }
 
-        history.value.push(normalizedPath);
+        history.value.push(resultNormalizedPath);
         historyIndex.value = history.value.length - 1;
       }
 
@@ -145,6 +258,8 @@ export function useFileBrowserNavigation(
       if (dirPaths.length > 0) {
         dirSizesStore.requestSizesBatch(dirPaths);
       }
+
+      await startWatching(resultNormalizedPath);
     }
     catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : String(err);
@@ -250,6 +365,7 @@ export function useFileBrowserNavigation(
     canGoForward,
     parentPath,
     currentDirEntry,
+    skipAnimation,
     readDir,
     navigateToPath,
     navigateToEntry,

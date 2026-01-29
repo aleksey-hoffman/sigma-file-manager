@@ -39,6 +39,7 @@ tantivy = "0.22"
 walkdir = "2.5"
 rayon = "1.10"
 tokio = { version = "1", features = ["rt", "rt-multi-thread"] }
+notify = "8"
 
 [target.'cfg(windows)'.dependencies]
 winreg = "0.55"
