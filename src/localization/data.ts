@@ -12,6 +12,7 @@ import it from './messages/it.json';
 import ja from './messages/ja.json';
 import pt from './messages/pt.json';
 import ru from './messages/ru.json';
+import sl from './messages/sl.json';
 import tr from './messages/tr.json';
 import vi from './messages/vi.json';
 import type { LocalizationLanguage } from '@/types/user-settings';
@@ -29,6 +30,7 @@ export const messages = {
   vi,
   it,
   pt,
+  sl,
 };
 
 export const languages: LocalizationLanguage[] = [
@@ -71,6 +73,12 @@ export const languages: LocalizationLanguage[] = [
   {
     name: 'Português',
     locale: 'pt',
+    isCorrected: false,
+    isRtl: false,
+  },
+  {
+    name: 'Slovenščina',
+    locale: 'sl',
     isCorrected: false,
     isRtl: false,
   },
@@ -125,4 +133,5 @@ export const dayjsLocaleMapping: Record<AppLocale, string> = {
   vi: 'vi',
   it: 'it',
   pt: 'pt',
+  sl: 'sl',
 };
