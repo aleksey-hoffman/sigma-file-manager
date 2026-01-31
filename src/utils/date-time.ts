@@ -18,6 +18,7 @@ import 'dayjs/locale/ja';
 import 'dayjs/locale/fa';
 import 'dayjs/locale/zh-cn';
 import 'dayjs/locale/vi';
+import 'dayjs/locale/sl';
 
 import { dayjsLocaleMapping, type AppLocale } from '@/localization/data';
 import type { DateTime } from '@/types/user-settings';

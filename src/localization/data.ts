@@ -79,7 +79,7 @@ export const languages: LocalizationLanguage[] = [
   {
     name: 'Slovenščina',
     locale: 'sl',
-    isCorrected: false,
+    isCorrected: true,
     isRtl: false,
   },
   {
