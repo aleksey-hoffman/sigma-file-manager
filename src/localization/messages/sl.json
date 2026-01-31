@@ -1063,7 +1063,7 @@
     },
     "appGuideDialog": {
       "appGuide": "Vodnik po aplikaciji",
-      "comingSoon": "KOMAJ PRIDE",
+      "comingSoon": "Prihaja kmalu",
       "moreGuidesWillBeAdded": "Več vodnikov bo dodanih v prihodnjih posodobitvah",
       "guideHeaderButtons": {
         "projectPage": "Stran projekta",
@@ -1078,7 +1078,7 @@
         "navigatorTips": "Nasveti navigatorja",
         "dataProtection": "Zaščita podatkov",
         "addressBar": "Naslovna vrstica",
-        "comingSoon": "KOMAJ PRIDE"
+        "comingSoon": "Prihaja kmalu"
       },
       "shortcuts": {
         "about": "O",
