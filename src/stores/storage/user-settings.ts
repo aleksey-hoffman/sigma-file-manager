@@ -51,8 +51,8 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
     navigator: {
       layout: {
         type: {
-          title: 'gridLayout',
-          name: 'grid',
+          title: 'listLayout',
+          name: 'list',
         },
         dirItemOptions: {
           title: {
