@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Fixed
+
+- Fixed system icons for files with unique icons - each file now displays its own icon instead of showing the same icon for all files of the same type. Applies to: Windows (.exe, .dll, .lnk, .ico, etc.), Linux (.desktop, .appimage), macOS (.icns);
+
 ### Directory Auto-Refresh
 
 - Navigator view automatically refreshes when files are created, deleted, renamed, or modified in the current directory;

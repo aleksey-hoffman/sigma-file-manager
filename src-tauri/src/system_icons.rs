@@ -30,7 +30,25 @@ fn normalize_path_for_os(path: &str) -> PathBuf {
     }
 }
 
-fn file_icon_cache_key(is_dir: bool, extension: &Option<String>, size: u16) -> String {
+fn has_unique_icon(extension: &Option<String>) -> bool {
+    #[cfg(windows)]
+    let unique_icon_extensions = [
+        "exe", "dll", "ico", "lnk", "scr", "cpl", "msi", "appx", "msix",
+    ];
+
+    #[cfg(target_os = "linux")]
+    let unique_icon_extensions = ["desktop", "appimage"];
+
+    #[cfg(target_os = "macos")]
+    let unique_icon_extensions = ["icns"];
+
+    extension
+        .as_ref()
+        .map(|ext| unique_icon_extensions.contains(&ext.to_lowercase().as_str()))
+        .unwrap_or(false)
+}
+
+fn file_icon_cache_key(path: &str, is_dir: bool, extension: &Option<String>, size: u16) -> String {
     if is_dir {
         return format!("dir:{size}");
     }
@@ -40,11 +58,19 @@ fn file_icon_cache_key(is_dir: bool, extension: &Option<String>, size: u16) -> S
         .map(|ext| ext.to_lowercase())
         .unwrap_or_default();
 
-    format!("ext:{normalized_extension}:{size}")
+    if has_unique_icon(extension) {
+        format!("path:{}:{size}", path.to_lowercase())
+    } else {
+        format!("ext:{normalized_extension}:{size}")
+    }
 }
 
 fn build_dummy_path_for_extension(extension: &Option<String>) -> PathBuf {
-    let file_name = match extension.as_ref().map(|ext| ext.trim()).filter(|ext| !ext.is_empty()) {
+    let file_name = match extension
+        .as_ref()
+        .map(|ext| ext.trim())
+        .filter(|ext| !ext.is_empty())
+    {
         Some(extension_value) => format!("file.{extension_value}"),
         None => "file".to_string(),
     };
@@ -88,7 +114,7 @@ pub fn get_system_icon(
     size: Option<u16>,
 ) -> Result<Option<String>, String> {
     let icon_size = size.unwrap_or(32).clamp(8, 256);
-    let cache_key = file_icon_cache_key(is_dir, &extension, icon_size);
+    let cache_key = file_icon_cache_key(&path, is_dir, &extension, icon_size);
 
     if let Ok(mut cache) = ICON_DATA_URL_CACHE.lock() {
         if let Some(cached_value) = cache.get(&cache_key) {
@@ -119,4 +145,3 @@ pub fn get_system_icon(
         Err(_) => Ok(None),
     }
 }
-
