@@ -16,6 +16,7 @@ import {
   ContextMenuSubTrigger,
   ContextMenuSubContent,
 } from '@/components/ui/context-menu';
+import { usePlatformStore } from '@/stores/runtime/platform';
 import {
   ExternalLinkIcon,
   Loader2Icon,
@@ -53,6 +54,7 @@ const emit = defineEmits<{
 }>();
 
 const { t } = useI18n();
+const platformStore = usePlatformStore();
 
 const isLoading = ref(false);
 const recommendedPrograms = ref<AssociatedProgram[]>([]);
@@ -61,6 +63,7 @@ const loadError = ref<string | null>(null);
 
 const firstEntry = computed(() => props.selectedEntries[0]);
 const isDirectory = computed(() => firstEntry.value?.is_dir ?? false);
+const showNativeOpenWith = computed(() => !isDirectory.value && !platformStore.isLinux);
 const lastLoadedPath = ref<string | null>(null);
 
 async function loadAssociatedPrograms() {
@@ -226,7 +229,7 @@ function handleOpenCustomDialog() {
         <ContextMenuSeparator v-if="!isDirectory" />
 
         <ContextMenuItem
-          v-if="!isDirectory"
+          v-if="showNativeOpenWith"
           class="open-with-submenu__action"
           @select="handleOpenNativeDialog"
         >
