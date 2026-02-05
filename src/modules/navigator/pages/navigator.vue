@@ -45,6 +45,7 @@ const singlePaneRef = ref<FileBrowserInstance | null>(null);
 const showInfoPanel = ref(true);
 const selectedEntries = ref<DirEntry[]>([]);
 const currentDirEntry = ref<DirEntry | null>(null);
+const activeTabId = ref<string | null>(null);
 const smallScreenMediaQuery = window.matchMedia(`(max-width: ${UI_CONSTANTS.SMALL_SCREEN_BREAKPOINT}px)`);
 const isSmallScreen = ref(smallScreenMediaQuery.matches);
 
@@ -77,12 +78,16 @@ function handleToggleInfoPanel() {
   showInfoPanel.value = !showInfoPanel.value;
 }
 
-function handleSelectionChange(entries: DirEntry[], activeTabId?: string) {
+function handleSelectionChange(entries: DirEntry[], tabId?: string) {
   selectedEntries.value = entries;
 
-  if (entries.length > 0 && activeTabId) {
-    paneRefsMap.value.forEach((pane, tabId) => {
-      if (tabId !== activeTabId) {
+  if (tabId) {
+    activeTabId.value = tabId;
+  }
+
+  if (entries.length > 0 && tabId) {
+    paneRefsMap.value.forEach((pane, paneTabId) => {
+      if (paneTabId !== tabId) {
         pane.clearSelection();
       }
     });
@@ -91,6 +96,10 @@ function handleSelectionChange(entries: DirEntry[], activeTabId?: string) {
 
 function handleCurrentDirChange(entry: DirEntry | null) {
   currentDirEntry.value = entry;
+}
+
+function handlePaneFocus(tabId: string) {
+  activeTabId.value = tabId;
 }
 
 function setPaneRef(element: FileBrowserInstance | null, tabId: string) {
@@ -130,6 +139,10 @@ function getSelectedEntries(pane: FileBrowserInstance): DirEntry[] {
 function getActivePaneRef(): FileBrowserInstance | undefined {
   if (!isSplitView.value) {
     return singlePaneRef.value || Array.from(paneRefsMap.value.values())[0];
+  }
+
+  if (activeTabId.value && paneRefsMap.value.has(activeTabId.value)) {
+    return paneRefsMap.value.get(activeTabId.value);
   }
 
   return Array.from(paneRefsMap.value.values())[0];
@@ -312,19 +325,6 @@ function registerShortcutHandlers() {
   shortcutsStore.registerHandler('quickView', handleQuickViewShortcut, { checkItemSelected: hasSelectedItems });
 }
 
-function unregisterShortcutHandlers() {
-  shortcutsStore.unregisterHandler('toggleFilter');
-  shortcutsStore.unregisterHandler('copy');
-  shortcutsStore.unregisterHandler('cut');
-  shortcutsStore.unregisterHandler('paste');
-  shortcutsStore.unregisterHandler('selectAll');
-  shortcutsStore.unregisterHandler('delete');
-  shortcutsStore.unregisterHandler('deletePermanently');
-  shortcutsStore.unregisterHandler('rename');
-  shortcutsStore.unregisterHandler('escape');
-  shortcutsStore.unregisterHandler('quickView');
-}
-
 onMounted(() => {
   registerShortcutHandlers();
   smallScreenMediaQuery.addEventListener('change', handleSmallScreenChange);
@@ -334,7 +334,6 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-  unregisterShortcutHandlers();
   smallScreenMediaQuery.removeEventListener('change', handleSmallScreenChange);
 });
 </script>
@@ -382,6 +381,7 @@ onUnmounted(() => {
               <ResizablePanel
                 :default-size="50"
                 :min-size="15"
+                @mousedown="handlePaneFocus(tab.id)"
               >
                 <FileBrowser
                   :ref="(el) => setPaneRef(el as FileBrowserInstance, tab.id)"

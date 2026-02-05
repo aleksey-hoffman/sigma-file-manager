@@ -326,6 +326,10 @@ onMounted(() => {
   window.addEventListener('keydown', handleKeydownForFilter);
 });
 
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKeydownForFilter);
+});
+
 defineExpose({
   isFilterOpen,
   toggleFilter,

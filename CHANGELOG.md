@@ -12,6 +12,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fixed system icons for files with unique icons - each file now displays its own icon instead of showing the same icon for all files of the same type. Applies to: Windows (.exe, .dll, .lnk, .ico, etc.), Linux (.desktop, .appimage), macOS (.icns);
+- Fixed keyboard shortcuts (Ctrl+C/X/V, Delete, Rename, etc.) not working in the second pane of split view - shortcuts now correctly target the last active pane;
+- Fixed keyboard shortcuts sometimes stopping to work after navigating between pages - shortcut handlers are now preserved during page navigation;
+- Fixed memory leak where filter keydown listeners were not properly cleaned up when file browser components unmounted;
 
 ### Directory Auto-Refresh
 
