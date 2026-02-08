@@ -16,9 +16,16 @@ import {
   TooltipContent,
 } from '@/components/ui/tooltip';
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
   ArrowLeftIcon,
   ArrowRightIcon,
   ArrowUpIcon,
+  EllipsisVerticalIcon,
   HomeIcon,
   RefreshCwIcon,
   TextSearchIcon,
@@ -85,7 +92,7 @@ function handleFilterInteractOutside(event: Event) {
 
 <template>
   <div class="file-browser-toolbar">
-    <div class="file-browser-toolbar__nav-buttons">
+    <div class="file-browser-toolbar__nav-buttons file-browser-toolbar__nav-buttons--expanded">
       <Tooltip>
         <TooltipTrigger as-child>
           <Button
@@ -159,6 +166,60 @@ function handleFilterInteractOutside(event: Event) {
         <TooltipContent>{{ t('fileBrowser.refresh') }}</TooltipContent>
       </Tooltip>
     </div>
+
+    <div class="file-browser-toolbar__nav-buttons file-browser-toolbar__nav-buttons--collapsed">
+      <DropdownMenu>
+        <DropdownMenuTrigger as-child>
+          <Button
+            variant="ghost"
+            size="icon"
+            class="file-browser-toolbar__nav-button"
+            :title="t('settingsCategories.navigation')"
+          >
+            <EllipsisVerticalIcon class="file-browser-toolbar__icon" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent
+          align="start"
+          side="bottom"
+          class="file-browser-toolbar__dropdown"
+        >
+          <DropdownMenuItem
+            :disabled="!canGoBack"
+            @click="emit('goBack')"
+          >
+            <ArrowLeftIcon :size="14" />
+            {{ t('fileBrowser.goBack') }}
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            :disabled="!canGoForward"
+            @click="emit('goForward')"
+          >
+            <ArrowRightIcon :size="14" />
+            {{ t('fileBrowser.goForward') }}
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            :disabled="!canGoUp"
+            @click="emit('goUp')"
+          >
+            <ArrowUpIcon :size="14" />
+            {{ t('fileBrowser.goUp') }}
+          </DropdownMenuItem>
+          <DropdownMenuItem @click="emit('goHome')">
+            <HomeIcon :size="14" />
+            {{ t('fileBrowser.goHome') }}
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            :disabled="isLoading"
+            @click="emit('refresh')"
+          >
+            <RefreshCwIcon :size="14" />
+            {{ t('fileBrowser.refresh') }}
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+
     <Separator
       orientation="vertical"
       class="file-browser-toolbar__separator"
@@ -241,6 +302,14 @@ function handleFilterInteractOutside(event: Event) {
   gap: 4px;
 }
 
+.file-browser-toolbar__nav-buttons--expanded {
+  display: flex;
+}
+
+.file-browser-toolbar__nav-buttons--collapsed {
+  display: none;
+}
+
 .file-browser-toolbar__nav-button {
   width: 36px;
   height: 36px;
@@ -268,6 +337,10 @@ function handleFilterInteractOutside(event: Event) {
 .file-browser-toolbar__separator {
   display: none;
   height: 20px;
+}
+
+.file-browser-toolbar__dropdown {
+  min-width: 180px;
 }
 
 .file-browser-toolbar__right {
@@ -316,30 +389,13 @@ function handleFilterInteractOutside(event: Event) {
   .file-browser-toolbar__separator {
     display: block;
   }
-}
 
-@container (width < 300px) {
-  .file-browser-toolbar__nav-button,
-  .file-browser-toolbar__filter-button {
-    width: 28px;
-    height: 28px;
+  .file-browser-toolbar__nav-buttons--expanded {
+    display: none;
   }
 
-  .file-browser-toolbar__icon {
-    width: 14px;
-    height: 14px;
-  }
-
-  .file-browser-toolbar {
-    gap: 8px;
-  }
-
-  .file-browser-toolbar__nav-buttons {
-    gap: 2px;
-  }
-
-  .file-browser-toolbar__right {
-    gap: 4px;
+  .file-browser-toolbar__nav-buttons--collapsed {
+    display: flex;
   }
 }
 </style>
