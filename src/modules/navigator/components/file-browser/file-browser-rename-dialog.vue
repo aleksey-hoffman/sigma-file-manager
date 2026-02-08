@@ -169,24 +169,9 @@ function handleKeydown(event: KeyboardEvent) {
             @keydown="handleKeydown"
           />
         </div>
-
-        <div
-          v-if="entry"
-          class="file-browser-rename-dialog__current-name"
-        >
-          <span class="file-browser-rename-dialog__current-label">{{ t('dialogs.renameDirItemDialog.currentName') }}:</span>
-          <span class="file-browser-rename-dialog__current-value">{{ entry.name }}</span>
-        </div>
       </div>
 
       <DialogFooter>
-        <Button
-          variant="ghost"
-          :disabled="isSubmitting"
-          @click="handleCancel"
-        >
-          {{ t('cancel') }}
-        </Button>
         <Button
           :disabled="!isValid || !hasChanges || isSubmitting"
           @click="handleSubmit"

@@ -4,13 +4,14 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, ref, watch, nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
 import {
-  ListIcon,
+  EyeIcon,
   CheckCheckIcon,
   XIcon,
   MenuIcon,
+  EllipsisVerticalIcon,
 } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,8 +20,8 @@ import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
 import {
   Popover,
   PopoverContent,
-  PopoverTrigger,
 } from '@/components/ui/popover';
+import { PopoverAnchor } from 'reka-ui';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -176,6 +177,14 @@ watch(() => props.selectedEntries?.length, (length) => {
 function removeItem(entry: DirEntry) {
   emit('removeFromSelection', entry);
 }
+
+function openCollapsedPopover() {
+  nextTick(() => {
+    setTimeout(() => {
+      showItemsPopoverOpen.value = true;
+    }, 200);
+  });
+}
 </script>
 
 <template>
@@ -199,119 +208,162 @@ function removeItem(entry: DirEntry) {
           </span>
         </template>
       </span>
-      <div class="file-browser-status-bar__actions">
-        <Popover v-model:open="showItemsPopoverOpen">
-          <PopoverTrigger as-child>
-            <Button
-              variant="ghost"
-              size="sm"
-              class="file-browser-status-bar__button"
-              :title="t('showItems')"
-            >
-              <ListIcon :size="14" />
-              <span class="file-browser-status-bar__button-text">{{ t('showItems') }}</span>
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent
-            align="start"
-            side="top"
-            class="file-browser-status-bar__popover"
-          >
-            <div class="file-browser-status-bar__popover-content">
-              <div class="file-browser-status-bar__filter-wrapper">
-                <Input
-                  v-model="itemsFilterQuery"
-                  :placeholder="t('filter.filter')"
-                  class="file-browser-status-bar__filter-input"
-                />
-              </div>
-              <div
-                v-if="showItemsHeader"
-                class="file-browser-status-bar__items-header"
+      <Popover v-model:open="showItemsPopoverOpen">
+        <PopoverAnchor as-child>
+          <div class="file-browser-status-bar__actions">
+            <div class="file-browser-status-bar__actions--expanded">
+              <Button
+                variant="ghost"
+                size="sm"
+                class="file-browser-status-bar__button"
+                :title="t('showItems')"
+                @click="showItemsPopoverOpen = true"
               >
-                {{ showItemsHeader }}
-              </div>
-              <ScrollArea class="file-browser-status-bar__scroll-area">
-                <div class="file-browser-status-bar__items-list">
-                  <div
-                    v-for="entry in displayedEntries"
-                    :key="entry.path"
-                    class="file-browser-status-bar__item"
+                <EyeIcon :size="14" />
+                <span class="file-browser-status-bar__button-text">{{ t('showItems') }}</span>
+              </Button>
+
+              <Button
+                variant="ghost"
+                size="sm"
+                class="file-browser-status-bar__button"
+                :title="t('shortcuts.selectAllItemsInCurrentDirectory')"
+                @click="emit('selectAll')"
+              >
+                <CheckCheckIcon :size="14" />
+                <span class="file-browser-status-bar__button-text">{{ t('fileBrowser.selectAll') }}</span>
+              </Button>
+
+              <Button
+                variant="ghost"
+                size="sm"
+                class="file-browser-status-bar__button"
+                :title="t('fileBrowser.deselectAll')"
+                @click="emit('deselectAll')"
+              >
+                <XIcon :size="14" />
+                <span class="file-browser-status-bar__button-text">{{ t('fileBrowser.deselectAll') }}</span>
+              </Button>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger as-child>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    class="file-browser-status-bar__button"
+                    :title="t('menu')"
                   >
-                    <div class="file-browser-status-bar__item-info">
-                      <span class="file-browser-status-bar__item-name">{{ entry.name }}</span>
-                      <span class="file-browser-status-bar__item-path">{{ entry.path }}</span>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      class="file-browser-status-bar__item-remove"
-                      :title="t('fileBrowser.removeFromSelection')"
-                      @click="removeItem(entry)"
-                    >
-                      <XIcon :size="18" />
-                    </Button>
-                  </div>
-                  <div
-                    v-if="displayedEntries.length === 0"
-                    class="file-browser-status-bar__no-items"
-                  >
-                    {{ t('fileBrowser.noMatchingItems') }}
-                  </div>
-                </div>
-              </ScrollArea>
+                    <MenuIcon :size="14" />
+                    <span class="file-browser-status-bar__button-text">{{ t('menu') }}</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="end"
+                  side="top"
+                  class="file-browser-status-bar__menu"
+                >
+                  <FileBrowserActionsMenu
+                    :selected-entries="selectedEntriesArray"
+                    :menu-item-component="DropdownMenuItem"
+                    :menu-separator-component="DropdownMenuSeparator"
+                    @action="emit('contextMenuAction', $event)"
+                  />
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
-          </PopoverContent>
-        </Popover>
 
-        <Button
-          variant="ghost"
-          size="sm"
-          class="file-browser-status-bar__button"
-          :title="t('shortcuts.selectAllItemsInCurrentDirectory')"
-          @click="emit('selectAll')"
+            <div class="file-browser-status-bar__actions--collapsed">
+              <DropdownMenu>
+                <DropdownMenuTrigger as-child>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    class="file-browser-status-bar__button"
+                    :title="t('actions')"
+                  >
+                    <EllipsisVerticalIcon :size="16" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="end"
+                  side="top"
+                  class="file-browser-status-bar__dropdown"
+                >
+                  <DropdownMenuItem @click="openCollapsedPopover">
+                    <EyeIcon :size="14" />
+                    {{ t('showItems') }}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem @click="emit('selectAll')">
+                    <CheckCheckIcon :size="14" />
+                    {{ t('fileBrowser.selectAll') }}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem @click="emit('deselectAll')">
+                    <XIcon :size="14" />
+                    {{ t('fileBrowser.deselectAll') }}
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <FileBrowserActionsMenu
+                    :selected-entries="selectedEntriesArray"
+                    :menu-item-component="DropdownMenuItem"
+                    :menu-separator-component="DropdownMenuSeparator"
+                    @action="emit('contextMenuAction', $event)"
+                  />
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
+        </PopoverAnchor>
+        <PopoverContent
+          align="start"
+          side="top"
+          class="file-browser-status-bar__popover"
         >
-          <CheckCheckIcon :size="14" />
-          <span class="file-browser-status-bar__button-text">{{ t('fileBrowser.selectAll') }}</span>
-        </Button>
-
-        <Button
-          variant="ghost"
-          size="sm"
-          class="file-browser-status-bar__button"
-          :title="t('fileBrowser.deselectAll')"
-          @click="emit('deselectAll')"
-        >
-          <XIcon :size="14" />
-          <span class="file-browser-status-bar__button-text">{{ t('fileBrowser.deselectAll') }}</span>
-        </Button>
-
-        <DropdownMenu>
-          <DropdownMenuTrigger as-child>
-            <Button
-              variant="ghost"
-              size="sm"
-              class="file-browser-status-bar__button"
-              :title="t('menu')"
+          <div class="file-browser-status-bar__popover-content">
+            <div class="file-browser-status-bar__filter-wrapper">
+              <Input
+                v-model="itemsFilterQuery"
+                :placeholder="t('filter.filter')"
+                class="file-browser-status-bar__filter-input"
+              />
+            </div>
+            <div
+              v-if="showItemsHeader"
+              class="file-browser-status-bar__items-header"
             >
-              <MenuIcon :size="14" />
-              <span class="file-browser-status-bar__button-text">{{ t('menu') }}</span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            align="end"
-            side="top"
-            class="file-browser-status-bar__menu"
-          >
-            <FileBrowserActionsMenu
-              :selected-entries="selectedEntriesArray"
-              :menu-item-component="DropdownMenuItem"
-              :menu-separator-component="DropdownMenuSeparator"
-              @action="emit('contextMenuAction', $event)"
-            />
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+              {{ showItemsHeader }}
+            </div>
+            <ScrollArea class="file-browser-status-bar__scroll-area">
+              <div class="file-browser-status-bar__items-list">
+                <div
+                  v-for="entry in displayedEntries"
+                  :key="entry.path"
+                  class="file-browser-status-bar__item"
+                >
+                  <div class="file-browser-status-bar__item-info">
+                    <span class="file-browser-status-bar__item-name">{{ entry.name }}</span>
+                    <span class="file-browser-status-bar__item-path">{{ entry.path }}</span>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    class="file-browser-status-bar__item-remove"
+                    :title="t('fileBrowser.removeFromSelection')"
+                    @click="removeItem(entry)"
+                  >
+                    <XIcon :size="18" />
+                  </Button>
+                </div>
+                <div
+                  v-if="displayedEntries.length === 0"
+                  class="file-browser-status-bar__no-items"
+                >
+                  {{ t('fileBrowser.noMatchingItems') }}
+                </div>
+              </div>
+            </ScrollArea>
+          </div>
+        </PopoverContent>
+      </Popover>
     </template>
     <template v-else>
       <span v-if="isFiltered">
@@ -335,6 +387,7 @@ function removeItem(entry: DirEntry) {
   border-top: 1px solid hsl(var(--border));
   background-color: hsl(var(--background-2));
   color: hsl(var(--muted-foreground));
+  container-type: inline-size;
   font-size: 12px;
   gap: 8px;
 }
@@ -362,8 +415,19 @@ function removeItem(entry: DirEntry) {
 
 .file-browser-status-bar__actions {
   display: flex;
+  flex-shrink: 0;
   align-items: center;
   gap: 4px;
+}
+
+.file-browser-status-bar__actions--expanded {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.file-browser-status-bar__actions--collapsed {
+  display: none;
 }
 
 .file-browser-status-bar__button {
@@ -377,10 +441,24 @@ function removeItem(entry: DirEntry) {
   display: none;
 }
 
-@media (width >= 600px) {
+@container (width >= 600px) {
   .file-browser-status-bar__button-text {
     display: inline;
   }
+}
+
+@container (width < 400px) {
+  .file-browser-status-bar__actions--expanded {
+    display: none;
+  }
+
+  .file-browser-status-bar__actions--collapsed {
+    display: flex;
+  }
+}
+
+.file-browser-status-bar__dropdown {
+  min-width: 180px;
 }
 
 .file-browser-status-bar__popover {
