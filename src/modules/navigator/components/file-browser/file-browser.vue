@@ -34,6 +34,7 @@ import FileBrowserLoading from './file-browser-loading.vue';
 import FileBrowserError from './file-browser-error.vue';
 import FileBrowserStatusBar from './file-browser-status-bar.vue';
 import FileBrowserRenameDialog from './file-browser-rename-dialog.vue';
+import FileBrowserNewItemDialog from './file-browser-new-item-dialog.vue';
 import FileBrowserOpenWithDialog from './file-browser-open-with-dialog.vue';
 
 const props = defineProps<{
@@ -138,6 +139,7 @@ const {
   startRename,
   cancelRename,
   confirmRename,
+  createNewItem,
 } = useFileBrowserSelection(
   entries,
   currentPathComputed,
@@ -169,6 +171,11 @@ const openWithState = ref({
   entries: [] as DirEntry[],
 });
 
+const newItemDialogState = ref({
+  isOpen: false,
+  type: 'directory' as 'directory' | 'file',
+});
+
 function openOpenWithDialog(entries: DirEntry[]) {
   openWithState.value = {
     isOpen: true,
@@ -183,12 +190,47 @@ function closeOpenWithDialog() {
   };
 }
 
+const isNewItemDialogOpen = computed({
+  get: () => newItemDialogState.value.isOpen,
+  set: (value: boolean) => {
+    if (!value) {
+      closeNewItemDialog();
+    }
+    else {
+      newItemDialogState.value.isOpen = true;
+    }
+  },
+});
+
+function openNewItemDialog(type: 'directory' | 'file') {
+  newItemDialogState.value = {
+    isOpen: true,
+    type,
+  };
+}
+
+function closeNewItemDialog() {
+  newItemDialogState.value.isOpen = false;
+}
+
 async function handleRenameConfirm(newName: string) {
   await confirmRename(newName);
 }
 
 function handleRenameCancel() {
   cancelRename();
+}
+
+async function handleNewItemConfirm(name: string) {
+  const success = await createNewItem(name, newItemDialogState.value.type);
+
+  if (success) {
+    closeNewItemDialog();
+  }
+}
+
+function handleNewItemCancel() {
+  closeNewItemDialog();
 }
 
 watch(() => props.tab?.id, async (newTabId, oldTabId) => {
@@ -376,6 +418,8 @@ defineExpose({
       @refresh="refresh"
       @submit-path="handlePathSubmit"
       @navigate-to="navigateToPath"
+      @create-new-directory="openNewItemDialog('directory')"
+      @create-new-file="openNewItemDialog('file')"
     />
 
     <div class="file-browser__content">
@@ -459,6 +503,13 @@ defineExpose({
       :entry="renameState.entry"
       @confirm="handleRenameConfirm"
       @cancel="handleRenameCancel"
+    />
+
+    <FileBrowserNewItemDialog
+      v-model:open="isNewItemDialogOpen"
+      :type="newItemDialogState.type"
+      @confirm="handleNewItemConfirm"
+      @cancel="handleNewItemCancel"
     />
 
     <FileBrowserOpenWithDialog

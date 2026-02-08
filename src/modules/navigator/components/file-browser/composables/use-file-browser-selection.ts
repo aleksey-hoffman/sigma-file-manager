@@ -403,6 +403,69 @@ export function useFileBrowserSelection(
     }
   }
 
+  async function createNewItem(name: string, itemType: 'directory' | 'file'): Promise<boolean> {
+    const trimmedName = name.trim();
+
+    if (!trimmedName) {
+      return false;
+    }
+
+    const invalidChars = /[<>:"/\\|?*\x00-\x1f]/;
+
+    if (invalidChars.test(trimmedName)) {
+      return false;
+    }
+
+    if (trimmedName === '.' || trimmedName === '..') {
+      return false;
+    }
+
+    try {
+      const result = await invoke<FileOperationResult>('create_item', {
+        directoryPath: currentPathRef.value,
+        name: trimmedName,
+        isDirectory: itemType === 'directory',
+      });
+
+      if (result.success) {
+        toast.custom(markRaw(CustomSimple), {
+          componentProps: {
+            title: itemType === 'directory'
+              ? t('dialogs.newDirItemDialog.newDirectoryCreated')
+              : t('dialogs.newDirItemDialog.newFileCreated'),
+            description: '',
+          },
+        });
+
+        dirSizesStore.invalidate([currentPathRef.value]);
+        onRefresh();
+        return true;
+      }
+      else {
+        toast.custom(markRaw(CustomSimple), {
+          componentProps: {
+            title: itemType === 'directory'
+              ? t('dialogs.newDirItemDialog.failedToCreateNewDirectory')
+              : t('dialogs.newDirItemDialog.failedToCreateNewFile'),
+            description: result.error || '',
+          },
+        });
+        return false;
+      }
+    }
+    catch (error) {
+      toast.custom(markRaw(CustomSimple), {
+        componentProps: {
+          title: itemType === 'directory'
+            ? t('dialogs.newDirItemDialog.failedToCreateNewDirectory')
+            : t('dialogs.newDirItemDialog.failedToCreateNewFile'),
+          description: String(error),
+        },
+      });
+      return false;
+    }
+  }
+
   function handleContextMenuAction(action: ContextMenuAction) {
     const entries = contextMenu.value.selectedEntries;
 
@@ -642,5 +705,6 @@ export function useFileBrowserSelection(
     startRename,
     cancelRename,
     confirmRename,
+    createNewItem,
   };
 }

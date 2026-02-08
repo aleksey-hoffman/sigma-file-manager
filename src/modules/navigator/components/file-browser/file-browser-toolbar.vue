@@ -26,7 +26,10 @@ import {
   ArrowRightIcon,
   ArrowUpIcon,
   EllipsisVerticalIcon,
+  FilePlusIcon,
+  FolderPlusIcon,
   HomeIcon,
+  PlusIcon,
   RefreshCwIcon,
   TextSearchIcon,
   XIcon,
@@ -55,6 +58,8 @@ const emit = defineEmits<{
   (event: 'refresh'): void;
   (event: 'submitPath'): void;
   (event: 'navigateTo', path: string): void;
+  (event: 'createNewDirectory'): void;
+  (event: 'createNewFile'): void;
 }>();
 
 const { t } = useI18n();
@@ -231,6 +236,38 @@ function handleFilterInteractOutside(event: Event) {
         @navigate="handleAddressBarNavigate"
       />
       <Tooltip>
+        <DropdownMenu>
+          <TooltipTrigger as-child>
+            <DropdownMenuTrigger as-child>
+              <Button
+                variant="ghost"
+                size="icon"
+                class="file-browser-toolbar__create-button"
+              >
+                <PlusIcon class="file-browser-toolbar__icon" />
+              </Button>
+            </DropdownMenuTrigger>
+          </TooltipTrigger>
+          <TooltipContent>
+            {{ t('navigator.newDirectoryFile') }}
+          </TooltipContent>
+          <DropdownMenuContent
+            align="end"
+            side="bottom"
+            class="file-browser-toolbar__dropdown"
+          >
+            <DropdownMenuItem @click="emit('createNewDirectory')">
+              <FolderPlusIcon :size="14" />
+              {{ t('navigator.newDirectory') }}
+            </DropdownMenuItem>
+            <DropdownMenuItem @click="emit('createNewFile')">
+              <FilePlusIcon :size="14" />
+              {{ t('navigator.newFile') }}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </Tooltip>
+      <Tooltip>
         <Popover
           :open="isFilterOpen"
           :modal="false"
@@ -357,6 +394,11 @@ function handleFilterInteractOutside(event: Event) {
 }
 
 .file-browser-toolbar__filter-button {
+  width: 36px;
+  height: 36px;
+}
+
+.file-browser-toolbar__create-button {
   width: 36px;
   height: 36px;
 }

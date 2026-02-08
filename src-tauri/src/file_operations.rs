@@ -341,3 +341,83 @@ pub fn delete_items(paths: Vec<String>, use_trash: bool) -> FileOperationResult 
         failed_count: Some(failed_count),
     }
 }
+
+#[tauri::command]
+pub fn create_item(directory_path: String, name: String, is_directory: bool) -> FileOperationResult {
+    let trimmed_name = name.trim();
+
+    if trimmed_name.is_empty() {
+        return FileOperationResult {
+            success: false,
+            error: Some("Name cannot be empty".to_string()),
+            copied_count: None,
+            failed_count: None,
+        };
+    }
+
+    if trimmed_name.contains('/') || trimmed_name.contains('\\') {
+        return FileOperationResult {
+            success: false,
+            error: Some("Name contains invalid path separators".to_string()),
+            copied_count: None,
+            failed_count: None,
+        };
+    }
+
+    let directory = Path::new(&directory_path);
+
+    if !directory.exists() {
+        return FileOperationResult {
+            success: false,
+            error: Some(format!("Directory does not exist: {}", directory_path)),
+            copied_count: None,
+            failed_count: None,
+        };
+    }
+
+    if !directory.is_dir() {
+        return FileOperationResult {
+            success: false,
+            error: Some(format!("Path is not a directory: {}", directory_path)),
+            copied_count: None,
+            failed_count: None,
+        };
+    }
+
+    let dest_path = directory.join(trimmed_name);
+
+    if dest_path.exists() {
+        return FileOperationResult {
+            success: false,
+            error: Some(format!("Path already exists: {}", dest_path.display())),
+            copied_count: None,
+            failed_count: None,
+        };
+    }
+
+    let result = if is_directory {
+        fs::create_dir(&dest_path).map_err(|error| error.to_string())
+    } else {
+        fs::OpenOptions::new()
+            .write(true)
+            .create_new(true)
+            .open(&dest_path)
+            .map(|_| ())
+            .map_err(|error| error.to_string())
+    };
+
+    match result {
+        Ok(()) => FileOperationResult {
+            success: true,
+            error: None,
+            copied_count: Some(1),
+            failed_count: Some(0),
+        },
+        Err(error) => FileOperationResult {
+            success: false,
+            error: Some(error),
+            copied_count: None,
+            failed_count: Some(1),
+        },
+    }
+}
