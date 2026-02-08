@@ -486,7 +486,7 @@
     },
     "clipboard": {
       "inactiveUnselectable": "inactive unselectable",
-      "showingNOfItems": "Showing {showingAmount} of {itemsAmount} items",
+      "showingNOfItems": "{itemsAmount} items ({hidden} hidden)",
       "matchedNOfItems": "Matched {matchedAmount} of {itemsAmount} items"
     },
     "navigator": {
@@ -1579,11 +1579,11 @@
     "fileCount": "0 files | 1 file | {count} files | {count} files",
     "directoryCount": "0 folders | 1 folder | {count} folders | {count} folders",
     "itemsTotal": "{count} items",
-    "showingFiltered": "Showing {filtered} of {total} items",
+    "showingFiltered": "{total} items ({hidden} hidden)",
     "selectedItems": "{count} items selected",
     "selectAll": "Select all",
     "deselectAll": "Deselect all",
-    "showingNOfItems": "Showing {showing} of {total} items",
+    "showingNOfItems": "{total} items ({hidden} hidden)",
     "matchedNOfItems": "Matched {matched} of {total} items",
     "noMatchingItems": "No matching items",
     "directoryIsEmpty": "This directory is empty",

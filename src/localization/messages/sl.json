@@ -486,7 +486,7 @@
     },
     "clipboard": {
       "inactiveUnselectable": "neaktivno neizbirljivo",
-      "showingNOfItems": "Prikazano {showingAmount} od {itemsAmount} predmetov",
+      "showingNOfItems": "{itemsAmount} predmetov ({hidden} skritih)",
       "matchedNOfItems": "Ujemajo {matchedAmount} od {itemsAmount} predmetov"
     },
     "navigator": {
@@ -1579,11 +1579,11 @@
     "fileCount": "0 datotek | 1 datoteka | {count} datotek | {count} datotek",
     "directoryCount": "0 map | 1 mapa | {count} map | {count} map",
     "itemsTotal": "{count} predmetov",
-    "showingFiltered": "Prikazano {filtered} od {total} predmetov",
+    "showingFiltered": "{total} predmetov ({hidden} skritih)",
     "selectedItems": "{count} izbranih predmetov",
     "selectAll": "Izberi vse",
     "deselectAll": "Odznači vse",
-    "showingNOfItems": "Prikazano {showing} od {total} predmetov",
+    "showingNOfItems": "{total} predmetov ({hidden} skritih)",
     "matchedNOfItems": "Ujemajo {matched} od {total} predmetov",
     "noMatchingItems": "Ni ujemajočih se predmetov",
     "directoryIsEmpty": "Ta mapa je prazna",

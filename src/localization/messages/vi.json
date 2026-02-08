@@ -473,7 +473,7 @@
     },
     "clipboard": {
       "inactiveUnselectable": "không hoạt động không thể chọn",
-      "showingNOfItems": "Hiển thị {showingAmount} của {itemsAmount} mục",
+      "showingNOfItems": "{itemsAmount} mục ({hidden} ẩn)",
       "matchedNOfItems": "Đã khớp {matchedAmount} của {itemsAmount} mục"
     },
     "navigator": {
@@ -1563,11 +1563,11 @@
     "fileCount": "0 tệp | 1 tệp | {count} tệp | {count} tệp",
     "directoryCount": "0 thư mục | 1 thư mục | {count} thư mục | {count} thư mục",
     "itemsTotal": "{count} mục",
-    "showingFiltered": "Hiển thị {filtered} trong {total} mục",
+    "showingFiltered": "{total} mục ({hidden} ẩn)",
     "selectedItems": "{count} mục đã chọn",
     "selectAll": "Chọn tất cả",
     "deselectAll": "Bỏ chọn tất cả",
-    "showingNOfItems": "Hiển thị {showing} của {total} mục",
+    "showingNOfItems": "{total} mục ({hidden} ẩn)",
     "matchedNOfItems": "Đã khớp {matched} của {total} mục",
     "noMatchingItems": "Không có mục phù hợp",
     "directoryIsEmpty": "Thư mục này trống",

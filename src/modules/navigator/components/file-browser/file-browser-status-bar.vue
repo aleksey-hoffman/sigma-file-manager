@@ -60,6 +60,7 @@ const itemsFilterQuery = ref('');
 const totalCount = computed(() => props.dirContents?.entries.length ?? 0);
 
 const isFiltered = computed(() => props.filteredCount !== totalCount.value);
+const hiddenCount = computed(() => Math.max(totalCount.value - props.filteredCount, 0));
 const hasSelection = computed(() => (props.selectedCount ?? 0) > 0);
 
 const selectedEntriesArray = computed(() => props.selectedEntries ?? []);
@@ -153,8 +154,10 @@ const showItemsHeader = computed(() => {
   }
 
   if (total > MAX_VISIBLE_ITEMS) {
+    const hidden = Math.max(total - displayed, 0);
+
     return t('fileBrowser.showingNOfItems', {
-      showing: displayed,
+      hidden,
       total,
     });
   }
@@ -367,7 +370,7 @@ function openCollapsedPopover() {
     </template>
     <template v-else>
       <span v-if="isFiltered">
-        {{ t('fileBrowser.showingFiltered', { filtered: filteredCount, total: totalCount }) }}
+        {{ t('fileBrowser.showingFiltered', { hidden: hiddenCount, total: totalCount }) }}
       </span>
       <span v-else>
         {{ t('fileBrowser.itemsTotal', { count: totalCount }) }}

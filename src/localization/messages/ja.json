@@ -473,7 +473,7 @@
     },
     "clipboard": {
       "inactiveUnselectable": "非アクティブ選択不可",
-      "showingNOfItems": "{itemsAmount} 個のアイテムの {showingAmount} 個を表示しています",
+      "showingNOfItems": "{itemsAmount} 個のアイテム（{hidden} 個非表示）",
       "matchedNOfItems": "{itemsAmount} 個のアイテムの {matchedAmount} 個が一致しました"
     },
     "navigator": {
@@ -1563,11 +1563,11 @@
     "fileCount": "0 ファイル | 1 ファイル | {count} ファイル | {count} ファイル",
     "directoryCount": "0 フォルダ | 1 フォルダ | {count} フォルダ | {count} フォルダ",
     "itemsTotal": "{count} 項目",
-    "showingFiltered": "{total} 中 {filtered} 件を表示",
+    "showingFiltered": "{total} 個のアイテム（{hidden} 個非表示）",
     "selectedItems": "{count} 件を選択中",
     "selectAll": "すべて選択",
     "deselectAll": "選択解除",
-    "showingNOfItems": "{total} 個のアイテムの {showing} 個を表示しています",
+    "showingNOfItems": "{total} 個のアイテム（{hidden} 個非表示）",
     "matchedNOfItems": "{total} 個のアイテムの {matched} 個が一致しました",
     "noMatchingItems": "一致するアイテムがありません",
     "directoryIsEmpty": "このディレクトリは空です",

@@ -473,7 +473,7 @@
     },
     "clipboard": {
       "inactiveUnselectable": "inaktiv nicht wählbar",
-      "showingNOfItems": "Zeige {showingAmount} von {itemsAmount} Elementen",
+      "showingNOfItems": "{itemsAmount} Elemente ({hidden} ausgeblendet)",
       "matchedNOfItems": "Übereinstimmung mit {matchedAmount} von {itemsAmount} Elementen"
     },
     "navigator": {
@@ -1563,11 +1563,11 @@
     "fileCount": "0 Dateien | 1 Datei | {count} Dateien | {count} Dateien",
     "directoryCount": "0 Ordner | 1 Ordner | {count} Ordner | {count} Ordner",
     "itemsTotal": "{count} Elemente",
-    "showingFiltered": "Zeige {filtered} von {total} Elementen",
+    "showingFiltered": "{total} Elemente ({hidden} ausgeblendet)",
     "selectedItems": "{count} Elemente ausgewählt",
     "selectAll": "Alle auswählen",
     "deselectAll": "Auswahl aufheben",
-    "showingNOfItems": "Zeige {showing} von {total} Elementen",
+    "showingNOfItems": "{total} Elemente ({hidden} ausgeblendet)",
     "matchedNOfItems": "Übereinstimmung mit {matched} von {total} Elementen",
     "noMatchingItems": "Keine übereinstimmenden Elemente",
     "directoryIsEmpty": "Dieses Verzeichnis ist leer",

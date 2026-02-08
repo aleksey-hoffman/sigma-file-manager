@@ -108,8 +108,10 @@ const clipboardItemsHeader = computed(() => {
   }
 
   if (total > MAX_VISIBLE_ITEMS) {
+    const hidden = Math.max(total - displayed, 0);
+
     return t('fileBrowser.showingNOfItems', {
-      showing: displayed,
+      hidden,
       total,
     });
   }

@@ -473,7 +473,7 @@
     },
     "clipboard": {
       "inactiveUnselectable": "不可选择不活动的",
-      "showingNOfItems": "显示 {showingAmount} 个项目，共 {itemsAmount} 个项目",
+      "showingNOfItems": "{itemsAmount} 个项目（隐藏 {hidden} 个）",
       "matchedNOfItems": "匹配了 {matchedAmount} 个项目，共 {itemsAmount} 个项目"
     },
     "navigator": {
@@ -1563,11 +1563,11 @@
     "fileCount": "0 个文件 | 1 个文件 | {count} 个文件 | {count} 个文件",
     "directoryCount": "0 个文件夹 | 1 个文件夹 | {count} 个文件夹 | {count} 个文件夹",
     "itemsTotal": "{count} 个项目",
-    "showingFiltered": "显示 {total} 中的 {filtered} 个项目",
+    "showingFiltered": "{total} 个项目（隐藏 {hidden} 个）",
     "selectedItems": "已选择 {count} 个项目",
     "selectAll": "全选",
     "deselectAll": "取消全选",
-    "showingNOfItems": "显示 {showing} 个项目，共 {total} 个项目",
+    "showingNOfItems": "{total} 个项目（隐藏 {hidden} 个）",
     "matchedNOfItems": "匹配了 {matched} 个项目，共 {total} 个项目",
     "noMatchingItems": "没有匹配的项目",
     "directoryIsEmpty": "此目录为空",

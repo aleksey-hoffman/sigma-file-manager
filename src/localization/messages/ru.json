@@ -486,7 +486,7 @@
     },
     "clipboard": {
       "inactiveUnselectable": "неактивный невыбираемый",
-      "showingNOfItems": "Показано {showingAmount} из {itemsAmount} элементов",
+      "showingNOfItems": "{itemsAmount} элементов ({hidden} скрытых)",
       "matchedNOfItems": "Сопоставлено {matchedAmount} из {itemsAmount} элементов"
     },
     "navigator": {
@@ -1579,11 +1579,11 @@
     "fileCount": "0 файлов | 1 файл | {count} файла | {count} файлов",
     "directoryCount": "0 папок | 1 папка | {count} папки | {count} папок",
     "itemsTotal": "{count} элементов",
-    "showingFiltered": "Показано {filtered} из {total} элементов",
+    "showingFiltered": "{total} элементов ({hidden} скрытых)",
     "selectedItems": "{count} элементов выбрано",
     "selectAll": "Выбрать все",
     "deselectAll": "Снять выделение",
-    "showingNOfItems": "Показано {showing} из {total} элементов",
+    "showingNOfItems": "{total} элементов ({hidden} скрытых)",
     "matchedNOfItems": "Сопоставлено {matched} из {total} элементов",
     "noMatchingItems": "Нет совпадающих элементов",
     "directoryIsEmpty": "Эта директория пуста",

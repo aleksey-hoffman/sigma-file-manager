@@ -473,7 +473,7 @@
     },
     "clipboard": {
       "inactiveUnselectable": "etkin değil seçilemez",
-      "showingNOfItems": "{itemsAmount} öğeden {showingAmount} tanesi gösteriliyor",
+      "showingNOfItems": "{itemsAmount} öğe ({hidden} gizli)",
       "matchedNOfItems": "{itemsAmount} öğeden {matchedAmount} ile eşleşti"
     },
     "navigator": {
@@ -1563,11 +1563,11 @@
     "fileCount": "0 dosya | 1 dosya | {count} dosya | {count} dosya",
     "directoryCount": "0 klasör | 1 klasör | {count} klasör | {count} klasör",
     "itemsTotal": "{count} öğe",
-    "showingFiltered": "{total} öğeden {filtered} tanesi gösteriliyor",
+    "showingFiltered": "{total} öğe ({hidden} gizli)",
     "selectedItems": "{count} öğe seçildi",
     "selectAll": "Tümünü seç",
     "deselectAll": "Seçimi kaldır",
-    "showingNOfItems": "{total} öğeden {showing} tanesi gösteriliyor",
+    "showingNOfItems": "{total} öğe ({hidden} gizli)",
     "matchedNOfItems": "{total} öğeden {matched} ile eşleşti",
     "noMatchingItems": "Eşleşen öğe yok",
     "directoryIsEmpty": "Bu dizin boş",

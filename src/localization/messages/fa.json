@@ -472,7 +472,7 @@
     },
     "clipboard": {
       "inactiveUnselectable": "غیر فعال غیر قابل انتخاب",
-      "showingNOfItems": "نمایش {showingAmount} از {itemsAmount} مورد",
+      "showingNOfItems": "{itemsAmount} مورد ({hidden} پنهان)",
       "matchedNOfItems": "Matched {matchedAmount} از {itemsAmount} مورد"
     },
     "navigator": {
@@ -1562,11 +1562,11 @@
     "fileCount": "0 فایل | 1 فایل | {count} فایل | {count} فایل",
     "directoryCount": "0 پوشه | 1 پوشه | {count} پوشه | {count} پوشه",
     "itemsTotal": "{count} مورد",
-    "showingFiltered": "نمایش {filtered} از {total} مورد",
+    "showingFiltered": "{total} مورد ({hidden} پنهان)",
     "selectedItems": "{count} مورد انتخاب شده",
     "selectAll": "انتخاب همه",
     "deselectAll": "لغو انتخاب همه",
-    "showingNOfItems": "نمایش {showing} از {total} مورد",
+    "showingNOfItems": "{total} مورد ({hidden} پنهان)",
     "matchedNOfItems": "مطابقت {matched} از {total} مورد",
     "noMatchingItems": "هیچ موردی مطابقت ندارد",
     "directoryIsEmpty": "این پوشه خالی است",
