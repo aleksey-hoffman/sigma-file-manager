@@ -37,10 +37,14 @@ const MAX_VISIBLE_ITEMS = 100;
 
 const props = defineProps<{
   currentPath?: string;
+  isSplitView?: boolean;
+  pane1Path?: string;
+  pane2Path?: string;
 }>();
 
 const emit = defineEmits<{
   paste: [];
+  pasteToPane: [paneIndex: number];
 }>();
 
 const { t } = useI18n();
@@ -57,6 +61,22 @@ const canPaste = computed(() => {
   }
 
   return clipboardStore.canPasteTo(props.currentPath);
+});
+
+const canPasteToPane1 = computed(() => {
+  if (!clipboardStore.hasItems || !props.pane1Path) {
+    return false;
+  }
+
+  return clipboardStore.canPasteTo(props.pane1Path);
+});
+
+const canPasteToPane2 = computed(() => {
+  if (!clipboardStore.hasItems || !props.pane2Path) {
+    return false;
+  }
+
+  return clipboardStore.canPasteTo(props.pane2Path);
 });
 
 const filteredClipboardItems = computed(() => {
@@ -173,7 +193,52 @@ function openCollapsedPopover() {
                 <span class="clipboard-toolbar__button-text">{{ t('showItems') }}</span>
               </Button>
 
-              <Tooltip :delay-duration="300">
+              <template v-if="isSplitView">
+                <Tooltip :delay-duration="300">
+                  <TooltipTrigger as-child>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      class="clipboard-toolbar__button"
+                      :class="{ 'clipboard-toolbar__button--disabled': !canPasteToPane1 }"
+                      :disabled="!canPasteToPane1"
+                      @click="emit('pasteToPane', 0)"
+                    >
+                      <ClipboardPasteIcon :size="14" />
+                      <span class="clipboard-toolbar__button-text">{{ t('fileBrowser.actions.pasteToPane1') }}</span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {{ t('shortcuts.transferPreparedToPane1') }}
+                    <kbd class="clipboard-toolbar__shortcut">{{ shortcutsStore.getShortcutLabel('paste') }}</kbd>
+                  </TooltipContent>
+                </Tooltip>
+
+                <Tooltip :delay-duration="300">
+                  <TooltipTrigger as-child>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      class="clipboard-toolbar__button"
+                      :class="{ 'clipboard-toolbar__button--disabled': !canPasteToPane2 }"
+                      :disabled="!canPasteToPane2"
+                      @click="emit('pasteToPane', 1)"
+                    >
+                      <ClipboardPasteIcon :size="14" />
+                      <span class="clipboard-toolbar__button-text">{{ t('fileBrowser.actions.pasteToPane2') }}</span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {{ t('shortcuts.transferPreparedToPane2') }}
+                    <kbd class="clipboard-toolbar__shortcut">{{ shortcutsStore.getShortcutLabel('paste') }}</kbd>
+                  </TooltipContent>
+                </Tooltip>
+              </template>
+
+              <Tooltip
+                v-else
+                :delay-duration="300"
+              >
                 <TooltipTrigger as-child>
                   <Button
                     variant="ghost"
@@ -226,7 +291,24 @@ function openCollapsedPopover() {
                     <EyeIcon :size="14" />
                     {{ t('showItems') }}
                   </DropdownMenuItem>
+                  <template v-if="isSplitView">
+                    <DropdownMenuItem
+                      :disabled="!canPasteToPane1"
+                      @click="emit('pasteToPane', 0)"
+                    >
+                      <ClipboardPasteIcon :size="14" />
+                      {{ t('fileBrowser.actions.pasteToPane1') }}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      :disabled="!canPasteToPane2"
+                      @click="emit('pasteToPane', 1)"
+                    >
+                      <ClipboardPasteIcon :size="14" />
+                      {{ t('fileBrowser.actions.pasteToPane2') }}
+                    </DropdownMenuItem>
+                  </template>
                   <DropdownMenuItem
+                    v-else
                     :disabled="!canPaste"
                     @click="emit('paste')"
                   >

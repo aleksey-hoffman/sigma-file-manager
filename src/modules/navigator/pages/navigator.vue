@@ -218,6 +218,20 @@ async function handlePasteShortcut() {
   }
 }
 
+async function handlePasteToPane(paneIndex: number) {
+  const tabGroup = workspacesStore.currentTabGroup;
+  if (!tabGroup || !clipboardStore.hasItems) return;
+
+  const tab = tabGroup[paneIndex];
+  if (!tab) return;
+
+  const pane = paneRefsMap.value.get(tab.id);
+
+  if (pane) {
+    await pane.pasteItems();
+  }
+}
+
 function handleSelectAllShortcut() {
   const pane = getActivePaneRef();
 
@@ -419,7 +433,11 @@ onUnmounted(() => {
         </div>
         <ClipboardToolbar
           :current-path="currentActivePath"
+          :is-split-view="isSplitView"
+          :pane1-path="workspacesStore.currentTabGroup?.[0]?.path"
+          :pane2-path="workspacesStore.currentTabGroup?.[1]?.path"
           @paste="handlePasteShortcut"
+          @paste-to-pane="handlePasteToPane"
         />
       </div>
       <InfoPanel
