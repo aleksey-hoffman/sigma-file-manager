@@ -115,8 +115,8 @@
   "globalSearch": {
     "globalSearch": "Küresel arama",
     "globalSearchDisabled": "Global arama özelliği devre dışı",
-    "driveScanInProgress": "Sürücü taraması devam ediyor",
-    "driveScanInterrupted": "Sürücü taraması kesildi.",
+    "driveScanInProgress": "Sürücü indeksleme devam ediyor",
+    "driveScanInterrupted": "Sürücü indeksleme kesildi.",
     "searchDataIncomplete": "Arama verileri eksik",
     "reScanDrives": "Sürücüleri yeniden tara",
     "clearSearchField": "Arama alanını temizle",
@@ -152,11 +152,11 @@
     "minutesAgo": "dakika önce",
     "indexedItems": "Dizine eklenen öğeler",
     "indexSize": "Dizin boyutu",
-    "scanning": "Taranıyor",
-    "scanningInParallel": "Tüm sürücüler paralel taranıyor",
+    "scanning": "İndeksleme",
+    "scanningInParallel": "Tüm sürücüler paralel indeksleniyor",
     "indexStatus": {
       "ready": "Hazır",
-      "scanning": "Taranıyor",
+      "scanning": "İndeksleme",
       "committing": "Dizin kaydediliyor",
       "outdated": "Güncel değil",
       "empty": "Veri yok",
@@ -171,8 +171,8 @@
     "searchStats": {
       "found": "{n} öğe bulundu | {n} öğe bulundu | {n} öğe bulundu | {n} öğe bulundu",
       "finished": "{n} saniyede tamamlandı",
-      "searched": "{n} yol arandı",
-      "searchingLevelsDeep": "{n} seviye derinlikte arama",
+      "searched": "{n} öğe indekslendi",
+      "searchingLevelsDeep": "{n} seviye derinlikte",
       "indexed": "{time} dizine eklendi",
       "nothingFound": "Hiçbir şey bulunamadı"
     },
@@ -1322,7 +1322,7 @@
     "openedWorkspaceName": "Açık çalışma alanı: {name}",
     "quickViewFileIsNotSupported": "Hızlı görünüm: dosya desteklenmiyor",
     "driveWasConnected": "Sürücü bağlandı",
-    "driveScanInitiated": "Sürücü taraması başlatıldı",
+    "driveScanInitiated": "Sürücü indeksleme başlatıldı",
     "oneOfTheSearchFilesIsDamaged": "Arama dosyalarından biri hasarlı",
     "workspaceAdded": "Çalışma alanı eklendi",
     "failedToFetchInstalledTerminals": "Yüklü terminaller alınamadı"

@@ -114,8 +114,8 @@
   "globalSearch": {
     "globalSearch": "جستجوی جهانی",
     "globalSearchDisabled": "ویژگی جستجوی جهانی غیرفعال است",
-    "driveScanInProgress": "اسکن درایو در حال انجام است",
-    "driveScanInterrupted": "اسکن درایو قطع شد.",
+    "driveScanInProgress": "فهرست‌بندی درایو در حال انجام است",
+    "driveScanInterrupted": "فهرست‌بندی درایو متوقف شد.",
     "searchDataIncomplete": "داده های جستجو ناقص است",
     "reScanDrives": "اسکن مجدد درایوها",
     "clearSearchField": "پاک کردن فیلد جستجو",
@@ -151,11 +151,11 @@
     "minutesAgo": "دقیقه قبل",
     "indexedItems": "موارد ایندکس شده",
     "indexSize": "اندازه شاخص",
-    "scanning": "در حال اسکن",
-    "scanningInParallel": "اسکن همزمان همه درایوها",
+    "scanning": "فهرست‌بندی",
+    "scanningInParallel": "فهرست‌بندی همزمان همه درایوها",
     "indexStatus": {
       "ready": "آماده",
-      "scanning": "در حال اسکن",
+      "scanning": "فهرست‌بندی",
       "committing": "در حال ذخیره شاخص",
       "outdated": "منسوخ شده",
       "empty": "بدون داده",
@@ -170,8 +170,8 @@
     "searchStats": {
       "found": "{n} مورد پیدا شد | {n} مورد پیدا شد | {n} مورد پیدا شد | {n} مورد یافت شد",
       "finished": "در {n} ثانیه به پایان رسید",
-      "searched": "{n} مسیرهای جستجو شده",
-      "searchingLevelsDeep": "جستجو در {n} سطح عمق",
+      "searched": "{n} مورد فهرست‌بندی شده",
+      "searchingLevelsDeep": "{n} سطح عمق",
       "indexed": "شاخص‌گذاری شده {time}",
       "nothingFound": "هیچ چیزی پیدا نشد"
     },
@@ -1321,7 +1321,7 @@
     "openedWorkspaceName": "فضای کاری باز شده: {name}",
     "quickViewFileIsNotSupported": "نمایش سریع: فایل پشتیبانی نمی شود",
     "driveWasConnected": "درایو متصل شد",
-    "driveScanInitiated": "اسکن درایو آغاز شد",
+    "driveScanInitiated": "فهرست‌بندی درایو آغاز شد",
     "oneOfTheSearchFilesIsDamaged": "یکی از فایل های جستجو آسیب دیده است",
     "workspaceAdded": "فضای کاری اضافه شد",
     "failedToFetchInstalledTerminals": "دریافت ترمینال‌های نصب شده با خطا مواجه شد"

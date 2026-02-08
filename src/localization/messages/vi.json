@@ -115,8 +115,8 @@
   "globalSearch": {
     "globalSearch": "Tìm kiếm toàn cầu",
     "globalSearchDisabled": "Tính năng tìm kiếm toàn cầu bị tắt",
-    "driveScanInProgress": "Đang quét ổ đĩa",
-    "driveScanInterrupted": "Quá trình quét ổ đĩa bị gián đoạn.",
+    "driveScanInProgress": "Đang lập chỉ mục ổ đĩa",
+    "driveScanInterrupted": "Lập chỉ mục ổ đĩa bị gián đoạn.",
     "searchDataIncomplete": "Dữ liệu tìm kiếm không đầy đủ",
     "reScanDrives": "Quét lại ổ đĩa",
     "clearSearchField": "Xóa trường tìm kiếm",
@@ -152,11 +152,11 @@
     "minutesAgo": "Vài phút trước",
     "indexedItems": "Mục đã lập chỉ mục",
     "indexSize": "Kích thước chỉ mục",
-    "scanning": "Đang quét",
-    "scanningInParallel": "Đang quét song song tất cả các ổ đĩa",
+    "scanning": "Lập chỉ mục",
+    "scanningInParallel": "Đang lập chỉ mục song song tất cả các ổ đĩa",
     "indexStatus": {
       "ready": "Sẵn sàng",
-      "scanning": "Đang quét",
+      "scanning": "Lập chỉ mục",
       "committing": "Đang lưu chỉ mục",
       "outdated": "Đã lỗi thời",
       "empty": "Không có dữ liệu",
@@ -171,8 +171,8 @@
     "searchStats": {
       "found": "Đã tìm thấy {n} mục | Đã tìm thấy {n} mục | Đã tìm thấy {n} mục | Đã tìm thấy {n} mục",
       "finished": "Hoàn tất sau {n} giây",
-      "searched": "Đã tìm kiếm {n} đường dẫn",
-      "searchingLevelsDeep": "tìm kiếm sâu {n} cấp",
+      "searched": "Đã lập chỉ mục {n} mục",
+      "searchingLevelsDeep": "{n} cấp sâu",
       "indexed": "Được lập chỉ mục {time}",
       "nothingFound": "Không tìm thấy gì"
     },
@@ -1322,7 +1322,7 @@
     "openedWorkspaceName": "Không gian làm việc đã mở: {name}",
     "quickViewFileIsNotSupported": "Xem nhanh: tập tin không được hỗ trợ",
     "driveWasConnected": "Ổ đĩa đã được kết nối",
-    "driveScanInitiated": "Đã bắt đầu quét ổ đĩa",
+    "driveScanInitiated": "Đã bắt đầu lập chỉ mục ổ đĩa",
     "oneOfTheSearchFilesIsDamaged": "Một trong các tệp tìm kiếm bị hỏng",
     "workspaceAdded": "Không gian làm việc đã được thêm vào",
     "failedToFetchInstalledTerminals": "Không thể tải các terminal đã cài đặt"

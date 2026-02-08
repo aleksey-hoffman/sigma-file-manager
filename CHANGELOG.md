@@ -16,6 +16,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Improved
 
+- Global search now allows searching even while drives are being indexed - the scan progress banner shows indexing status without blocking the search area, providing a better experience for users who want to search with partial index data;
+- Consistent terminology across the global search UI: replaced "scan" / "searched" phrasing with "indexing" / "indexed" everywhere (search widget, settings, notifications) in all 13 languages;
+
+### Fixed
+
+- Fixed global search indexing status not updating in real-time: the indexing progress banner would stay visible forever after indexing finished, and the indexed item count would only update after navigating away and back. Root cause: status polling was not awaiting the async backend response (using stale state for timing), and polling was unconditionally stopped when the search widget was closed even if indexing was still running in the background;
+
 - Clipboard toolbar (copy/move prepared items) is now displayed once below the panes container instead of in each pane, since the clipboard is shared across all panes;
 
 ### Fixed

@@ -4,8 +4,14 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue';
-import { useRouter } from 'vue-router';
+import {
+  computed,
+  onMounted,
+  onActivated,
+  ref,
+  watch,
+} from 'vue';
+import { useRouter, useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import {
   ChevronDownIcon, HardDriveIcon, LoaderCircleIcon, SearchIcon, SettingsIcon, SlidersHorizontalIcon, UsbIcon, XIcon,
@@ -36,6 +42,7 @@ const emit = defineEmits<{
 }>();
 
 const router = useRouter();
+const route = useRoute();
 const globalSearchStore = useGlobalSearchStore();
 const userSettingsStore = useUserSettingsStore();
 const settingsStore = useSettingsStore();
@@ -224,11 +231,27 @@ function focusInput() {
   }, 0);
 }
 
-watch(() => globalSearchStore.isOpen, (isOpen) => {
+watch(() => globalSearchStore.isOpen, async (isOpen) => {
   if (isOpen) {
+    await globalSearchStore.refreshStatus();
+    globalSearchStore.startStatusPolling();
     focusInput();
   }
 }, { immediate: true });
+
+watch(() => route.name, async (routeName) => {
+  if (routeName === 'navigator' && globalSearchStore.isOpen) {
+    await globalSearchStore.refreshStatus();
+    globalSearchStore.startStatusPolling();
+  }
+});
+
+onActivated(async () => {
+  if (globalSearchStore.isOpen) {
+    await globalSearchStore.refreshStatus();
+    globalSearchStore.startStatusPolling();
+  }
+});
 
 onMounted(() => {
   focusInput();
@@ -255,7 +278,7 @@ onMounted(() => {
           :model-value="globalSearchStore.query"
           :placeholder="t('globalSearch.globalSearch')"
           class="global-search-view__input"
-          :disabled="!hasIndexData && !globalSearchStore.isScanInProgress"
+          :disabled="!hasIndexData && !globalSearchStore.isScanInProgress && !globalSearchStore.isCommitting"
           @update:model-value="globalSearchStore.setQuery(String($event ?? ''))"
         />
         <Button
@@ -415,22 +438,6 @@ onMounted(() => {
         />
 
         <div
-          v-else-if="!hasIndexData && globalSearchStore.isScanInProgress"
-          class="global-search-view__empty"
-        >
-          <LoaderCircleIcon
-            :size="48"
-            class="global-search-view__empty-icon global-search-view__empty-icon--loading"
-          />
-          <span class="global-search-view__empty-title">
-            {{ t('globalSearch.driveScanInProgress') }}
-          </span>
-          <span class="global-search-view__empty-description">
-            {{ t('globalSearch.searchStats.searched', { n: globalSearchStore.indexedItemCount.toLocaleString() }) }}
-          </span>
-        </div>
-
-        <div
           v-else-if="!globalSearchStore.query.trim()"
           class="global-search-view__empty"
         >
@@ -443,13 +450,7 @@ onMounted(() => {
           </span>
           <span class="global-search-view__empty-description">
             {{ t('globalSearch.searchStats.searched', { n: globalSearchStore.indexedItemCount.toLocaleString() }) }}
-            ({{ t('globalSearch.searchStats.searchingLevelsDeep', { n: scanDepth }) }})
-          </span>
-          <span
-            v-if="lastScanRelative"
-            class="global-search-view__empty-description"
-          >
-            {{ t('globalSearch.searchStats.indexed', { time: lastScanRelative }) }}
+            ({{ t('globalSearch.searchStats.searchingLevelsDeep', { n: scanDepth }) }}<template v-if="lastScanRelative">, {{ t('globalSearch.searchStats.indexed', { time: lastScanRelative }).toLowerCase() }}</template>)
           </span>
           <Button
             variant="outline"
@@ -690,11 +691,6 @@ onMounted(() => {
 
 .global-search-view__empty-icon {
   color: hsl(var(--muted-foreground) / 30%);
-}
-
-.global-search-view__empty-icon--loading {
-  animation: spin 1s linear infinite;
-  color: hsl(var(--primary) / 50%);
 }
 
 .global-search-view__empty-title {

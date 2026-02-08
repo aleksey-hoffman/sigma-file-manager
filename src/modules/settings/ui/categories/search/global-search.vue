@@ -5,6 +5,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { storeToRefs } from 'pinia';
 import { useI18n } from 'vue-i18n';
 import {
   BanIcon, CheckIcon, CircleAlertIcon, ClockIcon, DatabaseIcon, FolderTreeIcon, HardDriveIcon,
@@ -31,6 +32,7 @@ import normalizePath from '@/utils/normalize-path';
 const { t } = useI18n();
 const userSettingsStore = useUserSettingsStore();
 const globalSearchStore = useGlobalSearchStore();
+const { indexedItemCount } = storeToRefs(globalSearchStore);
 const { drives } = useDrives();
 
 const displayTick = ref(0);
@@ -178,8 +180,8 @@ async function cancelScan() {
   await globalSearchStore.cancelScan();
 }
 
-onMounted(() => {
-  globalSearchStore.refreshStatus();
+onMounted(async () => {
+  await globalSearchStore.refreshStatus();
   globalSearchStore.startStatusPolling();
   displayTickIntervalId = setInterval(() => {
     displayTick.value++;
@@ -187,7 +189,11 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-  globalSearchStore.stopStatusPolling();
+  const isActive = globalSearchStore.isScanInProgress || globalSearchStore.isCommitting;
+
+  if (!isActive) {
+    globalSearchStore.stopStatusPolling();
+  }
 
   if (displayTickIntervalId !== null) {
     clearInterval(displayTickIntervalId);
@@ -282,7 +288,7 @@ onUnmounted(() => {
           <div class="global-search-settings__metrics">
             <div class="global-search-settings__metric">
               <span class="global-search-settings__metric-value">
-                {{ globalSearchStore.indexedItemCount.toLocaleString() }}
+                {{ indexedItemCount.toLocaleString() }}
               </span>
               <span class="global-search-settings__metric-label">
                 {{ t('globalSearch.indexedItems') }}
@@ -642,7 +648,7 @@ onUnmounted(() => {
   overflow: hidden;
   height: 4px;
   border-radius: 9999px;
-  background-color: hsl(var(--secondary));
+  background-color: hsl(var(--muted));
 }
 
 .global-search-settings__progress-bar-fill {

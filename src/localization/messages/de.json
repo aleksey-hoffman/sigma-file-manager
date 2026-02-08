@@ -115,8 +115,8 @@
   "globalSearch": {
     "globalSearch": "Globale Suche",
     "globalSearchDisabled": "Globale Suchfunktion ist deaktiviert",
-    "driveScanInProgress": "Laufwerksscan läuft",
-    "driveScanInterrupted": "Laufwerksscan wurde unterbrochen.",
+    "driveScanInProgress": "Laufwerk-Indexierung läuft",
+    "driveScanInterrupted": "Laufwerk-Indexierung wurde unterbrochen.",
     "searchDataIncomplete": "Suchdaten sind unvollständig",
     "reScanDrives": "Laufwerke erneut scannen",
     "clearSearchField": "Suchfeld löschen",
@@ -152,11 +152,11 @@
     "minutesAgo": "Vor ein paar Minuten",
     "indexedItems": "Indizierte Elemente",
     "indexSize": "Indexgröße",
-    "scanning": "Wird gescannt",
-    "scanningInParallel": "Alle Laufwerke werden parallel gescannt",
+    "scanning": "Indexierung",
+    "scanningInParallel": "Alle Laufwerke parallel indexieren",
     "indexStatus": {
       "ready": "Bereit",
-      "scanning": "Wird gescannt",
+      "scanning": "Indexierung",
       "committing": "Index wird gespeichert",
       "outdated": "Veraltet",
       "empty": "Keine Daten",
@@ -171,8 +171,8 @@
     "searchStats": {
       "found": "{n} Elemente gefunden | {n} Elemente gefunden | {n} Elemente gefunden | {n} Elemente gefunden",
       "finished": "Fertig in {n} Sekunden",
-      "searched": "Durchsuchte {n} Pfade",
-      "searchingLevelsDeep": "suche {n} Ebenen tief",
+      "searched": "{n} Elemente indexiert",
+      "searchingLevelsDeep": "{n} Ebenen tief",
       "indexed": "Indexiert {time}",
       "nothingFound": "Es wurde nichts gefunden"
     },
@@ -1322,7 +1322,7 @@
     "openedWorkspaceName": "Geöffneter Arbeitsbereich: {name}",
     "quickViewFileIsNotSupported": "Schnellansicht: Datei wird nicht unterstützt",
     "driveWasConnected": "Laufwerk wurde angeschlossen",
-    "driveScanInitiated": "Laufwerksscan eingeleitet",
+    "driveScanInitiated": "Laufwerk-Indexierung gestartet",
     "oneOfTheSearchFilesIsDamaged": "Eine der Suchdateien ist beschädigt",
     "workspaceAdded": "Arbeitsbereich wurde hinzugefügt",
     "failedToFetchInstalledTerminals": "Fehler beim Abrufen installierter Terminals"

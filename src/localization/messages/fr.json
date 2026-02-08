@@ -115,8 +115,8 @@
   "globalSearch": {
     "globalSearch": "Recherche globale",
     "globalSearchDisabled": "La fonction de recherche globale est désactivée",
-    "driveScanInProgress": "L'analyse du lecteur est en cours",
-    "driveScanInterrupted": "L'analyse du lecteur a été interrompue.",
+    "driveScanInProgress": "Indexation du lecteur en cours",
+    "driveScanInterrupted": "L'indexation du lecteur a été interrompue.",
     "searchDataIncomplete": "Les données de recherche sont incomplètes",
     "reScanDrives": "Re-scanner les lecteurs",
     "clearSearchField": "Effacer le champ de recherche",
@@ -152,11 +152,11 @@
     "minutesAgo": "il y a quelques minutes",
     "indexedItems": "Éléments indexés",
     "indexSize": "Taille de l'index",
-    "scanning": "Analyse en cours",
-    "scanningInParallel": "Analyse de tous les lecteurs en parallèle",
+    "scanning": "Indexation",
+    "scanningInParallel": "Indexation de tous les lecteurs en parallèle",
     "indexStatus": {
       "ready": "Prêt",
-      "scanning": "Analyse en cours",
+      "scanning": "Indexation",
       "committing": "Sauvegarde de l'index",
       "outdated": "Obsolète",
       "empty": "Pas de données",
@@ -171,8 +171,8 @@
     "searchStats": {
       "found": "Trouvé {n} éléments | Trouvé {n} éléments | Trouvé {n} éléments | Trouvé {n} éléments",
       "finished": "Terminé dans {n} secondes",
-      "searched": "Recherché {n} chemins",
-      "searchingLevelsDeep": "recherche sur {n} niveaux de profondeur",
+      "searched": "{n} éléments indexés",
+      "searchingLevelsDeep": "{n} niveaux de profondeur",
       "indexed": "Indexé {time}",
       "nothingFound": "Rien n'a été trouvé"
     },
@@ -1322,7 +1322,7 @@
     "openedWorkspaceName": "Espace de travail ouvert : {name}",
     "quickViewFileIsNotSupported": "Vue rapide: le fichier n'est pas pris en charge",
     "driveWasConnected": "Le lecteur était connecté",
-    "driveScanInitiated": "Analyse du lecteur lancée",
+    "driveScanInitiated": "Indexation du lecteur initiée",
     "oneOfTheSearchFilesIsDamaged": "L'un des fichiers de recherche est endommagé",
     "workspaceAdded": "L'espace de travail a été ajouté",
     "failedToFetchInstalledTerminals": "Échec de la récupération des terminaux installés"

@@ -128,8 +128,8 @@
   "globalSearch": {
     "globalSearch": "Глобальный поиск",
     "globalSearchDisabled": "Функция глобального поиска отключена",
-    "driveScanInProgress": "Идет сканирование диска",
-    "driveScanInterrupted": "Сканирование диска было прервано",
+    "driveScanInProgress": "Индексация диска выполняется",
+    "driveScanInterrupted": "Индексация диска была прервана.",
     "searchDataIncomplete": "Данные поиска неполные",
     "reScanDrives": "Повторное сканирование дисков",
     "clearSearchField": "Очистить поле поиска",
@@ -165,11 +165,11 @@
     "minutesAgo": "Минуты назад",
     "indexedItems": "Индексировано",
     "indexSize": "Размер индекса",
-    "scanning": "Сканирование",
-    "scanningInParallel": "Сканирование всех дисков параллельно",
+    "scanning": "Индексация",
+    "scanningInParallel": "Индексация всех дисков параллельно",
     "indexStatus": {
       "ready": "Готов",
-      "scanning": "Сканирование",
+      "scanning": "Индексация",
       "committing": "Сохранение индекса",
       "outdated": "Устарел",
       "empty": "Нет данных",
@@ -184,8 +184,8 @@
     "searchStats": {
       "found": "Найдено {n} элементов | Найдено {n} элементов | Найдено {n} элементов | Найдено {n} элементов",
       "finished": "Завершено через {n} секунд",
-      "searched": "Обыскано {n} путей",
-      "searchingLevelsDeep": "поиск на {n} уровней вглубь",
+      "searched": "{n} элементов проиндексировано",
+      "searchingLevelsDeep": "{n} уровней глубины",
       "indexed": "Индексировано {time}",
       "nothingFound": "Ничего не найдено"
     },
@@ -1337,7 +1337,7 @@
     "openedWorkspaceName": "Открыто рабочее пространство: {name}",
     "quickViewFileIsNotSupported": "Быстрый просмотр: файл не поддерживается",
     "driveWasConnected": "Диск подключен",
-    "driveScanInitiated": "Начато сканирование диска",
+    "driveScanInitiated": "Индексация диска запущена",
     "oneOfTheSearchFilesIsDamaged": "Один из файлов поиска поврежден",
     "workspaceAdded": "Рабочее пространство добавлено",
     "failedToFetchInstalledTerminals": "Не удалось получить установленные терминалы"

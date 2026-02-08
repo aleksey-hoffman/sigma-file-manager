@@ -115,8 +115,8 @@
   "globalSearch": {
     "globalSearch": "グローバル検索",
     "globalSearchDisabled": "グローバル検索機能が無効になっています",
-    "driveScanInProgress": "ドライブスキャンが進行中です",
-    "driveScanInterrupted": "ドライブスキャンが中断されました。",
+    "driveScanInProgress": "ドライブのインデックス作成中",
+    "driveScanInterrupted": "ドライブのインデックス作成が中断されました。",
     "searchDataIncomplete": "検索データが不完全です",
     "reScanDrives": "ドライブの再スキャン",
     "clearSearchField": "検索フィールドをクリア",
@@ -152,11 +152,11 @@
     "minutesAgo": "数分前",
     "indexedItems": "インデックス済みアイテム",
     "indexSize": "インデックスサイズ",
-    "scanning": "スキャン中",
-    "scanningInParallel": "すべてのドライブを並列スキャン中",
+    "scanning": "インデックス作成",
+    "scanningInParallel": "すべてのドライブを並列インデックス作成中",
     "indexStatus": {
       "ready": "準備完了",
-      "scanning": "スキャン中",
+      "scanning": "インデックス作成",
       "committing": "インデックス保存中",
       "outdated": "古い",
       "empty": "データなし",
@@ -171,8 +171,8 @@
     "searchStats": {
       "found": "{n} 個のアイテムが見つかりました | {n} 個のアイテムが見つかりました | {n} 個のアイテムが見つかりました | {n} 個のアイテムが見つかりました",
       "finished": "{n} 秒で終了",
-      "searched": "{n} パスを検索しました",
-      "searchingLevelsDeep": "{n} レベルの深さで検索",
+      "searched": "{n} 件のアイテムをインデックス済み",
+      "searchingLevelsDeep": "{n} レベルの深さ",
       "indexed": "{time}にインデックス作成",
       "nothingFound": "「何も見つかりませんでした」"
     },
@@ -1322,7 +1322,7 @@
     "openedWorkspaceName": "開いたワークスペース: {name}",
     "quickViewFileIsNotSupported": "クイック ビュー: ファイルはサポートされていません",
     "driveWasConnected": "ドライブが接続されました",
-    "driveScanInitiated": "ドライブ スキャンが開始されました",
+    "driveScanInitiated": "ドライブのインデックス作成が開始されました",
     "oneOfTheSearchFilesIsDamaged": "検索ファイルの 1 つが破損しています",
     "workspaceAdded": "ワークスペースが追加されました",
     "failedToFetchInstalledTerminals": "インストールされた端末の取得に失敗しました"

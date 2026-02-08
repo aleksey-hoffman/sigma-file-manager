@@ -115,8 +115,8 @@
   "globalSearch": {
     "globalSearch": "Pesquisa global",
     "globalSearchDisabled": "Pesquisa global desativada",
-    "driveScanInProgress": "unidade Verificação em andamento",
-    "driveScanInterrupted": "varredura da unidade interrompida.",
+    "driveScanInProgress": "Indexação do disco em andamento",
+    "driveScanInterrupted": "A indexação do disco foi interrompida.",
     "searchDataIncomplete": "dados de pesquisa incompletos",
     "reScanDrives": "Reescanear unidades",
     "clearSearchField": "limpar campo de pesquisa",
@@ -152,11 +152,11 @@
     "minutesAgo": "minutos atrás",
     "indexedItems": "Itens indexados",
     "indexSize": "Tamanho do índice",
-    "scanning": "Verificando",
-    "scanningInParallel": "Verificando todas as unidades em paralelo",
+    "scanning": "Indexação",
+    "scanningInParallel": "Indexando todas as unidades em paralelo",
     "indexStatus": {
       "ready": "Pronto",
-      "scanning": "Verificando",
+      "scanning": "Indexação",
       "committing": "Salvando índice",
       "outdated": "Desatualizado",
       "empty": "Sem dados",
@@ -171,8 +171,8 @@
     "searchStats": {
       "found": "Encontrados {n} elementos | Encontrados {n} elementos | Encontrados {n} elementos | Encontrados {n} elementos",
       "finished": "finalizado em {n} segundos",
-      "searched": "pesquisado {n} rotas",
-      "searchingLevelsDeep": "pesquisando {n} níveis de profundidade",
+      "searched": "{n} itens indexados",
+      "searchingLevelsDeep": "{n} níveis de profundidade",
       "indexed": "Indexado {time}",
       "nothingFound": "nada encontrado"
     },
@@ -1322,7 +1322,7 @@
     "openedWorkspaceName": "Área de trabalho aberta: {name}",
     "quickViewFileIsNotSupported": "QuickView: Arquivo não suportado",
     "driveWasConnected": "A unidade foi conectada",
-    "driveScanInitiated": "Verificação da unidade iniciada",
+    "driveScanInitiated": "Indexação do disco iniciada",
     "oneOfTheSearchFilesIsDamaged": "Um dos arquivos de pesquisa está danificado",
     "workspaceAdded": "O espaço de trabalho foi adicionado",
     "failedToFetchInstalledTerminals": "Falha ao buscar terminais instalados"

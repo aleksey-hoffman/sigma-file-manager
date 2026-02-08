@@ -56,7 +56,7 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
   const isInitialized = ref(false);
   const lastError = ref<string | null>(null);
 
-  const statusPollIntervalId = ref<ReturnType<typeof setInterval> | null>(null);
+  const statusPollTimerId = ref<ReturnType<typeof setTimeout> | null>(null);
   const debounceTimerId = ref<ReturnType<typeof setTimeout> | null>(null);
   const searchAbortController = ref<AbortController | null>(null);
   const idleCheckIntervalId = ref<ReturnType<typeof setInterval> | null>(null);
@@ -162,27 +162,27 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
     }
   }
 
-  function pollStatus() {
-    refreshStatus();
+  async function pollStatus() {
+    await refreshStatus();
 
-    if (statusPollIntervalId.value !== null) {
-      clearInterval(statusPollIntervalId.value);
+    if (statusPollTimerId.value !== null) {
+      clearTimeout(statusPollTimerId.value);
     }
 
     const isActive = isScanInProgress.value || isCommitting.value;
     const interval = isActive ? POLL_INTERVAL_ACTIVE_MS : POLL_INTERVAL_IDLE_MS;
-    statusPollIntervalId.value = setInterval(pollStatus, interval);
+    statusPollTimerId.value = setTimeout(() => pollStatus(), interval);
   }
 
   function startStatusPolling() {
-    if (statusPollIntervalId.value !== null) return;
+    if (statusPollTimerId.value !== null) return;
     pollStatus();
   }
 
   function stopStatusPolling() {
-    if (statusPollIntervalId.value === null) return;
-    clearInterval(statusPollIntervalId.value);
-    statusPollIntervalId.value = null;
+    if (statusPollTimerId.value === null) return;
+    clearTimeout(statusPollTimerId.value);
+    statusPollTimerId.value = null;
   }
 
   async function startScan() {
@@ -380,16 +380,21 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
     }, DEBOUNCE_DELAY_MS);
   }
 
-  function open() {
+  async function open() {
     isOpen.value = true;
-    refreshStatus();
+    await refreshStatus();
     startStatusPolling();
   }
 
   function close() {
     isOpen.value = false;
     cancelPendingSearch();
-    stopStatusPolling();
+
+    const isActive = isScanInProgress.value || isCommitting.value;
+
+    if (!isActive) {
+      stopStatusPolling();
+    }
   }
 
   function toggle() {

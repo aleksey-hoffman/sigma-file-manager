@@ -115,8 +115,8 @@
   "globalSearch": {
     "globalSearch": "Búsqueda global",
     "globalSearchDisabled": "La función de búsqueda global está deshabilitada",
-    "driveScanInProgress": "La exploración de la unidad está en curso",
-    "driveScanInterrupted": "Se interrumpió el análisis de la unidad.",
+    "driveScanInProgress": "Indexación de la unidad en curso",
+    "driveScanInterrupted": "La indexación de la unidad fue interrumpida.",
     "searchDataIncomplete": "Los datos de búsqueda están incompletos",
     "reScanDrives": "Volver a escanear unidades",
     "clearSearchField": "Borrar campo de búsqueda",
@@ -152,11 +152,11 @@
     "minutesAgo": "hace minutos",
     "indexedItems": "Elementos indexados",
     "indexSize": "Tamaño del índice",
-    "scanning": "Escaneando",
-    "scanningInParallel": "Escaneando todas las unidades en paralelo",
+    "scanning": "Indexación",
+    "scanningInParallel": "Indexando todas las unidades en paralelo",
     "indexStatus": {
       "ready": "Listo",
-      "scanning": "Escaneando",
+      "scanning": "Indexación",
       "committing": "Guardando índice",
       "outdated": "Desactualizado",
       "empty": "Sin datos",
@@ -171,8 +171,8 @@
     "searchStats": {
       "found": "Encontrados {n} elementos | Encontrados {n} elementos | Encontrados {n} elementos | Encontrados {n} elementos",
       "finished": "Terminado en {n} segundos",
-      "searched": "Se buscaron {n} rutas",
-      "searchingLevelsDeep": "buscando {n} niveles de profundidad",
+      "searched": "{n} elementos indexados",
+      "searchingLevelsDeep": "{n} niveles de profundidad",
       "indexed": "Indexado {time}",
       "nothingFound": "No se encontró nada"
     },
@@ -1322,7 +1322,7 @@
     "openedWorkspaceName": "Espacio de trabajo abierto: {name}",
     "quickViewFileIsNotSupported": "Vista rápida: el archivo no es compatible",
     "driveWasConnected": "La unidad estaba conectada",
-    "driveScanInitiated": "Escaneo de unidad iniciado",
+    "driveScanInitiated": "Indexación de la unidad iniciada",
     "oneOfTheSearchFilesIsDamaged": "Uno de los archivos de búsqueda está dañado",
     "workspaceAdded": "Se ha añadido el espacio de trabajo",
     "failedToFetchInstalledTerminals": "Error al buscar los terminales instalados"

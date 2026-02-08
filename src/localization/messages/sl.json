@@ -128,8 +128,8 @@
   "globalSearch": {
     "globalSearch": "Globalno iskanje",
     "globalSearchDisabled": "Funkcija globalnega iskanja je onemogočena",
-    "driveScanInProgress": "Skeniranje pogona je v teku",
-    "driveScanInterrupted": "Skeniranje pogona je bilo prekinjeno.",
+    "driveScanInProgress": "Indeksiranje pogona je v teku",
+    "driveScanInterrupted": "Indeksiranje pogona je bilo prekinjeno.",
     "searchDataIncomplete": "Podatki za iskanje so nepopolni",
     "reScanDrives": "Ponovno skeniraj pogone",
     "clearSearchField": "Počisti iskalno polje",
@@ -165,11 +165,11 @@
     "minutesAgo": "minut nazaj",
     "indexedItems": "Indeksirani predmeti",
     "indexSize": "Velikost indeksa",
-    "scanning": "Skeniranje",
-    "scanningInParallel": "Skeniranje vseh pogonov vzporedno",
+    "scanning": "Indeksiranje",
+    "scanningInParallel": "Indeksiranje vseh pogonov vzporedno",
     "indexStatus": {
       "ready": "Pripravljeno",
-      "scanning": "Skeniranje",
+      "scanning": "Indeksiranje",
       "committing": "Shranjevanje indeksa",
       "outdated": "Zastarelo",
       "empty": "Ni podatkov",
@@ -184,8 +184,8 @@
     "searchStats": {
       "found": "Najdeno {n} predmetov | Najdeno {n} predmetov | Najdeno {n} predmetov | Najdeno {n} predmetov",
       "finished": "Končano v {n} sekundah",
-      "searched": "Iskano {n} poti",
-      "searchingLevelsDeep": "iskanje {n} nivojev globoko",
+      "searched": "{n} elementov indeksiranih",
+      "searchingLevelsDeep": "{n} nivojev globoko",
       "indexed": "Indeksirano {time}",
       "nothingFound": "Nič ni bilo najdeno"
     },
@@ -1337,7 +1337,7 @@
     "openedWorkspaceName": "Odprt delovni prostor: {name}",
     "quickViewFileIsNotSupported": "Quick view: datoteka ni podprta",
     "driveWasConnected": "Pogon je bil povezan",
-    "driveScanInitiated": "Skeniranje pogona je bilo začeto",
+    "driveScanInitiated": "Indeksiranje pogona se je začelo",
     "oneOfTheSearchFilesIsDamaged": "Ena od datotek iskanja je poškodovana",
     "workspaceAdded": "Delovni prostor dodan",
     "failedToFetchInstalledTerminals": "Ni bilo mogoče pridobiti nameščenih terminalov"
