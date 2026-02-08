@@ -433,7 +433,6 @@ defineExpose({
       @deselect-all="clearSelection"
       @remove-from-selection="removeFromSelection"
       @context-menu-action="onContextMenuAction"
-      @paste="pasteItems"
     />
 
     <FileBrowserRenameDialog

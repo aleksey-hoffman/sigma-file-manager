@@ -1615,54 +1615,53 @@
       "addToFavorites": "Dodaj med priljubljene",
       "removeFromFavorites": "Odstrani iz priljubljenih"
     },
-  
-  "openWith": {
-    "title": "Odpri z",
-    "selectAppTitle": "Izberite aplikacijo za odpiranje te {ext} datoteke",
-    "loadingPrograms": "Nalagam programe...",
-    "defaultApp": "Privzeta aplikacija",
-    "suggestedApps": "Predlagane aplikacije",
-    "otherApps": "Druge aplikacije",
-    "moreOptions": "Več možnosti",
-    "noProgramsFound": "Ni najdenih povezanih programov za to vrsto datoteke",
-    "customProgram": "Program po meri",
-    "enterProgramPath": "Izberite drugo aplikacijo ali vnesite pot...",
-    "selectProgram": "Izberite program",
-    "advancedOptions": "Napredne možnosti",
-    "arguments": "Argumenti",
-    "argumentsHint": "Dodatni argumenti ukazne vrstice. Uporabite %1 kot nadomestni znak za pot do datoteke.",
-    "argumentsPlaceholder": "npr. --new-window --flag",
-    "open": "Odpri",
-    "always": "Vedno",
-    "justOnce": "Le enkrat",
-    "failedToLoadPrograms": "Ni uspelo naložiti povezanih programov",
-    "failedToOpenFile": "Ni uspelo odpreti datoteke",
-    "chooseAnotherApp": "Izberite drugo aplikacijo...",
-    "customCommandWithFlags": "Ukaz po meri z zastavicami...",
-    "customCommands": "Ukazi po meri",
-    "addCustomCommand": "Dodaj ukaz po meri",
-    "editCustomCommand": "Uredi ukaz po meri",
-    "commandName": "Ime ukaza",
-    "commandNamePlaceholder": "npr. VLC s podnapisi",
-    "programPath": "Pot do programa",
-    "noCustomCommands": "Še ni ukazov po meri. Dodajte ukaz po meri za odpiranje datotek s posebnimi zastavicami."
-  },
-  "moreOptions": {
-    "showMoreOptions": "Pokaži več možnosti",
-    "loading": "Nalagam možnosti...",
-    "shellExtensions": "Razširitve lupine",
-    "noOptionsAvailable": "Ni dodatnih možnosti na voljo",
-    "failedToLoad": "Ni uspelo naložiti možnosti"
-  },
-  "changelog": {
-    "title": "Kaj je novega",
-    "settingsTitle": "Kaj je novega",
-    "settingsDescription": "Oglejte si opombe ob izdaji in nastavite obvestila o posodobitvah",
-    "showOnUpdate": "Pokaži dnevnik sprememb ob posodobitvi aplikacije",
-    "viewChangelog": "Oglej si dnevnik sprememb",
-    "current": "Trenutno",
-    "summary": "Povzetek",
-    "selectVersion": "Izberite različico"
-  	}
-  }	
+    "openWith": {
+      "title": "Odpri z",
+      "selectAppTitle": "Izberite aplikacijo za odpiranje te {ext} datoteke",
+      "loadingPrograms": "Nalagam programe...",
+      "defaultApp": "Privzeta aplikacija",
+      "suggestedApps": "Predlagane aplikacije",
+      "otherApps": "Druge aplikacije",
+      "moreOptions": "Več možnosti",
+      "noProgramsFound": "Ni najdenih povezanih programov za to vrsto datoteke",
+      "customProgram": "Program po meri",
+      "enterProgramPath": "Izberite drugo aplikacijo ali vnesite pot...",
+      "selectProgram": "Izberite program",
+      "advancedOptions": "Napredne možnosti",
+      "arguments": "Argumenti",
+      "argumentsHint": "Dodatni argumenti ukazne vrstice. Uporabite %1 kot nadomestni znak za pot do datoteke.",
+      "argumentsPlaceholder": "npr. --new-window --flag",
+      "open": "Odpri",
+      "always": "Vedno",
+      "justOnce": "Le enkrat",
+      "failedToLoadPrograms": "Ni uspelo naložiti povezanih programov",
+      "failedToOpenFile": "Ni uspelo odpreti datoteke",
+      "chooseAnotherApp": "Izberite drugo aplikacijo...",
+      "customCommandWithFlags": "Ukaz po meri z zastavicami...",
+      "customCommands": "Ukazi po meri",
+      "addCustomCommand": "Dodaj ukaz po meri",
+      "editCustomCommand": "Uredi ukaz po meri",
+      "commandName": "Ime ukaza",
+      "commandNamePlaceholder": "npr. VLC s podnapisi",
+      "programPath": "Pot do programa",
+      "noCustomCommands": "Še ni ukazov po meri. Dodajte ukaz po meri za odpiranje datotek s posebnimi zastavicami."
+    },
+    "moreOptions": {
+      "showMoreOptions": "Pokaži več možnosti",
+      "loading": "Nalagam možnosti...",
+      "shellExtensions": "Razširitve lupine",
+      "noOptionsAvailable": "Ni dodatnih možnosti na voljo",
+      "failedToLoad": "Ni uspelo naložiti možnosti"
+    },
+    "changelog": {
+      "title": "Kaj je novega",
+      "settingsTitle": "Kaj je novega",
+      "settingsDescription": "Oglejte si opombe ob izdaji in nastavite obvestila o posodobitvah",
+      "showOnUpdate": "Pokaži dnevnik sprememb ob posodobitvi aplikacije",
+      "viewChangelog": "Oglej si dnevnik sprememb",
+      "current": "Trenutno",
+      "summary": "Povzetek",
+      "selectVersion": "Izberite različico"
+    }
+  }
 }

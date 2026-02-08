@@ -22,6 +22,7 @@ import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
 import { FileBrowser } from '@/modules/navigator/components/file-browser';
 import { InfoPanel } from '@/modules/navigator/components/info-panel';
 import { NavigatorToolbarActions } from '@/modules/navigator/components/navigator-toolbar-actions';
+import { ClipboardToolbar } from '@/modules/navigator/components/clipboard-toolbar';
 import { GlobalSearchView } from '@/modules/global-search';
 import { UI_CONSTANTS } from '@/constants';
 import type { DirEntry } from '@/types/dir-entry';
@@ -70,6 +71,10 @@ const isSplitView = computed(() => {
   return (workspacesStore.currentTabGroup?.length ?? 0) > 1;
 });
 
+const currentActivePath = computed(() => {
+  return currentDirEntry.value?.path;
+});
+
 function handleToggleSplitView() {
   workspacesStore.toggleSplitView();
 }
@@ -79,18 +84,21 @@ function handleToggleInfoPanel() {
 }
 
 function handleSelectionChange(entries: DirEntry[], tabId?: string) {
-  selectedEntries.value = entries;
+  if (entries.length > 0) {
+    selectedEntries.value = entries;
 
-  if (tabId) {
-    activeTabId.value = tabId;
+    if (tabId) {
+      activeTabId.value = tabId;
+
+      paneRefsMap.value.forEach((pane, paneTabId) => {
+        if (paneTabId !== tabId) {
+          pane.clearSelection();
+        }
+      });
+    }
   }
-
-  if (entries.length > 0 && tabId) {
-    paneRefsMap.value.forEach((pane, paneTabId) => {
-      if (paneTabId !== tabId) {
-        pane.clearSelection();
-      }
-    });
+  else if (!tabId || tabId === activeTabId.value) {
+    selectedEntries.value = [];
   }
 }
 
@@ -119,21 +127,6 @@ function getFilterState(pane: FileBrowserInstance): boolean {
   }
 
   return Boolean(state);
-}
-
-function getSelectedEntries(pane: FileBrowserInstance): DirEntry[] {
-  const selected = (pane as unknown as { selectedEntries?: unknown }).selectedEntries;
-
-  if (Array.isArray(selected)) {
-    return selected as DirEntry[];
-  }
-
-  if (typeof selected === 'object' && selected !== null && 'value' in selected) {
-    const selectedValue = (selected as { value: unknown }).value;
-    return Array.isArray(selectedValue) ? (selectedValue as DirEntry[]) : [];
-  }
-
-  return [];
 }
 
 function getActivePaneRef(): FileBrowserInstance | undefined {
@@ -202,20 +195,18 @@ function handleFilterShortcut() {
 function handleCopyShortcut() {
   const pane = getActivePaneRef();
   if (!pane) return;
-  const entriesArray = getSelectedEntries(pane);
 
-  if (entriesArray && entriesArray.length > 0) {
-    pane.copyItems(entriesArray);
+  if (selectedEntries.value.length > 0) {
+    pane.copyItems(selectedEntries.value);
   }
 }
 
 function handleCutShortcut() {
   const pane = getActivePaneRef();
   if (!pane) return;
-  const entriesArray = getSelectedEntries(pane);
 
-  if (entriesArray && entriesArray.length > 0) {
-    pane.cutItems(entriesArray);
+  if (selectedEntries.value.length > 0) {
+    pane.cutItems(selectedEntries.value);
   }
 }
 
@@ -238,20 +229,18 @@ function handleSelectAllShortcut() {
 async function handleDeleteShortcut() {
   const pane = getActivePaneRef();
   if (!pane) return;
-  const entriesArray = getSelectedEntries(pane);
 
-  if (entriesArray && entriesArray.length > 0) {
-    await pane.deleteItems(entriesArray, true);
+  if (selectedEntries.value.length > 0) {
+    await pane.deleteItems(selectedEntries.value, true);
   }
 }
 
 async function handleDeletePermanentlyShortcut() {
   const pane = getActivePaneRef();
   if (!pane) return;
-  const entriesArray = getSelectedEntries(pane);
 
-  if (entriesArray && entriesArray.length > 0) {
-    await pane.deleteItems(entriesArray, false);
+  if (selectedEntries.value.length > 0) {
+    await pane.deleteItems(selectedEntries.value, false);
   }
 }
 
@@ -362,70 +351,76 @@ onUnmounted(() => {
           :is-current-dir="selectedEntries.length === 0 && !!currentDirEntry"
         />
       </div>
-      <div class="navigator-page__panes-container">
-        <GlobalSearchView
-          v-show="globalSearchStore.isOpen"
-          @close="globalSearchStore.close()"
-          @open-entry="handleGlobalSearchOpenEntry"
-        />
-        <ResizablePanelGroup
-          v-show="!globalSearchStore.isOpen"
-          direction="horizontal"
-          class="navigator-page__panes"
-        >
-          <template v-if="workspacesStore.currentTabGroup && isSplitView">
-            <template
-              v-for="(tab, index) in workspacesStore.currentTabGroup"
-              :key="tab.id"
-            >
-              <ResizablePanel
-                :default-size="50"
-                :min-size="15"
-                @mousedown="handlePaneFocus(tab.id)"
+      <div class="navigator-page__panes-wrapper">
+        <div class="navigator-page__panes-container">
+          <GlobalSearchView
+            v-show="globalSearchStore.isOpen"
+            @close="globalSearchStore.close()"
+            @open-entry="handleGlobalSearchOpenEntry"
+          />
+          <ResizablePanelGroup
+            v-show="!globalSearchStore.isOpen"
+            direction="horizontal"
+            class="navigator-page__panes"
+          >
+            <template v-if="workspacesStore.currentTabGroup && isSplitView">
+              <template
+                v-for="(tab, index) in workspacesStore.currentTabGroup"
+                :key="tab.id"
               >
+                <ResizablePanel
+                  :default-size="50"
+                  :min-size="15"
+                  @mousedown="handlePaneFocus(tab.id)"
+                >
+                  <FileBrowser
+                    :ref="(el) => setPaneRef(el as FileBrowserInstance, tab.id)"
+                    :tab="tab"
+                    :pane-index="index"
+                    :layout="currentLayout"
+                    class="navigator-page__pane"
+                    @update:selected-entries="(entries) => handleSelectionChange(entries, tab.id)"
+                    @update:current-dir-entry="handleCurrentDirChange"
+                  />
+                </ResizablePanel>
+                <ResizableHandle
+                  v-if="index === 0"
+                  with-handle
+                />
+              </template>
+            </template>
+            <template v-else-if="workspacesStore.currentTabGroup">
+              <ResizablePanel :default-size="100">
                 <FileBrowser
-                  :ref="(el) => setPaneRef(el as FileBrowserInstance, tab.id)"
-                  :tab="tab"
-                  :pane-index="index"
+                  :key="workspacesStore.currentTabGroup[0].id"
+                  :ref="(el) => setPaneRef(el as FileBrowserInstance, workspacesStore.currentTabGroup![0].id)"
+                  :tab="workspacesStore.currentTabGroup[0]"
+                  :pane-index="0"
                   :layout="currentLayout"
                   class="navigator-page__pane"
-                  @update:selected-entries="(entries) => handleSelectionChange(entries, tab.id)"
+                  @update:selected-entries="(entries) => handleSelectionChange(entries, workspacesStore.currentTabGroup![0].id)"
                   @update:current-dir-entry="handleCurrentDirChange"
                 />
               </ResizablePanel>
-              <ResizableHandle
-                v-if="index === 0"
-                with-handle
-              />
             </template>
-          </template>
-          <template v-else-if="workspacesStore.currentTabGroup">
-            <ResizablePanel :default-size="100">
+            <ResizablePanel
+              v-else
+              :default-size="100"
+            >
               <FileBrowser
-                :key="workspacesStore.currentTabGroup[0].id"
-                :ref="(el) => setPaneRef(el as FileBrowserInstance, workspacesStore.currentTabGroup![0].id)"
-                :tab="workspacesStore.currentTabGroup[0]"
-                :pane-index="0"
+                ref="singlePaneRef"
                 :layout="currentLayout"
                 class="navigator-page__pane"
-                @update:selected-entries="(entries) => handleSelectionChange(entries, workspacesStore.currentTabGroup![0].id)"
+                @update:selected-entries="(entries) => handleSelectionChange(entries)"
                 @update:current-dir-entry="handleCurrentDirChange"
               />
             </ResizablePanel>
-          </template>
-          <ResizablePanel
-            v-else
-            :default-size="100"
-          >
-            <FileBrowser
-              ref="singlePaneRef"
-              :layout="currentLayout"
-              class="navigator-page__pane"
-              @update:selected-entries="(entries) => handleSelectionChange(entries)"
-              @update:current-dir-entry="handleCurrentDirChange"
-            />
-          </ResizablePanel>
-        </ResizablePanelGroup>
+          </ResizablePanelGroup>
+        </div>
+        <ClipboardToolbar
+          :current-path="currentActivePath"
+          @paste="handlePasteShortcut"
+        />
       </div>
       <InfoPanel
         v-if="showInfoPanel && !isSmallScreen"
@@ -464,9 +459,18 @@ onUnmounted(() => {
   min-width: 0;
 }
 
+.navigator-page__panes-wrapper {
+  display: flex;
+  overflow: hidden;
+  min-width: 0;
+  flex-direction: column;
+  gap: 6px;
+}
+
 .navigator-page__panes-container {
   overflow: hidden;
   min-width: 0;
+  flex: 1;
 }
 
 .navigator-page__pane {

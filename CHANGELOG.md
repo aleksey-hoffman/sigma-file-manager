@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Improved
+
+- Clipboard toolbar (copy/move prepared items) is now displayed once below the panes container instead of in each pane, since the clipboard is shared across all panes;
+
 ### Fixed
 
 - Fixed system icons for files with unique icons - each file now displays its own icon instead of showing the same icon for all files of the same type. Applies to: Windows (.exe, .dll, .lnk, .ico, etc.), Linux (.desktop, .appimage), macOS (.icns);
