@@ -1586,6 +1586,8 @@
     "showingNOfItems": "Prikazano {showing} od {total} predmetov",
     "matchedNOfItems": "Ujemajo {matched} od {total} predmetov",
     "noMatchingItems": "Ni ujemajočih se predmetov",
+    "directoryIsEmpty": "Ta mapa je prazna",
+    "directoryIsEmptyDescription": "V tej mapi ni datotek ali map",
     "removeFromSelection": "Odstrani iz izbire",
     "removeFromClipboard": "Odstrani iz odložišča",
     "preparedForCopying": "Pripravljeno za kopiranje",

@@ -1570,6 +1570,8 @@
     "showingNOfItems": "显示 {showing} 个项目，共 {total} 个项目",
     "matchedNOfItems": "匹配了 {matched} 个项目，共 {total} 个项目",
     "noMatchingItems": "没有匹配的项目",
+    "directoryIsEmpty": "此目录为空",
+    "directoryIsEmptyDescription": "此目录中没有文件或文件夹",
     "removeFromSelection": "从选择中移除",
     "removeFromClipboard": "从剪贴板中移除",
     "preparedForCopying": "准备复制",

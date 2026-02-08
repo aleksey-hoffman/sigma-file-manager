@@ -1570,6 +1570,8 @@
     "showingNOfItems": "Hiển thị {showing} của {total} mục",
     "matchedNOfItems": "Đã khớp {matched} của {total} mục",
     "noMatchingItems": "Không có mục phù hợp",
+    "directoryIsEmpty": "Thư mục này trống",
+    "directoryIsEmptyDescription": "Không có tệp hoặc thư mục nào trong thư mục này",
     "removeFromSelection": "Xóa khỏi lựa chọn",
     "removeFromClipboard": "Xóa khỏi clipboard",
     "preparedForCopying": "Đã chuẩn bị để sao chép",

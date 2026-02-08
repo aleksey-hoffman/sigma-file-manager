@@ -1570,6 +1570,8 @@
     "showingNOfItems": "Zeige {showing} von {total} Elementen",
     "matchedNOfItems": "Übereinstimmung mit {matched} von {total} Elementen",
     "noMatchingItems": "Keine übereinstimmenden Elemente",
+    "directoryIsEmpty": "Dieses Verzeichnis ist leer",
+    "directoryIsEmptyDescription": "Es gibt keine Dateien oder Ordner in diesem Verzeichnis",
     "removeFromSelection": "Aus Auswahl entfernen",
     "removeFromClipboard": "Aus Zwischenablage entfernen",
     "preparedForCopying": "Zum Kopieren vorbereitet",

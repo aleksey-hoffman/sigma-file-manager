@@ -11,8 +11,11 @@ import {
   watch,
   ref,
 } from 'vue';
+import { useI18n } from 'vue-i18n';
+import { FolderOpenIcon } from 'lucide-vue-next';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ContextMenu, ContextMenuTrigger } from '@/components/ui/context-menu';
+import { EmptyState } from '@/components/ui/empty-state';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { useDismissalLayerStore } from '@/stores/runtime/dismissal-layer';
 import { useQuickViewStore } from '@/stores/runtime/quick-view';
@@ -44,6 +47,7 @@ const emit = defineEmits<{
   'update:currentDirEntry': [entry: DirEntry | null];
 }>();
 
+const { t } = useI18n();
 const userSettingsStore = useUserSettingsStore();
 const dismissalLayerStore = useDismissalLayerStore();
 const quickViewStore = useQuickViewStore();
@@ -105,6 +109,11 @@ const entries = computed(() => {
   }
 
   return items;
+});
+
+const isDirectoryEmpty = computed(() => {
+  if (!dirContents.value) return false;
+  return dirContents.value.entries.length === 0;
 });
 
 const currentPathComputed = computed(() => currentPath.value);
@@ -378,6 +387,17 @@ defineExpose({
         @go-home="navigateToHome"
       />
 
+      <template v-else-if="isDirectoryEmpty">
+        <div class="file-browser__empty-state-container">
+          <EmptyState
+            :icon="FolderOpenIcon"
+            :title="t('fileBrowser.directoryIsEmpty')"
+            :description="t('fileBrowser.directoryIsEmptyDescription')"
+            :bordered="false"
+          />
+        </div>
+      </template>
+
       <template v-else>
         <ScrollArea
           class="file-browser__scroll-area"
@@ -465,6 +485,14 @@ defineExpose({
   min-height: 0;
   flex: 1;
   flex-direction: column;
+}
+
+.file-browser__empty-state-container {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
 }
 
 .file-browser__scroll-area {

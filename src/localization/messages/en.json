@@ -1586,6 +1586,8 @@
     "showingNOfItems": "Showing {showing} of {total} items",
     "matchedNOfItems": "Matched {matched} of {total} items",
     "noMatchingItems": "No matching items",
+    "directoryIsEmpty": "This directory is empty",
+    "directoryIsEmptyDescription": "There are no files or folders in this directory",
     "removeFromSelection": "Remove from selection",
     "removeFromClipboard": "Remove from clipboard",
     "preparedForCopying": "Prepared for copying",

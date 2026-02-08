@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Added
+
+- Empty state display when navigating to an empty directory, showing a clear message that the directory has no files or folders;
+- Shared reusable `EmptyState` UI component (`src/components/ui/empty-state`) for consistent empty state presentation across the app;
+
 ### Improved
 
 - Clipboard toolbar (copy/move prepared items) is now displayed once below the panes container instead of in each pane, since the clipboard is shared across all panes;

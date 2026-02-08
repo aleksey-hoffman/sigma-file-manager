@@ -1570,6 +1570,8 @@
     "showingNOfItems": "Affichage de {showing} sur {total} éléments",
     "matchedNOfItems": "Correspond à {matched} articles sur {total}",
     "noMatchingItems": "Aucun élément correspondant",
+    "directoryIsEmpty": "Ce répertoire est vide",
+    "directoryIsEmptyDescription": "Il n'y a aucun fichier ou dossier dans ce répertoire",
     "removeFromSelection": "Supprimer de la sélection",
     "removeFromClipboard": "Supprimer du presse-papiers",
     "preparedForCopying": "Préparé pour la copie",

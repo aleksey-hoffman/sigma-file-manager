@@ -1570,6 +1570,8 @@
     "showingNOfItems": "{total} 個のアイテムの {showing} 個を表示しています",
     "matchedNOfItems": "{total} 個のアイテムの {matched} 個が一致しました",
     "noMatchingItems": "一致するアイテムがありません",
+    "directoryIsEmpty": "このディレクトリは空です",
+    "directoryIsEmptyDescription": "このディレクトリにはファイルやフォルダがありません",
     "removeFromSelection": "選択から削除",
     "removeFromClipboard": "クリップボードから削除",
     "preparedForCopying": "コピー準備完了",

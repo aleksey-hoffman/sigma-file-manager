@@ -12,6 +12,7 @@ import {
 } from 'lucide-vue-next';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/ui/empty-state';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
@@ -405,21 +406,13 @@ onMounted(() => {
       </div>
 
       <ScrollArea class="global-search-view__results">
-        <div
+        <EmptyState
           v-if="!hasIndexData && !globalSearchStore.isScanInProgress && !globalSearchStore.isCommitting"
-          class="global-search-view__empty"
-        >
-          <SearchIcon
-            :size="48"
-            class="global-search-view__empty-icon"
-          />
-          <span class="global-search-view__empty-title">
-            {{ t('globalSearch.searchDataIncomplete') }}
-          </span>
-          <span class="global-search-view__empty-description">
-            {{ t('globalSearch.noDrivesSelected') }}
-          </span>
-        </div>
+          :icon="SearchIcon"
+          :title="t('globalSearch.searchDataIncomplete')"
+          :description="t('globalSearch.noDrivesSelected')"
+          :bordered="false"
+        />
 
         <div
           v-else-if="!hasIndexData && globalSearchStore.isScanInProgress"
@@ -469,18 +462,12 @@ onMounted(() => {
           </Button>
         </div>
 
-        <div
+        <EmptyState
           v-else-if="globalSearchStore.results.length === 0 && !globalSearchStore.isSearching"
-          class="global-search-view__empty"
-        >
-          <SearchIcon
-            :size="48"
-            class="global-search-view__empty-icon"
-          />
-          <span class="global-search-view__empty-title">
-            {{ t('globalSearch.searchStats.nothingFound') }}
-          </span>
-        </div>
+          :icon="SearchIcon"
+          :title="t('globalSearch.searchStats.nothingFound')"
+          :bordered="false"
+        />
 
         <template v-else-if="globalSearchStore.results.length > 0">
           <div class="global-search-view__results-header">
@@ -636,7 +623,6 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   padding: 12px 16px;
-  border-bottom: 1px solid hsl(var(--border));
   background-color: hsl(var(--primary) / 5%);
   gap: 8px;
 }

@@ -1570,6 +1570,8 @@
     "showingNOfItems": "{total} öğeden {showing} tanesi gösteriliyor",
     "matchedNOfItems": "{total} öğeden {matched} ile eşleşti",
     "noMatchingItems": "Eşleşen öğe yok",
+    "directoryIsEmpty": "Bu dizin boş",
+    "directoryIsEmptyDescription": "Bu dizinde dosya veya klasör bulunmuyor",
     "removeFromSelection": "Seçimden kaldır",
     "removeFromClipboard": "Panodan kaldır",
     "preparedForCopying": "Kopyalamaya hazır",
