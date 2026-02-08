@@ -125,6 +125,9 @@ watch(isOpen, (open) => {
       }
     });
   }
+  else if (!open) {
+    handleCancel();
+  }
 });
 
 async function handleSubmit() {
@@ -154,31 +157,32 @@ function handleKeydown(event: KeyboardEvent) {
       </DialogHeader>
 
       <div class="file-browser-rename-dialog__form">
-        <div class="file-browser-rename-dialog__field">
+        <div class="file-browser-rename-dialog__field-wrapper">
           <label
             for="rename-input"
             class="file-browser-rename-dialog__label"
           >
             {{ t('dialogs.renameDirItemDialog.newName') }}
           </label>
-          <Input
-            id="rename-input"
-            ref="inputRef"
-            v-model="newName"
-            :class="{ 'file-browser-rename-dialog__input--error': newName && !isValid }"
-            @keydown="handleKeydown"
-          />
+          <div class="file-browser-rename-dialog__field">
+            <Input
+              id="rename-input"
+              ref="inputRef"
+              v-model="newName"
+              :class="{ 'file-browser-rename-dialog__input--error': newName && !isValid }"
+              @keydown="handleKeydown"
+            />
+            <Button
+              :disabled="!isValid || !hasChanges || isSubmitting"
+              @click="handleSubmit"
+            >
+              {{ t('save') }}
+            </Button>
+          </div>
         </div>
       </div>
 
-      <DialogFooter>
-        <Button
-          :disabled="!isValid || !hasChanges || isSubmitting"
-          @click="handleSubmit"
-        >
-          {{ t('save') }}
-        </Button>
-      </DialogFooter>
+      <DialogFooter />
     </DialogContent>
   </Dialog>
 </template>
@@ -203,11 +207,19 @@ function handleKeydown(event: KeyboardEvent) {
   gap: 16px;
 }
 
-.file-browser-rename-dialog__field {
+.file-browser-rename-dialog__field-wrapper {
   display: flex;
   width: 100%;
   min-width: 0;
   flex-direction: column;
+  gap: 8px;
+}
+
+.file-browser-rename-dialog__field {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  align-items: center;
   gap: 8px;
 }
 
