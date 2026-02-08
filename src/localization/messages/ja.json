@@ -787,7 +787,7 @@
     "addSelectedItemsForCopying": "選択したアイテムをコピー用に追加します。一度に複数のディレクトリからアイテムをコピーできます",
     "setSelectedItemsForMoving": "移動する選択項目を設定する",
     "addSelectedItemsForMoving": "移動する選択したアイテムを追加します。一度に複数のディレクトリからアイテムを移動できます",
-    "transferPreparedForCopying": "アイテムを現在のディレクトリにコピー/移動する準備ができています",
+    "transferPreparedForCopying": "コピー/移動の準備ができたアイテムをここに転送",
     "moveSelectedItemsToTrash": "選択したアイテムをゴミ箱に移動",
     "deleteSelectedItemsFromDrive": "選択したアイテムをドライブから削除",
     "quickWindowPositioning": "クイックウィンドウ配置",

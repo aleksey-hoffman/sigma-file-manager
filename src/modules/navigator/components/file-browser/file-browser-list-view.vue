@@ -21,7 +21,6 @@ defineProps<{
   selectedEntries: DirEntry[];
   isEntrySelected: (entry: DirEntry) => boolean;
   currentPath: string;
-  skipAnimation?: boolean;
 }>();
 
 const clipboardStore = useClipboardStore();
@@ -141,8 +140,7 @@ const { t } = useI18n();
     </div>
     <div
       :key="currentPath"
-      class="file-browser-list-view__list"
-      :class="{ 'file-browser-list-view__list--animate': !skipAnimation }"
+      class="file-browser-list-view__list file-browser-list-view__list--animate"
     >
       <button
         v-for="entry in entries"

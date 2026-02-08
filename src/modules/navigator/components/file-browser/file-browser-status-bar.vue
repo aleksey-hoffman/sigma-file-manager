@@ -327,6 +327,7 @@ function removeItem(entry: DirEntry) {
 <style scoped>
 .file-browser-status-bar {
   display: flex;
+  height: 32px;
   flex-shrink: 0;
   align-items: center;
   justify-content: space-between;

@@ -25,22 +25,17 @@ export interface FileOperationResult {
  * Gets the parent directory path from a file/folder path
  */
 function getParentPath(path: string): string {
-  // Normalize path separators
-  const normalizedPath = path.replace(/\\/g, '/');
-  const lastSeparatorIndex = normalizedPath.lastIndexOf('/');
+  const lastSeparatorIndex = path.lastIndexOf('/');
 
   if (lastSeparatorIndex <= 0) {
-    return normalizedPath;
+    return path;
   }
 
-  return normalizedPath.substring(0, lastSeparatorIndex);
+  return path.substring(0, lastSeparatorIndex);
 }
 
-/**
- * Normalizes a path for comparison (handles Windows/Unix differences)
- */
-function normalizePath(path: string): string {
-  return path.replace(/\\/g, '/').toLowerCase();
+function normalizePathForComparison(path: string): string {
+  return path.toLowerCase();
 }
 
 export const useClipboardStore = defineStore('clipboard', () => {
@@ -64,7 +59,7 @@ export const useClipboardStore = defineStore('clipboard', () => {
 
     const firstItemParent = getParentPath(clipboardItems.value[0].path);
     const allFromSameDir = clipboardItems.value.every(
-      item => normalizePath(getParentPath(item.path)) === normalizePath(firstItemParent),
+      item => normalizePathForComparison(getParentPath(item.path)) === normalizePathForComparison(firstItemParent),
     );
 
     return allFromSameDir ? firstItemParent : null;
@@ -119,7 +114,7 @@ export const useClipboardStore = defineStore('clipboard', () => {
       return false;
     }
 
-    return normalizePath(destinationPath) === normalizePath(sourceDirectory.value);
+    return normalizePathForComparison(destinationPath) === normalizePathForComparison(sourceDirectory.value);
   }
 
   /**
@@ -127,13 +122,13 @@ export const useClipboardStore = defineStore('clipboard', () => {
    * (can't move/copy a folder into itself)
    */
   function isDestinationInsideClipboardItem(destinationPath: string): boolean {
-    const normalizedDest = normalizePath(destinationPath);
+    const normalizedDest = normalizePathForComparison(destinationPath);
     return clipboardItems.value.some((item) => {
       if (!item.is_dir) {
         return false;
       }
 
-      const normalizedItemPath = normalizePath(item.path);
+      const normalizedItemPath = normalizePathForComparison(item.path);
       return normalizedDest.startsWith(normalizedItemPath + '/');
     });
   }

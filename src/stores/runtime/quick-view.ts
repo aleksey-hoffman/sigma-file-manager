@@ -24,8 +24,7 @@ export function getFileExtension(path: string): string {
 }
 
 export function getFileName(path: string): string {
-  const normalizedPath = path.replace(/\\/g, '/');
-  const parts = normalizedPath.split('/');
+  const parts = path.split('/');
   return parts[parts.length - 1] || '';
 }
 

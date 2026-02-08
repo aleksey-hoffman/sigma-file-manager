@@ -10,16 +10,13 @@ use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::{Duration, Instant};
 use tauri::{AppHandle, Emitter};
+use crate::utils::normalize_path;
 
 static ACTIVE_WATCHERS: Lazy<Mutex<HashMap<String, WatcherHandle>>> =
     Lazy::new(|| Mutex::new(HashMap::new()));
 
 struct WatcherHandle {
     stop_signal: Arc<Mutex<bool>>,
-}
-
-fn normalize_path(path: &str) -> String {
-    path.replace('\\', "/")
 }
 
 fn is_relevant_event(kind: &EventKind) -> bool {

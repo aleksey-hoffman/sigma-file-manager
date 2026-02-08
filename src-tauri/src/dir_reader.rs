@@ -7,6 +7,7 @@ use std::fs;
 use std::path::Path;
 use std::time::UNIX_EPOCH;
 use sysinfo::Disks;
+use crate::utils::normalize_path;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DirEntry {
@@ -73,10 +74,6 @@ fn get_extension(path: &Path) -> Option<String> {
     path.extension()
         .and_then(|ext| ext.to_str())
         .map(|ext| ext.to_lowercase())
-}
-
-fn normalize_path(path: &str) -> String {
-    path.replace('\\', "/")
 }
 
 fn get_mime_type(extension: &Option<String>) -> Option<String> {

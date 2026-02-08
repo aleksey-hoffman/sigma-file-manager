@@ -22,15 +22,14 @@ const hasFooter = computed(() => !!slots.footer);
 
 const itemName = computed(() => {
   if (!props.path) return '';
-  const segments = props.path.replace(/\\/g, '/').split('/').filter(Boolean);
+  const segments = props.path.split('/').filter(Boolean);
   return segments[segments.length - 1] || props.path;
 });
 
 const itemDirectory = computed(() => {
   if (!props.path) return '';
-  const normalizedPath = props.path.replace(/\\/g, '/');
-  const lastSlashIndex = normalizedPath.lastIndexOf('/');
-  return lastSlashIndex > 0 ? normalizedPath.substring(0, lastSlashIndex) : normalizedPath;
+  const lastSlashIndex = props.path.lastIndexOf('/');
+  return lastSlashIndex > 0 ? props.path.substring(0, lastSlashIndex) : props.path;
 });
 
 const isDirectory = computed(() => {

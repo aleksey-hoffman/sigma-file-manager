@@ -5,6 +5,7 @@
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::Path;
+use crate::utils::normalize_path;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct FileOperationResult {
@@ -92,10 +93,10 @@ pub fn copy_items(source_paths: Vec<String>, destination_path: String) -> FileOp
             continue;
         }
 
-        let source_parent = source.parent().map(|parent| parent.to_string_lossy().to_string());
-        let dest_normalized = destination.to_string_lossy().replace('\\', "/");
+        let source_parent = source.parent().map(|parent| normalize_path(&parent.to_string_lossy()));
+        let dest_normalized = normalize_path(&destination.to_string_lossy());
         let is_same_directory = source_parent
-            .map(|parent| parent.replace('\\', "/") == dest_normalized)
+            .map(|parent| parent == dest_normalized)
             .unwrap_or(false);
 
         let file_name = match source.file_name() {
@@ -178,10 +179,10 @@ pub fn move_items(source_paths: Vec<String>, destination_path: String) -> FileOp
             continue;
         }
 
-        let source_parent = source.parent().map(|parent| parent.to_string_lossy().to_string());
-        let dest_normalized = destination.to_string_lossy().replace('\\', "/");
+        let source_parent = source.parent().map(|parent| normalize_path(&parent.to_string_lossy()));
+        let dest_normalized = normalize_path(&destination.to_string_lossy());
         let is_same_directory = source_parent
-            .map(|parent| parent.replace('\\', "/") == dest_normalized)
+            .map(|parent| parent == dest_normalized)
             .unwrap_or(false);
 
         if is_same_directory {

@@ -26,6 +26,7 @@ import { useGlobalSearchStore } from '@/stores/runtime/global-search';
 import { useDrives } from '@/modules/home/composables/use-drives';
 import { formatBytes } from '@/modules/navigator/components/file-browser/utils';
 import { SEARCH_CONSTANTS } from '@/constants';
+import normalizePath from '@/utils/normalize-path';
 
 const { t } = useI18n();
 const userSettingsStore = useUserSettingsStore();
@@ -154,7 +155,7 @@ function addIgnoredPathFromFilter(value: string) {
   const next = value.trim();
   if (!next) return;
   const set = new Set(ignoredPaths.value);
-  set.add(next.replace(/\\/g, '/'));
+  set.add(normalizePath(next));
   ignoredPaths.value = Array.from(set);
 }
 

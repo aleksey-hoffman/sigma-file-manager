@@ -18,6 +18,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useClipboardStore } from '@/stores/runtime/clipboard';
+import { useShortcutsStore } from '@/stores/runtime/shortcuts';
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import {
   Popover,
   PopoverContent,
@@ -44,6 +46,7 @@ const emit = defineEmits<{
 const { t } = useI18n();
 
 const clipboardStore = useClipboardStore();
+const shortcutsStore = useShortcutsStore();
 
 const clipboardItemsPopoverOpen = ref(false);
 const clipboardItemsFilterQuery = ref('');
@@ -170,18 +173,25 @@ function openCollapsedPopover() {
                 <span class="clipboard-toolbar__button-text">{{ t('showItems') }}</span>
               </Button>
 
-              <Button
-                variant="ghost"
-                size="sm"
-                class="clipboard-toolbar__button"
-                :class="{ 'clipboard-toolbar__button--disabled': !canPaste }"
-                :disabled="!canPaste"
-                :title="canPaste ? t('fileBrowser.actions.paste') : t('fileBrowser.cannotPasteHere')"
-                @click="emit('paste')"
-              >
-                <ClipboardPasteIcon :size="14" />
-                <span class="clipboard-toolbar__button-text">{{ t('fileBrowser.actions.paste') }}</span>
-              </Button>
+              <Tooltip :delay-duration="300">
+                <TooltipTrigger as-child>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    class="clipboard-toolbar__button"
+                    :class="{ 'clipboard-toolbar__button--disabled': !canPaste }"
+                    :disabled="!canPaste"
+                    @click="emit('paste')"
+                  >
+                    <ClipboardPasteIcon :size="14" />
+                    <span class="clipboard-toolbar__button-text">{{ t('fileBrowser.actions.paste') }}</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {{ t('shortcuts.transferPreparedForCopying') }}
+                  <kbd class="clipboard-toolbar__shortcut">{{ shortcutsStore.getShortcutLabel('paste') }}</kbd>
+                </TooltipContent>
+              </Tooltip>
 
               <Button
                 variant="ghost"
@@ -554,6 +564,11 @@ function openCollapsedPopover() {
 </style>
 
 <style>
+.clipboard-toolbar__shortcut {
+  margin-left: 8px;
+  opacity: 0.6;
+}
+
 .clipboard-toolbar__item .clipboard-toolbar__item-remove.sigma-ui-button.sigma-ui-button--size-icon {
   width: 36px;
   height: auto;

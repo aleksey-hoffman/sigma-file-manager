@@ -787,7 +787,7 @@
     "addSelectedItemsForCopying": "Ausgewählte Elemente zum Kopieren hinzufügen. Ermöglicht das gleichzeitige Kopieren von Elementen aus mehreren Verzeichnissen",
     "setSelectedItemsForMoving": "Ausgewählte Elemente zum Verschieben festlegen",
     "addSelectedItemsForMoving": "Ausgewählte Elemente zum Verschieben hinzufügen. Ermöglicht das gleichzeitige Verschieben von Elementen aus mehreren Verzeichnissen",
-    "transferPreparedForCopying": "Übertragung zum Kopieren/Verschieben von Elementen in das aktuelle Verzeichnis vorbereitet",
+    "transferPreparedForCopying": "Zum Kopieren / Verschieben vorbereitete Elemente hierher übertragen",
     "moveSelectedItemsToTrash": "Ausgewählte Elemente in den Papierkorb verschieben",
     "deleteSelectedItemsFromDrive": "Ausgewählte Elemente aus Laufwerk löschen",
     "quickWindowPositioning": "Schnelle Fensterpositionierung",

@@ -6,6 +6,7 @@ import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { userPathsFunctions } from '@/data/user-paths';
 import type { CustomPaths, UserPaths, UserPathsFunctions } from '@/data/user-paths';
+import normalizePath from '@/utils/normalize-path';
 
 export const useUserPathsStore = defineStore('userPaths', () => {
   const userPaths = ref<UserPaths>({
@@ -49,7 +50,8 @@ export const useUserPathsStore = defineStore('userPaths', () => {
     try {
       const promises = Object.keys(userPathsFunctions).map(async (key) => {
         try {
-          userPaths.value[key as keyof UserPaths] = await userPathsFunctions[key as keyof UserPathsFunctions]();
+          const resolvedPath = await userPathsFunctions[key as keyof UserPathsFunctions]();
+          userPaths.value[key as keyof UserPaths] = normalizePath(resolvedPath);
         }
         catch {
           if (!platformSpecificPaths.has(key)) {

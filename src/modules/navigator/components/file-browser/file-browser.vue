@@ -57,13 +57,14 @@ const {
   currentPath,
   dirContents,
   isLoading,
+  isRefreshing,
   error,
   pathInput,
   canGoBack,
   canGoForward,
   parentPath,
-  skipAnimation,
   readDir,
+  silentRefresh,
   navigateToPath,
   navigateToEntry,
   navigateToParent,
@@ -140,7 +141,7 @@ const {
       await openFile(entry.path);
     }
   },
-  refresh,
+  silentRefresh,
 );
 
 const { getVideoThumbnail } = useVideoThumbnails();
@@ -358,7 +359,7 @@ defineExpose({
       :can-go-back="canGoBack"
       :can-go-forward="canGoForward"
       :can-go-up="!!parentPath"
-      :is-loading="isLoading"
+      :is-loading="isLoading || isRefreshing"
       @go-back="goBack"
       @go-forward="goForward"
       @go-up="navigateToParent"
@@ -394,7 +395,6 @@ defineExpose({
                   :selected-entries="selectedEntries"
                   :is-entry-selected="isEntrySelected"
                   :current-path="currentPath"
-                  :skip-animation="skipAnimation"
                   :get-video-thumbnail="getVideoThumbnail"
                   @mousedown="onEntryMouseDown"
                   @mouseup="onEntryMouseUp"
@@ -406,7 +406,6 @@ defineExpose({
                   :selected-entries="selectedEntries"
                   :is-entry-selected="isEntrySelected"
                   :current-path="currentPath"
-                  :skip-animation="skipAnimation"
                   @mousedown="onEntryMouseDown"
                   @mouseup="onEntryMouseUp"
                   @contextmenu="handleEntryContextMenu"

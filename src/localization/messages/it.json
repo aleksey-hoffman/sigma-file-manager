@@ -787,7 +787,7 @@
     "addSelectedItemsForCopying": "Aggiunge gli elementi selezionati per la copia. Permette di copiare elementi da più directory contemporaneamente.",
     "setSelectedItemsForMoving": "Imposta gli elementi selezionati per lo spostamento",
     "addSelectedItemsForMoving": "Aggiungi gli elementi selezionati per lo spostamento. Permette di spostare elementi da più cartelle contemporaneamente",
-    "transferPreparedForCopying": "Trasferimento preparato per la copia / spostamento di elementi nella cartella attuale",
+    "transferPreparedForCopying": "Trasferisci gli elementi preparati per la copia / spostamento qui",
     "moveSelectedItemsToTrash": "Sposta gli elementi selezionati nel cestino",
     "deleteSelectedItemsFromDrive": "Elimina gli elementi selezionati dall'unità",
     "quickWindowPositioning": "Posizionamento rapido della finestra",

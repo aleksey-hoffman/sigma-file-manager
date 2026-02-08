@@ -46,6 +46,7 @@ import {
 } from 'lucide-vue-next';
 import { toast, CustomSimple } from '@/components/ui/toaster';
 import type { DirContents } from '@/types/dir-entry';
+import normalizePath from '@/utils/normalize-path';
 
 const props = defineProps<{
   currentPath: string;
@@ -76,8 +77,7 @@ function updatePopoverWidth() {
 const addressParts = computed(() => {
   if (!props.currentPath) return [];
 
-  const normalizedPath = props.currentPath.replace(/\\/g, '/');
-  const parts = normalizedPath.split('/').filter(part => part !== '');
+  const parts = props.currentPath.split('/').filter(part => part !== '');
   const formattedParts: Array<{
     path: string;
     name: string;
@@ -88,7 +88,7 @@ const addressParts = computed(() => {
     const pathSegments = parts.slice(0, index + 1);
     let fullPath = pathSegments.join('/');
 
-    if (normalizedPath.startsWith('/')) {
+    if (props.currentPath.startsWith('/')) {
       fullPath = '/' + fullPath;
     }
     else if (!fullPath.includes(':')) {
@@ -145,7 +145,7 @@ function navigateToPart(path: string) {
 }
 
 async function openEditor() {
-  const initialPath = props.currentPath.replace(/\\/g, '/');
+  const initialPath = props.currentPath;
   pathQuery.value = initialPath;
   selectedIndex.value = -1;
   updatePopoverWidth();
@@ -157,14 +157,14 @@ async function openEditor() {
 }
 
 async function handlePathInput(value: string | number | undefined) {
-  const stringValue = String(value ?? '').replace(/\\/g, '/');
+  const stringValue = normalizePath(String(value ?? ''));
   pathQuery.value = stringValue;
   selectedIndex.value = -1;
   await updateAutocompleteList(stringValue);
 }
 
 async function updateAutocompleteList(queryValue: string) {
-  const normalizedQuery = queryValue.replace(/\\/g, '/');
+  const normalizedQuery = normalizePath(queryValue);
 
   try {
     let dirPath = normalizedQuery;
@@ -173,24 +173,24 @@ async function updateAutocompleteList(queryValue: string) {
       const result = await invoke<DirContents>('read_dir', { path: normalizedQuery });
       const entries = result.entries
         .filter(entry => entry.is_dir)
-        .map(entry => entry.path.replace(/\\/g, '/'));
+        .map(entry => entry.path);
       autocompleteList.value = entries;
 
-      if (normalizedQuery !== props.currentPath.replace(/\\/g, '/')) {
+      if (normalizedQuery !== props.currentPath) {
         emit('navigate', normalizedQuery);
       }
 
       return;
     }
     catch {
-      dirPath = await dirname(normalizedQuery);
+      dirPath = normalizePath(await dirname(normalizedQuery));
     }
 
     const result = await invoke<DirContents>('read_dir', { path: dirPath });
     const queryLower = normalizedQuery.toLowerCase();
     const entries = result.entries
       .filter(entry => entry.is_dir)
-      .map(entry => entry.path.replace(/\\/g, '/'))
+      .map(entry => entry.path)
       .filter(path => path.toLowerCase().startsWith(queryLower));
 
     autocompleteList.value = entries;

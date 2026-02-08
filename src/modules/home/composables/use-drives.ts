@@ -82,10 +82,10 @@ async function refresh() {
 }
 
 function getDriveByPath(path: string): DriveInfo | null {
-  const normalizedPath = path.replace(/\\/g, '/').toUpperCase();
+  const normalizedPath = path.toUpperCase();
 
   return drives.value.find((drive) => {
-    const drivePath = drive.path.replace(/\\/g, '/').toUpperCase();
+    const drivePath = drive.path.toUpperCase();
     return drivePath === normalizedPath
       || drivePath === normalizedPath.replace(/\/$/, '')
       || drivePath + '/' === normalizedPath;

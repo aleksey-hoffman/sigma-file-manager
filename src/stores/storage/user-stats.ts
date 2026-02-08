@@ -3,6 +3,7 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 import { defineStore } from 'pinia';
+import { invoke } from '@tauri-apps/api/core';
 import { LazyStore } from '@tauri-apps/plugin-store';
 import { ref, computed } from 'vue';
 import { useUserPathsStore } from './user-paths';
@@ -288,9 +289,156 @@ export const useUserStatsStore = defineStore('userStats', () => {
     await saveStats();
   }
 
+  async function handlePathRenamed(oldPath: string, newPath: string) {
+    let hasChanges = false;
+
+    for (const item of userStats.value.favorites) {
+      const updated = replacePathPrefix(item.path, oldPath, newPath);
+
+      if (updated !== null) {
+        item.path = updated;
+        hasChanges = true;
+      }
+    }
+
+    for (const item of userStats.value.taggedItems) {
+      const updated = replacePathPrefix(item.path, oldPath, newPath);
+
+      if (updated !== null) {
+        item.path = updated;
+        hasChanges = true;
+      }
+    }
+
+    for (const item of userStats.value.history) {
+      const updated = replacePathPrefix(item.path, oldPath, newPath);
+
+      if (updated !== null) {
+        item.path = updated;
+        hasChanges = true;
+      }
+    }
+
+    for (const item of userStats.value.frequentItems) {
+      const updated = replacePathPrefix(item.path, oldPath, newPath);
+
+      if (updated !== null) {
+        item.path = updated;
+        hasChanges = true;
+      }
+    }
+
+    if (hasChanges) {
+      await saveStats();
+    }
+  }
+
+  function replacePathPrefix(path: string, oldPrefix: string, newPrefix: string): string | null {
+    if (path === oldPrefix) return newPrefix;
+    if (path.startsWith(oldPrefix + '/')) return newPrefix + path.slice(oldPrefix.length);
+    return null;
+  }
+
+  function isPathAffectedByDeletion(path: string, deletedPaths: string[]): boolean {
+    return deletedPaths.some(deletedPath =>
+      path === deletedPath || path.startsWith(deletedPath + '/'),
+    );
+  }
+
+  async function handlePathsDeleted(paths: string[]) {
+    const originalCounts = {
+      favorites: userStats.value.favorites.length,
+      taggedItems: userStats.value.taggedItems.length,
+      history: userStats.value.history.length,
+      frequentItems: userStats.value.frequentItems.length,
+    };
+
+    userStats.value.favorites = userStats.value.favorites.filter(
+      item => !isPathAffectedByDeletion(item.path, paths),
+    );
+
+    userStats.value.taggedItems = userStats.value.taggedItems.filter(
+      item => !isPathAffectedByDeletion(item.path, paths),
+    );
+
+    userStats.value.history = userStats.value.history.filter(
+      item => !isPathAffectedByDeletion(item.path, paths),
+    );
+
+    userStats.value.frequentItems = userStats.value.frequentItems.filter(
+      item => !isPathAffectedByDeletion(item.path, paths),
+    );
+
+    const hasChanges
+      = userStats.value.favorites.length !== originalCounts.favorites
+      || userStats.value.taggedItems.length !== originalCounts.taggedItems
+      || userStats.value.history.length !== originalCounts.history
+      || userStats.value.frequentItems.length !== originalCounts.frequentItems;
+
+    if (hasChanges) {
+      await saveStats();
+    }
+  }
+
+  async function removeNonExistentPaths() {
+    const allPaths = new Set<string>();
+
+    for (const item of userStats.value.favorites) allPaths.add(item.path);
+    for (const item of userStats.value.taggedItems) allPaths.add(item.path);
+    for (const item of userStats.value.history) allPaths.add(item.path);
+    for (const item of userStats.value.frequentItems) allPaths.add(item.path);
+
+    if (allPaths.size === 0) return;
+
+    const nonExistentPaths = new Set<string>();
+    let checkedCount = 0;
+
+    await Promise.allSettled(
+      Array.from(allPaths).map(async (path) => {
+        try {
+          const exists = await invoke<boolean>('path_exists', { path });
+
+          if (!exists) {
+            nonExistentPaths.add(path);
+          }
+
+          checkedCount++;
+        }
+        catch {
+          checkedCount++;
+        }
+      }),
+    );
+
+    if (nonExistentPaths.size === 0) return;
+
+    if (checkedCount === 0 || nonExistentPaths.size === allPaths.size) {
+      return;
+    }
+
+    userStats.value.favorites = userStats.value.favorites.filter(
+      item => !nonExistentPaths.has(item.path),
+    );
+
+    userStats.value.taggedItems = userStats.value.taggedItems.filter(
+      item => !nonExistentPaths.has(item.path),
+    );
+
+    userStats.value.history = userStats.value.history.filter(
+      item => !nonExistentPaths.has(item.path),
+    );
+
+    userStats.value.frequentItems = userStats.value.frequentItems.filter(
+      item => !nonExistentPaths.has(item.path),
+    );
+
+    await saveStats();
+  }
+
   async function init() {
     await initStorage();
     await loadStats();
+    removeNonExistentPaths();
   }
 
   return {
@@ -318,5 +466,7 @@ export const useUserStatsStore = defineStore('userStats', () => {
     clearAllFavorites,
     clearAllTagged,
     clearAllFrequent,
+    handlePathRenamed,
+    handlePathsDeleted,
   };
 });

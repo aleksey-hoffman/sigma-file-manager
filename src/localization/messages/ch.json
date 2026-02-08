@@ -787,7 +787,7 @@
     "addSelectedItemsForCopying": "添加选定的项目进行复制。允许一次从多个目录复制项目",
     "setSelectedItemsForMoving": "设置要移动的选定项目",
     "addSelectedItemsForMoving": "添加选定的项目进行移动。允许一次从多个目录移动项目",
-    "transferPreparedForCopying": "传输准备复制/移动项目到当前目录",
+    "transferPreparedForCopying": "将准备复制/移动的项目传输到此处",
     "moveSelectedItemsToTrash": "将选定的项目移至垃圾箱",
     "deleteSelectedItemsFromDrive": "从驱动器中删除选定的项目",
     "quickWindowPositioning": "快速窗口定位",

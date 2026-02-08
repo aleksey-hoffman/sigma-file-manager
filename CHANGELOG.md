@@ -15,6 +15,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fixed split view pane not updating when the directory it displays is deleted or renamed from the other pane - on delete the affected pane navigates to home, on rename it seamlessly follows the directory to its new path;
+- Renaming a directory now updates its path everywhere: all open tabs across all workspaces, favorites, tags, history, frequent items, and in-memory navigation history;
+- Deleting a file or directory now removes it from all stored lists: favorites, tags, history, and frequent items, and navigates affected tabs to the home directory;
+- Non-existent paths in favorites, tags, history, and frequent items are now automatically cleaned up on app startup;
+- Fixed tabs loading with an error when their stored path no longer exists on disk - the tab now falls back to the home directory;
 - Fixed system icons for files with unique icons - each file now displays its own icon instead of showing the same icon for all files of the same type. Applies to: Windows (.exe, .dll, .lnk, .ico, etc.), Linux (.desktop, .appimage), macOS (.icns);
 - Fixed keyboard shortcuts (Ctrl+C/X/V, Delete, Rename, etc.) not working in the second pane of split view - shortcuts now correctly target the last active pane;
 - Fixed keyboard shortcuts sometimes stopping to work after navigating between pages - shortcut handlers are now preserved during page navigation;

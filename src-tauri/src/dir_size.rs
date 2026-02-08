@@ -13,6 +13,7 @@ use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 use walkdir::WalkDir;
+use crate::utils::normalize_path;
 
 const CACHE_SIZE: usize = 2000;
 const CACHE_TTL_SECONDS: u64 = 300;
@@ -95,10 +96,6 @@ fn unregister_calculation(path: &str) {
     if let Ok(mut prog) = CALCULATION_PROGRESS.lock() {
         prog.remove(&normalized);
     }
-}
-
-fn normalize_path(path: &str) -> String {
-    path.replace('\\', "/")
 }
 
 fn get_dir_mtime(path: &Path) -> u64 {

@@ -2,7 +2,13 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-import { ref, computed, nextTick, onUnmounted } from 'vue';
+import {
+  ref,
+  computed,
+  watch,
+  nextTick,
+  onUnmounted,
+} from 'vue';
 import { useI18n } from 'vue-i18n';
 import { invoke } from '@tauri-apps/api/core';
 import { listen, type UnlistenFn } from '@tauri-apps/api/event';
@@ -10,9 +16,11 @@ import { homeDir, basename } from '@tauri-apps/api/path';
 import { openPath } from '@tauri-apps/plugin-opener';
 import type { DirEntry, DirContents } from '@/types/dir-entry';
 import type { Tab } from '@/types/workspaces';
+import { useWorkspacesStore } from '@/stores/storage/workspaces';
 import { useUserStatsStore } from '@/stores/storage/user-stats';
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
 import { DIR_SIZE_CONSTANTS } from '@/constants';
+import normalizePath from '@/utils/normalize-path';
 
 interface DirChangePayload {
   watchedPath: string;
@@ -23,8 +31,18 @@ interface DirChangePayload {
 const DIRECTORY_DWELL_TIME_MS = 3000;
 const WATCHER_DEBOUNCE_MS = 500;
 
-function normalizePath(path: string): string {
-  return path.replace(/\\/g, '/');
+function getParentOfPath(path: string): string | null {
+  const parts = path.split('/').filter(Boolean);
+  if (parts.length <= 1) return null;
+  parts.pop();
+  const parent = parts.join('/');
+  return parent.includes(':') ? `${parent}/` : `/${parent}`;
+}
+
+function replacePathPrefix(path: string, oldPrefix: string, newPrefix: string): string | null {
+  if (path === oldPrefix) return newPrefix;
+  if (path.startsWith(oldPrefix + '/')) return newPrefix + path.slice(oldPrefix.length);
+  return null;
 }
 
 export function useFileBrowserNavigation(
@@ -33,11 +51,13 @@ export function useFileBrowserNavigation(
   onSelectionClear?: () => void,
 ) {
   const { t } = useI18n();
+  const workspacesStore = useWorkspacesStore();
   const userStatsStore = useUserStatsStore();
   const dirSizesStore = useDirSizesStore();
   const currentPath = ref('');
   const dirContents = ref<DirContents | null>(null);
   const isLoading = ref(false);
+  const isRefreshing = ref(false);
   const error = ref<string | null>(null);
   const history = ref<string[]>([]);
   const historyIndex = ref(-1);
@@ -48,6 +68,7 @@ export function useFileBrowserNavigation(
   let watchedPath: string | null = null;
   let dirChangeUnlisten: UnlistenFn | null = null;
   let watcherRefreshTimer: ReturnType<typeof setTimeout> | null = null;
+  let watcherValidationTimer: ReturnType<typeof setTimeout> | null = null;
 
   function cancelPendingDirectoryRecord() {
     if (pendingDirectoryRecordTimer) {
@@ -91,11 +112,21 @@ export function useFileBrowserNavigation(
             }
 
             watcherRefreshTimer = setTimeout(() => {
-              if (currentPath.value && watchedPath === normalizePath(currentPath.value)) {
+              if (currentPath.value && watchedPath === currentPath.value) {
                 silentRefresh();
               }
 
               watcherRefreshTimer = null;
+            }, WATCHER_DEBOUNCE_MS);
+          }
+          else if (currentPath.value) {
+            if (watcherValidationTimer) {
+              clearTimeout(watcherValidationTimer);
+            }
+
+            watcherValidationTimer = setTimeout(() => {
+              validateCurrentPath();
+              watcherValidationTimer = null;
             }, WATCHER_DEBOUNCE_MS);
           }
         });
@@ -110,6 +141,11 @@ export function useFileBrowserNavigation(
     if (watcherRefreshTimer) {
       clearTimeout(watcherRefreshTimer);
       watcherRefreshTimer = null;
+    }
+
+    if (watcherValidationTimer) {
+      clearTimeout(watcherValidationTimer);
+      watcherValidationTimer = null;
     }
 
     if (watchedPath) {
@@ -137,14 +173,12 @@ export function useFileBrowserNavigation(
   const canGoBack = computed(() => historyIndex.value > 0);
   const canGoForward = computed(() => historyIndex.value < history.value.length - 1);
 
-  const skipAnimation = ref(false);
-
   async function silentRefresh(): Promise<void> {
     if (!currentPath.value) {
       return;
     }
 
-    skipAnimation.value = true;
+    isRefreshing.value = true;
 
     try {
       const result = await invoke<DirContents>('read_dir', { path: currentPath.value });
@@ -166,18 +200,45 @@ export function useFileBrowserNavigation(
         dirSizesStore.requestSizesBatch(dirPaths);
       }
     }
-    catch (err) {
-      console.error('Silent refresh failed:', err);
+    catch {
+      await navigateToNearestExistingAncestor();
+    }
+    finally {
+      isRefreshing.value = false;
+    }
+  }
+
+  async function navigateToNearestExistingAncestor(): Promise<void> {
+    let pathToTry = getParentOfPath(currentPath.value);
+
+    while (pathToTry) {
+      try {
+        await invoke<DirContents>('read_dir', { path: pathToTry });
+        await readDir(pathToTry);
+        return;
+      }
+      catch {
+        pathToTry = getParentOfPath(pathToTry);
+      }
+    }
+
+    await navigateToHome();
+  }
+
+  async function validateCurrentPath(): Promise<void> {
+    if (!currentPath.value) return;
+
+    try {
+      await invoke<DirContents>('read_dir', { path: currentPath.value });
+    }
+    catch {
+      await navigateToNearestExistingAncestor();
     }
   }
 
   const parentPath = computed(() => {
     if (!currentPath.value) return null;
-    const parts = currentPath.value.split('/').filter(Boolean);
-    if (parts.length <= 1) return null;
-    parts.pop();
-    const parent = parts.join('/');
-    return parent.includes(':') ? `${parent}/` : `/${parent}`;
+    return getParentOfPath(currentPath.value);
   });
 
   const currentDirEntry = computed<DirEntry | null>(() => {
@@ -201,14 +262,14 @@ export function useFileBrowserNavigation(
     };
   });
 
-  async function readDir(path: string, addToHistory = true) {
-    skipAnimation.value = false;
-    isLoading.value = true;
+  async function readDir(path: string, addToHistory = true, forceLoading = false) {
+    const normalizedPath = normalizePath(path);
+    const isNewDirectory = normalizedPath !== currentPath.value;
+
+    isLoading.value = forceLoading || isNewDirectory || !dirContents.value;
     error.value = null;
 
     onSelectionClear?.();
-
-    const normalizedPath = normalizePath(path);
 
     if (watchedPath && watchedPath !== normalizedPath) {
       await stopWatching();
@@ -216,22 +277,21 @@ export function useFileBrowserNavigation(
 
     try {
       const result = await invoke<DirContents>('read_dir', { path });
-      const resultNormalizedPath = normalizePath(result.path);
 
       dirContents.value = result;
-      currentPath.value = resultNormalizedPath;
-      pathInput.value = resultNormalizedPath;
+      currentPath.value = result.path;
+      pathInput.value = result.path;
 
       const currentTab = tab();
 
       if (currentTab) {
-        currentTab.path = resultNormalizedPath;
+        currentTab.path = result.path;
 
         try {
-          currentTab.name = await basename(resultNormalizedPath);
+          currentTab.name = await basename(result.path);
         }
         catch {
-          currentTab.name = resultNormalizedPath;
+          currentTab.name = result.path;
         }
 
         currentTab.dirEntries = result.entries;
@@ -242,7 +302,7 @@ export function useFileBrowserNavigation(
           history.value.splice(historyIndex.value + 1);
         }
 
-        history.value.push(resultNormalizedPath);
+        history.value.push(result.path);
         historyIndex.value = history.value.length - 1;
       }
 
@@ -259,7 +319,7 @@ export function useFileBrowserNavigation(
         dirSizesStore.requestSizesBatch(dirPaths);
       }
 
-      await startWatching(resultNormalizedPath);
+      await startWatching(result.path);
     }
     catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : String(err);
@@ -295,9 +355,9 @@ export function useFileBrowserNavigation(
 
   async function navigateToHome() {
     cancelPendingDirectoryRecord();
-    const homePath = await homeDir();
+    const homePath = normalizePath(await homeDir());
     await readDir(homePath);
-    schedulePendingDirectoryRecord(normalizePath(homePath));
+    schedulePendingDirectoryRecord(homePath);
   }
 
   async function goBack() {
@@ -324,7 +384,7 @@ export function useFileBrowserNavigation(
     cancelPendingDirectoryRecord();
 
     if (currentPath.value) {
-      await readDir(currentPath.value, false);
+      await readDir(currentPath.value, false, true);
     }
   }
 
@@ -332,7 +392,7 @@ export function useFileBrowserNavigation(
     if (pathInput.value && pathInput.value !== currentPath.value) {
       cancelPendingDirectoryRecord();
       await readDir(pathInput.value);
-      schedulePendingDirectoryRecord(normalizePath(pathInput.value));
+      schedulePendingDirectoryRecord(pathInput.value);
     }
   }
 
@@ -346,17 +406,50 @@ export function useFileBrowserNavigation(
 
     if (currentTab?.path) {
       await readDir(currentTab.path);
-      schedulePendingDirectoryRecord(normalizePath(currentTab.path));
+
+      if (error.value) {
+        await navigateToHome();
+      }
+      else {
+        schedulePendingDirectoryRecord(currentTab.path);
+      }
     }
     else {
       await navigateToHome();
     }
   }
 
+  watch(() => workspacesStore.lastRenamedPath, async (renamed) => {
+    if (!renamed || !currentPath.value) return;
+
+    const updatedPath = replacePathPrefix(currentPath.value, renamed.oldPath, renamed.newPath);
+
+    if (updatedPath) {
+      history.value = history.value.map((historyPath) => {
+        return replacePathPrefix(historyPath, renamed.oldPath, renamed.newPath) ?? historyPath;
+      });
+
+      await readDir(updatedPath, false);
+    }
+  });
+
+  watch(() => workspacesStore.lastDeletedPaths, async (deletedPaths) => {
+    if (!deletedPaths || !currentPath.value) return;
+
+    const isAffected = deletedPaths.some(deletedPath =>
+      currentPath.value === deletedPath || currentPath.value.startsWith(deletedPath + '/'),
+    );
+
+    if (isAffected) {
+      await navigateToHome();
+    }
+  });
+
   return {
     currentPath,
     dirContents,
     isLoading,
+    isRefreshing,
     error,
     history,
     historyIndex,
@@ -365,8 +458,8 @@ export function useFileBrowserNavigation(
     canGoForward,
     parentPath,
     currentDirEntry,
-    skipAnimation,
     readDir,
+    silentRefresh,
     navigateToPath,
     navigateToEntry,
     navigateToParent,

@@ -10,6 +10,7 @@ mod global_search;
 mod open_with;
 mod system_icons;
 mod system_tray;
+pub mod utils;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {

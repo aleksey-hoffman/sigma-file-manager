@@ -787,7 +787,7 @@
     "addSelectedItemsForCopying": "Adicionar itens selecionados para copiar. Permite copiar itens de vários diretórios de uma só vez",
     "setSelectedItemsForMoving": "Definir itens selecionados para serem movidos",
     "addSelectedItemsForMoving": "Adicionar itens selecionados para mover. Permite mover itens de vários diretórios de uma só vez",
-    "transferPreparedForCopying": "Transferência preparada para copiar/mover itens para o diretório atual",
+    "transferPreparedForCopying": "Transferir itens preparados para copiar / mover aqui",
     "moveSelectedItemsToTrash": "Mover itens selecionados para a lixeira",
     "deleteSelectedItemsFromDrive": "Excluir itens selecionados da unidade",
     "quickWindowPositioning": "Posicionamento rápido da janela",

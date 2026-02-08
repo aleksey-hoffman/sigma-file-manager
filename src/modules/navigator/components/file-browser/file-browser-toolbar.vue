@@ -251,6 +251,20 @@ function handleFilterInteractOutside(event: Event) {
   height: 18px;
 }
 
+.file-browser-toolbar__icon.animate-spin {
+  animation: toolbar-spin 1s linear infinite;
+}
+
+@keyframes toolbar-spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .file-browser-toolbar__separator {
   display: none;
   height: 20px;

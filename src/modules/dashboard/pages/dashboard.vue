@@ -49,9 +49,8 @@ function getTagById(tagId: string): ItemTag | undefined {
 }
 
 function getItemDirectory(path: string): string {
-  const normalizedPath = path.replace(/\\/g, '/');
-  const lastSlashIndex = normalizedPath.lastIndexOf('/');
-  return lastSlashIndex > 0 ? normalizedPath.substring(0, lastSlashIndex) : normalizedPath;
+  const lastSlashIndex = path.lastIndexOf('/');
+  return lastSlashIndex > 0 ? path.substring(0, lastSlashIndex) : path;
 }
 
 function formatRelativeTime(timestamp: number): string {

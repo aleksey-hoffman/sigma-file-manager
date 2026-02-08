@@ -126,13 +126,11 @@ type GroupedResults = {
 };
 
 function getDriveRoot(path: string): string {
-  const normalizedPath = path.replace(/\\/g, '/');
-
-  if (/^[a-zA-Z]:/.test(normalizedPath)) {
-    return normalizedPath.substring(0, 2).toUpperCase() + '/';
+  if (/^[a-zA-Z]:/.test(path)) {
+    return path.substring(0, 2).toUpperCase() + '/';
   }
 
-  const parts = normalizedPath.split('/').filter(Boolean);
+  const parts = path.split('/').filter(Boolean);
 
   if (parts.length > 0) {
     return '/' + parts[0];

@@ -29,6 +29,7 @@ import {
   userDirectoryIconNames,
   getIconComponent,
 } from '@/modules/home/composables/use-user-directories';
+import normalizePath from '@/utils/normalize-path';
 
 const props = defineProps<{
   directory: UserDirectory | null;
@@ -47,10 +48,6 @@ const editedTitle = ref('');
 const editedPathRaw = ref('');
 const selectedIcon = ref<string | undefined>(undefined);
 const pathError = ref<string | null>(null);
-
-function normalizePath(path: string): string {
-  return path.replace(/\\/g, '/');
-}
 
 const editedPath = computed({
   get: () => normalizePath(editedPathRaw.value),

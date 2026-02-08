@@ -36,6 +36,7 @@ import {
 import externalLinks from '@/data/external-links';
 import { useWorkspacesStore } from '@/stores/storage/workspaces';
 import { useChangelog } from '@/modules/changelog';
+import normalizePath from '@/utils/normalize-path';
 
 const { t } = useI18n();
 const router = useRouter();
@@ -48,23 +49,23 @@ async function navigateToDirectory(path: string) {
 }
 
 async function openAppDataDirectory() {
-  const path = await appDataDir();
+  const path = normalizePath(await appDataDir());
   await navigateToDirectory(path);
 }
 
 async function openAppConfigDirectory() {
-  const path = await appConfigDir();
+  const path = normalizePath(await appConfigDir());
   await navigateToDirectory(path);
 }
 
 async function openAppLogDirectory() {
-  const path = await appLogDir();
+  const path = normalizePath(await appLogDir());
   await navigateToDirectory(path);
 }
 
 async function openGlobalSearchIndexDirectory() {
-  const dataDir = await appDataDir();
-  const path = await join(dataDir, 'global-search');
+  const dataDir = normalizePath(await appDataDir());
+  const path = normalizePath(await join(dataDir, 'global-search'));
   await navigateToDirectory(path);
 }
 

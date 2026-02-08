@@ -17,6 +17,7 @@ use tantivy::schema::{
 use tantivy::{doc, Index, IndexReader, IndexWriter, Term};
 use tauri::Manager;
 use walkdir::WalkDir;
+use crate::utils::normalize_path;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GlobalSearchSettings {
@@ -121,10 +122,6 @@ fn now_millis() -> u64 {
         .duration_since(UNIX_EPOCH)
         .map(|duration| duration.as_millis() as u64)
         .unwrap_or(0)
-}
-
-fn normalize_path(path: &str) -> String {
-    path.replace('\\', "/")
 }
 
 fn normalize_case(value: &str) -> String {

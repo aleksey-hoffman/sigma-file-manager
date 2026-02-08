@@ -212,7 +212,7 @@ export function useFileBrowserSelection(
     clipboardStore.setClipboard('move', entries);
   }
 
-  async function pasteItems(): Promise<boolean> {
+  async function pasteItems(destinationPath?: string): Promise<boolean> {
     if (!clipboardStore.hasItems) {
       return false;
     }
@@ -267,7 +267,8 @@ export function useFileBrowserSelection(
       }
     };
 
-    const result = await clipboardStore.pasteItems(currentPathRef.value);
+    const targetPath = destinationPath || currentPathRef.value;
+    const result = await clipboardStore.pasteItems(targetPath);
 
     toastData.value.cleanup();
     toastData.value.progress = 100;
@@ -280,7 +281,11 @@ export function useFileBrowserSelection(
       toastData.value.itemCount = successCount;
       toastData.value.actionText = t('close');
 
-      const pathsToInvalidate = [currentPathRef.value];
+      const pathsToInvalidate = [targetPath];
+
+      if (targetPath !== currentPathRef.value) {
+        pathsToInvalidate.push(currentPathRef.value);
+      }
 
       if (clipboardStore.sourceDirectory) {
         pathsToInvalidate.push(clipboardStore.sourceDirectory);
@@ -363,6 +368,13 @@ export function useFileBrowserSelection(
           },
         });
 
+        const oldPath = entry.path;
+        const parentDir = oldPath.substring(0, oldPath.lastIndexOf('/'));
+        const newPath = `${parentDir}/${trimmedName}`;
+
+        workspacesStore.handlePathRenamed(oldPath, newPath);
+        userStatsStore.handlePathRenamed(oldPath, newPath);
+
         dirSizesStore.invalidate([entry.path, currentPathRef.value]);
 
         cancelRename();
@@ -413,12 +425,24 @@ export function useFileBrowserSelection(
         }
 
         break;
-      case 'paste':
-        pasteItems();
+
+      case 'paste': {
+        const targetDir = entries.length === 1 && !entries[0].is_file
+          ? entries[0].path
+          : undefined;
+        pasteItems(targetDir);
         break;
+      }
+
       case 'delete':
         if (entries.length > 0) {
           deleteItems(entries, true);
+        }
+
+        break;
+      case 'delete-permanently':
+        if (entries.length > 0) {
+          deleteItems(entries, false);
         }
 
         break;
@@ -548,6 +572,9 @@ export function useFileBrowserSelection(
           : t('notifications.deleted');
         toastData.value.itemCount = successCount;
         toastData.value.actionText = t('close');
+
+        workspacesStore.handlePathsDeleted(paths);
+        userStatsStore.handlePathsDeleted(paths);
 
         dirSizesStore.invalidate([currentPathRef.value, ...paths]);
 

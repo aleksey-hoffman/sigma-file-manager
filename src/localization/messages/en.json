@@ -800,7 +800,7 @@
     "addSelectedItemsForCopying": "Add selected items for copying. Allows to copy items from multiple directories at once",
     "setSelectedItemsForMoving": "Set selected items for moving",
     "addSelectedItemsForMoving": "Add selected items for moving. Allows to move items from multiple directories at once",
-    "transferPreparedForCopying": "Transfer prepared for copying / moving items to current directory",
+    "transferPreparedForCopying": "Transfer prepared for copying / moving items here",
     "moveSelectedItemsToTrash": "Move selected items to trash",
     "deleteSelectedItemsFromDrive": "Delete selected items from drive",
     "quickWindowPositioning": "Quick window positioning",

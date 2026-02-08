@@ -787,7 +787,7 @@
     "addSelectedItemsForCopying": "Thêm các mục đã chọn để sao chép. Cho phép sao chép các mục từ nhiều thư mục cùng một lúc",
     "setSelectedItemsForMoving": "Đặt các mục đã chọn để di chuyển",
     "addSelectedItemsForMoving": "Thêm các mục đã chọn để di chuyển. Cho phép di chuyển các mục từ nhiều thư mục cùng một lúc",
-    "transferPreparedForCopying": "Chuyển sẵn sàng để sao chép/di chuyển các mục vào thư mục hiện tại",
+    "transferPreparedForCopying": "Chuyển các mục đã chuẩn bị để sao chép / di chuyển vào đây",
     "moveSelectedItemsToTrash": "Chuyển các mục đã chọn vào thùng rác",
     "deleteSelectedItemsFromDrive": "Xóa các mục đã chọn khỏi ổ đĩa",
     "quickWindowPositioning": "Định vị cửa sổ nhanh",

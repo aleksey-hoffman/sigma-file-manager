@@ -787,7 +787,7 @@
     "addSelectedItemsForCopying": "Seçili öğeleri kopyalamak için ekle. Öğeleri aynı anda birden fazla dizinden kopyalamaya izin verir",
     "setSelectedItemsForMoving": "Seçili öğeleri taşımak için ayarla",
     "addSelectedItemsForMoving": "Seçili öğeleri taşımak için ekle. Öğeleri aynı anda birden fazla dizinden taşımaya izin verir",
-    "transferPreparedForCopying": "Öğeleri mevcut dizine kopyalamak / taşımak için hazırlanan aktarım",
+    "transferPreparedForCopying": "Kopyalama / taşıma için hazırlanan öğeleri buraya aktar",
     "moveSelectedItemsToTrash": "Seçili öğeleri çöp kutusuna taşı",
     "deleteSelectedItemsFromDrive": "Seçili öğeleri sürücüden sil",
     "quickWindowPositioning": "Hızlı pencere konumlandırma",

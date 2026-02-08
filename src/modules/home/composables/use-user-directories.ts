@@ -13,6 +13,7 @@ import {
   videoDir,
 } from '@tauri-apps/api/path';
 import type { Component } from 'vue';
+import normalizePath from '@/utils/normalize-path';
 import * as LucideIcons from 'lucide-vue-next';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import type { UserDirectoryCustomization } from '@/types/user-settings';
@@ -146,10 +147,6 @@ const directoryDefinitions: UserDirectoryDefinition[] = [
     pathFn: audioDir,
   },
 ];
-
-function normalizePath(path: string): string {
-  return path.replace(/\\/g, '/');
-}
 
 const userDirectories = ref<UserDirectory[]>([]);
 const isLoading = ref(false);

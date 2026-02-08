@@ -800,7 +800,7 @@
     "addSelectedItemsForCopying": "Dodaj izbrane predmete za kopiranje. Omogoča kopiranje predmetov iz več map hkrati",
     "setSelectedItemsForMoving": "Nastavi izbrane predmete za premik",
     "addSelectedItemsForMoving": "Dodaj izbrane predmete za premik. Omogoča premik predmetov iz več map hkrati",
-    "transferPreparedForCopying": "Prenesi pripravljeno za kopiranje / premik v trenutno mapo",
+    "transferPreparedForCopying": "Prenesi pripravljeno za kopiranje / premik sem",
     "moveSelectedItemsToTrash": "Premakni izbrane predmete v koš",
     "deleteSelectedItemsFromDrive": "Izbriši izbrane predmete z pogona",
     "quickWindowPositioning": "Hitro pozicioniranje okna",

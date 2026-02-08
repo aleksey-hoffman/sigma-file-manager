@@ -376,6 +376,62 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
     });
   }
 
+  const lastRenamedPath = ref<{
+    oldPath: string;
+    newPath: string;
+  } | null>(null);
+  const lastDeletedPaths = ref<string[] | null>(null);
+
+  function handlePathRenamed(oldPath: string, newPath: string) {
+    for (const workspace of workspaces.value) {
+      for (const tabGroup of workspace.tabGroups) {
+        for (const tab of tabGroup) {
+          const updatedPath = replacePathPrefix(tab.path, oldPath, newPath);
+
+          if (updatedPath !== null) {
+            tab.path = updatedPath;
+            const pathParts = updatedPath.split('/').filter(Boolean);
+            tab.name = pathParts[pathParts.length - 1] || updatedPath;
+          }
+        }
+      }
+    }
+
+    lastRenamedPath.value = {
+      oldPath,
+      newPath,
+    };
+  }
+
+  function replacePathPrefix(path: string, oldPrefix: string, newPrefix: string): string | null {
+    if (path === oldPrefix) return newPrefix;
+    if (path.startsWith(oldPrefix + '/')) return newPrefix + path.slice(oldPrefix.length);
+    return null;
+  }
+
+  function handlePathsDeleted(paths: string[]) {
+    const homePath = userPathsStore.userPaths.homeDir;
+    const homePathParts = homePath.split('/').filter(Boolean);
+    const homeName = homePathParts[homePathParts.length - 1] || homePath;
+
+    for (const workspace of workspaces.value) {
+      for (const tabGroup of workspace.tabGroups) {
+        for (const tab of tabGroup) {
+          const isAffected = paths.some(deletedPath =>
+            tab.path === deletedPath || tab.path.startsWith(deletedPath + '/'),
+          );
+
+          if (isAffected) {
+            tab.path = homePath;
+            tab.name = homeName;
+          }
+        }
+      }
+    }
+
+    lastDeletedPaths.value = paths;
+  }
+
   async function initStorage() {
     try {
       if (!workspacesStorage.value) {
@@ -492,5 +548,9 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
     setTabs,
     toggleSplitView,
     setTabFilterQuery,
+    lastRenamedPath,
+    handlePathRenamed,
+    lastDeletedPaths,
+    handlePathsDeleted,
   };
 });

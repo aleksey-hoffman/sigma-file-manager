@@ -14,6 +14,7 @@ import {
   FolderInputIcon,
   ClipboardPasteIcon,
   Trash2Icon,
+  ShredderIcon,
   EyeIcon,
   Share2Icon,
   PanelRightIcon,
@@ -25,7 +26,13 @@ import { useShortcutsStore } from '@/stores/runtime/shortcuts';
 import type { DirEntry } from '@/types/dir-entry';
 import type { ContextMenuAction } from './types';
 import { useContextMenuItems } from './composables/use-context-menu-items';
-import { toRef, computed } from 'vue';
+import {
+  toRef,
+  computed,
+  ref,
+  onMounted,
+  onUnmounted,
+} from 'vue';
 import FileBrowserOpenWithSubmenu from './file-browser-open-with-submenu.vue';
 import FileBrowserMoreOptionsSubmenu from './file-browser-more-options-submenu.vue';
 
@@ -133,6 +140,34 @@ const canPasteToSelectedDirectory = computed(() => {
 
   return clipboardStore.canPasteTo(selectedDirectory.value.path);
 });
+
+const isShiftHeld = ref(false);
+
+function handleKeyDown(event: KeyboardEvent) {
+  if (event.key === 'Shift') {
+    isShiftHeld.value = true;
+  }
+}
+
+function handleKeyUp(event: KeyboardEvent) {
+  if (event.key === 'Shift') {
+    isShiftHeld.value = false;
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', handleKeyDown);
+  window.addEventListener('keyup', handleKeyUp);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKeyDown);
+  window.removeEventListener('keyup', handleKeyUp);
+});
+
+function handleDeleteClick() {
+  emitAction(isShiftHeld.value ? 'delete-permanently' : 'delete');
+}
 </script>
 
 <template>
@@ -224,9 +259,16 @@ const canPasteToSelectedDirectory = computed(() => {
           variant="ghost"
           size="icon"
           class="file-browser-actions-menu__action--danger"
-          @click="emitAction('delete')"
+          @click="handleDeleteClick"
         >
-          <Trash2Icon :size="16" />
+          <ShredderIcon
+            v-if="isShiftHeld"
+            :size="16"
+          />
+          <Trash2Icon
+            v-else
+            :size="16"
+          />
         </Button>
       </TooltipTrigger>
       <TooltipContent class="file-browser-actions-menu__tooltip">
