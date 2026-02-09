@@ -209,6 +209,9 @@ onUnmounted(() => {
       :icon="DatabaseIcon"
     >
       <template #description>
+        <span class="global-search-settings__priority-index-description">
+          {{ t('settings.globalSearch.searchIndexingDescription') }}
+        </span>
         <div class="global-search-settings__status-container">
           <div class="global-search-settings__status-header">
             <div
@@ -722,7 +725,7 @@ onUnmounted(() => {
 
 .global-search-settings__priority-index-description {
   color: hsl(var(--muted-foreground));
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1.5;
 }
 
