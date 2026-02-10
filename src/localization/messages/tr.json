@@ -1536,7 +1536,16 @@
   "protectedItemsShort": "Korumalı",
   "pinnedItemsShort": "Ekli",
   "freeOf": "ücretsiz olarak",
-  "terminal": "Terminal",
+  "terminal": {
+    "terminal": "Terminal",
+    "terminalAdmin": "Terminal (yönetici)",
+    "openInTerminal": "Terminalde aç",
+    "loadingTerminals": "Terminaller yükleniyor...",
+    "noTerminalsFound": "Terminal bulunamadı",
+    "failedToLoadTerminals": "Mevcut terminaller yüklenemedi",
+    "failedToOpenTerminal": "Terminal açılamadı",
+    "holdModifierForAdmin": "Yönetici olarak açmak için {modifier} tuşunu basılı tutun"
+  },
   "conflict": "Çatışma",
   "command": "Komut",
   "keybinding": "Tuş bağlama",

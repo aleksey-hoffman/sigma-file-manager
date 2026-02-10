@@ -1552,7 +1552,16 @@
   "protectedItemsShort": "Защищенные",
   "pinnedItemsShort": "Прикрепленные",
   "freeOf": "свободно из",
-  "terminal": "Терминал",
+  "terminal": {
+    "terminal": "Терминал",
+    "terminalAdmin": "Терминал (администратор)",
+    "openInTerminal": "Открыть в терминале",
+    "loadingTerminals": "Загрузка терминалов...",
+    "noTerminalsFound": "Терминалы не найдены",
+    "failedToLoadTerminals": "Не удалось загрузить доступные терминалы",
+    "failedToOpenTerminal": "Не удалось открыть терминал",
+    "holdModifierForAdmin": "Удерживайте {modifier} для открытия от имени администратора"
+  },
   "conflict": "Конфликт",
   "command": "Команда",
   "keybinding": "Сочетание клавиш",

@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- "Open in terminal" context menu with automatic detection of all installed terminals on Windows (CMD, PowerShell, PowerShell 7, Windows Terminal), macOS (Terminal, iTerm2, Warp, Alacritty, Kitty), and Linux (GNOME Terminal, Konsole, Xfce Terminal, Alacritty, Kitty, WezTerm, and more). When Windows Terminal is installed, shows all configured shell profiles (PowerShell, CMD, Git Bash, WSL distros, VS Developer tools, etc.) with executable icons. Includes both normal and admin/elevated modes. Default shortcut: Alt+T;
 - Fonts setting in Appearance: choose UI font from system fonts (Local Font Access API), with filter, re-fetch, and reset to default;
 - Empty state display when navigating to an empty directory, showing a clear message that the directory has no files or folders;
 - Shared reusable `EmptyState` UI component (`src/components/ui/empty-state`) for consistent empty state presentation across the app;

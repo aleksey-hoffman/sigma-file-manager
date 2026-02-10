@@ -1536,7 +1536,16 @@
   "protectedItemsShort": "受保护",
   "pinnedItemsShort": "固定的",
   "freeOf": "自由于",
-  "terminal": "终端",
+  "terminal": {
+    "terminal": "终端",
+    "terminalAdmin": "终端（管理员）",
+    "openInTerminal": "在终端中打开",
+    "loadingTerminals": "正在加载终端...",
+    "noTerminalsFound": "未找到终端",
+    "failedToLoadTerminals": "加载可用终端失败",
+    "failedToOpenTerminal": "打开终端失败",
+    "holdModifierForAdmin": "按住 {modifier} 以管理员身份打开"
+  },
   "conflict": "冲突",
   "command": "命令",
   "keybinding": "键盘绑定",

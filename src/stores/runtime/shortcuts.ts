@@ -186,6 +186,35 @@ const DEFAULT_SHORTCUTS: ShortcutDefinition[] = [
     },
     isReadOnly: false,
   },
+  {
+    id: 'openTerminal',
+    labelKey: 'shortcuts.openCurrentDirInTerminal',
+    defaultKeys: {
+      alt: true,
+      key: 't',
+    },
+    scope: 'navigator',
+    conditions: {
+      inputFieldIsActive: false,
+      dialogIsOpened: false,
+    },
+    isReadOnly: false,
+  },
+  {
+    id: 'openTerminalAdmin',
+    labelKey: 'shortcuts.openCurrentDirInTerminalAsAdmin',
+    defaultKeys: {
+      alt: true,
+      shift: true,
+      key: 't',
+    },
+    scope: 'navigator',
+    conditions: {
+      inputFieldIsActive: false,
+      dialogIsOpened: false,
+    },
+    isReadOnly: false,
+  },
 ];
 
 export function formatShortcutKeys(keys: ShortcutKeys): string {

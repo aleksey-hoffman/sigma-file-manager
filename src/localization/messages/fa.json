@@ -1535,7 +1535,16 @@
   "protectedItemsShort": "حفاظت شده",
   "pinnedItemsShort": "پیوست شده است",
   "freeOf": "رایگان از",
-  "terminal": "ترمینال",
+  "terminal": {
+    "terminal": "ترمینال",
+    "terminalAdmin": "ترمینال (مدیر)",
+    "openInTerminal": "باز کردن در ترمینال",
+    "loadingTerminals": "بارگذاری ترمینال‌ها...",
+    "noTerminalsFound": "ترمینالی یافت نشد",
+    "failedToLoadTerminals": "بارگذاری ترمینال‌های موجود ناموفق بود",
+    "failedToOpenTerminal": "باز کردن ترمینال ناموفق بود",
+    "holdModifierForAdmin": "برای باز کردن به عنوان مدیر، {modifier} را نگه دارید"
+  },
   "conflict": "تضاد",
   "command": "فرمان",
   "keybinding": "کلید میانبر",

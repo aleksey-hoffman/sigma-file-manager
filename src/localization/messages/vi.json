@@ -1536,7 +1536,16 @@
   "protectedItemsShort": "được bảo vệ",
   "pinnedItemsShort": "Đính kèm",
   "freeOf": "miễn phí của",
-  "terminal": "Đầu cuối",
+  "terminal": {
+    "terminal": "Terminal",
+    "terminalAdmin": "Terminal (quản trị)",
+    "openInTerminal": "Mở trong terminal",
+    "loadingTerminals": "Đang tải terminal...",
+    "noTerminalsFound": "Không tìm thấy terminal nào",
+    "failedToLoadTerminals": "Không thể tải các terminal khả dụng",
+    "failedToOpenTerminal": "Không thể mở terminal",
+    "holdModifierForAdmin": "Giữ {modifier} để mở với quyền quản trị"
+  },
   "conflict": "Xung đột",
   "command": "Lệnh",
   "keybinding": "Phím tắt",

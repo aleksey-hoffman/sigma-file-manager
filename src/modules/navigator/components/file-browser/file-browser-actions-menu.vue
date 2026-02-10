@@ -35,6 +35,7 @@ import {
 } from 'vue';
 import FileBrowserOpenWithSubmenu from './file-browser-open-with-submenu.vue';
 import FileBrowserMoreOptionsSubmenu from './file-browser-more-options-submenu.vue';
+import FileBrowserTerminalSubmenu from './file-browser-terminal-submenu.vue';
 
 const props = defineProps<{
   selectedEntries: DirEntry[];
@@ -312,15 +313,11 @@ function handleDeleteClick() {
     <span>{{ t('fileBrowser.actions.quickView') }}</span>
     <kbd class="shortcut">{{ shortcutsStore.getShortcutLabel('quickView') }}</kbd>
   </component>
-  <component
-    :is="menuItemComponent"
-    v-if="isActionVisible('share')"
-    @select="emitAction('share')"
-    @click="emitAction('share')"
-  >
-    <Share2Icon :size="16" />
-    <span>{{ t('fileBrowser.actions.share') }}</span>
-  </component>
+  <FileBrowserTerminalSubmenu
+    v-if="isContextMenu"
+    :selected-entries="selectedEntries"
+    :is-shift-held="isShiftHeld"
+  />
   <component
     :is="menuItemComponent"
     v-if="isActionVisible('open-in-new-tab')"
@@ -329,6 +326,15 @@ function handleDeleteClick() {
   >
     <PanelRightIcon :size="16" />
     <span>{{ t('fileBrowser.actions.openInNewTab') }}</span>
+  </component>
+  <component
+    :is="menuItemComponent"
+    v-if="isActionVisible('share')"
+    @select="emitAction('share')"
+    @click="emitAction('share')"
+  >
+    <Share2Icon :size="16" />
+    <span>{{ t('fileBrowser.actions.share') }}</span>
   </component>
   <component :is="menuSeparatorComponent" />
   <component

@@ -10,6 +10,7 @@ mod global_search;
 mod open_with;
 mod system_icons;
 mod system_tray;
+mod terminal;
 pub mod utils;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -52,6 +53,9 @@ pub fn run() {
             open_with::get_shell_context_menu,
             open_with::invoke_shell_context_menu_item,
             system_icons::get_system_icon,
+            terminal::get_available_terminals,
+            terminal::get_terminal_icons,
+            terminal::open_terminal,
             dir_watcher::watch_directory,
             dir_watcher::unwatch_directory,
             dir_watcher::get_watched_directories,

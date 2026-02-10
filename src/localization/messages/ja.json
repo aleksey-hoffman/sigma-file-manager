@@ -1536,7 +1536,16 @@
   "protectedItemsShort": "保護された",
   "pinnedItemsShort": "添付",
   "freeOf": "から自由である",
-  "terminal": "ターミナル",
+  "terminal": {
+    "terminal": "ターミナル",
+    "terminalAdmin": "ターミナル（管理者）",
+    "openInTerminal": "ターミナルで開く",
+    "loadingTerminals": "ターミナルを読み込み中...",
+    "noTerminalsFound": "ターミナルが見つかりません",
+    "failedToLoadTerminals": "利用可能なターミナルの読み込みに失敗しました",
+    "failedToOpenTerminal": "ターミナルを開けませんでした",
+    "holdModifierForAdmin": "{modifier}キーを押しながら管理者として開く"
+  },
   "conflict": "コンフリクト",
   "command": "コマンド",
   "keybinding": "キーバインド",

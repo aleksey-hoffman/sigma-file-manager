@@ -1552,7 +1552,16 @@
   "protectedItemsShort": "Protected",
   "pinnedItemsShort": "Pinned",
   "freeOf": "free of",
-  "terminal": "Terminal",
+  "terminal": {
+    "terminal": "Terminal",
+    "terminalAdmin": "Terminal (admin)",
+    "openInTerminal": "Open in terminal",
+    "loadingTerminals": "Loading terminals...",
+    "noTerminalsFound": "No terminals found",
+    "failedToLoadTerminals": "Failed to load available terminals",
+    "failedToOpenTerminal": "Failed to open terminal",
+    "holdModifierForAdmin": "Hold {modifier} to open as admin"
+  },
   "conflict": "Conflict",
   "command": "Command",
   "keybinding": "Keybinding",

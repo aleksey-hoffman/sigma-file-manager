@@ -11,6 +11,7 @@ import { useWorkspacesStore } from '@/stores/storage/workspaces';
 import { usePlatformStore } from '@/stores/runtime/platform';
 import { useGlobalSearchStore } from '@/stores/runtime/global-search';
 import { useShortcutsStore } from '@/stores/runtime/shortcuts';
+import { useTerminalsStore } from '@/stores/runtime/terminals';
 import { disableWebViewFeatures } from '@/utils/disable-web-view-features';
 import { useChangelog } from '@/modules/changelog';
 
@@ -23,6 +24,7 @@ export function useInit() {
   const platformStore = usePlatformStore();
   const globalSearchStore = useGlobalSearchStore();
   const shortcutsStore = useShortcutsStore();
+  const terminalsStore = useTerminalsStore();
   const { checkAndShowChangelog } = useChangelog();
 
   function registerShortcutHandlers() {
@@ -49,6 +51,7 @@ export function useInit() {
     await workspacesStore.init();
     await globalSearchStore.initOnLaunch();
     shortcutsStore.init();
+    terminalsStore.init();
     disableWebViewFeatures();
     await checkAndShowChangelog();
   }

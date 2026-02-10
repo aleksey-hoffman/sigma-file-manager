@@ -79,7 +79,9 @@ export type ShortcutId
     | 'deletePermanently'
     | 'rename'
     | 'escape'
-    | 'quickView';
+    | 'quickView'
+    | 'openTerminal'
+    | 'openTerminalAdmin';
 
 export type UserShortcuts = Partial<Record<ShortcutId, ShortcutKeys>>;
 

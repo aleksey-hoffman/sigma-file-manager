@@ -1552,7 +1552,16 @@
   "protectedItemsShort": "Zaščiteno",
   "pinnedItemsShort": "Pripeto",
   "freeOf": "brez",
-  "terminal": "Terminal",
+  "terminal": {
+    "terminal": "Terminal",
+    "terminalAdmin": "Terminal (skrbnik)",
+    "openInTerminal": "Odpri v terminalu",
+    "loadingTerminals": "Nalaganje terminalov...",
+    "noTerminalsFound": "Noben terminal ni bil najden",
+    "failedToLoadTerminals": "Nalaganje razpoložljivih terminalov ni uspelo",
+    "failedToOpenTerminal": "Odpiranje terminala ni uspelo",
+    "holdModifierForAdmin": "Držite {modifier} za odprtje kot skrbnik"
+  },
   "conflict": "Spor",
   "command": "Ukaz",
   "keybinding": "Tipkovna bližnjica",

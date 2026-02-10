@@ -1536,7 +1536,16 @@
   "protectedItemsShort": "Protégé",
   "pinnedItemsShort": "Attaché",
   "freeOf": "libres sur",
-  "terminal": "Terminal",
+  "terminal": {
+    "terminal": "Terminal",
+    "terminalAdmin": "Terminal (admin)",
+    "openInTerminal": "Ouvrir dans le terminal",
+    "loadingTerminals": "Chargement des terminaux...",
+    "noTerminalsFound": "Aucun terminal trouvé",
+    "failedToLoadTerminals": "Impossible de charger les terminaux disponibles",
+    "failedToOpenTerminal": "Impossible d'ouvrir le terminal",
+    "holdModifierForAdmin": "Maintenez {modifier} pour ouvrir en tant qu'administrateur"
+  },
   "conflict": "Conflit",
   "command": "Commande",
   "keybinding": "Raccourci clavier",

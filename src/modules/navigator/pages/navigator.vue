@@ -18,6 +18,7 @@ import { useClipboardStore } from '@/stores/runtime/clipboard';
 import { useDismissalLayerStore } from '@/stores/runtime/dismissal-layer';
 import { useGlobalSearchStore } from '@/stores/runtime/global-search';
 import { useShortcutsStore } from '@/stores/runtime/shortcuts';
+import { useTerminalsStore } from '@/stores/runtime/terminals';
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
 import { FileBrowser } from '@/modules/navigator/components/file-browser';
 import { InfoPanel } from '@/modules/navigator/components/info-panel';
@@ -39,6 +40,7 @@ const clipboardStore = useClipboardStore();
 const dismissalLayerStore = useDismissalLayerStore();
 const globalSearchStore = useGlobalSearchStore();
 const shortcutsStore = useShortcutsStore();
+const terminalsStore = useTerminalsStore();
 const dirSizesStore = useDirSizesStore();
 
 const paneRefsMap = ref<Map<string, FileBrowserInstance>>(new Map());
@@ -309,6 +311,23 @@ async function handleQuickViewShortcut() {
   }
 }
 
+async function openTerminalWithOptions(asAdmin: boolean) {
+  if (!currentActivePath.value) return;
+
+  const defaultTerminal = terminalsStore.terminals[0];
+  if (!defaultTerminal) return;
+
+  await terminalsStore.openTerminal(currentActivePath.value, defaultTerminal.id, asAdmin);
+}
+
+async function handleOpenTerminalShortcut() {
+  await openTerminalWithOptions(false);
+}
+
+async function handleOpenTerminalAdminShortcut() {
+  await openTerminalWithOptions(true);
+}
+
 function registerShortcutHandlers() {
   shortcutsStore.registerHandler('toggleFilter', handleFilterShortcut);
   shortcutsStore.registerHandler('copy', handleCopyShortcut);
@@ -326,6 +345,8 @@ function registerShortcutHandlers() {
   }, { checkItemSelected: hasSelectedItems });
   shortcutsStore.registerHandler('escape', handleEscapeKey);
   shortcutsStore.registerHandler('quickView', handleQuickViewShortcut, { checkItemSelected: hasSelectedItems });
+  shortcutsStore.registerHandler('openTerminal', handleOpenTerminalShortcut);
+  shortcutsStore.registerHandler('openTerminalAdmin', handleOpenTerminalAdminShortcut);
 }
 
 onMounted(() => {
