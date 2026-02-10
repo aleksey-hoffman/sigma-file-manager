@@ -46,7 +46,8 @@ function handleOpenCustomDialog() {
 
 <style>
 .file-browser-context-menu.sigma-ui-context-menu-content {
-  width: clamp(200px, 100%, 240px);
+  min-width: 250px;
+  max-width: 300px;
   padding: 8px;
 }
 </style>
