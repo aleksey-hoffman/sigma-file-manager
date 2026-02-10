@@ -308,7 +308,7 @@ function closeAllTabs() {
 
 .tab__tooltip-content {
   min-width: 200px;
-  max-width: 250px;
+  max-width: 400px;
 }
 
 .tab__dropdown-menu {
