@@ -34,6 +34,9 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
       isRtl: false,
     },
     theme: 'dark',
+    text: {
+      font: 'system-ui',
+    },
     transparentToolbars: false,
     dateTime: {
       month: 'short',
@@ -145,6 +148,9 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
     };
   }
 
+  const defaultFontFamily = computed(
+    () => userSettings.value.text?.font ?? 'system-ui',
+  );
   const themeSettingRef = computed(() => userSettings.value.theme);
   const { setTheme } = useTheme(themeSettingRef);
 
@@ -280,6 +286,7 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
   return {
     userSettings,
     userSettingsDefault,
+    defaultFontFamily,
     init,
     set,
     setUserSettingsStorage,

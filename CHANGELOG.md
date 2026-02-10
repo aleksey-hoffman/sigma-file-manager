@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Fonts setting in Appearance: choose UI font from system fonts (Local Font Access API), with filter, re-fetch, and reset to default;
 - Empty state display when navigating to an empty directory, showing a clear message that the directory has no files or folders;
 - Shared reusable `EmptyState` UI component (`src/components/ui/empty-state`) for consistent empty state presentation across the app;
 - Navigator toolbar "Create new" menu for quickly creating a new file or directory in the current path;

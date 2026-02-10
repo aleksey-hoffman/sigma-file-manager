@@ -19,7 +19,9 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_system_fonts::init())
         .invoke_handler(tauri::generate_handler![
+            system_tray::reload_webview,
             dir_reader::read_dir,
             dir_reader::get_system_drives,
             dir_reader::get_parent_dir,

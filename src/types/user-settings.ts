@@ -88,9 +88,14 @@ export type ChangelogSettings = {
   lastSeenVersion: string;
 };
 
+export type TextSettings = {
+  font: string;
+};
+
 export type UserSettings = {
   language: LocalizationLanguage;
   theme: Theme;
+  text: TextSettings;
   transparentToolbars: boolean;
   dateTime: DateTime;
   navigator: UserSettingsNavigator;

@@ -119,6 +119,11 @@ pub fn reload_main_window<R: Runtime>(app: &AppHandle<R>) {
     }
 }
 
+#[tauri::command]
+pub fn reload_webview(app: tauri::AppHandle) {
+    reload_main_window(&app);
+}
+
 pub fn quit_app() {
     std::process::exit(0);
 }

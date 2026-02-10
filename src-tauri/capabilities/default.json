@@ -46,6 +46,7 @@
         }
       ]
     },
-    "dialog:allow-open"
+    "dialog:allow-open",
+    "system-fonts:default"
   ]
 }

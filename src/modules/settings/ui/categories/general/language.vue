@@ -141,12 +141,9 @@ const selectedLanguage = computed({
   border: none;
   border-radius: 0;
   background-color: transparent;
-  box-shadow: 0 1px 0 0 hsl(var(--border));
+  box-shadow: none;
   color: hsl(var(--foreground));
-}
-
-.language-combobox__input:focus-visible {
-  box-shadow: 0 2px 0 0 hsl(var(--ring));
+  outline: none;
 }
 
 .language-combobox__search-icon {

@@ -46,6 +46,7 @@
     "pinia": "^3.0.3",
     "reka-ui": "^2.7.0",
     "tailwindcss": "^4.1.11",
+    "tauri-plugin-system-fonts-api": "^2.0.2",
     "v-wave": "^3.0.3",
     "vue": "^3.5.17",
     "vue-i18n": "^11.1.9",
