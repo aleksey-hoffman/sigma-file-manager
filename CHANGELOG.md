@@ -16,6 +16,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Shared reusable `EmptyState` UI component (`src/components/ui/empty-state`) for consistent empty state presentation across the app;
 - Navigator toolbar "Create new" menu for quickly creating a new file or directory in the current path;
 
+### Removed
+
+- Empty "Navigation" tab from settings (no sections were implemented);
+
 ### Improved
 
 - Global search now allows searching even while drives are being indexed - the scan progress banner shows indexing status without blocking the search area, providing a better experience for users who want to search with partial index data;

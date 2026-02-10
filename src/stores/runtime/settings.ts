@@ -45,10 +45,6 @@ const settingsTabs: SettingsTab[] = [
     labelKey: 'settingsTabs.tabsWorkspaces',
   },
   {
-    name: 'navigation',
-    labelKey: 'settingsTabs.navigation',
-  },
-  {
     name: 'input',
     labelKey: 'settingsTabs.input',
   },
