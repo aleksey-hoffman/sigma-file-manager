@@ -7,12 +7,11 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 import { storeToRefs } from 'pinia';
 import { useI18n } from 'vue-i18n';
 import { computed } from 'vue';
-import { InfoIcon, LoaderCircleIcon } from 'lucide-vue-next';
+import { LoaderCircleIcon } from 'lucide-vue-next';
 import type { DirEntry } from '@/types/dir-entry';
 import { formatBytes, formatDate } from './utils';
 import { useClipboardStore } from '@/stores/runtime/clipboard';
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
-import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import { Skeleton } from '@/components/ui/skeleton';
 import FileBrowserEntryIcon from './file-browser-entry-icon.vue';
 
@@ -26,8 +25,6 @@ defineProps<{
 const clipboardStore = useClipboardStore();
 const dirSizesStore = useDirSizesStore();
 const { clipboardItems, clipboardType } = storeToRefs(clipboardStore);
-
-const legendSizeText = '1.5 GB';
 
 const clipboardPathsMap = computed(() => {
   const map = new Map<string, string>();
@@ -92,52 +89,6 @@ const { t } = useI18n();
 
 <template>
   <div class="file-browser-list-view">
-    <div class="file-browser-list-view__header">
-      <span class="file-browser-list-view__header-name">{{ t('fileBrowser.name') }}</span>
-      <span class="file-browser-list-view__header-items">{{ t('items') }}</span>
-      <Tooltip :delay-duration="200">
-        <TooltipTrigger as-child>
-          <span class="file-browser-list-view__header-size file-browser-list-view__header-size--with-info">
-            {{ t('fileBrowser.size') }}
-            <InfoIcon
-              :size="12"
-              class="file-browser-list-view__header-info-icon"
-            />
-          </span>
-        </TooltipTrigger>
-        <TooltipContent
-          side="bottom"
-          :side-offset="8"
-          class="file-browser-list-view__size-tooltip"
-        >
-          <div class="file-browser-list-view__size-tooltip-content">
-            <div class="file-browser-list-view__size-tooltip-title">
-              {{ t('fileBrowser.sizeTooltip.title') }}
-            </div>
-            <div class="file-browser-list-view__size-tooltip-body">
-              <div class="file-browser-list-view__size-tooltip-item">
-                <span class="file-browser-list-view__size-tooltip-label">{{ legendSizeText }}</span>
-                <span class="file-browser-list-view__size-tooltip-desc">{{ t('fileBrowser.sizeTooltip.exact') }}</span>
-              </div>
-              <div class="file-browser-list-view__size-tooltip-item">
-                <span class="file-browser-list-view__size-tooltip-label file-browser-list-view__size-tooltip-label--loading">
-                  <Skeleton class="file-browser-list-view__size-tooltip-skeleton" />
-                </span>
-                <span class="file-browser-list-view__size-tooltip-desc">{{ t('fileBrowser.sizeTooltip.loading') }}</span>
-              </div>
-              <div class="file-browser-list-view__size-tooltip-item">
-                <span class="file-browser-list-view__size-tooltip-label file-browser-list-view__size-tooltip-label--empty">—</span>
-                <span class="file-browser-list-view__size-tooltip-desc">{{ t('fileBrowser.sizeTooltip.notCalculated') }}</span>
-              </div>
-            </div>
-            <div class="file-browser-list-view__size-tooltip-note">
-              {{ t('fileBrowser.sizeTooltip.note') }}
-            </div>
-          </div>
-        </TooltipContent>
-      </Tooltip>
-      <span class="file-browser-list-view__header-modified">{{ t('fileBrowser.modified') }}</span>
-    </div>
     <div
       :key="currentPath"
       class="file-browser-list-view__list file-browser-list-view__list--animate"
@@ -151,6 +102,7 @@ const { t } = useI18n();
           'file-browser-list-view__entry--file': entry.is_file,
           'file-browser-list-view__entry--hidden': entry.is_hidden,
         }"
+        :data-entry-path="entry.path"
         :data-selected="isEntrySelected(entry) || undefined"
         :data-in-clipboard="clipboardPathsMap.has(entry.path) || undefined"
         :data-clipboard-type="clipboardPathsMap.get(entry.path) || undefined"
@@ -200,30 +152,7 @@ const { t } = useI18n();
 .file-browser-list-view {
   display: flex;
   flex-direction: column;
-  padding-right: 20px;
-}
-
-.file-browser-list-view__header {
-  position: sticky;
-  z-index: 2;
-  top: 0;
-  display: grid;
-  padding: 10px 16px;
-  border-bottom: 1px solid hsl(var(--border));
-  backdrop-filter: blur(var(--backdrop-filter-blur));
-  background-color: hsl(var(--background-3) / 90%);
-  color: hsl(var(--muted-foreground));
-  font-size: 12px;
-  font-weight: 500;
-  grid-template-columns: minmax(80px, 1fr) minmax(70px, 90px) minmax(50px, 100px) minmax(60px, 160px);
-  text-transform: uppercase;
-}
-
-.file-browser-list-view__header-name,
-.file-browser-list-view__header-items,
-.file-browser-list-view__header-size,
-.file-browser-list-view__header-modified {
-  padding-right: 16px;
+  padding-right: var(--file-browser-list-right-gutter);
 }
 
 .file-browser-list-view__list {
@@ -238,14 +167,14 @@ const { t } = useI18n();
 .file-browser-list-view__entry {
   position: relative;
   display: grid;
-  padding: 10px 16px;
+  padding: var(--file-browser-list-row-padding-y) var(--file-browser-list-row-padding-x);
   border: none;
   border-bottom: 1px solid hsl(var(--border) / 50%);
   background: transparent;
   color: hsl(var(--foreground));
   cursor: default;
   font-size: 13px;
-  grid-template-columns: minmax(80px, 1fr) minmax(70px, 90px) minmax(50px, 100px) minmax(60px, 160px);
+  grid-template-columns: var(--file-browser-list-columns);
   text-align: left;
 }
 
@@ -288,7 +217,7 @@ const { t } = useI18n();
   position: relative;
   z-index: 1;
   overflow: hidden;
-  padding-right: 16px;
+  padding-right: var(--file-browser-list-cell-padding-right);
   color: hsl(var(--muted-foreground));
   font-size: 12px;
   text-overflow: ellipsis;
@@ -416,87 +345,4 @@ const { t } = useI18n();
   gap: 4px;
 }
 
-.file-browser-list-view__header-info-icon {
-  opacity: 0.5;
-  transition: opacity 0.15s ease;
-}
-
-.file-browser-list-view__header-size--with-info:hover .file-browser-list-view__header-info-icon {
-  opacity: 1;
-}
-
-.file-browser-list-view__size-tooltip {
-  max-width: 300px;
-}
-
-.file-browser-list-view__size-tooltip-content {
-  display: flex;
-  max-width: 300px;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.file-browser-list-view__size-tooltip-title {
-  color: hsl(var(--foreground));
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-}
-
-.file-browser-list-view__size-tooltip-body {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.file-browser-list-view__size-tooltip-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.file-browser-list-view__size-tooltip-label {
-  display: inline-flex;
-  width: 70px;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-  padding: 2px 8px;
-  border-radius: 4px;
-  background-color: hsl(var(--primary) / 15%);
-  color: hsl(var(--primary));
-  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
-  font-size: 11px;
-  font-weight: 500;
-}
-
-.file-browser-list-view__size-tooltip-label--loading {
-  background-color: transparent;
-}
-
-.file-browser-list-view__size-tooltip-skeleton {
-  width: 100%;
-  height: 12px;
-}
-
-.file-browser-list-view__size-tooltip-label--empty {
-  background-color: hsl(var(--muted) / 30%);
-  color: hsl(var(--muted-foreground));
-}
-
-.file-browser-list-view__size-tooltip-desc {
-  color: hsl(var(--muted-foreground));
-  font-size: 12px;
-  line-height: 1.4;
-}
-
-.file-browser-list-view__size-tooltip-note {
-  padding-top: 6px;
-  border-top: 1px solid hsl(var(--border) / 50%);
-  color: hsl(var(--muted-foreground));
-  font-size: 11px;
-  font-style: italic;
-  line-height: 1.4;
-}
 </style>

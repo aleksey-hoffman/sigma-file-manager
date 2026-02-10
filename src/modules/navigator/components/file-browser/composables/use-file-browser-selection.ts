@@ -48,6 +48,24 @@ export function useFileBrowserSelection(
     entry: null as DirEntry | null,
   });
 
+  type PendingFocusRequest
+    = {
+      type: 'path';
+      targetPath: string;
+      path: string;
+    }
+    | {
+      type: 'diff';
+      targetPath: string;
+      previousPaths: Set<string>;
+    };
+
+  const pendingFocusRequest = ref<PendingFocusRequest | null>(null);
+
+  function clearPendingFocusRequest() {
+    pendingFocusRequest.value = null;
+  }
+
   function clearSelection() {
     selectedEntries.value = [];
     lastSelectedEntry.value = null;
@@ -105,6 +123,17 @@ export function useFileBrowserSelection(
     selectedEntries.value = [entry];
     lastSelectedEntry.value = entry;
     onSelect(selectedEntries.value);
+  }
+
+  function selectEntryByPath(path: string): boolean {
+    const targetEntry = entriesRef.value.find(entry => entry.path === path);
+
+    if (!targetEntry) {
+      return false;
+    }
+
+    replaceSelection(targetEntry);
+    return true;
   }
 
   function handleEntryMouseDown(entry: DirEntry, event: MouseEvent) {
@@ -220,6 +249,11 @@ export function useFileBrowserSelection(
     const isCopy = clipboardStore.isCopyOperation;
     const itemCount = clipboardStore.itemCount;
     const operationType = isCopy ? 'copy' : 'move';
+    const targetPath = destinationPath || currentPathRef.value;
+    const shouldFocusPaste = targetPath === currentPathRef.value;
+    const previousPaths = shouldFocusPaste
+      ? new Set(entriesRef.value.map(entry => entry.path))
+      : null;
 
     const toastData = ref({
       id: '' as string | number,
@@ -267,7 +301,6 @@ export function useFileBrowserSelection(
       }
     };
 
-    const targetPath = destinationPath || currentPathRef.value;
     const result = await clipboardStore.pasteItems(targetPath);
 
     toastData.value.cleanup();
@@ -294,6 +327,15 @@ export function useFileBrowserSelection(
       dirSizesStore.invalidate(pathsToInvalidate);
 
       clipboardStore.clearClipboard();
+
+      if (shouldFocusPaste && previousPaths) {
+        pendingFocusRequest.value = {
+          type: 'diff',
+          targetPath,
+          previousPaths,
+        };
+      }
+
       onRefresh();
 
       autoDismissTimeout = setTimeout(() => {
@@ -438,6 +480,11 @@ export function useFileBrowserSelection(
         });
 
         dirSizesStore.invalidate([currentPathRef.value]);
+        pendingFocusRequest.value = {
+          type: 'path',
+          targetPath: currentPathRef.value,
+          path: `${currentPathRef.value}/${trimmedName}`,
+        };
         onRefresh();
         return true;
       }
@@ -697,6 +744,7 @@ export function useFileBrowserSelection(
     handleContextMenuAction,
     resetMouseState,
     selectAll,
+    selectEntryByPath,
     removeFromSelection,
     copyItems,
     cutItems,
@@ -706,5 +754,7 @@ export function useFileBrowserSelection(
     cancelRename,
     confirmRename,
     createNewItem,
+    pendingFocusRequest,
+    clearPendingFocusRequest,
   };
 }

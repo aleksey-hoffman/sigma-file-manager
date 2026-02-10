@@ -120,6 +120,6 @@ function getUpdatedList(dropResult: DropResult) {
 }
 
 .draggable-list__item {
-  padding: 0 2px;
+  padding-right: 4px;
 }
 </style>

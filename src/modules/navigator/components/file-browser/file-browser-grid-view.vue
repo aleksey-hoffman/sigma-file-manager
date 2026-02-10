@@ -141,6 +141,7 @@ const groupedEntries = computed<GroupedEntries>(() => {
           :key="entry.path"
           class="file-browser-grid-view__card file-browser-grid-view__card--dir"
           :class="{ 'file-browser-grid-view__card--hidden': entry.is_hidden }"
+          :data-entry-path="entry.path"
           :data-selected="isEntrySelected(entry) || undefined"
           :data-in-clipboard="clipboardPathsMap.has(entry.path) || undefined"
           :data-clipboard-type="clipboardPathsMap.get(entry.path) || undefined"
@@ -197,6 +198,7 @@ const groupedEntries = computed<GroupedEntries>(() => {
           :key="entry.path"
           class="file-browser-grid-view__card file-browser-grid-view__card--file file-browser-grid-view__card--image"
           :class="{ 'file-browser-grid-view__card--hidden': entry.is_hidden }"
+          :data-entry-path="entry.path"
           :data-selected="isEntrySelected(entry) || undefined"
           :data-in-clipboard="clipboardPathsMap.has(entry.path) || undefined"
           :data-clipboard-type="clipboardPathsMap.get(entry.path) || undefined"
@@ -245,6 +247,7 @@ const groupedEntries = computed<GroupedEntries>(() => {
             'file-browser-grid-view__card--image': props.getVideoThumbnail(entry),
             'file-browser-grid-view__card--icon-full': !props.getVideoThumbnail(entry),
           }"
+          :data-entry-path="entry.path"
           :data-selected="isEntrySelected(entry) || undefined"
           :data-in-clipboard="clipboardPathsMap.has(entry.path) || undefined"
           :data-clipboard-type="clipboardPathsMap.get(entry.path) || undefined"
@@ -294,6 +297,7 @@ const groupedEntries = computed<GroupedEntries>(() => {
           :key="entry.path"
           class="file-browser-grid-view__card file-browser-grid-view__card--file file-browser-grid-view__card--other file-browser-grid-view__card--icon-full"
           :class="{ 'file-browser-grid-view__card--hidden': entry.is_hidden }"
+          :data-entry-path="entry.path"
           :data-selected="isEntrySelected(entry) || undefined"
           :data-in-clipboard="clipboardPathsMap.has(entry.path) || undefined"
           :data-clipboard-type="clipboardPathsMap.get(entry.path) || undefined"
@@ -333,7 +337,7 @@ const groupedEntries = computed<GroupedEntries>(() => {
   flex-direction: column;
   padding: 8px;
   padding-right: 16px;
-  gap: 16px;
+  gap: 12px;
 }
 
 .file-browser-grid-view--animate {
@@ -342,7 +346,7 @@ const groupedEntries = computed<GroupedEntries>(() => {
 
 .file-browser-grid-view__section-bar {
   position: sticky;
-  z-index: 3;
+  z-index: 5;
   top: 0;
   display: flex;
   align-items: center;

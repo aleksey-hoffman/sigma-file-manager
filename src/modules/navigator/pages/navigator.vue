@@ -475,6 +475,7 @@ onUnmounted(() => {
 .navigator-page__panes {
   overflow: hidden;
   min-width: 0;
+  gap: 6px;
 }
 
 .navigator-page__panes-wrapper {
@@ -494,6 +495,7 @@ onUnmounted(() => {
 .navigator-page__pane {
   width: 100%;
   height: 100%;
+  border-radius: var(--radius-sm);
 }
 
 .navigator-page__compact-header {

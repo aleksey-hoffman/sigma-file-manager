@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Global search now allows searching even while drives are being indexed - the scan progress banner shows indexing status without blocking the search area, providing a better experience for users who want to search with partial index data;
 - Consistent terminology across the global search UI: replaced "scan" / "searched" phrasing with "indexing" / "indexed" everywhere (search widget, settings, notifications) in all 13 languages;
 - File browser status bar now shows total items with hidden count in parentheses when the list is filtered or truncated;
+- Newly created files, folders, and pasted items now auto-focus into view in the active directory;
 
 ### Fixed
 

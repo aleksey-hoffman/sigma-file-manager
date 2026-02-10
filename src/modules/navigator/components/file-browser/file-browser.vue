@@ -4,34 +4,24 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import {
-  computed,
-  onMounted,
-  onUnmounted,
-  watch,
-  ref,
-} from 'vue';
-import { useI18n } from 'vue-i18n';
-import { FolderOpenIcon } from 'lucide-vue-next';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { ContextMenu, ContextMenuTrigger } from '@/components/ui/context-menu';
-import { EmptyState } from '@/components/ui/empty-state';
+import { computed, toRef } from 'vue';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { useDismissalLayerStore } from '@/stores/runtime/dismissal-layer';
 import { useQuickViewStore } from '@/stores/runtime/quick-view';
 import { useGlobalSearchStore } from '@/stores/runtime/global-search';
 import type { DirEntry } from '@/types/dir-entry';
 import type { Tab } from '@/types/workspaces';
-import type { ContextMenuAction } from './types';
 import { useFileBrowserNavigation } from './composables/use-file-browser-navigation';
 import { useFileBrowserSelection } from './composables/use-file-browser-selection';
+import { useFileBrowserEntries } from './composables/use-file-browser-entries';
+import { useFileBrowserFilter } from './composables/use-file-browser-filter';
+import { useFileBrowserFocus } from './composables/use-file-browser-focus';
+import { useFileBrowserDialogs } from './composables/use-file-browser-dialogs';
+import { useFileBrowserActions } from './composables/use-file-browser-actions';
+import { useFileBrowserLifecycle } from './composables/use-file-browser-lifecycle';
 import { useVideoThumbnails } from './composables/use-video-thumbnails';
+import FileBrowserContent from './file-browser-content.vue';
 import FileBrowserToolbar from './file-browser-toolbar.vue';
-import FileBrowserListView from './file-browser-list-view.vue';
-import FileBrowserGridView from './file-browser-grid-view.vue';
-import FileBrowserContextMenu from './file-browser-context-menu.vue';
-import FileBrowserLoading from './file-browser-loading.vue';
-import FileBrowserError from './file-browser-error.vue';
 import FileBrowserStatusBar from './file-browser-status-bar.vue';
 import FileBrowserRenameDialog from './file-browser-rename-dialog.vue';
 import FileBrowserNewItemDialog from './file-browser-new-item-dialog.vue';
@@ -48,16 +38,11 @@ const emit = defineEmits<{
   'update:currentDirEntry': [entry: DirEntry | null];
 }>();
 
-const { t } = useI18n();
 const userSettingsStore = useUserSettingsStore();
 const dismissalLayerStore = useDismissalLayerStore();
 const quickViewStore = useQuickViewStore();
 const globalSearchStore = useGlobalSearchStore();
-
-const filterQuery = ref('');
-const isFilterOpen = ref(false);
-const filterDismissalLayerId = ref<string | null>(null);
-
+const tabRef = toRef(props, 'tab');
 const {
   currentPath,
   dirContents,
@@ -89,40 +74,29 @@ const {
   },
 );
 
-function isHiddenFile(entry: DirEntry): boolean {
-  return entry.is_hidden || entry.name.startsWith('.');
-}
-
-const entries = computed(() => {
-  if (!dirContents.value) return [];
-  let items = dirContents.value.entries;
-
-  if (!userSettingsStore.userSettings.navigator.showHiddenFiles) {
-    items = items.filter(item => !isHiddenFile(item));
-  }
-
-  if (filterQuery.value) {
-    const query = filterQuery.value.trim().toLowerCase();
-
-    if (query) {
-      items = items.filter(item => item.name.toLowerCase().includes(query));
-    }
-  }
-
-  return items;
+const {
+  filterQuery,
+  isFilterOpen,
+  toggleFilter,
+  openFilter,
+  closeFilter,
+} = useFileBrowserFilter({
+  userSettingsStore,
+  dismissalLayerStore,
+  globalSearchStore,
 });
 
-const isDirectoryEmpty = computed(() => {
-  if (!dirContents.value) return false;
-  return dirContents.value.entries.length === 0;
-});
-
-const currentPathComputed = computed(() => currentPath.value);
+const showHiddenFiles = computed(() => userSettingsStore.userSettings.navigator.showHiddenFiles);
+const {
+  entries,
+  isDirectoryEmpty,
+} = useFileBrowserEntries(dirContents, filterQuery, showHiddenFiles);
 
 const {
   selectedEntries,
   contextMenu,
   renameState,
+  pendingFocusRequest,
   clearSelection,
   isEntrySelected,
   handleEntryMouseDown,
@@ -131,6 +105,7 @@ const {
   handleContextMenuAction,
   resetMouseState,
   selectAll,
+  selectEntryByPath,
   removeFromSelection,
   copyItems,
   cutItems,
@@ -140,9 +115,10 @@ const {
   cancelRename,
   confirmRename,
   createNewItem,
+  clearPendingFocusRequest,
 } = useFileBrowserSelection(
   entries,
-  currentPathComputed,
+  currentPath,
   selectedItems => emit('update:selectedEntries', selectedItems),
   async (entry) => {
     if (entry.is_dir) {
@@ -156,234 +132,57 @@ const {
 );
 
 const { getVideoThumbnail } = useVideoThumbnails();
-
-const isRenameDialogOpen = computed({
-  get: () => renameState.value.isActive,
-  set: (value: boolean) => {
-    if (!value) {
-      cancelRename();
-    }
-  },
+const {
+  openWithState,
+  newItemDialogState,
+  isRenameDialogOpen,
+  isNewItemDialogOpen,
+  openOpenWithDialog,
+  closeOpenWithDialog,
+  openNewItemDialog,
+  handleRenameConfirm,
+  handleRenameCancel,
+  handleNewItemConfirm,
+  handleNewItemCancel,
+} = useFileBrowserDialogs({
+  renameState,
+  cancelRename,
+  confirmRename,
+  createNewItem,
 });
 
-const openWithState = ref({
-  isOpen: false,
-  entries: [] as DirEntry[],
+const { setEntriesContainerRef } = useFileBrowserFocus({
+  entries,
+  pendingFocusRequest,
+  currentPath,
+  selectEntryByPath,
+  clearPendingFocusRequest,
 });
 
-const newItemDialogState = ref({
-  isOpen: false,
-  type: 'directory' as 'directory' | 'file',
+const {
+  quickView,
+  onContextMenuAction,
+  onEntryMouseDown,
+  onEntryMouseUp,
+} = useFileBrowserActions({
+  contextMenu,
+  selectedEntries,
+  quickViewStore,
+  handleContextMenuAction,
+  openOpenWithDialog,
+  handleEntryMouseDown,
+  handleEntryMouseUp,
 });
 
-function openOpenWithDialog(entries: DirEntry[]) {
-  openWithState.value = {
-    isOpen: true,
-    entries: [...entries],
-  };
-}
-
-function closeOpenWithDialog() {
-  openWithState.value = {
-    isOpen: false,
-    entries: [],
-  };
-}
-
-const isNewItemDialogOpen = computed({
-  get: () => newItemDialogState.value.isOpen,
-  set: (value: boolean) => {
-    if (!value) {
-      closeNewItemDialog();
-    }
-    else {
-      newItemDialogState.value.isOpen = true;
-    }
-  },
-});
-
-function openNewItemDialog(type: 'directory' | 'file') {
-  newItemDialogState.value = {
-    isOpen: true,
-    type,
-  };
-}
-
-function closeNewItemDialog() {
-  newItemDialogState.value.isOpen = false;
-}
-
-async function handleRenameConfirm(newName: string) {
-  await confirmRename(newName);
-}
-
-function handleRenameCancel() {
-  cancelRename();
-}
-
-async function handleNewItemConfirm(name: string) {
-  const success = await createNewItem(name, newItemDialogState.value.type);
-
-  if (success) {
-    closeNewItemDialog();
-  }
-}
-
-function handleNewItemCancel() {
-  closeNewItemDialog();
-}
-
-watch(() => props.tab?.id, async (newTabId, oldTabId) => {
-  if (newTabId && newTabId !== oldTabId && props.tab?.path) {
-    await readDir(props.tab.path, false);
-  }
-});
-
-watch(isFilterOpen, (isOpen) => {
-  if (isOpen) {
-    filterDismissalLayerId.value = dismissalLayerStore.registerLayer(
-      'filter',
-      () => closeFilter(),
-      100,
-    );
-  }
-  else {
-    if (filterDismissalLayerId.value) {
-      dismissalLayerStore.unregisterLayer(filterDismissalLayerId.value);
-      filterDismissalLayerId.value = null;
-    }
-
-    filterQuery.value = '';
-  }
-});
-
-watch(() => globalSearchStore.isOpen, (isGlobalSearchOpen) => {
-  if (isGlobalSearchOpen && isFilterOpen.value) {
-    closeFilter();
-  }
-});
-
-onUnmounted(() => {
-  if (filterDismissalLayerId.value) {
-    dismissalLayerStore.unregisterLayer(filterDismissalLayerId.value);
-  }
-
-  window.removeEventListener('keydown', handleKeydownForFilter);
-});
-
-function toggleFilter() {
-  if (globalSearchStore.isOpen) {
-    return;
-  }
-
-  isFilterOpen.value = !isFilterOpen.value;
-}
-
-function openFilter() {
-  if (globalSearchStore.isOpen) {
-    return;
-  }
-
-  isFilterOpen.value = true;
-}
-
-function closeFilter() {
-  isFilterOpen.value = false;
-  filterQuery.value = '';
-}
-
-function isCursorInsideTextField(): boolean {
-  const activeElement = document.activeElement;
-
-  if (!activeElement) {
-    return false;
-  }
-
-  const tagName = activeElement.tagName.toLowerCase();
-  const isTextInput = tagName === 'input' || tagName === 'textarea';
-  const isContentEditable = (activeElement as HTMLElement).isContentEditable;
-
-  return isTextInput || isContentEditable;
-}
-
-function handleKeydownForFilter(event: KeyboardEvent) {
-  if (!userSettingsStore.userSettings.navigator.focusFilterOnTyping) {
-    return;
-  }
-
-  if (isCursorInsideTextField()) {
-    return;
-  }
-
-  if (dismissalLayerStore.hasLayers) {
-    return;
-  }
-
-  const hasRekaDismissableLayers = document.querySelectorAll('[data-dismissable-layer]').length > 0;
-
-  if (hasRekaDismissableLayers) {
-    return;
-  }
-
-  const keyIsAlphaNum = (event.keyCode >= 48 && event.keyCode <= 90);
-  const hasModifiers = event.ctrlKey || event.altKey || event.shiftKey || event.metaKey;
-
-  if (keyIsAlphaNum && !hasModifiers) {
-    openFilter();
-  }
-}
-
-async function quickView(entry?: DirEntry) {
-  const targetEntry = entry || selectedEntries.value[selectedEntries.value.length - 1];
-
-  if (targetEntry && targetEntry.is_file) {
-    await quickViewStore.toggleQuickView(targetEntry.path);
-  }
-}
-
-function onContextMenuAction(action: ContextMenuAction) {
-  if (action === 'open-with') {
-    const entries = contextMenu.value.selectedEntries;
-
-    if (entries.length > 0) {
-      openOpenWithDialog(entries);
-    }
-
-    return;
-  }
-
-  if (action === 'quick-view') {
-    const entries = contextMenu.value.selectedEntries;
-
-    if (entries.length > 0 && entries[0].is_file) {
-      quickView(entries[0]);
-    }
-
-    return;
-  }
-
-  handleContextMenuAction(action);
-}
-
-function onEntryMouseDown(entry: DirEntry, event: MouseEvent) {
-  handleEntryMouseDown(entry, event);
-}
-
-function onEntryMouseUp(entry: DirEntry, event: MouseEvent) {
-  handleEntryMouseUp(entry, event);
-}
-
-onMounted(() => {
-  init();
-  window.addEventListener('keydown', handleKeydownForFilter);
-});
-
-onUnmounted(() => {
-  window.removeEventListener('keydown', handleKeydownForFilter);
+useFileBrowserLifecycle({
+  tabRef,
+  readDir,
+  init,
 });
 
 defineExpose({
   isFilterOpen,
+  selectedEntries,
   toggleFilter,
   openFilter,
   closeFilter,
@@ -395,7 +194,6 @@ defineExpose({
   cutItems,
   pasteItems,
   deleteItems,
-  selectedEntries,
   startRename,
   quickView,
 });
@@ -422,70 +220,25 @@ defineExpose({
       @create-new-file="openNewItemDialog('file')"
     />
 
-    <div class="file-browser__content">
-      <FileBrowserLoading v-if="isLoading" />
-
-      <FileBrowserError
-        v-else-if="error"
-        :error="error"
-        @go-home="navigateToHome"
-      />
-
-      <template v-else-if="isDirectoryEmpty">
-        <div class="file-browser__empty-state-container">
-          <EmptyState
-            :icon="FolderOpenIcon"
-            :title="t('fileBrowser.directoryIsEmpty')"
-            :description="t('fileBrowser.directoryIsEmptyDescription')"
-            :bordered="false"
-          />
-        </div>
-      </template>
-
-      <template v-else>
-        <ScrollArea
-          class="file-browser__scroll-area"
-          @contextmenu.self.prevent
-        >
-          <ContextMenu>
-            <ContextMenuTrigger as-child>
-              <div
-                class="file-browser__entries-container"
-                @contextmenu.self.prevent
-              >
-                <FileBrowserGridView
-                  v-if="layout === 'grid'"
-                  :entries="entries"
-                  :selected-entries="selectedEntries"
-                  :is-entry-selected="isEntrySelected"
-                  :current-path="currentPath"
-                  :get-video-thumbnail="getVideoThumbnail"
-                  @mousedown="onEntryMouseDown"
-                  @mouseup="onEntryMouseUp"
-                  @contextmenu="handleEntryContextMenu"
-                />
-                <FileBrowserListView
-                  v-else
-                  :entries="entries"
-                  :selected-entries="selectedEntries"
-                  :is-entry-selected="isEntrySelected"
-                  :current-path="currentPath"
-                  @mousedown="onEntryMouseDown"
-                  @mouseup="onEntryMouseUp"
-                  @contextmenu="handleEntryContextMenu"
-                />
-              </div>
-            </ContextMenuTrigger>
-            <FileBrowserContextMenu
-              v-if="contextMenu.selectedEntries.length > 0"
-              :selected-entries="contextMenu.selectedEntries"
-              @action="onContextMenuAction"
-              @open-custom-dialog="openOpenWithDialog(contextMenu.selectedEntries)"
-            />
-          </ContextMenu>
-        </ScrollArea>
-      </template>
-    </div>
+    <FileBrowserContent
+      :layout="layout"
+      :is-loading="isLoading"
+      :error="error"
+      :is-directory-empty="isDirectoryEmpty"
+      :entries="entries"
+      :selected-entries="selectedEntries"
+      :is-entry-selected="isEntrySelected"
+      :current-path="currentPath"
+      :context-menu="contextMenu"
+      :get-video-thumbnail="getVideoThumbnail"
+      :set-entries-container-ref="setEntriesContainerRef"
+      :on-entry-mouse-down="onEntryMouseDown"
+      :on-entry-mouse-up="onEntryMouseUp"
+      :handle-entry-context-menu="handleEntryContextMenu"
+      :on-context-menu-action="onContextMenuAction"
+      :open-open-with-dialog="openOpenWithDialog"
+      :navigate-to-home="navigateToHome"
+    />
 
     <FileBrowserStatusBar
       :dir-contents="dirContents"
@@ -519,7 +272,6 @@ defineExpose({
     />
   </div>
 </template>
-
 <style scoped>
 .file-browser {
   position: relative;
@@ -527,33 +279,5 @@ defineExpose({
   overflow: hidden;
   height: 100%;
   flex-direction: column;
-}
-
-.file-browser__content {
-  position: relative;
-  display: flex;
-  overflow: hidden;
-  min-height: 0;
-  flex: 1;
-  flex-direction: column;
-}
-
-.file-browser__empty-state-container {
-  display: flex;
-  flex: 1;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
-}
-
-.file-browser__scroll-area {
-  position: absolute;
-  inset: 0;
-}
-</style>
-
-<style>
-.file-browser__entries-container {
-  min-height: 100%;
 }
 </style>

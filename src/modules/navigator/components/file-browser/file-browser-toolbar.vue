@@ -5,6 +5,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <script setup lang="ts">
 import { ref } from 'vue';
+import type { ComponentPublicInstance } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -66,6 +67,7 @@ const { t } = useI18n();
 const shortcutsStore = useShortcutsStore();
 
 const filterInputRef = ref<InstanceType<typeof Input> | null>(null);
+const filterTriggerRef = ref<HTMLElement | ComponentPublicInstance | null>(null);
 
 function handleFilterAutoFocus(event: Event) {
   event.preventDefault();
@@ -85,7 +87,25 @@ function handleAddressBarNavigate(path: string) {
   emit('navigateTo', path);
 }
 
+function getFilterTriggerElement(): HTMLElement | null {
+  const refValue = filterTriggerRef.value;
+  if (!refValue) return null;
+  if (refValue instanceof HTMLElement) return refValue;
+  return (refValue as ComponentPublicInstance).$el as HTMLElement;
+}
+
 function handleFilterInteractOutside(event: Event) {
+  const customEvent = event as CustomEvent<{ originalEvent: PointerEvent | FocusEvent }>;
+  const target = customEvent.detail?.originalEvent?.target as Node | undefined;
+  const triggerEl = getFilterTriggerElement();
+  const isTriggerClick = triggerEl && target && triggerEl.contains(target);
+
+  if (isTriggerClick) {
+    event.preventDefault();
+
+    return;
+  }
+
   if (!props.filterQuery) {
     emit('update:isFilterOpen', false);
   }
@@ -93,6 +113,7 @@ function handleFilterInteractOutside(event: Event) {
     event.preventDefault();
   }
 }
+
 </script>
 
 <template>
@@ -276,6 +297,7 @@ function handleFilterInteractOutside(event: Event) {
           <TooltipTrigger as-child>
             <PopoverTrigger as-child>
               <Button
+                ref="filterTriggerRef"
                 variant="ghost"
                 size="icon"
                 class="file-browser-toolbar__filter-button"

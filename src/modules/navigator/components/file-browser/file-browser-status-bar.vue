@@ -387,6 +387,7 @@ function openCollapsedPopover() {
   align-items: center;
   justify-content: space-between;
   padding: 4px 8px;
+  border-radius: var(--radius-sm);
   border-top: 1px solid hsl(var(--border));
   background-color: hsl(var(--background-2));
   color: hsl(var(--muted-foreground));
