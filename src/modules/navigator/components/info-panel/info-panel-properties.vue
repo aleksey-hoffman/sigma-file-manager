@@ -4,7 +4,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, watch } from 'vue';
 import { LoaderCircleIcon, XIcon, RefreshCwIcon } from 'lucide-vue-next';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
@@ -16,13 +16,11 @@ import type { RelativeTimeTranslations } from '@/modules/navigator/components/fi
 
 const props = defineProps<{
   selectedEntry: DirEntry | null;
-  orientation?: 'vertical' | 'horizontal';
+  orientation?: 'vertical' | 'compact';
 }>();
 
 const { t } = useI18n();
 const dirSizesStore = useDirSizesStore();
-
-const listRef = ref<HTMLElement | null>(null);
 
 const dirSizeInfo = computed(() => {
   if (!props.selectedEntry?.is_dir) return null;
@@ -86,17 +84,6 @@ async function handleCancelSize() {
 watch(() => props.selectedEntry?.path, () => {
   // Reset state when entry changes
 }, { immediate: true });
-
-function handleHorizontalWheel(event: WheelEvent) {
-  if (props.orientation !== 'horizontal') return;
-  if (!listRef.value) return;
-
-  const viewport = listRef.value.closest('.sigma-ui-scroll-area__viewport') as HTMLElement | null;
-  if (!viewport) return;
-
-  event.preventDefault();
-  viewport.scrollLeft += event.deltaY || event.deltaX || 0;
-}
 
 interface PropertyItem {
   title: string;
@@ -176,13 +163,52 @@ const properties = computed<PropertyItem[]>(() => {
 
   return items;
 });
+
+const compactItems = computed<string[]>(() => {
+  if (!props.selectedEntry) return [];
+
+  const entry = props.selectedEntry;
+  const items: string[] = [];
+
+  items.push(entry.is_dir ? t('directory') : (entry.ext ? `.${entry.ext}` : t('file')));
+
+  if (entry.is_file) {
+    items.push(formatBytes(entry.size));
+  }
+  else if (entry.is_dir) {
+    if (dirSizeDisplay.value) {
+      items.push(dirSizeDisplay.value);
+    }
+
+    if (entry.item_count !== null) {
+      items.push(t('fileBrowser.itemCount', { count: entry.item_count }));
+    }
+  }
+
+  if (entry.modified_time) {
+    items.push(formatDate(entry.modified_time, false));
+  }
+
+  return items;
+});
 </script>
 
 <template>
+  <div
+    v-if="orientation === 'compact'"
+    class="info-panel-properties info-panel-properties--compact"
+  >
+    <span
+      v-if="selectedEntry"
+      class="info-panel-properties__compact-text"
+    >
+      {{ compactItems.join(' · ') }}
+    </span>
+  </div>
   <ScrollArea
+    v-else
     class="info-panel-properties"
-    :class="{ 'info-panel-properties--horizontal': orientation === 'horizontal' }"
-    :orientation="orientation || 'vertical'"
+    orientation="vertical"
   >
     <div
       v-if="!selectedEntry"
@@ -192,9 +218,7 @@ const properties = computed<PropertyItem[]>(() => {
     </div>
     <div
       v-else
-      ref="listRef"
       class="info-panel-properties__list"
-      @wheel="handleHorizontalWheel"
     >
       <div
         v-if="selectedEntry?.is_dir"
@@ -307,26 +331,18 @@ const properties = computed<PropertyItem[]>(() => {
   word-break: break-all;
 }
 
-.info-panel-properties--horizontal {
+.info-panel-properties--compact {
+  overflow: hidden;
+  min-width: 0;
   padding: 0;
 }
 
-.info-panel-properties--horizontal .info-panel-properties__list {
-  flex-direction: row;
-  padding-bottom: 8px;
-  gap: 16px;
-}
-
-.info-panel-properties--horizontal .info-panel-properties__item {
-  max-width: 120px;
-  flex-shrink: 0;
-}
-
-.info-panel-properties--horizontal .info-panel-properties__value {
+.info-panel-properties__compact-text {
   overflow: hidden;
+  color: hsl(var(--muted-foreground));
+  font-size: 12px;
   text-overflow: ellipsis;
   white-space: nowrap;
-  word-break: normal;
 }
 
 .info-panel-properties__value--action {
