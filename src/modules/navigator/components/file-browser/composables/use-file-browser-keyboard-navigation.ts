@@ -49,7 +49,10 @@ export function useFileBrowserKeyboardNavigation(options: {
     const element = getEntryElement(entry.path);
 
     if (element) {
-      element.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+      element.scrollIntoView({
+        block: 'nearest',
+        inline: 'nearest',
+      });
       element.focus({ preventScroll: true });
     }
   }

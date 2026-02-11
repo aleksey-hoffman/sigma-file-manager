@@ -218,7 +218,10 @@ async function selectFirstEntry() {
     );
 
     if (element) {
-      element.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+      element.scrollIntoView({
+        block: 'nearest',
+        inline: 'nearest',
+      });
       element.focus({ preventScroll: true });
     }
   }
