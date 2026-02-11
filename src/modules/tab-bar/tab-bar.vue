@@ -14,6 +14,7 @@ import {
   TooltipContent,
 } from '@/components/ui/tooltip';
 import { useWorkspacesStore } from '@/stores/storage/workspaces';
+import { useShortcutsStore } from '@/stores/runtime/shortcuts';
 import type { Tab as TabType, TabGroup } from '@/types/workspaces';
 import { PlusIcon } from 'lucide-vue-next';
 
@@ -28,6 +29,7 @@ const props = withDefaults(defineProps<{
 });
 
 const workspacesStore = useWorkspacesStore();
+const shortcutsStore = useShortcutsStore();
 
 const teleportDisabled = computed(() => !props.teleportTarget);
 const teleportTo = computed(() => props.teleportTarget || 'body');
@@ -115,6 +117,7 @@ onBeforeUnmount(() => {
         </TooltipTrigger>
         <TooltipContent>
           {{ t('tabs.newTab') }}
+          <kbd class="shortcut">{{ shortcutsStore.getShortcutLabel('openNewTab') }}</kbd>
         </TooltipContent>
       </Tooltip>
     </div>

@@ -761,6 +761,7 @@
     "toggleAddressBar": "Basculer la barre d'adresse",
     "copyCurrentDirectoryPathToClipboard": "Copier le chemin du répertoire actuel dans le presse-papiers",
     "openCopiedPath": "Ouvrir le chemin copié",
+    "openCurrentDirInNewTab": "Ouvrir le répertoire actuel dans un nouvel onglet",
     "openCurrentDirInTerminal": "Ouvrir le répertoire actuel dans le terminal",
     "openCurrentDirInTerminalAsAdmin": "Ouvrir le répertoire actuel dans le terminal en tant qu'administrateur",
     "focusUnfocusFilterField": "Champ de filtre Focus / Unfocus",
@@ -1544,7 +1545,8 @@
     "noTerminalsFound": "Aucun terminal trouvé",
     "failedToLoadTerminals": "Impossible de charger les terminaux disponibles",
     "failedToOpenTerminal": "Impossible d'ouvrir le terminal",
-    "holdModifierForAdmin": "Maintenez {modifier} pour ouvrir en tant qu'administrateur"
+    "holdModifierForAdmin": "Maintenez {modifier} pour ouvrir en tant qu'administrateur",
+    "defaultLabel": "Par défaut"
   },
   "conflict": "Conflit",
   "command": "Commande",

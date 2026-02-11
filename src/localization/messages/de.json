@@ -761,6 +761,7 @@
     "toggleAddressBar": "Adressleiste umschalten",
     "copyCurrentDirectoryPathToClipboard": "Aktuellen Verzeichnispfad in die Zwischenablage kopieren",
     "openCopiedPath": "Kopierpfad öffnen",
+    "openCurrentDirInNewTab": "Aktuelles Verzeichnis in neuem Tab öffnen",
     "openCurrentDirInTerminal": "Aktuelles Verzeichnis im Terminal öffnen",
     "openCurrentDirInTerminalAsAdmin": "Aktuelles Verzeichnis im Terminal als Administrator öffnen",
     "focusUnfocusFilterField": "Fokus-/Unfokus-Filterfeld",
@@ -1544,7 +1545,8 @@
     "noTerminalsFound": "Keine Terminals gefunden",
     "failedToLoadTerminals": "Verfügbare Terminals konnten nicht geladen werden",
     "failedToOpenTerminal": "Terminal konnte nicht geöffnet werden",
-    "holdModifierForAdmin": "{modifier} gedrückt halten, um als Administrator zu öffnen"
+    "holdModifierForAdmin": "{modifier} gedrückt halten, um als Administrator zu öffnen",
+    "defaultLabel": "Standard"
   },
   "conflict": "Konflikt",
   "command": "Befehl",

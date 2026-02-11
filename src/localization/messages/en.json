@@ -774,6 +774,7 @@
     "toggleAddressBar": "Toggle address bar",
     "copyCurrentDirectoryPathToClipboard": "Copy current directory path to clipboard",
     "openCopiedPath": "Open copied path",
+    "openCurrentDirInNewTab": "Open current dir in new tab",
     "openCurrentDirInTerminal": "Open current dir in terminal",
     "openCurrentDirInTerminalAsAdmin": "Open current dir in terminal as admin",
     "focusUnfocusFilterField": "Focus / unfocus filter field",
@@ -1560,7 +1561,8 @@
     "noTerminalsFound": "No terminals found",
     "failedToLoadTerminals": "Failed to load available terminals",
     "failedToOpenTerminal": "Failed to open terminal",
-    "holdModifierForAdmin": "Hold {modifier} to open as admin"
+    "holdModifierForAdmin": "Hold {modifier} to open as admin",
+    "defaultLabel": "Default"
   },
   "conflict": "Conflict",
   "command": "Command",

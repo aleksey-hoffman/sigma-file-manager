@@ -761,6 +761,7 @@
     "toggleAddressBar": "Alterna la barra degli indirizzi",
     "copyCurrentDirectoryPathToClipboard": "Copia il percorso della directory corrente negli appunti",
     "openCopiedPath": "Apri il percorso copiato",
+    "openCurrentDirInNewTab": "Apri la cartella attuale in una nuova scheda",
     "openCurrentDirInTerminal": "Apri la cartella attuale nel terminale",
     "openCurrentDirInTerminalAsAdmin": "Apri la cartella attuale nel terminale come amministratore",
     "focusUnfocusFilterField": "Campo filtro focalizzato / non focalizzato",
@@ -1544,7 +1545,8 @@
     "noTerminalsFound": "Nessun terminale trovato",
     "failedToLoadTerminals": "Impossibile caricare i terminali disponibili",
     "failedToOpenTerminal": "Impossibile aprire il terminale",
-    "holdModifierForAdmin": "Tieni premuto {modifier} per aprire come amministratore"
+    "holdModifierForAdmin": "Tieni premuto {modifier} per aprire come amministratore",
+    "defaultLabel": "Predefinito"
   },
   "conflict": "Conflitto",
   "command": "Comando",

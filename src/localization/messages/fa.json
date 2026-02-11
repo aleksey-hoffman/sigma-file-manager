@@ -760,6 +760,7 @@
     "toggleAddressBar": "تغییر نوار آدرس",
     "copyCurrentDirectoryPathToClipboard": "کپی مسیر دایرکتوری فعلی در کلیپ بورد",
     "openCopiedPath": "باز کردن مسیر کپی شده",
+    "openCurrentDirInNewTab": "باز کردن مسیر فعلی در تب جدید",
     "openCurrentDirInTerminal": "باز کردن مسیر فعلی در ترمینال",
     "openCurrentDirInTerminalAsAdmin": "باز کردن dir فعلی در ترمینال به عنوان مدیر",
     "focusUnfocusFilterField": "فیلد فیلتر فوکوس / عدم تمرکز",
@@ -1543,7 +1544,8 @@
     "noTerminalsFound": "ترمینالی یافت نشد",
     "failedToLoadTerminals": "بارگذاری ترمینال‌های موجود ناموفق بود",
     "failedToOpenTerminal": "باز کردن ترمینال ناموفق بود",
-    "holdModifierForAdmin": "برای باز کردن به عنوان مدیر، {modifier} را نگه دارید"
+    "holdModifierForAdmin": "برای باز کردن به عنوان مدیر، {modifier} را نگه دارید",
+    "defaultLabel": "پیش‌فرض"
   },
   "conflict": "تضاد",
   "command": "فرمان",

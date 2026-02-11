@@ -80,6 +80,7 @@ export type ShortcutId
     | 'rename'
     | 'escape'
     | 'quickView'
+    | 'openNewTab'
     | 'openTerminal'
     | 'openTerminalAdmin';
 

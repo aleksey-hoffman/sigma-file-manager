@@ -320,6 +320,10 @@ async function openTerminalWithOptions(asAdmin: boolean) {
   await terminalsStore.openTerminal(currentActivePath.value, defaultTerminal.id, asAdmin);
 }
 
+async function handleOpenNewTabShortcut() {
+  await workspacesStore.openNewTabGroup(currentActivePath.value);
+}
+
 async function handleOpenTerminalShortcut() {
   await openTerminalWithOptions(false);
 }
@@ -345,6 +349,7 @@ function registerShortcutHandlers() {
   }, { checkItemSelected: hasSelectedItems });
   shortcutsStore.registerHandler('escape', handleEscapeKey);
   shortcutsStore.registerHandler('quickView', handleQuickViewShortcut, { checkItemSelected: hasSelectedItems });
+  shortcutsStore.registerHandler('openNewTab', handleOpenNewTabShortcut);
   shortcutsStore.registerHandler('openTerminal', handleOpenTerminalShortcut);
   shortcutsStore.registerHandler('openTerminalAdmin', handleOpenTerminalAdminShortcut);
 }

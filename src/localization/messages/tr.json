@@ -761,6 +761,7 @@
     "toggleAddressBar": "Adres çubuğunu değiştir",
     "copyCurrentDirectoryPathToClipboard": "Geçerli dizin yolunu panoya kopyala",
     "openCopiedPath": "Kopyalanan yolu aç",
+    "openCurrentDirInNewTab": "Geçerli dizini yeni sekmede aç",
     "openCurrentDirInTerminal": "Geçerli dizini terminalde aç",
     "openCurrentDirInTerminalAsAdmin": "Geçerli dizini terminalde yönetici olarak aç",
     "focusUnfocusFilterField": "Odak / odak dışı filtre alanı",
@@ -1544,7 +1545,8 @@
     "noTerminalsFound": "Terminal bulunamadı",
     "failedToLoadTerminals": "Mevcut terminaller yüklenemedi",
     "failedToOpenTerminal": "Terminal açılamadı",
-    "holdModifierForAdmin": "Yönetici olarak açmak için {modifier} tuşunu basılı tutun"
+    "holdModifierForAdmin": "Yönetici olarak açmak için {modifier} tuşunu basılı tutun",
+    "defaultLabel": "Varsayılan"
   },
   "conflict": "Çatışma",
   "command": "Komut",

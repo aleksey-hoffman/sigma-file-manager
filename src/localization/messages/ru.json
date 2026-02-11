@@ -774,6 +774,7 @@
     "toggleAddressBar": "Переключить адресную строку",
     "copyCurrentDirectoryPathToClipboard": "Скопировать текущий путь к папке в буфер обмена",
     "openCopiedPath": "Открыть скопированный путь",
+    "openCurrentDirInNewTab": "Открыть текущую папку в новой вкладке",
     "openCurrentDirInTerminal": "Открыть текущий папка в терминале",
     "openCurrentDirInTerminalAsAdmin": "Открыть текущий папка в терминале от имени администратора",
     "focusUnfocusFilterField": "Фокусировать/расфокусировать поле фильтра",
@@ -1560,7 +1561,8 @@
     "noTerminalsFound": "Терминалы не найдены",
     "failedToLoadTerminals": "Не удалось загрузить доступные терминалы",
     "failedToOpenTerminal": "Не удалось открыть терминал",
-    "holdModifierForAdmin": "Удерживайте {modifier} для открытия от имени администратора"
+    "holdModifierForAdmin": "Удерживайте {modifier} для открытия от имени администратора",
+    "defaultLabel": "По умолчанию"
   },
   "conflict": "Конфликт",
   "command": "Команда",

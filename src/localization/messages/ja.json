@@ -761,6 +761,7 @@
     "toggleAddressBar": "アドレスバーの切り替え",
     "copyCurrentDirectoryPathToClipboard": "現在のディレクトリパスをクリップボードにコピー",
     "openCopiedPath": "コピーしたパスを開く",
+    "openCurrentDirInNewTab": "現在のディレクトリを新しいタブで開く",
     "openCurrentDirInTerminal": "ターミナルで現在のディレクトリを開く",
     "openCurrentDirInTerminalAsAdmin": "ターミナルで現在のディレクトリを管理者として開く",
     "focusUnfocusFilterField": "フォーカス/フォーカス解除フィルタ フィールド",
@@ -1544,7 +1545,8 @@
     "noTerminalsFound": "ターミナルが見つかりません",
     "failedToLoadTerminals": "利用可能なターミナルの読み込みに失敗しました",
     "failedToOpenTerminal": "ターミナルを開けませんでした",
-    "holdModifierForAdmin": "{modifier}キーを押しながら管理者として開く"
+    "holdModifierForAdmin": "{modifier}キーを押しながら管理者として開く",
+    "defaultLabel": "デフォルト"
   },
   "conflict": "コンフリクト",
   "command": "コマンド",

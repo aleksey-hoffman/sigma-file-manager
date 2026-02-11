@@ -774,6 +774,7 @@
     "toggleAddressBar": "Preklopi naslovno vrstico",
     "copyCurrentDirectoryPathToClipboard": "Kopiraj pot trenutne mape v odložišče",
     "openCopiedPath": "Odpri kopirano pot",
+    "openCurrentDirInNewTab": "Odpri trenutno mapo v novem zavihku",
     "openCurrentDirInTerminal": "Odpri trenutno mapo v terminalu",
     "openCurrentDirInTerminalAsAdmin": "Odpri trenutno mapo v terminalu kot admin",
     "focusUnfocusFilterField": "Fokusiraj / odstraniti fokus iz polja filtra",
@@ -1560,7 +1561,8 @@
     "noTerminalsFound": "Noben terminal ni bil najden",
     "failedToLoadTerminals": "Nalaganje razpoložljivih terminalov ni uspelo",
     "failedToOpenTerminal": "Odpiranje terminala ni uspelo",
-    "holdModifierForAdmin": "Držite {modifier} za odprtje kot skrbnik"
+    "holdModifierForAdmin": "Držite {modifier} za odprtje kot skrbnik",
+    "defaultLabel": "Privzeto"
   },
   "conflict": "Spor",
   "command": "Ukaz",

@@ -761,6 +761,7 @@
     "toggleAddressBar": "切换地址栏",
     "copyCurrentDirectoryPathToClipboard": "复制当前目录路径到剪贴板",
     "openCopiedPath": "打开复制的路径",
+    "openCurrentDirInNewTab": "在新标签页中打开当前目录",
     "openCurrentDirInTerminal": "在终端打开当前目录",
     "openCurrentDirInTerminalAsAdmin": "以管理员身份在终端中打开当前目录",
     "focusUnfocusFilterField": "聚焦/不聚焦过滤字段",
@@ -1544,7 +1545,8 @@
     "noTerminalsFound": "未找到终端",
     "failedToLoadTerminals": "加载可用终端失败",
     "failedToOpenTerminal": "打开终端失败",
-    "holdModifierForAdmin": "按住 {modifier} 以管理员身份打开"
+    "holdModifierForAdmin": "按住 {modifier} 以管理员身份打开",
+    "defaultLabel": "默认"
   },
   "conflict": "冲突",
   "command": "命令",

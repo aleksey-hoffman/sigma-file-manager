@@ -187,6 +187,20 @@ const DEFAULT_SHORTCUTS: ShortcutDefinition[] = [
     isReadOnly: false,
   },
   {
+    id: 'openNewTab',
+    labelKey: 'shortcuts.openCurrentDirInNewTab',
+    defaultKeys: {
+      ctrl: true,
+      key: 't',
+    },
+    scope: 'navigator',
+    conditions: {
+      inputFieldIsActive: false,
+      dialogIsOpened: false,
+    },
+    isReadOnly: false,
+  },
+  {
     id: 'openTerminal',
     labelKey: 'shortcuts.openCurrentDirInTerminal',
     defaultKeys: {
