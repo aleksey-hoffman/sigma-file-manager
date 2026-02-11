@@ -32,6 +32,13 @@ type FileBrowserInstance = InstanceType<typeof FileBrowser> & {
   navigateToPath?: (path: string) => Promise<void>;
   openFile?: (path: string) => Promise<void>;
   startRename?: (entry: DirEntry) => void;
+  selectFirstEntry?: () => Promise<void>;
+  navigateUp?: () => void;
+  navigateDown?: () => void;
+  navigateLeft?: () => void;
+  navigateRight?: () => void;
+  openSelected?: () => void;
+  navigateBack?: () => void;
 };
 
 const workspacesStore = useWorkspacesStore();
@@ -332,6 +339,51 @@ async function handleOpenTerminalAdminShortcut() {
   await openTerminalWithOptions(true);
 }
 
+function switchToPane(paneIndex: number): boolean {
+  if (!isSplitView.value) return false;
+
+  const tabGroup = workspacesStore.currentTabGroup;
+
+  if (!tabGroup || !tabGroup[paneIndex]) return false;
+
+  const targetTab = tabGroup[paneIndex];
+  activeTabId.value = targetTab.id;
+
+  paneRefsMap.value.forEach((pane, tabId) => {
+    if (tabId !== targetTab.id) {
+      pane.clearSelection();
+    }
+  });
+
+  const targetPane = paneRefsMap.value.get(targetTab.id);
+
+  if (targetPane?.selectFirstEntry) {
+    targetPane.selectFirstEntry();
+  }
+
+  return true;
+}
+
+function callActivePaneMethod(method: keyof Pick<
+  FileBrowserInstance,
+  'navigateUp' | 'navigateDown' | 'navigateLeft' | 'navigateRight' | 'openSelected' | 'navigateBack'
+>): boolean {
+  if (dismissalLayerStore.hasLayers) return false;
+
+  const hasRekaDismissableLayers = document.querySelectorAll('[data-dismissable-layer]').length > 0;
+
+  if (hasRekaDismissableLayers) return false;
+
+  const pane = getActivePaneRef();
+
+  if (pane?.[method]) {
+    pane[method]!();
+    return true;
+  }
+
+  return false;
+}
+
 function registerShortcutHandlers() {
   shortcutsStore.registerHandler('toggleFilter', handleFilterShortcut);
   shortcutsStore.registerHandler('copy', handleCopyShortcut);
@@ -352,6 +404,14 @@ function registerShortcutHandlers() {
   shortcutsStore.registerHandler('openNewTab', handleOpenNewTabShortcut);
   shortcutsStore.registerHandler('openTerminal', handleOpenTerminalShortcut);
   shortcutsStore.registerHandler('openTerminalAdmin', handleOpenTerminalAdminShortcut);
+  shortcutsStore.registerHandler('navigateUp', () => callActivePaneMethod('navigateUp'));
+  shortcutsStore.registerHandler('navigateDown', () => callActivePaneMethod('navigateDown'));
+  shortcutsStore.registerHandler('navigateLeft', () => callActivePaneMethod('navigateLeft'));
+  shortcutsStore.registerHandler('navigateRight', () => callActivePaneMethod('navigateRight'));
+  shortcutsStore.registerHandler('openSelected', () => callActivePaneMethod('openSelected'), { checkItemSelected: hasSelectedItems });
+  shortcutsStore.registerHandler('navigateBack', () => callActivePaneMethod('navigateBack'));
+  shortcutsStore.registerHandler('switchToLeftPane', () => switchToPane(0));
+  shortcutsStore.registerHandler('switchToRightPane', () => switchToPane(1));
 }
 
 onMounted(() => {

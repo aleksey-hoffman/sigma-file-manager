@@ -371,9 +371,9 @@ export const useUserStatsStore = defineStore('userStats', () => {
 
     const hasChanges
       = userStats.value.favorites.length !== originalCounts.favorites
-      || userStats.value.taggedItems.length !== originalCounts.taggedItems
-      || userStats.value.history.length !== originalCounts.history
-      || userStats.value.frequentItems.length !== originalCounts.frequentItems;
+        || userStats.value.taggedItems.length !== originalCounts.taggedItems
+        || userStats.value.history.length !== originalCounts.history
+        || userStats.value.frequentItems.length !== originalCounts.frequentItems;
 
     if (hasChanges) {
       await saveStats();

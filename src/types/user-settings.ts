@@ -82,7 +82,15 @@ export type ShortcutId
     | 'quickView'
     | 'openNewTab'
     | 'openTerminal'
-    | 'openTerminalAdmin';
+    | 'openTerminalAdmin'
+    | 'navigateUp'
+    | 'navigateDown'
+    | 'navigateLeft'
+    | 'navigateRight'
+    | 'openSelected'
+    | 'navigateBack'
+    | 'switchToLeftPane'
+    | 'switchToRightPane';
 
 export type UserShortcuts = Partial<Record<ShortcutId, ShortcutKeys>>;
 

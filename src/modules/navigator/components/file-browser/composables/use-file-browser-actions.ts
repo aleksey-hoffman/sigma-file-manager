@@ -4,7 +4,7 @@
 
 import type { Ref } from 'vue';
 import type { DirEntry } from '@/types/dir-entry';
-import type { ContextMenuAction } from '../types';
+import type { ContextMenuAction } from '@/modules/navigator/components/file-browser/types';
 
 type ContextMenuState = {
   targetEntry: DirEntry | null;

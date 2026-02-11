@@ -4,7 +4,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import { computed, toRef } from 'vue';
+import { computed, nextTick, toRef } from 'vue';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { useDismissalLayerStore } from '@/stores/runtime/dismissal-layer';
 import { useQuickViewStore } from '@/stores/runtime/quick-view';
@@ -181,7 +181,14 @@ useFileBrowserLifecycle({
   init,
 });
 
-useFileBrowserKeyboardNavigation({
+const {
+  navigateUp,
+  navigateDown,
+  navigateLeft,
+  navigateRight,
+  openSelected,
+  navigateBack,
+} = useFileBrowserKeyboardNavigation({
   entries,
   selectedEntries,
   layout: () => props.layout,
@@ -196,11 +203,26 @@ useFileBrowserKeyboardNavigation({
     }
   },
   entriesContainerRef,
-  isFilterOpen,
-  hasActiveLayers: () => {
-    return dismissalLayerStore.hasLayers;
-  },
 });
+
+async function selectFirstEntry() {
+  if (entries.value.length === 0) return;
+
+  const firstEntry = entries.value[0];
+  selectEntryByPath(firstEntry.path);
+  await nextTick();
+
+  if (entriesContainerRef.value) {
+    const element = entriesContainerRef.value.querySelector<HTMLElement>(
+      `[data-entry-path="${CSS.escape(firstEntry.path)}"]`,
+    );
+
+    if (element) {
+      element.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+      element.focus({ preventScroll: true });
+    }
+  }
+}
 
 defineExpose({
   isFilterOpen,
@@ -212,6 +234,13 @@ defineExpose({
   openFile,
   clearSelection,
   selectAll,
+  selectFirstEntry,
+  navigateUp,
+  navigateDown,
+  navigateLeft,
+  navigateRight,
+  openSelected,
+  navigateBack,
   copyItems,
   cutItems,
   pasteItems,

@@ -229,6 +229,113 @@ const DEFAULT_SHORTCUTS: ShortcutDefinition[] = [
     },
     isReadOnly: false,
   },
+  {
+    id: 'navigateUp',
+    labelKey: 'shortcuts.navigateUp',
+    defaultKeys: {
+      key: 'ArrowUp',
+    },
+    scope: 'navigator',
+    conditions: {
+      inputFieldIsActive: false,
+      dialogIsOpened: false,
+    },
+    isReadOnly: false,
+  },
+  {
+    id: 'navigateDown',
+    labelKey: 'shortcuts.navigateDown',
+    defaultKeys: {
+      key: 'ArrowDown',
+    },
+    scope: 'navigator',
+    conditions: {
+      inputFieldIsActive: false,
+      dialogIsOpened: false,
+    },
+    isReadOnly: false,
+  },
+  {
+    id: 'navigateLeft',
+    labelKey: 'shortcuts.navigateLeft',
+    defaultKeys: {
+      key: 'ArrowLeft',
+    },
+    scope: 'navigator',
+    conditions: {
+      inputFieldIsActive: false,
+      dialogIsOpened: false,
+    },
+    isReadOnly: false,
+  },
+  {
+    id: 'navigateRight',
+    labelKey: 'shortcuts.navigateRight',
+    defaultKeys: {
+      key: 'ArrowRight',
+    },
+    scope: 'navigator',
+    conditions: {
+      inputFieldIsActive: false,
+      dialogIsOpened: false,
+    },
+    isReadOnly: false,
+  },
+  {
+    id: 'openSelected',
+    labelKey: 'shortcuts.openSelectedEntry',
+    defaultKeys: {
+      key: 'Enter',
+    },
+    scope: 'navigator',
+    conditions: {
+      inputFieldIsActive: false,
+      dialogIsOpened: false,
+      dirItemIsSelected: true,
+    },
+    isReadOnly: false,
+  },
+  {
+    id: 'navigateBack',
+    labelKey: 'shortcuts.navigateBack',
+    defaultKeys: {
+      key: 'Backspace',
+    },
+    scope: 'navigator',
+    conditions: {
+      inputFieldIsActive: false,
+      dialogIsOpened: false,
+    },
+    isReadOnly: false,
+  },
+  {
+    id: 'switchToLeftPane',
+    labelKey: 'shortcuts.switchToLeftPane',
+    defaultKeys: {
+      ctrl: true,
+      key: 'ArrowLeft',
+    },
+    scope: 'navigator',
+    conditions: {
+      inputFieldIsActive: false,
+      dialogIsOpened: false,
+    },
+    isReadOnly: false,
+  },
+  {
+    id: 'switchToRightPane',
+    labelKey: 'shortcuts.switchToRightPane',
+    defaultKeys: {
+      ctrl: true,
+      key: 'ArrowRight',
+    },
+    scope: 'navigator',
+    conditions: {
+      inputFieldIsActive: false,
+      dialogIsOpened: false,
+    },
+    isReadOnly: false,
+  },
 ];
 
 export function formatShortcutKeys(keys: ShortcutKeys): string {
@@ -249,6 +356,18 @@ export function formatShortcutKeys(keys: ShortcutKeys): string {
   }
   else if (keyDisplay === 'Delete') {
     keyDisplay = 'Del';
+  }
+  else if (keyDisplay === 'ArrowUp') {
+    keyDisplay = '↑';
+  }
+  else if (keyDisplay === 'ArrowDown') {
+    keyDisplay = '↓';
+  }
+  else if (keyDisplay === 'ArrowLeft') {
+    keyDisplay = '←';
+  }
+  else if (keyDisplay === 'ArrowRight') {
+    keyDisplay = '→';
   }
 
   parts.push(keyDisplay);

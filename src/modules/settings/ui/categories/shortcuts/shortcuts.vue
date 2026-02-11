@@ -45,6 +45,13 @@ import {
   EyeIcon,
   TerminalSquareIcon,
   PlusIcon,
+  ArrowUpIcon,
+  ArrowDownIcon,
+  ArrowLeftIcon,
+  ArrowRightIcon,
+  CornerDownLeftIcon,
+  Undo2Icon,
+  FlipHorizontalIcon,
 } from 'lucide-vue-next';
 import type { Component } from 'vue';
 import {
@@ -74,6 +81,14 @@ const shortcutIcons: Record<ShortcutId, Component> = {
   openNewTab: PlusIcon,
   openTerminal: TerminalSquareIcon,
   openTerminalAdmin: TerminalSquareIcon,
+  navigateUp: ArrowUpIcon,
+  navigateDown: ArrowDownIcon,
+  navigateLeft: ArrowLeftIcon,
+  navigateRight: ArrowRightIcon,
+  openSelected: CornerDownLeftIcon,
+  navigateBack: Undo2Icon,
+  switchToLeftPane: FlipHorizontalIcon,
+  switchToRightPane: FlipHorizontalIcon,
 };
 
 const isDialogOpen = ref(false);

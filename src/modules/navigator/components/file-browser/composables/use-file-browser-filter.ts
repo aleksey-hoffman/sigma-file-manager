@@ -2,7 +2,7 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-import { onMounted, onUnmounted, ref, watch, type Ref } from 'vue';
+import { onMounted, onUnmounted, ref, watch } from 'vue';
 import type { DismissalLayerType } from '@/stores/runtime/dismissal-layer';
 
 type DismissalLayerStore = {

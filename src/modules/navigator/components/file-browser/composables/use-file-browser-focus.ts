@@ -2,12 +2,18 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-import { nextTick, ref, watch, type ComponentPublicInstance, type Ref } from 'vue';
+import {
+  nextTick, ref, watch, type ComponentPublicInstance, type Ref,
+} from 'vue';
 import type { DirEntry } from '@/types/dir-entry';
 
-type PendingFocusRequest =
-  | { type: 'path'; targetPath: string; path: string }
-  | { type: 'diff'; targetPath: string; previousPaths: Set<string> };
+type PendingFocusRequest
+  = | { type: 'path';
+    targetPath: string;
+    path: string; }
+    | { type: 'diff';
+      targetPath: string;
+      previousPaths: Set<string>; };
 
 export function useFileBrowserFocus(options: {
   entries: Ref<DirEntry[]>;

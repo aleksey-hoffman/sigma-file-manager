@@ -2,7 +2,7 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-import { nextTick, onMounted, onUnmounted, type Ref } from 'vue';
+import { nextTick, type Ref } from 'vue';
 import type { DirEntry } from '@/types/dir-entry';
 
 const ROW_TOLERANCE_PX = 30;
@@ -16,35 +16,7 @@ export function useFileBrowserKeyboardNavigation(options: {
   goBack: () => void;
   openEntry: (entry: DirEntry) => void;
   entriesContainerRef: Ref<HTMLElement | null>;
-  isFilterOpen: Ref<boolean>;
-  hasActiveLayers: () => boolean;
 }) {
-  function isCursorInsideTextField(): boolean {
-    const activeElement = document.activeElement;
-
-    if (!activeElement) {
-      return false;
-    }
-
-    const tagName = activeElement.tagName.toLowerCase();
-
-    return tagName === 'input'
-      || tagName === 'textarea'
-      || (activeElement as HTMLElement).isContentEditable;
-  }
-
-  function shouldIgnoreKeyboard(): boolean {
-    if (isCursorInsideTextField()) return true;
-    if (options.isFilterOpen.value) return true;
-    if (options.hasActiveLayers()) return true;
-
-    const hasRekaDismissableLayers = document.querySelectorAll('[data-dismissable-layer]').length > 0;
-
-    if (hasRekaDismissableLayers) return true;
-
-    return false;
-  }
-
   function getAllEntryElements(): HTMLElement[] {
     const container = options.entriesContainerRef.value;
 
@@ -198,57 +170,54 @@ export function useFileBrowserKeyboardNavigation(options: {
     }
   }
 
-  function handleKeydown(event: KeyboardEvent) {
-    if (shouldIgnoreKeyboard()) return;
-
+  function navigateUp() {
     const layout = options.layout();
 
-    switch (event.key) {
-      case 'ArrowUp':
-      case 'ArrowDown': {
-        event.preventDefault();
-
-        if (layout === 'grid') {
-          navigateGridVertical(event.key === 'ArrowUp' ? 'up' : 'down');
-        }
-        else {
-          navigateFlat(event.key === 'ArrowUp' ? 'previous' : 'next');
-        }
-
-        break;
-      }
-
-      case 'ArrowLeft':
-      case 'ArrowRight': {
-        event.preventDefault();
-        navigateFlat(event.key === 'ArrowLeft' ? 'previous' : 'next');
-        break;
-      }
-
-      case 'Enter': {
-        const selected = options.selectedEntries.value;
-
-        if (selected.length > 0) {
-          event.preventDefault();
-          options.openEntry(selected[0]);
-        }
-
-        break;
-      }
-
-      case 'Backspace': {
-        event.preventDefault();
-        options.goBack();
-        break;
-      }
+    if (layout === 'grid') {
+      navigateGridVertical('up');
+    }
+    else {
+      navigateFlat('previous');
     }
   }
 
-  onMounted(() => {
-    window.addEventListener('keydown', handleKeydown);
-  });
+  function navigateDown() {
+    const layout = options.layout();
 
-  onUnmounted(() => {
-    window.removeEventListener('keydown', handleKeydown);
-  });
+    if (layout === 'grid') {
+      navigateGridVertical('down');
+    }
+    else {
+      navigateFlat('next');
+    }
+  }
+
+  function navigateLeft() {
+    navigateFlat('previous');
+  }
+
+  function navigateRight() {
+    navigateFlat('next');
+  }
+
+  function openSelected() {
+    const selected = options.selectedEntries.value;
+
+    if (selected.length > 0) {
+      options.openEntry(selected[0]);
+    }
+  }
+
+  function navigateBack() {
+    options.goBack();
+  }
+
+  return {
+    navigateUp,
+    navigateDown,
+    navigateLeft,
+    navigateRight,
+    openSelected,
+    navigateBack,
+  };
 }
