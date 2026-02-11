@@ -17,7 +17,7 @@ import {
   ShredderIcon,
   EyeIcon,
   Share2Icon,
-  PanelRightIcon,
+  PlusIcon,
   StarIcon,
 } from 'lucide-vue-next';
 import { useClipboardStore } from '@/stores/runtime/clipboard';
@@ -325,7 +325,7 @@ function handleDeleteClick() {
     @select="emitAction('open-in-new-tab')"
     @click="emitAction('open-in-new-tab')"
   >
-    <PanelRightIcon :size="16" />
+    <PlusIcon :size="16" />
     <span>{{ t('fileBrowser.actions.openInNewTab') }}</span>
     <kbd class="shortcut">{{ shortcutsStore.getShortcutLabel('openNewTab') }}</kbd>
   </component>
