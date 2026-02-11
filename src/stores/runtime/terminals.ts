@@ -10,6 +10,7 @@ interface TerminalInfo {
   id: string;
   name: string;
   icon: string | null;
+  isDefault: boolean;
 }
 
 interface GetAvailableTerminalsResult {

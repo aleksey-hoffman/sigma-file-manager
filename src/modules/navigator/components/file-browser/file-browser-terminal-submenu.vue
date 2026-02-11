@@ -108,6 +108,12 @@ async function handleOpenTerminal(terminalId: string) {
             :size="16"
           />
           <span>{{ terminal.name }}</span>
+          <span
+            v-if="terminal.isDefault"
+            class="terminal-submenu__default-badge"
+          >
+            {{ t('terminal.defaultLabel') }}
+          </span>
         </ContextMenuItem>
       </template>
     </ContextMenuSubContent>
@@ -170,5 +176,12 @@ async function handleOpenTerminal(terminalId: string) {
   height: 16px;
   flex-shrink: 0;
   object-fit: contain;
+}
+
+.terminal-submenu__default-badge {
+  margin-left: auto;
+  color: hsl(var(--muted-foreground));
+  font-size: 11px;
+  opacity: 0.7;
 }
 </style>

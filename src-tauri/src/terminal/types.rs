@@ -9,6 +9,8 @@ pub struct TerminalInfo {
     pub id: String,
     pub name: String,
     pub icon: Option<String>,
+    #[serde(rename = "isDefault")]
+    pub is_default: bool,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
