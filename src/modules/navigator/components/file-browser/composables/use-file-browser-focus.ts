@@ -101,6 +101,7 @@ export function useFileBrowserFocus(options: {
   });
 
   return {
+    entriesContainerRef,
     setEntriesContainerRef,
   };
 }

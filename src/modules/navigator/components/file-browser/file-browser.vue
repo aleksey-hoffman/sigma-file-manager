@@ -18,6 +18,7 @@ import { useFileBrowserFilter } from './composables/use-file-browser-filter';
 import { useFileBrowserFocus } from './composables/use-file-browser-focus';
 import { useFileBrowserDialogs } from './composables/use-file-browser-dialogs';
 import { useFileBrowserActions } from './composables/use-file-browser-actions';
+import { useFileBrowserKeyboardNavigation } from './composables/use-file-browser-keyboard-navigation';
 import { useFileBrowserLifecycle } from './composables/use-file-browser-lifecycle';
 import { useVideoThumbnails } from './composables/use-video-thumbnails';
 import FileBrowserContent from './file-browser-content.vue';
@@ -151,7 +152,7 @@ const {
   createNewItem,
 });
 
-const { setEntriesContainerRef } = useFileBrowserFocus({
+const { entriesContainerRef, setEntriesContainerRef } = useFileBrowserFocus({
   entries,
   pendingFocusRequest,
   currentPath,
@@ -178,6 +179,27 @@ useFileBrowserLifecycle({
   tabRef,
   readDir,
   init,
+});
+
+useFileBrowserKeyboardNavigation({
+  entries,
+  selectedEntries,
+  layout: () => props.layout,
+  selectEntryByPath,
+  goBack,
+  openEntry: async (entry) => {
+    if (entry.is_dir) {
+      await navigateToEntry(entry);
+    }
+    else {
+      await openFile(entry.path);
+    }
+  },
+  entriesContainerRef,
+  isFilterOpen,
+  hasActiveLayers: () => {
+    return dismissalLayerStore.hasLayers;
+  },
 });
 
 defineExpose({

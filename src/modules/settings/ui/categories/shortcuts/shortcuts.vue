@@ -44,6 +44,7 @@ import {
   LockIcon,
   EyeIcon,
   TerminalSquareIcon,
+  PlusIcon,
 } from 'lucide-vue-next';
 import type { Component } from 'vue';
 import {
@@ -70,6 +71,7 @@ const shortcutIcons: Record<ShortcutId, Component> = {
   rename: PencilIcon,
   escape: XIcon,
   quickView: EyeIcon,
+  openNewTab: PlusIcon,
   openTerminal: TerminalSquareIcon,
   openTerminalAdmin: TerminalSquareIcon,
 };
