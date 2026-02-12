@@ -33,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fixed irrelevant and duplicate locations on Linux home page: virtual filesystems (tmpfs, cgroup, sysfs, proc, etc.), block device paths (/dev/sdd), entries with name "none", document portal mounts with invalid stats, and zero-space entries are now filtered out. Duplicate paths are deduplicated;
 - Fixed global search indexing status not updating in real-time: the indexing progress banner would stay visible forever after indexing finished, and the indexed item count would only update after navigating away and back. Root cause: status polling was not awaiting the async backend response (using stale state for timing), and polling was unconditionally stopped when the search widget was closed even if indexing was still running in the background;
 
 - Clipboard toolbar (copy/move prepared items) is now displayed once below the panes container instead of in each pane, since the clipboard is shared across all panes;

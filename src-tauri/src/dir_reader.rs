@@ -250,10 +250,32 @@ pub fn read_dir(path: String) -> Result<DirContents, String> {
     })
 }
 
+#[cfg(target_os = "linux")]
+fn is_virtual_or_irrelevant_filesystem(file_system: &str, name: &str, mount_point: &str) -> bool {
+    let fs_lower = file_system.to_lowercase();
+    let name_lower = name.to_lowercase();
+    let virtual_fs: [&str; 21] = [
+        "tmpfs", "cgroup", "cgroup2", "sysfs", "proc", "devtmpfs", "securityfs", "debugfs",
+        "configfs", "fusectl", "mqueue", "hugetlbfs", "devpts", "bpf", "tracefs", "pstore",
+        "efivarfs", "squashfs", "overlay", "fuse.portal", "portal",
+    ];
+    if virtual_fs.iter().any(|virtual_fs_type| fs_lower.starts_with(virtual_fs_type) || fs_lower.contains(virtual_fs_type)) {
+        return true;
+    }
+    if name_lower == "none" {
+        return true;
+    }
+    if mount_point.starts_with("/dev/") && !mount_point.starts_with("/dev/pts") {
+        return true;
+    }
+    false
+}
+
 #[tauri::command]
 pub fn get_system_drives() -> Result<Vec<DriveInfo>, String> {
     let disks = Disks::new_with_refreshed_list();
     let mut drives: Vec<DriveInfo> = Vec::new();
+    let mut seen_paths: std::collections::HashSet<String> = std::collections::HashSet::new();
 
     for disk in disks.iter() {
         let mount_point = disk.mount_point().to_string_lossy().to_string();
@@ -261,6 +283,27 @@ pub fn get_system_drives() -> Result<Vec<DriveInfo>, String> {
 
         let total_space = disk.total_space();
         let available_space = disk.available_space();
+
+        #[cfg(target_os = "linux")]
+        if total_space == 0
+            || is_virtual_or_irrelevant_filesystem(
+                &disk.file_system().to_string_lossy(),
+                &disk.name().to_string_lossy(),
+                &mount_point,
+            )
+        {
+            continue;
+        }
+
+        #[cfg(not(target_os = "linux"))]
+        if total_space == 0 {
+            continue;
+        }
+
+        if !seen_paths.insert(path.clone()) {
+            continue;
+        }
+
         let used_space = total_space.saturating_sub(available_space);
         let percent_used = if total_space > 0 {
             ((used_space as f64 / total_space as f64) * 100.0).round()
