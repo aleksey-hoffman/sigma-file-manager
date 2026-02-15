@@ -190,7 +190,10 @@
     "setDefaultBackground": "设置默认背景",
     "resetBackgroundPosition": "重置背景位置",
     "setNextBackground": "设置下一个背景",
-    "setPreviousBackground": "设置上一个背景"
+    "setPreviousBackground": "设置上一个背景",
+    "dropZoneClickToBrowse": "点击浏览图片或视频",
+    "dropZoneOrDropFiles": "或将文件拖放到此处",
+    "addMediaUrlPlaceholder": "粘贴图片或视频网址"
   },
   "navigator": {
     "newDirectoryFile": "新建目录/文件",

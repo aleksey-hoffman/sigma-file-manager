@@ -190,7 +190,10 @@
     "setDefaultBackground": "Đặt nền mặc định",
     "resetBackgroundPosition": "Đặt lại vị trí nền",
     "setNextBackground": "Thiết lập hình nền tiếp theo",
-    "setPreviousBackground": "Thiết lập hình nền trước đó"
+    "setPreviousBackground": "Thiết lập hình nền trước đó",
+    "dropZoneClickToBrowse": "Nhấp để duyệt ảnh hoặc video",
+    "dropZoneOrDropFiles": "Hoặc kéo thả tệp vào đây",
+    "addMediaUrlPlaceholder": "Dán URL hình ảnh hoặc video"
   },
   "navigator": {
     "newDirectoryFile": "Thư mục/tệp mới",

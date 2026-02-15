@@ -190,7 +190,10 @@
     "setDefaultBackground": "デフォルトの背景を設定",
     "resetBackgroundPosition": "背景位置をリセット",
     "setNextBackground": "次のバックグラウンドを設定",
-    "setPreviousBackground": "前のバックグラウンドを設定"
+    "dropZoneClickToBrowse": "クリックして画像または動画を参照",
+    "dropZoneOrDropFiles": "またはここにファイルをドロップ",
+    "setPreviousBackground": "前のバックグラウンドを設定",
+    "addMediaUrlPlaceholder": "画像または動画のURLを貼り付け"
   },
   "navigator": {
     "newDirectoryFile": "新しいディレクトリ/ファイル",

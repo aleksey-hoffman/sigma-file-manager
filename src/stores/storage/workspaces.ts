@@ -8,7 +8,6 @@ import { LazyStore } from '@tauri-apps/plugin-store';
 import { defineStore } from 'pinia';
 import { ref, watch, computed } from 'vue';
 import { useDebounceFn } from '@vueuse/core';
-import { useRouter } from 'vue-router';
 import { useNavigatorStore } from '@/stores/runtime/navigator';
 import { useUserPathsStore } from '@/stores/storage/user-paths';
 import { UI_CONSTANTS } from '@/constants';
@@ -27,7 +26,6 @@ import {
 export const useWorkspacesStore = defineStore('workspaces', () => {
   const userPathsStore = useUserPathsStore();
   const navigatorStore = useNavigatorStore();
-  const router = useRouter();
 
   const workspacesStorage = ref<LazyStore | null>(null);
   const isInitialized = ref(false);
@@ -59,7 +57,6 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
 
   watch(() => currentWorkspace?.value?.tabGroups?.length, (value) => {
     if (value === 0) {
-      router.push('/');
       preloadDefaultTab();
     }
   });
@@ -125,7 +122,12 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
     currentWorkspace.value?.tabGroups?.push(tabGroup);
   }
 
-  function closeTabGroup(tabGroup: Tab[]) {
+  async function closeTabGroup(tabGroup: Tab[]) {
+    if (tabGroupCount.value <= 1) {
+      await closeAllTabGroups();
+      return;
+    }
+
     const initialCurrentTabGroupIndex = currentWorkspace.value?.currentTabGroupIndex ?? -1;
     const isInitialClosingTabGroupCurrent = currentTabGroup.value?.[0]?.id === tabGroup[0].id;
     const initialClosingTabGroupIndex = currentWorkspace.value?.tabGroups

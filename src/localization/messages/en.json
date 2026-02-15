@@ -203,7 +203,10 @@
     "setDefaultBackground": "Set default background",
     "resetBackgroundPosition": "Reset background position",
     "setNextBackground": "Set next background",
-    "setPreviousBackground": "Set previous background"
+    "setPreviousBackground": "Set previous background",
+    "dropZoneClickToBrowse": "Click to browse for images or videos",
+    "dropZoneOrDropFiles": "Or drag and drop files here",
+    "addMediaUrlPlaceholder": "Paste image or video URL"
   },
   "navigator": {
     "newDirectoryFile": "New directory / file",
@@ -846,6 +849,16 @@
         "localSharingFeatureAllows": "The \"Local sharing\" feature allows you to share files between devices on your local network.",
         "toUseLocalSharing": "To use local sharing, you need to allow the app access to your network when prompted."
       }
+    },
+    "homeBannerPickerDialog": {
+      "homePageBackgroundManager": "Home page background manager",
+      "customBackgrounds": "Custom backgrounds",
+      "defaultBackgrounds": "Default backgrounds",
+      "artworksProvided": "Artworks provided by various artists."
+    },
+    "homeBannerPositionDialog": {
+      "positionXAxis": "Position X-axis",
+      "positionYAxis": "Position Y-axis"
     },
     "userDirectoryEditorDialog": {
       "userDirectoryEditor": "User directory editor",

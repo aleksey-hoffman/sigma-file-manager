@@ -190,7 +190,10 @@
     "setDefaultBackground": "definir plano de fundo padrão",
     "resetBackgroundPosition": "Redefinir posição do plano de fundo",
     "setNextBackground": "definir o próximo plano de fundo",
-    "setPreviousBackground": "definir plano de fundo anterior"
+    "setPreviousBackground": "definir plano de fundo anterior",
+    "dropZoneClickToBrowse": "Clique para procurar imagens ou vídeos",
+    "dropZoneOrDropFiles": "Ou arraste arquivos aqui",
+    "addMediaUrlPlaceholder": "Colar URL de imagem ou vídeo"
   },
   "navigator": {
     "newDirectoryFile": "novo arquivo de diretorio",

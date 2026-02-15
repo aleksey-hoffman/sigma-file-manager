@@ -92,6 +92,7 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
     },
     UIZoomLevel: 1.0,
     homeBannerIndex: 0,
+    homeBannerCustomMedia: [],
     homeBannerPositions: {},
     driveCard: {
       showSpaceIndicator: true,

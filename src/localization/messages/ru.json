@@ -203,7 +203,10 @@
     "setDefaultBackground": "Установить фон по умолчанию",
     "resetBackgroundPosition": "Сбросить положение фона",
     "setNextBackground": "Установить следующий фон",
-    "setPreviousBackground": "Установить предыдущий фон"
+    "setPreviousBackground": "Установить предыдущий фон",
+    "dropZoneClickToBrowse": "Нажмите, чтобы выбрать изображения или видео",
+    "dropZoneOrDropFiles": "Или перетащите файлы сюда",
+    "addMediaUrlPlaceholder": "Вставьте URL изображения или видео"
   },
   "navigator": {
     "newDirectoryFile": "Новая папка / файл",

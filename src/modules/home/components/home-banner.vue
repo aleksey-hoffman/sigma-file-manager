@@ -4,17 +4,21 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, defineAsyncComponent, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import {
   RefreshCwIcon,
   SettingsIcon,
   MoveIcon,
   RotateCcwIcon,
+  ImageIcon,
 } from 'lucide-vue-next';
-import { homeBannerMedia } from '@/data/home-banner-media';
-import type { BannerMedia } from '@/data/home-banner-media';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
+import { useHomeBannerMedia } from '@/modules/home/composables/use-home-banner-media';
+
+const HomeBannerMediaEditorDialog = defineAsyncComponent(
+  () => import('./home-banner-media-editor-dialog.vue'),
+);
 import {
   Tooltip,
   TooltipContent,
@@ -36,49 +40,48 @@ import { Slider } from '@/components/ui/slider';
 
 const { t } = useI18n();
 const userSettingsStore = useUserSettingsStore();
-
-const bannerImages = import.meta.glob('@/assets/media/home-banner/*.jpg', {
-  eager: true,
-  import: 'default',
-}) as Record<string, string>;
-
-const bannerVideos = import.meta.glob('@/assets/media/home-banner/*.mp4', {
-  eager: true,
-  import: 'default',
-}) as Record<string, string>;
+const {
+  currentItem,
+  currentIndex,
+  totalCount,
+  getMediaUrl,
+} = useHomeBannerMedia();
 
 const videoRef = ref<HTMLVideoElement | null>(null);
 const isDropdownOpen = ref(false);
 const isPositionPopoverOpen = ref(false);
+const isMediaEditorOpen = ref(false);
 const wasVideoPlaying = ref(false);
 
-const currentIndex = computed(() => {
-  const index = userSettingsStore.userSettings.homeBannerIndex;
-
-  if (index >= 0 && index < homeBannerMedia.length) {
-    return index;
-  }
-
-  return 0;
-});
-
-const currentBanner = computed<BannerMedia>(() => {
-  return homeBannerMedia[currentIndex.value];
-});
-
 const currentMediaUrl = computed(() => {
-  const fileName = currentBanner.value.fileName;
-  const mediaMap = currentBanner.value.type === 'video' ? bannerVideos : bannerImages;
-  const key = Object.keys(mediaMap).find(path => path.includes(fileName));
-  return key ? mediaMap[key] : '';
+  const item = currentItem.value;
+  return item ? getMediaUrl(item) : '';
+});
+
+const currentMediaType = computed(() => {
+  const item = currentItem.value;
+  if (!item) return 'image';
+  return item.kind === 'builtin' ? item.data.type : item.type;
+});
+
+const currentPositionX = computed(() => {
+  const item = currentItem.value;
+  if (!item) return 50;
+  return item.kind === 'builtin' ? item.data.positionX : 50;
+});
+
+const currentPositionY = computed(() => {
+  const item = currentItem.value;
+  if (!item) return 50;
+  return item.kind === 'builtin' ? item.data.positionY : 50;
 });
 
 const customPosition = computed(() => {
   return userSettingsStore.userSettings.homeBannerPositions[currentIndex.value];
 });
 
-const positionX = computed(() => customPosition.value?.positionX ?? currentBanner.value.positionX);
-const positionY = computed(() => customPosition.value?.positionY ?? currentBanner.value.positionY);
+const positionX = computed(() => customPosition.value?.positionX ?? currentPositionX.value);
+const positionY = computed(() => customPosition.value?.positionY ?? currentPositionY.value);
 const zoom = computed(() => customPosition.value?.zoom ?? 100);
 
 const positionXArray = computed({
@@ -106,13 +109,13 @@ const setPreviousBackgroundShortcutText = computed(() => {
   return `Alt+${t('click')}`;
 });
 
-const isVideo = computed(() => currentBanner.value.type === 'video');
+const isVideo = computed(() => currentMediaType.value === 'video');
 
 async function updateSetting(property: 'positionX' | 'positionY' | 'zoom', value: number) {
   const currentPositions = { ...userSettingsStore.userSettings.homeBannerPositions };
   const existingPosition = currentPositions[currentIndex.value] ?? {
-    positionX: currentBanner.value.positionX,
-    positionY: currentBanner.value.positionY,
+    positionX: currentPositionX.value,
+    positionY: currentPositionY.value,
     zoom: 100,
   };
 
@@ -131,14 +134,16 @@ async function resetPosition() {
 }
 
 async function nextBanner() {
-  const newIndex = (currentIndex.value + 1) % homeBannerMedia.length;
+  const total = totalCount.value;
+  const newIndex = total > 0 ? (currentIndex.value + 1) % total : 0;
   await userSettingsStore.set('homeBannerIndex', newIndex);
 }
 
 async function previousBanner() {
-  const newIndex = currentIndex.value === 0
-    ? homeBannerMedia.length - 1
-    : currentIndex.value - 1;
+  const total = totalCount.value;
+  const newIndex = total > 0
+    ? (currentIndex.value === 0 ? total - 1 : currentIndex.value - 1)
+    : 0;
   await userSettingsStore.set('homeBannerIndex', newIndex);
 }
 
@@ -190,14 +195,14 @@ watch(isPositionPopoverOpen, (isOpen) => {
   <div class="home-banner">
     <div class="home-banner__media-container">
       <img
-        v-if="currentBanner.type === 'image'"
+        v-if="currentMediaType === 'image' && currentMediaUrl"
         :src="currentMediaUrl"
         :style="mediaStyle"
         class="home-banner__media"
         alt=""
       >
       <video
-        v-else-if="currentBanner.type === 'video'"
+        v-else-if="currentMediaType === 'video' && currentMediaUrl"
         ref="videoRef"
         :src="currentMediaUrl"
         :style="mediaStyle"
@@ -263,6 +268,13 @@ watch(isPositionPopoverOpen, (isOpen) => {
             side="top"
             align="start"
           >
+            <DropdownMenuItem
+              class="home-banner__menu-item"
+              @click="isDropdownOpen = false; isMediaEditorOpen = true"
+            >
+              <ImageIcon :size="16" />
+              <span>{{ t('home.backgroundManager') }}</span>
+            </DropdownMenuItem>
             <Popover
               :open="isPositionPopoverOpen"
               :modal="false"
@@ -360,6 +372,11 @@ watch(isPositionPopoverOpen, (isOpen) => {
         </Tooltip>
       </DropdownMenu>
     </div>
+
+    <HomeBannerMediaEditorDialog
+      v-if="isMediaEditorOpen"
+      v-model:open="isMediaEditorOpen"
+    />
   </div>
 </template>
 

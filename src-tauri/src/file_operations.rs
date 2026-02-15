@@ -343,6 +343,26 @@ pub fn delete_items(paths: Vec<String>, use_trash: bool) -> FileOperationResult 
 }
 
 #[tauri::command]
+pub fn ensure_directory(directory_path: String) -> FileOperationResult {
+    let directory = Path::new(&directory_path);
+
+    match fs::create_dir_all(directory) {
+        Ok(()) => FileOperationResult {
+            success: true,
+            error: None,
+            copied_count: Some(1),
+            failed_count: Some(0),
+        },
+        Err(error) => FileOperationResult {
+            success: false,
+            error: Some(error.to_string()),
+            copied_count: None,
+            failed_count: Some(1),
+        },
+    }
+}
+
+#[tauri::command]
 pub fn create_item(directory_path: String, name: String, is_directory: bool) -> FileOperationResult {
     let trimmed_name = name.trim();
 

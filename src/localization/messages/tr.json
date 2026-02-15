@@ -190,7 +190,10 @@
     "setDefaultBackground": "Varsayılan arka planı ayarla",
     "resetBackgroundPosition": "Arka plan konumunu sıfırla",
     "setNextBackground": "Sonraki Arka Planı Ayarla",
-    "setPreviousBackground": "Önceki Arka Planı Ayarla"
+    "setPreviousBackground": "Önceki Arka Planı Ayarla",
+    "dropZoneClickToBrowse": "Görüntü veya video göz atmak için tıklayın",
+    "dropZoneOrDropFiles": "Veya dosyaları buraya sürükleyin",
+    "addMediaUrlPlaceholder": "Resim veya video URL'si yapıştırın"
   },
   "navigator": {
     "newDirectoryFile": "Yeni dizin / dosya",

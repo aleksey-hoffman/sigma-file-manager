@@ -203,7 +203,10 @@
     "setDefaultBackground": "Nastavi privzeto ozadje",
     "resetBackgroundPosition": "Ponastavi položaj ozadja",
     "setNextBackground": "Nastavi naslednje ozadje",
-    "setPreviousBackground": "Nastavi prejšnje ozadje"
+    "setPreviousBackground": "Nastavi prejšnje ozadje",
+    "dropZoneClickToBrowse": "Kliknite za iskanje slik ali videoposnetkov",
+    "dropZoneOrDropFiles": "Ali povlecite datoteke sem",
+    "addMediaUrlPlaceholder": "Prilepite URL slike ali videa"
   },
   "navigator": {
     "newDirectoryFile": "Nova mapa / datoteka",

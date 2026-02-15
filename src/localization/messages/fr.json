@@ -190,7 +190,10 @@
     "setDefaultBackground": "Définir l'arrière-plan par défaut",
     "resetBackgroundPosition": "Réinitialiser la position de l'arrière-plan",
     "setNextBackground": "Définir le fond d'écran suivant",
-    "setPreviousBackground": "Définir le fond d'écran précédent"
+    "setPreviousBackground": "Définir le fond d'écran précédent",
+    "dropZoneClickToBrowse": "Cliquez pour parcourir des images ou des vidéos",
+    "dropZoneOrDropFiles": "Ou glissez-déposez des fichiers ici",
+    "addMediaUrlPlaceholder": "Collez l'URL d'une image ou vidéo"
   },
   "navigator": {
     "newDirectoryFile": "Nouveau répertoire/fichier",

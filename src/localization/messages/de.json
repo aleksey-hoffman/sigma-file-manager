@@ -190,7 +190,10 @@
     "setDefaultBackground": "Standardhintergrund festlegen",
     "resetBackgroundPosition": "Hintergrundposition zurücksetzen",
     "setNextBackground": "Nächsten Hintergrund festlegen",
-    "setPreviousBackground": "Vorherigen Hintergrund festlegen"
+    "setPreviousBackground": "Vorherigen Hintergrund festlegen",
+    "dropZoneClickToBrowse": "Klicken, um Bilder oder Videos auszuwählen",
+    "dropZoneOrDropFiles": "Oder Dateien hierher ziehen",
+    "addMediaUrlPlaceholder": "Bild- oder Video-URL einfügen"
   },
   "navigator": {
     "newDirectoryFile": "Neues Verzeichnis / Datei",

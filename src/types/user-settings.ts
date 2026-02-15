@@ -113,6 +113,7 @@ export type UserSettings = {
   globalSearch: UserSettingsGlobalSearch;
   UIZoomLevel?: number;
   homeBannerIndex: number;
+  homeBannerCustomMedia: string[];
   homeBannerPositions: HomeBannerPositions;
   driveCard: DriveCardSettings;
   userDirectories: UserDirectoriesCustomizations;

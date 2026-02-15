@@ -190,7 +190,10 @@
     "setDefaultBackground": "Imposta lo sfondo predefinito",
     "resetBackgroundPosition": "Reimposta posizione dello sfondo",
     "setNextBackground": "Imposta il prossimo sfondo",
-    "setPreviousBackground": "Imposta lo sfondo precedente"
+    "setPreviousBackground": "Imposta lo sfondo precedente",
+    "dropZoneClickToBrowse": "Clicca per cercare immagini o video",
+    "dropZoneOrDropFiles": "Oppure trascina i file qui",
+    "addMediaUrlPlaceholder": "Incolla URL immagine o video"
   },
   "navigator": {
     "newDirectoryFile": "Nuova cartella/file",

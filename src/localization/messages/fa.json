@@ -189,7 +189,10 @@
     "setDefaultBackground": "تنظیم پس زمینه پیش فرض",
     "resetBackgroundPosition": "بازنشانی موقعیت پس زمینه",
     "setNextBackground": "تنظیم زمینه بعدی",
-    "setPreviousBackground": "تنظیم زمینه قبلی"
+    "setPreviousBackground": "تنظیم زمینه قبلی",
+    "dropZoneClickToBrowse": "برای انتخاب تصاویر یا ویدیو کلیک کنید",
+    "dropZoneOrDropFiles": "یا فایل‌ها را اینجا رها کنید",
+    "addMediaUrlPlaceholder": "آدرس تصویر یا ویدیو را بچسبانید"
   },
   "navigator": {
     "newDirectoryFile": "دایرکتوری / فایل جدید",

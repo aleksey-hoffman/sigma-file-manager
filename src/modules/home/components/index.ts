@@ -5,6 +5,7 @@
 export { default as DriveCard } from './drive-card.vue';
 export { default as DrivesSection } from './drives-section.vue';
 export { default as HomeBanner } from './home-banner.vue';
+export { default as HomeBannerMediaEditorDialog } from './home-banner-media-editor-dialog.vue';
 export { default as UserDirectoryCard } from './user-directory-card.vue';
 export { default as UserDirectoriesSection } from './user-directories-section.vue';
 export { default as UserDirectoryEditorDialog } from './user-directory-editor-dialog.vue';

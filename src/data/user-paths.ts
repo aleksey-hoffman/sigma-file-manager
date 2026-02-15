@@ -60,6 +60,7 @@ export interface CustomPaths {
   appUserDataWorkspacesPath: string;
   appUserDataStatsName: string;
   appUserDataStatsPath: string;
+  appStorageHomeBannerMediaPath: string;
 }
 
 export interface UserPathsFunctions {
