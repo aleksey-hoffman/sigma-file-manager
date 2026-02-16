@@ -6,6 +6,7 @@ import { ref, onMounted, onUnmounted, type Ref } from 'vue';
 import { getCurrentWebview } from '@tauri-apps/api/webview';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import type { DragOperationType } from './use-file-browser-drag';
+import { useDismissalLayerStore } from '@/stores/runtime/dismissal-layer';
 
 interface DropTargetInfo {
   path: string;
@@ -19,6 +20,7 @@ export function useFileBrowserExternalDrop(options: {
   onDrop: (sourcePaths: string[], targetPath: string, operation: DragOperationType) => void;
   disableBackgroundDrop?: boolean;
 }) {
+  const dismissalLayerStore = useDismissalLayerStore();
   const isExternalDragActive = ref(false);
   const externalDragItemCount = ref(0);
   const externalDragOperationType = ref<DragOperationType>('move');
@@ -27,6 +29,7 @@ export function useFileBrowserExternalDrop(options: {
   let dropTargets: DropTargetInfo[] = [];
   let currentDropTargetPath = '';
   let unlistenDrop: (() => void) | null = null;
+  let dismissalLayerId: string | null = null;
 
   function toLogicalPosition(physicalX: number, physicalY: number): {
     x: number;
@@ -137,6 +140,12 @@ export function useFileBrowserExternalDrop(options: {
     isTargetingEntry.value = false;
     currentDropTargetPath = '';
     dropTargets = [];
+
+    if (dismissalLayerId) {
+      dismissalLayerStore.unregisterLayer(dismissalLayerId);
+      dismissalLayerId = null;
+    }
+
     updateDropTargetAttributes('');
     window.removeEventListener('keydown', handleKeyDown);
     window.removeEventListener('keyup', handleKeyUp);
@@ -151,6 +160,7 @@ export function useFileBrowserExternalDrop(options: {
     isExternalDragActive.value = true;
     collectDropTargets();
     getCurrentWindow().setFocus();
+    dismissalLayerId = dismissalLayerStore.registerLayer('drag', () => resetState(), 300);
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
   }

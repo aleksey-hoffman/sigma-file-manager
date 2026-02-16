@@ -7,6 +7,7 @@ import { startDrag as startOutboundDrag } from '@crabnebula/tauri-plugin-drag';
 import { resolveResource } from '@tauri-apps/api/path';
 import type { DirEntry } from '@/types/dir-entry';
 import { UI_CONSTANTS } from '@/constants';
+import { useDismissalLayerStore } from '@/stores/runtime/dismissal-layer';
 
 export type DragOperationType = 'move' | 'copy';
 
@@ -46,6 +47,7 @@ export function useFileBrowserDrag(options: {
   onDrop: (items: DirEntry[], destinationPath: string, operation: DragOperationType) => void;
   disableBackgroundDrop?: boolean;
 }) {
+  const dismissalLayerStore = useDismissalLayerStore();
   const paneId = nextPaneId++;
   crossPaneRegistry.push({
     id: paneId,
@@ -70,6 +72,7 @@ export function useFileBrowserDrag(options: {
   let currentTargetElement: Element | null = null;
   let isOutboundDragActive = false;
   let cachedDragIconPath: string | null = null;
+  let dismissalLayerId: string | null = null;
 
   const dragState = computed<DragState>(() => ({
     isActive: isDragging.value,
@@ -298,6 +301,8 @@ export function useFileBrowserDrag(options: {
 
     collectDropTargets();
 
+    dismissalLayerId = dismissalLayerStore.registerLayer('drag', () => cancelDrag(), 300);
+
     document.body.style.userSelect = 'none';
     document.body.style.cursor = 'grabbing';
   }
@@ -307,10 +312,6 @@ export function useFileBrowserDrag(options: {
 
     if (event.key === 'Shift') {
       operationType.value = 'copy';
-    }
-
-    if (event.key === 'Escape') {
-      cancelDrag();
     }
   }
 
@@ -351,6 +352,11 @@ export function useFileBrowserDrag(options: {
     dropTargets = [];
     currentTargetElement = null;
     crossPaneDropTargetPaneId.value = null;
+
+    if (dismissalLayerId) {
+      dismissalLayerStore.unregisterLayer(dismissalLayerId);
+      dismissalLayerId = null;
+    }
 
     updateDropTargetAttributes('');
 

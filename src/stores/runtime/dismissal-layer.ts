@@ -9,6 +9,7 @@ export type DismissalLayerType
   = | 'clipboard'
     | 'selection'
     | 'filter'
+    | 'drag'
     | 'custom';
 
 export interface DismissalLayer {
