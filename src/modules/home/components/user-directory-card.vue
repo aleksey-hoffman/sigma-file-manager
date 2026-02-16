@@ -91,6 +91,8 @@ function handleEdit() {
 .user-directory-card {
   display: grid;
   overflow: hidden;
+  width: 100%;
+  height: 100%;
   align-items: center;
   padding: 0 12px 0 0;
   border: none;

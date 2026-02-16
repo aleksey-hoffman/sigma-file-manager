@@ -32,9 +32,13 @@ const props = defineProps<{
 
 const clipboardStore = useClipboardStore();
 const dirSizesStore = useDirSizesStore();
-const { clipboardItems, clipboardType } = storeToRefs(clipboardStore);
+const { clipboardItems, clipboardType, isToolbarSuppressed } = storeToRefs(clipboardStore);
 
 const clipboardPathsMap = computed(() => {
+  if (isToolbarSuppressed.value) {
+    return new Map<string, string>();
+  }
+
   const map = new Map<string, string>();
 
   for (const item of clipboardItems.value) {
@@ -145,6 +149,7 @@ const groupedEntries = computed<GroupedEntries>(() => {
           :data-selected="isEntrySelected(entry) || undefined"
           :data-in-clipboard="clipboardPathsMap.has(entry.path) || undefined"
           :data-clipboard-type="clipboardPathsMap.get(entry.path) || undefined"
+          data-drop-target
           @mousedown="emit('mousedown', entry, $event)"
           @mouseup="emit('mouseup', entry, $event)"
           @contextmenu="emit('contextmenu', entry)"
@@ -634,6 +639,13 @@ const groupedEntries = computed<GroupedEntries>(() => {
 }
 
 .file-browser-grid-view__card:hover .file-browser-grid-view__overlay--hover {
+  opacity: 1;
+  transition: opacity 0s;
+}
+
+.file-browser-grid-view__card[data-drag-over] .file-browser-grid-view__overlay--hover {
+  background-color: hsl(var(--primary) / 15%);
+  box-shadow: inset 0 0 0 2px hsl(var(--primary) / 60%);
   opacity: 1;
   transition: opacity 0s;
 }

@@ -8,6 +8,7 @@ import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useUserDirectories, type UserDirectory } from '@/modules/home/composables';
 import { Button } from '@/components/ui/button';
+import { DropTargetCard } from '@/components/drop-target-card';
 import UserDirectoryCard from './user-directory-card.vue';
 import UserDirectoryEditorDialog from './user-directory-editor-dialog.vue';
 
@@ -82,12 +83,16 @@ async function handleResetDirectory(name: string) {
       v-else
       class="user-directories-section__grid"
     >
-      <UserDirectoryCard
+      <DropTargetCard
         v-for="directory in userDirectories"
         :key="directory.name"
-        :directory="directory"
-        @edit="handleEditDirectory"
-      />
+        :path="directory.path"
+      >
+        <UserDirectoryCard
+          :directory="directory"
+          @edit="handleEditDirectory"
+        />
+      </DropTargetCard>
     </div>
 
     <UserDirectoryEditorDialog

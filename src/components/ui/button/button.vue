@@ -69,8 +69,8 @@ withDefaults(defineProps<Props>(), {
 }
 
 .sigma-ui-button--default {
-  background-color: hsl(var(--primary));
-  color: hsl(var(--primary-foreground));
+  background-color: hsl(var(--primary) / 50%);
+  color: hsl(var(--foreground));
 }
 
 .sigma-ui-button--default:hover {

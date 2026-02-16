@@ -18,11 +18,15 @@ import { PageDefaultLayout } from '@/layouts';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { TagSelector } from '@/components/ui/tag-selector';
+import { DropTargetCard } from '@/components/drop-target-card';
 import { useUserStatsStore } from '@/stores/storage/user-stats';
 import { useWorkspacesStore } from '@/stores/storage/workspaces';
+import { usePageDropZone } from '@/composables/use-page-drop-zone';
+import { useFileDropOperation } from '@/composables/use-file-drop-operation';
 import DashboardActionBar from '@/modules/dashboard/components/dashboard-action-bar.vue';
 import DashboardEmptyState from '@/modules/dashboard/components/dashboard-empty-state.vue';
 import EntryCard from '@/modules/dashboard/components/entry-card.vue';
+import FileBrowserConflictDialog from '@/modules/navigator/components/file-browser/file-browser-conflict-dialog.vue';
 import type {
   FavoriteItem,
   HistoryItem,
@@ -37,6 +41,21 @@ const userStatsStore = useUserStatsStore();
 const workspacesStore = useWorkspacesStore();
 
 const activeTab = ref('favorites');
+const dropContainerRef = ref<HTMLElement | null>(null);
+
+const {
+  conflictDialogState,
+  handleConflictResolution,
+  handleConflictCancel,
+  performDrop,
+} = useFileDropOperation();
+
+usePageDropZone({
+  containerRef: dropContainerRef,
+  onDrop: (sourcePaths, targetPath, operation) => {
+    performDrop(sourcePaths, targetPath, operation);
+  },
+});
 
 const favoriteItems = computed(() => userStatsStore.favorites);
 const taggedItems = computed(() => userStatsStore.taggedItems);
@@ -83,9 +102,12 @@ async function openItem(path: string, isFile: boolean) {
   }
 }
 
+function isFavoriteFile(item: FavoriteItem): boolean {
+  return !item.path.endsWith('/') && item.path.includes('.');
+}
+
 async function openFavoriteItem(item: FavoriteItem) {
-  const isFile = !item.path.endsWith('/') && item.path.includes('.');
-  await openItem(item.path, isFile);
+  await openItem(item.path, isFavoriteFile(item));
 }
 
 async function openHistoryItem(item: HistoryItem) {
@@ -136,11 +158,12 @@ async function handleDeleteTag(tagId: string) {
     :title="t('pages.dashboard')"
     :subtitle="t('dashboard.subtitle')"
   >
-    <Tabs
-      v-model="activeTab"
-      default-value="favorites"
-      class="dashboard-page__tabs"
-    >
+    <div ref="dropContainerRef">
+      <Tabs
+        v-model="activeTab"
+        default-value="favorites"
+        class="dashboard-page__tabs"
+      >
       <TabsList class="dashboard-page__tabs-list">
         <TabsTrigger
           value="favorites"
@@ -214,21 +237,26 @@ async function handleDeleteTag(tagId: string) {
           v-else
           class="dashboard-page__items-grid"
         >
-          <EntryCard
+          <DropTargetCard
             v-for="item in favoriteItems"
             :key="item.path"
             :path="item.path"
-            @click="openFavoriteItem(item)"
+            :enabled="!isFavoriteFile(item)"
           >
-            <Button
-              variant="ghost"
-              size="icon"
-              class="entry-card__action"
-              @click="removeFavorite(item.path, $event)"
+            <EntryCard
+              :path="item.path"
+              @click="openFavoriteItem(item)"
             >
-              <XIcon :size="14" />
-            </Button>
-          </EntryCard>
+              <Button
+                variant="ghost"
+                size="icon"
+                class="entry-card__action"
+                @click="removeFavorite(item.path, $event)"
+              >
+                <XIcon :size="14" />
+              </Button>
+            </EntryCard>
+          </DropTargetCard>
         </div>
       </TabsContent>
 
@@ -250,35 +278,40 @@ async function handleDeleteTag(tagId: string) {
           v-else
           class="dashboard-page__items-grid"
         >
-          <EntryCard
+          <DropTargetCard
             v-for="item in taggedItems"
             :key="item.path"
             :path="item.path"
-            :is-file="item.isFile"
-            @click="openItem(item.path, item.isFile)"
+            :enabled="!item.isFile"
           >
-            <template #footer>
-              <div class="entry-card__tags">
-                <span
-                  v-for="tagId in item.tagIds"
-                  :key="tagId"
-                  class="entry-card__tag"
-                  :style="{ backgroundColor: getTagById(tagId)?.color + '25', color: getTagById(tagId)?.color }"
-                >
-                  {{ getTagById(tagId)?.name }}
-                </span>
-              </div>
-              <TagSelector
-                :tags="tags"
-                :selected-tag-ids="item.tagIds"
-                :allow-create="true"
-                trigger-variant="compact"
-                @toggle-tag="(tagId) => handleToggleTagOnItem(item, tagId)"
-                @create-tag="(name) => handleCreateTagForItem(item, name)"
-                @delete-tag="handleDeleteTag"
-              />
-            </template>
-          </EntryCard>
+            <EntryCard
+              :path="item.path"
+              :is-file="item.isFile"
+              @click="openItem(item.path, item.isFile)"
+            >
+              <template #footer>
+                <div class="entry-card__tags">
+                  <span
+                    v-for="tagId in item.tagIds"
+                    :key="tagId"
+                    class="entry-card__tag"
+                    :style="{ backgroundColor: getTagById(tagId)?.color + '25', color: getTagById(tagId)?.color }"
+                  >
+                    {{ getTagById(tagId)?.name }}
+                  </span>
+                </div>
+                <TagSelector
+                  :tags="tags"
+                  :selected-tag-ids="item.tagIds"
+                  :allow-create="true"
+                  trigger-variant="compact"
+                  @toggle-tag="(tagId) => handleToggleTagOnItem(item, tagId)"
+                  @create-tag="(name) => handleCreateTagForItem(item, name)"
+                  @delete-tag="handleDeleteTag"
+                />
+              </template>
+            </EntryCard>
+          </DropTargetCard>
         </div>
       </TabsContent>
 
@@ -300,17 +333,22 @@ async function handleDeleteTag(tagId: string) {
           v-else
           class="dashboard-page__items-grid"
         >
-          <EntryCard
+          <DropTargetCard
             v-for="item in frequentItems"
             :key="item.path"
             :path="item.path"
-            :is-file="item.isFile"
-            @click="openFrequentItem(item)"
+            :enabled="!item.isFile"
           >
-            <div class="entry-card__stats">
-              <span class="entry-card__badge">{{ t('dashboard.openedCount', item.openCount) }}</span>
-            </div>
-          </EntryCard>
+            <EntryCard
+              :path="item.path"
+              :is-file="item.isFile"
+              @click="openFrequentItem(item)"
+            >
+              <div class="entry-card__stats">
+                <span class="entry-card__badge">{{ t('dashboard.openedCount', item.openCount) }}</span>
+              </div>
+            </EntryCard>
+          </DropTargetCard>
         </div>
       </TabsContent>
 
@@ -332,26 +370,39 @@ async function handleDeleteTag(tagId: string) {
           v-else
           class="dashboard-page__items-grid"
         >
-          <EntryCard
+          <DropTargetCard
             v-for="item in historyItems"
             :key="`${item.path}-${item.openedAt}`"
             :path="item.path"
-            :is-file="item.isFile"
-            @click="openHistoryItem(item)"
+            :enabled="!item.isFile"
           >
-            <span class="entry-card__time">{{ formatRelativeTime(item.openedAt) }}</span>
-            <Button
-              variant="ghost"
-              size="icon"
-              class="entry-card__action"
-              @click="removeHistoryItem(item.path, item.openedAt, $event)"
+            <EntryCard
+              :path="item.path"
+              :is-file="item.isFile"
+              @click="openHistoryItem(item)"
             >
-              <XIcon :size="14" />
-            </Button>
-          </EntryCard>
+              <span class="entry-card__time">{{ formatRelativeTime(item.openedAt) }}</span>
+              <Button
+                variant="ghost"
+                size="icon"
+                class="entry-card__action"
+                @click="removeHistoryItem(item.path, item.openedAt, $event)"
+              >
+                <XIcon :size="14" />
+              </Button>
+            </EntryCard>
+          </DropTargetCard>
         </div>
       </TabsContent>
     </Tabs>
+    </div>
+    <FileBrowserConflictDialog
+      v-model:open="conflictDialogState.isOpen"
+      :conflicts="conflictDialogState.conflicts"
+      :operation-type="conflictDialogState.operationType"
+      @resolve="handleConflictResolution"
+      @cancel="handleConflictCancel"
+    />
   </PageDefaultLayout>
 </template>
 

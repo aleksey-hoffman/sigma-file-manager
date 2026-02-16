@@ -9,6 +9,7 @@ import { useI18n } from 'vue-i18n';
 import { useDrives } from '@/modules/home/composables';
 import { usePlatformStore } from '@/stores/runtime/platform';
 import { Button } from '@/components/ui/button';
+import { DropTargetCard } from '@/components/drop-target-card';
 import DriveCard from './drive-card.vue';
 
 const { t } = useI18n();
@@ -59,11 +60,13 @@ const sectionTitle = computed(() => {
       v-else
       class="drives-section__grid"
     >
-      <DriveCard
+      <DropTargetCard
         v-for="drive in drives"
         :key="drive.path"
-        :drive="drive"
-      />
+        :path="drive.path"
+      >
+        <DriveCard :drive="drive" />
+      </DropTargetCard>
     </div>
   </section>
 </template>

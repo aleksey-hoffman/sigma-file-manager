@@ -4,11 +4,12 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import { computed, nextTick, toRef } from 'vue';
+import { ref, computed, nextTick, toRef } from 'vue';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { useDismissalLayerStore } from '@/stores/runtime/dismissal-layer';
 import { useQuickViewStore } from '@/stores/runtime/quick-view';
 import { useGlobalSearchStore } from '@/stores/runtime/global-search';
+import { useClipboardStore } from '@/stores/runtime/clipboard';
 import type { DirEntry } from '@/types/dir-entry';
 import type { Tab } from '@/types/workspaces';
 import { useFileBrowserNavigation } from './composables/use-file-browser-navigation';
@@ -20,6 +21,8 @@ import { useFileBrowserDialogs } from './composables/use-file-browser-dialogs';
 import { useFileBrowserActions } from './composables/use-file-browser-actions';
 import { useFileBrowserKeyboardNavigation } from './composables/use-file-browser-keyboard-navigation';
 import { useFileBrowserLifecycle } from './composables/use-file-browser-lifecycle';
+import { useFileBrowserDrag } from './composables/use-file-browser-drag';
+import { useFileBrowserExternalDrop } from './composables/use-file-browser-external-drop';
 import { useVideoThumbnails } from './composables/use-video-thumbnails';
 import FileBrowserContent from './file-browser-content.vue';
 import FileBrowserToolbar from './file-browser-toolbar.vue';
@@ -27,6 +30,9 @@ import FileBrowserStatusBar from './file-browser-status-bar.vue';
 import FileBrowserRenameDialog from './file-browser-rename-dialog.vue';
 import FileBrowserNewItemDialog from './file-browser-new-item-dialog.vue';
 import FileBrowserOpenWithDialog from './file-browser-open-with-dialog.vue';
+import FileBrowserDragOverlay from './file-browser-drag-overlay.vue';
+import FileBrowserInboundDragOverlay from './file-browser-inbound-drag-overlay.vue';
+import FileBrowserConflictDialog from './file-browser-conflict-dialog.vue';
 
 const props = defineProps<{
   tab?: Tab;
@@ -43,7 +49,9 @@ const userSettingsStore = useUserSettingsStore();
 const dismissalLayerStore = useDismissalLayerStore();
 const quickViewStore = useQuickViewStore();
 const globalSearchStore = useGlobalSearchStore();
+const clipboardStore = useClipboardStore();
 const tabRef = toRef(props, 'tab');
+const fileBrowserRef = ref<HTMLElement | null>(null);
 const {
   currentPath,
   dirContents,
@@ -100,6 +108,7 @@ const {
   pendingFocusRequest,
   clearSelection,
   isEntrySelected,
+  replaceSelection,
   handleEntryMouseDown,
   handleEntryMouseUp,
   handleEntryContextMenu,
@@ -111,12 +120,16 @@ const {
   copyItems,
   cutItems,
   pasteItems,
+  handleExternalDrop,
   deleteItems,
   startRename,
   cancelRename,
   confirmRename,
   createNewItem,
   clearPendingFocusRequest,
+  conflictDialogState,
+  handleConflictResolution,
+  handleConflictCancel,
 } = useFileBrowserSelection(
   entries,
   currentPath,
@@ -161,6 +174,54 @@ const { entriesContainerRef, setEntriesContainerRef } = useFileBrowserFocus({
 });
 
 const {
+  isDragging,
+  dragItems,
+  operationType: dragOperationType,
+  cursorX: dragCursorX,
+  cursorY: dragCursorY,
+  isCrossPaneTarget,
+  handleDragMouseDown,
+} = useFileBrowserDrag({
+  selectedEntries,
+  currentPath,
+  componentRef: fileBrowserRef,
+  isEntrySelected,
+  replaceSelection,
+  entriesContainerRef,
+  onDrop: async (items, destinationPath, operation) => {
+    clipboardStore.isToolbarSuppressed = true;
+
+    if (operation === 'copy') {
+      copyItems(items);
+    }
+    else {
+      cutItems(items);
+    }
+
+    const success = await pasteItems(destinationPath);
+
+    if (!success && clipboardStore.hasItems) {
+      clipboardStore.clearClipboard();
+    }
+  },
+});
+
+const {
+  isExternalDragActive,
+  externalDragItemCount,
+  externalDragOperationType,
+  isCurrentDirLocked,
+  isTargetingEntry,
+} = useFileBrowserExternalDrop({
+  componentRef: fileBrowserRef,
+  currentPath,
+  entriesContainerRef,
+  onDrop: (sourcePaths, targetPath, operation) => {
+    handleExternalDrop(sourcePaths, targetPath, operation);
+  },
+});
+
+const {
   quickView,
   onContextMenuAction,
   onEntryMouseDown,
@@ -173,6 +234,8 @@ const {
   openOpenWithDialog,
   handleEntryMouseDown,
   handleEntryMouseUp,
+  handleDragMouseDown,
+  isDragging,
 });
 
 useFileBrowserLifecycle({
@@ -254,7 +317,10 @@ defineExpose({
 </script>
 
 <template>
-  <div class="file-browser">
+  <div
+    ref="fileBrowserRef"
+    class="file-browser"
+  >
     <FileBrowserToolbar
       v-model:path-input="pathInput"
       v-model:filter-query="filterQuery"
@@ -324,6 +390,37 @@ defineExpose({
       :entries="openWithState.entries"
       @close="closeOpenWithDialog"
     />
+
+    <FileBrowserDragOverlay
+      :is-active="isDragging"
+      :item-count="dragItems.length"
+      :operation-type="dragOperationType"
+      :cursor-x="dragCursorX"
+      :cursor-y="dragCursorY"
+    />
+
+    <Transition name="cross-pane-drop-overlay">
+      <div
+        v-if="isCrossPaneTarget"
+        class="cross-pane-drop-overlay"
+      />
+    </Transition>
+
+    <FileBrowserInboundDragOverlay
+      :is-active="isExternalDragActive"
+      :item-count="externalDragItemCount"
+      :operation-type="externalDragOperationType"
+      :current-dir-locked="isCurrentDirLocked"
+      :targeting-entry="isTargetingEntry"
+    />
+
+    <FileBrowserConflictDialog
+      v-model:open="conflictDialogState.isOpen"
+      :conflicts="conflictDialogState.conflicts"
+      :operation-type="conflictDialogState.operationType || 'copy'"
+      @resolve="handleConflictResolution"
+      @cancel="handleConflictCancel"
+    />
   </div>
 </template>
 <style scoped>
@@ -333,5 +430,27 @@ defineExpose({
   overflow: hidden;
   height: 100%;
   flex-direction: column;
+}
+
+.cross-pane-drop-overlay {
+  position: absolute;
+  z-index: 80;
+  border: 2px dashed hsl(var(--primary) / 40%);
+  border-radius: var(--radius-md);
+  inset: 0;
+  pointer-events: none;
+}
+
+.cross-pane-drop-overlay-enter-active {
+  transition: opacity 0.15s ease-out;
+}
+
+.cross-pane-drop-overlay-leave-active {
+  transition: opacity 0.1s ease-in;
+}
+
+.cross-pane-drop-overlay-enter-from,
+.cross-pane-drop-overlay-leave-to {
+  opacity: 0;
 }
 </style>

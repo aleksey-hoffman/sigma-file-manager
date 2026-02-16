@@ -9,7 +9,7 @@ import type { DirEntry } from '@/types/dir-entry';
 import type { ContextMenuAction } from '@/modules/navigator/components/file-browser/types';
 import { useWorkspacesStore } from '@/stores/storage/workspaces';
 import { useUserStatsStore } from '@/stores/storage/user-stats';
-import { useClipboardStore, type FileOperationResult } from '@/stores/runtime/clipboard';
+import { useClipboardStore, type FileOperationResult, type ConflictItem, type ConflictResolution } from '@/stores/runtime/clipboard';
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
 import { toast, CustomProgress, CustomSimple } from '@/components/ui/toaster';
 import { UI_CONSTANTS } from '@/constants';
@@ -241,6 +241,42 @@ export function useFileBrowserSelection(
     clipboardStore.setClipboard('move', entries);
   }
 
+  const conflictDialogState = ref({
+    isOpen: false,
+    conflicts: [] as ConflictItem[],
+    operationType: '' as 'copy' | 'move',
+    pendingResolve: null as ((resolution: ConflictResolution | null) => void) | null,
+  });
+
+  function showConflictDialog(conflicts: ConflictItem[], operationType: 'copy' | 'move'): Promise<ConflictResolution | null> {
+    return new Promise((resolve) => {
+      conflictDialogState.value = {
+        isOpen: true,
+        conflicts,
+        operationType,
+        pendingResolve: resolve,
+      };
+    });
+  }
+
+  function handleConflictResolution(resolution: ConflictResolution) {
+    if (conflictDialogState.value.pendingResolve) {
+      conflictDialogState.value.pendingResolve(resolution);
+      conflictDialogState.value.pendingResolve = null;
+    }
+
+    conflictDialogState.value.isOpen = false;
+  }
+
+  function handleConflictCancel() {
+    if (conflictDialogState.value.pendingResolve) {
+      conflictDialogState.value.pendingResolve(null);
+      conflictDialogState.value.pendingResolve = null;
+    }
+
+    conflictDialogState.value.isOpen = false;
+  }
+
   async function pasteItems(destinationPath?: string): Promise<boolean> {
     if (!clipboardStore.hasItems) {
       return false;
@@ -250,6 +286,21 @@ export function useFileBrowserSelection(
     const itemCount = clipboardStore.itemCount;
     const operationType = isCopy ? 'copy' : 'move';
     const targetPath = destinationPath || currentPathRef.value;
+
+    const conflicts = await clipboardStore.checkConflicts(targetPath);
+
+    let conflictResolution: ConflictResolution | undefined;
+
+    if (conflicts.length > 0) {
+      const resolution = await showConflictDialog(conflicts, operationType);
+
+      if (resolution === null) {
+        return false;
+      }
+
+      conflictResolution = resolution;
+    }
+
     const shouldFocusPaste = targetPath === currentPathRef.value;
     const previousPaths = shouldFocusPaste
       ? new Set(entriesRef.value.map(entry => entry.path))
@@ -301,17 +352,34 @@ export function useFileBrowserSelection(
       }
     };
 
-    const result = await clipboardStore.pasteItems(targetPath);
+    const result = await clipboardStore.pasteItems(targetPath, conflictResolution);
 
     toastData.value.cleanup();
     toastData.value.progress = 100;
 
     if (result.success) {
-      const successCount = result.copied_count ?? itemCount;
-      toastData.value.title = isCopy
-        ? t('notifications.copied')
-        : t('notifications.moved');
-      toastData.value.itemCount = successCount;
+      const successCount = result.copied_count ?? 0;
+      const skippedCount = result.skipped_count ?? 0;
+      const allSkipped = successCount === 0 && skippedCount > 0;
+
+      if (allSkipped) {
+        toastData.value.title = t('notifications.skippedAll');
+        toastData.value.itemCount = skippedCount;
+      }
+      else if (skippedCount > 0) {
+        toastData.value.title = isCopy
+          ? t('notifications.copied')
+          : t('notifications.moved');
+        toastData.value.itemCount = successCount;
+        toastData.value.description = t('notifications.skippedCount', skippedCount);
+      }
+      else {
+        toastData.value.title = isCopy
+          ? t('notifications.copied')
+          : t('notifications.moved');
+        toastData.value.itemCount = successCount;
+      }
+
       toastData.value.actionText = t('close');
 
       const pathsToInvalidate = [targetPath];
@@ -366,6 +434,169 @@ export function useFileBrowserSelection(
     }
 
     return result.success;
+  }
+
+  async function handleExternalDrop(sourcePaths: string[], targetPath: string, operation: 'copy' | 'move' = 'copy'): Promise<boolean> {
+    if (sourcePaths.length === 0) {
+      return false;
+    }
+
+    const isCopy = operation === 'copy';
+
+    const conflicts = await invoke<ConflictItem[]>('check_conflicts', {
+      sourcePaths,
+      destinationPath: targetPath,
+    });
+
+    let conflictResolution: ConflictResolution | undefined;
+
+    if (conflicts.length > 0) {
+      const resolution = await showConflictDialog(conflicts, operation);
+
+      if (resolution === null) {
+        return false;
+      }
+
+      conflictResolution = resolution;
+    }
+
+    const shouldFocusPaste = targetPath === currentPathRef.value;
+    const previousPaths = shouldFocusPaste
+      ? new Set(entriesRef.value.map(entry => entry.path))
+      : null;
+
+    const toastData = ref({
+      id: '' as string | number,
+      title: isCopy ? t('notifications.copyingItems') : t('notifications.movingItems'),
+      description: '',
+      progress: 0,
+      timer: 0,
+      actionText: t('cancel'),
+      cleanup: () => {},
+      operationType: operation as 'copy' | 'move' | 'delete' | '',
+      itemCount: sourcePaths.length,
+    });
+
+    toastData.value.id = toast.custom(markRaw(CustomProgress), {
+      componentProps: {
+        data: toastData.value,
+        onAction: () => {
+          if (autoDismissTimeout) {
+            clearTimeout(autoDismissTimeout);
+            autoDismissTimeout = null;
+          }
+
+          toast.dismiss(toastData.value.id);
+        },
+      },
+      duration: Infinity,
+    });
+
+    let autoDismissTimeout: ReturnType<typeof setTimeout> | null = null;
+    let progressInterval: ReturnType<typeof setInterval> | null = setInterval(() => {
+      if (toastData.value.progress < 90) {
+        toastData.value.progress += 5;
+      }
+    }, 100);
+
+    toastData.value.cleanup = () => {
+      if (progressInterval) {
+        clearInterval(progressInterval);
+        progressInterval = null;
+      }
+
+      if (autoDismissTimeout) {
+        clearTimeout(autoDismissTimeout);
+        autoDismissTimeout = null;
+      }
+    };
+
+    try {
+      const tauriCommand = isCopy ? 'copy_items' : 'move_items';
+      const result = await invoke<FileOperationResult>(tauriCommand, {
+        sourcePaths,
+        destinationPath: targetPath,
+        conflictResolution: conflictResolution || null,
+      });
+
+      toastData.value.cleanup();
+      toastData.value.progress = 100;
+
+      if (result.success) {
+        const successCount = result.copied_count ?? 0;
+        const skippedCount = result.skipped_count ?? 0;
+        const allSkipped = successCount === 0 && skippedCount > 0;
+
+        if (allSkipped) {
+          toastData.value.title = t('notifications.skippedAll');
+          toastData.value.itemCount = skippedCount;
+        }
+        else if (skippedCount > 0) {
+          toastData.value.title = isCopy
+            ? t('notifications.copied')
+            : t('notifications.moved');
+          toastData.value.itemCount = successCount;
+          toastData.value.description = t('notifications.skippedCount', skippedCount);
+        }
+        else {
+          toastData.value.title = isCopy
+            ? t('notifications.copied')
+            : t('notifications.moved');
+          toastData.value.itemCount = successCount;
+        }
+
+        toastData.value.actionText = t('close');
+
+        dirSizesStore.invalidate([targetPath, currentPathRef.value]);
+
+        if (shouldFocusPaste && previousPaths) {
+          pendingFocusRequest.value = {
+            type: 'diff',
+            targetPath,
+            previousPaths,
+          };
+        }
+
+        onRefresh();
+
+        autoDismissTimeout = setTimeout(() => {
+          toast.dismiss(toastData.value.id);
+        }, 2500);
+
+        return true;
+      }
+      else {
+        toastData.value.title = isCopy
+          ? t('fileBrowser.copyFailed')
+          : t('fileBrowser.moveFailed');
+        toastData.value.description = result.error || '';
+        toastData.value.actionText = t('close');
+        toastData.value.progress = 0;
+        toastData.value.itemCount = 0;
+
+        setTimeout(() => {
+          toast.dismiss(toastData.value.id);
+        }, 5000);
+
+        return false;
+      }
+    }
+    catch (error) {
+      toastData.value.cleanup();
+      toastData.value.title = isCopy
+        ? t('fileBrowser.copyFailed')
+        : t('fileBrowser.moveFailed');
+      toastData.value.description = String(error);
+      toastData.value.actionText = t('close');
+      toastData.value.progress = 0;
+      toastData.value.itemCount = 0;
+
+      setTimeout(() => {
+        toast.dismiss(toastData.value.id);
+      }, 5000);
+
+      return false;
+    }
   }
 
   function startRename(entry: DirEntry) {
@@ -737,6 +968,7 @@ export function useFileBrowserSelection(
     renameState,
     clearSelection,
     isEntrySelected,
+    replaceSelection,
     handleEntryMouseDown,
     handleEntryMouseUp,
     handleEntryContextMenu,
@@ -749,6 +981,7 @@ export function useFileBrowserSelection(
     copyItems,
     cutItems,
     pasteItems,
+    handleExternalDrop,
     deleteItems,
     startRename,
     cancelRename,
@@ -756,5 +989,8 @@ export function useFileBrowserSelection(
     createNewItem,
     pendingFocusRequest,
     clearPendingFocusRequest,
+    conflictDialogState,
+    handleConflictResolution,
+    handleConflictCancel,
   };
 }

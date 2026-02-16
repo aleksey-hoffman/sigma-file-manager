@@ -21,6 +21,7 @@ pub fn run() {
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_system_fonts::init())
+        .plugin(tauri_plugin_drag::init())
         .invoke_handler(tauri::generate_handler![
             system_tray::reload_webview,
             dir_reader::read_dir,
@@ -34,6 +35,7 @@ pub fn run() {
             dir_size::invalidate_dir_size_cache,
             dir_size::clear_dir_size_cache,
             dir_size::cancel_dir_size,
+            file_operations::check_conflicts,
             file_operations::copy_items,
             file_operations::ensure_directory,
             file_operations::move_items,

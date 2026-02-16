@@ -23,6 +23,8 @@ export function useFileBrowserActions(options: {
   openOpenWithDialog: (entries: DirEntry[]) => void;
   handleEntryMouseDown: (entry: DirEntry, event: MouseEvent) => void;
   handleEntryMouseUp: (entry: DirEntry, event: MouseEvent) => void;
+  handleDragMouseDown?: (entry: DirEntry, event: MouseEvent) => void;
+  isDragging?: Ref<boolean>;
 }) {
   async function quickView(entry?: DirEntry) {
     const targetEntry = entry || options.selectedEntries.value[options.selectedEntries.value.length - 1];
@@ -58,9 +60,17 @@ export function useFileBrowserActions(options: {
 
   function onEntryMouseDown(entry: DirEntry, event: MouseEvent) {
     options.handleEntryMouseDown(entry, event);
+
+    if (options.handleDragMouseDown && event.button === 0) {
+      options.handleDragMouseDown(entry, event);
+    }
   }
 
   function onEntryMouseUp(entry: DirEntry, event: MouseEvent) {
+    if (options.isDragging?.value) {
+      return;
+    }
+
     options.handleEntryMouseUp(entry, event);
   }
 

@@ -31,6 +31,7 @@
     "sync-license": "npx tsx ./scripts/sync-license.js"
   },
   "dependencies": {
+    "@crabnebula/tauri-plugin-drag": "^2.1.0",
     "@tailwindcss/vite": "^4.1.11",
     "@tauri-apps/api": "^2.6.0",
     "@tauri-apps/plugin-dialog": "^2.5.0",

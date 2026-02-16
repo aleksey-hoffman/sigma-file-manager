@@ -47,6 +47,7 @@
       ]
     },
     "dialog:allow-open",
-    "system-fonts:default"
+    "system-fonts:default",
+    "drag:default"
   ]
 }

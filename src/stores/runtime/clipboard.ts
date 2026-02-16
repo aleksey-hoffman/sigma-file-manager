@@ -8,6 +8,7 @@ import { invoke } from '@tauri-apps/api/core';
 import type { DirEntry } from '@/types/dir-entry';
 
 export type ClipboardOperationType = 'copy' | 'move' | '';
+export type ConflictResolution = 'replace' | 'skip' | 'auto-rename';
 
 export interface ClipboardState {
   type: ClipboardOperationType;
@@ -19,6 +20,17 @@ export interface FileOperationResult {
   error?: string;
   copied_count?: number;
   failed_count?: number;
+  skipped_count?: number;
+}
+
+export interface ConflictItem {
+  source_path: string;
+  source_name: string;
+  source_is_dir: boolean;
+  source_size: number | null;
+  destination_path: string;
+  destination_is_dir: boolean;
+  destination_size: number | null;
 }
 
 /**
@@ -42,8 +54,10 @@ export const useClipboardStore = defineStore('clipboard', () => {
   const clipboardType = ref<ClipboardOperationType>('');
   const clipboardItems = ref<DirEntry[]>([]);
   const isOperationInProgress = ref(false);
+  const isToolbarSuppressed = ref(false);
 
   const hasItems = computed(() => clipboardItems.value.length > 0);
+  const showToolbar = computed(() => hasItems.value && !isToolbarSuppressed.value);
   const itemCount = computed(() => clipboardItems.value.length);
   const isCopyOperation = computed(() => clipboardType.value === 'copy');
   const isMoveOperation = computed(() => clipboardType.value === 'move');
@@ -97,6 +111,7 @@ export const useClipboardStore = defineStore('clipboard', () => {
   function clearClipboard() {
     clipboardType.value = '';
     clipboardItems.value = [];
+    isToolbarSuppressed.value = false;
   }
 
   function isItemInClipboard(item: DirEntry): boolean {
@@ -154,7 +169,25 @@ export const useClipboardStore = defineStore('clipboard', () => {
     return true;
   }
 
-  async function pasteItems(destinationPath: string): Promise<FileOperationResult> {
+  async function checkConflicts(destinationPath: string): Promise<ConflictItem[]> {
+    if (!hasItems.value) {
+      return [];
+    }
+
+    const sourcePaths = clipboardItems.value.map(item => item.path);
+
+    try {
+      return await invoke<ConflictItem[]>('check_conflicts', {
+        sourcePaths,
+        destinationPath,
+      });
+    }
+    catch {
+      return [];
+    }
+  }
+
+  async function pasteItems(destinationPath: string, conflictResolution?: ConflictResolution): Promise<FileOperationResult> {
     if (!hasItems.value) {
       return {
         success: false,
@@ -162,7 +195,6 @@ export const useClipboardStore = defineStore('clipboard', () => {
       };
     }
 
-    // Validate paste operation
     if (isDestinationInsideClipboardItem(destinationPath)) {
       return {
         success: false,
@@ -185,6 +217,7 @@ export const useClipboardStore = defineStore('clipboard', () => {
         const result = await invoke<FileOperationResult>('copy_items', {
           sourcePaths,
           destinationPath,
+          conflictResolution: conflictResolution || null,
         });
 
         return result;
@@ -193,6 +226,7 @@ export const useClipboardStore = defineStore('clipboard', () => {
         const result = await invoke<FileOperationResult>('move_items', {
           sourcePaths,
           destinationPath,
+          conflictResolution: conflictResolution || null,
         });
 
         if (result.success) {
@@ -222,7 +256,9 @@ export const useClipboardStore = defineStore('clipboard', () => {
     clipboardType,
     clipboardItems,
     isOperationInProgress,
+    isToolbarSuppressed,
     hasItems,
+    showToolbar,
     itemCount,
     isCopyOperation,
     isMoveOperation,
@@ -235,6 +271,7 @@ export const useClipboardStore = defineStore('clipboard', () => {
     isSameAsSourceDirectory,
     isDestinationInsideClipboardItem,
     canPasteTo,
+    checkConflicts,
     pasteItems,
   };
 });

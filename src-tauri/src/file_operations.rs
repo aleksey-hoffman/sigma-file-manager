@@ -13,6 +13,36 @@ pub struct FileOperationResult {
     pub error: Option<String>,
     pub copied_count: Option<u32>,
     pub failed_count: Option<u32>,
+    pub skipped_count: Option<u32>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ConflictItem {
+    pub source_path: String,
+    pub source_name: String,
+    pub source_is_dir: bool,
+    pub source_size: Option<u64>,
+    pub destination_path: String,
+    pub destination_is_dir: bool,
+    pub destination_size: Option<u64>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum ConflictResolution {
+    Replace,
+    Skip,
+    AutoRename,
+}
+
+impl ConflictResolution {
+    fn from_str(value: &str) -> Self {
+        match value {
+            "replace" => ConflictResolution::Replace,
+            "skip" => ConflictResolution::Skip,
+            "auto-rename" => ConflictResolution::AutoRename,
+            _ => ConflictResolution::AutoRename,
+        }
+    }
 }
 
 fn copy_dir_recursive(source: &Path, destination: &Path) -> Result<(), String> {
@@ -59,8 +89,80 @@ fn get_unique_destination_path(destination: &Path, name: &str) -> std::path::Pat
 }
 
 #[tauri::command]
-pub fn copy_items(source_paths: Vec<String>, destination_path: String) -> FileOperationResult {
+pub fn check_conflicts(source_paths: Vec<String>, destination_path: String) -> Vec<ConflictItem> {
     let destination = Path::new(&destination_path);
+    let mut conflicts = Vec::new();
+
+    if !destination.exists() || !destination.is_dir() {
+        return conflicts;
+    }
+
+    for source_path_str in &source_paths {
+        let source = Path::new(source_path_str);
+
+        if !source.exists() {
+            continue;
+        }
+
+        let source_parent = source.parent().map(|parent| normalize_path(&parent.to_string_lossy()));
+        let dest_normalized = normalize_path(&destination.to_string_lossy());
+        let is_same_directory = source_parent
+            .map(|parent| parent == dest_normalized)
+            .unwrap_or(false);
+
+        if is_same_directory {
+            continue;
+        }
+
+        let file_name = match source.file_name() {
+            Some(name) => name.to_string_lossy().to_string(),
+            None => continue,
+        };
+
+        let dest_item_path = destination.join(&file_name);
+
+        if dest_item_path.exists() {
+            let source_size = if source.is_file() {
+                fs::metadata(source).ok().map(|metadata| metadata.len())
+            } else {
+                None
+            };
+
+            let destination_size = if dest_item_path.is_file() {
+                fs::metadata(&dest_item_path).ok().map(|metadata| metadata.len())
+            } else {
+                None
+            };
+
+            conflicts.push(ConflictItem {
+                source_path: source_path_str.clone(),
+                source_name: file_name,
+                source_is_dir: source.is_dir(),
+                source_size,
+                destination_path: dest_item_path.to_string_lossy().to_string(),
+                destination_is_dir: dest_item_path.is_dir(),
+                destination_size,
+            });
+        }
+    }
+
+    conflicts
+}
+
+fn remove_dir_or_file(path: &Path) -> Result<(), String> {
+    if path.is_dir() {
+        fs::remove_dir_all(path).map_err(|error| error.to_string())
+    } else {
+        fs::remove_file(path).map_err(|error| error.to_string())
+    }
+}
+
+#[tauri::command]
+pub fn copy_items(source_paths: Vec<String>, destination_path: String, conflict_resolution: Option<String>) -> FileOperationResult {
+    let destination = Path::new(&destination_path);
+    let resolution = conflict_resolution
+        .map(|value| ConflictResolution::from_str(&value))
+        .unwrap_or(ConflictResolution::AutoRename);
 
     if !destination.exists() {
         return FileOperationResult {
@@ -68,6 +170,7 @@ pub fn copy_items(source_paths: Vec<String>, destination_path: String) -> FileOp
             error: Some(format!("Destination path does not exist: {}", destination_path)),
             copied_count: None,
             failed_count: None,
+            skipped_count: None,
         };
     }
 
@@ -77,11 +180,13 @@ pub fn copy_items(source_paths: Vec<String>, destination_path: String) -> FileOp
             error: Some(format!("Destination is not a directory: {}", destination_path)),
             copied_count: None,
             failed_count: None,
+            skipped_count: None,
         };
     }
 
     let mut copied_count: u32 = 0;
     let mut failed_count: u32 = 0;
+    let mut skipped_count: u32 = 0;
     let mut last_error: Option<String> = None;
 
     for source_path_str in &source_paths {
@@ -113,7 +218,23 @@ pub fn copy_items(source_paths: Vec<String>, destination_path: String) -> FileOp
         } else {
             let initial_dest = destination.join(&file_name);
             if initial_dest.exists() {
-                get_unique_destination_path(destination, &file_name)
+                match resolution {
+                    ConflictResolution::Skip => {
+                        skipped_count += 1;
+                        continue;
+                    }
+                    ConflictResolution::Replace => {
+                        if let Err(error) = remove_dir_or_file(&initial_dest) {
+                            failed_count += 1;
+                            last_error = Some(error);
+                            continue;
+                        }
+                        initial_dest
+                    }
+                    ConflictResolution::AutoRename => {
+                        get_unique_destination_path(destination, &file_name)
+                    }
+                }
             } else {
                 initial_dest
             }
@@ -141,12 +262,16 @@ pub fn copy_items(source_paths: Vec<String>, destination_path: String) -> FileOp
         error: last_error,
         copied_count: Some(copied_count),
         failed_count: Some(failed_count),
+        skipped_count: Some(skipped_count),
     }
 }
 
 #[tauri::command]
-pub fn move_items(source_paths: Vec<String>, destination_path: String) -> FileOperationResult {
+pub fn move_items(source_paths: Vec<String>, destination_path: String, conflict_resolution: Option<String>) -> FileOperationResult {
     let destination = Path::new(&destination_path);
+    let resolution = conflict_resolution
+        .map(|value| ConflictResolution::from_str(&value))
+        .unwrap_or(ConflictResolution::Skip);
 
     if !destination.exists() {
         return FileOperationResult {
@@ -154,6 +279,7 @@ pub fn move_items(source_paths: Vec<String>, destination_path: String) -> FileOp
             error: Some(format!("Destination path does not exist: {}", destination_path)),
             copied_count: None,
             failed_count: None,
+            skipped_count: None,
         };
     }
 
@@ -163,11 +289,13 @@ pub fn move_items(source_paths: Vec<String>, destination_path: String) -> FileOp
             error: Some(format!("Destination is not a directory: {}", destination_path)),
             copied_count: None,
             failed_count: None,
+            skipped_count: None,
         };
     }
 
     let mut moved_count: u32 = 0;
     let mut failed_count: u32 = 0;
+    let mut skipped_count: u32 = 0;
     let mut last_error: Option<String> = None;
 
     for source_path_str in &source_paths {
@@ -200,33 +328,45 @@ pub fn move_items(source_paths: Vec<String>, destination_path: String) -> FileOp
 
         let dest_path = destination.join(&file_name);
 
-        if dest_path.exists() {
-            failed_count += 1;
-            last_error = Some(format!("Destination already exists: {}", dest_path.display()));
-            continue;
-        }
+        let final_dest_path = if dest_path.exists() {
+            match resolution {
+                ConflictResolution::Skip => {
+                    skipped_count += 1;
+                    continue;
+                }
+                ConflictResolution::Replace => {
+                    if let Err(error) = remove_dir_or_file(&dest_path) {
+                        failed_count += 1;
+                        last_error = Some(error);
+                        continue;
+                    }
+                    dest_path
+                }
+                ConflictResolution::AutoRename => {
+                    get_unique_destination_path(destination, &file_name)
+                }
+            }
+        } else {
+            dest_path
+        };
 
-        let result = fs::rename(source, &dest_path);
+        let result = fs::rename(source, &final_dest_path);
 
         match result {
             Ok(()) => moved_count += 1,
             Err(error) => {
                 if error.raw_os_error() == Some(17) || error.raw_os_error() == Some(18) {
                     let copy_result = if source.is_dir() {
-                        copy_dir_recursive(source, &dest_path)
+                        copy_dir_recursive(source, &final_dest_path)
                     } else {
-                        fs::copy(source, &dest_path)
+                        fs::copy(source, &final_dest_path)
                             .map(|_| ())
                             .map_err(|copy_error| copy_error.to_string())
                     };
 
                     match copy_result {
                         Ok(()) => {
-                            if source.is_dir() {
-                                let _ = fs::remove_dir_all(source);
-                            } else {
-                                let _ = fs::remove_file(source);
-                            }
+                            let _ = remove_dir_or_file(source);
                             moved_count += 1;
                         }
                         Err(copy_error) => {
@@ -242,11 +382,12 @@ pub fn move_items(source_paths: Vec<String>, destination_path: String) -> FileOp
         }
     }
 
-        FileOperationResult {
+    FileOperationResult {
         success: failed_count == 0,
         error: last_error,
         copied_count: Some(moved_count),
         failed_count: Some(failed_count),
+        skipped_count: Some(skipped_count),
     }
 }
 
@@ -260,6 +401,7 @@ pub fn rename_item(source_path: String, new_name: String) -> FileOperationResult
             error: Some(format!("Source path does not exist: {}", source_path)),
             copied_count: None,
             failed_count: None,
+            skipped_count: None,
         };
     }
 
@@ -271,6 +413,7 @@ pub fn rename_item(source_path: String, new_name: String) -> FileOperationResult
                 error: Some("Cannot determine parent directory".to_string()),
                 copied_count: None,
                 failed_count: None,
+                skipped_count: None,
             };
         }
     };
@@ -283,6 +426,7 @@ pub fn rename_item(source_path: String, new_name: String) -> FileOperationResult
             error: Some(format!("A file or folder with the name '{}' already exists", new_name)),
             copied_count: None,
             failed_count: None,
+            skipped_count: None,
         };
     }
 
@@ -292,12 +436,14 @@ pub fn rename_item(source_path: String, new_name: String) -> FileOperationResult
             error: None,
             copied_count: Some(1),
             failed_count: Some(0),
+            skipped_count: Some(0),
         },
         Err(error) => FileOperationResult {
             success: false,
             error: Some(error.to_string()),
             copied_count: None,
             failed_count: Some(1),
+            skipped_count: None,
         },
     }
 }
@@ -339,6 +485,7 @@ pub fn delete_items(paths: Vec<String>, use_trash: bool) -> FileOperationResult 
         error: last_error,
         copied_count: Some(deleted_count),
         failed_count: Some(failed_count),
+        skipped_count: Some(0),
     }
 }
 
@@ -352,12 +499,14 @@ pub fn ensure_directory(directory_path: String) -> FileOperationResult {
             error: None,
             copied_count: Some(1),
             failed_count: Some(0),
+            skipped_count: Some(0),
         },
         Err(error) => FileOperationResult {
             success: false,
             error: Some(error.to_string()),
             copied_count: None,
             failed_count: Some(1),
+            skipped_count: None,
         },
     }
 }
@@ -372,6 +521,7 @@ pub fn create_item(directory_path: String, name: String, is_directory: bool) -> 
             error: Some("Name cannot be empty".to_string()),
             copied_count: None,
             failed_count: None,
+            skipped_count: None,
         };
     }
 
@@ -381,6 +531,7 @@ pub fn create_item(directory_path: String, name: String, is_directory: bool) -> 
             error: Some("Name contains invalid path separators".to_string()),
             copied_count: None,
             failed_count: None,
+            skipped_count: None,
         };
     }
 
@@ -392,6 +543,7 @@ pub fn create_item(directory_path: String, name: String, is_directory: bool) -> 
             error: Some(format!("Directory does not exist: {}", directory_path)),
             copied_count: None,
             failed_count: None,
+            skipped_count: None,
         };
     }
 
@@ -401,6 +553,7 @@ pub fn create_item(directory_path: String, name: String, is_directory: bool) -> 
             error: Some(format!("Path is not a directory: {}", directory_path)),
             copied_count: None,
             failed_count: None,
+            skipped_count: None,
         };
     }
 
@@ -412,6 +565,7 @@ pub fn create_item(directory_path: String, name: String, is_directory: bool) -> 
             error: Some(format!("Path already exists: {}", dest_path.display())),
             copied_count: None,
             failed_count: None,
+            skipped_count: None,
         };
     }
 
@@ -432,12 +586,14 @@ pub fn create_item(directory_path: String, name: String, is_directory: bool) -> 
             error: None,
             copied_count: Some(1),
             failed_count: Some(0),
+            skipped_count: Some(0),
         },
         Err(error) => FileOperationResult {
             success: false,
             error: Some(error),
             copied_count: None,
             failed_count: Some(1),
+            skipped_count: None,
         },
     }
 }

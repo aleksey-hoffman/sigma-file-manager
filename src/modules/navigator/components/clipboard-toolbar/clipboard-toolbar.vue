@@ -147,7 +147,7 @@ function openCollapsedPopover() {
 <template>
   <Transition name="clipboard-slide">
     <div
-      v-if="clipboardStore.hasItems"
+      v-if="clipboardStore.showToolbar"
       class="clipboard-toolbar-container"
     >
       <Popover
