@@ -21,11 +21,11 @@ export function useFileDropOperation() {
     operationType: 'copy' | 'move';
     pendingResolve: ((value: ConflictResolution | null) => void) | null;
   }>({
-    isOpen: false,
-    conflicts: [],
-    operationType: 'copy',
-    pendingResolve: null,
-  });
+        isOpen: false,
+        conflicts: [],
+        operationType: 'copy',
+        pendingResolve: null,
+      });
 
   function showConflictDialog(
     conflicts: ConflictItem[],

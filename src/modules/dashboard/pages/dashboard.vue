@@ -164,237 +164,237 @@ async function handleDeleteTag(tagId: string) {
         default-value="favorites"
         class="dashboard-page__tabs"
       >
-      <TabsList class="dashboard-page__tabs-list">
-        <TabsTrigger
+        <TabsList class="dashboard-page__tabs-list">
+          <TabsTrigger
+            value="favorites"
+            class="dashboard-page__tab-trigger"
+          >
+            <StarIcon :size="16" />
+            <span>{{ t('dashboard.tabs.favorites') }}</span>
+            <span
+              v-if="favoriteItems.length > 0"
+              class="dashboard-page__tab-badge"
+            >
+              {{ favoriteItems.length }}
+            </span>
+          </TabsTrigger>
+          <TabsTrigger
+            value="tagged"
+            class="dashboard-page__tab-trigger"
+          >
+            <TagIcon :size="16" />
+            <span>{{ t('dashboard.tabs.tagged') }}</span>
+            <span
+              v-if="taggedItems.length > 0"
+              class="dashboard-page__tab-badge"
+            >
+              {{ taggedItems.length }}
+            </span>
+          </TabsTrigger>
+          <TabsTrigger
+            value="frequent"
+            class="dashboard-page__tab-trigger"
+          >
+            <TrendingUpIcon :size="16" />
+            <span>{{ t('dashboard.tabs.frequent') }}</span>
+            <span
+              v-if="frequentItems.length > 0"
+              class="dashboard-page__tab-badge"
+            >
+              {{ frequentItems.length }}
+            </span>
+          </TabsTrigger>
+          <TabsTrigger
+            value="history"
+            class="dashboard-page__tab-trigger"
+          >
+            <ClockIcon :size="16" />
+            <span>{{ t('dashboard.tabs.history') }}</span>
+            <span
+              v-if="historyItems.length > 0"
+              class="dashboard-page__tab-badge"
+            >
+              {{ historyItems.length }}
+            </span>
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent
           value="favorites"
-          class="dashboard-page__tab-trigger"
+          class="dashboard-page__tab-content"
         >
-          <StarIcon :size="16" />
-          <span>{{ t('dashboard.tabs.favorites') }}</span>
-          <span
-            v-if="favoriteItems.length > 0"
-            class="dashboard-page__tab-badge"
+          <DashboardActionBar
+            :is-empty="favoriteItems.length === 0"
+            @clear-all="userStatsStore.clearAllFavorites()"
+          />
+          <DashboardEmptyState
+            v-if="favoriteItems.length === 0"
+            type="favorites"
+            :title="t('dashboard.emptyFavorites')"
+            :description="t('dashboard.emptyFavoritesDescription')"
+          />
+          <div
+            v-else
+            class="dashboard-page__items-grid"
           >
-            {{ favoriteItems.length }}
-          </span>
-        </TabsTrigger>
-        <TabsTrigger
+            <DropTargetCard
+              v-for="item in favoriteItems"
+              :key="item.path"
+              :path="item.path"
+              :enabled="!isFavoriteFile(item)"
+            >
+              <EntryCard
+                :path="item.path"
+                @click="openFavoriteItem(item)"
+              >
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  class="entry-card__action"
+                  @click="removeFavorite(item.path, $event)"
+                >
+                  <XIcon :size="14" />
+                </Button>
+              </EntryCard>
+            </DropTargetCard>
+          </div>
+        </TabsContent>
+
+        <TabsContent
           value="tagged"
-          class="dashboard-page__tab-trigger"
+          class="dashboard-page__tab-content"
         >
-          <TagIcon :size="16" />
-          <span>{{ t('dashboard.tabs.tagged') }}</span>
-          <span
-            v-if="taggedItems.length > 0"
-            class="dashboard-page__tab-badge"
+          <DashboardActionBar
+            :is-empty="taggedItems.length === 0"
+            @clear-all="userStatsStore.clearAllTagged()"
+          />
+          <DashboardEmptyState
+            v-if="taggedItems.length === 0"
+            type="tagged"
+            :title="t('dashboard.emptyTagged')"
+            :description="t('dashboard.emptyTaggedDescription')"
+          />
+          <div
+            v-else
+            class="dashboard-page__items-grid"
           >
-            {{ taggedItems.length }}
-          </span>
-        </TabsTrigger>
-        <TabsTrigger
+            <DropTargetCard
+              v-for="item in taggedItems"
+              :key="item.path"
+              :path="item.path"
+              :enabled="!item.isFile"
+            >
+              <EntryCard
+                :path="item.path"
+                :is-file="item.isFile"
+                @click="openItem(item.path, item.isFile)"
+              >
+                <template #footer>
+                  <div class="entry-card__tags">
+                    <span
+                      v-for="tagId in item.tagIds"
+                      :key="tagId"
+                      class="entry-card__tag"
+                      :style="{ backgroundColor: getTagById(tagId)?.color + '25', color: getTagById(tagId)?.color }"
+                    >
+                      {{ getTagById(tagId)?.name }}
+                    </span>
+                  </div>
+                  <TagSelector
+                    :tags="tags"
+                    :selected-tag-ids="item.tagIds"
+                    :allow-create="true"
+                    trigger-variant="compact"
+                    @toggle-tag="(tagId) => handleToggleTagOnItem(item, tagId)"
+                    @create-tag="(name) => handleCreateTagForItem(item, name)"
+                    @delete-tag="handleDeleteTag"
+                  />
+                </template>
+              </EntryCard>
+            </DropTargetCard>
+          </div>
+        </TabsContent>
+
+        <TabsContent
           value="frequent"
-          class="dashboard-page__tab-trigger"
+          class="dashboard-page__tab-content"
         >
-          <TrendingUpIcon :size="16" />
-          <span>{{ t('dashboard.tabs.frequent') }}</span>
-          <span
-            v-if="frequentItems.length > 0"
-            class="dashboard-page__tab-badge"
+          <DashboardActionBar
+            :is-empty="frequentItems.length === 0"
+            @clear-all="userStatsStore.clearAllFrequent()"
+          />
+          <DashboardEmptyState
+            v-if="frequentItems.length === 0"
+            type="frequent"
+            :title="t('dashboard.emptyFrequent')"
+            :description="t('dashboard.emptyFrequentDescription')"
+          />
+          <div
+            v-else
+            class="dashboard-page__items-grid"
           >
-            {{ frequentItems.length }}
-          </span>
-        </TabsTrigger>
-        <TabsTrigger
-          value="history"
-          class="dashboard-page__tab-trigger"
-        >
-          <ClockIcon :size="16" />
-          <span>{{ t('dashboard.tabs.history') }}</span>
-          <span
-            v-if="historyItems.length > 0"
-            class="dashboard-page__tab-badge"
-          >
-            {{ historyItems.length }}
-          </span>
-        </TabsTrigger>
-      </TabsList>
-
-      <TabsContent
-        value="favorites"
-        class="dashboard-page__tab-content"
-      >
-        <DashboardActionBar
-          :is-empty="favoriteItems.length === 0"
-          @clear-all="userStatsStore.clearAllFavorites()"
-        />
-        <DashboardEmptyState
-          v-if="favoriteItems.length === 0"
-          type="favorites"
-          :title="t('dashboard.emptyFavorites')"
-          :description="t('dashboard.emptyFavoritesDescription')"
-        />
-        <div
-          v-else
-          class="dashboard-page__items-grid"
-        >
-          <DropTargetCard
-            v-for="item in favoriteItems"
-            :key="item.path"
-            :path="item.path"
-            :enabled="!isFavoriteFile(item)"
-          >
-            <EntryCard
+            <DropTargetCard
+              v-for="item in frequentItems"
+              :key="item.path"
               :path="item.path"
-              @click="openFavoriteItem(item)"
+              :enabled="!item.isFile"
             >
-              <Button
-                variant="ghost"
-                size="icon"
-                class="entry-card__action"
-                @click="removeFavorite(item.path, $event)"
+              <EntryCard
+                :path="item.path"
+                :is-file="item.isFile"
+                @click="openFrequentItem(item)"
               >
-                <XIcon :size="14" />
-              </Button>
-            </EntryCard>
-          </DropTargetCard>
-        </div>
-      </TabsContent>
-
-      <TabsContent
-        value="tagged"
-        class="dashboard-page__tab-content"
-      >
-        <DashboardActionBar
-          :is-empty="taggedItems.length === 0"
-          @clear-all="userStatsStore.clearAllTagged()"
-        />
-        <DashboardEmptyState
-          v-if="taggedItems.length === 0"
-          type="tagged"
-          :title="t('dashboard.emptyTagged')"
-          :description="t('dashboard.emptyTaggedDescription')"
-        />
-        <div
-          v-else
-          class="dashboard-page__items-grid"
-        >
-          <DropTargetCard
-            v-for="item in taggedItems"
-            :key="item.path"
-            :path="item.path"
-            :enabled="!item.isFile"
-          >
-            <EntryCard
-              :path="item.path"
-              :is-file="item.isFile"
-              @click="openItem(item.path, item.isFile)"
-            >
-              <template #footer>
-                <div class="entry-card__tags">
-                  <span
-                    v-for="tagId in item.tagIds"
-                    :key="tagId"
-                    class="entry-card__tag"
-                    :style="{ backgroundColor: getTagById(tagId)?.color + '25', color: getTagById(tagId)?.color }"
-                  >
-                    {{ getTagById(tagId)?.name }}
-                  </span>
+                <div class="entry-card__stats">
+                  <span class="entry-card__badge">{{ t('dashboard.openedCount', item.openCount) }}</span>
                 </div>
-                <TagSelector
-                  :tags="tags"
-                  :selected-tag-ids="item.tagIds"
-                  :allow-create="true"
-                  trigger-variant="compact"
-                  @toggle-tag="(tagId) => handleToggleTagOnItem(item, tagId)"
-                  @create-tag="(name) => handleCreateTagForItem(item, name)"
-                  @delete-tag="handleDeleteTag"
-                />
-              </template>
-            </EntryCard>
-          </DropTargetCard>
-        </div>
-      </TabsContent>
+              </EntryCard>
+            </DropTargetCard>
+          </div>
+        </TabsContent>
 
-      <TabsContent
-        value="frequent"
-        class="dashboard-page__tab-content"
-      >
-        <DashboardActionBar
-          :is-empty="frequentItems.length === 0"
-          @clear-all="userStatsStore.clearAllFrequent()"
-        />
-        <DashboardEmptyState
-          v-if="frequentItems.length === 0"
-          type="frequent"
-          :title="t('dashboard.emptyFrequent')"
-          :description="t('dashboard.emptyFrequentDescription')"
-        />
-        <div
-          v-else
-          class="dashboard-page__items-grid"
+        <TabsContent
+          value="history"
+          class="dashboard-page__tab-content"
         >
-          <DropTargetCard
-            v-for="item in frequentItems"
-            :key="item.path"
-            :path="item.path"
-            :enabled="!item.isFile"
+          <DashboardActionBar
+            :is-empty="historyItems.length === 0"
+            @clear-all="userStatsStore.clearHistory()"
+          />
+          <DashboardEmptyState
+            v-if="historyItems.length === 0"
+            type="history"
+            :title="t('dashboard.emptyHistory')"
+            :description="t('dashboard.emptyHistoryDescription')"
+          />
+          <div
+            v-else
+            class="dashboard-page__items-grid"
           >
-            <EntryCard
+            <DropTargetCard
+              v-for="item in historyItems"
+              :key="`${item.path}-${item.openedAt}`"
               :path="item.path"
-              :is-file="item.isFile"
-              @click="openFrequentItem(item)"
+              :enabled="!item.isFile"
             >
-              <div class="entry-card__stats">
-                <span class="entry-card__badge">{{ t('dashboard.openedCount', item.openCount) }}</span>
-              </div>
-            </EntryCard>
-          </DropTargetCard>
-        </div>
-      </TabsContent>
-
-      <TabsContent
-        value="history"
-        class="dashboard-page__tab-content"
-      >
-        <DashboardActionBar
-          :is-empty="historyItems.length === 0"
-          @clear-all="userStatsStore.clearHistory()"
-        />
-        <DashboardEmptyState
-          v-if="historyItems.length === 0"
-          type="history"
-          :title="t('dashboard.emptyHistory')"
-          :description="t('dashboard.emptyHistoryDescription')"
-        />
-        <div
-          v-else
-          class="dashboard-page__items-grid"
-        >
-          <DropTargetCard
-            v-for="item in historyItems"
-            :key="`${item.path}-${item.openedAt}`"
-            :path="item.path"
-            :enabled="!item.isFile"
-          >
-            <EntryCard
-              :path="item.path"
-              :is-file="item.isFile"
-              @click="openHistoryItem(item)"
-            >
-              <span class="entry-card__time">{{ formatRelativeTime(item.openedAt) }}</span>
-              <Button
-                variant="ghost"
-                size="icon"
-                class="entry-card__action"
-                @click="removeHistoryItem(item.path, item.openedAt, $event)"
+              <EntryCard
+                :path="item.path"
+                :is-file="item.isFile"
+                @click="openHistoryItem(item)"
               >
-                <XIcon :size="14" />
-              </Button>
-            </EntryCard>
-          </DropTargetCard>
-        </div>
-      </TabsContent>
-    </Tabs>
+                <span class="entry-card__time">{{ formatRelativeTime(item.openedAt) }}</span>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  class="entry-card__action"
+                  @click="removeHistoryItem(item.path, item.openedAt, $event)"
+                >
+                  <XIcon :size="14" />
+                </Button>
+              </EntryCard>
+            </DropTargetCard>
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
     <FileBrowserConflictDialog
       v-model:open="conflictDialogState.isOpen"
