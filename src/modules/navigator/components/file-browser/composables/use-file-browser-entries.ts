@@ -6,7 +6,7 @@ import { computed, type Ref, type ComputedRef } from 'vue';
 import type { DirEntry } from '@/types/dir-entry';
 import type { ListSortColumn, ListSortDirection } from '@/types/user-settings';
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
-import { sortFileBrowserEntries } from '../utils/file-browser-sort';
+import { sortFileBrowserEntries } from '@/modules/navigator/components/file-browser/utils/file-browser-sort';
 
 type DirectoryContents = {
   entries: DirEntry[];

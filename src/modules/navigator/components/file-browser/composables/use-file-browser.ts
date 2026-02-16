@@ -24,7 +24,7 @@ import { useFileBrowserLifecycle } from './use-file-browser-lifecycle';
 import { useFileBrowserDrag } from './use-file-browser-drag';
 import { useFileBrowserExternalDrop } from './use-file-browser-external-drop';
 import { useVideoThumbnails } from './use-video-thumbnails';
-import { sortFileBrowserEntries } from '../utils/file-browser-sort';
+import { sortFileBrowserEntries } from '@/modules/navigator/components/file-browser/utils/file-browser-sort';
 
 export interface UseFileBrowserOptions {
   tab: () => Tab | undefined;
