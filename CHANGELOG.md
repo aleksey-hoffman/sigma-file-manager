@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Shared reusable `EmptyState` UI component (`src/components/ui/empty-state`) for consistent empty state presentation across the app;
 - Navigator toolbar "Create new" menu for quickly creating a new file or directory in the current path;
 - Column visibility customization for the list view layout;
+- Sortable columns in file browser list view;
 
 ### Removed
 

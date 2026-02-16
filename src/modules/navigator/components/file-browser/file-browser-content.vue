@@ -6,7 +6,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { FolderOpenIcon, InfoIcon, Columns3Icon } from 'lucide-vue-next';
+import {
+  FolderOpenIcon, InfoIcon, Columns3Icon, ArrowUpIcon, ArrowDownIcon,
+} from 'lucide-vue-next';
+import type { ListSortColumn } from '@/types/user-settings';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ContextMenu, ContextMenuTrigger } from '@/components/ui/context-menu';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -58,6 +61,19 @@ const listColumnsTemplate = computed(() => {
 function toggleColumnVisibility(column: 'items' | 'size' | 'modified', checked: boolean) {
   userSettingsStore.set(`navigator.listColumnVisibility.${column}`, checked);
 }
+
+const listSortColumn = computed(() => userSettingsStore.userSettings.navigator.listSortColumn);
+const listSortDirection = computed(() => userSettingsStore.userSettings.navigator.listSortDirection);
+
+function handleColumnHeaderClick(column: ListSortColumn) {
+  if (listSortColumn.value === column) {
+    userSettingsStore.set('navigator.listSortDirection', listSortDirection.value === 'asc' ? 'desc' : 'asc');
+  }
+  else {
+    userSettingsStore.set('navigator.listSortColumn', column);
+    userSettingsStore.set('navigator.listSortDirection', 'asc');
+  }
+}
 </script>
 
 <template>
@@ -70,23 +86,67 @@ function toggleColumnVisibility(column: 'items' | 'size' | 'modified', checked: 
       class="file-browser-list-view__header-container"
     >
       <div class="file-browser-list-view__header">
-        <span class="file-browser-list-view__header-item file-browser-list-view__header-name">{{ t('fileBrowser.name') }}</span>
-        <span
+        <button
+          type="button"
+          class="file-browser-list-view__header-item file-browser-list-view__header-item--sortable file-browser-list-view__header-name"
+          @click="handleColumnHeaderClick('name')"
+        >
+          {{ t('fileBrowser.name') }}
+          <ArrowUpIcon
+            v-if="listSortColumn === 'name' && listSortDirection === 'asc'"
+            :size="12"
+            class="file-browser-list-view__header-sort-icon"
+          />
+          <ArrowDownIcon
+            v-else-if="listSortColumn === 'name' && listSortDirection === 'desc'"
+            :size="12"
+            class="file-browser-list-view__header-sort-icon"
+          />
+        </button>
+        <button
           v-if="showItemsColumn"
-          class="file-browser-list-view__header-item file-browser-list-view__header-items"
-        >{{ t('items') }}</span>
+          type="button"
+          class="file-browser-list-view__header-item file-browser-list-view__header-item--sortable file-browser-list-view__header-items"
+          @click="handleColumnHeaderClick('items')"
+        >
+          {{ t('items') }}
+          <ArrowUpIcon
+            v-if="listSortColumn === 'items' && listSortDirection === 'asc'"
+            :size="12"
+            class="file-browser-list-view__header-sort-icon"
+          />
+          <ArrowDownIcon
+            v-else-if="listSortColumn === 'items' && listSortDirection === 'desc'"
+            :size="12"
+            class="file-browser-list-view__header-sort-icon"
+          />
+        </button>
         <Tooltip
           v-if="columnVisibility.size"
           :delay-duration="200"
         >
           <TooltipTrigger as-child>
-            <span class="file-browser-list-view__header-item file-browser-list-view__header-size file-browser-list-view__header-size--with-info">
+            <button
+              type="button"
+              class="file-browser-list-view__header-item file-browser-list-view__header-item--sortable file-browser-list-view__header-size file-browser-list-view__header-size--with-info"
+              @click="handleColumnHeaderClick('size')"
+            >
               {{ t('fileBrowser.size') }}
               <InfoIcon
                 :size="12"
                 class="file-browser-list-view__header-info-icon"
               />
-            </span>
+              <ArrowUpIcon
+                v-if="listSortColumn === 'size' && listSortDirection === 'asc'"
+                :size="12"
+                class="file-browser-list-view__header-sort-icon"
+              />
+              <ArrowDownIcon
+                v-else-if="listSortColumn === 'size' && listSortDirection === 'desc'"
+                :size="12"
+                class="file-browser-list-view__header-sort-icon"
+              />
+            </button>
           </TooltipTrigger>
           <TooltipContent
             side="bottom"
@@ -119,10 +179,24 @@ function toggleColumnVisibility(column: 'items' | 'size' | 'modified', checked: 
             </div>
           </TooltipContent>
         </Tooltip>
-        <span
+        <button
           v-if="columnVisibility.modified"
-          class="file-browser-list-view__header-item file-browser-list-view__header-modified"
-        >{{ t('fileBrowser.modified') }}</span>
+          type="button"
+          class="file-browser-list-view__header-item file-browser-list-view__header-item--sortable file-browser-list-view__header-modified"
+          @click="handleColumnHeaderClick('modified')"
+        >
+          {{ t('fileBrowser.modified') }}
+          <ArrowUpIcon
+            v-if="listSortColumn === 'modified' && listSortDirection === 'asc'"
+            :size="12"
+            class="file-browser-list-view__header-sort-icon"
+          />
+          <ArrowDownIcon
+            v-else-if="listSortColumn === 'modified' && listSortDirection === 'desc'"
+            :size="12"
+            class="file-browser-list-view__header-sort-icon"
+          />
+        </button>
       </div>
       <Popover
         :open="isColumnsPopoverOpen"
@@ -281,6 +355,24 @@ function toggleColumnVisibility(column: 'items' | 'size' | 'modified', checked: 
   align-items: center;
   padding-right: var(--file-browser-list-cell-padding-right);
   gap: 8px;
+}
+
+.file-browser-list-view__header-item--sortable {
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  text-transform: inherit;
+}
+
+.file-browser-list-view__header-item--sortable:hover {
+  color: hsl(var(--foreground));
+}
+
+.file-browser-list-view__header-sort-icon {
+  flex-shrink: 0;
+  opacity: 0.8;
 }
 
 .file-browser-list-view__header-info-icon {

@@ -9,6 +9,7 @@ import { useDismissalLayerStore } from '@/stores/runtime/dismissal-layer';
 import { useQuickViewStore } from '@/stores/runtime/quick-view';
 import { useGlobalSearchStore } from '@/stores/runtime/global-search';
 import { useClipboardStore } from '@/stores/runtime/clipboard';
+import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
 import type { DirEntry, DirContents } from '@/types/dir-entry';
 import type { Tab } from '@/types/workspaces';
 import { useFileBrowserNavigation } from './use-file-browser-navigation';
@@ -23,6 +24,7 @@ import { useFileBrowserLifecycle } from './use-file-browser-lifecycle';
 import { useFileBrowserDrag } from './use-file-browser-drag';
 import { useFileBrowserExternalDrop } from './use-file-browser-external-drop';
 import { useVideoThumbnails } from './use-video-thumbnails';
+import { sortFileBrowserEntries } from '../utils/file-browser-sort';
 
 export interface UseFileBrowserOptions {
   tab: () => Tab | undefined;
@@ -85,10 +87,20 @@ function setupNavigationDataSource(
   });
 
   const showHiddenFiles = computed(() => userSettingsStore.userSettings.navigator.showHiddenFiles);
+  const listSortColumn = computed(() => userSettingsStore.userSettings.navigator.listSortColumn);
+  const listSortDirection = computed(() => userSettingsStore.userSettings.navigator.listSortDirection);
+  const applyListSort = computed(() => options.layout() === 'list');
   const {
     entries: filteredEntries,
     isDirectoryEmpty: filteredIsDirectoryEmpty,
-  } = useFileBrowserEntries(navigation.dirContents, filter.filterQuery, showHiddenFiles);
+  } = useFileBrowserEntries(
+    navigation.dirContents,
+    filter.filterQuery,
+    showHiddenFiles,
+    listSortColumn,
+    listSortDirection,
+    applyListSort,
+  );
 
   const tabRef = toRef(options.tab);
 
@@ -130,11 +142,27 @@ function setupNavigationDataSource(
 
 function setupExternalDataSource(options: UseFileBrowserOptions): DataSource {
   const globalSearchStore = useGlobalSearchStore();
+  const userSettingsStore = useUserSettingsStore();
+  const dirSizesStore = useDirSizesStore();
   const getEntries = options.externalEntries ?? (() => []);
   const getBasePath = options.basePath ?? (() => '');
 
+  const listSortColumn = computed(() => userSettingsStore.userSettings.navigator.listSortColumn);
+  const listSortDirection = computed(() => userSettingsStore.userSettings.navigator.listSortDirection);
+
+  const entries = computed(() => {
+    const rawEntries = getEntries();
+
+    if (options.layout() !== 'list') {
+      return rawEntries;
+    }
+
+    const column = listSortColumn.value ?? 'name';
+    return sortFileBrowserEntries(rawEntries, column, listSortDirection.value, dirSizesStore);
+  });
+
   return {
-    entries: computed(() => getEntries()),
+    entries,
     currentPath: computed(() => getBasePath()),
     isDirectoryEmpty: computed(() => getEntries().length === 0),
     dirContents: ref(null),

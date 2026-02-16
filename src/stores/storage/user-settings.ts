@@ -81,6 +81,8 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
         size: true,
         modified: true,
       },
+      listSortColumn: null,
+      listSortDirection: 'asc',
     },
     globalSearch: {
       scanDepth: 6,

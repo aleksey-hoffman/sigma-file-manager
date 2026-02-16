@@ -121,7 +121,7 @@ defineExpose({
     />
 
     <FileBrowserContent
-      :layout="layout"
+      :layout="props.layout"
     />
 
     <FileBrowserStatusBar

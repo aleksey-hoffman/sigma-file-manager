@@ -180,6 +180,10 @@ export type ListColumnVisibility = {
   modified: boolean;
 };
 
+export type ListSortColumn = 'name' | 'items' | 'size' | 'modified';
+
+export type ListSortDirection = 'asc' | 'desc';
+
 export type UserSettingsNavigator = {
   layout: NavigatorLayout;
   infoPanel: UserSettingsNavigatorInfoPanel;
@@ -188,6 +192,8 @@ export type UserSettingsNavigator = {
   useSystemIconsForFiles: boolean;
   focusFilterOnTyping: boolean;
   listColumnVisibility: ListColumnVisibility;
+  listSortColumn: ListSortColumn | null;
+  listSortDirection: ListSortDirection;
 };
 
 export type UserSettingsNavigatorInfoPanel = {
