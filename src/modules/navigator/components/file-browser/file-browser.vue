@@ -4,26 +4,11 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import { ref, computed, nextTick, toRef } from 'vue';
-import { useUserSettingsStore } from '@/stores/storage/user-settings';
-import { useDismissalLayerStore } from '@/stores/runtime/dismissal-layer';
-import { useQuickViewStore } from '@/stores/runtime/quick-view';
-import { useGlobalSearchStore } from '@/stores/runtime/global-search';
-import { useClipboardStore } from '@/stores/runtime/clipboard';
+import { ref } from 'vue';
 import type { DirEntry } from '@/types/dir-entry';
 import type { Tab } from '@/types/workspaces';
-import { useFileBrowserNavigation } from './composables/use-file-browser-navigation';
-import { useFileBrowserSelection } from './composables/use-file-browser-selection';
-import { useFileBrowserEntries } from './composables/use-file-browser-entries';
-import { useFileBrowserFilter } from './composables/use-file-browser-filter';
-import { useFileBrowserFocus } from './composables/use-file-browser-focus';
-import { useFileBrowserDialogs } from './composables/use-file-browser-dialogs';
-import { useFileBrowserActions } from './composables/use-file-browser-actions';
-import { useFileBrowserKeyboardNavigation } from './composables/use-file-browser-keyboard-navigation';
-import { useFileBrowserLifecycle } from './composables/use-file-browser-lifecycle';
-import { useFileBrowserDrag } from './composables/use-file-browser-drag';
-import { useFileBrowserExternalDrop } from './composables/use-file-browser-external-drop';
-import { useVideoThumbnails } from './composables/use-video-thumbnails';
+import { useFileBrowser } from './composables/use-file-browser';
+import { provideFileBrowserContext } from './composables/use-file-browser-context';
 import FileBrowserContent from './file-browser-content.vue';
 import FileBrowserToolbar from './file-browser-toolbar.vue';
 import FileBrowserStatusBar from './file-browser-status-bar.vue';
@@ -38,281 +23,75 @@ const props = defineProps<{
   tab?: Tab;
   paneIndex?: number;
   layout?: 'list' | 'grid';
+  externalEntries?: DirEntry[];
+  basePath?: string;
+  hideToolbar?: boolean;
+  hideStatusBar?: boolean;
+  entryDescription?: (entry: DirEntry) => string | undefined;
 }>();
 
 const emit = defineEmits<{
   'update:selectedEntries': [entries: DirEntry[]];
   'update:currentDirEntry': [entry: DirEntry | null];
+  'openEntry': [entry: DirEntry];
 }>();
 
-const userSettingsStore = useUserSettingsStore();
-const dismissalLayerStore = useDismissalLayerStore();
-const quickViewStore = useQuickViewStore();
-const globalSearchStore = useGlobalSearchStore();
-const clipboardStore = useClipboardStore();
-const tabRef = toRef(props, 'tab');
 const fileBrowserRef = ref<HTMLElement | null>(null);
-const {
-  currentPath,
-  dirContents,
-  isLoading,
-  isRefreshing,
-  error,
-  pathInput,
-  canGoBack,
-  canGoForward,
-  parentPath,
-  readDir,
-  silentRefresh,
-  navigateToPath,
-  navigateToEntry,
-  navigateToParent,
-  navigateToHome,
-  goBack,
-  goForward,
-  refresh,
-  handlePathSubmit,
-  openFile,
-  init,
-} = useFileBrowserNavigation(
-  () => props.tab,
-  dirEntry => emit('update:currentDirEntry', dirEntry),
-  () => {
-    clearSelection();
-    resetMouseState();
-  },
-);
 
-const {
-  filterQuery,
-  isFilterOpen,
-  toggleFilter,
-  openFilter,
-  closeFilter,
-} = useFileBrowserFilter({
-  userSettingsStore,
-  dismissalLayerStore,
-  globalSearchStore,
-});
-
-const showHiddenFiles = computed(() => userSettingsStore.userSettings.navigator.showHiddenFiles);
-const {
-  entries,
-  isDirectoryEmpty,
-} = useFileBrowserEntries(dirContents, filterQuery, showHiddenFiles);
-
-const {
-  selectedEntries,
-  contextMenu,
-  renameState,
-  pendingFocusRequest,
-  clearSelection,
-  isEntrySelected,
-  replaceSelection,
-  handleEntryMouseDown,
-  handleEntryMouseUp,
-  handleEntryContextMenu,
-  handleContextMenuAction,
-  resetMouseState,
-  selectAll,
-  selectEntryByPath,
-  removeFromSelection,
-  copyItems,
-  cutItems,
-  pasteItems,
-  handleExternalDrop,
-  deleteItems,
-  startRename,
-  cancelRename,
-  confirmRename,
-  createNewItem,
-  clearPendingFocusRequest,
-  conflictDialogState,
-  handleConflictResolution,
-  handleConflictCancel,
-} = useFileBrowserSelection(
-  entries,
-  currentPath,
-  selectedItems => emit('update:selectedEntries', selectedItems),
-  async (entry) => {
-    if (entry.is_dir) {
-      await navigateToEntry(entry);
-    }
-    else {
-      await openFile(entry.path);
-    }
-  },
-  silentRefresh,
-);
-
-const { getVideoThumbnail } = useVideoThumbnails();
-const {
-  openWithState,
-  newItemDialogState,
-  isRenameDialogOpen,
-  isNewItemDialogOpen,
-  openOpenWithDialog,
-  closeOpenWithDialog,
-  openNewItemDialog,
-  handleRenameConfirm,
-  handleRenameCancel,
-  handleNewItemConfirm,
-  handleNewItemCancel,
-} = useFileBrowserDialogs({
-  renameState,
-  cancelRename,
-  confirmRename,
-  createNewItem,
-});
-
-const { entriesContainerRef, setEntriesContainerRef } = useFileBrowserFocus({
-  entries,
-  pendingFocusRequest,
-  currentPath,
-  selectEntryByPath,
-  clearPendingFocusRequest,
-});
-
-const {
-  isDragging,
-  dragItems,
-  operationType: dragOperationType,
-  cursorX: dragCursorX,
-  cursorY: dragCursorY,
-  isCrossPaneTarget,
-  handleDragMouseDown,
-} = useFileBrowserDrag({
-  selectedEntries,
-  currentPath,
-  componentRef: fileBrowserRef,
-  isEntrySelected,
-  replaceSelection,
-  entriesContainerRef,
-  onDrop: async (items, destinationPath, operation) => {
-    clipboardStore.isToolbarSuppressed = true;
-
-    if (operation === 'copy') {
-      copyItems(items);
-    }
-    else {
-      cutItems(items);
-    }
-
-    const success = await pasteItems(destinationPath);
-
-    if (!success && clipboardStore.hasItems) {
-      clipboardStore.clearClipboard();
-    }
-  },
-});
-
-const {
-  isExternalDragActive,
-  externalDragItemCount,
-  externalDragOperationType,
-  isCurrentDirLocked,
-  isTargetingEntry,
-} = useFileBrowserExternalDrop({
-  componentRef: fileBrowserRef,
-  currentPath,
-  entriesContainerRef,
-  onDrop: (sourcePaths, targetPath, operation) => {
-    handleExternalDrop(sourcePaths, targetPath, operation);
-  },
-});
-
-const {
-  quickView,
-  onContextMenuAction,
-  onEntryMouseDown,
-  onEntryMouseUp,
-} = useFileBrowserActions({
-  contextMenu,
-  selectedEntries,
-  quickViewStore,
-  handleContextMenuAction,
-  openOpenWithDialog,
-  handleEntryMouseDown,
-  handleEntryMouseUp,
-  handleDragMouseDown,
-  isDragging,
-});
-
-useFileBrowserLifecycle({
-  tabRef,
-  readDir,
-  init,
-});
-
-const {
-  navigateUp,
-  navigateDown,
-  navigateLeft,
-  navigateRight,
-  openSelected,
-  navigateBack,
-} = useFileBrowserKeyboardNavigation({
-  entries,
-  selectedEntries,
+const fb = useFileBrowser({
+  tab: () => props.tab,
   layout: () => props.layout,
-  selectEntryByPath,
-  goBack,
-  openEntry: async (entry) => {
-    if (entry.is_dir) {
-      await navigateToEntry(entry);
-    }
-    else {
-      await openFile(entry.path);
-    }
-  },
-  entriesContainerRef,
+  externalEntries: props.externalEntries ? () => props.externalEntries! : undefined,
+  basePath: props.basePath !== undefined ? () => props.basePath! : undefined,
+  onSelectedEntriesChange: entries => emit('update:selectedEntries', entries),
+  onCurrentDirEntryChange: entry => emit('update:currentDirEntry', entry),
+  onOpenEntry: entry => emit('openEntry', entry),
+  componentRef: fileBrowserRef,
 });
 
-async function selectFirstEntry() {
-  if (entries.value.length === 0) return;
-
-  const firstEntry = entries.value[0];
-  selectEntryByPath(firstEntry.path);
-  await nextTick();
-
-  if (entriesContainerRef.value) {
-    const element = entriesContainerRef.value.querySelector<HTMLElement>(
-      `[data-entry-path="${CSS.escape(firstEntry.path)}"]`,
-    );
-
-    if (element) {
-      element.scrollIntoView({
-        block: 'nearest',
-        inline: 'nearest',
-      });
-      element.focus({ preventScroll: true });
-    }
-  }
-}
+provideFileBrowserContext({
+  entries: fb.entries,
+  currentPath: fb.currentPath,
+  isLoading: fb.isLoading,
+  isDirectoryEmpty: fb.isDirectoryEmpty,
+  error: fb.error,
+  selectedEntries: fb.selectedEntries,
+  isEntrySelected: fb.isEntrySelected,
+  contextMenu: fb.contextMenu,
+  getVideoThumbnail: fb.getVideoThumbnail,
+  setEntriesContainerRef: fb.setEntriesContainerRef,
+  onEntryMouseDown: fb.onEntryMouseDown,
+  onEntryMouseUp: fb.onEntryMouseUp,
+  handleEntryContextMenu: fb.handleEntryContextMenu,
+  onContextMenuAction: fb.onContextMenuAction,
+  openOpenWithDialog: fb.openOpenWithDialog,
+  navigateToHome: fb.navigateToHome,
+  entryDescription: props.entryDescription,
+});
 
 defineExpose({
-  isFilterOpen,
-  selectedEntries,
-  toggleFilter,
-  openFilter,
-  closeFilter,
-  navigateToPath,
-  openFile,
-  clearSelection,
-  selectAll,
-  selectFirstEntry,
-  navigateUp,
-  navigateDown,
-  navigateLeft,
-  navigateRight,
-  openSelected,
-  navigateBack,
-  copyItems,
-  cutItems,
-  pasteItems,
-  deleteItems,
-  startRename,
-  quickView,
+  isFilterOpen: fb.isFilterOpen,
+  selectedEntries: fb.selectedEntries,
+  toggleFilter: fb.toggleFilter,
+  openFilter: fb.openFilter,
+  closeFilter: fb.closeFilter,
+  navigateToPath: fb.navigateToPath,
+  openFile: fb.openFile,
+  clearSelection: fb.clearSelection,
+  selectAll: fb.selectAll,
+  selectFirstEntry: fb.selectFirstEntry,
+  navigateUp: fb.navigateUp,
+  navigateDown: fb.navigateDown,
+  navigateLeft: fb.navigateLeft,
+  navigateRight: fb.navigateRight,
+  openSelected: fb.openSelected,
+  navigateBack: fb.navigateBack,
+  copyItems: fb.copyItems,
+  cutItems: fb.cutItems,
+  pasteItems: fb.pasteItems,
+  deleteItems: fb.deleteItems,
+  startRename: fb.startRename,
+  quickView: fb.quickView,
 });
 </script>
 
@@ -322,104 +101,91 @@ defineExpose({
     class="file-browser"
   >
     <FileBrowserToolbar
-      v-model:path-input="pathInput"
-      v-model:filter-query="filterQuery"
-      v-model:is-filter-open="isFilterOpen"
-      :can-go-back="canGoBack"
-      :can-go-forward="canGoForward"
-      :can-go-up="!!parentPath"
-      :is-loading="isLoading || isRefreshing"
-      @go-back="goBack"
-      @go-forward="goForward"
-      @go-up="navigateToParent"
-      @go-home="navigateToHome"
-      @refresh="refresh"
-      @submit-path="handlePathSubmit"
-      @navigate-to="navigateToPath"
-      @create-new-directory="openNewItemDialog('directory')"
-      @create-new-file="openNewItemDialog('file')"
+      v-if="!hideToolbar"
+      v-model:path-input="fb.pathInput.value"
+      v-model:filter-query="fb.filterQuery.value"
+      v-model:is-filter-open="fb.isFilterOpen.value"
+      :can-go-back="fb.canGoBack.value"
+      :can-go-forward="fb.canGoForward.value"
+      :can-go-up="!!fb.parentPath.value"
+      :is-loading="fb.isLoading.value || fb.isRefreshing.value"
+      @go-back="fb.goBack"
+      @go-forward="fb.goForward"
+      @go-up="fb.navigateToParent"
+      @go-home="fb.navigateToHome"
+      @refresh="fb.refresh"
+      @submit-path="fb.handlePathSubmit"
+      @navigate-to="fb.navigateToPath"
+      @create-new-directory="fb.openNewItemDialog('directory')"
+      @create-new-file="fb.openNewItemDialog('file')"
     />
 
     <FileBrowserContent
       :layout="layout"
-      :is-loading="isLoading"
-      :error="error"
-      :is-directory-empty="isDirectoryEmpty"
-      :entries="entries"
-      :selected-entries="selectedEntries"
-      :is-entry-selected="isEntrySelected"
-      :current-path="currentPath"
-      :context-menu="contextMenu"
-      :get-video-thumbnail="getVideoThumbnail"
-      :set-entries-container-ref="setEntriesContainerRef"
-      :on-entry-mouse-down="onEntryMouseDown"
-      :on-entry-mouse-up="onEntryMouseUp"
-      :handle-entry-context-menu="handleEntryContextMenu"
-      :on-context-menu-action="onContextMenuAction"
-      :open-open-with-dialog="openOpenWithDialog"
-      :navigate-to-home="navigateToHome"
     />
 
     <FileBrowserStatusBar
-      :dir-contents="dirContents"
-      :filtered-count="entries.length"
-      :selected-count="selectedEntries.length"
-      :selected-entries="selectedEntries"
-      @select-all="selectAll"
-      @deselect-all="clearSelection"
-      @remove-from-selection="removeFromSelection"
-      @context-menu-action="onContextMenuAction"
+      v-if="!hideStatusBar"
+      :dir-contents="fb.dirContents.value"
+      :filtered-count="fb.entries.value.length"
+      :selected-count="fb.selectedEntries.value.length"
+      :selected-entries="fb.selectedEntries.value"
+      @select-all="fb.selectAll"
+      @deselect-all="fb.clearSelection"
+      @remove-from-selection="fb.removeFromSelection"
+      @context-menu-action="fb.onContextMenuAction"
     />
 
     <FileBrowserRenameDialog
-      v-model:open="isRenameDialogOpen"
-      :entry="renameState.entry"
-      @confirm="handleRenameConfirm"
-      @cancel="handleRenameCancel"
+      v-model:open="fb.isRenameDialogOpen.value"
+      :entry="fb.renameState.value.entry"
+      @confirm="fb.handleRenameConfirm"
+      @cancel="fb.handleRenameCancel"
     />
 
     <FileBrowserNewItemDialog
-      v-model:open="isNewItemDialogOpen"
-      :type="newItemDialogState.type"
-      @confirm="handleNewItemConfirm"
-      @cancel="handleNewItemCancel"
+      v-model:open="fb.isNewItemDialogOpen.value"
+      :type="fb.newItemDialogState.value.type"
+      @confirm="fb.handleNewItemConfirm"
+      @cancel="fb.handleNewItemCancel"
     />
 
     <FileBrowserOpenWithDialog
-      v-model:open="openWithState.isOpen"
-      :entries="openWithState.entries"
-      @close="closeOpenWithDialog"
+      v-model:open="fb.openWithState.value.isOpen"
+      :entries="fb.openWithState.value.entries"
+      @close="fb.closeOpenWithDialog"
     />
 
     <FileBrowserDragOverlay
-      :is-active="isDragging"
-      :item-count="dragItems.length"
-      :operation-type="dragOperationType"
-      :cursor-x="dragCursorX"
-      :cursor-y="dragCursorY"
+      :is-active="fb.isDragging.value"
+      :item-count="fb.dragItems.value.length"
+      :operation-type="fb.dragOperationType.value"
+      :cursor-x="fb.dragCursorX.value"
+      :cursor-y="fb.dragCursorY.value"
     />
 
     <Transition name="cross-pane-drop-overlay">
       <div
-        v-if="isCrossPaneTarget"
+        v-if="fb.isCrossPaneTarget.value && !fb.isExternalMode"
         class="cross-pane-drop-overlay"
       />
     </Transition>
 
     <FileBrowserInboundDragOverlay
-      :is-active="isExternalDragActive"
-      :item-count="externalDragItemCount"
-      :operation-type="externalDragOperationType"
-      :current-dir-locked="isCurrentDirLocked"
-      :targeting-entry="isTargetingEntry"
+      v-if="!fb.isExternalMode"
+      :is-active="fb.isExternalDragActive.value"
+      :item-count="fb.externalDragItemCount.value"
+      :operation-type="fb.externalDragOperationType.value"
+      :current-dir-locked="fb.isCurrentDirLocked.value"
+      :targeting-entry="fb.isTargetingEntry.value"
     />
 
     <FileBrowserConflictDialog
-      v-model:open="conflictDialogState.isOpen"
-      :conflicts="conflictDialogState.conflicts"
-      :operation-type="conflictDialogState.operationType || 'copy'"
-      @resolve="handleConflictResolution"
-      @cancel="handleConflictCancel"
+      v-model:open="fb.conflictDialogState.value.isOpen"
+      :conflicts="fb.conflictDialogState.value.conflicts"
+      :operation-type="fb.conflictDialogState.value.operationType || 'copy'"
+      @resolve="fb.handleConflictResolution"
+      @cancel="fb.handleConflictCancel"
     />
   </div>
 </template>

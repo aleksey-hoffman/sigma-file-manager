@@ -5,60 +5,40 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
-import type { ComponentPublicInstance } from 'vue';
 import { FolderOpenIcon, InfoIcon } from 'lucide-vue-next';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ContextMenu, ContextMenuTrigger } from '@/components/ui/context-menu';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import type { DirEntry } from '@/types/dir-entry';
-import type { ContextMenuAction } from './types';
 import FileBrowserGridView from './file-browser-grid-view.vue';
 import FileBrowserListView from './file-browser-list-view.vue';
 import FileBrowserContextMenu from './file-browser-context-menu.vue';
 import FileBrowserLoading from './file-browser-loading.vue';
 import FileBrowserError from './file-browser-error.vue';
+import { useFileBrowserContext } from './composables/use-file-browser-context';
 
 const props = defineProps<{
   layout?: 'list' | 'grid';
-  isLoading: boolean;
-  error: string | null;
-  isDirectoryEmpty: boolean;
-  entries: DirEntry[];
-  selectedEntries: DirEntry[];
-  isEntrySelected: (entry: DirEntry) => boolean;
-  currentPath: string;
-  contextMenu: {
-    targetEntry: DirEntry | null;
-    selectedEntries: DirEntry[];
-  };
-  getVideoThumbnail: (entry: DirEntry) => string | undefined;
-  setEntriesContainerRef: (element: Element | ComponentPublicInstance | null) => void;
-  onEntryMouseDown: (entry: DirEntry, event: MouseEvent) => void;
-  onEntryMouseUp: (entry: DirEntry, event: MouseEvent) => void;
-  handleEntryContextMenu: (entry: DirEntry) => void;
-  onContextMenuAction: (action: ContextMenuAction) => void;
-  openOpenWithDialog: (entries: DirEntry[]) => void;
-  navigateToHome: () => void | Promise<void>;
 }>();
 
+const ctx = useFileBrowserContext();
 const { t } = useI18n();
 const legendSizeText = '1.5 GB';
 </script>
 
 <template>
   <div class="file-browser__content">
-    <FileBrowserLoading v-if="props.isLoading" />
+    <FileBrowserLoading v-if="ctx.isLoading.value" />
 
     <FileBrowserError
-      v-else-if="props.error"
-      :error="props.error"
-      @go-home="props.navigateToHome"
+      v-else-if="ctx.error.value"
+      :error="ctx.error.value"
+      @go-home="ctx.navigateToHome"
     />
 
     <EmptyState
-      v-else-if="props.isDirectoryEmpty"
+      v-else-if="ctx.isDirectoryEmpty.value"
       class="file-browser__empty-state-container"
       :icon="FolderOpenIcon"
       :title="t('fileBrowser.directoryIsEmpty')"
@@ -125,38 +105,20 @@ const legendSizeText = '1.5 GB';
         <ContextMenu>
           <ContextMenuTrigger as-child>
             <div
-              :ref="props.setEntriesContainerRef"
+              :ref="ctx.setEntriesContainerRef"
               class="file-browser__entries-container"
               @contextmenu.self.prevent
             >
               <FileBrowserGridView
                 v-if="props.layout === 'grid'"
-                :entries="props.entries"
-                :selected-entries="props.selectedEntries"
-                :is-entry-selected="props.isEntrySelected"
-                :current-path="props.currentPath"
-                :get-video-thumbnail="props.getVideoThumbnail"
-                @mousedown="props.onEntryMouseDown"
-                @mouseup="props.onEntryMouseUp"
-                @contextmenu="props.handleEntryContextMenu"
               />
               <FileBrowserListView
                 v-else
-                :entries="props.entries"
-                :selected-entries="props.selectedEntries"
-                :is-entry-selected="props.isEntrySelected"
-                :current-path="props.currentPath"
-                @mousedown="props.onEntryMouseDown"
-                @mouseup="props.onEntryMouseUp"
-                @contextmenu="props.handleEntryContextMenu"
               />
             </div>
           </ContextMenuTrigger>
           <FileBrowserContextMenu
-            v-if="props.contextMenu.selectedEntries.length > 0"
-            :selected-entries="props.contextMenu.selectedEntries"
-            @action="props.onContextMenuAction"
-            @open-custom-dialog="props.openOpenWithDialog(props.contextMenu.selectedEntries)"
+            v-if="ctx.contextMenu.value.selectedEntries.length > 0"
           />
         </ContextMenu>
       </ScrollArea>

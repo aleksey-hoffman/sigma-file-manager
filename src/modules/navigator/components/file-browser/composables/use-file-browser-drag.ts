@@ -29,6 +29,7 @@ interface CrossPaneInfo {
   componentRef: Ref<Element | null>;
   entriesContainerRef: Ref<Element | null>;
   currentPath: Ref<string>;
+  disableBackgroundDrop: boolean;
 }
 
 const crossPaneRegistry: CrossPaneInfo[] = [];
@@ -43,6 +44,7 @@ export function useFileBrowserDrag(options: {
   replaceSelection: (entry: DirEntry) => void;
   entriesContainerRef: Ref<Element | null>;
   onDrop: (items: DirEntry[], destinationPath: string, operation: DragOperationType) => void;
+  disableBackgroundDrop?: boolean;
 }) {
   const paneId = nextPaneId++;
   crossPaneRegistry.push({
@@ -50,6 +52,7 @@ export function useFileBrowserDrag(options: {
     componentRef: options.componentRef,
     entriesContainerRef: options.entriesContainerRef,
     currentPath: options.currentPath,
+    disableBackgroundDrop: !!options.disableBackgroundDrop,
   });
   const isDragging = ref(false);
   const dragItems = ref<DirEntry[]>([]);
@@ -189,8 +192,8 @@ export function useFileBrowserDrag(options: {
         && clientY <= rect.bottom
       ) {
         return {
-          path: pane.currentPath.value,
-          targetPaneId: pane.id,
+          path: pane.disableBackgroundDrop ? '' : pane.currentPath.value,
+          targetPaneId: pane.disableBackgroundDrop ? null : pane.id,
         };
       }
     }

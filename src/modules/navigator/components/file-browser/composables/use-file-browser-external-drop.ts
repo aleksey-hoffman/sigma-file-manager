@@ -17,6 +17,7 @@ export function useFileBrowserExternalDrop(options: {
   currentPath: Ref<string>;
   entriesContainerRef: Ref<Element | null>;
   onDrop: (sourcePaths: string[], targetPath: string, operation: DragOperationType) => void;
+  disableBackgroundDrop?: boolean;
 }) {
   const isExternalDragActive = ref(false);
   const externalDragItemCount = ref(0);
@@ -213,7 +214,9 @@ export function useFileBrowserExternalDrop(options: {
           const paths = (event.payload.paths as string[]) ?? [];
 
           const wasActive = isExternalDragActive.value;
-          const targetPath = currentDropTargetPath || options.currentPath.value;
+          const targetPath = options.disableBackgroundDrop
+            ? currentDropTargetPath
+            : (currentDropTargetPath || options.currentPath.value);
           const operation = externalDragOperationType.value;
 
           resetState();

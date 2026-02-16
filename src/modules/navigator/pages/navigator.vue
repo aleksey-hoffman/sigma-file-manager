@@ -9,6 +9,7 @@ import {
   ref,
   onMounted,
   onUnmounted,
+  watch,
 } from 'vue';
 import { TabBar } from '@/modules/tab-bar';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
@@ -41,6 +42,11 @@ type FileBrowserInstance = InstanceType<typeof FileBrowser> & {
   navigateBack?: () => void;
 };
 
+type GlobalSearchViewInstance = InstanceType<typeof GlobalSearchView> & {
+  getActiveFileBrowser?: () => FileBrowserInstance | undefined;
+  clearSelections?: () => void;
+};
+
 const workspacesStore = useWorkspacesStore();
 const userSettingsStore = useUserSettingsStore();
 const clipboardStore = useClipboardStore();
@@ -52,6 +58,8 @@ const dirSizesStore = useDirSizesStore();
 
 const paneRefsMap = ref<Map<string, FileBrowserInstance>>(new Map());
 const singlePaneRef = ref<FileBrowserInstance | null>(null);
+const globalSearchViewRef = ref<GlobalSearchViewInstance | null>(null);
+const isSearchSelectionActive = ref(false);
 const showInfoPanel = ref(true);
 const selectedEntries = ref<DirEntry[]>([]);
 const currentDirEntry = ref<DirEntry | null>(null);
@@ -84,7 +92,30 @@ const currentActivePath = computed(() => {
   return currentDirEntry.value?.path;
 });
 
+const wasSplitViewBeforeSearch = ref(false);
+
+watch(() => globalSearchStore.isOpen, (isOpen) => {
+  if (isOpen) {
+    wasSplitViewBeforeSearch.value = isSplitView.value;
+
+    if (isSplitView.value) {
+      workspacesStore.toggleSplitView();
+    }
+  }
+  else {
+    if (wasSplitViewBeforeSearch.value && !isSplitView.value) {
+      workspacesStore.toggleSplitView();
+    }
+
+    if (isSearchSelectionActive.value) {
+      isSearchSelectionActive.value = false;
+      selectedEntries.value = [];
+    }
+  }
+});
+
 function handleToggleSplitView() {
+  if (globalSearchStore.isOpen) return;
   workspacesStore.toggleSplitView();
 }
 
@@ -94,6 +125,8 @@ function handleToggleInfoPanel() {
 
 function handleSelectionChange(entries: DirEntry[], tabId?: string) {
   if (entries.length > 0) {
+    isSearchSelectionActive.value = false;
+    globalSearchViewRef.value?.clearSelections?.();
     selectedEntries.value = entries;
 
     if (tabId) {
@@ -106,7 +139,24 @@ function handleSelectionChange(entries: DirEntry[], tabId?: string) {
       });
     }
   }
-  else if (!tabId || tabId === activeTabId.value) {
+  else if (!isSearchSelectionActive.value && (!tabId || tabId === activeTabId.value)) {
+    selectedEntries.value = [];
+  }
+}
+
+function handleSearchSelectionChange(entries: DirEntry[]) {
+  if (entries.length > 0) {
+    isSearchSelectionActive.value = true;
+    selectedEntries.value = entries;
+
+    paneRefsMap.value.forEach(pane => pane.clearSelection());
+
+    if (singlePaneRef.value) {
+      singlePaneRef.value.clearSelection();
+    }
+  }
+  else {
+    isSearchSelectionActive.value = false;
     selectedEntries.value = [];
   }
 }
@@ -139,6 +189,14 @@ function getFilterState(pane: FileBrowserInstance): boolean {
 }
 
 function getActivePaneRef(): FileBrowserInstance | undefined {
+  if (isSearchSelectionActive.value && globalSearchStore.isOpen) {
+    const searchFileBrowser = globalSearchViewRef.value?.getActiveFileBrowser?.();
+
+    if (searchFileBrowser) {
+      return searchFileBrowser;
+    }
+  }
+
   if (!isSplitView.value) {
     return singlePaneRef.value || Array.from(paneRefsMap.value.values())[0];
   }
@@ -431,6 +489,7 @@ onUnmounted(() => {
   <NavigatorToolbarActions
     :is-split-view="isSplitView"
     :show-info-panel="showInfoPanel"
+    :is-global-search-open="globalSearchStore.isOpen"
     @toggle-split-view="handleToggleSplitView"
     @toggle-info-panel="handleToggleInfoPanel"
   />
@@ -454,12 +513,14 @@ onUnmounted(() => {
       <div class="navigator-page__panes-wrapper">
         <div class="navigator-page__panes-container">
           <GlobalSearchView
+            ref="globalSearchViewRef"
             v-show="globalSearchStore.isOpen"
+            class="navigator-page__search-panel"
             @close="globalSearchStore.close()"
             @open-entry="handleGlobalSearchOpenEntry"
+            @update:selected-entries="handleSearchSelectionChange"
           />
           <ResizablePanelGroup
-            v-show="!globalSearchStore.isOpen"
             direction="horizontal"
             class="navigator-page__panes"
           >
@@ -561,6 +622,7 @@ onUnmounted(() => {
 .navigator-page__panes {
   overflow: hidden;
   min-width: 0;
+  flex: 1;
   gap: 6px;
 }
 
@@ -573,9 +635,17 @@ onUnmounted(() => {
 }
 
 .navigator-page__panes-container {
+  display: flex;
   overflow: hidden;
   min-width: 0;
   flex: 1;
+  gap: 6px;
+}
+
+.navigator-page__search-panel {
+  min-width: 280px;
+  flex: 1;
+  border-radius: var(--radius-sm);
 }
 
 .navigator-page__pane {

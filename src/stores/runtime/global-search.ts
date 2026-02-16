@@ -449,19 +449,19 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
     }
 
     for (const favorite of userStatsStore.favorites) {
-      paths.add(favorite.path);
+      if (favorite.path) paths.add(favorite.path);
     }
 
     for (const historyItem of userStatsStore.history) {
-      paths.add(historyItem.path);
+      if (historyItem.path) paths.add(historyItem.path);
     }
 
     for (const frequentItem of userStatsStore.frequentItems) {
-      paths.add(frequentItem.path);
+      if (frequentItem.path) paths.add(frequentItem.path);
     }
 
     for (const taggedItem of userStatsStore.taggedItems) {
-      paths.add(taggedItem.path);
+      if (taggedItem.path) paths.add(taggedItem.path);
     }
 
     return Array.from(paths);

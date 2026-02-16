@@ -36,6 +36,7 @@ type LayoutType = 'list' | 'grid';
 const props = defineProps<{
   isSplitView: boolean;
   showInfoPanel: boolean;
+  isGlobalSearchOpen: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -169,6 +170,7 @@ function handleToggleHiddenFiles(checked: boolean) {
             variant="ghost"
             size="icon"
             :class="{ 'navigator-toolbar-actions__button--active': props.isSplitView }"
+            :disabled="props.isGlobalSearchOpen"
             @click="emit('toggle-split-view')"
           >
             <FlipHorizontalIcon

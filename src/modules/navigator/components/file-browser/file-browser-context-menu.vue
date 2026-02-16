@@ -9,32 +9,24 @@ import {
   ContextMenuItem,
   ContextMenuSeparator,
 } from '@/components/ui/context-menu';
-import type { DirEntry } from '@/types/dir-entry';
-import type { ContextMenuAction } from './types';
 import FileBrowserActionsMenu from './file-browser-actions-menu.vue';
+import { useFileBrowserContext } from './composables/use-file-browser-context';
 
-defineProps<{
-  selectedEntries: DirEntry[];
-}>();
+const ctx = useFileBrowserContext();
 
-const emit = defineEmits<{
-  action: [action: ContextMenuAction];
-  openCustomDialog: [];
-}>();
-
-function handleAction(action: ContextMenuAction) {
-  emit('action', action);
+function handleAction(action: Parameters<typeof ctx.onContextMenuAction>[0]) {
+  ctx.onContextMenuAction(action);
 }
 
 function handleOpenCustomDialog() {
-  emit('openCustomDialog');
+  ctx.openOpenWithDialog(ctx.contextMenu.value.selectedEntries);
 }
 </script>
 
 <template>
   <ContextMenuContent class="file-browser-context-menu">
     <FileBrowserActionsMenu
-      :selected-entries="selectedEntries"
+      :selected-entries="ctx.contextMenu.value.selectedEntries"
       :menu-item-component="ContextMenuItem"
       :menu-separator-component="ContextMenuSeparator"
       :is-context-menu="true"

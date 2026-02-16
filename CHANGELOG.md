@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Update global search layout and design to support drag and drop and other features;
 - Migrate auto update system;
 - Migrate drag and drop functionality and fs copy/move conflict resolver;
 - Home banner media editor;

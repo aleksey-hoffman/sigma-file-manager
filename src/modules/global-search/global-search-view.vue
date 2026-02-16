@@ -32,13 +32,15 @@ import { useSettingsStore } from '@/stores/runtime/settings';
 import { getDriveByPath } from '@/modules/home/composables/use-drives';
 import type { DirEntry } from '@/types/dir-entry';
 import type { DriveInfo } from '@/types/drive-info';
-import { formatBytes, formatDate } from '@/modules/navigator/components/file-browser/utils';
-import FileBrowserEntryIcon from '@/modules/navigator/components/file-browser/file-browser-entry-icon.vue';
+import FileBrowser from '@/modules/navigator/components/file-browser/file-browser.vue';
 import { SEARCH_CONSTANTS } from '@/constants';
 
+type FileBrowserInstance = InstanceType<typeof FileBrowser>;
+
 const emit = defineEmits<{
-  close: [];
-  openEntry: [entry: DirEntry];
+  'close': [];
+  'openEntry': [entry: DirEntry];
+  'update:selectedEntries': [entries: DirEntry[]];
 }>();
 
 const router = useRouter();
@@ -99,7 +101,6 @@ function toggleOptions() {
   showOptions.value = !showOptions.value;
 }
 
-const selectedPath = ref<string | null>(null);
 const collapsedDrives = ref<Set<string>>(new Set());
 
 const hasIndexData = computed(() => globalSearchStore.indexedItemCount > 0);
@@ -200,20 +201,60 @@ function isDriveCollapsed(driveRoot: string): boolean {
   return collapsedDrives.value.has(driveRoot);
 }
 
-function setSelected(entry: DirEntry) {
-  selectedPath.value = entry.path;
+function getEntryDescription(entry: DirEntry): string | undefined {
+  return entry.path;
 }
 
-function isSelected(entry: DirEntry): boolean {
-  return selectedPath.value === entry.path;
-}
+const searchFileBrowserRefs = ref<Map<string, FileBrowserInstance>>(new Map());
+const activeSearchDriveRoot = ref<string | null>(null);
 
-function handleEntryMouseUp(entry: DirEntry, event: MouseEvent) {
-  setSelected(entry);
-
-  if (event.detail >= 2) {
-    emit('openEntry', entry);
+function setSearchFileBrowserRef(element: FileBrowserInstance | null, driveRoot: string) {
+  if (element) {
+    searchFileBrowserRefs.value.set(driveRoot, element);
   }
+  else {
+    searchFileBrowserRefs.value.delete(driveRoot);
+  }
+}
+
+function handleSearchSelectionChange(entries: DirEntry[], driveRoot: string) {
+  if (entries.length > 0) {
+    activeSearchDriveRoot.value = driveRoot;
+
+    searchFileBrowserRefs.value.forEach((fileBrowser, key) => {
+      if (key !== driveRoot) {
+        fileBrowser.clearSelection();
+      }
+    });
+
+    emit('update:selectedEntries', entries);
+  }
+  else if (driveRoot === activeSearchDriveRoot.value) {
+    activeSearchDriveRoot.value = null;
+    emit('update:selectedEntries', []);
+  }
+}
+
+function getActiveFileBrowser(): FileBrowserInstance | undefined {
+  if (activeSearchDriveRoot.value) {
+    return searchFileBrowserRefs.value.get(activeSearchDriveRoot.value);
+  }
+
+  return undefined;
+}
+
+function clearSelections() {
+  searchFileBrowserRefs.value.forEach(fileBrowser => fileBrowser.clearSelection());
+  activeSearchDriveRoot.value = null;
+}
+
+defineExpose({
+  getActiveFileBrowser,
+  clearSelections,
+});
+
+function handleSearchEntryOpen(entry: DirEntry) {
+  emit('openEntry', entry);
 }
 
 function handleClose() {
@@ -506,47 +547,17 @@ onMounted(() => {
               v-if="!isDriveCollapsed(group.driveRoot)"
               class="global-search-view__list"
             >
-              <div class="global-search-view__list-header">
-                <span class="global-search-view__list-header-name">{{ t('fileBrowser.name') }}</span>
-                <span class="global-search-view__list-header-size">{{ t('fileBrowser.size') }}</span>
-                <span class="global-search-view__list-header-modified">{{ t('fileBrowser.modified') }}</span>
-              </div>
-
-              <button
-                v-for="entry in group.entries"
-                :key="entry.path"
-                class="global-search-view__entry"
-                :class="{
-                  'global-search-view__entry--dir': entry.is_dir,
-                  'global-search-view__entry--file': entry.is_file,
-                  'global-search-view__entry--hidden': entry.is_hidden,
-                }"
-                :data-selected="isSelected(entry) || undefined"
-                @mouseup="handleEntryMouseUp(entry, $event)"
-              >
-                <div class="global-search-view__overlay-container">
-                  <div class="global-search-view__overlay global-search-view__overlay--selected" />
-                  <div class="global-search-view__overlay global-search-view__overlay--hover" />
-                </div>
-                <div class="global-search-view__entry-name">
-                  <FileBrowserEntryIcon
-                    :entry="entry"
-                    :size="18"
-                    class="global-search-view__entry-icon"
-                    :class="{ 'global-search-view__entry-icon--folder': entry.is_dir }"
-                  />
-                  <div class="global-search-view__entry-name-content">
-                    <span class="global-search-view__entry-text">{{ entry.name }}</span>
-                    <span class="global-search-view__entry-path">{{ entry.path }}</span>
-                  </div>
-                </div>
-                <span class="global-search-view__entry-size">
-                  {{ entry.is_file ? formatBytes(entry.size) : entry.item_count !== null ? t('fileBrowser.itemCount', { count: entry.item_count }) : '' }}
-                </span>
-                <span class="global-search-view__entry-modified">
-                  {{ formatDate(entry.modified_time) }}
-                </span>
-              </button>
+              <FileBrowser
+                :ref="(element: any) => setSearchFileBrowserRef(element as FileBrowserInstance, group.driveRoot)"
+                :external-entries="group.entries"
+                :base-path="group.driveRoot"
+                layout="list"
+                :hide-toolbar="true"
+                :hide-status-bar="true"
+                :entry-description="getEntryDescription"
+                @open-entry="handleSearchEntryOpen"
+                @update:selected-entries="(entries: DirEntry[]) => handleSearchSelectionChange(entries, group.driveRoot)"
+              />
             </div>
           </div>
         </template>
@@ -562,12 +573,13 @@ onMounted(() => {
   display: flex;
   height: 100%;
   flex-direction: column;
+  border: 1px dashed hsl(var(--border));
 }
 
 .global-search-view__header {
   display: flex;
   align-items: center;
-  padding: 16px 4px;
+  padding: 8px;
   gap: 12px;
 }
 
@@ -839,134 +851,9 @@ onMounted(() => {
 }
 
 .global-search-view__list {
+  --file-browser-list-columns: minmax(120px, 1fr) minmax(50px, 100px) minmax(60px, 140px);
+
   display: flex;
   flex-direction: column;
-}
-
-.global-search-view__list-header {
-  position: sticky;
-  z-index: 2;
-  top: 0;
-  display: grid;
-  padding: 8px 16px;
-  border-bottom: 1px solid hsl(var(--border) / 50%);
-  backdrop-filter: blur(var(--backdrop-filter-blur));
-  background-color: hsl(var(--background) / 90%);
-  color: hsl(var(--muted-foreground));
-  font-size: 11px;
-  font-weight: 500;
-  grid-template-columns: minmax(120px, 1fr) minmax(50px, 100px) minmax(60px, 140px);
-  text-transform: uppercase;
-}
-
-.global-search-view__entry {
-  position: relative;
-  display: grid;
-  padding: 10px 16px;
-  border: none;
-  border-bottom: 1px solid hsl(var(--border) / 30%);
-  background: transparent;
-  color: hsl(var(--foreground));
-  cursor: default;
-  font-size: 13px;
-  grid-template-columns: minmax(120px, 1fr) minmax(50px, 100px) minmax(60px, 140px);
-  outline: none;
-  text-align: left;
-}
-
-.global-search-view__entry--hidden {
-  opacity: 0.5;
-}
-
-.global-search-view__entry-name {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  overflow: hidden;
-  align-items: center;
-  padding-right: 16px;
-  gap: 10px;
-}
-
-.global-search-view__entry-icon {
-  flex-shrink: 0;
-  color: hsl(var(--muted-foreground));
-}
-
-.global-search-view__entry-icon--folder {
-  color: hsl(var(--primary));
-}
-
-.global-search-view__entry-name-content {
-  display: flex;
-  overflow: hidden;
-  min-width: 0;
-  flex: 1;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.global-search-view__entry-text {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.global-search-view__entry-path {
-  overflow: hidden;
-  color: hsl(var(--muted-foreground));
-  font-size: 11px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.global-search-view__entry-size,
-.global-search-view__entry-modified {
-  position: relative;
-  z-index: 1;
-  overflow: hidden;
-  color: hsl(var(--muted-foreground));
-  font-size: 12px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.global-search-view__overlay-container {
-  position: absolute;
-  z-index: 0;
-  inset: 0;
-  pointer-events: none;
-}
-
-.global-search-view__overlay {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-
-.global-search-view__overlay--selected {
-  background-color: hsl(var(--primary) / 12%);
-  box-shadow: inset 0 0 0 1px hsl(var(--primary) / 40%);
-  opacity: 0;
-}
-
-.global-search-view__entry[data-selected] .global-search-view__overlay--selected {
-  opacity: 1;
-}
-
-.global-search-view__overlay--hover {
-  background-color: hsl(var(--foreground) / 5%);
-  opacity: 0;
-  transition: opacity 0.15s ease-out;
-}
-
-.global-search-view__entry:hover .global-search-view__overlay--hover {
-  opacity: 1;
-  transition: opacity 0s;
-}
-
-.global-search-view__entry:focus-visible {
-  outline: 2px solid hsl(var(--ring));
-  outline-offset: -2px;
 }
 </style>

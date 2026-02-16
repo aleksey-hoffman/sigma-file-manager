@@ -14,17 +14,15 @@ import { useClipboardStore } from '@/stores/runtime/clipboard';
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
 import { Skeleton } from '@/components/ui/skeleton';
 import FileBrowserEntryIcon from './file-browser-entry-icon.vue';
+import { useFileBrowserContext } from './composables/use-file-browser-context';
 
-defineProps<{
-  entries: DirEntry[];
-  selectedEntries: DirEntry[];
-  isEntrySelected: (entry: DirEntry) => boolean;
-  currentPath: string;
-}>();
+const ctx = useFileBrowserContext();
 
 const clipboardStore = useClipboardStore();
 const dirSizesStore = useDirSizesStore();
 const { clipboardItems, clipboardType, isToolbarSuppressed } = storeToRefs(clipboardStore);
+
+const hideItemsColumn = computed(() => !!ctx.entryDescription);
 
 const clipboardPathsMap = computed(() => {
   if (isToolbarSuppressed.value) {
@@ -76,12 +74,6 @@ function isDirLoadingWithProgress(entry: DirEntry): boolean {
   return !!(sizeInfo && sizeInfo.status === 'Loading' && sizeInfo.size > 0);
 }
 
-const emit = defineEmits<{
-  mousedown: [entry: DirEntry, event: MouseEvent];
-  mouseup: [entry: DirEntry, event: MouseEvent];
-  contextmenu: [entry: DirEntry];
-}>();
-
 function handleEntryKeydown(event: KeyboardEvent): void {
   if (event.code === 'Space') {
     event.preventDefault();
@@ -94,11 +86,11 @@ const { t } = useI18n();
 <template>
   <div class="file-browser-list-view">
     <div
-      :key="currentPath"
+      :key="ctx.currentPath.value"
       class="file-browser-list-view__list file-browser-list-view__list--animate"
     >
       <button
-        v-for="entry in entries"
+        v-for="entry in ctx.entries.value"
         :key="entry.path"
         class="file-browser-list-view__entry"
         :class="{
@@ -107,13 +99,13 @@ const { t } = useI18n();
           'file-browser-list-view__entry--hidden': entry.is_hidden,
         }"
         :data-entry-path="entry.path"
-        :data-selected="isEntrySelected(entry) || undefined"
+        :data-selected="ctx.isEntrySelected(entry) || undefined"
         :data-in-clipboard="clipboardPathsMap.has(entry.path) || undefined"
         :data-clipboard-type="clipboardPathsMap.get(entry.path) || undefined"
         :data-drop-target="entry.is_dir || undefined"
-        @mousedown="emit('mousedown', entry, $event)"
-        @mouseup="emit('mouseup', entry, $event)"
-        @contextmenu="emit('contextmenu', entry)"
+        @mousedown="ctx.onEntryMouseDown(entry, $event)"
+        @mouseup="ctx.onEntryMouseUp(entry, $event)"
+        @contextmenu="ctx.handleEntryContextMenu(entry)"
         @keydown="handleEntryKeydown"
       >
         <div class="file-browser-list-view__overlay-container">
@@ -128,9 +120,18 @@ const { t } = useI18n();
             class="file-browser-list-view__entry-icon"
             :class="{ 'file-browser-list-view__entry-icon--folder': entry.is_dir }"
           />
-          <span class="file-browser-list-view__entry-text">{{ entry.name }}</span>
+          <div class="file-browser-list-view__entry-name-content">
+            <span class="file-browser-list-view__entry-text">{{ entry.name }}</span>
+            <span
+              v-if="ctx.entryDescription?.(entry)"
+              class="file-browser-list-view__entry-description"
+            >{{ ctx.entryDescription!(entry) }}</span>
+          </div>
         </div>
-        <span class="file-browser-list-view__entry-items">
+        <span
+          v-if="!hideItemsColumn"
+          class="file-browser-list-view__entry-items"
+        >
           {{ getItemsDisplay(entry) }}
         </span>
         <span class="file-browser-list-view__entry-size">
@@ -210,8 +211,25 @@ const { t } = useI18n();
   color: hsl(var(--primary));
 }
 
+.file-browser-list-view__entry-name-content {
+  display: flex;
+  overflow: hidden;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+}
+
 .file-browser-list-view__entry-text {
   overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-browser-list-view__entry-description {
+  overflow: hidden;
+  color: hsl(var(--muted-foreground));
+  font-size: 11px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }

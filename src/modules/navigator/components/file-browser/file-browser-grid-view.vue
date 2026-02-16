@@ -21,14 +21,9 @@ import { useClipboardStore } from '@/stores/runtime/clipboard';
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
 import { Skeleton } from '@/components/ui/skeleton';
 import FileBrowserEntryIcon from './file-browser-entry-icon.vue';
+import { useFileBrowserContext } from './composables/use-file-browser-context';
 
-const props = defineProps<{
-  entries: DirEntry[];
-  selectedEntries: DirEntry[];
-  isEntrySelected: (entry: DirEntry) => boolean;
-  currentPath: string;
-  getVideoThumbnail: (entry: DirEntry) => string | undefined;
-}>();
+const ctx = useFileBrowserContext();
 
 const clipboardStore = useClipboardStore();
 const dirSizesStore = useDirSizesStore();
@@ -47,12 +42,6 @@ const clipboardPathsMap = computed(() => {
 
   return map;
 });
-
-const emit = defineEmits<{
-  mousedown: [entry: DirEntry, event: MouseEvent];
-  mouseup: [entry: DirEntry, event: MouseEvent];
-  contextmenu: [entry: DirEntry];
-}>();
 
 function handleEntryKeydown(event: KeyboardEvent): void {
   if (event.code === 'Space') {
@@ -104,7 +93,7 @@ const groupedEntries = computed<GroupedEntries>(() => {
   const videos: DirEntry[] = [];
   const others: DirEntry[] = [];
 
-  for (const entry of props.entries) {
+  for (const entry of ctx.entries.value) {
     if (entry.is_dir) {
       dirs.push(entry);
     }
@@ -130,7 +119,7 @@ const groupedEntries = computed<GroupedEntries>(() => {
 
 <template>
   <div
-    :key="currentPath"
+    :key="ctx.currentPath.value"
     class="file-browser-grid-view file-browser-grid-view--animate"
   >
     <template v-if="groupedEntries.dirs.length > 0">
@@ -146,13 +135,13 @@ const groupedEntries = computed<GroupedEntries>(() => {
           class="file-browser-grid-view__card file-browser-grid-view__card--dir"
           :class="{ 'file-browser-grid-view__card--hidden': entry.is_hidden }"
           :data-entry-path="entry.path"
-          :data-selected="isEntrySelected(entry) || undefined"
+          :data-selected="ctx.isEntrySelected(entry) || undefined"
           :data-in-clipboard="clipboardPathsMap.has(entry.path) || undefined"
           :data-clipboard-type="clipboardPathsMap.get(entry.path) || undefined"
           data-drop-target
-          @mousedown="emit('mousedown', entry, $event)"
-          @mouseup="emit('mouseup', entry, $event)"
-          @contextmenu="emit('contextmenu', entry)"
+          @mousedown="ctx.onEntryMouseDown(entry, $event)"
+          @mouseup="ctx.onEntryMouseUp(entry, $event)"
+          @contextmenu="ctx.handleEntryContextMenu(entry)"
           @keydown="handleEntryKeydown"
         >
           <div class="file-browser-grid-view__overlay-container">
@@ -204,12 +193,12 @@ const groupedEntries = computed<GroupedEntries>(() => {
           class="file-browser-grid-view__card file-browser-grid-view__card--file file-browser-grid-view__card--image"
           :class="{ 'file-browser-grid-view__card--hidden': entry.is_hidden }"
           :data-entry-path="entry.path"
-          :data-selected="isEntrySelected(entry) || undefined"
+          :data-selected="ctx.isEntrySelected(entry) || undefined"
           :data-in-clipboard="clipboardPathsMap.has(entry.path) || undefined"
           :data-clipboard-type="clipboardPathsMap.get(entry.path) || undefined"
-          @mousedown="emit('mousedown', entry, $event)"
-          @mouseup="emit('mouseup', entry, $event)"
-          @contextmenu="emit('contextmenu', entry)"
+          @mousedown="ctx.onEntryMouseDown(entry, $event)"
+          @mouseup="ctx.onEntryMouseUp(entry, $event)"
+          @contextmenu="ctx.handleEntryContextMenu(entry)"
           @keydown="handleEntryKeydown"
         >
           <div class="file-browser-grid-view__overlay-container">
@@ -249,16 +238,16 @@ const groupedEntries = computed<GroupedEntries>(() => {
           class="file-browser-grid-view__card file-browser-grid-view__card--file file-browser-grid-view__card--video"
           :class="{
             'file-browser-grid-view__card--hidden': entry.is_hidden,
-            'file-browser-grid-view__card--image': props.getVideoThumbnail(entry),
-            'file-browser-grid-view__card--icon-full': !props.getVideoThumbnail(entry),
+            'file-browser-grid-view__card--image': ctx.getVideoThumbnail(entry),
+            'file-browser-grid-view__card--icon-full': !ctx.getVideoThumbnail(entry),
           }"
           :data-entry-path="entry.path"
-          :data-selected="isEntrySelected(entry) || undefined"
+          :data-selected="ctx.isEntrySelected(entry) || undefined"
           :data-in-clipboard="clipboardPathsMap.has(entry.path) || undefined"
           :data-clipboard-type="clipboardPathsMap.get(entry.path) || undefined"
-          @mousedown="emit('mousedown', entry, $event)"
-          @mouseup="emit('mouseup', entry, $event)"
-          @contextmenu="emit('contextmenu', entry)"
+          @mousedown="ctx.onEntryMouseDown(entry, $event)"
+          @mouseup="ctx.onEntryMouseUp(entry, $event)"
+          @contextmenu="ctx.handleEntryContextMenu(entry)"
           @keydown="handleEntryKeydown"
         >
           <div class="file-browser-grid-view__overlay-container">
@@ -268,8 +257,8 @@ const groupedEntries = computed<GroupedEntries>(() => {
           </div>
           <div class="file-browser-grid-view__card-preview">
             <img
-              v-if="props.getVideoThumbnail(entry)"
-              :src="props.getVideoThumbnail(entry)"
+              v-if="ctx.getVideoThumbnail(entry)"
+              :src="ctx.getVideoThumbnail(entry)"
               :alt="entry.name"
               class="file-browser-grid-view__card-image"
             >
@@ -303,12 +292,12 @@ const groupedEntries = computed<GroupedEntries>(() => {
           class="file-browser-grid-view__card file-browser-grid-view__card--file file-browser-grid-view__card--other file-browser-grid-view__card--icon-full"
           :class="{ 'file-browser-grid-view__card--hidden': entry.is_hidden }"
           :data-entry-path="entry.path"
-          :data-selected="isEntrySelected(entry) || undefined"
+          :data-selected="ctx.isEntrySelected(entry) || undefined"
           :data-in-clipboard="clipboardPathsMap.has(entry.path) || undefined"
           :data-clipboard-type="clipboardPathsMap.get(entry.path) || undefined"
-          @mousedown="emit('mousedown', entry, $event)"
-          @mouseup="emit('mouseup', entry, $event)"
-          @contextmenu="emit('contextmenu', entry)"
+          @mousedown="ctx.onEntryMouseDown(entry, $event)"
+          @mouseup="ctx.onEntryMouseUp(entry, $event)"
+          @contextmenu="ctx.handleEntryContextMenu(entry)"
           @keydown="handleEntryKeydown"
         >
           <div class="file-browser-grid-view__overlay-container">
@@ -444,6 +433,7 @@ const groupedEntries = computed<GroupedEntries>(() => {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  pointer-events: none;
 }
 
 .file-browser-grid-view__card-icon {
