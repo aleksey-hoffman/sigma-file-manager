@@ -135,8 +135,11 @@ pub fn open_with_program(
 pub fn open_with_default(file_path: String) -> OpenWithResult {
     #[cfg(target_os = "windows")]
     {
+        use std::os::windows::process::CommandExt;
+        const CREATE_NO_WINDOW: u32 = 0x08000000;
         match Command::new("cmd")
             .args(["/C", "start", "", &file_path])
+            .creation_flags(CREATE_NO_WINDOW)
             .spawn()
         {
             Ok(_) => OpenWithResult {

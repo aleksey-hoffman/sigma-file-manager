@@ -85,8 +85,11 @@ pub fn get_terminal_icons() -> HashMap<String, String> {
 fn command_exists(cmd: &str) -> bool {
     #[cfg(target_os = "windows")]
     {
+        use std::os::windows::process::CommandExt;
+        const CREATE_NO_WINDOW: u32 = 0x08000000;
         Command::new("where")
             .arg(cmd)
+            .creation_flags(CREATE_NO_WINDOW)
             .output()
             .map(|output| output.status.success())
             .unwrap_or(false)
@@ -431,7 +434,13 @@ fn find_executable_path(commandline: &str) -> Option<String> {
 
 #[cfg(target_os = "windows")]
 fn resolve_via_where(exe_name: &str) -> Option<String> {
-    let output = Command::new("where").arg(exe_name).output().ok()?;
+    use std::os::windows::process::CommandExt;
+    const CREATE_NO_WINDOW: u32 = 0x08000000;
+    let output = Command::new("where")
+        .arg(exe_name)
+        .creation_flags(CREATE_NO_WINDOW)
+        .output()
+        .ok()?;
     if output.status.success() {
         let stdout = String::from_utf8_lossy(&output.stdout);
         return stdout.lines().next().map(|line| line.trim().to_string());
