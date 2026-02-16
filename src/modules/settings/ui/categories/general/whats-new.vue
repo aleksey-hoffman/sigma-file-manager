@@ -15,7 +15,7 @@ import { useChangelog } from '@/modules/changelog';
 
 const { t } = useI18n();
 const userSettingsStore = useUserSettingsStore();
-const { open, appVersion } = useChangelog();
+const { open } = useChangelog();
 
 const showOnUpdate = computed({
   get: () => userSettingsStore.userSettings.changelog.showOnUpdate,
