@@ -9,63 +9,106 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
-### Added
-
-- Update global search layout and design to support drag and drop and other features;
-- Migrate auto update system;
-- Migrate drag and drop functionality and fs copy/move conflict resolver;
-- Home banner media editor;
-- Keyboard navigation for the file browser: Arrow keys to move between entries (spatial navigation in grid view, sequential in list view), Enter to open the first selected directory or file, Backspace to navigate back. Works in both grid and list layout views and in split view. All navigation shortcuts are customizable in Settings > Shortcuts;
-- Keyboard shortcut Ctrl+Left / Ctrl+Right to switch focus between split view panes, selecting the first item in the target pane. Customizable in Settings > Shortcuts;
-- Keyboard shortcut Ctrl+T to open the current directory in a new tab. Displayed in the context menu "Open in new tab" item, the add new tab button tooltip, and the shortcuts settings list;
-- "Open in terminal" context menu with automatic detection of all installed terminals on Windows (CMD, PowerShell, PowerShell 7, Windows Terminal), macOS (Terminal, iTerm2, Warp, Alacritty, Kitty), and Linux (GNOME Terminal, Ptyxis, Konsole, Xfce Terminal, Alacritty, Kitty, WezTerm, Ghostty, Rio, COSMIC Terminal, Deepin Terminal, Terminology, rxvt-unicode, Simple Terminal, and more). When Windows Terminal is installed, shows all configured shell profiles (PowerShell, CMD, Git Bash, WSL distros, VS Developer tools, etc.) with executable icons. On Linux, the system's default terminal is automatically detected via `$TERMINAL` env var, GNOME/Cinnamon/MATE gsettings, KDE kreadconfig, and Debian `x-terminal-emulator` alternatives — the default is marked with a label and shown first. If the default terminal is not in the known list, it is added automatically. Includes both normal and admin/elevated modes. Default shortcut: Alt+T;
-- Fonts setting in Appearance: choose UI font from system fonts (Local Font Access API), with filter, re-fetch, and reset to default;
-- Empty state display when navigating to an empty directory, showing a clear message that the directory has no files or folders;
-- Shared reusable `EmptyState` UI component (`src/components/ui/empty-state`) for consistent empty state presentation across the app;
-- Navigator toolbar "Create new" menu for quickly creating a new file or directory in the current path;
-- Column visibility customization for the list view layout;
-- Sortable columns in file browser list view;
-
-### Removed
-
-- Empty "Navigation" tab from settings (no sections were implemented);
-
-### Improved
-
-- Global search now allows searching even while drives are being indexed - the scan progress banner shows indexing status without blocking the search area, providing a better experience for users who want to search with partial index data;
-- Consistent terminology across the global search UI: replaced "scan" / "searched" phrasing with "indexing" / "indexed" everywhere (search widget, settings, notifications) in all 13 languages;
-- File browser status bar now shows total items with hidden count in parentheses when the list is filtered or truncated;
-- Newly created files, folders, and pasted items now auto-focus into view in the active directory;
-
 ### Fixed
 
-- Fixed irrelevant and duplicate locations on Linux home page: virtual filesystems (tmpfs, cgroup, sysfs, proc, etc.), block device paths (/dev/sdd), entries with name "none", document portal mounts with invalid stats, and zero-space entries are now filtered out. Duplicate paths are deduplicated;
-- Fixed global search indexing status not updating in real-time: the indexing progress banner would stay visible forever after indexing finished, and the indexed item count would only update after navigating away and back. Root cause: status polling was not awaiting the async backend response (using stale state for timing), and polling was unconditionally stopped when the search widget was closed even if indexing was still running in the background;
+- Fixed visible console windows flickering on Windows in production builds when detecting available terminals and resolving executable paths (missing CREATE_NO_WINDOW flag on spawned processes);
+- Fixed `open_with_default` showing a brief console window flash when opening files on Windows;
 
-- Clipboard toolbar (copy/move prepared items) is now displayed once below the panes container instead of in each pane, since the clipboard is shared across all panes;
+## [2.0.0-beta.1] - February 2026
 
-### Fixed
+Major usability and design improvements including keyboard navigation, new shortcuts, open in terminal, directory auto-refresh, drag and drop, and enhanced search and list views.
 
-- Fixed split view pane not updating when the directory it displays is deleted or renamed from the other pane - on delete the affected pane navigates to home, on rename it seamlessly follows the directory to its new path;
-- Renaming a directory now updates its path everywhere: all open tabs across all workspaces, favorites, tags, history, frequent items, and in-memory navigation history;
-- Deleting a file or directory now removes it from all stored lists: favorites, tags, history, and frequent items, and navigates affected tabs to the home directory;
-- Non-existent paths in favorites, tags, history, and frequent items are now automatically cleaned up on app startup;
-- Fixed tabs loading with an error when their stored path no longer exists on disk - the tab now falls back to the home directory;
-- Fixed system icons for files with unique icons - each file now displays its own icon instead of showing the same icon for all files of the same type. Applies to: Windows (.exe, .dll, .lnk, .ico, etc.), Linux (.desktop, .appimage), macOS (.icns);
-- Fixed keyboard shortcuts (Ctrl+C/X/V, Delete, Rename, etc.) not working in the second pane of split view - shortcuts now correctly target the last active pane;
-- Fixed keyboard shortcuts sometimes stopping to work after navigating between pages - shortcut handlers are now preserved during page navigation;
-- Fixed memory leak where filter keydown listeners were not properly cleaned up when file browser components unmounted;
+### Keyboard Navigation
+
+Navigate files using the keyboard with full support for grid and list layouts and split view.
+
+- Arrow keys for spatial navigation in grid view and sequential navigation in list view;
+- Enter to open selected directory or file, Backspace to navigate back;
+- Ctrl+Left / Ctrl+Right to switch focus between split view panes;
+- Ctrl+T to open the current directory in a new tab;
+- All navigation shortcuts are customizable in Settings > Shortcuts;
 
 ### Directory Auto-Refresh
 
-- Navigator view automatically refreshes when files are created, deleted, renamed, or modified in the current directory;
-- File sizes update automatically when files are changed by external applications;
-- No need to manually reload when external applications modify directory contents;
-- Uses efficient file system watching with debouncing to avoid excessive refreshes;
-- Smart diff-based updates only change affected items, avoiding disruptive full-list animations;
+The navigator view automatically refreshes when files are created, deleted, renamed, or modified in the current directory.
 
+- File sizes update automatically when changed by external applications;
+- Efficient file system watching with debouncing to avoid excessive refreshes;
+- Smart diff-based updates only change affected items, preserving scroll position and selection;
 
-## [2.0.0-alpha.6] - January 2025
+### Drag and Drop
+
+<video width="100%" mute autoplay loop controls src="./public/changelog/beta-1/drag-and-drop.mp4"></video>
+
+You can now drag files and folders around to copy/move them with ease. Drag between panes, from or to search results lists, from or to external apps.
+
+### Copy conflicts
+
+Added modal window for easy copy/move conflict resolution.
+
+### Auto Update
+
+Added automatic checking for updates (can be controlled from settings).
+
+### Home Banner Media Editor
+
+Added editor for home page banner customization. You can now upload custom images and videos (both local and remote URL files are supported) 
+
+### List View Enhancements
+
+- Improved design and fixed little annoyances;
+- Added column visibility customization: choose which columns to display;
+- Added column sorting: click column headers to sort entries;
+- Default navigator layout changed to list view;
+
+### Global Search Improvements
+
+- Updated layout and design with drag and drop support;
+- Search is now available while drives are still being indexed;
+
+### Open in Terminal
+
+Open directories in your preferred terminal directly from the context menu.
+
+- Automatic detection of installed terminals on Windows, macOS, and Linux;
+- Windows Terminal shows all configured shell profiles with executable icons;
+- Linux default terminal auto-detected and shown first;
+- Includes normal and admin/elevated modes;
+- Default shortcut: Alt+T;
+
+### Localization
+
+- Added Slovenian language (thanks to: @anderlli0053);
+
+### UI / UX Improvements
+
+- Added font selector: choose UI font from installed system fonts;
+- Added "Create new" menu for quickly creating files or directories;
+- Showing empty state view when navigating to empty directories;
+- Status bar shows total items with hidden count when list is filtered;
+- Newly created, copied, and moved items auto-scroll into view;
+- Clipboard toolbar displayed once below panes instead of in each pane;
+- Simplified rename modal design;
+- Responsive toolbar icons that collapse into dropdown on small window sizes;
+- Removed empty "Navigation" tab from settings;
+- Renaming a directory now updates its path across all tabs, workspaces, favorites, tags, history, and frequent items;
+- Deleting a file or directory now removes it from all stored lists and navigates affected tabs to home;
+- Non-existent paths in favorites, tags, history, and frequent items are now auto-cleaned on startup;
+
+### Bug Fixes
+
+- Fixed global search indexing status not updating in real-time;
+- Fixed split view pane not updating when its directory is deleted or renamed from the other pane;
+- Fixed tabs loading with an error when their stored path no longer exists;
+- Fixed system icons showing the same icon for all files of the same type instead of unique per-file icons;
+- Fixed keyboard shortcuts not working in the second pane of split view;
+- Fixed keyboard shortcuts stopping to work after page navigation;
+- Fixed memory leak with filter keydown listeners not cleaned up on unmount;
+- Linux: added support for default app retrieval in "open with" menu;
+
+---
+
+## [2.0.0-alpha.6] - January 2026
 
 What's New window, Quick View, context menu enhancements, and new settings.
 
@@ -148,7 +191,7 @@ Improved global search with a hybrid indexed + direct search system for more rel
 
 ---
 
-## [2.0.0-alpha.5] - January 2025
+## [2.0.0-alpha.5] - January 2026
 
 File operations, global search, and shortcut customization.
 
@@ -172,7 +215,7 @@ Added option to display native system icons for files and directories instead of
 
 ---
 
-## [2.0.0-alpha.4] - January 2025
+## [2.0.0-alpha.4] - January 2026
 
 Home page, visual effects, and user customization options.
 
@@ -199,7 +242,7 @@ Fine-tune the position of your home page banner backgrounds. Adjust zoom, horizo
 
 ---
 
-## [2.0.0-alpha.3] - December 2024
+## [2.0.0-alpha.3] - December 2025
 
 Navigator view with tabs, workspaces, and a new design system.
 
@@ -217,7 +260,7 @@ Migrated the app from Vuetify to Sigma-UI for a more spacious, modern design wit
 
 ---
 
-## [2.0.0-alpha.1] - December 2024
+## [2.0.0-alpha.1] - January 2024
 
 Complete rewrite using modern technologies.
 
