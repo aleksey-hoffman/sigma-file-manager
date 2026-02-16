@@ -1594,6 +1594,7 @@
     "name": "Nombre",
     "size": "Tamaño",
     "modified": "Modificado",
+    "columns": "Columnas",
     "folders": "Carpetas",
     "images": "Imágenes",
     "videos": "Videos",

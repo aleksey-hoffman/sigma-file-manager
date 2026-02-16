@@ -1620,6 +1620,7 @@
     "name": "Name",
     "size": "Size",
     "modified": "Modified",
+    "columns": "Columns",
     "folders": "Folders",
     "images": "Images",
     "videos": "Videos",

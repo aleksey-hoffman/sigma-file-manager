@@ -1594,6 +1594,7 @@
     "name": "名称",
     "size": "大小",
     "modified": "修改时间",
+    "columns": "列",
     "folders": "文件夹",
     "images": "图片",
     "videos": "视频",

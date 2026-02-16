@@ -174,6 +174,12 @@ export type DateTime = {
   };
 };
 
+export type ListColumnVisibility = {
+  items: boolean;
+  size: boolean;
+  modified: boolean;
+};
+
 export type UserSettingsNavigator = {
   layout: NavigatorLayout;
   infoPanel: UserSettingsNavigatorInfoPanel;
@@ -181,6 +187,7 @@ export type UserSettingsNavigator = {
   useSystemIconsForDirectories: boolean;
   useSystemIconsForFiles: boolean;
   focusFilterOnTyping: boolean;
+  listColumnVisibility: ListColumnVisibility;
 };
 
 export type UserSettingsNavigatorInfoPanel = {

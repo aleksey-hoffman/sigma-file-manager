@@ -4,13 +4,19 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
+import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { FolderOpenIcon, InfoIcon } from 'lucide-vue-next';
+import { FolderOpenIcon, InfoIcon, Columns3Icon } from 'lucide-vue-next';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ContextMenu, ContextMenuTrigger } from '@/components/ui/context-menu';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import FileBrowserGridView from './file-browser-grid-view.vue';
 import FileBrowserListView from './file-browser-list-view.vue';
 import FileBrowserContextMenu from './file-browser-context-menu.vue';
@@ -25,10 +31,40 @@ const props = defineProps<{
 const ctx = useFileBrowserContext();
 const { t } = useI18n();
 const legendSizeText = '1.5 GB';
+const userSettingsStore = useUserSettingsStore();
+const isColumnsPopoverOpen = ref(false);
+
+const columnVisibility = computed(() => userSettingsStore.userSettings.navigator.listColumnVisibility);
+const showItemsColumn = computed(() => columnVisibility.value.items);
+
+const listColumnsTemplate = computed(() => {
+  const columns = ['minmax(80px, 1fr)'];
+
+  if (showItemsColumn.value) {
+    columns.push('minmax(70px, 90px)');
+  }
+
+  if (columnVisibility.value.size) {
+    columns.push('minmax(50px, 100px)');
+  }
+
+  if (columnVisibility.value.modified) {
+    columns.push('minmax(60px, 160px)');
+  }
+
+  return columns.join(' ');
+});
+
+function toggleColumnVisibility(column: 'items' | 'size' | 'modified', checked: boolean) {
+  userSettingsStore.set(`navigator.listColumnVisibility.${column}`, checked);
+}
 </script>
 
 <template>
-  <div class="file-browser__content">
+  <div
+    class="file-browser__content"
+    :style="props.layout === 'list' ? { '--file-browser-list-columns': listColumnsTemplate } : undefined"
+  >
     <FileBrowserLoading v-if="ctx.isLoading.value" />
 
     <FileBrowserError
@@ -53,8 +89,14 @@ const legendSizeText = '1.5 GB';
       >
         <div class="file-browser-list-view__header">
           <span class="file-browser-list-view__header-item file-browser-list-view__header-name">{{ t('fileBrowser.name') }}</span>
-          <span class="file-browser-list-view__header-item file-browser-list-view__header-items">{{ t('items') }}</span>
-          <Tooltip :delay-duration="200">
+          <span
+            v-if="showItemsColumn"
+            class="file-browser-list-view__header-item file-browser-list-view__header-items"
+          >{{ t('items') }}</span>
+          <Tooltip
+            v-if="columnVisibility.size"
+            :delay-duration="200"
+          >
             <TooltipTrigger as-child>
               <span class="file-browser-list-view__header-item file-browser-list-view__header-size file-browser-list-view__header-size--with-info">
                 {{ t('fileBrowser.size') }}
@@ -95,8 +137,62 @@ const legendSizeText = '1.5 GB';
               </div>
             </TooltipContent>
           </Tooltip>
-          <span class="file-browser-list-view__header-item file-browser-list-view__header-modified">{{ t('fileBrowser.modified') }}</span>
+          <span
+            v-if="columnVisibility.modified"
+            class="file-browser-list-view__header-item file-browser-list-view__header-modified"
+          >{{ t('fileBrowser.modified') }}</span>
         </div>
+        <Popover
+          :open="isColumnsPopoverOpen"
+          @update:open="isColumnsPopoverOpen = $event"
+        >
+          <Tooltip>
+            <TooltipTrigger as-child>
+              <PopoverTrigger as-child>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  class="file-browser-list-view__columns-button"
+                >
+                  <Columns3Icon :size="14" />
+                </Button>
+              </PopoverTrigger>
+            </TooltipTrigger>
+            <PopoverContent
+              :side="'bottom'"
+              :align="'end'"
+              class="file-browser-list-view__columns-popover"
+            >
+              <div class="file-browser-list-view__columns-option">
+                <Checkbox
+                  id="column-items"
+                  :model-value="columnVisibility.items"
+                  @update:model-value="toggleColumnVisibility('items', $event as boolean)"
+                />
+                <Label for="column-items">{{ t('items') }}</Label>
+              </div>
+              <div class="file-browser-list-view__columns-option">
+                <Checkbox
+                  id="column-size"
+                  :model-value="columnVisibility.size"
+                  @update:model-value="toggleColumnVisibility('size', $event as boolean)"
+                />
+                <Label for="column-size">{{ t('fileBrowser.size') }}</Label>
+              </div>
+              <div class="file-browser-list-view__columns-option">
+                <Checkbox
+                  id="column-modified"
+                  :model-value="columnVisibility.modified"
+                  @update:model-value="toggleColumnVisibility('modified', $event as boolean)"
+                />
+                <Label for="column-modified">{{ t('fileBrowser.modified') }}</Label>
+              </div>
+            </PopoverContent>
+            <TooltipContent>
+              {{ t('fileBrowser.columns') }}
+            </TooltipContent>
+          </Tooltip>
+        </Popover>
       </div>
       <ScrollArea
         class="file-browser__scroll-area"
@@ -135,13 +231,12 @@ const legendSizeText = '1.5 GB';
   flex: 1;
   flex-direction: column;
 
-  --file-browser-list-columns: minmax(80px, 1fr) minmax(70px, 90px) minmax(50px, 100px) minmax(60px, 160px);
   --file-browser-list-row-padding-y: 10px;
   --file-browser-list-row-padding-x: 16px;
   --file-browser-list-header-padding-x: 16px;
   --file-browser-list-header-padding-y: 10px;
   --file-browser-list-cell-padding-right: 16px;
-  --file-browser-list-right-gutter: 20px;
+  --file-browser-list-right-gutter: 32px;
 }
 
 .file-browser__empty-state-container {
@@ -164,6 +259,8 @@ const legendSizeText = '1.5 GB';
 
 .file-browser-list-view__header {
   display: grid;
+  min-width: 0;
+  flex: 1;
   padding: var(--file-browser-list-header-padding-y) var(--file-browser-list-header-padding-x);
   background-color: hsl(var(--background-3));
   color: hsl(var(--muted-foreground));
@@ -174,7 +271,9 @@ const legendSizeText = '1.5 GB';
 }
 
 .file-browser-list-view__header-container {
-  padding-right: var(--file-browser-list-right-gutter);
+  display: flex;
+  align-items: center;
+  padding-right: 4px;
   border-bottom: 1px solid hsl(var(--border));
 }
 
@@ -268,5 +367,34 @@ const legendSizeText = '1.5 GB';
   font-size: 11px;
   font-style: italic;
   line-height: 1.4;
+}
+
+.file-browser-list-view__columns-button {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  color: hsl(var(--muted-foreground));
+}
+</style>
+
+<style>
+.file-browser-list-view__columns-popover.sigma-ui-popover-content {
+  display: flex;
+  width: auto;
+  flex-direction: column;
+  padding: 8px 12px;
+  gap: 8px;
+}
+
+.file-browser-list-view__columns-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.file-browser-list-view__columns-option .sigma-ui-label {
+  cursor: pointer;
+  font-size: 13px;
+  user-select: none;
 }
 </style>

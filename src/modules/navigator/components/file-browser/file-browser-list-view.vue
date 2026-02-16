@@ -12,6 +12,7 @@ import type { DirEntry } from '@/types/dir-entry';
 import { formatBytes, formatDate } from './utils';
 import { useClipboardStore } from '@/stores/runtime/clipboard';
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
+import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { Skeleton } from '@/components/ui/skeleton';
 import FileBrowserEntryIcon from './file-browser-entry-icon.vue';
 import { useFileBrowserContext } from './composables/use-file-browser-context';
@@ -20,9 +21,13 @@ const ctx = useFileBrowserContext();
 
 const clipboardStore = useClipboardStore();
 const dirSizesStore = useDirSizesStore();
+const userSettingsStore = useUserSettingsStore();
 const { clipboardItems, clipboardType, isToolbarSuppressed } = storeToRefs(clipboardStore);
 
-const hideItemsColumn = computed(() => !!ctx.entryDescription);
+const columnVisibility = computed(() => userSettingsStore.userSettings.navigator.listColumnVisibility);
+const showItemsColumn = computed(() => columnVisibility.value.items);
+const showSizeColumn = computed(() => columnVisibility.value.size);
+const showModifiedColumn = computed(() => columnVisibility.value.modified);
 
 const clipboardPathsMap = computed(() => {
   if (isToolbarSuppressed.value) {
@@ -129,12 +134,15 @@ const { t } = useI18n();
           </div>
         </div>
         <span
-          v-if="!hideItemsColumn"
+          v-if="showItemsColumn"
           class="file-browser-list-view__entry-items"
         >
           {{ getItemsDisplay(entry) }}
         </span>
-        <span class="file-browser-list-view__entry-size">
+        <span
+          v-if="showSizeColumn"
+          class="file-browser-list-view__entry-size"
+        >
           <LoaderCircleIcon
             v-if="isDirLoadingWithProgress(entry)"
             :size="12"
@@ -146,7 +154,10 @@ const { t } = useI18n();
           />
           <template v-else>{{ getSizeDisplay(entry) }}</template>
         </span>
-        <span class="file-browser-list-view__entry-modified">
+        <span
+          v-if="showModifiedColumn"
+          class="file-browser-list-view__entry-modified"
+        >
           {{ formatDate(entry.modified_time) }}
         </span>
       </button>

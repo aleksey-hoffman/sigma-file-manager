@@ -76,6 +76,11 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
       useSystemIconsForDirectories: false,
       useSystemIconsForFiles: false,
       focusFilterOnTyping: true,
+      listColumnVisibility: {
+        items: true,
+        size: true,
+        modified: true,
+      },
     },
     globalSearch: {
       scanDepth: 6,
