@@ -170,6 +170,7 @@
     },
     "searchStats": {
       "found": "Đã tìm thấy {n} mục | Đã tìm thấy {n} mục | Đã tìm thấy {n} mục | Đã tìm thấy {n} mục",
+      "foundOnDrives": "Đã tìm thấy {n} mục trên {drives} ổ đĩa",
       "finished": "Hoàn tất sau {n} giây",
       "searched": "Đã lập chỉ mục {n} mục",
       "searchingLevelsDeep": "{n} cấp sâu",

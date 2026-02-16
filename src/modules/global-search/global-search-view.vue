@@ -469,98 +469,103 @@ onMounted(() => {
         </div>
       </div>
 
+      <div
+        v-if="globalSearchStore.results.length > 0"
+        class="global-search-view__results-header"
+      >
+        {{ t('globalSearch.searchStats.foundOnDrives', { n: totalResultsCount, drives: groupedResults.length }) }}
+      </div>
+
       <ScrollArea class="global-search-view__results">
-        <EmptyState
-          v-if="!hasIndexData && !globalSearchStore.isScanInProgress && !globalSearchStore.isCommitting"
-          :icon="SearchIcon"
-          :title="t('globalSearch.searchDataIncomplete')"
-          :description="t('globalSearch.noDrivesSelected')"
-          :bordered="false"
-        />
-
-        <div
-          v-else-if="!globalSearchStore.query.trim()"
-          class="global-search-view__empty"
-        >
-          <SearchIcon
-            :size="48"
-            class="global-search-view__empty-icon"
+        <div class="global-search-view__results-inner">
+          <EmptyState
+            v-if="!hasIndexData && !globalSearchStore.isScanInProgress && !globalSearchStore.isCommitting"
+            :icon="SearchIcon"
+            :title="t('globalSearch.searchDataIncomplete')"
+            :description="t('globalSearch.noDrivesSelected')"
+            :bordered="false"
           />
-          <span class="global-search-view__empty-title">
-            {{ t('globalSearch.globalSearch') }}
-          </span>
-          <span class="global-search-view__empty-description">
-            {{ t('globalSearch.searchStats.searched', { n: globalSearchStore.indexedItemCount.toLocaleString() }) }}
-            ({{ t('globalSearch.searchStats.searchingLevelsDeep', { n: scanDepth }) }}<template v-if="lastScanRelative">, {{ t('globalSearch.searchStats.indexed', { time: lastScanRelative }).toLowerCase() }}</template>)
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            class="global-search-view__settings-button"
-            @click="openSearchSettings"
-          >
-            <SettingsIcon :size="14" />
-            {{ t('globalSearch.showSearchSettings') }}
-          </Button>
-        </div>
-
-        <EmptyState
-          v-else-if="globalSearchStore.results.length === 0 && !globalSearchStore.isSearching"
-          :icon="SearchIcon"
-          :title="t('globalSearch.searchStats.nothingFound')"
-          :bordered="false"
-        />
-
-        <template v-else-if="globalSearchStore.results.length > 0">
-          <div class="global-search-view__results-header">
-            {{ t('globalSearch.searchStats.found', totalResultsCount) }}
-          </div>
 
           <div
-            v-for="group in groupedResults"
-            :key="group.driveRoot"
-            class="global-search-view__drive-group"
+            v-else-if="!globalSearchStore.query.trim()"
+            class="global-search-view__empty"
           >
-            <button
-              class="global-search-view__drive-header"
-              @click="toggleDriveCollapse(group.driveRoot)"
+            <SearchIcon
+              :size="48"
+              class="global-search-view__empty-icon"
+            />
+            <span class="global-search-view__empty-title">
+              {{ t('globalSearch.globalSearch') }}
+            </span>
+            <span class="global-search-view__empty-description">
+              {{ t('globalSearch.searchStats.searched', { n: globalSearchStore.indexedItemCount.toLocaleString() }) }}
+              ({{ t('globalSearch.searchStats.searchingLevelsDeep', { n: scanDepth }) }}<template v-if="lastScanRelative">, {{ t('globalSearch.searchStats.indexed', { time: lastScanRelative }).toLowerCase() }}</template>)
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              class="global-search-view__settings-button"
+              @click="openSearchSettings"
             >
-              <component
-                :is="group.driveInfo?.is_removable ? UsbIcon : HardDriveIcon"
-                :size="16"
-                class="global-search-view__drive-icon"
-              />
-              <span class="global-search-view__drive-name">
-                {{ group.driveInfo?.name || group.driveRoot }}
-              </span>
-              <span class="global-search-view__drive-count">
-                {{ t('item', group.entries.length) }}
-              </span>
-              <ChevronDownIcon
-                :size="16"
-                class="global-search-view__drive-chevron"
-                :class="{ 'global-search-view__drive-chevron--collapsed': isDriveCollapsed(group.driveRoot) }"
-              />
-            </button>
-
-            <div
-              v-if="!isDriveCollapsed(group.driveRoot)"
-              class="global-search-view__list"
-            >
-              <FileBrowser
-                :ref="(element: any) => setSearchFileBrowserRef(element as FileBrowserInstance, group.driveRoot)"
-                :external-entries="group.entries"
-                :base-path="group.driveRoot"
-                layout="list"
-                :hide-toolbar="true"
-                :hide-status-bar="true"
-                :entry-description="getEntryDescription"
-                @open-entry="handleSearchEntryOpen"
-                @update:selected-entries="(entries: DirEntry[]) => handleSearchSelectionChange(entries, group.driveRoot)"
-              />
-            </div>
+              <SettingsIcon :size="14" />
+              {{ t('globalSearch.showSearchSettings') }}
+            </Button>
           </div>
-        </template>
+
+          <EmptyState
+            v-else-if="globalSearchStore.results.length === 0 && !globalSearchStore.isSearching"
+            :icon="SearchIcon"
+            :title="t('globalSearch.searchStats.nothingFound')"
+            :bordered="false"
+          />
+
+          <template v-else-if="globalSearchStore.results.length > 0">
+            <div
+              v-for="group in groupedResults"
+              :key="group.driveRoot"
+              class="global-search-view__drive-group"
+            >
+              <button
+                class="global-search-view__drive-header"
+                @click="toggleDriveCollapse(group.driveRoot)"
+              >
+                <component
+                  :is="group.driveInfo?.is_removable ? UsbIcon : HardDriveIcon"
+                  :size="16"
+                  class="global-search-view__drive-icon"
+                />
+                <span class="global-search-view__drive-name">
+                  {{ group.driveInfo?.name || group.driveRoot }}
+                </span>
+                <span class="global-search-view__drive-count">
+                  {{ t('item', group.entries.length) }}
+                </span>
+                <ChevronDownIcon
+                  :size="16"
+                  class="global-search-view__drive-chevron"
+                  :class="{ 'global-search-view__drive-chevron--collapsed': isDriveCollapsed(group.driveRoot) }"
+                />
+              </button>
+
+              <div
+                v-if="!isDriveCollapsed(group.driveRoot)"
+                class="global-search-view__list"
+              >
+                <FileBrowser
+                  :ref="(element: any) => setSearchFileBrowserRef(element as FileBrowserInstance, group.driveRoot)"
+                  :external-entries="group.entries"
+                  :base-path="group.driveRoot"
+                  layout="list"
+                  :hide-toolbar="true"
+                  :hide-status-bar="true"
+                  :entry-description="getEntryDescription"
+                  @open-entry="handleSearchEntryOpen"
+                  @update:selected-entries="(entries: DirEntry[]) => handleSearchSelectionChange(entries, group.driveRoot)"
+                />
+              </div>
+            </div>
+          </template>
+        </div>
       </ScrollArea>
     </div>
   </div>
@@ -569,6 +574,7 @@ onMounted(() => {
 <style scoped>
 .global-search-view {
   --results-header-height: 36px;
+  --search-scroll-gutter: 18px;
 
   display: flex;
   height: 100%;
@@ -580,6 +586,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   padding: 8px;
+  padding-bottom: 0;
   gap: 12px;
 }
 
@@ -629,7 +636,8 @@ onMounted(() => {
   min-height: 0;
   flex: 1;
   flex-direction: column;
-  padding: 0 4px;
+  padding: 0 8px;
+  padding-right: 0;
 }
 
 .global-search-view__scan-status {
@@ -690,6 +698,14 @@ onMounted(() => {
 
 .global-search-view__results {
   flex: 1;
+}
+
+.global-search-view__results-inner {
+  display: flex;
+  min-height: 100%;
+  flex-direction: column;
+  padding-right: var(--search-scroll-gutter);
+  gap: 2px;
 }
 
 .global-search-view__empty {
@@ -776,44 +792,32 @@ onMounted(() => {
 }
 
 .global-search-view__results-header {
-  position: sticky;
-  z-index: 10;
-  top: 0;
   height: var(--results-header-height);
-  padding: 0 16px;
-  border-radius: var(--radius-sm);
-  background-color: hsl(var(--background));
+  padding: 0 2px;
+  background-color: transparent;
   color: hsl(var(--muted-foreground));
   font-size: 12px;
   font-weight: 500;
   line-height: var(--results-header-height);
-  text-transform: uppercase;
-}
-
-.global-search-view__drive-group {
-  border-bottom: 1px solid hsl(var(--border));
 }
 
 .global-search-view__drive-header {
   position: sticky;
   z-index: 5;
-  top: var(--results-header-height);
+  top: 0;
   display: flex;
   width: 100%;
   align-items: center;
   padding: 12px 16px;
   border: none;
-  background-color: hsl(var(--background-3));
+  border-radius: var(--radius-sm);
+  background-color: hsl(var(--background-2));
   color: hsl(var(--foreground));
   cursor: pointer;
   font-size: 13px;
   font-weight: 500;
   gap: 10px;
   text-align: left;
-}
-
-.global-search-view__drive-header:hover {
-  background-color: hsl(var(--background-3));
 }
 
 .global-search-view__drive-header:focus-visible {
@@ -855,5 +859,9 @@ onMounted(() => {
 
   display: flex;
   flex-direction: column;
+}
+
+.global-search-view__list :deep(.file-browser__content) {
+  --file-browser-list-right-gutter: 0;
 }
 </style>

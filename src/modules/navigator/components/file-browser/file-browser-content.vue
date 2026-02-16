@@ -63,8 +63,120 @@ function toggleColumnVisibility(column: 'items' | 'size' | 'modified', checked: 
 <template>
   <div
     class="file-browser__content"
-    :style="props.layout === 'list' ? { '--file-browser-list-columns': listColumnsTemplate } : undefined"
+    :style="{ '--file-browser-list-columns': listColumnsTemplate }"
   >
+    <div
+      v-if="props.layout === 'list'"
+      class="file-browser-list-view__header-container"
+    >
+      <div class="file-browser-list-view__header">
+        <span class="file-browser-list-view__header-item file-browser-list-view__header-name">{{ t('fileBrowser.name') }}</span>
+        <span
+          v-if="showItemsColumn"
+          class="file-browser-list-view__header-item file-browser-list-view__header-items"
+        >{{ t('items') }}</span>
+        <Tooltip
+          v-if="columnVisibility.size"
+          :delay-duration="200"
+        >
+          <TooltipTrigger as-child>
+            <span class="file-browser-list-view__header-item file-browser-list-view__header-size file-browser-list-view__header-size--with-info">
+              {{ t('fileBrowser.size') }}
+              <InfoIcon
+                :size="12"
+                class="file-browser-list-view__header-info-icon"
+              />
+            </span>
+          </TooltipTrigger>
+          <TooltipContent
+            side="bottom"
+            :side-offset="8"
+            class="file-browser-list-view__size-tooltip"
+          >
+            <div class="file-browser-list-view__size-tooltip-content">
+              <div class="file-browser-list-view__size-tooltip-title">
+                {{ t('fileBrowser.sizeTooltip.title') }}
+              </div>
+              <div class="file-browser-list-view__size-tooltip-body">
+                <div class="file-browser-list-view__size-tooltip-item">
+                  <span class="file-browser-list-view__size-tooltip-label">{{ legendSizeText }}</span>
+                  <span class="file-browser-list-view__size-tooltip-desc">{{ t('fileBrowser.sizeTooltip.exact') }}</span>
+                </div>
+                <div class="file-browser-list-view__size-tooltip-item">
+                  <span class="file-browser-list-view__size-tooltip-label file-browser-list-view__size-tooltip-label--loading">
+                    <Skeleton class="file-browser-list-view__size-tooltip-skeleton" />
+                  </span>
+                  <span class="file-browser-list-view__size-tooltip-desc">{{ t('fileBrowser.sizeTooltip.loading') }}</span>
+                </div>
+                <div class="file-browser-list-view__size-tooltip-item">
+                  <span class="file-browser-list-view__size-tooltip-label file-browser-list-view__size-tooltip-label--empty">—</span>
+                  <span class="file-browser-list-view__size-tooltip-desc">{{ t('fileBrowser.sizeTooltip.notCalculated') }}</span>
+                </div>
+              </div>
+              <div class="file-browser-list-view__size-tooltip-note">
+                {{ t('fileBrowser.sizeTooltip.note') }}
+              </div>
+            </div>
+          </TooltipContent>
+        </Tooltip>
+        <span
+          v-if="columnVisibility.modified"
+          class="file-browser-list-view__header-item file-browser-list-view__header-modified"
+        >{{ t('fileBrowser.modified') }}</span>
+      </div>
+      <Popover
+        :open="isColumnsPopoverOpen"
+        @update:open="isColumnsPopoverOpen = $event"
+      >
+        <Tooltip>
+          <TooltipTrigger as-child>
+            <PopoverTrigger as-child>
+              <Button
+                variant="ghost"
+                size="icon"
+                class="file-browser-list-view__columns-button"
+              >
+                <Columns3Icon :size="14" />
+              </Button>
+            </PopoverTrigger>
+          </TooltipTrigger>
+          <PopoverContent
+            :side="'bottom'"
+            :align="'end'"
+            class="file-browser-list-view__columns-popover"
+          >
+            <div class="file-browser-list-view__columns-option">
+              <Checkbox
+                id="column-items"
+                :model-value="columnVisibility.items"
+                @update:model-value="toggleColumnVisibility('items', $event as boolean)"
+              />
+              <Label for="column-items">{{ t('items') }}</Label>
+            </div>
+            <div class="file-browser-list-view__columns-option">
+              <Checkbox
+                id="column-size"
+                :model-value="columnVisibility.size"
+                @update:model-value="toggleColumnVisibility('size', $event as boolean)"
+              />
+              <Label for="column-size">{{ t('fileBrowser.size') }}</Label>
+            </div>
+            <div class="file-browser-list-view__columns-option">
+              <Checkbox
+                id="column-modified"
+                :model-value="columnVisibility.modified"
+                @update:model-value="toggleColumnVisibility('modified', $event as boolean)"
+              />
+              <Label for="column-modified">{{ t('fileBrowser.modified') }}</Label>
+            </div>
+          </PopoverContent>
+          <TooltipContent>
+            {{ t('fileBrowser.columns') }}
+          </TooltipContent>
+        </Tooltip>
+      </Popover>
+    </div>
+
     <FileBrowserLoading v-if="ctx.isLoading.value" />
 
     <FileBrowserError
@@ -83,117 +195,6 @@ function toggleColumnVisibility(column: 'items' | 'size' | 'modified', checked: 
     />
 
     <template v-else>
-      <div
-        v-if="props.layout === 'list'"
-        class="file-browser-list-view__header-container"
-      >
-        <div class="file-browser-list-view__header">
-          <span class="file-browser-list-view__header-item file-browser-list-view__header-name">{{ t('fileBrowser.name') }}</span>
-          <span
-            v-if="showItemsColumn"
-            class="file-browser-list-view__header-item file-browser-list-view__header-items"
-          >{{ t('items') }}</span>
-          <Tooltip
-            v-if="columnVisibility.size"
-            :delay-duration="200"
-          >
-            <TooltipTrigger as-child>
-              <span class="file-browser-list-view__header-item file-browser-list-view__header-size file-browser-list-view__header-size--with-info">
-                {{ t('fileBrowser.size') }}
-                <InfoIcon
-                  :size="12"
-                  class="file-browser-list-view__header-info-icon"
-                />
-              </span>
-            </TooltipTrigger>
-            <TooltipContent
-              side="bottom"
-              :side-offset="8"
-              class="file-browser-list-view__size-tooltip"
-            >
-              <div class="file-browser-list-view__size-tooltip-content">
-                <div class="file-browser-list-view__size-tooltip-title">
-                  {{ t('fileBrowser.sizeTooltip.title') }}
-                </div>
-                <div class="file-browser-list-view__size-tooltip-body">
-                  <div class="file-browser-list-view__size-tooltip-item">
-                    <span class="file-browser-list-view__size-tooltip-label">{{ legendSizeText }}</span>
-                    <span class="file-browser-list-view__size-tooltip-desc">{{ t('fileBrowser.sizeTooltip.exact') }}</span>
-                  </div>
-                  <div class="file-browser-list-view__size-tooltip-item">
-                    <span class="file-browser-list-view__size-tooltip-label file-browser-list-view__size-tooltip-label--loading">
-                      <Skeleton class="file-browser-list-view__size-tooltip-skeleton" />
-                    </span>
-                    <span class="file-browser-list-view__size-tooltip-desc">{{ t('fileBrowser.sizeTooltip.loading') }}</span>
-                  </div>
-                  <div class="file-browser-list-view__size-tooltip-item">
-                    <span class="file-browser-list-view__size-tooltip-label file-browser-list-view__size-tooltip-label--empty">—</span>
-                    <span class="file-browser-list-view__size-tooltip-desc">{{ t('fileBrowser.sizeTooltip.notCalculated') }}</span>
-                  </div>
-                </div>
-                <div class="file-browser-list-view__size-tooltip-note">
-                  {{ t('fileBrowser.sizeTooltip.note') }}
-                </div>
-              </div>
-            </TooltipContent>
-          </Tooltip>
-          <span
-            v-if="columnVisibility.modified"
-            class="file-browser-list-view__header-item file-browser-list-view__header-modified"
-          >{{ t('fileBrowser.modified') }}</span>
-        </div>
-        <Popover
-          :open="isColumnsPopoverOpen"
-          @update:open="isColumnsPopoverOpen = $event"
-        >
-          <Tooltip>
-            <TooltipTrigger as-child>
-              <PopoverTrigger as-child>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  class="file-browser-list-view__columns-button"
-                >
-                  <Columns3Icon :size="14" />
-                </Button>
-              </PopoverTrigger>
-            </TooltipTrigger>
-            <PopoverContent
-              :side="'bottom'"
-              :align="'end'"
-              class="file-browser-list-view__columns-popover"
-            >
-              <div class="file-browser-list-view__columns-option">
-                <Checkbox
-                  id="column-items"
-                  :model-value="columnVisibility.items"
-                  @update:model-value="toggleColumnVisibility('items', $event as boolean)"
-                />
-                <Label for="column-items">{{ t('items') }}</Label>
-              </div>
-              <div class="file-browser-list-view__columns-option">
-                <Checkbox
-                  id="column-size"
-                  :model-value="columnVisibility.size"
-                  @update:model-value="toggleColumnVisibility('size', $event as boolean)"
-                />
-                <Label for="column-size">{{ t('fileBrowser.size') }}</Label>
-              </div>
-              <div class="file-browser-list-view__columns-option">
-                <Checkbox
-                  id="column-modified"
-                  :model-value="columnVisibility.modified"
-                  @update:model-value="toggleColumnVisibility('modified', $event as boolean)"
-                />
-                <Label for="column-modified">{{ t('fileBrowser.modified') }}</Label>
-              </div>
-            </PopoverContent>
-            <TooltipContent>
-              {{ t('fileBrowser.columns') }}
-            </TooltipContent>
-          </Tooltip>
-        </Popover>
-      </div>
       <ScrollArea
         class="file-browser__scroll-area"
         @contextmenu.self.prevent
@@ -236,7 +237,8 @@ function toggleColumnVisibility(column: 'items' | 'size' | 'modified', checked: 
   --file-browser-list-header-padding-x: 16px;
   --file-browser-list-header-padding-y: 10px;
   --file-browser-list-cell-padding-right: 16px;
-  --file-browser-list-right-gutter: 32px;
+  --file-browser-list-right-gutter: 24px;
+  --file-browser-list-columns: minmax(80px, 1fr) minmax(70px, 90px) minmax(50px, 100px) minmax(60px, 160px);
 }
 
 .file-browser__empty-state-container {
@@ -259,8 +261,6 @@ function toggleColumnVisibility(column: 'items' | 'size' | 'modified', checked: 
 
 .file-browser-list-view__header {
   display: grid;
-  min-width: 0;
-  flex: 1;
   padding: var(--file-browser-list-header-padding-y) var(--file-browser-list-header-padding-x);
   background-color: hsl(var(--background-3));
   color: hsl(var(--muted-foreground));
@@ -271,9 +271,8 @@ function toggleColumnVisibility(column: 'items' | 'size' | 'modified', checked: 
 }
 
 .file-browser-list-view__header-container {
-  display: flex;
-  align-items: center;
-  padding-right: 4px;
+  position: relative;
+  padding-right: var(--file-browser-list-right-gutter);
   border-bottom: 1px solid hsl(var(--border));
 }
 
@@ -370,10 +369,13 @@ function toggleColumnVisibility(column: 'items' | 'size' | 'modified', checked: 
 }
 
 .file-browser-list-view__columns-button {
+  position: absolute;
+  top: 50%;
+  right: 0;
   width: 28px;
   height: 28px;
-  flex-shrink: 0;
   color: hsl(var(--muted-foreground));
+  transform: translateY(-50%);
 }
 </style>
 
@@ -390,6 +392,7 @@ function toggleColumnVisibility(column: 'items' | 'size' | 'modified', checked: 
   display: flex;
   align-items: center;
   gap: 8px;
+  text-transform: capitalize;
 }
 
 .file-browser-list-view__columns-option .sigma-ui-label {

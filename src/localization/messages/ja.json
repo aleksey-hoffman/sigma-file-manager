@@ -170,6 +170,7 @@
     },
     "searchStats": {
       "found": "{n} 個のアイテムが見つかりました | {n} 個のアイテムが見つかりました | {n} 個のアイテムが見つかりました | {n} 個のアイテムが見つかりました",
+      "foundOnDrives": "{n} 個のアイテムが {drives} ドライブで見つかりました",
       "finished": "{n} 秒で終了",
       "searched": "{n} 件のアイテムをインデックス済み",
       "searchingLevelsDeep": "{n} レベルの深さ",

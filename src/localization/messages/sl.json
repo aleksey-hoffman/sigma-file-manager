@@ -183,6 +183,7 @@
     },
     "searchStats": {
       "found": "Najdeno {n} predmetov | Najdeno {n} predmetov | Najdeno {n} predmetov | Najdeno {n} predmetov",
+      "foundOnDrives": "Najdeno {n} predmetov na {drives} pogonih",
       "finished": "Končano v {n} sekundah",
       "searched": "{n} elementov indeksiranih",
       "searchingLevelsDeep": "{n} nivojev globoko",

@@ -169,6 +169,7 @@
     },
     "searchStats": {
       "found": "{n} مورد پیدا شد | {n} مورد پیدا شد | {n} مورد پیدا شد | {n} مورد یافت شد",
+      "foundOnDrives": "{n} مورد در {drives} درایو یافت شد",
       "finished": "در {n} ثانیه به پایان رسید",
       "searched": "{n} مورد فهرست‌بندی شده",
       "searchingLevelsDeep": "{n} سطح عمق",

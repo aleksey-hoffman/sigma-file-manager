@@ -170,6 +170,7 @@
     },
     "searchStats": {
       "found": "{n} öğe bulundu | {n} öğe bulundu | {n} öğe bulundu | {n} öğe bulundu",
+      "foundOnDrives": "{n} öğe {drives} sürücüde bulundu",
       "finished": "{n} saniyede tamamlandı",
       "searched": "{n} öğe indekslendi",
       "searchingLevelsDeep": "{n} seviye derinlikte",

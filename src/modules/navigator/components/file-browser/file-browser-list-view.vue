@@ -195,6 +195,10 @@ const { t } = useI18n();
   text-align: left;
 }
 
+.file-browser-list-view__entry:last-child {
+  border-color: transparent;
+}
+
 .file-browser-list-view__entry:focus-visible {
   outline: none;
 }

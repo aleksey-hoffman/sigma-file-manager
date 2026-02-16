@@ -183,6 +183,7 @@
     },
     "searchStats": {
       "found": "Found {n} items | Found {n} items | Found {n} items | Found {n} items",
+      "foundOnDrives": "Found {n} items on {drives} drives",
       "finished": "Finished in {n} seconds",
       "searched": "{n} items indexed",
       "searchingLevelsDeep": "{n} levels deep",

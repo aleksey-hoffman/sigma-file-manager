@@ -170,6 +170,7 @@
     },
     "searchStats": {
       "found": "Encontrados {n} elementos | Encontrados {n} elementos | Encontrados {n} elementos | Encontrados {n} elementos",
+      "foundOnDrives": "Encontrados {n} elementos en {drives} unidades",
       "finished": "Terminado en {n} segundos",
       "searched": "{n} elementos indexados",
       "searchingLevelsDeep": "{n} niveles de profundidad",
