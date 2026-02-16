@@ -2,6 +2,7 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
+mod app_updater;
 mod dir_reader;
 mod dir_size;
 mod dir_watcher;
@@ -23,6 +24,7 @@ pub fn run() {
         .plugin(tauri_plugin_system_fonts::init())
         .plugin(tauri_plugin_drag::init())
         .invoke_handler(tauri::generate_handler![
+            app_updater::check_for_updates,
             system_tray::reload_webview,
             dir_reader::read_dir,
             dir_reader::get_system_drives,

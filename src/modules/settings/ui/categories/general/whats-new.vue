@@ -38,14 +38,6 @@ function openChangelog() {
       <div>
         {{ t('changelog.settingsDescription') }}
       </div>
-      <div class="whats-new-settings__version">
-        <span class="whats-new-settings__version-label">
-          {{ t('currentVersion') }}:
-        </span>
-        <span class="whats-new-settings__version-value">
-          {{ appVersion || '...' }}
-        </span>
-      </div>
 
       <Button
         variant="secondary"
@@ -91,23 +83,6 @@ function openChangelog() {
 
 .whats-new-settings__label {
   color: hsl(var(--foreground));
-  font-size: 0.875rem;
-}
-
-.whats-new-settings__version {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.whats-new-settings__version-label {
-  color: hsl(var(--muted-foreground));
-  font-size: 0.875rem;
-}
-
-.whats-new-settings__version-value {
-  color: hsl(var(--foreground));
-  font-family: monospace;
   font-size: 0.875rem;
 }
 

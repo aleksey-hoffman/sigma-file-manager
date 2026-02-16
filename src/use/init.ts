@@ -14,6 +14,7 @@ import { useShortcutsStore } from '@/stores/runtime/shortcuts';
 import { useTerminalsStore } from '@/stores/runtime/terminals';
 import { disableWebViewFeatures } from '@/utils/disable-web-view-features';
 import { useChangelog } from '@/modules/changelog';
+import { useAppUpdater } from '@/modules/app-updater';
 
 export function useInit() {
   const router = useRouter();
@@ -26,6 +27,7 @@ export function useInit() {
   const shortcutsStore = useShortcutsStore();
   const terminalsStore = useTerminalsStore();
   const { checkAndShowChangelog } = useChangelog();
+  const { initAutoCheck } = useAppUpdater();
 
   function registerShortcutHandlers() {
     shortcutsStore.registerHandler('toggleGlobalSearch', () => {
@@ -54,6 +56,7 @@ export function useInit() {
     terminalsStore.init();
     disableWebViewFeatures();
     await checkAndShowChangelog();
+    initAutoCheck();
   }
 
   onMounted(() => {

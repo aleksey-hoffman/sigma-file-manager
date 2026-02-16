@@ -1313,6 +1313,7 @@
     "permissionsWereChanged": "Les autorisations ont été modifiées",
     "failedToChangePermissions": "Impossible de modifier les autorisations",
     "noUpdatesAvailable": "Aucune mise à jour disponible",
+    "updateAvailable": "Mise à jour disponible",
     "updateDownloaded": "Mise à jour téléchargée",
     "pressInstallToCloseTheAppAndUpdateIt": "Appuyez sur installer pour fermer l'application et la mettre à jour",
     "storageLimitForImageThumbnailsWasReached": "La limite de stockage des vignettes d'images a été atteinte",

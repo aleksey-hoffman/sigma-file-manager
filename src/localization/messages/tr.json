@@ -1313,6 +1313,7 @@
     "permissionsWereChanged": "İzinler değiştirildi",
     "failedToChangePermissions": "İzinler değiştirilemedi",
     "noUpdatesAvailable": "Güncelleme yok",
+    "updateAvailable": "Güncelleme mevcut",
     "updateDownloaded": "Güncelleme indirildi",
     "pressInstallToCloseTheAppAndUpdateIt": "Uygulamayı kapatmak ve güncellemek için kur'a basın",
     "storageLimitForImageThumbnailsWasReached": "Görüntü küçük resimleri için depolama sınırına ulaşıldı",

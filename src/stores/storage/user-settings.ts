@@ -115,6 +115,10 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
     settingsCurrentTab: 'general',
     shortcuts: {},
     focusWindowOnDriveConnected: true,
+    appUpdates: {
+      autoCheck: true,
+      lastCheckTimestamp: 0,
+    },
     changelog: {
       showOnUpdate: true,
       lastSeenVersion: '',

@@ -1313,6 +1313,7 @@
     "permissionsWereChanged": "権限が変更されました",
     "failedToChangePermissions": "パーミッションの変更に失敗しました",
     "noUpdatesAvailable": "利用可能なアップデートはありません",
+    "updateAvailable": "アップデートがあります",
     "updateDownloaded": "アップデートをダウンロードしました",
     "pressInstallToCloseTheAppAndUpdateIt": "インストールを押してアプリを閉じて更新してください",
     "storageLimitForImageThumbnailsWasReached": "画像サムネイルのストレージ制限に達しました",

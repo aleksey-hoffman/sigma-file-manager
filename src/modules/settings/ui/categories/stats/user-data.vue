@@ -47,6 +47,5 @@ async function navigateToUserDataDirectory() {
 .user-data__button-icon {
   width: 16px;
   height: 16px;
-  margin-right: 12px;
 }
 </style>

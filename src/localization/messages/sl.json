@@ -1328,6 +1328,7 @@
     "permissionsWereChanged": "Dovoljenja so se spremenila",
     "failedToChangePermissions": "Sprememba dovoljenj ni uspela",
     "noUpdatesAvailable": "Nobene posodobitve na voljo",
+    "updateAvailable": "Posodobitev je na voljo",
     "updateDownloaded": "Posodobitev je bila prenesena",
     "pressInstallToCloseTheAppAndUpdateIt": "Pritisnite namesti za zaprtje aplikacije in posodobitev",
     "storageLimitForImageThumbnailsWasReached": "Dosežena omejitev prostora za sličice slik",

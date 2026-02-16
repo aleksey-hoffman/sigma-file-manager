@@ -1328,6 +1328,7 @@
     "permissionsWereChanged": "Разрешения были изменены",
     "failedToChangePermissions": "Не удалось изменить разрешения",
     "noUpdatesAvailable": "Нет доступных обновлений",
+    "updateAvailable": "Доступно обновление",
     "updateDownloaded": "Обновление загружено",
     "pressInstallToCloseTheAppAndUpdateIt": "Нажмите установить, чтобы закрыть приложение и обновить его",
     "storageLimitForImageThumbnailsWasReached": "Достигнут предел хранения миниатюр изображений",

@@ -5,7 +5,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
-import { EllipsisIcon, Trash2Icon } from 'lucide-vue-next';
+import { EllipsisVerticalIcon, Trash2Icon } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -43,7 +43,7 @@ function handleClearAll() {
             size="icon"
             class="dashboard-action-bar__menu-button"
           >
-            <EllipsisIcon :size="16" />
+            <EllipsisVerticalIcon :size="16" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">

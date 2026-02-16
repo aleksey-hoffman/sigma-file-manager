@@ -1312,6 +1312,7 @@
     "permissionsWereChanged": "مجوزها تغییر کردند",
     "failedToChangePermissions": "تغییر مجوزها انجام نشد",
     "noUpdatesAvailable": "بروز رسانی موجود نیست",
+    "updateAvailable": "بروزرسانی موجود است",
     "updateDownloaded": "به روز رسانی دانلود شد",
     "pressInstallToCloseTheAppAndUpdateIt": "برای بستن برنامه و به روز رسانی، نصب را فشار دهید",
     "storageLimitForImageThumbnailsWasReached": "حدت ذخیره سازی برای ریز عکسها رسیده است",

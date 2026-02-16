@@ -1313,6 +1313,7 @@
     "permissionsWereChanged": "权限已更改",
     "failedToChangePermissions": "更改权限失败",
     "noUpdatesAvailable": "没有可用的更新",
+    "updateAvailable": "有可用更新",
     "updateDownloaded": "更新下载",
     "pressInstallToCloseTheAppAndUpdateIt": "按安装关闭应用程序并更新它",
     "storageLimitForImageThumbnailsWasReached": "已达到图像缩略图的存储限制",

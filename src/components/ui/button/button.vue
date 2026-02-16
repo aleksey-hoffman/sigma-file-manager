@@ -53,6 +53,7 @@ withDefaults(defineProps<Props>(), {
   border-radius: var(--radius);
   font-size: 0.875rem;
   font-weight: 500;
+  gap: 8px;
   transition: background-color 0.1s ease, colors 0.2s;
   user-select: none;
   white-space: nowrap;

@@ -1313,6 +1313,7 @@
     "permissionsWereChanged": "Quyền đã được thay đổi",
     "failedToChangePermissions": "Không thể thay đổi quyền",
     "noUpdatesAvailable": "Không có bảng cập nhật có sẵn",
+    "updateAvailable": "Có bản cập nhật",
     "updateDownloaded": "Đã tải xuống bản cập nhật",
     "pressInstallToCloseTheAppAndUpdateIt": "Nhấn cài đặt để đóng ứng dụng và cập nhật nó",
     "storageLimitForImageThumbnailsWasReached": "Đã đạt đến giới hạn dung lượng cho hình thu nhỏ của hình ảnh",

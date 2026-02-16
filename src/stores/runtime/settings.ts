@@ -143,6 +143,7 @@ export const useSettingsStore = defineStore('settings', () => {
       { default: UserDataSection },
       { default: DriveDetectionSection },
       { default: AutoplaySection },
+      { default: AppUpdatesSection },
     ] = await Promise.all([
       import('@/modules/settings/ui/categories/general/language.vue'),
       import('@/modules/settings/ui/categories/general/window-scaling.vue'),
@@ -159,6 +160,7 @@ export const useSettingsStore = defineStore('settings', () => {
       import('@/modules/settings/ui/categories/stats/user-data.vue'),
       import('@/modules/settings/ui/categories/storage/drive-detection.vue'),
       import('@/modules/settings/ui/categories/storage/autoplay.vue'),
+      import('@/modules/settings/ui/categories/general/app-updates.vue'),
     ]);
 
     sections.value = [
@@ -181,6 +183,13 @@ export const useSettingsStore = defineStore('settings', () => {
         titleKey: 'changelog.settingsTitle',
         tags: 'settingsTags.whatsNew',
         component: markRaw(WhatsNewSection),
+        category: 'general',
+      },
+      {
+        key: 'appUpdates',
+        titleKey: 'appUpdates',
+        tags: 'settingsTags.updates',
+        component: markRaw(AppUpdatesSection),
         category: 'general',
       },
       {

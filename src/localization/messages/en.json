@@ -1338,6 +1338,7 @@
     "permissionsWereChanged": "Permissions were changed",
     "failedToChangePermissions": "Failed to change permissions",
     "noUpdatesAvailable": "No updates available",
+    "updateAvailable": "Update available",
     "updateDownloaded": "Update downloaded",
     "pressInstallToCloseTheAppAndUpdateIt": "Press install to close the app and update it",
     "storageLimitForImageThumbnailsWasReached": "Storage limit for image thumbnails was reached",

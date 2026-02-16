@@ -94,6 +94,11 @@ export type ShortcutId
 
 export type UserShortcuts = Partial<Record<ShortcutId, ShortcutKeys>>;
 
+export type AppUpdatesSettings = {
+  autoCheck: boolean;
+  lastCheckTimestamp: number;
+};
+
 export type ChangelogSettings = {
   showOnUpdate: boolean;
   lastSeenVersion: string;
@@ -121,6 +126,7 @@ export type UserSettings = {
   settingsCurrentTab: string;
   shortcuts?: UserShortcuts;
   focusWindowOnDriveConnected: boolean;
+  appUpdates: AppUpdatesSettings;
   changelog: ChangelogSettings;
 };
 

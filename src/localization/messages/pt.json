@@ -1313,6 +1313,7 @@
     "permissionsWereChanged": "PermissionsWereChanged",
     "failedToChangePermissions": "Falha ao alterar as permissões",
     "noUpdatesAvailable": "Nenhuma atualização disponível",
+    "updateAvailable": "Atualização disponível",
     "updateDownloaded": "Atualização baixada",
     "pressInstallToCloseTheAppAndUpdateIt": "Pressione instalar para fechar o aplicativo e atualizá-lo",
     "storageLimitForImageThumbnailsWasReached": "O limite de armazenamento para miniaturas de imagens foi atingido",

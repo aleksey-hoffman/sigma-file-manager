@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Migrate auto update system;
+- Migrate drag and drop functionality and fs copy/move conflict resolver;
 - Home banner media editor;
 - Keyboard navigation for the file browser: Arrow keys to move between entries (spatial navigation in grid view, sequential in list view), Enter to open the first selected directory or file, Backspace to navigate back. Works in both grid and list layout views and in split view. All navigation shortcuts are customizable in Settings > Shortcuts;
 - Keyboard shortcut Ctrl+Left / Ctrl+Right to switch focus between split view panes, selecting the first item in the target pane. Customizable in Settings > Shortcuts;

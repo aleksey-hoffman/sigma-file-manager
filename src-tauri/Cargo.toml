@@ -42,6 +42,8 @@ rayon = "1.10"
 tokio = { version = "1", features = ["rt", "rt-multi-thread"] }
 notify = "8"
 tauri-plugin-drag = "2"
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls"] }
+
 
 [target.'cfg(windows)'.dependencies]
 winreg = "0.55"
