@@ -1,3 +1,8 @@
+##  ⚡Latest news
+
+- v2 became the main branch
+- v2 moved from alpha to beta stage
+
 <h1>
   <img valign="middle" src="https://github.com/aleksey-hoffman/sigma-file-manager/raw/main/.github/media/logo-1024x1024.png" width="64px">
   &nbsp;&nbsp;Sigma File Manager
