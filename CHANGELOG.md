@@ -9,10 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
-### Fixed
-
-- Fixed visible console windows flickering on Windows in production builds when detecting available terminals and resolving executable paths (missing CREATE_NO_WINDOW flag on spawned processes);
-- Fixed `open_with_default` showing a brief console window flash when opening files on Windows;
+---
 
 ## [2.0.0-beta.1] - February 2026
 
