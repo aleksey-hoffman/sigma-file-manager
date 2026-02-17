@@ -80,7 +80,6 @@ fn setup_handler(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>>
         )?;
     }
 
-    // Initialize system tray for Tauri v2
     system_tray::setup_system_tray(&app.handle())?;
 
     // Open devtools in production for debugging (TODO: remove after debugging)

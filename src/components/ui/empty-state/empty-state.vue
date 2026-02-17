@@ -7,12 +7,14 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 import type { Component } from 'vue';
 
 withDefaults(defineProps<{
-  icon?: Component;
+  icon: Component;
   iconSize?: number;
   title: string;
   description?: string;
   bordered?: boolean;
 }>(), {
+  iconSize: 48,
+  description: '',
   bordered: true,
 });
 </script>
@@ -25,7 +27,7 @@ withDefaults(defineProps<{
     <component
       :is="icon"
       v-if="icon"
-      :size="iconSize ?? 48"
+      :size="iconSize"
       class="empty-state__icon"
     />
     <p class="empty-state__title">

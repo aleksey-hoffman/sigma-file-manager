@@ -6,5 +6,5 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
-    sigma_file_manager_tauri_v2_own_frontend_lib::run();
+    sigma_file_manager::run();
 }

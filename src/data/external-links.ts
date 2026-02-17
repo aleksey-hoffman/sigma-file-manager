@@ -3,7 +3,6 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 const githubMainBranch = 'main';
-const githubV2Branch = 'v2';
 const githubUser = 'aleksey-hoffman';
 const githubRepo = 'sigma-file-manager';
 const githubFullRepoName = `${githubUser}/${githubRepo}`;
@@ -13,8 +12,8 @@ const githubRawApiUrl = 'https://raw.githubusercontent.com';
 const githubUserLink = `${githubBaseUrl}/${githubUser}`;
 const githubRepoLink = `${githubBaseUrl}/${githubFullRepoName}`;
 const githubRepoApiLink = `${githubBaseApiUrl}/${githubFullRepoName}`;
-const githubLicenseLink = `${githubRepoLink}/blob/${githubV2Branch}/LICENSE.md`;
-const githubChangelogLink = `${githubRepoLink}/blob/${githubV2Branch}/CHANGELOG.md`;
+const githubLicenseLink = `${githubRepoLink}/blob/${githubMainBranch}/LICENSE.md`;
+const githubChangelogLink = `${githubRepoLink}/blob/${githubMainBranch}/CHANGELOG.md`;
 const githubIssuesLink = `${githubRepoLink}/issues/`;
 const githubDiscussionsLink = `${githubRepoLink}/discussions/`;
 const githubIssueTemplateProblemReport = `${githubRepoLink}/issues/new?template=Problem_report.md`;
