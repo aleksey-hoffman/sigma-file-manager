@@ -67,6 +67,18 @@ const activeTabId = ref<string | null>(null);
 const smallScreenMediaQuery = window.matchMedia(`(max-width: ${UI_CONSTANTS.SMALL_SCREEN_BREAKPOINT}px)`);
 const isSmallScreen = ref(smallScreenMediaQuery.matches);
 
+watch(() => workspacesStore.currentTabGroup, () => {
+  const currentTabIds = new Set(
+    workspacesStore.currentTabGroup?.map(tab => tab.id) || [],
+  );
+
+  for (const tabId of paneRefsMap.value.keys()) {
+    if (!currentTabIds.has(tabId)) {
+      paneRefsMap.value.delete(tabId);
+    }
+  }
+});
+
 function handleSmallScreenChange(event: MediaQueryListEvent) {
   isSmallScreen.value = event.matches;
 }
@@ -198,14 +210,40 @@ function getActivePaneRef(): FileBrowserInstance | undefined {
   }
 
   if (!isSplitView.value) {
-    return singlePaneRef.value || Array.from(paneRefsMap.value.values())[0];
+    const currentTabId = workspacesStore.currentTabGroup?.[0]?.id;
+
+    if (currentTabId && paneRefsMap.value.has(currentTabId)) {
+      return paneRefsMap.value.get(currentTabId);
+    }
+
+    return singlePaneRef.value || undefined;
   }
 
   if (activeTabId.value && paneRefsMap.value.has(activeTabId.value)) {
     return paneRefsMap.value.get(activeTabId.value);
   }
 
-  return Array.from(paneRefsMap.value.values())[0];
+  const firstCurrentTabId = workspacesStore.currentTabGroup?.[0]?.id;
+
+  if (firstCurrentTabId && paneRefsMap.value.has(firstCurrentTabId)) {
+    return paneRefsMap.value.get(firstCurrentTabId);
+  }
+
+  return undefined;
+}
+
+function getPasteTargetPath(): string | undefined {
+  if (isSplitView.value && activeTabId.value) {
+    const activeTab = workspacesStore.currentTabGroup?.find(
+      tab => tab.id === activeTabId.value,
+    );
+
+    if (activeTab?.path) {
+      return activeTab.path;
+    }
+  }
+
+  return workspacesStore.currentTabGroup?.[0]?.path;
 }
 
 async function handleGlobalSearchOpenEntry(entry: DirEntry) {
@@ -281,7 +319,7 @@ async function handlePasteShortcut() {
   const pane = getActivePaneRef();
 
   if (pane && clipboardStore.hasItems) {
-    await pane.pasteItems();
+    await pane.pasteItems(getPasteTargetPath());
   }
 }
 
@@ -295,7 +333,7 @@ async function handlePasteToPane(paneIndex: number) {
   const pane = paneRefsMap.value.get(tab.id);
 
   if (pane) {
-    await pane.pasteItems();
+    await pane.pasteItems(tab.path);
   }
 }
 
