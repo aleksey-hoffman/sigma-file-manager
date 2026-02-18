@@ -43,6 +43,7 @@ import {
   XIcon,
   EllipsisVerticalIcon,
   FolderIcon,
+  ChevronRightIcon,
 } from 'lucide-vue-next';
 import { toast, CustomSimple } from '@/components/ui/toaster';
 import type { DirContents } from '@/types/dir-entry';
@@ -67,6 +68,8 @@ const addressBarRef = ref<HTMLElement | null>(null);
 const breadcrumbsContainerRef = ref<HTMLElement | null>(null);
 const pathInputRef = ref<InstanceType<typeof Input> | null>(null);
 const popoverWidth = ref(0);
+const separatorDropdowns = ref<{ [key: number]: string[] }>({});
+const activeSeparatorIndex = ref<number | null>(null);
 
 function updatePopoverWidth() {
   if (addressBarRef.value) {
@@ -118,6 +121,31 @@ function scrollBreadcrumbsToEnd() {
   if (breadcrumbsContainerRef.value) {
     breadcrumbsContainerRef.value.scrollLeft = breadcrumbsContainerRef.value.scrollWidth;
   }
+}
+
+async function loadSeparatorDirectories(index: number) {
+  const part = addressParts.value[index];
+  if (!part) return;
+
+  try {
+    const result = await invoke<DirContents>('read_dir', { path: part.path });
+    const directories = result.entries
+      .filter(entry => entry.is_dir)
+      .map(entry => ({
+        path: entry.path,
+        name: entry.name,
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+    separatorDropdowns.value[index] = directories.map(d => d.path);
+    activeSeparatorIndex.value = index;
+  }
+  catch {
+    separatorDropdowns.value[index] = [];
+  }
+}
+
+function handleSeparatorNavigate(path: string) {
+  emit('navigate', path);
 }
 
 function scrollSelectedIntoView() {
@@ -381,10 +409,45 @@ onUnmounted(() => {
               >
                 {{ part.name }}
               </button>
-              <span
+              <DropdownMenu
                 v-if="!part.isLast"
-                class="address-bar__separator"
-              >/</span>
+                @update:open="(open: boolean) => { if (open) loadSeparatorDirectories(index) }"
+              >
+                <DropdownMenuTrigger as-child>
+                  <button
+                    class="address-bar__separator"
+                    :title="t('settings.addressBar.showSiblingFolders')"
+                    @click.stop
+                  >
+                    <ChevronRightIcon :size="12" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  :side="'bottom'"
+                  :align="'start'"
+                  class="address-bar__separator-menu"
+                >
+                  <ScrollArea
+                    v-if="separatorDropdowns[index]?.length > 0"
+                    class="address-bar__separator-menu-scroll"
+                  >
+                    <DropdownMenuItem
+                      v-for="dirPath in separatorDropdowns[index]"
+                      :key="dirPath"
+                      @select="handleSeparatorNavigate(dirPath)"
+                    >
+                      <FolderIcon :size="14" />
+                      <span class="address-bar__separator-menu-path">{{ dirPath.split('/').pop() || dirPath }}</span>
+                    </DropdownMenuItem>
+                  </ScrollArea>
+                  <div
+                    v-else
+                    class="address-bar__separator-menu-empty"
+                  >
+                    {{ t('settings.addressBar.noSubdirectories') }}
+                  </div>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </template>
           </div>
         </div>
@@ -593,8 +656,24 @@ onUnmounted(() => {
 }
 
 .address-bar__separator {
+  padding: 4px 6px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
   color: hsl(var(--muted-foreground) / 60%);
+  cursor: pointer;
   font-size: 13px;
+  transition: background-color 0.1s, color 0.1s;
+}
+
+.address-bar__separator:hover {
+  background-color: hsl(var(--secondary));
+  color: hsl(var(--foreground));
+}
+
+.address-bar__separator:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
 }
 
 </style>
@@ -724,5 +803,35 @@ onUnmounted(() => {
   margin-left: 6px;
   color: hsl(var(--primary));
   font-weight: 500;
+}
+
+.address-bar__separator-menu.sigma-ui-dropdown-menu-content {
+  min-width: 180px;
+  max-width: 300px;
+  padding: 0;
+}
+
+.address-bar__separator-menu-scroll {
+  max-height: 250px;
+  padding: 4px 0;
+}
+
+.address-bar__separator-menu .sigma-ui-dropdown-menu-item {
+  gap: 8px;
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
+.address-bar__separator-menu-path {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.address-bar__separator-menu-empty {
+  padding: 12px;
+  color: hsl(var(--muted-foreground));
+  font-size: 12px;
+  text-align: center;
 }
 </style>
