@@ -416,7 +416,7 @@ onUnmounted(() => {
                 <DropdownMenuTrigger as-child>
                   <button
                     class="address-bar__separator"
-                    :title="t('settings.addressBar.showSiblingFolders')"
+                    :title="t('settings.addressBar.showSiblingDirectories')"
                     @click.stop
                   >
                     <ChevronRightIcon :size="12" />
