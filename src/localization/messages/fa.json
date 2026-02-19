@@ -473,8 +473,7 @@
       "copyPathToClipboard": "کپی مسیر به کلیپ بورد",
       "openCopiedPath": "باز کردن مسیر کپی شده",
       "noMatchingDirectories": "هیچ پوشه‌ای مطابقت ندارد",
-      "showSiblingDirectories": "نمایش پوشه‌های همسطح",
-      "noSubdirectories": "بدون زیرپوشه"
+      "showSiblingDirectories": "نمایش پوشه‌های همسطح"
     },
     "clipboard": {
       "inactiveUnselectable": "غیر فعال غیر قابل انتخاب",

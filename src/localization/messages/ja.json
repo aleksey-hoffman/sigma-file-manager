@@ -474,8 +474,7 @@
       "copyPathToClipboard": "パスをクリップボードにコピー",
       "openCopiedPath": "コピーしたパスを開く",
       "noMatchingDirectories": "一致するディレクトリがありません",
-      "showSiblingDirectories": "兄弟ディレクトリを表示",
-      "noSubdirectories": "サブディレクトリがありません"
+      "showSiblingDirectories": "兄弟ディレクトリを表示"
     },
     "clipboard": {
       "inactiveUnselectable": "非アクティブ選択不可",

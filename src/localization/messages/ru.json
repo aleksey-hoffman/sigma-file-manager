@@ -487,8 +487,7 @@
       "copyPathToClipboard": "Копировать путь",
       "openCopiedPath": "Вставить и открыть скопированный путь",
       "noMatchingDirectories": "Нет подходящих каталогов",
-      "showSiblingDirectories": "Показать соседние каталоги",
-      "noSubdirectories": "Нет подкаталогов"
+      "showSiblingDirectories": "Показать соседние каталоги"
     },
     "clipboard": {
       "inactiveUnselectable": "неактивный невыбираемый",

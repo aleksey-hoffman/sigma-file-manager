@@ -474,8 +474,7 @@
       "copyPathToClipboard": "Copiar caminho para a área de transferência",
       "openCopiedPath": "abrir caminho copiado",
       "noMatchingDirectories": "Nenhum diretório correspondente",
-      "showSiblingDirectories": "Mostrar diretórios irmãos",
-      "noSubdirectories": "Sem subdiretórios"
+      "showSiblingDirectories": "Mostrar diretórios irmãos"
     },
     "clipboard": {
       "inactiveUnselectable": "inativo Não selecionável",

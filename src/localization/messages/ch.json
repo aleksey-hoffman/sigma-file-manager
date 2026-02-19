@@ -474,8 +474,7 @@
       "copyPathToClipboard": "复制路径到剪贴板",
       "openCopiedPath": "打开复制的路径",
       "noMatchingDirectories": "没有匹配的目录",
-      "showSiblingDirectories": "Show sibling directories",
-      "noSubdirectories": "No subdirectories"
+      "showSiblingDirectories": "显示同级文件夹"
     },
     "clipboard": {
       "inactiveUnselectable": "不可选择不活动的",

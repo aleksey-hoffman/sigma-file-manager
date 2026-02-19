@@ -474,8 +474,7 @@
       "copyPathToClipboard": "Copia il percorso",
       "openCopiedPath": "Incolla e apri il percorso copiato",
       "noMatchingDirectories": "Nessuna cartella corrispondente",
-      "showSiblingDirectories": "Mostra cartelle sorelle",
-      "noSubdirectories": "Nessuna sottocartella"
+      "showSiblingDirectories": "Mostra cartelle sorelle"
     },
     "clipboard": {
       "inactiveUnselectable": "inattivo non selezionabile",

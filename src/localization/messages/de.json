@@ -474,8 +474,7 @@
       "copyPathToClipboard": "Pfad in die Zwischenablage kopieren",
       "openCopiedPath": "Kopierpfad öffnen",
       "noMatchingDirectories": "Keine passenden Verzeichnisse",
-      "showSiblingDirectories": "Geschwisterverzeichnisse anzeigen",
-      "noSubdirectories": "Keine Unterverzeichnisse"
+      "showSiblingDirectories": "Geschwisterverzeichnisse anzeigen"
     },
     "clipboard": {
       "inactiveUnselectable": "inaktiv nicht wählbar",

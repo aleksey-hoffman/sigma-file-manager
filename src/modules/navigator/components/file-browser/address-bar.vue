@@ -69,7 +69,6 @@ const breadcrumbsContainerRef = ref<HTMLElement | null>(null);
 const pathInputRef = ref<InstanceType<typeof Input> | null>(null);
 const popoverWidth = ref(0);
 const separatorDropdowns = ref<{ [key: number]: string[] }>({});
-const activeSeparatorIndex = ref<number | null>(null);
 const openSeparators = ref<Set<number>>(new Set());
 
 function updatePopoverWidth() {
@@ -138,7 +137,6 @@ async function loadSeparatorDirectories(index: number) {
       }))
       .sort((a, b) => a.name.localeCompare(b.name));
     separatorDropdowns.value[index] = directories.map(d => d.path);
-    activeSeparatorIndex.value = index;
   }
   catch {
     separatorDropdowns.value[index] = [];
@@ -439,24 +437,20 @@ onUnmounted(() => {
                   class="address-bar__separator-menu"
                 >
                   <ScrollArea
-                    v-if="separatorDropdowns[index]?.length > 0"
+                    as-child
                     class="address-bar__separator-menu-scroll"
                   >
-                    <DropdownMenuItem
-                      v-for="dirPath in separatorDropdowns[index]"
-                      :key="dirPath"
-                      @select="handleSeparatorNavigate(dirPath)"
-                    >
-                      <FolderIcon :size="14" />
-                      <span class="address-bar__separator-menu-path">{{ dirPath.split('/').pop() || dirPath }}</span>
-                    </DropdownMenuItem>
+                    <div>
+                      <DropdownMenuItem
+                        v-for="dirPath in separatorDropdowns[index]"
+                        :key="dirPath"
+                        @select="handleSeparatorNavigate(dirPath)"
+                      >
+                        <FolderIcon :size="14" />
+                        <span class="address-bar__separator-menu-path">{{ dirPath.split('/').pop() || dirPath }}</span>
+                      </DropdownMenuItem>
+                    </div>
                   </ScrollArea>
-                  <div
-                    v-else
-                    class="address-bar__separator-menu-empty"
-                  >
-                    {{ t('settings.addressBar.noSubdirectories') }}
-                  </div>
                 </DropdownMenuContent>
               </DropdownMenu>
             </template>
@@ -845,12 +839,5 @@ onUnmounted(() => {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.address-bar__separator-menu-empty {
-  padding: 12px;
-  color: hsl(var(--muted-foreground));
-  font-size: 12px;
-  text-align: center;
 }
 </style>

@@ -487,8 +487,7 @@
       "copyPathToClipboard": "Kopiraj pot",
       "openCopiedPath": "Prilepi in odpri kopirano pot",
       "noMatchingDirectories": "Ni ujemajočih se map",
-      "showSiblingDirectories": "Prikaži sorodne mape",
-      "noSubdirectories": "Ni podmap"
+      "showSiblingDirectories": "Prikaži sorodne mape"
     },
     "clipboard": {
       "inactiveUnselectable": "neaktivno neizbirljivo",

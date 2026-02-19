@@ -474,8 +474,7 @@
       "copyPathToClipboard": "Yolu panoya kopyala",
       "openCopiedPath": "Kopyalanan yolu aç",
       "noMatchingDirectories": "Eşleşen dizin yok",
-      "showSiblingDirectories": "Kardeş dizinleri göster",
-      "noSubdirectories": "Alt dizin yok"
+      "showSiblingDirectories": "Kardeş dizinleri göster"
     },
     "clipboard": {
       "inactiveUnselectable": "etkin değil seçilemez",
