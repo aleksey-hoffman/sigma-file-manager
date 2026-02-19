@@ -70,6 +70,7 @@ const pathInputRef = ref<InstanceType<typeof Input> | null>(null);
 const popoverWidth = ref(0);
 const separatorDropdowns = ref<{ [key: number]: string[] }>({});
 const activeSeparatorIndex = ref<number | null>(null);
+const openSeparators = ref<Set<number>>(new Set());
 
 function updatePopoverWidth() {
   if (addressBarRef.value) {
@@ -411,7 +412,14 @@ onUnmounted(() => {
               </button>
               <DropdownMenu
                 v-if="!part.isLast"
-                @update:open="(open: boolean) => { if (open) loadSeparatorDirectories(index) }"
+                @update:open="(open: boolean) => {
+                  if (open) {
+                    loadSeparatorDirectories(index);
+                    openSeparators.add(index);
+                  } else {
+                    openSeparators.delete(index);
+                  }
+                }"
               >
                 <DropdownMenuTrigger as-child>
                   <button
@@ -419,7 +427,10 @@ onUnmounted(() => {
                     :title="t('settings.addressBar.showSiblingDirectories')"
                     @click.stop
                   >
-                    <ChevronRightIcon :size="12" />
+                    <ChevronRightIcon
+                      :size="12"
+                      :class="{ 'address-bar__separator-icon--open': openSeparators.has(index) }"
+                    />
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
@@ -674,6 +685,14 @@ onUnmounted(() => {
 .address-bar__separator:focus-visible {
   outline: 2px solid hsl(var(--ring));
   outline-offset: 2px;
+}
+
+.address-bar__separator-icon--open {
+  transform: rotate(90deg);
+}
+
+.address-bar__separator svg {
+  transition: transform 0.3s ease-in-out;
 }
 
 </style>
