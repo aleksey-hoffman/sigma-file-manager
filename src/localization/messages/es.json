@@ -473,7 +473,9 @@
       "toOpenThePath": "abrir el camino",
       "copyPathToClipboard": "Copiar ruta al portapapeles",
       "openCopiedPath": "Abrir ruta copiada",
-      "noMatchingDirectories": "No hay directorios coincidentes"
+      "noMatchingDirectories": "No hay directorios coincidentes",
+      "showSiblingDirectories": "Mostrar directorios hermanos",
+      "noSubdirectories": "Sin subdirectorios"
     },
     "clipboard": {
       "inactiveUnselectable": "inactivo no seleccionable",

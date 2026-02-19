@@ -473,7 +473,9 @@
       "toOpenThePath": "để mở đường",
       "copyPathToClipboard": "Sao chép đường dẫn vào khay nhớ tạm",
       "openCopiedPath": "Mở đường dẫn đã sao chép",
-      "noMatchingDirectories": "Không có thư mục phù hợp"
+      "noMatchingDirectories": "Không có thư mục phù hợp",
+      "showSiblingDirectories": "Hiển thị thư mục anh chị em",
+      "noSubdirectories": "Không có thư mục con"
     },
     "clipboard": {
       "inactiveUnselectable": "không hoạt động không thể chọn",

@@ -472,7 +472,9 @@
       "toOpenThePath": "برای باز کردن راه",
       "copyPathToClipboard": "کپی مسیر به کلیپ بورد",
       "openCopiedPath": "باز کردن مسیر کپی شده",
-      "noMatchingDirectories": "هیچ پوشه‌ای مطابقت ندارد"
+      "noMatchingDirectories": "هیچ پوشه‌ای مطابقت ندارد",
+      "showSiblingDirectories": "نمایش پوشه‌های همسطح",
+      "noSubdirectories": "بدون زیرپوشه"
     },
     "clipboard": {
       "inactiveUnselectable": "غیر فعال غیر قابل انتخاب",
