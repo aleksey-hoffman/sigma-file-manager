@@ -440,16 +440,14 @@ onUnmounted(() => {
                     as-child
                     class="address-bar__separator-menu-scroll"
                   >
-                    <div>
-                      <DropdownMenuItem
-                        v-for="dirPath in separatorDropdowns[index]"
-                        :key="dirPath"
-                        @select="handleSeparatorNavigate(dirPath)"
-                      >
-                        <FolderIcon :size="14" />
-                        <span class="address-bar__separator-menu-path">{{ dirPath.split('/').pop() || dirPath }}</span>
-                      </DropdownMenuItem>
-                    </div>
+                    <DropdownMenuItem
+                      v-for="dirPath in separatorDropdowns[index]"
+                      :key="dirPath"
+                      @select="handleSeparatorNavigate(dirPath)"
+                    >
+                      <FolderIcon :size="14" />
+                      <span class="address-bar__separator-menu-path">{{ dirPath.split('/').pop() || dirPath }}</span>
+                    </DropdownMenuItem>
                   </ScrollArea>
                 </DropdownMenuContent>
               </DropdownMenu>
