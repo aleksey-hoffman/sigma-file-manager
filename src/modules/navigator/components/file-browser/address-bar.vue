@@ -69,7 +69,7 @@ const breadcrumbsContainerRef = ref<HTMLElement | null>(null);
 const pathInputRef = ref<InstanceType<typeof Input> | null>(null);
 const popoverWidth = ref(0);
 const separatorDropdowns = ref<{ [key: number]: string[] }>({});
-const openSeparators = ref<Set<number>>(new Set());
+const openSeparatorIndex = ref<number | null>(null);
 
 function updatePopoverWidth() {
   if (addressBarRef.value) {
@@ -413,9 +413,9 @@ onUnmounted(() => {
                 @update:open="(open: boolean) => {
                   if (open) {
                     loadSeparatorDirectories(index);
-                    openSeparators.add(index);
+                    openSeparatorIndex = index;
                   } else {
-                    openSeparators.delete(index);
+                    openSeparatorIndex = null;
                   }
                 }"
               >
@@ -427,7 +427,7 @@ onUnmounted(() => {
                   >
                     <ChevronRightIcon
                       :size="12"
-                      :class="{ 'address-bar__separator-icon--open': openSeparators.has(index) }"
+                      :class="{ 'address-bar__separator-icon--open': openSeparatorIndex === index }"
                     />
                   </button>
                 </DropdownMenuTrigger>
