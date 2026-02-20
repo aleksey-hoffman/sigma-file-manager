@@ -473,7 +473,8 @@
       "toOpenThePath": "ouvrir le chemin",
       "copyPathToClipboard": "Copier le chemin dans le presse-papiers",
       "openCopiedPath": "Ouvrir le chemin copié",
-      "noMatchingDirectories": "Aucun répertoire correspondant"
+      "noMatchingDirectories": "Aucun répertoire correspondant",
+      "showSiblingDirectories": "Afficher les répertoires frères"
     },
     "clipboard": {
       "inactiveUnselectable": "inactif non sélectionnable",

@@ -473,7 +473,8 @@
       "toOpenThePath": "yolu açmak",
       "copyPathToClipboard": "Yolu panoya kopyala",
       "openCopiedPath": "Kopyalanan yolu aç",
-      "noMatchingDirectories": "Eşleşen dizin yok"
+      "noMatchingDirectories": "Eşleşen dizin yok",
+      "showSiblingDirectories": "Kardeş dizinleri göster"
     },
     "clipboard": {
       "inactiveUnselectable": "etkin değil seçilemez",

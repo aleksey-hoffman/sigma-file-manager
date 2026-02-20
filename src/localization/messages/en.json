@@ -486,7 +486,8 @@
       "toOpenThePath": "to open the path",
       "copyPathToClipboard": "Copy path",
       "openCopiedPath": "Paste and open copied path",
-      "noMatchingDirectories": "No matching directories"
+      "noMatchingDirectories": "No matching directories",
+      "showSiblingDirectories": "Show sibling directories"
     },
     "clipboard": {
       "inactiveUnselectable": "inactive unselectable",
