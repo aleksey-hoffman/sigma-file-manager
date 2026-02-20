@@ -445,7 +445,10 @@ onUnmounted(() => {
                       :key="dirPath"
                       @select="handleSeparatorNavigate(dirPath)"
                     >
-                      <FolderIcon :size="14" />
+                      <FolderIcon
+                        :size="14"
+                        class="address-bar__separator-menu-icon"
+                      />
                       <span class="address-bar__separator-menu-path">{{ dirPath.split('/').pop() || dirPath }}</span>
                     </DropdownMenuItem>
                   </ScrollArea>
@@ -684,7 +687,7 @@ onUnmounted(() => {
 }
 
 .address-bar__separator svg {
-  transition: transform 0.3s ease-in-out;
+  transition: transform 0.1s ease-in-out;
 }
 
 </style>
@@ -786,6 +789,10 @@ onUnmounted(() => {
   font-size: 12px;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.address-bar__separator-menu-icon {
+  flex-shrink: 0;
 }
 
 .address-bar__empty {
