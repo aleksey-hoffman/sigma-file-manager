@@ -835,9 +835,9 @@ onUnmounted(() => {
 }
 
 .address-bar__separator-menu .sigma-ui-dropdown-menu-item {
-  gap: 8px;
   padding: 6px 12px;
   font-size: 12px;
+  gap: 8px;
 }
 
 .address-bar__separator-menu-path {
