@@ -29,7 +29,7 @@ tauri-plugin-os = "2"
 tauri-plugin-dialog = "2"
 tauri-plugin-global-shortcut = "2"
 tauri-plugin-system-fonts = "2"
-sysinfo = "0.37"
+sysinfo = { version = "0.37", features = ["linux-netdevs"] }
 trash = "5.2.5"
 base64 = "0.22"
 png = "0.17"

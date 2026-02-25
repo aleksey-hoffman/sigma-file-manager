@@ -295,10 +295,7 @@ fn should_skip_linux_mount(file_system: &str, name: &str, mount_point: &str) -> 
 }
 
 #[cfg(target_os = "linux")]
-fn get_linux_display_name(sysinfo_name: &str, mount_point: &str) -> String {
-    if !sysinfo_name.is_empty() && !sysinfo_name.starts_with("/dev/") {
-        return sysinfo_name.to_string();
-    }
+fn get_linux_display_name(_sysinfo_name: &str, mount_point: &str) -> String {
     mount_point
         .rsplit('/')
         .find(|segment| !segment.is_empty())
