@@ -251,24 +251,59 @@ pub fn read_dir(path: String) -> Result<DirContents, String> {
 }
 
 #[cfg(target_os = "linux")]
-fn is_virtual_or_irrelevant_filesystem(file_system: &str, name: &str, mount_point: &str) -> bool {
+fn is_virtual_filesystem(file_system: &str) -> bool {
     let fs_lower = file_system.to_lowercase();
-    let name_lower = name.to_lowercase();
-    let virtual_fs: [&str; 21] = [
+    let virtual_fs: [&str; 24] = [
         "tmpfs", "cgroup", "cgroup2", "sysfs", "proc", "devtmpfs", "securityfs", "debugfs",
         "configfs", "fusectl", "mqueue", "hugetlbfs", "devpts", "bpf", "tracefs", "pstore",
-        "efivarfs", "squashfs", "overlay", "fuse.portal", "portal",
+        "efivarfs", "squashfs", "overlay", "fuse.portal", "portal", "autofs", "ramfs",
+        "rpc_pipefs",
     ];
-    if virtual_fs.iter().any(|virtual_fs_type| fs_lower.starts_with(virtual_fs_type) || fs_lower.contains(virtual_fs_type)) {
+    virtual_fs.iter().any(|virtual_fs_type| fs_lower.starts_with(virtual_fs_type) || fs_lower.contains(virtual_fs_type))
+}
+
+#[cfg(target_os = "linux")]
+fn is_network_filesystem(file_system: &str) -> bool {
+    let fs_lower = file_system.to_lowercase();
+    let network_fs: [&str; 7] = [
+        "nfs", "nfs4", "cifs", "smbfs", "fuse.sshfs", "fuse.rclone", "fuse.gvfsd-fuse",
+    ];
+    network_fs.iter().any(|network_fs_type| fs_lower == *network_fs_type)
+}
+
+#[cfg(target_os = "linux")]
+fn should_skip_linux_mount(file_system: &str, name: &str, mount_point: &str) -> bool {
+    if is_virtual_filesystem(file_system) {
         return true;
     }
-    if name_lower == "none" {
+    if name.to_lowercase() == "none" {
         return true;
     }
     if mount_point.starts_with("/dev/") && !mount_point.starts_with("/dev/pts") {
         return true;
     }
-    false
+    if mount_point == "/" {
+        return true;
+    }
+    let is_user_mount = mount_point.starts_with("/media/")
+        || mount_point.starts_with("/mnt/")
+        || mount_point.starts_with("/run/media/");
+    if is_user_mount || is_network_filesystem(file_system) {
+        return false;
+    }
+    true
+}
+
+#[cfg(target_os = "linux")]
+fn get_linux_display_name(sysinfo_name: &str, mount_point: &str) -> String {
+    if !sysinfo_name.is_empty() && !sysinfo_name.starts_with("/dev/") {
+        return sysinfo_name.to_string();
+    }
+    mount_point
+        .rsplit('/')
+        .find(|segment| !segment.is_empty())
+        .unwrap_or(mount_point)
+        .to_string()
 }
 
 #[tauri::command]
@@ -286,7 +321,7 @@ pub fn get_system_drives() -> Result<Vec<DriveInfo>, String> {
 
         #[cfg(target_os = "linux")]
         if total_space == 0
-            || is_virtual_or_irrelevant_filesystem(
+            || should_skip_linux_mount(
                 &disk.file_system().to_string_lossy(),
                 &disk.name().to_string_lossy(),
                 &mount_point,
@@ -319,27 +354,18 @@ pub fn get_system_drives() -> Result<Vec<DriveInfo>, String> {
 
         let name = disk.name().to_string_lossy().to_string();
 
-        let display_name = if name.is_empty() {
+        let display_name = {
             #[cfg(windows)]
             {
-                format!("Local Disk ({})", mount_point.trim_end_matches('\\'))
-            }
-            #[cfg(not(windows))]
-            {
-                if mount_point == "/" {
-                    "Root".to_string()
+                if name.is_empty() {
+                    format!("Local Disk ({})", mount_point.trim_end_matches('\\'))
                 } else {
-                    mount_point.clone()
+                    format!("{} ({})", name, mount_point.trim_end_matches('\\'))
                 }
             }
-        } else {
-            #[cfg(windows)]
-            {
-                format!("{} ({})", name, mount_point.trim_end_matches('\\'))
-            }
             #[cfg(not(windows))]
             {
-                name
+                get_linux_display_name(&name, &mount_point)
             }
         };
 
