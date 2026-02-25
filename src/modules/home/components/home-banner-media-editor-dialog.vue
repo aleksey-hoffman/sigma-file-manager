@@ -42,7 +42,7 @@ const {
   addFilesFromPaths,
   addMediaUrl,
   removeCustomMedia,
-  customPaths,
+  customItems,
 } = useHomeBannerMedia();
 
 const isAddingFiles = ref(false);
@@ -110,7 +110,7 @@ function getFlatIndex(item: MediaItem): number {
     return item.index;
   }
 
-  return customPaths.value.length + item.index;
+  return customItems.value.length + item.index;
 }
 
 let unlistenDrop: (() => void) | null = null;
@@ -232,7 +232,7 @@ onUnmounted(() => {
 
               <div
                 v-for="item in allMediaItems.filter(i => i.kind === 'custom')"
-                :key="item.path"
+                :key="item.id"
                 class="home-banner-media-editor__item"
                 :class="{ 'home-banner-media-editor__item--selected': getFlatIndex(item) === currentIndex }"
                 @click="selectMedia(getFlatIndex(item))"

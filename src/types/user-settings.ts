@@ -28,7 +28,14 @@ export type HomeBannerPosition = {
   zoom: number;
 };
 
-export type HomeBannerPositions = Record<number, HomeBannerPosition>;
+export type HomeBannerPositions = Record<string, HomeBannerPosition>;
+
+export type HomeBannerCustomMediaItem = {
+  path: string;
+  id: string;
+};
+
+export type HomeBannerCustomMedia = HomeBannerCustomMediaItem[];
 
 export type UserDirectoryCustomization = {
   title?: string;
@@ -47,6 +54,7 @@ export type InfusionPageSettings = {
     type: 'image' | 'video';
     path: string;
     index: number;
+    mediaId?: string;
   };
 };
 
@@ -81,6 +89,7 @@ export type ShortcutId
     | 'escape'
     | 'quickView'
     | 'openNewTab'
+    | 'closeCurrentTab'
     | 'openTerminal'
     | 'openTerminalAdmin'
     | 'navigateUp'
@@ -122,7 +131,8 @@ export type UserSettings = {
   globalSearch: UserSettingsGlobalSearch;
   UIZoomLevel?: number;
   homeBannerIndex: number;
-  homeBannerCustomMedia: string[];
+  homeBannerMediaId: string;
+  homeBannerCustomMedia: HomeBannerCustomMedia;
   homeBannerPositions: HomeBannerPositions;
   driveCard: DriveCardSettings;
   userDirectories: UserDirectoriesCustomizations;
@@ -189,7 +199,10 @@ export type ListSortColumn = 'name' | 'items' | 'size' | 'modified';
 
 export type ListSortDirection = 'asc' | 'desc';
 
+export type LastTabCloseBehavior = 'createDefaultTab' | 'closeWindow' | 'navigateToHomePage';
+
 export type UserSettingsNavigator = {
+  lastTabCloseBehavior: LastTabCloseBehavior;
   layout: NavigatorLayout;
   infoPanel: UserSettingsNavigatorInfoPanel;
   showHiddenFiles: boolean;

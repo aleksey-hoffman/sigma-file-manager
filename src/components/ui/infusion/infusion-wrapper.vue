@@ -8,21 +8,13 @@ import { computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { Infusion } from './index';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
-import { homeBannerMedia } from '@/data/home-banner-media';
+import { useHomeBannerMedia } from '@/modules/home/composables/use-home-banner-media';
+import { DEFAULT_INFUSION_BACKGROUND_FILE_NAME } from '@/data/home-banner-media';
 import type { InfusionPage } from '@/types/user-settings';
 
 const userSettingsStore = useUserSettingsStore();
 const route = useRoute();
-
-const bannerImages = import.meta.glob('@/assets/media/home-banner/*.jpg', {
-  eager: true,
-  import: 'default',
-}) as Record<string, string>;
-
-const bannerVideos = import.meta.glob('@/assets/media/home-banner/*.mp4', {
-  eager: true,
-  import: 'default',
-}) as Record<string, string>;
+const { allMediaItems, getPositionKey, getMediaUrl } = useHomeBannerMedia();
 
 const infusionSettings = computed(() => userSettingsStore.userSettings.infusion);
 
@@ -38,29 +30,41 @@ const effectivePageSettings = computed(() => {
   return settings.pages[currentRouteName.value] || settings.pages[''];
 });
 
-function getMediaUrl(fileName: string, type: 'image' | 'video'): string {
-  const mediaMap = type === 'video' ? bannerVideos : bannerImages;
-  const key = Object.keys(mediaMap).find(path => path.includes(fileName));
-  return key ? mediaMap[key] : '';
-}
+function getInfusionMediaFromBackground(background: { index?: number;
+  mediaId?: string; }) {
+  const mediaId = (typeof background.mediaId === 'string' && background.mediaId.trim())
+    ? background.mediaId
+    : DEFAULT_INFUSION_BACKGROUND_FILE_NAME;
 
-const infusionSrc = computed(() => {
-  const background = effectivePageSettings.value.background;
-  const media = homeBannerMedia[background.index];
+  const items = allMediaItems.value;
+  const item = items.find(i => getPositionKey(i) === mediaId);
 
-  if (!media) {
-    const fallbackMedia = homeBannerMedia[0];
-    return getMediaUrl(fallbackMedia.fileName, fallbackMedia.type);
+  if (item) {
+    return {
+      url: getMediaUrl(item),
+      type: item.kind === 'builtin' ? item.data.type : item.type,
+    };
   }
 
-  return getMediaUrl(media.fileName, media.type);
-});
+  const fallback = items.find(
+    i => i.kind === 'builtin' && i.data.fileName === DEFAULT_INFUSION_BACKGROUND_FILE_NAME,
+  ) ?? items[0];
 
-const infusionType = computed(() => {
-  const background = effectivePageSettings.value.background;
-  const media = homeBannerMedia[background.index];
-  return media?.type || 'image';
-});
+  if (fallback) {
+    return {
+      url: getMediaUrl(fallback),
+      type: fallback.kind === 'builtin' ? fallback.data.type : fallback.type,
+    };
+  }
+
+  return {
+    url: '',
+    type: 'image' as const,
+  };
+}
+
+const infusionSrc = computed(() => getInfusionMediaFromBackground(effectivePageSettings.value.background).url);
+const infusionType = computed(() => getInfusionMediaFromBackground(effectivePageSettings.value.background).type);
 
 const infusionOpacity = computed(() => effectivePageSettings.value.opacity / 100);
 const infusionBlur = computed(() => effectivePageSettings.value.blur);

@@ -9,6 +9,11 @@ import { ref, computed } from 'vue';
 import type {
   UserSettings, LocalizationLanguage, UserSettingsPath, UserSettingsValue, InfusionPageSettings,
 } from '@/types/user-settings';
+import {
+  homeBannerMedia,
+  DEFAULT_HOME_BANNER_FILE_NAME,
+  DEFAULT_INFUSION_BACKGROUND_FILE_NAME,
+} from '@/data/home-banner-media';
 import { useTheme } from './use/use-theme';
 import { useUserPathsStore } from './user-paths';
 import { i18n } from '@/localization';
@@ -52,6 +57,7 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
       },
     },
     navigator: {
+      lastTabCloseBehavior: 'createDefaultTab',
       layout: {
         type: {
           title: 'listLayout',
@@ -99,6 +105,7 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
     },
     UIZoomLevel: 1.0,
     homeBannerIndex: 0,
+    homeBannerMediaId: DEFAULT_HOME_BANNER_FILE_NAME,
     homeBannerCustomMedia: [],
     homeBannerPositions: {},
     driveCard: {
@@ -133,31 +140,40 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
     },
   });
 
+  function createDefaultInfusionBackground() {
+    const media = homeBannerMedia.find(item => item.fileName === DEFAULT_INFUSION_BACKGROUND_FILE_NAME)
+      ?? homeBannerMedia[0];
+    const index = homeBannerMedia.findIndex(item => item.fileName === media.fileName);
+
+    return {
+      type: media.type as 'image' | 'video',
+      path: media.fileName,
+      index: index >= 0 ? index : 0,
+      mediaId: media.fileName,
+    };
+  }
+
   function createDefaultInfusionPageSettings(): InfusionPageSettings {
+    const background = createDefaultInfusionBackground();
+
     return {
       blur: 64,
       opacity: 15,
       noise: 5,
       noiseScale: 0.5,
-      background: {
-        type: 'image',
-        path: '',
-        index: 0,
-      },
+      background,
     };
   }
 
   function createDefaultInfusionPageSettingsHome(): InfusionPageSettings {
+    const background = createDefaultInfusionBackground();
+
     return {
       blur: 32,
       opacity: 5,
       noise: 5,
       noiseScale: 0.5,
-      background: {
-        type: 'image',
-        path: '',
-        index: 0,
-      },
+      background,
     };
   }
 
@@ -287,7 +303,12 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
     await initUserSettings();
 
     if (userSettingsStorage.value) {
-      await migrateUserSettingsStorage(userSettingsStorage.value);
+      try {
+        await migrateUserSettingsStorage(userSettingsStorage.value);
+      }
+      catch (error) {
+        console.error('[UserSettings] Migration failed, loading with current storage state:', error);
+      }
     }
 
     await loadUserSettings();

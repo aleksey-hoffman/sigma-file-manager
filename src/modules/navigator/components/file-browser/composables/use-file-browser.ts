@@ -35,6 +35,7 @@ export interface UseFileBrowserOptions {
   onCurrentDirEntryChange: (entry: DirEntry | null) => void;
   onOpenEntry: (entry: DirEntry) => void;
   componentRef: Ref<HTMLElement | null>;
+  isDefaultPane?: boolean;
 }
 
 interface DataSource {
@@ -84,6 +85,9 @@ function setupNavigationDataSource(
     userSettingsStore,
     dismissalLayerStore,
     globalSearchStore,
+    currentPath: navigation.currentPath,
+    componentRef: options.componentRef,
+    isDefaultPane: options.isDefaultPane ?? true,
   });
 
   const showHiddenFiles = computed(() => userSettingsStore.userSettings.navigator.showHiddenFiles);

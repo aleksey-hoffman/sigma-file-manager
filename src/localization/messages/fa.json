@@ -84,7 +84,8 @@
     "tabActions": "عملیات برگه",
     "closeTab": "بستن برگه",
     "closeOtherTabs": "بستن سایر برگه ها",
-    "closeAllTabs": "بستن همه برگه ها"
+    "closeAllTabs": "بستن همه برگه ها",
+    "defaultTabOpened": "برگه پیش‌فرض باز شد"
   },
   "workspaces": {
     "title": "فضای کار",
@@ -514,6 +515,12 @@
       "showWorkspaceTitle": "نمایش عنوان فضای کاری در نوار ابزار پنجره"
     },
     "tabs": {
+      "lastTabCloseBehavior": {
+        "title": "وقتی آخرین برگه بسته می‌شود",
+        "createDefaultTab": "ایجاد برگه پیش‌فرض",
+        "closeWindow": "بستن پنجره",
+        "navigateToHomePage": "رفتن به صفحه اصلی"
+      },
       "tabs": "برگه ها",
       "tabBehavior": "رفتار برگه",
       "immutable": "تغییر ناپذیر",

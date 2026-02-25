@@ -84,7 +84,8 @@
     "tabActions": "标签操作",
     "closeTab": "关闭标签",
     "closeOtherTabs": "关闭其他标签",
-    "closeAllTabs": "关闭所有标签"
+    "closeAllTabs": "关闭所有标签",
+    "defaultTabOpened": "已打开默认标签页"
   },
   "splitView": "分屏视图",
   "workspaces": {
@@ -515,6 +516,12 @@
       "showWorkspaceTitle": "在窗口工具栏中显示工作区标题"
     },
     "tabs": {
+      "lastTabCloseBehavior": {
+        "title": "关闭最后一个标签时",
+        "createDefaultTab": "创建默认标签",
+        "closeWindow": "关闭窗口",
+        "navigateToHomePage": "导航到主页"
+      },
       "tabs": "标签",
       "tabBehavior": "选项卡行为",
       "immutable": "不可变",

@@ -84,7 +84,8 @@
     "tabActions": "Ações da guia",
     "closeTab": "Fechar guia",
     "closeOtherTabs": "Fechar outras guias",
-    "closeAllTabs": "Fechar todas as guias"
+    "closeAllTabs": "Fechar todas as guias",
+    "defaultTabOpened": "Guia padrão foi aberta"
   },
   "splitView": "Visualização dividida",
   "workspaces": {
@@ -515,6 +516,12 @@
       "showWorkspaceTitle": "Mostrar o título do espaço de trabalho na barra de ferramentas da janela"
     },
     "tabs": {
+      "lastTabCloseBehavior": {
+        "title": "Quando a última aba for fechada",
+        "createDefaultTab": "Criar aba padrão",
+        "closeWindow": "Fechar janela",
+        "navigateToHomePage": "Navegar para a página inicial"
+      },
       "tabs": "guias",
       "tabBehavior": "Comportamento da guia",
       "immutable": "Imutável",

@@ -84,7 +84,8 @@
     "tabActions": "Akcije zavihka",
     "closeTab": "Zapri zavihek",
     "closeOtherTabs": "Zapri druge zavihke",
-    "closeAllTabs": "Zapri vse zavihke"
+    "closeAllTabs": "Zapri vse zavihke",
+    "defaultTabOpened": "Privzeti zavihek je bil odprt"
   },
   "splitView": "Razdeljen pogled",
   "workspaces": {
@@ -528,6 +529,12 @@
       "showWorkspaceTitle": "Pokaži naslov delovnega prostora v orodni vrstici okna"
     },
     "tabs": {
+      "lastTabCloseBehavior": {
+        "title": "Ko je zadnji zavihek zaprt",
+        "createDefaultTab": "Ustvari privzet zavihek",
+        "closeWindow": "Zapri okno",
+        "navigateToHomePage": "Pojdi na domačo stran"
+      },
       "tabs": "Zavihki",
       "tabBehavior": "Obnašanje zavihka",
       "immutable": "Neprenosljiv",

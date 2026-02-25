@@ -84,7 +84,8 @@
     "tabActions": "Действия с вкладками",
     "closeTab": "Закрыть вкладку",
     "closeOtherTabs": "Закрыть другие вкладки",
-    "closeAllTabs": "Закрыть все вкладки"
+    "closeAllTabs": "Закрыть все вкладки",
+    "defaultTabOpened": "Открыта вкладка по умолчанию"
   },
   "splitView": "Разделённый вид",
   "workspaces": {
@@ -528,6 +529,12 @@
       "showWorkspaceTitle": "Показать заголовок рабочего пространства на панели инструментов окна"
     },
     "tabs": {
+      "lastTabCloseBehavior": {
+        "title": "Когда последняя вкладка закрыта",
+        "createDefaultTab": "Создать вкладку по умолчанию",
+        "closeWindow": "Закрыть окно",
+        "navigateToHomePage": "Перейти на главную страницу"
+      },
       "tabs": "Вкладки",
       "tabBehavior": "Поведение во вкладке",
       "immutable": "Неизменный",

@@ -84,7 +84,8 @@
     "tabActions": "Azioni scheda",
     "closeTab": "Chiudi scheda",
     "closeOtherTabs": "Chiudi altre schede",
-    "closeAllTabs": "Chiudi tutte le schede"
+    "closeAllTabs": "Chiudi tutte le schede",
+    "defaultTabOpened": "La scheda predefinita è stata aperta"
   },
   "splitView": "Vista divisa",
   "workspaces": {
@@ -515,6 +516,12 @@
       "showWorkspaceTitle": "Mostra il titolo dell'area di lavoro nella barra degli strumenti della finestra"
     },
     "tabs": {
+      "lastTabCloseBehavior": {
+        "title": "Quando l'ultima scheda viene chiusa",
+        "createDefaultTab": "Crea scheda predefinita",
+        "closeWindow": "Chiudi finestra",
+        "navigateToHomePage": "Vai alla pagina iniziale"
+      },
       "tabs": "Schede",
       "tabBehavior": "Comportamento della scheda",
       "immutable": "Immutabile",

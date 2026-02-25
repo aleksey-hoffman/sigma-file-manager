@@ -264,7 +264,7 @@ const groupedEntries = computed<GroupedEntries>(() => {
             >
             <FileVideoIcon
               v-else
-              :size="32"
+              :size="48"
               class="file-browser-grid-view__card-icon"
             />
           </div>
@@ -308,7 +308,7 @@ const groupedEntries = computed<GroupedEntries>(() => {
           <div class="file-browser-grid-view__card-preview">
             <FileBrowserEntryIcon
               :entry="entry"
-              :size="32"
+              :size="48"
               class="file-browser-grid-view__card-icon"
             />
           </div>
@@ -475,14 +475,14 @@ const groupedEntries = computed<GroupedEntries>(() => {
   position: absolute;
   top: 8px;
   left: 8px;
-  width: 24px;
-  height: 24px;
+  width: 48px;
+  height: 48px;
   background-color: transparent;
 }
 
 .file-browser-grid-view__card--icon-full .file-browser-grid-view__card-icon {
-  width: 24px;
-  height: 24px;
+  width: 48px;
+  height: 48px;
 }
 
 .file-browser-grid-view__card-name {

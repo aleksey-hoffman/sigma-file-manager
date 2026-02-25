@@ -44,7 +44,9 @@ const {
   currentItem,
   currentIndex,
   totalCount,
+  getPositionKey,
   getMediaUrl,
+  selectMedia,
 } = useHomeBannerMedia();
 
 const videoRef = ref<HTMLVideoElement | null>(null);
@@ -76,8 +78,14 @@ const currentPositionY = computed(() => {
   return item.kind === 'builtin' ? item.data.positionY : 50;
 });
 
+const positionKey = computed(() => {
+  const item = currentItem.value;
+  return item ? getPositionKey(item) : null;
+});
+
 const customPosition = computed(() => {
-  return userSettingsStore.userSettings.homeBannerPositions[currentIndex.value];
+  const key = positionKey.value;
+  return key ? userSettingsStore.userSettings.homeBannerPositions[key] : undefined;
 });
 
 const positionX = computed(() => customPosition.value?.positionX ?? currentPositionX.value);
@@ -112,14 +120,17 @@ const setPreviousBackgroundShortcutText = computed(() => {
 const isVideo = computed(() => currentMediaType.value === 'video');
 
 async function updateSetting(property: 'positionX' | 'positionY' | 'zoom', value: number) {
+  const key = positionKey.value;
+  if (!key) return;
+
   const currentPositions = { ...userSettingsStore.userSettings.homeBannerPositions };
-  const existingPosition = currentPositions[currentIndex.value] ?? {
+  const existingPosition = currentPositions[key] ?? {
     positionX: currentPositionX.value,
     positionY: currentPositionY.value,
     zoom: 100,
   };
 
-  currentPositions[currentIndex.value] = {
+  currentPositions[key] = {
     ...existingPosition,
     [property]: value,
   };
@@ -128,15 +139,18 @@ async function updateSetting(property: 'positionX' | 'positionY' | 'zoom', value
 }
 
 async function resetPosition() {
+  const key = positionKey.value;
+  if (!key) return;
+
   const currentPositions = { ...userSettingsStore.userSettings.homeBannerPositions };
-  delete currentPositions[currentIndex.value];
+  delete currentPositions[key];
   await userSettingsStore.set('homeBannerPositions', currentPositions);
 }
 
 async function nextBanner() {
   const total = totalCount.value;
   const newIndex = total > 0 ? (currentIndex.value + 1) % total : 0;
-  await userSettingsStore.set('homeBannerIndex', newIndex);
+  await selectMedia(newIndex);
 }
 
 async function previousBanner() {
@@ -144,7 +158,7 @@ async function previousBanner() {
   const newIndex = total > 0
     ? (currentIndex.value === 0 ? total - 1 : currentIndex.value - 1)
     : 0;
-  await userSettingsStore.set('homeBannerIndex', newIndex);
+  await selectMedia(newIndex);
 }
 
 async function handleClick(event: MouseEvent) {

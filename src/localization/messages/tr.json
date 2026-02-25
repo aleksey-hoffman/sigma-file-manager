@@ -84,7 +84,8 @@
     "tabActions": "Sekme işlemleri",
     "closeTab": "Sekmeyi kapat",
     "closeOtherTabs": "Diğer sekmeleri kapat",
-    "closeAllTabs": "Tüm sekmeleri kapat"
+    "closeAllTabs": "Tüm sekmeleri kapat",
+    "defaultTabOpened": "Varsayılan sekme açıldı"
   },
   "splitView": "Bölünmüş görünüm",
   "workspaces": {
@@ -515,6 +516,12 @@
       "showWorkspaceTitle": "Çalışma alanı başlığını pencere araç çubuğunda göster"
     },
     "tabs": {
+      "lastTabCloseBehavior": {
+        "title": "Son sekme kapatıldığında",
+        "createDefaultTab": "Varsayılan sekme oluştur",
+        "closeWindow": "Pencereyi kapat",
+        "navigateToHomePage": "Ana sayfaya git"
+      },
       "tabs": "Sekmeler",
       "tabBehavior": "Sekme davranışı",
       "immutable": "Değişmez",

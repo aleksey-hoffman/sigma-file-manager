@@ -2,6 +2,9 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
+export const DEFAULT_HOME_BANNER_FILE_NAME = 'Exile by Aleksey Hoffman.jpg';
+export const DEFAULT_INFUSION_BACKGROUND_FILE_NAME = 'Exile by Aleksey Hoffman.jpg';
+
 export type BannerMedia = {
   name: string;
   fileName: string;
@@ -12,6 +15,14 @@ export type BannerMedia = {
 };
 
 export const homeBannerMedia: BannerMedia[] = [
+  {
+    name: 'Exile',
+    fileName: 'Exile by Aleksey Hoffman.jpg',
+    type: 'image',
+    author: 'Aleksey Hoffman',
+    positionX: 50,
+    positionY: 50,
+  },
   {
     name: 'Glowing Chinese city in mountains',
     fileName: 'Glowing Chinese city in mountains by Aleksey Hoffman.jpg',
@@ -181,5 +192,3 @@ export const homeBannerMedia: BannerMedia[] = [
     positionY: 50,
   },
 ];
-
-export const defaultBannerIndex = 0;

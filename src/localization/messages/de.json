@@ -84,7 +84,8 @@
     "tabActions": "Tab-Aktionen",
     "closeTab": "Tab schließen",
     "closeOtherTabs": "Andere Tabs schließen",
-    "closeAllTabs": "Alle Tabs schließen"
+    "closeAllTabs": "Alle Tabs schließen",
+    "defaultTabOpened": "Standard-Tab wurde geöffnet"
   },
   "splitView": "Geteilte Ansicht",
   "workspaces": {
@@ -515,6 +516,12 @@
       "showWorkspaceTitle": "Titel des Arbeitsbereichs in der Fenstersymbolleiste anzeigen"
     },
     "tabs": {
+      "lastTabCloseBehavior": {
+        "title": "Wenn letzter Tab geschlossen wird",
+        "createDefaultTab": "Standard-Tab erstellen",
+        "closeWindow": "Fenster schließen",
+        "navigateToHomePage": "Zur Startseite navigieren"
+      },
       "tabs": "Tabs",
       "tabBehavior": "Tab-Verhalten",
       "immutable": "Unveränderlich",

@@ -84,7 +84,8 @@
     "tabActions": "Hành động tab",
     "closeTab": "Đóng tab",
     "closeOtherTabs": "Đóng các tab khác",
-    "closeAllTabs": "Đóng tất cả tab"
+    "closeAllTabs": "Đóng tất cả tab",
+    "defaultTabOpened": "Đã mở tab mặc định"
   },
   "splitView": "Chế độ chia màn hình",
   "workspaces": {
@@ -515,6 +516,12 @@
       "showWorkspaceTitle": "Hiển thị tiêu đề không gian làm việc trên thanh công cụ của cửa sổ"
     },
     "tabs": {
+      "lastTabCloseBehavior": {
+        "title": "Khi tab cuối cùng được đóng",
+        "createDefaultTab": "Tạo tab mặc định",
+        "closeWindow": "Đóng cửa sổ",
+        "navigateToHomePage": "Điều hướng đến trang chủ"
+      },
       "tabs": "Tab",
       "tabBehavior": "Hành vi tab",
       "immutable": "bất biến",

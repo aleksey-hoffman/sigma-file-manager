@@ -4,7 +4,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import { ref, watch, computed } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { invoke } from '@tauri-apps/api/core';
 import type { DirEntry } from '@/types/dir-entry';
@@ -47,9 +47,7 @@ const { t } = useI18n();
 const isLoading = ref(false);
 const menuItems = ref<ShellContextMenuItem[]>([]);
 const loadError = ref<string | null>(null);
-
-const firstEntry = computed(() => props.selectedEntries[0]);
-const lastLoadedPath = ref<string | null>(null);
+const hasLoadedForPath = ref<string | null>(null);
 
 function filterMenuItems(items: ShellContextMenuItem[]): ShellContextMenuItem[] {
   return items
@@ -62,15 +60,20 @@ function filterMenuItems(items: ShellContextMenuItem[]): ShellContextMenuItem[] 
 }
 
 async function loadShellContextMenu() {
-  if (!firstEntry.value) return;
+  const firstEntry = props.selectedEntries[0];
+  if (!firstEntry) return;
 
-  const currentPath = firstEntry.value.path;
-  if (currentPath === lastLoadedPath.value) return;
+  const currentPath = firstEntry.path;
+  if (currentPath === hasLoadedForPath.value && menuItems.value.length > 0) return;
 
   isLoading.value = true;
   loadError.value = null;
-  menuItems.value = [];
-  lastLoadedPath.value = currentPath;
+
+  if (hasLoadedForPath.value !== currentPath) {
+    menuItems.value = [];
+  }
+
+  hasLoadedForPath.value = currentPath;
 
   try {
     const result = await invoke<GetShellContextMenuResult>('get_shell_context_menu', {
@@ -92,17 +95,12 @@ async function loadShellContextMenu() {
   }
 }
 
-watch(
-  () => firstEntry.value?.path,
-  () => {
-    lastLoadedPath.value = null;
-    loadShellContextMenu();
-  },
-  { immediate: true },
-);
+onMounted(() => {
+  loadShellContextMenu();
+});
 
 async function invokeMenuItem(commandId: number) {
-  if (!firstEntry.value || !commandId) return;
+  if (props.selectedEntries.length === 0 || !commandId) return;
 
   try {
     for (const entry of props.selectedEntries) {

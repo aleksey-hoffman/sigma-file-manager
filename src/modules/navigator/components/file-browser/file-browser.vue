@@ -47,6 +47,7 @@ const fb = useFileBrowser({
   onCurrentDirEntryChange: entry => emit('update:currentDirEntry', entry),
   onOpenEntry: entry => emit('openEntry', entry),
   componentRef: fileBrowserRef,
+  isDefaultPane: props.paneIndex === 0 || props.paneIndex === undefined,
 });
 
 provideFileBrowserContext({

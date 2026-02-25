@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 
 type Props = {
   title: string;
-  description: string;
+  description?: string;
   actionText?: string;
 };
 
@@ -26,7 +26,10 @@ const emit = defineEmits<Emits>();
       <div class="sigma-ui-toaster-default__title">
         {{ props.title }}
       </div>
-      <div class="sigma-ui-toaster-default__description">
+      <div
+        v-if="props.description"
+        class="sigma-ui-toaster-default__description"
+      >
         {{ props.description }}
       </div>
     </div>

@@ -42,9 +42,19 @@ export async function migrateStorageSchema(params: {
 
   while (storedSchemaVersion < latestSchemaVersion) {
     const nextSchemaVersion = storedSchemaVersion + 1;
-    await migrateStep(storage, storedSchemaVersion, nextSchemaVersion);
-    storedSchemaVersion = nextSchemaVersion;
-    didMigrate = true;
+
+    try {
+      await migrateStep(storage, storedSchemaVersion, nextSchemaVersion);
+      storedSchemaVersion = nextSchemaVersion;
+      didMigrate = true;
+    }
+    catch (error) {
+      console.error(
+        `[Migration] Failed to migrate from v${storedSchemaVersion} to v${nextSchemaVersion}:`,
+        error,
+      );
+      throw error;
+    }
   }
 
   const shouldPersistSchemaVersion = didMigrate || normalizedStoredSchemaVersion !== latestSchemaVersion;

@@ -8,7 +8,7 @@ import { open } from '@tauri-apps/plugin-dialog';
 import { useUserPathsStore } from '@/stores/storage/user-paths';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { storeToRefs } from 'pinia';
-import { homeBannerMedia } from '@/data/home-banner-media';
+import { homeBannerMedia, DEFAULT_HOME_BANNER_FILE_NAME } from '@/data/home-banner-media';
 import type { BannerMedia } from '@/data/home-banner-media';
 
 const builtinBannerImages = import.meta.glob('@/assets/media/home-banner/*.jpg', {
@@ -27,8 +27,13 @@ export type MediaItem
     | { kind: 'custom';
       index: number;
       path: string;
+      id: string;
       fileName: string;
       type: 'image' | 'video'; };
+
+function generateShortId(): string {
+  return crypto.randomUUID().replace(/-/g, '').slice(0, 8);
+}
 
 function isUrl(value: string): boolean {
   return value.startsWith('http://') || value.startsWith('https://');
@@ -60,14 +65,19 @@ export function useHomeBannerMedia() {
   const userSettingsStore = useUserSettingsStore();
   const { userSettings } = storeToRefs(userSettingsStore);
 
-  const customPaths = computed(() => userSettings.value.homeBannerCustomMedia ?? []);
+  const customItems = computed(() => {
+    const raw = userSettings.value.homeBannerCustomMedia ?? [];
+    return Array.isArray(raw) ? raw : [];
+  });
   const builtinCount = homeBannerMedia.length;
 
   const allMediaItems = computed((): MediaItem[] => {
     const items: MediaItem[] = [];
-    const paths = customPaths.value;
+    const itemsRaw = customItems.value;
 
-    paths.forEach((path, index) => {
+    itemsRaw.forEach((entry, index) => {
+      const path = entry.path;
+      const id = entry.id;
       const fileName = path.split(/[/\\]/).pop() ?? path;
       const ext = getExtension(fileName);
       const type = isVideoExtension(ext) ? 'video' : 'image';
@@ -75,6 +85,7 @@ export function useHomeBannerMedia() {
         kind: 'custom',
         index,
         path,
+        id,
         fileName,
         type,
       });
@@ -91,11 +102,26 @@ export function useHomeBannerMedia() {
     return items;
   });
 
-  const currentIndex = computed(() => userSettings.value.homeBannerIndex ?? 0);
-  const totalCount = computed(() => customPaths.value.length + builtinCount);
+  const totalCount = computed(() => customItems.value.length + builtinCount);
+  const mediaId = computed(() => {
+    const id = userSettings.value.homeBannerMediaId;
+    return (typeof id === 'string' && id.trim()) ? id : DEFAULT_HOME_BANNER_FILE_NAME;
+  });
+
   const normalizedIndex = computed(() => {
-    const total = totalCount.value;
-    return total > 0 ? Math.min(Math.max(0, currentIndex.value), total - 1) : 0;
+    const items = allMediaItems.value;
+    const targetId = mediaId.value;
+
+    if (items.length === 0) return 0;
+
+    const foundIndex = items.findIndex(item => getPositionKey(item) === targetId);
+
+    if (foundIndex >= 0) return foundIndex;
+
+    const defaultIndex = items.findIndex(
+      item => item.kind === 'builtin' && item.data.fileName === DEFAULT_HOME_BANNER_FILE_NAME,
+    );
+    return defaultIndex >= 0 ? defaultIndex : 0;
   });
 
   const currentItem = computed((): MediaItem | null => {
@@ -107,6 +133,22 @@ export function useHomeBannerMedia() {
     const mediaMap = item.type === 'video' ? builtinBannerVideos : builtinBannerImages;
     const key = Object.keys(mediaMap).find(path => path.includes(item.fileName));
     return key ? mediaMap[key] : '';
+  }
+
+  function getPositionKey(item: MediaItem): string {
+    if (item.kind === 'builtin') {
+      return item.data.fileName;
+    }
+
+    return item.id;
+  }
+
+  function getItemDisplayName(item: MediaItem): string {
+    if (item.kind === 'builtin') {
+      return item.data.name;
+    }
+
+    return item.fileName;
   }
 
   function getMediaUrl(item: MediaItem): string {
@@ -122,7 +164,14 @@ export function useHomeBannerMedia() {
   }
 
   async function selectMedia(index: number) {
-    await userSettingsStore.set('homeBannerIndex', index);
+    const items = allMediaItems.value;
+    const item = items[index];
+
+    if (item) {
+      const id = getPositionKey(item);
+      await userSettingsStore.set('homeBannerMediaId', id);
+      await userSettingsStore.set('homeBannerIndex', index);
+    }
   }
 
   async function openFilePicker() {
@@ -168,16 +217,27 @@ export function useHomeBannerMedia() {
       throw new Error(result.error);
     }
 
-    const newPaths = sourcePaths.map((src) => {
+    const newEntries = sourcePaths.map((src) => {
       const fileName = src.split(/[/\\]/).pop() ?? src;
-      return `${destDir.replace(/\\/g, '/')}/${fileName}`.replace(/\/+/g, '/');
+      const path = `${destDir.replace(/\\/g, '/')}/${fileName}`.replace(/\/+/g, '/');
+      return {
+        path,
+        id: generateShortId(),
+      };
     });
 
     const currentCustom = userSettings.value.homeBannerCustomMedia ?? [];
-    const updated = [...currentCustom, ...newPaths];
+    const updated = [...currentCustom, ...newEntries];
     await userSettingsStore.set('homeBannerCustomMedia', updated);
 
     const firstNewIndex = currentCustom.length;
+    const newItem = updated.length > 0
+      ? {
+          path: updated[firstNewIndex].path,
+          id: updated[firstNewIndex].id,
+        }
+      : null;
+    await userSettingsStore.set('homeBannerMediaId', newItem?.id ?? DEFAULT_HOME_BANNER_FILE_NAME);
     await userSettingsStore.set('homeBannerIndex', firstNewIndex);
   }
 
@@ -189,36 +249,65 @@ export function useHomeBannerMedia() {
     }
 
     const currentCustom = userSettings.value.homeBannerCustomMedia ?? [];
+    const exists = currentCustom.some(entry => entry.path === trimmedUrl);
 
-    if (currentCustom.includes(trimmedUrl)) {
+    if (exists) {
       return;
     }
 
-    const updated = [...currentCustom, trimmedUrl];
+    const newEntry = {
+      path: trimmedUrl,
+      id: generateShortId(),
+    };
+    const updated = [...currentCustom, newEntry];
     await userSettingsStore.set('homeBannerCustomMedia', updated);
 
     const newIndex = currentCustom.length;
+    const newItem = updated[newIndex];
+    await userSettingsStore.set('homeBannerMediaId', newItem?.id ?? DEFAULT_HOME_BANNER_FILE_NAME);
     await userSettingsStore.set('homeBannerIndex', newIndex);
   }
 
   async function removeCustomMedia(path: string) {
     const currentCustom = userSettings.value.homeBannerCustomMedia ?? [];
-    const filtered = currentCustom.filter(p => p !== path);
+    const removedEntry = currentCustom.find(entry => entry.path === path);
+    const filtered = currentCustom.filter(entry => entry.path !== path);
     await userSettingsStore.set('homeBannerCustomMedia', filtered);
 
-    const currentIdx = userSettings.value.homeBannerIndex ?? 0;
+    if (removedEntry && userSettings.value.homeBannerPositions?.[removedEntry.id]) {
+      const positions = { ...userSettings.value.homeBannerPositions };
+      delete positions[removedEntry.id];
+      await userSettingsStore.set('homeBannerPositions', positions);
+    }
+
+    const itemsAfter = filtered.length + builtinCount;
+    const currentIdx = normalizedIndex.value;
     const itemsBefore = allMediaItems.value;
     const removeIdx = itemsBefore.findIndex(
       (item): item is MediaItem & { kind: 'custom' } => item.kind === 'custom' && item.path === path,
     );
 
-    let newIndex = userSettings.value.homeBannerIndex ?? 0;
+    let newIndex = currentIdx;
 
     if (removeIdx >= 0 && currentIdx >= removeIdx && currentIdx > 0) {
       newIndex = Math.max(0, currentIdx - 1);
     }
 
-    await userSettingsStore.set('homeBannerIndex', Math.min(newIndex, filtered.length + builtinCount - 1));
+    newIndex = Math.min(Math.max(0, newIndex), itemsAfter - 1);
+
+    let resolvedMediaId = DEFAULT_HOME_BANNER_FILE_NAME;
+
+    if (itemsAfter > 0) {
+      if (newIndex < filtered.length) {
+        resolvedMediaId = filtered[newIndex]?.id ?? DEFAULT_HOME_BANNER_FILE_NAME;
+      }
+      else {
+        resolvedMediaId = homeBannerMedia[newIndex - filtered.length]?.fileName ?? DEFAULT_HOME_BANNER_FILE_NAME;
+      }
+    }
+
+    await userSettingsStore.set('homeBannerMediaId', resolvedMediaId);
+    await userSettingsStore.set('homeBannerIndex', newIndex);
   }
 
   return {
@@ -226,13 +315,15 @@ export function useHomeBannerMedia() {
     currentItem,
     currentIndex: normalizedIndex,
     totalCount,
+    getPositionKey,
+    getItemDisplayName,
     getMediaUrl,
     selectMedia,
     openFilePicker,
     addFilesFromPaths,
     addMediaUrl,
     removeCustomMedia,
-    customPaths,
+    customItems,
     builtinCount,
   };
 }

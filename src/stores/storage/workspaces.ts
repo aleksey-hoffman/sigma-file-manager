@@ -4,12 +4,17 @@
 
 import { basename } from '@tauri-apps/api/path';
 import { invoke } from '@tauri-apps/api/core';
+import { getCurrentWindow } from '@tauri-apps/api/window';
 import { LazyStore } from '@tauri-apps/plugin-store';
 import { defineStore } from 'pinia';
-import { ref, watch, computed } from 'vue';
+import { ref, watch, computed, markRaw } from 'vue';
 import { useDebounceFn } from '@vueuse/core';
+import { useI18n } from 'vue-i18n';
+import router from '@/router';
+import { toast, CustomSimple } from '@/components/ui/toaster';
 import { useNavigatorStore } from '@/stores/runtime/navigator';
 import { useUserPathsStore } from '@/stores/storage/user-paths';
+import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { UI_CONSTANTS } from '@/constants';
 import clone from '@/utils/clone';
 import uniqueId from '@/utils/unique-id';
@@ -24,7 +29,9 @@ import {
 } from '@/stores/schemas/workspaces';
 
 export const useWorkspacesStore = defineStore('workspaces', () => {
+  const { t } = useI18n();
   const userPathsStore = useUserPathsStore();
+  const userSettingsStore = useUserSettingsStore();
   const navigatorStore = useNavigatorStore();
 
   const workspacesStorage = ref<LazyStore | null>(null);
@@ -152,12 +159,36 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
       return;
     }
 
+    const behavior = userSettingsStore.userSettings.navigator?.lastTabCloseBehavior ?? 'createDefaultTab';
+
+    if (behavior === 'closeWindow') {
+      getCurrentWindow().close();
+      return;
+    }
+
+    if (behavior === 'navigateToHomePage') {
+      const newTab = await createNewTab(userPathsStore.userPaths.homeDir);
+      const newTabGroup = [newTab];
+      currentWorkspace.value.tabGroups = [newTabGroup];
+      currentWorkspace.value.currentTabGroupIndex = 0;
+      currentWorkspace.value.currentTabIndex = 0;
+      await openTabGroup(newTabGroup);
+      await router.push({ name: 'home' });
+      return;
+    }
+
     const newTab = await createNewTab();
     const newTabGroup = [newTab];
     currentWorkspace.value.tabGroups = [newTabGroup];
     currentWorkspace.value.currentTabGroupIndex = 0;
     currentWorkspace.value.currentTabIndex = 0;
     await openTabGroup(newTabGroup);
+    toast.custom(markRaw(CustomSimple), {
+      componentProps: {
+        title: t('tabs.defaultTabOpened'),
+      },
+      duration: 2000,
+    });
   }
 
   function closeOtherTabGroups(keepTabGroup?: Tab[]) {

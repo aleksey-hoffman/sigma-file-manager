@@ -3,6 +3,7 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 import { onMounted, onUnmounted, ref, watch } from 'vue';
+import type { Ref } from 'vue';
 import type { DismissalLayerType } from '@/stores/runtime/dismissal-layer';
 
 type DismissalLayerStore = {
@@ -27,6 +28,9 @@ export function useFileBrowserFilter(options: {
   userSettingsStore: UserSettingsStore;
   dismissalLayerStore: DismissalLayerStore;
   globalSearchStore: GlobalSearchStore;
+  currentPath?: Ref<string>;
+  componentRef?: Ref<HTMLElement | null>;
+  isDefaultPane?: boolean;
 }) {
   const filterQuery = ref('');
   const isFilterOpen = ref(false);
@@ -90,6 +94,17 @@ export function useFileBrowserFilter(options: {
     const hasModifiers = event.ctrlKey || event.altKey || event.shiftKey || event.metaKey;
 
     if (keyIsAlphaNum && !hasModifiers) {
+      const rootEl = options.componentRef?.value;
+      const activeElement = document.activeElement;
+      const focusInAnyPane = Array.from(document.querySelectorAll('.file-browser')).some(
+        paneEl => paneEl.contains(activeElement),
+      );
+      const isDefaultPane = options.isDefaultPane ?? true;
+
+      if (rootEl && !rootEl.contains(activeElement) && (focusInAnyPane || !isDefaultPane)) {
+        return;
+      }
+
       openFilter();
     }
   }
@@ -117,6 +132,14 @@ export function useFileBrowserFilter(options: {
       closeFilter();
     }
   });
+
+  if (options.currentPath) {
+    watch(options.currentPath, (newPath, oldPath) => {
+      if (oldPath !== undefined && newPath !== oldPath) {
+        closeFilter();
+      }
+    });
+  }
 
   onMounted(() => {
     window.addEventListener('keydown', handleKeydownForFilter);

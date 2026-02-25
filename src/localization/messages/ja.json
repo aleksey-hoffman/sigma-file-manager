@@ -84,7 +84,8 @@
     "tabActions": "タブ操作",
     "closeTab": "タブを閉じる",
     "closeOtherTabs": "他のタブを閉じる",
-    "closeAllTabs": "すべてのタブを閉じる"
+    "closeAllTabs": "すべてのタブを閉じる",
+    "defaultTabOpened": "デフォルトタブが開きました"
   },
   "splitView": "分割表示",
   "workspaces": {
@@ -515,6 +516,12 @@
       "showWorkspaceTitle": "ウィンドウのツールバーにワークスペースのタイトルを表示"
     },
     "tabs": {
+      "lastTabCloseBehavior": {
+        "title": "最後のタブを閉じたとき",
+        "createDefaultTab": "デフォルトタブを作成",
+        "closeWindow": "ウィンドウを閉じる",
+        "navigateToHomePage": "ホームページに移動"
+      },
       "tabs": "タブ",
       "tabBehavior": "タブの動作",
       "immutable": "不変",

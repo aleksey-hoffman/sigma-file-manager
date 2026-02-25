@@ -87,6 +87,7 @@ const shortcutIcons: Record<ShortcutId, Component> = {
   escape: XIcon,
   quickView: EyeIcon,
   openNewTab: PlusIcon,
+  closeCurrentTab: XIcon,
   openTerminal: TerminalSquareIcon,
   openTerminalAdmin: TerminalSquareIcon,
   navigateUp: ArrowUpIcon,

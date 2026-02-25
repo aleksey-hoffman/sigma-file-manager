@@ -84,7 +84,8 @@
     "tabActions": "Acciones de pestaña",
     "closeTab": "Cerrar pestaña",
     "closeOtherTabs": "Cerrar otras pestañas",
-    "closeAllTabs": "Cerrar todas las pestañas"
+    "closeAllTabs": "Cerrar todas las pestañas",
+    "defaultTabOpened": "Se abrió la pestaña predeterminada"
   },
   "splitView": "Vista dividida",
   "workspaces": {
@@ -515,6 +516,12 @@
       "showWorkspaceTitle": "Mostrar el título del espacio de trabajo en la barra de herramientas de la ventana"
     },
     "tabs": {
+      "lastTabCloseBehavior": {
+        "title": "Cuando se cierra la última pestaña",
+        "createDefaultTab": "Crear pestaña predeterminada",
+        "closeWindow": "Cerrar ventana",
+        "navigateToHomePage": "Navegar a la página de inicio"
+      },
       "tabs": "Pestañas",
       "tabBehavior": "Comportamiento de la pestaña",
       "immutable": "Inmutable",

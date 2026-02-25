@@ -144,6 +144,7 @@ export const useSettingsStore = defineStore('settings', () => {
       { default: DriveDetectionSection },
       { default: AutoplaySection },
       { default: AppUpdatesSection },
+      { default: LastTabCloseBehaviorSection },
     ] = await Promise.all([
       import('@/modules/settings/ui/categories/general/language.vue'),
       import('@/modules/settings/ui/categories/general/window-scaling.vue'),
@@ -161,6 +162,7 @@ export const useSettingsStore = defineStore('settings', () => {
       import('@/modules/settings/ui/categories/storage/drive-detection.vue'),
       import('@/modules/settings/ui/categories/storage/autoplay.vue'),
       import('@/modules/settings/ui/categories/general/app-updates.vue'),
+      import('@/modules/settings/ui/categories/tabs/last-tab-close-behavior.vue'),
     ]);
 
     sections.value = [
@@ -254,6 +256,13 @@ export const useSettingsStore = defineStore('settings', () => {
         tags: 'settingsTags.inputElements',
         component: markRaw(FilterOnTypingSection),
         category: 'input',
+      },
+      {
+        key: 'lastTabCloseBehavior',
+        titleKey: 'settings.tabs.lastTabCloseBehavior.title',
+        tags: 'settingsTags.tabsWorkspaces',
+        component: markRaw(LastTabCloseBehaviorSection),
+        category: 'tabs',
       },
       {
         key: 'userData',

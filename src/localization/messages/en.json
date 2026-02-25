@@ -84,7 +84,8 @@
     "tabActions": "Tab actions",
     "closeTab": "Close tab",
     "closeOtherTabs": "Close other tabs",
-    "closeAllTabs": "Close all tabs"
+    "closeAllTabs": "Close all tabs",
+    "defaultTabOpened": "Default tab was opened"
   },
   "splitView": "Split view",
   "workspaces": {
@@ -528,6 +529,12 @@
       "showWorkspaceTitle": "Show workspace title in window toolbar"
     },
     "tabs": {
+      "lastTabCloseBehavior": {
+        "title": "When last tab is closed",
+        "createDefaultTab": "Create default tab",
+        "closeWindow": "Close window",
+        "navigateToHomePage": "Navigate to home page"
+      },
       "tabs": "Tabs",
       "tabBehavior": "Tab behavior",
       "immutable": "Immutable",

@@ -84,7 +84,8 @@
     "tabActions": "Actions d'onglet",
     "closeTab": "Fermer l'onglet",
     "closeOtherTabs": "Fermer les autres onglets",
-    "closeAllTabs": "Fermer tous les onglets"
+    "closeAllTabs": "Fermer tous les onglets",
+    "defaultTabOpened": "L'onglet par défaut a été ouvert"
   },
   "splitView": "Vue partagée",
   "workspaces": {
@@ -515,6 +516,12 @@
       "showWorkspaceTitle": "Afficher le titre de l'espace de travail dans la barre d'outils de la fenêtre"
     },
     "tabs": {
+      "lastTabCloseBehavior": {
+        "title": "Lorsque le dernier onglet est fermé",
+        "createDefaultTab": "Créer un onglet par défaut",
+        "closeWindow": "Fermer la fenêtre",
+        "navigateToHomePage": "Accéder à la page d'accueil"
+      },
       "tabs": "Onglets",
       "tabBehavior": "Comportement des onglets",
       "immutable": "Immuable",
