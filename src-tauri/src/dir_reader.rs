@@ -48,6 +48,8 @@ pub struct DriveInfo {
     pub percent_used: f64,
     pub is_removable: bool,
     pub is_read_only: bool,
+    pub is_mounted: bool,
+    pub device_path: String,
 }
 
 fn is_hidden(path: &Path) -> bool {
@@ -363,6 +365,8 @@ fn append_macos_network_volumes(
             percent_used: 0.0,
             is_removable: false,
             is_read_only: false,
+            is_mounted: true,
+            device_path: String::new(),
         });
     }
 }
@@ -461,8 +465,8 @@ fn append_windows_network_drives(
 
         drives.push(DriveInfo {
             name: display_name,
-            path,
-            mount_point,
+            path: path.clone(),
+            mount_point: mount_point.clone(),
             file_system,
             drive_type: "Network".to_string(),
             total_space: total_size,
@@ -471,6 +475,8 @@ fn append_windows_network_drives(
             percent_used,
             is_removable: false,
             is_read_only,
+            is_mounted: true,
+            device_path: mount_point,
         });
     }
 }
@@ -567,6 +573,8 @@ pub fn get_system_drives() -> Result<Vec<DriveInfo>, String> {
             }
         };
 
+        let device_path = disk.name().to_string_lossy().to_string();
+
         drives.push(DriveInfo {
             name: display_name,
             path,
@@ -579,6 +587,8 @@ pub fn get_system_drives() -> Result<Vec<DriveInfo>, String> {
             percent_used,
             is_removable: disk.is_removable(),
             is_read_only: disk.is_read_only(),
+            is_mounted: true,
+            device_path,
         });
     }
 
@@ -588,10 +598,247 @@ pub fn get_system_drives() -> Result<Vec<DriveInfo>, String> {
     #[cfg(windows)]
     append_windows_network_drives(&mut drives, &mut seen_paths);
 
+    #[cfg(target_os = "linux")]
+    {
+        let mounted_device_paths: std::collections::HashSet<String> = drives
+            .iter()
+            .map(|drive| drive.device_path.clone())
+            .collect();
+        append_unmounted_removable_devices(&mut drives, &mounted_device_paths);
+    }
+
     drives.sort_by(|first, second| first.path.cmp(&second.path));
 
     Ok(drives)
 }
+
+// ---------------------------------------------------------------------------
+// Linux: unmounted removable device detection
+// ---------------------------------------------------------------------------
+
+#[cfg(target_os = "linux")]
+fn get_device_label(device_path: &str) -> Option<String> {
+    let label_dir = Path::new("/dev/disk/by-label");
+    if !label_dir.exists() {
+        return None;
+    }
+    let canonical_device = fs::canonicalize(device_path).ok()?;
+    for entry in fs::read_dir(label_dir).ok()?.flatten() {
+        if let Ok(target) = fs::canonicalize(entry.path()) {
+            if target == canonical_device {
+                let label = entry.file_name().to_string_lossy().to_string();
+                return Some(label.replace("\\x20", " "));
+            }
+        }
+    }
+    None
+}
+
+#[cfg(target_os = "linux")]
+fn get_partition_fs_type(device_name: &str) -> Option<String> {
+    let output = std::process::Command::new("lsblk")
+        .args(["-no", "FSTYPE", &format!("/dev/{}", device_name)])
+        .output()
+        .ok()?;
+    let fs_type = String::from_utf8_lossy(&output.stdout).trim().to_string();
+    if fs_type.is_empty() { None } else { Some(fs_type) }
+}
+
+#[cfg(target_os = "linux")]
+fn append_unmounted_removable_devices(
+    drives: &mut Vec<DriveInfo>,
+    seen_device_paths: &std::collections::HashSet<String>,
+) {
+    let sys_block = Path::new("/sys/block");
+    let block_entries = match fs::read_dir(sys_block) {
+        Ok(entries) => entries,
+        Err(_) => return,
+    };
+
+    for block_entry in block_entries.flatten() {
+        let block_name = block_entry.file_name().to_string_lossy().to_string();
+
+        if block_name.starts_with("loop") || block_name.starts_with("ram") || block_name.starts_with("dm-") || block_name.starts_with("zram") {
+            continue;
+        }
+
+        let removable_flag = fs::read_to_string(block_entry.path().join("removable"))
+            .unwrap_or_default()
+            .trim()
+            .to_string();
+
+        let is_usb_transport = fs::canonicalize(block_entry.path())
+            .map(|resolved| resolved.to_string_lossy().contains("/usb"))
+            .unwrap_or(false);
+
+        if removable_flag != "1" && !is_usb_transport {
+            continue;
+        }
+
+        let mut partitions: Vec<String> = Vec::new();
+        if let Ok(sub_entries) = fs::read_dir(block_entry.path()) {
+            for sub_entry in sub_entries.flatten() {
+                let sub_name = sub_entry.file_name().to_string_lossy().to_string();
+                if sub_name.starts_with(&block_name) && sub_entry.path().join("partition").exists() {
+                    partitions.push(sub_name);
+                }
+            }
+        }
+
+        if partitions.is_empty() {
+            partitions.push(block_name.clone());
+        }
+
+        for partition_name in &partitions {
+            let dev_path = format!("/dev/{}", partition_name);
+            let canonical = fs::canonicalize(&dev_path)
+                .unwrap_or_else(|_| std::path::PathBuf::from(&dev_path))
+                .to_string_lossy()
+                .to_string();
+
+            if seen_device_paths.contains(&dev_path) || seen_device_paths.contains(&canonical) {
+                continue;
+            }
+
+            if !Path::new(&dev_path).exists() {
+                continue;
+            }
+
+            let fs_type = get_partition_fs_type(partition_name);
+            if fs_type.is_none() {
+                continue;
+            }
+
+            let size_sectors: u64 = fs::read_to_string(
+                sys_block.join(&block_name).join(partition_name).join("size"),
+            )
+            .or_else(|_| fs::read_to_string(sys_block.join(&block_name).join("size")))
+            .unwrap_or_default()
+            .trim()
+            .parse()
+            .unwrap_or(0);
+
+            let total_space = size_sectors * 512;
+
+            let label = get_device_label(&dev_path)
+                .unwrap_or_else(|| partition_name.to_uppercase());
+
+            drives.push(DriveInfo {
+                name: label,
+                path: dev_path.clone(),
+                mount_point: String::new(),
+                file_system: fs_type.unwrap_or_default(),
+                drive_type: "Removable".to_string(),
+                total_space,
+                available_space: 0,
+                used_space: total_space,
+                percent_used: 100.0,
+                is_removable: true,
+                is_read_only: false,
+                is_mounted: false,
+                device_path: dev_path,
+            });
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Mount / unmount commands (Linux uses udisksctl, others use platform tools)
+// ---------------------------------------------------------------------------
+
+#[tauri::command]
+pub fn mount_drive(device_path: String) -> Result<String, String> {
+    #[cfg(target_os = "linux")]
+    {
+        let output = std::process::Command::new("udisksctl")
+            .args(["mount", "-b", &device_path, "--no-user-interaction"])
+            .output()
+            .map_err(|mount_error| format!("Failed to run udisksctl: {}", mount_error))?;
+
+        if output.status.success() {
+            let stdout = String::from_utf8_lossy(&output.stdout).to_string();
+            let mount_point = stdout
+                .split(" at ")
+                .nth(1)
+                .map(|segment| segment.trim().trim_end_matches('.').to_string())
+                .unwrap_or_default();
+            Ok(mount_point)
+        } else {
+            let stderr = String::from_utf8_lossy(&output.stderr).to_string();
+            Err(stderr.trim().to_string())
+        }
+    }
+
+    #[cfg(target_os = "macos")]
+    {
+        let output = std::process::Command::new("diskutil")
+            .args(["mount", &device_path])
+            .output()
+            .map_err(|mount_error| format!("Failed to run diskutil: {}", mount_error))?;
+
+        if output.status.success() {
+            let stdout = String::from_utf8_lossy(&output.stdout).to_string();
+            let mount_point = stdout
+                .split("mounted at ")
+                .nth(1)
+                .map(|segment| segment.trim().to_string())
+                .unwrap_or_default();
+            Ok(mount_point)
+        } else {
+            let stderr = String::from_utf8_lossy(&output.stderr).to_string();
+            Err(stderr.trim().to_string())
+        }
+    }
+
+    #[cfg(windows)]
+    {
+        let _ = device_path;
+        Err("Mount not supported on Windows - drives are auto-mounted".to_string())
+    }
+}
+
+#[tauri::command]
+pub fn unmount_drive(device_path: String) -> Result<(), String> {
+    #[cfg(target_os = "linux")]
+    {
+        let output = std::process::Command::new("udisksctl")
+            .args(["unmount", "-b", &device_path, "--no-user-interaction"])
+            .output()
+            .map_err(|unmount_error| format!("Failed to run udisksctl: {}", unmount_error))?;
+
+        if output.status.success() {
+            Ok(())
+        } else {
+            let stderr = String::from_utf8_lossy(&output.stderr).to_string();
+            Err(stderr.trim().to_string())
+        }
+    }
+
+    #[cfg(target_os = "macos")]
+    {
+        let output = std::process::Command::new("diskutil")
+            .args(["unmount", &device_path])
+            .output()
+            .map_err(|unmount_error| format!("Failed to run diskutil: {}", unmount_error))?;
+
+        if output.status.success() {
+            Ok(())
+        } else {
+            let stderr = String::from_utf8_lossy(&output.stderr).to_string();
+            Err(stderr.trim().to_string())
+        }
+    }
+
+    #[cfg(windows)]
+    {
+        let _ = device_path;
+        Err("Unmount not supported on Windows - use system tray eject".to_string())
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Other path utilities
+// ---------------------------------------------------------------------------
 
 #[tauri::command]
 pub fn get_parent_dir(path: String) -> Option<String> {

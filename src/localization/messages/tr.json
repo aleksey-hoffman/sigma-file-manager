@@ -1568,6 +1568,9 @@
   "protectedItemsShort": "Korumalı",
   "pinnedItemsShort": "Ekli",
   "freeOf": "ücretsiz olarak",
+  "driveNotMounted": "Bağlı değil",
+  "mounting": "Bağlanıyor",
+  "unmount": "Çıkar",
   "terminal": {
     "terminal": "Terminal",
     "terminalAdmin": "Terminal (yönetici)",

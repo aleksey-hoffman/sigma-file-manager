@@ -1584,6 +1584,9 @@
   "protectedItemsShort": "Защищенные",
   "pinnedItemsShort": "Прикрепленные",
   "freeOf": "свободно из",
+  "driveNotMounted": "Не подключено",
+  "mounting": "Подключение",
+  "unmount": "Отключить",
   "terminal": {
     "terminal": "Терминал",
     "terminalAdmin": "Терминал (администратор)",

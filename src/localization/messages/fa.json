@@ -1567,6 +1567,9 @@
   "protectedItemsShort": "حفاظت شده",
   "pinnedItemsShort": "پیوست شده است",
   "freeOf": "رایگان از",
+  "driveNotMounted": "نصب نشده",
+  "mounting": "در حال نصب",
+  "unmount": "جدا کردن",
   "terminal": {
     "terminal": "ترمینال",
     "terminalAdmin": "ترمینال (مدیر)",

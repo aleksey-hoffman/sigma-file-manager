@@ -1594,6 +1594,9 @@
   "protectedItemsShort": "Protected",
   "pinnedItemsShort": "Pinned",
   "freeOf": "free of",
+  "driveNotMounted": "Not mounted",
+  "mounting": "Mounting",
+  "unmount": "Unmount",
   "terminal": {
     "terminal": "Terminal",
     "terminalAdmin": "Terminal (admin)",

@@ -14,4 +14,6 @@ export type DriveInfo = {
   percent_used: number;
   is_removable: boolean;
   is_read_only: boolean;
+  is_mounted: boolean;
+  device_path: string;
 };

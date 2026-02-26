@@ -1568,6 +1568,9 @@
   "protectedItemsShort": "受保护",
   "pinnedItemsShort": "固定的",
   "freeOf": "自由于",
+  "driveNotMounted": "未挂载",
+  "mounting": "挂载中",
+  "unmount": "卸载",
   "terminal": {
     "terminal": "终端",
     "terminalAdmin": "终端（管理员）",

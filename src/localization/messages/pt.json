@@ -1568,6 +1568,9 @@
   "protectedItemsShort": "itens protegidos curtos",
   "pinnedItemsShort": "itens fixados curtos",
   "freeOf": "livre de",
+  "driveNotMounted": "Não montado",
+  "mounting": "Montando",
+  "unmount": "Desmontar",
   "terminal": {
     "terminal": "Terminal",
     "terminalAdmin": "Terminal (admin)",

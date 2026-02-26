@@ -1584,6 +1584,9 @@
   "protectedItemsShort": "Zaščiteno",
   "pinnedItemsShort": "Pripeto",
   "freeOf": "brez",
+  "driveNotMounted": "Ni priklopljeno",
+  "mounting": "Priklapljanje",
+  "unmount": "Odklopi",
   "terminal": {
     "terminal": "Terminal",
     "terminalAdmin": "Terminal (skrbnik)",
