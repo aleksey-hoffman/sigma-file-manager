@@ -91,7 +91,10 @@ async function handleUnmount(clickEvent: MouseEvent) {
   clickEvent.stopPropagation();
 
   try {
-    await invoke('unmount_drive', { devicePath: props.drive.device_path });
+    await invoke('unmount_drive', {
+      devicePath: props.drive.device_path,
+      mountPoint: props.drive.mount_point,
+    });
   }
   catch (unmountError) {
     console.error('Failed to unmount drive:', unmountError);
