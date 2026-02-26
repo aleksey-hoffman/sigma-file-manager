@@ -1568,6 +1568,9 @@
   "protectedItemsShort": "保護された",
   "pinnedItemsShort": "添付",
   "freeOf": "から自由である",
+  "driveNotMounted": "未マウント",
+  "mounting": "マウント中",
+  "unmount": "アンマウント",
   "terminal": {
     "terminal": "ターミナル",
     "terminalAdmin": "ターミナル（管理者）",

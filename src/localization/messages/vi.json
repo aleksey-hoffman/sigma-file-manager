@@ -1568,6 +1568,9 @@
   "protectedItemsShort": "được bảo vệ",
   "pinnedItemsShort": "Đính kèm",
   "freeOf": "miễn phí của",
+  "driveNotMounted": "Chưa gắn kết",
+  "mounting": "Đang gắn kết",
+  "unmount": "Gỡ bỏ",
   "terminal": {
     "terminal": "Terminal",
     "terminalAdmin": "Terminal (quản trị)",
