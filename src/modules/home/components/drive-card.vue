@@ -167,7 +167,7 @@ async function handleUnmount(clickEvent: MouseEvent) {
     </div>
 
     <button
-      v-if="drive.is_mounted && drive.is_removable"
+      v-if="drive.is_mounted"
       type="button"
       class="drive-card__eject"
       :title="t('unmount')"
@@ -186,14 +186,14 @@ async function handleUnmount(clickEvent: MouseEvent) {
   width: 100%;
   height: 100%;
   align-items: center;
-  padding: 0 12px 0 0;
+  padding: 0 8px 0 0;
   border: none;
   border-radius: var(--radius);
   background-color: hsl(var(--card));
   color: hsl(var(--card-foreground));
   cursor: pointer;
   gap: 0;
-  grid-template-columns: 56px 1fr;
+  grid-template-columns: 56px 1fr auto;
   text-align: left;
   transition: background-color 0.15s ease;
 }
