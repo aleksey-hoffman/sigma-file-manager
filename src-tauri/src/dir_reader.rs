@@ -915,30 +915,82 @@ fn linux_unmount(device_path: &str, mount_point: &str) -> Result<(), String> {
 
 #[tauri::command]
 pub fn mount_network_share(params: NetworkShareParams) -> Result<String, String> {
-    let mount_base = {
-        #[cfg(target_os = "macos")]
-        { "/Volumes" }
-        #[cfg(not(target_os = "macos"))]
-        { "/mnt" }
-    };
-
-    let mount_point = format!("{}/{}", mount_base, params.mount_name);
-
-    fs::create_dir_all(&mount_point)
-        .map_err(|dir_error| format!("Failed to create mount point: {}", dir_error))?;
-
-    let result = match params.protocol.as_str() {
-        "sshfs" => mount_sshfs(&params, &mount_point),
-        "nfs" => mount_nfs(&params, &mount_point),
-        "smb" => mount_smb(&params, &mount_point),
-        unknown => Err(format!("Unknown protocol: {}", unknown)),
-    };
-
-    if result.is_err() {
-        let _ = fs::remove_dir(&mount_point);
+    #[cfg(windows)]
+    {
+        return mount_network_share_windows(&params);
     }
 
-    result.map(|_| mount_point)
+    #[cfg(not(windows))]
+    {
+        let mount_base = {
+            #[cfg(target_os = "macos")]
+            { "/Volumes" }
+            #[cfg(target_os = "linux")]
+            { "/mnt" }
+        };
+
+        let mount_point = format!("{}/{}", mount_base, params.mount_name);
+
+        fs::create_dir_all(&mount_point)
+            .map_err(|dir_error| format!("Failed to create mount point: {}", dir_error))?;
+
+        let result = match params.protocol.as_str() {
+            "sshfs" => mount_sshfs(&params, &mount_point),
+            "nfs" => mount_nfs(&params, &mount_point),
+            "smb" => mount_smb(&params, &mount_point),
+            unknown => Err(format!("Unknown protocol: {}", unknown)),
+        };
+
+        if result.is_err() {
+            let _ = fs::remove_dir(&mount_point);
+        }
+
+        result.map(|_| mount_point)
+    }
+}
+
+#[cfg(windows)]
+fn mount_network_share_windows(params: &NetworkShareParams) -> Result<String, String> {
+    match params.protocol.as_str() {
+        "smb" => {
+            let unc_path = format!("\\\\{}\\{}", params.host, params.remote_path);
+
+            let mut args = vec!["use", "*", &unc_path];
+
+            let password_arg;
+            if let Some(ref password) = params.password {
+                password_arg = format!("/user:{}", params.username.as_deref().unwrap_or(""));
+                args.push(&password_arg);
+                args.push(password);
+            }
+
+            let output = std::process::Command::new("net")
+                .args(&args)
+                .output()
+                .map_err(|run_error| format!("Failed to run 'net use': {}", run_error))?;
+
+            if output.status.success() {
+                let stdout = String::from_utf8_lossy(&output.stdout).to_string();
+                let drive_letter = stdout
+                    .lines()
+                    .find(|line| line.contains("assigned"))
+                    .and_then(|line| line.split_whitespace().last())
+                    .unwrap_or("")
+                    .to_string();
+                Ok(drive_letter)
+            } else {
+                let stderr = String::from_utf8_lossy(&output.stderr).to_string();
+                Err(format!("net use failed: {}", stderr.trim()))
+            }
+        }
+        "sshfs" => {
+            Err("SSHFS on Windows requires WinFSP and sshfs-win. Install from https://github.com/winfsp/sshfs-win".to_string())
+        }
+        "nfs" => {
+            Err("NFS on Windows requires 'Services for NFS' Windows feature to be enabled".to_string())
+        }
+        unknown => Err(format!("Unknown protocol: {}", unknown)),
+    }
 }
 
 fn mount_sshfs(params: &NetworkShareParams, mount_point: &str) -> Result<(), String> {
