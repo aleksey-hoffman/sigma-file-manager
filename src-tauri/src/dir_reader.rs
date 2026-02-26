@@ -563,10 +563,20 @@ pub fn get_system_drives() -> Result<Vec<DriveInfo>, String> {
             0.0
         };
 
-        let drive_type = match disk.kind() {
-            sysinfo::DiskKind::HDD => "HDD".to_string(),
-            sysinfo::DiskKind::SSD => "SSD".to_string(),
-            sysinfo::DiskKind::Unknown(_) => "Unknown".to_string(),
+        let file_system_str = disk.file_system().to_string_lossy().to_lowercase();
+        let is_network_fs = matches!(
+            file_system_str.as_str(),
+            "nfs" | "nfs4" | "cifs" | "smbfs" | "fuse.sshfs" | "fuse.rclone" | "fuse.gvfsd-fuse" | "afpfs"
+        );
+
+        let drive_type = if is_network_fs {
+            "Network".to_string()
+        } else {
+            match disk.kind() {
+                sysinfo::DiskKind::HDD => "HDD".to_string(),
+                sysinfo::DiskKind::SSD => "SSD".to_string(),
+                sysinfo::DiskKind::Unknown(_) => "Unknown".to_string(),
+            }
         };
 
         let display_name = {
