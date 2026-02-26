@@ -42,6 +42,7 @@ pub fn run() {
             dir_reader::get_system_drives,
             dir_reader::get_parent_dir,
             dir_reader::path_exists,
+            dir_reader::get_mountable_devices,
             dir_reader::mount_drive,
             dir_reader::unmount_drive,
             dir_size::get_dir_size,

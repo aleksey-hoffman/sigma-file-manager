@@ -52,6 +52,14 @@ pub struct DriveInfo {
     pub device_path: String,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct MountableDevice {
+    pub name: String,
+    pub device_path: String,
+    pub file_system: String,
+    pub size: u64,
+}
+
 fn is_hidden(path: &Path) -> bool {
     #[cfg(windows)]
     {
@@ -600,15 +608,6 @@ pub fn get_system_drives() -> Result<Vec<DriveInfo>, String> {
     #[cfg(windows)]
     append_windows_network_drives(&mut drives, &mut seen_paths);
 
-    #[cfg(target_os = "linux")]
-    {
-        let mounted_device_paths: std::collections::HashSet<String> = drives
-            .iter()
-            .map(|drive| drive.device_path.clone())
-            .collect();
-        append_unmounted_removable_devices(&mut drives, &mounted_device_paths);
-    }
-
     drives.sort_by(|first, second| first.path.cmp(&second.path));
 
     Ok(drives)
@@ -646,21 +645,52 @@ fn get_partition_fs_type(device_name: &str) -> Option<String> {
     if fs_type.is_empty() { None } else { Some(fs_type) }
 }
 
+// ---------------------------------------------------------------------------
+// Mountable device discovery
+// ---------------------------------------------------------------------------
+
+#[tauri::command]
+pub fn get_mountable_devices() -> Result<Vec<MountableDevice>, String> {
+    #[cfg(target_os = "linux")]
+    {
+        return Ok(linux_get_mountable_devices());
+    }
+
+    #[cfg(not(target_os = "linux"))]
+    {
+        Ok(Vec::new())
+    }
+}
+
 #[cfg(target_os = "linux")]
-fn append_unmounted_removable_devices(
-    drives: &mut Vec<DriveInfo>,
-    seen_device_paths: &std::collections::HashSet<String>,
-) {
+fn linux_get_mountable_devices() -> Vec<MountableDevice> {
+    let mounted_devices: std::collections::HashSet<String> = fs::read_to_string("/proc/mounts")
+        .unwrap_or_default()
+        .lines()
+        .filter_map(|line| {
+            let device = line.split_whitespace().next()?;
+            fs::canonicalize(device)
+                .ok()
+                .map(|resolved| resolved.to_string_lossy().to_string())
+        })
+        .collect();
+
+    let mut devices: Vec<MountableDevice> = Vec::new();
     let sys_block = Path::new("/sys/block");
+
     let block_entries = match fs::read_dir(sys_block) {
         Ok(entries) => entries,
-        Err(_) => return,
+        Err(_) => return devices,
     };
 
     for block_entry in block_entries.flatten() {
         let block_name = block_entry.file_name().to_string_lossy().to_string();
 
-        if block_name.starts_with("loop") || block_name.starts_with("ram") || block_name.starts_with("dm-") || block_name.starts_with("zram") {
+        if block_name.starts_with("loop")
+            || block_name.starts_with("ram")
+            || block_name.starts_with("dm-")
+            || block_name.starts_with("zram")
+        {
             continue;
         }
 
@@ -681,7 +711,9 @@ fn append_unmounted_removable_devices(
         if let Ok(sub_entries) = fs::read_dir(block_entry.path()) {
             for sub_entry in sub_entries.flatten() {
                 let sub_name = sub_entry.file_name().to_string_lossy().to_string();
-                if sub_name.starts_with(&block_name) && sub_entry.path().join("partition").exists() {
+                if sub_name.starts_with(&block_name)
+                    && sub_entry.path().join("partition").exists()
+                {
                     partitions.push(sub_name);
                 }
             }
@@ -698,7 +730,7 @@ fn append_unmounted_removable_devices(
                 .to_string_lossy()
                 .to_string();
 
-            if seen_device_paths.contains(&dev_path) || seen_device_paths.contains(&canonical) {
+            if mounted_devices.contains(&dev_path) || mounted_devices.contains(&canonical) {
                 continue;
             }
 
@@ -720,28 +752,19 @@ fn append_unmounted_removable_devices(
             .parse()
             .unwrap_or(0);
 
-            let total_space = size_sectors * 512;
-
             let label = get_device_label(&dev_path)
                 .unwrap_or_else(|| partition_name.to_uppercase());
 
-            drives.push(DriveInfo {
+            devices.push(MountableDevice {
                 name: label,
-                path: dev_path.clone(),
-                mount_point: String::new(),
-                file_system: fs_type.unwrap_or_default(),
-                drive_type: "Removable".to_string(),
-                total_space,
-                available_space: 0,
-                used_space: total_space,
-                percent_used: 100.0,
-                is_removable: true,
-                is_read_only: false,
-                is_mounted: false,
                 device_path: dev_path,
+                file_system: fs_type.unwrap_or_default(),
+                size: size_sectors * 512,
             });
         }
     }
+
+    devices
 }
 
 // ---------------------------------------------------------------------------

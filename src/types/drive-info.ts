@@ -17,3 +17,10 @@ export type DriveInfo = {
   is_mounted: boolean;
   device_path: string;
 };
+
+export type MountableDevice = {
+  name: string;
+  device_path: string;
+  file_system: string;
+  size: number;
+};
