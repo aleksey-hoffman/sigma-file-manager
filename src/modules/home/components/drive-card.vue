@@ -8,7 +8,7 @@ import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { invoke } from '@tauri-apps/api/core';
-import { HardDriveIcon, UsbIcon, UnplugIcon } from 'lucide-vue-next';
+import { HardDriveIcon, NetworkIcon, UsbIcon, UnplugIcon } from 'lucide-vue-next';
 import { useWorkspacesStore } from '@/stores/storage/workspaces';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import toReadableBytes from '@/utils/to-readable-bytes';
@@ -48,7 +48,13 @@ const isLinearVertical = computed(() => indicatorStyle.value === 'linearVertical
 const isLinearHorizontal = computed(() => indicatorStyle.value === 'linearHorizontal');
 const isLinearHorizontalCentered = computed(() => indicatorStyle.value === 'linearHorizontalCentered');
 
-const driveIcon = computed(() => props.drive.is_removable ? UsbIcon : HardDriveIcon);
+const driveIcon = computed(() => {
+  if (props.drive.drive_type === 'Network') {
+    return NetworkIcon;
+  }
+
+  return props.drive.is_removable ? UsbIcon : HardDriveIcon;
+});
 
 async function handleClick() {
   if (!props.drive.is_mounted) {
