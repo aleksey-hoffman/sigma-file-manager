@@ -11,6 +11,7 @@ import { invoke } from '@tauri-apps/api/core';
 import { HardDriveIcon, NetworkIcon, UsbIcon, UnplugIcon } from 'lucide-vue-next';
 import { useWorkspacesStore } from '@/stores/storage/workspaces';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
+import { usePlatformStore } from '@/stores/runtime/platform';
 import toReadableBytes from '@/utils/to-readable-bytes';
 import type { DriveInfo } from '@/types/drive-info';
 import { CircularProgress, LinearBar, EdgeIndicator } from './indicators';
@@ -23,6 +24,7 @@ const router = useRouter();
 const { t } = useI18n();
 const workspacesStore = useWorkspacesStore();
 const userSettingsStore = useUserSettingsStore();
+const platformStore = usePlatformStore();
 
 const isMounting = ref(false);
 
@@ -176,7 +178,7 @@ async function handleUnmount(clickEvent: MouseEvent) {
     </div>
 
     <button
-      v-if="drive.is_mounted"
+      v-if="drive.is_mounted && !platformStore.isWindows"
       type="button"
       class="drive-card__eject"
       :title="t('unmount')"
