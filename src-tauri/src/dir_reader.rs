@@ -384,10 +384,10 @@ fn append_windows_network_drives(
         GetDiskFreeSpaceExW, GetDriveTypeW, GetVolumeInformationW,
     };
     use windows::Win32::Foundation::MAX_PATH;
-    use windows::Win32::System::SystemServices::FILE_READ_ONLY_VOLUME;
     use windows::core::PCWSTR;
 
     const DRIVE_REMOTE: u32 = 4;
+    const FILE_READ_ONLY_VOLUME: u32 = 0x00080000;
 
     for letter_offset in 0u8..26 {
         let letter = b'A' + letter_offset;
