@@ -684,7 +684,108 @@ pub fn get_mountable_devices() -> Result<Vec<MountableDevice>, String> {
 }
 
 #[cfg(target_os = "linux")]
+fn is_wsl() -> bool {
+    fs::read_to_string("/proc/version")
+        .map(|version| {
+            let lower = version.to_lowercase();
+            lower.contains("microsoft") || lower.contains("wsl")
+        })
+        .unwrap_or(false)
+}
+
+#[cfg(target_os = "linux")]
 fn linux_get_mountable_devices() -> Vec<MountableDevice> {
+    let mut devices = linux_get_mountable_block_devices();
+
+    if is_wsl() {
+        devices.extend(wsl_get_unmounted_windows_drives());
+    }
+
+    devices
+}
+
+#[cfg(target_os = "linux")]
+fn wsl_get_unmounted_windows_drives() -> Vec<MountableDevice> {
+    let mounted_sources: std::collections::HashSet<String> = fs::read_to_string("/proc/mounts")
+        .unwrap_or_default()
+        .lines()
+        .filter_map(|line| {
+            let source = line.split_whitespace().next()?;
+            Some(source.to_uppercase())
+        })
+        .collect();
+
+    let output = match std::process::Command::new("cmd.exe")
+        .args(["/c", "wmic logicaldisk get name,size,description /format:csv"])
+        .output()
+    {
+        Ok(output) if output.status.success() => output,
+        _ => return Vec::new(),
+    };
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let mut devices: Vec<MountableDevice> = Vec::new();
+
+    for line in stdout.lines().skip(1) {
+        let line = line.trim().trim_matches('\r');
+        if line.is_empty() {
+            continue;
+        }
+
+        let fields: Vec<&str> = line.split(',').collect();
+        if fields.len() < 4 {
+            continue;
+        }
+
+        let description = fields[1].trim();
+        let drive_letter = fields[2].trim();
+        let size_str = fields[3].trim();
+
+        if drive_letter.is_empty() {
+            continue;
+        }
+
+        let source_upper = format!("{}\\134", drive_letter.to_uppercase());
+        let letter_only = drive_letter.to_uppercase();
+
+        if mounted_sources.contains(&source_upper)
+            || mounted_sources.contains(&letter_only)
+            || mounted_sources.contains(&format!("{}:", letter_only.trim_end_matches(':')))
+        {
+            continue;
+        }
+
+        let mount_path = format!(
+            "/mnt/{}",
+            drive_letter.trim_end_matches(':').to_lowercase()
+        );
+        if Path::new(&mount_path).exists()
+            && fs::read_dir(&mount_path).map(|mut readdir| readdir.next().is_some()).unwrap_or(false)
+        {
+            continue;
+        }
+
+        let size: u64 = size_str.parse().unwrap_or(0);
+
+        let display_name = if description.is_empty() {
+            format!("Drive ({})", drive_letter)
+        } else {
+            format!("{} ({})", description, drive_letter)
+        };
+
+        devices.push(MountableDevice {
+            name: display_name,
+            device_path: drive_letter.to_string(),
+            file_system: "drvfs".to_string(),
+            size,
+        });
+    }
+
+    devices
+}
+
+#[cfg(target_os = "linux")]
+fn linux_get_mountable_block_devices() -> Vec<MountableDevice> {
     let mounted_devices: std::collections::HashSet<String> = fs::read_to_string("/proc/mounts")
         .unwrap_or_default()
         .lines()
@@ -796,6 +897,14 @@ fn linux_get_mountable_devices() -> Vec<MountableDevice> {
 pub fn mount_drive(device_path: String) -> Result<String, String> {
     #[cfg(target_os = "linux")]
     {
+        let looks_like_windows_drive = device_path.len() <= 3
+            && device_path.contains(':')
+            && device_path.chars().next().map(|character| character.is_ascii_alphabetic()).unwrap_or(false);
+
+        if looks_like_windows_drive && is_wsl() {
+            return wsl_mount_drvfs(&device_path);
+        }
+
         if let Ok(output) = std::process::Command::new("udisksctl")
             .args(["mount", "-b", &device_path, "--no-user-interaction"])
             .output()
@@ -878,6 +987,39 @@ pub fn unmount_drive(device_path: String, mount_point: String) -> Result<(), Str
     {
         let _ = (device_path, mount_point);
         Err("Unmount not supported on Windows - use system tray eject".to_string())
+    }
+}
+
+#[cfg(target_os = "linux")]
+fn wsl_mount_drvfs(drive_letter: &str) -> Result<String, String> {
+    let letter = drive_letter.trim_end_matches(':').to_lowercase();
+    let mount_point = format!("/mnt/{}", letter);
+
+    let _ = fs::create_dir_all(&mount_point);
+
+    let output = std::process::Command::new("mount")
+        .args(["-t", "drvfs", drive_letter, &mount_point])
+        .output();
+
+    match output {
+        Ok(result) if result.status.success() => return Ok(mount_point),
+        _ => {}
+    }
+
+    let sudo_output = std::process::Command::new("sudo")
+        .args(["-n", "mount", "-t", "drvfs", drive_letter, &mount_point])
+        .output();
+
+    match sudo_output {
+        Ok(result) if result.status.success() => Ok(mount_point),
+        Ok(result) => {
+            let stderr = String::from_utf8_lossy(&result.stderr).to_string();
+            Err(format!(
+                "Mounting {} requires elevated privileges. Run: sudo mount -t drvfs {} {}\n{}",
+                drive_letter, drive_letter, mount_point, stderr.trim()
+            ))
+        }
+        Err(run_error) => Err(format!("Failed to mount {}: {}", drive_letter, run_error)),
     }
 }
 
