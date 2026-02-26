@@ -384,6 +384,7 @@ fn append_windows_network_drives(
         GetDiskFreeSpaceExW, GetDriveTypeW, GetVolumeInformationW,
     };
     use windows::Win32::Foundation::MAX_PATH;
+    use windows::Win32::System::SystemServices::FILE_READ_ONLY_VOLUME;
     use windows::core::PCWSTR;
 
     const DRIVE_REMOTE: u32 = 4;
@@ -392,8 +393,9 @@ fn append_windows_network_drives(
         let letter = b'A' + letter_offset;
         let root_path_str = format!("{}:\\", letter as char);
         let root_wide: Vec<u16> = root_path_str.encode_utf16().chain(std::iter::once(0)).collect();
+        let root_pcwstr = PCWSTR::from_raw(root_wide.as_ptr());
 
-        let drive_type = unsafe { GetDriveTypeW(PCWSTR::from_raw(root_wide.as_ptr())) }.0;
+        let drive_type = unsafe { GetDriveTypeW(root_pcwstr) };
         if drive_type != DRIVE_REMOTE {
             continue;
         }
@@ -411,7 +413,7 @@ fn append_windows_network_drives(
 
         let got_info = unsafe {
             GetVolumeInformationW(
-                PCWSTR::from_raw(root_wide.as_ptr()),
+                root_pcwstr,
                 Some(&mut name_buf),
                 None,
                 None,
@@ -440,7 +442,7 @@ fn append_windows_network_drives(
 
         let got_size = unsafe {
             GetDiskFreeSpaceExW(
-                PCWSTR::from_raw(root_wide.as_ptr()),
+                root_pcwstr,
                 None,
                 Some(&mut total_size),
                 Some(&mut free_space),
@@ -461,7 +463,7 @@ fn append_windows_network_drives(
             format!("{} ({}:)", volume_name, letter as char)
         };
 
-        let is_read_only = (flags & 0x00080000) != 0;
+        let is_read_only = (flags & FILE_READ_ONLY_VOLUME) != 0;
 
         drives.push(DriveInfo {
             name: display_name,
