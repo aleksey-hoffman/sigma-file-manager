@@ -1571,6 +1571,12 @@
   "driveNotMounted": "Non monté",
   "mounting": "Montage",
   "unmount": "Démonter",
+  "mount": "Monter",
+  "mountableDevices": "Monter un périphérique",
+  "mountableDevicesDescription": "Périphériques détectés pouvant être montés",
+  "noMountableDevicesFound": "Aucun périphérique non monté trouvé",
+  "scanning": "Analyse en cours",
+  "rescan": "Ré-analyser",
   "terminal": {
     "terminal": "Terminal",
     "terminalAdmin": "Terminal (admin)",

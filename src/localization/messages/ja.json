@@ -1571,6 +1571,12 @@
   "driveNotMounted": "未マウント",
   "mounting": "マウント中",
   "unmount": "アンマウント",
+  "mount": "マウント",
+  "mountableDevices": "デバイスをマウント",
+  "mountableDevicesDescription": "マウント可能なデバイス",
+  "noMountableDevicesFound": "マウント可能なデバイスが見つかりません",
+  "scanning": "スキャン中",
+  "rescan": "再スキャン",
   "terminal": {
     "terminal": "ターミナル",
     "terminalAdmin": "ターミナル（管理者）",

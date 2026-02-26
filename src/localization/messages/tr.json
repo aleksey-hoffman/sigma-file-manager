@@ -1571,6 +1571,12 @@
   "driveNotMounted": "Bağlı değil",
   "mounting": "Bağlanıyor",
   "unmount": "Çıkar",
+  "mount": "Bağla",
+  "mountableDevices": "Bir aygıt bağla",
+  "mountableDevicesDescription": "Bağlanabilir bulunan aygıtlar",
+  "noMountableDevicesFound": "Bağlanabilir aygıt bulunamadı",
+  "scanning": "Taranıyor",
+  "rescan": "Yeniden tara",
   "terminal": {
     "terminal": "Terminal",
     "terminalAdmin": "Terminal (yönetici)",

@@ -1571,6 +1571,12 @@
   "driveNotMounted": "Nicht eingehängt",
   "mounting": "Einhängen",
   "unmount": "Aushängen",
+  "mount": "Einhängen",
+  "mountableDevices": "Gerät einhängen",
+  "mountableDevicesDescription": "Erkannte Geräte, die eingehängt werden können",
+  "noMountableDevicesFound": "Keine nicht eingehängten Geräte gefunden",
+  "scanning": "Suche läuft",
+  "rescan": "Erneut suchen",
   "terminal": {
     "terminal": "Terminal",
     "terminalAdmin": "Terminal (Admin)",

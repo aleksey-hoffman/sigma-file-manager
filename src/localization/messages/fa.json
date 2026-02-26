@@ -1570,6 +1570,12 @@
   "driveNotMounted": "نصب نشده",
   "mounting": "در حال نصب",
   "unmount": "جدا کردن",
+  "mount": "نصب",
+  "mountableDevices": "نصب دستگاه",
+  "mountableDevicesDescription": "دستگاه‌های کشف‌شده قابل نصب",
+  "noMountableDevicesFound": "دستگاه قابل نصب یافت نشد",
+  "scanning": "در حال اسکن",
+  "rescan": "اسکن مجدد",
   "terminal": {
     "terminal": "ترمینال",
     "terminalAdmin": "ترمینال (مدیر)",

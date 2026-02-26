@@ -1571,6 +1571,12 @@
   "driveNotMounted": "Não montado",
   "mounting": "Montando",
   "unmount": "Desmontar",
+  "mount": "Montar",
+  "mountableDevices": "Montar um dispositivo",
+  "mountableDevicesDescription": "Dispositivos descobertos que podem ser montados",
+  "noMountableDevicesFound": "Nenhum dispositivo desmontado encontrado",
+  "scanning": "Verificando",
+  "rescan": "Reverificar",
   "terminal": {
     "terminal": "Terminal",
     "terminalAdmin": "Terminal (admin)",

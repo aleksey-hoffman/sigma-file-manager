@@ -1571,6 +1571,12 @@
   "driveNotMounted": "Chưa gắn kết",
   "mounting": "Đang gắn kết",
   "unmount": "Gỡ bỏ",
+  "mount": "Gắn kết",
+  "mountableDevices": "Gắn kết thiết bị",
+  "mountableDevicesDescription": "Các thiết bị được phát hiện có thể gắn kết",
+  "noMountableDevicesFound": "Không tìm thấy thiết bị có thể gắn kết",
+  "scanning": "Đang quét",
+  "rescan": "Quét lại",
   "terminal": {
     "terminal": "Terminal",
     "terminalAdmin": "Terminal (quản trị)",

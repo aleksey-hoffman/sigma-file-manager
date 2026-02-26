@@ -1587,6 +1587,12 @@
   "driveNotMounted": "Не подключено",
   "mounting": "Подключение",
   "unmount": "Отключить",
+  "mount": "Подключить",
+  "mountableDevices": "Подключить устройство",
+  "mountableDevicesDescription": "Обнаруженные устройства, которые можно подключить",
+  "noMountableDevicesFound": "Не найдено устройств для подключения",
+  "scanning": "Сканирование",
+  "rescan": "Повторить сканирование",
   "terminal": {
     "terminal": "Терминал",
     "terminalAdmin": "Терминал (администратор)",

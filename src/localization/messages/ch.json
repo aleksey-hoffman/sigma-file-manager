@@ -1571,6 +1571,12 @@
   "driveNotMounted": "未挂载",
   "mounting": "挂载中",
   "unmount": "卸载",
+  "mount": "挂载",
+  "mountableDevices": "挂载设备",
+  "mountableDevicesDescription": "发现的可挂载设备",
+  "noMountableDevicesFound": "未找到可挂载的设备",
+  "scanning": "扫描中",
+  "rescan": "重新扫描",
   "terminal": {
     "terminal": "终端",
     "terminalAdmin": "终端（管理员）",

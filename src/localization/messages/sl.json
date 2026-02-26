@@ -1587,6 +1587,12 @@
   "driveNotMounted": "Ni priklopljeno",
   "mounting": "Priklapljanje",
   "unmount": "Odklopi",
+  "mount": "Priklopi",
+  "mountableDevices": "Priklopi napravo",
+  "mountableDevicesDescription": "Odkrite naprave, ki jih je mogoče priklopiti",
+  "noMountableDevicesFound": "Ni najdenih naprav za priklop",
+  "scanning": "Iskanje",
+  "rescan": "Ponovno iskanje",
   "terminal": {
     "terminal": "Terminal",
     "terminalAdmin": "Terminal (skrbnik)",
