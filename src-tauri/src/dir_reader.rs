@@ -250,6 +250,10 @@ pub fn read_dir(path: String) -> Result<DirContents, String> {
     })
 }
 
+// ---------------------------------------------------------------------------
+// Linux: mount filtering and display names
+// ---------------------------------------------------------------------------
+
 #[cfg(target_os = "linux")]
 fn is_virtual_filesystem(file_system: &str) -> bool {
     let fs_lower = file_system.to_lowercase();
@@ -294,14 +298,198 @@ fn should_skip_linux_mount(file_system: &str, name: &str, mount_point: &str) -> 
     true
 }
 
-#[cfg(target_os = "linux")]
-fn get_linux_display_name(_sysinfo_name: &str, mount_point: &str) -> String {
+// ---------------------------------------------------------------------------
+// macOS: mount filtering and network volume enumeration
+// ---------------------------------------------------------------------------
+
+#[cfg(target_os = "macos")]
+fn should_skip_macos_mount(mount_point: &str) -> bool {
+    if mount_point == "/" {
+        return true;
+    }
+    if mount_point.starts_with("/System/Volumes/") {
+        return true;
+    }
+    if mount_point.starts_with("/private/") {
+        return true;
+    }
+    false
+}
+
+#[cfg(target_os = "macos")]
+fn append_macos_network_volumes(
+    drives: &mut Vec<DriveInfo>,
+    seen_paths: &mut std::collections::HashSet<String>,
+) {
+    let volumes_dir = Path::new("/Volumes");
+    let entries = match fs::read_dir(volumes_dir) {
+        Ok(entries) => entries,
+        Err(_) => return,
+    };
+
+    for entry in entries.flatten() {
+        let mount_point = entry.path().to_string_lossy().to_string();
+        let path = normalize_path(&mount_point);
+
+        if seen_paths.contains(&path) {
+            continue;
+        }
+
+        if !entry.path().is_dir() {
+            continue;
+        }
+
+        let metadata = match fs::metadata(&entry.path()) {
+            Ok(metadata) => metadata,
+            Err(_) => continue,
+        };
+
+        if metadata.len() == 0 && !metadata.is_dir() {
+            continue;
+        }
+
+        let display_name = entry.file_name().to_string_lossy().to_string();
+        seen_paths.insert(path.clone());
+
+        drives.push(DriveInfo {
+            name: display_name,
+            path,
+            mount_point,
+            file_system: "Network".to_string(),
+            drive_type: "Network".to_string(),
+            total_space: 0,
+            available_space: 0,
+            used_space: 0,
+            percent_used: 0.0,
+            is_removable: false,
+            is_read_only: false,
+        });
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Windows: network drive enumeration (mapped DRIVE_REMOTE drives)
+// ---------------------------------------------------------------------------
+
+#[cfg(windows)]
+fn append_windows_network_drives(
+    drives: &mut Vec<DriveInfo>,
+    seen_paths: &mut std::collections::HashSet<String>,
+) {
+    use windows::Win32::Storage::FileSystem::{
+        GetDiskFreeSpaceExW, GetDriveTypeW, GetVolumeInformationW,
+    };
+    use windows::Win32::Foundation::MAX_PATH;
+    use windows::core::PCWSTR;
+
+    const DRIVE_REMOTE: u32 = 4;
+
+    for letter_offset in 0u8..26 {
+        let letter = b'A' + letter_offset;
+        let root_path_str = format!("{}:\\", letter as char);
+        let root_wide: Vec<u16> = root_path_str.encode_utf16().chain(std::iter::once(0)).collect();
+
+        let drive_type = unsafe { GetDriveTypeW(PCWSTR::from_raw(root_wide.as_ptr())) }.0;
+        if drive_type != DRIVE_REMOTE {
+            continue;
+        }
+
+        let mount_point = root_path_str.clone();
+        let path = normalize_path(&mount_point);
+
+        if !seen_paths.insert(path.clone()) {
+            continue;
+        }
+
+        let mut name_buf = [0u16; MAX_PATH as usize + 1];
+        let mut fs_buf = [0u16; 32];
+        let mut flags = 0u32;
+
+        let got_info = unsafe {
+            GetVolumeInformationW(
+                PCWSTR::from_raw(root_wide.as_ptr()),
+                Some(&mut name_buf),
+                None,
+                None,
+                Some(&mut flags),
+                Some(&mut fs_buf),
+            )
+            .is_ok()
+        };
+
+        let volume_name = if got_info {
+            let length = name_buf.iter().position(|&character| character == 0).unwrap_or(name_buf.len());
+            String::from_utf16_lossy(&name_buf[..length])
+        } else {
+            String::new()
+        };
+
+        let file_system = if got_info {
+            let length = fs_buf.iter().position(|&character| character == 0).unwrap_or(fs_buf.len());
+            String::from_utf16_lossy(&fs_buf[..length])
+        } else {
+            "Network".to_string()
+        };
+
+        let mut total_size: u64 = 0;
+        let mut free_space: u64 = 0;
+
+        let got_size = unsafe {
+            GetDiskFreeSpaceExW(
+                PCWSTR::from_raw(root_wide.as_ptr()),
+                None,
+                Some(&mut total_size),
+                Some(&mut free_space),
+            )
+            .is_ok()
+        };
+
+        if !got_size || total_size == 0 {
+            continue;
+        }
+
+        let used_space = total_size.saturating_sub(free_space);
+        let percent_used = ((used_space as f64 / total_size as f64) * 100.0).round();
+
+        let display_name = if volume_name.is_empty() {
+            format!("Network Drive ({}:)", letter as char)
+        } else {
+            format!("{} ({}:)", volume_name, letter as char)
+        };
+
+        let is_read_only = (flags & 0x00080000) != 0;
+
+        drives.push(DriveInfo {
+            name: display_name,
+            path,
+            mount_point,
+            file_system,
+            drive_type: "Network".to_string(),
+            total_space: total_size,
+            available_space: free_space,
+            used_space,
+            percent_used,
+            is_removable: false,
+            is_read_only,
+        });
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Display name helpers (per-platform)
+// ---------------------------------------------------------------------------
+
+fn mount_point_last_component(mount_point: &str) -> String {
     mount_point
         .rsplit('/')
         .find(|segment| !segment.is_empty())
         .unwrap_or(mount_point)
         .to_string()
 }
+
+// ---------------------------------------------------------------------------
+// Main drive listing command
+// ---------------------------------------------------------------------------
 
 #[tauri::command]
 pub fn get_system_drives() -> Result<Vec<DriveInfo>, String> {
@@ -327,7 +515,12 @@ pub fn get_system_drives() -> Result<Vec<DriveInfo>, String> {
             continue;
         }
 
-        #[cfg(not(target_os = "linux"))]
+        #[cfg(target_os = "macos")]
+        if total_space == 0 || should_skip_macos_mount(&mount_point) {
+            continue;
+        }
+
+        #[cfg(windows)]
         if total_space == 0 {
             continue;
         }
@@ -349,20 +542,28 @@ pub fn get_system_drives() -> Result<Vec<DriveInfo>, String> {
             sysinfo::DiskKind::Unknown(_) => "Unknown".to_string(),
         };
 
-        let name = disk.name().to_string_lossy().to_string();
-
         let display_name = {
             #[cfg(windows)]
             {
-                if name.is_empty() {
+                let volume_label = disk.name().to_string_lossy().to_string();
+                if volume_label.is_empty() {
                     format!("Local Disk ({})", mount_point.trim_end_matches('\\'))
                 } else {
-                    format!("{} ({})", name, mount_point.trim_end_matches('\\'))
+                    format!("{} ({})", volume_label, mount_point.trim_end_matches('\\'))
                 }
             }
-            #[cfg(not(windows))]
+            #[cfg(target_os = "linux")]
             {
-                get_linux_display_name(&name, &mount_point)
+                mount_point_last_component(&mount_point)
+            }
+            #[cfg(target_os = "macos")]
+            {
+                let volume_label = disk.name().to_string_lossy().to_string();
+                if volume_label.is_empty() {
+                    mount_point_last_component(&mount_point)
+                } else {
+                    volume_label
+                }
             }
         };
 
@@ -380,6 +581,12 @@ pub fn get_system_drives() -> Result<Vec<DriveInfo>, String> {
             is_read_only: disk.is_read_only(),
         });
     }
+
+    #[cfg(target_os = "macos")]
+    append_macos_network_volumes(&mut drives, &mut seen_paths);
+
+    #[cfg(windows)]
+    append_windows_network_drives(&mut drives, &mut seen_paths);
 
     drives.sort_by(|first, second| first.path.cmp(&second.path));
 
