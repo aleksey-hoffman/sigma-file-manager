@@ -60,6 +60,17 @@ pub struct MountableDevice {
     pub size: u64,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct NetworkShareParams {
+    pub protocol: String,
+    pub host: String,
+    pub port: Option<u16>,
+    pub username: Option<String>,
+    pub password: Option<String>,
+    pub remote_path: String,
+    pub mount_name: String,
+}
+
 fn is_hidden(path: &Path) -> bool {
     #[cfg(windows)]
     {
@@ -896,6 +907,173 @@ fn linux_unmount(device_path: &str, mount_point: &str) -> Result<(), String> {
     }
 
     Err(format!("Could not unmount. Install udisks2 or use 'umount {}'.", mount_point))
+}
+
+// ---------------------------------------------------------------------------
+// Network share mounting
+// ---------------------------------------------------------------------------
+
+#[tauri::command]
+pub fn mount_network_share(params: NetworkShareParams) -> Result<String, String> {
+    let mount_base = {
+        #[cfg(target_os = "macos")]
+        { "/Volumes" }
+        #[cfg(not(target_os = "macos"))]
+        { "/mnt" }
+    };
+
+    let mount_point = format!("{}/{}", mount_base, params.mount_name);
+
+    fs::create_dir_all(&mount_point)
+        .map_err(|dir_error| format!("Failed to create mount point: {}", dir_error))?;
+
+    let result = match params.protocol.as_str() {
+        "sshfs" => mount_sshfs(&params, &mount_point),
+        "nfs" => mount_nfs(&params, &mount_point),
+        "smb" => mount_smb(&params, &mount_point),
+        unknown => Err(format!("Unknown protocol: {}", unknown)),
+    };
+
+    if result.is_err() {
+        let _ = fs::remove_dir(&mount_point);
+    }
+
+    result.map(|_| mount_point)
+}
+
+fn mount_sshfs(params: &NetworkShareParams, mount_point: &str) -> Result<(), String> {
+    let username = params.username.as_deref().unwrap_or("root");
+    let port = params.port.unwrap_or(22);
+    let source = format!("{}@{}:{}", username, params.host, params.remote_path);
+
+    let mut command = std::process::Command::new("sshfs");
+    command.args([
+        &source,
+        mount_point,
+        "-p", &port.to_string(),
+        "-o", "StrictHostKeyChecking=no",
+        "-o", "reconnect",
+        "-o", "ServerAliveInterval=15",
+    ]);
+
+    if params.password.is_some() {
+        command.args(["-o", "password_stdin"]);
+    }
+
+    let output = if let Some(ref password) = params.password {
+        use std::io::Write;
+        let mut child = command
+            .stdin(std::process::Stdio::piped())
+            .stdout(std::process::Stdio::piped())
+            .stderr(std::process::Stdio::piped())
+            .spawn()
+            .map_err(|spawn_error| format!("Failed to run sshfs: {}. Is sshfs installed?", spawn_error))?;
+
+        if let Some(ref mut stdin) = child.stdin {
+            let _ = stdin.write_all(password.as_bytes());
+        }
+
+        child.wait_with_output()
+            .map_err(|wait_error| format!("sshfs process error: {}", wait_error))?
+    } else {
+        command.output()
+            .map_err(|run_error| format!("Failed to run sshfs: {}. Is sshfs installed?", run_error))?
+    };
+
+    if output.status.success() {
+        Ok(())
+    } else {
+        let stderr = String::from_utf8_lossy(&output.stderr).to_string();
+        Err(format!("sshfs failed: {}", stderr.trim()))
+    }
+}
+
+fn mount_nfs(params: &NetworkShareParams, mount_point: &str) -> Result<(), String> {
+    let source = format!("{}:{}", params.host, params.remote_path);
+
+    let output = std::process::Command::new("mount")
+        .args(["-t", "nfs4", &source, mount_point])
+        .output()
+        .or_else(|_| {
+            std::process::Command::new("mount")
+                .args(["-t", "nfs", &source, mount_point])
+                .output()
+        })
+        .map_err(|run_error| format!("Failed to run mount: {}", run_error))?;
+
+    if output.status.success() {
+        Ok(())
+    } else {
+        let stderr = String::from_utf8_lossy(&output.stderr).to_string();
+        Err(format!("NFS mount failed: {}", stderr.trim()))
+    }
+}
+
+fn mount_smb(params: &NetworkShareParams, mount_point: &str) -> Result<(), String> {
+    let source = format!("//{}/{}", params.host, params.remote_path);
+
+    #[cfg(target_os = "macos")]
+    {
+        let mount_source = if let Some(ref username) = params.username {
+            format!("//{}@{}/{}", username, params.host, params.remote_path)
+        } else {
+            source.clone()
+        };
+
+        let output = std::process::Command::new("mount")
+            .args(["-t", "smbfs", &mount_source, mount_point])
+            .output()
+            .map_err(|run_error| format!("Failed to run mount: {}", run_error))?;
+
+        if output.status.success() {
+            return Ok(());
+        }
+
+        let stderr = String::from_utf8_lossy(&output.stderr).to_string();
+        return Err(format!("SMB mount failed: {}", stderr.trim()));
+    }
+
+    #[cfg(not(target_os = "macos"))]
+    {
+        let gio_uri = if let Some(ref username) = params.username {
+            format!("smb://{}@{}/{}", username, params.host, params.remote_path)
+        } else {
+            format!("smb://{}/{}", params.host, params.remote_path)
+        };
+
+        if let Ok(output) = std::process::Command::new("gio")
+            .args(["mount", &gio_uri])
+            .output()
+        {
+            if output.status.success() {
+                return Ok(());
+            }
+        }
+
+        let mut mount_args = vec!["-t", "cifs", &source, mount_point];
+        let options = if let Some(ref username) = params.username {
+            if let Some(ref password) = params.password {
+                format!("username={},password={}", username, password)
+            } else {
+                format!("username={}", username)
+            }
+        } else {
+            "guest".to_string()
+        };
+        mount_args.extend(["-o", &options]);
+
+        let output = std::process::Command::new("mount")
+            .args(&mount_args)
+            .output()
+            .map_err(|run_error| format!("Failed to run mount: {}", run_error))?;
+
+        if output.status.success() {
+            Ok(())
+        } else {
+            let stderr = String::from_utf8_lossy(&output.stderr).to_string();
+            Err(format!("SMB mount failed: {}", stderr.trim()))
+        }
+    }
 }
 
 // ---------------------------------------------------------------------------
