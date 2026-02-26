@@ -33,7 +33,6 @@ const sectionTitle = computed(() => {
       </h2>
 
       <button
-        v-if="!platformStore.isWindows"
         type="button"
         class="drives-section__add-button"
         :title="t('mountableDevices')"
