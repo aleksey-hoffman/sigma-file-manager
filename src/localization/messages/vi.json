@@ -1678,7 +1678,8 @@
       "share": "Chia sẻ",
       "openInNewTab": "Mở trong tab mới",
       "addToFavorites": "Thêm vào yêu thích",
-      "removeFromFavorites": "Xóa khỏi yêu thích"
+      "removeFromFavorites": "Xóa khỏi yêu thích",
+      "copyPath": "Sao chép đường dẫn"
     }
   },
   "openWith": {

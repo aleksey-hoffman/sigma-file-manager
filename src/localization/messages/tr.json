@@ -1678,7 +1678,8 @@
       "share": "Paylaş",
       "openInNewTab": "Yeni sekmede aç",
       "addToFavorites": "Favorilere ekle",
-      "removeFromFavorites": "Favorilerden kaldır"
+      "removeFromFavorites": "Favorilerden kaldır",
+      "copyPath": "Yolu kopyala"
     }
   },
   "openWith": {

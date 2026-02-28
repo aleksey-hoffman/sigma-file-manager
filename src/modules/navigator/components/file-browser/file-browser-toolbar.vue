@@ -36,6 +36,7 @@ import {
   XIcon,
 } from 'lucide-vue-next';
 import AddressBar from './address-bar.vue';
+import FileBrowserCurrentDirMenu from './file-browser-current-dir-menu.vue';
 import { useShortcutsStore } from '@/stores/runtime/shortcuts';
 
 const props = defineProps<{
@@ -245,6 +246,8 @@ function handleFilterInteractOutside(event: Event) {
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
+
+    <FileBrowserCurrentDirMenu />
 
     <Separator
       orientation="vertical"

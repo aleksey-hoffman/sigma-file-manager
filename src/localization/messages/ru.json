@@ -1694,7 +1694,8 @@
       "share": "Поделиться",
       "openInNewTab": "Открыть в новой вкладке",
       "addToFavorites": "Добавить в избранное",
-      "removeFromFavorites": "Удалить из избранного"
+      "removeFromFavorites": "Удалить из избранного",
+      "copyPath": "Копировать путь"
     }
   },
   "openWith": {

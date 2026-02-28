@@ -1704,7 +1704,8 @@
       "share": "Share",
       "openInNewTab": "Open in new tab",
       "addToFavorites": "Add to favorites",
-      "removeFromFavorites": "Remove from favorites"
+      "removeFromFavorites": "Remove from favorites",
+      "copyPath": "Copy path"
     }
   },
   "openWith": {

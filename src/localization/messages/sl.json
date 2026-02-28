@@ -1693,7 +1693,8 @@
       "share": "Deli",
       "openInNewTab": "Odpri v novem zavihku",
       "addToFavorites": "Dodaj med priljubljene",
-      "removeFromFavorites": "Odstrani iz priljubljenih"
+      "removeFromFavorites": "Odstrani iz priljubljenih",
+      "copyPath": "Kopiraj pot"
     },
     "openWith": {
       "title": "Odpri z",
