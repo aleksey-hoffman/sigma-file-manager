@@ -6,37 +6,20 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { ContextMenu, ContextMenuTrigger } from '@/components/ui/context-menu';
 import { Button } from '@/components/ui/button';
 import {
   Tooltip,
   TooltipTrigger,
   TooltipContent,
 } from '@/components/ui/tooltip';
-import {
-  EllipsisIcon,
-  ClipboardPasteIcon,
-  CopyIcon,
-  PlusIcon,
-  StarIcon,
-} from 'lucide-vue-next';
-import { useClipboardStore } from '@/stores/runtime/clipboard';
-import { useUserStatsStore } from '@/stores/storage/user-stats';
-import { useWorkspacesStore } from '@/stores/storage/workspaces';
+import { EllipsisIcon } from 'lucide-vue-next';
 import { useFileBrowserContext } from './composables/use-file-browser-context';
+import FileBrowserContextMenu from './file-browser-context-menu.vue';
 import type { DirEntry } from '@/types/dir-entry';
 
 const { t } = useI18n();
 const ctx = useFileBrowserContext();
-const clipboardStore = useClipboardStore();
-const userStatsStore = useUserStatsStore();
-const workspacesStore = useWorkspacesStore();
 
 const currentPath = computed(() => ctx.currentPath.value);
 
@@ -56,83 +39,49 @@ const currentDirEntry = computed<DirEntry>(() => ({
   mime: null,
 }));
 
-const canPaste = computed(() => {
-  return clipboardStore.hasItems && clipboardStore.canPasteTo(currentPath.value);
-});
-
-const isFavorite = computed(() => {
-  return userStatsStore.isFavorite(currentPath.value);
-});
-
-function handlePaste() {
-  const entry = currentDirEntry.value;
+function setupContextMenuState() {
   ctx.contextMenu.value = {
-    targetEntry: entry,
-    selectedEntries: [entry],
+    targetEntry: currentDirEntry.value,
+    selectedEntries: [currentDirEntry.value],
   };
-  ctx.onContextMenuAction('paste');
 }
 
-async function handleCopyPath() {
-  await navigator.clipboard.writeText(currentPath.value);
-}
+function handleClick(event: MouseEvent) {
+  setupContextMenuState();
 
-async function handleOpenInNewTab() {
-  await workspacesStore.openNewTabGroup(currentPath.value, { activate: false });
-}
+  const target = event.currentTarget as HTMLElement;
+  const rect = target.getBoundingClientRect();
 
-function handleToggleFavorite() {
-  userStatsStore.toggleFavorite(currentPath.value);
+  target.dispatchEvent(new MouseEvent('contextmenu', {
+    bubbles: true,
+    cancelable: true,
+    clientX: rect.left,
+    clientY: rect.bottom,
+  }));
 }
 </script>
 
 <template>
   <Tooltip>
-    <DropdownMenu>
+    <ContextMenu>
       <TooltipTrigger as-child>
-        <DropdownMenuTrigger as-child>
+        <ContextMenuTrigger as-child>
           <Button
             variant="ghost"
             size="icon"
             class="file-browser-current-dir-menu__trigger"
+            @click="handleClick"
+            @contextmenu="setupContextMenuState"
           >
             <EllipsisIcon class="file-browser-current-dir-menu__icon" />
           </Button>
-        </DropdownMenuTrigger>
+        </ContextMenuTrigger>
       </TooltipTrigger>
       <TooltipContent>
         {{ t('navigator.currentDirectoryContextMenu') }}
       </TooltipContent>
-      <DropdownMenuContent
-        align="start"
-        side="bottom"
-        class="file-browser-current-dir-menu__content"
-      >
-        <DropdownMenuItem
-          v-if="canPaste"
-          @select="handlePaste"
-        >
-          <ClipboardPasteIcon :size="16" />
-          <span>{{ t('fileBrowser.actions.paste') }}</span>
-        </DropdownMenuItem>
-        <DropdownMenuItem @select="handleCopyPath">
-          <CopyIcon :size="16" />
-          <span>{{ t('fileBrowser.actions.copyPath') }}</span>
-        </DropdownMenuItem>
-        <DropdownMenuItem @select="handleOpenInNewTab">
-          <PlusIcon :size="16" />
-          <span>{{ t('fileBrowser.actions.openInNewTab') }}</span>
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem @select="handleToggleFavorite">
-          <StarIcon
-            :size="16"
-            :fill="isFavorite ? 'currentColor' : 'none'"
-          />
-          <span>{{ isFavorite ? t('fileBrowser.actions.removeFromFavorites') : t('fileBrowser.actions.addToFavorites') }}</span>
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+      <FileBrowserContextMenu v-if="ctx.contextMenu.value.selectedEntries.length > 0" />
+    </ContextMenu>
   </Tooltip>
 </template>
 
@@ -145,10 +94,5 @@ function handleToggleFavorite() {
 .file-browser-current-dir-menu__icon {
   width: 18px;
   height: 18px;
-}
-
-.file-browser-current-dir-menu__content.sigma-ui-dropdown-menu-content {
-  min-width: 220px;
-  max-width: 280px;
 }
 </style>
