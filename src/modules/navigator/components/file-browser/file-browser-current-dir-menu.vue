@@ -87,8 +87,8 @@ function handleToggleFavorite() {
 </script>
 
 <template>
-  <DropdownMenu>
-    <Tooltip>
+  <Tooltip>
+    <DropdownMenu>
       <TooltipTrigger as-child>
         <DropdownMenuTrigger as-child>
           <Button
@@ -103,37 +103,37 @@ function handleToggleFavorite() {
       <TooltipContent>
         {{ t('navigator.currentDirectoryContextMenu') }}
       </TooltipContent>
-    </Tooltip>
-    <DropdownMenuContent
-      align="start"
-      side="bottom"
-      class="file-browser-current-dir-menu__content"
-    >
-      <DropdownMenuItem
-        v-if="canPaste"
-        @select="handlePaste"
+      <DropdownMenuContent
+        align="start"
+        side="bottom"
+        class="file-browser-current-dir-menu__content"
       >
-        <ClipboardPasteIcon :size="16" />
-        <span>{{ t('fileBrowser.actions.paste') }}</span>
-      </DropdownMenuItem>
-      <DropdownMenuItem @select="handleCopyPath">
-        <CopyIcon :size="16" />
-        <span>{{ t('fileBrowser.actions.copyPath') }}</span>
-      </DropdownMenuItem>
-      <DropdownMenuItem @select="handleOpenInNewTab">
-        <PlusIcon :size="16" />
-        <span>{{ t('fileBrowser.actions.openInNewTab') }}</span>
-      </DropdownMenuItem>
-      <DropdownMenuSeparator />
-      <DropdownMenuItem @select="handleToggleFavorite">
-        <StarIcon
-          :size="16"
-          :fill="isFavorite ? 'currentColor' : 'none'"
-        />
-        <span>{{ isFavorite ? t('fileBrowser.actions.removeFromFavorites') : t('fileBrowser.actions.addToFavorites') }}</span>
-      </DropdownMenuItem>
-    </DropdownMenuContent>
-  </DropdownMenu>
+        <DropdownMenuItem
+          v-if="canPaste"
+          @select="handlePaste"
+        >
+          <ClipboardPasteIcon :size="16" />
+          <span>{{ t('fileBrowser.actions.paste') }}</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem @select="handleCopyPath">
+          <CopyIcon :size="16" />
+          <span>{{ t('fileBrowser.actions.copyPath') }}</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem @select="handleOpenInNewTab">
+          <PlusIcon :size="16" />
+          <span>{{ t('fileBrowser.actions.openInNewTab') }}</span>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem @select="handleToggleFavorite">
+          <StarIcon
+            :size="16"
+            :fill="isFavorite ? 'currentColor' : 'none'"
+          />
+          <span>{{ isFavorite ? t('fileBrowser.actions.removeFromFavorites') : t('fileBrowser.actions.addToFavorites') }}</span>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  </Tooltip>
 </template>
 
 <style>
