@@ -1665,6 +1665,7 @@
     "itemsTotal": "{count} items",
     "showingFiltered": "{total} items ({hidden} hidden)",
     "selectedItems": "{count} items selected",
+    "currentDirectory": "Current directory",
     "selectAll": "Select all",
     "deselectAll": "Deselect all",
     "showingNOfItems": "{total} items ({hidden} hidden)",

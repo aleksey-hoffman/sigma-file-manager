@@ -227,6 +227,30 @@ export function useFileBrowserSelection(
     };
   }
 
+  function handleBackgroundContextMenu() {
+    const pathParts = currentPathRef.value.split('/').filter(Boolean);
+    const currentDirEntry: DirEntry = {
+      name: pathParts.length > 0 ? pathParts[pathParts.length - 1] : currentPathRef.value,
+      path: currentPathRef.value,
+      is_dir: true,
+      is_file: false,
+      is_hidden: false,
+      is_symlink: false,
+      size: 0,
+      created_time: 0,
+      modified_time: 0,
+      accessed_time: 0,
+      item_count: null,
+      ext: null,
+      mime: null,
+    };
+
+    contextMenu.value = {
+      targetEntry: currentDirEntry,
+      selectedEntries: [currentDirEntry],
+    };
+  }
+
   function closeContextMenu() {
     contextMenu.value.selectedEntries = [];
   }
@@ -682,7 +706,11 @@ export function useFileBrowserSelection(
     }
   }
 
-  async function createNewItem(name: string, itemType: 'directory' | 'file'): Promise<boolean> {
+  async function createNewItem(
+    name: string,
+    itemType: 'directory' | 'file',
+    targetPaths?: string[],
+  ): Promise<boolean> {
     const trimmedName = name.trim();
 
     if (!trimmedName) {
@@ -699,55 +727,63 @@ export function useFileBrowserSelection(
       return false;
     }
 
-    try {
-      const result = await invoke<FileOperationResult>('create_item', {
-        directoryPath: currentPathRef.value,
-        name: trimmedName,
-        isDirectory: itemType === 'directory',
-      });
+    const directoryPaths = targetPaths && targetPaths.length > 0
+      ? targetPaths
+      : [currentPathRef.value];
 
-      if (result.success) {
-        toast.custom(markRaw(CustomSimple), {
-          componentProps: {
-            title: itemType === 'directory'
-              ? t('dialogs.newDirItemDialog.newDirectoryCreated')
-              : t('dialogs.newDirItemDialog.newFileCreated'),
-            description: '',
-          },
+    let successCount = 0;
+    let lastError: string | null = null;
+
+    for (const directoryPath of directoryPaths) {
+      try {
+        const result = await invoke<FileOperationResult>('create_item', {
+          directoryPath,
+          name: trimmedName,
+          isDirectory: itemType === 'directory',
         });
 
-        dirSizesStore.invalidate([currentPathRef.value]);
-        pendingFocusRequest.value = {
-          type: 'path',
-          targetPath: currentPathRef.value,
-          path: `${currentPathRef.value}/${trimmedName}`,
-        };
-        onRefresh();
-        return true;
+        if (result.success) {
+          successCount++;
+          dirSizesStore.invalidate([directoryPath]);
+          if (directoryPath === currentPathRef.value) {
+            pendingFocusRequest.value = {
+              type: 'path',
+              targetPath: currentPathRef.value,
+              path: `${currentPathRef.value}/${trimmedName}`,
+            };
+          }
+        }
+        else {
+          lastError = result.error || '';
+        }
       }
-      else {
-        toast.custom(markRaw(CustomSimple), {
-          componentProps: {
-            title: itemType === 'directory'
-              ? t('dialogs.newDirItemDialog.failedToCreateNewDirectory')
-              : t('dialogs.newDirItemDialog.failedToCreateNewFile'),
-            description: result.error || '',
-          },
-        });
-        return false;
+      catch (error) {
+        lastError = String(error);
       }
     }
-    catch (error) {
+
+    if (successCount > 0) {
       toast.custom(markRaw(CustomSimple), {
         componentProps: {
           title: itemType === 'directory'
-            ? t('dialogs.newDirItemDialog.failedToCreateNewDirectory')
-            : t('dialogs.newDirItemDialog.failedToCreateNewFile'),
-          description: String(error),
+            ? t('dialogs.newDirItemDialog.newDirectoryCreated')
+            : t('dialogs.newDirItemDialog.newFileCreated'),
+          description: '',
         },
       });
-      return false;
+      onRefresh();
+      return true;
     }
+
+    toast.custom(markRaw(CustomSimple), {
+      componentProps: {
+        title: itemType === 'directory'
+          ? t('dialogs.newDirItemDialog.failedToCreateNewDirectory')
+          : t('dialogs.newDirItemDialog.failedToCreateNewFile'),
+        description: lastError || '',
+      },
+    });
+    return false;
   }
 
   function handleContextMenuAction(action: ContextMenuAction) {
@@ -978,6 +1014,7 @@ export function useFileBrowserSelection(
     handleEntryMouseDown,
     handleEntryMouseUp,
     handleEntryContextMenu,
+    handleBackgroundContextMenu,
     closeContextMenu,
     handleContextMenuAction,
     resetMouseState,

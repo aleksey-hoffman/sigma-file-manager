@@ -1639,6 +1639,7 @@
     "itemsTotal": "{count} mục",
     "showingFiltered": "{total} mục ({hidden} ẩn)",
     "selectedItems": "{count} mục đã chọn",
+    "currentDirectory": "Thư mục hiện tại",
     "selectAll": "Chọn tất cả",
     "deselectAll": "Bỏ chọn tất cả",
     "showingNOfItems": "{total} mục ({hidden} ẩn)",

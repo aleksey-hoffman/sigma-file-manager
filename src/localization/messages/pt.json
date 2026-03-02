@@ -1639,6 +1639,7 @@
     "itemsTotal": "{count} itens",
     "showingFiltered": "{total} itens ({hidden} ocultos)",
     "selectedItems": "{count} itens selecionados",
+    "currentDirectory": "Diretório atual",
     "selectAll": "Selecionar tudo",
     "deselectAll": "Desmarcar tudo",
     "showingNOfItems": "{total} itens ({hidden} ocultos)",

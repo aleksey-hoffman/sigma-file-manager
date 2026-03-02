@@ -1639,6 +1639,7 @@
     "itemsTotal": "{count} öğe",
     "showingFiltered": "{total} öğe ({hidden} gizli)",
     "selectedItems": "{count} öğe seçildi",
+    "currentDirectory": "Geçerli dizin",
     "selectAll": "Tümünü seç",
     "deselectAll": "Seçimi kaldır",
     "showingNOfItems": "{total} öğe ({hidden} gizli)",

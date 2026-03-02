@@ -64,8 +64,10 @@ provideFileBrowserContext({
   onEntryMouseDown: fb.onEntryMouseDown,
   onEntryMouseUp: fb.onEntryMouseUp,
   handleEntryContextMenu: fb.handleEntryContextMenu,
+  handleBackgroundContextMenu: fb.handleBackgroundContextMenu,
   onContextMenuAction: fb.onContextMenuAction,
   openOpenWithDialog: fb.openOpenWithDialog,
+  openNewItemDialog: fb.openNewItemDialog,
   navigateToHome: fb.navigateToHome,
   entryDescription: props.entryDescription,
 });

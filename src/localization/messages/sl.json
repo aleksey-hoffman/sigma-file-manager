@@ -1655,6 +1655,7 @@
     "itemsTotal": "{count} predmetov",
     "showingFiltered": "{total} predmetov ({hidden} skritih)",
     "selectedItems": "{count} izbranih predmetov",
+    "currentDirectory": "Trenutna mapa",
     "selectAll": "Izberi vse",
     "deselectAll": "Odznači vse",
     "showingNOfItems": "{total} predmetov ({hidden} skritih)",

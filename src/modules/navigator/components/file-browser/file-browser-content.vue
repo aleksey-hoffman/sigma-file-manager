@@ -270,14 +270,24 @@ function handleColumnHeaderClick(column: ListSortColumn) {
             @go-home="ctx.navigateToHome"
           />
 
-          <EmptyState
+          <ContextMenu
             v-else-if="ctx.isDirectoryEmpty.value"
-            class="file-browser__empty-state-container"
-            :icon="FolderOpenIcon"
-            :title="t('fileBrowser.directoryIsEmpty')"
-            :description="t('fileBrowser.directoryIsEmptyDescription')"
-            :bordered="false"
-          />
+          >
+            <ContextMenuTrigger as-child>
+              <div
+                class="file-browser__empty-state-container"
+                @contextmenu.prevent="ctx.handleBackgroundContextMenu"
+              >
+                <EmptyState
+                  :icon="FolderOpenIcon"
+                  :title="t('fileBrowser.directoryIsEmpty')"
+                  :description="t('fileBrowser.directoryIsEmptyDescription')"
+                  :bordered="false"
+                />
+              </div>
+            </ContextMenuTrigger>
+            <FileBrowserContextMenu />
+          </ContextMenu>
 
           <template v-else>
             <ContextMenu>
@@ -285,7 +295,7 @@ function handleColumnHeaderClick(column: ListSortColumn) {
                 <div
                   :ref="ctx.setEntriesContainerRef"
                   class="file-browser__entries-container"
-                  @contextmenu.self.prevent
+                  @contextmenu.self.prevent="ctx.handleBackgroundContextMenu"
                 >
                   <FileBrowserGridView
                     v-if="props.layout === 'grid'"

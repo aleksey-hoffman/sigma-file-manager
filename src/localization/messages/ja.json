@@ -1639,6 +1639,7 @@
     "itemsTotal": "{count} 項目",
     "showingFiltered": "{total} 個のアイテム（{hidden} 個非表示）",
     "selectedItems": "{count} 件を選択中",
+    "currentDirectory": "現在のフォルダ",
     "selectAll": "すべて選択",
     "deselectAll": "選択解除",
     "showingNOfItems": "{total} 個のアイテム（{hidden} 個非表示）",

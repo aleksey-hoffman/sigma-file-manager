@@ -21,6 +21,7 @@ import {
 } from '@/components/ui/tooltip';
 import { ChevronDownIcon } from 'lucide-vue-next';
 import { useFileBrowserContext } from './composables/use-file-browser-context';
+import FileBrowserContextMenuHeader from './file-browser-context-menu-header.vue';
 import FileBrowserActionsMenu from './file-browser-actions-menu.vue';
 import type { DirEntry } from '@/types/dir-entry';
 import type { ContextMenuAction } from './types';
@@ -86,6 +87,9 @@ function handleOpenCustomDialog() {
         side="bottom"
         class="file-browser-current-dir-menu__content"
       >
+        <FileBrowserContextMenuHeader
+          :selected-entries="[currentDirEntry]"
+        />
         <FileBrowserActionsMenu
           :selected-entries="[currentDirEntry]"
           :menu-item-component="DropdownMenuItem"

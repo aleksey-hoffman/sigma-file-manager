@@ -14,7 +14,7 @@ export function useFileBrowserDialogs(options: {
   renameState: Ref<RenameState>;
   cancelRename: () => void;
   confirmRename: (newName: string) => Promise<boolean>;
-  createNewItem: (name: string, itemType: 'directory' | 'file') => Promise<boolean>;
+  createNewItem: (name: string, itemType: 'directory' | 'file', targetPaths?: string[]) => Promise<boolean>;
 }) {
   const openWithState = ref({
     isOpen: false,
@@ -24,6 +24,7 @@ export function useFileBrowserDialogs(options: {
   const newItemDialogState = ref({
     isOpen: false,
     type: 'directory' as 'directory' | 'file',
+    targetPaths: undefined as string[] | undefined,
   });
 
   const isRenameDialogOpen = computed({
@@ -61,15 +62,20 @@ export function useFileBrowserDialogs(options: {
     };
   }
 
-  function openNewItemDialog(type: 'directory' | 'file') {
+  function openNewItemDialog(type: 'directory' | 'file', targetPaths?: string[]) {
     newItemDialogState.value = {
       isOpen: true,
       type,
+      targetPaths,
     };
   }
 
   function closeNewItemDialog() {
-    newItemDialogState.value.isOpen = false;
+    newItemDialogState.value = {
+      isOpen: false,
+      type: 'directory',
+      targetPaths: undefined,
+    };
   }
 
   async function handleRenameConfirm(newName: string) {
@@ -81,7 +87,11 @@ export function useFileBrowserDialogs(options: {
   }
 
   async function handleNewItemConfirm(name: string) {
-    const success = await options.createNewItem(name, newItemDialogState.value.type);
+    const success = await options.createNewItem(
+      name,
+      newItemDialogState.value.type,
+      newItemDialogState.value.targetPaths,
+    );
 
     if (success) {
       closeNewItemDialog();

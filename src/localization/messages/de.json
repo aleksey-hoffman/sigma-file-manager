@@ -1639,6 +1639,7 @@
     "itemsTotal": "{count} Elemente",
     "showingFiltered": "{total} Elemente ({hidden} ausgeblendet)",
     "selectedItems": "{count} Elemente ausgewählt",
+    "currentDirectory": "Aktuelles Verzeichnis",
     "selectAll": "Alle auswählen",
     "deselectAll": "Auswahl aufheben",
     "showingNOfItems": "{total} Elemente ({hidden} ausgeblendet)",

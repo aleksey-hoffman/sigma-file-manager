@@ -188,15 +188,11 @@ const { t } = useI18n();
   border-bottom: 1px solid hsl(var(--border) / 50%);
   background: transparent;
   color: hsl(var(--foreground));
+  column-gap: var(--file-browser-list-column-gap);
   cursor: default;
   font-size: 13px;
-  column-gap: var(--file-browser-list-column-gap);
   grid-template-columns: var(--file-browser-list-columns);
   text-align: left;
-}
-
-.file-browser-list-view__entry:last-child {
-  border-color: transparent;
 }
 
 .file-browser-list-view__entry:focus-visible {

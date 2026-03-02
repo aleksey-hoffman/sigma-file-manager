@@ -385,6 +385,7 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
     selectEntryByPath: selection.selectEntryByPath,
     removeFromSelection: selection.removeFromSelection,
     handleEntryContextMenu: selection.handleEntryContextMenu,
+    handleBackgroundContextMenu: selection.handleBackgroundContextMenu,
     copyItems: selection.copyItems,
     cutItems: selection.cutItems,
     pasteItems: selection.pasteItems,

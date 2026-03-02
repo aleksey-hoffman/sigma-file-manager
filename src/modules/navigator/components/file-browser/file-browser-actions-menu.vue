@@ -17,7 +17,7 @@ import {
   ShredderIcon,
   EyeIcon,
   Share2Icon,
-  PlusIcon,
+  SquarePlusIcon,
   StarIcon,
 } from 'lucide-vue-next';
 import { useClipboardStore } from '@/stores/runtime/clipboard';
@@ -33,6 +33,7 @@ import {
   onMounted,
   onUnmounted,
 } from 'vue';
+import FileBrowserNewSubmenu from './file-browser-new-submenu.vue';
 import FileBrowserOpenWithSubmenu from './file-browser-open-with-submenu.vue';
 import FileBrowserMoreOptionsSubmenu from './file-browser-more-options-submenu.vue';
 import FileBrowserTerminalSubmenu from './file-browser-terminal-submenu.vue';
@@ -70,7 +71,7 @@ const clipboardStore = useClipboardStore();
 const userStatsStore = useUserStatsStore();
 const shortcutsStore = useShortcutsStore();
 
-const { isActionVisible } = useContextMenuItems(toRef(props, 'selectedEntries'));
+const { isActionVisible, selectionStats } = useContextMenuItems(toRef(props, 'selectedEntries'));
 
 const allSelectedAreFavorites = computed(() => {
   return props.selectedEntries.every(entry => userStatsStore.isFavorite(entry.path));
@@ -314,10 +315,14 @@ function handleDeleteClick() {
     @select="emitAction('open-in-new-tab')"
     @click="emitAction('open-in-new-tab')"
   >
-    <PlusIcon :size="16" />
+    <SquarePlusIcon :size="16" />
     <span>{{ t('fileBrowser.actions.openInNewTab') }}</span>
     <kbd class="shortcut">{{ shortcutsStore.getShortcutLabel('openNewTab') }}</kbd>
   </component>
+  <FileBrowserNewSubmenu
+    v-if="selectionStats.hasDirectories"
+    :selected-entries="selectedEntries"
+  />
   <component
     :is="menuItemComponent"
     v-if="isActionVisible('share')"
@@ -361,7 +366,7 @@ function handleDeleteClick() {
 <style>
 .file-browser-actions-menu__quick-actions {
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 4px;
 }
 

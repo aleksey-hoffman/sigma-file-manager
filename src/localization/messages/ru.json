@@ -1655,6 +1655,7 @@
     "itemsTotal": "{count} элементов",
     "showingFiltered": "{total} элементов ({hidden} скрытых)",
     "selectedItems": "{count} элементов выбрано",
+    "currentDirectory": "Текущая папка",
     "selectAll": "Выбрать все",
     "deselectAll": "Снять выделение",
     "showingNOfItems": "{total} элементов ({hidden} скрытых)",

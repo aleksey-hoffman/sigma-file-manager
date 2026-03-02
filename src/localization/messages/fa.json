@@ -1638,6 +1638,7 @@
     "itemsTotal": "{count} مورد",
     "showingFiltered": "{total} مورد ({hidden} پنهان)",
     "selectedItems": "{count} مورد انتخاب شده",
+    "currentDirectory": "پوشه جاری",
     "selectAll": "انتخاب همه",
     "deselectAll": "لغو انتخاب همه",
     "showingNOfItems": "{total} مورد ({hidden} پنهان)",

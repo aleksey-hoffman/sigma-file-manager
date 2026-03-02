@@ -1639,6 +1639,7 @@
     "itemsTotal": "{count} 个项目",
     "showingFiltered": "{total} 个项目（隐藏 {hidden} 个）",
     "selectedItems": "已选择 {count} 个项目",
+    "currentDirectory": "当前目录",
     "selectAll": "全选",
     "deselectAll": "取消全选",
     "showingNOfItems": "{total} 个项目（隐藏 {hidden} 个）",
