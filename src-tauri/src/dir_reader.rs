@@ -1001,7 +1001,7 @@ pub fn mount_network_share(params: NetworkShareParams) -> Result<String, String>
             }
             #[cfg(target_os = "linux")]
             {
-                "/mnt"
+                "/tmp"
             }
         };
 
