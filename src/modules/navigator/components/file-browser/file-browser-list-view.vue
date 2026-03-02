@@ -169,7 +169,6 @@ const { t } = useI18n();
 .file-browser-list-view {
   display: flex;
   flex-direction: column;
-  padding-right: var(--file-browser-list-right-gutter);
 }
 
 .file-browser-list-view__list {
@@ -191,6 +190,7 @@ const { t } = useI18n();
   color: hsl(var(--foreground));
   cursor: default;
   font-size: 13px;
+  column-gap: var(--file-browser-list-column-gap);
   grid-template-columns: var(--file-browser-list-columns);
   text-align: left;
 }
@@ -213,7 +213,6 @@ const { t } = useI18n();
   display: flex;
   overflow: hidden;
   align-items: center;
-  padding-right: 16px;
   gap: 10px;
 }
 
@@ -255,7 +254,6 @@ const { t } = useI18n();
   position: relative;
   z-index: 1;
   overflow: hidden;
-  padding-right: var(--file-browser-list-cell-padding-right);
   color: hsl(var(--muted-foreground));
   font-size: 12px;
   text-overflow: ellipsis;
@@ -294,6 +292,10 @@ const { t } = useI18n();
   z-index: 0;
   inset: 0;
   pointer-events: none;
+}
+
+.file-browser-list-view__overlay-container > *:last-child {
+  padding-right: 0;
 }
 
 .file-browser-list-view__overlay {

@@ -50,19 +50,18 @@ const columnVisibility = computed(() => userSettingsStore.userSettings.navigator
 .file-browser-loading__list {
   display: flex;
   flex-direction: column;
-  padding-right: var(--file-browser-list-right-gutter);
 }
 
 .file-browser-loading__row {
   display: grid;
   padding: var(--file-browser-list-row-padding-y) var(--file-browser-list-row-padding-x);
+  column-gap: var(--file-browser-list-column-gap);
   grid-template-columns: var(--file-browser-list-columns);
 }
 
 .file-browser-loading__name {
   display: flex;
   align-items: center;
-  padding-right: var(--file-browser-list-cell-padding-right);
   gap: 10px;
 }
 

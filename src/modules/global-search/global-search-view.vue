@@ -855,13 +855,8 @@ onMounted(() => {
 }
 
 .global-search-view__list {
-  --file-browser-list-columns: minmax(120px, 1fr) minmax(50px, 100px) minmax(60px, 140px);
-
   display: flex;
   flex-direction: column;
 }
 
-.global-search-view__list :deep(.file-browser__content) {
-  --file-browser-list-right-gutter: 0;
-}
 </style>
