@@ -1083,8 +1083,6 @@ fn mount_sshfs(params: &NetworkShareParams, mount_point: &str) -> Result<(), Str
         "-o",
         "StrictHostKeyChecking=no",
         "-o",
-        "reconnect",
-        "-o",
         "ServerAliveInterval=15",
     ]);
 
