@@ -4,41 +4,13 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import type { ComponentPublicInstance } from 'vue';
-import { useI18n } from 'vue-i18n';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
-import { Separator } from '@/components/ui/separator';
-import {
-  Tooltip,
-  TooltipTrigger,
-  TooltipContent,
-} from '@/components/ui/tooltip';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import {
-  ArrowLeftIcon,
-  ArrowRightIcon,
-  ArrowUpIcon,
-  EllipsisVerticalIcon,
-  FilePlusIcon,
-  FolderPlusIcon,
-  HomeIcon,
-  PlusIcon,
-  RefreshCwIcon,
-  TextSearchIcon,
-  XIcon,
-} from 'lucide-vue-next';
-import AddressBar from './address-bar.vue';
-import { useShortcutsStore } from '@/stores/runtime/shortcuts';
+import FileBrowserCurrentDirMenu from './file-browser-current-dir-menu.vue';
+import FileBrowserToolbarAddressBar from './file-browser-toolbar-address-bar.vue';
+import FileBrowserToolbarNavButtons from './file-browser-toolbar-nav-buttons.vue';
+import FileBrowserToolbarCreateButton from './file-browser-toolbar-create-button.vue';
+import FileBrowserToolbarFilter from './file-browser-toolbar-filter.vue';
 
-const props = defineProps<{
+defineProps<{
   pathInput: string;
   filterQuery: string;
   canGoBack: boolean;
@@ -63,283 +35,42 @@ const emit = defineEmits<{
   (event: 'createNewFile'): void;
 }>();
 
-const { t } = useI18n();
-const shortcutsStore = useShortcutsStore();
-
-const filterInputRef = ref<InstanceType<typeof Input> | null>(null);
-const filterTriggerRef = ref<HTMLElement | ComponentPublicInstance | null>(null);
-
-function handleFilterAutoFocus(event: Event) {
-  event.preventDefault();
-  filterInputRef.value?.$el?.focus();
-}
-
-function clearFilter() {
-  emit('update:filterQuery', '');
-}
-
-function handleFilterQueryUpdate(value: string | number | undefined) {
-  emit('update:filterQuery', String(value ?? ''));
-}
-
 function handleAddressBarNavigate(path: string) {
   emit('update:pathInput', path);
   emit('navigateTo', path);
 }
-
-function getFilterTriggerElement(): HTMLElement | null {
-  const refValue = filterTriggerRef.value;
-  if (!refValue) return null;
-  if (refValue instanceof HTMLElement) return refValue;
-  return (refValue as ComponentPublicInstance).$el as HTMLElement;
-}
-
-function handleFilterInteractOutside(event: Event) {
-  const customEvent = event as CustomEvent<{ originalEvent: PointerEvent | FocusEvent }>;
-  const target = customEvent.detail?.originalEvent?.target as Node | undefined;
-  const triggerEl = getFilterTriggerElement();
-  const isTriggerClick = triggerEl && target && triggerEl.contains(target);
-
-  if (isTriggerClick) {
-    event.preventDefault();
-
-    return;
-  }
-
-  if (!props.filterQuery) {
-    emit('update:isFilterOpen', false);
-  }
-  else {
-    event.preventDefault();
-  }
-}
-
 </script>
 
 <template>
   <div class="file-browser-toolbar">
-    <div class="file-browser-toolbar__nav-buttons file-browser-toolbar__nav-buttons--expanded">
-      <Tooltip>
-        <TooltipTrigger as-child>
-          <Button
-            variant="ghost"
-            size="icon"
-            class="file-browser-toolbar__nav-button"
-            :disabled="!canGoBack"
-            @click="emit('goBack')"
-          >
-            <ArrowLeftIcon class="file-browser-toolbar__icon" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>{{ t('fileBrowser.goBack') }}</TooltipContent>
-      </Tooltip>
-      <Tooltip>
-        <TooltipTrigger as-child>
-          <Button
-            variant="ghost"
-            size="icon"
-            class="file-browser-toolbar__nav-button"
-            :disabled="!canGoForward"
-            @click="emit('goForward')"
-          >
-            <ArrowRightIcon class="file-browser-toolbar__icon" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>{{ t('fileBrowser.goForward') }}</TooltipContent>
-      </Tooltip>
-      <Tooltip>
-        <TooltipTrigger as-child>
-          <Button
-            variant="ghost"
-            size="icon"
-            class="file-browser-toolbar__nav-button"
-            :disabled="!canGoUp"
-            @click="emit('goUp')"
-          >
-            <ArrowUpIcon class="file-browser-toolbar__icon" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>{{ t('fileBrowser.goUp') }}</TooltipContent>
-      </Tooltip>
-      <Tooltip>
-        <TooltipTrigger as-child>
-          <Button
-            variant="ghost"
-            size="icon"
-            class="file-browser-toolbar__nav-button"
-            @click="emit('goHome')"
-          >
-            <HomeIcon class="file-browser-toolbar__icon" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>{{ t('fileBrowser.goHome') }}</TooltipContent>
-      </Tooltip>
-      <Tooltip>
-        <TooltipTrigger as-child>
-          <Button
-            variant="ghost"
-            size="icon"
-            class="file-browser-toolbar__nav-button"
-            :disabled="isLoading"
-            @click="emit('refresh')"
-          >
-            <RefreshCwIcon
-              class="file-browser-toolbar__icon"
-              :class="{ 'animate-spin': isLoading }"
-            />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>{{ t('fileBrowser.refresh') }}</TooltipContent>
-      </Tooltip>
-    </div>
-
-    <div class="file-browser-toolbar__nav-buttons file-browser-toolbar__nav-buttons--collapsed">
-      <DropdownMenu>
-        <DropdownMenuTrigger as-child>
-          <Button
-            variant="ghost"
-            size="icon"
-            class="file-browser-toolbar__nav-button"
-            :title="t('settingsCategories.navigation')"
-          >
-            <EllipsisVerticalIcon class="file-browser-toolbar__icon" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent
-          align="start"
-          side="bottom"
-          class="file-browser-toolbar__dropdown"
-        >
-          <DropdownMenuItem
-            :disabled="!canGoBack"
-            @click="emit('goBack')"
-          >
-            <ArrowLeftIcon :size="14" />
-            {{ t('fileBrowser.goBack') }}
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            :disabled="!canGoForward"
-            @click="emit('goForward')"
-          >
-            <ArrowRightIcon :size="14" />
-            {{ t('fileBrowser.goForward') }}
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            :disabled="!canGoUp"
-            @click="emit('goUp')"
-          >
-            <ArrowUpIcon :size="14" />
-            {{ t('fileBrowser.goUp') }}
-          </DropdownMenuItem>
-          <DropdownMenuItem @click="emit('goHome')">
-            <HomeIcon :size="14" />
-            {{ t('fileBrowser.goHome') }}
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            :disabled="isLoading"
-            @click="emit('refresh')"
-          >
-            <RefreshCwIcon :size="14" />
-            {{ t('fileBrowser.refresh') }}
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </div>
-
-    <Separator
-      orientation="vertical"
-      class="file-browser-toolbar__separator"
+    <FileBrowserToolbarNavButtons
+      :can-go-back="canGoBack"
+      :can-go-forward="canGoForward"
+      :can-go-up="canGoUp"
+      :is-loading="isLoading"
+      @go-back="emit('goBack')"
+      @go-forward="emit('goForward')"
+      @go-up="emit('goUp')"
+      @go-home="emit('goHome')"
+      @refresh="emit('refresh')"
     />
+
     <div class="file-browser-toolbar__right">
-      <AddressBar
+      <FileBrowserToolbarAddressBar
         :current-path="pathInput"
-        class="file-browser-toolbar__address-bar"
         @navigate="handleAddressBarNavigate"
       />
-      <Tooltip>
-        <DropdownMenu>
-          <TooltipTrigger as-child>
-            <DropdownMenuTrigger as-child>
-              <Button
-                variant="ghost"
-                size="icon"
-                class="file-browser-toolbar__create-button"
-              >
-                <PlusIcon class="file-browser-toolbar__icon" />
-              </Button>
-            </DropdownMenuTrigger>
-          </TooltipTrigger>
-          <TooltipContent>
-            {{ t('navigator.newDirectoryFile') }}
-          </TooltipContent>
-          <DropdownMenuContent
-            align="end"
-            side="bottom"
-            class="file-browser-toolbar__dropdown"
-          >
-            <DropdownMenuItem @click="emit('createNewDirectory')">
-              <FolderPlusIcon :size="14" />
-              {{ t('navigator.newDirectory') }}
-            </DropdownMenuItem>
-            <DropdownMenuItem @click="emit('createNewFile')">
-              <FilePlusIcon :size="14" />
-              {{ t('navigator.newFile') }}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </Tooltip>
-      <Tooltip>
-        <Popover
-          :open="isFilterOpen"
-          :modal="false"
-          @update:open="emit('update:isFilterOpen', $event)"
-        >
-          <TooltipTrigger as-child>
-            <PopoverTrigger as-child>
-              <Button
-                ref="filterTriggerRef"
-                variant="ghost"
-                size="icon"
-                class="file-browser-toolbar__filter-button"
-                :class="{ 'file-browser-toolbar__filter-button--active': filterQuery }"
-              >
-                <TextSearchIcon class="file-browser-toolbar__icon" />
-              </Button>
-            </PopoverTrigger>
-          </TooltipTrigger>
-          <TooltipContent>
-            {{ t('fileBrowser.quickSearch') }}
-            <kbd class="shortcut">{{ shortcutsStore.getShortcutLabel('toggleFilter') }}</kbd>
-          </TooltipContent>
-          <PopoverContent
-            :side="'bottom'"
-            :align="'end'"
-            class="file-browser-toolbar__filter-popover"
-            @open-auto-focus="handleFilterAutoFocus"
-            @close-auto-focus.prevent
-            @interact-outside="handleFilterInteractOutside"
-          >
-            <div class="file-browser-toolbar__filter-input-wrapper">
-              <Input
-                ref="filterInputRef"
-                :model-value="filterQuery"
-                :placeholder="t('fileBrowser.searchThisDirectory')"
-                class="file-browser-toolbar__filter-input"
-                @update:model-value="handleFilterQueryUpdate"
-              />
-              <Button
-                v-if="filterQuery"
-                variant="ghost"
-                size="icon"
-                class="file-browser-toolbar__filter-clear"
-                @click="clearFilter"
-              >
-                <XIcon :size="14" />
-              </Button>
-            </div>
-          </PopoverContent>
-        </Popover>
-      </Tooltip>
+      <FileBrowserToolbarCreateButton
+        @create-new-directory="emit('createNewDirectory')"
+        @create-new-file="emit('createNewFile')"
+      />
+      <FileBrowserToolbarFilter
+        :filter-query="filterQuery"
+        :is-filter-open="isFilterOpen"
+        @update:filter-query="emit('update:filterQuery', $event)"
+        @update:is-filter-open="emit('update:isFilterOpen', $event)"
+      />
+      <FileBrowserCurrentDirMenu />
     </div>
   </div>
 </template>
@@ -355,118 +86,11 @@ function handleFilterInteractOutside(event: Event) {
   gap: 12px;
 }
 
-.file-browser-toolbar__nav-buttons {
-  display: flex;
-  flex-shrink: 0;
-  gap: 4px;
-}
-
-.file-browser-toolbar__nav-buttons--expanded {
-  display: flex;
-}
-
-.file-browser-toolbar__nav-buttons--collapsed {
-  display: none;
-}
-
-.file-browser-toolbar__nav-button {
-  width: 36px;
-  height: 36px;
-}
-
-.file-browser-toolbar__icon {
-  width: 18px;
-  height: 18px;
-}
-
-.file-browser-toolbar__icon.animate-spin {
-  animation: toolbar-spin 1s linear infinite;
-}
-
-@keyframes toolbar-spin {
-  from {
-    transform: rotate(0deg);
-  }
-
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.file-browser-toolbar__separator {
-  display: none;
-  height: 20px;
-}
-
-.file-browser-toolbar__dropdown {
-  min-width: 180px;
-}
-
 .file-browser-toolbar__right {
   display: flex;
   min-width: 0;
   flex: 1;
   align-items: center;
-  gap: 8px;
-}
-
-.file-browser-toolbar__address-bar {
-  min-width: 0;
-  flex: 1;
-}
-
-.file-browser-toolbar__filter-button {
-  width: 36px;
-  height: 36px;
-}
-
-.file-browser-toolbar__create-button {
-  width: 36px;
-  height: 36px;
-}
-
-.file-browser-toolbar__filter-button--active {
-  background-color: hsl(var(--secondary));
-  color: hsl(var(--foreground));
-}
-
-.file-browser-toolbar__filter-input-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.file-browser-toolbar__filter-input {
-  width: 100%;
-  height: 36px;
-  padding-right: 36px;
-}
-
-.file-browser-toolbar__filter-clear {
-  position: absolute;
-  right: 4px;
-  width: 28px;
-  height: 28px;
-}
-
-@container (width < 400px) {
-  .file-browser-toolbar__separator {
-    display: block;
-  }
-
-  .file-browser-toolbar__nav-buttons--expanded {
-    display: none;
-  }
-
-  .file-browser-toolbar__nav-buttons--collapsed {
-    display: flex;
-  }
-}
-</style>
-
-<style>
-.file-browser-toolbar__filter-popover.sigma-ui-popover-content {
-  width: 280px;
-  padding: 8px;
+  gap: 4px;
 }
 </style>

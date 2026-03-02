@@ -32,6 +32,7 @@ import {
 import type { DirContents, DirEntry } from '@/types/dir-entry';
 import type { ContextMenuAction } from './types';
 import FileBrowserActionsMenu from './file-browser-actions-menu.vue';
+import { useFileBrowserContext } from './composables/use-file-browser-context';
 import { formatBytes } from './utils';
 
 const MAX_VISIBLE_ITEMS = 100;
@@ -47,10 +48,10 @@ const emit = defineEmits<{
   selectAll: [];
   deselectAll: [];
   removeFromSelection: [entry: DirEntry];
-  contextMenuAction: [action: ContextMenuAction];
 }>();
 
 const { t } = useI18n();
+const ctx = useFileBrowserContext();
 
 const dirSizesStore = useDirSizesStore();
 
@@ -188,6 +189,24 @@ function openCollapsedPopover() {
     }, 200);
   });
 }
+
+function applyContextMenuState() {
+  const entries = selectedEntriesArray.value;
+  ctx.contextMenu.value = {
+    targetEntry: entries[0] ?? null,
+    selectedEntries: [...entries],
+  };
+}
+
+function handleAction(action: ContextMenuAction) {
+  applyContextMenuState();
+  ctx.onContextMenuAction(action);
+}
+
+function handleOpenCustomDialog() {
+  applyContextMenuState();
+  ctx.openOpenWithDialog(ctx.contextMenu.value.selectedEntries);
+}
 </script>
 
 <template>
@@ -269,7 +288,8 @@ function openCollapsedPopover() {
                     :selected-entries="selectedEntriesArray"
                     :menu-item-component="DropdownMenuItem"
                     :menu-separator-component="DropdownMenuSeparator"
-                    @action="emit('contextMenuAction', $event)"
+                    @action="handleAction"
+                    @open-custom-dialog="handleOpenCustomDialog"
                   />
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -309,7 +329,8 @@ function openCollapsedPopover() {
                     :selected-entries="selectedEntriesArray"
                     :menu-item-component="DropdownMenuItem"
                     :menu-separator-component="DropdownMenuSeparator"
-                    @action="emit('contextMenuAction', $event)"
+                    @action="handleAction"
+                    @open-custom-dialog="handleOpenCustomDialog"
                   />
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -552,7 +573,8 @@ function openCollapsedPopover() {
 }
 
 .file-browser-status-bar__menu {
-  width: 200px;
+  min-width: 250px;
+  max-width: 300px;
   padding: 8px;
 }
 </style>

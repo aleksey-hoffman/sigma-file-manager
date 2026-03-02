@@ -1677,7 +1677,8 @@
       "share": "اشتراک‌گذاری",
       "openInNewTab": "باز کردن در برگه جدید",
       "addToFavorites": "افزودن به موردعلاقه‌ها",
-      "removeFromFavorites": "حذف از موردعلاقه‌ها"
+      "removeFromFavorites": "حذف از موردعلاقه‌ها",
+      "copyPath": "کپی مسیر"
     }
   },
   "openWith": {

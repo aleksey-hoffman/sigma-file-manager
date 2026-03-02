@@ -134,7 +134,6 @@ defineExpose({
       @select-all="fb.selectAll"
       @deselect-all="fb.clearSelection"
       @remove-from-selection="fb.removeFromSelection"
-      @context-menu-action="fb.onContextMenuAction"
     />
 
     <FileBrowserRenameDialog

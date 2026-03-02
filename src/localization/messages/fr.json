@@ -1678,7 +1678,8 @@
       "share": "Partager",
       "openInNewTab": "Ouvrir dans un nouvel onglet",
       "addToFavorites": "Ajouter aux favoris",
-      "removeFromFavorites": "Retirer des favoris"
+      "removeFromFavorites": "Retirer des favoris",
+      "copyPath": "Copier le chemin"
     }
   },
   "openWith": {

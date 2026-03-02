@@ -1678,7 +1678,8 @@
       "share": "分享",
       "openInNewTab": "在新标签页中打开",
       "addToFavorites": "添加到收藏",
-      "removeFromFavorites": "从收藏中移除"
+      "removeFromFavorites": "从收藏中移除",
+      "copyPath": "复制路径"
     }
   },
   "openWith": {

@@ -29,7 +29,6 @@ function handleOpenCustomDialog() {
       :selected-entries="ctx.contextMenu.value.selectedEntries"
       :menu-item-component="ContextMenuItem"
       :menu-separator-component="ContextMenuSeparator"
-      :is-context-menu="true"
       @action="handleAction"
       @open-custom-dialog="handleOpenCustomDialog"
     />

@@ -41,7 +41,6 @@ const props = defineProps<{
   selectedEntries: DirEntry[];
   menuItemComponent: object;
   menuSeparatorComponent: object;
-  isContextMenu?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -286,22 +285,13 @@ function handleDeleteClick() {
   </div>
   <component :is="menuSeparatorComponent" />
   <FileBrowserOpenWithSubmenu
-    v-if="isActionVisible('open-with') && isContextMenu"
+    v-if="isActionVisible('open-with')"
     :selected-entries="selectedEntries"
     @open-custom-dialog="handleOpenCustomDialog"
   />
   <FileBrowserMoreOptionsSubmenu
-    v-if="isContextMenu"
     :selected-entries="selectedEntries"
   />
-  <component
-    :is="menuItemComponent"
-    v-if="isActionVisible('open-with') && !isContextMenu"
-    @select="emitAction('open-with')"
-    @click="emitAction('open-with')"
-  >
-    <span>{{ t('fileBrowser.actions.openWith') }}</span>
-  </component>
   <component
     :is="menuItemComponent"
     v-if="isActionVisible('quick-view')"
@@ -314,7 +304,6 @@ function handleDeleteClick() {
     <kbd class="shortcut">{{ shortcutsStore.getShortcutLabel('quickView') }}</kbd>
   </component>
   <FileBrowserTerminalSubmenu
-    v-if="isContextMenu"
     :selected-entries="selectedEntries"
     :is-shift-held="isShiftHeld"
   />
