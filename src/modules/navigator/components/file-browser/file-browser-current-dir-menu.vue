@@ -46,27 +46,27 @@ const currentDirEntry = computed<DirEntry>(() => ({
   mime: null,
 }));
 
-function handleMenuOpen(open: boolean) {
-  if (open) {
-    ctx.contextMenu.value = {
-      targetEntry: currentDirEntry.value,
-      selectedEntries: [currentDirEntry.value],
-    };
-  }
+function applyContextMenuState() {
+  ctx.contextMenu.value = {
+    targetEntry: currentDirEntry.value,
+    selectedEntries: [currentDirEntry.value],
+  };
 }
 
 function handleAction(action: ContextMenuAction) {
+  applyContextMenuState();
   ctx.onContextMenuAction(action);
 }
 
 function handleOpenCustomDialog() {
+  applyContextMenuState();
   ctx.openOpenWithDialog(ctx.contextMenu.value.selectedEntries);
 }
 </script>
 
 <template>
   <Tooltip>
-    <DropdownMenu @update:open="handleMenuOpen">
+    <DropdownMenu>
       <TooltipTrigger as-child>
         <DropdownMenuTrigger as-child>
           <Button
