@@ -34,6 +34,13 @@
     "autoFetchTranslationsOnAppLoad": "Every time the app is opened from fully closed state",
     "autoFetchTranslationsPeriodically": "Periodically (every hour)"
   },
+  "quickAccess": {
+    "title": "Quick access",
+    "favorites": "Favorites",
+    "tagged": "Tagged",
+    "emptyFavorites": "No favorites",
+    "emptyTagged": "No tagged items"
+  },
   "placeholders": {
     "noDrivesFound": "No drives found",
     "noUserDirectoriesFound": "No user directories found"

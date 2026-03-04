@@ -34,6 +34,13 @@
     "autoFetchTranslationsOnAppLoad": "Ogni volta che l'app viene aperta da uno stato completamente chiuso",
     "autoFetchTranslationsPeriodically": "Periodicamente (ogni ora)"
   },
+  "quickAccess": {
+    "title": "Accesso rapido",
+    "favorites": "Preferiti",
+    "tagged": "Con etichette",
+    "emptyFavorites": "Nessun preferito",
+    "emptyTagged": "Nessun elemento con etichette"
+  },
   "placeholders": {
     "noDrivesFound": "Nessuna unità trovata",
     "noUserDirectoriesFound": "Nessuna cartella utente trovata"

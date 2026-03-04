@@ -34,6 +34,13 @@
     "autoFetchTranslationsOnAppLoad": "هر زمان که برنامه از حالت بسته کامل باز می شود",
     "autoFetchTranslationsPeriodically": "دوره ای (هر ساعت)"
   },
+  "quickAccess": {
+    "title": "دسترسی سریع",
+    "favorites": "موردعلاقه‌ها",
+    "tagged": "برچسب‌خورده",
+    "emptyFavorites": "بدون موردعلاقه",
+    "emptyTagged": "بدون آیتم برچسب‌خورده"
+  },
   "placeholders": {
     "noDrivesFound": "هیچ درایوی پیدا نشد",
     "noUserDirectoriesFound": "هیچ فهرست کاربری یافت نشد"

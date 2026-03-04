@@ -34,6 +34,13 @@
     "autoFetchTranslationsOnAppLoad": "每次应用程序从完全关闭的状态打开时",
     "autoFetchTranslationsPeriodically": "定期（每小时一次）"
   },
+  "quickAccess": {
+    "title": "快速访问",
+    "favorites": "收藏夹",
+    "tagged": "已标记",
+    "emptyFavorites": "无收藏",
+    "emptyTagged": "无已标记项目"
+  },
   "placeholders": {
     "noDrivesFound": "未找到驱动器",
     "noUserDirectoriesFound": "未找到用户目录"

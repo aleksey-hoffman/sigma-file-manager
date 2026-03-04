@@ -34,6 +34,13 @@
     "autoFetchTranslationsOnAppLoad": "Uygulama tamamen kapalı durumdan açıldığında her seferinde",
     "autoFetchTranslationsPeriodically": "Periyodik olarak (her saat)"
   },
+  "quickAccess": {
+    "title": "Hızlı erişim",
+    "favorites": "Favoriler",
+    "tagged": "Etiketli",
+    "emptyFavorites": "Favori yok",
+    "emptyTagged": "Etiketli öğe yok"
+  },
   "placeholders": {
     "noDrivesFound": "Sürücü bulunamadı",
     "noUserDirectoriesFound": "Kullanıcı dizini bulunamadı"

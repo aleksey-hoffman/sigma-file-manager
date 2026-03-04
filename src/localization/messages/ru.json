@@ -34,6 +34,13 @@
     "autoFetchTranslationsOnAppLoad": "Каждый раз при открытии приложения с полностью закрытого состояния",
     "autoFetchTranslationsPeriodically": "Периодически (каждый час)"
   },
+  "quickAccess": {
+    "title": "Быстрый доступ",
+    "favorites": "Избранное",
+    "tagged": "С метками",
+    "emptyFavorites": "Нет избранного",
+    "emptyTagged": "Нет элементов с метками"
+  },
   "placeholders": {
     "noDrivesFound": "Диски не найдены",
     "noUserDirectoriesFound": "Пользовательские папки не найдены"

@@ -410,7 +410,6 @@ async function handleDeleteTag(tagId: string) {
 .dashboard-page__tabs {
   display: flex;
   flex-direction: column;
-  gap: 16px;
 }
 
 .dashboard-page__tabs-list {

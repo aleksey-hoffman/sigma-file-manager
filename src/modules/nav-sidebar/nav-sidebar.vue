@@ -4,23 +4,52 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import { useRouter } from 'vue-router';
-import { HardDriveIcon, UsbIcon } from 'lucide-vue-next';
+import { BlocksIcon, HardDriveIcon, UsbIcon } from 'lucide-vue-next';
 import { useAppStore } from '@/stores/runtime/app';
+import { useExtensionsStore } from '@/stores/runtime/extensions';
 import { useWorkspacesStore } from '@/stores/storage/workspaces';
 import { useDrives } from '@/modules/home/composables';
 import { DriveCard } from '@/modules/home/components';
+import { getLucideIcon } from '@/utils/lucide-icons';
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
+import QuickAccessPanel from './components/quick-access-panel.vue';
 
 const router = useRouter();
 const appStore = useAppStore();
+const extensionsStore = useExtensionsStore();
 const workspacesStore = useWorkspacesStore();
 const { drives } = useDrives();
+
+function isDashboardPage(item: { name?: unknown }) {
+  return item.name === 'dashboard';
+}
+
+const sortedExtensionPages = computed(() => {
+  return [...extensionsStore.sidebarPages].sort((a, b) => {
+    const orderA = a.page.order ?? 0;
+    const orderB = b.page.order ?? 0;
+    return orderA - orderB;
+  });
+});
+
+function isExtensionPageActive(pageId: string) {
+  return router.currentRoute.value.name === 'extension-page'
+    && router.currentRoute.value.params.fullPageId === pageId;
+}
+
+function openExtensionPage(pageId: string) {
+  router.push({
+    name: 'extension-page',
+    params: { fullPageId: pageId },
+  });
+}
 
 async function openDrive(path: string) {
   await workspacesStore.openNewTabGroup(path);
@@ -41,21 +70,80 @@ async function openDrive(path: string) {
     </div>
 
     <div class="nav-sidebar-items">
-      <Tooltip
+      <template
         v-for="(item, index) in appStore.pages"
         :key="index"
+      >
+        <Tooltip
+          v-if="isDashboardPage(item)"
+          :delay-duration="0"
+        >
+          <TooltipTrigger as-child>
+            <Button
+              class="nav-sidebar-item"
+              size="icon"
+              :value="item.name"
+              :is-active="item.name === router.currentRoute.value.name"
+              @click="router.push({ name: item.name })"
+            >
+              <component
+                :is="item.icon"
+                :size="18"
+                class="nav-sidebar-item-icon"
+              />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent
+            side="right"
+            align="start"
+            :side-offset="12"
+            class="nav-sidebar__quick-access-tooltip"
+          >
+            <QuickAccessPanel />
+          </TooltipContent>
+        </Tooltip>
+        <Tooltip
+          v-else
+          :delay-duration="0"
+        >
+          <TooltipTrigger as-child>
+            <Button
+              class="nav-sidebar-item"
+              size="icon"
+              :value="item.name"
+              :is-active="item.name === router.currentRoute.value.name"
+              @click="router.push({ name: item.name })"
+            >
+              <component
+                :is="item.icon"
+                :size="18"
+                class="nav-sidebar-item-icon"
+              />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent
+            side="right"
+            :side-offset="12"
+          >
+            {{ item.title }}
+          </TooltipContent>
+        </Tooltip>
+      </template>
+
+      <Tooltip
+        v-for="registration in sortedExtensionPages"
+        :key="registration.page.id"
         :delay-duration="0"
       >
         <TooltipTrigger as-child>
           <Button
             class="nav-sidebar-item"
             size="icon"
-            :value="item.name"
-            :is-active="item.name === router.currentRoute.value.name"
-            @click="router.push({ name: item.name })"
+            :is-active="isExtensionPageActive(registration.page.id)"
+            @click="openExtensionPage(registration.page.id)"
           >
             <component
-              :is="item.icon"
+              :is="getLucideIcon(registration.page.icon) ?? BlocksIcon"
               :size="18"
               class="nav-sidebar-item-icon"
             />
@@ -65,7 +153,7 @@ async function openDrive(path: string) {
           side="right"
           :side-offset="12"
         >
-          {{ item.title }}
+          {{ registration.page.title }}
         </TooltipContent>
       </Tooltip>
     </div>
@@ -106,6 +194,7 @@ async function openDrive(path: string) {
 
 <style scoped>
 .nav-sidebar {
+  z-index: 10;
   display: flex;
   width: var(--nav-sidebar-width);
   height: calc(100vh - 12px);
@@ -198,9 +287,16 @@ async function openDrive(path: string) {
 .nav-sidebar-drive:hover .nav-sidebar-drive-icon {
   stroke: hsl(var(--foreground));
 }
+
 </style>
 
 <style>
+.nav-sidebar__quick-access-tooltip {
+  padding: 0;
+  border: none;
+  margin-top: 0;
+}
+
 .nav-sidebar-drive-tooltip {
   padding: 0;
   border: none;

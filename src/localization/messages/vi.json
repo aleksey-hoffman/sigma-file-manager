@@ -34,6 +34,13 @@
     "autoFetchTranslationsOnAppLoad": "Mỗi khi ứng dụng được mở từ trạng thái đóng hoàn toàn",
     "autoFetchTranslationsPeriodically": "Định kỳ (mỗi giờ)"
   },
+  "quickAccess": {
+    "title": "Truy cập nhanh",
+    "favorites": "Yêu thích",
+    "tagged": "Đã gắn thẻ",
+    "emptyFavorites": "Chưa có mục yêu thích",
+    "emptyTagged": "Chưa có mục được gắn thẻ"
+  },
   "placeholders": {
     "noDrivesFound": "Không tìm thấy ổ đĩa",
     "noUserDirectoriesFound": "Không tìm thấy thư mục người dùng"
