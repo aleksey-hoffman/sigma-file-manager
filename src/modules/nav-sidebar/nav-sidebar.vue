@@ -4,15 +4,12 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import { computed } from 'vue';
 import { useRouter } from 'vue-router';
-import { BlocksIcon, HardDriveIcon, UsbIcon } from 'lucide-vue-next';
+import { HardDriveIcon, UsbIcon } from 'lucide-vue-next';
 import { useAppStore } from '@/stores/runtime/app';
-import { useExtensionsStore } from '@/stores/runtime/extensions';
 import { useWorkspacesStore } from '@/stores/storage/workspaces';
 import { useDrives } from '@/modules/home/composables';
 import { DriveCard } from '@/modules/home/components';
-import { getLucideIcon } from '@/utils/lucide-icons';
 import {
   Tooltip,
   TooltipContent,
@@ -23,32 +20,11 @@ import QuickAccessPanel from './components/quick-access-panel.vue';
 
 const router = useRouter();
 const appStore = useAppStore();
-const extensionsStore = useExtensionsStore();
 const workspacesStore = useWorkspacesStore();
 const { drives } = useDrives();
 
 function isDashboardPage(item: { name?: unknown }) {
   return item.name === 'dashboard';
-}
-
-const sortedExtensionPages = computed(() => {
-  return [...extensionsStore.sidebarPages].sort((a, b) => {
-    const orderA = a.page.order ?? 0;
-    const orderB = b.page.order ?? 0;
-    return orderA - orderB;
-  });
-});
-
-function isExtensionPageActive(pageId: string) {
-  return router.currentRoute.value.name === 'extension-page'
-    && router.currentRoute.value.params.fullPageId === pageId;
-}
-
-function openExtensionPage(pageId: string) {
-  router.push({
-    name: 'extension-page',
-    params: { fullPageId: pageId },
-  });
 }
 
 async function openDrive(path: string) {
@@ -129,33 +105,6 @@ async function openDrive(path: string) {
           </TooltipContent>
         </Tooltip>
       </template>
-
-      <Tooltip
-        v-for="registration in sortedExtensionPages"
-        :key="registration.page.id"
-        :delay-duration="0"
-      >
-        <TooltipTrigger as-child>
-          <Button
-            class="nav-sidebar-item"
-            size="icon"
-            :is-active="isExtensionPageActive(registration.page.id)"
-            @click="openExtensionPage(registration.page.id)"
-          >
-            <component
-              :is="getLucideIcon(registration.page.icon) ?? BlocksIcon"
-              :size="18"
-              class="nav-sidebar-item-icon"
-            />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent
-          side="right"
-          :side-offset="12"
-        >
-          {{ registration.page.title }}
-        </TooltipContent>
-      </Tooltip>
     </div>
 
     <div class="nav-sidebar-spacer" />

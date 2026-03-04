@@ -4,7 +4,7 @@
 
 import HomePage from '@/modules/home/pages/home.vue';
 import {
-  BlocksIcon, FolderClosedIcon, HomeIcon, LayoutDashboardIcon, SettingsIcon, XIcon,
+  BlocksIcon, FolderClosedIcon, HomeIcon, BookmarkIcon, SettingsIcon, XIcon,
 } from 'lucide-vue-next';
 import type { RouteRecordRaw } from 'vue-router';
 
@@ -31,7 +31,7 @@ export const routes: Array<RouteRecordRaw & { icon: typeof XIcon }> = [
   {
     path: '/dashboard',
     name: 'dashboard',
-    icon: LayoutDashboardIcon,
+    icon: BookmarkIcon,
     component: () => import('@/modules/dashboard/pages/dashboard.vue'),
   },
   {
