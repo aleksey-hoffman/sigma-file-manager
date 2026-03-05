@@ -1001,7 +1001,7 @@ pub fn mount_network_share(params: NetworkShareParams) -> Result<String, String>
             }
             #[cfg(target_os = "linux")]
             {
-                "/mnt"
+                "/tmp"
             }
         };
 
@@ -1082,8 +1082,6 @@ fn mount_sshfs(params: &NetworkShareParams, mount_point: &str) -> Result<(), Str
         &port.to_string(),
         "-o",
         "StrictHostKeyChecking=no",
-        "-o",
-        "reconnect",
         "-o",
         "ServerAliveInterval=15",
     ]);
