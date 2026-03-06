@@ -62,6 +62,11 @@ const CONTEXT_MENU_ITEMS: ContextMenuItemConfig[] = [
     selectionTypes: ['single', 'multiple'],
     entryTypes: ['file', 'directory'],
   },
+  {
+    action: 'copy-path',
+    selectionTypes: ['single', 'multiple'],
+    entryTypes: ['file', 'directory'],
+  },
 ];
 
 export function useContextMenuItems(selectedEntries: Ref<DirEntry[]>) {

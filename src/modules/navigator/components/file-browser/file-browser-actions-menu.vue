@@ -37,6 +37,7 @@ import FileBrowserNewSubmenu from './file-browser-new-submenu.vue';
 import FileBrowserOpenWithSubmenu from './file-browser-open-with-submenu.vue';
 import FileBrowserMoreOptionsSubmenu from './file-browser-more-options-submenu.vue';
 import FileBrowserTerminalSubmenu from './file-browser-terminal-submenu.vue';
+import { ContextMenuShortcut } from '@/components/ui/context-menu';
 
 const props = defineProps<{
   selectedEntries: DirEntry[];
@@ -298,11 +299,12 @@ function handleDeleteClick() {
     v-if="isActionVisible('quick-view')"
     class="file-browser-actions-menu__item-with-shortcut"
     @select="emitAction('quick-view')"
-    @click="emitAction('quick-view')"
   >
     <EyeIcon :size="16" />
     <span>{{ t('fileBrowser.actions.quickView') }}</span>
-    <kbd class="shortcut">{{ shortcutsStore.getShortcutLabel('quickView') }}</kbd>
+    <ContextMenuShortcut v-if="shortcutsStore.getShortcutLabel('quickView')">
+      {{ shortcutsStore.getShortcutLabel('quickView') }}
+    </ContextMenuShortcut>
   </component>
   <FileBrowserTerminalSubmenu
     :selected-entries="selectedEntries"
@@ -313,11 +315,18 @@ function handleDeleteClick() {
     v-if="isActionVisible('open-in-new-tab')"
     class="file-browser-actions-menu__item-with-shortcut"
     @select="emitAction('open-in-new-tab')"
-    @click="emitAction('open-in-new-tab')"
   >
     <SquarePlusIcon :size="16" />
     <span>{{ t('fileBrowser.actions.openInNewTab') }}</span>
     <kbd class="shortcut">{{ shortcutsStore.getShortcutLabel('openNewTab') }}</kbd>
+  </component>
+  <component
+    :is="menuItemComponent"
+    v-if="isActionVisible('copy-path')"
+    @select="emitAction('copy-path')"
+  >
+    <CopyIcon :size="16" />
+    <span>{{ t('settings.addressBar.copyPathToClipboard') }}</span>
   </component>
   <FileBrowserNewSubmenu
     v-if="selectionStats.hasDirectories"
@@ -327,7 +336,6 @@ function handleDeleteClick() {
     :is="menuItemComponent"
     v-if="isActionVisible('share')"
     @select="emitAction('share')"
-    @click="emitAction('share')"
   >
     <Share2Icon :size="16" />
     <span>{{ t('fileBrowser.actions.share') }}</span>
@@ -337,7 +345,6 @@ function handleDeleteClick() {
     :is="menuItemComponent"
     v-if="isActionVisible('toggle-favorite')"
     @select="emitAction('toggle-favorite')"
-    @click="emitAction('toggle-favorite')"
   >
     <StarIcon
       :size="16"

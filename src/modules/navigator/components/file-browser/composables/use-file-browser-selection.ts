@@ -841,6 +841,23 @@ export function useFileBrowserSelection(
         }
 
         break;
+      case 'copy-path':
+        if (entries.length > 0) {
+          const pathText = entries.map(entry => entry.path).join('\n');
+          navigator.clipboard.writeText(pathText).then(() => {
+            toast.custom(markRaw(CustomSimple), {
+              componentProps: {
+                title: t('dialogs.localShareManagerDialog.addressCopiedToClipboard'),
+                description: pathText,
+              },
+              duration: 2000,
+            });
+          }).catch((error) => {
+            console.error('Failed to copy path:', error);
+          });
+        }
+
+        break;
     }
 
     closeContextMenu();
