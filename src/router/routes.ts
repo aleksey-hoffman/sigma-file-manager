@@ -15,6 +15,13 @@ export const quickViewRoute: RouteRecordRaw = {
   meta: { layout: 'quick-view' },
 };
 
+export const extensionPageRoute: RouteRecordRaw = {
+  path: '/extension/:fullPageId',
+  name: 'extension-page',
+  component: () => import('@/modules/extensions/pages/extension-page.vue'),
+  meta: { keepAlive: true },
+};
+
 export const routes: Array<RouteRecordRaw & { icon: typeof XIcon }> = [
   {
     path: '/',

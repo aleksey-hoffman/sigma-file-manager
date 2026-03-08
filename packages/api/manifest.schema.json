@@ -1,0 +1,406 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://raw.githubusercontent.com/aleksey-hoffman/sigma-file-manager/main/packages/api/manifest.schema.json",
+  "title": "Sigma File Manager Extension Manifest",
+  "description": "Schema for Sigma File Manager extension package.json files",
+  "type": "object",
+  "required": [
+    "id",
+    "name",
+    "version",
+    "repository",
+    "license",
+    "extensionType",
+    "main",
+    "permissions",
+    "engines"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique extension identifier in format 'publisher.extension-name'",
+      "pattern": "^[a-z0-9-]+\\.[a-z0-9-]+$"
+    },
+    "name": {
+      "type": "string",
+      "description": "Display name of the extension"
+    },
+    "previousName": {
+      "type": "string",
+      "description": "Previous name of the extension (shown in extension details and used for search)"
+    },
+    "version": {
+      "type": "string",
+      "description": "Semantic version of the extension",
+      "pattern": "^\\d+\\.\\d+\\.\\d+(-[a-zA-Z0-9.]+)?$"
+    },
+    "publisher": {
+      "type": "object",
+      "description": "Extension publisher information",
+      "required": [
+        "name"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Publisher name"
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "Publisher website URL"
+        }
+      }
+    },
+    "repository": {
+      "type": "string",
+      "format": "uri",
+      "description": "GitHub repository URL"
+    },
+    "license": {
+      "type": "string",
+      "description": "SPDX license identifier"
+    },
+    "icon": {
+      "type": "string",
+      "description": "Relative path to extension icon"
+    },
+    "banner": {
+      "type": "string",
+      "description": "Relative path to banner image"
+    },
+    "categories": {
+      "type": "array",
+      "description": "Categories for extension classification",
+      "items": {
+        "type": "string",
+        "enum": [
+          "File Management",
+          "Media",
+          "Security",
+          "Backup & Sync",
+          "Productivity",
+          "Search & Filter",
+          "Appearance",
+          "Integration",
+          "Developer Tools",
+          "Example",
+          "Other"
+        ]
+      },
+      "minItems": 1
+    },
+    "tags": {
+      "type": "array",
+      "description": "Keywords for discovery",
+      "items": {
+        "type": "string"
+      }
+    },
+    "extensionType": {
+      "type": "string",
+      "description": "Extension execution type",
+      "enum": [
+        "api",
+        "iframe",
+        "webview"
+      ],
+      "enumDescriptions": [
+        "API-only extension that runs JavaScript with access to the extension API",
+        "Sandboxed iframe extension with postMessage communication",
+        "Separate Tauri webview window for full page content"
+      ]
+    },
+    "main": {
+      "type": "string",
+      "description": "Entry point file"
+    },
+    "permissions": {
+      "type": "array",
+      "description": "Permissions required by the extension",
+      "items": {
+        "type": "string",
+        "enum": [
+          "contextMenu",
+          "sidebar",
+          "toolbar",
+          "commands",
+          "fs.read",
+          "fs.write",
+          "notifications",
+          "dialogs",
+          "shell"
+        ]
+      }
+    },
+    "activationEvents": {
+      "type": "array",
+      "description": "Events that activate the extension",
+      "items": {
+        "type": "string",
+        "anyOf": [
+          {
+            "enum": [
+              "onStartup",
+              "onInstall",
+              "onUninstall",
+              "onEnable",
+              "onDisable",
+              "onUpdate"
+            ]
+          },
+          {
+            "pattern": "^onCommand:.+$"
+          }
+        ]
+      }
+    },
+    "contributes": {
+      "type": "object",
+      "description": "Static contributions declared by the extension",
+      "properties": {
+        "commands": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "title"
+            ],
+            "properties": {
+              "id": { "type": "string" },
+              "title": { "type": "string" },
+              "description": { "type": "string" },
+              "icon": { "type": "string" },
+              "shortcut": { "type": "string" }
+            }
+          }
+        },
+        "contextMenu": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "title"
+            ],
+            "properties": {
+              "id": { "type": "string" },
+              "title": { "type": "string" },
+              "icon": { "type": "string" },
+              "group": { "type": "string" },
+              "order": { "type": "number" },
+              "when": {
+                "type": "object",
+                "properties": {
+                  "selectionType": {
+                    "type": "string",
+                    "enum": [
+                      "single",
+                      "multiple",
+                      "any"
+                    ]
+                  },
+                  "entryType": {
+                    "type": "string",
+                    "enum": [
+                      "file",
+                      "directory",
+                      "any"
+                    ]
+                  },
+                  "fileExtensions": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "sidebar": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "title",
+              "icon"
+            ],
+            "properties": {
+              "id": { "type": "string" },
+              "title": { "type": "string" },
+              "icon": { "type": "string" },
+              "order": { "type": "number" },
+              "url": {
+                "type": "string",
+                "format": "uri"
+              }
+            }
+          }
+        },
+        "toolbar": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "title",
+              "items"
+            ],
+            "properties": {
+              "id": { "type": "string" },
+              "title": { "type": "string" },
+              "icon": { "type": "string" },
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "title"
+                  ],
+                  "properties": {
+                    "id": { "type": "string" },
+                    "title": { "type": "string" },
+                    "icon": { "type": "string" },
+                    "commandId": { "type": "string" },
+                    "separator": { "type": "boolean" }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "configuration": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "properties": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "object",
+                "required": [
+                  "type"
+                ],
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "string",
+                      "number",
+                      "boolean",
+                      "array"
+                    ]
+                  },
+                  "default": {},
+                  "description": {
+                    "type": "string"
+                  },
+                  "enum": {
+                    "type": "array",
+                    "items": {
+                      "type": [
+                        "string",
+                        "number"
+                      ]
+                    }
+                  },
+                  "enumDescriptions": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "minimum": {
+                    "type": "number"
+                  },
+                  "maximum": {
+                    "type": "number"
+                  },
+                  "minLength": {
+                    "type": "number"
+                  },
+                  "maxLength": {
+                    "type": "number"
+                  },
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "type"
+                    ],
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "enum": [
+                          "string",
+                          "number"
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "keybindings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "command",
+              "key"
+            ],
+            "properties": {
+              "command": { "type": "string" },
+              "key": { "type": "string" },
+              "when": {
+                "type": "string",
+                "enum": [
+                  "always",
+                  "fileSelected",
+                  "directorySelected",
+                  "singleSelected",
+                  "multipleSelected",
+                  "navigatorFocused"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "platforms": {
+      "type": "array",
+      "description": "Supported operating systems",
+      "items": {
+        "type": "string",
+        "enum": [
+          "windows",
+          "macos",
+          "linux"
+        ]
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "engines": {
+      "type": "object",
+      "description": "Version constraints",
+      "required": [
+        "sigmaFileManager"
+      ],
+      "properties": {
+        "sigmaFileManager": {
+          "type": "string",
+          "description": "Required Sigma File Manager version range"
+        }
+      }
+    }
+  }
+}

@@ -46,7 +46,8 @@ const { t } = useI18n();
   position: fixed;
   z-index: 50;
   animation: sigma-ui-fade-in 0.2s ease-out;
-  background-color: rgb(0 0 0 / 80%);
+  backdrop-filter: blur(8px);
+  background-color: rgb(0 0 0 / 60%);
   inset: 0;
 }
 
@@ -70,7 +71,8 @@ const { t } = useI18n();
   padding: 1.5rem;
   border: 1px solid hsl(var(--border));
   border-radius: var(--radius-lg);
-  background-color: hsl(var(--background));
+  backdrop-filter: blur(var(--backdrop-filter-blur));
+  background-color: hsl(var(--popover));
   box-shadow: var(--shadow-lg);
   gap: 1rem;
   transform: translate(-50%, -50%);

@@ -14,6 +14,9 @@ rust-version = "1.88.0"
 name = "sigma_file_manager"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
+[features]
+devtools = []
+
 [build-dependencies]
 tauri-build = { version = "2.3.0", features = [] }
 
@@ -46,7 +49,11 @@ tauri-plugin-drag = "2"
 tauri-plugin-window-state = "2"
 tauri-plugin-single-instance = "2"
 reqwest = { version = "0.12", default-features = false, features = ["rustls-tls"] }
+zip = "2.2"
+sha2 = "0.10"
 
+[target.'cfg(unix)'.dependencies]
+libc = "0.2"
 
 [target.'cfg(windows)'.dependencies]
 winreg = "0.55"
@@ -61,6 +68,8 @@ windows = { version = "0.58", features = [
     "Win32_Graphics_Gdi",
     "Win32_System_Registry",
     "Win32_UI_WindowsAndMessaging",
+    "Win32_System_Console",
+    "Win32_System_Threading",
 ] }
 windows-sys = { version = "0.59", features = [
     "Win32_UI_Shell",

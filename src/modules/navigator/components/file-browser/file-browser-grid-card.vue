@@ -7,7 +7,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 import { computed } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useI18n } from 'vue-i18n';
-import { FileIcon, FileVideoIcon, LoaderCircleIcon } from 'lucide-vue-next';
+import { FileVideoIcon, LoaderCircleIcon } from 'lucide-vue-next';
 import type { DirEntry } from '@/types/dir-entry';
 import { formatBytes } from './utils';
 import { useClipboardStore } from '@/stores/runtime/clipboard';
@@ -32,10 +32,13 @@ const clipboardPathsMap = computed(() => {
   if (isToolbarSuppressed.value) {
     return new Map<string, string>();
   }
+
   const map = new Map<string, string>();
+
   for (const item of clipboardItems.value) {
     map.set(item.path, clipboardType.value || '');
   }
+
   return map;
 });
 
@@ -58,6 +61,7 @@ function getDirSizeDisplay(entry: DirEntry): string | null {
       const progressStr = formatBytes(sizeInfo.size);
       return itemCountStr ? `${itemCountStr} · ${progressStr}` : progressStr;
     }
+
     return itemCountStr || null;
   }
 
@@ -157,7 +161,10 @@ function isDirLoadingWithProgress(entry: DirEntry): boolean {
           :size="12"
           class="file-browser-grid-card__spinner"
         />
-        <span v-if="props.variant === 'dir'" class="file-browser-grid-card__size">
+        <span
+          v-if="props.variant === 'dir'"
+          class="file-browser-grid-card__size"
+        >
           <template v-if="getDirSizeDisplay(props.entry)">{{ getDirSizeDisplay(props.entry) }}</template>
           <template v-else-if="shouldShowSizeSkeleton(props.entry)">
             <span
@@ -168,9 +175,18 @@ function isDirLoadingWithProgress(entry: DirEntry): boolean {
           </template>
         </span>
         <template v-else>
-          <span v-if="props.variant === 'other'" class="file-browser-grid-card__type">{{ props.entry.ext?.toUpperCase() || t('file') }}</span>
-          <span v-else-if="props.variant === 'video'" class="file-browser-grid-card__type">{{ t('fileBrowser.video') }}</span>
-          <span v-else class="file-browser-grid-card__type">{{ props.entry.ext?.toUpperCase() }}</span>
+          <span
+            v-if="props.variant === 'other'"
+            class="file-browser-grid-card__type"
+          >{{ props.entry.ext?.toUpperCase() || t('file') }}</span>
+          <span
+            v-else-if="props.variant === 'video'"
+            class="file-browser-grid-card__type"
+          >{{ t('fileBrowser.video') }}</span>
+          <span
+            v-else
+            class="file-browser-grid-card__type"
+          >{{ props.entry.ext?.toUpperCase() }}</span>
           <span class="file-browser-grid-card__size">{{ formatBytes(props.entry.size) }}</span>
         </template>
       </div>
@@ -288,10 +304,10 @@ function isDirLoadingWithProgress(entry: DirEntry): boolean {
   position: absolute;
   top: 8px;
   left: 8px;
-  align-items: flex-start;
-  justify-content: flex-start;
   width: 48px;
   height: 48px;
+  align-items: flex-start;
+  justify-content: flex-start;
   background-color: transparent;
 }
 

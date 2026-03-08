@@ -32,6 +32,14 @@ const forwarded = useForwardPropsEmits(props, emits);
   box-shadow: var(--shadow-lg);
 }
 
+.sigma-ui-command-dialog:focus-visible {
+  outline: none;
+}
+
+.sigma-ui-command-dialog > .sigma-ui-dialog-close {
+  display: none;
+}
+
 .sigma-ui-command-dialog__command [cmdk-group-heading] {
   padding-right: 0.5rem;
   padding-left: 0.5rem;

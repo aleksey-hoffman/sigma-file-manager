@@ -2,7 +2,9 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-import { ref, computed, nextTick, toRef } from 'vue';
+import {
+  ref, computed, nextTick, toRef, onMounted, onUnmounted, watch,
+} from 'vue';
 import type { Ref, ComputedRef } from 'vue';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { useDismissalLayerStore } from '@/stores/runtime/dismissal-layer';
@@ -10,6 +12,16 @@ import { useQuickViewStore } from '@/stores/runtime/quick-view';
 import { useGlobalSearchStore } from '@/stores/runtime/global-search';
 import { useClipboardStore } from '@/stores/runtime/clipboard';
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
+import {
+  registerNavigationProvider,
+  unregisterNavigationProvider,
+  emitPathChange,
+  emitSelectionChange,
+} from '@/modules/extensions/context';
+import {
+  registerNavigateToPath,
+  unregisterNavigateToPath,
+} from '@/modules/extensions/builtin-commands';
 import type { DirEntry, DirContents } from '@/types/dir-entry';
 import type { Tab } from '@/types/workspaces';
 import { useFileBrowserNavigation } from './use-file-browser-navigation';
@@ -344,6 +356,30 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
         element.focus({ preventScroll: true });
       }
     }
+  }
+
+  if (!isExternalMode) {
+    onMounted(() => {
+      registerNavigationProvider({
+        getCurrentPath: () => dataSource.currentPath.value || null,
+        getSelectedEntries: () => selection.selectedEntries.value,
+      });
+
+      registerNavigateToPath(dataSource.navigateToPath);
+    });
+
+    onUnmounted(() => {
+      unregisterNavigationProvider();
+      unregisterNavigateToPath();
+    });
+
+    watch(dataSource.currentPath, (newPath) => {
+      emitPathChange(newPath);
+    });
+
+    watch(selection.selectedEntries, (newSelection) => {
+      emitSelectionChange(newSelection);
+    }, { deep: true });
   }
 
   return {

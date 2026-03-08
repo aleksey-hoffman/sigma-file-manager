@@ -68,6 +68,11 @@ import {
   formatTauriShortcut,
   type GlobalShortcutId,
 } from '@/stores/runtime/global-shortcuts';
+import { formatKeybindingKeys } from '@/modules/extensions/api';
+import { useExtensionsStore } from '@/stores/runtime/extensions';
+import { useExtensionsStorageStore } from '@/stores/storage/extensions';
+import { BlocksIcon } from 'lucide-vue-next';
+import type { ExtensionKeybindingOverride } from '@/types/extension';
 
 const { t } = useI18n();
 const shortcutsStore = useShortcutsStore();
@@ -77,6 +82,7 @@ const shortcutIcons: Record<ShortcutId, Component> = {
   toggleGlobalSearch: SearchIcon,
   toggleFilter: TextSearchIcon,
   toggleSettingsSearch: TextSearchIcon,
+  toggleCommandPalette: TerminalSquareIcon,
   copy: CopyIcon,
   cut: FolderInputIcon,
   paste: ClipboardPasteIcon,
@@ -103,6 +109,7 @@ const shortcutIcons: Record<ShortcutId, Component> = {
 const globalShortcutIcons: Record<GlobalShortcutId, Component> = {
   launchApp: AppWindowIcon,
 };
+const extensionsStorageStore = useExtensionsStorageStore();
 
 const isDialogOpen = ref(false);
 const editingShortcutId = ref<ShortcutId | null>(null);
@@ -112,6 +119,13 @@ const isRecording = ref(false);
 const recordButtonRef = ref<HTMLButtonElement | null>(null);
 
 const isEditingGlobalShortcut = computed(() => editingGlobalShortcutId.value !== null);
+const editingExtensionKeybinding = ref<{
+  extensionId: string;
+  commandId: string;
+  commandTitle: string;
+} | null>(null);
+
+const isEditingExtension = computed(() => editingExtensionKeybinding.value !== null);
 
 const editingDefinition = computed(() => {
   if (editingGlobalShortcutId.value) {
@@ -306,6 +320,61 @@ function getSourceIcon(shortcutId: ShortcutId): Component {
   return shortcutsStore.getSource(shortcutId) === 'user' ? UserIcon : SettingsIcon;
 }
 
+function openExtensionKeybindingEditor(extensionId: string, commandId: string, commandTitle: string) {
+  editingExtensionKeybinding.value = {
+    extensionId,
+    commandId,
+    commandTitle,
+  };
+  editingShortcutId.value = null;
+  recordedKeys.value = null;
+  isRecording.value = true;
+  isDialogOpen.value = true;
+
+  nextTick(() => {
+    focusRecordButton();
+  });
+}
+
+async function saveExtensionKeybinding() {
+  if (!editingExtensionKeybinding.value || !recordedKeys.value) return;
+
+  const override: ExtensionKeybindingOverride = {
+    commandId: editingExtensionKeybinding.value.commandId,
+    keys: recordedKeys.value,
+  };
+
+  await extensionsStorageStore.setKeybindingOverride(
+    editingExtensionKeybinding.value.extensionId,
+    override,
+  );
+
+  const keybinding = extensionsStore.keybindings.find(
+    kb => kb.commandId === editingExtensionKeybinding.value!.commandId,
+  );
+
+  if (keybinding) {
+    keybinding.keys = recordedKeys.value;
+  }
+
+  isDialogOpen.value = false;
+  editingExtensionKeybinding.value = null;
+  recordedKeys.value = null;
+}
+
+async function resetExtensionKeybinding() {
+  if (!editingExtensionKeybinding.value) return;
+
+  await extensionsStorageStore.removeKeybindingOverride(
+    editingExtensionKeybinding.value.extensionId,
+    editingExtensionKeybinding.value.commandId,
+  );
+
+  isDialogOpen.value = false;
+  editingExtensionKeybinding.value = null;
+  recordedKeys.value = null;
+}
+
 watch(isDialogOpen, (open) => {
   if (!open) {
     isRecording.value = false;
@@ -321,6 +390,57 @@ watch(isDialogOpen, (open) => {
       focusRecordButton();
     });
   }
+});
+
+const extensionsStore = useExtensionsStore();
+
+const extensionKeybindings = computed(() => {
+  return extensionsStore.keybindings.map((keybinding) => {
+    const commandIdWithoutPrefix = keybinding.commandId.replace(`${keybinding.extensionId}.`, '');
+
+    const command = extensionsStore.commands.find(
+      cmd => cmd.command.id === keybinding.commandId,
+    );
+    const contextMenuItem = extensionsStore.contextMenuItems.find(
+      item => item.extensionId === keybinding.extensionId && item.item.id === keybinding.commandId,
+    );
+
+    const installed = extensionsStore.installedExtensions.find(
+      ext => ext.id === keybinding.extensionId,
+    );
+    const extensionName = installed?.manifest?.name || keybinding.extensionId;
+
+    let commandTitle = commandIdWithoutPrefix;
+
+    if (command) {
+      commandTitle = command.command.title;
+    }
+    else if (contextMenuItem) {
+      commandTitle = contextMenuItem.item.title;
+    }
+
+    return {
+      ...keybinding,
+      commandTitle,
+      extensionName,
+      keybindingLabel: formatKeybindingKeys(keybinding.keys),
+      whenLabel: keybinding.when || 'always',
+    };
+  });
+});
+
+const extensionKeybindingsByExtension = computed(() => {
+  const groups: Record<string, typeof extensionKeybindings.value> = {};
+
+  for (const keybinding of extensionKeybindings.value) {
+    if (!groups[keybinding.extensionId]) {
+      groups[keybinding.extensionId] = [];
+    }
+
+    groups[keybinding.extensionId].push(keybinding);
+  }
+
+  return groups;
 });
 </script>
 
@@ -512,6 +632,72 @@ watch(isDialogOpen, (open) => {
         </div>
       </div>
 
+      <template v-if="extensionKeybindings.length > 0">
+        <div class="shortcuts-table shortcuts-table--extensions">
+          <div class="shortcuts-table__section-header">
+            <BlocksIcon :size="16" />
+            <span>{{ t('settingsTabs.extensions') }}</span>
+          </div>
+          <div class="shortcuts-table__header">
+            <div class="shortcuts-table__header-cell shortcuts-table__cell--command">
+              {{ t('command') }}
+            </div>
+            <div class="shortcuts-table__header-cell shortcuts-table__cell--keybinding">
+              {{ t('keybinding') }}
+            </div>
+            <div class="shortcuts-table__header-cell shortcuts-table__cell--when">
+              {{ t('when') }}
+            </div>
+            <div class="shortcuts-table__header-cell shortcuts-table__cell--source">
+              {{ t('source') }}
+            </div>
+          </div>
+
+          <div class="shortcuts-table__body">
+            <template
+              v-for="(groupKeybindings, extensionId) in extensionKeybindingsByExtension"
+              :key="extensionId"
+            >
+              <div
+                v-for="keybinding in groupKeybindings"
+                :key="keybinding.commandId"
+                class="shortcuts-table__row"
+                @click="openExtensionKeybindingEditor(keybinding.extensionId, keybinding.commandId, keybinding.commandTitle)"
+              >
+                <div class="shortcuts-table__cell shortcuts-table__cell--command">
+                  <BlocksIcon
+                    :size="14"
+                    class="shortcuts-table__cell-icon"
+                  />
+                  <span class="shortcuts-table__cell-text">
+                    {{ keybinding.commandTitle }}
+                  </span>
+                </div>
+
+                <div class="shortcuts-table__cell shortcuts-table__cell--keybinding">
+                  <kbd class="shortcuts-table__kbd">
+                    {{ keybinding.keybindingLabel }}
+                  </kbd>
+                </div>
+
+                <div class="shortcuts-table__cell shortcuts-table__cell--when">
+                  <code class="shortcuts-table__when-code">
+                    {{ keybinding.whenLabel }}
+                  </code>
+                </div>
+
+                <div class="shortcuts-table__cell shortcuts-table__cell--source">
+                  <span class="shortcuts-table__source shortcuts-table__source--extension">
+                    <BlocksIcon :size="12" />
+                    {{ keybinding.extensionName }}
+                  </span>
+                </div>
+              </div>
+            </template>
+          </div>
+        </div>
+      </template>
+
       <Dialog v-model:open="isDialogOpen">
         <DialogContent class="shortcut-editor-dialog">
           <DialogHeader>
@@ -521,10 +707,16 @@ watch(isDialogOpen, (open) => {
             <DialogDescription v-if="editingDefinition">
               {{ t(editingDefinition.labelKey) }}
             </DialogDescription>
+            <DialogDescription v-else-if="editingExtensionKeybinding">
+              {{ editingExtensionKeybinding.commandTitle }}
+            </DialogDescription>
           </DialogHeader>
 
           <div class="shortcut-editor">
-            <div class="shortcut-editor__info-row">
+            <div
+              v-if="!isEditingExtension"
+              class="shortcut-editor__info-row"
+            >
               <span class="shortcut-editor__label">
                 {{ t('dialogs.shortcutEditorDialog.shortcut') }}:
               </span>
@@ -596,7 +788,7 @@ watch(isDialogOpen, (open) => {
             <ConfirmButton
               variant="outline"
               class="shortcut-editor-dialog__footer-button"
-              @click="resetShortcut"
+              @click="isEditingExtension ? resetExtensionKeybinding() : resetShortcut()"
             >
               <RotateCcwIcon :size="14" />
               {{ t('shortcutsUI.resetShortcut') }}
@@ -609,7 +801,7 @@ watch(isDialogOpen, (open) => {
               </DialogClose>
               <Button
                 :disabled="!recordedKeys || hasConflict"
-                @click="saveShortcut"
+                @click="isEditingExtension ? saveExtensionKeybinding() : saveShortcut()"
               >
                 {{ t('save') }}
               </Button>
@@ -702,6 +894,24 @@ watch(isDialogOpen, (open) => {
   display: flex;
   width: 100%;
   flex-direction: column;
+}
+
+.shortcuts-table--extensions {
+  border-top: 1px solid hsl(var(--border));
+  margin-top: 1rem;
+}
+
+.shortcuts-table__section-header {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background-color: hsl(var(--muted) / 20%);
+  color: hsl(var(--muted-foreground));
+  font-size: 0.75rem;
+  font-weight: 600;
+  gap: 0.5rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
 .shortcuts-table__header {
@@ -816,6 +1026,10 @@ watch(isDialogOpen, (open) => {
 
 .shortcuts-table__source--user {
   color: hsl(var(--primary));
+}
+
+.shortcuts-table__source--extension {
+  color: hsl(var(--muted-foreground));
 }
 
 .shortcuts-table__lock-icon {

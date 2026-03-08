@@ -23,17 +23,6 @@ export default defineConfigWithVueTs(
       'check-file': checkFile,
     },
     rules: {
-      'no-restricted-imports': [
-        'error',
-        {
-          patterns: [
-            {
-              group: ['../*'],
-              message: 'Use alias imports (@/) instead of relative parent imports (../)',
-            },
-          ],
-        },
-      ],
       'func-style': ['error', 'declaration', { allowTypeAnnotation: true }],
       'vue/max-attributes-per-line': 'error',
       'vue/multi-word-component-names': 'off',
@@ -85,6 +74,9 @@ export default defineConfigWithVueTs(
         'error',
         {
           '**/': 'KEBAB_CASE',
+        },
+        {
+          ignoreWords: ['__tests__'],
         },
       ],
     },

@@ -20,6 +20,7 @@ const props = defineProps<TabsContentProps>();
 
 <style>
 .sigma-ui-tabs-content {
+  min-width: 0;
   margin-top: 0.75rem;
 }
 

@@ -79,6 +79,7 @@ export type ShortcutId
   = 'toggleGlobalSearch'
     | 'toggleFilter'
     | 'toggleSettingsSearch'
+    | 'toggleCommandPalette'
     | 'copy'
     | 'cut'
     | 'paste'

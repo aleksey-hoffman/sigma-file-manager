@@ -16,6 +16,8 @@ import { useTerminalsStore } from '@/stores/runtime/terminals';
 import { disableWebViewFeatures } from '@/utils/disable-web-view-features';
 import { useChangelog } from '@/modules/changelog';
 import { useAppUpdater } from '@/modules/app-updater';
+import { useExtensionsStore } from '@/stores/runtime/extensions';
+import { initPlatformInfo } from '@/modules/extensions/api';
 
 export function useInit() {
   const router = useRouter();
@@ -28,6 +30,7 @@ export function useInit() {
   const shortcutsStore = useShortcutsStore();
   const globalShortcutsStore = useGlobalShortcutsStore();
   const terminalsStore = useTerminalsStore();
+  const extensionsStore = useExtensionsStore();
   const { checkAndShowChangelog } = useChangelog();
   const { initAutoCheck } = useAppUpdater();
 
@@ -60,6 +63,8 @@ export function useInit() {
     disableWebViewFeatures();
     await checkAndShowChangelog();
     initAutoCheck();
+    await initPlatformInfo();
+    await extensionsStore.init();
   }
 
   onMounted(() => {

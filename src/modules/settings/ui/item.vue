@@ -26,9 +26,12 @@ const props = defineProps<Props>();
           :size="24"
         />
         <div>
-          <h3 class="settings-view-item__title">
-            {{ props.title }}
-          </h3>
+          <div class="settings-view-item__title-row">
+            <h3 class="settings-view-item__title">
+              {{ props.title }}
+            </h3>
+            <slot name="title-suffix" />
+          </div>
           <p
             v-if="props.description"
             class="settings-view-item__description"
@@ -92,8 +95,15 @@ const props = defineProps<Props>();
   color: hsl(var(--icon));
 }
 
+.settings-view-item__title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .settings-view-item__title {
-  margin: 0 0 0.25rem;
+  margin: 0;
   color: hsl(var(--foreground));
   font-size: 1rem;
   font-weight: 600;

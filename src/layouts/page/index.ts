@@ -4,3 +4,4 @@
 
 export { default as PageDefaultLayout } from './default.vue';
 export { default as PageHomeLayout } from './home.vue';
+export { default as PageIframeLayout } from './iframe.vue';

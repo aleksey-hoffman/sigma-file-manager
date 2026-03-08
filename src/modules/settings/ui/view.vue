@@ -9,6 +9,7 @@ import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import AppearanceCategory from './categories/appearance/index.vue';
+import ExtensionsCategory from './categories/extensions/index.vue';
 import GeneralCategory from './categories/general/index.vue';
 import InputCategory from './categories/input/index.vue';
 import SearchCategory from './categories/search/index.vue';
@@ -36,6 +37,7 @@ const categoryComponentMap: Record<string, unknown> = {
   tabs: TabsCategory,
   stats: StatsCategory,
   storage: StorageCategory,
+  extensions: ExtensionsCategory,
 };
 
 function getComponentForTab(tabName: string) {

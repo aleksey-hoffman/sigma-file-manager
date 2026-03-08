@@ -11,6 +11,7 @@ export { default as ContextMenuGroup } from './context-menu-group.vue';
 export { default as ContextMenuItem } from './context-menu-item.vue';
 export { default as ContextMenuSeparator } from './context-menu-separator.vue';
 export { default as ContextMenuLabel } from './context-menu-label.vue';
+export { default as ContextMenuShortcut } from './context-menu-shortcut.vue';
 export { default as ContextMenuSub } from './context-menu-sub.vue';
 export { default as ContextMenuSubTrigger } from './context-menu-sub-trigger.vue';
 export { default as ContextMenuSubContent } from './context-menu-sub-content.vue';

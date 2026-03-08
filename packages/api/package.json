@@ -1,0 +1,20 @@
+{
+  "name": "@sigma-file-manager/api",
+  "version": "1.3.0",
+  "description": "Type definitions and manifest schema for Sigma File Manager extensions",
+  "license": "GPL-3.0-or-later",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aleksey-hoffman/sigma-file-manager.git",
+    "directory": "packages/api"
+  },
+  "files": [
+    "index.d.ts",
+    "manifest.schema.json",
+    "README.md"
+  ],
+  "types": "index.d.ts",
+  "publishConfig": {
+    "access": "public"
+  }
+}

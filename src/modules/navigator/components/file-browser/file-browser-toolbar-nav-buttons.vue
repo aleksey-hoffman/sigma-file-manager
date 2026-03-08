@@ -21,7 +21,7 @@ import {
   ArrowLeftIcon,
   ArrowRightIcon,
   ArrowUpIcon,
-  EllipsisVerticalIcon,
+  EllipsisIcon,
   HomeIcon,
   RefreshCwIcon,
 } from 'lucide-vue-next';
@@ -129,7 +129,7 @@ const { t } = useI18n();
           class="file-browser-toolbar-nav-buttons__button"
           :title="t('settingsCategories.navigation')"
         >
-          <EllipsisVerticalIcon class="file-browser-toolbar-nav-buttons__icon" />
+          <EllipsisIcon class="file-browser-toolbar-nav-buttons__icon" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent

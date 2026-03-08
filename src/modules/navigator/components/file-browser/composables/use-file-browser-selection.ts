@@ -745,6 +745,7 @@ export function useFileBrowserSelection(
         if (result.success) {
           successCount++;
           dirSizesStore.invalidate([directoryPath]);
+
           if (directoryPath === currentPathRef.value) {
             pendingFocusRequest.value = {
               type: 'path',

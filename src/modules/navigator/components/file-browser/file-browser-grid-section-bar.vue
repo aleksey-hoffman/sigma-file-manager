@@ -27,9 +27,9 @@ defineProps<{
   border-radius: var(--radius-sm);
   background-color: hsl(var(--secondary) / 50%);
   color: hsl(var(--muted-foreground));
-  gap: 8px;
   font-size: 12px;
   font-weight: 500;
+  gap: 8px;
   text-transform: uppercase;
 }
 

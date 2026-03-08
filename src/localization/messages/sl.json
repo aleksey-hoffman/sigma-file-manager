@@ -1480,6 +1480,8 @@
   "pathCannotBeOpened": "Poti ni mogoče odpreti",
   "removeAllFromThisList": "Odstrani vse s tega seznama",
   "thisFeatureIsDisabled": "Ta funkcija je onemogočena",
+  "list": "Seznam",
+  "grid": "Mreža",
   "listLayout": "Seznamski izgled",
   "gridLayout": "Mrežni izgled",
   "scale": "Skala",
@@ -1751,6 +1753,54 @@
       "current": "Trenutno",
       "summary": "Povzetek",
       "selectVersion": "Izberite različico"
+    },
+    "extensions": {
+      "subtitle": "Odkrijte in upravljajte razširitve skupnosti za aplikacijo",
+      "loadingExtension": "Nalaganje razširitve...",
+      "noPermissions": "Ta razširitev ne zahteva posebnih dovoljenj.",
+      "noExtensionCommands": "Ta razširitev ne ponuja nobenih ukazov.",
+      "platforms": "Platforme",
+      "allPlatforms": "Vse platforme",
+      "platformWarning": "Ta razširitev podpira samo {platforms}",
+      "platformIncompatible": "Ta razširitev ni združljiva z vašo platformo ({current}). Podpira samo: {supported}",
+      "platformIncompatibleShort": "Nezdružljivo",
+      "tabs": {
+        "marketplace": "Trgovina",
+        "installed": "Nameščene",
+        "overview": "Pregled",
+        "permissions": "Dovoljenja",
+        "changelog": "Zapis sprememb",
+        "commands": "Ukazi"
+      },
+      "badges": {
+        "official": "Uradna",
+        "officialTooltip": "To razširitev je ustvarila in vzdržuje ekipa Sigma File Manager",
+        "community": "Skupnost",
+        "communityTooltip": "To je razširitev skupnosti. Pred namestitvijo pregledajte izvorno kodo.",
+        "local": "Lokalna",
+        "localTooltip": "Ta razširitev je bila nameščena iz lokalne mape",
+        "broken": "Poškodovana",
+        "brokenTooltip": "Datoteke razširitve manjkajo. Odstranite namestitev, da jo odstranite s seznama."
+      },
+      "api": {
+        "permissionDenied": "Dovoljenje zavrnjeno: {permission}",
+        "permissionDeniedBinary": "Dovoljenje zavrnjeno: shell (potrebno za upravljanje binarnih datotek)",
+        "downloading": "Prenašanje {name}",
+        "downloadingProgress": "Prenašanje...",
+        "startingDownload": "Začenjanje prenosa...",
+        "downloadComplete": "Prenos končan",
+        "waitForDependencies": "Čakajte, da razširitev dokonča prenos svojih odvisnosti",
+        "dismiss": "Zapri",
+        "stop": "Ustavi"
+      }
+    },
+    "commandPalette": {
+      "searchPlaceholder": "Vnesite ukaz ali iščite...",
+      "noResults": "Ni najdenih ukazov.",
+      "noCommands": "Ni registriranih ukazov. Namestite in omogočite razširitve za dodajanje ukazov.",
+      "recentHeading": "Nedavno",
+      "otherCommandsHeading": "Ostalo",
+      "run": "Zaženi"
     }
   }
 }

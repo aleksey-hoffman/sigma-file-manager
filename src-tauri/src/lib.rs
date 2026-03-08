@@ -2,12 +2,11 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-use tauri::Manager;
-
 mod app_updater;
 mod dir_reader;
 mod dir_size;
 mod dir_watcher;
+mod extensions;
 mod file_operations;
 mod global_search;
 mod open_with;
@@ -80,6 +79,41 @@ pub fn run() {
             dir_watcher::watch_directory,
             dir_watcher::unwatch_directory,
             dir_watcher::get_watched_directories,
+            extensions::get_extensions_dir,
+            extensions::get_extension_path,
+            extensions::get_extension_storage_path,
+            extensions::download_extension,
+            extensions::delete_extension,
+            extensions::install_local_extension,
+            extensions::get_installed_extensions,
+            extensions::read_extension_manifest,
+            extensions::read_extension_file,
+            extensions::read_file_binary,
+            extensions::write_file_binary,
+            extensions::import_extension_storage_file,
+            extensions::delete_file_binary,
+            extensions::is_path_within_directory,
+            extensions::extension_path_exists,
+            extensions::run_extension_command,
+            extensions::download_extension_file,
+            extensions::start_extension_command,
+            extensions::cancel_extension_command,
+            extensions::cancel_all_extension_commands,
+            extensions::rename_part_files_to_ts,
+            extensions::get_platform_info,
+            extensions::get_extension_binary_path,
+            extensions::download_extension_binary,
+            extensions::remove_extension_binary,
+            extensions::extension_binary_exists,
+            extensions::download_and_extract_extension_binary,
+            extensions::get_shared_binary_path,
+            extensions::download_shared_binary,
+            extensions::download_and_extract_shared_binary,
+            extensions::remove_shared_binary,
+            extensions::shared_binary_exists,
+            extensions::get_shared_binaries_base_dir,
+            extensions::fetch_github_tags,
+            extensions::fetch_url_text,
         ])
         .setup(setup_handler)
         .on_window_event(|window, event| {
@@ -104,7 +138,7 @@ fn setup_handler(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>>
         )?;
     }
 
-    system_tray::setup_system_tray(&app.handle())?;
+    system_tray::setup_system_tray(app.handle())?;
 
     // Open devtools in production for debugging (TODO: remove after debugging)
     #[cfg(feature = "devtools")]

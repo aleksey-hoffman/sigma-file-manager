@@ -23,6 +23,7 @@ import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { useChangelog, type Release } from '@/modules/changelog/composables/use-changelog';
+import { escapeHtml, sanitizeHtml } from '@/utils/safe-html';
 
 const { t } = useI18n();
 const userSettingsStore = useUserSettingsStore();
@@ -100,14 +101,6 @@ function renderMedia(alt: string, src: string): string {
   }
 
   return `<div class="changelog-dialog__feature-media-container"><img src="${resolvedSrc}" alt="${alt}" class="changelog-dialog__feature-image"></div>`;
-}
-
-function escapeHtml(text: string): string {
-  return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
 }
 
 function renderInlineCode(text: string): string {
@@ -198,7 +191,10 @@ function renderMarkdown(text: string): string {
 
   endList();
 
-  return result.join('');
+  return sanitizeHtml(result.join(''), {
+    ADD_TAGS: ['video', 'source'],
+    ADD_ATTR: ['class', 'controls', 'muted', 'loop', 'playsinline', 'src', 'type', 'alt'],
+  });
 }
 </script>
 

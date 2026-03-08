@@ -10,6 +10,7 @@ import Spacer from './spacer.vue';
 import WindowActions from './window-actions.vue';
 import { GlobalSearchToolbarButton } from '@/modules/global-search';
 import { StatusCenterToolbarButton } from '@/modules/status-center';
+import CommandPaletteToolbarButton from '@/modules/extensions/components/command-palette-toolbar-button.vue';
 
 const route = useRoute();
 
@@ -36,6 +37,8 @@ const shouldShowStatusCenter = computed(() => {
       class="window-toolbar-drag-layer"
     />
     <div class="window-toolbar-action-layer">
+      <CommandPaletteToolbarButton />
+      <div class="window-toolbar-extension-embed-teleport-target" />
       <div class="window-toolbar-primary-teleport-target" />
       <Spacer class="window-toolbar-spacer" />
       <div class="window-toolbar-secondary-teleport-target" />
@@ -47,6 +50,17 @@ const shouldShowStatusCenter = computed(() => {
 </template>
 
 <style scoped>
+.window-toolbar-extension-embed-teleport-target {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 12px;
+}
+
+.window-toolbar-extension-embed-teleport-target:empty {
+  display: none;
+}
+
 .window-toolbar-primary-teleport-target {
   display: flex;
   max-width: 50%;
@@ -102,6 +116,7 @@ const shouldShowStatusCenter = computed(() => {
   flex: 1 1 auto;
   align-items: center;
   justify-content: center;
+  margin-left: 4px;
   gap: 8px;
 }
 

@@ -40,12 +40,18 @@ defineProps<{
 
 <style>
 .page-layout {
+  overflow: hidden;
+  width: 100%;
+  max-width: 100%;
   height: calc(100vh - var(--window-toolbar-height));
   user-select: none;
 }
 
 .page-layout__container {
   display: flex;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
   flex-direction: column;
   padding: 20px 40px;
   padding-right: 46px;

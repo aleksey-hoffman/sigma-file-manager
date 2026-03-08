@@ -24,6 +24,17 @@ const githubReadmeSupportSectionLink = `${githubRepoLink}#supporters`;
 const githubLocalesLink = `${githubRawApiUrl}/${githubFullRepoName}/${githubMainBranch}/src/localization/locales`;
 const githubLanguageInstructionsLink = `${githubDiscussionsLink}196`;
 
+const extensionsRegistryRepo = 'sfm-extensions';
+const extensionsRegistryOrg = 'sigma-hub';
+const extensionsRegistryFullRepoName = `${extensionsRegistryOrg}/${extensionsRegistryRepo}`;
+const extensionsRegistryBaseUrl = `${githubRawApiUrl}/${extensionsRegistryFullRepoName}/main`;
+const extensionsRegistryUrl = `${extensionsRegistryBaseUrl}/registry.json`;
+const extensionsFeaturedUrl = `${extensionsRegistryBaseUrl}/featured.json`;
+const extensionsSubmissionGuideUrl = `${githubBaseUrl}/${extensionsRegistryFullRepoName}#readme`;
+const extensionsApiBaseUrl = `${githubRawApiUrl}/${githubFullRepoName}/${githubMainBranch}/packages/api`;
+const extensionsTypesUrl = `${extensionsApiBaseUrl}/index.d.ts`;
+const extensionsManifestSchemaUrl = `${extensionsApiBaseUrl}/manifest.schema.json`;
+
 export default {
   githubRepo,
   githubUserLink,
@@ -40,4 +51,9 @@ export default {
   githubReadmeSupportSectionLink,
   githubLocalesLink,
   githubLanguageInstructionsLink,
+  extensionsRegistryUrl,
+  extensionsFeaturedUrl,
+  extensionsSubmissionGuideUrl,
+  extensionsTypesUrl,
+  extensionsManifestSchemaUrl,
 };

@@ -21,6 +21,8 @@ const props = defineProps<TabsListProps>();
 <style>
 .sigma-ui-tabs-list {
   display: inline-flex;
+  overflow: auto hidden;
+  max-width: 100%;
   height: 2.5rem;
   align-items: center;
   justify-content: center;
@@ -28,5 +30,24 @@ const props = defineProps<TabsListProps>();
   border-radius: var(--radius-md);
   background-color: hsl(var(--secondary));
   color: hsl(var(--muted-foreground));
+  scrollbar-color: hsl(var(--border)) transparent;
+  scrollbar-width: thin;
+}
+
+.sigma-ui-tabs-list::-webkit-scrollbar {
+  height: 6px;
+}
+
+.sigma-ui-tabs-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sigma-ui-tabs-list::-webkit-scrollbar-thumb {
+  border-radius: 3px;
+  background-color: hsl(var(--border));
+}
+
+.sigma-ui-tabs-list::-webkit-scrollbar-thumb:hover {
+  background-color: hsl(var(--border) / 80%);
 }
 </style>

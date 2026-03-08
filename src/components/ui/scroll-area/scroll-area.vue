@@ -55,4 +55,9 @@ const props = withDefaults(defineProps<Props>(), {
   border-radius: inherit;
   outline: none;
 }
+
+.sigma-ui-scroll-area__viewport > div {
+  width: 100%;
+  max-width: 100%;
+}
 </style>

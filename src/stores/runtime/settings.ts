@@ -57,6 +57,10 @@ const settingsTabs: SettingsTab[] = [
     labelKey: 'settingsTabs.dataStorage',
   },
   {
+    name: 'extensions',
+    labelKey: 'settingsTabs.extensions',
+  },
+  {
     name: 'stats',
     labelKey: 'settingsTabs.stats',
   },
@@ -146,6 +150,7 @@ export const useSettingsStore = defineStore('settings', () => {
       { default: AutoplaySection },
       { default: AppUpdatesSection },
       { default: LastTabCloseBehaviorSection },
+      { default: ExtensionsListSection },
     ] = await Promise.all([
       import('@/modules/settings/ui/categories/general/language.vue'),
       import('@/modules/settings/ui/categories/general/window-scaling.vue'),
@@ -165,6 +170,7 @@ export const useSettingsStore = defineStore('settings', () => {
       import('@/modules/settings/ui/categories/storage/autoplay.vue'),
       import('@/modules/settings/ui/categories/general/app-updates.vue'),
       import('@/modules/settings/ui/categories/tabs/last-tab-close-behavior.vue'),
+      import('@/modules/settings/ui/categories/extensions/extensions-list.vue'),
     ]);
 
     sections.value = [
@@ -293,6 +299,13 @@ export const useSettingsStore = defineStore('settings', () => {
         tags: 'settingsTags.autoplay',
         component: markRaw(AutoplaySection),
         category: 'storage',
+      },
+      {
+        key: 'extensionSettings',
+        titleKey: 'extensions.settings.title',
+        tags: 'settingsTags.extensions',
+        component: markRaw(ExtensionsListSection),
+        category: 'extensions',
       },
     ];
 

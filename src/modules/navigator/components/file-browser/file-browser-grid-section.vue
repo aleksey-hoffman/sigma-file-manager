@@ -19,7 +19,10 @@ defineProps<{
       class="file-browser-grid-section__bar-wrapper"
       :style="stickyIndex !== undefined ? { zIndex: stickyIndex } : undefined"
     >
-      <FileBrowserGridSectionBar :label="label" :count="count">
+      <FileBrowserGridSectionBar
+        :label="label"
+        :count="count"
+      >
         <template #icon>
           <slot name="icon" />
         </template>

@@ -8,6 +8,7 @@ import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Button } from '@/components/ui/button';
 import { CopyIcon, FolderInputIcon, Trash2Icon } from 'lucide-vue-next';
+import ExtensionIcon from '@/modules/extensions/components/extension-icon.vue';
 
 export type OperationType = 'copy' | 'move' | 'delete' | '';
 
@@ -15,6 +16,7 @@ export type ToastItem = {
   data: {
     id: number | string;
     title: string;
+    subtitle?: string;
     description: string;
     progress: number;
     timer: number;
@@ -22,15 +24,12 @@ export type ToastItem = {
     cleanup: () => void;
     operationType?: OperationType;
     itemCount?: number;
+    extensionId?: string;
+    extensionIconPath?: string;
   };
 };
 
-type Emits = {
-  action: [];
-};
-
 const props = defineProps<ToastItem>();
-const emit = defineEmits<Emits>();
 const { t } = useI18n();
 
 const operationIcon = computed(() => {
@@ -53,6 +52,36 @@ const operationClass = computed(() => {
 
   return '';
 });
+
+const formattedTitle = computed(() => {
+  const titleText = props.data.title ?? '';
+  const separatorIndex = titleText.indexOf('|');
+
+  if (separatorIndex === -1) {
+    return {
+      prefix: titleText,
+      badge: '',
+      hasBadge: false,
+    };
+  }
+
+  const prefixText = titleText.slice(0, separatorIndex).trim();
+  const badgeText = titleText.slice(separatorIndex + 1).trim();
+
+  if (!prefixText || !badgeText) {
+    return {
+      prefix: titleText,
+      badge: '',
+      hasBadge: false,
+    };
+  }
+
+  return {
+    prefix: prefixText,
+    badge: badgeText,
+    hasBadge: true,
+  };
+});
 </script>
 
 <template>
@@ -68,7 +97,21 @@ const operationClass = computed(() => {
           :size="16"
           class="sigma-ui-toaster-progress__icon"
         />
-        {{ props.data.title }}
+        <span class="sigma-ui-toaster-progress__title-prefix">
+          {{ formattedTitle.prefix }}
+        </span>
+        <span
+          v-if="formattedTitle.hasBadge"
+          class="sigma-ui-toaster-progress__title-badge"
+        >
+          <ExtensionIcon
+            v-if="props.data.extensionId"
+            :extension-id="props.data.extensionId"
+            :icon-path="props.data.extensionIconPath"
+            :size="12"
+          />
+          {{ formattedTitle.badge }}
+        </span>
         <span
           v-if="props.data.itemCount"
           class="sigma-ui-toaster-progress__count-tag"
@@ -81,6 +124,12 @@ const operationClass = computed(() => {
         >
           {{ props.data.progress }}%
         </div>
+      </div>
+      <div
+        v-if="props.data.subtitle"
+        class="sigma-ui-toaster-progress__subtitle"
+      >
+        {{ props.data.subtitle }}
       </div>
       <div
         v-if="props.data.description"
@@ -99,9 +148,10 @@ const operationClass = computed(() => {
       </div>
     </div>
     <Button
+      v-if="props.data.actionText"
       size="xs"
       variant="secondary"
-      @click="emit('action')"
+      @click="props.data.cleanup"
     >
       {{ props.data.actionText }}
     </Button>
@@ -131,6 +181,8 @@ const operationClass = computed(() => {
 
 .sigma-ui-toaster-progress__content {
   display: flex;
+  overflow: hidden;
+  min-width: 0;
   flex: 1;
   flex-direction: column;
 }
@@ -148,6 +200,28 @@ const operationClass = computed(() => {
   color: hsl(var(--primary));
 }
 
+.sigma-ui-toaster-progress__title-prefix {
+  overflow: hidden;
+  min-width: 0;
+  flex-shrink: 1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sigma-ui-toaster-progress__title-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius-sm);
+  background-color: hsl(var(--secondary) / 50%);
+  color: hsl(var(--foreground));
+  font-size: 0.75rem;
+  font-weight: 500;
+  gap: 6px;
+  line-height: 1.2;
+}
+
 .sigma-ui-toaster-progress__count-tag {
   padding: 2px 8px;
   border-radius: 4px;
@@ -157,13 +231,28 @@ const operationClass = computed(() => {
 }
 
 .sigma-ui-toaster-progress__percentage {
+  display: inline-flex;
+  flex-shrink: 0;
+  margin-left: auto;
   color: hsl(var(--muted-foreground));
   font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.sigma-ui-toaster-progress__subtitle {
+  overflow: hidden;
+  color: hsl(var(--foreground) / 75%);
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .sigma-ui-toaster-progress__description {
-  color: hsl(var(--muted-foreground));
+  overflow: hidden;
+  color: hsl(var(--foreground) / 45%);
   font-size: 0.875rem;
+  white-space: pre-line;
 }
 
 .sigma-ui-toaster-progress__bar {

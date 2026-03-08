@@ -6,6 +6,15 @@ import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import type { ShortcutId, ShortcutKeys, UserShortcuts } from '@/types/user-settings';
+import {
+  getKeybindingRegistrations,
+  getCommandRegistrations,
+  getContextMenuRegistrations,
+  setAppKeybindingConflictChecker,
+  parseKeybindingString,
+} from '@/modules/extensions/api';
+import { getSelectedEntries, getCurrentPath } from '@/modules/extensions/context';
+import { useExtensionsStore } from '@/stores/runtime/extensions';
 
 export type { ShortcutId, ShortcutKeys, UserShortcuts };
 
@@ -63,6 +72,18 @@ const DEFAULT_SHORTCUTS: ShortcutDefinition[] = [
     conditions: {
       dialogIsOpened: false,
     },
+    isReadOnly: false,
+  },
+  {
+    id: 'toggleCommandPalette',
+    labelKey: 'shortcuts.toggleCommandPalette',
+    defaultKeys: {
+      ctrl: true,
+      shift: true,
+      key: 'p',
+    },
+    scope: 'global',
+    conditions: {},
     isReadOnly: false,
   },
   {
@@ -484,6 +505,7 @@ type HandlerRegistration = {
 
 export const useShortcutsStore = defineStore('shortcuts', () => {
   const userSettingsStore = useUserSettingsStore();
+  const extensionsStore = useExtensionsStore();
 
   const definitions = ref<ShortcutDefinition[]>(DEFAULT_SHORTCUTS);
   const handlers = ref<Map<ShortcutId, HandlerRegistration>>(new Map());
@@ -622,7 +644,121 @@ export const useShortcutsStore = defineStore('shortcuts', () => {
     return null;
   }
 
+  function checkExtensionKeybindingCondition(when?: string): boolean {
+    if (!when || when === 'always') return true;
+
+    const selectedEntries = getSelectedEntries();
+    const hasSelection = selectedEntries.length > 0;
+    const hasFiles = selectedEntries.some(entry => entry.isFile);
+    const hasDirs = selectedEntries.some(entry => entry.isDirectory);
+
+    switch (when) {
+      case 'fileSelected':
+        return hasFiles;
+      case 'directorySelected':
+        return hasDirs;
+      case 'singleSelected':
+        return selectedEntries.length === 1;
+      case 'multipleSelected':
+        return selectedEntries.length > 1;
+      case 'navigatorFocused':
+        return hasSelection;
+      default:
+        return true;
+    }
+  }
+
+  async function handleExtensionKeybindings(event: KeyboardEvent): Promise<boolean> {
+    const keybindings = getKeybindingRegistrations();
+
+    for (const registration of keybindings) {
+      if (!matchesShortcut(event, registration.keys)) continue;
+
+      if (!checkExtensionKeybindingCondition(registration.when)) continue;
+
+      const commandRegistrations = getCommandRegistrations();
+      const commandReg = commandRegistrations.find(
+        cmd => cmd.command.id === registration.commandId,
+      );
+
+      if (commandReg) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        try {
+          await commandReg.handler();
+        }
+        catch (error) {
+          console.error(`Failed to execute extension command ${registration.commandId}:`, error);
+        }
+
+        return true;
+      }
+
+      const contextMenuRegistrations = getContextMenuRegistrations();
+      const contextMenuReg = contextMenuRegistrations.find(
+        item => item.item.id === registration.commandId,
+      );
+
+      if (contextMenuReg) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        try {
+          const selectedEntries = getSelectedEntries().map(entry => ({
+            path: entry.path,
+            name: entry.name,
+            isDirectory: entry.isDirectory,
+            size: entry.size ?? undefined,
+            extension: entry.extension ?? undefined,
+          }));
+          const menuContext = {
+            currentPath: getCurrentPath() || '',
+            selectedEntries,
+          };
+          await contextMenuReg.handler(menuContext);
+        }
+        catch (error) {
+          console.error(`Failed to execute extension context menu ${registration.commandId}:`, error);
+        }
+
+        return true;
+      }
+    }
+
+    for (const extension of extensionsStore.enabledExtensions) {
+      const manifestKeybindings = extension.manifest.contributes?.keybindings ?? [];
+
+      for (const keybinding of manifestKeybindings) {
+        const parsedKeys = parseKeybindingString(keybinding.key);
+
+        if (!parsedKeys.key) continue;
+        if (!matchesShortcut(event, parsedKeys)) continue;
+        if (!checkExtensionKeybindingCondition(keybinding.when)) continue;
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        const fullCommandId = `${extension.id}.${keybinding.command}`;
+
+        try {
+          await extensionsStore.executeCommand(fullCommandId);
+        }
+        catch (error) {
+          console.error(`Failed to execute extension command ${fullCommandId}:`, error);
+        }
+
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   async function handleKeydown(event: KeyboardEvent): Promise<boolean> {
+    const extensionHandled = await handleExtensionKeybindings(event);
+    if (extensionHandled) return true;
+
     const matchingShortcutIds = findAllMatchingShortcuts(event);
     if (matchingShortcutIds.length === 0) return false;
 
@@ -674,10 +810,29 @@ export const useShortcutsStore = defineStore('shortcuts', () => {
     isListenerActive.value = false;
   }
 
+  function hasConflictWithAppShortcut(keys: ShortcutKeys): boolean {
+    for (const definition of definitions.value) {
+      const shortcutKeys = getShortcutKeys(definition.id);
+
+      if (
+        shortcutKeys.key.toLowerCase() === keys.key.toLowerCase()
+        && (shortcutKeys.ctrl || false) === (keys.ctrl || false)
+        && (shortcutKeys.alt || false) === (keys.alt || false)
+        && (shortcutKeys.shift || false) === (keys.shift || false)
+        && (shortcutKeys.meta || false) === (keys.meta || false)
+      ) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   function init(): void {
     if (isInitialized.value) return;
     isInitialized.value = true;
     startGlobalListener();
+    setAppKeybindingConflictChecker(hasConflictWithAppShortcut);
   }
 
   function cleanup(): void {

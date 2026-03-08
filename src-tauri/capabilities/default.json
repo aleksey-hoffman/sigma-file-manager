@@ -36,6 +36,7 @@
         }
       ]
     },
+    "opener:allow-default-urls",
     {
       "identifier": "opener:allow-open-url",
       "allow": [
@@ -48,6 +49,7 @@
       ]
     },
     "dialog:allow-open",
+    "dialog:allow-save",
     "global-shortcut:allow-register",
     "global-shortcut:allow-unregister",
     "global-shortcut:allow-unregister-all",

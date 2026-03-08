@@ -10,6 +10,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
@@ -23,7 +24,9 @@ import { ChevronDownIcon } from 'lucide-vue-next';
 import { useFileBrowserContext } from './composables/use-file-browser-context';
 import FileBrowserContextMenuHeader from './file-browser-context-menu-header.vue';
 import FileBrowserActionsMenu from './file-browser-actions-menu.vue';
+import FileBrowserExtensionMenuItems from './file-browser-extension-menu-items.vue';
 import type { DirEntry } from '@/types/dir-entry';
+import type { ContextMenuItemRegistration } from '@/types/extension';
 import type { ContextMenuAction } from './types';
 
 const { t } = useI18n();
@@ -63,6 +66,26 @@ function handleOpenCustomDialog() {
   applyContextMenuState();
   ctx.openOpenWithDialog(ctx.contextMenu.value.selectedEntries);
 }
+
+async function handleExtensionAction(registration: ContextMenuItemRegistration) {
+  applyContextMenuState();
+  const context = {
+    selectedEntries: ctx.contextMenu.value.selectedEntries.map(entry => ({
+      path: entry.path,
+      name: entry.name,
+      isDirectory: entry.is_dir,
+      size: entry.size,
+      extension: entry.ext ?? undefined,
+    })),
+  };
+
+  try {
+    await registration.handler(context);
+  }
+  catch (error) {
+    console.error('Extension action failed:', error);
+  }
+}
 </script>
 
 <template>
@@ -96,6 +119,13 @@ function handleOpenCustomDialog() {
           :menu-separator-component="DropdownMenuSeparator"
           @action="handleAction"
           @open-custom-dialog="handleOpenCustomDialog"
+        />
+        <FileBrowserExtensionMenuItems
+          :selected-entries="[currentDirEntry]"
+          :menu-item-component="DropdownMenuItem"
+          :menu-separator-component="DropdownMenuSeparator"
+          :menu-label-component="DropdownMenuLabel"
+          @extension-action="handleExtensionAction"
         />
       </DropdownMenuContent>
     </DropdownMenu>

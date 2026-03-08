@@ -346,7 +346,7 @@ function handleColumnHeaderClick(column: ListSortColumn) {
   flex-direction: column;
 }
 
-.file-browser__scroll-area-viewport {
+:global(.file-browser__scroll-area-viewport) {
   min-height: 0;
   flex: 1;
   border: none;
