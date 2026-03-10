@@ -339,7 +339,8 @@ export const useUserStatsStore = defineStore('userStats', () => {
     return null;
   }
 
-  function isPathAffectedByDeletion(path: string, deletedPaths: string[]): boolean {
+  function isPathAffectedByDeletion(path: string | null, deletedPaths: string[]): boolean {
+    if (path == null) return true;
     return deletedPaths.some(deletedPath =>
       path === deletedPath || path.startsWith(deletedPath + '/'),
     );
