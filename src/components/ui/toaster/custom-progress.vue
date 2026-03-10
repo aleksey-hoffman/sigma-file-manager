@@ -89,72 +89,74 @@ const formattedTitle = computed(() => {
     class="sigma-ui-toaster-progress"
     :class="operationClass"
   >
-    <div class="sigma-ui-toaster-progress__content">
-      <div class="sigma-ui-toaster-progress__header">
-        <component
-          :is="operationIcon"
-          v-if="operationIcon"
-          :size="16"
-          class="sigma-ui-toaster-progress__icon"
+    <div class="sigma-ui-toaster-progress__header">
+      <component
+        :is="operationIcon"
+        v-if="operationIcon"
+        :size="16"
+        class="sigma-ui-toaster-progress__icon"
+      />
+      <span class="sigma-ui-toaster-progress__title-prefix">
+        {{ formattedTitle.prefix }}
+      </span>
+      <span
+        v-if="formattedTitle.hasBadge"
+        class="sigma-ui-toaster-progress__title-badge"
+      >
+        <ExtensionIcon
+          v-if="props.data.extensionId"
+          :extension-id="props.data.extensionId"
+          :icon-path="props.data.extensionIconPath"
+          :size="12"
         />
-        <span class="sigma-ui-toaster-progress__title-prefix">
-          {{ formattedTitle.prefix }}
-        </span>
-        <span
-          v-if="formattedTitle.hasBadge"
-          class="sigma-ui-toaster-progress__title-badge"
-        >
-          <ExtensionIcon
-            v-if="props.data.extensionId"
-            :extension-id="props.data.extensionId"
-            :icon-path="props.data.extensionIconPath"
-            :size="12"
-          />
-          {{ formattedTitle.badge }}
-        </span>
-        <span
-          v-if="props.data.itemCount"
-          class="sigma-ui-toaster-progress__count-tag"
-        >
-          {{ t('item', props.data.itemCount) }}
-        </span>
-        <div
-          v-if="props.data.progress && props.data.progress < 100"
-          class="sigma-ui-toaster-progress__percentage"
-        >
-          {{ props.data.progress }}%
-        </div>
-      </div>
-      <div
-        v-if="props.data.subtitle"
-        class="sigma-ui-toaster-progress__subtitle"
+        {{ formattedTitle.badge }}
+      </span>
+      <span
+        v-if="props.data.itemCount"
+        class="sigma-ui-toaster-progress__count-tag"
       >
-        {{ props.data.subtitle }}
-      </div>
+        {{ t('item', props.data.itemCount) }}
+      </span>
       <div
-        v-if="props.data.description"
-        class="sigma-ui-toaster-progress__description"
+        v-if="props.data.progress && props.data.progress < 100"
+        class="sigma-ui-toaster-progress__percentage"
       >
-        {{ props.data.description }}
-      </div>
-      <div
-        v-if="props.data.progress > 0 && props.data.progress < 100"
-        class="sigma-ui-toaster-progress__bar"
-      >
-        <div
-          class="sigma-ui-toaster-progress__bar-fill"
-          :style="{ width: `${props.data.progress}%` }"
-        />
+        {{ props.data.progress }}%
       </div>
     </div>
-    <Button
-      v-if="props.data.actionText"
-      size="xs"
-      variant="secondary"
-      @click="props.data.cleanup"
+    <div
+      v-if="props.data.subtitle"
+      class="sigma-ui-toaster-progress__subtitle"
     >
-      {{ props.data.actionText }}
-    </Button>
+      {{ props.data.subtitle }}
+    </div>
+    <div
+      v-if="props.data.description"
+      class="sigma-ui-toaster-progress__description"
+    >
+      {{ props.data.description }}
+    </div>
+    <div
+      v-if="props.data.progress > 0 && props.data.progress < 100"
+      class="sigma-ui-toaster-progress__bar"
+    >
+      <div
+        class="sigma-ui-toaster-progress__bar-fill"
+        :style="{ width: `${props.data.progress}%` }"
+      />
+    </div>
+    <div
+      v-if="props.data.actionText"
+      class="sigma-ui-toaster-progress__toolbar"
+    >
+      <Button
+        size="xs"
+        variant="secondary"
+        @click="props.data.cleanup"
+      >
+        {{ props.data.actionText }}
+      </Button>
+    </div>
   </div>
 </template>
 
@@ -163,15 +165,14 @@ const formattedTitle = computed(() => {
   display: flex;
   width: 100%;
   box-sizing: border-box;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
   padding: 1rem;
   border: 1px solid hsl(var(--border));
   border-radius: var(--radius);
   backdrop-filter: blur(24px);
   background-color: hsl(var(--background) / 50%);
   box-shadow: var(--shadow-md);
-  gap: 1.5rem;
+  gap: 0.25rem;
   transition: backdrop-filter 160ms ease, background-color 160ms ease;
 }
 
@@ -179,20 +180,20 @@ const formattedTitle = computed(() => {
   color: hsl(var(--warning));
 }
 
-.sigma-ui-toaster-progress__content {
-  display: flex;
-  overflow: hidden;
-  min-width: 0;
-  flex: 1;
-  flex-direction: column;
-}
-
 .sigma-ui-toaster-progress__header {
   display: flex;
+  width: 100%;
   align-items: center;
   font-size: 0.875rem;
   font-weight: 600;
   gap: 0.5rem;
+}
+
+.sigma-ui-toaster-progress__toolbar {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  padding-top: 0.25rem;
 }
 
 .sigma-ui-toaster-progress__icon {
@@ -252,14 +253,14 @@ const formattedTitle = computed(() => {
   overflow: hidden;
   color: hsl(var(--foreground) / 45%);
   font-size: 0.875rem;
-  white-space: pre-line;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .sigma-ui-toaster-progress__bar {
   width: 100%;
   height: 2px;
   border-radius: var(--rounded-full);
-  margin-top: 0.5rem;
   background-color: hsl(var(--primary) / 10%);
   font-size: 0.875rem;
 }

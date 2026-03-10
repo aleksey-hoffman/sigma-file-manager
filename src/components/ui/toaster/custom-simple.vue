@@ -22,24 +22,26 @@ const emit = defineEmits<Emits>();
 
 <template>
   <div class="sigma-ui-toaster-default">
-    <div class="sigma-ui-toaster-default__content">
-      <div class="sigma-ui-toaster-default__title">
-        {{ props.title }}
-      </div>
-      <div
-        v-if="props.description"
-        class="sigma-ui-toaster-default__description"
-      >
-        {{ props.description }}
-      </div>
+    <div class="sigma-ui-toaster-default__title">
+      {{ props.title }}
     </div>
-    <Button
-      v-if="props.actionText"
-      size="xs"
-      @click="emit('action')"
+    <div
+      v-if="props.description"
+      class="sigma-ui-toaster-default__description"
     >
-      {{ props.actionText }}
-    </Button>
+      {{ props.description }}
+    </div>
+    <div
+      v-if="props.actionText"
+      class="sigma-ui-toaster-default__toolbar"
+    >
+      <Button
+        size="xs"
+        @click="emit('action')"
+      >
+        {{ props.actionText }}
+      </Button>
+    </div>
   </div>
 </template>
 
@@ -47,24 +49,36 @@ const emit = defineEmits<Emits>();
 .sigma-ui-toaster-default {
   display: flex;
   width: 100%;
-  align-items: flex-end;
-  justify-content: space-between;
+  flex-direction: column;
   padding: 1rem;
   border: 1px solid hsl(var(--border));
   border-radius: var(--radius);
   backdrop-filter: blur(24px);
   background-color: hsl(var(--background) / 50%);
   box-shadow: var(--shadow-md);
+  gap: 0.25rem;
   transition: backdrop-filter 160ms ease, background-color 160ms ease;
 }
 
 .sigma-ui-toaster-default__title {
+  width: 100%;
   font-size: 0.875rem;
   font-weight: 600;
 }
 
 .sigma-ui-toaster-default__description {
+  overflow: hidden;
+  width: 100%;
   color: hsl(var(--muted-foreground));
   font-size: 0.875rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sigma-ui-toaster-default__toolbar {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  padding-top: 0.25rem;
 }
 </style>

@@ -315,6 +315,9 @@
       "noteSourceCode": "Обратите внимание на исходный код"
     }
   },
+  "settingsCategories": {
+    "navigation": "Навигация"
+  },
   "settings": {
     "searchSettings": "Поиск настроек",
     "general": {
@@ -676,7 +679,8 @@
     "search": "Поиск",
     "dataStorage": "Хранилище данных",
     "stats": "Статистика",
-    "advanced": "Расширенные"
+    "advanced": "Расширенные",
+    "extensions": "Extensions"
   },
   "settingsTags": {
     "language": "язык",
@@ -713,7 +717,8 @@
     "imageThumbnails": "изображение, картинка, эскизы, ограничение, хранилище, ресурсы, использование, производительность",
     "directoryItemStatistics": "папка, элемент, статистика, статистика, данные, хранение, использование",
     "advanced": "расширенный, профессиональный, разработчик, терминал, оболочка",
-    "whatsNew": "что нового, журнал изменений, примечания к выпуску, версия, обновление, новости"
+    "whatsNew": "что нового, журнал изменений, примечания к выпуску, версия, обновление, новости",
+    "extensions": "extensions, plugins, addons, configuration, settings"
   },
   "dataBackupReminder": {
     "title": "Напоминание: резервное копирование данных",
@@ -845,7 +850,8 @@
     "deleteSelectedItemsFromDrive": "Удалить выбранные элементы с диска",
     "quickWindowPositioning": "Быстрое позиционирование окон",
     "displaySystemEmojiAndSymbolPicker": "Отображение системных эмодзи и выбора символов",
-    "displaySystemClipboard": "Отображать системный буфер обмена (должен быть включен в настройках системы)"
+    "displaySystemClipboard": "Отображать системный буфер обмена (должен быть включен в настройках системы)",
+    "toggleCommandPalette": "Open / close command palette"
   },
   "dialogs": {
     "errorDialog": {
@@ -1771,6 +1777,8 @@
     "version": "Версия",
     "latestVersionLabel": "Последняя версия",
     "selectedVersionLabel": "Выбранная версия",
+    "versionPrefix": "v",
+    "metaSeparator": "•",
     "status": "Статус",
     "latest": "последняя",
     "install": "Установить",
@@ -1798,7 +1806,7 @@
     "noInstalledExtensionsDescription": "Просмотрите маркетплейс, чтобы найти расширения, улучшающие ваш файловый менеджер.",
     "noPermissions": "Это расширение не требует специальных разрешений.",
     "platforms": "Платформы",
-    "allPlatforms": "Все платформы",
+    "allPlatforms": "Все",
     "platformWarning": "Это расширение поддерживает только {platforms}",
     "platformIncompatible": "Это расширение несовместимо с вашей платформой ({current}). Поддерживаются только: {supported}",
     "platformIncompatibleShort": "Несовместимо",
@@ -1809,9 +1817,11 @@
     "tabs": {
       "marketplace": "Маркетплейс",
       "installed": "Установленные",
+      "dependencies": "Зависимости",
       "overview": "Обзор",
       "permissions": "Разрешения",
-      "changelog": "История изменений"
+      "changelog": "История изменений",
+      "commands": "Команды"
     },
     "badges": {
       "official": "Официальное",
@@ -1842,9 +1852,29 @@
       "downloadingProgress": "Загрузка...",
       "startingDownload": "Начало загрузки...",
       "downloadComplete": "Загрузка завершена",
+      "downloadingDependencies": "Загрузка зависимостей",
+      "extensionReady": "Расширение готово",
       "waitForDependencies": "Ждите, пока расширение завершит загрузку своих зависимостей",
       "dismiss": "Закрыть",
       "stop": "Остановить"
+    },
+    "unknownPublisher": "Unknown publisher",
+    "contextMenuLabel": "Extensions",
+    "autoUpdate": "Auto-update",
+    "showFolder": "Show folder",
+    "reinstalledSuccessfully": "Успешно переустановлено",
+    "reusedDependencies": "Использовано {count} существующих зависимостей",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "noExtensionCommands": "This extension does not provide any commands.",
+    "dependencies": {
+      "noDependencies": "No shared dependencies",
+      "noDependenciesDescription": "Shared binaries will appear here when extensions install dependencies like FFmpeg or Deno.",
+      "usedBy": "Used by",
+      "installedOn": "Installed",
+      "removeWarning": "This dependency is still used by extensions",
+      "removeConfirm": "This dependency is used by: {extensions}. They will need to re-download it on next use. Remove anyway?",
+      "removeError": "Failed to remove dependency"
     }
   },
   "commandPalette": {

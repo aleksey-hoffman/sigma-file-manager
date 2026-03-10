@@ -302,6 +302,9 @@
       "noteSourceCode": "笔记源码"
     }
   },
+  "settingsCategories": {
+    "navigation": "导航"
+  },
   "settings": {
     "searchSettings": "搜索设置",
     "general": {
@@ -663,7 +666,8 @@
     "search": "搜索",
     "dataStorage": "数据存储",
     "stats": "统计",
-    "advanced": "高级"
+    "advanced": "高级",
+    "extensions": "Extensions"
   },
   "settingsTags": {
     "language": "语言",
@@ -700,7 +704,8 @@
     "imageThumbnails": "图像、图片、缩略图、限制、存储、资源、使用、性能",
     "directoryItemStatistics": "目录、项目、统计、统计、数据、存储、使用",
     "advanced": "高级，专业，开发者，终端，壳",
-    "whatsNew": "新功能, 更新日志, 版本说明, 版本, 更新, 新闻"
+    "whatsNew": "新功能, 更新日志, 版本说明, 版本, 更新, 新闻",
+    "extensions": "extensions, plugins, addons, configuration, settings"
   },
   "dataBackupReminder": {
     "title": "提醒：数据备份",
@@ -832,7 +837,8 @@
     "deleteSelectedItemsFromDrive": "从驱动器中删除选定的项目",
     "quickWindowPositioning": "快速窗口定位",
     "displaySystemEmojiAndSymbolPicker": "显示系统表情符号和符号选择器",
-    "displaySystemClipboard": "显示系统剪贴板（必须在系统设置中开启）"
+    "displaySystemClipboard": "显示系统剪贴板（必须在系统设置中开启）",
+    "toggleCommandPalette": "Open / close command palette"
   },
   "dialogs": {
     "errorDialog": {
@@ -1366,7 +1372,9 @@
     "driveScanInitiated": "驱动器索引已启动",
     "oneOfTheSearchFilesIsDamaged": "其中一个搜索文件被损坏",
     "workspaceAdded": "工作区已被添加",
-    "failedToFetchInstalledTerminals": "无法获取已安装的终端"
+    "failedToFetchInstalledTerminals": "无法获取已安装的终端",
+    "removedFromFavorites": "Removed 0 items from favorites | Removed 1 item from favorites | Removed {n} items from favorites | Removed {n} items from favorites",
+    "addedToFavorites": "Added 0 items to favorites | Added 1 item to favorites | Added {n} items to favorites | Added {n} items to favorites"
   },
   "contextMenus": {
     "dirItem": {
@@ -1755,6 +1763,8 @@
     "version": "版本",
     "latestVersionLabel": "最新版本",
     "selectedVersionLabel": "选择的版本",
+    "versionPrefix": "v",
+    "metaSeparator": "•",
     "status": "状态",
     "latest": "最新",
     "install": "安装",
@@ -1783,7 +1793,7 @@
     "noPermissions": "此扩展程序不需要特殊权限。",
     "noExtensionCommands": "此扩展不提供任何命令。",
     "platforms": "平台",
-    "allPlatforms": "所有平台",
+    "allPlatforms": "全部",
     "platformWarning": "此扩展仅支持 {platforms}",
     "platformIncompatible": "此扩展与您的平台（{current}）不兼容。仅支持：{supported}",
     "platformIncompatibleShort": "不兼容",
@@ -1794,6 +1804,7 @@
     "tabs": {
       "marketplace": "市场",
       "installed": "已安装",
+      "dependencies": "依赖项",
       "overview": "概览",
       "permissions": "权限",
       "changelog": "更新日志",
@@ -1828,9 +1839,28 @@
       "downloadingProgress": "下载中...",
       "startingDownload": "正在开始下载...",
       "downloadComplete": "下载完成",
+      "downloadingDependencies": "正在下载依赖项",
+      "extensionReady": "扩展已就绪",
       "waitForDependencies": "等待扩展完成其依赖项下载",
       "dismiss": "关闭",
       "stop": "停止"
+    },
+    "unknownPublisher": "Unknown publisher",
+    "contextMenuLabel": "Extensions",
+    "autoUpdate": "Auto-update",
+    "showFolder": "Show folder",
+    "reinstalledSuccessfully": "重新安装成功",
+    "reusedDependencies": "重复使用了 {count} 个现有依赖",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "dependencies": {
+      "noDependencies": "No shared dependencies",
+      "noDependenciesDescription": "Shared binaries will appear here when extensions install dependencies like FFmpeg or Deno.",
+      "usedBy": "Used by",
+      "installedOn": "Installed",
+      "removeWarning": "This dependency is still used by extensions",
+      "removeConfirm": "This dependency is used by: {extensions}. They will need to re-download it on next use. Remove anyway?",
+      "removeError": "Failed to remove dependency"
     }
   },
   "commandPalette": {
@@ -1840,5 +1870,19 @@
     "recentHeading": "最近",
     "otherCommandsHeading": "其他",
     "run": "运行"
-  }
+  },
+  "statusCenter": {
+    "title": "Status center",
+    "clearCompleted": "Clear completed",
+    "noOperations": "No operations",
+    "active": "active",
+    "cancelAll": "Cancel all",
+    "groups": {
+      "dir-size": "Directory size calculations",
+      "copy": "Copy operations",
+      "move": "Move operations",
+      "delete": "Delete operations"
+    }
+  },
+  "recalculate": "Recalculate"
 }

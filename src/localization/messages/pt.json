@@ -302,6 +302,9 @@
       "noteSourceCode": "observe o código-fonte"
     }
   },
+  "settingsCategories": {
+    "navigation": "Navegação"
+  },
   "settings": {
     "searchSettings": "Pesquisar configurações",
     "general": {
@@ -663,7 +666,8 @@
     "search": "Pesquisar",
     "dataStorage": "Armazenamento de dados",
     "stats": "Estatísticas",
-    "advanced": "Avançado"
+    "advanced": "Avançado",
+    "extensions": "Extensions"
   },
   "settingsTags": {
     "language": "idioma",
@@ -700,7 +704,8 @@
     "imageThumbnails": "imagem, imagem, miniaturas, limite, armazenamento, recursos, uso, desempenho",
     "directoryItemStatistics": "diretório, item, estatísticas, estatísticas, dados, armazenamento, uso",
     "advanced": "avançado, profissional, desenvolvedor, terminal, shell",
-    "whatsNew": "novidades, registro de alterações, notas de versão, versão, atualização, notícias"
+    "whatsNew": "novidades, registro de alterações, notas de versão, versão, atualização, notícias",
+    "extensions": "extensions, plugins, addons, configuration, settings"
   },
   "dataBackupReminder": {
     "title": "Lembrete: backup de dados",
@@ -750,7 +755,9 @@
       "dateCreated": "Criado",
       "itemsSize": "Itens/tamanho",
       "status": "Estado"
-    }
+    },
+    "descendingOrder": "Descending order",
+    "ascendingOrder": "Ascending order"
   },
   "errors": {
     "error": "Erro",
@@ -832,7 +839,8 @@
     "deleteSelectedItemsFromDrive": "Excluir itens selecionados da unidade",
     "quickWindowPositioning": "Posicionamento rápido da janela",
     "displaySystemEmojiAndSymbolPicker": "Exibir emoji do sistema e seletor de símbolos",
-    "displaySystemClipboard": "Mostrar área de transferência do sistema (deve estar habilitado nas configurações do sistema)"
+    "displaySystemClipboard": "Mostrar área de transferência do sistema (deve estar habilitado nas configurações do sistema)",
+    "toggleCommandPalette": "Open / close command palette"
   },
   "dialogs": {
     "errorDialog": {
@@ -854,7 +862,8 @@
       "linkWasCopiedToClipboard": "O link foi copiado para a área de transferência",
       "openLinkInDefaultBrowser": "Abrir link no navegador padrão",
       "operationFailed": "Operação falhou",
-      "errorDuringTemplateGeneration": "Erro durante a geração do modelo"
+      "errorDuringTemplateGeneration": "Erro durante a geração do modelo",
+      "pressButtonToCreateIssueAutomatically": "Press the button below to create the issue template automatically;"
     },
     "confirmationDialog": {
       "localSharingFirewall": {
@@ -1025,7 +1034,8 @@
       "pathDoesNotExist": "O caminho não existe",
       "pathShouldBeAFile": "O caminho deve ser um arquivo",
       "nameCannotBeEmpty": "O nome não pode estar vazio",
-      "errorUnableToSelectTheProgram": "Erro: Não é possível selecionar o programa"
+      "errorUnableToSelectTheProgram": "Erro: Não é possível selecionar o programa",
+      "program": "Program"
     },
     "releaseNotesDialog": {
       "releaseNotes": "Notas de versão"
@@ -1095,7 +1105,8 @@
       "guideHeaderButtons": {
         "projectPage": "Página do projeto",
         "requestsIssues": "Solicitações e problemas",
-        "discussões": "Discussões"
+        "discussões": "Discussões",
+        "discussions": "Discussions"
       },
       "nav": {
         "shortcuts": "Atalhos",
@@ -1188,7 +1199,8 @@
         "advancedMode": "\"Modo Avançado\" é voltado para usuários avançados. Ele permite que você defina manualmente diferentes atributos para elementos específicos.",
         "immutableMode": "\"Modo Imutável\" é uma maneira rápida de proteger um arquivo/diretório tornando-o imutável. Quando ativado, o sistema definirá todos os atributos do arquivo/diretório especificado para o estado 'negado' e o tornará imutável (o que significa que os programas não serão capazes de ler/escrever/modificar/excluir sem redefinir os atributos).",
         "Warning": "Aviso",
-        "useWithCaution": "Use com cautela. \"Modo Avançado\" e \"Modo Imutável\" ainda estão nos estágios iniciais de desenvolvimento. O recurso ainda não foi totalmente testado. Em teoria, ele pode travar um arquivo/diretório de uma forma que impossibilitará o acesso ao seu conteúdo. Certifique-se de testar este recurso em alguns arquivos/diretórios de teste antes de usá-lo em dados importantes E reportar problemas se encontrar algum criando um problema na página do Projeto Github."
+        "useWithCaution": "Use com cautela. \"Modo Avançado\" e \"Modo Imutável\" ainda estão nos estágios iniciais de desenvolvimento. O recurso ainda não foi totalmente testado. Em teoria, ele pode travar um arquivo/diretório de uma forma que impossibilitará o acesso ao seu conteúdo. Certifique-se de testar este recurso em alguns arquivos/diretórios de teste antes de usá-lo em dados importantes E reportar problemas se encontrar algum criando um problema na página do Projeto Github.",
+        "warning": "Warning"
       },
       "addressBar": {
         "addressBarAllows": "A barra de endereço permite que você navegue em diretórios e arquivos digitando seu caminho.",
@@ -1210,7 +1222,8 @@
         "addressBarCanBeOpened": "A barra de endereço pode ser aberta de qualquer página com o atalho",
         "orByPressing": "ou pressionando",
         "typeInAddressManually": "Digite o endereço manualmente",
-        "buttonInTheAddressBarMenu": "botão no menu da barra de endereço, localizado na barra de ação da página \"Navegador\"."
+        "buttonInTheAddressBarMenu": "botão no menu da barra de endereço, localizado na barra de ação da página \"Navegador\".",
+        "areAutomaticallyConverted": "are automatically converted to forward slashes"
       }
     },
     "trashCurrentDir": {
@@ -1237,19 +1250,22 @@
       "title": "Excluindo da unidade",
       "description": "Esta operação excluirá permanentemente {count} itens do seu computador.",
       "confirm": "Confirme, se você entende isso não pode ser desfeito.",
-      "Delete": "Excluir"
+      "Delete": "Excluir",
+      "delete": "Delete"
     },
     "deleteCurrentDir": {
       "title": "Excluindo diretório atual",
       "description": "Os itens selecionados incluem o diretório atualmente aberto.",
       "confirm": "Confirme se isso foi intencional e você deseja excluí-lo.",
-      "Delete": "Excluir"
+      "Delete": "Excluir",
+      "delete": "Delete"
     },
     "deleteInRoot": {
       "title": "Excluindo itens raiz",
       "description": "Excluir arquivos do sistema na raiz do armazenamento pode danificar o sistema operacional do computador.",
       "confirm": "Confirme, se você sabe o que está excluindo.",
-      "Delete": "Excluir"
+      "Delete": "Excluir",
+      "delete": "Delete"
     },
     "trashInRoot": {
       "title": "Lixeira de itens raiz",
@@ -1366,7 +1382,10 @@
     "driveScanInitiated": "Indexação do disco iniciada",
     "oneOfTheSearchFilesIsDamaged": "Um dos arquivos de pesquisa está danificado",
     "workspaceAdded": "O espaço de trabalho foi adicionado",
-    "failedToFetchInstalledTerminals": "Falha ao buscar terminais instalados"
+    "failedToFetchInstalledTerminals": "Falha ao buscar terminais instalados",
+    "trashedNItems": "Trashed {totalAmount} items",
+    "removedFromFavorites": "Removed 0 items from favorites | Removed 1 item from favorites | Removed {n} items from favorites | Removed {n} items from favorites",
+    "addedToFavorites": "Added 0 items to favorites | Added 1 item to favorites | Added {n} items to favorites | Added {n} items to favorites"
   },
   "contextMenus": {
     "dirItem": {
@@ -1401,7 +1420,9 @@
       "createSymbolicLink": "Criar link simbólico",
       "windowsLinkLnk": "Link do Windows (.lnk)",
       "errorOpenProgram": "Erro: Não foi possível abrir o programa",
-      "editCard": "Editar cartão"
+      "editCard": "Editar cartão",
+      "modifiers": "Modifiers",
+      "permissions": "Permissions"
     }
   },
   "version": "Versão",
@@ -1752,6 +1773,8 @@
     "version": "Versão",
     "latestVersionLabel": "Versão mais recente",
     "selectedVersionLabel": "Versão selecionada",
+    "versionPrefix": "v",
+    "metaSeparator": "•",
     "status": "Status",
     "latest": "última",
     "install": "Instalar",
@@ -1779,7 +1802,7 @@
     "noInstalledExtensionsDescription": "Navegue pelo marketplace para descobrir extensões que melhoram seu gerenciador de arquivos.",
     "noPermissions": "Esta extensão não requer permissões especiais.",
     "platforms": "Plataformas",
-    "allPlatforms": "Todas as plataformas",
+    "allPlatforms": "Todas",
     "platformWarning": "Esta extensão suporta apenas {platforms}",
     "platformIncompatible": "Esta extensão não é compatível com a sua plataforma ({current}). Suporta apenas: {supported}",
     "platformIncompatibleShort": "Incompatível",
@@ -1790,9 +1813,11 @@
     "tabs": {
       "marketplace": "Marketplace",
       "installed": "Instaladas",
+      "dependencies": "Dependências",
       "overview": "Visão geral",
       "permissions": "Permissões",
-      "changelog": "Registro de alterações"
+      "changelog": "Registro de alterações",
+      "commands": "Commands"
     },
     "badges": {
       "official": "Oficial",
@@ -1823,9 +1848,32 @@
       "downloadingProgress": "Baixando...",
       "startingDownload": "Iniciando download...",
       "downloadComplete": "Download concluído",
+      "downloadingDependencies": "Baixando dependências",
+      "extensionReady": "A extensão está pronta",
       "waitForDependencies": "Espere até que a extensão termine de baixar suas dependências",
       "dismiss": "Fechar",
       "stop": "Parar"
+    },
+    "excalidraw": {
+      "exportToFolder": "Export to folder"
+    },
+    "unknownPublisher": "Unknown publisher",
+    "contextMenuLabel": "Extensions",
+    "autoUpdate": "Auto-update",
+    "showFolder": "Show folder",
+    "reinstalledSuccessfully": "Reinstalado com sucesso",
+    "reusedDependencies": "Reutilizadas {count} dependências existentes",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "noExtensionCommands": "This extension does not provide any commands.",
+    "dependencies": {
+      "noDependencies": "No shared dependencies",
+      "noDependenciesDescription": "Shared binaries will appear here when extensions install dependencies like FFmpeg or Deno.",
+      "usedBy": "Used by",
+      "installedOn": "Installed",
+      "removeWarning": "This dependency is still used by extensions",
+      "removeConfirm": "This dependency is used by: {extensions}. They will need to re-download it on next use. Remove anyway?",
+      "removeError": "Failed to remove dependency"
     }
   },
   "commandPalette": {
@@ -1835,5 +1883,21 @@
     "recentHeading": "Recente",
     "otherCommandsHeading": "Outros",
     "run": "Executar"
-  }
+  },
+  "statusCenter": {
+    "title": "Status center",
+    "clearCompleted": "Clear completed",
+    "noOperations": "No operations",
+    "active": "active",
+    "cancelAll": "Cancel all",
+    "groups": {
+      "dir-size": "Directory size calculations",
+      "copy": "Copy operations",
+      "move": "Move operations",
+      "delete": "Delete operations"
+    }
+  },
+  "items": "items",
+  "recalculate": "Recalculate",
+  "sec": "sec"
 }

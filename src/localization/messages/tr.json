@@ -302,6 +302,9 @@
       "noteSourceCode": "Kaynak kodunu not edin"
     }
   },
+  "settingsCategories": {
+    "navigation": "Gezinme"
+  },
   "settings": {
     "searchSettings": "Ayarları ara",
     "general": {
@@ -663,7 +666,8 @@
     "search": "Arama",
     "dataStorage": "Veri depolama",
     "stats": "İstatistikler",
-    "advanced": "Gelişmiş"
+    "advanced": "Gelişmiş",
+    "extensions": "Extensions"
   },
   "settingsTags": {
     "language": "dil",
@@ -700,7 +704,8 @@
     "imageThumbnails": "resim, resim, küçük resimler, sınır, depolama, kaynaklar, kullanım, performans",
     "directoryItemStatistics": "dizin, öğe, istatistikler, istatistikler, veri, depolama, kullanım",
     "advanced": "gelişmiş, pro, geliştirici, terminal, kabuk",
-    "whatsNew": "yenilikler, değişiklik günlüğü, sürüm notları, sürüm, güncelleme, haberler"
+    "whatsNew": "yenilikler, değişiklik günlüğü, sürüm notları, sürüm, güncelleme, haberler",
+    "extensions": "extensions, plugins, addons, configuration, settings"
   },
   "dataBackupReminder": {
     "title": "Hatırlatma: veri yedekleme",
@@ -832,7 +837,8 @@
     "deleteSelectedItemsFromDrive": "Seçili öğeleri sürücüden sil",
     "quickWindowPositioning": "Hızlı pencere konumlandırma",
     "displaySystemEmojiAndSymbolPicker": "Görüntü sistemi emojisi ve simge seçici",
-    "displaySystemClipboard": "Sistem panosunu görüntüle (sistem ayarlarında açık olmalıdır)"
+    "displaySystemClipboard": "Sistem panosunu görüntüle (sistem ayarlarında açık olmalıdır)",
+    "toggleCommandPalette": "Open / close command palette"
   },
   "dialogs": {
     "errorDialog": {
@@ -1366,7 +1372,9 @@
     "driveScanInitiated": "Sürücü indeksleme başlatıldı",
     "oneOfTheSearchFilesIsDamaged": "Arama dosyalarından biri hasarlı",
     "workspaceAdded": "Çalışma alanı eklendi",
-    "failedToFetchInstalledTerminals": "Yüklü terminaller alınamadı"
+    "failedToFetchInstalledTerminals": "Yüklü terminaller alınamadı",
+    "removedFromFavorites": "Removed 0 items from favorites | Removed 1 item from favorites | Removed {n} items from favorites | Removed {n} items from favorites",
+    "addedToFavorites": "Added 0 items to favorites | Added 1 item to favorites | Added {n} items to favorites | Added {n} items to favorites"
   },
   "contextMenus": {
     "dirItem": {
@@ -1752,6 +1760,8 @@
     "version": "Sürüm",
     "latestVersionLabel": "En son sürüm",
     "selectedVersionLabel": "Seçilen sürüm",
+    "versionPrefix": "v",
+    "metaSeparator": "•",
     "status": "Durum",
     "latest": "en son",
     "install": "Yükle",
@@ -1780,7 +1790,7 @@
     "noPermissions": "Bu eklenti özel izin gerektirmiyor.",
     "noExtensionCommands": "Bu eklenti herhangi bir komut sağlamıyor.",
     "platforms": "Platformlar",
-    "allPlatforms": "Tüm platformlar",
+    "allPlatforms": "Tüm",
     "platformWarning": "Bu eklenti yalnızca {platforms} destekler",
     "platformIncompatible": "Bu eklenti platformunuzla ({current}) uyumlu değil. Yalnızca şunları destekler: {supported}",
     "platformIncompatibleShort": "Uyumsuz",
@@ -1791,6 +1801,7 @@
     "tabs": {
       "marketplace": "Market",
       "installed": "Yüklü",
+      "dependencies": "Bağımlılıklar",
       "overview": "Genel bakış",
       "permissions": "İzinler",
       "changelog": "Değişiklik günlüğü",
@@ -1825,9 +1836,31 @@
       "downloadingProgress": "İndiriliyor...",
       "startingDownload": "İndirme başlatılıyor...",
       "downloadComplete": "İndirme tamamlandı",
+      "downloadingDependencies": "Bağımlılıklar indiriliyor",
+      "extensionReady": "Uzantı hazır",
       "waitForDependencies": "Uzantı bağımlılıklarını indirmeyi bitirene kadar bekleyin",
       "dismiss": "Kapat",
       "stop": "Durdur"
+    },
+    "excalidraw": {
+      "exportToFolder": "Export to folder"
+    },
+    "unknownPublisher": "Unknown publisher",
+    "contextMenuLabel": "Extensions",
+    "autoUpdate": "Auto-update",
+    "showFolder": "Show folder",
+    "reinstalledSuccessfully": "Başarıyla yeniden yüklendi",
+    "reusedDependencies": "{count} mevcut bağımlılık yeniden kullanıldı",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "dependencies": {
+      "noDependencies": "No shared dependencies",
+      "noDependenciesDescription": "Shared binaries will appear here when extensions install dependencies like FFmpeg or Deno.",
+      "usedBy": "Used by",
+      "installedOn": "Installed",
+      "removeWarning": "This dependency is still used by extensions",
+      "removeConfirm": "This dependency is used by: {extensions}. They will need to re-download it on next use. Remove anyway?",
+      "removeError": "Failed to remove dependency"
     }
   },
   "commandPalette": {
@@ -1837,5 +1870,19 @@
     "recentHeading": "Son Kullanılan",
     "otherCommandsHeading": "Diğer",
     "run": "Çalıştır"
-  }
+  },
+  "statusCenter": {
+    "title": "Status center",
+    "clearCompleted": "Clear completed",
+    "noOperations": "No operations",
+    "active": "active",
+    "cancelAll": "Cancel all",
+    "groups": {
+      "dir-size": "Directory size calculations",
+      "copy": "Copy operations",
+      "move": "Move operations",
+      "delete": "Delete operations"
+    }
+  },
+  "recalculate": "Recalculate"
 }

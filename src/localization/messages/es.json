@@ -302,6 +302,9 @@
       "noteSourceCode": "Nota código fuente"
     }
   },
+  "settingsCategories": {
+    "navigation": "Navegación"
+  },
   "settings": {
     "searchSettings": "Buscar configuración",
     "general": {
@@ -663,7 +666,8 @@
     "search": "Buscar",
     "dataStorage": "Almacenamiento de datos",
     "stats": "Estadísticas",
-    "advanced": "Avanzado"
+    "advanced": "Avanzado",
+    "extensions": "Extensions"
   },
   "settingsTags": {
     "language": "idioma",
@@ -700,7 +704,8 @@
     "imageThumbnails": "imagen, imagen, miniaturas, límite, almacenamiento, recursos, uso, rendimiento",
     "directoryItemStatistics": "directorio, elemento, estadísticas, estadísticas, datos, almacenamiento, uso",
     "advanced": "avanzado, pro, desarrollador, terminal, shell",
-    "whatsNew": "novedades, registro de cambios, notas de versión, versión, actualización, noticias"
+    "whatsNew": "novedades, registro de cambios, notas de versión, versión, actualización, noticias",
+    "extensions": "extensions, plugins, addons, configuration, settings"
   },
   "dataBackupReminder": {
     "title": "Recordatorio: copia de seguridad de datos",
@@ -832,7 +837,8 @@
     "deleteSelectedItemsFromDrive": "Eliminar elementos seleccionados de la unidad",
     "quickWindowPositioning": "Posicionamiento rápido de ventanas",
     "displaySystemEmojiAndSymbolPicker": "Mostrar emoji del sistema y selector de símbolos",
-    "displaySystemClipboard": "Mostrar portapapeles del sistema (debe estar activado en la configuración del sistema)"
+    "displaySystemClipboard": "Mostrar portapapeles del sistema (debe estar activado en la configuración del sistema)",
+    "toggleCommandPalette": "Open / close command palette"
   },
   "dialogs": {
     "errorDialog": {
@@ -1366,7 +1372,9 @@
     "driveScanInitiated": "Indexación de la unidad iniciada",
     "oneOfTheSearchFilesIsDamaged": "Uno de los archivos de búsqueda está dañado",
     "workspaceAdded": "Se ha añadido el espacio de trabajo",
-    "failedToFetchInstalledTerminals": "Error al buscar los terminales instalados"
+    "failedToFetchInstalledTerminals": "Error al buscar los terminales instalados",
+    "removedFromFavorites": "Removed 0 items from favorites | Removed 1 item from favorites | Removed {n} items from favorites | Removed {n} items from favorites",
+    "addedToFavorites": "Added 0 items to favorites | Added 1 item to favorites | Added {n} items to favorites | Added {n} items to favorites"
   },
   "contextMenus": {
     "dirItem": {
@@ -1755,6 +1763,8 @@
     "version": "Versión",
     "latestVersionLabel": "Última versión",
     "selectedVersionLabel": "Versión seleccionada",
+    "versionPrefix": "v",
+    "metaSeparator": "•",
     "status": "Estado",
     "latest": "última",
     "install": "Instalar",
@@ -1783,7 +1793,7 @@
     "noPermissions": "Esta extensión no requiere permisos especiales.",
     "noExtensionCommands": "Esta extensión no proporciona ningún comando.",
     "platforms": "Plataformas",
-    "allPlatforms": "Todas las plataformas",
+    "allPlatforms": "Todas",
     "platformWarning": "Esta extensión solo es compatible con {platforms}",
     "platformIncompatible": "Esta extensión no es compatible con tu plataforma ({current}). Solo admite: {supported}",
     "platformIncompatibleShort": "Incompatible",
@@ -1794,6 +1804,7 @@
     "tabs": {
       "marketplace": "Marketplace",
       "installed": "Instaladas",
+      "dependencies": "Dependencias",
       "overview": "Resumen",
       "permissions": "Permisos",
       "changelog": "Registro de cambios",
@@ -1828,9 +1839,28 @@
       "downloadingProgress": "Descargando...",
       "startingDownload": "Iniciando descarga...",
       "downloadComplete": "Descarga completada",
+      "downloadingDependencies": "Descargando dependencias",
+      "extensionReady": "La extensión está lista",
       "waitForDependencies": "Espera hasta que la extensión termine de descargar sus dependencias",
       "dismiss": "Cerrar",
       "stop": "Detener"
+    },
+    "unknownPublisher": "Unknown publisher",
+    "contextMenuLabel": "Extensions",
+    "autoUpdate": "Auto-update",
+    "showFolder": "Show folder",
+    "reinstalledSuccessfully": "Reinstalado correctamente",
+    "reusedDependencies": "Reutilizadas {count} dependencias existentes",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "dependencies": {
+      "noDependencies": "No shared dependencies",
+      "noDependenciesDescription": "Shared binaries will appear here when extensions install dependencies like FFmpeg or Deno.",
+      "usedBy": "Used by",
+      "installedOn": "Installed",
+      "removeWarning": "This dependency is still used by extensions",
+      "removeConfirm": "This dependency is used by: {extensions}. They will need to re-download it on next use. Remove anyway?",
+      "removeError": "Failed to remove dependency"
     }
   },
   "commandPalette": {
@@ -1840,5 +1870,19 @@
     "recentHeading": "Reciente",
     "otherCommandsHeading": "Otros",
     "run": "Ejecutar"
-  }
+  },
+  "statusCenter": {
+    "title": "Status center",
+    "clearCompleted": "Clear completed",
+    "noOperations": "No operations",
+    "active": "active",
+    "cancelAll": "Cancel all",
+    "groups": {
+      "dir-size": "Directory size calculations",
+      "copy": "Copy operations",
+      "move": "Move operations",
+      "delete": "Delete operations"
+    }
+  },
+  "recalculate": "Recalculate"
 }

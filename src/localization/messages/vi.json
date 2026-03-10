@@ -302,6 +302,9 @@
       "noteSourceCode": "Ghi chú mã nguồn"
     }
   },
+  "settingsCategories": {
+    "navigation": "Điều hướng"
+  },
   "settings": {
     "searchSettings": "Tìm kiếm cài đặt",
     "general": {
@@ -663,7 +666,8 @@
     "search": "Tìm kiếm",
     "dataStorage": "Dữ liệu & lưu trữ",
     "stats": "Số liệu thống kê",
-    "advanced": "Nâng cao"
+    "advanced": "Nâng cao",
+    "extensions": "Extensions"
   },
   "settingsTags": {
     "language": "ngôn ngữ",
@@ -700,7 +704,8 @@
     "imageThumbnails": "hình ảnh, hình ảnh, hình thu nhỏ, giới hạn, lưu trữ, tài nguyên, cách sử dụng, hiệu suất",
     "directoryItemStatistics": "thư mục, mục, thống kê, thống kê, dữ liệu, lưu trữ, sử dụng",
     "advanced": "nâng cao, chuyên nghiệp, nhà phát triển, đầu cuối, shell",
-    "whatsNew": "tin mới, nhật ký thay đổi, ghi chú phát hành, phiên bản, cập nhật, tin tức"
+    "whatsNew": "tin mới, nhật ký thay đổi, ghi chú phát hành, phiên bản, cập nhật, tin tức",
+    "extensions": "extensions, plugins, addons, configuration, settings"
   },
   "dataBackupReminder": {
     "title": "Lời nhắc: sao lưu dữ liệu",
@@ -832,7 +837,8 @@
     "deleteSelectedItemsFromDrive": "Xóa các mục đã chọn khỏi ổ đĩa",
     "quickWindowPositioning": "Định vị cửa sổ nhanh",
     "displaySystemEmojiAndSymbolPicker": "Bộ chọn biểu tượng và biểu tượng cảm xúc của hệ thống hiển thị",
-    "displaySystemClipboard": "Hiển thị khay nhớ tạm của hệ thống (phải được bật trong cài đặt hệ thống)"
+    "displaySystemClipboard": "Hiển thị khay nhớ tạm của hệ thống (phải được bật trong cài đặt hệ thống)",
+    "toggleCommandPalette": "Open / close command palette"
   },
   "dialogs": {
     "errorDialog": {
@@ -1366,7 +1372,9 @@
     "driveScanInitiated": "Đã bắt đầu lập chỉ mục ổ đĩa",
     "oneOfTheSearchFilesIsDamaged": "Một trong các tệp tìm kiếm bị hỏng",
     "workspaceAdded": "Không gian làm việc đã được thêm vào",
-    "failedToFetchInstalledTerminals": "Không thể tải các terminal đã cài đặt"
+    "failedToFetchInstalledTerminals": "Không thể tải các terminal đã cài đặt",
+    "removedFromFavorites": "Removed 0 items from favorites | Removed 1 item from favorites | Removed {n} items from favorites | Removed {n} items from favorites",
+    "addedToFavorites": "Added 0 items to favorites | Added 1 item to favorites | Added {n} items to favorites | Added {n} items to favorites"
   },
   "contextMenus": {
     "dirItem": {
@@ -1755,6 +1763,8 @@
     "version": "Phiên bản",
     "latestVersionLabel": "Phiên bản mới nhất",
     "selectedVersionLabel": "Phiên bản được chọn",
+    "versionPrefix": "v",
+    "metaSeparator": "•",
     "status": "Trạng thái",
     "latest": "mới nhất",
     "install": "Cài đặt",
@@ -1783,7 +1793,7 @@
     "noPermissions": "Tiện ích mở rộng này không yêu cầu quyền đặc biệt.",
     "noExtensionCommands": "Tiện ích mở rộng này không cung cấp lệnh nào.",
     "platforms": "Nền tảng",
-    "allPlatforms": "Tất cả nền tảng",
+    "allPlatforms": "Tất cả",
     "platformWarning": "Tiện ích mở rộng này chỉ hỗ trợ {platforms}",
     "platformIncompatible": "Tiện ích mở rộng này không tương thích với nền tảng của bạn ({current}). Chỉ hỗ trợ: {supported}",
     "platformIncompatibleShort": "Không tương thích",
@@ -1794,6 +1804,7 @@
     "tabs": {
       "marketplace": "Cửa hàng",
       "installed": "Đã cài đặt",
+      "dependencies": "Phụ thuộc",
       "overview": "Tổng quan",
       "permissions": "Quyền",
       "changelog": "Nhật ký thay đổi",
@@ -1828,9 +1839,28 @@
       "downloadingProgress": "Đang tải xuống...",
       "startingDownload": "Bắt đầu tải xuống...",
       "downloadComplete": "Tải xuống hoàn tất",
+      "downloadingDependencies": "Đang tải xuống các phụ thuộc",
+      "extensionReady": "Tiện ích mở rộng đã sẵn sàng",
       "waitForDependencies": "Đợi cho đến khi tiện ích mở rộng tải xong các phần phụ thuộc",
       "dismiss": "Đóng",
       "stop": "Dừng"
+    },
+    "unknownPublisher": "Unknown publisher",
+    "contextMenuLabel": "Extensions",
+    "autoUpdate": "Auto-update",
+    "showFolder": "Show folder",
+    "reinstalledSuccessfully": "Cài đặt lại thành công",
+    "reusedDependencies": "Đã tái sử dụng {count} phụ thuộc hiện có",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "dependencies": {
+      "noDependencies": "No shared dependencies",
+      "noDependenciesDescription": "Shared binaries will appear here when extensions install dependencies like FFmpeg or Deno.",
+      "usedBy": "Used by",
+      "installedOn": "Installed",
+      "removeWarning": "This dependency is still used by extensions",
+      "removeConfirm": "This dependency is used by: {extensions}. They will need to re-download it on next use. Remove anyway?",
+      "removeError": "Failed to remove dependency"
     }
   },
   "commandPalette": {
@@ -1840,5 +1870,19 @@
     "recentHeading": "Gần đây",
     "otherCommandsHeading": "Khác",
     "run": "Chạy"
-  }
+  },
+  "statusCenter": {
+    "title": "Status center",
+    "clearCompleted": "Clear completed",
+    "noOperations": "No operations",
+    "active": "active",
+    "cancelAll": "Cancel all",
+    "groups": {
+      "dir-size": "Directory size calculations",
+      "copy": "Copy operations",
+      "move": "Move operations",
+      "delete": "Delete operations"
+    }
+  },
+  "recalculate": "Recalculate"
 }

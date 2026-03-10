@@ -301,6 +301,9 @@
       "noteSourceCode": "کد منبع را یادداشت کنید"
     }
   },
+  "settingsCategories": {
+    "navigation": "ناوبری"
+  },
   "settings": {
     "searchSettings": "جستجوی تنظیمات",
     "general": {
@@ -662,7 +665,8 @@
     "search": "جستجو کردن",
     "dataStorage": "داده ها و ذخیره سازی",
     "stats": "آمار",
-    "advanced": "پیشرفته"
+    "advanced": "پیشرفته",
+    "extensions": "Extensions"
   },
   "settingsTags": {
     "language": "زبان",
@@ -699,7 +703,8 @@
     "imageThumbnails": "تصویر، تصویر، ریز عکسها، محدودیت، ذخیره سازی، منابع، استفاده، عملکرد",
     "directoryItemStatistics": "دایرکتوری، آیتم، آمار، آمار، داده، ذخیره سازی، استفاده",
     "advanced": "پیشرفته، حرفه ای، توسعه دهنده، ترمینال، شل",
-    "whatsNew": "تازه‌ها، تغییرات، یادداشت‌های نسخه، نسخه، به‌روزرسانی، اخبار"
+    "whatsNew": "تازه‌ها، تغییرات، یادداشت‌های نسخه، نسخه، به‌روزرسانی، اخبار",
+    "extensions": "extensions, plugins, addons, configuration, settings"
   },
   "dataBackupReminder": {
     "title": "یادآوری: پشتیبان گیری از داده ها",
@@ -831,7 +836,8 @@
     "deleteSelectedItemsFromDrive": "حذف موارد انتخاب شده از درایو",
     "quickWindowPositioning": "موقعیت یابی سریع پنجره",
     "displaySystemEmojiAndSymbolPicker": "نمایش ایموجی سیستم و انتخابگر نماد",
-    "displaySystemClipboard": "نمایش کلیپ بورد سیستم (باید در تنظیمات سیستم روشن باشد)"
+    "displaySystemClipboard": "نمایش کلیپ بورد سیستم (باید در تنظیمات سیستم روشن باشد)",
+    "toggleCommandPalette": "Open / close command palette"
   },
   "dialogs": {
     "errorDialog": {
@@ -1365,7 +1371,9 @@
     "driveScanInitiated": "فهرست‌بندی درایو آغاز شد",
     "oneOfTheSearchFilesIsDamaged": "یکی از فایل های جستجو آسیب دیده است",
     "workspaceAdded": "فضای کاری اضافه شد",
-    "failedToFetchInstalledTerminals": "دریافت ترمینال‌های نصب شده با خطا مواجه شد"
+    "failedToFetchInstalledTerminals": "دریافت ترمینال‌های نصب شده با خطا مواجه شد",
+    "removedFromFavorites": "Removed 0 items from favorites | Removed 1 item from favorites | Removed {n} items from favorites | Removed {n} items from favorites",
+    "addedToFavorites": "Added 0 items to favorites | Added 1 item to favorites | Added {n} items to favorites | Added {n} items to favorites"
   },
   "contextMenus": {
     "dirItem": {
@@ -1751,6 +1759,8 @@
     "version": "نسخه",
     "latestVersionLabel": "آخرین نسخه",
     "selectedVersionLabel": "نسخه انتخاب شده",
+    "versionPrefix": "v",
+    "metaSeparator": "•",
     "status": "وضعیت",
     "latest": "آخرین",
     "install": "نصب",
@@ -1779,7 +1789,7 @@
     "noPermissions": "این افزونه نیازی به مجوزهای خاص ندارد.",
     "noExtensionCommands": "این افزونه هیچ دستوری ارائه نمی‌دهد.",
     "platforms": "پلتفرم‌ها",
-    "allPlatforms": "همه پلتفرم‌ها",
+    "allPlatforms": "همه",
     "platformWarning": "این افزونه فقط از {platforms} پشتیبانی می‌کند",
     "platformIncompatible": "این افزونه با پلتفرم شما ({current}) سازگار نیست. فقط پشتیبانی می‌کند از: {supported}",
     "platformIncompatibleShort": "ناسازگار",
@@ -1790,6 +1800,7 @@
     "tabs": {
       "marketplace": "بازار",
       "installed": "نصب‌شده",
+      "dependencies": "وابستگی‌ها",
       "overview": "نمای کلی",
       "permissions": "مجوزها",
       "changelog": "تاریخچه تغییرات",
@@ -1824,9 +1835,31 @@
       "downloadingProgress": "در حال دانلود...",
       "startingDownload": "شروع دانلود...",
       "downloadComplete": "دانلود تکمیل شد",
+      "downloadingDependencies": "در حال دانلود وابستگی‌ها",
+      "extensionReady": "افزونه آماده است",
       "waitForDependencies": "صبر کنید تا افزونه دانلود وابستگی‌هایش را کامل کند",
       "dismiss": "بستن",
       "stop": "توقف"
+    },
+    "excalidraw": {
+      "exportToFolder": "Export to folder"
+    },
+    "unknownPublisher": "Unknown publisher",
+    "contextMenuLabel": "Extensions",
+    "autoUpdate": "Auto-update",
+    "showFolder": "Show folder",
+    "reinstalledSuccessfully": "با موفقیت نصب مجدد شد",
+    "reusedDependencies": "{count} وابستگی موجود مجدداً استفاده شد",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "dependencies": {
+      "noDependencies": "No shared dependencies",
+      "noDependenciesDescription": "Shared binaries will appear here when extensions install dependencies like FFmpeg or Deno.",
+      "usedBy": "Used by",
+      "installedOn": "Installed",
+      "removeWarning": "This dependency is still used by extensions",
+      "removeConfirm": "This dependency is used by: {extensions}. They will need to re-download it on next use. Remove anyway?",
+      "removeError": "Failed to remove dependency"
     }
   },
   "commandPalette": {
@@ -1836,5 +1869,20 @@
     "recentHeading": "اخیر",
     "otherCommandsHeading": "سایر",
     "run": "اجرا"
-  }
+  },
+  "splitView": "Split view",
+  "statusCenter": {
+    "title": "Status center",
+    "clearCompleted": "Clear completed",
+    "noOperations": "No operations",
+    "active": "active",
+    "cancelAll": "Cancel all",
+    "groups": {
+      "dir-size": "Directory size calculations",
+      "copy": "Copy operations",
+      "move": "Move operations",
+      "delete": "Delete operations"
+    }
+  },
+  "recalculate": "Recalculate"
 }

@@ -1,4 +1,7 @@
-<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- SPDX-License-Identifier: GPL-3.0-or-later
+License: GNU GPLv3 or later. See the license file in the project root for more information.
+Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
+-->
 
 <script setup lang="ts">
 import {
@@ -8,8 +11,6 @@ import { invoke } from '@tauri-apps/api/core';
 import { useI18n } from 'vue-i18n';
 import { getExtensionAPI } from '@/modules/extensions/runtime/loader';
 import ExtensionIcon from '@/modules/extensions/components/extension-icon.vue';
-
-defineOptions({ name: 'ExtensionEmbed' });
 
 const props = defineProps<{
   extensionId: string;

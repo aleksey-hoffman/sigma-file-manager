@@ -315,6 +315,9 @@
       "noteSourceCode": "Izvorna koda opombe"
     }
   },
+  "settingsCategories": {
+    "navigation": "Navigacija"
+  },
   "settings": {
     "searchSettings": "Nastavitve iskanja",
     "general": {
@@ -676,7 +679,8 @@
     "search": "Iskanje",
     "dataStorage": "Podatki & shranjevanje",
     "stats": "Statistika",
-    "advanced": "Napredno"
+    "advanced": "Napredno",
+    "extensions": "Extensions"
   },
   "settingsTags": {
     "language": "language",
@@ -713,7 +717,8 @@
     "imageThumbnails": "image, picture, thumbnails, limit, storage, resources, usage, performance",
     "directoryItemStatistics": "directory, item, statistics, stats, data, storage, usage",
     "advanced": "advanced, pro, developer, terminal, shell",
-    "whatsNew": "what's new, changelog, release notes, version, update, news"
+    "whatsNew": "what's new, changelog, release notes, version, update, news",
+    "extensions": "extensions, plugins, addons, configuration, settings"
   },
   "dataBackupReminder": {
     "title": "Opomnik: varnostno kopiranje podatkov",
@@ -845,7 +850,8 @@
     "deleteSelectedItemsFromDrive": "Izbriši izbrane predmete z pogona",
     "quickWindowPositioning": "Hitro pozicioniranje okna",
     "displaySystemEmojiAndSymbolPicker": "Prikaži sistemski izbirnik emojijev in simbolov",
-    "displaySystemClipboard": "Prikaži sistemsko odložišče (mora biti vklopljeno v sistemskih nastavitvah)"
+    "displaySystemClipboard": "Prikaži sistemsko odložišče (mora biti vklopljeno v sistemskih nastavitvah)",
+    "toggleCommandPalette": "Open / close command palette"
   },
   "dialogs": {
     "errorDialog": {
@@ -1760,13 +1766,16 @@
       "noPermissions": "Ta razširitev ne zahteva posebnih dovoljenj.",
       "noExtensionCommands": "Ta razširitev ne ponuja nobenih ukazov.",
       "platforms": "Platforme",
-      "allPlatforms": "Vse platforme",
+      "allPlatforms": "Vse",
       "platformWarning": "Ta razširitev podpira samo {platforms}",
       "platformIncompatible": "Ta razširitev ni združljiva z vašo platformo ({current}). Podpira samo: {supported}",
       "platformIncompatibleShort": "Nezdružljivo",
+      "versionPrefix": "v",
+      "metaSeparator": "•",
       "tabs": {
         "marketplace": "Trgovina",
         "installed": "Nameščene",
+        "dependencies": "Odvisnosti",
         "overview": "Pregled",
         "permissions": "Dovoljenja",
         "changelog": "Zapis sprememb",
@@ -1789,6 +1798,8 @@
         "downloadingProgress": "Prenašanje...",
         "startingDownload": "Začenjanje prenosa...",
         "downloadComplete": "Prenos končan",
+        "downloadingDependencies": "Prenos odvisnosti",
+        "extensionReady": "Razširitev je pripravljena",
         "waitForDependencies": "Čakajte, da razširitev dokonča prenos svojih odvisnosti",
         "dismiss": "Zapri",
         "stop": "Ustavi"
@@ -1801,6 +1812,176 @@
       "recentHeading": "Nedavno",
       "otherCommandsHeading": "Ostalo",
       "run": "Zaženi"
+    },
+    "cannotPasteHere": "Cannot paste here"
+  },
+  "openWith": {
+    "title": "Open with",
+    "selectAppTitle": "Select an app to open this {ext} file",
+    "loadingPrograms": "Loading programs...",
+    "defaultApp": "Default app",
+    "suggestedApps": "Suggested apps",
+    "otherApps": "Other apps",
+    "moreOptions": "More options",
+    "noProgramsFound": "No associated programs found for this file type",
+    "customProgram": "Custom program",
+    "enterProgramPath": "Choose another app or enter path...",
+    "selectProgram": "Select program",
+    "advancedOptions": "Advanced options",
+    "arguments": "Arguments",
+    "argumentsHint": "Additional command-line arguments. Use %1 as placeholder for the file path.",
+    "argumentsPlaceholder": "e.g. --new-window --flag",
+    "open": "Open",
+    "always": "Always",
+    "justOnce": "Just once",
+    "failedToLoadPrograms": "Failed to load associated programs",
+    "failedToOpenFile": "Failed to open file",
+    "chooseAnotherApp": "Choose another app...",
+    "customCommandWithFlags": "Custom command with flags...",
+    "customCommands": "Custom commands",
+    "addCustomCommand": "Add custom command",
+    "editCustomCommand": "Edit custom command",
+    "commandName": "Command name",
+    "commandNamePlaceholder": "e.g. VLC with subtitles",
+    "programPath": "Program path",
+    "noCustomCommands": "No custom commands yet. Add a custom command to open files with specific flags."
+  },
+  "moreOptions": {
+    "showMoreOptions": "Show more options",
+    "loading": "Loading options...",
+    "shellExtensions": "Shell extensions",
+    "noOptionsAvailable": "No additional options available",
+    "failedToLoad": "Failed to load options"
+  },
+  "changelog": {
+    "title": "What's New",
+    "settingsTitle": "What's New",
+    "settingsDescription": "View release notes and configure update notifications",
+    "showOnUpdate": "Show changelog on app update",
+    "viewChangelog": "View changelog",
+    "current": "Current",
+    "summary": "Summary",
+    "selectVersion": "Select version"
+  },
+  "extensions": {
+    "excalidraw": {
+      "exportToFolder": "Export to folder"
+    },
+    "subtitle": "Discover and manage community extensions for the app",
+    "searchPlaceholder": "Search extensions...",
+    "refresh": "Refresh",
+    "loadingExtension": "Loading extension...",
+    "loadingRegistry": "Loading extensions...",
+    "noDescription": "No description available",
+    "unknownPublisher": "Unknown publisher",
+    "unknownPermission": "Unknown permission",
+    "version": "Version",
+    "latestVersionLabel": "Latest version",
+    "selectedVersionLabel": "Selected version",
+    "versionPrefix": "v",
+    "metaSeparator": "•",
+    "contextMenuLabel": "Extensions",
+    "autoUpdate": "Auto-update",
+    "status": "Status",
+    "latest": "latest",
+    "install": "Install",
+    "installing": "Installing...",
+    "showFolder": "Show folder",
+    "installFromFolder": "Install from folder",
+    "installLocalError": "Failed to install extension from folder",
+    "selectExtensionFolder": "Select extension folder",
+    "uninstall": "Uninstall",
+    "uninstalling": "Uninstalling...",
+    "reinstall": "Re-install",
+    "reinstalledSuccessfully": "Ponovno uspešno nameščeno",
+    "reusedDependencies": "Ponovno uporabljenih {count} obstoječih odvisnosti",
+    "update": "Update",
+    "updateAvailable": "Update available",
+    "installed": "Installed",
+    "enable": "Enable",
+    "disable": "Disable",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "viewSource": "View source",
+    "previouslyKnownAs": "Previously known as \"{name}\"",
+    "featured": "Featured",
+    "allExtensions": "All Extensions",
+    "searchResults": "Search Results",
+    "noResults": "No extensions found",
+    "noResultsDescription": "No extensions match \"{query}\". Try a different search term.",
+    "noExtensionsAvailable": "No extensions available in the registry",
+    "noInstalledExtensions": "No extensions installed",
+    "noInstalledExtensionsDescription": "Browse the marketplace to discover extensions that enhance your file manager experience.",
+    "noPermissions": "This extension does not require any special permissions.",
+    "noExtensionCommands": "This extension does not provide any commands.",
+    "platforms": "Platforms",
+    "allPlatforms": "All",
+    "platformWarning": "This extension only supports {platforms}",
+    "platformIncompatible": "This extension is not compatible with your platform ({current}). It only supports: {supported}",
+    "platformIncompatibleShort": "Incompatible",
+    "readmeNotFound": "README file not found for this extension.",
+    "readmeLoadError": "Failed to load README content.",
+    "changelogNotFound": "Changelog not found for this extension.",
+    "changelogLoadError": "Failed to load changelog content.",
+    "tabs": {
+      "marketplace": "Marketplace",
+      "installed": "Installed",
+      "dependencies": "Dependencies",
+      "overview": "Overview",
+      "permissions": "Permissions",
+      "changelog": "Changelog",
+      "commands": "Commands"
+    },
+    "dependencies": {
+      "noDependencies": "No shared dependencies",
+      "noDependenciesDescription": "Shared binaries will appear here when extensions install dependencies like FFmpeg or Deno.",
+      "usedBy": "Used by",
+      "installedOn": "Installed",
+      "removeWarning": "This dependency is still used by extensions",
+      "removeConfirm": "This dependency is used by: {extensions}. They will need to re-download it on next use. Remove anyway?",
+      "removeError": "Failed to remove dependency"
+    },
+    "badges": {
+      "official": "Official",
+      "officialTooltip": "This extension is created and maintained by the Sigma File Manager team",
+      "community": "Community",
+      "communityTooltip": "This is a community extension. Review the source code before installing.",
+      "local": "Local",
+      "localTooltip": "This extension was installed from a local folder",
+      "broken": "Broken",
+      "brokenTooltip": "Extension files are missing. Uninstall to remove from the list."
+    },
+    "stats": {
+      "total": "Total",
+      "enabled": "Enabled",
+      "disabled": "Disabled",
+      "local": "Local",
+      "updates": "Updates"
+    },
+    "settings": {
+      "title": "Extension Settings",
+      "noExtensions": "No extensions with settings",
+      "noExtensionsDescription": "Install and enable extensions that have configurable settings to see them here."
+    },
+    "api": {
+      "permissionDenied": "Permission denied: {permission}",
+      "permissionDeniedBinary": "Permission denied: shell (required for binary management)",
+      "downloading": "Downloading {name}",
+      "downloadingProgress": "Downloading...",
+      "startingDownload": "Starting download...",
+      "downloadComplete": "Download complete",
+      "downloadingDependencies": "Downloading dependencies",
+      "extensionReady": "Extension is ready",
+      "waitForDependencies": "Wait until the extension finishes downloading its dependencies",
+      "dismiss": "Dismiss",
+      "stop": "Stop"
     }
+  },
+  "commandPalette": {
+    "searchPlaceholder": "Type a command or search...",
+    "noResults": "No commands found.",
+    "noCommands": "No commands registered. Install and enable extensions to add commands.",
+    "recentHeading": "Recent",
+    "otherCommandsHeading": "Other"
   }
 }

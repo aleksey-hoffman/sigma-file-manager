@@ -166,7 +166,8 @@ async function loadApiExtension(
     }
   }
   catch (error) {
-    console.error(`Failed to load extension ${extensionId}:`, error);
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`Failed to load extension ${extensionId}: ${message}`);
     throw error;
   }
 }

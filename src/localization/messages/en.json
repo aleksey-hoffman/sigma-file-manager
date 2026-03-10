@@ -315,6 +315,9 @@
       "noteSourceCode": "Note source code"
     }
   },
+  "settingsCategories": {
+    "navigation": "Navigation"
+  },
   "settings": {
     "searchSettings": "Search settings",
     "general": {
@@ -1821,7 +1824,7 @@
     "noPermissions": "This extension does not require any special permissions.",
     "noExtensionCommands": "This extension does not provide any commands.",
     "platforms": "Platforms",
-    "allPlatforms": "All platforms",
+    "allPlatforms": "All",
     "platformWarning": "This extension only supports {platforms}",
     "platformIncompatible": "This extension is not compatible with your platform ({current}). It only supports: {supported}",
     "platformIncompatibleShort": "Incompatible",

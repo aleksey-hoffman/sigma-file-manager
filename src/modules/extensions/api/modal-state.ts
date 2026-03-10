@@ -2,9 +2,7 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-import {
-  ref, reactive, nextTick, toRaw, type Ref,
-} from 'vue';
+import { ref, reactive, nextTick, type Ref } from 'vue';
 import type {
   ModalOptions,
   ModalHandle,
@@ -13,6 +11,19 @@ import type {
   ModalValueChangeCallback,
   UIElement,
 } from '@/types/extension';
+import {
+  hasValue,
+  toPlainValues,
+  initializeFormValues,
+} from '@/modules/extensions/utils/ui-element-values';
+
+const ERROR_PREFIX = '[Extensions]';
+
+const CALLBACK_ERROR_LABELS = {
+  close: 'Modal close callback error',
+  valueChange: 'Modal valueChange callback error',
+  submit: 'Modal submit callback error',
+} as const;
 
 export type ModalInstance = {
   id: string;
@@ -28,48 +39,89 @@ export type ModalInstance = {
 type PaletteFormHandler = (modal: ModalInstance) => void;
 
 const activeModals: Ref<ModalInstance[]> = ref([]);
-let modalIdCounter = 0;
-let paletteFormHandler: PaletteFormHandler | null = null;
+const modalState = {
+  idCounter: 0,
+  paletteFormHandler: null as PaletteFormHandler | null,
+};
 
-function generateModalId(): string {
-  return `ext-modal-${Date.now()}-${++modalIdCounter}`;
+function invokeSyncCallbacks(
+  callbacks: (() => void)[],
+  errorLabel: string,
+): void {
+  for (const callback of callbacks) {
+    try {
+      callback();
+    }
+    catch (error) {
+      console.error(`${ERROR_PREFIX} ${errorLabel}:`, error);
+    }
+  }
 }
 
-function initializeValues(content: UIElement[]): Record<string, unknown> {
-  const values: Record<string, unknown> = {};
+async function invokeSubmitCallbacks(
+  callbacks: ModalSubmitCallback[],
+  values: Record<string, unknown>,
+  buttonId: string,
+): Promise<boolean> {
+  let shouldClose = true;
 
-  for (const element of content) {
-    if (element.id && element.type !== 'separator' && element.type !== 'text' && element.type !== 'button' && element.type !== 'image' && element.type !== 'skeleton' && element.type !== 'alert' && element.type !== 'previewCard' && element.type !== 'previewCardSkeleton') {
-      if (element.type === 'checkbox') {
-        values[element.id] = element.value ?? false;
+  for (const callback of callbacks) {
+    try {
+      const result = await callback(values, buttonId);
+
+      if (result === false) {
+        shouldClose = false;
       }
-      else if (element.type === 'select') {
-        values[element.id] = element.value ?? (element.options?.[0]?.value ?? '');
-      }
-      else {
-        values[element.id] = element.value ?? '';
-      }
+    }
+    catch (error) {
+      console.error(`${ERROR_PREFIX} ${CALLBACK_ERROR_LABELS.submit}:`, error);
     }
   }
 
-  return values;
+  return shouldClose;
+}
+
+function invokeValueChangeCallbacks(
+  callbacks: ModalValueChangeCallback[],
+  elementId: string,
+  value: unknown,
+  plainValues: Record<string, unknown>,
+  errorLabel: string,
+): void {
+  for (const callback of callbacks) {
+    try {
+      callback(elementId, value, plainValues);
+    }
+    catch (error) {
+      console.error(`${ERROR_PREFIX} ${errorLabel}:`, error);
+    }
+  }
+}
+
+function generateModalId(): string {
+  return `ext-modal-${Date.now()}-${++modalState.idCounter}`;
+}
+
+function resolveInstance(modalId: string, fallback: ModalInstance): ModalInstance {
+  return getModalInstance(modalId) ?? fallback;
 }
 
 export function registerPaletteFormHandler(handler: PaletteFormHandler): void {
-  paletteFormHandler = handler;
+  modalState.paletteFormHandler = handler;
 }
 
 export function unregisterPaletteFormHandler(): void {
-  paletteFormHandler = null;
+  modalState.paletteFormHandler = null;
 }
 
-export function createModal(extensionId: string, options: ModalOptions): ModalHandle {
-  const modalId = generateModalId();
-  const values = initializeValues(options.content);
-
-  const shouldRouteToPalette = paletteFormHandler !== null;
-
-  const instance = reactive<ModalInstance>({
+function createModalInstance(
+  extensionId: string,
+  options: ModalOptions,
+  values: Record<string, unknown>,
+  renderedInPalette: boolean,
+  modalId: string,
+): ModalInstance {
+  return reactive<ModalInstance>({
     id: modalId,
     extensionId,
     options: { ...options },
@@ -77,12 +129,18 @@ export function createModal(extensionId: string, options: ModalOptions): ModalHa
     submitCallbacks: [],
     closeCallbacks: [],
     valueChangeCallbacks: [],
-    renderedInPalette: shouldRouteToPalette,
+    renderedInPalette,
   });
+}
 
-  if (shouldRouteToPalette) {
+/**
+ * Palette modals are rendered inline and must be in activeModals immediately for the form to bind.
+ * Standalone modals render in a portal that mounts after layout; defer push so the modal appears when its container exists.
+ */
+function registerModalInstance(instance: ModalInstance): void {
+  if (instance.renderedInPalette && modalState.paletteFormHandler) {
     activeModals.value.push(instance);
-    paletteFormHandler!(instance);
+    modalState.paletteFormHandler(instance);
   }
   else {
     nextTick(() => {
@@ -91,8 +149,10 @@ export function createModal(extensionId: string, options: ModalOptions): ModalHa
       });
     });
   }
+}
 
-  const handle: ModalHandle = {
+function createModalHandle(modalId: string, instance: ModalInstance): ModalHandle {
+  return {
     onSubmit: (callback: ModalSubmitCallback) => {
       instance.submitCallbacks.push(callback);
     },
@@ -106,7 +166,7 @@ export function createModal(extensionId: string, options: ModalOptions): ModalHa
       closeModal(modalId);
     },
     updateElement: (elementId: string, updates: Partial<UIElement>) => {
-      const mutableInstance = getModalInstance(modalId) ?? instance;
+      const mutableInstance = resolveInstance(modalId, instance);
       const elementIndex = mutableInstance.options.content.findIndex(element => element.id === elementId);
 
       if (elementIndex !== -1) {
@@ -117,25 +177,14 @@ export function createModal(extensionId: string, options: ModalOptions): ModalHa
           ...updates,
         };
 
-        if (
-          currentElement.id
-          && currentElement.type !== 'separator'
-          && currentElement.type !== 'text'
-          && currentElement.type !== 'button'
-          && currentElement.type !== 'image'
-          && currentElement.type !== 'skeleton'
-          && currentElement.type !== 'alert'
-          && currentElement.type !== 'previewCard'
-          && currentElement.type !== 'previewCardSkeleton'
-          && updates.value !== undefined
-        ) {
-          mutableInstance.values[currentElement.id] = updates.value;
+        if (hasValue(currentElement) && updates.value !== undefined) {
+          mutableInstance.values[currentElement.id!] = updates.value;
         }
       }
     },
     setContent: (content: UIElement[]) => {
-      const mutableInstance = getModalInstance(modalId) ?? instance;
-      const newValues = initializeValues(content);
+      const mutableInstance = resolveInstance(modalId, instance);
+      const newValues = initializeFormValues(content);
 
       for (const key of Object.keys(newValues)) {
         if (key in mutableInstance.values) {
@@ -147,19 +196,28 @@ export function createModal(extensionId: string, options: ModalOptions): ModalHa
       mutableInstance.values = newValues;
     },
     getValues: () => {
-      const mutableInstance = getModalInstance(modalId) ?? instance;
-      const rawValues = toRaw(mutableInstance.values);
-      const plainValues: Record<string, unknown> = {};
-
-      for (const key of Object.keys(rawValues)) {
-        plainValues[key] = toRaw(rawValues[key]);
-      }
-
-      return plainValues;
+      const mutableInstance = resolveInstance(modalId, instance);
+      return toPlainValues(mutableInstance.values);
     },
   };
+}
 
-  return handle;
+export function createModal(extensionId: string, options: ModalOptions): ModalHandle {
+  const modalId = generateModalId();
+  const values = initializeFormValues(options.content);
+  const shouldRouteToPalette = modalState.paletteFormHandler !== null;
+
+  const instance = createModalInstance(
+    extensionId,
+    options,
+    values,
+    shouldRouteToPalette,
+    modalId,
+  );
+
+  registerModalInstance(instance);
+
+  return createModalHandle(modalId, instance);
 }
 
 export function getActiveModals(): Ref<ModalInstance[]> {
@@ -177,21 +235,14 @@ export function updateModalValue(modalId: string, elementId: string, value: unkn
     instance.values[elementId] = value;
 
     if (instance.valueChangeCallbacks.length > 0) {
-      const rawValues = toRaw(instance.values);
-      const plainValues: Record<string, unknown> = {};
-
-      for (const key of Object.keys(rawValues)) {
-        plainValues[key] = toRaw(rawValues[key]);
-      }
-
-      for (const callback of instance.valueChangeCallbacks) {
-        try {
-          callback(elementId, value, plainValues);
-        }
-        catch (error) {
-          console.error('[Extensions] Modal valueChange callback error:', error);
-        }
-      }
+      const plainValues = toPlainValues(instance.values);
+      invokeValueChangeCallbacks(
+        instance.valueChangeCallbacks,
+        elementId,
+        value,
+        plainValues,
+        CALLBACK_ERROR_LABELS.valueChange,
+      );
     }
   }
 }
@@ -199,35 +250,20 @@ export function updateModalValue(modalId: string, elementId: string, value: unkn
 export async function submitModal(modalId: string, buttonId: string): Promise<boolean> {
   const instance = getModalInstance(modalId);
 
-  if (instance) {
-    const rawValues = toRaw(instance.values);
-    const values: Record<string, unknown> = {};
-
-    for (const key of Object.keys(rawValues)) {
-      values[key] = toRaw(rawValues[key]);
-    }
-
-    let shouldCloseModal = true;
-
-    for (const callback of instance.submitCallbacks) {
-      try {
-        const callbackResult = await callback(values, buttonId);
-
-        if (callbackResult === false) {
-          shouldCloseModal = false;
-        }
-      }
-      catch (error) {
-        console.error('[Extensions] Modal submit callback error:', error);
-      }
-    }
-
-    if (shouldCloseModal) {
-      closeModal(modalId);
-      return true;
-    }
-
+  if (!instance) {
     return false;
+  }
+
+  const values = toPlainValues(instance.values);
+  const shouldCloseModal = await invokeSubmitCallbacks(
+    instance.submitCallbacks,
+    values,
+    buttonId,
+  );
+
+  if (shouldCloseModal) {
+    closeModal(modalId);
+    return true;
   }
 
   return false;
@@ -238,16 +274,7 @@ export function closeModal(modalId: string): void {
 
   if (instanceIndex !== -1) {
     const instance = activeModals.value[instanceIndex];
-
-    for (const callback of instance.closeCallbacks) {
-      try {
-        callback();
-      }
-      catch (error) {
-        console.error('[Extensions] Modal close callback error:', error);
-      }
-    }
-
+    invokeSyncCallbacks(instance.closeCallbacks, CALLBACK_ERROR_LABELS.close);
     activeModals.value.splice(instanceIndex, 1);
   }
 }

@@ -35,7 +35,7 @@ import { useExtensionsStorageStore } from '@/stores/storage/extensions';
 import { loadExtensionRuntime, unloadExtensionRuntime } from '@/modules/extensions/runtime/loader';
 import { getBinaryLookupVersion } from '@/modules/extensions/utils/binary-metadata';
 import {
-  getContextMenuRegistrations, getKeybindingRegistrations, getCommandRegistrations, getSidebarRegistrations, getToolbarRegistrations, clearExtensionRegistrations, getBinaryDownloadCount, clearBinaryDownloadCount, getPlatformInfo,
+  getContextMenuRegistrations, getKeybindingRegistrations, getCommandRegistrations, getSidebarRegistrations, getToolbarRegistrations, clearExtensionRegistrations, getBinaryDownloadCount, clearBinaryDownloadCount, getPlatformInfo, initPlatformInfo,
 } from '@/modules/extensions/api';
 import { isBuiltinCommand, getBuiltinCommandHandler, getBuiltinCommandDefinitions } from '@/modules/extensions/builtin-commands';
 import { assertValidManifestData, assertValidRegistryData, isVersionCompatibleWithRange } from '@/modules/extensions/runtime/validation';
@@ -401,7 +401,8 @@ export const useExtensionsStore = defineStore('extensions', () => {
         return 'unreachable';
       }
 
-      console.warn(`Unable to validate registry entry ${registryEntry.id}:`, error);
+      const message = error instanceof Error ? error.message : String(error);
+      console.warn(`Unable to validate registry entry ${registryEntry.id}: ${message}`);
       return 'unknown';
     }
   }
@@ -1387,6 +1388,7 @@ export const useExtensionsStore = defineStore('extensions', () => {
   async function init(): Promise<void> {
     if (isInitialized.value) return;
 
+    await initPlatformInfo();
     await storageStore.init();
     await reconcileInstalledExtensions();
 
@@ -1424,7 +1426,8 @@ export const useExtensionsStore = defineStore('extensions', () => {
         await loadExtension(extension.id, 'onStartup');
       }
       catch (error) {
-        console.error(`Failed to load extension ${extension.id}:`, error);
+        const message = error instanceof Error ? error.message : String(error);
+        console.error(`Failed to load extension ${extension.id}: ${message}`);
       }
     }
 

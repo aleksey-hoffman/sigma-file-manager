@@ -39,6 +39,4 @@ Use this schema URL in your extension `package.json`:
 
 ## Release
 
-- Package versions are independent from app versions.
-- Use `api-vX.Y.Z` tags for package releases.
-- Publish from `packages/api` with `npm publish`.
+API package versions are independent from app versions and tagged as `api-vX.Y.Z`.

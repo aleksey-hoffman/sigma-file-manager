@@ -302,6 +302,9 @@
       "noteSourceCode": "ソースコードに注意"
     }
   },
+  "settingsCategories": {
+    "navigation": "ナビゲーション"
+  },
   "settings": {
     "searchSettings": "設定を検索",
     "general": {
@@ -663,7 +666,8 @@
     "search": "探す",
     "dataStorage": "データストレージ",
     "stats": "統計",
-    "advanced": "詳細"
+    "advanced": "詳細",
+    "extensions": "Extensions"
   },
   "settingsTags": {
     "language": "言語",
@@ -700,7 +704,8 @@
     "imageThumbnails": "画像、画像、サムネイル、制限、ストレージ、リソース、使用状況、パフォーマンス",
     "directoryItemStatistics": "ディレクトリ、アイテム、統計、統計、データ、ストレージ、使用",
     "advanced": "アドバンスド, プロ, 開発者, ターミナル, シェル",
-    "whatsNew": "新機能, 更新履歴, リリースノート, バージョン, アップデート, ニュース"
+    "whatsNew": "新機能, 更新履歴, リリースノート, バージョン, アップデート, ニュース",
+    "extensions": "extensions, plugins, addons, configuration, settings"
   },
   "dataBackupReminder": {
     "title": "リマインダー: データのバックアップ",
@@ -832,7 +837,8 @@
     "deleteSelectedItemsFromDrive": "選択したアイテムをドライブから削除",
     "quickWindowPositioning": "クイックウィンドウ配置",
     "displaySystemEmojiAndSymbolPicker": "表示システム絵文字と記号ピッカー",
-    "displaySystemClipboard": "システム クリップボードを表示します (システム設定でオンにする必要があります)"
+    "displaySystemClipboard": "システム クリップボードを表示します (システム設定でオンにする必要があります)",
+    "toggleCommandPalette": "Open / close command palette"
   },
   "dialogs": {
     "errorDialog": {
@@ -1366,7 +1372,9 @@
     "driveScanInitiated": "ドライブのインデックス作成が開始されました",
     "oneOfTheSearchFilesIsDamaged": "検索ファイルの 1 つが破損しています",
     "workspaceAdded": "ワークスペースが追加されました",
-    "failedToFetchInstalledTerminals": "インストールされた端末の取得に失敗しました"
+    "failedToFetchInstalledTerminals": "インストールされた端末の取得に失敗しました",
+    "removedFromFavorites": "Removed 0 items from favorites | Removed 1 item from favorites | Removed {n} items from favorites | Removed {n} items from favorites",
+    "addedToFavorites": "Added 0 items to favorites | Added 1 item to favorites | Added {n} items to favorites | Added {n} items to favorites"
   },
   "contextMenus": {
     "dirItem": {
@@ -1752,6 +1760,8 @@
     "version": "バージョン",
     "latestVersionLabel": "最新バージョン",
     "selectedVersionLabel": "選択されたバージョン",
+    "versionPrefix": "v",
+    "metaSeparator": "•",
     "status": "ステータス",
     "latest": "最新",
     "install": "インストール",
@@ -1780,7 +1790,7 @@
     "noPermissions": "この拡張機能は特別な権限を必要としません。",
     "noExtensionCommands": "この拡張機能はコマンドを提供していません。",
     "platforms": "プラットフォーム",
-    "allPlatforms": "すべてのプラットフォーム",
+    "allPlatforms": "すべて",
     "platformWarning": "この拡張機能は {platforms} のみをサポートしています",
     "platformIncompatible": "この拡張機能はお使いのプラットフォーム（{current}）と互換性がありません。対応プラットフォーム：{supported}",
     "platformIncompatibleShort": "非対応",
@@ -1791,6 +1801,7 @@
     "tabs": {
       "marketplace": "マーケットプレイス",
       "installed": "インストール済み",
+      "dependencies": "依存関係",
       "overview": "概要",
       "permissions": "権限",
       "changelog": "変更履歴",
@@ -1825,9 +1836,31 @@
       "downloadingProgress": "ダウンロード中...",
       "startingDownload": "ダウンロードを開始しています...",
       "downloadComplete": "ダウンロード完了",
+      "downloadingDependencies": "依存関係をダウンロード中",
+      "extensionReady": "拡張機能の準備ができました",
       "waitForDependencies": "拡張機能が依存関係のダウンロードを完了するまで待ってください",
       "dismiss": "閉じる",
       "stop": "停止"
+    },
+    "excalidraw": {
+      "exportToFolder": "Export to folder"
+    },
+    "unknownPublisher": "Unknown publisher",
+    "contextMenuLabel": "Extensions",
+    "autoUpdate": "Auto-update",
+    "showFolder": "Show folder",
+    "reinstalledSuccessfully": "再インストールが完了しました",
+    "reusedDependencies": "既存の依存関係 {count} 件を再利用しました",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "dependencies": {
+      "noDependencies": "No shared dependencies",
+      "noDependenciesDescription": "Shared binaries will appear here when extensions install dependencies like FFmpeg or Deno.",
+      "usedBy": "Used by",
+      "installedOn": "Installed",
+      "removeWarning": "This dependency is still used by extensions",
+      "removeConfirm": "This dependency is used by: {extensions}. They will need to re-download it on next use. Remove anyway?",
+      "removeError": "Failed to remove dependency"
     }
   },
   "commandPalette": {
@@ -1837,5 +1870,19 @@
     "recentHeading": "最近",
     "otherCommandsHeading": "その他",
     "run": "実行"
-  }
+  },
+  "statusCenter": {
+    "title": "Status center",
+    "clearCompleted": "Clear completed",
+    "noOperations": "No operations",
+    "active": "active",
+    "cancelAll": "Cancel all",
+    "groups": {
+      "dir-size": "Directory size calculations",
+      "copy": "Copy operations",
+      "move": "Move operations",
+      "delete": "Delete operations"
+    }
+  },
+  "recalculate": "Recalculate"
 }
