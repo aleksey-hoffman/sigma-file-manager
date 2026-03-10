@@ -49,7 +49,18 @@ export default defineConfig({
     },
   },
   build: {
-    // Tauri uses Chromium on Windows and WebKit on macOS and Linux
+    rollupOptions: {
+      onwarn(warning, defaultHandler) {
+        if (
+          typeof warning.message === 'string'
+          && warning.message.includes('dynamically imported')
+          && warning.message.includes('dynamic import will not move module into another chunk')
+        ) {
+          return;
+        }
+        defaultHandler(warning);
+      },
+    },
     target:
       process.env.TAURI_ENV_PLATFORM == 'windows'
         ? 'chrome138'
