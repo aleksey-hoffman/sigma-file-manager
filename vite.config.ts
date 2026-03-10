@@ -58,6 +58,7 @@ export default defineConfig({
         ) {
           return;
         }
+
         defaultHandler(warning);
       },
     },

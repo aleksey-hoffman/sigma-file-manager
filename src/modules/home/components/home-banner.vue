@@ -493,10 +493,10 @@ watch(isPositionPopoverOpen, (isOpen) => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
   margin-top: 4px;
   color: hsl(var(--muted-foreground));
   font-size: 12px;
+  gap: 12px;
 }
 
 .home-banner__menu-item {
