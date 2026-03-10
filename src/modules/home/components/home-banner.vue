@@ -24,6 +24,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { ContextMenuShortcut } from '@/components/ui/context-menu';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -254,7 +255,7 @@ watch(isPositionPopoverOpen, (isOpen) => {
           <div>{{ t('home.setNextBackground') }}</div>
           <div class="home-banner__tooltip-shortcut">
             {{ t('home.setPreviousBackground') }}
-            <kbd class="shortcut">{{ setPreviousBackgroundShortcutText }}</kbd>
+            <ContextMenuShortcut>{{ setPreviousBackgroundShortcutText }}</ContextMenuShortcut>
           </div>
         </TooltipContent>
       </Tooltip>
@@ -489,6 +490,10 @@ watch(isPositionPopoverOpen, (isOpen) => {
 }
 
 .home-banner__tooltip-shortcut {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   margin-top: 4px;
   color: hsl(var(--muted-foreground));
   font-size: 12px;

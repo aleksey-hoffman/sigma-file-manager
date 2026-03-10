@@ -188,8 +188,10 @@ function handleDeleteClick() {
         </Button>
       </TooltipTrigger>
       <TooltipContent>
-        {{ t('fileBrowser.actions.rename') }}
-        <kbd class="shortcut">{{ shortcutsStore.getShortcutLabel('rename') }}</kbd>
+        <div class="file-browser-actions-menu__tooltip-row">
+          {{ t('fileBrowser.actions.rename') }}
+          <ContextMenuShortcut>{{ shortcutsStore.getShortcutLabel('rename') }}</ContextMenuShortcut>
+        </div>
       </TooltipContent>
     </Tooltip>
     <Tooltip
@@ -208,7 +210,7 @@ function handleDeleteClick() {
       <TooltipContent class="file-browser-actions-menu__tooltip">
         <div class="file-browser-actions-menu__tooltip-row">
           {{ t('fileBrowser.actions.copy') }}
-          <kbd class="shortcut">{{ shortcutsStore.getShortcutLabel('copy') }}</kbd>
+          <ContextMenuShortcut>{{ shortcutsStore.getShortcutLabel('copy') }}</ContextMenuShortcut>
         </div>
       </TooltipContent>
     </Tooltip>
@@ -228,7 +230,7 @@ function handleDeleteClick() {
       <TooltipContent class="file-browser-actions-menu__tooltip">
         <div class="file-browser-actions-menu__tooltip-row">
           {{ t('fileBrowser.actions.move') }}
-          <kbd class="shortcut">{{ shortcutsStore.getShortcutLabel('cut') }}</kbd>
+          <ContextMenuShortcut>{{ shortcutsStore.getShortcutLabel('cut') }}</ContextMenuShortcut>
         </div>
       </TooltipContent>
     </Tooltip>
@@ -248,7 +250,7 @@ function handleDeleteClick() {
       <TooltipContent class="file-browser-actions-menu__tooltip">
         <div class="file-browser-actions-menu__tooltip-row">
           {{ t('shortcuts.transferPreparedForCopying') }}
-          <kbd class="shortcut">{{ shortcutsStore.getShortcutLabel('paste') }}</kbd>
+          <ContextMenuShortcut>{{ shortcutsStore.getShortcutLabel('paste') }}</ContextMenuShortcut>
         </div>
       </TooltipContent>
     </Tooltip>
@@ -276,11 +278,11 @@ function handleDeleteClick() {
       <TooltipContent class="file-browser-actions-menu__tooltip">
         <div class="file-browser-actions-menu__tooltip-row">
           {{ t('shortcuts.moveSelectedItemsToTrash') }}
-          <kbd class="shortcut">{{ shortcutsStore.getShortcutLabel('delete') }}</kbd>
+          <ContextMenuShortcut>{{ shortcutsStore.getShortcutLabel('delete') }}</ContextMenuShortcut>
         </div>
         <div class="file-browser-actions-menu__tooltip-row">
           {{ t('shortcuts.deleteSelectedItemsFromDrive') }}
-          <kbd class="shortcut">{{ shortcutsStore.getShortcutLabel('deletePermanently') }}</kbd>
+          <ContextMenuShortcut>{{ shortcutsStore.getShortcutLabel('deletePermanently') }}</ContextMenuShortcut>
         </div>
       </TooltipContent>
     </Tooltip>
@@ -318,7 +320,9 @@ function handleDeleteClick() {
   >
     <SquarePlusIcon :size="16" />
     <span>{{ t('fileBrowser.actions.openInNewTab') }}</span>
-    <kbd class="shortcut">{{ shortcutsStore.getShortcutLabel('openNewTab') }}</kbd>
+    <ContextMenuShortcut v-if="shortcutsStore.getShortcutLabel('openNewTab')">
+      {{ shortcutsStore.getShortcutLabel('openNewTab') }}
+    </ContextMenuShortcut>
   </component>
   <component
     :is="menuItemComponent"
@@ -402,10 +406,5 @@ function handleDeleteClick() {
   display: flex;
   align-items: center;
   gap: 8px;
-}
-
-.file-browser-actions-menu__item-with-shortcut .shortcut {
-  margin-left: auto;
-  opacity: 0.6;
 }
 </style>

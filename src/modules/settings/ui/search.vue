@@ -8,6 +8,7 @@ import { ref, onMounted, onBeforeUnmount, type ComponentPublicInstance } from 'v
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
+import { ContextMenuShortcut } from '@/components/ui/context-menu';
 import { useSettingsStore } from '@/stores/runtime/settings';
 import { useShortcutsStore } from '@/stores/runtime/shortcuts';
 import { useI18n } from 'vue-i18n';
@@ -64,8 +65,10 @@ onBeforeUnmount(() => {
           </PopoverTrigger>
         </TooltipTrigger>
         <TooltipContent>
-          {{ t('settings.searchSettings') }}
-          <kbd class="shortcut">{{ shortcutsStore.getShortcutLabel('toggleSettingsSearch') }}</kbd>
+          <div class="settings-search__tooltip-row">
+            {{ t('settings.searchSettings') }}
+            <ContextMenuShortcut>{{ shortcutsStore.getShortcutLabel('toggleSettingsSearch') }}</ContextMenuShortcut>
+          </div>
         </TooltipContent>
         <PopoverContent
           :side="'left'"
@@ -94,6 +97,13 @@ onBeforeUnmount(() => {
 
 .settings-search-icon:hover {
   opacity: 0.7;
+}
+
+.settings-search__tooltip-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 .settings-search-input {

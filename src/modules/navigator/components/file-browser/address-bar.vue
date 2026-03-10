@@ -31,6 +31,7 @@ import {
   TooltipTrigger,
   TooltipContent,
 } from '@/components/ui/tooltip';
+import { ContextMenuShortcut } from '@/components/ui/context-menu';
 import {
   TextCursorIcon,
   CopyIcon,
@@ -428,8 +429,10 @@ onUnmounted(() => {
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            {{ t('settings.addressBar.closeEditor') }}
-            <kbd class="shortcut">Esc</kbd>
+            <div class="address-bar__tooltip-row">
+              {{ t('settings.addressBar.closeEditor') }}
+              <ContextMenuShortcut>Esc</ContextMenuShortcut>
+            </div>
           </TooltipContent>
         </Tooltip>
       </div>
@@ -554,8 +557,10 @@ onUnmounted(() => {
           </Button>
         </TooltipTrigger>
         <TooltipContent>
-          {{ t('settings.addressBar.editAddress') }}
-          <kbd class="shortcut">Ctrl+P</kbd>
+          <div class="address-bar__tooltip-row">
+            {{ t('settings.addressBar.editAddress') }}
+            <ContextMenuShortcut>Ctrl+P</ContextMenuShortcut>
+          </div>
         </TooltipContent>
       </Tooltip>
     </template>
@@ -616,6 +621,13 @@ onUnmounted(() => {
   width: 28px;
   height: 28px;
   flex-shrink: 0;
+}
+
+.address-bar__tooltip-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 .address-bar__breadcrumbs {

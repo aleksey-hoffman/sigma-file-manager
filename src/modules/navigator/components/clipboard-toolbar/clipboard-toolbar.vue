@@ -20,6 +20,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useClipboardStore } from '@/stores/runtime/clipboard';
 import { useShortcutsStore } from '@/stores/runtime/shortcuts';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
+import { ContextMenuShortcut } from '@/components/ui/context-menu';
 import {
   Popover,
   PopoverContent,
@@ -211,8 +212,10 @@ function openCollapsedPopover() {
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    {{ t('shortcuts.transferPreparedToPane1') }}
-                    <kbd class="clipboard-toolbar__shortcut">{{ shortcutsStore.getShortcutLabel('paste') }}</kbd>
+                    <div class="clipboard-toolbar__tooltip-row">
+                      {{ t('shortcuts.transferPreparedToPane1') }}
+                      <ContextMenuShortcut>{{ shortcutsStore.getShortcutLabel('paste') }}</ContextMenuShortcut>
+                    </div>
                   </TooltipContent>
                 </Tooltip>
 
@@ -231,8 +234,10 @@ function openCollapsedPopover() {
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    {{ t('shortcuts.transferPreparedToPane2') }}
-                    <kbd class="clipboard-toolbar__shortcut">{{ shortcutsStore.getShortcutLabel('paste') }}</kbd>
+                    <div class="clipboard-toolbar__tooltip-row">
+                      {{ t('shortcuts.transferPreparedToPane2') }}
+                      <ContextMenuShortcut>{{ shortcutsStore.getShortcutLabel('paste') }}</ContextMenuShortcut>
+                    </div>
                   </TooltipContent>
                 </Tooltip>
               </template>
@@ -255,8 +260,10 @@ function openCollapsedPopover() {
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
-                  {{ t('shortcuts.transferPreparedForCopying') }}
-                  <kbd class="clipboard-toolbar__shortcut">{{ shortcutsStore.getShortcutLabel('paste') }}</kbd>
+                  <div class="clipboard-toolbar__tooltip-row">
+                    {{ t('shortcuts.transferPreparedForCopying') }}
+                    <ContextMenuShortcut>{{ shortcutsStore.getShortcutLabel('paste') }}</ContextMenuShortcut>
+                  </div>
                 </TooltipContent>
               </Tooltip>
 
@@ -648,9 +655,11 @@ function openCollapsedPopover() {
 </style>
 
 <style>
-.clipboard-toolbar__shortcut {
-  margin-left: 8px;
-  opacity: 0.6;
+.clipboard-toolbar__tooltip-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 .clipboard-toolbar__item .clipboard-toolbar__item-remove.sigma-ui-button.sigma-ui-button--size-icon {

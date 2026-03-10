@@ -9,6 +9,7 @@ import { useRouter } from 'vue-router';
 import { SearchIcon } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
+import { ContextMenuShortcut } from '@/components/ui/context-menu';
 import { useGlobalSearchStore } from '@/stores/runtime/global-search';
 import { useShortcutsStore } from '@/stores/runtime/shortcuts';
 
@@ -46,8 +47,10 @@ function handleClick() {
         </Button>
       </TooltipTrigger>
       <TooltipContent>
-        {{ t('globalSearch.globalSearch') }}
-        <kbd class="shortcut">{{ shortcutsStore.getShortcutLabel('toggleGlobalSearch') }}</kbd>
+        <div class="global-search-toolbar-button__tooltip-row">
+          {{ t('globalSearch.globalSearch') }}
+          <ContextMenuShortcut>{{ shortcutsStore.getShortcutLabel('toggleGlobalSearch') }}</ContextMenuShortcut>
+        </div>
       </TooltipContent>
     </Tooltip>
   </div>
@@ -61,6 +64,13 @@ function handleClick() {
 
 .global-search-toolbar-button__icon {
   stroke: hsl(var(--foreground) / 50%);
+}
+
+.global-search-toolbar-button__tooltip-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 .global-search-toolbar-button__button--active {

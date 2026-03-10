@@ -15,6 +15,7 @@ import {
   TooltipTrigger,
   TooltipContent,
 } from '@/components/ui/tooltip';
+import { ContextMenuShortcut } from '@/components/ui/context-menu';
 import { useWorkspacesStore } from '@/stores/storage/workspaces';
 import { useShortcutsStore } from '@/stores/runtime/shortcuts';
 import type { Tab as TabType, TabGroup } from '@/types/workspaces';
@@ -132,8 +133,10 @@ onBeforeUnmount(() => {
           </Button>
         </TooltipTrigger>
         <TooltipContent>
-          {{ t('tabs.newTab') }}
-          <kbd class="shortcut">{{ shortcutsStore.getShortcutLabel('openNewTab') }}</kbd>
+          <div class="tab-bar__tooltip-row">
+            {{ t('tabs.newTab') }}
+            <ContextMenuShortcut>{{ shortcutsStore.getShortcutLabel('openNewTab') }}</ContextMenuShortcut>
+          </div>
         </TooltipContent>
       </Tooltip>
     </div>
@@ -167,6 +170,13 @@ onBeforeUnmount(() => {
 
 .tab-bar__add-tab-button {
   color: hsl(var(--muted-foreground));
+}
+
+.tab-bar__tooltip-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 .tab-bar--compact {

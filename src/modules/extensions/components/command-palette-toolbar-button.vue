@@ -8,6 +8,7 @@ import { useI18n } from 'vue-i18n';
 import { CommandIcon } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
+import { ContextMenuShortcut } from '@/components/ui/context-menu';
 import { useShortcutsStore } from '@/stores/runtime/shortcuts';
 
 const { t } = useI18n();
@@ -43,8 +44,10 @@ function handleClick() {
         </Button>
       </TooltipTrigger>
       <TooltipContent>
-        {{ t('shortcuts.toggleCommandPalette') }}
-        <kbd class="shortcut">{{ shortcutsStore.getShortcutLabel('toggleCommandPalette') }}</kbd>
+        <div class="command-palette-toolbar-button__tooltip-row">
+          {{ t('shortcuts.toggleCommandPalette') }}
+          <ContextMenuShortcut>{{ shortcutsStore.getShortcutLabel('toggleCommandPalette') }}</ContextMenuShortcut>
+        </div>
       </TooltipContent>
     </Tooltip>
   </div>
@@ -58,5 +61,12 @@ function handleClick() {
 
 .command-palette-toolbar-button__icon {
   stroke: hsl(var(--foreground) / 50%);
+}
+
+.command-palette-toolbar-button__tooltip-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 </style>

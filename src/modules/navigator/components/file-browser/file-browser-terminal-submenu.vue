@@ -12,6 +12,7 @@ import {
   ContextMenuItem,
   ContextMenuSeparator,
   ContextMenuLabel,
+  ContextMenuShortcut,
   ContextMenuSubTrigger,
   ContextMenuSubContent,
 } from '@/components/ui/context-menu';
@@ -62,7 +63,9 @@ async function handleOpenTerminal(terminalId: string) {
     <ContextMenuSubTrigger class="terminal-submenu__trigger">
       <TerminalSquareIcon :size="16" />
       <span>{{ t('terminal.openInTerminal') }}</span>
-      <kbd class="shortcut terminal-submenu__shortcut">{{ shortcutsStore.getShortcutLabel('openTerminal') }}</kbd>
+      <ContextMenuShortcut v-if="shortcutsStore.getShortcutLabel('openTerminal')">
+        {{ shortcutsStore.getShortcutLabel('openTerminal') }}
+      </ContextMenuShortcut>
     </ContextMenuSubTrigger>
     <ContextMenuSubContent class="terminal-submenu">
       <template v-if="terminalsStore.loadError">
@@ -87,7 +90,9 @@ async function handleOpenTerminal(terminalId: string) {
               <kbd>{{ ADMIN_MODIFIER_KEY }}</kbd>
             </template>
           </i18n-t>
-          <kbd class="shortcut terminal-submenu__hint-shortcut">{{ shortcutsStore.getShortcutLabel('openTerminalAdmin') }}</kbd>
+          <ContextMenuShortcut v-if="shortcutsStore.getShortcutLabel('openTerminalAdmin')">
+            {{ shortcutsStore.getShortcutLabel('openTerminalAdmin') }}
+          </ContextMenuShortcut>
         </ContextMenuLabel>
 
         <ContextMenuSeparator />
@@ -132,11 +137,6 @@ async function handleOpenTerminal(terminalId: string) {
   gap: 8px;
 }
 
-.terminal-submenu__shortcut {
-  margin-left: auto;
-  opacity: 0.6;
-}
-
 .terminal-submenu__error {
   padding: 8px 12px;
   color: hsl(var(--destructive));
@@ -157,12 +157,6 @@ async function handleOpenTerminal(terminalId: string) {
   font-size: 11px;
   font-style: italic;
   gap: 8px;
-}
-
-.terminal-submenu__hint-shortcut {
-  margin-left: auto;
-  font-style: normal;
-  opacity: 0.6;
 }
 
 .terminal-submenu__item {

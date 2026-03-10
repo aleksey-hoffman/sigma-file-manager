@@ -175,6 +175,10 @@ function getCommandShortcutParts(commandId: string): string[] {
   return [];
 }
 
+function getCommandShortcutLabel(commandId: string): string {
+  return getCommandShortcutParts(commandId).join('+');
+}
+
 function exitFormMode(): void {
   if (paletteModal.value) {
     closeModal(paletteModal.value.id);
@@ -311,15 +315,8 @@ defineExpose({
             />
             <span class="command-palette__extension-name">{{ getExtensionName(cmd.extensionId) }}:</span>
             <span>{{ cmd.command.title }}</span>
-            <CommandShortcut
-              v-if="getCommandShortcutParts(cmd.command.id).length > 0"
-              class="command-palette__shortcut"
-            >
-              <kbd
-                v-for="(keyPart, keyIndex) in getCommandShortcutParts(cmd.command.id)"
-                :key="keyIndex"
-                class="command-palette__kbd"
-              >{{ keyPart }}</kbd>
+            <CommandShortcut v-if="getCommandShortcutLabel(cmd.command.id)">
+              {{ getCommandShortcutLabel(cmd.command.id) }}
             </CommandShortcut>
           </CommandItem>
         </CommandGroup>
@@ -342,15 +339,8 @@ defineExpose({
             />
             <span class="command-palette__extension-name">{{ getExtensionName(cmd.extensionId) }}:</span>
             <span>{{ cmd.command.title }}</span>
-            <CommandShortcut
-              v-if="getCommandShortcutParts(cmd.command.id).length > 0"
-              class="command-palette__shortcut"
-            >
-              <kbd
-                v-for="(keyPart, keyIndex) in getCommandShortcutParts(cmd.command.id)"
-                :key="keyIndex"
-                class="command-palette__kbd"
-              >{{ keyPart }}</kbd>
+            <CommandShortcut v-if="getCommandShortcutLabel(cmd.command.id)">
+              {{ getCommandShortcutLabel(cmd.command.id) }}
             </CommandShortcut>
           </CommandItem>
         </CommandGroup>
@@ -385,26 +375,6 @@ defineExpose({
 .command-palette__extension-name {
   margin-right: 0.25rem;
   color: hsl(var(--muted-foreground));
-}
-
-.command-palette__shortcut {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.command-palette__kbd {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1px 5px;
-  border: 1px solid hsl(var(--border));
-  border-radius: 4px;
-  background-color: hsl(var(--muted));
-  color: hsl(var(--muted-foreground));
-  font-family: inherit;
-  font-size: 0.7rem;
-  line-height: 1.4;
 }
 
 .command-palette__empty {

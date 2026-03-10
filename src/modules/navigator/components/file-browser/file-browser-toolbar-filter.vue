@@ -15,6 +15,7 @@ import {
   TooltipTrigger,
   TooltipContent,
 } from '@/components/ui/tooltip';
+import { ContextMenuShortcut } from '@/components/ui/context-menu';
 import { TextSearchIcon, XIcon } from 'lucide-vue-next';
 import { useShortcutsStore } from '@/stores/runtime/shortcuts';
 
@@ -95,8 +96,10 @@ function handleFilterInteractOutside(event: Event) {
         </PopoverTrigger>
       </TooltipTrigger>
       <TooltipContent>
-        {{ t('fileBrowser.quickSearch') }}
-        <kbd class="shortcut">{{ shortcutsStore.getShortcutLabel('toggleFilter') }}</kbd>
+        <div class="file-browser-toolbar-filter__tooltip-row">
+          {{ t('fileBrowser.quickSearch') }}
+          <ContextMenuShortcut>{{ shortcutsStore.getShortcutLabel('toggleFilter') }}</ContextMenuShortcut>
+        </div>
       </TooltipContent>
       <PopoverContent
         :side="'bottom'"
@@ -162,6 +165,13 @@ function handleFilterInteractOutside(event: Event) {
   right: 4px;
   width: 28px;
   height: 28px;
+}
+
+.file-browser-toolbar-filter__tooltip-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 </style>
 

@@ -5,6 +5,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue';
+import { invoke } from '@tauri-apps/api/core';
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -21,6 +22,7 @@ import { PuzzleIcon } from 'lucide-vue-next';
 import type { InstalledExtension, ExtensionConfigurationProperty } from '@/types/extension';
 import { useExtensionsStorageStore } from '@/stores/storage/extensions';
 import { notifySettingsChange } from '@/modules/extensions/api';
+import { useI18n } from 'vue-i18n';
 
 type Props = {
   extension: InstalledExtension;
@@ -29,24 +31,85 @@ type Props = {
 const props = defineProps<Props>();
 
 const extensionsStorageStore = useExtensionsStorageStore();
+const { locale } = useI18n();
 
 const configuration = computed(() => {
   return props.extension.manifest.contributes?.configuration;
 });
 
+const extensionMessages = ref<Record<string, string> | null>(null);
+
 const configurationTitle = computed(() => {
+  const translated = extensionMessages.value?.['settings.title'];
+  if (translated) return translated;
   return configuration.value?.title || props.extension.manifest.name;
+});
+
+const configurationDescription = computed(() => {
+  const translated = extensionMessages.value?.['settings.description'];
+  if (translated) return translated;
+  return props.extension.registryEntry?.description ?? '';
 });
 
 const settingsValues = ref<Record<string, unknown>>({});
 
 onMounted(async () => {
   await loadSettings();
+  await loadExtensionMessages();
 });
 
 watch(() => props.extension.id, async () => {
   await loadSettings();
+  await loadExtensionMessages();
 });
+
+watch(locale, () => {
+  void loadExtensionMessages();
+});
+
+async function loadExtensionMessages(): Promise<void> {
+  try {
+    const filePath = `locales/${locale.value}.json`;
+    const exists = await invoke<boolean>('extension_path_exists', {
+      extensionId: props.extension.id,
+      filePath,
+    });
+
+    if (!exists) {
+      const enPath = 'locales/en.json';
+      const enExists = await invoke<boolean>('extension_path_exists', {
+        extensionId: props.extension.id,
+        filePath: enPath,
+      });
+
+      if (!enExists) {
+        extensionMessages.value = null;
+
+        return;
+      }
+
+      const bytes = await invoke<number[]>('read_extension_file', {
+        extensionId: props.extension.id,
+        filePath: enPath,
+      });
+      const content = new TextDecoder().decode(new Uint8Array(bytes));
+      extensionMessages.value = JSON.parse(content) as Record<string, string>;
+
+      return;
+    }
+
+    const bytes = await invoke<number[]>('read_extension_file', {
+      extensionId: props.extension.id,
+      filePath,
+    });
+
+    const content = new TextDecoder().decode(new Uint8Array(bytes));
+    extensionMessages.value = JSON.parse(content) as Record<string, string>;
+  }
+  catch {
+    extensionMessages.value = null;
+  }
+}
 
 async function loadSettings(): Promise<void> {
   const settings = await extensionsStorageStore.getExtensionSettings(props.extension.id);
@@ -78,12 +141,20 @@ async function updateSetting(key: string, value: unknown): Promise<void> {
 }
 
 function getPropertyLabel(key: string): string {
+  const translated = extensionMessages.value?.[`settings.${key}`];
+  if (translated) return translated;
   const parts = key.split('.');
   const lastPart = parts[parts.length - 1];
   return lastPart
     .replace(/([A-Z])/g, ' $1')
     .replace(/^./, str => str.toUpperCase())
     .trim();
+}
+
+function getPropertyDescription(key: string, fallback: string | undefined): string {
+  const translated = extensionMessages.value?.[`settings.${key}Description`];
+  if (translated) return translated;
+  return fallback ?? '';
 }
 
 function isEnumProperty(prop: ExtensionConfigurationProperty): boolean {
@@ -95,7 +166,7 @@ function isEnumProperty(prop: ExtensionConfigurationProperty): boolean {
   <SettingsItem
     v-if="configuration?.properties"
     :title="configurationTitle"
-    :description="extension.registryEntry?.description"
+    :description="configurationDescription"
     :icon="PuzzleIcon"
   >
     <template #nested>
@@ -113,10 +184,10 @@ function isEnumProperty(prop: ExtensionConfigurationProperty): boolean {
               {{ getPropertyLabel(String(key)) }}
             </Label>
             <p
-              v-if="prop.description"
+              v-if="getPropertyDescription(String(key), prop.description)"
               class="extension-settings__description"
             >
-              {{ prop.description }}
+              {{ getPropertyDescription(String(key), prop.description) }}
             </p>
           </div>
 

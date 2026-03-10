@@ -15,6 +15,7 @@ import { openUrl } from '@tauri-apps/plugin-opener';
 import { ArrowLeftIcon, XIcon } from 'lucide-vue-next';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { ContextMenuShortcut } from '@/components/ui/context-menu';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
@@ -431,16 +432,9 @@ watch(
           @click="handleButtonClick(button.id)"
         >
           <span class="ext-form-view__action-label">{{ button.label }}</span>
-          <span
-            v-if="button.shortcut"
-            class="ext-form-view__shortcut-keys"
-          >
-            <kbd
-              v-for="(keyPart, keyIndex) in getShortcutParts(button.shortcut)"
-              :key="keyIndex"
-              class="ext-form-view__action-kbd"
-            >{{ keyPart }}</kbd>
-          </span>
+          <ContextMenuShortcut v-if="button.shortcut">
+            {{ getShortcutParts(button.shortcut).join('+') }}
+          </ContextMenuShortcut>
         </button>
       </div>
     </div>
@@ -739,25 +733,5 @@ watch(
 
 .ext-form-view__action-label {
   white-space: nowrap;
-}
-
-.ext-form-view__shortcut-keys {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.ext-form-view__action-kbd {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1px 5px;
-  border: 1px solid hsl(var(--border));
-  border-radius: 4px;
-  background-color: hsl(var(--muted));
-  color: hsl(var(--muted-foreground));
-  font-family: inherit;
-  font-size: 0.7rem;
-  line-height: 1.4;
 }
 </style>
