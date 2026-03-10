@@ -255,53 +255,6 @@
       "clearAll": "从此列表中删除全部"
     }
   },
-  "notes": {
-    "newNote": "新建笔记",
-    "existingNotes": "现有笔记",
-    "trashedNotes": "已删除的笔记",
-    "loadingNotes": "加载笔记",
-    "trashedNotesDeletedAfter7days": "已删除的笔记在被删除 7 天后会自动从驱动器中删除",
-    "deleteAllTrashed": "删除所有已删除的笔记",
-    "noTrashedNotes": "没有已删除的笔记",
-    "noNotes": "没有笔记",
-    "ungroupedNotes": "未分组的笔记",
-    "group": "分组",
-    "noteCard": {
-      "deleteNotePermanently": "永久删除笔记",
-      "restoreNoteFromTrashList": "恢复笔记",
-      "noteWillBeDeletedOnSpecifiedDate": "此笔记将在该日期永久删除",
-      "noteProtectionIsOn": "笔记保护已开启",
-      "itCannotBeDeletedModified": "不能删除/修改",
-      "noteProtectionIsOff": "笔记保护已关闭",
-      "itCanBeDeletedModified": "可以删除/修改",
-      "changeNoteGroup": "更改笔记分组",
-      "noteGroups": "笔记分组",
-      "ungroup": "取消分组",
-      "changeColor": "更换颜色",
-      "moveNoteToTrash": "将笔记移至垃圾桶"
-    },
-    "noteEditor": {
-      "searchSelectionInGoogle": "在谷歌中搜索选择",
-      "searchSelectionInDuckDuckGo": "在 DuckDuckGo 中搜索选择",
-      "transformSelectionUppercase": "转换选择：大写",
-      "transformSelectionLowercase": "转换选择：小写",
-      "showNoteSourceCode": "显示笔记源码",
-      "loadTemplate": "加载模板",
-      "saveTemplate": "保存模板",
-      "removeFormattingFromSelection": "从选区中删除格式",
-      "removeAllEditingFromSelection": "从选区中删除所有编辑",
-      "turnSelectionIntoSuperscript": "将选区变为上标",
-      "turnSelectionIntoSubscript": "将选区转为下标",
-      "textColor": "文字颜色",
-      "textHighlighting": "文字高亮",
-      "insertDivider": "插入分隔线",
-      "decreaseIndentation": "减少缩进",
-      "increaseIndentation": "增加缩进",
-      "math": "数学",
-      "formula": "公式",
-      "noteSourceCode": "笔记源码"
-    }
-  },
   "settingsCategories": {
     "navigation": "导航"
   },
@@ -667,7 +620,7 @@
     "dataStorage": "数据存储",
     "stats": "统计",
     "advanced": "高级",
-    "extensions": "Extensions"
+    "extensions": "拓展功能"
   },
   "settingsTags": {
     "language": "语言",
@@ -1846,7 +1799,7 @@
       "stop": "停止"
     },
     "unknownPublisher": "Unknown publisher",
-    "contextMenuLabel": "Extensions",
+    "contextMenuLabel": "拓展功能",
     "autoUpdate": "Auto-update",
     "showFolder": "Show folder",
     "reinstalledSuccessfully": "重新安装成功",

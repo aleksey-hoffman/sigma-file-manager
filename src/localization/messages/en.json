@@ -268,53 +268,6 @@
       "clearAll": "Remove all from this list"
     }
   },
-  "notes": {
-    "newNote": "New note",
-    "existingNotes": "Existing notes",
-    "trashedNotes": "Trashed notes",
-    "loadingNotes": "Loading notes",
-    "trashedNotesDeletedAfter7days": "Trashed notes are automatically deleted from the drive 7 days after being trashed",
-    "deleteAllTrashed": "Delete all trashed",
-    "noTrashedNotes": "No trashed notes",
-    "noNotes": "No notes",
-    "ungroupedNotes": "Ungrouped notes",
-    "group": "Group",
-    "noteCard": {
-      "deleteNotePermanently": "Delete note permanently",
-      "restoreNoteFromTrashList": "Restore note from trash list",
-      "noteWillBeDeletedOnSpecifiedDate": "Note will be permanently deleted on the specified date",
-      "noteProtectionIsOn": "Note protection is ON",
-      "itCannotBeDeletedModified": "It cannot be deleted / modified",
-      "noteProtectionIsOff": "Note protection is OFF",
-      "itCanBeDeletedModified": "It can be deleted / modified",
-      "changeNoteGroup": "Change note group",
-      "noteGroups": "Note groups",
-      "ungroup": "Ungroup",
-      "changeColor": "Change color",
-      "moveNoteToTrash": "Move note to trash"
-    },
-    "noteEditor": {
-      "searchSelectionInGoogle": "Search selection in Google",
-      "searchSelectionInDuckDuckGo": "Search selection in DuckDuckGo",
-      "transformSelectionUppercase": "Transform selection: UPPERCASE",
-      "transformSelectionLowercase": "Transform selection: lowercase",
-      "showNoteSourceCode": "Show note source code",
-      "loadTemplate": "Load template",
-      "saveTemplate": "Save template",
-      "removeFormattingFromSelection": "Remove formatting from selection",
-      "removeAllEditingFromSelection": "Remove all editing from selection",
-      "turnSelectionIntoSuperscript": "Turn selection into superscript",
-      "turnSelectionIntoSubscript": "Turn selection into subscript",
-      "textColor": "Text color",
-      "textHighlighting": "Text highlighting",
-      "insertDivider": "Insert divider",
-      "decreaseIndentation": "Decrease indentation",
-      "increaseIndentation": "Increase indentation",
-      "math": "Math",
-      "formula": "formula",
-      "noteSourceCode": "Note source code"
-    }
-  },
   "settingsCategories": {
     "navigation": "Navigation"
   },
@@ -884,9 +837,11 @@
     },
     "homeBannerPickerDialog": {
       "homePageBackgroundManager": "Home page background manager",
+      "highResourceUsage": "High resource usage",
+      "videoBackgroundsUse": "Video backgrounds use much more memory than images. To offload resources from RAM to GPU memory, set the app to run on dedicated GPU.",
       "customBackgrounds": "Custom backgrounds",
       "defaultBackgrounds": "Default backgrounds",
-      "artworksProvided": "Artworks provided by various artists."
+      "artworksProvided": "The artworks provided by different artists. Hover previews to see the links to their profiles and other details.  "
     },
     "homeBannerPositionDialog": {
       "positionXAxis": "Position X-axis",
@@ -931,18 +886,6 @@
       "topOverlayHeight": "Top overlay height (CSS units)",
       "bottomOverlayHeight": "Bottom overlay height (CSS units)",
       "bottomMaskHeight": "Bottom mask height (CSS units)"
-    },
-    "homeBannerPickerDialog": {
-      "homePageBackgroundManager": "Home page background manager",
-      "highResourceUsage": "High resource usage",
-      "videoBackgroundsUse": "Video backgrounds use much more memory than images. To offload resources from RAM to GPU memory, set the app to run on dedicated GPU.",
-      "customBackgrounds": "Custom backgrounds",
-      "defaultBackgrounds": "Default backgrounds",
-      "artworksProvided": "The artworks provided by different artists. Hover previews to see the links to their profiles and other details.  "
-    },
-    "homeBannerPositionDialog": {
-      "positionXAxis": "Position X-axis",
-      "positionYAxis": "Position Y-axis"
     },
     "imagePickerDialog": {
       "cancel": "Cancel",

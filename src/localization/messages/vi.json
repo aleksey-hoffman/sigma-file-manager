@@ -255,53 +255,6 @@
       "clearAll": "Xóa tất cả khỏi danh sách này"
     }
   },
-  "notes": {
-    "newNote": "Ghi chú mới",
-    "existingNotes": "Ghi chú hiện có",
-    "trashedNotes": "Ghi chú đã chuyển vào thùng rác",
-    "loadingNotes": "Đang tải ghi chú",
-    "trashedNotesDeletedAfter7days": "Ghi chú đã chuyển vào thùng rác sẽ tự động bị xóa khỏi ổ đĩa sau 7 ngày kể từ khi bị chuyển vào thùng rác",
-    "deleteAllTrashed": "Xóa tất cả vào thùng rác",
-    "noTrashedNotes": "Không có ghi chú nào bị chuyển vào thùng rác",
-    "noNotes": "Không có ghi chú",
-    "ungroupedNotes": "Ghi chú chưa được nhóm",
-    "group": "Nhóm",
-    "noteCard": {
-      "deleteNotePermanently": "Xóa ghi chú vĩnh viễn",
-      "restoreNoteFromTrashList": "Khôi phục ghi chú từ danh sách thùng rác",
-      "noteWillBeDeletedOnSpecifiedDate": "Ghi chú sẽ bị xóa vĩnh viễn vào ngày đã chỉ định",
-      "noteProtectionIsOn": "Bảo vệ ghi chú BẬT",
-      "itCannotBeDeletedModified": "Không thể xóa/sửa đổi nó",
-      "noteProtectionIsOff": "Bảo vệ ghi chú TẮT",
-      "itCanBeDeletedModified": "Nó có thể bị xóa/sửa đổi",
-      "changeNoteGroup": "Thay đổi nhóm ghi chú",
-      "noteGroups": "Nhóm ghi chú",
-      "ungroup": "Ungroup",
-      "changeColor": "Thay đổi màu sắc",
-      "moveNoteToTrash": "Chuyển ghi chú vào thùng rác"
-    },
-    "noteEditor": {
-      "searchSelectionInGoogle": "Lựa chọn tìm kiếm trong Google",
-      "searchSelectionInDuckDuckGo": "Lựa chọn tìm kiếm trong DuckDuckGo",
-      "transformSelectionUppercase": "Chuyển đổi lựa chọn: UPPERCASE",
-      "transformSelectionLowercase": "Chuyển đổi lựa chọn: chữ thường",
-      "showNoteSourceCode": "Hiển thị mã nguồn ghi chú",
-      "loadTemplate": "Chạy bản mẫu",
-      "saveTemplate": "Lưu mẫu",
-      "removeFormattingFromSelection": "Xóa định dạng khỏi lựa chọn",
-      "removeAllEditingFromSelection": "Xóa tất cả chỉnh sửa khỏi lựa chọn",
-      "turnSelectionIntoSuperscript": "Biến lựa chọn thành chỉ số trên",
-      "turnSelectionIntoSubscript": "Biến lựa chọn thành chỉ số dưới",
-      "textColor": "Văn bản màu",
-      "textHighlighting": "Đánh dấu văn bản",
-      "insertDivider": "Chèn dải phân cách",
-      "decreaseIndentation": "Giảm thụt lề",
-      "increaseIndentation": "Tăng thụt đầu dòng",
-      "math": "Toán học",
-      "formula": "công thức",
-      "noteSourceCode": "Ghi chú mã nguồn"
-    }
-  },
   "settingsCategories": {
     "navigation": "Điều hướng"
   },
@@ -667,7 +620,7 @@
     "dataStorage": "Dữ liệu & lưu trữ",
     "stats": "Số liệu thống kê",
     "advanced": "Nâng cao",
-    "extensions": "Extensions"
+    "extensions": "Tiện ích mở rộng"
   },
   "settingsTags": {
     "language": "ngôn ngữ",
@@ -994,7 +947,7 @@
       "willSelectTheWordAndShowOptions": "sẽ chọn từ và hiển thị các tùy chọn",
       "pasteCopiedDataWithoutFormatting": "dán dữ liệu đã sao chép mà không cần định dạng",
       "escapeBlockAddNewLine": "khối thoát; thêm dòng mới",
-      "escapeBlock": "khối thoát",
+      "escapeBlock": "thoát khối",
       "escapeBlockWhenEndIsReached": "khối thoát (khi kết thúc)",
       "1stLevelHeadline": "tiêu đề cấp 1",
       "n1to6LevelHeadline": "Dòng tiêu đề cấp N[1-6]",
@@ -1846,7 +1799,7 @@
       "stop": "Dừng"
     },
     "unknownPublisher": "Unknown publisher",
-    "contextMenuLabel": "Extensions",
+    "contextMenuLabel": "Tiện ích mở rộng",
     "autoUpdate": "Auto-update",
     "showFolder": "Show folder",
     "reinstalledSuccessfully": "Cài đặt lại thành công",

@@ -255,53 +255,6 @@
       "clearAll": "Alle aus dieser Liste entfernen"
     }
   },
-  "notes": {
-    "newNote": "Neue Notiz",
-    "existingNotes": "Vorhandene Notizen",
-    "trashedNotes": "Verworfene Notizen",
-    "loadingNotes": "Notizen werden geladen",
-    "trashedNotesDeletedAfter7days": "Verworfene Notizen werden 7 Tage nach dem Löschen automatisch vom Laufwerk gelöscht",
-    "deleteAllTrashed": "Alle Papierkörbe leeren",
-    "noTrashedNotes": "Keine verworfenen Notizen",
-    "noNotes": "Keine Notizen",
-    "ungroupedNotes": "Nicht gruppierte Notizen",
-    "group": "Gruppe",
-    "noteCard": {
-      "deleteNotePermanently": "Notiz dauerhaft löschen",
-      "restoreNoteFromTrashList": "Notiz aus dem Papierkorb wiederherstellen",
-      "noteWillBeDeletedOnSpecifiedDate": "Notiz wird am angegebenen Datum dauerhaft gelöscht",
-      "noteProtectionIsOn": "Notenschutz ist AN",
-      "itCannotBeDeletedModified": "Es kann nicht gelöscht / modifiziert werden",
-      "noteProtectionIsOff": "Notenschutz ist AUS",
-      "itCanBeDeletedModified": "Es kann gelöscht / modifiziert werden",
-      "changeNoteGroup": "Notizgruppe ändern",
-      "noteGroups": "Notizgruppierung",
-      "ungroup": "Gruppierung aufheben",
-      "changeColor": "Farbe ändern",
-      "moveNoteToTrash": "Notiz in den Papierkorb verschieben"
-    },
-    "noteEditor": {
-      "searchSelectionInGoogle": "Suchauswahl in Google",
-      "searchSelectionInDuckDuckGo": "Suchauswahl in DuckDuckGo",
-      "transformSelectionUppercase": "Auswahl transformieren: GROSSBUCHSTABEN",
-      "transformSelectionLowercase": "Auswahl transformieren: Kleinbuchstaben",
-      "showNoteSourceCode": "Quellcode der Notiz anzeigen",
-      "loadTemplate": "Vorlage laden",
-      "saveTemplate": "Vorlage speichern",
-      "removeFormattingFromSelection": "Formatierung aus Auswahl entfernen",
-      "removeAllEditingFromSelection": "Alle Bearbeitungen aus der Auswahl entfernen",
-      "turnSelectionIntoSuperscript": "Auswahl hochstellen",
-      "turnSelectionIntoSubscript": "Auswahl in Tiefstellung umwandeln",
-      "textColor": "Textfarbe",
-      "textHighlighting": "Texthervorhebung",
-      "insertDivider": "Teiler einfügen",
-      "decreaseIndentation": "Einzug verkleinern",
-      "increaseIndentation": "Einzug vergrößern",
-      "math": "Mathematik",
-      "formula": "Formel",
-      "noteSourceCode": "Quellcode beachten"
-    }
-  },
   "settingsCategories": {
     "navigation": "Navigation"
   },
@@ -667,7 +620,7 @@
     "dataStorage": "Datenspeicher",
     "stats": "Statistiken",
     "advanced": "Erweitert",
-    "extensions": "Extensions"
+    "extensions": "Erweiterungen"
   },
   "settingsTags": {
     "language": "Sprache",
@@ -1504,7 +1457,7 @@
   "showInDirectory": "Im Verzeichnis anzeigen",
   "fileSymlink": "Datei-Symlink",
   "directorySymlink": "Verzeichnis-Symlink",
-  "done": "Getan",
+  "done": "Fertig",
   "paused": "Pausiert",
   "inProgress": "In Bearbeitung",
   "item": "0 Elemente | 1 Element | {n} Elemente | {n} Elemente",
@@ -1846,7 +1799,7 @@
       "stop": "Stoppen"
     },
     "unknownPublisher": "Unknown publisher",
-    "contextMenuLabel": "Extensions",
+    "contextMenuLabel": "Erweiterungen",
     "autoUpdate": "Auto-update",
     "showFolder": "Show folder",
     "reinstalledSuccessfully": "Erneut erfolgreich installiert",

@@ -255,53 +255,6 @@
       "clearAll": "Remover tudo desta lista"
     }
   },
-  "notes": {
-    "newNote": "nova nota",
-    "existingNotes": "Notas existentes",
-    "trashedNotes": "Notas descartadas",
-    "loadingNotes": "carregando notas",
-    "trashedNotesDeletedAfter7days": "notas na lixeira excluídas após 7 dias",
-    "deleteAllTrashed": "excluir tudo da lixeira",
-    "noTrashedNotes": "sem notas na lixeira",
-    "noNotes": "sem notas",
-    "ungroupedNotes": "Notas desagrupadas",
-    "group": "Grupo",
-    "noteCard": {
-      "deleteNotePermanently": "excluir nota permanentemente",
-      "restoreNoteFromTrashList": "restaurar nota da lista de lixeira",
-      "noteWillBeDeletedOnSpecifiedDate": "nota será excluída na data especificada",
-      "noteProtectionIsOn": "observe que a proteção está ativada",
-      "itCannotBeDeletedModified": "Não pode ser excluído/modificado",
-      "noteProtectionIsOff": "A proteção de nota está desativada",
-      "itCanBeDeletedModified": "Pode ser excluído/modificado",
-      "changeNoteGroup": "alterar grupo de notas",
-      "noteGroups": "Grupos de notas",
-      "ungroup": "Desagrupar",
-      "changeColor": "mudar cor",
-      "moveNoteToTrash": "mover nota para a lixeira"
-    },
-    "noteEditor": {
-      "searchSelectionInGoogle": "seleção de pesquisa no Google",
-      "searchSelectionInDuckDuckGo": "seleção de pesquisa no DuckDuckGo",
-      "transformSelectionUppercase": "transformar seleção: MAIÚSCULA",
-      "transformSelectionLowercase": "transformar seleção: minúscula",
-      "showNoteSourceCode": "mostrar código-fonte da nota",
-      "loadTemplate": "carregar modelo",
-      "saveTemplate": "Guardar modelo",
-      "removeFormattingFromSelection": "remover formatação da seleção",
-      "removeAllEditingFromSelection": "remover todas as edições da seleção",
-      "turnSelectionIntoSuperscript": "transformar a seleção em sobrescrito",
-      "turnSelectionIntoSubscript": "transformar a seleção em subscrito",
-      "textColor": "cor do texto",
-      "textHighlighting": "Destaque de texto",
-      "insertDivider": "inserir divisor",
-      "decreaseIndentation": "diminuir recuo",
-      "increaseIndentation": "aumentar o recuo",
-      "math": "Matemática",
-      "formula": "fórmula",
-      "noteSourceCode": "observe o código-fonte"
-    }
-  },
   "settingsCategories": {
     "navigation": "Navegação"
   },
@@ -667,7 +620,7 @@
     "dataStorage": "Armazenamento de dados",
     "stats": "Estatísticas",
     "advanced": "Avançado",
-    "extensions": "Extensions"
+    "extensions": "Extensões"
   },
   "settingsTags": {
     "language": "idioma",
@@ -997,7 +950,7 @@
       "willSelectTheWordAndShowOptions": "irá selecionar a palavra e mostrar opções",
       "pasteCopiedDataWithoutFormatting": "colar dados copiados sem formatação",
       "escapeBlockAddNewLine": "bloco de escape; adicionar nova linha",
-      "escapeBlock": "bloco de escape",
+      "escapeBlock": "sair do bloco",
       "escapeBlockWhenEndIsReached": "bloco de escape (quando o fim é alcançado)",
       "1stLevelHeadline": "título de primeiro nível",
       "n1to6LevelHeadline": "Título do nível N[1-6]",
@@ -1517,7 +1470,7 @@
   "showInDirectory": "Mostrar no diretório",
   "fileSymlink": "link simbólico do arquivo",
   "directorySymlink": "Link simbólico do diretório",
-  "done": "pronto",
+  "done": "Pronto",
   "paused": "Pausado",
   "inProgress": "Em andamento",
   "item": "0 itens | 1 item | {n} itens | {n} itens",
@@ -1858,7 +1811,7 @@
       "exportToFolder": "Export to folder"
     },
     "unknownPublisher": "Unknown publisher",
-    "contextMenuLabel": "Extensions",
+    "contextMenuLabel": "Extensões",
     "autoUpdate": "Auto-update",
     "showFolder": "Show folder",
     "reinstalledSuccessfully": "Reinstalado com sucesso",
@@ -1897,7 +1850,7 @@
       "delete": "Delete operations"
     }
   },
-  "items": "items",
+  "items": "itens",
   "recalculate": "Recalculate",
   "sec": "sec"
 }

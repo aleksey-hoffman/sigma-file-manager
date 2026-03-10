@@ -268,53 +268,6 @@
       "clearAll": "Odstrani vse s tega seznama"
     }
   },
-  "notes": {
-    "newNote": "Nova opomba",
-    "existingNotes": "Obstoječe opombe",
-    "trashedNotes": "Izbrisane opombe",
-    "loadingNotes": "Nalagam opombe",
-    "trashedNotesDeletedAfter7days": "Izbrisane opombe se samodejno izbrišejo s pogona 7 dni po premiku v koš",
-    "deleteAllTrashed": "Izbriši vse iz koša",
-    "noTrashedNotes": "Ni izbrisanih opomb",
-    "noNotes": "Ni opomb",
-    "ungroupedNotes": "Nerazvrščene opombe",
-    "group": "Skupina",
-    "noteCard": {
-      "deleteNotePermanently": "Trajno izbriši opombo",
-      "restoreNoteFromTrashList": "Obnovi opombo iz koša",
-      "noteWillBeDeletedOnSpecifiedDate": "Opomba bo trajno izbrisana na določen datum",
-      "noteProtectionIsOn": "Zaščita opombe je VKLOPLJENA",
-      "itCannotBeDeletedModified": "Ne more biti izbrisana / spremenjena",
-      "noteProtectionIsOff": "Zaščita opombe je IZKLJUČENA",
-      "itCanBeDeletedModified": "Lahko je izbrisana / spremenjena",
-      "changeNoteGroup": "Spremeni skupino opombe",
-      "noteGroups": "Skupine opomb",
-      "ungroup": "Razgrupi",
-      "changeColor": "Spremeni barvo",
-      "moveNoteToTrash": "Premakni opombo v koš"
-    },
-    "noteEditor": {
-      "searchSelectionInGoogle": "Iskanje izbire v Google",
-      "searchSelectionInDuckDuckGo": "Iskanje izbire v DuckDuckGo",
-      "transformSelectionUppercase": "Pretvori izbiro: VELIKE ČRKE",
-      "transformSelectionLowercase": "Pretvori izbiro: male črke",
-      "showNoteSourceCode": "Pokaži izvorno kodo opombe",
-      "loadTemplate": "Naloži predlogo",
-      "saveTemplate": "Shrani predlogo",
-      "removeFormattingFromSelection": "Odstrani oblikovanje iz izbire",
-      "removeAllEditingFromSelection": "Odstrani vso urejanje iz izbire",
-      "turnSelectionIntoSuperscript": "Pretvori izbiro v nadpisano besedilo",
-      "turnSelectionIntoSubscript": "Pretvori izbiro v podpisano besedilo",
-      "textColor": "Barva besedila",
-      "textHighlighting": "Označevanje besedila",
-      "insertDivider": "Vstavi delilnik",
-      "decreaseIndentation": "Zmanjšaj zamik",
-      "increaseIndentation": "Povečaj zamik",
-      "math": "Matematika",
-      "formula": "formula",
-      "noteSourceCode": "Izvorna koda opombe"
-    }
-  },
   "settingsCategories": {
     "navigation": "Navigacija"
   },
@@ -680,7 +633,7 @@
     "dataStorage": "Podatki & shranjevanje",
     "stats": "Statistika",
     "advanced": "Napredno",
-    "extensions": "Extensions"
+    "extensions": "Razširitve"
   },
   "settingsTags": {
     "language": "language",
@@ -1007,7 +960,7 @@
       "willSelectTheWordAndShowOptions": "izbere besedo in prikaže možnosti",
       "pasteCopiedDataWithoutFormatting": "prilepi kopirane podatke brez oblikovanja",
       "escapeBlockAddNewLine": "escape blok; dodaj novo vrstico",
-      "escapeBlock": "escape blok",
+      "escapeBlock": "izhod iz bloka",
       "escapeBlockWhenEndIsReached": "escape blok (ko je konec dosežen)",
       "1stLevelHeadline": "Naslov 1. nivoja",
       "n1to6LevelHeadline": "Naslov nivoja N[1-6]",
@@ -1880,7 +1833,7 @@
     "selectedVersionLabel": "Selected version",
     "versionPrefix": "v",
     "metaSeparator": "•",
-    "contextMenuLabel": "Extensions",
+    "contextMenuLabel": "Razširitve",
     "autoUpdate": "Auto-update",
     "status": "Status",
     "latest": "latest",

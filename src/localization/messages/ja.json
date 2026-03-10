@@ -255,53 +255,6 @@
       "clearAll": "このリストからすべて削除"
     }
   },
-  "notes": {
-    "newNote": "新しいノート",
-    "existingNotes": "既存のノート",
-    "trashedNotes": "トラッシュノート",
-    "loadingNotes": "メモの読み込み",
-    "trashedNotesDeletedAfter7days": "「ゴミ箱に捨てられたメモは、ゴミ箱に移動されてから 7 日後にドライブから自動的に削除されます」",
-    "deleteAllTrashed": "ゴミ箱に入れられたものをすべて削除",
-    "noTrashedNotes": "ゴミ箱にメモはありません",
-    "noNotes": "メモなし",
-    "ungroupedNotes": "グループ化されていないメモ",
-    "group": "グループ",
-    "noteCard": {
-      "deleteNotePermanently": "メモを完全に削除する",
-      "restoreNoteFromTrashList": "ごみ箱リストからメモを復元",
-      "noteWillBeDeletedOnSpecifiedDate": "メモは指定された日に完全に削除されます",
-      "noteProtectionIsOn": "メモ保護がオン",
-      "itCannotBeDeletedModified": "削除/変更できません",
-      "noteProtectionIsOff": "メモ保護はオフです",
-      "itCanBeDeletedModified": "「削除・変更可能」",
-      "changeNoteGroup": "変更メモグループ",
-      "noteGroups": "ノートグループ",
-      "ungroup": "グループ解除",
-      "changeColor": "色を変える",
-      "moveNoteToTrash": "ノートをゴミ箱に移動"
-    },
-    "noteEditor": {
-      "searchSelectionInGoogle": "Google での検索選択",
-      "searchSelectionInDuckDuckGo": "DuckDuckGo での検索選択",
-      "transformSelectionUppercase": "変換の選択: 大文字",
-      "transformSelectionLowercase": "変換の選択: 小文字",
-      "showNoteSourceCode": "ノートのソースコードを表示",
-      "loadTemplate": "テンプレートをロード",
-      "saveTemplate": "テンプレートを保存",
-      "removeFormattingFromSelection": "選択範囲から書式を削除",
-      "removeAllEditingFromSelection": "選択からすべての編集を削除",
-      "turnSelectionIntoSuperscript": "選択範囲を上付き文字に変換",
-      "turnSelectionIntoSubscript": "選択範囲を添字に変換",
-      "textColor": "テキストの色",
-      "textHighlighting": "テキストのハイライト",
-      "insertDivider": "仕切りを挿入",
-      "decreaseIndentation": "インデントを減らす",
-      "increaseIndentation": "インデントを増やす",
-      "math": "算数",
-      "formula": "方式",
-      "noteSourceCode": "ソースコードに注意"
-    }
-  },
   "settingsCategories": {
     "navigation": "ナビゲーション"
   },
@@ -667,7 +620,7 @@
     "dataStorage": "データストレージ",
     "stats": "統計",
     "advanced": "詳細",
-    "extensions": "Extensions"
+    "extensions": "拡張機能"
   },
   "settingsTags": {
     "language": "言語",
@@ -994,7 +947,7 @@
       "willSelectTheWordAndShowOptions": "単語を選択し、オプションを表示します",
       "pasteCopiedDataWithoutFormatting": "コピーしたデータをフォーマットせずに貼り付け",
       "escapeBlockAddNewLine": "エスケープブロック; 新しい行を追加",
-      "escapeBlock": "「エスケープブロック」",
+      "escapeBlock": "ブロックから抜ける",
       "escapeBlockWhenEndIsReached": "「エスケープブロック(終了時)」",
       "1stLevelHeadline": "第 1 レベルの見出し",
       "n1to6LevelHeadline": "N[1-6] レベルの見出し",
@@ -1504,7 +1457,7 @@
   "showInDirectory": "ディレクトリに表示",
   "fileSymlink": "ファイルのシンボリックリンク",
   "directorySymlink": "ディレクトリシンボリックリンク",
-  "done": "終わり",
+  "done": "完了",
   "paused": "一時停止",
   "inProgress": "進行中",
   "item": "0 アイテム | 1 アイテム | {n} アイテム | {n} アイテム",
@@ -1551,7 +1504,7 @@
   "name": "名前",
   "download": "ダウンロード",
   "url": "URL",
-  "resume": "履歴書",
+  "resume": "再開",
   "installUpdate": "更新プログラムをインストールします",
   "stopServer": "サーバーを停止",
   "copyAddress": "アドレスをコピー",
@@ -1846,7 +1799,7 @@
       "exportToFolder": "Export to folder"
     },
     "unknownPublisher": "Unknown publisher",
-    "contextMenuLabel": "Extensions",
+    "contextMenuLabel": "拡張機能",
     "autoUpdate": "Auto-update",
     "showFolder": "Show folder",
     "reinstalledSuccessfully": "再インストールが完了しました",

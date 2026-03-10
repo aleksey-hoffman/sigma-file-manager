@@ -254,53 +254,6 @@
       "clearAll": "حذف همه از این لیست"
     }
   },
-  "notes": {
-    "newNote": "یادداشت جدید",
-    "existingNotes": "یادداشت های موجود",
-    "trashedNotes": "یادداشت های سطل زباله",
-    "loadingNotes": "بارگیری یادداشت ها",
-    "trashedNotesDeletedAfter7days": "یادداشت های حذف شده به طور خودکار 7 روز پس از سطل زباله از درایو حذف می شوند",
-    "deleteAllTrashed": "حذف همه سطل زباله",
-    "noTrashedNotes": "بدون یادداشت های سطل زباله",
-    "noNotes": "بدون یادداشت",
-    "ungroupedNotes": "یادداشت های گروه بندی نشده",
-    "group": "گروه",
-    "noteCard": {
-      "deleteNotePermanently": "حذف یادداشت برای همیشه",
-      "restoreNoteFromTrashList": "بازیابی یادداشت از فهرست زباله",
-      "noteWillBeDeletedOnSpecifiedDate": "یادداشت در تاریخ مشخص شده برای همیشه حذف خواهد شد",
-      "noteProtectionIsOn": "محافظت یادداشت روشن است",
-      "itCannotBeDeletedModified": "این را نمی توان حذف / اصلاح کرد",
-      "noteProtectionIsOff": "محافظت یادداشت خاموش است",
-      "itCanBeDeletedModified": "می توان آن را حذف / اصلاح کرد",
-      "changeNoteGroup": "تغییر گروه یادداشت",
-      "noteGroups": "گروه های یادداشت",
-      "ungroup": "لغو گروه",
-      "changeColor": "تغییر رنگ",
-      "moveNoteToTrash": "انتقال یادداشت به سطل زباله"
-    },
-    "noteEditor": {
-      "searchSelectionInGoogle": "جستجوی انتخاب در گوگل",
-      "searchSelectionInDuckDuckGo": "جستجوی انتخاب در DuckDuckGo",
-      "transformSelectionUppercase": "انتخاب تبدیل: UPPERCASE",
-      "transformSelectionLowercase": "انتخاب تبدیل: حروف کوچک",
-      "showNoteSourceCode": "نمایش کد منبع یادداشت",
-      "loadTemplate": "بارگیری قالب",
-      "saveTemplate": "ذخیره الگو",
-      "removeFormattingFromSelection": "حذف قالب بندی از انتخاب",
-      "removeAllEditingFromSelection": "حذف تمام ویرایش ها از انتخاب",
-      "turnSelectionIntoSuperscript": "تبدیل انتخاب به بالانویس",
-      "turnSelectionIntoSubscript": "تبدیل انتخاب به زیرمجموعه",
-      "textColor": "رنگ متن",
-      "textHighlighting": "برجستگی متن",
-      "insertDivider": "درج تقسیم کننده",
-      "decreaseIndentation": "کاهش تورفتگی",
-      "increaseIndentation": "افزایش تورفتگی",
-      "math": "ریاضی",
-      "formula": "فرمول",
-      "noteSourceCode": "کد منبع را یادداشت کنید"
-    }
-  },
   "settingsCategories": {
     "navigation": "ناوبری"
   },
@@ -666,7 +619,7 @@
     "dataStorage": "داده ها و ذخیره سازی",
     "stats": "آمار",
     "advanced": "پیشرفته",
-    "extensions": "Extensions"
+    "extensions": "برنامه های افزودنی"
   },
   "settingsTags": {
     "language": "زبان",
@@ -993,7 +946,7 @@
       "willSelectTheWordAndShowOptions": "کلمه را انتخاب می کند و گزینه ها را نشان می دهد",
       "pasteCopiedDataWithoutFormatting": "پیست داده های کپی شده بدون قالب بندی",
       "escapeBlockAddNewLine": "بلوک فرار؛ اضافه کردن خط جدید",
-      "escapeBlock": "بلوک فرار",
+      "escapeBlock": "خروج از بلوک",
       "escapeBlockWhenEndIsReached": "بلوک فرار (وقتی به پایان رسید)",
       "1stLevelHeadline": "سرفصل سطح 1",
       "n1to6LevelHeadline": "تیتر سطح N[1-6]",
@@ -1503,7 +1456,7 @@
   "showInDirectory": "نمایش در فهرست",
   "fileSymlink": "پیوند نماد فایل",
   "directorySymlink": "Directory-symlink",
-  "done": "انجام شده",
+  "done": "تمام",
   "paused": "مکث",
   "inProgress": "در حال پیش رفت",
   "item": "0 مورد | 1 مورد | {n} مورد | {n} مورد",
@@ -1845,7 +1798,7 @@
       "exportToFolder": "Export to folder"
     },
     "unknownPublisher": "Unknown publisher",
-    "contextMenuLabel": "Extensions",
+    "contextMenuLabel": "برنامه های افزودنی",
     "autoUpdate": "Auto-update",
     "showFolder": "Show folder",
     "reinstalledSuccessfully": "با موفقیت نصب مجدد شد",

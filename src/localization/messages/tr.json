@@ -255,53 +255,6 @@
       "clearAll": "Tümünü bu listeden kaldır"
     }
   },
-  "notes": {
-    "newNote": "Yeni not",
-    "existingNotes": "Mevcut notlar",
-    "trashedNotes": "Çöpe atılan notlar",
-    "loadingNotes": "Notlar yükleniyor",
-    "trashedNotesDeletedAfter7days": "Çöpe atılan notlar, çöpe atıldıktan 7 gün sonra sürücüden otomatik olarak silinir",
-    "deleteAllTrashed": "Çöp kutusuna atılanların hepsini sil",
-    "noTrashedNotes": "Çöpe atılan not yok",
-    "noNotes": "Not yok",
-    "ungroupedNotes": "Gruplanmamış notlar",
-    "group": "Grup",
-    "noteCard": {
-      "deleteNotePermanently": "Notu kalıcı olarak sil",
-      "restoreNoteFromTrashList": "Notu çöp listesinden geri yükle",
-      "noteWillBeDeletedOnSpecifiedDate": "Not belirtilen tarihte kalıcı olarak silinecektir",
-      "noteProtectionIsOn": "Not koruması AÇIK",
-      "itCannotBeDeletedModified": "Silinemez/değiştirilemez",
-      "noteProtectionIsOff": "Not koruması KAPALI",
-      "itCanBeDeletedModified": "Silinebilir / değiştirilebilir",
-      "changeNoteGroup": "Not grubunu değiştir",
-      "noteGroups": "Not grupları",
-      "ungroup": "Grubu Çöz",
-      "changeColor": "Rengi değiştir",
-      "moveNoteToTrash": "Notu çöp kutusuna taşı"
-    },
-    "noteEditor": {
-      "searchSelectionInGoogle": "Google'da seçim ara",
-      "searchSelectionInDuckDuckGo": "DuckDuckGo'da seçimi ara",
-      "transformSelectionUppercase": "Seçimi dönüştür: BÜYÜK HARF",
-      "transformSelectionLowercase": "Seçimi dönüştür: küçük harf",
-      "showNoteSourceCode": "Not kaynak kodunu göster",
-      "loadTemplate": "Şablonu yükle",
-      "saveTemplate": "Şablonu kaydet",
-      "removeFormattingFromSelection": "Seçimden biçimlendirmeyi kaldır",
-      "removeAllEditingFromSelection": "Tüm düzenlemeleri seçimden kaldır",
-      "turnSelectionIntoSuperscript": "Seçimi üst simgeye çevir",
-      "turnSelectionIntoSubscript": "Seçimi alt simgeye çevir",
-      "textColor": "Metin rengi",
-      "textHighlighting": "Metin vurgulama",
-      "insertDivider": "Bölücü ekle",
-      "decreaseIndentation": "Girintiyi azalt",
-      "increaseIndentation": "Girintiyi artır",
-      "math": "Matematik",
-      "formula": "formül",
-      "noteSourceCode": "Kaynak kodunu not edin"
-    }
-  },
   "settingsCategories": {
     "navigation": "Gezinme"
   },
@@ -667,7 +620,7 @@
     "dataStorage": "Veri depolama",
     "stats": "İstatistikler",
     "advanced": "Gelişmiş",
-    "extensions": "Extensions"
+    "extensions": "Uzantılar"
   },
   "settingsTags": {
     "language": "dil",
@@ -994,7 +947,7 @@
       "willSelectTheWordAndShowOptions": "kelimeyi seçecek ve seçenekleri gösterecek",
       "pasteCopiedDataWithoutFormatting": "kopyalanan verileri biçimlendirmeden yapıştır",
       "escapeBlockAddNewLine": "kaçış bloğu; yeni satır ekle",
-      "escapeBlock": "kaçış bloğu",
+      "escapeBlock": "bloktan çık",
       "escapeBlockWhenEndIsReached": "kaçış bloğu (sona ulaşıldığında)",
       "1stLevelHeadline": "1. düzey başlık",
       "n1to6LevelHeadline": "N[1-6] düzeyinde başlık",
@@ -1504,7 +1457,7 @@
   "showInDirectory": "Dizinde göster",
   "fileSymlink": "dosya sembolik bağlantısı",
   "directorySymlink": "Dizin-sembolik bağlantı",
-  "done": "Tamamlandı",
+  "done": "Tamam",
   "paused": "Duraklatıldı",
   "inProgress": "Devam etmekte",
   "item": "0 ürün | 1 ürün | {n} ürün | {n} ürün",
@@ -1534,7 +1487,7 @@
   "enterPassword": "Parolanı Gir",
   "errorOccured": "Hata oluştu",
   "dataType": "Veri tipi",
-  "position": "Durum",
+  "position": "Konum",
   "error": "Hata",
   "address": "Adres",
   "reason": "Sebep",
@@ -1545,7 +1498,7 @@
   "ok": "Tamam",
   "save": "Kayıt etmek",
   "browse": "Gözat",
-  "create": "Oluşturmak",
+  "create": "Oluştur",
   "createNew": "Yeni oluşturmak",
   "new": "Yeni",
   "name": "İsim",
@@ -1846,7 +1799,7 @@
       "exportToFolder": "Export to folder"
     },
     "unknownPublisher": "Unknown publisher",
-    "contextMenuLabel": "Extensions",
+    "contextMenuLabel": "Uzantılar",
     "autoUpdate": "Auto-update",
     "showFolder": "Show folder",
     "reinstalledSuccessfully": "Başarıyla yeniden yüklendi",

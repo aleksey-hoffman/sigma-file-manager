@@ -255,53 +255,6 @@
       "clearAll": "Eliminar todo de esta lista"
     }
   },
-  "notes": {
-    "newNote": "Nueva nota",
-    "existingNotes": "Notas existentes",
-    "trashedNotes": "Notas desechadas",
-    "loadingNotes": "Cargando notas",
-    "trashedNotesDeletedAfter7days": "Las notas enviadas a la papelera se eliminan automáticamente de la unidad 7 días después de ser enviadas a la papelera",
-    "deleteAllTrashed": "Eliminar todo en la papelera",
-    "noTrashedNotes": "Sin notas desechadas",
-    "noNotes": "Sin notas",
-    "ungroupedNotes": "Notas desagrupadas",
-    "group": "Grupo",
-    "noteCard": {
-      "deleteNotePermanently": "Eliminar nota de forma permanente",
-      "restoreNoteFromTrashList": "Restaurar nota de la lista de basura",
-      "noteWillBeDeletedOnSpecifiedDate": "La nota se eliminará de forma permanente en la fecha especificada",
-      "noteProtectionIsOn": "La protección de la nota está activada",
-      "itCannotBeDeletedModified": "No se puede borrar/modificar",
-      "noteProtectionIsOff": "La protección de la nota está desactivada",
-      "itCanBeDeletedModified": "Se puede borrar/modificar",
-      "changeNoteGroup": "Cambiar grupo de notas",
-      "noteGroups": "Grupos de notas",
-      "ungroup": "Desagrupar",
-      "changeColor": "Cambiar el color",
-      "moveNoteToTrash": "Mover nota a la papelera"
-    },
-    "noteEditor": {
-      "searchSelectionInGoogle": "Selección de búsqueda en Google",
-      "searchSelectionInDuckDuckGo": "Selección de búsqueda en DuckDuckGo",
-      "transformSelectionUppercase": "Transformar selección: MAYÚSCULAS",
-      "transformSelectionLowercase": "Transformar selección: minúsculas",
-      "showNoteSourceCode": "Mostrar código fuente de la nota",
-      "loadTemplate": "Cargar plantilla",
-      "saveTemplate": "Guardar plantilla",
-      "removeFormattingFromSelection": "Eliminar formato de la selección",
-      "removeAllEditingFromSelection": "Eliminar todas las ediciones de la selección",
-      "turnSelectionIntoSuperscript": "Convertir selección en superíndice",
-      "turnSelectionIntoSubscript": "Convertir selección en subíndice",
-      "textColor": "Color de texto",
-      "textHighlighting": "Resaltado de texto",
-      "insertDivider": "Insertar separador",
-      "decreaseIndentation": "Disminuir sangría",
-      "increaseIndentation": "Aumentar sangría",
-      "math": "Matemáticas",
-      "formula": "fórmula",
-      "noteSourceCode": "Nota código fuente"
-    }
-  },
   "settingsCategories": {
     "navigation": "Navegación"
   },
@@ -667,7 +620,7 @@
     "dataStorage": "Almacenamiento de datos",
     "stats": "Estadísticas",
     "advanced": "Avanzado",
-    "extensions": "Extensions"
+    "extensions": "Extensiones"
   },
   "settingsTags": {
     "language": "idioma",
@@ -1504,7 +1457,7 @@
   "showInDirectory": "Mostrar en directorio",
   "fileSymlink": "enlace simbólico de archivo",
   "directorySymlink": "Directorio-enlace simbólico",
-  "done": "Hecho",
+  "done": "Listo",
   "paused": "En pausa",
   "inProgress": "En progreso",
   "item": "0 elementos | 1 elemento | {n} elementos | {n} elementos",
@@ -1846,7 +1799,7 @@
       "stop": "Detener"
     },
     "unknownPublisher": "Unknown publisher",
-    "contextMenuLabel": "Extensions",
+    "contextMenuLabel": "Extensiones",
     "autoUpdate": "Auto-update",
     "showFolder": "Show folder",
     "reinstalledSuccessfully": "Reinstalado correctamente",
