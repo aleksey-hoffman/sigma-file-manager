@@ -5,7 +5,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <script setup lang="ts">
 import {
-  ref, onBeforeUnmount, computed, watch, nextTick,
+  ref, onBeforeUnmount, onMounted, computed, watch, nextTick,
 } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Tab, TabDraggable } from '.';
@@ -78,6 +78,24 @@ function handleWheel(event: WheelEvent) {
 function onScroll() {
   handleScrollActivity();
 }
+
+function scrollSelectedTabGroupIntoView() {
+  nextTick(() => {
+    const selectedTab = document.querySelector('.tab[is-active="true"]');
+
+    if (selectedTab) {
+      selectedTab.scrollIntoView({
+        block: 'nearest',
+        inline: 'nearest',
+        behavior: 'instant',
+      });
+    }
+  });
+}
+
+onMounted(() => {
+  scrollSelectedTabGroupIntoView();
+});
 
 onBeforeUnmount(() => {
   if (scrollDisableTimeoutId !== null) {
