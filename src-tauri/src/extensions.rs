@@ -2,10 +2,12 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
+use futures_util::StreamExt;
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::fs;
+use std::time::Duration;
 use std::io::{self, BufRead, BufReader, Read, Write};
 use std::path::{Component, Path, PathBuf};
 use std::process::{Child, Command, Stdio};
@@ -58,6 +60,8 @@ pub struct ExtensionCommandComplete {
 
 static COMMAND_TASKS: Lazy<Mutex<std::collections::HashMap<String, Arc<Mutex<Child>>>>> =
     Lazy::new(|| Mutex::new(std::collections::HashMap::new()));
+static IN_FLIGHT_BINARY_DOWNLOADS: Lazy<tokio::sync::Mutex<std::collections::HashMap<String, tokio::sync::broadcast::Sender<Result<String, String>>>>> =
+    Lazy::new(|| tokio::sync::Mutex::new(std::collections::HashMap::new()));
 static COMMAND_PIDS: Lazy<Mutex<std::collections::HashMap<String, u32>>> =
     Lazy::new(|| Mutex::new(std::collections::HashMap::new()));
 static COMMAND_EXTENSION_MAP: Lazy<Mutex<std::collections::HashMap<String, String>>> =
@@ -1183,10 +1187,17 @@ pub async fn run_extension_command(
     };
 
     let output = tauri::async_runtime::spawn_blocking(move || {
-        Command::new(command_path_clone)
-            .args(args_clone)
-            .env("PATH", enhanced_path)
-            .output()
+        let mut command = Command::new(command_path_clone);
+        command.args(args_clone).env("PATH", enhanced_path);
+
+        #[cfg(windows)]
+        {
+            use std::os::windows::process::CommandExt;
+            const CREATE_NO_WINDOW: u32 = 0x08000000;
+            command.creation_flags(CREATE_NO_WINDOW);
+        }
+
+        command.output()
     })
     .await
     .map_err(|error| format!("Failed to run command: {}", error))?
@@ -1920,7 +1931,14 @@ pub async fn download_and_extract_extension_binary(
 
     let zip_path = staging_root_dir.join("download.zip");
 
-    let response = reqwest::get(&download_url)
+    let client = reqwest::Client::builder()
+        .timeout(Duration::from_secs(900))
+        .build()
+        .map_err(|error| format!("Failed to create HTTP client: {}", error))?;
+
+    let response = client
+        .get(&download_url)
+        .send()
         .await
         .map_err(|error| format!("Failed to download binary archive: {}", error))?;
 
@@ -2018,6 +2036,18 @@ pub async fn get_shared_binary_path(
     }
 }
 
+fn binary_download_key(kind: &str, binary_id: &str, version: Option<&str>) -> String {
+    format!("{}:{}:{}", kind, binary_id, version.unwrap_or("latest"))
+}
+
+#[derive(Clone, Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct BinaryDownloadProgress {
+    progress_event_id: String,
+    downloaded: u64,
+    total: Option<u64>,
+}
+
 #[tauri::command]
 pub async fn download_shared_binary(
     app_handle: tauri::AppHandle,
@@ -2026,6 +2056,88 @@ pub async fn download_shared_binary(
     executable_name: String,
     integrity: Option<String>,
     version: Option<String>,
+    progress_event_id: Option<String>,
+) -> Result<String, String> {
+    let binary_dir = get_shared_binary_dir(&app_handle, &binary_id, version.as_deref())?;
+    let binary_path = resolve_binary_file_path(&binary_dir, &executable_name)?;
+
+    if binary_path.exists() {
+        return Ok(binary_path.to_string_lossy().to_string());
+    }
+
+    let key = binary_download_key("raw", &binary_id, version.as_deref());
+    let app_handle_clone = app_handle.clone();
+    let binary_id_clone = binary_id.clone();
+    let download_url_clone = download_url.clone();
+    let executable_name_clone = executable_name.clone();
+    let integrity_clone = integrity.clone();
+    let version_clone = version.clone();
+    let progress_event_id_clone = progress_event_id.clone();
+
+    let mut guard = IN_FLIGHT_BINARY_DOWNLOADS.lock().await;
+    if let Some(tx) = guard.get(&key) {
+        let mut rx = tx.subscribe();
+        drop(guard);
+        match rx.recv().await {
+            Ok(result) => result,
+            Err(tokio::sync::broadcast::error::RecvError::Lagged(_)) => {
+                if binary_path.exists() {
+                    Ok(binary_path.to_string_lossy().to_string())
+                } else {
+                    Err("Previous download completed but binary not found".to_string())
+                }
+            }
+            Err(tokio::sync::broadcast::error::RecvError::Closed) => {
+                Err("Download channel closed".to_string())
+            }
+        }
+    } else {
+        let (tx, mut rx) = tokio::sync::broadcast::channel(1);
+        guard.insert(key.clone(), tx.clone());
+        drop(guard);
+
+        let tx_for_task = tx.clone();
+        tokio::spawn(async move {
+            let result = run_download_shared_binary(
+                app_handle_clone,
+                binary_id_clone,
+                download_url_clone,
+                executable_name_clone,
+                integrity_clone,
+                version_clone,
+                progress_event_id_clone,
+            )
+            .await;
+            let _ = tx_for_task.send(result);
+        });
+
+        let result = match rx.recv().await {
+            Ok(r) => r,
+            Err(tokio::sync::broadcast::error::RecvError::Lagged(_)) => {
+                if binary_path.exists() {
+                    Ok(binary_path.to_string_lossy().to_string())
+                } else {
+                    Err("Download completed but binary not found".to_string())
+                }
+            }
+            Err(tokio::sync::broadcast::error::RecvError::Closed) => {
+                Err("Download channel closed".to_string())
+            }
+        };
+
+        IN_FLIGHT_BINARY_DOWNLOADS.lock().await.remove(&key);
+        result
+    }
+}
+
+async fn run_download_shared_binary(
+    app_handle: tauri::AppHandle,
+    binary_id: String,
+    download_url: String,
+    executable_name: String,
+    integrity: Option<String>,
+    version: Option<String>,
+    progress_event_id: Option<String>,
 ) -> Result<String, String> {
     let binary_dir = get_shared_binary_dir(&app_handle, &binary_id, version.as_deref())?;
     let binary_path = resolve_binary_file_path(&binary_dir, &executable_name)?;
@@ -2043,7 +2155,14 @@ pub async fn download_shared_binary(
         }
     }
 
-    let response = reqwest::get(&download_url)
+    let client = reqwest::Client::builder()
+        .timeout(Duration::from_secs(900))
+        .build()
+        .map_err(|error| format!("Failed to create HTTP client: {}", error))?;
+
+    let response = client
+        .get(&download_url)
+        .send()
         .await
         .map_err(|error| format!("Failed to download binary: {}", error))?;
 
@@ -2054,10 +2173,48 @@ pub async fn download_shared_binary(
         ));
     }
 
-    let bytes = response
-        .bytes()
-        .await
-        .map_err(|error| format!("Failed to read binary response: {}", error))?;
+    let total = response.content_length();
+    if let Some(ref progress_id) = progress_event_id {
+        let payload = BinaryDownloadProgress {
+            progress_event_id: progress_id.clone(),
+            downloaded: 0,
+            total,
+        };
+        let _ = app_handle.emit("binary-download-progress", payload);
+    }
+
+    let mut stream = response.bytes_stream();
+    let mut bytes = Vec::new();
+    let mut downloaded: u64 = 0;
+    let mut last_emit: u64 = 0;
+
+    while let Some(chunk_result) = stream.next().await {
+        let chunk = chunk_result.map_err(|error| format!("Failed to read binary stream: {}", error))?;
+        downloaded += chunk.len() as u64;
+        bytes.extend_from_slice(&chunk);
+
+        if let Some(ref progress_id) = progress_event_id {
+            if downloaded - last_emit >= 256 * 1024 || downloaded == 0 {
+                last_emit = downloaded;
+                let payload = BinaryDownloadProgress {
+                    progress_event_id: progress_id.clone(),
+                    downloaded,
+                    total,
+                };
+                let _ = app_handle.emit("binary-download-progress", payload);
+            }
+        }
+    }
+
+    if let Some(ref progress_id) = progress_event_id {
+        let payload = BinaryDownloadProgress {
+            progress_event_id: progress_id.clone(),
+            downloaded,
+            total,
+        };
+        let _ = app_handle.emit("binary-download-progress", payload);
+    }
+
     verify_integrity(&bytes, integrity.as_deref())?;
 
     let mut file = fs::File::create(&binary_path)
@@ -2088,6 +2245,88 @@ pub async fn download_and_extract_shared_binary(
     executable_name: String,
     integrity: Option<String>,
     version: Option<String>,
+    progress_event_id: Option<String>,
+) -> Result<String, String> {
+    let binary_dir = get_shared_binary_dir(&app_handle, &binary_id, version.as_deref())?;
+    let binary_path = resolve_binary_file_path(&binary_dir, &executable_name)?;
+
+    if binary_path.exists() {
+        return Ok(binary_path.to_string_lossy().to_string());
+    }
+
+    let key = binary_download_key("extract", &binary_id, version.as_deref());
+    let app_handle_clone = app_handle.clone();
+    let binary_id_clone = binary_id.clone();
+    let download_url_clone = download_url.clone();
+    let executable_name_clone = executable_name.clone();
+    let integrity_clone = integrity.clone();
+    let version_clone = version.clone();
+    let progress_event_id_clone = progress_event_id.clone();
+
+    let mut guard = IN_FLIGHT_BINARY_DOWNLOADS.lock().await;
+    if let Some(tx) = guard.get(&key) {
+        let mut rx = tx.subscribe();
+        drop(guard);
+        match rx.recv().await {
+            Ok(result) => result,
+            Err(tokio::sync::broadcast::error::RecvError::Lagged(_)) => {
+                if binary_path.exists() {
+                    Ok(binary_path.to_string_lossy().to_string())
+                } else {
+                    Err("Previous download completed but binary not found".to_string())
+                }
+            }
+            Err(tokio::sync::broadcast::error::RecvError::Closed) => {
+                Err("Download channel closed".to_string())
+            }
+        }
+    } else {
+        let (tx, mut rx) = tokio::sync::broadcast::channel(1);
+        guard.insert(key.clone(), tx.clone());
+        drop(guard);
+
+        let tx_for_task = tx.clone();
+        tokio::spawn(async move {
+            let result = run_download_and_extract_shared_binary(
+                app_handle_clone,
+                binary_id_clone,
+                download_url_clone,
+                executable_name_clone,
+                integrity_clone,
+                version_clone,
+                progress_event_id_clone,
+            )
+            .await;
+            let _ = tx_for_task.send(result);
+        });
+
+        let result = match rx.recv().await {
+            Ok(r) => r,
+            Err(tokio::sync::broadcast::error::RecvError::Lagged(_)) => {
+                if binary_path.exists() {
+                    Ok(binary_path.to_string_lossy().to_string())
+                } else {
+                    Err("Download completed but binary not found".to_string())
+                }
+            }
+            Err(tokio::sync::broadcast::error::RecvError::Closed) => {
+                Err("Download channel closed".to_string())
+            }
+        };
+
+        IN_FLIGHT_BINARY_DOWNLOADS.lock().await.remove(&key);
+        result
+    }
+}
+
+async fn run_download_and_extract_shared_binary(
+    app_handle: tauri::AppHandle,
+    binary_id: String,
+    download_url: String,
+    executable_name: String,
+    integrity: Option<String>,
+    version: Option<String>,
+    progress_event_id: Option<String>,
 ) -> Result<String, String> {
     let binary_dir = get_shared_binary_dir(&app_handle, &binary_id, version.as_deref())?;
     let binary_path = resolve_binary_file_path(&binary_dir, &executable_name)?;
@@ -2107,7 +2346,14 @@ pub async fn download_and_extract_shared_binary(
 
     let zip_path = staging_root_dir.join("download.zip");
 
-    let response = reqwest::get(&download_url)
+    let client = reqwest::Client::builder()
+        .timeout(Duration::from_secs(900))
+        .build()
+        .map_err(|error| format!("Failed to create HTTP client: {}", error))?;
+
+    let response = client
+        .get(&download_url)
+        .send()
         .await
         .map_err(|error| format!("Failed to download binary archive: {}", error))?;
 
@@ -2119,10 +2365,48 @@ pub async fn download_and_extract_shared_binary(
         ));
     }
 
-    let bytes = response
-        .bytes()
-        .await
-        .map_err(|error| format!("Failed to read response: {}", error))?;
+    let total = response.content_length();
+    if let Some(ref progress_id) = progress_event_id {
+        let payload = BinaryDownloadProgress {
+            progress_event_id: progress_id.clone(),
+            downloaded: 0,
+            total,
+        };
+        let _ = app_handle.emit("binary-download-progress", payload);
+    }
+
+    let mut stream = response.bytes_stream();
+    let mut bytes = Vec::new();
+    let mut downloaded: u64 = 0;
+    let mut last_emit: u64 = 0;
+
+    while let Some(chunk_result) = stream.next().await {
+        let chunk = chunk_result.map_err(|error| format!("Failed to read archive stream: {}", error))?;
+        downloaded += chunk.len() as u64;
+        bytes.extend_from_slice(&chunk);
+
+        if let Some(ref progress_id) = progress_event_id {
+            if downloaded - last_emit >= 256 * 1024 || downloaded == 0 {
+                last_emit = downloaded;
+                let payload = BinaryDownloadProgress {
+                    progress_event_id: progress_id.clone(),
+                    downloaded,
+                    total,
+                };
+                let _ = app_handle.emit("binary-download-progress", payload);
+            }
+        }
+    }
+
+    if let Some(ref progress_id) = progress_event_id {
+        let payload = BinaryDownloadProgress {
+            progress_event_id: progress_id.clone(),
+            downloaded,
+            total,
+        };
+        let _ = app_handle.emit("binary-download-progress", payload);
+    }
+
     verify_integrity(&bytes, integrity.as_deref())?;
 
     let mut file = fs::File::create(&zip_path)

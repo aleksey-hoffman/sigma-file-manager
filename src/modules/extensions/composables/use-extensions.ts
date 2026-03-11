@@ -631,6 +631,7 @@ export function useExtensions() {
     installingExtensions: computed(() => extensionsStore.installingExtensions),
     uninstallingExtensions: computed(() => extensionsStore.uninstallingExtensions),
     updatingExtensions: computed(() => extensionsStore.updatingExtensions),
+    isAnyInstallInProgress: computed(() => extensionsStore.isAnyInstallInProgress),
 
     selectExtension,
     clearSelection,

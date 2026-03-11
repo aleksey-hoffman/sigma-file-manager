@@ -46,6 +46,7 @@ import { getKeybindingForCommand, formatKeybindingKeys } from '@/modules/extensi
 const props = defineProps<{
   extension: ExtensionWithManifest;
   isInstalling?: boolean;
+  isInstallDisabled?: boolean;
   isUninstalling?: boolean;
   isUpdating?: boolean;
   isRefreshing?: boolean;
@@ -610,7 +611,7 @@ onMounted(() => {
             <Button
               class="extension-detail__controls-button"
               size="sm"
-              :disabled="isInstalling || !isPlatformCompatible"
+              :disabled="(isInstallDisabled ?? isInstalling) || !isPlatformCompatible"
               @click="handleInstall"
             >
               <DownloadIcon

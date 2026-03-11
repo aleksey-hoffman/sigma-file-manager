@@ -16,6 +16,7 @@ const props = defineProps<{
   isLoading?: boolean;
   error?: string | null;
   installingExtensions: Set<string>;
+  isAnyInstallInProgress?: boolean;
   searchQuery: string;
 }>();
 
@@ -95,6 +96,7 @@ const noResults = computed(() => {
               :key="extension.id"
               :extension="extension"
               :is-installing="installingExtensions.has(extension.id)"
+              :is-install-disabled="installingExtensions.has(extension.id) || isAnyInstallInProgress"
               @click="(event) => emit('select', extension, event)"
               @install="emit('install', extension.id)"
               @update="emit('update', extension.id)"
@@ -116,6 +118,7 @@ const noResults = computed(() => {
               :key="extension.id"
               :extension="extension"
               :is-installing="installingExtensions.has(extension.id)"
+              :is-install-disabled="installingExtensions.has(extension.id) || isAnyInstallInProgress"
               @click="(event) => emit('select', extension, event)"
               @install="emit('install', extension.id)"
               @update="emit('update', extension.id)"

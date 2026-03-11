@@ -35,7 +35,7 @@ import { useExtensionsStorageStore } from '@/stores/storage/extensions';
 import { loadExtensionRuntime, unloadExtensionRuntime } from '@/modules/extensions/runtime/loader';
 import { getBinaryLookupVersion } from '@/modules/extensions/utils/binary-metadata';
 import {
-  getContextMenuRegistrations, getKeybindingRegistrations, getCommandRegistrations, getSidebarRegistrations, getToolbarRegistrations, clearExtensionRegistrations, getBinaryDownloadCount, clearBinaryDownloadCount, getPlatformInfo, initPlatformInfo,
+  getContextMenuRegistrations, getKeybindingRegistrations, getCommandRegistrations, getSidebarRegistrations, getToolbarRegistrations, clearExtensionRegistrations, getBinaryDownloadCount, clearBinaryDownloadCount, getBinaryReuseCount, clearBinaryReuseCount, getPlatformInfo, initPlatformInfo,
 } from '@/modules/extensions/api';
 import { isBuiltinCommand, getBuiltinCommandHandler, getBuiltinCommandDefinitions } from '@/modules/extensions/builtin-commands';
 import { assertValidManifestData, assertValidRegistryData, isVersionCompatibleWithRange } from '@/modules/extensions/runtime/validation';
@@ -195,6 +195,27 @@ export const useExtensionsStore = defineStore('extensions', () => {
   const installingExtensions = ref<Set<string>>(new Set());
   const uninstallingExtensions = ref<Set<string>>(new Set());
   const updatingExtensions = ref<Set<string>>(new Set());
+  const installQueueDepth = ref(0);
+  let installQueueTail: Promise<void> = Promise.resolve();
+
+  async function runInInstallQueue<T>(task: () => Promise<T>): Promise<T> {
+    installQueueDepth.value += 1;
+    const previous = installQueueTail;
+    let resolveNext!: () => void;
+    const next = new Promise<void>(resolve => { resolveNext = resolve; });
+    installQueueTail = next;
+
+    try {
+      await previous;
+      return await task();
+    }
+    finally {
+      installQueueDepth.value -= 1;
+      resolveNext();
+    }
+  }
+
+  const isAnyInstallInProgress = computed(() => installQueueDepth.value > 0);
   const pendingExtensionLoads = new Map<string, Promise<void>>();
   const blockingCommandActivationEvents = new Set<ExtensionActivationEvent>([
     'onStartup',
@@ -223,12 +244,15 @@ export const useExtensionsStore = defineStore('extensions', () => {
 
   function showDependenciesInstalledToast(extensionId: string): void {
     const downloadCount = getBinaryDownloadCount(extensionId);
-    if (downloadCount === 0) return;
+    const reuseCount = getBinaryReuseCount(extensionId);
+    if (downloadCount === 0 && reuseCount === 0) return;
 
     clearBinaryDownloadCount(extensionId);
+    clearBinaryReuseCount(extensionId);
 
     const { t } = i18n.global;
     const toastId = `ext-ready-${extensionId}`;
+    const description = reuseCount > 0 ? t('extensions.reusedDependencies', { count: reuseCount }) : '';
 
     toast.custom(markRaw(CustomProgress), {
       id: toastId,
@@ -238,7 +262,7 @@ export const useExtensionsStore = defineStore('extensions', () => {
           id: toastId,
           title: getExtensionToastTitle(extensionId),
           subtitle: t('extensions.api.extensionReady'),
-          description: '',
+          description,
           progress: 0,
           timer: 0,
           actionText: '',
@@ -537,65 +561,68 @@ export const useExtensionsStore = defineStore('extensions', () => {
     extensionId: string,
     version?: string,
   ): Promise<void> {
-    if (installingExtensions.value.has(extensionId)) return;
+    return runInInstallQueue(async () => {
+      if (installingExtensions.value.has(extensionId)) return;
 
-    const registryEntry = availableExtensions.value.find(
-      extension => extension.id === extensionId,
-    );
+      const registryEntry = availableExtensions.value.find(
+        extension => extension.id === extensionId,
+      );
 
-    if (!registryEntry) {
-      throw new Error(`Extension not found in registry: ${extensionId}`);
-    }
-
-    installingExtensions.value.add(extensionId);
-
-    try {
-      const wasAlreadyLoaded = loadedExtensions.value.has(extensionId);
-
-      if (wasAlreadyLoaded) {
-        await unloadExtension(extensionId);
-        await invoke('cancel_all_extension_commands', { extensionId });
+      if (!registryEntry) {
+        throw new Error(`Extension not found in registry: ${extensionId}`);
       }
 
-      let targetVersion = version;
+      installingExtensions.value.add(extensionId);
 
-      if (!targetVersion) {
-        targetVersion = await getLatestVersion(registryEntry.repository) ?? undefined;
+      try {
+        const wasAlreadyLoaded = loadedExtensions.value.has(extensionId);
+
+        if (wasAlreadyLoaded) {
+          await unloadExtension(extensionId);
+          await invoke('cancel_all_extension_commands', { extensionId });
+        }
+
+        let targetVersion = version;
+
+        if (!targetVersion) {
+          targetVersion = await getLatestVersion(registryEntry.repository) ?? undefined;
+        }
+
+        if (!targetVersion) {
+          throw new Error(`Could not determine version to install for: ${extensionId}`);
+        }
+
+        const manifest = await fetchExtensionManifest(registryEntry, targetVersion);
+        await assertManifestEngineCompatibility(manifest);
+        assertManifestPlatformCompatibility(manifest);
+
+        const downloadUrl = getExtensionDownloadUrl(registryEntry.repository, targetVersion);
+
+        await invoke('download_extension', {
+          extensionId,
+          downloadUrl,
+          version: targetVersion,
+          integrity: getRegistryIntegrity(registryEntry, targetVersion) ?? null,
+        });
+
+        await storageStore.addInstalledExtension(extensionId, targetVersion, manifest);
+        brokenExtensionIds.value = new Set([...brokenExtensionIds.value].filter(id => id !== extensionId));
+
+        clearBinaryDownloadCount(extensionId);
+        clearBinaryReuseCount(extensionId);
+
+        await loadExtensionForEvent(extensionId, manifest, 'onInstall', { allowWhenDisabled: true });
+
+        if (shouldActivateOnStartup(manifest)) {
+          await loadExtension(extensionId, 'onStartup');
+        }
+
+        showDependenciesInstalledToast(extensionId);
       }
-
-      if (!targetVersion) {
-        throw new Error(`Could not determine version to install for: ${extensionId}`);
+      finally {
+        installingExtensions.value.delete(extensionId);
       }
-
-      const manifest = await fetchExtensionManifest(registryEntry, targetVersion);
-      await assertManifestEngineCompatibility(manifest);
-      assertManifestPlatformCompatibility(manifest);
-
-      const downloadUrl = getExtensionDownloadUrl(registryEntry.repository, targetVersion);
-
-      await invoke('download_extension', {
-        extensionId,
-        downloadUrl,
-        version: targetVersion,
-        integrity: getRegistryIntegrity(registryEntry, targetVersion) ?? null,
-      });
-
-      await storageStore.addInstalledExtension(extensionId, targetVersion, manifest);
-      brokenExtensionIds.value = new Set([...brokenExtensionIds.value].filter(id => id !== extensionId));
-
-      clearBinaryDownloadCount(extensionId);
-
-      await loadExtensionForEvent(extensionId, manifest, 'onInstall', { allowWhenDisabled: true });
-
-      if (shouldActivateOnStartup(manifest)) {
-        await loadExtension(extensionId, 'onStartup');
-      }
-
-      showDependenciesInstalledToast(extensionId);
-    }
-    finally {
-      installingExtensions.value.delete(extensionId);
-    }
+    });
   }
 
   type LocalExtensionInstallResult = {
@@ -606,116 +633,122 @@ export const useExtensionsStore = defineStore('extensions', () => {
   };
 
   async function installLocalExtension(sourcePath: string): Promise<void> {
-    const result = await invoke<LocalExtensionInstallResult>('install_local_extension', {
-      sourcePath,
-    });
-
-    if (!result.success || !result.extension_id) {
-      throw new Error(result.error || 'Failed to install local extension');
-    }
-
-    const extensionId = result.extension_id;
-
-    installingExtensions.value.add(extensionId);
-
-    try {
-      const wasAlreadyLoaded = loadedExtensions.value.has(extensionId);
-
-      if (wasAlreadyLoaded) {
-        await unloadExtension(extensionId);
-        await invoke('cancel_all_extension_commands', { extensionId });
-      }
-
-      const manifestJson = await invoke<string>('read_extension_manifest', { extensionId });
-      const parsedManifest = JSON.parse(manifestJson) as unknown;
-      assertValidManifestData(parsedManifest);
-      const manifest = parsedManifest as ExtensionManifest;
-      await assertManifestEngineCompatibility(manifest);
-
-      await storageStore.addInstalledExtension(extensionId, manifest.version, manifest, {
-        isLocal: true,
-        localSourcePath: sourcePath,
-      });
-      brokenExtensionIds.value = new Set([...brokenExtensionIds.value].filter(id => id !== extensionId));
-
-      clearBinaryDownloadCount(extensionId);
-
-      await loadExtensionForEvent(extensionId, manifest, 'onInstall', { allowWhenDisabled: true });
-
-      if (shouldActivateOnStartup(manifest)) {
-        await loadExtension(extensionId, 'onStartup');
-      }
-
-      showDependenciesInstalledToast(extensionId);
-    }
-    finally {
-      installingExtensions.value.delete(extensionId);
-    }
-  }
-
-  async function refreshLocalExtension(extensionId: string): Promise<void> {
-    const extensionData = storageStore.extensionsData.installedExtensions[extensionId];
-
-    if (!extensionData?.isLocal || !extensionData.localSourcePath) {
-      throw new Error('Extension is not a local extension or source path is missing');
-    }
-
-    const sourcePath = extensionData.localSourcePath;
-
-    installingExtensions.value.add(extensionId);
-
-    try {
-      await unloadExtension(extensionId);
-      await invoke('cancel_all_extension_commands', { extensionId });
-
+    return runInInstallQueue(async () => {
       const result = await invoke<LocalExtensionInstallResult>('install_local_extension', {
         sourcePath,
       });
 
       if (!result.success || !result.extension_id) {
-        throw new Error(result.error || 'Failed to refresh local extension');
+        throw new Error(result.error || 'Failed to install local extension');
       }
 
-      if (result.extension_id !== extensionId) {
-        throw new Error(`Local extension id changed from "${extensionId}" to "${result.extension_id}". Reinstall from folder instead.`);
-      }
+      const extensionId = result.extension_id;
 
-      const manifestJson = await invoke<string>('read_extension_manifest', { extensionId });
-      const parsedManifest = JSON.parse(manifestJson) as unknown;
-      assertValidManifestData(parsedManifest);
-      const manifest = parsedManifest as ExtensionManifest;
-      await assertManifestEngineCompatibility(manifest);
+      installingExtensions.value.add(extensionId);
 
-      await storageStore.refreshLocalExtension(extensionId, manifest.version, manifest);
-      brokenExtensionIds.value = new Set([...brokenExtensionIds.value].filter(id => id !== extensionId));
+      try {
+        const wasAlreadyLoaded = loadedExtensions.value.has(extensionId);
 
-      clearBinaryDownloadCount(extensionId);
-
-      const orphanedBinaries = await storageStore.removeAllSharedBinaryUsages(extensionId);
-
-      for (const binary of orphanedBinaries) {
-        try {
-          await invoke('remove_shared_binary', {
-            binaryId: binary.id,
-            version: getBinaryLookupVersion(binary) ?? null,
-          });
+        if (wasAlreadyLoaded) {
+          await unloadExtension(extensionId);
+          await invoke('cancel_all_extension_commands', { extensionId });
         }
-        catch (error) {
-          console.error(`Failed to remove orphaned shared binary ${binary.id}:`, error);
+
+        const manifestJson = await invoke<string>('read_extension_manifest', { extensionId });
+        const parsedManifest = JSON.parse(manifestJson) as unknown;
+        assertValidManifestData(parsedManifest);
+        const manifest = parsedManifest as ExtensionManifest;
+        await assertManifestEngineCompatibility(manifest);
+
+        await storageStore.addInstalledExtension(extensionId, manifest.version, manifest, {
+          isLocal: true,
+          localSourcePath: sourcePath,
+        });
+        brokenExtensionIds.value = new Set([...brokenExtensionIds.value].filter(id => id !== extensionId));
+
+        clearBinaryDownloadCount(extensionId);
+        clearBinaryReuseCount(extensionId);
+
+        await loadExtensionForEvent(extensionId, manifest, 'onInstall', { allowWhenDisabled: true });
+
+        if (shouldActivateOnStartup(manifest)) {
+          await loadExtension(extensionId, 'onStartup');
+        }
+
+        showDependenciesInstalledToast(extensionId);
+      }
+      finally {
+        installingExtensions.value.delete(extensionId);
+      }
+    });
+  }
+
+  async function refreshLocalExtension(extensionId: string): Promise<void> {
+    return runInInstallQueue(async () => {
+      const extensionData = storageStore.extensionsData.installedExtensions[extensionId];
+
+      if (!extensionData?.isLocal || !extensionData.localSourcePath) {
+        throw new Error('Extension is not a local extension or source path is missing');
+      }
+
+      const sourcePath = extensionData.localSourcePath;
+
+      installingExtensions.value.add(extensionId);
+
+      try {
+        await unloadExtension(extensionId);
+        await invoke('cancel_all_extension_commands', { extensionId });
+
+        const result = await invoke<LocalExtensionInstallResult>('install_local_extension', {
+          sourcePath,
+        });
+
+        if (!result.success || !result.extension_id) {
+          throw new Error(result.error || 'Failed to refresh local extension');
+        }
+
+        if (result.extension_id !== extensionId) {
+          throw new Error(`Local extension id changed from "${extensionId}" to "${result.extension_id}". Reinstall from folder instead.`);
+        }
+
+        const manifestJson = await invoke<string>('read_extension_manifest', { extensionId });
+        const parsedManifest = JSON.parse(manifestJson) as unknown;
+        assertValidManifestData(parsedManifest);
+        const manifest = parsedManifest as ExtensionManifest;
+        await assertManifestEngineCompatibility(manifest);
+
+        await storageStore.refreshLocalExtension(extensionId, manifest.version, manifest);
+        brokenExtensionIds.value = new Set([...brokenExtensionIds.value].filter(id => id !== extensionId));
+
+        clearBinaryDownloadCount(extensionId);
+        clearBinaryReuseCount(extensionId);
+
+        const orphanedBinaries = await storageStore.removeAllSharedBinaryUsages(extensionId);
+
+        for (const binary of orphanedBinaries) {
+          try {
+            await invoke('remove_shared_binary', {
+              binaryId: binary.id,
+              version: getBinaryLookupVersion(binary) ?? null,
+            });
+          }
+          catch (error) {
+            console.error(`Failed to remove orphaned shared binary ${binary.id}:`, error);
+          }
+        }
+
+        await storageStore.clearExtensionBinaryStorage(extensionId);
+
+        await loadExtensionForEvent(extensionId, manifest, 'onUpdate', { allowWhenDisabled: true });
+
+        if (extensionData.enabled && shouldActivateOnStartup(manifest)) {
+          await loadExtension(extensionId, 'onStartup');
         }
       }
-
-      await storageStore.clearExtensionBinaryStorage(extensionId);
-
-      await loadExtensionForEvent(extensionId, manifest, 'onUpdate', { allowWhenDisabled: true });
-
-      if (extensionData.enabled && shouldActivateOnStartup(manifest)) {
-        await loadExtension(extensionId, 'onStartup');
+      finally {
+        installingExtensions.value.delete(extensionId);
       }
-    }
-    finally {
-      installingExtensions.value.delete(extensionId);
-    }
+    });
   }
 
   async function uninstallExtension(extensionId: string): Promise<void> {
@@ -770,90 +803,93 @@ export const useExtensionsStore = defineStore('extensions', () => {
     extensionId: string,
     version?: string,
   ): Promise<void> {
-    if (updatingExtensions.value.has(extensionId)) return;
+    return runInInstallQueue(async () => {
+      if (updatingExtensions.value.has(extensionId)) return;
 
-    const installed = installedExtensions.value.find(
-      extension => extension.id === extensionId,
-    );
-
-    if (!installed) {
-      throw new Error(`Extension not installed: ${extensionId}`);
-    }
-
-    updatingExtensions.value.add(extensionId);
-
-    try {
-      await unloadExtension(extensionId);
-      await invoke('cancel_all_extension_commands', { extensionId });
-
-      const registryEntry = availableExtensions.value.find(
+      const installed = installedExtensions.value.find(
         extension => extension.id === extensionId,
       );
 
-      if (!registryEntry) {
-        throw new Error(`Extension not found in registry: ${extensionId}`);
+      if (!installed) {
+        throw new Error(`Extension not installed: ${extensionId}`);
       }
 
-      let targetVersion = version;
+      updatingExtensions.value.add(extensionId);
 
-      if (!targetVersion) {
-        targetVersion = await getLatestVersion(registryEntry.repository) ?? undefined;
-      }
+      try {
+        await unloadExtension(extensionId);
+        await invoke('cancel_all_extension_commands', { extensionId });
 
-      if (!targetVersion) {
-        throw new Error(`Could not determine version to update to for: ${extensionId}`);
-      }
+        const registryEntry = availableExtensions.value.find(
+          extension => extension.id === extensionId,
+        );
 
-      const manifest = await fetchExtensionManifest(registryEntry, targetVersion);
-      await assertManifestEngineCompatibility(manifest);
-      assertManifestPlatformCompatibility(manifest);
-
-      const downloadUrl = getExtensionDownloadUrl(registryEntry.repository, targetVersion);
-
-      await invoke('download_extension', {
-        extensionId,
-        downloadUrl,
-        version: targetVersion,
-        integrity: getRegistryIntegrity(registryEntry, targetVersion) ?? null,
-      });
-
-      await storageStore.updateInstalledExtension(extensionId, targetVersion, manifest);
-      brokenExtensionIds.value = new Set([...brokenExtensionIds.value].filter(id => id !== extensionId));
-
-      clearBinaryDownloadCount(extensionId);
-
-      const orphanedBinaries = await storageStore.removeAllSharedBinaryUsages(extensionId);
-
-      for (const binary of orphanedBinaries) {
-        try {
-          await invoke('remove_shared_binary', {
-            binaryId: binary.id,
-            version: getBinaryLookupVersion(binary) ?? null,
-          });
+        if (!registryEntry) {
+          throw new Error(`Extension not found in registry: ${extensionId}`);
         }
-        catch (error) {
-          console.error(`Failed to remove orphaned shared binary ${binary.id}:`, error);
+
+        let targetVersion = version;
+
+        if (!targetVersion) {
+          targetVersion = await getLatestVersion(registryEntry.repository) ?? undefined;
         }
+
+        if (!targetVersion) {
+          throw new Error(`Could not determine version to update to for: ${extensionId}`);
+        }
+
+        const manifest = await fetchExtensionManifest(registryEntry, targetVersion);
+        await assertManifestEngineCompatibility(manifest);
+        assertManifestPlatformCompatibility(manifest);
+
+        const downloadUrl = getExtensionDownloadUrl(registryEntry.repository, targetVersion);
+
+        await invoke('download_extension', {
+          extensionId,
+          downloadUrl,
+          version: targetVersion,
+          integrity: getRegistryIntegrity(registryEntry, targetVersion) ?? null,
+        });
+
+        await storageStore.updateInstalledExtension(extensionId, targetVersion, manifest);
+        brokenExtensionIds.value = new Set([...brokenExtensionIds.value].filter(id => id !== extensionId));
+
+        clearBinaryDownloadCount(extensionId);
+        clearBinaryReuseCount(extensionId);
+
+        const orphanedBinaries = await storageStore.removeAllSharedBinaryUsages(extensionId);
+
+        for (const binary of orphanedBinaries) {
+          try {
+            await invoke('remove_shared_binary', {
+              binaryId: binary.id,
+              version: getBinaryLookupVersion(binary) ?? null,
+            });
+          }
+          catch (error) {
+            console.error(`Failed to remove orphaned shared binary ${binary.id}:`, error);
+          }
+        }
+
+        await storageStore.clearExtensionBinaryStorage(extensionId);
+
+        await loadExtensionForEvent(
+          extensionId,
+          manifest,
+          'onUpdate',
+          { allowWhenDisabled: !installed.enabled },
+        );
+
+        if (installed.enabled && shouldActivateOnStartup(manifest)) {
+          await loadExtension(extensionId, 'onStartup');
+        }
+
+        showDependenciesInstalledToast(extensionId);
       }
-
-      await storageStore.clearExtensionBinaryStorage(extensionId);
-
-      await loadExtensionForEvent(
-        extensionId,
-        manifest,
-        'onUpdate',
-        { allowWhenDisabled: !installed.enabled },
-      );
-
-      if (installed.enabled && shouldActivateOnStartup(manifest)) {
-        await loadExtension(extensionId, 'onStartup');
+      finally {
+        updatingExtensions.value.delete(extensionId);
       }
-
-      showDependenciesInstalledToast(extensionId);
-    }
-    finally {
-      updatingExtensions.value.delete(extensionId);
-    }
+    });
   }
 
   async function enableExtension(extensionId: string): Promise<void> {
@@ -1467,6 +1503,7 @@ export const useExtensionsStore = defineStore('extensions', () => {
     installingExtensions,
     uninstallingExtensions,
     updatingExtensions,
+    isAnyInstallInProgress,
 
     availableExtensions,
     installedExtensions,

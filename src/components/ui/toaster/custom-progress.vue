@@ -18,6 +18,7 @@ export type ToastItem = {
     title: string;
     subtitle?: string;
     description: string;
+    downloadSize?: string;
     progress: number;
     timer: number;
     actionText: string;
@@ -131,10 +132,18 @@ const formattedTitle = computed(() => {
       {{ props.data.subtitle }}
     </div>
     <div
-      v-if="props.data.description"
+      v-if="props.data.description || props.data.downloadSize"
       class="sigma-ui-toaster-progress__description"
     >
-      {{ props.data.description }}
+      <template v-if="props.data.description && props.data.downloadSize">
+        {{ props.data.description }} • {{ props.data.downloadSize }}
+      </template>
+      <template v-else-if="props.data.downloadSize">
+        {{ props.data.downloadSize }}
+      </template>
+      <template v-else>
+        {{ props.data.description }}
+      </template>
     </div>
     <div
       v-if="props.data.progress > 0 && props.data.progress < 100"
@@ -269,5 +278,6 @@ const formattedTitle = computed(() => {
   height: 2px;
   border-radius: var(--rounded-full);
   background-color: hsl(var(--primary));
+  transition: width 200ms ease-out;
 }
 </style>

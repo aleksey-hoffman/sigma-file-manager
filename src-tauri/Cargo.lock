@@ -4678,6 +4678,7 @@ version = "2.0.0-alpha.1"
 dependencies = [
  "base64 0.22.1",
  "file_icon_provider",
+ "futures-util",
  "image",
  "libc",
  "log",

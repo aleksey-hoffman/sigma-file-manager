@@ -88,6 +88,8 @@ vi.mock('@/modules/extensions/api', () => ({
   },
   getBinaryDownloadCount: () => 0,
   clearBinaryDownloadCount: clearBinaryDownloadCountMock,
+  getBinaryReuseCount: () => 0,
+  clearBinaryReuseCount: vi.fn(),
   getPlatformInfo: () => ({
     os: 'windows',
     arch: 'x64',

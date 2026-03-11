@@ -3,6 +3,7 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 import { invoke } from '@tauri-apps/api/core';
+import { listen } from '@tauri-apps/api/event';
 import { toast } from 'vue-sonner';
 import { markRaw } from 'vue';
 import type { BinaryInstallOptions, BinaryInfo, SharedBinaryInfo, PlatformOS } from '@/types/extension';
@@ -12,7 +13,7 @@ import { getBinaryLookupVersion } from '@/modules/extensions/utils/binary-metada
 import { getSharedBinaryPendingKey } from '@/modules/extensions/utils/shared-binary';
 import { fetchGitHubTags, getGitHubRepoInfo, parseVersionFromTag } from '@/data/extensions';
 import { ensurePlatformInfo } from '@/modules/extensions/api/platform';
-import { incrementBinaryDownloadCount } from '@/modules/extensions/api/binary-download-counts';
+import { incrementBinaryDownloadCount, incrementBinaryReuseCount } from '@/modules/extensions/api/binary-download-counts';
 import type { ExtensionContext } from '@/modules/extensions/api/extension-context';
 
 type SharedBinaryInstallResult = {
@@ -28,6 +29,20 @@ type SharedBinaryInstallResult = {
 
 const BINARY_STORAGE_KEY = '__binaries';
 const pendingBinaryDownloads = new Map<string, Promise<SharedBinaryInstallResult>>();
+
+function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function formatDownloadSize(downloaded: number | null, total: number | null): string | undefined {
+  if (downloaded === null && total === null) return undefined;
+  if (downloaded !== null && total !== null) return `${formatBytes(downloaded)} / ${formatBytes(total)}`;
+  if (downloaded !== null) return formatBytes(downloaded);
+  if (total !== null) return `? / ${formatBytes(total)}`;
+  return undefined;
+}
 
 export function createBinaryAPI(context: ExtensionContext) {
   async function getBinaryStorage(): Promise<Record<string, BinaryInfo>> {
@@ -189,30 +204,41 @@ export function createBinaryAPI(context: ExtensionContext) {
     const toastTitle = context.getExtensionToastTitle();
 
     let progressValue = 0;
+    let downloadedBytes: number | null = null;
+    let totalBytes: number | null = null;
     const progressInterval = setInterval(() => {
-      if (progressValue < 90) {
-        progressValue += 3;
-        toast.custom(markRaw(CustomProgress), {
-          id: toastId,
-          duration: Infinity,
-          componentProps: {
-            data: {
-              id: toastId,
-              title: toastTitle,
-              subtitle: context.t('extensions.api.downloadingDependencies'),
-              description: binaryLabel,
-              progress: progressValue,
-              timer: 0,
-              actionText: '',
-              cleanup: () => {},
-              extensionId: context.extensionId,
-              extensionIconPath: context.getExtensionIconPath(),
-            },
-          },
-        });
+      if (progressValue < 90 && (downloadedBytes === null || totalBytes === null || totalBytes === 0)) {
+        progressValue = Math.min(90, progressValue + 3);
       }
+
+      const sizeLabel = formatDownloadSize(downloadedBytes, totalBytes);
+      const realProgress = (downloadedBytes !== null && totalBytes !== null && totalBytes > 0)
+        ? Math.min(99, Math.round((downloadedBytes / totalBytes) * 100))
+        : null;
+      const displayProgress = realProgress ?? progressValue;
+
+      toast.custom(markRaw(CustomProgress), {
+        id: toastId,
+        duration: Infinity,
+        componentProps: {
+          data: {
+            id: toastId,
+            title: toastTitle,
+            subtitle: context.t('extensions.api.downloadingDependencies'),
+            description: binaryLabel,
+            downloadSize: sizeLabel,
+            progress: displayProgress,
+            timer: 0,
+            actionText: '',
+            cleanup: () => {},
+            extensionId: context.extensionId,
+            extensionIconPath: context.getExtensionIconPath(),
+          },
+        },
+      });
     }, 200);
 
+    const initialSizeLabel = formatDownloadSize(null, null);
     toast.custom(markRaw(CustomProgress), {
       id: toastId,
       duration: Infinity,
@@ -222,6 +248,7 @@ export function createBinaryAPI(context: ExtensionContext) {
           title: toastTitle,
           subtitle: context.t('extensions.api.downloadingDependencies'),
           description: binaryLabel,
+          downloadSize: initialSizeLabel,
           progress: 0,
           timer: 0,
           actionText: '',
@@ -231,6 +258,20 @@ export function createBinaryAPI(context: ExtensionContext) {
         },
       },
     });
+
+    const unlistenProgress = await listen<{
+      progressEventId: string;
+      downloaded: number;
+      total: number | null;
+    }>(
+      'binary-download-progress',
+      (event) => {
+        if (event.payload?.progressEventId === toastId && event.payload.downloaded !== undefined) {
+          downloadedBytes = event.payload.downloaded;
+          totalBytes = event.payload.total ?? null;
+        }
+      },
+    );
 
     try {
       const isZipDownload = downloadUrl.toLowerCase().endsWith('.zip');
@@ -244,8 +285,10 @@ export function createBinaryAPI(context: ExtensionContext) {
         executableName,
         integrity: options.integrity ?? null,
         version: lookupVersion ?? null,
+        progressEventId: toastId,
       });
 
+      unlistenProgress();
       clearInterval(progressInterval);
       toast.dismiss(toastId);
 
@@ -267,6 +310,7 @@ export function createBinaryAPI(context: ExtensionContext) {
       };
     }
     catch (error) {
+      unlistenProgress();
       clearInterval(progressInterval);
       toast.dismiss(toastId);
       throw error;
@@ -290,6 +334,7 @@ export function createBinaryAPI(context: ExtensionContext) {
     );
 
     if (existingSharedBinary) {
+      incrementBinaryReuseCount(context.extensionId);
       return attachSharedBinaryToExtension(id, lookupVersion, existingSharedBinary);
     }
 
@@ -308,6 +353,7 @@ export function createBinaryAPI(context: ExtensionContext) {
 
     if (pendingDownload) {
       const sharedBinaryResult = await pendingDownload;
+      incrementBinaryReuseCount(context.extensionId);
       return attachSharedBinaryToExtension(id, lookupVersion, sharedBinaryResult);
     }
 

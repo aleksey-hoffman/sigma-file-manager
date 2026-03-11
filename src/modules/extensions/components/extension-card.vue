@@ -22,6 +22,7 @@ import { formatBytes } from '@/modules/navigator/components/file-browser/utils';
 const props = defineProps<{
   extension: ExtensionWithManifest;
   isInstalling?: boolean;
+  isInstallDisabled?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -153,7 +154,7 @@ function handleUpdateClick(event: MouseEvent) {
           v-if="!extension.isInstalled"
           variant="default"
           size="xs"
-          :disabled="isInstalling || !isPlatformCompatible"
+          :disabled="(isInstallDisabled ?? isInstalling) || !isPlatformCompatible"
           @click="handleInstallClick"
         >
           <DownloadIcon

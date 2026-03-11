@@ -38,6 +38,7 @@ const {
   installingExtensions,
   uninstallingExtensions,
   updatingExtensions,
+  isAnyInstallInProgress,
   selectExtension,
   clearSelection,
   installExtension,
@@ -52,8 +53,6 @@ const {
 } = useExtensions();
 
 const extensionsStorageStore = useExtensionsStorageStore();
-
-const isInstallingLocal = ref(false);
 const refreshingExtensions = ref<Set<string>>(new Set());
 const removingDependencies = ref<Set<string>>(new Set());
 
@@ -263,18 +262,13 @@ async function handleToggleAutoUpdate(extensionId: string) {
 }
 
 async function handleInstallLocal(sourcePath: string) {
-  if (isInstallingLocal.value) return;
-
-  isInstallingLocal.value = true;
+  if (isAnyInstallInProgress.value) return;
 
   try {
     await installLocalExtension(sourcePath);
   }
   catch (error) {
     handleError(t('extensions.installLocalError'), error);
-  }
-  finally {
-    isInstallingLocal.value = false;
   }
 }
 
@@ -376,6 +370,7 @@ onUnmounted(() => {
           :is-loading="isFetchingRegistry && filteredExtensions.length === 0"
           :error="registryError"
           :installing-extensions="installingExtensions"
+          :is-any-install-in-progress="isAnyInstallInProgress"
           :search-query="searchQuery"
           @select="handleSelectExtension"
           @install="handleInstall"
@@ -392,7 +387,7 @@ onUnmounted(() => {
           :installing-extensions="installingExtensions"
           :uninstalling-extensions="uninstallingExtensions"
           :refreshing-extensions="refreshingExtensions"
-          :is-installing-local="isInstallingLocal"
+          :is-installing-local="isAnyInstallInProgress"
           @select="handleSelectExtension"
           @toggle="handleToggle"
           @update="handleUpdate"
@@ -436,6 +431,7 @@ onUnmounted(() => {
               <ExtensionDetail
                 :extension="selectedExtension"
                 :is-installing="installingExtensions.has(selectedExtension.id)"
+                :is-install-disabled="installingExtensions.has(selectedExtension.id) || isAnyInstallInProgress"
                 :is-uninstalling="uninstallingExtensions.has(selectedExtension.id)"
                 :is-updating="updatingExtensions.has(selectedExtension.id)"
                 :is-refreshing="refreshingExtensions.has(selectedExtension.id)"

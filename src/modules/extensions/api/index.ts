@@ -54,6 +54,8 @@ export {
 export {
   getBinaryDownloadCount,
   clearBinaryDownloadCount,
+  getBinaryReuseCount,
+  clearBinaryReuseCount,
 } from '@/modules/extensions/api/binary-download-counts';
 
 export { createExtensionAPI } from '@/modules/extensions/api/create-extension-api';
