@@ -16,6 +16,22 @@ export type ResolveMediaSelectionOptions<TOption extends MediaSelectionOptionVal
   resolveMediaIdFromIndex?: (index: number, options: TOption[]) => string | null;
 };
 
+function stripMediaSelectionPrefix(value: string): string {
+  if (value.startsWith('builtin:')) {
+    return value.slice('builtin:'.length);
+  }
+
+  if (value.startsWith('custom:')) {
+    return value.slice('custom:'.length);
+  }
+
+  return value;
+}
+
+function matchesMediaSelectionValue(optionValue: string, targetMediaId: string): boolean {
+  return optionValue === targetMediaId || stripMediaSelectionPrefix(optionValue) === targetMediaId;
+}
+
 export function getMediaIdFromSelection<TOption extends MediaSelectionOptionValue>(
   selection: MediaSelectionState,
   options: ResolveMediaSelectionOptions<TOption>,
@@ -55,7 +71,7 @@ export function resolveMediaSelectionIndex<TOption extends MediaSelectionOptionV
   if (selectionIndex >= 0 && selectionIndex < optionList.length) {
     const optionAtIndex = optionList[selectionIndex];
 
-    if (optionAtIndex && optionAtIndex.value === targetMediaId) {
+    if (optionAtIndex && matchesMediaSelectionValue(optionAtIndex.value, targetMediaId)) {
       return selectionIndex;
     }
   }
@@ -66,7 +82,13 @@ export function resolveMediaSelectionIndex<TOption extends MediaSelectionOptionV
     return foundIndex;
   }
 
-  const defaultIndex = optionList.findIndex(option => option.value === options.defaultMediaId);
+  const legacyFoundIndex = optionList.findIndex(option => matchesMediaSelectionValue(option.value, targetMediaId));
+
+  if (legacyFoundIndex >= 0) {
+    return legacyFoundIndex;
+  }
+
+  const defaultIndex = optionList.findIndex(option => matchesMediaSelectionValue(option.value, options.defaultMediaId));
 
   return defaultIndex >= 0 ? defaultIndex : 0;
 }

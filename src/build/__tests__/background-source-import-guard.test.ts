@@ -19,13 +19,13 @@ describe('background source import guard', () => {
     expect(isRestrictedBackgroundSourceModuleId(normalizedModuleId)).toBe(true);
   });
 
-  it('throws for source background imports and allows preview imports', () => {
+  it('throws for source background imports and allows source background preview imports', () => {
     expect(() => assertNoRestrictedBackgroundSourceImport(
       '/repo/src/assets/media/source-backgrounds/Exile by Aleksey Hoffman.jpg?url',
     )).toThrow(/must stay out of the app bundle/i);
 
     expect(() => assertNoRestrictedBackgroundSourceImport(
-      '/repo/src/assets/media/background-previews/Exile by Aleksey Hoffman.jpg',
+      '/repo/src/assets/media/source-backgrounds-previews/Exile by Aleksey Hoffman.jpg',
     )).not.toThrow();
   });
 });

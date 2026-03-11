@@ -24,9 +24,9 @@ import type {
 const BACKGROUND_REPO_BASE = 'https://raw.githubusercontent.com/aleksey-hoffman/sigma-file-manager/main/src/assets/media/source-backgrounds';
 const defaultBuiltinMedia = backgroundMedia.find(item => item.fileName === DEFAULT_BACKGROUND_FILE_NAME)
   ?? backgroundMedia[0];
-const previewBuiltinMedia = backgroundMedia.filter(item => item.fileName !== DEFAULT_BACKGROUND_FILE_NAME);
+const sourceBackgroundPreviewMedia = backgroundMedia.filter(item => item.fileName !== DEFAULT_BACKGROUND_FILE_NAME);
 
-const builtinPreviews = import.meta.glob('@/assets/media/background-previews/*.jpg', {
+const sourceBackgroundPreviewImages = import.meta.glob('@/assets/media/source-backgrounds-previews/*.jpg', {
   eager: true,
   import: 'default',
 }) as Record<string, string>;
@@ -153,7 +153,7 @@ export function useBackgroundMedia() {
   const { userSettings } = storeToRefs(userSettingsStore);
 
   const customItems = computed(() => customBackgroundsFromDir.value);
-  const builtinCount = (defaultBuiltinMedia ? 1 : 0) + previewBuiltinMedia.length;
+  const builtinCount = (defaultBuiltinMedia ? 1 : 0) + sourceBackgroundPreviewMedia.length;
 
   const allMediaItems = computed((): MediaItem[] => {
     const items: MediaItem[] = [];
@@ -182,7 +182,7 @@ export function useBackgroundMedia() {
       });
     }
 
-    previewBuiltinMedia.forEach((data) => {
+    sourceBackgroundPreviewMedia.forEach((data) => {
       items.push({
         kind: 'builtin',
         index: backgroundMedia.findIndex(item => item.fileName === data.fileName),
@@ -196,7 +196,7 @@ export function useBackgroundMedia() {
   const mediaOptions = computed((): MediaSelectionOption[] => {
     return allMediaItems.value.map(item => ({
       name: getItemDisplayName(item),
-      value: getPositionKey(item),
+      value: getMediaSelectionId(item),
       item,
     }));
   });
@@ -241,9 +241,9 @@ export function useBackgroundMedia() {
     }
 
     const baseName = item.fileName.replace(/\.[^.]+$/, '');
-    const key = Object.keys(builtinPreviews).find(path => path.includes(baseName));
+    const key = Object.keys(sourceBackgroundPreviewImages).find(path => path.includes(baseName));
 
-    return key ? builtinPreviews[key] : getBuiltinMediaUrl(item);
+    return key ? sourceBackgroundPreviewImages[key] : getBuiltinMediaUrl(item);
   }
 
   function getPositionKey(item: MediaItem): string {
@@ -252,6 +252,14 @@ export function useBackgroundMedia() {
     }
 
     return item.id;
+  }
+
+  function getMediaSelectionId(item: MediaItem): string {
+    if (item.kind === 'builtin') {
+      return `builtin:${item.data.fileName}`;
+    }
+
+    return `custom:${item.id}`;
   }
 
   function getItemDisplayName(item: MediaItem): string {
@@ -440,7 +448,7 @@ export function useBackgroundMedia() {
         return;
       }
 
-      const id = getPositionKey(item);
+      const id = getMediaSelectionId(item);
       await userSettingsStore.set(homeBannerStorageKeys.mediaId, id);
       await userSettingsStore.set(homeBannerStorageKeys.mediaIndex, index);
     }
@@ -498,7 +506,7 @@ export function useBackgroundMedia() {
     const newFileName = newEntry?.fileName ?? currentCustom[0]?.fileName ?? DEFAULT_BACKGROUND_FILE_NAME;
     const newIndex = currentCustom.findIndex(entry => entry.fileName === newFileName);
 
-    await userSettingsStore.set(homeBannerStorageKeys.mediaId, newFileName);
+    await userSettingsStore.set(homeBannerStorageKeys.mediaId, `custom:${newFileName}`);
     await userSettingsStore.set(homeBannerStorageKeys.mediaIndex, newIndex >= 0 ? newIndex : 0);
   }
 
@@ -533,7 +541,7 @@ export function useBackgroundMedia() {
 
     await refreshCustomBackgroundsFromDir();
 
-    await userSettingsStore.set(homeBannerStorageKeys.mediaId, fileName);
+    await userSettingsStore.set(homeBannerStorageKeys.mediaId, `custom:${fileName}`);
     await userSettingsStore.set(
       homeBannerStorageKeys.mediaIndex,
       customBackgroundsFromDir.value.findIndex(entry => entry.fileName === fileName),
