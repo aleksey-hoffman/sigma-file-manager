@@ -3,6 +3,7 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 mod app_updater;
+mod background_sources;
 mod dir_reader;
 mod dir_size;
 mod dir_watcher;
@@ -114,6 +115,9 @@ pub fn run() {
             extensions::get_shared_binaries_base_dir,
             extensions::fetch_github_tags,
             extensions::fetch_url_text,
+            background_sources::resolve_background_source_to_cache,
+            background_sources::download_url_to_path,
+            background_sources::copy_files_to_backgrounds,
         ])
         .setup(setup_handler)
         .on_window_event(|window, event| {

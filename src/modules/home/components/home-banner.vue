@@ -14,9 +14,9 @@ import {
   ImageIcon,
 } from 'lucide-vue-next';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
-import { useHomeBannerMedia } from '@/modules/home/composables/use-home-banner-media';
+import { useBackgroundMedia } from '@/modules/home/composables/use-background-media';
 
-const HomeBannerMediaEditorDialog = defineAsyncComponent(
+const HomeBackgroundMediaEditorDialog = defineAsyncComponent(
   () => import('./home-banner-media-editor-dialog.vue'),
 );
 import {
@@ -38,17 +38,19 @@ import {
 } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
+import { DEFAULT_BACKGROUND_FILE_NAME } from '@/data/background-media';
+import { homeBannerStorageKeys } from '../background-storage-keys';
 
 const { t } = useI18n();
 const userSettingsStore = useUserSettingsStore();
 const {
   currentItem,
-  currentIndex,
-  totalCount,
   getPositionKey,
   getMediaUrl,
   selectMedia,
-} = useHomeBannerMedia();
+  ensureMediaCached,
+  resolveOffsetMediaSelection,
+} = useBackgroundMedia();
 
 const videoRef = ref<HTMLVideoElement | null>(null);
 const isDropdownOpen = ref(false);
@@ -120,6 +122,12 @@ const setPreviousBackgroundShortcutText = computed(() => {
 
 const isVideo = computed(() => currentMediaType.value === 'video');
 
+watch(currentItem, (item) => {
+  if (item) {
+    ensureMediaCached(item);
+  }
+}, { immediate: true });
+
 async function updateSetting(property: 'positionX' | 'positionY' | 'zoom', value: number) {
   const key = positionKey.value;
   if (!key) return;
@@ -136,7 +144,7 @@ async function updateSetting(property: 'positionX' | 'positionY' | 'zoom', value
     [property]: value,
   };
 
-  await userSettingsStore.set('homeBannerPositions', currentPositions);
+  await userSettingsStore.set(homeBannerStorageKeys.positions, currentPositions);
 }
 
 async function resetPosition() {
@@ -145,21 +153,45 @@ async function resetPosition() {
 
   const currentPositions = { ...userSettingsStore.userSettings.homeBannerPositions };
   delete currentPositions[key];
-  await userSettingsStore.set('homeBannerPositions', currentPositions);
+  await userSettingsStore.set(homeBannerStorageKeys.positions, currentPositions);
 }
 
 async function nextBanner() {
-  const total = totalCount.value;
-  const newIndex = total > 0 ? (currentIndex.value + 1) % total : 0;
-  await selectMedia(newIndex);
+  const selection = resolveOffsetMediaSelection(
+    {
+      mediaId: userSettingsStore.userSettings.homeBannerMediaId,
+      index: userSettingsStore.userSettings.homeBannerIndex,
+    },
+    1,
+    {
+      defaultMediaId: DEFAULT_BACKGROUND_FILE_NAME,
+    },
+  );
+
+  if (!selection) {
+    return;
+  }
+
+  await selectMedia(selection.index);
 }
 
 async function previousBanner() {
-  const total = totalCount.value;
-  const newIndex = total > 0
-    ? (currentIndex.value === 0 ? total - 1 : currentIndex.value - 1)
-    : 0;
-  await selectMedia(newIndex);
+  const selection = resolveOffsetMediaSelection(
+    {
+      mediaId: userSettingsStore.userSettings.homeBannerMediaId,
+      index: userSettingsStore.userSettings.homeBannerIndex,
+    },
+    -1,
+    {
+      defaultMediaId: DEFAULT_BACKGROUND_FILE_NAME,
+    },
+  );
+
+  if (!selection) {
+    return;
+  }
+
+  await selectMedia(selection.index);
 }
 
 async function handleClick(event: MouseEvent) {
@@ -387,7 +419,7 @@ watch(isPositionPopoverOpen, (isOpen) => {
       </DropdownMenu>
     </div>
 
-    <HomeBannerMediaEditorDialog
+    <HomeBackgroundMediaEditorDialog
       v-if="isMediaEditorOpen"
       v-model:open="isMediaEditorOpen"
     />

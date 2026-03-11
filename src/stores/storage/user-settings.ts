@@ -10,10 +10,10 @@ import type {
   UserSettings, LocalizationLanguage, UserSettingsPath, UserSettingsValue, InfusionPageSettings,
 } from '@/types/user-settings';
 import {
-  homeBannerMedia,
-  DEFAULT_HOME_BANNER_FILE_NAME,
+  backgroundMedia,
+  DEFAULT_BACKGROUND_FILE_NAME,
   DEFAULT_INFUSION_BACKGROUND_FILE_NAME,
-} from '@/data/home-banner-media';
+} from '@/data/background-media';
 import { useTheme } from './use/use-theme';
 import { useUserPathsStore } from './user-paths';
 import { i18n } from '@/localization';
@@ -105,8 +105,8 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
     },
     UIZoomLevel: 1.0,
     homeBannerIndex: 0,
-    homeBannerMediaId: DEFAULT_HOME_BANNER_FILE_NAME,
-    homeBannerCustomMedia: [],
+    homeBannerMediaId: DEFAULT_BACKGROUND_FILE_NAME,
+    customBackgroundMedia: [],
     homeBannerPositions: {},
     driveCard: {
       showSpaceIndicator: true,
@@ -142,9 +142,9 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
   });
 
   function createDefaultInfusionBackground() {
-    const media = homeBannerMedia.find(item => item.fileName === DEFAULT_INFUSION_BACKGROUND_FILE_NAME)
-      ?? homeBannerMedia[0];
-    const index = homeBannerMedia.findIndex(item => item.fileName === media.fileName);
+    const media = backgroundMedia.find(item => item.fileName === DEFAULT_INFUSION_BACKGROUND_FILE_NAME)
+      ?? backgroundMedia[0];
+    const index = backgroundMedia.findIndex(item => item.fileName === media.fileName);
 
     return {
       type: media.type as 'image' | 'video',

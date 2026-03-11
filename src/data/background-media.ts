@@ -2,10 +2,10 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-export const DEFAULT_HOME_BANNER_FILE_NAME = 'Exile by Aleksey Hoffman.jpg';
+export const DEFAULT_BACKGROUND_FILE_NAME = 'Exile by Aleksey Hoffman.jpg';
 export const DEFAULT_INFUSION_BACKGROUND_FILE_NAME = 'Exile by Aleksey Hoffman.jpg';
 
-export type BannerMedia = {
+export type BackgroundMedia = {
   name: string;
   fileName: string;
   type: 'image' | 'video';
@@ -14,7 +14,7 @@ export type BannerMedia = {
   positionY: number;
 };
 
-export const homeBannerMedia: BannerMedia[] = [
+export const backgroundMedia: BackgroundMedia[] = [
   {
     name: 'Exile',
     fileName: 'Exile by Aleksey Hoffman.jpg',

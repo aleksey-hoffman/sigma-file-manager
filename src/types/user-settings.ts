@@ -30,12 +30,12 @@ export type HomeBannerPosition = {
 
 export type HomeBannerPositions = Record<string, HomeBannerPosition>;
 
-export type HomeBannerCustomMediaItem = {
+export type CustomBackgroundMediaItem = {
   path: string;
   id: string;
 };
 
-export type HomeBannerCustomMedia = HomeBannerCustomMediaItem[];
+export type CustomBackgroundMedia = CustomBackgroundMediaItem[];
 
 export type UserDirectoryCustomization = {
   title?: string;
@@ -133,7 +133,7 @@ export type UserSettings = {
   UIZoomLevel?: number;
   homeBannerIndex: number;
   homeBannerMediaId: string;
-  homeBannerCustomMedia: HomeBannerCustomMedia;
+  customBackgroundMedia: CustomBackgroundMedia;
   homeBannerPositions: HomeBannerPositions;
   driveCard: DriveCardSettings;
   userDirectories: UserDirectoriesCustomizations;

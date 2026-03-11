@@ -18,6 +18,7 @@ import { useChangelog } from '@/modules/changelog';
 import { useAppUpdater } from '@/modules/app-updater';
 import { useExtensionsStore } from '@/stores/runtime/extensions';
 import { initPlatformInfo } from '@/modules/extensions/api';
+import { refreshCustomBackgroundsFromDir } from '@/modules/home/composables/use-background-media';
 
 export function useInit() {
   const router = useRouter();
@@ -54,6 +55,7 @@ export function useInit() {
     await platformStore.init();
     await userPathsStore.init();
     await userSettingsStore.init();
+    await refreshCustomBackgroundsFromDir();
     await userStatsStore.init();
     await workspacesStore.init();
     await globalSearchStore.initOnLaunch();

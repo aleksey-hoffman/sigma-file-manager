@@ -202,7 +202,9 @@ export const useExtensionsStore = defineStore('extensions', () => {
     installQueueDepth.value += 1;
     const previous = installQueueTail;
     let resolveNext!: () => void;
-    const next = new Promise<void>(resolve => { resolveNext = resolve; });
+    const next = new Promise<void>((resolve) => {
+      resolveNext = resolve;
+    });
     installQueueTail = next;
 
     try {

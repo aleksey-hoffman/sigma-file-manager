@@ -4,14 +4,24 @@ import vue from '@vitejs/plugin-vue';
 import vueDevTools from 'vite-plugin-vue-devtools';
 // import tailwindcss from '@tailwindcss/vite';
 import { run } from 'vite-plugin-run';
+import { assertNoRestrictedBackgroundSourceImport } from './src/build/background-source-import-guard';
 
 const host = process.env.TAURI_DEV_HOST;
+
+const backgroundSourceImportGuard = {
+  name: 'background-source-import-guard',
+  load(id: string) {
+    assertNoRestrictedBackgroundSourceImport(id);
+    return null;
+  },
+};
 
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
     vue(),
     vueDevTools(),
+    backgroundSourceImportGuard,
     // tailwindcss(),
     run([
       {

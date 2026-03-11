@@ -21,18 +21,20 @@ import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { useI18n } from 'vue-i18n';
 import { computed } from 'vue';
 import { SparklesIcon, RefreshCcwIcon } from 'lucide-vue-next';
-import { useHomeBannerMedia } from '@/modules/home/composables/use-home-banner-media';
-import { homeBannerMedia, DEFAULT_INFUSION_BACKGROUND_FILE_NAME } from '@/data/home-banner-media';
+import { useBackgroundMedia } from '@/modules/home/composables/use-background-media';
+import type { ResolvedMediaSelection } from '@/modules/home/composables/use-background-media';
+import { backgroundMedia, DEFAULT_INFUSION_BACKGROUND_FILE_NAME } from '@/data/background-media';
 import type { InfusionPage } from '@/types/user-settings';
 import { Button } from '@/components/ui/button';
 
 const userSettingsStore = useUserSettingsStore();
 const { t } = useI18n();
 const {
-  allMediaItems,
-  getPositionKey,
-  getItemDisplayName,
-} = useHomeBannerMedia();
+  mediaOptions,
+  ensureMediaCached,
+  resolveMediaSelection,
+  resolveOffsetMediaSelection,
+} = useBackgroundMedia();
 
 const infusionSettings = computed(() => userSettingsStore.userSettings.infusion);
 
@@ -148,68 +150,69 @@ async function onSameSettingsForAllPagesChange(checked: boolean) {
   await userSettingsStore.setUserSettingsStorage('infusion.sameSettingsForAllPages', checked);
 }
 
-const backgroundMediaOptions = computed(() => {
-  return allMediaItems.value.map(item => ({
-    name: getItemDisplayName(item),
-    value: getPositionKey(item),
-    item,
-  }));
-});
+const infusionMediaSelectionOptions = {
+  defaultMediaId: DEFAULT_INFUSION_BACKGROUND_FILE_NAME,
+  resolveMediaIdFromIndex: (index: number) => {
+    return backgroundMedia[index]?.fileName ?? null;
+  },
+};
 
-function getInfusionBackgroundMediaId() {
-  const background = currentPageSettings.value.background;
+async function applyInfusionBackgroundSelection(selection: ResolvedMediaSelection) {
+  const isReady = await ensureMediaCached(selection.item);
 
-  if (background.mediaId && background.mediaId.trim()) {
-    return background.mediaId;
+  if (!isReady) {
+    return;
   }
 
-  const builtinIndex = typeof background.index === 'number' ? background.index : 0;
-  const legacyMedia = homeBannerMedia[builtinIndex];
+  const page = effectivePageToCustomize.value;
+  const background = {
+    type: selection.type,
+    path: selection.path,
+    index: selection.index,
+    mediaId: selection.mediaId,
+  };
 
-  if (legacyMedia) {
-    return legacyMedia.fileName;
-  }
-
-  return DEFAULT_INFUSION_BACKGROUND_FILE_NAME;
+  userSettingsStore.userSettings.infusion.pages[page].background = background;
+  userSettingsStore.setUserSettingsStorage(getStorageKeyForPage(page, 'background'), background);
 }
 
 const selectedBackground = computed({
   get: () => {
-    const mediaId = getInfusionBackgroundMediaId();
-    return backgroundMediaOptions.value.find(option => option.value === mediaId)
-      ?? backgroundMediaOptions.value[0];
+    return resolveMediaSelection(
+      currentPageSettings.value.background,
+      infusionMediaSelectionOptions,
+    );
   },
   set: (option) => {
     if (option) {
-      const page = effectivePageToCustomize.value;
-      const item = option.item;
-      const type = item.kind === 'builtin' ? item.data.type : item.type;
-      const path = item.kind === 'builtin' ? item.data.fileName : item.path;
-      const index = backgroundMediaOptions.value.findIndex(opt => opt.value === option.value);
-      const background = {
-        type,
-        path,
-        index: index >= 0 ? index : 0,
-        mediaId: option.value,
-      };
-      userSettingsStore.userSettings.infusion.pages[page].background = background;
-      userSettingsStore.setUserSettingsStorage(getStorageKeyForPage(page, 'background'), background);
+      const selection = resolveMediaSelection(
+        {
+          mediaId: option.value,
+        },
+        infusionMediaSelectionOptions,
+      );
+
+      if (!selection) {
+        return;
+      }
+
+      void applyInfusionBackgroundSelection(selection);
     }
   },
 });
 
-function selectNextBackground() {
-  const options = backgroundMediaOptions.value;
-  if (options.length === 0) return;
+async function selectNextBackground() {
+  const selection = resolveOffsetMediaSelection(
+    currentPageSettings.value.background,
+    1,
+    infusionMediaSelectionOptions,
+  );
 
-  const currentMediaId = getInfusionBackgroundMediaId();
-  const currentIdx = options.findIndex(opt => opt.value === currentMediaId);
-  const nextIdx = (currentIdx >= 0 ? currentIdx + 1 : 0) % options.length;
-  const option = options[nextIdx];
-
-  if (option) {
-    selectedBackground.value = option;
+  if (!selection) {
+    return;
   }
+
+  await applyInfusionBackgroundSelection(selection);
 }
 </script>
 
@@ -336,7 +339,7 @@ function selectNextBackground() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem
-                      v-for="option in backgroundMediaOptions"
+                      v-for="option in mediaOptions"
                       :key="option.value"
                       :value="option"
                     >

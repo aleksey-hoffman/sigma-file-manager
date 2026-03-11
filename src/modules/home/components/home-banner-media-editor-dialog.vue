@@ -22,7 +22,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { useHomeBannerMedia, type MediaItem } from '@/modules/home/composables/use-home-banner-media';
+import { useBackgroundMedia, type MediaItem } from '@/modules/home/composables/use-background-media';
 
 const props = defineProps<{
   open: boolean;
@@ -37,13 +37,14 @@ const {
   allMediaItems,
   currentIndex,
   getMediaUrl,
+  getPreviewUrl,
   selectMedia,
   openFilePicker,
   addFilesFromPaths,
   addMediaUrl,
   removeCustomMedia,
   customItems,
-} = useHomeBannerMedia();
+} = useBackgroundMedia();
 
 const isAddingFiles = ref(false);
 const isContentReady = ref(false);
@@ -299,19 +300,11 @@ onUnmounted(() => {
               >
                 <div class="home-banner-media-editor__item-thumb">
                   <img
-                    v-if="getItemType(item) === 'image'"
-                    :src="getMediaUrl(item)"
+                    :src="getPreviewUrl(item)"
                     :alt="getItemDisplayName(item)"
                     class="home-banner-media-editor__item-media"
                     loading="lazy"
                   >
-                  <video
-                    v-else
-                    :src="getMediaUrl(item) + '#t=0.5'"
-                    class="home-banner-media-editor__item-media"
-                    muted
-                    preload="metadata"
-                  />
                 </div>
 
                 <div class="home-banner-media-editor__item-overlay">

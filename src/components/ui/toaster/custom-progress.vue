@@ -83,6 +83,14 @@ const formattedTitle = computed(() => {
     hasBadge: true,
   };
 });
+
+const descriptionText = computed(() => {
+  if (props.data.description && props.data.downloadSize) {
+    return `${props.data.description} • ${props.data.downloadSize}`;
+  }
+
+  return props.data.downloadSize || props.data.description || '';
+});
 </script>
 
 <template>
@@ -135,15 +143,7 @@ const formattedTitle = computed(() => {
       v-if="props.data.description || props.data.downloadSize"
       class="sigma-ui-toaster-progress__description"
     >
-      <template v-if="props.data.description && props.data.downloadSize">
-        {{ props.data.description }} • {{ props.data.downloadSize }}
-      </template>
-      <template v-else-if="props.data.downloadSize">
-        {{ props.data.downloadSize }}
-      </template>
-      <template v-else>
-        {{ props.data.description }}
-      </template>
+      {{ descriptionText }}
     </div>
     <div
       v-if="props.data.progress > 0 && props.data.progress < 100"

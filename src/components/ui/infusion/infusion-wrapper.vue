@@ -4,17 +4,17 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { Infusion } from './index';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
-import { useHomeBannerMedia } from '@/modules/home/composables/use-home-banner-media';
-import { DEFAULT_INFUSION_BACKGROUND_FILE_NAME } from '@/data/home-banner-media';
+import { useBackgroundMedia } from '@/modules/home/composables/use-background-media';
+import { backgroundMedia, DEFAULT_INFUSION_BACKGROUND_FILE_NAME } from '@/data/background-media';
 import type { InfusionPage } from '@/types/user-settings';
 
 const userSettingsStore = useUserSettingsStore();
 const route = useRoute();
-const { allMediaItems, getPositionKey, getMediaUrl } = useHomeBannerMedia();
+const { getMediaUrl, ensureMediaCached, resolveMediaSelection } = useBackgroundMedia();
 
 const infusionSettings = computed(() => userSettingsStore.userSettings.infusion);
 
@@ -30,30 +30,21 @@ const effectivePageSettings = computed(() => {
   return settings.pages[currentRouteName.value] || settings.pages[''];
 });
 
+const infusionMediaSelectionOptions = {
+  defaultMediaId: DEFAULT_INFUSION_BACKGROUND_FILE_NAME,
+  resolveMediaIdFromIndex: (index: number) => {
+    return backgroundMedia[index]?.fileName ?? null;
+  },
+};
+
 function getInfusionMediaFromBackground(background: { index?: number;
   mediaId?: string; }) {
-  const mediaId = (typeof background.mediaId === 'string' && background.mediaId.trim())
-    ? background.mediaId
-    : DEFAULT_INFUSION_BACKGROUND_FILE_NAME;
+  const selection = resolveMediaSelection(background, infusionMediaSelectionOptions);
 
-  const items = allMediaItems.value;
-  const item = items.find(i => getPositionKey(i) === mediaId);
-
-  if (item) {
+  if (selection) {
     return {
-      url: getMediaUrl(item),
-      type: item.kind === 'builtin' ? item.data.type : item.type,
-    };
-  }
-
-  const fallback = items.find(
-    i => i.kind === 'builtin' && i.data.fileName === DEFAULT_INFUSION_BACKGROUND_FILE_NAME,
-  ) ?? items[0];
-
-  if (fallback) {
-    return {
-      url: getMediaUrl(fallback),
-      type: fallback.kind === 'builtin' ? fallback.data.type : fallback.type,
+      url: getMediaUrl(selection.item),
+      type: selection.type,
     };
   }
 
@@ -63,8 +54,23 @@ function getInfusionMediaFromBackground(background: { index?: number;
   };
 }
 
-const infusionSrc = computed(() => getInfusionMediaFromBackground(effectivePageSettings.value.background).url);
-const infusionType = computed(() => getInfusionMediaFromBackground(effectivePageSettings.value.background).type);
+const infusionMediaInfo = computed(() => getInfusionMediaFromBackground(effectivePageSettings.value.background));
+
+const infusionSrc = computed(() => infusionMediaInfo.value.url);
+const infusionType = computed(() => infusionMediaInfo.value.type);
+
+watch(
+  () => resolveMediaSelection(
+    effectivePageSettings.value.background,
+    infusionMediaSelectionOptions,
+  )?.item ?? null,
+  (selectionItem) => {
+    if (selectionItem) {
+      ensureMediaCached(selectionItem);
+    }
+  },
+  { immediate: true },
+);
 
 const infusionOpacity = computed(() => effectivePageSettings.value.opacity / 100);
 const infusionBlur = computed(() => effectivePageSettings.value.blur);

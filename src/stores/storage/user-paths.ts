@@ -42,7 +42,8 @@ export const useUserPathsStore = defineStore('userPaths', () => {
     appUserDataWorkspacesPath: '',
     appUserDataStatsName: '',
     appUserDataStatsPath: '',
-    appStorageHomeBannerMediaPath: '',
+    appStorageCustomBackgroundsPath: '',
+    appUserDataSourceBackgroundsPath: '',
   });
 
   const platformSpecificPaths = new Set(['runtimeDir', 'fontDir', 'executableDir', 'templateDir']);
@@ -78,7 +79,8 @@ export const useUserPathsStore = defineStore('userPaths', () => {
     customPaths.value.appUserDataWorkspacesPath = `${customPaths.value.appUserDataDir}/${customPaths.value.appUserDataWorkspacesName}`;
     customPaths.value.appUserDataStatsName = 'user-stats.json';
     customPaths.value.appUserDataStatsPath = `${customPaths.value.appUserDataDir}/${customPaths.value.appUserDataStatsName}`;
-    customPaths.value.appStorageHomeBannerMediaPath = `${customPaths.value.appUserDataDir}/media/home-banner`;
+    customPaths.value.appStorageCustomBackgroundsPath = `${customPaths.value.appUserDataDir}/media/custom-backgrounds`;
+    customPaths.value.appUserDataSourceBackgroundsPath = `${customPaths.value.appUserDataDir}/media/source-backgrounds`;
   }
 
   return {
