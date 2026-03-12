@@ -34,7 +34,10 @@ const userSettingsStore = useUserSettingsStore();
       <div class="app-layout__main">
         <WindowToolbar />
         <div class="app-layout__content">
-          <RouterView v-slot="{ Component }">
+          <RouterView
+            v-slot="{ Component }"
+            data-vaul-drawer-wrapper
+          >
             <KeepAlive :include="['ExtensionPage']">
               <component
                 :is="Component"

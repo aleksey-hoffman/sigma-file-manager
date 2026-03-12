@@ -28,6 +28,7 @@ const forwardedProps = useForwardProps(props);
   align-items: center;
   padding: 0.375rem 0.5rem;
   border-radius: var(--radius-sm);
+  color: hsl(var(--foreground));
   cursor: default;
   font-size: 0.875rem;
   gap: 0.625rem;
@@ -43,7 +44,7 @@ const forwardedProps = useForwardProps(props);
 
 .sigma-ui-dropdown-menu-item:focus {
   background-color: hsl(var(--secondary));
-  color: hsl(var(--secondary-foreground));
+  color: hsl(var(--muted-foreground));
 }
 
 .sigma-ui-dropdown-menu-item[data-disabled] {

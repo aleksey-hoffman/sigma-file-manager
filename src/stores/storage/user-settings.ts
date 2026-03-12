@@ -162,6 +162,7 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
       opacity: 15,
       noise: 5,
       noiseScale: 0.5,
+      mixBlendMode: 'normal',
       background,
     };
   }
@@ -174,6 +175,7 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
       opacity: 5,
       noise: 5,
       noiseScale: 0.5,
+      mixBlendMode: 'normal',
       background,
     };
   }

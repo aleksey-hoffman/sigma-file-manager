@@ -36,6 +36,7 @@ const forwardedProps = useForwardProps(props);
   border-radius: var(--radius-md);
   background-color: hsl(var(--input));
   font-size: 0.875rem;
+  font-weight: 500;
   line-height: 1.25rem;
 }
 

@@ -21,7 +21,7 @@ const props = defineProps<DialogOverlayProps>();
 .sigma-ui-drawer-overlay {
   position: fixed;
   z-index: 50;
-  background-color: rgb(0 0 0 / 80%);
+  background-color: rgb(0 0 0 / 40%);
   inset: 0;
 }
 </style>

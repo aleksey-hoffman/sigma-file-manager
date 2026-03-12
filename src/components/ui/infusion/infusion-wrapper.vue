@@ -76,6 +76,7 @@ const infusionOpacity = computed(() => effectivePageSettings.value.opacity / 100
 const infusionBlur = computed(() => effectivePageSettings.value.blur);
 const infusionNoise = computed(() => effectivePageSettings.value.noise / 100);
 const infusionNoiseScale = computed(() => effectivePageSettings.value.noiseScale);
+const infusionBlendMode = computed(() => effectivePageSettings.value.mixBlendMode);
 const infusionEnabled = computed(() => infusionSettings.value.enabled);
 </script>
 
@@ -89,5 +90,6 @@ const infusionEnabled = computed(() => infusionSettings.value.enabled);
     :blur="infusionBlur"
     :noise-opacity="infusionNoise"
     :noise-scale="infusionNoiseScale"
+    :blend-mode="infusionBlendMode"
   />
 </template>

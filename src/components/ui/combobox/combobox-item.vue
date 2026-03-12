@@ -30,6 +30,7 @@ const forwarded = useForwardPropsEmits(props, emits);
   justify-content: space-between;
   padding: 0.375rem 0.5rem;
   border-radius: 0.125rem;
+  color: hsl(var(--foreground));
   cursor: default;
   font-size: 0.875rem;
   gap: 0.5rem;
@@ -39,7 +40,7 @@ const forwarded = useForwardPropsEmits(props, emits);
 }
 
 .sigma-ui-combobox-item[data-highlighted] {
-  background-color: hsl(var(--secondary));
+  background-color: hsl(var(--secondary-foreground) / 5%);
   color: hsl(var(--secondary-foreground));
 }
 

@@ -16,8 +16,9 @@ import { SparklesIcon, RefreshCcwIcon, ImageIcon } from 'lucide-vue-next';
 import { useBackgroundMedia } from '@/modules/home/composables/use-background-media';
 import type { ResolvedMediaSelection } from '@/modules/home/composables/use-background-media';
 import { backgroundMedia, DEFAULT_INFUSION_BACKGROUND_FILE_NAME } from '@/data/background-media';
-import type { InfusionPage } from '@/types/user-settings';
+import type { InfusionPage, MixBlendMode } from '@/types/user-settings';
 import { Button } from '@/components/ui/button';
+import { BaseCombobox } from '@/components/base';
 import BackgroundManagerDialog from '@/components/ui/background-manager/background-manager-dialog.vue';
 import { useDropOverlayStore } from '@/stores/runtime/drop-overlay';
 
@@ -135,6 +136,89 @@ const noiseScaleValue = computed({
     const page = effectivePageToCustomize.value;
     userSettingsStore.userSettings.infusion.pages[page].noiseScale = value[0];
     userSettingsStore.setUserSettingsStorage(getStorageKeyForPage(page, 'noiseScale'), value[0]);
+  },
+});
+
+const mixBlendModeOptions = computed<{
+  name: string;
+  value: MixBlendMode;
+}[]>(() => [
+  {
+    name: t('settings.visualEffects.mixBlendMode.normal'),
+    value: 'normal',
+  },
+  {
+    name: t('settings.visualEffects.mixBlendMode.multiply'),
+    value: 'multiply',
+  },
+  {
+    name: t('settings.visualEffects.mixBlendMode.screen'),
+    value: 'screen',
+  },
+  {
+    name: t('settings.visualEffects.mixBlendMode.overlay'),
+    value: 'overlay',
+  },
+  {
+    name: t('settings.visualEffects.mixBlendMode.darken'),
+    value: 'darken',
+  },
+  {
+    name: t('settings.visualEffects.mixBlendMode.lighten'),
+    value: 'lighten',
+  },
+  {
+    name: t('settings.visualEffects.mixBlendMode.color-dodge'),
+    value: 'color-dodge',
+  },
+  {
+    name: t('settings.visualEffects.mixBlendMode.color-burn'),
+    value: 'color-burn',
+  },
+  {
+    name: t('settings.visualEffects.mixBlendMode.hard-light'),
+    value: 'hard-light',
+  },
+  {
+    name: t('settings.visualEffects.mixBlendMode.soft-light'),
+    value: 'soft-light',
+  },
+  {
+    name: t('settings.visualEffects.mixBlendMode.difference'),
+    value: 'difference',
+  },
+  {
+    name: t('settings.visualEffects.mixBlendMode.exclusion'),
+    value: 'exclusion',
+  },
+  {
+    name: t('settings.visualEffects.mixBlendMode.hue'),
+    value: 'hue',
+  },
+  {
+    name: t('settings.visualEffects.mixBlendMode.saturation'),
+    value: 'saturation',
+  },
+  {
+    name: t('settings.visualEffects.mixBlendMode.color'),
+    value: 'color',
+  },
+  {
+    name: t('settings.visualEffects.mixBlendMode.luminosity'),
+    value: 'luminosity',
+  },
+]);
+
+const selectedMixBlendMode = computed({
+  get: () => mixBlendModeOptions.value.find(
+    option => option.value === currentPageSettings.value.mixBlendMode,
+  ) ?? mixBlendModeOptions.value[0],
+  set: (option) => {
+    if (option) {
+      const page = effectivePageToCustomize.value;
+      userSettingsStore.userSettings.infusion.pages[page].mixBlendMode = option.value;
+      userSettingsStore.setUserSettingsStorage(getStorageKeyForPage(page, 'mixBlendMode'), option.value);
+    }
   },
 });
 
@@ -296,13 +380,14 @@ async function selectNextBackground() {
               />
             </div>
 
-            <div class="visual-effects-settings__row visual-effects-settings__row--background">
+            <div class="visual-effects-settings__row">
               <span class="visual-effects-settings__label">
                 {{ t('settings.visualEffects.overlayBackground') }}
               </span>
               <div class="visual-effects-settings__background-controls">
                 <Button
                   variant="outline"
+                  size="sm"
                   class="visual-effects-settings__background-manager-button"
                   @click="isBackgroundManagerOpen = true"
                 >
@@ -313,6 +398,7 @@ async function selectNextBackground() {
                   <TooltipTrigger as-child>
                     <Button
                       variant="outline"
+                      size="sm"
                       @click="selectNextBackground"
                     >
                       <RefreshCcwIcon :size="18" />
@@ -323,6 +409,20 @@ async function selectNextBackground() {
                   </TooltipContent>
                 </Tooltip>
               </div>
+            </div>
+
+            <div class="visual-effects-settings__row">
+              <span class="visual-effects-settings__label">
+                {{ t('settings.visualEffects.overlayMixBlendMode') }}
+              </span>
+
+              <BaseCombobox
+                v-model="selectedMixBlendMode"
+                :options="mixBlendModeOptions"
+                by="value"
+                :search-placeholder="t('search')"
+                select-on-highlight
+              />
             </div>
           </div>
         </div>
@@ -357,11 +457,6 @@ async function selectNextBackground() {
 
 .visual-effects-settings__row--toggle {
   gap: 2rem;
-}
-
-.visual-effects-settings__row--background {
-  flex-direction: column;
-  align-items: stretch;
 }
 
 .visual-effects-settings__label {

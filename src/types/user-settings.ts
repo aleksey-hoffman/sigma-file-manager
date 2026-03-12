@@ -45,11 +45,14 @@ export type UserDirectoryCustomization = {
 
 export type UserDirectoriesCustomizations = Record<string, UserDirectoryCustomization>;
 
+export type MixBlendMode = 'normal' | 'multiply' | 'screen' | 'overlay' | 'darken' | 'lighten' | 'color-dodge' | 'color-burn' | 'hard-light' | 'soft-light' | 'difference' | 'exclusion' | 'hue' | 'saturation' | 'color' | 'luminosity';
+
 export type InfusionPageSettings = {
   blur: number;
   opacity: number;
   noise: number;
   noiseScale: number;
+  mixBlendMode: MixBlendMode;
   background: {
     type: 'image' | 'video';
     path: string;

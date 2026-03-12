@@ -64,7 +64,7 @@ const selectedTheme = computed({
           {{ selectedTheme?.name }}
         </SelectValue>
       </SelectTrigger>
-      <SelectContent>
+      <SelectContent align="end">
         <SelectItem
           v-for="option in themeOptions"
           :key="option.value"
