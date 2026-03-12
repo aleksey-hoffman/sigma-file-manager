@@ -6,6 +6,7 @@ import { ref, reactive, nextTick, type Ref } from 'vue';
 import type {
   ModalOptions,
   ModalHandle,
+  ModalButton,
   ModalSubmitCallback,
   ModalCloseCallback,
   ModalValueChangeCallback,
@@ -194,6 +195,10 @@ function createModalHandle(modalId: string, instance: ModalInstance): ModalHandl
 
       mutableInstance.options.content = content;
       mutableInstance.values = newValues;
+    },
+    setButtons: (buttons: ModalButton[]) => {
+      const mutableInstance = resolveInstance(modalId, instance);
+      mutableInstance.options.buttons = buttons;
     },
     getValues: () => {
       const mutableInstance = resolveInstance(modalId, instance);

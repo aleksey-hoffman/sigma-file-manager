@@ -339,6 +339,7 @@ export interface ModalHandle {
   close(): void;
   updateElement(id: string, updates: Partial<UIElement>): void;
   setContent(content: UIElement[]): void;
+  setButtons(buttons: ModalButton[]): void;
   getValues(): Record<string, unknown>;
 }
 
