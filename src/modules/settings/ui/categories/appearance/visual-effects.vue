@@ -4,14 +4,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectItemText,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { computed, ref, watch } from 'vue';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -19,20 +12,25 @@ import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip
 import { SettingsItem } from '@/modules/settings';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { useI18n } from 'vue-i18n';
-import { computed } from 'vue';
-import { SparklesIcon, RefreshCcwIcon } from 'lucide-vue-next';
+import { SparklesIcon, RefreshCcwIcon, ImageIcon } from 'lucide-vue-next';
 import { useBackgroundMedia } from '@/modules/home/composables/use-background-media';
 import type { ResolvedMediaSelection } from '@/modules/home/composables/use-background-media';
 import { backgroundMedia, DEFAULT_INFUSION_BACKGROUND_FILE_NAME } from '@/data/background-media';
 import type { InfusionPage } from '@/types/user-settings';
 import { Button } from '@/components/ui/button';
+import BackgroundManagerDialog from '@/components/ui/background-manager/background-manager-dialog.vue';
+import { useDropOverlayStore } from '@/stores/runtime/drop-overlay';
 
+const dropOverlayStore = useDropOverlayStore();
 const userSettingsStore = useUserSettingsStore();
 const { t } = useI18n();
+const isBackgroundManagerOpen = ref(false);
+
+watch(isBackgroundManagerOpen, (open) => {
+  dropOverlayStore.setBackgroundManagerOpen(open);
+}, { immediate: true });
 const {
-  mediaOptions,
   ensureMediaCached,
-  resolveMediaSelection,
   resolveOffsetMediaSelection,
 } = useBackgroundMedia();
 
@@ -176,31 +174,6 @@ async function applyInfusionBackgroundSelection(selection: ResolvedMediaSelectio
   userSettingsStore.setUserSettingsStorage(getStorageKeyForPage(page, 'background'), background);
 }
 
-const selectedBackground = computed({
-  get: () => {
-    return resolveMediaSelection(
-      currentPageSettings.value.background,
-      infusionMediaSelectionOptions,
-    );
-  },
-  set: (option) => {
-    if (option) {
-      const selection = resolveMediaSelection(
-        {
-          mediaId: option.value,
-        },
-        infusionMediaSelectionOptions,
-      );
-
-      if (!selection) {
-        return;
-      }
-
-      void applyInfusionBackgroundSelection(selection);
-    }
-  },
-});
-
 async function selectNextBackground() {
   const selection = resolveOffsetMediaSelection(
     currentPageSettings.value.background,
@@ -328,27 +301,14 @@ async function selectNextBackground() {
                 {{ t('settings.visualEffects.overlayBackground') }}
               </span>
               <div class="visual-effects-settings__background-controls">
-                <Select
-                  v-model="selectedBackground"
-                  by="value"
+                <Button
+                  variant="outline"
+                  class="visual-effects-settings__background-manager-button"
+                  @click="isBackgroundManagerOpen = true"
                 >
-                  <SelectTrigger class="visual-effects-settings__select-trigger">
-                    <SelectValue>
-                      {{ selectedBackground?.name }}
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem
-                      v-for="option in mediaOptions"
-                      :key="option.value"
-                      :value="option"
-                    >
-                      <SelectItemText>
-                        {{ option.name }}
-                      </SelectItemText>
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
+                  <ImageIcon :size="18" />
+                  <span>{{ t('home.backgroundManager') }}</span>
+                </Button>
                 <Tooltip>
                   <TooltipTrigger as-child>
                     <Button
@@ -367,6 +327,14 @@ async function selectNextBackground() {
           </div>
         </div>
       </div>
+
+      <BackgroundManagerDialog
+        v-if="isBackgroundManagerOpen"
+        v-model:open="isBackgroundManagerOpen"
+        :selection-state="currentPageSettings.background"
+        :default-media-id="DEFAULT_INFUSION_BACKGROUND_FILE_NAME"
+        :on-apply-selection="applyInfusionBackgroundSelection"
+      />
     </template>
   </SettingsItem>
 </template>
@@ -413,6 +381,10 @@ async function selectNextBackground() {
 .visual-effects-settings__background-controls {
   display: flex;
   align-items: center;
+  gap: 0.5rem;
+}
+
+.visual-effects-settings__background-manager-button {
   gap: 0.5rem;
 }
 

@@ -2,11 +2,12 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-import { computed, ref, shallowRef } from 'vue';
+import { computed, ref } from 'vue';
 import { convertFileSrc, invoke } from '@tauri-apps/api/core';
 import { open } from '@tauri-apps/plugin-dialog';
 import { useUserPathsStore } from '@/stores/storage/user-paths';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
+import { useBackgroundMediaStore } from '@/stores/runtime/background-media';
 import { storeToRefs } from 'pinia';
 import defaultBannerImage from '@/assets/media/default-background/Exile by Aleksey Hoffman.jpg';
 import { backgroundMedia, DEFAULT_BACKGROUND_FILE_NAME } from '@/data/background-media';
@@ -33,13 +34,6 @@ const sourceBackgroundPreviewImages = import.meta.glob('@/assets/media/source-ba
 
 const cachedMediaPaths = ref<Record<string, string>>({});
 const pendingMediaCacheDownloads = new Map<string, Promise<string>>();
-const customBackgroundsFromDir = shallowRef<Array<{ path: string;
-  fileName: string; }>>([]);
-
-const MEDIA_EXTENSIONS = new Set([
-  'jpg', 'jpeg', 'png', 'gif', 'webp',
-  'mp4', 'webm', 'ogg', 'mov', 'avi', 'mkv',
-]);
 
 export type MediaItem
   = | { kind: 'builtin';
@@ -67,92 +61,42 @@ export type ResolvedMediaSelection = MediaSelectionOption & {
 
 export type { MediaSelectionState } from './background-media-selection';
 
-function isUrl(value: string): boolean {
-  return value.startsWith('http://') || value.startsWith('https://');
-}
+export type BackgroundMediaTarget = {
+  getSelection: () => MediaSelectionState;
+  applySelection: (selection: ResolvedMediaSelection) => Promise<void> | void;
+  defaultMediaId?: string;
+};
 
 function getExtension(pathOrUrl: string): string {
-  let cleanPath = pathOrUrl;
+  const lastDot = pathOrUrl.lastIndexOf('.');
 
-  if (isUrl(cleanPath)) {
-    try {
-      cleanPath = new URL(cleanPath).pathname;
-    }
-    catch {
-      cleanPath = cleanPath.split('?')[0].split('#')[0];
-    }
-  }
-
-  const lastDot = cleanPath.lastIndexOf('.');
-
-  return lastDot >= 0 ? cleanPath.slice(lastDot + 1).toLowerCase() : '';
+  return lastDot >= 0 ? pathOrUrl.slice(lastDot + 1).toLowerCase() : '';
 }
 
 function isVideoExtension(ext: string): boolean {
   return ['mp4', 'webm', 'ogg', 'mov', 'avi', 'mkv'].includes(ext);
 }
 
-function safeFileNameFromUrl(url: string): string {
-  try {
-    const pathname = new URL(url).pathname;
-    const segment = pathname.split('/').filter(Boolean).pop();
-
-    if (segment && /^[^<>:"/\\|?*]+\.\w+$/.test(segment)) {
-      return segment;
-    }
-  }
-  catch {
-  }
-
-  const ext = getExtension(url) || 'jpg';
-
-  return `image-${Date.now().toString(36)}.${ext}`;
-}
-
-export async function refreshCustomBackgroundsFromDir(): Promise<void> {
-  const userPathsStore = useUserPathsStore();
-  const destDir = userPathsStore.customPaths.appStorageCustomBackgroundsPath;
-
-  if (!destDir) {
-    customBackgroundsFromDir.value = [];
-    return;
-  }
-
-  try {
-    const result = await invoke<{ path: string;
-      entries: Array<{ name: string;
-        path: string;
-        is_file: boolean;
-        ext?: string; }>; }>('read_dir', {
-      path: destDir,
-    });
-
-    const mediaFiles = (result.entries ?? [])
-      .filter(entry => entry.is_file)
-      .filter((entry) => {
-        const ext = (entry.ext ?? entry.name.split('.').pop() ?? '').toLowerCase();
-
-        return MEDIA_EXTENSIONS.has(ext);
-      })
-      .map(entry => ({
-        path: entry.path,
-        fileName: entry.name,
-      }))
-      .sort((a, b) => a.fileName.localeCompare(b.fileName, undefined, { sensitivity: 'base' }));
-
-    customBackgroundsFromDir.value = mediaFiles;
-  }
-  catch {
-    customBackgroundsFromDir.value = [];
-  }
-}
-
-export function useBackgroundMedia() {
+export function useBackgroundMedia(target?: BackgroundMediaTarget) {
+  const backgroundMediaStore = useBackgroundMediaStore();
   const userPathsStore = useUserPathsStore();
   const userSettingsStore = useUserSettingsStore();
   const { userSettings } = storeToRefs(userSettingsStore);
+  const { customBackgrounds } = storeToRefs(backgroundMediaStore);
+  const homeBannerTarget: BackgroundMediaTarget = {
+    getSelection: () => ({
+      mediaId: userSettings.value.homeBannerMediaId,
+      index: userSettings.value.homeBannerIndex,
+    }),
+    applySelection: async (selection) => {
+      await userSettingsStore.set(homeBannerStorageKeys.mediaId, selection.mediaId);
+      await userSettingsStore.set(homeBannerStorageKeys.mediaIndex, selection.index);
+    },
+    defaultMediaId: DEFAULT_BACKGROUND_FILE_NAME,
+  };
+  const activeTarget = target ?? homeBannerTarget;
 
-  const customItems = computed(() => customBackgroundsFromDir.value);
+  const customItems = computed(() => customBackgrounds.value);
   const builtinCount = (defaultBuiltinMedia ? 1 : 0) + sourceBackgroundPreviewMedia.length;
 
   const allMediaItems = computed((): MediaItem[] => {
@@ -202,20 +146,21 @@ export function useBackgroundMedia() {
   });
 
   const totalCount = computed(() => allMediaItems.value.length);
+  const currentSelection = computed(() => activeTarget.getSelection());
   const mediaId = computed(() => {
-    const id = userSettings.value.homeBannerMediaId;
+    const id = currentSelection.value.mediaId;
 
-    return (typeof id === 'string' && id.trim()) ? id : DEFAULT_BACKGROUND_FILE_NAME;
+    return (typeof id === 'string' && id.trim()) ? id : (activeTarget.defaultMediaId ?? DEFAULT_BACKGROUND_FILE_NAME);
   });
 
   const normalizedIndex = computed(() => {
     return resolveSelectionIndex(
       {
         mediaId: mediaId.value,
-        index: userSettings.value.homeBannerIndex,
+        index: currentSelection.value.index,
       },
       {
-        defaultMediaId: DEFAULT_BACKGROUND_FILE_NAME,
+        defaultMediaId: activeTarget.defaultMediaId ?? DEFAULT_BACKGROUND_FILE_NAME,
       },
       mediaOptions.value,
     );
@@ -438,19 +383,16 @@ export function useBackgroundMedia() {
   }
 
   async function selectMedia(index: number) {
-    const items = allMediaItems.value;
-    const item = items[index];
+    const selection = buildResolvedMediaSelection(mediaOptions.value[index] ?? null);
 
-    if (item) {
-      const isReady = await ensureMediaCached(item);
+    if (selection) {
+      const isReady = await ensureMediaCached(selection.item);
 
       if (!isReady) {
         return;
       }
 
-      const id = getMediaSelectionId(item);
-      await userSettingsStore.set(homeBannerStorageKeys.mediaId, id);
-      await userSettingsStore.set(homeBannerStorageKeys.mediaIndex, index);
+      await activeTarget.applySelection(selection);
     }
   }
 
@@ -475,77 +417,63 @@ export function useBackgroundMedia() {
   }
 
   async function addFilesFromPaths(sourcePaths: string[]) {
-    if (sourcePaths.length === 0) {
-      return;
-    }
-
-    const destDir = userPathsStore.customPaths.appStorageCustomBackgroundsPath;
-
-    if (!destDir) {
-      return;
-    }
-
-    await invoke('ensure_directory', { directoryPath: destDir });
-
     try {
-      await invoke('copy_files_to_backgrounds', {
-        sourcePaths,
-        destinationPath: destDir,
-      });
+      const addedEntries = await backgroundMediaStore.addFilesFromPaths(sourcePaths);
+
+      if (addedEntries.length === 0) {
+        return;
+      }
+
+      const currentCustom = customBackgrounds.value;
+      const firstAddedEntry = addedEntries[0];
+      const firstSourceName = sourcePaths[0]?.split(/[/\\]/).pop() ?? '';
+      const newEntry = currentCustom.find(entry => entry.fileName === firstAddedEntry.fileName)
+        ?? currentCustom.find(entry => entry.fileName === firstSourceName
+          || entry.fileName.startsWith(firstSourceName.replace(/\.[^.]+$/, '')));
+      const newFileName = newEntry?.fileName ?? firstAddedEntry.fileName;
+      const selection = resolveMediaSelection(
+        {
+          mediaId: `custom:${newFileName}`,
+        },
+        {
+          defaultMediaId: activeTarget.defaultMediaId ?? DEFAULT_BACKGROUND_FILE_NAME,
+        },
+      );
+
+      if (selection) {
+        await activeTarget.applySelection(selection);
+      }
     }
     catch (error) {
       throw new Error(error instanceof Error ? error.message : String(error));
     }
-
-    await refreshCustomBackgroundsFromDir();
-
-    const currentCustom = customBackgroundsFromDir.value;
-    const firstSourceName = sourcePaths[0]?.split(/[/\\]/).pop() ?? '';
-    const newEntry = currentCustom.find(entry => entry.fileName === firstSourceName
-      || entry.fileName.startsWith(firstSourceName.replace(/\.[^.]+$/, '')));
-    const newFileName = newEntry?.fileName ?? currentCustom[0]?.fileName ?? DEFAULT_BACKGROUND_FILE_NAME;
-    const newIndex = currentCustom.findIndex(entry => entry.fileName === newFileName);
-
-    await userSettingsStore.set(homeBannerStorageKeys.mediaId, `custom:${newFileName}`);
-    await userSettingsStore.set(homeBannerStorageKeys.mediaIndex, newIndex >= 0 ? newIndex : 0);
   }
 
   async function addMediaUrl(url: string) {
-    const trimmedUrl = url.trim();
-
-    if (!trimmedUrl || !isUrl(trimmedUrl)) {
-      return;
-    }
-
-    const destDir = userPathsStore.customPaths.appStorageCustomBackgroundsPath;
-
-    if (!destDir) {
-      return;
-    }
-
-    await invoke('ensure_directory', { directoryPath: destDir });
-
-    const fileName = safeFileNameFromUrl(trimmedUrl);
-    const destPath = `${destDir.replace(/\\/g, '/')}/${fileName}`.replace(/\/+/g, '/');
-
     try {
-      await invoke('download_url_to_path', {
-        url: trimmedUrl,
-        destPath,
-      });
+      const addedEntry = await backgroundMediaStore.addMediaUrl(url);
+
+      if (!addedEntry) {
+        return;
+      }
+
+      const selection = resolveMediaSelection(
+        {
+          mediaId: `custom:${addedEntry.fileName}`,
+        },
+        {
+          defaultMediaId: activeTarget.defaultMediaId ?? DEFAULT_BACKGROUND_FILE_NAME,
+        },
+      );
+
+      if (selection) {
+        await activeTarget.applySelection(selection);
+      }
     }
     catch (error) {
       console.error('Failed to download media:', error);
       throw error;
     }
-
-    await refreshCustomBackgroundsFromDir();
-
-    await userSettingsStore.set(homeBannerStorageKeys.mediaId, `custom:${fileName}`);
-    await userSettingsStore.set(
-      homeBannerStorageKeys.mediaIndex,
-      customBackgroundsFromDir.value.findIndex(entry => entry.fileName === fileName),
-    );
   }
 
   async function removeCustomMedia(path: string) {
@@ -558,20 +486,9 @@ export function useBackgroundMedia() {
       await userSettingsStore.set(homeBannerStorageKeys.positions, positions);
     }
 
-    try {
-      await invoke('delete_items', {
-        paths: [path],
-        useTrash: true,
-      });
-    }
-    catch (error) {
-      console.error('Failed to delete media:', error);
-      throw error;
-    }
+    await backgroundMediaStore.removeCustomBackground(path);
 
-    await refreshCustomBackgroundsFromDir();
-
-    const itemsAfter = customBackgroundsFromDir.value.length + builtinCount;
+    const itemsAfter = allMediaItems.value;
     const currentIdx = normalizedIndex.value;
     const itemsBefore = allMediaItems.value;
     const removeIdx = itemsBefore.findIndex(
@@ -584,21 +501,13 @@ export function useBackgroundMedia() {
       newIndex = Math.max(0, currentIdx - 1);
     }
 
-    newIndex = Math.min(Math.max(0, newIndex), itemsAfter - 1);
+    newIndex = Math.min(Math.max(0, newIndex), Math.max(0, itemsAfter.length - 1));
 
-    let resolvedMediaId = DEFAULT_BACKGROUND_FILE_NAME;
+    const selection = buildResolvedMediaSelection(mediaOptions.value[newIndex] ?? null);
 
-    if (itemsAfter > 0) {
-      if (newIndex < customBackgroundsFromDir.value.length) {
-        resolvedMediaId = customBackgroundsFromDir.value[newIndex]?.fileName ?? DEFAULT_BACKGROUND_FILE_NAME;
-      }
-      else {
-        resolvedMediaId = backgroundMedia[newIndex - customBackgroundsFromDir.value.length]?.fileName ?? DEFAULT_BACKGROUND_FILE_NAME;
-      }
+    if (selection) {
+      await activeTarget.applySelection(selection);
     }
-
-    await userSettingsStore.set(homeBannerStorageKeys.mediaId, resolvedMediaId);
-    await userSettingsStore.set(homeBannerStorageKeys.mediaIndex, newIndex);
   }
 
   return {
@@ -618,7 +527,6 @@ export function useBackgroundMedia() {
     resolveOffsetMediaSelection,
     selectMedia,
     ensureMediaCached,
-    refreshCustomBackgroundsFromDir,
     openFilePicker,
     addFilesFromPaths,
     addMediaUrl,

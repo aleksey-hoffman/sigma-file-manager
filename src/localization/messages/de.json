@@ -863,7 +863,7 @@
       "bottomMaskHeight": "Höhe der unteren Maske (CSS-Einheiten)"
     },
     "homeBannerPickerDialog": {
-      "homePageBackgroundManager": "Homepage-Hintergrundmanager",
+      "homePageBackgroundManager": "Hintergrundmanager",
       "highResourceUsage": "Hoher Ressourcenverbrauch",
       "videoBackgroundsUse": "Videohintergründe benötigen viel mehr Speicher als Bilder. Um Ressourcen vom RAM in den GPU-Speicher zu verlagern, stellen Sie die App so ein, dass sie auf einer dedizierten GPU ausgeführt wird.",
       "customBackgrounds": "Benutzerdefinierte Hintergründe",

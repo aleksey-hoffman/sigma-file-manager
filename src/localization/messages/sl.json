@@ -876,7 +876,7 @@
       "bottomMaskHeight": "Višina spodnje maske (CSS enote)"
     },
     "homeBannerPickerDialog": {
-      "homePageBackgroundManager": "Upravljalnik ozadja domače strani",
+      "homePageBackgroundManager": "Upravljalnik ozadij",
       "highResourceUsage": "Visoka poraba virov",
       "videoBackgroundsUse": "Video ozadja porabijo veliko več pomnilnika kot slike. Za preusmeritev virov iz RAM-a v GPU spomin, nastavite aplikacijo, da se izvaja na namenskem GPU-ju.",
       "customBackgrounds": "Lastna ozadja",

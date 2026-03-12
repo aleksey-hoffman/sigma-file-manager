@@ -22,10 +22,18 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { useBackgroundMedia, type MediaItem } from '@/modules/home/composables/use-background-media';
-
+import {
+  useBackgroundMedia,
+  type MediaItem,
+  type MediaSelectionState,
+  type ResolvedMediaSelection,
+} from '@/modules/home/composables/use-background-media';
+import { useBackgroundMediaStore } from '@/stores/runtime/background-media';
 const props = defineProps<{
   open: boolean;
+  selectionState?: MediaSelectionState;
+  defaultMediaId?: string;
+  onApplySelection?: (selection: ResolvedMediaSelection) => Promise<void> | void;
 }>();
 
 const emit = defineEmits<{
@@ -33,6 +41,14 @@ const emit = defineEmits<{
 }>();
 
 const { t } = useI18n();
+const backgroundMediaStore = useBackgroundMediaStore();
+const backgroundMediaTarget = props.selectionState && props.onApplySelection
+  ? {
+      getSelection: () => props.selectionState as MediaSelectionState,
+      applySelection: (selection: ResolvedMediaSelection) => props.onApplySelection?.(selection),
+      defaultMediaId: props.defaultMediaId,
+    }
+  : undefined;
 const {
   allMediaItems,
   currentIndex,
@@ -44,7 +60,7 @@ const {
   addMediaUrl,
   removeCustomMedia,
   customItems,
-} = useBackgroundMedia();
+} = useBackgroundMedia(backgroundMediaTarget);
 
 const isAddingFiles = ref(false);
 const isContentReady = ref(false);
@@ -53,8 +69,9 @@ const isDraggingOver = ref(false);
 
 watch(
   () => props.open,
-  (isOpen) => {
+  async (isOpen) => {
     if (isOpen) {
+      await backgroundMediaStore.refreshCustomBackgrounds();
       setTimeout(() => {
         isContentReady.value = true;
       }, 350);
@@ -121,7 +138,7 @@ onMounted(() => {
   const videoExts = new Set(['mp4', 'webm', 'ogg', 'mov', 'avi', 'mkv']);
 
   getCurrentWebview()
-    .onDragDropEvent((event) => {
+    .onDragDropEvent(async (event) => {
       if (!props.open) {
         return;
       }
@@ -142,7 +159,7 @@ onMounted(() => {
         });
 
         if (filtered.length > 0) {
-          addFilesFromPaths(filtered);
+          await addFilesFromPaths(filtered);
         }
       }
     })
@@ -163,40 +180,40 @@ onUnmounted(() => {
     :open="open"
     @update:open="emit('update:open', $event)"
   >
-    <DrawerContent class="home-banner-media-editor-dialog">
+    <DrawerContent class="background-manager-dialog">
       <DrawerHeader>
         <DrawerTitle>
-          {{ t('dialogs.homeBannerPickerDialog.homePageBackgroundManager') }}
+          {{ t('home.backgroundManager') }}
         </DrawerTitle>
       </DrawerHeader>
 
-      <ScrollArea class="home-banner-media-editor__scroll-area">
+      <ScrollArea class="background-manager__scroll-area">
         <div
           v-if="!isContentReady"
-          class="home-banner-media-editor__loader"
+          class="background-manager__loader"
         >
           <LoaderCircleIcon
             :size="28"
-            class="home-banner-media-editor__loader-icon"
+            class="background-manager__loader-icon"
           />
         </div>
 
         <div
           v-else
-          class="home-banner-media-editor__body animate-fade-in"
+          class="background-manager__body animate-fade-in"
         >
-          <div class="home-banner-media-editor__section">
-            <h3 class="home-banner-media-editor__section-title">
+          <div class="background-manager__section">
+            <h3 class="background-manager__section-title">
               {{ t('dialogs.homeBannerPickerDialog.customBackgrounds') }}
             </h3>
-            <div class="home-banner-media-editor__url-input-row">
+            <div class="background-manager__url-input-row">
               <GlobeIcon
                 :size="16"
-                class="home-banner-media-editor__url-input-icon"
+                class="background-manager__url-input-icon"
               />
               <Input
                 v-model="urlInput"
-                class="home-banner-media-editor__url-input"
+                class="background-manager__url-input"
                 :placeholder="t('home.addMediaUrlPlaceholder')"
                 @keydown.enter="handleAddUrl"
               />
@@ -209,68 +226,68 @@ onUnmounted(() => {
                 {{ t('add') }}
               </Button>
             </div>
-            <div class="home-banner-media-editor__grid">
+            <div class="background-manager__grid">
               <button
                 type="button"
-                class="home-banner-media-editor__drop-zone"
+                class="background-manager__drop-zone"
                 :class="{
-                  'home-banner-media-editor__drop-zone--loading': isAddingFiles,
-                  'home-banner-media-editor__drop-zone--drag-over': isDraggingOver,
+                  'background-manager__drop-zone--loading': isAddingFiles,
+                  'background-manager__drop-zone--drag-over': isDraggingOver,
                 }"
                 @click="handleDropZoneClick"
               >
                 <PlusIcon
                   :size="32"
-                  class="home-banner-media-editor__drop-zone-icon"
+                  class="background-manager__drop-zone-icon"
                 />
-                <span class="home-banner-media-editor__drop-zone-title">
+                <span class="background-manager__drop-zone-title">
                   {{ t('home.dropZoneClickToBrowse') }}
                 </span>
-                <span class="home-banner-media-editor__drop-zone-hint">
+                <span class="background-manager__drop-zone-hint">
                   {{ t('home.dropZoneOrDropFiles') }}
                 </span>
               </button>
 
               <div
-                v-for="item in allMediaItems.filter(i => i.kind === 'custom')"
+                v-for="item in allMediaItems.filter(mediaItem => mediaItem.kind === 'custom')"
                 :key="item.id"
-                class="home-banner-media-editor__item"
-                :class="{ 'home-banner-media-editor__item--selected': getFlatIndex(item) === currentIndex }"
+                class="background-manager__item"
+                :class="{ 'background-manager__item--selected': getFlatIndex(item) === currentIndex }"
                 @click="selectMedia(getFlatIndex(item))"
               >
-                <div class="home-banner-media-editor__item-thumb">
+                <div class="background-manager__item-thumb">
                   <img
                     v-if="getItemType(item) === 'image'"
                     :src="getMediaUrl(item)"
                     :alt="getItemDisplayName(item)"
-                    class="home-banner-media-editor__item-media"
+                    class="background-manager__item-media"
                     loading="lazy"
                   >
                   <video
                     v-else
                     :src="getMediaUrl(item) + '#t=0.5'"
-                    class="home-banner-media-editor__item-media"
+                    class="background-manager__item-media"
                     muted
                     preload="metadata"
                   />
                 </div>
 
-                <div class="home-banner-media-editor__item-overlay">
-                  <div class="home-banner-media-editor__item-overlay-text">
-                    <span class="home-banner-media-editor__item-name">{{ getItemDisplayName(item) }}</span>
-                    <span class="home-banner-media-editor__item-type">
+                <div class="background-manager__item-overlay">
+                  <div class="background-manager__item-overlay-text">
+                    <span class="background-manager__item-name">{{ getItemDisplayName(item) }}</span>
+                    <span class="background-manager__item-type">
                       {{ t(getItemType(item) === 'image' ? 'image' : 'video') }}
                     </span>
                   </div>
                 </div>
 
-                <div class="home-banner-media-editor__item-actions">
+                <div class="background-manager__item-actions">
                   <Tooltip>
                     <TooltipTrigger as-child>
                       <Button
                         variant="ghost"
                         size="icon"
-                        class="home-banner-media-editor__item-delete"
+                        class="background-manager__item-delete"
                         @click.stop="removeCustomMedia(item.path)"
                       >
                         <Trash2Icon :size="16" />
@@ -285,32 +302,32 @@ onUnmounted(() => {
             </div>
           </div>
 
-          <div class="home-banner-media-editor__section">
-            <h3 class="home-banner-media-editor__section-title">
+          <div class="background-manager__section">
+            <h3 class="background-manager__section-title">
               {{ t('dialogs.homeBannerPickerDialog.defaultBackgrounds') }}
             </h3>
 
-            <div class="home-banner-media-editor__grid animate-fade-in">
+            <div class="background-manager__grid animate-fade-in">
               <div
-                v-for="item in allMediaItems.filter(i => i.kind === 'builtin')"
+                v-for="item in allMediaItems.filter(mediaItem => mediaItem.kind === 'builtin')"
                 :key="item.data.fileName"
-                class="home-banner-media-editor__item"
-                :class="{ 'home-banner-media-editor__item--selected': getFlatIndex(item) === currentIndex }"
+                class="background-manager__item"
+                :class="{ 'background-manager__item--selected': getFlatIndex(item) === currentIndex }"
                 @click="selectMedia(getFlatIndex(item))"
               >
-                <div class="home-banner-media-editor__item-thumb">
+                <div class="background-manager__item-thumb">
                   <img
                     :src="getPreviewUrl(item)"
                     :alt="getItemDisplayName(item)"
-                    class="home-banner-media-editor__item-media"
+                    class="background-manager__item-media"
                     loading="lazy"
                   >
                 </div>
 
-                <div class="home-banner-media-editor__item-overlay">
-                  <div class="home-banner-media-editor__item-overlay-text">
-                    <span class="home-banner-media-editor__item-name">{{ getItemDisplayName(item) }}</span>
-                    <span class="home-banner-media-editor__item-type">
+                <div class="background-manager__item-overlay">
+                  <div class="background-manager__item-overlay-text">
+                    <span class="background-manager__item-name">{{ getItemDisplayName(item) }}</span>
+                    <span class="background-manager__item-type">
                       {{ item.data.author }} · {{ t(getItemType(item) === 'image' ? 'image' : 'video') }}
                     </span>
                   </div>
@@ -325,7 +342,7 @@ onUnmounted(() => {
 </template>
 
 <style>
-.home-banner-media-editor-dialog {
+.background-manager-dialog {
   display: flex;
   overflow: hidden;
   height: min(500px, 80vh);
@@ -333,13 +350,13 @@ onUnmounted(() => {
   flex-direction: column;
 }
 
-.home-banner-media-editor__scroll-area {
+.background-manager__scroll-area {
   overflow: hidden;
   min-height: 0;
   flex: 1;
 }
 
-.home-banner-media-editor__loader {
+.background-manager__loader {
   display: flex;
   flex: 1;
   align-items: center;
@@ -347,7 +364,7 @@ onUnmounted(() => {
   padding: 48px 0;
 }
 
-.home-banner-media-editor__loader-icon {
+.background-manager__loader-icon {
   animation: spin 1s linear infinite;
   color: hsl(var(--muted-foreground));
 }
@@ -362,33 +379,33 @@ onUnmounted(() => {
   }
 }
 
-.home-banner-media-editor__body {
+.background-manager__body {
   padding: 8px 24px 24px;
 }
 
-.home-banner-media-editor__section {
+.background-manager__section {
   margin-bottom: 32px;
 }
 
-.home-banner-media-editor__section:last-child {
+.background-manager__section:last-child {
   margin-bottom: 0;
 }
 
-.home-banner-media-editor__section-title {
+.background-manager__section-title {
   margin: 0 0 8px;
   color: hsl(var(--foreground));
   font-size: 15px;
   font-weight: 600;
 }
 
-.home-banner-media-editor__grid {
+.background-manager__grid {
   display: grid;
   gap: 16px;
   grid-auto-rows: 1fr;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
 }
 
-.home-banner-media-editor__drop-zone {
+.background-manager__drop-zone {
   display: flex;
   min-height: 0;
   flex-direction: column;
@@ -403,26 +420,26 @@ onUnmounted(() => {
   transition: all 0.2s ease;
 }
 
-.home-banner-media-editor__drop-zone:hover {
+.background-manager__drop-zone:hover {
   border-color: hsl(var(--primary));
   background: hsl(var(--primary) / 8%);
 }
 
-.home-banner-media-editor__drop-zone--loading {
+.background-manager__drop-zone--loading {
   cursor: wait;
   opacity: 0.7;
 }
 
-.home-banner-media-editor__drop-zone--drag-over {
+.background-manager__drop-zone--drag-over {
   border-color: hsl(var(--primary));
   background: hsl(var(--primary) / 12%);
 }
 
-.home-banner-media-editor__drop-zone--drag-over .home-banner-media-editor__drop-zone-icon {
+.background-manager__drop-zone--drag-over .background-manager__drop-zone-icon {
   color: hsl(var(--primary));
 }
 
-.home-banner-media-editor__drop-zone-icon {
+.background-manager__drop-zone-icon {
   width: 24px;
   height: 24px;
   flex-shrink: 0;
@@ -430,41 +447,41 @@ onUnmounted(() => {
   color: hsl(var(--muted-foreground));
 }
 
-.home-banner-media-editor__drop-zone:hover .home-banner-media-editor__drop-zone-icon {
+.background-manager__drop-zone:hover .background-manager__drop-zone-icon {
   color: hsl(var(--primary));
 }
 
-.home-banner-media-editor__drop-zone-title {
+.background-manager__drop-zone-title {
   color: hsl(var(--foreground));
   font-size: 14px;
   font-weight: 500;
 }
 
-.home-banner-media-editor__drop-zone-hint {
+.background-manager__drop-zone-hint {
   margin-top: 4px;
   color: hsl(var(--muted-foreground));
   font-size: 12px;
 }
 
-.home-banner-media-editor__url-input-row {
+.background-manager__url-input-row {
   display: flex;
   align-items: center;
   margin-bottom: 12px;
   gap: 8px;
 }
 
-.home-banner-media-editor__url-input-icon {
+.background-manager__url-input-icon {
   flex-shrink: 0;
   color: hsl(var(--muted-foreground));
 }
 
-.home-banner-media-editor__url-input {
+.background-manager__url-input {
   height: 2rem;
   flex: 1;
   font-size: 13px;
 }
 
-.home-banner-media-editor__item {
+.background-manager__item {
   position: relative;
   overflow: hidden;
   min-height: 0;
@@ -475,11 +492,11 @@ onUnmounted(() => {
   transition: box-shadow 0.2s ease;
 }
 
-.home-banner-media-editor__item:hover {
+.background-manager__item:hover {
   box-shadow: 0 4px 12px hsl(0deg 0% 0% / 25%);
 }
 
-.home-banner-media-editor__item--selected::before {
+.background-manager__item--selected::before {
   position: absolute;
   z-index: 5;
   border: 2px solid hsl(var(--primary));
@@ -489,19 +506,19 @@ onUnmounted(() => {
   pointer-events: none;
 }
 
-.home-banner-media-editor__item-thumb {
+.background-manager__item-thumb {
   position: absolute;
   inset: 0;
 }
 
-.home-banner-media-editor__item-media {
+.background-manager__item-media {
   display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.home-banner-media-editor__item-overlay {
+.background-manager__item-overlay {
   position: absolute;
   z-index: 1;
   right: -1px;
@@ -517,11 +534,11 @@ onUnmounted(() => {
   transition: all 0.2s ease;
 }
 
-.home-banner-media-editor__item:hover .home-banner-media-editor__item-overlay {
+.background-manager__item:hover .background-manager__item-overlay {
   background: linear-gradient(to top, hsl(0deg 0% 0% / 79%), hsl(0deg 0% 0% / 25%));
 }
 
-.home-banner-media-editor__item-overlay-text {
+.background-manager__item-overlay-text {
   display: flex;
   min-width: 0;
   flex: 1;
@@ -529,7 +546,7 @@ onUnmounted(() => {
   justify-content: center;
 }
 
-.home-banner-media-editor__item-name {
+.background-manager__item-name {
   display: block;
   overflow: hidden;
   color: #ffffff;
@@ -539,12 +556,12 @@ onUnmounted(() => {
   white-space: nowrap;
 }
 
-.home-banner-media-editor__item-type {
+.background-manager__item-type {
   color: hsl(0deg 0% 100% / 80%);
   font-size: 11px;
 }
 
-.home-banner-media-editor__item-actions {
+.background-manager__item-actions {
   position: absolute;
   z-index: 6;
   top: 8px;
@@ -554,17 +571,17 @@ onUnmounted(() => {
   gap: 4px;
 }
 
-.home-banner-media-editor__item-delete {
+.background-manager__item-delete {
   background: hsl(0deg 0% 0% / 50%) !important;
   color: #ffffff !important;
   opacity: 0;
 }
 
-.home-banner-media-editor__item:hover .home-banner-media-editor__item-delete {
+.background-manager__item:hover .background-manager__item-delete {
   opacity: 1;
 }
 
-.home-banner-media-editor__item--selected .home-banner-media-editor__item-delete {
+.background-manager__item--selected .background-manager__item-delete {
   opacity: 1;
 }
 </style>

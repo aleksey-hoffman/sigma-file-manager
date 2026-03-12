@@ -863,7 +863,7 @@
       "bottomMaskHeight": "Chiều cao mặt nạ dưới (đơn vị CSS)"
     },
     "homeBannerPickerDialog": {
-      "homePageBackgroundManager": "Trình quản lý nền trang chủ",
+      "homePageBackgroundManager": "Quản lý nền",
       "highResourceUsage": "Mức sử dụng tài nguyên cao",
       "videoBackgroundsUse": "Nền video sử dụng nhiều bộ nhớ hơn hình ảnh. Để giảm tải tài nguyên từ RAM sang bộ nhớ GPU, hãy đặt ứng dụng chạy trên GPU chuyên dụng.",
       "customBackgrounds": "Nền tùy chỉnh",

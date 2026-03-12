@@ -16,8 +16,8 @@ import {
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { useBackgroundMedia } from '@/modules/home/composables/use-background-media';
 
-const HomeBackgroundMediaEditorDialog = defineAsyncComponent(
-  () => import('./home-banner-media-editor-dialog.vue'),
+const BackgroundManagerDialog = defineAsyncComponent(
+  () => import('@/components/ui/background-manager/background-manager-dialog.vue'),
 );
 import {
   Tooltip,
@@ -39,8 +39,10 @@ import {
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { DEFAULT_BACKGROUND_FILE_NAME } from '@/data/background-media';
+import { useDropOverlayStore } from '@/stores/runtime/drop-overlay';
 import { homeBannerStorageKeys } from '../background-storage-keys';
 
+const dropOverlayStore = useDropOverlayStore();
 const { t } = useI18n();
 const userSettingsStore = useUserSettingsStore();
 const {
@@ -57,6 +59,10 @@ const isDropdownOpen = ref(false);
 const isPositionPopoverOpen = ref(false);
 const isMediaEditorOpen = ref(false);
 const wasVideoPlaying = ref(false);
+
+watch(isMediaEditorOpen, (open) => {
+  dropOverlayStore.setBackgroundManagerOpen(open);
+}, { immediate: true });
 
 const currentMediaUrl = computed(() => {
   const item = currentItem.value;
@@ -419,7 +425,7 @@ watch(isPositionPopoverOpen, (isOpen) => {
       </DropdownMenu>
     </div>
 
-    <HomeBackgroundMediaEditorDialog
+    <BackgroundManagerDialog
       v-if="isMediaEditorOpen"
       v-model:open="isMediaEditorOpen"
     />

@@ -5,8 +5,10 @@
 import { ref, onMounted, onUnmounted, type Ref } from 'vue';
 import { getCurrentWebview } from '@tauri-apps/api/webview';
 import { getCurrentWindow } from '@tauri-apps/api/window';
+import { storeToRefs } from 'pinia';
 import type { DragOperationType } from './use-file-browser-drag';
 import { useDismissalLayerStore } from '@/stores/runtime/dismissal-layer';
+import { useDropOverlayStore } from '@/stores/runtime/drop-overlay';
 
 interface DropTargetInfo {
   path: string;
@@ -21,6 +23,8 @@ export function useFileBrowserExternalDrop(options: {
   disableBackgroundDrop?: boolean;
 }) {
   const dismissalLayerStore = useDismissalLayerStore();
+  const dropOverlayStore = useDropOverlayStore();
+  const { isBackgroundManagerOpen } = storeToRefs(dropOverlayStore);
   const isExternalDragActive = ref(false);
   const externalDragItemCount = ref(0);
   const externalDragOperationType = ref<DragOperationType>('move');
@@ -168,6 +172,10 @@ export function useFileBrowserExternalDrop(options: {
   onMounted(() => {
     getCurrentWebview()
       .onDragDropEvent((event) => {
+        if (isBackgroundManagerOpen.value) {
+          return;
+        }
+
         if (event.payload.type === 'enter') {
           const paths = (event.payload.paths as string[]) ?? [];
           const position = event.payload.position as {

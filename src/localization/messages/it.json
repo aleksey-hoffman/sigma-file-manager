@@ -863,7 +863,7 @@
       "bottomMaskHeight": "Altezza maschera inferiore (unità CSS)"
     },
     "homeBannerPickerDialog": {
-      "homePageBackgroundManager": "Gestore dello sfondo della pagina iniziale",
+      "homePageBackgroundManager": "Gestore dello sfondo",
       "highResourceUsage": "Utilizzo elevato delle risorse",
       "videoBackgroundsUse": "Gli sfondi video utilizzano molta più memoria delle immagini. Per scaricare le risorse dalla RAM alla memoria della GPU, impostare l'app in modo che venga eseguita su una GPU dedicata.",
       "customBackgrounds": "Sfondi personalizzati",

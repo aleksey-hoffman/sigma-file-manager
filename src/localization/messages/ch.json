@@ -863,7 +863,7 @@
       "bottomMaskHeight": "底部遮罩高度（CSS 单位）"
     },
     "homeBannerPickerDialog": {
-      "homePageBackgroundManager": "首页后台管理器",
+      "homePageBackgroundManager": "后台管理器",
       "highResourceUsage": "高资源使用率",
       "videoBackgroundsUse": "视频背景使用的内存比图像多得多。要将资源从 RAM 卸载到 GPU 内存，请将应用程序设置为在专用 GPU 上运行。",
       "customBackgrounds": "自定义背景",

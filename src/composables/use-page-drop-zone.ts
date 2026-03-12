@@ -5,6 +5,8 @@
 import { ref, onMounted, onUnmounted, type Ref } from 'vue';
 import { getCurrentWebview } from '@tauri-apps/api/webview';
 import { getCurrentWindow } from '@tauri-apps/api/window';
+import { storeToRefs } from 'pinia';
+import { useDropOverlayStore } from '@/stores/runtime/drop-overlay';
 
 export type DropOperationType = 'move' | 'copy';
 
@@ -17,6 +19,8 @@ export function usePageDropZone(options: {
   containerRef: Ref<Element | null>;
   onDrop: (sourcePaths: string[], targetPath: string, operation: DropOperationType) => void;
 }) {
+  const dropOverlayStore = useDropOverlayStore();
+  const { isBackgroundManagerOpen } = storeToRefs(dropOverlayStore);
   const isActive = ref(false);
   const itemCount = ref(0);
   const operationType = ref<DropOperationType>('move');
@@ -141,6 +145,10 @@ export function usePageDropZone(options: {
   onMounted(() => {
     getCurrentWebview()
       .onDragDropEvent((event) => {
+        if (isBackgroundManagerOpen.value) {
+          return;
+        }
+
         if (event.payload.type === 'enter') {
           const paths = (event.payload.paths as string[]) ?? [];
           const position = event.payload.position as {

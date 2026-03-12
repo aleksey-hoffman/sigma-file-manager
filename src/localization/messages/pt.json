@@ -866,7 +866,7 @@
       "bottomMaskHeight": "Altura da máscara inferior (unidades CSS)"
     },
     "homeBannerPickerDialog": {
-      "homePageBackgroundManager": "Gerenciador de plano de fundo da página inicial",
+      "homePageBackgroundManager": "Gerenciador de plano de fundo",
       "highResourceUsage": "Alto uso de recursos",
       "videoBackgroundsUse": "Os fundos de vídeo usam muito mais memória do que imagens. Para descarregar recursos da RAM para a memória da GPU, configure o aplicativo para rodar em uma GPU dedicada",
       "customBackgrounds": "Fundos personalizados",

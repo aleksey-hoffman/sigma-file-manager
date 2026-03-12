@@ -81,9 +81,6 @@ async fn download_to_dir(url: &str, dir: &str, filename: &str) -> Result<String,
   file.write_all(&bytes)
     .map_err(|error| format!("Failed to write file: {}", error))?;
 
-  file.sync_all()
-    .map_err(|error| format!("Failed to sync file: {}", error))?;
-
   drop(file);
 
   wait_until_file_readable(&dest_path).await?;
@@ -95,7 +92,7 @@ async fn download_to_dir(url: &str, dir: &str, filename: &str) -> Result<String,
 pub async fn copy_files_to_backgrounds(
   source_paths: Vec<String>,
   destination_path: String,
-) -> Result<bool, String> {
+) -> Result<Vec<String>, String> {
   let destination = Path::new(&destination_path);
 
   if !destination.exists() {
@@ -106,6 +103,8 @@ pub async fn copy_files_to_backgrounds(
   if !destination.is_dir() {
     return Err("Destination is not a directory".to_string());
   }
+
+  let mut copied_paths: Vec<String> = Vec::new();
 
   for source_path_str in &source_paths {
     let source = Path::new(source_path_str);
@@ -140,16 +139,9 @@ pub async fn copy_files_to_backgrounds(
     fs::copy(source, &unique_dest)
       .map_err(|error| format!("Failed to copy: {}", error))?;
 
-    let file = fs::File::open(&unique_dest)
-      .map_err(|error| format!("Failed to open copied file: {}", error))?;
-
-    file.sync_all()
-      .map_err(|error| format!("Failed to sync file: {}", error))?;
-
-    drop(file);
-
     wait_until_file_readable(&unique_dest).await?;
+    copied_paths.push(unique_dest.to_string_lossy().to_string());
   }
 
-  Ok(true)
+  Ok(copied_paths)
 }

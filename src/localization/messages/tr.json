@@ -863,7 +863,7 @@
       "bottomMaskHeight": "Alt maske yüksekliği (CSS birimleri)"
     },
     "homeBannerPickerDialog": {
-      "homePageBackgroundManager": "Ana sayfa arka plan yöneticisi",
+      "homePageBackgroundManager": "Arka plan yöneticisi",
       "highResourceUsage": "Yüksek kaynak kullanımı",
       "videoBackgroundsUse": "Video arka planları, görüntülerden çok daha fazla bellek kullanır. Kaynakları RAM'den GPU belleğine boşaltmak için uygulamayı özel GPU'da çalışacak şekilde ayarlayın.",
       "customBackgrounds": "Özel arka planlar",

@@ -862,7 +862,7 @@
       "bottomMaskHeight": "ارتفاع ماسک پایین (واحدهای CSS)"
     },
     "homeBannerPickerDialog": {
-      "homePageBackgroundManager": "مدیر پس زمینه صفحه اصلی",
+      "homePageBackgroundManager": "مدیر پیشینه",
       "highResourceUsage": "استفاده از منابع بالا",
       "videoBackgroundsUse": "پس زمینه های ویدئویی از حافظه بسیار بیشتری نسبت به تصاویر استفاده می کنند. برای تخلیه منابع از RAM به حافظه GPU، برنامه را طوری تنظیم کنید که روی GPU اختصاصی اجرا شود.",
       "customBackgrounds": "پس زمینه های سفارشی",

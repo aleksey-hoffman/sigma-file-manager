@@ -836,7 +836,7 @@
       }
     },
     "homeBannerPickerDialog": {
-      "homePageBackgroundManager": "Home page background manager",
+      "homePageBackgroundManager": "Background manager",
       "highResourceUsage": "High resource usage",
       "videoBackgroundsUse": "Video backgrounds use much more memory than images. To offload resources from RAM to GPU memory, set the app to run on dedicated GPU.",
       "customBackgrounds": "Custom backgrounds",

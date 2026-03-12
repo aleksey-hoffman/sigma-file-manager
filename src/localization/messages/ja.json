@@ -863,7 +863,7 @@
       "bottomMaskHeight": "下部マスクの高さ (CSS 単位)"
     },
     "homeBannerPickerDialog": {
-      "homePageBackgroundManager": "ホームページ背景マネージャー",
+      "homePageBackgroundManager": "バックグラウンドマネージャー",
       "highResourceUsage": "リソース使用率が高い",
       "videoBackgroundsUse": "動画の背景は、画像よりもはるかに多くのメモリを使用します。リソースを RAM から GPU メモリにオフロードするには、専用の GPU で実行するようにアプリを設定してください。",
       "customBackgrounds": "カスタム背景",

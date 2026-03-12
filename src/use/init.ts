@@ -13,12 +13,12 @@ import { useGlobalSearchStore } from '@/stores/runtime/global-search';
 import { useShortcutsStore } from '@/stores/runtime/shortcuts';
 import { useGlobalShortcutsStore } from '@/stores/runtime/global-shortcuts';
 import { useTerminalsStore } from '@/stores/runtime/terminals';
+import { useBackgroundMediaStore } from '@/stores/runtime/background-media';
 import { disableWebViewFeatures } from '@/utils/disable-web-view-features';
 import { useChangelog } from '@/modules/changelog';
 import { useAppUpdater } from '@/modules/app-updater';
 import { useExtensionsStore } from '@/stores/runtime/extensions';
 import { initPlatformInfo } from '@/modules/extensions/api';
-import { refreshCustomBackgroundsFromDir } from '@/modules/home/composables/use-background-media';
 
 export function useInit() {
   const router = useRouter();
@@ -31,6 +31,7 @@ export function useInit() {
   const shortcutsStore = useShortcutsStore();
   const globalShortcutsStore = useGlobalShortcutsStore();
   const terminalsStore = useTerminalsStore();
+  const backgroundMediaStore = useBackgroundMediaStore();
   const extensionsStore = useExtensionsStore();
   const { checkAndShowChangelog } = useChangelog();
   const { initAutoCheck } = useAppUpdater();
@@ -55,7 +56,7 @@ export function useInit() {
     await platformStore.init();
     await userPathsStore.init();
     await userSettingsStore.init();
-    await refreshCustomBackgroundsFromDir();
+    await backgroundMediaStore.refreshCustomBackgrounds();
     await userStatsStore.init();
     await workspacesStore.init();
     await globalSearchStore.initOnLaunch();
