@@ -212,7 +212,6 @@ export function useFileBrowserDrag(options: {
 
     isOutboundDragActive = true;
     const filePaths = dragItems.value.map(item => item.path);
-    const dragMode = operationType.value;
     const iconPath = await getDragIconPath();
 
     cleanup();
@@ -220,7 +219,7 @@ export function useFileBrowserDrag(options: {
     await startOutboundDrag({
       item: filePaths,
       icon: iconPath,
-      mode: dragMode,
+      mode: 'copy',
     });
 
     isOutboundDragActive = false;
