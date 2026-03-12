@@ -1823,6 +1823,8 @@
     "showFolder": "Show folder",
     "reinstalledSuccessfully": "Cài đặt lại thành công",
     "reusedDependencies": "Đã tái sử dụng {count} phụ thuộc hiện có",
+    "noLongerAvailable": "Không còn khả dụng",
+    "removedBecauseUnapproved": "Tiện ích mở rộng này đã bị gỡ vì không còn trong danh sách đăng ký đã được phê duyệt.",
     "enabled": "Enabled",
     "disabled": "Disabled",
     "dependencies": {

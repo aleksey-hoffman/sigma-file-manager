@@ -1822,6 +1822,8 @@
     "showFolder": "Show folder",
     "reinstalledSuccessfully": "با موفقیت نصب مجدد شد",
     "reusedDependencies": "{count} وابستگی موجود مجدداً استفاده شد",
+    "noLongerAvailable": "دیگر در دسترس نیست",
+    "removedBecauseUnapproved": "این افزونه حذف شد چون دیگر در رجیستری مورد تأیید وجود ندارد.",
     "enabled": "Enabled",
     "disabled": "Disabled",
     "dependencies": {

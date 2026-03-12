@@ -1823,6 +1823,8 @@
     "showFolder": "Show folder",
     "reinstalledSuccessfully": "Reinstallato con successo",
     "reusedDependencies": "Riusate {count} dipendenze esistenti",
+    "noLongerAvailable": "Non è più disponibile",
+    "removedBecauseUnapproved": "Questa estensione è stata rimossa perché non è più presente nel registro approvato.",
     "enabled": "Enabled",
     "disabled": "Disabled",
     "dependencies": {

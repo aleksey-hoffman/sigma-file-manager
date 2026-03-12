@@ -1823,6 +1823,8 @@
     "showFolder": "Show folder",
     "reinstalledSuccessfully": "Başarıyla yeniden yüklendi",
     "reusedDependencies": "{count} mevcut bağımlılık yeniden kullanıldı",
+    "noLongerAvailable": "Artık kullanılamıyor",
+    "removedBecauseUnapproved": "Bu uzantı, artık onaylı kayıt listesinde olmadığı için kaldırıldı.",
     "enabled": "Enabled",
     "disabled": "Disabled",
     "dependencies": {

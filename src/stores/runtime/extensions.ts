@@ -226,10 +226,18 @@ export const useExtensionsStore = defineStore('extensions', () => {
     'onEnable',
   ]);
 
-  function getExtensionToastTitle(extensionId: string): string {
-    const { t } = i18n.global;
+  function getExtensionDisplayName(extensionId: string, fallbackName?: string): string {
+    if (fallbackName) {
+      return fallbackName;
+    }
+
     const installedExt = storageStore.extensionsData.installedExtensions[extensionId];
-    const extensionName = installedExt?.manifest?.name || extensionId.split('.').pop() || extensionId;
+    return installedExt?.manifest?.name || extensionId.split('.').pop() || extensionId;
+  }
+
+  function getExtensionToastTitle(extensionId: string, fallbackName?: string): string {
+    const { t } = i18n.global;
+    const extensionName = getExtensionDisplayName(extensionId, fallbackName);
     return `${t('extension')} | ${extensionName}`;
   }
 
@@ -278,6 +286,28 @@ export const useExtensionsStore = defineStore('extensions', () => {
     setTimeout(() => {
       toast.dismiss(toastId);
     }, 3000);
+  }
+
+  function showExtensionNoLongerAvailableToast(extensionId: string, extensionName: string): void {
+    const { t } = i18n.global;
+    const toastId = `ext-removed-${extensionId}`;
+
+    toast.custom(markRaw(CustomProgress), {
+      id: toastId,
+      duration: 5000,
+      componentProps: {
+        data: {
+          id: toastId,
+          title: getExtensionToastTitle(extensionId, extensionName),
+          subtitle: t('extensions.noLongerAvailable'),
+          description: t('extensions.removedBecauseUnapproved'),
+          progress: 0,
+          timer: 0,
+          actionText: '',
+          cleanup: () => {},
+        },
+      },
+    });
   }
 
   function shouldBlockCommandsForActivationEvent(
@@ -499,6 +529,7 @@ export const useExtensionsStore = defineStore('extensions', () => {
       registryFetchedAt.value = Date.now();
 
       await storageStore.updateRegistryCache(filteredRegistry);
+      await removeUnapprovedInstalledExtensions(filteredRegistry);
     }
     catch (error) {
       registryError.value = error instanceof Error ? error.message : String(error);
@@ -753,17 +784,21 @@ export const useExtensionsStore = defineStore('extensions', () => {
     });
   }
 
-  async function uninstallExtension(extensionId: string): Promise<void> {
+  async function removeInstalledExtension(
+    extensionId: string,
+    options: { runUninstallHook?: boolean } = {},
+  ): Promise<void> {
     if (uninstallingExtensions.value.has(extensionId)) return;
 
     uninstallingExtensions.value.add(extensionId);
 
     try {
+      const shouldRunUninstallHook = options.runUninstallHook ?? true;
       const installed = installedExtensions.value.find(
         extension => extension.id === extensionId,
       );
 
-      if (installed) {
+      if (shouldRunUninstallHook && installed) {
         await loadExtensionForEvent(
           extensionId,
           installed.manifest,
@@ -799,6 +834,10 @@ export const useExtensionsStore = defineStore('extensions', () => {
     finally {
       uninstallingExtensions.value.delete(extensionId);
     }
+  }
+
+  async function uninstallExtension(extensionId: string): Promise<void> {
+    await removeInstalledExtension(extensionId);
   }
 
   async function updateExtension(
@@ -1303,6 +1342,43 @@ export const useExtensionsStore = defineStore('extensions', () => {
     }
     catch (error) {
       console.error('Failed to reconcile installed extensions:', error);
+    }
+  }
+
+  async function removeUnapprovedInstalledExtensions(nextRegistry: ExtensionRegistry): Promise<void> {
+    const approvedExtensionIds = new Set(nextRegistry.extensions.map(extension => extension.id));
+    const removableExtensionIds = Object.entries(storageStore.extensionsData.installedExtensions)
+      .filter(([extensionId, installedExtensionData]) => {
+        if (installedExtensionData.isLocal) {
+          return false;
+        }
+
+        if (approvedExtensionIds.has(extensionId)) {
+          return false;
+        }
+
+        if (
+          installingExtensions.value.has(extensionId)
+          || updatingExtensions.value.has(extensionId)
+          || uninstallingExtensions.value.has(extensionId)
+        ) {
+          return false;
+        }
+
+        return true;
+      })
+      .map(([extensionId]) => extensionId);
+
+    for (const extensionId of removableExtensionIds) {
+      const extensionName = getExtensionDisplayName(extensionId);
+
+      try {
+        await removeInstalledExtension(extensionId, { runUninstallHook: false });
+        showExtensionNoLongerAvailableToast(extensionId, extensionName);
+      }
+      catch (error) {
+        console.error(`Failed to remove unapproved extension ${extensionId}:`, error);
+      }
     }
   }
 

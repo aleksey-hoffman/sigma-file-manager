@@ -1836,6 +1836,8 @@
     "showFolder": "Show folder",
     "reinstalledSuccessfully": "Успешно переустановлено",
     "reusedDependencies": "Использовано {count} существующих зависимостей",
+    "noLongerAvailable": "Больше недоступно",
+    "removedBecauseUnapproved": "Это расширение было удалено, потому что его больше нет в одобренном реестре.",
     "enabled": "Enabled",
     "disabled": "Disabled",
     "noExtensionCommands": "This extension does not provide any commands.",

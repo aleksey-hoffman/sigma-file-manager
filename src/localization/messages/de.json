@@ -1823,6 +1823,8 @@
     "showFolder": "Show folder",
     "reinstalledSuccessfully": "Erneut erfolgreich installiert",
     "reusedDependencies": "{count} vorhandene Abhängigkeiten wiederverwendet",
+    "noLongerAvailable": "Nicht mehr verfügbar",
+    "removedBecauseUnapproved": "Diese Erweiterung wurde entfernt, weil sie nicht mehr in der genehmigten Registry enthalten ist.",
     "enabled": "Enabled",
     "disabled": "Disabled",
     "dependencies": {

@@ -1835,6 +1835,8 @@
     "showFolder": "Show folder",
     "reinstalledSuccessfully": "Reinstalado com sucesso",
     "reusedDependencies": "Reutilizadas {count} dependências existentes",
+    "noLongerAvailable": "Não está mais disponível",
+    "removedBecauseUnapproved": "Esta extensão foi removida porque não está mais no registro aprovado.",
     "enabled": "Enabled",
     "disabled": "Disabled",
     "noExtensionCommands": "This extension does not provide any commands.",

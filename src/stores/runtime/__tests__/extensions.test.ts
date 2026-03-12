@@ -176,7 +176,10 @@ function getMainBranchManifestUrl(repository: string): string {
   return `https://raw.githubusercontent.com/${owner}/${repo}/main/package.json`;
 }
 
-function installTestExtension(manifest: ExtensionManifest): void {
+function installTestExtension(
+  manifest: ExtensionManifest,
+  options: { isLocal?: boolean } = {},
+): void {
   const storageStore = useExtensionsStorageStore();
   storageStore.extensionsData.installedExtensions[manifest.id] = {
     version: manifest.version,
@@ -189,6 +192,7 @@ function installTestExtension(manifest: ExtensionManifest): void {
       customSettings: {},
       keybindingOverrides: [],
     },
+    isLocal: options.isLocal,
   };
 }
 
@@ -387,5 +391,117 @@ describe('extensions runtime store', () => {
       reachableEntry.id,
       flakyEntry.id,
     ]);
+  });
+
+  it('removes installed non-local extensions that are no longer in the registry', async () => {
+    const approvedEntry = createRegistryEntry(
+      'test.approved',
+      'https://github.com/example/approved-extension',
+    );
+    const removedManifest = createRemoteManifest(
+      'test.removed',
+      'https://github.com/example/removed-extension',
+    );
+    removedManifest.name = 'Removed Extension';
+
+    const localManifest = createRemoteManifest(
+      'test.local',
+      'https://github.com/example/local-extension',
+    );
+    localManifest.name = 'Local Extension';
+
+    installTestExtension(removedManifest);
+    installTestExtension(localManifest, { isLocal: true });
+
+    invokeMock.mockImplementation(async (command: string, args?: Record<string, unknown>) => {
+      if (command === 'fetch_github_tags') {
+        return [];
+      }
+
+      if (command === 'fetch_url_text') {
+        if (args?.url === 'https://raw.githubusercontent.com/sigma-hub/sfm-extensions/main/registry.json') {
+          return {
+            ok: true,
+            status: 200,
+            body: JSON.stringify({
+              schemaVersion: '1.0.0',
+              extensions: [approvedEntry],
+            }),
+          };
+        }
+
+        if (args?.url === getMainBranchManifestUrl(approvedEntry.repository)) {
+          return {
+            ok: true,
+            status: 200,
+            body: JSON.stringify(createRemoteManifest(approvedEntry.id, approvedEntry.repository)),
+          };
+        }
+      }
+
+      if (command === 'cancel_all_extension_commands' || command === 'delete_extension') {
+        return undefined;
+      }
+
+      throw new Error(`Unexpected invoke command: ${command}`);
+    });
+
+    const extensionsStore = useExtensionsStore();
+    const storageStore = useExtensionsStorageStore();
+
+    await extensionsStore.fetchRegistry(true);
+
+    expect(storageStore.extensionsData.installedExtensions['test.removed']).toBeUndefined();
+    expect(storageStore.extensionsData.installedExtensions['test.local']).toBeDefined();
+    expect(invokeMock).toHaveBeenCalledWith('delete_extension', { extensionId: 'test.removed' });
+    expect(invokeMock).not.toHaveBeenCalledWith('delete_extension', { extensionId: 'test.local' });
+    expect(toastCustomMock).toHaveBeenCalledTimes(1);
+    expect(toastCustomMock.mock.calls[0]?.[1]?.componentProps?.data).toMatchObject({
+      title: 'Extension | Removed Extension',
+      subtitle: 'No longer available',
+      description: 'This extension was removed because it is no longer in the approved registry.',
+    });
+  });
+
+  it('does not remove installed extensions when registry refresh fails and falls back to cache', async () => {
+    const cachedEntry = createRegistryEntry(
+      'test.cached',
+      'https://github.com/example/cached-extension',
+    );
+    const removedManifest = createRemoteManifest(
+      'test.removed',
+      'https://github.com/example/removed-extension',
+    );
+
+    installTestExtension(removedManifest);
+
+    const storageStore = useExtensionsStorageStore();
+    storageStore.extensionsData.registryCache = {
+      data: {
+        schemaVersion: '1.0.0',
+        extensions: [cachedEntry],
+      },
+      fetchedAt: 123,
+    };
+
+    invokeMock.mockImplementation(async (command: string, args?: Record<string, unknown>) => {
+      if (command === 'fetch_github_tags') {
+        return [];
+      }
+
+      if (command === 'fetch_url_text' && args?.url === 'https://raw.githubusercontent.com/sigma-hub/sfm-extensions/main/registry.json') {
+        throw new Error('Network error');
+      }
+
+      throw new Error(`Unexpected invoke command: ${command}`);
+    });
+
+    const extensionsStore = useExtensionsStore();
+    await extensionsStore.fetchRegistry(true);
+
+    expect(extensionsStore.availableExtensions.map(extension => extension.id)).toEqual([cachedEntry.id]);
+    expect(storageStore.extensionsData.installedExtensions['test.removed']).toBeDefined();
+    expect(invokeMock).not.toHaveBeenCalledWith('delete_extension', { extensionId: 'test.removed' });
+    expect(toastCustomMock).not.toHaveBeenCalled();
   });
 });

@@ -1823,6 +1823,8 @@
     "showFolder": "Show folder",
     "reinstalledSuccessfully": "Réinstallation réussie",
     "reusedDependencies": "{count} dépendances existantes réutilisées",
+    "noLongerAvailable": "N'est plus disponible",
+    "removedBecauseUnapproved": "Cette extension a été supprimée, car elle ne figure plus dans le registre approuvé.",
     "enabled": "Enabled",
     "disabled": "Disabled",
     "dependencies": {

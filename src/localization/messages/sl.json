@@ -1867,6 +1867,8 @@
     "reinstall": "Re-install",
     "reinstalledSuccessfully": "Ponovno uspešno nameščeno",
     "reusedDependencies": "Ponovno uporabljenih {count} obstoječih odvisnosti",
+    "noLongerAvailable": "Ni več na voljo",
+    "removedBecauseUnapproved": "Ta razširitev je bila odstranjena, ker je ni več v odobrenem registru.",
     "update": "Update",
     "updateAvailable": "Update available",
     "installed": "Installed",

@@ -1823,6 +1823,8 @@
     "showFolder": "Show folder",
     "reinstalledSuccessfully": "重新安装成功",
     "reusedDependencies": "重复使用了 {count} 个现有依赖",
+    "noLongerAvailable": "不再可用",
+    "removedBecauseUnapproved": "此扩展已被移除，因为它已不在已批准的注册表中。",
     "enabled": "Enabled",
     "disabled": "Disabled",
     "dependencies": {
