@@ -16,17 +16,16 @@ import type { Component } from 'vue';
 import normalizePath from '@/utils/normalize-path';
 import * as LucideIcons from 'lucide-vue-next';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
-import type { UserDirectoryCustomization } from '@/types/user-settings';
-import type { UserDirectoriesCustomizations } from '@/types/user-settings';
+import type { UserDirectoryCustomization, UserDirectoriesCustomizations } from '@/types/user-settings';
+import uniqueId from '@/utils/unique-id';
 
 export interface UserDirectory {
-  name: string;
-  titleKey: string;
+  id: string;
+  titleKey?: string;
   customTitle?: string;
   iconName: string;
   customIconName?: string;
   path: string;
-  defaultPath: string;
 }
 
 interface UserDirectoryDefinition {
@@ -101,6 +100,10 @@ export type UserDirectoryIconName = typeof userDirectoryIconNames[number];
 export function getIconComponent(iconName: string): Component {
   const icons = LucideIcons as unknown as Record<string, Component>;
   return icons[iconName] || LucideIcons.FolderIcon;
+}
+
+function isBuiltInDirectoryId(directoryId: string): boolean {
+  return directoryDefinitions.some(definition => definition.name === directoryId);
 }
 
 const directoryDefinitions: UserDirectoryDefinition[] = [
@@ -186,16 +189,40 @@ export function useUserDirectories() {
       }
 
       const customization = customizations[definition.name];
+
+      if (customization?.deleted) {
+        continue;
+      }
+
       const customPath = customization?.path ? normalizePath(customization.path) : undefined;
 
       directories.push({
-        name: definition.name,
+        id: definition.name,
         titleKey: definition.titleKey,
         customTitle: customization?.title,
         iconName: customization?.icon || definition.iconName,
         customIconName: customization?.icon,
         path: customPath || defaultPath,
-        defaultPath,
+      });
+    }
+
+    for (const [directoryId, customization] of Object.entries(customizations)) {
+      if (isBuiltInDirectoryId(directoryId) || customization.deleted) {
+        continue;
+      }
+
+      const customPath = customization.path ? normalizePath(customization.path) : undefined;
+
+      if (!customPath) {
+        continue;
+      }
+
+      directories.push({
+        id: directoryId,
+        customTitle: customization.title,
+        iconName: customization.icon || 'FolderIcon',
+        customIconName: customization.icon,
+        path: customPath,
       });
     }
 
@@ -224,39 +251,88 @@ export function useUserDirectories() {
   watch(
     () => userSettingsStore.userSettings.userDirectories,
     (newCustomizations) => {
-      if (defaultPathsInitialized && newCustomizations) {
-        userDirectories.value = buildUserDirectories(newCustomizations);
+      if (defaultPathsInitialized) {
+        userDirectories.value = buildUserDirectories(newCustomizations || {});
       }
     },
     { deep: true },
   );
 
-  async function updateUserDirectory(name: string, customization: UserDirectoryCustomization) {
+  async function updateUserDirectory(directoryId: string, customization: UserDirectoryCustomization) {
     const currentCustomizations = { ...userSettingsStore.userSettings.userDirectories };
-
     const normalizedCustomization: UserDirectoryCustomization = {
       title: customization.title,
       path: customization.path ? normalizePath(customization.path) : undefined,
       icon: customization.icon,
+      deleted: false,
     };
 
-    if (normalizedCustomization.title || normalizedCustomization.path || normalizedCustomization.icon) {
-      currentCustomizations[name] = {
-        ...currentCustomizations[name],
-        ...normalizedCustomization,
+    if (isBuiltInDirectoryId(directoryId)) {
+      const defaultPath = defaultPaths.value[directoryId];
+      const hasTitle = !!normalizedCustomization.title;
+      const hasIcon = !!normalizedCustomization.icon;
+      const hasCustomPath = !!normalizedCustomization.path && normalizedCustomization.path !== defaultPath;
+
+      if (hasTitle || hasIcon || hasCustomPath) {
+        currentCustomizations[directoryId] = {
+          title: normalizedCustomization.title,
+          path: hasCustomPath ? normalizedCustomization.path : undefined,
+          icon: normalizedCustomization.icon,
+          deleted: false,
+        };
+      }
+      else {
+        delete currentCustomizations[directoryId];
+      }
+
+      await userSettingsStore.set('userDirectories', currentCustomizations);
+      return;
+    }
+
+    currentCustomizations[directoryId] = {
+      title: normalizedCustomization.title,
+      path: normalizedCustomization.path,
+      icon: normalizedCustomization.icon,
+      deleted: false,
+    };
+
+    await userSettingsStore.set('userDirectories', currentCustomizations);
+  }
+
+  async function deleteUserDirectory(directoryId: string) {
+    const currentCustomizations = { ...userSettingsStore.userSettings.userDirectories };
+
+    if (isBuiltInDirectoryId(directoryId)) {
+      currentCustomizations[directoryId] = {
+        deleted: true,
       };
     }
     else {
-      delete currentCustomizations[name];
+      delete currentCustomizations[directoryId];
     }
 
     await userSettingsStore.set('userDirectories', currentCustomizations);
   }
 
-  async function resetUserDirectory(name: string) {
+  async function createUserDirectory(customization: UserDirectoryCustomization) {
+    const directoryPath = customization.path ? normalizePath(customization.path) : '';
+
+    if (!directoryPath) {
+      return '';
+    }
+
+    const directoryId = uniqueId();
     const currentCustomizations = { ...userSettingsStore.userSettings.userDirectories };
-    delete currentCustomizations[name];
+
+    currentCustomizations[`custom:${directoryId}`] = {
+      title: customization.title || undefined,
+      path: directoryPath,
+      icon: customization.icon || undefined,
+      deleted: false,
+    };
+
     await userSettingsStore.set('userDirectories', currentCustomizations);
+    return directoryId;
   }
 
   onMounted(() => {
@@ -271,7 +347,8 @@ export function useUserDirectories() {
     error,
     isEmpty,
     refresh: fetchUserDirectories,
+    createUserDirectory,
+    deleteUserDirectory,
     updateUserDirectory,
-    resetUserDirectory,
   };
 }

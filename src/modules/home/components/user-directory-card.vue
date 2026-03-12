@@ -30,7 +30,16 @@ const { t } = useI18n();
 const workspacesStore = useWorkspacesStore();
 
 const displayTitle = computed(() => {
-  return props.directory.customTitle || t(props.directory.titleKey);
+  if (props.directory.customTitle) {
+    return props.directory.customTitle;
+  }
+
+  if (props.directory.titleKey) {
+    return t(props.directory.titleKey);
+  }
+
+  const pathSegments = props.directory.path.split(/[/\\]/).filter(Boolean);
+  return pathSegments[pathSegments.length - 1] || props.directory.path;
 });
 
 const iconComponent = computed(() => {

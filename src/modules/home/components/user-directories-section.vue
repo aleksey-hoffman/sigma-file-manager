@@ -6,9 +6,11 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { PlusIcon } from 'lucide-vue-next';
 import { useUserDirectories, type UserDirectory } from '@/modules/home/composables';
 import { Button } from '@/components/ui/button';
 import { DropTargetCard } from '@/components/drop-target-card';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import UserDirectoryCard from './user-directory-card.vue';
 import UserDirectoryEditorDialog from './user-directory-editor-dialog.vue';
 
@@ -19,36 +21,71 @@ const {
   error,
   isEmpty,
   refresh,
+  createUserDirectory,
+  deleteUserDirectory,
   updateUserDirectory,
-  resetUserDirectory,
 } = useUserDirectories();
 
 const isEditorOpen = ref(false);
 const editingDirectory = ref<UserDirectory | null>(null);
+
+function handleAddDirectory() {
+  editingDirectory.value = {
+    id: '',
+    titleKey: undefined,
+    customTitle: '',
+    iconName: 'FolderIcon',
+    customIconName: undefined,
+    path: '',
+  };
+  isEditorOpen.value = true;
+}
 
 function handleEditDirectory(directory: UserDirectory) {
   editingDirectory.value = directory;
   isEditorOpen.value = true;
 }
 
-async function handleSaveDirectory(name: string, title: string, path: string, icon: string | undefined) {
-  await updateUserDirectory(name, {
+async function handleSaveDirectory(directoryId: string, title: string, path: string, icon: string | undefined) {
+  const customization = {
     title: title || undefined,
     path,
     icon,
-  });
+  };
+
+  if (directoryId) {
+    await updateUserDirectory(directoryId, customization);
+    return;
+  }
+
+  await createUserDirectory(customization);
 }
 
-async function handleResetDirectory(name: string) {
-  await resetUserDirectory(name);
+async function handleDeleteDirectory(directoryId: string) {
+  await deleteUserDirectory(directoryId);
 }
 </script>
 
 <template>
   <section class="user-directories-section">
-    <h2 class="user-directories-section__title">
-      {{ t('userDirectories') }}
-    </h2>
+    <div class="user-directories-section__header">
+      <h2 class="user-directories-section__title">
+        {{ t('userDirectories') }}
+      </h2>
+      <Tooltip>
+        <TooltipTrigger as-child>
+          <Button
+            class="user-directories-section__add-button"
+            variant="outline"
+            size="xs"
+            @click="handleAddDirectory"
+          >
+            <PlusIcon :size="14" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>{{ t('add') }}</TooltipContent>
+      </Tooltip>
+    </div>
 
     <div
       v-if="isLoading"
@@ -85,7 +122,7 @@ async function handleResetDirectory(name: string) {
     >
       <DropTargetCard
         v-for="directory in userDirectories"
-        :key="directory.name"
+        :key="directory.id"
         :path="directory.path"
       >
         <UserDirectoryCard
@@ -100,7 +137,7 @@ async function handleResetDirectory(name: string) {
       v-model:open="isEditorOpen"
       :directory="editingDirectory"
       @save="handleSaveDirectory"
-      @reset="handleResetDirectory"
+      @delete="handleDeleteDirectory"
     />
   </section>
 </template>
@@ -110,13 +147,29 @@ async function handleResetDirectory(name: string) {
   margin-bottom: 16px;
 }
 
-.user-directories-section__title {
+.user-directories-section__header {
+  display: flex;
+  align-items: center;
   margin-bottom: 12px;
+  gap: 8px;
+}
+
+.user-directories-section__title {
   color: hsl(var(--muted-foreground));
   font-size: 13px;
   font-weight: 500;
   letter-spacing: 0.5px;
   text-transform: uppercase;
+}
+
+.user-directories-section__add-button {
+  opacity: 0;
+  transition: opacity 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+}
+
+.user-directories-section:hover .user-directories-section__add-button,
+.user-directories-section:focus-within .user-directories-section__add-button {
+  opacity: 1;
 }
 
 .user-directories-section__grid {

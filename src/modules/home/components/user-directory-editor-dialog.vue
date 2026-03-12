@@ -6,7 +6,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { RotateCcwIcon, FolderOpenIcon } from 'lucide-vue-next';
+import { FolderOpenIcon, Trash2Icon } from 'lucide-vue-next';
 import { invoke } from '@tauri-apps/api/core';
 import { open } from '@tauri-apps/plugin-dialog';
 import {
@@ -36,8 +36,8 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  save: [name: string, title: string, path: string, icon: string | undefined];
-  reset: [name: string];
+  save: [directoryId: string, title: string, path: string, icon: string | undefined];
+  delete: [directoryId: string];
 }>();
 
 const isOpen = defineModel<boolean>('open', { required: true });
@@ -48,6 +48,7 @@ const editedTitle = ref('');
 const editedPathRaw = ref('');
 const selectedIcon = ref<string | undefined>(undefined);
 const pathError = ref<string | null>(null);
+const isCreating = computed(() => !props.directory?.id);
 
 const editedPath = computed({
   get: () => normalizePath(editedPathRaw.value),
@@ -59,6 +60,12 @@ const editedPath = computed({
 const hasChanges = computed(() => {
   if (!props.directory) {
     return false;
+  }
+
+  if (isCreating.value) {
+    return editedTitle.value.length > 0
+      || editedPath.value.length > 0
+      || selectedIcon.value !== undefined;
   }
 
   const originalTitle = props.directory.customTitle || '';
@@ -118,16 +125,16 @@ function handleSave() {
     return;
   }
 
-  emit('save', props.directory.name, editedTitle.value, editedPath.value, selectedIcon.value);
+  emit('save', props.directory.id, editedTitle.value, editedPath.value, selectedIcon.value);
   isOpen.value = false;
 }
 
-function handleReset() {
-  if (!props.directory) {
+function handleDelete() {
+  if (!props.directory || isCreating.value) {
     return;
   }
 
-  emit('reset', props.directory.name);
+  emit('delete', props.directory.id);
   isOpen.value = false;
 }
 
@@ -166,7 +173,7 @@ async function handleBrowse() {
           <Input
             id="directory-title"
             v-model="editedTitle"
-            :placeholder="directory ? t(directory.titleKey) : ''"
+            :placeholder="directory?.titleKey ? t(directory.titleKey) : ''"
           />
         </div>
 
@@ -231,21 +238,20 @@ async function handleBrowse() {
       </div>
 
       <DialogFooter>
-        <Tooltip :delay-duration="0">
-          <TooltipTrigger as-child>
-            <Button
-              variant="ghost"
-              size="icon"
-              class="user-directory-editor-dialog__reset-button"
-              @click="handleReset"
-            >
-              <RotateCcwIcon :size="16" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            {{ t('home.resetBackgroundPosition') }}
-          </TooltipContent>
-        </Tooltip>
+        <div
+          v-if="directory && !isCreating"
+          class="user-directory-editor-dialog__left-actions"
+        >
+          <Button
+            variant="destructive"
+            size="sm"
+            class="user-directory-editor-dialog__delete-button"
+            @click="handleDelete"
+          >
+            <Trash2Icon :size="16" />
+            {{ t('delete') }}
+          </Button>
+        </div>
 
         <div class="user-directory-editor-dialog__actions">
           <Button
@@ -367,9 +373,16 @@ async function handleBrowse() {
   justify-content: space-between;
 }
 
-.user-directory-editor-dialog__reset-button {
-  width: 32px;
-  height: 32px;
+.user-directory-editor-dialog__left-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.user-directory-editor-dialog__delete-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .user-directory-editor-dialog__actions {

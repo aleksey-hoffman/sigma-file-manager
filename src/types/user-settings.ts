@@ -41,6 +41,7 @@ export type UserDirectoryCustomization = {
   title?: string;
   path?: string;
   icon?: string;
+  deleted?: boolean;
 };
 
 export type UserDirectoriesCustomizations = Record<string, UserDirectoryCustomization>;
