@@ -62,7 +62,7 @@ const props = defineProps<ToasterProps>();
   opacity: 0;
 }
 
-[data-sonner-toast][data-mounted='false'] .sigma-ui-toaster-progress {
+[data-sonner-toast][data-mounted='false'] .sigma-ui-toast-card {
   backdrop-filter: blur(0);
   background-color: hsl(var(--background) / 0%);
 }

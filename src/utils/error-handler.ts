@@ -3,7 +3,7 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 import { markRaw } from 'vue';
-import { toast, CustomSimple } from '@/components/ui/toaster';
+import { toast, ToastStatic } from '@/components/ui/toaster';
 
 export type ErrorSeverity = 'error' | 'warning' | 'info';
 
@@ -44,10 +44,12 @@ export function handleError(
   }
 
   if (mergedOptions.showToast) {
-    toast.custom(markRaw(CustomSimple), {
+    toast.custom(markRaw(ToastStatic), {
       componentProps: {
-        title: message,
-        description: errorMessage || '',
+        data: {
+          title: message,
+          description: errorMessage || '',
+        },
       },
       duration: 5000,
     });

@@ -8,7 +8,7 @@ import { getVersion } from '@tauri-apps/api/app';
 import { openUrl } from '@tauri-apps/plugin-opener';
 import { useI18n } from 'vue-i18n';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
-import { toast, CustomSimple } from '@/components/ui/toaster';
+import { toast, ToastStatic } from '@/components/ui/toaster';
 
 const CHECK_INTERVAL_MS = 6 * 60 * 60 * 1000;
 const CHECK_COOLDOWN_MS = 10 * 60 * 1000;
@@ -101,13 +101,15 @@ export function useAppUpdater() {
   }
 
   function showUpdateToast(info: UpdateInfo) {
-    toast.custom(markRaw(CustomSimple), {
+    toast.custom(markRaw(ToastStatic), {
       componentProps: {
-        title: `${t('notifications.updateAvailable')}: v${info.latestVersion}`,
-        description: `${t('currentVersion')}: v${info.currentVersion}`,
-        actionText: t('download'),
-        onAction: () => {
-          openUrl(info.releaseUrl);
+        data: {
+          title: `${t('notifications.updateAvailable')}: v${info.latestVersion}`,
+          description: `${t('currentVersion')}: v${info.currentVersion}`,
+          actionText: t('download'),
+          onAction: () => {
+            openUrl(info.releaseUrl);
+          },
         },
       },
       duration: 15000,

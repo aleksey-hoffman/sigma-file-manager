@@ -7,7 +7,7 @@ import { listen } from '@tauri-apps/api/event';
 import { toast } from 'vue-sonner';
 import { markRaw } from 'vue';
 import type { BinaryInstallOptions, BinaryInfo, SharedBinaryInfo, PlatformOS } from '@/types/extension';
-import { CustomProgress } from '@/components/ui/toaster';
+import { ToastProgress } from '@/components/ui/toaster';
 import { useExtensionsStorageStore } from '@/stores/storage/extensions';
 import { getBinaryLookupVersion } from '@/modules/extensions/utils/binary-metadata';
 import { getSharedBinaryPendingKey } from '@/modules/extensions/utils/shared-binary';
@@ -217,7 +217,7 @@ export function createBinaryAPI(context: ExtensionContext) {
         : null;
       const displayProgress = realProgress ?? progressValue;
 
-      toast.custom(markRaw(CustomProgress), {
+      toast.custom(markRaw(ToastProgress), {
         id: toastId,
         duration: Infinity,
         componentProps: {
@@ -239,7 +239,7 @@ export function createBinaryAPI(context: ExtensionContext) {
     }, 200);
 
     const initialSizeLabel = formatDownloadSize(null, null);
-    toast.custom(markRaw(CustomProgress), {
+    toast.custom(markRaw(ToastProgress), {
       id: toastId,
       duration: Infinity,
       componentProps: {

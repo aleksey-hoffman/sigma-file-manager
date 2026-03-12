@@ -5,7 +5,7 @@
 import { ref, markRaw } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
 import { useI18n } from 'vue-i18n';
-import { toast, CustomProgress } from '@/components/ui/toaster';
+import { toast, ToastProgress } from '@/components/ui/toaster';
 import type {
   ConflictItem,
   ConflictResolution,
@@ -85,19 +85,29 @@ export function useFileDropOperation() {
       conflictResolution = resolution;
     }
 
-    const toastData = ref({
-      id: '' as string | number,
-      title: isCopy ? t('notifications.copyingItems') : t('notifications.movingItems'),
-      description: '',
-      progress: 0,
-      timer: 0,
-      actionText: t('cancel'),
-      cleanup: () => {},
-      operationType: operation as 'copy' | 'move' | 'delete' | '',
-      itemCount: sourcePaths.length,
-    });
+    const toastData = ref<{
+      id: string | number;
+      title: string;
+      description: string;
+      progress: number;
+      timer: number;
+      actionText?: string;
+      cleanup: () => void;
+      operationType: 'copy' | 'move' | 'delete' | '';
+      itemCount: number;
+    }>({
+          id: '' as string | number,
+          title: isCopy ? t('notifications.copyingItems') : t('notifications.movingItems'),
+          description: '',
+          progress: 0,
+          timer: 0,
+          actionText: t('cancel'),
+          cleanup: () => {},
+          operationType: operation as 'copy' | 'move' | 'delete' | '',
+          itemCount: sourcePaths.length,
+        });
 
-    toastData.value.id = toast.custom(markRaw(CustomProgress), {
+    toastData.value.id = toast.custom(markRaw(ToastProgress), {
       componentProps: {
         data: toastData.value,
         onAction: () => {
@@ -165,7 +175,7 @@ export function useFileDropOperation() {
           toastData.value.itemCount = successCount;
         }
 
-        toastData.value.actionText = t('close');
+        toastData.value.actionText = undefined;
 
         autoDismissTimeout = setTimeout(() => {
           toast.dismiss(toastData.value.id);
@@ -176,7 +186,7 @@ export function useFileDropOperation() {
           ? t('fileBrowser.copyFailed')
           : t('fileBrowser.moveFailed');
         toastData.value.description = result.error || '';
-        toastData.value.actionText = t('close');
+        toastData.value.actionText = undefined;
         toastData.value.progress = 0;
         toastData.value.itemCount = 0;
 
@@ -191,7 +201,7 @@ export function useFileDropOperation() {
         ? t('fileBrowser.copyFailed')
         : t('fileBrowser.moveFailed');
       toastData.value.description = String(error);
-      toastData.value.actionText = t('close');
+      toastData.value.actionText = undefined;
       toastData.value.progress = 0;
       toastData.value.itemCount = 0;
 

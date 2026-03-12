@@ -41,7 +41,7 @@ import { isBuiltinCommand, getBuiltinCommandHandler, getBuiltinCommandDefinition
 import { assertValidManifestData, assertValidRegistryData, isVersionCompatibleWithRange } from '@/modules/extensions/runtime/validation';
 import { toast } from 'vue-sonner';
 import { markRaw } from 'vue';
-import { CustomProgress } from '@/components/ui/toaster';
+import { ToastStatic } from '@/components/ui/toaster';
 import { i18n } from '@/localization';
 import type { ShortcutKeys } from '@/types/user-settings';
 import type { ExtensionKeybindingWhen } from '@/types/extension';
@@ -264,19 +264,14 @@ export const useExtensionsStore = defineStore('extensions', () => {
     const toastId = `ext-ready-${extensionId}`;
     const description = reuseCount > 0 ? t('extensions.reusedDependencies', { count: reuseCount }) : '';
 
-    toast.custom(markRaw(CustomProgress), {
+    toast.custom(markRaw(ToastStatic), {
       id: toastId,
       duration: Infinity,
       componentProps: {
         data: {
-          id: toastId,
           title: getExtensionToastTitle(extensionId),
           subtitle: t('extensions.api.extensionReady'),
           description,
-          progress: 0,
-          timer: 0,
-          actionText: '',
-          cleanup: () => {},
           extensionId,
           extensionIconPath: getExtensionToastIconPath(extensionId),
         },
@@ -292,19 +287,14 @@ export const useExtensionsStore = defineStore('extensions', () => {
     const { t } = i18n.global;
     const toastId = `ext-removed-${extensionId}`;
 
-    toast.custom(markRaw(CustomProgress), {
+    toast.custom(markRaw(ToastStatic), {
       id: toastId,
       duration: 5000,
       componentProps: {
         data: {
-          id: toastId,
           title: getExtensionToastTitle(extensionId, extensionName),
           subtitle: t('extensions.noLongerAvailable'),
           description: t('extensions.removedBecauseUnapproved'),
-          progress: 0,
-          timer: 0,
-          actionText: '',
-          cleanup: () => {},
         },
       },
     });
@@ -320,19 +310,14 @@ export const useExtensionsStore = defineStore('extensions', () => {
     const { t } = i18n.global;
     const toastId = `ext-busy-${extensionId}`;
 
-    toast.custom(markRaw(CustomProgress), {
+    toast.custom(markRaw(ToastStatic), {
       id: toastId,
       duration: Infinity,
       componentProps: {
         data: {
-          id: toastId,
           title: getExtensionToastTitle(extensionId),
           subtitle: t('extensions.api.waitForDependencies'),
           description: '',
-          progress: 0,
-          timer: 0,
-          actionText: '',
-          cleanup: () => {},
           extensionId,
           extensionIconPath: getExtensionToastIconPath(extensionId),
         },

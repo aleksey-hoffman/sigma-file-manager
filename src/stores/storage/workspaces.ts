@@ -11,7 +11,7 @@ import { ref, watch, computed, markRaw } from 'vue';
 import { useDebounceFn } from '@vueuse/core';
 import { useI18n } from 'vue-i18n';
 import router from '@/router';
-import { toast, CustomSimple } from '@/components/ui/toaster';
+import { toast, ToastStatic } from '@/components/ui/toaster';
 import { useNavigatorStore } from '@/stores/runtime/navigator';
 import { useUserPathsStore } from '@/stores/storage/user-paths';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
@@ -183,9 +183,11 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
     currentWorkspace.value.currentTabGroupIndex = 0;
     currentWorkspace.value.currentTabIndex = 0;
     await openTabGroup(newTabGroup);
-    toast.custom(markRaw(CustomSimple), {
+    toast.custom(markRaw(ToastStatic), {
       componentProps: {
-        title: t('tabs.defaultTabOpened'),
+        data: {
+          title: t('tabs.defaultTabOpened'),
+        },
       },
       duration: 2000,
     });

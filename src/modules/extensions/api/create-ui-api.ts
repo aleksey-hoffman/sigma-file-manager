@@ -17,7 +17,7 @@ import type {
   UIElement,
   UISelectOption,
 } from '@/types/extension';
-import { CustomProgress } from '@/components/ui/toaster';
+import { ToastStatic, ToastProgress } from '@/components/ui/toaster';
 import { createModal } from '@/modules/extensions/api/modal-state';
 import { showExtensionDialog } from '@/modules/extensions/api/dialog-state';
 import ExtensionToolbarView from '@/modules/extensions/components/extension-toolbar-view.vue';
@@ -36,19 +36,14 @@ export function createUiAPI(context: ExtensionContext) {
 
       const toastId = `ext-notification-${context.extensionId}-${Date.now()}`;
 
-      toast.custom(markRaw(CustomProgress), {
+      toast.custom(markRaw(ToastStatic), {
         id: toastId,
         duration: options.duration || 4000,
         componentProps: {
           data: {
-            id: toastId,
             title: context.getExtensionToastTitle(),
             subtitle: options.subtitle || '',
             description: options.description || '',
-            progress: 0,
-            timer: 0,
-            actionText: '',
-            cleanup: () => {},
             extensionId: context.extensionId,
             extensionIconPath: context.getExtensionIconPath(),
           },
@@ -80,7 +75,7 @@ export function createUiAPI(context: ExtensionContext) {
       const toastId = `progress-${context.extensionId}-${Date.now()}`;
 
       function updateToast(): void {
-        toast.custom(markRaw(CustomProgress), {
+        toast.custom(markRaw(ToastProgress), {
           id: toastId,
           duration: Infinity,
           componentProps: {

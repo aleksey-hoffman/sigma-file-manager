@@ -10,7 +10,7 @@ import {
 import { useI18n } from 'vue-i18n';
 import { invoke } from '@tauri-apps/api/core';
 import { StoreIcon, CircleCheckIcon, PackageIcon } from 'lucide-vue-next';
-import { toast, CustomProgress } from '@/components/ui/toaster';
+import { toast, ToastStatic } from '@/components/ui/toaster';
 import { PageDefaultLayout } from '@/layouts';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -213,21 +213,16 @@ async function handleRefresh(extensionId: string) {
     const extensionName = refreshedExtension?.manifest?.name || extensionId.split('.').pop() || extensionId;
     const reusedBinaryCount = refreshedExtension?.binaries.length ?? 0;
     const toastId = `ext-refresh-${extensionId}`;
-    toast.custom(markRaw(CustomProgress), {
+    toast.custom(markRaw(ToastStatic), {
       id: toastId,
       duration: 3000,
       componentProps: {
         data: {
-          id: toastId,
           title: `${t('extension')} | ${extensionName}`,
           subtitle: t('extensions.reinstalledSuccessfully'),
           description: reusedBinaryCount > 0
             ? t('extensions.reusedDependencies', { count: reusedBinaryCount })
             : '',
-          progress: 0,
-          timer: 0,
-          actionText: '',
-          cleanup: () => {},
           extensionId,
           extensionIconPath: refreshedExtension?.manifest?.icon,
         },

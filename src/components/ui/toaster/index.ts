@@ -4,5 +4,5 @@
 
 export { toast } from 'vue-sonner';
 export { default as Toaster } from './toaster.vue';
-export { default as CustomSimple } from './custom-simple.vue';
-export { default as CustomProgress } from './custom-progress.vue';
+export { default as ToastStatic } from './toast-static.vue';
+export { default as ToastProgress } from './toast-progress.vue';

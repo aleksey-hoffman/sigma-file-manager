@@ -42,7 +42,7 @@ import {
   FolderIcon,
   ChevronRightIcon,
 } from 'lucide-vue-next';
-import { toast, CustomSimple } from '@/components/ui/toaster';
+import { toast, ToastStatic } from '@/components/ui/toaster';
 import type { DirContents } from '@/types/dir-entry';
 import normalizePath from '@/utils/normalize-path';
 
@@ -297,10 +297,12 @@ function handleKeydown(event: KeyboardEvent) {
 async function copyPathToClipboard() {
   try {
     await navigator.clipboard.writeText(props.currentPath);
-    toast.custom(markRaw(CustomSimple), {
+    toast.custom(markRaw(ToastStatic), {
       componentProps: {
-        title: t('dialogs.localShareManagerDialog.addressCopiedToClipboard'),
-        description: props.currentPath,
+        data: {
+          title: t('dialogs.localShareManagerDialog.addressCopiedToClipboard'),
+          description: props.currentPath,
+        },
       },
       duration: 2000,
     });

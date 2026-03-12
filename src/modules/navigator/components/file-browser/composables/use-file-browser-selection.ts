@@ -11,8 +11,20 @@ import { useWorkspacesStore } from '@/stores/storage/workspaces';
 import { useUserStatsStore } from '@/stores/storage/user-stats';
 import { useClipboardStore, type FileOperationResult, type ConflictItem, type ConflictResolution } from '@/stores/runtime/clipboard';
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
-import { toast, CustomProgress, CustomSimple } from '@/components/ui/toaster';
+import { toast, ToastProgress, ToastStatic } from '@/components/ui/toaster';
 import { UI_CONSTANTS } from '@/constants';
+
+type FileOperationToastData = {
+  id: string | number;
+  title: string;
+  description: string;
+  progress: number;
+  timer: number;
+  actionText?: string;
+  cleanup: () => void;
+  operationType: 'copy' | 'move' | 'delete' | '';
+  itemCount: number;
+};
 
 export function useFileBrowserSelection(
   entriesRef: Ref<DirEntry[]>,
@@ -336,7 +348,7 @@ export function useFileBrowserSelection(
       ? new Set(entriesRef.value.map(entry => entry.path))
       : null;
 
-    const toastData = ref({
+    const toastData = ref<FileOperationToastData>({
       id: '' as string | number,
       title: isCopy ? t('notifications.copyingItems') : t('notifications.movingItems'),
       description: '',
@@ -348,7 +360,7 @@ export function useFileBrowserSelection(
       itemCount: itemCount,
     });
 
-    toastData.value.id = toast.custom(markRaw(CustomProgress), {
+    toastData.value.id = toast.custom(markRaw(ToastProgress), {
       componentProps: {
         data: toastData.value,
         onAction: () => {
@@ -410,7 +422,7 @@ export function useFileBrowserSelection(
         toastData.value.itemCount = successCount;
       }
 
-      toastData.value.actionText = t('close');
+      toastData.value.actionText = undefined;
 
       const pathsToInvalidate = [targetPath];
 
@@ -454,7 +466,7 @@ export function useFileBrowserSelection(
         ? t('fileBrowser.copyFailed')
         : t('fileBrowser.moveFailed');
       toastData.value.description = errorMessage;
-      toastData.value.actionText = t('close');
+      toastData.value.actionText = undefined;
       toastData.value.progress = 0;
       toastData.value.itemCount = 0;
 
@@ -507,7 +519,7 @@ export function useFileBrowserSelection(
       itemCount: sourcePaths.length,
     });
 
-    toastData.value.id = toast.custom(markRaw(CustomProgress), {
+    toastData.value.id = toast.custom(markRaw(ToastProgress), {
       componentProps: {
         data: toastData.value,
         onAction: () => {
@@ -575,7 +587,7 @@ export function useFileBrowserSelection(
           toastData.value.itemCount = successCount;
         }
 
-        toastData.value.actionText = t('close');
+        toastData.value.actionText = '';
 
         dirSizesStore.invalidate([targetPath, currentPathRef.value]);
 
@@ -600,7 +612,7 @@ export function useFileBrowserSelection(
           ? t('fileBrowser.copyFailed')
           : t('fileBrowser.moveFailed');
         toastData.value.description = result.error || '';
-        toastData.value.actionText = t('close');
+        toastData.value.actionText = '';
         toastData.value.progress = 0;
         toastData.value.itemCount = 0;
 
@@ -617,7 +629,7 @@ export function useFileBrowserSelection(
         ? t('fileBrowser.copyFailed')
         : t('fileBrowser.moveFailed');
       toastData.value.description = String(error);
-      toastData.value.actionText = t('close');
+      toastData.value.actionText = '';
       toastData.value.progress = 0;
       toastData.value.itemCount = 0;
 
@@ -664,10 +676,12 @@ export function useFileBrowserSelection(
       });
 
       if (result.success) {
-        toast.custom(markRaw(CustomSimple), {
+        toast.custom(markRaw(ToastStatic), {
           componentProps: {
-            title: t('notifications.renamed'),
-            description: '',
+            data: {
+              title: t('notifications.renamed'),
+              description: '',
+            },
           },
         });
 
@@ -686,20 +700,24 @@ export function useFileBrowserSelection(
         return true;
       }
       else {
-        toast.custom(markRaw(CustomSimple), {
+        toast.custom(markRaw(ToastStatic), {
           componentProps: {
-            title: t('notifications.failedToRenameItem'),
-            description: result.error || '',
+            data: {
+              title: t('notifications.failedToRenameItem'),
+              description: result.error || '',
+            },
           },
         });
         return false;
       }
     }
     catch (error) {
-      toast.custom(markRaw(CustomSimple), {
+      toast.custom(markRaw(ToastStatic), {
         componentProps: {
-          title: t('notifications.failedToRenameItem'),
-          description: String(error),
+          data: {
+            title: t('notifications.failedToRenameItem'),
+            description: String(error),
+          },
         },
       });
       return false;
@@ -764,24 +782,28 @@ export function useFileBrowserSelection(
     }
 
     if (successCount > 0) {
-      toast.custom(markRaw(CustomSimple), {
+      toast.custom(markRaw(ToastStatic), {
         componentProps: {
-          title: itemType === 'directory'
-            ? t('dialogs.newDirItemDialog.newDirectoryCreated')
-            : t('dialogs.newDirItemDialog.newFileCreated'),
-          description: '',
+          data: {
+            title: itemType === 'directory'
+              ? t('dialogs.newDirItemDialog.newDirectoryCreated')
+              : t('dialogs.newDirItemDialog.newFileCreated'),
+            description: '',
+          },
         },
       });
       onRefresh();
       return true;
     }
 
-    toast.custom(markRaw(CustomSimple), {
+    toast.custom(markRaw(ToastStatic), {
       componentProps: {
-        title: itemType === 'directory'
-          ? t('dialogs.newDirItemDialog.failedToCreateNewDirectory')
-          : t('dialogs.newDirItemDialog.failedToCreateNewFile'),
-        description: lastError || '',
+        data: {
+          title: itemType === 'directory'
+            ? t('dialogs.newDirItemDialog.failedToCreateNewDirectory')
+            : t('dialogs.newDirItemDialog.failedToCreateNewFile'),
+          description: lastError || '',
+        },
       },
     });
     return false;
@@ -846,10 +868,12 @@ export function useFileBrowserSelection(
         if (entries.length > 0) {
           const pathText = entries.map(entry => entry.path).join('\n');
           navigator.clipboard.writeText(pathText).then(() => {
-            toast.custom(markRaw(CustomSimple), {
+            toast.custom(markRaw(ToastStatic), {
               componentProps: {
-                title: t('dialogs.localShareManagerDialog.addressCopiedToClipboard'),
-                description: pathText,
+                data: {
+                  title: t('dialogs.localShareManagerDialog.addressCopiedToClipboard'),
+                  description: pathText,
+                },
               },
               duration: 2000,
             });
@@ -880,10 +904,12 @@ export function useFileBrowserSelection(
       ? t('notifications.removedFromFavorites', entries.length)
       : t('notifications.addedToFavorites', entries.length);
 
-    toast.custom(markRaw(CustomSimple), {
+    toast.custom(markRaw(ToastStatic), {
       componentProps: {
-        title: message,
-        description: '',
+        data: {
+          title: message,
+          description: '',
+        },
       },
     });
   }
@@ -909,7 +935,7 @@ export function useFileBrowserSelection(
 
     const itemCount = entries.length;
 
-    const toastData = ref({
+    const toastData = ref<FileOperationToastData>({
       id: '' as string | number,
       title: useTrash ? t('notifications.trashingItems') : t('notifications.deletingItems'),
       description: '',
@@ -921,7 +947,7 @@ export function useFileBrowserSelection(
       itemCount: itemCount,
     });
 
-    toastData.value.id = toast.custom(markRaw(CustomProgress), {
+    toastData.value.id = toast.custom(markRaw(ToastProgress), {
       componentProps: {
         data: toastData.value,
         onAction: () => {
@@ -972,7 +998,7 @@ export function useFileBrowserSelection(
           ? t('notifications.trashed')
           : t('notifications.deleted');
         toastData.value.itemCount = successCount;
-        toastData.value.actionText = t('close');
+        toastData.value.actionText = undefined;
 
         workspacesStore.handlePathsDeleted(paths);
         userStatsStore.handlePathsDeleted(paths);
@@ -991,7 +1017,7 @@ export function useFileBrowserSelection(
           ? t('notifications.errorTrashItems')
           : t('notifications.errorDeleteItems');
         toastData.value.description = result.error || '';
-        toastData.value.actionText = t('close');
+        toastData.value.actionText = undefined;
         toastData.value.progress = 0;
         toastData.value.itemCount = 0;
 
@@ -1008,7 +1034,7 @@ export function useFileBrowserSelection(
         ? t('notifications.errorTrashItems')
         : t('notifications.errorDeleteItems');
       toastData.value.description = String(error);
-      toastData.value.actionText = t('close');
+      toastData.value.actionText = undefined;
       toastData.value.progress = 0;
       toastData.value.itemCount = 0;
 
