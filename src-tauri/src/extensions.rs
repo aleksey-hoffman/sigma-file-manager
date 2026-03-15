@@ -703,7 +703,6 @@ pub async fn download_extension(
     integrity: Option<String>,
 ) -> Result<ExtensionOperationResult, String> {
     let _install_lock = acquire_extension_install_lock(&extension_id).await?;
-    require_integrity(&integrity, "remote extension downloads")?;
     let validated_url = validate_remote_url(&download_url)?;
     let extensions_dir = get_extensions_base_dir(&app_handle)?;
     let extension_dir = get_extension_dir(&app_handle, &extension_id)?;
