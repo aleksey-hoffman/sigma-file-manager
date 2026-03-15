@@ -18,6 +18,8 @@ import type {
   SidebarPageRegistration,
   ToolbarDropdownRegistration,
   CommandRegistration,
+  InstalledExtensionData,
+  SharedBinaryInfo,
 } from '@/types/extension';
 import externalLinks from '@/data/external-links';
 import {
@@ -34,15 +36,31 @@ import {
 import { useExtensionsStorageStore } from '@/stores/storage/extensions';
 import { loadExtensionRuntime, unloadExtensionRuntime } from '@/modules/extensions/runtime/loader';
 import { getBinaryLookupVersion } from '@/modules/extensions/utils/binary-metadata';
+import { invokeAsExtension } from '@/modules/extensions/runtime/extension-invoke';
 import {
-  getContextMenuRegistrations, getKeybindingRegistrations, getCommandRegistrations, getSidebarRegistrations, getToolbarRegistrations, clearExtensionRegistrations, getBinaryDownloadCount, clearBinaryDownloadCount, getBinaryReuseCount, clearBinaryReuseCount, getPlatformInfo, initPlatformInfo,
+  getContextMenuRegistrations, getKeybindingRegistrations, getCommandRegistrations, getSidebarRegistrations, getToolbarRegistrations, clearExtensionRegistrations, clearBinaryDownloadCount, clearBinaryReuseCount, initPlatformInfo,
 } from '@/modules/extensions/api';
 import { isBuiltinCommand, getBuiltinCommandHandler, getBuiltinCommandDefinitions } from '@/modules/extensions/builtin-commands';
 import { assertValidManifestData, assertValidRegistryData, isVersionCompatibleWithRange } from '@/modules/extensions/runtime/validation';
-import { toast } from 'vue-sonner';
-import { markRaw } from 'vue';
-import { ToastStatic } from '@/components/ui/toaster';
-import { i18n } from '@/localization';
+import {
+  getActivationEvents,
+  getCommandIdParts,
+  matchesCommandActivationEvent,
+  shouldActivateForEvent,
+  shouldActivateOnStartup,
+  isManifestCompatibleWithPlatform,
+  assertManifestPlatformCompatibility,
+  getRegistryIntegrity,
+  shouldBlockCommandsForActivationEvent,
+  cloneSerializableValue,
+} from '@/modules/extensions/utils/manifest-utils';
+import {
+  getExtensionDisplayName,
+  showDependenciesInstalledToast,
+  showExtensionNoLongerAvailableToast,
+  showExtensionBusyToast,
+} from '@/modules/extensions/utils/toast-utils';
+import { filterReachableRegistryEntries } from '@/modules/extensions/utils/registry-utils';
 import type { ShortcutKeys } from '@/types/user-settings';
 import type { ExtensionKeybindingWhen } from '@/types/extension';
 
@@ -102,96 +120,6 @@ export const useExtensionsStore = defineStore('extensions', () => {
     }
   }
 
-  function getRegistryIntegrity(
-    registryEntry: ExtensionRegistryEntry,
-    version: string,
-  ): string | undefined {
-    const versionMetadata = registryEntry.releaseMetadata?.[version];
-    return versionMetadata?.integrity ?? registryEntry.integrity;
-  }
-
-  function isManifestCompatibleWithPlatform(manifest: ExtensionManifest): boolean {
-    if (!manifest.platforms || manifest.platforms.length === 0) {
-      return true;
-    }
-
-    const currentOS = getPlatformInfo().os;
-    return manifest.platforms.includes(currentOS);
-  }
-
-  function assertManifestPlatformCompatibility(manifest: ExtensionManifest): void {
-    if (isManifestCompatibleWithPlatform(manifest)) {
-      return;
-    }
-
-    const currentOS = getPlatformInfo().os;
-    const supported = manifest.platforms!.join(', ');
-    throw new Error(
-      i18n.global.t('extensions.platformIncompatible', {
-        current: currentOS,
-        supported,
-      }),
-    );
-  }
-
-  function getActivationEvents(manifest: ExtensionManifest): ExtensionActivationEvent[] {
-    if (!manifest.activationEvents || manifest.activationEvents.length === 0) {
-      return ['onStartup'];
-    }
-
-    return manifest.activationEvents;
-  }
-
-  type CommandIdParts = {
-    fullCommandId: string;
-    shortCommandId: string;
-  };
-
-  function getCommandIdParts(extensionId: string, commandId: string): CommandIdParts {
-    const fullCommandId = commandId.includes('.') ? commandId : `${extensionId}.${commandId}`;
-    const prefix = `${extensionId}.`;
-    const shortCommandId = fullCommandId.startsWith(prefix)
-      ? fullCommandId.slice(prefix.length)
-      : commandId;
-
-    return {
-      fullCommandId,
-      shortCommandId,
-    };
-  }
-
-  function matchesCommandActivationEvent(
-    activationEvents: ExtensionActivationEvent[],
-    extensionId: string,
-    commandId: string,
-  ): boolean {
-    const { fullCommandId, shortCommandId } = getCommandIdParts(extensionId, commandId);
-    const fullEvent = `onCommand:${fullCommandId}` as ExtensionActivationEvent;
-    const shortEvent = `onCommand:${shortCommandId}` as ExtensionActivationEvent;
-    return activationEvents.includes(fullEvent) || activationEvents.includes(shortEvent);
-  }
-
-  function shouldActivateForEvent(
-    manifest: ExtensionManifest,
-    extensionId: string,
-    activationEvent: ExtensionActivationEvent,
-  ): boolean {
-    const activationEvents = getActivationEvents(manifest);
-
-    if (activationEvent.startsWith('onCommand:')) {
-      const commandId = activationEvent.slice('onCommand:'.length);
-
-      return matchesCommandActivationEvent(activationEvents, extensionId, commandId);
-    }
-
-    return activationEvents.includes(activationEvent);
-  }
-
-  function shouldActivateOnStartup(manifest: ExtensionManifest): boolean {
-    const activationEvents = getActivationEvents(manifest);
-    return activationEvents.includes('onStartup');
-  }
-
   const installingExtensions = ref<Set<string>>(new Set());
   const uninstallingExtensions = ref<Set<string>>(new Set());
   const updatingExtensions = ref<Set<string>>(new Set());
@@ -219,114 +147,35 @@ export const useExtensionsStore = defineStore('extensions', () => {
 
   const isAnyInstallInProgress = computed(() => installQueueDepth.value > 0);
   const pendingExtensionLoads = new Map<string, Promise<void>>();
-  const blockingCommandActivationEvents = new Set<ExtensionActivationEvent>([
-    'onStartup',
-    'onInstall',
-    'onUpdate',
-    'onEnable',
-  ]);
 
-  function getExtensionDisplayName(extensionId: string, fallbackName?: string): string {
-    if (fallbackName) {
-      return fallbackName;
+  async function cleanupOrphanedSharedBinaries(orphanedBinaries: SharedBinaryInfo[]): Promise<void> {
+    for (const orphanedBinary of orphanedBinaries) {
+      try {
+        await invoke('remove_shared_binary', {
+          binaryId: orphanedBinary.id,
+          version: getBinaryLookupVersion(orphanedBinary) ?? null,
+        });
+      }
+      catch (error) {
+        console.warn(`Deferred cleanup for orphaned shared binary ${orphanedBinary.id}:`, error);
+      }
     }
-
-    const installedExt = storageStore.extensionsData.installedExtensions[extensionId];
-    return installedExt?.manifest?.name || extensionId.split('.').pop() || extensionId;
   }
 
-  function getExtensionToastTitle(extensionId: string, fallbackName?: string): string {
-    const { t } = i18n.global;
-    const extensionName = getExtensionDisplayName(extensionId, fallbackName);
-    return `${t('extension')} | ${extensionName}`;
-  }
-
-  function getExtensionToastIconPath(extensionId: string): string | undefined {
+  function createExtensionStorageSnapshot(extensionId: string): {
+    installedExtension: InstalledExtensionData;
+    sharedBinaries: Record<string, SharedBinaryInfo>;
+  } {
     const installedExtension = storageStore.extensionsData.installedExtensions[extensionId];
-    const manifestIcon = installedExtension?.manifest?.icon;
 
-    if (typeof manifestIcon === 'string' && manifestIcon.trim().length > 0) {
-      return manifestIcon.trim();
+    if (!installedExtension) {
+      throw new Error(`Extension not installed: ${extensionId}`);
     }
 
-    return undefined;
-  }
-
-  function showDependenciesInstalledToast(extensionId: string): void {
-    const downloadCount = getBinaryDownloadCount(extensionId);
-    const reuseCount = getBinaryReuseCount(extensionId);
-    if (downloadCount === 0 && reuseCount === 0) return;
-
-    clearBinaryDownloadCount(extensionId);
-    clearBinaryReuseCount(extensionId);
-
-    const { t } = i18n.global;
-    const toastId = `ext-ready-${extensionId}`;
-    const description = reuseCount > 0 ? t('extensions.reusedDependencies', { count: reuseCount }) : '';
-
-    toast.custom(markRaw(ToastStatic), {
-      id: toastId,
-      duration: Infinity,
-      componentProps: {
-        data: {
-          title: getExtensionToastTitle(extensionId),
-          subtitle: t('extensions.api.extensionReady'),
-          description,
-          extensionId,
-          extensionIconPath: getExtensionToastIconPath(extensionId),
-        },
-      },
-    });
-
-    setTimeout(() => {
-      toast.dismiss(toastId);
-    }, 3000);
-  }
-
-  function showExtensionNoLongerAvailableToast(extensionId: string, extensionName: string): void {
-    const { t } = i18n.global;
-    const toastId = `ext-removed-${extensionId}`;
-
-    toast.custom(markRaw(ToastStatic), {
-      id: toastId,
-      duration: 5000,
-      componentProps: {
-        data: {
-          title: getExtensionToastTitle(extensionId, extensionName),
-          subtitle: t('extensions.noLongerAvailable'),
-          description: t('extensions.removedBecauseUnapproved'),
-        },
-      },
-    });
-  }
-
-  function shouldBlockCommandsForActivationEvent(
-    activationEvent?: ExtensionActivationEvent,
-  ): boolean {
-    return activationEvent !== undefined && blockingCommandActivationEvents.has(activationEvent);
-  }
-
-  function showExtensionBusyToast(extensionId: string): void {
-    const { t } = i18n.global;
-    const toastId = `ext-busy-${extensionId}`;
-
-    toast.custom(markRaw(ToastStatic), {
-      id: toastId,
-      duration: Infinity,
-      componentProps: {
-        data: {
-          title: getExtensionToastTitle(extensionId),
-          subtitle: t('extensions.api.waitForDependencies'),
-          description: '',
-          extensionId,
-          extensionIconPath: getExtensionToastIconPath(extensionId),
-        },
-      },
-    });
-
-    setTimeout(() => {
-      toast.dismiss(toastId);
-    }, 3000);
+    return {
+      installedExtension: cloneSerializableValue(installedExtension),
+      sharedBinaries: cloneSerializableValue(storageStore.extensionsData.sharedBinaries),
+    };
   }
 
   const availableExtensions = computed(() => {
@@ -417,58 +266,6 @@ export const useExtensionsStore = defineStore('extensions', () => {
   async function getLatestVersion(repository: string): Promise<string | null> {
     const versions = await fetchExtensionVersions(repository);
     return versions.length > 0 ? versions[0] : null;
-  }
-
-  function isMissingRegistryEntryError(error: unknown): boolean {
-    return error instanceof Error && /\b404\b/.test(error.message);
-  }
-
-  async function getRegistryEntryReachability(
-    registryEntry: ExtensionRegistryEntry,
-  ): Promise<'reachable' | 'unreachable' | 'unknown'> {
-    try {
-      const response = await fetchUrlText(getExtensionManifestUrl(registryEntry.repository, 'main'));
-
-      if (!response.ok) {
-        return response.status === 404 ? 'unreachable' : 'unknown';
-      }
-
-      const parsedManifest = JSON.parse(response.body) as unknown;
-      assertValidManifestData(parsedManifest);
-      return 'reachable';
-    }
-    catch (error) {
-      if (isMissingRegistryEntryError(error)) {
-        return 'unreachable';
-      }
-
-      const message = error instanceof Error ? error.message : String(error);
-      console.warn(`Unable to validate registry entry ${registryEntry.id}: ${message}`);
-      return 'unknown';
-    }
-  }
-
-  async function filterReachableRegistryEntries(
-    registryEntries: ExtensionRegistryEntry[],
-  ): Promise<ExtensionRegistryEntry[]> {
-    const validationResults = await Promise.all(registryEntries.map(async (registryEntry) => {
-      return {
-        registryEntry,
-        reachability: await getRegistryEntryReachability(registryEntry),
-      };
-    }));
-
-    const unreachableIds = validationResults
-      .filter(result => result.reachability === 'unreachable')
-      .map(result => result.registryEntry.id);
-
-    if (unreachableIds.length > 0) {
-      console.warn(`Filtered unreachable registry extensions: ${unreachableIds.join(', ')}`);
-    }
-
-    return validationResults
-      .filter(result => result.reachability !== 'unreachable')
-      .map(result => result.registryEntry);
   }
 
   function getCachedVersions(repository: string): string[] {
@@ -672,7 +469,9 @@ export const useExtensionsStore = defineStore('extensions', () => {
           await invoke('cancel_all_extension_commands', { extensionId });
         }
 
-        const manifestJson = await invoke<string>('read_extension_manifest', { extensionId });
+        const manifestJson = await invokeAsExtension<string>(extensionId, 'read_extension_manifest', {
+          extensionId,
+        });
         const parsedManifest = JSON.parse(manifestJson) as unknown;
         assertValidManifestData(parsedManifest);
         const manifest = parsedManifest as ExtensionManifest;
@@ -710,6 +509,7 @@ export const useExtensionsStore = defineStore('extensions', () => {
       }
 
       const sourcePath = extensionData.localSourcePath;
+      const rollbackSnapshot = createExtensionStorageSnapshot(extensionId);
 
       installingExtensions.value.add(extensionId);
 
@@ -719,6 +519,7 @@ export const useExtensionsStore = defineStore('extensions', () => {
 
         const result = await invoke<LocalExtensionInstallResult>('install_local_extension', {
           sourcePath,
+          expectedExtensionId: extensionId,
         });
 
         if (!result.success || !result.extension_id) {
@@ -729,7 +530,9 @@ export const useExtensionsStore = defineStore('extensions', () => {
           throw new Error(`Local extension id changed from "${extensionId}" to "${result.extension_id}". Reinstall from folder instead.`);
         }
 
-        const manifestJson = await invoke<string>('read_extension_manifest', { extensionId });
+        const manifestJson = await invokeAsExtension<string>(extensionId, 'read_extension_manifest', {
+          extensionId,
+        });
         const parsedManifest = JSON.parse(manifestJson) as unknown;
         assertValidManifestData(parsedManifest);
         const manifest = parsedManifest as ExtensionManifest;
@@ -742,18 +545,7 @@ export const useExtensionsStore = defineStore('extensions', () => {
         clearBinaryReuseCount(extensionId);
 
         const orphanedBinaries = await storageStore.removeAllSharedBinaryUsages(extensionId);
-
-        for (const binary of orphanedBinaries) {
-          try {
-            await invoke('remove_shared_binary', {
-              binaryId: binary.id,
-              version: getBinaryLookupVersion(binary) ?? null,
-            });
-          }
-          catch (error) {
-            console.error(`Failed to remove orphaned shared binary ${binary.id}:`, error);
-          }
-        }
+        await cleanupOrphanedSharedBinaries(orphanedBinaries);
 
         await storageStore.clearExtensionBinaryStorage(extensionId);
 
@@ -762,6 +554,24 @@ export const useExtensionsStore = defineStore('extensions', () => {
         if (extensionData.enabled && shouldActivateOnStartup(manifest)) {
           await loadExtension(extensionId, 'onStartup');
         }
+      }
+      catch (error) {
+        await storageStore.restoreExtensionSnapshot(
+          extensionId,
+          rollbackSnapshot.installedExtension,
+          rollbackSnapshot.sharedBinaries,
+        );
+
+        if (extensionData.enabled && shouldActivateOnStartup(extensionData.manifest)) {
+          try {
+            await loadExtension(extensionId, 'onStartup');
+          }
+          catch (reloadError) {
+            console.error(`Failed to restore extension ${extensionId} after refresh failure:`, reloadError);
+          }
+        }
+
+        throw error;
       }
       finally {
         installingExtensions.value.delete(extensionId);
@@ -798,18 +608,7 @@ export const useExtensionsStore = defineStore('extensions', () => {
       await invoke('delete_extension', { extensionId });
 
       const orphanedBinaries = await storageStore.removeAllSharedBinaryUsages(extensionId);
-
-      for (const binary of orphanedBinaries) {
-        try {
-          await invoke('remove_shared_binary', {
-            binaryId: binary.id,
-            version: getBinaryLookupVersion(binary) ?? null,
-          });
-        }
-        catch (error) {
-          console.error(`Failed to remove orphaned shared binary ${binary.id}:`, error);
-        }
-      }
+      await cleanupOrphanedSharedBinaries(orphanedBinaries);
 
       await storageStore.removeInstalledExtension(extensionId);
       brokenExtensionIds.value = new Set([...brokenExtensionIds.value].filter(id => id !== extensionId));
@@ -841,6 +640,7 @@ export const useExtensionsStore = defineStore('extensions', () => {
       }
 
       updatingExtensions.value.add(extensionId);
+      const rollbackSnapshot = createExtensionStorageSnapshot(extensionId);
 
       try {
         await unloadExtension(extensionId);
@@ -884,18 +684,7 @@ export const useExtensionsStore = defineStore('extensions', () => {
         clearBinaryReuseCount(extensionId);
 
         const orphanedBinaries = await storageStore.removeAllSharedBinaryUsages(extensionId);
-
-        for (const binary of orphanedBinaries) {
-          try {
-            await invoke('remove_shared_binary', {
-              binaryId: binary.id,
-              version: getBinaryLookupVersion(binary) ?? null,
-            });
-          }
-          catch (error) {
-            console.error(`Failed to remove orphaned shared binary ${binary.id}:`, error);
-          }
-        }
+        await cleanupOrphanedSharedBinaries(orphanedBinaries);
 
         await storageStore.clearExtensionBinaryStorage(extensionId);
 
@@ -911,6 +700,24 @@ export const useExtensionsStore = defineStore('extensions', () => {
         }
 
         showDependenciesInstalledToast(extensionId);
+      }
+      catch (error) {
+        await storageStore.restoreExtensionSnapshot(
+          extensionId,
+          rollbackSnapshot.installedExtension,
+          rollbackSnapshot.sharedBinaries,
+        );
+
+        if (installed.enabled && shouldActivateOnStartup(installed.manifest)) {
+          try {
+            await loadExtension(extensionId, 'onStartup');
+          }
+          catch (reloadError) {
+            console.error(`Failed to restore extension ${extensionId} after update failure:`, reloadError);
+          }
+        }
+
+        throw error;
       }
       finally {
         updatingExtensions.value.delete(extensionId);

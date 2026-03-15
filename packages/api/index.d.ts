@@ -13,7 +13,8 @@ export type ExtensionPermission
     | 'fs.write'
     | 'notifications'
     | 'dialogs'
-    | 'shell';
+    | 'shell'
+    | 'clipboard';
 
 export type ExtensionActivationEvent
   = | 'onStartup'
@@ -361,7 +362,7 @@ export interface SigmaExtensionAPI {
     t(key: string, params?: Record<string, string | number>): string;
     mergeMessages(messages: Record<string, Record<string, string>>): void;
     mergeFromPath(basePath: string): Promise<void>;
-    extensionT(key: string, params?: Record<string, string | number>): string;
+    extensionT(key: string, params?: Record<string, string | number>, fallback?: string): string;
   };
   contextMenu: {
     registerItem(
@@ -438,11 +439,14 @@ export interface SigmaExtensionAPI {
   ui: {
     showNotification(options: NotificationOptions): void;
     showDialog(options: DialogOptions): Promise<DialogResult>;
+    copyText(text: string): Promise<void>;
+    clipboardWrite(items: Record<string, Uint8Array>[]): Promise<void>;
     withProgress<T>(
       options: ProgressOptions,
       task: (progress: Progress, token: CancellationToken) => Promise<T>
     ): Promise<T>;
     createModal(options: ModalOptions): ModalHandle;
+    showModal(options: ModalOptions): Promise<Record<string, unknown> | null>;
     input(options: {
       id: string;
       label?: string;
@@ -560,6 +564,11 @@ export interface SigmaExtensionAPI {
     readonly isMacos: boolean;
     readonly isLinux: boolean;
     joinPath(...segments: string[]): string;
+  };
+  path: {
+    dirname(filePath: string): string;
+    basename(filePath: string, suffix?: string): string;
+    extname(filePath: string): string;
   };
   binary: {
     ensureInstalled(id: string, options: BinaryInstallOptions): Promise<string>;

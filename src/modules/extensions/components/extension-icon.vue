@@ -8,6 +8,7 @@ import { computed, ref, watch } from 'vue';
 import { convertFileSrc, invoke } from '@tauri-apps/api/core';
 import { BlocksIcon } from 'lucide-vue-next';
 import { getExtensionAssetUrl } from '@/data/extensions';
+import { invokeAsExtension } from '@/modules/extensions/runtime/extension-invoke';
 
 const props = withDefaults(defineProps<{
   extensionId: string;
@@ -57,7 +58,7 @@ async function resolveIcon() {
   }
 
   try {
-    const extensionPath = await invoke<string>('get_extension_path', {
+    const extensionPath = await invokeAsExtension<string>(props.extensionId, 'get_extension_path', {
       extensionId: props.extensionId,
     });
     const fullPath = `${extensionPath}/${trimmedPath}`;

@@ -57,6 +57,31 @@ export function createUiAPI(context: ExtensionContext) {
 
       return showExtensionDialog(options);
     },
+    copyText: async (text: string): Promise<void> => {
+      if (!context.hasPermission('clipboard')) {
+        throw new Error(context.t('extensions.api.permissionDenied', { permission: 'clipboard' }));
+      }
+
+      await navigator.clipboard.writeText(text);
+    },
+    clipboardWrite: async (items: Record<string, Uint8Array>[]): Promise<void> => {
+      if (!context.hasPermission('clipboard')) {
+        throw new Error(context.t('extensions.api.permissionDenied', { permission: 'clipboard' }));
+      }
+
+      const clipboardItems = items.map((typesData) => {
+        const blobParts: Record<string, Blob> = {};
+
+        for (const [mimeType, data] of Object.entries(typesData)) {
+          const bytes = data instanceof Uint8Array ? data : new Uint8Array(data as ArrayLike<number>);
+          blobParts[mimeType] = new Blob([bytes.buffer as ArrayBuffer], { type: mimeType });
+        }
+
+        return new ClipboardItem(blobParts);
+      });
+
+      await navigator.clipboard.write(clipboardItems);
+    },
     withProgress: async <T>(
       options: ProgressOptions,
       task: (progress: Progress, token: CancellationToken) => Promise<T>,
@@ -172,6 +197,19 @@ export function createUiAPI(context: ExtensionContext) {
     },
     createModal: (options: ModalOptions): ModalHandle => {
       return createModal(context.extensionId, options);
+    },
+    showModal: async (options: ModalOptions): Promise<Record<string, unknown> | null> => {
+      const modalHandle = createModal(context.extensionId, options);
+
+      return new Promise<Record<string, unknown> | null>((resolve) => {
+        modalHandle.onSubmit((values) => {
+          resolve(values as Record<string, unknown>);
+          return true;
+        });
+        modalHandle.onClose(() => {
+          resolve(null);
+        });
+      });
     },
     input: (options: {
       id: string;

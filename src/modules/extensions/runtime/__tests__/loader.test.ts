@@ -12,16 +12,20 @@ const {
   createExtensionAPIMock,
   registerExtensionConfigurationMock,
   registerExtensionKeybindingsMock,
-  evaluateMock,
-  destroyMock,
+  initializeWorkerMock,
+  activateWorkerMock,
+  deactivateWorkerMock,
+  destroyWorkerMock,
   validateExtensionCodeMock,
 } = vi.hoisted(() => ({
   invokeMock: vi.fn(),
   createExtensionAPIMock: vi.fn(() => ({})),
   registerExtensionConfigurationMock: vi.fn(),
   registerExtensionKeybindingsMock: vi.fn(),
-  evaluateMock: vi.fn(),
-  destroyMock: vi.fn(),
+  initializeWorkerMock: vi.fn(),
+  activateWorkerMock: vi.fn(),
+  deactivateWorkerMock: vi.fn(),
+  destroyWorkerMock: vi.fn(),
   validateExtensionCodeMock: vi.fn(() => ({
     valid: true,
     errors: [],
@@ -40,14 +44,16 @@ vi.mock('@/modules/extensions/api', () => ({
 }));
 
 vi.mock('@/modules/extensions/runtime/sandbox', () => ({
-  createSandbox: vi.fn(() => ({
-    extensionId: 'test.video',
-    globalContext: {},
-    console,
-    evaluate: evaluateMock,
-    destroy: destroyMock,
-  })),
   validateExtensionCode: validateExtensionCodeMock,
+}));
+
+vi.mock('@/modules/extensions/runtime/worker-runtime', () => ({
+  createWorkerHost: vi.fn(() => ({
+    initialize: initializeWorkerMock,
+    activate: activateWorkerMock,
+    deactivate: deactivateWorkerMock,
+    destroy: destroyWorkerMock,
+  })),
 }));
 
 import { getLoadedRuntime, loadExtensionRuntime, unloadExtensionRuntime } from '@/modules/extensions/runtime/loader';
@@ -75,8 +81,10 @@ describe('extension runtime loader', () => {
     createExtensionAPIMock.mockClear();
     registerExtensionConfigurationMock.mockClear();
     registerExtensionKeybindingsMock.mockClear();
-    evaluateMock.mockReset();
-    destroyMock.mockClear();
+    initializeWorkerMock.mockReset();
+    activateWorkerMock.mockReset();
+    deactivateWorkerMock.mockReset();
+    destroyWorkerMock.mockReset();
     validateExtensionCodeMock.mockClear();
   });
 
@@ -85,23 +93,34 @@ describe('extension runtime loader', () => {
   });
 
   it('passes persistent storagePath to api extension activate context', async () => {
-    const activateMock = vi.fn();
-    evaluateMock.mockReturnValue({
-      activate: activateMock,
-      deactivate: vi.fn(),
-    });
     invokeMock.mockImplementation(async (command: string, args?: Record<string, unknown>) => {
       switch (command) {
         case 'get_extension_path':
-          expect(args).toEqual({ extensionId: 'test.video' });
+          expect(args).toEqual({
+            extensionId: 'test.video',
+            callerExtensionId: 'test.video',
+          });
           return '/extensions/test.video';
         case 'get_extension_storage_path':
-          expect(args).toEqual({ extensionId: 'test.video' });
+          expect(args).toEqual({
+            extensionId: 'test.video',
+            callerExtensionId: 'test.video',
+          });
           return '/storage/test.video';
         case 'extension_path_exists':
+          expect(args).toEqual({
+            extensionId: 'test.video',
+            filePath: 'index.js',
+            callerExtensionId: 'test.video',
+          });
           return true;
         case 'read_extension_file':
-          return Array.from(new TextEncoder().encode('module.exports = {};'));
+          expect(args).toEqual({
+            extensionId: 'test.video',
+            filePath: 'index.js',
+            callerExtensionId: 'test.video',
+          });
+          return Array.from(new TextEncoder().encode('export {};'));
         default:
           throw new Error(`Unexpected invoke command: ${command}`);
       }
@@ -110,7 +129,8 @@ describe('extension runtime loader', () => {
     await loadExtensionRuntime('test.video', createManifest(), 'onStartup');
 
     expect(createExtensionAPIMock).toHaveBeenCalledWith('test.video', ['commands']);
-    expect(activateMock).toHaveBeenCalledWith({
+    expect(initializeWorkerMock).toHaveBeenCalledWith(expect.stringMatching(/^asset:\/\/\/extensions\/test\.video\/index\.js\?runtime=\d+$/));
+    expect(activateWorkerMock).toHaveBeenCalledWith({
       extensionId: 'test.video',
       extensionPath: '/extensions/test.video',
       storagePath: '/storage/test.video',
@@ -120,10 +140,7 @@ describe('extension runtime loader', () => {
 
   it('propagates activation failures instead of creating placeholder runtime', async () => {
     const activationError = new Error('Activation failed');
-    evaluateMock.mockReturnValue({
-      activate: () => { throw activationError; },
-      deactivate: vi.fn(),
-    });
+    activateWorkerMock.mockRejectedValueOnce(activationError);
     invokeMock.mockImplementation(async (command: string) => {
       switch (command) {
         case 'get_extension_path':
@@ -133,7 +150,7 @@ describe('extension runtime loader', () => {
         case 'extension_path_exists':
           return true;
         case 'read_extension_file':
-          return Array.from(new TextEncoder().encode('module.exports = {};'));
+          return Array.from(new TextEncoder().encode('export {};'));
         default:
           throw new Error(`Unexpected invoke command: ${command}`);
       }
@@ -144,5 +161,27 @@ describe('extension runtime loader', () => {
     ).rejects.toThrow('Activation failed');
 
     expect(getLoadedRuntime('test.video')).toBeUndefined();
+  });
+
+  it('destroys the worker host when unloading an api extension', async () => {
+    invokeMock.mockImplementation(async (command: string) => {
+      switch (command) {
+        case 'get_extension_path':
+          return '/extensions/test.video';
+        case 'get_extension_storage_path':
+          return '/storage/test.video';
+        case 'extension_path_exists':
+          return true;
+        case 'read_extension_file':
+          return Array.from(new TextEncoder().encode('export {};'));
+        default:
+          throw new Error(`Unexpected invoke command: ${command}`);
+      }
+    });
+
+    await loadExtensionRuntime('test.video', createManifest(), 'onStartup');
+    await unloadExtensionRuntime('test.video');
+
+    expect(destroyWorkerMock).toHaveBeenCalledTimes(1);
   });
 });

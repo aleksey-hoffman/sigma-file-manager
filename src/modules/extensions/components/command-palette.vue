@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/command';
 import { getKeybindingForCommand, getKeybindingParts, parseKeybindingString } from '@/modules/extensions/api';
 import { getBuiltinCommandDefinitions } from '@/modules/extensions/builtin-commands';
+import { getPaletteCommandEntries } from '@/modules/extensions/utils/command-display';
 import { useShortcutsStore } from '@/stores/runtime/shortcuts';
 import { useExtensionsStore } from '@/stores/runtime/extensions';
 import type { ExtensionCommand } from '@/types/extension';
@@ -37,6 +38,12 @@ import ExtensionFormView from './extension-form-view.vue';
 const { t } = useI18n();
 const shortcutsStore = useShortcutsStore();
 const extensionsStore = useExtensionsStore();
+
+const builtinCommandTitleKeys: Record<string, string> = {
+  'sigma.app.openSettings': 'openSettings',
+  'sigma.app.openExtensions': 'openExtensions',
+  'sigma.app.reloadWindow': 'trayMenu.reloadWindow',
+};
 
 const isOpen = ref(false);
 const paletteModal = ref<ModalInstance | null>(null);
@@ -57,25 +64,11 @@ const dialogOpen = computed({
 
 const allCommands = computed(() => {
   const entries: Array<{ extensionId: string;
-    command: ExtensionCommand; }> = [];
-  const existingIds = new Set<string>();
-
-  for (const extension of extensionsStore.enabledExtensions) {
-    const manifestCommands = extension.manifest.contributes?.commands ?? [];
-
-    for (const command of manifestCommands) {
-      const fullCommandId = `${extension.id}.${command.id}`;
-      if (existingIds.has(fullCommandId)) continue;
-      existingIds.add(fullCommandId);
-      entries.push({
-        extensionId: extension.id,
-        command: {
-          ...command,
-          id: fullCommandId,
-        },
-      });
-    }
-  }
+    command: ExtensionCommand; }> = getPaletteCommandEntries(
+      extensionsStore.enabledExtensions,
+      extensionsStore.commands,
+    );
+  const existingIds = new Set(entries.map(entry => entry.command.id));
 
   const builtinCommands = getBuiltinCommandDefinitions();
 
@@ -177,6 +170,16 @@ function getCommandShortcutParts(commandId: string): string[] {
 
 function getCommandShortcutLabel(commandId: string): string {
   return getCommandShortcutParts(commandId).join('+');
+}
+
+function getCommandTitle(command: ExtensionCommand): string {
+  const builtinTitleKey = builtinCommandTitleKeys[command.id];
+
+  if (builtinTitleKey) {
+    return t(builtinTitleKey);
+  }
+
+  return command.title;
 }
 
 function exitFormMode(): void {
@@ -304,7 +307,7 @@ defineExpose({
           <CommandItem
             v-for="cmd in recentCommands"
             :key="cmd.command.id"
-            :value="`${getExtensionName(cmd.extensionId)}: ${cmd.command.title}`"
+            :value="`${getExtensionName(cmd.extensionId)}: ${getCommandTitle(cmd.command)}`"
             @select="handleSelect(cmd.extensionId, cmd.command)"
           >
             <ExtensionIcon
@@ -314,7 +317,7 @@ defineExpose({
               :size="16"
             />
             <span class="command-palette__extension-name">{{ getExtensionName(cmd.extensionId) }}:</span>
-            <span>{{ cmd.command.title }}</span>
+            <span>{{ getCommandTitle(cmd.command) }}</span>
             <CommandShortcut v-if="getCommandShortcutLabel(cmd.command.id)">
               {{ getCommandShortcutLabel(cmd.command.id) }}
             </CommandShortcut>
@@ -328,7 +331,7 @@ defineExpose({
           <CommandItem
             v-for="cmd in otherCommands"
             :key="cmd.command.id"
-            :value="`${getExtensionName(cmd.extensionId)}: ${cmd.command.title}`"
+            :value="`${getExtensionName(cmd.extensionId)}: ${getCommandTitle(cmd.command)}`"
             @select="handleSelect(cmd.extensionId, cmd.command)"
           >
             <ExtensionIcon
@@ -338,7 +341,7 @@ defineExpose({
               :size="16"
             />
             <span class="command-palette__extension-name">{{ getExtensionName(cmd.extensionId) }}:</span>
-            <span>{{ cmd.command.title }}</span>
+            <span>{{ getCommandTitle(cmd.command) }}</span>
             <CommandShortcut v-if="getCommandShortcutLabel(cmd.command.id)">
               {{ getCommandShortcutLabel(cmd.command.id) }}
             </CommandShortcut>

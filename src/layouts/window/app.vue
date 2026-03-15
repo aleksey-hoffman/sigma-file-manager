@@ -10,12 +10,16 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { Toaster } from '@/components/ui/toaster';
 import { InfusionWrapper } from '@/components/ui/infusion';
 import { ChangelogDialog } from '@/modules/changelog';
+import { PageIframeLayout } from '@/layouts';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
+import { useEmbedPages } from '@/modules/extensions/composables/use-embed-pages';
 import ExtensionDialog from '@/modules/extensions/components/extension-dialog.vue';
+import ExtensionEmbed from '@/modules/extensions/components/extension-embed.vue';
 import CommandPalette from '@/modules/extensions/components/command-palette.vue';
 import ExtensionModalsContainer from '@/modules/extensions/components/extension-modals-container.vue';
 
 const userSettingsStore = useUserSettingsStore();
+const { activeEmbedPageId, visitedEmbedPages } = useEmbedPages();
 </script>
 
 <template>
@@ -34,7 +38,24 @@ const userSettingsStore = useUserSettingsStore();
       <div class="app-layout__main">
         <WindowToolbar />
         <div class="app-layout__content">
+          <PageIframeLayout
+            v-for="embedPage in visitedEmbedPages"
+            :key="embedPage.pageId"
+            :class="[
+              'app-layout__extension-embed-page',
+              { 'app-layout__extension-embed-page--hidden': activeEmbedPageId !== embedPage.pageId },
+            ]"
+          >
+            <ExtensionEmbed
+              class="app-layout__extension-embed"
+              :extension-id="embedPage.extensionId"
+              :embed-script-path="embedPage.url"
+              :icon-path="embedPage.iconPath"
+              :is-active="activeEmbedPageId === embedPage.pageId"
+            />
+          </PageIframeLayout>
           <RouterView
+            v-show="!activeEmbedPageId"
             v-slot="{ Component }"
             data-vaul-drawer-wrapper
           >
@@ -77,8 +98,29 @@ const userSettingsStore = useUserSettingsStore();
 }
 
 .app-layout__content {
+  position: relative;
   overflow: hidden;
   min-height: 0;
   flex: 1;
+}
+
+.app-layout__extension-embed-page {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+}
+
+.app-layout__extension-embed-page--hidden {
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.app-layout__extension-embed {
+  display: flex;
+  overflow: hidden;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  border-radius: var(--radius-sm);
 }
 </style>

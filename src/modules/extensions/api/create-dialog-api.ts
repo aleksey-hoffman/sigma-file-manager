@@ -22,7 +22,13 @@ export function createDialogAPI(
         throw new Error(context.t('extensions.api.permissionDenied', { permission: 'dialogs' }));
       }
 
-      return executeCommand('sigma.dialog.saveFile', options) as Promise<string | null>;
+      const selectedPath = await executeCommand('sigma.dialog.saveFile', options) as string | null;
+
+      if (typeof selectedPath === 'string' && selectedPath.length > 0) {
+        context.grantDialogWriteAccess(selectedPath);
+      }
+
+      return selectedPath;
     },
   };
 }

@@ -7,6 +7,7 @@ import { i18n } from '@/localization';
 import type { ExtensionPermission } from '@/types/extension';
 import { useExtensionsStorageStore } from '@/stores/storage/extensions';
 import { getPlatformInfo } from '@/modules/extensions/api/platform';
+import { invokeAsExtension } from '@/modules/extensions/runtime/extension-invoke';
 
 export type ExtensionContext = {
   extensionId: string;
@@ -25,6 +26,8 @@ export type ExtensionContext = {
   getExtensionName: () => string;
   getExtensionIconPath: () => string | undefined;
   getExtensionToastTitle: () => string;
+  grantDialogWriteAccess: (filePath: string) => void;
+  consumeDialogWriteAccess: (filePath: string) => boolean;
 };
 
 export function createExtensionContext(
@@ -43,7 +46,7 @@ export function createExtensionContext(
 
   async function getExtensionPath(): Promise<string> {
     if (!extensionPathPromise) {
-      extensionPathPromise = invoke<string>('get_extension_path', { extensionId });
+      extensionPathPromise = invokeAsExtension<string>(extensionId, 'get_extension_path', { extensionId });
     }
 
     return extensionPathPromise;
@@ -53,7 +56,7 @@ export function createExtensionContext(
 
   async function getExtensionStoragePath(): Promise<string> {
     if (!extensionStoragePathPromise) {
-      extensionStoragePathPromise = invoke<string>('get_extension_storage_path', { extensionId });
+      extensionStoragePathPromise = invokeAsExtension<string>(extensionId, 'get_extension_storage_path', { extensionId });
     }
 
     return extensionStoragePathPromise;
@@ -169,6 +172,34 @@ export function createExtensionContext(
     return `${t('extension')} | ${getExtensionName()}`;
   }
 
+  const DIALOG_GRANT_EXPIRY_MS = 300_000;
+  const dialogGrantedPaths = new Map<string, ReturnType<typeof setTimeout>>();
+
+  function grantDialogWriteAccess(filePath: string): void {
+    const existingTimer = dialogGrantedPaths.get(filePath);
+
+    if (existingTimer !== undefined) {
+      clearTimeout(existingTimer);
+    }
+
+    const timer = setTimeout(() => {
+      dialogGrantedPaths.delete(filePath);
+    }, DIALOG_GRANT_EXPIRY_MS);
+    dialogGrantedPaths.set(filePath, timer);
+  }
+
+  function consumeDialogWriteAccess(filePath: string): boolean {
+    const timer = dialogGrantedPaths.get(filePath);
+
+    if (timer === undefined) {
+      return false;
+    }
+
+    clearTimeout(timer);
+    dialogGrantedPaths.delete(filePath);
+    return true;
+  }
+
   return {
     extensionId,
     hasPermission,
@@ -186,5 +217,7 @@ export function createExtensionContext(
     getExtensionName,
     getExtensionIconPath,
     getExtensionToastTitle,
+    grantDialogWriteAccess,
+    consumeDialogWriteAccess,
   };
 }

@@ -2,7 +2,6 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-import { invoke } from '@tauri-apps/api/core';
 import { open } from '@tauri-apps/plugin-dialog';
 import type {
   ExtensionDirEntry,
@@ -10,69 +9,81 @@ import type {
 } from '@/types/extension';
 import { useExtensionsStorageStore } from '@/stores/storage/extensions';
 import type { ExtensionContext } from '@/modules/extensions/api/extension-context';
+import { invokeAsExtension } from '@/modules/extensions/runtime/extension-invoke';
 
 export function createFsAPI(context: ExtensionContext) {
+  function requirePermission(permission: 'fs.read' | 'fs.write'): void {
+    if (!context.hasPermission(permission)) {
+      throw new Error(context.t('extensions.api.permissionDenied', { permission }));
+    }
+  }
+
+  async function requireReadAccess(path: string): Promise<void> {
+    requirePermission('fs.read');
+
+    if (!await context.isInAllowedReadDir(path)) {
+      throw new Error(`Access denied: ${path} is not in allowed directories`);
+    }
+  }
+
+  async function requireScopedReadAccess(path: string): Promise<void> {
+    requirePermission('fs.read');
+    const storageStore = useExtensionsStorageStore();
+
+    if (!await storageStore.hasScopedAccess(context.extensionId, path, 'read')) {
+      throw new Error(`Access denied: ${path} is not in scoped directories`);
+    }
+  }
+
+  async function requireScopedWriteAccess(path: string): Promise<void> {
+    requirePermission('fs.write');
+    const storageStore = useExtensionsStorageStore();
+
+    if (!await storageStore.hasScopedAccess(context.extensionId, path, 'write')) {
+      throw new Error(`Access denied: ${path} is not in scoped directories`);
+    }
+  }
+
   return {
     readFile: async (path: string): Promise<Uint8Array> => {
-      if (!context.hasPermission('fs.read')) {
-        throw new Error(context.t('extensions.api.permissionDenied', { permission: 'fs.read' }));
-      }
-
-      if (!await context.isInAllowedReadDir(path)) {
-        throw new Error(`Access denied: ${path} is not in scoped directories`);
-      }
-
-      const result = await invoke<number[]>('read_file_binary', { path });
+      await requireReadAccess(path);
+      const result = await invokeAsExtension<number[]>(context.extensionId, 'read_file_binary', { path });
       return new Uint8Array(result);
     },
     writeFile: async (path: string, data: Uint8Array): Promise<void> => {
-      if (!context.hasPermission('fs.write')) {
-        throw new Error(context.t('extensions.api.permissionDenied', { permission: 'fs.write' }));
+      requirePermission('fs.write');
+
+      const hasDialogAccess = context.consumeDialogWriteAccess(path);
+
+      if (!hasDialogAccess) {
+        const storageStore = useExtensionsStorageStore();
+
+        if (!await context.isInExtensionDir(path) && !await storageStore.hasScopedAccess(context.extensionId, path, 'write')) {
+          throw new Error(`Access denied: ${path} is not in allowed directories`);
+        }
       }
 
-      const storageStore = useExtensionsStorageStore();
-
-      if (!await context.isInExtensionDir(path) && !await storageStore.hasScopedAccess(context.extensionId, path, 'write')) {
-        throw new Error(`Access denied: ${path} is not in scoped directories`);
-      }
-
-      await invoke('write_file_binary', {
+      await invokeAsExtension<void>(context.extensionId, 'write_file_binary', {
         path,
         data: Array.from(data),
       });
     },
     readDir: async (path: string): Promise<ExtensionDirEntry[]> => {
-      if (!context.hasPermission('fs.read')) {
-        throw new Error(context.t('extensions.api.permissionDenied', { permission: 'fs.read' }));
-      }
-
-      if (!await context.isInAllowedReadDir(path)) {
-        throw new Error(`Access denied: ${path} is not in scoped directories`);
-      }
-
-      return invoke<ExtensionDirEntry[]>('read_dir', { path });
+      await requireReadAccess(path);
+      return invokeAsExtension<ExtensionDirEntry[]>(context.extensionId, 'read_dir', { path });
     },
     exists: async (path: string): Promise<boolean> => {
-      if (!context.hasPermission('fs.read')) {
-        throw new Error(context.t('extensions.api.permissionDenied', { permission: 'fs.read' }));
-      }
-
-      if (!await context.isInAllowedReadDir(path)) {
-        throw new Error(`Access denied: ${path} is not in scoped directories`);
-      }
-
-      return invoke<boolean>('path_exists', { path });
+      await requireReadAccess(path);
+      return invokeAsExtension<boolean>(context.extensionId, 'path_exists', { path });
     },
     downloadFile: async (url: string, path: string): Promise<void> => {
-      if (!context.hasPermission('fs.write')) {
-        throw new Error(context.t('extensions.api.permissionDenied', { permission: 'fs.write' }));
-      }
+      requirePermission('fs.write');
 
       if (!await context.isInExtensionDir(path)) {
         throw new Error(`Access denied: ${path} is not in extension directory`);
       }
 
-      await invoke('download_extension_file', {
+      await invokeAsExtension<void>(context.extensionId, 'download_extension_file', {
         extensionId: context.extensionId,
         filePath: path,
         url,
@@ -81,42 +92,30 @@ export function createFsAPI(context: ExtensionContext) {
     },
     private: {
       readFile: async (relativePath: string): Promise<Uint8Array> => {
-        if (!context.hasPermission('fs.read')) {
-          throw new Error(context.t('extensions.api.permissionDenied', { permission: 'fs.read' }));
-        }
-
+        requirePermission('fs.read');
         const resolvedPath = await context.resolvePrivatePath(relativePath);
-        const result = await invoke<number[]>('read_file_binary', { path: resolvedPath });
+        const result = await invokeAsExtension<number[]>(context.extensionId, 'read_file_binary', { path: resolvedPath });
         return new Uint8Array(result);
       },
       writeFile: async (relativePath: string, data: Uint8Array): Promise<void> => {
-        if (!context.hasPermission('fs.write')) {
-          throw new Error(context.t('extensions.api.permissionDenied', { permission: 'fs.write' }));
-        }
-
+        requirePermission('fs.write');
         const resolvedPath = await context.resolvePrivatePath(relativePath);
-        await invoke('write_file_binary', {
+        await invokeAsExtension<void>(context.extensionId, 'write_file_binary', {
           path: resolvedPath,
           data: Array.from(data),
         });
       },
       readDir: async (relativePath = ''): Promise<ExtensionDirEntry[]> => {
-        if (!context.hasPermission('fs.read')) {
-          throw new Error(context.t('extensions.api.permissionDenied', { permission: 'fs.read' }));
-        }
-
+        requirePermission('fs.read');
         const resolvedPath = relativePath.trim().length > 0
           ? await context.resolvePrivatePath(relativePath)
           : await context.getExtensionPath();
-        return invoke<ExtensionDirEntry[]>('read_dir', { path: resolvedPath });
+        return invokeAsExtension<ExtensionDirEntry[]>(context.extensionId, 'read_dir', { path: resolvedPath });
       },
       exists: async (relativePath: string): Promise<boolean> => {
-        if (!context.hasPermission('fs.read')) {
-          throw new Error(context.t('extensions.api.permissionDenied', { permission: 'fs.read' }));
-        }
-
+        requirePermission('fs.read');
         const resolvedPath = await context.resolvePrivatePath(relativePath);
-        return invoke<boolean>('path_exists', { path: resolvedPath });
+        return invokeAsExtension<boolean>(context.extensionId, 'path_exists', { path: resolvedPath });
       },
       resolvePath: async (relativePath: string): Promise<string> => {
         return context.resolvePrivatePath(relativePath);
@@ -124,68 +123,52 @@ export function createFsAPI(context: ExtensionContext) {
     },
     storage: {
       readFile: async (relativePath: string): Promise<Uint8Array> => {
-        if (!context.hasPermission('fs.read')) {
-          throw new Error(context.t('extensions.api.permissionDenied', { permission: 'fs.read' }));
-        }
-
+        requirePermission('fs.read');
         const resolvedPath = await context.resolveStoragePath(relativePath);
-        const result = await invoke<number[]>('read_file_binary', { path: resolvedPath });
+        const result = await invokeAsExtension<number[]>(context.extensionId, 'read_file_binary', { path: resolvedPath });
         return new Uint8Array(result);
       },
       writeFile: async (relativePath: string, data: Uint8Array): Promise<void> => {
-        if (!context.hasPermission('fs.write')) {
-          throw new Error(context.t('extensions.api.permissionDenied', { permission: 'fs.write' }));
-        }
-
+        requirePermission('fs.write');
         const resolvedPath = await context.resolveStoragePath(relativePath);
-        await invoke('write_file_binary', {
+        await invokeAsExtension<void>(context.extensionId, 'write_file_binary', {
           path: resolvedPath,
           data: Array.from(data),
         });
       },
       readDir: async (relativePath = ''): Promise<ExtensionDirEntry[]> => {
-        if (!context.hasPermission('fs.read')) {
-          throw new Error(context.t('extensions.api.permissionDenied', { permission: 'fs.read' }));
-        }
-
+        requirePermission('fs.read');
         const resolvedPath = relativePath.trim().length > 0
           ? await context.resolveStoragePath(relativePath)
           : await context.getExtensionStoragePath();
-        return invoke<ExtensionDirEntry[]>('read_dir', { path: resolvedPath });
+        return invokeAsExtension<ExtensionDirEntry[]>(context.extensionId, 'read_dir', { path: resolvedPath });
       },
       exists: async (relativePath: string): Promise<boolean> => {
-        if (!context.hasPermission('fs.read')) {
-          throw new Error(context.t('extensions.api.permissionDenied', { permission: 'fs.read' }));
-        }
-
+        requirePermission('fs.read');
         const resolvedPath = await context.resolveStoragePath(relativePath);
-        return invoke<boolean>('path_exists', { path: resolvedPath });
+        return invokeAsExtension<boolean>(context.extensionId, 'path_exists', { path: resolvedPath });
       },
       resolvePath: async (relativePath: string): Promise<string> => {
         return context.resolveStoragePath(relativePath);
       },
       importFile: async (sourcePath: string, targetRelativePath: string): Promise<string> => {
-        if (!context.hasPermission('fs.read')) {
-          throw new Error(context.t('extensions.api.permissionDenied', { permission: 'fs.read' }));
+        requirePermission('fs.read');
+        requirePermission('fs.write');
+
+        if (!await context.isInAllowedReadDir(sourcePath)) {
+          throw new Error(`Access denied: ${sourcePath} is not in allowed directories`);
         }
 
-        if (!context.hasPermission('fs.write')) {
-          throw new Error(context.t('extensions.api.permissionDenied', { permission: 'fs.write' }));
-        }
-
-        return invoke<string>('import_extension_storage_file', {
+        return invokeAsExtension<string>(context.extensionId, 'import_extension_storage_file', {
           extensionId: context.extensionId,
           sourcePath,
           targetRelativePath: context.normalizeRelativePath(targetRelativePath),
         });
       },
       deleteFile: async (relativePath: string): Promise<void> => {
-        if (!context.hasPermission('fs.write')) {
-          throw new Error(context.t('extensions.api.permissionDenied', { permission: 'fs.write' }));
-        }
-
+        requirePermission('fs.write');
         const resolvedPath = await context.resolveStoragePath(relativePath);
-        await invoke('delete_file_binary', { path: resolvedPath });
+        await invokeAsExtension<void>(context.extensionId, 'delete_file_binary', { path: resolvedPath });
       },
     },
     scoped: {
@@ -246,60 +229,24 @@ export function createFsAPI(context: ExtensionContext) {
         return extensionSettings?.scopedDirectories ?? [];
       },
       readFile: async (path: string): Promise<Uint8Array> => {
-        if (!context.hasPermission('fs.read')) {
-          throw new Error(context.t('extensions.api.permissionDenied', { permission: 'fs.read' }));
-        }
-
-        const storageStore = useExtensionsStorageStore();
-
-        if (!await storageStore.hasScopedAccess(context.extensionId, path, 'read')) {
-          throw new Error(`Access denied: ${path} is not in scoped directories`);
-        }
-
-        const result = await invoke<number[]>('read_file_binary', { path });
+        await requireScopedReadAccess(path);
+        const result = await invokeAsExtension<number[]>(context.extensionId, 'read_file_binary', { path });
         return new Uint8Array(result);
       },
       writeFile: async (path: string, data: Uint8Array): Promise<void> => {
-        if (!context.hasPermission('fs.write')) {
-          throw new Error(context.t('extensions.api.permissionDenied', { permission: 'fs.write' }));
-        }
-
-        const storageStore = useExtensionsStorageStore();
-
-        if (!await storageStore.hasScopedAccess(context.extensionId, path, 'write')) {
-          throw new Error(`Access denied: ${path} is not in scoped directories`);
-        }
-
-        await invoke('write_file_binary', {
+        await requireScopedWriteAccess(path);
+        await invokeAsExtension<void>(context.extensionId, 'write_file_binary', {
           path,
           data: Array.from(data),
         });
       },
       readDir: async (path: string): Promise<ExtensionDirEntry[]> => {
-        if (!context.hasPermission('fs.read')) {
-          throw new Error(context.t('extensions.api.permissionDenied', { permission: 'fs.read' }));
-        }
-
-        const storageStore = useExtensionsStorageStore();
-
-        if (!await storageStore.hasScopedAccess(context.extensionId, path, 'read')) {
-          throw new Error(`Access denied: ${path} is not in scoped directories`);
-        }
-
-        return invoke<ExtensionDirEntry[]>('read_dir', { path });
+        await requireScopedReadAccess(path);
+        return invokeAsExtension<ExtensionDirEntry[]>(context.extensionId, 'read_dir', { path });
       },
       exists: async (path: string): Promise<boolean> => {
-        if (!context.hasPermission('fs.read')) {
-          throw new Error(context.t('extensions.api.permissionDenied', { permission: 'fs.read' }));
-        }
-
-        const storageStore = useExtensionsStorageStore();
-
-        if (!await storageStore.hasScopedAccess(context.extensionId, path, 'read')) {
-          throw new Error(`Access denied: ${path} is not in scoped directories`);
-        }
-
-        return invoke<boolean>('path_exists', { path });
+        await requireScopedReadAccess(path);
+        return invokeAsExtension<boolean>(context.extensionId, 'path_exists', { path });
       },
     },
   };

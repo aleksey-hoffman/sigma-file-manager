@@ -4,6 +4,7 @@
 
 import { ref, type Ref } from 'vue';
 import { open, save } from '@tauri-apps/plugin-dialog';
+import type { ExtensionPermission } from '@/types/extension';
 import { useQuickViewStore } from '@/stores/runtime/quick-view';
 import router from '@/router';
 
@@ -11,6 +12,7 @@ export type BuiltinCommandDefinition = {
   id: string;
   title: string;
   description: string;
+  requiredPermission?: ExtensionPermission;
   showInPalette?: boolean;
   parameters?: {
     name: string;
@@ -87,6 +89,7 @@ export const BUILTIN_COMMANDS: BuiltinCommandDefinition[] = [
     id: 'sigma.dialog.openFile',
     title: 'Open File Dialog',
     description: 'Show the native file open dialog',
+    requiredPermission: 'dialogs',
     parameters: [
       {
         name: 'options',
@@ -100,6 +103,7 @@ export const BUILTIN_COMMANDS: BuiltinCommandDefinition[] = [
     id: 'sigma.dialog.saveFile',
     title: 'Save File Dialog',
     description: 'Show the native file save dialog',
+    requiredPermission: 'dialogs',
     parameters: [
       {
         name: 'options',
@@ -204,6 +208,10 @@ initializeHandlers();
 
 export function getBuiltinCommandHandler(commandId: string): BuiltinCommandHandler | undefined {
   return builtinCommandHandlers.get(commandId);
+}
+
+export function getBuiltinCommandRequiredPermission(commandId: string): ExtensionPermission | undefined {
+  return BUILTIN_COMMANDS.find(command => command.id === commandId)?.requiredPermission;
 }
 
 export function isBuiltinCommand(commandId: string): boolean {

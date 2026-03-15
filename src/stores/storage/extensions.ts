@@ -14,6 +14,7 @@ import type {
   ExtensionScopedDirectory,
   ExtensionKeybindingOverride,
   SharedBinaryInfo,
+  InstalledExtensionData,
 } from '@/types/extension';
 import { mergeSharedBinaryInfo } from '@/modules/extensions/utils/shared-binary';
 import { useUserPathsStore } from './user-paths';
@@ -246,6 +247,16 @@ export const useExtensionsStorageStore = defineStore('extensionsStorage', () => 
       customSettings: nextCustomSettings,
     };
 
+    await saveStorageData();
+  }
+
+  async function restoreExtensionSnapshot(
+    extensionId: string,
+    installedExtension: InstalledExtensionData,
+    sharedBinaries: Record<string, SharedBinaryInfo>,
+  ): Promise<void> {
+    extensionsData.value.installedExtensions[extensionId] = installedExtension;
+    extensionsData.value.sharedBinaries = sharedBinaries;
     await saveStorageData();
   }
 
@@ -514,6 +525,7 @@ export const useExtensionsStorageStore = defineStore('extensionsStorage', () => 
     getExtensionSettings,
     updateExtensionSettings,
     clearExtensionBinaryStorage,
+    restoreExtensionSnapshot,
     addScopedDirectory,
     removeScopedDirectory,
     hasScopedAccess,

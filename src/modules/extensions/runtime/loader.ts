@@ -2,7 +2,7 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-import { convertFileSrc, invoke } from '@tauri-apps/api/core';
+import { convertFileSrc } from '@tauri-apps/api/core';
 import type {
   ExtensionManifest,
   ExtensionInstance,
@@ -11,13 +11,17 @@ import type {
 } from '@/types/extension';
 import type { SigmaExtensionAPI } from '@/modules/extensions/api';
 import { createExtensionAPI, registerExtensionConfiguration, registerExtensionKeybindings } from '@/modules/extensions/api';
-import { createSandbox, type ExtensionSandbox, validateExtensionCode } from './sandbox';
+import { type ExtensionSandbox, validateExtensionCode } from './sandbox';
+import { createExtensionApiMethodMap } from '@/modules/extensions/runtime/api-method-map';
+import { createWorkerHost, type WorkerHost } from '@/modules/extensions/runtime/worker-runtime';
+import { invokeAsExtension } from '@/modules/extensions/runtime/extension-invoke';
 
 export type LoadedExtensionRuntime = {
   id: string;
   manifest: ExtensionManifest;
   instance: ExtensionInstance | null;
   sandbox: ExtensionSandbox | null;
+  workerHost: WorkerHost | null;
   iframeElement: HTMLIFrameElement | null;
   iframeOrigin: string | null;
   removeMessageListener: (() => void) | null;
@@ -40,6 +44,7 @@ export async function loadExtensionRuntime(
     manifest,
     instance: null,
     sandbox: null,
+    workerHost: null,
     iframeElement: null,
     iframeOrigin: null,
     removeMessageListener: null,
@@ -79,6 +84,10 @@ export async function unloadExtensionRuntime(extensionId: string): Promise<void>
     runtime.sandbox.destroy();
   }
 
+  if (runtime.workerHost) {
+    runtime.workerHost.destroy();
+  }
+
   if (runtime.iframeElement) {
     runtime.iframeElement.remove();
   }
@@ -108,11 +117,12 @@ async function loadApiExtension(
 ): Promise<void> {
   const { id: extensionId, manifest } = runtime;
 
-  const extensionPath = await invoke<string>('get_extension_path', { extensionId });
-  const storagePath = await invoke<string>('get_extension_storage_path', { extensionId });
+  const extensionPath = await invokeAsExtension<string>(extensionId, 'get_extension_path', { extensionId });
+  const storagePath = await invokeAsExtension<string>(extensionId, 'get_extension_storage_path', { extensionId });
   const mainFile = manifest.main || 'index.js';
+  const entryUrl = `${convertFileSrc(`${extensionPath}/${mainFile}`)}?runtime=${Date.now()}`;
 
-  const fileExists = await invoke<boolean>('extension_path_exists', {
+  const fileExists = await invokeAsExtension<boolean>(extensionId, 'extension_path_exists', {
     extensionId,
     filePath: mainFile,
   });
@@ -131,10 +141,10 @@ async function loadApiExtension(
 
   const api = createExtensionAPI(extensionId, manifest.permissions);
   runtime.api = api;
-  runtime.sandbox = createSandbox(extensionId, api);
+  runtime.workerHost = createWorkerHost(api);
 
   try {
-    const fileContent = await invoke<number[]>('read_extension_file', {
+    const fileContent = await invokeAsExtension<number[]>(extensionId, 'read_extension_file', {
       extensionId,
       filePath: mainFile,
     });
@@ -147,13 +157,17 @@ async function loadApiExtension(
       throw new Error(`Extension code validation failed: ${validationResult.errors.join(', ')}`);
     }
 
-    const moduleExports = runtime.sandbox.evaluate(code);
-    const activate = moduleExports.activate as ((context: unknown) => Promise<void> | void) | undefined;
-    const deactivate = moduleExports.deactivate as (() => Promise<void> | void) | undefined;
+    await runtime.workerHost.initialize(entryUrl);
 
     runtime.instance = {
-      activate: activate ? ctx => activate(ctx) : async () => {},
-      deactivate: deactivate || (async () => {}),
+      activate: async (ctx) => {
+        if (ctx) {
+          await runtime.workerHost?.activate(ctx);
+        }
+      },
+      deactivate: async () => {
+        await runtime.workerHost?.deactivate();
+      },
     };
 
     if (runtime.instance) {
@@ -183,8 +197,8 @@ async function loadIframeExtension(
   iframe.setAttribute('sandbox', 'allow-scripts');
   iframe.style.display = 'none';
 
-  const extensionPath = await invoke<string>('get_extension_path', { extensionId });
-  const storagePath = await invoke<string>('get_extension_storage_path', { extensionId });
+  const extensionPath = await invokeAsExtension<string>(extensionId, 'get_extension_path', { extensionId });
+  const storagePath = await invokeAsExtension<string>(extensionId, 'get_extension_storage_path', { extensionId });
   const mainFile = manifest.main || 'index.html';
 
   const iframeSource = convertFileSrc(`${extensionPath}/${mainFile}`);
@@ -255,44 +269,41 @@ function handleIframeMessage(
     id?: string; };
 
   if (message.type === 'api-call' && message.method) {
-    const methodPath = message.method.split('.');
-    let target: unknown = api;
+    const methodMap = createExtensionApiMethodMap(api);
+    const handler = methodMap[message.method];
 
-    for (const part of methodPath) {
-      if (target && typeof target === 'object') {
-        target = (target as Record<string, unknown>)[part];
-      }
-      else {
-        target = undefined;
-        break;
-      }
+    if (!handler) {
+      postMessageToExtension(extensionId, {
+        type: 'api-response',
+        id: message.id,
+        error: `Extension API method is not allowed: ${message.method}`,
+      });
+      return;
     }
 
-    if (typeof target === 'function') {
-      const result = target(...(message.args || []));
+    const result = handler(...(message.args || []));
 
-      if (result instanceof Promise) {
-        result.then((value) => {
-          postMessageToExtension(extensionId, {
-            type: 'api-response',
-            id: message.id,
-            result: value,
-          });
-        }).catch((error) => {
-          postMessageToExtension(extensionId, {
-            type: 'api-response',
-            id: message.id,
-            error: error instanceof Error ? error.message : String(error),
-          });
-        });
-      }
-      else {
+    if (result instanceof Promise) {
+      result.then((value) => {
         postMessageToExtension(extensionId, {
           type: 'api-response',
           id: message.id,
-          result,
+          result: value,
         });
-      }
+      }).catch((error) => {
+        postMessageToExtension(extensionId, {
+          type: 'api-response',
+          id: message.id,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      });
+    }
+    else {
+      postMessageToExtension(extensionId, {
+        type: 'api-response',
+        id: message.id,
+        result,
+      });
     }
   }
 }

@@ -7,11 +7,14 @@ import type { ExtensionContext } from '@/modules/extensions/api/extension-contex
 import { addCommandRegistration, findCommandRegistration } from '@/modules/extensions/api/registrations';
 import {
   getBuiltinCommandHandler,
+  getBuiltinCommandRequiredPermission,
   isBuiltinCommand,
   getBuiltinCommandDefinitions,
 } from '@/modules/extensions/builtin-commands';
 
 export function createCommandsAPI(context: ExtensionContext) {
+  const ownCommandPrefix = `${context.extensionId}.`;
+
   return {
     registerCommand: (
       command: ExtensionCommand,
@@ -32,8 +35,10 @@ export function createCommandsAPI(context: ExtensionContext) {
     },
     executeCommand: async (commandId: string, ...args: unknown[]): Promise<unknown> => {
       if (isBuiltinCommand(commandId)) {
-        if (commandId.startsWith('sigma.shell.') && !context.hasPermission('shell')) {
-          throw new Error(context.t('extensions.api.permissionDenied', { permission: 'shell' }));
+        const requiredPermission = getBuiltinCommandRequiredPermission(commandId);
+
+        if (requiredPermission && !context.hasPermission(requiredPermission)) {
+          throw new Error(context.t('extensions.api.permissionDenied', { permission: requiredPermission }));
         }
 
         const handler = getBuiltinCommandHandler(commandId);
@@ -45,7 +50,12 @@ export function createCommandsAPI(context: ExtensionContext) {
         return handler(...args);
       }
 
-      const fullCommandId = commandId.includes('.') ? commandId : `${context.extensionId}.${commandId}`;
+      const fullCommandId = commandId.includes('.') ? commandId : `${ownCommandPrefix}${commandId}`;
+
+      if (!fullCommandId.startsWith(ownCommandPrefix)) {
+        throw new Error('Cross-extension command execution is not allowed');
+      }
+
       const registration = findCommandRegistration(fullCommandId);
 
       if (!registration) {

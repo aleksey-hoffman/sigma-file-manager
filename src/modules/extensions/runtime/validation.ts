@@ -12,7 +12,7 @@ type RegistryVersionMetadata = {
 
 const EXTENSION_ID_PATTERN = /^[a-z0-9-]+\.[a-z0-9-]+$/;
 
-const VALID_PERMISSIONS: ExtensionPermission[] = [
+const VALID_PERMISSIONS: string[] = [
   'contextMenu',
   'sidebar',
   'toolbar',
@@ -22,6 +22,8 @@ const VALID_PERMISSIONS: ExtensionPermission[] = [
   'notifications',
   'dialogs',
   'shell',
+  'clipboard',
+  'openUrl',
 ];
 
 function isObjectRecord(value: unknown): value is Record<string, unknown> {

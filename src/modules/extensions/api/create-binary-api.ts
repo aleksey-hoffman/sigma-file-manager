@@ -2,7 +2,6 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
 import { toast } from 'vue-sonner';
 import { markRaw } from 'vue';
@@ -11,10 +10,16 @@ import { ToastProgress } from '@/components/ui/toaster';
 import { useExtensionsStorageStore } from '@/stores/storage/extensions';
 import { getBinaryLookupVersion } from '@/modules/extensions/utils/binary-metadata';
 import { getSharedBinaryPendingKey } from '@/modules/extensions/utils/shared-binary';
-import { fetchGitHubTags, getGitHubRepoInfo, parseVersionFromTag } from '@/data/extensions';
+import { fetchGitHubTags, fetchUrlText, getGitHubRepoInfo, parseVersionFromTag } from '@/data/extensions';
 import { ensurePlatformInfo } from '@/modules/extensions/api/platform';
 import { incrementBinaryDownloadCount, incrementBinaryReuseCount } from '@/modules/extensions/api/binary-download-counts';
+import {
+  buildIntegrityCandidateUrls,
+  getAssetNameFromDownloadUrl,
+  parseIntegrityFromChecksumText,
+} from '@/modules/extensions/api/binary-integrity';
 import type { ExtensionContext } from '@/modules/extensions/api/extension-context';
+import { invokeAsExtension } from '@/modules/extensions/runtime/extension-invoke';
 
 type SharedBinaryInstallResult = {
   path: string;
@@ -29,6 +34,10 @@ type SharedBinaryInstallResult = {
 
 const BINARY_STORAGE_KEY = '__binaries';
 const pendingBinaryDownloads = new Map<string, Promise<SharedBinaryInstallResult>>();
+
+function cloneBinaryInfo(info: BinaryInfo): BinaryInfo {
+  return JSON.parse(JSON.stringify(info)) as BinaryInfo;
+}
 
 function formatBytes(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
@@ -81,6 +90,43 @@ export function createBinaryAPI(context: ExtensionContext) {
     catch {
       return undefined;
     }
+  }
+
+  async function resolveBinaryIntegrity(
+    downloadUrl: string,
+    integrity: string | undefined,
+  ): Promise<string | undefined> {
+    if (integrity?.trim()) {
+      return integrity;
+    }
+
+    const assetName = getAssetNameFromDownloadUrl(downloadUrl);
+
+    if (!assetName) {
+      return undefined;
+    }
+
+    const candidateUrls = buildIntegrityCandidateUrls(downloadUrl);
+
+    for (const candidateUrl of candidateUrls) {
+      try {
+        const response = await fetchUrlText(candidateUrl);
+
+        if (!response.ok) {
+          continue;
+        }
+
+        const resolvedIntegrity = parseIntegrityFromChecksumText(response.body, assetName);
+
+        if (resolvedIntegrity) {
+          return resolvedIntegrity;
+        }
+      }
+      catch {
+      }
+    }
+
+    return undefined;
   }
 
   function createExtensionBinaryInfo(result: SharedBinaryInstallResult): BinaryInfo {
@@ -148,7 +194,7 @@ export function createBinaryAPI(context: ExtensionContext) {
     lookupVersion: string | undefined,
   ): Promise<SharedBinaryInstallResult | null> {
     const storageStore = useExtensionsStorageStore();
-    const sharedPath = await invoke<string | null>('get_shared_binary_path', {
+    const sharedPath = await invokeAsExtension<string | null>(context.extensionId, 'get_shared_binary_path', {
       binaryId,
       executableName,
       version: lookupVersion ?? null,
@@ -197,6 +243,7 @@ export function createBinaryAPI(context: ExtensionContext) {
     const downloadUrl = typeof options.downloadUrl === 'function'
       ? options.downloadUrl(platform)
       : options.downloadUrl;
+    const resolvedIntegrity = await resolveBinaryIntegrity(downloadUrl, options.integrity);
 
     const toastId = `binary-download-${context.extensionId}-${binaryId}`;
     const versionLabel = options.version ? ` ${options.version}` : '';
@@ -279,11 +326,11 @@ export function createBinaryAPI(context: ExtensionContext) {
         ? 'download_and_extract_shared_binary'
         : 'download_shared_binary';
 
-      const binaryPath = await invoke<string>(downloadCommand, {
+      const binaryPath = await invokeAsExtension<string>(context.extensionId, downloadCommand, {
         binaryId,
         downloadUrl,
         executableName,
-        integrity: options.integrity ?? null,
+        integrity: resolvedIntegrity ?? null,
         version: lookupVersion ?? null,
         progressEventId: toastId,
       });
@@ -338,7 +385,7 @@ export function createBinaryAPI(context: ExtensionContext) {
       return attachSharedBinaryToExtension(id, lookupVersion, existingSharedBinary);
     }
 
-    const legacyPath = await invoke<string | null>('get_extension_binary_path', {
+    const legacyPath = await invokeAsExtension<string | null>(context.extensionId, 'get_extension_binary_path', {
       extensionId: context.extensionId,
       binaryId: id,
       executableName,
@@ -386,14 +433,14 @@ export function createBinaryAPI(context: ExtensionContext) {
     const executableName = info.path.split(/[/\\]/).pop() || '';
     const lookupVersion = getBinaryLookupVersion(info);
 
-    const sharedExists = await invoke<boolean>('shared_binary_exists', {
+    const sharedExists = await invokeAsExtension<boolean>(context.extensionId, 'shared_binary_exists', {
       binaryId: id,
       executableName,
       version: lookupVersion ?? null,
     });
 
     if (sharedExists) {
-      const sharedPath = await invoke<string | null>('get_shared_binary_path', {
+      const sharedPath = await invokeAsExtension<string | null>(context.extensionId, 'get_shared_binary_path', {
         binaryId: id,
         executableName,
         version: lookupVersion ?? null,
@@ -401,7 +448,7 @@ export function createBinaryAPI(context: ExtensionContext) {
       return sharedPath;
     }
 
-    const legacyExists = await invoke<boolean>('extension_binary_exists', {
+    const legacyExists = await invokeAsExtension<boolean>(context.extensionId, 'extension_binary_exists', {
       extensionId: context.extensionId,
       binaryId: id,
       executableName,
@@ -451,7 +498,7 @@ export function createBinaryAPI(context: ExtensionContext) {
         const updatedBinary = storageStore.getSharedBinary(id, version);
 
         if (!updatedBinary || updatedBinary.usedBy.length === 0) {
-          await invoke('remove_shared_binary', {
+          await invokeAsExtension<void>(context.extensionId, 'remove_shared_binary', {
             binaryId: id,
             version: version ?? null,
           });
@@ -459,7 +506,7 @@ export function createBinaryAPI(context: ExtensionContext) {
         }
       }
       else {
-        await invoke('remove_extension_binary', {
+        await invokeAsExtension<void>(context.extensionId, 'remove_extension_binary', {
           extensionId: context.extensionId,
           binaryId: id,
         });
@@ -475,7 +522,7 @@ export function createBinaryAPI(context: ExtensionContext) {
       }
 
       const binaries = await getBinaryStorage();
-      return binaries[id] || null;
+      return binaries[id] ? cloneBinaryInfo(binaries[id]) : null;
     },
   };
 }

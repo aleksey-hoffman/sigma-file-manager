@@ -504,4 +504,144 @@ describe('extensions runtime store', () => {
     expect(invokeMock).not.toHaveBeenCalledWith('delete_extension', { extensionId: 'test.removed' });
     expect(toastCustomMock).not.toHaveBeenCalled();
   });
+
+  it('reloads the previous extension after an update failure', async () => {
+    const installedManifest = createRemoteManifest(
+      'test.video',
+      'https://github.com/example/test-video',
+    );
+    const updatedManifest = {
+      ...installedManifest,
+      version: '1.1.0',
+    };
+
+    installTestExtension(installedManifest);
+    const storageStore = useExtensionsStorageStore();
+    storageStore.extensionsData.installedExtensions['test.video']!.settings.customSettings = {
+      __binaries: {
+        ffmpeg: {
+          path: '/extensions/test.video/bin/ffmpeg',
+        },
+      },
+    };
+    storageStore.extensionsData.sharedBinaries = {
+      'ffmpeg@7.0.0': {
+        id: 'ffmpeg',
+        path: '/shared/ffmpeg',
+        version: '7.0.0',
+        storageVersion: '7.0.0',
+        installedAt: 123,
+        usedBy: ['test.video'],
+      },
+    };
+
+    const extensionsStore = useExtensionsStore();
+    extensionsStore.registry = {
+      schemaVersion: '1.0.0',
+      extensions: [createRegistryEntry('test.video', installedManifest.repository)],
+    };
+
+    invokeMock.mockImplementation(async (command: string, args?: Record<string, unknown>) => {
+      console.log(args);
+
+      if (command === 'fetch_url_text') {
+        return {
+          ok: true,
+          status: 200,
+          body: JSON.stringify(updatedManifest),
+        };
+      }
+
+      if (command === 'cancel_all_extension_commands') {
+        return undefined;
+      }
+
+      if (command === 'download_extension') {
+        throw new Error('download failed');
+      }
+
+      throw new Error(`Unexpected invoke command: ${command}`);
+    });
+
+    await expect(extensionsStore.updateExtension('test.video', '1.1.0')).rejects.toThrow('download failed');
+    expect(loadExtensionRuntimeMock).toHaveBeenCalledTimes(1);
+    expect(loadExtensionRuntimeMock).toHaveBeenCalledWith(
+      'test.video',
+      installedManifest,
+      'onStartup',
+    );
+    expect(storageStore.extensionsData.installedExtensions['test.video']?.manifest.version).toBe('1.0.0');
+    expect(storageStore.extensionsData.installedExtensions['test.video']?.settings.customSettings).toEqual({
+      __binaries: {
+        ffmpeg: {
+          path: '/extensions/test.video/bin/ffmpeg',
+        },
+      },
+    });
+    expect(storageStore.extensionsData.sharedBinaries).toEqual({
+      'ffmpeg@7.0.0': {
+        id: 'ffmpeg',
+        path: '/shared/ffmpeg',
+        version: '7.0.0',
+        storageVersion: '7.0.0',
+        installedAt: 123,
+        usedBy: ['test.video'],
+      },
+    });
+  });
+
+  it('uninstalls extensions even when orphaned shared binary cleanup is deferred', async () => {
+    const manifest = createRemoteManifest(
+      'test.video',
+      'https://github.com/example/test-video',
+    );
+
+    installTestExtension(manifest);
+    const storageStore = useExtensionsStorageStore();
+    storageStore.extensionsData.installedExtensions['test.video']!.settings.customSettings = {
+      __binaries: {
+        ffmpeg: {
+          id: 'ffmpeg',
+          path: '/shared/ffmpeg',
+          version: '7.0.0',
+        },
+      },
+    };
+    storageStore.extensionsData.sharedBinaries = {
+      'ffmpeg@7.0.0': {
+        id: 'ffmpeg',
+        path: '/shared/ffmpeg',
+        version: '7.0.0',
+        storageVersion: '7.0.0',
+        installedAt: 123,
+        usedBy: ['test.video'],
+      },
+    };
+
+    const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    invokeMock.mockImplementation(async (command: string) => {
+      if (command === 'cancel_all_extension_commands' || command === 'delete_extension') {
+        return undefined;
+      }
+
+      if (command === 'remove_shared_binary') {
+        throw new Error('binary directory is locked');
+      }
+
+      throw new Error(`Unexpected invoke command: ${command}`);
+    });
+
+    const extensionsStore = useExtensionsStore();
+    await extensionsStore.uninstallExtension('test.video');
+
+    expect(storageStore.extensionsData.installedExtensions['test.video']).toBeUndefined();
+    expect(storageStore.extensionsData.sharedBinaries).toEqual({});
+    expect(consoleWarnSpy).toHaveBeenCalledWith(
+      'Deferred cleanup for orphaned shared binary ffmpeg:',
+      expect.any(Error),
+    );
+
+    consoleWarnSpy.mockRestore();
+  });
 });

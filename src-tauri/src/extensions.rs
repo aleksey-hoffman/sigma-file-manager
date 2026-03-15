@@ -7,12 +7,12 @@ use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::fs;
-use std::time::Duration;
 use std::io::{self, BufRead, BufReader, Read, Write};
 use std::path::{Component, Path, PathBuf};
 use std::process::{Child, Command, Stdio};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, Mutex};
+use std::time::Duration;
 use tauri::{Emitter, Manager};
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -60,14 +60,176 @@ pub struct ExtensionCommandComplete {
 
 static COMMAND_TASKS: Lazy<Mutex<std::collections::HashMap<String, Arc<Mutex<Child>>>>> =
     Lazy::new(|| Mutex::new(std::collections::HashMap::new()));
-static IN_FLIGHT_BINARY_DOWNLOADS: Lazy<tokio::sync::Mutex<std::collections::HashMap<String, tokio::sync::broadcast::Sender<Result<String, String>>>>> =
-    Lazy::new(|| tokio::sync::Mutex::new(std::collections::HashMap::new()));
+static IN_FLIGHT_BINARY_DOWNLOADS: Lazy<
+    tokio::sync::Mutex<
+        std::collections::HashMap<String, tokio::sync::broadcast::Sender<Result<String, String>>>,
+    >,
+> = Lazy::new(|| tokio::sync::Mutex::new(std::collections::HashMap::new()));
+static EXTENSION_INSTALL_LOCKS: Lazy<
+    tokio::sync::Mutex<std::collections::HashMap<String, Arc<tokio::sync::Mutex<()>>>>,
+> = Lazy::new(|| tokio::sync::Mutex::new(std::collections::HashMap::new()));
 static COMMAND_PIDS: Lazy<Mutex<std::collections::HashMap<String, u32>>> =
     Lazy::new(|| Mutex::new(std::collections::HashMap::new()));
 static COMMAND_EXTENSION_MAP: Lazy<Mutex<std::collections::HashMap<String, String>>> =
     Lazy::new(|| Mutex::new(std::collections::HashMap::new()));
 static TASK_COUNTER: AtomicU64 = AtomicU64::new(0);
 static EXTENSION_MANIFEST_FILE: &str = "package.json";
+const MAX_EXTENSION_ARCHIVE_BYTES: u64 = 100 * 1024 * 1024;
+const MAX_TEXT_FETCH_BYTES: u64 = 2 * 1024 * 1024;
+const MAX_BINARY_DOWNLOAD_BYTES: u64 = 512 * 1024 * 1024;
+
+fn authorize_extension_caller(
+    caller_extension_id: Option<&str>,
+    extension_id: &str,
+) -> Result<(), String> {
+    match caller_extension_id {
+        Some(caller_id) if caller_id == extension_id => Ok(()),
+        Some(_) => {
+            Err("Access denied: caller extension does not match target extension".to_string())
+        }
+        None => Err("Access denied: missing caller extension identity".to_string()),
+    }
+}
+
+async fn acquire_extension_install_lock(
+    extension_id: &str,
+) -> Result<tokio::sync::OwnedMutexGuard<()>, String> {
+    validate_binary_path_component(extension_id, "extension id")?;
+
+    let mutex = {
+        let mut locks = EXTENSION_INSTALL_LOCKS.lock().await;
+        locks
+            .entry(extension_id.to_string())
+            .or_insert_with(|| Arc::new(tokio::sync::Mutex::new(())))
+            .clone()
+    };
+
+    Ok(mutex.lock_owned().await)
+}
+
+fn require_integrity(integrity: &Option<String>, label: &str) -> Result<(), String> {
+    match integrity
+        .as_ref()
+        .map(|value| value.trim())
+        .filter(|value| !value.is_empty())
+    {
+        Some(_) => Ok(()),
+        None => Err(format!("Integrity is required for {}", label)),
+    }
+}
+
+fn is_private_ip_address(ip_address: &std::net::IpAddr) -> bool {
+    match ip_address {
+        std::net::IpAddr::V4(ipv4) => {
+            ipv4.is_private()
+                || ipv4.is_loopback()
+                || ipv4.is_link_local()
+                || ipv4.is_broadcast()
+                || *ipv4 == std::net::Ipv4Addr::UNSPECIFIED
+                || *ipv4 == std::net::Ipv4Addr::new(169, 254, 169, 254)
+        }
+        std::net::IpAddr::V6(ipv6) => {
+            ipv6.is_loopback()
+                || ipv6.is_unspecified()
+                || ipv6.is_unique_local()
+                || ipv6.is_unicast_link_local()
+        }
+    }
+}
+
+fn validate_remote_url(url: &str) -> Result<reqwest::Url, String> {
+    let parsed_url =
+        reqwest::Url::parse(url).map_err(|error| format!("Invalid URL '{}': {}", url, error))?;
+    let scheme = parsed_url.scheme();
+
+    if scheme != "https" && scheme != "http" {
+        return Err("Only http and https URLs are allowed".to_string());
+    }
+
+    let host = parsed_url
+        .host_str()
+        .ok_or_else(|| "URL host is required".to_string())?
+        .to_ascii_lowercase();
+
+    if host == "localhost"
+        || host == "metadata.google.internal"
+        || host == "metadata"
+        || host.ends_with(".local")
+    {
+        return Err("Access denied: target host is not allowed".to_string());
+    }
+
+    if let Ok(ip_address) = host.parse::<std::net::IpAddr>() {
+        if is_private_ip_address(&ip_address) {
+            return Err("Access denied: target host is not allowed".to_string());
+        }
+    }
+
+    Ok(parsed_url)
+}
+
+async fn read_response_bytes_with_limit(
+    response: reqwest::Response,
+    max_bytes: u64,
+    read_error_label: &str,
+) -> Result<Vec<u8>, String> {
+    if let Some(content_length) = response.content_length() {
+        if content_length > max_bytes {
+            return Err(format!(
+                "Download exceeds size limit of {} bytes",
+                max_bytes
+            ));
+        }
+    }
+
+    let mut stream = response.bytes_stream();
+    let mut bytes = Vec::new();
+    let mut total_read: u64 = 0;
+
+    while let Some(chunk_result) = stream.next().await {
+        let chunk = chunk_result
+            .map_err(|error| format!("Failed to read {}: {}", read_error_label, error))?;
+        total_read += chunk.len() as u64;
+
+        if total_read > max_bytes {
+            return Err(format!(
+                "Download exceeds size limit of {} bytes",
+                max_bytes
+            ));
+        }
+
+        bytes.extend_from_slice(&chunk);
+    }
+
+    Ok(bytes)
+}
+
+async fn download_url_bytes(
+    url: &str,
+    max_bytes: u64,
+    request_error_label: &str,
+    read_error_label: &str,
+) -> Result<Vec<u8>, String> {
+    let client = reqwest::Client::builder()
+        .timeout(Duration::from_secs(900))
+        .build()
+        .map_err(|error| format!("Failed to create HTTP client: {}", error))?;
+    let response = client
+        .get(url)
+        .header("User-Agent", "sigma-file-manager")
+        .send()
+        .await
+        .map_err(|error| format!("Failed to {}: {}", request_error_label, error))?;
+
+    if !response.status().is_success() {
+        return Err(format!(
+            "Download failed with status: {}",
+            response.status()
+        ));
+    }
+
+    read_response_bytes_with_limit(response, max_bytes, read_error_label).await
+}
 
 fn normalize_integrity_value(value: &str) -> String {
     value
@@ -99,9 +261,8 @@ fn verify_integrity(bytes: &[u8], expected_integrity: Option<&str>) -> Result<()
 }
 
 fn is_safe_archive_relative_path(path: &Path) -> bool {
-    path.components().all(|component| {
-        matches!(component, Component::Normal(_) | Component::CurDir)
-    })
+    path.components()
+        .all(|component| matches!(component, Component::Normal(_) | Component::CurDir))
 }
 
 fn is_safe_managed_relative_path(path: &Path) -> bool {
@@ -116,8 +277,12 @@ fn validate_binary_path_component(value: &str, label: &str) -> Result<(), String
     }
 
     let path = Path::new(trimmed_value);
-    if path.is_absolute() || !is_safe_managed_relative_path(path) || path.components().count() != 1 {
-        return Err(format!("Invalid {}: must be a single safe path component", label));
+    if path.is_absolute() || !is_safe_managed_relative_path(path) || path.components().count() != 1
+    {
+        return Err(format!(
+            "Invalid {}: must be a single safe path component",
+            label
+        ));
     }
 
     Ok(())
@@ -293,7 +458,9 @@ pub async fn get_extensions_dir(app_handle: tauri::AppHandle) -> Result<String, 
 pub async fn get_extension_path(
     app_handle: tauri::AppHandle,
     extension_id: String,
+    caller_extension_id: Option<String>,
 ) -> Result<String, String> {
+    authorize_extension_caller(caller_extension_id.as_deref(), &extension_id)?;
     let extension_dir = get_extension_dir(&app_handle, &extension_id)?;
     Ok(extension_dir.to_string_lossy().to_string())
 }
@@ -302,7 +469,9 @@ pub async fn get_extension_path(
 pub async fn get_extension_storage_path(
     app_handle: tauri::AppHandle,
     extension_id: String,
+    caller_extension_id: Option<String>,
 ) -> Result<String, String> {
+    authorize_extension_caller(caller_extension_id.as_deref(), &extension_id)?;
     let extension_storage_dir = get_extension_storage_dir(&app_handle, &extension_id)?;
     Ok(extension_storage_dir.to_string_lossy().to_string())
 }
@@ -453,15 +622,11 @@ fn clear_extension_dir_preserving_bin(extension_dir: &Path) -> Result<(), String
         .map_err(|error| format!("Failed to read extension directory: {}", error))?;
 
     for entry in entries {
-        let entry =
-            entry.map_err(|error| format!("Failed to read directory entry: {}", error))?;
+        let entry = entry.map_err(|error| format!("Failed to read directory entry: {}", error))?;
         let entry_path = entry.path();
 
         if entry_path.is_dir() {
-            let dir_name = entry
-                .file_name()
-                .to_string_lossy()
-                .to_string();
+            let dir_name = entry.file_name().to_string_lossy().to_string();
 
             if dir_name == "bin" {
                 log::info!(
@@ -480,11 +645,7 @@ fn clear_extension_dir_preserving_bin(extension_dir: &Path) -> Result<(), String
             })?;
         } else {
             fs::remove_file(&entry_path).map_err(|error| {
-                format!(
-                    "Failed to remove file {}: {}",
-                    entry_path.display(),
-                    error
-                )
+                format!("Failed to remove file {}: {}", entry_path.display(), error)
             })?;
         }
     }
@@ -501,7 +662,10 @@ fn cleanup_trash_directories(extensions_dir: &Path) {
     for entry in entries.flatten() {
         let name = entry.file_name().to_string_lossy().to_string();
         if name.starts_with(".trash.") && entry.path().is_dir() {
-            log::info!("Cleaning up leftover trash directory: {}", entry.path().display());
+            log::info!(
+                "Cleaning up leftover trash directory: {}",
+                entry.path().display()
+            );
             if let Err(error) = fs::remove_dir_all(entry.path()) {
                 log::warn!(
                     "Failed to clean up trash directory {}: {}",
@@ -514,7 +678,14 @@ fn cleanup_trash_directories(extensions_dir: &Path) {
 }
 
 #[tauri::command]
-pub async fn cancel_all_extension_commands(extension_id: String) -> Result<(), String> {
+pub async fn cancel_all_extension_commands(
+    extension_id: String,
+    caller_extension_id: Option<String>,
+) -> Result<(), String> {
+    if caller_extension_id.is_some() {
+        authorize_extension_caller(caller_extension_id.as_deref(), &extension_id)?;
+    }
+
     log::info!(
         "cancel_all_extension_commands called for extension: {}",
         extension_id
@@ -531,16 +702,11 @@ pub async fn download_extension(
     version: String,
     integrity: Option<String>,
 ) -> Result<ExtensionOperationResult, String> {
+    let _install_lock = acquire_extension_install_lock(&extension_id).await?;
+    require_integrity(&integrity, "remote extension downloads")?;
+    let validated_url = validate_remote_url(&download_url)?;
     let extensions_dir = get_extensions_base_dir(&app_handle)?;
     let extension_dir = get_extension_dir(&app_handle, &extension_id)?;
-
-    if extension_dir.exists() {
-        terminate_all_extension_processes(&extension_id);
-        clear_extension_dir_preserving_bin(&extension_dir)?;
-    } else {
-        fs::create_dir_all(&extension_dir)
-            .map_err(|error| format!("Failed to create extension directory: {}", error))?;
-    }
 
     let temp_dir = extensions_dir.join(".temp");
     if !temp_dir.exists() {
@@ -550,22 +716,21 @@ pub async fn download_extension(
 
     let zip_filename = format!("{}-{}.zip", extension_id, version);
     let zip_path = temp_dir.join(&zip_filename);
+    let staging_dir = temp_dir.join(format!("{}.{}.staging", extension_id, version));
 
-    let response = reqwest::get(&download_url)
-        .await
-        .map_err(|error| format!("Failed to download extension: {}", error))?;
-
-    if !response.status().is_success() {
-        return Err(format!(
-            "Download failed with status: {}",
-            response.status()
-        ));
+    if staging_dir.exists() {
+        remove_dir_force(&staging_dir)?;
     }
+    fs::create_dir_all(&staging_dir)
+        .map_err(|error| format!("Failed to create staging directory: {}", error))?;
 
-    let bytes = response
-        .bytes()
-        .await
-        .map_err(|error| format!("Failed to read response: {}", error))?;
+    let bytes = download_url_bytes(
+        validated_url.as_str(),
+        MAX_EXTENSION_ARCHIVE_BYTES,
+        "download extension",
+        "extension response",
+    )
+    .await?;
     verify_integrity(&bytes, integrity.as_deref())?;
 
     let mut file = fs::File::create(&zip_path)
@@ -574,9 +739,13 @@ pub async fn download_extension(
     file.write_all(&bytes)
         .map_err(|error| format!("Failed to write zip file: {}", error))?;
 
-    extract_zip(&zip_path, &extension_dir)?;
+    extract_zip(&zip_path, &staging_dir)?;
+
+    terminate_all_extension_processes(&extension_id);
+    replace_extension_dir(&staging_dir, &extension_dir)?;
 
     fs::remove_file(&zip_path).ok();
+    remove_dir_force(&staging_dir).ok();
 
     Ok(ExtensionOperationResult {
         success: true,
@@ -629,6 +798,72 @@ fn copy_dir_recursive(src: &Path, dst: &Path) -> Result<(), String> {
     Ok(())
 }
 
+fn next_managed_temp_dir(base_dir: &Path, prefix: &str) -> Result<PathBuf, String> {
+    let timestamp = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|duration| duration.as_millis())
+        .unwrap_or(0);
+    let dir_name = base_dir
+        .file_name()
+        .map(|name| name.to_string_lossy().to_string())
+        .unwrap_or_else(|| "extension".to_string());
+    let parent_dir = base_dir
+        .parent()
+        .ok_or_else(|| "Cannot determine managed directory parent".to_string())?;
+
+    Ok(parent_dir.join(format!(".{}.{}.{}", dir_name, prefix, timestamp)))
+}
+
+fn replace_extension_dir(staged_dir: &Path, target_dir: &Path) -> Result<(), String> {
+    let backup_dir = next_managed_temp_dir(target_dir, "backup")?;
+    let had_existing_target = target_dir.exists();
+
+    if had_existing_target {
+        let existing_bin_dir = target_dir.join("bin");
+        let staged_bin_dir = staged_dir.join("bin");
+        if existing_bin_dir.exists() && !staged_bin_dir.exists() {
+            copy_dir_recursive(&existing_bin_dir, &staged_bin_dir)?;
+        }
+
+        if backup_dir.exists() {
+            remove_dir_force(&backup_dir)?;
+        }
+
+        fs::rename(target_dir, &backup_dir).map_err(|error| {
+            format!("Failed to back up existing extension directory: {}", error)
+        })?;
+    }
+
+    match fs::rename(staged_dir, target_dir) {
+        Ok(_) => {
+            if had_existing_target && backup_dir.exists() {
+                if let Err(error) = remove_dir_force(&backup_dir) {
+                    log::warn!(
+                        "Failed to remove extension backup directory {}: {}",
+                        backup_dir.display(),
+                        error
+                    );
+                }
+            }
+
+            Ok(())
+        }
+        Err(error) => {
+            if had_existing_target && backup_dir.exists() && !target_dir.exists() {
+                if let Err(restore_error) = fs::rename(&backup_dir, target_dir) {
+                    log::warn!(
+                        "Failed to restore extension backup directory {}: {}",
+                        backup_dir.display(),
+                        restore_error
+                    );
+                }
+            }
+
+            Err(format!("Failed to replace extension directory: {}", error))
+        }
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct LocalExtensionInstallResult {
     pub success: bool,
@@ -641,6 +876,7 @@ pub struct LocalExtensionInstallResult {
 pub async fn install_local_extension(
     app_handle: tauri::AppHandle,
     source_path: String,
+    expected_extension_id: Option<String>,
 ) -> Result<LocalExtensionInstallResult, String> {
     let source_dir = PathBuf::from(&source_path);
 
@@ -679,20 +915,37 @@ pub async fn install_local_extension(
         .ok_or_else(|| format!("{} missing required 'id' field", EXTENSION_MANIFEST_FILE))?
         .to_string();
 
+    if let Some(expected_id) = expected_extension_id.as_ref() {
+        if expected_id != &extension_id {
+            return Ok(LocalExtensionInstallResult {
+                success: false,
+                extension_id: Some(extension_id),
+                version: None,
+                error: Some(
+                    "Selected extension id does not match the expected extension".to_string(),
+                ),
+            });
+        }
+    }
+
     let version = manifest
         .get("version")
         .and_then(|version| version.as_str())
         .unwrap_or("0.0.0")
         .to_string();
 
+    let _install_lock = acquire_extension_install_lock(&extension_id).await?;
     let extension_dir = get_extension_dir(&app_handle, &extension_id)?;
+    let staging_dir = next_managed_temp_dir(&extension_dir, "staging")?;
 
-    if extension_dir.exists() {
-        terminate_all_extension_processes(&extension_id);
-        clear_extension_dir_preserving_bin(&extension_dir)?;
+    if staging_dir.exists() {
+        remove_dir_force(&staging_dir)?;
     }
 
-    copy_dir_recursive(&source_dir, &extension_dir)?;
+    copy_dir_recursive(&source_dir, &staging_dir)?;
+    terminate_all_extension_processes(&extension_id);
+    replace_extension_dir(&staging_dir, &extension_dir)?;
+    remove_dir_force(&staging_dir).ok();
 
     Ok(LocalExtensionInstallResult {
         success: true,
@@ -770,7 +1023,9 @@ pub async fn get_installed_extensions(
 pub async fn read_extension_manifest(
     app_handle: tauri::AppHandle,
     extension_id: String,
+    caller_extension_id: Option<String>,
 ) -> Result<String, String> {
+    authorize_extension_caller(caller_extension_id.as_deref(), &extension_id)?;
     let extension_dir = get_extension_dir(&app_handle, &extension_id)?;
     let manifest_path = extension_dir.join(EXTENSION_MANIFEST_FILE);
 
@@ -790,7 +1045,9 @@ pub async fn read_extension_file(
     app_handle: tauri::AppHandle,
     extension_id: String,
     file_path: String,
+    caller_extension_id: Option<String>,
 ) -> Result<Vec<u8>, String> {
+    authorize_extension_caller(caller_extension_id.as_deref(), &extension_id)?;
     let extension_dir = get_extension_dir(&app_handle, &extension_id)?;
     let full_path = extension_dir.join(&file_path);
 
@@ -821,7 +1078,9 @@ pub async fn extension_path_exists(
     app_handle: tauri::AppHandle,
     extension_id: String,
     file_path: String,
+    caller_extension_id: Option<String>,
 ) -> Result<bool, String> {
+    authorize_extension_caller(caller_extension_id.as_deref(), &extension_id)?;
     let extension_dir = get_extension_dir(&app_handle, &extension_id)?;
     let full_path = extension_dir.join(&file_path);
 
@@ -882,7 +1141,9 @@ pub async fn import_extension_storage_file(
     extension_id: String,
     source_path: String,
     target_relative_path: String,
+    caller_extension_id: Option<String>,
 ) -> Result<String, String> {
+    authorize_extension_caller(caller_extension_id.as_deref(), &extension_id)?;
     let source_file_path = PathBuf::from(&source_path);
     if !source_file_path.exists() {
         return Err(format!("File not found: {}", source_path));
@@ -941,7 +1202,10 @@ pub async fn is_path_within_directory(path: String, directory: String) -> Result
     let canonical_path = match path_value.canonicalize() {
         Ok(canonical) => canonical,
         Err(_) => {
-            let parent = path_value.parent().map(PathBuf::from).unwrap_or_else(|| PathBuf::from("."));
+            let parent = path_value
+                .parent()
+                .map(PathBuf::from)
+                .unwrap_or_else(|| PathBuf::from("."));
             if !parent.exists() {
                 return Ok(false);
             }
@@ -965,7 +1229,10 @@ pub async fn download_extension_file(
     file_path: String,
     url: String,
     integrity: Option<String>,
+    caller_extension_id: Option<String>,
 ) -> Result<ExtensionOperationResult, String> {
+    authorize_extension_caller(caller_extension_id.as_deref(), &extension_id)?;
+    let validated_url = validate_remote_url(&url)?;
     let extension_dir = get_extension_dir(&app_handle, &extension_id)?;
     let full_path = PathBuf::from(&file_path);
 
@@ -1007,21 +1274,13 @@ pub async fn download_extension_file(
         return Err("Access denied: target is outside extension directory".to_string());
     }
 
-    let response = reqwest::get(&url)
-        .await
-        .map_err(|error| format!("Failed to download file: {}", error))?;
-
-    if !response.status().is_success() {
-        return Err(format!(
-            "Download failed with status: {}",
-            response.status()
-        ));
-    }
-
-    let bytes = response
-        .bytes()
-        .await
-        .map_err(|error| format!("Failed to read response: {}", error))?;
+    let bytes = download_url_bytes(
+        validated_url.as_str(),
+        MAX_BINARY_DOWNLOAD_BYTES,
+        "download file",
+        "file response",
+    )
+    .await?;
     verify_integrity(&bytes, integrity.as_deref())?;
 
     let mut file = fs::File::create(&normalized_target)
@@ -1050,9 +1309,7 @@ pub async fn download_extension_file(
 }
 
 fn is_bare_command_name(command_path: &str) -> bool {
-    !command_path.contains('/')
-        && !command_path.contains('\\')
-        && !command_path.is_empty()
+    !command_path.contains('/') && !command_path.contains('\\') && !command_path.is_empty()
 }
 
 fn resolve_from_system_path(command_name: &str) -> Option<PathBuf> {
@@ -1078,10 +1335,7 @@ fn resolve_from_system_path(command_name: &str) -> Option<PathBuf> {
     None
 }
 
-fn build_path_with_extension_binaries(
-    extension_dir: &Path,
-    command_path: &Path,
-) -> String {
+fn build_path_with_extension_binaries(extension_dir: &Path, command_path: &Path) -> String {
     let separator = if cfg!(windows) { ";" } else { ":" };
     let current_path = std::env::var("PATH").unwrap_or_default();
     let mut path_parts: Vec<String> = Vec::new();
@@ -1115,7 +1369,9 @@ pub async fn run_extension_command(
     extension_id: String,
     command_path: String,
     args: Vec<String>,
+    caller_extension_id: Option<String>,
 ) -> Result<ExtensionCommandResult, String> {
+    authorize_extension_caller(caller_extension_id.as_deref(), &extension_id)?;
     let extension_dir = get_extension_dir(&app_handle, &extension_id)?;
     let normalized_extension_dir = extension_dir
         .canonicalize()
@@ -1216,7 +1472,9 @@ pub async fn start_extension_command(
     extension_id: String,
     command_path: String,
     args: Vec<String>,
+    caller_extension_id: Option<String>,
 ) -> Result<String, String> {
+    authorize_extension_caller(caller_extension_id.as_deref(), &extension_id)?;
     let extension_dir = get_extension_dir(&app_handle, &extension_id)?;
     let normalized_extension_dir = extension_dir
         .canonicalize()
@@ -1464,8 +1722,26 @@ fn terminate_process_tree(pid: u32) -> bool {
 }
 
 #[tauri::command]
-pub async fn cancel_extension_command(task_id: String) -> Result<(), String> {
+pub async fn cancel_extension_command(
+    task_id: String,
+    caller_extension_id: Option<String>,
+) -> Result<(), String> {
     log::info!("cancel_extension_command called for task_id: {}", task_id);
+
+    if let Some(caller_id) = caller_extension_id.as_deref() {
+        let command_owner = COMMAND_EXTENSION_MAP
+            .lock()
+            .map_err(|_| "Failed to lock command ownership map".to_string())?
+            .get(&task_id)
+            .cloned();
+
+        match command_owner {
+            Some(owner_extension_id) => {
+                authorize_extension_caller(Some(caller_id), &owner_extension_id)?
+            }
+            None => return Err("Access denied: command task not found".to_string()),
+        }
+    }
 
     let pid = COMMAND_PIDS
         .lock()
@@ -1599,8 +1875,7 @@ fn extract_tag_name_from_entry(entry_chunk: &str) -> Option<String> {
     if let Some(id_start_offset) = entry_chunk.find("<id>") {
         let id_content_start = id_start_offset + "<id>".len();
         if let Some(id_end_offset) = entry_chunk[id_content_start..].find("</id>") {
-            let id_text =
-                entry_chunk[id_content_start..id_content_start + id_end_offset].trim();
+            let id_text = entry_chunk[id_content_start..id_content_start + id_end_offset].trim();
             if let Some(last_slash) = id_text.rfind('/') {
                 let tag_name = id_text[last_slash + 1..].trim();
                 if !tag_name.is_empty() {
@@ -1668,12 +1943,13 @@ pub struct FetchUrlResult {
 
 #[tauri::command]
 pub async fn fetch_url_text(url: String) -> Result<FetchUrlResult, String> {
+    let validated_url = validate_remote_url(&url)?;
     let client = reqwest::Client::builder()
         .build()
         .map_err(|error| format!("Failed to create HTTP client: {}", error))?;
 
     let response = client
-        .get(&url)
+        .get(validated_url)
         .header("User-Agent", "sigma-file-manager")
         .send()
         .await
@@ -1682,10 +1958,9 @@ pub async fn fetch_url_text(url: String) -> Result<FetchUrlResult, String> {
     let status = response.status().as_u16();
     let ok = response.status().is_success();
 
-    let body = response
-        .text()
-        .await
-        .map_err(|error| format!("Failed to read response body: {}", error))?;
+    let body_bytes =
+        read_response_bytes_with_limit(response, MAX_TEXT_FETCH_BYTES, "response body").await?;
+    let body = String::from_utf8_lossy(&body_bytes).to_string();
 
     Ok(FetchUrlResult { ok, status, body })
 }
@@ -1831,7 +2106,9 @@ pub async fn get_extension_binary_path(
     extension_id: String,
     binary_id: String,
     executable_name: String,
+    caller_extension_id: Option<String>,
 ) -> Result<Option<String>, String> {
+    authorize_extension_caller(caller_extension_id.as_deref(), &extension_id)?;
     let binary_dir = get_extension_binary_dir(&app_handle, &extension_id, &binary_id)?;
     let binary_path = resolve_binary_file_path(&binary_dir, &executable_name)?;
 
@@ -1851,6 +2128,8 @@ pub async fn download_extension_binary(
     executable_name: String,
     integrity: Option<String>,
 ) -> Result<String, String> {
+    require_integrity(&integrity, "remote extension binary downloads")?;
+    let validated_url = validate_remote_url(&download_url)?;
     let binary_dir = get_extension_binary_dir(&app_handle, &extension_id, &binary_id)?;
     let binary_path = resolve_binary_file_path(&binary_dir, &executable_name)?;
 
@@ -1867,21 +2146,13 @@ pub async fn download_extension_binary(
         }
     }
 
-    let response = reqwest::get(&download_url)
-        .await
-        .map_err(|error| format!("Failed to download binary: {}", error))?;
-
-    if !response.status().is_success() {
-        return Err(format!(
-            "Binary download failed with status: {}",
-            response.status()
-        ));
-    }
-
-    let bytes = response
-        .bytes()
-        .await
-        .map_err(|error| format!("Failed to read binary response: {}", error))?;
+    let bytes = download_url_bytes(
+        validated_url.as_str(),
+        MAX_BINARY_DOWNLOAD_BYTES,
+        "download binary",
+        "binary response",
+    )
+    .await?;
     verify_integrity(&bytes, integrity.as_deref())?;
 
     let mut file = fs::File::create(&binary_path)
@@ -1913,13 +2184,16 @@ pub async fn download_and_extract_extension_binary(
     executable_name: String,
     integrity: Option<String>,
 ) -> Result<String, String> {
+    require_integrity(&integrity, "remote extension binary downloads")?;
+    let validated_url = validate_remote_url(&download_url)?;
     let binary_dir = get_extension_binary_dir(&app_handle, &extension_id, &binary_id)?;
     let binary_path = resolve_binary_file_path(&binary_dir, &executable_name)?;
     let staging_root_dir = next_binary_temp_dir(&binary_dir, "staging")?;
     let staging_extract_dir = staging_root_dir.join("contents");
-    let staged_binary_path = staging_extract_dir.join(
-        validate_binary_relative_path(&executable_name, "binary executable path")?,
-    );
+    let staged_binary_path = staging_extract_dir.join(validate_binary_relative_path(
+        &executable_name,
+        "binary executable path",
+    )?);
 
     prepare_binary_parent_dir(&binary_dir)?;
 
@@ -1937,7 +2211,7 @@ pub async fn download_and_extract_extension_binary(
         .map_err(|error| format!("Failed to create HTTP client: {}", error))?;
 
     let response = client
-        .get(&download_url)
+        .get(validated_url)
         .send()
         .await
         .map_err(|error| format!("Failed to download binary archive: {}", error))?;
@@ -1950,10 +2224,8 @@ pub async fn download_and_extract_extension_binary(
         ));
     }
 
-    let bytes = response
-        .bytes()
-        .await
-        .map_err(|error| format!("Failed to read response: {}", error))?;
+    let bytes =
+        read_response_bytes_with_limit(response, MAX_BINARY_DOWNLOAD_BYTES, "response").await?;
     verify_integrity(&bytes, integrity.as_deref())?;
 
     let mut file = fs::File::create(&zip_path)
@@ -1996,7 +2268,9 @@ pub async fn remove_extension_binary(
     app_handle: tauri::AppHandle,
     extension_id: String,
     binary_id: String,
+    caller_extension_id: Option<String>,
 ) -> Result<(), String> {
+    authorize_extension_caller(caller_extension_id.as_deref(), &extension_id)?;
     let binary_dir = get_extension_binary_dir(&app_handle, &extension_id, &binary_id)?;
 
     if binary_dir.exists() {
@@ -2013,7 +2287,9 @@ pub async fn extension_binary_exists(
     extension_id: String,
     binary_id: String,
     executable_name: String,
+    caller_extension_id: Option<String>,
 ) -> Result<bool, String> {
+    authorize_extension_caller(caller_extension_id.as_deref(), &extension_id)?;
     let binary_dir = get_extension_binary_dir(&app_handle, &extension_id, &binary_id)?;
     let binary_path = resolve_binary_file_path(&binary_dir, &executable_name)?;
     Ok(binary_path.exists())
@@ -2058,6 +2334,7 @@ pub async fn download_shared_binary(
     version: Option<String>,
     progress_event_id: Option<String>,
 ) -> Result<String, String> {
+    require_integrity(&integrity, "remote shared binary downloads")?;
     let binary_dir = get_shared_binary_dir(&app_handle, &binary_id, version.as_deref())?;
     let binary_path = resolve_binary_file_path(&binary_dir, &executable_name)?;
 
@@ -2139,6 +2416,7 @@ async fn run_download_shared_binary(
     version: Option<String>,
     progress_event_id: Option<String>,
 ) -> Result<String, String> {
+    let validated_url = validate_remote_url(&download_url)?;
     let binary_dir = get_shared_binary_dir(&app_handle, &binary_id, version.as_deref())?;
     let binary_path = resolve_binary_file_path(&binary_dir, &executable_name)?;
 
@@ -2161,7 +2439,7 @@ async fn run_download_shared_binary(
         .map_err(|error| format!("Failed to create HTTP client: {}", error))?;
 
     let response = client
-        .get(&download_url)
+        .get(validated_url)
         .send()
         .await
         .map_err(|error| format!("Failed to download binary: {}", error))?;
@@ -2174,6 +2452,12 @@ async fn run_download_shared_binary(
     }
 
     let total = response.content_length();
+    if total.unwrap_or(0) > MAX_BINARY_DOWNLOAD_BYTES {
+        return Err(format!(
+            "Download exceeds size limit of {} bytes",
+            MAX_BINARY_DOWNLOAD_BYTES
+        ));
+    }
     if let Some(ref progress_id) = progress_event_id {
         let payload = BinaryDownloadProgress {
             progress_event_id: progress_id.clone(),
@@ -2189,8 +2473,15 @@ async fn run_download_shared_binary(
     let mut last_emit: u64 = 0;
 
     while let Some(chunk_result) = stream.next().await {
-        let chunk = chunk_result.map_err(|error| format!("Failed to read binary stream: {}", error))?;
+        let chunk =
+            chunk_result.map_err(|error| format!("Failed to read binary stream: {}", error))?;
         downloaded += chunk.len() as u64;
+        if downloaded > MAX_BINARY_DOWNLOAD_BYTES {
+            return Err(format!(
+                "Download exceeds size limit of {} bytes",
+                MAX_BINARY_DOWNLOAD_BYTES
+            ));
+        }
         bytes.extend_from_slice(&chunk);
 
         if let Some(ref progress_id) = progress_event_id {
@@ -2247,6 +2538,7 @@ pub async fn download_and_extract_shared_binary(
     version: Option<String>,
     progress_event_id: Option<String>,
 ) -> Result<String, String> {
+    require_integrity(&integrity, "remote shared binary downloads")?;
     let binary_dir = get_shared_binary_dir(&app_handle, &binary_id, version.as_deref())?;
     let binary_path = resolve_binary_file_path(&binary_dir, &executable_name)?;
 
@@ -2328,13 +2620,15 @@ async fn run_download_and_extract_shared_binary(
     version: Option<String>,
     progress_event_id: Option<String>,
 ) -> Result<String, String> {
+    let validated_url = validate_remote_url(&download_url)?;
     let binary_dir = get_shared_binary_dir(&app_handle, &binary_id, version.as_deref())?;
     let binary_path = resolve_binary_file_path(&binary_dir, &executable_name)?;
     let staging_root_dir = next_binary_temp_dir(&binary_dir, "staging")?;
     let staging_extract_dir = staging_root_dir.join("contents");
-    let staged_binary_path = staging_extract_dir.join(
-        validate_binary_relative_path(&executable_name, "binary executable path")?,
-    );
+    let staged_binary_path = staging_extract_dir.join(validate_binary_relative_path(
+        &executable_name,
+        "binary executable path",
+    )?);
 
     prepare_binary_parent_dir(&binary_dir)?;
 
@@ -2352,7 +2646,7 @@ async fn run_download_and_extract_shared_binary(
         .map_err(|error| format!("Failed to create HTTP client: {}", error))?;
 
     let response = client
-        .get(&download_url)
+        .get(validated_url)
         .send()
         .await
         .map_err(|error| format!("Failed to download binary archive: {}", error))?;
@@ -2366,6 +2660,13 @@ async fn run_download_and_extract_shared_binary(
     }
 
     let total = response.content_length();
+    if total.unwrap_or(0) > MAX_BINARY_DOWNLOAD_BYTES {
+        remove_dir_force(&staging_root_dir).ok();
+        return Err(format!(
+            "Download exceeds size limit of {} bytes",
+            MAX_BINARY_DOWNLOAD_BYTES
+        ));
+    }
     if let Some(ref progress_id) = progress_event_id {
         let payload = BinaryDownloadProgress {
             progress_event_id: progress_id.clone(),
@@ -2381,8 +2682,16 @@ async fn run_download_and_extract_shared_binary(
     let mut last_emit: u64 = 0;
 
     while let Some(chunk_result) = stream.next().await {
-        let chunk = chunk_result.map_err(|error| format!("Failed to read archive stream: {}", error))?;
+        let chunk =
+            chunk_result.map_err(|error| format!("Failed to read archive stream: {}", error))?;
         downloaded += chunk.len() as u64;
+        if downloaded > MAX_BINARY_DOWNLOAD_BYTES {
+            remove_dir_force(&staging_root_dir).ok();
+            return Err(format!(
+                "Download exceeds size limit of {} bytes",
+                MAX_BINARY_DOWNLOAD_BYTES
+            ));
+        }
         bytes.extend_from_slice(&chunk);
 
         if let Some(ref progress_id) = progress_event_id {
@@ -2453,7 +2762,7 @@ pub async fn remove_shared_binary(
     let binary_dir = get_shared_binary_dir(&app_handle, &binary_id, version.as_deref())?;
 
     if binary_dir.exists() {
-        fs::remove_dir_all(&binary_dir)
+        remove_dir_force(&binary_dir)
             .map_err(|error| format!("Failed to remove shared binary directory: {}", error))?;
     }
 
@@ -2473,9 +2782,7 @@ pub async fn shared_binary_exists(
 }
 
 #[tauri::command]
-pub async fn get_shared_binaries_base_dir(
-    app_handle: tauri::AppHandle,
-) -> Result<String, String> {
+pub async fn get_shared_binaries_base_dir(app_handle: tauri::AppHandle) -> Result<String, String> {
     let binaries_dir = get_shared_binaries_dir(&app_handle)?;
     Ok(binaries_dir.to_string_lossy().to_string())
 }

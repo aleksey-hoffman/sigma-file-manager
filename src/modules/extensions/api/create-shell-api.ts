@@ -2,9 +2,9 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
 import type { ExtensionContext } from '@/modules/extensions/api/extension-context';
+import { invokeAsExtension } from '@/modules/extensions/runtime/extension-invoke';
 
 export function createShellAPI(context: ExtensionContext) {
   return {
@@ -15,9 +15,9 @@ export function createShellAPI(context: ExtensionContext) {
         throw new Error(context.t('extensions.api.permissionDenied', { permission: 'shell' }));
       }
 
-      return invoke<{ code: number;
+      return invokeAsExtension<{ code: number;
         stdout: string;
-        stderr: string; }>('run_extension_command', {
+        stderr: string; }>(context.extensionId, 'run_extension_command', {
         extensionId: context.extensionId,
         commandPath,
         args: args || [],
@@ -40,7 +40,7 @@ export function createShellAPI(context: ExtensionContext) {
         throw new Error(context.t('extensions.api.permissionDenied', { permission: 'shell' }));
       }
 
-      const taskId = await invoke<string>('start_extension_command', {
+      const taskId = await invokeAsExtension<string>(context.extensionId, 'start_extension_command', {
         extensionId: context.extensionId,
         commandPath,
         args: args || [],
@@ -88,7 +88,7 @@ export function createShellAPI(context: ExtensionContext) {
 
       async function cancel(): Promise<void> {
         try {
-          await invoke('cancel_extension_command', { taskId });
+          await invokeAsExtension<void>(context.extensionId, 'cancel_extension_command', { taskId });
         }
         catch (error) {
           if (rejectResult) rejectResult(error);
@@ -106,7 +106,7 @@ export function createShellAPI(context: ExtensionContext) {
         throw new Error(context.t('extensions.api.permissionDenied', { permission: 'shell' }));
       }
 
-      return invoke<number>('rename_part_files_to_ts', { directory });
+      return invokeAsExtension<number>(context.extensionId, 'rename_part_files_to_ts', { directory });
     },
   };
 }

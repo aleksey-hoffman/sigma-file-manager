@@ -129,7 +129,8 @@
           "fs.write",
           "notifications",
           "dialogs",
-          "shell"
+          "shell",
+          "clipboard"
         ]
       }
     },
@@ -168,11 +169,21 @@
               "title"
             ],
             "properties": {
-              "id": { "type": "string" },
-              "title": { "type": "string" },
-              "description": { "type": "string" },
-              "icon": { "type": "string" },
-              "shortcut": { "type": "string" }
+              "id": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "icon": {
+                "type": "string"
+              },
+              "shortcut": {
+                "type": "string"
+              }
             }
           }
         },
@@ -185,11 +196,21 @@
               "title"
             ],
             "properties": {
-              "id": { "type": "string" },
-              "title": { "type": "string" },
-              "icon": { "type": "string" },
-              "group": { "type": "string" },
-              "order": { "type": "number" },
+              "id": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "icon": {
+                "type": "string"
+              },
+              "group": {
+                "type": "string"
+              },
+              "order": {
+                "type": "number"
+              },
               "when": {
                 "type": "object",
                 "properties": {
@@ -230,10 +251,18 @@
               "icon"
             ],
             "properties": {
-              "id": { "type": "string" },
-              "title": { "type": "string" },
-              "icon": { "type": "string" },
-              "order": { "type": "number" },
+              "id": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "icon": {
+                "type": "string"
+              },
+              "order": {
+                "type": "number"
+              },
               "url": {
                 "type": "string",
                 "format": "uri"
@@ -251,9 +280,15 @@
               "items"
             ],
             "properties": {
-              "id": { "type": "string" },
-              "title": { "type": "string" },
-              "icon": { "type": "string" },
+              "id": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "icon": {
+                "type": "string"
+              },
               "items": {
                 "type": "array",
                 "items": {
@@ -263,11 +298,21 @@
                     "title"
                   ],
                   "properties": {
-                    "id": { "type": "string" },
-                    "title": { "type": "string" },
-                    "icon": { "type": "string" },
-                    "commandId": { "type": "string" },
-                    "separator": { "type": "boolean" }
+                    "id": {
+                      "type": "string"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "icon": {
+                      "type": "string"
+                    },
+                    "commandId": {
+                      "type": "string"
+                    },
+                    "separator": {
+                      "type": "boolean"
+                    }
                   }
                 }
               }
@@ -357,8 +402,12 @@
               "key"
             ],
             "properties": {
-              "command": { "type": "string" },
-              "key": { "type": "string" },
+              "command": {
+                "type": "string"
+              },
+              "key": {
+                "type": "string"
+              },
               "when": {
                 "type": "string",
                 "enum": [

@@ -147,12 +147,12 @@ const formattedTitle = computed(() => {
 }
 
 .sigma-ui-toast-header__subtitle {
-  overflow: hidden;
   width: 100%;
+  min-width: 0;
   color: hsl(var(--foreground) / 75%);
   font-size: 0.875rem;
   font-weight: 500;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
+  white-space: normal;
 }
 </style>

@@ -6,17 +6,15 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
-import { convertFileSrc, invoke } from '@tauri-apps/api/core';
+import { convertFileSrc } from '@tauri-apps/api/core';
 import { useExtensionsStore } from '@/stores/runtime/extensions';
-import { useExtensionsStorageStore } from '@/stores/storage/extensions';
 import { PageIframeLayout } from '@/layouts';
-import ExtensionEmbed from '@/modules/extensions/components/extension-embed.vue';
+import { invokeAsExtension } from '@/modules/extensions/runtime/extension-invoke';
 
 defineOptions({ name: 'ExtensionPage' });
 
 const route = useRoute();
 const extensionsStore = useExtensionsStore();
-const extensionsStorageStore = useExtensionsStorageStore();
 
 const fullPageId = computed(() => route.params.fullPageId as string);
 
@@ -26,25 +24,14 @@ const pageRegistration = computed(() => {
   );
 });
 
-const extensionIconPath = computed(() => {
-  const registration = pageRegistration.value;
-  if (!registration) return undefined;
-  const installed = extensionsStorageStore.extensionsData.installedExtensions[registration.extensionId];
-  return installed?.manifest?.icon;
-});
-
 const rawUrl = computed(() => pageRegistration.value?.page.url ?? '');
 const iframeUrl = ref('');
 const iframeSrcdoc = ref('');
 
-const isExtensionEmbed = computed(
-  () => {
-    const reg = pageRegistration.value;
-    if (!reg) return false;
-    const url = rawUrl.value;
-    return !!(url && (url.endsWith('.js') || url === 'embed'));
-  },
-);
+const isExtensionEmbed = computed(() => {
+  const url = rawUrl.value;
+  return !!(url && (url.endsWith('.js') || url === 'embed'));
+});
 
 async function resolveIframeContent() {
   const url = rawUrl.value;
@@ -70,7 +57,7 @@ async function resolveIframeContent() {
   }
 
   try {
-    const fileBytes = await invoke<number[]>('read_extension_file', {
+    const fileBytes = await invokeAsExtension<number[]>(registration.extensionId, 'read_extension_file', {
       extensionId: registration.extensionId,
       filePath: url.replace(/^\//, ''),
     });
@@ -79,7 +66,7 @@ async function resolveIframeContent() {
     iframeUrl.value = '';
   }
   catch {
-    const extensionPath = await invoke<string>('get_extension_path', {
+    const extensionPath = await invokeAsExtension<string>(registration.extensionId, 'get_extension_path', {
       extensionId: registration.extensionId,
     });
     const fullPath = `${extensionPath}/${url.replace(/^\//, '')}`;
@@ -92,18 +79,11 @@ watch([rawUrl, fullPageId], resolveIframeContent, { immediate: true });
 </script>
 
 <template>
-  <PageIframeLayout class="extension-page">
-    <ExtensionEmbed
-      v-if="isExtensionEmbed && pageRegistration"
-      class="extension-page__embed"
-      :extension-id="pageRegistration.extensionId"
-      :embed-script-path="rawUrl"
-      :icon-path="extensionIconPath"
-    />
-    <div
-      v-else
-      class="extension-page__iframe-wrapper"
-    >
+  <PageIframeLayout
+    v-if="!isExtensionEmbed"
+    class="extension-page"
+  >
+    <div class="extension-page__iframe-wrapper">
       <iframe
         v-if="iframeUrl || iframeSrcdoc"
         class="extension-page__iframe"
@@ -127,15 +107,6 @@ watch([rawUrl, fullPageId], resolveIframeContent, { immediate: true });
   min-height: 0;
   flex: 1;
   flex-direction: column;
-}
-
-.extension-page__embed {
-  display: flex;
-  overflow: hidden;
-  min-height: 0;
-  flex: 1;
-  flex-direction: column;
-  border-radius: var(--radius-sm);
 }
 
 .extension-page__iframe-wrapper {

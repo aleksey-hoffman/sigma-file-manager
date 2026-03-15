@@ -19,16 +19,24 @@ import { createStorageAPI } from '@/modules/extensions/api/create-storage-api';
 import { createSettingsAPI } from '@/modules/extensions/api/create-settings-api';
 import { createPlatformAPI } from '@/modules/extensions/api/create-platform-api';
 import { createBinaryAPI } from '@/modules/extensions/api/create-binary-api';
-import { createI18nAPI } from '@/modules/extensions/api/create-i18n-api';
+import { createPathAPI } from '@/modules/extensions/api/create-path-api';
+import { createI18nAPI, type ExtensionLocaleMessages } from '@/modules/extensions/api/create-i18n-api';
+
+export type RuntimeExtensionAPI = SigmaExtensionAPI & {
+  i18n: SigmaExtensionAPI['i18n'] & {
+    getLocale(): string;
+    loadFromPath(basePath: string): Promise<ExtensionLocaleMessages>;
+  };
+};
 
 export function createExtensionAPI(
   extensionId: string,
   permissions: ExtensionPermission[],
-): SigmaExtensionAPI {
+): RuntimeExtensionAPI {
   const context = createExtensionContext(extensionId, permissions);
   const commandsAPI = createCommandsAPI(context);
 
-  const api: SigmaExtensionAPI = {
+  const api: RuntimeExtensionAPI = {
     i18n: createI18nAPI(context),
     contextMenu: createContextMenuAPI(context),
     sidebar: createSidebarAPI(context),
@@ -42,6 +50,7 @@ export function createExtensionAPI(
     settings: createSettingsAPI(context),
     storage: createStorageAPI(context),
     platform: createPlatformAPI(),
+    path: createPathAPI(),
     binary: createBinaryAPI(context),
   };
 

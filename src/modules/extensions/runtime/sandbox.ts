@@ -23,6 +23,7 @@ const BLOCKED_GLOBALS = [
   'indexedDB',
   'document',
   'window',
+  'globalThis',
   'parent',
   'top',
   'frames',
@@ -144,7 +145,7 @@ export function createSandbox(
     },
     has(target, prop: string) {
       if (BLOCKED_GLOBALS.includes(prop)) {
-        return false;
+        return true;
       }
 
       return prop in target;
@@ -241,6 +242,38 @@ export function validateExtensionCode(code: string): { valid: boolean;
     {
       pattern: /\bWebSocket\b/g,
       message: 'WebSocket is not allowed',
+    },
+    {
+      pattern: /(?<![\w$.])self\b/g,
+      message: 'Direct self access is not allowed',
+    },
+    {
+      pattern: /(?<![\w$.])globalThis\b/g,
+      message: 'Direct globalThis access is not allowed',
+    },
+    {
+      pattern: /(?<![\w$.])postMessage\s*\(/g,
+      message: 'Direct postMessage() is not allowed',
+    },
+    {
+      pattern: /(?<![\w$.])addEventListener\s*\(/g,
+      message: 'Direct addEventListener() is not allowed',
+    },
+    {
+      pattern: /(?<![\w$.])removeEventListener\s*\(/g,
+      message: 'Direct removeEventListener() is not allowed',
+    },
+    {
+      pattern: /(?<![\w$.])dispatchEvent\s*\(/g,
+      message: 'Direct dispatchEvent() is not allowed',
+    },
+    {
+      pattern: /\bimportScripts\b/g,
+      message: 'importScripts is not allowed',
+    },
+    {
+      pattern: /(?<![\w$.])navigator\b/g,
+      message: 'Direct navigator access is not allowed',
     },
   ];
 
