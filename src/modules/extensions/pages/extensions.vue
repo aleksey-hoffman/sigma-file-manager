@@ -403,7 +403,7 @@ onUnmounted(() => {
       </TabsContent>
     </Tabs>
 
-    <Teleport to="body">
+    <Teleport to=".app-layout__content">
       <div
         v-if="showDetail && selectedExtension"
         class="extension-modal"
@@ -515,6 +515,7 @@ onUnmounted(() => {
 
 .extension-modal {
   position: fixed;
+  z-index: 2;
   overflow: hidden;
   inset: 0;
   opacity: 1;

@@ -14,8 +14,12 @@ import CommandPaletteToolbarButton from '@/modules/extensions/components/command
 
 const route = useRoute();
 
-const isTransparent = computed(() => {
+const isAbsolute = computed(() => {
   return route.name === 'home';
+});
+
+const isBlurred = computed(() => {
+  return route.name === 'extensions';
 });
 
 const shouldShowGlobalSearchButton = computed(() => {
@@ -30,7 +34,10 @@ const shouldShowStatusCenter = computed(() => {
 <template>
   <div
     class="window-toolbar"
-    :class="{ 'window-toolbar--transparent': isTransparent }"
+    :class="{
+      'window-toolbar--blurred': isBlurred,
+      'window-toolbar--absolute': isAbsolute
+    }"
   >
     <div
       data-tauri-drag-region
@@ -81,11 +88,14 @@ const shouldShowStatusCenter = computed(() => {
   height: var(--window-toolbar-height);
   align-items: center;
   justify-content: space-between;
-  background: var(--window-toolbar);
-  transition: background-color 0.2s ease;
+  background-color: transparent;
 }
 
-.window-toolbar--transparent {
+.window-toolbar--blurred {
+  backdrop-filter: blur(32px);
+}
+
+.window-toolbar--absolute {
   position: absolute;
   top: 0;
   right: 0;
