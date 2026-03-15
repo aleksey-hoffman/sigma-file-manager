@@ -151,7 +151,7 @@ function handleUpdateClick(event: MouseEvent) {
 
       <div class="extension-card__actions">
         <Button
-          v-if="!extension.isInstalled"
+          v-if="!extension.isInstalled || isInstalling"
           variant="default"
           size="xs"
           :disabled="(isInstallDisabled ?? isInstalling) || !isPlatformCompatible"

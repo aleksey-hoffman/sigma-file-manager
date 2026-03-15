@@ -437,7 +437,7 @@ onMounted(() => {
         </Button>
 
         <div
-          v-if="extension.isInstalled"
+          v-if="extension.isInstalled && !isInstalling"
           class="extension-detail__enabled-toggle"
         >
           <span class="extension-detail__enabled-label">
@@ -459,7 +459,7 @@ onMounted(() => {
         @leave="handleStatusLeave"
       >
         <div
-          v-if="extension.isInstalled && !extension.isEnabled"
+          v-if="extension.isInstalled && !isInstalling && !extension.isEnabled"
           class="extension-detail__status-alert-wrapper"
           data-animate="status-alert"
         >
@@ -607,7 +607,7 @@ onMounted(() => {
             <span>{{ t('extensions.platformWarning', { platforms: extensionPlatforms.map(getPlatformDisplayName).join(', ') }) }}</span>
           </div>
 
-          <template v-if="!extension.isInstalled">
+          <template v-if="!extension.isInstalled || isInstalling">
             <Button
               class="extension-detail__controls-button"
               size="sm"

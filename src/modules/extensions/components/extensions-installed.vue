@@ -289,7 +289,7 @@ function getBinariesPreview(extension: ExtensionWithManifest): string {
                 variant="ghost"
                 size="icon"
                 :title="t('extensions.reinstall')"
-                :disabled="refreshingExtensions?.has(extension.id)"
+                :disabled="refreshingExtensions?.has(extension.id) || installingExtensions.has(extension.id)"
                 @click.stop="emit('refresh', extension.id)"
               >
                 <RefreshCwIcon
@@ -305,7 +305,7 @@ function getBinariesPreview(extension: ExtensionWithManifest): string {
               <Button
                 variant="ghost"
                 size="icon"
-                :disabled="uninstallingExtensions.has(extension.id)"
+                :disabled="uninstallingExtensions.has(extension.id) || installingExtensions.has(extension.id)"
                 @click.stop="emit('uninstall', extension.id)"
               >
                 <TrashIcon :size="16" />
@@ -315,7 +315,7 @@ function getBinariesPreview(extension: ExtensionWithManifest): string {
             <Switch
               @click.stop
               :model-value="extension.isEnabled"
-              :disabled="extension.isBroken"
+              :disabled="extension.isBroken || installingExtensions.has(extension.id)"
               @update:model-value="emit('toggle', extension.id)"
             />
           </div>

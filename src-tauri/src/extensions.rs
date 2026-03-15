@@ -448,6 +448,132 @@ fn extract_zip(zip_path: &Path, dest_dir: &Path) -> Result<(), String> {
     Ok(())
 }
 
+fn extract_tar_from_reader<R: Read>(reader: R, dest_dir: &Path) -> Result<(), String> {
+    let mut archive_bytes = Vec::new();
+    let mut buf_reader = io::BufReader::new(reader);
+    buf_reader
+        .read_to_end(&mut archive_bytes)
+        .map_err(|error| format!("Failed to read tar stream: {}", error))?;
+
+    let mut root_dir: Option<PathBuf> = None;
+    {
+        let cursor = io::Cursor::new(&archive_bytes);
+        let mut archive = tar::Archive::new(cursor);
+        for entry_result in archive
+            .entries()
+            .map_err(|error| format!("Failed to read tar entries: {}", error))?
+        {
+            let entry =
+                entry_result.map_err(|error| format!("Failed to read tar entry: {}", error))?;
+            let path = entry
+                .path()
+                .map_err(|error| format!("Failed to read tar entry path: {}", error))?
+                .to_path_buf();
+            if !is_safe_archive_relative_path(&path) {
+                return Err("Tar contains unsafe path entry".to_string());
+            }
+            let mut components = path.components();
+            if let Some(first) = components.next() {
+                if components.next().is_some() {
+                    root_dir = Some(PathBuf::from(first.as_os_str()));
+                    break;
+                }
+            }
+        }
+    }
+
+    let cursor = io::Cursor::new(&archive_bytes);
+    let mut archive = tar::Archive::new(cursor);
+    for entry_result in archive
+        .entries()
+        .map_err(|error| format!("Failed to read tar entries: {}", error))?
+    {
+        let mut entry =
+            entry_result.map_err(|error| format!("Failed to read tar entry: {}", error))?;
+        let path = entry
+            .path()
+            .map_err(|error| format!("Failed to read tar entry path: {}", error))?
+            .to_path_buf();
+        if !is_safe_archive_relative_path(&path) {
+            return Err("Tar contains unsafe path entry".to_string());
+        }
+
+        let relative_path = if let Some(root) = &root_dir {
+            path.strip_prefix(root).unwrap_or(&path).to_path_buf()
+        } else {
+            path.clone()
+        };
+
+        if relative_path.as_os_str().is_empty() {
+            continue;
+        }
+
+        let outpath = dest_dir.join(&relative_path);
+        if !outpath.starts_with(dest_dir) {
+            return Err("Tar extraction blocked due to unsafe output path".to_string());
+        }
+
+        let entry_type = entry.header().entry_type();
+        if entry_type.is_dir() {
+            fs::create_dir_all(&outpath)
+                .map_err(|error| format!("Failed to create directory: {}", error))?;
+        } else if entry_type.is_file() {
+            if let Some(parent) = outpath.parent() {
+                if !parent.exists() {
+                    fs::create_dir_all(parent)
+                        .map_err(|error| format!("Failed to create parent directory: {}", error))?;
+                }
+            }
+            let mut outfile = fs::File::create(&outpath)
+                .map_err(|error| format!("Failed to create file: {}", error))?;
+            io::copy(&mut entry, &mut outfile)
+                .map_err(|error| format!("Failed to extract file: {}", error))?;
+        }
+    }
+
+    Ok(())
+}
+
+enum ArchiveFormat {
+    Zip,
+    TarXz,
+    TarGz,
+}
+
+fn detect_archive_format(url: &str) -> Option<ArchiveFormat> {
+    let lower = url.to_lowercase();
+    if lower.ends_with(".zip") {
+        Some(ArchiveFormat::Zip)
+    } else if lower.ends_with(".tar.xz") || lower.ends_with(".txz") {
+        Some(ArchiveFormat::TarXz)
+    } else if lower.ends_with(".tar.gz") || lower.ends_with(".tgz") {
+        Some(ArchiveFormat::TarGz)
+    } else {
+        None
+    }
+}
+
+fn extract_archive(archive_path: &Path, dest_dir: &Path, download_url: &str) -> Result<(), String> {
+    let format = detect_archive_format(download_url)
+        .ok_or_else(|| format!("Unsupported archive format for URL: {}", download_url))?;
+
+    match format {
+        ArchiveFormat::Zip => extract_zip(archive_path, dest_dir),
+        ArchiveFormat::TarXz => {
+            let file = fs::File::open(archive_path)
+                .map_err(|error| format!("Failed to open tar.xz file: {}", error))?;
+            let decoder = xz2::read::XzDecoder::new(file);
+            extract_tar_from_reader(decoder, dest_dir)
+        }
+        ArchiveFormat::TarGz => {
+            let file = fs::File::open(archive_path)
+                .map_err(|error| format!("Failed to open tar.gz file: {}", error))?;
+            let decoder = flate2::read::GzDecoder::new(file);
+            extract_tar_from_reader(decoder, dest_dir)
+        }
+    }
+}
+
 #[tauri::command]
 pub async fn get_extensions_dir(app_handle: tauri::AppHandle) -> Result<String, String> {
     let extensions_dir = get_extensions_base_dir(&app_handle)?;
@@ -2202,7 +2328,7 @@ pub async fn download_and_extract_extension_binary(
     fs::create_dir_all(&staging_extract_dir)
         .map_err(|error| format!("Failed to create staging directory: {}", error))?;
 
-    let zip_path = staging_root_dir.join("download.zip");
+    let archive_path = staging_root_dir.join("download_archive");
 
     let client = reqwest::Client::builder()
         .timeout(Duration::from_secs(900))
@@ -2227,13 +2353,13 @@ pub async fn download_and_extract_extension_binary(
         read_response_bytes_with_limit(response, MAX_BINARY_DOWNLOAD_BYTES, "response").await?;
     verify_integrity(&bytes, integrity.as_deref())?;
 
-    let mut file = fs::File::create(&zip_path)
-        .map_err(|error| format!("Failed to create zip file: {}", error))?;
+    let mut file = fs::File::create(&archive_path)
+        .map_err(|error| format!("Failed to create archive file: {}", error))?;
 
     file.write_all(&bytes)
-        .map_err(|error| format!("Failed to write zip file: {}", error))?;
+        .map_err(|error| format!("Failed to write archive file: {}", error))?;
 
-    extract_zip(&zip_path, &staging_extract_dir)?;
+    extract_archive(&archive_path, &staging_extract_dir, &download_url)?;
 
     if !staged_binary_path.exists() {
         remove_dir_force(&staging_root_dir).ok();
@@ -2637,7 +2763,7 @@ async fn run_download_and_extract_shared_binary(
     fs::create_dir_all(&staging_extract_dir)
         .map_err(|error| format!("Failed to create staging directory: {}", error))?;
 
-    let zip_path = staging_root_dir.join("download.zip");
+    let archive_path = staging_root_dir.join("download_archive");
 
     let client = reqwest::Client::builder()
         .timeout(Duration::from_secs(900))
@@ -2717,13 +2843,13 @@ async fn run_download_and_extract_shared_binary(
 
     verify_integrity(&bytes, integrity.as_deref())?;
 
-    let mut file = fs::File::create(&zip_path)
-        .map_err(|error| format!("Failed to create zip file: {}", error))?;
+    let mut file = fs::File::create(&archive_path)
+        .map_err(|error| format!("Failed to create archive file: {}", error))?;
 
     file.write_all(&bytes)
-        .map_err(|error| format!("Failed to write zip file: {}", error))?;
+        .map_err(|error| format!("Failed to write archive file: {}", error))?;
 
-    extract_zip(&zip_path, &staging_extract_dir)?;
+    extract_archive(&archive_path, &staging_extract_dir, &download_url)?;
 
     if !staged_binary_path.exists() {
         remove_dir_force(&staging_root_dir).ok();

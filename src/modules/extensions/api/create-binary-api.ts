@@ -321,8 +321,8 @@ export function createBinaryAPI(context: ExtensionContext) {
     );
 
     try {
-      const isZipDownload = downloadUrl.toLowerCase().endsWith('.zip');
-      const downloadCommand = isZipDownload
+      const isArchiveDownload = /\.(zip|tar\.xz|txz|tar\.gz|tgz)$/i.test(downloadUrl);
+      const downloadCommand = isArchiveDownload
         ? 'download_and_extract_shared_binary'
         : 'download_shared_binary';
 

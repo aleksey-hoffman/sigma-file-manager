@@ -51,6 +51,9 @@ tauri-plugin-single-instance = "2"
 reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "stream"] }
 futures-util = "0.3"
 zip = "2.2"
+tar = "0.4"
+xz2 = "0.1"
+flate2 = "1.0"
 sha2 = "0.10"
 
 [target.'cfg(unix)'.dependencies]
