@@ -12,6 +12,15 @@ const { writeTextMock } = vi.hoisted(() => ({
   writeTextMock: vi.fn(),
 }));
 
+vi.mock('@tauri-apps/plugin-clipboard-manager', () => ({
+  writeText: writeTextMock,
+  writeImage: vi.fn(),
+}));
+
+vi.mock('@tauri-apps/api/image', () => ({
+  Image: { fromBytes: vi.fn() },
+}));
+
 vi.mock('vue-sonner', () => ({
   toast: {
     custom: vi.fn(),
@@ -71,14 +80,6 @@ function createContext(permissions: ExtensionPermission[] = []): ExtensionContex
 describe('createUiAPI', () => {
   beforeEach(() => {
     writeTextMock.mockReset();
-    Object.defineProperty(globalThis, 'navigator', {
-      configurable: true,
-      value: {
-        clipboard: {
-          writeText: writeTextMock,
-        },
-      },
-    });
   });
 
   it('blocks clipboard copy without permission', async () => {

@@ -34,6 +34,7 @@ pub fn run() {
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .plugin(tauri_plugin_system_fonts::init())
         .plugin(tauri_plugin_drag::init())
+        .plugin(tauri_plugin_clipboard_manager::init())
         .invoke_handler(tauri::generate_handler![
             app_updater::check_for_updates,
             system_tray::reload_webview,

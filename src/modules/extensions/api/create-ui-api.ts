@@ -4,6 +4,8 @@
 
 import { toast } from 'vue-sonner';
 import { createApp, markRaw } from 'vue';
+import { writeText as tauriWriteText, writeImage as tauriWriteImage } from '@tauri-apps/plugin-clipboard-manager';
+import { Image as TauriImage } from '@tauri-apps/api/image';
 import type {
   NotificationOptions,
   DialogOptions,
@@ -62,25 +64,32 @@ export function createUiAPI(context: ExtensionContext) {
         throw new Error(context.t('extensions.api.permissionDenied', { permission: 'clipboard' }));
       }
 
-      await navigator.clipboard.writeText(text);
+      await tauriWriteText(text);
     },
     clipboardWrite: async (items: Record<string, Uint8Array>[]): Promise<void> => {
       if (!context.hasPermission('clipboard')) {
         throw new Error(context.t('extensions.api.permissionDenied', { permission: 'clipboard' }));
       }
 
-      const clipboardItems = items.map((typesData) => {
-        const blobParts: Record<string, Blob> = {};
-
-        for (const [mimeType, data] of Object.entries(typesData)) {
-          const bytes = data instanceof Uint8Array ? data : new Uint8Array(data as ArrayLike<number>);
-          blobParts[mimeType] = new Blob([bytes.buffer as ArrayBuffer], { type: mimeType });
+      for (const typesData of items) {
+        if (typesData['image/png']) {
+          const bytes = typesData['image/png'] instanceof Uint8Array
+            ? typesData['image/png']
+            : new Uint8Array(typesData['image/png'] as ArrayLike<number>);
+          const image = await TauriImage.fromBytes(bytes);
+          await tauriWriteImage(image);
+          return;
         }
 
-        return new ClipboardItem(blobParts);
-      });
-
-      await navigator.clipboard.write(clipboardItems);
+        if (typesData['text/plain']) {
+          const bytes = typesData['text/plain'] instanceof Uint8Array
+            ? typesData['text/plain']
+            : new Uint8Array(typesData['text/plain'] as ArrayLike<number>);
+          const text = new TextDecoder().decode(bytes);
+          await tauriWriteText(text);
+          return;
+        }
+      }
     },
     withProgress: async <T>(
       options: ProgressOptions,

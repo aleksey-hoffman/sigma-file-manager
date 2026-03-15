@@ -55,6 +55,7 @@ tar = "0.4"
 xz2 = "0.1"
 flate2 = "1.0"
 sha2 = "0.10"
+tauri-plugin-clipboard-manager = "2.3.2"
 
 [target.'cfg(unix)'.dependencies]
 libc = "0.2"

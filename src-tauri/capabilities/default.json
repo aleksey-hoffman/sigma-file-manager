@@ -55,6 +55,9 @@
     "global-shortcut:allow-unregister-all",
     "global-shortcut:allow-is-registered",
     "system-fonts:default",
-    "drag:default"
+    "drag:default",
+    "clipboard-manager:allow-write-text",
+    "clipboard-manager:allow-write-image",
+    "clipboard-manager:allow-read-text"
   ]
 }
