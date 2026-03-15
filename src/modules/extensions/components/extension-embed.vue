@@ -224,6 +224,7 @@ onUnmounted(() => {
         ref="iframeRef"
         class="extension-embed__content"
         sandbox="allow-scripts"
+        allow="clipboard-write; clipboard-read"
         title=""
       />
       <Transition name="extension-embed-loader">
