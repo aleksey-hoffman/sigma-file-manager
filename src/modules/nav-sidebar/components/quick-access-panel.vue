@@ -283,18 +283,18 @@ function openTaggedItem(item: TaggedItem) {
 
 <style scoped>
 .quick-access-panel {
-  --_header-height: 45px;
-  --_max-height: calc(100vh - 12px);
+  --header-height: 45px;
+  --max-height: calc(100vh - 12px);
 
   width: var(--quick-access-panel-width);
-  max-height: var(--_max-height);
+  max-height: var(--max-height);
   border: 1px solid hsl(var(--border));
   border-radius: var(--radius-sm);
   box-shadow: var(--shadow-md);
 }
 
 .quick-access-panel__header {
-  height: var(--_header-height);
+  height: var(--header-height);
   padding: 12px 16px;
   border-bottom: 1px solid hsl(var(--border));
 }
@@ -306,7 +306,7 @@ function openTaggedItem(item: TaggedItem) {
 }
 
 .quick-access-panel__scroll {
-  max-height: calc(var(--_max-height) - var(--_header-height));
+  max-height: calc(var(--max-height) - var(--header-height));
 }
 
 .quick-access-panel__scroll :deep(.sigma-ui-scroll-area__viewport) {

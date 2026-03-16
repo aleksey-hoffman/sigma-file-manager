@@ -34,6 +34,7 @@ export function useSystemIcon(params: SystemIconParams) {
     if (isDir.value) {
       return `dir:${path.value.toLowerCase()}:${size.value}`;
     }
+
     const extensionKey = (extension.value || '').toLowerCase();
     return `ext:${extensionKey}:${size.value}`;
   });
