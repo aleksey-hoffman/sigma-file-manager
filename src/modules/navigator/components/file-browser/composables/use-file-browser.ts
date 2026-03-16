@@ -308,33 +308,24 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
     isDragging: drag.isDragging,
   });
 
-  const keyboardNavDefaults = {
-    navigateUp: () => {},
-    navigateDown: () => {},
-    navigateLeft: () => {},
-    navigateRight: () => {},
-    openSelected: () => {},
-    navigateBack: () => {},
-  };
-
-  const keyboardNav = !isExternalMode
-    ? useFileBrowserKeyboardNavigation({
-        entries: dataSource.entries,
-        selectedEntries: selection.selectedEntries,
-        layout: options.layout,
-        selectEntryByPath: selection.selectEntryByPath,
-        goBack: dataSource.goBack,
-        openEntry: async (entry) => {
-          if (entry.is_dir) {
-            await dataSource.navigateToEntry(entry);
-          }
-          else {
-            await dataSource.openFile(entry.path);
-          }
-        },
-        entriesContainerRef,
-      })
-    : keyboardNavDefaults;
+  const keyboardNav = useFileBrowserKeyboardNavigation({
+    entries: dataSource.entries,
+    selectedEntries: selection.selectedEntries,
+    layout: options.layout,
+    selectEntryByPath: selection.selectEntryByPath,
+    goBack: dataSource.goBack,
+    openEntry: isExternalMode
+      ? (entry) => { options.onOpenEntry(entry); }
+      : async (entry) => {
+        if (entry.is_dir) {
+          await dataSource.navigateToEntry(entry);
+        }
+        else {
+          await dataSource.openFile(entry.path);
+        }
+      },
+    entriesContainerRef,
+  });
 
   async function selectFirstEntry() {
     if (dataSource.entries.value.length === 0) return;
