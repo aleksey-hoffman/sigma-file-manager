@@ -512,7 +512,7 @@ onUnmounted(() => {
                 class="address-bar__part"
                 :class="{ 'address-bar__part--last': part.isLast }"
                 :title="part.path"
-                @click.stop="navigateToPart(part.path)"
+                @click.stop="!part.isLast && navigateToPart(part.path)"
               >
                 {{ part.name }}
               </button>
