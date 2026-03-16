@@ -190,15 +190,7 @@ function setPaneRef(element: FileBrowserInstance | null, tabId: string) {
   }
 }
 
-function getActivePaneRef(): FileBrowserInstance | undefined {
-  if (isSearchSelectionActive.value && globalSearchStore.isOpen) {
-    const searchFileBrowser = globalSearchViewRef.value?.getActiveFileBrowser?.();
-
-    if (searchFileBrowser) {
-      return searchFileBrowser;
-    }
-  }
-
+function getNavigatorPaneRef(): FileBrowserInstance | undefined {
   if (!isSplitView.value) {
     const currentTabId = workspacesStore.currentTabGroup?.[0]?.id;
 
@@ -222,6 +214,18 @@ function getActivePaneRef(): FileBrowserInstance | undefined {
   return undefined;
 }
 
+function getActivePaneRef(): FileBrowserInstance | undefined {
+  if (isSearchSelectionActive.value && globalSearchStore.isOpen) {
+    const searchFileBrowser = globalSearchViewRef.value?.getActiveFileBrowser?.();
+
+    if (searchFileBrowser) {
+      return searchFileBrowser;
+    }
+  }
+
+  return getNavigatorPaneRef();
+}
+
 function getPasteTargetPath(): string | undefined {
   if (isSplitView.value && activeTabId.value) {
     const activeTab = workspacesStore.currentTabGroup?.find(
@@ -237,7 +241,7 @@ function getPasteTargetPath(): string | undefined {
 }
 
 async function handleGlobalSearchOpenEntry(entry: DirEntry) {
-  const pane = getActivePaneRef();
+  const pane = getNavigatorPaneRef();
   if (!pane) return;
 
   if (entry.is_dir && pane.navigateToPath) {
@@ -246,8 +250,6 @@ async function handleGlobalSearchOpenEntry(entry: DirEntry) {
   else if (entry.is_file && pane.openFile) {
     await pane.openFile(entry.path);
   }
-
-  globalSearchStore.close();
 }
 
 function handleFilterShortcut() {
