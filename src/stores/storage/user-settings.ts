@@ -131,6 +131,7 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
     globalShortcuts: {},
     focusWindowOnDriveConnected: true,
     preventDropdownCloseFocusReturn: false,
+    quickAccessOnHover: true,
     appUpdates: {
       autoCheck: true,
       lastCheckTimestamp: 0,

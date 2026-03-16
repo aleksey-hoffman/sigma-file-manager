@@ -429,7 +429,9 @@
       "linearHorizontalCentered": "Linéaire {'|'} horizontal {'|'} centré",
       "circular": "Circulaire",
       "preventDropdownCloseFocusReturn": "Empêcher le retour du focus à la fermeture des menus déroulants",
-      "preventDropdownCloseFocusReturnDescription": "Lorsqu'activé, la fermeture d'un menu déroulant (par ex. avec Échap) ne ramènera pas le focus sur le bouton déclencheur, évitant l'affichage du contour de focus et de l'infobulle"
+      "preventDropdownCloseFocusReturnDescription": "Lorsqu'activé, la fermeture d'un menu déroulant (par ex. avec Échap) ne ramènera pas le focus sur le bouton déclencheur, évitant l'affichage du contour de focus et de l'infobulle",
+      "quickAccessOnHover": "Ouvrir le panneau d'accès rapide au survol",
+      "quickAccessOnHoverDescription": "Lorsqu'activé, le panneau d'accès rapide s'ouvre automatiquement au survol du bouton tableau de bord dans la barre latérale"
     },
     "homePageMediaBanner": {
       "title": "Bannière média de la page d'accueil",
@@ -657,6 +659,7 @@
     "dateTime": "date, heure, format",
     "overlays": "superpositions, navigation, panneau, lecteur, stockage, lettre, interface utilisateur, éléments, visuel",
     "uiElements": "interface utilisateur, éléments, visuel, entrée, accent, couleur, chronologie, tableau de bord, page, récent, cartes, accueil, lecteur, espace, indicateur, style",
+    "quickAccess": "quick, access, panel, hover, sidebar, dashboard",
     "homePageMediaBanner": "accueil, page, média, bannière, arrière-plan, image, vidéo",
     "infoPanel": "info, panneau, répertoire, taille, performances, informations, détails, propriétés",
     "navigator": "conception, interface utilisateur, navigateur, séparateurs, titres, tri, vue, mise en page, liste, grille, élément, fichier, répertoire, survol, échelle, surbrillance, OCD",

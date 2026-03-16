@@ -429,7 +429,9 @@
       "linearHorizontalCentered": "Tuyến tính {'|'} ngang {'|'} chính giữa",
       "circular": "Dạng hình tròn",
       "preventDropdownCloseFocusReturn": "Ngăn trả lại tiêu điểm khi đóng menu thả xuống",
-      "preventDropdownCloseFocusReturnDescription": "Khi bật, đóng menu thả xuống (ví dụ bằng phím Escape) sẽ không trả tiêu điểm về nút kích hoạt, tránh hiển thị vòng tiêu điểm và chú thích"
+      "preventDropdownCloseFocusReturnDescription": "Khi bật, đóng menu thả xuống (ví dụ bằng phím Escape) sẽ không trả tiêu điểm về nút kích hoạt, tránh hiển thị vòng tiêu điểm và chú thích",
+      "quickAccessOnHover": "Mở bảng truy cập nhanh khi di chuột",
+      "quickAccessOnHoverDescription": "Khi bật, bảng truy cập nhanh sẽ tự động mở khi di chuột qua nút bảng điều khiển trên thanh bên"
     },
     "homePageMediaBanner": {
       "title": "Biểu ngữ truyền thông trang chủ",
@@ -657,6 +659,7 @@
     "dateTime": "ngày, giờ, định dạng",
     "overlays": "lớp phủ, điều hướng, bảng điều khiển, ổ đĩa, lưu trữ, chữ cái, giao diện người dùng, thành phần, hình ảnh",
     "uiElements": "ui, thành phần, hình ảnh, đầu vào, dấu, màu sắc, dòng thời gian, bảng điều khiển, trang, gần đây, thẻ, nhà, ổ đĩa, không gian, chỉ báo, kiểu",
+    "quickAccess": "quick, access, panel, hover, sidebar, dashboard",
     "homePageMediaBanner": "trang chủ, trang, phương tiện, biểu ngữ, nền, hình ảnh, video",
     "infoPanel": "thông tin, bảng điều khiển, thư mục, kích thước, hiệu suất, thông tin, chi tiết, thuộc tính",
     "navigator": "thiết kế, giao diện người dùng, bộ điều hướng, bộ chia, tiêu đề, sắp xếp, chế độ xem, bố cục, danh sách, lưới, mục, tệp, thư mục, di chuột, tỷ lệ, đánh dấu, OCD",

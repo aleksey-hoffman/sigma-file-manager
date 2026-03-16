@@ -429,7 +429,9 @@
       "linearHorizontalCentered": "线 {'|'} 水平 {'|'} 居中",
       "circular": "圆",
       "preventDropdownCloseFocusReturn": "关闭下拉菜单时不返回焦点",
-      "preventDropdownCloseFocusReturnDescription": "启用后，关闭下拉菜单（例如按 Escape）时不会将焦点返回到触发按钮，从而避免显示焦点环和工具提示"
+      "preventDropdownCloseFocusReturnDescription": "启用后，关闭下拉菜单（例如按 Escape）时不会将焦点返回到触发按钮，从而避免显示焦点环和工具提示",
+      "quickAccessOnHover": "悬停时打开快速访问面板",
+      "quickAccessOnHoverDescription": "启用后，将鼠标悬停在侧边栏的仪表板按钮上时，快速访问面板会自动打开"
     },
     "homePageMediaBanner": {
       "title": "主页媒体横幅",
@@ -657,6 +659,7 @@
     "dateTime": "日期,时间,格式",
     "overlays": "叠加层、导航、面板、驱动器、存储、字母、用户界面、元素、视觉",
     "uiElements": "ui、元素、视觉、输入、重音、颜色、时间线、仪表板、页面、最近、卡片、主页、驱动器、空间、指示器、样式",
+    "quickAccess": "quick, access, panel, hover, sidebar, dashboard",
     "homePageMediaBanner": "主页、页面、媒体、横幅、背景、图像、视频",
     "infoPanel": "信息、面板、目录、大小、性能、信息、细节、属性",
     "navigator": "设计、用户界面、导航器、分隔线、标题、排序、视图、布局、列表、网格、项目、文件、目录、悬停、缩放、突出显示、强迫症",

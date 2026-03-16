@@ -429,7 +429,9 @@
       "linearHorizontalCentered": "Linear {'|'} horizontal {'|'} zentriert",
       "circular": "Kreisförmig",
       "preventDropdownCloseFocusReturn": "Fokus-Rückgabe beim Schließen von Dropdowns verhindern",
-      "preventDropdownCloseFocusReturnDescription": "Wenn aktiviert, wird beim Schließen eines Dropdowns (z. B. mit Escape) der Fokus nicht zum Auslöser-Button zurückgegeben, wodurch Fokusring und Tooltip vermieden werden"
+      "preventDropdownCloseFocusReturnDescription": "Wenn aktiviert, wird beim Schließen eines Dropdowns (z. B. mit Escape) der Fokus nicht zum Auslöser-Button zurückgegeben, wodurch Fokusring und Tooltip vermieden werden",
+      "quickAccessOnHover": "Schnellzugriffsleiste beim Überfahren öffnen",
+      "quickAccessOnHoverDescription": "Wenn aktiviert, öffnet sich die Schnellzugriffsleiste automatisch beim Überfahren der Dashboard-Schaltfläche in der Seitenleiste"
     },
     "homePageMediaBanner": {
       "title": "Homepage-Medienbanner",
@@ -657,6 +659,7 @@
     "dateTime": "Datum, Uhrzeit, Format",
     "overlays": "overlays, navigation, panel, drive, storage, letter, ui, elements, visual",
     "uiElements": "UI, Elemente, visuell, Eingabe, Akzent, Farbe, Zeitleiste, Dashboard, Seite, aktuell, Karten, Startseite, Laufwerk, Raum, Anzeige, Stil",
+    "quickAccess": "quick, access, panel, hover, sidebar, dashboard",
     "homePageMediaBanner": "Startseite, Seite, Medien, Banner, Hintergrund, Bild, Video",
     "infoPanel": "Info, Panel, Verzeichnis, Größe, Leistung, Informationen, Details, Eigenschaften",
     "navigator": "design, ui, navigator, dividers, titles, sorting, view, layout, list, grid, item, file, directory, hover, scale, highlight, OCD",

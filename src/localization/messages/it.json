@@ -429,7 +429,9 @@
       "linearHorizontalCentered": "Lineare {'|'} orizzontale {'|'} centrato",
       "circular": "Circolare",
       "preventDropdownCloseFocusReturn": "Impedire il ritorno del focus alla chiusura dei menu a discesa",
-      "preventDropdownCloseFocusReturnDescription": "Quando attivato, la chiusura di un menu a discesa (es. con Esc) non riporterà il focus sul pulsante di attivazione, evitando la visualizzazione del contorno di focus e del tooltip"
+      "preventDropdownCloseFocusReturnDescription": "Quando attivato, la chiusura di un menu a discesa (es. con Esc) non riporterà il focus sul pulsante di attivazione, evitando la visualizzazione del contorno di focus e del tooltip",
+      "quickAccessOnHover": "Apri pannello accesso rapido al passaggio del mouse",
+      "quickAccessOnHoverDescription": "Quando attivato, il pannello di accesso rapido si apre automaticamente passando il mouse sul pulsante dashboard nella barra laterale"
     },
     "homePageMediaBanner": {
       "title": "Banner multimediale nella pagina iniziale",
@@ -657,6 +659,7 @@
     "dateTime": "data, ora, formato",
     "overlays": "sovrapposizioni, navigazione, pannello, unità, archiviazione, lettera, ui, elementi, visivo",
     "uiElements": "ui, elementi, visivo, input, accento, colore, cronologia, dashboard, pagina, recenti, schede, inizio, drive, spazio, indicatore, stile",
+    "quickAccess": "quick, access, panel, hover, sidebar, dashboard",
     "homePageMediaBanner": "home, pagina, media, banner, sfondo, immagine, video",
     "infoPanel": "info, pannello, cartella, dimensioni, prestazioni, informazioni, dettagli, proprietà",
     "navigator": "design, ui, navigatore, divisori, titoli, ordinamento, visualizzazione, layout, elenco, griglia, elemento, file, directory, hover, scala, evidenziazione, OCD",

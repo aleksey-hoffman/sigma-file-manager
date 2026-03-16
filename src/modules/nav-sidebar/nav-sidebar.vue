@@ -4,11 +4,12 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, provide, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { BlocksIcon, HardDriveIcon, UsbIcon } from 'lucide-vue-next';
 import { useAppStore } from '@/stores/runtime/app';
 import { useExtensionsStore } from '@/stores/runtime/extensions';
+import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { useWorkspacesStore } from '@/stores/storage/workspaces';
 import { useDrives } from '@/modules/home/composables';
 import { DriveCard } from '@/modules/home/components';
@@ -19,13 +20,29 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
+import { CONTEXT_MENU_OPEN_COUNT_KEY } from '@/components/dir-entry-interactive';
 import QuickAccessPanel from './components/quick-access-panel.vue';
 
 const router = useRouter();
 const appStore = useAppStore();
 const extensionsStore = useExtensionsStore();
+const userSettingsStore = useUserSettingsStore();
 const workspacesStore = useWorkspacesStore();
 const { drives } = useDrives();
+
+const quickAccessOnHover = computed(() => userSettingsStore.userSettings.quickAccessOnHover);
+
+const quickAccessContextMenuOpenCount = ref(0);
+provide(CONTEXT_MENU_OPEN_COUNT_KEY, quickAccessContextMenuOpenCount);
+
+const quickAccessHoverOpen = ref(false);
+const quickAccessTooltipOpen = computed(() =>
+  quickAccessHoverOpen.value || quickAccessContextMenuOpenCount.value > 0,
+);
+
+function handleQuickAccessTooltipOpenChange(value: boolean) {
+  quickAccessHoverOpen.value = value;
+}
 
 function isDashboardPage(item: { name?: unknown }) {
   return item.name === 'dashboard';
@@ -75,8 +92,10 @@ async function openDrive(path: string) {
         :key="index"
       >
         <Tooltip
-          v-if="isDashboardPage(item)"
+          v-if="isDashboardPage(item) && quickAccessOnHover"
           :delay-duration="0"
+          :open="quickAccessTooltipOpen"
+          @update:open="handleQuickAccessTooltipOpenChange"
         >
           <TooltipTrigger as-child>
             <Button
@@ -97,6 +116,7 @@ async function openDrive(path: string) {
             side="right"
             align="start"
             :side-offset="12"
+            :collision-padding="6"
             class="nav-sidebar__quick-access-tooltip"
           >
             <QuickAccessPanel />

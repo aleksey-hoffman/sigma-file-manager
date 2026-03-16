@@ -442,7 +442,9 @@
       "linearHorizontalCentered": "Linearno {'|'} horizontalno {'|'} centrirano",
       "circular": "Krožno",
       "preventDropdownCloseFocusReturn": "Prepreči vrnitev fokusa ob zapiranju spustnih menijev",
-      "preventDropdownCloseFocusReturnDescription": "Ko je omogočeno, zapiranje spustnega menija (npr. z Escape) ne bo vrnilo fokusa na gumb aktivacije, kar prepreči prikaz obroča fokusa in namiga"
+      "preventDropdownCloseFocusReturnDescription": "Ko je omogočeno, zapiranje spustnega menija (npr. z Escape) ne bo vrnilo fokusa na gumb aktivacije, kar prepreči prikaz obroča fokusa in namiga",
+      "quickAccessOnHover": "Odpri ploščo za hitri dostop ob lebdenju",
+      "quickAccessOnHoverDescription": "Ko je omogočeno, se plošča za hitri dostop samodejno odpre ob lebdenju nad gumbom nadzorne plošče v stranski vrstici"
     },
     "homePageMediaBanner": {
       "title": "Medijska pasica domače strani",
@@ -670,6 +672,7 @@
     "dateTime": "date, time, format",
     "overlays": "overlays, navigation, panel, drive, storage, letter, ui, elements, visual",
     "uiElements": "ui, elements, visual, input, accent, color, timeline, dashboard, page, recent, cards, home, drive, space, indicator, style",
+    "quickAccess": "quick, access, panel, hover, sidebar, dashboard",
     "homePageMediaBanner": "home, page, media, banner, background, image, video",
     "infoPanel": "info, panel, directory, size, performance, information, details, properties",
     "navigator": "design, ui, navigator, dividers, titles, sorting, view, layout, list, grid, item, file, directory, hover, scale, highlight, OCD",

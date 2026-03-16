@@ -429,7 +429,9 @@
       "linearHorizontalCentered": "線形 {'|'} 水平 {'|'} 中央揃え",
       "circular": "円形",
       "preventDropdownCloseFocusReturn": "ドロップダウンを閉じた時にフォーカスを戻さない",
-      "preventDropdownCloseFocusReturnDescription": "有効にすると、ドロップダウンを閉じても（Escapeキーなど）フォーカスがトリガーボタンに戻らず、フォーカスリングやツールチップの表示を防ぎます"
+      "preventDropdownCloseFocusReturnDescription": "有効にすると、ドロップダウンを閉じても（Escapeキーなど）フォーカスがトリガーボタンに戻らず、フォーカスリングやツールチップの表示を防ぎます",
+      "quickAccessOnHover": "ホバーでクイックアクセスパネルを開く",
+      "quickAccessOnHoverDescription": "有効にすると、サイドバーのダッシュボードボタンにマウスを合わせたときにクイックアクセスパネルが自動的に開きます"
     },
     "homePageMediaBanner": {
       "title": "ホームページメディアバナー",
@@ -657,6 +659,7 @@
     "dateTime": "日付、時刻、形式",
     "overlays": "オーバーレイ、ナビゲーション、パネル、ドライブ、ストレージ、文字、UI、要素、ビジュアル",
     "uiElements": "UI、要素、ビジュアル、入力、アクセント、色、タイムライン、ダッシュボード、ページ、最近、カード、ホーム、ドライブ、スペース、インジケーター、スタイル",
+    "quickAccess": "quick, access, panel, hover, sidebar, dashboard",
     "homePageMediaBanner": "ホーム、ページ、メディア、バナー、背景、画像、動画",
     "infoPanel": "情報、パネル、ディレクトリ、サイズ、パフォーマンス、情報、詳細、プロパティ",
     "navigator": "デザイン、UI、ナビゲーター、ディバイダー、タイトル、ソート、ビュー、レイアウト、リスト、グリッド、アイテム、ファイル、ディレクトリ、ホバー、スケール、ハイライト、OCD",

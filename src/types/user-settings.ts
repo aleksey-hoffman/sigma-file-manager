@@ -147,6 +147,7 @@ export type UserSettings = {
   globalShortcuts?: UserGlobalShortcuts;
   focusWindowOnDriveConnected: boolean;
   preventDropdownCloseFocusReturn: boolean;
+  quickAccessOnHover: boolean;
   appUpdates: AppUpdatesSettings;
   changelog: ChangelogSettings;
 };

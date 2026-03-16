@@ -442,7 +442,9 @@
       "linearHorizontalCentered": "Linear {'|'} horizontal {'|'} centered",
       "circular": "Circular",
       "preventDropdownCloseFocusReturn": "Prevent focus return when closing dropdowns",
-      "preventDropdownCloseFocusReturnDescription": "When enabled, closing a dropdown (e.g. with Escape) will not return focus to the trigger button, avoiding focus ring and tooltip display"
+      "preventDropdownCloseFocusReturnDescription": "When enabled, closing a dropdown (e.g. with Escape) will not return focus to the trigger button, avoiding focus ring and tooltip display",
+      "quickAccessOnHover": "Open quick access panel on hover",
+      "quickAccessOnHoverDescription": "When enabled, the quick access panel opens automatically when hovering over the dashboard button in the sidebar"
     },
     "homePageMediaBanner": {
       "title": "Home page media banner",
@@ -670,6 +672,7 @@
     "dateTime": "date, time, format",
     "overlays": "overlays, navigation, panel, drive, storage, letter, ui, elements, visual",
     "uiElements": "ui, elements, visual, input, accent, color, timeline, dashboard, page, recent, cards, home, drive, space, indicator, style",
+    "quickAccess": "quick, access, panel, hover, sidebar, dashboard",
     "homePageMediaBanner": "home, page, media, banner, background, image, video",
     "infoPanel": "info, panel, directory, size, performance, information, details, properties",
     "navigator": "design, ui, navigator, dividers, titles, sorting, view, layout, list, grid, item, file, directory, hover, scale, highlight, OCD",

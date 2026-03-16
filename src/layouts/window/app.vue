@@ -57,14 +57,18 @@ const { activeEmbedPageId, visitedEmbedPages } = useEmbedPages();
           <RouterView
             v-show="!activeEmbedPageId"
             v-slot="{ Component }"
-            data-vaul-drawer-wrapper
           >
-            <KeepAlive :include="['ExtensionPage']">
-              <component
-                :is="Component"
-                :key="$route.name === 'extension-page' ? $route.params.fullPageId : $route.fullPath"
-              />
-            </KeepAlive>
+            <div
+              data-vaul-drawer-wrapper
+              class="app-layout__router-view-wrapper"
+            >
+              <KeepAlive :include="['ExtensionPage']">
+                <component
+                  :is="Component"
+                  :key="$route.name === 'extension-page' ? $route.params.fullPageId : $route.fullPath"
+                />
+              </KeepAlive>
+            </div>
           </RouterView>
         </div>
       </div>
@@ -113,6 +117,11 @@ const { activeEmbedPageId, visitedEmbedPages } = useEmbedPages();
 .app-layout__extension-embed-page--hidden {
   pointer-events: none;
   visibility: hidden;
+}
+
+.app-layout__router-view-wrapper {
+  overflow: hidden;
+  height: 100%;
 }
 
 .app-layout__extension-embed {

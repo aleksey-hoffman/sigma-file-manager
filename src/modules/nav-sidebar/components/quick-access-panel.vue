@@ -3,24 +3,31 @@ License: GNU GPLv3 or later. See the license file in the project root for more i
 Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
+<script lang="ts">
+import { ref } from 'vue';
+
+const favoritesOpenState = ref<boolean | null>(null);
+const tagsOpenState = ref<boolean | null>(null);
+</script>
+
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import {
   ChevronDownIcon,
   ChevronRightIcon,
-  FileIcon,
-  FolderIcon,
   StarIcon,
   TagIcon,
 } from 'lucide-vue-next';
+import QuickAccessItemIcon from './quick-access-item-icon.vue';
 import {
   CollapsibleContent,
   CollapsibleRoot,
   CollapsibleTrigger,
 } from 'reka-ui';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { DirEntryInteractive } from '@/components/dir-entry-interactive';
 import { useUserStatsStore } from '@/stores/storage/user-stats';
 import { useWorkspacesStore } from '@/stores/storage/workspaces';
 import type { FavoriteItem, ItemTag, TaggedItem } from '@/types/user-stats';
@@ -30,16 +37,37 @@ const router = useRouter();
 const userStatsStore = useUserStatsStore();
 const workspacesStore = useWorkspacesStore();
 
-const favoritesOpen = ref(true);
-const tagsOpen = ref(true);
-
 const favoriteItems = computed(() => userStatsStore.favorites);
 const taggedItems = computed(() => userStatsStore.taggedItems);
 const tags = computed(() => userStatsStore.tags);
 
-function getTagById(tagId: string): ItemTag | undefined {
-  return tags.value.find(tag => tag.id === tagId);
+interface TagGroup {
+  tag: ItemTag;
+  items: TaggedItem[];
 }
+
+const tagGroups = computed<TagGroup[]>(() => {
+  return tags.value
+    .map(tag => ({
+      tag,
+      items: taggedItems.value.filter(item => item.tagIds.includes(tag.id)),
+    }))
+    .filter(group => group.items.length > 0);
+});
+
+const totalTaggedItemCount = computed(() => {
+  return new Set(taggedItems.value.map(item => item.path)).size;
+});
+
+const favoritesOpen = computed({
+  get: () => favoritesOpenState.value ?? favoriteItems.value.length > 0,
+  set: (value: boolean) => { favoritesOpenState.value = value; },
+});
+
+const tagsOpen = computed({
+  get: () => tagsOpenState.value ?? tagGroups.value.length > 0,
+  set: (value: boolean) => { tagsOpenState.value = value; },
+});
 
 function getItemName(path: string): string {
   if (!path) return '';
@@ -128,25 +156,25 @@ function openTaggedItem(item: TaggedItem) {
             >
               {{ t('quickAccess.emptyFavorites') }}
             </div>
-            <button
+            <DirEntryInteractive
               v-for="item in favoriteItems"
               :key="item.path"
-              type="button"
-              class="quick-access-panel__item"
-              @click="openFavoriteItem(item)"
+              :path="item.path"
+              :is-file="isFavoriteFile(item)"
             >
-              <FolderIcon
-                v-if="!isFavoriteFile(item)"
-                :size="14"
-                class="quick-access-panel__item-icon"
-              />
-              <FileIcon
-                v-else
-                :size="14"
-                class="quick-access-panel__item-icon"
-              />
-              <span class="quick-access-panel__item-name">{{ getItemName(item.path) }}</span>
-            </button>
+              <button
+                type="button"
+                class="quick-access-panel__item"
+                @click="openFavoriteItem(item)"
+              >
+                <QuickAccessItemIcon
+                  :path="item.path"
+                  :is-file="isFavoriteFile(item)"
+                  :size="14"
+                />
+                <span class="quick-access-panel__item-name">{{ getItemName(item.path) }}</span>
+              </button>
+            </DirEntryInteractive>
           </CollapsibleContent>
         </CollapsibleRoot>
 
@@ -178,52 +206,53 @@ function openTaggedItem(item: TaggedItem) {
               />
               <span class="quick-access-panel__section-title">{{ t('quickAccess.tagged') }}</span>
               <span
-                v-if="taggedItems.length > 0"
+                v-if="totalTaggedItemCount > 0"
                 class="quick-access-panel__badge"
               >
-                {{ taggedItems.length }}
+                {{ totalTaggedItemCount }}
               </span>
             </button>
           </CollapsibleTrigger>
           <CollapsibleContent class="quick-access-panel__section-content">
             <div
               class="quick-access-panel__empty"
-              v-if="taggedItems.length === 0"
+              v-if="tagGroups.length === 0"
             >
               {{ t('quickAccess.emptyTagged') }}
             </div>
-            <button
-              v-for="item in taggedItems"
-              :key="item.path"
-              type="button"
-              class="quick-access-panel__item"
-              @click="openTaggedItem(item)"
+            <div
+              v-for="group in tagGroups"
+              :key="group.tag.id"
+              class="quick-access-panel__tag-group"
             >
-              <FolderIcon
-                v-if="!item.isFile"
-                :size="14"
-                class="quick-access-panel__item-icon"
-              />
-              <FileIcon
-                v-else
-                :size="14"
-                class="quick-access-panel__item-icon"
-              />
-              <span class="quick-access-panel__item-name">{{ getItemName(item.path) }}</span>
-              <div class="quick-access-panel__item-tags">
+              <div class="quick-access-panel__tag-subtitle">
                 <span
-                  v-for="tagId in item.tagIds"
-                  :key="tagId"
-                  class="quick-access-panel__tag"
-                  :style="{
-                    backgroundColor: (getTagById(tagId)?.color ?? '#666') + '25',
-                    color: getTagById(tagId)?.color ?? '#666',
-                  }"
-                >
-                  {{ getTagById(tagId)?.name }}
-                </span>
+                  class="quick-access-panel__tag-dot"
+                  :style="{ backgroundColor: group.tag.color }"
+                />
+                <span class="quick-access-panel__tag-name">{{ group.tag.name }}</span>
+                <span class="quick-access-panel__tag-count">{{ group.items.length }}</span>
               </div>
-            </button>
+              <DirEntryInteractive
+                v-for="item in group.items"
+                :key="item.path"
+                :path="item.path"
+                :is-file="item.isFile"
+              >
+                <button
+                  type="button"
+                  class="quick-access-panel__item"
+                  @click="openTaggedItem(item)"
+                >
+                  <QuickAccessItemIcon
+                    :path="item.path"
+                    :is-file="item.isFile"
+                    :size="14"
+                  />
+                  <span class="quick-access-panel__item-name">{{ getItemName(item.path) }}</span>
+                </button>
+              </DirEntryInteractive>
+            </div>
           </CollapsibleContent>
         </CollapsibleRoot>
       </div>
@@ -233,17 +262,18 @@ function openTaggedItem(item: TaggedItem) {
 
 <style scoped>
 .quick-access-panel {
-  display: flex;
+  --_header-height: 45px;
+  --_max-height: calc(100vh - 12px);
+
   width: var(--quick-access-panel-width);
-  height: 100%;
-  flex-direction: column;
+  max-height: var(--_max-height);
   border: 1px solid hsl(var(--border));
   border-radius: var(--radius-sm);
   box-shadow: var(--shadow-md);
 }
 
 .quick-access-panel__header {
-  flex-shrink: 0;
+  height: var(--_header-height);
   padding: 12px 16px;
   border-bottom: 1px solid hsl(var(--border));
 }
@@ -255,10 +285,11 @@ function openTaggedItem(item: TaggedItem) {
 }
 
 .quick-access-panel__scroll {
-  overflow: hidden;
-  height: 100%;
-  min-height: 0;
-  flex: 1;
+  max-height: calc(var(--_max-height) - var(--_header-height));
+}
+
+.quick-access-panel__scroll :deep(.sigma-ui-scroll-area__viewport) {
+  max-height: inherit;
 }
 
 .quick-access-panel__content {
@@ -287,6 +318,7 @@ function openTaggedItem(item: TaggedItem) {
   width: 100%;
   align-items: center;
   padding: 8px 12px;
+  padding-left: 8px;
   border: none;
   border-radius: var(--radius-sm);
   background: none;
@@ -323,7 +355,7 @@ function openTaggedItem(item: TaggedItem) {
 .quick-access-panel__badge {
   flex-shrink: 0;
   padding: 2px 6px;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   background-color: hsl(var(--primary) / 20%);
   color: hsl(var(--primary));
   font-size: 0.6875rem;
@@ -355,14 +387,13 @@ function openTaggedItem(item: TaggedItem) {
 .quick-access-panel__item {
   display: flex;
   width: 100%;
-  flex-wrap: wrap;
   align-items: center;
   padding: 6px 12px;
   border: none;
   border-radius: var(--radius-sm);
   background: none;
   cursor: pointer;
-  gap: 6px 8px;
+  gap: 8px;
   text-align: left;
   transition: background-color 0.15s ease;
 }
@@ -386,17 +417,48 @@ function openTaggedItem(item: TaggedItem) {
   white-space: nowrap;
 }
 
-.quick-access-panel__item-tags {
+.quick-access-panel__tag-group {
   display: flex;
-  flex-shrink: 0;
-  flex-wrap: wrap;
-  gap: 4px;
+  flex-direction: column;
 }
 
-.quick-access-panel__tag {
+.quick-access-panel__tag-group + .quick-access-panel__tag-group {
+  margin-top: 4px;
+}
+
+.quick-access-panel__tag-subtitle {
+  display: flex;
+  align-items: center;
+  padding: 4px 12px;
+  gap: 6px;
+}
+
+.quick-access-panel__tag-dot {
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+  border-radius: 50%;
+}
+
+.quick-access-panel__tag-name {
+  overflow: hidden;
+  flex: 1;
+  color: hsl(var(--muted-foreground));
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.quick-access-panel__tag-count {
+  flex-shrink: 0;
   padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 0.625rem;
-  font-weight: 500;
+  border-radius: var(--radius-sm);
+  background-color: hsl(var(--primary) / 20%);
+  color: hsl(var(--primary));
+  font-size: 0.6875rem;
+  font-weight: 600;
 }
 </style>

@@ -429,7 +429,9 @@
       "linearHorizontalCentered": "Lineal {'|'} horizontal {'|'} centrado",
       "circular": "Circular",
       "preventDropdownCloseFocusReturn": "Evitar devolver el foco al cerrar menús desplegables",
-      "preventDropdownCloseFocusReturnDescription": "Cuando está activado, cerrar un menú desplegable (p. ej. con Escape) no devolverá el foco al botón de activación, evitando el anillo de foco y la tooltip"
+      "preventDropdownCloseFocusReturnDescription": "Cuando está activado, cerrar un menú desplegable (p. ej. con Escape) no devolverá el foco al botón de activación, evitando el anillo de foco y la tooltip",
+      "quickAccessOnHover": "Abrir panel de acceso rápido al pasar el cursor",
+      "quickAccessOnHoverDescription": "Cuando está activado, el panel de acceso rápido se abre automáticamente al pasar el cursor sobre el botón del panel en la barra lateral"
     },
     "homePageMediaBanner": {
       "title": "Banner de medios de la página de inicio",
@@ -657,6 +659,7 @@
     "dateTime": "fecha, hora, formato",
     "overlays": "superposiciones, navegación, panel, unidad, almacenamiento, carta, interfaz de usuario, elementos, visual",
     "uiElements": "ui, elementos, visual, entrada, acento, color, línea de tiempo, tablero, página, reciente, tarjetas, inicio, unidad, espacio, indicador, estilo",
+    "quickAccess": "quick, access, panel, hover, sidebar, dashboard",
     "homePageMediaBanner": "inicio, página, medios, banner, fondo, imagen, video",
     "infoPanel": "info, panel, directorio, tamaño, rendimiento, información, detalles, propiedades",
     "navigator": "diseño, interfaz de usuario, navegador, divisores, títulos, clasificación, vista, diseño, lista, cuadrícula, elemento, archivo, directorio, desplazamiento, escala, resaltado, OCD",
