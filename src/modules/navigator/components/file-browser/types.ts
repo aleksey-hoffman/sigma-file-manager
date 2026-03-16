@@ -51,7 +51,7 @@ export interface GroupedEntries {
   others: DirEntry[];
 }
 
-export type ContextMenuAction = 'rename' | 'copy' | 'cut' | 'paste' | 'delete' | 'delete-permanently' | 'open-with' | 'quick-view' | 'share' | 'open-in-new-tab' | 'toggle-favorite' | 'edit-tags' | 'copy-path';
+export type ContextMenuAction = 'rename' | 'copy' | 'cut' | 'paste' | 'delete' | 'delete-permanently' | 'open-with' | 'quick-view' | 'share' | 'open-in-new-tab' | 'toggle-favorite' | 'edit-tags' | 'copy-path' | 'create-file' | 'create-directory';
 
 export type SelectionType = 'single' | 'multiple';
 export type EntryType = 'file' | 'directory';

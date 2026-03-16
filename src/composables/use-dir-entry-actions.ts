@@ -12,6 +12,7 @@ import { useWorkspacesStore } from '@/stores/storage/workspaces';
 import { useUserStatsStore } from '@/stores/storage/user-stats';
 import { useClipboardStore, type FileOperationResult, type ConflictItem, type ConflictResolution } from '@/stores/runtime/clipboard';
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
+import { useQuickViewStore } from '@/stores/runtime/quick-view';
 import { toast, ToastProgress, ToastStatic } from '@/components/ui/toaster';
 
 type FileOperationToastData = {
@@ -33,6 +34,7 @@ export function useDirEntryActions() {
   const userStatsStore = useUserStatsStore();
   const clipboardStore = useClipboardStore();
   const dirSizesStore = useDirSizesStore();
+  const quickViewStore = useQuickViewStore();
 
   const conflictDialogState = ref({
     isOpen: false,
@@ -385,6 +387,78 @@ export function useDirEntryActions() {
     }
   }
 
+  async function createNewItem(
+    name: string,
+    itemType: 'directory' | 'file',
+    targetPaths: string[],
+  ): Promise<boolean> {
+    const trimmedName = name.trim();
+
+    if (!trimmedName) {
+      return false;
+    }
+
+    const invalidChars = /[<>:"/\\|?*\x00-\x1f]/;
+
+    if (invalidChars.test(trimmedName)) {
+      return false;
+    }
+
+    if (trimmedName === '.' || trimmedName === '..') {
+      return false;
+    }
+
+    let successCount = 0;
+    let lastError: string | null = null;
+
+    for (const directoryPath of targetPaths) {
+      try {
+        const result = await invoke<FileOperationResult>('create_item', {
+          directoryPath,
+          name: trimmedName,
+          isDirectory: itemType === 'directory',
+        });
+
+        if (result.success) {
+          successCount++;
+          dirSizesStore.invalidate([directoryPath]);
+        }
+        else {
+          lastError = result.error || '';
+        }
+      }
+      catch (error) {
+        lastError = String(error);
+      }
+    }
+
+    if (successCount > 0) {
+      toast.custom(markRaw(ToastStatic), {
+        componentProps: {
+          data: {
+            title: itemType === 'directory'
+              ? t('dialogs.newDirItemDialog.newDirectoryCreated')
+              : t('dialogs.newDirItemDialog.newFileCreated'),
+            description: '',
+          },
+        },
+      });
+      return true;
+    }
+
+    toast.custom(markRaw(ToastStatic), {
+      componentProps: {
+        data: {
+          title: itemType === 'directory'
+            ? t('dialogs.newDirItemDialog.failedToCreateNewDirectory')
+            : t('dialogs.newDirItemDialog.failedToCreateNewFile'),
+          description: lastError || '',
+        },
+      },
+    });
+    return false;
+  }
+
   async function toggleFavorites(entries: DirEntry[]) {
     const allAreFavorites = entries.every(entry => userStatsStore.isFavorite(entry.path));
 
@@ -409,6 +483,14 @@ export function useDirEntryActions() {
         },
       },
     });
+  }
+
+  async function quickView(entries: DirEntry[]) {
+    const fileEntry = entries.find(entry => entry.is_file);
+
+    if (fileEntry) {
+      await quickViewStore.toggleQuickView(fileEntry.path);
+    }
   }
 
   function copyPath(entries: DirEntry[]) {
@@ -468,11 +550,15 @@ export function useDirEntryActions() {
       case 'copy-path':
         copyPath(entries);
         break;
+      case 'quick-view':
+        quickView(entries);
+        break;
       case 'rename':
       case 'open-with':
-      case 'quick-view':
       case 'share':
       case 'edit-tags':
+      case 'create-file':
+      case 'create-directory':
         break;
     }
   }
@@ -486,6 +572,7 @@ export function useDirEntryActions() {
     pasteItems,
     deleteItems,
     renameItem,
+    createNewItem,
     toggleFavorites,
     copyPath,
     conflictDialogState,

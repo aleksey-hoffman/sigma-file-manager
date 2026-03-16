@@ -18,6 +18,14 @@ import { useFileBrowserContext } from './composables/use-file-browser-context';
 const ctx = useFileBrowserContext();
 
 function handleAction(action: Parameters<typeof ctx.onContextMenuAction>[0]) {
+  if (action === 'create-file' || action === 'create-directory') {
+    const targetPaths = ctx.contextMenu.value.selectedEntries
+      .filter(entry => entry.is_dir)
+      .map(entry => entry.path);
+    ctx.openNewItemDialog(action === 'create-file' ? 'file' : 'directory', targetPaths);
+    return;
+  }
+
   ctx.onContextMenuAction(action);
 }
 

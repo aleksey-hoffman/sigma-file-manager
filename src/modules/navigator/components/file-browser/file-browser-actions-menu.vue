@@ -39,14 +39,11 @@ import FileBrowserMoreOptionsSubmenu from './file-browser-more-options-submenu.v
 import FileBrowserTerminalSubmenu from './file-browser-terminal-submenu.vue';
 import { ContextMenuShortcut } from '@/components/ui/context-menu';
 
-const props = withDefaults(defineProps<{
+const props = defineProps<{
   selectedEntries: DirEntry[];
   menuItemComponent: object;
   menuSeparatorComponent: object;
-  showNewItemSubmenu?: boolean;
-}>(), {
-  showNewItemSubmenu: true,
-});
+}>();
 
 const emit = defineEmits<{
   action: [action: ContextMenuAction];
@@ -336,8 +333,8 @@ function handleDeleteClick() {
     <span>{{ t('settings.addressBar.copyPathToClipboard') }}</span>
   </component>
   <FileBrowserNewSubmenu
-    v-if="props.showNewItemSubmenu && selectionStats.hasDirectories"
-    :selected-entries="selectedEntries"
+    v-if="selectionStats.hasDirectories"
+    @action="emitAction"
   />
   <component
     :is="menuItemComponent"

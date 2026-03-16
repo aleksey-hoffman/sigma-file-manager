@@ -4,10 +4,13 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import { computed, inject, ref, onBeforeUnmount } from 'vue';
+import {
+  computed, inject, ref, watch, onBeforeUnmount,
+} from 'vue';
 import { ContextMenu, ContextMenuTrigger } from '@/components/ui/context-menu';
 import DirEntryContextMenu from './dir-entry-context-menu.vue';
 import FileBrowserRenameDialog from '@/modules/navigator/components/file-browser/file-browser-rename-dialog.vue';
+import FileBrowserNewItemDialog from '@/modules/navigator/components/file-browser/file-browser-new-item-dialog.vue';
 import { useDirEntryActions } from '@/composables/use-dir-entry-actions';
 import { CONTEXT_MENU_OPEN_COUNT_KEY } from './index';
 import type { DirEntry } from '@/types/dir-entry';
@@ -19,16 +22,38 @@ const props = withDefaults(defineProps<{
   isFile: false,
 });
 
-const { openEntriesInNewTabs, renameItem } = useDirEntryActions();
+const { openEntriesInNewTabs, renameItem, createNewItem } = useDirEntryActions();
 
 const contextMenuOpenCount = inject(CONTEXT_MENU_OPEN_COUNT_KEY, null);
 const isContextMenuOpenForThisInstance = ref(false);
 const renameDialogOpen = ref(false);
 const renameTarget = ref<DirEntry | null>(null);
+const newItemDialogOpen = ref(false);
+const newItemDialogType = ref<'file' | 'directory'>('directory');
+const newItemTargetPaths = ref<string[]>([]);
+
+function adjustOpenCount(delta: number) {
+  if (contextMenuOpenCount) {
+    contextMenuOpenCount.value += delta;
+  }
+}
+
+watch(renameDialogOpen, (isOpen) => {
+  adjustOpenCount(isOpen ? 1 : -1);
+});
+
+watch(newItemDialogOpen, (isOpen) => {
+  adjustOpenCount(isOpen ? 1 : -1);
+});
 
 onBeforeUnmount(() => {
-  if (isContextMenuOpenForThisInstance.value && contextMenuOpenCount) {
-    contextMenuOpenCount.value -= 1;
+  let countToRemove = 0;
+  if (isContextMenuOpenForThisInstance.value) countToRemove++;
+  if (renameDialogOpen.value) countToRemove++;
+  if (newItemDialogOpen.value) countToRemove++;
+
+  if (contextMenuOpenCount && countToRemove > 0) {
+    contextMenuOpenCount.value -= countToRemove;
   }
 });
 
@@ -89,6 +114,24 @@ function handleRenameCancel() {
   renameDialogOpen.value = false;
   renameTarget.value = null;
 }
+
+function handleCreateNewItem(type: 'file' | 'directory', targetPaths: string[]) {
+  newItemDialogType.value = type;
+  newItemTargetPaths.value = targetPaths;
+  newItemDialogOpen.value = true;
+}
+
+async function handleNewItemConfirm(name: string) {
+  const success = await createNewItem(name, newItemDialogType.value, newItemTargetPaths.value);
+
+  if (success) {
+    newItemDialogOpen.value = false;
+  }
+}
+
+function handleNewItemCancel() {
+  newItemDialogOpen.value = false;
+}
 </script>
 
 <template>
@@ -109,6 +152,7 @@ function handleRenameCancel() {
     <DirEntryContextMenu
       :entries="[dirEntry]"
       @rename="handleRename"
+      @create-new-item="handleCreateNewItem"
     />
   </ContextMenu>
 
@@ -117,6 +161,13 @@ function handleRenameCancel() {
     :entry="renameTarget"
     @confirm="handleRenameConfirm"
     @cancel="handleRenameCancel"
+  />
+
+  <FileBrowserNewItemDialog
+    v-model:open="newItemDialogOpen"
+    :type="newItemDialogType"
+    @confirm="handleNewItemConfirm"
+    @cancel="handleNewItemCancel"
   />
 </template>
 

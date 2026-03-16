@@ -4,9 +4,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import type { DirEntry } from '@/types/dir-entry';
 import { ContextMenuSub } from 'reka-ui';
 import {
   ContextMenuSubTrigger,
@@ -14,27 +12,20 @@ import {
   ContextMenuItem,
 } from '@/components/ui/context-menu';
 import { FilePlusIcon, FolderPlusIcon, PlusIcon } from 'lucide-vue-next';
-import { useFileBrowserContext } from './composables/use-file-browser-context';
+import type { ContextMenuAction } from './types';
 
-const props = defineProps<{
-  selectedEntries: DirEntry[];
+const emit = defineEmits<{
+  action: [action: ContextMenuAction];
 }>();
 
 const { t } = useI18n();
-const ctx = useFileBrowserContext();
-
-const targetPaths = computed(() =>
-  props.selectedEntries
-    .filter(entry => entry.is_dir)
-    .map(entry => entry.path),
-);
 
 function handleCreateFile() {
-  ctx.openNewItemDialog('file', targetPaths.value);
+  emit('action', 'create-file');
 }
 
 function handleCreateDirectory() {
-  ctx.openNewItemDialog('directory', targetPaths.value);
+  emit('action', 'create-directory');
 }
 </script>
 

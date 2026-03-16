@@ -44,6 +44,8 @@ import {
 } from 'lucide-vue-next';
 import { toast, ToastStatic } from '@/components/ui/toaster';
 import type { DirContents } from '@/types/dir-entry';
+import { DirEntryInteractive } from '@/components/dir-entry-interactive';
+import { registerDropContainer, unregisterDropContainer } from '@/composables/use-drop-target-registry';
 import normalizePath from '@/utils/normalize-path';
 
 const props = defineProps<{
@@ -332,14 +334,27 @@ function handleGlobalKeydown(event: KeyboardEvent) {
   }
 }
 
+let dropContainerId: number | null = null;
+
 onMounted(() => {
   nextTick(() => {
     scrollBreadcrumbsToEnd();
   });
+
+  dropContainerId = registerDropContainer({
+    componentRef: addressBarRef,
+    entriesContainerRef: addressBarRef,
+    disableBackgroundDrop: true,
+  });
+
   window.addEventListener('keydown', handleGlobalKeydown);
 });
 
 onUnmounted(() => {
+  if (dropContainerId !== null) {
+    unregisterDropContainer(dropContainerId);
+  }
+
   window.removeEventListener('keydown', handleGlobalKeydown);
 });
 </script>
@@ -489,15 +504,19 @@ onUnmounted(() => {
             v-for="(part, index) in addressParts"
             :key="index"
           >
-            <button
-              class="address-bar__part"
-              :class="{ 'address-bar__part--last': part.isLast }"
-              :disabled="part.isLast"
-              :title="part.path"
-              @click.stop="navigateToPart(part.path)"
+            <DirEntryInteractive
+              :path="part.path"
+              :is-file="false"
             >
-              {{ part.name }}
-            </button>
+              <button
+                class="address-bar__part"
+                :class="{ 'address-bar__part--last': part.isLast }"
+                :title="part.path"
+                @click.stop="navigateToPart(part.path)"
+              >
+                {{ part.name }}
+              </button>
+            </DirEntryInteractive>
             <DropdownMenu
               v-if="!part.isLast"
               @update:open="(open: boolean) => {
@@ -678,7 +697,6 @@ onUnmounted(() => {
 
 .address-bar__part--last {
   color: hsl(var(--muted-foreground));
-  cursor: default;
 }
 
 .address-bar__separator {
@@ -834,5 +852,10 @@ onUnmounted(() => {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.address-bar .dir-entry-interactive[data-drag-over] > .address-bar__part {
+  background-color: hsl(var(--primary) / 15%);
+  box-shadow: inset 0 0 0 2px hsl(var(--primary) / 60%);
 }
 </style>

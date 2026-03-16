@@ -23,6 +23,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   rename: [entry: DirEntry];
+  createNewItem: [type: 'file' | 'directory', targetPaths: string[]];
 }>();
 
 const { handleContextMenuAction } = useDirEntryActions();
@@ -30,6 +31,14 @@ const { handleContextMenuAction } = useDirEntryActions();
 function handleAction(action: ContextMenuAction) {
   if (action === 'rename' && props.entries.length === 1) {
     emit('rename', props.entries[0]);
+    return;
+  }
+
+  if (action === 'create-file' || action === 'create-directory') {
+    const targetPaths = props.entries
+      .filter(entry => entry.is_dir)
+      .map(entry => entry.path);
+    emit('createNewItem', action === 'create-file' ? 'file' : 'directory', targetPaths);
     return;
   }
 
@@ -62,7 +71,6 @@ async function handleExtensionAction(registration: ContextMenuItemRegistration) 
       :selected-entries="props.entries"
       :menu-item-component="ContextMenuItem"
       :menu-separator-component="ContextMenuSeparator"
-      :show-new-item-submenu="false"
       @action="handleAction"
     />
     <FileBrowserExtensionMenuItems

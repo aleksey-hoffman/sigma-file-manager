@@ -203,6 +203,15 @@ function applyContextMenuState() {
 
 function handleAction(action: ContextMenuAction) {
   applyContextMenuState();
+
+  if (action === 'create-file' || action === 'create-directory') {
+    const targetPaths = selectedEntriesArray.value
+      .filter(entry => entry.is_dir)
+      .map(entry => entry.path);
+    ctx.openNewItemDialog(action === 'create-file' ? 'file' : 'directory', targetPaths);
+    return;
+  }
+
   ctx.onContextMenuAction(action);
 }
 

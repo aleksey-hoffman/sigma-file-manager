@@ -424,7 +424,7 @@ function openTaggedItem(item: TaggedItem) {
   background-color: hsl(var(--foreground) / 5%);
 }
 
-.dir-entry-interactive[data-drag-over] > .quick-access-panel__item {
+:deep(.dir-entry-interactive[data-drag-over]) > .quick-access-panel__item {
   background-color: hsl(var(--primary) / 15%);
   box-shadow: inset 0 0 0 2px hsl(var(--primary) / 60%);
 }

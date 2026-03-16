@@ -59,6 +59,12 @@ function applyContextMenuState() {
 
 function handleAction(action: ContextMenuAction) {
   applyContextMenuState();
+
+  if (action === 'create-file' || action === 'create-directory') {
+    ctx.openNewItemDialog(action === 'create-file' ? 'file' : 'directory', [currentPath.value]);
+    return;
+  }
+
   ctx.onContextMenuAction(action);
 }
 
