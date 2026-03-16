@@ -18,8 +18,10 @@ import type { DirEntry } from '@/types/dir-entry';
 const props = withDefaults(defineProps<{
   path: string;
   isFile?: boolean;
+  disableDestructiveActions?: boolean;
 }>(), {
   isFile: false,
+  disableDestructiveActions: false,
 });
 
 const { openEntriesInNewTabs, renameItem, createNewItem } = useDirEntryActions();
@@ -151,6 +153,7 @@ function handleNewItemCancel() {
     </ContextMenuTrigger>
     <DirEntryContextMenu
       :entries="[dirEntry]"
+      :disable-destructive-actions="props.disableDestructiveActions"
       @rename="handleRename"
       @create-new-item="handleCreateNewItem"
     >

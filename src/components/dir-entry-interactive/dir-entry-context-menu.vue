@@ -17,9 +17,12 @@ import type { ContextMenuItemRegistration } from '@/types/extension';
 import type { DirEntry } from '@/types/dir-entry';
 import { useDirEntryActions } from '@/composables/use-dir-entry-actions';
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   entries: DirEntry[];
-}>();
+  disableDestructiveActions?: boolean;
+}>(), {
+  disableDestructiveActions: false,
+});
 
 const emit = defineEmits<{
   rename: [entry: DirEntry];
@@ -67,13 +70,14 @@ async function handleExtensionAction(registration: ContextMenuItemRegistration) 
 
 <template>
   <ContextMenuContent class="dir-entry-context-menu">
+    <slot name="extra-items" />
     <FileBrowserActionsMenu
       :selected-entries="props.entries"
       :menu-item-component="ContextMenuItem"
       :menu-separator-component="ContextMenuSeparator"
+      :disable-destructive-actions="props.disableDestructiveActions"
       @action="handleAction"
     />
-    <slot name="extra-items" />
     <FileBrowserExtensionMenuItems
       :selected-entries="props.entries"
       :menu-item-component="ContextMenuItem"

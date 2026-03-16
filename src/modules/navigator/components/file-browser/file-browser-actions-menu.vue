@@ -39,11 +39,14 @@ import FileBrowserMoreOptionsSubmenu from './file-browser-more-options-submenu.v
 import FileBrowserTerminalSubmenu from './file-browser-terminal-submenu.vue';
 import { ContextMenuShortcut } from '@/components/ui/context-menu';
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   selectedEntries: DirEntry[];
   menuItemComponent: object;
   menuSeparatorComponent: object;
-}>();
+  disableDestructiveActions?: boolean;
+}>(), {
+  disableDestructiveActions: false,
+});
 
 const emit = defineEmits<{
   action: [action: ContextMenuAction];
@@ -72,7 +75,10 @@ const clipboardStore = useClipboardStore();
 const userStatsStore = useUserStatsStore();
 const shortcutsStore = useShortcutsStore();
 
-const { isActionVisible, selectionStats } = useContextMenuItems(toRef(props, 'selectedEntries'));
+const { isActionVisible, selectionStats } = useContextMenuItems(
+  toRef(props, 'selectedEntries'),
+  { disableDestructiveActions: toRef(props, 'disableDestructiveActions') },
+);
 
 const allSelectedAreFavorites = computed(() => {
   return props.selectedEntries.every(entry => userStatsStore.isFavorite(entry.path));

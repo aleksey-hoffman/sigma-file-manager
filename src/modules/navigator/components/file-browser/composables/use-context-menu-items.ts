@@ -73,7 +73,10 @@ const CONTEXT_MENU_ITEMS: ContextMenuItemConfig[] = [
 
 const PROTECTED_ACTIONS = new Set<ContextMenuAction>(['rename', 'cut', 'delete', 'delete-permanently']);
 
-export function useContextMenuItems(selectedEntries: Ref<DirEntry[]>) {
+export function useContextMenuItems(
+  selectedEntries: Ref<DirEntry[]>,
+  options?: { disableDestructiveActions?: Ref<boolean> },
+) {
   const platformStore = usePlatformStore();
 
   const selectionStats = computed(() => {
@@ -113,6 +116,8 @@ export function useContextMenuItems(selectedEntries: Ref<DirEntry[]>) {
     if (!allEntriesMatchAllowedTypes) return false;
 
     if (PROTECTED_ACTIONS.has(action)) {
+      if (options?.disableDestructiveActions?.value) return false;
+
       const hasProtectedEntry = entries.some(
         entry => isProtectedSystemPath(entry.path, platformStore.currentPlatform),
       );

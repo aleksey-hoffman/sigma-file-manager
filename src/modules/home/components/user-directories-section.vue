@@ -125,13 +125,14 @@ async function handleDeleteDirectory(directoryId: string) {
         v-for="directory in userDirectories"
         :key="directory.id"
         :path="directory.path"
+        :disable-destructive-actions="true"
       >
         <template #extra-items>
-          <ContextMenuSeparator />
           <ContextMenuItem @select="handleEditDirectory(directory)">
             <PencilIcon :size="16" />
             {{ t('contextMenus.dirItem.editCard') }}
           </ContextMenuItem>
+          <ContextMenuSeparator />
         </template>
         <UserDirectoryCard :directory="directory" />
       </DirEntryInteractive>
