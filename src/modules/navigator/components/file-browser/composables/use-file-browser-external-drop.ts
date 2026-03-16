@@ -9,6 +9,7 @@ import { storeToRefs } from 'pinia';
 import type { DragOperationType } from './use-file-browser-drag';
 import { useDismissalLayerStore } from '@/stores/runtime/dismissal-layer';
 import { useDropOverlayStore } from '@/stores/runtime/drop-overlay';
+import { getDropTargetRegistry } from '@/composables/use-drop-target-registry';
 
 interface DropTargetInfo {
   path: string;
@@ -62,20 +63,24 @@ export function useFileBrowserExternalDrop(options: {
 
   function collectDropTargets() {
     dropTargets = [];
-    const container = options.entriesContainerRef.value;
-    if (!container) return;
+    const dropTargetRegistry = getDropTargetRegistry();
 
-    const elements = container.querySelectorAll('[data-drop-target]');
-    elements.forEach((element) => {
-      const path = element.getAttribute('data-entry-path');
+    for (const container of dropTargetRegistry) {
+      const containerElement = container.entriesContainerRef.value;
+      if (!containerElement) continue;
 
-      if (path) {
-        dropTargets.push({
-          path,
-          element,
-        });
-      }
-    });
+      const elements = containerElement.querySelectorAll('[data-drop-target]');
+      elements.forEach((element) => {
+        const path = element.getAttribute('data-entry-path');
+
+        if (path) {
+          dropTargets.push({
+            path,
+            element,
+          });
+        }
+      });
+    }
   }
 
   function findDropTarget(clientX: number, clientY: number): DropTargetInfo | null {
@@ -96,20 +101,30 @@ export function useFileBrowserExternalDrop(options: {
   }
 
   function updateDropTargetAttributes(targetPath: string) {
-    const container = options.entriesContainerRef.value;
-    if (!container) return;
+    const dropTargetRegistry = getDropTargetRegistry();
 
-    container.querySelectorAll('[data-drag-over]').forEach((element) => {
-      element.removeAttribute('data-drag-over');
-    });
+    for (const container of dropTargetRegistry) {
+      const containerElement = container.entriesContainerRef.value;
+      if (!containerElement) continue;
+
+      containerElement.querySelectorAll('[data-drag-over]').forEach((element) => {
+        element.removeAttribute('data-drag-over');
+      });
+    }
 
     if (targetPath) {
-      const targetElement = container.querySelector(
-        `[data-entry-path="${CSS.escape(targetPath)}"]`,
-      );
+      for (const container of dropTargetRegistry) {
+        const containerElement = container.entriesContainerRef.value;
+        if (!containerElement) continue;
 
-      if (targetElement) {
-        targetElement.setAttribute('data-drag-over', '');
+        const targetElement = containerElement.querySelector(
+          `[data-entry-path="${CSS.escape(targetPath)}"]`,
+        );
+
+        if (targetElement) {
+          targetElement.setAttribute('data-drag-over', '');
+          break;
+        }
       }
     }
   }

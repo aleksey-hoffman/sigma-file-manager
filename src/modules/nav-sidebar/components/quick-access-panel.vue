@@ -11,7 +11,7 @@ const tagsOpenState = ref<boolean | null>(null);
 </script>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, onMounted, onUnmounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import {
@@ -30,12 +30,30 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { DirEntryInteractive } from '@/components/dir-entry-interactive';
 import { useUserStatsStore } from '@/stores/storage/user-stats';
 import { useWorkspacesStore } from '@/stores/storage/workspaces';
+import { registerDropContainer, unregisterDropContainer } from '@/composables/use-drop-target-registry';
 import type { FavoriteItem, ItemTag, TaggedItem } from '@/types/user-stats';
 
 const { t } = useI18n();
 const router = useRouter();
 const userStatsStore = useUserStatsStore();
 const workspacesStore = useWorkspacesStore();
+
+const panelRef = ref<HTMLElement | null>(null);
+let dropContainerId: number | null = null;
+
+onMounted(() => {
+  dropContainerId = registerDropContainer({
+    componentRef: panelRef,
+    entriesContainerRef: panelRef,
+    disableBackgroundDrop: true,
+  });
+});
+
+onUnmounted(() => {
+  if (dropContainerId !== null) {
+    unregisterDropContainer(dropContainerId);
+  }
+});
 
 const favoriteItems = computed(() => userStatsStore.favorites);
 const taggedItems = computed(() => userStatsStore.taggedItems);
@@ -107,7 +125,10 @@ function openTaggedItem(item: TaggedItem) {
 </script>
 
 <template>
-  <div class="quick-access-panel">
+  <div
+    ref="panelRef"
+    class="quick-access-panel"
+  >
     <div class="quick-access-panel__header">
       <span class="quick-access-panel__title">{{ t('quickAccess.title') }}</span>
     </div>
@@ -365,7 +386,8 @@ function openTaggedItem(item: TaggedItem) {
 .quick-access-panel__section-content {
   overflow: hidden;
   padding-bottom: 4px;
-  padding-left: 22px;
+  padding-left: 20px;
+  margin-right: 8px;
 }
 
 .quick-access-panel__section-content[data-state="open"] {
@@ -400,6 +422,11 @@ function openTaggedItem(item: TaggedItem) {
 
 .quick-access-panel__item:hover {
   background-color: hsl(var(--foreground) / 5%);
+}
+
+.dir-entry-interactive[data-drag-over] > .quick-access-panel__item {
+  background-color: hsl(var(--primary) / 15%);
+  box-shadow: inset 0 0 0 2px hsl(var(--primary) / 60%);
 }
 
 .quick-access-panel__item-icon {

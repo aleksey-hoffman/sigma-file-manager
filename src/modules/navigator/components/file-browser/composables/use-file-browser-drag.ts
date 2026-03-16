@@ -8,6 +8,12 @@ import { resolveResource } from '@tauri-apps/api/path';
 import type { DirEntry } from '@/types/dir-entry';
 import { UI_CONSTANTS } from '@/constants';
 import { useDismissalLayerStore } from '@/stores/runtime/dismissal-layer';
+import {
+  getDropTargetRegistry,
+  getCrossPaneDropTargetPaneId,
+  registerDropContainer,
+  unregisterDropContainer,
+} from '@/composables/use-drop-target-registry';
 
 export type DragOperationType = 'move' | 'copy';
 
@@ -25,18 +31,6 @@ interface DropTargetInfo {
   element: Element;
 }
 
-interface CrossPaneInfo {
-  id: number;
-  componentRef: Ref<Element | null>;
-  entriesContainerRef: Ref<Element | null>;
-  currentPath: Ref<string>;
-  disableBackgroundDrop: boolean;
-}
-
-const crossPaneRegistry: CrossPaneInfo[] = [];
-const crossPaneDropTargetPaneId = ref<number | null>(null);
-let nextPaneId = 0;
-
 export function useFileBrowserDrag(options: {
   selectedEntries: Ref<DirEntry[]>;
   currentPath: Ref<string>;
@@ -48,9 +42,9 @@ export function useFileBrowserDrag(options: {
   disableBackgroundDrop?: boolean;
 }) {
   const dismissalLayerStore = useDismissalLayerStore();
-  const paneId = nextPaneId++;
-  crossPaneRegistry.push({
-    id: paneId,
+  const dropTargetRegistry = getDropTargetRegistry();
+  const crossPaneDropTargetPaneId = getCrossPaneDropTargetPaneId();
+  const paneId = registerDropContainer({
     componentRef: options.componentRef,
     entriesContainerRef: options.entriesContainerRef,
     currentPath: options.currentPath,
@@ -88,11 +82,11 @@ export function useFileBrowserDrag(options: {
   function collectDropTargets() {
     dropTargets = [];
 
-    for (const pane of crossPaneRegistry) {
-      const container = pane.entriesContainerRef.value;
-      if (!container) continue;
+    for (const container of dropTargetRegistry) {
+      const containerElement = container.entriesContainerRef.value;
+      if (!containerElement) continue;
 
-      const elements = container.querySelectorAll('[data-drop-target]');
+      const elements = containerElement.querySelectorAll('[data-drop-target]');
       elements.forEach((element) => {
         const path = element.getAttribute('data-entry-path');
 
@@ -107,15 +101,11 @@ export function useFileBrowserDrag(options: {
   }
 
   function findDropTarget(clientX: number, clientY: number): DropTargetInfo | null {
-    for (const target of dropTargets) {
-      const rect = target.element.getBoundingClientRect();
+    const topElement = document.elementFromPoint(clientX, clientY);
+    if (!topElement) return null;
 
-      if (
-        clientX >= rect.left
-        && clientX <= rect.right
-        && clientY >= rect.top
-        && clientY <= rect.bottom
-      ) {
+    for (const target of dropTargets) {
+      if (target.element === topElement || target.element.contains(topElement)) {
         const isDraggedItem = dragItems.value.some(
           item => item.path === target.path,
         );
@@ -130,11 +120,11 @@ export function useFileBrowserDrag(options: {
   }
 
   function updateDropTargetAttributes(targetPath: string, targetElement?: Element | null) {
-    for (const pane of crossPaneRegistry) {
-      const container = pane.entriesContainerRef.value;
-      if (!container) continue;
+    for (const container of dropTargetRegistry) {
+      const containerElement = container.entriesContainerRef.value;
+      if (!containerElement) continue;
 
-      container.querySelectorAll('[data-drag-over]').forEach((element) => {
+      containerElement.querySelectorAll('[data-drag-over]').forEach((element) => {
         element.removeAttribute('data-drag-over');
       });
     }
@@ -143,11 +133,11 @@ export function useFileBrowserDrag(options: {
       targetElement.setAttribute('data-drag-over', '');
     }
     else if (targetPath) {
-      for (const pane of crossPaneRegistry) {
-        const container = pane.entriesContainerRef.value;
-        if (!container) continue;
+      for (const container of dropTargetRegistry) {
+        const containerElement = container.entriesContainerRef.value;
+        if (!containerElement) continue;
 
-        const foundElement = container.querySelector(
+        const foundElement = containerElement.querySelector(
           `[data-entry-path="${CSS.escape(targetPath)}"]`,
         );
 
@@ -180,10 +170,10 @@ export function useFileBrowserDrag(options: {
     path: string;
     targetPaneId: number | null;
   } {
-    for (const pane of crossPaneRegistry) {
-      if (pane.id === paneId) continue;
+    for (const container of dropTargetRegistry) {
+      if (container.id === paneId) continue;
 
-      const element = pane.componentRef.value;
+      const element = container.componentRef.value;
       if (!element) continue;
 
       const rect = element.getBoundingClientRect();
@@ -195,8 +185,8 @@ export function useFileBrowserDrag(options: {
         && clientY <= rect.bottom
       ) {
         return {
-          path: pane.disableBackgroundDrop ? '' : pane.currentPath.value,
-          targetPaneId: pane.disableBackgroundDrop ? null : pane.id,
+          path: container.disableBackgroundDrop ? '' : container.currentPath.value,
+          targetPaneId: container.disableBackgroundDrop ? null : container.id,
         };
       }
     }
@@ -261,6 +251,8 @@ export function useFileBrowserDrag(options: {
     cursorX.value = event.clientX;
     cursorY.value = event.clientY;
     operationType.value = event.shiftKey ? 'copy' : 'move';
+
+    collectDropTargets();
 
     if (isCursorOutsideViewport(event.clientX, event.clientY)) {
       initiateOutboundDrag();
@@ -370,11 +362,7 @@ export function useFileBrowserDrag(options: {
 
   onUnmounted(() => {
     cleanup();
-    const registryIndex = crossPaneRegistry.findIndex(pane => pane.id === paneId);
-
-    if (registryIndex !== -1) {
-      crossPaneRegistry.splice(registryIndex, 1);
-    }
+    unregisterDropContainer(paneId);
   });
 
   return {

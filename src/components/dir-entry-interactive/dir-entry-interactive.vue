@@ -122,6 +122,6 @@ function handleRenameCancel() {
 
 <style>
 .dir-entry-interactive {
-  display: contents;
+  display: block;
 }
 </style>
