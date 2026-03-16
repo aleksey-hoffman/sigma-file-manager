@@ -153,7 +153,14 @@ function handleNewItemCancel() {
       :entries="[dirEntry]"
       @rename="handleRename"
       @create-new-item="handleCreateNewItem"
-    />
+    >
+      <template
+        v-if="$slots['extra-items']"
+        #extra-items
+      >
+        <slot name="extra-items" />
+      </template>
+    </DirEntryContextMenu>
   </ContextMenu>
 
   <FileBrowserRenameDialog

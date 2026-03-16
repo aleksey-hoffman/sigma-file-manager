@@ -73,6 +73,7 @@ async function handleExtensionAction(registration: ContextMenuItemRegistration) 
       :menu-separator-component="ContextMenuSeparator"
       @action="handleAction"
     />
+    <slot name="extra-items" />
     <FileBrowserExtensionMenuItems
       :selected-entries="props.entries"
       :menu-item-component="ContextMenuItem"

@@ -18,7 +18,7 @@ import { PageDefaultLayout } from '@/layouts';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { TagSelector } from '@/components/ui/tag-selector';
-import { DropTargetCard } from '@/components/drop-target-card';
+import { DirEntryInteractive } from '@/components/dir-entry-interactive';
 import { useUserStatsStore } from '@/stores/storage/user-stats';
 import { useWorkspacesStore } from '@/stores/storage/workspaces';
 import { usePageDropZone } from '@/composables/use-page-drop-zone';
@@ -237,11 +237,11 @@ async function handleDeleteTag(tagId: string) {
             v-else
             class="dashboard-page__items-grid"
           >
-            <DropTargetCard
+            <DirEntryInteractive
               v-for="item in favoriteItems"
               :key="item.path"
               :path="item.path"
-              :enabled="!isFavoriteFile(item)"
+              :is-file="isFavoriteFile(item)"
             >
               <EntryCard
                 :path="item.path"
@@ -256,7 +256,7 @@ async function handleDeleteTag(tagId: string) {
                   <XIcon :size="14" />
                 </Button>
               </EntryCard>
-            </DropTargetCard>
+            </DirEntryInteractive>
           </div>
         </TabsContent>
 
@@ -278,11 +278,11 @@ async function handleDeleteTag(tagId: string) {
             v-else
             class="dashboard-page__items-grid"
           >
-            <DropTargetCard
+            <DirEntryInteractive
               v-for="item in taggedItems"
               :key="item.path"
               :path="item.path"
-              :enabled="!item.isFile"
+              :is-file="item.isFile"
             >
               <EntryCard
                 :path="item.path"
@@ -311,7 +311,7 @@ async function handleDeleteTag(tagId: string) {
                   />
                 </template>
               </EntryCard>
-            </DropTargetCard>
+            </DirEntryInteractive>
           </div>
         </TabsContent>
 
@@ -333,11 +333,11 @@ async function handleDeleteTag(tagId: string) {
             v-else
             class="dashboard-page__items-grid"
           >
-            <DropTargetCard
+            <DirEntryInteractive
               v-for="item in frequentItems"
               :key="item.path"
               :path="item.path"
-              :enabled="!item.isFile"
+              :is-file="item.isFile"
             >
               <EntryCard
                 :path="item.path"
@@ -348,7 +348,7 @@ async function handleDeleteTag(tagId: string) {
                   <span class="entry-card__badge">{{ t('dashboard.openedCount', item.openCount) }}</span>
                 </div>
               </EntryCard>
-            </DropTargetCard>
+            </DirEntryInteractive>
           </div>
         </TabsContent>
 
@@ -370,11 +370,11 @@ async function handleDeleteTag(tagId: string) {
             v-else
             class="dashboard-page__items-grid"
           >
-            <DropTargetCard
+            <DirEntryInteractive
               v-for="item in historyItems"
               :key="`${item.path}-${item.openedAt}`"
               :path="item.path"
-              :enabled="!item.isFile"
+              :is-file="item.isFile"
             >
               <EntryCard
                 :path="item.path"
@@ -391,7 +391,7 @@ async function handleDeleteTag(tagId: string) {
                   <XIcon :size="14" />
                 </Button>
               </EntryCard>
-            </DropTargetCard>
+            </DirEntryInteractive>
           </div>
         </TabsContent>
       </Tabs>
@@ -465,6 +465,16 @@ async function handleDeleteTag(tagId: string) {
   display: grid;
   gap: 12px;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+
+.dashboard-page__items-grid .dir-entry-interactive {
+  border-radius: var(--radius);
+  transition: box-shadow 0.15s ease, background-color 0.15s ease;
+}
+
+.dashboard-page__items-grid .dir-entry-interactive[data-drag-over] {
+  background-color: hsl(var(--primary) / 8%);
+  box-shadow: inset 0 0 0 2px hsl(var(--primary) / 60%);
 }
 
 @media (width <= 768px) {

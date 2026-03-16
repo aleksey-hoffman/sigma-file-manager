@@ -10,7 +10,7 @@ import { PlusIcon } from 'lucide-vue-next';
 import { useDrives } from '@/modules/home/composables';
 import { usePlatformStore } from '@/stores/runtime/platform';
 import { Button } from '@/components/ui/button';
-import { DropTargetCard } from '@/components/drop-target-card';
+import { DirEntryInteractive } from '@/components/dir-entry-interactive';
 import DriveCard from './drive-card.vue';
 import MountDialog from './mount-dialog.vue';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -82,13 +82,13 @@ const sectionTitle = computed(() => {
       v-else
       class="drives-section__grid"
     >
-      <DropTargetCard
+      <DirEntryInteractive
         v-for="drive in drives"
         :key="drive.path"
         :path="drive.path"
       >
         <DriveCard :drive="drive" />
-      </DropTargetCard>
+      </DirEntryInteractive>
     </div>
 
     <MountDialog
@@ -172,5 +172,15 @@ const sectionTitle = computed(() => {
   color: hsl(var(--muted-foreground));
   font-size: 13px;
   text-align: center;
+}
+
+.drives-section__grid .dir-entry-interactive {
+  border-radius: var(--radius);
+  transition: box-shadow 0.15s ease, background-color 0.15s ease;
+}
+
+.drives-section__grid .dir-entry-interactive[data-drag-over] {
+  background-color: hsl(var(--primary) / 8%);
+  box-shadow: inset 0 0 0 2px hsl(var(--primary) / 60%);
 }
 </style>

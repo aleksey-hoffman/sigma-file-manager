@@ -6,10 +6,11 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { PlusIcon } from 'lucide-vue-next';
+import { PlusIcon, PencilIcon } from 'lucide-vue-next';
 import { useUserDirectories, type UserDirectory } from '@/modules/home/composables';
 import { Button } from '@/components/ui/button';
-import { DropTargetCard } from '@/components/drop-target-card';
+import { DirEntryInteractive } from '@/components/dir-entry-interactive';
+import { ContextMenuItem, ContextMenuSeparator } from '@/components/ui/context-menu';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import UserDirectoryCard from './user-directory-card.vue';
 import UserDirectoryEditorDialog from './user-directory-editor-dialog.vue';
@@ -120,16 +121,20 @@ async function handleDeleteDirectory(directoryId: string) {
       v-else
       class="user-directories-section__grid"
     >
-      <DropTargetCard
+      <DirEntryInteractive
         v-for="directory in userDirectories"
         :key="directory.id"
         :path="directory.path"
       >
-        <UserDirectoryCard
-          :directory="directory"
-          @edit="handleEditDirectory"
-        />
-      </DropTargetCard>
+        <template #extra-items>
+          <ContextMenuSeparator />
+          <ContextMenuItem @select="handleEditDirectory(directory)">
+            <PencilIcon :size="16" />
+            {{ t('contextMenus.dirItem.editCard') }}
+          </ContextMenuItem>
+        </template>
+        <UserDirectoryCard :directory="directory" />
+      </DirEntryInteractive>
     </div>
 
     <UserDirectoryEditorDialog
@@ -216,5 +221,15 @@ async function handleDeleteDirectory(directoryId: string) {
   color: hsl(var(--muted-foreground));
   font-size: 13px;
   text-align: center;
+}
+
+.user-directories-section__grid .dir-entry-interactive {
+  border-radius: var(--radius);
+  transition: box-shadow 0.15s ease, background-color 0.15s ease;
+}
+
+.user-directories-section__grid .dir-entry-interactive[data-drag-over] {
+  background-color: hsl(var(--primary) / 8%);
+  box-shadow: inset 0 0 0 2px hsl(var(--primary) / 60%);
 }
 </style>

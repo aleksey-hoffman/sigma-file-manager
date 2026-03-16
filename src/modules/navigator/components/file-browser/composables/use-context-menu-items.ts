@@ -5,6 +5,8 @@
 import { computed, type Ref } from 'vue';
 import type { DirEntry } from '@/types/dir-entry';
 import type { ContextMenuAction, ContextMenuItemConfig, SelectionType, EntryType } from '@/modules/navigator/components/file-browser/types';
+import { usePlatformStore } from '@/stores/runtime/platform';
+import { isProtectedSystemPath } from '@/utils/is-protected-system-path';
 
 const CONTEXT_MENU_ITEMS: ContextMenuItemConfig[] = [
   {
@@ -69,7 +71,11 @@ const CONTEXT_MENU_ITEMS: ContextMenuItemConfig[] = [
   },
 ];
 
+const PROTECTED_ACTIONS = new Set<ContextMenuAction>(['rename', 'cut', 'delete', 'delete-permanently']);
+
 export function useContextMenuItems(selectedEntries: Ref<DirEntry[]>) {
+  const platformStore = usePlatformStore();
+
   const selectionStats = computed(() => {
     const entries = selectedEntries.value;
     const selectionType: SelectionType = entries.length === 1 ? 'single' : 'multiple';
@@ -104,7 +110,17 @@ export function useContextMenuItems(selectedEntries: Ref<DirEntry[]>) {
       entryType => config.entryTypes.includes(entryType),
     );
 
-    return allEntriesMatchAllowedTypes;
+    if (!allEntriesMatchAllowedTypes) return false;
+
+    if (PROTECTED_ACTIONS.has(action)) {
+      const hasProtectedEntry = entries.some(
+        entry => isProtectedSystemPath(entry.path, platformStore.currentPlatform),
+      );
+
+      if (hasProtectedEntry) return false;
+    }
+
+    return true;
   }
 
   return {

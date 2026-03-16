@@ -7,22 +7,11 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
-import { PencilIcon } from 'lucide-vue-next';
 import { useWorkspacesStore } from '@/stores/storage/workspaces';
-import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuTrigger,
-} from '@/components/ui/context-menu';
 import { type UserDirectory, getIconComponent } from '@/modules/home/composables/use-user-directories';
 
 const props = defineProps<{
   directory: UserDirectory;
-}>();
-
-const emit = defineEmits<{
-  edit: [directory: UserDirectory];
 }>();
 
 const router = useRouter();
@@ -56,44 +45,28 @@ async function handleClick() {
   }
 }
 
-function handleEdit() {
-  emit('edit', props.directory);
-}
 </script>
 
 <template>
-  <ContextMenu>
-    <ContextMenuTrigger as-child>
-      <button
-        type="button"
-        class="user-directory-card"
-        @click="handleClick"
-      >
-        <div class="user-directory-card__icon-container">
-          <component
-            :is="iconComponent"
-            :size="20"
-            class="user-directory-card__icon"
-          />
-        </div>
+  <button
+    type="button"
+    class="user-directory-card"
+    @click="handleClick"
+  >
+    <div class="user-directory-card__icon-container">
+      <component
+        :is="iconComponent"
+        :size="20"
+        class="user-directory-card__icon"
+      />
+    </div>
 
-        <div class="user-directory-card__content">
-          <div class="user-directory-card__name">
-            {{ displayTitle }}
-          </div>
-        </div>
-      </button>
-    </ContextMenuTrigger>
-    <ContextMenuContent>
-      <ContextMenuItem
-        class="user-directory-card__context-menu-item"
-        @select="handleEdit"
-      >
-        <PencilIcon :size="16" />
-        {{ t('contextMenus.dirItem.editCard') }}
-      </ContextMenuItem>
-    </ContextMenuContent>
-  </ContextMenu>
+    <div class="user-directory-card__content">
+      <div class="user-directory-card__name">
+        {{ displayTitle }}
+      </div>
+    </div>
+  </button>
 </template>
 
 <style>
@@ -154,9 +127,4 @@ function handleEdit() {
   white-space: nowrap;
 }
 
-.user-directory-card__context-menu-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
 </style>
