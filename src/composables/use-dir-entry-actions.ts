@@ -14,6 +14,7 @@ import { useClipboardStore, type FileOperationResult, type ConflictItem, type Co
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
 import { useQuickViewStore } from '@/stores/runtime/quick-view';
 import { toast, ToastProgress, ToastStatic } from '@/components/ui/toaster';
+import { getParentDirectory } from '@/utils/normalize-path';
 
 type FileOperationToastData = {
   id: string | number;
@@ -298,7 +299,7 @@ export function useDirEntryActions() {
         userStatsStore.handlePathsDeleted(paths);
         dirSizesStore.invalidate(paths);
 
-        const parentDirs = [...new Set(paths.map(path => path.substring(0, path.lastIndexOf('/'))))];
+        const parentDirs = [...new Set(paths.map(path => getParentDirectory(path)))];
         workspacesStore.handleDirectoryContentsChanged(parentDirs);
 
         autoDismissTimeout = setTimeout(() => {
@@ -359,8 +360,8 @@ export function useDirEntryActions() {
         });
 
         const oldPath = entry.path;
-        const parentDir = oldPath.substring(0, oldPath.lastIndexOf('/'));
-        const newPath = `${parentDir}/${trimmedName}`;
+        const parentDir = getParentDirectory(oldPath);
+        const newPath = `${parentDir}${parentDir.endsWith('/') ? '' : '/'}${trimmedName}`;
 
         workspacesStore.handlePathRenamed(oldPath, newPath);
         userStatsStore.handlePathRenamed(oldPath, newPath);

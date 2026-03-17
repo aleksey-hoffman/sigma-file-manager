@@ -42,9 +42,11 @@ function handleAction(action: ContextMenuAction) {
     const targetDir = props.entries.length === 1 && !props.entries[0].is_file
       ? props.entries[0].path
       : undefined;
+
     if (targetDir) {
       emit('paste', targetDir);
     }
+
     return;
   }
 

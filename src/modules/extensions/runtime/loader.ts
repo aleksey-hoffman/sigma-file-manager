@@ -10,7 +10,7 @@ import type {
   ExtensionActivationEvent,
 } from '@/types/extension';
 import type { SigmaExtensionAPI } from '@/modules/extensions/api';
-import { createExtensionAPI, registerExtensionConfiguration, registerExtensionKeybindings } from '@/modules/extensions/api';
+import { createExtensionAPI, registerExtensionConfiguration, registerExtensionKeybindings, clearExtensionRegistrations } from '@/modules/extensions/api';
 import { type ExtensionSandbox, validateExtensionCode } from './sandbox';
 import { createExtensionApiMethodMap } from '@/modules/extensions/runtime/api-method-map';
 import { createWorkerHost, type WorkerHost } from '@/modules/extensions/runtime/worker-runtime';
@@ -180,6 +180,13 @@ async function loadApiExtension(
     }
   }
   catch (error) {
+    clearExtensionRegistrations(extensionId);
+
+    if (runtime.workerHost) {
+      runtime.workerHost.destroy();
+      runtime.workerHost = null;
+    }
+
     const message = error instanceof Error ? error.message : String(error);
     console.error(`Failed to load extension ${extensionId}: ${message}`);
     throw error;

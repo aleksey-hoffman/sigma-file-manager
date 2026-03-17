@@ -147,6 +147,7 @@ export const useExtensionsStore = defineStore('extensions', () => {
 
   const isAnyInstallInProgress = computed(() => installQueueDepth.value > 0);
   const pendingExtensionLoads = new Map<string, Promise<void>>();
+  const extensionLoadGeneration = new Map<string, number>();
 
   async function cleanupOrphanedSharedBinaries(orphanedBinaries: SharedBinaryInfo[]): Promise<void> {
     for (const orphanedBinary of orphanedBinaries) {
@@ -798,14 +799,21 @@ export const useExtensionsStore = defineStore('extensions', () => {
 
     loadedExtensions.value.set(extensionId, loadState);
 
+    const generation = (extensionLoadGeneration.get(extensionId) ?? 0) + 1;
+    extensionLoadGeneration.set(extensionId, generation);
+
     const loadPromise = (async () => {
       try {
         await loadExtensionCode(extensionId, manifest, activationEvent);
+
+        if (extensionLoadGeneration.get(extensionId) !== generation) return;
 
         loadState.state = 'loaded';
         loadedExtensions.value.set(extensionId, loadState);
       }
       catch (error) {
+        if (extensionLoadGeneration.get(extensionId) !== generation) return;
+
         loadState.state = 'error';
         loadState.error = error instanceof Error ? error.message : String(error);
         loadedExtensions.value.set(extensionId, loadState);
@@ -939,6 +947,9 @@ export const useExtensionsStore = defineStore('extensions', () => {
     const loaded = loadedExtensions.value.get(extensionId);
 
     if (!loaded) return;
+
+    extensionLoadGeneration.set(extensionId, (extensionLoadGeneration.get(extensionId) ?? 0) + 1);
+    pendingExtensionLoads.delete(extensionId);
 
     await unloadExtensionRuntime(extensionId);
 

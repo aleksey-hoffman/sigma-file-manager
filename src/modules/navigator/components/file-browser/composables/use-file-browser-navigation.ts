@@ -449,7 +449,7 @@ export function useFileBrowserNavigation(
     if (!modifiedPaths || !currentPath.value) return;
 
     if (modifiedPaths.includes(currentPath.value)) {
-      await readDir(currentPath.value);
+      await readDir(currentPath.value, false);
     }
   });
 

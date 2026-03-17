@@ -40,12 +40,6 @@ export function createShellAPI(context: ExtensionContext) {
         throw new Error(context.t('extensions.api.permissionDenied', { permission: 'shell' }));
       }
 
-      const taskId = await invokeAsExtension<string>(context.extensionId, 'start_extension_command', {
-        extensionId: context.extensionId,
-        commandPath,
-        args: args || [],
-      });
-
       let resolveResult: ((value: { code: number;
         stdout: string;
         stderr: string; }) => void) | null = null;
@@ -57,6 +51,8 @@ export function createShellAPI(context: ExtensionContext) {
         resolveResult = resolve;
         rejectResult = reject;
       });
+
+      let taskId: string | null = null;
 
       const unlistenProgress = await listen<{
         taskId: string;
@@ -86,9 +82,22 @@ export function createShellAPI(context: ExtensionContext) {
         }
       });
 
+      try {
+        taskId = await invokeAsExtension<string>(context.extensionId, 'start_extension_command', {
+          extensionId: context.extensionId,
+          commandPath,
+          args: args || [],
+        });
+      }
+      catch (error) {
+        unlistenProgress();
+        unlistenComplete();
+        throw error;
+      }
+
       async function cancel(): Promise<void> {
         try {
-          await invokeAsExtension<void>(context.extensionId, 'cancel_extension_command', { taskId });
+          await invokeAsExtension<void>(context.extensionId, 'cancel_extension_command', { taskId: taskId! });
         }
         catch (error) {
           if (rejectResult) rejectResult(error);

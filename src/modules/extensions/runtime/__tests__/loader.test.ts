@@ -12,6 +12,7 @@ const {
   createExtensionAPIMock,
   registerExtensionConfigurationMock,
   registerExtensionKeybindingsMock,
+  clearExtensionRegistrationsMock,
   initializeWorkerMock,
   activateWorkerMock,
   deactivateWorkerMock,
@@ -22,6 +23,7 @@ const {
   createExtensionAPIMock: vi.fn(() => ({})),
   registerExtensionConfigurationMock: vi.fn(),
   registerExtensionKeybindingsMock: vi.fn(),
+  clearExtensionRegistrationsMock: vi.fn(),
   initializeWorkerMock: vi.fn(),
   activateWorkerMock: vi.fn(),
   deactivateWorkerMock: vi.fn(),
@@ -41,6 +43,7 @@ vi.mock('@/modules/extensions/api', () => ({
   createExtensionAPI: createExtensionAPIMock,
   registerExtensionConfiguration: registerExtensionConfigurationMock,
   registerExtensionKeybindings: registerExtensionKeybindingsMock,
+  clearExtensionRegistrations: clearExtensionRegistrationsMock,
 }));
 
 vi.mock('@/modules/extensions/runtime/sandbox', () => ({
@@ -81,6 +84,7 @@ describe('extension runtime loader', () => {
     createExtensionAPIMock.mockClear();
     registerExtensionConfigurationMock.mockClear();
     registerExtensionKeybindingsMock.mockClear();
+    clearExtensionRegistrationsMock.mockClear();
     initializeWorkerMock.mockReset();
     activateWorkerMock.mockReset();
     deactivateWorkerMock.mockReset();
@@ -161,6 +165,8 @@ describe('extension runtime loader', () => {
     ).rejects.toThrow('Activation failed');
 
     expect(getLoadedRuntime('test.video')).toBeUndefined();
+    expect(clearExtensionRegistrationsMock).toHaveBeenCalledWith('test.video');
+    expect(destroyWorkerMock).toHaveBeenCalledTimes(1);
   });
 
   it('destroys the worker host when unloading an api extension', async () => {

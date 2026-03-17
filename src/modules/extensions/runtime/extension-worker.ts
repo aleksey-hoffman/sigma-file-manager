@@ -53,6 +53,8 @@ type MutableWorkerGlobalKey
     | 'addEventListener'
     | 'removeEventListener'
     | 'dispatchEvent'
+    | 'eval'
+    | 'Function'
     | 'sigma';
 
 const workerScope = globalThis as typeof globalThis & {
@@ -131,6 +133,8 @@ function restrictWorkerGlobals(): void {
     'addEventListener',
     'removeEventListener',
     'dispatchEvent',
+    'eval',
+    'Function',
   ];
 
   for (const blockedGlobal of blockedGlobals) {

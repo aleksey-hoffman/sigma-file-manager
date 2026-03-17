@@ -75,15 +75,9 @@ export function createUiAPI(context: ExtensionContext) {
         return data instanceof Uint8Array ? data : new Uint8Array(data);
       }
 
-      function findImageType(typesData: Record<string, Uint8Array>): string | undefined {
-        return Object.keys(typesData).find(type => type.startsWith('image/'));
-      }
-
       for (const typesData of items) {
-        const imageType = findImageType(typesData);
-
-        if (imageType) {
-          const image = await TauriImage.fromBytes(toBytes(typesData[imageType]));
+        if (typesData['image/png']) {
+          const image = await TauriImage.fromBytes(toBytes(typesData['image/png']));
           await tauriWriteImage(image);
           return;
         }
@@ -107,7 +101,7 @@ export function createUiAPI(context: ExtensionContext) {
       const allTypes = [...new Set(items.flatMap(item => Object.keys(item)))];
 
       if (allTypes.length > 0) {
-        throw new Error(`No supported clipboard types found in: ${allTypes.join(', ')}. Supported: image/*, text/html, text/plain`);
+        throw new Error(`No supported clipboard types found in: ${allTypes.join(', ')}. Supported: image/png, text/html, text/plain`);
       }
     },
     withProgress: async <T>(

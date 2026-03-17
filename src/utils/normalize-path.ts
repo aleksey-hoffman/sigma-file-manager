@@ -5,3 +5,11 @@
 export default function normalizePath(path: string): string {
   return path.replace(/\\/g, '/');
 }
+
+export function getParentDirectory(filePath: string): string {
+  const slashIndex = filePath.lastIndexOf('/');
+  if (slashIndex <= 0) return '/';
+  const parent = filePath.substring(0, slashIndex);
+
+  return parent.endsWith(':') ? `${parent}/` : parent;
+}

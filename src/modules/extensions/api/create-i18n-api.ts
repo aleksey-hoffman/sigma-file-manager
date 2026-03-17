@@ -46,6 +46,7 @@ export function createI18nAPI(context: ExtensionContext) {
           extensionId: context.extensionId,
           filePath: enPath,
         });
+
         if (bytes.length > MAX_LOCALE_FILE_SIZE) {
           console.warn(`Extension ${context.extensionId}: locale file ${enPath} exceeds size limit`);
         }
@@ -75,6 +76,7 @@ export function createI18nAPI(context: ExtensionContext) {
             extensionId: context.extensionId,
             filePath,
           });
+
           if (bytes.length > MAX_LOCALE_FILE_SIZE) {
             console.warn(`Extension ${context.extensionId}: locale file ${filePath} exceeds size limit`);
             if (enMessages) messages[locale] = enMessages;

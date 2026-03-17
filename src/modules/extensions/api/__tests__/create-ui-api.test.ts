@@ -151,7 +151,10 @@ describe('createUiAPI', () => {
       const htmlBytes = new TextEncoder().encode('<b>bold</b>');
       const textBytes = new TextEncoder().encode('bold');
 
-      await uiApi.clipboardWrite([{ 'text/html': htmlBytes, 'text/plain': textBytes }]);
+      await uiApi.clipboardWrite([{
+        'text/html': htmlBytes,
+        'text/plain': textBytes,
+      }]);
 
       expect(writeHtmlMock).toHaveBeenCalledWith('<b>bold</b>', 'bold');
       expect(writeTextMock).not.toHaveBeenCalled();
@@ -196,18 +199,16 @@ describe('createUiAPI', () => {
       expect(writeTextMock).not.toHaveBeenCalled();
     });
 
-    it('writes any image/* type', async () => {
-      const fakeImage = { type: 'tauri-image' };
-      fromBytesMock.mockResolvedValueOnce(fakeImage);
-      writeImageMock.mockResolvedValueOnce(undefined);
+    it('rejects non-PNG image types', async () => {
       const uiApi = createUiAPI(createContext(['clipboard' as ExtensionPermission]));
       const jpegBytes = new Uint8Array([255, 216, 255, 224]);
 
-      await uiApi.clipboardWrite([{ 'image/jpeg': jpegBytes }]);
+      await expect(
+        uiApi.clipboardWrite([{ 'image/jpeg': jpegBytes }]),
+      ).rejects.toThrow('No supported clipboard types found');
 
-      expect(fromBytesMock).toHaveBeenCalledWith(jpegBytes);
-      expect(writeImageMock).toHaveBeenCalledWith(fakeImage);
-      expect(writeTextMock).not.toHaveBeenCalled();
+      expect(fromBytesMock).not.toHaveBeenCalled();
+      expect(writeImageMock).not.toHaveBeenCalled();
     });
 
     it('throws for unsupported MIME types only', async () => {
