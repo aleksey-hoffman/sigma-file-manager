@@ -67,6 +67,14 @@ export function removeSettingsChangeListener(listener: SettingsChangeListener): 
   }
 }
 
+export function clearExtensionSettingsChangeListeners(extensionId: string): void {
+  for (let index = settingsChangeListeners.length - 1; index >= 0; index--) {
+    if (settingsChangeListeners[index].extensionId === extensionId) {
+      settingsChangeListeners.splice(index, 1);
+    }
+  }
+}
+
 export function clearAllSettingsChangeListeners(): void {
   settingsChangeListeners.length = 0;
 }

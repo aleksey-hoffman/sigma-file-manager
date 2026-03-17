@@ -19,6 +19,7 @@ import {
   deleteExtensionConfiguration,
   clearExtensionConfigurations,
   clearAllSettingsChangeListeners,
+  clearExtensionSettingsChangeListeners,
 } from '@/modules/extensions/api/configuration';
 
 export type ContextMenuRegistration = {
@@ -133,6 +134,7 @@ export function clearAllRegistrations(): void {
 
 export function clearExtensionActivationRegistrations(extensionId: string): void {
   clearExtensionContextListeners(extensionId);
+  clearExtensionSettingsChangeListeners(extensionId);
 
   for (let registrationIndex = contextMenuRegistrations.length - 1; registrationIndex >= 0; registrationIndex--) {
     if (contextMenuRegistrations[registrationIndex].extensionId === extensionId) {

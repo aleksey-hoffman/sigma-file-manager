@@ -29,6 +29,7 @@ export type WorkerHost = {
   initialize: (entryUrl: string) => Promise<void>;
   activate: (context: ExtensionActivateContext) => Promise<void>;
   deactivate: () => Promise<void>;
+  disposeActivationResources: () => void;
   destroy: () => void;
 };
 
@@ -429,6 +430,16 @@ export function createWorkerHost(
       return postWorkerRequest<void>(worker, pendingRequests, {
         type: 'deactivate',
       });
+    },
+    disposeActivationResources() {
+      for (const disposable of resourceDisposables.values()) {
+        disposable.dispose();
+      }
+
+      resourceDisposables.clear();
+      modalHandles.clear();
+      activeProgressTasks.clear();
+      activeShellTasks.clear();
     },
     destroy() {
       for (const disposable of resourceDisposables.values()) {

@@ -136,7 +136,15 @@ export async function reactivateExtensionRuntime(extensionId: string): Promise<v
 
   clearExtensionActivationRegistrations(extensionId);
   await runtime.workerHost.deactivate();
-  await runtime.workerHost.activate(runtime.activationContext);
+  runtime.workerHost.disposeActivationResources();
+
+  const reactivationContext: ExtensionActivateContext = {
+    ...runtime.activationContext,
+    activationEvent: 'onStartup',
+  };
+  runtime.activationContext = reactivationContext;
+
+  await runtime.workerHost.activate(reactivationContext);
 }
 
 async function loadApiExtension(

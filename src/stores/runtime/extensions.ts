@@ -1029,6 +1029,7 @@ export const useExtensionsStore = defineStore('extensions', () => {
       }
       catch (error) {
         console.error(`Failed to reload locale for extension ${extensionId}:`, error);
+        await unloadExtension(extensionId);
         continue;
       }
 
