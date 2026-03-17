@@ -420,7 +420,14 @@ export const useExtensionsStore = defineStore('extensions', () => {
           integrity: getRegistryIntegrity(registryEntry, targetVersion) ?? null,
         });
 
-        await storageStore.addInstalledExtension(extensionId, targetVersion, manifest);
+        try {
+          await storageStore.addInstalledExtension(extensionId, targetVersion, manifest);
+        }
+        catch (storageError) {
+          await invoke('delete_extension', { extensionId }).catch(() => {});
+          throw storageError;
+        }
+
         brokenExtensionIds.value = new Set([...brokenExtensionIds.value].filter(id => id !== extensionId));
 
         clearBinaryDownloadCount(extensionId);
@@ -583,41 +590,43 @@ export const useExtensionsStore = defineStore('extensions', () => {
     extensionId: string,
     options: { runUninstallHook?: boolean } = {},
   ): Promise<void> {
-    if (uninstallingExtensions.value.has(extensionId)) return;
+    return runInInstallQueue(async () => {
+      if (uninstallingExtensions.value.has(extensionId)) return;
 
-    uninstallingExtensions.value.add(extensionId);
+      uninstallingExtensions.value.add(extensionId);
 
-    try {
-      const shouldRunUninstallHook = options.runUninstallHook ?? true;
-      const installed = installedExtensions.value.find(
-        extension => extension.id === extensionId,
-      );
-
-      if (shouldRunUninstallHook && installed) {
-        await loadExtensionForEvent(
-          extensionId,
-          installed.manifest,
-          'onUninstall',
-          { allowWhenDisabled: true },
+      try {
+        const shouldRunUninstallHook = options.runUninstallHook ?? true;
+        const installed = installedExtensions.value.find(
+          extension => extension.id === extensionId,
         );
+
+        if (shouldRunUninstallHook && installed) {
+          await loadExtensionForEvent(
+            extensionId,
+            installed.manifest,
+            'onUninstall',
+            { allowWhenDisabled: true },
+          );
+        }
+
+        await unloadExtension(extensionId);
+        await invoke('cancel_all_extension_commands', { extensionId });
+
+        await invoke('delete_extension', { extensionId });
+
+        const orphanedBinaries = await storageStore.removeAllSharedBinaryUsages(extensionId);
+        await cleanupOrphanedSharedBinaries(orphanedBinaries);
+
+        await storageStore.removeInstalledExtension(extensionId);
+        brokenExtensionIds.value = new Set([...brokenExtensionIds.value].filter(id => id !== extensionId));
+
+        filterRecentCommandsToExisting();
       }
-
-      await unloadExtension(extensionId);
-      await invoke('cancel_all_extension_commands', { extensionId });
-
-      await invoke('delete_extension', { extensionId });
-
-      const orphanedBinaries = await storageStore.removeAllSharedBinaryUsages(extensionId);
-      await cleanupOrphanedSharedBinaries(orphanedBinaries);
-
-      await storageStore.removeInstalledExtension(extensionId);
-      brokenExtensionIds.value = new Set([...brokenExtensionIds.value].filter(id => id !== extensionId));
-
-      filterRecentCommandsToExisting();
-    }
-    finally {
-      uninstallingExtensions.value.delete(extensionId);
-    }
+      finally {
+        uninstallingExtensions.value.delete(extensionId);
+      }
+    });
   }
 
   async function uninstallExtension(extensionId: string): Promise<void> {
@@ -1069,10 +1078,10 @@ export const useExtensionsStore = defineStore('extensions', () => {
     return registration.handler(...args);
   }
 
-  async function addToRecentCommands(commandId: string): Promise<void> {
+  function addToRecentCommands(commandId: string): void {
     const filtered = recentCommandIds.value.filter(id => id !== commandId);
     recentCommandIds.value = [commandId, ...filtered].slice(0, MAX_RECENT_COMMANDS);
-    await storageStore.setRecentCommandIds(recentCommandIds.value);
+    storageStore.setRecentCommandIds(recentCommandIds.value).catch(() => {});
   }
 
   function filterRecentCommandsToExisting(): void {

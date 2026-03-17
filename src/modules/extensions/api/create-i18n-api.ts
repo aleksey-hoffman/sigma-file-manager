@@ -7,6 +7,8 @@ import { messages as appMessages } from '@/localization/data';
 import type { ExtensionContext } from '@/modules/extensions/api/extension-context';
 import { invokeAsExtension } from '@/modules/extensions/runtime/extension-invoke';
 
+const MAX_LOCALE_FILE_SIZE = 512 * 1024;
+
 export type ExtensionLocaleMessages = Record<string, Record<string, string>>;
 
 export function createI18nAPI(context: ExtensionContext) {
@@ -44,11 +46,17 @@ export function createI18nAPI(context: ExtensionContext) {
           extensionId: context.extensionId,
           filePath: enPath,
         });
-        const content = new TextDecoder().decode(new Uint8Array(bytes));
-        const parsed = JSON.parse(content) as Record<string, string>;
-        if (parsed && typeof parsed === 'object') enMessages = parsed;
+        if (bytes.length > MAX_LOCALE_FILE_SIZE) {
+          console.warn(`Extension ${context.extensionId}: locale file ${enPath} exceeds size limit`);
+        }
+        else {
+          const content = new TextDecoder().decode(new Uint8Array(bytes));
+          const parsed = JSON.parse(content) as Record<string, string>;
+          if (parsed && typeof parsed === 'object') enMessages = parsed;
+        }
       }
-      catch {
+      catch (error) {
+        console.warn(`Extension ${context.extensionId}: failed to load locale file ${enPath}:`, error);
       }
     }
 
@@ -67,12 +75,19 @@ export function createI18nAPI(context: ExtensionContext) {
             extensionId: context.extensionId,
             filePath,
           });
-          const content = new TextDecoder().decode(new Uint8Array(bytes));
-          const parsed = JSON.parse(content) as Record<string, string>;
-          if (parsed && typeof parsed === 'object') messages[locale] = parsed;
-          else if (enMessages) messages[locale] = enMessages;
+          if (bytes.length > MAX_LOCALE_FILE_SIZE) {
+            console.warn(`Extension ${context.extensionId}: locale file ${filePath} exceeds size limit`);
+            if (enMessages) messages[locale] = enMessages;
+          }
+          else {
+            const content = new TextDecoder().decode(new Uint8Array(bytes));
+            const parsed = JSON.parse(content) as Record<string, string>;
+            if (parsed && typeof parsed === 'object') messages[locale] = parsed;
+            else if (enMessages) messages[locale] = enMessages;
+          }
         }
-        catch {
+        catch (error) {
+          console.warn(`Extension ${context.extensionId}: failed to load locale file ${filePath}:`, error);
           if (enMessages) messages[locale] = enMessages;
         }
       }

@@ -245,6 +245,7 @@ function handleUpdateClick(event: MouseEvent) {
 
 .extension-card__info {
   display: flex;
+  min-width: 0;
   flex: 1;
   flex-direction: column;
   gap: 4px;
@@ -252,20 +253,27 @@ function handleUpdateClick(event: MouseEvent) {
 
 .extension-card__title-row {
   display: flex;
+  min-width: 0;
   align-items: center;
   gap: 8px;
 }
 
 .extension-card__name {
+  overflow: hidden;
   color: hsl(var(--foreground));
   font-size: 1rem;
   font-weight: 600;
   line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .extension-card__publisher {
+  overflow: hidden;
   color: hsl(var(--muted-foreground));
   font-size: 0.875rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .extension-card__description {

@@ -419,6 +419,11 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
     newPath: string;
   } | null>(null);
   const lastDeletedPaths = ref<string[] | null>(null);
+  const lastModifiedDirectoryPaths = ref<string[] | null>(null);
+
+  function handleDirectoryContentsChanged(directoryPaths: string[]) {
+    lastModifiedDirectoryPaths.value = directoryPaths;
+  }
 
   function handlePathRenamed(oldPath: string, newPath: string) {
     for (const workspace of workspaces.value) {
@@ -590,5 +595,7 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
     handlePathRenamed,
     lastDeletedPaths,
     handlePathsDeleted,
+    lastModifiedDirectoryPaths,
+    handleDirectoryContentsChanged,
   };
 });

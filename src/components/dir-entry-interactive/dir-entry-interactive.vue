@@ -11,6 +11,7 @@ import { ContextMenu, ContextMenuTrigger } from '@/components/ui/context-menu';
 import DirEntryContextMenu from './dir-entry-context-menu.vue';
 import FileBrowserRenameDialog from '@/modules/navigator/components/file-browser/file-browser-rename-dialog.vue';
 import FileBrowserNewItemDialog from '@/modules/navigator/components/file-browser/file-browser-new-item-dialog.vue';
+import FileBrowserConflictDialog from '@/modules/navigator/components/file-browser/file-browser-conflict-dialog.vue';
 import { useDirEntryActions } from '@/composables/use-dir-entry-actions';
 import { CONTEXT_MENU_OPEN_COUNT_KEY } from './index';
 import type { DirEntry } from '@/types/dir-entry';
@@ -24,7 +25,15 @@ const props = withDefaults(defineProps<{
   disableDestructiveActions: false,
 });
 
-const { openEntriesInNewTabs, renameItem, createNewItem } = useDirEntryActions();
+const {
+  openEntriesInNewTabs,
+  renameItem,
+  createNewItem,
+  pasteItems,
+  conflictDialogState,
+  handleConflictResolution,
+  handleConflictCancel,
+} = useDirEntryActions();
 
 const contextMenuOpenCount = inject(CONTEXT_MENU_OPEN_COUNT_KEY, null);
 const isContextMenuOpenForThisInstance = ref(false);
@@ -107,14 +116,21 @@ function handleRename(entry: DirEntry) {
 async function handleRenameConfirm(newName: string) {
   if (!renameTarget.value) return;
 
-  await renameItem(renameTarget.value, newName);
-  renameDialogOpen.value = false;
-  renameTarget.value = null;
+  const success = await renameItem(renameTarget.value, newName);
+
+  if (success) {
+    renameDialogOpen.value = false;
+    renameTarget.value = null;
+  }
 }
 
 function handleRenameCancel() {
   renameDialogOpen.value = false;
   renameTarget.value = null;
+}
+
+function handlePaste(targetDir: string) {
+  pasteItems(targetDir);
 }
 
 function handleCreateNewItem(type: 'file' | 'directory', targetPaths: string[]) {
@@ -155,6 +171,7 @@ function handleNewItemCancel() {
       :entries="[dirEntry]"
       :disable-destructive-actions="props.disableDestructiveActions"
       @rename="handleRename"
+      @paste="handlePaste"
       @create-new-item="handleCreateNewItem"
     >
       <template
@@ -178,6 +195,14 @@ function handleNewItemCancel() {
     :type="newItemDialogType"
     @confirm="handleNewItemConfirm"
     @cancel="handleNewItemCancel"
+  />
+
+  <FileBrowserConflictDialog
+    v-model:open="conflictDialogState.isOpen"
+    :conflicts="conflictDialogState.conflicts"
+    :operation-type="conflictDialogState.operationType || 'copy'"
+    @resolve="handleConflictResolution"
+    @cancel="handleConflictCancel"
   />
 </template>
 

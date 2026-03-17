@@ -24,21 +24,37 @@ const { t } = useI18n();
 const extensionsStore = useExtensionsStore();
 
 const extensionMenuItems = computed(() => {
-  return extensionsStore.contextMenuItems.filter((registration) => {
+  const filtered = extensionsStore.contextMenuItems.filter((registration) => {
     const when = registration.item.when;
     if (!when) return true;
 
     const selectedEntries = props.selectedEntries;
     const selectionCount = selectedEntries.length;
-    const hasFiles = selectedEntries.some(entry => entry.is_file);
-    const hasDirs = selectedEntries.some(entry => entry.is_dir);
 
     if (when.selectionType === 'single' && selectionCount !== 1) return false;
     if (when.selectionType === 'multiple' && selectionCount < 2) return false;
-    if (when.entryType === 'file' && !hasFiles) return false;
-    if (when.entryType === 'directory' && !hasDirs) return false;
+
+    if (when.entryType === 'file' && !selectedEntries.every(entry => entry.is_file)) return false;
+    if (when.entryType === 'directory' && !selectedEntries.every(entry => entry.is_dir)) return false;
+
+    if (when.fileExtensions && when.fileExtensions.length > 0) {
+      const normalizedExtensions = when.fileExtensions.map(
+        extension => extension.startsWith('.') ? extension.slice(1).toLowerCase() : extension.toLowerCase(),
+      );
+      const allEntriesMatchExtension = selectedEntries.every(entry =>
+        entry.ext !== null && normalizedExtensions.includes(entry.ext.toLowerCase()),
+      );
+      if (!allEntriesMatchExtension) return false;
+    }
 
     return true;
+  });
+
+  return [...filtered].sort((registrationA, registrationB) => {
+    const groupA = registrationA.item.group ?? '';
+    const groupB = registrationB.item.group ?? '';
+    if (groupA !== groupB) return groupA.localeCompare(groupB);
+    return (registrationA.item.order ?? 0) - (registrationB.item.order ?? 0);
   });
 });
 

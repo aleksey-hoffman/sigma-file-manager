@@ -440,6 +440,12 @@ export interface SigmaExtensionAPI {
     showNotification(options: NotificationOptions): void;
     showDialog(options: DialogOptions): Promise<DialogResult>;
     copyText(text: string): Promise<void>;
+    /**
+     * Writes data to the clipboard. Supported MIME types: `image/*`, `text/html`, `text/plain`.
+     * When `text/html` is provided alongside `text/plain`, the plain text is used as fallback.
+     * Writes the first supported representation found across items (image > html > text).
+     * Throws if only unsupported types are provided.
+     */
     clipboardWrite(items: Record<string, Uint8Array>[]): Promise<void>;
     withProgress<T>(
       options: ProgressOptions,

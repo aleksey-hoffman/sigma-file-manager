@@ -588,6 +588,7 @@ export function useExtensions() {
   watch(
     () => extensionsStore.installedExtensions.map(extensionItem => `${extensionItem.id}:${extensionItem.version}:${extensionItem.installedAt}`).join('|'),
     async () => {
+      void prefetchMarketplaceManifests();
       await refreshInstalledExtensionSizes();
       await refreshInstalledBinaryVersions();
 

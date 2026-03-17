@@ -27,6 +27,7 @@ const props = withDefaults(defineProps<{
 const emit = defineEmits<{
   rename: [entry: DirEntry];
   createNewItem: [type: 'file' | 'directory', targetPaths: string[]];
+  paste: [targetDir: string];
 }>();
 
 const { handleContextMenuAction } = useDirEntryActions();
@@ -34,6 +35,16 @@ const { handleContextMenuAction } = useDirEntryActions();
 function handleAction(action: ContextMenuAction) {
   if (action === 'rename' && props.entries.length === 1) {
     emit('rename', props.entries[0]);
+    return;
+  }
+
+  if (action === 'paste') {
+    const targetDir = props.entries.length === 1 && !props.entries[0].is_file
+      ? props.entries[0].path
+      : undefined;
+    if (targetDir) {
+      emit('paste', targetDir);
+    }
     return;
   }
 

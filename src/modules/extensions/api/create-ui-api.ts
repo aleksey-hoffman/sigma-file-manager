@@ -4,7 +4,7 @@
 
 import { toast } from 'vue-sonner';
 import { createApp, markRaw } from 'vue';
-import { writeText as tauriWriteText, writeImage as tauriWriteImage } from '@tauri-apps/plugin-clipboard-manager';
+import { writeText as tauriWriteText, writeImage as tauriWriteImage, writeHtml as tauriWriteHtml } from '@tauri-apps/plugin-clipboard-manager';
 import { Image as TauriImage } from '@tauri-apps/api/image';
 import type {
   NotificationOptions,
@@ -71,24 +71,43 @@ export function createUiAPI(context: ExtensionContext) {
         throw new Error(context.t('extensions.api.permissionDenied', { permission: 'clipboard' }));
       }
 
+      function toBytes(data: Uint8Array | ArrayLike<number>): Uint8Array {
+        return data instanceof Uint8Array ? data : new Uint8Array(data);
+      }
+
+      function findImageType(typesData: Record<string, Uint8Array>): string | undefined {
+        return Object.keys(typesData).find(type => type.startsWith('image/'));
+      }
+
       for (const typesData of items) {
-        if (typesData['image/png']) {
-          const bytes = typesData['image/png'] instanceof Uint8Array
-            ? typesData['image/png']
-            : new Uint8Array(typesData['image/png'] as ArrayLike<number>);
-          const image = await TauriImage.fromBytes(bytes);
+        const imageType = findImageType(typesData);
+
+        if (imageType) {
+          const image = await TauriImage.fromBytes(toBytes(typesData[imageType]));
           await tauriWriteImage(image);
           return;
         }
 
+        if (typesData['text/html']) {
+          const html = new TextDecoder().decode(toBytes(typesData['text/html']));
+          const altText = typesData['text/plain']
+            ? new TextDecoder().decode(toBytes(typesData['text/plain']))
+            : undefined;
+          await tauriWriteHtml(html, altText);
+          return;
+        }
+
         if (typesData['text/plain']) {
-          const bytes = typesData['text/plain'] instanceof Uint8Array
-            ? typesData['text/plain']
-            : new Uint8Array(typesData['text/plain'] as ArrayLike<number>);
-          const text = new TextDecoder().decode(bytes);
+          const text = new TextDecoder().decode(toBytes(typesData['text/plain']));
           await tauriWriteText(text);
           return;
         }
+      }
+
+      const allTypes = [...new Set(items.flatMap(item => Object.keys(item)))];
+
+      if (allTypes.length > 0) {
+        throw new Error(`No supported clipboard types found in: ${allTypes.join(', ')}. Supported: image/*, text/html, text/plain`);
       }
     },
     withProgress: async <T>(

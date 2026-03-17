@@ -195,11 +195,14 @@ export function useDirEntryActions() {
 
       toastData.value.actionText = undefined;
 
-      dirSizesStore.invalidate([destinationPath]);
+      const pathsToInvalidate = [destinationPath];
 
       if (clipboardStore.sourceDirectory) {
-        dirSizesStore.invalidate([clipboardStore.sourceDirectory]);
+        pathsToInvalidate.push(clipboardStore.sourceDirectory);
       }
+
+      dirSizesStore.invalidate(pathsToInvalidate);
+      workspacesStore.handleDirectoryContentsChanged(pathsToInvalidate);
 
       clipboardStore.clearClipboard();
 
@@ -295,6 +298,9 @@ export function useDirEntryActions() {
         userStatsStore.handlePathsDeleted(paths);
         dirSizesStore.invalidate(paths);
 
+        const parentDirs = [...new Set(paths.map(path => path.substring(0, path.lastIndexOf('/'))))];
+        workspacesStore.handleDirectoryContentsChanged(parentDirs);
+
         autoDismissTimeout = setTimeout(() => {
           toast.dismiss(toastData.value.id);
         }, 2500);
@@ -359,6 +365,7 @@ export function useDirEntryActions() {
         workspacesStore.handlePathRenamed(oldPath, newPath);
         userStatsStore.handlePathRenamed(oldPath, newPath);
         dirSizesStore.invalidate([entry.path]);
+        workspacesStore.handleDirectoryContentsChanged([parentDir]);
 
         return true;
       }
@@ -443,6 +450,7 @@ export function useDirEntryActions() {
           },
         },
       });
+      workspacesStore.handleDirectoryContentsChanged(targetPaths);
       return true;
     }
 

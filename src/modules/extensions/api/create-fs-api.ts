@@ -118,6 +118,7 @@ export function createFsAPI(context: ExtensionContext) {
         return invokeAsExtension<boolean>(context.extensionId, 'path_exists', { path: resolvedPath });
       },
       resolvePath: async (relativePath: string): Promise<string> => {
+        requirePermission('fs.read');
         return context.resolvePrivatePath(relativePath);
       },
     },
@@ -149,6 +150,7 @@ export function createFsAPI(context: ExtensionContext) {
         return invokeAsExtension<boolean>(context.extensionId, 'path_exists', { path: resolvedPath });
       },
       resolvePath: async (relativePath: string): Promise<string> => {
+        requirePermission('fs.read');
         return context.resolveStoragePath(relativePath);
       },
       importFile: async (sourcePath: string, targetRelativePath: string): Promise<string> => {

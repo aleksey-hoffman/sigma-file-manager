@@ -445,6 +445,14 @@ export function useFileBrowserNavigation(
     }
   });
 
+  watch(() => workspacesStore.lastModifiedDirectoryPaths, async (modifiedPaths) => {
+    if (!modifiedPaths || !currentPath.value) return;
+
+    if (modifiedPaths.includes(currentPath.value)) {
+      await readDir(currentPath.value);
+    }
+  });
+
   return {
     currentPath,
     dirContents,
