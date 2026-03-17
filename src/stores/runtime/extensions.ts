@@ -5,7 +5,7 @@
 import { defineStore } from 'pinia';
 import { invoke } from '@tauri-apps/api/core';
 import { getVersion } from '@tauri-apps/api/app';
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import type {
   ExtensionRegistry,
   ExtensionRegistryEntry,
@@ -34,7 +34,7 @@ import {
   isOfficialExtension,
 } from '@/data/extensions';
 import { useExtensionsStorageStore } from '@/stores/storage/extensions';
-import { loadExtensionRuntime, unloadExtensionRuntime } from '@/modules/extensions/runtime/loader';
+import { loadExtensionRuntime, unloadExtensionRuntime, reactivateExtensionRuntime } from '@/modules/extensions/runtime/loader';
 import { getBinaryLookupVersion } from '@/modules/extensions/utils/binary-metadata';
 import { invokeAsExtension } from '@/modules/extensions/runtime/extension-invoke';
 import {
@@ -61,6 +61,7 @@ import {
   showExtensionBusyToast,
 } from '@/modules/extensions/utils/toast-utils';
 import { filterReachableRegistryEntries } from '@/modules/extensions/utils/registry-utils';
+import { i18n } from '@/localization';
 import type { ShortcutKeys } from '@/types/user-settings';
 import type { ExtensionKeybindingWhen } from '@/types/extension';
 
@@ -806,7 +807,10 @@ export const useExtensionsStore = defineStore('extensions', () => {
       try {
         await loadExtensionCode(extensionId, manifest, activationEvent);
 
-        if (extensionLoadGeneration.get(extensionId) !== generation) return;
+        if (extensionLoadGeneration.get(extensionId) !== generation) {
+          await unloadExtensionRuntime(extensionId);
+          return;
+        }
 
         loadState.state = 'loaded';
         loadedExtensions.value.set(extensionId, loadState);
@@ -976,6 +980,60 @@ export const useExtensionsStore = defineStore('extensions', () => {
     );
 
     loadedExtensions.value.delete(extensionId);
+  }
+
+  let localeReloadInProgress: Promise<void> | null = null;
+
+  async function reloadExtensionsLocale(): Promise<void> {
+    if (localeReloadInProgress) {
+      await localeReloadInProgress;
+    }
+
+    let resolveReload!: () => void;
+    localeReloadInProgress = new Promise<void>((resolve) => {
+      resolveReload = resolve;
+    });
+
+    try {
+      await reloadExtensionsLocaleUnsafe();
+    }
+    finally {
+      localeReloadInProgress = null;
+      resolveReload();
+    }
+  }
+
+  async function reloadExtensionsLocaleUnsafe(): Promise<void> {
+    const loadedIds = [...loadedExtensions.value.keys()];
+
+    for (const extensionId of loadedIds) {
+      const loaded = loadedExtensions.value.get(extensionId);
+
+      if (!loaded || loaded.state !== 'loaded') continue;
+
+      contextMenuItems.value = contextMenuItems.value.filter(
+        item => item.extensionId !== extensionId,
+      );
+      sidebarPages.value = sidebarPages.value.filter(
+        page => page.extensionId !== extensionId,
+      );
+      toolbarDropdowns.value = toolbarDropdowns.value.filter(
+        dropdown => dropdown.extensionId !== extensionId,
+      );
+      commands.value = commands.value.filter(
+        command => command.extensionId !== extensionId,
+      );
+
+      try {
+        await reactivateExtensionRuntime(extensionId);
+      }
+      catch (error) {
+        console.error(`Failed to reload locale for extension ${extensionId}:`, error);
+        continue;
+      }
+
+      syncRegistrationsFromApi();
+    }
   }
 
   async function activateExtensionsForCommand(commandId: string): Promise<boolean> {
@@ -1358,6 +1416,10 @@ export const useExtensionsStore = defineStore('extensions', () => {
     }
 
     filterRecentCommandsToExisting();
+
+    watch(i18n.global.locale, () => {
+      void reloadExtensionsLocale();
+    });
 
     isInitialized.value = true;
   }

@@ -212,6 +212,10 @@ export function validateExtensionCode(code: string): { valid: boolean;
       message: 'new Function() is not allowed',
     },
     {
+      pattern: /\.constructor\s*\(\s*['"`]/g,
+      message: 'Dynamic code construction via .constructor() is not allowed',
+    },
+    {
       pattern: /\bdocument\s*\./g,
       message: 'Direct document access is not allowed',
     },

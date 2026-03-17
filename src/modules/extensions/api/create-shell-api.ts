@@ -52,35 +52,57 @@ export function createShellAPI(context: ExtensionContext) {
         rejectResult = reject;
       });
 
+      type ProgressPayload = { taskId: string; line: string; isStderr: boolean };
+      type CompletePayload = { taskId: string; code: number; stdout: string; stderr: string };
+      type EarlyEvent =
+        | { type: 'progress'; payload: ProgressPayload }
+        | { type: 'complete'; payload: CompletePayload };
+
       let taskId: string | null = null;
+      let settled = false;
+      const earlyEvents: EarlyEvent[] = [];
 
-      const unlistenProgress = await listen<{
-        taskId: string;
-        line: string;
-        isStderr: boolean;
-      }>('extension-command-progress', (event) => {
-        if (event.payload.taskId !== taskId) return;
-        if (onProgress) onProgress(event.payload);
-      });
+      function handleProgress(payload: ProgressPayload): void {
+        if (onProgress) onProgress(payload);
+      }
 
-      const unlistenComplete = await listen<{
-        taskId: string;
-        code: number;
-        stdout: string;
-        stderr: string;
-      }>('extension-command-complete', (event) => {
-        if (event.payload.taskId !== taskId) return;
+      function handleComplete(payload: CompletePayload): void {
+        if (settled) return;
+        settled = true;
         unlistenProgress();
         unlistenComplete();
-
         if (resolveResult) {
           resolveResult({
-            code: event.payload.code,
-            stdout: event.payload.stdout,
-            stderr: event.payload.stderr,
+            code: payload.code,
+            stdout: payload.stdout,
+            stderr: payload.stderr,
           });
         }
-      });
+      }
+
+      const unlistenProgress = await listen<ProgressPayload>(
+        'extension-command-progress',
+        (event) => {
+          if (taskId === null) {
+            earlyEvents.push({ type: 'progress', payload: event.payload });
+            return;
+          }
+          if (event.payload.taskId !== taskId) return;
+          handleProgress(event.payload);
+        },
+      );
+
+      const unlistenComplete = await listen<CompletePayload>(
+        'extension-command-complete',
+        (event) => {
+          if (taskId === null) {
+            earlyEvents.push({ type: 'complete', payload: event.payload });
+            return;
+          }
+          if (event.payload.taskId !== taskId) return;
+          handleComplete(event.payload);
+        },
+      );
 
       try {
         taskId = await invokeAsExtension<string>(context.extensionId, 'start_extension_command', {
@@ -88,6 +110,17 @@ export function createShellAPI(context: ExtensionContext) {
           commandPath,
           args: args || [],
         });
+
+        for (const event of earlyEvents) {
+          if (event.payload.taskId !== taskId) continue;
+          if (event.type === 'progress') {
+            handleProgress(event.payload);
+          }
+          else {
+            handleComplete(event.payload);
+          }
+        }
+        earlyEvents.length = 0;
       }
       catch (error) {
         unlistenProgress();

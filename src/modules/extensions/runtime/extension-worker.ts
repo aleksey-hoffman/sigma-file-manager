@@ -112,6 +112,51 @@ function setWorkerGlobal(name: MutableWorkerGlobalKey, value: unknown): void {
   }
 }
 
+function blockFunctionConstructors(): void {
+  const noop = () => {
+    throw new Error('Dynamic code generation is not allowed');
+  };
+
+  try {
+    Object.defineProperty(Function.prototype, 'constructor', {
+      value: noop,
+      writable: false,
+      configurable: false,
+    });
+  }
+  catch {}
+
+  try {
+    const AsyncFunctionProto = Object.getPrototypeOf(async function () {});
+    Object.defineProperty(AsyncFunctionProto, 'constructor', {
+      value: noop,
+      writable: false,
+      configurable: false,
+    });
+  }
+  catch {}
+
+  try {
+    const GeneratorFunctionProto = Object.getPrototypeOf(function* () {});
+    Object.defineProperty(GeneratorFunctionProto, 'constructor', {
+      value: noop,
+      writable: false,
+      configurable: false,
+    });
+  }
+  catch {}
+
+  try {
+    const AsyncGeneratorFunctionProto = Object.getPrototypeOf(async function* () {});
+    Object.defineProperty(AsyncGeneratorFunctionProto, 'constructor', {
+      value: noop,
+      writable: false,
+      configurable: false,
+    });
+  }
+  catch {}
+}
+
 function restrictWorkerGlobals(): void {
   const blockedGlobals: MutableWorkerGlobalKey[] = [
     'fetch',
@@ -140,6 +185,8 @@ function restrictWorkerGlobals(): void {
   for (const blockedGlobal of blockedGlobals) {
     setWorkerGlobal(blockedGlobal, undefined);
   }
+
+  blockFunctionConstructors();
 }
 
 function postRequest(type: WorkerToHostMessage['type'], payload: Record<string, unknown>): Promise<unknown> {

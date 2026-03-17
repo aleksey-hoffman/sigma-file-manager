@@ -131,7 +131,7 @@ export function clearAllRegistrations(): void {
   clearExtensionConfigurations();
 }
 
-export function clearExtensionRegistrations(extensionId: string): void {
+export function clearExtensionActivationRegistrations(extensionId: string): void {
   clearExtensionContextListeners(extensionId);
 
   for (let registrationIndex = contextMenuRegistrations.length - 1; registrationIndex >= 0; registrationIndex--) {
@@ -157,7 +157,10 @@ export function clearExtensionRegistrations(extensionId: string): void {
       commandRegistrations.splice(registrationIndex, 1);
     }
   }
+}
 
+export function clearExtensionRegistrations(extensionId: string): void {
+  clearExtensionActivationRegistrations(extensionId);
   clearKeybindingRegistrationsForExtension(extensionId);
   deleteExtensionConfiguration(extensionId);
 }

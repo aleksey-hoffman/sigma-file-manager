@@ -38,6 +38,7 @@ export {
   getCommandRegistrations,
   clearAllRegistrations,
   clearExtensionRegistrations,
+  clearExtensionActivationRegistrations,
 } from '@/modules/extensions/api/registrations';
 
 export {

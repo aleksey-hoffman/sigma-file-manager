@@ -13,6 +13,7 @@ const {
   registerExtensionConfigurationMock,
   registerExtensionKeybindingsMock,
   clearExtensionRegistrationsMock,
+  clearExtensionActivationRegistrationsMock,
   initializeWorkerMock,
   activateWorkerMock,
   deactivateWorkerMock,
@@ -24,6 +25,7 @@ const {
   registerExtensionConfigurationMock: vi.fn(),
   registerExtensionKeybindingsMock: vi.fn(),
   clearExtensionRegistrationsMock: vi.fn(),
+  clearExtensionActivationRegistrationsMock: vi.fn(),
   initializeWorkerMock: vi.fn(),
   activateWorkerMock: vi.fn(),
   deactivateWorkerMock: vi.fn(),
@@ -44,6 +46,7 @@ vi.mock('@/modules/extensions/api', () => ({
   registerExtensionConfiguration: registerExtensionConfigurationMock,
   registerExtensionKeybindings: registerExtensionKeybindingsMock,
   clearExtensionRegistrations: clearExtensionRegistrationsMock,
+  clearExtensionActivationRegistrations: clearExtensionActivationRegistrationsMock,
 }));
 
 vi.mock('@/modules/extensions/runtime/sandbox', () => ({
@@ -85,6 +88,7 @@ describe('extension runtime loader', () => {
     registerExtensionConfigurationMock.mockClear();
     registerExtensionKeybindingsMock.mockClear();
     clearExtensionRegistrationsMock.mockClear();
+    clearExtensionActivationRegistrationsMock.mockClear();
     initializeWorkerMock.mockReset();
     activateWorkerMock.mockReset();
     deactivateWorkerMock.mockReset();
@@ -167,6 +171,46 @@ describe('extension runtime loader', () => {
     expect(getLoadedRuntime('test.video')).toBeUndefined();
     expect(clearExtensionRegistrationsMock).toHaveBeenCalledWith('test.video');
     expect(destroyWorkerMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('cleans up runtime when unloaded during loading', async () => {
+    let rejectInitialize!: (error: Error) => void;
+    initializeWorkerMock.mockImplementation(
+      () => new Promise<void>((_resolve, reject) => { rejectInitialize = reject; }),
+    );
+
+    invokeMock.mockImplementation(async (command: string) => {
+      switch (command) {
+        case 'get_extension_path':
+          return '/extensions/test.video';
+        case 'get_extension_storage_path':
+          return '/storage/test.video';
+        case 'extension_path_exists':
+          return true;
+        case 'read_extension_file':
+          return Array.from(new TextEncoder().encode('export {};'));
+        default:
+          throw new Error(`Unexpected invoke command: ${command}`);
+      }
+    });
+
+    const loadPromise = loadExtensionRuntime('test.video', createManifest(), 'onStartup');
+
+    await vi.waitFor(() => {
+      expect(initializeWorkerMock).toHaveBeenCalled();
+    });
+
+    expect(getLoadedRuntime('test.video')).toBeDefined();
+
+    await unloadExtensionRuntime('test.video');
+
+    expect(getLoadedRuntime('test.video')).toBeUndefined();
+    expect(destroyWorkerMock).toHaveBeenCalledTimes(1);
+
+    rejectInitialize(new Error('Extension worker destroyed'));
+
+    await expect(loadPromise).rejects.toThrow();
+    expect(getLoadedRuntime('test.video')).toBeUndefined();
   });
 
   it('destroys the worker host when unloading an api extension', async () => {

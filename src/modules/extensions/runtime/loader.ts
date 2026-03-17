@@ -8,9 +8,16 @@ import type {
   ExtensionInstance,
   ExtensionType,
   ExtensionActivationEvent,
+  ExtensionActivateContext,
 } from '@/types/extension';
 import type { SigmaExtensionAPI } from '@/modules/extensions/api';
-import { createExtensionAPI, registerExtensionConfiguration, registerExtensionKeybindings, clearExtensionRegistrations } from '@/modules/extensions/api';
+import {
+  createExtensionAPI,
+  registerExtensionConfiguration,
+  registerExtensionKeybindings,
+  clearExtensionRegistrations,
+  clearExtensionActivationRegistrations,
+} from '@/modules/extensions/api';
 import { type ExtensionSandbox, validateExtensionCode } from './sandbox';
 import { createExtensionApiMethodMap } from '@/modules/extensions/runtime/api-method-map';
 import { createWorkerHost, type WorkerHost } from '@/modules/extensions/runtime/worker-runtime';
@@ -26,6 +33,7 @@ export type LoadedExtensionRuntime = {
   iframeOrigin: string | null;
   removeMessageListener: (() => void) | null;
   api?: SigmaExtensionAPI;
+  activationContext?: ExtensionActivateContext;
 };
 
 const loadedRuntimes = new Map<string, LoadedExtensionRuntime>();
@@ -50,19 +58,29 @@ export async function loadExtensionRuntime(
     removeMessageListener: null,
   };
 
-  switch (manifest.extensionType) {
-    case 'api':
-      await loadApiExtension(runtime, activationEvent);
-      break;
-    case 'iframe':
-      await loadIframeExtension(runtime, activationEvent);
-      break;
-    case 'webview':
-      await loadWebviewExtension(runtime, activationEvent);
-      break;
+  loadedRuntimes.set(extensionId, runtime);
+
+  try {
+    switch (manifest.extensionType) {
+      case 'api':
+        await loadApiExtension(runtime, activationEvent);
+        break;
+      case 'iframe':
+        await loadIframeExtension(runtime, activationEvent);
+        break;
+      case 'webview':
+        await loadWebviewExtension(runtime, activationEvent);
+        break;
+    }
+  }
+  catch (error) {
+    if (loadedRuntimes.get(extensionId) === runtime) {
+      loadedRuntimes.delete(extensionId);
+    }
+
+    throw error;
   }
 
-  loadedRuntimes.set(extensionId, runtime);
   return runtime;
 }
 
@@ -109,6 +127,16 @@ export function getExtensionAPI(extensionId: string): SigmaExtensionAPI | undefi
 
 export function getAllLoadedRuntimes(): LoadedExtensionRuntime[] {
   return Array.from(loadedRuntimes.values());
+}
+
+export async function reactivateExtensionRuntime(extensionId: string): Promise<void> {
+  const runtime = loadedRuntimes.get(extensionId);
+
+  if (!runtime?.workerHost || !runtime.activationContext) return;
+
+  clearExtensionActivationRegistrations(extensionId);
+  await runtime.workerHost.deactivate();
+  await runtime.workerHost.activate(runtime.activationContext);
 }
 
 async function loadApiExtension(
@@ -171,12 +199,14 @@ async function loadApiExtension(
     };
 
     if (runtime.instance) {
-      await runtime.instance.activate({
+      const activationContext: ExtensionActivateContext = {
         extensionId,
         extensionPath,
         storagePath,
         activationEvent,
-      });
+      };
+      runtime.activationContext = activationContext;
+      await runtime.instance.activate(activationContext);
     }
   }
   catch (error) {
