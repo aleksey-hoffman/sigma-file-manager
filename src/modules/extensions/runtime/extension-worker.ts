@@ -1035,6 +1035,7 @@ async function handleWorkerMessage(message: HostToWorkerMessage): Promise<void> 
 
   if (message.type === 'activate') {
     try {
+      handlerMap.clear();
       pendingActivationTasks = [];
       const activationContext = message.context as { extensionId: string };
       extensionNamespace = `extensions.${activationContext.extensionId}`;

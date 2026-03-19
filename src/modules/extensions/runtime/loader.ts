@@ -140,7 +140,7 @@ export async function reactivateExtensionRuntime(extensionId: string): Promise<v
 
   const reactivationContext: ExtensionActivateContext = {
     ...runtime.activationContext,
-    activationEvent: 'onStartup',
+    activationEvent: 'onLocaleChange',
   };
   runtime.activationContext = reactivationContext;
 

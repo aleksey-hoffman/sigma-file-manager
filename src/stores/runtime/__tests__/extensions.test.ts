@@ -15,6 +15,7 @@ const {
   toastDismissMock,
   loadExtensionRuntimeMock,
   unloadExtensionRuntimeMock,
+  reactivateExtensionRuntimeMock,
   clearBinaryDownloadCountMock,
   commandRegistrations,
 } = vi.hoisted(() => ({
@@ -24,6 +25,7 @@ const {
   toastDismissMock: vi.fn(),
   loadExtensionRuntimeMock: vi.fn(),
   unloadExtensionRuntimeMock: vi.fn(),
+  reactivateExtensionRuntimeMock: vi.fn(),
   clearBinaryDownloadCountMock: vi.fn(),
   commandRegistrations: [] as Array<{
     extensionId: string;
@@ -72,6 +74,7 @@ vi.mock('vue-sonner', () => ({
 vi.mock('@/modules/extensions/runtime/loader', () => ({
   loadExtensionRuntime: loadExtensionRuntimeMock,
   unloadExtensionRuntime: unloadExtensionRuntimeMock,
+  reactivateExtensionRuntime: reactivateExtensionRuntimeMock,
 }));
 
 vi.mock('@/modules/extensions/api', () => ({
@@ -217,6 +220,7 @@ describe('extensions runtime store', () => {
     toastDismissMock.mockReset();
     loadExtensionRuntimeMock.mockReset();
     unloadExtensionRuntimeMock.mockReset();
+    reactivateExtensionRuntimeMock.mockReset();
     clearBinaryDownloadCountMock.mockReset();
   });
 
@@ -643,5 +647,65 @@ describe('extensions runtime store', () => {
     );
 
     consoleWarnSpy.mockRestore();
+  });
+
+  it('reactivates loaded extensions on locale reload', async () => {
+    const manifest = createManifest();
+    const extensionsStore = useExtensionsStore();
+
+    installTestExtension(manifest);
+
+    extensionsStore.loadedExtensions.set(manifest.id, {
+      id: manifest.id,
+      state: 'loaded',
+      activationEvent: 'onInstall',
+    });
+
+    await extensionsStore.reloadExtensionsLocale();
+
+    expect(reactivateExtensionRuntimeMock).toHaveBeenCalledTimes(1);
+    expect(reactivateExtensionRuntimeMock).toHaveBeenCalledWith(manifest.id);
+    expect(extensionsStore.loadedExtensions.has(manifest.id)).toBe(true);
+  });
+
+  it('unloads extension when locale reactivation fails', async () => {
+    const manifest = createManifest();
+    const extensionsStore = useExtensionsStore();
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    installTestExtension(manifest);
+
+    extensionsStore.loadedExtensions.set(manifest.id, {
+      id: manifest.id,
+      state: 'loaded',
+      activationEvent: 'onStartup',
+    });
+
+    reactivateExtensionRuntimeMock.mockRejectedValueOnce(new Error('reactivation failed'));
+
+    await extensionsStore.reloadExtensionsLocale();
+
+    expect(reactivateExtensionRuntimeMock).toHaveBeenCalledTimes(1);
+    expect(unloadExtensionRuntimeMock).toHaveBeenCalledWith(manifest.id);
+    expect(extensionsStore.loadedExtensions.has(manifest.id)).toBe(false);
+
+    consoleErrorSpy.mockRestore();
+  });
+
+  it('skips non-loaded extensions during locale reload', async () => {
+    const manifest = createManifest();
+    const extensionsStore = useExtensionsStore();
+
+    installTestExtension(manifest);
+
+    extensionsStore.loadedExtensions.set(manifest.id, {
+      id: manifest.id,
+      state: 'loading',
+      activationEvent: 'onStartup',
+    });
+
+    await extensionsStore.reloadExtensionsLocale();
+
+    expect(reactivateExtensionRuntimeMock).not.toHaveBeenCalled();
   });
 });

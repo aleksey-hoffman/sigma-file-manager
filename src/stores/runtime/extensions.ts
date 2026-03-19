@@ -1498,5 +1498,6 @@ export const useExtensionsStore = defineStore('extensions', () => {
     isManifestCompatibleWithPlatform,
     init,
     filterRecentCommandsToExisting,
+    reloadExtensionsLocale,
   };
 });

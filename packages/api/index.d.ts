@@ -23,6 +23,7 @@ export type ExtensionActivationEvent
     | 'onEnable'
     | 'onDisable'
     | 'onUpdate'
+    | 'onLocaleChange'
     | `onCommand:${string}`;
 
 export interface ExtensionPublisher {
