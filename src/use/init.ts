@@ -2,7 +2,7 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-import { onMounted, onUnmounted } from 'vue';
+import { nextTick, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useUserPathsStore } from '@/stores/storage/user-paths';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
@@ -19,6 +19,7 @@ import { useChangelog } from '@/modules/changelog';
 import { useAppUpdater } from '@/modules/app-updater';
 import { useExtensionsStore } from '@/stores/runtime/extensions';
 import { initPlatformInfo } from '@/modules/extensions/api';
+import { getCurrentWindow } from '@tauri-apps/api/window';
 
 export function useInit() {
   const router = useRouter();
@@ -52,6 +53,18 @@ export function useInit() {
     shortcutsStore.unregisterHandler('toggleGlobalSearch');
   }
 
+  async function showMainWindow() {
+    await nextTick();
+    await new Promise(resolve => requestAnimationFrame(resolve));
+
+    const currentWindow = getCurrentWindow();
+
+    if (currentWindow.label === 'main') {
+      await currentWindow.show();
+      await currentWindow.setFocus();
+    }
+  }
+
   async function init() {
     await platformStore.init();
     await userPathsStore.init();
@@ -59,15 +72,16 @@ export function useInit() {
     await backgroundMediaStore.refreshCustomBackgrounds();
     await userStatsStore.init();
     await workspacesStore.init();
+    await showMainWindow();
     await globalSearchStore.initOnLaunch();
-    shortcutsStore.init();
+    await shortcutsStore.init();
     await globalShortcutsStore.init();
-    terminalsStore.init();
-    disableWebViewFeatures();
-    await checkAndShowChangelog();
-    initAutoCheck();
+    await terminalsStore.init();
     await initPlatformInfo();
     await extensionsStore.init();
+    await initAutoCheck();
+    await checkAndShowChangelog();
+    disableWebViewFeatures();
   }
 
   onMounted(() => {

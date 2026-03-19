@@ -23,11 +23,13 @@ pub fn run() {
             system_tray::focus_main_window(app);
         }))
         .plugin(tauri_plugin_store::Builder::new().build())
-        .plugin(
+        .plugin({
+            use tauri_plugin_window_state::StateFlags;
             tauri_plugin_window_state::Builder::default()
+                .with_state_flags(StateFlags::all() & !StateFlags::VISIBLE)
                 .with_denylist(&["quick-view"])
-                .build(),
-        )
+                .build()
+        })
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_dialog::init())
