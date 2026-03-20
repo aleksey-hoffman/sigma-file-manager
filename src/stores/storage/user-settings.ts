@@ -162,6 +162,7 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
 
     return {
       blur: 64,
+      mediaContrast: 100,
       opacity: 15,
       noise: 5,
       noiseScale: 0.5,
@@ -175,6 +176,7 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
 
     return {
       blur: 32,
+      mediaContrast: 100,
       opacity: 5,
       noise: 5,
       noiseScale: 0.5,

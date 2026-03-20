@@ -316,6 +316,7 @@
       "title": "Hiệu ứng hình ảnh",
       "windowTransparencyEffect": "Hiệu ứng trong suốt của cửa sổ",
       "overlayBlur": "Làm mờ lớp phủ: {n}@:units.px",
+      "overlayMediaContrast": "Độ tương phản phương tiện lớp phủ: {n}%",
       "overlayOpacity": "Độ mờ của lớp phủ: {n}%",
       "overlayNoise": "Nhiễu lớp phủ: {n}%",
       "overlayNoiseScale": "Tỷ lệ nhiễu lớp phủ: {n}",

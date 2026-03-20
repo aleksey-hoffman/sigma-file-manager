@@ -316,6 +316,7 @@
       "title": "视觉效果",
       "windowTransparencyEffect": "窗口透明效果",
       "overlayBlur": "叠加模糊：{n}@:units.px",
+      "overlayMediaContrast": "叠加媒体对比度：{n}%",
       "overlayOpacity": "叠加不透明度：{n}%",
       "overlayNoise": "叠加噪点：{n}%",
       "overlayNoiseScale": "叠加噪点缩放：{n}",

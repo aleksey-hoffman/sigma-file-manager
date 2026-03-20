@@ -316,6 +316,7 @@
       "title": "Efeitos visuais",
       "windowTransparencyEffect": "efeito de transparência da janela",
       "overlayBlur": "sobreposição de desfoque: {n}@:units.px",
+      "overlayMediaContrast": "Contraste da mídia de sobreposição: {n}%",
       "overlayOpacity": "sobreposição de opacidade: {n}%",
       "overlayNoise": "Ruído de sobreposição: {n}%",
       "overlayNoiseScale": "Escala de ruído de sobreposição: {n}",

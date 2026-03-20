@@ -329,6 +329,7 @@
       "title": "Visual effects",
       "windowTransparencyEffect": "Window transparency effect",
       "overlayBlur": "Overlay blur: {n}@:units.px",
+      "overlayMediaContrast": "Overlay media contrast: {n}%",
       "overlayOpacity": "Overlay opacity: {n}%",
       "overlayNoise": "Overlay noise: {n}%",
       "overlayNoiseScale": "Overlay noise scale: {n}",

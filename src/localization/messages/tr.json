@@ -316,6 +316,7 @@
       "title": "Görsel efektler",
       "windowTransparencyEffect": "Pencere şeffaflık efekti",
       "overlayBlur": "Yer paylaşımı bulanıklığı: {n}@:units.px",
+      "overlayMediaContrast": "Yer paylaşımı medya kontrastı: {n}%",
       "overlayOpacity": "Yer paylaşımı opaklığı: {n}%",
       "overlayNoise": "Yer paylaşımı gürültüsü: {n}%",
       "overlayNoiseScale": "Yer paylaşımı gürültü ölçeği: {n}",

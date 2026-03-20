@@ -15,6 +15,7 @@ interface Props {
   noiseIntensity?: number;
   noiseScale?: number;
   noiseOpacity?: number;
+  mediaContrast?: number;
   blendMode?: CSSProperties['mixBlendMode'];
   relative?: boolean;
   type?: 'image' | 'video';
@@ -30,6 +31,7 @@ const props = withDefaults(defineProps<Props>(), {
   noiseIntensity: 0.5,
   noiseScale: 1,
   noiseOpacity: 0.05,
+  mediaContrast: 100,
   blendMode: 'normal',
   relative: false,
   type: 'image',
@@ -65,6 +67,7 @@ const imageStyle = computed(() => ({
   '--infusion-noise-intensity': props.noiseIntensity,
   '--infusion-noise-scale': props.noiseScale,
   '--infusion-noise-opacity': props.noiseOpacity,
+  '--infusion-media-contrast': `${props.mediaContrast}%`,
   'mixBlendMode': props.blendMode,
 }));
 
@@ -163,7 +166,7 @@ const containerClass = computed(() => [
 .infusion-image {
   width: 100%;
   height: 100%;
-  filter: blur(var(--infusion-blur));
+  filter: blur(var(--infusion-blur)) contrast(var(--infusion-media-contrast));
   object-fit: cover;
   opacity: var(--infusion-opacity);
   transform: scale(1.1)
@@ -176,7 +179,7 @@ const containerClass = computed(() => [
 .infusion-video {
   width: 100%;
   height: 100%;
-  filter: blur(var(--infusion-blur));
+  filter: blur(var(--infusion-blur)) contrast(var(--infusion-media-contrast));
   object-fit: cover;
   opacity: var(--infusion-opacity);
   transform: scale(1.1)

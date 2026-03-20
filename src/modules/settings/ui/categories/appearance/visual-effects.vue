@@ -112,6 +112,15 @@ const blurValue = computed({
   },
 });
 
+const mediaContrastValue = computed({
+  get: () => [currentPageSettings.value.mediaContrast ?? 100],
+  set: (value: number[]) => {
+    const page = effectivePageToCustomize.value;
+    userSettingsStore.userSettings.infusion.pages[page].mediaContrast = value[0];
+    userSettingsStore.setUserSettingsStorage(getStorageKeyForPage(page, 'mediaContrast'), value[0]);
+  },
+});
+
 const opacityValue = computed({
   get: () => [currentPageSettings.value.opacity],
   set: (value: number[]) => {
@@ -379,6 +388,19 @@ async function selectNextBackground() {
                 v-model="opacityValue"
                 :min="0"
                 :max="50"
+                :step="1"
+                class="visual-effects-settings__slider"
+              />
+            </div>
+
+            <div class="visual-effects-settings__row">
+              <span class="visual-effects-settings__label">
+                {{ t('settings.visualEffects.overlayMediaContrast', { n: mediaContrastValue[0] }) }}
+              </span>
+              <Slider
+                v-model="mediaContrastValue"
+                :min="50"
+                :max="200"
                 :step="1"
                 class="visual-effects-settings__slider"
               />

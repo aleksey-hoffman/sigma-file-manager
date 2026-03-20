@@ -329,6 +329,7 @@
       "title": "Vizualni učinki",
       "windowTransparencyEffect": "Učinek prosojnosti okna",
       "overlayBlur": "Zameglitev prekrivanja: {n}@:units.px",
+      "overlayMediaContrast": "Kontrast medija prekrivanja: {n}%",
       "overlayOpacity": "Prosojnost prekrivanja: {n}%",
       "overlayNoise": "Šum prekrivanja: {n}%",
       "overlayNoiseScale": "Merilo šuma prekrivanja: {n}",

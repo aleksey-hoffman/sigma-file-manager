@@ -316,6 +316,7 @@
       "title": "Visuelle Effekte",
       "windowTransparencyEffect": "Fenstertransparenzeffekt",
       "overlayBlur": "Unschärfe überlagern: {n}@:units.px",
+      "overlayMediaContrast": "Medienkontrast der Überlagerung: {n} %",
       "overlayOpacity": "Overlay-Opazität: {n} %",
       "overlayNoise": "Overlay-Rauschen: {n} %",
       "overlayNoiseScale": "Overlay-Rauschskalierung: {n}",

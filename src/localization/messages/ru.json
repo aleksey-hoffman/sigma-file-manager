@@ -329,6 +329,7 @@
       "title": "Визуальные эффекты",
       "windowTransparencyEffect": "Эффект прозрачности окна",
       "overlayBlur": "Размытие наложения: {n}@:units.px",
+      "overlayMediaContrast": "Контраст медиа наложения: {n}%",
       "overlayOpacity": "Прозрачность наложения: {n}%",
       "overlayNoise": "Шум наложения: {n}%",
       "overlayNoiseScale": "Масштаб шума наложения: {n}",

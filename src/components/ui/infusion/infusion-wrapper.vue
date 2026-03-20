@@ -78,6 +78,9 @@ watch(
 
 const infusionOpacity = computed(() => effectivePageSettings.value.opacity / 100);
 const infusionBlur = computed(() => effectivePageSettings.value.blur);
+const infusionMediaContrast = computed(
+  () => effectivePageSettings.value.mediaContrast ?? 100,
+);
 const infusionNoise = computed(() => effectivePageSettings.value.noise / 100);
 const infusionNoiseScale = computed(() => effectivePageSettings.value.noiseScale);
 const infusionBlendMode = computed(() => effectivePageSettings.value.mixBlendMode);
@@ -104,6 +107,7 @@ const pauseOverlayBackgroundVideo = computed(() => {
     :opacity="infusionOpacity"
     :opacity-dark="infusionOpacity"
     :blur="infusionBlur"
+    :media-contrast="infusionMediaContrast"
     :noise-opacity="infusionNoise"
     :noise-scale="infusionNoiseScale"
     :blend-mode="infusionBlendMode"

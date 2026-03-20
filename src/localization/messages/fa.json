@@ -315,6 +315,7 @@
       "title": "جلوههای بصری",
       "windowTransparencyEffect": "اثر شفافیت پنجره",
       "overlayBlur": "تاری همپوشانی: {n}@:units.px",
+      "overlayMediaContrast": "کنتراست رسانهٔ همپوشانی: {n}%",
       "overlayOpacity": "تاری همپوشانی: {n}%",
       "overlayNoise": "نویز همپوشانی: {n}%",
       "overlayNoiseScale": "مقیاس نویز همپوشانی: {n}",

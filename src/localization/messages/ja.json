@@ -316,6 +316,7 @@
       "title": "視覚効果",
       "windowTransparencyEffect": "「ウィンドウ透明効果」",
       "overlayBlur": "オーバーレイぼかし: {n}@:units.px",
+      "overlayMediaContrast": "オーバーレイメディアのコントラスト: {n}%",
       "overlayOpacity": "オーバーレイの不透明度: {n}%",
       "overlayNoise": "オーバーレイノイズ: {n}%",
       "overlayNoiseScale": "オーバーレイノイズスケール: {n}",

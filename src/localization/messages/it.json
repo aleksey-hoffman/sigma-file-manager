@@ -316,6 +316,7 @@
       "title": "Effetti visivi",
       "windowTransparencyEffect": "Effetto trasparenza finestra",
       "overlayBlur": "Sfocatura sovrimpressione: {n}@:unità.px",
+      "overlayMediaContrast": "Contrasto media sovrimpressione: {n}%",
       "overlayOpacity": "Opacità sovrimpressione: {n}%",
       "overlayNoise": "Rumore sovrimpressione: {n}%",
       "overlayNoiseScale": "Scala rumore sovrimpressione: {n}",
