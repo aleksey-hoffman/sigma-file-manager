@@ -747,7 +747,10 @@
     "changeShortcut": "Thay đổi phím tắt",
     "resetShortcut": "Đặt lại phím tắt",
     "localShortcutsAppScope": "Phím tắt cục bộ (phạm vi ứng dụng)",
-    "whenConditionTooltip": "Các điều kiện phải được đáp ứng để phím tắt này kích hoạt"
+    "whenConditionTooltip": "Các điều kiện phải được đáp ứng để phím tắt này kích hoạt",
+    "unknownMainKey": "Phím không xác định",
+    "globalShortcutRegisterFailed": "Không thể đăng ký phím tắt toàn cục này. Có thể Windows hoặc ứng dụng khác đang dùng. Hãy thử tổ hợp khác (ví dụ Win+Shift+… hoặc Ctrl+Alt+…).",
+    "shortcutRecorderGlobalCaptureHint": "Nếu nhấn phím mà không thấy gì, hệ thống của bạn hoặc chương trình khác có thể đã chặn phím trước khi cửa sổ này nhận được. Hãy thử tổ hợp khác."
   },
   "shortcuts": {
     "openCloseTheAppWindow": "Mở/đóng cửa sổ ứng dụng",

@@ -15,6 +15,10 @@ import {
 } from '@/modules/extensions/api';
 import { getSelectedEntries, getCurrentPath } from '@/modules/extensions/context';
 import { useExtensionsStore } from '@/stores/runtime/extensions';
+import {
+  KEYBOARD_MAIN_KEY_UNUSABLE,
+  shortcutMainKeyDisplayLabel,
+} from '@/localization/shortcut-main-key-label';
 
 export type { ShortcutId, ShortcutKeys, UserShortcuts };
 
@@ -373,15 +377,206 @@ const DEFAULT_SHORTCUTS: ShortcutDefinition[] = [
   },
 ];
 
-export function formatShortcutKeys(keys: ShortcutKeys): string {
-  const parts: string[] = [];
+const MODIFIER_ONLY_KEYBOARD_CODES = new Set([
+  'MetaLeft',
+  'MetaRight',
+  'OSLeft',
+  'OSRight',
+  'ControlLeft',
+  'ControlRight',
+  'ShiftLeft',
+  'ShiftRight',
+  'AltLeft',
+  'AltRight',
+]);
 
-  if (keys.ctrl) parts.push('Ctrl');
-  if (keys.alt) parts.push('Alt');
-  if (keys.meta) parts.push('Win');
-  if (keys.shift) parts.push('Shift');
+export function isModifierPhysicalKeyCode(code: string): boolean {
+  return MODIFIER_ONLY_KEYBOARD_CODES.has(code);
+}
 
-  let keyDisplay = keys.key;
+const F_KEYCODE_TO_LABEL: Record<number, string> = (() => {
+  const table: Record<number, string> = {};
+
+  for (let functionKeyNumber = 1; functionKeyNumber <= 12; functionKeyNumber += 1) {
+    table[111 + functionKeyNumber] = `F${functionKeyNumber}`;
+  }
+
+  return table;
+})();
+
+const OEM_KEYCODE_CHROMIUM: Record<number, string> = {
+  186: ';',
+  187: '=',
+  188: ',',
+  189: '-',
+  190: '.',
+  191: '/',
+  192: '`',
+  219: '[',
+  220: '\\',
+  221: ']',
+  222: '\'',
+};
+
+function isBadResolvedMainKey(value: string): boolean {
+  return value === '' || value === 'Unidentified' || KEYBOARD_MAIN_KEY_UNUSABLE.has(value);
+}
+
+function mainKeyFromLegacyKeyCode(event: KeyboardEvent): string | null {
+  const keyCode = event.keyCode || event.which;
+  if (!keyCode) return null;
+
+  const location = event.location;
+
+  if (location === KeyboardEvent.DOM_KEY_LOCATION_NUMPAD) {
+    if (keyCode >= 96 && keyCode <= 105) {
+      return String(keyCode - 96);
+    }
+
+    if (keyCode === 106) return '*';
+    if (keyCode === 107) return '+';
+    if (keyCode === 109) return '-';
+    if (keyCode === 110) return '.';
+    if (keyCode === 111) return '/';
+    if (keyCode === 13) return 'Enter';
+  }
+
+  if (keyCode >= 48 && keyCode <= 57) {
+    return String.fromCharCode(keyCode);
+  }
+
+  if (keyCode >= 65 && keyCode <= 90) {
+    return String.fromCharCode(keyCode).toLowerCase();
+  }
+
+  if (keyCode === 32) {
+    return ' ';
+  }
+
+  const functionKeyLabel = F_KEYCODE_TO_LABEL[keyCode];
+
+  if (functionKeyLabel) {
+    return functionKeyLabel;
+  }
+
+  return OEM_KEYCODE_CHROMIUM[keyCode] ?? null;
+}
+
+function mainKeyFromPhysicalCode(code: string): string {
+  if (!code || code === 'Unidentified') {
+    return '';
+  }
+
+  if (code.startsWith('Key') && code.length === 4) {
+    return code.slice(3).toLowerCase();
+  }
+
+  if (code.startsWith('Digit')) {
+    return code.slice(5);
+  }
+
+  if (code === 'NumpadDecimal') return '.';
+  if (code === 'NumpadAdd') return '+';
+  if (code === 'NumpadSubtract') return '-';
+  if (code === 'NumpadMultiply') return '*';
+  if (code === 'NumpadDivide') return '/';
+  if (code === 'NumpadEnter') return 'Enter';
+  if (code === 'NumpadEqual') return '=';
+
+  if (code.startsWith('Numpad')) {
+    const numpadDigit = code.slice(6);
+    if (/^\d$/.test(numpadDigit)) return numpadDigit;
+  }
+
+  const codeToKey: Record<string, string> = {
+    Space: ' ',
+    Minus: '-',
+    Equal: '=',
+    BracketLeft: '[',
+    BracketRight: ']',
+    Backslash: '\\',
+    Semicolon: ';',
+    Quote: '\'',
+    Comma: ',',
+    Period: '.',
+    Slash: '/',
+    Backquote: '`',
+    IntlBackslash: '\\',
+    ArrowUp: 'ArrowUp',
+    ArrowDown: 'ArrowDown',
+    ArrowLeft: 'ArrowLeft',
+    ArrowRight: 'ArrowRight',
+    Enter: 'Enter',
+    Escape: 'Escape',
+    Tab: 'Tab',
+    Backspace: 'Backspace',
+    Delete: 'Delete',
+    Insert: 'Insert',
+    Home: 'Home',
+    End: 'End',
+    PageUp: 'PageUp',
+    PageDown: 'PageDown',
+    CapsLock: 'CapsLock',
+    ContextMenu: 'ContextMenu',
+    Pause: 'Pause',
+    ScrollLock: 'ScrollLock',
+    PrintScreen: 'PrintScreen',
+    NumLock: 'NumLock',
+  };
+
+  const mapped = codeToKey[code];
+  if (mapped !== undefined) return mapped;
+
+  if (/^F([1-9]|1[0-2])$/.test(code)) return code;
+
+  return code;
+}
+
+export type ResolveShortcutKeyOptions = {
+  preferPhysicalMainKey?: boolean;
+};
+
+export function resolveShortcutKeyFromKeyboardEvent(
+  event: KeyboardEvent,
+  options?: ResolveShortcutKeyOptions,
+): string | null {
+  if (isModifierPhysicalKeyCode(event.code)) {
+    return null;
+  }
+
+  const code = event.code;
+  const fromPhysical = mainKeyFromPhysicalCode(code);
+  const preferPhysical = options?.preferPhysicalMainKey === true;
+
+  if (
+    preferPhysical
+    && (code.startsWith('Key') || code.startsWith('Digit'))
+    && !isBadResolvedMainKey(fromPhysical)
+  ) {
+    return fromPhysical;
+  }
+
+  const fromKey = event.key;
+
+  if (!KEYBOARD_MAIN_KEY_UNUSABLE.has(fromKey)) {
+    return fromKey;
+  }
+
+  if (!isBadResolvedMainKey(fromPhysical)) {
+    return fromPhysical;
+  }
+
+  const fromLegacy = mainKeyFromLegacyKeyCode(event);
+
+  if (fromLegacy && !isBadResolvedMainKey(fromLegacy)) {
+    return fromLegacy;
+  }
+
+  return null;
+}
+
+function formatShortcutMainKeyForDisplay(rawKey: string): string {
+  let keyDisplay = shortcutMainKeyDisplayLabel(rawKey);
 
   if (keyDisplay === ' ') {
     keyDisplay = 'Space';
@@ -405,7 +600,44 @@ export function formatShortcutKeys(keys: ShortcutKeys): string {
     keyDisplay = '→';
   }
 
-  parts.push(keyDisplay);
+  return keyDisplay;
+}
+
+export function formatCaptureChordLabel(
+  pressedCodes: ReadonlySet<string>,
+  modifierEvent: KeyboardEvent,
+): string {
+  const parts: string[] = [];
+
+  if (modifierEvent.ctrlKey) parts.push('Ctrl');
+  if (modifierEvent.altKey) parts.push('Alt');
+  if (modifierEvent.metaKey) parts.push('Win');
+  if (modifierEvent.shiftKey) parts.push('Shift');
+
+  const mainCodes = [...pressedCodes]
+    .filter(code => !isModifierPhysicalKeyCode(code))
+    .sort();
+
+  for (const code of mainCodes) {
+    const raw = mainKeyFromPhysicalCode(code);
+
+    if (raw !== '') {
+      parts.push(formatShortcutMainKeyForDisplay(raw));
+    }
+  }
+
+  return parts.join('+');
+}
+
+export function formatShortcutKeys(keys: ShortcutKeys): string {
+  const parts: string[] = [];
+
+  if (keys.ctrl) parts.push('Ctrl');
+  if (keys.alt) parts.push('Alt');
+  if (keys.meta) parts.push('Win');
+  if (keys.shift) parts.push('Shift');
+
+  parts.push(formatShortcutMainKeyForDisplay(keys.key));
 
   return parts.join('+');
 }
@@ -447,7 +679,12 @@ function matchesShortcut(event: KeyboardEvent, keys: ShortcutKeys): boolean {
 
   if (expectedKey === ' ' && event.code === 'Space') return true;
 
-  return eventKey === expectedKey || event.code.toLowerCase() === `key${expectedKey}`;
+  if (/^[0-9]$/.test(expectedKey) && event.code === `Digit${expectedKey}`) {
+    return true;
+  }
+
+  const codeLower = event.code.toLowerCase();
+  return eventKey === expectedKey || codeLower === `key${expectedKey}`;
 }
 
 export function formatConditionsLabel(conditions: ShortcutConditions): string {

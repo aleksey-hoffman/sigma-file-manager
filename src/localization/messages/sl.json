@@ -760,7 +760,10 @@
     "changeShortcut": "Spremeni bližnjico",
     "resetShortcut": "Ponastavi bližnjico",
     "localShortcutsAppScope": "Lokalne bližnjice (obseg aplikacije)",
-    "whenConditionTooltip": "Pogoji, ki morajo biti izpolnjeni, da se bližnjica sproži"
+    "whenConditionTooltip": "Pogoji, ki morajo biti izpolnjeni, da se bližnjica sproži",
+    "unknownMainKey": "Neznana tipka",
+    "globalShortcutRegisterFailed": "Tega globalnega bližnjice ni bilo mogoče registrirati. Morda ga že uporabljata Windows ali druga aplikacija. Poskusite drugo kombinacijo (npr. Win+Shift+… ali Ctrl+Alt+…).",
+    "shortcutRecorderGlobalCaptureHint": "Če se ob pritisku tipk nič ne prikaže, jih morda vaš sistem ali drug program prestreže, preden jih to okno prejme. Poskusite drugo kombinacijo."
   },
   "shortcuts": {
     "openCloseTheAppWindow": "Odpri / zapri okno aplikacije",

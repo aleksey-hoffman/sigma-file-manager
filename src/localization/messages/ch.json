@@ -747,7 +747,10 @@
     "changeShortcut": "更改快捷键",
     "resetShortcut": "重置快捷键",
     "localShortcutsAppScope": "本地快捷键（应用范围）",
-    "whenConditionTooltip": "必须满足的条件才能触发此快捷键"
+    "whenConditionTooltip": "必须满足的条件才能触发此快捷键",
+    "unknownMainKey": "未知按键",
+    "globalShortcutRegisterFailed": "无法注册此全局快捷键。可能已被 Windows 或其他应用占用。请尝试其他组合（例如 Win+Shift+… 或 Ctrl+Alt+…）。",
+    "shortcutRecorderGlobalCaptureHint": "如果按键后没有任何显示，可能是您的系统或其他程序在本窗口收到按键之前就拦截了。请尝试其他组合。"
   },
   "shortcuts": {
     "openCloseTheAppWindow": "打开/关闭应用程序窗口",

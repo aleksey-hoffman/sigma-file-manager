@@ -4,11 +4,17 @@
 
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import { register, unregister, unregisterAll } from '@tauri-apps/plugin-global-shortcut';
+import {
+  register,
+  unregister,
+  unregisterAll,
+  type ShortcutHandler,
+} from '@tauri-apps/plugin-global-shortcut';
 import { WebviewWindow } from '@tauri-apps/api/webviewWindow';
 import { invoke } from '@tauri-apps/api/core';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import type { GlobalShortcutId, UserGlobalShortcuts, ShortcutKeys } from '@/types/user-settings';
+import { formatShortcutKeys } from '@/stores/runtime/shortcuts';
 
 export type { GlobalShortcutId, UserGlobalShortcuts };
 
@@ -91,7 +97,9 @@ export const useGlobalShortcutsStore = defineStore('globalShortcuts', () => {
   }
 
   function getShortcutLabel(globalShortcutId: GlobalShortcutId): string {
-    return formatTauriShortcut(getShortcutString(globalShortcutId));
+    const shortcutString = getShortcutString(globalShortcutId);
+    if (!shortcutString) return '';
+    return formatShortcutKeys(tauriFormatToShortcutKeys(shortcutString));
   }
 
   function getShortcutKeys(globalShortcutId: GlobalShortcutId): ShortcutKeys {
@@ -121,12 +129,20 @@ export const useGlobalShortcutsStore = defineStore('globalShortcuts', () => {
     return handlers[globalShortcutId] ?? null;
   }
 
-  async function registerShortcut(globalShortcutId: GlobalShortcutId): Promise<void> {
+  function createGlobalShortcutCallback(handler: () => Promise<void>): ShortcutHandler {
+    return async (shortcutEvent) => {
+      if (shortcutEvent.state === 'Pressed') {
+        await handler();
+      }
+    };
+  }
+
+  async function registerShortcut(globalShortcutId: GlobalShortcutId): Promise<boolean> {
     const shortcutString = getShortcutString(globalShortcutId);
-    if (!shortcutString) return;
+    if (!shortcutString) return false;
 
     const handler = getHandler(globalShortcutId);
-    if (!handler) return;
+    if (!handler) return false;
 
     try {
       await unregister(shortcutString);
@@ -135,29 +151,28 @@ export const useGlobalShortcutsStore = defineStore('globalShortcuts', () => {
     }
 
     try {
-      await register(shortcutString, async (event) => {
-        if (event.state === 'Pressed') {
-          await handler();
-        }
-      });
+      await register(shortcutString, createGlobalShortcutCallback(handler));
 
       registeredShortcuts.value.set(globalShortcutId, shortcutString);
+      return true;
     }
     catch (error) {
       console.error(`Failed to register global shortcut "${shortcutString}" for "${globalShortcutId}":`, error);
+      return false;
     }
   }
 
   async function unregisterShortcut(globalShortcutId: GlobalShortcutId): Promise<void> {
-    const existingShortcut = registeredShortcuts.value.get(globalShortcutId);
-    if (!existingShortcut) return;
+    const fromMap = registeredShortcuts.value.get(globalShortcutId);
+    const shortcutString = fromMap ?? getShortcutString(globalShortcutId);
+    if (!shortcutString) return;
 
     try {
-      await unregister(existingShortcut);
+      await unregister(shortcutString);
       registeredShortcuts.value.delete(globalShortcutId);
     }
     catch (error) {
-      console.error(`Failed to unregister global shortcut "${existingShortcut}":`, error);
+      console.error(`Failed to unregister global shortcut "${shortcutString}":`, error);
     }
   }
 
@@ -171,16 +186,56 @@ export const useGlobalShortcutsStore = defineStore('globalShortcuts', () => {
     }
   }
 
-  async function setShortcut(globalShortcutId: GlobalShortcutId, keys: ShortcutKeys): Promise<void> {
+  async function setShortcut(globalShortcutId: GlobalShortcutId, keys: ShortcutKeys): Promise<boolean> {
+    const oldEffective = getShortcutString(globalShortcutId);
+    const newTauriShortcut = shortcutKeysToTauriFormat(keys);
+    const handler = getHandler(globalShortcutId);
+
+    if (!handler) {
+      return false;
+    }
+
     await unregisterShortcut(globalShortcutId);
-    const tauriShortcut = shortcutKeysToTauriFormat(keys);
-    const newShortcuts = {
-      ...userGlobalShortcuts.value,
-      [globalShortcutId]: tauriShortcut,
-    };
-    userGlobalShortcuts.value = newShortcuts;
-    await registerShortcut(globalShortcutId);
-    await syncTrayShortcutHint();
+
+    try {
+      try {
+        await unregister(newTauriShortcut);
+      }
+      catch {
+      }
+
+      await register(newTauriShortcut, createGlobalShortcutCallback(handler));
+      registeredShortcuts.value.set(globalShortcutId, newTauriShortcut);
+      const newShortcuts = {
+        ...userGlobalShortcuts.value,
+        [globalShortcutId]: newTauriShortcut,
+      };
+      userGlobalShortcuts.value = newShortcuts;
+      await syncTrayShortcutHint();
+      return true;
+    }
+    catch (error) {
+      console.error(`Failed to register global shortcut "${newTauriShortcut}" for "${globalShortcutId}":`, error);
+      registeredShortcuts.value.delete(globalShortcutId);
+
+      try {
+        if (oldEffective) {
+          try {
+            await unregister(oldEffective);
+          }
+          catch {
+          }
+
+          await register(oldEffective, createGlobalShortcutCallback(handler));
+          registeredShortcuts.value.set(globalShortcutId, oldEffective);
+        }
+      }
+      catch (restoreError) {
+        console.error(`Failed to restore global shortcut "${oldEffective}" for "${globalShortcutId}":`, restoreError);
+      }
+
+      return false;
+    }
   }
 
   async function resetShortcut(globalShortcutId: GlobalShortcutId): Promise<void> {

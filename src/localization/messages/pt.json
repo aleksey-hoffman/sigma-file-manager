@@ -749,7 +749,10 @@
     "changeShortcut": "Alterar atalho",
     "resetShortcut": "Redefinir atalho",
     "localShortcutsAppScope": "Atalhos locais (escopo do aplicativo)",
-    "whenConditionTooltip": "Condições que devem ser atendidas para que este atalho seja acionado"
+    "whenConditionTooltip": "Condições que devem ser atendidas para que este atalho seja acionado",
+    "unknownMainKey": "Tecla desconhecida",
+    "globalShortcutRegisterFailed": "Não foi possível registrar este atalho global. Ele pode já estar em uso pelo Windows ou por outro aplicativo. Tente outra combinação (por exemplo Win+Shift+… ou Ctrl+Alt+…).",
+    "shortcutRecorderGlobalCaptureHint": "Se nada aparecer ao pressionar as teclas, o seu sistema ou outro programa pode estar interceptando-as antes desta janela recebê-las. Tente outra combinação."
   },
   "shortcuts": {
     "openCloseTheAppWindow": "Abrir/fechar a janela do aplicativo",

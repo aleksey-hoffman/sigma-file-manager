@@ -747,7 +747,10 @@
     "changeShortcut": "Kısayolu değiştir",
     "resetShortcut": "Kısayolu sıfırla",
     "localShortcutsAppScope": "Yerel kısayollar (uygulama kapsamı)",
-    "whenConditionTooltip": "Bu kısayolun tetiklenmesi için karşılanması gereken koşullar"
+    "whenConditionTooltip": "Bu kısayolun tetiklenmesi için karşılanması gereken koşullar",
+    "unknownMainKey": "Bilinmeyen tuş",
+    "globalShortcutRegisterFailed": "Bu genel kısayol kaydedilemedi. Windows veya başka bir uygulama tarafından kullanılıyor olabilir. Farklı bir kombinasyon deneyin (ör. Win+Shift+… veya Ctrl+Alt+…).",
+    "shortcutRecorderGlobalCaptureHint": "Tuşlara bastığınızda hiçbir şey görünmüyorsa, sisteminiz veya başka bir program tuşları bu pencereye ulaşmadan yakalıyor olabilir. Başka bir kombinasyon deneyin."
   },
   "shortcuts": {
     "openCloseTheAppWindow": "Uygulama penceresini aç / kapat",

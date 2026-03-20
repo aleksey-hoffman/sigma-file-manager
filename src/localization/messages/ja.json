@@ -747,7 +747,10 @@
     "changeShortcut": "ショートカットを変更",
     "resetShortcut": "ショートカットをリセット",
     "localShortcutsAppScope": "ローカル ショートカット (アプリ スコープ)",
-    "whenConditionTooltip": "このショートカットをトリガーするために満たすべき条件"
+    "whenConditionTooltip": "このショートカットをトリガーするために満たすべき条件",
+    "unknownMainKey": "不明なキー",
+    "globalShortcutRegisterFailed": "このグローバルショートカットを登録できませんでした。Windows や他のアプリが使用中の可能性があります。別の組み合わせ（例: Win+Shift+… や Ctrl+Alt+…）をお試しください。",
+    "shortcutRecorderGlobalCaptureHint": "キーを押しても何も表示されない場合、お使いのシステムや他のプログラムがこのウィンドウより先にキーを取っている可能性があります。別の組み合わせをお試しください。"
   },
   "shortcuts": {
     "openCloseTheAppWindow": "アプリ ウィンドウを開く / 閉じる",

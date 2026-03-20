@@ -4,6 +4,7 @@
 
 import type { ExtensionKeybinding, ExtensionKeybindingWhen } from '@/types/extension';
 import type { ShortcutKeys } from '@/types/user-settings';
+import { shortcutMainKeyDisplayLabel } from '@/localization/shortcut-main-key-label';
 
 export type KeybindingRegistration = {
   extensionId: string;
@@ -77,7 +78,7 @@ export function getKeybindingParts(keys: ShortcutKeys): string[] {
   if (keys.shift) parts.push('Shift');
   if (keys.meta) parts.push('Meta');
 
-  let keyDisplay = keys.key;
+  let keyDisplay = shortcutMainKeyDisplayLabel(keys.key);
 
   if (keyDisplay.length === 1) {
     keyDisplay = keyDisplay.toUpperCase();

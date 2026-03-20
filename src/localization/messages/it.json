@@ -747,7 +747,10 @@
     "changeShortcut": "Cambia scorciatoia",
     "resetShortcut": "Reimposta scorciatoia",
     "localShortcutsAppScope": "Scorciatoie locali (sistema)",
-    "whenConditionTooltip": "Condizioni che devono essere soddisfatte affinché questa scorciatoia si attivi"
+    "whenConditionTooltip": "Condizioni che devono essere soddisfatte affinché questa scorciatoia si attivi",
+    "unknownMainKey": "Tasto sconosciuto",
+    "globalShortcutRegisterFailed": "Impossibile registrare questa scorciatoia globale. Potrebbe essere già usata da Windows o da un'altra app. Prova un'altra combinazione (ad esempio Win+Maiusc+… o Ctrl+Alt+…).",
+    "shortcutRecorderGlobalCaptureHint": "Se premendo i tasti non compare nulla, il tuo sistema o un altro programma potrebbe intercettarli prima che questa finestra li riceva. Prova un'altra combinazione."
   },
   "shortcuts": {
     "openCloseTheAppWindow": "Apri / chiudi la finestra dell'app",

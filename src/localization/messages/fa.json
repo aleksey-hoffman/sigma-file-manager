@@ -746,7 +746,10 @@
     "changeShortcut": "تغییر میانبر",
     "resetShortcut": "بازنشانی میانبر",
     "localShortcutsAppScope": "میانبرهای محلی (حوزه برنامه)",
-    "whenConditionTooltip": "شرایطی که باید برای فعال شدن این میانبر رعایت شوند"
+    "whenConditionTooltip": "شرایطی که باید برای فعال شدن این میانبر رعایت شوند",
+    "unknownMainKey": "کلید ناشناخته",
+    "globalShortcutRegisterFailed": "ثبت این میانبر سراسری ممکن نشد. ممکن است ویندوز یا برنامهٔ دیگری از آن استفاده کند. ترکیب دیگری امتحان کنید (مثلاً Win+Shift+… یا Ctrl+Alt+…).",
+    "shortcutRecorderGlobalCaptureHint": "اگر با فشار کلید چیزی دیده نمی‌شود، سیستم شما یا برنامهٔ دیگری ممکن است قبل از این پنجره کلیدها را بگیرد. ترکیب دیگری امتحان کنید."
   },
   "shortcuts": {
     "openCloseTheAppWindow": "باز کردن / بستن پنجره برنامه",

@@ -747,7 +747,10 @@
     "changeShortcut": "Changer de raccourci",
     "resetShortcut": "Réinitialiser le raccourci",
     "localShortcutsAppScope": "Raccourcis locaux (portée de l'application)",
-    "whenConditionTooltip": "Conditions qui doivent être remplies pour que ce raccourci se déclenche"
+    "whenConditionTooltip": "Conditions qui doivent être remplies pour que ce raccourci se déclenche",
+    "unknownMainKey": "Touche inconnue",
+    "globalShortcutRegisterFailed": "Impossible d’enregistrer ce raccourci global. Il est peut-être déjà utilisé par Windows ou une autre application. Essayez une autre combinaison (par ex. Win+Maj+… ou Ctrl+Alt+…).",
+    "shortcutRecorderGlobalCaptureHint": "Si rien n’apparaît quand vous appuyez, votre système ou un autre programme intercepte peut-être les touches avant cette fenêtre. Essayez une autre combinaison."
   },
   "shortcuts": {
     "openCloseTheAppWindow": "Ouvrir / fermer la fenêtre de l'application",

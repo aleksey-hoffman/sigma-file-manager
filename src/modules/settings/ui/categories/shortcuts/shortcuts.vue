@@ -9,6 +9,7 @@ import {
   computed,
   watch,
   nextTick,
+  onUnmounted,
 } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Button, ConfirmButton } from '@/components/ui/button';
@@ -59,6 +60,9 @@ import {
   useShortcutsStore,
   formatShortcutKeys,
   formatConditionsLabel,
+  formatCaptureChordLabel,
+  isModifierPhysicalKeyCode,
+  resolveShortcutKeyFromKeyboardEvent,
   type ShortcutId,
   type ShortcutKeys,
 } from '@/stores/runtime/shortcuts';
@@ -117,6 +121,195 @@ const editingGlobalShortcutId = ref<GlobalShortcutId | null>(null);
 const recordedKeys = ref<ShortcutKeys | null>(null);
 const isRecording = ref(false);
 const recordButtonRef = ref<HTMLButtonElement | null>(null);
+const captureDisplayLabel = ref('');
+const lastCaptureKeyboardEvent = ref<KeyboardEvent | null>(null);
+const pressedPhysicalCodes = new Set<string>();
+const globalRegisterFailed = ref(false);
+
+let recordCaptureKeyDown: ((event: KeyboardEvent) => void) | null = null;
+let recordCaptureKeyUp: ((event: KeyboardEvent) => void) | null = null;
+
+function shouldIgnorePhysicalCodeForCaptureTracking(code: string): boolean {
+  return code === 'Tab' || code === 'Enter';
+}
+
+function updateCaptureDisplayLabel() {
+  const event = lastCaptureKeyboardEvent.value;
+  const nonModifierCodes = [...pressedPhysicalCodes].filter(
+    code => !isModifierPhysicalKeyCode(code),
+  );
+
+  if (nonModifierCodes.length > 0) {
+    if (!event) {
+      captureDisplayLabel.value = recordedKeys.value
+        ? formatShortcutKeys(recordedKeys.value)
+        : '';
+      return;
+    }
+
+    captureDisplayLabel.value = formatCaptureChordLabel(pressedPhysicalCodes, event);
+    return;
+  }
+
+  if (pressedPhysicalCodes.size > 0) {
+    if (!event) {
+      captureDisplayLabel.value = recordedKeys.value
+        ? formatShortcutKeys(recordedKeys.value)
+        : '';
+      return;
+    }
+
+    if (recordedKeys.value) {
+      captureDisplayLabel.value = formatShortcutKeys(recordedKeys.value);
+      return;
+    }
+
+    captureDisplayLabel.value = formatCaptureChordLabel(pressedPhysicalCodes, event);
+    return;
+  }
+
+  if (recordedKeys.value) {
+    captureDisplayLabel.value = formatShortcutKeys(recordedKeys.value);
+    return;
+  }
+
+  captureDisplayLabel.value = '';
+}
+
+function resetCaptureKeyTracking() {
+  pressedPhysicalCodes.clear();
+  lastCaptureKeyboardEvent.value = null;
+  captureDisplayLabel.value = '';
+}
+
+function refocusRecordControl() {
+  nextTick(() => {
+    recordButtonRef.value?.focus({ preventScroll: true });
+  });
+}
+
+const MODIFIER_KEY_NAMES = new Set(['Control', 'Alt', 'Shift', 'Meta']);
+
+function shouldStealShortcutCaptureEvent(event: KeyboardEvent): boolean {
+  if (MODIFIER_KEY_NAMES.has(event.key)) {
+    return true;
+  }
+
+  if (event.key === 'Tab') {
+    return true;
+  }
+
+  return false;
+}
+
+function detachRecordCaptureListeners() {
+  if (recordCaptureKeyDown) {
+    window.removeEventListener('keydown', recordCaptureKeyDown, true);
+    recordCaptureKeyDown = null;
+  }
+
+  if (recordCaptureKeyUp) {
+    window.removeEventListener('keyup', recordCaptureKeyUp, true);
+    recordCaptureKeyUp = null;
+  }
+
+  resetCaptureKeyTracking();
+}
+
+function attachRecordCaptureListeners() {
+  detachRecordCaptureListeners();
+
+  recordCaptureKeyDown = (event: KeyboardEvent) => {
+    if (!isDialogOpen.value || !isRecording.value) {
+      return;
+    }
+
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      event.stopPropagation();
+
+      if (recordedKeys.value === null) {
+        isDialogOpen.value = false;
+      }
+      else {
+        isRecording.value = false;
+      }
+
+      return;
+    }
+
+    if (shouldStealShortcutCaptureEvent(event)) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+
+    if (pressedPhysicalCodes.size === 0 && !event.repeat) {
+      recordedKeys.value = null;
+    }
+
+    if (!shouldIgnorePhysicalCodeForCaptureTracking(event.code)) {
+      pressedPhysicalCodes.add(event.code);
+    }
+
+    lastCaptureKeyboardEvent.value = event;
+    updateCaptureDisplayLabel();
+    refocusRecordControl();
+  };
+
+  recordCaptureKeyUp = (event: KeyboardEvent) => {
+    if (!isDialogOpen.value || !isRecording.value) {
+      return;
+    }
+
+    if (event.key === 'Escape') {
+      return;
+    }
+
+    if (shouldStealShortcutCaptureEvent(event)) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+
+    pressedPhysicalCodes.delete(event.code);
+    lastCaptureKeyboardEvent.value = event;
+    updateCaptureDisplayLabel();
+    refocusRecordControl();
+  };
+
+  window.addEventListener('keydown', recordCaptureKeyDown, true);
+  window.addEventListener('keyup', recordCaptureKeyUp, true);
+}
+
+watch(
+  [isDialogOpen, isRecording],
+  () => {
+    if (isDialogOpen.value && isRecording.value) {
+      attachRecordCaptureListeners();
+    }
+    else {
+      detachRecordCaptureListeners();
+    }
+  },
+  { flush: 'post' },
+);
+
+watch(recordedKeys, (keys) => {
+  if (keys) {
+    globalRegisterFailed.value = false;
+  }
+
+  updateCaptureDisplayLabel();
+});
+
+watch(isDialogOpen, (open) => {
+  if (!open) {
+    globalRegisterFailed.value = false;
+  }
+});
+
+onUnmounted(() => {
+  detachRecordCaptureListeners();
+});
 
 const isEditingGlobalShortcut = computed(() => editingGlobalShortcutId.value !== null);
 const editingExtensionKeybinding = ref<{
@@ -197,6 +390,7 @@ function openShortcutEditor(shortcutId: ShortcutId) {
   editingShortcutId.value = shortcutId;
   editingGlobalShortcutId.value = null;
   recordedKeys.value = null;
+  globalRegisterFailed.value = false;
   isRecording.value = true;
   isDialogOpen.value = true;
 
@@ -209,6 +403,7 @@ function openGlobalShortcutEditor(globalShortcutId: GlobalShortcutId) {
   editingGlobalShortcutId.value = globalShortcutId;
   editingShortcutId.value = null;
   recordedKeys.value = null;
+  globalRegisterFailed.value = false;
   isRecording.value = true;
   isDialogOpen.value = true;
 
@@ -224,6 +419,8 @@ function focusRecordButton() {
 function startRecording() {
   isRecording.value = true;
   recordedKeys.value = null;
+  globalRegisterFailed.value = false;
+  resetCaptureKeyTracking();
   focusRecordButton();
 }
 
@@ -245,6 +442,12 @@ function handleRecordKeyDown(event: KeyboardEvent) {
     return;
   }
 
+  if (key === 'Enter') {
+    event.preventDefault();
+    event.stopPropagation();
+    return;
+  }
+
   event.preventDefault();
   event.stopPropagation();
 
@@ -252,8 +455,16 @@ function handleRecordKeyDown(event: KeyboardEvent) {
     return;
   }
 
+  const mainKey = resolveShortcutKeyFromKeyboardEvent(event, {
+    preferPhysicalMainKey: true,
+  });
+
+  if (mainKey === null) {
+    return;
+  }
+
   const keys: ShortcutKeys = {
-    key: key,
+    key: mainKey,
     ctrl: event.ctrlKey,
     alt: event.altKey,
     shift: event.shiftKey,
@@ -261,14 +472,25 @@ function handleRecordKeyDown(event: KeyboardEvent) {
   };
 
   recordedKeys.value = keys;
-  isRecording.value = false;
+  lastCaptureKeyboardEvent.value = event;
+  updateCaptureDisplayLabel();
 }
 
 async function saveShortcut() {
   if (!recordedKeys.value || hasConflict.value) return;
 
   if (editingGlobalShortcutId.value) {
-    await globalShortcutsStore.setShortcut(editingGlobalShortcutId.value, recordedKeys.value);
+    globalRegisterFailed.value = false;
+    const registered = await globalShortcutsStore.setShortcut(
+      editingGlobalShortcutId.value,
+      recordedKeys.value,
+    );
+
+    if (!registered) {
+      globalRegisterFailed.value = true;
+      return;
+    }
+
     isDialogOpen.value = false;
     editingGlobalShortcutId.value = null;
     recordedKeys.value = null;
@@ -327,7 +549,9 @@ function openExtensionKeybindingEditor(extensionId: string, commandId: string, c
     commandTitle,
   };
   editingShortcutId.value = null;
+  editingGlobalShortcutId.value = null;
   recordedKeys.value = null;
+  globalRegisterFailed.value = false;
   isRecording.value = true;
   isDialogOpen.value = true;
 
@@ -743,31 +967,39 @@ const extensionKeybindingsByExtension = computed(() => {
                 type="button"
                 class="shortcut-editor__record-button"
                 :class="{
-                  'shortcut-editor__record-button--recording': isRecording,
-                  'shortcut-editor__record-button--has-value': recordedKeys && !isRecording,
-                  'shortcut-editor__record-button--conflict': hasConflict,
+                  'shortcut-editor__record-button--recording': isRecording && !recordedKeys,
+                  'shortcut-editor__record-button--has-value': isRecording && recordedKeys,
+                  'shortcut-editor__record-button--conflict': hasConflict || globalRegisterFailed,
                 }"
                 @click="startRecording"
                 @keydown="handleRecordKeyDown"
               >
-                <span
-                  v-if="isRecording"
-                  class="shortcut-editor__record-pulse"
-                />
+                <template v-if="isRecording">
+                  <span
+                    v-if="!captureDisplayLabel"
+                    class="shortcut-editor__record-pulse"
+                  />
+                  <kbd
+                    v-if="captureDisplayLabel"
+                    class="shortcut-editor__recorded-kbd"
+                  >
+                    {{ captureDisplayLabel }}
+                  </kbd>
+                  <span
+                    v-if="!captureDisplayLabel"
+                    class="shortcut-editor__record-text"
+                  >
+                    {{ t('dialogs.shortcutEditorDialog.pressDesiredKeyCombination') }}
+                  </span>
+                </template>
                 <kbd
-                  v-if="recordedKeys && !isRecording"
+                  v-else-if="recordedKeys"
                   class="shortcut-editor__recorded-kbd"
                 >
                   {{ recordedKeysLabel }}
                 </kbd>
                 <span
-                  v-else-if="isRecording"
-                  class="shortcut-editor__record-text"
-                >
-                  {{ t('dialogs.shortcutEditorDialog.pressDesiredKeyCombination') }}
-                </span>
-                <span
-                  v-else
+                  v-else-if="!isRecording"
                   class="shortcut-editor__record-placeholder"
                 >
                   {{ t('click') }}
@@ -781,6 +1013,21 @@ const extensionKeybindingsByExtension = computed(() => {
                 <AlertTriangleIcon :size="14" />
                 <span>{{ t('conflict') }}: {{ t(conflictingShortcut.labelKey) }}</span>
               </div>
+
+              <div
+                v-if="globalRegisterFailed"
+                class="shortcut-editor__conflict"
+              >
+                <AlertTriangleIcon :size="14" />
+                <span>{{ t('shortcutsUI.globalShortcutRegisterFailed') }}</span>
+              </div>
+
+              <p
+                v-if="isEditingGlobalShortcut && isRecording"
+                class="shortcut-editor__global-capture-hint"
+              >
+                {{ t('shortcutsUI.shortcutRecorderGlobalCaptureHint') }}
+              </p>
             </div>
           </div>
 
@@ -1163,6 +1410,13 @@ const extensionKeybindingsByExtension = computed(() => {
 
 .shortcut-editor__record-text {
   font-size: 0.75rem;
+}
+
+.shortcut-editor__global-capture-hint {
+  margin: 0;
+  color: hsl(var(--muted-foreground));
+  font-size: 0.6875rem;
+  line-height: 1.4;
 }
 
 .shortcut-editor__record-placeholder {

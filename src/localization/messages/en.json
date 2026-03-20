@@ -760,7 +760,10 @@
     "changeShortcut": "Change shortcut",
     "resetShortcut": "Reset shortcut",
     "localShortcutsAppScope": "Local shortcuts (app scope)",
-    "whenConditionTooltip": "Conditions that must be met for this shortcut to trigger"
+    "whenConditionTooltip": "Conditions that must be met for this shortcut to trigger",
+    "unknownMainKey": "Unknown key",
+    "globalShortcutRegisterFailed": "This global shortcut could not be registered. It may already be used by Windows or another app. Try a different combination (for example Win+Shift+… or Ctrl+Alt+…).",
+    "shortcutRecorderGlobalCaptureHint": "If keys do not appear when you press them, your system or another program may be handling them before this window receives them. Try another combination."
   },
   "shortcuts": {
     "openCloseTheAppWindow": "Open / close the app window",

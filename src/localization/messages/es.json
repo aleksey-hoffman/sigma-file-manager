@@ -747,7 +747,10 @@
     "changeShortcut": "Cambiar acceso directo",
     "resetShortcut": "Restablecer acceso directo",
     "localShortcutsAppScope": "Accesos directos locales (alcance de la aplicación)",
-    "whenConditionTooltip": "Condiciones que deben cumplirse para que este acceso directo se active"
+    "whenConditionTooltip": "Condiciones que deben cumplirse para que este acceso directo se active",
+    "unknownMainKey": "Tecla desconocida",
+    "globalShortcutRegisterFailed": "No se pudo registrar este atajo global. Puede que Windows u otra aplicación ya lo esté usando. Prueba otra combinación (por ejemplo Win+Mayús+… o Ctrl+Alt+…).",
+    "shortcutRecorderGlobalCaptureHint": "Si al pulsar no aparece nada, tu sistema u otro programa puede estar capturando las teclas antes de que las reciba esta ventana. Prueba otra combinación."
   },
   "shortcuts": {
     "openCloseTheAppWindow": "Abrir/cerrar la ventana de la aplicación",
