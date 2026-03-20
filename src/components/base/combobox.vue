@@ -45,6 +45,7 @@ const props = withDefaults(
 
 const emit = defineEmits<{
   'update:modelValue': [value: ComboboxOption | null];
+  'update:open': [value: boolean];
   'highlight': [payload: {
     ref: HTMLElement;
     value: AcceptableValue;
@@ -90,6 +91,7 @@ function onHighlight(payload: {
     :model-value="modelValue"
     :by="by"
     @update:model-value="onModelValueUpdate"
+    @update:open="emit('update:open', $event)"
     @highlight="onHighlight"
   >
     <ComboboxAnchor as-child>

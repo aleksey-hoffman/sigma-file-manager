@@ -4,7 +4,8 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, nextTick, ref, watch } from 'vue';
+import type { AcceptableValue } from 'reka-ui';
 import cloneDeep from 'lodash.clonedeep';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
@@ -92,6 +93,10 @@ const effectivePageToCustomize = computed(() => {
   const selected = infusionSettings.value.selectedPageToCustomize;
 
   return selected === '' ? 'home' : selected;
+});
+
+watch(effectivePageToCustomize, () => {
+  dropOverlayStore.setMixBlendModePreview(null);
 });
 
 const currentPageSettings = computed(() => {
@@ -231,6 +236,34 @@ const selectedMixBlendMode = computed({
     }
   },
 });
+
+function onMixBlendModeComboboxHighlight(
+  payload:
+    | {
+      ref: HTMLElement;
+      value: AcceptableValue;
+    }
+    | undefined,
+) {
+  const highlighted = payload?.value;
+
+  if (
+    highlighted !== null
+    && highlighted !== undefined
+    && typeof highlighted === 'object'
+    && 'value' in highlighted
+  ) {
+    dropOverlayStore.setMixBlendModePreview((highlighted as { value: MixBlendMode }).value);
+  }
+}
+
+function onMixBlendModeComboboxOpen(open: boolean) {
+  if (!open) {
+    nextTick(() => {
+      dropOverlayStore.setMixBlendModePreview(null);
+    });
+  }
+}
 
 async function onEnabledChange(checked: boolean) {
   userSettingsStore.userSettings.infusion.enabled = checked;
@@ -524,7 +557,8 @@ async function resetVisualEffectsSection(): Promise<void> {
                 :options="mixBlendModeOptions"
                 by="value"
                 :search-placeholder="t('search')"
-                select-on-highlight
+                @highlight="onMixBlendModeComboboxHighlight"
+                @update:open="onMixBlendModeComboboxOpen"
               />
             </div>
           </div>
