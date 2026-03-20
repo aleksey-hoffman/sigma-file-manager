@@ -113,9 +113,9 @@ function setWorkerGlobal(name: MutableWorkerGlobalKey, value: unknown): void {
 }
 
 function blockFunctionConstructors(): void {
-  const noop = () => {
+  function noop() {
     throw new Error('Dynamic code generation is not allowed');
-  };
+  }
 
   try {
     Object.defineProperty(Function.prototype, 'constructor', {

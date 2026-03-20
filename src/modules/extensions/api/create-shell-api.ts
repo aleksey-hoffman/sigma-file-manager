@@ -52,11 +52,18 @@ export function createShellAPI(context: ExtensionContext) {
         rejectResult = reject;
       });
 
-      type ProgressPayload = { taskId: string; line: string; isStderr: boolean };
-      type CompletePayload = { taskId: string; code: number; stdout: string; stderr: string };
-      type EarlyEvent =
-        | { type: 'progress'; payload: ProgressPayload }
-        | { type: 'complete'; payload: CompletePayload };
+      type ProgressPayload = { taskId: string;
+        line: string;
+        isStderr: boolean; };
+      type CompletePayload = { taskId: string;
+        code: number;
+        stdout: string;
+        stderr: string; };
+      type EarlyEvent
+        = | { type: 'progress';
+          payload: ProgressPayload; }
+          | { type: 'complete';
+            payload: CompletePayload; };
 
       let taskId: string | null = null;
       let settled = false;
@@ -71,6 +78,7 @@ export function createShellAPI(context: ExtensionContext) {
         settled = true;
         unlistenProgress();
         unlistenComplete();
+
         if (resolveResult) {
           resolveResult({
             code: payload.code,
@@ -84,9 +92,13 @@ export function createShellAPI(context: ExtensionContext) {
         'extension-command-progress',
         (event) => {
           if (taskId === null) {
-            earlyEvents.push({ type: 'progress', payload: event.payload });
+            earlyEvents.push({
+              type: 'progress',
+              payload: event.payload,
+            });
             return;
           }
+
           if (event.payload.taskId !== taskId) return;
           handleProgress(event.payload);
         },
@@ -96,9 +108,13 @@ export function createShellAPI(context: ExtensionContext) {
         'extension-command-complete',
         (event) => {
           if (taskId === null) {
-            earlyEvents.push({ type: 'complete', payload: event.payload });
+            earlyEvents.push({
+              type: 'complete',
+              payload: event.payload,
+            });
             return;
           }
+
           if (event.payload.taskId !== taskId) return;
           handleComplete(event.payload);
         },
@@ -113,6 +129,7 @@ export function createShellAPI(context: ExtensionContext) {
 
         for (const event of earlyEvents) {
           if (event.payload.taskId !== taskId) continue;
+
           if (event.type === 'progress') {
             handleProgress(event.payload);
           }
@@ -120,6 +137,7 @@ export function createShellAPI(context: ExtensionContext) {
             handleComplete(event.payload);
           }
         }
+
         earlyEvents.length = 0;
       }
       catch (error) {
