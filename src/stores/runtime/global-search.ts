@@ -9,6 +9,7 @@ import type { DirEntry } from '@/types/dir-entry';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { useUserStatsStore } from '@/stores/storage/user-stats';
 import { useUserPathsStore } from '@/stores/storage/user-paths';
+import { useAppStateStore } from '@/stores/runtime/app-state';
 import { sharedDrives } from '@/modules/home/composables/use-drives';
 import { SEARCH_CONSTANTS } from '@/constants';
 
@@ -34,8 +35,6 @@ type GlobalSearchStatus = {
 const DEBOUNCE_DELAY_MS = 200;
 const POLL_INTERVAL_ACTIVE_MS = 300;
 const POLL_INTERVAL_IDLE_MS = 5000;
-const IDLE_THRESHOLD_MS = 60 * 1000;
-const IDLE_CHECK_INTERVAL_MS = 10 * 1000;
 
 export const useGlobalSearchStore = defineStore('globalSearch', () => {
   const isOpen = ref(false);
@@ -59,9 +58,7 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
   const statusPollTimerId = ref<ReturnType<typeof setTimeout> | null>(null);
   const debounceTimerId = ref<ReturnType<typeof setTimeout> | null>(null);
   const searchAbortController = ref<AbortController | null>(null);
-  const idleCheckIntervalId = ref<ReturnType<typeof setInterval> | null>(null);
   const driveChangeDebounceTimerId = ref<ReturnType<typeof setTimeout> | null>(null);
-  const lastActivityTime = ref<number>(Date.now());
   const lastKnownDriveCount = ref<number>(0);
 
   const userSettingsStore = useUserSettingsStore();
@@ -90,10 +87,6 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
     const timeSinceLastScan = Date.now() - lastScanTime.value;
 
     return timeSinceLastScan > staleThresholdMs;
-  }
-
-  function getIsUserIdle() {
-    return (Date.now() - lastActivityTime.value) > IDLE_THRESHOLD_MS;
   }
 
   async function getDriveRoots(): Promise<string[]> {
@@ -146,7 +139,7 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
 
       lastKnownDriveCount.value = sharedDrives.value.length;
 
-      startIdleDetection();
+      wireUserIdleDetectionToReindex();
 
       const settings = userSettingsStore.userSettings.globalSearch;
       const shouldRescanOnLaunch = needsScan.value || (settings.autoReindexWhenIdle && getIsIndexStale());
@@ -158,7 +151,7 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
     catch (error) {
       lastError.value = String(error);
       isInitialized.value = true;
-      startIdleDetection();
+      wireUserIdleDetectionToReindex();
     }
   }
 
@@ -416,10 +409,6 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
     results.value = [];
   }
 
-  function recordActivity() {
-    lastActivityTime.value = Date.now();
-  }
-
   function checkIdleReindex() {
     const settings = userSettingsStore.userSettings.globalSearch;
 
@@ -427,9 +416,17 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
     if (isScanInProgress.value) return;
     if (!isInitialized.value) return;
     if (!getIsIndexStale()) return;
-    if (!getIsUserIdle()) return;
+
+    const appStateStore = useAppStateStore();
+    if (!appStateStore.getIsUserIdle()) return;
 
     startScan();
+  }
+
+  function wireUserIdleDetectionToReindex() {
+    useAppStateStore().startUserIdleDetection(() => {
+      checkIdleReindex();
+    });
   }
 
   function getAllPriorityPaths(): string[] {
@@ -465,29 +462,6 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
     }
 
     return Array.from(paths);
-  }
-
-  function startIdleDetection() {
-    if (idleCheckIntervalId.value !== null) return;
-
-    const activityEvents = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll', 'wheel'];
-    activityEvents.forEach((event) => {
-      window.addEventListener(event, recordActivity, { passive: true });
-    });
-
-    idleCheckIntervalId.value = setInterval(checkIdleReindex, IDLE_CHECK_INTERVAL_MS);
-  }
-
-  function stopIdleDetection() {
-    if (idleCheckIntervalId.value !== null) {
-      clearInterval(idleCheckIntervalId.value);
-      idleCheckIntervalId.value = null;
-    }
-
-    const activityEvents = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll', 'wheel'];
-    activityEvents.forEach((event) => {
-      window.removeEventListener(event, recordActivity);
-    });
   }
 
   async function handleDriveListChange() {
@@ -602,7 +576,6 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
     getIsIndexStale,
     isInitialized,
     lastError,
-    getIsUserIdle,
     open,
     close,
     toggle,
@@ -615,7 +588,5 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
     startScan,
     cancelScan,
     search,
-    startIdleDetection,
-    stopIdleDetection,
   };
 });

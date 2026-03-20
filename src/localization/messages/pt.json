@@ -348,7 +348,9 @@
       "pageToCustomize": "página para personalizar",
       "pageToCustomizeDescription1": "Selecione a página da lista e ajuste as configurações para salvar.",
       "pageToCustomizeDescription2": "A visualização do efeito será mostrada nesta página até que você visite outra página",
-      "allPages": "Todas as páginas"
+      "allPages": "Todas as páginas",
+      "pauseBackgroundVideoWhenIdle": "Pausar vídeo de fundo quando a app estiver inativa ou minimizada",
+      "pauseBannerVideoWhenIdle": "Pausar vídeo do banner quando a app estiver inativa ou minimizada"
     },
     "homeBannerEffects": {
       "title": "Efeitos de banner inicial",

@@ -348,7 +348,9 @@
       "pageToCustomize": "Seite zum Anpassen",
       "pageToCustomizeDescription1": "Wählen Sie eine Seite aus der Liste aus und passen Sie die Einstellungen zum Speichern an.",
       "pageToCustomizeDescription2": "Die Vorschau des Effekts wird auf dieser Seite angezeigt, bis Sie eine andere Seite besuchen.",
-      "allPages": "Alle Seiten"
+      "allPages": "Alle Seiten",
+      "pauseBackgroundVideoWhenIdle": "Hintergrundvideo pausieren, wenn die App leerläuft oder minimiert ist",
+      "pauseBannerVideoWhenIdle": "Bannervideo pausieren, wenn die App leerläuft oder minimiert ist"
     },
     "homeBannerEffects": {
       "title": "Home-Banner-Effekte",

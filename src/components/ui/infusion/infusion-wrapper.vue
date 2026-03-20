@@ -8,11 +8,15 @@ import { computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { Infusion } from './index';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
+import { useAppStateStore } from '@/stores/runtime/app-state';
+import { useAppWindowStore } from '@/stores/runtime/app-window';
 import { useBackgroundMedia } from '@/modules/home/composables/use-background-media';
 import { backgroundMedia, DEFAULT_INFUSION_BACKGROUND_FILE_NAME } from '@/data/background-media';
 import type { InfusionPage } from '@/types/user-settings';
 
 const userSettingsStore = useUserSettingsStore();
+const appStateStore = useAppStateStore();
+const appWindowStore = useAppWindowStore();
 const route = useRoute();
 const { getMediaUrl, ensureMediaCached, resolveMediaSelection } = useBackgroundMedia();
 
@@ -78,6 +82,18 @@ const infusionNoise = computed(() => effectivePageSettings.value.noise / 100);
 const infusionNoiseScale = computed(() => effectivePageSettings.value.noiseScale);
 const infusionBlendMode = computed(() => effectivePageSettings.value.mixBlendMode);
 const infusionEnabled = computed(() => infusionSettings.value.enabled);
+
+const pauseOverlayBackgroundVideo = computed(() => {
+  if (infusionType.value !== 'video') {
+    return false;
+  }
+
+  if (!infusionSettings.value.pauseVideoWhenIdle) {
+    return false;
+  }
+
+  return appStateStore.isUserIdle || appWindowStore.isMainWindowMinimized;
+});
 </script>
 
 <template>
@@ -91,5 +107,6 @@ const infusionEnabled = computed(() => infusionSettings.value.enabled);
     :noise-opacity="infusionNoise"
     :noise-scale="infusionNoiseScale"
     :blend-mode="infusionBlendMode"
+    :pause-playback="pauseOverlayBackgroundVideo"
   />
 </template>

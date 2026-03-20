@@ -348,7 +348,9 @@
       "pageToCustomize": "カスタマイズするページ",
       "pageToCustomizeDescription1": "リストからページを選択し、設定を調整して保存します。",
       "pageToCustomizeDescription2": "効果のプレビューは、別のページにアクセスするまでこのページに表示されます。",
-      "allPages": "すべてのページ"
+      "allPages": "すべてのページ",
+      "pauseBackgroundVideoWhenIdle": "アプリがアイドルまたは最小化のとき背景動画を一時停止",
+      "pauseBannerVideoWhenIdle": "アプリがアイドルまたは最小化のときバナー動画を一時停止"
     },
     "homeBannerEffects": {
       "title": "「ホームバナー効果」",

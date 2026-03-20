@@ -5,6 +5,8 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <script setup lang="ts">
 import { computed, defineAsyncComponent, ref, watch } from 'vue';
+import { useAppStateStore } from '@/stores/runtime/app-state';
+import { useAppWindowStore } from '@/stores/runtime/app-window';
 import { useI18n } from 'vue-i18n';
 import {
   RefreshCwIcon,
@@ -45,6 +47,8 @@ import { homeBannerStorageKeys } from '../background-storage-keys';
 const dropOverlayStore = useDropOverlayStore();
 const { t } = useI18n();
 const userSettingsStore = useUserSettingsStore();
+const appStateStore = useAppStateStore();
+const appWindowStore = useAppWindowStore();
 const {
   currentItem,
   getPositionKey,
@@ -58,7 +62,6 @@ const videoRef = ref<HTMLVideoElement | null>(null);
 const isDropdownOpen = ref(false);
 const isPositionPopoverOpen = ref(false);
 const isMediaEditorOpen = ref(false);
-const wasVideoPlaying = ref(false);
 
 watch(isMediaEditorOpen, (open) => {
   dropOverlayStore.setBackgroundManagerOpen(open);
@@ -127,6 +130,39 @@ const setPreviousBackgroundShortcutText = computed(() => {
 });
 
 const isVideo = computed(() => currentMediaType.value === 'video');
+
+const shouldPlayBannerVideo = computed(() => {
+  if (!isVideo.value || !currentMediaUrl.value) {
+    return false;
+  }
+
+  if (isPositionPopoverOpen.value) {
+    return false;
+  }
+
+  if (userSettingsStore.userSettings.homeBannerPauseVideoWhenIdle) {
+    if (appStateStore.isUserIdle || appWindowStore.isMainWindowMinimized) {
+      return false;
+    }
+  }
+
+  return true;
+});
+
+watch([shouldPlayBannerVideo, videoRef], ([shouldPlay]) => {
+  const videoElement = videoRef.value;
+
+  if (!videoElement || !isVideo.value) {
+    return;
+  }
+
+  if (shouldPlay) {
+    void videoElement.play().catch(() => {});
+  }
+  else {
+    videoElement.pause();
+  }
+}, { immediate: true });
 
 watch(currentItem, (item) => {
   if (item) {
@@ -228,20 +264,6 @@ function handlePositionPopoverOpenChange(open: boolean) {
 function preventPopoverClose(event: Event) {
   event.preventDefault();
 }
-
-watch(isPositionPopoverOpen, (isOpen) => {
-  if (!videoRef.value) {
-    return;
-  }
-
-  if (isOpen && isVideo.value) {
-    wasVideoPlaying.value = !videoRef.value.paused;
-    videoRef.value.pause();
-  }
-  else if (!isOpen && wasVideoPlaying.value) {
-    videoRef.value.play();
-  }
-});
 </script>
 
 <template>

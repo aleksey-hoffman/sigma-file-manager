@@ -348,7 +348,9 @@
       "pageToCustomize": "Page à personnaliser",
       "pageToCustomizeDescription1": "Sélectionnez la page dans la liste et ajustez les paramètres à enregistrer.",
       "pageToCustomizeDescription2": "L'aperçu de l'effet sera affiché sur cette page jusqu'à ce que vous visitiez une autre page.",
-      "allPages": "Toutes les pages"
+      "allPages": "Toutes les pages",
+      "pauseBackgroundVideoWhenIdle": "Mettre en pause la vidéo d'arrière-plan quand l'app est inactive ou réduite",
+      "pauseBannerVideoWhenIdle": "Mettre en pause la vidéo de la bannière quand l'app est inactive ou réduite"
     },
     "homeBannerEffects": {
       "title": "Effets de bannière d'accueil",

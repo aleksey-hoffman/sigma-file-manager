@@ -4,7 +4,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import { computed, type CSSProperties } from 'vue';
+import { computed, ref, watch, type CSSProperties } from 'vue';
 
 interface Props {
   src: string;
@@ -18,6 +18,7 @@ interface Props {
   blendMode?: CSSProperties['mixBlendMode'];
   relative?: boolean;
   type?: 'image' | 'video';
+  pausePlayback?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -32,7 +33,29 @@ const props = withDefaults(defineProps<Props>(), {
   blendMode: 'normal',
   relative: false,
   type: 'image',
+  pausePlayback: false,
 });
+
+const videoElementRef = ref<HTMLVideoElement | null>(null);
+
+watch(
+  [() => props.pausePlayback, videoElementRef, () => props.type, () => props.src],
+  ([pausePlayback]) => {
+    const videoElement = videoElementRef.value;
+
+    if (!videoElement || props.type !== 'video') {
+      return;
+    }
+
+    if (pausePlayback) {
+      videoElement.pause();
+    }
+    else {
+      void videoElement.play().catch(() => {});
+    }
+  },
+  { immediate: true },
+);
 
 const imageStyle = computed(() => ({
   '--infusion-opacity': props.opacity,
@@ -99,6 +122,7 @@ const containerClass = computed(() => [
     >
     <video
       v-if="props.type === 'video'"
+      ref="videoElementRef"
       class="infusion-video"
       :src="props.src"
       autoplay

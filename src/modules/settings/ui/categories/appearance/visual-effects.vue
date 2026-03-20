@@ -232,6 +232,16 @@ async function onSameSettingsForAllPagesChange(checked: boolean) {
   await userSettingsStore.setUserSettingsStorage('infusion.sameSettingsForAllPages', checked);
 }
 
+async function onPauseInfusionVideoWhenIdleChange(checked: boolean) {
+  userSettingsStore.userSettings.infusion.pauseVideoWhenIdle = checked;
+  await userSettingsStore.setUserSettingsStorage('infusion.pauseVideoWhenIdle', checked);
+}
+
+async function onPauseBannerVideoWhenIdleChange(checked: boolean) {
+  userSettingsStore.userSettings.homeBannerPauseVideoWhenIdle = checked;
+  await userSettingsStore.setUserSettingsStorage('homeBannerPauseVideoWhenIdle', checked);
+}
+
 const infusionMediaSelectionOptions = {
   defaultMediaId: DEFAULT_INFUSION_BACKGROUND_FILE_NAME,
   resolveMediaIdFromIndex: (index: number) => {
@@ -295,6 +305,26 @@ async function selectNextBackground() {
           <Switch
             :model-value="infusionSettings.sameSettingsForAllPages"
             @update:model-value="onSameSettingsForAllPagesChange"
+          />
+        </div>
+
+        <div class="visual-effects-settings__row visual-effects-settings__row--toggle">
+          <span class="visual-effects-settings__label">
+            {{ t('settings.visualEffects.pauseBackgroundVideoWhenIdle') }}
+          </span>
+          <Switch
+            :model-value="infusionSettings.pauseVideoWhenIdle"
+            @update:model-value="onPauseInfusionVideoWhenIdleChange"
+          />
+        </div>
+
+        <div class="visual-effects-settings__row visual-effects-settings__row--toggle">
+          <span class="visual-effects-settings__label">
+            {{ t('settings.visualEffects.pauseBannerVideoWhenIdle') }}
+          </span>
+          <Switch
+            :model-value="userSettingsStore.userSettings.homeBannerPauseVideoWhenIdle"
+            @update:model-value="onPauseBannerVideoWhenIdleChange"
           />
         </div>
 

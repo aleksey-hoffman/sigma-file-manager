@@ -361,7 +361,9 @@
       "pageToCustomize": "Page to customize",
       "pageToCustomizeDescription1": "Select page from the list and adjust settings to save.",
       "pageToCustomizeDescription2": "The preview of the effect will be displayed on this page until you visit another page.",
-      "allPages": "All pages"
+      "allPages": "All pages",
+      "pauseBackgroundVideoWhenIdle": "Pause background video when the app is idle or minimized",
+      "pauseBannerVideoWhenIdle": "Pause banner video when the app is idle or minimized"
     },
     "homeBannerEffects": {
       "title": "Home banner effects",

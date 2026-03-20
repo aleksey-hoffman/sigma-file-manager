@@ -68,6 +68,7 @@ export type InfusionSettings = {
   enabled: boolean;
   sameSettingsForAllPages: boolean;
   selectedPageToCustomize: InfusionPage;
+  pauseVideoWhenIdle: boolean;
   pages: Record<InfusionPage, InfusionPageSettings>;
 };
 
@@ -137,6 +138,7 @@ export type UserSettings = {
   UIZoomLevel?: number;
   homeBannerIndex: number;
   homeBannerMediaId: string;
+  homeBannerPauseVideoWhenIdle: boolean;
   customBackgroundMedia: CustomBackgroundMedia;
   homeBannerPositions: HomeBannerPositions;
   driveCard: DriveCardSettings;

@@ -10,6 +10,7 @@ import { useUserStatsStore } from '@/stores/storage/user-stats';
 import { useWorkspacesStore } from '@/stores/storage/workspaces';
 import { usePlatformStore } from '@/stores/runtime/platform';
 import { useGlobalSearchStore } from '@/stores/runtime/global-search';
+import { useAppWindowStore } from '@/stores/runtime/app-window';
 import { useShortcutsStore } from '@/stores/runtime/shortcuts';
 import { useGlobalShortcutsStore } from '@/stores/runtime/global-shortcuts';
 import { useTerminalsStore } from '@/stores/runtime/terminals';
@@ -29,6 +30,7 @@ export function useInit() {
   const userPathsStore = useUserPathsStore();
   const platformStore = usePlatformStore();
   const globalSearchStore = useGlobalSearchStore();
+  const appWindowStore = useAppWindowStore();
   const shortcutsStore = useShortcutsStore();
   const globalShortcutsStore = useGlobalShortcutsStore();
   const terminalsStore = useTerminalsStore();
@@ -73,6 +75,7 @@ export function useInit() {
     await userStatsStore.init();
     await workspacesStore.init();
     await showMainWindow();
+    await appWindowStore.initMainWindowStateListeners();
     await globalSearchStore.initOnLaunch();
     await shortcutsStore.init();
     await globalShortcutsStore.init();
@@ -90,6 +93,7 @@ export function useInit() {
 
   onUnmounted(() => {
     unregisterShortcutHandlers();
+    appWindowStore.disposeMainWindowStateListeners();
   });
 
   return {

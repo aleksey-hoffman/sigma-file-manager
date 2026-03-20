@@ -348,7 +348,9 @@
       "pageToCustomize": "自定义页面",
       "pageToCustomizeDescription1": "从列表中选择页面并调整设置以保存。",
       "pageToCustomizeDescription2": "效果预览将显示在该页面上，直到您访问另一个页面。",
-      "allPages": "所有页面"
+      "allPages": "所有页面",
+      "pauseBackgroundVideoWhenIdle": "应用空闲或最小化时暂停背景视频",
+      "pauseBannerVideoWhenIdle": "应用空闲或最小化时暂停横幅视频"
     },
     "homeBannerEffects": {
       "title": "主页横幅效果",

@@ -348,7 +348,9 @@
       "pageToCustomize": "Özelleştirilecek sayfa",
       "pageToCustomizeDescription1": "Listeden sayfa seçin ve kaydetmek için ayarları yapın.",
       "pageToCustomizeDescription2": "Efektin önizlemesi, siz başka bir sayfayı ziyaret edene kadar bu sayfada görüntülenecektir.",
-      "allPages": "Tüm sayfalar"
+      "allPages": "Tüm sayfalar",
+      "pauseBackgroundVideoWhenIdle": "Uygulama boştayken veya simge durumundayken arka plan videosunu duraklat",
+      "pauseBannerVideoWhenIdle": "Uygulama boştayken veya simge durumundayken banner videosunu duraklat"
     },
     "homeBannerEffects": {
       "title": "Ev banner efektleri",

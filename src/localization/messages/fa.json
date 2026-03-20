@@ -347,7 +347,9 @@
       "pageToCustomize": "صفحه برای سفارشی کردن",
       "pageToCustomizeDescription1": "صفحه را از لیست انتخاب کنید و تنظیمات را برای ذخیره تنظیم کنید.",
       "pageToCustomizeDescription2": "پیش نمایش افکت در این صفحه نمایش داده می شود تا زمانی که صفحه دیگری را مشاهده کنید.",
-      "allPages": "همه صفحات"
+      "allPages": "همه صفحات",
+      "pauseBackgroundVideoWhenIdle": "توقف ویدیوی پس‌زمینه وقتی برنامه بیکار است یا کوچک شده",
+      "pauseBannerVideoWhenIdle": "توقف ویدیوی بنر وقتی برنامه بیکار است یا کوچک شده"
     },
     "homeBannerEffects": {
       "title": "افکت های بنر خانه",
