@@ -351,7 +351,8 @@
       "pageToCustomizeDescription2": "Efektin önizlemesi, siz başka bir sayfayı ziyaret edene kadar bu sayfada görüntülenecektir.",
       "allPages": "Tüm sayfalar",
       "pauseBackgroundVideoWhenIdle": "Uygulama boştayken veya simge durumundayken arka plan videosunu duraklat",
-      "pauseBannerVideoWhenIdle": "Uygulama boştayken veya simge durumundayken banner videosunu duraklat"
+      "pauseBannerVideoWhenIdle": "Uygulama boştayken veya simge durumundayken banner videosunu duraklat",
+      "resetToDefaults": "Görsel efektleri varsayılanlara sıfırla"
     },
     "homeBannerEffects": {
       "title": "Ev banner efektleri",

@@ -351,7 +351,8 @@
       "pageToCustomizeDescription2": "Bản xem trước của hiệu ứng sẽ được hiển thị trên trang này cho đến khi bạn truy cập trang khác.",
       "allPages": "Tất cả các trang",
       "pauseBackgroundVideoWhenIdle": "Tạm dừng video nền khi ứng dụng nhàn rỗi hoặc thu nhỏ",
-      "pauseBannerVideoWhenIdle": "Tạm dừng video banner khi ứng dụng nhàn rỗi hoặc thu nhỏ"
+      "pauseBannerVideoWhenIdle": "Tạm dừng video banner khi ứng dụng nhàn rỗi hoặc thu nhỏ",
+      "resetToDefaults": "Đặt lại hiệu ứng hình ảnh về mặc định"
     },
     "homeBannerEffects": {
       "title": "Hiệu ứng biểu ngữ trang chủ",

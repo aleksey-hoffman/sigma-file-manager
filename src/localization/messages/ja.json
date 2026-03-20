@@ -351,7 +351,8 @@
       "pageToCustomizeDescription2": "効果のプレビューは、別のページにアクセスするまでこのページに表示されます。",
       "allPages": "すべてのページ",
       "pauseBackgroundVideoWhenIdle": "アプリがアイドルまたは最小化のとき背景動画を一時停止",
-      "pauseBannerVideoWhenIdle": "アプリがアイドルまたは最小化のときバナー動画を一時停止"
+      "pauseBannerVideoWhenIdle": "アプリがアイドルまたは最小化のときバナー動画を一時停止",
+      "resetToDefaults": "ビジュアル効果を既定にリセット"
     },
     "homeBannerEffects": {
       "title": "「ホームバナー効果」",

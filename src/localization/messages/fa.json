@@ -350,7 +350,8 @@
       "pageToCustomizeDescription2": "پیش نمایش افکت در این صفحه نمایش داده می شود تا زمانی که صفحه دیگری را مشاهده کنید.",
       "allPages": "همه صفحات",
       "pauseBackgroundVideoWhenIdle": "توقف ویدیوی پس‌زمینه وقتی برنامه بیکار است یا کوچک شده",
-      "pauseBannerVideoWhenIdle": "توقف ویدیوی بنر وقتی برنامه بیکار است یا کوچک شده"
+      "pauseBannerVideoWhenIdle": "توقف ویدیوی بنر وقتی برنامه بیکار است یا کوچک شده",
+      "resetToDefaults": "بازنشانی جلوه‌های بصری به پیش‌فرض"
     },
     "homeBannerEffects": {
       "title": "افکت های بنر خانه",

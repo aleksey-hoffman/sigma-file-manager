@@ -351,7 +351,8 @@
       "pageToCustomizeDescription2": "A visualização do efeito será mostrada nesta página até que você visite outra página",
       "allPages": "Todas as páginas",
       "pauseBackgroundVideoWhenIdle": "Pausar vídeo de fundo quando a app estiver inativa ou minimizada",
-      "pauseBannerVideoWhenIdle": "Pausar vídeo do banner quando a app estiver inativa ou minimizada"
+      "pauseBannerVideoWhenIdle": "Pausar vídeo do banner quando a app estiver inativa ou minimizada",
+      "resetToDefaults": "Restaurar efeitos visuais para o padrão"
     },
     "homeBannerEffects": {
       "title": "Efeitos de banner inicial",

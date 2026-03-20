@@ -364,7 +364,8 @@
       "pageToCustomizeDescription2": "Predogled učinka bo prikazan na tej strani, dokler ne obiščete druge strani.",
       "allPages": "Vse strani",
       "pauseBackgroundVideoWhenIdle": "Zaustavi ozadni video, ko je aplikacija nedejavna ali pomanjšana",
-      "pauseBannerVideoWhenIdle": "Zaustavi video pasice, ko je aplikacija nedejavna ali pomanjšana"
+      "pauseBannerVideoWhenIdle": "Zaustavi video pasice, ko je aplikacija nedejavna ali pomanjšana",
+      "resetToDefaults": "Ponastavi vizualne učinke na privzete vrednosti"
     },
     "homeBannerEffects": {
       "title": "Učinki pasice doma",

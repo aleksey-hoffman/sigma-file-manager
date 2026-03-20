@@ -5,6 +5,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
+import cloneDeep from 'lodash.clonedeep';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -12,7 +13,7 @@ import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip
 import { SettingsItem } from '@/modules/settings';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { useI18n } from 'vue-i18n';
-import { SparklesIcon, RefreshCcwIcon, ImageIcon } from 'lucide-vue-next';
+import { SparklesIcon, RefreshCcwIcon, ImageIcon, RotateCcwIcon } from 'lucide-vue-next';
 import { useBackgroundMedia } from '@/modules/home/composables/use-background-media';
 import type { ResolvedMediaSelection } from '@/modules/home/composables/use-background-media';
 import { backgroundMedia, DEFAULT_INFUSION_BACKGROUND_FILE_NAME } from '@/data/background-media';
@@ -290,6 +291,39 @@ async function selectNextBackground() {
 
   await applyInfusionBackgroundSelection(selection);
 }
+
+const infusionPagesToPersist: InfusionPage[] = ['', 'home', 'navigator', 'dashboard', 'settings', 'extensions'];
+
+async function resetVisualEffectsSection(): Promise<void> {
+  const defaultsSnapshot = userSettingsStore.userSettingsDefault;
+
+  if (!defaultsSnapshot) {
+    return;
+  }
+
+  const defaultInfusion = cloneDeep(defaultsSnapshot.infusion);
+
+  userSettingsStore.userSettings.infusion = defaultInfusion;
+  userSettingsStore.userSettings.homeBannerPauseVideoWhenIdle = defaultsSnapshot.homeBannerPauseVideoWhenIdle;
+
+  await userSettingsStore.setUserSettingsStorage('infusion.enabled', defaultInfusion.enabled);
+  await userSettingsStore.setUserSettingsStorage('infusion.sameSettingsForAllPages', defaultInfusion.sameSettingsForAllPages);
+  await userSettingsStore.setUserSettingsStorage('infusion.selectedPageToCustomize', defaultInfusion.selectedPageToCustomize);
+  await userSettingsStore.setUserSettingsStorage('infusion.pauseVideoWhenIdle', defaultInfusion.pauseVideoWhenIdle);
+  await userSettingsStore.setUserSettingsStorage('homeBannerPauseVideoWhenIdle', defaultsSnapshot.homeBannerPauseVideoWhenIdle);
+
+  for (const page of infusionPagesToPersist) {
+    const pageSettings = defaultInfusion.pages[page];
+
+    await userSettingsStore.setUserSettingsStorage(getStorageKeyForPage(page, 'blur'), pageSettings.blur);
+    await userSettingsStore.setUserSettingsStorage(getStorageKeyForPage(page, 'mediaContrast'), pageSettings.mediaContrast);
+    await userSettingsStore.setUserSettingsStorage(getStorageKeyForPage(page, 'opacity'), pageSettings.opacity);
+    await userSettingsStore.setUserSettingsStorage(getStorageKeyForPage(page, 'noise'), pageSettings.noise);
+    await userSettingsStore.setUserSettingsStorage(getStorageKeyForPage(page, 'noiseScale'), pageSettings.noiseScale);
+    await userSettingsStore.setUserSettingsStorage(getStorageKeyForPage(page, 'mixBlendMode'), pageSettings.mixBlendMode);
+    await userSettingsStore.setUserSettingsStorage(getStorageKeyForPage(page, 'background'), pageSettings.background);
+  }
+}
 </script>
 
 <template>
@@ -297,10 +331,27 @@ async function selectNextBackground() {
     :title="t('settings.visualEffects.title')"
     :icon="SparklesIcon"
   >
-    <Switch
-      :model-value="infusionSettings.enabled"
-      @update:model-value="onEnabledChange"
-    />
+    <div class="visual-effects-settings__header-controls">
+      <Tooltip v-if="infusionSettings.enabled">
+        <TooltipTrigger as-child>
+          <Button
+            variant="outline"
+            size="icon"
+            :disabled="!userSettingsStore.userSettingsDefault"
+            @click="resetVisualEffectsSection"
+          >
+            <RotateCcwIcon class="visual-effects-settings__header-action-icon" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>
+          {{ t('settings.visualEffects.resetToDefaults') }}
+        </TooltipContent>
+      </Tooltip>
+      <Switch
+        :model-value="infusionSettings.enabled"
+        @update:model-value="onEnabledChange"
+      />
+    </div>
 
     <template
       v-if="infusionSettings.enabled"
@@ -492,6 +543,18 @@ async function selectNextBackground() {
 </template>
 
 <style scoped>
+.visual-effects-settings__header-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+}
+
+.visual-effects-settings__header-action-icon {
+  width: 1rem;
+  height: 1rem;
+}
+
 .visual-effects-settings {
   display: flex;
   width: 100%;

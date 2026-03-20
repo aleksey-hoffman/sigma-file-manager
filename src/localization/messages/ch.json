@@ -351,7 +351,8 @@
       "pageToCustomizeDescription2": "效果预览将显示在该页面上，直到您访问另一个页面。",
       "allPages": "所有页面",
       "pauseBackgroundVideoWhenIdle": "应用空闲或最小化时暂停背景视频",
-      "pauseBannerVideoWhenIdle": "应用空闲或最小化时暂停横幅视频"
+      "pauseBannerVideoWhenIdle": "应用空闲或最小化时暂停横幅视频",
+      "resetToDefaults": "将视觉效果重置为默认值"
     },
     "homeBannerEffects": {
       "title": "主页横幅效果",

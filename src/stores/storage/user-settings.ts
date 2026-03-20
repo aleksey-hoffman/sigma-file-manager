@@ -106,7 +106,7 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
     UIZoomLevel: 1.0,
     homeBannerIndex: 0,
     homeBannerMediaId: DEFAULT_BACKGROUND_FILE_NAME,
-    homeBannerPauseVideoWhenIdle: false,
+    homeBannerPauseVideoWhenIdle: true,
     customBackgroundMedia: [],
     homeBannerPositions: {},
     driveCard: {
@@ -118,7 +118,7 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
       enabled: true,
       sameSettingsForAllPages: true,
       selectedPageToCustomize: '',
-      pauseVideoWhenIdle: false,
+      pauseVideoWhenIdle: true,
       pages: {
         '': createDefaultInfusionPageSettings(),
         'home': createDefaultInfusionPageSettingsHome(),
