@@ -5,9 +5,9 @@
 import cloneDeep from 'lodash.clonedeep';
 import { defineStore } from 'pinia';
 import { LazyStore } from '@tauri-apps/plugin-store';
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import type {
-  UserSettings, LocalizationLanguage, UserSettingsPath, UserSettingsValue, InfusionPageSettings,
+  UserSettings, LocalizationLanguage, UserSettingsPath, UserSettingsValue, InfusionPageSettings, VisualFiltersSettings,
 } from '@/types/user-settings';
 import {
   backgroundMedia,
@@ -128,6 +128,7 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
         'extensions': createDefaultInfusionPageSettings(),
       },
     },
+    visualFilters: createDefaultVisualFiltersSettings(),
     settingsCurrentTab: 'general',
     shortcuts: {},
     globalShortcuts: {},
@@ -185,11 +186,47 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
     };
   }
 
+  function createDefaultVisualFiltersSettings(): VisualFiltersSettings {
+    return {
+      brightness: 100,
+      contrast: 100,
+    };
+  }
+
+  function clampVisualFilterValue(value: number): number {
+    return Math.min(200, Math.max(80, value));
+  }
+
+  function applyBodyVisualFilters(visualFilters: VisualFiltersSettings) {
+    if (typeof document === 'undefined' || !document.body) {
+      return;
+    }
+
+    const brightness = clampVisualFilterValue(visualFilters.brightness);
+    const contrast = clampVisualFilterValue(visualFilters.contrast);
+
+    document.body.style.filter = brightness === 100 && contrast === 100
+      ? ''
+      : `brightness(${brightness}%) contrast(${contrast}%)`;
+  }
+
   const defaultFontFamily = computed(
     () => userSettings.value.text?.font ?? 'system-ui',
   );
   const themeSettingRef = computed(() => userSettings.value.theme);
   const { setTheme } = useTheme(themeSettingRef);
+
+  watch(
+    () => [
+      userSettings.value.visualFilters.brightness,
+      userSettings.value.visualFilters.contrast,
+    ] as const,
+    ([brightness, contrast]) => applyBodyVisualFilters({
+      brightness,
+      contrast,
+    }),
+    { immediate: true },
+  );
 
   async function loadUserSettings() {
     try {

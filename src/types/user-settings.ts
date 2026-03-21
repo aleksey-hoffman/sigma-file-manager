@@ -73,6 +73,11 @@ export type InfusionSettings = {
   pages: Record<InfusionPage, InfusionPageSettings>;
 };
 
+export type VisualFiltersSettings = {
+  brightness: number;
+  contrast: number;
+};
+
 export type ShortcutKeys = {
   ctrl?: boolean;
   alt?: boolean;
@@ -145,6 +150,7 @@ export type UserSettings = {
   driveCard: DriveCardSettings;
   userDirectories: UserDirectoriesCustomizations;
   infusion: InfusionSettings;
+  visualFilters: VisualFiltersSettings;
   settingsCurrentTab: string;
   shortcuts?: UserShortcuts;
   globalShortcuts?: UserGlobalShortcuts;
