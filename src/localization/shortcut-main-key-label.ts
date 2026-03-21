@@ -10,5 +10,6 @@ export function shortcutMainKeyDisplayLabel(rawKey: string): string {
   if (!KEYBOARD_MAIN_KEY_UNUSABLE.has(rawKey)) {
     return rawKey;
   }
+
   return String(i18n.global.t('shortcutsUI.unknownMainKey'));
 }

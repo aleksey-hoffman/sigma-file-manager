@@ -31,49 +31,49 @@ export function useSystemIcon(params: SystemIconParams) {
   ));
 
   const cacheKey = computed(() => {
-    if (isDir.value) {
-      return `dir:${path.value.toLowerCase()}:${size.value}`;
-    }
-
-    const extensionKey = (extension.value || '').toLowerCase();
-    return `ext:${extensionKey}:${size.value}`;
+    const entryType = isDir.value ? 'dir' : 'file';
+    return `${entryType}:${path.value.toLowerCase()}:${size.value}`;
   });
 
   const systemIconSrc = ref<string | null>(null);
 
   async function fetchSystemIcon(): Promise<string | null> {
     const iconSize = Math.max(8, Math.min(256, Math.round(size.value)));
-    const cached = systemIconCache.get(cacheKey.value);
+    const requestCacheKey = cacheKey.value;
+    const requestPath = path.value;
+    const requestIsDir = isDir.value;
+    const requestExtension = extension.value;
+    const cached = systemIconCache.get(requestCacheKey);
 
     if (cached !== undefined) {
       return cached;
     }
 
-    const existingRequest = systemIconInFlight.get(cacheKey.value);
+    const existingRequest = systemIconInFlight.get(requestCacheKey);
 
     if (existingRequest) {
       return await existingRequest;
     }
 
     const requestPromise = invoke<string | null>('get_system_icon', {
-      path: path.value,
-      isDir: isDir.value,
-      extension: extension.value,
+      path: requestPath,
+      isDir: requestIsDir,
+      extension: requestExtension,
       size: iconSize,
     })
       .then((result) => {
-        systemIconCache.set(cacheKey.value, result);
+        systemIconCache.set(requestCacheKey, result);
         return result;
       })
       .catch(() => {
-        systemIconCache.set(cacheKey.value, null);
+        systemIconCache.set(requestCacheKey, null);
         return null;
       })
       .finally(() => {
-        systemIconInFlight.delete(cacheKey.value);
+        systemIconInFlight.delete(requestCacheKey);
       });
 
-    systemIconInFlight.set(cacheKey.value, requestPromise);
+    systemIconInFlight.set(requestCacheKey, requestPromise);
     return await requestPromise;
   }
 
