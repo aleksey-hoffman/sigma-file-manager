@@ -46,7 +46,7 @@ import { toast, ToastStatic } from '@/components/ui/toaster';
 import type { DirContents } from '@/types/dir-entry';
 import { DirEntryInteractive } from '@/components/dir-entry-interactive';
 import { registerDropContainer, unregisterDropContainer } from '@/composables/use-drop-target-registry';
-import normalizePath from '@/utils/normalize-path';
+import normalizePath, { getPathLeafName, getPathSegments, isUncPath } from '@/utils/normalize-path';
 
 const props = defineProps<{
   currentPath: string;
@@ -82,7 +82,9 @@ onClickOutside(
 const addressParts = computed(() => {
   if (!props.currentPath) return [];
 
-  const parts = props.currentPath.split('/').filter(part => part !== '');
+  const normalizedPath = normalizePath(props.currentPath).replace(/\/+$/, '');
+  const parts = getPathSegments(normalizedPath);
+  const uncPath = isUncPath(normalizedPath);
   const formattedParts: Array<{
     path: string;
     name: string;
@@ -91,16 +93,23 @@ const addressParts = computed(() => {
 
   parts.forEach((part, index) => {
     const pathSegments = parts.slice(0, index + 1);
-    let fullPath = pathSegments.join('/');
+    let fullPath = '';
 
-    if (props.currentPath.startsWith('/')) {
-      fullPath = '/' + fullPath;
+    if (uncPath) {
+      fullPath = `//${pathSegments.join('/')}`;
     }
-    else if (!fullPath.includes(':')) {
-      fullPath = fullPath + '/';
+    else if (normalizedPath.startsWith('/')) {
+      fullPath = `/${pathSegments.join('/')}`;
     }
-    else if (index === 0 && fullPath.includes(':')) {
-      fullPath = fullPath + '/';
+    else if (pathSegments[0]?.includes(':')) {
+      fullPath = `${pathSegments[0]}/`;
+
+      if (pathSegments.length > 1) {
+        fullPath += pathSegments.slice(1).join('/');
+      }
+    }
+    else {
+      fullPath = pathSegments.join('/');
     }
 
     formattedParts.push({
@@ -558,7 +567,7 @@ onUnmounted(() => {
                       :size="14"
                       class="address-bar__separator-menu-icon"
                     />
-                    <span class="address-bar__separator-menu-path">{{ dirPath.split('/').pop() || dirPath }}</span>
+                    <span class="address-bar__separator-menu-path">{{ getPathLeafName(dirPath) || dirPath }}</span>
                   </DropdownMenuItem>
                 </ScrollArea>
               </DropdownMenuContent>

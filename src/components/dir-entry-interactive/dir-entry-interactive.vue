@@ -15,6 +15,7 @@ import FileBrowserConflictDialog from '@/modules/navigator/components/file-brows
 import { useDirEntryActions } from '@/composables/use-dir-entry-actions';
 import { CONTEXT_MENU_OPEN_COUNT_KEY } from './index';
 import type { DirEntry } from '@/types/dir-entry';
+import { getPathLeafName } from '@/utils/normalize-path';
 
 const props = withDefaults(defineProps<{
   path: string;
@@ -69,8 +70,7 @@ onBeforeUnmount(() => {
 });
 
 const dirEntry = computed<DirEntry>(() => {
-  const segments = props.path.split('/').filter(Boolean);
-  const name = segments[segments.length - 1] || props.path;
+  const name = getPathLeafName(props.path) || props.path;
   const lastDotIndex = name.lastIndexOf('.');
   const ext = props.isFile && lastDotIndex > 0 ? name.substring(lastDotIndex + 1) : null;
 

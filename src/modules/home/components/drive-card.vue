@@ -32,12 +32,17 @@ const LOW_SPACE_THRESHOLD = 15;
 
 const showIndicator = computed(() => userSettingsStore.userSettings.driveCard.showSpaceIndicator);
 const indicatorStyle = computed(() => userSettingsStore.userSettings.driveCard.spaceIndicatorStyle);
+const hasSpaceData = computed(() => props.drive.total_space > 0);
 
-const isLowSpace = computed(() => props.drive.percent_used >= (100 - LOW_SPACE_THRESHOLD));
+const isLowSpace = computed(() => hasSpaceData.value && props.drive.percent_used >= (100 - LOW_SPACE_THRESHOLD));
 
 const formattedSpaceInfo = computed(() => {
   if (!props.drive.is_mounted) {
     return t('driveNotMounted');
+  }
+
+  if (!hasSpaceData.value) {
+    return props.drive.mount_point;
   }
 
   const available = toReadableBytes(props.drive.available_space, 1);
@@ -51,7 +56,7 @@ const isLinearHorizontal = computed(() => indicatorStyle.value === 'linearHorizo
 const isLinearHorizontalCentered = computed(() => indicatorStyle.value === 'linearHorizontalCentered');
 
 const driveIcon = computed(() => {
-  if (props.drive.drive_type === 'Network') {
+  if (props.drive.drive_type === 'Network' || props.drive.drive_type === 'WSL') {
     return NetworkIcon;
   }
 
@@ -115,20 +120,20 @@ async function handleUnmount(clickEvent: MouseEvent) {
     type="button"
     class="drive-card"
     :class="{
-      'drive-card--circular': isCircular && showIndicator && drive.is_mounted,
+      'drive-card--circular': isCircular && showIndicator && hasSpaceData && drive.is_mounted,
       'drive-card--unmounted': !drive.is_mounted,
     }"
     @click="handleClick"
   >
     <EdgeIndicator
-      v-if="drive.is_mounted && showIndicator && isLinearVertical"
+      v-if="drive.is_mounted && hasSpaceData && showIndicator && isLinearVertical"
       direction="vertical"
       :percent-used="drive.percent_used"
       :is-low-space="isLowSpace"
     />
 
     <EdgeIndicator
-      v-if="drive.is_mounted && showIndicator && isLinearHorizontal"
+      v-if="drive.is_mounted && hasSpaceData && showIndicator && isLinearHorizontal"
       direction="horizontal"
       :percent-used="drive.percent_used"
       :is-low-space="isLowSpace"
@@ -136,7 +141,7 @@ async function handleUnmount(clickEvent: MouseEvent) {
 
     <div class="drive-card__preview">
       <CircularProgress
-        v-if="drive.is_mounted && showIndicator && isCircular"
+        v-if="drive.is_mounted && hasSpaceData && showIndicator && isCircular"
         :percent-used="drive.percent_used"
         :is-low-space="isLowSpace"
       />
@@ -148,7 +153,7 @@ async function handleUnmount(clickEvent: MouseEvent) {
           class="drive-card__icon"
         />
         <span
-          v-if="drive.is_mounted"
+          v-if="drive.is_mounted && hasSpaceData"
           class="drive-card__percent"
         >
           {{ drive.percent_used }}%
@@ -162,7 +167,7 @@ async function handleUnmount(clickEvent: MouseEvent) {
       </div>
 
       <LinearBar
-        v-if="drive.is_mounted && showIndicator && isLinearHorizontalCentered"
+        v-if="drive.is_mounted && hasSpaceData && showIndicator && isLinearHorizontalCentered"
         :percent-used="drive.percent_used"
         :is-low-space="isLowSpace"
       />

@@ -32,6 +32,7 @@ import { useUserStatsStore } from '@/stores/storage/user-stats';
 import { useWorkspacesStore } from '@/stores/storage/workspaces';
 import { registerDropContainer, unregisterDropContainer } from '@/composables/use-drop-target-registry';
 import type { FavoriteItem, ItemTag, TaggedItem } from '@/types/user-stats';
+import { getPathLeafName } from '@/utils/normalize-path';
 
 const { t } = useI18n();
 const router = useRouter();
@@ -89,8 +90,7 @@ const tagsOpen = computed({
 
 function getItemName(path: string): string {
   if (!path) return '';
-  const segments = path.split('/').filter(Boolean);
-  return segments[segments.length - 1] || path;
+  return getPathLeafName(path) || path;
 }
 
 function isFavoriteFile(item: FavoriteItem): boolean {

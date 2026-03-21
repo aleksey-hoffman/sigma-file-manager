@@ -6,7 +6,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <script setup lang="ts">
 import { computed, provide, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { BlocksIcon, HardDriveIcon, UsbIcon } from 'lucide-vue-next';
+import { BlocksIcon, HardDriveIcon, NetworkIcon, UsbIcon } from 'lucide-vue-next';
 import { useAppStore } from '@/stores/runtime/app';
 import { useExtensionsStore } from '@/stores/runtime/extensions';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
@@ -71,6 +71,15 @@ function openExtensionPage(pageId: string) {
 async function openDrive(path: string) {
   await workspacesStore.openNewTabGroup(path);
   router.push({ name: 'navigator' });
+}
+
+function getDriveIcon(drive: { drive_type: string;
+  is_removable: boolean; }) {
+  if (drive.drive_type === 'Network' || drive.drive_type === 'WSL') {
+    return NetworkIcon;
+  }
+
+  return drive.is_removable ? UsbIcon : HardDriveIcon;
 }
 </script>
 
@@ -193,7 +202,7 @@ async function openDrive(path: string) {
             @click="openDrive(drive.path)"
           >
             <component
-              :is="drive.is_removable ? UsbIcon : HardDriveIcon"
+              :is="getDriveIcon(drive)"
               :size="16"
               class="nav-sidebar-drive-icon"
             />

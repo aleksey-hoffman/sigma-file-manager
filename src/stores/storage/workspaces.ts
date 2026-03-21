@@ -17,6 +17,7 @@ import { useUserPathsStore } from '@/stores/storage/user-paths';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { UI_CONSTANTS } from '@/constants';
 import clone from '@/utils/clone';
+import { getPathLeafName } from '@/utils/normalize-path';
 import uniqueId from '@/utils/unique-id';
 import type { DirEntry } from '@/types/dir-entry';
 import type { Workspace, Tab, TabGroup } from '@/types/workspaces';
@@ -96,13 +97,17 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
 
   async function createNewTab(path?: string): Promise<Tab> {
     const tabPath = path || userPathsStore.userPaths.homeDir;
-    let tabName: string;
+    let tabName = '';
 
     try {
       tabName = await basename(tabPath);
     }
     catch {
-      tabName = tabPath;
+      tabName = '';
+    }
+
+    if (!tabName) {
+      tabName = getPathLeafName(tabPath) || tabPath;
     }
 
     return {
@@ -433,8 +438,7 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
 
           if (updatedPath !== null) {
             tab.path = updatedPath;
-            const pathParts = updatedPath.split('/').filter(Boolean);
-            tab.name = pathParts[pathParts.length - 1] || updatedPath;
+            tab.name = getPathLeafName(updatedPath) || updatedPath;
           }
         }
       }
@@ -454,8 +458,7 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
 
   function handlePathsDeleted(paths: string[]) {
     const homePath = userPathsStore.userPaths.homeDir;
-    const homePathParts = homePath.split('/').filter(Boolean);
-    const homeName = homePathParts[homePathParts.length - 1] || homePath;
+    const homeName = getPathLeafName(homePath) || homePath;
 
     for (const workspace of workspaces.value) {
       for (const tabGroup of workspace.tabGroups) {

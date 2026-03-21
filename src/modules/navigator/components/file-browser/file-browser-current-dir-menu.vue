@@ -28,6 +28,7 @@ import FileBrowserExtensionMenuItems from './file-browser-extension-menu-items.v
 import type { DirEntry } from '@/types/dir-entry';
 import type { ContextMenuItemRegistration } from '@/types/extension';
 import type { ContextMenuAction } from './types';
+import { getPathLeafName } from '@/utils/normalize-path';
 
 const { t } = useI18n();
 const ctx = useFileBrowserContext();
@@ -35,7 +36,7 @@ const ctx = useFileBrowserContext();
 const currentPath = computed(() => ctx.currentPath.value);
 
 const currentDirEntry = computed<DirEntry>(() => ({
-  name: currentPath.value.split('/').filter(Boolean).pop() || currentPath.value,
+  name: getPathLeafName(currentPath.value) || currentPath.value,
   path: currentPath.value,
   is_dir: true,
   is_file: false,

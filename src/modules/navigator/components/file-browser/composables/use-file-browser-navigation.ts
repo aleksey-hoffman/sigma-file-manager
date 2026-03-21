@@ -20,7 +20,7 @@ import { useWorkspacesStore } from '@/stores/storage/workspaces';
 import { useUserStatsStore } from '@/stores/storage/user-stats';
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
 import { DIR_SIZE_CONSTANTS } from '@/constants';
-import normalizePath from '@/utils/normalize-path';
+import normalizePath, { getParentPath, getPathLeafName } from '@/utils/normalize-path';
 
 interface DirChangePayload {
   watchedPath: string;
@@ -32,11 +32,7 @@ const DIRECTORY_DWELL_TIME_MS = 3000;
 const WATCHER_DEBOUNCE_MS = 500;
 
 function getParentOfPath(path: string): string | null {
-  const parts = path.split('/').filter(Boolean);
-  if (parts.length <= 1) return null;
-  parts.pop();
-  const parent = parts.join('/');
-  return parent.includes(':') ? `${parent}/` : `/${parent}`;
+  return getParentPath(path);
 }
 
 function replacePathPrefix(path: string, oldPrefix: string, newPrefix: string): string | null {
@@ -243,8 +239,7 @@ export function useFileBrowserNavigation(
 
   const currentDirEntry = computed<DirEntry | null>(() => {
     if (!dirContents.value) return null;
-    const pathParts = currentPath.value.split('/').filter(Boolean);
-    const name = pathParts[pathParts.length - 1] || currentPath.value;
+    const name = getPathLeafName(currentPath.value) || currentPath.value;
     return {
       name,
       path: currentPath.value,

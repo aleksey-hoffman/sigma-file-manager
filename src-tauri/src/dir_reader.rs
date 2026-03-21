@@ -593,6 +593,78 @@ fn append_windows_network_drives(
     }
 }
 
+#[cfg(windows)]
+fn decode_windows_command_output(output: &[u8]) -> String {
+    if output.len() >= 2 && output.len().is_multiple_of(2) {
+        let utf16_units: Vec<u16> = output
+            .chunks_exact(2)
+            .map(|chunk| u16::from_le_bytes([chunk[0], chunk[1]]))
+            .collect();
+        let decoded = String::from_utf16_lossy(&utf16_units);
+
+        if decoded.chars().any(|character| !character.is_control()) {
+            return decoded;
+        }
+    }
+
+    String::from_utf8_lossy(output).to_string()
+}
+
+#[cfg(windows)]
+fn get_windows_wsl_distributions() -> Vec<String> {
+    let command_output = match std::process::Command::new("wsl")
+        .args(["-l", "-q"])
+        .output()
+    {
+        Ok(output) if output.status.success() => output.stdout,
+        _ => return Vec::new(),
+    };
+
+    decode_windows_command_output(&command_output)
+        .lines()
+        .map(|line| line.replace('\0', "").trim().to_string())
+        .filter(|line| !line.is_empty())
+        .collect()
+}
+
+#[cfg(windows)]
+fn create_windows_wsl_drive_info(distribution_name: &str) -> DriveInfo {
+    let mount_point = format!(r"\\wsl.localhost\{distribution_name}\");
+    let normalized_mount_point = normalize_path(&mount_point);
+
+    DriveInfo {
+        name: distribution_name.to_string(),
+        path: normalized_mount_point.clone(),
+        mount_point: normalized_mount_point.clone(),
+        file_system: "WSL".to_string(),
+        drive_type: "WSL".to_string(),
+        total_space: 0,
+        available_space: 0,
+        used_space: 0,
+        percent_used: 0.0,
+        is_removable: false,
+        is_read_only: false,
+        is_mounted: true,
+        device_path: normalized_mount_point,
+    }
+}
+
+#[cfg(windows)]
+fn append_windows_wsl_drives(
+    drives: &mut Vec<DriveInfo>,
+    seen_paths: &mut std::collections::HashSet<String>,
+) {
+    for distribution_name in get_windows_wsl_distributions() {
+        let drive_info = create_windows_wsl_drive_info(&distribution_name);
+
+        if !seen_paths.insert(drive_info.path.clone()) {
+            continue;
+        }
+
+        drives.push(drive_info);
+    }
+}
+
 // ---------------------------------------------------------------------------
 // Display name helpers (per-platform)
 // ---------------------------------------------------------------------------
@@ -726,6 +798,9 @@ pub fn get_system_drives() -> Result<Vec<DriveInfo>, String> {
 
     #[cfg(windows)]
     append_windows_network_drives(&mut drives, &mut seen_paths);
+
+    #[cfg(windows)]
+    append_windows_wsl_drives(&mut drives, &mut seen_paths);
 
     drives.sort_by(|first, second| first.path.cmp(&second.path));
 
@@ -1281,7 +1356,11 @@ pub fn path_exists(path: String) -> bool {
 
 #[cfg(all(test, windows))]
 mod tests {
-    use super::{is_blacklisted_windows_system_path, windows_system_drive_root};
+    use super::{
+        create_windows_wsl_drive_info, decode_windows_command_output,
+        is_blacklisted_windows_system_path,
+        windows_system_drive_root,
+    };
     use std::path::Path;
 
     #[test]
@@ -1316,5 +1395,29 @@ mod tests {
                 &visible_path
             )));
         }
+    }
+
+    #[test]
+    fn windows_wsl_drive_uses_a_dedicated_drive_type() {
+        let wsl_drive = create_windows_wsl_drive_info("Ubuntu-24.04");
+
+        assert_eq!(wsl_drive.name, "Ubuntu-24.04");
+        assert_eq!(wsl_drive.path, "//wsl.localhost/Ubuntu-24.04/");
+        assert_eq!(wsl_drive.mount_point, "//wsl.localhost/Ubuntu-24.04/");
+        assert_eq!(wsl_drive.file_system, "WSL");
+        assert_eq!(wsl_drive.drive_type, "WSL");
+        assert!(wsl_drive.is_mounted);
+        assert_eq!(wsl_drive.total_space, 0);
+        assert_eq!(wsl_drive.available_space, 0);
+    }
+
+    #[test]
+    fn windows_command_output_decodes_utf16le() {
+        let utf16le_output = [
+            b'U', 0, b'b', 0, b'u', 0, b'n', 0, b't', 0, b'u', 0, b'-', 0, b'2', 0, b'4',
+            0, b'.', 0, b'0', 0, b'4', 0, b'\r', 0, b'\n', 0,
+        ];
+
+        assert_eq!(decode_windows_command_output(&utf16le_output), "Ubuntu-24.04\r\n");
     }
 }
