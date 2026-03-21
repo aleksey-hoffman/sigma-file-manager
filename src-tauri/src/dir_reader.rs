@@ -154,7 +154,58 @@ fn get_mime_type(extension: &Option<String>) -> Option<String> {
     })
 }
 
+#[cfg(windows)]
+fn windows_system_drive_root() -> String {
+    let system_drive = std::env::var("SystemDrive").unwrap_or_else(|_| "C:".to_string());
+    let trimmed_system_drive = system_drive.trim_end_matches('\\').trim_end_matches('/');
+    normalize_path(&format!("{trimmed_system_drive}\\")).to_lowercase()
+}
+
+#[cfg(windows)]
+fn is_blacklisted_windows_system_path(path: &Path) -> bool {
+    let parent_path = path
+        .parent()
+        .and_then(|parent| parent.to_str())
+        .map(normalize_path)
+        .map(|normalized_path| normalized_path.to_lowercase());
+
+    if parent_path.as_deref() != Some(windows_system_drive_root().as_str()) {
+        return false;
+    }
+
+    let entry_name = match path.file_name().and_then(|name| name.to_str()) {
+        Some(name) => name.to_lowercase(),
+        None => return false,
+    };
+
+    matches!(
+        entry_name.as_str(),
+        "hiberfil.sys"
+            | "pagefile.sys"
+            | "swapfile.sys"
+            | "dumpstack.log.tmp"
+            | "documents and settings"
+    )
+}
+
+fn should_skip_path(path: &Path) -> bool {
+    #[cfg(windows)]
+    {
+        is_blacklisted_windows_system_path(path)
+    }
+
+    #[cfg(not(windows))]
+    {
+        let _ = path;
+        false
+    }
+}
+
 fn read_entry(path: &Path) -> Option<DirEntry> {
+    if should_skip_path(path) {
+        return None;
+    }
+
     let metadata = match fs::metadata(path) {
         Ok(meta) => meta,
         Err(_) => return None,
@@ -195,9 +246,12 @@ fn read_entry(path: &Path) -> Option<DirEntry> {
     let size = if is_file { metadata.len() } else { 0 };
 
     let item_count = if is_dir {
-        fs::read_dir(path)
-            .ok()
-            .map(|entries| entries.count() as u32)
+        let directory_entries = match fs::read_dir(path) {
+            Ok(entries) => entries,
+            Err(_) => return None,
+        };
+
+        Some(directory_entries.count() as u32)
     } else {
         None
     };
@@ -243,16 +297,14 @@ pub fn read_dir(path: String) -> Result<DirContents, String> {
     let mut dir_count = 0;
     let mut file_count = 0;
 
-    for entry_result in read_result {
-        if let Ok(entry) = entry_result {
-            if let Some(dir_entry) = read_entry(&entry.path()) {
-                if dir_entry.is_dir {
-                    dir_count += 1;
-                } else if dir_entry.is_file {
-                    file_count += 1;
-                }
-                entries.push(dir_entry);
+    for entry in read_result.flatten() {
+        if let Some(dir_entry) = read_entry(&entry.path()) {
+            if dir_entry.is_dir {
+                dir_count += 1;
+            } else if dir_entry.is_file {
+                file_count += 1;
             }
+            entries.push(dir_entry);
         }
     }
 
@@ -989,7 +1041,7 @@ fn linux_unmount(device_path: &str, mount_point: &str) -> Result<(), String> {
 pub fn mount_network_share(params: NetworkShareParams) -> Result<String, String> {
     #[cfg(windows)]
     {
-        return mount_network_share_windows(&params);
+        mount_network_share_windows(&params)
     }
 
     #[cfg(not(windows))]
@@ -1219,10 +1271,50 @@ pub fn get_parent_dir(path: String) -> Option<String> {
     Path::new(&path)
         .parent()
         .and_then(|parent| parent.to_str())
-        .map(|path_str| normalize_path(path_str))
+        .map(normalize_path)
 }
 
 #[tauri::command]
 pub fn path_exists(path: String) -> bool {
     Path::new(&path).exists()
+}
+
+#[cfg(all(test, windows))]
+mod tests {
+    use super::{is_blacklisted_windows_system_path, windows_system_drive_root};
+    use std::path::Path;
+
+    #[test]
+    fn blacklisted_windows_system_root_entries_are_filtered() {
+        let system_drive_root = windows_system_drive_root();
+        let blacklisted_paths = [
+            format!("{system_drive_root}hiberfil.sys"),
+            format!("{system_drive_root}pagefile.sys"),
+            format!("{system_drive_root}swapfile.sys"),
+            format!("{system_drive_root}dumpstack.log.tmp"),
+            format!("{system_drive_root}documents and settings"),
+        ];
+
+        for blacklisted_path in blacklisted_paths {
+            assert!(is_blacklisted_windows_system_path(Path::new(
+                &blacklisted_path
+            )));
+        }
+    }
+
+    #[test]
+    fn non_blacklisted_paths_are_not_filtered() {
+        let system_drive_root = windows_system_drive_root();
+        let visible_paths = [
+            format!("{system_drive_root}users"),
+            format!("{system_drive_root}documents"),
+            format!("{system_drive_root}documents and settings/desktop"),
+        ];
+
+        for visible_path in visible_paths {
+            assert!(!is_blacklisted_windows_system_path(Path::new(
+                &visible_path
+            )));
+        }
+    }
 }
