@@ -13,6 +13,7 @@ import { formatBytes, formatDate, formatRelativeTime } from '@/modules/navigator
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
 import type { DirEntry } from '@/types/dir-entry';
 import type { RelativeTimeTranslations } from '@/modules/navigator/components/file-browser/utils';
+import { getPathDisplayValue } from '@/utils/normalize-path';
 
 const props = defineProps<{
   selectedEntry: DirEntry | null;
@@ -102,7 +103,7 @@ const properties = computed<PropertyItem[]>(() => {
   });
   items.push({
     title: t('path'),
-    value: entry.path,
+    value: getPathDisplayValue(entry.path),
   });
 
   if (entry.is_file) {

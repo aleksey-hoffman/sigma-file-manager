@@ -20,7 +20,7 @@ import { useWorkspacesStore } from '@/stores/storage/workspaces';
 import { useUserStatsStore } from '@/stores/storage/user-stats';
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
 import { DIR_SIZE_CONSTANTS } from '@/constants';
-import normalizePath, { getParentPath, getPathLeafName } from '@/utils/normalize-path';
+import normalizePath, { getParentPath, getPathDisplayName } from '@/utils/normalize-path';
 
 interface DirChangePayload {
   watchedPath: string;
@@ -239,7 +239,7 @@ export function useFileBrowserNavigation(
 
   const currentDirEntry = computed<DirEntry | null>(() => {
     if (!dirContents.value) return null;
-    const name = getPathLeafName(currentPath.value) || currentPath.value;
+    const name = getPathDisplayName(currentPath.value) || currentPath.value;
     return {
       name,
       path: currentPath.value,

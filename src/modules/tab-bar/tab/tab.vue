@@ -10,6 +10,7 @@ import { useTimeoutFn, useEventListener } from '@vueuse/core';
 import { useWorkspacesStore } from '@/stores/storage/workspaces';
 import type { Tab } from '@/types/workspaces';
 import { XIcon } from 'lucide-vue-next';
+import { getPathDisplayName, getPathDisplayValue } from '@/utils/normalize-path';
 import {
   Tooltip,
   TooltipContent,
@@ -96,15 +97,23 @@ const isActive = computed(() => (
   props.tabGroup?.[0]?.id === workspacesStore.currentTab?.id
 ));
 
+function getTabDisplayName(tab: Tab | undefined): string {
+  if (!tab) {
+    return '';
+  }
+
+  return getPathDisplayName(tab.name) || getPathDisplayName(tab.path) || tab.name || tab.path;
+}
+
 const tabName = computed(() => {
   const firstTab = props.tabGroup?.[0];
   const secondTab = props.tabGroup?.[1];
 
   if (props.tabGroup?.length === 2 && secondTab) {
-    return `${firstTab.name || firstTab.path} | ${secondTab.name || secondTab.path}`;
+    return `${getTabDisplayName(firstTab)} | ${getTabDisplayName(secondTab)}`;
   }
 
-  return `${firstTab.name || firstTab.path}`;
+  return getTabDisplayName(firstTab);
 });
 
 function tabOnClick(tabGroup: Tab[]) {
@@ -211,10 +220,10 @@ function closeAllTabs() {
             :key="index"
           >
             <div class="tab__tooltip-title">
-              {{ tab.name }}
+              {{ getTabDisplayName(tab) }}
             </div>
             <div class="tab__tooltip-subtitle">
-              {{ tab.path }}
+              {{ getPathDisplayValue(tab.path) }}
             </div>
           </div>
         </span>

@@ -2,7 +2,6 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-import { basename } from '@tauri-apps/api/path';
 import { invoke } from '@tauri-apps/api/core';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { LazyStore } from '@tauri-apps/plugin-store';
@@ -17,7 +16,7 @@ import { useUserPathsStore } from '@/stores/storage/user-paths';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { UI_CONSTANTS } from '@/constants';
 import clone from '@/utils/clone';
-import { getPathLeafName } from '@/utils/normalize-path';
+import { getPathDisplayName } from '@/utils/normalize-path';
 import uniqueId from '@/utils/unique-id';
 import type { DirEntry } from '@/types/dir-entry';
 import type { Workspace, Tab, TabGroup } from '@/types/workspaces';
@@ -97,18 +96,7 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
 
   async function createNewTab(path?: string): Promise<Tab> {
     const tabPath = path || userPathsStore.userPaths.homeDir;
-    let tabName = '';
-
-    try {
-      tabName = await basename(tabPath);
-    }
-    catch {
-      tabName = '';
-    }
-
-    if (!tabName) {
-      tabName = getPathLeafName(tabPath) || tabPath;
-    }
+    const tabName = getPathDisplayName(tabPath) || tabPath;
 
     return {
       id: uniqueId(),
@@ -438,7 +426,7 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
 
           if (updatedPath !== null) {
             tab.path = updatedPath;
-            tab.name = getPathLeafName(updatedPath) || updatedPath;
+            tab.name = getPathDisplayName(updatedPath) || updatedPath;
           }
         }
       }
@@ -458,7 +446,7 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
 
   function handlePathsDeleted(paths: string[]) {
     const homePath = userPathsStore.userPaths.homeDir;
-    const homeName = getPathLeafName(homePath) || homePath;
+    const homeName = getPathDisplayName(homePath) || homePath;
 
     for (const workspace of workspaces.value) {
       for (const tabGroup of workspace.tabGroups) {

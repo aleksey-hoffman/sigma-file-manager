@@ -4,9 +4,13 @@
 
 import { describe, expect, it } from 'vitest';
 import normalizePath, {
+  getPathDisplayName,
+  getPathDisplayValue,
   getParentPath,
   getPathLeafName,
   getPathSegments,
+  isUncShareRootPath,
+  isWindowsDriveRootPath,
   isUncPath,
 } from '@/utils/normalize-path';
 
@@ -18,6 +22,17 @@ describe('normalizePath', () => {
   it('detects UNC paths', () => {
     expect(isUncPath('\\\\wsl.localhost\\Ubuntu')).toBe(true);
     expect(isUncPath('C:/Users/aleks')).toBe(false);
+  });
+
+  it('detects Windows drive roots', () => {
+    expect(isWindowsDriveRootPath('C:/')).toBe(true);
+    expect(isWindowsDriveRootPath('C:')).toBe(true);
+    expect(isWindowsDriveRootPath('C:/Users')).toBe(false);
+  });
+
+  it('detects UNC share roots', () => {
+    expect(isUncShareRootPath('//wsl.localhost/Ubuntu-24.04/')).toBe(true);
+    expect(isUncShareRootPath('//wsl.localhost/Ubuntu-24.04/home')).toBe(false);
   });
 
   it('extracts path segments from UNC paths', () => {
@@ -42,5 +57,18 @@ describe('normalizePath', () => {
   it('returns parents for local Windows paths', () => {
     expect(getParentPath('C:/Users/aleks/Documents')).toBe('C:/Users/aleks');
     expect(getParentPath('C:/Users')).toBe('C:/');
+  });
+
+  it('formats display names consistently for root paths', () => {
+    expect(getPathDisplayName('C:/')).toBe('C:');
+    expect(getPathDisplayName('/')).toBe('/');
+    expect(getPathDisplayName('//wsl.localhost/Ubuntu-24.04/')).toBe('Ubuntu-24.04');
+  });
+
+  it('formats display path values for root paths', () => {
+    expect(getPathDisplayValue('C:/')).toBe('C:');
+    expect(getPathDisplayValue('/')).toBe('/');
+    expect(getPathDisplayValue('//wsl.localhost/Ubuntu-24.04/')).toBe('//wsl.localhost/Ubuntu-24.04');
+    expect(getPathDisplayValue('C:/Users/aleks')).toBe('C:/Users/aleks');
   });
 });

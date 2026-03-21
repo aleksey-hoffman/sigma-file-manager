@@ -46,7 +46,7 @@ import { toast, ToastStatic } from '@/components/ui/toaster';
 import type { DirContents } from '@/types/dir-entry';
 import { DirEntryInteractive } from '@/components/dir-entry-interactive';
 import { registerDropContainer, unregisterDropContainer } from '@/composables/use-drop-target-registry';
-import normalizePath, { getPathLeafName, getPathSegments, isUncPath } from '@/utils/normalize-path';
+import normalizePath, { getPathDisplayName, getPathSegments, isUncPath } from '@/utils/normalize-path';
 
 const props = defineProps<{
   currentPath: string;
@@ -567,7 +567,7 @@ onUnmounted(() => {
                       :size="14"
                       class="address-bar__separator-menu-icon"
                     />
-                    <span class="address-bar__separator-menu-path">{{ getPathLeafName(dirPath) || dirPath }}</span>
+                    <span class="address-bar__separator-menu-path">{{ getPathDisplayName(dirPath) || dirPath }}</span>
                   </DropdownMenuItem>
                 </ScrollArea>
               </DropdownMenuContent>

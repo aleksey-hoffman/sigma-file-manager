@@ -13,6 +13,7 @@ import { useWorkspacesStore } from '@/stores/storage/workspaces';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { usePlatformStore } from '@/stores/runtime/platform';
 import toReadableBytes from '@/utils/to-readable-bytes';
+import { getPathDisplayValue } from '@/utils/normalize-path';
 import type { DriveInfo } from '@/types/drive-info';
 import { CircularProgress, LinearBar, EdgeIndicator } from './indicators';
 
@@ -42,7 +43,7 @@ const formattedSpaceInfo = computed(() => {
   }
 
   if (!hasSpaceData.value) {
-    return props.drive.mount_point;
+    return getPathDisplayValue(props.drive.mount_point);
   }
 
   const available = toReadableBytes(props.drive.available_space, 1);

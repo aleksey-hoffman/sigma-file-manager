@@ -11,6 +11,21 @@ export function isUncPath(path: string): boolean {
   return normalizedPath.startsWith('//') && !normalizedPath.startsWith('///');
 }
 
+export function isWindowsDriveRootPath(path: string): boolean {
+  const normalizedPath = normalizePath(path).replace(/\/+$/, '');
+  return /^[A-Za-z]:$/.test(normalizedPath);
+}
+
+export function isUncShareRootPath(path: string): boolean {
+  const normalizedPath = normalizePath(path).replace(/\/+$/, '');
+
+  if (!isUncPath(normalizedPath)) {
+    return false;
+  }
+
+  return normalizedPath.slice(2).split('/').filter(Boolean).length === 2;
+}
+
 export function getPathSegments(path: string): string[] {
   const normalizedPath = normalizePath(path).replace(/\/+$/, '');
   return normalizedPath.split('/').filter(Boolean);
@@ -60,4 +75,41 @@ export function getParentPath(path: string): string | null {
 
 export function getParentDirectory(filePath: string): string {
   return getParentPath(filePath) ?? filePath;
+}
+
+export function getPathDisplayName(path: string): string {
+  const normalizedPath = normalizePath(path);
+
+  if (!normalizedPath) {
+    return '';
+  }
+
+  if (normalizedPath === '/') {
+    return '/';
+  }
+
+  const leafName = getPathLeafName(normalizedPath);
+  return leafName || normalizedPath;
+}
+
+export function getPathDisplayValue(path: string): string {
+  const normalizedPath = normalizePath(path);
+
+  if (!normalizedPath) {
+    return '';
+  }
+
+  if (normalizedPath === '/') {
+    return '/';
+  }
+
+  if (isWindowsDriveRootPath(normalizedPath)) {
+    return normalizedPath.replace(/\/+$/, '');
+  }
+
+  if (isUncShareRootPath(normalizedPath)) {
+    return normalizedPath.replace(/\/+$/, '');
+  }
+
+  return normalizedPath;
 }
