@@ -91,6 +91,7 @@
     "tabActions": "Actions d'onglet",
     "closeTab": "Fermer l'onglet",
     "closeOtherTabs": "Fermer les autres onglets",
+    "closeDuplicateTabs": "Fermer les doublons",
     "closeAllTabs": "Fermer tous les onglets",
     "defaultTabOpened": "L'onglet par défaut a été ouvert"
   },

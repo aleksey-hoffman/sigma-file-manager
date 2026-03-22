@@ -91,6 +91,7 @@
     "tabActions": "タブ操作",
     "closeTab": "タブを閉じる",
     "closeOtherTabs": "他のタブを閉じる",
+    "closeDuplicateTabs": "重複を閉じる",
     "closeAllTabs": "すべてのタブを閉じる",
     "defaultTabOpened": "デフォルトタブが開きました"
   },

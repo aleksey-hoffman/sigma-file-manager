@@ -9,7 +9,7 @@ import { useI18n } from 'vue-i18n';
 import { useTimeoutFn, useEventListener } from '@vueuse/core';
 import { useWorkspacesStore } from '@/stores/storage/workspaces';
 import type { Tab } from '@/types/workspaces';
-import { XIcon } from 'lucide-vue-next';
+import { Layers, XIcon, XLineTopIcon } from 'lucide-vue-next';
 import { getPathDisplayName, getPathDisplayValue } from '@/utils/normalize-path';
 import {
   Tooltip,
@@ -97,6 +97,8 @@ const isActive = computed(() => (
   props.tabGroup?.[0]?.id === workspacesStore.currentTab?.id
 ));
 
+const canCloseDuplicateTabs = computed(() => props.tabGroup.length === 1);
+
 function getTabDisplayName(tab: Tab | undefined): string {
   if (!tab) {
     return '';
@@ -140,6 +142,14 @@ function handleTabMouseDown(event: MouseEvent) {
 
 function closeOtherTabs() {
   workspacesStore.closeOtherTabGroups(props.tabGroup);
+}
+
+function closeDuplicateTabs() {
+  const keepTab = props.tabGroup[0];
+
+  if (canCloseDuplicateTabs.value && keepTab) {
+    workspacesStore.closeDuplicatePathTabs(keepTab.id);
+  }
 }
 
 function closeAllTabs() {
@@ -196,7 +206,7 @@ function closeAllTabs() {
         class="tab__dropdown-menu"
       >
         <DropdownMenuItem @select="closeOtherTabs">
-          <XIcon
+          <XLineTopIcon
             class="tab__menu-button-icon"
             :size="14"
           />
@@ -208,6 +218,16 @@ function closeAllTabs() {
             :size="14"
           />
           {{ t('tabs.closeAllTabs') }}
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          :disabled="!canCloseDuplicateTabs"
+          @select="closeDuplicateTabs"
+        >
+          <Layers
+            class="tab__menu-button-icon"
+            :size="14"
+          />
+          {{ t('tabs.closeDuplicateTabs') }}
         </DropdownMenuItem>
       </DropdownMenuContent>
       <TooltipContent

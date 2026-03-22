@@ -91,6 +91,7 @@
     "tabActions": "عملیات برگه",
     "closeTab": "بستن برگه",
     "closeOtherTabs": "بستن سایر برگه ها",
+    "closeDuplicateTabs": "بستن تکراری‌ها",
     "closeAllTabs": "بستن همه برگه ها",
     "defaultTabOpened": "برگه پیش‌فرض باز شد"
   },

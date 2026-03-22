@@ -91,6 +91,7 @@
     "tabActions": "Tab actions",
     "closeTab": "Close tab",
     "closeOtherTabs": "Close other tabs",
+    "closeDuplicateTabs": "Close duplicates",
     "closeAllTabs": "Close all tabs",
     "defaultTabOpened": "Default tab was opened"
   },

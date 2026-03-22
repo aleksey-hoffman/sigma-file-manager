@@ -91,6 +91,7 @@
     "tabActions": "Sekme işlemleri",
     "closeTab": "Sekmeyi kapat",
     "closeOtherTabs": "Diğer sekmeleri kapat",
+    "closeDuplicateTabs": "Yinelenenleri kapat",
     "closeAllTabs": "Tüm sekmeleri kapat",
     "defaultTabOpened": "Varsayılan sekme açıldı"
   },

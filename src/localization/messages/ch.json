@@ -91,6 +91,7 @@
     "tabActions": "标签操作",
     "closeTab": "关闭标签",
     "closeOtherTabs": "关闭其他标签",
+    "closeDuplicateTabs": "关闭重复标签",
     "closeAllTabs": "关闭所有标签",
     "defaultTabOpened": "已打开默认标签页"
   },

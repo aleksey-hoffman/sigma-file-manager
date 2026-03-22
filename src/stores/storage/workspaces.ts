@@ -16,7 +16,7 @@ import { useUserPathsStore } from '@/stores/storage/user-paths';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { UI_CONSTANTS } from '@/constants';
 import clone from '@/utils/clone';
-import { getPathDisplayName } from '@/utils/normalize-path';
+import normalizePath, { getPathDisplayName } from '@/utils/normalize-path';
 import uniqueId from '@/utils/unique-id';
 import type { DirEntry } from '@/types/dir-entry';
 import type { Workspace, Tab, TabGroup } from '@/types/workspaces';
@@ -201,6 +201,68 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
     currentWorkspace.value.tabGroups = [tabGroupCopy];
     currentWorkspace.value.currentTabGroupIndex = 0;
     currentWorkspace.value.currentTabIndex = 0;
+  }
+
+  function tabPathDedupKey(path: string): string {
+    const normalizedPath = normalizePath(path).replace(/\/+$/, '');
+    return /^[A-Za-z]:/.test(normalizedPath) ? normalizedPath.toLowerCase() : normalizedPath;
+  }
+
+  async function closeDuplicatePathTabs(keepTabId: string) {
+    if (!currentWorkspace.value) {
+      return;
+    }
+
+    const workspace = currentWorkspace.value;
+    const pathToSingleTabGroups = new Map<string, {
+      index: number;
+      tab: Tab;
+    }[]>();
+
+    workspace.tabGroups.forEach((tabGroup, index) => {
+      if (tabGroup.length !== 1) {
+        return;
+      }
+
+      const tab = tabGroup[0];
+      const key = tabPathDedupKey(tab.path);
+      const list = pathToSingleTabGroups.get(key) ?? [];
+      list.push({
+        index,
+        tab,
+      });
+      pathToSingleTabGroups.set(key, list);
+    });
+
+    const indicesToRemove = new Set<number>();
+
+    for (const entries of pathToSingleTabGroups.values()) {
+      if (entries.length <= 1) {
+        continue;
+      }
+
+      const sortedByIndex = [...entries].sort((left, right) => left.index - right.index);
+      const keepEntry = sortedByIndex.find(entry => entry.tab.id === keepTabId) ?? sortedByIndex[0];
+
+      for (const entry of sortedByIndex) {
+        if (entry.index !== keepEntry.index) {
+          indicesToRemove.add(entry.index);
+        }
+      }
+    }
+
+    if (indicesToRemove.size === 0) {
+      return;
+    }
+
+    const sortedIndices = [...indicesToRemove].sort((left, right) => right - left);
+    const groupsToClose = sortedIndices
+      .map(index => workspace.tabGroups[index])
+      .filter((group): group is Tab[] => Array.isArray(group));
+
+    for (const tabGroup of groupsToClose) {
+      await closeTabGroup(tabGroup);
+    }
   }
 
   function setCurrentTabGroupAfterClosing(params: {
@@ -579,6 +641,7 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
     closeTabGroup,
     closeAllTabGroups,
     closeOtherTabGroups,
+    closeDuplicatePathTabs,
     setTabs,
     toggleSplitView,
     setTabFilterQuery,

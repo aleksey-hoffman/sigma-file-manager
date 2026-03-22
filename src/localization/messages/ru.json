@@ -91,6 +91,7 @@
     "tabActions": "Действия с вкладками",
     "closeTab": "Закрыть вкладку",
     "closeOtherTabs": "Закрыть другие вкладки",
+    "closeDuplicateTabs": "Закрыть дубликаты",
     "closeAllTabs": "Закрыть все вкладки",
     "defaultTabOpened": "Открыта вкладка по умолчанию"
   },

@@ -91,6 +91,7 @@
     "tabActions": "Acciones de pestaña",
     "closeTab": "Cerrar pestaña",
     "closeOtherTabs": "Cerrar otras pestañas",
+    "closeDuplicateTabs": "Cerrar duplicados",
     "closeAllTabs": "Cerrar todas las pestañas",
     "defaultTabOpened": "Se abrió la pestaña predeterminada"
   },

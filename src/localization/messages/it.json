@@ -91,6 +91,7 @@
     "tabActions": "Azioni scheda",
     "closeTab": "Chiudi scheda",
     "closeOtherTabs": "Chiudi altre schede",
+    "closeDuplicateTabs": "Chiudi duplicati",
     "closeAllTabs": "Chiudi tutte le schede",
     "defaultTabOpened": "La scheda predefinita è stata aperta"
   },

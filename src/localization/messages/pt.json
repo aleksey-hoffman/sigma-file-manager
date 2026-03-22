@@ -91,6 +91,7 @@
     "tabActions": "Ações da guia",
     "closeTab": "Fechar guia",
     "closeOtherTabs": "Fechar outras guias",
+    "closeDuplicateTabs": "Fechar duplicados",
     "closeAllTabs": "Fechar todas as guias",
     "defaultTabOpened": "Guia padrão foi aberta"
   },

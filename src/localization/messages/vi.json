@@ -91,6 +91,7 @@
     "tabActions": "Hành động tab",
     "closeTab": "Đóng tab",
     "closeOtherTabs": "Đóng các tab khác",
+    "closeDuplicateTabs": "Đóng bản trùng",
     "closeAllTabs": "Đóng tất cả tab",
     "defaultTabOpened": "Đã mở tab mặc định"
   },
