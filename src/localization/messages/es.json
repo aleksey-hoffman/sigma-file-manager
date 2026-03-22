@@ -1647,6 +1647,7 @@
     "noMatchingItems": "No hay elementos coincidentes",
     "directoryIsEmpty": "Este directorio está vacío",
     "directoryIsEmptyDescription": "No hay archivos ni carpetas en este directorio",
+    "directoryAccessErrorTitle": "No se puede abrir esta carpeta",
     "removeFromSelection": "Eliminar de la selección",
     "removeFromClipboard": "Eliminar del portapapeles",
     "preparedForCopying": "Preparado para copiar",

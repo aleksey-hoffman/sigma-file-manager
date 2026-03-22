@@ -9,7 +9,6 @@ import {
   nextTick,
   onUnmounted,
 } from 'vue';
-import { useI18n } from 'vue-i18n';
 import { invoke } from '@tauri-apps/api/core';
 import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 import { homeDir, basename } from '@tauri-apps/api/path';
@@ -20,7 +19,11 @@ import { useWorkspacesStore } from '@/stores/storage/workspaces';
 import { useUserStatsStore } from '@/stores/storage/user-stats';
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
 import { DIR_SIZE_CONSTANTS } from '@/constants';
-import normalizePath, { getParentPath, getPathDisplayName } from '@/utils/normalize-path';
+import normalizePath, {
+  getParentPath,
+  getPathDisplayName,
+  isWslHostRootUncPath,
+} from '@/utils/normalize-path';
 
 interface DirChangePayload {
   watchedPath: string;
@@ -46,7 +49,6 @@ export function useFileBrowserNavigation(
   onNavigationComplete?: (dirEntry: DirEntry | null) => void,
   onSelectionClear?: () => void,
 ) {
-  const { t } = useI18n();
   const workspacesStore = useWorkspacesStore();
   const userStatsStore = useUserStatsStore();
   const dirSizesStore = useDirSizesStore();
@@ -318,7 +320,7 @@ export function useFileBrowserNavigation(
     }
     catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : String(err);
-      error.value = `${t('notifications.cannotFetchDirectoryItems')}: ${errorMessage}`;
+      error.value = errorMessage;
       console.error(err);
     }
     finally {
@@ -328,8 +330,15 @@ export function useFileBrowserNavigation(
 
   async function navigateToPath(path: string) {
     cancelPendingDirectoryRecord();
+    const normalizedTarget = normalizePath(path);
     await readDir(path);
-    schedulePendingDirectoryRecord(path);
+
+    if (error.value && isWslHostRootUncPath(normalizedTarget)) {
+      await navigateToHome();
+    }
+    else if (!error.value) {
+      schedulePendingDirectoryRecord(path);
+    }
   }
 
   async function navigateToEntry(entry: DirEntry) {
@@ -341,10 +350,19 @@ export function useFileBrowserNavigation(
   }
 
   async function navigateToParent() {
-    if (parentPath.value) {
-      cancelPendingDirectoryRecord();
-      await readDir(parentPath.value);
-      schedulePendingDirectoryRecord(parentPath.value);
+    if (!parentPath.value) {
+      return;
+    }
+
+    const targetPath = parentPath.value;
+    cancelPendingDirectoryRecord();
+    await readDir(targetPath);
+
+    if (error.value && isWslHostRootUncPath(targetPath)) {
+      await navigateToHome();
+    }
+    else if (!error.value) {
+      schedulePendingDirectoryRecord(targetPath);
     }
   }
 

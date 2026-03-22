@@ -1647,6 +1647,7 @@
     "noMatchingItems": "Aucun élément correspondant",
     "directoryIsEmpty": "Ce répertoire est vide",
     "directoryIsEmptyDescription": "Il n'y a aucun fichier ou dossier dans ce répertoire",
+    "directoryAccessErrorTitle": "Impossible d'ouvrir ce dossier",
     "removeFromSelection": "Supprimer de la sélection",
     "removeFromClipboard": "Supprimer du presse-papiers",
     "preparedForCopying": "Préparé pour la copie",

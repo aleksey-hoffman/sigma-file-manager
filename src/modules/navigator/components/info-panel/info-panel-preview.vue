@@ -15,6 +15,8 @@ import {
   isImageFile as checkIsImage,
   isVideoFile as checkIsVideo,
 } from '@/modules/navigator/components/file-browser/utils';
+import UbuntuWslIcon from '@/components/icons/ubuntu-wsl-icon.vue';
+import { isWslPath } from '@/utils/normalize-path';
 import type { DirEntry } from '@/types/dir-entry';
 
 const props = defineProps<{
@@ -39,6 +41,12 @@ const mediaSrc = computed(() => {
 
   return convertFileSrc(props.selectedEntry.path);
 });
+
+const showWslDirectoryIcon = computed(() => {
+  if (!props.selectedEntry?.is_dir) return false;
+
+  return isWslPath(props.selectedEntry.path);
+});
 </script>
 
 <template>
@@ -53,7 +61,13 @@ const mediaSrc = computed(() => {
       v-else-if="selectedEntry.is_dir"
       class="info-panel-preview__placeholder"
     >
+      <UbuntuWslIcon
+        v-if="showWslDirectoryIcon"
+        :size="48"
+        class="info-panel-preview__icon--folder"
+      />
       <component
+        v-else
         :is="isCurrentDir ? FolderOpenIcon : FolderIcon"
         :size="48"
         class="info-panel-preview__icon--folder"

@@ -1647,6 +1647,7 @@
     "noMatchingItems": "一致するアイテムがありません",
     "directoryIsEmpty": "このディレクトリは空です",
     "directoryIsEmptyDescription": "このディレクトリにはファイルやフォルダがありません",
+    "directoryAccessErrorTitle": "このフォルダを開けません",
     "removeFromSelection": "選択から削除",
     "removeFromClipboard": "クリップボードから削除",
     "preparedForCopying": "コピー準備完了",

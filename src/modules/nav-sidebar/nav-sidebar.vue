@@ -22,6 +22,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { CONTEXT_MENU_OPEN_COUNT_KEY } from '@/components/dir-entry-interactive';
 import QuickAccessPanel from './components/quick-access-panel.vue';
+import UbuntuWslIcon from '@/components/icons/ubuntu-wsl-icon.vue';
 
 const router = useRouter();
 const appStore = useAppStore();
@@ -75,7 +76,7 @@ async function openDrive(path: string) {
 
 function getDriveIcon(drive: { drive_type: string;
   is_removable: boolean; }) {
-  if (drive.drive_type === 'Network' || drive.drive_type === 'WSL') {
+  if (drive.drive_type === 'Network') {
     return NetworkIcon;
   }
 
@@ -201,7 +202,13 @@ function getDriveIcon(drive: { drive_type: string;
             size="icon"
             @click="openDrive(drive.path)"
           >
+            <UbuntuWslIcon
+              v-if="drive.drive_type === 'WSL'"
+              :size="16"
+              class="nav-sidebar-drive-icon"
+            />
             <component
+              v-else
               :is="getDriveIcon(drive)"
               :size="16"
               class="nav-sidebar-drive-icon"
@@ -310,10 +317,12 @@ function getDriveIcon(drive: { drive_type: string;
 }
 
 .nav-sidebar-drive-icon {
+  color: hsl(var(--muted-foreground));
   stroke: hsl(var(--muted-foreground));
 }
 
 .nav-sidebar-drive:hover .nav-sidebar-drive-icon {
+  color: hsl(var(--foreground));
   stroke: hsl(var(--foreground));
 }
 

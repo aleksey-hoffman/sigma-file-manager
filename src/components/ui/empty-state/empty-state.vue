@@ -39,6 +39,12 @@ withDefaults(defineProps<{
     >
       {{ description }}
     </p>
+    <div
+      v-if="$slots.footer"
+      class="empty-state__footer"
+    >
+      <slot name="footer" />
+    </div>
   </div>
 </template>
 
@@ -73,5 +79,10 @@ withDefaults(defineProps<{
   color: hsl(var(--muted-foreground));
   font-size: 0.9rem;
   text-align: center;
+}
+
+.empty-state__footer {
+  display: flex;
+  justify-content: center;
 }
 </style>

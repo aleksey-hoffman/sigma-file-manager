@@ -1646,6 +1646,7 @@
     "noMatchingItems": "هیچ موردی مطابقت ندارد",
     "directoryIsEmpty": "این پوشه خالی است",
     "directoryIsEmptyDescription": "هیچ فایل یا پوشه‌ای در این پوشه وجود ندارد",
+    "directoryAccessErrorTitle": "این پوشه باز نمی‌شود",
     "removeFromSelection": "حذف از انتخاب",
     "removeFromClipboard": "حذف از کلیپ‌بورد",
     "preparedForCopying": "آماده برای کپی",

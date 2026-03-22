@@ -1663,6 +1663,7 @@
     "noMatchingItems": "Ni ujemajočih se predmetov",
     "directoryIsEmpty": "Ta mapa je prazna",
     "directoryIsEmptyDescription": "V tej mapi ni datotek ali map",
+    "directoryAccessErrorTitle": "Te mape ni mogoče odpreti",
     "removeFromSelection": "Odstrani iz izbire",
     "removeFromClipboard": "Odstrani iz odložišča",
     "preparedForCopying": "Pripravljeno za kopiranje",

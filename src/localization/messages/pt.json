@@ -1660,6 +1660,7 @@
     "noMatchingItems": "Nenhum item correspondente",
     "directoryIsEmpty": "Este diretório está vazio",
     "directoryIsEmptyDescription": "Não há arquivos ou pastas neste diretório",
+    "directoryAccessErrorTitle": "Não é possível abrir esta pasta",
     "removeFromSelection": "Remover da seleção",
     "removeFromClipboard": "Remover da área de transferência",
     "preparedForCopying": "Preparado para cópia",

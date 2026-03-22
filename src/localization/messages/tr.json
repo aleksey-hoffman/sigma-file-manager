@@ -1647,6 +1647,7 @@
     "noMatchingItems": "Eşleşen öğe yok",
     "directoryIsEmpty": "Bu dizin boş",
     "directoryIsEmptyDescription": "Bu dizinde dosya veya klasör bulunmuyor",
+    "directoryAccessErrorTitle": "Bu klasör açılamıyor",
     "removeFromSelection": "Seçimden kaldır",
     "removeFromClipboard": "Panodan kaldır",
     "preparedForCopying": "Kopyalamaya hazır",

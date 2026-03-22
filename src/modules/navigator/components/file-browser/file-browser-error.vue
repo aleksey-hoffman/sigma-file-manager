@@ -5,8 +5,9 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
+import { FolderOpenIcon } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
-import { AlertCircleIcon } from 'lucide-vue-next';
+import { EmptyState } from '@/components/ui/empty-state';
 
 defineProps<{
   error: string;
@@ -20,27 +21,22 @@ const { t } = useI18n();
 </script>
 
 <template>
-  <div class="file-browser-error">
-    <AlertCircleIcon :size="32" />
-    <span>{{ error }}</span>
-    <Button
-      variant="secondary"
-      size="sm"
-      @click="$emit('goHome')"
+  <div class="file-browser__empty-state-container">
+    <EmptyState
+      :icon="FolderOpenIcon"
+      :title="t('fileBrowser.directoryAccessErrorTitle')"
+      :description="error"
+      :bordered="false"
     >
-      {{ t('fileBrowser.goHome') }}
-    </Button>
+      <template #footer>
+        <Button
+          variant="secondary"
+          size="sm"
+          @click="$emit('goHome')"
+        >
+          {{ t('fileBrowser.goHome') }}
+        </Button>
+      </template>
+    </EmptyState>
   </div>
 </template>
-
-<style scoped>
-.file-browser-error {
-  display: flex;
-  height: 100%;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  color: hsl(var(--destructive));
-  gap: 16px;
-}
-</style>

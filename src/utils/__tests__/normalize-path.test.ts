@@ -12,6 +12,8 @@ import normalizePath, {
   isUncShareRootPath,
   isWindowsDriveRootPath,
   isUncPath,
+  isWslPath,
+  isWslHostRootUncPath,
 } from '@/utils/normalize-path';
 
 describe('normalizePath', () => {
@@ -22,6 +24,22 @@ describe('normalizePath', () => {
   it('detects UNC paths', () => {
     expect(isUncPath('\\\\wsl.localhost\\Ubuntu')).toBe(true);
     expect(isUncPath('C:/Users/aleks')).toBe(false);
+  });
+
+  it('detects WSL UNC paths', () => {
+    expect(isWslPath('//wsl.localhost/Ubuntu/home')).toBe(true);
+    expect(isWslPath('\\\\wsl.localhost\\Ubuntu')).toBe(true);
+    expect(isWslPath('//wsl$/Ubuntu')).toBe(true);
+    expect(isWslPath('//other-server/share')).toBe(false);
+    expect(isWslPath('C:/Users/aleks')).toBe(false);
+  });
+
+  it('detects WSL host root UNC paths', () => {
+    expect(isWslHostRootUncPath('//wsl.localhost')).toBe(true);
+    expect(isWslHostRootUncPath('//wsl.localhost/')).toBe(true);
+    expect(isWslHostRootUncPath('//wsl$')).toBe(true);
+    expect(isWslHostRootUncPath('//wsl.localhost/Ubuntu')).toBe(false);
+    expect(isWslHostRootUncPath('//other-server')).toBe(false);
   });
 
   it('detects Windows drive roots', () => {

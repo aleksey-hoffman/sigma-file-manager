@@ -1647,6 +1647,7 @@
     "noMatchingItems": "Nessun elemento corrispondente",
     "directoryIsEmpty": "Questa directory è vuota",
     "directoryIsEmptyDescription": "Non ci sono file o cartelle in questa directory",
+    "directoryAccessErrorTitle": "Impossibile aprire questa cartella",
     "removeFromSelection": "Rimuovi dalla selezione",
     "removeFromClipboard": "Rimuovi dagli appunti",
     "preparedForCopying": "Preparato per la copia",

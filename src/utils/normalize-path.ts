@@ -11,6 +11,32 @@ export function isUncPath(path: string): boolean {
   return normalizedPath.startsWith('//') && !normalizedPath.startsWith('///');
 }
 
+export function isWslPath(path: string): boolean {
+  const normalizedPath = normalizePath(path).toLowerCase();
+
+  if (!isUncPath(normalizedPath)) {
+    return false;
+  }
+
+  const firstSegment = normalizedPath.slice(2).split('/').filter(Boolean)[0] ?? '';
+  return firstSegment === 'wsl.localhost' || firstSegment === 'wsl$';
+}
+
+export function isWslHostRootUncPath(path: string): boolean {
+  const normalizedPath = normalizePath(path).replace(/\/+$/, '').toLowerCase();
+
+  if (!isUncPath(normalizedPath)) {
+    return false;
+  }
+
+  const segments = normalizedPath.slice(2).split('/').filter(Boolean);
+  if (segments.length !== 1) {
+    return false;
+  }
+
+  return segments[0] === 'wsl.localhost' || segments[0] === 'wsl$';
+}
+
 export function isWindowsDriveRootPath(path: string): boolean {
   const normalizedPath = normalizePath(path).replace(/\/+$/, '');
   return /^[A-Za-z]:$/.test(normalizedPath);

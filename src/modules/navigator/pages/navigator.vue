@@ -67,7 +67,7 @@ const activeTabId = ref<string | null>(null);
 const smallScreenMediaQuery = window.matchMedia(`(max-width: ${UI_CONSTANTS.SMALL_SCREEN_BREAKPOINT}px)`);
 const isSmallScreen = ref(smallScreenMediaQuery.matches);
 
-watch(() => workspacesStore.currentTabGroup, () => {
+watch(() => workspacesStore.currentTabGroup, (newGroup, oldGroup) => {
   const currentTabIds = new Set(
     workspacesStore.currentTabGroup?.map(tab => tab.id) || [],
   );
@@ -75,6 +75,18 @@ watch(() => workspacesStore.currentTabGroup, () => {
   for (const tabId of paneRefsMap.value.keys()) {
     if (!currentTabIds.has(tabId)) {
       paneRefsMap.value.delete(tabId);
+    }
+  }
+
+  const newPrimaryTabId = newGroup?.[0]?.id;
+  const oldPrimaryTabId = oldGroup?.[0]?.id;
+
+  if (oldPrimaryTabId !== undefined && newPrimaryTabId !== oldPrimaryTabId) {
+    selectedEntries.value = [];
+    currentDirEntry.value = null;
+
+    if (newPrimaryTabId !== undefined) {
+      activeTabId.value = newPrimaryTabId;
     }
   }
 });

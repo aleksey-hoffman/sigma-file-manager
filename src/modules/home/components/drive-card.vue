@@ -16,6 +16,7 @@ import toReadableBytes from '@/utils/to-readable-bytes';
 import { getPathDisplayValue } from '@/utils/normalize-path';
 import type { DriveInfo } from '@/types/drive-info';
 import { CircularProgress, LinearBar, EdgeIndicator } from './indicators';
+import UbuntuWslIcon from '@/components/icons/ubuntu-wsl-icon.vue';
 
 const props = defineProps<{
   drive: DriveInfo;
@@ -56,8 +57,10 @@ const isLinearVertical = computed(() => indicatorStyle.value === 'linearVertical
 const isLinearHorizontal = computed(() => indicatorStyle.value === 'linearHorizontal');
 const isLinearHorizontalCentered = computed(() => indicatorStyle.value === 'linearHorizontalCentered');
 
+const isWslDrive = computed(() => props.drive.drive_type === 'WSL');
+
 const driveIcon = computed(() => {
-  if (props.drive.drive_type === 'Network' || props.drive.drive_type === 'WSL') {
+  if (props.drive.drive_type === 'Network') {
     return NetworkIcon;
   }
 
@@ -148,7 +151,13 @@ async function handleUnmount(clickEvent: MouseEvent) {
       />
 
       <template v-else>
+        <UbuntuWslIcon
+          v-if="isWslDrive"
+          :size="20"
+          class="drive-card__icon"
+        />
         <component
+          v-else
           :is="driveIcon"
           :size="20"
           class="drive-card__icon"

@@ -1647,6 +1647,7 @@
     "noMatchingItems": "Không có mục phù hợp",
     "directoryIsEmpty": "Thư mục này trống",
     "directoryIsEmptyDescription": "Không có tệp hoặc thư mục nào trong thư mục này",
+    "directoryAccessErrorTitle": "Không thể mở thư mục này",
     "removeFromSelection": "Xóa khỏi lựa chọn",
     "removeFromClipboard": "Xóa khỏi clipboard",
     "preparedForCopying": "Đã chuẩn bị để sao chép",

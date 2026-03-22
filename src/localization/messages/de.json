@@ -1647,6 +1647,7 @@
     "noMatchingItems": "Keine übereinstimmenden Elemente",
     "directoryIsEmpty": "Dieses Verzeichnis ist leer",
     "directoryIsEmptyDescription": "Es gibt keine Dateien oder Ordner in diesem Verzeichnis",
+    "directoryAccessErrorTitle": "Dieser Ordner kann nicht geöffnet werden",
     "removeFromSelection": "Aus Auswahl entfernen",
     "removeFromClipboard": "Aus Zwischenablage entfernen",
     "preparedForCopying": "Zum Kopieren vorbereitet",

@@ -1647,6 +1647,7 @@
     "noMatchingItems": "没有匹配的项目",
     "directoryIsEmpty": "此目录为空",
     "directoryIsEmptyDescription": "此目录中没有文件或文件夹",
+    "directoryAccessErrorTitle": "无法打开此文件夹",
     "removeFromSelection": "从选择中移除",
     "removeFromClipboard": "从剪贴板中移除",
     "preparedForCopying": "准备复制",

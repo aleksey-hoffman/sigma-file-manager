@@ -7,6 +7,8 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { getFileIcon } from '@/modules/navigator/components/file-browser/utils';
+import UbuntuWslIcon from '@/components/icons/ubuntu-wsl-icon.vue';
+import { isWslPath } from '@/utils/normalize-path';
 import type { DirEntry } from '@/types/dir-entry';
 
 const props = defineProps<{
@@ -21,6 +23,10 @@ const entryIcon = computed(() => {
       is_dir: false,
       ext: '',
     } as DirEntry);
+  }
+
+  if (props.selectedEntry.is_dir && isWslPath(props.selectedEntry.path)) {
+    return UbuntuWslIcon;
   }
 
   return getFileIcon(props.selectedEntry);

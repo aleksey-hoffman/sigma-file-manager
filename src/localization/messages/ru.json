@@ -1663,6 +1663,7 @@
     "noMatchingItems": "Нет совпадающих элементов",
     "directoryIsEmpty": "Эта директория пуста",
     "directoryIsEmptyDescription": "В этой директории нет файлов или папок",
+    "directoryAccessErrorTitle": "Не удаётся открыть эту папку",
     "removeFromSelection": "Убрать из выделения",
     "removeFromClipboard": "Убрать из буфера обмена",
     "preparedForCopying": "Подготовлено для копирования",
