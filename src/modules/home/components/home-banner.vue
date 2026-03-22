@@ -478,6 +478,7 @@ function preventPopoverClose(event: Event) {
   height: 100%;
   border-radius: var(--radius-sm);
   object-fit: cover;
+  pointer-events: none;
   transition: opacity 0.5s ease;
 }
 
