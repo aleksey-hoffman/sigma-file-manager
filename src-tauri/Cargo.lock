@@ -4799,6 +4799,7 @@ dependencies = [
  "tauri-plugin-store",
  "tauri-plugin-system-fonts",
  "tauri-plugin-window-state",
+ "tempfile",
  "tokio",
  "trash",
  "walkdir",

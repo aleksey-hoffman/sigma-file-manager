@@ -1681,6 +1681,25 @@
       "addToFavorites": "Añadir a favoritos",
       "removeFromFavorites": "Quitar de favoritos",
       "copyPath": "Copiar ruta"
+    },
+    "archive": {
+      "extract": "Extraer",
+      "compress": "Comprimir",
+      "extractHere": "Extraer aquí",
+      "extractToNamedFolder": "Extraer en {folderName}",
+      "extractToPicker": "Extraer en…",
+      "pickExtractFolderTitle": "Elegir carpeta de destino",
+      "compressWithDialog": "Crear archivo…",
+      "compressQuick": "Crear {name}",
+      "zipFilterName": "Archivo zip",
+      "saveArchiveTitle": "Guardar archivo zip",
+      "multiSelectionArchiveFileName": "Archivo.zip",
+      "operationFailed": "{message}",
+      "unknownError": "Error desconocido",
+      "operationErrorTitle": "Error en la operación de archivo",
+      "errors": {
+        "destinationInsideSelectedFolder": "El archivo de destino está dentro de una carpeta seleccionada"
+      }
     }
   },
   "openWith": {
@@ -1862,11 +1881,13 @@
     "noOperations": "No operations",
     "active": "active",
     "cancelAll": "Cancel all",
+    "cancelling": "Cancelando…",
     "groups": {
       "dir-size": "Directory size calculations",
       "copy": "Copy operations",
       "move": "Move operations",
-      "delete": "Delete operations"
+      "delete": "Delete operations",
+      "archive": "Operaciones de archivo"
     }
   },
   "recalculate": "Recalculate"

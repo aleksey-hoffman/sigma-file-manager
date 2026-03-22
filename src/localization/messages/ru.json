@@ -126,11 +126,13 @@
     "noOperations": "Нет операций",
     "active": "активно",
     "cancelAll": "Отменить все",
+    "cancelling": "Отмена…",
     "groups": {
       "dir-size": "Расчёт размера папок",
       "copy": "Операции копирования",
       "move": "Операции перемещения",
-      "delete": "Операции удаления"
+      "delete": "Операции удаления",
+      "archive": "Операции с архивами"
     }
   },
   "globalSearch": {
@@ -1695,6 +1697,25 @@
       "addToFavorites": "Добавить в избранное",
       "removeFromFavorites": "Удалить из избранного",
       "copyPath": "Копировать путь"
+    },
+    "archive": {
+      "extract": "Извлечь",
+      "compress": "Сжать",
+      "extractHere": "Извлечь сюда",
+      "extractToNamedFolder": "Извлечь в {folderName}",
+      "extractToPicker": "Извлечь в…",
+      "pickExtractFolderTitle": "Выберите папку для извлечения",
+      "compressWithDialog": "Создать архив…",
+      "compressQuick": "Создать {name}",
+      "zipFilterName": "Zip-архив",
+      "saveArchiveTitle": "Сохранить zip-архив",
+      "multiSelectionArchiveFileName": "Архив.zip",
+      "operationFailed": "{message}",
+      "unknownError": "Неизвестная ошибка",
+      "operationErrorTitle": "Ошибка архивной операции",
+      "errors": {
+        "destinationInsideSelectedFolder": "Архив назначения находится внутри выбранной папки"
+      }
     }
   },
   "openWith": {

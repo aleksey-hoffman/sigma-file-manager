@@ -260,11 +260,6 @@ fn verify_integrity(bytes: &[u8], expected_integrity: Option<&str>) -> Result<()
     Ok(())
 }
 
-fn is_safe_archive_relative_path(path: &Path) -> bool {
-    path.components()
-        .all(|component| matches!(component, Component::Normal(_) | Component::CurDir))
-}
-
 fn is_safe_managed_relative_path(path: &Path) -> bool {
     path.components()
         .all(|component| matches!(component, Component::Normal(_)))
@@ -365,89 +360,6 @@ fn get_extension_storage_dir(
     Ok(extension_storage_dir)
 }
 
-fn extract_zip(zip_path: &Path, dest_dir: &Path) -> Result<(), String> {
-    let file =
-        fs::File::open(zip_path).map_err(|error| format!("Failed to open zip file: {}", error))?;
-
-    let mut archive = zip::ZipArchive::new(file)
-        .map_err(|error| format!("Failed to read zip archive: {}", error))?;
-
-    let mut root_dir: Option<PathBuf> = None;
-
-    for archive_index in 0..archive.len() {
-        let file = archive
-            .by_index(archive_index)
-            .map_err(|error| format!("Failed to read zip entry: {}", error))?;
-        let enclosed_path = file
-            .enclosed_name()
-            .ok_or_else(|| "Zip contains unsafe path entry".to_string())?;
-        if !is_safe_archive_relative_path(&enclosed_path) {
-            return Err("Zip contains unsafe path entry".to_string());
-        }
-
-        if root_dir.is_none() {
-            let mut components = enclosed_path.components();
-            if let Some(first_component) = components.next() {
-                if components.next().is_some() {
-                    root_dir = Some(PathBuf::from(first_component.as_os_str()));
-                }
-            }
-        }
-    }
-
-    for archive_index in 0..archive.len() {
-        let mut file = archive
-            .by_index(archive_index)
-            .map_err(|error| format!("Failed to read zip entry: {}", error))?;
-
-        let enclosed_path = file
-            .enclosed_name()
-            .ok_or_else(|| "Zip contains unsafe path entry".to_string())?;
-        if !is_safe_archive_relative_path(&enclosed_path) {
-            return Err("Zip contains unsafe path entry".to_string());
-        }
-
-        let relative_path = if let Some(root) = &root_dir {
-            enclosed_path
-                .strip_prefix(root)
-                .unwrap_or(&enclosed_path)
-                .to_path_buf()
-        } else {
-            enclosed_path.to_path_buf()
-        };
-
-        if relative_path.as_os_str().is_empty() {
-            continue;
-        }
-
-        let outpath = dest_dir.join(&relative_path);
-
-        if !outpath.starts_with(dest_dir) {
-            return Err("Zip extraction blocked due to unsafe output path".to_string());
-        }
-
-        if file.is_dir() {
-            fs::create_dir_all(&outpath)
-                .map_err(|error| format!("Failed to create directory: {}", error))?;
-        } else {
-            if let Some(parent) = outpath.parent() {
-                if !parent.exists() {
-                    fs::create_dir_all(parent)
-                        .map_err(|error| format!("Failed to create parent directory: {}", error))?;
-                }
-            }
-
-            let mut outfile = fs::File::create(&outpath)
-                .map_err(|error| format!("Failed to create file: {}", error))?;
-
-            io::copy(&mut file, &mut outfile)
-                .map_err(|error| format!("Failed to extract file: {}", error))?;
-        }
-    }
-
-    Ok(())
-}
-
 fn extract_tar_from_reader<R: Read>(reader: R, dest_dir: &Path) -> Result<(), String> {
     let mut archive_bytes = Vec::new();
     let mut buf_reader = io::BufReader::new(reader);
@@ -469,7 +381,7 @@ fn extract_tar_from_reader<R: Read>(reader: R, dest_dir: &Path) -> Result<(), St
                 .path()
                 .map_err(|error| format!("Failed to read tar entry path: {}", error))?
                 .to_path_buf();
-            if !is_safe_archive_relative_path(&path) {
+            if !crate::archive::is_safe_archive_relative_path(&path) {
                 return Err("Tar contains unsafe path entry".to_string());
             }
             let mut components = path.components();
@@ -494,7 +406,7 @@ fn extract_tar_from_reader<R: Read>(reader: R, dest_dir: &Path) -> Result<(), St
             .path()
             .map_err(|error| format!("Failed to read tar entry path: {}", error))?
             .to_path_buf();
-        if !is_safe_archive_relative_path(&path) {
+        if !crate::archive::is_safe_archive_relative_path(&path) {
             return Err("Tar contains unsafe path entry".to_string());
         }
 
@@ -558,7 +470,7 @@ fn extract_archive(archive_path: &Path, dest_dir: &Path, download_url: &str) -> 
         .ok_or_else(|| format!("Unsupported archive format for URL: {}", download_url))?;
 
     match format {
-        ArchiveFormat::Zip => extract_zip(archive_path, dest_dir),
+        ArchiveFormat::Zip => crate::archive::extract_zip_to_directory(archive_path, dest_dir),
         ArchiveFormat::TarXz => {
             let file = fs::File::open(archive_path)
                 .map_err(|error| format!("Failed to open tar.xz file: {}", error))?;
@@ -864,7 +776,7 @@ pub async fn download_extension(
     file.write_all(&bytes)
         .map_err(|error| format!("Failed to write zip file: {}", error))?;
 
-    extract_zip(&zip_path, &staging_dir)?;
+    crate::archive::extract_zip_to_directory(&zip_path, &staging_dir)?;
 
     terminate_all_extension_processes(&extension_id);
     replace_extension_dir(&staging_dir, &extension_dir)?;

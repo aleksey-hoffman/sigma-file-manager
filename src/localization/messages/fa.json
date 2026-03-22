@@ -1680,6 +1680,25 @@
       "addToFavorites": "افزودن به موردعلاقه‌ها",
       "removeFromFavorites": "حذف از موردعلاقه‌ها",
       "copyPath": "کپی مسیر"
+    },
+    "archive": {
+      "extract": "استخراج",
+      "compress": "فشرده‌سازی",
+      "extractHere": "استخراج در اینجا",
+      "extractToNamedFolder": "استخراج در {folderName}",
+      "extractToPicker": "استخراج در…",
+      "pickExtractFolderTitle": "پوشه مقصد را انتخاب کنید",
+      "compressWithDialog": "ایجاد بایگانی…",
+      "compressQuick": "ایجاد {name}",
+      "zipFilterName": "بایگانی zip",
+      "saveArchiveTitle": "ذخیره بایگانی zip",
+      "multiSelectionArchiveFileName": "بایگانی.zip",
+      "operationFailed": "{message}",
+      "unknownError": "خطای ناشناخته",
+      "operationErrorTitle": "عملیات آرشیو ناموفق بود",
+      "errors": {
+        "destinationInsideSelectedFolder": "آرشیو مقصد داخل یکی از پوشه‌های انتخاب‌شده است"
+      }
     }
   },
   "openWith": {
@@ -1862,11 +1881,13 @@
     "noOperations": "No operations",
     "active": "active",
     "cancelAll": "Cancel all",
+    "cancelling": "در حال لغو…",
     "groups": {
       "dir-size": "Directory size calculations",
       "copy": "Copy operations",
       "move": "Move operations",
-      "delete": "Delete operations"
+      "delete": "Delete operations",
+      "archive": "عملیات آرشیو"
     }
   },
   "recalculate": "Recalculate"

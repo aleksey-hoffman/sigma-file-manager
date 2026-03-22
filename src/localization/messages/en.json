@@ -126,11 +126,13 @@
     "noOperations": "No operations",
     "active": "active",
     "cancelAll": "Cancel all",
+    "cancelling": "Canceling…",
     "groups": {
       "dir-size": "Directory size calculations",
       "copy": "Copy operations",
       "move": "Move operations",
-      "delete": "Delete operations"
+      "delete": "Delete operations",
+      "archive": "Archive operations"
     }
   },
   "globalSearch": {
@@ -1695,6 +1697,25 @@
       "addToFavorites": "Add to favorites",
       "removeFromFavorites": "Remove from favorites",
       "copyPath": "Copy path"
+    },
+    "archive": {
+      "extract": "Extract",
+      "compress": "Compress",
+      "extractHere": "Extract here",
+      "extractToNamedFolder": "Extract to {folderName}",
+      "extractToPicker": "Extract to…",
+      "pickExtractFolderTitle": "Choose folder to extract into",
+      "compressWithDialog": "Create archive…",
+      "compressQuick": "Create {name}",
+      "zipFilterName": "Zip archive",
+      "saveArchiveTitle": "Save zip archive",
+      "multiSelectionArchiveFileName": "Archive.zip",
+      "operationFailed": "{message}",
+      "unknownError": "Unknown error",
+      "operationErrorTitle": "Archive operation failed",
+      "errors": {
+        "destinationInsideSelectedFolder": "Destination archive is inside a selected folder"
+      }
     }
   },
   "openWith": {

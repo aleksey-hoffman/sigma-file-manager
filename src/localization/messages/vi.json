@@ -1681,6 +1681,25 @@
       "addToFavorites": "Thêm vào yêu thích",
       "removeFromFavorites": "Xóa khỏi yêu thích",
       "copyPath": "Sao chép đường dẫn"
+    },
+    "archive": {
+      "extract": "Giải nén",
+      "compress": "Nén",
+      "extractHere": "Giải nén vào đây",
+      "extractToNamedFolder": "Giải nén vào {folderName}",
+      "extractToPicker": "Giải nén vào…",
+      "pickExtractFolderTitle": "Chọn thư mục đích",
+      "compressWithDialog": "Tạo tệp nén…",
+      "compressQuick": "Tạo {name}",
+      "zipFilterName": "Tệp zip",
+      "saveArchiveTitle": "Lưu tệp zip",
+      "multiSelectionArchiveFileName": "Lưu trữ.zip",
+      "operationFailed": "{message}",
+      "unknownError": "Lỗi không xác định",
+      "operationErrorTitle": "Thao tác lưu trữ thất bại",
+      "errors": {
+        "destinationInsideSelectedFolder": "Tệp lưu trữ đích nằm trong một thư mục đã chọn"
+      }
     }
   },
   "openWith": {
@@ -1862,11 +1881,13 @@
     "noOperations": "No operations",
     "active": "active",
     "cancelAll": "Cancel all",
+    "cancelling": "Đang hủy…",
     "groups": {
       "dir-size": "Directory size calculations",
       "copy": "Copy operations",
       "move": "Move operations",
-      "delete": "Delete operations"
+      "delete": "Delete operations",
+      "archive": "Thao tác nén và giải nén"
     }
   },
   "recalculate": "Recalculate"

@@ -69,6 +69,8 @@ provideFileBrowserContext({
   openOpenWithDialog: fb.openOpenWithDialog,
   openNewItemDialog: fb.openNewItemDialog,
   navigateToHome: fb.navigateToHome,
+  refresh: fb.refresh,
+  requestFocusEntryAfterRefresh: fb.requestFocusEntryAfterRefresh,
   entryDescription: props.entryDescription,
 });
 

@@ -4,21 +4,27 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
+import { storeToRefs } from 'pinia';
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import {
-  ActivityIcon, LoaderCircleIcon, XIcon, CheckIcon, FolderIcon,
+  ActivityIcon, LoaderCircleIcon, XIcon, CheckIcon, FolderIcon, FileArchiveIcon,
+  BanIcon,
 } from 'lucide-vue-next';
+import type { FocusOutsideEvent, PointerDownOutsideEvent } from 'reka-ui';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useStatusCenterStore } from '@/stores/runtime/status-center';
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
+import { useArchiveJobsStore } from '@/stores/runtime/archive-jobs';
 import { formatBytes } from '@/modules/navigator/components/file-browser/utils';
 
 const { t } = useI18n();
 const statusCenterStore = useStatusCenterStore();
+const { isOpen: statusCenterPopoverOpen } = storeToRefs(statusCenterStore);
 const dirSizesStore = useDirSizesStore();
+const archiveJobsStore = useArchiveJobsStore();
 
 const hasOperations = computed(() => statusCenterStore.operationsList.length > 0);
 const hasCompletedOperations = computed(() => statusCenterStore.completedOperations.length > 0);
@@ -27,6 +33,8 @@ function getOperationIcon(type: string) {
   switch (type) {
     case 'dir-size':
       return FolderIcon;
+    case 'archive':
+      return FileArchiveIcon;
     default:
       return ActivityIcon;
   }
@@ -36,25 +44,42 @@ function getStatusIcon(status: string) {
   switch (status) {
     case 'in-progress':
     case 'pending':
+    case 'cancelling':
       return LoaderCircleIcon;
     case 'completed':
       return CheckIcon;
     case 'cancelled':
     case 'error':
-      return XIcon;
+      return BanIcon;
     default:
       return ActivityIcon;
   }
 }
 
 function getGroupActiveCount(operations: typeof statusCenterStore.operationsList) {
-  return operations.filter(op => op.status === 'in-progress' || op.status === 'pending').length;
+  return operations.filter(
+    op =>
+      op.status === 'in-progress'
+      || op.status === 'pending'
+      || op.status === 'cancelling',
+  ).length;
 }
 
 async function handleCancelOperation(operation: typeof statusCenterStore.operationsList[0]) {
   if (operation.type === 'dir-size') {
     await dirSizesStore.cancelSize(operation.path);
     statusCenterStore.completeOperation(operation.id, 'cancelled');
+  }
+  else if (operation.type === 'archive') {
+    if (operation.status === 'cancelling') {
+      return;
+    }
+
+    statusCenterStore.updateOperation(operation.id, {
+      status: 'cancelling',
+      message: t('statusCenter.cancelling'),
+    });
+    await archiveJobsStore.cancelJob(operation.id);
   }
 }
 
@@ -79,6 +104,26 @@ function formatPath(path: string): string {
   return parts[parts.length - 1] || path;
 }
 
+function operationPrimaryLabel(operation: typeof statusCenterStore.operationsList[0]): string {
+  if (operation.type === 'archive') {
+    return operation.label;
+  }
+
+  return formatPath(operation.path);
+}
+
+function handleStatusCenterPointerDownOutside(event: PointerDownOutsideEvent) {
+  if (statusCenterStore.isOutsideDismissSuppressed()) {
+    event.preventDefault();
+  }
+}
+
+function handleStatusCenterFocusOutside(event: FocusOutsideEvent) {
+  if (statusCenterStore.isOutsideDismissSuppressed()) {
+    event.preventDefault();
+  }
+}
+
 function getOperationDetails(operation: typeof statusCenterStore.operationsList[0]): string {
   if (operation.type === 'dir-size') {
     const sizeInfo = dirSizesStore.getSize(operation.path);
@@ -88,13 +133,39 @@ function getOperationDetails(operation: typeof statusCenterStore.operationsList[
     }
   }
 
+  if (operation.type === 'archive') {
+    const name = formatPath(operation.path);
+    const segments: string[] = [];
+
+    if (
+      operation.progress != null
+      && (
+        operation.status === 'in-progress'
+        || operation.status === 'pending'
+        || operation.status === 'cancelling'
+      )
+    ) {
+      segments.push(`${operation.progress}%`);
+    }
+
+    if (operation.message) {
+      segments.push(operation.message);
+    }
+
+    if (segments.length > 0) {
+      return `${name} · ${segments.join(' · ')}`;
+    }
+
+    return name;
+  }
+
   return operation.message || '';
 }
 </script>
 
 <template>
   <div class="status-center-toolbar-button animate-fade-in">
-    <Popover>
+    <Popover v-model:open="statusCenterPopoverOpen">
       <PopoverTrigger as-child>
         <Button
           variant="ghost"
@@ -124,6 +195,8 @@ function getOperationDetails(operation: typeof statusCenterStore.operationsList[
         align="end"
         :side-offset="8"
         class="status-center-popover"
+        @pointer-down-outside="handleStatusCenterPointerDownOutside"
+        @focus-outside="handleStatusCenterFocusOutside"
       >
         <div class="status-center">
           <div class="status-center__header">
@@ -190,14 +263,33 @@ function getOperationDetails(operation: typeof statusCenterStore.operationsList[
                       :is="getStatusIcon(operation.status)"
                       :size="14"
                       :class="{
-                        'status-center__spinner': operation.status === 'in-progress' || operation.status === 'pending',
+                        'status-center__spinner':
+                          operation.status === 'in-progress'
+                          || operation.status === 'pending'
+                          || operation.status === 'cancelling',
                         'status-center__check': operation.status === 'completed',
                         'status-center__error': operation.status === 'cancelled' || operation.status === 'error',
                       }"
                     />
                   </div>
                   <div class="status-center__operation-info">
-                    <span class="status-center__operation-label">{{ formatPath(operation.path) }}</span>
+                    <span class="status-center__operation-label">{{ operationPrimaryLabel(operation) }}</span>
+                    <div
+                      v-if="
+                        operation.progress != null
+                          && (
+                            operation.status === 'in-progress'
+                            || operation.status === 'pending'
+                            || operation.status === 'cancelling'
+                          )
+                      "
+                      class="status-center__operation-progress"
+                    >
+                      <div
+                        class="status-center__operation-progress-bar"
+                        :style="{ width: `${Math.min(100, Math.max(0, operation.progress))}%` }"
+                      />
+                    </div>
                     <span
                       v-if="getOperationDetails(operation)"
                       class="status-center__operation-details"
@@ -208,16 +300,21 @@ function getOperationDetails(operation: typeof statusCenterStore.operationsList[
                   <Button
                     v-if="operation.status === 'in-progress' || operation.status === 'pending'"
                     variant="ghost"
-                    size="xs"
+                    size="sm"
                     class="status-center__operation-cancel"
                     @click="handleCancelOperation(operation)"
                   >
-                    <XIcon :size="12" />
+                    <BanIcon :size="12" />
                   </Button>
+                  <div
+                    v-else-if="operation.status === 'cancelling'"
+                    class="status-center__operation-action-slot"
+                    aria-hidden="true"
+                  />
                   <Button
                     v-else
                     variant="ghost"
-                    size="xs"
+                    size="sm"
                     class="status-center__operation-dismiss"
                     @click="handleDismiss(operation.id)"
                   >
@@ -280,7 +377,7 @@ function getOperationDetails(operation: typeof statusCenterStore.operationsList[
   font-weight: 600;
 }
 
-.status-center-popover {
+:global(.status-center-popover) {
   width: 340px;
   padding: 0;
 }
@@ -404,6 +501,12 @@ function getOperationDetails(operation: typeof statusCenterStore.operationsList[
   background: hsl(var(--muted) / 50%);
 }
 
+.status-center__operation-action-slot {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+}
+
 .status-center__operation--completed {
   opacity: 0.7;
 }
@@ -452,6 +555,22 @@ function getOperationDetails(operation: typeof statusCenterStore.operationsList[
 .status-center__operation-details {
   color: hsl(var(--muted-foreground));
   font-size: 10px;
+}
+
+.status-center__operation-progress {
+  overflow: hidden;
+  width: 100%;
+  height: 3px;
+  flex-shrink: 0;
+  border-radius: 2px;
+  background: hsl(var(--muted) / 60%);
+}
+
+.status-center__operation-progress-bar {
+  height: 100%;
+  border-radius: 2px;
+  background: hsl(var(--primary));
+  transition: width 0.2s ease;
 }
 
 .status-center__operation-cancel,

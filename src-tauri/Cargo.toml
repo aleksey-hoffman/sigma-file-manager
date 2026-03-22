@@ -43,7 +43,7 @@ once_cell = "1.19"
 tantivy = "0.22"
 walkdir = "2.5"
 rayon = "1.10"
-tokio = { version = "1", features = ["rt", "rt-multi-thread"] }
+tokio = { version = "1", features = ["rt", "rt-multi-thread", "sync"] }
 notify = "8"
 tauri-plugin-drag = "2"
 tauri-plugin-window-state = "2"
@@ -56,6 +56,9 @@ xz2 = "0.1"
 flate2 = "1.0"
 sha2 = "0.10"
 tauri-plugin-clipboard-manager = "2.3.2"
+
+[dev-dependencies]
+tempfile = "3"
 
 [target.'cfg(unix)'.dependencies]
 libc = "0.2"

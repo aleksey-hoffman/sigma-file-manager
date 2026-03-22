@@ -126,11 +126,13 @@
     "noOperations": "Ni operacij",
     "active": "aktivno",
     "cancelAll": "Prekliči vse",
+    "cancelling": "Preklicovanje …",
     "groups": {
       "dir-size": "Izračuni velikosti map",
       "copy": "Operacije kopiranja",
       "move": "Operacije premikanja",
-      "delete": "Operacije brisanja"
+      "delete": "Operacije brisanja",
+      "archive": "Operacije z arhivi"
     }
   },
   "globalSearch": {
@@ -1694,6 +1696,25 @@
       "addToFavorites": "Dodaj med priljubljene",
       "removeFromFavorites": "Odstrani iz priljubljenih",
       "copyPath": "Kopiraj pot"
+    },
+    "archive": {
+      "extract": "Razširi",
+      "compress": "Stisni",
+      "extractHere": "Razširi sem",
+      "extractToNamedFolder": "Razširi v {folderName}",
+      "extractToPicker": "Razširi v…",
+      "pickExtractFolderTitle": "Izberi mapo za razširitev",
+      "compressWithDialog": "Ustvari arhiv…",
+      "compressQuick": "Ustvari {name}",
+      "zipFilterName": "Zip arhiv",
+      "saveArchiveTitle": "Shrani zip arhiv",
+      "multiSelectionArchiveFileName": "Arhiv.zip",
+      "operationFailed": "{message}",
+      "unknownError": "Neznana napaka",
+      "operationErrorTitle": "Arhivska operacija ni uspela",
+      "errors": {
+        "destinationInsideSelectedFolder": "Ciljni arhiv je znotraj izbrane mape"
+      }
     },
     "openWith": {
       "title": "Odpri z",

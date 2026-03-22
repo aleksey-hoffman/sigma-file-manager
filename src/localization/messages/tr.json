@@ -1681,6 +1681,25 @@
       "addToFavorites": "Favorilere ekle",
       "removeFromFavorites": "Favorilerden kaldır",
       "copyPath": "Yolu kopyala"
+    },
+    "archive": {
+      "extract": "Çıkar",
+      "compress": "Sıkıştır",
+      "extractHere": "Buraya çıkar",
+      "extractToNamedFolder": "{folderName} konumuna çıkar",
+      "extractToPicker": "Şuraya çıkar…",
+      "pickExtractFolderTitle": "Çıkarma klasörünü seçin",
+      "compressWithDialog": "Arşiv oluştur…",
+      "compressQuick": "{name} oluştur",
+      "zipFilterName": "Zip arşivi",
+      "saveArchiveTitle": "Zip arşivini kaydet",
+      "multiSelectionArchiveFileName": "Arşiv.zip",
+      "operationFailed": "{message}",
+      "unknownError": "Bilinmeyen hata",
+      "operationErrorTitle": "Arşiv işlemi başarısız",
+      "errors": {
+        "destinationInsideSelectedFolder": "Hedef arşiv seçilen bir klasörün içinde"
+      }
     }
   },
   "openWith": {
@@ -1862,11 +1881,13 @@
     "noOperations": "No operations",
     "active": "active",
     "cancelAll": "Cancel all",
+    "cancelling": "İptal ediliyor…",
     "groups": {
       "dir-size": "Directory size calculations",
       "copy": "Copy operations",
       "move": "Move operations",
-      "delete": "Delete operations"
+      "delete": "Delete operations",
+      "archive": "Arşiv işlemleri"
     }
   },
   "recalculate": "Recalculate"

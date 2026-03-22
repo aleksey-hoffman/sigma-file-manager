@@ -5,8 +5,14 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 
-export type OperationType = 'dir-size' | 'copy' | 'move' | 'delete';
-export type OperationStatus = 'pending' | 'in-progress' | 'completed' | 'cancelled' | 'error';
+export type OperationType = 'dir-size' | 'copy' | 'move' | 'delete' | 'archive';
+export type OperationStatus
+  = | 'pending'
+    | 'in-progress'
+    | 'cancelling'
+    | 'completed'
+    | 'cancelled'
+    | 'error';
 
 export interface Operation {
   id: string;
@@ -26,14 +32,22 @@ export interface OperationGroup {
   operations: Operation[];
 }
 
+const AUTO_OPEN_DISMISS_SUPPRESSION_MS = 900;
+
 export const useStatusCenterStore = defineStore('status-center', () => {
   const operations = ref<Map<string, Operation>>(new Map());
   const isOpen = ref(false);
+  let suppressOutsideDismissUntilMs = 0;
 
   const operationsList = computed(() => Array.from(operations.value.values()));
 
   const activeOperations = computed(() =>
-    operationsList.value.filter(op => op.status === 'in-progress' || op.status === 'pending'),
+    operationsList.value.filter(
+      op =>
+        op.status === 'in-progress'
+        || op.status === 'pending'
+        || op.status === 'cancelling',
+    ),
   );
 
   const completedOperations = computed(() =>
@@ -57,6 +71,7 @@ export const useStatusCenterStore = defineStore('status-center', () => {
       'copy': 'Copy Operations',
       'move': 'Move Operations',
       'delete': 'Delete Operations',
+      'archive': 'Archive operations',
     };
 
     return Array.from(groups.entries()).map(([type, ops]) => ({
@@ -72,7 +87,19 @@ export const useStatusCenterStore = defineStore('status-center', () => {
       startedAt: Date.now(),
     };
     operations.value.set(op.id, op);
+    setTimeout(() => {
+      isOpen.value = true;
+      suppressOutsideDismissUntilMs = Date.now() + AUTO_OPEN_DISMISS_SUPPRESSION_MS;
+    }, 0);
     return op;
+  }
+
+  function isOutsideDismissSuppressed(): boolean {
+    return Date.now() < suppressOutsideDismissUntilMs;
+  }
+
+  function getOperation(id: string): Operation | undefined {
+    return operations.value.get(id);
   }
 
   function updateOperation(id: string, updates: Partial<Operation>) {
@@ -132,6 +159,8 @@ export const useStatusCenterStore = defineStore('status-center', () => {
     groupedOperations,
     isOpen,
     addOperation,
+    isOutsideDismissSuppressed,
+    getOperation,
     updateOperation,
     completeOperation,
     removeOperation,

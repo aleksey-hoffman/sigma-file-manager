@@ -1681,6 +1681,25 @@
       "addToFavorites": "お気に入りに追加",
       "removeFromFavorites": "お気に入りから削除",
       "copyPath": "パスをコピー"
+    },
+    "archive": {
+      "extract": "展開",
+      "compress": "圧縮",
+      "extractHere": "ここに展開",
+      "extractToNamedFolder": "{folderName} に展開",
+      "extractToPicker": "展開先を指定…",
+      "pickExtractFolderTitle": "展開先フォルダーを選択",
+      "compressWithDialog": "アーカイブを作成…",
+      "compressQuick": "{name} を作成",
+      "zipFilterName": "Zip アーカイブ",
+      "saveArchiveTitle": "Zip アーカイブを保存",
+      "multiSelectionArchiveFileName": "アーカイブ.zip",
+      "operationFailed": "{message}",
+      "unknownError": "不明なエラー",
+      "operationErrorTitle": "アーカイブ操作に失敗しました",
+      "errors": {
+        "destinationInsideSelectedFolder": "出力先のアーカイブが選択したフォルダー内にあります"
+      }
     }
   },
   "openWith": {
@@ -1862,11 +1881,13 @@
     "noOperations": "No operations",
     "active": "active",
     "cancelAll": "Cancel all",
+    "cancelling": "キャンセルしています…",
     "groups": {
       "dir-size": "Directory size calculations",
       "copy": "Copy operations",
       "move": "Move operations",
-      "delete": "Delete operations"
+      "delete": "Delete operations",
+      "archive": "アーカイブ操作"
     }
   },
   "recalculate": "Recalculate"

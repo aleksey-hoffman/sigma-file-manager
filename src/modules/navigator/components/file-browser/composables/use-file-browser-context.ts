@@ -31,10 +31,14 @@ export interface FileBrowserContext {
   openNewItemDialog: (type: 'file' | 'directory', targetPaths?: string[]) => void;
   navigateToHome: () => void | Promise<void>;
 
+  refresh: () => void;
+
+  requestFocusEntryAfterRefresh: (parentDirectoryPath: string, entryPath: string) => void;
+
   entryDescription?: (entry: DirEntry) => string | undefined;
 }
 
-const FILE_BROWSER_CONTEXT_KEY: InjectionKey<FileBrowserContext> = Symbol('FileBrowserContext');
+export const FILE_BROWSER_CONTEXT_KEY: InjectionKey<FileBrowserContext> = Symbol('FileBrowserContext');
 
 export function provideFileBrowserContext(context: FileBrowserContext): void {
   provide(FILE_BROWSER_CONTEXT_KEY, context);

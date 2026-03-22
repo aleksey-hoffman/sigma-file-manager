@@ -19,6 +19,7 @@ import { disableWebViewFeatures } from '@/utils/disable-web-view-features';
 import { useChangelog } from '@/modules/changelog';
 import { useAppUpdater } from '@/modules/app-updater';
 import { useExtensionsStore } from '@/stores/runtime/extensions';
+import { useArchiveJobsStore } from '@/stores/runtime/archive-jobs';
 import { initPlatformInfo } from '@/modules/extensions/api';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 
@@ -36,6 +37,7 @@ export function useInit() {
   const terminalsStore = useTerminalsStore();
   const backgroundMediaStore = useBackgroundMediaStore();
   const extensionsStore = useExtensionsStore();
+  const archiveJobsStore = useArchiveJobsStore();
   const { checkAndShowChangelog } = useChangelog();
   const { initAutoCheck } = useAppUpdater();
 
@@ -82,6 +84,7 @@ export function useInit() {
     await terminalsStore.init();
     await initPlatformInfo();
     await extensionsStore.init();
+    void archiveJobsStore.ensureEventListeners();
     await initAutoCheck();
     await checkAndShowChangelog();
     disableWebViewFeatures();

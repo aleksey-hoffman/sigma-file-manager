@@ -13,6 +13,7 @@ import { useClipboardStore, type FileOperationResult, type ConflictItem, type Co
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
 import { toast, ToastProgress, ToastStatic } from '@/components/ui/toaster';
 import { UI_CONSTANTS } from '@/constants';
+import normalizePath from '@/utils/normalize-path';
 
 type FileOperationToastData = {
   id: string | number;
@@ -78,6 +79,14 @@ export function useFileBrowserSelection(
     pendingFocusRequest.value = null;
   }
 
+  function requestFocusEntryAfterRefresh(parentDirectoryPath: string, entryPath: string) {
+    pendingFocusRequest.value = {
+      type: 'path',
+      targetPath: normalizePath(parentDirectoryPath),
+      path: normalizePath(entryPath),
+    };
+  }
+
   function clearSelection() {
     selectedEntries.value = [];
     lastSelectedEntry.value = null;
@@ -138,7 +147,10 @@ export function useFileBrowserSelection(
   }
 
   function selectEntryByPath(path: string): boolean {
-    const targetEntry = entriesRef.value.find(entry => entry.path === path);
+    const normalizedPath = normalizePath(path);
+    const targetEntry = entriesRef.value.find(
+      entry => normalizePath(entry.path) === normalizedPath,
+    );
 
     if (!targetEntry) {
       return false;
@@ -1076,6 +1088,7 @@ export function useFileBrowserSelection(
     createNewItem,
     pendingFocusRequest,
     clearPendingFocusRequest,
+    requestFocusEntryAfterRefresh,
     conflictDialogState,
     handleConflictResolution,
     handleConflictCancel,

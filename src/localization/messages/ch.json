@@ -1681,6 +1681,25 @@
       "addToFavorites": "添加到收藏",
       "removeFromFavorites": "从收藏中移除",
       "copyPath": "复制路径"
+    },
+    "archive": {
+      "extract": "解压",
+      "compress": "压缩",
+      "extractHere": "解压到当前文件夹",
+      "extractToNamedFolder": "解压到 {folderName}",
+      "extractToPicker": "解压到…",
+      "pickExtractFolderTitle": "选择解压目标文件夹",
+      "compressWithDialog": "创建压缩包…",
+      "compressQuick": "创建 {name}",
+      "zipFilterName": "Zip 压缩包",
+      "saveArchiveTitle": "保存 Zip 压缩包",
+      "multiSelectionArchiveFileName": "压缩包.zip",
+      "operationFailed": "{message}",
+      "unknownError": "未知错误",
+      "operationErrorTitle": "归档操作失败",
+      "errors": {
+        "destinationInsideSelectedFolder": "目标归档位于所选文件夹内"
+      }
     }
   },
   "openWith": {
@@ -1862,11 +1881,13 @@
     "noOperations": "No operations",
     "active": "active",
     "cancelAll": "Cancel all",
+    "cancelling": "正在取消…",
     "groups": {
       "dir-size": "Directory size calculations",
       "copy": "Copy operations",
       "move": "Move operations",
-      "delete": "Delete operations"
+      "delete": "Delete operations",
+      "archive": "归档操作"
     }
   },
   "recalculate": "Recalculate"

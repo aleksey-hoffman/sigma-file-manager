@@ -410,6 +410,7 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
     clearSelection: selection.clearSelection,
     selectAll: selection.selectAll,
     selectEntryByPath: selection.selectEntryByPath,
+    requestFocusEntryAfterRefresh: selection.requestFocusEntryAfterRefresh,
     removeFromSelection: selection.removeFromSelection,
     handleEntryContextMenu: selection.handleEntryContextMenu,
     handleBackgroundContextMenu: selection.handleBackgroundContextMenu,
