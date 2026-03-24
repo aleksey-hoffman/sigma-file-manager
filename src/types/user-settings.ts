@@ -157,6 +157,8 @@ export type UserSettings = {
   focusWindowOnDriveConnected: boolean;
   preventDropdownCloseFocusReturn: boolean;
   quickAccessOnHover: boolean;
+  launchAtStartup: boolean;
+  launchAtStartupHidden: boolean;
   appUpdates: AppUpdatesSettings;
   changelog: ChangelogSettings;
 };

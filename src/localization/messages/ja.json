@@ -685,6 +685,7 @@
     "directoryItemStatistics": "ディレクトリ、アイテム、統計、統計、データ、ストレージ、使用",
     "advanced": "アドバンスド, プロ, 開発者, ターミナル, シェル",
     "whatsNew": "新機能, 更新履歴, リリースノート, バージョン, アップデート, ニュース",
+    "autostart": "自動起動, スタートアップ, ログイン, システム, 起動",
     "extensions": "extensions, plugins, addons, configuration, settings"
   },
   "dataBackupReminder": {

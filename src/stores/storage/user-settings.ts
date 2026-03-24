@@ -135,6 +135,8 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
     focusWindowOnDriveConnected: true,
     preventDropdownCloseFocusReturn: false,
     quickAccessOnHover: true,
+    launchAtStartup: true,
+    launchAtStartupHidden: true,
     appUpdates: {
       autoCheck: true,
       lastCheckTimestamp: 0,

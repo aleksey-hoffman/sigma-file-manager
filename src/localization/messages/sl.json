@@ -700,6 +700,7 @@
     "directoryItemStatistics": "directory, item, statistics, stats, data, storage, usage",
     "advanced": "advanced, pro, developer, terminal, shell",
     "whatsNew": "what's new, changelog, release notes, version, update, news",
+    "autostart": "autostart, zagon, sistem, prijava, zagon ob zagonu",
     "extensions": "extensions, plugins, addons, configuration, settings"
   },
   "dataBackupReminder": {

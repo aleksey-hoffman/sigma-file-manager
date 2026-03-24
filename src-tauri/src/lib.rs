@@ -19,6 +19,11 @@ mod terminal;
 mod url_drop;
 pub mod utils;
 
+#[tauri::command]
+fn get_app_args() -> Vec<String> {
+    std::env::args().collect()
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -40,7 +45,13 @@ pub fn run() {
         .plugin(tauri_plugin_system_fonts::init())
         .plugin(tauri_plugin_drag::init())
         .plugin(tauri_plugin_clipboard_manager::init())
+        .plugin(
+            tauri_plugin_autostart::Builder::new()
+                .args(["--sigma-autostart"])
+                .build(),
+        )
         .invoke_handler(tauri::generate_handler![
+            get_app_args,
             app_updater::check_for_updates,
             system_tray::reload_webview,
             system_tray::update_tray_shortcut,
