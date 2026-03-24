@@ -612,8 +612,35 @@ fn decode_windows_command_output(output: &[u8]) -> String {
 
 #[cfg(windows)]
 fn get_windows_wsl_distributions() -> Vec<String> {
+    use std::sync::Mutex;
+    use std::time::{Duration, Instant};
+
+    static WSL_CACHE: std::sync::OnceLock<Mutex<(Vec<String>, Instant)>> =
+        std::sync::OnceLock::new();
+    const WSL_CACHE_TTL: Duration = Duration::from_secs(30);
+
+    let cache = WSL_CACHE.get_or_init(|| Mutex::new((Vec::new(), Instant::now() - WSL_CACHE_TTL)));
+    let mut guard = cache
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+
+    if guard.1.elapsed() < WSL_CACHE_TTL {
+        return guard.0.clone();
+    }
+
+    let distributions = fetch_wsl_distributions();
+    *guard = (distributions.clone(), Instant::now());
+    distributions
+}
+
+#[cfg(windows)]
+fn fetch_wsl_distributions() -> Vec<String> {
+    use std::os::windows::process::CommandExt;
+    const CREATE_NO_WINDOW: u32 = 0x08000000;
+
     let command_output = match std::process::Command::new("wsl")
         .args(["-l", "-q"])
+        .creation_flags(CREATE_NO_WINDOW)
         .output()
     {
         Ok(output) if output.status.success() => output.stdout,
@@ -1358,8 +1385,7 @@ pub fn path_exists(path: String) -> bool {
 mod tests {
     use super::{
         create_windows_wsl_drive_info, decode_windows_command_output,
-        is_blacklisted_windows_system_path,
-        windows_system_drive_root,
+        is_blacklisted_windows_system_path, windows_system_drive_root,
     };
     use std::path::Path;
 
@@ -1414,10 +1440,13 @@ mod tests {
     #[test]
     fn windows_command_output_decodes_utf16le() {
         let utf16le_output = [
-            b'U', 0, b'b', 0, b'u', 0, b'n', 0, b't', 0, b'u', 0, b'-', 0, b'2', 0, b'4',
-            0, b'.', 0, b'0', 0, b'4', 0, b'\r', 0, b'\n', 0,
+            b'U', 0, b'b', 0, b'u', 0, b'n', 0, b't', 0, b'u', 0, b'-', 0, b'2', 0, b'4', 0, b'.',
+            0, b'0', 0, b'4', 0, b'\r', 0, b'\n', 0,
         ];
 
-        assert_eq!(decode_windows_command_output(&utf16le_output), "Ubuntu-24.04\r\n");
+        assert_eq!(
+            decode_windows_command_output(&utf16le_output),
+            "Ubuntu-24.04\r\n"
+        );
     }
 }
