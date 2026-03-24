@@ -294,6 +294,9 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
     onDrop: (sourcePaths, targetPath, operation) => {
       selection.handleExternalDrop(sourcePaths, targetPath, operation);
     },
+    onUrlDrop: (urls, targetPath) => {
+      selection.handleExternalUrlDrop(urls, targetPath);
+    },
   });
 
   const actions = useFileBrowserActions({
@@ -449,6 +452,7 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
     isExternalDragActive: externalDrop.isExternalDragActive,
     externalDragItemCount: externalDrop.externalDragItemCount,
     externalDragOperationType: externalDrop.externalDragOperationType,
+    isUrlDrop: externalDrop.isUrlDrop,
     isCurrentDirLocked: externalDrop.isCurrentDirLocked,
     isTargetingEntry: externalDrop.isTargetingEntry,
 

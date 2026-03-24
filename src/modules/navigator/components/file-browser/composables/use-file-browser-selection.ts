@@ -14,6 +14,7 @@ import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
 import { toast, ToastProgress, ToastStatic } from '@/components/ui/toaster';
 import { UI_CONSTANTS } from '@/constants';
 import normalizePath from '@/utils/normalize-path';
+import { createIndexedFileName, safeFileNameFromUrl } from '@/utils/remote-file';
 
 type FileOperationToastData = {
   id: string | number;
@@ -85,6 +86,38 @@ export function useFileBrowserSelection(
       targetPath: normalizePath(parentDirectoryPath),
       path: normalizePath(entryPath),
     };
+  }
+
+  function buildJoinedPath(parentPath: string, fileName: string): string {
+    const normalizedParentPath = normalizePath(parentPath).replace(/\/+$/, '');
+    return `${normalizedParentPath}/${fileName}`;
+  }
+
+  async function resolveAvailableDownloadPath(
+    targetPath: string,
+    fileName: string,
+    reservedPaths: Set<string>,
+  ): Promise<string> {
+    let index = 0;
+
+    while (true) {
+      const candidateFileName = createIndexedFileName(fileName, index);
+      const candidatePath = normalizePath(buildJoinedPath(targetPath, candidateFileName));
+
+      if (reservedPaths.has(candidatePath)) {
+        index += 1;
+        continue;
+      }
+
+      const exists = await invoke<boolean>('path_exists', { path: candidatePath });
+
+      if (!exists) {
+        reservedPaths.add(candidatePath);
+        return candidatePath;
+      }
+
+      index += 1;
+    }
   }
 
   function clearSelection() {
@@ -653,6 +686,133 @@ export function useFileBrowserSelection(
     }
   }
 
+  async function handleExternalUrlDrop(urls: string[], targetPath: string): Promise<boolean> {
+    if (urls.length === 0) {
+      return false;
+    }
+
+    const shouldFocusPaste = targetPath === currentPathRef.value;
+    const previousPaths = shouldFocusPaste
+      ? new Set(entriesRef.value.map(entry => entry.path))
+      : null;
+
+    const toastData = ref({
+      id: '' as string | number,
+      title: t('notifications.copyingItems'),
+      description: '',
+      progress: 0,
+      timer: 0,
+      actionText: t('cancel'),
+      cleanup: () => {},
+      operationType: 'copy' as 'copy' | 'move' | 'delete' | '',
+      itemCount: urls.length,
+    });
+
+    toastData.value.id = toast.custom(markRaw(ToastProgress), {
+      componentProps: {
+        data: toastData.value,
+        onAction: () => {
+          if (autoDismissTimeout) {
+            clearTimeout(autoDismissTimeout);
+            autoDismissTimeout = null;
+          }
+
+          toast.dismiss(toastData.value.id);
+        },
+      },
+      duration: Infinity,
+    });
+
+    let autoDismissTimeout: ReturnType<typeof setTimeout> | null = null;
+    let progressInterval: ReturnType<typeof setInterval> | null = setInterval(() => {
+      if (toastData.value.progress < 90) {
+        toastData.value.progress += 5;
+      }
+    }, 100);
+
+    toastData.value.cleanup = () => {
+      if (progressInterval) {
+        clearInterval(progressInterval);
+        progressInterval = null;
+      }
+
+      if (autoDismissTimeout) {
+        clearTimeout(autoDismissTimeout);
+        autoDismissTimeout = null;
+      }
+    };
+
+    const downloadedPaths: string[] = [];
+    let lastDownloadError = '';
+
+    try {
+      await invoke('ensure_directory', { directoryPath: targetPath });
+
+      const reservedPaths = new Set<string>();
+
+      for (const url of urls) {
+        try {
+          const destinationPath = await resolveAvailableDownloadPath(
+            targetPath,
+            safeFileNameFromUrl(url),
+            reservedPaths,
+          );
+          const downloadedPath = await invoke<string>('download_url_to_path', {
+            url,
+            destPath: destinationPath,
+          });
+          downloadedPaths.push(normalizePath(downloadedPath));
+        }
+        catch (error) {
+          lastDownloadError = String(error);
+        }
+      }
+
+      if (downloadedPaths.length === 0) {
+        throw new Error(lastDownloadError || t('fileBrowser.copyFailed'));
+      }
+
+      toastData.value.cleanup();
+      toastData.value.progress = 100;
+      toastData.value.title = t('notifications.copied');
+      toastData.value.itemCount = downloadedPaths.length;
+      toastData.value.actionText = '';
+      toastData.value.description = downloadedPaths.length < urls.length ? lastDownloadError : '';
+
+      dirSizesStore.invalidate([targetPath, currentPathRef.value]);
+
+      if (shouldFocusPaste && previousPaths) {
+        pendingFocusRequest.value = {
+          type: 'diff',
+          targetPath,
+          previousPaths,
+        };
+      }
+
+      onRefresh();
+
+      autoDismissTimeout = setTimeout(() => {
+        toast.dismiss(toastData.value.id);
+      }, downloadedPaths.length < urls.length ? 5000 : 2500);
+
+      return downloadedPaths.length === urls.length;
+    }
+    catch (error) {
+      toastData.value.cleanup();
+      toastData.value.title = t('fileBrowser.copyFailed');
+      toastData.value.description = String(error);
+      toastData.value.actionText = '';
+      toastData.value.progress = 0;
+      toastData.value.itemCount = 0;
+
+      setTimeout(() => {
+        toast.dismiss(toastData.value.id);
+      }, 5000);
+
+      return false;
+    }
+  }
+
   function startRename(entry: DirEntry) {
     renameState.value = {
       isActive: true,
@@ -1081,6 +1241,7 @@ export function useFileBrowserSelection(
     cutItems,
     pasteItems,
     handleExternalDrop,
+    handleExternalUrlDrop,
     deleteItems,
     startRename,
     cancelRename,

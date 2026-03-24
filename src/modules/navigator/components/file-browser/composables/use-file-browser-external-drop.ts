@@ -5,6 +5,7 @@
 import { ref, onMounted, onUnmounted, type Ref } from 'vue';
 import { getCurrentWebview } from '@tauri-apps/api/webview';
 import { getCurrentWindow } from '@tauri-apps/api/window';
+import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 import { storeToRefs } from 'pinia';
 import type { DragOperationType } from './use-file-browser-drag';
 import { useDismissalLayerStore } from '@/stores/runtime/dismissal-layer';
@@ -21,6 +22,7 @@ export function useFileBrowserExternalDrop(options: {
   currentPath: Ref<string>;
   entriesContainerRef: Ref<Element | null>;
   onDrop: (sourcePaths: string[], targetPath: string, operation: DragOperationType) => void;
+  onUrlDrop: (urls: string[], targetPath: string) => void;
   disableBackgroundDrop?: boolean;
 }) {
   const dismissalLayerStore = useDismissalLayerStore();
@@ -29,12 +31,16 @@ export function useFileBrowserExternalDrop(options: {
   const isExternalDragActive = ref(false);
   const externalDragItemCount = ref(0);
   const externalDragOperationType = ref<DragOperationType>('move');
+  const isUrlDrop = ref(false);
   const isCurrentDirLocked = ref(false);
   const isTargetingEntry = ref(false);
   let dropTargets: DropTargetInfo[] = [];
   let currentDropTargetPath = '';
   let unlistenDrop: (() => void) | null = null;
+  let unlistenUrlDragEnter: UnlistenFn | null = null;
+  let unlistenUrlDrop: UnlistenFn | null = null;
   let dismissalLayerId: string | null = null;
+  let currentDragHasPaths = false;
 
   function toLogicalPosition(physicalX: number, physicalY: number): {
     x: number;
@@ -47,7 +53,7 @@ export function useFileBrowserExternalDrop(options: {
     };
   }
 
-  function isPositionWithinComponent(physicalX: number, physicalY: number): boolean {
+  function isPhysicalPositionWithinComponent(physicalX: number, physicalY: number): boolean {
     const element = options.componentRef.value;
     if (!element) return false;
 
@@ -83,15 +89,15 @@ export function useFileBrowserExternalDrop(options: {
     }
   }
 
-  function findDropTarget(clientX: number, clientY: number): DropTargetInfo | null {
+  function findDropTarget(logicalX: number, logicalY: number): DropTargetInfo | null {
     for (const target of dropTargets) {
       const rect = target.element.getBoundingClientRect();
 
       if (
-        clientX >= rect.left
-        && clientX <= rect.right
-        && clientY >= rect.top
-        && clientY <= rect.bottom
+        logicalX >= rect.left
+        && logicalX <= rect.right
+        && logicalY >= rect.top
+        && logicalY <= rect.bottom
       ) {
         return target;
       }
@@ -129,8 +135,36 @@ export function useFileBrowserExternalDrop(options: {
     }
   }
 
+  function updateTargetAtLogicalPosition(logicalX: number, logicalY: number) {
+    if (!isCurrentDirLocked.value) {
+      const target = findDropTarget(logicalX, logicalY);
+      const newTargetPath = target ? target.path : '';
+
+      isTargetingEntry.value = !!newTargetPath;
+
+      if (currentDropTargetPath !== newTargetPath) {
+        currentDropTargetPath = newTargetPath;
+        updateDropTargetAttributes(newTargetPath);
+      }
+
+      return;
+    }
+
+    if (currentDropTargetPath) {
+      currentDropTargetPath = '';
+      updateDropTargetAttributes('');
+    }
+
+    isTargetingEntry.value = false;
+  }
+
+  function updateTargetAtPhysicalPosition(physicalX: number, physicalY: number) {
+    const { x, y } = toLogicalPosition(physicalX, physicalY);
+    updateTargetAtLogicalPosition(x, y);
+  }
+
   function handleKeyDown(event: KeyboardEvent) {
-    if (event.key === 'Shift') {
+    if (event.key === 'Shift' && !isUrlDrop.value) {
       externalDragOperationType.value = 'copy';
     }
 
@@ -143,7 +177,7 @@ export function useFileBrowserExternalDrop(options: {
   }
 
   function handleKeyUp(event: KeyboardEvent) {
-    if (event.key === 'Shift') {
+    if (event.key === 'Shift' && !isUrlDrop.value) {
       externalDragOperationType.value = 'move';
     }
 
@@ -154,6 +188,7 @@ export function useFileBrowserExternalDrop(options: {
 
   function deactivatePane() {
     isExternalDragActive.value = false;
+    isUrlDrop.value = false;
     externalDragOperationType.value = 'move';
     isCurrentDirLocked.value = false;
     isTargetingEntry.value = false;
@@ -173,10 +208,13 @@ export function useFileBrowserExternalDrop(options: {
   function resetState() {
     deactivatePane();
     externalDragItemCount.value = 0;
+    currentDragHasPaths = false;
   }
 
-  function activateDrag() {
+  function activateDrag(urlDrop = false) {
     isExternalDragActive.value = true;
+    isUrlDrop.value = urlDrop;
+    externalDragOperationType.value = urlDrop ? 'copy' : 'move';
     collectDropTargets();
     getCurrentWindow().setFocus();
     dismissalLayerId = dismissalLayerStore.registerLayer('drag', () => resetState(), 300);
@@ -184,7 +222,59 @@ export function useFileBrowserExternalDrop(options: {
     window.addEventListener('keyup', handleKeyUp);
   }
 
+  function resolveDropTargetPath(): string {
+    if (options.disableBackgroundDrop) {
+      return currentDropTargetPath;
+    }
+
+    return currentDropTargetPath || options.currentPath.value;
+  }
+
+  type UrlDropEventPayload = {
+    urls: string[];
+    position: {
+      x: number;
+      y: number;
+    };
+  };
+
   onMounted(() => {
+    listen<UrlDropEventPayload>(
+      'app://url-drag-enter',
+      (event) => {
+        if (event.payload.urls.length > 0) {
+          externalDragItemCount.value = event.payload.urls.length;
+        }
+      },
+    ).then((unlisten) => {
+      unlistenUrlDragEnter = unlisten;
+    });
+
+    listen<UrlDropEventPayload>(
+      'app://url-drop',
+      (event) => {
+        if (!isUrlDrop.value || !isExternalDragActive.value) {
+          return;
+        }
+
+        const urls = event.payload.urls;
+
+        if (urls.length === 0) {
+          return;
+        }
+
+        const targetPath = resolveDropTargetPath();
+
+        resetState();
+
+        if (targetPath) {
+          options.onUrlDrop(urls, targetPath);
+        }
+      },
+    ).then((unlisten) => {
+      unlistenUrlDrop = unlisten;
+    });
+
     getCurrentWebview()
       .onDragDropEvent((event) => {
         if (isBackgroundManagerOpen.value) {
@@ -198,10 +288,12 @@ export function useFileBrowserExternalDrop(options: {
             y: number;
           };
 
-          externalDragItemCount.value = paths.length;
+          currentDragHasPaths = paths.length > 0;
+          externalDragItemCount.value = currentDragHasPaths ? paths.length : 1;
 
-          if (isPositionWithinComponent(position.x, position.y)) {
-            activateDrag();
+          if (isPhysicalPositionWithinComponent(position.x, position.y)) {
+            activateDrag(!currentDragHasPaths);
+            updateTargetAtPhysicalPosition(position.x, position.y);
           }
         }
         else if (event.payload.type === 'over') {
@@ -210,7 +302,7 @@ export function useFileBrowserExternalDrop(options: {
             y: number;
           };
 
-          if (!isPositionWithinComponent(position.x, position.y)) {
+          if (!isPhysicalPositionWithinComponent(position.x, position.y)) {
             if (isExternalDragActive.value) {
               deactivatePane();
             }
@@ -219,26 +311,10 @@ export function useFileBrowserExternalDrop(options: {
           }
 
           if (!isExternalDragActive.value) {
-            activateDrag();
+            activateDrag(!currentDragHasPaths);
           }
 
-          if (!isCurrentDirLocked.value) {
-            const logicalPosition = toLogicalPosition(position.x, position.y);
-            const target = findDropTarget(logicalPosition.x, logicalPosition.y);
-            const newTargetPath = target ? target.path : '';
-
-            isTargetingEntry.value = !!newTargetPath;
-
-            if (currentDropTargetPath !== newTargetPath) {
-              currentDropTargetPath = newTargetPath;
-              updateDropTargetAttributes(newTargetPath);
-            }
-          }
-          else if (currentDropTargetPath) {
-            currentDropTargetPath = '';
-            isTargetingEntry.value = false;
-            updateDropTargetAttributes('');
-          }
+          updateTargetAtPhysicalPosition(position.x, position.y);
         }
         else if (event.payload.type === 'leave') {
           resetState();
@@ -246,16 +322,26 @@ export function useFileBrowserExternalDrop(options: {
         else if (event.payload.type === 'drop') {
           const paths = (event.payload.paths as string[]) ?? [];
 
-          const wasActive = isExternalDragActive.value;
-          const targetPath = options.disableBackgroundDrop
-            ? currentDropTargetPath
-            : (currentDropTargetPath || options.currentPath.value);
-          const operation = externalDragOperationType.value;
+          if (paths.length > 0) {
+            const wasActive = isExternalDragActive.value;
+            const targetPath = resolveDropTargetPath();
+            const operation = externalDragOperationType.value;
 
-          resetState();
+            resetState();
 
-          if (wasActive && paths.length > 0 && targetPath) {
-            options.onDrop(paths, targetPath, operation);
+            if (wasActive && targetPath) {
+              options.onDrop(paths, targetPath, operation);
+            }
+          }
+          else if (isUrlDrop.value) {
+            setTimeout(() => {
+              if (isExternalDragActive.value) {
+                resetState();
+              }
+            }, 500);
+          }
+          else {
+            resetState();
           }
         }
       })
@@ -268,12 +354,21 @@ export function useFileBrowserExternalDrop(options: {
     if (unlistenDrop) {
       unlistenDrop();
     }
+
+    if (unlistenUrlDragEnter) {
+      unlistenUrlDragEnter();
+    }
+
+    if (unlistenUrlDrop) {
+      unlistenUrlDrop();
+    }
   });
 
   return {
     isExternalDragActive,
     externalDragItemCount,
     externalDragOperationType,
+    isUrlDrop,
     isCurrentDirLocked,
     isTargetingEntry,
   };

@@ -6,6 +6,12 @@ import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
 import { useUserPathsStore } from '@/stores/storage/user-paths';
+import {
+  getFileName,
+  getPathOrUrlExtension,
+  isHttpUrl,
+  safeFileNameFromUrl,
+} from '@/utils/remote-file';
 
 export type CustomBackgroundEntry = {
   path: string;
@@ -16,48 +22,6 @@ const mediaExtensions = new Set([
   'jpg', 'jpeg', 'png', 'gif', 'webp',
   'mp4', 'webm', 'ogg', 'mov', 'avi', 'mkv',
 ]);
-
-function isHttpUrl(value: string): boolean {
-  return value.startsWith('http://') || value.startsWith('https://');
-}
-
-function getExtension(pathOrUrl: string): string {
-  let cleanPath = pathOrUrl;
-
-  if (isHttpUrl(cleanPath)) {
-    try {
-      cleanPath = new URL(cleanPath).pathname;
-    }
-    catch {
-      cleanPath = cleanPath.split('?')[0].split('#')[0];
-    }
-  }
-
-  const lastDot = cleanPath.lastIndexOf('.');
-
-  return lastDot >= 0 ? cleanPath.slice(lastDot + 1).toLowerCase() : '';
-}
-
-function getFileName(path: string): string {
-  return path.split(/[/\\]/).pop() ?? path;
-}
-
-function safeFileNameFromUrl(url: string): string {
-  try {
-    const pathname = new URL(url).pathname;
-    const segment = pathname.split('/').filter(Boolean).pop();
-
-    if (segment && /^[^<>:"/\\|?*]+\.\w+$/.test(segment)) {
-      return segment;
-    }
-  }
-  catch {
-  }
-
-  const extension = getExtension(url) || 'jpg';
-
-  return `image-${Date.now().toString(36)}.${extension}`;
-}
 
 async function readCustomBackgroundEntries(path: string): Promise<CustomBackgroundEntry[]> {
   const result = await invoke<{ entries: Array<{ name: string;
@@ -70,7 +34,7 @@ async function readCustomBackgroundEntries(path: string): Promise<CustomBackgrou
   return (result.entries ?? [])
     .filter(entry => entry.is_file)
     .filter((entry) => {
-      const extension = (entry.ext ?? entry.name.split('.').pop() ?? '').toLowerCase();
+      const extension = (entry.ext ?? getPathOrUrlExtension(entry.name)).toLowerCase();
 
       return mediaExtensions.has(extension);
     })

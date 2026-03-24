@@ -15,6 +15,8 @@ mod open_with;
 mod system_icons;
 mod system_tray;
 mod terminal;
+#[cfg(windows)]
+mod url_drop;
 pub mod utils;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -150,7 +152,9 @@ fn setup_handler(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>>
 
     system_tray::setup_system_tray(app.handle())?;
 
-    // Open devtools in production for debugging (TODO: remove after debugging)
+    #[cfg(windows)]
+    url_drop::setup(app.handle());
+
     #[cfg(feature = "devtools")]
     {
         use tauri::Manager;

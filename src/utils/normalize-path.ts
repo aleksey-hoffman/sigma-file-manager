@@ -30,6 +30,7 @@ export function isWslHostRootUncPath(path: string): boolean {
   }
 
   const segments = normalizedPath.slice(2).split('/').filter(Boolean);
+
   if (segments.length !== 1) {
     return false;
   }

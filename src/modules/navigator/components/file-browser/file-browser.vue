@@ -180,6 +180,7 @@ defineExpose({
       :is-active="fb.isExternalDragActive.value"
       :item-count="fb.externalDragItemCount.value"
       :operation-type="fb.externalDragOperationType.value"
+      :is-url-drop="fb.isUrlDrop.value"
       :current-dir-locked="fb.isCurrentDirLocked.value"
       :targeting-entry="fb.isTargetingEntry.value"
     />

@@ -13,6 +13,7 @@ const props = defineProps<{
   isActive: boolean;
   itemCount: number;
   operationType: DragOperationType;
+  isUrlDrop: boolean;
   currentDirLocked: boolean;
   targetingEntry: boolean;
 }>();
@@ -20,7 +21,7 @@ const props = defineProps<{
 const { t } = useI18n();
 
 const description = computed(() => {
-  if (props.operationType === 'copy') {
+  if (props.isUrlDrop || props.operationType === 'copy') {
     return t('drag.dropToCopyItems', props.itemCount);
   }
 
@@ -39,12 +40,15 @@ const description = computed(() => {
         <div class="inbound-drag-overlay__content">
           <span class="inbound-drag-overlay__description">{{ description }}</span>
           <component
-            :is="props.operationType === 'copy' ? CopyIcon : FolderInputIcon"
+            :is="props.isUrlDrop || props.operationType === 'copy' ? CopyIcon : FolderInputIcon"
             :size="16"
             class="inbound-drag-overlay__icon"
           />
         </div>
-        <div class="inbound-drag-overlay__hint">
+        <div
+          v-if="!props.isUrlDrop"
+          class="inbound-drag-overlay__hint"
+        >
           {{ t('drag.holdShiftToChangeMode') }}
         </div>
         <div class="inbound-drag-overlay__hint">
