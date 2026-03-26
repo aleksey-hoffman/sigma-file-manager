@@ -401,6 +401,7 @@
       "dateTimePreview": "Xem trước ngày/giờ:",
       "dateTimeRegionalFormat": "Định dạng khu vực ngày/giờ",
       "autoDetectRegionalFormat": "Tự động phát hiện định dạng khu vực",
+      "regionalFormatLocale": "Ngôn ngữ định dạng khu vực",
       "resetRegionalFormatToDefault": "Đặt lại định dạng khu vực về mặc định",
       "monthFormat": "Định dạng tháng",
       "numeric": "Số",

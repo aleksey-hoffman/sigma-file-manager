@@ -401,6 +401,7 @@
       "dateTimePreview": "日時のプレビュー:",
       "dateTimeRegionalFormat": "「日付/時刻の地域形式」",
       "autoDetectRegionalFormat": "地域フォーマットを自動検出",
+      "regionalFormatLocale": "地域形式のロケール",
       "resetRegionalFormatToDefault": "地域のフォーマットをデフォルトにリセット",
       "monthFormat": "月のフォーマット",
       "numeric": "数値",

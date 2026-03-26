@@ -416,6 +416,7 @@
       "dateTimePreview": "Predogled datuma / časa:",
       "dateTimeRegionalFormat": "Regionalni format datuma / časa",
       "autoDetectRegionalFormat": "Samodejno zaznaj regionalni format",
+      "regionalFormatLocale": "Jezikovna nastavitev regionalnega formata",
       "resetRegionalFormatToDefault": "Ponastavi regionalni format na privzeto",
       "monthFormat": "Oblika meseca",
       "numeric": "Številčno",

@@ -40,21 +40,70 @@ export function formatDateTime(date: Date, format: string, locale: AppLocale = '
   }
 }
 
-export function toLocalTime(date: Date, options: DateTime, locale = 'en'): string {
+function resolveFormattingLocale(options: DateTime, appLocale: string): string | undefined {
+  if (options.autoDetectRegionalFormat) {
+    if (typeof navigator !== 'undefined' && navigator.language) {
+      return navigator.language;
+    }
+    return undefined;
+  }
+  const code = options.regionalFormat?.code;
+  if (code && code.length > 0) {
+    return code;
+  }
+  return appLocale;
+}
+
+function monthToIntlOption(month: DateTime['month']): Intl.DateTimeFormatOptions['month'] {
+  if (month === 'numeric') {
+    return '2-digit';
+  }
+  if (month === 'long') {
+    return 'long';
+  }
+  return 'short';
+}
+
+export function formatDateTimeDisplay(
+  date: Date,
+  options: DateTime,
+  appLocale: string,
+  includeTimePart = true,
+): string {
   try {
+    const localeTag = resolveFormattingLocale(options, appLocale);
+    if (!includeTimePart) {
+      return new Intl.DateTimeFormat(localeTag, {
+        year: 'numeric',
+        month: monthToIntlOption(options.month),
+        day: 'numeric',
+      }).format(date);
+    }
+
     const formatOptions: Intl.DateTimeFormatOptions & { fractionalSecondDigits?: 1 | 2 | 3 } = {
       year: 'numeric',
-      month: 'numeric',
+      month: monthToIntlOption(options.month),
       day: 'numeric',
       hour: 'numeric',
       minute: 'numeric',
       hour12: options.hour12,
-      second: options.properties.showSeconds ? 'numeric' : undefined,
-      fractionalSecondDigits: options.properties.showMilliseconds ? 3 : undefined,
     };
-    return new Intl.DateTimeFormat(options.regionalFormat.code || locale, formatOptions).format(new Date(date));
+
+    if (options.properties.showSeconds || options.properties.showMilliseconds) {
+      formatOptions.second = 'numeric';
+    }
+
+    if (options.properties.showMilliseconds) {
+      formatOptions.fractionalSecondDigits = 3;
+    }
+
+    return new Intl.DateTimeFormat(localeTag, formatOptions).format(date);
   }
   catch {
     return '';
   }
+}
+
+export function toLocalTime(date: Date, options: DateTime, appLocale: string): string {
+  return formatDateTimeDisplay(date, options, appLocale);
 }

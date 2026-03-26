@@ -416,6 +416,7 @@
       "dateTimePreview": "Date / time preview:",
       "dateTimeRegionalFormat": "Date / time regional format",
       "autoDetectRegionalFormat": "Auto detect regional format",
+      "regionalFormatLocale": "Regional format locale",
       "resetRegionalFormatToDefault": "Reset regional format to default",
       "monthFormat": "Month format",
       "numeric": "Numeric",

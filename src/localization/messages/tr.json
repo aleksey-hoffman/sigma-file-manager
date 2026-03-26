@@ -401,6 +401,7 @@
       "dateTimePreview": "Tarih / saat önizlemesi:",
       "dateTimeRegionalFormat": "Tarih/saat bölgesel biçimi",
       "autoDetectRegionalFormat": "Bölgesel formatı otomatik algıla",
+      "regionalFormatLocale": "Bölgesel format yerel ayarı",
       "resetRegionalFormatToDefault": "Bölgesel formatı varsayılana sıfırla",
       "monthFormat": "Ay formatı",
       "numeric": "Sayısal",

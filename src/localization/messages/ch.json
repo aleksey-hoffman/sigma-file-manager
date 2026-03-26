@@ -401,6 +401,7 @@
       "dateTimePreview": "日期/时间预览：",
       "dateTimeRegionalFormat": "日期/时间区域格式",
       "autoDetectRegionalFormat": "自动检测区域格式",
+      "regionalFormatLocale": "区域格式的语言区域",
       "resetRegionalFormatToDefault": "将区域格式重置为默认值",
       "monthFormat": "月份格式",
       "numeric": "数字",

@@ -15,6 +15,9 @@ import {
 } from 'lucide-vue-next';
 import { FILE_EXTENSIONS } from '@/constants';
 import type { DirEntry } from '@/types/dir-entry';
+import { i18n } from '@/localization';
+import { useUserSettingsStore } from '@/stores/storage/user-settings';
+import { formatDateTimeDisplay } from '@/utils/date-time';
 
 export function isImageFile(entry: DirEntry): boolean {
   if (entry.is_dir) return false;
@@ -56,22 +59,17 @@ export function formatBytes(bytes: number): string {
   return `${value.toFixed(unitIndex > 0 ? 1 : 0)} ${units[unitIndex]}`;
 }
 
-export function formatDate(timestamp: number, includeSeconds = false): string {
+export function formatDate(timestamp: number): string {
   if (!timestamp) return '-';
 
-  const options: Intl.DateTimeFormatOptions = {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  };
+  const userSettingsStore = useUserSettingsStore();
+  const locale = i18n.global.locale.value as string;
 
-  if (includeSeconds) {
-    options.second = '2-digit';
-  }
-
-  return new Date(timestamp).toLocaleString(undefined, options);
+  return formatDateTimeDisplay(
+    new Date(timestamp),
+    userSettingsStore.userSettings.dateTime,
+    locale,
+  );
 }
 
 export interface RelativeTimeTranslations {
@@ -94,5 +92,13 @@ export function formatRelativeTime(timestamp: number, translations: RelativeTime
   if (hours < 24) return translations.hoursAgo(hours);
   if (days < 7) return translations.daysAgo(days);
 
-  return new Date(timestamp).toLocaleDateString();
+  const userSettingsStore = useUserSettingsStore();
+  const locale = i18n.global.locale.value as string;
+
+  return formatDateTimeDisplay(
+    new Date(timestamp),
+    userSettingsStore.userSettings.dateTime,
+    locale,
+    false,
+  );
 }

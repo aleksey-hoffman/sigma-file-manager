@@ -401,6 +401,7 @@
       "dateTimePreview": "Anteprima data / ora:",
       "dateTimeRegionalFormat": "Formato regionale data / ora",
       "autoDetectRegionalFormat": "Rileva automaticamente il formato regionale",
+      "regionalFormatLocale": "Impostazioni locali del formato regionale",
       "resetRegionalFormatToDefault": "Ripristina il formato regionale a quello predefinito",
       "monthFormat": "Formato del mese",
       "numeric": "Numerico",

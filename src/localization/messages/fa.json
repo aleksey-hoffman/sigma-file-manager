@@ -400,6 +400,7 @@
       "dateTimePreview": "پیش نمایش تاریخ/زمان:",
       "dateTimeRegionalFormat": "فرمت منطقه ای تاریخ/زمان",
       "autoDetectRegionalFormat": "قالب منطقه ای تشخیص خودکار",
+      "regionalFormatLocale": "زبان محلی قالب منطقه‌ای",
       "resetRegionalFormatToDefault": "بازنشانی فرمت منطقه ای به پیش فرض",
       "monthFormat": "قالب ماه",
       "numeric": "عددی",

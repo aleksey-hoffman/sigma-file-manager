@@ -17,7 +17,7 @@ import {
   TriangleAlertIcon,
 } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
-import { formatBytes } from '@/modules/navigator/components/file-browser/utils';
+import { formatBytes, formatDate } from '@/modules/navigator/components/file-browser/utils';
 import { useWorkspacesStore } from '@/stores/storage/workspaces';
 import { useExtensionsStorageStore } from '@/stores/storage/extensions';
 import type { SharedBinaryInfo } from '@/types/extension';
@@ -135,14 +135,6 @@ async function refreshBinarySizes(): Promise<void> {
   }
   catch {
   }
-}
-
-function formatDate(timestamp: number): string {
-  return new Date(timestamp).toLocaleDateString(undefined, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
 }
 
 function getExtensionDisplayId(extensionId: string): string {

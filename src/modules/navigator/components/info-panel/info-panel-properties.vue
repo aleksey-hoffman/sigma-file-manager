@@ -130,21 +130,21 @@ const properties = computed<PropertyItem[]>(() => {
   if (entry.modified_time) {
     items.push({
       title: t('modified'),
-      value: formatDate(entry.modified_time, true),
+      value: formatDate(entry.modified_time),
     });
   }
 
   if (entry.created_time) {
     items.push({
       title: t('created'),
-      value: formatDate(entry.created_time, true),
+      value: formatDate(entry.created_time),
     });
   }
 
   if (entry.accessed_time) {
     items.push({
       title: t('accessed'),
-      value: formatDate(entry.accessed_time, true),
+      value: formatDate(entry.accessed_time),
     });
   }
 
@@ -187,7 +187,7 @@ const compactItems = computed<string[]>(() => {
   }
 
   if (entry.modified_time) {
-    items.push(formatDate(entry.modified_time, false));
+    items.push(formatDate(entry.modified_time));
   }
 
   return items;

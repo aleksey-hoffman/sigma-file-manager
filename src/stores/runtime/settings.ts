@@ -133,6 +133,7 @@ export const useSettingsStore = defineStore('settings', () => {
 
     const [
       { default: LanguageSection },
+      { default: DateTimeSection },
       { default: WindowScalingSection },
       { default: WhatsNewSection },
       { default: StartupSection },
@@ -156,6 +157,7 @@ export const useSettingsStore = defineStore('settings', () => {
       { default: ExtensionsListSection },
     ] = await Promise.all([
       import('@/modules/settings/ui/categories/general/language.vue'),
+      import('@/modules/settings/ui/categories/general/date-time.vue'),
       import('@/modules/settings/ui/categories/general/window-scaling.vue'),
       import('@/modules/settings/ui/categories/general/whats-new.vue'),
       import('@/modules/settings/ui/categories/general/startup.vue'),
@@ -213,6 +215,13 @@ export const useSettingsStore = defineStore('settings', () => {
         titleKey: 'settings.general.startupBehavior',
         tags: 'settingsTags.autostart',
         component: markRaw(StartupSection),
+        category: 'general',
+      },
+      {
+        key: 'dateTime',
+        titleKey: 'settings.dateTime.dateTime',
+        tags: 'settingsTags.dateTime',
+        component: markRaw(DateTimeSection),
         category: 'general',
       },
       {

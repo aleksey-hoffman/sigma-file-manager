@@ -416,6 +416,7 @@
       "dateTimePreview": "Предварительный просмотр даты/времени:",
       "dateTimeRegionalFormat": "Региональный формат даты/времени",
       "autoDetectRegionalFormat": "Автоопределение регионального формата",
+      "regionalFormatLocale": "Локаль регионального формата",
       "resetRegionalFormatToDefault": "Сбросить региональный формат по умолчанию",
       "monthFormat": "Формат месяца",
       "numeric": "Числовой",

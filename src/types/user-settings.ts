@@ -197,7 +197,7 @@ export type LocalizationLanguage = {
 export type Theme = 'light' | 'dark' | 'system';
 
 export type DateTime = {
-  month: 'short' | 'long';
+  month: 'numeric' | 'short' | 'long';
   regionalFormat: {
     code: string;
     name: string;

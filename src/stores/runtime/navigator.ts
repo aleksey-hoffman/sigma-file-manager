@@ -13,7 +13,7 @@ import type { Runtime } from '@/types/runtime';
 export const useNavigatorStore = defineStore('navigator', () => {
   const userSettingsStore = useUserSettingsStore();
 
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
 
   const runtime = ref<Runtime>({
     navigator: {
@@ -42,19 +42,19 @@ export const useNavigatorStore = defineStore('navigator', () => {
       {
         propName: 'dateCreated',
         title: t('sorting.typeShortTitles.dateCreated'),
-        value: toLocalTime(new Date(dirEntry.created_time), userSettingsStore.userSettings.dateTime),
+        value: toLocalTime(new Date(dirEntry.created_time), userSettingsStore.userSettings.dateTime, locale.value),
         tooltip: `${t('toCopy')}: ${'copyShortcut'}`,
       },
       {
         propName: 'dateModified',
         title: t('sorting.typeShortTitles.dateModified'),
-        value: toLocalTime(new Date(dirEntry.modified_time), userSettingsStore.userSettings.dateTime),
+        value: toLocalTime(new Date(dirEntry.modified_time), userSettingsStore.userSettings.dateTime, locale.value),
         tooltip: `${t('toCopy')}: ${'copyShortcut'}`,
       },
       {
         propName: 'dateAccessed',
         title: t('sorting.typeShortTitles.dateAccessed'),
-        value: toLocalTime(new Date(dirEntry.accessed_time), userSettingsStore.userSettings.dateTime),
+        value: toLocalTime(new Date(dirEntry.accessed_time), userSettingsStore.userSettings.dateTime, locale.value),
         tooltip: `${t('toCopy')}: ${'copyShortcut'}`,
       },
     ];
