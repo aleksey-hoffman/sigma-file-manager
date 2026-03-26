@@ -8,6 +8,7 @@ import {
   ref, computed, onMounted, onUnmounted, watch, nextTick,
 } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { invoke } from '@tauri-apps/api/core';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { emit, listen, type UnlistenFn } from '@tauri-apps/api/event';
 import {
@@ -15,27 +16,70 @@ import {
   FileWarningIcon,
   FileTextIcon,
   Music2Icon,
+  SaveIcon,
+  Undo2Icon,
   VideoIcon,
 } from '@lucide/vue';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Button } from '@/components/ui/button';
+import { toast } from '@/components/ui/toaster';
 import {
   determineFileType,
   getFileName,
+  getFileExtension,
   getFileAssetUrl,
   fetchQuickViewSiblingPathsFromDisk,
   QUICK_VIEW_DISPLAYED_PATH_CHANGED_EVENT,
   type QuickViewFileType,
 } from '@/stores/runtime/quick-view';
+import {
+  decodeTextFileBytesWithEncoding,
+  encodeTextFileBytes,
+  type TextFileSourceEncoding,
+} from '@/utils/decode-text-file-bytes';
+import { renderMarkdownToSafeHtml } from '@/utils/safe-html';
 
 const { t } = useI18n();
+
+const QUICK_VIEW_TEXT_PREVIEW_MAX_BYTES = 4 * 1024 * 1024;
 
 const currentFilePath = ref<string | null>(null);
 const resolvedSiblingPaths = ref<string[]>([]);
 const siblingPathsProvidedByMain = ref(false);
 const isLoading = ref(true);
 const stripScrollElement = ref<HTMLElement | null>(null);
+const textEditorRef = ref<HTMLTextAreaElement | null>(null);
+const textEditorValue = ref('');
+const textSavedBaseline = ref('');
+const textSourceEncoding = ref<TextFileSourceEncoding>('utf8');
+const textWasTruncated = ref(false);
+const textPreviewError = ref<string | null>(null);
+const textPreviewLoading = ref(false);
+const textSaveInProgress = ref(false);
+let textPreviewRequestId = 0;
 let unlistenLoadFile: UnlistenFn | null = null;
 let unlistenCloseRequested: UnlistenFn | null = null;
+
+interface PendingTextState {
+  text: string;
+  baseline: string;
+  encoding: TextFileSourceEncoding;
+  truncated: boolean;
+}
+
+interface MarkdownSplitViewports {
+  source: HTMLElement;
+  preview: HTMLElement;
+}
+
+const pendingTextEdits = ref<Record<string, PendingTextState>>({});
+
+const markdownSplitSourcePane = ref<HTMLElement | null>(null);
+const markdownSplitPreviewPane = ref<HTMLElement | null>(null);
+const plainTextScrollPane = ref<HTMLElement | null>(null);
+
+let markdownScrollSyncLock = false;
+let markdownScrollSyncTeardown: (() => void) | null = null;
 
 const fileType = computed((): QuickViewFileType => {
   if (!currentFilePath.value) return 'unsupported';
@@ -52,6 +96,42 @@ const fileAssetUrl = computed((): string => {
   return getFileAssetUrl(currentFilePath.value);
 });
 
+const textIsDirty = computed(() => {
+  if (!currentFilePath.value || determineFileType(currentFilePath.value) !== 'text') {
+    return false;
+  }
+
+  return textEditorValue.value !== textSavedBaseline.value;
+});
+
+const canSaveText = computed(() => {
+  if (!currentFilePath.value || determineFileType(currentFilePath.value) !== 'text') {
+    return false;
+  }
+
+  if (textPreviewLoading.value || textPreviewError.value || textWasTruncated.value || textSaveInProgress.value) {
+    return false;
+  }
+
+  return textIsDirty.value;
+});
+
+const isMarkdownQuickView = computed(() => {
+  if (!currentFilePath.value) {
+    return false;
+  }
+
+  return getFileExtension(currentFilePath.value) === 'md';
+});
+
+const markdownPreviewHtml = computed(() => {
+  if (!isMarkdownQuickView.value) {
+    return '';
+  }
+
+  return renderMarkdownToSafeHtml(textEditorValue.value);
+});
+
 function thumbStripKind(path: string): 'image' | 'video' | 'audio' | 'document' {
   const type = determineFileType(path);
 
@@ -66,10 +146,197 @@ const thumbsWithKind = computed(() =>
   resolvedSiblingPaths.value.map(path => ({
     path,
     kind: thumbStripKind(path),
+    hasUnsavedBadge: Boolean(pendingTextEdits.value[path])
+      || (path === currentFilePath.value && textIsDirty.value),
   })),
 );
 
+function getScrollViewportFromPane(pane: HTMLElement | null): HTMLElement | null {
+  return pane?.querySelector('.sigma-ui-scroll-area__viewport') ?? null;
+}
+
+function getTextEditorScrollViewport(): HTMLElement | null {
+  if (isMarkdownQuickView.value) {
+    return getScrollViewportFromPane(markdownSplitSourcePane.value);
+  }
+
+  return getScrollViewportFromPane(plainTextScrollPane.value);
+}
+
+function clampScrollTop(viewport: HTMLElement, scrollTop: number): number {
+  const maxScroll = Math.max(0, viewport.scrollHeight - viewport.clientHeight);
+
+  return Math.min(Math.max(0, scrollTop), maxScroll);
+}
+
+function getMarkdownSplitViewports(): MarkdownSplitViewports | null {
+  const sourceViewport = getScrollViewportFromPane(markdownSplitSourcePane.value);
+  const previewViewport = getScrollViewportFromPane(markdownSplitPreviewPane.value);
+
+  if (!sourceViewport || !previewViewport) {
+    return null;
+  }
+
+  return {
+    source: sourceViewport,
+    preview: previewViewport,
+  };
+}
+
+function syncMarkdownPreviewToSourceRatio() {
+  if (markdownScrollSyncLock) {
+    return;
+  }
+
+  const viewports = getMarkdownSplitViewports();
+
+  if (!viewports) {
+    return;
+  }
+
+  const { source: sourceViewport, preview: previewViewport } = viewports;
+  const sourceRange = sourceViewport.scrollHeight - sourceViewport.clientHeight;
+  const previewRange = previewViewport.scrollHeight - previewViewport.clientHeight;
+
+  if (previewRange <= 0) {
+    return;
+  }
+
+  const ratio = sourceRange > 0 ? sourceViewport.scrollTop / sourceRange : 0;
+  const nextPreviewTop = ratio * previewRange;
+
+  if (Math.abs(previewViewport.scrollTop - nextPreviewTop) < 0.5) {
+    return;
+  }
+
+  markdownScrollSyncLock = true;
+  previewViewport.scrollTop = nextPreviewTop;
+  queueMicrotask(() => {
+    markdownScrollSyncLock = false;
+  });
+}
+
+function syncMarkdownSourceToPreviewRatio() {
+  if (markdownScrollSyncLock) {
+    return;
+  }
+
+  const viewports = getMarkdownSplitViewports();
+
+  if (!viewports) {
+    return;
+  }
+
+  const { source: sourceViewport, preview: previewViewport } = viewports;
+  const sourceRange = sourceViewport.scrollHeight - sourceViewport.clientHeight;
+  const previewRange = previewViewport.scrollHeight - previewViewport.clientHeight;
+
+  if (sourceRange <= 0) {
+    return;
+  }
+
+  const ratio = previewRange > 0 ? previewViewport.scrollTop / previewRange : 0;
+  const nextSourceTop = ratio * sourceRange;
+
+  if (Math.abs(sourceViewport.scrollTop - nextSourceTop) < 0.5) {
+    return;
+  }
+
+  markdownScrollSyncLock = true;
+  sourceViewport.scrollTop = nextSourceTop;
+  queueMicrotask(() => {
+    markdownScrollSyncLock = false;
+  });
+}
+
+function teardownMarkdownScrollSync() {
+  markdownScrollSyncTeardown?.();
+  markdownScrollSyncTeardown = null;
+}
+
+function setupMarkdownScrollSync(): (() => void) | null {
+  const sourceViewport = getScrollViewportFromPane(markdownSplitSourcePane.value);
+  const previewViewport = getScrollViewportFromPane(markdownSplitPreviewPane.value);
+
+  if (!sourceViewport || !previewViewport) {
+    return null;
+  }
+
+  function onSourceScroll() {
+    syncMarkdownPreviewToSourceRatio();
+  }
+
+  function onPreviewScroll() {
+    syncMarkdownSourceToPreviewRatio();
+  }
+
+  sourceViewport.addEventListener('scroll', onSourceScroll, { passive: true });
+  previewViewport.addEventListener('scroll', onPreviewScroll, { passive: true });
+
+  const resizeObserver = new ResizeObserver(() => {
+    syncMarkdownPreviewToSourceRatio();
+  });
+
+  resizeObserver.observe(sourceViewport);
+  resizeObserver.observe(previewViewport);
+
+  return () => {
+    sourceViewport.removeEventListener('scroll', onSourceScroll);
+    previewViewport.removeEventListener('scroll', onPreviewScroll);
+    resizeObserver.disconnect();
+  };
+}
+
+function syncTextEditorScrollHeight() {
+  const element = textEditorRef.value;
+
+  if (!element) {
+    return;
+  }
+
+  element.style.height = 'auto';
+  element.style.height = `${element.scrollHeight}px`;
+}
+
+function onTextEditorInput() {
+  const viewport = getTextEditorScrollViewport();
+  const scrollTopBefore = viewport?.scrollTop ?? 0;
+
+  syncTextEditorScrollHeight();
+
+  if (!viewport) {
+    return;
+  }
+
+  function restoreScrollPosition() {
+    viewport.scrollTop = clampScrollTop(viewport, scrollTopBefore);
+  }
+
+  void nextTick(() => {
+    restoreScrollPosition();
+    requestAnimationFrame(() => {
+      restoreScrollPosition();
+      requestAnimationFrame(restoreScrollPosition);
+    });
+  });
+}
+
+function isEditableKeyboardTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) {
+    return false;
+  }
+
+  if (target.isContentEditable) {
+    return true;
+  }
+
+  const tag = target.tagName;
+  return tag === 'TEXTAREA' || tag === 'INPUT' || tag === 'SELECT';
+}
+
 async function closeWindow() {
+  pendingTextEdits.value = {};
+
   const currentWindow = getCurrentWindow();
   await currentWindow.hide();
   currentFilePath.value = null;
@@ -98,14 +365,157 @@ async function ensureResolvedSiblingPaths(): Promise<string[]> {
   return paths;
 }
 
+function stashCurrentTextIfDirty() {
+  const path = currentFilePath.value;
+
+  if (!path || determineFileType(path) !== 'text') {
+    return;
+  }
+
+  if (textPreviewLoading.value || textPreviewError.value) {
+    return;
+  }
+
+  if (textEditorValue.value === textSavedBaseline.value) {
+    return;
+  }
+
+  pendingTextEdits.value = {
+    ...pendingTextEdits.value,
+    [path]: {
+      text: textEditorValue.value,
+      baseline: textSavedBaseline.value,
+      encoding: textSourceEncoding.value,
+      truncated: textWasTruncated.value,
+    },
+  };
+}
+
+function removePendingEditForPath(path: string) {
+  if (!pendingTextEdits.value[path]) {
+    return;
+  }
+
+  const next = { ...pendingTextEdits.value };
+  delete next[path];
+  pendingTextEdits.value = next;
+}
+
 async function selectPath(path: string) {
   if (path === currentFilePath.value) {
     return;
   }
 
+  stashCurrentTextIfDirty();
+
   currentFilePath.value = path;
   await setQuickViewWindowTitle(path);
   void emit(QUICK_VIEW_DISPLAYED_PATH_CHANGED_EVENT, { path });
+}
+
+async function loadTextPreview(path: string) {
+  const pending = pendingTextEdits.value[path];
+
+  if (pending) {
+    ++textPreviewRequestId;
+    textPreviewLoading.value = true;
+    textPreviewError.value = null;
+    removePendingEditForPath(path);
+    textWasTruncated.value = pending.truncated;
+    textSourceEncoding.value = pending.encoding;
+    textEditorValue.value = pending.text;
+    textSavedBaseline.value = pending.baseline;
+    textPreviewLoading.value = false;
+    await nextTick();
+    syncTextEditorScrollHeight();
+    return;
+  }
+
+  const requestId = ++textPreviewRequestId;
+  textPreviewLoading.value = true;
+  textPreviewError.value = null;
+  textEditorValue.value = '';
+  textSavedBaseline.value = '';
+  textWasTruncated.value = false;
+
+  try {
+    const byteList = await invoke<number[]>('read_file_binary', { path });
+
+    if (requestId !== textPreviewRequestId) {
+      return;
+    }
+
+    let bytes = new Uint8Array(byteList);
+    const fullLength = bytes.byteLength;
+
+    if (bytes.byteLength > QUICK_VIEW_TEXT_PREVIEW_MAX_BYTES) {
+      bytes = bytes.slice(0, QUICK_VIEW_TEXT_PREVIEW_MAX_BYTES);
+    }
+
+    textWasTruncated.value = fullLength > QUICK_VIEW_TEXT_PREVIEW_MAX_BYTES;
+
+    const { text, encoding } = decodeTextFileBytesWithEncoding(bytes);
+    textSourceEncoding.value = encoding;
+    textEditorValue.value = text;
+    textSavedBaseline.value = text;
+  }
+  catch (caught) {
+    if (requestId !== textPreviewRequestId) {
+      return;
+    }
+
+    const message = caught instanceof Error ? caught.message : String(caught);
+    textPreviewError.value = message;
+  }
+  finally {
+    if (requestId === textPreviewRequestId) {
+      textPreviewLoading.value = false;
+    }
+  }
+
+  if (requestId !== textPreviewRequestId) {
+    return;
+  }
+
+  await nextTick();
+  syncTextEditorScrollHeight();
+}
+
+async function revertTextChanges() {
+  if (!canSaveText.value) {
+    return;
+  }
+
+  textEditorValue.value = textSavedBaseline.value;
+  await nextTick();
+  syncTextEditorScrollHeight();
+}
+
+async function saveTextFile() {
+  const path = currentFilePath.value;
+
+  if (!path || determineFileType(path) !== 'text' || textWasTruncated.value || !canSaveText.value) {
+    return;
+  }
+
+  textSaveInProgress.value = true;
+
+  try {
+    const bytes = encodeTextFileBytes(textEditorValue.value, textSourceEncoding.value);
+    await invoke('write_file_binary', {
+      path,
+      data: Array.from(bytes),
+    });
+    textSavedBaseline.value = textEditorValue.value;
+    removePendingEditForPath(path);
+    toast.success(t('quickView.textSaved'));
+  }
+  catch {
+    toast.error(t('quickView.textSaveFailed'));
+  }
+  finally {
+    textSaveInProgress.value = false;
+  }
 }
 
 async function goToSibling(offset: number) {
@@ -133,6 +543,8 @@ async function goToSibling(offset: number) {
     return;
   }
 
+  stashCurrentTextIfDirty();
+
   currentFilePath.value = nextPath;
   await setQuickViewWindowTitle(nextPath);
   void emit(QUICK_VIEW_DISPLAYED_PATH_CHANGED_EVENT, { path: nextPath });
@@ -157,13 +569,37 @@ function scrollActiveThumbIntoView() {
 }
 
 async function handleKeydown(event: KeyboardEvent) {
-  if (event.code === 'Space' || event.code === 'Escape') {
+  const saveShortcut = (event.ctrlKey || event.metaKey) && event.code === 'KeyS';
+
+  if (saveShortcut) {
+    if (currentFilePath.value && determineFileType(currentFilePath.value) === 'text') {
+      event.preventDefault();
+
+      if (canSaveText.value) {
+        await saveTextFile();
+      }
+    }
+
+    return;
+  }
+
+  if (event.code === 'Escape') {
+    event.preventDefault();
+    await closeWindow();
+    return;
+  }
+
+  if (event.code === 'Space' && !isEditableKeyboardTarget(event.target)) {
     event.preventDefault();
     await closeWindow();
     return;
   }
 
   if (event.code === 'ArrowLeft' || event.code === 'ArrowRight') {
+    if (isEditableKeyboardTarget(event.target)) {
+      return;
+    }
+
     event.preventDefault();
     await goToSibling(event.code === 'ArrowLeft' ? -1 : 1);
   }
@@ -178,6 +614,7 @@ async function setupEventListeners() {
   }>(
     'quick-view:load-file',
     async (event) => {
+      stashCurrentTextIfDirty();
       currentFilePath.value = event.payload.path;
       resolvedSiblingPaths.value = event.payload.siblingPaths ?? [];
       siblingPathsProvidedByMain.value = event.payload.siblingPaths !== null;
@@ -201,10 +638,50 @@ watch(fileType, (newType) => {
   }
 });
 
-watch(currentFilePath, () => {
+watch(
+  [isMarkdownQuickView, textPreviewLoading],
+  async () => {
+    teardownMarkdownScrollSync();
+
+    if (textPreviewLoading.value) {
+      return;
+    }
+
+    await nextTick();
+    syncTextEditorScrollHeight();
+
+    if (!isMarkdownQuickView.value) {
+      return;
+    }
+
+    await nextTick();
+    let scrollSyncCleanup = setupMarkdownScrollSync();
+
+    if (!scrollSyncCleanup) {
+      await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+      scrollSyncCleanup = setupMarkdownScrollSync();
+    }
+
+    markdownScrollSyncTeardown = scrollSyncCleanup ?? null;
+  },
+);
+
+watch(currentFilePath, (path) => {
   void nextTick(() => {
     scrollActiveThumbIntoView();
   });
+
+  if (!path || determineFileType(path) !== 'text') {
+    textEditorValue.value = '';
+    textSavedBaseline.value = '';
+    textSourceEncoding.value = 'utf8';
+    textWasTruncated.value = false;
+    textPreviewError.value = null;
+    textPreviewLoading.value = false;
+    return;
+  }
+
+  void loadTextPreview(path);
 });
 
 onMounted(async () => {
@@ -215,6 +692,7 @@ onMounted(async () => {
 
 onUnmounted(() => {
   window.removeEventListener('keydown', handleKeydown, true);
+  teardownMarkdownScrollSync();
 
   if (unlistenLoadFile) {
     unlistenLoadFile();
@@ -239,7 +717,10 @@ onUnmounted(() => {
     </div>
 
     <template v-else-if="currentFilePath">
-      <div class="quick-view__body">
+      <div
+        class="quick-view__body"
+        :class="{ 'quick-view__body--stretch': fileType === 'text' }"
+      >
         <img
           v-if="fileType === 'image'"
           :key="`${currentFilePath}-image`"
@@ -273,12 +754,113 @@ onUnmounted(() => {
           class="quick-view__pdf"
         />
 
-        <iframe
+        <div
           v-else-if="fileType === 'text'"
           :key="`${currentFilePath}-text`"
-          :src="fileAssetUrl"
-          class="quick-view__text"
-        />
+          class="quick-view__text-panel"
+        >
+          <div class="quick-view__text-toolbar">
+            <Button
+              size="xs"
+              variant="outline"
+              :disabled="!canSaveText"
+              @click="void revertTextChanges()"
+            >
+              <Undo2Icon
+                :size="16"
+                class="quick-view__toolbar-icon"
+                aria-hidden="true"
+              />
+              {{ t('quickView.revertText') }}
+            </Button>
+            <Button
+              size="xs"
+              :disabled="!canSaveText"
+              :is-loading="textSaveInProgress"
+              @click="void saveTextFile()"
+            >
+              <SaveIcon
+                v-if="!textSaveInProgress"
+                :size="16"
+                class="quick-view__toolbar-icon"
+                aria-hidden="true"
+              />
+              {{ t('quickView.saveText') }}
+            </Button>
+            <span
+              v-if="textWasTruncated"
+              class="quick-view__text-toolbar-hint"
+            >
+              {{ t('quickView.readOnlyTruncated') }}
+            </span>
+          </div>
+          <div
+            v-if="textPreviewLoading"
+            class="quick-view__text-loading"
+          >
+            <Loader2Icon
+              :size="48"
+              class="quick-view__loading-icon"
+            />
+          </div>
+          <p
+            v-else-if="textPreviewError"
+            class="quick-view__text-error"
+          >
+            {{ textPreviewError }}
+          </p>
+          <div
+            v-else-if="isMarkdownQuickView"
+            class="quick-view__text-split"
+            role="group"
+            :aria-label="t('quickView.markdownSplitGroup')"
+          >
+            <div
+              ref="markdownSplitSourcePane"
+              class="quick-view__text-split-pane quick-view__text-split-pane--source"
+              :aria-label="t('quickView.markdownSource')"
+            >
+              <ScrollArea class="quick-view__text-scroll">
+                <textarea
+                  ref="textEditorRef"
+                  v-model="textEditorValue"
+                  class="quick-view__text-area"
+                  spellcheck="false"
+                  :readonly="textWasTruncated"
+                  @input="onTextEditorInput"
+                />
+              </ScrollArea>
+            </div>
+            <div
+              ref="markdownSplitPreviewPane"
+              class="quick-view__text-split-pane quick-view__text-split-pane--preview"
+              :aria-label="t('quickView.markdownPreview')"
+            >
+              <ScrollArea class="quick-view__text-scroll">
+                <div
+                  class="markdown-content quick-view__markdown-preview"
+                  v-html="markdownPreviewHtml"
+                />
+              </ScrollArea>
+            </div>
+          </div>
+          <div
+            v-else
+            ref="plainTextScrollPane"
+            class="quick-view__text-scroll-wrap"
+          >
+            <ScrollArea class="quick-view__text-scroll">
+              <textarea
+                ref="textEditorRef"
+                v-model="textEditorValue"
+                class="quick-view__text-area"
+                spellcheck="false"
+                :readonly="textWasTruncated"
+                @input="onTextEditorInput"
+              />
+            </ScrollArea>
+          </div>
+        </div>
 
         <div
           v-else
@@ -318,6 +900,7 @@ onUnmounted(() => {
               :class="{ 'quick-view__thumb--active': thumb.path === currentFilePath }"
               :aria-selected="thumb.path === currentFilePath"
               :data-quick-view-thumb="thumb.path"
+              :title="thumb.hasUnsavedBadge ? t('quickView.thumbnailUnsavedHint') : undefined"
               @click="void selectPath(thumb.path)"
             >
               <img
@@ -342,6 +925,11 @@ onUnmounted(() => {
                 v-else-if="thumb.kind === 'document'"
                 class="quick-view__thumb-icon"
                 :size="28"
+                aria-hidden="true"
+              />
+              <span
+                v-if="thumb.hasUnsavedBadge"
+                class="quick-view__thumb-unsaved-badge"
                 aria-hidden="true"
               />
             </button>
@@ -406,6 +994,12 @@ onUnmounted(() => {
   padding: 8px;
 }
 
+.quick-view__body--stretch {
+  width: 100%;
+  align-items: stretch;
+  align-self: stretch;
+}
+
 .quick-view__image {
   max-width: 100%;
   max-height: 100%;
@@ -423,13 +1017,142 @@ onUnmounted(() => {
   max-width: 500px;
 }
 
-.quick-view__pdf,
-.quick-view__text {
+.quick-view__pdf {
   width: 100%;
   height: 100%;
   min-height: 0;
   border: none;
   background: white;
+}
+
+.quick-view__text-panel {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  flex: 1 1 0;
+  flex-direction: column;
+  align-self: stretch;
+}
+
+.quick-view__text-toolbar {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  padding: 8px 10px;
+  border-bottom: 1px solid hsl(var(--border, 0 0% 90%));
+  gap: 12px;
+}
+
+.quick-view__text-toolbar-hint {
+  color: hsl(var(--muted-foreground, 0 0% 45%));
+  font-size: 12px;
+}
+
+.quick-view__toolbar-icon {
+  flex-shrink: 0;
+}
+
+.quick-view__text-loading {
+  display: flex;
+  min-height: 120px;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.quick-view__text-error {
+  padding: 16px;
+  margin: 0;
+  color: hsl(var(--destructive, 0 84% 45%));
+  font-size: 14px;
+}
+
+.quick-view__text-split {
+  display: flex;
+  width: 100%;
+  min-height: 0;
+  flex: 1 1 0;
+  flex-direction: row;
+}
+
+.quick-view__text-split-pane {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  flex: 1 1 50%;
+  flex-direction: column;
+}
+
+.quick-view__text-split-pane--source {
+  border-right: 1px solid hsl(var(--border, 0 0% 90%));
+}
+
+.quick-view__text-split-pane--source .quick-view__text-scroll {
+  min-height: 0;
+  flex: 1 1 0;
+}
+
+.quick-view__text-scroll-wrap {
+  display: flex;
+  min-height: 0;
+  flex: 1 1 0;
+  flex-direction: column;
+}
+
+.quick-view__text-scroll {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  flex: 1 1 0;
+}
+
+.quick-view__text-scroll :deep(.sigma-ui-scroll-area__viewport) {
+  max-height: 100%;
+  overflow-anchor: none;
+}
+
+.quick-view__markdown-preview {
+  box-sizing: border-box;
+  padding: 12px 16px;
+  margin: 0;
+  color: hsl(var(--foreground, 0 0% 9%));
+  font-size: 0.875rem;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+@media (width <= 720px) {
+  .quick-view__text-split {
+    flex-direction: column;
+  }
+
+  .quick-view__text-split-pane--source {
+    min-height: 120px;
+    flex: 1 1 40%;
+    border-right: none;
+    border-bottom: 1px solid hsl(var(--border, 0 0% 90%));
+  }
+}
+
+.quick-view__text-area {
+  display: block;
+  overflow: hidden;
+  width: 100%;
+  min-height: 3.6em;
+  box-sizing: border-box;
+  padding: 12px 16px;
+  border: none;
+  margin: 0;
+  background: hsl(var(--background, 0 0% 100%));
+  color: hsl(var(--foreground, 0 0% 9%));
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  font-size: 13px;
+  line-height: 1.45;
+  outline: none;
+  overflow-x: auto;
+  resize: none;
 }
 
 .quick-view__unsupported {
@@ -484,6 +1207,7 @@ onUnmounted(() => {
 }
 
 .quick-view__thumb {
+  position: relative;
   display: flex;
   overflow: hidden;
   width: 64px;
@@ -500,6 +1224,18 @@ onUnmounted(() => {
     border-color 0.15s ease,
     box-shadow 0.15s ease,
     opacity 0.15s ease;
+}
+
+.quick-view__thumb-unsaved-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: hsl(var(--destructive, 0 84% 45%));
+  box-shadow: 0 0 0 2px hsl(var(--background, 0 0% 100%));
+  pointer-events: none;
 }
 
 .quick-view__thumb:hover {
@@ -536,6 +1272,19 @@ onUnmounted(() => {
     background: hsl(var(--background, 0 0% 10%));
   }
 
+  .quick-view__text-area {
+    background: hsl(var(--background, 0 0% 10%));
+    color: hsl(var(--foreground, 0 0% 95%));
+  }
+
+  .quick-view__text-toolbar {
+    border-bottom-color: hsl(var(--border, 0 0% 20%));
+  }
+
+  .quick-view__text-split-pane--source {
+    border-right-color: hsl(var(--border, 0 0% 20%));
+  }
+
   .quick-view__strip {
     border-top-color: hsl(var(--border, 0 0% 20%));
     background: hsl(var(--background, 0 0% 10%) / 95%);
@@ -545,8 +1294,26 @@ onUnmounted(() => {
     background: hsl(var(--muted, 0 0% 18%));
   }
 
+  .quick-view__thumb-unsaved-badge {
+    box-shadow: 0 0 0 2px hsl(var(--background, 0 0% 10%));
+  }
+
   .quick-view__hint {
     background: hsl(var(--background, 0 0% 10%) / 90%);
   }
+
+  .quick-view__markdown-preview {
+    color: hsl(var(--foreground, 0 0% 95%));
+  }
 }
+
+@media (prefers-color-scheme: dark) and (width <= 720px) {
+  .quick-view__text-split-pane--source {
+    border-bottom-color: hsl(var(--border, 0 0% 20%));
+  }
+}
+</style>
+
+<style>
+@import '@/styles/markdown-content.css';
 </style>

@@ -60,7 +60,16 @@
     "unsupportedFileType": "Este tipo de arquivo não é suportado para visualização rápida",
     "noFileSelected": "Nenhum arquivo selecionado",
     "closeHint": "Espaço ou Esc para fechar. Esquerda/Direita: arquivo anterior ou seguinte.",
-    "thumbnailStripLabel": "Arquivos nesta pasta"
+    "thumbnailStripLabel": "Arquivos nesta pasta",
+    "saveText": "Salvar",
+    "revertText": "Reverter",
+    "thumbnailUnsavedHint": "Alterações não salvas",
+    "textSaved": "Arquivo salvo",
+    "textSaveFailed": "Não foi possível salvar o arquivo",
+    "readOnlyTruncated": "Somente o início do arquivo é mostrado; é grande demais para editar ou salvar com segurança.",
+    "markdownSplitGroup": "Fonte Markdown e pré-visualização renderizada",
+    "markdownSource": "Fonte Markdown",
+    "markdownPreview": "Pré-visualização renderizada"
   },
   "trayMenu": {
     "globalShortcuts": "ACESSO DIRETO GLOBAL",

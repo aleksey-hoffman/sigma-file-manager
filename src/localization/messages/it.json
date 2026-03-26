@@ -60,7 +60,16 @@
     "unsupportedFileType": "Questo tipo di file non è supportato per l'anteprima rapida",
     "noFileSelected": "Nessun file selezionato",
     "closeHint": "Spazio o Esc per chiudere. Sinistra/Destra: file precedente o successivo.",
-    "thumbnailStripLabel": "File in questa cartella"
+    "thumbnailStripLabel": "File in questa cartella",
+    "saveText": "Salva",
+    "revertText": "Ripristina",
+    "thumbnailUnsavedHint": "Modifiche non salvate",
+    "textSaved": "File salvato",
+    "textSaveFailed": "Impossibile salvare il file",
+    "readOnlyTruncated": "Viene mostrato solo l’inizio del file; è troppo grande per modificarlo o salvarlo in modo sicuro.",
+    "markdownSplitGroup": "Sorgente Markdown e anteprima resa",
+    "markdownSource": "Sorgente Markdown",
+    "markdownPreview": "Anteprima resa"
   },
   "trayMenu": {
     "globalShortcuts": "SCORCIATOIE GLOBALI",

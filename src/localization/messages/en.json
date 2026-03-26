@@ -60,7 +60,16 @@
     "unsupportedFileType": "This file type is not supported for quick view",
     "noFileSelected": "No file selected",
     "closeHint": "Press Space or Esc to close. Left/Right: previous or next file.",
-    "thumbnailStripLabel": "Files in this folder"
+    "thumbnailStripLabel": "Files in this folder",
+    "saveText": "Save",
+    "revertText": "Revert",
+    "thumbnailUnsavedHint": "Unsaved changes",
+    "textSaved": "File saved",
+    "textSaveFailed": "Could not save the file",
+    "readOnlyTruncated": "Preview only shows the start of this file; it is too large to edit or save safely.",
+    "markdownSplitGroup": "Markdown source and rendered preview",
+    "markdownSource": "Markdown source",
+    "markdownPreview": "Rendered preview"
   },
   "trayMenu": {
     "globalShortcuts": "GLOBAL SHORTCUTS",

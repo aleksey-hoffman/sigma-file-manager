@@ -60,7 +60,16 @@
     "unsupportedFileType": "Bu dosya türü hızlı görüntüleme için desteklenmiyor",
     "noFileSelected": "Dosya seçilmedi",
     "closeHint": "Kapatmak için Boşluk veya Esc. Sol/Sağ: önceki veya sonraki dosya.",
-    "thumbnailStripLabel": "Bu klasördeki dosyalar"
+    "thumbnailStripLabel": "Bu klasördeki dosyalar",
+    "saveText": "Kaydet",
+    "revertText": "Geri al",
+    "thumbnailUnsavedHint": "Kaydedilmemiş değişiklikler",
+    "textSaved": "Dosya kaydedildi",
+    "textSaveFailed": "Dosya kaydedilemedi",
+    "readOnlyTruncated": "Yalnızca dosyanın başı gösteriliyor; güvenli düzenleme ve kayıt için çok büyük.",
+    "markdownSplitGroup": "Markdown kaynağı ve işlenmiş önizleme",
+    "markdownSource": "Markdown kaynağı",
+    "markdownPreview": "İşlenmiş önizleme"
   },
   "trayMenu": {
     "globalShortcuts": "GLOBAL KISAYOLLAR",

@@ -60,7 +60,16 @@
     "unsupportedFileType": "このファイル形式はクイックビューでサポートされていません",
     "noFileSelected": "ファイルが選択されていません",
     "closeHint": "スペースまたはEscで閉じる。左右キーで前または次のファイル。",
-    "thumbnailStripLabel": "このフォルダ内のファイル"
+    "thumbnailStripLabel": "このフォルダ内のファイル",
+    "saveText": "保存",
+    "revertText": "変更を取り消す",
+    "thumbnailUnsavedHint": "未保存の変更",
+    "textSaved": "ファイルを保存しました",
+    "textSaveFailed": "ファイルを保存できませんでした",
+    "readOnlyTruncated": "ファイルの先頭のみ表示しています。安全に編集・保存できるサイズを超えています。",
+    "markdownSplitGroup": "Markdown のソースとレンダリング結果のプレビュー",
+    "markdownSource": "Markdown ソース",
+    "markdownPreview": "レンダリング結果のプレビュー"
   },
   "trayMenu": {
     "globalShortcuts": "グローバル ショートカット",

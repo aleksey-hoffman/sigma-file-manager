@@ -60,7 +60,16 @@
     "unsupportedFileType": "Ce type de fichier n'est pas pris en charge pour l'aperçu rapide",
     "noFileSelected": "Aucun fichier sélectionné",
     "closeHint": "Espace ou Échap pour fermer. Gauche/Droite : fichier précédent ou suivant.",
-    "thumbnailStripLabel": "Fichiers dans ce dossier"
+    "thumbnailStripLabel": "Fichiers dans ce dossier",
+    "saveText": "Enregistrer",
+    "revertText": "Rétablir",
+    "thumbnailUnsavedHint": "Modifications non enregistrées",
+    "textSaved": "Fichier enregistré",
+    "textSaveFailed": "Impossible d’enregistrer le fichier",
+    "readOnlyTruncated": "Seul le début du fichier est affiché ; il est trop volumineux pour être modifié ou enregistré en toute sécurité.",
+    "markdownSplitGroup": "Source Markdown et aperçu rendu",
+    "markdownSource": "Source Markdown",
+    "markdownPreview": "Aperçu rendu"
   },
   "trayMenu": {
     "globalShortcuts": "RACCOURCIS GLOBAUX",

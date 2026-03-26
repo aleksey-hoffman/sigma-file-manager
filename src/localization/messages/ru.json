@@ -60,7 +60,16 @@
     "unsupportedFileType": "Этот тип файла не поддерживается для быстрого просмотра",
     "noFileSelected": "Файл не выбран",
     "closeHint": "Пробел или Esc — закрыть. Стрелки влево/вправо — предыдущий или следующий файл.",
-    "thumbnailStripLabel": "Файлы в этой папке"
+    "thumbnailStripLabel": "Файлы в этой папке",
+    "saveText": "Сохранить",
+    "revertText": "Откатить",
+    "thumbnailUnsavedHint": "Несохранённые изменения",
+    "textSaved": "Файл сохранён",
+    "textSaveFailed": "Не удалось сохранить файл",
+    "readOnlyTruncated": "Показано только начало файла: он слишком большой для безопасного редактирования и сохранения.",
+    "markdownSplitGroup": "Исходный Markdown и предпросмотр",
+    "markdownSource": "Исходный Markdown",
+    "markdownPreview": "Предпросмотр"
   },
   "trayMenu": {
     "globalShortcuts": "ГЛОБАЛЬНЫЕ ШОРТКАТЫ",

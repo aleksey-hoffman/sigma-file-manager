@@ -60,7 +60,16 @@
     "unsupportedFileType": "Dieser Dateityp wird für die Schnellansicht nicht unterstützt",
     "noFileSelected": "Keine Datei ausgewählt",
     "closeHint": "Leertaste oder Esc zum Schließen. Links/Rechts: vorherige oder nächste Datei.",
-    "thumbnailStripLabel": "Dateien in diesem Ordner"
+    "thumbnailStripLabel": "Dateien in diesem Ordner",
+    "saveText": "Speichern",
+    "revertText": "Zurücksetzen",
+    "thumbnailUnsavedHint": "Ungespeicherte Änderungen",
+    "textSaved": "Datei gespeichert",
+    "textSaveFailed": "Datei konnte nicht gespeichert werden",
+    "readOnlyTruncated": "Es wird nur der Anfang der Datei angezeigt; sie ist zu groß zum sicheren Bearbeiten und Speichern.",
+    "markdownSplitGroup": "Markdown-Quelltext und gerenderte Vorschau",
+    "markdownSource": "Markdown-Quelltext",
+    "markdownPreview": "Gerenderte Vorschau"
   },
   "trayMenu": {
     "globalShortcuts": "GLOBALE VERKNÜPFUNGEN",

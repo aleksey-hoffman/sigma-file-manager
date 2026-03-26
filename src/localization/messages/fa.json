@@ -60,7 +60,16 @@
     "unsupportedFileType": "این نوع فایل برای نمایش سریع پشتیبانی نمی‌شود",
     "noFileSelected": "فایلی انتخاب نشده است",
     "closeHint": "Space یا Esc برای بستن. چپ/راست: پروندهٔ قبلی یا بعدی.",
-    "thumbnailStripLabel": "پرونده‌ها در این پوشه"
+    "thumbnailStripLabel": "پرونده‌ها در این پوشه",
+    "saveText": "ذخیره",
+    "revertText": "برگرداندن",
+    "thumbnailUnsavedHint": "تغییرات ذخیره‌نشده",
+    "textSaved": "پرونده ذخیره شد",
+    "textSaveFailed": "ذخیرهٔ پرونده ممکن نشد",
+    "readOnlyTruncated": "فقط آغاز پرونده نمایش داده می‌شود؛ برای ویرایش یا ذخیرهٔ ایمن بیش‌ازحد بزرگ است.",
+    "markdownSplitGroup": "منبع مارک‌داون و پیش‌نمایش رندرشده",
+    "markdownSource": "منبع مارک‌داون",
+    "markdownPreview": "پیش‌نمایش رندرشده"
   },
   "trayMenu": {
     "globalShortcuts": "میانبرهای جهانی",

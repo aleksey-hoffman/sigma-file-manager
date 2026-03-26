@@ -60,7 +60,16 @@
     "unsupportedFileType": "Loại tệp này không được hỗ trợ cho xem nhanh",
     "noFileSelected": "Chưa chọn tệp",
     "closeHint": "Nhấn Space hoặc Esc để đóng. Trái/Phải: tệp trước hoặc sau.",
-    "thumbnailStripLabel": "Tệp trong thư mục này"
+    "thumbnailStripLabel": "Tệp trong thư mục này",
+    "saveText": "Lưu",
+    "revertText": "Hoàn tác",
+    "thumbnailUnsavedHint": "Thay đổi chưa lưu",
+    "textSaved": "Đã lưu tệp",
+    "textSaveFailed": "Không thể lưu tệp",
+    "readOnlyTruncated": "Chỉ hiển thị phần đầu tệp; tệp quá lớn để chỉnh sửa hoặc lưu an toàn.",
+    "markdownSplitGroup": "Mã nguồn Markdown và bản xem trước đã kết xuất",
+    "markdownSource": "Mã nguồn Markdown",
+    "markdownPreview": "Bản xem trước đã kết xuất"
   },
   "trayMenu": {
     "globalShortcuts": "CÁCH TẮT TOÀN CẦU",
