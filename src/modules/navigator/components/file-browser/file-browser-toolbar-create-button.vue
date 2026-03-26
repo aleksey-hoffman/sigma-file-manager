@@ -17,7 +17,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { FilePlusIcon, FolderPlusIcon, PlusIcon } from 'lucide-vue-next';
+import { FilePlusIcon, FolderPlusIcon, PlusIcon } from '@lucide/vue';
 
 const emit = defineEmits<{
   (event: 'createNewDirectory'): void;

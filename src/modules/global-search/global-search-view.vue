@@ -15,7 +15,7 @@ import { useRouter, useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import {
   ChevronDownIcon, HardDriveIcon, LoaderCircleIcon, SearchIcon, SettingsIcon, SlidersHorizontalIcon, UsbIcon, XIcon,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';

@@ -5,7 +5,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <script setup lang="ts">
 import { Primitive, type PrimitiveProps } from 'reka-ui';
-import { Loader2Icon } from 'lucide-vue-next';
+import { Loader2Icon } from '@lucide/vue';
 import { type ButtonVariants, buttonVariants } from '.';
 
 interface Props extends PrimitiveProps {

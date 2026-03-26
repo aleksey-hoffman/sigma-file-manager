@@ -16,7 +16,7 @@ import {
   TooltipContent,
 } from '@/components/ui/tooltip';
 import { ContextMenuShortcut } from '@/components/ui/context-menu';
-import { TextSearchIcon, XIcon } from 'lucide-vue-next';
+import { TextSearchIcon, XIcon } from '@lucide/vue';
 import { useShortcutsStore } from '@/stores/runtime/shortcuts';
 
 const props = defineProps<{

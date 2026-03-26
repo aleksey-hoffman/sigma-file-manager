@@ -6,7 +6,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { RocketIcon } from 'lucide-vue-next';
+import { RocketIcon } from '@lucide/vue';
 import { SettingsItem } from '@/modules/settings';
 import { Switch } from '@/components/ui/switch';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';

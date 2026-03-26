@@ -12,7 +12,7 @@ import {
   XIcon,
   MenuIcon,
   EllipsisVerticalIcon,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';

@@ -7,7 +7,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 import { storeToRefs } from 'pinia';
 import { useI18n } from 'vue-i18n';
 import { computed } from 'vue';
-import { LoaderCircleIcon } from 'lucide-vue-next';
+import { LoaderCircleIcon } from '@lucide/vue';
 import type { DirEntry } from '@/types/dir-entry';
 import { formatBytes, formatDate } from './utils';
 import { useClipboardStore } from '@/stores/runtime/clipboard';

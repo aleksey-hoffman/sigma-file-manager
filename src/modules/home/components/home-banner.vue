@@ -14,7 +14,7 @@ import {
   MoveIcon,
   RotateCcwIcon,
   ImageIcon,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { useBackgroundMedia } from '@/modules/home/composables/use-background-media';
 

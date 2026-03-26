@@ -5,7 +5,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <script setup lang="ts">
 import { SelectIcon, SelectTrigger, type SelectTriggerProps, useForwardProps } from 'reka-ui';
-import { ChevronDownIcon } from 'lucide-vue-next';
+import { ChevronDownIcon } from '@lucide/vue';
 
 const props = defineProps<SelectTriggerProps>();
 

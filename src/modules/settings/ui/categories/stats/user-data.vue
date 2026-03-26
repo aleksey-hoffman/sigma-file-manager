@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { SettingsItem } from '@/modules/settings';
 import { useUserPathsStore } from '@/stores/storage/user-paths';
 import { useWorkspacesStore } from '@/stores/storage/workspaces';
-import { DatabaseIcon, FolderOpenIcon } from 'lucide-vue-next';
+import { DatabaseIcon, FolderOpenIcon } from '@lucide/vue';
 
 const { t } = useI18n();
 const router = useRouter();

@@ -6,7 +6,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { PlusIcon, PencilIcon } from 'lucide-vue-next';
+import { PlusIcon, PencilIcon } from '@lucide/vue';
 import { useUserDirectories, type UserDirectory } from '@/modules/home/composables';
 import { Button } from '@/components/ui/button';
 import { DirEntryInteractive } from '@/components/dir-entry-interactive';

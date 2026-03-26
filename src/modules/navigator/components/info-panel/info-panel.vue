@@ -5,7 +5,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
-import { InfoIcon, XIcon } from 'lucide-vue-next';
+import { InfoIcon, XIcon } from '@lucide/vue';
 import { Button } from '@/components/ui/button';
 import InfoPanelHeader from './info-panel-header.vue';
 import InfoPanelPreview from './info-panel-preview.vue';

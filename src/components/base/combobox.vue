@@ -17,7 +17,7 @@ import {
   ComboboxList,
   ComboboxTrigger,
 } from '@/components/ui/combobox';
-import { ChevronsUpDownIcon, SearchIcon, CheckIcon } from 'lucide-vue-next';
+import { ChevronsUpDownIcon, SearchIcon, CheckIcon } from '@lucide/vue';
 
 interface ComboboxOption {
   [key: string]: unknown;

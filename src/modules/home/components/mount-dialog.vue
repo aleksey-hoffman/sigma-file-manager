@@ -7,7 +7,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 import { ref, watch, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { invoke } from '@tauri-apps/api/core';
-import { HardDriveIcon, Loader2Icon, NetworkIcon } from 'lucide-vue-next';
+import { HardDriveIcon, Loader2Icon, NetworkIcon } from '@lucide/vue';
 import {
   Dialog,
   DialogContent,

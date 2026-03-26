@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/context-menu';
 import { useShortcutsStore } from '@/stores/runtime/shortcuts';
 import { useTerminalsStore } from '@/stores/runtime/terminals';
-import { TerminalSquareIcon } from 'lucide-vue-next';
+import { TerminalSquareIcon } from '@lucide/vue';
 
 const props = defineProps<{
   selectedEntries: DirEntry[];

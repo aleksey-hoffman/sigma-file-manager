@@ -6,7 +6,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { CopyIcon, FolderInputIcon } from 'lucide-vue-next';
+import { CopyIcon, FolderInputIcon } from '@lucide/vue';
 import type { DragOperationType } from './composables/use-file-browser-drag';
 import { UI_CONSTANTS } from '@/constants';
 

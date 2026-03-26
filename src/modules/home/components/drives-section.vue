@@ -6,7 +6,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { PlusIcon } from 'lucide-vue-next';
+import { PlusIcon } from '@lucide/vue';
 import { useDrives } from '@/modules/home/composables';
 import { usePlatformStore } from '@/stores/runtime/platform';
 import { Button } from '@/components/ui/button';

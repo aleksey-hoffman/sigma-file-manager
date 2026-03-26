@@ -6,7 +6,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { SparklesIcon, SearchXIcon, AlertCircleIcon, Loader2Icon } from 'lucide-vue-next';
+import { SparklesIcon, SearchXIcon, AlertCircleIcon, Loader2Icon } from '@lucide/vue';
 import ExtensionCard from './extension-card.vue';
 import type { ExtensionWithManifest } from '@/modules/extensions/composables/use-extensions';
 

@@ -10,7 +10,7 @@ import {
   FolderIcon,
   FolderOpenIcon,
   FileIcon,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 import {
   isImageFile as checkIsImage,
   isVideoFile as checkIsVideo,

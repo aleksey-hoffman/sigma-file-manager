@@ -5,7 +5,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <script setup lang="ts">
 import { computed, watch } from 'vue';
-import { LoaderCircleIcon, XIcon, RefreshCwIcon } from 'lucide-vue-next';
+import { LoaderCircleIcon, XIcon, RefreshCwIcon } from '@lucide/vue';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { useI18n } from 'vue-i18n';

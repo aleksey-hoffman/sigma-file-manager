@@ -6,7 +6,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { UsbIcon } from 'lucide-vue-next';
+import { UsbIcon } from '@lucide/vue';
 import { Switch } from '@/components/ui/switch';
 import { SettingsItem } from '@/modules/settings';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';

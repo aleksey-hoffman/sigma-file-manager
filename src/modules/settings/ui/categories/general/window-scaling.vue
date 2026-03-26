@@ -13,7 +13,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { ContextMenuShortcut } from '@/components/ui/context-menu';
 import { useShortcutsStore } from '@/stores/runtime/shortcuts';
 import { useI18n } from 'vue-i18n';
-import { FullscreenIcon, MinusIcon, PlusIcon } from 'lucide-vue-next';
+import { FullscreenIcon, MinusIcon, PlusIcon } from '@lucide/vue';
 import {
   applyUiZoomStep,
   resetUiZoom,

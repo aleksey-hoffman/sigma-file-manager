@@ -10,7 +10,7 @@ import { useI18n } from 'vue-i18n';
 import {
   ActivityIcon, LoaderCircleIcon, XIcon, CheckIcon, FolderIcon, FileArchiveIcon,
   BanIcon,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 import type { FocusOutsideEvent, PointerDownOutsideEvent } from 'reka-ui';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';

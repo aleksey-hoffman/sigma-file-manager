@@ -5,7 +5,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <script setup lang="ts">
 import { SelectScrollUpButton, type SelectScrollUpButtonProps, useForwardProps } from 'reka-ui';
-import { ChevronUpIcon } from 'lucide-vue-next';
+import { ChevronUpIcon } from '@lucide/vue';
 
 const props = defineProps<SelectScrollUpButtonProps>();
 

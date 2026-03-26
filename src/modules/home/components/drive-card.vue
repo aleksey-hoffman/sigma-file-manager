@@ -8,7 +8,7 @@ import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { invoke } from '@tauri-apps/api/core';
-import { HardDriveIcon, NetworkIcon, UsbIcon, UnplugIcon } from 'lucide-vue-next';
+import { HardDriveIcon, NetworkIcon, UsbIcon, UnplugIcon } from '@lucide/vue';
 import { useWorkspacesStore } from '@/stores/storage/workspaces';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { usePlatformStore } from '@/stores/runtime/platform';

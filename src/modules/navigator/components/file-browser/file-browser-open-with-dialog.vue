@@ -28,7 +28,7 @@ import {
   Trash2Icon,
   PlayIcon,
   FileIcon,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 
 interface CustomCommand {
   id: string;

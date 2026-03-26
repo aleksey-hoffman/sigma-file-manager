@@ -12,7 +12,7 @@ import {
   FileAudioIcon,
   FileCodeIcon,
   FileArchiveIcon,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 import { FILE_EXTENSIONS } from '@/constants';
 import type { DirEntry } from '@/types/dir-entry';
 import { i18n } from '@/localization';

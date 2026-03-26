@@ -11,7 +11,7 @@ import {
   type DropdownMenuRadioItemProps,
   useForwardPropsEmits,
 } from 'reka-ui';
-import { CircleIcon } from 'lucide-vue-next';
+import { CircleIcon } from '@lucide/vue';
 
 const props = defineProps<DropdownMenuRadioItemProps>();
 const emits = defineEmits<DropdownMenuRadioItemEmits>();

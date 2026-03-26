@@ -15,7 +15,7 @@ import {
   ContextMenuSubTrigger,
   ContextMenuSubContent,
 } from '@/components/ui/context-menu';
-import { FileArchiveIcon, PackageOpenIcon } from 'lucide-vue-next';
+import { FileArchiveIcon, PackageOpenIcon } from '@lucide/vue';
 import { FILE_BROWSER_CONTEXT_KEY } from './composables/use-file-browser-context';
 import { useArchiveJobsStore } from '@/stores/runtime/archive-jobs';
 import { translateArchiveErrorMessage } from '@/utils/translate-archive-error-message';

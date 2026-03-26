@@ -18,7 +18,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { SettingsItem } from '@/modules/settings';
-import { PuzzleIcon } from 'lucide-vue-next';
+import { PuzzleIcon } from '@lucide/vue';
 import type { InstalledExtension, ExtensionConfigurationProperty } from '@/types/extension';
 import { useExtensionsStorageStore } from '@/stores/storage/extensions';
 import { notifySettingsChange } from '@/modules/extensions/api';

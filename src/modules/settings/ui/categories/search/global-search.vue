@@ -10,7 +10,7 @@ import { useI18n } from 'vue-i18n';
 import {
   BanIcon, CheckIcon, CircleAlertIcon, ClockIcon, DatabaseIcon, FolderTreeIcon, HardDriveIcon,
   ListIcon, LoaderCircleIcon, RefreshCcwIcon, UsbIcon, XIcon, ZapIcon,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import {

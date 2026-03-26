@@ -17,7 +17,7 @@ import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import type { LastTabCloseBehavior } from '@/types/user-settings';
 import { useI18n } from 'vue-i18n';
 import { computed } from 'vue';
-import { XCircleIcon } from 'lucide-vue-next';
+import { XCircleIcon } from '@lucide/vue';
 
 const userSettingsStore = useUserSettingsStore();
 const { t } = useI18n();

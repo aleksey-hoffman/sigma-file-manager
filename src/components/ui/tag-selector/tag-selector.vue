@@ -6,7 +6,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { CheckIcon, CirclePlusIcon, TagIcon, Trash2Icon } from 'lucide-vue-next';
+import { CheckIcon, CirclePlusIcon, TagIcon, Trash2Icon } from '@lucide/vue';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {

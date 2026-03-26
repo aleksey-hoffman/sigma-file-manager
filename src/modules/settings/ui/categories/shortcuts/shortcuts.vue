@@ -56,7 +56,7 @@ import {
   FlipHorizontalIcon,
   AppWindowIcon,
   FullscreenIcon,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 import type { Component } from 'vue';
 import {
   useShortcutsStore,
@@ -77,7 +77,7 @@ import {
 import { formatKeybindingKeys } from '@/modules/extensions/api';
 import { useExtensionsStore } from '@/stores/runtime/extensions';
 import { useExtensionsStorageStore } from '@/stores/storage/extensions';
-import { BlocksIcon } from 'lucide-vue-next';
+import { BlocksIcon } from '@lucide/vue';
 import type { ExtensionKeybindingOverride } from '@/types/extension';
 
 const { t } = useI18n();

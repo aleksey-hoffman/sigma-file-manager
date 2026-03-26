@@ -11,11 +11,11 @@ import {
   type Component,
   type VNode,
 } from 'vue';
-import { Blocks } from 'lucide-vue-next';
+import { Blocks } from '@lucide/vue';
 
 // Include all icon mappings into bundle so we can load any icon  dynamically at runtime
 const iconModules = import.meta.glob<{ default: Component }>(
-  '../../node_modules/lucide-vue-next/dist/esm/icons/*.js',
+  '../../node_modules/@lucide/vue/dist/esm/icons/*.js',
 );
 
 const iconCache = new Map<string, Component>();

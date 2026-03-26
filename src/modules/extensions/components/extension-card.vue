@@ -12,7 +12,7 @@ import {
   CheckIcon,
   ArrowBigUpDashIcon,
   TriangleAlertIcon,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 import { Button } from '@/components/ui/button';
 import ExtensionBadge from './extension-badge.vue';
 import ExtensionIcon from './extension-icon.vue';

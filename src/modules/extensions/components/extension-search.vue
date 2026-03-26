@@ -4,7 +4,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import { SearchIcon, XIcon, RefreshCwIcon } from 'lucide-vue-next';
+import { SearchIcon, XIcon, RefreshCwIcon } from '@lucide/vue';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useI18n } from 'vue-i18n';

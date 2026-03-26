@@ -8,7 +8,7 @@ import {
   ref, computed, onMounted, onUnmounted, watch, nextTick,
 } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { BlocksIcon } from 'lucide-vue-next';
+import { BlocksIcon } from '@lucide/vue';
 import {
   CommandDialog,
   CommandEmpty,

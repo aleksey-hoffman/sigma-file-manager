@@ -14,7 +14,7 @@ import {
 } from '@tauri-apps/api/path';
 import type { Component } from 'vue';
 import normalizePath from '@/utils/normalize-path';
-import * as LucideIcons from 'lucide-vue-next';
+import * as LucideIcons from '@lucide/vue';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import type { UserDirectoryCustomization, UserDirectoriesCustomizations } from '@/types/user-settings';
 import uniqueId from '@/utils/unique-id';

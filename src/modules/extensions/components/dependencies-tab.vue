@@ -15,7 +15,7 @@ import {
   HardDriveIcon,
   FolderOpenIcon,
   TriangleAlertIcon,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 import { Button } from '@/components/ui/button';
 import { formatBytes, formatDate } from '@/modules/navigator/components/file-browser/utils';
 import { useWorkspacesStore } from '@/stores/storage/workspaces';

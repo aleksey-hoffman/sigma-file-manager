@@ -20,10 +20,10 @@ import {
   BookOpenIcon,
   UserIcon,
   CalendarIcon,
-  GithubIcon,
+  GitBranchIcon,
   TriangleAlertIcon,
   TerminalIcon,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import {
@@ -556,7 +556,7 @@ onMounted(() => {
                   class="extension-detail__meta-item extension-detail__meta-item--clickable"
                   @click="openRepository"
                 >
-                  <GithubIcon :size="14" />
+                  <GitBranchIcon :size="14" />
                   {{ t('extensions.viewSource') }}
                   <ExternalLinkIcon :size="12" />
                 </button>

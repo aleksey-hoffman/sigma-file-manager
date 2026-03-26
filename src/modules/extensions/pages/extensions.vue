@@ -9,7 +9,7 @@ import {
 } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { invoke } from '@tauri-apps/api/core';
-import { StoreIcon, CircleCheckIcon, PackageIcon } from 'lucide-vue-next';
+import { StoreIcon, CircleCheckIcon, PackageIcon } from '@lucide/vue';
 import { toast, ToastStatic } from '@/components/ui/toaster';
 import { PageDefaultLayout } from '@/layouts';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';

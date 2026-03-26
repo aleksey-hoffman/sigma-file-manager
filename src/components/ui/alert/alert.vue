@@ -5,7 +5,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { CircleCheckIcon, InfoIcon, TriangleAlertIcon } from 'lucide-vue-next';
+import { CircleCheckIcon, InfoIcon, TriangleAlertIcon } from '@lucide/vue';
 
 const props = withDefaults(defineProps<{
   title: string;

@@ -10,7 +10,7 @@ import {
   TagIcon,
   TrendingUpIcon,
   ClockIcon,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 import { EmptyState } from '@/components/ui/empty-state';
 
 type EmptyStateType = 'favorites' | 'tagged' | 'frequent' | 'history';

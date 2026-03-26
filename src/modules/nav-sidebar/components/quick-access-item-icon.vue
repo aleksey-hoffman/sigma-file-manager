@@ -5,7 +5,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { FileIcon, FolderIcon } from 'lucide-vue-next';
+import { FileIcon, FolderIcon } from '@lucide/vue';
 import { useSystemIcon } from '@/composables/use-system-icon';
 
 const props = defineProps<{

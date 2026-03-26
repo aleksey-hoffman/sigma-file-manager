@@ -19,7 +19,7 @@ import {
   Share2Icon,
   SquarePlusIcon,
   StarIcon,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 import { useClipboardStore } from '@/stores/runtime/clipboard';
 import { useUserStatsStore } from '@/stores/storage/user-stats';
 import { useShortcutsStore } from '@/stores/runtime/shortcuts';

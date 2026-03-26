@@ -13,7 +13,7 @@ import {
   TrendingUpIcon,
   ClockIcon,
   XIcon,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 import { PageDefaultLayout } from '@/layouts';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';

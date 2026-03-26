@@ -7,7 +7,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 import { storeToRefs } from 'pinia';
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { Share2Icon, PlayIcon, FolderIcon, InfoIcon } from 'lucide-vue-next';
+import { Share2Icon, PlayIcon, FolderIcon, InfoIcon } from '@lucide/vue';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';

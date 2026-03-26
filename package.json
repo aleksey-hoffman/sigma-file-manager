@@ -51,7 +51,7 @@
     "dayjs": "^1.11.20",
     "dompurify": "^3.3.3",
     "lodash.clonedeep": "^4.5.0",
-    "lucide-vue-next": "^1.0.0",
+    "@lucide/vue": "^1.0.0",
     "marked": "^17.0.5",
     "minimatch": "^10.2.4",
     "pinia": "^3.0.4",

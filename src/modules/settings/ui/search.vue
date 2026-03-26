@@ -12,7 +12,7 @@ import { ContextMenuShortcut } from '@/components/ui/context-menu';
 import { useSettingsStore } from '@/stores/runtime/settings';
 import { useShortcutsStore } from '@/stores/runtime/shortcuts';
 import { useI18n } from 'vue-i18n';
-import { SearchIcon } from 'lucide-vue-next';
+import { SearchIcon } from '@lucide/vue';
 import { Button } from '@/components/ui/button';
 
 const settingsStore = useSettingsStore();

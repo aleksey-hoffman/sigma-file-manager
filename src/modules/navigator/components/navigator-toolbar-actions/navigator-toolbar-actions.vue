@@ -26,7 +26,7 @@ import {
   LayoutGridIcon,
   ListIcon,
   EllipsisVerticalIcon,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 
 type LayoutType = 'list' | 'grid';

@@ -11,7 +11,7 @@ import {
   ContextMenuSubContent,
   ContextMenuItem,
 } from '@/components/ui/context-menu';
-import { FilePlusIcon, FolderPlusIcon, PlusIcon } from 'lucide-vue-next';
+import { FilePlusIcon, FolderPlusIcon, PlusIcon } from '@lucide/vue';
 import type { ContextMenuAction } from './types';
 
 const emit = defineEmits<{

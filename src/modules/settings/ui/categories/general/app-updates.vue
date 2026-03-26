@@ -8,7 +8,7 @@ import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import {
   ArrowUpCircleIcon, ExternalLinkIcon, LoaderCircleIcon, CheckCircleIcon, AlertCircleIcon,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 import { SettingsItem } from '@/modules/settings';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';

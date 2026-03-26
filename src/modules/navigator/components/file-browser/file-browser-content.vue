@@ -8,7 +8,7 @@ import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import {
   FolderOpenIcon, InfoIcon, Columns3Icon, ArrowUpIcon, ArrowDownIcon,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 import type { ListSortColumn } from '@/types/user-settings';
 import {
   ScrollAreaCorner,

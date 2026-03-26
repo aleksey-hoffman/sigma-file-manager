@@ -9,7 +9,7 @@ import {
   FileIcon,
   FileImageIcon,
   FileVideoIcon,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 import { useFileBrowserContext } from './composables/use-file-browser-context';
 import { useGroupedEntries } from './composables/use-grouped-entries';

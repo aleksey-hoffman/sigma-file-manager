@@ -24,7 +24,7 @@ import {
   EllipsisIcon,
   HomeIcon,
   RefreshCwIcon,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 
 defineProps<{
   canGoBack: boolean;

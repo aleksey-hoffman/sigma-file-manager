@@ -6,7 +6,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <script setup lang="ts">
 import { ref, watch, onMounted, onUnmounted } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { GlobeIcon, LoaderCircleIcon, PlusIcon, Trash2Icon } from 'lucide-vue-next';
+import { GlobeIcon, LoaderCircleIcon, PlusIcon, Trash2Icon } from '@lucide/vue';
 import { getCurrentWebview } from '@tauri-apps/api/webview';
 import {
   Drawer,

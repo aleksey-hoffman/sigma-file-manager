@@ -132,8 +132,8 @@ const formattedTitle = computed(() => {
   white-space: nowrap;
 }
 
-.sigma-ui-toast-header__title-badge :deep(svg),
-.sigma-ui-toast-header__title-badge :deep(img) {
+.sigma-ui-toast-header__title-badge svg,
+.sigma-ui-toast-header__title-badge img {
   flex-shrink: 0;
 }
 

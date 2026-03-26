@@ -11,7 +11,7 @@ import {
   CalendarIcon,
   ChevronDownIcon,
   XIcon,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 import {
   Dialog,
   DialogContent,

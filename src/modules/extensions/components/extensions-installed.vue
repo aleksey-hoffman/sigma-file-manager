@@ -14,7 +14,7 @@ import {
   ArrowBigUpDashIcon,
   PackageOpenIcon,
   FolderOpenIcon,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 import { open as openDialog } from '@tauri-apps/plugin-dialog';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';

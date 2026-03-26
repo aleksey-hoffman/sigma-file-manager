@@ -5,7 +5,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <script setup lang="ts">
 import { SplitterResizeHandle, type SplitterResizeHandleEmits, type SplitterResizeHandleProps, useForwardPropsEmits } from 'reka-ui';
-import { GripVerticalIcon } from 'lucide-vue-next';
+import { GripVerticalIcon } from '@lucide/vue';
 
 const props = defineProps<SplitterResizeHandleProps & { withHandle?: boolean }>();
 const emits = defineEmits<SplitterResizeHandleEmits>();

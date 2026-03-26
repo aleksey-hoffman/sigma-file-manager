@@ -5,7 +5,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { CheckIcon } from 'lucide-vue-next';
+import { CheckIcon } from '@lucide/vue';
 import { Button } from '.';
 import { type ButtonVariants } from '.';
 

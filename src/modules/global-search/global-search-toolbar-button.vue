@@ -6,7 +6,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
-import { SearchIcon } from 'lucide-vue-next';
+import { SearchIcon } from '@lucide/vue';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import { ContextMenuShortcut } from '@/components/ui/context-menu';

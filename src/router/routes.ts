@@ -5,7 +5,7 @@
 import HomePage from '@/modules/home/pages/home.vue';
 import {
   BlocksIcon, FolderClosedIcon, HomeIcon, BookmarkIcon, SettingsIcon, XIcon,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 import type { RouteRecordRaw } from 'vue-router';
 
 export const quickViewRoute: RouteRecordRaw = {

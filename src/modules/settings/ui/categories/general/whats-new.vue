@@ -6,7 +6,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { SparklesIcon } from 'lucide-vue-next';
+import { SparklesIcon } from '@lucide/vue';
 import { SettingsItem } from '@/modules/settings';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';

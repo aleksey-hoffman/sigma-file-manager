@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { SettingsItem } from '@/modules/settings';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { useI18n } from 'vue-i18n';
-import { SlidersHorizontalIcon, RotateCcwIcon } from 'lucide-vue-next';
+import { SlidersHorizontalIcon, RotateCcwIcon } from '@lucide/vue';
 
 const userSettingsStore = useUserSettingsStore();
 const { t } = useI18n();

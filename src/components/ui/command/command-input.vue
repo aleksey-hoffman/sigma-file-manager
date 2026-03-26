@@ -4,7 +4,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import { SearchIcon } from 'lucide-vue-next';
+import { SearchIcon } from '@lucide/vue';
 import { ComboboxInput, type ComboboxInputProps, useForwardProps } from 'reka-ui';
 
 defineOptions({

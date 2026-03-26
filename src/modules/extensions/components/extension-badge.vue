@@ -6,7 +6,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { CheckCircle2Icon, AlertTriangleIcon, HardDriveIcon, AlertCircleIcon } from 'lucide-vue-next';
+import { CheckCircle2Icon, AlertTriangleIcon, HardDriveIcon, AlertCircleIcon } from '@lucide/vue';
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 
 type BadgeType = 'official' | 'community' | 'local' | 'broken';

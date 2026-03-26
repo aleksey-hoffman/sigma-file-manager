@@ -7,7 +7,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { SettingsItem } from '@/modules/settings';
-import { PuzzleIcon } from 'lucide-vue-next';
+import { PuzzleIcon } from '@lucide/vue';
 import { useExtensionsStore } from '@/stores/runtime/extensions';
 import ExtensionSettings from './extension-settings.vue';
 

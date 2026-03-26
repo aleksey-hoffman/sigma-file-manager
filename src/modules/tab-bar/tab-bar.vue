@@ -19,7 +19,7 @@ import { ContextMenuShortcut } from '@/components/ui/context-menu';
 import { useWorkspacesStore } from '@/stores/storage/workspaces';
 import { useShortcutsStore } from '@/stores/runtime/shortcuts';
 import type { Tab as TabType, TabGroup } from '@/types/workspaces';
-import { PlusIcon } from 'lucide-vue-next';
+import { PlusIcon } from '@lucide/vue';
 
 const { t } = useI18n();
 

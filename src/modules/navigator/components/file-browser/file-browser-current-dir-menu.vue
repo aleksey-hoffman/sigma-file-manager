@@ -20,7 +20,7 @@ import {
   TooltipTrigger,
   TooltipContent,
 } from '@/components/ui/tooltip';
-import { ChevronDownIcon } from 'lucide-vue-next';
+import { ChevronDownIcon } from '@lucide/vue';
 import { useFileBrowserContext } from './composables/use-file-browser-context';
 import FileBrowserContextMenuHeader from './file-browser-context-menu-header.vue';
 import FileBrowserActionsMenu from './file-browser-actions-menu.vue';

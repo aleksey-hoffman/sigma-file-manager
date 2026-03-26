@@ -12,7 +12,7 @@ import {
   watch,
 } from 'vue';
 import { openUrl } from '@tauri-apps/plugin-opener';
-import { ArrowLeftIcon, XIcon } from 'lucide-vue-next';
+import { ArrowLeftIcon, XIcon } from '@lucide/vue';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { ContextMenuShortcut } from '@/components/ui/context-menu';

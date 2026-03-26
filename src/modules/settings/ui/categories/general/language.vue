@@ -9,7 +9,7 @@ import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { useI18n } from 'vue-i18n';
 import { languages } from '@/localization/data';
 import { computed } from 'vue';
-import { LanguagesIcon } from 'lucide-vue-next';
+import { LanguagesIcon } from '@lucide/vue';
 import { BaseCombobox } from '@/components/base';
 
 const { locale, t } = useI18n();

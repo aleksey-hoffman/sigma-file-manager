@@ -9,7 +9,7 @@ import {
   type DropdownMenuSubTriggerProps,
   useForwardProps,
 } from 'reka-ui';
-import { ChevronRightIcon } from 'lucide-vue-next';
+import { ChevronRightIcon } from '@lucide/vue';
 
 const props = defineProps<DropdownMenuSubTriggerProps & { inset?: boolean }>();
 

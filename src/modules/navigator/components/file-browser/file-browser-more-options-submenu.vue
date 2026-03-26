@@ -17,7 +17,7 @@ import {
 import {
   MoreHorizontalIcon,
   Loader2Icon,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 
 interface ShellContextMenuItem {
   id: number;

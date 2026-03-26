@@ -6,7 +6,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <script lang="ts" setup>
 import { computed } from 'vue';
 import { Button } from '@/components/ui/button';
-import { CopyIcon, FolderInputIcon, Trash2Icon } from 'lucide-vue-next';
+import { CopyIcon, FolderInputIcon, Trash2Icon } from '@lucide/vue';
 import ToastCard from './toast-card.vue';
 import ToastHeader from './toast-header.vue';
 

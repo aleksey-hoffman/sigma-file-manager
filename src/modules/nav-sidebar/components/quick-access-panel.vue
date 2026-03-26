@@ -19,7 +19,7 @@ import {
   ChevronRightIcon,
   StarIcon,
   TagIcon,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 import QuickAccessItemIcon from './quick-access-item-icon.vue';
 import {
   CollapsibleContent,

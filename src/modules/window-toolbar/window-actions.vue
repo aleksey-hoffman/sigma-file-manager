@@ -5,7 +5,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <script setup lang="ts">
 import { getCurrentWindow } from '@tauri-apps/api/window';
-import { MinusIcon, SquareIcon, XIcon } from 'lucide-vue-next';
+import { MinusIcon, SquareIcon, XIcon } from '@lucide/vue';
 import { useI18n } from 'vue-i18n';
 import {
   Tooltip,

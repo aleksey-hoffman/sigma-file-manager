@@ -6,7 +6,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <script setup lang="ts">
 import type { NumberFieldDecrementProps } from 'reka-ui';
 import { NumberFieldDecrement, useForwardProps } from 'reka-ui';
-import { MinusIcon } from 'lucide-vue-next';
+import { MinusIcon } from '@lucide/vue';
 
 const props = defineProps<NumberFieldDecrementProps>();
 

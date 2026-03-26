@@ -8,7 +8,7 @@ import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import {
   AlertTriangleIcon, FileIcon, FolderIcon, ArrowRightLeftIcon, SkipForwardIcon, CopyPlusIcon,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 import type { ConflictItem } from '@/stores/runtime/clipboard';
 import type { ConflictResolution } from '@/stores/runtime/clipboard';
 import toReadableBytes from '@/utils/to-readable-bytes';

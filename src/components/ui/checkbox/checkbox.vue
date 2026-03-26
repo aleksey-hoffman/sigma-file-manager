@@ -11,7 +11,7 @@ import {
   type CheckboxRootProps,
   useForwardPropsEmits,
 } from 'reka-ui';
-import { CheckIcon } from 'lucide-vue-next';
+import { CheckIcon } from '@lucide/vue';
 
 const props = defineProps<CheckboxRootProps>();
 

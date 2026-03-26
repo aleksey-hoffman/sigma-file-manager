@@ -14,7 +14,7 @@ import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip
 import { SettingsItem } from '@/modules/settings';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { useI18n } from 'vue-i18n';
-import { SparklesIcon, RefreshCcwIcon, ImageIcon, RotateCcwIcon } from 'lucide-vue-next';
+import { SparklesIcon, RefreshCcwIcon, ImageIcon, RotateCcwIcon } from '@lucide/vue';
 import { useBackgroundMedia } from '@/modules/home/composables/use-background-media';
 import type { ResolvedMediaSelection } from '@/modules/home/composables/use-background-media';
 import { backgroundMedia, DEFAULT_INFUSION_BACKGROUND_FILE_NAME } from '@/data/background-media';

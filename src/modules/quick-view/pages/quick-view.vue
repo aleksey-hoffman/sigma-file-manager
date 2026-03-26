@@ -10,7 +10,7 @@ import {
 import { useI18n } from 'vue-i18n';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { listen, type UnlistenFn } from '@tauri-apps/api/event';
-import { Loader2Icon, FileWarningIcon } from 'lucide-vue-next';
+import { Loader2Icon, FileWarningIcon } from '@lucide/vue';
 import {
   determineFileType,
   getFileName,

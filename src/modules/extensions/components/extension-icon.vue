@@ -6,7 +6,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { convertFileSrc, invoke } from '@tauri-apps/api/core';
-import { BlocksIcon } from 'lucide-vue-next';
+import { BlocksIcon } from '@lucide/vue';
 import { getExtensionAssetUrl } from '@/data/extensions';
 import { invokeAsExtension } from '@/modules/extensions/runtime/extension-invoke';
 

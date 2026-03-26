@@ -41,7 +41,7 @@ import {
   EllipsisVerticalIcon,
   FolderIcon,
   ChevronRightIcon,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 import { toast, ToastStatic } from '@/components/ui/toaster';
 import type { DirContents } from '@/types/dir-entry';
 import { DirEntryInteractive } from '@/components/dir-entry-interactive';

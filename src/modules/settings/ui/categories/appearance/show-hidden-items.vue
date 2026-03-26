@@ -9,7 +9,7 @@ import { useI18n } from 'vue-i18n';
 import { Switch } from '@/components/ui/switch';
 import { SettingsItem } from '@/modules/settings';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
-import { EyeOffIcon } from 'lucide-vue-next';
+import { EyeOffIcon } from '@lucide/vue';
 
 const userSettingsStore = useUserSettingsStore();
 const { t } = useI18n();

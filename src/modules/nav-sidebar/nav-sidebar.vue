@@ -6,7 +6,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <script setup lang="ts">
 import { computed, provide, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { BlocksIcon, HardDriveIcon, NetworkIcon, UsbIcon } from 'lucide-vue-next';
+import { BlocksIcon, HardDriveIcon, NetworkIcon, UsbIcon } from '@lucide/vue';
 import { useAppStore } from '@/stores/runtime/app';
 import { useExtensionsStore } from '@/stores/runtime/extensions';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';

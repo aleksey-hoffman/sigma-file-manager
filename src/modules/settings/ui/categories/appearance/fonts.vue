@@ -6,7 +6,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { TypeIcon, RotateCcwIcon, RefreshCwIcon } from 'lucide-vue-next';
+import { TypeIcon, RotateCcwIcon, RefreshCwIcon } from '@lucide/vue';
 import {
   Select,
   SelectContent,

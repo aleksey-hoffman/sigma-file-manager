@@ -5,7 +5,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
-import { FolderOpenIcon } from 'lucide-vue-next';
+import { FolderOpenIcon } from '@lucide/vue';
 import { platform } from '@tauri-apps/plugin-os';
 import { openUrl } from '@tauri-apps/plugin-opener';
 import { Button } from '@/components/ui/button';

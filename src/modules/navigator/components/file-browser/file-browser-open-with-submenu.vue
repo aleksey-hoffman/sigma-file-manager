@@ -23,7 +23,7 @@ import {
   FolderOpenIcon,
   SettingsIcon,
   FileIcon,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 
 interface AssociatedProgram {
   name: string;

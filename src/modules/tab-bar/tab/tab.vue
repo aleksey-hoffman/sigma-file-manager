@@ -9,7 +9,7 @@ import { useI18n } from 'vue-i18n';
 import { useTimeoutFn, useEventListener } from '@vueuse/core';
 import { useWorkspacesStore } from '@/stores/storage/workspaces';
 import type { Tab } from '@/types/workspaces';
-import { Layers, XIcon, XLineTopIcon } from 'lucide-vue-next';
+import { Layers, XIcon, XLineTopIcon } from '@lucide/vue';
 import { getPathDisplayName, getPathDisplayValue } from '@/utils/normalize-path';
 import {
   Tooltip,

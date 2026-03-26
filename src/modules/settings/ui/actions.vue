@@ -17,7 +17,7 @@ import {
   FileTextIcon,
   SearchIcon,
   SparklesIcon,
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 import { join } from '@tauri-apps/api/path';
 import { Button } from '@/components/ui/button';
 import {
