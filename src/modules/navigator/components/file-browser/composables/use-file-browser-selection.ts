@@ -2,7 +2,7 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-import { ref, markRaw, type Ref } from 'vue';
+import { ref, markRaw, nextTick, type Ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { invoke } from '@tauri-apps/api/core';
 import type { DirEntry } from '@/types/dir-entry';
@@ -311,6 +311,7 @@ export function useFileBrowserSelection(
   }
 
   function closeContextMenu() {
+    contextMenu.value.targetEntry = null;
     contextMenu.value.selectedEntries = [];
   }
 
@@ -1065,7 +1066,9 @@ export function useFileBrowserSelection(
         break;
     }
 
-    closeContextMenu();
+    void nextTick(() => {
+      closeContextMenu();
+    });
   }
 
   async function toggleFavorites(entries: DirEntry[]) {

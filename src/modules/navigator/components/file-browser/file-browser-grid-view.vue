@@ -25,6 +25,7 @@ const { t } = useI18n();
   <div
     :key="ctx.currentPath.value"
     class="file-browser-grid-view file-browser-grid-view--animate"
+    @contextmenu.self="ctx.handleBackgroundContextMenu"
   >
     <FileBrowserGridSection
       v-if="groupedEntries.dirs.length > 0"
@@ -99,6 +100,7 @@ const { t } = useI18n();
 <style scoped>
 .file-browser-grid-view {
   display: flex;
+  flex: 1;
   flex-direction: column;
   padding: 0 0 8px 8px;
   gap: 12px;

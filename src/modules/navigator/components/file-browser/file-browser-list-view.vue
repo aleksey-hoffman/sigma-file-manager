@@ -89,7 +89,10 @@ const { t } = useI18n();
 </script>
 
 <template>
-  <div class="file-browser-list-view">
+  <div
+    class="file-browser-list-view"
+    @contextmenu.self="ctx.handleBackgroundContextMenu"
+  >
     <div
       :key="ctx.currentPath.value"
       class="file-browser-list-view__list file-browser-list-view__list--animate"
@@ -168,6 +171,7 @@ const { t } = useI18n();
 <style scoped>
 .file-browser-list-view {
   display: flex;
+  flex: 1;
   flex-direction: column;
 }
 
