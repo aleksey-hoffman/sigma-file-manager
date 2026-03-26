@@ -22,6 +22,7 @@ import { useExtensionsStore } from '@/stores/runtime/extensions';
 import { useArchiveJobsStore } from '@/stores/runtime/archive-jobs';
 import { initPlatformInfo } from '@/modules/extensions/api';
 import { invoke } from '@tauri-apps/api/core';
+import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { SIGMA_AUTOSTART_CLI_FLAG } from '@/constants/autostart';
 import { applyLaunchAtStartupPreference } from '@/utils/autostart-sync';
@@ -45,6 +46,10 @@ export function useInit() {
   const archiveJobsStore = useArchiveJobsStore();
   const { checkAndShowChangelog } = useChangelog();
   const { initAutoCheck } = useAppUpdater();
+
+  function isMainWebviewWindow(): boolean {
+    return getCurrentWebviewWindow().label === 'main';
+  }
 
   function registerShortcutHandlers() {
     shortcutsStore.registerHandler('toggleGlobalSearch', () => {
@@ -113,8 +118,10 @@ export function useInit() {
     await showMainWindow();
     await appWindowStore.initMainWindowStateListeners();
     await globalSearchStore.initOnLaunch();
-    await shortcutsStore.init();
-    await globalShortcutsStore.init();
+    if (isMainWebviewWindow()) {
+      await shortcutsStore.init();
+      await globalShortcutsStore.init();
+    }
     await terminalsStore.init();
     await initPlatformInfo();
     await extensionsStore.init();
@@ -125,11 +132,15 @@ export function useInit() {
   }
 
   onMounted(() => {
-    registerShortcutHandlers();
+    if (isMainWebviewWindow()) {
+      registerShortcutHandlers();
+    }
   });
 
   onUnmounted(() => {
-    unregisterShortcutHandlers();
+    if (isMainWebviewWindow()) {
+      unregisterShortcutHandlers();
+    }
     appWindowStore.disposeMainWindowStateListeners();
   });
 
