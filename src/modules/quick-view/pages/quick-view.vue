@@ -308,8 +308,10 @@ function onTextEditorInput() {
     return;
   }
 
+  const textScrollViewport: HTMLElement = viewport;
+
   function restoreScrollPosition() {
-    viewport.scrollTop = clampScrollTop(viewport, scrollTopBefore);
+    textScrollViewport.scrollTop = clampScrollTop(textScrollViewport, scrollTopBefore);
   }
 
   void nextTick(() => {
