@@ -67,6 +67,7 @@
     "textSaved": "文件已保存",
     "textSaveFailed": "无法保存文件",
     "readOnlyTruncated": "仅显示文件开头；文件过大，无法安全编辑或保存。",
+    "readOnlyEncoding": "此文件使用的编码不支持安全编辑或保存。",
     "markdownSplitGroup": "Markdown 源码与渲染预览",
     "markdownSource": "Markdown 源码",
     "markdownPreview": "渲染预览"

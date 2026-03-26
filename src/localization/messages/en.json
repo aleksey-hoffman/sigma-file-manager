@@ -67,6 +67,7 @@
     "textSaved": "File saved",
     "textSaveFailed": "Could not save the file",
     "readOnlyTruncated": "Preview only shows the start of this file; it is too large to edit or save safely.",
+    "readOnlyEncoding": "This file does not use a supported encoding for safe editing and saving.",
     "markdownSplitGroup": "Markdown source and rendered preview",
     "markdownSource": "Markdown source",
     "markdownPreview": "Rendered preview"

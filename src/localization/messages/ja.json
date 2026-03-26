@@ -67,6 +67,7 @@
     "textSaved": "ファイルを保存しました",
     "textSaveFailed": "ファイルを保存できませんでした",
     "readOnlyTruncated": "ファイルの先頭のみ表示しています。安全に編集・保存できるサイズを超えています。",
+    "readOnlyEncoding": "このファイルはサポートされた文字エンコーディングではないため、安全に編集・保存できません。",
     "markdownSplitGroup": "Markdown のソースとレンダリング結果のプレビュー",
     "markdownSource": "Markdown ソース",
     "markdownPreview": "レンダリング結果のプレビュー"

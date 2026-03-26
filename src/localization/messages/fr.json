@@ -67,6 +67,7 @@
     "textSaved": "Fichier enregistré",
     "textSaveFailed": "Impossible d’enregistrer le fichier",
     "readOnlyTruncated": "Seul le début du fichier est affiché ; il est trop volumineux pour être modifié ou enregistré en toute sécurité.",
+    "readOnlyEncoding": "Ce fichier n’utilise pas un encodage pris en charge pour une modification ou un enregistrement sûrs.",
     "markdownSplitGroup": "Source Markdown et aperçu rendu",
     "markdownSource": "Source Markdown",
     "markdownPreview": "Aperçu rendu"

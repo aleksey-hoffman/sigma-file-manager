@@ -110,6 +110,7 @@ pub fn run() {
             extensions::get_installed_extensions,
             extensions::read_extension_manifest,
             extensions::read_extension_file,
+            extensions::read_text_preview,
             extensions::read_file_binary,
             extensions::write_file_binary,
             extensions::import_extension_storage_file,

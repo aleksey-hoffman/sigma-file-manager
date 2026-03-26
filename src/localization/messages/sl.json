@@ -67,6 +67,7 @@
     "textSaved": "Datoteka shranjena",
     "textSaveFailed": "Datoteke ni bilo mogoče shraniti",
     "readOnlyTruncated": "Prikazan je samo začetek datoteke; prevelika je za varno urejanje in shranjevanje.",
+    "readOnlyEncoding": "Datoteka ne uporablja podprtega kodiranja za varno urejanje in shranjevanje.",
     "markdownSplitGroup": "Markdown izvorna koda in upodobljen predogled",
     "markdownSource": "Markdown izvorna koda",
     "markdownPreview": "Upodobljen predogled"

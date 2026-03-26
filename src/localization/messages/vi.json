@@ -67,6 +67,7 @@
     "textSaved": "Đã lưu tệp",
     "textSaveFailed": "Không thể lưu tệp",
     "readOnlyTruncated": "Chỉ hiển thị phần đầu tệp; tệp quá lớn để chỉnh sửa hoặc lưu an toàn.",
+    "readOnlyEncoding": "Tệp không dùng bảng mã được hỗ trợ để chỉnh sửa hoặc lưu an toàn.",
     "markdownSplitGroup": "Mã nguồn Markdown và bản xem trước đã kết xuất",
     "markdownSource": "Mã nguồn Markdown",
     "markdownPreview": "Bản xem trước đã kết xuất"

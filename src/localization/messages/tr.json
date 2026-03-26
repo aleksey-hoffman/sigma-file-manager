@@ -67,6 +67,7 @@
     "textSaved": "Dosya kaydedildi",
     "textSaveFailed": "Dosya kaydedilemedi",
     "readOnlyTruncated": "Yalnızca dosyanın başı gösteriliyor; güvenli düzenleme ve kayıt için çok büyük.",
+    "readOnlyEncoding": "Bu dosya güvenli düzenleme ve kayıt için desteklenen bir kodlamada değil.",
     "markdownSplitGroup": "Markdown kaynağı ve işlenmiş önizleme",
     "markdownSource": "Markdown kaynağı",
     "markdownPreview": "İşlenmiş önizleme"

@@ -52,6 +52,7 @@ const textEditorRef = ref<HTMLTextAreaElement | null>(null);
 const textEditorValue = ref('');
 const textSavedBaseline = ref('');
 const textSourceEncoding = ref<TextFileSourceEncoding>('utf8');
+const textSaveRoundTripSafe = ref(true);
 const textWasTruncated = ref(false);
 const textPreviewError = ref<string | null>(null);
 const textPreviewLoading = ref(false);
@@ -64,6 +65,12 @@ interface PendingTextState {
   text: string;
   baseline: string;
   encoding: TextFileSourceEncoding;
+  truncated: boolean;
+  saveRoundTripSafe: boolean;
+}
+
+interface ReadTextPreviewResult {
+  bytes: number[];
   truncated: boolean;
 }
 
@@ -109,12 +116,20 @@ const canSaveText = computed(() => {
     return false;
   }
 
-  if (textPreviewLoading.value || textPreviewError.value || textWasTruncated.value || textSaveInProgress.value) {
+  if (
+    textPreviewLoading.value
+    || textPreviewError.value
+    || textWasTruncated.value
+    || !textSaveRoundTripSafe.value
+    || textSaveInProgress.value
+  ) {
     return false;
   }
 
   return textIsDirty.value;
 });
+
+const textEditorReadOnly = computed(() => textWasTruncated.value || !textSaveRoundTripSafe.value);
 
 const isMarkdownQuickView = computed(() => {
   if (!currentFilePath.value) {
@@ -389,6 +404,7 @@ function stashCurrentTextIfDirty() {
       baseline: textSavedBaseline.value,
       encoding: textSourceEncoding.value,
       truncated: textWasTruncated.value,
+      saveRoundTripSafe: textSaveRoundTripSafe.value,
     },
   };
 }
@@ -424,6 +440,7 @@ async function loadTextPreview(path: string) {
     textPreviewError.value = null;
     removePendingEditForPath(path);
     textWasTruncated.value = pending.truncated;
+    textSaveRoundTripSafe.value = pending.saveRoundTripSafe ?? true;
     textSourceEncoding.value = pending.encoding;
     textEditorValue.value = pending.text;
     textSavedBaseline.value = pending.baseline;
@@ -439,24 +456,23 @@ async function loadTextPreview(path: string) {
   textEditorValue.value = '';
   textSavedBaseline.value = '';
   textWasTruncated.value = false;
+  textSaveRoundTripSafe.value = true;
 
   try {
-    const byteList = await invoke<number[]>('read_file_binary', { path });
+    const preview = await invoke<ReadTextPreviewResult>('read_text_preview', {
+      path,
+      maxBytes: QUICK_VIEW_TEXT_PREVIEW_MAX_BYTES,
+    });
 
     if (requestId !== textPreviewRequestId) {
       return;
     }
 
-    let bytes = new Uint8Array(byteList);
-    const fullLength = bytes.byteLength;
+    const bytes = new Uint8Array(preview.bytes);
+    textWasTruncated.value = preview.truncated;
 
-    if (bytes.byteLength > QUICK_VIEW_TEXT_PREVIEW_MAX_BYTES) {
-      bytes = bytes.slice(0, QUICK_VIEW_TEXT_PREVIEW_MAX_BYTES);
-    }
-
-    textWasTruncated.value = fullLength > QUICK_VIEW_TEXT_PREVIEW_MAX_BYTES;
-
-    const { text, encoding } = decodeTextFileBytesWithEncoding(bytes);
+    const { text, encoding, saveRoundTripSafe } = decodeTextFileBytesWithEncoding(bytes);
+    textSaveRoundTripSafe.value = saveRoundTripSafe;
     textSourceEncoding.value = encoding;
     textEditorValue.value = text;
     textSavedBaseline.value = text;
@@ -677,6 +693,7 @@ watch(currentFilePath, (path) => {
     textEditorValue.value = '';
     textSavedBaseline.value = '';
     textSourceEncoding.value = 'utf8';
+    textSaveRoundTripSafe.value = true;
     textWasTruncated.value = false;
     textPreviewError.value = null;
     textPreviewLoading.value = false;
@@ -795,6 +812,12 @@ onUnmounted(() => {
             >
               {{ t('quickView.readOnlyTruncated') }}
             </span>
+            <span
+              v-else-if="!textSaveRoundTripSafe"
+              class="quick-view__text-toolbar-hint"
+            >
+              {{ t('quickView.readOnlyEncoding') }}
+            </span>
           </div>
           <div
             v-if="textPreviewLoading"
@@ -828,7 +851,7 @@ onUnmounted(() => {
                   v-model="textEditorValue"
                   class="quick-view__text-area"
                   spellcheck="false"
-                  :readonly="textWasTruncated"
+                  :readonly="textEditorReadOnly"
                   @input="onTextEditorInput"
                 />
               </ScrollArea>
@@ -857,7 +880,7 @@ onUnmounted(() => {
                 v-model="textEditorValue"
                 class="quick-view__text-area"
                 spellcheck="false"
-                :readonly="textWasTruncated"
+                :readonly="textEditorReadOnly"
                 @input="onTextEditorInput"
               />
             </ScrollArea>

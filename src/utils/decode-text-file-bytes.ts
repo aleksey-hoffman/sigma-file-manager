@@ -7,11 +7,13 @@ export type TextFileSourceEncoding = 'utf8' | 'utf8-bom' | 'utf16le' | 'utf16be'
 export function decodeTextFileBytesWithEncoding(bytes: Uint8Array): {
   text: string;
   encoding: TextFileSourceEncoding;
+  saveRoundTripSafe: boolean;
 } {
   if (bytes.length >= 3 && bytes[0] === 0xEF && bytes[1] === 0xBB && bytes[2] === 0xBF) {
     return {
       text: new TextDecoder('utf-8').decode(bytes.subarray(3)),
       encoding: 'utf8-bom',
+      saveRoundTripSafe: true,
     };
   }
 
@@ -19,6 +21,7 @@ export function decodeTextFileBytesWithEncoding(bytes: Uint8Array): {
     return {
       text: new TextDecoder('utf-16le').decode(bytes.subarray(2)),
       encoding: 'utf16le',
+      saveRoundTripSafe: true,
     };
   }
 
@@ -26,13 +29,23 @@ export function decodeTextFileBytesWithEncoding(bytes: Uint8Array): {
     return {
       text: new TextDecoder('utf-16be').decode(bytes.subarray(2)),
       encoding: 'utf16be',
+      saveRoundTripSafe: true,
     };
   }
 
-  return {
-    text: new TextDecoder('utf-8', { fatal: false }).decode(bytes),
-    encoding: 'utf8',
-  };
+  try {
+    return {
+      text: new TextDecoder('utf-8', { fatal: true }).decode(bytes),
+      encoding: 'utf8',
+      saveRoundTripSafe: true,
+    };
+  } catch {
+    return {
+      text: new TextDecoder('utf-8', { fatal: false }).decode(bytes),
+      encoding: 'utf8',
+      saveRoundTripSafe: false,
+    };
+  }
 }
 
 export function decodeTextFileBytes(bytes: Uint8Array): string {

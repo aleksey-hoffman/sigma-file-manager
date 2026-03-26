@@ -29,6 +29,13 @@ describe('decodeTextFileBytes', () => {
     const bytes = new Uint8Array([0xFF, 0xFE, 0x61, 0x00, 0x62, 0x00]);
     expect(decodeTextFileBytes(bytes)).toBe('ab');
   });
+
+  it('marks invalid UTF-8 without BOM as not safe to save', () => {
+    const bytes = new Uint8Array([0xC0, 0xC0]);
+    const decoded = decodeTextFileBytesWithEncoding(bytes);
+    expect(decoded.encoding).toBe('utf8');
+    expect(decoded.saveRoundTripSafe).toBe(false);
+  });
 });
 
 describe('encodeTextFileBytes round-trip', () => {
@@ -37,6 +44,7 @@ describe('encodeTextFileBytes round-trip', () => {
     const decoded = decodeTextFileBytesWithEncoding(bytes);
     expect(decoded.encoding).toBe(encoding);
     expect(decoded.text).toBe(text);
+    expect(decoded.saveRoundTripSafe).toBe(true);
   }
 
   it('round-trips utf8', () => {

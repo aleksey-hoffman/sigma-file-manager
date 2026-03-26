@@ -67,6 +67,7 @@
     "textSaved": "Archivo guardado",
     "textSaveFailed": "No se pudo guardar el archivo",
     "readOnlyTruncated": "Solo se muestra el inicio del archivo; es demasiado grande para editarlo o guardarlo con seguridad.",
+    "readOnlyEncoding": "El archivo no usa una codificación admitida para editar o guardar con seguridad.",
     "markdownSplitGroup": "Fuente Markdown y vista previa renderizada",
     "markdownSource": "Fuente Markdown",
     "markdownPreview": "Vista previa renderizada"

@@ -58,10 +58,8 @@ pub struct ExtensionCommandComplete {
     pub stderr: String,
 }
 
-type BinaryDownloadSenderMap = std::collections::HashMap<
-    String,
-    tokio::sync::broadcast::Sender<Result<String, String>>,
->;
+type BinaryDownloadSenderMap =
+    std::collections::HashMap<String, tokio::sync::broadcast::Sender<Result<String, String>>>;
 
 static COMMAND_TASKS: Lazy<Mutex<std::collections::HashMap<String, Arc<Mutex<Child>>>>> =
     Lazy::new(|| Mutex::new(std::collections::HashMap::new()));
@@ -1108,6 +1106,53 @@ pub async fn extension_path_exists(
     } else {
         Ok(false)
     }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ReadTextPreviewResult {
+    pub bytes: Vec<u8>,
+    pub truncated: bool,
+}
+
+#[tauri::command]
+pub async fn read_text_preview(
+    path: String,
+    max_bytes: u64,
+) -> Result<ReadTextPreviewResult, String> {
+    let resolved_path = PathBuf::from(&path);
+    if !resolved_path.exists() {
+        return Err(format!("File not found: {}", path));
+    }
+    if !resolved_path.is_file() {
+        return Err(format!("Path is not a file: {}", path));
+    }
+
+    let max_bytes = usize::try_from(max_bytes)
+        .map_err(|_| "max_bytes is too large for this platform".to_string())?;
+
+    let mut file = fs::File::open(&resolved_path)
+        .map_err(|error| format!("Failed to open file: {}", error))?;
+
+    let mut buffer = vec![0u8; max_bytes];
+    let read_amount = file
+        .read(&mut buffer)
+        .map_err(|error| format!("Failed to read file: {}", error))?;
+    buffer.truncate(read_amount);
+
+    let truncated = if read_amount == max_bytes && max_bytes > 0 {
+        let mut probe = [0u8; 1];
+        match file.read(&mut probe) {
+            Ok(extra) => extra > 0,
+            Err(error) => return Err(format!("Failed to read file: {}", error)),
+        }
+    } else {
+        false
+    };
+
+    Ok(ReadTextPreviewResult {
+        bytes: buffer,
+        truncated,
+    })
 }
 
 #[tauri::command]
