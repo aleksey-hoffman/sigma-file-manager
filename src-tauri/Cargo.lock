@@ -5533,7 +5533,6 @@ dependencies = [
  "tempfile",
  "tokio",
  "tokio-util",
- "tower-http",
  "trash",
  "urlencoding",
  "walkdir",

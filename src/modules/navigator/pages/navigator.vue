@@ -516,6 +516,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   smallScreenMediaQuery.removeEventListener('change', handleSmallScreenChange);
+  navigatorSelectionStore.setSelectedDirEntries([]);
 });
 </script>
 

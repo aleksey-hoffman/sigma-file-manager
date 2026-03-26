@@ -9,14 +9,14 @@ use std::sync::Arc;
 
 use axum::body::Body;
 use axum::extract::{DefaultBodyLimit, Multipart, Query, State};
-use axum::http::{header, HeaderValue, StatusCode};
+use axum::http::{header, HeaderMap, HeaderValue, StatusCode};
 use axum::response::{Html, IntoResponse, Response};
 use axum::routing::{get, post};
 use axum::Router;
 use serde::{Deserialize, Serialize};
+use tokio::io::{AsyncReadExt, AsyncSeekExt};
 use tokio::sync::Mutex;
 use tokio_util::io::ReaderStream;
-use tower_http::cors::CorsLayer;
 
 const MDNS_SERVICE_TYPE: &str = "_http._tcp.local.";
 const MDNS_HOSTNAME: &str = "sfm.local.";
@@ -256,7 +256,61 @@ fn build_content_disposition(file_name: &str) -> HeaderValue {
     HeaderValue::from_str(&value).unwrap_or_else(|_| HeaderValue::from_static("inline"))
 }
 
-async fn stream_file_response(path: &Path) -> Response {
+fn sanitize_upload_filename(raw_name: &str) -> Option<String> {
+    let name = Path::new(raw_name)
+        .file_name()?
+        .to_string_lossy()
+        .to_string();
+    if name.is_empty() {
+        return None;
+    }
+    Some(name)
+}
+
+fn parse_range_header(range_value: Option<&HeaderValue>, total_size: u64) -> Option<(u64, u64)> {
+    let range_str = range_value?.to_str().ok()?;
+    let byte_range = range_str.strip_prefix("bytes=")?;
+
+    if byte_range.contains(',') {
+        return None;
+    }
+
+    let mut parts = byte_range.splitn(2, '-');
+    let start_str = parts.next()?.trim();
+    let end_str = parts.next()?.trim();
+
+    if total_size == 0 {
+        return None;
+    }
+
+    if start_str.is_empty() {
+        let suffix_length: u64 = end_str.parse().ok()?;
+        if suffix_length == 0 {
+            return None;
+        }
+        let start = total_size.saturating_sub(suffix_length);
+        return Some((start, total_size - 1));
+    }
+
+    let start: u64 = start_str.parse().ok()?;
+    if start >= total_size {
+        return None;
+    }
+
+    let end = if end_str.is_empty() {
+        total_size - 1
+    } else {
+        end_str.parse::<u64>().ok()?.min(total_size - 1)
+    };
+
+    if start > end {
+        return None;
+    }
+
+    Some((start, end))
+}
+
+async fn stream_file_response(path: &Path, request_headers: &HeaderMap) -> Response {
     let mime = mime_guess::from_path(path)
         .first_or_octet_stream()
         .to_string();
@@ -274,43 +328,86 @@ async fn stream_file_response(path: &Path) -> Response {
         }
     };
 
-    let metadata = file.metadata().await.ok();
-    let stream = ReaderStream::new(file);
-    let body = Body::from_stream(stream);
-
-    let mut response = Response::new(body);
-    response
-        .headers_mut()
-        .insert(header::CONTENT_TYPE, HeaderValue::from_str(&mime).unwrap());
-    response.headers_mut().insert(
-        header::CONTENT_DISPOSITION,
-        build_content_disposition(&file_name),
-    );
-    if let Some(metadata) = metadata {
-        if let Ok(length) = HeaderValue::from_str(&metadata.len().to_string()) {
-            response
-                .headers_mut()
-                .insert(header::CONTENT_LENGTH, length);
+    let metadata = match file.metadata().await {
+        Ok(metadata) => metadata,
+        Err(_) => {
+            return (StatusCode::INTERNAL_SERVER_ERROR, "Failed to read file").into_response()
         }
+    };
+
+    let total_size = metadata.len();
+    let content_disposition = build_content_disposition(&file_name);
+    let content_type = HeaderValue::from_str(&mime).unwrap();
+
+    if let Some((range_start, range_end)) =
+        parse_range_header(request_headers.get(header::RANGE), total_size)
+    {
+        let length = range_end - range_start + 1;
+        let mut file = file;
+
+        if file
+            .seek(std::io::SeekFrom::Start(range_start))
+            .await
+            .is_err()
+        {
+            return (StatusCode::INTERNAL_SERVER_ERROR, "Failed to seek file").into_response();
+        }
+
+        let limited = file.take(length);
+        let stream = ReaderStream::new(limited);
+        let body = Body::from_stream(stream);
+        let content_range = format!("bytes {range_start}-{range_end}/{total_size}");
+
+        Response::builder()
+            .status(StatusCode::PARTIAL_CONTENT)
+            .header(header::CONTENT_TYPE, content_type)
+            .header(header::CONTENT_LENGTH, length.to_string())
+            .header(header::CONTENT_RANGE, content_range)
+            .header(header::ACCEPT_RANGES, "bytes")
+            .header(header::CONTENT_DISPOSITION, content_disposition)
+            .body(body)
+            .unwrap_or_else(|_| {
+                (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    "Failed to build response",
+                )
+                    .into_response()
+            })
+    } else {
+        let stream = ReaderStream::new(file);
+        let body = Body::from_stream(stream);
+
+        Response::builder()
+            .status(StatusCode::OK)
+            .header(header::CONTENT_TYPE, content_type)
+            .header(header::CONTENT_LENGTH, total_size.to_string())
+            .header(header::ACCEPT_RANGES, "bytes")
+            .header(header::CONTENT_DISPOSITION, content_disposition)
+            .body(body)
+            .unwrap_or_else(|_| {
+                (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    "Failed to build response",
+                )
+                    .into_response()
+            })
     }
-    response
 }
 
 fn build_stream_router(state: ShareState) -> Router {
     Router::new()
         .route("/", get(stream_handler))
-        .layer(CorsLayer::permissive())
         .with_state(state)
 }
 
-async fn stream_handler(State(state): State<ShareState>) -> Response {
+async fn stream_handler(State(state): State<ShareState>, headers: HeaderMap) -> Response {
     let path = &state.share_path;
 
     if !path.exists() || !path.is_file() {
         return (StatusCode::NOT_FOUND, "File not found").into_response();
     }
 
-    stream_file_response(path).await
+    stream_file_response(path, &headers).await
 }
 
 fn build_stream_dir_router(state: ShareState) -> Router {
@@ -319,7 +416,6 @@ fn build_stream_dir_router(state: ShareState) -> Router {
         .route("/app-icon.png", get(ftp_app_icon_handler))
         .route("/api/list", get(ftp_list_handler))
         .route("/files/{*path}", get(ftp_file_handler))
-        .layer(CorsLayer::permissive())
         .with_state(state)
 }
 
@@ -335,7 +431,6 @@ fn build_ftp_router(state: ShareState) -> Router {
         .route("/api/upload", post(ftp_upload_handler))
         .route("/files/{*path}", get(ftp_file_handler))
         .layer(DefaultBodyLimit::max(FTP_MAX_UPLOAD_BYTES))
-        .layer(CorsLayer::permissive())
         .with_state(state)
 }
 
@@ -472,7 +567,11 @@ async fn ftp_list_handler(
     (StatusCode::OK, axum::Json(response_body)).into_response()
 }
 
-async fn hub_file_handler(hub: &[PathBuf], file_path: &str) -> Response {
+async fn hub_file_handler(
+    hub: &[PathBuf],
+    file_path: &str,
+    request_headers: &HeaderMap,
+) -> Response {
     let target = match file_path.parse::<usize>() {
         Ok(idx) => hub.get(idx),
         Err(_) => None,
@@ -486,15 +585,16 @@ async fn hub_file_handler(hub: &[PathBuf], file_path: &str) -> Response {
         return (StatusCode::NOT_FOUND, "File not found").into_response();
     }
 
-    stream_file_response(target).await
+    stream_file_response(target, request_headers).await
 }
 
 async fn ftp_file_handler(
     State(state): State<ShareState>,
+    headers: HeaderMap,
     axum::extract::Path(file_path): axum::extract::Path<String>,
 ) -> Response {
     if let Some(hub) = &state.file_hub {
-        return hub_file_handler(hub, &file_path).await;
+        return hub_file_handler(hub, &file_path, &headers).await;
     }
 
     let target = match resolve_sub_path(&state.share_path, Some(&file_path)) {
@@ -506,7 +606,7 @@ async fn ftp_file_handler(
         return (StatusCode::NOT_FOUND, "File not found").into_response();
     }
 
-    stream_file_response(&target).await
+    stream_file_response(&target, &headers).await
 }
 
 async fn ftp_upload_handler(
@@ -530,16 +630,17 @@ async fn ftp_upload_handler(
     let mut uploaded_count: u32 = 0;
 
     while let Ok(Some(field)) = multipart.next_field().await {
-        let file_name = match field.file_name() {
+        let raw_name = match field.file_name() {
             Some(name) => name.to_string(),
             None => continue,
         };
 
-        if file_name.is_empty() {
-            continue;
-        }
+        let safe_name = match sanitize_upload_filename(&raw_name) {
+            Some(name) => name,
+            None => continue,
+        };
 
-        let dest_path = get_unique_path(&target_dir.join(&file_name));
+        let dest_path = get_unique_path(&target_dir.join(&safe_name));
 
         let bytes = match field.bytes().await {
             Ok(bytes) => bytes,
