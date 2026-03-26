@@ -926,15 +926,14 @@
     },
     "localShareManagerDialog": {
       "localShareManager": "ローカル共有マネージャー",
-      "scanQRCore": "この QR コードをスキャンしてアドレスを開きます",
       "typeAddressManually": "または、指定されたアドレスを Web ブラウザーに手動で入力します。",
       "toSeeSharedFiles": "共有ファイルを表示するには、ローカル デバイス (同じネットワークに接続されている) のいずれかで、指定されたアドレスを Web ブラウザーの URL バーに入力します。",
       "localServerAddress": "ローカルサーバーアドレス",
       "addressCopiedToClipboard": "アドレスがクリップボードにコピーされました",
       "shareType": "共有タイプ",
       "stream": "ストリーム",
-      "sharedFile": "共有ファイル",
-      "sharedDirectory": "共有ディレクトリ",
+      "sharedFile": "ファイルへのアクセス",
+      "sharedDirectory": "フォルダーへのアクセス",
       "doesnTWork": "「うまくいきませんか？」",
       "makeSurNetworkIsSetUp": "ネットワークが正しく設定されていることを確認してください:",
       "youShouldAllow": "ファイアウォールでネットワークへのアプリ アクセスを許可する必要があります",
@@ -1679,7 +1678,7 @@
       "delete": "削除",
       "openWith": "アプリで開く...",
       "quickView": "クイックビュー",
-      "share": "共有",
+      "share": "LAN で共有",
       "openInNewTab": "新しいタブで開く",
       "addToFavorites": "お気に入りに追加",
       "removeFromFavorites": "お気に入りから削除",
@@ -1893,5 +1892,28 @@
       "archive": "アーカイブ操作"
     }
   },
-  "recalculate": "Recalculate"
+  "recalculate": "Recalculate",
+  "lanShare": {
+    "serverActive": "LAN 共有が有効です",
+    "serverStopped": "LAN 共有が停止しました",
+    "failedToStart": "LAN 共有の開始に失敗しました",
+    "stopSharing": "共有を停止",
+    "urlHintMain": "メイン",
+    "urlHintDirect": "直接",
+    "secondaryHint": "セカンダリ",
+    "toolbarTooltip": "LAN 共有",
+    "idleEmptyTitle": "ファイルへのアクセスは許可されていません",
+    "idleHint": "ローカルネットワーク上のデバイスに、ファイルとフォルダーへのアクセスを許可できます。",
+    "shareCurrentDirectory": "現在のフォルダーを共有",
+    "shareSelectedItems": "選択項目を共有",
+    "shareSelectedItemsWithCount": "選択を共有（{count} 件）",
+    "modeStream": "ストリーム",
+    "modeStreamDescription": "メディアの直接再生",
+    "modeFtp": "FTP",
+    "modeFtpDescription": "ファイルの閲覧と管理",
+    "hubSharedSelectionCount": "選択中のファイル {count} 件",
+    "replaceShareDialogTitle": "現在の共有を置き換えますか？",
+    "replaceShareDialogDescription": "すでにネットワーク上でファイルが共有されています。現在の共有を停止し、新しいものに置き換えます。",
+    "replaceShareDialogConfirm": "置き換え"
+  }
 }

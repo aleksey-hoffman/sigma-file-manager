@@ -926,15 +926,14 @@
     },
     "localShareManagerDialog": {
       "localShareManager": "Yerel paylaşım yöneticisi",
-      "scanQRCore": "Adresi açmak için bu QR kodunu tarayın",
       "typeAddressManually": "Veya belirtilen adresi bir web tarayıcısına manuel olarak yazın.",
       "toSeeSharedFiles": "Paylaşılan dosyaları görmek için, belirtilen adresi herhangi bir yerel cihazınızda (aynı ağa bağlı) bir web tarayıcısının URL çubuğuna girin.",
       "localServerAddress": "Yerel sunucu adresi",
       "addressCopiedToClipboard": "Adres panoya kopyalandı",
       "shareType": "Paylaşım türü",
-      "stream": "Aktarım",
-      "sharedFile": "Paylaşılan dosya",
-      "sharedDirectory": "Paylaşılan dizin",
+      "stream": "Stream",
+      "sharedFile": "Dosya erişimi",
+      "sharedDirectory": "Klasör erişimi",
       "doesnTWork": "Çalışmıyor mu?",
       "makeSurNetworkIsSetUp": "Ağınızın düzgün kurulduğundan emin olun:",
       "youShouldAllow": "Güvenlik Duvarınızda uygulamanın ağınıza erişmesine izin vermelisiniz",
@@ -1679,7 +1678,7 @@
       "delete": "Sil",
       "openWith": "Birlikte aç...",
       "quickView": "Hızlı görünüm",
-      "share": "Paylaş",
+      "share": "Yerel ağda paylaş",
       "openInNewTab": "Yeni sekmede aç",
       "addToFavorites": "Favorilere ekle",
       "removeFromFavorites": "Favorilerden kaldır",
@@ -1893,5 +1892,28 @@
       "archive": "Arşiv işlemleri"
     }
   },
-  "recalculate": "Recalculate"
+  "recalculate": "Recalculate",
+  "lanShare": {
+    "serverActive": "Yerel ağ paylaşımı aktif",
+    "serverStopped": "Yerel ağ paylaşımı durduruldu",
+    "failedToStart": "Yerel ağ paylaşımı başlatılamadı",
+    "stopSharing": "Paylaşımı durdur",
+    "urlHintMain": "Ana",
+    "urlHintDirect": "Doğrudan",
+    "secondaryHint": "İkincil",
+    "toolbarTooltip": "LAN paylaşımı",
+    "idleEmptyTitle": "Dosyalara erişim sağlanmadı",
+    "idleHint": "Yerel ağınızdaki cihazların dosya ve klasörlerinize erişmesine izin verebilirsiniz.",
+    "shareCurrentDirectory": "Geçerli klasörü paylaş",
+    "shareSelectedItems": "Seçili öğeleri paylaş",
+    "shareSelectedItemsWithCount": "Seçileni paylaş ({count} öğe)",
+    "modeStream": "Akış",
+    "modeStreamDescription": "Doğrudan medya oynatma",
+    "modeFtp": "FTP",
+    "modeFtpDescription": "Dosyaları göz at ve yönet",
+    "hubSharedSelectionCount": "{count} seçili dosya",
+    "replaceShareDialogTitle": "Mevcut paylaşım değiştirilsin mi?",
+    "replaceShareDialogDescription": "Ağ üzerinden zaten dosyalar paylaşılıyor. Mevcut paylaşım durdurulup yenisiyle değiştirilecek.",
+    "replaceShareDialogConfirm": "Değiştir"
+  }
 }

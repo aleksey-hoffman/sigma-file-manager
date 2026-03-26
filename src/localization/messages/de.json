@@ -926,15 +926,14 @@
     },
     "localShareManagerDialog": {
       "localShareManager": "Lokaler Freigabemanager",
-      "scanQRCore": "Diesen QR-Code scannen, um die Adresse zu öffnen",
       "typeAddressManually": "Oder geben Sie die angegebene Adresse manuell in einen Webbrowser ein.",
       "toSeeSharedFiles": "Um freigegebene Dateien anzuzeigen, geben Sie die angegebene Adresse in die URL-Leiste eines Webbrowsers auf einem Ihrer lokalen Geräte ein (die mit demselben Netzwerk verbunden sind).",
       "localServerAddress": "Lokale Serveradresse",
       "addressCopiedToClipboard": "Adresse wurde in die Zwischenablage kopiert",
       "shareType": "Aktientyp",
-      "stream": "Strom",
-      "sharedFile": "Freigegebene Datei",
-      "sharedDirectory": "Freigegebenes Verzeichnis",
+      "stream": "Stream",
+      "sharedFile": "Zugriff auf Datei",
+      "sharedDirectory": "Zugriff auf Ordner",
       "doesnTWork": "Geht nicht?",
       "makeSurNetworkIsSetUp": "Stellen Sie sicher, dass Ihr Netzwerk richtig eingerichtet ist:",
       "youShouldAllow": "Sie sollten der App in Ihrer Firewall den Zugriff auf Ihr Netzwerk erlauben",
@@ -1679,7 +1678,7 @@
       "delete": "Löschen",
       "openWith": "Öffnen mit...",
       "quickView": "Schnellansicht",
-      "share": "Teilen",
+      "share": "Im Netzwerk teilen",
       "openInNewTab": "In neuem Tab öffnen",
       "addToFavorites": "Zu Favoriten hinzufügen",
       "removeFromFavorites": "Aus Favoriten entfernen",
@@ -1893,5 +1892,28 @@
       "archive": "Archivoperationen"
     }
   },
-  "recalculate": "Recalculate"
+  "recalculate": "Recalculate",
+  "lanShare": {
+    "serverActive": "Netzwerkfreigabe aktiv",
+    "serverStopped": "Netzwerkfreigabe gestoppt",
+    "failedToStart": "Netzwerkfreigabe konnte nicht gestartet werden",
+    "stopSharing": "Freigabe beenden",
+    "urlHintMain": "Haupt",
+    "urlHintDirect": "Direkt",
+    "secondaryHint": "Sekundär",
+    "toolbarTooltip": "LAN-Freigabe",
+    "idleEmptyTitle": "Kein Zugriff auf Dateien",
+    "idleHint": "Sie können Geräten in Ihrem lokalen Netzwerk Zugriff auf Ihre Dateien und Ordner gewähren.",
+    "shareCurrentDirectory": "Aktuellen Ordner freigeben",
+    "shareSelectedItems": "Ausgewählte Elemente freigeben",
+    "shareSelectedItemsWithCount": "Ausgewählte freigeben ({count} Elemente)",
+    "modeStream": "Stream",
+    "modeStreamDescription": "Direkte Medienwiedergabe",
+    "modeFtp": "FTP",
+    "modeFtpDescription": "Dateien durchsuchen und verwalten",
+    "hubSharedSelectionCount": "{count} ausgewählte Dateien",
+    "replaceShareDialogTitle": "Aktuelle Freigabe ersetzen?",
+    "replaceShareDialogDescription": "Es werden bereits Dateien im Netzwerk freigegeben. Die aktuelle Freigabe wird gestoppt und durch eine neue ersetzt.",
+    "replaceShareDialogConfirm": "Ersetzen"
+  }
 }

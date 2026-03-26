@@ -14,6 +14,7 @@ import { useClipboardStore, type FileOperationResult, type ConflictItem, type Co
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
 import { useQuickViewStore } from '@/stores/runtime/quick-view';
 import { toast, ToastProgress, ToastStatic } from '@/components/ui/toaster';
+import { useLanShare } from '@/composables/use-lan-share';
 import { getParentDirectory } from '@/utils/normalize-path';
 
 type FileOperationToastData = {
@@ -36,6 +37,7 @@ export function useDirEntryActions() {
   const clipboardStore = useClipboardStore();
   const dirSizesStore = useDirSizesStore();
   const quickViewStore = useQuickViewStore();
+  const { startShare } = useLanShare();
 
   const conflictDialogState = ref({
     isOpen: false,
@@ -562,9 +564,11 @@ export function useDirEntryActions() {
       case 'quick-view':
         quickView(entries);
         break;
+      case 'share':
+        startShare(entries);
+        break;
       case 'rename':
       case 'open-with':
-      case 'share':
       case 'edit-tags':
       case 'create-file':
       case 'create-directory':

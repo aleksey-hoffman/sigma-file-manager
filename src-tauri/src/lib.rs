@@ -11,6 +11,7 @@ mod dir_watcher;
 mod extensions;
 mod file_operations;
 mod global_search;
+mod lan_share;
 mod open_with;
 mod system_icons;
 mod system_tray;
@@ -137,6 +138,9 @@ pub fn run() {
             background_sources::resolve_background_source_to_cache,
             background_sources::download_url_to_path,
             background_sources::copy_files_to_backgrounds,
+            lan_share::start_lan_share,
+            lan_share::stop_lan_share,
+            lan_share::get_local_ip,
         ])
         .setup(setup_handler)
         .on_window_event(|window, event| {
@@ -144,6 +148,11 @@ pub fn run() {
                 if window.label() == "main" {
                     let _ = window.hide();
                     api.prevent_close();
+                }
+            }
+            if let tauri::WindowEvent::Destroyed = event {
+                if window.label() == "main" {
+                    tokio::spawn(async { lan_share::stop_lan_share().await.ok() });
                 }
             }
         })

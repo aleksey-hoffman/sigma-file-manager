@@ -57,6 +57,16 @@ flate2 = "1.0"
 sha2 = "0.10"
 tauri-plugin-clipboard-manager = "2.3.2"
 tauri-plugin-autostart = "2"
+axum = { version = "0.8", features = ["multipart"] }
+tower-http = { version = "0.6", features = ["cors"] }
+mime_guess = "2"
+mdns-sd = { version = "0.18", features = ["async"] }
+tokio-util = { version = "0.7", features = ["io"] }
+urlencoding = "2"
+local-ip-address = "0.6"
+rcgen = "0.14"
+axum-server = { version = "0.8", features = ["tls-rustls"] }
+rustls = { version = "0.23", features = ["ring"] }
 
 [dev-dependencies]
 tempfile = "3"

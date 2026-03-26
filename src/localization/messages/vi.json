@@ -926,15 +926,14 @@
     },
     "localShareManagerDialog": {
       "localShareManager": "Người quản lý chia sẻ cục bộ",
-      "scanQRCore": "Quét mã QR này để mở địa chỉ",
       "typeAddressManually": "Hoặc nhập địa chỉ được chỉ định theo cách thủ công trong trình duyệt web.",
       "toSeeSharedFiles": "Để xem các tệp được chia sẻ, hãy nhập địa chỉ đã chỉ định vào thanh URL của trình duyệt web trên bất kỳ thiết bị cục bộ nào của bạn (được kết nối với cùng một mạng).",
       "localServerAddress": "Địa chỉ máy chủ cục bộ",
       "addressCopiedToClipboard": "Địa chỉ đã được sao chép vào khay nhớ tạm",
       "shareType": "Loại chia sẻ",
-      "stream": "Suối",
-      "sharedFile": "Tệp được chia sẻ",
-      "sharedDirectory": "Thư mục dùng chung",
+      "stream": "Stream",
+      "sharedFile": "Truy cập tệp",
+      "sharedDirectory": "Truy cập thư mục",
       "doesnTWork": "Không hoạt động?",
       "makeSurNetworkIsSetUp": "Đảm bảo mạng của bạn được thiết lập đúng cách:",
       "youShouldAllow": "Bạn nên cho phép ứng dụng truy cập vào mạng của mình trong Tường lửa",
@@ -1679,7 +1678,7 @@
       "delete": "Xóa",
       "openWith": "Mở bằng...",
       "quickView": "Xem nhanh",
-      "share": "Chia sẻ",
+      "share": "Chia sẻ qua mạng LAN",
       "openInNewTab": "Mở trong tab mới",
       "addToFavorites": "Thêm vào yêu thích",
       "removeFromFavorites": "Xóa khỏi yêu thích",
@@ -1893,5 +1892,28 @@
       "archive": "Thao tác nén và giải nén"
     }
   },
-  "recalculate": "Recalculate"
+  "recalculate": "Recalculate",
+  "lanShare": {
+    "serverActive": "Chia sẻ qua mạng LAN đang hoạt động",
+    "serverStopped": "Chia sẻ qua mạng LAN đã dừng",
+    "failedToStart": "Không thể bắt đầu chia sẻ qua mạng LAN",
+    "stopSharing": "Dừng chia sẻ",
+    "urlHintMain": "Chính",
+    "urlHintDirect": "Trực tiếp",
+    "secondaryHint": "Phụ",
+    "toolbarTooltip": "Chia sẻ LAN",
+    "idleEmptyTitle": "Chưa cấp quyền truy cập tệp",
+    "idleHint": "Bạn có thể cho phép các thiết bị trên mạng cục bộ truy cập tệp và thư mục của bạn.",
+    "shareCurrentDirectory": "Chia sẻ thư mục hiện tại",
+    "shareSelectedItems": "Chia sẻ mục đã chọn",
+    "shareSelectedItemsWithCount": "Chia sẻ đã chọn ({count} mục)",
+    "modeStream": "Phát trực tiếp",
+    "modeStreamDescription": "Phát phương tiện trực tiếp",
+    "modeFtp": "FTP",
+    "modeFtpDescription": "Duyệt và quản lý tệp",
+    "hubSharedSelectionCount": "{count} tệp đã chọn",
+    "replaceShareDialogTitle": "Thay thế chia sẻ hiện tại?",
+    "replaceShareDialogDescription": "Các tập tin đang được chia sẻ qua mạng. Chia sẻ hiện tại sẽ bị dừng và thay thế bằng chia sẻ mới.",
+    "replaceShareDialogConfirm": "Thay thế"
+  }
 }

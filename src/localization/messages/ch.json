@@ -926,15 +926,14 @@
     },
     "localShareManagerDialog": {
       "localShareManager": "本地共享管理器",
-      "scanQRCore": "扫描此二维码打开地址",
       "typeAddressManually": "或在网络浏览器中手动输入指定地址。",
       "toSeeSharedFiles": "要查看共享文件，请在任何本地设备（连接到同一网络）上的 Web 浏览器的 URL 栏中输入指定地址。",
       "localServerAddress": "本地服务器地址",
       "addressCopiedToClipboard": "地址已复制到剪贴板",
       "shareType": "共享类型",
-      "stream": "流",
-      "sharedFile": "共享文件",
-      "sharedDirectory": "共享目录",
+      "stream": "串流",
+      "sharedFile": "文件访问",
+      "sharedDirectory": "文件夹访问",
       "doesnTWork": "不起作用？",
       "makeSurNetworkIsSetUp": "确保您的网络设置正确：",
       "youShouldAllow": "您应该在您的防火墙中允许该应用程序访问您的网络",
@@ -1679,7 +1678,7 @@
       "delete": "删除",
       "openWith": "打开方式...",
       "quickView": "快速查看",
-      "share": "分享",
+      "share": "局域网共享",
       "openInNewTab": "在新标签页中打开",
       "addToFavorites": "添加到收藏",
       "removeFromFavorites": "从收藏中移除",
@@ -1893,5 +1892,28 @@
       "archive": "归档操作"
     }
   },
-  "recalculate": "Recalculate"
+  "recalculate": "Recalculate",
+  "lanShare": {
+    "serverActive": "局域网共享已启用",
+    "serverStopped": "局域网共享已停止",
+    "failedToStart": "无法启动局域网共享",
+    "stopSharing": "停止共享",
+    "urlHintMain": "主地址",
+    "urlHintDirect": "直连",
+    "secondaryHint": "次要",
+    "toolbarTooltip": "局域网共享",
+    "idleEmptyTitle": "尚未授予文件访问权限",
+    "idleHint": "您可以让局域网中的设备访问您的文件和文件夹。",
+    "shareCurrentDirectory": "共享当前文件夹",
+    "shareSelectedItems": "共享所选项目",
+    "shareSelectedItemsWithCount": "共享所选（{count} 项）",
+    "modeStream": "串流",
+    "modeStreamDescription": "直接媒体播放",
+    "modeFtp": "FTP",
+    "modeFtpDescription": "浏览和管理文件",
+    "hubSharedSelectionCount": "已选 {count} 个文件",
+    "replaceShareDialogTitle": "替换当前共享？",
+    "replaceShareDialogDescription": "文件已在网络上共享。当前共享将被停止并替换为新的共享。",
+    "replaceShareDialogConfirm": "替换"
+  }
 }

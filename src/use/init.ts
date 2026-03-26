@@ -71,9 +71,11 @@ export function useInit() {
       const launchedFromOsAutostart = processArguments.includes(SIGMA_AUTOSTART_CLI_FLAG);
       const stayHiddenAfterAutostart = launchedFromOsAutostart
         && userSettingsStore.userSettings.launchAtStartupHidden;
+
       if (stayHiddenAfterAutostart) {
         return;
       }
+
       await currentWindow.show();
       await currentWindow.setFocus();
     }
@@ -83,12 +85,14 @@ export function useInit() {
     await platformStore.init();
     await userPathsStore.init();
     await userSettingsStore.init();
+
     try {
       await applyLaunchAtStartupPreference(userSettingsStore.userSettings.launchAtStartup);
     }
     catch (error) {
       console.error('Failed to apply launch at startup preference:', error);
     }
+
     await backgroundMediaStore.refreshCustomBackgrounds();
     await userStatsStore.init();
     await workspacesStore.init();

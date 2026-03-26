@@ -926,15 +926,14 @@
     },
     "localShareManagerDialog": {
       "localShareManager": "Gestore delle condivisioni locali",
-      "scanQRCore": "Scansiona questo codice QR per aprire l'indirizzo",
       "typeAddressManually": "Oppure scrivi manualmente l'indirizzo specificato in un browser web.",
       "toSeeSharedFiles": "To see shared files, enter the specified address into a web browser's URL bar on any of your local devices (connected to the same network).",
       "localServerAddress": "Indirizzo del server locale",
       "addressCopiedToClipboard": "L'indirizzo è stato copiato negli appunti",
       "shareType": "Condividi tipo",
       "stream": "Stream",
-      "sharedFile": "File condiviso",
-      "sharedDirectory": "Cartella condivisa",
+      "sharedFile": "Accesso al file",
+      "sharedDirectory": "Accesso alla cartella",
       "doesnTWork": "Non funziona?",
       "makeSurNetworkIsSetUp": "Assicurati che la rete sia configurata correttamente:",
       "youShouldAllow": "Dovresti consentire l'accesso dell'app alla tua rete nel tuo Firewall",
@@ -1679,7 +1678,7 @@
       "delete": "Elimina",
       "openWith": "Apri con...",
       "quickView": "Anteprima rapida",
-      "share": "Condividi",
+      "share": "Condividi in rete locale",
       "openInNewTab": "Apri in nuova scheda",
       "addToFavorites": "Aggiungi ai preferiti",
       "removeFromFavorites": "Rimuovi dai preferiti",
@@ -1893,5 +1892,28 @@
       "archive": "Operazioni di archivio"
     }
   },
-  "recalculate": "Recalculate"
+  "recalculate": "Recalculate",
+  "lanShare": {
+    "serverActive": "Condivisione in rete locale attiva",
+    "serverStopped": "Condivisione in rete locale interrotta",
+    "failedToStart": "Impossibile avviare la condivisione in rete locale",
+    "stopSharing": "Interrompi condivisione",
+    "urlHintMain": "Principale",
+    "urlHintDirect": "Diretto",
+    "secondaryHint": "Secondario",
+    "toolbarTooltip": "Condivisione LAN",
+    "idleEmptyTitle": "Accesso ai file non concesso",
+    "idleHint": "Puoi consentire ai dispositivi sulla rete locale di accedere ai tuoi file e cartelle.",
+    "shareCurrentDirectory": "Condividi cartella corrente",
+    "shareSelectedItems": "Condividi elementi selezionati",
+    "shareSelectedItemsWithCount": "Condividi selezione ({count} elementi)",
+    "modeStream": "Streaming",
+    "modeStreamDescription": "Riproduzione diretta dei media",
+    "modeFtp": "FTP",
+    "modeFtpDescription": "Sfoglia e gestisci file",
+    "hubSharedSelectionCount": "{count} file selezionati",
+    "replaceShareDialogTitle": "Sostituire la condivisione attuale?",
+    "replaceShareDialogDescription": "Ci sono già file condivisi in rete. La condivisione attuale verrà interrotta e sostituita con quella nuova.",
+    "replaceShareDialogConfirm": "Sostituisci"
+  }
 }

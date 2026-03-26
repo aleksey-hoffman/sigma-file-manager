@@ -12,6 +12,7 @@ import { useUserStatsStore } from '@/stores/storage/user-stats';
 import { useClipboardStore, type FileOperationResult, type ConflictItem, type ConflictResolution } from '@/stores/runtime/clipboard';
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
 import { toast, ToastProgress, ToastStatic } from '@/components/ui/toaster';
+import { useLanShare } from '@/composables/use-lan-share';
 import { UI_CONSTANTS } from '@/constants';
 import normalizePath from '@/utils/normalize-path';
 import { createIndexedFileName, safeFileNameFromUrl } from '@/utils/remote-file';
@@ -40,6 +41,7 @@ export function useFileBrowserSelection(
   const userStatsStore = useUserStatsStore();
   const clipboardStore = useClipboardStore();
   const dirSizesStore = useDirSizesStore();
+  const { startShare } = useLanShare();
   const selectedEntries = ref<DirEntry[]>([]);
   const lastSelectedEntry = ref<DirEntry | null>(null);
 
@@ -1052,6 +1054,12 @@ export function useFileBrowserSelection(
           }).catch((error) => {
             console.error('Failed to copy path:', error);
           });
+        }
+
+        break;
+      case 'share':
+        if (entries.length > 0) {
+          startShare(entries);
         }
 
         break;

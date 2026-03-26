@@ -926,15 +926,14 @@
     },
     "localShareManagerDialog": {
       "localShareManager": "Administrador de acciones locales",
-      "scanQRCore": "Escanee este código QR para abrir la dirección",
       "typeAddressManually": "O escriba la dirección especificada manualmente en un navegador web.",
       "toSeeSharedFiles": "Para ver los archivos compartidos, ingrese la dirección especificada en la barra de URL de un navegador web en cualquiera de sus dispositivos locales (conectados a la misma red)",
       "localServerAddress": "Dirección del servidor local",
       "addressCopiedToClipboard": "La dirección fue copiada al portapapeles",
       "shareType": "Tipo de recurso compartido",
-      "stream": "Corriente",
-      "sharedFile": "Archivo compartido",
-      "sharedDirectory": "Directorio compartido",
+      "stream": "Streaming",
+      "sharedFile": "Acceso al archivo",
+      "sharedDirectory": "Acceso a la carpeta",
       "doesnTWork": "¿No funciona?",
       "makeSurNetworkIsSetUp": "Asegúrese de que su red esté configurada correctamente:",
       "youShouldAllow": "Debe permitir que la aplicación acceda a su red en su Firewall",
@@ -1679,7 +1678,7 @@
       "delete": "Eliminar",
       "openWith": "Abrir con...",
       "quickView": "Vista rápida",
-      "share": "Compartir",
+      "share": "Compartir en red local",
       "openInNewTab": "Abrir en nueva pestaña",
       "addToFavorites": "Añadir a favoritos",
       "removeFromFavorites": "Quitar de favoritos",
@@ -1893,5 +1892,28 @@
       "archive": "Operaciones de archivo"
     }
   },
-  "recalculate": "Recalculate"
+  "recalculate": "Recalculate",
+  "lanShare": {
+    "serverActive": "Compartir en red local activo",
+    "serverStopped": "Compartir en red local detenido",
+    "failedToStart": "Error al iniciar compartir en red local",
+    "stopSharing": "Dejar de compartir",
+    "urlHintMain": "Principal",
+    "urlHintDirect": "Directo",
+    "secondaryHint": "Secundario",
+    "toolbarTooltip": "Compartir en LAN",
+    "idleEmptyTitle": "Acceso a archivos no concedido",
+    "idleHint": "Puede permitir que los dispositivos de su red local accedan a sus archivos y carpetas.",
+    "shareCurrentDirectory": "Compartir carpeta actual",
+    "shareSelectedItems": "Compartir elementos seleccionados",
+    "shareSelectedItemsWithCount": "Compartir selección ({count} elementos)",
+    "modeStream": "Transmisión",
+    "modeStreamDescription": "Reproducción directa de medios",
+    "modeFtp": "FTP",
+    "modeFtpDescription": "Explorar y gestionar archivos",
+    "hubSharedSelectionCount": "{count} archivos seleccionados",
+    "replaceShareDialogTitle": "¿Reemplazar el recurso compartido?",
+    "replaceShareDialogDescription": "Ya se están compartiendo archivos en la red. El recurso compartido actual se detendrá y será reemplazado por uno nuevo.",
+    "replaceShareDialogConfirm": "Reemplazar"
+  }
 }

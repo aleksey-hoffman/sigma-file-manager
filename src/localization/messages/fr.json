@@ -926,15 +926,14 @@
     },
     "localShareManagerDialog": {
       "localShareManager": "Gestionnaire de partage local",
-      "scanQRCore": "Scannez ce QR code pour ouvrir l'adresse",
       "typeAddressManually": "Ou tapez manuellement l'adresse spécifiée dans un navigateur Web.",
       "toSeeSharedFiles": "Pour voir les fichiers partagés, entrez l'adresse spécifiée dans la barre d'URL d'un navigateur Web sur l'un de vos appareils locaux (connectés au même réseau).",
       "localServerAddress": "Adresse du serveur local",
       "addressCopiedToClipboard": "L'adresse a été copiée dans le presse-papiers",
       "shareType": "Type de partage",
-      "stream": "Flux",
-      "sharedFile": "Fichier partagé",
-      "sharedDirectory": "Répertoire partagé",
+      "stream": "Stream",
+      "sharedFile": "Accès au fichier",
+      "sharedDirectory": "Accès au dossier",
       "doesnTWork": "Ça ne marche pas ?",
       "makeSurNetworkIsSetUp": "Assurez-vous que votre réseau est correctement configuré :",
       "youShouldAllow": "Vous devez autoriser l'application à accéder à votre réseau dans votre pare-feu",
@@ -1679,7 +1678,7 @@
       "delete": "Supprimer",
       "openWith": "Ouvrir avec...",
       "quickView": "Aperçu rapide",
-      "share": "Partager",
+      "share": "Partager en réseau local",
       "openInNewTab": "Ouvrir dans un nouvel onglet",
       "addToFavorites": "Ajouter aux favoris",
       "removeFromFavorites": "Retirer des favoris",
@@ -1893,5 +1892,28 @@
       "archive": "Opérations d'archive"
     }
   },
-  "recalculate": "Recalculate"
+  "recalculate": "Recalculate",
+  "lanShare": {
+    "serverActive": "Partage en réseau local actif",
+    "serverStopped": "Partage en réseau local arrêté",
+    "failedToStart": "Échec du démarrage du partage en réseau local",
+    "stopSharing": "Arrêter le partage",
+    "urlHintMain": "Principal",
+    "urlHintDirect": "Direct",
+    "secondaryHint": "Secondaire",
+    "toolbarTooltip": "Partage LAN",
+    "idleEmptyTitle": "Aucun accès aux fichiers",
+    "idleHint": "Vous pouvez permettre aux appareils de votre réseau local d’accéder à vos fichiers et dossiers.",
+    "shareCurrentDirectory": "Partager le dossier actuel",
+    "shareSelectedItems": "Partager la sélection",
+    "shareSelectedItemsWithCount": "Partager la sélection ({count} éléments)",
+    "modeStream": "Diffusion",
+    "modeStreamDescription": "Lecture directe des médias",
+    "modeFtp": "FTP",
+    "modeFtpDescription": "Parcourir et gérer les fichiers",
+    "hubSharedSelectionCount": "{count} fichiers sélectionnés",
+    "replaceShareDialogTitle": "Remplacer le partage en cours ?",
+    "replaceShareDialogDescription": "Des fichiers sont déjà partagés sur le réseau. Le partage actuel sera arrêté et remplacé par le nouveau.",
+    "replaceShareDialogConfirm": "Remplacer"
+  }
 }

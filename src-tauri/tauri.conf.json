@@ -22,7 +22,8 @@
         "fullscreen": false,
         "decorations": false,
         "shadow": true,
-        "visible": false
+        "visible": false,
+        "backgroundColor": "#242227"
       },
       {
         "label": "quick-view",

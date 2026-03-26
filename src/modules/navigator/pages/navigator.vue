@@ -21,6 +21,7 @@ import { useGlobalSearchStore } from '@/stores/runtime/global-search';
 import { useShortcutsStore } from '@/stores/runtime/shortcuts';
 import { useTerminalsStore } from '@/stores/runtime/terminals';
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
+import { useNavigatorSelectionStore } from '@/stores/runtime/navigator-selection';
 import { FileBrowser } from '@/modules/navigator/components/file-browser';
 import { InfoPanel } from '@/modules/navigator/components/info-panel';
 import { NavigatorToolbarActions } from '@/modules/navigator/components/navigator-toolbar-actions';
@@ -55,6 +56,7 @@ const globalSearchStore = useGlobalSearchStore();
 const shortcutsStore = useShortcutsStore();
 const terminalsStore = useTerminalsStore();
 const dirSizesStore = useDirSizesStore();
+const navigatorSelectionStore = useNavigatorSelectionStore();
 
 const paneRefsMap = ref<Map<string, FileBrowserInstance>>(new Map());
 const singlePaneRef = ref<FileBrowserInstance | null>(null);
@@ -62,6 +64,11 @@ const globalSearchViewRef = ref<GlobalSearchViewInstance | null>(null);
 const isSearchSelectionActive = ref(false);
 const showInfoPanel = ref(true);
 const selectedEntries = ref<DirEntry[]>([]);
+
+watch(selectedEntries, (entries) => {
+  navigatorSelectionStore.setSelectedDirEntries(entries);
+}, { deep: true });
+
 const currentDirEntry = ref<DirEntry | null>(null);
 const activeTabId = ref<string | null>(null);
 const smallScreenMediaQuery = window.matchMedia(`(max-width: ${UI_CONSTANTS.SMALL_SCREEN_BREAKPOINT}px)`);

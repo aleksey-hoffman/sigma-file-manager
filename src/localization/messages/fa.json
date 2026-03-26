@@ -925,15 +925,14 @@
     },
     "localShareManagerDialog": {
       "localShareManager": "مدیر سهام محلی",
-      "scanQRCore": "این کد QR را اسکن کنید تا آدرس باز شود",
       "typeAddressManually": "یا آدرس مشخص شده را به صورت دستی در یک مرورگر وب تایپ کنید.",
       "toSeeSharedFiles": "برای مشاهده فایل های به اشتراک گذاشته شده، آدرس مشخص شده را در نوار URL مرورگر وب در هر یک از دستگاه های محلی خود (متصل به همان شبکه) وارد کنید.",
       "localServerAddress": "آدرس سرور محلی",
       "addressCopiedToClipboard": "آدرس در کلیپ بورد کپی شد",
       "shareType": "نوع اشتراک گذاری",
-      "stream": "جریان",
-      "sharedFile": "فایل مشترک",
-      "sharedDirectory": "دایرکتوری مشترک",
+      "stream": "استریم",
+      "sharedFile": "دسترسی به فایل",
+      "sharedDirectory": "دسترسی به پوشه",
       "doesnTWork": "کار نمی کند؟",
       "makeSurNetworkIsSetUp": "مطمئن شوید که شبکه شما به درستی راه اندازی شده است:",
       "youShouldAllow": "شما باید به برنامه اجازه دسترسی به شبکه خود را در فایروال خود بدهید",
@@ -1678,7 +1677,7 @@
       "delete": "حذف",
       "openWith": "باز کردن با...",
       "quickView": "نمای سریع",
-      "share": "اشتراک‌گذاری",
+      "share": "اشتراک‌گذاری در شبکه محلی",
       "openInNewTab": "باز کردن در برگه جدید",
       "addToFavorites": "افزودن به موردعلاقه‌ها",
       "removeFromFavorites": "حذف از موردعلاقه‌ها",
@@ -1893,5 +1892,28 @@
       "archive": "عملیات آرشیو"
     }
   },
-  "recalculate": "Recalculate"
+  "recalculate": "Recalculate",
+  "lanShare": {
+    "serverActive": "اشتراک‌گذاری در شبکه محلی فعال است",
+    "serverStopped": "اشتراک‌گذاری در شبکه محلی متوقف شد",
+    "failedToStart": "شروع اشتراک‌گذاری در شبکه محلی ناموفق بود",
+    "stopSharing": "توقف اشتراک‌گذاری",
+    "urlHintMain": "اصلی",
+    "urlHintDirect": "مستقیم",
+    "secondaryHint": "ثانویه",
+    "toolbarTooltip": "اشتراک LAN",
+    "idleEmptyTitle": "دسترسی به پرونده‌ها اعطا نشده",
+    "idleHint": "می‌توانید به دستگاه‌های موجود در شبکه محلی خود دسترسی به پرونده‌ها و پوشه‌هایتان را بدهید.",
+    "shareCurrentDirectory": "اشتراک پوشه فعلی",
+    "shareSelectedItems": "اشتراک موارد انتخاب‌شده",
+    "shareSelectedItemsWithCount": "اشتراک موارد انتخاب‌شده ({count} مورد)",
+    "modeStream": "پخش جریانی",
+    "modeStreamDescription": "پخش مستقیم رسانه",
+    "modeFtp": "FTP",
+    "modeFtpDescription": "مرور و مدیریت فایل‌ها",
+    "hubSharedSelectionCount": "{count} فایل انتخاب‌شده",
+    "replaceShareDialogTitle": "اشتراک‌گذاری فعلی جایگزین شود؟",
+    "replaceShareDialogDescription": "فایل‌ها از قبل از طریق شبکه به اشتراک گذاشته شده‌اند. اشتراک‌گذاری فعلی متوقف و با مورد جدید جایگزین خواهد شد.",
+    "replaceShareDialogConfirm": "جایگزینی"
+  }
 }

@@ -36,6 +36,7 @@ export function safeFileNameFromUrl(url: string): string {
 
     if (segment) {
       let decoded = segment;
+
       try {
         decoded = decodeURIComponent(segment);
       }

@@ -9,6 +9,7 @@ import { useRoute } from 'vue-router';
 import Spacer from './spacer.vue';
 import WindowActions from './window-actions.vue';
 import { GlobalSearchToolbarButton } from '@/modules/global-search';
+import { LanShareReplaceDialog, LanShareToolbarButton } from '@/modules/lan-share';
 import { StatusCenterToolbarButton } from '@/modules/status-center';
 import CommandPaletteToolbarButton from '@/modules/extensions/components/command-palette-toolbar-button.vue';
 
@@ -26,7 +27,7 @@ const shouldShowGlobalSearchButton = computed(() => {
   return route.name === 'home' || route.name === 'navigator';
 });
 
-const shouldShowStatusCenter = computed(() => {
+const shouldShowNavigatorToolbarExtras = computed(() => {
   return route.name === 'navigator';
 });
 </script>
@@ -44,12 +45,14 @@ const shouldShowStatusCenter = computed(() => {
       class="window-toolbar-drag-layer"
     />
     <div class="window-toolbar-action-layer">
+      <LanShareReplaceDialog />
       <CommandPaletteToolbarButton />
       <div class="window-toolbar-extension-embed-teleport-target" />
       <div class="window-toolbar-primary-teleport-target" />
       <Spacer class="window-toolbar-spacer" />
       <div class="window-toolbar-secondary-teleport-target" />
-      <StatusCenterToolbarButton v-if="shouldShowStatusCenter" />
+      <LanShareToolbarButton v-if="shouldShowNavigatorToolbarExtras" />
+      <StatusCenterToolbarButton v-if="shouldShowNavigatorToolbarExtras" />
       <GlobalSearchToolbarButton v-if="shouldShowGlobalSearchButton" />
       <WindowActions />
     </div>
