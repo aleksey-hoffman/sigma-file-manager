@@ -490,6 +490,8 @@ pub async fn download_release_installer(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::fs::File;
+    use std::io::Write;
 
     #[test]
     fn semver_filter_rejects_non_app_tags() {
@@ -517,5 +519,88 @@ mod tests {
         .expect("expected a release");
         assert_eq!(best.tag, "v2.0.0-beta.2");
         assert_eq!(best.url, "https://c");
+    }
+
+    #[test]
+    fn validate_github_release_download_url_accepts_github_and_usercontent_https() {
+        let github_release = "https://github.com/aleksey-hoffman/sigma-file-manager/releases/download/v2.0.0/setup.exe";
+        assert!(validate_github_release_download_url(github_release).is_ok());
+
+        let usercontent = "https://objects.githubusercontent.com/github-production-release-asset/123/asset?name=setup.exe";
+        assert!(validate_github_release_download_url(usercontent).is_ok());
+    }
+
+    #[test]
+    fn validate_github_release_download_url_rejects_non_https() {
+        let http_url = "http://github.com/owner/repo/releases/download/v1/a.exe";
+        assert!(validate_github_release_download_url(http_url).is_err());
+    }
+
+    #[test]
+    fn validate_github_release_download_url_rejects_non_github_hosts() {
+        assert!(validate_github_release_download_url("https://example.com/evil.exe").is_err());
+    }
+
+    #[test]
+    fn validate_github_release_download_url_rejects_localhost_and_private_ips() {
+        assert!(validate_github_release_download_url("https://localhost/foo").is_err());
+        assert!(validate_github_release_download_url("https://127.0.0.1/foo").is_err());
+        assert!(validate_github_release_download_url("https://192.168.1.1/foo").is_err());
+    }
+
+    #[test]
+    fn sanitize_download_file_name_accepts_simple_names() {
+        assert_eq!(
+            sanitize_download_file_name("Sigma-Setup.exe").unwrap(),
+            "Sigma-Setup.exe"
+        );
+    }
+
+    #[test]
+    fn sanitize_download_file_name_rejects_path_traversal_and_separators() {
+        assert!(sanitize_download_file_name("").is_err());
+        assert!(sanitize_download_file_name("a/b").is_err());
+        assert!(sanitize_download_file_name(r"a\b").is_err());
+        assert!(sanitize_download_file_name("..").is_err());
+        assert!(sanitize_download_file_name("x..y").is_err());
+    }
+
+    #[test]
+    fn make_unique_path_in_dir_returns_original_when_free() {
+        let temp = tempfile::tempdir().expect("temp dir");
+        let path = make_unique_path_in_dir(temp.path(), "installer.exe");
+        assert_eq!(path, temp.path().join("installer.exe"));
+        assert!(!path.exists());
+    }
+
+    #[test]
+    fn make_unique_path_in_dir_adds_suffix_when_taken() {
+        let temp = tempfile::tempdir().expect("temp dir");
+        let first = temp.path().join("installer.exe");
+        File::create(&first)
+            .expect("create file")
+            .write_all(b"x")
+            .expect("write");
+        let unique = make_unique_path_in_dir(temp.path(), "installer.exe");
+        assert_eq!(unique, temp.path().join("installer (2).exe"));
+        assert!(!unique.exists());
+    }
+
+    #[test]
+    fn make_unique_path_in_dir_increments_until_free() {
+        let temp = tempfile::tempdir().expect("temp dir");
+        for index in 1..=3 {
+            let name = if index == 1 {
+                "a.txt".to_string()
+            } else {
+                format!("a ({}).txt", index)
+            };
+            File::create(temp.path().join(&name))
+                .expect("create file")
+                .write_all(b"x")
+                .expect("write");
+        }
+        let unique = make_unique_path_in_dir(temp.path(), "a.txt");
+        assert_eq!(unique, temp.path().join("a (4).txt"));
     }
 }

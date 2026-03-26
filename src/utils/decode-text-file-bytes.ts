@@ -39,7 +39,8 @@ export function decodeTextFileBytesWithEncoding(bytes: Uint8Array): {
       encoding: 'utf8',
       saveRoundTripSafe: true,
     };
-  } catch {
+  }
+  catch {
     return {
       text: new TextDecoder('utf-8', { fatal: false }).decode(bytes),
       encoding: 'utf8',
@@ -70,6 +71,7 @@ export function encodeTextFileBytes(text: string, encoding: TextFileSourceEncodi
     case 'utf8': {
       return utf8Encoder.encode(text);
     }
+
     case 'utf8-bom': {
       const body = utf8Encoder.encode(text);
       const out = new Uint8Array(3 + body.length);
@@ -79,6 +81,7 @@ export function encodeTextFileBytes(text: string, encoding: TextFileSourceEncodi
       out.set(body, 3);
       return out;
     }
+
     case 'utf16le': {
       const body = encodeUtf16WithEndianness(text, false);
       const out = new Uint8Array(2 + body.length);
@@ -87,6 +90,7 @@ export function encodeTextFileBytes(text: string, encoding: TextFileSourceEncodi
       out.set(body, 2);
       return out;
     }
+
     case 'utf16be': {
       const body = encodeUtf16WithEndianness(text, true);
       const out = new Uint8Array(2 + body.length);

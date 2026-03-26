@@ -6,9 +6,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import {
-  InfoIcon, Columns3Icon, ArrowUpIcon, ArrowDownIcon,
-} from '@lucide/vue';
+import { InfoIcon, Columns3Icon, ArrowUpIcon, ArrowDownIcon } from '@lucide/vue';
 import type { ListSortColumn } from '@/types/user-settings';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';

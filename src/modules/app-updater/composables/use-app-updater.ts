@@ -14,8 +14,10 @@ import { toast, ToastStatic, ToastProgress } from '@/components/ui/toaster';
 const CHECK_INTERVAL_MS = 6 * 60 * 60 * 1000;
 const CHECK_COOLDOWN_MS = 10 * 60 * 1000;
 
-const EMULATE_INSTALLED_AS_BETA1_FOR_UPDATE_TEST = false;
+const EMULATE_UPDATE_CHECK_IN_DEV = false;
 const EMULATED_CURRENT_VERSION_FOR_UPDATE_CHECK = '2.0.0-beta.1';
+
+const EMULATE_INSTALLED_AS_BETA1_FOR_UPDATE_TEST = import.meta.env.DEV && EMULATE_UPDATE_CHECK_IN_DEV;
 
 function currentVersionSentToUpdateCheck(realVersion: string): string {
   if (!EMULATE_INSTALLED_AS_BETA1_FOR_UPDATE_TEST) {
@@ -49,6 +51,10 @@ const currentVersion = ref<string>('');
 const isInitialized = ref(false);
 
 let checkIntervalId: ReturnType<typeof setInterval> | null = null;
+
+function toastIdForUpdateNotification(latestVersion: string): string {
+  return `app-update-${latestVersion}`;
+}
 
 function formatBytes(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
@@ -142,6 +148,10 @@ export function useAppUpdater() {
       isChecking.value = false;
       return null;
     }
+  }
+
+  async function downloadReleaseInstaller(info: UpdateInfo) {
+    await runInstallerDownload(info, toastIdForUpdateNotification(info.latestVersion));
   }
 
   async function runInstallerDownload(info: UpdateInfo, toastId: string) {
@@ -238,12 +248,12 @@ export function useAppUpdater() {
   }
 
   function showUpdateToast(info: UpdateInfo, options?: { downloadedPath?: string }) {
-    const toastId = `app-update-${info.latestVersion}`;
+    const toastId = toastIdForUpdateNotification(info.latestVersion);
     const downloadedPath = options?.downloadedPath;
 
-    const dismissThisToast = () => {
+    function dismissThisToast() {
       toast.dismiss(toastId);
-    };
+    }
 
     if (downloadedPath) {
       const savedName = fileBaseNameFromPath(downloadedPath);
@@ -390,6 +400,8 @@ export function useAppUpdater() {
     currentVersion,
     isCooldownActive,
     checkForUpdates,
+    downloadReleaseInstaller,
+    notifyUpdateAvailable: showUpdateToast,
     initAutoCheck,
     onAutoCheckSettingChanged,
     stopPeriodicCheck,

@@ -30,6 +30,7 @@ function isFileBrowserEntryTarget(target: EventTarget | null): boolean {
 
 function openPaneBackgroundContextMenuFromPointer(event: MouseEvent) {
   const triggerElement = event.currentTarget;
+
   if (!(triggerElement instanceof HTMLElement)) {
     return;
   }
@@ -115,11 +116,11 @@ function handlePaneBackgroundClick(event: MouseEvent) {
 <style scoped>
 .file-browser__content-body {
   display: flex;
+  width: 100%;
+  min-height: 0;
   flex: 1;
   flex-direction: column;
   align-self: stretch;
-  min-height: 0;
-  width: 100%;
 }
 
 :deep(.file-browser__empty-state-container) {
@@ -132,15 +133,15 @@ function handlePaneBackgroundClick(event: MouseEvent) {
 
 .file-browser__entries-container {
   display: flex;
+  min-height: 0;
   flex: 1;
   flex-direction: column;
-  min-height: 0;
 }
 
 .file-browser__content-body > :deep(.file-browser-loading) {
   display: flex;
+  min-height: 0;
   flex: 1;
   flex-direction: column;
-  min-height: 0;
 }
 </style>

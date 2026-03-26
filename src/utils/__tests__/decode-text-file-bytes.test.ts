@@ -39,27 +39,38 @@ describe('decodeTextFileBytes', () => {
 });
 
 describe('encodeTextFileBytes round-trip', () => {
-  function roundTrip(text: string, encoding: TextFileSourceEncoding): void {
+  const roundTripCases: {
+    name: string;
+    text: string;
+    encoding: TextFileSourceEncoding;
+  }[] = [
+    {
+      name: 'utf8',
+      text: 'Line\nПривет',
+      encoding: 'utf8',
+    },
+    {
+      name: 'utf8-bom',
+      text: 'abcюникод',
+      encoding: 'utf8-bom',
+    },
+    {
+      name: 'utf16le',
+      text: 'x你好',
+      encoding: 'utf16le',
+    },
+    {
+      name: 'utf16be',
+      text: 'yこんにちは',
+      encoding: 'utf16be',
+    },
+  ];
+
+  it.each(roundTripCases)('round-trips $name', ({ text, encoding }) => {
     const bytes = encodeTextFileBytes(text, encoding);
     const decoded = decodeTextFileBytesWithEncoding(bytes);
     expect(decoded.encoding).toBe(encoding);
     expect(decoded.text).toBe(text);
     expect(decoded.saveRoundTripSafe).toBe(true);
-  }
-
-  it('round-trips utf8', () => {
-    roundTrip('Line\nПривет', 'utf8');
-  });
-
-  it('round-trips utf8-bom', () => {
-    roundTrip('abcюникод', 'utf8-bom');
-  });
-
-  it('round-trips utf16le', () => {
-    roundTrip('x你好', 'utf16le');
-  });
-
-  it('round-trips utf16be', () => {
-    roundTrip('yこんにちは', 'utf16be');
   });
 });

@@ -94,11 +94,11 @@ const listColumnsTemplate = computed(() => {
 }
 
 :global(.file-browser__scroll-area-viewport) {
+  width: 100%;
+  height: 100%;
   min-height: 0;
   flex: 1;
   align-self: stretch;
-  width: 100%;
-  height: 100%;
   border: none;
   border-radius: inherit;
   outline: none;
@@ -106,18 +106,18 @@ const listColumnsTemplate = computed(() => {
 
 :global(.file-browser__scroll-area-viewport > div) {
   display: flex;
-  flex: 1 1 auto;
-  flex-direction: column;
-  box-sizing: border-box;
   width: 100%;
   min-height: 100%;
+  box-sizing: border-box;
+  flex: 1 1 auto;
+  flex-direction: column;
 }
 
 .file-browser__content-inner {
   display: flex;
+  min-height: 0;
   flex: 1;
   flex-direction: column;
-  min-height: 0;
   padding-right: var(--file-browser-scrollbar-gutter);
 }
 

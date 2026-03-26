@@ -27,6 +27,8 @@ const {
   lastCheckError,
   currentVersion,
   checkForUpdates,
+  downloadReleaseInstaller,
+  notifyUpdateAvailable,
   onAutoCheckSettingChanged,
 } = useAppUpdater();
 
@@ -41,17 +43,37 @@ const autoCheck = computed({
 });
 
 async function handleCheckForUpdates() {
-  await checkForUpdates();
+  const result = await checkForUpdates();
   hasCheckedOnce.value = true;
+
+  if (result) {
+    notifyUpdateAvailable(result);
+  }
 }
 
 async function openReleasesPage() {
   await openUrl(externalLinks.githubAllReleases);
 }
 
-async function openDownloadLink() {
-  if (updateInfo.value?.releaseUrl) {
-    await openUrl(updateInfo.value.releaseUrl);
+const hasInstallerDownload = computed(
+  () =>
+    Boolean(
+      updateInfo.value?.installerDownloadUrl && updateInfo.value?.installerFileName,
+    ),
+);
+
+async function handleUpdateAcquireAction() {
+  const info = updateInfo.value;
+
+  if (!info) {
+    return;
+  }
+
+  if (info.installerDownloadUrl && info.installerFileName) {
+    await downloadReleaseInstaller(info);
+  }
+  else if (info.releaseUrl) {
+    await openUrl(info.releaseUrl);
   }
 }
 </script>
@@ -84,7 +106,7 @@ async function openDownloadLink() {
       >
         <ArrowUpCircleIcon :size="16" />
         <span>
-          {{ `${t('appUpdates')}: v${updateInfo.latestVersion}` }}
+          {{ `${t('notifications.updateAvailable')}: v${updateInfo.latestVersion}` }}
         </span>
       </div>
 
@@ -131,10 +153,14 @@ async function openDownloadLink() {
           v-if="updateAvailable && updateInfo"
           variant="secondary"
           size="xs"
-          @click="openDownloadLink"
+          @click="handleUpdateAcquireAction"
         >
           <ExternalLinkIcon :size="16" />
-          {{ `${t('download')} v${updateInfo.latestVersion}` }}
+          {{
+            hasInstallerDownload
+              ? `${t('download')} v${updateInfo.latestVersion}`
+              : t('notifications.viewRelease')
+          }}
         </Button>
 
         <Button
