@@ -153,5 +153,5 @@ pub fn update_tray_shortcut(app: tauri::AppHandle, shortcut: String) {
 }
 
 pub fn quit_app<R: tauri::Runtime>(app: &tauri::AppHandle<R>) {
-    let _ = app.exit(0);
+    app.exit(0);
 }

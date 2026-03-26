@@ -46,7 +46,7 @@ pub fn open_native_open_with_dialog_impl(file_path: &str) -> OpenWithResult {
         sei.cbSize = std::mem::size_of::<SHELLEXECUTEINFOW>() as u32;
         sei.lpVerb = PCWSTR(verb_wide.as_ptr());
         sei.lpFile = PCWSTR(file_wide.as_ptr());
-        sei.nShow = SW_SHOWNORMAL.0 as i32;
+        sei.nShow = SW_SHOWNORMAL.0;
         sei.fMask = SEE_MASK_INVOKEIDLIST;
 
         if ShellExecuteExW(&mut sei).is_ok() {

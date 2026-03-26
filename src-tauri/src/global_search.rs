@@ -2,6 +2,7 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
+use crate::utils::normalize_path;
 use once_cell::sync::Lazy;
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
@@ -17,7 +18,6 @@ use tantivy::schema::{
 use tantivy::{doc, Index, IndexReader, IndexWriter, Term};
 use tauri::Manager;
 use walkdir::WalkDir;
-use crate::utils::normalize_path;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GlobalSearchSettings {
@@ -548,7 +548,7 @@ fn build_query(
     let max_distance = if options.typo_tolerance { 2 } else { 1 };
 
     let mut subqueries: Vec<(tantivy::query::Occur, Box<dyn Query>)> = Vec::new();
-    
+
     for word in &words {
         let term = Term::from_field_text(fields.name, word);
         let fuzzy = FuzzyTermQuery::new(term, max_distance, true);
@@ -789,10 +789,8 @@ pub async fn global_search_start_scan(
                         .collect();
 
                     for handle in results {
-                        if let Ok(result) = handle.join() {
-                            if let Err(error) = result {
-                                errors.push(error);
-                            }
+                        if let Ok(Err(error)) = handle.join() {
+                            errors.push(error);
                         }
                     }
                 });
@@ -865,9 +863,9 @@ pub async fn global_search_start_scan(
             state.status.is_scan_in_progress = false;
             state.status.is_parallel_scan = false;
             state.status.current_drive_root = None;
-            
+
             let was_cancelled = state.cancel_flag.load(Ordering::SeqCst);
-            
+
             if let Ok(count) = result {
                 if !was_cancelled {
                     state.status.last_scan_time = Some(now_millis());
@@ -937,13 +935,13 @@ pub async fn global_search_index_paths(
 
     for dir_path in &settings.paths {
         let path = Path::new(dir_path);
-        
+
         if !path.exists() || !path.is_dir() {
             continue;
         }
 
         let normalized_dir = normalize_path(dir_path);
-        
+
         if is_ignored_path(&normalized_dir, &ignored_paths) {
             continue;
         }
@@ -1129,10 +1127,7 @@ pub async fn global_search_query(
 
     for entry in results {
         let drive_root = get_drive_root(&entry.path);
-        drive_groups
-            .entry(drive_root)
-            .or_insert_with(Vec::new)
-            .push(entry);
+        drive_groups.entry(drive_root).or_default().push(entry);
     }
 
     let mut final_results: Vec<GlobalSearchResultEntry> = Vec::new();
@@ -1183,8 +1178,7 @@ pub async fn global_search_query_paths(
                             collected_paths.push(entry_result.path());
                         }
                     }
-                }
-                else {
+                } else {
                     collected_paths.push(path.to_path_buf());
                 }
             }

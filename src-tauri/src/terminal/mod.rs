@@ -187,7 +187,11 @@ fn read_wt_settings() -> Option<serde_json::Value> {
 fn get_visible_wt_profiles(settings: &serde_json::Value) -> Vec<(&serde_json::Value, String)> {
     let mut profiles = Vec::new();
 
-    let profiles_list = match settings.get("profiles").and_then(|p| p.get("list")).and_then(|l| l.as_array()) {
+    let profiles_list = match settings
+        .get("profiles")
+        .and_then(|p| p.get("list"))
+        .and_then(|l| l.as_array())
+    {
         Some(list) => list,
         None => return profiles,
     };
@@ -329,10 +333,7 @@ fn resolve_wt_profile_icon(profile: &serde_json::Value) -> Option<String> {
         }
     }
 
-    let profile_name = profile
-        .get("name")
-        .and_then(|v| v.as_str())
-        .unwrap_or("");
+    let profile_name = profile.get("name").and_then(|v| v.as_str()).unwrap_or("");
     let name_lower = profile_name.to_lowercase();
 
     if name_lower.contains("git bash") || name_lower.contains("git-bash") {
@@ -351,9 +352,7 @@ fn resolve_wt_profile_icon(profile: &serde_json::Value) -> Option<String> {
     }
 
     let name_exe = if name_lower.contains("powershell") {
-        if name_lower.contains("7")
-            || name_lower.contains("core")
-            || name_lower.contains("preview")
+        if name_lower.contains("7") || name_lower.contains("core") || name_lower.contains("preview")
         {
             Some("pwsh.exe")
         } else {
@@ -391,9 +390,9 @@ fn resolve_wt_profile_icon(profile: &serde_json::Value) -> Option<String> {
 fn find_executable_path(commandline: &str) -> Option<String> {
     let trimmed = commandline.trim();
 
-    if trimmed.starts_with('"') {
-        let end_quote = trimmed[1..].find('"')?;
-        let exe_token = &trimmed[1..1 + end_quote];
+    if let Some(after_opening_quote) = trimmed.strip_prefix('"') {
+        let end_quote = after_opening_quote.find('"')?;
+        let exe_token = &after_opening_quote[..end_quote];
         let expanded = expand_env_vars(exe_token);
 
         let expanded_path = Path::new(&expanded);
@@ -414,10 +413,7 @@ fn find_executable_path(commandline: &str) -> Option<String> {
             return Some(expanded);
         }
 
-        if expanded.ends_with(".exe")
-            || expanded.ends_with(".cmd")
-            || expanded.ends_with(".com")
-        {
+        if expanded.ends_with(".exe") || expanded.ends_with(".cmd") || expanded.ends_with(".com") {
             if let Some(found) = resolve_via_where(&expanded) {
                 return Some(found);
             }
@@ -500,15 +496,9 @@ fn load_image_as_base64(file_path: &str) -> Option<String> {
     let data = std::fs::read(file_path).ok()?;
 
     if data.starts_with(&[0x89, 0x50, 0x4E, 0x47]) {
-        Some(format!(
-            "data:image/png;base64,{}",
-            STANDARD.encode(&data)
-        ))
+        Some(format!("data:image/png;base64,{}", STANDARD.encode(&data)))
     } else if data.starts_with(&[0xFF, 0xD8]) {
-        Some(format!(
-            "data:image/jpeg;base64,{}",
-            STANDARD.encode(&data)
-        ))
+        Some(format!("data:image/jpeg;base64,{}", STANDARD.encode(&data)))
     } else {
         None
     }
@@ -517,11 +507,7 @@ fn load_image_as_base64(file_path: &str) -> Option<String> {
 #[cfg(target_os = "windows")]
 fn expand_env_vars(input: &str) -> String {
     let mut result = input.to_string();
-    loop {
-        let start = match result.find('%') {
-            Some(pos) => pos,
-            None => break,
-        };
+    while let Some(start) = result.find('%') {
         let rest = &result[start + 1..];
         let end_offset = match rest.find('%') {
             Some(pos) => pos,
@@ -616,8 +602,7 @@ fn open_terminal_windows(
 ) -> OpenTerminalResult {
     const CREATE_NO_WINDOW: u32 = 0x08000000;
 
-    let spawn_result = if terminal_id.starts_with("wt-profile:") {
-        let profile_name = &terminal_id["wt-profile:".len()..];
+    let spawn_result = if let Some(profile_name) = terminal_id.strip_prefix("wt-profile:") {
         open_wt_profile(directory_path, profile_name, as_admin, CREATE_NO_WINDOW)
     } else if as_admin {
         open_standalone_admin(directory_path, terminal_id, CREATE_NO_WINDOW)
@@ -995,15 +980,15 @@ fn detect_terminal_from_env() -> Option<String> {
 fn detect_terminal_from_gsettings() -> Option<String> {
     let schemas = [
         ("org.gnome.desktop.default-applications.terminal", "exec"),
-        (
-            "org.cinnamon.desktop.default-applications.terminal",
-            "exec",
-        ),
+        ("org.cinnamon.desktop.default-applications.terminal", "exec"),
         ("org.mate.applications-terminal", "exec"),
     ];
 
     for (schema, key) in &schemas {
-        if let Ok(output) = Command::new("gsettings").args(["get", schema, key]).output() {
+        if let Ok(output) = Command::new("gsettings")
+            .args(["get", schema, key])
+            .output()
+        {
             if output.status.success() {
                 let value = String::from_utf8_lossy(&output.stdout)
                     .trim()
@@ -1115,9 +1100,7 @@ fn terminal_display_name(binary_name: &str) -> String {
             let mut chars = word.chars();
             match chars.next() {
                 None => String::new(),
-                Some(first_char) => {
-                    first_char.to_uppercase().to_string() + chars.as_str()
-                }
+                Some(first_char) => first_char.to_uppercase().to_string() + chars.as_str(),
             }
         })
         .collect::<Vec<_>>()
@@ -1240,16 +1223,11 @@ fn open_terminal_linux(
             "terminology" => Command::new("terminology")
                 .args(["--working-dir", directory_path])
                 .spawn(),
-            "urxvt" => Command::new("urxvt")
-                .args(["-cd", directory_path])
-                .spawn(),
+            "urxvt" => Command::new("urxvt").args(["-cd", directory_path]).spawn(),
             "xterm" => {
                 let escaped_path = directory_path.replace('\'', "'\\''");
                 Command::new("xterm")
-                    .args([
-                        "-e",
-                        &format!("cd '{}' && exec $SHELL", escaped_path),
-                    ])
+                    .args(["-e", &format!("cd '{}' && exec $SHELL", escaped_path)])
                     .spawn()
             }
             _ => Command::new(terminal_id)

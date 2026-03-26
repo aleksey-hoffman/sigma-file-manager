@@ -72,13 +72,11 @@ pub fn get_associated_programs_impl(file_path: &str) -> GetAssociatedProgramsRes
                     .is_ok()
                     && fetched > 0
                 {
-                    for handler_opt in handlers.iter().take(fetched as usize) {
-                        if let Some(handler) = handler_opt {
-                            if let Some(program) = extract_handler_info(handler, &seen_paths) {
-                                seen_paths.insert(program.name.to_lowercase());
-                                seen_paths.insert(program.path.to_lowercase());
-                                recommended_programs.push(program);
-                            }
+                    for handler in handlers.iter().take(fetched as usize).flatten() {
+                        if let Some(program) = extract_handler_info(handler, &seen_paths) {
+                            seen_paths.insert(program.name.to_lowercase());
+                            seen_paths.insert(program.path.to_lowercase());
+                            recommended_programs.push(program);
                         }
                     }
 
@@ -101,13 +99,11 @@ pub fn get_associated_programs_impl(file_path: &str) -> GetAssociatedProgramsRes
                     .is_ok()
                     && fetched > 0
                 {
-                    for handler_opt in handlers.iter().take(fetched as usize) {
-                        if let Some(handler) = handler_opt {
-                            if let Some(program) = extract_handler_info(handler, &seen_paths) {
-                                seen_paths.insert(program.name.to_lowercase());
-                                seen_paths.insert(program.path.to_lowercase());
-                                other_programs.push(program);
-                            }
+                    for handler in handlers.iter().take(fetched as usize).flatten() {
+                        if let Some(program) = extract_handler_info(handler, &seen_paths) {
+                            seen_paths.insert(program.name.to_lowercase());
+                            seen_paths.insert(program.path.to_lowercase());
+                            other_programs.push(program);
                         }
                     }
 
@@ -211,7 +207,7 @@ unsafe fn extract_handler_info(
         } else {
             handler_path
                 .split(&['\\', '/', '!'][..])
-                .last()
+                .next_back()
                 .unwrap_or("Unknown")
                 .to_string()
         }
@@ -397,68 +393,66 @@ pub fn invoke_handler_for_file(handler_name: &str, file_path: &str) -> OpenWithR
                         .is_ok()
                         && fetched > 0
                     {
-                        for handler_opt in handlers.iter().take(fetched as usize) {
-                            if let Some(handler) = handler_opt {
-                                let ui_name = handler
-                                    .GetUIName()
-                                    .ok()
-                                    .and_then(|pwstr| pwstr_to_string_and_free(pwstr));
+                        for handler in handlers.iter().take(fetched as usize).flatten() {
+                            let ui_name = handler
+                                .GetUIName()
+                                .ok()
+                                .and_then(|pwstr| pwstr_to_string_and_free(pwstr));
 
-                                let handler_path = handler
-                                    .GetName()
-                                    .ok()
-                                    .and_then(|pwstr| pwstr_to_string_and_free(pwstr));
+                            let handler_path = handler
+                                .GetName()
+                                .ok()
+                                .and_then(|pwstr| pwstr_to_string_and_free(pwstr));
 
-                                let matches = ui_name
+                            let matches = ui_name
+                                .as_ref()
+                                .map(|n| n.to_lowercase() == handler_name.to_lowercase())
+                                .unwrap_or(false)
+                                || handler_path
                                     .as_ref()
-                                    .map(|n| n.to_lowercase() == handler_name.to_lowercase())
-                                    .unwrap_or(false)
-                                    || handler_path
-                                        .as_ref()
-                                        .map(|p| p.to_lowercase() == handler_name.to_lowercase())
-                                        .unwrap_or(false);
+                                    .map(|p| p.to_lowercase() == handler_name.to_lowercase())
+                                    .unwrap_or(false);
 
-                                if matches {
-                                    let file_hstring = HSTRING::from(file_path);
-                                    let shell_item: Result<IShellItem, _> =
-                                        SHCreateItemFromParsingName(&file_hstring, None);
+                            if matches {
+                                let file_hstring = HSTRING::from(file_path);
+                                let shell_item: Result<IShellItem, _> =
+                                    SHCreateItemFromParsingName(&file_hstring, None);
 
-                                    if let Ok(item) = shell_item {
-                                        let item_array: Result<IShellItemArray, _> =
-                                            SHCreateShellItemArrayFromShellItem(&item);
+                                if let Ok(item) = shell_item {
+                                    let item_array: Result<IShellItemArray, _> =
+                                        SHCreateShellItemArrayFromShellItem(&item);
 
-                                        if let Ok(arr) = item_array {
-                                            let data_object: Result<IDataObject, _> = arr
-                                                .BindToHandler(
-                                                    None,
-                                                    &windows::Win32::UI::Shell::BHID_DataObject,
-                                                );
+                                    if let Ok(arr) = item_array {
+                                        let data_object: Result<IDataObject, _> = arr
+                                            .BindToHandler(
+                                                None,
+                                                &windows::Win32::UI::Shell::BHID_DataObject,
+                                            );
 
-                                            if let Ok(data_obj) = data_object {
-                                                let invoke_result = handler.Invoke(&data_obj);
+                                        if let Ok(data_obj) = data_object {
+                                            let invoke_result = handler.Invoke(&data_obj);
 
-                                                for h in handlers.iter_mut() {
-                                                    *h = None;
-                                                }
-
-                                                if needs_uninit {
-                                                    CoUninitialize();
-                                                }
-
-                                                return match invoke_result {
-                                                    Ok(_) => OpenWithResult {
-                                                        success: true,
-                                                        error: None,
-                                                    },
-                                                    Err(invoke_error) => OpenWithResult {
-                                                        success: false,
-                                                        error: Some(format!(
-                                                            "Failed to invoke handler: {}",
-                                                            invoke_error
-                                                        )),
-                                                    },
-                                                };
+                                            for h in handlers.iter_mut() {
+                                                *h = None;
                                             }
+
+                                            if needs_uninit {
+                                                CoUninitialize();
+                                            }
+
+                                            return match invoke_result {
+                                                Ok(_) => OpenWithResult {
+                                                    success: true,
+                                                    error: None,
+                                                },
+                                                Err(invoke_error) => OpenWithResult {
+                                                    success: false,
+                                                    error: Some(format!(
+                                                        "Failed to invoke handler: {}",
+                                                        invoke_error
+                                                    )),
+                                                },
+                                            };
                                         }
                                     }
                                 }

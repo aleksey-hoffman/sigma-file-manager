@@ -96,7 +96,7 @@ pub fn get_uwp_app_icon_from_shell(app_user_model_id: &str) -> Option<String> {
                 let size = SIZE { cx: 32, cy: 32 };
                 factory.GetImage(size, SIIGBF_BIGGERSIZEOK).ok()
             })
-            .and_then(|hbitmap| extract_bitmap_to_png(hbitmap));
+            .and_then(extract_bitmap_to_png);
 
         if needs_uninit {
             CoUninitialize();

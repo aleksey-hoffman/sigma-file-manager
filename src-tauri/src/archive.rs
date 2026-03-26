@@ -327,13 +327,6 @@ fn build_zip_entries(sources: &[PathBuf]) -> Result<Vec<(PathBuf, String)>, Stri
     Ok(result)
 }
 
-pub(crate) fn create_zip_from_sources(
-    source_paths: &[PathBuf],
-    destination_zip: &Path,
-) -> Result<(), String> {
-    create_zip_from_sources_with_sink(source_paths, destination_zip, None)
-}
-
 fn create_zip_from_sources_with_sink(
     source_paths: &[PathBuf],
     destination_zip: &Path,
@@ -628,7 +621,8 @@ mod tests {
         fs::write(&source_file, b"content").unwrap();
 
         let zip_path = temp.path().join("out.zip");
-        create_zip_from_sources(&[source_file.clone()], &zip_path).unwrap();
+        create_zip_from_sources_with_sink(std::slice::from_ref(&source_file), &zip_path, None)
+            .unwrap();
 
         let extract_dir = temp.path().join("extracted");
         fs::create_dir_all(&extract_dir).unwrap();

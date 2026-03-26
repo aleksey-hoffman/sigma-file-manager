@@ -58,13 +58,15 @@ pub struct ExtensionCommandComplete {
     pub stderr: String,
 }
 
+type BinaryDownloadSenderMap = std::collections::HashMap<
+    String,
+    tokio::sync::broadcast::Sender<Result<String, String>>,
+>;
+
 static COMMAND_TASKS: Lazy<Mutex<std::collections::HashMap<String, Arc<Mutex<Child>>>>> =
     Lazy::new(|| Mutex::new(std::collections::HashMap::new()));
-static IN_FLIGHT_BINARY_DOWNLOADS: Lazy<
-    tokio::sync::Mutex<
-        std::collections::HashMap<String, tokio::sync::broadcast::Sender<Result<String, String>>>,
-    >,
-> = Lazy::new(|| tokio::sync::Mutex::new(std::collections::HashMap::new()));
+static IN_FLIGHT_BINARY_DOWNLOADS: Lazy<tokio::sync::Mutex<BinaryDownloadSenderMap>> =
+    Lazy::new(|| tokio::sync::Mutex::new(std::collections::HashMap::new()));
 static EXTENSION_INSTALL_LOCKS: Lazy<
     tokio::sync::Mutex<std::collections::HashMap<String, Arc<tokio::sync::Mutex<()>>>>,
 > = Lazy::new(|| tokio::sync::Mutex::new(std::collections::HashMap::new()));
@@ -653,46 +655,6 @@ fn remove_dir_force(path: &Path) -> Result<(), String> {
             ))
         }
     }
-}
-
-fn clear_extension_dir_preserving_bin(extension_dir: &Path) -> Result<(), String> {
-    if !extension_dir.exists() {
-        return Ok(());
-    }
-
-    let entries = fs::read_dir(extension_dir)
-        .map_err(|error| format!("Failed to read extension directory: {}", error))?;
-
-    for entry in entries {
-        let entry = entry.map_err(|error| format!("Failed to read directory entry: {}", error))?;
-        let entry_path = entry.path();
-
-        if entry_path.is_dir() {
-            let dir_name = entry.file_name().to_string_lossy().to_string();
-
-            if dir_name == "bin" {
-                log::info!(
-                    "Preserving bin/ directory during extension reinstall: {}",
-                    entry_path.display()
-                );
-                continue;
-            }
-
-            fs::remove_dir_all(&entry_path).map_err(|error| {
-                format!(
-                    "Failed to remove directory {}: {}",
-                    entry_path.display(),
-                    error
-                )
-            })?;
-        } else {
-            fs::remove_file(&entry_path).map_err(|error| {
-                format!("Failed to remove file {}: {}", entry_path.display(), error)
-            })?;
-        }
-    }
-
-    Ok(())
 }
 
 fn cleanup_trash_directories(extensions_dir: &Path) {

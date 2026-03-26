@@ -696,6 +696,7 @@ fn append_windows_wsl_drives(
 // Display name helpers (per-platform)
 // ---------------------------------------------------------------------------
 
+#[cfg(any(target_os = "linux", target_os = "macos"))]
 fn mount_point_last_component(mount_point: &str) -> String {
     mount_point
         .rsplit('/')
@@ -1223,6 +1224,7 @@ fn mount_network_share_windows(params: &NetworkShareParams) -> Result<String, St
     }
 }
 
+#[cfg(not(windows))]
 fn mount_sshfs(params: &NetworkShareParams, mount_point: &str) -> Result<(), String> {
     let username = params.username.as_deref().unwrap_or("root");
     let port = params.port.unwrap_or(22);
@@ -1276,6 +1278,7 @@ fn mount_sshfs(params: &NetworkShareParams, mount_point: &str) -> Result<(), Str
     }
 }
 
+#[cfg(not(windows))]
 fn mount_nfs(params: &NetworkShareParams, mount_point: &str) -> Result<(), String> {
     let source = format!("{}:{}", params.host, params.remote_path);
 
@@ -1297,6 +1300,7 @@ fn mount_nfs(params: &NetworkShareParams, mount_point: &str) -> Result<(), Strin
     }
 }
 
+#[cfg(not(windows))]
 fn mount_smb(params: &NetworkShareParams, mount_point: &str) -> Result<(), String> {
     let source = format!("//{}/{}", params.host, params.remote_path);
 
