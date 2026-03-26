@@ -59,7 +59,8 @@
   "quickView": {
     "unsupportedFileType": "This file type is not supported for quick view",
     "noFileSelected": "No file selected",
-    "closeHint": "Press Space or Esc to close"
+    "closeHint": "Press Space or Esc to close. Left/Right: previous or next file.",
+    "thumbnailStripLabel": "Files in this folder"
   },
   "trayMenu": {
     "globalShortcuts": "GLOBAL SHORTCUTS",

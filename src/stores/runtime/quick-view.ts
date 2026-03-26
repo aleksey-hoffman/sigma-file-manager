@@ -6,9 +6,11 @@ import { defineStore } from 'pinia';
 import { ref, computed, markRaw } from 'vue';
 import { getAllWindows, Window, getCurrentWindow } from '@tauri-apps/api/window';
 import { emit } from '@tauri-apps/api/event';
-import { convertFileSrc } from '@tauri-apps/api/core';
+import { convertFileSrc, invoke } from '@tauri-apps/api/core';
 import { toast, ToastStatic } from '@/components/ui/toaster';
 import { i18n } from '@/localization';
+import type { DirContents } from '@/types/dir-entry';
+import { getParentDirectory } from '@/utils/normalize-path';
 
 export type QuickViewFileType = 'image' | 'video' | 'audio' | 'pdf' | 'text' | 'unsupported';
 
@@ -38,6 +40,56 @@ export function determineFileType(path: string): QuickViewFileType {
   if (TEXT_EXTENSIONS.includes(extension)) return 'text';
 
   return 'unsupported';
+}
+
+export function isQuickViewSupported(path: string): boolean {
+  return determineFileType(path) !== 'unsupported';
+}
+
+export function quickViewSupportedPathsFromVisibleEntries(
+  entries: readonly { path: string;
+    is_file: boolean; }[],
+): string[] {
+  const paths: string[] = [];
+
+  for (const entry of entries) {
+    if (entry.is_file && isQuickViewSupported(entry.path)) {
+      paths.push(entry.path);
+    }
+  }
+
+  return paths;
+}
+
+export async function fetchQuickViewSiblingPathsFromDisk(filePath: string): Promise<string[]> {
+  const parentDir = getParentDirectory(filePath);
+
+  if (!parentDir) {
+    return [filePath];
+  }
+
+  try {
+    const contents = await invoke<DirContents>('read_dir', { path: parentDir });
+    const paths = contents.entries
+      .filter(entry => entry.is_file && isQuickViewSupported(entry.path))
+      .map(entry => entry.path)
+      .sort((pathA, pathB) =>
+        getFileName(pathA).localeCompare(getFileName(pathB), undefined, { sensitivity: 'base' }),
+      );
+
+    if (paths.length === 0) {
+      return [filePath];
+    }
+
+    if (!paths.includes(filePath)) {
+      return [filePath];
+    }
+
+    return paths;
+  }
+  catch {
+    return [filePath];
+  }
 }
 
 export function getFileAssetUrl(path: string): string {
@@ -94,7 +146,10 @@ export const useQuickViewStore = defineStore('quickView', () => {
     });
   }
 
-  async function openFileFromMainWindow(path: string): Promise<boolean> {
+  async function openFileFromMainWindow(
+    path: string,
+    siblingPaths?: string[] | null,
+  ): Promise<boolean> {
     const type = determineFileType(path);
 
     if (type === 'unsupported') {
@@ -110,7 +165,13 @@ export const useQuickViewStore = defineStore('quickView', () => {
       const title = `Sigma File Manager | Quick View - ${getFileName(path)}`;
       await quickWindow.setTitle(title);
 
-      await emit('quick-view:load-file', { path });
+      await emit('quick-view:load-file', {
+        path,
+        siblingPaths:
+          siblingPaths === undefined || siblingPaths === null || siblingPaths.length === 0
+            ? null
+            : siblingPaths,
+      });
 
       await quickWindow.center();
       await quickWindow.show();
@@ -153,7 +214,10 @@ export const useQuickViewStore = defineStore('quickView', () => {
     return false;
   }
 
-  async function toggleQuickView(path: string): Promise<boolean> {
+  async function toggleQuickView(
+    path: string,
+    siblingPaths?: string[] | null,
+  ): Promise<boolean> {
     const isVisible = await isWindowVisible();
 
     if (isVisible && lastOpenedPath.value === path) {
@@ -161,7 +225,7 @@ export const useQuickViewStore = defineStore('quickView', () => {
       return true;
     }
 
-    return await openFileFromMainWindow(path);
+    return await openFileFromMainWindow(path, siblingPaths);
   }
 
   return {

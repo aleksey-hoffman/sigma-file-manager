@@ -59,7 +59,8 @@
   "quickView": {
     "unsupportedFileType": "Dieser Dateityp wird für die Schnellansicht nicht unterstützt",
     "noFileSelected": "Keine Datei ausgewählt",
-    "closeHint": "Drücken Sie Leertaste oder Esc zum Schließen"
+    "closeHint": "Leertaste oder Esc zum Schließen. Links/Rechts: vorherige oder nächste Datei.",
+    "thumbnailStripLabel": "Dateien in diesem Ordner"
   },
   "trayMenu": {
     "globalShortcuts": "GLOBALE VERKNÜPFUNGEN",

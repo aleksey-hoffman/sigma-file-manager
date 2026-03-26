@@ -59,7 +59,8 @@
   "quickView": {
     "unsupportedFileType": "このファイル形式はクイックビューでサポートされていません",
     "noFileSelected": "ファイルが選択されていません",
-    "closeHint": "スペースまたはEscキーで閉じる"
+    "closeHint": "スペースまたはEscで閉じる。左右キーで前または次のファイル。",
+    "thumbnailStripLabel": "このフォルダ内のファイル"
   },
   "trayMenu": {
     "globalShortcuts": "グローバル ショートカット",

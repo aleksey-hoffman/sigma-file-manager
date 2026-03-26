@@ -59,7 +59,8 @@
   "quickView": {
     "unsupportedFileType": "Este tipo de arquivo não é suportado para visualização rápida",
     "noFileSelected": "Nenhum arquivo selecionado",
-    "closeHint": "Pressione Espaço ou Esc para fechar"
+    "closeHint": "Espaço ou Esc para fechar. Esquerda/Direita: arquivo anterior ou seguinte.",
+    "thumbnailStripLabel": "Arquivos nesta pasta"
   },
   "trayMenu": {
     "globalShortcuts": "ACESSO DIRETO GLOBAL",

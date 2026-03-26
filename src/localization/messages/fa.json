@@ -59,7 +59,8 @@
   "quickView": {
     "unsupportedFileType": "این نوع فایل برای نمایش سریع پشتیبانی نمی‌شود",
     "noFileSelected": "فایلی انتخاب نشده است",
-    "closeHint": "برای بستن Space یا Esc را فشار دهید"
+    "closeHint": "Space یا Esc برای بستن. چپ/راست: پروندهٔ قبلی یا بعدی.",
+    "thumbnailStripLabel": "پرونده‌ها در این پوشه"
   },
   "trayMenu": {
     "globalShortcuts": "میانبرهای جهانی",

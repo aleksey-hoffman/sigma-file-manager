@@ -2,9 +2,10 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-import type { Ref } from 'vue';
+import type { ComputedRef, Ref } from 'vue';
 import type { DirEntry } from '@/types/dir-entry';
 import type { ContextMenuAction } from '@/modules/navigator/components/file-browser/types';
+import { quickViewSupportedPathsFromVisibleEntries } from '@/stores/runtime/quick-view';
 
 type ContextMenuState = {
   targetEntry: DirEntry | null;
@@ -12,12 +13,13 @@ type ContextMenuState = {
 };
 
 type QuickViewStore = {
-  toggleQuickView: (path: string) => Promise<boolean>;
+  toggleQuickView: (path: string, siblingPaths?: string[] | null) => Promise<boolean>;
 };
 
 export function useFileBrowserActions(options: {
   contextMenu: Ref<ContextMenuState>;
   selectedEntries: Ref<DirEntry[]>;
+  visibleEntries: ComputedRef<DirEntry[]>;
   quickViewStore: QuickViewStore;
   handleContextMenuAction: (action: ContextMenuAction) => void;
   openOpenWithDialog: (entries: DirEntry[]) => void;
@@ -30,7 +32,8 @@ export function useFileBrowserActions(options: {
     const targetEntry = entry || options.selectedEntries.value[options.selectedEntries.value.length - 1];
 
     if (targetEntry && targetEntry.is_file) {
-      await options.quickViewStore.toggleQuickView(targetEntry.path);
+      const siblingPaths = quickViewSupportedPathsFromVisibleEntries(options.visibleEntries.value);
+      await options.quickViewStore.toggleQuickView(targetEntry.path, siblingPaths);
     }
   }
 

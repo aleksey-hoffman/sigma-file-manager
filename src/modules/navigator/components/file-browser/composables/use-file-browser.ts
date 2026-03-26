@@ -302,6 +302,7 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
   const actions = useFileBrowserActions({
     contextMenu: selection.contextMenu,
     selectedEntries: selection.selectedEntries,
+    visibleEntries: dataSource.entries,
     quickViewStore,
     handleContextMenuAction: selection.handleContextMenuAction,
     openOpenWithDialog: dialogs.openOpenWithDialog,

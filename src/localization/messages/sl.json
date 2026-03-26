@@ -59,7 +59,8 @@
   "quickView": {
     "unsupportedFileType": "Ta tip datoteke ni podprt za hitro ogled",
     "noFileSelected": "Ni izbrane datoteke",
-    "closeHint": "Pritisni preslednico ali Esc za zapiranje"
+    "closeHint": "Preslednica ali Esc za zapiranje. Levo/desno: prejšnja ali naslednja datoteka.",
+    "thumbnailStripLabel": "Datoteke v tej mapi"
   },
   "trayMenu": {
     "globalShortcuts": "GLOBALNE BLIŽNICE",

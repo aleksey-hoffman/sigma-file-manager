@@ -59,7 +59,8 @@
   "quickView": {
     "unsupportedFileType": "Этот тип файла не поддерживается для быстрого просмотра",
     "noFileSelected": "Файл не выбран",
-    "closeHint": "Нажмите Пробел или Esc для закрытия"
+    "closeHint": "Пробел или Esc — закрыть. Стрелки влево/вправо — предыдущий или следующий файл.",
+    "thumbnailStripLabel": "Файлы в этой папке"
   },
   "trayMenu": {
     "globalShortcuts": "ГЛОБАЛЬНЫЕ ШОРТКАТЫ",

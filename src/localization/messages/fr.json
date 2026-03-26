@@ -59,7 +59,8 @@
   "quickView": {
     "unsupportedFileType": "Ce type de fichier n'est pas pris en charge pour l'aperçu rapide",
     "noFileSelected": "Aucun fichier sélectionné",
-    "closeHint": "Appuyez sur Espace ou Échap pour fermer"
+    "closeHint": "Espace ou Échap pour fermer. Gauche/Droite : fichier précédent ou suivant.",
+    "thumbnailStripLabel": "Fichiers dans ce dossier"
   },
   "trayMenu": {
     "globalShortcuts": "RACCOURCIS GLOBAUX",

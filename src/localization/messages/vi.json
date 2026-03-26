@@ -59,7 +59,8 @@
   "quickView": {
     "unsupportedFileType": "Loại tệp này không được hỗ trợ cho xem nhanh",
     "noFileSelected": "Chưa chọn tệp",
-    "closeHint": "Nhấn Space hoặc Esc để đóng"
+    "closeHint": "Nhấn Space hoặc Esc để đóng. Trái/Phải: tệp trước hoặc sau.",
+    "thumbnailStripLabel": "Tệp trong thư mục này"
   },
   "trayMenu": {
     "globalShortcuts": "CÁCH TẮT TOÀN CẦU",

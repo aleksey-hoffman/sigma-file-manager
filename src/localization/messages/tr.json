@@ -59,7 +59,8 @@
   "quickView": {
     "unsupportedFileType": "Bu dosya türü hızlı görüntüleme için desteklenmiyor",
     "noFileSelected": "Dosya seçilmedi",
-    "closeHint": "Kapatmak için Boşluk veya Esc tuşuna basın"
+    "closeHint": "Kapatmak için Boşluk veya Esc. Sol/Sağ: önceki veya sonraki dosya.",
+    "thumbnailStripLabel": "Bu klasördeki dosyalar"
   },
   "trayMenu": {
     "globalShortcuts": "GLOBAL KISAYOLLAR",
