@@ -111,7 +111,10 @@ export type ShortcutId
     | 'openSelected'
     | 'navigateBack'
     | 'switchToLeftPane'
-    | 'switchToRightPane';
+    | 'switchToRightPane'
+    | 'uiZoomIncrease'
+    | 'uiZoomDecrease'
+    | 'toggleFullscreen';
 
 export type UserShortcuts = Partial<Record<ShortcutId, ShortcutKeys>>;
 

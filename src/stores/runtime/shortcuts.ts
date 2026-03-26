@@ -375,6 +375,38 @@ const DEFAULT_SHORTCUTS: ShortcutDefinition[] = [
     },
     isReadOnly: false,
   },
+  {
+    id: 'uiZoomIncrease',
+    labelKey: 'shortcuts.uiZoomIncrease',
+    defaultKeys: {
+      ctrl: true,
+      key: '=',
+    },
+    scope: 'global',
+    conditions: {},
+    isReadOnly: false,
+  },
+  {
+    id: 'uiZoomDecrease',
+    labelKey: 'shortcuts.uiZoomDecrease',
+    defaultKeys: {
+      ctrl: true,
+      key: '-',
+    },
+    scope: 'global',
+    conditions: {},
+    isReadOnly: false,
+  },
+  {
+    id: 'toggleFullscreen',
+    labelKey: 'shortcuts.toggleFullScreen',
+    defaultKeys: {
+      key: 'F11',
+    },
+    scope: 'global',
+    conditions: {},
+    isReadOnly: false,
+  },
 ];
 
 const MODIFIER_ONLY_KEYBOARD_CODES = new Set([
@@ -637,7 +669,12 @@ export function formatShortcutKeys(keys: ShortcutKeys): string {
   if (keys.meta) parts.push('Win');
   if (keys.shift) parts.push('Shift');
 
-  parts.push(formatShortcutMainKeyForDisplay(keys.key));
+  let mainKeyForDisplay = keys.key;
+  if ((keys.ctrl || keys.meta) && mainKeyForDisplay === '=' && !keys.shift) {
+    mainKeyForDisplay = '+';
+  }
+
+  parts.push(formatShortcutMainKeyForDisplay(mainKeyForDisplay));
 
   return parts.join('+');
 }
@@ -672,10 +709,33 @@ function matchesShortcut(event: KeyboardEvent, keys: ShortcutKeys): boolean {
 
   if (eventCtrl !== expectedCtrl) return false;
   if (event.altKey !== (keys.alt || false)) return false;
-  if (event.shiftKey !== (keys.shift || false)) return false;
 
   const eventKey = event.key.toLowerCase();
   const expectedKey = keys.key.toLowerCase();
+
+  if (
+    expectedKey === '='
+    && (keys.ctrl || keys.meta)
+    && !keys.alt
+    && !keys.shift
+  ) {
+    if (eventKey === '=' || eventKey === '+' || event.code === 'NumpadAdd') {
+      return true;
+    }
+  }
+
+  if (
+    expectedKey === '-'
+    && (keys.ctrl || keys.meta)
+    && !keys.alt
+    && !keys.shift
+  ) {
+    if (eventKey === '-' || event.code === 'NumpadSubtract') {
+      return true;
+    }
+  }
+
+  if (event.shiftKey !== (keys.shift || false)) return false;
 
   if (expectedKey === ' ' && event.code === 'Space') return true;
 
@@ -748,6 +808,7 @@ export const useShortcutsStore = defineStore('shortcuts', () => {
   const handlers = ref<Map<ShortcutId, HandlerRegistration>>(new Map());
   const isInitialized = ref(false);
   const isListenerActive = ref(false);
+  const isShortcutCaptureActive = ref(false);
 
   const userShortcuts = computed({
     get: () => userSettingsStore.userSettings.shortcuts ?? {},
@@ -837,6 +898,10 @@ export const useShortcutsStore = defineStore('shortcuts', () => {
 
   function unregisterHandler(shortcutId: ShortcutId): void {
     handlers.value.delete(shortcutId);
+  }
+
+  function setShortcutCaptureActive(isActive: boolean): void {
+    isShortcutCaptureActive.value = isActive;
   }
 
   function findMatchingShortcut(event: KeyboardEvent): ShortcutId | null {
@@ -993,6 +1058,10 @@ export const useShortcutsStore = defineStore('shortcuts', () => {
   }
 
   async function handleKeydown(event: KeyboardEvent): Promise<boolean> {
+    if (isShortcutCaptureActive.value) {
+      return false;
+    }
+
     const extensionHandled = await handleExtensionKeybindings(event);
     if (extensionHandled) return true;
 
@@ -1075,6 +1144,7 @@ export const useShortcutsStore = defineStore('shortcuts', () => {
   function cleanup(): void {
     stopGlobalListener();
     handlers.value.clear();
+    isShortcutCaptureActive.value = false;
     isInitialized.value = false;
   }
 
@@ -1092,6 +1162,7 @@ export const useShortcutsStore = defineStore('shortcuts', () => {
     resetAllShortcuts,
     registerHandler,
     unregisterHandler,
+    setShortcutCaptureActive,
     findMatchingShortcut,
     findConflictingShortcut,
     handleKeydown,

@@ -25,6 +25,8 @@ import { invoke } from '@tauri-apps/api/core';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { SIGMA_AUTOSTART_CLI_FLAG } from '@/constants/autostart';
 import { applyLaunchAtStartupPreference } from '@/utils/autostart-sync';
+import { applyUiZoomStep } from '@/utils/ui-zoom';
+import { toggleMainWindowFullscreen } from '@/utils/window-fullscreen';
 
 export function useInit() {
   const router = useRouter();
@@ -54,10 +56,22 @@ export function useInit() {
         globalSearchStore.close();
       }
     });
+    shortcutsStore.registerHandler('uiZoomIncrease', () => {
+      void applyUiZoomStep(1);
+    });
+    shortcutsStore.registerHandler('uiZoomDecrease', () => {
+      void applyUiZoomStep(-1);
+    });
+    shortcutsStore.registerHandler('toggleFullscreen', () => {
+      void toggleMainWindowFullscreen();
+    });
   }
 
   function unregisterShortcutHandlers() {
     shortcutsStore.unregisterHandler('toggleGlobalSearch');
+    shortcutsStore.unregisterHandler('uiZoomIncrease');
+    shortcutsStore.unregisterHandler('uiZoomDecrease');
+    shortcutsStore.unregisterHandler('toggleFullscreen');
   }
 
   async function showMainWindow() {

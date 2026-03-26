@@ -9,55 +9,50 @@ import { SettingsItem } from '@/modules/settings';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { ref, onMounted } from 'vue';
 import { getCurrentWebview } from '@tauri-apps/api/webview';
-import { getCurrentWindow } from '@tauri-apps/api/window';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { ContextMenuShortcut } from '@/components/ui/context-menu';
+import { useShortcutsStore } from '@/stores/runtime/shortcuts';
 import { useI18n } from 'vue-i18n';
 import { FullscreenIcon, MinusIcon, PlusIcon } from 'lucide-vue-next';
+import {
+  applyUiZoomStep,
+  resetUiZoom,
+  UI_ZOOM_DEFAULT,
+  UI_ZOOM_MAX,
+  UI_ZOOM_MIN,
+} from '@/utils/ui-zoom';
+import { toggleMainWindowFullscreen } from '@/utils/window-fullscreen';
 
 const webview = getCurrentWebview();
-const currentWindow = getCurrentWindow();
 const userSettingsStore = useUserSettingsStore();
+const shortcutsStore = useShortcutsStore();
 const { t } = useI18n();
 
-const currentZoomFactor = ref(1.0);
-const isFullscreen = ref(false);
+const currentZoomFactor = ref(UI_ZOOM_DEFAULT);
 
 onMounted(async () => {
-  const savedZoom = userSettingsStore.userSettings.UIZoomLevel || 1.0;
+  const savedZoom = userSettingsStore.userSettings.UIZoomLevel ?? UI_ZOOM_DEFAULT;
   currentZoomFactor.value = savedZoom;
   webview.setZoom(savedZoom);
-
-  isFullscreen.value = await currentWindow.isFullscreen();
 });
 
 async function increaseZoom() {
-  if (currentZoomFactor.value < 1.5) {
-    const newZoomFactor = Number((currentZoomFactor.value + 0.1).toFixed(1));
-    currentZoomFactor.value = newZoomFactor;
-    await webview.setZoom(newZoomFactor);
-    await userSettingsStore.set('UIZoomLevel', newZoomFactor);
-  }
+  await applyUiZoomStep(1);
+  currentZoomFactor.value = userSettingsStore.userSettings.UIZoomLevel ?? UI_ZOOM_DEFAULT;
 }
 
 async function decreaseZoom() {
-  if (currentZoomFactor.value > 0.6) {
-    const newZoomFactor = Number((currentZoomFactor.value - 0.1).toFixed(1));
-    currentZoomFactor.value = newZoomFactor;
-    await webview.setZoom(newZoomFactor);
-    await userSettingsStore.set('UIZoomLevel', newZoomFactor);
-  }
+  await applyUiZoomStep(-1);
+  currentZoomFactor.value = userSettingsStore.userSettings.UIZoomLevel ?? UI_ZOOM_DEFAULT;
 }
 
 async function resetZoom() {
-  currentZoomFactor.value = 1.0;
-  await webview.setZoom(1.0);
-  await userSettingsStore.set('UIZoomLevel', 1.0);
+  await resetUiZoom();
+  currentZoomFactor.value = UI_ZOOM_DEFAULT;
 }
 
 async function toggleFullscreen() {
-  const newFullscreenState = !isFullscreen.value;
-  await currentWindow.setFullscreen(newFullscreenState);
-  isFullscreen.value = newFullscreenState;
+  await toggleMainWindowFullscreen();
 }
 </script>
 
@@ -69,33 +64,60 @@ async function toggleFullscreen() {
   >
     <div class="scaling-section">
       <div class="zoom-controls">
-        <Button
-          variant="outline"
-          size="icon"
-          @click="decreaseZoom"
-          :disabled="currentZoomFactor <= 0.6"
-          class="zoom-btn"
-        >
-          <MinusIcon :size="16" />
-        </Button>
-        <Button
-          variant="outline"
-          size="icon"
-          @click="increaseZoom"
-          :disabled="currentZoomFactor >= 1.5"
-          class="zoom-btn"
-        >
-          <PlusIcon :size="16" />
-        </Button>
-        <Button
-          variant="outline"
-          @click="resetZoom"
-          class="zoom-reset"
-        >
-          {{ t('reset') }}
-        </Button>
         <Tooltip>
-          <TooltipTrigger>
+          <TooltipTrigger as-child>
+            <Button
+              variant="outline"
+              size="icon"
+              @click="decreaseZoom"
+              :disabled="currentZoomFactor <= UI_ZOOM_MIN"
+              class="zoom-btn"
+            >
+              <MinusIcon :size="16" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <div class="window-scaling__tooltip-row">
+              <span>{{ t('settings.general.decreaseZoomLevel') }}</span>
+              <ContextMenuShortcut>{{ shortcutsStore.getShortcutLabel('uiZoomDecrease') }}</ContextMenuShortcut>
+            </div>
+          </TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger as-child>
+            <Button
+              variant="outline"
+              size="icon"
+              @click="increaseZoom"
+              :disabled="currentZoomFactor >= UI_ZOOM_MAX"
+              class="zoom-btn"
+            >
+              <PlusIcon :size="16" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <div class="window-scaling__tooltip-row">
+              <span>{{ t('settings.general.increaseZoomLevel') }}</span>
+              <ContextMenuShortcut>{{ shortcutsStore.getShortcutLabel('uiZoomIncrease') }}</ContextMenuShortcut>
+            </div>
+          </TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger as-child>
+            <Button
+              variant="outline"
+              @click="resetZoom"
+              class="zoom-reset"
+            >
+              {{ t('reset') }}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            {{ t('settings.general.resetZoomLevel') }}
+          </TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger as-child>
             <Button
               variant="outline"
               size="icon"
@@ -106,7 +128,10 @@ async function toggleFullscreen() {
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            <p>{{ t('fullScreen') }}</p>
+            <div class="window-scaling__tooltip-row">
+              <span>{{ t('fullScreen') }}</span>
+              <ContextMenuShortcut>{{ shortcutsStore.getShortcutLabel('toggleFullscreen') }}</ContextMenuShortcut>
+            </div>
           </TooltipContent>
         </Tooltip>
       </div>
@@ -156,5 +181,12 @@ async function toggleFullscreen() {
   font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.05em;
+}
+
+.window-scaling__tooltip-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 </style>

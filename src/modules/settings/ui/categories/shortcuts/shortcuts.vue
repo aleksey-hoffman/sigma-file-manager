@@ -46,6 +46,7 @@ import {
   EyeIcon,
   TerminalSquareIcon,
   PlusIcon,
+  MinusIcon,
   ArrowUpIcon,
   ArrowDownIcon,
   ArrowLeftIcon,
@@ -54,6 +55,7 @@ import {
   Undo2Icon,
   FlipHorizontalIcon,
   AppWindowIcon,
+  FullscreenIcon,
 } from 'lucide-vue-next';
 import type { Component } from 'vue';
 import {
@@ -108,6 +110,9 @@ const shortcutIcons: Record<ShortcutId, Component> = {
   navigateBack: Undo2Icon,
   switchToLeftPane: FlipHorizontalIcon,
   switchToRightPane: FlipHorizontalIcon,
+  uiZoomIncrease: PlusIcon,
+  uiZoomDecrease: MinusIcon,
+  toggleFullscreen: FullscreenIcon,
 };
 
 const globalShortcutIcons: Record<GlobalShortcutId, Component> = {
@@ -283,6 +288,8 @@ function attachRecordCaptureListeners() {
 watch(
   [isDialogOpen, isRecording],
   () => {
+    shortcutsStore.setShortcutCaptureActive(isDialogOpen.value && isRecording.value);
+
     if (isDialogOpen.value && isRecording.value) {
       attachRecordCaptureListeners();
     }
@@ -308,6 +315,7 @@ watch(isDialogOpen, (open) => {
 });
 
 onUnmounted(() => {
+  shortcutsStore.setShortcutCaptureActive(false);
   detachRecordCaptureListeners();
 });
 
