@@ -131,7 +131,9 @@ export function useInit() {
     await extensionsStore.init();
     void archiveJobsStore.ensureEventListeners();
     void quickViewStore.ensureMainWindowDisplayedPathListener();
-    await initAutoCheck();
+    if (isMainWebviewWindow()) {
+      await initAutoCheck();
+    }
     await checkAndShowChangelog();
     disableWebViewFeatures();
   }

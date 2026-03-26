@@ -54,6 +54,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             get_app_args,
             app_updater::check_for_updates,
+            app_updater::download_release_installer,
             system_tray::reload_webview,
             system_tray::update_tray_shortcut,
             dir_reader::read_dir,

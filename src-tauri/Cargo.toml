@@ -40,6 +40,7 @@ file_icon_provider = "1.0.0"
 image = { version = "0.25", default-features = false, features = ["png"] }
 lru = "0.16"
 once_cell = "1.21"
+dirs = "5"
 tantivy = "0.25"
 walkdir = "2.5"
 rayon = "1.11"
