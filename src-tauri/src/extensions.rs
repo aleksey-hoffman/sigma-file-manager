@@ -242,7 +242,11 @@ fn normalize_integrity_value(value: &str) -> String {
 fn compute_sha256_hex(bytes: &[u8]) -> String {
     let mut hasher = Sha256::new();
     hasher.update(bytes);
-    format!("{:x}", hasher.finalize())
+    hasher
+        .finalize()
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect()
 }
 
 fn verify_integrity(bytes: &[u8], expected_integrity: Option<&str>) -> Result<(), String> {

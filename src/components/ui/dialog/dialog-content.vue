@@ -130,7 +130,7 @@ const { t } = useI18n();
   padding: 0;
   border-width: 0;
   margin: -1px;
-  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
   white-space: nowrap;
 }
 

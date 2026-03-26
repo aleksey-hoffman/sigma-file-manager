@@ -2,7 +2,6 @@ import { fileURLToPath, URL } from 'node:url';
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import vueDevTools from 'vite-plugin-vue-devtools';
-// import tailwindcss from '@tailwindcss/vite';
 import { run } from 'vite-plugin-run';
 import { assertNoRestrictedBackgroundSourceImport } from './src/build/background-source-import-guard';
 
@@ -22,7 +21,6 @@ export default defineConfig({
     vue(),
     vueDevTools(),
     backgroundSourceImportGuard,
-    // tailwindcss(),
     run([
       {
         name: 'Sync License Headers',

@@ -65,9 +65,9 @@ const dialogOpen = computed({
 const allCommands = computed(() => {
   const entries: Array<{ extensionId: string;
     command: ExtensionCommand; }> = getPaletteCommandEntries(
-      extensionsStore.enabledExtensions,
-      extensionsStore.commands,
-    );
+    extensionsStore.enabledExtensions,
+    extensionsStore.commands,
+  );
   const existingIds = new Set(entries.map(entry => entry.command.id));
 
   const builtinCommands = getBuiltinCommandDefinitions();

@@ -101,33 +101,15 @@ describe('extension runtime loader', () => {
   });
 
   it('passes persistent storagePath to api extension activate context', async () => {
-    invokeMock.mockImplementation(async (command: string, args?: Record<string, unknown>) => {
+    invokeMock.mockImplementation(async (command: string) => {
       switch (command) {
         case 'get_extension_path':
-          expect(args).toEqual({
-            extensionId: 'test.video',
-            callerExtensionId: 'test.video',
-          });
           return '/extensions/test.video';
         case 'get_extension_storage_path':
-          expect(args).toEqual({
-            extensionId: 'test.video',
-            callerExtensionId: 'test.video',
-          });
           return '/storage/test.video';
         case 'extension_path_exists':
-          expect(args).toEqual({
-            extensionId: 'test.video',
-            filePath: 'index.js',
-            callerExtensionId: 'test.video',
-          });
           return true;
         case 'read_extension_file':
-          expect(args).toEqual({
-            extensionId: 'test.video',
-            filePath: 'index.js',
-            callerExtensionId: 'test.video',
-          });
           return Array.from(new TextEncoder().encode('export {};'));
         default:
           throw new Error(`Unexpected invoke command: ${command}`);
@@ -135,6 +117,39 @@ describe('extension runtime loader', () => {
     });
 
     await loadExtensionRuntime('test.video', createManifest(), 'onStartup');
+
+    expect(invokeMock.mock.calls).toEqual([
+      [
+        'get_extension_path',
+        {
+          extensionId: 'test.video',
+          callerExtensionId: 'test.video',
+        },
+      ],
+      [
+        'get_extension_storage_path',
+        {
+          extensionId: 'test.video',
+          callerExtensionId: 'test.video',
+        },
+      ],
+      [
+        'extension_path_exists',
+        {
+          extensionId: 'test.video',
+          filePath: 'index.js',
+          callerExtensionId: 'test.video',
+        },
+      ],
+      [
+        'read_extension_file',
+        {
+          extensionId: 'test.video',
+          filePath: 'index.js',
+          callerExtensionId: 'test.video',
+        },
+      ],
+    ]);
 
     expect(createExtensionAPIMock).toHaveBeenCalledWith('test.video', ['commands']);
     expect(initializeWorkerMock).toHaveBeenCalledWith(expect.stringMatching(/^asset:\/\/\/extensions\/test\.video\/index\.js\?runtime=\d+$/));

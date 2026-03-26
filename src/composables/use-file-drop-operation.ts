@@ -21,11 +21,11 @@ export function useFileDropOperation() {
     operationType: 'copy' | 'move';
     pendingResolve: ((value: ConflictResolution | null) => void) | null;
   }>({
-        isOpen: false,
-        conflicts: [],
-        operationType: 'copy',
-        pendingResolve: null,
-      });
+    isOpen: false,
+    conflicts: [],
+    operationType: 'copy',
+    pendingResolve: null,
+  });
 
   function showConflictDialog(
     conflicts: ConflictItem[],
@@ -96,16 +96,16 @@ export function useFileDropOperation() {
       operationType: 'copy' | 'move' | 'delete' | '';
       itemCount: number;
     }>({
-          id: '' as string | number,
-          title: isCopy ? t('notifications.copyingItems') : t('notifications.movingItems'),
-          description: '',
-          progress: 0,
-          timer: 0,
-          actionText: t('cancel'),
-          cleanup: () => {},
-          operationType: operation as 'copy' | 'move' | 'delete' | '',
-          itemCount: sourcePaths.length,
-        });
+      id: '' as string | number,
+      title: isCopy ? t('notifications.copyingItems') : t('notifications.movingItems'),
+      description: '',
+      progress: 0,
+      timer: 0,
+      actionText: t('cancel'),
+      cleanup: () => {},
+      operationType: operation as 'copy' | 'move' | 'delete' | '',
+      itemCount: sourcePaths.length,
+    });
 
     toastData.value.id = toast.custom(markRaw(ToastProgress), {
       componentProps: {

@@ -4,23 +4,23 @@
 
 const MOUNT_POINT_ROOTS: Array<{ prefix: string;
   maxDepth: number; }> = [
-    {
-      prefix: '/Volumes/',
-      maxDepth: 1,
-    },
-    {
-      prefix: '/mnt/',
-      maxDepth: 1,
-    },
-    {
-      prefix: '/media/',
-      maxDepth: 2,
-    },
-    {
-      prefix: '/run/media/',
-      maxDepth: 2,
-    },
-  ];
+  {
+    prefix: '/Volumes/',
+    maxDepth: 1,
+  },
+  {
+    prefix: '/mnt/',
+    maxDepth: 1,
+  },
+  {
+    prefix: '/media/',
+    maxDepth: 2,
+  },
+  {
+    prefix: '/run/media/',
+    maxDepth: 2,
+  },
+];
 
 export function isProtectedSystemPath(path: string, platform: string | null): boolean {
   if (!path) return false;

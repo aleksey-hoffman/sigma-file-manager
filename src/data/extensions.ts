@@ -26,121 +26,121 @@ export type ExtensionCategory = typeof EXTENSION_CATEGORIES[number];
 
 export const EXTENSION_CATEGORIES_INFO: Record<ExtensionCategory, { description: string;
   icon: string; }> = {
-    'File Management': {
-      description: 'Core file operations, batch processing, organization, and file utilities',
-      icon: 'FolderIcon',
-    },
-    'Media': {
-      description: 'Video/audio downloading, media conversion, thumbnails, and playback',
-      icon: 'VideoIcon',
-    },
-    'Security': {
-      description: 'Encryption, hash computing, secure delete, and file verification',
-      icon: 'ShieldIcon',
-    },
-    'Backup & Sync': {
-      description: 'Backup tools, sync utilities, and file versioning',
-      icon: 'CloudIcon',
-    },
-    'Productivity': {
-      description: 'Quick actions, workflows, automation, and time-saving tools',
-      icon: 'ZapIcon',
-    },
-    'Search & Filter': {
-      description: 'Advanced search, filtering, sorting, and file discovery',
-      icon: 'SearchIcon',
-    },
-    'Appearance': {
-      description: 'Themes, icons, UI customization, and visual enhancements',
-      icon: 'PaletteIcon',
-    },
-    'Integration': {
-      description: 'Cloud storage, external services, and third-party app connections',
-      icon: 'PlugIcon',
-    },
-    'Developer Tools': {
-      description: 'Terminal integration, scripts, git tools, and development utilities',
-      icon: 'TerminalIcon',
-    },
-    'Example': {
-      description: 'Demo and starter extensions to learn extension development',
-      icon: 'BookOpenIcon',
-    },
-    'Other': {
-      description: 'Extensions that do not fit into other categories',
-      icon: 'PackageIcon',
-    },
-  };
+  'File Management': {
+    description: 'Core file operations, batch processing, organization, and file utilities',
+    icon: 'FolderIcon',
+  },
+  'Media': {
+    description: 'Video/audio downloading, media conversion, thumbnails, and playback',
+    icon: 'VideoIcon',
+  },
+  'Security': {
+    description: 'Encryption, hash computing, secure delete, and file verification',
+    icon: 'ShieldIcon',
+  },
+  'Backup & Sync': {
+    description: 'Backup tools, sync utilities, and file versioning',
+    icon: 'CloudIcon',
+  },
+  'Productivity': {
+    description: 'Quick actions, workflows, automation, and time-saving tools',
+    icon: 'ZapIcon',
+  },
+  'Search & Filter': {
+    description: 'Advanced search, filtering, sorting, and file discovery',
+    icon: 'SearchIcon',
+  },
+  'Appearance': {
+    description: 'Themes, icons, UI customization, and visual enhancements',
+    icon: 'PaletteIcon',
+  },
+  'Integration': {
+    description: 'Cloud storage, external services, and third-party app connections',
+    icon: 'PlugIcon',
+  },
+  'Developer Tools': {
+    description: 'Terminal integration, scripts, git tools, and development utilities',
+    icon: 'TerminalIcon',
+  },
+  'Example': {
+    description: 'Demo and starter extensions to learn extension development',
+    icon: 'BookOpenIcon',
+  },
+  'Other': {
+    description: 'Extensions that do not fit into other categories',
+    icon: 'PackageIcon',
+  },
+};
 
 export const EXTENSION_PERMISSIONS_INFO: Record<string, { title: string;
   description: string;
   risk: 'low' | 'medium' | 'high' | 'highest'; }> = {
-    'contextMenu': {
-      title: 'Context Menu',
-      description: 'Add items to the file browser context menu',
-      risk: 'low',
-    },
-    'sidebar': {
-      title: 'Sidebar',
-      description: 'Add pages to the sidebar navigation',
-      risk: 'low',
-    },
-    'toolbar': {
-      title: 'Toolbar',
-      description: 'Add dropdown menus to the window toolbar',
-      risk: 'low',
-    },
-    'commands': {
-      title: 'Commands',
-      description: 'Register commands that can be executed via keyboard shortcuts or command palette',
-      risk: 'low',
-    },
-    'fs.read': {
-      title: 'File System Read',
-      description: 'Read files and directories within approved folders',
-      risk: 'medium',
-    },
-    'fs.write': {
-      title: 'File System Write',
-      description: 'Write and modify files within approved folders',
-      risk: 'high',
-    },
-    'notifications': {
-      title: 'Notifications',
-      description: 'Show notification messages',
-      risk: 'low',
-    },
-    'dialogs': {
-      title: 'Dialogs',
-      description: 'Show dialog windows for user interaction',
-      risk: 'low',
-    },
-    'shell': {
-      title: 'Shell Commands',
-      description: 'Execute shell commands and external programs on your system',
-      risk: 'highest',
-    },
-  };
+  'contextMenu': {
+    title: 'Context Menu',
+    description: 'Add items to the file browser context menu',
+    risk: 'low',
+  },
+  'sidebar': {
+    title: 'Sidebar',
+    description: 'Add pages to the sidebar navigation',
+    risk: 'low',
+  },
+  'toolbar': {
+    title: 'Toolbar',
+    description: 'Add dropdown menus to the window toolbar',
+    risk: 'low',
+  },
+  'commands': {
+    title: 'Commands',
+    description: 'Register commands that can be executed via keyboard shortcuts or command palette',
+    risk: 'low',
+  },
+  'fs.read': {
+    title: 'File System Read',
+    description: 'Read files and directories within approved folders',
+    risk: 'medium',
+  },
+  'fs.write': {
+    title: 'File System Write',
+    description: 'Write and modify files within approved folders',
+    risk: 'high',
+  },
+  'notifications': {
+    title: 'Notifications',
+    description: 'Show notification messages',
+    risk: 'low',
+  },
+  'dialogs': {
+    title: 'Dialogs',
+    description: 'Show dialog windows for user interaction',
+    risk: 'low',
+  },
+  'shell': {
+    title: 'Shell Commands',
+    description: 'Execute shell commands and external programs on your system',
+    risk: 'highest',
+  },
+};
 
 export const EXTENSION_TYPES_INFO: Record<string, { title: string;
   description: string;
   security: 'high' | 'medium'; }> = {
-    api: {
-      title: 'API Extension',
-      description: 'Runs JavaScript code with access to the extension API. Best for adding features like context menu items, commands, and toolbar buttons.',
-      security: 'medium',
-    },
-    iframe: {
-      title: 'Iframe Extension',
-      description: 'Runs in a sandboxed iframe with communication via postMessage. High security isolation.',
-      security: 'high',
-    },
-    webview: {
-      title: 'Webview Extension',
-      description: 'Runs in a separate Tauri webview window with IPC communication. Can render full page content.',
-      security: 'high',
-    },
-  };
+  api: {
+    title: 'API Extension',
+    description: 'Runs JavaScript code with access to the extension API. Best for adding features like context menu items, commands, and toolbar buttons.',
+    security: 'medium',
+  },
+  iframe: {
+    title: 'Iframe Extension',
+    description: 'Runs in a sandboxed iframe with communication via postMessage. High security isolation.',
+    security: 'high',
+  },
+  webview: {
+    title: 'Webview Extension',
+    description: 'Runs in a separate Tauri webview window with IPC communication. Can render full page content.',
+    security: 'high',
+  },
+};
 
 export function getExtensionRawFileUrl(repository: string, branch: string, filePath: string): string {
   const match = repository.match(/github\.com\/([^/]+)\/([^/]+)/);
