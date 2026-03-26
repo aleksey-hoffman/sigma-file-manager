@@ -14,7 +14,7 @@ import { toast, ToastStatic, ToastProgress } from '@/components/ui/toaster';
 const CHECK_INTERVAL_MS = 6 * 60 * 60 * 1000;
 const CHECK_COOLDOWN_MS = 10 * 60 * 1000;
 
-const EMULATE_INSTALLED_AS_BETA1_FOR_UPDATE_TEST = !false;
+const EMULATE_INSTALLED_AS_BETA1_FOR_UPDATE_TEST = false;
 const EMULATED_CURRENT_VERSION_FOR_UPDATE_CHECK = '2.0.0-beta.1';
 
 function currentVersionSentToUpdateCheck(realVersion: string): string {
