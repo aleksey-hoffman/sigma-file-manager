@@ -166,8 +166,10 @@ async function handleKeydown(event: KeyboardEvent) {
 async function setupEventListeners() {
   const currentWindow = getCurrentWindow();
 
-  unlistenLoadFile = await listen<{ path: string;
-    siblingPaths: string[] | null; }>(
+  unlistenLoadFile = await listen<{
+    path: string;
+    siblingPaths: string[] | null;
+  }>(
     'quick-view:load-file',
     async (event) => {
       currentFilePath.value = event.payload.path;
@@ -233,7 +235,7 @@ onUnmounted(() => {
       <div class="quick-view__body">
         <img
           v-if="fileType === 'image'"
-          :key="currentFilePath"
+          :key="`${currentFilePath}-image`"
           :src="fileAssetUrl"
           :alt="fileName"
           class="quick-view__image"
@@ -241,7 +243,7 @@ onUnmounted(() => {
 
         <video
           v-else-if="fileType === 'video'"
-          :key="currentFilePath"
+          :key="`${currentFilePath}-video`"
           :src="fileAssetUrl"
           class="quick-view__video"
           controls
@@ -250,7 +252,7 @@ onUnmounted(() => {
 
         <audio
           v-else-if="fileType === 'audio'"
-          :key="currentFilePath"
+          :key="`${currentFilePath}-audio`"
           :src="fileAssetUrl"
           class="quick-view__audio"
           controls
@@ -259,20 +261,21 @@ onUnmounted(() => {
 
         <iframe
           v-else-if="fileType === 'pdf'"
-          :key="currentFilePath"
+          :key="`${currentFilePath}-pdf`"
           :src="fileAssetUrl"
           class="quick-view__pdf"
         />
 
         <iframe
           v-else-if="fileType === 'text'"
-          :key="currentFilePath"
+          :key="`${currentFilePath}-text`"
           :src="fileAssetUrl"
           class="quick-view__text"
         />
 
         <div
           v-else
+          :key="`${currentFilePath}-unsupported`"
           class="quick-view__unsupported"
         >
           <FileWarningIcon

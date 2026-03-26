@@ -9,12 +9,16 @@ import type { DirEntry } from '@/types/dir-entry';
 import normalizePath from '@/utils/normalize-path';
 
 type PendingFocusRequest
-  = | { type: 'path';
+  = | {
+    type: 'path';
     targetPath: string;
-    path: string; }
-    | { type: 'diff';
-      targetPath: string;
-      previousPaths: Set<string>; };
+    path: string;
+  }
+  | {
+    type: 'diff';
+    targetPath: string;
+    previousPaths: Set<string>;
+  };
 
 export function useFileBrowserFocus(options: {
   entries: Ref<DirEntry[]>;

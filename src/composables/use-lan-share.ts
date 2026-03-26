@@ -121,9 +121,11 @@ export function useLanShare() {
     originalPath: string,
     mode: LanShareMode,
     isFile: boolean,
-    options?: { openPopover?: boolean;
+    options?: {
+      openPopover?: boolean;
       hubPaths?: string[];
-      skipReplaceConfirm?: boolean; },
+      skipReplaceConfirm?: boolean;
+    },
   ) {
     const skipReplaceConfirm = options?.skipReplaceConfirm ?? false;
 

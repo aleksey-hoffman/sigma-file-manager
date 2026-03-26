@@ -47,8 +47,10 @@ export function isQuickViewSupported(path: string): boolean {
 }
 
 export function quickViewSupportedPathsFromVisibleEntries(
-  entries: readonly { path: string;
-    is_file: boolean; }[],
+  entries: readonly {
+    path: string;
+    is_file: boolean;
+  }[],
 ): string[] {
   const paths: string[] = [];
 

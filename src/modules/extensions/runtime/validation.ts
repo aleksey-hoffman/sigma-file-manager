@@ -46,8 +46,10 @@ function isPermissionsList(value: unknown): value is ExtensionPermission[] {
   return Array.isArray(value) && value.every(permission => VALID_PERMISSIONS.includes(permission as ExtensionPermission));
 }
 
-function parseVersionComparator(value: string): { operator: string;
-  version: string; } | null {
+function parseVersionComparator(value: string): {
+  operator: string;
+  version: string;
+} | null {
   const match = value.trim().match(/^(<=|>=|<|>|=)?\s*(\d+\.\d+\.\d+(?:-[\w.]+)?)$/);
 
   if (!match) {

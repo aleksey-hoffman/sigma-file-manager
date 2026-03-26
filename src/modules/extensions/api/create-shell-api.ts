@@ -8,16 +8,20 @@ import { invokeAsExtension } from '@/modules/extensions/runtime/extension-invoke
 
 export function createShellAPI(context: ExtensionContext) {
   return {
-    run: async (commandPath: string, args?: string[]): Promise<{ code: number;
+    run: async (commandPath: string, args?: string[]): Promise<{
+      code: number;
       stdout: string;
-      stderr: string; }> => {
+      stderr: string;
+    }> => {
       if (!context.hasPermission('shell')) {
         throw new Error(context.t('extensions.api.permissionDenied', { permission: 'shell' }));
       }
 
-      return invokeAsExtension<{ code: number;
+      return invokeAsExtension<{
+        code: number;
         stdout: string;
-        stderr: string; }>(context.extensionId, 'run_extension_command', {
+        stderr: string;
+      }>(context.extensionId, 'run_extension_command', {
         extensionId: context.extensionId,
         commandPath,
         args: args || [],
@@ -26,44 +30,60 @@ export function createShellAPI(context: ExtensionContext) {
     runWithProgress: async (
       commandPath: string,
       args?: string[],
-      onProgress?: (payload: { taskId: string;
+      onProgress?: (payload: {
+        taskId: string;
         line: string;
-        isStderr: boolean; }) => void,
+        isStderr: boolean;
+      }) => void,
     ): Promise<{
       taskId: string;
-      result: Promise<{ code: number;
+      result: Promise<{
+        code: number;
         stdout: string;
-        stderr: string; }>;
+        stderr: string;
+      }>;
       cancel: () => Promise<void>;
     }> => {
       if (!context.hasPermission('shell')) {
         throw new Error(context.t('extensions.api.permissionDenied', { permission: 'shell' }));
       }
 
-      let resolveResult: ((value: { code: number;
+      let resolveResult: ((value: {
+        code: number;
         stdout: string;
-        stderr: string; }) => void) | null = null;
+        stderr: string;
+      }) => void) | null = null;
       let rejectResult: ((reason?: unknown) => void) | null = null;
 
-      const resultPromise = new Promise<{ code: number;
+      const resultPromise = new Promise<{
+        code: number;
         stdout: string;
-        stderr: string; }>((resolve, reject) => {
+        stderr: string;
+      }>((resolve, reject) => {
         resolveResult = resolve;
         rejectResult = reject;
       });
 
-      type ProgressPayload = { taskId: string;
+      type ProgressPayload = {
+        taskId: string;
         line: string;
-        isStderr: boolean; };
-      type CompletePayload = { taskId: string;
+        isStderr: boolean;
+      };
+      type CompletePayload = {
+        taskId: string;
         code: number;
         stdout: string;
-        stderr: string; };
+        stderr: string;
+      };
       type EarlyEvent
-        = | { type: 'progress';
-          payload: ProgressPayload; }
-          | { type: 'complete';
-            payload: CompletePayload; };
+        = | {
+          type: 'progress';
+          payload: ProgressPayload;
+        }
+        | {
+          type: 'complete';
+          payload: CompletePayload;
+        };
 
       let taskId: string | null = null;
       let settled = false;

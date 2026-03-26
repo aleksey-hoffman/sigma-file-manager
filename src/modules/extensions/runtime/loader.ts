@@ -308,10 +308,12 @@ function handleIframeMessage(
 ): void {
   if (!data || typeof data !== 'object') return;
 
-  const message = data as { type: string;
+  const message = data as {
+    type: string;
     method?: string;
     args?: unknown[];
-    id?: string; };
+    id?: string;
+  };
 
   if (message.type === 'api-call' && message.method) {
     const methodMap = createExtensionApiMethodMap(api);

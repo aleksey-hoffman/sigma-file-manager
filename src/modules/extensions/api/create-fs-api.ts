@@ -178,9 +178,11 @@ export function createFsAPI(context: ExtensionContext) {
         permission?: 'read' | 'write' | 'readWrite';
         title?: string;
         defaultPath?: string;
-      }): Promise<{ granted: boolean;
+      }): Promise<{
+        granted: boolean;
         path?: string;
-        permissions?: ('read' | 'write')[]; }> => {
+        permissions?: ('read' | 'write')[];
+      }> => {
         const requestedPermission = options?.permission ?? 'read';
 
         if ((requestedPermission === 'read' || requestedPermission === 'readWrite') && !context.hasPermission('fs.read')) {

@@ -43,8 +43,10 @@ const infusionMediaSelectionOptions = {
   },
 };
 
-function getInfusionMediaFromBackground(background: { index?: number;
-  mediaId?: string; }) {
+function getInfusionMediaFromBackground(background: {
+  index?: number;
+  mediaId?: string;
+}) {
   const selection = resolveMediaSelection(background, infusionMediaSelectionOptions);
 
   if (selection) {

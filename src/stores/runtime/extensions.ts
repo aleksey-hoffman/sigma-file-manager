@@ -1318,8 +1318,10 @@ export const useExtensionsStore = defineStore('extensions', () => {
     await storageStore.setExtensionAutoUpdate(extensionId, autoUpdate);
   }
 
-  async function autoUpdateAllExtensions(): Promise<{ updated: string[];
-    failed: string[]; }> {
+  async function autoUpdateAllExtensions(): Promise<{
+    updated: string[];
+    failed: string[];
+  }> {
     const extensionsToUpdate = getAutoUpdateExtensions();
     const updated: string[] = [];
     const failed: string[] = [];

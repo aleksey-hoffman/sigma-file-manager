@@ -105,8 +105,10 @@ export const useExtensionsStorageStore = defineStore('extensionsStorage', () => 
     extensionId: string,
     version: string,
     manifest: ExtensionManifest,
-    options?: { isLocal?: boolean;
-      localSourcePath?: string; },
+    options?: {
+      isLocal?: boolean;
+      localSourcePath?: string;
+    },
   ): Promise<void> {
     const existing = extensionsData.value.installedExtensions[extensionId];
 

@@ -36,15 +36,19 @@ const cachedMediaPaths = ref<Record<string, string>>({});
 const pendingMediaCacheDownloads = new Map<string, Promise<string>>();
 
 export type MediaItem
-  = | { kind: 'builtin';
+  = | {
+    kind: 'builtin';
     index: number;
-    data: BackgroundMedia; }
-    | { kind: 'custom';
-      index: number;
-      path: string;
-      id: string;
-      fileName: string;
-      type: 'image' | 'video'; };
+    data: BackgroundMedia;
+  }
+  | {
+    kind: 'custom';
+    index: number;
+    path: string;
+    id: string;
+    fileName: string;
+    type: 'image' | 'video';
+  };
 
 export type MediaSelectionOption = {
   name: string;

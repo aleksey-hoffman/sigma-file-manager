@@ -24,10 +24,14 @@ const mediaExtensions = new Set([
 ]);
 
 async function readCustomBackgroundEntries(path: string): Promise<CustomBackgroundEntry[]> {
-  const result = await invoke<{ entries: Array<{ name: string;
-    path: string;
-    is_file: boolean;
-    ext?: string; }>; }>('read_dir', {
+  const result = await invoke<{
+    entries: Array<{
+      name: string;
+      path: string;
+      is_file: boolean;
+      ext?: string;
+    }>;
+  }>('read_dir', {
     path,
   });
 

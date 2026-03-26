@@ -198,8 +198,10 @@ export function createSandboxedFunction(): () => Promise<void> {
   };
 }
 
-export function validateExtensionCode(code: string): { valid: boolean;
-  errors: string[]; } {
+export function validateExtensionCode(code: string): {
+  valid: boolean;
+  errors: string[];
+} {
   const errors: string[] = [];
 
   const dangerousPatterns = [

@@ -148,10 +148,12 @@ async function migrateUserSettingsStep(storage: StorageAdapter, fromVersion: num
 
     for (const pageKey of infusionPageKeys) {
       const storageKey = `infusion.pages.${pageKey}.background`;
-      const background = await storage.get<{ type?: string;
+      const background = await storage.get<{
+        type?: string;
         path?: string;
         index?: number;
-        mediaId?: string; }>(storageKey);
+        mediaId?: string;
+      }>(storageKey);
 
       if (background && typeof background === 'object' && !background.mediaId && typeof background.index === 'number') {
         const builtinIndex = background.index;

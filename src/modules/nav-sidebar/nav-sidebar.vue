@@ -74,8 +74,10 @@ async function openDrive(path: string) {
   router.push({ name: 'navigator' });
 }
 
-function getDriveIcon(drive: { drive_type: string;
-  is_removable: boolean; }) {
+function getDriveIcon(drive: {
+  drive_type: string;
+  is_removable: boolean;
+}) {
   if (drive.drive_type === 'Network') {
     return NetworkIcon;
   }

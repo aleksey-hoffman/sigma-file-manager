@@ -46,6 +46,16 @@ export default defineConfigWithVueTs(
             minProperties: 5,
           },
           ExportDeclaration: { multiline: true },
+          TSTypeLiteral: {
+            multiline: true,
+            consistent: true,
+            minProperties: 2,
+          },
+          TSInterfaceBody: {
+            multiline: true,
+            consistent: true,
+            minProperties: 2,
+          },
         },
       ],
       '@stylistic/padding-line-between-statements': [

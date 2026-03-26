@@ -22,8 +22,10 @@ import { XCircleIcon } from '@lucide/vue';
 const userSettingsStore = useUserSettingsStore();
 const { t } = useI18n();
 
-const behaviorOptions: { name: string;
-  value: LastTabCloseBehavior; }[] = [
+const behaviorOptions: {
+  name: string;
+  value: LastTabCloseBehavior;
+}[] = [
   {
     name: t('settings.tabs.lastTabCloseBehavior.createDefaultTab'),
     value: 'createDefaultTab',

@@ -615,34 +615,42 @@ function createBridge() {
         type: 'text',
         value: content,
       }),
-      alert: (options: { title: string;
+      alert: (options: {
+        title: string;
         description?: string;
-        tone?: string; }) => ({
+        tone?: string;
+      }) => ({
         type: 'alert',
         label: options.title,
         value: options.description || '',
         tone: options.tone || 'info',
       }),
-      image: (options: { id?: string;
+      image: (options: {
+        id?: string;
         src: string;
-        alt?: string; }) => ({
+        alt?: string;
+      }) => ({
         type: 'image',
         id: options.id,
         value: options.src,
         label: options.alt,
       }),
-      previewCard: (options: { thumbnail: string;
+      previewCard: (options: {
+        thumbnail: string;
         title: string;
-        subtitle?: string; }) => ({
+        subtitle?: string;
+      }) => ({
         type: 'previewCard',
         value: options.thumbnail,
         label: options.title,
         subtitle: options.subtitle || '',
       }),
       previewCardSkeleton: () => ({ type: 'previewCardSkeleton' }),
-      skeleton: (options?: { id?: string;
+      skeleton: (options?: {
+        id?: string;
         width?: number;
-        height?: number; }) => {
+        height?: number;
+      }) => {
         const value = options?.width && options?.height
           ? `${options.width}x${options.height}`
           : undefined;
@@ -653,11 +661,13 @@ function createBridge() {
           value,
         };
       },
-      button: (options: { id: string;
+      button: (options: {
+        id: string;
         label: string;
         variant?: string;
         size?: string;
-        disabled?: boolean; }) => ({
+        disabled?: boolean;
+      }) => ({
         type: 'button',
         id: options.id,
         label: options.label,

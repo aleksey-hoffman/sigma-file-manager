@@ -47,9 +47,11 @@ const networkMountName = ref('');
 const isConnecting = ref(false);
 const connectionError = ref<string | null>(null);
 
-const protocols: { value: Protocol;
+const protocols: {
+  value: Protocol;
   label: string;
-  defaultPort: string; }[] = [
+  defaultPort: string;
+}[] = [
   {
     value: 'sshfs',
     label: 'SSHFS (SSH)',

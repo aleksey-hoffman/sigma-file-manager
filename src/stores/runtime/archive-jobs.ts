@@ -13,14 +13,20 @@ import uniqueId from '@/utils/unique-id';
 import { useStatusCenterStore } from './status-center';
 
 export type StartArchiveJobRequest
-  = | { kind: 'extractHere';
+  = | {
+    kind: 'extractHere';
     archivePath: string;
-    destinationDir: string; }
-    | { kind: 'extractToNamedFolder';
-      archivePath: string; }
-      | { kind: 'compress';
-        sourcePaths: string[];
-        destinationZipPath: string; };
+    destinationDir: string;
+  }
+  | {
+    kind: 'extractToNamedFolder';
+    archivePath: string;
+  }
+  | {
+    kind: 'compress';
+    sourcePaths: string[];
+    destinationZipPath: string;
+  };
 
 interface ArchiveJobProgressPayload {
   jobId: string;

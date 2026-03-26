@@ -290,26 +290,32 @@ export function createUiAPI(context: ExtensionContext) {
       value: options.description ?? '',
       tone: options.tone ?? 'info',
     }),
-    image: (options: { id?: string;
+    image: (options: {
+      id?: string;
       src: string;
-      alt?: string; }): UIElement => ({
+      alt?: string;
+    }): UIElement => ({
       type: 'image',
       id: options.id,
       value: options.src,
       label: options.alt,
     }),
-    previewCard: (options: { thumbnail: string;
+    previewCard: (options: {
+      thumbnail: string;
       title: string;
-      subtitle?: string; }): UIElement => ({
+      subtitle?: string;
+    }): UIElement => ({
       type: 'previewCard',
       value: options.thumbnail,
       label: options.title,
       subtitle: options.subtitle ?? '',
     }),
     previewCardSkeleton: (): UIElement => ({ type: 'previewCardSkeleton' }),
-    skeleton: (options?: { id?: string;
+    skeleton: (options?: {
+      id?: string;
       width?: number;
-      height?: number; }): UIElement => {
+      height?: number;
+    }): UIElement => {
       const value = options?.width && options?.height
         ? `${options.width}x${options.height}`
         : undefined;

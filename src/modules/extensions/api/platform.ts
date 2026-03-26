@@ -13,8 +13,10 @@ export async function initPlatformInfo(): Promise<void> {
   if (platformInfoPromise) return platformInfoPromise;
 
   platformInfoPromise = (async () => {
-    const info = await invoke<{ os: string;
-      arch: string; }>('get_platform_info');
+    const info = await invoke<{
+      os: string;
+      arch: string;
+    }>('get_platform_info');
     const os = info.os as PlatformOS;
 
     platformInfo = {

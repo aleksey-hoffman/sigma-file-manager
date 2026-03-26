@@ -29,8 +29,10 @@ const {
   clearBinaryDownloadCountMock: vi.fn(),
   commandRegistrations: [] as Array<{
     extensionId: string;
-    command: { id: string;
-      title: string; };
+    command: {
+      id: string;
+      title: string;
+    };
     handler: (...args: unknown[]) => Promise<unknown> | unknown;
   }>,
 }));

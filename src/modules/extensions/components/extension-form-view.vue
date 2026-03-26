@@ -109,8 +109,10 @@ function handleFormKeydown(event: KeyboardEvent): void {
   }
 }
 
-function parseSkeletonDimensions(value: unknown): { width?: string;
-  height?: string; } {
+function parseSkeletonDimensions(value: unknown): {
+  width?: string;
+  height?: string;
+} {
   const str = String(value ?? '');
   const match = str.match(/^(\d+)x(\d+)$/);
 

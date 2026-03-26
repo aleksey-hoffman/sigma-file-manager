@@ -24,8 +24,10 @@ export const EXTENSION_CATEGORIES = [
 
 export type ExtensionCategory = typeof EXTENSION_CATEGORIES[number];
 
-export const EXTENSION_CATEGORIES_INFO: Record<ExtensionCategory, { description: string;
-  icon: string; }> = {
+export const EXTENSION_CATEGORIES_INFO: Record<ExtensionCategory, {
+  description: string;
+  icon: string;
+}> = {
   'File Management': {
     description: 'Core file operations, batch processing, organization, and file utilities',
     icon: 'FolderIcon',
@@ -72,9 +74,11 @@ export const EXTENSION_CATEGORIES_INFO: Record<ExtensionCategory, { description:
   },
 };
 
-export const EXTENSION_PERMISSIONS_INFO: Record<string, { title: string;
+export const EXTENSION_PERMISSIONS_INFO: Record<string, {
+  title: string;
   description: string;
-  risk: 'low' | 'medium' | 'high' | 'highest'; }> = {
+  risk: 'low' | 'medium' | 'high' | 'highest';
+}> = {
   'contextMenu': {
     title: 'Context Menu',
     description: 'Add items to the file browser context menu',
@@ -122,9 +126,11 @@ export const EXTENSION_PERMISSIONS_INFO: Record<string, { title: string;
   },
 };
 
-export const EXTENSION_TYPES_INFO: Record<string, { title: string;
+export const EXTENSION_TYPES_INFO: Record<string, {
+  title: string;
   description: string;
-  security: 'high' | 'medium'; }> = {
+  security: 'high' | 'medium';
+}> = {
   api: {
     title: 'API Extension',
     description: 'Runs JavaScript code with access to the extension API. Best for adding features like context menu items, commands, and toolbar buttons.',
@@ -196,8 +202,10 @@ export function isOfficialExtension(repository: string): boolean {
   return owner.toLowerCase() === OFFICIAL_EXTENSION_ORG.toLowerCase();
 }
 
-export function getGitHubRepoInfo(repository: string): { owner: string;
-  repo: string; } | null {
+export function getGitHubRepoInfo(repository: string): {
+  owner: string;
+  repo: string;
+} | null {
   const match = repository.match(/github\.com\/([^/]+)\/([^/]+)/);
   if (!match) return null;
   const [, owner, repo] = match;
