@@ -10,7 +10,7 @@ import {
   unregisterAll,
   type ShortcutHandler,
 } from '@tauri-apps/plugin-global-shortcut';
-import { WebviewWindow } from '@tauri-apps/api/webviewWindow';
+import { WebviewWindow, getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import { invoke } from '@tauri-apps/api/core';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import type { GlobalShortcutId, UserGlobalShortcuts, ShortcutKeys } from '@/types/user-settings';
@@ -265,6 +265,7 @@ export const useGlobalShortcutsStore = defineStore('globalShortcuts', () => {
 
   async function init(): Promise<void> {
     if (isInitialized.value) return;
+    if (getCurrentWebviewWindow().label !== 'main') return;
     isInitialized.value = true;
     await registerAllShortcuts();
     await syncTrayShortcutHint();
