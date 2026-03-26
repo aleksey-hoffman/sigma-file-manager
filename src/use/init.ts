@@ -20,6 +20,7 @@ import { useChangelog } from '@/modules/changelog';
 import { useAppUpdater } from '@/modules/app-updater';
 import { useExtensionsStore } from '@/stores/runtime/extensions';
 import { useArchiveJobsStore } from '@/stores/runtime/archive-jobs';
+import { useQuickViewStore } from '@/stores/runtime/quick-view';
 import { initPlatformInfo } from '@/modules/extensions/api';
 import { invoke } from '@tauri-apps/api/core';
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
@@ -44,6 +45,7 @@ export function useInit() {
   const backgroundMediaStore = useBackgroundMediaStore();
   const extensionsStore = useExtensionsStore();
   const archiveJobsStore = useArchiveJobsStore();
+  const quickViewStore = useQuickViewStore();
   const { checkAndShowChangelog } = useChangelog();
   const { initAutoCheck } = useAppUpdater();
 
@@ -118,14 +120,17 @@ export function useInit() {
     await showMainWindow();
     await appWindowStore.initMainWindowStateListeners();
     await globalSearchStore.initOnLaunch();
+
     if (isMainWebviewWindow()) {
       await shortcutsStore.init();
       await globalShortcutsStore.init();
     }
+
     await terminalsStore.init();
     await initPlatformInfo();
     await extensionsStore.init();
     void archiveJobsStore.ensureEventListeners();
+    void quickViewStore.ensureMainWindowDisplayedPathListener();
     await initAutoCheck();
     await checkAndShowChangelog();
     disableWebViewFeatures();
@@ -141,6 +146,7 @@ export function useInit() {
     if (isMainWebviewWindow()) {
       unregisterShortcutHandlers();
     }
+
     appWindowStore.disposeMainWindowStateListeners();
   });
 

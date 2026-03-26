@@ -3,9 +3,10 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 import { defineStore } from 'pinia';
-import { ref, computed, markRaw } from 'vue';
+import { ref, computed, markRaw, shallowRef } from 'vue';
 import { getAllWindows, Window, getCurrentWindow } from '@tauri-apps/api/window';
-import { emit } from '@tauri-apps/api/event';
+import { emit, listen, type UnlistenFn } from '@tauri-apps/api/event';
+import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import { convertFileSrc, invoke } from '@tauri-apps/api/core';
 import { toast, ToastStatic } from '@/components/ui/toaster';
 import { i18n } from '@/localization';
@@ -99,11 +100,14 @@ export function getFileAssetUrl(path: string): string {
   return convertFileSrc(path);
 }
 
+export const QUICK_VIEW_DISPLAYED_PATH_CHANGED_EVENT = 'quick-view:displayed-path-changed';
+
 export const useQuickViewStore = defineStore('quickView', () => {
   const currentFilePath = ref<string | null>(null);
   const isLoading = ref(false);
   const quickViewWindow = ref<Window | null>(null);
   const lastOpenedPath = ref<string | null>(null);
+  const displayedPathEventUnlisteners = shallowRef<UnlistenFn[]>([]);
 
   const fileType = computed((): QuickViewFileType => {
     if (!currentFilePath.value) return 'unsupported';
@@ -230,6 +234,25 @@ export const useQuickViewStore = defineStore('quickView', () => {
     return await openFileFromMainWindow(path, siblingPaths);
   }
 
+  async function ensureMainWindowDisplayedPathListener(): Promise<void> {
+    if (displayedPathEventUnlisteners.value.length > 0) {
+      return;
+    }
+
+    if (getCurrentWebviewWindow().label !== 'main') {
+      return;
+    }
+
+    const unlisten = await listen<{ path: string | null }>(
+      QUICK_VIEW_DISPLAYED_PATH_CHANGED_EVENT,
+      (event) => {
+        lastOpenedPath.value = event.payload.path;
+      },
+    );
+
+    displayedPathEventUnlisteners.value = [unlisten];
+  }
+
   return {
     currentFilePath,
     isLoading,
@@ -243,5 +266,6 @@ export const useQuickViewStore = defineStore('quickView', () => {
     isWindowVisible,
     toggleQuickView,
     getQuickViewWindow,
+    ensureMainWindowDisplayedPathListener,
   };
 });

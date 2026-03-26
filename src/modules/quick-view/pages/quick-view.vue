@@ -9,7 +9,7 @@ import {
 } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { getCurrentWindow } from '@tauri-apps/api/window';
-import { listen, type UnlistenFn } from '@tauri-apps/api/event';
+import { emit, listen, type UnlistenFn } from '@tauri-apps/api/event';
 import {
   Loader2Icon,
   FileWarningIcon,
@@ -23,6 +23,7 @@ import {
   getFileName,
   getFileAssetUrl,
   fetchQuickViewSiblingPathsFromDisk,
+  QUICK_VIEW_DISPLAYED_PATH_CHANGED_EVENT,
   type QuickViewFileType,
 } from '@/stores/runtime/quick-view';
 
@@ -30,6 +31,7 @@ const { t } = useI18n();
 
 const currentFilePath = ref<string | null>(null);
 const resolvedSiblingPaths = ref<string[]>([]);
+const siblingPathsProvidedByMain = ref(false);
 const isLoading = ref(true);
 const stripScrollElement = ref<HTMLElement | null>(null);
 let unlistenLoadFile: UnlistenFn | null = null;
@@ -72,6 +74,8 @@ async function closeWindow() {
   await currentWindow.hide();
   currentFilePath.value = null;
   resolvedSiblingPaths.value = [];
+  siblingPathsProvidedByMain.value = false;
+  void emit(QUICK_VIEW_DISPLAYED_PATH_CHANGED_EVENT, { path: null });
 }
 
 async function setQuickViewWindowTitle(path: string) {
@@ -86,7 +90,7 @@ async function ensureResolvedSiblingPaths(): Promise<string[]> {
 
   let paths = resolvedSiblingPaths.value;
 
-  if (paths.length <= 1) {
+  if (paths.length <= 1 && !siblingPathsProvidedByMain.value) {
     paths = await fetchQuickViewSiblingPathsFromDisk(currentFilePath.value);
     resolvedSiblingPaths.value = paths;
   }
@@ -101,6 +105,7 @@ async function selectPath(path: string) {
 
   currentFilePath.value = path;
   await setQuickViewWindowTitle(path);
+  void emit(QUICK_VIEW_DISPLAYED_PATH_CHANGED_EVENT, { path });
 }
 
 async function goToSibling(offset: number) {
@@ -130,6 +135,7 @@ async function goToSibling(offset: number) {
 
   currentFilePath.value = nextPath;
   await setQuickViewWindowTitle(nextPath);
+  void emit(QUICK_VIEW_DISPLAYED_PATH_CHANGED_EVENT, { path: nextPath });
 }
 
 function scrollActiveThumbIntoView() {
@@ -174,6 +180,7 @@ async function setupEventListeners() {
     async (event) => {
       currentFilePath.value = event.payload.path;
       resolvedSiblingPaths.value = event.payload.siblingPaths ?? [];
+      siblingPathsProvidedByMain.value = event.payload.siblingPaths !== null;
       isLoading.value = false;
       await setQuickViewWindowTitle(event.payload.path);
       await ensureResolvedSiblingPaths();
