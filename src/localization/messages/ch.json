@@ -406,6 +406,7 @@
       "monthFormat": "月份格式",
       "numeric": "数字",
       "short": "短的",
+      "long": "长",
       "timeFormat": "时间格式",
       "12HourFormat": "12 小时制",
       "displayedDateProperties": "显示的日期属性",

@@ -670,6 +670,7 @@ export function formatShortcutKeys(keys: ShortcutKeys): string {
   if (keys.shift) parts.push('Shift');
 
   let mainKeyForDisplay = keys.key;
+
   if ((keys.ctrl || keys.meta) && mainKeyForDisplay === '=' && !keys.shift) {
     mainKeyForDisplay = '+';
   }

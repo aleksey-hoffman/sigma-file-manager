@@ -421,6 +421,7 @@
       "monthFormat": "Oblika meseca",
       "numeric": "Številčno",
       "short": "Kratko",
+      "long": "Dolg",
       "timeFormat": "Oblika časa",
       "12HourFormat": "12-urni format",
       "displayedDateProperties": "Prikazane lastnosti datuma",

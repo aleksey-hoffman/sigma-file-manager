@@ -406,6 +406,7 @@
       "monthFormat": "Định dạng tháng",
       "numeric": "Số",
       "short": "Ngắn ngủi",
+      "long": "Dài",
       "timeFormat": "Định dạng thời gian",
       "12HourFormat": "Định dạng 12 giờ",
       "displayedDateProperties": "Thuộc tính ngày được hiển thị",

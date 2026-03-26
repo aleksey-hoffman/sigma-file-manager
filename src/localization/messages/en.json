@@ -421,6 +421,7 @@
       "monthFormat": "Month format",
       "numeric": "Numeric",
       "short": "Short",
+      "long": "Long",
       "timeFormat": "Time format",
       "12HourFormat": "12-hour format",
       "displayedDateProperties": "Displayed date properties",

@@ -20,7 +20,7 @@ import 'dayjs/locale/zh-cn';
 import 'dayjs/locale/vi';
 import 'dayjs/locale/sl';
 
-import { dayjsLocaleMapping, type AppLocale } from '@/localization/data';
+import { dayjsLocaleMapping, intlLocaleMapping, type AppLocale } from '@/localization/data';
 import type { DateTime } from '@/types/user-settings';
 
 dayjs.extend(dayjsCustomParseFormat);
@@ -40,27 +40,37 @@ export function formatDateTime(date: Date, format: string, locale: AppLocale = '
   }
 }
 
+function toIntlLocale(appLocale: string): string {
+  return intlLocaleMapping[appLocale as AppLocale] ?? appLocale;
+}
+
 function resolveFormattingLocale(options: DateTime, appLocale: string): string | undefined {
   if (options.autoDetectRegionalFormat) {
     if (typeof navigator !== 'undefined' && navigator.language) {
       return navigator.language;
     }
+
     return undefined;
   }
+
   const code = options.regionalFormat?.code;
+
   if (code && code.length > 0) {
-    return code;
+    return toIntlLocale(code);
   }
-  return appLocale;
+
+  return toIntlLocale(appLocale);
 }
 
 function monthToIntlOption(month: DateTime['month']): Intl.DateTimeFormatOptions['month'] {
   if (month === 'numeric') {
     return '2-digit';
   }
+
   if (month === 'long') {
     return 'long';
   }
+
   return 'short';
 }
 
@@ -72,6 +82,7 @@ export function formatDateTimeDisplay(
 ): string {
   try {
     const localeTag = resolveFormattingLocale(options, appLocale);
+
     if (!includeTimePart) {
       return new Intl.DateTimeFormat(localeTag, {
         year: 'numeric',

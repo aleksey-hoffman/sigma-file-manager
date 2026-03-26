@@ -421,6 +421,7 @@
       "monthFormat": "Формат месяца",
       "numeric": "Числовой",
       "short": "Короткий",
+      "long": "Длинный",
       "timeFormat": "Формат времени",
       "12HourFormat": "12-часовой формат",
       "displayedDateProperties": "Отображаемые свойства даты",

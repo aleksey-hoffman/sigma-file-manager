@@ -405,6 +405,7 @@
       "monthFormat": "قالب ماه",
       "numeric": "عددی",
       "short": "کوتاه",
+      "long": "بلند",
       "timeFormat": "قالب زمان",
       "12HourFormat": "فرمت 12 ساعته",
       "displayedDateProperties": "ویژگی های تاریخ نمایش داده شده",

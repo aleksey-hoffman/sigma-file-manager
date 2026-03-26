@@ -135,3 +135,19 @@ export const dayjsLocaleMapping: Record<AppLocale, string> = {
   pt: 'pt',
   sl: 'sl',
 };
+
+export const intlLocaleMapping: Record<AppLocale, string> = {
+  en: 'en',
+  ru: 'ru',
+  es: 'es',
+  de: 'de',
+  fr: 'fr',
+  tr: 'tr',
+  ja: 'ja',
+  fa: 'fa',
+  ch: 'zh-CN',
+  vi: 'vi',
+  it: 'it',
+  pt: 'pt',
+  sl: 'sl',
+};

@@ -72,11 +72,11 @@ const selectedRegionalLanguage = computed({
 });
 
 const monthFormatTab = computed({
-  get(): 'numeric' | 'short' {
-    return userSettingsStore.userSettings.dateTime.month === 'numeric' ? 'numeric' : 'short';
+  get(): 'numeric' | 'short' | 'long' {
+    return userSettingsStore.userSettings.dateTime.month;
   },
   set(value: string) {
-    if (value === 'numeric' || value === 'short') {
+    if (value === 'numeric' || value === 'short' || value === 'long') {
       void userSettingsStore.set('dateTime.month', value);
     }
   },
@@ -138,6 +138,12 @@ const monthFormatTab = computed({
                 class="date-time-settings__tab-trigger"
               >
                 {{ t('settings.dateTime.short') }}
+              </TabsTrigger>
+              <TabsTrigger
+                value="long"
+                class="date-time-settings__tab-trigger"
+              >
+                {{ t('settings.dateTime.long') }}
               </TabsTrigger>
             </TabsList>
           </Tabs>

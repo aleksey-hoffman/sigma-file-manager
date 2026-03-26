@@ -406,6 +406,7 @@
       "monthFormat": "Ay formatı",
       "numeric": "Sayısal",
       "short": "Kısa boylu",
+      "long": "Uzun",
       "timeFormat": "Zaman formatı",
       "12HourFormat": "12 saatlik biçim",
       "displayedDateProperties": "Görüntülenen tarih özellikleri",

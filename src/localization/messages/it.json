@@ -406,6 +406,7 @@
       "monthFormat": "Formato del mese",
       "numeric": "Numerico",
       "short": "Breve",
+      "long": "Lungo",
       "timeFormat": "Formato orario",
       "12HourFormat": "Formato 12 ore",
       "displayedDateProperties": "Proprietà della data visualizzata",

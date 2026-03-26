@@ -406,6 +406,7 @@
       "monthFormat": "月のフォーマット",
       "numeric": "数値",
       "short": "短い",
+      "long": "長い",
       "timeFormat": "時間形式",
       "12HourFormat": "12時間形式",
       "displayedDateProperties": "表示された日付のプロパティ",
