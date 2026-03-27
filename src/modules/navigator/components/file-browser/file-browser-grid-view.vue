@@ -19,13 +19,21 @@ import FileBrowserGridCard from './file-browser-grid-card.vue';
 const ctx = useFileBrowserContext();
 const { groupedEntries } = useGroupedEntries();
 const { t } = useI18n();
+
+function handleGridContextMenu(event: MouseEvent) {
+  if (event.target instanceof Element && event.target.closest('.file-browser-grid-card')) {
+    return;
+  }
+
+  ctx.handleBackgroundContextMenu();
+}
 </script>
 
 <template>
   <div
     :key="ctx.currentPath.value"
     class="file-browser-grid-view file-browser-grid-view--animate"
-    @contextmenu.self="ctx.handleBackgroundContextMenu"
+    @contextmenu="handleGridContextMenu"
   >
     <FileBrowserGridSection
       v-if="groupedEntries.dirs.length > 0"
