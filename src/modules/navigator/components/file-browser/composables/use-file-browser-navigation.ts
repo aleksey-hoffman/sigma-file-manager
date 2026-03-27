@@ -242,6 +242,7 @@ export function useFileBrowserNavigation(
   const currentDirEntry = computed<DirEntry | null>(() => {
     if (!dirContents.value) return null;
     const name = getPathDisplayName(currentPath.value) || currentPath.value;
+    const times = dirContents.value.opened_directory_times;
     return {
       name,
       path: currentPath.value,
@@ -250,9 +251,9 @@ export function useFileBrowserNavigation(
       is_hidden: false,
       is_symlink: false,
       size: 0,
-      created_time: 0,
-      modified_time: 0,
-      accessed_time: 0,
+      created_time: times.created_time,
+      modified_time: times.modified_time,
+      accessed_time: times.accessed_time,
       item_count: dirContents.value.entries.length,
       ext: null,
       mime: null,

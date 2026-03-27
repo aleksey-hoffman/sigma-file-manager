@@ -27,12 +27,20 @@ pub struct DirEntry {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+pub struct OpenedDirectoryTimes {
+    pub modified_time: u64,
+    pub accessed_time: u64,
+    pub created_time: u64,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 pub struct DirContents {
     pub path: String,
     pub entries: Vec<DirEntry>,
     pub total_count: usize,
     pub dir_count: usize,
     pub file_count: usize,
+    pub opened_directory_times: OpenedDirectoryTimes,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -201,6 +209,31 @@ fn should_skip_path(path: &Path) -> bool {
     }
 }
 
+fn file_times_from_metadata(metadata: &fs::Metadata) -> (u64, u64, u64) {
+    let modified_time = metadata
+        .modified()
+        .ok()
+        .and_then(|time| time.duration_since(UNIX_EPOCH).ok())
+        .map(|duration| duration.as_millis() as u64)
+        .unwrap_or(0);
+
+    let accessed_time = metadata
+        .accessed()
+        .ok()
+        .and_then(|time| time.duration_since(UNIX_EPOCH).ok())
+        .map(|duration| duration.as_millis() as u64)
+        .unwrap_or(0);
+
+    let created_time = metadata
+        .created()
+        .ok()
+        .and_then(|time| time.duration_since(UNIX_EPOCH).ok())
+        .map(|duration| duration.as_millis() as u64)
+        .unwrap_or(0);
+
+    (modified_time, accessed_time, created_time)
+}
+
 fn read_entry(path: &Path) -> Option<DirEntry> {
     if should_skip_path(path) {
         return None;
@@ -222,26 +255,7 @@ fn read_entry(path: &Path) -> Option<DirEntry> {
     let is_dir = metadata.is_dir();
     let is_file = metadata.is_file();
 
-    let modified_time = metadata
-        .modified()
-        .ok()
-        .and_then(|time| time.duration_since(UNIX_EPOCH).ok())
-        .map(|duration| duration.as_millis() as u64)
-        .unwrap_or(0);
-
-    let accessed_time = metadata
-        .accessed()
-        .ok()
-        .and_then(|time| time.duration_since(UNIX_EPOCH).ok())
-        .map(|duration| duration.as_millis() as u64)
-        .unwrap_or(0);
-
-    let created_time = metadata
-        .created()
-        .ok()
-        .and_then(|time| time.duration_since(UNIX_EPOCH).ok())
-        .map(|duration| duration.as_millis() as u64)
-        .unwrap_or(0);
+    let (modified_time, accessed_time, created_time) = file_times_from_metadata(&metadata);
 
     let size = if is_file { metadata.len() } else { 0 };
 
@@ -291,6 +305,9 @@ pub fn read_dir(path: String) -> Result<DirContents, String> {
         return Err(format!("Path is not a directory: {}", path));
     }
 
+    let self_metadata = fs::metadata(directory).map_err(|error| error.to_string())?;
+    let (self_modified, self_accessed, self_created) = file_times_from_metadata(&self_metadata);
+
     let read_result = fs::read_dir(directory).map_err(|error| error.to_string())?;
 
     let mut entries: Vec<DirEntry> = Vec::new();
@@ -320,6 +337,11 @@ pub fn read_dir(path: String) -> Result<DirContents, String> {
         total_count: dir_count + file_count,
         dir_count,
         file_count,
+        opened_directory_times: OpenedDirectoryTimes {
+            modified_time: self_modified,
+            accessed_time: self_accessed,
+            created_time: self_created,
+        },
     })
 }
 

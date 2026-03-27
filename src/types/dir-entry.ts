@@ -2,12 +2,19 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
+export interface OpenedDirectoryTimes {
+  modified_time: number;
+  accessed_time: number;
+  created_time: number;
+}
+
 export interface DirContents {
   path: string;
   entries: DirEntry[];
   total_count: number;
   dir_count: number;
   file_count: number;
+  opened_directory_times: OpenedDirectoryTimes;
 }
 
 export type ExtendedVirtualEntry = {
