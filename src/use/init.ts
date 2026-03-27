@@ -83,7 +83,7 @@ export function useInit() {
 
   async function showMainWindow() {
     await nextTick();
-    await new Promise(resolve => requestAnimationFrame(resolve));
+    await new Promise(resolve => setTimeout(resolve, 0));
 
     const currentWindow = getCurrentWindow();
 
