@@ -434,6 +434,7 @@ pub async fn global_search_index_paths(
         .collect();
 
     let mut indexed_count: u64 = 0;
+    let mut did_mutate_index = false;
     let scan_depth = settings.scan_depth.max(1);
 
     for dir_path in &settings.paths {
@@ -454,6 +455,7 @@ pub async fn global_search_index_paths(
 
         let exact_term = Term::from_field_text(fields.path, &normalized_dir);
         writer.delete_term(exact_term);
+        did_mutate_index = true;
 
         for entry_result in WalkDir::new(path)
             .follow_links(false)
@@ -489,7 +491,7 @@ pub async fn global_search_index_paths(
         }
     }
 
-    if indexed_count > 0 {
+    if did_mutate_index {
         writer.commit().map_err(|error| error.to_string())?;
         reader.reload().map_err(|error| error.to_string())?;
 

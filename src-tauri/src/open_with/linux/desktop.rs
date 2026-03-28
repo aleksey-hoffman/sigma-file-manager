@@ -2,8 +2,8 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-use super::types::AssociatedProgram;
-use super::utils::{get_program_icon, load_png_as_base64};
+use crate::open_with::types::AssociatedProgram;
+use crate::open_with::utils::{get_program_icon, load_png_as_base64};
 use std::collections::HashSet;
 use std::env;
 use std::fs;
@@ -11,15 +11,15 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 
 pub(super) struct GioMimeInfo {
-    default_app: Option<String>,
-    recommended_apps: Vec<String>,
-    registered_apps: Vec<String>,
+    pub(crate) default_app: Option<String>,
+    pub(crate) recommended_apps: Vec<String>,
+    pub(crate) registered_apps: Vec<String>,
 }
 
 pub(super) struct MimeappsEntries {
-    default_app: Option<String>,
-    recommended_apps: Vec<String>,
-    other_apps: Vec<String>,
+    pub(crate) default_app: Option<String>,
+    pub(crate) recommended_apps: Vec<String>,
+    pub(crate) other_apps: Vec<String>,
 }
 
 pub(super) struct DesktopEntry {
@@ -598,4 +598,26 @@ pub(super) fn find_desktop_file(desktop_id: &str) -> Option<PathBuf> {
     }
 
     None
+}
+
+#[cfg(test)]
+mod tests {
+    use super::parse_gio_mime_output;
+
+    #[test]
+    fn parse_gio_mime_output_reads_default_recommended_and_registered() {
+        let content = r"Default application for text/plain: code.desktop
+
+Recommended applications: rec1.desktop; rec2.desktop;
+
+Registered applications: reg1.desktop;
+";
+        let parsed = parse_gio_mime_output(content);
+        assert_eq!(parsed.default_app.as_deref(), Some("code.desktop"));
+        assert_eq!(
+            parsed.recommended_apps,
+            vec!["rec1.desktop", "rec2.desktop"]
+        );
+        assert_eq!(parsed.registered_apps, vec!["reg1.desktop"]);
+    }
 }

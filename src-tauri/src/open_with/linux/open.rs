@@ -7,7 +7,7 @@ use super::desktop::{
     get_xdg_default_app, merge_desktop_ids, GioMimeInfo, MimeappsEntries,
 };
 use super::mime::get_mime_type;
-use super::types::{AssociatedProgram, GetAssociatedProgramsResult, OpenWithResult};
+use crate::open_with::types::{AssociatedProgram, GetAssociatedProgramsResult, OpenWithResult};
 use std::collections::HashSet;
 use std::path::Path;
 use std::process::Command;
