@@ -6,7 +6,7 @@ use crate::utils::{metadata_modified_time_unix_ms, normalize_path};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::Mutex;
-use tantivy::{doc, IndexWriter, Term};
+use tantivy::{doc, Index, IndexReader, IndexWriter, Term};
 use tauri::Manager;
 use walkdir::WalkDir;
 
@@ -15,10 +15,49 @@ use super::index::{
     calculate_dir_size, clear_index, index_dir, open_or_create_index, read_meta, validate_index,
     write_meta, GlobalSearchMeta, SCHEMA_VERSION,
 };
-use super::state::{now_millis, GlobalSearchIndexFields, GLOBAL_SEARCH_STATE};
+use super::state::{now_millis, GlobalSearchIndexFields, GlobalSearchState, GLOBAL_SEARCH_STATE};
 use super::types::{
     GlobalSearchDriveScanError, GlobalSearchSettings, GlobalSearchStatus, IndexPathsSettings,
 };
+struct CommittedIndexUpdate {
+    doc_count: u64,
+    index_size_bytes: u64,
+    index: Index,
+    reader: IndexReader,
+    fields: GlobalSearchIndexFields,
+}
+
+fn apply_committed_index_status(
+    state: &mut GlobalSearchState,
+    base_dir: &Path,
+    update: CommittedIndexUpdate,
+    advance_last_scan_time: bool,
+) {
+    let CommittedIndexUpdate {
+        doc_count,
+        index_size_bytes,
+        index,
+        reader,
+        fields,
+    } = update;
+    state.index = Some(index);
+    state.reader = Some(reader);
+    state.fields = Some(fields);
+    state.status.indexed_item_count = doc_count;
+    state.status.index_size_bytes = index_size_bytes;
+    state.status.is_index_valid = doc_count > 0;
+    if advance_last_scan_time {
+        state.status.last_scan_time = Some(now_millis());
+    }
+    let _ = write_meta(
+        base_dir,
+        &GlobalSearchMeta {
+            last_scan_time: state.status.last_scan_time,
+            indexed_item_count: doc_count,
+            schema_version: SCHEMA_VERSION,
+        },
+    );
+}
 
 pub fn global_search_init(app: tauri::AppHandle) -> Result<GlobalSearchStatus, String> {
     let base_dir = app
@@ -212,163 +251,156 @@ pub async fn global_search_start_scan(
     };
 
     tauri::async_runtime::spawn(async move {
-        let result = (|| -> Result<u64, String> {
-            let (index, reader, fields) = open_or_create_index(&index_path)?;
+        let result =
+            (|| -> Result<(u64, Index, IndexReader, GlobalSearchIndexFields, u64), String> {
+                let (index, reader, fields) = open_or_create_index(&index_path)?;
 
-            let writer = index
-                .writer(100_000_000)
-                .map_err(|error| error.to_string())?;
+                let writer = index
+                    .writer(100_000_000)
+                    .map_err(|error| error.to_string())?;
 
-            writer
-                .delete_all_documents()
-                .map_err(|error| error.to_string())?;
+                writer
+                    .delete_all_documents()
+                    .map_err(|error| error.to_string())?;
 
-            let writer = Mutex::new(writer);
+                let writer = Mutex::new(writer);
 
-            let ignored_paths: Vec<String> = settings
-                .ignored_paths
-                .iter()
-                .map(|path| normalize_path(path))
-                .chain(builtin_ignored_paths().iter().map(|path| path.to_string()))
-                .collect();
+                let ignored_paths: Vec<String> = settings
+                    .ignored_paths
+                    .iter()
+                    .map(|path| normalize_path(path))
+                    .chain(builtin_ignored_paths().iter().map(|path| path.to_string()))
+                    .collect();
 
-            let valid_drive_roots: Vec<String> = settings
-                .drive_roots
-                .iter()
-                .filter(|root| {
-                    let path = std::path::Path::new(root);
-                    path.exists() && path.is_dir()
-                })
-                .cloned()
-                .collect();
+                let valid_drive_roots: Vec<String> = settings
+                    .drive_roots
+                    .iter()
+                    .filter(|root| {
+                        let path = std::path::Path::new(root);
+                        path.exists() && path.is_dir()
+                    })
+                    .cloned()
+                    .collect();
 
-            if valid_drive_roots.is_empty() {
-                if let Ok(mut state) = GLOBAL_SEARCH_STATE.write() {
-                    state.status.is_scan_in_progress = false;
-                    state.status.total_drives_count = 0;
-                    state.status.current_drive_root = None;
+                if valid_drive_roots.is_empty() {
+                    if let Ok(mut state) = GLOBAL_SEARCH_STATE.write() {
+                        state.status.is_scan_in_progress = false;
+                        state.status.total_drives_count = 0;
+                        state.status.current_drive_root = None;
+                    }
+                    return Err("No valid drives found to scan".to_string());
                 }
-                return Err("No valid drives found to scan".to_string());
-            }
 
-            if let Ok(mut state) = GLOBAL_SEARCH_STATE.write() {
-                state.status.total_drives_count = valid_drive_roots.len() as u32;
-            }
+                if let Ok(mut state) = GLOBAL_SEARCH_STATE.write() {
+                    state.status.total_drives_count = valid_drive_roots.len() as u32;
+                }
 
-            let indexed_count = AtomicU64::new(0);
-            let mut errors: Vec<GlobalSearchDriveScanError> = Vec::new();
-            let mut scanned_count: u32 = 0;
+                let indexed_count = AtomicU64::new(0);
+                let mut errors: Vec<GlobalSearchDriveScanError> = Vec::new();
+                let mut scanned_count: u32 = 0;
 
-            if settings.parallel_scan && valid_drive_roots.len() > 1 {
-                use std::thread;
+                if settings.parallel_scan && valid_drive_roots.len() > 1 {
+                    use std::thread;
 
-                thread::scope(|scope| {
-                    let results: Vec<_> = valid_drive_roots
-                        .iter()
-                        .map(|root| {
-                            let root = root.clone();
-                            let ignored_paths = ignored_paths.clone();
-                            let writer_ref = &writer;
-                            let indexed_count_ref = &indexed_count;
-                            let cancel_flag_ref = &cancel_flag;
-                            let scan_depth = settings.scan_depth;
+                    thread::scope(|scope| {
+                        let results: Vec<_> = valid_drive_roots
+                            .iter()
+                            .map(|root| {
+                                let root = root.clone();
+                                let ignored_paths = ignored_paths.clone();
+                                let writer_ref = &writer;
+                                let indexed_count_ref = &indexed_count;
+                                let cancel_flag_ref = &cancel_flag;
+                                let scan_depth = settings.scan_depth;
 
-                            scope.spawn(move || {
-                                if let Ok(mut state) = GLOBAL_SEARCH_STATE.write() {
-                                    state.status.current_drive_root = Some(normalize_path(&root));
-                                }
+                                scope.spawn(move || {
+                                    if let Ok(mut state) = GLOBAL_SEARCH_STATE.write() {
+                                        state.status.current_drive_root =
+                                            Some(normalize_path(&root));
+                                    }
 
-                                let result = scan_drive(
-                                    &root,
-                                    scan_depth,
-                                    &ignored_paths,
-                                    &fields,
-                                    writer_ref,
-                                    indexed_count_ref,
-                                    cancel_flag_ref,
-                                );
+                                    let result = scan_drive(
+                                        &root,
+                                        scan_depth,
+                                        &ignored_paths,
+                                        &fields,
+                                        writer_ref,
+                                        indexed_count_ref,
+                                        cancel_flag_ref,
+                                    );
 
-                                if let Ok(mut state) = GLOBAL_SEARCH_STATE.write() {
-                                    state.status.scanned_drives_count += 1;
-                                    state.status.indexed_item_count =
-                                        indexed_count_ref.load(Ordering::Relaxed);
-                                }
+                                    if let Ok(mut state) = GLOBAL_SEARCH_STATE.write() {
+                                        state.status.scanned_drives_count += 1;
+                                        state.status.indexed_item_count =
+                                            indexed_count_ref.load(Ordering::Relaxed);
+                                    }
 
-                                result
+                                    result
+                                })
                             })
-                        })
-                        .collect();
+                            .collect();
 
-                    for handle in results {
-                        if let Ok(Err(error)) = handle.join() {
+                        for handle in results {
+                            if let Ok(Err(error)) = handle.join() {
+                                errors.push(error);
+                            }
+                        }
+                    });
+                } else {
+                    for root in valid_drive_roots.iter() {
+                        if cancel_flag.load(Ordering::SeqCst) {
+                            break;
+                        }
+
+                        let root_string = normalize_path(root);
+
+                        if let Ok(mut state) = GLOBAL_SEARCH_STATE.write() {
+                            state.status.current_drive_root = Some(root_string.clone());
+                        }
+
+                        let result = scan_drive(
+                            root,
+                            settings.scan_depth,
+                            &ignored_paths,
+                            &fields,
+                            &writer,
+                            &indexed_count,
+                            &cancel_flag,
+                        );
+
+                        scanned_count += 1;
+                        if let Ok(mut state) = GLOBAL_SEARCH_STATE.write() {
+                            state.status.scanned_drives_count = scanned_count;
+                            state.status.indexed_item_count = indexed_count.load(Ordering::Relaxed);
+                        }
+
+                        if let Err(error) = result {
                             errors.push(error);
                         }
                     }
-                });
-            } else {
-                for root in valid_drive_roots.iter() {
-                    if cancel_flag.load(Ordering::SeqCst) {
-                        break;
-                    }
-
-                    let root_string = normalize_path(root);
-
-                    if let Ok(mut state) = GLOBAL_SEARCH_STATE.write() {
-                        state.status.current_drive_root = Some(root_string.clone());
-                    }
-
-                    let result = scan_drive(
-                        root,
-                        settings.scan_depth,
-                        &ignored_paths,
-                        &fields,
-                        &writer,
-                        &indexed_count,
-                        &cancel_flag,
-                    );
-
-                    scanned_count += 1;
-                    if let Ok(mut state) = GLOBAL_SEARCH_STATE.write() {
-                        state.status.scanned_drives_count = scanned_count;
-                        state.status.indexed_item_count = indexed_count.load(Ordering::Relaxed);
-                    }
-
-                    if let Err(error) = result {
-                        errors.push(error);
-                    }
                 }
-            }
 
-            if let Ok(mut state) = GLOBAL_SEARCH_STATE.write() {
-                state.status.drive_scan_errors = errors;
-                state.status.current_drive_root = None;
-                state.status.is_committing = true;
-            }
+                if let Ok(mut state) = GLOBAL_SEARCH_STATE.write() {
+                    state.status.drive_scan_errors = errors;
+                    state.status.current_drive_root = None;
+                    state.status.is_committing = true;
+                }
 
-            let mut writer_locked = writer.lock().map_err(|error| error.to_string())?;
-            writer_locked.commit().map_err(|error| error.to_string())?;
-            drop(writer_locked);
+                let mut writer_locked = writer.lock().map_err(|error| error.to_string())?;
+                writer_locked.commit().map_err(|error| error.to_string())?;
+                drop(writer_locked);
 
-            reader.reload().map_err(|error| error.to_string())?;
+                reader.reload().map_err(|error| error.to_string())?;
 
-            if let Ok(mut state) = GLOBAL_SEARCH_STATE.write() {
-                state.status.is_committing = false;
-            }
+                if let Ok(mut state) = GLOBAL_SEARCH_STATE.write() {
+                    state.status.is_committing = false;
+                }
 
-            let final_count = indexed_count.load(Ordering::Relaxed);
-            let index_size = calculate_dir_size(&index_path);
+                let final_count = indexed_count.load(Ordering::Relaxed);
+                let index_size = calculate_dir_size(&index_path);
 
-            let mut state = GLOBAL_SEARCH_STATE
-                .write()
-                .map_err(|error| error.to_string())?;
-            state.index = Some(index);
-            state.reader = Some(reader);
-            state.fields = Some(fields);
-            state.status.is_index_valid = final_count > 0;
-            state.status.index_size_bytes = index_size;
-
-            Ok(final_count)
-        })();
+                Ok((final_count, index, reader, fields, index_size))
+            })();
 
         if let Ok(mut state) = GLOBAL_SEARCH_STATE.write() {
             state.status.is_scan_in_progress = false;
@@ -377,18 +409,18 @@ pub async fn global_search_start_scan(
 
             let was_cancelled = state.cancel_flag.load(Ordering::SeqCst);
 
-            if let Ok(count) = result {
-                if !was_cancelled {
-                    state.status.last_scan_time = Some(now_millis());
-                }
-                state.status.indexed_item_count = count;
-                let _ = write_meta(
+            if let Ok((count, index, reader, fields, index_size)) = result {
+                apply_committed_index_status(
+                    &mut state,
                     &base_dir,
-                    &GlobalSearchMeta {
-                        last_scan_time: state.status.last_scan_time,
-                        indexed_item_count: count,
-                        schema_version: SCHEMA_VERSION,
+                    CommittedIndexUpdate {
+                        doc_count: count,
+                        index_size_bytes: index_size,
+                        index,
+                        reader,
+                        fields,
                     },
+                    !was_cancelled,
                 );
             }
         }
@@ -499,13 +531,77 @@ pub async fn global_search_index_paths(
         let index_size = calculate_dir_size(&index_path);
 
         if let Ok(mut state) = GLOBAL_SEARCH_STATE.write() {
-            state.status.indexed_item_count = new_total;
-            state.status.index_size_bytes = index_size;
-            state.index = Some(index);
-            state.reader = Some(reader);
-            state.fields = Some(fields);
+            apply_committed_index_status(
+                &mut state,
+                &base_dir,
+                CommittedIndexUpdate {
+                    doc_count: new_total,
+                    index_size_bytes: index_size,
+                    index,
+                    reader,
+                    fields,
+                },
+                true,
+            );
         }
     }
 
     Ok(indexed_count)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::sync::atomic::AtomicBool;
+    use std::sync::Arc;
+    use tempfile::TempDir;
+
+    #[test]
+    fn committed_index_status_clears_valid_flag_and_persists_meta_for_empty_index() {
+        let temp = TempDir::new().unwrap();
+        let base_dir = temp.path();
+        let index_path = index_dir(base_dir);
+        let (index, reader, fields) = open_or_create_index(&index_path).unwrap();
+
+        let mut state = GlobalSearchState {
+            status: GlobalSearchStatus {
+                is_scan_in_progress: false,
+                is_committing: false,
+                is_parallel_scan: false,
+                last_scan_time: Some(1),
+                indexed_item_count: 999,
+                index_size_bytes: 0,
+                current_drive_root: None,
+                drive_scan_errors: vec![],
+                is_index_valid: true,
+                scanned_drives_count: 0,
+                total_drives_count: 0,
+            },
+            index: None,
+            reader: None,
+            fields: None,
+            cancel_flag: Arc::new(AtomicBool::new(false)),
+        };
+
+        apply_committed_index_status(
+            &mut state,
+            base_dir,
+            CommittedIndexUpdate {
+                doc_count: 0,
+                index_size_bytes: 0,
+                index,
+                reader,
+                fields,
+            },
+            true,
+        );
+
+        assert!(!state.status.is_index_valid);
+        assert_eq!(state.status.indexed_item_count, 0);
+        assert!(state.status.last_scan_time.unwrap() > 1);
+        let meta = read_meta(base_dir).expect("meta written");
+        assert_eq!(meta.indexed_item_count, 0);
+        assert_eq!(meta.indexed_item_count, state.status.indexed_item_count);
+        assert_eq!(meta.last_scan_time, state.status.last_scan_time);
+    }
 }
