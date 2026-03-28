@@ -14,7 +14,7 @@ import {
   DEFAULT_BACKGROUND_FILE_NAME,
   DEFAULT_INFUSION_BACKGROUND_FILE_NAME,
 } from '@/data/background-media';
-import { useTheme } from './use/use-theme';
+import { useTheme } from './composables/use-theme';
 import { useUserPathsStore } from './user-paths';
 import { i18n } from '@/localization';
 import { getCurrentWebview } from '@tauri-apps/api/webview';

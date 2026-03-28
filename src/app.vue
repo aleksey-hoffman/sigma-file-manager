@@ -6,7 +6,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';
-import { useInit } from './use/init';
+import { useInit } from '@/composables/use-init';
 import { WindowAppLayout, WindowQuickViewLayout } from '@/layouts';
 
 const route = useRoute();

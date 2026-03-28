@@ -239,7 +239,6 @@ const monthFormatTab = computed({
 .date-time-settings__tab-trigger {
   min-width: 0;
   flex: 1 1 0;
-  padding-inline: 0.5rem;
 }
 
 .date-time-settings__label {
