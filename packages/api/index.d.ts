@@ -14,7 +14,8 @@ export type ExtensionPermission
     | 'notifications'
     | 'dialogs'
     | 'shell'
-    | 'clipboard';
+    | 'clipboard'
+    | 'openUrl';
 
 export type ExtensionActivationEvent
   = | 'onStartup'

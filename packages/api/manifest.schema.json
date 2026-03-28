@@ -130,7 +130,8 @@
           "notifications",
           "dialogs",
           "shell",
-          "clipboard"
+          "clipboard",
+          "openUrl"
         ]
       }
     },
@@ -147,7 +148,8 @@
               "onUninstall",
               "onEnable",
               "onDisable",
-              "onUpdate"
+              "onUpdate",
+              "onLocaleChange"
             ]
           },
           {
