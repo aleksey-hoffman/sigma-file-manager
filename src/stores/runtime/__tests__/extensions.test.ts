@@ -111,6 +111,7 @@ vi.mock('@/modules/extensions/builtin-commands', () => ({
   getBuiltinCommandDefinitions: () => [],
 }));
 
+import externalLinks from '@/data/external-links';
 import { useExtensionsStore } from '@/stores/runtime/extensions';
 import { useExtensionsStorageStore } from '@/stores/storage/extensions';
 
@@ -312,7 +313,7 @@ describe('extensions runtime store', () => {
       }
 
       if (command === 'fetch_url_text') {
-        if (args?.url === 'https://raw.githubusercontent.com/sigma-hub/sfm-extensions/main/registry.json') {
+        if (args?.url === externalLinks.extensionsRegistryUrl) {
           return {
             ok: true,
             status: 200,
@@ -366,7 +367,7 @@ describe('extensions runtime store', () => {
       }
 
       if (command === 'fetch_url_text') {
-        if (args?.url === 'https://raw.githubusercontent.com/sigma-hub/sfm-extensions/main/registry.json') {
+        if (args?.url === externalLinks.extensionsRegistryUrl) {
           return {
             ok: true,
             status: 200,
@@ -425,7 +426,7 @@ describe('extensions runtime store', () => {
       }
 
       if (command === 'fetch_url_text') {
-        if (args?.url === 'https://raw.githubusercontent.com/sigma-hub/sfm-extensions/main/registry.json') {
+        if (args?.url === externalLinks.extensionsRegistryUrl) {
           return {
             ok: true,
             status: 200,
@@ -495,7 +496,7 @@ describe('extensions runtime store', () => {
         return [];
       }
 
-      if (command === 'fetch_url_text' && args?.url === 'https://raw.githubusercontent.com/sigma-hub/sfm-extensions/main/registry.json') {
+      if (command === 'fetch_url_text' && args?.url === externalLinks.extensionsRegistryUrl) {
         throw new Error('Network error');
       }
 

@@ -24,7 +24,7 @@ const githubReadmeSupportSectionLink = `${githubRepoLink}#supporters`;
 const githubLocalesLink = `${githubRawApiUrl}/${githubFullRepoName}/${githubMainBranch}/src/localization/locales`;
 const githubLanguageInstructionsLink = `${githubDiscussionsLink}196`;
 
-const extensionsRegistryRepo = 'sfm-extensions';
+const extensionsRegistryRepo = 'sfm-extensions-registry';
 const extensionsRegistryOrg = 'sigma-hub';
 const extensionsRegistryFullRepoName = `${extensionsRegistryOrg}/${extensionsRegistryRepo}`;
 const extensionsRegistryBaseUrl = `${githubRawApiUrl}/${extensionsRegistryFullRepoName}/main`;
