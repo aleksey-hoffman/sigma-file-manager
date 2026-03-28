@@ -2,10 +2,10 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
+use crate::utils::{source_and_destination_same_directory, unique_path_with_index};
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::Path;
-use crate::utils::normalize_path;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct FileOperationResult {
@@ -67,25 +67,7 @@ fn copy_dir_recursive(source: &Path, destination: &Path) -> Result<(), String> {
 }
 
 fn get_unique_destination_path(destination: &Path, name: &str) -> std::path::PathBuf {
-    let mut dest_path = destination.join(name);
-    let mut counter = 1;
-
-    while dest_path.exists() {
-        let path = Path::new(name);
-        let stem = path.file_stem().and_then(|stem| stem.to_str()).unwrap_or(name);
-        let extension = path.extension().and_then(|ext| ext.to_str());
-
-        let new_name = if let Some(ext) = extension {
-            format!("{} ({}).{}", stem, counter, ext)
-        } else {
-            format!("{} ({})", stem, counter)
-        };
-
-        dest_path = destination.join(&new_name);
-        counter += 1;
-    }
-
-    dest_path
+    unique_path_with_index(&destination.join(name), 1, name, None, None)
 }
 
 #[tauri::command]
@@ -104,11 +86,7 @@ pub fn check_conflicts(source_paths: Vec<String>, destination_path: String) -> V
             continue;
         }
 
-        let source_parent = source.parent().map(|parent| normalize_path(&parent.to_string_lossy()));
-        let dest_normalized = normalize_path(&destination.to_string_lossy());
-        let is_same_directory = source_parent
-            .map(|parent| parent == dest_normalized)
-            .unwrap_or(false);
+        let is_same_directory = source_and_destination_same_directory(source, destination);
 
         if is_same_directory {
             continue;
@@ -129,7 +107,9 @@ pub fn check_conflicts(source_paths: Vec<String>, destination_path: String) -> V
             };
 
             let destination_size = if dest_item_path.is_file() {
-                fs::metadata(&dest_item_path).ok().map(|metadata| metadata.len())
+                fs::metadata(&dest_item_path)
+                    .ok()
+                    .map(|metadata| metadata.len())
             } else {
                 None
             };
@@ -158,7 +138,11 @@ fn remove_dir_or_file(path: &Path) -> Result<(), String> {
 }
 
 #[tauri::command]
-pub fn copy_items(source_paths: Vec<String>, destination_path: String, conflict_resolution: Option<String>) -> FileOperationResult {
+pub fn copy_items(
+    source_paths: Vec<String>,
+    destination_path: String,
+    conflict_resolution: Option<String>,
+) -> FileOperationResult {
     let destination = Path::new(&destination_path);
     let resolution = conflict_resolution
         .map(|value| ConflictResolution::from_str(&value))
@@ -167,7 +151,10 @@ pub fn copy_items(source_paths: Vec<String>, destination_path: String, conflict_
     if !destination.exists() {
         return FileOperationResult {
             success: false,
-            error: Some(format!("Destination path does not exist: {}", destination_path)),
+            error: Some(format!(
+                "Destination path does not exist: {}",
+                destination_path
+            )),
             copied_count: None,
             failed_count: None,
             skipped_count: None,
@@ -177,7 +164,10 @@ pub fn copy_items(source_paths: Vec<String>, destination_path: String, conflict_
     if !destination.is_dir() {
         return FileOperationResult {
             success: false,
-            error: Some(format!("Destination is not a directory: {}", destination_path)),
+            error: Some(format!(
+                "Destination is not a directory: {}",
+                destination_path
+            )),
             copied_count: None,
             failed_count: None,
             skipped_count: None,
@@ -198,11 +188,7 @@ pub fn copy_items(source_paths: Vec<String>, destination_path: String, conflict_
             continue;
         }
 
-        let source_parent = source.parent().map(|parent| normalize_path(&parent.to_string_lossy()));
-        let dest_normalized = normalize_path(&destination.to_string_lossy());
-        let is_same_directory = source_parent
-            .map(|parent| parent == dest_normalized)
-            .unwrap_or(false);
+        let is_same_directory = source_and_destination_same_directory(source, destination);
 
         let file_name = match source.file_name() {
             Some(name) => name.to_string_lossy().to_string(),
@@ -267,7 +253,11 @@ pub fn copy_items(source_paths: Vec<String>, destination_path: String, conflict_
 }
 
 #[tauri::command]
-pub fn move_items(source_paths: Vec<String>, destination_path: String, conflict_resolution: Option<String>) -> FileOperationResult {
+pub fn move_items(
+    source_paths: Vec<String>,
+    destination_path: String,
+    conflict_resolution: Option<String>,
+) -> FileOperationResult {
     let destination = Path::new(&destination_path);
     let resolution = conflict_resolution
         .map(|value| ConflictResolution::from_str(&value))
@@ -276,7 +266,10 @@ pub fn move_items(source_paths: Vec<String>, destination_path: String, conflict_
     if !destination.exists() {
         return FileOperationResult {
             success: false,
-            error: Some(format!("Destination path does not exist: {}", destination_path)),
+            error: Some(format!(
+                "Destination path does not exist: {}",
+                destination_path
+            )),
             copied_count: None,
             failed_count: None,
             skipped_count: None,
@@ -286,7 +279,10 @@ pub fn move_items(source_paths: Vec<String>, destination_path: String, conflict_
     if !destination.is_dir() {
         return FileOperationResult {
             success: false,
-            error: Some(format!("Destination is not a directory: {}", destination_path)),
+            error: Some(format!(
+                "Destination is not a directory: {}",
+                destination_path
+            )),
             copied_count: None,
             failed_count: None,
             skipped_count: None,
@@ -307,11 +303,7 @@ pub fn move_items(source_paths: Vec<String>, destination_path: String, conflict_
             continue;
         }
 
-        let source_parent = source.parent().map(|parent| normalize_path(&parent.to_string_lossy()));
-        let dest_normalized = normalize_path(&destination.to_string_lossy());
-        let is_same_directory = source_parent
-            .map(|parent| parent == dest_normalized)
-            .unwrap_or(false);
+        let is_same_directory = source_and_destination_same_directory(source, destination);
 
         if is_same_directory {
             continue;
@@ -423,7 +415,10 @@ pub fn rename_item(source_path: String, new_name: String) -> FileOperationResult
     if dest_path.exists() {
         return FileOperationResult {
             success: false,
-            error: Some(format!("A file or folder with the name '{}' already exists", new_name)),
+            error: Some(format!(
+                "A file or folder with the name '{}' already exists",
+                new_name
+            )),
             copied_count: None,
             failed_count: None,
             skipped_count: None,
@@ -512,7 +507,11 @@ pub fn ensure_directory(directory_path: String) -> FileOperationResult {
 }
 
 #[tauri::command]
-pub fn create_item(directory_path: String, name: String, is_directory: bool) -> FileOperationResult {
+pub fn create_item(
+    directory_path: String,
+    name: String,
+    is_directory: bool,
+) -> FileOperationResult {
     let trimmed_name = name.trim();
 
     if trimmed_name.is_empty() {

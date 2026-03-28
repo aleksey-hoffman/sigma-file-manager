@@ -1,7 +1,7 @@
 [package]
 name = "sigma-file-manager"
 description = "Sigma File Manager"
-version = "2.0.0-alpha.1"
+version = "2.0.0-beta.2"
 license = "GPL-3.0-or-later"
 authors = ["Aleksey Hoffman"]
 repository = "https://github.com/aleksey-hoffman/sigma-file-manager"

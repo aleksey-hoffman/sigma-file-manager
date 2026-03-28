@@ -8,6 +8,7 @@ use super::utils::{
 };
 use crate::open_with::types::{AssociatedProgram, GetAssociatedProgramsResult, OpenWithResult};
 use crate::open_with::utils::{get_program_icon, load_png_as_base64};
+use crate::utils::path_extension_lowercase;
 use std::collections::HashSet;
 use std::path::Path;
 use windows::core::{HSTRING, PCWSTR, PWSTR};
@@ -24,8 +25,8 @@ pub fn get_associated_programs_impl(file_path: &str) -> GetAssociatedProgramsRes
     let association_types: Vec<String> = if is_directory {
         vec!["Folder".to_string(), "Directory".to_string()]
     } else {
-        match path.extension().and_then(|ext| ext.to_str()) {
-            Some(ext) => vec![format!(".{}", ext.to_lowercase())],
+        match path_extension_lowercase(path) {
+            Some(extension) => vec![format!(".{}", extension)],
             None => {
                 return GetAssociatedProgramsResult {
                     success: false,

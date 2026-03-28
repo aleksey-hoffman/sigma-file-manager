@@ -13,6 +13,8 @@ use serde_json::Value;
 use tauri::Emitter;
 use urlencoding::encode;
 
+use crate::utils::unique_path_with_index;
+
 const RELEASES_ATOM_URL: &str =
     "https://github.com/aleksey-hoffman/sigma-file-manager/releases.atom";
 const GITHUB_REPO_OWNER: &str = "aleksey-hoffman";
@@ -216,28 +218,7 @@ fn sanitize_download_file_name(name: &str) -> Result<String, String> {
 }
 
 fn make_unique_path_in_dir(directory: &Path, file_name: &str) -> PathBuf {
-    let path = directory.join(file_name);
-    if !path.exists() {
-        return path;
-    }
-
-    let stem = Path::new(file_name)
-        .file_stem()
-        .and_then(|stem| stem.to_str())
-        .unwrap_or("download");
-    let extension = Path::new(file_name)
-        .extension()
-        .map(|extension| format!(".{}", extension.to_string_lossy()))
-        .unwrap_or_default();
-
-    for index in 2..1000 {
-        let candidate = directory.join(format!("{} ({}){}", stem, index, extension));
-        if !candidate.exists() {
-            return candidate;
-        }
-    }
-
-    path
+    unique_path_with_index(&directory.join(file_name), 2, "download", None, Some(1000))
 }
 
 #[cfg(target_os = "windows")]

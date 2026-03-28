@@ -77,7 +77,6 @@ pub fn open_with_program(
                 if result.success {
                     return result;
                 }
-                return result;
             }
         }
     }

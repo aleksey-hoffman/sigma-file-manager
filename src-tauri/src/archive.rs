@@ -17,7 +17,7 @@ use zip::write::SimpleFileOptions;
 use zip::CompressionMethod;
 use zip::{ZipArchive, ZipWriter};
 
-use crate::utils::normalize_path;
+use crate::utils::{normalize_path, unique_path_with_index};
 
 const ARCHIVE_JOB_CANCELLED: &str = "__ARCHIVE_JOB_CANCELLED__";
 
@@ -418,28 +418,7 @@ fn create_zip_from_sources_with_sink(
 }
 
 fn unique_zip_destination(base: &Path) -> PathBuf {
-    if !base.exists() {
-        return base.to_path_buf();
-    }
-
-    let parent = base.parent().unwrap_or(Path::new(""));
-    let stem = base
-        .file_stem()
-        .and_then(|value| value.to_str())
-        .unwrap_or("archive");
-    let extension = base
-        .extension()
-        .and_then(|value| value.to_str())
-        .unwrap_or("zip");
-
-    let mut counter = 1u32;
-    loop {
-        let candidate = parent.join(format!("{} ({}).{}", stem, counter, extension));
-        if !candidate.exists() {
-            return candidate;
-        }
-        counter += 1;
-    }
+    unique_path_with_index(base, 1, "archive", Some("zip"), None)
 }
 
 fn run_archive_job_blocking(
