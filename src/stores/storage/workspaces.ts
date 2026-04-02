@@ -37,6 +37,11 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
   const workspacesStorage = ref<LazyStore | null>(null);
   const isInitialized = ref(false);
   const workspaces = ref<Workspace[]>(createDefaultWorkspaces());
+  const pendingLaunchRevealQueue = ref<Array<{
+    parentPath: string;
+    entryPath: string;
+  }>>([]);
+  const pendingLaunchReveal = computed(() => pendingLaunchRevealQueue.value[0] ?? null);
 
   const primaryWorkspace: ComputedRef<Workspace | null> = computed(() => (
     workspaces.value?.find(workspace => workspace.isPrimary) || null
@@ -321,6 +326,31 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
 
     if (options?.activate !== false) {
       openTabGroup(newTabGroup);
+    }
+  }
+
+  function findTabGroupIndexByPath(path: string): number {
+    const normalized = normalizePath(path);
+    return currentWorkspace.value?.tabGroups?.findIndex(
+      (tabGroup: TabGroup) => tabGroup.some(
+        (tab: Tab) => normalizePath(tab.path) === normalized,
+      ),
+    ) ?? -1;
+  }
+
+  async function openOrFocusTabGroup(path: string) {
+    const existingIndex = findTabGroupIndexByPath(path);
+
+    if (existingIndex >= 0) {
+      setCurrentTabGroupIndex(existingIndex);
+      const tabGroup = currentWorkspace.value?.tabGroups[existingIndex];
+
+      if (tabGroup) {
+        await loadTabGroupDirEntries(tabGroup);
+      }
+    }
+    else {
+      await openNewTabGroup(path);
     }
   }
 
@@ -625,6 +655,17 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
     }
   }
 
+  function setPendingLaunchReveal(parentPath: string, entryPath: string) {
+    pendingLaunchRevealQueue.value.push({
+      parentPath: normalizePath(parentPath),
+      entryPath: normalizePath(entryPath),
+    });
+  }
+
+  function clearPendingLaunchReveal() {
+    pendingLaunchRevealQueue.value.shift();
+  }
+
   return {
     workspaces,
     primaryWorkspace,
@@ -632,9 +673,11 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
     tabs,
     currentTabGroup,
     currentTab,
+    pendingLaunchReveal,
     init,
     addNewTabGroup,
     openNewTabGroup,
+    openOrFocusTabGroup,
     preloadDefaultTab,
     getDirEntry,
     openTabGroup,
@@ -645,6 +688,8 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
     setTabs,
     toggleSplitView,
     setTabFilterQuery,
+    setPendingLaunchReveal,
+    clearPendingLaunchReveal,
     lastRenamedPath,
     handlePathRenamed,
     lastDeletedPaths,

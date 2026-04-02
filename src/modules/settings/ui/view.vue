@@ -9,6 +9,7 @@ import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import AppearanceCategory from './categories/appearance/index.vue';
+import ExperimentalCategory from './categories/experimental/index.vue';
 import ExtensionsCategory from './categories/extensions/index.vue';
 import GeneralCategory from './categories/general/index.vue';
 import InputCategory from './categories/input/index.vue';
@@ -31,6 +32,7 @@ const currentTabLabel = computed(() => {
 const categoryComponentMap: Record<string, unknown> = {
   general: GeneralCategory,
   appearance: AppearanceCategory,
+  experimental: ExperimentalCategory,
   input: InputCategory,
   search: SearchCategory,
   shortcuts: ShortcutsCategory,

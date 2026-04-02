@@ -629,8 +629,8 @@
       "description": "Uygulama, gösterge paneli listeleri ve arama gibi özellikleri etkinleştirmek için verileri yerel olarak depolar (etiketler, favoriler, geçmiş, son açılan öğeler). Bu veriler uygulama dizininde saklanır.",
       "openDataDirectory": "Veri dizinini aç"
     },
-    "advanced": {
-      "advancedSettings": "Gelişmiş Ayarlar",
+    "experimental": {
+      "experimentalSettings": "Deneysel Ayarlar",
       "description": "Bu ayarlar, başlıca programcılar ve ileri düzey kullanıcılar içindir",
       "terminal": {
         "description": "Dizinleri açmak için terminal",
@@ -639,6 +639,10 @@
       "shell": {
         "description": "Dizinleri açmak için shell",
         "adminDescription": "Dizinleri açmak için yönetici shell"
+      },
+      "defaultFileManager": {
+        "title": "Sigma File Manager'i varsayılan dosya yöneticisi olarak ayarla",
+        "description": "Bu seçenek sistem kaydını değiştirir ve cihazınızda beklenmedik yan etkilere neden olabilir. Riski kabul ederek devam edin."
       }
     }
   },
@@ -658,7 +662,7 @@
     "search": "Arama",
     "dataStorage": "Veri depolama",
     "stats": "İstatistikler",
-    "advanced": "Gelişmiş",
+    "experimental": "Deneysel",
     "extensions": "Uzantılar"
   },
   "settingsTags": {
@@ -696,7 +700,7 @@
     "autoplay": "otomatik oynatma, gezgin, windows, sürücü, usb, otomatik, aç, klasör",
     "imageThumbnails": "resim, resim, küçük resimler, sınır, depolama, kaynaklar, kullanım, performans",
     "directoryItemStatistics": "dizin, öğe, istatistikler, istatistikler, veri, depolama, kullanım",
-    "advanced": "gelişmiş, pro, geliştirici, terminal, kabuk",
+    "experimental": "gelişmiş, deneysel, varsayılan dosya yöneticisi, dosya gezgini, kayıt defteri, terminal, shell",
     "whatsNew": "yenilikler, değişiklik günlüğü, sürüm notları, sürüm, güncelleme, haberler",
     "autostart": "otomatik başlatma, başlangıç, oturum açma, sistem, açılış",
     "extensions": "extensions, plugins, addons, configuration, settings"

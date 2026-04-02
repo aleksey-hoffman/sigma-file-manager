@@ -629,8 +629,8 @@
       "description": "应用程序在本地存储数据（标签、收藏、历史记录、最近打开的项目）以支持仪表板列表和搜索等功能。这些数据存储在应用程序目录中。",
       "openDataDirectory": "打开数据目录"
     },
-    "advanced": {
-      "advancedSettings": "高级设置",
+    "experimental": {
+      "experimentalSettings": "实验性设置",
       "description": "这些设置主要适用于程序员和高级用户",
       "terminal": {
         "description": "打开目录的终端",
@@ -639,6 +639,10 @@
       "shell": {
         "description": "打开目录的Shell",
         "adminDescription": "打开目录的管理员Shell"
+      },
+      "defaultFileManager": {
+        "title": "将 Sigma File Manager 设为默认文件管理器",
+        "description": "此选项会修改系统注册表，并且可能会对您的设备产生意外的副作用。请自行承担风险后继续。"
       }
     }
   },
@@ -658,7 +662,7 @@
     "search": "搜索",
     "dataStorage": "数据存储",
     "stats": "统计",
-    "advanced": "高级",
+    "experimental": "实验性",
     "extensions": "拓展功能"
   },
   "settingsTags": {
@@ -696,7 +700,7 @@
     "autoplay": "自动播放、资源管理器、windows、驱动器、usb、自动、打开、文件夹",
     "imageThumbnails": "图像、图片、缩略图、限制、存储、资源、使用、性能",
     "directoryItemStatistics": "目录、项目、统计、统计、数据、存储、使用",
-    "advanced": "高级，专业，开发者，终端，壳",
+    "experimental": "高级，实验性，默认文件管理器，文件资源管理器，注册表，终端，壳",
     "whatsNew": "新功能, 更新日志, 版本说明, 版本, 更新, 新闻",
     "autostart": "自动启动, 启动, 登录, 系统, 开机启动",
     "extensions": "extensions, plugins, addons, configuration, settings"

@@ -16,6 +16,11 @@ pub fn read_dir(path: String) -> Result<DirContents, String> {
 }
 
 #[tauri::command]
+pub fn get_dir_entry(path: String) -> Result<super::types::DirEntry, String> {
+    read::get_dir_entry(path)
+}
+
+#[tauri::command]
 pub fn get_system_drives() -> Result<Vec<DriveInfo>, String> {
     drives::get_system_drives()
 }

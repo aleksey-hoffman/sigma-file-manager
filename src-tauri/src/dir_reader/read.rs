@@ -114,6 +114,24 @@ fn should_skip_path(path: &Path) -> bool {
     }
 }
 
+fn entry_name(path: &Path, normalized_path: &str) -> Option<String> {
+    if let Some(name) = path.file_name().and_then(|value| value.to_str()) {
+        return Some(name.to_string());
+    }
+
+    let trimmed_path = normalized_path.trim_end_matches('/');
+
+    if trimmed_path.is_empty() {
+        return Some("/".to_string());
+    }
+
+    trimmed_path
+        .rsplit('/')
+        .find(|segment| !segment.is_empty())
+        .map(|segment| segment.to_string())
+        .or_else(|| Some(normalized_path.to_string()))
+}
+
 fn read_entry(path: &Path) -> Option<DirEntry> {
     if should_skip_path(path) {
         return None;
@@ -129,9 +147,9 @@ fn read_entry(path: &Path) -> Option<DirEntry> {
         .map(|meta| meta.is_symlink())
         .unwrap_or(false);
 
-    let name = path.file_name()?.to_str()?.to_string();
-    let extension = path_extension_lowercase(path);
     let path_string = normalize_path(path.to_str()?);
+    let name = entry_name(path, &path_string)?;
+    let extension = path_extension_lowercase(path);
     let is_dir = metadata.is_dir();
     let is_file = metadata.is_file();
 
@@ -171,6 +189,16 @@ fn read_entry(path: &Path) -> Option<DirEntry> {
         is_symlink,
         is_hidden: is_hidden_path(path),
     })
+}
+
+pub fn get_dir_entry(path: String) -> Result<DirEntry, String> {
+    let entry_path = Path::new(&path);
+
+    if !entry_path.exists() {
+        return Err(format!("Path does not exist: {}", path));
+    }
+
+    read_entry(entry_path).ok_or_else(|| format!("Failed to read path: {}", path))
 }
 
 pub fn read_dir(path: String) -> Result<DirContents, String> {

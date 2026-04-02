@@ -629,8 +629,8 @@
       "description": "Ứng dụng lưu trữ dữ liệu cục bộ (thẻ, mục yêu thích, lịch sử, các mục đã mở gần đây) để kích hoạt các tính năng như danh sách bảng điều khiển và tìm kiếm. Dữ liệu này được lưu trữ trong thư mục ứng dụng.",
       "openDataDirectory": "Mở thư mục dữ liệu"
     },
-    "advanced": {
-      "advancedSettings": "Cài đặt nâng cao",
+    "experimental": {
+      "experimentalSettings": "Cài đặt thử nghiệm",
       "description": "Những cài đặt này chủ yếu dành cho lập trình viên và người dùng nâng cao",
       "terminal": {
         "description": "Terminal để mở thư mục",
@@ -639,6 +639,10 @@
       "shell": {
         "description": "Shell để mở thư mục",
         "adminDescription": "Shell quản trị để mở thư mục"
+      },
+      "defaultFileManager": {
+        "title": "Đặt Sigma File Manager làm trình quản lý tệp mặc định",
+        "description": "Tùy chọn này sửa đổi sổ đăng ký hệ thống và có thể gây ra tác dụng phụ ngoài ý muốn trên thiết bị của bạn. Hãy tiếp tục với rủi ro của riêng bạn."
       }
     }
   },
@@ -658,7 +662,7 @@
     "search": "Tìm kiếm",
     "dataStorage": "Dữ liệu & lưu trữ",
     "stats": "Số liệu thống kê",
-    "advanced": "Nâng cao",
+    "experimental": "Thử nghiệm",
     "extensions": "Tiện ích mở rộng"
   },
   "settingsTags": {
@@ -696,7 +700,7 @@
     "autoplay": "tự động phát, trình khám phá, windows, ổ đĩa, usb, tự động, mở, thư mục",
     "imageThumbnails": "hình ảnh, hình ảnh, hình thu nhỏ, giới hạn, lưu trữ, tài nguyên, cách sử dụng, hiệu suất",
     "directoryItemStatistics": "thư mục, mục, thống kê, thống kê, dữ liệu, lưu trữ, sử dụng",
-    "advanced": "nâng cao, chuyên nghiệp, nhà phát triển, đầu cuối, shell",
+    "experimental": "nâng cao, thử nghiệm, trình quản lý tệp mặc định, trình khám phá tệp, sổ đăng ký, terminal, shell",
     "whatsNew": "tin mới, nhật ký thay đổi, ghi chú phát hành, phiên bản, cập nhật, tin tức",
     "autostart": "khởi động tự động, khởi động, đăng nhập, hệ thống, boot",
     "extensions": "extensions, plugins, addons, configuration, settings"

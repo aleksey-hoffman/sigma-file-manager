@@ -10,6 +10,7 @@ import {
   onMounted,
   onUnmounted,
   watch,
+  nextTick,
 } from 'vue';
 import { TabBar } from '@/modules/tab-bar';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
@@ -33,6 +34,7 @@ import type { DirEntry } from '@/types/dir-entry';
 type FileBrowserInstance = InstanceType<typeof FileBrowser> & {
   navigateToPath?: (path: string) => Promise<void>;
   openFile?: (path: string) => Promise<void>;
+  requestFocusEntryAfterRefresh?: (parentDirectoryPath: string, entryPath: string) => void;
   startRename?: (entry: DirEntry) => void;
   selectFirstEntry?: () => Promise<void>;
   navigateUp?: () => void;
@@ -145,6 +147,18 @@ watch(() => globalSearchStore.isOpen, (isOpen) => {
   }
 });
 
+watch(
+  () => [
+    workspacesStore.pendingLaunchReveal,
+    workspacesStore.currentTab?.id,
+  ] as const,
+  async () => {
+    await nextTick();
+    applyPendingLaunchReveal();
+  },
+  { deep: true },
+);
+
 function handleToggleSplitView() {
   if (globalSearchStore.isOpen) return;
   workspacesStore.toggleSplitView();
@@ -203,6 +217,7 @@ function handlePaneFocus(tabId: string) {
 function setPaneRef(element: FileBrowserInstance | null, tabId: string) {
   if (element) {
     paneRefsMap.value.set(tabId, element);
+    applyPendingLaunchReveal();
   }
   else {
     paneRefsMap.value.delete(tabId);
@@ -231,6 +246,26 @@ function getNavigatorPaneRef(): FileBrowserInstance | undefined {
   }
 
   return undefined;
+}
+
+function applyPendingLaunchReveal() {
+  const pendingLaunchReveal = workspacesStore.pendingLaunchReveal;
+
+  if (!pendingLaunchReveal) {
+    return;
+  }
+
+  const pane = getNavigatorPaneRef();
+
+  if (!pane?.requestFocusEntryAfterRefresh) {
+    return;
+  }
+
+  pane.requestFocusEntryAfterRefresh(
+    pendingLaunchReveal.parentPath,
+    pendingLaunchReveal.entryPath,
+  );
+  workspacesStore.clearPendingLaunchReveal();
 }
 
 function getActivePaneRef(): FileBrowserInstance | undefined {

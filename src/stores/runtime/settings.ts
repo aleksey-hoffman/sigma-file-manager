@@ -13,6 +13,7 @@ import {
 import { useI18n } from 'vue-i18n';
 import { messages } from '@/localization/data';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
+import { usePlatformStore } from '@/stores/runtime/platform';
 
 export interface SettingsSection {
   key: string;
@@ -25,6 +26,10 @@ export interface SettingsSection {
 export interface SettingsTab {
   name: string;
   labelKey: string;
+}
+
+function normalizeSettingsTabName(tabName: string): string {
+  return tabName === 'advanced' ? 'experimental' : tabName;
 }
 
 const settingsTabs: SettingsTab[] = [
@@ -65,8 +70,8 @@ const settingsTabs: SettingsTab[] = [
     labelKey: 'settingsTabs.stats',
   },
   {
-    name: 'advanced',
-    labelKey: 'settingsTabs.advanced',
+    name: 'experimental',
+    labelKey: 'settingsTabs.experimental',
   },
 ];
 
@@ -108,12 +113,14 @@ function matchesAnyLocale(key: string, searchTerm: string): boolean {
 export const useSettingsStore = defineStore('settings', () => {
   const { t } = useI18n();
   const userSettingsStore = useUserSettingsStore();
+  const platformStore = usePlatformStore();
 
   const currentTab = computed({
-    get: () => userSettingsStore.userSettings.settingsCurrentTab,
+    get: () => normalizeSettingsTabName(userSettingsStore.userSettings.settingsCurrentTab),
     set: (value: string) => {
-      userSettingsStore.userSettings.settingsCurrentTab = value;
-      userSettingsStore.setUserSettingsStorage('settingsCurrentTab', value);
+      const normalizedValue = normalizeSettingsTabName(value);
+      userSettingsStore.userSettings.settingsCurrentTab = normalizedValue;
+      userSettingsStore.setUserSettingsStorage('settingsCurrentTab', normalizedValue);
     },
   });
 
@@ -122,10 +129,15 @@ export const useSettingsStore = defineStore('settings', () => {
   const isInitialized = ref(false);
 
   const tabs = computed(() =>
-    settingsTabs.map(tab => ({
-      name: tab.name,
-      label: t(tab.labelKey),
-    })),
+    settingsTabs
+      .filter((tab) => {
+        if (tab.name !== 'advanced') return true;
+        return sections.value.some(section => section.category === 'advanced');
+      })
+      .map(tab => ({
+        name: tab.name,
+        label: t(tab.labelKey),
+      })),
   );
 
   async function init() {
@@ -155,6 +167,7 @@ export const useSettingsStore = defineStore('settings', () => {
       { default: AppUpdatesSection },
       { default: LastTabCloseBehaviorSection },
       { default: ExtensionsListSection },
+      { default: DefaultFileManagerSection },
     ] = await Promise.all([
       import('@/modules/settings/ui/categories/general/language.vue'),
       import('@/modules/settings/ui/categories/general/date-time.vue'),
@@ -179,6 +192,7 @@ export const useSettingsStore = defineStore('settings', () => {
       import('@/modules/settings/ui/categories/general/app-updates.vue'),
       import('@/modules/settings/ui/categories/tabs/last-tab-close-behavior.vue'),
       import('@/modules/settings/ui/categories/extensions/extensions-list.vue'),
+      import('@/modules/settings/ui/categories/experimental/default-file-manager.vue'),
     ]);
 
     sections.value = [
@@ -343,7 +357,26 @@ export const useSettingsStore = defineStore('settings', () => {
         component: markRaw(ExtensionsListSection),
         category: 'extensions',
       },
+      ...(platformStore.isWindows
+        ? [{
+            key: 'defaultFileManager',
+            titleKey: 'settings.experimental.defaultFileManager.title',
+            tags: 'settingsTags.experimental',
+            component: markRaw(DefaultFileManagerSection),
+            category: 'experimental',
+          }]
+        : []),
     ];
+
+    const normalizedStoredTab = normalizeSettingsTabName(userSettingsStore.userSettings.settingsCurrentTab);
+
+    if (normalizedStoredTab !== userSettingsStore.userSettings.settingsCurrentTab) {
+      setCurrentTab(normalizedStoredTab);
+    }
+
+    if (!sections.value.some(section => section.category === currentTab.value)) {
+      setCurrentTab('general');
+    }
 
     isInitialized.value = true;
   }

@@ -23,12 +23,19 @@ import { useArchiveJobsStore } from '@/stores/runtime/archive-jobs';
 import { useQuickViewStore } from '@/stores/runtime/quick-view';
 import { initPlatformInfo } from '@/modules/extensions/api';
 import { invoke } from '@tauri-apps/api/core';
+import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { SIGMA_AUTOSTART_CLI_FLAG } from '@/constants/autostart';
 import { applyLaunchAtStartupPreference } from '@/utils/autostart-sync';
+import {
+  resolveLaunchTargetsFromArgs,
+  type LaunchContext,
+} from '@/utils/launch-directories';
 import { applyUiZoomStep } from '@/utils/ui-zoom';
 import { toggleMainWindowFullscreen } from '@/utils/window-fullscreen';
+
+const APP_LAUNCH_ARGS_EVENT = 'app-launch-args';
 
 export function useInit() {
   const router = useRouter();
@@ -48,6 +55,7 @@ export function useInit() {
   const quickViewStore = useQuickViewStore();
   const { checkAndShowChangelog } = useChangelog();
   const { initAutoCheck } = useAppUpdater();
+  let appLaunchArgsUnlisten: UnlistenFn | null = null;
 
   function isMainWebviewWindow(): boolean {
     return getCurrentWebviewWindow().label === 'main';
@@ -81,25 +89,90 @@ export function useInit() {
     shortcutsStore.unregisterHandler('toggleFullscreen');
   }
 
-  async function showMainWindow() {
+  function shouldKeepMainWindowHidden(
+    launchContext: LaunchContext,
+    openedLaunchTargets: boolean,
+  ): boolean {
+    if (openedLaunchTargets) {
+      return false;
+    }
+
+    if (launchContext.hadAbsorbedShellPaths) {
+      return false;
+    }
+
+    return launchContext.hadDelegatedShellPaths && launchContext.args.length <= 1;
+  }
+
+  async function showMainWindow(
+    launchContextOverride?: LaunchContext,
+    openedLaunchTargets = false,
+  ) {
     await nextTick();
     await new Promise(resolve => setTimeout(resolve, 0));
 
     const currentWindow = getCurrentWindow();
 
     if (currentWindow.label === 'main') {
-      const processArguments = await invoke<string[]>('get_app_args');
-      const launchedFromOsAutostart = processArguments.includes(SIGMA_AUTOSTART_CLI_FLAG);
+      const launchContext = launchContextOverride ?? await invoke<LaunchContext>('get_launch_context');
+      const launchedFromOsAutostart = launchContext.args.includes(SIGMA_AUTOSTART_CLI_FLAG);
       const stayHiddenAfterAutostart = launchedFromOsAutostart
         && userSettingsStore.userSettings.launchAtStartupHidden;
 
-      if (stayHiddenAfterAutostart) {
+      if (stayHiddenAfterAutostart || shouldKeepMainWindowHidden(launchContext, openedLaunchTargets)) {
         return;
       }
 
       await currentWindow.show();
       await currentWindow.setFocus();
     }
+  }
+
+  async function openDirectoriesFromLaunchArgs(launchContext: LaunchContext): Promise<boolean> {
+    const launchTargets = await resolveLaunchTargetsFromArgs(
+      launchContext,
+      path => workspacesStore.getDirEntry({ path }),
+    );
+
+    if (launchTargets.length === 0) {
+      return false;
+    }
+
+    await router.push({ name: 'navigator' });
+
+    for (const launchTarget of launchTargets) {
+      await workspacesStore.openOrFocusTabGroup(launchTarget.directoryPath);
+
+      if (launchTarget.focusPath) {
+        workspacesStore.setPendingLaunchReveal(
+          launchTarget.directoryPath,
+          launchTarget.focusPath,
+        );
+      }
+    }
+
+    return true;
+  }
+
+  async function registerAppLaunchArgsListener() {
+    if (appLaunchArgsUnlisten || !isMainWebviewWindow()) {
+      return;
+    }
+
+    appLaunchArgsUnlisten = await listen<LaunchContext>(APP_LAUNCH_ARGS_EVENT, async (event) => {
+      const didOpenTargets = await openDirectoriesFromLaunchArgs(event.payload);
+
+      if (didOpenTargets) {
+        const currentWindow = getCurrentWindow();
+        await currentWindow.show();
+        await currentWindow.setFocus();
+      }
+    });
+  }
+
+  function unregisterAppLaunchArgsListener() {
+    appLaunchArgsUnlisten?.();
+    appLaunchArgsUnlisten = null;
   }
 
   async function init() {
@@ -114,10 +187,19 @@ export function useInit() {
       console.error('Failed to apply launch at startup preference:', error);
     }
 
+    let initialLaunchContext: LaunchContext | undefined;
+    let openedInitialLaunchTargets = false;
+
     await backgroundMediaStore.refreshCustomBackgrounds();
     await userStatsStore.init();
     await workspacesStore.init();
-    await showMainWindow();
+
+    if (isMainWebviewWindow()) {
+      initialLaunchContext = await invoke<LaunchContext>('get_launch_context');
+      openedInitialLaunchTargets = await openDirectoriesFromLaunchArgs(initialLaunchContext);
+    }
+
+    await showMainWindow(initialLaunchContext, openedInitialLaunchTargets);
     await appWindowStore.initMainWindowStateListeners();
     await globalSearchStore.initOnLaunch();
 
@@ -143,12 +225,14 @@ export function useInit() {
   onMounted(() => {
     if (isMainWebviewWindow()) {
       registerShortcutHandlers();
+      void registerAppLaunchArgsListener();
     }
   });
 
   onUnmounted(() => {
     if (isMainWebviewWindow()) {
       unregisterShortcutHandlers();
+      unregisterAppLaunchArgsListener();
     }
 
     appWindowStore.disposeMainWindowStateListeners();

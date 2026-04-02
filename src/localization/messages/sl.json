@@ -644,8 +644,8 @@
       "description": "Aplikacija lokalno shranjuje podatke (oznake, priljubljene, zgodovina, nedavno odprti predmeti) za omogočanje funkcij kot so seznami na nadzorni plošči in iskanje. Ti podatki so shranjeni v mapi aplikacije.",
       "openDataDirectory": "Odpri podatkovno mapo"
     },
-    "advanced": {
-      "advancedSettings": "Napredne nastavitve",
+    "experimental": {
+      "experimentalSettings": "Eksperimentalne nastavitve",
       "description": "Te nastavitve so namenjene predvsem programerjem in naprednim uporabnikom",
       "terminal": {
         "description": "Terminal za odpiranje map",
@@ -654,6 +654,10 @@
       "shell": {
         "description": "Lupina za odpiranje map",
         "adminDescription": "Administratorska lupina za odpiranje map"
+      },
+      "defaultFileManager": {
+        "title": "Nastavi Sigma File Manager kot privzeti upravljalnik datotek",
+        "description": "Ta možnost spremeni sistemski register in lahko povzroči nepričakovane stranske učinke na vaši napravi. Nadaljujte na lastno odgovornost."
       }
     }
   },
@@ -673,7 +677,7 @@
     "search": "Iskanje",
     "dataStorage": "Podatki & shranjevanje",
     "stats": "Statistika",
-    "advanced": "Napredno",
+    "experimental": "Eksperimentalno",
     "extensions": "Razširitve"
   },
   "settingsTags": {
@@ -711,7 +715,7 @@
     "autoplay": "autoplay, explorer, windows, drive, usb, automatic, open, folder",
     "imageThumbnails": "image, picture, thumbnails, limit, storage, resources, usage, performance",
     "directoryItemStatistics": "directory, item, statistics, stats, data, storage, usage",
-    "advanced": "advanced, pro, developer, terminal, shell",
+    "experimental": "napredno, eksperimentalno, privzeti upravljalnik datotek, raziskovalec datotek, register, terminal, lupina",
     "whatsNew": "what's new, changelog, release notes, version, update, news",
     "autostart": "autostart, zagon, sistem, prijava, zagon ob zagonu",
     "extensions": "extensions, plugins, addons, configuration, settings"

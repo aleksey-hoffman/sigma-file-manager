@@ -629,8 +629,8 @@
       "description": "L'application stocke des données localement (étiquettes, favoris, historique, éléments récemment ouverts) pour activer des fonctionnalités telles que les listes du tableau de bord et la recherche. Ces données sont stockées dans le répertoire de l'application.",
       "openDataDirectory": "Ouvrir le répertoire des données"
     },
-    "advanced": {
-      "advancedSettings": "Paramètres avancés",
+    "experimental": {
+      "experimentalSettings": "Paramètres expérimentaux",
       "description": "Ces paramètres sont principalement destinés aux programmeurs et aux utilisateurs avancés",
       "terminal": {
         "description": "Terminal pour ouvrir des répertoires",
@@ -639,6 +639,10 @@
       "shell": {
         "description": "Shell pour ouvrir des répertoires",
         "adminDescription": "Shell administrateur pour ouvrir des répertoires"
+      },
+      "defaultFileManager": {
+        "title": "Définir Sigma File Manager comme gestionnaire de fichiers par défaut",
+        "description": "Cette option modifie le registre système et peut avoir des effets secondaires inattendus sur votre appareil. Continuez à vos propres risques."
       }
     }
   },
@@ -658,7 +662,7 @@
     "search": "Rechercher",
     "dataStorage": "Stockage de données",
     "stats": "Statistiques",
-    "advanced": "Avancé",
+    "experimental": "Expérimental",
     "extensions": "Extensions"
   },
   "settingsTags": {
@@ -696,7 +700,7 @@
     "autoplay": "lecture automatique, explorateur, windows, lecteur, usb, automatique, ouvrir, dossier",
     "imageThumbnails": "image, image, vignettes, limite, stockage, ressources, utilisation, performances",
     "directoryItemStatistics": "répertoire, élément, statistiques, statistiques, données, stockage, utilisation",
-    "advanced": "avancé, pro, développeur, terminal, shell",
+    "experimental": "avancé, expérimental, gestionnaire de fichiers par défaut, explorateur de fichiers, registre, terminal, shell",
     "whatsNew": "nouveautés, journal des modifications, notes de version, version, mise à jour, actualités",
     "autostart": "démarrage automatique, démarrage, connexion, système, boot",
     "extensions": "extensions, plugins, addons, configuration, settings"

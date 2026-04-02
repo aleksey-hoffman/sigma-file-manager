@@ -213,14 +213,18 @@ pub fn get_shell_context_menu(file_path: String) -> GetShellContextMenuResult {
 }
 
 #[tauri::command]
-pub fn invoke_shell_context_menu_item(file_path: String, command_id: u32) -> OpenWithResult {
+pub fn invoke_shell_context_menu_item(
+    file_path: String,
+    command_id: u32,
+    command_verb: Option<String>,
+) -> OpenWithResult {
     #[cfg(target_os = "windows")]
     {
-        windows::invoke_shell_command(&file_path, command_id)
+        windows::invoke_shell_command(&file_path, command_id, command_verb.as_deref())
     }
     #[cfg(not(target_os = "windows"))]
     {
-        let _ = (file_path, command_id);
+        let _ = (file_path, command_id, command_verb);
         OpenWithResult {
             success: false,
             error: Some("Shell context menu is only supported on Windows".to_string()),

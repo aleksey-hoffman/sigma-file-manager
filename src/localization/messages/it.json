@@ -629,8 +629,8 @@
       "description": "L'app memorizza dati localmente (etichette, preferiti, cronologia, elementi aperti di recente) per abilitare funzionalità come elenchi della dashboard e ricerca. Questi dati sono memorizzati nella cartella dell'app.",
       "openDataDirectory": "Apri cartella dati"
     },
-    "advanced": {
-      "advancedSettings": "Impostazioni avanzate",
+    "experimental": {
+      "experimentalSettings": "Impostazioni sperimentali",
       "description": "Queste impostazioni sono principalmente per programmatori e utenti avanzati",
       "terminal": {
         "description": "Terminale per aprire le directory",
@@ -639,6 +639,10 @@
       "shell": {
         "description": "Shell per aprire le directory",
         "adminDescription": "Shell admin per aprire le directory"
+      },
+      "defaultFileManager": {
+        "title": "Imposta Sigma File Manager come file manager predefinito",
+        "description": "Questa opzione modifica il registro di sistema e può avere effetti collaterali imprevisti sul dispositivo. Continua a tuo rischio."
       }
     }
   },
@@ -658,7 +662,7 @@
     "search": "Ricerca",
     "dataStorage": "Dati & archiviazione",
     "stats": "Statistiche",
-    "advanced": "Avanzate",
+    "experimental": "Sperimentale",
     "extensions": "Estensioni"
   },
   "settingsTags": {
@@ -696,7 +700,7 @@
     "autoplay": "riproduzione automatica, esplora risorse, windows, unità, usb, automatico, aprire, cartella",
     "imageThumbnails": "immagine, foto, miniature, limite, archiviazione, risorse, utilizzo, prestazioni",
     "directoryItemStatistics": "cartella, elemento, statistiche, stat., dati, archiviazione, utilizzo",
-    "advanced": "avanzato, pro, sviluppatore, terminale, shell",
+    "experimental": "avanzato, sperimentale, file manager predefinito, esplora file, registro, terminale, shell",
     "whatsNew": "novità, registro modifiche, note di rilascio, versione, aggiornamento, notizie",
     "autostart": "avvio automatico, avvio, boot, accesso, sistema, login",
     "extensions": "extensions, plugins, addons, configuration, settings"

@@ -121,6 +121,14 @@ pub fn get_associated_programs_impl(file_path: &str) -> GetAssociatedProgramsRes
         }
     }
 
+    if is_directory && crate::default_file_manager::is_default_file_manager().unwrap_or(false) {
+        if let Some(explorer_program) = get_file_explorer_program(&seen_paths) {
+            seen_paths.insert(explorer_program.name.to_lowercase());
+            seen_paths.insert(explorer_program.path.to_lowercase());
+            recommended_programs.push(explorer_program);
+        }
+    }
+
     GetAssociatedProgramsResult {
         success: true,
         recommended_programs,
@@ -128,6 +136,29 @@ pub fn get_associated_programs_impl(file_path: &str) -> GetAssociatedProgramsRes
         default_program,
         error: None,
     }
+}
+
+fn get_file_explorer_program(seen_paths: &HashSet<String>) -> Option<AssociatedProgram> {
+    let windows_dir = std::env::var("WINDIR").unwrap_or_else(|_| "C:\\Windows".to_string());
+    let explorer_path = Path::new(&windows_dir).join("explorer.exe");
+
+    if !explorer_path.exists() {
+        return None;
+    }
+
+    let explorer_path = explorer_path.to_string_lossy().into_owned();
+    let explorer_path_key = explorer_path.to_lowercase();
+
+    if seen_paths.contains(&explorer_path_key) || seen_paths.contains("file explorer") {
+        return None;
+    }
+
+    Some(AssociatedProgram {
+        name: "File Explorer".to_string(),
+        path: explorer_path.clone(),
+        icon: get_program_icon(&explorer_path),
+        is_default: false,
+    })
 }
 
 unsafe fn extract_handler_info(

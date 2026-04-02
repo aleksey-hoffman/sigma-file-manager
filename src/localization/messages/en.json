@@ -644,8 +644,8 @@
       "description": "The app stores data locally (tags, favorites, history, recently opened items) to enable features like dashboard lists and search. This data is stored in the app directory.",
       "openDataDirectory": "Open data directory"
     },
-    "advanced": {
-      "advancedSettings": "Advanced settings",
+    "experimental": {
+      "experimentalSettings": "Experimental settings",
       "description": "These settings are primarily for programmers and advanced users",
       "terminal": {
         "description": "Terminal for opening directories",
@@ -654,6 +654,10 @@
       "shell": {
         "description": "Shell for opening directories",
         "adminDescription": "Admin shell for opening directories"
+      },
+      "defaultFileManager": {
+        "title": "Set Sigma File Manager as the default file manager",
+        "description": "This option modifies the system registry and can have unexpected side effects on your device. Continue at your own risk."
       }
     }
   },
@@ -674,7 +678,7 @@
     "dataStorage": "Data & storage",
     "extensions": "Extensions",
     "stats": "Stats",
-    "advanced": "Advanced"
+    "experimental": "Experimental"
   },
   "settingsTags": {
     "language": "language",
@@ -711,7 +715,7 @@
     "autoplay": "autoplay, explorer, windows, drive, usb, automatic, open, folder",
     "imageThumbnails": "image, picture, thumbnails, limit, storage, resources, usage, performance",
     "directoryItemStatistics": "directory, item, statistics, stats, data, storage, usage",
-    "advanced": "advanced, pro, developer, terminal, shell",
+    "experimental": "advanced, experimental, default file manager, file explorer, registry, terminal, shell",
     "whatsNew": "what's new, changelog, release notes, version, update, news",
     "autostart": "autostart, startup, boot, login, launch, system, wake",
     "extensions": "extensions, plugins, addons, configuration, settings"

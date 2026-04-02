@@ -629,8 +629,8 @@
       "description": "O aplicativo armazena dados localmente (etiquetas, favoritos, histórico, itens abertos recentemente) para habilitar recursos como listas do painel e pesquisa. Esses dados são armazenados no diretório do aplicativo.",
       "openDataDirectory": "Abrir diretório de dados"
     },
-    "advanced": {
-      "advancedSettings": "Configurações avançadas",
+    "experimental": {
+      "experimentalSettings": "Configurações experimentais",
       "description": "Essas configurações são principalmente para programadores e usuários avançados",
       "terminal": {
         "description": "Terminal para abertura de diretórios",
@@ -639,6 +639,10 @@
       "shell": {
         "description": "Shell para abrir diretórios",
         "adminDescription": "Admin shell para abrir diretórios"
+      },
+      "defaultFileManager": {
+        "title": "Definir o Sigma File Manager como gerenciador de arquivos padrão",
+        "description": "Esta opção modifica o registro do sistema e pode causar efeitos colaterais inesperados no seu dispositivo. Continue por sua conta e risco."
       }
     }
   },
@@ -658,7 +662,7 @@
     "search": "Pesquisar",
     "dataStorage": "Armazenamento de dados",
     "stats": "Estatísticas",
-    "advanced": "Avançado",
+    "experimental": "Experimental",
     "extensions": "Extensões"
   },
   "settingsTags": {
@@ -696,7 +700,7 @@
     "autoplay": "reprodução automática, explorador, windows, unidade, usb, automático, abrir, pasta",
     "imageThumbnails": "imagem, imagem, miniaturas, limite, armazenamento, recursos, uso, desempenho",
     "directoryItemStatistics": "diretório, item, estatísticas, estatísticas, dados, armazenamento, uso",
-    "advanced": "avançado, profissional, desenvolvedor, terminal, shell",
+    "experimental": "avançado, experimental, gerenciador de arquivos padrão, explorador de arquivos, registro, terminal, shell",
     "whatsNew": "novidades, registro de alterações, notas de versão, versão, atualização, notícias",
     "autostart": "início automático, arranque, inicialização, login, sistema, boot",
     "extensions": "extensions, plugins, addons, configuration, settings"

@@ -2,15 +2,15 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-mod types;
-mod read;
-mod drives_platform;
+mod commands;
 mod drives;
-mod mountable;
+mod drives_platform;
 mod mount;
+mod mountable;
 mod network_shares;
 mod path_helpers;
-mod commands;
+mod read;
+mod types;
 
 #[allow(unused_imports)]
 pub use types::{
@@ -21,10 +21,10 @@ pub use commands::*;
 
 #[cfg(all(test, windows))]
 mod tests {
-    use super::drives_platform::{
-        create_windows_wsl_drive_info, decode_windows_command_output,
+    use super::drives_platform::{create_windows_wsl_drive_info, decode_windows_command_output};
+    use super::read::{
+        get_dir_entry, is_blacklisted_windows_system_path, windows_system_drive_root,
     };
-    use super::read::{is_blacklisted_windows_system_path, windows_system_drive_root};
     use std::path::Path;
 
     #[test]
@@ -86,5 +86,16 @@ mod tests {
             decode_windows_command_output(&utf16le_output),
             "Ubuntu-24.04\r\n"
         );
+    }
+
+    #[test]
+    fn drive_root_dir_entry_can_be_read() {
+        let drive_root = windows_system_drive_root();
+        let dir_entry =
+            get_dir_entry(drive_root.clone()).expect("drive root dir entry should exist");
+
+        assert!(dir_entry.is_dir);
+        assert_eq!(dir_entry.path, drive_root);
+        assert!(!dir_entry.name.is_empty());
     }
 }

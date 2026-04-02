@@ -4,16 +4,20 @@
 
 use crate::open_with::types::{GetShellContextMenuResult, OpenWithResult, ShellContextMenuItem};
 use crate::open_with::utils::canonicalize_path;
+use std::ffi::OsStr;
+use std::os::windows::ffi::OsStrExt;
 use std::path::Path;
 use windows::core::{HSTRING, PSTR};
 use windows::Win32::Foundation::TRUE;
 use windows::Win32::System::Com::{CoInitializeEx, CoUninitialize, COINIT_APARTMENTTHREADED};
 use windows::Win32::UI::Shell::{
-    IContextMenu, IShellItem, SHCreateItemFromParsingName, CMF_NORMAL,
+    IContextMenu, IShellItem, SHCreateItemFromParsingName, ShellExecuteExW,
+    CMINVOKECOMMANDINFOEX, CMF_NORMAL, SEE_MASK_ASYNCOK, SEE_MASK_UNICODE,
+    SHELLEXECUTEINFOW,
 };
 use windows::Win32::UI::WindowsAndMessaging::{
     CreatePopupMenu, DestroyMenu, GetMenuItemCount, GetMenuItemInfoW, MENUITEMINFOW, MIIM_BITMAP,
-    MIIM_ID, MIIM_STRING, MIIM_SUBMENU,
+    MIIM_ID, MIIM_STRING, MIIM_SUBMENU, SW_SHOWNORMAL,
 };
 
 const EXCLUDED_VERBS: &[&str] = &[
@@ -25,6 +29,8 @@ const EXCLUDED_VERBS: &[&str] = &[
     "link",
     "properties",
 ];
+
+const UNSUPPORTED_VERBS: &[&str] = &["pintostartscreen"];
 
 unsafe fn extract_menu_items(
     context_menu: &IContextMenu,
@@ -105,6 +111,12 @@ unsafe fn extract_menu_items(
             if EXCLUDED_VERBS
                 .iter()
                 .any(|&excluded| verb_lower == excluded)
+            {
+                continue;
+            }
+            if UNSUPPORTED_VERBS
+                .iter()
+                .any(|&unsupported| verb_lower == unsupported)
             {
                 continue;
             }
@@ -308,7 +320,91 @@ unsafe fn get_context_menu_items(file_path: &str) -> GetShellContextMenuResult {
     }
 }
 
-pub fn invoke_shell_command(file_path: &str, command_id: u32) -> OpenWithResult {
+fn invoke_shell_verb(file_path: &str, command_verb: &str) -> OpenWithResult {
+    let absolute_path = canonicalize_path(Path::new(file_path));
+    let verb_wide: Vec<u16> = OsStr::new(command_verb)
+        .encode_wide()
+        .chain(std::iter::once(0))
+        .collect();
+    let file_wide: Vec<u16> = OsStr::new(&absolute_path)
+        .encode_wide()
+        .chain(std::iter::once(0))
+        .collect();
+
+    unsafe {
+        let mut shell_execute_info: SHELLEXECUTEINFOW = std::mem::zeroed();
+        shell_execute_info.cbSize = std::mem::size_of::<SHELLEXECUTEINFOW>() as u32;
+        shell_execute_info.lpVerb = windows::core::PCWSTR(verb_wide.as_ptr());
+        shell_execute_info.lpFile = windows::core::PCWSTR(file_wide.as_ptr());
+        shell_execute_info.nShow = SW_SHOWNORMAL.0;
+
+        match ShellExecuteExW(&mut shell_execute_info) {
+            Ok(_) => OpenWithResult {
+                success: true,
+                error: None,
+            },
+            Err(execute_error) => OpenWithResult {
+                success: false,
+                error: Some(format!(
+                    "Failed to invoke shell verb '{}': {}",
+                    command_verb, execute_error
+                )),
+            },
+        }
+    }
+}
+
+unsafe fn invoke_context_menu_command_by_id(
+    menu: &IContextMenu,
+    command_id: u32,
+) -> windows::core::Result<()> {
+    use windows::Win32::UI::WindowsAndMessaging::GetForegroundWindow;
+
+    let hwnd = GetForegroundWindow();
+    let mut invoke_info: CMINVOKECOMMANDINFOEX = std::mem::zeroed();
+    invoke_info.cbSize = std::mem::size_of::<CMINVOKECOMMANDINFOEX>() as u32;
+    invoke_info.fMask = SEE_MASK_ASYNCOK;
+    invoke_info.hwnd = hwnd;
+    invoke_info.lpVerb = windows::core::PCSTR((command_id - 1) as usize as *const u8);
+    invoke_info.nShow = SW_SHOWNORMAL.0;
+
+    menu.InvokeCommand(&invoke_info as *const _ as *const _)
+}
+
+unsafe fn invoke_context_menu_command_by_verb(
+    menu: &IContextMenu,
+    command_verb: &str,
+) -> windows::core::Result<()> {
+    use windows::Win32::UI::WindowsAndMessaging::GetForegroundWindow;
+
+    let hwnd = GetForegroundWindow();
+    let verb_ansi = std::ffi::CString::new(command_verb).map_err(|_| {
+        windows::core::Error::new(
+            windows::core::HRESULT(0x80070057u32 as i32),
+            "Invalid command verb",
+        )
+    })?;
+    let verb_wide: Vec<u16> = OsStr::new(command_verb)
+        .encode_wide()
+        .chain(std::iter::once(0))
+        .collect();
+
+    let mut invoke_info: CMINVOKECOMMANDINFOEX = std::mem::zeroed();
+    invoke_info.cbSize = std::mem::size_of::<CMINVOKECOMMANDINFOEX>() as u32;
+    invoke_info.fMask = SEE_MASK_ASYNCOK | SEE_MASK_UNICODE;
+    invoke_info.hwnd = hwnd;
+    invoke_info.lpVerb = windows::core::PCSTR(verb_ansi.as_ptr() as *const u8);
+    invoke_info.lpVerbW = windows::core::PCWSTR(verb_wide.as_ptr());
+    invoke_info.nShow = SW_SHOWNORMAL.0;
+
+    menu.InvokeCommand(&invoke_info as *const _ as *const _)
+}
+
+pub fn invoke_shell_command(
+    file_path: &str,
+    command_id: u32,
+    command_verb: Option<&str>,
+) -> OpenWithResult {
     let path = Path::new(file_path);
     if !path.exists() {
         return OpenWithResult {
@@ -323,8 +419,7 @@ pub fn invoke_shell_command(file_path: &str, command_id: u32) -> OpenWithResult 
 
         let absolute_path = canonicalize_path(path);
         let file_hstring = HSTRING::from(&absolute_path);
-        let shell_item: Result<IShellItem, _> =
-            SHCreateItemFromParsingName(&file_hstring, None);
+        let shell_item: Result<IShellItem, _> = SHCreateItemFromParsingName(&file_hstring, None);
 
         let result = match shell_item {
             Ok(item) => {
@@ -333,9 +428,8 @@ pub fn invoke_shell_command(file_path: &str, command_id: u32) -> OpenWithResult 
 
                 match context_menu {
                     Ok(menu) => {
-                        use windows::Win32::UI::Shell::CMINVOKECOMMANDINFO;
                         use windows::Win32::UI::WindowsAndMessaging::{
-                            CreatePopupMenu, DestroyMenu, SW_SHOWNORMAL,
+                            CreatePopupMenu, DestroyMenu,
                         };
 
                         let hmenu = CreatePopupMenu();
@@ -347,8 +441,7 @@ pub fn invoke_shell_command(file_path: &str, command_id: u32) -> OpenWithResult 
                         }
                         let hmenu = hmenu.unwrap();
 
-                        let query_result =
-                            menu.QueryContextMenu(hmenu, 0, 1, 0x7FFF, CMF_NORMAL);
+                        let query_result = menu.QueryContextMenu(hmenu, 0, 1, 0x7FFF, CMF_NORMAL);
 
                         if query_result.is_err() {
                             let _ = DestroyMenu(hmenu);
@@ -358,18 +451,7 @@ pub fn invoke_shell_command(file_path: &str, command_id: u32) -> OpenWithResult 
                             };
                         }
 
-                        use windows::Win32::UI::WindowsAndMessaging::GetForegroundWindow;
-
-                        let hwnd = GetForegroundWindow();
-
-                        let mut ici: CMINVOKECOMMANDINFO = std::mem::zeroed();
-                        ici.cbSize = std::mem::size_of::<CMINVOKECOMMANDINFO>() as u32;
-                        ici.hwnd = hwnd;
-                        ici.lpVerb =
-                            windows::core::PCSTR((command_id - 1) as usize as *const u8);
-                        ici.nShow = SW_SHOWNORMAL.0;
-
-                        let invoke_result = menu.InvokeCommand(&ici);
+                        let invoke_result = invoke_context_menu_command_by_id(&menu, command_id);
                         let _ = DestroyMenu(hmenu);
 
                         match invoke_result {
@@ -377,13 +459,42 @@ pub fn invoke_shell_command(file_path: &str, command_id: u32) -> OpenWithResult 
                                 success: true,
                                 error: None,
                             },
-                            Err(invoke_err) => OpenWithResult {
-                                success: false,
-                                error: Some(format!(
-                                    "Failed to invoke command: {}",
-                                    invoke_err
-                                )),
-                            },
+                            Err(invoke_err) => {
+                                if let Some(verb) = command_verb {
+                                    match invoke_context_menu_command_by_verb(&menu, verb) {
+                                        Ok(_) => OpenWithResult {
+                                            success: true,
+                                            error: None,
+                                        },
+                                        Err(verb_invoke_err) => {
+                                            let fallback_result = invoke_shell_verb(file_path, verb);
+                                            if fallback_result.success {
+                                                fallback_result
+                                            } else {
+                                                OpenWithResult {
+                                                    success: false,
+                                                    error: Some(format!(
+                                                        "Failed to invoke command: {}; verb invoke failed: {}; fallback failed: {}",
+                                                        invoke_err,
+                                                        verb_invoke_err,
+                                                        fallback_result
+                                                            .error
+                                                            .unwrap_or_else(|| "unknown error".to_string())
+                                                    )),
+                                                }
+                                            }
+                                        }
+                                    }
+                                } else {
+                                    OpenWithResult {
+                                        success: false,
+                                        error: Some(format!(
+                                            "Failed to invoke command: {}",
+                                            invoke_err
+                                        )),
+                                    }
+                                }
+                            }
                         }
                     }
                     Err(menu_err) => OpenWithResult {

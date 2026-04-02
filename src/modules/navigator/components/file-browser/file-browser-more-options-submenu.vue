@@ -99,14 +99,15 @@ onMounted(() => {
   loadShellContextMenu();
 });
 
-async function invokeMenuItem(commandId: number) {
-  if (props.selectedEntries.length === 0 || !commandId) return;
+async function invokeMenuItem(item: ShellContextMenuItem) {
+  if (props.selectedEntries.length === 0 || !item.id) return;
 
   try {
     for (const entry of props.selectedEntries) {
       const result = await invoke<OpenWithResult>('invoke_shell_context_menu_item', {
         filePath: entry.path,
-        commandId: commandId,
+        commandId: item.id,
+        commandVerb: item.verb,
       });
 
       if (!result.success) {
@@ -169,7 +170,7 @@ async function invokeMenuItem(commandId: number) {
                       v-for="child in item.children"
                       :key="child.id"
                       class="more-options-submenu__item"
-                      @select="invokeMenuItem(child.id)"
+                      @select="invokeMenuItem(child)"
                     >
                       <span class="more-options-submenu__item-icon">
                         <img
@@ -186,7 +187,7 @@ async function invokeMenuItem(commandId: number) {
               <ContextMenuItem
                 v-else
                 class="more-options-submenu__item"
-                @select="invokeMenuItem(item.id)"
+                @select="invokeMenuItem(item)"
               >
                 <span class="more-options-submenu__item-icon">
                   <img

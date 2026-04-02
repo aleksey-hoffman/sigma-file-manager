@@ -629,8 +629,8 @@
       "description": "アプリはデータをローカルに保存します（タグ、お気に入り、履歴、最近開いた項目）。これにより、ダッシュボードリストや検索などの機能が有効になります。このデータはアプリディレクトリに保存されます。",
       "openDataDirectory": "データディレクトリを開く"
     },
-    "advanced": {
-      "advancedSettings": "詳細設定",
+    "experimental": {
+      "experimentalSettings": "実験的な設定",
       "description": "これらの設定は主にプログラマーや上級ユーザー向けです",
       "terminal": {
         "description": "ディレクトリを開くためのターミナル",
@@ -639,6 +639,10 @@
       "shell": {
         "description": "ディレクトリを開くためのシェル",
         "adminDescription": "ディレクトリを開くための管理者用シェル"
+      },
+      "defaultFileManager": {
+        "title": "Sigma File Manager を既定のファイルマネージャーとして設定",
+        "description": "このオプションはシステム レジストリを変更するため、デバイスで予期しない副作用が発生する可能性があります。自己責任で続行してください。"
       }
     }
   },
@@ -658,7 +662,7 @@
     "search": "探す",
     "dataStorage": "データストレージ",
     "stats": "統計",
-    "advanced": "詳細",
+    "experimental": "実験的",
     "extensions": "拡張機能"
   },
   "settingsTags": {
@@ -696,7 +700,7 @@
     "autoplay": "自動再生、エクスプローラー、windows、ドライブ、usb、自動、開く、フォルダ",
     "imageThumbnails": "画像、画像、サムネイル、制限、ストレージ、リソース、使用状況、パフォーマンス",
     "directoryItemStatistics": "ディレクトリ、アイテム、統計、統計、データ、ストレージ、使用",
-    "advanced": "アドバンスド, プロ, 開発者, ターミナル, シェル",
+    "experimental": "高度, 実験的, 既定のファイルマネージャー, エクスプローラー, レジストリ, ターミナル, シェル",
     "whatsNew": "新機能, 更新履歴, リリースノート, バージョン, アップデート, ニュース",
     "autostart": "自動起動, スタートアップ, ログイン, システム, 起動",
     "extensions": "extensions, plugins, addons, configuration, settings"

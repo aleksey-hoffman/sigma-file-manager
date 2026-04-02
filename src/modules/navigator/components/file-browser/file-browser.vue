@@ -84,6 +84,7 @@ defineExpose({
   openFile: fb.openFile,
   clearSelection: fb.clearSelection,
   selectAll: fb.selectAll,
+  requestFocusEntryAfterRefresh: fb.requestFocusEntryAfterRefresh,
   selectFirstEntry: fb.selectFirstEntry,
   navigateUp: fb.navigateUp,
   navigateDown: fb.navigateDown,

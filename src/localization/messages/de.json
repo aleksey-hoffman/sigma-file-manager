@@ -629,8 +629,8 @@
       "description": "Die App speichert Daten lokal (Tags, Favoriten, Verlauf, kürzlich geöffnete Elemente), um Funktionen wie Dashboard-Listen und Suche zu ermöglichen. Diese Daten werden im App-Verzeichnis gespeichert.",
       "openDataDirectory": "Datenverzeichnis öffnen"
     },
-    "advanced": {
-      "advancedSettings": "Erweiterte Einstellungen",
+    "experimental": {
+      "experimentalSettings": "Experimentelle Einstellungen",
       "description": "Diese Einstellungen sind hauptsächlich für Programmierer und fortgeschrittene Benutzer",
       "terminal": {
         "description": "Terminal zum Öffnen von Verzeichnissen",
@@ -639,6 +639,10 @@
       "shell": {
         "description": "Shell zum Öffnen von Verzeichnissen",
         "adminDescription": "Admin-Shell zum Öffnen von Verzeichnissen"
+      },
+      "defaultFileManager": {
+        "title": "Sigma File Manager als Standard-Dateimanager festlegen",
+        "description": "Diese Option ändert die Systemregistrierung und kann unerwartete Nebenwirkungen auf Ihrem Gerät haben. Fahren Sie auf eigenes Risiko fort."
       }
     }
   },
@@ -658,7 +662,7 @@
     "search": "Suche",
     "dataStorage": "Datenspeicher",
     "stats": "Statistiken",
-    "advanced": "Erweitert",
+    "experimental": "Experimentell",
     "extensions": "Erweiterungen"
   },
   "settingsTags": {
@@ -696,7 +700,7 @@
     "autoplay": "autoplay, explorer, windows, laufwerk, usb, automatisch, öffnen, ordner",
     "imageThumbnails": "Bild, Bild, Thumbnails, Limit, Speicherplatz, Ressourcen, Nutzung, Leistung",
     "directoryItemStatistics": "Verzeichnis, Element, Statistiken, Statistiken, Daten, Speicherung, Nutzung",
-    "advanced": "erweitert, Pro, Entwickler, Terminal, Shell",
+    "experimental": "erweitert, experimentell, Standard-Dateimanager, Datei-Explorer, Registrierung, Terminal, Shell",
     "whatsNew": "neuigkeiten, änderungsprotokoll, versionshinweise, version, aktualisierung, news",
     "autostart": "Autostart, Start, Systemstart, Boot, Anmeldung, Login, System",
     "extensions": "extensions, plugins, addons, configuration, settings"

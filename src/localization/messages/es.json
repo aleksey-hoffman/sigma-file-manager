@@ -629,8 +629,8 @@
       "description": "La aplicación almacena datos localmente (etiquetas, favoritos, historial, elementos abiertos recientemente) para habilitar funciones como listas del panel y búsqueda. Estos datos se almacenan en el directorio de la aplicación.",
       "openDataDirectory": "Abrir directorio de datos"
     },
-    "advanced": {
-      "advancedSettings": "Configuraciones avanzadas",
+    "experimental": {
+      "experimentalSettings": "Configuraciones experimentales",
       "description": "Estas configuraciones son principalmente para programadores y usuarios avanzados",
       "terminal": {
         "description": "Terminal para abrir directorios",
@@ -639,6 +639,10 @@
       "shell": {
         "description": "Shell para abrir directorios",
         "adminDescription": "Shell de administrador para abrir directorios"
+      },
+      "defaultFileManager": {
+        "title": "Establecer Sigma File Manager como gestor de archivos predeterminado",
+        "description": "Esta opción modifica el registro del sistema y puede tener efectos secundarios inesperados en su dispositivo. Continúe bajo su propia responsabilidad."
       }
     }
   },
@@ -658,7 +662,7 @@
     "search": "Buscar",
     "dataStorage": "Almacenamiento de datos",
     "stats": "Estadísticas",
-    "advanced": "Avanzado",
+    "experimental": "Experimental",
     "extensions": "Extensiones"
   },
   "settingsTags": {
@@ -696,7 +700,7 @@
     "autoplay": "reproducción automática, explorador, windows, unidad, usb, automático, abrir, carpeta",
     "imageThumbnails": "imagen, imagen, miniaturas, límite, almacenamiento, recursos, uso, rendimiento",
     "directoryItemStatistics": "directorio, elemento, estadísticas, estadísticas, datos, almacenamiento, uso",
-    "advanced": "avanzado, pro, desarrollador, terminal, shell",
+    "experimental": "avanzado, experimental, gestor de archivos predeterminado, explorador de archivos, registro, terminal, shell",
     "whatsNew": "novedades, registro de cambios, notas de versión, versión, actualización, noticias",
     "autostart": "inicio automático, arranque, inicio de sesión, sistema, arranque del sistema",
     "extensions": "extensions, plugins, addons, configuration, settings"
