@@ -8,12 +8,14 @@ import en from './messages/en.json';
 import es from './messages/es.json';
 import fa from './messages/fa.json';
 import fr from './messages/fr.json';
+import hi from './messages/hi.json';
 import it from './messages/it.json';
 import ja from './messages/ja.json';
 import pt from './messages/pt.json';
 import ru from './messages/ru.json';
 import sl from './messages/sl.json';
 import tr from './messages/tr.json';
+import ur from './messages/ur.json';
 import vi from './messages/vi.json';
 import type { LocalizationLanguage } from '@/types/user-settings';
 
@@ -31,6 +33,8 @@ export const messages = {
   it,
   pt,
   sl,
+  hi,
+  ur,
 };
 
 export const languages: LocalizationLanguage[] = [
@@ -112,6 +116,18 @@ export const languages: LocalizationLanguage[] = [
     isCorrected: false,
     isRtl: false,
   },
+  {
+    name: 'हिन्दी',
+    locale: 'hi',
+    isCorrected: false,
+    isRtl: false,
+  },
+  {
+    name: 'اردو',
+    locale: 'ur',
+    isCorrected: false,
+    isRtl: true,
+  },
 ] as const;
 
 export function getLanguage(locale: string) {
@@ -134,6 +150,8 @@ export const dayjsLocaleMapping: Record<AppLocale, string> = {
   it: 'it',
   pt: 'pt',
   sl: 'sl',
+  hi: 'hi',
+  ur: 'ur',
 };
 
 export const intlLocaleMapping: Record<AppLocale, string> = {
@@ -150,4 +168,6 @@ export const intlLocaleMapping: Record<AppLocale, string> = {
   it: 'it',
   pt: 'pt',
   sl: 'sl',
+  hi: 'hi-IN',
+  ur: 'ur-PK',
 };
