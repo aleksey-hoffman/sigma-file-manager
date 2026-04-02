@@ -16,13 +16,15 @@ const UI_ZOOM_STEP = 0.1;
 const UI_ZOOM_TOAST_ID = 'ui-zoom-level';
 
 function showCurrentUiZoomToast(zoomLevel: number): void {
-  const prefix = String(i18n.global.t('settings.general.currentUiZoomLevel'));
+  const translatedLabel = String(i18n.global.t('settings.general.currentUiZoomLevel'));
+  const title = translatedLabel.replace(/[\s\u00A0]*[:：]\s*$/u, '').trim();
   const percentLabel = `${(zoomLevel * 100).toFixed(0)}%`;
   toast.custom(markRaw(ToastStatic), {
     id: UI_ZOOM_TOAST_ID,
     componentProps: {
       data: {
-        title: `${prefix}${percentLabel}`,
+        title,
+        description: percentLabel,
       },
     },
     duration: 2000,
