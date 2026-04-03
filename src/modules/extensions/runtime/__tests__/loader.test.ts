@@ -19,6 +19,8 @@ const {
   deactivateWorkerMock,
   destroyWorkerMock,
   validateExtensionCodeMock,
+  createObjectUrlMock,
+  revokeObjectUrlMock,
 } = vi.hoisted(() => ({
   invokeMock: vi.fn(),
   createExtensionAPIMock: vi.fn(() => ({})),
@@ -34,6 +36,8 @@ const {
     valid: true,
     errors: [],
   })),
+  createObjectUrlMock: vi.fn(),
+  revokeObjectUrlMock: vi.fn(),
 }));
 
 vi.mock('@tauri-apps/api/core', () => ({
@@ -94,6 +98,21 @@ describe('extension runtime loader', () => {
     deactivateWorkerMock.mockReset();
     destroyWorkerMock.mockReset();
     validateExtensionCodeMock.mockClear();
+    createObjectUrlMock.mockReset();
+    revokeObjectUrlMock.mockReset();
+    createObjectUrlMock
+      .mockReturnValueOnce('blob:test.video:translator')
+      .mockReturnValueOnce('blob:test.video:index');
+    Object.defineProperty(URL, 'createObjectURL', {
+      configurable: true,
+      writable: true,
+      value: createObjectUrlMock,
+    });
+    Object.defineProperty(URL, 'revokeObjectURL', {
+      configurable: true,
+      writable: true,
+      value: revokeObjectUrlMock,
+    });
   });
 
   afterEach(async () => {
@@ -159,6 +178,41 @@ describe('extension runtime loader', () => {
       storagePath: '/storage/test.video',
       activationEvent: 'onStartup',
     });
+  });
+
+  it('loads Windows api extensions through blob module URLs', async () => {
+    invokeMock.mockImplementation(async (command: string, args?: { filePath?: string }) => {
+      switch (command) {
+        case 'get_extension_path':
+          return 'C:\\Users\\aleks\\AppData\\Roaming\\com.sigma-file-manager.app\\extensions\\test.video';
+        case 'get_extension_storage_path':
+          return 'C:\\Users\\aleks\\AppData\\Roaming\\com.sigma-file-manager.app\\extension-storage\\test.video';
+        case 'extension_path_exists':
+          return true;
+        case 'read_extension_file':
+          if (args?.filePath === 'index.js') {
+            return Array.from(new TextEncoder().encode('import "./lib/translator.js"; export {};'));
+          }
+
+          if (args?.filePath === 'lib/translator.js') {
+            return Array.from(new TextEncoder().encode('export const t = () => "ok";'));
+          }
+
+          throw new Error(`Unexpected filePath: ${args?.filePath}`);
+        default:
+          throw new Error(`Unexpected invoke command: ${command}`);
+      }
+    });
+
+    await loadExtensionRuntime('test.video', createManifest(), 'onStartup');
+
+    expect(createObjectUrlMock).toHaveBeenCalledTimes(2);
+    expect(initializeWorkerMock).toHaveBeenCalledWith('blob:test.video:index');
+
+    await unloadExtensionRuntime('test.video');
+
+    expect(revokeObjectUrlMock).toHaveBeenCalledWith('blob:test.video:index');
+    expect(revokeObjectUrlMock).toHaveBeenCalledWith('blob:test.video:translator');
   });
 
   it('propagates activation failures instead of creating placeholder runtime', async () => {
