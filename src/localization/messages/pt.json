@@ -1643,7 +1643,12 @@
     "andMore": "e mais 0 itens | e mais 1 item | e mais {n} itens | e mais {n} itens",
     "replace": "Substituir",
     "skip": "Pular",
-    "keepBoth": "Manter ambos"
+    "keepBoth": "Manter ambos",
+    "applyToAll": "Aplicar a todos",
+    "continue": "Continuar",
+    "typeMismatch": "Pasta e ficheiro diferem neste caminho",
+    "actionForItem": "Ação para este conflito",
+    "replaceOverview": "{replaced} de {total} itens serão substituídos no destino"
   },
   "command": "Comando",
   "keybinding": "Combinação de teclas",

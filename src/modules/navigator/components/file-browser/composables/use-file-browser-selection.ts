@@ -9,7 +9,12 @@ import type { DirEntry } from '@/types/dir-entry';
 import type { ContextMenuAction } from '@/modules/navigator/components/file-browser/types';
 import { useWorkspacesStore } from '@/stores/storage/workspaces';
 import { useUserStatsStore } from '@/stores/storage/user-stats';
-import { useClipboardStore, type FileOperationResult, type ConflictItem, type ConflictResolution } from '@/stores/runtime/clipboard';
+import {
+  useClipboardStore,
+  type FileOperationResult,
+  type ConflictItem,
+  type ConflictResolutionPayload,
+} from '@/stores/runtime/clipboard';
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
 import { toast, ToastProgress, ToastStatic } from '@/components/ui/toaster';
 import { useLanShare } from '@/composables/use-lan-share';
@@ -335,10 +340,13 @@ export function useFileBrowserSelection(
     isOpen: false,
     conflicts: [] as ConflictItem[],
     operationType: '' as 'copy' | 'move',
-    pendingResolve: null as ((resolution: ConflictResolution | null) => void) | null,
+    pendingResolve: null as ((resolution: ConflictResolutionPayload | null) => void) | null,
   });
 
-  function showConflictDialog(conflicts: ConflictItem[], operationType: 'copy' | 'move'): Promise<ConflictResolution | null> {
+  function showConflictDialog(
+    conflicts: ConflictItem[],
+    operationType: 'copy' | 'move',
+  ): Promise<ConflictResolutionPayload | null> {
     return new Promise((resolve) => {
       conflictDialogState.value = {
         isOpen: true,
@@ -349,9 +357,9 @@ export function useFileBrowserSelection(
     });
   }
 
-  function handleConflictResolution(resolution: ConflictResolution) {
+  function handleConflictResolution(payload: ConflictResolutionPayload) {
     if (conflictDialogState.value.pendingResolve) {
-      conflictDialogState.value.pendingResolve(resolution);
+      conflictDialogState.value.pendingResolve(payload);
       conflictDialogState.value.pendingResolve = null;
     }
 
@@ -379,16 +387,16 @@ export function useFileBrowserSelection(
 
     const conflicts = await clipboardStore.checkConflicts(targetPath);
 
-    let conflictResolution: ConflictResolution | undefined;
+    let conflictPayload: ConflictResolutionPayload | undefined;
 
     if (conflicts.length > 0) {
-      const resolution = await showConflictDialog(conflicts, operationType);
+      const resolutionPayload = await showConflictDialog(conflicts, operationType);
 
-      if (resolution === null) {
+      if (resolutionPayload === null) {
         return false;
       }
 
-      conflictResolution = resolution;
+      conflictPayload = resolutionPayload;
     }
 
     const shouldFocusPaste = targetPath === currentPathRef.value;
@@ -442,7 +450,7 @@ export function useFileBrowserSelection(
       }
     };
 
-    const result = await clipboardStore.pasteItems(targetPath, conflictResolution);
+    const result = await clipboardStore.pasteItems(targetPath, conflictPayload?.perPathResolutions);
 
     toastData.value.cleanup();
     toastData.value.progress = 100;
@@ -538,16 +546,16 @@ export function useFileBrowserSelection(
       destinationPath: targetPath,
     });
 
-    let conflictResolution: ConflictResolution | undefined;
+    let conflictPayload: ConflictResolutionPayload | undefined;
 
     if (conflicts.length > 0) {
-      const resolution = await showConflictDialog(conflicts, operation);
+      const resolutionPayload = await showConflictDialog(conflicts, operation);
 
-      if (resolution === null) {
+      if (resolutionPayload === null) {
         return false;
       }
 
-      conflictResolution = resolution;
+      conflictPayload = resolutionPayload;
     }
 
     const shouldFocusPaste = targetPath === currentPathRef.value;
@@ -606,7 +614,14 @@ export function useFileBrowserSelection(
       const result = await invoke<FileOperationResult>(tauriCommand, {
         sourcePaths,
         destinationPath: targetPath,
-        conflictResolution: conflictResolution || null,
+        conflictResolution: null,
+        perPathResolutions:
+          conflictPayload && conflictPayload.perPathResolutions.length > 0
+            ? conflictPayload.perPathResolutions.map(entry => ({
+                destination_path: entry.destination_path,
+                resolution: entry.resolution,
+              }))
+            : null,
       });
 
       toastData.value.cleanup();

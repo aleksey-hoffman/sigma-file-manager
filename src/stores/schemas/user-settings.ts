@@ -233,6 +233,8 @@ async function migrateUserSettingsStep(storage: StorageAdapter, fromVersion: num
               await invoke('copy_items', {
                 sourcePaths: [localPath],
                 destinationPath: customBackgroundsDir,
+                conflictResolution: null,
+                perPathResolutions: null,
               });
             }
             catch {

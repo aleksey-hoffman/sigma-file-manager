@@ -8,7 +8,7 @@ import { useI18n } from 'vue-i18n';
 import { toast, ToastProgress } from '@/components/ui/toaster';
 import type {
   ConflictItem,
-  ConflictResolution,
+  ConflictResolutionPayload,
   FileOperationResult,
 } from '@/stores/runtime/clipboard';
 
@@ -19,7 +19,7 @@ export function useFileDropOperation() {
     isOpen: boolean;
     conflicts: ConflictItem[];
     operationType: 'copy' | 'move';
-    pendingResolve: ((value: ConflictResolution | null) => void) | null;
+    pendingResolve: ((value: ConflictResolutionPayload | null) => void) | null;
   }>({
     isOpen: false,
     conflicts: [],
@@ -30,7 +30,7 @@ export function useFileDropOperation() {
   function showConflictDialog(
     conflicts: ConflictItem[],
     operationType: 'copy' | 'move',
-  ): Promise<ConflictResolution | null> {
+  ): Promise<ConflictResolutionPayload | null> {
     return new Promise((resolve) => {
       conflictDialogState.value = {
         isOpen: true,
@@ -41,9 +41,9 @@ export function useFileDropOperation() {
     });
   }
 
-  function handleConflictResolution(resolution: ConflictResolution) {
+  function handleConflictResolution(payload: ConflictResolutionPayload) {
     if (conflictDialogState.value.pendingResolve) {
-      conflictDialogState.value.pendingResolve(resolution);
+      conflictDialogState.value.pendingResolve(payload);
       conflictDialogState.value.pendingResolve = null;
     }
 
@@ -73,16 +73,16 @@ export function useFileDropOperation() {
       destinationPath: targetPath,
     });
 
-    let conflictResolution: ConflictResolution | undefined;
+    let conflictPayload: ConflictResolutionPayload | undefined;
 
     if (conflicts.length > 0) {
-      const resolution = await showConflictDialog(conflicts, operation);
+      const resolutionPayload = await showConflictDialog(conflicts, operation);
 
-      if (resolution === null) {
+      if (resolutionPayload === null) {
         return;
       }
 
-      conflictResolution = resolution;
+      conflictPayload = resolutionPayload;
     }
 
     const toastData = ref<{
@@ -146,7 +146,14 @@ export function useFileDropOperation() {
       const result = await invoke<FileOperationResult>(tauriCommand, {
         sourcePaths,
         destinationPath: targetPath,
-        conflictResolution: conflictResolution || null,
+        conflictResolution: null,
+        perPathResolutions:
+          conflictPayload && conflictPayload.perPathResolutions.length > 0
+            ? conflictPayload.perPathResolutions.map(entry => ({
+                destination_path: entry.destination_path,
+                resolution: entry.resolution,
+              }))
+            : null,
       });
 
       toastData.value.cleanup();

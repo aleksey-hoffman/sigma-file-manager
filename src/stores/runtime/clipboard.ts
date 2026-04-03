@@ -10,6 +10,15 @@ import type { DirEntry } from '@/types/dir-entry';
 export type ClipboardOperationType = 'copy' | 'move' | '';
 export type ConflictResolution = 'replace' | 'skip' | 'auto-rename';
 
+export interface PathResolutionEntry {
+  destination_path: string;
+  resolution: ConflictResolution;
+}
+
+export type ConflictResolutionPayload = {
+  perPathResolutions: PathResolutionEntry[];
+};
+
 export interface ClipboardState {
   type: ClipboardOperationType;
   items: DirEntry[];
@@ -31,6 +40,7 @@ export interface ConflictItem {
   destination_path: string;
   destination_is_dir: boolean;
   destination_size: number | null;
+  relative_path: string;
 }
 
 /**
@@ -187,7 +197,10 @@ export const useClipboardStore = defineStore('clipboard', () => {
     }
   }
 
-  async function pasteItems(destinationPath: string, conflictResolution?: ConflictResolution): Promise<FileOperationResult> {
+  async function pasteItems(
+    destinationPath: string,
+    perPathResolutions?: PathResolutionEntry[],
+  ): Promise<FileOperationResult> {
     if (!hasItems.value) {
       return {
         success: false,
@@ -217,7 +230,14 @@ export const useClipboardStore = defineStore('clipboard', () => {
         const result = await invoke<FileOperationResult>('copy_items', {
           sourcePaths,
           destinationPath,
-          conflictResolution: conflictResolution || null,
+          conflictResolution: null,
+          perPathResolutions:
+            perPathResolutions && perPathResolutions.length > 0
+              ? perPathResolutions.map(entry => ({
+                  destination_path: entry.destination_path,
+                  resolution: entry.resolution,
+                }))
+              : null,
         });
 
         return result;
@@ -226,7 +246,14 @@ export const useClipboardStore = defineStore('clipboard', () => {
         const result = await invoke<FileOperationResult>('move_items', {
           sourcePaths,
           destinationPath,
-          conflictResolution: conflictResolution || null,
+          conflictResolution: null,
+          perPathResolutions:
+            perPathResolutions && perPathResolutions.length > 0
+              ? perPathResolutions.map(entry => ({
+                  destination_path: entry.destination_path,
+                  resolution: entry.resolution,
+                }))
+              : null,
         });
 
         if (result.success) {

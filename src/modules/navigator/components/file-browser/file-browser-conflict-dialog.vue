@@ -4,13 +4,17 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import {
-  AlertTriangleIcon, FileIcon, FolderIcon, ArrowRightLeftIcon, SkipForwardIcon, CopyPlusIcon,
+  AlertTriangleIcon,
+  FileIcon,
+  FolderIcon,
+  ArrowRightLeftIcon,
+  SkipForwardIcon,
+  CopyPlusIcon,
 } from '@lucide/vue';
-import type { ConflictItem } from '@/stores/runtime/clipboard';
-import type { ConflictResolution } from '@/stores/runtime/clipboard';
+import type { ConflictItem, ConflictResolution, ConflictResolutionPayload } from '@/stores/runtime/clipboard';
 import toReadableBytes from '@/utils/to-readable-bytes';
 import {
   Dialog,
@@ -22,6 +26,13 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 const props = defineProps<{
   conflicts: ConflictItem[];
@@ -29,7 +40,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  resolve: [resolution: ConflictResolution];
+  resolve: [payload: ConflictResolutionPayload];
   cancel: [];
 }>();
 
@@ -40,12 +51,43 @@ const sizeSeparator = ' \u2192 ';
 
 const conflictCount = computed(() => props.conflicts.length);
 
-const visibleConflicts = computed(() => {
-  return props.conflicts.slice(0, 5);
+const defaultRowResolution = computed((): ConflictResolution => {
+  return props.operationType === 'copy' ? 'auto-rename' : 'skip';
 });
 
-const remainingCount = computed(() => {
-  return Math.max(0, props.conflicts.length - 5);
+const rowResolutions = ref<Record<string, ConflictResolution>>({});
+
+watch(
+  () => [props.conflicts, props.operationType] as const,
+  () => {
+    const next: Record<string, ConflictResolution> = {};
+    const fallback = defaultRowResolution.value;
+
+    for (const conflict of props.conflicts) {
+      next[conflict.destination_path] = fallback;
+    }
+
+    rowResolutions.value = next;
+  },
+  {
+    immediate: true,
+    deep: true,
+  },
+);
+
+const replaceCount = computed(() => {
+  const fallback = defaultRowResolution.value;
+  let count = 0;
+
+  for (const conflict of props.conflicts) {
+    const resolution = rowResolutions.value[conflict.destination_path] ?? fallback;
+
+    if (resolution === 'replace') {
+      count += 1;
+    }
+  }
+
+  return count;
 });
 
 function formatSize(size: number | null): string {
@@ -56,18 +98,44 @@ function formatSize(size: number | null): string {
   return toReadableBytes(size);
 }
 
-function handleReplace() {
-  emit('resolve', 'replace');
-  isOpen.value = false;
+function setRowResolution(destinationPath: string, value: unknown) {
+  if (typeof value !== 'string') {
+    return;
+  }
+
+  if (value !== 'replace' && value !== 'skip' && value !== 'auto-rename') {
+    return;
+  }
+
+  rowResolutions.value = {
+    ...rowResolutions.value,
+    [destinationPath]: value,
+  };
 }
 
-function handleSkip() {
-  emit('resolve', 'skip');
-  isOpen.value = false;
+function applyAllTo(resolution: ConflictResolution) {
+  const next: Record<string, ConflictResolution> = {};
+
+  for (const conflict of props.conflicts) {
+    next[conflict.destination_path] = resolution;
+  }
+
+  rowResolutions.value = next;
 }
 
-function handleKeepBoth() {
-  emit('resolve', 'auto-rename');
+function getConflictRowKey(conflict: ConflictItem) {
+  return `${conflict.destination_path}:${conflict.source_path}`;
+}
+
+function handleConfirm() {
+  const perPathResolutions = props.conflicts.map((conflict) => {
+    return {
+      destination_path: conflict.destination_path,
+      resolution: rowResolutions.value[conflict.destination_path] ?? defaultRowResolution.value,
+    };
+  });
+
+  emit('resolve', { perPathResolutions });
   isOpen.value = false;
 }
 
@@ -81,6 +149,23 @@ function handleOpenChange(open: boolean) {
     handleCancel();
   }
 }
+
+const resolutionSelectOptions = computed(() => {
+  return [
+    {
+      value: 'skip' as const,
+      label: t('conflictDialog.skip'),
+    },
+    {
+      value: 'auto-rename' as const,
+      label: t('conflictDialog.keepBoth'),
+    },
+    {
+      value: 'replace' as const,
+      label: t('conflictDialog.replace'),
+    },
+  ];
+});
 </script>
 
 <template>
@@ -99,22 +184,63 @@ function handleOpenChange(open: boolean) {
         </DialogDescription>
       </DialogHeader>
 
+      <div class="conflict-dialog__bulk">
+        <div class="conflict-dialog__bulk-label">
+          {{ t('conflictDialog.applyToAll') }}
+        </div>
+        <div class="conflict-dialog__bulk-actions">
+          <Button
+            variant="outline"
+            size="xs"
+            class="conflict-dialog__bulk-btn"
+            @click="applyAllTo('skip')"
+          >
+            <SkipForwardIcon class="conflict-dialog__btn-icon" />
+            {{ t('conflictDialog.skip') }}
+          </Button>
+          <Button
+            variant="outline"
+            size="xs"
+            class="conflict-dialog__bulk-btn"
+            @click="applyAllTo('auto-rename')"
+          >
+            <CopyPlusIcon class="conflict-dialog__btn-icon" />
+            {{ t('conflictDialog.keepBoth') }}
+          </Button>
+          <Button
+            variant="outline"
+            size="xs"
+            class="conflict-dialog__bulk-btn conflict-dialog__bulk-btn--replace"
+            @click="applyAllTo('replace')"
+          >
+            <ArrowRightLeftIcon class="conflict-dialog__btn-icon" />
+            {{ t('conflictDialog.replace') }}
+          </Button>
+        </div>
+      </div>
+
       <ScrollArea class="conflict-dialog__items">
         <div class="conflict-dialog__items-inner">
           <div
-            v-for="conflict in visibleConflicts"
-            :key="conflict.source_path"
-            class="conflict-dialog__item"
+            v-for="conflict in conflicts"
+            :key="getConflictRowKey(conflict)"
+            class="conflict-dialog__row"
           >
             <component
               :is="conflict.source_is_dir ? FolderIcon : FileIcon"
-              class="conflict-dialog__item-icon"
+              class="conflict-dialog__row-icon"
             />
-            <div class="conflict-dialog__item-info">
-              <span class="conflict-dialog__item-name">{{ conflict.source_name }}</span>
+            <div class="conflict-dialog__row-main">
+              <span class="conflict-dialog__row-path">{{ conflict.relative_path || conflict.source_name }}</span>
               <span
-                v-if="conflict.source_size !== null || conflict.destination_size !== null"
-                class="conflict-dialog__item-size"
+                v-if="conflict.source_is_dir !== conflict.destination_is_dir"
+                class="conflict-dialog__row-hint"
+              >
+                {{ t('conflictDialog.typeMismatch') }}
+              </span>
+              <span
+                v-else-if="conflict.source_size !== null || conflict.destination_size !== null"
+                class="conflict-dialog__row-sizes"
               >
                 <template v-if="conflict.source_size !== null">
                   {{ t('conflictDialog.sourceSize', { size: formatSize(conflict.source_size) }) }}
@@ -128,45 +254,54 @@ function handleOpenChange(open: boolean) {
               </span>
               <span
                 v-else-if="conflict.source_is_dir"
-                class="conflict-dialog__item-size"
+                class="conflict-dialog__row-sizes"
               >
                 {{ t('directory') }}
               </span>
             </div>
-          </div>
-          <div
-            v-if="remainingCount > 0"
-            class="conflict-dialog__remaining"
-          >
-            {{ t('conflictDialog.andMore', remainingCount) }}
+            <Select
+              class="conflict-dialog__row-select"
+              :model-value="rowResolutions[conflict.destination_path] ?? defaultRowResolution"
+              @update:model-value="setRowResolution(conflict.destination_path, $event)"
+            >
+              <SelectTrigger
+                class="conflict-dialog__select-trigger"
+                :aria-label="t('conflictDialog.actionForItem')"
+              >
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem
+                  v-for="option in resolutionSelectOptions"
+                  :key="option.value"
+                  :value="option.value"
+                >
+                  {{ option.label }}
+                </SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
       </ScrollArea>
-
+      <p
+        v-if="conflictCount > 0"
+        class="conflict-dialog__overview"
+      >
+        {{ t('conflictDialog.replaceOverview', { replaced: replaceCount, total: conflictCount }) }}
+      </p>
       <DialogFooter class="conflict-dialog__footer">
         <div class="conflict-dialog__actions">
           <Button
             variant="outline"
-            class="conflict-dialog__action-btn"
-            @click="handleSkip"
+            @click="handleCancel"
           >
-            <SkipForwardIcon class="conflict-dialog__btn-icon" />
-            {{ t('conflictDialog.skip') }}
+            {{ t('cancel') }}
           </Button>
           <Button
-            variant="outline"
-            class="conflict-dialog__action-btn"
-            @click="handleKeepBoth"
+            class="conflict-dialog__action-btn--primary"
+            @click="handleConfirm"
           >
-            <CopyPlusIcon class="conflict-dialog__btn-icon" />
-            {{ t('conflictDialog.keepBoth') }}
-          </Button>
-          <Button
-            class="conflict-dialog__action-btn conflict-dialog__action-btn--replace"
-            @click="handleReplace"
-          >
-            <ArrowRightLeftIcon class="conflict-dialog__btn-icon" />
-            {{ t('conflictDialog.replace') }}
+            {{ t('conflictDialog.continue') }}
           </Button>
         </div>
       </DialogFooter>
@@ -176,7 +311,7 @@ function handleOpenChange(open: boolean) {
 
 <style>
 .conflict-dialog {
-  width: 520px;
+  width: 640px;
   max-width: calc(100vw - 32px);
   box-sizing: border-box;
   overflow-x: hidden;
@@ -205,59 +340,111 @@ function handleOpenChange(open: boolean) {
   line-height: 1.5;
 }
 
+.conflict-dialog__overview {
+  padding-top: 4px;
+  margin: 0;
+  color: hsl(var(--foreground));
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.45;
+}
+
+.conflict-dialog__bulk {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.conflict-dialog__bulk-label {
+  color: hsl(var(--muted-foreground));
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.conflict-dialog__bulk-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.conflict-dialog__bulk-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .conflict-dialog__items {
-  max-height: 220px;
+  max-height: 30vh;
 }
 
 .conflict-dialog__items-inner {
   display: flex;
   flex-direction: column;
   padding: 4px 0;
-  gap: 2px;
+  gap: 8px;
 }
 
-.conflict-dialog__item {
-  display: flex;
-  align-items: center;
-  padding: 8px 12px;
+.conflict-dialog__row {
+  display: grid;
+  align-items: start;
+  padding: 10px 12px;
   border-radius: var(--radius);
   background-color: hsl(var(--muted) / 40%);
   gap: 10px;
+  grid-template-columns: 18px 1fr minmax(140px, 1fr);
 }
 
-.conflict-dialog__item-icon {
+.conflict-dialog__row-icon {
   width: 16px;
   height: 16px;
   flex-shrink: 0;
+  margin-top: 2px;
   color: hsl(var(--muted-foreground));
 }
 
-.conflict-dialog__item-info {
+.conflict-dialog__row-main {
   display: flex;
   min-width: 0;
   flex-direction: column;
   gap: 2px;
 }
 
-.conflict-dialog__item-name {
+.conflict-dialog__row-path {
   overflow: hidden;
   color: hsl(var(--foreground));
   font-size: 13px;
   font-weight: 500;
+  line-height: 1.35;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.conflict-dialog__item-size {
+.conflict-dialog__row-name {
+  overflow: hidden;
+  color: hsl(var(--muted-foreground));
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.conflict-dialog__row-hint {
+  color: hsl(var(--warning, 38 92% 50%));
+  font-size: 11px;
+  line-height: 1.3;
+}
+
+.conflict-dialog__row-sizes {
   color: hsl(var(--muted-foreground));
   font-size: 12px;
 }
 
-.conflict-dialog__remaining {
-  padding: 6px 12px;
-  color: hsl(var(--muted-foreground));
-  font-size: 13px;
-  font-style: italic;
+.conflict-dialog__row-select {
+  width: 100%;
+  min-width: 0;
+}
+
+.conflict-dialog__select-trigger {
+  width: 100%;
 }
 
 .conflict-dialog__footer {
@@ -269,13 +456,7 @@ function handleOpenChange(open: boolean) {
   width: 100%;
   flex-wrap: wrap;
   justify-content: flex-end;
-  gap: 6px;
-}
-
-.conflict-dialog__action-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .conflict-dialog__btn-icon {

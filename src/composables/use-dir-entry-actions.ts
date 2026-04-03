@@ -10,7 +10,12 @@ import type { DirEntry } from '@/types/dir-entry';
 import type { ContextMenuAction } from '@/modules/navigator/components/file-browser/types';
 import { useWorkspacesStore } from '@/stores/storage/workspaces';
 import { useUserStatsStore } from '@/stores/storage/user-stats';
-import { useClipboardStore, type FileOperationResult, type ConflictItem, type ConflictResolution } from '@/stores/runtime/clipboard';
+import {
+  useClipboardStore,
+  type FileOperationResult,
+  type ConflictItem,
+  type ConflictResolutionPayload,
+} from '@/stores/runtime/clipboard';
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
 import { useQuickViewStore } from '@/stores/runtime/quick-view';
 import { toast, ToastProgress, ToastStatic } from '@/components/ui/toaster';
@@ -43,10 +48,13 @@ export function useDirEntryActions() {
     isOpen: false,
     conflicts: [] as ConflictItem[],
     operationType: '' as 'copy' | 'move',
-    pendingResolve: null as ((resolution: ConflictResolution | null) => void) | null,
+    pendingResolve: null as ((resolution: ConflictResolutionPayload | null) => void) | null,
   });
 
-  function showConflictDialog(conflicts: ConflictItem[], operationType: 'copy' | 'move'): Promise<ConflictResolution | null> {
+  function showConflictDialog(
+    conflicts: ConflictItem[],
+    operationType: 'copy' | 'move',
+  ): Promise<ConflictResolutionPayload | null> {
     return new Promise((resolve) => {
       conflictDialogState.value = {
         isOpen: true,
@@ -57,9 +65,9 @@ export function useDirEntryActions() {
     });
   }
 
-  function handleConflictResolution(resolution: ConflictResolution) {
+  function handleConflictResolution(payload: ConflictResolutionPayload) {
     if (conflictDialogState.value.pendingResolve) {
-      conflictDialogState.value.pendingResolve(resolution);
+      conflictDialogState.value.pendingResolve(payload);
       conflictDialogState.value.pendingResolve = null;
     }
 
@@ -114,16 +122,16 @@ export function useDirEntryActions() {
     const operationType = isCopy ? 'copy' : 'move';
 
     const conflicts = await clipboardStore.checkConflicts(destinationPath);
-    let conflictResolution: ConflictResolution | undefined;
+    let conflictPayload: ConflictResolutionPayload | undefined;
 
     if (conflicts.length > 0) {
-      const resolution = await showConflictDialog(conflicts, operationType);
+      const resolutionPayload = await showConflictDialog(conflicts, operationType);
 
-      if (resolution === null) {
+      if (resolutionPayload === null) {
         return false;
       }
 
-      conflictResolution = resolution;
+      conflictPayload = resolutionPayload;
     }
 
     const toastData = ref<FileOperationToastData>({
@@ -172,7 +180,7 @@ export function useDirEntryActions() {
       }
     };
 
-    const result = await clipboardStore.pasteItems(destinationPath, conflictResolution);
+    const result = await clipboardStore.pasteItems(destinationPath, conflictPayload?.perPathResolutions);
 
     toastData.value.cleanup();
     toastData.value.progress = 100;

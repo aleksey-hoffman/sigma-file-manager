@@ -1630,7 +1630,12 @@
     "andMore": "et 0 élément supplémentaire | et 1 élément supplémentaire | et {n} éléments supplémentaires | et {n} éléments supplémentaires",
     "replace": "Remplacer",
     "skip": "Ignorer",
-    "keepBoth": "Conserver les deux"
+    "keepBoth": "Conserver les deux",
+    "applyToAll": "Appliquer à tous",
+    "continue": "Continuer",
+    "typeMismatch": "Le dossier et le fichier diffèrent à ce chemin",
+    "actionForItem": "Action pour ce conflit",
+    "replaceOverview": "{replaced} sur {total} éléments seront remplacés dans la destination"
   },
   "command": "Commande",
   "keybinding": "Raccourci clavier",

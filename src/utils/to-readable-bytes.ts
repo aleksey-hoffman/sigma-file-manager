@@ -3,6 +3,14 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 export default function toReadableBytes(bytes: number, decimals?: number): string {
+  if (!Number.isFinite(bytes) || bytes < 0) {
+    return '0 B';
+  }
+
+  if (bytes === 0) {
+    return '0 B';
+  }
+
   const units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
   const base = 1024;
   const exp = Math.floor(Math.log(bytes) / Math.log(base));

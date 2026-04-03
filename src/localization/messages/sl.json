@@ -1646,7 +1646,12 @@
     "andMore": "in še 0 elementov | in še 1 element | in še {n} elementa | in še {n} elementov",
     "replace": "Zamenjaj",
     "skip": "Preskoči",
-    "keepBoth": "Obdrži oboje"
+    "keepBoth": "Obdrži oboje",
+    "applyToAll": "Uporabi za vse",
+    "continue": "Nadaljuj",
+    "typeMismatch": "Mapa in datoteka se na tej poti razlikujeta",
+    "actionForItem": "Dejanje za ta spor",
+    "replaceOverview": "{replaced} od {total} predmetov bo zamenjanih na cilju"
   },
   "command": "Ukaz",
   "keybinding": "Tipkovna bližnjica",

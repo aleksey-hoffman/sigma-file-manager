@@ -1646,7 +1646,12 @@
     "andMore": "اور 0 مزید | اور 1 مزید | اور {n} مزید | اور {n} مزید",
     "replace": "بدل دیں",
     "skip": "چھوڑیں",
-    "keepBoth": "دونوں رکھیں"
+    "keepBoth": "دونوں رکھیں",
+    "applyToAll": "سب پر لاگو کریں",
+    "continue": "جاری رکھیں",
+    "typeMismatch": "اس راستے پر فولڈر اور فائل مختلف ہیں",
+    "actionForItem": "اس تنازع کے لیے عمل",
+    "replaceOverview": "{total} میں سے {replaced} اشیاء منزل پر تبدیل کی جائیں گی"
   },
   "command": "کمانڈ",
   "keybinding": "کی بائنڈنگ",

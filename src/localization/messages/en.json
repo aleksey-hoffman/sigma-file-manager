@@ -1646,7 +1646,12 @@
     "andMore": "and 0 more items | and 1 more item | and {n} more items | and {n} more items",
     "replace": "Replace",
     "skip": "Skip",
-    "keepBoth": "Keep both"
+    "keepBoth": "Keep both",
+    "applyToAll": "Apply to all",
+    "continue": "Continue",
+    "typeMismatch": "Folder and file differ at this path",
+    "actionForItem": "Action for this conflict",
+    "replaceOverview": "{replaced} of {total} items will be replaced at the destination"
   },
   "command": "Command",
   "keybinding": "Keybinding",

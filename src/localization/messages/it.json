@@ -1630,7 +1630,12 @@
     "andMore": "e altri 0 elementi | e 1 altro elemento | e altri {n} elementi | e altri {n} elementi",
     "replace": "Sostituisci",
     "skip": "Salta",
-    "keepBoth": "Mantieni entrambi"
+    "keepBoth": "Mantieni entrambi",
+    "applyToAll": "Applica a tutti",
+    "continue": "Continua",
+    "typeMismatch": "Cartella e file diversi in questo percorso",
+    "actionForItem": "Azione per questo conflitto",
+    "replaceOverview": "{replaced} di {total} elementi saranno sostituiti nella destinazione"
   },
   "command": "Comando",
   "keybinding": "Combinazione tasti",

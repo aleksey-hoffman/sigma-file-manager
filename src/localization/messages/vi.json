@@ -1630,7 +1630,12 @@
     "andMore": "và 0 mục khác | và 1 mục khác | và {n} mục khác | và {n} mục khác",
     "replace": "Thay thế",
     "skip": "Bỏ qua",
-    "keepBoth": "Giữ cả hai"
+    "keepBoth": "Giữ cả hai",
+    "applyToAll": "Áp dụng cho tất cả",
+    "continue": "Tiếp tục",
+    "typeMismatch": "Thư mục và tệp khác nhau tại đường dẫn này",
+    "actionForItem": "Thao tác cho xung đột này",
+    "replaceOverview": "{replaced} trong {total} mục sẽ được thay thế tại đích"
   },
   "command": "Lệnh",
   "keybinding": "Phím tắt",

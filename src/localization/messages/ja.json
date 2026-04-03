@@ -1630,7 +1630,12 @@
     "andMore": "他に0個のアイテム | 他に1個のアイテム | 他に{n}個のアイテム | 他に{n}個のアイテム",
     "replace": "置換",
     "skip": "スキップ",
-    "keepBoth": "両方残す"
+    "keepBoth": "両方残す",
+    "applyToAll": "すべてに適用",
+    "continue": "続行",
+    "typeMismatch": "このパスでフォルダとファイルの種類が一致しません",
+    "actionForItem": "この競合の操作",
+    "replaceOverview": "{total} 件中 {replaced} 件がコピー先で置き換えられます"
   },
   "command": "コマンド",
   "keybinding": "キーバインド",
