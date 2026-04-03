@@ -268,7 +268,7 @@ async function createBlobModuleEntry(
 
     let rewrittenSource = sourceCode;
 
-    for (const replacement of replacements.filter(Boolean).reverse()) {
+    for (const replacement of replacements.filter((value): value is NonNullable<typeof value> => value !== null).reverse()) {
       rewrittenSource = `${rewrittenSource.slice(0, replacement.start)}${replacement.replacement}${rewrittenSource.slice(replacement.end)}`;
     }
 
