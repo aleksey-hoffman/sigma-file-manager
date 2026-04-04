@@ -330,6 +330,7 @@
       "windowTransparencyEffect": "Effetto trasparenza finestra",
       "overlayBlur": "Sfocatura sovrimpressione: {n}@:unità.px",
       "overlayMediaContrast": "Contrasto media sovrimpressione: {n}%",
+      "overlayMediaBrightness": "Luminosità media sovrimpressione: {n}%",
       "overlayOpacity": "Opacità sovrimpressione: {n}%",
       "overlayNoise": "Rumore sovrimpressione: {n}%",
       "overlayNoiseScale": "Scala rumore sovrimpressione: {n}",
@@ -385,7 +386,7 @@
       "switchLabel": "Barre degli strumenti trasparenti"
     },
     "visualFilters": {
-      "title": "Filtri visivi",
+      "title": "Impostazioni di stile",
       "filters": "Filtri",
       "applyFiltersToMediaElements": "Applica i filtri agli elementi multimediali (immagini, video)",
       "contrast": "Contrasto: {n}%",

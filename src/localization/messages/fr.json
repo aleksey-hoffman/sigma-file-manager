@@ -330,6 +330,7 @@
       "windowTransparencyEffect": "Effet de transparence de la fenêtre",
       "overlayBlur": "Flou de superposition : {n}@:units.px",
       "overlayMediaContrast": "Contraste du média de superposition : {n} %",
+      "overlayMediaBrightness": "Luminosité du média de superposition : {n} %",
       "overlayOpacity": "Opacité de superposition : {n} %",
       "overlayNoise": "Bruit de superposition : {n} %",
       "overlayNoiseScale": "Échelle du bruit de superposition : {n}",
@@ -385,7 +386,7 @@
       "switchLabel": "Barres d'outils transparentes"
     },
     "visualFilters": {
-      "title": "Filtres visuels",
+      "title": "Paramètres de style",
       "filters": "Filtres",
       "applyFiltersToMediaElements": "Appliquer des filtres aux éléments multimédias (images, vidéos)",
       "contrast": "Contraste : {n} %",

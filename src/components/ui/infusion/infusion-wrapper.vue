@@ -85,6 +85,9 @@ const infusionBlur = computed(() => effectivePageSettings.value.blur);
 const infusionMediaContrast = computed(
   () => effectivePageSettings.value.mediaContrast ?? 100,
 );
+const infusionMediaBrightness = computed(
+  () => effectivePageSettings.value.mediaBrightness ?? 100,
+);
 const infusionNoise = computed(() => effectivePageSettings.value.noise / 100);
 const infusionNoiseScale = computed(() => effectivePageSettings.value.noiseScale);
 const infusionBlendMode = computed(() => {
@@ -120,6 +123,7 @@ const pauseOverlayBackgroundVideo = computed(() => {
     :opacity-dark="infusionOpacity"
     :blur="infusionBlur"
     :media-contrast="infusionMediaContrast"
+    :media-brightness="infusionMediaBrightness"
     :noise-opacity="infusionNoise"
     :noise-scale="infusionNoiseScale"
     :blend-mode="infusionBlendMode"

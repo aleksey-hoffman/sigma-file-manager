@@ -330,6 +330,7 @@
       "windowTransparencyEffect": "Pencere şeffaflık efekti",
       "overlayBlur": "Yer paylaşımı bulanıklığı: {n}@:units.px",
       "overlayMediaContrast": "Yer paylaşımı medya kontrastı: {n}%",
+      "overlayMediaBrightness": "Yer paylaşımı medya parlaklığı: {n}%",
       "overlayOpacity": "Yer paylaşımı opaklığı: {n}%",
       "overlayNoise": "Yer paylaşımı gürültüsü: {n}%",
       "overlayNoiseScale": "Yer paylaşımı gürültü ölçeği: {n}",
@@ -385,7 +386,7 @@
       "switchLabel": "Şeffaf araç çubukları"
     },
     "visualFilters": {
-      "title": "Görsel filtreler",
+      "title": "Stil ayarları",
       "filters": "Filtreler",
       "applyFiltersToMediaElements": "Medya öğelerine (resimler, videolar) filtre uygulayın",
       "contrast": "Kontrast: %{n}",

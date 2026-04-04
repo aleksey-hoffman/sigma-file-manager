@@ -345,6 +345,7 @@
       "windowTransparencyEffect": "Эффект прозрачности окна",
       "overlayBlur": "Размытие наложения: {n}@:units.px",
       "overlayMediaContrast": "Контраст медиа наложения: {n}%",
+      "overlayMediaBrightness": "Яркость медиа наложения: {n}%",
       "overlayOpacity": "Прозрачность наложения: {n}%",
       "overlayNoise": "Шум наложения: {n}%",
       "overlayNoiseScale": "Масштаб шума наложения: {n}",
@@ -400,7 +401,7 @@
       "switchLabel": "Прозрачные панели инструментов"
     },
     "visualFilters": {
-      "title": "Визуальные фильтры",
+      "title": "Параметры стилей",
       "filters": "Фильтры",
       "applyFiltersToMediaElements": "Применить фильтры к элементам мультимедиа (изображениям, видео)",
       "contrast": "Контрастность: {n}%",

@@ -330,6 +330,7 @@
       "windowTransparencyEffect": "Fenstertransparenzeffekt",
       "overlayBlur": "Unschärfe überlagern: {n}@:units.px",
       "overlayMediaContrast": "Medienkontrast der Überlagerung: {n} %",
+      "overlayMediaBrightness": "Medienhelligkeit der Überlagerung: {n} %",
       "overlayOpacity": "Overlay-Opazität: {n} %",
       "overlayNoise": "Overlay-Rauschen: {n} %",
       "overlayNoiseScale": "Overlay-Rauschskalierung: {n}",
@@ -385,7 +386,7 @@
       "switchLabel": "Transparente Symbolleisten"
     },
     "visualFilters": {
-      "title": "Visuelle Filter",
+      "title": "Stil-Einstellungen",
       "filters": "Filter",
       "applyFiltersToMediaElements": "Filter auf Medienelemente (Bilder, Videos) anwenden",
       "contrast": "Kontrast: {n} %",

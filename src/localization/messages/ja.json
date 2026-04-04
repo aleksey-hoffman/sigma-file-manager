@@ -330,6 +330,7 @@
       "windowTransparencyEffect": "「ウィンドウ透明効果」",
       "overlayBlur": "オーバーレイぼかし: {n}@:units.px",
       "overlayMediaContrast": "オーバーレイメディアのコントラスト: {n}%",
+      "overlayMediaBrightness": "オーバーレイメディアの明るさ: {n}%",
       "overlayOpacity": "オーバーレイの不透明度: {n}%",
       "overlayNoise": "オーバーレイノイズ: {n}%",
       "overlayNoiseScale": "オーバーレイノイズスケール: {n}",
@@ -385,7 +386,7 @@
       "switchLabel": "透明なツールバー"
     },
     "visualFilters": {
-      "title": "ビジュアルフィルター",
+      "title": "スタイル設定",
       "filters": "フィルター",
       "applyFiltersToMediaElements": "メディア要素 (画像、動画) にフィルターを適用する",
       "contrast": "コントラスト: {n}%",

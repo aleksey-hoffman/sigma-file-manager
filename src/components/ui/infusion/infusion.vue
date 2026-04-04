@@ -16,6 +16,7 @@ interface Props {
   noiseScale?: number;
   noiseOpacity?: number;
   mediaContrast?: number;
+  mediaBrightness?: number;
   blendMode?: CSSProperties['mixBlendMode'];
   relative?: boolean;
   type?: 'image' | 'video';
@@ -32,6 +33,7 @@ const props = withDefaults(defineProps<Props>(), {
   noiseScale: 1,
   noiseOpacity: 0.05,
   mediaContrast: 100,
+  mediaBrightness: 100,
   blendMode: 'normal',
   relative: false,
   type: 'image',
@@ -68,6 +70,7 @@ const imageStyle = computed(() => ({
   '--infusion-noise-scale': props.noiseScale,
   '--infusion-noise-opacity': props.noiseOpacity,
   '--infusion-media-contrast': `${props.mediaContrast}%`,
+  '--infusion-media-brightness': `${props.mediaBrightness}%`,
   'mixBlendMode': props.blendMode,
 }));
 

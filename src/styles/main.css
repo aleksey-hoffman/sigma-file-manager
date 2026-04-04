@@ -28,6 +28,7 @@
   .infusion-image,
   .infusion-video {
     filter: blur(var(--infusion-blur)) contrast(var(--infusion-media-contrast))
+      brightness(var(--infusion-media-brightness))
       contrast(calc(100% * 100 / var(--sigma-visual-filter-contrast, 100)))
       brightness(calc(100% * 100 / var(--sigma-visual-filter-brightness, 100)));
   }

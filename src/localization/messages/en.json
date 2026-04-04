@@ -345,6 +345,7 @@
       "windowTransparencyEffect": "Window transparency effect",
       "overlayBlur": "Overlay blur: {n}@:units.px",
       "overlayMediaContrast": "Overlay media contrast: {n}%",
+      "overlayMediaBrightness": "Overlay media brightness: {n}%",
       "overlayOpacity": "Overlay opacity: {n}%",
       "overlayNoise": "Overlay noise: {n}%",
       "overlayNoiseScale": "Overlay noise scale: {n}",
@@ -400,7 +401,7 @@
       "switchLabel": "Transparent toolbars"
     },
     "visualFilters": {
-      "title": "Visual filters",
+      "title": "Style settings",
       "filters": "Filters",
       "applyFiltersToMediaElements": "Apply filters to media elements (images, videos)",
       "contrast": "Contrast: {n}%",

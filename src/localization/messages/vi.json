@@ -330,6 +330,7 @@
       "windowTransparencyEffect": "Hiệu ứng trong suốt của cửa sổ",
       "overlayBlur": "Làm mờ lớp phủ: {n}@:units.px",
       "overlayMediaContrast": "Độ tương phản phương tiện lớp phủ: {n}%",
+      "overlayMediaBrightness": "Độ sáng phương tiện lớp phủ: {n}%",
       "overlayOpacity": "Độ mờ của lớp phủ: {n}%",
       "overlayNoise": "Nhiễu lớp phủ: {n}%",
       "overlayNoiseScale": "Tỷ lệ nhiễu lớp phủ: {n}",
@@ -385,7 +386,7 @@
       "switchLabel": "Thanh công cụ trong suốt"
     },
     "visualFilters": {
-      "title": "Bộ lọc hình ảnh",
+      "title": "Cài đặt phong cách",
       "filters": "Bộ lọc",
       "applyFiltersToMediaElements": "Áp dụng bộ lọc cho các thành phần phương tiện (hình ảnh, video)",
       "contrast": "Độ tương phản: {n}%",

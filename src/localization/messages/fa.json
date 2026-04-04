@@ -329,6 +329,7 @@
       "windowTransparencyEffect": "اثر شفافیت پنجره",
       "overlayBlur": "تاری همپوشانی: {n}@:units.px",
       "overlayMediaContrast": "کنتراست رسانهٔ همپوشانی: {n}%",
+      "overlayMediaBrightness": "روشنایی رسانهٔ همپوشانی: {n}%",
       "overlayOpacity": "تاری همپوشانی: {n}%",
       "overlayNoise": "نویز همپوشانی: {n}%",
       "overlayNoiseScale": "مقیاس نویز همپوشانی: {n}",
@@ -384,7 +385,7 @@
       "switchLabel": "نوار ابزار شفاف"
     },
     "visualFilters": {
-      "title": "فیلترهای بصری",
+      "title": "تنظیمات سبک",
       "filters": "فیلترها",
       "applyFiltersToMediaElements": "اعمال فیلترها برای عناصر رسانه (تصاویر، ویدئوها)",
       "contrast": "کنتراست: {n}%",

@@ -127,6 +127,15 @@ const mediaContrastValue = computed({
   },
 });
 
+const mediaBrightnessValue = computed({
+  get: () => [currentPageSettings.value.mediaBrightness ?? 100],
+  set: (value: number[]) => {
+    const page = effectivePageToCustomize.value;
+    userSettingsStore.userSettings.infusion.pages[page].mediaBrightness = value[0];
+    userSettingsStore.setUserSettingsStorage(getStorageKeyForPage(page, 'mediaBrightness'), value[0]);
+  },
+});
+
 const opacityValue = computed({
   get: () => [currentPageSettings.value.opacity],
   set: (value: number[]) => {
@@ -350,6 +359,7 @@ async function resetVisualEffectsSection(): Promise<void> {
 
     await userSettingsStore.setUserSettingsStorage(getStorageKeyForPage(page, 'blur'), pageSettings.blur);
     await userSettingsStore.setUserSettingsStorage(getStorageKeyForPage(page, 'mediaContrast'), pageSettings.mediaContrast);
+    await userSettingsStore.setUserSettingsStorage(getStorageKeyForPage(page, 'mediaBrightness'), pageSettings.mediaBrightness);
     await userSettingsStore.setUserSettingsStorage(getStorageKeyForPage(page, 'opacity'), pageSettings.opacity);
     await userSettingsStore.setUserSettingsStorage(getStorageKeyForPage(page, 'noise'), pageSettings.noise);
     await userSettingsStore.setUserSettingsStorage(getStorageKeyForPage(page, 'noiseScale'), pageSettings.noiseScale);
@@ -483,6 +493,19 @@ async function resetVisualEffectsSection(): Promise<void> {
               </span>
               <Slider
                 v-model="mediaContrastValue"
+                :min="50"
+                :max="200"
+                :step="1"
+                class="visual-effects-settings__slider"
+              />
+            </div>
+
+            <div class="visual-effects-settings__row">
+              <span class="visual-effects-settings__label">
+                {{ t('settings.visualEffects.overlayMediaBrightness', { n: mediaBrightnessValue[0] }) }}
+              </span>
+              <Slider
+                v-model="mediaBrightnessValue"
                 :min="50"
                 :max="200"
                 :step="1"

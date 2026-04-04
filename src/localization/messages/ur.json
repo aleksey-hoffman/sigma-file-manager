@@ -345,6 +345,7 @@
       "windowTransparencyEffect": "ونڈو شفافیت کا اثر",
       "overlayBlur": "اوورلے دھندلاپن: {n}@:units.px",
       "overlayMediaContrast": "اوورلے میڈیا کنٹراسٹ: {n}%",
+      "overlayMediaBrightness": "اوورلے میڈیا چمک: {n}%",
       "overlayOpacity": "اوورلے دھندلاپن کے بغیر حصہ: {n}%",
       "overlayNoise": "اوورلے نوائز: {n}%",
       "overlayNoiseScale": "اوورلے نوائز اسکیل: {n}",
@@ -400,7 +401,7 @@
       "switchLabel": "شفاف ٹول بار"
     },
     "visualFilters": {
-      "title": "بصری فلٹر",
+      "title": "اسٹائل کی ترتیبات",
       "filters": "فلٹر",
       "applyFiltersToMediaElements": "میڈیا (تصویر، ویڈیو) پر فلٹر لگائیں",
       "contrast": "کنٹراسٹ: {n}%",

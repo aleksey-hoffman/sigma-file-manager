@@ -51,6 +51,7 @@ export type MixBlendMode = 'normal' | 'multiply' | 'screen' | 'overlay' | 'darke
 export type InfusionPageSettings = {
   blur: number;
   mediaContrast: number;
+  mediaBrightness: number;
   opacity: number;
   noise: number;
   noiseScale: number;

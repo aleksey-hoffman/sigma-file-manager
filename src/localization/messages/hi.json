@@ -345,6 +345,7 @@
       "windowTransparencyEffect": "विंडो पारदर्शिता प्रभाव",
       "overlayBlur": "ओवरले ब्लर: {n}@:units.px",
       "overlayMediaContrast": "ओवरले मीडिया कंट्रास्ट: {n}%",
+      "overlayMediaBrightness": "ओवरले मीडिया चमक: {n}%",
       "overlayOpacity": "ओवरले अपारदर्शिता: {n}%",
       "overlayNoise": "ओवरले शोर: {n}%",
       "overlayNoiseScale": "ओवरले शोर स्केल: {n}",
@@ -400,7 +401,7 @@
       "switchLabel": "पारदर्शी टूलबार"
     },
     "visualFilters": {
-      "title": "दृश्य फिल्टर",
+      "title": "शैली सेटिंग्स",
       "filters": "फिल्टर",
       "applyFiltersToMediaElements": "मीडिया तत्वों (चित्र, वीडियो) पर फ़िल्टर लागू करें",
       "contrast": "कंट्रास्ट: {n}%",

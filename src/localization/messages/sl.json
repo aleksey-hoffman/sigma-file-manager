@@ -345,6 +345,7 @@
       "windowTransparencyEffect": "Učinek prosojnosti okna",
       "overlayBlur": "Zameglitev prekrivanja: {n}@:units.px",
       "overlayMediaContrast": "Kontrast medija prekrivanja: {n}%",
+      "overlayMediaBrightness": "Svetlost medija prekrivanja: {n}%",
       "overlayOpacity": "Prosojnost prekrivanja: {n}%",
       "overlayNoise": "Šum prekrivanja: {n}%",
       "overlayNoiseScale": "Merilo šuma prekrivanja: {n}",
@@ -400,7 +401,7 @@
       "switchLabel": "Transparentne orodne vrstice"
     },
     "visualFilters": {
-      "title": "Vizualni filtri",
+      "title": "Nastavitve sloga",
       "filters": "Filtri",
       "applyFiltersToMediaElements": "Uporabi filtre na medijske elemente (slike, videe)",
       "contrast": "Kontrast: {n}%",
