@@ -16,6 +16,12 @@ import type {
   TaggedItem,
 } from '@/types/user-stats';
 import { DEFAULT_USER_STATS } from '@/types/user-stats';
+import {
+  canUseStartupStorageFastPath,
+  getStartupStorageFile,
+  getStartupStorageRecord,
+  type StartupStorageFileBootstrap,
+} from './startup-storage-bootstrap';
 
 const HISTORY_MAX_ITEMS = 200;
 const FREQUENT_ITEMS_MAX = 100;
@@ -55,21 +61,34 @@ export const useUserStatsStore = defineStore('userStats', () => {
     try {
       const storedStats = await userStatsStorage.value?.entries();
 
-      if (!storedStats || storedStats.length === 0) {
-        return;
-      }
-
-      for (const [key, value] of storedStats) {
-        if (key in userStats.value) {
-          (userStats.value as Record<string, unknown>)[key] = value;
-        }
-      }
-
+      applyStatsRecord(storedStats ? Object.fromEntries(storedStats) : null);
       await deduplicateHistory();
     }
     catch (error) {
       console.error('Failed to load user stats:', error);
     }
+  }
+
+  function applyStatsRecord(statsRecord: Record<string, unknown> | null) {
+    if (!statsRecord) {
+      return;
+    }
+
+    for (const [key, value] of Object.entries(statsRecord)) {
+      if (key in userStats.value) {
+        (userStats.value as Record<string, unknown>)[key] = value;
+      }
+    }
+  }
+
+  async function loadStatsFromBootstrap(bootstrapFile?: StartupStorageFileBootstrap): Promise<boolean> {
+    if (!canUseStartupStorageFastPath(bootstrapFile)) {
+      return false;
+    }
+
+    applyStatsRecord(getStartupStorageRecord(bootstrapFile));
+    await deduplicateHistory();
+    return true;
   }
 
   async function deduplicateHistory() {
@@ -436,9 +455,15 @@ export const useUserStatsStore = defineStore('userStats', () => {
     await saveStats();
   }
 
-  async function init() {
+  async function init(bootstrapFile?: StartupStorageFileBootstrap) {
+    const resolvedBootstrapFile = bootstrapFile ?? await getStartupStorageFile('userStats');
     await initStorage();
-    await loadStats();
+    const loadedFromBootstrap = await loadStatsFromBootstrap(resolvedBootstrapFile);
+
+    if (!loadedFromBootstrap) {
+      await loadStats();
+    }
+
     removeNonExistentPaths();
   }
 

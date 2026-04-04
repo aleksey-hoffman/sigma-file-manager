@@ -27,6 +27,12 @@ import {
   WORKSPACES_SCHEMA_VERSION,
   WORKSPACES_SCHEMA_VERSION_KEY,
 } from '@/stores/schemas/workspaces';
+import {
+  canUseStartupStorageFastPath,
+  getStartupStorageFile,
+  getStartupStorageRecord,
+  type StartupStorageFileBootstrap,
+} from './startup-storage-bootstrap';
 
 export const useWorkspacesStore = defineStore('workspaces', () => {
   const { t } = useI18n();
@@ -574,19 +580,7 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
     try {
       const storedWorkspacesValue = await workspacesStorage.value?.get<unknown>('workspaces');
       const storedCurrentTabGroupIndex = await workspacesStorage.value?.get<number>('currentTabGroupIndex');
-      const storedWorkspaces = storedWorkspacesValue ? parseWorkspaces(storedWorkspacesValue) : null;
-
-      if (!storedWorkspaces) {
-        return false;
-      }
-
-      workspaces.value = storedWorkspaces;
-
-      if (typeof storedCurrentTabGroupIndex === 'number' && Number.isFinite(storedCurrentTabGroupIndex)) {
-        setCurrentTabGroupIndex(storedCurrentTabGroupIndex);
-      }
-
-      return true;
+      return applyLoadedWorkspaces(storedWorkspacesValue, storedCurrentTabGroupIndex);
     }
     catch (error) {
       console.error('Failed to load workspaces:', error);
@@ -629,15 +623,56 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
     { deep: true },
   );
 
-  async function init() {
+  function applyLoadedWorkspaces(
+    storedWorkspacesValue: unknown,
+    storedCurrentTabGroupIndex: unknown,
+  ): boolean {
+    const storedWorkspaces = storedWorkspacesValue ? parseWorkspaces(storedWorkspacesValue) : null;
+
+    if (!storedWorkspaces) {
+      return false;
+    }
+
+    workspaces.value = storedWorkspaces;
+
+    if (typeof storedCurrentTabGroupIndex === 'number' && Number.isFinite(storedCurrentTabGroupIndex)) {
+      setCurrentTabGroupIndex(storedCurrentTabGroupIndex);
+    }
+
+    return true;
+  }
+
+  function loadWorkspacesFromBootstrap(bootstrapFile?: StartupStorageFileBootstrap): boolean | null {
+    if (!canUseStartupStorageFastPath(bootstrapFile, WORKSPACES_SCHEMA_VERSION)) {
+      return null;
+    }
+
+    const bootstrapRecord = getStartupStorageRecord(bootstrapFile);
+
+    if (!bootstrapRecord) {
+      return false;
+    }
+
+    return applyLoadedWorkspaces(
+      bootstrapRecord.workspaces,
+      bootstrapRecord.currentTabGroupIndex,
+    );
+  }
+
+  async function init(bootstrapFile?: StartupStorageFileBootstrap) {
     try {
+      const resolvedBootstrapFile = bootstrapFile ?? await getStartupStorageFile('workspaces');
       await initStorage();
 
-      if (workspacesStorage.value) {
-        await migrateWorkspacesStorage(workspacesStorage.value);
-      }
+      let loaded = loadWorkspacesFromBootstrap(resolvedBootstrapFile);
 
-      const loaded = await loadWorkspaces();
+      if (loaded === null) {
+        if (workspacesStorage.value) {
+          await migrateWorkspacesStorage(workspacesStorage.value);
+        }
+
+        loaded = await loadWorkspaces();
+      }
 
       if (!loaded) {
         await preloadDefaultTab();

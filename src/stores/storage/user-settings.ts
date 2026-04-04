@@ -22,8 +22,15 @@ import {
   buildAllowedUserSettingsStorageKeys,
   migrateUserSettingsStorage,
   USER_SETTINGS_SCHEMA_VERSION_KEY,
+  USER_SETTINGS_SCHEMA_VERSION,
 } from '@/stores/schemas/user-settings';
 import { SEARCH_CONSTANTS } from '@/constants';
+import {
+  canUseStartupStorageFastPath,
+  getStartupStorageFile,
+  getStartupStorageRecord,
+  type StartupStorageFileBootstrap,
+} from './startup-storage-bootstrap';
 
 export const useUserSettingsStore = defineStore('userSettings', () => {
   const userPathsStore = useUserPathsStore();
@@ -230,6 +237,22 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
     { immediate: true },
   );
 
+  function applyUserSettingsEntries(settingsEntries: Iterable<[string, unknown]>) {
+    for (const [key, value] of settingsEntries) {
+      if (key === USER_SETTINGS_SCHEMA_VERSION_KEY) {
+        continue;
+      }
+
+      const normalizedKey = normalizeStorageKeyToMemory(key);
+
+      if (!allowedUserSettingsStorageKeys.value.has(normalizedKey)) {
+        continue;
+      }
+
+      setNestedValue(userSettings.value as Record<string, unknown>, normalizedKey, value);
+    }
+  }
+
   async function loadUserSettings() {
     try {
       const settings = await userSettingsStorage.value?.entries();
@@ -238,19 +261,7 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
         return;
       }
 
-      for (const [key, value] of settings) {
-        if (key === USER_SETTINGS_SCHEMA_VERSION_KEY) {
-          continue;
-        }
-
-        const normalizedKey = normalizeStorageKeyToMemory(key);
-
-        if (!allowedUserSettingsStorageKeys.value.has(normalizedKey)) {
-          continue;
-        }
-
-        setNestedValue(userSettings.value as Record<string, unknown>, normalizedKey, value);
-      }
+      applyUserSettingsEntries(settings);
     }
     catch (error) {
       console.error('Failed to load user settings:', error);
@@ -346,10 +357,26 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
     await setUserSettingsStorage(key, value);
   }
 
-  async function init() {
-    await initUserSettings();
+  function hydrateUserSettingsFromBootstrap(bootstrapFile?: StartupStorageFileBootstrap): boolean {
+    if (!canUseStartupStorageFastPath(bootstrapFile, USER_SETTINGS_SCHEMA_VERSION)) {
+      return false;
+    }
 
-    if (userSettingsStorage.value) {
+    const bootstrapRecord = getStartupStorageRecord(bootstrapFile);
+
+    if (bootstrapRecord) {
+      applyUserSettingsEntries(Object.entries(bootstrapRecord));
+    }
+
+    return true;
+  }
+
+  async function init(bootstrapFile?: StartupStorageFileBootstrap) {
+    const resolvedBootstrapFile = bootstrapFile ?? await getStartupStorageFile('userSettings');
+    await initUserSettings();
+    const loadedFromBootstrap = hydrateUserSettingsFromBootstrap(resolvedBootstrapFile);
+
+    if (!loadedFromBootstrap && userSettingsStorage.value) {
       try {
         await migrateUserSettingsStorage(userSettingsStorage.value);
       }
@@ -358,7 +385,10 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
       }
     }
 
-    await loadUserSettings();
+    if (!loadedFromBootstrap) {
+      await loadUserSettings();
+    }
+
     initTheme();
     initLanguage();
     await initZoom();

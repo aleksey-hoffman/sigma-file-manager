@@ -11,12 +11,16 @@ import type { Tab, TabGroup, Workspace } from '@/types/workspaces';
 const {
   closeWindowMock,
   invokeMock,
+  lazyStoreGetMock,
+  lazyStoreSaveMock,
   routerPushMock,
   toastCustomMock,
   updateInfoPanelMock,
 } = vi.hoisted(() => ({
   closeWindowMock: vi.fn(),
   invokeMock: vi.fn(),
+  lazyStoreGetMock: vi.fn(),
+  lazyStoreSaveMock: vi.fn(),
   routerPushMock: vi.fn(),
   toastCustomMock: vi.fn(),
   updateInfoPanelMock: vi.fn(),
@@ -34,9 +38,12 @@ vi.mock('@tauri-apps/api/window', () => ({
 
 vi.mock('@tauri-apps/plugin-store', () => ({
   LazyStore: class {
-    async save(): Promise<void> {}
-    async get(): Promise<undefined> {
-      return undefined;
+    async save(): Promise<void> {
+      await lazyStoreSaveMock();
+    }
+
+    async get<T>(key: string): Promise<T | undefined> {
+      return lazyStoreGetMock(key);
     }
 
     async set(): Promise<void> {}
@@ -96,6 +103,8 @@ describe('workspaces storage duplicate tabs', () => {
     setActivePinia(createPinia());
     closeWindowMock.mockReset();
     invokeMock.mockReset();
+    lazyStoreGetMock.mockReset();
+    lazyStoreSaveMock.mockReset();
     routerPushMock.mockReset();
     toastCustomMock.mockReset();
     updateInfoPanelMock.mockReset();
@@ -147,6 +156,44 @@ describe('workspaces storage duplicate tabs', () => {
       [lowerCaseTab],
       [upperCaseTab],
     ]);
+  });
+
+  it('hydrates from startup bootstrap without reading workspaces from LazyStore', async () => {
+    invokeMock.mockImplementation((command: string) => {
+      if (command === 'get_dir_entries') {
+        return Promise.resolve([]);
+      }
+
+      if (command === 'get_dir_entry') {
+        return Promise.resolve({
+          path: 'C:/Users/aleks/Projects',
+        });
+      }
+
+      return Promise.resolve(null);
+    });
+
+    const workspacesStore = useWorkspacesStore();
+
+    await workspacesStore.init({
+      path: 'mock/workspaces.json',
+      status: 'ready',
+      data: {
+        __schemaVersion: 1,
+        currentTabGroupIndex: 0,
+        workspaces: [
+          createWorkspace([
+            [createTab('bootstrapped-tab', 'C:/Users/aleks/Projects')],
+          ]),
+        ],
+      },
+      schemaVersion: 1,
+      error: null,
+    });
+
+    expect(lazyStoreGetMock).not.toHaveBeenCalled();
+    expect(workspacesStore.workspaces[0]?.tabGroups[0]?.[0]?.path).toBe('C:/Users/aleks/Projects');
+    expect(invokeMock).toHaveBeenCalledWith('get_dir_entries', { path: 'C:/Users/aleks/Projects' });
   });
 });
 

@@ -14,6 +14,7 @@ mod file_operations;
 mod global_search;
 mod lan_share;
 mod open_with;
+mod startup_storage_bootstrap;
 mod system_icons;
 mod system_tray;
 mod terminal;
@@ -22,7 +23,7 @@ mod url_drop;
 pub mod utils;
 
 use serde::Serialize;
-use tauri::Emitter;
+use tauri::{Emitter, Manager};
 
 #[derive(Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -158,6 +159,7 @@ fn get_launch_context() -> LaunchContext {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .manage(startup_storage_bootstrap::StartupStorageBootstrapState::default())
         .plugin(tauri_plugin_single_instance::init(|app, argv, cwd| {
             #[cfg(windows)]
             {
@@ -213,6 +215,7 @@ pub fn run() {
         )
         .invoke_handler(tauri::generate_handler![
             get_launch_context,
+            startup_storage_bootstrap::get_startup_storage_bootstrap,
             default_file_manager::is_default_file_manager,
             default_file_manager::set_default_file_manager,
             app_updater::check_for_updates,
@@ -336,6 +339,12 @@ fn setup_handler(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>>
     }
 
     system_tray::setup_system_tray(app.handle())?;
+    startup_storage_bootstrap::start_preload(
+        app.handle().clone(),
+        app.state::<startup_storage_bootstrap::StartupStorageBootstrapState>()
+            .inner()
+            .clone(),
+    );
 
     #[cfg(windows)]
     {

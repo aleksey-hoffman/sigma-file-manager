@@ -18,6 +18,12 @@ import type {
 } from '@/types/extension';
 import { mergeSharedBinaryInfo } from '@/modules/extensions/utils/shared-binary';
 import { useUserPathsStore } from './user-paths';
+import {
+  canUseStartupStorageFastPath,
+  getStartupStorageFile,
+  getStartupStorageRecord,
+  type StartupStorageFileBootstrap,
+} from './startup-storage-bootstrap';
 
 const EXTENSIONS_STORAGE_FILENAME = 'extensions.json';
 
@@ -33,19 +39,48 @@ export const useExtensionsStorageStore = defineStore('extensionsStorage', () => 
   });
   const isInitialized = ref(false);
 
-  async function init(): Promise<void> {
+  async function init(bootstrapFile?: StartupStorageFileBootstrap): Promise<void> {
     if (isInitialized.value) return;
 
     try {
+      const resolvedBootstrapFile = bootstrapFile ?? await getStartupStorageFile('extensions');
       const storagePath = `${userPathsStore.customPaths.appUserDataDir}/${EXTENSIONS_STORAGE_FILENAME}`;
       storage.value = await new LazyStore(storagePath);
       await storage.value.save();
 
-      await loadStorageData();
+      const loadedFromBootstrap = loadStorageDataFromBootstrap(resolvedBootstrapFile);
+
+      if (!loadedFromBootstrap) {
+        await loadStorageData();
+      }
+
       isInitialized.value = true;
     }
     catch (error) {
       console.error('Failed to initialize extensions storage:', error);
+    }
+  }
+
+  function applyExtensionsDataRecord(record: Record<string, unknown>) {
+    const installedExtensions = record.installedExtensions as ExtensionStorageData['installedExtensions'] | undefined;
+    const sharedBinaries = record.sharedBinaries as ExtensionStorageData['sharedBinaries'] | undefined;
+    const registryCache = record.registryCache as ExtensionStorageData['registryCache'] | undefined;
+    const recentCommandIds = record.recentCommandIds as ExtensionStorageData['recentCommandIds'] | undefined;
+
+    if (installedExtensions) {
+      extensionsData.value.installedExtensions = installedExtensions;
+    }
+
+    if (sharedBinaries) {
+      extensionsData.value.sharedBinaries = sharedBinaries;
+    }
+
+    if (registryCache) {
+      extensionsData.value.registryCache = registryCache;
+    }
+
+    if (recentCommandIds) {
+      extensionsData.value.recentCommandIds = recentCommandIds;
     }
   }
 
@@ -58,25 +93,31 @@ export const useExtensionsStorageStore = defineStore('extensionsStorage', () => 
       const registryCache = await storage.value.get<ExtensionStorageData['registryCache']>('registryCache');
       const recentCommandIds = await storage.value.get<ExtensionStorageData['recentCommandIds']>('recentCommandIds');
 
-      if (installedExtensions) {
-        extensionsData.value.installedExtensions = installedExtensions;
-      }
-
-      if (sharedBinaries) {
-        extensionsData.value.sharedBinaries = sharedBinaries;
-      }
-
-      if (registryCache) {
-        extensionsData.value.registryCache = registryCache;
-      }
-
-      if (recentCommandIds) {
-        extensionsData.value.recentCommandIds = recentCommandIds;
-      }
+      applyExtensionsDataRecord({
+        installedExtensions,
+        sharedBinaries,
+        registryCache,
+        recentCommandIds,
+      });
     }
     catch (error) {
       console.error('Failed to load extensions storage:', error);
     }
+  }
+
+  function loadStorageDataFromBootstrap(bootstrapFile?: StartupStorageFileBootstrap): boolean {
+    if (!canUseStartupStorageFastPath(bootstrapFile)) {
+      return false;
+    }
+
+    const bootstrapRecord = getStartupStorageRecord(bootstrapFile);
+
+    if (!bootstrapRecord) {
+      return true;
+    }
+
+    applyExtensionsDataRecord(bootstrapRecord);
+    return true;
   }
 
   async function saveStorageData(): Promise<void> {
