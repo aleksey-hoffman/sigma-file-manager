@@ -5,6 +5,7 @@
 use std::fs;
 use std::io::ErrorKind;
 use std::path::Path;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 
 use serde::Serialize;
@@ -38,14 +39,24 @@ pub struct StartupStorageBootstrapPayload {
     extensions: StartupStorageFileBootstrap,
 }
 
-#[derive(Clone, Default)]
+#[derive(Clone)]
 pub struct StartupStorageBootstrapState {
-    payload: Arc<OnceCell<StartupStorageBootstrapPayload>>,
+    preloaded: Arc<OnceCell<StartupStorageBootstrapPayload>>,
+    consumed: Arc<AtomicBool>,
+}
+
+impl Default for StartupStorageBootstrapState {
+    fn default() -> Self {
+        Self {
+            preloaded: Arc::new(OnceCell::new()),
+            consumed: Arc::new(AtomicBool::new(false)),
+        }
+    }
 }
 
 impl StartupStorageBootstrapState {
-    async fn get_or_init(&self, app_handle: tauri::AppHandle) -> StartupStorageBootstrapPayload {
-        self.payload
+    async fn get_preloaded(&self, app_handle: tauri::AppHandle) -> StartupStorageBootstrapPayload {
+        self.preloaded
             .get_or_init(|| async move { load_startup_storage_bootstrap(&app_handle) })
             .await
             .clone()
@@ -234,7 +245,7 @@ fn load_startup_storage_bootstrap(app_handle: &tauri::AppHandle) -> StartupStora
 
 pub fn start_preload(app_handle: tauri::AppHandle, state: StartupStorageBootstrapState) {
     tauri::async_runtime::spawn(async move {
-        let _ = state.get_or_init(app_handle).await;
+        let _ = state.get_preloaded(app_handle).await;
     });
 }
 
@@ -243,7 +254,13 @@ pub async fn get_startup_storage_bootstrap(
     app_handle: tauri::AppHandle,
     state: tauri::State<'_, StartupStorageBootstrapState>,
 ) -> Result<StartupStorageBootstrapPayload, String> {
-    Ok(state.inner().clone().get_or_init(app_handle).await)
+    let was_consumed = state.consumed.swap(true, Ordering::SeqCst);
+
+    if was_consumed {
+        return Ok(load_startup_storage_bootstrap(&app_handle));
+    }
+
+    Ok(state.inner().clone().get_preloaded(app_handle).await)
 }
 
 #[cfg(test)]
