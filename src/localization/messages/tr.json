@@ -39,7 +39,8 @@
     "favorites": "Favoriler",
     "tagged": "Etiketli",
     "emptyFavorites": "Favori yok",
-    "emptyTagged": "Etiketli öğe yok"
+    "emptyTagged": "Etiketli öğe yok",
+    "unknownTagGroup": "Bilinmeyen etiket"
   },
   "placeholders": {
     "noDrivesFound": "Sürücü bulunamadı",

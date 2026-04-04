@@ -39,7 +39,8 @@
     "favorites": "收藏夹",
     "tagged": "已标记",
     "emptyFavorites": "无收藏",
-    "emptyTagged": "无已标记项目"
+    "emptyTagged": "无已标记项目",
+    "unknownTagGroup": "未知标签"
   },
   "placeholders": {
     "noDrivesFound": "未找到驱动器",

@@ -39,7 +39,8 @@
     "favorites": "Favoritos",
     "tagged": "Marcados",
     "emptyFavorites": "Sem favoritos",
-    "emptyTagged": "Sem itens marcados"
+    "emptyTagged": "Sem itens marcados",
+    "unknownTagGroup": "Etiqueta desconhecida"
   },
   "placeholders": {
     "noDrivesFound": "Nenhuma unidade encontrada",

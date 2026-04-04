@@ -39,7 +39,8 @@
     "favorites": "Favoriten",
     "tagged": "Markiert",
     "emptyFavorites": "Keine Favoriten",
-    "emptyTagged": "Keine markierten Elemente"
+    "emptyTagged": "Keine markierten Elemente",
+    "unknownTagGroup": "Unbekannte Markierung"
   },
   "placeholders": {
     "noDrivesFound": "Keine Laufwerke gefunden",

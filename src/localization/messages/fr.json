@@ -39,7 +39,8 @@
     "favorites": "Favoris",
     "tagged": "Étiquetés",
     "emptyFavorites": "Aucun favori",
-    "emptyTagged": "Aucun élément étiqueté"
+    "emptyTagged": "Aucun élément étiqueté",
+    "unknownTagGroup": "Étiquette inconnue"
   },
   "placeholders": {
     "noDrivesFound": "Aucun lecteur trouvé",

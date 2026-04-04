@@ -39,7 +39,8 @@
     "favorites": "پسندیدہ",
     "tagged": "ٹیگ والے",
     "emptyFavorites": "کوئی پسندیدہ نہیں",
-    "emptyTagged": "کوئی ٹیگ والی شے نہیں"
+    "emptyTagged": "کوئی ٹیگ والی شے نہیں",
+    "unknownTagGroup": "نامعلوم ٹیگ"
   },
   "placeholders": {
     "noDrivesFound": "کوئی ڈرائیو نہیں ملی",

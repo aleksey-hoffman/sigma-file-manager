@@ -39,7 +39,8 @@
     "favorites": "Priljubljene",
     "tagged": "Označeno",
     "emptyFavorites": "Ni priljubljenih",
-    "emptyTagged": "Ni označenih predmetov"
+    "emptyTagged": "Ni označenih predmetov",
+    "unknownTagGroup": "Neznana oznaka"
   },
   "placeholders": {
     "noDrivesFound": "Ni najdenih pogonov",

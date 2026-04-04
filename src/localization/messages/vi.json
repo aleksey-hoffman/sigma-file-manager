@@ -39,7 +39,8 @@
     "favorites": "Yêu thích",
     "tagged": "Đã gắn thẻ",
     "emptyFavorites": "Chưa có mục yêu thích",
-    "emptyTagged": "Chưa có mục được gắn thẻ"
+    "emptyTagged": "Chưa có mục được gắn thẻ",
+    "unknownTagGroup": "Thẻ không xác định"
   },
   "placeholders": {
     "noDrivesFound": "Không tìm thấy ổ đĩa",

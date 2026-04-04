@@ -39,7 +39,8 @@
     "favorites": "Избранное",
     "tagged": "С метками",
     "emptyFavorites": "Нет избранного",
-    "emptyTagged": "Нет элементов с метками"
+    "emptyTagged": "Нет элементов с метками",
+    "unknownTagGroup": "Неизвестная метка"
   },
   "placeholders": {
     "noDrivesFound": "Диски не найдены",

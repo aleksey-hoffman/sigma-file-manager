@@ -39,7 +39,8 @@
     "favorites": "お気に入り",
     "tagged": "タグ付き",
     "emptyFavorites": "お気に入りなし",
-    "emptyTagged": "タグ付きアイテムなし"
+    "emptyTagged": "タグ付きアイテムなし",
+    "unknownTagGroup": "不明なタグ"
   },
   "placeholders": {
     "noDrivesFound": "ドライブが見つかりません",

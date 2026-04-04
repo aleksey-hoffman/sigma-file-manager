@@ -39,7 +39,8 @@
     "favorites": "पसंदीदा",
     "tagged": "टैग",
     "emptyFavorites": "कोई पसंदीदा नहीं",
-    "emptyTagged": "कोई टैग किया गया आइटम नहीं"
+    "emptyTagged": "कोई टैग किया गया आइटम नहीं",
+    "unknownTagGroup": "अज्ञात टैग"
   },
   "placeholders": {
     "noDrivesFound": "कोई ड्राइव नहीं मिली",

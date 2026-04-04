@@ -39,7 +39,8 @@
     "favorites": "موردعلاقه‌ها",
     "tagged": "برچسب‌خورده",
     "emptyFavorites": "بدون موردعلاقه",
-    "emptyTagged": "بدون آیتم برچسب‌خورده"
+    "emptyTagged": "بدون آیتم برچسب‌خورده",
+    "unknownTagGroup": "برچسب ناشناخته"
   },
   "placeholders": {
     "noDrivesFound": "هیچ درایوی پیدا نشد",

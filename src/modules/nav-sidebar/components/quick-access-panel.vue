@@ -65,6 +65,8 @@ interface TagGroup {
   items: TaggedItem[];
 }
 
+const knownTagIds = computed(() => new Set(tags.value.map(tag => tag.id)));
+
 const tagGroups = computed<TagGroup[]>(() => {
   return tags.value
     .map(tag => ({
@@ -74,8 +76,18 @@ const tagGroups = computed<TagGroup[]>(() => {
     .filter(group => group.items.length > 0);
 });
 
+const orphanedTaggedItems = computed(() => {
+  return taggedItems.value.filter(
+    item => !item.tagIds.some(tagId => knownTagIds.value.has(tagId)),
+  );
+});
+
 const totalTaggedItemCount = computed(() => {
   return new Set(taggedItems.value.map(item => item.path)).size;
+});
+
+const hasTaggedSectionContent = computed(() => {
+  return tagGroups.value.length > 0 || orphanedTaggedItems.value.length > 0;
 });
 
 const favoritesOpen = computed({
@@ -84,7 +96,7 @@ const favoritesOpen = computed({
 });
 
 const tagsOpen = computed({
-  get: () => tagsOpenState.value ?? tagGroups.value.length > 0,
+  get: () => tagsOpenState.value ?? totalTaggedItemCount.value > 0,
   set: (value: boolean) => { tagsOpenState.value = value; },
 });
 
@@ -237,7 +249,7 @@ function openTaggedItem(item: TaggedItem) {
           <CollapsibleContent class="quick-access-panel__section-content">
             <div
               class="quick-access-panel__empty"
-              v-if="tagGroups.length === 0"
+              v-if="!hasTaggedSectionContent"
             >
               {{ t('quickAccess.emptyTagged') }}
             </div>
@@ -256,6 +268,35 @@ function openTaggedItem(item: TaggedItem) {
               </div>
               <DirEntryInteractive
                 v-for="item in group.items"
+                :key="item.path"
+                :path="item.path"
+                :is-file="item.isFile"
+              >
+                <button
+                  type="button"
+                  class="quick-access-panel__item"
+                  @click="openTaggedItem(item)"
+                >
+                  <QuickAccessItemIcon
+                    :path="item.path"
+                    :is-file="item.isFile"
+                    :size="14"
+                  />
+                  <span class="quick-access-panel__item-name">{{ getItemName(item.path) }}</span>
+                </button>
+              </DirEntryInteractive>
+            </div>
+            <div
+              v-if="orphanedTaggedItems.length > 0"
+              class="quick-access-panel__tag-group"
+            >
+              <div class="quick-access-panel__tag-subtitle">
+                <span class="quick-access-panel__tag-dot quick-access-panel__tag-dot--muted" />
+                <span class="quick-access-panel__tag-name">{{ t('quickAccess.unknownTagGroup') }}</span>
+                <span class="quick-access-panel__tag-count">{{ orphanedTaggedItems.length }}</span>
+              </div>
+              <DirEntryInteractive
+                v-for="item in orphanedTaggedItems"
                 :key="item.path"
                 :path="item.path"
                 :is-file="item.isFile"
@@ -465,6 +506,10 @@ function openTaggedItem(item: TaggedItem) {
   height: 8px;
   flex-shrink: 0;
   border-radius: 50%;
+}
+
+.quick-access-panel__tag-dot--muted {
+  background-color: hsl(var(--muted-foreground));
 }
 
 .quick-access-panel__tag-name {

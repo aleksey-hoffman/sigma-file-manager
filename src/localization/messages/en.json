@@ -39,7 +39,8 @@
     "favorites": "Favorites",
     "tagged": "Tagged",
     "emptyFavorites": "No favorites",
-    "emptyTagged": "No tagged items"
+    "emptyTagged": "No tagged items",
+    "unknownTagGroup": "Unknown tag"
   },
   "placeholders": {
     "noDrivesFound": "No drives found",
