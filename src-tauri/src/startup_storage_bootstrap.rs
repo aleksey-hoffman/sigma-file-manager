@@ -84,8 +84,26 @@ fn migrate_legacy_user_storage_files_in_user_data_dir(app_user_data_dir: &Path) 
     for (legacy_name, new_name) in legacy_pairs {
         let legacy_path = app_user_data_dir.join(legacy_name);
         let new_path = app_user_data_dir.join(new_name);
-        if !new_path.exists() && legacy_path.exists() {
-            let _ = fs::rename(&legacy_path, &new_path);
+
+        if new_path.exists() && legacy_path.exists() {
+            log::warn!(
+                "Both legacy and new storage files exist: '{}' and '{}'. Using '{}'.",
+                legacy_path.display(),
+                new_path.display(),
+                new_path.display(),
+            );
+            continue;
+        }
+
+        if legacy_path.exists() {
+            if let Err(rename_error) = fs::rename(&legacy_path, &new_path) {
+                log::error!(
+                    "Failed to rename legacy storage file '{}' to '{}': {}",
+                    legacy_path.display(),
+                    new_path.display(),
+                    rename_error,
+                );
+            }
         }
     }
 }
