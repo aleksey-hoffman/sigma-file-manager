@@ -1470,7 +1470,7 @@
   "noData": "Sem dados",
   "tags": {
     "editTags": "Editar tags",
-    "searchTags": "Pesquisar tags...",
+    "searchTags": "Pesquisar / criar tag",
     "noTagsFound": "Nenhuma tag encontrada",
     "createTag": "Criar tag",
     "deleteTag": "Excluir tag",

@@ -1457,7 +1457,7 @@
   "noData": "Sin datos",
   "tags": {
     "editTags": "Editar etiquetas",
-    "searchTags": "Buscar etiquetas...",
+    "searchTags": "Buscar / crear etiqueta",
     "noTagsFound": "No se encontraron etiquetas",
     "createTag": "Crear etiqueta",
     "deleteTag": "Eliminar etiqueta",

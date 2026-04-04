@@ -1472,7 +1472,7 @@
   "noData": "कोई डेटा नहीं",
   "tags": {
     "editTags": "जोड़ संपादित करें",
-    "searchTags": "टैग खोजें...",
+    "searchTags": "टैग खोजें / बनाएँ",
     "noTagsFound": "कोई टैग नहीं मिला",
     "createTag": "टैग बनाएं",
     "deleteTag": "टैग हटाएँ",

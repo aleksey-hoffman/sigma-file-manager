@@ -1457,7 +1457,7 @@
   "noData": "Veri yok",
   "tags": {
     "editTags": "Etiketleri düzenle",
-    "searchTags": "Etiket ara...",
+    "searchTags": "Ara / etiket oluştur",
     "noTagsFound": "Etiket bulunamadı",
     "createTag": "Etiket oluştur",
     "deleteTag": "Etiketi sil",

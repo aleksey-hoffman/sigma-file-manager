@@ -1457,7 +1457,7 @@
   "noData": "データなし",
   "tags": {
     "editTags": "タグを編集",
-    "searchTags": "タグを検索...",
+    "searchTags": "タグを検索・作成",
     "noTagsFound": "タグが見つかりません",
     "createTag": "タグを作成",
     "deleteTag": "タグを削除",

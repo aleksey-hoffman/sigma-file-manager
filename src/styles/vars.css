@@ -1,4 +1,5 @@
 :root {
+  color-scheme: light;
   /* Drive progress indicator colors */
   --drive-progress-color-green: 174deg 100% 27%;
   --drive-progress-color-red: 4deg 82% 58%;
@@ -72,6 +73,7 @@
 }
 
 .dark {
+  color-scheme: dark;
   --light: 0 0% 100%;
   --dark: 0 0% 0%;
   --background-2: 225 10% 16%;

@@ -151,6 +151,11 @@ function startEdit(event: Event, tag: ItemTag) {
   event.stopPropagation();
   event.preventDefault();
 
+  if (editingTagId.value === tag.id) {
+    commitEdit();
+    return;
+  }
+
   if (editingTagId.value !== null && editingTagId.value !== tag.id) {
     commitEdit();
   }
@@ -389,19 +394,21 @@ function onColorBlur(event: Event) {
                 @click.stop
                 @pointerdown.stop
               >
-                <input
-                  type="color"
-                  class="tag-selector__color-input"
-                  :value="colorHexForPicker(displayColor(tag))"
-                  @click.stop
-                  @input="onColorInput($event, tag.id)"
-                  @blur="onColorBlur"
-                >
-                <span
-                  class="tag-selector__color-dot"
-                  aria-hidden="true"
-                  :style="{ backgroundColor: displayColor(tag) }"
-                />
+                <div class="tag-selector__color-dot-hitbox">
+                  <input
+                    type="color"
+                    class="tag-selector__color-input"
+                    :value="colorHexForPicker(displayColor(tag))"
+                    @click.stop
+                    @input="onColorInput($event, tag.id)"
+                    @blur="onColorBlur"
+                  >
+                  <span
+                    class="tag-selector__color-dot"
+                    aria-hidden="true"
+                    :style="{ backgroundColor: displayColor(tag) }"
+                  />
+                </div>
               </label>
               <span
                 v-if="editingTagId !== tag.id"
@@ -573,15 +580,21 @@ function onColorBlur(event: Event) {
 }
 
 .tag-selector__color-dot-wrap {
-  position: relative;
   display: flex;
-  width: 14px;
-  height: 14px;
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
   margin-right: 8px;
   cursor: pointer;
+}
+
+.tag-selector__color-dot-hitbox {
+  position: relative;
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
 }
 
 .tag-selector__color-input {
@@ -591,6 +604,7 @@ function onColorBlur(event: Event) {
   padding: 0;
   margin: 0;
   cursor: pointer;
+  inset: 0;
   opacity: 0;
 }
 

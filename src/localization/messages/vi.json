@@ -1457,7 +1457,7 @@
   "noData": "Không có dữ liệu",
   "tags": {
     "editTags": "Chỉnh sửa thẻ",
-    "searchTags": "Tìm kiếm thẻ...",
+    "searchTags": "Tìm / tạo thẻ",
     "noTagsFound": "Không tìm thấy thẻ",
     "createTag": "Tạo thẻ",
     "deleteTag": "Xóa thẻ",

@@ -1472,7 +1472,7 @@
   "noData": "No data",
   "tags": {
     "editTags": "Edit tags",
-    "searchTags": "Search tags...",
+    "searchTags": "Search / create tag",
     "noTagsFound": "No tags found",
     "createTag": "Create tag",
     "deleteTag": "Delete tag",

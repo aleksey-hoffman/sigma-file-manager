@@ -1472,7 +1472,7 @@
   "noData": "Нет данных",
   "tags": {
     "editTags": "Редактировать теги",
-    "searchTags": "Поиск тегов...",
+    "searchTags": "Найти / создать тег",
     "noTagsFound": "Теги не найдены",
     "createTag": "Создать тег",
     "deleteTag": "Удалить тег",

@@ -1457,7 +1457,7 @@
   "noData": "没有数据",
   "tags": {
     "editTags": "编辑标签",
-    "searchTags": "搜索标签...",
+    "searchTags": "搜索 / 创建标签",
     "noTagsFound": "未找到标签",
     "createTag": "创建标签",
     "deleteTag": "删除标签",
