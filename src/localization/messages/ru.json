@@ -1420,7 +1420,7 @@
       "quickView": "Быстрый просмотр",
       "reviewFileInASeparateWindow": "просмотреть файл в отдельном окне",
       "previewFileInASeparateWindow": "Предварительный просмотр файла в отдельном окне",
-      "editTags": "Редактировать теги",
+      "editTags": "Теги",
       "openInNewTab": "Открыть в новой вкладке",
       "shareDirectoryWithLocalDevices": "Поделиться папкой с локальными устройствами",
       "shareFileWithLocalDevices": "Поделиться файлом с локальными устройствами",
@@ -1472,7 +1472,7 @@
   "limit": "Лимит",
   "noData": "Нет данных",
   "tags": {
-    "editTags": "Редактировать теги",
+    "editTags": "Теги",
     "searchTags": "Найти / создать тег",
     "noTagsFound": "Теги не найдены",
     "createTag": "Создать тег",

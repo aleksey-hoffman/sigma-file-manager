@@ -1405,7 +1405,7 @@
       "quickView": "Visualizzazione rapida",
       "reviewFileInASeparateWindow": "Rivedi il file in una finestra separata",
       "previewFileInASeparateWindow": "Anteprima del file in una finestra separata",
-      "editTags": "Modifica tag",
+      "editTags": "Tag",
       "openInNewTab": "Apri in una nuova scheda",
       "shareDirectoryWithLocalDevices": "Condividi la cartella con i dispositivi locali",
       "shareFileWithLocalDevices": "Condividi il file con i dispositivi locali",
@@ -1457,7 +1457,7 @@
   "limit": "Limite",
   "noData": "Nessun dato",
   "tags": {
-    "editTags": "Modifica tag",
+    "editTags": "Tag",
     "searchTags": "Cerca / crea tag",
     "noTagsFound": "Nessun tag trovato",
     "createTag": "Crea tag",

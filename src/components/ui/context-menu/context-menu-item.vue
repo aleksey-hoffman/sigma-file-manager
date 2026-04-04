@@ -43,7 +43,7 @@ const forwardedProps = useForwardProps(props);
 
 .sigma-ui-context-menu-item:focus {
   background-color: hsl(var(--secondary));
-  color: hsl(var(--secondary-foreground));
+  color: hsl(var(--popover-foreground) / 80%);
 }
 
 .sigma-ui-context-menu-item[data-disabled] {

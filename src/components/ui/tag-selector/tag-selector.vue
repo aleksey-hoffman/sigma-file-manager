@@ -22,6 +22,7 @@ import {
   CommandSeparator,
 } from '@/components/ui/command';
 import type { ItemTag } from '@/types/user-stats';
+import type { PopoverContentProps } from 'reka-ui';
 
 const props = withDefaults(defineProps<{
   tags: ItemTag[];
@@ -30,11 +31,16 @@ const props = withDefaults(defineProps<{
   triggerVariant?: 'default' | 'compact' | 'icon';
   maxBadges?: number;
   fullWidth?: boolean;
+  align?: PopoverContentProps['align'];
+  side?: PopoverContentProps['side'];
+  alignOffset?: PopoverContentProps['alignOffset'];
+  sideOffset?: PopoverContentProps['sideOffset'];
 }>(), {
   allowCreate: true,
   triggerVariant: 'default',
   maxBadges: 2,
   fullWidth: false,
+  align: 'start',
 });
 
 const emit = defineEmits<{
@@ -318,7 +324,7 @@ function onColorBlur(event: Event) {
         class="tag-selector__trigger"
         :class="{ 'tag-selector__trigger--full-width': fullWidth }"
       >
-        <CirclePlusIcon class="tag-selector__trigger-icon-plus" />
+        <TagIcon class="tag-selector__trigger-icon-plus" />
         <span class="tag-selector__label">{{ t('tags.editTags') }}</span>
         <template v-if="selectedTags.length > 0">
           <div class="tag-selector__selected-tags">
@@ -343,7 +349,10 @@ function onColorBlur(event: Event) {
 
     <PopoverContent
       class="tag-selector__content"
-      align="start"
+      :align="align"
+      :side="side"
+      :align-offset="alignOffset"
+      :side-offset="sideOffset"
     >
       <Command :key="commandKey">
         <CommandInput
@@ -467,7 +476,12 @@ function onColorBlur(event: Event) {
 .tag-selector__trigger {
   overflow: hidden;
   border-style: dashed;
+  color: hsl(var(--popover-foreground));
   gap: 8px;
+}
+
+.tag-selector__trigger:hover {
+  color: hsl(var(--popover-foreground) / 80%);
 }
 
 .tag-selector__trigger--compact {
@@ -489,6 +503,11 @@ function onColorBlur(event: Event) {
 
 .tag-selector__label {
   flex-shrink: 0;
+  font-weight: 400;
+}
+
+.tag-selector__label:hover {
+  color: hsl(var(--popover-foreground) / 80%);
 }
 
 .tag-selector__count {

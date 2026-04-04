@@ -1420,7 +1420,7 @@
       "quickView": "Quick view",
       "reviewFileInASeparateWindow": "review file in a separate window",
       "previewFileInASeparateWindow": "Preview file in a separate window",
-      "editTags": "Edit tags",
+      "editTags": "Tags",
       "openInNewTab": "Open in new tab",
       "shareDirectoryWithLocalDevices": "Share directory with local devices",
       "shareFileWithLocalDevices": "Share file with local devices",
@@ -1472,7 +1472,7 @@
   "limit": "Limit",
   "noData": "No data",
   "tags": {
-    "editTags": "Edit tags",
+    "editTags": "Tags",
     "searchTags": "Search / create tag",
     "noTagsFound": "No tags found",
     "createTag": "Create tag",

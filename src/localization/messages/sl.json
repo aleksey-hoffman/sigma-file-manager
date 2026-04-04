@@ -1420,7 +1420,7 @@
       "quickView": "Hitri pregled",
       "reviewFileInASeparateWindow": "preglej datoteko v ločenem oknu",
       "previewFileInASeparateWindow": "Predogled datoteke v ločenem oknu",
-      "editTags": "Uredi oznake",
+      "editTags": "Oznake",
       "openInNewTab": "Odpri v novem zavihku",
       "shareDirectoryWithLocalDevices": "Deli mapo z lokalnimi napravami",
       "shareFileWithLocalDevices": "Deli datoteko z lokalnimi napravami",
@@ -1472,7 +1472,7 @@
   "limit": "Omejitev",
   "noData": "Ni podatkov",
   "tags": {
-    "editTags": "Uredi oznake",
+    "editTags": "Oznake",
     "searchTags": "Poišči / ustvari oznako",
     "noTagsFound": "Ni najdenih oznak",
     "createTag": "Ustvari oznako",

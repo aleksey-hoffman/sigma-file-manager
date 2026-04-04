@@ -1405,7 +1405,7 @@
       "quickView": "Xem lướt qua",
       "reviewFileInASeparateWindow": "xem lại tập tin trong một cửa sổ riêng biệt",
       "previewFileInASeparateWindow": "Xem trước tập tin trong một cửa sổ riêng biệt",
-      "editTags": "Chỉnh sửa thẻ",
+      "editTags": "Thẻ",
       "openInNewTab": "Mở ra trong trang mới",
       "shareDirectoryWithLocalDevices": "Chia sẻ thư mục với các thiết bị cục bộ",
       "shareFileWithLocalDevices": "Chia sẻ tệp với các thiết bị cục bộ",
@@ -1457,7 +1457,7 @@
   "limit": "Giới hạn",
   "noData": "Không có dữ liệu",
   "tags": {
-    "editTags": "Chỉnh sửa thẻ",
+    "editTags": "Thẻ",
     "searchTags": "Tìm / tạo thẻ",
     "noTagsFound": "Không tìm thấy thẻ",
     "createTag": "Tạo thẻ",

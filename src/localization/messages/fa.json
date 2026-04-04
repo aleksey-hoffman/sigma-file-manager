@@ -1404,7 +1404,7 @@
       "quickView": "مشاهده سریع",
       "reviewFileInASeparateWindow": "بازبینی فایل در یک پنجره جداگانه",
       "previewFileInASeparateWindow": "پیش نمایش فایل در یک پنجره جداگانه",
-      "editTags": "ویرایش برچسب ها",
+      "editTags": "برچسب‌ها",
       "openInNewTab": "در برگه جدیدی باز کن",
       "shareDirectoryWithLocalDevices": "اشتراک گذاری دایرکتوری با دستگاه های محلی",
       "shareFileWithLocalDevices": "اشتراک گذاری فایل با دستگاه های محلی",
@@ -1456,7 +1456,7 @@
   "limit": "حد",
   "noData": "بدون اطلاعات",
   "tags": {
-    "editTags": "ویرایش برچسب‌ها",
+    "editTags": "برچسب‌ها",
     "searchTags": "جستجو / ایجاد برچسب",
     "noTagsFound": "برچسبی یافت نشد",
     "createTag": "ایجاد برچسب",

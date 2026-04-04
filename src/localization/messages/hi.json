@@ -1420,7 +1420,7 @@
       "quickView": "त्वरित देखें",
       "reviewFileInASeparateWindow": "एक अलग विंडो में फ़ाइल की समीक्षा करें",
       "previewFileInASeparateWindow": "एक अलग विंडो में फ़ाइल का पूर्वावलोकन करें",
-      "editTags": "जोड़ संपादित करें",
+      "editTags": "टैग",
       "openInNewTab": "वेब टेब में खोलें",
       "shareDirectoryWithLocalDevices": "स्थानीय उपकरणों के साथ निर्देशिका साझा करें",
       "shareFileWithLocalDevices": "स्थानीय उपकरणों के साथ फ़ाइल साझा करें",
@@ -1472,7 +1472,7 @@
   "limit": "आप LIMIT",
   "noData": "कोई डेटा नहीं",
   "tags": {
-    "editTags": "जोड़ संपादित करें",
+    "editTags": "टैग",
     "searchTags": "टैग खोजें / बनाएँ",
     "noTagsFound": "कोई टैग नहीं मिला",
     "createTag": "टैग बनाएं",

@@ -1405,7 +1405,7 @@
       "quickView": "Hızlı Görünüm",
       "reviewFileInASeparateWindow": "dosyayı ayrı bir pencerede incele",
       "previewFileInASeparateWindow": "Dosyayı ayrı bir pencerede önizleyin",
-      "editTags": "Etiketleri düzenle",
+      "editTags": "Etiketler",
       "openInNewTab": "Yeni sekmede aç",
       "shareDirectoryWithLocalDevices": "Yerel cihazlarla dizini paylaş",
       "shareFileWithLocalDevices": "Dosyayı yerel cihazlarla paylaş",
@@ -1457,7 +1457,7 @@
   "limit": "Sınır",
   "noData": "Veri yok",
   "tags": {
-    "editTags": "Etiketleri düzenle",
+    "editTags": "Etiketler",
     "searchTags": "Ara / etiket oluştur",
     "noTagsFound": "Etiket bulunamadı",
     "createTag": "Etiket oluştur",

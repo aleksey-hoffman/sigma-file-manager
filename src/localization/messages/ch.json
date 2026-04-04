@@ -1405,7 +1405,7 @@
       "quickView": "快速浏览",
       "reviewFileInASeparateWindow": "在单独的窗口中查看文件",
       "previewFileInASeparateWindow": "在单独的窗口中预览文件",
-      "editTags": "编辑标签",
+      "editTags": "标签",
       "openInNewTab": "在新标签页中打开",
       "shareDirectoryWithLocalDevices": "与本地设备共享目录",
       "shareFileWithLocalDevices": "与本地设备共享文件",
@@ -1457,7 +1457,7 @@
   "limit": "限制",
   "noData": "没有数据",
   "tags": {
-    "editTags": "编辑标签",
+    "editTags": "标签",
     "searchTags": "搜索 / 创建标签",
     "noTagsFound": "未找到标签",
     "createTag": "创建标签",

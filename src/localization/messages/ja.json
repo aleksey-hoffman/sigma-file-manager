@@ -1405,7 +1405,7 @@
       "quickView": "クイックビュー",
       "reviewFileInASeparateWindow": "別のウィンドウでファイルを確認",
       "previewFileInASeparateWindow": "別ウィンドウでファイルをプレビュー",
-      "editTags": "タグの編集",
+      "editTags": "タグ",
       "openInNewTab": "新しいタブで開く",
       "shareDirectoryWithLocalDevices": "ローカルデバイスとディレクトリを共有",
       "shareFileWithLocalDevices": "ローカルデバイスとファイルを共有",
@@ -1457,7 +1457,7 @@
   "limit": "限界",
   "noData": "データなし",
   "tags": {
-    "editTags": "タグを編集",
+    "editTags": "タグ",
     "searchTags": "タグを検索・作成",
     "noTagsFound": "タグが見つかりません",
     "createTag": "タグを作成",

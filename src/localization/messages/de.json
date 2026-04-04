@@ -1405,7 +1405,7 @@
       "quickView": "Schnellansicht",
       "reviewFileInASeparateWindow": "Datei in einem separaten Fenster überprüfen",
       "previewFileInASeparateWindow": "Vorschaudatei in separatem Fenster anzeigen",
-      "editTags": "Stichworte bearbeiten",
+      "editTags": "Tags",
       "openInNewTab": "In neuem Tab öffnen",
       "shareDirectoryWithLocalDevices": "Verzeichnis mit lokalen Geräten teilen",
       "shareFileWithLocalDevices": "Datei mit lokalen Geräten teilen",
@@ -1457,7 +1457,7 @@
   "limit": "Grenze",
   "noData": "Keine Daten",
   "tags": {
-    "editTags": "Tags bearbeiten",
+    "editTags": "Tags",
     "searchTags": "Tag suchen / erstellen",
     "noTagsFound": "Keine Tags gefunden",
     "createTag": "Tag erstellen",

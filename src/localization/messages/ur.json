@@ -1420,7 +1420,7 @@
       "quickView": "فوری نظر",
       "reviewFileInASeparateWindow": "الگ ونڈو میں فائل دیکھیں",
       "previewFileInASeparateWindow": "الگ ونڈو میں پیش نظارہ",
-      "editTags": "ٹیگز میں ترمیم",
+      "editTags": "ٹیگز",
       "openInNewTab": "نئے ٹیب میں کھولیں",
       "shareDirectoryWithLocalDevices": "مقامی ڈیوائسز کے ساتھ فولڈر شیئر کریں",
       "shareFileWithLocalDevices": "مقامی ڈیوائسز کے ساتھ فائل شیئر کریں",
@@ -1472,7 +1472,7 @@
   "limit": "حد",
   "noData": "کوئی ڈیٹا نہیں",
   "tags": {
-    "editTags": "ٹیگز میں ترمیم",
+    "editTags": "ٹیگز",
     "searchTags": "ٹیگ تلاش کریں / بنائیں",
     "noTagsFound": "کوئی ٹیگ نہیں",
     "createTag": "ٹیگ بنائیں",
