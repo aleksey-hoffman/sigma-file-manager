@@ -1653,6 +1653,16 @@
     "quickSearch": "Tìm kiếm nhanh",
     "searchThisDirectory": "Tìm trong thư mục này...",
     "quickSearchFilterByColumn": "Tìm trong cột",
+    "quickSearchPropertyTooltip": {
+      "name": "Chỉ tìm trong tên và phần mở rộng (không phải đường dẫn thư mục).",
+      "size": "Lọc theo kích thước. So sánh (>=, <=, >, <, =, ==) với số và đơn vị tùy chọn (b, kb, mb, gb, tb). Không có đơn vị thì dùng MB. Ví dụ: size: >=2mb, size: >=2. Khoảng: size: 1mb..10mb.",
+      "items": "Lọc theo số mục trong thư mục. So sánh (>=, <=, >, <, =, ==) với số nguyên. Ví dụ: items: >=5. Khoảng: items: 3..10. Tệp không áp dụng.",
+      "modified": "Tìm trong chuỗi ngày sửa đổi hiển thị.",
+      "created": "Tìm trong chuỗi ngày tạo hiển thị.",
+      "accessed": "Tìm trong chuỗi ngày truy cập hiển thị.",
+      "path": "Chỉ tìm trong đường dẫn đầy đủ.",
+      "mime": "Tìm trong chuỗi loại MIME."
+    },
     "name": "Tên",
     "size": "Kích thước",
     "modified": "Đã sửa đổi",

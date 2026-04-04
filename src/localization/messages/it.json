@@ -1653,6 +1653,16 @@
     "quickSearch": "Ricerca rapida",
     "searchThisDirectory": "Cerca in questa directory...",
     "quickSearchFilterByColumn": "Cerca nella colonna",
+    "quickSearchPropertyTooltip": {
+      "name": "Cerca solo nel nome e nell’estensione (non nel percorso della cartella).",
+      "size": "Filtra per dimensione. Confronti (>=, <=, >, <, =, ==) con numero e unità facoltativa (b, kb, mb, gb, tb). Senza unità si usano i megabyte. Esempi: size: >=2mb, size: >=2. Intervalli: size: 1mb..10mb.",
+      "items": "Filtra per numero di elementi nella cartella. Confronti (>=, <=, >, <, =, ==) con numeri interi. Esempi: items: >=5. Intervalli: items: 3..10. I file sono esclusi.",
+      "modified": "Cerca nel testo della data di modifica mostrata.",
+      "created": "Cerca nel testo della data di creazione mostrata.",
+      "accessed": "Cerca nel testo della data di accesso mostrata.",
+      "path": "Cerca solo nel percorso completo.",
+      "mime": "Cerca nel testo del tipo MIME."
+    },
     "name": "Nome",
     "size": "Dimensione",
     "modified": "Modificato",

@@ -1653,6 +1653,16 @@
     "quickSearch": "快速搜索",
     "searchThisDirectory": "搜索此目录...",
     "quickSearchFilterByColumn": "在列中搜索",
+    "quickSearchPropertyTooltip": {
+      "name": "仅在名称和扩展名中搜索（不包括文件夹路径）。",
+      "size": "按大小筛选。使用比较运算符（>=、<=、>、<、=、==）与数字及可选单位（b、kb、mb、gb、tb）。无单位时按 MB。示例：size: >=2mb、size: >=2。范围：size: 1mb..10mb。",
+      "items": "按文件夹项目数筛选。使用比较运算符（>=、<=、>、<、=、==）与整数。示例：items: >=5。范围：items: 3..10。文件不包含在内。",
+      "modified": "在显示的修改日期文本中搜索。",
+      "created": "在显示的创建日期文本中搜索。",
+      "accessed": "在显示的访问日期文本中搜索。",
+      "path": "仅在完整路径中搜索。",
+      "mime": "在 MIME 类型文本中搜索。"
+    },
     "name": "名称",
     "size": "大小",
     "modified": "修改时间",

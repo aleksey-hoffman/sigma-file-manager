@@ -1666,6 +1666,16 @@
     "quickSearch": "Pesquisa rápida",
     "searchThisDirectory": "Pesquisar neste diretório...",
     "quickSearchFilterByColumn": "Pesquisar na coluna",
+    "quickSearchPropertyTooltip": {
+      "name": "Pesquisar apenas no nome e na extensão (não no caminho da pasta).",
+      "size": "Filtrar por tamanho. Comparações (>=, <=, >, <, =, ==) com número e unidade opcional (b, kb, mb, gb, tb). Sem unidade, usa-se MB. Exemplos: size: >=2mb, size: >=2. Intervalos: size: 1mb..10mb.",
+      "items": "Filtrar pela contagem de itens da pasta. Comparações (>=, <=, >, <, =, ==) com inteiros. Exemplos: items: >=5. Intervalos: items: 3..10. Ficheiros são excluídos.",
+      "modified": "Pesquisar no texto da data de modificação mostrada.",
+      "created": "Pesquisar no texto da data de criação mostrada.",
+      "accessed": "Pesquisar no texto da data de acesso mostrada.",
+      "path": "Pesquisar apenas no caminho completo.",
+      "mime": "Pesquisar no texto do tipo MIME."
+    },
     "name": "Nome",
     "size": "Tamanho",
     "modified": "Modificado",

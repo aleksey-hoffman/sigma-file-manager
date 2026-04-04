@@ -1669,6 +1669,16 @@
     "quickSearch": "Hitro iskanje",
     "searchThisDirectory": "Išči v tej mapi...",
     "quickSearchFilterByColumn": "Iskanje v stolpcu",
+    "quickSearchPropertyTooltip": {
+      "name": "Išči samo v imenu in priponi (ne v poti mape).",
+      "size": "Filtriraj po velikosti. Primerjave (>=, <=, >, <, =, ==) s številko in neobvezno enoto (b, kb, mb, gb, tb). Brez enote se uporabijo megabajti. Primeri: size: >=2mb, size: >=2. Razponi: size: 1mb..10mb.",
+      "items": "Filtriraj po številu predmetov v mapi. Primerjave (>=, <=, >, <, =, ==) z celimi števili. Primeri: items: >=5. Razponi: items: 3..10. Datoteke so izključene.",
+      "modified": "Išči v prikazanem besedilu datuma spremembe.",
+      "created": "Išči v prikazanem besedilu datuma ustvarjanja.",
+      "accessed": "Išči v prikazanem besedilu datuma dostopa.",
+      "path": "Išči samo v celotni poti.",
+      "mime": "Išči v besedilu vrste MIME."
+    },
     "name": "Ime",
     "size": "Velikost",
     "modified": "Spremenjeno",

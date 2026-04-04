@@ -1653,6 +1653,16 @@
     "quickSearch": "Hızlı arama",
     "searchThisDirectory": "Bu dizinde ara...",
     "quickSearchFilterByColumn": "Sütunda ara",
+    "quickSearchPropertyTooltip": {
+      "name": "Yalnızca ad ve uzantıda ara (klasör yolunda değil).",
+      "size": "Boyuta göre filtrele. Sayı ve isteğe bağlı birim (b, kb, mb, gb, tb) ile karşılaştırma (>=, <=, >, <, =, ==). Birim yoksa MB kullanılır. Örnekler: size: >=2mb, size: >=2. Aralıklar: size: 1mb..10mb.",
+      "items": "Klasör öğe sayısına göre filtrele. Tam sayılarla karşılaştırma (>=, <=, >, <, =, ==). Örnekler: items: >=5. Aralıklar: items: 3..10. Dosyalar hariç tutulur.",
+      "modified": "Gösterilen değiştirilme tarihi metninde ara.",
+      "created": "Gösterilen oluşturulma tarihi metninde ara.",
+      "accessed": "Gösterilen erişim tarihi metninde ara.",
+      "path": "Yalnızca tam yolda ara.",
+      "mime": "MIME türü metninde ara."
+    },
     "name": "Ad",
     "size": "Boyut",
     "modified": "Değiştirilme",

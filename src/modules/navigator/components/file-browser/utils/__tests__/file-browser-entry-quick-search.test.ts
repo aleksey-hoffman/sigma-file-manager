@@ -28,6 +28,8 @@ function createMockDirSizesStore(overrides?: { getSize?: DirSizesStore['getSize'
   } as DirSizesStore;
 }
 
+const MB = 1024 ** 2;
+
 function createFileEntry(overrides: Partial<DirEntry> = {}): DirEntry {
   return {
     name: 'readme',
@@ -99,6 +101,32 @@ describe('fileBrowserEntryMatchesQuickSearch', () => {
     const store = createMockDirSizesStore();
     expect(fileBrowserEntryMatchesQuickSearch(entry, String(modifiedTime), store)).toBe(false);
     expect(fileBrowserEntryMatchesQuickSearch(entry, '2024', store)).toBe(true);
+  });
+
+  it('matches size property with comparison and range predicates', () => {
+    const store = createMockDirSizesStore();
+    const largeFile = createFileEntry({ size: 3 * MB });
+    expect(fileBrowserEntryMatchesQuickSearch(largeFile, 'size: >=2', store)).toBe(true);
+    expect(fileBrowserEntryMatchesQuickSearch(largeFile, 'size: <1mb', store)).toBe(false);
+    expect(fileBrowserEntryMatchesQuickSearch(largeFile, 'size: 2mb..4mb', store)).toBe(true);
+    const smallFile = createFileEntry({ size: 400 * 1024 });
+    expect(fileBrowserEntryMatchesQuickSearch(smallFile, 'size: <=500kb', store)).toBe(true);
+  });
+
+  it('matches items property with comparison and range predicates', () => {
+    const store = createMockDirSizesStore();
+    const folder = createFileEntry({
+      name: 'd',
+      path: 'C:/d',
+      is_file: false,
+      is_dir: true,
+      item_count: 8,
+    });
+    expect(fileBrowserEntryMatchesQuickSearch(folder, 'items: >=5', store)).toBe(true);
+    expect(fileBrowserEntryMatchesQuickSearch(folder, 'items: 3..10', store)).toBe(true);
+    expect(fileBrowserEntryMatchesQuickSearch(folder, 'items: ==12', store)).toBe(false);
+    const fileEntry = createFileEntry({ name: 'f', path: 'C:/f', item_count: null });
+    expect(fileBrowserEntryMatchesQuickSearch(fileEntry, 'items: >=0', store)).toBe(false);
   });
 
   it('property prefix limits search to that field', () => {

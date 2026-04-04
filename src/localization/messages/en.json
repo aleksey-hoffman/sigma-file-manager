@@ -1669,6 +1669,16 @@
     "quickSearch": "Quick search",
     "searchThisDirectory": "Search this directory...",
     "quickSearchFilterByColumn": "Search in column",
+    "quickSearchPropertyTooltip": {
+      "name": "Search only in the name and extension (not the folder path).",
+      "size": "Filter by size. Use comparisons (>=, <=, >, <, =, ==) with a number and optional unit (b, kb, mb, gb, tb). Without a unit, megabytes are used. Examples: size: >=2mb, size: >=2. Ranges: size: 1mb..10mb.",
+      "items": "Filter by folder item count. Use comparisons (>=, <=, >, <, =, ==) with whole numbers. Examples: items: >=5. Ranges: items: 3..10. Files are excluded.",
+      "modified": "Search in the displayed modified date text.",
+      "created": "Search in the displayed created date text.",
+      "accessed": "Search in the displayed accessed date text.",
+      "path": "Search only in the full path.",
+      "mime": "Search in the MIME type text."
+    },
     "name": "Name",
     "size": "Size",
     "modified": "Modified",

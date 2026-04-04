@@ -10,6 +10,24 @@ import {
   parseQuickSearchQuery,
   type QuickSearchProperty,
 } from './file-browser-quick-search-query';
+import {
+  evaluateQuickSearchItemsPredicate,
+  evaluateQuickSearchSizePredicate,
+  parseQuickSearchItemsPredicate,
+  parseQuickSearchSizePredicate,
+} from './file-browser-quick-search-numeric';
+
+function getFileBrowserItemCountForFilter(entry: DirEntry): number | null {
+  if (!entry.is_dir) {
+    return null;
+  }
+
+  if (entry.item_count !== null) {
+    return entry.item_count;
+  }
+
+  return null;
+}
 
 export function buildFileBrowserQuickSearchHaystack(entry: DirEntry, dirSizesStore: DirSizesStore): string {
   const parts: string[] = [entry.name.toLowerCase()];
@@ -125,9 +143,36 @@ export function fileBrowserEntryMatchesQuickSearch(
   }
 
   const parsed = parseQuickSearchQuery(trimmed);
-  const valueNormalized = parsed.property !== null
-    ? parsed.value.trim().toLowerCase()
-    : trimmed.toLowerCase();
+  const valueRaw = parsed.property !== null ? parsed.value.trim() : trimmed;
+  const valueNormalized = valueRaw.toLowerCase();
+
+  if (parsed.property !== null && !valueNormalized) {
+    return true;
+  }
+
+  if (parsed.property === 'size') {
+    const sizePredicate = parseQuickSearchSizePredicate(valueRaw);
+
+    if (sizePredicate.kind !== 'substring') {
+      const sizeBytes = getFileBrowserEntryResolvedSizeBytes(entry, dirSizesStore);
+
+      return evaluateQuickSearchSizePredicate(sizePredicate, sizeBytes);
+    }
+  }
+
+  if (parsed.property === 'items') {
+    const itemsPredicate = parseQuickSearchItemsPredicate(valueRaw);
+
+    if (itemsPredicate.kind !== 'substring') {
+      const itemCount = getFileBrowserItemCountForFilter(entry);
+
+      if (itemCount === null) {
+        return false;
+      }
+
+      return evaluateQuickSearchItemsPredicate(itemsPredicate, itemCount);
+    }
+  }
 
   if (!valueNormalized) {
     return true;

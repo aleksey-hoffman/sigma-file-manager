@@ -65,6 +65,10 @@ function labelForProperty(property: QuickSearchProperty): string {
   return t(propertyLabelKeys[property]);
 }
 
+function tooltipForProperty(property: QuickSearchProperty): string {
+  return t(`fileBrowser.quickSearchPropertyTooltip.${property}`);
+}
+
 function handleFilterAutoFocus(event: Event) {
   event.preventDefault();
   filterInputRef.value?.$el?.focus();
@@ -201,20 +205,32 @@ function selectProperty(property: QuickSearchProperty) {
             {{ t('fileBrowser.quickSearchFilterByColumn') }}
           </div>
           <div class="file-browser-toolbar-filter__property-toggles">
-            <Button
+            <Tooltip
               v-for="property in QUICK_SEARCH_PROPERTY_KEYS"
               :key="property"
-              type="button"
-              size="sm"
-              variant="outline"
-              :class="[
-                'file-browser-toolbar-filter__property-toggle',
-                { 'file-browser-toolbar-filter__property-toggle--active': activeProperty === property },
-              ]"
-              @click="selectProperty(property)"
+              :delay-duration="400"
             >
-              {{ labelForProperty(property) }}
-            </Button>
+              <TooltipTrigger as-child>
+                <Button
+                  type="button"
+                  size="xs"
+                  variant="outline"
+                  :class="[
+                    'file-browser-toolbar-filter__property-toggle',
+                    { 'file-browser-toolbar-filter__property-toggle--active': activeProperty === property },
+                  ]"
+                  @click="selectProperty(property)"
+                >
+                  {{ labelForProperty(property) }}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent
+                side="top"
+                class="file-browser-toolbar-filter__property-tooltip"
+              >
+                {{ tooltipForProperty(property) }}
+              </TooltipContent>
+            </Tooltip>
           </div>
         </div>
       </PopoverContent>
@@ -290,7 +306,11 @@ function selectProperty(property: QuickSearchProperty) {
 }
 
 .file-browser-toolbar-filter__property-toggle {
-  font-size: 12px;
+  height: 1.375rem;
+  min-height: 1.375rem;
+  padding: 0 0.35rem;
+  font-size: 11px;
+  line-height: 1.15;
   text-transform: capitalize;
 }
 
@@ -316,5 +336,10 @@ function selectProperty(property: QuickSearchProperty) {
 .file-browser-toolbar-filter__popover.sigma-ui-popover-content {
   width: min(340px, calc(100vw - 32px));
   padding: 8px;
+}
+
+.file-browser-toolbar-filter__property-tooltip.sigma-ui-tooltip-content {
+  max-width: 18rem;
+  line-height: 1.35;
 }
 </style>
