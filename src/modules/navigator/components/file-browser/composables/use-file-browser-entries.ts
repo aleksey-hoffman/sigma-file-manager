@@ -7,6 +7,7 @@ import type { DirEntry } from '@/types/dir-entry';
 import type { ListSortColumn, ListSortDirection } from '@/types/user-settings';
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
 import { sortFileBrowserEntries } from '@/modules/navigator/components/file-browser/utils/file-browser-sort';
+import { fileBrowserEntryMatchesQuickSearch } from '@/modules/navigator/components/file-browser/utils/file-browser-entry-quick-search';
 
 type DirectoryContents = {
   entries: DirEntry[];
@@ -34,12 +35,8 @@ export function useFileBrowserEntries(
       items = items.filter(item => !isHiddenFile(item));
     }
 
-    if (filterQuery.value) {
-      const query = filterQuery.value.trim().toLowerCase();
-
-      if (query) {
-        items = items.filter(item => item.name.toLowerCase().includes(query));
-      }
+    if (filterQuery.value.trim()) {
+      items = items.filter(item => fileBrowserEntryMatchesQuickSearch(item, filterQuery.value, dirSizesStore));
     }
 
     if (applySort.value) {

@@ -1650,6 +1650,7 @@
     "enterPath": "مسیر را وارد کنید...",
     "quickSearch": "جستجوی سریع",
     "searchThisDirectory": "جستجو در این پوشه...",
+    "quickSearchFilterByColumn": "جستجو در ستون",
     "name": "نام",
     "size": "اندازه",
     "modified": "تغییر یافته",

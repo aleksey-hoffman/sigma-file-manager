@@ -1651,6 +1651,7 @@
     "enterPath": "输入路径...",
     "quickSearch": "快速搜索",
     "searchThisDirectory": "搜索此目录...",
+    "quickSearchFilterByColumn": "在列中搜索",
     "name": "名称",
     "size": "大小",
     "modified": "修改时间",

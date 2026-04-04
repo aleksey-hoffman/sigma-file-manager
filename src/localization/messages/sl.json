@@ -1667,6 +1667,7 @@
     "enterPath": "Vnesite pot...",
     "quickSearch": "Hitro iskanje",
     "searchThisDirectory": "Išči v tej mapi...",
+    "quickSearchFilterByColumn": "Iskanje v stolpcu",
     "name": "Ime",
     "size": "Velikost",
     "modified": "Spremenjeno",

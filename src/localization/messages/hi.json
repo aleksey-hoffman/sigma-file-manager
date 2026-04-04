@@ -1667,6 +1667,7 @@
     "enterPath": "पथ दर्ज करें...",
     "quickSearch": "त्वरित खोज",
     "searchThisDirectory": "यह निर्देशिका खोजें...",
+    "quickSearchFilterByColumn": "कॉलम में खोजें",
     "name": "नाम",
     "size": "आकार",
     "modified": "संशोधित",

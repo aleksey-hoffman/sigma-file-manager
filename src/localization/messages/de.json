@@ -1651,6 +1651,7 @@
     "enterPath": "Pfad eingeben...",
     "quickSearch": "Schnellsuche",
     "searchThisDirectory": "Dieses Verzeichnis durchsuchen...",
+    "quickSearchFilterByColumn": "In Spalte suchen",
     "name": "Name",
     "size": "Größe",
     "modified": "Geändert",

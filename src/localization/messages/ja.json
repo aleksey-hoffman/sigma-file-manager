@@ -1651,6 +1651,7 @@
     "enterPath": "パスを入力...",
     "quickSearch": "クイック検索",
     "searchThisDirectory": "このディレクトリを検索...",
+    "quickSearchFilterByColumn": "列で検索",
     "name": "名前",
     "size": "サイズ",
     "modified": "更新日時",

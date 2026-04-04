@@ -4,7 +4,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import type { ComponentPublicInstance } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Button } from '@/components/ui/button';
@@ -16,8 +16,14 @@ import {
   TooltipContent,
 } from '@/components/ui/tooltip';
 import { ContextMenuShortcut } from '@/components/ui/context-menu';
-import { TextSearchIcon, XIcon } from '@lucide/vue';
+import { TextSearchIcon, XIcon, ChevronDownIcon } from '@lucide/vue';
 import { useShortcutsStore } from '@/stores/runtime/shortcuts';
+import {
+  QUICK_SEARCH_PROPERTY_KEYS,
+  parseQuickSearchQuery,
+  toggleQuickSearchPropertyInQuery,
+  type QuickSearchProperty,
+} from '@/modules/navigator/components/file-browser/utils/file-browser-quick-search-query';
 
 const props = defineProps<{
   filterQuery: string;
@@ -34,6 +40,30 @@ const shortcutsStore = useShortcutsStore();
 
 const filterInputRef = ref<InstanceType<typeof Input> | null>(null);
 const filterTriggerRef = ref<HTMLElement | ComponentPublicInstance | null>(null);
+const isPropertyPanelOpen = ref(false);
+
+const activeProperty = computed(() => parseQuickSearchQuery(props.filterQuery.trim()).property);
+
+watch(() => props.isFilterOpen, (open) => {
+  if (!open) {
+    isPropertyPanelOpen.value = false;
+  }
+});
+
+const propertyLabelKeys: Record<QuickSearchProperty, string> = {
+  name: 'fileBrowser.name',
+  size: 'fileBrowser.size',
+  items: 'items',
+  modified: 'fileBrowser.modified',
+  created: 'created',
+  accessed: 'accessed',
+  path: 'path',
+  mime: 'type',
+};
+
+function labelForProperty(property: QuickSearchProperty): string {
+  return t(propertyLabelKeys[property]);
+}
 
 function handleFilterAutoFocus(event: Event) {
   event.preventDefault();
@@ -42,6 +72,7 @@ function handleFilterAutoFocus(event: Event) {
 
 function clearFilter() {
   emit('update:filterQuery', '');
+  isPropertyPanelOpen.value = false;
 }
 
 function handleFilterQueryUpdate(value: string | number | undefined) {
@@ -72,6 +103,14 @@ function handleFilterInteractOutside(event: Event) {
   else {
     event.preventDefault();
   }
+}
+
+function togglePropertyPanel() {
+  isPropertyPanelOpen.value = !isPropertyPanelOpen.value;
+}
+
+function selectProperty(property: QuickSearchProperty) {
+  emit('update:filterQuery', toggleQuickSearchPropertyInQuery(props.filterQuery, property));
 }
 </script>
 
@@ -109,7 +148,7 @@ function handleFilterInteractOutside(event: Event) {
         @close-auto-focus.prevent
         @interact-outside="handleFilterInteractOutside"
       >
-        <div class="file-browser-toolbar-filter__input-wrapper">
+        <div class="file-browser-toolbar-filter__field-row">
           <Input
             ref="filterInputRef"
             :model-value="filterQuery"
@@ -117,15 +156,66 @@ function handleFilterInteractOutside(event: Event) {
             class="file-browser-toolbar-filter__input"
             @update:model-value="handleFilterQueryUpdate"
           />
+          <Tooltip>
+            <TooltipTrigger as-child>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                class="file-browser-toolbar-filter__suffix-btn"
+                :class="{
+                  'file-browser-toolbar-filter__suffix-btn--active': isPropertyPanelOpen,
+                }"
+                :aria-expanded="isPropertyPanelOpen"
+                :aria-label="t('fileBrowser.quickSearchFilterByColumn')"
+                @click="togglePropertyPanel"
+              >
+                <ChevronDownIcon
+                  class="file-browser-toolbar-filter__chevron"
+                  :class="{ 'file-browser-toolbar-filter__chevron--open': isPropertyPanelOpen }"
+                  :size="16"
+                />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              {{ t('fileBrowser.quickSearchFilterByColumn') }}
+            </TooltipContent>
+          </Tooltip>
           <Button
             v-if="filterQuery"
             variant="ghost"
             size="icon"
-            class="file-browser-toolbar-filter__clear"
+            class="file-browser-toolbar-filter__suffix-btn"
             @click="clearFilter"
           >
             <XIcon :size="14" />
           </Button>
+        </div>
+        <div
+          v-show="isPropertyPanelOpen"
+          class="file-browser-toolbar-filter__property-panel"
+          role="group"
+          :aria-label="t('fileBrowser.quickSearchFilterByColumn')"
+        >
+          <div class="file-browser-toolbar-filter__property-panel-title">
+            {{ t('fileBrowser.quickSearchFilterByColumn') }}
+          </div>
+          <div class="file-browser-toolbar-filter__property-toggles">
+            <Button
+              v-for="property in QUICK_SEARCH_PROPERTY_KEYS"
+              :key="property"
+              type="button"
+              size="sm"
+              variant="outline"
+              :class="[
+                'file-browser-toolbar-filter__property-toggle',
+                { 'file-browser-toolbar-filter__property-toggle--active': activeProperty === property },
+              ]"
+              @click="selectProperty(property)"
+            >
+              {{ labelForProperty(property) }}
+            </Button>
+          </div>
         </div>
       </PopoverContent>
     </Popover>
@@ -148,23 +238,70 @@ function handleFilterInteractOutside(event: Event) {
   height: 18px;
 }
 
-.file-browser-toolbar-filter__input-wrapper {
-  position: relative;
+.file-browser-toolbar-filter__field-row {
   display: flex;
   align-items: center;
+  gap: 4px;
 }
 
 .file-browser-toolbar-filter__input {
-  width: 100%;
+  min-width: 0;
   height: 36px;
-  padding-right: 36px;
+  flex: 1 1 auto;
 }
 
-.file-browser-toolbar-filter__clear {
-  position: absolute;
-  right: 4px;
-  width: 28px;
-  height: 28px;
+.file-browser-toolbar-filter__suffix-btn {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+}
+
+.file-browser-toolbar-filter__suffix-btn--active {
+  background-color: hsl(var(--secondary));
+}
+
+.file-browser-toolbar-filter__chevron {
+  transition: transform 0.15s ease;
+}
+
+.file-browser-toolbar-filter__chevron--open {
+  transform: rotate(180deg);
+}
+
+.file-browser-toolbar-filter__property-panel {
+  padding-top: 10px;
+  border-top: 1px solid hsl(var(--border) / 50%);
+  margin-top: 10px;
+}
+
+.file-browser-toolbar-filter__property-panel-title {
+  margin-bottom: 8px;
+  color: hsl(var(--muted-foreground));
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.file-browser-toolbar-filter__property-toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.file-browser-toolbar-filter__property-toggle {
+  font-size: 12px;
+  text-transform: capitalize;
+}
+
+.file-browser-toolbar-filter__property-toggle--active {
+  background-color: hsl(var(--secondary));
+  color: hsl(var(--secondary-foreground));
+}
+
+.file-browser-toolbar-filter__property-toggle--active:hover {
+  background-color: hsl(var(--secondary) / 80%);
+  color: hsl(var(--secondary-foreground));
 }
 
 .file-browser-toolbar-filter__tooltip-row {
@@ -177,7 +314,7 @@ function handleFilterInteractOutside(event: Event) {
 
 <style>
 .file-browser-toolbar-filter__popover.sigma-ui-popover-content {
-  width: 280px;
+  width: min(340px, calc(100vw - 32px));
   padding: 8px;
 }
 </style>

@@ -1667,6 +1667,7 @@
     "enterPath": "Введите путь...",
     "quickSearch": "Быстрый поиск",
     "searchThisDirectory": "Поиск в этой папке...",
+    "quickSearchFilterByColumn": "Искать в столбце",
     "name": "Имя",
     "size": "Размер",
     "modified": "Изменён",

@@ -1664,6 +1664,7 @@
     "enterPath": "Digite o caminho...",
     "quickSearch": "Pesquisa rápida",
     "searchThisDirectory": "Pesquisar neste diretório...",
+    "quickSearchFilterByColumn": "Pesquisar na coluna",
     "name": "Nome",
     "size": "Tamanho",
     "modified": "Modificado",

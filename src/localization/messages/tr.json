@@ -1651,6 +1651,7 @@
     "enterPath": "Yol girin...",
     "quickSearch": "Hızlı arama",
     "searchThisDirectory": "Bu dizinde ara...",
+    "quickSearchFilterByColumn": "Sütunda ara",
     "name": "Ad",
     "size": "Boyut",
     "modified": "Değiştirilme",

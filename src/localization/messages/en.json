@@ -1667,6 +1667,7 @@
     "enterPath": "Enter path...",
     "quickSearch": "Quick search",
     "searchThisDirectory": "Search this directory...",
+    "quickSearchFilterByColumn": "Search in column",
     "name": "Name",
     "size": "Size",
     "modified": "Modified",

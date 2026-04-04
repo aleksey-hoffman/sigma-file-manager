@@ -1651,6 +1651,7 @@
     "enterPath": "Nhập đường dẫn...",
     "quickSearch": "Tìm kiếm nhanh",
     "searchThisDirectory": "Tìm trong thư mục này...",
+    "quickSearchFilterByColumn": "Tìm trong cột",
     "name": "Tên",
     "size": "Kích thước",
     "modified": "Đã sửa đổi",

@@ -1651,6 +1651,7 @@
     "enterPath": "Introducir ruta...",
     "quickSearch": "Búsqueda rápida",
     "searchThisDirectory": "Buscar en este directorio...",
+    "quickSearchFilterByColumn": "Buscar en la columna",
     "name": "Nombre",
     "size": "Tamaño",
     "modified": "Modificado",
