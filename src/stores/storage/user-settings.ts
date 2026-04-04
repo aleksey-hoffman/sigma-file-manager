@@ -222,16 +222,15 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
   }
 
   function applyBodyVisualFilters(visualFilters: Pick<VisualFiltersSettings, 'brightness' | 'contrast'>) {
-    if (typeof document === 'undefined' || !document.body) {
+    if (typeof document === 'undefined' || !document.documentElement) {
       return;
     }
 
     const brightness = clampVisualFilterValue(visualFilters.brightness);
     const contrast = clampVisualFilterValue(visualFilters.contrast);
 
-    document.body.style.filter = brightness === 100 && contrast === 100
-      ? ''
-      : `brightness(${brightness}%) contrast(${contrast}%)`;
+    document.documentElement.style.setProperty('--sigma-visual-filter-brightness', String(brightness));
+    document.documentElement.style.setProperty('--sigma-visual-filter-contrast', String(contrast));
   }
 
   const defaultFontFamily = computed(

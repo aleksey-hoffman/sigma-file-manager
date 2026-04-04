@@ -166,7 +166,6 @@ const containerClass = computed(() => [
 .infusion-image {
   width: 100%;
   height: 100%;
-  filter: blur(var(--infusion-blur)) contrast(var(--infusion-media-contrast));
   object-fit: cover;
   opacity: var(--infusion-opacity);
   transform: scale(1.1)
@@ -179,7 +178,6 @@ const containerClass = computed(() => [
 .infusion-video {
   width: 100%;
   height: 100%;
-  filter: blur(var(--infusion-blur)) contrast(var(--infusion-media-contrast));
   object-fit: cover;
   opacity: var(--infusion-opacity);
   transform: scale(1.1)
