@@ -1272,6 +1272,7 @@
     "downloadingFile": "Datei wird heruntergeladen",
     "cannotFetchDirectoryItems": "Verzeichniseinträge können nicht abgerufen werden",
     "errorDuringCopying": "Fehler: Kopieren",
+    "conflictCheckFailed": "Dateikonflikte konnten nicht überprüft werden. Einfügen wurde aus Sicherheitsgründen abgebrochen.",
     "cannotCopySpecifiedValueAsText": "Angegebener Wert kann nicht als Text kopiert werden.",
     "copyingItems": "Elemente kopieren",
     "copiedNItems": "0 Elemente kopiert | 1 Element kopiert | {n} Elemente kopiert | {n} Elemente kopiert",

@@ -252,9 +252,22 @@ fn is_dir_empty(path: &Path) -> bool {
         .unwrap_or(true)
 }
 
+fn should_fallback_to_copy_delete(error: &std::io::Error) -> bool {
+    if error.kind() == std::io::ErrorKind::AlreadyExists {
+        return true;
+    }
+    if cfg!(unix) {
+        error.raw_os_error() == Some(18)
+    } else if cfg!(windows) {
+        error.raw_os_error() == Some(17)
+    } else {
+        false
+    }
+}
+
 fn try_rename_or_copy_delete(source: &Path, dest: &Path) -> Result<(), String> {
     if let Err(rename_error) = fs::rename(source, dest) {
-        if rename_error.raw_os_error() == Some(17) || rename_error.raw_os_error() == Some(18) {
+        if should_fallback_to_copy_delete(&rename_error) {
             if source.is_dir() {
                 copy_dir_recursive(source, dest)?;
                 remove_dir_or_file(source)?;
@@ -850,7 +863,7 @@ pub fn move_items(
         match result {
             Ok(()) => moved_count += 1,
             Err(error) => {
-                if error.raw_os_error() == Some(17) || error.raw_os_error() == Some(18) {
+                if should_fallback_to_copy_delete(&error) {
                     let copy_result = if source.is_dir() {
                         copy_dir_recursive(source, &final_dest_path)
                     } else {

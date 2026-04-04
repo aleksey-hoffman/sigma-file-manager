@@ -68,10 +68,18 @@ export function useFileDropOperation() {
 
     const isCopy = operation === 'copy';
 
-    const conflicts = await invoke<ConflictItem[]>('check_conflicts', {
-      sourcePaths,
-      destinationPath: targetPath,
-    });
+    let conflicts: ConflictItem[];
+
+    try {
+      conflicts = await invoke<ConflictItem[]>('check_conflicts', {
+        sourcePaths,
+        destinationPath: targetPath,
+      });
+    }
+    catch {
+      toast.error(t('notifications.conflictCheckFailed'));
+      return;
+    }
 
     let conflictPayload: ConflictResolutionPayload | undefined;
 

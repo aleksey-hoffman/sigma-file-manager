@@ -1287,6 +1287,7 @@
     "downloadingFile": "फ़ाइल डाउनलोड हो रही है",
     "cannotFetchDirectoryItems": "निर्देशिका आइटम नहीं लाये जा सकते",
     "errorDuringCopying": "त्रुटि: प्रतिलिपि",
+    "conflictCheckFailed": "फ़ाइल विरोधों की पुष्टि नहीं हो सकी। सुरक्षा के लिए चिपकाना रद्द किया गया।",
     "cannotCopySpecifiedValueAsText": "निर्दिष्ट मान को पाठ के रूप में कॉपी नहीं किया जा सकता.",
     "copyingItems": "आइटम कॉपी करना",
     "copiedNItems": "0 आइटम कॉपी किए गए | 1 आइटम कॉपी किया गया | कॉपी किए गए {n} आइटम | कॉपी किए गए {n} आइटम",

@@ -385,7 +385,15 @@ export function useFileBrowserSelection(
     const operationType = isCopy ? 'copy' : 'move';
     const targetPath = destinationPath || currentPathRef.value;
 
-    const conflicts = await clipboardStore.checkConflicts(targetPath);
+    let conflicts: ConflictItem[];
+
+    try {
+      conflicts = await clipboardStore.checkConflicts(targetPath);
+    }
+    catch {
+      toast.error(t('notifications.conflictCheckFailed'));
+      return false;
+    }
 
     let conflictPayload: ConflictResolutionPayload | undefined;
 

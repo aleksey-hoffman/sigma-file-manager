@@ -1287,6 +1287,7 @@
     "downloadingFile": "Prenos datoteke",
     "cannotFetchDirectoryItems": "Ne morem pridobiti predmetov mape",
     "errorDuringCopying": "Napaka: kopiranje",
+    "conflictCheckFailed": "Preverjanje sporov datotek ni uspelo. Lepljenje je bilo preklicano zaradi varnosti.",
     "cannotCopySpecifiedValueAsText": "Ne morem kopirati določenega vrednost kot besedilo.",
     "copyingItems": "Kopiranje predmetov",
     "copiedNItems": "Kopirano 0 predmetov | Kopirano 1 predmet | Kopirano {n} predmetov | Kopirano {n} predmetov",

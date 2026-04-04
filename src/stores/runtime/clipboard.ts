@@ -186,15 +186,10 @@ export const useClipboardStore = defineStore('clipboard', () => {
 
     const sourcePaths = clipboardItems.value.map(item => item.path);
 
-    try {
-      return await invoke<ConflictItem[]>('check_conflicts', {
-        sourcePaths,
-        destinationPath,
-      });
-    }
-    catch {
-      return [];
-    }
+    return await invoke<ConflictItem[]>('check_conflicts', {
+      sourcePaths,
+      destinationPath,
+    });
   }
 
   async function pasteItems(

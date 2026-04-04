@@ -1272,6 +1272,7 @@
     "downloadingFile": "Dosya indiriliyor",
     "cannotFetchDirectoryItems": "Dizin öğeleri getirilemiyor",
     "errorDuringCopying": "Hata: kopyala",
+    "conflictCheckFailed": "Dosya çakışmaları doğrulanamadı. Güvenlik için yapıştırma iptal edildi.",
     "cannotCopySpecifiedValueAsText": "Belirtilen değer metin olarak kopyalanamıyor.",
     "copyingItems": "Öğeleri kopyalama",
     "copiedNItems": "0 öğe kopyalandı | 1 öğe kopyalandı | {n} öğe kopyalandı | {n} öğe kopyalandı",

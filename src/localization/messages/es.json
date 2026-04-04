@@ -1272,6 +1272,7 @@
     "downloadingFile": "Descargando archivo",
     "cannotFetchDirectoryItems": "No se pueden obtener elementos del directorio",
     "errorDuringCopying": "Error: copiar",
+    "conflictCheckFailed": "No se pudieron verificar los conflictos de archivos. Pegado cancelado por seguridad.",
     "cannotCopySpecifiedValueAsText": "No se puede copiar el valor especificado como texto.",
     "copyingItems": "Copiar elementos",
     "copiedNItems": "Copiado 0 elementos | Copiado 1 elemento | Copiado {n} elementos | Copiado {n} elementos",

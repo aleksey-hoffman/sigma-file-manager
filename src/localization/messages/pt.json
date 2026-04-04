@@ -1282,6 +1282,7 @@
     "downloadingFile": "Baixando arquivo",
     "cannotFetchDirectoryItems": "Não é possível buscar itens do diretório",
     "errorDuringCopying": "Erro: copiando",
+    "conflictCheckFailed": "Não foi possível verificar conflitos de arquivos. Colagem cancelada por segurança.",
     "cannotCopySpecifiedValueAsText": "Não é possível copiar o valor especificado como texto.",
     "copyingItems": "Copiar itens",
     "copiedNItems": "0 itens copiados | 1 item copiado | {n} itens copiados | {n} itens copiados",

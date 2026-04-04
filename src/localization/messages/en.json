@@ -1287,6 +1287,7 @@
     "downloadingFile": "Downloading file",
     "cannotFetchDirectoryItems": "Cannot fetch directory items",
     "errorDuringCopying": "Error: copy",
+    "conflictCheckFailed": "Could not verify file conflicts. Paste aborted for safety.",
     "cannotCopySpecifiedValueAsText": "Cannot copy specified value as text.",
     "copyingItems": "Copying items",
     "copiedNItems": "Copied 0 items | Copied 1 item | Copied {n} items | Copied {n} items",

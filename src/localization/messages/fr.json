@@ -1272,6 +1272,7 @@
     "downloadingFile": "Télécharger le fichier",
     "cannotFetchDirectoryItems": "Impossible de récupérer les éléments du répertoire",
     "errorDuringCopying": "Erreur : copie",
+    "conflictCheckFailed": "Impossible de vérifier les conflits de fichiers. Collage annulé par sécurité.",
     "cannotCopySpecifiedValueAsText": "Impossible de copier la valeur spécifiée sous forme de texte.",
     "copyingItems": "Copier des éléments",
     "copiedNItems": "Copié 0 éléments | Copié 1 élément | {n} éléments copiés | {n} éléments copiés",

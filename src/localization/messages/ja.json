@@ -1272,6 +1272,7 @@
     "downloadingFile": "ファイルをダウンロードしています",
     "cannotFetchDirectoryItems": "ディレクトリ アイテムを取得できません",
     "errorDuringCopying": "エラー: コピー",
+    "conflictCheckFailed": "ファイルの競合を確認できませんでした。安全のため貼り付けを中止しました。",
     "cannotCopySpecifiedValueAsText": "指定された値をテキストとしてコピーできません。",
     "copyingItems": "アイテムのコピー",
     "copiedNItems": "0 個のアイテムをコピーしました | 1 個のアイテムをコピーしました | {n} 個のアイテムをコピーしました | {n} 個のアイテムをコピーしました",

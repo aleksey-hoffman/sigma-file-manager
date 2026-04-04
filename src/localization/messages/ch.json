@@ -1272,6 +1272,7 @@
     "downloadingFile": "下载文件",
     "cannotFetchDirectoryItems": "无法获取目录项",
     "errorDuringCopying": "错误：复制",
+    "conflictCheckFailed": "无法验证文件冲突。为安全起见，粘贴已取消。",
     "cannotCopySpecifiedValueAsText": "无法将指定值复制为文本。",
     "copyingItems": "复制项目",
     "copiedNItems": "已复制 0 项 | 已复制 1 项 | 已复制 {n} 项 | 已复制 {n} 项",

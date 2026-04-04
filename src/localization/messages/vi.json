@@ -1272,6 +1272,7 @@
     "downloadingFile": "Dữ liệu đang tải",
     "cannotFetchDirectoryItems": "Không thể tìm nạp các mục trong thư mục",
     "errorDuringCopying": "Lỗi: sao chép",
+    "conflictCheckFailed": "Không thể xác minh xung đột tệp. Đã hủy dán để đảm bảo an toàn.",
     "cannotCopySpecifiedValueAsText": "Không thể sao chép giá trị đã chỉ định dưới dạng văn bản.",
     "copyingItems": "Sao chép mục",
     "copiedNItems": "Đã sao chép 0 mục | Đã sao chép 1 mục | Đã sao chép {n} mục | Đã sao chép {n} mục",

@@ -1271,6 +1271,7 @@
     "downloadingFile": "دانلود فایل",
     "cannotFetchDirectoryItems": "نمی توان موارد دایرکتوری را واکشی کرد",
     "errorDuringCopying": "خطا: کپی",
+    "conflictCheckFailed": "تأیید تداخل فایل‌ها ممکن نبود. چسباندن برای امنیت لغو شد.",
     "cannotCopySpecifiedValueAsText": "نمی توان مقدار مشخص شده را به عنوان متن کپی کرد.",
     "copyingItems": "کپی موارد",
     "copiedNItems": "0 مورد کپی شد | 1 مورد کپی شد | {n} مورد کپی شد | {n} مورد کپی شد",

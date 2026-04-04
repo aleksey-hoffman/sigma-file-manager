@@ -121,7 +121,16 @@ export function useDirEntryActions() {
     const itemCount = clipboardStore.itemCount;
     const operationType = isCopy ? 'copy' : 'move';
 
-    const conflicts = await clipboardStore.checkConflicts(destinationPath);
+    let conflicts: ConflictItem[];
+
+    try {
+      conflicts = await clipboardStore.checkConflicts(destinationPath);
+    }
+    catch {
+      toast.error(t('notifications.conflictCheckFailed'));
+      return false;
+    }
+
     let conflictPayload: ConflictResolutionPayload | undefined;
 
     if (conflicts.length > 0) {

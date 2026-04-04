@@ -1287,6 +1287,7 @@
     "downloadingFile": "فائل ڈاؤن لوڈ ہو رہی ہے",
     "cannotFetchDirectoryItems": "فولڈر کی اشیاء نہیں مل سکی",
     "errorDuringCopying": "خرابی: کاپی",
+    "conflictCheckFailed": "فائل تنازعات کی تصدیق نہیں ہو سکی۔ حفاظت کے لیے چسپاں کرنا منسوخ کر دیا گیا۔",
     "cannotCopySpecifiedValueAsText": "یہ قدر متن کی طرح کاپی نہیں ہو سکی۔",
     "copyingItems": "اشیاء کاپی ہو رہی ہیں",
     "copiedNItems": "0 اشیا کاپی ہوئیں | 1 شے کاپی ہوئی | {n} اشیا کاپی ہوئیں | {n} اشیا کاپی ہوئیں",
