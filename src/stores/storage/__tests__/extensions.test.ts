@@ -32,6 +32,7 @@ vi.mock('@/stores/storage/user-paths', () => ({
   useUserPathsStore: () => ({
     customPaths: {
       appUserDataDir: '/tmp/user-data',
+      appUserDataExtensionsPath: '/tmp/user-data/user-extensions.json',
     },
   }),
 }));
@@ -84,7 +85,7 @@ describe('extensions storage shared binaries', () => {
     const storageStore = useExtensionsStorageStore();
 
     await storageStore.init({
-      path: '/tmp/user-data/extensions.json',
+      path: '/tmp/user-data/user-extensions.json',
       status: 'ready',
       data: {
         installedExtensions: {

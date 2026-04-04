@@ -7,7 +7,7 @@ import {
   canUseStartupStorageFastPath,
   getStartupStorageRecord,
   type StartupStorageFileBootstrap,
-} from '@/stores/storage/startup-storage-bootstrap';
+} from '@/stores/storage/utils/startup-storage-bootstrap';
 
 describe('startup storage bootstrap helpers', () => {
   it('uses the fast path for missing files', () => {

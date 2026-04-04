@@ -30,7 +30,7 @@ import {
   getStartupStorageFile,
   getStartupStorageRecord,
   type StartupStorageFileBootstrap,
-} from './startup-storage-bootstrap';
+} from './utils/startup-storage-bootstrap';
 
 export const useUserSettingsStore = defineStore('userSettings', () => {
   const userPathsStore = useUserPathsStore();

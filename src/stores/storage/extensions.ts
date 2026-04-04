@@ -23,9 +23,7 @@ import {
   getStartupStorageFile,
   getStartupStorageRecord,
   type StartupStorageFileBootstrap,
-} from './startup-storage-bootstrap';
-
-const EXTENSIONS_STORAGE_FILENAME = 'extensions.json';
+} from './utils/startup-storage-bootstrap';
 
 export const useExtensionsStorageStore = defineStore('extensionsStorage', () => {
   const userPathsStore = useUserPathsStore();
@@ -44,7 +42,7 @@ export const useExtensionsStorageStore = defineStore('extensionsStorage', () => 
 
     try {
       const resolvedBootstrapFile = bootstrapFile ?? await getStartupStorageFile('extensions');
-      const storagePath = `${userPathsStore.customPaths.appUserDataDir}/${EXTENSIONS_STORAGE_FILENAME}`;
+      const storagePath = userPathsStore.customPaths.appUserDataExtensionsPath;
       storage.value = await new LazyStore(storagePath);
       await storage.value.save();
 

@@ -60,6 +60,8 @@ export interface CustomPaths {
   appUserDataWorkspacesPath: string;
   appUserDataStatsName: string;
   appUserDataStatsPath: string;
+  appUserDataExtensionsName: string;
+  appUserDataExtensionsPath: string;
   appStorageCustomBackgroundsPath: string;
   appUserDataSourceBackgroundsPath: string;
 }

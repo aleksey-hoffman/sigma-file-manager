@@ -81,7 +81,7 @@ vi.mock('@/stores/storage/user-paths', () => ({
       homeDir: 'C:/Users/aleks',
     },
     customPaths: {
-      appUserDataWorkspacesPath: 'mock/workspaces.json',
+      appUserDataWorkspacesPath: 'mock/user-workspaces.json',
     },
   }),
 }));
@@ -176,7 +176,7 @@ describe('workspaces storage duplicate tabs', () => {
     const workspacesStore = useWorkspacesStore();
 
     await workspacesStore.init({
-      path: 'mock/workspaces.json',
+      path: 'mock/user-workspaces.json',
       status: 'ready',
       data: {
         __schemaVersion: 1,

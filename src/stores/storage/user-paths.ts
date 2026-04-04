@@ -4,6 +4,7 @@
 
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
+import userStorageFiles from '@shared/user-storage-files.json';
 import { userPathsFunctions } from '@/data/user-paths';
 import type { CustomPaths, UserPaths, UserPathsFunctions } from '@/data/user-paths';
 import normalizePath from '@/utils/normalize-path';
@@ -42,6 +43,8 @@ export const useUserPathsStore = defineStore('userPaths', () => {
     appUserDataWorkspacesPath: '',
     appUserDataStatsName: '',
     appUserDataStatsPath: '',
+    appUserDataExtensionsName: '',
+    appUserDataExtensionsPath: '',
     appStorageCustomBackgroundsPath: '',
     appUserDataSourceBackgroundsPath: '',
   });
@@ -72,13 +75,16 @@ export const useUserPathsStore = defineStore('userPaths', () => {
   }
 
   function setCustomPaths() {
-    customPaths.value.appUserDataDir = `${userPaths.value.appDataDir}/user-data`;
-    customPaths.value.appUserDataSettingsName = 'user-settings.json';
+    const fileNames = userStorageFiles.fileNames;
+    customPaths.value.appUserDataDir = `${userPaths.value.appDataDir}/${userStorageFiles.userDataDirName}`;
+    customPaths.value.appUserDataSettingsName = fileNames.userSettings;
     customPaths.value.appUserDataSettingsPath = `${customPaths.value.appUserDataDir}/${customPaths.value.appUserDataSettingsName}`;
-    customPaths.value.appUserDataWorkspacesName = 'workspaces.json';
+    customPaths.value.appUserDataWorkspacesName = fileNames.workspaces;
     customPaths.value.appUserDataWorkspacesPath = `${customPaths.value.appUserDataDir}/${customPaths.value.appUserDataWorkspacesName}`;
-    customPaths.value.appUserDataStatsName = 'user-stats.json';
+    customPaths.value.appUserDataStatsName = fileNames.userStats;
     customPaths.value.appUserDataStatsPath = `${customPaths.value.appUserDataDir}/${customPaths.value.appUserDataStatsName}`;
+    customPaths.value.appUserDataExtensionsName = fileNames.extensions;
+    customPaths.value.appUserDataExtensionsPath = `${customPaths.value.appUserDataDir}/${customPaths.value.appUserDataExtensionsName}`;
     customPaths.value.appStorageCustomBackgroundsPath = `${customPaths.value.appUserDataDir}/media/custom-backgrounds`;
     customPaths.value.appUserDataSourceBackgroundsPath = `${customPaths.value.appUserDataDir}/media/source-backgrounds`;
   }

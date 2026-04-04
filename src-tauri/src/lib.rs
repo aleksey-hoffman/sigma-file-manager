@@ -20,6 +20,7 @@ mod system_tray;
 mod terminal;
 #[cfg(windows)]
 mod url_drop;
+mod user_storage_files_config;
 pub mod utils;
 
 use serde::Serialize;
@@ -339,6 +340,7 @@ fn setup_handler(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>>
     }
 
     system_tray::setup_system_tray(app.handle())?;
+    startup_storage_bootstrap::migrate_legacy_user_storage_filenames(app.handle());
     startup_storage_bootstrap::start_preload(
         app.handle().clone(),
         app.state::<startup_storage_bootstrap::StartupStorageBootstrapState>()

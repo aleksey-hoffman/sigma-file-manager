@@ -21,7 +21,7 @@ import {
   getStartupStorageFile,
   getStartupStorageRecord,
   type StartupStorageFileBootstrap,
-} from './startup-storage-bootstrap';
+} from './utils/startup-storage-bootstrap';
 
 const HISTORY_MAX_ITEMS = 200;
 const FREQUENT_ITEMS_MAX = 100;

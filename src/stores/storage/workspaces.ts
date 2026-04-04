@@ -32,7 +32,7 @@ import {
   getStartupStorageFile,
   getStartupStorageRecord,
   type StartupStorageFileBootstrap,
-} from './startup-storage-bootstrap';
+} from './utils/startup-storage-bootstrap';
 
 export const useWorkspacesStore = defineStore('workspaces', () => {
   const { t } = useI18n();

@@ -12,11 +12,8 @@ use serde_json::{Map, Value};
 use tauri::Manager;
 use tokio::sync::OnceCell;
 
-const USER_DATA_DIR_NAME: &str = "user-data";
-const USER_SETTINGS_FILENAME: &str = "user-settings.json";
-const WORKSPACES_FILENAME: &str = "workspaces.json";
-const USER_STATS_FILENAME: &str = "user-stats.json";
-const EXTENSIONS_FILENAME: &str = "extensions.json";
+use crate::user_storage_files_config::user_storage_files_config;
+
 const READY_STATUS: &str = "ready";
 const MISSING_STATUS: &str = "missing";
 const INVALID_STATUS: &str = "invalid";
@@ -60,7 +57,37 @@ fn normalize_path(path: &Path) -> String {
 }
 
 fn build_app_user_data_dir(app_data_dir: &Path) -> std::path::PathBuf {
-    app_data_dir.join(USER_DATA_DIR_NAME)
+    app_data_dir.join(&user_storage_files_config().user_data_dir_name)
+}
+
+pub fn migrate_legacy_user_storage_filenames(app_handle: &tauri::AppHandle) {
+    let Ok(app_data_dir) = app_handle.path().app_data_dir() else {
+        return;
+    };
+
+    migrate_legacy_user_storage_files_in_user_data_dir(&build_app_user_data_dir(&app_data_dir));
+}
+
+fn migrate_legacy_user_storage_files_in_user_data_dir(app_user_data_dir: &Path) {
+    let config = user_storage_files_config();
+    let legacy_pairs = [
+        (
+            config.legacy_file_names.workspaces.as_str(),
+            config.file_names.workspaces.as_str(),
+        ),
+        (
+            config.legacy_file_names.extensions.as_str(),
+            config.file_names.extensions.as_str(),
+        ),
+    ];
+
+    for (legacy_name, new_name) in legacy_pairs {
+        let legacy_path = app_user_data_dir.join(legacy_name);
+        let new_path = app_user_data_dir.join(new_name);
+        if !new_path.exists() && legacy_path.exists() {
+            let _ = fs::rename(&legacy_path, &new_path);
+        }
+    }
 }
 
 fn load_storage_file(path: &Path, schema_version_key: Option<&str>) -> StartupStorageFileBootstrap {
@@ -171,18 +198,19 @@ fn load_startup_storage_bootstrap(app_handle: &tauri::AppHandle) -> StartupStora
     };
 
     let app_user_data_dir = build_app_user_data_dir(&app_data_dir);
+    let file_names = &user_storage_files_config().file_names;
 
     StartupStorageBootstrapPayload {
         user_settings: load_storage_file(
-            &app_user_data_dir.join(USER_SETTINGS_FILENAME),
+            &app_user_data_dir.join(&file_names.user_settings),
             Some("__schemaVersion"),
         ),
         workspaces: load_storage_file(
-            &app_user_data_dir.join(WORKSPACES_FILENAME),
+            &app_user_data_dir.join(&file_names.workspaces),
             Some("__schemaVersion"),
         ),
-        user_stats: load_storage_file(&app_user_data_dir.join(USER_STATS_FILENAME), None),
-        extensions: load_storage_file(&app_user_data_dir.join(EXTENSIONS_FILENAME), None),
+        user_stats: load_storage_file(&app_user_data_dir.join(&file_names.user_stats), None),
+        extensions: load_storage_file(&app_user_data_dir.join(&file_names.extensions), None),
     }
 }
 
@@ -203,9 +231,11 @@ pub async fn get_startup_storage_bootstrap(
 #[cfg(test)]
 mod tests {
     use super::{
-        build_app_user_data_dir, load_storage_file, StartupStorageFileBootstrap, MISSING_STATUS,
-        READY_STATUS,
+        build_app_user_data_dir, load_storage_file,
+        migrate_legacy_user_storage_files_in_user_data_dir, StartupStorageFileBootstrap,
+        MISSING_STATUS, READY_STATUS,
     };
+    use crate::user_storage_files_config::user_storage_files_config;
     use serde_json::Value;
     use std::fs;
     use std::path::PathBuf;
@@ -215,7 +245,7 @@ mod tests {
         let app_data_dir = PathBuf::from("/tmp/sigma");
         assert_eq!(
             build_app_user_data_dir(&app_data_dir),
-            PathBuf::from("/tmp/sigma/user-data")
+            PathBuf::from("/tmp/sigma").join(&user_storage_files_config().user_data_dir_name)
         );
     }
 
@@ -235,7 +265,9 @@ mod tests {
     #[test]
     fn returns_ready_status_and_schema_version_for_valid_storage_file() {
         let temp_dir = tempfile::tempdir().unwrap();
-        let file_path = temp_dir.path().join("user-settings.json");
+        let file_path = temp_dir
+            .path()
+            .join(&user_storage_files_config().file_names.user_settings);
         fs::write(
             &file_path,
             r#"{"__schemaVersion":7,"theme":"dark","nested":{"enabled":true}}"#,
@@ -270,5 +302,61 @@ mod tests {
         assert_eq!(file.status, "invalid");
         assert!(file.data.is_none());
         assert!(file.error.is_some());
+    }
+
+    #[test]
+    fn renames_legacy_workspace_and_extensions_files_when_new_names_absent() {
+        let temp_dir = tempfile::tempdir().unwrap();
+        let config = user_storage_files_config();
+        fs::write(
+            temp_dir.path().join(&config.legacy_file_names.workspaces),
+            r#"{"__schemaVersion":1}"#,
+        )
+        .unwrap();
+        fs::write(
+            temp_dir.path().join(&config.legacy_file_names.extensions),
+            "{}",
+        )
+        .unwrap();
+
+        migrate_legacy_user_storage_files_in_user_data_dir(temp_dir.path());
+
+        assert!(temp_dir.path().join(&config.file_names.workspaces).exists());
+        assert!(temp_dir.path().join(&config.file_names.extensions).exists());
+        assert!(!temp_dir
+            .path()
+            .join(&config.legacy_file_names.workspaces)
+            .exists());
+        assert!(!temp_dir
+            .path()
+            .join(&config.legacy_file_names.extensions)
+            .exists());
+    }
+
+    #[test]
+    fn skips_rename_when_target_user_storage_file_already_exists() {
+        let temp_dir = tempfile::tempdir().unwrap();
+        let config = user_storage_files_config();
+        fs::write(
+            temp_dir.path().join(&config.legacy_file_names.workspaces),
+            r#"{"__schemaVersion":1}"#,
+        )
+        .unwrap();
+        fs::write(
+            temp_dir.path().join(&config.file_names.workspaces),
+            r#"{"__schemaVersion":2}"#,
+        )
+        .unwrap();
+
+        migrate_legacy_user_storage_files_in_user_data_dir(temp_dir.path());
+
+        assert_eq!(
+            fs::read_to_string(temp_dir.path().join(&config.file_names.workspaces)).unwrap(),
+            r#"{"__schemaVersion":2}"#
+        );
+        assert!(temp_dir
+            .path()
+            .join(&config.legacy_file_names.workspaces)
+            .exists());
     }
 }

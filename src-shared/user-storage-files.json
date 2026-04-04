@@ -1,0 +1,13 @@
+{
+  "userDataDirName": "user-data",
+  "fileNames": {
+    "userSettings": "user-settings.json",
+    "workspaces": "user-workspaces.json",
+    "userStats": "user-stats.json",
+    "extensions": "user-extensions.json"
+  },
+  "legacyFileNames": {
+    "workspaces": "workspaces.json",
+    "extensions": "extensions.json"
+  }
+}
