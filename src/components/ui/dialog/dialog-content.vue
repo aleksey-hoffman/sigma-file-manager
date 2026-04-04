@@ -46,7 +46,7 @@ const { t } = useI18n();
   position: fixed;
   z-index: 50;
   animation: sigma-ui-fade-in 0.2s ease-out;
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(var(--sigma-dialog-overlay-backdrop-blur, 8px));
   background-color: rgb(0 0 0 / 60%);
   inset: 0;
 }

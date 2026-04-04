@@ -389,7 +389,8 @@
       "applyFiltersToMediaElements": "将过滤器应用于媒体元素（图像、视频）",
       "contrast": "对比度：{n}%",
       "brightness": "亮度：{n}%",
-      "saturation": "饱和度：{n}%"
+      "saturation": "饱和度：{n}%",
+      "dialogOverlayBlur": "对话框背景模糊：{n}px"
     },
     "animations": {
       "title": "动画",
@@ -675,7 +676,7 @@
     "theme": "主题,风格,浅色,深色,颜色",
     "systemIcons": "系统, 图标, 原生, 文件, 文件夹, 资源管理器, finder",
     "driveCard": "驱动器, 卡片, 空间, 指示器, 存储, 进度, 圆形, 线性",
-    "visualFilters": "视觉、滤镜、颜色、对比度、亮度、饱和度、图像、视频、主题",
+    "visualFilters": "视觉、滤镜、颜色、对比度、亮度、饱和度、图像、视频、主题、对话框、背景、模糊",
     "animations": "动画,主页,页面",
     "fonts": "字体,文本",
     "dateTime": "日期,时间,格式",

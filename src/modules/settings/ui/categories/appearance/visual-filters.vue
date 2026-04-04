@@ -32,6 +32,14 @@ const contrastValue = computed({
   },
 });
 
+const dialogOverlayBlurValue = computed({
+  get: () => [userSettingsStore.userSettings.visualFilters.dialogOverlayBlur],
+  set: (value: number[]) => {
+    userSettingsStore.userSettings.visualFilters.dialogOverlayBlur = value[0];
+    userSettingsStore.setUserSettingsStorage('visualFilters.dialogOverlayBlur', value[0]);
+  },
+});
+
 async function resetVisualFiltersSection() {
   const defaultsSnapshot = userSettingsStore.userSettingsDefault;
 
@@ -50,6 +58,10 @@ async function resetVisualFiltersSection() {
   await userSettingsStore.setUserSettingsStorage(
     'visualFilters.contrast',
     defaultsSnapshot.visualFilters.contrast,
+  );
+  await userSettingsStore.setUserSettingsStorage(
+    'visualFilters.dialogOverlayBlur',
+    defaultsSnapshot.visualFilters.dialogOverlayBlur,
   );
 }
 </script>
@@ -100,6 +112,19 @@ async function resetVisualFiltersSection() {
             v-model="contrastValue"
             :min="80"
             :max="200"
+            :step="1"
+            class="visual-filters-settings__slider"
+          />
+        </div>
+
+        <div class="visual-filters-settings__row">
+          <span class="visual-filters-settings__label">
+            {{ t('settings.visualFilters.dialogOverlayBlur', { n: dialogOverlayBlurValue[0] }) }}
+          </span>
+          <Slider
+            v-model="dialogOverlayBlurValue"
+            :min="0"
+            :max="32"
             :step="1"
             class="visual-filters-settings__slider"
           />

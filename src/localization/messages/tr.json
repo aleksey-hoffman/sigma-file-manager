@@ -389,7 +389,8 @@
       "applyFiltersToMediaElements": "Medya öğelerine (resimler, videolar) filtre uygulayın",
       "contrast": "Kontrast: %{n}",
       "brightness": "Parlaklık: %{n}",
-      "saturation": "Doygunluk: %{n}"
+      "saturation": "Doygunluk: %{n}",
+      "dialogOverlayBlur": "İletişim kutusu arka plan bulanıklığı: {n}px"
     },
     "animations": {
       "title": "Animasyonlar",
@@ -675,7 +676,7 @@
     "theme": "tema, stil, açık, koyu, renkli",
     "systemIcons": "sistem, simgeler, ikonlar, yerel, dosya, klasör, gezgin, explorer, finder",
     "driveCard": "sürücü, kart, alan, gösterge, depolama, ilerleme, dairesel, doğrusal",
-    "visualFilters": "görsel, filtreler, renk, kontrast, parlaklık, doygunluk, görüntü, video, tema",
+    "visualFilters": "görsel, filtreler, renk, kontrast, parlaklık, doygunluk, görüntü, video, tema, iletişim kutusu, arka plan, bulanıklık",
     "animations": "animasyonlar, ana sayfa, sayfa",
     "fonts": "yazı tipleri, metin",
     "dateTime": "tarih, saat, biçim",

@@ -404,7 +404,8 @@
       "applyFiltersToMediaElements": "Apply filters to media elements (images, videos)",
       "contrast": "Contrast: {n}%",
       "brightness": "Brightness: {n}%",
-      "saturation": "Saturation: {n}%"
+      "saturation": "Saturation: {n}%",
+      "dialogOverlayBlur": "Dialog backdrop blur: {n}px"
     },
     "animations": {
       "title": "Animations",
@@ -690,7 +691,7 @@
     "theme": "theme, style, light, dark, color",
     "systemIcons": "system, icons, native, file, folder, directory, directories, files, explorer, finder",
     "driveCard": "drive, card, space, indicator, storage, disk, progress, bar, circular, linear, vertical, horizontal",
-    "visualFilters": "visual, filters, color, contrast, brightness, saturation, image, video, theme",
+    "visualFilters": "visual, filters, color, contrast, brightness, saturation, image, video, theme, dialog, backdrop, blur",
     "animations": "animations, home, page",
     "fonts": "fonts, text",
     "dateTime": "date, time, format",

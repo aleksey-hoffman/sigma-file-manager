@@ -76,6 +76,7 @@ export type InfusionSettings = {
 export type VisualFiltersSettings = {
   brightness: number;
   contrast: number;
+  dialogOverlayBlur: number;
 };
 
 export type ShortcutKeys = {

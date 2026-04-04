@@ -404,7 +404,8 @@
       "applyFiltersToMediaElements": "میڈیا (تصویر، ویڈیو) پر فلٹر لگائیں",
       "contrast": "کنٹراسٹ: {n}%",
       "brightness": "چمک: {n}%",
-      "saturation": "سیچوریشن: {n}%"
+      "saturation": "سیچوریشن: {n}%",
+      "dialogOverlayBlur": "ڈائیلاگ پس‌منظر دھندلاپن: {n}px"
     },
     "animations": {
       "title": "اینیمیشن",
@@ -690,7 +691,7 @@
     "theme": "تھیم, رنگ, ڈارک, لائٹ",
     "systemIcons": "سسٹم, آئیکن, فائل, فولڈر, explorer",
     "driveCard": "ڈرائیو, جگہ, اسٹوریج, پیش رفت",
-    "visualFilters": "فلٹر, کنٹراسٹ, چمک, تصویر, ویڈیو",
+    "visualFilters": "فلٹر, کنٹراسٹ, چمک, تصویر, ویڈیو, ڈائیلاگ, پس‌منظر, دھندلاپن",
     "animations": "اینیمیشن, ہوم",
     "fonts": "فونٹ, متن",
     "dateTime": "تاریخ, وقت, فارمیٹ",

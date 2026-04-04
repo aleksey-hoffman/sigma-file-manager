@@ -389,7 +389,8 @@
       "applyFiltersToMediaElements": "Áp dụng bộ lọc cho các thành phần phương tiện (hình ảnh, video)",
       "contrast": "Độ tương phản: {n}%",
       "brightness": "Độ sáng: {n}%",
-      "saturation": "Độ bão hòa: {n}%"
+      "saturation": "Độ bão hòa: {n}%",
+      "dialogOverlayBlur": "Độ mờ nền hộp thoại: {n}px"
     },
     "animations": {
       "title": "Hoạt hình",
@@ -675,7 +676,7 @@
     "theme": "chủ đề, phong cách, ánh sáng, bóng tối, màu sắc",
     "systemIcons": "hệ thống, biểu tượng, gốc, tệp, thư mục, explorer, finder",
     "driveCard": "ổ đĩa, thẻ, không gian, chỉ báo, lưu trữ, tiến trình, hình tròn, tuyến tính",
-    "visualFilters": "hình ảnh, bộ lọc, màu sắc, độ tương phản, độ sáng, độ bão hòa, hình ảnh, video, chủ đề",
+    "visualFilters": "hình ảnh, bộ lọc, màu sắc, độ tương phản, độ sáng, độ bão hòa, hình ảnh, video, chủ đề, hộp thoại, nền, mờ",
     "animations": "hình ảnh động, trang chủ, trang",
     "fonts": "phông chữ, văn bản",
     "dateTime": "ngày, giờ, định dạng",

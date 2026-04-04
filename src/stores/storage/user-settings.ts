@@ -199,6 +199,7 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
     return {
       brightness: 100,
       contrast: 100,
+      dialogOverlayBlur: 8,
     };
   }
 
@@ -206,7 +207,21 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
     return Math.min(200, Math.max(80, value));
   }
 
-  function applyBodyVisualFilters(visualFilters: VisualFiltersSettings) {
+  function clampDialogOverlayBlur(value: number): number {
+    const candidate = Number.isFinite(value) ? Math.round(value) : 8;
+    return Math.min(32, Math.max(0, candidate));
+  }
+
+  function applyDialogOverlayBackdropBlur(blurPixels: number) {
+    if (typeof document === 'undefined' || !document.documentElement) {
+      return;
+    }
+
+    const blur = clampDialogOverlayBlur(blurPixels);
+    document.documentElement.style.setProperty('--sigma-dialog-overlay-backdrop-blur', `${blur}px`);
+  }
+
+  function applyBodyVisualFilters(visualFilters: Pick<VisualFiltersSettings, 'brightness' | 'contrast'>) {
     if (typeof document === 'undefined' || !document.body) {
       return;
     }
@@ -229,11 +244,15 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
     () => [
       userSettings.value.visualFilters.brightness,
       userSettings.value.visualFilters.contrast,
+      userSettings.value.visualFilters.dialogOverlayBlur,
     ] as const,
-    ([brightness, contrast]) => applyBodyVisualFilters({
-      brightness,
-      contrast,
-    }),
+    ([brightness, contrast, dialogOverlayBlur]) => {
+      applyBodyVisualFilters({
+        brightness,
+        contrast,
+      });
+      applyDialogOverlayBackdropBlur(dialogOverlayBlur);
+    },
     { immediate: true },
   );
 

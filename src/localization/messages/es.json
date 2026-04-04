@@ -389,7 +389,8 @@
       "applyFiltersToMediaElements": "Aplicar filtros a elementos multimedia (imágenes, videos)",
       "contrast": "Contraste: {n}%",
       "brightness": "Brillo: {n}%",
-      "saturation": "Saturación: {n}%"
+      "saturation": "Saturación: {n}%",
+      "dialogOverlayBlur": "Desenfoque del fondo del diálogo: {n}px"
     },
     "animations": {
       "title": "Animaciones",
@@ -675,7 +676,7 @@
     "theme": "tema, estilo, claro, oscuro, color",
     "systemIcons": "sistema, iconos, nativos, archivo, carpeta, directorio, explorer, finder",
     "driveCard": "unidad, tarjeta, espacio, indicador, almacenamiento, progreso, circular, lineal",
-    "visualFilters": "visual, filtros, color, contraste, brillo, saturación, imagen, video, tema",
+    "visualFilters": "visual, filtros, color, contraste, brillo, saturación, imagen, video, tema, diálogo, fondo, desenfoque",
     "animations": "animaciones, inicio, página",
     "fonts": "fuentes, texto",
     "dateTime": "fecha, hora, formato",
