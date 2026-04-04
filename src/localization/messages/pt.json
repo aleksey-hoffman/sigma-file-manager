@@ -1473,7 +1473,10 @@
     "searchTags": "Pesquisar tags...",
     "noTagsFound": "Nenhuma tag encontrada",
     "createTag": "Criar tag",
-    "deleteTag": "Excluir tag"
+    "deleteTag": "Excluir tag",
+    "renameTag": "Renomear tag",
+    "tagColor": "Cor da etiqueta",
+    "recoveredTag": "Etiqueta desconhecida ({id})"
   },
   "action": "Ação",
   "actions": "Comportamento",

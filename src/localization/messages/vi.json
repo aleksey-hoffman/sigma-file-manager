@@ -1460,7 +1460,10 @@
     "searchTags": "Tìm kiếm thẻ...",
     "noTagsFound": "Không tìm thấy thẻ",
     "createTag": "Tạo thẻ",
-    "deleteTag": "Xóa thẻ"
+    "deleteTag": "Xóa thẻ",
+    "renameTag": "Đổi tên thẻ",
+    "tagColor": "Màu thẻ",
+    "recoveredTag": "Thẻ không xác định ({id})"
   },
   "action": "Hoạt động",
   "actions": "Hành động",

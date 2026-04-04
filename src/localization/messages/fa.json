@@ -1459,7 +1459,10 @@
     "searchTags": "جستجوی برچسب‌ها...",
     "noTagsFound": "برچسبی یافت نشد",
     "createTag": "ایجاد برچسب",
-    "deleteTag": "حذف برچسب"
+    "deleteTag": "حذف برچسب",
+    "renameTag": "تغییر نام برچسب",
+    "tagColor": "رنگ برچسب",
+    "recoveredTag": "برچسب ناشناخته ({id})"
   },
   "action": "عمل",
   "actions": "اقدامات",

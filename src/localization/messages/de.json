@@ -1460,7 +1460,10 @@
     "searchTags": "Tags suchen...",
     "noTagsFound": "Keine Tags gefunden",
     "createTag": "Tag erstellen",
-    "deleteTag": "Tag löschen"
+    "deleteTag": "Tag löschen",
+    "renameTag": "Tag umbenennen",
+    "tagColor": "Tagfarbe",
+    "recoveredTag": "Unbekannte Markierung ({id})"
   },
   "action": "Aktion",
   "actions": "Aktionen",

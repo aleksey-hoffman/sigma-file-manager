@@ -1475,7 +1475,10 @@
     "searchTags": "टैग खोजें...",
     "noTagsFound": "कोई टैग नहीं मिला",
     "createTag": "टैग बनाएं",
-    "deleteTag": "टैग हटाएँ"
+    "deleteTag": "टैग हटाएँ",
+    "renameTag": "टैग का नाम बदलें",
+    "tagColor": "टैग रंग",
+    "recoveredTag": "अज्ञात टैग ({id})"
   },
   "action": "कार्रवाई",
   "actions": "कार्रवाई",

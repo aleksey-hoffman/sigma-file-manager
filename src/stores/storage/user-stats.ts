@@ -22,6 +22,8 @@ import {
   getStartupStorageRecord,
   type StartupStorageFileBootstrap,
 } from './utils/startup-storage-bootstrap';
+import { i18n } from '@/localization';
+import { reconcileMissingTagDefinitions as mergeTagDefinitionsFromTaggedItems } from '@/utils/reconcile-user-stats-tags';
 
 const HISTORY_MAX_ITEMS = 200;
 const FREQUENT_ITEMS_MAX = 100;
@@ -29,7 +31,7 @@ const FREQUENT_ITEMS_MAX = 100;
 export const useUserStatsStore = defineStore('userStats', () => {
   const userPathsStore = useUserPathsStore();
   const userStatsStorage = ref<LazyStore | null>(null);
-  const userStats = ref<UserStats>({ ...DEFAULT_USER_STATS });
+  const userStats = ref<UserStats>(structuredClone(DEFAULT_USER_STATS));
 
   const favorites = computed(() => userStats.value.favorites);
   const tags = computed(() => userStats.value.tags);
@@ -89,6 +91,21 @@ export const useUserStatsStore = defineStore('userStats', () => {
     applyStatsRecord(getStartupStorageRecord(bootstrapFile));
     await deduplicateHistory();
     return true;
+  }
+
+  async function reconcileMissingTagDefinitions() {
+    const didChange = mergeTagDefinitionsFromTaggedItems(
+      userStats.value.tags,
+      userStats.value.taggedItems,
+      (tagId) => {
+        const labelSource = tagId.startsWith('tag-') ? tagId.slice(4) : tagId;
+        return String(i18n.global.t('tags.recoveredTag', { id: labelSource }));
+      },
+    );
+
+    if (didChange) {
+      await saveStats();
+    }
   }
 
   async function deduplicateHistory() {
@@ -232,6 +249,43 @@ export const useUserStatsStore = defineStore('userStats', () => {
 
       await saveStats();
     }
+  }
+
+  async function renameTag(tagId: string, name: string) {
+    const trimmed = name.trim();
+
+    if (!trimmed) {
+      return;
+    }
+
+    const tagIndex = userStats.value.tags.findIndex(tag => tag.id === tagId);
+
+    if (tagIndex === -1) {
+      return;
+    }
+
+    const hasConflict = userStats.value.tags.some(
+      (tag, index) =>
+        index !== tagIndex && tag.name.toLowerCase() === trimmed.toLowerCase(),
+    );
+
+    if (hasConflict) {
+      return;
+    }
+
+    userStats.value.tags[tagIndex].name = trimmed;
+    await saveStats();
+  }
+
+  async function updateTagColor(tagId: string, color: string) {
+    const tag = userStats.value.tags.find(tagItem => tagItem.id === tagId);
+
+    if (!tag) {
+      return;
+    }
+
+    tag.color = color;
+    await saveStats();
   }
 
   async function recordItemOpen(path: string, isFile: boolean) {
@@ -464,7 +518,8 @@ export const useUserStatsStore = defineStore('userStats', () => {
       await loadStats();
     }
 
-    removeNonExistentPaths();
+    await removeNonExistentPaths();
+    await reconcileMissingTagDefinitions();
   }
 
   return {
@@ -486,6 +541,8 @@ export const useUserStatsStore = defineStore('userStats', () => {
     removeTagFromItem,
     createTag,
     deleteTag,
+    renameTag,
+    updateTagColor,
     recordItemOpen,
     clearHistory,
     removeFromHistory,

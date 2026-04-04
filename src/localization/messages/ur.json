@@ -1475,7 +1475,10 @@
     "searchTags": "ٹیگز تلاش کریں…",
     "noTagsFound": "کوئی ٹیگ نہیں",
     "createTag": "ٹیگ بنائیں",
-    "deleteTag": "ٹیگ حذف کریں"
+    "deleteTag": "ٹیگ حذف کریں",
+    "renameTag": "ٹیگ کا نام بدلیں",
+    "tagColor": "ٹیگ کا رنگ",
+    "recoveredTag": "نامعلوم ٹیگ ({id})"
   },
   "action": "عمل",
   "actions": "اعمال",

@@ -4,9 +4,12 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { useThrottleFn } from '@vueuse/core';
+import { computed, nextTick, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { CheckIcon, CirclePlusIcon, TagIcon, Trash2Icon } from '@lucide/vue';
+import {
+  CheckIcon, CirclePlusIcon, PencilIcon, TagIcon, Trash2Icon,
+} from '@lucide/vue';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
@@ -38,12 +41,19 @@ const emit = defineEmits<{
   'toggle-tag': [tagId: string];
   'create-tag': [name: string];
   'delete-tag': [tagId: string];
+  'rename-tag': [tagId: string, name: string];
+  'update-tag-color': [tagId: string, color: string];
 }>();
 
 const { t } = useI18n();
 const searchQuery = ref('');
 const isOpen = ref(false);
 const commandKey = ref(0);
+const editingTagId = ref<string | null>(null);
+const editDraft = ref('');
+const renameInputRef = ref<HTMLInputElement | null>(null);
+const previewTagColors = ref<Record<string, string>>({});
+const pendingTagColors = ref<Record<string, string>>({});
 
 const trimmedSearchQuery = computed(() => searchQuery.value.trim());
 const selectedTagIdsSet = computed(() => new Set(props.selectedTagIds));
@@ -66,14 +76,143 @@ const selectedTags = computed(() => {
   return props.tags.filter(tag => selectedTagIdsSet.value.has(tag.id));
 });
 
+function displayColor(tag: ItemTag): string {
+  return previewTagColors.value[tag.id] ?? tag.color;
+}
+
+function flushPendingColorsToParent() {
+  const snapshot = { ...pendingTagColors.value };
+
+  if (Object.keys(snapshot).length === 0) {
+    return;
+  }
+
+  for (const [tagId, color] of Object.entries(snapshot)) {
+    emit('update-tag-color', tagId, color);
+
+    if (pendingTagColors.value[tagId] === color) {
+      delete pendingTagColors.value[tagId];
+    }
+  }
+}
+
+const schedulePersistTagColors = useThrottleFn(flushPendingColorsToParent, 1000, true, false);
+
 function toggleTag(tagId: string) {
   emit('toggle-tag', tagId);
 }
 
 function deleteTag(event: Event, tagId: string) {
   event.stopPropagation();
+
+  if (editingTagId.value === tagId) {
+    cancelEdit();
+  }
+
   emit('delete-tag', tagId);
 }
+
+function cancelEdit() {
+  editingTagId.value = null;
+  editDraft.value = '';
+}
+
+function commitEdit() {
+  const activeTagId = editingTagId.value;
+
+  if (activeTagId === null) {
+    return;
+  }
+
+  const tag = props.tags.find(item => item.id === activeTagId);
+
+  if (!tag) {
+    cancelEdit();
+    return;
+  }
+
+  const trimmed = editDraft.value.trim();
+
+  if (trimmed === '') {
+    cancelEdit();
+    return;
+  }
+
+  if (trimmed === tag.name) {
+    cancelEdit();
+    return;
+  }
+
+  emit('rename-tag', activeTagId, trimmed);
+  cancelEdit();
+}
+
+function startEdit(event: Event, tag: ItemTag) {
+  event.stopPropagation();
+  event.preventDefault();
+
+  if (editingTagId.value !== null && editingTagId.value !== tag.id) {
+    commitEdit();
+  }
+
+  editingTagId.value = tag.id;
+  editDraft.value = tag.name;
+  void nextTick(() => {
+    renameInputRef.value?.focus();
+    renameInputRef.value?.select();
+  });
+}
+
+function onSelectTag(tag: ItemTag) {
+  if (editingTagId.value === tag.id) {
+    return;
+  }
+
+  toggleTag(tag.id);
+}
+
+watch(isOpen, (open) => {
+  if (!open) {
+    flushPendingColorsToParent();
+    cancelEdit();
+  }
+});
+
+watch(
+  () => props.tags,
+  (tags) => {
+    const validIds = new Set(tags.map(tagItem => tagItem.id));
+    const preview = { ...previewTagColors.value };
+    const pending = { ...pendingTagColors.value };
+
+    for (const tagId of Object.keys(preview)) {
+      if (!validIds.has(tagId)) {
+        delete preview[tagId];
+      }
+    }
+
+    for (const tagId of Object.keys(pending)) {
+      if (!validIds.has(tagId)) {
+        delete pending[tagId];
+      }
+    }
+
+    for (const tag of tags) {
+      const previewed = preview[tag.id];
+
+      if (
+        previewed
+        && colorHexForPicker(tag.color).toLowerCase() === previewed.toLowerCase()
+      ) {
+        delete preview[tag.id];
+      }
+    }
+
+    previewTagColors.value = preview;
+    pendingTagColors.value = pending;
+  },
+  { deep: true },
+);
 
 function createTag() {
   const name = trimmedSearchQuery.value;
@@ -85,6 +224,60 @@ function createTag() {
 
 function clearSearch() {
   searchQuery.value = '';
+}
+
+function stopSpaceFromReachingCombobox(event: KeyboardEvent) {
+  if (event.key === ' ') {
+    event.stopPropagation();
+  }
+}
+
+function colorHexForPicker(color: string): string {
+  const trimmed = color.trim();
+
+  if (/^#[0-9A-Fa-f]{6}$/.test(trimmed)) {
+    return trimmed;
+  }
+
+  if (/^#[0-9A-Fa-f]{3}$/.test(trimmed)) {
+    return `#${trimmed[1]}${trimmed[1]}${trimmed[2]}${trimmed[2]}${trimmed[3]}${trimmed[3]}`;
+  }
+
+  return '#64748b';
+}
+
+function onColorInput(event: Event, tagId: string) {
+  event.stopPropagation();
+  const target = event.target as HTMLInputElement;
+  const next = target.value;
+  const tag = props.tags.find(tagItem => tagItem.id === tagId);
+
+  if (!tag) {
+    return;
+  }
+
+  const effectiveCurrent = previewTagColors.value[tagId] ?? tag.color;
+
+  if (
+    colorHexForPicker(effectiveCurrent).toLowerCase() === next.toLowerCase()
+  ) {
+    return;
+  }
+
+  previewTagColors.value = {
+    ...previewTagColors.value,
+    [tagId]: next,
+  };
+  pendingTagColors.value = {
+    ...pendingTagColors.value,
+    [tagId]: next,
+  };
+  void schedulePersistTagColors();
+}
+
+function onColorBlur(event: Event) {
+  event.stopPropagation();
+  flushPendingColorsToParent();
 }
 </script>
 
@@ -128,7 +321,7 @@ function clearSearch() {
               v-for="tag in selectedTags.slice(0, maxBadges)"
               :key="tag.id"
               class="tag-selector__badge"
-              :style="{ backgroundColor: tag.color + '25', color: tag.color }"
+              :style="{ backgroundColor: displayColor(tag) + '25', color: displayColor(tag) }"
             >
               {{ tag.name }}
             </span>
@@ -151,9 +344,10 @@ function clearSearch() {
         <CommandInput
           v-model="searchQuery"
           :placeholder="t('tags.searchTags')"
+          @keydown="stopSpaceFromReachingCombobox"
           @keydown.esc="clearSearch"
         />
-        <CommandList>
+        <CommandList class="tag-selector__command-list">
           <CommandEmpty v-if="filteredTags.length === 0 && !canCreate">
             {{ t('tags.noTagsFound') }}
           </CommandEmpty>
@@ -177,31 +371,72 @@ function clearSearch() {
               :key="tag.id"
               :value="tag.name"
               class="tag-selector__item"
-              @select="() => toggleTag(tag.id)"
+              @select="() => onSelectTag(tag)"
             >
               <div
                 class="tag-selector__checkbox"
                 :data-selected="selectedTagIdsSet.has(tag.id) || undefined"
-                :style="selectedTagIdsSet.has(tag.id) ? { borderColor: tag.color + '80', backgroundColor: tag.color + '20' } : undefined"
+                :style="selectedTagIdsSet.has(tag.id) ? { borderColor: displayColor(tag) + '80', backgroundColor: displayColor(tag) + '20' } : undefined"
               >
                 <CheckIcon
                   class="tag-selector__check"
-                  :style="{ color: tag.color }"
+                  :style="{ color: displayColor(tag) }"
                 />
               </div>
-              <span
-                class="tag-selector__color-dot"
-                :style="{ backgroundColor: tag.color }"
-              />
-              <span class="tag-selector__tag-name">{{ tag.name }}</span>
-              <button
-                type="button"
-                class="tag-selector__delete"
-                :title="t('tags.deleteTag')"
-                @click="(event) => deleteTag(event, tag.id)"
+              <label
+                class="tag-selector__color-dot-wrap"
+                :title="t('tags.tagColor')"
+                @click.stop
+                @pointerdown.stop
               >
-                <Trash2Icon :size="14" />
-              </button>
+                <input
+                  type="color"
+                  class="tag-selector__color-input"
+                  :value="colorHexForPicker(displayColor(tag))"
+                  @click.stop
+                  @input="onColorInput($event, tag.id)"
+                  @blur="onColorBlur"
+                >
+                <span
+                  class="tag-selector__color-dot"
+                  aria-hidden="true"
+                  :style="{ backgroundColor: displayColor(tag) }"
+                />
+              </label>
+              <span
+                v-if="editingTagId !== tag.id"
+                class="tag-selector__tag-name"
+              >{{ tag.name }}</span>
+              <input
+                v-else
+                ref="renameInputRef"
+                v-model="editDraft"
+                class="sigma-ui-input tag-selector__rename-input"
+                @keydown="stopSpaceFromReachingCombobox"
+                @keydown.enter.prevent="commitEdit"
+                @keydown.esc.prevent="cancelEdit"
+                @blur="commitEdit"
+                @click.stop
+                @pointerdown.stop
+              >
+              <div class="tag-selector__item-actions">
+                <button
+                  type="button"
+                  class="tag-selector__edit"
+                  :title="t('tags.renameTag')"
+                  @click="(event) => startEdit(event, tag)"
+                >
+                  <PencilIcon :size="14" />
+                </button>
+                <button
+                  type="button"
+                  class="tag-selector__delete"
+                  :title="t('tags.deleteTag')"
+                  @click="(event) => deleteTag(event, tag.id)"
+                >
+                  <Trash2Icon :size="14" />
+                </button>
+              </div>
             </CommandItem>
           </CommandGroup>
           <CommandSeparator v-if="$slots.footer" />
@@ -218,6 +453,10 @@ function clearSearch() {
 </template>
 
 <style>
+.tag-selector__command-list {
+  height: 200px;
+}
+
 .tag-selector__trigger {
   overflow: hidden;
   border-style: dashed;
@@ -225,6 +464,7 @@ function clearSearch() {
 }
 
 .tag-selector__trigger--compact {
+  flex-shrink: 0;
   padding: 4px 8px;
   gap: 4px;
 }
@@ -332,12 +572,34 @@ function clearSearch() {
   height: 14px;
 }
 
+.tag-selector__color-dot-wrap {
+  position: relative;
+  display: flex;
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  margin-right: 8px;
+  cursor: pointer;
+}
+
+.tag-selector__color-input {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  opacity: 0;
+}
+
 .tag-selector__color-dot {
   width: 10px;
   height: 10px;
   flex-shrink: 0;
   border-radius: 50%;
-  margin-right: 8px;
+  pointer-events: none;
 }
 
 .tag-selector__tag-name {
@@ -351,6 +613,24 @@ function clearSearch() {
   position: relative;
 }
 
+.tag-selector__rename-input {
+  min-width: 0;
+  height: 1.75rem;
+  flex: 1;
+  font-size: 0.8125rem;
+  padding-block: 0.125rem;
+  padding-inline: 0.375rem;
+}
+
+.tag-selector__item-actions {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  margin-left: auto;
+  gap: 2px;
+}
+
+.tag-selector__edit,
 .tag-selector__delete {
   display: flex;
   align-items: center;
@@ -358,7 +638,6 @@ function clearSearch() {
   padding: 4px;
   border: none;
   border-radius: 4px;
-  margin-left: auto;
   background: transparent;
   color: hsl(var(--muted-foreground));
   cursor: pointer;
@@ -366,8 +645,14 @@ function clearSearch() {
   transition: opacity 0.15s, color 0.15s, background-color 0.15s;
 }
 
+.tag-selector__item:hover .tag-selector__edit,
 .tag-selector__item:hover .tag-selector__delete {
   opacity: 1;
+}
+
+.tag-selector__edit:hover {
+  background-color: hsl(var(--primary) / 10%);
+  color: hsl(var(--primary));
 }
 
 .tag-selector__delete:hover {

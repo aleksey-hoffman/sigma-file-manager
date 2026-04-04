@@ -1475,7 +1475,10 @@
     "searchTags": "Поиск тегов...",
     "noTagsFound": "Теги не найдены",
     "createTag": "Создать тег",
-    "deleteTag": "Удалить тег"
+    "deleteTag": "Удалить тег",
+    "renameTag": "Переименовать метку",
+    "tagColor": "Цвет метки",
+    "recoveredTag": "Неизвестная метка ({id})"
   },
   "action": "Действие",
   "actions": "Действия",

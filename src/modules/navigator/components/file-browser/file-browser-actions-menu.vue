@@ -138,6 +138,14 @@ async function handleDeleteTag(tagId: string) {
   await userStatsStore.deleteTag(tagId);
 }
 
+async function handleRenameTag(tagId: string, name: string) {
+  await userStatsStore.renameTag(tagId, name);
+}
+
+async function handleUpdateTagColor(tagId: string, color: string) {
+  await userStatsStore.updateTagColor(tagId, color);
+}
+
 const selectedDirectory = computed(() => {
   return props.selectedEntries.find(entry => entry.is_dir);
 });
@@ -378,6 +386,8 @@ function handleDeleteClick() {
       @toggle-tag="handleToggleTag"
       @create-tag="handleCreateTag"
       @delete-tag="handleDeleteTag"
+      @rename-tag="handleRenameTag"
+      @update-tag-color="handleUpdateTagColor"
     />
   </div>
 </template>

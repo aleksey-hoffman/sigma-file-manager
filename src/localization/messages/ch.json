@@ -1460,7 +1460,10 @@
     "searchTags": "搜索标签...",
     "noTagsFound": "未找到标签",
     "createTag": "创建标签",
-    "deleteTag": "删除标签"
+    "deleteTag": "删除标签",
+    "renameTag": "重命名标签",
+    "tagColor": "标签颜色",
+    "recoveredTag": "未知标签（{id}）"
   },
   "action": "操作",
   "actions": "操作",

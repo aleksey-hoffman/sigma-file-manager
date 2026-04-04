@@ -1475,7 +1475,10 @@
     "searchTags": "Search tags...",
     "noTagsFound": "No tags found",
     "createTag": "Create tag",
-    "deleteTag": "Delete tag"
+    "deleteTag": "Delete tag",
+    "renameTag": "Rename tag",
+    "tagColor": "Tag color",
+    "recoveredTag": "Unknown tag ({id})"
   },
   "action": "Action",
   "actions": "Actions",

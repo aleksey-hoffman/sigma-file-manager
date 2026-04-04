@@ -150,6 +150,14 @@ async function handleCreateTagForItem(item: TaggedItem, name: string) {
 async function handleDeleteTag(tagId: string) {
   await userStatsStore.deleteTag(tagId);
 }
+
+async function handleRenameTag(tagId: string, name: string) {
+  await userStatsStore.renameTag(tagId, name);
+}
+
+async function handleUpdateTagColor(tagId: string, color: string) {
+  await userStatsStore.updateTagColor(tagId, color);
+}
 </script>
 
 <template>
@@ -308,6 +316,8 @@ async function handleDeleteTag(tagId: string) {
                     @toggle-tag="(tagId) => handleToggleTagOnItem(item, tagId)"
                     @create-tag="(name) => handleCreateTagForItem(item, name)"
                     @delete-tag="handleDeleteTag"
+                    @rename-tag="handleRenameTag"
+                    @update-tag-color="handleUpdateTagColor"
                   />
                 </template>
               </EntryCard>

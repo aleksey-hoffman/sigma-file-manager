@@ -1475,7 +1475,10 @@
     "searchTags": "Išči oznake...",
     "noTagsFound": "Ni najdenih oznak",
     "createTag": "Ustvari oznako",
-    "deleteTag": "Izbriši oznako"
+    "deleteTag": "Izbriši oznako",
+    "renameTag": "Preimenuj oznako",
+    "tagColor": "Barva oznake",
+    "recoveredTag": "Neznana oznaka ({id})"
   },
   "action": "Dejanje",
   "actions": "Dejanja",

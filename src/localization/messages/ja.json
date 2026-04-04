@@ -1460,7 +1460,10 @@
     "searchTags": "タグを検索...",
     "noTagsFound": "タグが見つかりません",
     "createTag": "タグを作成",
-    "deleteTag": "タグを削除"
+    "deleteTag": "タグを削除",
+    "renameTag": "タグの名前を変更",
+    "tagColor": "タグの色",
+    "recoveredTag": "不明なタグ（{id}）"
   },
   "action": "アクション",
   "actions": "行動",

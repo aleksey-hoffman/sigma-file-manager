@@ -1460,7 +1460,10 @@
     "searchTags": "Buscar etiquetas...",
     "noTagsFound": "No se encontraron etiquetas",
     "createTag": "Crear etiqueta",
-    "deleteTag": "Eliminar etiqueta"
+    "deleteTag": "Eliminar etiqueta",
+    "renameTag": "Renombrar etiqueta",
+    "tagColor": "Color de la etiqueta",
+    "recoveredTag": "Etiqueta desconocida ({id})"
   },
   "action": "Acción",
   "actions": "Comportamiento",

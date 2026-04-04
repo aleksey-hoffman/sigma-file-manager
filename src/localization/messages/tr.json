@@ -1460,7 +1460,10 @@
     "searchTags": "Etiket ara...",
     "noTagsFound": "Etiket bulunamadı",
     "createTag": "Etiket oluştur",
-    "deleteTag": "Etiketi sil"
+    "deleteTag": "Etiketi sil",
+    "renameTag": "Etiketi yeniden adlandır",
+    "tagColor": "Etiket rengi",
+    "recoveredTag": "Bilinmeyen etiket ({id})"
   },
   "action": "Eylem",
   "actions": "Hareketler",
