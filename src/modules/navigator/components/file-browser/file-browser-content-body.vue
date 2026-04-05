@@ -19,6 +19,7 @@ const props = withDefaults(defineProps<{
   layout?: 'list' | 'grid';
   trackRelativeTime?: boolean;
 }>(), {
+  layout: undefined,
   trackRelativeTime: true,
 });
 
@@ -42,6 +43,7 @@ const { t } = useI18n();
       <ContextMenuTrigger as-child>
         <div
           class="file-browser__empty-state-container"
+          data-e2e-root="file-browser-empty-directory"
           @contextmenu="ctx.handleBackgroundContextMenu"
         >
           <EmptyState
@@ -63,6 +65,7 @@ const { t } = useI18n();
           <div
             :ref="ctx.setEntriesContainerRef"
             class="file-browser__entries-container"
+            data-e2e-root="file-browser-entries"
             @contextmenu.self="ctx.handleBackgroundContextMenu"
           >
             <FileBrowserGridView

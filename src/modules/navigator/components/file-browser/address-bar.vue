@@ -505,6 +505,8 @@ onUnmounted(() => {
       <div
         ref="breadcrumbsContainerRef"
         class="address-bar__breadcrumbs"
+        data-e2e-root="address-bar-breadcrumbs"
+        :data-e2e-current-path="props.currentPath ?? ''"
         @wheel="handleBreadcrumbsWheel"
         @click="openEditor"
       >

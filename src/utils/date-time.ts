@@ -98,7 +98,7 @@ export function formatTimeOnly(
   try {
     const localeTag = resolveFormattingLocale(options, appLocale);
 
-    const formatOptions: Intl.DateTimeFormatOptions = {
+    const formatOptions: Intl.DateTimeFormatOptions & { fractionalSecondDigits?: number } = {
       hour: 'numeric',
       minute: 'numeric',
       hour12: options.hour12,

@@ -4,6 +4,7 @@ import vue from '@vitejs/plugin-vue';
 import vueDevTools from 'vite-plugin-vue-devtools';
 import { run } from 'vite-plugin-run';
 import { assertNoRestrictedBackgroundSourceImport } from './src/build/background-source-import-guard';
+import { rejectTestModulesInProductionBuild } from './src/build/reject-test-modules-in-production-build';
 
 const host = process.env.TAURI_DEV_HOST;
 
@@ -21,6 +22,7 @@ export default defineConfig({
     vue(),
     vueDevTools(),
     backgroundSourceImportGuard,
+    rejectTestModulesInProductionBuild(),
     run([
       {
         name: 'Sync License Headers',

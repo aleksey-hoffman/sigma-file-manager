@@ -31,6 +31,12 @@ const props = withDefaults(defineProps<{
   entryDescription?: (entry: DirEntry) => string | undefined;
   trackRelativeTime?: boolean;
 }>(), {
+  tab: undefined,
+  paneIndex: undefined,
+  layout: undefined,
+  externalEntries: undefined,
+  basePath: undefined,
+  entryDescription: undefined,
   trackRelativeTime: true,
 });
 

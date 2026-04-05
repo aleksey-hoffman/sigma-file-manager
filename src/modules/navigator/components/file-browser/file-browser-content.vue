@@ -19,6 +19,7 @@ const props = withDefaults(defineProps<{
   layout?: 'list' | 'grid';
   trackRelativeTime?: boolean;
 }>(), {
+  layout: undefined,
   trackRelativeTime: true,
 });
 

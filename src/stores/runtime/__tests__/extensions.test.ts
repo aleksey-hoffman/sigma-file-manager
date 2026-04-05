@@ -70,6 +70,9 @@ vi.mock('vue-sonner', () => ({
   toast: {
     custom: toastCustomMock,
     dismiss: toastDismissMock,
+    promise: vi.fn(),
+    getHistory: vi.fn(() => []),
+    getToasts: vi.fn(() => []),
   },
 }));
 

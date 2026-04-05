@@ -7,7 +7,7 @@ import checkFile from 'eslint-plugin-check-file';
 import pluginVueI18n from '@intlify/eslint-plugin-vue-i18n';
 
 export default defineConfigWithVueTs(
-  globalIgnores(['**/dist/**', '**/dist-ssr/**', '**/coverage/**', 'src-tauri/**']),
+  globalIgnores(['**/dist/**', '**/dist-ssr/**', '**/coverage/**', '**/e2e-webdriver/**', 'src-tauri/**']),
   pluginVue.configs['flat/strongly-recommended'],
   vueTsConfigs.recommended,
   pluginStylistic.configs.customize({

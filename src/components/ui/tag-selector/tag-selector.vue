@@ -41,6 +41,9 @@ const props = withDefaults(defineProps<{
   maxBadges: 2,
   fullWidth: false,
   align: 'start',
+  side: 'bottom',
+  alignOffset: 0,
+  sideOffset: 4,
 });
 
 const emit = defineEmits<{

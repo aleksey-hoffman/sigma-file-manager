@@ -21,7 +21,10 @@ const { t } = useI18n();
 </script>
 
 <template>
-  <div class="file-browser__empty-state-container">
+  <div
+    class="file-browser__empty-state-container"
+    data-e2e-root="file-browser-access-error"
+  >
     <EmptyState
       :icon="FolderOpenIcon"
       :title="t('fileBrowser.directoryAccessErrorTitle')"

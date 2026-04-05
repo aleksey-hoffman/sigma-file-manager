@@ -15,7 +15,10 @@ const columnVisibility = computed(() => userSettingsStore.userSettings.navigator
 
 <template>
   <ScrollArea class="file-browser-loading">
-    <div class="file-browser-loading__list">
+    <div
+      class="file-browser-loading__list"
+      data-e2e-root="file-browser-loading"
+    >
       <div
         v-for="skeletonIndex in 12"
         :key="skeletonIndex"

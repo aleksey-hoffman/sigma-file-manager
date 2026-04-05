@@ -87,7 +87,10 @@ function getDriveIcon(drive: {
 </script>
 
 <template>
-  <div class="nav-sidebar">
+  <div
+    class="nav-sidebar"
+    data-e2e-root="nav-sidebar"
+  >
     <div class="nav-sidebar-header">
       <div class="nav-sidebar-header-logo">
         <img
