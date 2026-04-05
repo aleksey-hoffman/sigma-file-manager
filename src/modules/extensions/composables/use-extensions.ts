@@ -10,9 +10,13 @@ import type {
   ExtensionRegistryEntry, ExtensionManifest, BinaryInfo, ExtensionSettings, PlatformOS,
 } from '@/types/extension';
 import { useExtensionsStorageStore } from '@/stores/storage/extensions';
-import { fetchGitHubTags, parseVersionFromTag, compareVersions } from '@/data/extensions';
+import {
+  compareVersions,
+  fetchGitHubTags,
+  pickDisplayVersionFromGitHubTags,
+} from '@/data/extensions';
 import { getPlatformInfo } from '@/modules/extensions/api';
-import { getBinaryLookupVersion } from '@/modules/extensions/utils/binary-metadata';
+import { getBinaryDisplayVersion, getBinaryLookupVersion } from '@/modules/extensions/utils/binary-metadata';
 
 export type ExtensionWithManifest = ExtensionRegistryEntry & {
   manifest?: ExtensionManifest;
@@ -88,6 +92,34 @@ export function useExtensions() {
     });
   }
 
+  function enrichBinariesWithSharedStore(binaries: BinaryInfo[]): BinaryInfo[] {
+    return binaries.map((binary) => {
+      const lookupVersion = getBinaryLookupVersion(binary);
+      const shared = extensionsStorageStore.getSharedBinary(binary.id, lookupVersion);
+
+      if (!shared) {
+        return binary;
+      }
+
+      return {
+        ...binary,
+        downloadUrl: binary.downloadUrl ?? shared.downloadUrl,
+        repository: binary.repository ?? shared.repository,
+        version: binary.version ?? shared.version,
+        latestVersion: binary.latestVersion ?? shared.latestVersion,
+      };
+    });
+  }
+
+  function compareBinaryVersionsForUpdate(latestVersion: string, installedVersion: string): number {
+    try {
+      return compareVersions(latestVersion, installedVersion);
+    }
+    catch {
+      return 0;
+    }
+  }
+
   function normalizeFsPath(pathValue: string): string {
     return pathValue
       .replace(/^\\\\\?\\/, '')
@@ -161,14 +193,11 @@ export function useExtensions() {
 
     try {
       const tags = await fetchGitHubTags(repository);
+      const picked = pickDisplayVersionFromGitHubTags(tags);
 
-      for (const tagName of tags) {
-        const parsedVersion = parseVersionFromTag(tagName);
-
-        if (parsedVersion) {
-          latestBinaryVersionByRepository.value.set(repository, parsedVersion);
-          return parsedVersion;
-        }
+      if (picked) {
+        latestBinaryVersionByRepository.value.set(repository, picked);
+        return picked;
       }
     }
     catch {
@@ -194,22 +223,37 @@ export function useExtensions() {
           binaryInfo.repository
           && (!binaryInfo.latestCheckedAt || (Date.now() - binaryInfo.latestCheckedAt) > BINARY_VERSION_CHECK_TTL_MS),
         );
+        const needsVersionBackfill = Boolean(
+          binaryInfo.repository && !getBinaryDisplayVersion(binaryInfo),
+        );
         let latestVersion = binaryInfo.latestVersion;
+        let nextLatestCheckedAt = binaryInfo.latestCheckedAt;
 
-        if (shouldCheckLatest && binaryInfo.repository) {
+        if ((shouldCheckLatest || needsVersionBackfill) && binaryInfo.repository) {
           const fetchedLatestVersion = await getLatestBinaryVersion(binaryInfo.repository);
 
           if (fetchedLatestVersion) {
             latestVersion = fetchedLatestVersion;
           }
+
+          if (shouldCheckLatest) {
+            nextLatestCheckedAt = Date.now();
+          }
+          else if (needsVersionBackfill && fetchedLatestVersion) {
+            nextLatestCheckedAt = Date.now();
+          }
         }
 
-        const hasUpdate = Boolean(binaryInfo.version && latestVersion && compareVersions(latestVersion, binaryInfo.version) > 0);
+        const hasUpdate = Boolean(
+          binaryInfo.version
+          && latestVersion
+          && compareBinaryVersionsForUpdate(latestVersion, binaryInfo.version) > 0,
+        );
         const nextBinaryInfo: BinaryInfo = {
           ...binaryInfo,
           latestVersion,
           hasUpdate,
-          latestCheckedAt: shouldCheckLatest ? Date.now() : binaryInfo.latestCheckedAt,
+          latestCheckedAt: nextLatestCheckedAt,
         };
         nextBinaries[nextBinaryInfo.id] = nextBinaryInfo;
 
@@ -225,6 +269,7 @@ export function useExtensions() {
             version: nextBinaryInfo.version,
             storageVersion: nextBinaryInfo.storageVersion,
             repository: nextBinaryInfo.repository,
+            downloadUrl: nextBinaryInfo.downloadUrl ?? existingSharedBinary.downloadUrl,
             latestVersion,
             hasUpdate,
             latestCheckedAt: nextBinaryInfo.latestCheckedAt,
@@ -234,6 +279,7 @@ export function useExtensions() {
             nextSharedBinary.version !== existingSharedBinary.version
             || nextSharedBinary.storageVersion !== existingSharedBinary.storageVersion
             || nextSharedBinary.repository !== existingSharedBinary.repository
+            || nextSharedBinary.downloadUrl !== existingSharedBinary.downloadUrl
             || nextSharedBinary.latestVersion !== existingSharedBinary.latestVersion
             || nextSharedBinary.hasUpdate !== existingSharedBinary.hasUpdate
             || nextSharedBinary.latestCheckedAt !== existingSharedBinary.latestCheckedAt
@@ -295,7 +341,9 @@ export function useExtensions() {
         versions,
         latestVersion,
         sizeBytes: installedExt ? extensionSizes.value.get(entry.id) : undefined,
-        binaries: installedExt ? getBinariesFromSettings(installedExt.settings) : [],
+        binaries: installedExt
+          ? enrichBinariesWithSharedStore(getBinariesFromSettings(installedExt.settings))
+          : [],
         platforms: getExtensionPlatforms(manifest),
         isPlatformCompatible: checkPlatformCompatibility(manifest),
       };
@@ -360,7 +408,7 @@ export function useExtensions() {
         versions: versions.length > 0 ? versions : [inst.version],
         latestVersion,
         sizeBytes: extensionSizes.value.get(inst.id),
-        binaries: getBinariesFromSettings(inst.settings),
+        binaries: enrichBinariesWithSharedStore(getBinariesFromSettings(inst.settings)),
         platforms: getExtensionPlatforms(inst.manifest),
         isPlatformCompatible: checkPlatformCompatibility(inst.manifest),
       };
@@ -467,7 +515,9 @@ export function useExtensions() {
       versions,
       latestVersion,
       sizeBytes: installed ? extensionSizes.value.get(extensionId) : undefined,
-      binaries: installed ? getBinariesFromSettings(installed.settings) : [],
+      binaries: installed
+        ? enrichBinariesWithSharedStore(getBinariesFromSettings(installed.settings))
+        : [],
       platforms: getExtensionPlatforms(rebuildManifest),
       isPlatformCompatible: checkPlatformCompatibility(rebuildManifest),
     };

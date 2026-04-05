@@ -26,11 +26,17 @@ export function buildIntegrityCandidateUrls(downloadUrl: string): string[] {
     const baseUrl = `${parsedUrl.origin}${parsedUrl.pathname.slice(0, lastSlashIndex)}`;
     const assetDownloadUrl = `${parsedUrl.origin}${parsedUrl.pathname}`;
 
-    return [
+    const candidates = [
       `${assetDownloadUrl}.sha256sum`,
+      `${assetDownloadUrl}.sha256`,
       `${baseUrl}/SHA2-256SUMS`,
+      `${baseUrl}/SHA256SUMS`,
       `${baseUrl}/checksums.sha256`,
+      `${baseUrl}/sha256sums.txt`,
+      `${baseUrl}/checksums.txt`,
     ];
+
+    return [...new Set(candidates)];
   }
   catch {
     return [];
@@ -88,4 +94,23 @@ export function parseIntegrityFromChecksumText(
   }
 
   return undefined;
+}
+
+export function shouldAllowMissingIntegrity(
+  isLocalExtensionInstall: boolean,
+  resolvedIntegrity: string | null | undefined,
+): boolean {
+  return isLocalExtensionInstall && !resolvedIntegrity?.trim();
+}
+
+export function warnUnverifiedBinaryDownload(params: {
+  extensionId: string;
+  binaryId: string;
+  downloadUrl: string;
+}): void {
+  console.warn(
+    '[Sigma][extensions] Binary download proceeds without integrity verification (folder-installed extension only). '
+    + 'Before publishing, set `integrity` in `sigma.binary.ensureInstalled` options or host a checksum file next to the download URL. '
+    + `extensionId=${params.extensionId} binaryId=${params.binaryId} downloadUrl=${params.downloadUrl}`,
+  );
 }

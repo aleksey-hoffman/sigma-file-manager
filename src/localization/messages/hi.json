@@ -1830,6 +1830,7 @@
     "noDescription": "कोई विवरण उपलब्ध नहीं",
     "unknownPublisher": "अज्ञात प्रकाशक",
     "unknownPermission": "अज्ञात अनुमति",
+    "unknownVersion": "अज्ञात संस्करण",
     "version": "संस्करण",
     "latestVersionLabel": "नवीनतम संस्करण",
     "selectedVersionLabel": "चयनित संस्करण",
@@ -1896,7 +1897,8 @@
       "installedOn": "स्थापित",
       "removeWarning": "यह निर्भरता अभी भी एक्सटेंशन द्वारा उपयोग की जाती है",
       "removeConfirm": "इस निर्भरता का उपयोग किया जाता है: {extensions}. उन्हें अगले उपयोग पर इसे पुनः डाउनलोड करना होगा। फिर भी हटाएँ?",
-      "removeError": "निर्भरता हटाने में विफल"
+      "removeError": "निर्भरता हटाने में विफल",
+      "downloadSource": "डाउनलोड लिंक खोलें"
     },
     "badges": {
       "official": "अधिकारी",

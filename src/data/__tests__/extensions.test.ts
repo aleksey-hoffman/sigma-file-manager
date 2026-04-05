@@ -3,8 +3,40 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 import { describe, expect, it } from 'vitest';
-import { compareVersions, getExtensionAssetUrl, sortVersionsDescending } from '@/data/extensions';
+import {
+  compareVersions,
+  getExtensionAssetUrl,
+  parseVersionFromTag,
+  pickDisplayVersionFromGitHubTags,
+  sortVersionsDescending,
+} from '@/data/extensions';
 import { isVersionCompatibleWithRange } from '@/modules/extensions/runtime/validation';
+
+describe('parseVersionFromTag', () => {
+  it('parses semver and calver with extra numeric segments', () => {
+    expect(parseVersionFromTag('v1.2.3')).toBe('1.2.3');
+    expect(parseVersionFromTag('2024.01.01')).toBe('2024.01.01');
+    expect(parseVersionFromTag('2024.01.01.123456')).toBe('2024.01.01.123456');
+  });
+
+  it('parses a trailing version after a prefix', () => {
+    expect(parseVersionFromTag('nightly-2024.01.01')).toBe('2024.01.01');
+  });
+});
+
+describe('pickDisplayVersionFromGitHubTags', () => {
+  it('falls back to the first tag when none match semver-like patterns', () => {
+    expect(pickDisplayVersionFromGitHubTags(['build-master-abc', 'other'])).toBe('build-master-abc');
+  });
+
+  it('skips uninformative labels such as latest when using fallback', () => {
+    expect(pickDisplayVersionFromGitHubTags(['latest', '2024.01.15'])).toBe('2024.01.15');
+  });
+
+  it('returns undefined for an empty list', () => {
+    expect(pickDisplayVersionFromGitHubTags([])).toBeUndefined();
+  });
+});
 
 describe('compareVersions', () => {
   it('returns -1 when versionA is less than versionB', () => {
@@ -31,6 +63,13 @@ describe('sortVersionsDescending', () => {
   it('sorts versions with prereleases correctly', () => {
     const versions = ['2.0.0-beta.1', '2.0.0', '2.0.0-beta.2', '1.9.0'];
     expect(sortVersionsDescending(versions)).toEqual(['2.0.0', '2.0.0-beta.2', '2.0.0-beta.1', '1.9.0']);
+  });
+
+  it('does not throw when strings are not valid semver', () => {
+    const versions = ['2024.01.01.123', '2024.01.01.124', '1.0.0'];
+    expect(() => sortVersionsDescending(versions)).not.toThrow();
+    const sorted = sortVersionsDescending(versions);
+    expect(sorted).toHaveLength(3);
   });
 });
 

@@ -276,6 +276,7 @@ export interface BinaryInfo {
   version?: string;
   storageVersion?: string | null;
   repository?: string;
+  downloadUrl?: string;
   latestVersion?: string;
   hasUpdate?: boolean;
   latestCheckedAt?: number;

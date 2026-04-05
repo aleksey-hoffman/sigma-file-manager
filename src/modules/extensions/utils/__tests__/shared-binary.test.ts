@@ -23,6 +23,7 @@ describe('shared binary helpers', () => {
         version: '7.0.0',
         storageVersion: '7.0.0',
         repository: 'https://github.com/example/ffmpeg',
+        downloadUrl: 'https://example.com/ffmpeg.zip',
         latestVersion: '7.1.0',
         hasUpdate: true,
         latestCheckedAt: 123,
@@ -39,6 +40,7 @@ describe('shared binary helpers', () => {
 
     expect(mergedBinary.version).toBe('7.0.0');
     expect(mergedBinary.repository).toBe('https://github.com/example/ffmpeg');
+    expect(mergedBinary.downloadUrl).toBe('https://example.com/ffmpeg.zip');
     expect(mergedBinary.latestVersion).toBe('7.1.0');
     expect(mergedBinary.hasUpdate).toBe(true);
     expect(mergedBinary.latestCheckedAt).toBe(123);

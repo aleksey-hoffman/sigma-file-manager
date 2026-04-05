@@ -1830,6 +1830,7 @@
     "noDescription": "کوئی تفصیل نہیں",
     "unknownPublisher": "نامعلوم ناشر",
     "unknownPermission": "نامعلوم اجازت",
+    "unknownVersion": "نامعلوم ورژن",
     "version": "ورژن",
     "latestVersionLabel": "تازہ ترین",
     "selectedVersionLabel": "منتخب ورژن",
@@ -1896,7 +1897,8 @@
       "installedOn": "انسٹال",
       "removeWarning": "یہ وابستگی ابھی ایکسٹینشنز استعمال کر رہے ہیں",
       "removeConfirm": "یہ وابستگی استعمال میں: {extensions}۔ اگلی دفعہ دوبارہ ڈاؤن لوڈ ہو گی۔ پھر بھی ہٹائیں؟",
-      "removeError": "وابستگی نہیں ہٹ سکی"
+      "removeError": "وابستگی نہیں ہٹ سکی",
+      "downloadSource": "ڈاؤن لوڈ لنک کھولیں"
     },
     "badges": {
       "official": "سرکاری",

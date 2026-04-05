@@ -1811,6 +1811,7 @@
     "noDescription": "説明がありません",
     "unknownAuthor": "不明な作者",
     "unknownPermission": "不明な権限",
+    "unknownVersion": "不明なバージョン",
     "version": "バージョン",
     "latestVersionLabel": "最新バージョン",
     "selectedVersionLabel": "選択されたバージョン",
@@ -1916,7 +1917,8 @@
       "installedOn": "Installed",
       "removeWarning": "This dependency is still used by extensions",
       "removeConfirm": "This dependency is used by: {extensions}. They will need to re-download it on next use. Remove anyway?",
-      "removeError": "Failed to remove dependency"
+      "removeError": "Failed to remove dependency",
+      "downloadSource": "ダウンロードリンクを開く"
     }
   },
   "commandPalette": {

@@ -2,12 +2,14 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
   buildIntegrityCandidateUrls,
   getAssetNameFromDownloadUrl,
   parseIntegrityFromChecksumText,
+  shouldAllowMissingIntegrity,
+  warnUnverifiedBinaryDownload,
 } from '@/modules/extensions/api/binary-integrity';
 
 describe('binary-integrity', () => {
@@ -22,8 +24,12 @@ describe('binary-integrity', () => {
       'https://github.com/yt-dlp/yt-dlp-nightly-builds/releases/latest/download/yt-dlp.exe',
     )).toEqual([
       'https://github.com/yt-dlp/yt-dlp-nightly-builds/releases/latest/download/yt-dlp.exe.sha256sum',
+      'https://github.com/yt-dlp/yt-dlp-nightly-builds/releases/latest/download/yt-dlp.exe.sha256',
       'https://github.com/yt-dlp/yt-dlp-nightly-builds/releases/latest/download/SHA2-256SUMS',
+      'https://github.com/yt-dlp/yt-dlp-nightly-builds/releases/latest/download/SHA256SUMS',
       'https://github.com/yt-dlp/yt-dlp-nightly-builds/releases/latest/download/checksums.sha256',
+      'https://github.com/yt-dlp/yt-dlp-nightly-builds/releases/latest/download/sha256sums.txt',
+      'https://github.com/yt-dlp/yt-dlp-nightly-builds/releases/latest/download/checksums.txt',
     ]);
   });
 
@@ -60,5 +66,36 @@ describe('binary-integrity', () => {
       ].join('\n'),
       'deno-x86_64-pc-windows-msvc.zip',
     )).toBe('sha256:0bf523e2909da9bfc56100461cd70a1287ae247e6c63b390c52605941d370dd1');
+  });
+
+  it('allows missing integrity for local extensions only', () => {
+    expect(shouldAllowMissingIntegrity(true, undefined)).toBe(true);
+    expect(shouldAllowMissingIntegrity(true, '')).toBe(true);
+    expect(shouldAllowMissingIntegrity(true, '   ')).toBe(true);
+    expect(shouldAllowMissingIntegrity(true, 'sha256:abc')).toBe(false);
+    expect(shouldAllowMissingIntegrity(false, undefined)).toBe(false);
+  });
+});
+
+describe('warnUnverifiedBinaryDownload', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('logs a console warning with extension and binary identifiers', () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    warnUnverifiedBinaryDownload({
+      extensionId: 'publisher.tool',
+      binaryId: 'ffmpeg',
+      downloadUrl: 'https://example.com/ffmpeg.zip',
+    });
+
+    expect(warnSpy).toHaveBeenCalledTimes(1);
+    const message = warnSpy.mock.calls[0][0] as string;
+    expect(message).toContain('[Sigma][extensions]');
+    expect(message).toContain('publisher.tool');
+    expect(message).toContain('ffmpeg');
+    expect(message).toContain('https://example.com/ffmpeg.zip');
   });
 });

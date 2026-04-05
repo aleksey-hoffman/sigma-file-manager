@@ -10,13 +10,20 @@ import { ToastProgress } from '@/components/ui/toaster';
 import { useExtensionsStorageStore } from '@/stores/storage/extensions';
 import { getBinaryLookupVersion } from '@/modules/extensions/utils/binary-metadata';
 import { getSharedBinaryPendingKey } from '@/modules/extensions/utils/shared-binary';
-import { fetchGitHubTags, fetchUrlText, getGitHubRepoInfo, parseVersionFromTag } from '@/data/extensions';
+import {
+  fetchGitHubTags,
+  fetchUrlText,
+  getGitHubRepoInfo,
+  pickDisplayVersionFromGitHubTags,
+} from '@/data/extensions';
 import { ensurePlatformInfo } from '@/modules/extensions/api/platform';
 import { incrementBinaryDownloadCount, incrementBinaryReuseCount } from '@/modules/extensions/api/binary-download-counts';
 import {
   buildIntegrityCandidateUrls,
   getAssetNameFromDownloadUrl,
   parseIntegrityFromChecksumText,
+  shouldAllowMissingIntegrity,
+  warnUnverifiedBinaryDownload,
 } from '@/modules/extensions/api/binary-integrity';
 import type { ExtensionContext } from '@/modules/extensions/api/extension-context';
 import { invokeAsExtension } from '@/modules/extensions/runtime/extension-invoke';
@@ -26,6 +33,7 @@ type SharedBinaryInstallResult = {
   version?: string;
   storageVersion?: string | null;
   repository?: string;
+  downloadUrl?: string;
   latestVersion?: string;
   hasUpdate?: boolean;
   latestCheckedAt?: number;
@@ -34,6 +42,7 @@ type SharedBinaryInstallResult = {
 
 const BINARY_STORAGE_KEY = '__binaries';
 const pendingBinaryDownloads = new Map<string, Promise<SharedBinaryInstallResult>>();
+const pendingPrivateBinaryDownloads = new Map<string, Promise<SharedBinaryInstallResult>>();
 
 function cloneBinaryInfo(info: BinaryInfo): BinaryInfo {
   return JSON.parse(JSON.stringify(info)) as BinaryInfo;
@@ -54,6 +63,11 @@ function formatDownloadSize(downloaded: number | null, total: number | null): st
 }
 
 export function createBinaryAPI(context: ExtensionContext) {
+  function isLocalExtensionInstall(): boolean {
+    const storageStore = useExtensionsStorageStore();
+    return storageStore.extensionsData.installedExtensions[context.extensionId]?.isLocal === true;
+  }
+
   async function getBinaryStorage(): Promise<Record<string, BinaryInfo>> {
     const storageStore = useExtensionsStorageStore();
     const settings = await storageStore.getExtensionSettings(context.extensionId);
@@ -79,13 +93,7 @@ export function createBinaryAPI(context: ExtensionContext) {
   async function getLatestGitHubVersion(repository: string): Promise<string | undefined> {
     try {
       const tags = await fetchGitHubTags(repository);
-
-      for (const tagName of tags) {
-        const parsedVersion = parseVersionFromTag(tagName);
-        if (parsedVersion) return parsedVersion;
-      }
-
-      return undefined;
+      return pickDisplayVersionFromGitHubTags(tags);
     }
     catch {
       return undefined;
@@ -136,6 +144,7 @@ export function createBinaryAPI(context: ExtensionContext) {
       version: result.version,
       storageVersion: result.storageVersion,
       repository: result.repository,
+      downloadUrl: result.downloadUrl,
       latestVersion: result.latestVersion,
       hasUpdate: result.hasUpdate,
       latestCheckedAt: result.latestCheckedAt,
@@ -154,6 +163,7 @@ export function createBinaryAPI(context: ExtensionContext) {
       version: result.version,
       storageVersion: result.storageVersion,
       repository: result.repository,
+      downloadUrl: result.downloadUrl,
       latestVersion: result.latestVersion,
       hasUpdate: result.hasUpdate,
       latestCheckedAt: result.latestCheckedAt,
@@ -185,6 +195,20 @@ export function createBinaryAPI(context: ExtensionContext) {
     return result.path;
   }
 
+  async function attachPrivateBinaryToExtension(
+    binaryId: string,
+    result: SharedBinaryInstallResult,
+  ): Promise<string> {
+    const binaries = await getBinaryStorage();
+    binaries[binaryId] = {
+      ...createExtensionBinaryInfo(result),
+      id: binaryId,
+    };
+    await setBinaryStorage(binaries);
+
+    return result.path;
+  }
+
   async function ensureSharedBinaryInstalled(
     binaryId: string,
     options: BinaryInstallOptions,
@@ -201,6 +225,11 @@ export function createBinaryAPI(context: ExtensionContext) {
     });
 
     if (sharedPath) {
+      const resolvedDownloadUrl = typeof options.downloadUrl === 'function'
+        ? options.downloadUrl(platform)
+        : options.downloadUrl;
+      const repositoryFromOptions = options.repository ?? parseGitHubRepositoryFromUrl(resolvedDownloadUrl);
+
       const existingSharedBinary = storageStore.getSharedBinary(binaryId, lookupVersion);
 
       if (existingSharedBinary) {
@@ -208,7 +237,8 @@ export function createBinaryAPI(context: ExtensionContext) {
           path: sharedPath,
           version: existingSharedBinary.version,
           storageVersion: existingSharedBinary.storageVersion,
-          repository: existingSharedBinary.repository,
+          repository: existingSharedBinary.repository ?? repositoryFromOptions,
+          downloadUrl: existingSharedBinary.downloadUrl ?? resolvedDownloadUrl,
           latestVersion: existingSharedBinary.latestVersion,
           hasUpdate: existingSharedBinary.hasUpdate,
           latestCheckedAt: existingSharedBinary.latestCheckedAt,
@@ -216,15 +246,12 @@ export function createBinaryAPI(context: ExtensionContext) {
         };
       }
 
-      const repository = options.repository ?? parseGitHubRepositoryFromUrl(
-        typeof options.downloadUrl === 'function' ? options.downloadUrl(platform) : options.downloadUrl,
-      );
-
       return {
         path: sharedPath,
         version: options.version,
         storageVersion,
-        repository,
+        repository: repositoryFromOptions,
+        downloadUrl: resolvedDownloadUrl,
         installedAt: Date.now(),
       };
     }
@@ -236,15 +263,11 @@ export function createBinaryAPI(context: ExtensionContext) {
     binaryId: string,
     options: BinaryInstallOptions,
     executableName: string,
-    platform: PlatformOS,
+    downloadUrl: string,
+    resolvedIntegrity: string | undefined,
     storageVersion: string | null,
     lookupVersion: string | undefined,
   ): Promise<SharedBinaryInstallResult> {
-    const downloadUrl = typeof options.downloadUrl === 'function'
-      ? options.downloadUrl(platform)
-      : options.downloadUrl;
-    const resolvedIntegrity = await resolveBinaryIntegrity(downloadUrl, options.integrity);
-
     const toastId = `binary-download-${context.extensionId}-${binaryId}`;
     const versionLabel = options.version ? ` ${options.version}` : '';
     const binaryLabel = `${options.name}${versionLabel}`;
@@ -330,9 +353,11 @@ export function createBinaryAPI(context: ExtensionContext) {
         binaryId,
         downloadUrl,
         executableName,
-        integrity: resolvedIntegrity ?? null,
-        version: lookupVersion ?? null,
-        progressEventId: toastId,
+        options: {
+          integrity: resolvedIntegrity ?? null,
+          version: lookupVersion ?? null,
+          progressEventId: toastId,
+        },
       });
 
       unlistenProgress();
@@ -350,6 +375,7 @@ export function createBinaryAPI(context: ExtensionContext) {
         version: installedVersion,
         storageVersion,
         repository,
+        downloadUrl,
         latestVersion,
         hasUpdate: Boolean(installedVersion && latestVersion && installedVersion !== latestVersion),
         latestCheckedAt: latestVersion ? Date.now() : undefined,
@@ -364,6 +390,120 @@ export function createBinaryAPI(context: ExtensionContext) {
     }
   }
 
+  async function downloadPrivateBinary(
+    binaryId: string,
+    options: BinaryInstallOptions,
+    executableName: string,
+    downloadUrl: string,
+    resolvedIntegrity: string | undefined,
+    storageVersion: string | null,
+    allowMissingIntegrityRequest: boolean,
+  ): Promise<SharedBinaryInstallResult> {
+    if (allowMissingIntegrityRequest) {
+      warnUnverifiedBinaryDownload({
+        extensionId: context.extensionId,
+        binaryId,
+        downloadUrl,
+      });
+    }
+
+    const toastId = `binary-download-${context.extensionId}-${binaryId}`;
+    const versionLabel = options.version ? ` ${options.version}` : '';
+    const binaryLabel = `${options.name}${versionLabel}`;
+    const toastTitle = context.getExtensionToastTitle();
+
+    let progressValue = 0;
+    const progressInterval = setInterval(() => {
+      if (progressValue < 90) {
+        progressValue = Math.min(90, progressValue + 3);
+      }
+
+      toast.custom(markRaw(ToastProgress), {
+        id: toastId,
+        duration: Infinity,
+        componentProps: {
+          data: {
+            id: toastId,
+            title: toastTitle,
+            subtitle: context.t('extensions.api.downloadingDependencies'),
+            description: binaryLabel,
+            downloadSize: undefined,
+            progress: progressValue,
+            timer: 0,
+            actionText: '',
+            cleanup: () => {},
+            extensionId: context.extensionId,
+            extensionIconPath: context.getExtensionIconPath(),
+          },
+        },
+      });
+    }, 200);
+
+    toast.custom(markRaw(ToastProgress), {
+      id: toastId,
+      duration: Infinity,
+      componentProps: {
+        data: {
+          id: toastId,
+          title: toastTitle,
+          subtitle: context.t('extensions.api.downloadingDependencies'),
+          description: binaryLabel,
+          downloadSize: undefined,
+          progress: 0,
+          timer: 0,
+          actionText: '',
+          cleanup: () => {},
+          extensionId: context.extensionId,
+          extensionIconPath: context.getExtensionIconPath(),
+        },
+      },
+    });
+
+    try {
+      const isArchiveDownload = /\.(zip|tar\.xz|txz|tar\.gz|tgz)$/i.test(downloadUrl);
+      const downloadCommand = isArchiveDownload
+        ? 'download_and_extract_extension_binary'
+        : 'download_extension_binary';
+
+      const binaryPath = await invokeAsExtension<string>(context.extensionId, downloadCommand, {
+        extensionId: context.extensionId,
+        binaryId,
+        downloadUrl,
+        executableName,
+        options: {
+          integrity: resolvedIntegrity ?? null,
+          allowMissingIntegrity: allowMissingIntegrityRequest,
+        },
+      });
+
+      clearInterval(progressInterval);
+      toast.dismiss(toastId);
+
+      incrementBinaryDownloadCount(context.extensionId);
+
+      const repository = options.repository ?? parseGitHubRepositoryFromUrl(downloadUrl);
+      const latestVersion = repository ? await getLatestGitHubVersion(repository) : undefined;
+      const installedVersion = options.version ?? latestVersion;
+
+      return {
+        path: binaryPath,
+        version: installedVersion,
+        storageVersion,
+        repository,
+        downloadUrl,
+        latestVersion,
+        hasUpdate: Boolean(installedVersion && latestVersion && installedVersion !== latestVersion),
+        latestCheckedAt: latestVersion ? Date.now() : undefined,
+        installedAt: Date.now(),
+      };
+    }
+    catch (error) {
+      clearInterval(progressInterval);
+      toast.dismiss(toastId);
+      throw error;
+    }
+  }
+
   async function performBinaryInstall(id: string, options: BinaryInstallOptions): Promise<string> {
     const platformData = await ensurePlatformInfo();
     const platform = platformData.os;
@@ -371,6 +511,14 @@ export function createBinaryAPI(context: ExtensionContext) {
       || (platformData.isWindows ? `${options.name}.exe` : options.name);
     const storageVersion = options.version ?? null;
     const lookupVersion = getBinaryLookupVersion({ storageVersion });
+    const downloadUrl = typeof options.downloadUrl === 'function'
+      ? options.downloadUrl(platform)
+      : options.downloadUrl;
+    const resolvedIntegrity = await resolveBinaryIntegrity(downloadUrl, options.integrity);
+    const allowMissingIntegrity = shouldAllowMissingIntegrity(
+      isLocalExtensionInstall(),
+      resolvedIntegrity,
+    );
     const existingSharedBinary = await ensureSharedBinaryInstalled(
       id,
       options,
@@ -404,11 +552,41 @@ export function createBinaryAPI(context: ExtensionContext) {
       return attachSharedBinaryToExtension(id, lookupVersion, sharedBinaryResult);
     }
 
+    const pendingPrivateDownload = pendingPrivateBinaryDownloads.get(pendingKey);
+
+    if (pendingPrivateDownload) {
+      const privateBinaryResult = await pendingPrivateDownload;
+      incrementBinaryReuseCount(context.extensionId);
+      return attachPrivateBinaryToExtension(id, privateBinaryResult);
+    }
+
+    if (allowMissingIntegrity) {
+      const privateBinaryPromise = downloadPrivateBinary(
+        id,
+        options,
+        executableName,
+        downloadUrl,
+        resolvedIntegrity,
+        storageVersion,
+        allowMissingIntegrity,
+      );
+      pendingPrivateBinaryDownloads.set(pendingKey, privateBinaryPromise);
+
+      try {
+        const privateBinaryResult = await privateBinaryPromise;
+        return attachPrivateBinaryToExtension(id, privateBinaryResult);
+      }
+      finally {
+        pendingPrivateBinaryDownloads.delete(pendingKey);
+      }
+    }
+
     const downloadPromise = downloadSharedBinary(
       id,
       options,
       executableName,
-      platform,
+      downloadUrl,
+      resolvedIntegrity,
       storageVersion,
       lookupVersion,
     );

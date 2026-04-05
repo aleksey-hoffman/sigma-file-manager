@@ -34,6 +34,7 @@ export function mergeSharedBinaryInfo(
     version: nextBinary.version ?? existingBinary?.version,
     storageVersion: nextBinary.storageVersion ?? existingBinary?.storageVersion,
     repository: nextBinary.repository ?? existingBinary?.repository,
+    downloadUrl: nextBinary.downloadUrl ?? existingBinary?.downloadUrl,
     latestVersion: nextBinary.latestVersion ?? existingBinary?.latestVersion,
     hasUpdate: nextBinary.hasUpdate ?? existingBinary?.hasUpdate,
     latestCheckedAt: nextBinary.latestCheckedAt ?? existingBinary?.latestCheckedAt,

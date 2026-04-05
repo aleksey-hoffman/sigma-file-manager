@@ -1830,6 +1830,7 @@
     "noDescription": "No description available",
     "unknownPublisher": "Unknown publisher",
     "unknownPermission": "Unknown permission",
+    "unknownVersion": "Unknown version",
     "version": "Version",
     "latestVersionLabel": "Latest version",
     "selectedVersionLabel": "Selected version",
@@ -1896,7 +1897,8 @@
       "installedOn": "Installed",
       "removeWarning": "This dependency is still used by extensions",
       "removeConfirm": "This dependency is used by: {extensions}. They will need to re-download it on next use. Remove anyway?",
-      "removeError": "Failed to remove dependency"
+      "removeError": "Failed to remove dependency",
+      "downloadSource": "Open download link"
     },
     "badges": {
       "official": "Official",

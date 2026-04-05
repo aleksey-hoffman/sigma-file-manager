@@ -1810,6 +1810,7 @@
     "noDescription": "توضیحی موجود نیست",
     "unknownAuthor": "نویسنده ناشناخته",
     "unknownPermission": "مجوز ناشناخته",
+    "unknownVersion": "نسخه ناشناخته",
     "version": "نسخه",
     "latestVersionLabel": "آخرین نسخه",
     "selectedVersionLabel": "نسخه انتخاب شده",
@@ -1915,7 +1916,8 @@
       "installedOn": "Installed",
       "removeWarning": "This dependency is still used by extensions",
       "removeConfirm": "This dependency is used by: {extensions}. They will need to re-download it on next use. Remove anyway?",
-      "removeError": "Failed to remove dependency"
+      "removeError": "Failed to remove dependency",
+      "downloadSource": "باز کردن لینک دانلود"
     }
   },
   "commandPalette": {

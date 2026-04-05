@@ -204,6 +204,56 @@ function postRequest(type: WorkerToHostMessage['type'], payload: Record<string, 
   });
 }
 
+async function unwrapPromisesForPostMessage(value: unknown): Promise<unknown> {
+  let current = await Promise.resolve(value);
+
+  while (current instanceof Promise) {
+    current = await current;
+  }
+
+  if (current === null || typeof current !== 'object') {
+    return current;
+  }
+
+  if (Array.isArray(current)) {
+    return Promise.all(current.map(item => unwrapPromisesForPostMessage(item)));
+  }
+
+  const tag = Object.prototype.toString.call(current);
+
+  if (
+    tag === '[object Date]'
+    || tag === '[object RegExp]'
+    || tag === '[object Blob]'
+    || tag === '[object File]'
+    || tag === '[object URL]'
+    || tag === '[object Error]'
+    || tag === '[object ArrayBuffer]'
+  ) {
+    return current;
+  }
+
+  if (ArrayBuffer.isView(current)) {
+    return current;
+  }
+
+  if (tag === '[object Map]' || tag === '[object Set]') {
+    return current;
+  }
+
+  if (typeof (current as { then?: unknown }).then === 'function') {
+    return unwrapPromisesForPostMessage(await Promise.resolve(current));
+  }
+
+  const unwrapped: Record<string, unknown> = {};
+
+  for (const key of Object.keys(current as object)) {
+    unwrapped[key] = await unwrapPromisesForPostMessage((current as Record<string, unknown>)[key]);
+  }
+
+  return unwrapped;
+}
+
 function createDisposable(resourceId: string, setupPromise: Promise<unknown>) {
   function disposeResource() {
     return postRequest('dispose-resource', { resourceId }).catch(() => {});
@@ -387,10 +437,12 @@ function createBridge() {
           cancellationListeners,
         };
         progressState.set(resourceId, state);
-        const setupPromise = postRequest('progress-start', {
-          resourceId,
-          options,
-        });
+        const setupPromise = unwrapPromisesForPostMessage(options).then(normalizedOptions =>
+          postRequest('progress-start', {
+            resourceId,
+            options: normalizedOptions,
+          }),
+        );
         pendingActivationTasks.push(setupPromise);
         return (async () => {
           await setupPromise;
@@ -399,10 +451,12 @@ function createBridge() {
             const result = await task(
               {
                 report(value: unknown) {
-                  return postRequest('progress-report', {
-                    resourceId,
-                    value,
-                  }).catch(() => {});
+                  return unwrapPromisesForPostMessage(value).then(normalized =>
+                    postRequest('progress-report', {
+                      resourceId,
+                      value: normalized,
+                    }).catch(() => {}),
+                  );
                 },
               },
               {
@@ -917,7 +971,7 @@ async function handleWorkerMessage(message: HostToWorkerMessage): Promise<void> 
     }
 
     try {
-      const result = await handler(...(message.args || []));
+      const result = await unwrapPromisesForPostMessage(handler(...(message.args || [])));
       emitToHost({
         type: 'invoke-worker-handler-result',
         callId: message.callId,

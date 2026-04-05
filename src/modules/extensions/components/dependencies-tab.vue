@@ -15,6 +15,7 @@ import {
   HardDriveIcon,
   FolderOpenIcon,
   TriangleAlertIcon,
+  ExternalLinkIcon,
 } from '@lucide/vue';
 import { Button } from '@/components/ui/button';
 import { formatBytes, formatDate } from '@/modules/navigator/components/file-browser/utils';
@@ -22,6 +23,7 @@ import { useWorkspacesStore } from '@/stores/storage/workspaces';
 import { useExtensionsStorageStore } from '@/stores/storage/extensions';
 import type { SharedBinaryInfo } from '@/types/extension';
 import { getBinaryDisplayVersion, getBinaryLookupVersion } from '@/modules/extensions/utils/binary-metadata';
+import { isHttpUrl, openBinaryDownloadUrl } from '@/modules/extensions/utils/binary-download-url';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 type DirSizeResult = {
@@ -247,6 +249,17 @@ watch(
                 class="dependencies-tab__used-by-extension"
               >{{ getExtensionDisplayId(extensionId) }}<span v-if="extensionIndex < binary.usedBy.length - 1">,&nbsp;</span></span>
             </div>
+            <Button
+              v-if="binary.downloadUrl && isHttpUrl(binary.downloadUrl)"
+              variant="ghost"
+              size="sm"
+              class="dependencies-tab__item-download"
+              :title="binary.downloadUrl"
+              @click="openBinaryDownloadUrl(binary.downloadUrl)"
+            >
+              <ExternalLinkIcon :size="14" />
+              {{ t('extensions.dependencies.downloadSource') }}
+            </Button>
           </div>
 
           <div class="dependencies-tab__item-actions">
@@ -452,6 +465,16 @@ watch(
 .dependencies-tab__used-by-extension {
   color: hsl(var(--primary));
   font-weight: 500;
+}
+
+.dependencies-tab__item-download {
+  max-width: 100%;
+  align-self: flex-start;
+  padding: 0 8px;
+  margin-top: 2px;
+  color: hsl(var(--primary));
+  font-size: 0.8125rem;
+  gap: 6px;
 }
 
 .dependencies-tab__item-actions {

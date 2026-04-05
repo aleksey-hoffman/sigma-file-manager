@@ -232,8 +232,46 @@ export async function fetchUrlText(url: string): Promise<FetchUrlResult> {
 }
 
 export function parseVersionFromTag(tagName: string): string | null {
-  const versionMatch = tagName.match(/^v?(\d+\.\d+\.\d+(?:-[\w.]+)?)$/);
-  return versionMatch ? versionMatch[1] : null;
+  const trimmed = tagName.trim();
+
+  const direct = trimmed.match(/^v?(\d+\.\d+\.\d+(?:\.\d+)*(?:-[\w.]+)?)$/);
+  if (direct) {
+    return direct[1];
+  }
+
+  const tail = trimmed.match(/(\d+\.\d+\.\d+(?:\.\d+)*(?:-[\w.]+)?)$/);
+  if (tail) {
+    return tail[1];
+  }
+
+  return null;
+}
+
+function isUninformativeGitHubTagLabel(tagName: string): boolean {
+  const normalized = tagName.replace(/^v/i, '').trim().toLowerCase();
+  return normalized.length === 0 || normalized === 'latest';
+}
+
+export function pickDisplayVersionFromGitHubTags(tagNames: string[]): string | undefined {
+  if (tagNames.length === 0) {
+    return undefined;
+  }
+
+  for (const tagName of tagNames) {
+    const parsed = parseVersionFromTag(tagName);
+    if (parsed) {
+      return parsed;
+    }
+  }
+
+  for (const tagName of tagNames) {
+    const fallback = tagName.replace(/^v/i, '').trim();
+    if (fallback.length > 0 && !isUninformativeGitHubTagLabel(tagName)) {
+      return fallback;
+    }
+  }
+
+  return undefined;
 }
 
 export function compareVersions(versionA: string, versionB: string): number {
@@ -241,5 +279,12 @@ export function compareVersions(versionA: string, versionB: string): number {
 }
 
 export function sortVersionsDescending(versions: string[]): string[] {
-  return [...versions].sort((versionA, versionB) => compareVersions(versionB, versionA));
+  return [...versions].sort((versionA, versionB) => {
+    try {
+      return compareVersions(versionB, versionA);
+    }
+    catch {
+      return versionB.localeCompare(versionA, undefined, { numeric: true, sensitivity: 'base' });
+    }
+  });
 }

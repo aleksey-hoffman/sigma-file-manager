@@ -136,15 +136,26 @@ pub async fn get_extension_binary_path(
     }
 }
 
+pub struct BinaryDownloadRequest {
+    pub integrity: Option<String>,
+    pub allow_missing_integrity: bool,
+}
+
 pub async fn download_extension_binary(
     app_handle: tauri::AppHandle,
     extension_id: String,
     binary_id: String,
     download_url: String,
     executable_name: String,
-    integrity: Option<String>,
+    request: BinaryDownloadRequest,
+    caller_extension_id: Option<String>,
 ) -> Result<String, String> {
-    require_integrity(&integrity, "remote extension binary downloads")?;
+    authorize_extension_caller(caller_extension_id.as_deref(), &extension_id)?;
+    require_integrity_if_needed(
+        &request.integrity,
+        request.allow_missing_integrity,
+        "remote extension binary downloads",
+    )?;
     let validated_url = validate_remote_url(&download_url)?;
     let binary_dir = get_extension_binary_dir(&app_handle, &extension_id, &binary_id)?;
     let binary_path = resolve_binary_file_path(&binary_dir, &executable_name)?;
@@ -169,7 +180,7 @@ pub async fn download_extension_binary(
         "binary response",
     )
     .await?;
-    verify_integrity(&bytes, integrity.as_deref())?;
+    verify_integrity(&bytes, request.integrity.as_deref())?;
 
     let mut file = fs::File::create(&binary_path)
         .map_err(|error| format!("Failed to create binary file: {}", error))?;
@@ -197,9 +208,15 @@ pub async fn download_and_extract_extension_binary(
     binary_id: String,
     download_url: String,
     executable_name: String,
-    integrity: Option<String>,
+    request: BinaryDownloadRequest,
+    caller_extension_id: Option<String>,
 ) -> Result<String, String> {
-    require_integrity(&integrity, "remote extension binary downloads")?;
+    authorize_extension_caller(caller_extension_id.as_deref(), &extension_id)?;
+    require_integrity_if_needed(
+        &request.integrity,
+        request.allow_missing_integrity,
+        "remote extension binary downloads",
+    )?;
     let validated_url = validate_remote_url(&download_url)?;
     let binary_dir = get_extension_binary_dir(&app_handle, &extension_id, &binary_id)?;
     let binary_path = resolve_binary_file_path(&binary_dir, &executable_name)?;
@@ -241,7 +258,7 @@ pub async fn download_and_extract_extension_binary(
 
     let bytes =
         read_response_bytes_with_limit(response, MAX_BINARY_DOWNLOAD_BYTES, "response").await?;
-    verify_integrity(&bytes, integrity.as_deref())?;
+    verify_integrity(&bytes, request.integrity.as_deref())?;
 
     let mut file = fs::File::create(&archive_path)
         .map_err(|error| format!("Failed to create archive file: {}", error))?;
@@ -328,6 +345,18 @@ fn binary_download_key(kind: &str, binary_id: &str, version: Option<&str>) -> St
     format!("{}:{}:{}", kind, binary_id, version.unwrap_or("latest"))
 }
 
+fn require_integrity_if_needed(
+    integrity: &Option<String>,
+    allow_missing_integrity: bool,
+    label: &str,
+) -> Result<(), String> {
+    if allow_missing_integrity {
+        return Ok(());
+    }
+
+    require_integrity(integrity, label)
+}
+
 #[derive(Clone, Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 struct BinaryDownloadProgress {
@@ -336,31 +365,35 @@ struct BinaryDownloadProgress {
     total: Option<u64>,
 }
 
+pub struct SharedBinaryDownloadRequest {
+    pub integrity: Option<String>,
+    pub version: Option<String>,
+    pub progress_event_id: Option<String>,
+}
+
 pub async fn download_shared_binary(
     app_handle: tauri::AppHandle,
     binary_id: String,
     download_url: String,
     executable_name: String,
-    integrity: Option<String>,
-    version: Option<String>,
-    progress_event_id: Option<String>,
+    request: SharedBinaryDownloadRequest,
 ) -> Result<String, String> {
-    require_integrity(&integrity, "remote shared binary downloads")?;
-    let binary_dir = get_shared_binary_dir(&app_handle, &binary_id, version.as_deref())?;
+    require_integrity(&request.integrity, "remote shared binary downloads")?;
+    let binary_dir = get_shared_binary_dir(&app_handle, &binary_id, request.version.as_deref())?;
     let binary_path = resolve_binary_file_path(&binary_dir, &executable_name)?;
 
     if binary_path.exists() {
         return Ok(binary_path.to_string_lossy().to_string());
     }
 
-    let key = binary_download_key("raw", &binary_id, version.as_deref());
+    let key = binary_download_key("raw", &binary_id, request.version.as_deref());
     let app_handle_clone = app_handle.clone();
     let binary_id_clone = binary_id.clone();
     let download_url_clone = download_url.clone();
     let executable_name_clone = executable_name.clone();
-    let integrity_clone = integrity.clone();
-    let version_clone = version.clone();
-    let progress_event_id_clone = progress_event_id.clone();
+    let integrity_clone = request.integrity.clone();
+    let version_clone = request.version.clone();
+    let progress_event_id_clone = request.progress_event_id.clone();
 
     let mut guard = IN_FLIGHT_BINARY_DOWNLOADS.lock().await;
     if let Some(tx) = guard.get(&key) {
@@ -544,26 +577,24 @@ pub async fn download_and_extract_shared_binary(
     binary_id: String,
     download_url: String,
     executable_name: String,
-    integrity: Option<String>,
-    version: Option<String>,
-    progress_event_id: Option<String>,
+    request: SharedBinaryDownloadRequest,
 ) -> Result<String, String> {
-    require_integrity(&integrity, "remote shared binary downloads")?;
-    let binary_dir = get_shared_binary_dir(&app_handle, &binary_id, version.as_deref())?;
+    require_integrity(&request.integrity, "remote shared binary downloads")?;
+    let binary_dir = get_shared_binary_dir(&app_handle, &binary_id, request.version.as_deref())?;
     let binary_path = resolve_binary_file_path(&binary_dir, &executable_name)?;
 
     if binary_path.exists() {
         return Ok(binary_path.to_string_lossy().to_string());
     }
 
-    let key = binary_download_key("extract", &binary_id, version.as_deref());
+    let key = binary_download_key("extract", &binary_id, request.version.as_deref());
     let app_handle_clone = app_handle.clone();
     let binary_id_clone = binary_id.clone();
     let download_url_clone = download_url.clone();
     let executable_name_clone = executable_name.clone();
-    let integrity_clone = integrity.clone();
-    let version_clone = version.clone();
-    let progress_event_id_clone = progress_event_id.clone();
+    let integrity_clone = request.integrity.clone();
+    let version_clone = request.version.clone();
+    let progress_event_id_clone = request.progress_event_id.clone();
 
     let mut guard = IN_FLIGHT_BINARY_DOWNLOADS.lock().await;
     if let Some(tx) = guard.get(&key) {

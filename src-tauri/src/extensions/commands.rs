@@ -13,6 +13,22 @@ use super::types::{
     ExtensionCommandResult, ExtensionOperationResult, FetchUrlResult, InstalledExtensionInfo,
     LocalExtensionInstallResult, PlatformInfo, ReadTextPreviewResult,
 };
+use serde::Deserialize;
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BinaryDownloadOptions {
+    integrity: Option<String>,
+    allow_missing_integrity: Option<bool>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SharedBinaryDownloadOptions {
+    integrity: Option<String>,
+    version: Option<String>,
+    progress_event_id: Option<String>,
+}
 
 #[tauri::command]
 pub async fn get_extensions_dir(app_handle: tauri::AppHandle) -> Result<String, String> {
@@ -144,7 +160,8 @@ pub async fn extension_path_exists(
     file_path: String,
     caller_extension_id: Option<String>,
 ) -> Result<bool, String> {
-    filesystem::extension_path_exists(app_handle, extension_id, file_path, caller_extension_id).await
+    filesystem::extension_path_exists(app_handle, extension_id, file_path, caller_extension_id)
+        .await
 }
 
 #[tauri::command]
@@ -155,7 +172,14 @@ pub async fn run_extension_command(
     args: Vec<String>,
     caller_extension_id: Option<String>,
 ) -> Result<ExtensionCommandResult, String> {
-    processes::run_extension_command(app_handle, extension_id, command_path, args, caller_extension_id).await
+    processes::run_extension_command(
+        app_handle,
+        extension_id,
+        command_path,
+        args,
+        caller_extension_id,
+    )
+    .await
 }
 
 #[tauri::command]
@@ -186,7 +210,14 @@ pub async fn start_extension_command(
     args: Vec<String>,
     caller_extension_id: Option<String>,
 ) -> Result<String, String> {
-    processes::start_extension_command(app_handle, extension_id, command_path, args, caller_extension_id).await
+    processes::start_extension_command(
+        app_handle,
+        extension_id,
+        command_path,
+        args,
+        caller_extension_id,
+    )
+    .await
 }
 
 #[tauri::command]
@@ -240,7 +271,8 @@ pub async fn download_extension_binary(
     binary_id: String,
     download_url: String,
     executable_name: String,
-    integrity: Option<String>,
+    options: BinaryDownloadOptions,
+    caller_extension_id: Option<String>,
 ) -> Result<String, String> {
     binaries::download_extension_binary(
         app_handle,
@@ -248,7 +280,11 @@ pub async fn download_extension_binary(
         binary_id,
         download_url,
         executable_name,
-        integrity,
+        binaries::BinaryDownloadRequest {
+            integrity: options.integrity,
+            allow_missing_integrity: options.allow_missing_integrity.unwrap_or(false),
+        },
+        caller_extension_id,
     )
     .await
 }
@@ -260,7 +296,8 @@ pub async fn download_and_extract_extension_binary(
     binary_id: String,
     download_url: String,
     executable_name: String,
-    integrity: Option<String>,
+    options: BinaryDownloadOptions,
+    caller_extension_id: Option<String>,
 ) -> Result<String, String> {
     binaries::download_and_extract_extension_binary(
         app_handle,
@@ -268,7 +305,11 @@ pub async fn download_and_extract_extension_binary(
         binary_id,
         download_url,
         executable_name,
-        integrity,
+        binaries::BinaryDownloadRequest {
+            integrity: options.integrity,
+            allow_missing_integrity: options.allow_missing_integrity.unwrap_or(false),
+        },
+        caller_extension_id,
     )
     .await
 }
@@ -280,7 +321,8 @@ pub async fn remove_extension_binary(
     binary_id: String,
     caller_extension_id: Option<String>,
 ) -> Result<(), String> {
-    binaries::remove_extension_binary(app_handle, extension_id, binary_id, caller_extension_id).await
+    binaries::remove_extension_binary(app_handle, extension_id, binary_id, caller_extension_id)
+        .await
 }
 
 #[tauri::command]
@@ -317,18 +359,18 @@ pub async fn download_shared_binary(
     binary_id: String,
     download_url: String,
     executable_name: String,
-    integrity: Option<String>,
-    version: Option<String>,
-    progress_event_id: Option<String>,
+    options: SharedBinaryDownloadOptions,
 ) -> Result<String, String> {
     binaries::download_shared_binary(
         app_handle,
         binary_id,
         download_url,
         executable_name,
-        integrity,
-        version,
-        progress_event_id,
+        binaries::SharedBinaryDownloadRequest {
+            integrity: options.integrity,
+            version: options.version,
+            progress_event_id: options.progress_event_id,
+        },
     )
     .await
 }
@@ -339,18 +381,18 @@ pub async fn download_and_extract_shared_binary(
     binary_id: String,
     download_url: String,
     executable_name: String,
-    integrity: Option<String>,
-    version: Option<String>,
-    progress_event_id: Option<String>,
+    options: SharedBinaryDownloadOptions,
 ) -> Result<String, String> {
     binaries::download_and_extract_shared_binary(
         app_handle,
         binary_id,
         download_url,
         executable_name,
-        integrity,
-        version,
-        progress_event_id,
+        binaries::SharedBinaryDownloadRequest {
+            integrity: options.integrity,
+            version: options.version,
+            progress_event_id: options.progress_event_id,
+        },
     )
     .await
 }

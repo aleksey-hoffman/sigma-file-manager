@@ -1830,6 +1830,7 @@
     "noDescription": "Описание отсутствует",
     "unknownAuthor": "Неизвестный автор",
     "unknownPermission": "Неизвестное разрешение",
+    "unknownVersion": "Неизвестная версия",
     "version": "Версия",
     "latestVersionLabel": "Последняя версия",
     "selectedVersionLabel": "Выбранная версия",
@@ -1932,7 +1933,8 @@
       "installedOn": "Installed",
       "removeWarning": "This dependency is still used by extensions",
       "removeConfirm": "This dependency is used by: {extensions}. They will need to re-download it on next use. Remove anyway?",
-      "removeError": "Failed to remove dependency"
+      "removeError": "Failed to remove dependency",
+      "downloadSource": "Открыть ссылку загрузки"
     }
   },
   "commandPalette": {

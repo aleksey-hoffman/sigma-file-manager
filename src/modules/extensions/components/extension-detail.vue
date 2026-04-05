@@ -38,6 +38,7 @@ import { EXTENSION_PERMISSIONS_INFO } from '@/data/extensions';
 import { getExtensionReadmeUrl, getExtensionChangelogUrl } from '@/data/extensions';
 import { formatBytes, formatDate } from '@/modules/navigator/components/file-browser/utils';
 import { getBinaryDisplayVersion } from '@/modules/extensions/utils/binary-metadata';
+import { isHttpUrl, openBinaryDownloadUrl } from '@/modules/extensions/utils/binary-download-url';
 import { getLucideIcon } from '@/utils/lucide-icons';
 import { renderMarkdownToSafeHtml } from '@/utils/safe-html';
 import { useExtensionsStore } from '@/stores/runtime/extensions';
@@ -929,24 +930,37 @@ onMounted(() => {
             :key="binary.id"
             class="extension-detail__binary-item"
           >
-            <span class="extension-detail__binary-id">{{ binary.id }}</span>
-            <span
-              v-if="getBinaryDisplayVersion(binary)"
-              class="extension-detail__binary-version"
-            >{{ getBinaryDisplayVersion(binary) }}</span>
-            <span
-              v-else
-              class="extension-detail__binary-version"
-            >{{ t('unknown') }} {{ t('extensions.version') }}</span>
-            <span
-              v-if="binary.hasUpdate && binary.latestVersion"
-              class="extension-detail__binary-update"
-            >{{ `${t('extensions.update')}: ${binary.latestVersion}` }}</span>
-            <span
-              v-else-if="binary.latestVersion"
-              class="extension-detail__binary-latest"
-            >{{ `${t('extensions.latest')}: ${binary.latestVersion}` }}</span>
-            <span class="extension-detail__binary-date">{{ formatDate(binary.installedAt) }}</span>
+            <div class="extension-detail__binary-item-main">
+              <span class="extension-detail__binary-id">{{ binary.id }}</span>
+              <span
+                v-if="getBinaryDisplayVersion(binary)"
+                class="extension-detail__binary-version"
+              >{{ getBinaryDisplayVersion(binary) }}</span>
+              <span
+                v-else
+                class="extension-detail__binary-version"
+              >{{ t('extensions.unknownVersion') }}</span>
+              <span
+                v-if="binary.hasUpdate && binary.latestVersion"
+                class="extension-detail__binary-update"
+              >{{ `${t('extensions.update')}: ${binary.latestVersion}` }}</span>
+              <span
+                v-else-if="binary.latestVersion"
+                class="extension-detail__binary-latest"
+              >{{ `${t('extensions.latest')}: ${binary.latestVersion}` }}</span>
+              <span class="extension-detail__binary-date">{{ formatDate(binary.installedAt) }}</span>
+            </div>
+            <Button
+              v-if="binary.downloadUrl && isHttpUrl(binary.downloadUrl)"
+              variant="ghost"
+              size="sm"
+              class="extension-detail__binary-download"
+              :title="binary.downloadUrl"
+              @click="openBinaryDownloadUrl(binary.downloadUrl)"
+            >
+              <ExternalLinkIcon :size="14" />
+              {{ t('extensions.dependencies.downloadSource') }}
+            </Button>
           </div>
         </div>
       </TabsContent>
@@ -1210,13 +1224,28 @@ onMounted(() => {
 
 .extension-detail__binary-item {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-start;
   padding: 6px 8px;
   border: 1px solid hsl(var(--border) / 60%);
   border-radius: 8px;
   background-color: hsl(var(--background) / 60%);
   gap: 8px;
+}
+
+.extension-detail__binary-item-main {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.extension-detail__binary-download {
+  max-width: 100%;
+  padding: 0 8px;
+  color: hsl(var(--primary));
+  font-size: 0.8125rem;
+  gap: 6px;
 }
 
 .extension-detail__binary-id {
