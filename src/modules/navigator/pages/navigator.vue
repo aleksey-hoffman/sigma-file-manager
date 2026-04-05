@@ -6,12 +6,14 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <script setup lang="ts">
 import {
   computed,
+  markRaw,
   ref,
   onMounted,
   onUnmounted,
   watch,
   nextTick,
 } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { TabBar } from '@/modules/tab-bar';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 import { useWorkspacesStore } from '@/stores/storage/workspaces';
@@ -19,7 +21,8 @@ import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { useClipboardStore } from '@/stores/runtime/clipboard';
 import { useDismissalLayerStore } from '@/stores/runtime/dismissal-layer';
 import { useGlobalSearchStore } from '@/stores/runtime/global-search';
-import { useShortcutsStore } from '@/stores/runtime/shortcuts';
+import { useShortcutsStore, getSelectedTextForCopy } from '@/stores/runtime/shortcuts';
+import { toast, ToastStatic } from '@/components/ui/toaster';
 import { useTerminalsStore } from '@/stores/runtime/terminals';
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
 import { useNavigatorSelectionStore } from '@/stores/runtime/navigator-selection';
@@ -59,6 +62,16 @@ const shortcutsStore = useShortcutsStore();
 const terminalsStore = useTerminalsStore();
 const dirSizesStore = useDirSizesStore();
 const navigatorSelectionStore = useNavigatorSelectionStore();
+const { t } = useI18n();
+
+const TEXT_COPY_PREVIEW_MAX_LENGTH = 400;
+
+function truncateTextCopyPreview(text: string): string {
+  if (text.length <= TEXT_COPY_PREVIEW_MAX_LENGTH) {
+    return text;
+  }
+  return `${text.slice(0, TEXT_COPY_PREVIEW_MAX_LENGTH)}…`;
+}
 
 const paneRefsMap = ref<Map<string, FileBrowserInstance>>(new Map());
 const singlePaneRef = ref<FileBrowserInstance | null>(null);
@@ -317,6 +330,24 @@ function handleFilterShortcut() {
 }
 
 function handleCopyShortcut() {
+  const selectedText = getSelectedTextForCopy();
+  if (selectedText !== null) {
+    void navigator.clipboard.writeText(selectedText).then(() => {
+      toast.custom(markRaw(ToastStatic), {
+        componentProps: {
+          data: {
+            title: t('notifications.copied'),
+            description: truncateTextCopyPreview(selectedText),
+          },
+        },
+        duration: 2000,
+      });
+    }).catch((error) => {
+      console.error('Failed to copy selected text:', error);
+    });
+    return true;
+  }
+
   const pane = getActivePaneRef();
   if (!pane) return;
 
@@ -326,6 +357,10 @@ function handleCopyShortcut() {
 }
 
 function handleCutShortcut() {
+  if (getSelectedTextForCopy() !== null) {
+    return false;
+  }
+
   const pane = getActivePaneRef();
   if (!pane) return;
 

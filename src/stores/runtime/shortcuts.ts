@@ -775,6 +775,18 @@ export function formatConditionsLabel(conditions: ShortcutConditions): string {
   return conditionLabels.join(' && ') || '';
 }
 
+export function getSelectedTextForCopy(): string | null {
+  const selection = window.getSelection();
+  if (!selection || selection.rangeCount === 0 || selection.isCollapsed) {
+    return null;
+  }
+  const text = selection.toString();
+  if (text.trim().length === 0) {
+    return null;
+  }
+  return text;
+}
+
 function isInputFieldActive(): boolean {
   const activeElement = document.activeElement;
   if (!activeElement) return false;

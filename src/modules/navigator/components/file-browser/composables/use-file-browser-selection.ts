@@ -194,7 +194,13 @@ export function useFileBrowserSelection(
     return true;
   }
 
+  function clearDocumentTextSelection() {
+    window.getSelection()?.removeAllRanges();
+  }
+
   function handleEntryMouseDown(entry: DirEntry, event: MouseEvent) {
+    clearDocumentTextSelection();
+
     if (event.button === 1 && entry.is_dir) {
       event.preventDefault();
       event.stopPropagation();
