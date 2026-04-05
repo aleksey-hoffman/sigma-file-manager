@@ -20,6 +20,7 @@ import { useChangelog } from '@/modules/changelog';
 import { useAppUpdater } from '@/modules/app-updater';
 import { useExtensionsStore } from '@/stores/runtime/extensions';
 import { useArchiveJobsStore } from '@/stores/runtime/archive-jobs';
+import { useDeleteJobsStore } from '@/stores/runtime/delete-jobs';
 import { useQuickViewStore } from '@/stores/runtime/quick-view';
 import { initPlatformInfo } from '@/modules/extensions/api';
 import { invoke } from '@tauri-apps/api/core';
@@ -52,6 +53,7 @@ export function useInit() {
   const backgroundMediaStore = useBackgroundMediaStore();
   const extensionsStore = useExtensionsStore();
   const archiveJobsStore = useArchiveJobsStore();
+  const deleteJobsStore = useDeleteJobsStore();
   const quickViewStore = useQuickViewStore();
   const { checkAndShowChangelog } = useChangelog();
   const { initAutoCheck } = useAppUpdater();
@@ -212,6 +214,7 @@ export function useInit() {
     await initPlatformInfo();
     await extensionsStore.init();
     void archiveJobsStore.ensureEventListeners();
+    void deleteJobsStore.ensureEventListeners();
     void quickViewStore.ensureMainWindowDisplayedPathListener();
 
     if (isMainWebviewWindow()) {

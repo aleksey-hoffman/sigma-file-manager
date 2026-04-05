@@ -4,15 +4,31 @@
 
 export type CompareOp = '>=' | '<=' | '>' | '<' | '=' | '==';
 
-export type QuickSearchSizePredicate =
-  | { kind: 'substring' }
-  | { kind: 'compare'; op: CompareOp; thresholdBytes: number }
-  | { kind: 'between'; minBytes: number; maxBytes: number };
+export type QuickSearchSizePredicate
+  = | { kind: 'substring' }
+    | {
+      kind: 'compare';
+      op: CompareOp;
+      thresholdBytes: number;
+    }
+    | {
+      kind: 'between';
+      minBytes: number;
+      maxBytes: number;
+    };
 
-export type QuickSearchItemsPredicate =
-  | { kind: 'substring' }
-  | { kind: 'compare'; op: CompareOp; threshold: number }
-  | { kind: 'between'; min: number; max: number };
+export type QuickSearchItemsPredicate
+  = | { kind: 'substring' }
+    | {
+      kind: 'compare';
+      op: CompareOp;
+      threshold: number;
+    }
+    | {
+      kind: 'between';
+      min: number;
+      max: number;
+    };
 
 const SIZE_UNIT_TO_BYTES: Record<string, number> = {
   b: 1,
@@ -65,10 +81,18 @@ export function parseQuickSearchSizePredicate(raw: string): QuickSearchSizePredi
     const maxBytes = sizeToBytes(secondValue, secondUnit);
 
     if (minBytes > maxBytes) {
-      return { kind: 'between', minBytes: maxBytes, maxBytes: minBytes };
+      return {
+        kind: 'between',
+        minBytes: maxBytes,
+        maxBytes: minBytes,
+      };
     }
 
-    return { kind: 'between', minBytes, maxBytes };
+    return {
+      kind: 'between',
+      minBytes,
+      maxBytes,
+    };
   }
 
   const compareMatch = trimmed.match(COMPARE_SIZE_PATTERN);
@@ -83,7 +107,11 @@ export function parseQuickSearchSizePredicate(raw: string): QuickSearchSizePredi
     const op = compareMatch[1] as CompareOp;
     const thresholdBytes = sizeToBytes(numericValue, compareMatch[3]);
 
-    return { kind: 'compare', op, thresholdBytes };
+    return {
+      kind: 'compare',
+      op,
+      thresholdBytes,
+    };
   }
 
   return { kind: 'substring' };
@@ -107,10 +135,18 @@ export function parseQuickSearchItemsPredicate(raw: string): QuickSearchItemsPre
     }
 
     if (min > max) {
-      return { kind: 'between', min: max, max: min };
+      return {
+        kind: 'between',
+        min: max,
+        max: min,
+      };
     }
 
-    return { kind: 'between', min, max };
+    return {
+      kind: 'between',
+      min,
+      max,
+    };
   }
 
   const compareMatch = trimmed.match(COMPARE_ITEMS_PATTERN);
@@ -124,7 +160,11 @@ export function parseQuickSearchItemsPredicate(raw: string): QuickSearchItemsPre
 
     const op = compareMatch[1] as CompareOp;
 
-    return { kind: 'compare', op, threshold };
+    return {
+      kind: 'compare',
+      op,
+      threshold,
+    };
   }
 
   return { kind: 'substring' };

@@ -275,6 +275,7 @@ async function migrateUserSettingsStep(storage: StorageAdapter, fromVersion: num
 
   if (fromVersion === 7 && toVersion === 8) {
     const existing = await storage.get<boolean>('dateTime.showRelativeModifiedInFileList');
+
     if (typeof existing !== 'boolean') {
       await storage.set('dateTime.showRelativeModifiedInFileList', true);
     }
@@ -282,6 +283,7 @@ async function migrateUserSettingsStep(storage: StorageAdapter, fromVersion: num
 
   if (fromVersion === 8 && toVersion === 9) {
     const next = await storage.get<boolean>('dateTime.showRelativeDates');
+
     if (typeof next !== 'boolean') {
       const previous = await storage.get<boolean>('dateTime.showRelativeModifiedInFileList');
       await storage.set(

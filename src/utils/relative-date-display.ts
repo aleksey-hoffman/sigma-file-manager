@@ -71,11 +71,13 @@ export function formatRelativeDateDisplay(params: {
 
   if (elapsedMs < RECENT_RELATIVE_DATE_WINDOW_MS) {
     const totalSeconds = Math.floor(elapsedMs / 1000);
+
     if (totalSeconds < 60) {
       return translate('relativeTime.secondsAgo', totalSeconds);
     }
 
     const totalMinutes = Math.floor(totalSeconds / 60);
+
     if (totalMinutes < 60) {
       return translate('relativeTime.minutesAgo', totalMinutes);
     }

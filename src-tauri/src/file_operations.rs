@@ -2,7 +2,9 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-use crate::utils::{source_and_destination_same_directory, unique_path_with_index};
+use crate::utils::{
+    minimize_delete_paths, source_and_destination_same_directory, unique_path_with_index,
+};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs;
@@ -961,6 +963,17 @@ pub fn rename_item(source_path: String, new_name: String) -> FileOperationResult
 
 #[tauri::command]
 pub fn delete_items(paths: Vec<String>, use_trash: bool) -> FileOperationResult {
+    let paths = minimize_delete_paths(paths);
+    if paths.is_empty() {
+        return FileOperationResult {
+            success: false,
+            error: Some("No paths to delete".to_string()),
+            copied_count: None,
+            failed_count: None,
+            skipped_count: None,
+        };
+    }
+
     let mut deleted_count: u32 = 0;
     let mut failed_count: u32 = 0;
     let mut last_error: Option<String> = None;
@@ -991,9 +1004,18 @@ pub fn delete_items(paths: Vec<String>, use_trash: bool) -> FileOperationResult 
         }
     }
 
+    let error = match (failed_count, last_error) {
+        (count, Some(last)) if count > 1 => {
+            Some(format!("{} paths failed. Last error: {}", count, last))
+        }
+        (_, Some(last)) => Some(last),
+        (count, None) if count > 1 => Some(format!("{} paths failed", count)),
+        (_, None) => None,
+    };
+
     FileOperationResult {
         success: failed_count == 0,
-        error: last_error,
+        error,
         copied_count: Some(deleted_count),
         failed_count: Some(failed_count),
         skipped_count: Some(0),

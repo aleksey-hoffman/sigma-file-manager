@@ -1936,6 +1936,7 @@
     "active": "active",
     "cancelAll": "Cancel all",
     "cancelling": "Wird abgebrochen…",
+    "deleteSelectedCount": "{count} Elemente",
     "groups": {
       "dir-size": "Directory size calculations",
       "copy": "Copy operations",

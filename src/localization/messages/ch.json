@@ -1936,6 +1936,7 @@
     "active": "active",
     "cancelAll": "Cancel all",
     "cancelling": "正在取消…",
+    "deleteSelectedCount": "{count} 项",
     "groups": {
       "dir-size": "Directory size calculations",
       "copy": "Copy operations",

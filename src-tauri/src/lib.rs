@@ -6,6 +6,7 @@ mod app_updater;
 mod archive;
 mod background_sources;
 mod default_file_manager;
+mod delete_job;
 mod dir_reader;
 mod dir_size;
 mod dir_watcher;
@@ -248,6 +249,8 @@ pub fn run() {
             file_operations::create_item,
             archive::start_archive_job,
             archive::cancel_archive_job,
+            delete_job::start_delete_job,
+            delete_job::cancel_delete_job,
             global_search::global_search_init,
             global_search::global_search_get_status,
             global_search::global_search_start_scan,

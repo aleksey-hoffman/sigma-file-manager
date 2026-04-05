@@ -9,7 +9,7 @@ import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import {
   ActivityIcon, LoaderCircleIcon, XIcon, CheckIcon, FolderIcon, FileArchiveIcon,
-  BanIcon,
+  BanIcon, Trash2Icon,
 } from '@lucide/vue';
 import type { FocusOutsideEvent, PointerDownOutsideEvent } from 'reka-ui';
 import { Button } from '@/components/ui/button';
@@ -18,6 +18,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useStatusCenterStore } from '@/stores/runtime/status-center';
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
 import { useArchiveJobsStore } from '@/stores/runtime/archive-jobs';
+import { useDeleteJobsStore } from '@/stores/runtime/delete-jobs';
 import { formatBytes } from '@/modules/navigator/components/file-browser/utils';
 
 const { t } = useI18n();
@@ -25,6 +26,7 @@ const statusCenterStore = useStatusCenterStore();
 const { isOpen: statusCenterPopoverOpen } = storeToRefs(statusCenterStore);
 const dirSizesStore = useDirSizesStore();
 const archiveJobsStore = useArchiveJobsStore();
+const deleteJobsStore = useDeleteJobsStore();
 
 const hasOperations = computed(() => statusCenterStore.operationsList.length > 0);
 const hasCompletedOperations = computed(() => statusCenterStore.completedOperations.length > 0);
@@ -35,6 +37,8 @@ function getOperationIcon(type: string) {
       return FolderIcon;
     case 'archive':
       return FileArchiveIcon;
+    case 'delete':
+      return Trash2Icon;
     default:
       return ActivityIcon;
   }
@@ -81,6 +85,17 @@ async function handleCancelOperation(operation: typeof statusCenterStore.operati
     });
     await archiveJobsStore.cancelJob(operation.id);
   }
+  else if (operation.type === 'delete') {
+    if (operation.status === 'cancelling') {
+      return;
+    }
+
+    statusCenterStore.updateOperation(operation.id, {
+      status: 'cancelling',
+      message: t('statusCenter.cancelling'),
+    });
+    await deleteJobsStore.cancelJob(operation.id);
+  }
 }
 
 async function handleCancelGroup(operations: typeof statusCenterStore.operationsList) {
@@ -105,7 +120,7 @@ function formatPath(path: string): string {
 }
 
 function operationPrimaryLabel(operation: typeof statusCenterStore.operationsList[0]): string {
-  if (operation.type === 'archive') {
+  if (operation.type === 'archive' || operation.type === 'delete') {
     return operation.label;
   }
 
@@ -133,7 +148,7 @@ function getOperationDetails(operation: typeof statusCenterStore.operationsList[
     }
   }
 
-  if (operation.type === 'archive') {
+  if (operation.type === 'archive' || operation.type === 'delete') {
     const name = formatPath(operation.path);
     const segments: string[] = [];
 

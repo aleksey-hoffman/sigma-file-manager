@@ -9,7 +9,11 @@ import type { ItemTag, TaggedItem } from '@/types/user-stats';
 describe('reconcileMissingTagDefinitions', () => {
   it('adds tag definitions for ids referenced only in taggedItems', () => {
     const tags: ItemTag[] = [
-      { id: 'tag-work', name: 'Work', color: '#3b82f6' },
+      {
+        id: 'tag-work',
+        name: 'Work',
+        color: '#3b82f6',
+      },
     ];
     const taggedItems: TaggedItem[] = [
       {
@@ -34,9 +38,18 @@ describe('reconcileMissingTagDefinitions', () => {
   });
 
   it('returns false when all tag ids are already defined', () => {
-    const tags: ItemTag[] = [{ id: 'tag-a', name: 'A', color: '#000' }];
+    const tags: ItemTag[] = [{
+      id: 'tag-a',
+      name: 'A',
+      color: '#000',
+    }];
     const taggedItems: TaggedItem[] = [
-      { path: '/x', tagIds: ['tag-a'], addedAt: 1, isFile: false },
+      {
+        path: '/x',
+        tagIds: ['tag-a'],
+        addedAt: 1,
+        isFile: false,
+      },
     ];
 
     const didChange = reconcileMissingTagDefinitions(tags, taggedItems, () => 'x');

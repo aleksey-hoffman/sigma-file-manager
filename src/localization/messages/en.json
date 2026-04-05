@@ -141,6 +141,7 @@
     "active": "active",
     "cancelAll": "Cancel all",
     "cancelling": "Canceling…",
+    "deleteSelectedCount": "{count} items",
     "groups": {
       "dir-size": "Directory size calculations",
       "copy": "Copy operations",

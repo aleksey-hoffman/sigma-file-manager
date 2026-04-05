@@ -1936,6 +1936,7 @@
     "active": "active",
     "cancelAll": "Cancel all",
     "cancelling": "İptal ediliyor…",
+    "deleteSelectedCount": "{count} öğe",
     "groups": {
       "dir-size": "Directory size calculations",
       "copy": "Copy operations",

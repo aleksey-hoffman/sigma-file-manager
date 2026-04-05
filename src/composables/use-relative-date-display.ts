@@ -2,7 +2,9 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-import { computed, onUnmounted, ref, toValue, watch } from 'vue';
+import {
+  computed, onUnmounted, ref, toValue, watch,
+} from 'vue';
 import type { MaybeRefOrGetter } from 'vue';
 import { useDocumentVisibility } from '@vueuse/core';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
@@ -57,5 +59,9 @@ export function useRelativeDateDisplayClock(trackRelativeTime: MaybeRefOrGetter<
     clearClockInterval();
   });
 
-  return { clockRef, isEnabled, shouldRunRelativeClock };
+  return {
+    clockRef,
+    isEnabled,
+    shouldRunRelativeClock,
+  };
 }

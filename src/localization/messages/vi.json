@@ -1936,6 +1936,7 @@
     "active": "active",
     "cancelAll": "Cancel all",
     "cancelling": "Đang hủy…",
+    "deleteSelectedCount": "{count} mục",
     "groups": {
       "dir-size": "Directory size calculations",
       "copy": "Copy operations",

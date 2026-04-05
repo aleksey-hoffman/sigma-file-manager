@@ -141,6 +141,7 @@
     "active": "सक्रिय",
     "cancelAll": "सभी रद्द करें",
     "cancelling": "रद्द किया जा रहा है...",
+    "deleteSelectedCount": "{count} आइटम",
     "groups": {
       "dir-size": "निर्देशिका आकार की गणना",
       "copy": "प्रतिलिपि संचालन",

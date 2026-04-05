@@ -2,12 +2,48 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
+use std::collections::HashSet;
 use std::fs::Metadata;
 use std::path::Path;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 pub fn normalize_path(path: &str) -> String {
     path.replace('\\', "/")
+}
+
+pub fn path_is_descendant_of(child: &str, ancestor: &str) -> bool {
+    if child == ancestor {
+        return false;
+    }
+    if ancestor == "/" {
+        return child.starts_with('/') && child != "/";
+    }
+    let ancestor = ancestor.trim_end_matches('/');
+    if ancestor.is_empty() {
+        return false;
+    }
+    let prefix = format!("{}/", ancestor);
+    child.starts_with(&prefix)
+}
+
+pub fn minimize_delete_paths(paths: Vec<String>) -> Vec<String> {
+    let normalized: HashSet<String> = paths
+        .into_iter()
+        .map(|path| normalize_path(&path))
+        .filter(|path| !path.trim().is_empty())
+        .collect();
+    let normalized: Vec<String> = normalized.into_iter().collect();
+    let mut kept: Vec<String> = Vec::new();
+    for candidate in &normalized {
+        let has_ancestor = normalized
+            .iter()
+            .any(|other| path_is_descendant_of(candidate, other));
+        if !has_ancestor {
+            kept.push(candidate.clone());
+        }
+    }
+    kept.sort_by(|left, right| right.len().cmp(&left.len()));
+    kept
 }
 
 pub fn path_extension_lowercase(path: &Path) -> Option<String> {
@@ -105,5 +141,50 @@ pub fn unique_path_with_index(
             return candidate;
         }
         index += 1;
+    }
+}
+
+#[cfg(test)]
+mod path_minimize_tests {
+    use super::{minimize_delete_paths, path_is_descendant_of};
+
+    #[test]
+    fn descendant_under_root() {
+        assert!(path_is_descendant_of("/a/b", "/"));
+        assert!(!path_is_descendant_of("/", "/"));
+    }
+
+    #[test]
+    fn descendant_nested() {
+        assert!(path_is_descendant_of("/a/b/c", "/a/b"));
+        assert!(!path_is_descendant_of("/a/b", "/a/b"));
+        assert!(!path_is_descendant_of("/a/b2", "/a/b"));
+    }
+
+    #[test]
+    fn descendant_windows_drive_prefix() {
+        assert!(path_is_descendant_of("C:/foo/bar", "C:/foo"));
+        assert!(!path_is_descendant_of("C:/foobar", "C:/foo"));
+    }
+
+    #[test]
+    fn minimize_drops_child_when_parent_selected() {
+        let result =
+            minimize_delete_paths(vec!["/project/a".to_string(), "/project/a/b".to_string()]);
+        assert_eq!(result, vec!["/project/a"]);
+    }
+
+    #[test]
+    fn minimize_keeps_siblings() {
+        let mut result =
+            minimize_delete_paths(vec!["/project/a/x".to_string(), "/project/b/y".to_string()]);
+        result.sort();
+        assert_eq!(result, vec!["/project/a/x", "/project/b/y"]);
+    }
+
+    #[test]
+    fn minimize_dedupes() {
+        let result = minimize_delete_paths(vec!["/x".to_string(), "/x".to_string()]);
+        assert_eq!(result, vec!["/x"]);
     }
 }

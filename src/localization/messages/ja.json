@@ -1936,6 +1936,7 @@
     "active": "active",
     "cancelAll": "Cancel all",
     "cancelling": "キャンセルしています…",
+    "deleteSelectedCount": "{count} 件",
     "groups": {
       "dir-size": "Directory size calculations",
       "copy": "Copy operations",

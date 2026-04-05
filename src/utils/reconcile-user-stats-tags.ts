@@ -19,6 +19,7 @@ export function reconcileMissingTagDefinitions(
       if (knownIds.has(tagId)) {
         continue;
       }
+
       didChange = true;
       tags.push({
         id: tagId,

@@ -12,11 +12,17 @@ vi.mock('@/stores/storage/user-settings', () => ({
     userSettings: {
       dateTime: {
         month: 'short',
-        regionalFormat: { code: 'en-US', name: 'United States' },
+        regionalFormat: {
+          code: 'en-US',
+          name: 'United States',
+        },
         autoDetectRegionalFormat: false,
         hour12: true,
         showRelativeDates: true,
-        properties: { showSeconds: false, showMilliseconds: false },
+        properties: {
+          showSeconds: false,
+          showMilliseconds: false,
+        },
       },
     },
   }),
@@ -126,7 +132,11 @@ describe('fileBrowserEntryMatchesQuickSearch', () => {
     expect(fileBrowserEntryMatchesQuickSearch(folder, 'items: >=5', store)).toBe(true);
     expect(fileBrowserEntryMatchesQuickSearch(folder, 'items: 3..10', store)).toBe(true);
     expect(fileBrowserEntryMatchesQuickSearch(folder, 'items: ==12', store)).toBe(false);
-    const fileEntry = createFileEntry({ name: 'f', path: 'C:/f', item_count: null });
+    const fileEntry = createFileEntry({
+      name: 'f',
+      path: 'C:/f',
+      item_count: null,
+    });
     expect(fileBrowserEntryMatchesQuickSearch(fileEntry, 'items: >=0', store)).toBe(false);
   });
 
@@ -161,6 +171,7 @@ describe('fileBrowserEntryMatchesQuickSearch', () => {
             calculatedAt: Date.now(),
           };
         }
+
         return undefined;
       },
     });

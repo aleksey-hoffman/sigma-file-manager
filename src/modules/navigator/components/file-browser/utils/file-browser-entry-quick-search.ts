@@ -122,9 +122,11 @@ function buildHaystackForProperty(
   if (property === 'modified') {
     if (!entry.modified_time) return '';
     const absolute = formatDate(entry.modified_time).toLowerCase();
+
     if (!isRelativeDateDisplayEnabled(useUserSettingsStore().userSettings.dateTime.showRelativeDates)) {
       return absolute;
     }
+
     const listLabel = formatFileBrowserListModifiedDate(entry.modified_time, Date.now()).toLowerCase();
     return `${absolute} ${listLabel}`;
   }

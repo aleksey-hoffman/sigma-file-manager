@@ -28,16 +28,25 @@ export function parseQuickSearchQuery(raw: string): {
   const match = trimmed.match(PROPERTY_PREFIX_PATTERN);
 
   if (!match) {
-    return { property: null, value: trimmed };
+    return {
+      property: null,
+      value: trimmed,
+    };
   }
 
   const key = match[1].toLowerCase() as QuickSearchProperty;
 
   if (!QUICK_SEARCH_PROPERTY_KEYS.includes(key)) {
-    return { property: null, value: trimmed };
+    return {
+      property: null,
+      value: trimmed,
+    };
   }
 
-  return { property: key, value: match[2] };
+  return {
+    property: key,
+    value: match[2],
+  };
 }
 
 export function toggleQuickSearchPropertyInQuery(

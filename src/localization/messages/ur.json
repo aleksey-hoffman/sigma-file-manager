@@ -141,6 +141,7 @@
     "active": "فعال",
     "cancelAll": "سب منسوخ کریں",
     "cancelling": "منسوخ ہو رہا ہے…",
+    "deleteSelectedCount": "{count} اشیاء",
     "groups": {
       "dir-size": "فولڈر سائز کا حساب",
       "copy": "کاپی کارروائیاں",

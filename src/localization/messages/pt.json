@@ -1949,6 +1949,7 @@
     "active": "active",
     "cancelAll": "Cancel all",
     "cancelling": "A cancelar…",
+    "deleteSelectedCount": "{count} itens",
     "groups": {
       "dir-size": "Directory size calculations",
       "copy": "Copy operations",

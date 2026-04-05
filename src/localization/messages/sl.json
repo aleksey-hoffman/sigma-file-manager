@@ -141,6 +141,7 @@
     "active": "aktivno",
     "cancelAll": "Prekliči vse",
     "cancelling": "Preklicovanje …",
+    "deleteSelectedCount": "{count} predmetov",
     "groups": {
       "dir-size": "Izračuni velikosti map",
       "copy": "Operacije kopiranja",

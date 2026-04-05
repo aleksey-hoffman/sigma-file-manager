@@ -17,6 +17,7 @@ import {
   type ConflictResolutionPayload,
 } from '@/stores/runtime/clipboard';
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
+import { useDeleteJobsStore } from '@/stores/runtime/delete-jobs';
 import { useQuickViewStore } from '@/stores/runtime/quick-view';
 import { toast, ToastProgress, ToastStatic } from '@/components/ui/toaster';
 import { useLanShare } from '@/composables/use-lan-share';
@@ -41,6 +42,7 @@ export function useDirEntryActions() {
   const userStatsStore = useUserStatsStore();
   const clipboardStore = useClipboardStore();
   const dirSizesStore = useDirSizesStore();
+  const deleteJobsStore = useDeleteJobsStore();
   const quickViewStore = useQuickViewStore();
   const { startShare } = useLanShare();
 
@@ -250,106 +252,37 @@ export function useDirEntryActions() {
       return false;
     }
 
-    const itemCount = entries.length;
-    const toastData = ref<FileOperationToastData>({
-      id: '' as string | number,
-      title: useTrash ? t('notifications.trashingItems') : t('notifications.deletingItems'),
-      description: '',
-      progress: 0,
-      timer: 0,
-      actionText: t('cancel'),
-      cleanup: () => {},
-      operationType: 'delete' as 'copy' | 'move' | 'delete' | '',
-      itemCount,
-    });
-
-    toastData.value.id = toast.custom(markRaw(ToastProgress), {
-      componentProps: {
-        data: toastData.value,
-        onAction: () => {
-          if (autoDismissTimeout) {
-            clearTimeout(autoDismissTimeout);
-            autoDismissTimeout = null;
-          }
-
-          toast.dismiss(toastData.value.id);
-        },
-      },
-      duration: Infinity,
-    });
-
-    let autoDismissTimeout: ReturnType<typeof setTimeout> | null = null;
-    let progressInterval: ReturnType<typeof setInterval> | null = setInterval(() => {
-      if (toastData.value.progress < 90) {
-        toastData.value.progress += 5;
-      }
-    }, 100);
-
-    toastData.value.cleanup = () => {
-      if (progressInterval) {
-        clearInterval(progressInterval);
-        progressInterval = null;
-      }
-
-      if (autoDismissTimeout) {
-        clearTimeout(autoDismissTimeout);
-        autoDismissTimeout = null;
-      }
-    };
-
     const paths = entries.map(entry => entry.path);
+    const displayPath = entries.length === 1
+      ? entries[0].name
+      : t('statusCenter.deleteSelectedCount', { count: entries.length });
 
     try {
-      const result = await invoke<FileOperationResult>('delete_items', {
-        paths,
-        useTrash,
+      const result = await deleteJobsStore.startJob(paths, useTrash, {
+        label: useTrash ? t('notifications.trashingItems') : t('notifications.deletingItems'),
+        displayPath,
       });
 
-      toastData.value.cleanup();
-      toastData.value.progress = 100;
+      if (result.deletedPaths.length > 0) {
+        workspacesStore.handlePathsDeleted(result.deletedPaths);
+        userStatsStore.handlePathsDeleted(result.deletedPaths);
+        dirSizesStore.invalidate(result.deletedPaths);
 
-      if (result.success) {
-        const successCount = result.copied_count ?? itemCount;
-        toastData.value.title = useTrash ? t('notifications.trashed') : t('notifications.deleted');
-        toastData.value.itemCount = successCount;
-        toastData.value.actionText = undefined;
-
-        workspacesStore.handlePathsDeleted(paths);
-        userStatsStore.handlePathsDeleted(paths);
-        dirSizesStore.invalidate(paths);
-
-        const parentDirs = [...new Set(paths.map(path => getParentDirectory(path)))];
+        const parentDirs = [...new Set(result.deletedPaths.map(path => getParentDirectory(path)))];
         workspacesStore.handleDirectoryContentsChanged(parentDirs);
-
-        autoDismissTimeout = setTimeout(() => {
-          toast.dismiss(toastData.value.id);
-        }, 2500);
-      }
-      else {
-        toastData.value.title = useTrash ? t('notifications.errorTrashItems') : t('notifications.errorDeleteItems');
-        toastData.value.description = result.error || '';
-        toastData.value.actionText = undefined;
-        toastData.value.progress = 0;
-        toastData.value.itemCount = 0;
-
-        setTimeout(() => {
-          toast.dismiss(toastData.value.id);
-        }, 5000);
       }
 
-      return result.success;
+      return result.success && !result.cancelled;
     }
     catch (error) {
-      toastData.value.cleanup();
-      toastData.value.title = useTrash ? t('notifications.errorTrashItems') : t('notifications.errorDeleteItems');
-      toastData.value.description = String(error);
-      toastData.value.actionText = undefined;
-      toastData.value.progress = 0;
-      toastData.value.itemCount = 0;
-
-      setTimeout(() => {
-        toast.dismiss(toastData.value.id);
-      }, 5000);
+      toast.custom(markRaw(ToastStatic), {
+        componentProps: {
+          data: {
+            title: useTrash ? t('notifications.errorTrashItems') : t('notifications.errorDeleteItems'),
+            description: String(error),
+          },
+        },
+      });
 
       return false;
     }

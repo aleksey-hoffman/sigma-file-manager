@@ -141,6 +141,7 @@
     "active": "активно",
     "cancelAll": "Отменить все",
     "cancelling": "Отмена…",
+    "deleteSelectedCount": "{count} элементов",
     "groups": {
       "dir-size": "Расчёт размера папок",
       "copy": "Операции копирования",

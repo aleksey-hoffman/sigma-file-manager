@@ -235,11 +235,13 @@ export function parseVersionFromTag(tagName: string): string | null {
   const trimmed = tagName.trim();
 
   const direct = trimmed.match(/^v?(\d+\.\d+\.\d+(?:\.\d+)*(?:-[\w.]+)?)$/);
+
   if (direct) {
     return direct[1];
   }
 
   const tail = trimmed.match(/(\d+\.\d+\.\d+(?:\.\d+)*(?:-[\w.]+)?)$/);
+
   if (tail) {
     return tail[1];
   }
@@ -259,6 +261,7 @@ export function pickDisplayVersionFromGitHubTags(tagNames: string[]): string | u
 
   for (const tagName of tagNames) {
     const parsed = parseVersionFromTag(tagName);
+
     if (parsed) {
       return parsed;
     }
@@ -266,6 +269,7 @@ export function pickDisplayVersionFromGitHubTags(tagNames: string[]): string | u
 
   for (const tagName of tagNames) {
     const fallback = tagName.replace(/^v/i, '').trim();
+
     if (fallback.length > 0 && !isUninformativeGitHubTagLabel(tagName)) {
       return fallback;
     }
@@ -284,7 +288,10 @@ export function sortVersionsDescending(versions: string[]): string[] {
       return compareVersions(versionB, versionA);
     }
     catch {
-      return versionB.localeCompare(versionA, undefined, { numeric: true, sensitivity: 'base' });
+      return versionB.localeCompare(versionA, undefined, {
+        numeric: true,
+        sensitivity: 'base',
+      });
     }
   });
 }

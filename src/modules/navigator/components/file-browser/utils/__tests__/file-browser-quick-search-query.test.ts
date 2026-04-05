@@ -10,18 +10,36 @@ import {
 
 describe('parseQuickSearchQuery', () => {
   it('parses known property prefixes case-insensitively', () => {
-    expect(parseQuickSearchQuery('size: 24 mb')).toEqual({ property: 'size', value: '24 mb' });
-    expect(parseQuickSearchQuery('SIZE:foo')).toEqual({ property: 'size', value: 'foo' });
-    expect(parseQuickSearchQuery('Modified: 2024')).toEqual({ property: 'modified', value: '2024' });
+    expect(parseQuickSearchQuery('size: 24 mb')).toEqual({
+      property: 'size',
+      value: '24 mb',
+    });
+    expect(parseQuickSearchQuery('SIZE:foo')).toEqual({
+      property: 'size',
+      value: 'foo',
+    });
+    expect(parseQuickSearchQuery('Modified: 2024')).toEqual({
+      property: 'modified',
+      value: '2024',
+    });
   });
 
   it('returns null property when no prefix matches', () => {
-    expect(parseQuickSearchQuery('hello world')).toEqual({ property: null, value: 'hello world' });
-    expect(parseQuickSearchQuery('unknown: x')).toEqual({ property: null, value: 'unknown: x' });
+    expect(parseQuickSearchQuery('hello world')).toEqual({
+      property: null,
+      value: 'hello world',
+    });
+    expect(parseQuickSearchQuery('unknown: x')).toEqual({
+      property: null,
+      value: 'unknown: x',
+    });
   });
 
   it('captures value after first colon for property match', () => {
-    expect(parseQuickSearchQuery('path: C:\\a:b')).toEqual({ property: 'path', value: 'C:\\a:b' });
+    expect(parseQuickSearchQuery('path: C:\\a:b')).toEqual({
+      property: 'path',
+      value: 'C:\\a:b',
+    });
   });
 });
 
