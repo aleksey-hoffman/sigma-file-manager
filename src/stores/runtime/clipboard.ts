@@ -137,6 +137,10 @@ export const useClipboardStore = defineStore('clipboard', () => {
     isToolbarSuppressed.value = false;
   }
 
+  function finalizeSuccessfulPaste() {
+    clearClipboard();
+  }
+
   function isItemInClipboard(item: DirEntry): boolean {
     return clipboardItems.value.some(
       clipboardItem => clipboardItem.path === item.path,
@@ -253,7 +257,7 @@ export const useClipboardStore = defineStore('clipboard', () => {
         );
 
         if (result.success) {
-          isToolbarSuppressed.value = true;
+          finalizeSuccessfulPaste();
         }
 
         return result;
@@ -272,7 +276,7 @@ export const useClipboardStore = defineStore('clipboard', () => {
         );
 
         if (result.success) {
-          clearClipboard();
+          finalizeSuccessfulPaste();
         }
 
         return result;
