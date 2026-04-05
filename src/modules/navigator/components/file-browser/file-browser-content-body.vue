@@ -4,7 +4,6 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import { nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { FolderOpenIcon } from '@lucide/vue';
 import { ContextMenu, ContextMenuTrigger } from '@/components/ui/context-menu';
@@ -25,38 +24,6 @@ const props = withDefaults(defineProps<{
 
 const ctx = useFileBrowserContext();
 const { t } = useI18n();
-
-function isFileBrowserEntryTarget(target: EventTarget | null): boolean {
-  return target instanceof Element
-    && !!(target.closest('.file-browser-list-view__entry') || target.closest('.file-browser-grid-card'));
-}
-
-function openPaneBackgroundContextMenuFromPointer(event: MouseEvent) {
-  const triggerElement = event.currentTarget;
-
-  if (!(triggerElement instanceof HTMLElement)) {
-    return;
-  }
-
-  ctx.handleBackgroundContextMenu();
-  void nextTick(() => {
-    triggerElement.dispatchEvent(new MouseEvent('contextmenu', {
-      bubbles: true,
-      cancelable: true,
-      clientX: event.clientX,
-      clientY: event.clientY,
-      view: window,
-    }));
-  });
-}
-
-function handlePaneBackgroundClick(event: MouseEvent) {
-  if (isFileBrowserEntryTarget(event.target)) {
-    return;
-  }
-
-  openPaneBackgroundContextMenuFromPointer(event);
-}
 </script>
 
 <template>
@@ -75,7 +42,6 @@ function handlePaneBackgroundClick(event: MouseEvent) {
       <ContextMenuTrigger as-child>
         <div
           class="file-browser__empty-state-container"
-          @click="handlePaneBackgroundClick"
           @contextmenu="ctx.handleBackgroundContextMenu"
         >
           <EmptyState
@@ -97,7 +63,6 @@ function handlePaneBackgroundClick(event: MouseEvent) {
           <div
             :ref="ctx.setEntriesContainerRef"
             class="file-browser__entries-container"
-            @click="handlePaneBackgroundClick"
             @contextmenu.self="ctx.handleBackgroundContextMenu"
           >
             <FileBrowserGridView
