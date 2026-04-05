@@ -54,3 +54,16 @@ pub fn get_parent_dir(path: String) -> Option<String> {
 pub fn path_exists(path: String) -> bool {
     path_helpers::path_exists(path)
 }
+
+#[tauri::command]
+pub fn paths_are_directories(paths: Vec<String>) -> Vec<bool> {
+    paths
+        .into_iter()
+        .map(|path| {
+            std::path::Path::new(&path)
+                .symlink_metadata()
+                .map(|meta| meta.is_dir())
+                .unwrap_or(false)
+        })
+        .collect()
+}

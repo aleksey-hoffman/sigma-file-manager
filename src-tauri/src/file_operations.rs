@@ -9,6 +9,8 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Arc;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct FileOperationResult {
@@ -37,6 +39,444 @@ pub struct PathResolution {
     pub resolution: String,
 }
 
+fn report_progress_for_item(
+    progress: &mut Option<&mut dyn FnMut(u32, String, Option<u64>, Option<u64>)>,
+    index: usize,
+    total: u32,
+    detail: &str,
+    is_before: bool,
+) {
+    if let Some(progress_fn) = progress.as_mut() {
+        let total = total.max(1);
+        let pct = if is_before {
+            ((index as u32) * 100 / total).min(99)
+        } else {
+            (((index + 1) as u32) * 100 / total).min(100)
+        };
+        progress_fn(pct, detail.to_string(), None, None);
+    }
+}
+
+fn maybe_emit_scan_progress(
+    progress: &mut Option<&mut dyn FnMut(u32, String, Option<u64>, Option<u64>)>,
+    top_label: &str,
+    scanned: u64,
+    last_emit_at: &mut u64,
+) {
+    if scanned == 0 {
+        return;
+    }
+    if scanned.saturating_sub(*last_emit_at) < 256 && scanned != 1 {
+        return;
+    }
+    *last_emit_at = scanned;
+    if let Some(progress_fn) = progress.as_mut() {
+        progress_fn(0, format!("{} · Preparing", top_label), Some(scanned), None);
+    }
+}
+
+fn copy_symlink(source: &Path, dest: &Path) -> std::io::Result<()> {
+    let target = fs::read_link(source)?;
+    #[cfg(unix)]
+    {
+        std::os::unix::fs::symlink(&target, dest)
+    }
+    #[cfg(windows)]
+    {
+        let meta = fs::symlink_metadata(source)?;
+        if meta.is_dir() {
+            std::os::windows::fs::symlink_dir(&target, dest)
+        } else {
+            std::os::windows::fs::symlink_file(&target, dest)
+        }
+    }
+    #[cfg(not(any(unix, windows)))]
+    {
+        let _ = (source, dest, target);
+        Err(std::io::Error::new(
+            std::io::ErrorKind::Unsupported,
+            "symlinks are not supported on this platform",
+        ))
+    }
+}
+
+fn symlink_create_failed_use_file_copy_instead(error: &std::io::Error) -> bool {
+    #[cfg(windows)]
+    {
+        matches!(error.raw_os_error(), Some(1314) | Some(5))
+    }
+    #[cfg(unix)]
+    {
+        matches!(
+            error.kind(),
+            std::io::ErrorKind::PermissionDenied | std::io::ErrorKind::Unsupported,
+        )
+    }
+    #[cfg(not(any(windows, unix)))]
+    {
+        let _ = error;
+        false
+    }
+}
+
+fn copy_file_resilient(source: &Path, dest: &Path) -> std::io::Result<u64> {
+    #[cfg(windows)]
+    {
+        for attempt in 0u32..6 {
+            if attempt > 0 {
+                std::thread::sleep(std::time::Duration::from_millis(20 * attempt as u64));
+            }
+            match fs::copy(source, dest) {
+                Ok(bytes) => return Ok(bytes),
+                Err(err) => {
+                    let transient = matches!(err.raw_os_error(), Some(32) | Some(33) | Some(5),);
+                    if !transient || attempt == 5 {
+                        return Err(err);
+                    }
+                }
+            }
+        }
+        unreachable!()
+    }
+    #[cfg(not(windows))]
+    {
+        fs::copy(source, dest)
+    }
+}
+
+fn count_copy_units_with_progress(
+    path: &Path,
+    cancel: Option<&Arc<AtomicBool>>,
+    progress: &mut Option<&mut dyn FnMut(u32, String, Option<u64>, Option<u64>)>,
+    top_label: &str,
+    scanned: &mut u64,
+    last_emit_at: &mut u64,
+) -> Result<u64, String> {
+    if let Some(cancel_flag) = cancel {
+        if cancel_flag.load(Ordering::Relaxed) {
+            return Err("Operation cancelled".to_string());
+        }
+    }
+    let meta =
+        fs::symlink_metadata(path).map_err(|error| format!("{}: {}", path.display(), error))?;
+    if meta.file_type().is_symlink() && !meta.is_dir() {
+        *scanned += 1;
+        maybe_emit_scan_progress(progress, top_label, *scanned, last_emit_at);
+        return Ok(1);
+    }
+    if meta.is_file() {
+        *scanned += 1;
+        maybe_emit_scan_progress(progress, top_label, *scanned, last_emit_at);
+        return Ok(1);
+    }
+    if !meta.is_dir() {
+        return Ok(0);
+    }
+    let entries: Vec<_> = fs::read_dir(path)
+        .map_err(|error| format!("{}: {}", path.display(), error))?
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|error| format!("{}: {}", path.display(), error))?;
+    if entries.is_empty() {
+        *scanned += 1;
+        maybe_emit_scan_progress(progress, top_label, *scanned, last_emit_at);
+        return Ok(1);
+    }
+    let mut sum = 0u64;
+    for entry in entries {
+        sum += count_copy_units_with_progress(
+            &entry.path(),
+            cancel,
+            progress,
+            top_label,
+            scanned,
+            last_emit_at,
+        )?;
+    }
+    Ok(sum)
+}
+
+fn emit_item_progress(
+    progress: &mut Option<&mut dyn FnMut(u32, String, Option<u64>, Option<u64>)>,
+    source_index: usize,
+    source_count: u32,
+    local_done: u64,
+    local_total: u64,
+    top_label: &str,
+    rel_suffix: &str,
+    last_emitted_pct: &mut u32,
+    force: bool,
+) {
+    let Some(progress_fn) = progress.as_mut() else {
+        return;
+    };
+    let source_count = source_count.max(1);
+    let range_start = (source_index as u32) * 100 / source_count;
+    let range_end = ((source_index + 1) as u32) * 100 / source_count;
+    let span = (range_end.saturating_sub(range_start)) as u64;
+    let local_total = local_total.max(1);
+    let slice_u64 = (((local_done * span) + local_total - 1) / local_total).min(span);
+    let mut pct = range_start + slice_u64 as u32;
+    if local_done >= local_total {
+        pct = range_end;
+    }
+    pct = pct.min(100);
+    if !force {
+        if pct <= *last_emitted_pct && local_done % 48 != 0 && local_done < local_total {
+            return;
+        }
+        if pct <= *last_emitted_pct && local_done < local_total {
+            return;
+        }
+    }
+    *last_emitted_pct = pct;
+    let detail = if rel_suffix.is_empty() {
+        top_label.to_string()
+    } else {
+        format!("{} · {}", top_label, rel_suffix.replace('\\', "/"))
+    };
+    progress_fn(pct, detail, Some(local_done), Some(local_total));
+}
+
+fn copy_dir_recursive(source: &Path, destination: &Path) -> Result<(), String> {
+    if !destination.exists() {
+        fs::create_dir_all(destination)
+            .map_err(|error| format!("{}: {}", destination.display(), error))?;
+    }
+
+    let entries: Vec<_> = fs::read_dir(source)
+        .map_err(|error| format!("{}: {}", source.display(), error))?
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|error| format!("{}: {}", source.display(), error))?;
+
+    if entries.is_empty() {
+        return Ok(());
+    }
+
+    for entry in entries {
+        let source_path = entry.path();
+        let meta = fs::symlink_metadata(&source_path)
+            .map_err(|error| format!("{}: {}", source_path.display(), error))?;
+        let file_name = source_path.file_name().ok_or("Invalid file name")?;
+        let dest_path = destination.join(file_name);
+
+        if meta.file_type().is_symlink() {
+            match copy_symlink(&source_path, &dest_path) {
+                Ok(()) => {}
+                Err(error) if symlink_create_failed_use_file_copy_instead(&error) => {
+                    if meta.is_dir() {
+                        copy_dir_recursive(&source_path, &dest_path)?;
+                    } else {
+                        copy_file_resilient(&source_path, &dest_path).map_err(|copy_error| {
+                            format!("{}: {}", dest_path.display(), copy_error)
+                        })?;
+                    }
+                }
+                Err(error) => {
+                    return Err(format!("{}: {}", dest_path.display(), error));
+                }
+            }
+        } else if meta.is_dir() {
+            copy_dir_recursive(&source_path, &dest_path)?;
+        } else {
+            copy_file_resilient(&source_path, &dest_path)
+                .map_err(|error| format!("{}: {}", dest_path.display(), error))?;
+        }
+    }
+
+    Ok(())
+}
+
+fn copy_dir_recursive_with_progress(
+    source: &Path,
+    destination: &Path,
+    cancel: Option<&Arc<AtomicBool>>,
+    progress: &mut Option<&mut dyn FnMut(u32, String, Option<u64>, Option<u64>)>,
+    source_index: usize,
+    source_count: u32,
+    local_done: &mut u64,
+    local_total: u64,
+    top_label: &str,
+    last_emitted_pct: &mut u32,
+    relative_prefix: &str,
+    inner_failed: &mut u32,
+    last_inner_error: &mut Option<String>,
+) -> Result<(), String> {
+    if let Some(cancel_flag) = cancel {
+        if cancel_flag.load(Ordering::Relaxed) {
+            return Err("Operation cancelled".to_string());
+        }
+    }
+
+    if !destination.exists() {
+        fs::create_dir_all(destination)
+            .map_err(|error| format!("{}: {}", destination.display(), error))?;
+    }
+
+    let entries: Vec<_> = fs::read_dir(source)
+        .map_err(|error| format!("{}: {}", source.display(), error))?
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|error| format!("{}: {}", source.display(), error))?;
+
+    if entries.is_empty() {
+        *local_done += 1;
+        let rel = if relative_prefix.is_empty() {
+            ".".to_string()
+        } else {
+            relative_prefix.replace('\\', "/")
+        };
+        emit_item_progress(
+            progress,
+            source_index,
+            source_count,
+            *local_done,
+            local_total,
+            top_label,
+            &rel,
+            last_emitted_pct,
+            true,
+        );
+        return Ok(());
+    }
+
+    for entry in entries {
+        if let Some(cancel_flag) = cancel {
+            if cancel_flag.load(Ordering::Relaxed) {
+                return Err("Operation cancelled".to_string());
+            }
+        }
+
+        let source_path = entry.path();
+        let meta = match fs::symlink_metadata(&source_path) {
+            Ok(meta) => meta,
+            Err(error) => {
+                *inner_failed += 1;
+                *last_inner_error = Some(format!("{}: {}", source_path.display(), error));
+                continue;
+            }
+        };
+        let file_name = source_path.file_name().ok_or("Invalid file name")?;
+        let dest_path = destination.join(file_name);
+        let rel = join_relative(relative_prefix, &file_name.to_string_lossy());
+
+        if meta.file_type().is_symlink() {
+            match copy_symlink(&source_path, &dest_path) {
+                Ok(()) => {
+                    *local_done += 1;
+                    emit_item_progress(
+                        progress,
+                        source_index,
+                        source_count,
+                        *local_done,
+                        local_total,
+                        top_label,
+                        &rel,
+                        last_emitted_pct,
+                        false,
+                    );
+                }
+                Err(error) if symlink_create_failed_use_file_copy_instead(&error) => {
+                    if meta.is_dir() {
+                        copy_dir_recursive_with_progress(
+                            &source_path,
+                            &dest_path,
+                            cancel,
+                            progress,
+                            source_index,
+                            source_count,
+                            local_done,
+                            local_total,
+                            top_label,
+                            last_emitted_pct,
+                            &rel,
+                            inner_failed,
+                            last_inner_error,
+                        )?;
+                    } else {
+                        match copy_file_resilient(&source_path, &dest_path) {
+                            Ok(_) => {
+                                *local_done += 1;
+                                emit_item_progress(
+                                    progress,
+                                    source_index,
+                                    source_count,
+                                    *local_done,
+                                    local_total,
+                                    top_label,
+                                    &rel,
+                                    last_emitted_pct,
+                                    false,
+                                );
+                            }
+                            Err(copy_error) => {
+                                *inner_failed += 1;
+                                *last_inner_error =
+                                    Some(format!("{}: {}", dest_path.display(), copy_error));
+                            }
+                        }
+                    }
+                }
+                Err(error) => {
+                    *inner_failed += 1;
+                    *last_inner_error = Some(format!("{}: {}", dest_path.display(), error));
+                }
+            }
+        } else if meta.is_dir() {
+            copy_dir_recursive_with_progress(
+                &source_path,
+                &dest_path,
+                cancel,
+                progress,
+                source_index,
+                source_count,
+                local_done,
+                local_total,
+                top_label,
+                last_emitted_pct,
+                &rel,
+                inner_failed,
+                last_inner_error,
+            )?;
+        } else {
+            match copy_file_resilient(&source_path, &dest_path) {
+                Ok(_) => {
+                    *local_done += 1;
+                    emit_item_progress(
+                        progress,
+                        source_index,
+                        source_count,
+                        *local_done,
+                        local_total,
+                        top_label,
+                        &rel,
+                        last_emitted_pct,
+                        false,
+                    );
+                }
+                Err(error) => {
+                    *inner_failed += 1;
+                    *last_inner_error = Some(format!("{}: {}", dest_path.display(), error));
+                }
+            }
+        }
+    }
+
+    Ok(())
+}
+
+fn file_operation_error_from_counts(
+    failed_count: u32,
+    last_error: Option<String>,
+) -> Option<String> {
+    match (failed_count, last_error) {
+        (count, Some(last)) if count > 1 => {
+            Some(format!("{} items failed. Last error: {}", count, last))
+        }
+        (_, Some(last)) => Some(last),
+        (count, None) if count > 1 => Some(format!("{} items failed", count)),
+        (_, None) => None,
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ConflictResolution {
     Replace,
@@ -53,27 +493,6 @@ impl ConflictResolution {
             _ => ConflictResolution::AutoRename,
         }
     }
-}
-
-fn copy_dir_recursive(source: &Path, destination: &Path) -> Result<(), String> {
-    if !destination.exists() {
-        fs::create_dir_all(destination).map_err(|error| error.to_string())?;
-    }
-
-    for entry in fs::read_dir(source).map_err(|error| error.to_string())? {
-        let entry = entry.map_err(|error| error.to_string())?;
-        let source_path = entry.path();
-        let file_name = source_path.file_name().ok_or("Invalid file name")?;
-        let dest_path = destination.join(file_name);
-
-        if source_path.is_dir() {
-            copy_dir_recursive(&source_path, &dest_path)?;
-        } else {
-            fs::copy(&source_path, &dest_path).map_err(|error| error.to_string())?;
-        }
-    }
-
-    Ok(())
 }
 
 fn get_unique_destination_path(destination: &Path, name: &str) -> std::path::PathBuf {
@@ -274,7 +693,7 @@ fn try_rename_or_copy_delete(source: &Path, dest: &Path) -> Result<(), String> {
                 copy_dir_recursive(source, dest)?;
                 remove_dir_or_file(source)?;
             } else {
-                fs::copy(source, dest).map_err(|copy_error| copy_error.to_string())?;
+                copy_file_resilient(source, dest).map_err(|copy_error| copy_error.to_string())?;
                 fs::remove_file(source).map_err(|remove_error| remove_error.to_string())?;
             }
             Ok(())
@@ -301,7 +720,7 @@ fn copy_merge(
             if let Some(parent) = dest.parent() {
                 fs::create_dir_all(parent).map_err(|error| error.to_string())?;
             }
-            return fs::copy(source, dest)
+            return copy_file_resilient(source, dest)
                 .map(|_| ())
                 .map_err(|error| error.to_string());
         }
@@ -317,7 +736,7 @@ fn copy_merge(
                     *skipped_count += 1;
                     Ok(())
                 }
-                ConflictResolution::Replace => fs::copy(source, dest)
+                ConflictResolution::Replace => copy_file_resilient(source, dest)
                     .map(|_| ())
                     .map_err(|error| error.to_string()),
                 ConflictResolution::AutoRename => {
@@ -325,7 +744,7 @@ fn copy_merge(
                     let name = dest.file_name().ok_or("Invalid destination file name")?;
                     let unique_dest =
                         get_unique_destination_path(parent, name.to_string_lossy().as_ref());
-                    fs::copy(source, &unique_dest)
+                    copy_file_resilient(source, &unique_dest)
                         .map(|_| ())
                         .map_err(|error| error.to_string())
                 }
@@ -343,7 +762,7 @@ fn copy_merge(
                 }
                 ConflictResolution::Replace => {
                     fs::remove_dir_all(dest).map_err(|error| error.to_string())?;
-                    fs::copy(source, dest)
+                    copy_file_resilient(source, dest)
                         .map(|_| ())
                         .map_err(|error| error.to_string())
                 }
@@ -352,7 +771,7 @@ fn copy_merge(
                     let name = dest.file_name().ok_or("Invalid destination file name")?;
                     let unique_dest =
                         get_unique_destination_path(parent, name.to_string_lossy().as_ref());
-                    fs::copy(source, &unique_dest)
+                    copy_file_resilient(source, &unique_dest)
                         .map(|_| ())
                         .map_err(|error| error.to_string())
                 }
@@ -577,13 +996,14 @@ fn move_merge(
     }
 }
 
-#[tauri::command]
-pub fn copy_items(
+pub(crate) fn copy_items_impl(
     source_paths: Vec<String>,
     destination_path: String,
     conflict_resolution: Option<String>,
     per_path_resolutions: Option<Vec<PathResolution>>,
-) -> FileOperationResult {
+    cancel: Option<&Arc<AtomicBool>>,
+    progress: &mut Option<&mut dyn FnMut(u32, String, Option<u64>, Option<u64>)>,
+) -> (FileOperationResult, bool) {
     let destination = Path::new(&destination_path);
     let legacy_resolution = conflict_resolution
         .as_ref()
@@ -609,42 +1029,65 @@ pub fn copy_items(
         });
 
     if !destination.exists() {
-        return FileOperationResult {
-            success: false,
-            error: Some(format!(
-                "Destination path does not exist: {}",
-                destination_path
-            )),
-            copied_count: None,
-            failed_count: None,
-            skipped_count: None,
-        };
+        return (
+            FileOperationResult {
+                success: false,
+                error: Some(format!(
+                    "Destination path does not exist: {}",
+                    destination_path
+                )),
+                copied_count: None,
+                failed_count: None,
+                skipped_count: None,
+            },
+            false,
+        );
     }
 
     if !destination.is_dir() {
-        return FileOperationResult {
-            success: false,
-            error: Some(format!(
-                "Destination is not a directory: {}",
-                destination_path
-            )),
-            copied_count: None,
-            failed_count: None,
-            skipped_count: None,
-        };
+        return (
+            FileOperationResult {
+                success: false,
+                error: Some(format!(
+                    "Destination is not a directory: {}",
+                    destination_path
+                )),
+                copied_count: None,
+                failed_count: None,
+                skipped_count: None,
+            },
+            false,
+        );
     }
 
     let mut copied_count: u32 = 0;
     let mut failed_count: u32 = 0;
     let mut skipped_count: u32 = 0;
     let mut last_error: Option<String> = None;
+    let mut cancelled = false;
+    let total = source_paths.len().max(1) as u32;
 
-    for source_path_str in &source_paths {
+    for (index, source_path_str) in source_paths.iter().enumerate() {
+        if let Some(cancel_flag) = cancel {
+            if cancel_flag.load(Ordering::Relaxed) {
+                cancelled = true;
+                break;
+            }
+        }
+
         let source = Path::new(source_path_str);
+        let detail = source
+            .file_name()
+            .map(|name| name.to_string_lossy().to_string())
+            .unwrap_or_else(|| source_path_str.clone());
+        if merge_map.is_some() || progress.is_none() {
+            report_progress_for_item(progress, index, total, &detail, true);
+        }
 
         if !source.exists() {
             failed_count += 1;
             last_error = Some(format!("Source path does not exist: {}", source_path_str));
+            report_progress_for_item(progress, index, total, &detail, false);
             continue;
         }
 
@@ -655,6 +1098,7 @@ pub fn copy_items(
             None => {
                 failed_count += 1;
                 last_error = Some(format!("Invalid source path: {}", source_path_str));
+                report_progress_for_item(progress, index, total, &detail, false);
                 continue;
             }
         };
@@ -676,6 +1120,7 @@ pub fn copy_items(
                     last_error = Some(error);
                 }
             }
+            report_progress_for_item(progress, index, total, &detail, false);
             continue;
         }
 
@@ -688,12 +1133,14 @@ pub fn copy_items(
                 match resolution {
                     ConflictResolution::Skip => {
                         skipped_count += 1;
+                        report_progress_for_item(progress, index, total, &detail, false);
                         continue;
                     }
                     ConflictResolution::Replace => {
                         if let Err(error) = remove_dir_or_file(&initial_dest) {
                             failed_count += 1;
                             last_error = Some(error);
+                            report_progress_for_item(progress, index, total, &detail, false);
                             continue;
                         }
                         initial_dest
@@ -707,39 +1154,206 @@ pub fn copy_items(
             }
         };
 
-        let result = if source.is_dir() {
-            copy_dir_recursive(source, &dest_path)
+        let use_weighted_progress = progress.is_some();
+
+        let mut weighted_local_total = 1u64;
+        if use_weighted_progress && source.is_dir() {
+            if let Some(pfn) = progress.as_mut() {
+                pfn(0, format!("{} · Preparing", detail), Some(0), None);
+            }
+            let mut scanned = 0u64;
+            let mut last_emit_at = 0u64;
+            match count_copy_units_with_progress(
+                source,
+                cancel,
+                progress,
+                &detail,
+                &mut scanned,
+                &mut last_emit_at,
+            ) {
+                Ok(total) => weighted_local_total = total,
+                Err(error) => {
+                    if error == "Operation cancelled" {
+                        cancelled = true;
+                    } else {
+                        failed_count += 1;
+                        last_error = Some(error);
+                    }
+                    report_progress_for_item(progress, index, total, &detail, false);
+                    continue;
+                }
+            }
+        }
+
+        let mut inner_failed: u32 = 0;
+        let mut inner_last_error: Option<String> = None;
+
+        let copy_result = if use_weighted_progress {
+            let local_total = weighted_local_total;
+            let mut local_done = 0u64;
+            let mut last_emitted_pct = 0u32;
+            emit_item_progress(
+                progress,
+                index,
+                total,
+                0,
+                local_total,
+                &detail,
+                "",
+                &mut last_emitted_pct,
+                true,
+            );
+            let result = if source.is_dir() {
+                copy_dir_recursive_with_progress(
+                    source,
+                    &dest_path,
+                    cancel,
+                    progress,
+                    index,
+                    total,
+                    &mut local_done,
+                    local_total,
+                    &detail,
+                    &mut last_emitted_pct,
+                    "",
+                    &mut inner_failed,
+                    &mut inner_last_error,
+                )
+            } else {
+                let file_label = source
+                    .file_name()
+                    .map(|name| name.to_string_lossy().to_string())
+                    .unwrap_or_default();
+                match copy_file_resilient(source, &dest_path) {
+                    Ok(_) => {
+                        local_done += 1;
+                        emit_item_progress(
+                            progress,
+                            index,
+                            total,
+                            local_done,
+                            local_total,
+                            &detail,
+                            &file_label,
+                            &mut last_emitted_pct,
+                            true,
+                        );
+                        Ok(())
+                    }
+                    Err(error) => Err(format!("{}: {}", dest_path.display(), error)),
+                }
+            };
+            if result.is_ok() {
+                emit_item_progress(
+                    progress,
+                    index,
+                    total,
+                    local_total,
+                    local_total,
+                    &detail,
+                    "",
+                    &mut last_emitted_pct,
+                    true,
+                );
+            }
+            result
+        } else if source.is_dir() {
+            let mut progress_none: Option<&mut dyn FnMut(u32, String, Option<u64>, Option<u64>)> =
+                None;
+            let mut local_done = 0u64;
+            let mut last_emitted_pct = 0u32;
+            copy_dir_recursive_with_progress(
+                source,
+                &dest_path,
+                cancel,
+                &mut progress_none,
+                0,
+                1,
+                &mut local_done,
+                1,
+                &detail,
+                &mut last_emitted_pct,
+                "",
+                &mut inner_failed,
+                &mut inner_last_error,
+            )
         } else {
-            fs::copy(source, &dest_path)
+            copy_file_resilient(source, &dest_path)
                 .map(|_| ())
-                .map_err(|error| error.to_string())
+                .map_err(|error| format!("{}: {}", dest_path.display(), error))
         };
 
-        match result {
-            Ok(()) => copied_count += 1,
-            Err(error) => {
-                failed_count += 1;
-                last_error = Some(error);
+        let copy_failed = copy_result.is_err();
+
+        match copy_result {
+            Ok(()) => {
+                copied_count += 1;
+                failed_count += inner_failed;
+                if inner_last_error.is_some() {
+                    last_error = inner_last_error;
+                }
             }
+            Err(error) => {
+                if error == "Operation cancelled" {
+                    cancelled = true;
+                } else {
+                    failed_count += 1 + inner_failed;
+                    last_error = Some(error);
+                }
+            }
+        }
+        if merge_map.is_some() || progress.is_none() {
+            report_progress_for_item(progress, index, total, &detail, false);
+        } else if copy_failed {
+            report_progress_for_item(progress, index, total, &detail, false);
         }
     }
 
-    FileOperationResult {
-        success: failed_count == 0,
-        error: last_error,
-        copied_count: Some(copied_count),
-        failed_count: Some(failed_count),
-        skipped_count: Some(skipped_count),
-    }
+    let error = if cancelled {
+        None
+    } else {
+        file_operation_error_from_counts(failed_count, last_error)
+    };
+    let success = !cancelled && failed_count == 0;
+    (
+        FileOperationResult {
+            success,
+            error,
+            copied_count: Some(copied_count),
+            failed_count: Some(failed_count),
+            skipped_count: Some(skipped_count),
+        },
+        cancelled,
+    )
 }
 
 #[tauri::command]
-pub fn move_items(
+pub fn copy_items(
     source_paths: Vec<String>,
     destination_path: String,
     conflict_resolution: Option<String>,
     per_path_resolutions: Option<Vec<PathResolution>>,
 ) -> FileOperationResult {
+    let mut progress_none: Option<&mut dyn FnMut(u32, String, Option<u64>, Option<u64>)> = None;
+    copy_items_impl(
+        source_paths,
+        destination_path,
+        conflict_resolution,
+        per_path_resolutions,
+        None,
+        &mut progress_none,
+    )
+    .0
+}
+
+pub(crate) fn move_items_impl(
+    source_paths: Vec<String>,
+    destination_path: String,
+    conflict_resolution: Option<String>,
+    per_path_resolutions: Option<Vec<PathResolution>>,
+    cancel: Option<&Arc<AtomicBool>>,
+    progress: &mut Option<&mut dyn FnMut(u32, String, Option<u64>, Option<u64>)>,
+) -> (FileOperationResult, bool) {
     let destination = Path::new(&destination_path);
     let legacy_resolution = conflict_resolution
         .as_ref()
@@ -765,48 +1379,72 @@ pub fn move_items(
         });
 
     if !destination.exists() {
-        return FileOperationResult {
-            success: false,
-            error: Some(format!(
-                "Destination path does not exist: {}",
-                destination_path
-            )),
-            copied_count: None,
-            failed_count: None,
-            skipped_count: None,
-        };
+        return (
+            FileOperationResult {
+                success: false,
+                error: Some(format!(
+                    "Destination path does not exist: {}",
+                    destination_path
+                )),
+                copied_count: None,
+                failed_count: None,
+                skipped_count: None,
+            },
+            false,
+        );
     }
 
     if !destination.is_dir() {
-        return FileOperationResult {
-            success: false,
-            error: Some(format!(
-                "Destination is not a directory: {}",
-                destination_path
-            )),
-            copied_count: None,
-            failed_count: None,
-            skipped_count: None,
-        };
+        return (
+            FileOperationResult {
+                success: false,
+                error: Some(format!(
+                    "Destination is not a directory: {}",
+                    destination_path
+                )),
+                copied_count: None,
+                failed_count: None,
+                skipped_count: None,
+            },
+            false,
+        );
     }
 
     let mut moved_count: u32 = 0;
     let mut failed_count: u32 = 0;
     let mut skipped_count: u32 = 0;
     let mut last_error: Option<String> = None;
+    let mut cancelled = false;
+    let total = source_paths.len().max(1) as u32;
 
-    for source_path_str in &source_paths {
+    for (index, source_path_str) in source_paths.iter().enumerate() {
+        if let Some(cancel_flag) = cancel {
+            if cancel_flag.load(Ordering::Relaxed) {
+                cancelled = true;
+                break;
+            }
+        }
+
         let source = Path::new(source_path_str);
+        let detail = source
+            .file_name()
+            .map(|name| name.to_string_lossy().to_string())
+            .unwrap_or_else(|| source_path_str.clone());
+        if merge_map.is_some() || progress.is_none() {
+            report_progress_for_item(progress, index, total, &detail, true);
+        }
 
         if !source.exists() {
             failed_count += 1;
             last_error = Some(format!("Source path does not exist: {}", source_path_str));
+            report_progress_for_item(progress, index, total, &detail, false);
             continue;
         }
 
         let is_same_directory = source_and_destination_same_directory(source, destination);
 
         if is_same_directory {
+            report_progress_for_item(progress, index, total, &detail, false);
             continue;
         }
 
@@ -815,6 +1453,7 @@ pub fn move_items(
             None => {
                 failed_count += 1;
                 last_error = Some(format!("Invalid source path: {}", source_path_str));
+                report_progress_for_item(progress, index, total, &detail, false);
                 continue;
             }
         };
@@ -832,6 +1471,7 @@ pub fn move_items(
                     last_error = Some(error);
                 }
             }
+            report_progress_for_item(progress, index, total, &detail, false);
             continue;
         }
 
@@ -842,12 +1482,14 @@ pub fn move_items(
             match resolution {
                 ConflictResolution::Skip => {
                     skipped_count += 1;
+                    report_progress_for_item(progress, index, total, &detail, false);
                     continue;
                 }
                 ConflictResolution::Replace => {
                     if let Err(error) = remove_dir_or_file(&dest_path) {
                         failed_count += 1;
                         last_error = Some(error);
+                        report_progress_for_item(progress, index, total, &detail, false);
                         continue;
                     }
                     dest_path
@@ -862,26 +1504,166 @@ pub fn move_items(
 
         let result = fs::rename(source, &final_dest_path);
 
+        let mut skip_end_progress_report = false;
+
         match result {
             Ok(()) => moved_count += 1,
             Err(error) => {
                 if should_fallback_to_copy_delete(&error) {
-                    let copy_result = if source.is_dir() {
-                        copy_dir_recursive(source, &final_dest_path)
+                    let mut weighted_local_total = 1u64;
+                    let mut count_failed = false;
+                    if progress.is_some() && source.is_dir() {
+                        if let Some(pfn) = progress.as_mut() {
+                            pfn(0, format!("{} · Preparing", detail), Some(0), None);
+                        }
+                        let mut scanned = 0u64;
+                        let mut last_emit_at = 0u64;
+                        match count_copy_units_with_progress(
+                            source,
+                            cancel,
+                            progress,
+                            &detail,
+                            &mut scanned,
+                            &mut last_emit_at,
+                        ) {
+                            Ok(total) => weighted_local_total = total,
+                            Err(copy_error) => {
+                                if copy_error == "Operation cancelled" {
+                                    cancelled = true;
+                                } else {
+                                    failed_count += 1;
+                                    last_error = Some(copy_error);
+                                }
+                                report_progress_for_item(progress, index, total, &detail, false);
+                                count_failed = true;
+                            }
+                        }
+                    }
+                    if count_failed {
+                        continue;
+                    }
+                    let mut inner_failed: u32 = 0;
+                    let mut inner_last_error: Option<String> = None;
+                    let copy_result = if progress.is_some() {
+                        let local_total = weighted_local_total;
+                        let mut local_done = 0u64;
+                        let mut last_emitted_pct = 0u32;
+                        emit_item_progress(
+                            progress,
+                            index,
+                            total,
+                            0,
+                            local_total,
+                            &detail,
+                            "",
+                            &mut last_emitted_pct,
+                            true,
+                        );
+                        let inner = if source.is_dir() {
+                            copy_dir_recursive_with_progress(
+                                source,
+                                &final_dest_path,
+                                cancel,
+                                progress,
+                                index,
+                                total,
+                                &mut local_done,
+                                local_total,
+                                &detail,
+                                &mut last_emitted_pct,
+                                "",
+                                &mut inner_failed,
+                                &mut inner_last_error,
+                            )
+                        } else {
+                            let file_label = source
+                                .file_name()
+                                .map(|name| name.to_string_lossy().to_string())
+                                .unwrap_or_default();
+                            match copy_file_resilient(source, &final_dest_path) {
+                                Ok(_) => {
+                                    local_done += 1;
+                                    emit_item_progress(
+                                        progress,
+                                        index,
+                                        total,
+                                        local_done,
+                                        local_total,
+                                        &detail,
+                                        &file_label,
+                                        &mut last_emitted_pct,
+                                        true,
+                                    );
+                                    Ok(())
+                                }
+                                Err(copy_error) => {
+                                    Err(format!("{}: {}", final_dest_path.display(), copy_error))
+                                }
+                            }
+                        };
+                        if inner.is_ok() {
+                            emit_item_progress(
+                                progress,
+                                index,
+                                total,
+                                local_total,
+                                local_total,
+                                &detail,
+                                "",
+                                &mut last_emitted_pct,
+                                true,
+                            );
+                            skip_end_progress_report = true;
+                        }
+                        inner
+                    } else if source.is_dir() {
+                        let mut progress_none: Option<
+                            &mut dyn FnMut(u32, String, Option<u64>, Option<u64>),
+                        > = None;
+                        let mut local_done = 0u64;
+                        let mut last_emitted_pct = 0u32;
+                        copy_dir_recursive_with_progress(
+                            source,
+                            &final_dest_path,
+                            cancel,
+                            &mut progress_none,
+                            0,
+                            1,
+                            &mut local_done,
+                            1,
+                            &detail,
+                            &mut last_emitted_pct,
+                            "",
+                            &mut inner_failed,
+                            &mut inner_last_error,
+                        )
                     } else {
-                        fs::copy(source, &final_dest_path)
+                        copy_file_resilient(source, &final_dest_path)
                             .map(|_| ())
-                            .map_err(|copy_error| copy_error.to_string())
+                            .map_err(|copy_error| {
+                                format!("{}: {}", final_dest_path.display(), copy_error)
+                            })
                     };
 
                     match copy_result {
                         Ok(()) => {
-                            let _ = remove_dir_or_file(source);
-                            moved_count += 1;
+                            if inner_failed == 0 {
+                                let _ = remove_dir_or_file(source);
+                                moved_count += 1;
+                            } else {
+                                failed_count += inner_failed;
+                                if inner_last_error.is_some() {
+                                    last_error = inner_last_error;
+                                }
+                            }
                         }
                         Err(copy_error) => {
-                            failed_count += 1;
-                            last_error = Some(copy_error);
+                            if copy_error == "Operation cancelled" {
+                                cancelled = true;
+                            } else {
+                                failed_count += 1 + inner_failed;
+                                last_error = Some(copy_error);
+                            }
                         }
                     }
                 } else {
@@ -890,15 +1672,48 @@ pub fn move_items(
                 }
             }
         }
+        if merge_map.is_some() || progress.is_none() {
+            report_progress_for_item(progress, index, total, &detail, false);
+        } else if !skip_end_progress_report {
+            report_progress_for_item(progress, index, total, &detail, false);
+        }
     }
 
-    FileOperationResult {
-        success: failed_count == 0,
-        error: last_error,
-        copied_count: Some(moved_count),
-        failed_count: Some(failed_count),
-        skipped_count: Some(skipped_count),
-    }
+    let error = if cancelled {
+        None
+    } else {
+        file_operation_error_from_counts(failed_count, last_error)
+    };
+    let success = !cancelled && failed_count == 0;
+    (
+        FileOperationResult {
+            success,
+            error,
+            copied_count: Some(moved_count),
+            failed_count: Some(failed_count),
+            skipped_count: Some(skipped_count),
+        },
+        cancelled,
+    )
+}
+
+#[tauri::command]
+pub fn move_items(
+    source_paths: Vec<String>,
+    destination_path: String,
+    conflict_resolution: Option<String>,
+    per_path_resolutions: Option<Vec<PathResolution>>,
+) -> FileOperationResult {
+    let mut progress_none: Option<&mut dyn FnMut(u32, String, Option<u64>, Option<u64>)> = None;
+    move_items_impl(
+        source_paths,
+        destination_path,
+        conflict_resolution,
+        per_path_resolutions,
+        None,
+        &mut progress_none,
+    )
+    .0
 }
 
 #[tauri::command]

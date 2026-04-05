@@ -18,6 +18,10 @@ pub struct DeleteJobProgressPayload {
     pub job_id: String,
     pub percent: u32,
     pub detail: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub processed_count: Option<u64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub total_count: Option<u64>,
 }
 
 #[derive(Clone, Serialize)]
@@ -45,16 +49,17 @@ fn run_delete_blocking(
     paths: Vec<String>,
     use_trash: bool,
     cancel: Arc<AtomicBool>,
-    progress_tx: UnboundedSender<(u32, String)>,
+    progress_tx: UnboundedSender<(u32, String, Option<u64>, Option<u64>)>,
 ) -> DeleteJobOutcome {
     let total = paths.len().max(1) as u32;
+    let total_paths = paths.len() as u64;
     let mut deleted_paths = Vec::new();
     let mut failed_count: u32 = 0;
     let mut last_error: Option<String> = None;
 
     for (index, path_str) in paths.iter().enumerate() {
         if cancel.load(Ordering::Relaxed) {
-            let _ = progress_tx.send((100, String::new()));
+            let _ = progress_tx.send((100, String::new(), None, None));
             return DeleteJobOutcome {
                 deleted_paths,
                 cancelled: true,
@@ -71,13 +76,23 @@ fn run_delete_blocking(
             .unwrap_or_else(|| normalized.clone());
 
         let pct_before = ((index as u32) * 100 / total).min(99);
-        let _ = progress_tx.send((pct_before, detail.clone()));
+        let _ = progress_tx.send((
+            pct_before,
+            detail.clone(),
+            Some(index as u64),
+            Some(total_paths),
+        ));
 
         if !path.exists() {
             failed_count += 1;
             last_error = Some(format!("Path does not exist: {}", normalized));
             let pct_after = (((index + 1) as u32) * 100 / total).min(100);
-            let _ = progress_tx.send((pct_after, detail));
+            let _ = progress_tx.send((
+                pct_after,
+                detail,
+                Some((index + 1) as u64),
+                Some(total_paths),
+            ));
             continue;
         }
 
@@ -100,7 +115,12 @@ fn run_delete_blocking(
         }
 
         let pct_after = (((index + 1) as u32) * 100 / total).min(100);
-        let _ = progress_tx.send((pct_after, detail));
+        let _ = progress_tx.send((
+            pct_after,
+            detail,
+            Some((index + 1) as u64),
+            Some(total_paths),
+        ));
     }
 
     DeleteJobOutcome {
@@ -131,16 +151,19 @@ pub async fn start_delete_job(
         guard.insert(job_id.clone(), cancel.clone());
     }
 
-    let (progress_tx, mut progress_rx) = tokio::sync::mpsc::unbounded_channel::<(u32, String)>();
+    let (progress_tx, mut progress_rx) =
+        tokio::sync::mpsc::unbounded_channel::<(u32, String, Option<u64>, Option<u64>)>();
 
     let app_progress = app.clone();
     let job_id_progress = job_id.clone();
     let emit_progress = tokio::spawn(async move {
-        while let Some((percent, detail)) = progress_rx.recv().await {
+        while let Some((percent, detail, processed_count, total_count)) = progress_rx.recv().await {
             let payload = DeleteJobProgressPayload {
                 job_id: job_id_progress.clone(),
                 percent,
                 detail,
+                processed_count,
+                total_count,
             };
             let _ = app_progress.emit("delete-job-progress", &payload);
         }

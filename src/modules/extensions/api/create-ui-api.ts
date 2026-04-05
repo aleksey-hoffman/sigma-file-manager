@@ -2,7 +2,6 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-import { toast } from 'vue-sonner';
 import { createApp, markRaw } from 'vue';
 import { writeText as tauriWriteText, writeImage as tauriWriteImage, writeHtml as tauriWriteHtml } from '@tauri-apps/plugin-clipboard-manager';
 import { Image as TauriImage } from '@tauri-apps/api/image';
@@ -19,7 +18,7 @@ import type {
   UIElement,
   UISelectOption,
 } from '@/types/extension';
-import { ToastStatic, ToastProgress } from '@/components/ui/toaster';
+import { toast, ToastStatic, ToastProgress } from '@/components/ui/toaster';
 import { createModal } from '@/modules/extensions/api/modal-state';
 import { showExtensionDialog } from '@/modules/extensions/api/dialog-state';
 import ExtensionToolbarView from '@/modules/extensions/components/extension-toolbar-view.vue';

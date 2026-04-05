@@ -6,6 +6,7 @@ import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
 import type { DirEntry } from '@/types/dir-entry';
+import { i18n } from '@/localization';
 
 export type ClipboardOperationType = 'copy' | 'move' | '';
 export type ConflictResolution = 'replace' | 'skip' | 'auto-rename';
@@ -26,10 +27,12 @@ export interface ClipboardState {
 
 export interface FileOperationResult {
   success: boolean;
+  cancelled?: boolean;
   error?: string;
   copied_count?: number;
   failed_count?: number;
   skipped_count?: number;
+  fromStatusCenterJob?: boolean;
 }
 
 export interface ConflictItem {
@@ -89,13 +92,23 @@ export const useClipboardStore = defineStore('clipboard', () => {
     return allFromSameDir ? firstItemParent : null;
   });
 
-  function setClipboard(type: ClipboardOperationType, items: DirEntry[]) {
+  function setClipboard(
+    type: ClipboardOperationType,
+    items: DirEntry[],
+    options?: { keepToolbarHidden?: boolean },
+  ) {
     clipboardType.value = type;
     clipboardItems.value = items.map(item => ({ ...item }));
+    isToolbarSuppressed.value = options?.keepToolbarHidden === true;
   }
 
-  function addToClipboard(type: ClipboardOperationType, items: DirEntry[]) {
+  function addToClipboard(
+    type: ClipboardOperationType,
+    items: DirEntry[],
+    options?: { keepToolbarHidden?: boolean },
+  ) {
     clipboardType.value = type;
+    isToolbarSuppressed.value = options?.keepToolbarHidden === true;
 
     for (const item of items) {
       const itemAlreadyAdded = clipboardItems.value.some(
@@ -199,57 +212,64 @@ export const useClipboardStore = defineStore('clipboard', () => {
     if (!hasItems.value) {
       return {
         success: false,
-        error: 'No items in clipboard',
+        error: i18n.global.t('fileBrowser.noItemsInClipboard'),
       };
     }
 
     if (isDestinationInsideClipboardItem(destinationPath)) {
       return {
         success: false,
-        error: 'Cannot paste a folder into itself',
+        error: i18n.global.t('fileBrowser.cannotPasteIntoItself'),
       };
     }
 
     if (isMoveOperation.value && isSameAsSourceDirectory(destinationPath)) {
       return {
         success: false,
-        error: 'Cannot move items to the same directory',
+        error: i18n.global.t('fileBrowser.cannotMoveToSameDirectory'),
       };
     }
 
     const sourcePaths = clipboardItems.value.map(item => item.path);
     isOperationInProgress.value = true;
 
+    const displayPath = destinationPath.split(/[/\\]/).pop() ?? destinationPath;
+
     try {
+      const { useCopyMoveJobsStore } = await import('@/stores/runtime/copy-move-jobs');
+      const copyMoveJobsStore = useCopyMoveJobsStore();
+
       if (clipboardType.value === 'copy') {
-        const result = await invoke<FileOperationResult>('copy_items', {
+        const result = await copyMoveJobsStore.startJob(
+          'copy',
           sourcePaths,
           destinationPath,
-          conflictResolution: null,
-          perPathResolutions:
-            perPathResolutions && perPathResolutions.length > 0
-              ? perPathResolutions.map(entry => ({
-                  destination_path: entry.destination_path,
-                  resolution: entry.resolution,
-                }))
-              : null,
-        });
+          null,
+          perPathResolutions,
+          {
+            label: i18n.global.t('notifications.copyingItems'),
+            displayPath,
+          },
+        );
+
+        if (result.success) {
+          isToolbarSuppressed.value = true;
+        }
 
         return result;
       }
       else if (clipboardType.value === 'move') {
-        const result = await invoke<FileOperationResult>('move_items', {
+        const result = await copyMoveJobsStore.startJob(
+          'move',
           sourcePaths,
           destinationPath,
-          conflictResolution: null,
-          perPathResolutions:
-            perPathResolutions && perPathResolutions.length > 0
-              ? perPathResolutions.map(entry => ({
-                  destination_path: entry.destination_path,
-                  resolution: entry.resolution,
-                }))
-              : null,
-        });
+          null,
+          perPathResolutions,
+          {
+            label: i18n.global.t('notifications.movingItems'),
+            displayPath,
+          },
+        );
 
         if (result.success) {
           clearClipboard();
@@ -260,7 +280,7 @@ export const useClipboardStore = defineStore('clipboard', () => {
 
       return {
         success: false,
-        error: 'Invalid clipboard operation type',
+        error: i18n.global.t('fileBrowser.invalidClipboardOperation'),
       };
     }
     catch (error) {

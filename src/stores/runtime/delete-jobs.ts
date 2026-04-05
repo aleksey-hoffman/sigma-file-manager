@@ -9,12 +9,15 @@ import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 import { toast, ToastStatic } from '@/components/ui/toaster';
 import { i18n } from '@/localization';
 import uniqueId from '@/utils/unique-id';
+import { sourceDisplayNameFromPaths } from '@/utils/source-display-name';
 import { useStatusCenterStore } from './status-center';
 
 interface DeleteJobProgressPayload {
   jobId: string;
   percent: number;
   detail: string;
+  processedCount?: number | null;
+  totalCount?: number | null;
 }
 
 interface DeleteJobFinishedPayload {
@@ -66,6 +69,8 @@ export const useDeleteJobsStore = defineStore('delete-jobs', () => {
           status: 'in-progress',
           progress: payload.percent,
           message: payload.detail,
+          processedCount: payload.processedCount ?? undefined,
+          totalCount: payload.totalCount ?? undefined,
         });
       },
     );
@@ -156,11 +161,12 @@ export const useDeleteJobsStore = defineStore('delete-jobs', () => {
       completionHandlers.set(jobId, { resolve });
       statusCenterStore.addOperation({
         id: jobId,
-        type: 'delete',
+        type: useTrash ? 'deleteTrash' : 'deletePermanent',
         status: 'in-progress',
         label: options.label,
         path: options.displayPath,
         progress: 0,
+        sourceDisplayName: sourceDisplayNameFromPaths(paths),
       });
 
       invoke('start_delete_job', {

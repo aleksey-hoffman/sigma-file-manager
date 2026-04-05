@@ -19,10 +19,7 @@ const props = defineProps<ToasterProps>();
       ...props.toastOptions,
       unstyled: true,
       classes: {
-        toast: 'sigma-ui-toast',
-        description: 'sigma-ui-toast__description',
-        actionButton: 'sigma-ui-toast__action-button',
-        cancelButton: 'sigma-ui-toast__cancel-button',
+        toast: 'sigma-ui-toast-shell',
       },
     }"
   />
@@ -67,6 +64,12 @@ const props = defineProps<ToasterProps>();
   background-color: hsl(var(--background) / 0%);
 }
 
+[data-sonner-toast][data-mounted='false'] :deep(.sigma-ui-toast-static),
+[data-sonner-toast][data-mounted='false'] :deep(.sigma-ui-toast-progress) {
+  backdrop-filter: blur(0);
+  background-color: hsl(var(--background) / 0%);
+}
+
 [data-sonner-toast][data-expanded='false'][data-front='false'] {
   overflow: hidden;
 }
@@ -75,7 +78,7 @@ const props = defineProps<ToasterProps>();
   opacity: 0;
 }
 
-.sigma-ui-toast {
+.sigma-ui-toast-shell {
   display: flex;
   width: 100%;
   align-items: stretch;
@@ -90,43 +93,5 @@ const props = defineProps<ToasterProps>();
 
 [data-sonner-toast] > * {
   flex: 1;
-}
-
-.sigma-ui-toast[data-type="default"] {
-  padding: 0.75rem 1rem;
-  border: 1px solid hsl(var(--border));
-  background-color: hsl(var(--background));
-  box-shadow: 0 4px 12px rgb(0 0 0 / 10%);
-}
-
-.sigma-ui-toast[data-type="default"] [data-content] {
-  display: flex;
-  flex: 1;
-}
-
-.sigma-ui-toast[data-type="default"] .sigma-ui-toast__description {
-  width: 100%;
-}
-
-.sigma-ui-toast[data-type="default"] .sigma-ui-toast__action-button {
-  padding: 2px 6px;
-  border-radius: var(--radius-sm);
-  background-color: hsl(var(--primary));
-  color: hsl(var(--primary-foreground));
-}
-
-.sigma-ui-toast[data-type="default"] .sigma-ui-toast__action-button:hover {
-  opacity: 0.9;
-}
-
-.sigma-ui-toast[data-type="default"] .sigma-ui-toast__cancel-button {
-  padding: 2px 6px;
-  border-radius: var(--radius-sm);
-  background-color: hsl(var(--muted));
-  color: hsl(var(--muted-foreground));
-}
-
-.sigma-ui-toast[data-type="default"] .sigma-ui-toast__cancel-button:hover {
-  opacity: 0.9;
 }
 </style>

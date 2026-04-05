@@ -1246,10 +1246,11 @@
       "deleteAll": "Delete all"
     },
     "deleteIrreversibly": {
-      "title": "Deleting from drive",
-      "description": "This operation will permanently delete {count} items from your computer.",
-      "confirm": "Confirm, if you understand this cannot be undone.",
-      "delete": "Delete"
+      "title": "ドライブから完全削除",
+      "descriptionSingle": "{path} は完全に削除されます。",
+      "description": "この操作はコンピューターから {count} 個のアイテムを完全に削除します。",
+      "confirm": "この操作は取り消せません。理解したうえで承認してください。",
+      "delete": "削除"
     },
     "deleteCurrentDir": {
       "title": "Deleting current directory",
@@ -1709,6 +1710,8 @@
     "cannotPasteHere": "ここには貼り付けできません",
     "cannotMoveToSameDirectory": "同じディレクトリに移動できません",
     "cannotPasteIntoItself": "フォルダを自身に貼り付けることはできません",
+    "noItemsInClipboard": "クリップボードに項目がありません",
+    "invalidClipboardOperation": "無効なクリップボード操作",
     "copyFailed": "コピー失敗",
     "moveFailed": "移動失敗",
     "sizeTooltip": {
@@ -1937,11 +1940,14 @@
     "cancelAll": "Cancel all",
     "cancelling": "キャンセルしています…",
     "deleteSelectedCount": "{count} 件",
+    "selectedItemsCount": "{count} 件",
+    "preparing": "準備中",
     "groups": {
       "dir-size": "Directory size calculations",
       "copy": "Copy operations",
       "move": "Move operations",
-      "delete": "Delete operations",
+      "deleteTrash": "ゴミ箱へ移動",
+      "deletePermanent": "完全削除の操作",
       "archive": "アーカイブ操作"
     }
   },

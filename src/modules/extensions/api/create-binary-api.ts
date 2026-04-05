@@ -3,10 +3,9 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 import { listen } from '@tauri-apps/api/event';
-import { toast } from 'vue-sonner';
 import { markRaw } from 'vue';
 import type { BinaryInstallOptions, BinaryInfo, SharedBinaryInfo, PlatformOS } from '@/types/extension';
-import { ToastProgress } from '@/components/ui/toaster';
+import { toast, ToastProgress } from '@/components/ui/toaster';
 import { useExtensionsStorageStore } from '@/stores/storage/extensions';
 import { getBinaryLookupVersion } from '@/modules/extensions/utils/binary-metadata';
 import { getSharedBinaryPendingKey } from '@/modules/extensions/utils/shared-binary';

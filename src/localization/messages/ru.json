@@ -142,11 +142,14 @@
     "cancelAll": "Отменить все",
     "cancelling": "Отмена…",
     "deleteSelectedCount": "{count} элементов",
+    "selectedItemsCount": "{count} элементов",
+    "preparing": "Подготовка",
     "groups": {
       "dir-size": "Расчёт размера папок",
       "copy": "Операции копирования",
       "move": "Операции перемещения",
-      "delete": "Операции удаления",
+      "deleteTrash": "Операции корзины",
+      "deletePermanent": "Операции окончательного удаления",
       "archive": "Операции с архивами"
     }
   },
@@ -1262,10 +1265,11 @@
       "deleteAll": "Delete all"
     },
     "deleteIrreversibly": {
-      "title": "Deleting from drive",
-      "description": "This operation will permanently delete {count} items from your computer.",
-      "confirm": "Confirm, if you understand this cannot be undone.",
-      "delete": "Delete"
+      "title": "Безвозвратное удаление",
+      "descriptionSingle": "{path} будет удалён безвозвратно.",
+      "description": "Эта операция безвозвратно удалит {count} элементов с вашего компьютера.",
+      "confirm": "Подтвердите только если понимаете, что отменить это действие нельзя.",
+      "delete": "Удалить"
     },
     "deleteCurrentDir": {
       "title": "Deleting current directory",
@@ -1298,7 +1302,7 @@
     "cannotCopySpecifiedValueAsText": "Невозможно скопировать указанное значение как текст.",
     "copyingItems": "Копирование элементов",
     "copiedNItems": "Скопировано 0 элементов | Скопировано 1 элемент | Скопировано {n} элементов | Скопировано {n} элементов",
-    "movingItems": "Движущиеся предметы",
+    "movingItems": "Перемещение элементов",
     "trashingItems": "Перемещение в корзину",
     "deletingItems": "Удаление элементов",
     "movedNItems": "Перемещено 0 элементов | Перемещено 1 элемента | Перемещено {n} элементов | Перемещено {n} элементов",
@@ -1726,6 +1730,8 @@
     "cannotPasteHere": "Невозможно вставить сюда",
     "cannotMoveToSameDirectory": "Невозможно переместить элементы в ту же папку",
     "cannotPasteIntoItself": "Невозможно вставить папку в саму себя",
+    "noItemsInClipboard": "В буфере обмена нет элементов",
+    "invalidClipboardOperation": "Недопустимая операция буфера обмена",
     "copyFailed": "Ошибка копирования",
     "moveFailed": "Ошибка перемещения",
     "sizeTooltip": {

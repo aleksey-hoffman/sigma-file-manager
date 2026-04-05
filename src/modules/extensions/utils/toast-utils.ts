@@ -2,9 +2,8 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-import { toast } from 'vue-sonner';
 import { markRaw } from 'vue';
-import { ToastStatic } from '@/components/ui/toaster';
+import { toast, ToastStatic } from '@/components/ui/toaster';
 import { i18n } from '@/localization';
 import { useExtensionsStorageStore } from '@/stores/storage/extensions';
 import {

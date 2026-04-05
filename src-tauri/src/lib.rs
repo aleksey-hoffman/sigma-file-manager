@@ -5,6 +5,7 @@
 mod app_updater;
 mod archive;
 mod background_sources;
+mod copy_move_job;
 mod default_file_manager;
 mod delete_job;
 mod dir_reader;
@@ -229,6 +230,7 @@ pub fn run() {
             dir_reader::get_system_drives,
             dir_reader::get_parent_dir,
             dir_reader::path_exists,
+            dir_reader::paths_are_directories,
             dir_reader::get_mountable_devices,
             dir_reader::mount_drive,
             dir_reader::unmount_drive,
@@ -249,6 +251,8 @@ pub fn run() {
             file_operations::create_item,
             archive::start_archive_job,
             archive::cancel_archive_job,
+            copy_move_job::start_copy_move_job,
+            copy_move_job::cancel_copy_move_job,
             delete_job::start_delete_job,
             delete_job::cancel_delete_job,
             global_search::global_search_init,

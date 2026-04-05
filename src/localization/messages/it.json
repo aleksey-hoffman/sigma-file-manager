@@ -1253,6 +1253,7 @@
     },
     "deleteIrreversibly": {
       "title": "Eliminazione dal disco",
+      "descriptionSingle": "{path} verrà eliminato definitivamente.",
       "description": "Questa operazione eliminerà definitivamente {count} elementi dal tuo computer.",
       "confirm": "Conferma, se capisci che questa operazione non può essere annullata.",
       "delete": "Elimina"
@@ -1709,6 +1710,8 @@
     "cannotPasteHere": "Impossibile incollare qui",
     "cannotMoveToSameDirectory": "Impossibile spostare gli elementi nella stessa directory",
     "cannotPasteIntoItself": "Impossibile incollare una cartella in se stessa",
+    "noItemsInClipboard": "Nessun elemento negli appunti",
+    "invalidClipboardOperation": "Operazione degli appunti non valida",
     "copyFailed": "Copia fallita",
     "moveFailed": "Spostamento fallito",
     "sizeTooltip": {
@@ -1937,11 +1940,14 @@
     "cancelAll": "Cancel all",
     "cancelling": "Annullamento…",
     "deleteSelectedCount": "{count} elementi",
+    "selectedItemsCount": "{count} elementi",
+    "preparing": "Preparazione",
     "groups": {
       "dir-size": "Directory size calculations",
       "copy": "Copy operations",
       "move": "Move operations",
-      "delete": "Delete operations",
+      "deleteTrash": "Operazioni nel cestino",
+      "deletePermanent": "Operazioni di eliminazione permanente",
       "archive": "Operazioni di archivio"
     }
   },

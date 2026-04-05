@@ -1246,10 +1246,11 @@
       "deleteAll": "Delete all"
     },
     "deleteIrreversibly": {
-      "title": "Deleting from drive",
-      "description": "This operation will permanently delete {count} items from your computer.",
-      "confirm": "Confirm, if you understand this cannot be undone.",
-      "delete": "Delete"
+      "title": "Xóa vĩnh viễn khỏi ổ đĩa",
+      "descriptionSingle": "{path} sẽ bị xóa vĩnh viễn.",
+      "description": "Thao tác này sẽ xóa vĩnh viễn {count} mục khỏi máy tính của bạn.",
+      "confirm": "Chỉ xác nhận nếu bạn hiểu rằng không thể hoàn tác.",
+      "delete": "Xóa"
     },
     "deleteCurrentDir": {
       "title": "Deleting current directory",
@@ -1282,7 +1283,7 @@
     "cannotCopySpecifiedValueAsText": "Không thể sao chép giá trị đã chỉ định dưới dạng văn bản.",
     "copyingItems": "Sao chép mục",
     "copiedNItems": "Đã sao chép 0 mục | Đã sao chép 1 mục | Đã sao chép {n} mục | Đã sao chép {n} mục",
-    "movingItems": "Các mục đang di chuyển",
+    "movingItems": "Di chuyển mục",
     "trashingItems": "Đang chuyển vào thùng rác",
     "deletingItems": "Đang xóa mục",
     "movedNItems": "Đã chuyển 0 mục | Đã chuyển 1 mục | Đã chuyển {n} mục | Đã chuyển {n} mục",
@@ -1709,6 +1710,8 @@
     "cannotPasteHere": "Không thể dán vào đây",
     "cannotMoveToSameDirectory": "Không thể di chuyển các mục vào cùng thư mục",
     "cannotPasteIntoItself": "Không thể dán thư mục vào chính nó",
+    "noItemsInClipboard": "Không có mục nào trong clipboard",
+    "invalidClipboardOperation": "Thao tác clipboard không hợp lệ",
     "copyFailed": "Sao chép thất bại",
     "moveFailed": "Di chuyển thất bại",
     "sizeTooltip": {
@@ -1937,11 +1940,14 @@
     "cancelAll": "Cancel all",
     "cancelling": "Đang hủy…",
     "deleteSelectedCount": "{count} mục",
+    "selectedItemsCount": "{count} mục",
+    "preparing": "Đang chuẩn bị",
     "groups": {
       "dir-size": "Directory size calculations",
       "copy": "Copy operations",
       "move": "Move operations",
-      "delete": "Delete operations",
+      "deleteTrash": "Thao tác thùng rác",
+      "deletePermanent": "Thao tác xóa vĩnh viễn",
       "archive": "Thao tác nén và giải nén"
     }
   },

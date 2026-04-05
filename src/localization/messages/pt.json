@@ -1254,10 +1254,10 @@
     },
     "deleteIrreversibly": {
       "title": "Excluindo da unidade",
+      "descriptionSingle": "{path} será excluído permanentemente.",
       "description": "Esta operação excluirá permanentemente {count} itens do seu computador.",
       "confirm": "Confirme, se você entende isso não pode ser desfeito.",
-      "Delete": "Excluir",
-      "delete": "Delete"
+      "delete": "Excluir"
     },
     "deleteCurrentDir": {
       "title": "Excluindo diretório atual",
@@ -1722,6 +1722,8 @@
     "cannotPasteHere": "Não é possível colar aqui",
     "cannotMoveToSameDirectory": "Não é possível mover itens para o mesmo diretório",
     "cannotPasteIntoItself": "Não é possível colar uma pasta em si mesma",
+    "noItemsInClipboard": "Nenhum item na área de transferência",
+    "invalidClipboardOperation": "Operação de área de transferência inválida",
     "copyFailed": "Falha ao copiar",
     "moveFailed": "Falha ao mover",
     "sizeTooltip": {
@@ -1950,11 +1952,14 @@
     "cancelAll": "Cancel all",
     "cancelling": "A cancelar…",
     "deleteSelectedCount": "{count} itens",
+    "selectedItemsCount": "{count} itens",
+    "preparing": "A preparar",
     "groups": {
       "dir-size": "Directory size calculations",
       "copy": "Copy operations",
       "move": "Move operations",
-      "delete": "Delete operations",
+      "deleteTrash": "Operações na lixeira",
+      "deletePermanent": "Operações de exclusão permanente",
       "archive": "Operações de arquivo"
     }
   },

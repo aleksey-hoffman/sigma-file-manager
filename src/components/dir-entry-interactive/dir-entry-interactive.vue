@@ -12,6 +12,7 @@ import DirEntryContextMenu from './dir-entry-context-menu.vue';
 import FileBrowserRenameDialog from '@/modules/navigator/components/file-browser/file-browser-rename-dialog.vue';
 import FileBrowserNewItemDialog from '@/modules/navigator/components/file-browser/file-browser-new-item-dialog.vue';
 import FileBrowserConflictDialog from '@/modules/navigator/components/file-browser/file-browser-conflict-dialog.vue';
+import PermanentDeleteConfirmDialog from '@/modules/navigator/components/file-browser/permanent-delete-confirm-dialog.vue';
 import { useDirEntryActions } from '@/composables/use-dir-entry-actions';
 import { CONTEXT_MENU_OPEN_COUNT_KEY } from './index';
 import type { DirEntry } from '@/types/dir-entry';
@@ -34,7 +35,11 @@ const {
   conflictDialogState,
   handleConflictResolution,
   handleConflictCancel,
+  permanentDeleteConfirm,
 } = useDirEntryActions();
+
+const permanentDeleteIsOpen = permanentDeleteConfirm.isOpen;
+const permanentDeletePendingEntries = permanentDeleteConfirm.pendingEntries;
 
 const contextMenuOpenCount = inject(CONTEXT_MENU_OPEN_COUNT_KEY, null);
 const isContextMenuOpenForThisInstance = ref(false);
@@ -203,6 +208,13 @@ function handleNewItemCancel() {
     :operation-type="conflictDialogState.operationType || 'copy'"
     @resolve="handleConflictResolution"
     @cancel="handleConflictCancel"
+  />
+
+  <PermanentDeleteConfirmDialog
+    :open="permanentDeleteIsOpen"
+    :entries="permanentDeletePendingEntries"
+    @update:open="permanentDeleteConfirm.handleOpenChange"
+    @confirm="permanentDeleteConfirm.handleConfirm"
   />
 </template>
 

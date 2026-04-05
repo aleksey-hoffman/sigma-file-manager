@@ -142,11 +142,14 @@
     "cancelAll": "Prekliči vse",
     "cancelling": "Preklicovanje …",
     "deleteSelectedCount": "{count} predmetov",
+    "selectedItemsCount": "{count} predmetov",
+    "preparing": "Pripravljanje",
     "groups": {
       "dir-size": "Izračuni velikosti map",
       "copy": "Operacije kopiranja",
       "move": "Operacije premikanja",
-      "delete": "Operacije brisanja",
+      "deleteTrash": "Operacije v koš",
+      "deletePermanent": "Operacije trajnega brisanja",
       "archive": "Operacije z arhivi"
     }
   },
@@ -1269,6 +1272,7 @@
     },
     "deleteIrreversibly": {
       "title": "Izbris iz pogona",
+      "descriptionSingle": "{path} bo trajno izbrisan.",
       "description": "Ta operacija bo trajno izbrisala {count} predmetov z vašega računalnika.",
       "confirm": "Potrdite, če razumete, da tega ni mogoče razveljaviti.",
       "delete": "Izbriši"
@@ -1725,6 +1729,8 @@
     "discardClipboard": "Zavrzi",
     "cannotMoveToSameDirectory": "Ni mogoče premakniti elementov v isti imenik",
     "cannotPasteIntoItself": "Ni mogoče prilepiti mape v samo sebe",
+    "noItemsInClipboard": "V odložišču ni elementov",
+    "invalidClipboardOperation": "Neveljavna operacija odložišča",
     "copyFailed": "Kopiranje ni uspelo",
     "moveFailed": "Premikanje ni uspelo",
     "sizeTooltip": {

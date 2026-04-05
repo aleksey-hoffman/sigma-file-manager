@@ -1253,6 +1253,7 @@
     },
     "deleteIrreversibly": {
       "title": "从驱动器中删除",
+      "descriptionSingle": "{path} 将被永久删除。",
       "description": "此操作将永久性地从您的计算机中删除 {count} 个项目。",
       "confirm": "如果您了解此操作无法撤消，请确认。",
       "delete": "删除"
@@ -1282,7 +1283,7 @@
     "cannotCopySpecifiedValueAsText": "无法将指定值复制为文本。",
     "copyingItems": "复制项目",
     "copiedNItems": "已复制 0 项 | 已复制 1 项 | 已复制 {n} 项 | 已复制 {n} 项",
-    "movingItems": "移动物品",
+    "movingItems": "移动项目",
     "trashingItems": "移动到回收站",
     "deletingItems": "删除项目",
     "movedNItems": "移动 0 项 | 移动 1 项 | 移动 {n} 项 | 移动 {n} 项",
@@ -1709,6 +1710,8 @@
     "cannotPasteHere": "无法在此处粘贴",
     "cannotMoveToSameDirectory": "无法将项目移动到同一目录",
     "cannotPasteIntoItself": "无法将文件夹粘贴到自身",
+    "noItemsInClipboard": "剪贴板中没有项目",
+    "invalidClipboardOperation": "无效的剪贴板操作",
     "copyFailed": "复制失败",
     "moveFailed": "移动失败",
     "sizeTooltip": {
@@ -1930,18 +1933,21 @@
     "run": "运行"
   },
   "statusCenter": {
-    "title": "Status center",
-    "clearCompleted": "Clear completed",
-    "noOperations": "No operations",
-    "active": "active",
-    "cancelAll": "Cancel all",
+    "title": "状态中心",
+    "clearCompleted": "清除已完成",
+    "noOperations": "无操作",
+    "active": "进行中",
+    "cancelAll": "全部取消",
     "cancelling": "正在取消…",
     "deleteSelectedCount": "{count} 项",
+    "selectedItemsCount": "{count} 项",
+    "preparing": "正在准备",
     "groups": {
-      "dir-size": "Directory size calculations",
-      "copy": "Copy operations",
-      "move": "Move operations",
-      "delete": "Delete operations",
+      "dir-size": "目录大小计算",
+      "copy": "复制操作",
+      "move": "移动操作",
+      "deleteTrash": "回收站操作",
+      "deletePermanent": "永久删除操作",
       "archive": "归档操作"
     }
   },

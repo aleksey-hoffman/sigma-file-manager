@@ -17,23 +17,13 @@ import {
 } from '@/stores/runtime/clipboard';
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
 import { useDeleteJobsStore } from '@/stores/runtime/delete-jobs';
+import { useCopyMoveJobsStore } from '@/stores/runtime/copy-move-jobs';
 import { toast, ToastProgress, ToastStatic } from '@/components/ui/toaster';
 import { useLanShare } from '@/composables/use-lan-share';
 import { UI_CONSTANTS } from '@/constants';
 import normalizePath from '@/utils/normalize-path';
 import { createIndexedFileName, safeFileNameFromUrl } from '@/utils/remote-file';
-
-type FileOperationToastData = {
-  id: string | number;
-  title: string;
-  description: string;
-  progress: number;
-  timer: number;
-  actionText?: string;
-  cleanup: () => void;
-  operationType: 'copy' | 'move' | 'delete' | '';
-  itemCount: number;
-};
+import { usePermanentDeleteConfirm } from '@/composables/use-permanent-delete-confirm';
 
 export function useFileBrowserSelection(
   entriesRef: Ref<DirEntry[]>,
@@ -48,7 +38,9 @@ export function useFileBrowserSelection(
   const clipboardStore = useClipboardStore();
   const dirSizesStore = useDirSizesStore();
   const deleteJobsStore = useDeleteJobsStore();
+  const copyMoveJobsStore = useCopyMoveJobsStore();
   const { startShare } = useLanShare();
+  const permanentDeleteConfirm = usePermanentDeleteConfirm();
   const selectedEntries = ref<DirEntry[]>([]);
   const lastSelectedEntry = ref<DirEntry | null>(null);
 
@@ -383,7 +375,6 @@ export function useFileBrowserSelection(
     }
 
     const isCopy = clipboardStore.isCopyOperation;
-    const itemCount = clipboardStore.itemCount;
     const operationType = isCopy ? 'copy' : 'move';
     const targetPath = destinationPath || currentPathRef.value;
 
@@ -414,96 +405,25 @@ export function useFileBrowserSelection(
       ? new Set(entriesRef.value.map(entry => entry.path))
       : null;
 
-    const toastData = ref<FileOperationToastData>({
-      id: '' as string | number,
-      title: isCopy ? t('notifications.copyingItems') : t('notifications.movingItems'),
-      description: '',
-      progress: 0,
-      timer: 0,
-      actionText: t('cancel'),
-      cleanup: () => {},
-      operationType: operationType as 'copy' | 'move' | 'delete' | '',
-      itemCount: itemCount,
-    });
-
-    toastData.value.id = toast.custom(markRaw(ToastProgress), {
-      componentProps: {
-        data: toastData.value,
-        onAction: () => {
-          if (autoDismissTimeout) {
-            clearTimeout(autoDismissTimeout);
-            autoDismissTimeout = null;
-          }
-
-          toast.dismiss(toastData.value.id);
-        },
-      },
-      duration: Infinity,
-    });
-
-    let autoDismissTimeout: ReturnType<typeof setTimeout> | null = null;
-    let progressInterval: ReturnType<typeof setInterval> | null = setInterval(() => {
-      if (toastData.value.progress < 90) {
-        toastData.value.progress += 5;
-      }
-    }, 100);
-
-    toastData.value.cleanup = () => {
-      if (progressInterval) {
-        clearInterval(progressInterval);
-        progressInterval = null;
-      }
-
-      if (autoDismissTimeout) {
-        clearTimeout(autoDismissTimeout);
-        autoDismissTimeout = null;
-      }
-    };
-
+    const sourcesForSizes = clipboardStore.clipboardItems.map(item => ({
+      path: item.path,
+      is_dir: item.is_dir,
+    }));
     const result = await clipboardStore.pasteItems(targetPath, conflictPayload?.perPathResolutions);
 
-    toastData.value.cleanup();
-    toastData.value.progress = 100;
+    if (!result.success && result.error && !result.fromStatusCenterJob) {
+      toast.error(result.error);
+    }
+
+    if (!result.cancelled && (result.copied_count ?? 0) > 0) {
+      await dirSizesStore.refreshSizesAfterCopyMove(sourcesForSizes, targetPath, [
+        targetPath,
+        currentPathRef.value,
+        clipboardStore.sourceDirectory,
+      ].filter((pathItem): pathItem is string => Boolean(pathItem)));
+    }
 
     if (result.success) {
-      const successCount = result.copied_count ?? 0;
-      const skippedCount = result.skipped_count ?? 0;
-      const allSkipped = successCount === 0 && skippedCount > 0;
-
-      if (allSkipped) {
-        toastData.value.title = t('notifications.skippedAll');
-        toastData.value.itemCount = skippedCount;
-      }
-      else if (skippedCount > 0) {
-        toastData.value.title = isCopy
-          ? t('notifications.copied')
-          : t('notifications.moved');
-        toastData.value.itemCount = successCount;
-        toastData.value.description = t('notifications.skippedCount', skippedCount);
-      }
-      else {
-        toastData.value.title = isCopy
-          ? t('notifications.copied')
-          : t('notifications.moved');
-        toastData.value.itemCount = successCount;
-      }
-
-      toastData.value.actionText = undefined;
-
-      const pathsToInvalidate = [targetPath];
-
-      if (targetPath !== currentPathRef.value) {
-        pathsToInvalidate.push(currentPathRef.value);
-      }
-
-      if (clipboardStore.sourceDirectory) {
-        pathsToInvalidate.push(clipboardStore.sourceDirectory);
-      }
-
-      dirSizesStore.invalidate(pathsToInvalidate);
-
-      clipboardStore.clearClipboard();
-
       if (shouldFocusPaste && previousPaths) {
         pendingFocusRequest.value = {
           type: 'diff',
@@ -513,32 +433,9 @@ export function useFileBrowserSelection(
       }
 
       onRefresh();
-
-      autoDismissTimeout = setTimeout(() => {
-        toast.dismiss(toastData.value.id);
-      }, 2500);
     }
-    else {
-      let errorMessage = result.error || '';
-
-      if (errorMessage.includes('same directory')) {
-        errorMessage = t('fileBrowser.cannotMoveToSameDirectory');
-      }
-      else if (errorMessage.includes('into itself')) {
-        errorMessage = t('fileBrowser.cannotPasteIntoItself');
-      }
-
-      toastData.value.title = isCopy
-        ? t('fileBrowser.copyFailed')
-        : t('fileBrowser.moveFailed');
-      toastData.value.description = errorMessage;
-      toastData.value.actionText = undefined;
-      toastData.value.progress = 0;
-      toastData.value.itemCount = 0;
-
-      setTimeout(() => {
-        toast.dismiss(toastData.value.id);
-      }, 5000);
+    else if (!result.cancelled && (result.copied_count ?? 0) > 0) {
+      onRefresh();
     }
 
     return result.success;
@@ -573,97 +470,46 @@ export function useFileBrowserSelection(
       ? new Set(entriesRef.value.map(entry => entry.path))
       : null;
 
-    const toastData = ref({
-      id: '' as string | number,
-      title: isCopy ? t('notifications.copyingItems') : t('notifications.movingItems'),
-      description: '',
-      progress: 0,
-      timer: 0,
-      actionText: t('cancel'),
-      cleanup: () => {},
-      operationType: operation as 'copy' | 'move' | 'delete' | '',
-      itemCount: sourcePaths.length,
-    });
+    const displayPath = targetPath.split(/[/\\]/).pop() ?? targetPath;
 
-    toastData.value.id = toast.custom(markRaw(ToastProgress), {
-      componentProps: {
-        data: toastData.value,
-        onAction: () => {
-          if (autoDismissTimeout) {
-            clearTimeout(autoDismissTimeout);
-            autoDismissTimeout = null;
-          }
-
-          toast.dismiss(toastData.value.id);
-        },
-      },
-      duration: Infinity,
-    });
-
-    let autoDismissTimeout: ReturnType<typeof setTimeout> | null = null;
-    let progressInterval: ReturnType<typeof setInterval> | null = setInterval(() => {
-      if (toastData.value.progress < 90) {
-        toastData.value.progress += 5;
-      }
-    }, 100);
-
-    toastData.value.cleanup = () => {
-      if (progressInterval) {
-        clearInterval(progressInterval);
-        progressInterval = null;
-      }
-
-      if (autoDismissTimeout) {
-        clearTimeout(autoDismissTimeout);
-        autoDismissTimeout = null;
-      }
-    };
+    let sourcePathIsDir: boolean[];
 
     try {
-      const tauriCommand = isCopy ? 'copy_items' : 'move_items';
-      const result = await invoke<FileOperationResult>(tauriCommand, {
-        sourcePaths,
-        destinationPath: targetPath,
-        conflictResolution: null,
-        perPathResolutions:
-          conflictPayload && conflictPayload.perPathResolutions.length > 0
-            ? conflictPayload.perPathResolutions.map(entry => ({
-                destination_path: entry.destination_path,
-                resolution: entry.resolution,
-              }))
-            : null,
+      sourcePathIsDir = await invoke<boolean[]>('paths_are_directories', {
+        paths: sourcePaths,
       });
+    }
+    catch {
+      sourcePathIsDir = sourcePaths.map(() => true);
+    }
 
-      toastData.value.cleanup();
-      toastData.value.progress = 100;
+    try {
+      const result = await copyMoveJobsStore.startJob(
+        isCopy ? 'copy' : 'move',
+        sourcePaths,
+        targetPath,
+        null,
+        conflictPayload?.perPathResolutions,
+        {
+          label: isCopy ? t('notifications.copyingItems') : t('notifications.movingItems'),
+          displayPath,
+        },
+      );
+
+      const copiedCount = result.copied_count ?? 0;
+
+      if (!result.cancelled && copiedCount > 0) {
+        const sourcesForSizes = sourcePaths.map((path, index) => ({
+          path,
+          is_dir: sourcePathIsDir[index] ?? false,
+        }));
+        await dirSizesStore.refreshSizesAfterCopyMove(sourcesForSizes, targetPath, [
+          targetPath,
+          currentPathRef.value,
+        ]);
+      }
 
       if (result.success) {
-        const successCount = result.copied_count ?? 0;
-        const skippedCount = result.skipped_count ?? 0;
-        const allSkipped = successCount === 0 && skippedCount > 0;
-
-        if (allSkipped) {
-          toastData.value.title = t('notifications.skippedAll');
-          toastData.value.itemCount = skippedCount;
-        }
-        else if (skippedCount > 0) {
-          toastData.value.title = isCopy
-            ? t('notifications.copied')
-            : t('notifications.moved');
-          toastData.value.itemCount = successCount;
-          toastData.value.description = t('notifications.skippedCount', skippedCount);
-        }
-        else {
-          toastData.value.title = isCopy
-            ? t('notifications.copied')
-            : t('notifications.moved');
-          toastData.value.itemCount = successCount;
-        }
-
-        toastData.value.actionText = '';
-
-        dirSizesStore.invalidate([targetPath, currentPathRef.value]);
-
         if (shouldFocusPaste && previousPaths) {
           pendingFocusRequest.value = {
             type: 'diff',
@@ -674,42 +520,25 @@ export function useFileBrowserSelection(
 
         onRefresh();
 
-        autoDismissTimeout = setTimeout(() => {
-          toast.dismiss(toastData.value.id);
-        }, 2500);
-
         return true;
       }
-      else {
-        toastData.value.title = isCopy
-          ? t('fileBrowser.copyFailed')
-          : t('fileBrowser.moveFailed');
-        toastData.value.description = result.error || '';
-        toastData.value.actionText = '';
-        toastData.value.progress = 0;
-        toastData.value.itemCount = 0;
 
-        setTimeout(() => {
-          toast.dismiss(toastData.value.id);
-        }, 5000);
-
-        return false;
+      if (!result.cancelled && copiedCount > 0) {
+        onRefresh();
       }
+
+      return false;
     }
-    catch (error) {
-      toastData.value.cleanup();
-      toastData.value.title = isCopy
-        ? t('fileBrowser.copyFailed')
-        : t('fileBrowser.moveFailed');
-      toastData.value.description = String(error);
-      toastData.value.actionText = '';
-      toastData.value.progress = 0;
-      toastData.value.itemCount = 0;
-
-      setTimeout(() => {
-        toast.dismiss(toastData.value.id);
-      }, 5000);
-
+    catch (error: unknown) {
+      toast.custom(markRaw(ToastStatic), {
+        componentProps: {
+          data: {
+            title: isCopy ? t('fileBrowser.copyFailed') : t('fileBrowser.moveFailed'),
+            description: String(error),
+          },
+        },
+        duration: 5000,
+      });
       return false;
     }
   }
@@ -1048,7 +877,7 @@ export function useFileBrowserSelection(
         break;
       case 'delete-permanently':
         if (entries.length > 0) {
-          deleteItems(entries, false);
+          void deleteItems(entries, false);
         }
 
         break;
@@ -1141,6 +970,14 @@ export function useFileBrowserSelection(
       return false;
     }
 
+    if (!useTrash) {
+      const confirmed = await permanentDeleteConfirm.requestConfirm(entries);
+
+      if (!confirmed) {
+        return false;
+      }
+    }
+
     const paths = entries.map(entry => entry.path);
     const displayPath = entries.length === 1
       ? entries[0].name
@@ -1213,5 +1050,6 @@ export function useFileBrowserSelection(
     conflictDialogState,
     handleConflictResolution,
     handleConflictCancel,
+    permanentDeleteConfirm,
   };
 }

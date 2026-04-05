@@ -18,6 +18,7 @@ import FileBrowserOpenWithDialog from './file-browser-open-with-dialog.vue';
 import FileBrowserDragOverlay from './file-browser-drag-overlay.vue';
 import FileBrowserInboundDragOverlay from './file-browser-inbound-drag-overlay.vue';
 import FileBrowserConflictDialog from './file-browser-conflict-dialog.vue';
+import PermanentDeleteConfirmDialog from './permanent-delete-confirm-dialog.vue';
 
 const props = withDefaults(defineProps<{
   tab?: Tab;
@@ -52,6 +53,9 @@ const fb = useFileBrowser({
   componentRef: fileBrowserRef,
   isDefaultPane: props.paneIndex === 0 || props.paneIndex === undefined,
 });
+
+const permanentDeleteIsOpen = fb.permanentDeleteConfirm.isOpen;
+const permanentDeletePendingEntries = fb.permanentDeleteConfirm.pendingEntries;
 
 provideFileBrowserContext({
   entries: fb.entries,
@@ -196,6 +200,13 @@ defineExpose({
       :operation-type="fb.conflictDialogState.value.operationType || 'copy'"
       @resolve="fb.handleConflictResolution"
       @cancel="fb.handleConflictCancel"
+    />
+
+    <PermanentDeleteConfirmDialog
+      :open="permanentDeleteIsOpen"
+      :entries="permanentDeletePendingEntries"
+      @update:open="fb.permanentDeleteConfirm.handleOpenChange"
+      @confirm="fb.permanentDeleteConfirm.handleConfirm"
     />
   </div>
 </template>

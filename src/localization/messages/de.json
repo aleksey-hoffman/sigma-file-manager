@@ -1253,6 +1253,7 @@
     },
     "deleteIrreversibly": {
       "title": "Vom Laufwerk löschen",
+      "descriptionSingle": "{path} wird dauerhaft gelöscht.",
       "description": "Diese Operation wird {count} Elemente dauerhaft von Ihrem Computer löschen.",
       "confirm": "Bestätigen Sie, wenn Sie verstehen, dass dies nicht rückgängig gemacht werden kann.",
       "delete": "Löschen"
@@ -1282,7 +1283,7 @@
     "cannotCopySpecifiedValueAsText": "Angegebener Wert kann nicht als Text kopiert werden.",
     "copyingItems": "Elemente kopieren",
     "copiedNItems": "0 Elemente kopiert | 1 Element kopiert | {n} Elemente kopiert | {n} Elemente kopiert",
-    "movingItems": "Umzugsgegenstände",
+    "movingItems": "Elemente verschieben",
     "trashingItems": "In den Papierkorb verschieben",
     "deletingItems": "Elemente löschen",
     "movedNItems": "0 Elemente verschoben | 1 Element verschoben | {n} Elemente verschoben | {n} Elemente verschoben",
@@ -1709,6 +1710,8 @@
     "cannotPasteHere": "Hier nicht einfügen möglich",
     "cannotMoveToSameDirectory": "Elemente können nicht in dasselbe Verzeichnis verschoben werden",
     "cannotPasteIntoItself": "Ein Ordner kann nicht in sich selbst eingefügt werden",
+    "noItemsInClipboard": "Keine Elemente in der Zwischenablage",
+    "invalidClipboardOperation": "Ungültiger Zwischenablage-Vorgang",
     "copyFailed": "Kopieren fehlgeschlagen",
     "moveFailed": "Verschieben fehlgeschlagen",
     "sizeTooltip": {
@@ -1937,11 +1940,14 @@
     "cancelAll": "Cancel all",
     "cancelling": "Wird abgebrochen…",
     "deleteSelectedCount": "{count} Elemente",
+    "selectedItemsCount": "{count} Elemente",
+    "preparing": "Vorbereitung",
     "groups": {
       "dir-size": "Directory size calculations",
       "copy": "Copy operations",
       "move": "Move operations",
-      "delete": "Delete operations",
+      "deleteTrash": "Papierkorb-Operationen",
+      "deletePermanent": "Operationen zum endgültigen Löschen",
       "archive": "Archivoperationen"
     }
   },

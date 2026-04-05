@@ -1245,10 +1245,11 @@
       "deleteAll": "Delete all"
     },
     "deleteIrreversibly": {
-      "title": "Deleting from drive",
-      "description": "This operation will permanently delete {count} items from your computer.",
-      "confirm": "Confirm, if you understand this cannot be undone.",
-      "delete": "Delete"
+      "title": "حذف دائمی",
+      "descriptionSingle": "{path} برای همیشه حذف خواهد شد.",
+      "description": "این عمل {count} مورد را از رایانه شما برای همیشه حذف می‌کند.",
+      "confirm": "تنها در صورت تأیید کنید که می‌دانید این کار قابل بازگشت نیست.",
+      "delete": "حذف"
     },
     "deleteCurrentDir": {
       "title": "Deleting current directory",
@@ -1708,6 +1709,8 @@
     "cannotPasteHere": "امکان چسباندن در اینجا نیست",
     "cannotMoveToSameDirectory": "امکان انتقال موارد به همان پوشه نیست",
     "cannotPasteIntoItself": "امکان چسباندن پوشه در خودش نیست",
+    "noItemsInClipboard": "هیچ موردی در کلیپ‌بورد نیست",
+    "invalidClipboardOperation": "عملیات کلیپ‌بورد نامعتبر",
     "copyFailed": "کپی ناموفق",
     "moveFailed": "انتقال ناموفق",
     "sizeTooltip": {
@@ -1937,11 +1940,14 @@
     "cancelAll": "Cancel all",
     "cancelling": "در حال لغو…",
     "deleteSelectedCount": "{count} مورد",
+    "selectedItemsCount": "{count} مورد",
+    "preparing": "در حال آماده‌سازی",
     "groups": {
       "dir-size": "Directory size calculations",
       "copy": "Copy operations",
       "move": "Move operations",
-      "delete": "Delete operations",
+      "deleteTrash": "عملیات سطل زباله",
+      "deletePermanent": "عملیات حذف دائمی",
       "archive": "عملیات آرشیو"
     }
   },

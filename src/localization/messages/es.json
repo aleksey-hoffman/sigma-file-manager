@@ -1246,10 +1246,11 @@
       "deleteAll": "Delete all"
     },
     "deleteIrreversibly": {
-      "title": "Deleting from drive",
-      "description": "This operation will permanently delete {count} items from your computer.",
-      "confirm": "Confirm, if you understand this cannot be undone.",
-      "delete": "Delete"
+      "title": "Eliminación permanente",
+      "descriptionSingle": "{path} se eliminará permanentemente.",
+      "description": "Esta operación eliminará permanentemente {count} elementos de tu equipo.",
+      "confirm": "Confirma solo si entiendes que esta acción no se puede deshacer.",
+      "delete": "Eliminar"
     },
     "deleteCurrentDir": {
       "title": "Deleting current directory",
@@ -1709,6 +1710,8 @@
     "cannotPasteHere": "No se puede pegar aquí",
     "cannotMoveToSameDirectory": "No se pueden mover elementos al mismo directorio",
     "cannotPasteIntoItself": "No se puede pegar una carpeta en sí misma",
+    "noItemsInClipboard": "No hay elementos en el portapapeles",
+    "invalidClipboardOperation": "Operación de portapapeles no válida",
     "copyFailed": "Error al copiar",
     "moveFailed": "Error al mover",
     "sizeTooltip": {
@@ -1937,11 +1940,14 @@
     "cancelAll": "Cancel all",
     "cancelling": "Cancelando…",
     "deleteSelectedCount": "{count} elementos",
+    "selectedItemsCount": "{count} elementos",
+    "preparing": "Preparando",
     "groups": {
       "dir-size": "Directory size calculations",
       "copy": "Copy operations",
       "move": "Move operations",
-      "delete": "Delete operations",
+      "deleteTrash": "Operaciones de papelera",
+      "deletePermanent": "Operaciones de eliminación permanente",
       "archive": "Operaciones de archivo"
     }
   },

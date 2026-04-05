@@ -526,7 +526,7 @@ async function saveTextFile() {
     });
     textSavedBaseline.value = textEditorValue.value;
     removePendingEditForPath(path);
-    toast.success(t('quickView.textSaved'));
+    toast.success(t('quickView.textSaved'), { duration: 2500 });
   }
   catch {
     toast.error(t('quickView.textSaveFailed'));

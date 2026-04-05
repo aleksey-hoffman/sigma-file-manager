@@ -1246,10 +1246,11 @@
       "deleteAll": "Delete all"
     },
     "deleteIrreversibly": {
-      "title": "Deleting from drive",
-      "description": "This operation will permanently delete {count} items from your computer.",
-      "confirm": "Confirm, if you understand this cannot be undone.",
-      "delete": "Delete"
+      "title": "Kalıcı silme",
+      "descriptionSingle": "{path} kalıcı olarak silinecek.",
+      "description": "Bu işlem bilgisayarınızdan {count} öğeyi kalıcı olarak siler.",
+      "confirm": "Yalnızca bunun geri alınamayacağını anlıyorsanız onaylayın.",
+      "delete": "Sil"
     },
     "deleteCurrentDir": {
       "title": "Deleting current directory",
@@ -1709,6 +1710,8 @@
     "cannotPasteHere": "Buraya yapıştırılamaz",
     "cannotMoveToSameDirectory": "Öğeler aynı dizine taşınamaz",
     "cannotPasteIntoItself": "Klasör kendisine yapıştırılamaz",
+    "noItemsInClipboard": "Pano öğe içermiyor",
+    "invalidClipboardOperation": "Geçersiz pano işlemi",
     "copyFailed": "Kopyalama başarısız",
     "moveFailed": "Taşıma başarısız",
     "sizeTooltip": {
@@ -1937,11 +1940,14 @@
     "cancelAll": "Cancel all",
     "cancelling": "İptal ediliyor…",
     "deleteSelectedCount": "{count} öğe",
+    "selectedItemsCount": "{count} öğe",
+    "preparing": "Hazırlanıyor",
     "groups": {
       "dir-size": "Directory size calculations",
       "copy": "Copy operations",
       "move": "Move operations",
-      "delete": "Delete operations",
+      "deleteTrash": "Çöp kutusu işlemleri",
+      "deletePermanent": "Kalıcı silme işlemleri",
       "archive": "Arşiv işlemleri"
     }
   },

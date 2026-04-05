@@ -5,15 +5,18 @@
 import { ref, markRaw } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
 import { useI18n } from 'vue-i18n';
-import { toast, ToastProgress } from '@/components/ui/toaster';
+import { toast, ToastStatic } from '@/components/ui/toaster';
 import type {
   ConflictItem,
   ConflictResolutionPayload,
-  FileOperationResult,
 } from '@/stores/runtime/clipboard';
+import { useCopyMoveJobsStore } from '@/stores/runtime/copy-move-jobs';
+import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
 
 export function useFileDropOperation() {
   const { t } = useI18n();
+  const copyMoveJobsStore = useCopyMoveJobsStore();
+  const dirSizesStore = useDirSizesStore();
 
   const conflictDialogState = ref<{
     isOpen: boolean;
@@ -64,7 +67,9 @@ export function useFileDropOperation() {
     targetPath: string,
     operation: 'copy' | 'move',
   ) {
-    if (sourcePaths.length === 0) return;
+    if (sourcePaths.length === 0) {
+      return;
+    }
 
     const isCopy = operation === 'copy';
 
@@ -93,136 +98,52 @@ export function useFileDropOperation() {
       conflictPayload = resolutionPayload;
     }
 
-    const toastData = ref<{
-      id: string | number;
-      title: string;
-      description: string;
-      progress: number;
-      timer: number;
-      actionText?: string;
-      cleanup: () => void;
-      operationType: 'copy' | 'move' | 'delete' | '';
-      itemCount: number;
-    }>({
-      id: '' as string | number,
-      title: isCopy ? t('notifications.copyingItems') : t('notifications.movingItems'),
-      description: '',
-      progress: 0,
-      timer: 0,
-      actionText: t('cancel'),
-      cleanup: () => {},
-      operationType: operation as 'copy' | 'move' | 'delete' | '',
-      itemCount: sourcePaths.length,
-    });
+    const displayPath = targetPath.split(/[/\\]/).pop() ?? targetPath;
 
-    toastData.value.id = toast.custom(markRaw(ToastProgress), {
-      componentProps: {
-        data: toastData.value,
-        onAction: () => {
-          if (autoDismissTimeout) {
-            clearTimeout(autoDismissTimeout);
-            autoDismissTimeout = null;
-          }
-
-          toast.dismiss(toastData.value.id);
-        },
-      },
-      duration: Infinity,
-    });
-
-    let autoDismissTimeout: ReturnType<typeof setTimeout> | null = null;
-    let progressInterval: ReturnType<typeof setInterval> | null = setInterval(() => {
-      if (toastData.value.progress < 90) {
-        toastData.value.progress += 5;
-      }
-    }, 100);
-
-    toastData.value.cleanup = () => {
-      if (progressInterval) {
-        clearInterval(progressInterval);
-        progressInterval = null;
-      }
-
-      if (autoDismissTimeout) {
-        clearTimeout(autoDismissTimeout);
-        autoDismissTimeout = null;
-      }
-    };
+    let sourcePathIsDir: boolean[];
 
     try {
-      const tauriCommand = isCopy ? 'copy_items' : 'move_items';
-      const result = await invoke<FileOperationResult>(tauriCommand, {
-        sourcePaths,
-        destinationPath: targetPath,
-        conflictResolution: null,
-        perPathResolutions:
-          conflictPayload && conflictPayload.perPathResolutions.length > 0
-            ? conflictPayload.perPathResolutions.map(entry => ({
-                destination_path: entry.destination_path,
-                resolution: entry.resolution,
-              }))
-            : null,
+      sourcePathIsDir = await invoke<boolean[]>('paths_are_directories', {
+        paths: sourcePaths,
       });
+    }
+    catch {
+      sourcePathIsDir = sourcePaths.map(() => true);
+    }
 
-      toastData.value.cleanup();
-      toastData.value.progress = 100;
+    try {
+      const result = await copyMoveJobsStore.startJob(
+        isCopy ? 'copy' : 'move',
+        sourcePaths,
+        targetPath,
+        null,
+        conflictPayload?.perPathResolutions,
+        {
+          label: isCopy ? t('notifications.copyingItems') : t('notifications.movingItems'),
+          displayPath,
+        },
+      );
 
-      if (result.success) {
-        const successCount = result.copied_count ?? 0;
-        const skippedCount = result.skipped_count ?? 0;
-        const allSkipped = successCount === 0 && skippedCount > 0;
+      const copiedCount = result.copied_count ?? 0;
 
-        if (allSkipped) {
-          toastData.value.title = t('notifications.skippedAll');
-          toastData.value.itemCount = skippedCount;
-        }
-        else if (skippedCount > 0) {
-          toastData.value.title = isCopy
-            ? t('notifications.copied')
-            : t('notifications.moved');
-          toastData.value.itemCount = successCount;
-          toastData.value.description = t('notifications.skippedCount', skippedCount);
-        }
-        else {
-          toastData.value.title = isCopy
-            ? t('notifications.copied')
-            : t('notifications.moved');
-          toastData.value.itemCount = successCount;
-        }
-
-        toastData.value.actionText = undefined;
-
-        autoDismissTimeout = setTimeout(() => {
-          toast.dismiss(toastData.value.id);
-        }, 2500);
-      }
-      else {
-        toastData.value.title = isCopy
-          ? t('fileBrowser.copyFailed')
-          : t('fileBrowser.moveFailed');
-        toastData.value.description = result.error || '';
-        toastData.value.actionText = undefined;
-        toastData.value.progress = 0;
-        toastData.value.itemCount = 0;
-
-        autoDismissTimeout = setTimeout(() => {
-          toast.dismiss(toastData.value.id);
-        }, 5000);
+      if (!result.cancelled && copiedCount > 0) {
+        const sourcesForSizes = sourcePaths.map((path, index) => ({
+          path,
+          is_dir: sourcePathIsDir[index] ?? false,
+        }));
+        await dirSizesStore.refreshSizesAfterCopyMove(sourcesForSizes, targetPath, [targetPath]);
       }
     }
-    catch (error) {
-      toastData.value.cleanup();
-      toastData.value.title = isCopy
-        ? t('fileBrowser.copyFailed')
-        : t('fileBrowser.moveFailed');
-      toastData.value.description = String(error);
-      toastData.value.actionText = undefined;
-      toastData.value.progress = 0;
-      toastData.value.itemCount = 0;
-
-      autoDismissTimeout = setTimeout(() => {
-        toast.dismiss(toastData.value.id);
-      }, 5000);
+    catch (error: unknown) {
+      toast.custom(markRaw(ToastStatic), {
+        componentProps: {
+          data: {
+            title: isCopy ? t('fileBrowser.copyFailed') : t('fileBrowser.moveFailed'),
+            description: String(error),
+          },
+        },
+        duration: 5000,
+      });
     }
   }
 

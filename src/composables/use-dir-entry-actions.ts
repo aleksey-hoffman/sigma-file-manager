@@ -19,21 +19,10 @@ import {
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
 import { useDeleteJobsStore } from '@/stores/runtime/delete-jobs';
 import { useQuickViewStore } from '@/stores/runtime/quick-view';
-import { toast, ToastProgress, ToastStatic } from '@/components/ui/toaster';
+import { toast, ToastStatic } from '@/components/ui/toaster';
 import { useLanShare } from '@/composables/use-lan-share';
 import { getParentDirectory } from '@/utils/normalize-path';
-
-type FileOperationToastData = {
-  id: string | number;
-  title: string;
-  description: string;
-  progress: number;
-  timer: number;
-  actionText?: string;
-  cleanup: () => void;
-  operationType: 'copy' | 'move' | 'delete' | '';
-  itemCount: number;
-};
+import { usePermanentDeleteConfirm } from '@/composables/use-permanent-delete-confirm';
 
 export function useDirEntryActions() {
   const { t } = useI18n();
@@ -45,6 +34,7 @@ export function useDirEntryActions() {
   const deleteJobsStore = useDeleteJobsStore();
   const quickViewStore = useQuickViewStore();
   const { startShare } = useLanShare();
+  const permanentDeleteConfirm = usePermanentDeleteConfirm();
 
   const conflictDialogState = ref({
     isOpen: false,
@@ -120,7 +110,6 @@ export function useDirEntryActions() {
     }
 
     const isCopy = clipboardStore.isCopyOperation;
-    const itemCount = clipboardStore.itemCount;
     const operationType = isCopy ? 'copy' : 'move';
 
     let conflicts: ConflictItem[];
@@ -145,103 +134,40 @@ export function useDirEntryActions() {
       conflictPayload = resolutionPayload;
     }
 
-    const toastData = ref<FileOperationToastData>({
-      id: '' as string | number,
-      title: isCopy ? t('notifications.copyingItems') : t('notifications.movingItems'),
-      description: '',
-      progress: 0,
-      timer: 0,
-      actionText: t('cancel'),
-      cleanup: () => {},
-      operationType: operationType as 'copy' | 'move' | 'delete' | '',
-      itemCount,
-    });
-
-    toastData.value.id = toast.custom(markRaw(ToastProgress), {
-      componentProps: {
-        data: toastData.value,
-        onAction: () => {
-          if (autoDismissTimeout) {
-            clearTimeout(autoDismissTimeout);
-            autoDismissTimeout = null;
-          }
-
-          toast.dismiss(toastData.value.id);
-        },
-      },
-      duration: Infinity,
-    });
-
-    let autoDismissTimeout: ReturnType<typeof setTimeout> | null = null;
-    let progressInterval: ReturnType<typeof setInterval> | null = setInterval(() => {
-      if (toastData.value.progress < 90) {
-        toastData.value.progress += 5;
-      }
-    }, 100);
-
-    toastData.value.cleanup = () => {
-      if (progressInterval) {
-        clearInterval(progressInterval);
-        progressInterval = null;
-      }
-
-      if (autoDismissTimeout) {
-        clearTimeout(autoDismissTimeout);
-        autoDismissTimeout = null;
-      }
-    };
-
+    const sourcesForSizes = clipboardStore.clipboardItems.map(item => ({
+      path: item.path,
+      is_dir: item.is_dir,
+    }));
     const result = await clipboardStore.pasteItems(destinationPath, conflictPayload?.perPathResolutions);
 
-    toastData.value.cleanup();
-    toastData.value.progress = 100;
+    if (!result.success && result.error && !result.fromStatusCenterJob) {
+      toast.error(result.error);
+    }
+
+    if (!result.cancelled && (result.copied_count ?? 0) > 0) {
+      await dirSizesStore.refreshSizesAfterCopyMove(sourcesForSizes, destinationPath, [
+        destinationPath,
+        clipboardStore.sourceDirectory,
+      ].filter((pathItem): pathItem is string => Boolean(pathItem)));
+    }
 
     if (result.success) {
-      const successCount = result.copied_count ?? 0;
-      const skippedCount = result.skipped_count ?? 0;
-      const allSkipped = successCount === 0 && skippedCount > 0;
-
-      if (allSkipped) {
-        toastData.value.title = t('notifications.skippedAll');
-        toastData.value.itemCount = skippedCount;
-      }
-      else if (skippedCount > 0) {
-        toastData.value.title = isCopy ? t('notifications.copied') : t('notifications.moved');
-        toastData.value.itemCount = successCount;
-        toastData.value.description = t('notifications.skippedCount', skippedCount);
-      }
-      else {
-        toastData.value.title = isCopy ? t('notifications.copied') : t('notifications.moved');
-        toastData.value.itemCount = successCount;
-      }
-
-      toastData.value.actionText = undefined;
-
       const pathsToInvalidate = [destinationPath];
 
       if (clipboardStore.sourceDirectory) {
         pathsToInvalidate.push(clipboardStore.sourceDirectory);
       }
 
-      dirSizesStore.invalidate(pathsToInvalidate);
       workspacesStore.handleDirectoryContentsChanged(pathsToInvalidate);
-
-      clipboardStore.clearClipboard();
-
-      autoDismissTimeout = setTimeout(() => {
-        toast.dismiss(toastData.value.id);
-      }, 2500);
     }
-    else {
-      toastData.value.title = isCopy ? t('fileBrowser.copyFailed') : t('fileBrowser.moveFailed');
-      toastData.value.description = result.error || '';
-      toastData.value.actionText = undefined;
-      toastData.value.progress = 0;
-      toastData.value.itemCount = 0;
+    else if (!result.cancelled && (result.copied_count ?? 0) > 0) {
+      const pathsToInvalidate = [destinationPath];
 
-      setTimeout(() => {
-        toast.dismiss(toastData.value.id);
-      }, 5000);
+      if (clipboardStore.sourceDirectory) {
+        pathsToInvalidate.push(clipboardStore.sourceDirectory);
+      }
+
+      workspacesStore.handleDirectoryContentsChanged(pathsToInvalidate);
     }
 
     return result.success;
@@ -250,6 +176,14 @@ export function useDirEntryActions() {
   async function deleteItems(entries: DirEntry[], useTrash: boolean = true): Promise<boolean> {
     if (entries.length === 0) {
       return false;
+    }
+
+    if (!useTrash) {
+      const confirmed = await permanentDeleteConfirm.requestConfirm(entries);
+
+      if (!confirmed) {
+        return false;
+      }
     }
 
     const paths = entries.map(entry => entry.path);
@@ -500,7 +434,7 @@ export function useDirEntryActions() {
         deleteItems(entries, true);
         break;
       case 'delete-permanently':
-        deleteItems(entries, false);
+        void deleteItems(entries, false);
         break;
       case 'open-in-new-tab':
         openEntriesInNewTabs(entries);
@@ -541,5 +475,6 @@ export function useDirEntryActions() {
     conflictDialogState,
     handleConflictResolution,
     handleConflictCancel,
+    permanentDeleteConfirm,
   };
 }

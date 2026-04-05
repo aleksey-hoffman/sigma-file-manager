@@ -5,6 +5,7 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
+import normalizePath from '@/utils/normalize-path';
 import { useStatusCenterStore } from './status-center';
 
 export type SizeStatus = 'Complete' | 'Error' | 'Loading';
@@ -25,6 +26,11 @@ export interface DirSizeResult {
   dir_count: number;
   error: string | null;
 }
+
+export type CopyMoveSourceForSizeRefresh = {
+  path: string;
+  is_dir: boolean;
+};
 
 export const useDirSizesStore = defineStore('dir-sizes', () => {
   const sizes = ref<Map<string, DirSizeInfo>>(new Map());
@@ -154,7 +160,11 @@ export const useDirSizesStore = defineStore('dir-sizes', () => {
     }
   }
 
-  async function requestSizeForce(path: string): Promise<DirSizeInfo | null> {
+  async function requestSizeFull(
+    path: string,
+    options?: { showInStatusCenter?: boolean },
+  ): Promise<DirSizeInfo | null> {
+    const showInStatusCenter = options?.showInStatusCenter ?? true;
     const statusCenterStore = useStatusCenterStore();
 
     if (pendingPaths.value.has(path)) {
@@ -164,13 +174,16 @@ export const useDirSizesStore = defineStore('dir-sizes', () => {
     setLoading(path);
 
     const operationId = `dir-size-${path}`;
-    statusCenterStore.addOperation({
-      id: operationId,
-      type: 'dir-size',
-      status: 'in-progress',
-      label: 'Calculating directory size',
-      path,
-    });
+
+    if (showInStatusCenter) {
+      statusCenterStore.addOperation({
+        id: operationId,
+        type: 'dir-size',
+        status: 'in-progress',
+        label: 'Calculating directory size',
+        path,
+      });
+    }
 
     startProgressPolling(path);
 
@@ -184,11 +197,13 @@ export const useDirSizesStore = defineStore('dir-sizes', () => {
 
       setSize(path, result);
 
-      if (result.status === 'Cancelled') {
-        statusCenterStore.completeOperation(operationId, 'cancelled');
-      }
-      else {
-        statusCenterStore.completeOperation(operationId, 'completed');
+      if (showInStatusCenter) {
+        if (result.status === 'Cancelled') {
+          statusCenterStore.completeOperation(operationId, 'cancelled');
+        }
+        else {
+          statusCenterStore.completeOperation(operationId, 'completed');
+        }
       }
 
       return getSize(path) ?? null;
@@ -199,14 +214,29 @@ export const useDirSizesStore = defineStore('dir-sizes', () => {
       pendingPaths.value.delete(path);
       sizes.value.delete(path);
 
-      statusCenterStore.completeOperation(operationId, 'error', String(error));
+      if (showInStatusCenter) {
+        statusCenterStore.completeOperation(operationId, 'error', String(error));
+      }
 
       console.error('Failed to get directory size:', error);
       return null;
     }
   }
 
-  async function requestSizesBatch(paths: string[]): Promise<void> {
+  async function requestSizeForce(path: string): Promise<DirSizeInfo | null> {
+    return requestSizeFull(path, { showInStatusCenter: true });
+  }
+
+  async function requestSizesBatch(
+    paths: string[],
+    options?: {
+      timeoutMs?: number | null;
+      useCache?: boolean;
+    },
+  ): Promise<void> {
+    const timeoutMs = options?.timeoutMs ?? 500;
+    const useCache = options?.useCache ?? true;
+
     const pathsToFetch = paths
       .filter((path) => {
         const existing = sizes.value.get(path);
@@ -226,8 +256,8 @@ export const useDirSizesStore = defineStore('dir-sizes', () => {
     try {
       const results = await invoke<DirSizeResult[]>('get_dir_sizes_batch', {
         paths: pathsToFetch,
-        timeoutMs: 500,
-        useCache: true,
+        timeoutMs: timeoutMs === null ? null : timeoutMs,
+        useCache,
       });
 
       for (const result of results) {
@@ -241,6 +271,43 @@ export const useDirSizesStore = defineStore('dir-sizes', () => {
 
       console.error('Failed to get directory sizes batch:', error);
     }
+  }
+
+  async function refreshSizesAfterCopyMove(
+    sources: CopyMoveSourceForSizeRefresh[],
+    destinationDirectory: string,
+    extraInvalidatePaths?: string[],
+  ): Promise<void> {
+    const destDir = normalizePath(destinationDirectory).replace(/\/+$/, '');
+    const toRefresh = new Set<string>();
+    toRefresh.add(destDir);
+
+    for (const extra of extraInvalidatePaths ?? []) {
+      if (extra) {
+        toRefresh.add(normalizePath(extra).replace(/\/+$/, ''));
+      }
+    }
+
+    for (const src of sources) {
+      if (!src.is_dir) {
+        continue;
+      }
+
+      const segments = normalizePath(src.path).split('/').filter(Boolean);
+      const name = segments[segments.length - 1];
+
+      if (name) {
+        toRefresh.add(normalizePath(`${destDir}/${name}`));
+      }
+    }
+
+    const list = [...toRefresh];
+    invalidate(list);
+    await Promise.all(
+      list.map(pathItem =>
+        requestSizeFull(pathItem, { showInStatusCenter: false }),
+      ),
+    );
   }
 
   async function cancelSize(path: string): Promise<boolean> {
@@ -399,8 +466,10 @@ export const useDirSizesStore = defineStore('dir-sizes', () => {
     getStatus,
     isLoading,
     requestSize,
+    requestSizeFull,
     requestSizeForce,
     requestSizesBatch,
+    refreshSizesAfterCopyMove,
     cancelSize,
     invalidate,
     invalidateAll,

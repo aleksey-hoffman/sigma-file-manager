@@ -142,11 +142,14 @@
     "cancelAll": "सभी रद्द करें",
     "cancelling": "रद्द किया जा रहा है...",
     "deleteSelectedCount": "{count} आइटम",
+    "selectedItemsCount": "{count} आइटम",
+    "preparing": "तैयारी",
     "groups": {
       "dir-size": "निर्देशिका आकार की गणना",
       "copy": "प्रतिलिपि संचालन",
       "move": "संचालन ले जाएँ",
-      "delete": "परिचालन हटाएँ",
+      "deleteTrash": "ट्रैश संचालन",
+      "deletePermanent": "स्थायी हटाने के संचालन",
       "archive": "पुरालेख संचालन"
     }
   },
@@ -1269,6 +1272,7 @@
     },
     "deleteIrreversibly": {
       "title": "ड्राइव से हटाया जा रहा है",
+      "descriptionSingle": "{path} को स्थायी रूप से हटा दिया जाएगा।",
       "description": "यह ऑपरेशन आपके कंप्यूटर से {count} आइटम को स्थायी रूप से हटा देगा।",
       "confirm": "पुष्टि करें, यदि आप समझते हैं कि इसे पूर्ववत नहीं किया जा सकता है।",
       "delete": "मिटाना"
@@ -1298,7 +1302,7 @@
     "cannotCopySpecifiedValueAsText": "निर्दिष्ट मान को पाठ के रूप में कॉपी नहीं किया जा सकता.",
     "copyingItems": "आइटम कॉपी करना",
     "copiedNItems": "0 आइटम कॉपी किए गए | 1 आइटम कॉपी किया गया | कॉपी किए गए {n} आइटम | कॉपी किए गए {n} आइटम",
-    "movingItems": "चलती वस्तुएं",
+    "movingItems": "आइटम ले जाना",
     "movedNItems": "0 आइटम ले जाया गया | 1 आइटम ले जाया गया | {n} आइटम ले जाया गया | {n} आइटम ले जाया गया",
     "trashingItems": "कूड़ेदान में जा रहा हूँ",
     "deletingItems": "आइटम हटाना",
@@ -1726,6 +1730,8 @@
     "cannotPasteHere": "यहां चिपकाया नहीं जा सकता",
     "cannotMoveToSameDirectory": "आइटमों को एक ही निर्देशिका में नहीं ले जाया जा सकता",
     "cannotPasteIntoItself": "किसी फ़ोल्डर को स्वयं में चिपकाया नहीं जा सकता",
+    "noItemsInClipboard": "क्लिपबोर्ड में कोई आइटम नहीं",
+    "invalidClipboardOperation": "अमान्य क्लिपबोर्ड ऑपरेशन",
     "copyFailed": "प्रतिलिपि विफल",
     "moveFailed": "स्थानांतरण विफल",
     "sizeTooltip": {

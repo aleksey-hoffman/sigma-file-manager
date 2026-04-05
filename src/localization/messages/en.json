@@ -142,11 +142,14 @@
     "cancelAll": "Cancel all",
     "cancelling": "Canceling…",
     "deleteSelectedCount": "{count} items",
+    "selectedItemsCount": "{count} items",
+    "preparing": "Preparing",
     "groups": {
       "dir-size": "Directory size calculations",
       "copy": "Copy operations",
       "move": "Move operations",
-      "delete": "Delete operations",
+      "deleteTrash": "Trash operations",
+      "deletePermanent": "Permanent delete operations",
       "archive": "Archive operations"
     }
   },
@@ -1269,6 +1272,7 @@
     },
     "deleteIrreversibly": {
       "title": "Deleting from drive",
+      "descriptionSingle": "{path} will be permanently removed.",
       "description": "This operation will permanently delete {count} items from your computer.",
       "confirm": "Confirm, if you understand this cannot be undone.",
       "delete": "Delete"
@@ -1726,6 +1730,8 @@
     "cannotPasteHere": "Cannot paste here",
     "cannotMoveToSameDirectory": "Cannot move items to the same directory",
     "cannotPasteIntoItself": "Cannot paste a folder into itself",
+    "noItemsInClipboard": "No items in clipboard",
+    "invalidClipboardOperation": "Invalid clipboard operation",
     "copyFailed": "Copy failed",
     "moveFailed": "Move failed",
     "sizeTooltip": {

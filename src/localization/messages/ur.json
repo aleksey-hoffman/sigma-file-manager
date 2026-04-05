@@ -142,11 +142,14 @@
     "cancelAll": "سب منسوخ کریں",
     "cancelling": "منسوخ ہو رہا ہے…",
     "deleteSelectedCount": "{count} اشیاء",
+    "selectedItemsCount": "{count} اشیاء",
+    "preparing": "تیاری",
     "groups": {
       "dir-size": "فولڈر سائز کا حساب",
       "copy": "کاپی کارروائیاں",
       "move": "منتقلی کارروائیاں",
-      "delete": "حذف کی کارروائیاں",
+      "deleteTrash": "ری سائیکل بن میں کارروائیاں",
+      "deletePermanent": "مستقل حذف کی کارروائیاں",
       "archive": "آرکائیو کارروائیاں"
     }
   },
@@ -1269,6 +1272,7 @@
     },
     "deleteIrreversibly": {
       "title": "ڈرائیو سے حذف کرنا",
+      "descriptionSingle": "{path} مستقل طور پر حذف کر دیا جائے گا۔",
       "description": "یہ کارروائی آپ کے کمپیوٹر سے {count} اشیاء مستقل حذف کر دے گی۔",
       "confirm": "تصدیق کریں اگر سمجھتے ہیں کہ یہ واپس نہیں ہو سکتا۔",
       "delete": "حذف کریں"
@@ -1726,6 +1730,8 @@
     "cannotPasteHere": "یہاں چسپاں نہیں",
     "cannotMoveToSameDirectory": "اسی فولڈر میں منتقل نہیں",
     "cannotPasteIntoItself": "فولڈر اپنے اندر نہیں چسپاں",
+    "noItemsInClipboard": "کلپ بورڈ میں کوئی آئٹم نہیں",
+    "invalidClipboardOperation": "غلط کلپ بورڈ عمل",
     "copyFailed": "کاپی ناکام",
     "moveFailed": "منتقل ناکام",
     "sizeTooltip": {

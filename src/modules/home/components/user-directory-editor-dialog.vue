@@ -238,11 +238,15 @@ async function handleBrowse() {
       </div>
 
       <DialogFooter>
-        <div
-          v-if="directory && !isCreating"
-          class="user-directory-editor-dialog__left-actions"
-        >
+        <div class="user-directory-editor-dialog__actions">
           <Button
+            variant="ghost"
+            @click="handleCancel"
+          >
+            {{ t('cancel') }}
+          </Button>
+          <Button
+            v-if="directory && !isCreating"
             variant="destructive"
             size="sm"
             class="user-directory-editor-dialog__delete-button"
@@ -250,15 +254,6 @@ async function handleBrowse() {
           >
             <Trash2Icon :size="16" />
             {{ t('delete') }}
-          </Button>
-        </div>
-
-        <div class="user-directory-editor-dialog__actions">
-          <Button
-            variant="ghost"
-            @click="handleCancel"
-          >
-            {{ t('cancel') }}
           </Button>
           <Button
             :disabled="!isValid || !hasChanges"
@@ -367,18 +362,6 @@ async function handleBrowse() {
   color: hsl(var(--primary));
 }
 
-.sigma-ui-dialog-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.user-directory-editor-dialog__left-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
 .user-directory-editor-dialog__delete-button {
   display: inline-flex;
   align-items: center;
@@ -387,6 +370,10 @@ async function handleBrowse() {
 
 .user-directory-editor-dialog__actions {
   display: flex;
+  width: 100%;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
   gap: 8px;
 }
 </style>

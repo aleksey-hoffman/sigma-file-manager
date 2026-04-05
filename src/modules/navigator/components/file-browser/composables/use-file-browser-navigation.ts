@@ -18,6 +18,7 @@ import type { Tab } from '@/types/workspaces';
 import { useWorkspacesStore } from '@/stores/storage/workspaces';
 import { useUserStatsStore } from '@/stores/storage/user-stats';
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
+import { useStatusCenterStore } from '@/stores/runtime/status-center';
 import { DIR_SIZE_CONSTANTS } from '@/constants';
 import normalizePath, {
   getParentPath,
@@ -52,6 +53,14 @@ export function useFileBrowserNavigation(
   const workspacesStore = useWorkspacesStore();
   const userStatsStore = useUserStatsStore();
   const dirSizesStore = useDirSizesStore();
+  const statusCenterStore = useStatusCenterStore();
+
+  function isCopyOrMoveInProgress(): boolean {
+    return statusCenterStore.activeOperations.some(
+      operation => operation.type === 'copy' || operation.type === 'move',
+    );
+  }
+
   const currentPath = ref('');
   const dirContents = ref<DirContents | null>(null);
   const isLoading = ref(false);
@@ -194,7 +203,7 @@ export function useFileBrowserNavigation(
         .slice(0, DIR_SIZE_CONSTANTS.BATCH_LIMIT)
         .map(entry => entry.path);
 
-      if (dirPaths.length > 0) {
+      if (dirPaths.length > 0 && !isCopyOrMoveInProgress()) {
         dirSizesStore.requestSizesBatch(dirPaths);
       }
     }
@@ -313,7 +322,7 @@ export function useFileBrowserNavigation(
         .slice(0, DIR_SIZE_CONSTANTS.BATCH_LIMIT)
         .map(entry => entry.path);
 
-      if (dirPaths.length > 0) {
+      if (dirPaths.length > 0 && !isCopyOrMoveInProgress()) {
         dirSizesStore.requestSizesBatch(dirPaths);
       }
 

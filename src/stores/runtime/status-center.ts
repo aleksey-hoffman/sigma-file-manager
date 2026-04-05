@@ -5,7 +5,13 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 
-export type OperationType = 'dir-size' | 'copy' | 'move' | 'delete' | 'archive';
+export type OperationType
+  = | 'dir-size'
+    | 'copy'
+    | 'move'
+    | 'deleteTrash'
+    | 'deletePermanent'
+    | 'archive';
 export type OperationStatus
   = | 'pending'
     | 'in-progress'
@@ -22,6 +28,9 @@ export interface Operation {
   path: string;
   progress?: number;
   message?: string;
+  processedCount?: number;
+  totalCount?: number;
+  sourceDisplayName?: string;
   startedAt: number;
   completedAt?: number;
 }
@@ -70,7 +79,8 @@ export const useStatusCenterStore = defineStore('status-center', () => {
       'dir-size': 'Directory Size Calculations',
       'copy': 'Copy Operations',
       'move': 'Move Operations',
-      'delete': 'Delete Operations',
+      'deleteTrash': 'Trash Operations',
+      'deletePermanent': 'Permanent Delete Operations',
       'archive': 'Archive operations',
     };
 

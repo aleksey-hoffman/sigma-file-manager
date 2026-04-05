@@ -9,7 +9,7 @@ import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import {
   ActivityIcon, LoaderCircleIcon, XIcon, CheckIcon, FolderIcon, FileArchiveIcon,
-  BanIcon, Trash2Icon,
+  BanIcon, Trash2Icon, CopyIcon, ArrowRightLeftIcon,
 } from '@lucide/vue';
 import type { FocusOutsideEvent, PointerDownOutsideEvent } from 'reka-ui';
 import { Button } from '@/components/ui/button';
@@ -19,6 +19,7 @@ import { useStatusCenterStore } from '@/stores/runtime/status-center';
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
 import { useArchiveJobsStore } from '@/stores/runtime/archive-jobs';
 import { useDeleteJobsStore } from '@/stores/runtime/delete-jobs';
+import { useCopyMoveJobsStore } from '@/stores/runtime/copy-move-jobs';
 import { formatBytes } from '@/modules/navigator/components/file-browser/utils';
 
 const { t } = useI18n();
@@ -27,6 +28,7 @@ const { isOpen: statusCenterPopoverOpen } = storeToRefs(statusCenterStore);
 const dirSizesStore = useDirSizesStore();
 const archiveJobsStore = useArchiveJobsStore();
 const deleteJobsStore = useDeleteJobsStore();
+const copyMoveJobsStore = useCopyMoveJobsStore();
 
 const hasOperations = computed(() => statusCenterStore.operationsList.length > 0);
 const hasCompletedOperations = computed(() => statusCenterStore.completedOperations.length > 0);
@@ -37,8 +39,13 @@ function getOperationIcon(type: string) {
       return FolderIcon;
     case 'archive':
       return FileArchiveIcon;
-    case 'delete':
+    case 'deleteTrash':
+    case 'deletePermanent':
       return Trash2Icon;
+    case 'copy':
+      return CopyIcon;
+    case 'move':
+      return ArrowRightLeftIcon;
     default:
       return ActivityIcon;
   }
@@ -72,7 +79,6 @@ function getGroupActiveCount(operations: typeof statusCenterStore.operationsList
 async function handleCancelOperation(operation: typeof statusCenterStore.operationsList[0]) {
   if (operation.type === 'dir-size') {
     await dirSizesStore.cancelSize(operation.path);
-    statusCenterStore.completeOperation(operation.id, 'cancelled');
   }
   else if (operation.type === 'archive') {
     if (operation.status === 'cancelling') {
@@ -85,7 +91,7 @@ async function handleCancelOperation(operation: typeof statusCenterStore.operati
     });
     await archiveJobsStore.cancelJob(operation.id);
   }
-  else if (operation.type === 'delete') {
+  else if (operation.type === 'deleteTrash' || operation.type === 'deletePermanent') {
     if (operation.status === 'cancelling') {
       return;
     }
@@ -95,6 +101,17 @@ async function handleCancelOperation(operation: typeof statusCenterStore.operati
       message: t('statusCenter.cancelling'),
     });
     await deleteJobsStore.cancelJob(operation.id);
+  }
+  else if (operation.type === 'copy' || operation.type === 'move') {
+    if (operation.status === 'cancelling') {
+      return;
+    }
+
+    statusCenterStore.updateOperation(operation.id, {
+      status: 'cancelling',
+      message: t('statusCenter.cancelling'),
+    });
+    await copyMoveJobsStore.cancelJob(operation.id);
   }
 }
 
@@ -119,8 +136,64 @@ function formatPath(path: string): string {
   return parts[parts.length - 1] || path;
 }
 
+function formatItemCountLine(processed: number | undefined, total: number | undefined): string | null {
+  if (processed === undefined && total === undefined) {
+    return null;
+  }
+
+  if (processed !== undefined && total !== undefined) {
+    return `${processed.toLocaleString()} / ${total.toLocaleString()}`;
+  }
+
+  if (processed !== undefined) {
+    return `${processed.toLocaleString()} / …`;
+  }
+
+  return null;
+}
+
+function parseCopyMoveInnerMessage(message: string | undefined): string {
+  if (!message) {
+    return '';
+  }
+
+  const separator = ' · ';
+  const index = message.indexOf(separator);
+
+  if (index === -1) {
+    return message;
+  }
+
+  return message.slice(index + separator.length).trim();
+}
+
+function isRedundantDeleteProgressMessage(
+  sourceDisplayName: string,
+  currentItemMessage: string,
+): boolean {
+  if (!currentItemMessage) {
+    return true;
+  }
+
+  if (currentItemMessage === sourceDisplayName) {
+    return true;
+  }
+
+  if (sourceDisplayName.startsWith(`${currentItemMessage} (`)) {
+    return true;
+  }
+
+  return false;
+}
+
 function operationPrimaryLabel(operation: typeof statusCenterStore.operationsList[0]): string {
-  if (operation.type === 'archive' || operation.type === 'delete') {
+  if (
+    operation.type === 'archive'
+    || operation.type === 'deleteTrash'
+    || operation.type === 'deletePermanent'
+    || operation.type === 'copy'
+    || operation.type === 'move'
+  ) {
     return operation.label;
   }
 
@@ -141,6 +214,10 @@ function handleStatusCenterFocusOutside(event: FocusOutsideEvent) {
 
 function getOperationDetails(operation: typeof statusCenterStore.operationsList[0]): string {
   if (operation.type === 'dir-size') {
+    if (operation.status === 'error') {
+      return formatPath(operation.path);
+    }
+
     const sizeInfo = dirSizesStore.getSize(operation.path);
 
     if (sizeInfo && sizeInfo.size > 0) {
@@ -148,8 +225,100 @@ function getOperationDetails(operation: typeof statusCenterStore.operationsList[
     }
   }
 
-  if (operation.type === 'archive' || operation.type === 'delete') {
+  if (operation.type === 'copy' || operation.type === 'move') {
+    if (operation.status === 'error') {
+      return operation.sourceDisplayName ?? '';
+    }
+
+    if (
+      operation.status === 'in-progress'
+      || operation.status === 'pending'
+      || operation.status === 'cancelling'
+    ) {
+      const sourceName = operation.sourceDisplayName ?? '';
+      const segments: string[] = [];
+
+      if (sourceName) {
+        segments.push(sourceName);
+      }
+
+      if (operation.progress != null) {
+        segments.push(`${operation.progress}%`);
+      }
+
+      const itemCountLine = formatItemCountLine(operation.processedCount, operation.totalCount);
+
+      if (itemCountLine) {
+        segments.push(itemCountLine);
+      }
+
+      let inner = parseCopyMoveInnerMessage(operation.message);
+
+      if (inner === 'Preparing') {
+        inner = t('statusCenter.preparing');
+      }
+
+      if (inner) {
+        segments.push(inner);
+      }
+
+      if (segments.length > 0) {
+        return segments.join(' · ');
+      }
+    }
+
+    return operation.sourceDisplayName ?? operation.message ?? '';
+  }
+
+  if (operation.type === 'deleteTrash' || operation.type === 'deletePermanent') {
+    if (operation.status === 'error') {
+      return operation.sourceDisplayName ?? '';
+    }
+
+    if (
+      operation.status === 'in-progress'
+      || operation.status === 'pending'
+      || operation.status === 'cancelling'
+    ) {
+      const sourceName = operation.sourceDisplayName ?? '';
+      const segments: string[] = [];
+
+      if (sourceName) {
+        segments.push(sourceName);
+      }
+
+      if (operation.progress != null) {
+        segments.push(`${operation.progress}%`);
+      }
+
+      const itemCountLine = formatItemCountLine(operation.processedCount, operation.totalCount);
+
+      if (itemCountLine) {
+        segments.push(itemCountLine);
+      }
+
+      if (
+        operation.message
+        && !isRedundantDeleteProgressMessage(sourceName, operation.message)
+      ) {
+        segments.push(operation.message);
+      }
+
+      if (segments.length > 0) {
+        return segments.join(' · ');
+      }
+    }
+
+    return operation.sourceDisplayName ?? operation.message ?? '';
+  }
+
+  if (operation.type === 'archive') {
     const name = formatPath(operation.path);
+
+    if (operation.status === 'error') {
+      return name;
+    }
+
     const segments: string[] = [];
 
     if (
@@ -163,7 +332,20 @@ function getOperationDetails(operation: typeof statusCenterStore.operationsList[
       segments.push(`${operation.progress}%`);
     }
 
-    if (operation.message) {
+    const itemCountLine = formatItemCountLine(operation.processedCount, operation.totalCount);
+
+    if (itemCountLine) {
+      segments.push(itemCountLine);
+    }
+
+    if (
+      operation.message
+      && (
+        operation.status === 'in-progress'
+        || operation.status === 'pending'
+        || operation.status === 'cancelling'
+      )
+    ) {
       segments.push(operation.message);
     }
 
@@ -310,6 +492,12 @@ function getOperationDetails(operation: typeof statusCenterStore.operationsList[
                       class="status-center__operation-details"
                     >
                       {{ getOperationDetails(operation) }}
+                    </span>
+                    <span
+                      v-if="operation.status === 'error' && operation.message"
+                      class="status-center__operation-error"
+                    >
+                      {{ operation.message }}
                     </span>
                   </div>
                   <Button
@@ -561,6 +749,7 @@ function getOperationDetails(operation: typeof statusCenterStore.operationsList[
 
 .status-center__operation-label {
   overflow: hidden;
+  min-width: 0;
   color: hsl(var(--foreground) / 80%);
   font-size: 12px;
   text-overflow: ellipsis;
@@ -568,8 +757,25 @@ function getOperationDetails(operation: typeof statusCenterStore.operationsList[
 }
 
 .status-center__operation-details {
+  display: block;
+  overflow: hidden;
+  min-width: 0;
+  max-width: 100%;
   color: hsl(var(--muted-foreground));
   font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.status-center__operation-error {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  margin-top: 2px;
+  color: hsl(var(--destructive));
+  font-size: 10px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
 }
 
 .status-center__operation-progress {

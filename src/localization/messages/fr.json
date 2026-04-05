@@ -1246,10 +1246,11 @@
       "deleteAll": "Delete all"
     },
     "deleteIrreversibly": {
-      "title": "Deleting from drive",
-      "description": "This operation will permanently delete {count} items from your computer.",
-      "confirm": "Confirm, if you understand this cannot be undone.",
-      "delete": "Delete"
+      "title": "Suppression définitive",
+      "descriptionSingle": "{path} sera définitivement supprimé.",
+      "description": "Cette opération supprimera définitivement {count} éléments de votre ordinateur.",
+      "confirm": "Confirmez uniquement si vous comprenez que cette action est irréversible.",
+      "delete": "Supprimer"
     },
     "deleteCurrentDir": {
       "title": "Deleting current directory",
@@ -1282,7 +1283,7 @@
     "cannotCopySpecifiedValueAsText": "Impossible de copier la valeur spécifiée sous forme de texte.",
     "copyingItems": "Copier des éléments",
     "copiedNItems": "Copié 0 éléments | Copié 1 élément | {n} éléments copiés | {n} éléments copiés",
-    "movingItems": "Déménagement d'objets",
+    "movingItems": "Déplacer des éléments",
     "trashingItems": "Déplacement vers la corbeille",
     "deletingItems": "Suppression des éléments",
     "movedNItems": "0 élément déplacé | 1 élément déplacé | {n} éléments déplacés | {n} éléments déplacés",
@@ -1709,6 +1710,8 @@
     "cannotPasteHere": "Impossible de coller ici",
     "cannotMoveToSameDirectory": "Impossible de déplacer les éléments vers le même répertoire",
     "cannotPasteIntoItself": "Impossible de coller un dossier dans lui-même",
+    "noItemsInClipboard": "Aucun élément dans le presse-papiers",
+    "invalidClipboardOperation": "Opération de presse-papiers invalide",
     "copyFailed": "Échec de la copie",
     "moveFailed": "Échec du déplacement",
     "sizeTooltip": {
@@ -1937,11 +1940,14 @@
     "cancelAll": "Cancel all",
     "cancelling": "Annulation…",
     "deleteSelectedCount": "{count} éléments",
+    "selectedItemsCount": "{count} éléments",
+    "preparing": "Préparation",
     "groups": {
       "dir-size": "Directory size calculations",
       "copy": "Copy operations",
       "move": "Move operations",
-      "delete": "Delete operations",
+      "deleteTrash": "Opérations corbeille",
+      "deletePermanent": "Opérations de suppression définitive",
       "archive": "Opérations d'archive"
     }
   },

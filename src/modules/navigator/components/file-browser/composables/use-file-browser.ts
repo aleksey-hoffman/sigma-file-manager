@@ -269,13 +269,11 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
     entriesContainerRef,
     disableBackgroundDrop: isExternalMode,
     onDrop: async (items, destinationPath, operation) => {
-      clipboardStore.isToolbarSuppressed = true;
-
       if (operation === 'copy') {
-        selection.copyItems(items);
+        clipboardStore.setClipboard('copy', items, { keepToolbarHidden: true });
       }
       else {
-        selection.cutItems(items);
+        clipboardStore.setClipboard('move', items, { keepToolbarHidden: true });
       }
 
       const success = await selection.pasteItems(destinationPath);
@@ -426,6 +424,7 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
     conflictDialogState: selection.conflictDialogState,
     handleConflictResolution: selection.handleConflictResolution,
     handleConflictCancel: selection.handleConflictCancel,
+    permanentDeleteConfirm: selection.permanentDeleteConfirm,
 
     getVideoThumbnail: videoThumbnails.getVideoThumbnail,
     entriesContainerRef,
