@@ -76,6 +76,49 @@ function monthToIntlOption(month: DateTime['month']): Intl.DateTimeFormatOptions
   return 'short';
 }
 
+export function isSameLocalCalendarDay(left: Date, right: Date): boolean {
+  return (
+    left.getFullYear() === right.getFullYear()
+    && left.getMonth() === right.getMonth()
+    && left.getDate() === right.getDate()
+  );
+}
+
+export function isPreviousLocalCalendarDay(candidate: Date, reference: Date): boolean {
+  const yesterday = new Date(reference);
+  yesterday.setDate(yesterday.getDate() - 1);
+  return isSameLocalCalendarDay(candidate, yesterday);
+}
+
+export function formatTimeOnly(
+  date: Date,
+  options: DateTime,
+  appLocale: string,
+): string {
+  try {
+    const localeTag = resolveFormattingLocale(options, appLocale);
+
+    const formatOptions: Intl.DateTimeFormatOptions = {
+      hour: 'numeric',
+      minute: 'numeric',
+      hour12: options.hour12,
+    };
+
+    if (options.properties.showSeconds || options.properties.showMilliseconds) {
+      formatOptions.second = 'numeric';
+    }
+
+    if (options.properties.showMilliseconds) {
+      formatOptions.fractionalSecondDigits = 3;
+    }
+
+    return new Intl.DateTimeFormat(localeTag, formatOptions).format(date);
+  }
+  catch {
+    return '';
+  }
+}
+
 export function formatDateTimeDisplay(
   date: Date,
   options: DateTime,

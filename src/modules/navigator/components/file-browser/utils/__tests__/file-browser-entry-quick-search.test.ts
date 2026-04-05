@@ -15,6 +15,7 @@ vi.mock('@/stores/storage/user-settings', () => ({
         regionalFormat: { code: 'en-US', name: 'United States' },
         autoDetectRegionalFormat: false,
         hour12: true,
+        showRelativeDates: true,
         properties: { showSeconds: false, showMilliseconds: false },
       },
     },

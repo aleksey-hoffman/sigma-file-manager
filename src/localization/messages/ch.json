@@ -11,6 +11,7 @@
   },
   "relativeTime": {
     "justNow": "刚刚",
+    "secondsAgo": "0秒前 | 1秒前 | {n}秒前 | {n}秒前",
     "minutesAgo": "0分钟前 | 1分钟前 | {n}分钟前 | {n}分钟前",
     "hoursAgo": "0小时前 | 1小时前 | {n}小时前 | {n}小时前",
     "daysAgo": "0天前 | 1天前 | {n}天前 | {n}天前"
@@ -185,6 +186,7 @@
     },
     "relativeTime": {
       "justNow": "刚刚",
+      "secondsAgo": "0 秒前 | 1 秒前 | {n} 秒前 | {n} 秒前",
       "minutesAgo": "0 分钟前 | 1 分钟前 | {n} 分钟前 | {n} 分钟前",
       "hoursAgo": "0 小时前 | 1 小时前 | {n} 小时前 | {n} 小时前",
       "daysAgo": "0 天前 | 1 天前 | {n} 天前 | {n} 天前"
@@ -425,7 +427,8 @@
       "12HourFormat": "12 小时制",
       "displayedDateProperties": "显示的日期属性",
       "showSeconds": "显示秒",
-      "showMilliseconds": "显示毫秒"
+      "showMilliseconds": "显示毫秒",
+      "showRelativeDates": "对最近的时间以相对格式显示（例如：5 分钟前、今天 15:15）"
     },
     "overlays": {
       "overlays": "叠加",
@@ -1671,6 +1674,10 @@
     "name": "名称",
     "size": "大小",
     "modified": "修改时间",
+    "listModifiedDate": {
+      "todayAt": "今天 {time}",
+      "yesterdayAt": "昨天 {time}"
+    },
     "columns": "列",
     "folders": "文件夹",
     "images": "图片",

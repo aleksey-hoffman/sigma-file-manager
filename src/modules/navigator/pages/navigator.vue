@@ -121,6 +121,8 @@ const isSplitView = computed(() => {
   return (workspacesStore.currentTabGroup?.length ?? 0) > 1;
 });
 
+const trackNavigatorRelativeTime = computed(() => !globalSearchStore.isOpen);
+
 const currentActivePath = computed(() => {
   return currentDirEntry.value?.path;
 });
@@ -609,6 +611,7 @@ onUnmounted(() => {
                     :tab="tab"
                     :pane-index="index"
                     :layout="currentLayout"
+                    :track-relative-time="trackNavigatorRelativeTime"
                     class="navigator-page__pane"
                     @update:selected-entries="(entries) => handleSelectionChange(entries, tab.id)"
                     @update:current-dir-entry="handleCurrentDirChange"
@@ -628,6 +631,7 @@ onUnmounted(() => {
                   :tab="workspacesStore.currentTabGroup[0]"
                   :pane-index="0"
                   :layout="currentLayout"
+                  :track-relative-time="trackNavigatorRelativeTime"
                   class="navigator-page__pane"
                   @update:selected-entries="(entries) => handleSelectionChange(entries, workspacesStore.currentTabGroup![0].id)"
                   @update:current-dir-entry="handleCurrentDirChange"
@@ -641,6 +645,7 @@ onUnmounted(() => {
               <FileBrowser
                 ref="singlePaneRef"
                 :layout="currentLayout"
+                :track-relative-time="trackNavigatorRelativeTime"
                 class="navigator-page__pane"
                 @update:selected-entries="(entries) => handleSelectionChange(entries)"
                 @update:current-dir-entry="handleCurrentDirChange"

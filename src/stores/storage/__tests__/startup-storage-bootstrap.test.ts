@@ -11,19 +11,19 @@ import {
 
 describe('startup storage bootstrap helpers', () => {
   it('uses the fast path for missing files', () => {
-    expect(canUseStartupStorageFastPath(createBootstrapFile({ status: 'missing' }), 7)).toBe(true);
+    expect(canUseStartupStorageFastPath(createBootstrapFile({ status: 'missing' }), 9)).toBe(true);
   });
 
   it('uses the fast path for ready files with the matching schema', () => {
     expect(
       canUseStartupStorageFastPath(
         createBootstrapFile({
-          schemaVersion: 7,
+          schemaVersion: 9,
           data: {
-            __schemaVersion: 7,
+            __schemaVersion: 9,
           },
         }),
-        7,
+        9,
       ),
     ).toBe(true);
   });
@@ -37,7 +37,7 @@ describe('startup storage bootstrap helpers', () => {
             __schemaVersion: 6,
           },
         }),
-        7,
+        9,
       ),
     ).toBe(false);
   });

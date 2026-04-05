@@ -15,7 +15,7 @@ import {
 } from '@/modules/home/background-storage-keys';
 
 export const USER_SETTINGS_SCHEMA_VERSION_KEY = '__schemaVersion';
-export const USER_SETTINGS_SCHEMA_VERSION = 7;
+export const USER_SETTINGS_SCHEMA_VERSION = 9;
 
 function generateShortId(): string {
   return crypto.randomUUID().replace(/-/g, '').slice(0, 8);
@@ -270,6 +270,24 @@ async function migrateUserSettingsStep(storage: StorageAdapter, fromVersion: num
 
       await storage.set(homeBannerStorageKeys.mediaId, newMediaId);
       await storage.set(legacyBackgroundStorageKeys.customMedia, []);
+    }
+  }
+
+  if (fromVersion === 7 && toVersion === 8) {
+    const existing = await storage.get<boolean>('dateTime.showRelativeModifiedInFileList');
+    if (typeof existing !== 'boolean') {
+      await storage.set('dateTime.showRelativeModifiedInFileList', true);
+    }
+  }
+
+  if (fromVersion === 8 && toVersion === 9) {
+    const next = await storage.get<boolean>('dateTime.showRelativeDates');
+    if (typeof next !== 'boolean') {
+      const previous = await storage.get<boolean>('dateTime.showRelativeModifiedInFileList');
+      await storage.set(
+        'dateTime.showRelativeDates',
+        typeof previous === 'boolean' ? previous : true,
+      );
     }
   }
 

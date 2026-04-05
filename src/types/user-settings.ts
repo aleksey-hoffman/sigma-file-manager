@@ -206,6 +206,7 @@ export type DateTime = {
   };
   autoDetectRegionalFormat: boolean;
   hour12: boolean;
+  showRelativeDates: boolean;
   properties: {
     showSeconds: boolean;
     showMilliseconds: boolean;

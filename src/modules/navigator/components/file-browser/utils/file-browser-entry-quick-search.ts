@@ -4,7 +4,9 @@
 
 import type { DirEntry } from '@/types/dir-entry';
 import { i18n } from '@/localization';
-import { formatBytes, formatDate } from '../utils';
+import { useUserSettingsStore } from '@/stores/storage/user-settings';
+import { formatBytes, formatDate, formatFileBrowserListModifiedDate } from '../utils';
+import { isRelativeDateDisplayEnabled } from '@/utils/relative-date-display';
 import { getFileBrowserEntryResolvedSizeBytes, type DirSizesStore } from './file-browser-sort';
 import {
   parseQuickSearchQuery,
@@ -30,6 +32,7 @@ function getFileBrowserItemCountForFilter(entry: DirEntry): number | null {
 }
 
 export function buildFileBrowserQuickSearchHaystack(entry: DirEntry, dirSizesStore: DirSizesStore): string {
+  const showRelativeDates = useUserSettingsStore().userSettings.dateTime.showRelativeDates;
   const parts: string[] = [entry.name.toLowerCase()];
 
   if (entry.ext) {
@@ -63,6 +66,10 @@ export function buildFileBrowserQuickSearchHaystack(entry: DirEntry, dirSizesSto
     if (timestamp) {
       parts.push(formatDate(timestamp).toLowerCase());
     }
+  }
+
+  if (entry.modified_time && isRelativeDateDisplayEnabled(showRelativeDates)) {
+    parts.push(formatFileBrowserListModifiedDate(entry.modified_time, Date.now()).toLowerCase());
   }
 
   return parts.join(' ');
@@ -113,7 +120,13 @@ function buildHaystackForProperty(
   }
 
   if (property === 'modified') {
-    return entry.modified_time ? formatDate(entry.modified_time).toLowerCase() : '';
+    if (!entry.modified_time) return '';
+    const absolute = formatDate(entry.modified_time).toLowerCase();
+    if (!isRelativeDateDisplayEnabled(useUserSettingsStore().userSettings.dateTime.showRelativeDates)) {
+      return absolute;
+    }
+    const listLabel = formatFileBrowserListModifiedDate(entry.modified_time, Date.now()).toLowerCase();
+    return `${absolute} ${listLabel}`;
   }
 
   if (property === 'created') {

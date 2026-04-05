@@ -16,9 +16,12 @@ import FileBrowserLoading from './file-browser-loading.vue';
 import FileBrowserError from './file-browser-error.vue';
 import { useFileBrowserContext } from './composables/use-file-browser-context';
 
-defineProps<{
+const props = withDefaults(defineProps<{
   layout?: 'list' | 'grid';
-}>();
+  trackRelativeTime?: boolean;
+}>(), {
+  trackRelativeTime: true,
+});
 
 const ctx = useFileBrowserContext();
 const { t } = useI18n();
@@ -98,10 +101,11 @@ function handlePaneBackgroundClick(event: MouseEvent) {
             @contextmenu.self="ctx.handleBackgroundContextMenu"
           >
             <FileBrowserGridView
-              v-if="layout === 'grid'"
+              v-if="props.layout === 'grid'"
             />
             <FileBrowserListView
               v-else
+              :track-relative-time="props.trackRelativeTime"
             />
           </div>
         </ContextMenuTrigger>

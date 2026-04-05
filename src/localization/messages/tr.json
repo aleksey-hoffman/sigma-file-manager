@@ -11,6 +11,7 @@
   },
   "relativeTime": {
     "justNow": "Az önce",
+    "secondsAgo": "0 sn önce | 1 sn önce | {n} sn önce | {n} sn önce",
     "minutesAgo": "0 dk önce | 1 dk önce | {n} dk önce | {n} dk önce",
     "hoursAgo": "0 saat önce | 1 saat önce | {n} saat önce | {n} saat önce",
     "daysAgo": "0 gün önce | 1 gün önce | {n} gün önce | {n} gün önce"
@@ -185,6 +186,7 @@
     },
     "relativeTime": {
       "justNow": "Az önce",
+      "secondsAgo": "0 sn önce | 1 sn önce | {n} sn önce | {n} sn önce",
       "minutesAgo": "0 dk önce | 1 dk önce | {n} dk önce | {n} dk önce",
       "hoursAgo": "0 saat önce | 1 saat önce | {n} saat önce | {n} saat önce",
       "daysAgo": "0 gün önce | 1 gün önce | {n} gün önce | {n} gün önce"
@@ -425,7 +427,8 @@
       "12HourFormat": "12 saatlik biçim",
       "displayedDateProperties": "Görüntülenen tarih özellikleri",
       "showSeconds": "Saniyeleri göster",
-      "showMilliseconds": "Milisaniyeleri göster"
+      "showMilliseconds": "Milisaniyeleri göster",
+      "showRelativeDates": "Yakın zamanlar için saati göreli biçimde göster (ör. 5 dk önce, Bugün 15:15)"
     },
     "overlays": {
       "overlays": "Kaplamalar",
@@ -1671,6 +1674,10 @@
     "name": "Ad",
     "size": "Boyut",
     "modified": "Değiştirilme",
+    "listModifiedDate": {
+      "todayAt": "Bugün {time}",
+      "yesterdayAt": "Dün {time}"
+    },
     "columns": "Sütunlar",
     "folders": "Klasörler",
     "images": "Resimler",

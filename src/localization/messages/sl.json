@@ -11,6 +11,7 @@
   },
   "relativeTime": {
     "justNow": "Sedaj",
+    "secondsAgo": "0 s nazaj | 1 s nazaj | {n} s nazaj | {n} s nazaj",
     "minutesAgo": "0 min nazaj | 1 min nazaj | {n} min nazaj | {n} min nazaj",
     "hoursAgo": "0 ur nazaj | 1 ura nazaj | {n} ur nazaj | {n} ur nazaj",
     "daysAgo": "0 dni nazaj | 1 dan nazaj | {n} dni nazaj | {n} dni nazaj"
@@ -200,6 +201,7 @@
     },
     "relativeTime": {
       "justNow": "Takoj",
+      "secondsAgo": "0 s nazaj | 1 s nazaj | {n} s nazaj | {n} s nazaj",
       "minutesAgo": "0 min nazaj | 1 min nazaj | {n} min nazaj | {n} min nazaj",
       "hoursAgo": "0 ur nazaj | 1 ura nazaj | {n} ur nazaj | {n} ur nazaj",
       "daysAgo": "0 dni nazaj | 1 dan nazaj | {n} dni nazaj | {n} dni nazaj"
@@ -440,7 +442,8 @@
       "12HourFormat": "12-urni format",
       "displayedDateProperties": "Prikazane lastnosti datuma",
       "showSeconds": "Pokaži sekunde",
-      "showMilliseconds": "Pokaži milisekunde"
+      "showMilliseconds": "Pokaži milisekunde",
+      "showRelativeDates": "Za nedavne čase prikaži čas v relativni obliki (npr. pred 5 min, danes ob 15:15)"
     },
     "overlays": {
       "overlays": "Prekrivanja",
@@ -1687,6 +1690,10 @@
     "name": "Ime",
     "size": "Velikost",
     "modified": "Spremenjeno",
+    "listModifiedDate": {
+      "todayAt": "Danes ob {time}",
+      "yesterdayAt": "Včeraj ob {time}"
+    },
     "columns": "Stolpci",
     "folders": "Mape",
     "images": "Slike",

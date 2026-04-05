@@ -4,24 +4,52 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import { computed, watch } from 'vue';
+import { computed } from 'vue';
 import { LoaderCircleIcon, XIcon, RefreshCwIcon } from '@lucide/vue';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
+import DateHoverDisplay from '@/components/ui/date-hover-display/date-hover-display.vue';
 import { useI18n } from 'vue-i18n';
-import { formatBytes, formatDate, formatRelativeTime } from '@/modules/navigator/components/file-browser/utils';
+import {
+  formatBytes,
+  formatRelativeTime,
+} from '@/modules/navigator/components/file-browser/utils';
+import { useRelativeDateDisplayClock } from '@/composables/use-relative-date-display';
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
+import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import type { DirEntry } from '@/types/dir-entry';
 import type { RelativeTimeTranslations } from '@/modules/navigator/components/file-browser/utils';
 import { getPathDisplayValue } from '@/utils/normalize-path';
-
+import { formatRelativeDateDisplay } from '@/utils/relative-date-display';
 const props = defineProps<{
   selectedEntry: DirEntry | null;
   orientation?: 'vertical' | 'compact';
 }>();
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 const dirSizesStore = useDirSizesStore();
+const userSettingsStore = useUserSettingsStore();
+
+const { clockRef: relativeDateClock } = useRelativeDateDisplayClock(() => {
+  const entry = props.selectedEntry;
+
+  if (!entry) {
+    return false;
+  }
+
+  return !!(entry.modified_time || entry.created_time);
+});
+
+function formatPropertyDate(timestamp: number, relativeDisplay = true): string {
+  return formatRelativeDateDisplay({
+    timestamp,
+    referenceNowMs: relativeDateClock.value,
+    dateTimeOptions: userSettingsStore.userSettings.dateTime,
+    appLocale: locale.value,
+    translate: t,
+    relativeDisplay,
+  });
+}
 
 const dirSizeInfo = computed(() => {
   if (!props.selectedEntry?.is_dir) return null;
@@ -82,14 +110,18 @@ async function handleCancelSize() {
   await dirSizesStore.cancelSize(props.selectedEntry.path);
 }
 
-watch(() => props.selectedEntry?.path, () => {
-  // Reset state when entry changes
-}, { immediate: true });
-
-interface PropertyItem {
+interface PropertyValueItem {
   title: string;
   value: string;
 }
+
+interface PropertyDateItem {
+  title: string;
+  dateTimestamp: number;
+  relativeDisplay?: boolean;
+}
+
+type PropertyItem = PropertyValueItem | PropertyDateItem;
 
 const properties = computed<PropertyItem[]>(() => {
   if (!props.selectedEntry) return [];
@@ -130,21 +162,22 @@ const properties = computed<PropertyItem[]>(() => {
   if (entry.modified_time) {
     items.push({
       title: t('modified'),
-      value: formatDate(entry.modified_time),
+      dateTimestamp: entry.modified_time,
     });
   }
 
   if (entry.created_time) {
     items.push({
       title: t('created'),
-      value: formatDate(entry.created_time),
+      dateTimestamp: entry.created_time,
     });
   }
 
   if (entry.accessed_time) {
     items.push({
       title: t('accessed'),
-      value: formatDate(entry.accessed_time),
+      dateTimestamp: entry.accessed_time,
+      relativeDisplay: false,
     });
   }
 
@@ -187,7 +220,7 @@ const compactItems = computed<string[]>(() => {
   }
 
   if (entry.modified_time) {
-    items.push(formatDate(entry.modified_time));
+    items.push(formatPropertyDate(entry.modified_time));
   }
 
   return items;
@@ -286,7 +319,15 @@ const compactItems = computed<string[]>(() => {
           {{ item.title }}
         </div>
         <div class="info-panel-properties__value">
-          {{ item.value }}
+          <DateHoverDisplay
+            v-if="'dateTimestamp' in item"
+            :timestamp="item.dateTimestamp"
+            :reference-now="relativeDateClock"
+            :relative-display="item.relativeDisplay ?? true"
+          />
+          <template v-else>
+            {{ item.value }}
+          </template>
         </div>
       </div>
     </div>

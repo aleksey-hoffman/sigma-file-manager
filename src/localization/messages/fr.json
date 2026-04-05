@@ -11,6 +11,7 @@
   },
   "relativeTime": {
     "justNow": "À l'instant",
+    "secondsAgo": "il y a 0 s | il y a 1 s | il y a {n} s | il y a {n} s",
     "minutesAgo": "il y a 0 min | il y a 1 min | il y a {n} min | il y a {n} min",
     "hoursAgo": "il y a 0 heures | il y a 1 heure | il y a {n} heures | il y a {n} heures",
     "daysAgo": "il y a 0 jours | il y a 1 jour | il y a {n} jours | il y a {n} jours"
@@ -185,6 +186,7 @@
     },
     "relativeTime": {
       "justNow": "À l'instant",
+      "secondsAgo": "0 s | 1 s | {n} s | {n} s",
       "minutesAgo": "0 min | 1 min | {n} min | {n} min",
       "hoursAgo": "0 h | 1 h | {n} h | {n} h",
       "daysAgo": "0 jours | 1 jour | {n} jours | {n} jours"
@@ -425,7 +427,8 @@
       "12HourFormat": "Format 12 heures",
       "displayedDateProperties": "Propriétés de la date affichée",
       "showSeconds": "Afficher les secondes",
-      "showMilliseconds": "Afficher les millisecondes"
+      "showMilliseconds": "Afficher les millisecondes",
+      "showRelativeDates": "Afficher l’heure au format relatif pour les moments récents (ex. il y a 5 min, Aujourd’hui à 15:15)"
     },
     "overlays": {
       "overlays": "Superpositions",
@@ -1671,6 +1674,10 @@
     "name": "Nom",
     "size": "Taille",
     "modified": "Modifié",
+    "listModifiedDate": {
+      "todayAt": "Aujourd'hui à {time}",
+      "yesterdayAt": "Hier à {time}"
+    },
     "columns": "Colonnes",
     "folders": "Dossiers",
     "images": "Images",

@@ -9,13 +9,21 @@ import { useI18n } from 'vue-i18n';
 import { computed } from 'vue';
 import { LoaderCircleIcon } from '@lucide/vue';
 import type { DirEntry } from '@/types/dir-entry';
-import { formatBytes, formatDate } from './utils';
+import { formatBytes } from './utils';
+import DateHoverDisplay from '@/components/ui/date-hover-display/date-hover-display.vue';
 import { useClipboardStore } from '@/stores/runtime/clipboard';
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { Skeleton } from '@/components/ui/skeleton';
 import FileBrowserEntryIcon from './file-browser-entry-icon.vue';
+import { useRelativeDateDisplayClock } from '@/composables/use-relative-date-display';
 import { useFileBrowserContext } from './composables/use-file-browser-context';
+
+const props = withDefaults(defineProps<{
+  trackRelativeTime?: boolean;
+}>(), {
+  trackRelativeTime: true,
+});
 
 const ctx = useFileBrowserContext();
 
@@ -28,6 +36,11 @@ const columnVisibility = computed(() => userSettingsStore.userSettings.navigator
 const showItemsColumn = computed(() => columnVisibility.value.items);
 const showSizeColumn = computed(() => columnVisibility.value.size);
 const showModifiedColumn = computed(() => columnVisibility.value.modified);
+const shouldTrackListRelativeTime = computed(() => {
+  return props.trackRelativeTime
+    && showModifiedColumn.value
+    && ctx.entries.value.some(entry => entry.modified_time > 0);
+});
 
 const clipboardPathsMap = computed(() => {
   if (isToolbarSuppressed.value) {
@@ -86,6 +99,8 @@ function handleEntryKeydown(event: KeyboardEvent): void {
 }
 
 const { t } = useI18n();
+
+const { clockRef: listModifiedClock } = useRelativeDateDisplayClock(shouldTrackListRelativeTime);
 </script>
 
 <template>
@@ -161,7 +176,10 @@ const { t } = useI18n();
           v-if="showModifiedColumn"
           class="file-browser-list-view__entry-modified"
         >
-          {{ formatDate(entry.modified_time) }}
+          <DateHoverDisplay
+            :timestamp="entry.modified_time"
+            :reference-now="listModifiedClock"
+          />
         </span>
       </button>
     </div>

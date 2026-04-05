@@ -19,7 +19,7 @@ import FileBrowserDragOverlay from './file-browser-drag-overlay.vue';
 import FileBrowserInboundDragOverlay from './file-browser-inbound-drag-overlay.vue';
 import FileBrowserConflictDialog from './file-browser-conflict-dialog.vue';
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   tab?: Tab;
   paneIndex?: number;
   layout?: 'list' | 'grid';
@@ -28,7 +28,10 @@ const props = defineProps<{
   hideToolbar?: boolean;
   hideStatusBar?: boolean;
   entryDescription?: (entry: DirEntry) => string | undefined;
-}>();
+  trackRelativeTime?: boolean;
+}>(), {
+  trackRelativeTime: true,
+});
 
 const emit = defineEmits<{
   'update:selectedEntries': [entries: DirEntry[]];
@@ -128,6 +131,7 @@ defineExpose({
 
     <FileBrowserContent
       :layout="props.layout"
+      :track-relative-time="props.trackRelativeTime"
     />
 
     <FileBrowserStatusBar

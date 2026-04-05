@@ -15,9 +15,12 @@ import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import FileBrowserListHeader from './file-browser-list-header.vue';
 import FileBrowserContentBody from './file-browser-content-body.vue';
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   layout?: 'list' | 'grid';
-}>();
+  trackRelativeTime?: boolean;
+}>(), {
+  trackRelativeTime: true,
+});
 
 const userSettingsStore = useUserSettingsStore();
 
@@ -56,7 +59,10 @@ const listColumnsTemplate = computed(() => {
         <div class="file-browser__content-inner">
           <FileBrowserListHeader v-if="props.layout === 'list'" />
 
-          <FileBrowserContentBody :layout="props.layout" />
+          <FileBrowserContentBody
+            :layout="props.layout"
+            :track-relative-time="props.trackRelativeTime"
+          />
         </div>
       </ScrollAreaViewport>
       <ScrollBar orientation="horizontal" />

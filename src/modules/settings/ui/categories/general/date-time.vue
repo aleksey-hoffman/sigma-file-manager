@@ -81,6 +81,13 @@ const monthFormatTab = computed({
     }
   },
 });
+
+const showRelativeDates = computed({
+  get: () => userSettingsStore.userSettings.dateTime.showRelativeDates ?? true,
+  set: (value: boolean) => {
+    void userSettingsStore.set('dateTime.showRelativeDates', value);
+  },
+});
 </script>
 
 <template>
@@ -95,31 +102,6 @@ const monthFormatTab = computed({
     </div>
     <template #nested>
       <div class="date-time-settings">
-        <div class="date-time-settings__row date-time-settings__row--toggle">
-          <span class="date-time-settings__label">{{ t('settings.dateTime.autoDetectRegionalFormat') }}</span>
-          <Switch
-            id="date-time-auto-regional"
-            :model-value="autoDetectRegionalFormat"
-            @update:model-value="autoDetectRegionalFormat = $event"
-          />
-        </div>
-
-        <div
-          v-if="!autoDetectRegionalFormat"
-          class="date-time-settings__row date-time-settings__row--combobox"
-        >
-          <span class="date-time-settings__label">{{ t('settings.dateTime.regionalFormatLocale') }}</span>
-          <BaseCombobox
-            v-model="selectedRegionalLanguage"
-            :options="languages"
-            by="locale"
-            :search-placeholder="t('search')"
-            :empty-text="t('noData')"
-            trigger-width="250px"
-            class="date-time-settings__combobox"
-          />
-        </div>
-
         <div class="date-time-settings__row date-time-settings__row--toggle">
           <span class="date-time-settings__label">{{ t('settings.dateTime.monthFormat') }}</span>
           <Tabs
@@ -150,6 +132,31 @@ const monthFormatTab = computed({
         </div>
 
         <div class="date-time-settings__row date-time-settings__row--toggle">
+          <span class="date-time-settings__label">{{ t('settings.dateTime.autoDetectRegionalFormat') }}</span>
+          <Switch
+            id="date-time-auto-regional"
+            :model-value="autoDetectRegionalFormat"
+            @update:model-value="autoDetectRegionalFormat = $event"
+          />
+        </div>
+
+        <div
+          v-if="!autoDetectRegionalFormat"
+          class="date-time-settings__row date-time-settings__row--combobox"
+        >
+          <span class="date-time-settings__label">{{ t('settings.dateTime.regionalFormatLocale') }}</span>
+          <BaseCombobox
+            v-model="selectedRegionalLanguage"
+            :options="languages"
+            by="locale"
+            :search-placeholder="t('search')"
+            :empty-text="t('noData')"
+            trigger-width="250px"
+            class="date-time-settings__combobox"
+          />
+        </div>
+
+        <div class="date-time-settings__row date-time-settings__row--toggle">
           <span class="date-time-settings__label">{{ t('settings.dateTime.12HourFormat') }}</span>
           <Switch
             id="date-time-hour12"
@@ -173,6 +180,15 @@ const monthFormatTab = computed({
             id="date-time-show-ms"
             :model-value="userSettingsStore.userSettings.dateTime.properties.showMilliseconds"
             @update:model-value="onShowMillisecondsChange"
+          />
+        </div>
+
+        <div class="date-time-settings__row date-time-settings__row--toggle">
+          <span class="date-time-settings__label">{{ t('settings.dateTime.showRelativeDates') }}</span>
+          <Switch
+            id="date-time-relative-dates"
+            :model-value="showRelativeDates"
+            @update:model-value="showRelativeDates = $event"
           />
         </div>
       </div>

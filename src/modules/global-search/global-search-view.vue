@@ -558,6 +558,7 @@ onMounted(() => {
                   layout="list"
                   :hide-toolbar="true"
                   :hide-status-bar="true"
+                  :track-relative-time="false"
                   :entry-description="getEntryDescription"
                   @open-entry="handleSearchEntryOpen"
                   @update:selected-entries="(entries: DirEntry[]) => handleSearchSelectionChange(entries, group.driveRoot)"

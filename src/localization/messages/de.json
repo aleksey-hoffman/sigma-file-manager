@@ -11,6 +11,7 @@
   },
   "relativeTime": {
     "justNow": "Gerade eben",
+    "secondsAgo": "0 Sek. her | 1 Sek. her | {n} Sek. her | {n} Sek. her",
     "minutesAgo": "0 Min. her | 1 Min. her | {n} Min. her | {n} Min. her",
     "hoursAgo": "0 Std. her | 1 Std. her | {n} Std. her | {n} Std. her",
     "daysAgo": "0 Tage her | 1 Tag her | {n} Tage her | {n} Tage her"
@@ -185,6 +186,7 @@
     },
     "relativeTime": {
       "justNow": "Gerade eben",
+      "secondsAgo": "0 Sek. | 1 Sek. | {n} Sek. | {n} Sek.",
       "minutesAgo": "0 Min. | 1 Min. | {n} Min. | {n} Min.",
       "hoursAgo": "0 Std. | 1 Std. | {n} Std. | {n} Std.",
       "daysAgo": "0 Tage | 1 Tag | {n} Tage | {n} Tage"
@@ -425,7 +427,8 @@
       "12HourFormat": "12-Stunden-Format",
       "displayedDateProperties": "Angezeigte Zeiteigenschaften",
       "showSeconds": "Sekunden anzeigen",
-      "showMilliseconds": "Millisekunden anzeigen"
+      "showMilliseconds": "Millisekunden anzeigen",
+      "showRelativeDates": "Zeiten in relativem Format für kürzliche Zeitpunkte anzeigen (z. B. vor 5 Min., Heute um 15:15)"
     },
     "overlays": {
       "overlays": "Überlagerungen",
@@ -1671,6 +1674,10 @@
     "name": "Name",
     "size": "Größe",
     "modified": "Geändert",
+    "listModifiedDate": {
+      "todayAt": "Heute um {time}",
+      "yesterdayAt": "Gestern um {time}"
+    },
     "columns": "Spalten",
     "folders": "Ordner",
     "images": "Bilder",

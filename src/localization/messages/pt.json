@@ -11,6 +11,7 @@
   },
   "relativeTime": {
     "justNow": "Agora",
+    "secondsAgo": "há 0 s | há 1 s | há {n} s | há {n} s",
     "minutesAgo": "há 0 min | há 1 min | há {n} min | há {n} min",
     "hoursAgo": "há 0 horas | há 1 hora | há {n} horas | há {n} horas",
     "daysAgo": "há 0 dias | há 1 dia | há {n} dias | há {n} dias"
@@ -185,6 +186,7 @@
     },
     "relativeTime": {
       "justNow": "Agora mesmo",
+      "secondsAgo": "0 s atrás | 1 s atrás | {n} s atrás | {n} s atrás",
       "minutesAgo": "0 min atrás | 1 min atrás | {n} min atrás | {n} min atrás",
       "hoursAgo": "0 h atrás | 1 h atrás | {n} h atrás | {n} h atrás",
       "daysAgo": "0 dias atrás | 1 dia atrás | {n} dias atrás | {n} dias atrás"
@@ -425,7 +427,8 @@
       "12HourFormat": "Formato de 12 horas",
       "displayedDateProperties": "Propriedades de data exibidas",
       "showSeconds": "Mostrar segundos",
-      "showMilliseconds": "Mostrar milissegundos"
+      "showMilliseconds": "Mostrar milissegundos",
+      "showRelativeDates": "Exibir a hora em formato relativo para momentos recentes (ex.: há 5 min, Hoje às 15:15)"
     },
     "overlays": {
       "overlays": "Sobreposições",
@@ -1684,6 +1687,10 @@
     "name": "Nome",
     "size": "Tamanho",
     "modified": "Modificado",
+    "listModifiedDate": {
+      "todayAt": "Hoje às {time}",
+      "yesterdayAt": "Ontem às {time}"
+    },
     "columns": "Colunas",
     "folders": "Pastas",
     "images": "Imagens",

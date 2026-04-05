@@ -17,7 +17,10 @@ import { FILE_EXTENSIONS } from '@/constants';
 import type { DirEntry } from '@/types/dir-entry';
 import { i18n } from '@/localization';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
-import { formatDateTimeDisplay } from '@/utils/date-time';
+import {
+  formatAbsoluteDateDisplay,
+  formatRelativeDateDisplay,
+} from '@/utils/relative-date-display';
 
 export function isImageFile(entry: DirEntry): boolean {
   if (entry.is_dir) return false;
@@ -60,16 +63,25 @@ export function formatBytes(bytes: number): string {
 }
 
 export function formatDate(timestamp: number): string {
-  if (!timestamp) return '-';
-
   const userSettingsStore = useUserSettingsStore();
   const locale = i18n.global.locale.value as string;
 
-  return formatDateTimeDisplay(
-    new Date(timestamp),
+  return formatAbsoluteDateDisplay(
+    timestamp,
     userSettingsStore.userSettings.dateTime,
     locale,
   );
+}
+
+export function formatFileBrowserListModifiedDate(timestamp: number, referenceNowMs: number): string {
+  const userSettingsStore = useUserSettingsStore();
+  return formatRelativeDateDisplay({
+    timestamp,
+    referenceNowMs,
+    dateTimeOptions: userSettingsStore.userSettings.dateTime,
+    appLocale: i18n.global.locale.value as string,
+    translate: i18n.global.t,
+  });
 }
 
 export interface RelativeTimeTranslations {
@@ -95,8 +107,8 @@ export function formatRelativeTime(timestamp: number, translations: RelativeTime
   const userSettingsStore = useUserSettingsStore();
   const locale = i18n.global.locale.value as string;
 
-  return formatDateTimeDisplay(
-    new Date(timestamp),
+  return formatAbsoluteDateDisplay(
+    timestamp,
     userSettingsStore.userSettings.dateTime,
     locale,
     false,

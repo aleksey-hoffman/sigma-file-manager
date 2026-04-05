@@ -3,7 +3,12 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 import { describe, expect, it } from 'vitest';
-import { formatDateTimeDisplay } from '@/utils/date-time';
+import {
+  formatDateTimeDisplay,
+  formatTimeOnly,
+  isPreviousLocalCalendarDay,
+  isSameLocalCalendarDay,
+} from '@/utils/date-time';
 import type { DateTime } from '@/types/user-settings';
 
 function createDateTimeOptions(overrides: Partial<DateTime> = {}): DateTime {
@@ -15,6 +20,7 @@ function createDateTimeOptions(overrides: Partial<DateTime> = {}): DateTime {
     },
     autoDetectRegionalFormat: false,
     hour12: false,
+    showRelativeDates: true,
     properties: {
       showSeconds: false,
       showMilliseconds: false,
@@ -224,5 +230,46 @@ describe('formatDateTimeDisplay', () => {
       expect(result).toMatch(/2026/);
       expect(result).toMatch(/25/);
     });
+  });
+});
+
+describe('isSameLocalCalendarDay', () => {
+  it('returns true for the same local calendar day', () => {
+    const morning = new Date(2026, 3, 5, 8, 0, 0);
+    const evening = new Date(2026, 3, 5, 22, 30, 0);
+    expect(isSameLocalCalendarDay(morning, evening)).toBe(true);
+  });
+
+  it('returns false across local midnights', () => {
+    const late = new Date(2026, 3, 5, 23, 59, 0);
+    const early = new Date(2026, 3, 6, 0, 1, 0);
+    expect(isSameLocalCalendarDay(late, early)).toBe(false);
+  });
+});
+
+describe('isPreviousLocalCalendarDay', () => {
+  it('returns true when candidate is the local calendar day before reference', () => {
+    const reference = new Date(2026, 3, 6, 14, 0, 0);
+    const candidate = new Date(2026, 3, 5, 23, 30, 0);
+    expect(isPreviousLocalCalendarDay(candidate, reference)).toBe(true);
+  });
+
+  it('returns false for the same day or two days back', () => {
+    const reference = new Date(2026, 3, 6, 8, 0, 0);
+    expect(isPreviousLocalCalendarDay(new Date(2026, 3, 6, 1, 0, 0), reference)).toBe(false);
+    expect(isPreviousLocalCalendarDay(new Date(2026, 3, 4, 12, 0, 0), reference)).toBe(false);
+  });
+});
+
+describe('formatTimeOnly', () => {
+  it('formats hour and minute using 24-hour preference', () => {
+    const result = formatTimeOnly(
+      new Date(2026, 2, 26, 17, 5, 0),
+      createDateTimeOptions({ hour12: false }),
+      'en',
+    );
+
+    expect(result).toMatch(/17/);
+    expect(result).toMatch(/05|5/);
   });
 });

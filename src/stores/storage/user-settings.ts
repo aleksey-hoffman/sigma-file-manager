@@ -58,6 +58,7 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
       },
       autoDetectRegionalFormat: true,
       hour12: false,
+      showRelativeDates: true,
       properties: {
         showSeconds: false,
         showMilliseconds: false,

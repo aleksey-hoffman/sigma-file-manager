@@ -11,6 +11,7 @@
   },
   "relativeTime": {
     "justNow": "Vừa xong",
+    "secondsAgo": "0 giây trước | 1 giây trước | {n} giây trước | {n} giây trước",
     "minutesAgo": "0 phút trước | 1 phút trước | {n} phút trước | {n} phút trước",
     "hoursAgo": "0 giờ trước | 1 giờ trước | {n} giờ trước | {n} giờ trước",
     "daysAgo": "0 ngày trước | 1 ngày trước | {n} ngày trước | {n} ngày trước"
@@ -185,6 +186,7 @@
     },
     "relativeTime": {
       "justNow": "Vừa xong",
+      "secondsAgo": "0 giây trước | 1 giây trước | {n} giây trước | {n} giây trước",
       "minutesAgo": "0 phút trước | 1 phút trước | {n} phút trước | {n} phút trước",
       "hoursAgo": "0 giờ trước | 1 giờ trước | {n} giờ trước | {n} giờ trước",
       "daysAgo": "0 ngày trước | 1 ngày trước | {n} ngày trước | {n} ngày trước"
@@ -425,7 +427,8 @@
       "12HourFormat": "Định dạng 12 giờ",
       "displayedDateProperties": "Thuộc tính ngày được hiển thị",
       "showSeconds": "Hiển thị giây",
-      "showMilliseconds": "Hiển thị mili giây"
+      "showMilliseconds": "Hiển thị mili giây",
+      "showRelativeDates": "Hiển thị thời gian ở dạng tương đối cho các thời điểm gần đây (vd. 5 phút trước, Hôm nay lúc 15:15)"
     },
     "overlays": {
       "overlays": "Lớp phủ",
@@ -1671,6 +1674,10 @@
     "name": "Tên",
     "size": "Kích thước",
     "modified": "Đã sửa đổi",
+    "listModifiedDate": {
+      "todayAt": "Hôm nay {time}",
+      "yesterdayAt": "Hôm qua {time}"
+    },
     "columns": "Cột",
     "folders": "Thư mục",
     "images": "Hình ảnh",

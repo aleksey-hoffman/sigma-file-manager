@@ -11,6 +11,7 @@
   },
   "relativeTime": {
     "justNow": "たった今",
+    "secondsAgo": "0秒前 | 1秒前 | {n}秒前 | {n}秒前",
     "minutesAgo": "0分前 | 1分前 | {n}分前 | {n}分前",
     "hoursAgo": "0時間前 | 1時間前 | {n}時間前 | {n}時間前",
     "daysAgo": "0日前 | 1日前 | {n}日前 | {n}日前"
@@ -185,6 +186,7 @@
     },
     "relativeTime": {
       "justNow": "たった今",
+      "secondsAgo": "0 秒前 | 1 秒前 | {n} 秒前 | {n} 秒前",
       "minutesAgo": "0 分前 | 1 分前 | {n} 分前 | {n} 分前",
       "hoursAgo": "0 時間前 | 1 時間前 | {n} 時間前 | {n} 時間前",
       "daysAgo": "0 日前 | 1 日前 | {n} 日前 | {n} 日前"
@@ -425,7 +427,8 @@
       "12HourFormat": "12時間形式",
       "displayedDateProperties": "表示された日付のプロパティ",
       "showSeconds": "秒を表示",
-      "showMilliseconds": "ミリ秒を表示"
+      "showMilliseconds": "ミリ秒を表示",
+      "showRelativeDates": "直近の時刻を相対形式で表示する（例: 5分前、今日 15:15）"
     },
     "overlays": {
       "overlays": "オーバーレイ",
@@ -1671,6 +1674,10 @@
     "name": "名前",
     "size": "サイズ",
     "modified": "更新日時",
+    "listModifiedDate": {
+      "todayAt": "今日 {time}",
+      "yesterdayAt": "昨日 {time}"
+    },
     "columns": "列",
     "folders": "フォルダー",
     "images": "画像",

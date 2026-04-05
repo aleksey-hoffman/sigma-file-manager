@@ -11,6 +11,7 @@
   },
   "relativeTime": {
     "justNow": "Just now",
+    "secondsAgo": "0 sec ago | 1 sec ago | {n} sec ago | {n} sec ago",
     "minutesAgo": "0 min ago | 1 min ago | {n} min ago | {n} min ago",
     "hoursAgo": "0 hours ago | 1 hour ago | {n} hours ago | {n} hours ago",
     "daysAgo": "0 days ago | 1 day ago | {n} days ago | {n} days ago"
@@ -200,6 +201,7 @@
     },
     "relativeTime": {
       "justNow": "Just now",
+      "secondsAgo": "0 sec ago | 1 sec ago | {n} sec ago | {n} sec ago",
       "minutesAgo": "0 min ago | 1 min ago | {n} min ago | {n} min ago",
       "hoursAgo": "0 hours ago | 1 hour ago | {n} hours ago | {n} hours ago",
       "daysAgo": "0 days ago | 1 day ago | {n} days ago | {n} days ago"
@@ -440,7 +442,8 @@
       "12HourFormat": "12-hour format",
       "displayedDateProperties": "Displayed date properties",
       "showSeconds": "Show seconds",
-      "showMilliseconds": "Show milliseconds"
+      "showMilliseconds": "Show milliseconds",
+      "showRelativeDates": "Display time in relative format for recent times (e.g. 5 min ago, Today at 3:15 PM)"
     },
     "overlays": {
       "overlays": "Overlays",
@@ -1687,6 +1690,10 @@
     "name": "Name",
     "size": "Size",
     "modified": "Modified",
+    "listModifiedDate": {
+      "todayAt": "Today at {time}",
+      "yesterdayAt": "Yesterday, {time}"
+    },
     "columns": "Columns",
     "folders": "Folders",
     "images": "Images",
