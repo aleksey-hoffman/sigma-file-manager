@@ -114,17 +114,25 @@ describe('launch-directories', () => {
     ]);
   });
 
-  it('falls back to cwd when there are no path arguments', () => {
+  it('falls back to cwd for absorbed shell launches without path arguments', () => {
     expect(getLaunchDirectoryCandidates(createLaunchContext({
       cwd: 'C:/Users/aleks/Documents',
+      hadAbsorbedShellPaths: true,
     }))).toEqual([
       'C:/Users/aleks/Documents',
     ]);
   });
 
+  it('does not fall back to cwd during regular startup without absorbed shell paths', () => {
+    expect(getLaunchDirectoryCandidates(createLaunchContext({
+      cwd: 'C:/Users/aleks/Documents',
+    }))).toEqual([]);
+  });
+
   it('normalizes cwd fallback paths before returning them', () => {
     expect(getLaunchDirectoryCandidates(createLaunchContext({
       cwd: 'C:\\Users\\aleks\\Documents',
+      hadAbsorbedShellPaths: true,
     }))).toEqual([
       'C:/Users/aleks/Documents',
     ]);
@@ -133,6 +141,7 @@ describe('launch-directories', () => {
   it('does not fall back to cwd when cwd matches the executable directory', () => {
     expect(getLaunchDirectoryCandidates(createLaunchContext({
       cwd: 'C:/Apps',
+      hadAbsorbedShellPaths: true,
     }))).toEqual([]);
   });
 
@@ -140,6 +149,7 @@ describe('launch-directories', () => {
     expect(getLaunchDirectoryCandidates(createLaunchContext({
       cwd: 'C:/Windows/System32',
       executableDir: 'C:/Program Files/Sigma File Manager',
+      hadAbsorbedShellPaths: true,
     }))).toEqual([]);
   });
 

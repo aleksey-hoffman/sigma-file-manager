@@ -64,7 +64,7 @@ function shouldIgnoreCwdFallback(path: string): boolean {
 }
 
 function shouldUseCwdFallback(context: LaunchContext, candidatePaths: string[]): boolean {
-  if (candidatePaths.length > 0 || !context.cwd) {
+  if (candidatePaths.length > 0 || !context.cwd || !context.hadAbsorbedShellPaths) {
     return false;
   }
 
