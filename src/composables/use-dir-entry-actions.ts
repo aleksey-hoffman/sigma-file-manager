@@ -38,22 +38,59 @@ export function useDirEntryActions() {
 
   const conflictDialogState = ref({
     isOpen: false,
+    isCheckingConflicts: false,
     conflicts: [] as ConflictItem[],
     operationType: '' as 'copy' | 'move',
-    pendingResolve: null as ((resolution: ConflictResolutionPayload | null) => void) | null,
+    pendingResolve: null as
+      | ((value: ConflictResolutionPayload | null | undefined) => void)
+      | null,
   });
 
   function showConflictDialog(
-    conflicts: ConflictItem[],
     operationType: 'copy' | 'move',
-  ): Promise<ConflictResolutionPayload | null> {
+    loadConflicts: () => Promise<ConflictItem[]>,
+  ): Promise<ConflictResolutionPayload | null | undefined> {
     return new Promise((resolve) => {
       conflictDialogState.value = {
         isOpen: true,
-        conflicts,
+        isCheckingConflicts: true,
+        conflicts: [],
         operationType,
         pendingResolve: resolve,
       };
+
+      void (async () => {
+        try {
+          const conflicts = await loadConflicts();
+
+          if (conflicts.length === 0) {
+            if (conflictDialogState.value.pendingResolve) {
+              conflictDialogState.value.pendingResolve(undefined);
+              conflictDialogState.value.pendingResolve = null;
+            }
+
+            conflictDialogState.value.isOpen = false;
+            conflictDialogState.value.isCheckingConflicts = false;
+            conflictDialogState.value.conflicts = [];
+            return;
+          }
+
+          conflictDialogState.value.conflicts = conflicts;
+          conflictDialogState.value.isCheckingConflicts = false;
+        }
+        catch {
+          toast.error(t('notifications.conflictCheckFailed'));
+
+          if (conflictDialogState.value.pendingResolve) {
+            conflictDialogState.value.pendingResolve(null);
+            conflictDialogState.value.pendingResolve = null;
+          }
+
+          conflictDialogState.value.isOpen = false;
+          conflictDialogState.value.isCheckingConflicts = false;
+          conflictDialogState.value.conflicts = [];
+        }
+      })();
     });
   }
 
@@ -64,6 +101,7 @@ export function useDirEntryActions() {
     }
 
     conflictDialogState.value.isOpen = false;
+    conflictDialogState.value.isCheckingConflicts = false;
   }
 
   function handleConflictCancel() {
@@ -73,6 +111,7 @@ export function useDirEntryActions() {
     }
 
     conflictDialogState.value.isOpen = false;
+    conflictDialogState.value.isCheckingConflicts = false;
   }
 
   async function openEntriesInNewTabs(entries: DirEntry[]) {
@@ -112,27 +151,16 @@ export function useDirEntryActions() {
     const isCopy = clipboardStore.isCopyOperation;
     const operationType = isCopy ? 'copy' : 'move';
 
-    let conflicts: ConflictItem[];
+    const resolutionPayload = await showConflictDialog(operationType, () =>
+      clipboardStore.checkConflicts(destinationPath),
+    );
 
-    try {
-      conflicts = await clipboardStore.checkConflicts(destinationPath);
-    }
-    catch {
-      toast.error(t('notifications.conflictCheckFailed'));
+    if (resolutionPayload === null) {
       return false;
     }
 
-    let conflictPayload: ConflictResolutionPayload | undefined;
-
-    if (conflicts.length > 0) {
-      const resolutionPayload = await showConflictDialog(conflicts, operationType);
-
-      if (resolutionPayload === null) {
-        return false;
-      }
-
-      conflictPayload = resolutionPayload;
-    }
+    const conflictPayload
+      = resolutionPayload === undefined ? undefined : resolutionPayload;
 
     const sourcesForSizes = clipboardStore.clipboardItems.map(item => ({
       path: item.path,

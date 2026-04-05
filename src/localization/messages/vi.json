@@ -1646,7 +1646,9 @@
     "continue": "Tiếp tục",
     "typeMismatch": "Thư mục và tệp khác nhau tại đường dẫn này",
     "actionForItem": "Thao tác cho xung đột này",
-    "replaceOverview": "{replaced} trong {total} mục sẽ được thay thế tại đích"
+    "replaceOverview": "{replaced} trong {total} mục sẽ được thay thế tại đích",
+    "checkingConflicts": "Đang kiểm tra xung đột…",
+    "skipIdenticalFiles": "Bỏ qua {n} tệp có cùng kích thước và ngày | Bỏ qua {n} tệp có cùng kích thước và ngày"
   },
   "command": "Lệnh",
   "keybinding": "Phím tắt",

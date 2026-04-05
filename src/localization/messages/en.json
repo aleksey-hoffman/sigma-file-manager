@@ -1666,7 +1666,9 @@
     "continue": "Continue",
     "typeMismatch": "Folder and file differ at this path",
     "actionForItem": "Action for this conflict",
-    "replaceOverview": "{replaced} of {total} items will be replaced at the destination"
+    "replaceOverview": "{replaced} of {total} items will be replaced at the destination",
+    "checkingConflicts": "Checking for conflicts…",
+    "skipIdenticalFiles": "Skip {n} file with the same size and date | Skip {n} files with the same size and date"
   },
   "command": "Command",
   "keybinding": "Keybinding",

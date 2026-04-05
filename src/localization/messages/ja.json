@@ -1646,7 +1646,9 @@
     "continue": "続行",
     "typeMismatch": "このパスでフォルダとファイルの種類が一致しません",
     "actionForItem": "この競合の操作",
-    "replaceOverview": "{total} 件中 {replaced} 件がコピー先で置き換えられます"
+    "replaceOverview": "{total} 件中 {replaced} 件がコピー先で置き換えられます",
+    "checkingConflicts": "競合を確認しています…",
+    "skipIdenticalFiles": "サイズと更新日時が同じ {n} 件のファイルをスキップ | サイズと更新日時が同じ {n} 件のファイルをスキップ"
   },
   "command": "コマンド",
   "keybinding": "キーバインド",

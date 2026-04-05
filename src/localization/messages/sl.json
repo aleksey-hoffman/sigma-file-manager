@@ -1666,7 +1666,9 @@
     "continue": "Nadaljuj",
     "typeMismatch": "Mapa in datoteka se na tej poti razlikujeta",
     "actionForItem": "Dejanje za ta spor",
-    "replaceOverview": "{replaced} od {total} predmetov bo zamenjanih na cilju"
+    "replaceOverview": "{replaced} od {total} predmetov bo zamenjanih na cilju",
+    "checkingConflicts": "Preverjanje sporov …",
+    "skipIdenticalFiles": "Preskoči {n} datoteko z enako velikostjo in datumom | Preskoči {n} datoteki z enako velikostjo in datumom | Preskoči {n} datoteke z enako velikostjo in datumom | Preskoči {n} datotek z enako velikostjo in datumom"
   },
   "command": "Ukaz",
   "keybinding": "Tipkovna bližnjica",

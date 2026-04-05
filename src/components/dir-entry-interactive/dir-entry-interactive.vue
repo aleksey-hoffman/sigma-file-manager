@@ -206,6 +206,7 @@ function handleNewItemCancel() {
     v-model:open="conflictDialogState.isOpen"
     :conflicts="conflictDialogState.conflicts"
     :operation-type="conflictDialogState.operationType || 'copy'"
+    :is-checking-conflicts="conflictDialogState.isCheckingConflicts"
     @resolve="handleConflictResolution"
     @cancel="handleConflictCancel"
   />

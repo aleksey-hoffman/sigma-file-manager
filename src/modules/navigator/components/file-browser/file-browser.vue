@@ -198,6 +198,7 @@ defineExpose({
       v-model:open="fb.conflictDialogState.value.isOpen"
       :conflicts="fb.conflictDialogState.value.conflicts"
       :operation-type="fb.conflictDialogState.value.operationType || 'copy'"
+      :is-checking-conflicts="fb.conflictDialogState.value.isCheckingConflicts"
       @resolve="fb.handleConflictResolution"
       @cancel="fb.handleConflictCancel"
     />

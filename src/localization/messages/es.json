@@ -1646,7 +1646,9 @@
     "continue": "Continuar",
     "typeMismatch": "La carpeta y el archivo difieren en esta ruta",
     "actionForItem": "Acción para este conflicto",
-    "replaceOverview": "{replaced} de {total} elementos se reemplazarán en el destino"
+    "replaceOverview": "{replaced} de {total} elementos se reemplazarán en el destino",
+    "checkingConflicts": "Comprobando conflictos…",
+    "skipIdenticalFiles": "Omitir {n} archivo con el mismo tamaño y fecha | Omitir {n} archivos con el mismo tamaño y fecha"
   },
   "command": "Comando",
   "keybinding": "Combinación de teclas",

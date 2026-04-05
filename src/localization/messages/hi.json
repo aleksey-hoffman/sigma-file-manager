@@ -1666,7 +1666,9 @@
     "continue": "जारी रखें",
     "typeMismatch": "इस पथ पर फ़ोल्डर और फ़ाइल मेल नहीं खाते",
     "actionForItem": "इस संघर्ष के लिए कार्रवाई",
-    "replaceOverview": "{total} में से {replaced} आइटम गंतव्य पर बदल दिए जाएंगे"
+    "replaceOverview": "{total} में से {replaced} आइटम गंतव्य पर बदल दिए जाएंगे",
+    "checkingConflicts": "संघर्षों की जाँच हो रही है…",
+    "skipIdenticalFiles": "समान आकार और दिनांक वाली {n} फ़ाइल छोड़ें | समान आकार और दिनांक वाली {n} फ़ाइलें छोड़ें"
   },
   "command": "आज्ञा",
   "keybinding": "कीबाइंडिंग",

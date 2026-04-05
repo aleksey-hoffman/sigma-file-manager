@@ -1646,7 +1646,9 @@
     "continue": "继续",
     "typeMismatch": "此路径上文件夹与文件类型不一致",
     "actionForItem": "此冲突的操作",
-    "replaceOverview": "{total} 项中的 {replaced} 项将在目标位置被替换"
+    "replaceOverview": "{total} 项中的 {replaced} 项将在目标位置被替换",
+    "checkingConflicts": "正在检查冲突…",
+    "skipIdenticalFiles": "跳过 {n} 个大小和日期相同的文件 | 跳过 {n} 个大小和日期相同的文件"
   },
   "command": "命令",
   "keybinding": "键盘绑定",

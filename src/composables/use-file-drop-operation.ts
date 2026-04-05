@@ -20,27 +20,65 @@ export function useFileDropOperation() {
 
   const conflictDialogState = ref<{
     isOpen: boolean;
+    isCheckingConflicts: boolean;
     conflicts: ConflictItem[];
     operationType: 'copy' | 'move';
-    pendingResolve: ((value: ConflictResolutionPayload | null) => void) | null;
+    pendingResolve:
+      | ((value: ConflictResolutionPayload | null | undefined) => void)
+      | null;
   }>({
     isOpen: false,
+    isCheckingConflicts: false,
     conflicts: [],
     operationType: 'copy',
     pendingResolve: null,
   });
 
   function showConflictDialog(
-    conflicts: ConflictItem[],
     operationType: 'copy' | 'move',
-  ): Promise<ConflictResolutionPayload | null> {
+    loadConflicts: () => Promise<ConflictItem[]>,
+  ): Promise<ConflictResolutionPayload | null | undefined> {
     return new Promise((resolve) => {
       conflictDialogState.value = {
         isOpen: true,
-        conflicts,
+        isCheckingConflicts: true,
+        conflicts: [],
         operationType,
         pendingResolve: resolve,
       };
+
+      void (async () => {
+        try {
+          const conflicts = await loadConflicts();
+
+          if (conflicts.length === 0) {
+            if (conflictDialogState.value.pendingResolve) {
+              conflictDialogState.value.pendingResolve(undefined);
+              conflictDialogState.value.pendingResolve = null;
+            }
+
+            conflictDialogState.value.isOpen = false;
+            conflictDialogState.value.isCheckingConflicts = false;
+            conflictDialogState.value.conflicts = [];
+            return;
+          }
+
+          conflictDialogState.value.conflicts = conflicts;
+          conflictDialogState.value.isCheckingConflicts = false;
+        }
+        catch {
+          toast.error(t('notifications.conflictCheckFailed'));
+
+          if (conflictDialogState.value.pendingResolve) {
+            conflictDialogState.value.pendingResolve(null);
+            conflictDialogState.value.pendingResolve = null;
+          }
+
+          conflictDialogState.value.isOpen = false;
+          conflictDialogState.value.isCheckingConflicts = false;
+          conflictDialogState.value.conflicts = [];
+        }
+      })();
     });
   }
 
@@ -51,6 +89,7 @@ export function useFileDropOperation() {
     }
 
     conflictDialogState.value.isOpen = false;
+    conflictDialogState.value.isCheckingConflicts = false;
   }
 
   function handleConflictCancel() {
@@ -60,6 +99,7 @@ export function useFileDropOperation() {
     }
 
     conflictDialogState.value.isOpen = false;
+    conflictDialogState.value.isCheckingConflicts = false;
   }
 
   async function performDrop(
@@ -73,30 +113,19 @@ export function useFileDropOperation() {
 
     const isCopy = operation === 'copy';
 
-    let conflicts: ConflictItem[];
-
-    try {
-      conflicts = await invoke<ConflictItem[]>('check_conflicts', {
+    const resolutionPayload = await showConflictDialog(operation, () =>
+      invoke<ConflictItem[]>('check_conflicts', {
         sourcePaths,
         destinationPath: targetPath,
-      });
-    }
-    catch {
-      toast.error(t('notifications.conflictCheckFailed'));
+      }),
+    );
+
+    if (resolutionPayload === null) {
       return;
     }
 
-    let conflictPayload: ConflictResolutionPayload | undefined;
-
-    if (conflicts.length > 0) {
-      const resolutionPayload = await showConflictDialog(conflicts, operation);
-
-      if (resolutionPayload === null) {
-        return;
-      }
-
-      conflictPayload = resolutionPayload;
-    }
+    const conflictPayload
+      = resolutionPayload === undefined ? undefined : resolutionPayload;
 
     const displayPath = targetPath.split(/[/\\]/).pop() ?? targetPath;
 

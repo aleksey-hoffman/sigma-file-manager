@@ -1658,7 +1658,9 @@
     "continue": "Continuar",
     "typeMismatch": "Pasta e ficheiro diferem neste caminho",
     "actionForItem": "Ação para este conflito",
-    "replaceOverview": "{replaced} de {total} itens serão substituídos no destino"
+    "replaceOverview": "{replaced} de {total} itens serão substituídos no destino",
+    "checkingConflicts": "A verificar conflitos…",
+    "skipIdenticalFiles": "Ignorar {n} ficheiro com o mesmo tamanho e data | Ignorar {n} ficheiros com o mesmo tamanho e data"
   },
   "command": "Comando",
   "keybinding": "Combinação de teclas",

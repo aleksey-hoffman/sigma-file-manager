@@ -11,6 +11,7 @@ use std::fs;
 use std::path::Path;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
+use std::time::{SystemTime, UNIX_EPOCH};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct FileOperationResult {
@@ -27,9 +28,11 @@ pub struct ConflictItem {
     pub source_name: String,
     pub source_is_dir: bool,
     pub source_size: Option<u64>,
+    pub source_modified_ms: Option<u64>,
     pub destination_path: String,
     pub destination_is_dir: bool,
     pub destination_size: Option<u64>,
+    pub destination_modified_ms: Option<u64>,
     pub relative_path: String,
 }
 
@@ -508,16 +511,30 @@ fn join_relative(prefix: &str, name: &str) -> String {
     }
 }
 
+fn system_time_to_unix_ms(time: SystemTime) -> Option<u64> {
+    time.duration_since(UNIX_EPOCH)
+        .ok()
+        .map(|duration| duration.as_millis() as u64)
+}
+
 fn push_file_conflict(
     source_path: &Path,
     dest_path: &Path,
     relative_path: &str,
     out: &mut Vec<ConflictItem>,
 ) {
-    let source_size = fs::metadata(source_path)
-        .ok()
-        .map(|metadata| metadata.len());
-    let destination_size = fs::metadata(dest_path).ok().map(|metadata| metadata.len());
+    let source_meta = fs::metadata(source_path).ok();
+    let source_size = source_meta.as_ref().map(|metadata| metadata.len());
+    let source_modified_ms = source_meta
+        .as_ref()
+        .and_then(|metadata| metadata.modified().ok())
+        .and_then(system_time_to_unix_ms);
+    let dest_meta = fs::metadata(dest_path).ok();
+    let destination_size = dest_meta.as_ref().map(|metadata| metadata.len());
+    let destination_modified_ms = dest_meta
+        .as_ref()
+        .and_then(|metadata| metadata.modified().ok())
+        .and_then(system_time_to_unix_ms);
     out.push(ConflictItem {
         source_path: source_path.to_string_lossy().to_string(),
         source_name: source_path
@@ -526,9 +543,11 @@ fn push_file_conflict(
             .unwrap_or_default(),
         source_is_dir: false,
         source_size,
+        source_modified_ms,
         destination_path: dest_path.to_string_lossy().to_string(),
         destination_is_dir: false,
         destination_size,
+        destination_modified_ms,
         relative_path: relative_path.to_string(),
     });
 }
@@ -559,9 +578,11 @@ fn push_type_mismatch_conflict(
             .unwrap_or_default(),
         source_is_dir: source_path.is_dir(),
         source_size,
+        source_modified_ms: None,
         destination_path: dest_path.to_string_lossy().to_string(),
         destination_is_dir: dest_path.is_dir(),
         destination_size,
+        destination_modified_ms: None,
         relative_path: relative_path.to_string(),
     });
 }
@@ -603,8 +624,7 @@ fn collect_merge_conflicts(
     }
 }
 
-#[tauri::command]
-pub fn check_conflicts(source_paths: Vec<String>, destination_path: String) -> Vec<ConflictItem> {
+fn check_conflicts_sync(source_paths: Vec<String>, destination_path: String) -> Vec<ConflictItem> {
     let destination = Path::new(&destination_path);
     let mut conflicts = Vec::new();
 
@@ -657,6 +677,16 @@ pub fn check_conflicts(source_paths: Vec<String>, destination_path: String) -> V
     }
 
     conflicts
+}
+
+#[tauri::command]
+pub async fn check_conflicts(
+    source_paths: Vec<String>,
+    destination_path: String,
+) -> Result<Vec<ConflictItem>, String> {
+    tokio::task::spawn_blocking(move || check_conflicts_sync(source_paths, destination_path))
+        .await
+        .map_err(|_| "Conflict check task failed".to_string())
 }
 
 fn remove_dir_or_file(path: &Path) -> Result<(), String> {
@@ -1982,7 +2012,7 @@ mod tests {
         File::create(&a).unwrap().write_all(b"x").unwrap();
         File::create(&b).unwrap().write_all(b"y").unwrap();
 
-        let conflicts = check_conflicts(
+        let conflicts = check_conflicts_sync(
             vec![src_folder.to_string_lossy().to_string()],
             dest.to_string_lossy().to_string(),
         );

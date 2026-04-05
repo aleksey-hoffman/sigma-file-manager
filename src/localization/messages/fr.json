@@ -1646,7 +1646,9 @@
     "continue": "Continuer",
     "typeMismatch": "Le dossier et le fichier diffèrent à ce chemin",
     "actionForItem": "Action pour ce conflit",
-    "replaceOverview": "{replaced} sur {total} éléments seront remplacés dans la destination"
+    "replaceOverview": "{replaced} sur {total} éléments seront remplacés dans la destination",
+    "checkingConflicts": "Vérification des conflits…",
+    "skipIdenticalFiles": "Ignorer {n} fichier de même taille et de même date | Ignorer {n} fichiers de même taille et de même date"
   },
   "command": "Commande",
   "keybinding": "Raccourci clavier",

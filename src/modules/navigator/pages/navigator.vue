@@ -70,6 +70,7 @@ function truncateTextCopyPreview(text: string): string {
   if (text.length <= TEXT_COPY_PREVIEW_MAX_LENGTH) {
     return text;
   }
+
   return `${text.slice(0, TEXT_COPY_PREVIEW_MAX_LENGTH)}…`;
 }
 
@@ -331,6 +332,7 @@ function handleFilterShortcut() {
 
 function handleCopyShortcut() {
   const selectedText = getSelectedTextForCopy();
+
   if (selectedText !== null) {
     void navigator.clipboard.writeText(selectedText).then(() => {
       toast.custom(markRaw(ToastStatic), {

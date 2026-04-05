@@ -410,6 +410,7 @@ async function handleUpdateTagColor(tagId: string, color: string) {
       v-model:open="conflictDialogState.isOpen"
       :conflicts="conflictDialogState.conflicts"
       :operation-type="conflictDialogState.operationType"
+      :is-checking-conflicts="conflictDialogState.isCheckingConflicts"
       @resolve="handleConflictResolution"
       @cancel="handleConflictCancel"
     />

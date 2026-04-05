@@ -40,9 +40,11 @@ export interface ConflictItem {
   source_name: string;
   source_is_dir: boolean;
   source_size: number | null;
+  source_modified_ms: number | null;
   destination_path: string;
   destination_is_dir: boolean;
   destination_size: number | null;
+  destination_modified_ms: number | null;
   relative_path: string;
 }
 

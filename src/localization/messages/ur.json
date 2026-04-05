@@ -1666,7 +1666,9 @@
     "continue": "جاری رکھیں",
     "typeMismatch": "اس راستے پر فولڈر اور فائل مختلف ہیں",
     "actionForItem": "اس تنازع کے لیے عمل",
-    "replaceOverview": "{total} میں سے {replaced} اشیاء منزل پر تبدیل کی جائیں گی"
+    "replaceOverview": "{total} میں سے {replaced} اشیاء منزل پر تبدیل کی جائیں گی",
+    "checkingConflicts": "تصادمات کی جانچ ہو رہی ہے…",
+    "skipIdenticalFiles": "ایک ہی سائز اور تاریخ والی {n} فائل چھوڑیں | ایک ہی سائز اور تاریخ والی {n} فائلیں چھوڑیں"
   },
   "command": "کمانڈ",
   "keybinding": "کی بائنڈنگ",

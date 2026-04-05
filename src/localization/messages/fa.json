@@ -1645,7 +1645,9 @@
     "continue": "ادامه",
     "typeMismatch": "پوشه و پرونده در این مسیر متفاوت هستند",
     "actionForItem": "اقدام برای این تداخل",
-    "replaceOverview": "{replaced} مورد از {total} مورد در مقصد جایگزین می‌شوند"
+    "replaceOverview": "{replaced} مورد از {total} مورد در مقصد جایگزین می‌شوند",
+    "checkingConflicts": "در حال بررسی تداخل‌ها…",
+    "skipIdenticalFiles": "رد کردن {n} پرونده با اندازه و تاریخ یکسان | رد کردن {n} پرونده با اندازه و تاریخ یکسان"
   },
   "command": "فرمان",
   "keybinding": "کلید میانبر",

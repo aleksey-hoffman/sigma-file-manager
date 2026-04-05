@@ -1646,7 +1646,9 @@
     "continue": "Devam",
     "typeMismatch": "Bu yolda klasör ve dosya eşleşmiyor",
     "actionForItem": "Bu çakışma için eylem",
-    "replaceOverview": "{total} öğeden {replaced} tanesi hedefte değiştirilecek"
+    "replaceOverview": "{total} öğeden {replaced} tanesi hedefte değiştirilecek",
+    "checkingConflicts": "Çakışmalar denetleniyor…",
+    "skipIdenticalFiles": "Aynı boyut ve tarihe sahip {n} dosyayı atla | Aynı boyut ve tarihe sahip {n} dosyayı atla"
   },
   "command": "Komut",
   "keybinding": "Tuş bağlama",

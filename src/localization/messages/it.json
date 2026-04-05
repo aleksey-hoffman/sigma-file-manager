@@ -1646,7 +1646,9 @@
     "continue": "Continua",
     "typeMismatch": "Cartella e file diversi in questo percorso",
     "actionForItem": "Azione per questo conflitto",
-    "replaceOverview": "{replaced} di {total} elementi saranno sostituiti nella destinazione"
+    "replaceOverview": "{replaced} di {total} elementi saranno sostituiti nella destinazione",
+    "checkingConflicts": "Verifica conflitti in corso…",
+    "skipIdenticalFiles": "Salta {n} file con stessa dimensione e data | Salta {n} file con stessa dimensione e data"
   },
   "command": "Comando",
   "keybinding": "Combinazione tasti",

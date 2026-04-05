@@ -1646,7 +1646,9 @@
     "continue": "Weiter",
     "typeMismatch": "Ordner und Datei unterscheiden sich an diesem Pfad",
     "actionForItem": "Aktion für diesen Konflikt",
-    "replaceOverview": "{replaced} von {total} Elementen werden im Ziel ersetzt"
+    "replaceOverview": "{replaced} von {total} Elementen werden im Ziel ersetzt",
+    "checkingConflicts": "Konflikte werden geprüft…",
+    "skipIdenticalFiles": "Überspringe {n} Datei mit derselben Größe und demselben Datum | Überspringe {n} Dateien mit derselben Größe und demselben Datum"
   },
   "command": "Befehl",
   "keybinding": "Tastenkombination",

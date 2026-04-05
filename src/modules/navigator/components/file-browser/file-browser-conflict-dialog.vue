@@ -4,7 +4,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, ref, useId, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import {
   AlertTriangleIcon,
@@ -13,6 +13,7 @@ import {
   ArrowRightLeftIcon,
   SkipForwardIcon,
   CopyPlusIcon,
+  Loader2Icon,
 } from '@lucide/vue';
 import type { ConflictItem, ConflictResolution, ConflictResolutionPayload } from '@/stores/runtime/clipboard';
 import toReadableBytes from '@/utils/to-readable-bytes';
@@ -33,11 +34,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   conflicts: ConflictItem[];
   operationType: 'copy' | 'move';
-}>();
+  isCheckingConflicts?: boolean;
+}>(), {
+  isCheckingConflicts: false,
+});
 
 const emit = defineEmits<{
   resolve: [payload: ConflictResolutionPayload];
@@ -48,8 +53,52 @@ const isOpen = defineModel<boolean>('open', { required: true });
 
 const { t } = useI18n();
 const sizeSeparator = ' \u2192 ';
+const skipIdenticalSwitchId = useId();
 
-const conflictCount = computed(() => props.conflicts.length);
+const skipIdenticalFiles = ref(false);
+
+function isIdenticalFileConflict(conflict: ConflictItem): boolean {
+  if (conflict.source_is_dir !== conflict.destination_is_dir) {
+    return false;
+  }
+
+  if (conflict.source_is_dir) {
+    return false;
+  }
+
+  const sourceSize = conflict.source_size;
+  const destinationSize = conflict.destination_size;
+
+  if (sourceSize === null || destinationSize === null || sourceSize !== destinationSize) {
+    return false;
+  }
+
+  const sourceModifiedMs = conflict.source_modified_ms;
+  const destinationModifiedMs = conflict.destination_modified_ms;
+
+  if (
+    sourceModifiedMs === null
+    || destinationModifiedMs === null
+    || sourceModifiedMs !== destinationModifiedMs
+  ) {
+    return false;
+  }
+
+  return true;
+}
+
+const identicalCount = computed(() => props.conflicts.filter(isIdenticalFileConflict).length);
+
+const visibleConflicts = computed(() => {
+  if (!skipIdenticalFiles.value) {
+    return props.conflicts;
+  }
+
+  return props.conflicts.filter(conflict => !isIdenticalFileConflict(conflict));
+});
+
+const descriptionTotal = computed(() => props.conflicts.length);
+const conflictCount = computed(() => visibleConflicts.value.length);
 
 const defaultRowResolution = computed((): ConflictResolution => {
   return props.operationType === 'copy' ? 'auto-rename' : 'skip';
@@ -60,6 +109,7 @@ const rowResolutions = ref<Record<string, ConflictResolution>>({});
 watch(
   () => [props.conflicts, props.operationType] as const,
   () => {
+    skipIdenticalFiles.value = false;
     const next: Record<string, ConflictResolution> = {};
     const fallback = defaultRowResolution.value;
 
@@ -79,7 +129,7 @@ const replaceCount = computed(() => {
   const fallback = defaultRowResolution.value;
   let count = 0;
 
-  for (const conflict of props.conflicts) {
+  for (const conflict of visibleConflicts.value) {
     const resolution = rowResolutions.value[conflict.destination_path] ?? fallback;
 
     if (resolution === 'replace') {
@@ -116,11 +166,14 @@ function setRowResolution(destinationPath: string, value: unknown) {
 function applyAllTo(resolution: ConflictResolution) {
   const next: Record<string, ConflictResolution> = {};
 
-  for (const conflict of props.conflicts) {
+  for (const conflict of visibleConflicts.value) {
     next[conflict.destination_path] = resolution;
   }
 
-  rowResolutions.value = next;
+  rowResolutions.value = {
+    ...rowResolutions.value,
+    ...next,
+  };
 }
 
 function getConflictRowKey(conflict: ConflictItem) {
@@ -129,6 +182,13 @@ function getConflictRowKey(conflict: ConflictItem) {
 
 function handleConfirm() {
   const perPathResolutions = props.conflicts.map((conflict) => {
+    if (skipIdenticalFiles.value && isIdenticalFileConflict(conflict)) {
+      return {
+        destination_path: conflict.destination_path,
+        resolution: 'skip' as const,
+      };
+    }
+
     return {
       destination_path: conflict.destination_path,
       resolution: rowResolutions.value[conflict.destination_path] ?? defaultRowResolution.value,
@@ -179,50 +239,81 @@ const resolutionSelectOptions = computed(() => {
           <AlertTriangleIcon class="conflict-dialog__title-icon" />
           {{ t('conflictDialog.title') }}
         </DialogTitle>
-        <DialogDescription class="conflict-dialog__description">
-          {{ t('conflictDialog.description', conflictCount) }}
+        <DialogDescription
+          v-if="!isCheckingConflicts"
+          class="conflict-dialog__description"
+        >
+          {{ t('conflictDialog.description', descriptionTotal) }}
         </DialogDescription>
       </DialogHeader>
 
-      <div class="conflict-dialog__bulk">
-        <div class="conflict-dialog__bulk-label">
-          {{ t('conflictDialog.applyToAll') }}
+      <template v-if="!isCheckingConflicts">
+        <div
+          v-if="identicalCount > 0"
+          class="conflict-dialog__skip-identical"
+        >
+          <Switch
+            :id="skipIdenticalSwitchId"
+            v-model="skipIdenticalFiles"
+          />
+          <label
+            class="conflict-dialog__skip-identical-label"
+            :for="skipIdenticalSwitchId"
+          >
+            {{ t('conflictDialog.skipIdenticalFiles', identicalCount) }}
+          </label>
         </div>
-        <div class="conflict-dialog__bulk-actions">
-          <Button
-            variant="outline"
-            size="xs"
-            class="conflict-dialog__bulk-btn"
-            @click="applyAllTo('skip')"
-          >
-            <SkipForwardIcon class="conflict-dialog__btn-icon" />
-            {{ t('conflictDialog.skip') }}
-          </Button>
-          <Button
-            variant="outline"
-            size="xs"
-            class="conflict-dialog__bulk-btn"
-            @click="applyAllTo('auto-rename')"
-          >
-            <CopyPlusIcon class="conflict-dialog__btn-icon" />
-            {{ t('conflictDialog.keepBoth') }}
-          </Button>
-          <Button
-            variant="outline"
-            size="xs"
-            class="conflict-dialog__bulk-btn conflict-dialog__bulk-btn--replace"
-            @click="applyAllTo('replace')"
-          >
-            <ArrowRightLeftIcon class="conflict-dialog__btn-icon" />
-            {{ t('conflictDialog.replace') }}
-          </Button>
+
+        <div class="conflict-dialog__bulk">
+          <div class="conflict-dialog__bulk-label">
+            {{ t('conflictDialog.applyToAll') }}
+          </div>
+          <div class="conflict-dialog__bulk-actions">
+            <Button
+              variant="outline"
+              size="xs"
+              class="conflict-dialog__bulk-btn"
+              @click="applyAllTo('skip')"
+            >
+              <SkipForwardIcon class="conflict-dialog__btn-icon" />
+              {{ t('conflictDialog.skip') }}
+            </Button>
+            <Button
+              variant="outline"
+              size="xs"
+              class="conflict-dialog__bulk-btn"
+              @click="applyAllTo('auto-rename')"
+            >
+              <CopyPlusIcon class="conflict-dialog__btn-icon" />
+              {{ t('conflictDialog.keepBoth') }}
+            </Button>
+            <Button
+              variant="outline"
+              size="xs"
+              class="conflict-dialog__bulk-btn conflict-dialog__bulk-btn--replace"
+              @click="applyAllTo('replace')"
+            >
+              <ArrowRightLeftIcon class="conflict-dialog__btn-icon" />
+              {{ t('conflictDialog.replace') }}
+            </Button>
+          </div>
         </div>
-      </div>
+      </template>
 
       <ScrollArea class="conflict-dialog__items">
-        <div class="conflict-dialog__items-inner">
+        <div
+          v-if="isCheckingConflicts"
+          class="conflict-dialog__loading"
+        >
+          <Loader2Icon class="conflict-dialog__spinner" />
+          <span>{{ t('conflictDialog.checkingConflicts') }}</span>
+        </div>
+        <div
+          v-else
+          class="conflict-dialog__items-inner"
+        >
           <div
-            v-for="conflict in conflicts"
+            v-for="conflict in visibleConflicts"
             :key="getConflictRowKey(conflict)"
             class="conflict-dialog__row"
           >
@@ -284,7 +375,7 @@ const resolutionSelectOptions = computed(() => {
         </div>
       </ScrollArea>
       <p
-        v-if="conflictCount > 0"
+        v-if="!isCheckingConflicts && conflictCount > 0"
         class="conflict-dialog__overview"
       >
         {{ t('conflictDialog.replaceOverview', { replaced: replaceCount, total: conflictCount }) }}
@@ -299,6 +390,7 @@ const resolutionSelectOptions = computed(() => {
           </Button>
           <Button
             class="conflict-dialog__action-btn--primary"
+            :disabled="isCheckingConflicts"
             @click="handleConfirm"
           >
             {{ t('conflictDialog.continue') }}
@@ -340,6 +432,19 @@ const resolutionSelectOptions = computed(() => {
   line-height: 1.5;
 }
 
+.conflict-dialog__skip-identical {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.conflict-dialog__skip-identical-label {
+  color: hsl(var(--foreground));
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
 .conflict-dialog__overview {
   padding-top: 4px;
   margin: 0;
@@ -375,6 +480,32 @@ const resolutionSelectOptions = computed(() => {
 
 .conflict-dialog__items {
   max-height: 30vh;
+}
+
+.conflict-dialog__loading {
+  display: flex;
+  align-items: center;
+  padding: 24px 12px;
+  color: hsl(var(--muted-foreground));
+  font-size: 13px;
+  gap: 10px;
+}
+
+.conflict-dialog__spinner {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  animation: conflict-dialog-spin 1s linear infinite;
+}
+
+@keyframes conflict-dialog-spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .conflict-dialog__items-inner {
