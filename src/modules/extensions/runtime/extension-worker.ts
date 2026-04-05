@@ -6,6 +6,7 @@ import { createI18n } from 'vue-i18n';
 import { messages as appMessages } from '@/localization/data';
 import { pluralRules } from '@/localization/plural-rules';
 import { createRequestId } from '@/modules/extensions/runtime/worker-protocol';
+import { isExtensionInstallCancelledError } from '@/modules/extensions/utils/install-cancellation-error';
 import type {
   HostToWorkerMessage,
   WorkerRuntimeMessage,
@@ -798,6 +799,9 @@ function createBridge() {
       get isLinux() {
         return undefined;
       },
+    },
+    runtime: {
+      isExtensionInstallCancelledError: (error: unknown) => isExtensionInstallCancelledError(error),
     },
     path: {
       dirname(filePath: string): string {

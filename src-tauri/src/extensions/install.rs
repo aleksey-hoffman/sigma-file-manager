@@ -3,23 +3,22 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 use std::fs;
-use std::io::Write;
 use std::path::PathBuf;
 
 use super::fs_ops::{
     cleanup_trash_directories, copy_dir_recursive, next_managed_temp_dir, remove_dir_force,
     replace_extension_dir,
 };
-use super::http::download_url_bytes;
+use super::http::{build_http_client, stream_response_to_file_with_limit};
 use super::paths::{get_extension_dir, get_extensions_base_dir};
 use super::processes::terminate_all_extension_processes;
 use super::security::{
     acquire_extension_install_lock, authorize_extension_caller, validate_remote_url,
-    verify_integrity,
 };
+use super::state::get_extension_install_cancellation_flag;
 use super::types::{
     ExtensionOperationResult, InstalledExtensionInfo, LocalExtensionInstallResult,
-    MAX_EXTENSION_ARCHIVE_BYTES, EXTENSION_MANIFEST_FILE,
+    EXTENSION_MANIFEST_FILE, MAX_EXTENSION_ARCHIVE_BYTES,
 };
 
 pub async fn cancel_all_extension_commands(
@@ -44,6 +43,7 @@ pub async fn download_extension(
     download_url: String,
     version: String,
     integrity: Option<String>,
+    cancellation_id: Option<String>,
 ) -> Result<ExtensionOperationResult, String> {
     let _install_lock = acquire_extension_install_lock(&extension_id).await?;
     let validated_url = validate_remote_url(&download_url)?;
@@ -66,28 +66,45 @@ pub async fn download_extension(
     fs::create_dir_all(&staging_dir)
         .map_err(|error| format!("Failed to create staging directory: {}", error))?;
 
-    let bytes = download_url_bytes(
-        validated_url.as_str(),
-        MAX_EXTENSION_ARCHIVE_BYTES,
-        "download extension",
-        "extension response",
-    )
-    .await?;
-    verify_integrity(&bytes, integrity.as_deref())?;
+    let result = async {
+        let client = build_http_client()?;
+        let response = client
+            .get(validated_url)
+            .send()
+            .await
+            .map_err(|error| format!("Failed to download extension: {}", error))?;
 
-    let mut file = fs::File::create(&zip_path)
-        .map_err(|error| format!("Failed to create zip file: {}", error))?;
+        if !response.status().is_success() {
+            return Err(format!(
+                "Download failed with status: {}",
+                response.status()
+            ));
+        }
 
-    file.write_all(&bytes)
-        .map_err(|error| format!("Failed to write zip file: {}", error))?;
+        let cancel_flag = get_extension_install_cancellation_flag(cancellation_id.as_ref());
 
-    crate::archive::extract_zip_to_directory(&zip_path, &staging_dir)?;
+        stream_response_to_file_with_limit(
+            response,
+            &zip_path,
+            MAX_EXTENSION_ARCHIVE_BYTES,
+            "extension response",
+            integrity.as_deref(),
+            |_downloaded, _total| {},
+            cancel_flag,
+        )
+        .await?;
 
-    terminate_all_extension_processes(&extension_id);
-    replace_extension_dir(&staging_dir, &extension_dir)?;
+        crate::archive::extract_zip_to_directory(&zip_path, &staging_dir)?;
+
+        terminate_all_extension_processes(&extension_id);
+        replace_extension_dir(&staging_dir, &extension_dir)
+    }
+    .await;
 
     fs::remove_file(&zip_path).ok();
     remove_dir_force(&staging_dir).ok();
+
+    result?;
 
     Ok(ExtensionOperationResult {
         success: true,

@@ -1851,6 +1851,8 @@
     "latest": "latest",
     "install": "Install",
     "installing": "Installing...",
+    "cancelInstall": "Cancel",
+    "installFailed": "Installation failed",
     "showFolder": "Show folder",
     "installFromFolder": "Install from folder",
     "installLocalError": "Failed to install extension from folder",

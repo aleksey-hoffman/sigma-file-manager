@@ -147,9 +147,14 @@ export const useExtensionsStorageStore = defineStore('extensionsStorage', () => 
     options?: {
       isLocal?: boolean;
       localSourcePath?: string;
+      installPendingDependencies?: boolean;
     },
   ): Promise<void> {
     const existing = extensionsData.value.installedExtensions[extensionId];
+
+    const installPendingDependencies = options?.installPendingDependencies !== undefined
+      ? options.installPendingDependencies
+      : existing?.installPendingDependencies;
 
     extensionsData.value.installedExtensions[extensionId] = {
       version,
@@ -163,8 +168,22 @@ export const useExtensionsStorageStore = defineStore('extensionsStorage', () => 
       },
       isLocal: options?.isLocal,
       localSourcePath: options?.localSourcePath,
+      ...(installPendingDependencies !== undefined
+        ? { installPendingDependencies }
+        : {}),
     };
 
+    await saveStorageData();
+  }
+
+  async function completeExtensionInstall(extensionId: string): Promise<void> {
+    const extension = extensionsData.value.installedExtensions[extensionId];
+
+    if (!extension) {
+      throw new Error(`Extension not found: ${extensionId}`);
+    }
+
+    extension.installPendingDependencies = false;
     await saveStorageData();
   }
 
@@ -190,6 +209,7 @@ export const useExtensionsStorageStore = defineStore('extensionsStorage', () => 
       manifest,
       isLocal: undefined,
       localSourcePath: undefined,
+      installPendingDependencies: false,
     };
 
     await saveStorageData();
@@ -211,6 +231,7 @@ export const useExtensionsStorageStore = defineStore('extensionsStorage', () => 
       version,
       manifest,
       installedAt: Date.now(),
+      installPendingDependencies: false,
     };
 
     await saveStorageData();
@@ -558,6 +579,7 @@ export const useExtensionsStorageStore = defineStore('extensionsStorage', () => 
     loadStorageData,
     saveStorageData,
     addInstalledExtension,
+    completeExtensionInstall,
     removeInstalledExtension,
     updateInstalledExtension,
     refreshLocalExtension,

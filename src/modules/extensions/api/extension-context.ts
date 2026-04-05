@@ -17,9 +17,11 @@ export type ExtensionContext = {
   getExtensionStoragePath: () => Promise<string>;
   isPathWithinDirectory: (path: string, directory: string) => Promise<boolean>;
   isInExtensionDir: (path: string) => Promise<boolean>;
+  isInExtensionStorageDir: (path: string) => Promise<boolean>;
   getSharedBinariesDir: () => Promise<string>;
   isInSharedBinariesDir: (path: string) => Promise<boolean>;
   isInAllowedReadDir: (path: string) => Promise<boolean>;
+  isInAllowedWriteDir: (path: string) => Promise<boolean>;
   normalizeRelativePath: (relativePath: string) => string;
   resolvePrivatePath: (relativePath: string) => Promise<string>;
   resolveStoragePath: (relativePath: string) => Promise<string>;
@@ -79,6 +81,11 @@ export function createExtensionContext(
     return isPathWithinDirectory(path, extensionPath);
   }
 
+  async function isInExtensionStorageDir(path: string): Promise<boolean> {
+    const extensionStoragePath = await getExtensionStoragePath();
+    return isPathWithinDirectory(path, extensionStoragePath);
+  }
+
   let sharedBinariesDirPromise: Promise<string> | null = null;
 
   async function getSharedBinariesDir(): Promise<string> {
@@ -96,9 +103,17 @@ export function createExtensionContext(
 
   async function isInAllowedReadDir(path: string): Promise<boolean> {
     if (await isInExtensionDir(path)) return true;
+    if (await isInExtensionStorageDir(path)) return true;
     if (await isInSharedBinariesDir(path)) return true;
     const storageStore = useExtensionsStorageStore();
     return storageStore.hasScopedAccess(extensionId, path, 'read');
+  }
+
+  async function isInAllowedWriteDir(path: string): Promise<boolean> {
+    if (await isInExtensionDir(path)) return true;
+    if (await isInExtensionStorageDir(path)) return true;
+    const storageStore = useExtensionsStorageStore();
+    return storageStore.hasScopedAccess(extensionId, path, 'write');
   }
 
   function normalizeRelativePath(relativePath: string): string {
@@ -208,9 +223,11 @@ export function createExtensionContext(
     getExtensionStoragePath,
     isPathWithinDirectory,
     isInExtensionDir,
+    isInExtensionStorageDir,
     getSharedBinariesDir,
     isInSharedBinariesDir,
     isInAllowedReadDir,
+    isInAllowedWriteDir,
     normalizeRelativePath,
     resolvePrivatePath,
     resolveStoragePath,

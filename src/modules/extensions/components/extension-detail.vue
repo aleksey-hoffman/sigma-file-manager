@@ -23,6 +23,7 @@ import {
   GitBranchIcon,
   TriangleAlertIcon,
   TerminalIcon,
+  XIcon,
 } from '@lucide/vue';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
@@ -59,6 +60,7 @@ const emit = defineEmits<{
   uninstall: [];
   update: [version?: string];
   refresh: [];
+  cancel: [];
   toggle: [];
   toggleAutoUpdate: [];
 }>();
@@ -72,6 +74,7 @@ const readmeContent = ref<string | null>(null);
 const changelogContent = ref<string | null>(null);
 const isLoadingReadme = ref(false);
 const isLoadingChangelog = ref(false);
+const isCancelRequested = ref(false);
 
 const displayName = computed(() => {
   return props.extension.name || props.extension.manifest?.name || props.extension.id.split('.').pop() || props.extension.id;
@@ -215,6 +218,10 @@ const isCrossPlatform = computed(() => {
 
 const isPlatformCompatible = computed(() => {
   return props.extension.isPlatformCompatible;
+});
+
+const isShowingCancelButton = computed(() => {
+  return Boolean(props.isInstalling || props.isUpdating || props.isRefreshing);
 });
 
 function getPlatformDisplayName(platform: string): string {
@@ -361,6 +368,12 @@ function handleUpdate() {
   emit('update', hasSelectedVersionChange.value ? selectedVersion.value : undefined);
 }
 
+function handleCancel() {
+  if (isCancelRequested.value) return;
+  isCancelRequested.value = true;
+  emit('cancel');
+}
+
 async function openRepository() {
   if (repositoryUrl.value) {
     await openUrl(repositoryUrl.value);
@@ -384,6 +397,12 @@ watch(
     }
   },
 );
+
+watch(isShowingCancelButton, (isShowing) => {
+  if (!isShowing) {
+    isCancelRequested.value = false;
+  }
+});
 
 function handleMarkdownLinkClick(event: MouseEvent) {
   const anchor = (event.target as HTMLElement).closest('a');
@@ -626,6 +645,18 @@ onMounted(() => {
               />
               {{ isInstalling ? t('extensions.installing') : t('extensions.install') }}
             </Button>
+
+            <Button
+              v-if="isInstalling"
+              variant="outline"
+              size="sm"
+              class="extension-detail__controls-button"
+              :disabled="isCancelRequested"
+              @click="handleCancel"
+            >
+              <XIcon :size="16" />
+              {{ t('extensions.cancelInstall') }}
+            </Button>
           </template>
 
           <template v-else>
@@ -649,6 +680,18 @@ onMounted(() => {
             </Button>
 
             <Button
+              v-if="showUpdateButton && isUpdating"
+              variant="outline"
+              size="sm"
+              class="extension-detail__controls-button"
+              :disabled="isCancelRequested"
+              @click="handleCancel"
+            >
+              <XIcon :size="16" />
+              {{ t('extensions.cancelInstall') }}
+            </Button>
+
+            <Button
               v-if="isLocal"
               variant="outline"
               size="sm"
@@ -661,6 +704,18 @@ onMounted(() => {
                 :class="{ 'extension-detail__spinner': isRefreshing }"
               />
               {{ t('extensions.reinstall') }}
+            </Button>
+
+            <Button
+              v-if="isLocal && isRefreshing"
+              variant="outline"
+              size="sm"
+              class="extension-detail__controls-button"
+              :disabled="isCancelRequested"
+              @click="handleCancel"
+            >
+              <XIcon :size="16" />
+              {{ t('extensions.cancelInstall') }}
             </Button>
 
             <Button

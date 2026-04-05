@@ -9,6 +9,7 @@ use super::install;
 use super::misc;
 use super::paths;
 use super::processes;
+use super::state;
 use super::types::{
     ExtensionCommandResult, ExtensionOperationResult, FetchUrlResult, InstalledExtensionInfo,
     LocalExtensionInstallResult, PlatformInfo, ReadTextPreviewResult,
@@ -20,6 +21,7 @@ use serde::Deserialize;
 pub struct BinaryDownloadOptions {
     integrity: Option<String>,
     allow_missing_integrity: Option<bool>,
+    cancellation_id: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -28,6 +30,25 @@ pub struct SharedBinaryDownloadOptions {
     integrity: Option<String>,
     version: Option<String>,
     progress_event_id: Option<String>,
+    cancellation_id: Option<String>,
+}
+
+#[tauri::command]
+pub fn register_extension_install_cancellation(cancellation_id: String) -> Result<(), String> {
+    state::register_extension_install_cancellation(cancellation_id);
+    Ok(())
+}
+
+#[tauri::command]
+pub fn cancel_extension_install_cancellation(cancellation_id: String) -> Result<(), String> {
+    state::cancel_extension_install_cancellation(&cancellation_id);
+    Ok(())
+}
+
+#[tauri::command]
+pub fn clear_extension_install_cancellation(cancellation_id: String) -> Result<(), String> {
+    state::clear_extension_install_cancellation(&cancellation_id);
+    Ok(())
 }
 
 #[tauri::command]
@@ -60,8 +81,17 @@ pub async fn download_extension(
     download_url: String,
     version: String,
     integrity: Option<String>,
+    cancellation_id: Option<String>,
 ) -> Result<ExtensionOperationResult, String> {
-    install::download_extension(app_handle, extension_id, download_url, version, integrity).await
+    install::download_extension(
+        app_handle,
+        extension_id,
+        download_url,
+        version,
+        integrity,
+        cancellation_id,
+    )
+    .await
 }
 
 #[tauri::command]
@@ -283,6 +313,7 @@ pub async fn download_extension_binary(
         binaries::BinaryDownloadRequest {
             integrity: options.integrity,
             allow_missing_integrity: options.allow_missing_integrity.unwrap_or(false),
+            cancellation_id: options.cancellation_id,
         },
         caller_extension_id,
     )
@@ -308,6 +339,7 @@ pub async fn download_and_extract_extension_binary(
         binaries::BinaryDownloadRequest {
             integrity: options.integrity,
             allow_missing_integrity: options.allow_missing_integrity.unwrap_or(false),
+            cancellation_id: options.cancellation_id,
         },
         caller_extension_id,
     )
@@ -370,6 +402,7 @@ pub async fn download_shared_binary(
             integrity: options.integrity,
             version: options.version,
             progress_event_id: options.progress_event_id,
+            cancellation_id: options.cancellation_id,
         },
     )
     .await
@@ -392,6 +425,7 @@ pub async fn download_and_extract_shared_binary(
             integrity: options.integrity,
             version: options.version,
             progress_event_id: options.progress_event_id,
+            cancellation_id: options.cancellation_id,
         },
     )
     .await

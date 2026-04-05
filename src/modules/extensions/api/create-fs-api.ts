@@ -56,9 +56,7 @@ export function createFsAPI(context: ExtensionContext) {
       const hasDialogAccess = context.consumeDialogWriteAccess(path);
 
       if (!hasDialogAccess) {
-        const storageStore = useExtensionsStorageStore();
-
-        if (!await context.isInExtensionDir(path) && !await storageStore.hasScopedAccess(context.extensionId, path, 'write')) {
+        if (!await context.isInAllowedWriteDir(path)) {
           throw new Error(`Access denied: ${path} is not in allowed directories`);
         }
       }

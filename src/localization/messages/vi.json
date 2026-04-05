@@ -1829,6 +1829,8 @@
     "latest": "mới nhất",
     "install": "Cài đặt",
     "installing": "Đang cài đặt...",
+    "cancelInstall": "Hủy",
+    "installFailed": "Cài đặt thất bại",
     "installFromFolder": "Cài đặt từ thư mục",
     "installLocalError": "Không thể cài đặt tiện ích từ thư mục",
     "selectExtensionFolder": "Chọn thư mục tiện ích",

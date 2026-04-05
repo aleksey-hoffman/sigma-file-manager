@@ -17,6 +17,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useExtensions } from '@/modules/extensions/composables/use-extensions';
 import { useExtensionAnimation } from '@/modules/extensions/composables/use-extension-animation';
 import { useExtensionsStorageStore } from '@/stores/storage/extensions';
+import { isUserCancelledError } from '@/modules/extensions/utils/extension-install-cancellation';
 import { handleError } from '@/utils/error-handler';
 import ExtensionSearch from '@/modules/extensions/components/extension-search.vue';
 import ExtensionsMarketplace from '@/modules/extensions/components/extensions-marketplace.vue';
@@ -34,6 +35,8 @@ const {
   featuredExtensions,
   installedExtensionsWithManifest,
   isFetchingRegistry,
+  isFetchingExtensionRemoteMetadata,
+  isLoadingManifest,
   registryError,
   installingExtensions,
   uninstallingExtensions,
@@ -42,6 +45,7 @@ const {
   selectExtension,
   clearSelection,
   installExtension,
+  cancelInstallExtension,
   installLocalExtension,
   refreshLocalExtension,
   uninstallExtension,
@@ -51,6 +55,12 @@ const {
   changeVersion,
   refreshRegistry,
 } = useExtensions();
+
+const showExtensionsTopLoader = computed(() => {
+  return isFetchingRegistry.value
+    || isLoadingManifest.value
+    || isFetchingExtensionRemoteMetadata.value;
+});
 
 const extensionsStorageStore = useExtensionsStorageStore();
 const refreshingExtensions = ref<Set<string>>(new Set());
@@ -193,7 +203,17 @@ async function handleBack() {
 }
 
 async function handleInstall(extensionId: string, version?: string) {
-  await installExtension(extensionId, version);
+  try {
+    await installExtension(extensionId, version);
+  }
+  catch (error) {
+    if (isUserCancelledError(error)) return;
+    handleError(t('extensions.installFailed'), error);
+  }
+}
+
+async function handleCancelInstall(extensionId: string) {
+  await cancelInstallExtension(extensionId);
 }
 
 async function handleUninstall(extensionId: string) {
@@ -230,6 +250,7 @@ async function handleRefresh(extensionId: string) {
     });
   }
   catch (error) {
+    if (isUserCancelledError(error)) return;
     handleError(t('extensions.installLocalError'), error);
   }
   finally {
@@ -240,12 +261,18 @@ async function handleRefresh(extensionId: string) {
 }
 
 async function handleUpdate(extensionId: string, version?: string) {
-  if (version) {
-    await changeVersion(extensionId, version);
-    return;
-  }
+  try {
+    if (version) {
+      await changeVersion(extensionId, version);
+      return;
+    }
 
-  await updateExtension(extensionId);
+    await updateExtension(extensionId);
+  }
+  catch (error) {
+    if (isUserCancelledError(error)) return;
+    handleError(t('extensions.installFailed'), error);
+  }
 }
 
 async function handleToggle(extensionId: string) {
@@ -263,6 +290,7 @@ async function handleInstallLocal(sourcePath: string) {
     await installLocalExtension(sourcePath);
   }
   catch (error) {
+    if (isUserCancelledError(error)) return;
     handleError(t('extensions.installLocalError'), error);
   }
 }
@@ -283,6 +311,15 @@ onUnmounted(() => {
 </script>
 
 <template>
+  <Teleport to="body">
+    <div
+      v-if="showExtensionsTopLoader"
+      class="extensions-page__top-loader animate-fade-in"
+      aria-hidden="true"
+    >
+      <div class="extensions-page__top-loader-bar" />
+    </div>
+  </Teleport>
   <PageDefaultLayout
     class="extensions-page"
     :title="t('pages.extensions')"
@@ -365,11 +402,13 @@ onUnmounted(() => {
           :is-loading="isFetchingRegistry && filteredExtensions.length === 0"
           :error="registryError"
           :installing-extensions="installingExtensions"
+          :updating-extensions="updatingExtensions"
           :is-any-install-in-progress="isAnyInstallInProgress"
           :search-query="searchQuery"
           @select="handleSelectExtension"
           @install="handleInstall"
           @update="handleUpdate"
+          @cancel="handleCancelInstall"
         />
       </TabsContent>
 
@@ -380,6 +419,7 @@ onUnmounted(() => {
         <ExtensionsInstalled
           :extensions="installedExtensionsWithManifest"
           :installing-extensions="installingExtensions"
+          :updating-extensions="updatingExtensions"
           :uninstalling-extensions="uninstallingExtensions"
           :refreshing-extensions="refreshingExtensions"
           :is-installing-local="isAnyInstallInProgress"
@@ -389,6 +429,7 @@ onUnmounted(() => {
           @refresh="handleRefresh"
           @uninstall="handleUninstall"
           @install-local="handleInstallLocal"
+          @cancel="handleCancelInstall"
         />
       </TabsContent>
 
@@ -437,6 +478,7 @@ onUnmounted(() => {
                 @refresh="handleRefresh(selectedExtension!.id)"
                 @toggle="handleToggle(selectedExtension!.id)"
                 @toggle-auto-update="handleToggleAutoUpdate(selectedExtension!.id)"
+                @cancel="handleCancelInstall(selectedExtension!.id)"
               />
             </div>
           </ScrollArea>
@@ -447,6 +489,40 @@ onUnmounted(() => {
 </template>
 
 <style>
+.extensions-page__top-loader {
+  position: fixed;
+  z-index: 100;
+  top: 0;
+  right: 0;
+  left: 0;
+  overflow: hidden;
+  height: 4px;
+  background-color: hsl(var(--muted) / 35%);
+  pointer-events: none;
+}
+
+.extensions-page__top-loader-bar {
+  width: 38%;
+  height: 100%;
+  animation: extensions-page-top-loader 1.15s ease-in-out infinite;
+  background: linear-gradient(
+    90deg,
+    hsl(var(--primary) / 0%),
+    hsl(var(--primary) / 92%),
+    hsl(var(--primary) / 0%)
+  );
+}
+
+@keyframes extensions-page-top-loader {
+  0% {
+    transform: translateX(-120%);
+  }
+
+  100% {
+    transform: translateX(320%);
+  }
+}
+
 .extensions-page__tabs {
   display: flex;
   flex-direction: column;

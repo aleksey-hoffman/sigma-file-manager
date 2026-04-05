@@ -25,6 +25,7 @@ import type { SharedBinaryInfo } from '@/types/extension';
 import { getBinaryDisplayVersion, getBinaryLookupVersion } from '@/modules/extensions/utils/binary-metadata';
 import { isHttpUrl, openBinaryDownloadUrl } from '@/modules/extensions/utils/binary-download-url';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { getStaggerSlideUpBinding } from '@/utils/stagger-animation';
 
 type DirSizeResult = {
   path: string;
@@ -208,9 +209,10 @@ watch(
 
       <div class="dependencies-tab__list">
         <div
-          v-for="binary in sharedBinaries"
+          v-for="(binary, itemIndex) in sharedBinaries"
           :key="`${binary.id}@${getBinaryLookupVersion(binary) || 'latest'}`"
           class="dependencies-tab__item"
+          v-bind="getStaggerSlideUpBinding(itemIndex)"
         >
           <div class="dependencies-tab__item-icon">
             <PackageIcon :size="24" />

@@ -1,0 +1,24 @@
+.animate-stagger-slide-up {
+  opacity: 0;
+  animation: animate-stagger-slide-up 0.44s ease-out forwards;
+}
+
+@keyframes animate-stagger-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-stagger-slide-up {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}

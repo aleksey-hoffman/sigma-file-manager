@@ -1838,6 +1838,8 @@
     "latest": "última",
     "install": "Instalar",
     "installing": "Instalando...",
+    "cancelInstall": "Cancelar",
+    "installFailed": "Falha na instalação",
     "installFromFolder": "Instalar da pasta",
     "installLocalError": "Falha ao instalar extensão da pasta",
     "selectExtensionFolder": "Selecionar pasta da extensão",

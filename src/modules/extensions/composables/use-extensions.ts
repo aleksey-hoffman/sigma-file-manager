@@ -12,7 +12,7 @@ import type {
 import { useExtensionsStorageStore } from '@/stores/storage/extensions';
 import {
   compareVersions,
-  fetchGitHubTags,
+  fetchGitHubTagsWithRetry,
   pickDisplayVersionFromGitHubTags,
 } from '@/data/extensions';
 import { getPlatformInfo } from '@/modules/extensions/api';
@@ -21,6 +21,7 @@ import { getBinaryDisplayVersion, getBinaryLookupVersion } from '@/modules/exten
 export type ExtensionWithManifest = ExtensionRegistryEntry & {
   manifest?: ExtensionManifest;
   isInstalled: boolean;
+  installPendingDependencies?: boolean;
   installedVersion?: string;
   installedAt?: number;
   hasUpdate: boolean;
@@ -129,7 +130,9 @@ export function useExtensions() {
   }
 
   async function refreshInstalledExtensionSizes(): Promise<void> {
-    const installed = extensionsStore.installedExtensions;
+    const installed = extensionsStore.installedExtensions.filter(
+      extensionItem => !extensionItem.installPendingDependencies,
+    );
 
     if (installed.length === 0) {
       extensionSizes.value.clear();
@@ -192,7 +195,7 @@ export function useExtensions() {
     }
 
     try {
-      const tags = await fetchGitHubTags(repository);
+      const tags = await fetchGitHubTagsWithRetry(repository);
       const picked = pickDisplayVersionFromGitHubTags(tags);
 
       if (picked) {
@@ -207,7 +210,9 @@ export function useExtensions() {
   }
 
   async function refreshInstalledBinaryVersions(): Promise<void> {
-    await Promise.all(extensionsStore.installedExtensions.map(async (installedExtension) => {
+    await Promise.all(extensionsStore.installedExtensions
+      .filter(installedExtension => !installedExtension.installPendingDependencies)
+      .map(async (installedExtension) => {
       const currentSettings = installedExtension.settings;
       const currentBinaries = getBinariesFromSettings(currentSettings);
 
@@ -328,7 +333,8 @@ export function useExtensions() {
       return {
         ...entry,
         manifest,
-        isInstalled: !!installedExt,
+        isInstalled: Boolean(installedExt && !installedExt.installPendingDependencies),
+        installPendingDependencies: installedExt?.installPendingDependencies,
         installedVersion: installedExt?.version,
         installedAt: installedExt?.installedAt,
         hasUpdate: installedExt ? extensionsStore.hasUpdate(entry.id) : false,
@@ -376,7 +382,9 @@ export function useExtensions() {
   });
 
   const installedExtensionsWithManifest = computed((): ExtensionWithManifest[] => {
-    return extensionsStore.installedExtensions.map((inst): ExtensionWithManifest => {
+    return extensionsStore.installedExtensions
+      .filter(inst => !inst.installPendingDependencies)
+      .map((inst): ExtensionWithManifest => {
       const registryEntry = extensionsStore.availableExtensions.find(
         ext => ext.id === inst.id,
       );
@@ -502,7 +510,8 @@ export function useExtensions() {
       categories: registryEntry?.categories ?? installed?.manifest.categories ?? selectedExtension.value.categories,
       tags: registryEntry?.tags ?? selectedExtension.value.tags,
       manifest: rebuildManifest,
-      isInstalled: !!installed,
+      isInstalled: Boolean(installed && !installed.installPendingDependencies),
+      installPendingDependencies: installed?.installPendingDependencies,
       installedVersion: installed?.version,
       installedAt: installed?.installedAt,
       hasUpdate: installed ? extensionsStore.hasUpdate(extensionId) : false,
@@ -528,6 +537,10 @@ export function useExtensions() {
     rebuildSelectedExtension(extensionId);
   }
 
+  async function cancelInstallExtension(extensionId: string): Promise<void> {
+    await extensionsStore.cancelInstallExtension(extensionId);
+  }
+
   async function uninstallExtension(extensionId: string) {
     await extensionsStore.uninstallExtension(extensionId);
     rebuildSelectedExtension(extensionId);
@@ -540,7 +553,7 @@ export function useExtensions() {
 
   async function toggleExtension(extensionId: string) {
     const installed = extensionsStore.installedExtensions.find(
-      ext => ext.id === extensionId,
+      ext => ext.id === extensionId && !ext.installPendingDependencies,
     );
 
     if (!installed) return;
@@ -557,7 +570,7 @@ export function useExtensions() {
 
   async function toggleAutoUpdate(extensionId: string) {
     const installed = extensionsStore.installedExtensions.find(
-      ext => ext.id === extensionId,
+      ext => ext.id === extensionId && !ext.installPendingDependencies,
     );
 
     if (!installed) return;
@@ -573,7 +586,7 @@ export function useExtensions() {
 
   async function changeVersion(extensionId: string, version: string) {
     const installed = extensionsStore.installedExtensions.find(
-      ext => ext.id === extensionId,
+      ext => ext.id === extensionId && !ext.installPendingDependencies,
     );
 
     if (!installed) return;
@@ -611,7 +624,10 @@ export function useExtensions() {
         return false;
       }
 
-      return !extensionsStore.installedExtensions.some(installedExtension => installedExtension.id === entry.id);
+      return !extensionsStore.installedExtensions.some(
+        installedExtension => installedExtension.id === entry.id
+          && !installedExtension.installPendingDependencies,
+      );
     });
 
     await Promise.allSettled(manifestEntries.map(entry => loadManifest(entry)));
@@ -636,7 +652,7 @@ export function useExtensions() {
   );
 
   watch(
-    () => extensionsStore.installedExtensions.map(extensionItem => `${extensionItem.id}:${extensionItem.version}:${extensionItem.installedAt}`).join('|'),
+    () => extensionsStore.installedExtensions.map(extensionItem => `${extensionItem.id}:${extensionItem.version}:${extensionItem.installedAt}:${extensionItem.installPendingDependencies ? 'p' : ''}`).join('|'),
     async () => {
       void prefetchMarketplaceManifests();
       await refreshInstalledExtensionSizes();
@@ -678,6 +694,9 @@ export function useExtensions() {
     installedExtensionsWithManifest,
 
     isFetchingRegistry: computed(() => extensionsStore.isFetchingRegistry),
+    isFetchingExtensionRemoteMetadata: computed(
+      () => extensionsStore.isFetchingExtensionRemoteMetadata,
+    ),
     registryError: computed(() => extensionsStore.registryError),
     installingExtensions: computed(() => extensionsStore.installingExtensions),
     uninstallingExtensions: computed(() => extensionsStore.uninstallingExtensions),
@@ -688,6 +707,7 @@ export function useExtensions() {
     clearSelection,
     loadManifest,
     installExtension,
+    cancelInstallExtension,
     installLocalExtension,
     refreshLocalExtension,
     uninstallExtension,

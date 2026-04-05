@@ -10,7 +10,7 @@ import { useExtensionsStorageStore } from '@/stores/storage/extensions';
 import { getBinaryLookupVersion } from '@/modules/extensions/utils/binary-metadata';
 import { getSharedBinaryPendingKey } from '@/modules/extensions/utils/shared-binary';
 import {
-  fetchGitHubTags,
+  fetchGitHubTagsWithRetry,
   fetchUrlText,
   getGitHubRepoInfo,
   pickDisplayVersionFromGitHubTags,
@@ -26,6 +26,10 @@ import {
 } from '@/modules/extensions/api/binary-integrity';
 import type { ExtensionContext } from '@/modules/extensions/api/extension-context';
 import { invokeAsExtension } from '@/modules/extensions/runtime/extension-invoke';
+import {
+  getExtensionInstallCancellationIdForExtension,
+  raceWithInstallAbort,
+} from '@/modules/extensions/utils/extension-install-cancellation';
 
 type SharedBinaryInstallResult = {
   path: string;
@@ -91,7 +95,7 @@ export function createBinaryAPI(context: ExtensionContext) {
 
   async function getLatestGitHubVersion(repository: string): Promise<string | undefined> {
     try {
-      const tags = await fetchGitHubTags(repository);
+      const tags = await fetchGitHubTagsWithRetry(repository);
       return pickDisplayVersionFromGitHubTags(tags);
     }
     catch {
@@ -348,16 +352,20 @@ export function createBinaryAPI(context: ExtensionContext) {
         ? 'download_and_extract_shared_binary'
         : 'download_shared_binary';
 
-      const binaryPath = await invokeAsExtension<string>(context.extensionId, downloadCommand, {
-        binaryId,
-        downloadUrl,
-        executableName,
-        options: {
-          integrity: resolvedIntegrity ?? null,
-          version: lookupVersion ?? null,
-          progressEventId: toastId,
-        },
-      });
+      const binaryPath = await raceWithInstallAbort(
+        invokeAsExtension<string>(context.extensionId, downloadCommand, {
+          binaryId,
+          downloadUrl,
+          executableName,
+          options: {
+            integrity: resolvedIntegrity ?? null,
+            version: lookupVersion ?? null,
+            progressEventId: toastId,
+            cancellationId: getExtensionInstallCancellationIdForExtension(context.extensionId) ?? null,
+          },
+        }),
+        context.extensionId,
+      );
 
       unlistenProgress();
       clearInterval(progressInterval);
@@ -464,16 +472,20 @@ export function createBinaryAPI(context: ExtensionContext) {
         ? 'download_and_extract_extension_binary'
         : 'download_extension_binary';
 
-      const binaryPath = await invokeAsExtension<string>(context.extensionId, downloadCommand, {
-        extensionId: context.extensionId,
-        binaryId,
-        downloadUrl,
-        executableName,
-        options: {
-          integrity: resolvedIntegrity ?? null,
-          allowMissingIntegrity: allowMissingIntegrityRequest,
-        },
-      });
+      const binaryPath = await raceWithInstallAbort(
+        invokeAsExtension<string>(context.extensionId, downloadCommand, {
+          extensionId: context.extensionId,
+          binaryId,
+          downloadUrl,
+          executableName,
+          options: {
+            integrity: resolvedIntegrity ?? null,
+            allowMissingIntegrity: allowMissingIntegrityRequest,
+            cancellationId: getExtensionInstallCancellationIdForExtension(context.extensionId) ?? null,
+          },
+        }),
+        context.extensionId,
+      );
 
       clearInterval(progressInterval);
       toast.dismiss(toastId);
@@ -546,7 +558,7 @@ export function createBinaryAPI(context: ExtensionContext) {
     const pendingDownload = pendingBinaryDownloads.get(pendingKey);
 
     if (pendingDownload) {
-      const sharedBinaryResult = await pendingDownload;
+      const sharedBinaryResult = await raceWithInstallAbort(pendingDownload, context.extensionId);
       incrementBinaryReuseCount(context.extensionId);
       return attachSharedBinaryToExtension(id, lookupVersion, sharedBinaryResult);
     }
@@ -554,7 +566,7 @@ export function createBinaryAPI(context: ExtensionContext) {
     const pendingPrivateDownload = pendingPrivateBinaryDownloads.get(pendingKey);
 
     if (pendingPrivateDownload) {
-      const privateBinaryResult = await pendingPrivateDownload;
+      const privateBinaryResult = await raceWithInstallAbort(pendingPrivateDownload, context.extensionId);
       incrementBinaryReuseCount(context.extensionId);
       return attachPrivateBinaryToExtension(id, privateBinaryResult);
     }

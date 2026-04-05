@@ -515,6 +515,115 @@ describe('extensions runtime store', () => {
     expect(toastCustomMock).not.toHaveBeenCalled();
   });
 
+  it('passes install cancellation ids to extension archive downloads', async () => {
+    const manifest = createRemoteManifest(
+      'test.video',
+      'https://github.com/example/test-video',
+    );
+    const registryEntry = createRegistryEntry('test.video', manifest.repository);
+    const extensionsStore = useExtensionsStore();
+    extensionsStore.registry = {
+      schemaVersion: '1.0.0',
+      extensions: [registryEntry],
+    };
+
+    invokeMock.mockImplementation(async (command: string) => {
+      if (command === 'fetch_url_text') {
+        return {
+          ok: true,
+          status: 200,
+          body: JSON.stringify(manifest),
+        };
+      }
+
+      if (
+        command === 'register_extension_install_cancellation'
+        || command === 'clear_extension_install_cancellation'
+      ) {
+        return undefined;
+      }
+
+      if (command === 'download_extension') {
+        return {
+          success: true,
+          error: null,
+        };
+      }
+
+      throw new Error(`Unexpected invoke command: ${command}`);
+    });
+
+    await extensionsStore.installExtension('test.video', '1.0.0');
+
+    expect(invokeMock).toHaveBeenCalledWith(
+      'download_extension',
+      expect.objectContaining({
+        extensionId: 'test.video',
+        version: '1.0.0',
+        cancellationId: expect.any(String),
+      }),
+    );
+  });
+
+  it('passes install cancellation ids to extension archive updates', async () => {
+    const installedManifest = createRemoteManifest(
+      'test.video',
+      'https://github.com/example/test-video',
+    );
+    const updatedManifest = {
+      ...installedManifest,
+      version: '1.1.0',
+    };
+
+    installTestExtension(installedManifest);
+    const extensionsStore = useExtensionsStore();
+    extensionsStore.registry = {
+      schemaVersion: '1.0.0',
+      extensions: [createRegistryEntry('test.video', installedManifest.repository)],
+    };
+
+    invokeMock.mockImplementation(async (command: string) => {
+      if (command === 'fetch_url_text') {
+        return {
+          ok: true,
+          status: 200,
+          body: JSON.stringify(updatedManifest),
+        };
+      }
+
+      if (command === 'cancel_all_extension_commands') {
+        return undefined;
+      }
+
+      if (
+        command === 'register_extension_install_cancellation'
+        || command === 'clear_extension_install_cancellation'
+      ) {
+        return undefined;
+      }
+
+      if (command === 'download_extension') {
+        return {
+          success: true,
+          error: null,
+        };
+      }
+
+      throw new Error(`Unexpected invoke command: ${command}`);
+    });
+
+    await extensionsStore.updateExtension('test.video', '1.1.0');
+
+    expect(invokeMock).toHaveBeenCalledWith(
+      'download_extension',
+      expect.objectContaining({
+        extensionId: 'test.video',
+        version: '1.1.0',
+        cancellationId: expect.any(String),
+      }),
+    );
+  });
+
   it('reloads the previous extension after an update failure', async () => {
     const installedManifest = createRemoteManifest(
       'test.video',
@@ -552,8 +661,6 @@ describe('extensions runtime store', () => {
     };
 
     invokeMock.mockImplementation(async (command: string, args?: Record<string, unknown>) => {
-      console.log(args);
-
       if (command === 'fetch_url_text') {
         return {
           ok: true,
@@ -563,6 +670,14 @@ describe('extensions runtime store', () => {
       }
 
       if (command === 'cancel_all_extension_commands') {
+        return undefined;
+      }
+
+      if (
+        command === 'register_extension_install_cancellation'
+        || command === 'clear_extension_install_cancellation'
+        || command === 'cancel_extension_install_cancellation'
+      ) {
         return undefined;
       }
 

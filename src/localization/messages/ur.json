@@ -1851,6 +1851,8 @@
     "latest": "تازہ",
     "install": "انسٹال",
     "installing": "انسٹال ہو رہا ہے…",
+    "cancelInstall": "منسوخ",
+    "installFailed": "انسٹال ناکام",
     "showFolder": "فولڈر دکھائیں",
     "installFromFolder": "فولڈر سے انسٹال",
     "installLocalError": "فولڈر سے انسٹال ناکام",

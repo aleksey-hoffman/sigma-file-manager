@@ -1829,6 +1829,8 @@
     "latest": "neueste",
     "install": "Installieren",
     "installing": "Wird installiert...",
+    "cancelInstall": "Abbrechen",
+    "installFailed": "Installation fehlgeschlagen",
     "installFromFolder": "Aus Ordner installieren",
     "installLocalError": "Erweiterung konnte nicht aus Ordner installiert werden",
     "selectExtensionFolder": "Erweiterungsordner auswählen",

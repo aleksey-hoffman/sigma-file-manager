@@ -3,6 +3,7 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 import { defineStore } from 'pinia';
+import { toast } from '@/components/ui/toaster';
 import { invoke } from '@tauri-apps/api/core';
 import { getVersion } from '@tauri-apps/api/app';
 import { ref, computed, watch } from 'vue';
@@ -26,7 +27,7 @@ import {
   EXTENSION_REGISTRY_CACHE_TTL_MS,
   getExtensionManifestUrl,
   getExtensionDownloadUrl,
-  fetchGitHubTags,
+  fetchGitHubTagsWithRetry,
   fetchUrlText,
   parseVersionFromTag,
   sortVersionsDescending,
@@ -61,6 +62,12 @@ import {
   showExtensionBusyToast,
 } from '@/modules/extensions/utils/toast-utils';
 import { filterReachableRegistryEntries } from '@/modules/extensions/utils/registry-utils';
+import {
+  beginExtensionInstall,
+  cancelExtensionInstall as requestExtensionInstallCancel,
+  endExtensionInstall,
+  isUserCancelledError,
+} from '@/modules/extensions/utils/extension-install-cancellation';
 import { i18n } from '@/localization';
 import type { ShortcutKeys } from '@/types/user-settings';
 import type { ExtensionKeybindingWhen } from '@/types/extension';
@@ -84,6 +91,10 @@ export const useExtensionsStore = defineStore('extensions', () => {
 
   const extensionVersionsCache = ref<Map<string, VersionCacheEntry>>(new Map());
   const VERSIONS_CACHE_TTL_MS = 10 * 60 * 1000;
+  const extensionRemoteMetadataFetchCount = ref(0);
+  const isFetchingExtensionRemoteMetadata = computed(
+    () => extensionRemoteMetadataFetchCount.value > 0,
+  );
 
   const contextMenuItems = ref<ContextMenuItemRegistration[]>([]);
   const sidebarPages = ref<SidebarPageRegistration[]>([]);
@@ -126,6 +137,38 @@ export const useExtensionsStore = defineStore('extensions', () => {
   const updatingExtensions = ref<Set<string>>(new Set());
   const installQueueDepth = ref(0);
   let installQueueTail: Promise<void> = Promise.resolve();
+
+  function throwIfInstallAborted(signal: AbortSignal): void {
+    if (signal.aborted) throw new DOMException('Aborted', 'AbortError');
+  }
+
+  async function rollbackInstallAfterCancel(extensionId: string): Promise<void> {
+    toast.dismiss(`ext-ready-${extensionId}`);
+    try {
+      await unloadExtension(extensionId);
+    } catch {
+    }
+    try {
+      await invoke('cancel_all_extension_commands', { extensionId });
+    } catch {
+    }
+    try {
+      await invoke('delete_extension', { extensionId });
+    } catch {
+    }
+    try {
+      const orphanedBinaries = await storageStore.removeAllSharedBinaryUsages(extensionId);
+      await cleanupOrphanedSharedBinaries(orphanedBinaries);
+    } catch {
+    }
+    try {
+      if (storageStore.extensionsData.installedExtensions[extensionId]) {
+        await storageStore.removeInstalledExtension(extensionId);
+      }
+    } catch {
+    }
+    brokenExtensionIds.value = new Set([...brokenExtensionIds.value].filter(id => id !== extensionId));
+  }
 
   async function runInInstallQueue<T>(task: () => Promise<T>): Promise<T> {
     installQueueDepth.value += 1;
@@ -205,6 +248,7 @@ export const useExtensionsStore = defineStore('extensions', () => {
         registryEntry,
         isLocal: data.isLocal,
         localSourcePath: data.localSourcePath,
+        installPendingDependencies: data.installPendingDependencies,
       });
     }
 
@@ -212,7 +256,9 @@ export const useExtensionsStore = defineStore('extensions', () => {
   });
 
   const enabledExtensions = computed(() => {
-    return installedExtensions.value.filter(extension => extension.enabled);
+    return installedExtensions.value.filter(
+      extension => extension.enabled && !extension.installPendingDependencies,
+    );
   });
 
   const featuredExtensions = computed(() => {
@@ -238,8 +284,9 @@ export const useExtensionsStore = defineStore('extensions', () => {
       return cached.versions;
     }
 
+    extensionRemoteMetadataFetchCount.value += 1;
     try {
-      const tagNames = await fetchGitHubTags(repository);
+      const tagNames = await fetchGitHubTagsWithRetry(repository);
       const versions: string[] = [];
 
       for (const tagName of tagNames) {
@@ -262,6 +309,9 @@ export const useExtensionsStore = defineStore('extensions', () => {
     catch (error) {
       console.warn(`Error fetching versions for ${repository}:`, error);
       return cached?.versions ?? [];
+    }
+    finally {
+      extensionRemoteMetadataFetchCount.value -= 1;
     }
   }
 
@@ -389,7 +439,10 @@ export const useExtensionsStore = defineStore('extensions', () => {
         throw new Error(`Extension not found in registry: ${extensionId}`);
       }
 
+      const { cancellationId, signal } = await beginExtensionInstall(extensionId);
       installingExtensions.value.add(extensionId);
+
+      let persistedInstall = false;
 
       try {
         const wasAlreadyLoaded = loadedExtensions.value.has(extensionId);
@@ -409,9 +462,13 @@ export const useExtensionsStore = defineStore('extensions', () => {
           throw new Error(`Could not determine version to install for: ${extensionId}`);
         }
 
+        throwIfInstallAborted(signal);
+
         const manifest = await fetchExtensionManifest(registryEntry, targetVersion);
         await assertManifestEngineCompatibility(manifest);
         assertManifestPlatformCompatibility(manifest);
+
+        throwIfInstallAborted(signal);
 
         const downloadUrl = getExtensionDownloadUrl(registryEntry.repository, targetVersion);
 
@@ -420,15 +477,22 @@ export const useExtensionsStore = defineStore('extensions', () => {
           downloadUrl,
           version: targetVersion,
           integrity: getRegistryIntegrity(registryEntry, targetVersion) ?? null,
+          cancellationId,
         });
 
+        throwIfInstallAborted(signal);
+
         try {
-          await storageStore.addInstalledExtension(extensionId, targetVersion, manifest);
+          await storageStore.addInstalledExtension(extensionId, targetVersion, manifest, {
+            installPendingDependencies: true,
+          });
         }
         catch (storageError) {
           await invoke('delete_extension', { extensionId }).catch(() => {});
           throw storageError;
         }
+
+        persistedInstall = true;
 
         brokenExtensionIds.value = new Set([...brokenExtensionIds.value].filter(id => id !== extensionId));
 
@@ -441,12 +505,31 @@ export const useExtensionsStore = defineStore('extensions', () => {
           await loadExtension(extensionId, 'onStartup');
         }
 
+        await storageStore.completeExtensionInstall(extensionId);
+
         showDependenciesInstalledToast(extensionId);
       }
+      catch (error) {
+        if (persistedInstall) {
+          await rollbackInstallAfterCancel(extensionId);
+        }
+        else if (signal.aborted || isUserCancelledError(error)) {
+          await rollbackInstallAfterCancel(extensionId);
+        }
+        if (signal.aborted || isUserCancelledError(error)) {
+          return;
+        }
+        throw error;
+      }
       finally {
+        await endExtensionInstall(extensionId);
         installingExtensions.value.delete(extensionId);
       }
     });
+  }
+
+  async function cancelInstallExtension(extensionId: string): Promise<void> {
+    await requestExtensionInstallCancel(extensionId);
   }
 
   type LocalExtensionInstallResult = {
@@ -468,7 +551,10 @@ export const useExtensionsStore = defineStore('extensions', () => {
 
       const extensionId = result.extension_id;
 
+      const { signal } = await beginExtensionInstall(extensionId);
       installingExtensions.value.add(extensionId);
+
+      let persistedInstall = false;
 
       try {
         const wasAlreadyLoaded = loadedExtensions.value.has(extensionId);
@@ -478,6 +564,8 @@ export const useExtensionsStore = defineStore('extensions', () => {
           await invoke('cancel_all_extension_commands', { extensionId });
         }
 
+        throwIfInstallAborted(signal);
+
         const manifestJson = await invokeAsExtension<string>(extensionId, 'read_extension_manifest', {
           extensionId,
         });
@@ -486,10 +574,15 @@ export const useExtensionsStore = defineStore('extensions', () => {
         const manifest = parsedManifest as ExtensionManifest;
         await assertManifestEngineCompatibility(manifest);
 
+        throwIfInstallAborted(signal);
+
         await storageStore.addInstalledExtension(extensionId, manifest.version, manifest, {
           isLocal: true,
           localSourcePath: sourcePath,
+          installPendingDependencies: true,
         });
+        persistedInstall = true;
+
         brokenExtensionIds.value = new Set([...brokenExtensionIds.value].filter(id => id !== extensionId));
 
         clearBinaryDownloadCount(extensionId);
@@ -501,9 +594,24 @@ export const useExtensionsStore = defineStore('extensions', () => {
           await loadExtension(extensionId, 'onStartup');
         }
 
+        await storageStore.completeExtensionInstall(extensionId);
+
         showDependenciesInstalledToast(extensionId);
       }
+      catch (error) {
+        if (persistedInstall) {
+          await rollbackInstallAfterCancel(extensionId);
+        }
+        else if (signal.aborted || isUserCancelledError(error)) {
+          await rollbackInstallAfterCancel(extensionId);
+        }
+        if (signal.aborted || isUserCancelledError(error)) {
+          return;
+        }
+        throw error;
+      }
       finally {
+        await endExtensionInstall(extensionId);
         installingExtensions.value.delete(extensionId);
       }
     });
@@ -520,11 +628,14 @@ export const useExtensionsStore = defineStore('extensions', () => {
       const sourcePath = extensionData.localSourcePath;
       const rollbackSnapshot = createExtensionStorageSnapshot(extensionId);
 
+      const { signal } = await beginExtensionInstall(extensionId);
       installingExtensions.value.add(extensionId);
 
       try {
         await unloadExtension(extensionId);
         await invoke('cancel_all_extension_commands', { extensionId });
+
+        throwIfInstallAborted(signal);
 
         const result = await invoke<LocalExtensionInstallResult>('install_local_extension', {
           sourcePath,
@@ -539,6 +650,8 @@ export const useExtensionsStore = defineStore('extensions', () => {
           throw new Error(`Local extension id changed from "${extensionId}" to "${result.extension_id}". Reinstall from folder instead.`);
         }
 
+        throwIfInstallAborted(signal);
+
         const manifestJson = await invokeAsExtension<string>(extensionId, 'read_extension_manifest', {
           extensionId,
         });
@@ -546,6 +659,8 @@ export const useExtensionsStore = defineStore('extensions', () => {
         assertValidManifestData(parsedManifest);
         const manifest = parsedManifest as ExtensionManifest;
         await assertManifestEngineCompatibility(manifest);
+
+        throwIfInstallAborted(signal);
 
         await storageStore.refreshLocalExtension(extensionId, manifest.version, manifest);
         brokenExtensionIds.value = new Set([...brokenExtensionIds.value].filter(id => id !== extensionId));
@@ -580,9 +695,12 @@ export const useExtensionsStore = defineStore('extensions', () => {
           }
         }
 
-        throw error;
+        if (!signal.aborted && !isUserCancelledError(error)) {
+          throw error;
+        }
       }
       finally {
+        await endExtensionInstall(extensionId);
         installingExtensions.value.delete(extensionId);
       }
     });
@@ -650,8 +768,9 @@ export const useExtensionsStore = defineStore('extensions', () => {
         throw new Error(`Extension not installed: ${extensionId}`);
       }
 
-      updatingExtensions.value.add(extensionId);
       const rollbackSnapshot = createExtensionStorageSnapshot(extensionId);
+      const { cancellationId, signal } = await beginExtensionInstall(extensionId);
+      updatingExtensions.value.add(extensionId);
 
       try {
         await unloadExtension(extensionId);
@@ -675,9 +794,13 @@ export const useExtensionsStore = defineStore('extensions', () => {
           throw new Error(`Could not determine version to update to for: ${extensionId}`);
         }
 
+        throwIfInstallAborted(signal);
+
         const manifest = await fetchExtensionManifest(registryEntry, targetVersion);
         await assertManifestEngineCompatibility(manifest);
         assertManifestPlatformCompatibility(manifest);
+
+        throwIfInstallAborted(signal);
 
         const downloadUrl = getExtensionDownloadUrl(registryEntry.repository, targetVersion);
 
@@ -686,7 +809,10 @@ export const useExtensionsStore = defineStore('extensions', () => {
           downloadUrl,
           version: targetVersion,
           integrity: getRegistryIntegrity(registryEntry, targetVersion) ?? null,
+          cancellationId,
         });
+
+        throwIfInstallAborted(signal);
 
         await storageStore.updateInstalledExtension(extensionId, targetVersion, manifest);
         brokenExtensionIds.value = new Set([...brokenExtensionIds.value].filter(id => id !== extensionId));
@@ -728,9 +854,12 @@ export const useExtensionsStore = defineStore('extensions', () => {
           }
         }
 
-        throw error;
+        if (!signal.aborted && !isUserCancelledError(error)) {
+          throw error;
+        }
       }
       finally {
+        await endExtensionInstall(extensionId);
         updatingExtensions.value.delete(extensionId);
       }
     });
@@ -1188,7 +1317,7 @@ export const useExtensionsStore = defineStore('extensions', () => {
 
   function isExtensionInstalled(extensionId: string): boolean {
     return installedExtensions.value.some(
-      extension => extension.id === extensionId,
+      extension => extension.id === extensionId && !extension.installPendingDependencies,
     );
   }
 
@@ -1213,6 +1342,21 @@ export const useExtensionsStore = defineStore('extensions', () => {
     }
     catch (error) {
       console.error('Failed to reconcile installed extensions:', error);
+    }
+  }
+
+  async function cleanupOrphanedIncompleteExtensionInstalls(): Promise<void> {
+    const pendingIds = Object.entries(storageStore.extensionsData.installedExtensions)
+      .filter(([, data]) => data.installPendingDependencies)
+      .map(([extensionId]) => extensionId);
+
+    for (const extensionId of pendingIds) {
+      try {
+        await rollbackInstallAfterCancel(extensionId);
+      }
+      catch (error) {
+        console.error(`Failed to clean up incomplete extension install for ${extensionId}:`, error);
+      }
     }
   }
 
@@ -1266,7 +1410,7 @@ export const useExtensionsStore = defineStore('extensions', () => {
       extension => extension.id === extensionId,
     );
 
-    if (!installed) return false;
+    if (!installed || installed.installPendingDependencies) return false;
 
     const registryEntry = availableExtensions.value.find(
       ext => ext.id === extensionId,
@@ -1286,7 +1430,7 @@ export const useExtensionsStore = defineStore('extensions', () => {
       extension => extension.id === extensionId,
     );
 
-    if (!installed) return false;
+    if (!installed || installed.installPendingDependencies) return false;
 
     const registryEntry = availableExtensions.value.find(
       ext => ext.id === extensionId,
@@ -1309,6 +1453,7 @@ export const useExtensionsStore = defineStore('extensions', () => {
 
   function getAutoUpdateExtensions(): InstalledExtension[] {
     return installedExtensions.value.filter((extension) => {
+      if (extension.installPendingDependencies) return false;
       const data = storageStore.extensionsData.installedExtensions[extension.id];
       return data?.autoUpdate !== false && hasUpdate(extension.id);
     });
@@ -1378,6 +1523,7 @@ export const useExtensionsStore = defineStore('extensions', () => {
     await initPlatformInfo();
     await storageStore.init();
     await reconcileInstalledExtensions();
+    await cleanupOrphanedIncompleteExtensionInstalls();
 
     const cached = storageStore.extensionsData.registryCache;
 
@@ -1444,6 +1590,7 @@ export const useExtensionsStore = defineStore('extensions', () => {
     registry,
     registryFetchedAt,
     isFetchingRegistry,
+    isFetchingExtensionRemoteMetadata,
     registryError,
     loadedExtensions,
     isInitialized,
@@ -1475,6 +1622,7 @@ export const useExtensionsStore = defineStore('extensions', () => {
     getCachedLatestVersion,
     isExtensionOfficial,
     installExtension,
+    cancelInstallExtension,
     installLocalExtension,
     refreshLocalExtension,
     uninstallExtension,

@@ -15,8 +15,7 @@ const { t } = useI18n();
 const extensionsStore = useExtensionsStore();
 
 const extensionsWithSettings = computed(() => {
-  return extensionsStore.installedExtensions
-    .filter(extension => extension.enabled)
+  return extensionsStore.enabledExtensions
     .filter((extension) => {
       const config = extension.manifest.contributes?.configuration;
       return config?.properties && Object.keys(config.properties).length > 0;

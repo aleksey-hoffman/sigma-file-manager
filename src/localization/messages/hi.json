@@ -1851,6 +1851,8 @@
     "latest": "नवीनतम",
     "install": "स्थापित करना",
     "installing": "स्थापित किया जा रहा है...",
+    "cancelInstall": "रद्द करें",
+    "installFailed": "इंस्टॉल विफल",
     "showFolder": "फ़ोल्डर दिखाएँ",
     "installFromFolder": "फ़ोल्डर से इंस्टॉल करें",
     "installLocalError": "फ़ोल्डर से एक्सटेंशन इंस्टॉल करने में विफल",

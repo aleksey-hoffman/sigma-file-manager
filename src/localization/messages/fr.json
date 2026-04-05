@@ -1829,6 +1829,8 @@
     "latest": "dernière",
     "install": "Installer",
     "installing": "Installation...",
+    "cancelInstall": "Annuler",
+    "installFailed": "Échec de l’installation",
     "installFromFolder": "Installer depuis un dossier",
     "installLocalError": "Échec de l'installation de l'extension depuis le dossier",
     "selectExtensionFolder": "Sélectionner le dossier d'extension",

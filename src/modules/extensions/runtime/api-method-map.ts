@@ -75,6 +75,7 @@ export function createExtensionApiMethodMap(api: SigmaExtensionAPI): ExtensionAp
     'path.dirname': filePath => api.path.dirname(filePath as string),
     'path.basename': (filePath, suffix) => api.path.basename(filePath as string, suffix as string | undefined),
     'path.extname': filePath => api.path.extname(filePath as string),
+    'runtime.isExtensionInstallCancelledError': error => api.runtime.isExtensionInstallCancelledError(error),
     'platform.joinPath': (...segments) => api.platform.joinPath(...segments as string[]),
     'platform.getOs': () => api.platform.os,
     'platform.getArch': () => api.platform.arch,

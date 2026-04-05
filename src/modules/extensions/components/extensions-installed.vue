@@ -4,7 +4,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { invoke } from '@tauri-apps/api/core';
@@ -14,6 +14,7 @@ import {
   ArrowBigUpDashIcon,
   PackageOpenIcon,
   FolderOpenIcon,
+  XIcon,
 } from '@lucide/vue';
 import { open as openDialog } from '@tauri-apps/plugin-dialog';
 import { Button } from '@/components/ui/button';
@@ -23,10 +24,12 @@ import { useWorkspacesStore } from '@/stores/storage/workspaces';
 import ExtensionBadge from './extension-badge.vue';
 import ExtensionIcon from './extension-icon.vue';
 import type { ExtensionWithManifest } from '@/modules/extensions/composables/use-extensions';
+import { getStaggerSlideUpBinding } from '@/utils/stagger-animation';
 
 const props = defineProps<{
   extensions: ExtensionWithManifest[];
   installingExtensions: Set<string>;
+  updatingExtensions: Set<string>;
   uninstallingExtensions: Set<string>;
   refreshingExtensions?: Set<string>;
   isInstallingLocal?: boolean;
@@ -39,11 +42,13 @@ const emit = defineEmits<{
   uninstall: [extensionId: string];
   refresh: [extensionId: string];
   installLocal: [sourcePath: string];
+  cancel: [extensionId: string];
 }>();
 
 const { t } = useI18n();
 const router = useRouter();
 const workspacesStore = useWorkspacesStore();
+const cancelRequestedExtensionIds = ref<Set<string>>(new Set());
 
 async function navigateToExtensionsFolder() {
   const extensionsDir = await invoke<string>('get_extensions_dir');
@@ -96,6 +101,35 @@ const hasSizeData = computed(() => {
   return props.extensions.some(extension => typeof extension.sizeBytes === 'number');
 });
 
+const visibleCancelableExtensionIds = computed(() => {
+  const cancelableIds = new Set<string>();
+
+  for (const extension of props.extensions) {
+    const isUpdating = props.updatingExtensions.has(extension.id);
+    const isRefreshing = props.refreshingExtensions?.has(extension.id);
+    const canCancelUpdate = extension.hasUpdate && !extension.isLocal && !extension.isBroken && isUpdating;
+    const canCancelRefresh = extension.isLocal && Boolean(isRefreshing);
+
+    if (canCancelUpdate || canCancelRefresh) {
+      cancelableIds.add(extension.id);
+    }
+  }
+
+  return cancelableIds;
+});
+
+watch(visibleCancelableExtensionIds, (cancelableIds) => {
+  const nextRequestedIds = new Set<string>();
+
+  for (const extensionId of cancelRequestedExtensionIds.value) {
+    if (cancelableIds.has(extensionId)) {
+      nextRequestedIds.add(extensionId);
+    }
+  }
+
+  cancelRequestedExtensionIds.value = nextRequestedIds;
+});
+
 function getDisplayName(extension: ExtensionWithManifest): string {
   return extension.name || extension.manifest?.name || extension.id.split('.').pop() || extension.id;
 }
@@ -110,6 +144,15 @@ function getBinariesPreview(extension: ExtensionWithManifest): string {
   }
 
   return extension.binaries.map(binaryItem => binaryItem.id).join(', ');
+}
+
+function handleCancel(extensionId: string) {
+  if (cancelRequestedExtensionIds.value.has(extensionId)) return;
+
+  const nextRequestedIds = new Set(cancelRequestedExtensionIds.value);
+  nextRequestedIds.add(extensionId);
+  cancelRequestedExtensionIds.value = nextRequestedIds;
+  emit('cancel', extensionId);
 }
 
 </script>
@@ -206,10 +249,11 @@ function getBinariesPreview(extension: ExtensionWithManifest): string {
 
       <div class="extensions-installed__list">
         <div
-          v-for="extension in extensions"
+          v-for="(extension, itemIndex) in extensions"
           :key="extension.id"
           class="extensions-installed__item"
           :class="{ 'extensions-installed__item--disabled': !extension.isEnabled }"
+          v-bind="getStaggerSlideUpBinding(itemIndex)"
           @click="emit('select', extension, $event)"
         >
           <div class="extensions-installed__item-icon">
@@ -271,11 +315,11 @@ function getBinariesPreview(extension: ExtensionWithManifest): string {
                 v-if="extension.hasUpdate && !extension.isLocal && !extension.isBroken"
                 variant="outline"
                 size="icon"
-                :disabled="installingExtensions.has(extension.id)"
+                :disabled="updatingExtensions.has(extension.id)"
                 @click.stop="emit('update', extension.id)"
               >
                 <RefreshCwIcon
-                  v-if="installingExtensions.has(extension.id)"
+                  v-if="updatingExtensions.has(extension.id)"
                   :size="16"
                   class="extensions-installed__spinner"
                 />
@@ -283,6 +327,16 @@ function getBinariesPreview(extension: ExtensionWithManifest): string {
                   v-else
                   :size="16"
                 />
+              </Button>
+              <Button
+                v-if="extension.hasUpdate && !extension.isLocal && !extension.isBroken && updatingExtensions.has(extension.id)"
+                variant="outline"
+                size="icon"
+                :title="t('extensions.cancelInstall')"
+                :disabled="cancelRequestedExtensionIds.has(extension.id)"
+                @click.stop="handleCancel(extension.id)"
+              >
+                <XIcon :size="16" />
               </Button>
               <Button
                 v-if="extension.isLocal"
@@ -301,6 +355,16 @@ function getBinariesPreview(extension: ExtensionWithManifest): string {
                   v-else
                   :size="16"
                 />
+              </Button>
+              <Button
+                v-if="extension.isLocal && refreshingExtensions?.has(extension.id)"
+                variant="outline"
+                size="icon"
+                :title="t('extensions.cancelInstall')"
+                :disabled="cancelRequestedExtensionIds.has(extension.id)"
+                @click.stop="handleCancel(extension.id)"
+              >
+                <XIcon :size="16" />
               </Button>
               <Button
                 variant="ghost"

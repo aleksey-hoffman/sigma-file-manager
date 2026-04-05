@@ -579,6 +579,9 @@ export interface SigmaExtensionAPI {
     basename(filePath: string, suffix?: string): string;
     extname(filePath: string): string;
   };
+  runtime: {
+    isExtensionInstallCancelledError(error: unknown): boolean;
+  };
   binary: {
     ensureInstalled(id: string, options: BinaryInstallOptions): Promise<string>;
     getPath(id: string): Promise<string | null>;

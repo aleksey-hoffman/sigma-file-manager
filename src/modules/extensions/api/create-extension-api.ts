@@ -21,6 +21,7 @@ import { createPlatformAPI } from '@/modules/extensions/api/create-platform-api'
 import { createBinaryAPI } from '@/modules/extensions/api/create-binary-api';
 import { createPathAPI } from '@/modules/extensions/api/create-path-api';
 import { createI18nAPI, type ExtensionLocaleMessages } from '@/modules/extensions/api/create-i18n-api';
+import { isExtensionInstallCancelledError } from '@/modules/extensions/utils/install-cancellation-error';
 
 export type RuntimeExtensionAPI = SigmaExtensionAPI & {
   i18n: SigmaExtensionAPI['i18n'] & {
@@ -52,6 +53,9 @@ export function createExtensionAPI(
     platform: createPlatformAPI(),
     path: createPathAPI(),
     binary: createBinaryAPI(context),
+    runtime: {
+      isExtensionInstallCancelledError: (error: unknown) => isExtensionInstallCancelledError(error),
+    },
   };
 
   return freezeObject(api);

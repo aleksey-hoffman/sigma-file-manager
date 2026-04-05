@@ -1826,6 +1826,8 @@
     "latest": "ultima",
     "install": "Installa",
     "installing": "Installazione...",
+    "cancelInstall": "Annulla",
+    "installFailed": "Installazione non riuscita",
     "installFromFolder": "Installa da cartella",
     "installLocalError": "Impossibile installare l'estensione dalla cartella",
     "selectExtensionFolder": "Seleziona cartella estensione",

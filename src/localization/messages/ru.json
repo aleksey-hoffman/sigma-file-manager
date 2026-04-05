@@ -1849,6 +1849,8 @@
     "latest": "последняя",
     "install": "Установить",
     "installing": "Установка...",
+    "cancelInstall": "Отмена",
+    "installFailed": "Не удалось установить",
     "installFromFolder": "Установить из папки",
     "installLocalError": "Не удалось установить расширение из папки",
     "selectExtensionFolder": "Выберите папку расширения",

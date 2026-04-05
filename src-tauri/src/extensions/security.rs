@@ -104,14 +104,32 @@ fn normalize_integrity_value(value: &str) -> String {
         .to_lowercase()
 }
 
+fn hex_encode_digest(bytes: &[u8]) -> String {
+    bytes.iter().map(|byte| format!("{byte:02x}")).collect()
+}
+
 pub fn compute_sha256_hex(bytes: &[u8]) -> String {
     let mut hasher = Sha256::new();
     hasher.update(bytes);
-    hasher
-        .finalize()
-        .iter()
-        .map(|byte| format!("{byte:02x}"))
-        .collect()
+    hex_encode_digest(hasher.finalize().as_slice())
+}
+
+pub fn verify_integrity_sha256_digest(
+    digest: &[u8; 32],
+    expected_integrity: Option<&str>,
+) -> Result<(), String> {
+    if let Some(expected) = expected_integrity {
+        let expected_hash = normalize_integrity_value(expected);
+        let actual_hash = hex_encode_digest(digest);
+        if actual_hash != expected_hash {
+            return Err(format!(
+                "Integrity verification failed: expected sha256:{}, got sha256:{}",
+                expected_hash, actual_hash
+            ));
+        }
+    }
+
+    Ok(())
 }
 
 pub fn verify_integrity(bytes: &[u8], expected_integrity: Option<&str>) -> Result<(), String> {
@@ -165,4 +183,3 @@ pub fn validate_binary_relative_path(value: &str, label: &str) -> Result<PathBuf
 
     Ok(path)
 }
-

@@ -1952,6 +1952,8 @@
     "latest": "latest",
     "install": "Install",
     "installing": "Installing...",
+    "cancelInstall": "Prekliči",
+    "installFailed": "Namestitev ni uspela",
     "showFolder": "Prikaži mapo",
     "installFromFolder": "Install from folder",
     "installLocalError": "Failed to install extension from folder",

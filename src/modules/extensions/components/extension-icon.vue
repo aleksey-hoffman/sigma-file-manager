@@ -98,20 +98,21 @@ watch(
 
 <template>
   <div
-    class="extension-icon"
+    class="extension-icon animate-fade-in"
     :style="styleObject"
   >
     <img
       v-if="resolvedIconUrl && !hasError"
       :src="resolvedIconUrl"
       alt=""
-      class="extension-icon__image"
+      class="extension-icon__image animate-fade-in"
       draggable="false"
       @error="handleImageError"
       @load="handleImageLoad"
     >
     <BlocksIcon
       v-else
+      class="animate-fade-in"
       :size="size"
     />
   </div>

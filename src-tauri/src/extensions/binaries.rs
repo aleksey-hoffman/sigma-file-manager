@@ -2,23 +2,20 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-use futures_util::StreamExt;
 use serde::Serialize;
 use std::fs;
-use std::io::Write;
 use std::path::{Path, PathBuf};
-use std::time::Duration;
 use tauri::Emitter;
 
 use super::archives::extract_archive;
 use super::fs_ops::{next_sibling_temp_dir, remove_dir_force};
-use super::http::{download_url_bytes, read_response_bytes_with_limit};
+use super::http::{build_http_client, stream_response_to_file_with_limit};
 use super::paths::{ensure_app_data_subdir, get_extension_dir};
 use super::security::{
     authorize_extension_caller, require_integrity, validate_binary_path_component,
-    validate_binary_relative_path, validate_remote_url, verify_integrity,
+    validate_binary_relative_path, validate_remote_url,
 };
-use super::state::IN_FLIGHT_BINARY_DOWNLOADS;
+use super::state::{get_extension_install_cancellation_flag, IN_FLIGHT_BINARY_DOWNLOADS};
 use super::types::MAX_BINARY_DOWNLOAD_BYTES;
 
 pub fn get_shared_binaries_dir(app_handle: &tauri::AppHandle) -> Result<PathBuf, String> {
@@ -139,6 +136,7 @@ pub async fn get_extension_binary_path(
 pub struct BinaryDownloadRequest {
     pub integrity: Option<String>,
     pub allow_missing_integrity: bool,
+    pub cancellation_id: Option<String>,
 }
 
 pub async fn download_extension_binary(
@@ -173,20 +171,32 @@ pub async fn download_extension_binary(
         }
     }
 
-    let bytes = download_url_bytes(
-        validated_url.as_str(),
+    let client = build_http_client()?;
+    let response = client
+        .get(validated_url)
+        .send()
+        .await
+        .map_err(|error| format!("Failed to download binary: {}", error))?;
+
+    if !response.status().is_success() {
+        return Err(format!(
+            "Download failed with status: {}",
+            response.status()
+        ));
+    }
+
+    let cancel_flag = get_extension_install_cancellation_flag(request.cancellation_id.as_ref());
+
+    stream_response_to_file_with_limit(
+        response,
+        &binary_path,
         MAX_BINARY_DOWNLOAD_BYTES,
-        "download binary",
         "binary response",
+        request.integrity.as_deref(),
+        |_downloaded, _total| {},
+        cancel_flag,
     )
     .await?;
-    verify_integrity(&bytes, request.integrity.as_deref())?;
-
-    let mut file = fs::File::create(&binary_path)
-        .map_err(|error| format!("Failed to create binary file: {}", error))?;
-
-    file.write_all(&bytes)
-        .map_err(|error| format!("Failed to write binary file: {}", error))?;
 
     #[cfg(unix)]
     {
@@ -237,11 +247,7 @@ pub async fn download_and_extract_extension_binary(
 
     let archive_path = staging_root_dir.join("download_archive");
 
-    let client = reqwest::Client::builder()
-        .timeout(Duration::from_secs(900))
-        .build()
-        .map_err(|error| format!("Failed to create HTTP client: {}", error))?;
-
+    let client = build_http_client()?;
     let response = client
         .get(validated_url)
         .send()
@@ -256,15 +262,22 @@ pub async fn download_and_extract_extension_binary(
         ));
     }
 
-    let bytes =
-        read_response_bytes_with_limit(response, MAX_BINARY_DOWNLOAD_BYTES, "response").await?;
-    verify_integrity(&bytes, request.integrity.as_deref())?;
+    let cancel_flag = get_extension_install_cancellation_flag(request.cancellation_id.as_ref());
 
-    let mut file = fs::File::create(&archive_path)
-        .map_err(|error| format!("Failed to create archive file: {}", error))?;
-
-    file.write_all(&bytes)
-        .map_err(|error| format!("Failed to write archive file: {}", error))?;
+    if let Err(error) = stream_response_to_file_with_limit(
+        response,
+        &archive_path,
+        MAX_BINARY_DOWNLOAD_BYTES,
+        "response",
+        request.integrity.as_deref(),
+        |_downloaded, _total| {},
+        cancel_flag,
+    )
+    .await
+    {
+        remove_dir_force(&staging_root_dir).ok();
+        return Err(error);
+    }
 
     extract_archive(&archive_path, &staging_extract_dir, &download_url)?;
 
@@ -365,10 +378,27 @@ struct BinaryDownloadProgress {
     total: Option<u64>,
 }
 
+fn make_shared_binary_progress_emitter(
+    app_handle: tauri::AppHandle,
+    progress_event_id: Option<String>,
+) -> impl FnMut(u64, Option<u64>) {
+    move |downloaded: u64, total: Option<u64>| {
+        if let Some(ref progress_id) = progress_event_id {
+            let payload = BinaryDownloadProgress {
+                progress_event_id: progress_id.clone(),
+                downloaded,
+                total,
+            };
+            let _ = app_handle.emit("binary-download-progress", payload);
+        }
+    }
+}
+
 pub struct SharedBinaryDownloadRequest {
     pub integrity: Option<String>,
     pub version: Option<String>,
     pub progress_event_id: Option<String>,
+    pub cancellation_id: Option<String>,
 }
 
 pub async fn download_shared_binary(
@@ -394,6 +424,7 @@ pub async fn download_shared_binary(
     let integrity_clone = request.integrity.clone();
     let version_clone = request.version.clone();
     let progress_event_id_clone = request.progress_event_id.clone();
+    let cancellation_id_clone = request.cancellation_id.clone();
 
     let mut guard = IN_FLIGHT_BINARY_DOWNLOADS.lock().await;
     if let Some(tx) = guard.get(&key) {
@@ -427,6 +458,7 @@ pub async fn download_shared_binary(
                 integrity_clone,
                 version_clone,
                 progress_event_id_clone,
+                cancellation_id_clone,
             )
             .await;
             let _ = tx_for_task.send(result);
@@ -459,6 +491,7 @@ async fn run_download_shared_binary(
     integrity: Option<String>,
     version: Option<String>,
     progress_event_id: Option<String>,
+    cancellation_id: Option<String>,
 ) -> Result<String, String> {
     let validated_url = validate_remote_url(&download_url)?;
     let binary_dir = get_shared_binary_dir(&app_handle, &binary_id, version.as_deref())?;
@@ -477,11 +510,7 @@ async fn run_download_shared_binary(
         }
     }
 
-    let client = reqwest::Client::builder()
-        .timeout(Duration::from_secs(900))
-        .build()
-        .map_err(|error| format!("Failed to create HTTP client: {}", error))?;
-
+    let client = build_http_client()?;
     let response = client
         .get(validated_url)
         .send()
@@ -502,61 +531,22 @@ async fn run_download_shared_binary(
             MAX_BINARY_DOWNLOAD_BYTES
         ));
     }
-    if let Some(ref progress_id) = progress_event_id {
-        let payload = BinaryDownloadProgress {
-            progress_event_id: progress_id.clone(),
-            downloaded: 0,
-            total,
-        };
-        let _ = app_handle.emit("binary-download-progress", payload);
-    }
 
-    let mut stream = response.bytes_stream();
-    let mut bytes = Vec::new();
-    let mut downloaded: u64 = 0;
-    let mut last_emit: u64 = 0;
+    let on_progress =
+        make_shared_binary_progress_emitter(app_handle.clone(), progress_event_id.clone());
 
-    while let Some(chunk_result) = stream.next().await {
-        let chunk =
-            chunk_result.map_err(|error| format!("Failed to read binary stream: {}", error))?;
-        downloaded += chunk.len() as u64;
-        if downloaded > MAX_BINARY_DOWNLOAD_BYTES {
-            return Err(format!(
-                "Download exceeds size limit of {} bytes",
-                MAX_BINARY_DOWNLOAD_BYTES
-            ));
-        }
-        bytes.extend_from_slice(&chunk);
+    let cancel_flag = get_extension_install_cancellation_flag(cancellation_id.as_ref());
 
-        if let Some(ref progress_id) = progress_event_id {
-            if downloaded - last_emit >= 256 * 1024 || downloaded == 0 {
-                last_emit = downloaded;
-                let payload = BinaryDownloadProgress {
-                    progress_event_id: progress_id.clone(),
-                    downloaded,
-                    total,
-                };
-                let _ = app_handle.emit("binary-download-progress", payload);
-            }
-        }
-    }
-
-    if let Some(ref progress_id) = progress_event_id {
-        let payload = BinaryDownloadProgress {
-            progress_event_id: progress_id.clone(),
-            downloaded,
-            total,
-        };
-        let _ = app_handle.emit("binary-download-progress", payload);
-    }
-
-    verify_integrity(&bytes, integrity.as_deref())?;
-
-    let mut file = fs::File::create(&binary_path)
-        .map_err(|error| format!("Failed to create binary file: {}", error))?;
-
-    file.write_all(&bytes)
-        .map_err(|error| format!("Failed to write binary file: {}", error))?;
+    stream_response_to_file_with_limit(
+        response,
+        &binary_path,
+        MAX_BINARY_DOWNLOAD_BYTES,
+        "binary response",
+        integrity.as_deref(),
+        on_progress,
+        cancel_flag,
+    )
+    .await?;
 
     #[cfg(unix)]
     {
@@ -595,6 +585,7 @@ pub async fn download_and_extract_shared_binary(
     let integrity_clone = request.integrity.clone();
     let version_clone = request.version.clone();
     let progress_event_id_clone = request.progress_event_id.clone();
+    let cancellation_id_clone = request.cancellation_id.clone();
 
     let mut guard = IN_FLIGHT_BINARY_DOWNLOADS.lock().await;
     if let Some(tx) = guard.get(&key) {
@@ -628,6 +619,7 @@ pub async fn download_and_extract_shared_binary(
                 integrity_clone,
                 version_clone,
                 progress_event_id_clone,
+                cancellation_id_clone,
             )
             .await;
             let _ = tx_for_task.send(result);
@@ -660,6 +652,7 @@ async fn run_download_and_extract_shared_binary(
     integrity: Option<String>,
     version: Option<String>,
     progress_event_id: Option<String>,
+    cancellation_id: Option<String>,
 ) -> Result<String, String> {
     let validated_url = validate_remote_url(&download_url)?;
     let binary_dir = get_shared_binary_dir(&app_handle, &binary_id, version.as_deref())?;
@@ -681,11 +674,7 @@ async fn run_download_and_extract_shared_binary(
 
     let archive_path = staging_root_dir.join("download_archive");
 
-    let client = reqwest::Client::builder()
-        .timeout(Duration::from_secs(900))
-        .build()
-        .map_err(|error| format!("Failed to create HTTP client: {}", error))?;
-
+    let client = build_http_client()?;
     let response = client
         .get(validated_url)
         .send()
@@ -708,62 +697,26 @@ async fn run_download_and_extract_shared_binary(
             MAX_BINARY_DOWNLOAD_BYTES
         ));
     }
-    if let Some(ref progress_id) = progress_event_id {
-        let payload = BinaryDownloadProgress {
-            progress_event_id: progress_id.clone(),
-            downloaded: 0,
-            total,
-        };
-        let _ = app_handle.emit("binary-download-progress", payload);
+
+    let on_progress =
+        make_shared_binary_progress_emitter(app_handle.clone(), progress_event_id.clone());
+
+    let cancel_flag = get_extension_install_cancellation_flag(cancellation_id.as_ref());
+
+    if let Err(error) = stream_response_to_file_with_limit(
+        response,
+        &archive_path,
+        MAX_BINARY_DOWNLOAD_BYTES,
+        "archive response",
+        integrity.as_deref(),
+        on_progress,
+        cancel_flag,
+    )
+    .await
+    {
+        remove_dir_force(&staging_root_dir).ok();
+        return Err(error);
     }
-
-    let mut stream = response.bytes_stream();
-    let mut bytes = Vec::new();
-    let mut downloaded: u64 = 0;
-    let mut last_emit: u64 = 0;
-
-    while let Some(chunk_result) = stream.next().await {
-        let chunk =
-            chunk_result.map_err(|error| format!("Failed to read archive stream: {}", error))?;
-        downloaded += chunk.len() as u64;
-        if downloaded > MAX_BINARY_DOWNLOAD_BYTES {
-            remove_dir_force(&staging_root_dir).ok();
-            return Err(format!(
-                "Download exceeds size limit of {} bytes",
-                MAX_BINARY_DOWNLOAD_BYTES
-            ));
-        }
-        bytes.extend_from_slice(&chunk);
-
-        if let Some(ref progress_id) = progress_event_id {
-            if downloaded - last_emit >= 256 * 1024 || downloaded == 0 {
-                last_emit = downloaded;
-                let payload = BinaryDownloadProgress {
-                    progress_event_id: progress_id.clone(),
-                    downloaded,
-                    total,
-                };
-                let _ = app_handle.emit("binary-download-progress", payload);
-            }
-        }
-    }
-
-    if let Some(ref progress_id) = progress_event_id {
-        let payload = BinaryDownloadProgress {
-            progress_event_id: progress_id.clone(),
-            downloaded,
-            total,
-        };
-        let _ = app_handle.emit("binary-download-progress", payload);
-    }
-
-    verify_integrity(&bytes, integrity.as_deref())?;
-
-    let mut file = fs::File::create(&archive_path)
-        .map_err(|error| format!("Failed to create archive file: {}", error))?;
-
-    file.write_all(&bytes)
-        .map_err(|error| format!("Failed to write archive file: {}", error))?;
 
     extract_archive(&archive_path, &staging_extract_dir, &download_url)?;
 

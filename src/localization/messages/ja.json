@@ -1826,6 +1826,8 @@
     "latest": "最新",
     "install": "インストール",
     "installing": "インストール中...",
+    "cancelInstall": "キャンセル",
+    "installFailed": "インストールに失敗しました",
     "installFromFolder": "フォルダからインストール",
     "installLocalError": "フォルダから拡張機能をインストールできませんでした",
     "selectExtensionFolder": "拡張機能フォルダを選択",

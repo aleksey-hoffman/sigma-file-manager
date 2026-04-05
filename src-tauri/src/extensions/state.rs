@@ -3,8 +3,9 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 use once_cell::sync::Lazy;
+use std::collections::HashMap;
 use std::process::Child;
-use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::{Arc, Mutex};
 
 use super::types::BinaryDownloadSenderMap;
@@ -21,6 +22,38 @@ pub static COMMAND_PIDS: Lazy<Mutex<std::collections::HashMap<String, u32>>> =
 pub static COMMAND_EXTENSION_MAP: Lazy<Mutex<std::collections::HashMap<String, String>>> =
     Lazy::new(|| Mutex::new(std::collections::HashMap::new()));
 pub static TASK_COUNTER: AtomicU64 = AtomicU64::new(0);
+
+pub static EXTENSION_INSTALL_CANCELLATIONS: Lazy<Mutex<HashMap<String, Arc<AtomicBool>>>> =
+    Lazy::new(|| Mutex::new(HashMap::new()));
+
+pub fn register_extension_install_cancellation(cancellation_id: String) {
+    let mut guard = EXTENSION_INSTALL_CANCELLATIONS.lock().unwrap();
+    guard.insert(cancellation_id, Arc::new(AtomicBool::new(false)));
+}
+
+pub fn cancel_extension_install_cancellation(cancellation_id: &str) {
+    let guard = EXTENSION_INSTALL_CANCELLATIONS.lock().unwrap();
+    if let Some(flag) = guard.get(cancellation_id) {
+        flag.store(true, Ordering::SeqCst);
+    }
+}
+
+pub fn clear_extension_install_cancellation(cancellation_id: &str) {
+    let mut guard = EXTENSION_INSTALL_CANCELLATIONS.lock().unwrap();
+    guard.remove(cancellation_id);
+}
+
+pub fn get_extension_install_cancellation_flag(
+    cancellation_id: Option<&String>,
+) -> Option<Arc<AtomicBool>> {
+    cancellation_id.and_then(|id| {
+        EXTENSION_INSTALL_CANCELLATIONS
+            .lock()
+            .unwrap()
+            .get(id)
+            .cloned()
+    })
+}
 
 pub fn next_task_id() -> String {
     let counter = TASK_COUNTER.fetch_add(1, Ordering::SeqCst);

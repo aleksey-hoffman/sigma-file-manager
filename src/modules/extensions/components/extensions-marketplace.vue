@@ -9,6 +9,7 @@ import { useI18n } from 'vue-i18n';
 import { SparklesIcon, SearchXIcon, AlertCircleIcon, Loader2Icon } from '@lucide/vue';
 import ExtensionCard from './extension-card.vue';
 import type { ExtensionWithManifest } from '@/modules/extensions/composables/use-extensions';
+import { getStaggerSlideUpBinding } from '@/utils/stagger-animation';
 
 const props = defineProps<{
   extensions: ExtensionWithManifest[];
@@ -16,6 +17,7 @@ const props = defineProps<{
   isLoading?: boolean;
   error?: string | null;
   installingExtensions: Set<string>;
+  updatingExtensions: Set<string>;
   isAnyInstallInProgress?: boolean;
   searchQuery: string;
 }>();
@@ -24,6 +26,7 @@ const emit = defineEmits<{
   select: [extension: ExtensionWithManifest, event: MouseEvent];
   install: [extensionId: string];
   update: [extensionId: string];
+  cancel: [extensionId: string];
 }>();
 
 const { t } = useI18n();
@@ -92,14 +95,17 @@ const noResults = computed(() => {
           </div>
           <div class="extensions-marketplace__grid extensions-marketplace__grid--featured">
             <ExtensionCard
-              v-for="extension in featuredExtensions"
+              v-for="(extension, itemIndex) in featuredExtensions"
               :key="extension.id"
+              v-bind="getStaggerSlideUpBinding(itemIndex)"
               :extension="extension"
               :is-installing="installingExtensions.has(extension.id)"
+              :is-updating="updatingExtensions.has(extension.id)"
               :is-install-disabled="installingExtensions.has(extension.id) || isAnyInstallInProgress"
               @click="(event) => emit('select', extension, event)"
               @install="emit('install', extension.id)"
               @update="emit('update', extension.id)"
+              @cancel="emit('cancel', extension.id)"
             />
           </div>
         </div>
@@ -114,14 +120,17 @@ const noResults = computed(() => {
           </div>
           <div class="extensions-marketplace__grid">
             <ExtensionCard
-              v-for="extension in displayExtensions"
+              v-for="(extension, itemIndex) in displayExtensions"
               :key="extension.id"
+              v-bind="getStaggerSlideUpBinding(itemIndex)"
               :extension="extension"
               :is-installing="installingExtensions.has(extension.id)"
+              :is-updating="updatingExtensions.has(extension.id)"
               :is-install-disabled="installingExtensions.has(extension.id) || isAnyInstallInProgress"
               @click="(event) => emit('select', extension, event)"
               @install="emit('install', extension.id)"
               @update="emit('update', extension.id)"
+              @cancel="emit('cancel', extension.id)"
             />
           </div>
         </div>

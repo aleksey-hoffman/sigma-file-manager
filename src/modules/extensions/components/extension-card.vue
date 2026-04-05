@@ -4,7 +4,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import {
   DownloadIcon,
@@ -12,6 +12,7 @@ import {
   CheckIcon,
   ArrowBigUpDashIcon,
   TriangleAlertIcon,
+  XIcon,
 } from '@lucide/vue';
 import { Button } from '@/components/ui/button';
 import ExtensionBadge from './extension-badge.vue';
@@ -22,6 +23,7 @@ import { formatBytes } from '@/modules/navigator/components/file-browser/utils';
 const props = defineProps<{
   extension: ExtensionWithManifest;
   isInstalling?: boolean;
+  isUpdating?: boolean;
   isInstallDisabled?: boolean;
 }>();
 
@@ -29,9 +31,12 @@ const emit = defineEmits<{
   click: [event: MouseEvent];
   install: [];
   update: [];
+  cancel: [];
 }>();
 
 const { t } = useI18n();
+
+const isCancelRequested = ref(false);
 
 const displayName = computed(() => {
   return props.extension.name || props.extension.manifest?.name || props.extension.id.split('.').pop() || props.extension.id;
@@ -63,6 +68,16 @@ const categories = computed(() => {
   return (props.extension.categories || []).slice(0, 3);
 });
 
+const isShowingCancelButton = computed(() => {
+  return Boolean(props.isInstalling || props.isUpdating);
+});
+
+watch(isShowingCancelButton, (isShowing) => {
+  if (!isShowing) {
+    isCancelRequested.value = false;
+  }
+});
+
 function handleInstallClick(event: MouseEvent) {
   event.stopPropagation();
   emit('install');
@@ -71,6 +86,13 @@ function handleInstallClick(event: MouseEvent) {
 function handleUpdateClick(event: MouseEvent) {
   event.stopPropagation();
   emit('update');
+}
+
+function handleCancelClick(event: MouseEvent) {
+  event.stopPropagation();
+  if (isCancelRequested.value) return;
+  isCancelRequested.value = true;
+  emit('cancel');
 }
 </script>
 
@@ -150,44 +172,68 @@ function handleUpdateClick(event: MouseEvent) {
       </div>
 
       <div class="extension-card__actions">
-        <Button
-          v-if="!extension.isInstalled || isInstalling"
-          variant="default"
-          size="xs"
-          :disabled="(isInstallDisabled ?? isInstalling) || !isPlatformCompatible"
-          @click="handleInstallClick"
-        >
-          <DownloadIcon
-            v-if="!isInstalling"
-            :size="16"
-          />
-          <RefreshCwIcon
-            v-else
-            :size="16"
-            class="extension-card__spinner"
-          />
-          {{ isInstalling ? t('extensions.installing') : t('extensions.install') }}
-        </Button>
-
-        <template v-else>
+        <template v-if="!extension.isInstalled || isInstalling">
           <Button
-            v-if="extension.hasUpdate && !isLocal"
-            variant="outline"
-            size="sm"
-            :disabled="isInstalling"
-            @click="handleUpdateClick"
+            variant="default"
+            size="xs"
+            :disabled="(isInstallDisabled ?? isInstalling) || !isPlatformCompatible"
+            @click="handleInstallClick"
           >
+            <DownloadIcon
+              v-if="!isInstalling"
+              :size="16"
+            />
             <RefreshCwIcon
-              v-if="isInstalling"
+              v-else
               :size="16"
               class="extension-card__spinner"
             />
-            <ArrowBigUpDashIcon
-              v-else
-              :size="16"
-            />
-            {{ t('extensions.update') }}
+            {{ isInstalling ? t('extensions.installing') : t('extensions.install') }}
           </Button>
+
+          <Button
+            v-if="isInstalling"
+            variant="outline"
+            size="xs"
+            :disabled="isCancelRequested"
+            @click="handleCancelClick"
+          >
+            <XIcon :size="16" />
+            {{ t('extensions.cancelInstall') }}
+          </Button>
+        </template>
+
+        <template v-else>
+          <template v-if="extension.hasUpdate && !isLocal">
+            <Button
+              variant="outline"
+              size="sm"
+              :disabled="isUpdating"
+              @click="handleUpdateClick"
+            >
+              <RefreshCwIcon
+                v-if="isUpdating"
+                :size="16"
+                class="extension-card__spinner"
+              />
+              <ArrowBigUpDashIcon
+                v-else
+                :size="16"
+              />
+              {{ t('extensions.update') }}
+            </Button>
+
+            <Button
+              v-if="isUpdating"
+              variant="outline"
+              size="sm"
+              :disabled="isCancelRequested"
+              @click="handleCancelClick"
+            >
+              <XIcon :size="16" />
+              {{ t('extensions.cancelInstall') }}
+            </Button>
+          </template>
           <span
             v-else
             class="extension-card__installed-badge"

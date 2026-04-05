@@ -1826,6 +1826,8 @@
     "latest": "en son",
     "install": "Yükle",
     "installing": "Yükleniyor...",
+    "cancelInstall": "İptal",
+    "installFailed": "Yükleme başarısız",
     "installFromFolder": "Klasörden yükle",
     "installLocalError": "Eklenti klasörden yüklenemedi",
     "selectExtensionFolder": "Eklenti klasörünü seçin",

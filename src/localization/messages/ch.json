@@ -1829,6 +1829,8 @@
     "latest": "最新",
     "install": "安装",
     "installing": "安装中...",
+    "cancelInstall": "取消",
+    "installFailed": "安装失败",
     "installFromFolder": "从文件夹安装",
     "installLocalError": "从文件夹安装扩展失败",
     "selectExtensionFolder": "选择扩展文件夹",

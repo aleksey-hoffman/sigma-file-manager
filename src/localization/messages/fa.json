@@ -1825,6 +1825,8 @@
     "latest": "آخرین",
     "install": "نصب",
     "installing": "در حال نصب...",
+    "cancelInstall": "لغو",
+    "installFailed": "نصب ناموفق بود",
     "installFromFolder": "نصب از پوشه",
     "installLocalError": "نصب افزونه از پوشه ناموفق بود",
     "selectExtensionFolder": "انتخاب پوشه افزونه",

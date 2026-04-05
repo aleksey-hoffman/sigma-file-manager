@@ -2,7 +2,7 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-use super::http::read_response_bytes_with_limit;
+use super::http::{build_http_client, read_response_bytes_with_limit};
 use super::security::validate_remote_url;
 use super::types::{FetchUrlResult, MAX_TEXT_FETCH_BYTES};
 
@@ -71,13 +71,10 @@ pub async fn fetch_github_tags(repository: String) -> Result<Vec<String>, String
 
     let atom_url = format!("https://github.com/{}/{}/tags.atom", owner, repo);
 
-    let client = reqwest::Client::builder()
-        .build()
-        .map_err(|error| format!("Failed to create HTTP client: {}", error))?;
+    let client = build_http_client()?;
 
     let response = client
         .get(&atom_url)
-        .header("User-Agent", "sigma-file-manager")
         .send()
         .await
         .map_err(|error| format!("Failed to fetch tags feed: {}", error))?;
@@ -100,13 +97,10 @@ pub async fn fetch_github_tags(repository: String) -> Result<Vec<String>, String
 
 pub async fn fetch_url_text(url: String) -> Result<FetchUrlResult, String> {
     let validated_url = validate_remote_url(&url)?;
-    let client = reqwest::Client::builder()
-        .build()
-        .map_err(|error| format!("Failed to create HTTP client: {}", error))?;
+    let client = build_http_client()?;
 
     let response = client
         .get(validated_url)
-        .header("User-Agent", "sigma-file-manager")
         .send()
         .await
         .map_err(|error| format!("Failed to fetch URL: {}", error))?;

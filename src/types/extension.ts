@@ -74,6 +74,7 @@ export type InstalledExtension = {
   registryEntry?: ExtensionRegistryEntry;
   isLocal?: boolean;
   localSourcePath?: string;
+  installPendingDependencies?: boolean;
 };
 
 export type ExtensionLoadState = 'unloaded' | 'loading' | 'loaded' | 'error';
@@ -102,6 +103,7 @@ export type InstalledExtensionData = {
   settings: ExtensionSettings;
   isLocal?: boolean;
   localSourcePath?: string;
+  installPendingDependencies?: boolean;
 };
 
 export type SharedBinaryInfo = BinaryInfo & {
