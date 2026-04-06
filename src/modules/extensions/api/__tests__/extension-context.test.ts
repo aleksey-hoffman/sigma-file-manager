@@ -75,4 +75,15 @@ describe('createExtensionContext', () => {
 
     expect(hasScopedAccessMock).not.toHaveBeenCalled();
   });
+
+  it('treats dialog-selected files as allowed read paths', async () => {
+    const context = createExtensionContext('test.extension', ['fs.read' as ExtensionPermission]);
+    context.grantDialogReadAccess('/downloads/cookies.txt');
+
+    await expect(
+      context.isInAllowedReadDir('/downloads/cookies.txt'),
+    ).resolves.toBe(true);
+
+    expect(hasScopedAccessMock).not.toHaveBeenCalled();
+  });
 });

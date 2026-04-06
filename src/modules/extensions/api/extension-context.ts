@@ -28,6 +28,8 @@ export type ExtensionContext = {
   getExtensionName: () => string;
   getExtensionIconPath: () => string | undefined;
   getExtensionToastTitle: () => string;
+  grantDialogReadAccess: (filePath: string) => void;
+  hasDialogReadAccess: (filePath: string) => boolean;
   grantDialogWriteAccess: (filePath: string) => void;
   consumeDialogWriteAccess: (filePath: string) => boolean;
 };
@@ -102,6 +104,7 @@ export function createExtensionContext(
   }
 
   async function isInAllowedReadDir(path: string): Promise<boolean> {
+    if (hasDialogReadAccess(path)) return true;
     if (await isInExtensionDir(path)) return true;
     if (await isInExtensionStorageDir(path)) return true;
     if (await isInSharedBinariesDir(path)) return true;
@@ -188,7 +191,25 @@ export function createExtensionContext(
   }
 
   const DIALOG_GRANT_EXPIRY_MS = 300_000;
+  const dialogReadablePaths = new Map<string, ReturnType<typeof setTimeout>>();
   const dialogGrantedPaths = new Map<string, ReturnType<typeof setTimeout>>();
+
+  function grantDialogReadAccess(filePath: string): void {
+    const existingTimer = dialogReadablePaths.get(filePath);
+
+    if (existingTimer !== undefined) {
+      clearTimeout(existingTimer);
+    }
+
+    const timer = setTimeout(() => {
+      dialogReadablePaths.delete(filePath);
+    }, DIALOG_GRANT_EXPIRY_MS);
+    dialogReadablePaths.set(filePath, timer);
+  }
+
+  function hasDialogReadAccess(filePath: string): boolean {
+    return dialogReadablePaths.has(filePath);
+  }
 
   function grantDialogWriteAccess(filePath: string): void {
     const existingTimer = dialogGrantedPaths.get(filePath);
@@ -234,6 +255,8 @@ export function createExtensionContext(
     getExtensionName,
     getExtensionIconPath,
     getExtensionToastTitle,
+    grantDialogReadAccess,
+    hasDialogReadAccess,
     grantDialogWriteAccess,
     consumeDialogWriteAccess,
   };

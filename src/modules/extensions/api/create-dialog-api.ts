@@ -15,7 +15,19 @@ export function createDialogAPI(
         throw new Error(context.t('extensions.api.permissionDenied', { permission: 'dialogs' }));
       }
 
-      return executeCommand('sigma.dialog.openFile', options) as Promise<string | string[] | null>;
+      const selectedPath = await executeCommand('sigma.dialog.openFile', options) as string | string[] | null;
+
+      if (typeof selectedPath === 'string' && selectedPath.length > 0) {
+        context.grantDialogReadAccess(selectedPath);
+      } else if (Array.isArray(selectedPath)) {
+        for (const filePath of selectedPath) {
+          if (typeof filePath === 'string' && filePath.length > 0) {
+            context.grantDialogReadAccess(filePath);
+          }
+        }
+      }
+
+      return selectedPath;
     },
     saveFile: async (options?: SaveFileDialogOptions): Promise<string | null> => {
       if (!context.hasPermission('dialogs')) {

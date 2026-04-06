@@ -51,6 +51,8 @@ function createContext(permissions: ExtensionPermission[] = []): ExtensionContex
     getExtensionName: vi.fn(),
     getExtensionIconPath: vi.fn(),
     getExtensionToastTitle: vi.fn(),
+    grantDialogReadAccess: vi.fn(),
+    hasDialogReadAccess: vi.fn(),
     grantDialogWriteAccess: vi.fn(),
     consumeDialogWriteAccess: vi.fn(),
   };
@@ -90,6 +92,25 @@ describe('createFsAPI', () => {
     expect(invokeAsExtensionMock).toHaveBeenCalledWith('test.extension', 'write_file_binary', {
       path: '/extension-storage/secrets/youtube-cookies.txt',
       data: [1, 2, 3],
+    });
+  });
+
+  it('allows importing a file selected from a dialog', async () => {
+    const context = createContext(['fs.read', 'fs.write']);
+    context.isInAllowedReadDir = vi.fn(async () => true);
+    context.normalizeRelativePath = vi.fn((value: string) => value);
+    invokeAsExtensionMock.mockResolvedValueOnce('/extension-storage/secrets/youtube-cookies.txt');
+    const fsApi = createFsAPI(context);
+
+    await expect(
+      fsApi.storage.importFile('/downloads/cookies.txt', 'secrets/youtube-cookies.txt'),
+    ).resolves.toBe('/extension-storage/secrets/youtube-cookies.txt');
+
+    expect(context.isInAllowedReadDir).toHaveBeenCalledWith('/downloads/cookies.txt');
+    expect(invokeAsExtensionMock).toHaveBeenCalledWith('test.extension', 'import_extension_storage_file', {
+      extensionId: 'test.extension',
+      sourcePath: '/downloads/cookies.txt',
+      targetRelativePath: 'secrets/youtube-cookies.txt',
     });
   });
 });

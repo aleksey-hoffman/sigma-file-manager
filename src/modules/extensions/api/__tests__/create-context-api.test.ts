@@ -48,6 +48,8 @@ function createContext(permissions: ExtensionPermission[] = []): ExtensionContex
     getExtensionName: vi.fn(),
     getExtensionIconPath: vi.fn(),
     getExtensionToastTitle: vi.fn(),
+    grantDialogReadAccess: vi.fn(),
+    hasDialogReadAccess: vi.fn(),
     grantDialogWriteAccess: vi.fn(),
     consumeDialogWriteAccess: vi.fn(),
   };
