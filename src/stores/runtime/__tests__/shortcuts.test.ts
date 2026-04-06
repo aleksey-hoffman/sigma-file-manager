@@ -185,4 +185,21 @@ describe('shortcuts store', () => {
     expect(zoomInHandler).not.toHaveBeenCalled();
     expect(extensionHandler).not.toHaveBeenCalled();
   });
+
+  it('prevents default synchronously for the reload directory shortcut before async work', async () => {
+    const shortcutsStore = useShortcutsStore();
+
+    const event = new KeyboardEvent('keydown', {
+      key: 'F5',
+      code: 'F5',
+      bubbles: true,
+      cancelable: true,
+    });
+
+    const handlePromise = shortcutsStore.handleKeydown(event);
+
+    expect(event.defaultPrevented).toBe(true);
+
+    await expect(handlePromise).resolves.toBe(false);
+  });
 });

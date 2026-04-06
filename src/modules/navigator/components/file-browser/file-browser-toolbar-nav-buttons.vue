@@ -11,6 +11,8 @@ import {
   TooltipTrigger,
   TooltipContent,
 } from '@/components/ui/tooltip';
+import { ContextMenuShortcut } from '@/components/ui/context-menu';
+import { useShortcutsStore } from '@/stores/runtime/shortcuts';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -42,6 +44,7 @@ const emit = defineEmits<{
 }>();
 
 const { t } = useI18n();
+const shortcutsStore = useShortcutsStore();
 </script>
 
 <template>
@@ -116,7 +119,12 @@ const { t } = useI18n();
           />
         </Button>
       </TooltipTrigger>
-      <TooltipContent>{{ t('fileBrowser.refresh') }}</TooltipContent>
+      <TooltipContent>
+        <div class="file-browser-toolbar-nav-buttons__tooltip-row">
+          {{ t('fileBrowser.refresh') }}
+          <ContextMenuShortcut>{{ shortcutsStore.getShortcutLabel('reloadCurrentDirectory') }}</ContextMenuShortcut>
+        </div>
+      </TooltipContent>
     </Tooltip>
   </div>
 
@@ -215,6 +223,13 @@ const { t } = useI18n();
 
 .file-browser-toolbar-nav-buttons__dropdown {
   min-width: 180px;
+}
+
+.file-browser-toolbar-nav-buttons__tooltip-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 @container (width < 400px) {

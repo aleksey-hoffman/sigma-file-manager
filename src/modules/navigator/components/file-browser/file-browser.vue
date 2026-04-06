@@ -111,6 +111,7 @@ defineExpose({
   deleteItems: fb.deleteItems,
   startRename: fb.startRename,
   quickView: fb.quickView,
+  refresh: fb.refresh,
 });
 </script>
 

@@ -66,6 +66,18 @@ const DEFAULT_SHORTCUTS: ShortcutDefinition[] = [
     isReadOnly: false,
   },
   {
+    id: 'reloadCurrentDirectory',
+    labelKey: 'shortcuts.reloadCurrentDirectory',
+    defaultKeys: {
+      key: 'F5',
+    },
+    scope: 'navigator',
+    conditions: {
+      dialogIsOpened: false,
+    },
+    isReadOnly: false,
+  },
+  {
     id: 'toggleSettingsSearch',
     labelKey: 'shortcuts.focusUnfocusSettingsSearch',
     defaultKeys: {
@@ -1077,6 +1089,13 @@ export const useShortcutsStore = defineStore('shortcuts', () => {
   async function handleKeydown(event: KeyboardEvent): Promise<boolean> {
     if (isShortcutCaptureActive.value) {
       return false;
+    }
+
+    const reloadDirectoryKeys = getShortcutKeys('reloadCurrentDirectory');
+
+    if (reloadDirectoryKeys.key && matchesShortcut(event, reloadDirectoryKeys)) {
+      event.preventDefault();
+      event.stopPropagation();
     }
 
     const extensionHandled = await handleExtensionKeybindings(event);

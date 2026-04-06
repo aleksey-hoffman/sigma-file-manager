@@ -114,6 +114,7 @@ export type ShortcutId
     | 'navigateBack'
     | 'switchToLeftPane'
     | 'switchToRightPane'
+    | 'reloadCurrentDirectory'
     | 'uiZoomIncrease'
     | 'uiZoomDecrease'
     | 'toggleFullscreen';

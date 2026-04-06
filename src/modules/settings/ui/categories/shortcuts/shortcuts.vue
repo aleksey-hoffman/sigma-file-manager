@@ -88,6 +88,7 @@ const globalShortcutsStore = useGlobalShortcutsStore();
 const shortcutIcons: Record<ShortcutId, Component> = {
   toggleGlobalSearch: SearchIcon,
   toggleFilter: TextSearchIcon,
+  reloadCurrentDirectory: RotateCcwIcon,
   toggleSettingsSearch: TextSearchIcon,
   toggleCommandPalette: TerminalSquareIcon,
   copy: CopyIcon,

@@ -37,6 +37,7 @@ import type { DirEntry } from '@/types/dir-entry';
 type FileBrowserInstance = InstanceType<typeof FileBrowser> & {
   navigateToPath?: (path: string) => Promise<void>;
   openFile?: (path: string) => Promise<void>;
+  refresh?: () => void | Promise<void>;
   requestFocusEntryAfterRefresh?: (parentDirectoryPath: string, entryPath: string) => void;
   startRename?: (entry: DirEntry) => void;
   selectFirstEntry?: () => Promise<void>;
@@ -330,6 +331,14 @@ function handleFilterShortcut() {
   }
 }
 
+async function handleReloadShortcut() {
+  const pane = getActivePaneRef();
+
+  if (pane?.refresh) {
+    await pane.refresh();
+  }
+}
+
 function handleCopyShortcut() {
   const selectedText = getSelectedTextForCopy();
 
@@ -551,6 +560,7 @@ function callActivePaneMethod(method: keyof Pick<
 
 function registerShortcutHandlers() {
   shortcutsStore.registerHandler('toggleFilter', handleFilterShortcut);
+  shortcutsStore.registerHandler('reloadCurrentDirectory', handleReloadShortcut);
   shortcutsStore.registerHandler('copy', handleCopyShortcut);
   shortcutsStore.registerHandler('cut', handleCutShortcut);
   shortcutsStore.registerHandler('paste', handlePasteShortcut);
