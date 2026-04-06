@@ -25,7 +25,7 @@ import {
 import { i18n } from '@/localization';
 import { reconcileMissingTagDefinitions as mergeTagDefinitionsFromTaggedItems } from '@/utils/reconcile-user-stats-tags';
 
-const HISTORY_MAX_ITEMS = 200;
+const HISTORY_MAX_ITEMS = 100;
 const FREQUENT_ITEMS_MAX = 100;
 
 export const useUserStatsStore = defineStore('userStats', () => {
@@ -125,8 +125,27 @@ export const useUserStatsStore = defineStore('userStats', () => {
     }
   }
 
+  function enforceUserStatsListLimits() {
+    if (userStats.value.history.length > HISTORY_MAX_ITEMS) {
+      const sortedByNewest = [...userStats.value.history].sort(
+        (itemA, itemB) => itemB.openedAt - itemA.openedAt,
+      );
+      userStats.value.history = sortedByNewest.slice(0, HISTORY_MAX_ITEMS);
+    }
+
+    if (userStats.value.frequentItems.length > FREQUENT_ITEMS_MAX) {
+      userStats.value.frequentItems.sort((itemA, itemB) => itemB.openCount - itemA.openCount);
+      userStats.value.frequentItems = userStats.value.frequentItems.slice(
+        0,
+        FREQUENT_ITEMS_MAX,
+      );
+    }
+  }
+
   async function saveStats() {
     try {
+      enforceUserStatsListLimits();
+
       if (userStatsStorage.value) {
         await userStatsStorage.value.set('favorites', userStats.value.favorites);
         await userStatsStorage.value.set('tags', userStats.value.tags);
@@ -303,10 +322,6 @@ export const useUserStatsStore = defineStore('userStats', () => {
 
     userStats.value.history.unshift(historyItem);
 
-    if (userStats.value.history.length > HISTORY_MAX_ITEMS) {
-      userStats.value.history = userStats.value.history.slice(0, HISTORY_MAX_ITEMS);
-    }
-
     const existingFrequent = userStats.value.frequentItems.find(item => item.path === path);
 
     if (existingFrequent) {
@@ -321,11 +336,6 @@ export const useUserStatsStore = defineStore('userStats', () => {
         isFile,
       };
       userStats.value.frequentItems.push(newFrequent);
-    }
-
-    if (userStats.value.frequentItems.length > FREQUENT_ITEMS_MAX) {
-      userStats.value.frequentItems.sort((itemA, itemB) => itemB.openCount - itemA.openCount);
-      userStats.value.frequentItems = userStats.value.frequentItems.slice(0, FREQUENT_ITEMS_MAX);
     }
 
     await saveStats();
