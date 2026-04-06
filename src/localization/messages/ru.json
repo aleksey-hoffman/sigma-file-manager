@@ -9,6 +9,7 @@
     "vh": "vh",
     "mb": "МБ"
   },
+  "minutes": "минут",
   "relativeTime": {
     "justNow": "Только что",
     "secondsAgo": "0 сек назад | 1 сек назад | {n} сек назад | {n} сек назад",
@@ -773,6 +774,8 @@
       "dateModifiedContents": "Дата изменения содержимого",
       "dateModifiedMeta": "Дата изменения метаданных",
       "dateCreated": "Дата создания",
+      "dateModified": "Дата изменения",
+      "dateAccessed": "Дата доступа",
       "itemsSize": "Количество/размер",
       "status": "Статус"
     },
@@ -781,6 +784,8 @@
       "dateModifiedContents": "Изменение содержимого",
       "dateModifiedMeta": "Изменение мета",
       "dateCreated": "Создано",
+      "dateModified": "Изменено",
+      "dateAccessed": "Доступ",
       "itemsSize": "Количество/размер",
       "status": "Статус"
     }

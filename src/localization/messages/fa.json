@@ -9,6 +9,7 @@
     "vh": "vh",
     "mb": "MB"
   },
+  "minutes": "دقیقه",
   "relativeTime": {
     "justNow": "همین الان",
     "secondsAgo": "0 ثانیه پیش | 1 ثانیه پیش | {n} ثانیه پیش | {n} ثانیه پیش",
@@ -753,6 +754,8 @@
       "dateModifiedContents": "تاریخ اصلاح مطالب",
       "dateModifiedMeta": "تاریخ تغییر متای",
       "dateCreated": "تاریخ ایجاد",
+      "dateModified": "تاریخ تغییر",
+      "dateAccessed": "تاریخ دسترسی",
       "itemsSize": "اقلام / اندازه",
       "status": "وضعیت"
     },
@@ -761,6 +764,8 @@
       "dateModifiedContents": "مطالب اصلاح شده",
       "dateModifiedMeta": "متای اصلاح شده",
       "dateCreated": "ایجاد شده",
+      "dateModified": "تغییر یافته",
+      "dateAccessed": "دسترسی",
       "itemsSize": "اقلام / اندازه",
       "status": "وضعیت"
     }

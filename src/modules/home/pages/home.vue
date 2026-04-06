@@ -14,6 +14,7 @@ import { PageHomeLayout } from '@/layouts';
 import { usePageDropZone } from '@/composables/use-page-drop-zone';
 import { useFileDropOperation } from '@/composables/use-file-drop-operation';
 import FileBrowserConflictDialog from '@/modules/navigator/components/file-browser/file-browser-conflict-dialog.vue';
+import { getStaggerSlideUpBinding } from '@/utils/stagger-animation';
 
 const dropContainerRef = ref<HTMLElement | null>(null);
 
@@ -40,8 +41,8 @@ usePageDropZone({
       ref="dropContainerRef"
       class="home-page__content"
     >
-      <UserDirectoriesSection />
-      <DrivesSection />
+      <UserDirectoriesSection v-bind="getStaggerSlideUpBinding(0, {initialDelayMs: 0, stepMs: 300})" />
+      <DrivesSection v-bind="getStaggerSlideUpBinding(1, {initialDelayMs: 0, stepMs: 300})" />
     </div>
 
     <FileBrowserConflictDialog

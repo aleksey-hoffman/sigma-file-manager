@@ -9,6 +9,7 @@
     "vh": "vh",
     "mb": "MB"
   },
+  "minutes": "minut",
   "relativeTime": {
     "justNow": "Sedaj",
     "secondsAgo": "0 s nazaj | 1 s nazaj | {n} s nazaj | {n} s nazaj",
@@ -773,6 +774,8 @@
       "dateModifiedContents": "Datum spremembe vsebine",
       "dateModifiedMeta": "Datum meta spremembe",
       "dateCreated": "Datum ustvarjanja",
+      "dateModified": "Datum spremembe",
+      "dateAccessed": "Datum dostopa",
       "itemsSize": "Predmeti / velikost",
       "status": "Stanje"
     },
@@ -781,6 +784,8 @@
       "dateModifiedContents": "Sprememba vsebine",
       "dateModifiedMeta": "Sprememba meta",
       "dateCreated": "Ustvarjeno",
+      "dateModified": "Spremenjeno",
+      "dateAccessed": "Dostop",
       "itemsSize": "Predmeti / velikost",
       "status": "Stanje"
     }

@@ -9,6 +9,7 @@
     "vh": "vh",
     "mb": "MB"
   },
+  "minutes": "分",
   "relativeTime": {
     "justNow": "たった今",
     "secondsAgo": "0秒前 | 1秒前 | {n}秒前 | {n}秒前",
@@ -754,6 +755,8 @@
       "dateModifiedContents": "コンテンツの変更日",
       "dateModifiedMeta": "日付変更メタ",
       "dateCreated": "作成日",
+      "dateModified": "変更日",
+      "dateAccessed": "アクセス日",
       "itemsSize": "アイテム/サイズ",
       "status": "スターテス"
     },
@@ -762,6 +765,8 @@
       "dateModifiedContents": "変更された内容",
       "dateModifiedMeta": "変更されたメタ",
       "dateCreated": "作成した",
+      "dateModified": "変更",
+      "dateAccessed": "アクセス",
       "itemsSize": "アイテム/サイズ",
       "status": "スターテス"
     }

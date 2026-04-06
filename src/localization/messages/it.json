@@ -9,6 +9,7 @@
     "vh": "vh",
     "mb": "MB"
   },
+  "minutes": "minuti",
   "relativeTime": {
     "justNow": "Adesso",
     "secondsAgo": "0 sec fa | 1 sec fa | {n} sec fa | {n} sec fa",
@@ -754,6 +755,8 @@
       "dateModifiedContents": "Data modifica contenuti",
       "dateModifiedMeta": "Data modifica meta",
       "dateCreated": "Data di creazione",
+      "dateModified": "Data di modifica",
+      "dateAccessed": "Ultimo accesso",
       "itemsSize": "Elemento / dimensione",
       "status": "Stato"
     },
@@ -762,6 +765,8 @@
       "dateModifiedContents": "Contenuti modificati",
       "dateModifiedMeta": "Meta modificati",
       "dateCreated": "Creato",
+      "dateModified": "Modificato",
+      "dateAccessed": "Accesso",
       "itemsSize": "Elementi / dimensione",
       "status": "Stato"
     }

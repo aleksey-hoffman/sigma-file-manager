@@ -9,6 +9,7 @@
     "vh": "vh",
     "mb": "MB"
   },
+  "minutes": "phút",
   "relativeTime": {
     "justNow": "Vừa xong",
     "secondsAgo": "0 giây trước | 1 giây trước | {n} giây trước | {n} giây trước",
@@ -754,6 +755,8 @@
       "dateModifiedContents": "Ngày sửa đổi nội dung",
       "dateModifiedMeta": "Ngày sửa đổi meta",
       "dateCreated": "Ngày tạo",
+      "dateModified": "Ngày sửa đổi",
+      "dateAccessed": "Ngày truy cập",
       "itemsSize": "Mặt hàng / kích thước",
       "status": "Tình trạng"
     },
@@ -762,6 +765,8 @@
       "dateModifiedContents": "Nội dung đã sửa đổi",
       "dateModifiedMeta": "Meta đã sửa đổi",
       "dateCreated": "Tạo",
+      "dateModified": "Sửa đổi",
+      "dateAccessed": "Truy cập",
       "itemsSize": "Mặt hàng / kích thước",
       "status": "Tình trạng"
     }

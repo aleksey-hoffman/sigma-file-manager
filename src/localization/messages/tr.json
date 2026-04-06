@@ -9,6 +9,7 @@
     "vh": "vh",
     "mb": "MB"
   },
+  "minutes": "dakika",
   "relativeTime": {
     "justNow": "Az önce",
     "secondsAgo": "0 sn önce | 1 sn önce | {n} sn önce | {n} sn önce",
@@ -754,6 +755,8 @@
       "dateModifiedContents": "Tarih değiştirilen içerikler",
       "dateModifiedMeta": "Tarih değiştirilen meta",
       "dateCreated": "Tarih oluşturuldu",
+      "dateModified": "Değiştirilme tarihi",
+      "dateAccessed": "Erişim tarihi",
       "itemsSize": "Öğeler / boyut",
       "status": "Durum"
     },
@@ -762,6 +765,8 @@
       "dateModifiedContents": "Değiştirilmiş içerik",
       "dateModifiedMeta": "Değiştirilmiş meta",
       "dateCreated": "Oluşturuldu",
+      "dateModified": "Değiştirildi",
+      "dateAccessed": "Erişildi",
       "itemsSize": "Öğeler / boyut",
       "status": "Durum"
     }

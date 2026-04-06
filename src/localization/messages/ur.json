@@ -9,6 +9,7 @@
     "vh": "vh",
     "mb": "MB"
   },
+  "minutes": "منٹ",
   "relativeTime": {
     "justNow": "ابھی ابھی",
     "secondsAgo": "0 سیکنڈ پہلے | 1 سیکنڈ پہلے | {n} سیکنڈ پہلے | {n} سیکنڈ پہلے",
@@ -773,6 +774,8 @@
       "dateModifiedContents": "مواد میں ترمیم کی تاریخ",
       "dateModifiedMeta": "میٹا میں ترمیم کی تاریخ",
       "dateCreated": "بننے کی تاریخ",
+      "dateModified": "ترمیم کی تاریخ",
+      "dateAccessed": "رسائی کی تاریخ",
       "itemsSize": "اشیاء / سائز",
       "status": "حالت"
     },
@@ -781,6 +784,8 @@
       "dateModifiedContents": "مواد بدلا",
       "dateModifiedMeta": "میٹا بدلا",
       "dateCreated": "بنائی",
+      "dateModified": "ترمیم شدہ",
+      "dateAccessed": "رسائی",
       "itemsSize": "اشیاء / سائز",
       "status": "حالت"
     }

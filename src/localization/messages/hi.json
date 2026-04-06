@@ -9,6 +9,7 @@
     "vh": "वी.एच",
     "mb": "एमबी"
   },
+  "minutes": "मिनट",
   "relativeTime": {
     "justNow": "बस अब",
     "secondsAgo": "0 सेकंड पहले | 1 सेकंड पहले | {n} सेकंड पहले | {n} सेकंड पहले",
@@ -773,6 +774,8 @@
       "dateModifiedContents": "दिनांक संशोधित सामग्री",
       "dateModifiedMeta": "दिनांक संशोधित मेटा",
       "dateCreated": "बनाया गया दिनांक",
+      "dateModified": "संशोधन दिनांक",
+      "dateAccessed": "पहुंच दिनांक",
       "itemsSize": "आइटम/आकार",
       "status": "स्थिति"
     },
@@ -781,6 +784,8 @@
       "dateModifiedContents": "संशोधित सामग्री",
       "dateModifiedMeta": "संशोधित मेटा",
       "dateCreated": "बनाया था",
+      "dateModified": "संशोधित",
+      "dateAccessed": "पहुंचा",
       "itemsSize": "आइटम/आकार",
       "status": "स्थिति"
     }

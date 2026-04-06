@@ -9,6 +9,7 @@
     "vh": "vh",
     "mb": "MB"
   },
+  "minutes": "分钟",
   "relativeTime": {
     "justNow": "刚刚",
     "secondsAgo": "0秒前 | 1秒前 | {n}秒前 | {n}秒前",
@@ -754,6 +755,8 @@
       "dateModifiedContents": "日期修改内容",
       "dateModifiedMeta": "日期修改元数据",
       "dateCreated": "创建日期",
+      "dateModified": "修改日期",
+      "dateAccessed": "访问日期",
       "itemsSize": "项目/尺寸",
       "status": "状态"
     },
@@ -762,6 +765,8 @@
       "dateModifiedContents": "修改内容",
       "dateModifiedMeta": "修改后的元",
       "dateCreated": "创建日期",
+      "dateModified": "已修改",
+      "dateAccessed": "已访问",
       "itemsSize": "项目/尺寸",
       "status": "状态"
     }

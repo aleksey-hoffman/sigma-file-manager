@@ -89,7 +89,7 @@ const sectionTitle = computed(() => {
         :path="drive.path"
       >
         <DriveCard
-          v-bind="getStaggerSlideUpBinding(itemIndex)"
+          v-bind="getStaggerSlideUpBinding(itemIndex, {initialDelayMs: 300})"
           :drive="drive"
         />
       </DirEntryInteractive>
