@@ -1836,6 +1836,7 @@
     "latest": "en son",
     "install": "Yükle",
     "installing": "Yükleniyor...",
+    "cancellingInstall": "İptal ediliyor...",
     "cancelInstall": "İptal",
     "installFailed": "Yükleme başarısız",
     "installFromFolder": "Klasörden yükle",

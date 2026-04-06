@@ -832,10 +832,8 @@ function createBridge() {
       },
     },
     binary: {
-      ensureInstalled: makeCall('binary.ensureInstalled'),
       getPath: makeCall('binary.getPath'),
       isInstalled: makeCall('binary.isInstalled'),
-      remove: makeCall('binary.remove'),
       getInfo: makeCall('binary.getInfo'),
     },
     i18n: {

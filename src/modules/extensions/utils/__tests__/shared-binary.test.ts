@@ -3,18 +3,9 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 import { describe, expect, it } from 'vitest';
-import {
-  getSharedBinaryPendingKey,
-  mergeSharedBinaryInfo,
-} from '@/modules/extensions/utils/shared-binary';
+import { mergeSharedBinaryInfo } from '@/modules/extensions/utils/shared-binary';
 
 describe('shared binary helpers', () => {
-  it('uses the shared binary identity for pending downloads', () => {
-    expect(getSharedBinaryPendingKey('ffmpeg', 'ffmpeg.exe', undefined)).toBe('ffmpeg:latest:ffmpeg.exe');
-    expect(getSharedBinaryPendingKey('ffmpeg', 'ffmpeg.exe', '7.1.0')).toBe('ffmpeg:7.1.0:ffmpeg.exe');
-    expect(getSharedBinaryPendingKey('ffmpeg', 'ffplay.exe', '7.1.0')).toBe('ffmpeg:7.1.0:ffplay.exe');
-  });
-
   it('merges users without dropping existing metadata', () => {
     const mergedBinary = mergeSharedBinaryInfo(
       {

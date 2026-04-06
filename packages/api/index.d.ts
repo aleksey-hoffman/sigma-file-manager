@@ -128,7 +128,26 @@ export interface ExtensionEngines {
 }
 
 export type PlatformOS = 'windows' | 'macos' | 'linux';
-export type PlatformArch = 'x64' | 'arm64' | 'x86';
+export type PlatformArch = 'x64' | 'arm64';
+
+export interface ManifestBinaryAsset {
+  platform: PlatformOS;
+  arch?: PlatformArch[];
+  downloadUrl: string;
+  integrity: string;
+  archive?: boolean;
+  executable?: string;
+}
+
+export interface ManifestBinaryDefinition {
+  id: string;
+  name: string;
+  version: string;
+  executable?: string;
+  repository?: string;
+  platforms?: PlatformOS[];
+  assets: ManifestBinaryAsset[];
+}
 
 export interface ExtensionManifest {
   id: string;
@@ -148,6 +167,7 @@ export interface ExtensionManifest {
   activationEvents?: ExtensionActivationEvent[];
   contributes?: ExtensionContributions;
   platforms?: PlatformOS[];
+  binaries?: ManifestBinaryDefinition[];
   engines: ExtensionEngines;
 }
 
@@ -261,15 +281,6 @@ export interface SaveFileDialogOptions {
   filters?: FileDialogFilter[];
 }
 
-export interface BinaryInstallOptions {
-  name: string;
-  downloadUrl: string | ((platform: PlatformOS) => string);
-  integrity?: string;
-  executable?: string;
-  version?: string;
-  repository?: string;
-}
-
 export interface BinaryInfo {
   id: string;
   path: string;
@@ -353,7 +364,7 @@ export interface ToolbarRenderHandle {
 
 export interface PlatformInfo {
   os: PlatformOS;
-  arch: PlatformArch;
+  arch: string;
   pathSeparator: string;
   isWindows: boolean;
   isMacos: boolean;
@@ -567,7 +578,7 @@ export interface SigmaExtensionAPI {
   };
   platform: {
     readonly os: PlatformOS;
-    readonly arch: PlatformArch;
+    readonly arch: string;
     readonly pathSeparator: string;
     readonly isWindows: boolean;
     readonly isMacos: boolean;
@@ -583,10 +594,8 @@ export interface SigmaExtensionAPI {
     isExtensionInstallCancelledError(error: unknown): boolean;
   };
   binary: {
-    ensureInstalled(id: string, options: BinaryInstallOptions): Promise<string>;
     getPath(id: string): Promise<string | null>;
     isInstalled(id: string): Promise<boolean>;
-    remove(id: string): Promise<void>;
     getInfo(id: string): Promise<BinaryInfo | null>;
   };
 }

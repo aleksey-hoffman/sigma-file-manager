@@ -4,14 +4,6 @@
 
 import type { SharedBinaryInfo } from '@/types/extension';
 
-export function getSharedBinaryPendingKey(
-  binaryId: string,
-  executableName: string,
-  version?: string,
-): string {
-  return `${binaryId}:${version ?? 'latest'}:${executableName}`;
-}
-
 export function mergeSharedBinaryUsers(...usedByLists: string[][]): string[] {
   const mergedUsers = new Set<string>();
 

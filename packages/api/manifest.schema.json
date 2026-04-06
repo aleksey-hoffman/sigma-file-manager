@@ -440,6 +440,104 @@
       "minItems": 1,
       "uniqueItems": true
     },
+    "binaries": {
+      "type": "array",
+      "description": "Binary definitions installed and managed by the host application",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "version",
+          "assets"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique binary identifier shared across extensions"
+          },
+          "name": {
+            "type": "string",
+            "description": "Display name of the binary"
+          },
+          "version": {
+            "type": "string",
+            "description": "Pinned binary version used for shared lookup and install",
+            "minLength": 1
+          },
+          "executable": {
+            "type": "string",
+            "description": "Relative path to the executable inside the extracted directory"
+          },
+          "repository": {
+            "type": "string",
+            "format": "uri",
+            "description": "Upstream repository URL for reference"
+          },
+          "platforms": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "windows",
+                "macos",
+                "linux"
+              ]
+            },
+            "minItems": 1,
+            "uniqueItems": true
+          },
+          "assets": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": [
+                "platform",
+                "downloadUrl",
+                "integrity"
+              ],
+              "properties": {
+                "platform": {
+                  "type": "string",
+                  "enum": [
+                    "windows",
+                    "macos",
+                    "linux"
+                  ]
+                },
+                "arch": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "x64",
+                      "arm64"
+                    ]
+                  },
+                  "minItems": 1,
+                  "uniqueItems": true
+                },
+                "downloadUrl": {
+                  "type": "string",
+                  "format": "uri"
+                },
+                "integrity": {
+                  "type": "string",
+                  "pattern": "^sha256:[a-fA-F0-9]{64}$"
+                },
+                "archive": {
+                  "type": "boolean"
+                },
+                "executable": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "engines": {
       "type": "object",
       "description": "Version constraints",

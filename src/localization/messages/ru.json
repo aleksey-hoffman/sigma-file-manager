@@ -1859,6 +1859,7 @@
     "latest": "последняя",
     "install": "Установить",
     "installing": "Установка...",
+    "cancellingInstall": "Отмена...",
     "cancelInstall": "Отмена",
     "installFailed": "Не удалось установить",
     "installFromFolder": "Установить из папки",

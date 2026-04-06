@@ -1839,6 +1839,7 @@
     "latest": "mới nhất",
     "install": "Cài đặt",
     "installing": "Đang cài đặt...",
+    "cancellingInstall": "Đang hủy...",
     "cancelInstall": "Hủy",
     "installFailed": "Cài đặt thất bại",
     "installFromFolder": "Cài đặt từ thư mục",

@@ -105,12 +105,14 @@ const visibleCancelableExtensionIds = computed(() => {
   const cancelableIds = new Set<string>();
 
   for (const extension of props.extensions) {
+    const isInstalling = props.installingExtensions.has(extension.id);
     const isUpdating = props.updatingExtensions.has(extension.id);
     const isRefreshing = props.refreshingExtensions?.has(extension.id);
+    const canCancelLocalInstall = extension.isLocal && isInstalling;
     const canCancelUpdate = extension.hasUpdate && !extension.isLocal && !extension.isBroken && isUpdating;
     const canCancelRefresh = extension.isLocal && Boolean(isRefreshing);
 
-    if (canCancelUpdate || canCancelRefresh) {
+    if (canCancelLocalInstall || canCancelUpdate || canCancelRefresh) {
       cancelableIds.add(extension.id);
     }
   }
@@ -153,6 +155,18 @@ function handleCancel(extensionId: string) {
   nextRequestedIds.add(extensionId);
   cancelRequestedExtensionIds.value = nextRequestedIds;
   emit('cancel', extensionId);
+}
+
+function getLocalReinstallButtonTitle(extensionId: string): string {
+  if (cancelRequestedExtensionIds.value.has(extensionId)) {
+    return t('extensions.cancellingInstall');
+  }
+
+  if (props.installingExtensions.has(extensionId)) {
+    return t('extensions.installing');
+  }
+
+  return t('extensions.reinstall');
 }
 
 </script>
@@ -342,12 +356,12 @@ function handleCancel(extensionId: string) {
                 v-if="extension.isLocal"
                 variant="ghost"
                 size="icon"
-                :title="t('extensions.reinstall')"
+                :title="getLocalReinstallButtonTitle(extension.id)"
                 :disabled="refreshingExtensions?.has(extension.id) || installingExtensions.has(extension.id)"
                 @click.stop="emit('refresh', extension.id)"
               >
                 <RefreshCwIcon
-                  v-if="refreshingExtensions?.has(extension.id)"
+                  v-if="refreshingExtensions?.has(extension.id) || installingExtensions.has(extension.id)"
                   :size="16"
                   class="extensions-installed__spinner"
                 />
@@ -355,6 +369,16 @@ function handleCancel(extensionId: string) {
                   v-else
                   :size="16"
                 />
+              </Button>
+              <Button
+                v-if="extension.isLocal && installingExtensions.has(extension.id)"
+                variant="outline"
+                size="icon"
+                :title="t('extensions.cancelInstall')"
+                :disabled="cancelRequestedExtensionIds.has(extension.id)"
+                @click.stop="handleCancel(extension.id)"
+              >
+                <XIcon :size="16" />
               </Button>
               <Button
                 v-if="extension.isLocal && refreshingExtensions?.has(extension.id)"

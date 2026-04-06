@@ -383,7 +383,7 @@ export function useExtensions() {
 
   const installedExtensionsWithManifest = computed((): ExtensionWithManifest[] => {
     return extensionsStore.installedExtensions
-      .filter(inst => !inst.installPendingDependencies)
+      .filter(inst => !inst.installPendingDependencies || inst.isLocal)
       .map((inst): ExtensionWithManifest => {
         const registryEntry = extensionsStore.availableExtensions.find(
           ext => ext.id === inst.id,

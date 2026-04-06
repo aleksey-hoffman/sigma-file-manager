@@ -1861,6 +1861,7 @@
     "latest": "latest",
     "install": "Install",
     "installing": "Installing...",
+    "cancellingInstall": "Cancelling...",
     "cancelInstall": "Cancel",
     "installFailed": "Installation failed",
     "showFolder": "Show folder",

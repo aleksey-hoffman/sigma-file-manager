@@ -1861,6 +1861,7 @@
     "latest": "تازہ",
     "install": "انسٹال",
     "installing": "انسٹال ہو رہا ہے…",
+    "cancellingInstall": "منسوخ کیا جا رہا ہے…",
     "cancelInstall": "منسوخ",
     "installFailed": "انسٹال ناکام",
     "showFolder": "فولڈر دکھائیں",

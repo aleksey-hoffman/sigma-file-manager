@@ -1835,6 +1835,7 @@
     "latest": "آخرین",
     "install": "نصب",
     "installing": "در حال نصب...",
+    "cancellingInstall": "در حال لغو...",
     "cancelInstall": "لغو",
     "installFailed": "نصب ناموفق بود",
     "installFromFolder": "نصب از پوشه",

@@ -35,6 +35,7 @@ import { Switch } from '@/components/ui/switch';
 import ExtensionBadge from './extension-badge.vue';
 import ExtensionIcon from './extension-icon.vue';
 import type { ExtensionWithManifest } from '@/modules/extensions/composables/use-extensions';
+import type { ExtensionManifest, PlatformInfo } from '@/types/extension';
 import { EXTENSION_PERMISSIONS_INFO } from '@/data/extensions';
 import { getExtensionReadmeUrl, getExtensionChangelogUrl } from '@/data/extensions';
 import { formatBytes, formatDate } from '@/modules/navigator/components/file-browser/utils';
@@ -44,6 +45,8 @@ import { getLucideIcon } from '@/utils/lucide-icons';
 import { renderMarkdownToSafeHtml } from '@/utils/safe-html';
 import { useExtensionsStore } from '@/stores/runtime/extensions';
 import { getKeybindingForCommand, formatKeybindingKeys } from '@/modules/extensions/api';
+import { ensurePlatformInfo } from '@/modules/extensions/api/platform';
+import { resolveManifestBinaryAsset } from '@/modules/extensions/utils/manifest-binaries';
 
 const props = defineProps<{
   extension: ExtensionWithManifest;
@@ -75,9 +78,11 @@ const changelogContent = ref<string | null>(null);
 const isLoadingReadme = ref(false);
 const isLoadingChangelog = ref(false);
 const isCancelRequested = ref(false);
+const currentManifest = ref<ExtensionManifest | undefined>(props.extension.manifest);
+const currentPlatformInfo = ref<PlatformInfo | null>(null);
 
 const displayName = computed(() => {
-  return props.extension.name || props.extension.manifest?.name || props.extension.id.split('.').pop() || props.extension.id;
+  return props.extension.name || currentManifest.value?.name || props.extension.id.split('.').pop() || props.extension.id;
 });
 
 const description = computed(() => {
@@ -85,11 +90,11 @@ const description = computed(() => {
 });
 
 const publisherName = computed(() => {
-  return props.extension.publisher || props.extension.manifest?.publisher?.name || t('extensions.unknownPublisher');
+  return props.extension.publisher || currentManifest.value?.publisher?.name || t('extensions.unknownPublisher');
 });
 
 const publisherUrl = computed(() => {
-  return props.extension.publisherUrl || props.extension.manifest?.publisher?.url;
+  return props.extension.publisherUrl || currentManifest.value?.publisher?.url;
 });
 
 const isOfficial = computed(() => props.extension.isOfficial);
@@ -99,7 +104,7 @@ const isLocal = computed(() => props.extension.isLocal);
 const isBroken = computed(() => props.extension.isBroken);
 
 const previousName = computed(() => {
-  return props.extension.manifest?.previousName;
+  return currentManifest.value?.previousName;
 });
 
 const availableVersions = computed(() => {
@@ -114,7 +119,7 @@ const RISK_SORT_ORDER: Record<string, number> = {
 };
 
 const permissions = computed(() => {
-  const permissionsList = props.extension.manifest?.permissions || [];
+  const permissionsList = currentManifest.value?.permissions || [];
   return [...permissionsList].sort((permissionA, permissionB) => {
     const riskA = RISK_SORT_ORDER[getPermissionInfo(permissionA).risk] ?? 1;
     const riskB = RISK_SORT_ORDER[getPermissionInfo(permissionB).risk] ?? 1;
@@ -130,7 +135,7 @@ const extensionCommands = computed(() => {
   const runtimeRegistrations = extensionsStore.commands.filter(
     registration => registration.extensionId === props.extension.id,
   );
-  const manifestCommands = props.extension.manifest?.contributes?.commands ?? [];
+  const manifestCommands = currentManifest.value?.contributes?.commands ?? [];
   const registeredIds = new Set(runtimeRegistrations.map(reg => reg.command.id));
   type CommandDisplay = {
     id: string;
@@ -202,6 +207,36 @@ const extensionBinaries = computed(() => {
   return props.extension.binaries || [];
 });
 
+const dependencyRows = computed(() => {
+  if (props.extension.isInstalled) {
+    return extensionBinaries.value.map(binary => ({
+      id: binary.id,
+      label: binary.id,
+      versionLabel: getBinaryDisplayVersion(binary) || t('extensions.unknownVersion'),
+      hasUpdate: binary.hasUpdate,
+      latestVersion: binary.latestVersion,
+      dateLabel: formatDate(binary.installedAt),
+      downloadUrl: binary.downloadUrl,
+    }));
+  }
+
+  return (currentManifest.value?.binaries || []).map((binary) => {
+    const matchingAsset = currentPlatformInfo.value
+      ? resolveManifestBinaryAsset(binary, currentPlatformInfo.value.os, currentPlatformInfo.value.arch)
+      : null;
+
+    return {
+      id: binary.id,
+      label: binary.name,
+      versionLabel: binary.version,
+      hasUpdate: false,
+      latestVersion: undefined,
+      dateLabel: [...(binary.platforms || Array.from(new Set(binary.assets.map(asset => asset.platform))))].join(' / '),
+      downloadUrl: matchingAsset?.downloadUrl,
+    };
+  });
+});
+
 const PLATFORM_DISPLAY_NAMES: Record<string, string> = {
   windows: 'Windows',
   macos: 'macOS',
@@ -209,7 +244,7 @@ const PLATFORM_DISPLAY_NAMES: Record<string, string> = {
 };
 
 const extensionPlatforms = computed(() => {
-  return props.extension.platforms || [];
+  return currentManifest.value?.platforms || props.extension.platforms || [];
 });
 
 const isCrossPlatform = computed(() => {
@@ -226,6 +261,36 @@ const isShowingCancelButton = computed(() => {
 
 function getPlatformDisplayName(platform: string): string {
   return PLATFORM_DISPLAY_NAMES[platform] || platform;
+}
+
+async function loadSelectedManifest(): Promise<void> {
+  if (props.extension.isInstalled) {
+    currentManifest.value = props.extension.manifest;
+    return;
+  }
+
+  const targetVersion = selectedVersion.value || props.extension.latestVersion || '';
+
+  if (!targetVersion) {
+    currentManifest.value = props.extension.manifest;
+    return;
+  }
+
+  try {
+    currentManifest.value = await extensionsStore.fetchExtensionManifest(props.extension, targetVersion);
+  }
+  catch {
+    currentManifest.value = props.extension.manifest;
+  }
+}
+
+async function loadPlatformInfo(): Promise<void> {
+  try {
+    currentPlatformInfo.value = await ensurePlatformInfo();
+  }
+  catch {
+    currentPlatformInfo.value = null;
+  }
 }
 
 function handleStatusEnter(element: Element) {
@@ -398,6 +463,19 @@ watch(
   },
 );
 
+watch(
+  [
+    () => props.extension.id,
+    () => props.extension.manifest,
+    () => props.extension.isInstalled,
+    selectedVersion,
+  ],
+  () => {
+    void loadSelectedManifest();
+  },
+  { immediate: true },
+);
+
 watch(isShowingCancelButton, (isShowing) => {
   if (!isShowing) {
     isCancelRequested.value = false;
@@ -438,6 +516,7 @@ watchOperationCompletion(() => props.isUninstalling);
 
 onMounted(() => {
   loadReadme();
+  void loadPlatformInfo();
 });
 </script>
 
@@ -643,15 +722,14 @@ onMounted(() => {
                 :size="16"
                 class="extension-detail__spinner"
               />
-              {{ isInstalling ? t('extensions.installing') : t('extensions.install') }}
+              {{ isInstalling ? (isCancelRequested ? t('extensions.cancellingInstall') : t('extensions.installing')) : t('extensions.install') }}
             </Button>
 
             <Button
-              v-if="isInstalling"
+              v-if="isInstalling && !isCancelRequested"
               variant="outline"
               size="sm"
               class="extension-detail__controls-button"
-              :disabled="isCancelRequested"
               @click="handleCancel"
             >
               <XIcon :size="16" />
@@ -680,11 +758,10 @@ onMounted(() => {
             </Button>
 
             <Button
-              v-if="showUpdateButton && isUpdating"
+              v-if="showUpdateButton && isUpdating && !isCancelRequested"
               variant="outline"
               size="sm"
               class="extension-detail__controls-button"
-              :disabled="isCancelRequested"
               @click="handleCancel"
             >
               <XIcon :size="16" />
@@ -707,11 +784,10 @@ onMounted(() => {
             </Button>
 
             <Button
-              v-if="isLocal && isRefreshing"
+              v-if="isLocal && isRefreshing && !isCancelRequested"
               variant="outline"
               size="sm"
               class="extension-detail__controls-button"
-              :disabled="isCancelRequested"
               @click="handleCancel"
             >
               <XIcon :size="16" />
@@ -783,11 +859,11 @@ onMounted(() => {
             <span class="extension-detail__metadata-value">{{ formatBytes(extension.sizeBytes) }}</span>
           </div>
           <div
-            v-if="extensionBinaries.length > 0"
+            v-if="dependencyRows.length > 0"
             class="extension-detail__metadata-block"
           >
             <span class="extension-detail__metadata-label">{{ t('extensions.tabs.dependencies') }}</span>
-            <span class="extension-detail__metadata-value">{{ extensionBinaries.length }}</span>
+            <span class="extension-detail__metadata-value">{{ dependencyRows.length }}</span>
           </div>
         </div>
       </div>
@@ -830,7 +906,7 @@ onMounted(() => {
           <span>{{ t('extensions.tabs.changelog') }}</span>
         </TabsTrigger>
         <TabsTrigger
-          v-if="extensionBinaries.length > 0"
+          v-if="dependencyRows.length > 0"
           value="binaries"
           class="extension-detail__tab-trigger"
         >
@@ -971,7 +1047,7 @@ onMounted(() => {
         class="extension-detail__tab-content"
       >
         <div
-          v-if="extensionBinaries.length === 0"
+          v-if="dependencyRows.length === 0"
           class="extension-detail__empty"
         >
           {{ t('extensions.dependencies.noDependencies') }}
@@ -981,20 +1057,13 @@ onMounted(() => {
           class="extension-detail__binary-list"
         >
           <div
-            v-for="binary in extensionBinaries"
+            v-for="binary in dependencyRows"
             :key="binary.id"
             class="extension-detail__binary-item"
           >
             <div class="extension-detail__binary-item-main">
-              <span class="extension-detail__binary-id">{{ binary.id }}</span>
-              <span
-                v-if="getBinaryDisplayVersion(binary)"
-                class="extension-detail__binary-version"
-              >{{ getBinaryDisplayVersion(binary) }}</span>
-              <span
-                v-else
-                class="extension-detail__binary-version"
-              >{{ t('extensions.unknownVersion') }}</span>
+              <span class="extension-detail__binary-id">{{ binary.label || binary.id }}</span>
+              <span class="extension-detail__binary-version">{{ binary.versionLabel }}</span>
               <span
                 v-if="binary.hasUpdate && binary.latestVersion"
                 class="extension-detail__binary-update"
@@ -1003,7 +1072,7 @@ onMounted(() => {
                 v-else-if="binary.latestVersion"
                 class="extension-detail__binary-latest"
               >{{ `${t('extensions.latest')}: ${binary.latestVersion}` }}</span>
-              <span class="extension-detail__binary-date">{{ formatDate(binary.installedAt) }}</span>
+              <span class="extension-detail__binary-date">{{ binary.dateLabel }}</span>
             </div>
             <Button
               v-if="binary.downloadUrl && isHttpUrl(binary.downloadUrl)"

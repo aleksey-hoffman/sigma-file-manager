@@ -188,14 +188,13 @@ function handleCancelClick(event: MouseEvent) {
               :size="16"
               class="extension-card__spinner"
             />
-            {{ isInstalling ? t('extensions.installing') : t('extensions.install') }}
+            {{ isInstalling ? (isCancelRequested ? t('extensions.cancellingInstall') : t('extensions.installing')) : t('extensions.install') }}
           </Button>
 
           <Button
-            v-if="isInstalling"
+            v-if="isInstalling && !isCancelRequested"
             variant="outline"
             size="xs"
-            :disabled="isCancelRequested"
             @click="handleCancelClick"
           >
             <XIcon :size="16" />
@@ -224,10 +223,9 @@ function handleCancelClick(event: MouseEvent) {
             </Button>
 
             <Button
-              v-if="isUpdating"
+              v-if="isUpdating && !isCancelRequested"
               variant="outline"
               size="sm"
-              :disabled="isCancelRequested"
               @click="handleCancelClick"
             >
               <XIcon :size="16" />

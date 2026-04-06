@@ -1836,6 +1836,7 @@
     "latest": "最新",
     "install": "インストール",
     "installing": "インストール中...",
+    "cancellingInstall": "キャンセル中...",
     "cancelInstall": "キャンセル",
     "installFailed": "インストールに失敗しました",
     "installFromFolder": "フォルダからインストール",

@@ -26,6 +26,9 @@ const VALID_PERMISSIONS: string[] = [
   'openUrl',
 ];
 
+const VALID_PLATFORMS = ['windows', 'macos', 'linux'] as const;
+const VALID_ARCHES = ['x64', 'arm64'] as const;
+
 function isObjectRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
 }
@@ -44,6 +47,120 @@ function isVersionString(value: string): boolean {
 
 function isPermissionsList(value: unknown): value is ExtensionPermission[] {
   return Array.isArray(value) && value.every(permission => VALID_PERMISSIONS.includes(permission as ExtensionPermission));
+}
+
+function isValidPlatform(value: unknown): value is (typeof VALID_PLATFORMS)[number] {
+  return typeof value === 'string' && VALID_PLATFORMS.includes(value as (typeof VALID_PLATFORMS)[number]);
+}
+
+function isValidPlatformList(value: unknown): value is NonNullable<ExtensionManifest['platforms']> {
+  return Array.isArray(value)
+    && value.length > 0
+    && value.every(isValidPlatform)
+    && new Set(value).size === value.length;
+}
+
+function isValidArchList(value: unknown): boolean {
+  return Array.isArray(value)
+    && value.length > 0
+    && value.every(arch => typeof arch === 'string' && VALID_ARCHES.includes(arch as (typeof VALID_ARCHES)[number]))
+    && new Set(value).size === value.length;
+}
+
+function isSafeRelativePath(value: string): boolean {
+  if (!value.trim() || /^[a-zA-Z]:/.test(value) || value.startsWith('/') || value.startsWith('\\')) {
+    return false;
+  }
+
+  const pathSegments = value.split(/[\\/]+/).filter(segment => segment.length > 0);
+  return pathSegments.length > 0 && pathSegments.every(segment => segment !== '.' && segment !== '..');
+}
+
+function isValidIntegrity(value: unknown): value is string {
+  return typeof value === 'string' && /^sha256:[a-f0-9]{64}$/i.test(value.trim());
+}
+
+function isValidManifestBinaryAsset(value: unknown): boolean {
+  if (!isObjectRecord(value)) {
+    return false;
+  }
+
+  if (!isValidPlatform(value.platform)) {
+    return false;
+  }
+
+  if (!isNonEmptyString(value.downloadUrl)) {
+    return false;
+  }
+
+  if (!isValidIntegrity(value.integrity)) {
+    return false;
+  }
+
+  if (value.arch !== undefined && !isValidArchList(value.arch)) {
+    return false;
+  }
+
+  if (value.archive !== undefined && typeof value.archive !== 'boolean') {
+    return false;
+  }
+
+  if (value.executable !== undefined && (!isNonEmptyString(value.executable) || !isSafeRelativePath(value.executable))) {
+    return false;
+  }
+
+  return true;
+}
+
+function isValidManifestBinaryDefinition(value: unknown): boolean {
+  if (!isObjectRecord(value)) {
+    return false;
+  }
+
+  if (!isNonEmptyString(value.id) || !isNonEmptyString(value.name)) {
+    return false;
+  }
+
+  if (!isNonEmptyString(value.version)) {
+    return false;
+  }
+
+  if (value.repository !== undefined && !isNonEmptyString(value.repository)) {
+    return false;
+  }
+
+  if (value.executable !== undefined && (!isNonEmptyString(value.executable) || !isSafeRelativePath(value.executable))) {
+    return false;
+  }
+
+  if (value.platforms !== undefined && !isValidPlatformList(value.platforms)) {
+    return false;
+  }
+
+  if (!Array.isArray(value.assets) || value.assets.length === 0 || value.assets.some(asset => !isValidManifestBinaryAsset(asset))) {
+    return false;
+  }
+
+  const seenTargets = new Set<string>();
+
+  for (const asset of value.assets) {
+    const targetPlatforms = value.platforms as string[] | undefined;
+
+    if (targetPlatforms && !targetPlatforms.includes(asset.platform as string)) {
+      return false;
+    }
+
+    const archKey = Array.isArray(asset.arch) ? [...asset.arch].sort().join(',') : '*';
+    const targetKey = `${asset.platform}:${archKey}`;
+
+    if (seenTargets.has(targetKey)) {
+      return false;
+    }
+
+    seenTargets.add(targetKey);
+  }
+
+  return true;
 }
 
 function parseVersionComparator(value: string): {
@@ -248,6 +365,16 @@ export function assertValidManifestData(data: unknown): asserts data is Extensio
 
   if (!isPermissionsList(data.permissions)) {
     throw new Error('Invalid manifest: permissions are invalid');
+  }
+
+  if (data.platforms !== undefined && !isValidPlatformList(data.platforms)) {
+    throw new Error('Invalid manifest: platforms are invalid');
+  }
+
+  if (data.binaries !== undefined) {
+    if (!Array.isArray(data.binaries) || data.binaries.some(binary => !isValidManifestBinaryDefinition(binary))) {
+      throw new Error('Invalid manifest: binaries are invalid');
+    }
   }
 
   if (!isObjectRecord(data.engines) || !isNonEmptyString(data.engines.sigmaFileManager)) {

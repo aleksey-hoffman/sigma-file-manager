@@ -1836,6 +1836,7 @@
     "latest": "ultima",
     "install": "Installa",
     "installing": "Installazione...",
+    "cancellingInstall": "Annullamento in corso...",
     "cancelInstall": "Annulla",
     "installFailed": "Installazione non riuscita",
     "installFromFolder": "Installa da cartella",

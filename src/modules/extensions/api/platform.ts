@@ -3,7 +3,7 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 import { invoke } from '@tauri-apps/api/core';
-import type { PlatformOS, PlatformArch, PlatformInfo } from '@/types/extension';
+import type { PlatformOS, PlatformInfo } from '@/types/extension';
 
 let platformInfo: PlatformInfo | null = null;
 let platformInfoPromise: Promise<void> | null = null;
@@ -21,7 +21,7 @@ export async function initPlatformInfo(): Promise<void> {
 
     platformInfo = {
       os,
-      arch: info.arch as PlatformArch,
+      arch: info.arch,
       pathSeparator: os === 'windows' ? '\\' : '/',
       isWindows: os === 'windows',
       isMacos: os === 'macos',

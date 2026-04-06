@@ -1962,6 +1962,7 @@
     "latest": "latest",
     "install": "Install",
     "installing": "Installing...",
+    "cancellingInstall": "Preklicujem...",
     "cancelInstall": "Prekliči",
     "installFailed": "Namestitev ni uspela",
     "showFolder": "Prikaži mapo",

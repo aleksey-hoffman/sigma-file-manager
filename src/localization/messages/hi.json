@@ -1861,6 +1861,7 @@
     "latest": "नवीनतम",
     "install": "स्थापित करना",
     "installing": "स्थापित किया जा रहा है...",
+    "cancellingInstall": "रद्द किया जा रहा है...",
     "cancelInstall": "रद्द करें",
     "installFailed": "इंस्टॉल विफल",
     "showFolder": "फ़ोल्डर दिखाएँ",

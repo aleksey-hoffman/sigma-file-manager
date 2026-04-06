@@ -62,6 +62,7 @@ import {
   showExtensionBusyToast,
 } from '@/modules/extensions/utils/toast-utils';
 import { filterReachableRegistryEntries } from '@/modules/extensions/utils/registry-utils';
+import { syncManifestBinariesForExtension } from '@/modules/extensions/runtime/manifest-binaries';
 import {
   beginExtensionInstall,
   cancelExtensionInstall as requestExtensionInstallCancel,
@@ -511,6 +512,7 @@ export const useExtensionsStore = defineStore('extensions', () => {
         clearBinaryDownloadCount(extensionId);
         clearBinaryReuseCount(extensionId);
 
+        await syncManifestBinariesForExtension(extensionId, manifest);
         await loadExtensionForEvent(extensionId, manifest, 'onInstall', { allowWhenDisabled: true });
 
         if (shouldActivateOnStartup(manifest)) {
@@ -602,6 +604,7 @@ export const useExtensionsStore = defineStore('extensions', () => {
         clearBinaryDownloadCount(extensionId);
         clearBinaryReuseCount(extensionId);
 
+        await syncManifestBinariesForExtension(extensionId, manifest);
         await loadExtensionForEvent(extensionId, manifest, 'onInstall', { allowWhenDisabled: true });
 
         if (shouldActivateOnStartup(manifest)) {
@@ -688,6 +691,7 @@ export const useExtensionsStore = defineStore('extensions', () => {
         await cleanupOrphanedSharedBinaries(orphanedBinaries);
 
         await storageStore.clearExtensionBinaryStorage(extensionId);
+        await syncManifestBinariesForExtension(extensionId, manifest);
 
         await loadExtensionForEvent(extensionId, manifest, 'onUpdate', { allowWhenDisabled: true });
 
@@ -840,6 +844,7 @@ export const useExtensionsStore = defineStore('extensions', () => {
         await cleanupOrphanedSharedBinaries(orphanedBinaries);
 
         await storageStore.clearExtensionBinaryStorage(extensionId);
+        await syncManifestBinariesForExtension(extensionId, manifest);
 
         await loadExtensionForEvent(
           extensionId,

@@ -24,7 +24,8 @@ pub async fn rename_part_files_to_ts(directory: String) -> Result<u32, String> {
 
     std::thread::sleep(std::time::Duration::from_millis(500));
 
-    let entries = fs::read_dir(dir_path).map_err(|error| format!("Failed to read directory: {}", error))?;
+    let entries =
+        fs::read_dir(dir_path).map_err(|error| format!("Failed to read directory: {}", error))?;
 
     for entry in entries.flatten() {
         let path = entry.path();
@@ -78,7 +79,6 @@ pub fn get_platform_info() -> PlatformInfo {
     let arch = match std::env::consts::ARCH {
         "x86_64" => "x64",
         "aarch64" => "arm64",
-        "x86" => "x86",
         other => other,
     };
 
