@@ -2,105 +2,27 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-import { ref, markRaw } from 'vue';
+import { markRaw } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
 import { useI18n } from 'vue-i18n';
 import { toast, ToastStatic } from '@/components/ui/toaster';
 import type {
   ConflictItem,
-  ConflictResolutionPayload,
 } from '@/stores/runtime/clipboard';
 import { useCopyMoveJobsStore } from '@/stores/runtime/copy-move-jobs';
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
+import { useConflictResolutionDialog } from '@/composables/use-conflict-resolution-dialog';
 
 export function useFileDropOperation() {
   const { t } = useI18n();
   const copyMoveJobsStore = useCopyMoveJobsStore();
   const dirSizesStore = useDirSizesStore();
-
-  const conflictDialogState = ref<{
-    isOpen: boolean;
-    isCheckingConflicts: boolean;
-    conflicts: ConflictItem[];
-    operationType: 'copy' | 'move';
-    pendingResolve:
-      | ((value: ConflictResolutionPayload | null | undefined) => void)
-      | null;
-  }>({
-    isOpen: false,
-    isCheckingConflicts: false,
-    conflicts: [],
-    operationType: 'copy',
-    pendingResolve: null,
-  });
-
-  function showConflictDialog(
-    operationType: 'copy' | 'move',
-    loadConflicts: () => Promise<ConflictItem[]>,
-  ): Promise<ConflictResolutionPayload | null | undefined> {
-    return new Promise((resolve) => {
-      conflictDialogState.value = {
-        isOpen: true,
-        isCheckingConflicts: true,
-        conflicts: [],
-        operationType,
-        pendingResolve: resolve,
-      };
-
-      void (async () => {
-        try {
-          const conflicts = await loadConflicts();
-
-          if (conflicts.length === 0) {
-            if (conflictDialogState.value.pendingResolve) {
-              conflictDialogState.value.pendingResolve(undefined);
-              conflictDialogState.value.pendingResolve = null;
-            }
-
-            conflictDialogState.value.isOpen = false;
-            conflictDialogState.value.isCheckingConflicts = false;
-            conflictDialogState.value.conflicts = [];
-            return;
-          }
-
-          conflictDialogState.value.conflicts = conflicts;
-          conflictDialogState.value.isCheckingConflicts = false;
-        }
-        catch {
-          toast.error(t('notifications.conflictCheckFailed'));
-
-          if (conflictDialogState.value.pendingResolve) {
-            conflictDialogState.value.pendingResolve(null);
-            conflictDialogState.value.pendingResolve = null;
-          }
-
-          conflictDialogState.value.isOpen = false;
-          conflictDialogState.value.isCheckingConflicts = false;
-          conflictDialogState.value.conflicts = [];
-        }
-      })();
-    });
-  }
-
-  function handleConflictResolution(payload: ConflictResolutionPayload) {
-    if (conflictDialogState.value.pendingResolve) {
-      conflictDialogState.value.pendingResolve(payload);
-      conflictDialogState.value.pendingResolve = null;
-    }
-
-    conflictDialogState.value.isOpen = false;
-    conflictDialogState.value.isCheckingConflicts = false;
-  }
-
-  function handleConflictCancel() {
-    if (conflictDialogState.value.pendingResolve) {
-      conflictDialogState.value.pendingResolve(null);
-      conflictDialogState.value.pendingResolve = null;
-    }
-
-    conflictDialogState.value.isOpen = false;
-    conflictDialogState.value.isCheckingConflicts = false;
-  }
+  const {
+    conflictDialogState,
+    showConflictDialog,
+    handleConflictResolution,
+    handleConflictCancel,
+  } = useConflictResolutionDialog();
 
   async function performDrop(
     sourcePaths: string[],

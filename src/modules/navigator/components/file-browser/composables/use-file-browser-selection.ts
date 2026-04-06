@@ -13,13 +13,13 @@ import {
   useClipboardStore,
   type FileOperationResult,
   type ConflictItem,
-  type ConflictResolutionPayload,
 } from '@/stores/runtime/clipboard';
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
 import { useDeleteJobsStore } from '@/stores/runtime/delete-jobs';
 import { useCopyMoveJobsStore } from '@/stores/runtime/copy-move-jobs';
 import { toast, ToastProgress, ToastStatic } from '@/components/ui/toaster';
 import { useLanShare } from '@/composables/use-lan-share';
+import { useConflictResolutionDialog } from '@/composables/use-conflict-resolution-dialog';
 import { UI_CONSTANTS } from '@/constants';
 import normalizePath from '@/utils/normalize-path';
 import { createIndexedFileName, safeFileNameFromUrl } from '@/utils/remote-file';
@@ -58,6 +58,12 @@ export function useFileBrowserSelection(
     targetEntry: null as DirEntry | null,
     selectedEntries: [] as DirEntry[],
   });
+  const {
+    conflictDialogState,
+    showConflictDialog,
+    handleConflictResolution,
+    handleConflictCancel,
+  } = useConflictResolutionDialog();
 
   const renameState = ref({
     isActive: false,
@@ -337,84 +343,6 @@ export function useFileBrowserSelection(
 
   function cutItems(entries: DirEntry[]) {
     clipboardStore.setClipboard('move', entries);
-  }
-
-  const conflictDialogState = ref({
-    isOpen: false,
-    isCheckingConflicts: false,
-    conflicts: [] as ConflictItem[],
-    operationType: '' as 'copy' | 'move',
-    pendingResolve: null as
-      | ((value: ConflictResolutionPayload | null | undefined) => void)
-      | null,
-  });
-
-  function showConflictDialog(
-    operationType: 'copy' | 'move',
-    loadConflicts: () => Promise<ConflictItem[]>,
-  ): Promise<ConflictResolutionPayload | null | undefined> {
-    return new Promise((resolve) => {
-      conflictDialogState.value = {
-        isOpen: true,
-        isCheckingConflicts: true,
-        conflicts: [],
-        operationType,
-        pendingResolve: resolve,
-      };
-
-      void (async () => {
-        try {
-          const conflicts = await loadConflicts();
-
-          if (conflicts.length === 0) {
-            if (conflictDialogState.value.pendingResolve) {
-              conflictDialogState.value.pendingResolve(undefined);
-              conflictDialogState.value.pendingResolve = null;
-            }
-
-            conflictDialogState.value.isOpen = false;
-            conflictDialogState.value.isCheckingConflicts = false;
-            conflictDialogState.value.conflicts = [];
-            return;
-          }
-
-          conflictDialogState.value.conflicts = conflicts;
-          conflictDialogState.value.isCheckingConflicts = false;
-        }
-        catch {
-          toast.error(t('notifications.conflictCheckFailed'));
-
-          if (conflictDialogState.value.pendingResolve) {
-            conflictDialogState.value.pendingResolve(null);
-            conflictDialogState.value.pendingResolve = null;
-          }
-
-          conflictDialogState.value.isOpen = false;
-          conflictDialogState.value.isCheckingConflicts = false;
-          conflictDialogState.value.conflicts = [];
-        }
-      })();
-    });
-  }
-
-  function handleConflictResolution(payload: ConflictResolutionPayload) {
-    if (conflictDialogState.value.pendingResolve) {
-      conflictDialogState.value.pendingResolve(payload);
-      conflictDialogState.value.pendingResolve = null;
-    }
-
-    conflictDialogState.value.isOpen = false;
-    conflictDialogState.value.isCheckingConflicts = false;
-  }
-
-  function handleConflictCancel() {
-    if (conflictDialogState.value.pendingResolve) {
-      conflictDialogState.value.pendingResolve(null);
-      conflictDialogState.value.pendingResolve = null;
-    }
-
-    conflictDialogState.value.isOpen = false;
-    conflictDialogState.value.isCheckingConflicts = false;
   }
 
   async function pasteItems(destinationPath?: string): Promise<boolean> {

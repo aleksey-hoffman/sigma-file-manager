@@ -13,14 +13,13 @@ import { useUserStatsStore } from '@/stores/storage/user-stats';
 import {
   useClipboardStore,
   type FileOperationResult,
-  type ConflictItem,
-  type ConflictResolutionPayload,
 } from '@/stores/runtime/clipboard';
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
 import { useDeleteJobsStore } from '@/stores/runtime/delete-jobs';
 import { useQuickViewStore } from '@/stores/runtime/quick-view';
 import { toast, ToastStatic } from '@/components/ui/toaster';
 import { useLanShare } from '@/composables/use-lan-share';
+import { useConflictResolutionDialog } from '@/composables/use-conflict-resolution-dialog';
 import { getParentDirectory } from '@/utils/normalize-path';
 import { resolveNavigableItemTarget } from '@/utils/resolve-navigable-item-target';
 import { usePermanentDeleteConfirm } from '@/composables/use-permanent-delete-confirm';
@@ -36,84 +35,12 @@ export function useDirEntryActions() {
   const quickViewStore = useQuickViewStore();
   const { startShare } = useLanShare();
   const permanentDeleteConfirm = usePermanentDeleteConfirm();
-
-  const conflictDialogState = ref({
-    isOpen: false,
-    isCheckingConflicts: false,
-    conflicts: [] as ConflictItem[],
-    operationType: '' as 'copy' | 'move',
-    pendingResolve: null as
-      | ((value: ConflictResolutionPayload | null | undefined) => void)
-      | null,
-  });
-
-  function showConflictDialog(
-    operationType: 'copy' | 'move',
-    loadConflicts: () => Promise<ConflictItem[]>,
-  ): Promise<ConflictResolutionPayload | null | undefined> {
-    return new Promise((resolve) => {
-      conflictDialogState.value = {
-        isOpen: true,
-        isCheckingConflicts: true,
-        conflicts: [],
-        operationType,
-        pendingResolve: resolve,
-      };
-
-      void (async () => {
-        try {
-          const conflicts = await loadConflicts();
-
-          if (conflicts.length === 0) {
-            if (conflictDialogState.value.pendingResolve) {
-              conflictDialogState.value.pendingResolve(undefined);
-              conflictDialogState.value.pendingResolve = null;
-            }
-
-            conflictDialogState.value.isOpen = false;
-            conflictDialogState.value.isCheckingConflicts = false;
-            conflictDialogState.value.conflicts = [];
-            return;
-          }
-
-          conflictDialogState.value.conflicts = conflicts;
-          conflictDialogState.value.isCheckingConflicts = false;
-        }
-        catch {
-          toast.error(t('notifications.conflictCheckFailed'));
-
-          if (conflictDialogState.value.pendingResolve) {
-            conflictDialogState.value.pendingResolve(null);
-            conflictDialogState.value.pendingResolve = null;
-          }
-
-          conflictDialogState.value.isOpen = false;
-          conflictDialogState.value.isCheckingConflicts = false;
-          conflictDialogState.value.conflicts = [];
-        }
-      })();
-    });
-  }
-
-  function handleConflictResolution(payload: ConflictResolutionPayload) {
-    if (conflictDialogState.value.pendingResolve) {
-      conflictDialogState.value.pendingResolve(payload);
-      conflictDialogState.value.pendingResolve = null;
-    }
-
-    conflictDialogState.value.isOpen = false;
-    conflictDialogState.value.isCheckingConflicts = false;
-  }
-
-  function handleConflictCancel() {
-    if (conflictDialogState.value.pendingResolve) {
-      conflictDialogState.value.pendingResolve(null);
-      conflictDialogState.value.pendingResolve = null;
-    }
-
-    conflictDialogState.value.isOpen = false;
-    conflictDialogState.value.isCheckingConflicts = false;
-  }
+  const {
+    conflictDialogState,
+    showConflictDialog,
+    handleConflictResolution,
+    handleConflictCancel,
+  } = useConflictResolutionDialog();
 
   async function openEntriesInNewTabs(entries: DirEntry[]) {
     for (const entry of entries) {
