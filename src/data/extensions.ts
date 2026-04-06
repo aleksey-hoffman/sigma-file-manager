@@ -230,18 +230,22 @@ function delayMilliseconds(durationMs: number): Promise<void> {
 
 export async function fetchGitHubTagsWithRetry(repository: string): Promise<string[]> {
   let lastError: unknown;
+
   for (let attemptIndex = 0; attemptIndex <= GITHUB_TAGS_RETRY_DELAYS_MS.length; attemptIndex += 1) {
     try {
       return await fetchGitHubTags(repository);
     }
     catch (error) {
       lastError = error;
+
       if (attemptIndex >= GITHUB_TAGS_RETRY_DELAYS_MS.length) {
         break;
       }
+
       await delayMilliseconds(GITHUB_TAGS_RETRY_DELAYS_MS[attemptIndex]);
     }
   }
+
   throw lastError;
 }
 

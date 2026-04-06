@@ -1956,6 +1956,9 @@
   },
   "lanShare": {
     "serverActive": "LAN share is active",
+    "notWorkingHint": "Not working?",
+    "notWorkingReasonVpn": "Do not use a VPN while sharing.",
+    "notWorkingReasonFirewall": "If you previously blocked this app in the firewall, allow network access so other devices on your LAN can connect.",
     "serverStopped": "LAN share stopped",
     "failedToStart": "Failed to start LAN share",
     "stopSharing": "Stop sharing",

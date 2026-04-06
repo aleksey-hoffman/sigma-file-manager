@@ -1,6 +1,6 @@
 .animate-stagger-slide-up {
-  opacity: 0;
   animation: animate-stagger-slide-up 0.44s ease-out forwards;
+  opacity: 0;
 }
 
 @keyframes animate-stagger-slide-up {

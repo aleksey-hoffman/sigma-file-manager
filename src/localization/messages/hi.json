@@ -1956,6 +1956,9 @@
   },
   "lanShare": {
     "serverActive": "LAN शेयर सक्रिय है",
+    "notWorkingHint": "काम नहीं कर रहा?",
+    "notWorkingReasonVpn": "शेयर करते समय VPN उपयोग न करें।",
+    "notWorkingReasonFirewall": "यदि आपने पहले फ़ायरवॉल में इस ऐप को ब्लॉक किया था, तो नेटवर्क पहुँच की अनुमति दें ताकि LAN पर अन्य डिवाइस कनेक्ट हो सकें।",
     "serverStopped": "LAN शेयर बंद हो गया",
     "failedToStart": "LAN शेयर प्रारंभ करने में विफल",
     "stopSharing": "साझा करना बंद",

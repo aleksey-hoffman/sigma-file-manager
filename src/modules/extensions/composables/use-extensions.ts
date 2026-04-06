@@ -213,111 +213,111 @@ export function useExtensions() {
     await Promise.all(extensionsStore.installedExtensions
       .filter(installedExtension => !installedExtension.installPendingDependencies)
       .map(async (installedExtension) => {
-      const currentSettings = installedExtension.settings;
-      const currentBinaries = getBinariesFromSettings(currentSettings);
+        const currentSettings = installedExtension.settings;
+        const currentBinaries = getBinariesFromSettings(currentSettings);
 
-      if (currentBinaries.length === 0) {
-        return;
-      }
-
-      let hasBinaryUpdates = false;
-      const nextBinaries: Record<string, BinaryInfo> = {};
-
-      for (const binaryInfo of currentBinaries) {
-        const shouldCheckLatest = Boolean(
-          binaryInfo.repository
-          && (!binaryInfo.latestCheckedAt || (Date.now() - binaryInfo.latestCheckedAt) > BINARY_VERSION_CHECK_TTL_MS),
-        );
-        const needsVersionBackfill = Boolean(
-          binaryInfo.repository && !getBinaryDisplayVersion(binaryInfo),
-        );
-        let latestVersion = binaryInfo.latestVersion;
-        let nextLatestCheckedAt = binaryInfo.latestCheckedAt;
-
-        if ((shouldCheckLatest || needsVersionBackfill) && binaryInfo.repository) {
-          const fetchedLatestVersion = await getLatestBinaryVersion(binaryInfo.repository);
-
-          if (fetchedLatestVersion) {
-            latestVersion = fetchedLatestVersion;
-          }
-
-          if (shouldCheckLatest) {
-            nextLatestCheckedAt = Date.now();
-          }
-          else if (needsVersionBackfill && fetchedLatestVersion) {
-            nextLatestCheckedAt = Date.now();
-          }
+        if (currentBinaries.length === 0) {
+          return;
         }
 
-        const hasUpdate = Boolean(
-          binaryInfo.version
-          && latestVersion
-          && compareBinaryVersionsForUpdate(latestVersion, binaryInfo.version) > 0,
-        );
-        const nextBinaryInfo: BinaryInfo = {
-          ...binaryInfo,
-          latestVersion,
-          hasUpdate,
-          latestCheckedAt: nextLatestCheckedAt,
-        };
-        nextBinaries[nextBinaryInfo.id] = nextBinaryInfo;
+        let hasBinaryUpdates = false;
+        const nextBinaries: Record<string, BinaryInfo> = {};
 
-        const sharedBinaryVersion = getBinaryLookupVersion(nextBinaryInfo);
-        const existingSharedBinary = extensionsStorageStore.getSharedBinary(
-          nextBinaryInfo.id,
-          sharedBinaryVersion,
-        );
+        for (const binaryInfo of currentBinaries) {
+          const shouldCheckLatest = Boolean(
+            binaryInfo.repository
+            && (!binaryInfo.latestCheckedAt || (Date.now() - binaryInfo.latestCheckedAt) > BINARY_VERSION_CHECK_TTL_MS),
+          );
+          const needsVersionBackfill = Boolean(
+            binaryInfo.repository && !getBinaryDisplayVersion(binaryInfo),
+          );
+          let latestVersion = binaryInfo.latestVersion;
+          let nextLatestCheckedAt = binaryInfo.latestCheckedAt;
 
-        if (existingSharedBinary) {
-          const nextSharedBinary = {
-            ...existingSharedBinary,
-            version: nextBinaryInfo.version,
-            storageVersion: nextBinaryInfo.storageVersion,
-            repository: nextBinaryInfo.repository,
-            downloadUrl: nextBinaryInfo.downloadUrl ?? existingSharedBinary.downloadUrl,
+          if ((shouldCheckLatest || needsVersionBackfill) && binaryInfo.repository) {
+            const fetchedLatestVersion = await getLatestBinaryVersion(binaryInfo.repository);
+
+            if (fetchedLatestVersion) {
+              latestVersion = fetchedLatestVersion;
+            }
+
+            if (shouldCheckLatest) {
+              nextLatestCheckedAt = Date.now();
+            }
+            else if (needsVersionBackfill && fetchedLatestVersion) {
+              nextLatestCheckedAt = Date.now();
+            }
+          }
+
+          const hasUpdate = Boolean(
+            binaryInfo.version
+            && latestVersion
+            && compareBinaryVersionsForUpdate(latestVersion, binaryInfo.version) > 0,
+          );
+          const nextBinaryInfo: BinaryInfo = {
+            ...binaryInfo,
             latestVersion,
             hasUpdate,
-            latestCheckedAt: nextBinaryInfo.latestCheckedAt,
+            latestCheckedAt: nextLatestCheckedAt,
           };
+          nextBinaries[nextBinaryInfo.id] = nextBinaryInfo;
+
+          const sharedBinaryVersion = getBinaryLookupVersion(nextBinaryInfo);
+          const existingSharedBinary = extensionsStorageStore.getSharedBinary(
+            nextBinaryInfo.id,
+            sharedBinaryVersion,
+          );
+
+          if (existingSharedBinary) {
+            const nextSharedBinary = {
+              ...existingSharedBinary,
+              version: nextBinaryInfo.version,
+              storageVersion: nextBinaryInfo.storageVersion,
+              repository: nextBinaryInfo.repository,
+              downloadUrl: nextBinaryInfo.downloadUrl ?? existingSharedBinary.downloadUrl,
+              latestVersion,
+              hasUpdate,
+              latestCheckedAt: nextBinaryInfo.latestCheckedAt,
+            };
+
+            if (
+              nextSharedBinary.version !== existingSharedBinary.version
+              || nextSharedBinary.storageVersion !== existingSharedBinary.storageVersion
+              || nextSharedBinary.repository !== existingSharedBinary.repository
+              || nextSharedBinary.downloadUrl !== existingSharedBinary.downloadUrl
+              || nextSharedBinary.latestVersion !== existingSharedBinary.latestVersion
+              || nextSharedBinary.hasUpdate !== existingSharedBinary.hasUpdate
+              || nextSharedBinary.latestCheckedAt !== existingSharedBinary.latestCheckedAt
+            ) {
+              await extensionsStorageStore.setSharedBinary(
+                nextBinaryInfo.id,
+                sharedBinaryVersion,
+                nextSharedBinary,
+              );
+            }
+          }
 
           if (
-            nextSharedBinary.version !== existingSharedBinary.version
-            || nextSharedBinary.storageVersion !== existingSharedBinary.storageVersion
-            || nextSharedBinary.repository !== existingSharedBinary.repository
-            || nextSharedBinary.downloadUrl !== existingSharedBinary.downloadUrl
-            || nextSharedBinary.latestVersion !== existingSharedBinary.latestVersion
-            || nextSharedBinary.hasUpdate !== existingSharedBinary.hasUpdate
-            || nextSharedBinary.latestCheckedAt !== existingSharedBinary.latestCheckedAt
+            nextBinaryInfo.latestVersion !== binaryInfo.latestVersion
+            || nextBinaryInfo.hasUpdate !== binaryInfo.hasUpdate
+            || nextBinaryInfo.latestCheckedAt !== binaryInfo.latestCheckedAt
           ) {
-            await extensionsStorageStore.setSharedBinary(
-              nextBinaryInfo.id,
-              sharedBinaryVersion,
-              nextSharedBinary,
-            );
+            hasBinaryUpdates = true;
           }
         }
 
-        if (
-          nextBinaryInfo.latestVersion !== binaryInfo.latestVersion
-          || nextBinaryInfo.hasUpdate !== binaryInfo.hasUpdate
-          || nextBinaryInfo.latestCheckedAt !== binaryInfo.latestCheckedAt
-        ) {
-          hasBinaryUpdates = true;
+        if (!hasBinaryUpdates) {
+          return;
         }
-      }
 
-      if (!hasBinaryUpdates) {
-        return;
-      }
-
-      const nextCustomSettings = {
-        ...(currentSettings.customSettings ?? {}),
-        __binaries: nextBinaries,
-      };
-      await extensionsStorageStore.updateExtensionSettings(installedExtension.id, {
-        customSettings: nextCustomSettings,
-      });
-    }));
+        const nextCustomSettings = {
+          ...(currentSettings.customSettings ?? {}),
+          __binaries: nextBinaries,
+        };
+        await extensionsStorageStore.updateExtensionSettings(installedExtension.id, {
+          customSettings: nextCustomSettings,
+        });
+      }));
   }
 
   const filteredExtensions = computed((): ExtensionWithManifest[] => {
@@ -385,42 +385,42 @@ export function useExtensions() {
     return extensionsStore.installedExtensions
       .filter(inst => !inst.installPendingDependencies)
       .map((inst): ExtensionWithManifest => {
-      const registryEntry = extensionsStore.availableExtensions.find(
-        ext => ext.id === inst.id,
-      );
+        const registryEntry = extensionsStore.availableExtensions.find(
+          ext => ext.id === inst.id,
+        );
 
-      const repository = registryEntry?.repository ?? inst.manifest.repository;
-      const versions = extensionsStore.getCachedVersions(repository);
-      const latestVersion = versions.length > 0 ? versions[0] : inst.version;
+        const repository = registryEntry?.repository ?? inst.manifest.repository;
+        const versions = extensionsStore.getCachedVersions(repository);
+        const latestVersion = versions.length > 0 ? versions[0] : inst.version;
 
-      return {
-        id: inst.id,
-        name: registryEntry?.name ?? inst.manifest.name,
-        description: registryEntry?.description ?? t('extensions.noDescription'),
-        publisher: registryEntry?.publisher ?? inst.manifest.publisher?.name ?? '',
-        publisherUrl: registryEntry?.publisherUrl ?? inst.manifest.publisher?.url ?? '',
-        repository,
-        featured: registryEntry?.featured ?? false,
-        categories: registryEntry?.categories ?? inst.manifest.categories ?? [],
-        manifest: inst.manifest,
-        isInstalled: true,
-        installedVersion: inst.version,
-        installedAt: inst.installedAt,
-        hasUpdate: registryEntry ? extensionsStore.hasUpdate(inst.id) : false,
-        isEnabled: inst.enabled,
-        autoUpdate: inst.autoUpdate,
-        isOfficial: extensionsStore.isExtensionOfficial(inst.id),
-        isLocal: inst.isLocal ?? false,
-        isBroken: extensionsStore.isExtensionBroken(inst.id),
-        localSourcePath: inst.localSourcePath,
-        versions: versions.length > 0 ? versions : [inst.version],
-        latestVersion,
-        sizeBytes: extensionSizes.value.get(inst.id),
-        binaries: enrichBinariesWithSharedStore(getBinariesFromSettings(inst.settings)),
-        platforms: getExtensionPlatforms(inst.manifest),
-        isPlatformCompatible: checkPlatformCompatibility(inst.manifest),
-      };
-    });
+        return {
+          id: inst.id,
+          name: registryEntry?.name ?? inst.manifest.name,
+          description: registryEntry?.description ?? t('extensions.noDescription'),
+          publisher: registryEntry?.publisher ?? inst.manifest.publisher?.name ?? '',
+          publisherUrl: registryEntry?.publisherUrl ?? inst.manifest.publisher?.url ?? '',
+          repository,
+          featured: registryEntry?.featured ?? false,
+          categories: registryEntry?.categories ?? inst.manifest.categories ?? [],
+          manifest: inst.manifest,
+          isInstalled: true,
+          installedVersion: inst.version,
+          installedAt: inst.installedAt,
+          hasUpdate: registryEntry ? extensionsStore.hasUpdate(inst.id) : false,
+          isEnabled: inst.enabled,
+          autoUpdate: inst.autoUpdate,
+          isOfficial: extensionsStore.isExtensionOfficial(inst.id),
+          isLocal: inst.isLocal ?? false,
+          isBroken: extensionsStore.isExtensionBroken(inst.id),
+          localSourcePath: inst.localSourcePath,
+          versions: versions.length > 0 ? versions : [inst.version],
+          latestVersion,
+          sizeBytes: extensionSizes.value.get(inst.id),
+          binaries: enrichBinariesWithSharedStore(getBinariesFromSettings(inst.settings)),
+          platforms: getExtensionPlatforms(inst.manifest),
+          isPlatformCompatible: checkPlatformCompatibility(inst.manifest),
+        };
+      });
   });
 
   async function loadManifest(entry: ExtensionRegistryEntry): Promise<ExtensionManifest | null> {

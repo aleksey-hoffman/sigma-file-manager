@@ -1972,6 +1972,9 @@
   "sec": "sec",
   "lanShare": {
     "serverActive": "Compartilhamento na rede local ativo",
+    "notWorkingHint": "Não está funcionando?",
+    "notWorkingReasonVpn": "Não use uma VPN durante o compartilhamento.",
+    "notWorkingReasonFirewall": "Se você bloqueou este aplicativo no firewall antes, permita o acesso à rede para que outros dispositivos na LAN possam se conectar.",
     "serverStopped": "Compartilhamento na rede local parado",
     "failedToStart": "Falha ao iniciar compartilhamento na rede local",
     "stopSharing": "Parar compartilhamento",

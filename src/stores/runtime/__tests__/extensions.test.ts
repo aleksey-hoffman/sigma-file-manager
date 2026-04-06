@@ -661,6 +661,8 @@ describe('extensions runtime store', () => {
     };
 
     invokeMock.mockImplementation(async (command: string, args?: Record<string, unknown>) => {
+      console.log('invokeMock', args);
+
       if (command === 'fetch_url_text') {
         return {
           ok: true,

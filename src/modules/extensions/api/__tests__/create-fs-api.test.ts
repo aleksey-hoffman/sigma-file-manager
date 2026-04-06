@@ -2,7 +2,9 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import {
+  beforeEach, describe, expect, it, vi,
+} from 'vitest';
 import type { ExtensionPermission } from '@/types/extension';
 import type { ExtensionContext } from '@/modules/extensions/api/extension-context';
 

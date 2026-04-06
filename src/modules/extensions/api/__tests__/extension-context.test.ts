@@ -2,7 +2,9 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import {
+  beforeEach, describe, expect, it, vi,
+} from 'vitest';
 import type { ExtensionPermission } from '@/types/extension';
 
 const { invokeMock, hasScopedAccessMock, invokeAsExtensionMock } = vi.hoisted(() => ({
@@ -42,12 +44,17 @@ describe('createExtensionContext', () => {
       if (command === 'get_extension_path') {
         return '/extensions/test.extension';
       }
+
       if (command === 'get_extension_storage_path') {
         return '/extensions-storage/test.extension';
       }
+
       throw new Error(`Unexpected invokeAsExtension command: ${command}`);
     });
-    invokeMock.mockImplementation(async (command: string, args?: { path?: string; directory?: string }) => {
+    invokeMock.mockImplementation(async (command: string, args?: {
+      path?: string;
+      directory?: string;
+    }) => {
       if (command !== 'is_path_within_directory') {
         throw new Error(`Unexpected invoke command: ${command}`);
       }

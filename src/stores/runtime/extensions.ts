@@ -144,29 +144,40 @@ export const useExtensionsStore = defineStore('extensions', () => {
 
   async function rollbackInstallAfterCancel(extensionId: string): Promise<void> {
     toast.dismiss(`ext-ready-${extensionId}`);
+
     try {
       await unloadExtension(extensionId);
-    } catch {
     }
+    catch {
+    }
+
     try {
       await invoke('cancel_all_extension_commands', { extensionId });
-    } catch {
     }
+    catch {
+    }
+
     try {
       await invoke('delete_extension', { extensionId });
-    } catch {
     }
+    catch {
+    }
+
     try {
       const orphanedBinaries = await storageStore.removeAllSharedBinaryUsages(extensionId);
       await cleanupOrphanedSharedBinaries(orphanedBinaries);
-    } catch {
     }
+    catch {
+    }
+
     try {
       if (storageStore.extensionsData.installedExtensions[extensionId]) {
         await storageStore.removeInstalledExtension(extensionId);
       }
-    } catch {
     }
+    catch {
+    }
+
     brokenExtensionIds.value = new Set([...brokenExtensionIds.value].filter(id => id !== extensionId));
   }
 
@@ -285,6 +296,7 @@ export const useExtensionsStore = defineStore('extensions', () => {
     }
 
     extensionRemoteMetadataFetchCount.value += 1;
+
     try {
       const tagNames = await fetchGitHubTagsWithRetry(repository);
       const versions: string[] = [];
@@ -516,9 +528,11 @@ export const useExtensionsStore = defineStore('extensions', () => {
         else if (signal.aborted || isUserCancelledError(error)) {
           await rollbackInstallAfterCancel(extensionId);
         }
+
         if (signal.aborted || isUserCancelledError(error)) {
           return;
         }
+
         throw error;
       }
       finally {
@@ -605,9 +619,11 @@ export const useExtensionsStore = defineStore('extensions', () => {
         else if (signal.aborted || isUserCancelledError(error)) {
           await rollbackInstallAfterCancel(extensionId);
         }
+
         if (signal.aborted || isUserCancelledError(error)) {
           return;
         }
+
         throw error;
       }
       finally {

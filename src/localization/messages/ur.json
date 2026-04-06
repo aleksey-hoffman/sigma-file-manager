@@ -1956,6 +1956,9 @@
   },
   "lanShare": {
     "serverActive": "LAN شیئر فعال ہے",
+    "notWorkingHint": "کام نہیں کر رہا؟",
+    "notWorkingReasonVpn": "شیئر کرتے وقت VPN استعمال نہ کریں۔",
+    "notWorkingReasonFirewall": "اگر آپ نے پہلے فائر وال میں اس ایپ کو بلاک کیا تھا تو نیٹ ورک رسائی کی اجازت دیں تاکہ LAN پر دیگر آلات جڑ سکیں۔",
     "serverStopped": "LAN شیئر بند",
     "failedToStart": "LAN شیئر شروع نہیں ہو سکا",
     "stopSharing": "شیئر بند کریں",

@@ -1958,6 +1958,9 @@
   "recalculate": "Recalculate",
   "lanShare": {
     "serverActive": "局域网共享已启用",
+    "notWorkingHint": "无法连接？",
+    "notWorkingReasonVpn": "共享时不要使用 VPN。",
+    "notWorkingReasonFirewall": "若曾在防火墙中禁止本应用访问网络，请改为允许，以便局域网中的其他设备可以连接。",
     "serverStopped": "局域网共享已停止",
     "failedToStart": "无法启动局域网共享",
     "stopSharing": "停止共享",

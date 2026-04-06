@@ -19,7 +19,8 @@ export function createDialogAPI(
 
       if (typeof selectedPath === 'string' && selectedPath.length > 0) {
         context.grantDialogReadAccess(selectedPath);
-      } else if (Array.isArray(selectedPath)) {
+      }
+      else if (Array.isArray(selectedPath)) {
         for (const filePath of selectedPath) {
           if (typeof filePath === 'string' && filePath.length > 0) {
             context.grantDialogReadAccess(filePath);

@@ -12,12 +12,21 @@ type ExtensionInstallSession = {
 
 const sessions = new Map<string, ExtensionInstallSession>();
 
-export async function beginExtensionInstall(extensionId: string): Promise<{ cancellationId: string; signal: AbortSignal }> {
+export async function beginExtensionInstall(extensionId: string): Promise<{
+  cancellationId: string;
+  signal: AbortSignal;
+}> {
   const cancellationId = crypto.randomUUID();
   const abortController = new AbortController();
-  sessions.set(extensionId, { cancellationId, abortController });
+  sessions.set(extensionId, {
+    cancellationId,
+    abortController,
+  });
   await invoke('register_extension_install_cancellation', { cancellationId });
-  return { cancellationId, signal: abortController.signal };
+  return {
+    cancellationId,
+    signal: abortController.signal,
+  };
 }
 
 export async function endExtensionInstall(extensionId: string): Promise<void> {
@@ -49,15 +58,19 @@ export function isUserCancelledError(error: unknown): boolean {
 export function getInstallAbortPromise(extensionId: string): Promise<never> {
   return new Promise((_, reject) => {
     const session = getExtensionInstallSession(extensionId);
+
     if (!session) {
       reject(new Error('No install session'));
       return;
     }
+
     const signal = session.abortController.signal;
+
     if (signal.aborted) {
       reject(new DOMException('Aborted', 'AbortError'));
       return;
     }
+
     signal.addEventListener('abort', () => reject(new DOMException('Aborted', 'AbortError')), { once: true });
   });
 }
@@ -66,5 +79,6 @@ export async function raceWithInstallAbort<T>(promise: Promise<T>, extensionId: 
   if (!getExtensionInstallSession(extensionId)) {
     return promise;
   }
+
   return Promise.race([promise, getInstallAbortPromise(extensionId)]);
 }

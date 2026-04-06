@@ -1958,6 +1958,9 @@
   "recalculate": "Recalculate",
   "lanShare": {
     "serverActive": "Condivisione in rete locale attiva",
+    "notWorkingHint": "Non funziona?",
+    "notWorkingReasonVpn": "Non usare una VPN durante la condivisione.",
+    "notWorkingReasonFirewall": "Se in precedenza hai bloccato questa app nel firewall, consenti l'accesso alla rete così gli altri dispositivi sulla LAN possono connettersi.",
     "serverStopped": "Condivisione in rete locale interrotta",
     "failedToStart": "Impossibile avviare la condivisione in rete locale",
     "stopSharing": "Interrompi condivisione",

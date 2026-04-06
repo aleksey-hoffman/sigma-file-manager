@@ -1958,6 +1958,9 @@
   "recalculate": "Recalculate",
   "lanShare": {
     "serverActive": "LAN 共有が有効です",
+    "notWorkingHint": "うまくいかない場合",
+    "notWorkingReasonVpn": "共有中は VPN を使わないでください。",
+    "notWorkingReasonFirewall": "以前にファイアウォールでこのアプリをブロックした場合は、ネットワークアクセスを許可して LAN 上の他の端末が接続できるようにしてください。",
     "serverStopped": "LAN 共有が停止しました",
     "failedToStart": "LAN 共有の開始に失敗しました",
     "stopSharing": "共有を停止",

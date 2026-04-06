@@ -1958,6 +1958,9 @@
   "recalculate": "Recalculate",
   "lanShare": {
     "serverActive": "Yerel ağ paylaşımı aktif",
+    "notWorkingHint": "Çalışmıyor mu?",
+    "notWorkingReasonVpn": "Paylaşım sırasında VPN kullanmayın.",
+    "notWorkingReasonFirewall": "Bu uygulamayı güvenlik duvarında daha önce engellediyseniz, ağ erişimine izin verin; böylece yerel ağdaki diğer cihazlar bağlanabilir.",
     "serverStopped": "Yerel ağ paylaşımı durduruldu",
     "failedToStart": "Yerel ağ paylaşımı başlatılamadı",
     "stopSharing": "Paylaşımı durdur",

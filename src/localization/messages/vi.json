@@ -1958,6 +1958,9 @@
   "recalculate": "Recalculate",
   "lanShare": {
     "serverActive": "Chia sẻ qua mạng LAN đang hoạt động",
+    "notWorkingHint": "Không hoạt động?",
+    "notWorkingReasonVpn": "Đừng dùng VPN khi đang chia sẻ.",
+    "notWorkingReasonFirewall": "Nếu trước đây bạn đã chặn ứng dụng này trong tường lửa, hãy cho phép truy cập mạng để thiết bị khác trên LAN có thể kết nối.",
     "serverStopped": "Chia sẻ qua mạng LAN đã dừng",
     "failedToStart": "Không thể bắt đầu chia sẻ qua mạng LAN",
     "stopSharing": "Dừng chia sẻ",

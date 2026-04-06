@@ -72,7 +72,29 @@ const isHubSession = computed(() => (activeSession.value?.hubPaths?.length ?? 0)
           class="lan-share-toolbar__active"
         >
           <div class="lan-share-toolbar__header">
-            {{ t('lanShare.serverActive') }}
+            <span class="lan-share-toolbar__header-title">{{ t('lanShare.serverActive') }}</span>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger as-child>
+                  <button
+                    type="button"
+                    class="lan-share-toolbar__not-working"
+                  >
+                    {{ t('lanShare.notWorkingHint') }}
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent
+                  side="bottom"
+                  align="end"
+                  class="lan-share-toolbar__not-working-tooltip"
+                >
+                  <ul class="lan-share-toolbar__not-working-list">
+                    <li>{{ t('lanShare.notWorkingReasonVpn') }}</li>
+                    <li>{{ t('lanShare.notWorkingReasonFirewall') }}</li>
+                  </ul>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
 
           <div class="lan-share-toolbar__body">
@@ -290,12 +312,55 @@ const isHubSession = computed(() => (activeSession.value?.hubPaths?.length ?? 0)
 }
 
 .lan-share-toolbar__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   padding: 8px 10px;
   border-bottom: 1px solid hsl(var(--border));
   color: hsl(var(--muted-foreground));
   font-size: 11px;
   font-weight: 500;
+  gap: 0.5rem;
+}
+
+.lan-share-toolbar__header-title {
+  min-width: 0;
   text-transform: uppercase;
+}
+
+.lan-share-toolbar__not-working {
+  all: unset;
+  flex-shrink: 0;
+  color: hsl(var(--primary));
+  cursor: help;
+  font-size: 11px;
+  font-weight: 500;
+  text-decoration: underline;
+  text-decoration-color: hsl(var(--primary) / 35%);
+  text-underline-offset: 2px;
+}
+
+.lan-share-toolbar__not-working:hover {
+  text-decoration-color: hsl(var(--primary) / 55%);
+}
+
+.sigma-ui-tooltip-content.lan-share-toolbar__not-working-tooltip {
+  overflow: visible;
+  max-width: 16.5rem;
+}
+
+.lan-share-toolbar__not-working-list {
+  margin: 0;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  list-style-position: outside;
+  list-style-type: disc;
+  padding-inline-start: 1.25rem;
+  text-align: start;
+}
+
+.lan-share-toolbar__not-working-list li + li {
+  margin-top: 0.35rem;
 }
 
 .lan-share-toolbar__active {
@@ -328,7 +393,7 @@ const isHubSession = computed(() => (activeSession.value?.hubPaths?.length ?? 0)
   min-width: 0;
   flex: 1;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 24px;
 }
 
 .lan-share-toolbar__address-group,

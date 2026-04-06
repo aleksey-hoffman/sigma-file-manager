@@ -2057,6 +2057,9 @@
   },
   "lanShare": {
     "serverActive": "Deljenje prek omrežja je aktivno",
+    "notWorkingHint": "Ne deluje?",
+    "notWorkingReasonVpn": "Med deljenjem ne uporabljajte VPN.",
+    "notWorkingReasonFirewall": "Če ste to aplikacijo prej blokirali v požarnem zidu, dovolite omrežni dostop, da se lahko druge naprave v LAN povežejo.",
     "serverStopped": "Deljenje prek omrežja ustavljeno",
     "failedToStart": "Deljenja prek omrežja ni bilo mogoče zagnati",
     "stopSharing": "Ustavi deljenje",

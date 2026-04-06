@@ -1958,6 +1958,9 @@
   "recalculate": "Recalculate",
   "lanShare": {
     "serverActive": "Netzwerkfreigabe aktiv",
+    "notWorkingHint": "Funktioniert nicht?",
+    "notWorkingReasonVpn": "Verwenden Sie während der Freigabe kein VPN.",
+    "notWorkingReasonFirewall": "Wenn Sie diese App zuvor in der Firewall blockiert haben, erlauben Sie den Netzwerkzugriff, damit andere Geräte im LAN verbinden können.",
     "serverStopped": "Netzwerkfreigabe gestoppt",
     "failedToStart": "Netzwerkfreigabe konnte nicht gestartet werden",
     "stopSharing": "Freigabe beenden",

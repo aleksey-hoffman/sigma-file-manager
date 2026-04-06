@@ -1958,6 +1958,9 @@
   "recalculate": "Recalculate",
   "lanShare": {
     "serverActive": "اشتراک‌گذاری در شبکه محلی فعال است",
+    "notWorkingHint": "کار نمی‌کند؟",
+    "notWorkingReasonVpn": "هنگام اشتراک‌گذاری از VPN استفاده نکنید.",
+    "notWorkingReasonFirewall": "اگر قبلاً این برنامه را در فایروال مسدود کرده‌اید، دسترسی شبکه را مجاز کنید تا دستگاه‌های دیگر در LAN بتوانند وصل شوند.",
     "serverStopped": "اشتراک‌گذاری در شبکه محلی متوقف شد",
     "failedToStart": "شروع اشتراک‌گذاری در شبکه محلی ناموفق بود",
     "stopSharing": "توقف اشتراک‌گذاری",
