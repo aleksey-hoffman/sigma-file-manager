@@ -457,6 +457,10 @@
       "quickAccessOnHover": "ホバーでクイックアクセスパネルを開く",
       "quickAccessOnHoverDescription": "有効にすると、サイドバーのダッシュボードボタンにマウスを合わせたときにクイックアクセスパネルが自動的に開きます"
     },
+    "tooltips": {
+      "title": "ツールチップ",
+      "delay": "ツールチップ表示までの遅延（{n} ms）"
+    },
     "homePageMediaBanner": {
       "title": "ホームページメディアバナー",
       "options": "バナーオプション",
@@ -688,6 +692,7 @@
     "overlays": "オーバーレイ、ナビゲーション、パネル、ドライブ、ストレージ、文字、UI、要素、ビジュアル",
     "uiElements": "UI、要素、ビジュアル、入力、アクセント、色、タイムライン、ダッシュボード、ページ、最近、カード、ホーム、ドライブ、スペース、インジケーター、スタイル",
     "quickAccess": "quick, access, panel, hover, sidebar, dashboard",
+    "tooltips": "tooltip, tooltips, hover, delay, timing",
     "homePageMediaBanner": "ホーム、ページ、メディア、バナー、背景、画像、動画",
     "infoPanel": "情報、パネル、ディレクトリ、サイズ、パフォーマンス、情報、詳細、プロパティ",
     "navigator": "デザイン、UI、ナビゲーター、ディバイダー、タイトル、ソート、ビュー、レイアウト、リスト、グリッド、アイテム、ファイル、ディレクトリ、ホバー、スケール、ハイライト、OCD",

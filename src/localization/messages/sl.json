@@ -476,6 +476,10 @@
       "quickAccessOnHover": "Odpri ploščo za hitri dostop ob lebdenju",
       "quickAccessOnHoverDescription": "Ko je omogočeno, se plošča za hitri dostop samodejno odpre ob lebdenju nad gumbom nadzorne plošče v stranski vrstici"
     },
+    "tooltips": {
+      "title": "Namigi",
+      "delay": "Zakasnitev namiga ({n} ms)"
+    },
     "homePageMediaBanner": {
       "title": "Medijska pasica domače strani",
       "options": "Možnosti pasice",
@@ -707,6 +711,7 @@
     "overlays": "overlays, navigation, panel, drive, storage, letter, ui, elements, visual",
     "uiElements": "ui, elements, visual, input, accent, color, timeline, dashboard, page, recent, cards, home, drive, space, indicator, style",
     "quickAccess": "quick, access, panel, hover, sidebar, dashboard",
+    "tooltips": "tooltip, tooltips, hover, delay, timing",
     "homePageMediaBanner": "home, page, media, banner, background, image, video",
     "infoPanel": "info, panel, directory, size, performance, information, details, properties",
     "navigator": "design, ui, navigator, dividers, titles, sorting, view, layout, list, grid, item, file, directory, hover, scale, highlight, OCD",

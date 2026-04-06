@@ -457,6 +457,10 @@
       "quickAccessOnHover": "悬停时打开快速访问面板",
       "quickAccessOnHoverDescription": "启用后，将鼠标悬停在侧边栏的仪表板按钮上时，快速访问面板会自动打开"
     },
+    "tooltips": {
+      "title": "工具提示",
+      "delay": "工具提示延迟（{n} 毫秒）"
+    },
     "homePageMediaBanner": {
       "title": "主页媒体横幅",
       "options": "横幅选项",
@@ -688,6 +692,7 @@
     "overlays": "叠加层、导航、面板、驱动器、存储、字母、用户界面、元素、视觉",
     "uiElements": "ui、元素、视觉、输入、重音、颜色、时间线、仪表板、页面、最近、卡片、主页、驱动器、空间、指示器、样式",
     "quickAccess": "quick, access, panel, hover, sidebar, dashboard",
+    "tooltips": "tooltip, tooltips, hover, delay, timing",
     "homePageMediaBanner": "主页、页面、媒体、横幅、背景、图像、视频",
     "infoPanel": "信息、面板、目录、大小、性能、信息、细节、属性",
     "navigator": "设计、用户界面、导航器、分隔线、标题、排序、视图、布局、列表、网格、项目、文件、目录、悬停、缩放、突出显示、强迫症",

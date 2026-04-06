@@ -93,7 +93,7 @@ function openReleasesPage() {
 <template>
   <Teleport to=".window-toolbar-primary-teleport-target">
     <div class="animate-fade-in settings-actions">
-      <Tooltip :delay-duration="0">
+      <Tooltip>
         <TooltipTrigger as-child>
           <Button
             variant="ghost"

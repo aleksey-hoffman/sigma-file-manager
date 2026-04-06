@@ -24,7 +24,6 @@ import {
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import {
@@ -820,20 +819,18 @@ const extensionKeybindingsByExtension = computed(() => {
               </div>
 
               <div class="shortcuts-table__cell shortcuts-table__cell--when">
-                <TooltipProvider v-if="getConditionsLabel(definition.id)">
-                  <Tooltip>
-                    <TooltipTrigger as-child>
-                      <code class="shortcuts-table__when-code">
-                        {{ getConditionsLabel(definition.id) }}
-                      </code>
-                    </TooltipTrigger>
-                    <TooltipContent side="top">
-                      <code class="shortcuts-table__when-tooltip-code">
-                        {{ getConditionsLabel(definition.id) }}
-                      </code>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                <Tooltip v-if="getConditionsLabel(definition.id)">
+                  <TooltipTrigger as-child>
+                    <code class="shortcuts-table__when-code">
+                      {{ getConditionsLabel(definition.id) }}
+                    </code>
+                  </TooltipTrigger>
+                  <TooltipContent side="top">
+                    <code class="shortcuts-table__when-tooltip-code">
+                      {{ getConditionsLabel(definition.id) }}
+                    </code>
+                  </TooltipContent>
+                </Tooltip>
               </div>
 
               <div class="shortcuts-table__cell shortcuts-table__cell--source">

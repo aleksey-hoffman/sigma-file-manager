@@ -190,7 +190,7 @@ async function handleBrowse() {
               v-model="editedPath"
               :class="{ 'user-directory-editor-dialog__input--error': pathError }"
             />
-            <Tooltip :delay-duration="0">
+            <Tooltip>
               <TooltipTrigger as-child>
                 <Button
                   variant="secondary"

@@ -457,6 +457,10 @@
       "quickAccessOnHover": "Fareyle üzerine gelindiğinde hızlı erişim panelini aç",
       "quickAccessOnHoverDescription": "Etkinleştirildiğinde, kenar çubuğundaki pano düğmesinin üzerine gelindiğinde hızlı erişim paneli otomatik olarak açılır"
     },
+    "tooltips": {
+      "title": "İpuçları",
+      "delay": "İpucu gecikmesi ({n} ms)"
+    },
     "homePageMediaBanner": {
       "title": "Ana sayfa medya banner'ı",
       "options": "Banner seçenekleri",
@@ -688,6 +692,7 @@
     "overlays": "bindirmeler, gezinme, panel, sürücü, depolama, mektup, ui, öğeler, görsel",
     "uiElements": "ui, öğeler, görsel, giriş, vurgu, renk, zaman çizelgesi, pano, sayfa, son, kartlar, ev, sürücü, boşluk, gösterge, stil",
     "quickAccess": "quick, access, panel, hover, sidebar, dashboard",
+    "tooltips": "tooltip, tooltips, hover, delay, timing",
     "homePageMediaBanner": "ana sayfa, sayfa, medya, afiş, arka plan, resim, video",
     "infoPanel": "bilgi, panel, dizin, boyut, performans, bilgi, ayrıntılar, özellikler",
     "navigator": "tasarım, kullanıcı arabirimi, gezgin, bölücüler, başlıklar, sıralama, görünüm, düzen, liste, ızgara, öğe, dosya, dizin, vurgulu, ölçek, vurgulama, OKB",

@@ -82,7 +82,6 @@ function toggleColumnVisibility(column: 'items' | 'size' | 'modified', checked: 
       </button>
       <Tooltip
         v-if="columnVisibility.size"
-        :delay-duration="200"
       >
         <TooltipTrigger as-child>
           <button

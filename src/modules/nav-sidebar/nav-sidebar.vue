@@ -108,7 +108,6 @@ function getDriveIcon(drive: {
       >
         <Tooltip
           v-if="isDashboardPage(item) && quickAccessOnHover"
-          :delay-duration="0"
           :open="quickAccessTooltipOpen"
           @update:open="handleQuickAccessTooltipOpenChange"
         >
@@ -139,7 +138,6 @@ function getDriveIcon(drive: {
         </Tooltip>
         <Tooltip
           v-else
-          :delay-duration="0"
         >
           <TooltipTrigger as-child>
             <Button
@@ -168,7 +166,6 @@ function getDriveIcon(drive: {
       <Tooltip
         v-for="registration in sortedExtensionPages"
         :key="registration.page.id"
-        :delay-duration="0"
       >
         <TooltipTrigger as-child>
           <Button
@@ -199,7 +196,6 @@ function getDriveIcon(drive: {
       <Tooltip
         v-for="drive in drives"
         :key="drive.path"
-        :delay-duration="0"
       >
         <TooltipTrigger as-child>
           <Button

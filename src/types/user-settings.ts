@@ -163,6 +163,7 @@ export type UserSettings = {
   focusWindowOnDriveConnected: boolean;
   preventDropdownCloseFocusReturn: boolean;
   quickAccessOnHover: boolean;
+  tooltipDelayMs: number;
   launchAtStartup: boolean;
   launchAtStartupHidden: boolean;
   appUpdates: AppUpdatesSettings;

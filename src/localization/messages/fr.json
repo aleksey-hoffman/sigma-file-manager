@@ -457,6 +457,10 @@
       "quickAccessOnHover": "Ouvrir le panneau d'accès rapide au survol",
       "quickAccessOnHoverDescription": "Lorsqu'activé, le panneau d'accès rapide s'ouvre automatiquement au survol du bouton tableau de bord dans la barre latérale"
     },
+    "tooltips": {
+      "title": "Info-bulles",
+      "delay": "Délai de l'info-bulle ({n} ms)"
+    },
     "homePageMediaBanner": {
       "title": "Bannière média de la page d'accueil",
       "options": "Options de bannière",
@@ -688,6 +692,7 @@
     "overlays": "superpositions, navigation, panneau, lecteur, stockage, lettre, interface utilisateur, éléments, visuel",
     "uiElements": "interface utilisateur, éléments, visuel, entrée, accent, couleur, chronologie, tableau de bord, page, récent, cartes, accueil, lecteur, espace, indicateur, style",
     "quickAccess": "quick, access, panel, hover, sidebar, dashboard",
+    "tooltips": "tooltip, tooltips, hover, delay, timing",
     "homePageMediaBanner": "accueil, page, média, bannière, arrière-plan, image, vidéo",
     "infoPanel": "info, panneau, répertoire, taille, performances, informations, détails, propriétés",
     "navigator": "conception, interface utilisateur, navigateur, séparateurs, titres, tri, vue, mise en page, liste, grille, élément, fichier, répertoire, survol, échelle, surbrillance, OCD",

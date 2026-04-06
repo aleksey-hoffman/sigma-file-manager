@@ -208,7 +208,6 @@ function selectProperty(property: QuickSearchProperty) {
             <Tooltip
               v-for="property in QUICK_SEARCH_PROPERTY_KEYS"
               :key="property"
-              :delay-duration="400"
             >
               <TooltipTrigger as-child>
                 <Button

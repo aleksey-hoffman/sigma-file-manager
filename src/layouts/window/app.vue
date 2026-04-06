@@ -32,7 +32,7 @@ const { activeEmbedPageId, visitedEmbedPages } = useEmbedPages();
     <ExtensionDialog />
     <CommandPalette />
     <ExtensionModalsContainer />
-    <TooltipProvider>
+    <TooltipProvider :delay-duration="userSettingsStore.userSettings.tooltipDelayMs">
       <NavSidebar />
       <div class="app-layout__main">
         <WindowToolbar />

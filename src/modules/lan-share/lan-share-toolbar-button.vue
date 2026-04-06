@@ -11,7 +11,7 @@ import { Share2Icon, PlayIcon, FolderIcon, InfoIcon } from '@lucide/vue';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
-import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useLanShareStore } from '@/stores/runtime/lan-share';
 import { useNavigatorSelectionStore } from '@/stores/runtime/navigator-selection';
 import { useWorkspacesStore } from '@/stores/storage/workspaces';
@@ -73,28 +73,26 @@ const isHubSession = computed(() => (activeSession.value?.hubPaths?.length ?? 0)
         >
           <div class="lan-share-toolbar__header">
             <span class="lan-share-toolbar__header-title">{{ t('lanShare.serverActive') }}</span>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger as-child>
-                  <button
-                    type="button"
-                    class="lan-share-toolbar__not-working"
-                  >
-                    {{ t('lanShare.notWorkingHint') }}
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent
-                  side="bottom"
-                  align="end"
-                  class="lan-share-toolbar__not-working-tooltip"
+            <Tooltip>
+              <TooltipTrigger as-child>
+                <button
+                  type="button"
+                  class="lan-share-toolbar__not-working"
                 >
-                  <ul class="lan-share-toolbar__not-working-list">
-                    <li>{{ t('lanShare.notWorkingReasonVpn') }}</li>
-                    <li>{{ t('lanShare.notWorkingReasonFirewall') }}</li>
-                  </ul>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+                  {{ t('lanShare.notWorkingHint') }}
+                </button>
+              </TooltipTrigger>
+              <TooltipContent
+                side="bottom"
+                align="end"
+                class="lan-share-toolbar__not-working-tooltip"
+              >
+                <ul class="lan-share-toolbar__not-working-list">
+                  <li>{{ t('lanShare.notWorkingReasonVpn') }}</li>
+                  <li>{{ t('lanShare.notWorkingReasonFirewall') }}</li>
+                </ul>
+              </TooltipContent>
+            </Tooltip>
           </div>
 
           <div class="lan-share-toolbar__body">
@@ -115,24 +113,22 @@ const isHubSession = computed(() => (activeSession.value?.hubPaths?.length ?? 0)
                   <div class="lan-share-toolbar__address-label">
                     {{ t('dialogs.localShareManagerDialog.localServerAddress') }}
                   </div>
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger as-child>
-                        <button
-                          type="button"
-                          class="lan-share-toolbar__info-icon"
-                          @click="copyLanShareAddress(activeSession.address)"
-                        >
-                          <InfoIcon :size="13" />
-                        </button>
-                      </TooltipTrigger>
-                      <TooltipContent side="top">
-                        <p class="lan-share-toolbar__tooltip-text">
-                          {{ t('lanShare.urlHintDirect') }}: {{ activeSession.address }}
-                        </p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger as-child>
+                      <button
+                        type="button"
+                        class="lan-share-toolbar__info-icon"
+                        @click="copyLanShareAddress(activeSession.address)"
+                      >
+                        <InfoIcon :size="13" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top">
+                      <p class="lan-share-toolbar__tooltip-text">
+                        {{ t('lanShare.urlHintDirect') }}: {{ activeSession.address }}
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
                 </div>
                 <div
                   v-if="activeSession.mdnsAddress"

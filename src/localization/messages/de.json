@@ -457,6 +457,10 @@
       "quickAccessOnHover": "Schnellzugriffsleiste beim Überfahren öffnen",
       "quickAccessOnHoverDescription": "Wenn aktiviert, öffnet sich die Schnellzugriffsleiste automatisch beim Überfahren der Dashboard-Schaltfläche in der Seitenleiste"
     },
+    "tooltips": {
+      "title": "Tooltips",
+      "delay": "Tooltip-Verzögerung ({n} ms)"
+    },
     "homePageMediaBanner": {
       "title": "Homepage-Medienbanner",
       "options": "Banneroptionen",
@@ -688,6 +692,7 @@
     "overlays": "overlays, navigation, panel, drive, storage, letter, ui, elements, visual",
     "uiElements": "UI, Elemente, visuell, Eingabe, Akzent, Farbe, Zeitleiste, Dashboard, Seite, aktuell, Karten, Startseite, Laufwerk, Raum, Anzeige, Stil",
     "quickAccess": "quick, access, panel, hover, sidebar, dashboard",
+    "tooltips": "tooltip, tooltips, hover, delay, timing",
     "homePageMediaBanner": "Startseite, Seite, Medien, Banner, Hintergrund, Bild, Video",
     "infoPanel": "Info, Panel, Verzeichnis, Größe, Leistung, Informationen, Details, Eigenschaften",
     "navigator": "design, ui, navigator, dividers, titles, sorting, view, layout, list, grid, item, file, directory, hover, scale, highlight, OCD",

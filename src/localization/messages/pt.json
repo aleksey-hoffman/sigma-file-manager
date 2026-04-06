@@ -457,6 +457,10 @@
       "quickAccessOnHover": "Abrir painel de acesso rápido ao passar o cursor",
       "quickAccessOnHoverDescription": "Quando ativado, o painel de acesso rápido abre automaticamente ao passar o cursor sobre o botão do painel na barra lateral"
     },
+    "tooltips": {
+      "title": "Dicas",
+      "delay": "Atraso da dica ({n} ms)"
+    },
     "homePageMediaBanner": {
       "title": "Banner de mídia da página inicial",
       "options": "Opções de Banner",
@@ -688,6 +692,7 @@
     "overlays": "sobreposições, navegação, painel, unidade, armazenamento, gráfico, interface do usuário, elementos, visual",
     "uiElements": "ui, elementos, visual, entrada, acento, cor, linha do tempo, painel, página, recente, cartões, página inicial, unidade, espaço, indicador, estilo",
     "quickAccess": "quick, access, panel, hover, sidebar, dashboard",
+    "tooltips": "tooltip, tooltips, hover, delay, timing",
     "homePageMediaBanner": "home, página, mídia, banner, plano de fundo, imagem, vídeo",
     "infoPanel": "informações, painel, diretório, tamanho, desempenho, informações, detalhes, propriedades",
     "navigator": "layout, interface do usuário, navegador, divisórias, títulos, classificação, visualização, layout, lista, grade, item, arquivo, diretório, rolagem, escala, destaque, OCD",

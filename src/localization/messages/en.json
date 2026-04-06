@@ -476,6 +476,10 @@
       "quickAccessOnHover": "Open quick access panel on hover",
       "quickAccessOnHoverDescription": "When enabled, the quick access panel opens automatically when hovering over the dashboard button in the sidebar"
     },
+    "tooltips": {
+      "title": "Tooltips",
+      "delay": "Tooltip delay ({n} ms)"
+    },
     "homePageMediaBanner": {
       "title": "Home page media banner",
       "options": "Banner options",
@@ -707,6 +711,7 @@
     "overlays": "overlays, navigation, panel, drive, storage, letter, ui, elements, visual",
     "uiElements": "ui, elements, visual, input, accent, color, timeline, dashboard, page, recent, cards, home, drive, space, indicator, style",
     "quickAccess": "quick, access, panel, hover, sidebar, dashboard",
+    "tooltips": "tooltip, tooltips, hover, delay, timing",
     "homePageMediaBanner": "home, page, media, banner, background, image, video",
     "infoPanel": "info, panel, directory, size, performance, information, details, properties",
     "navigator": "design, ui, navigator, dividers, titles, sorting, view, layout, list, grid, item, file, directory, hover, scale, highlight, OCD",

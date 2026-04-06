@@ -476,6 +476,10 @@
       "quickAccessOnHover": "ہوور پر فوری رسائی پینل کھولیں",
       "quickAccessOnHoverDescription": "چالو ہونے پر سائیڈ بار میں ڈیش بورڈ بٹن پر ہوور کرتے ہی فوری رسائی پینل کھلتا ہے"
     },
+    "tooltips": {
+      "title": "ٹول ٹپس",
+      "delay": "ٹول ٹپ میں تاخیر ({n} ms)"
+    },
     "homePageMediaBanner": {
       "title": "ہوم صفحے میڈیا بینر",
       "options": "بینر اختیارات",
@@ -707,6 +711,7 @@
     "overlays": "اوورلے, نیویگیشن, ڈرائیو حرف",
     "uiElements": "ui, عناصر, ڈیش بورڈ, کارڈ, ٹائم لائن",
     "quickAccess": "فوری رسائی, سائیڈ بار, ہوور",
+    "tooltips": "tooltip, tooltips, hover, delay, timing",
     "homePageMediaBanner": "ہوم, میڈیا, بینر, پس منظر",
     "infoPanel": "معلومات, فولڈر سائز, تفصیل",
     "navigator": "نیویگیٹر, لے آؤٹ, فہرست, گرڈ, ترتیب",

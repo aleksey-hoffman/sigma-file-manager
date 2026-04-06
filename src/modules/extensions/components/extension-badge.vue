@@ -7,7 +7,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { CheckCircle2Icon, AlertTriangleIcon, HardDriveIcon, AlertCircleIcon } from '@lucide/vue';
-import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 type BadgeType = 'official' | 'community' | 'local' | 'broken';
 
@@ -54,30 +54,28 @@ const badgeConfig = computed(() => {
 </script>
 
 <template>
-  <TooltipProvider>
-    <Tooltip>
-      <TooltipTrigger as-child>
+  <Tooltip>
+    <TooltipTrigger as-child>
+      <span
+        class="extension-badge"
+        :class="badgeConfig.class"
+      >
+        <component
+          :is="badgeConfig.icon"
+          :size="14"
+        />
         <span
-          class="extension-badge"
-          :class="badgeConfig.class"
+          v-if="showLabel"
+          class="extension-badge__label"
         >
-          <component
-            :is="badgeConfig.icon"
-            :size="14"
-          />
-          <span
-            v-if="showLabel"
-            class="extension-badge__label"
-          >
-            {{ badgeConfig.label }}
-          </span>
+          {{ badgeConfig.label }}
         </span>
-      </TooltipTrigger>
-      <TooltipContent>
-        <p>{{ badgeConfig.tooltip }}</p>
-      </TooltipContent>
-    </Tooltip>
-  </TooltipProvider>
+      </span>
+    </TooltipTrigger>
+    <TooltipContent>
+      <p>{{ badgeConfig.tooltip }}</p>
+    </TooltipContent>
+  </Tooltip>
 </template>
 
 <style>

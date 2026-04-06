@@ -190,7 +190,6 @@ function handleDeleteClick() {
 <template>
   <div class="file-browser-actions-menu__quick-actions">
     <Tooltip
-      :delay-duration="300"
       v-if="isActionVisible('rename')"
     >
       <TooltipTrigger as-child>
@@ -210,7 +209,6 @@ function handleDeleteClick() {
       </TooltipContent>
     </Tooltip>
     <Tooltip
-      :delay-duration="300"
       v-if="isActionVisible('copy')"
     >
       <TooltipTrigger as-child>
@@ -230,7 +228,6 @@ function handleDeleteClick() {
       </TooltipContent>
     </Tooltip>
     <Tooltip
-      :delay-duration="300"
       v-if="isActionVisible('cut')"
     >
       <TooltipTrigger as-child>
@@ -250,7 +247,6 @@ function handleDeleteClick() {
       </TooltipContent>
     </Tooltip>
     <Tooltip
-      :delay-duration="300"
       v-if="canPasteToSelectedDirectory"
     >
       <TooltipTrigger as-child>
@@ -270,7 +266,6 @@ function handleDeleteClick() {
       </TooltipContent>
     </Tooltip>
     <Tooltip
-      :delay-duration="300"
       v-if="isActionVisible('delete')"
     >
       <TooltipTrigger as-child>

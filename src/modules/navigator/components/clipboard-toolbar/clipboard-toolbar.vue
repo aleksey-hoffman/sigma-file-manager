@@ -197,7 +197,7 @@ function openCollapsedPopover() {
               </Button>
 
               <template v-if="isSplitView">
-                <Tooltip :delay-duration="300">
+                <Tooltip>
                   <TooltipTrigger as-child>
                     <Button
                       variant="ghost"
@@ -219,7 +219,7 @@ function openCollapsedPopover() {
                   </TooltipContent>
                 </Tooltip>
 
-                <Tooltip :delay-duration="300">
+                <Tooltip>
                   <TooltipTrigger as-child>
                     <Button
                       variant="ghost"
@@ -244,7 +244,6 @@ function openCollapsedPopover() {
 
               <Tooltip
                 v-else
-                :delay-duration="300"
               >
                 <TooltipTrigger as-child>
                   <Button

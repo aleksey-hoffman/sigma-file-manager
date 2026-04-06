@@ -297,7 +297,7 @@ function preventPopoverClose(event: Event) {
         {{ t('pages.home') }}
       </span>
 
-      <Tooltip :delay-duration="0">
+      <Tooltip>
         <TooltipTrigger as-child>
           <Button
             variant="ghost"
@@ -324,7 +324,7 @@ function preventPopoverClose(event: Event) {
         :open="isDropdownOpen"
         @update:open="handleDropdownOpenChange"
       >
-        <Tooltip :delay-duration="0">
+        <Tooltip>
           <TooltipTrigger as-child>
             <DropdownMenuTrigger as-child>
               <Button
@@ -375,7 +375,7 @@ function preventPopoverClose(event: Event) {
                 <div class="home-banner__position-controls">
                   <div class="home-banner__position-header">
                     <span class="home-banner__position-title">{{ t('home.backgroundPosition') }}</span>
-                    <Tooltip :delay-duration="0">
+                    <Tooltip>
                       <TooltipTrigger as-child>
                         <Button
                           variant="ghost"

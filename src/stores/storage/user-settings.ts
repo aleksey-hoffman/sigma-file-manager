@@ -143,6 +143,7 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
     focusWindowOnDriveConnected: true,
     preventDropdownCloseFocusReturn: false,
     quickAccessOnHover: true,
+    tooltipDelayMs: 0,
     launchAtStartup: false,
     launchAtStartupHidden: false,
     appUpdates: {
