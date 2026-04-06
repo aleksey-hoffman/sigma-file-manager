@@ -144,6 +144,9 @@
   .animate-fade-in {
     animation: sigma-ui-fade-in 0.5s ease;
   }
+  .animate-fade-in-x2 {
+    animation: sigma-ui-fade-in 1s ease;
+  }
 
   .animate-sigma-ui-spin {
     animation: sigma-ui-spin 1s linear infinite;

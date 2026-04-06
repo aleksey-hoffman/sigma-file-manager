@@ -35,6 +35,7 @@ import type {
   ItemTag,
   TaggedItem,
 } from '@/types/user-stats';
+import { getStaggerSlideUpBinding } from '@/utils/stagger-animation';
 
 const { t } = useI18n();
 const router = useRouter();
@@ -249,12 +250,13 @@ async function handleUpdateTagColor(tagId: string, color: string) {
             class="dashboard-page__items-grid"
           >
             <DirEntryInteractive
-              v-for="item in favoriteItems"
+              v-for="(item, itemIndex) in favoriteItems"
               :key="item.path"
               :path="item.path"
               :is-file="isFavoriteFile(item)"
             >
               <EntryCard
+                v-bind="getStaggerSlideUpBinding(itemIndex)"
                 :path="item.path"
                 @click="openFavoriteItem(item)"
               >
@@ -290,12 +292,13 @@ async function handleUpdateTagColor(tagId: string, color: string) {
             class="dashboard-page__items-grid"
           >
             <DirEntryInteractive
-              v-for="item in taggedItems"
+              v-for="(item, itemIndex) in taggedItems"
               :key="item.path"
               :path="item.path"
               :is-file="item.isFile"
             >
               <EntryCard
+                v-bind="getStaggerSlideUpBinding(itemIndex)"
                 :path="item.path"
                 :is-file="item.isFile"
                 @click="openItem(item.path, item.isFile)"
@@ -347,12 +350,13 @@ async function handleUpdateTagColor(tagId: string, color: string) {
             class="dashboard-page__items-grid"
           >
             <DirEntryInteractive
-              v-for="item in frequentItems"
+              v-for="(item, itemIndex) in frequentItems"
               :key="item.path"
               :path="item.path"
               :is-file="item.isFile"
             >
               <EntryCard
+                v-bind="getStaggerSlideUpBinding(itemIndex)"
                 :path="item.path"
                 :is-file="item.isFile"
                 @click="openFrequentItem(item)"
@@ -384,12 +388,13 @@ async function handleUpdateTagColor(tagId: string, color: string) {
             class="dashboard-page__items-grid"
           >
             <DirEntryInteractive
-              v-for="item in historyItems"
+              v-for="(item, itemIndex) in historyItems"
               :key="`${item.path}-${item.openedAt}`"
               :path="item.path"
               :is-file="item.isFile"
             >
               <EntryCard
+                v-bind="getStaggerSlideUpBinding(itemIndex)"
                 :path="item.path"
                 :is-file="item.isFile"
                 @click="openHistoryItem(item)"

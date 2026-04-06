@@ -5,6 +5,9 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <script setup lang="ts">
 import UserData from './user-data.vue';
+import { resetSettingsItemStaggerIndex } from '@/utils/settings-item-stagger';
+
+resetSettingsItemStaggerIndex();
 </script>
 
 <template>

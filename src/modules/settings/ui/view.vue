@@ -5,8 +5,9 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <script setup lang="ts">
 import { useSettingsStore } from '@/stores/runtime/settings';
-import { computed } from 'vue';
+import { computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { resetSettingsItemStaggerIndex } from '@/utils/settings-item-stagger';
 
 import AppearanceCategory from './categories/appearance/index.vue';
 import ExperimentalCategory from './categories/experimental/index.vue';
@@ -45,6 +46,16 @@ const categoryComponentMap: Record<string, unknown> = {
 function getComponentForTab(tabName: string) {
   return categoryComponentMap[tabName];
 }
+
+watch(
+  () => [settingsStore.search, settingsStore.currentTabSections] as const,
+  () => {
+    if (settingsStore.search) {
+      resetSettingsItemStaggerIndex();
+    }
+  },
+  { flush: 'pre' },
+);
 </script>
 
 <template>
@@ -123,6 +134,7 @@ function getComponentForTab(tabName: string) {
   min-height: 0;
   flex: 1;
   flex-direction: column;
+  padding-bottom: 12px;
   gap: 1rem;
   overflow-y: auto;
 }

@@ -5,6 +5,8 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <script setup lang="ts">
 import type { Component } from 'vue';
+import { getStaggerSlideUpBinding } from '@/utils/stagger-animation';
+import { getNextSettingsItemStaggerIndex } from '@/utils/settings-item-stagger';
 
 type Props = {
   title: string;
@@ -13,10 +15,15 @@ type Props = {
 };
 
 const props = defineProps<Props>();
+
+const staggerBinding = getStaggerSlideUpBinding(getNextSettingsItemStaggerIndex());
 </script>
 
 <template>
-  <div class="settings-view-item">
+  <div
+    class="settings-view-item"
+    v-bind="staggerBinding"
+  >
     <div class="settings-view-item__main">
       <div class="settings-view-item__header">
         <Component

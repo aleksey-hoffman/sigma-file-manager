@@ -6,6 +6,9 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useSettingsStore } from '@/stores/runtime/settings';
+import { resetSettingsItemStaggerIndex } from '@/utils/settings-item-stagger';
+
+resetSettingsItemStaggerIndex();
 
 const settingsStore = useSettingsStore();
 

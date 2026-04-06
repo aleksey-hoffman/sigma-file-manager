@@ -79,6 +79,7 @@ import { useExtensionsStore } from '@/stores/runtime/extensions';
 import { useExtensionsStorageStore } from '@/stores/storage/extensions';
 import { BlocksIcon } from '@lucide/vue';
 import type { ExtensionKeybindingOverride } from '@/types/extension';
+import { SettingsItem } from '@/modules/settings';
 
 const { t } = useI18n();
 const shortcutsStore = useShortcutsStore();
@@ -677,27 +678,22 @@ const extensionKeybindingsByExtension = computed(() => {
 </script>
 
 <template>
-  <div class="shortcuts-card">
-    <div class="shortcuts-card__header">
-      <div class="shortcuts-card__header-left">
-        <KeyboardIcon
-          :size="24"
-          class="shortcuts-card__icon"
-        />
-        <h3 class="shortcuts-card__title">
-          {{ t('settingsTabs.shortcuts') }}
-        </h3>
-      </div>
+  <SettingsItem
+    class="shortcuts-settings-item"
+    :title="t('settingsTabs.shortcuts')"
+    :icon="KeyboardIcon"
+  >
+    <template #title-suffix>
       <ConfirmButton
         variant="outline"
         size="sm"
-        class="shortcuts-card__reset-all-button"
+        class="shortcuts-settings-item__reset-all"
         @click="resetAllShortcuts"
       >
         <RotateCcwIcon :size="14" />
         {{ t('resetAll') }}
       </ConfirmButton>
-    </div>
+    </template>
 
     <div class="shortcuts-section">
       <div class="shortcuts-section__group">
@@ -1065,45 +1061,41 @@ const extensionKeybindingsByExtension = computed(() => {
         </DialogContent>
       </Dialog>
     </div>
-  </div>
+  </SettingsItem>
 </template>
 
 <style scoped>
-.shortcuts-card {
-  overflow: hidden;
-  border: 1px solid hsl(var(--border));
-  border-radius: var(--radius);
-  background-color: hsl(var(--card));
+.shortcuts-settings-item :deep(.settings-view-item__main) {
+  flex-direction: column;
+  align-items: stretch;
+  padding: 0;
+  gap: 0;
 }
 
-.shortcuts-card__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+.shortcuts-settings-item :deep(.settings-view-item__header) {
   padding: 1rem;
   border-bottom: 1px solid hsl(var(--border));
-  gap: 1rem;
-}
-
-.shortcuts-card__header-left {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.shortcuts-card__icon {
-  flex-shrink: 0;
-  color: hsl(var(--icon));
-}
-
-.shortcuts-card__title {
   margin: 0;
-  color: hsl(var(--foreground));
-  font-size: 1rem;
-  font-weight: 600;
+  gap: 1rem;
 }
 
-.shortcuts-card__reset-all-button {
+.shortcuts-settings-item :deep(.settings-view-item__header > div:last-child) {
+  min-width: 0;
+  flex: 1;
+}
+
+.shortcuts-settings-item :deep(.settings-view-item__title-row) {
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.shortcuts-settings-item :deep(.settings-view-item__content) {
+  min-width: 0;
+  padding: 0;
+}
+
+.shortcuts-settings-item__reset-all {
   gap: 8px;
 }
 

@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { DirEntryInteractive } from '@/components/dir-entry-interactive';
 import DriveCard from './drive-card.vue';
 import MountDialog from './mount-dialog.vue';
+import { getStaggerSlideUpBinding } from '@/utils/stagger-animation';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 const { t } = useI18n();
@@ -83,11 +84,14 @@ const sectionTitle = computed(() => {
       class="drives-section__grid"
     >
       <DirEntryInteractive
-        v-for="drive in drives"
+        v-for="(drive, itemIndex) in drives"
         :key="drive.path"
         :path="drive.path"
       >
-        <DriveCard :drive="drive" />
+        <DriveCard
+          v-bind="getStaggerSlideUpBinding(itemIndex)"
+          :drive="drive"
+        />
       </DirEntryInteractive>
     </div>
 

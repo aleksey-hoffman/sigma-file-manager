@@ -14,6 +14,7 @@ import { ContextMenuItem, ContextMenuSeparator } from '@/components/ui/context-m
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import UserDirectoryCard from './user-directory-card.vue';
 import UserDirectoryEditorDialog from './user-directory-editor-dialog.vue';
+import { getStaggerSlideUpBinding } from '@/utils/stagger-animation';
 
 const { t } = useI18n();
 const {
@@ -122,7 +123,7 @@ async function handleDeleteDirectory(directoryId: string) {
       class="user-directories-section__grid"
     >
       <DirEntryInteractive
-        v-for="directory in userDirectories"
+        v-for="(directory, itemIndex) in userDirectories"
         :key="directory.id"
         :path="directory.path"
         :disable-destructive-actions="true"
@@ -134,7 +135,10 @@ async function handleDeleteDirectory(directoryId: string) {
           </ContextMenuItem>
           <ContextMenuSeparator />
         </template>
-        <UserDirectoryCard :directory="directory" />
+        <UserDirectoryCard
+          v-bind="getStaggerSlideUpBinding(itemIndex)"
+          :directory="directory"
+        />
       </DirEntryInteractive>
     </div>
 
