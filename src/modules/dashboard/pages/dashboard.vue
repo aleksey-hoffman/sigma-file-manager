@@ -26,6 +26,7 @@ import { useFileDropOperation } from '@/composables/use-file-drop-operation';
 import { resolveNavigableItemTarget } from '@/utils/resolve-navigable-item-target';
 import DashboardActionBar from '@/modules/dashboard/components/dashboard-action-bar.vue';
 import DashboardEmptyState from '@/modules/dashboard/components/dashboard-empty-state.vue';
+import DashboardTagSectionHeader from '@/modules/dashboard/components/dashboard-tag-section-header.vue';
 import EntryCard from '@/modules/dashboard/components/entry-card.vue';
 import FileBrowserConflictDialog from '@/modules/navigator/components/file-browser/file-browser-conflict-dialog.vue';
 import type {
@@ -36,6 +37,12 @@ import type {
   TaggedItem,
 } from '@/types/user-stats';
 import { getStaggerSlideUpBinding } from '@/utils/stagger-animation';
+
+type TaggedSection = {
+  tag: ItemTag;
+  items: TaggedItem[];
+  staggerBase: number;
+};
 
 const { t } = useI18n();
 const router = useRouter();
@@ -64,6 +71,28 @@ const taggedItems = computed(() => userStatsStore.taggedItems);
 const historyItems = computed(() => userStatsStore.sortedHistory);
 const frequentItems = computed(() => userStatsStore.sortedFrequentItems);
 const tags = computed(() => userStatsStore.tags);
+
+const taggedSections = computed((): TaggedSection[] => {
+  let staggerBase = 0;
+  const sections: TaggedSection[] = [];
+
+  for (const tag of tags.value) {
+    const itemsForTag = taggedItems.value.filter(item => item.tagIds.includes(tag.id));
+
+    if (itemsForTag.length === 0) {
+      continue;
+    }
+
+    sections.push({
+      tag,
+      items: itemsForTag,
+      staggerBase,
+    });
+    staggerBase += itemsForTag.length;
+  }
+
+  return sections;
+});
 
 function getTagById(tagId: string): ItemTag | undefined {
   return tags.value.find(tag => tag.id === tagId);
@@ -289,45 +318,61 @@ async function handleUpdateTagColor(tagId: string, color: string) {
           />
           <div
             v-else
-            class="dashboard-page__items-grid"
+            class="dashboard-page__tagged-sections"
           >
-            <DirEntryInteractive
-              v-for="(item, itemIndex) in taggedItems"
-              :key="item.path"
-              :path="item.path"
-              :is-file="item.isFile"
+            <section
+              v-for="section in taggedSections"
+              :key="section.tag.id"
+              class="dashboard-page__tagged-section"
             >
-              <EntryCard
-                v-bind="getStaggerSlideUpBinding(itemIndex)"
-                :path="item.path"
-                :is-file="item.isFile"
-                @click="openItem(item.path, item.isFile)"
-              >
-                <template #footer>
-                  <div class="entry-card__tags">
-                    <span
-                      v-for="tagId in item.tagIds"
-                      :key="tagId"
-                      class="entry-card__tag"
-                      :style="{ backgroundColor: getTagById(tagId)?.color + '25', color: getTagById(tagId)?.color }"
-                    >
-                      {{ getTagById(tagId)?.name }}
-                    </span>
-                  </div>
-                  <TagSelector
-                    :tags="tags"
-                    :selected-tag-ids="item.tagIds"
-                    :allow-create="true"
-                    trigger-variant="compact"
-                    @toggle-tag="(tagId) => handleToggleTagOnItem(item, tagId)"
-                    @create-tag="(name) => handleCreateTagForItem(item, name)"
-                    @delete-tag="handleDeleteTag"
-                    @rename-tag="handleRenameTag"
-                    @update-tag-color="handleUpdateTagColor"
-                  />
-                </template>
-              </EntryCard>
-            </DirEntryInteractive>
+              <div class="dashboard-page__tagged-section-head">
+                <DashboardTagSectionHeader
+                  :tag="section.tag"
+                  @rename-tag="handleRenameTag"
+                  @delete-tag="handleDeleteTag"
+                  @update-tag-color="handleUpdateTagColor"
+                />
+              </div>
+              <div class="dashboard-page__items-grid">
+                <DirEntryInteractive
+                  v-for="(item, itemIndex) in section.items"
+                  :key="`${section.tag.id}-${item.path}`"
+                  :path="item.path"
+                  :is-file="item.isFile"
+                >
+                  <EntryCard
+                    v-bind="getStaggerSlideUpBinding(section.staggerBase + itemIndex)"
+                    :path="item.path"
+                    :is-file="item.isFile"
+                    @click="openItem(item.path, item.isFile)"
+                  >
+                    <template #footer>
+                      <div class="entry-card__tags">
+                        <span
+                          v-for="tagId in item.tagIds"
+                          :key="tagId"
+                          class="entry-card__tag"
+                          :style="{ backgroundColor: getTagById(tagId)?.color + '25', color: getTagById(tagId)?.color }"
+                        >
+                          {{ getTagById(tagId)?.name }}
+                        </span>
+                      </div>
+                      <TagSelector
+                        :tags="tags"
+                        :selected-tag-ids="item.tagIds"
+                        :allow-create="true"
+                        trigger-variant="compact"
+                        @toggle-tag="(tagId) => handleToggleTagOnItem(item, tagId)"
+                        @create-tag="(name) => handleCreateTagForItem(item, name)"
+                        @delete-tag="handleDeleteTag"
+                        @rename-tag="handleRenameTag"
+                        @update-tag-color="handleUpdateTagColor"
+                      />
+                    </template>
+                  </EntryCard>
+                </DirEntryInteractive>
+              </div>
+            </section>
           </div>
         </TabsContent>
 
@@ -478,6 +523,27 @@ async function handleUpdateTagColor(tagId: string, color: string) {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+.dashboard-page__tagged-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.dashboard-page__tagged-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dashboard-page__tagged-section-head {
+  min-width: 0;
+}
+
+.dashboard-page__tagged-section-head .tag-selector__tag-name {
+  font-size: 0.9375rem;
+  font-weight: 600;
 }
 
 .dashboard-page__items-grid {

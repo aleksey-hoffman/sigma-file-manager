@@ -4,8 +4,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import { useThrottleFn } from '@vueuse/core';
-import { computed, nextTick, ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import {
   CheckIcon, CirclePlusIcon, PencilIcon, TagIcon, Trash2Icon,
@@ -23,6 +22,7 @@ import {
 } from '@/components/ui/command';
 import type { ItemTag } from '@/types/user-stats';
 import type { PopoverContentProps } from 'reka-ui';
+import { useTagInlineEditor, stopSpaceKeyPropagation } from '@/composables/use-tag-inline-editor';
 
 const props = withDefaults(defineProps<{
   tags: ItemTag[];
@@ -58,11 +58,28 @@ const { t } = useI18n();
 const searchQuery = ref('');
 const isOpen = ref(false);
 const commandKey = ref(0);
-const editingTagId = ref<string | null>(null);
-const editDraft = ref('');
-const renameInputRef = ref<HTMLInputElement | null>(null);
-const previewTagColors = ref<Record<string, string>>({});
-const pendingTagColors = ref<Record<string, string>>({});
+
+const tagsRef = computed(() => props.tags);
+
+const {
+  editingTagId,
+  editDraft,
+  renameInputRef,
+  displayColor,
+  colorHexForPicker,
+  cancelEdit,
+  commitEdit,
+  startEdit,
+  deleteTag,
+  onColorInput,
+  onColorBlur,
+  resetEditState,
+} = useTagInlineEditor({
+  tags: tagsRef,
+  onRename: (tagId, name) => emit('rename-tag', tagId, name),
+  onDelete: tagId => emit('delete-tag', tagId),
+  onUpdateColor: (tagId, color) => emit('update-tag-color', tagId, color),
+});
 
 const trimmedSearchQuery = computed(() => searchQuery.value.trim());
 const selectedTagIdsSet = computed(() => new Set(props.selectedTagIds));
@@ -85,96 +102,8 @@ const selectedTags = computed(() => {
   return props.tags.filter(tag => selectedTagIdsSet.value.has(tag.id));
 });
 
-function displayColor(tag: ItemTag): string {
-  return previewTagColors.value[tag.id] ?? tag.color;
-}
-
-function flushPendingColorsToParent() {
-  const snapshot = { ...pendingTagColors.value };
-
-  if (Object.keys(snapshot).length === 0) {
-    return;
-  }
-
-  for (const [tagId, color] of Object.entries(snapshot)) {
-    emit('update-tag-color', tagId, color);
-
-    if (pendingTagColors.value[tagId] === color) {
-      delete pendingTagColors.value[tagId];
-    }
-  }
-}
-
-const schedulePersistTagColors = useThrottleFn(flushPendingColorsToParent, 1000, true, false);
-
 function toggleTag(tagId: string) {
   emit('toggle-tag', tagId);
-}
-
-function deleteTag(event: Event, tagId: string) {
-  event.stopPropagation();
-
-  if (editingTagId.value === tagId) {
-    cancelEdit();
-  }
-
-  emit('delete-tag', tagId);
-}
-
-function cancelEdit() {
-  editingTagId.value = null;
-  editDraft.value = '';
-}
-
-function commitEdit() {
-  const activeTagId = editingTagId.value;
-
-  if (activeTagId === null) {
-    return;
-  }
-
-  const tag = props.tags.find(item => item.id === activeTagId);
-
-  if (!tag) {
-    cancelEdit();
-    return;
-  }
-
-  const trimmed = editDraft.value.trim();
-
-  if (trimmed === '') {
-    cancelEdit();
-    return;
-  }
-
-  if (trimmed === tag.name) {
-    cancelEdit();
-    return;
-  }
-
-  emit('rename-tag', activeTagId, trimmed);
-  cancelEdit();
-}
-
-function startEdit(event: Event, tag: ItemTag) {
-  event.stopPropagation();
-  event.preventDefault();
-
-  if (editingTagId.value === tag.id) {
-    commitEdit();
-    return;
-  }
-
-  if (editingTagId.value !== null && editingTagId.value !== tag.id) {
-    commitEdit();
-  }
-
-  editingTagId.value = tag.id;
-  editDraft.value = tag.name;
-  void nextTick(() => {
-    renameInputRef.value?.focus();
-    renameInputRef.value?.select();
-  });
 }
 
 function onSelectTag(tag: ItemTag) {
@@ -187,46 +116,9 @@ function onSelectTag(tag: ItemTag) {
 
 watch(isOpen, (open) => {
   if (!open) {
-    flushPendingColorsToParent();
-    cancelEdit();
+    resetEditState();
   }
 });
-
-watch(
-  () => props.tags,
-  (tags) => {
-    const validIds = new Set(tags.map(tagItem => tagItem.id));
-    const preview = { ...previewTagColors.value };
-    const pending = { ...pendingTagColors.value };
-
-    for (const tagId of Object.keys(preview)) {
-      if (!validIds.has(tagId)) {
-        delete preview[tagId];
-      }
-    }
-
-    for (const tagId of Object.keys(pending)) {
-      if (!validIds.has(tagId)) {
-        delete pending[tagId];
-      }
-    }
-
-    for (const tag of tags) {
-      const previewed = preview[tag.id];
-
-      if (
-        previewed
-        && colorHexForPicker(tag.color).toLowerCase() === previewed.toLowerCase()
-      ) {
-        delete preview[tag.id];
-      }
-    }
-
-    previewTagColors.value = preview;
-    pendingTagColors.value = pending;
-  },
-  { deep: true },
-);
 
 function createTag() {
   const name = trimmedSearchQuery.value;
@@ -240,59 +132,6 @@ function clearSearch() {
   searchQuery.value = '';
 }
 
-function stopSpaceFromReachingCombobox(event: KeyboardEvent) {
-  if (event.key === ' ') {
-    event.stopPropagation();
-  }
-}
-
-function colorHexForPicker(color: string): string {
-  const trimmed = color.trim();
-
-  if (/^#[0-9A-Fa-f]{6}$/.test(trimmed)) {
-    return trimmed;
-  }
-
-  if (/^#[0-9A-Fa-f]{3}$/.test(trimmed)) {
-    return `#${trimmed[1]}${trimmed[1]}${trimmed[2]}${trimmed[2]}${trimmed[3]}${trimmed[3]}`;
-  }
-
-  return '#64748b';
-}
-
-function onColorInput(event: Event, tagId: string) {
-  event.stopPropagation();
-  const target = event.target as HTMLInputElement;
-  const next = target.value;
-  const tag = props.tags.find(tagItem => tagItem.id === tagId);
-
-  if (!tag) {
-    return;
-  }
-
-  const effectiveCurrent = previewTagColors.value[tagId] ?? tag.color;
-
-  if (
-    colorHexForPicker(effectiveCurrent).toLowerCase() === next.toLowerCase()
-  ) {
-    return;
-  }
-
-  previewTagColors.value = {
-    ...previewTagColors.value,
-    [tagId]: next,
-  };
-  pendingTagColors.value = {
-    ...pendingTagColors.value,
-    [tagId]: next,
-  };
-  void schedulePersistTagColors();
-}
-
-function onColorBlur(event: Event) {
-  event.stopPropagation();
-  flushPendingColorsToParent();
-}
 </script>
 
 <template>
@@ -361,7 +200,7 @@ function onColorBlur(event: Event) {
         <CommandInput
           v-model="searchQuery"
           :placeholder="t('tags.searchTags')"
-          @keydown="stopSpaceFromReachingCombobox"
+          @keydown="stopSpaceKeyPropagation"
           @keydown.esc="clearSearch"
         />
         <CommandList class="tag-selector__command-list">
@@ -431,7 +270,7 @@ function onColorBlur(event: Event) {
                 ref="renameInputRef"
                 v-model="editDraft"
                 class="sigma-ui-input tag-selector__rename-input"
-                @keydown="stopSpaceFromReachingCombobox"
+                @keydown="stopSpaceKeyPropagation"
                 @keydown.enter.prevent="commitEdit"
                 @keydown.esc.prevent="cancelEdit"
                 @blur="commitEdit"
