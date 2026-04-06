@@ -191,6 +191,96 @@ fn read_entry(path: &Path) -> Option<DirEntry> {
     })
 }
 
+#[cfg(windows)]
+fn resolve_windows_shortcut_target(path: &Path) -> Option<String> {
+    use std::os::windows::ffi::OsStrExt;
+    use windows::core::{Interface, PCWSTR};
+    use windows::Win32::System::Com::{
+        CoCreateInstance, CoInitializeEx, CoUninitialize, IPersistFile, CLSCTX_INPROC_SERVER,
+        COINIT_APARTMENTTHREADED,
+    };
+    use windows::Win32::UI::Shell::{IShellLinkW, ShellLink, SLGP_RAWPATH};
+
+    unsafe {
+        let coinit_result = CoInitializeEx(None, COINIT_APARTMENTTHREADED);
+        let needs_uninitialize = coinit_result.is_ok();
+
+        let resolved_path = (|| {
+            let shell_link: IShellLinkW =
+                CoCreateInstance(&ShellLink, None, CLSCTX_INPROC_SERVER).ok()?;
+            let persist_file: IPersistFile = shell_link.cast().ok()?;
+            let shortcut_path: Vec<u16> = path
+                .as_os_str()
+                .encode_wide()
+                .chain(std::iter::once(0))
+                .collect();
+
+            persist_file
+                .Load(
+                    PCWSTR(shortcut_path.as_ptr()),
+                    windows::Win32::System::Com::STGM(0),
+                )
+                .ok()?;
+
+            let mut target_path_buffer = vec![0u16; 260];
+            shell_link
+                .GetPath(
+                    &mut target_path_buffer,
+                    std::ptr::null_mut(),
+                    SLGP_RAWPATH.0 as u32,
+                )
+                .ok()?;
+
+            let target_path_length = target_path_buffer
+                .iter()
+                .position(|character| *character == 0)?;
+
+            if target_path_length == 0 {
+                return None;
+            }
+
+            Some(String::from_utf16_lossy(
+                &target_path_buffer[..target_path_length],
+            ))
+        })();
+
+        if needs_uninitialize {
+            CoUninitialize();
+        }
+
+        resolved_path
+    }
+}
+
+#[cfg(windows)]
+pub fn resolve_windows_directory_shortcut(path: String) -> Result<Option<String>, String> {
+    let shortcut_path = Path::new(&path);
+
+    if !shortcut_path.exists() || !shortcut_path.is_file() {
+        return Ok(None);
+    }
+
+    if path_extension_lowercase(shortcut_path).as_deref() != Some("lnk") {
+        return Ok(None);
+    }
+
+    let Some(resolved_path) = resolve_windows_shortcut_target(shortcut_path) else {
+        return Ok(None);
+    };
+
+    if !Path::new(&resolved_path).is_dir() {
+        return Ok(None);
+    }
+
+    Ok(Some(normalize_path(&resolved_path)))
+}
+
+#[cfg(not(windows))]
+pub fn resolve_windows_directory_shortcut(path: String) -> Result<Option<String>, String> {
+    let _ = path;
+    Ok(None)
+}
+
 pub fn get_dir_entry(path: String) -> Result<DirEntry, String> {
     let entry_path = Path::new(&path);
 

@@ -25,6 +25,7 @@ import normalizePath, {
   getPathDisplayName,
   isWslHostRootUncPath,
 } from '@/utils/normalize-path';
+import { resolveNavigableItemTarget } from '@/utils/resolve-navigable-item-target';
 
 interface DirChangePayload {
   watchedPath: string;
@@ -420,8 +421,15 @@ export function useFileBrowserNavigation(
   }
 
   async function openFile(path: string) {
-    await openPath(path);
-    userStatsStore.recordItemOpen(path, true);
+    const navigableItemTarget = await resolveNavigableItemTarget(path, true);
+
+    if (!navigableItemTarget.opensAsFile) {
+      await navigateToPath(navigableItemTarget.targetPath);
+      return;
+    }
+
+    await openPath(navigableItemTarget.targetPath);
+    userStatsStore.recordItemOpen(navigableItemTarget.targetPath, true);
   }
 
   async function init() {

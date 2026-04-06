@@ -23,6 +23,7 @@ import { useUserStatsStore } from '@/stores/storage/user-stats';
 import { useWorkspacesStore } from '@/stores/storage/workspaces';
 import { usePageDropZone } from '@/composables/use-page-drop-zone';
 import { useFileDropOperation } from '@/composables/use-file-drop-operation';
+import { resolveNavigableItemTarget } from '@/utils/resolve-navigable-item-target';
 import DashboardActionBar from '@/modules/dashboard/components/dashboard-action-bar.vue';
 import DashboardEmptyState from '@/modules/dashboard/components/dashboard-empty-state.vue';
 import EntryCard from '@/modules/dashboard/components/entry-card.vue';
@@ -87,12 +88,14 @@ function formatRelativeTime(timestamp: number): string {
 
 async function openItem(path: string, isFile: boolean) {
   try {
-    if (isFile) {
-      const directory = getItemDirectory(path);
+    const navigableItemTarget = await resolveNavigableItemTarget(path, isFile);
+
+    if (navigableItemTarget.opensAsFile) {
+      const directory = getItemDirectory(navigableItemTarget.targetPath);
       await workspacesStore.openNewTabGroup(directory);
     }
     else {
-      await workspacesStore.openNewTabGroup(path);
+      await workspacesStore.openNewTabGroup(navigableItemTarget.targetPath);
     }
 
     router.push({ name: 'navigator' });

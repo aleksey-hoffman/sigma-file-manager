@@ -22,6 +22,7 @@ import { useQuickViewStore } from '@/stores/runtime/quick-view';
 import { toast, ToastStatic } from '@/components/ui/toaster';
 import { useLanShare } from '@/composables/use-lan-share';
 import { getParentDirectory } from '@/utils/normalize-path';
+import { resolveNavigableItemTarget } from '@/utils/resolve-navigable-item-target';
 import { usePermanentDeleteConfirm } from '@/composables/use-permanent-delete-confirm';
 
 export function useDirEntryActions() {
@@ -115,21 +116,27 @@ export function useDirEntryActions() {
   }
 
   async function openEntriesInNewTabs(entries: DirEntry[]) {
-    const directoryEntries = entries.filter(entry => entry.is_dir);
+    for (const entry of entries) {
+      const navigableItemTarget = await resolveNavigableItemTarget(entry.path, entry.is_file);
 
-    for (const entry of directoryEntries) {
-      await workspacesStore.openNewTabGroup(entry.path, { activate: false });
+      if (!navigableItemTarget.opensAsFile) {
+        await workspacesStore.openNewTabGroup(navigableItemTarget.targetPath, { activate: false });
+      }
     }
   }
 
   async function openEntry(path: string, isFile: boolean) {
-    if (isFile) {
-      const lastSlashIndex = path.lastIndexOf('/');
-      const directory = lastSlashIndex > 0 ? path.substring(0, lastSlashIndex) : path;
+    const navigableItemTarget = await resolveNavigableItemTarget(path, isFile);
+
+    if (navigableItemTarget.opensAsFile) {
+      const lastSlashIndex = navigableItemTarget.targetPath.lastIndexOf('/');
+      const directory = lastSlashIndex > 0
+        ? navigableItemTarget.targetPath.substring(0, lastSlashIndex)
+        : navigableItemTarget.targetPath;
       await workspacesStore.openNewTabGroup(directory);
     }
     else {
-      await workspacesStore.openNewTabGroup(path);
+      await workspacesStore.openNewTabGroup(navigableItemTarget.targetPath);
     }
 
     router.push({ name: 'navigator' });

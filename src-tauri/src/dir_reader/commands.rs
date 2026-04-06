@@ -21,6 +21,11 @@ pub fn get_dir_entry(path: String) -> Result<super::types::DirEntry, String> {
 }
 
 #[tauri::command]
+pub fn resolve_windows_directory_shortcut(path: String) -> Result<Option<String>, String> {
+    read::resolve_windows_directory_shortcut(path)
+}
+
+#[tauri::command]
 pub fn get_system_drives() -> Result<Vec<DriveInfo>, String> {
     drives::get_system_drives()
 }

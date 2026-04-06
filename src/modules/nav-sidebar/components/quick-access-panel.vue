@@ -33,6 +33,7 @@ import { useWorkspacesStore } from '@/stores/storage/workspaces';
 import { registerDropContainer, unregisterDropContainer } from '@/composables/use-drop-target-registry';
 import type { FavoriteItem, ItemTag, TaggedItem } from '@/types/user-stats';
 import { getPathDisplayName } from '@/utils/normalize-path';
+import { resolveNavigableItemTarget } from '@/utils/resolve-navigable-item-target';
 
 const { t } = useI18n();
 const router = useRouter();
@@ -111,13 +112,17 @@ function isFavoriteFile(item: FavoriteItem): boolean {
 
 async function openItem(path: string, isFile: boolean) {
   try {
-    if (isFile) {
-      const lastSlashIndex = path.lastIndexOf('/');
-      const directory = lastSlashIndex > 0 ? path.substring(0, lastSlashIndex) : path;
+    const navigableItemTarget = await resolveNavigableItemTarget(path, isFile);
+
+    if (navigableItemTarget.opensAsFile) {
+      const lastSlashIndex = navigableItemTarget.targetPath.lastIndexOf('/');
+      const directory = lastSlashIndex > 0
+        ? navigableItemTarget.targetPath.substring(0, lastSlashIndex)
+        : navigableItemTarget.targetPath;
       await workspacesStore.openNewTabGroup(directory);
     }
     else {
-      await workspacesStore.openNewTabGroup(path);
+      await workspacesStore.openNewTabGroup(navigableItemTarget.targetPath);
     }
 
     router.push({ name: 'navigator' });

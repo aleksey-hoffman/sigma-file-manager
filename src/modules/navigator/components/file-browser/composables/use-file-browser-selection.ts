@@ -24,6 +24,7 @@ import { UI_CONSTANTS } from '@/constants';
 import normalizePath from '@/utils/normalize-path';
 import { createIndexedFileName, safeFileNameFromUrl } from '@/utils/remote-file';
 import { usePermanentDeleteConfirm } from '@/composables/use-permanent-delete-confirm';
+import { resolveNavigableItemTarget } from '@/utils/resolve-navigable-item-target';
 
 export function useFileBrowserSelection(
   entriesRef: Ref<DirEntry[]>,
@@ -321,10 +322,12 @@ export function useFileBrowserSelection(
   }
 
   async function openEntriesInNewTabs(entries: DirEntry[]) {
-    const directoryEntries = entries.filter(entry => entry.is_dir);
+    for (const entry of entries) {
+      const navigableItemTarget = await resolveNavigableItemTarget(entry.path, entry.is_file);
 
-    for (const entry of directoryEntries) {
-      await workspacesStore.openNewTabGroup(entry.path, { activate: false });
+      if (!navigableItemTarget.opensAsFile) {
+        await workspacesStore.openNewTabGroup(navigableItemTarget.targetPath, { activate: false });
+      }
     }
   }
 
