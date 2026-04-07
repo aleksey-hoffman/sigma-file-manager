@@ -1842,6 +1842,8 @@
       "exportToFolder": "فولڈر میں برآمد"
     },
     "subtitle": "کمیونٹی ایکسٹینشنز دریافت اور منظم کریں",
+    "toolbarOptions": "ایکسٹینشن کے اختیارات",
+    "createExtension": "ایکسٹینشن بنائیں",
     "searchPlaceholder": "ایکسٹینشن تلاش…",
     "refresh": "تازہ کریں",
     "loadingExtension": "ایکسٹینشن لوڈ…",
@@ -1864,8 +1866,8 @@
     "cancellingInstall": "منسوخ کیا جا رہا ہے…",
     "cancelInstall": "منسوخ",
     "installFailed": "انسٹال ناکام",
-    "showFolder": "فولڈر دکھائیں",
-    "installFromFolder": "فولڈر سے انسٹال",
+    "showExtensionsFolder": "ایکسٹینشن فولڈر دکھائیں",
+    "installExtensionFromFolder": "فولڈر سے ایکسٹینشن انسٹال کریں",
     "installLocalError": "فولڈر سے انسٹال ناکام",
     "selectExtensionFolder": "ایکسٹینشن فولڈر چنیں",
     "uninstall": "اَن انسٹال",
@@ -1920,7 +1922,8 @@
       "removeWarning": "یہ وابستگی ابھی ایکسٹینشنز استعمال کر رہے ہیں",
       "removeConfirm": "یہ وابستگی استعمال میں: {extensions}۔ اگلی دفعہ دوبارہ ڈاؤن لوڈ ہو گی۔ پھر بھی ہٹائیں؟",
       "removeError": "وابستگی نہیں ہٹ سکی",
-      "downloadSource": "ڈاؤن لوڈ لنک کھولیں"
+      "downloadSource": "ڈاؤن لوڈ لنک کھولیں",
+      "showFolder": "فولڈر دکھائیں"
     },
     "badges": {
       "official": "سرکاری",

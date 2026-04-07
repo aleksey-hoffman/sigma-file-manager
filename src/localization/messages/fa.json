@@ -1818,6 +1818,8 @@
   },
   "extensions": {
     "subtitle": "افزونه‌های جامعه را برای برنامه کشف و مدیریت کنید",
+    "toolbarOptions": "گزینه‌های افزونه",
+    "createExtension": "ایجاد افزونه",
     "searchPlaceholder": "جستجوی افزونه‌ها...",
     "refresh": "بازخوانی",
     "loadingExtension": "در حال بارگذاری افزونه...",
@@ -1838,7 +1840,7 @@
     "cancellingInstall": "در حال لغو...",
     "cancelInstall": "لغو",
     "installFailed": "نصب ناموفق بود",
-    "installFromFolder": "نصب از پوشه",
+    "installExtensionFromFolder": "نصب افزونه از پوشه",
     "installLocalError": "نصب افزونه از پوشه ناموفق بود",
     "selectExtensionFolder": "انتخاب پوشه افزونه",
     "uninstall": "حذف",
@@ -1920,7 +1922,7 @@
     "unknownPublisher": "Unknown publisher",
     "contextMenuLabel": "برنامه های افزودنی",
     "autoUpdate": "Auto-update",
-    "showFolder": "نمایش پوشه",
+    "showExtensionsFolder": "نمایش پوشه افزونه‌ها",
     "reinstalledSuccessfully": "با موفقیت نصب مجدد شد",
     "reusedDependencies": "{count} وابستگی موجود مجدداً استفاده شد",
     "noLongerAvailable": "دیگر در دسترس نیست",
@@ -1935,7 +1937,8 @@
       "removeWarning": "This dependency is still used by extensions",
       "removeConfirm": "This dependency is used by: {extensions}. They will need to re-download it on next use. Remove anyway?",
       "removeError": "Failed to remove dependency",
-      "downloadSource": "باز کردن لینک دانلود"
+      "downloadSource": "باز کردن لینک دانلود",
+      "showFolder": "نمایش پوشه"
     }
   },
   "commandPalette": {

@@ -1842,6 +1842,8 @@
       "exportToFolder": "Export to folder"
     },
     "subtitle": "Discover and manage community extensions for the app",
+    "toolbarOptions": "Extension options",
+    "createExtension": "Create extension",
     "searchPlaceholder": "Search extensions...",
     "refresh": "Refresh",
     "loadingExtension": "Loading extension...",
@@ -1864,8 +1866,8 @@
     "cancellingInstall": "Cancelling...",
     "cancelInstall": "Cancel",
     "installFailed": "Installation failed",
-    "showFolder": "Show folder",
-    "installFromFolder": "Install from folder",
+    "showExtensionsFolder": "Show extensions folder",
+    "installExtensionFromFolder": "Install extension from folder",
     "installLocalError": "Failed to install extension from folder",
     "selectExtensionFolder": "Select extension folder",
     "uninstall": "Uninstall",
@@ -1920,7 +1922,8 @@
       "removeWarning": "This dependency is still used by extensions",
       "removeConfirm": "This dependency is used by: {extensions}. They will need to re-download it on next use. Remove anyway?",
       "removeError": "Failed to remove dependency",
-      "downloadSource": "Open download link"
+      "downloadSource": "Open download link",
+      "showFolder": "Show folder"
     },
     "badges": {
       "official": "Official",

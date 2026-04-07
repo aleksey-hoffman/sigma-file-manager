@@ -101,7 +101,7 @@ describe('extension runtime loader', () => {
     createObjectUrlMock.mockReset();
     revokeObjectUrlMock.mockReset();
     createObjectUrlMock
-      .mockReturnValueOnce('blob:test.video:translator')
+      .mockReturnValueOnce('blob:test.video:helper')
       .mockReturnValueOnce('blob:test.video:index');
     Object.defineProperty(URL, 'createObjectURL', {
       configurable: true,
@@ -191,11 +191,11 @@ describe('extension runtime loader', () => {
           return true;
         case 'read_extension_file':
           if (args?.filePath === 'index.js') {
-            return Array.from(new TextEncoder().encode('import "./lib/translator.js"; export {};'));
+            return Array.from(new TextEncoder().encode('import "./lib/helper.js"; export {};'));
           }
 
-          if (args?.filePath === 'lib/translator.js') {
-            return Array.from(new TextEncoder().encode('export const t = () => "ok";'));
+          if (args?.filePath === 'lib/helper.js') {
+            return Array.from(new TextEncoder().encode('export const helper = () => "ok";'));
           }
 
           throw new Error(`Unexpected filePath: ${args?.filePath}`);
@@ -212,7 +212,7 @@ describe('extension runtime loader', () => {
     await unloadExtensionRuntime('test.video');
 
     expect(revokeObjectUrlMock).toHaveBeenCalledWith('blob:test.video:index');
-    expect(revokeObjectUrlMock).toHaveBeenCalledWith('blob:test.video:translator');
+    expect(revokeObjectUrlMock).toHaveBeenCalledWith('blob:test.video:helper');
   });
 
   it('propagates activation failures instead of creating placeholder runtime', async () => {

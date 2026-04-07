@@ -317,8 +317,8 @@ function extensionTInWorker(
   const namespacedKey = `${extensionNamespace}.${key}`;
   const translated = translateInWorker(namespacedKey, params);
 
-  if (translated === namespacedKey && fallback !== undefined) {
-    return fallback;
+  if (translated === namespacedKey) {
+    return fallback !== undefined ? fallback : key;
   }
 
   return translated;
@@ -891,15 +891,6 @@ function createBridge() {
       },
       extensionT: extensionTInWorker,
       formatMessage: formatExtensionMessage,
-      createExtensionTranslator(messages: Record<string, string>) {
-        return (key: string, params?: Record<string, string | number>): string => {
-          return extensionTInWorker(
-            key,
-            params,
-            formatExtensionMessage(messages[key] ?? key, params),
-          );
-        };
-      },
     },
   };
 }

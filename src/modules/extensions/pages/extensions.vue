@@ -19,6 +19,7 @@ import { useExtensionAnimation } from '@/modules/extensions/composables/use-exte
 import { useExtensionsStorageStore } from '@/stores/storage/extensions';
 import { isUserCancelledError } from '@/modules/extensions/utils/extension-install-cancellation';
 import { handleError } from '@/utils/error-handler';
+import ExtensionsToolbarActions from '@/modules/extensions/components/extensions-toolbar-actions.vue';
 import ExtensionSearch from '@/modules/extensions/components/extension-search.vue';
 import ExtensionsMarketplace from '@/modules/extensions/components/extensions-marketplace.vue';
 import ExtensionsInstalled from '@/modules/extensions/components/extensions-installed.vue';
@@ -320,6 +321,10 @@ onUnmounted(() => {
       <div class="extensions-page__top-loader-bar" />
     </div>
   </Teleport>
+  <ExtensionsToolbarActions
+    :is-install-from-folder-disabled="isAnyInstallInProgress"
+    @install-local="handleInstallLocal"
+  />
   <PageDefaultLayout
     class="extensions-page"
     :title="t('pages.extensions')"

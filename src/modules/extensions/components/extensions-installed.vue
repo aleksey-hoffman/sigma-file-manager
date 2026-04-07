@@ -6,8 +6,6 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { useRouter } from 'vue-router';
-import { invoke } from '@tauri-apps/api/core';
 import {
   TrashIcon,
   RefreshCwIcon,
@@ -16,15 +14,14 @@ import {
   FolderOpenIcon,
   XIcon,
 } from '@lucide/vue';
-import { open as openDialog } from '@tauri-apps/plugin-dialog';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { formatBytes } from '@/modules/navigator/components/file-browser/utils';
-import { useWorkspacesStore } from '@/stores/storage/workspaces';
 import ExtensionBadge from './extension-badge.vue';
 import ExtensionIcon from './extension-icon.vue';
 import type { ExtensionWithManifest } from '@/modules/extensions/composables/use-extensions';
 import { getStaggerSlideUpBinding } from '@/utils/stagger-animation';
+import { useExtensionsFolderActions } from '@/modules/extensions/composables/use-extensions-folder-actions';
 
 const props = defineProps<{
   extensions: ExtensionWithManifest[];
@@ -46,28 +43,14 @@ const emit = defineEmits<{
 }>();
 
 const { t } = useI18n();
-const router = useRouter();
-const workspacesStore = useWorkspacesStore();
+const { navigateToExtensionsFolder, pickExtensionFolderPath } = useExtensionsFolderActions();
 const cancelRequestedExtensionIds = ref<Set<string>>(new Set());
 
-async function navigateToExtensionsFolder() {
-  const extensionsDir = await invoke<string>('get_extensions_dir');
-
-  if (extensionsDir) {
-    await workspacesStore.openNewTabGroup(extensionsDir);
-    router.push({ name: 'navigator' });
-  }
-}
-
 async function handleInstallLocal() {
-  const selected = await openDialog({
-    directory: true,
-    multiple: false,
-    title: t('extensions.selectExtensionFolder'),
-  });
+  const sourcePath = await pickExtensionFolderPath();
 
-  if (selected && typeof selected === 'string') {
-    emit('installLocal', selected);
+  if (sourcePath) {
+    emit('installLocal', sourcePath);
   }
 }
 
@@ -193,7 +176,7 @@ function getLocalReinstallButtonTitle(extensionId: string): string {
         @click="handleInstallLocal"
       >
         <FolderOpenIcon :size="16" />
-        {{ t('extensions.installFromFolder') }}
+        {{ t('extensions.installExtensionFromFolder') }}
       </Button>
     </div>
 
@@ -240,23 +223,7 @@ function getLocalReinstallButtonTitle(extensionId: string): string {
             @click="navigateToExtensionsFolder"
           >
             <FolderOpenIcon :size="16" />
-            {{ t('extensions.showFolder') }}
-          </Button>
-          <Button
-            variant="outline"
-            :disabled="isInstallingLocal"
-            @click="handleInstallLocal"
-          >
-            <RefreshCwIcon
-              v-if="isInstallingLocal"
-              :size="16"
-              class="extensions-installed__spinner"
-            />
-            <FolderOpenIcon
-              v-else
-              :size="16"
-            />
-            {{ t('extensions.installFromFolder') }}
+            {{ t('extensions.showExtensionsFolder') }}
           </Button>
         </div>
       </div>

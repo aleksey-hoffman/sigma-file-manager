@@ -1819,6 +1819,8 @@
   },
   "extensions": {
     "subtitle": "Uygulama için topluluk eklentilerini keşfedin ve yönetin",
+    "toolbarOptions": "Uzantı seçenekleri",
+    "createExtension": "Uzantı oluştur",
     "searchPlaceholder": "Eklenti ara...",
     "refresh": "Yenile",
     "loadingExtension": "Uzantı yükleniyor...",
@@ -1839,7 +1841,7 @@
     "cancellingInstall": "İptal ediliyor...",
     "cancelInstall": "İptal",
     "installFailed": "Yükleme başarısız",
-    "installFromFolder": "Klasörden yükle",
+    "installExtensionFromFolder": "Klasörden uzantı yükle",
     "installLocalError": "Eklenti klasörden yüklenemedi",
     "selectExtensionFolder": "Eklenti klasörünü seçin",
     "uninstall": "Kaldır",
@@ -1921,7 +1923,7 @@
     "unknownPublisher": "Unknown publisher",
     "contextMenuLabel": "Uzantılar",
     "autoUpdate": "Auto-update",
-    "showFolder": "Klasörü göster",
+    "showExtensionsFolder": "Uzantılar klasörünü göster",
     "reinstalledSuccessfully": "Başarıyla yeniden yüklendi",
     "reusedDependencies": "{count} mevcut bağımlılık yeniden kullanıldı",
     "noLongerAvailable": "Artık kullanılamıyor",
@@ -1936,7 +1938,8 @@
       "removeWarning": "This dependency is still used by extensions",
       "removeConfirm": "This dependency is used by: {extensions}. They will need to re-download it on next use. Remove anyway?",
       "removeError": "Failed to remove dependency",
-      "downloadSource": "İndirme bağlantısını aç"
+      "downloadSource": "İndirme bağlantısını aç",
+      "showFolder": "Klasörü göster"
     }
   },
   "commandPalette": {

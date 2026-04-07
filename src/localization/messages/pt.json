@@ -1831,6 +1831,8 @@
   },
   "extensions": {
     "subtitle": "Descubra e gerencie extensões da comunidade para o aplicativo",
+    "toolbarOptions": "Opções de extensões",
+    "createExtension": "Criar extensão",
     "searchPlaceholder": "Pesquisar extensões...",
     "refresh": "Atualizar",
     "loadingExtension": "Carregando extensão...",
@@ -1851,7 +1853,7 @@
     "cancellingInstall": "A cancelar...",
     "cancelInstall": "Cancelar",
     "installFailed": "Falha na instalação",
-    "installFromFolder": "Instalar da pasta",
+    "installExtensionFromFolder": "Instalar extensão da pasta",
     "installLocalError": "Falha ao instalar extensão da pasta",
     "selectExtensionFolder": "Selecionar pasta da extensão",
     "uninstall": "Desinstalar",
@@ -1932,7 +1934,7 @@
     "unknownPublisher": "Unknown publisher",
     "contextMenuLabel": "Extensões",
     "autoUpdate": "Auto-update",
-    "showFolder": "Mostrar pasta",
+    "showExtensionsFolder": "Mostrar pasta de extensões",
     "reinstalledSuccessfully": "Reinstalado com sucesso",
     "reusedDependencies": "Reutilizadas {count} dependências existentes",
     "noLongerAvailable": "Não está mais disponível",
@@ -1948,7 +1950,8 @@
       "removeWarning": "This dependency is still used by extensions",
       "removeConfirm": "This dependency is used by: {extensions}. They will need to re-download it on next use. Remove anyway?",
       "removeError": "Failed to remove dependency",
-      "downloadSource": "Abrir link de download"
+      "downloadSource": "Abrir link de download",
+      "showFolder": "Mostrar pasta"
     }
   },
   "commandPalette": {

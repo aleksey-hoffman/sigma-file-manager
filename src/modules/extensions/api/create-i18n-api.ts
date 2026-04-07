@@ -124,8 +124,8 @@ export function createI18nAPI(context: ExtensionContext) {
     const namespacedKey = `${extensionNamespace}.${key}`;
     const translated = context.t(namespacedKey, params);
 
-    if (translated === namespacedKey && fallback !== undefined) {
-      return fallback;
+    if (translated === namespacedKey) {
+      return fallback !== undefined ? fallback : key;
     }
 
     return translated;
@@ -140,15 +140,6 @@ export function createI18nAPI(context: ExtensionContext) {
     },
     extensionT,
     formatMessage: formatExtensionMessage,
-    createExtensionTranslator(messages: Record<string, string>) {
-      return (key: string, params?: Record<string, string | number>): string => {
-        return extensionT(
-          key,
-          params,
-          formatExtensionMessage(messages[key] ?? key, params),
-        );
-      };
-    },
     getLocale: () => i18n.global.locale.value,
     loadFromPath: loadExtensionMessages,
   };

@@ -1842,6 +1842,8 @@
       "exportToFolder": "Экспорт в папку"
     },
     "subtitle": "Находите и управляйте расширениями от сообщества для приложения",
+    "toolbarOptions": "Параметры расширений",
+    "createExtension": "Создать расширение",
     "searchPlaceholder": "Поиск расширений...",
     "refresh": "Обновить",
     "loadingExtension": "Загрузка расширения...",
@@ -1862,7 +1864,7 @@
     "cancellingInstall": "Отмена...",
     "cancelInstall": "Отмена",
     "installFailed": "Не удалось установить",
-    "installFromFolder": "Установить из папки",
+    "installExtensionFromFolder": "Установить расширение из папки",
     "installLocalError": "Не удалось установить расширение из папки",
     "selectExtensionFolder": "Выберите папку расширения",
     "uninstall": "Удалить",
@@ -1940,7 +1942,7 @@
     "unknownPublisher": "Unknown publisher",
     "contextMenuLabel": "Расширения",
     "autoUpdate": "Auto-update",
-    "showFolder": "Показать папку",
+    "showExtensionsFolder": "Показать папку расширений",
     "reinstalledSuccessfully": "Успешно переустановлено",
     "reusedDependencies": "Использовано {count} существующих зависимостей",
     "noLongerAvailable": "Больше недоступно",
@@ -1956,7 +1958,8 @@
       "removeWarning": "This dependency is still used by extensions",
       "removeConfirm": "This dependency is used by: {extensions}. They will need to re-download it on next use. Remove anyway?",
       "removeError": "Failed to remove dependency",
-      "downloadSource": "Открыть ссылку загрузки"
+      "downloadSource": "Открыть ссылку загрузки",
+      "showFolder": "Показать папку"
     }
   },
   "commandPalette": {

@@ -1842,6 +1842,8 @@
       "exportToFolder": "फ़ोल्डर में निर्यात करें"
     },
     "subtitle": "ऐप के लिए सामुदायिक एक्सटेंशन खोजें और प्रबंधित करें",
+    "toolbarOptions": "एक्सटेंशन विकल्प",
+    "createExtension": "एक्सटेंशन बनाएँ",
     "searchPlaceholder": "एक्सटेंशन खोजें...",
     "refresh": "ताज़ा करना",
     "loadingExtension": "एक्सटेंशन लोड हो रहा है...",
@@ -1864,8 +1866,8 @@
     "cancellingInstall": "रद्द किया जा रहा है...",
     "cancelInstall": "रद्द करें",
     "installFailed": "इंस्टॉल विफल",
-    "showFolder": "फ़ोल्डर दिखाएँ",
-    "installFromFolder": "फ़ोल्डर से इंस्टॉल करें",
+    "showExtensionsFolder": "एक्सटेंशन फ़ोल्डर दिखाएँ",
+    "installExtensionFromFolder": "फ़ोल्डर से एक्सटेंशन इंस्टॉल करें",
     "installLocalError": "फ़ोल्डर से एक्सटेंशन इंस्टॉल करने में विफल",
     "selectExtensionFolder": "एक्सटेंशन फ़ोल्डर चुनें",
     "uninstall": "अनइंस्टॉल करें",
@@ -1920,7 +1922,8 @@
       "removeWarning": "यह निर्भरता अभी भी एक्सटेंशन द्वारा उपयोग की जाती है",
       "removeConfirm": "इस निर्भरता का उपयोग किया जाता है: {extensions}. उन्हें अगले उपयोग पर इसे पुनः डाउनलोड करना होगा। फिर भी हटाएँ?",
       "removeError": "निर्भरता हटाने में विफल",
-      "downloadSource": "डाउनलोड लिंक खोलें"
+      "downloadSource": "डाउनलोड लिंक खोलें",
+      "showFolder": "फ़ोल्डर दिखाएँ"
     },
     "badges": {
       "official": "अधिकारी",

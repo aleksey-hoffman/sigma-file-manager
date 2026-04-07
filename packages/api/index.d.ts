@@ -4,6 +4,9 @@ declare global {
 
 export type ExtensionType = 'api' | 'iframe' | 'webview';
 
+/** Flat key–value map for one extension locale file (for example `locales/en.json`). */
+export type ExtensionLocaleStrings = Record<string, string>;
+
 export type ExtensionPermission
   = | 'contextMenu'
     | 'sidebar'
@@ -376,11 +379,12 @@ export interface SigmaExtensionAPI {
     t(key: string, params?: Record<string, string | number>): string;
     mergeMessages(messages: Record<string, Record<string, string>>): void;
     mergeFromPath(basePath: string): Promise<void>;
+    /**
+     * Resolves extension-localized strings under `extensions.<extensionId>.<key>`.
+     * When no translation exists, this returns `fallback` if provided, otherwise the original `key`.
+     */
     extensionT(key: string, params?: Record<string, string | number>, fallback?: string): string;
     formatMessage(template: string, params?: Record<string, string | number>): string;
-    createExtensionTranslator(
-      messages: Record<string, string>,
-    ): (key: string, params?: Record<string, string | number>) => string;
   };
   contextMenu: {
     registerItem(

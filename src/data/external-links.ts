@@ -31,6 +31,7 @@ const extensionsRegistryBaseUrl = `${githubRawApiUrl}/${extensionsRegistryFullRe
 const extensionsRegistryUrl = `${extensionsRegistryBaseUrl}/registry.json`;
 const extensionsFeaturedUrl = `${extensionsRegistryBaseUrl}/featured.json`;
 const extensionsSubmissionGuideUrl = `${githubBaseUrl}/${extensionsRegistryFullRepoName}#readme`;
+const extensionsDevelopmentWikiUrl = `${githubBaseUrl}/${extensionsRegistryFullRepoName}/wiki`;
 const extensionsApiBaseUrl = `${githubRawApiUrl}/${githubFullRepoName}/${githubMainBranch}/packages/api`;
 const extensionsTypesUrl = `${extensionsApiBaseUrl}/index.d.ts`;
 const extensionsManifestSchemaUrl = `${extensionsApiBaseUrl}/manifest.schema.json`;
@@ -54,6 +55,7 @@ export default {
   extensionsRegistryUrl,
   extensionsFeaturedUrl,
   extensionsSubmissionGuideUrl,
+  extensionsDevelopmentWikiUrl,
   extensionsTypesUrl,
   extensionsManifestSchemaUrl,
 };

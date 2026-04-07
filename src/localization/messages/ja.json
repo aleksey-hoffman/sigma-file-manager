@@ -1819,6 +1819,8 @@
   },
   "extensions": {
     "subtitle": "アプリのコミュニティ拡張機能を見つけて管理する",
+    "toolbarOptions": "拡張機能のオプション",
+    "createExtension": "拡張機能を作成",
     "searchPlaceholder": "拡張機能を検索...",
     "refresh": "更新",
     "loadingExtension": "拡張機能を読み込み中...",
@@ -1839,7 +1841,7 @@
     "cancellingInstall": "キャンセル中...",
     "cancelInstall": "キャンセル",
     "installFailed": "インストールに失敗しました",
-    "installFromFolder": "フォルダからインストール",
+    "installExtensionFromFolder": "フォルダから拡張機能をインストール",
     "installLocalError": "フォルダから拡張機能をインストールできませんでした",
     "selectExtensionFolder": "拡張機能フォルダを選択",
     "uninstall": "アンインストール",
@@ -1921,7 +1923,7 @@
     "unknownPublisher": "Unknown publisher",
     "contextMenuLabel": "拡張機能",
     "autoUpdate": "Auto-update",
-    "showFolder": "フォルダーを表示",
+    "showExtensionsFolder": "拡張機能フォルダーを表示",
     "reinstalledSuccessfully": "再インストールが完了しました",
     "reusedDependencies": "既存の依存関係 {count} 件を再利用しました",
     "noLongerAvailable": "利用できなくなりました",
@@ -1936,7 +1938,8 @@
       "removeWarning": "This dependency is still used by extensions",
       "removeConfirm": "This dependency is used by: {extensions}. They will need to re-download it on next use. Remove anyway?",
       "removeError": "Failed to remove dependency",
-      "downloadSource": "ダウンロードリンクを開く"
+      "downloadSource": "ダウンロードリンクを開く",
+      "showFolder": "フォルダーを表示"
     }
   },
   "commandPalette": {

@@ -1822,6 +1822,8 @@
       "exportToFolder": "Xuất vào thư mục"
     },
     "subtitle": "Khám phá và quản lý các tiện ích mở rộng cộng đồng cho ứng dụng",
+    "toolbarOptions": "Tùy chọn tiện ích mở rộng",
+    "createExtension": "Tạo tiện ích mở rộng",
     "searchPlaceholder": "Tìm kiếm tiện ích mở rộng...",
     "refresh": "Làm mới",
     "loadingExtension": "Đang tải tiện ích mở rộng...",
@@ -1842,7 +1844,7 @@
     "cancellingInstall": "Đang hủy...",
     "cancelInstall": "Hủy",
     "installFailed": "Cài đặt thất bại",
-    "installFromFolder": "Cài đặt từ thư mục",
+    "installExtensionFromFolder": "Cài đặt tiện ích mở rộng từ thư mục",
     "installLocalError": "Không thể cài đặt tiện ích từ thư mục",
     "selectExtensionFolder": "Chọn thư mục tiện ích",
     "uninstall": "Gỡ cài đặt",
@@ -1921,7 +1923,7 @@
     "unknownPublisher": "Unknown publisher",
     "contextMenuLabel": "Tiện ích mở rộng",
     "autoUpdate": "Auto-update",
-    "showFolder": "Hiển thị thư mục",
+    "showExtensionsFolder": "Hiển thị thư mục tiện ích mở rộng",
     "reinstalledSuccessfully": "Cài đặt lại thành công",
     "reusedDependencies": "Đã tái sử dụng {count} phụ thuộc hiện có",
     "noLongerAvailable": "Không còn khả dụng",
@@ -1936,7 +1938,8 @@
       "removeWarning": "This dependency is still used by extensions",
       "removeConfirm": "This dependency is used by: {extensions}. They will need to re-download it on next use. Remove anyway?",
       "removeError": "Failed to remove dependency",
-      "downloadSource": "Mở liên kết tải xuống"
+      "downloadSource": "Mở liên kết tải xuống",
+      "showFolder": "Hiển thị thư mục"
     }
   },
   "commandPalette": {

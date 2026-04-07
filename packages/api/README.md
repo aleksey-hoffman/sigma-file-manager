@@ -1,6 +1,6 @@
 # @sigma-file-manager/api
 
-Types and manifest schema for Sigma File Manager extensions.
+Type definitions and the extension manifest JSON schema for [Sigma File Manager](https://github.com/aleksey-hoffman/sigma-file-manager) extensions.
 
 ## Install
 
@@ -8,45 +8,52 @@ Types and manifest schema for Sigma File Manager extensions.
 npm install -D @sigma-file-manager/api
 ```
 
-## Use in JavaScript extensions
+Add a `devDependency` only; the host does not run `npm install` for installed extensions.
 
-Use `// @ts-check` and JSDoc imports from the package:
+## TypeScript
 
-```js
-// @ts-check
+Import types for entrypoints and helpers. The global `sigma` object is declared in this package.
 
-/**
- * @typedef {import('@sigma-file-manager/api').ExtensionActivationContext} ExtensionActivationContext
- */
+```ts
+import type { ExtensionActivationContext, ExtensionContextEntry, UIElement } from '@sigma-file-manager/api';
 
-/**
- * @param {ExtensionActivationContext} context
- */
-async function activate(context) {
-  console.log(context.extensionPath);
+export async function activate(context: ExtensionActivationContext): Promise<void> {
+  await sigma.i18n.mergeFromPath('locales');
 }
+
+export async function deactivate(): Promise<void> {}
 ```
 
-Bundled English defaults with locale JSON from `mergeFromPath`:
+Point `package.json` `"main"` at your compiled file (for example `dist/index.js`), set `"type": "module"`, and build with `tsc` or your bundler. Commit build output if installs come from a Git tag archive without running a build on the client.
 
-```js
-import { extensionMessages } from './messages.js';
+## i18n
 
-export const t = sigma.i18n.createExtensionTranslator(extensionMessages);
+Keep strings in `locales/*.json`, merge every locale from the extension root, and alias `sigma.i18n.extensionT` for extension-local keys:
+
+```ts
+const t = sigma.i18n.extensionT;
 ```
 
-`formatMessage` for `{placeholder}` strings is available as `sigma.i18n.formatMessage` when needed.
+Call `await sigma.i18n.mergeFromPath('locales')` in `activate` before registering UI that uses `t`.
+
+`sigma.i18n.formatMessage` is available when you need `{placeholder}` formatting outside the translator.
 
 ## Manifest schema
 
-Use this schema URL in your extension `package.json`:
+In extension `package.json`:
 
 ```json
 {
-  "$schema": "https://raw.githubusercontent.com/aleksey-hoffman/sigma-file-manager/main/packages/api/manifest.schema.json"
+  "$schema": "./node_modules/@sigma-file-manager/api/manifest.schema.json"
 }
 ```
 
+Run `npm install` first so the local schema file exists.
+
+## Documentation
+
+See extensions API **[docs](https://github.com/sigma-hub/sfm-extensions-registry/wiki)** for more details.
+
 ## Release
 
-API package versions are independent from app versions and tagged as `api-vX.Y.Z`.
+API package versions are independent from app releases and are published to npm as `@sigma-file-manager/api`.

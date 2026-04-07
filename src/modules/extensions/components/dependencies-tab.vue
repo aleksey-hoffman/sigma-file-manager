@@ -202,7 +202,7 @@ watch(
             @click="navigateToDependenciesFolder"
           >
             <FolderOpenIcon :size="16" />
-            {{ t('extensions.showFolder') }}
+            {{ t('extensions.dependencies.showFolder') }}
           </Button>
         </div>
       </div>
