@@ -189,7 +189,7 @@ function handleToggleHiddenFiles(checked: boolean) {
 }
 
 .navigator-toolbar-actions__icon {
-  stroke: hsl(var(--icon));
+  stroke: hsl(var(--foreground) / 50%);
 }
 
 .navigator-toolbar-actions__button--active {

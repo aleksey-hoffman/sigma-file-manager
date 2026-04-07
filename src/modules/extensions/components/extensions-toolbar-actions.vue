@@ -119,7 +119,7 @@ async function handleInstallLocal(): Promise<void> {
 }
 
 .extensions-toolbar-actions__icon {
-  stroke: hsl(var(--icon));
+  stroke: hsl(var(--foreground) / 50%);
 }
 
 .extensions-toolbar-actions__menu-icon {
