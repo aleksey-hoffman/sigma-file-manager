@@ -29,7 +29,6 @@ const extensionsRegistryOrg = 'sigma-hub';
 const extensionsRegistryFullRepoName = `${extensionsRegistryOrg}/${extensionsRegistryRepo}`;
 const extensionsRegistryBaseUrl = `${githubRawApiUrl}/${extensionsRegistryFullRepoName}/main`;
 const extensionsRegistryUrl = `${extensionsRegistryBaseUrl}/registry.json`;
-const extensionsFeaturedUrl = `${extensionsRegistryBaseUrl}/featured.json`;
 const extensionsSubmissionGuideUrl = `${githubBaseUrl}/${extensionsRegistryFullRepoName}#readme`;
 const extensionsDevelopmentWikiUrl = `${githubBaseUrl}/${extensionsRegistryFullRepoName}/wiki`;
 const extensionsApiBaseUrl = `${githubRawApiUrl}/${githubFullRepoName}/${githubMainBranch}/packages/api`;
@@ -53,7 +52,6 @@ export default {
   githubLocalesLink,
   githubLanguageInstructionsLink,
   extensionsRegistryUrl,
-  extensionsFeaturedUrl,
   extensionsSubmissionGuideUrl,
   extensionsDevelopmentWikiUrl,
   extensionsTypesUrl,

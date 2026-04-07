@@ -40,11 +40,6 @@ export type ExtensionRegistry = {
   extensions: ExtensionRegistryEntry[];
 };
 
-export type ExtensionFeatured = {
-  schemaVersion: string;
-  featured: string[];
-};
-
 export type ExtensionKeybindingOverride = {
   commandId: string;
   keys: {
