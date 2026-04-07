@@ -377,6 +377,10 @@ export interface SigmaExtensionAPI {
     mergeMessages(messages: Record<string, Record<string, string>>): void;
     mergeFromPath(basePath: string): Promise<void>;
     extensionT(key: string, params?: Record<string, string | number>, fallback?: string): string;
+    formatMessage(template: string, params?: Record<string, string | number>): string;
+    createExtensionTranslator(
+      messages: Record<string, string>,
+    ): (key: string, params?: Record<string, string | number>) => string;
   };
   contextMenu: {
     registerItem(

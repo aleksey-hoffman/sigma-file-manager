@@ -11,6 +11,21 @@ const MAX_LOCALE_FILE_SIZE = 512 * 1024;
 
 export type ExtensionLocaleMessages = Record<string, Record<string, string>>;
 
+function formatExtensionMessage(
+  template: string,
+  params?: Record<string, string | number>,
+): string {
+  if (!params) {
+    return template;
+  }
+
+  return String(template).replace(/\{(\w+)\}/g, (fullMatch, paramKey: string) => {
+    return Object.prototype.hasOwnProperty.call(params, paramKey)
+      ? String(params[paramKey])
+      : fullMatch;
+  });
+}
+
 export function createI18nAPI(context: ExtensionContext) {
   const extensionNamespace = `extensions.${context.extensionId}`;
 
@@ -101,6 +116,21 @@ export function createI18nAPI(context: ExtensionContext) {
     return messages;
   }
 
+  function extensionT(
+    key: string,
+    params?: Record<string, string | number>,
+    fallback?: string,
+  ): string {
+    const namespacedKey = `${extensionNamespace}.${key}`;
+    const translated = context.t(namespacedKey, params);
+
+    if (translated === namespacedKey && fallback !== undefined) {
+      return fallback;
+    }
+
+    return translated;
+  }
+
   return {
     t: (key: string, params?: Record<string, string | number>) => context.t(key, params),
     mergeMessages: mergeExtensionMessages,
@@ -108,15 +138,16 @@ export function createI18nAPI(context: ExtensionContext) {
       const messages = await loadExtensionMessages(basePath);
       if (Object.keys(messages).length > 0) mergeExtensionMessages(messages);
     },
-    extensionT: (key: string, params?: Record<string, string | number>, fallback?: string) => {
-      const namespacedKey = `${extensionNamespace}.${key}`;
-      const translated = context.t(namespacedKey, params);
-
-      if (translated === namespacedKey && fallback !== undefined) {
-        return fallback;
-      }
-
-      return translated;
+    extensionT,
+    formatMessage: formatExtensionMessage,
+    createExtensionTranslator(messages: Record<string, string>) {
+      return (key: string, params?: Record<string, string | number>): string => {
+        return extensionT(
+          key,
+          params,
+          formatExtensionMessage(messages[key] ?? key, params),
+        );
+      };
     },
     getLocale: () => i18n.global.locale.value,
     loadFromPath: loadExtensionMessages,

@@ -294,6 +294,36 @@ function translateInWorker(key: string, params?: Record<string, string | number>
   return workerI18n.global.t(key, params as never) as string;
 }
 
+function formatExtensionMessage(
+  template: string,
+  params?: Record<string, string | number>,
+): string {
+  if (!params) {
+    return template;
+  }
+
+  return String(template).replace(/\{(\w+)\}/g, (fullMatch, paramKey: string) => {
+    return Object.prototype.hasOwnProperty.call(params, paramKey)
+      ? String(params[paramKey])
+      : fullMatch;
+  });
+}
+
+function extensionTInWorker(
+  key: string,
+  params?: Record<string, string | number>,
+  fallback?: string,
+): string {
+  const namespacedKey = `${extensionNamespace}.${key}`;
+  const translated = translateInWorker(namespacedKey, params);
+
+  if (translated === namespacedKey && fallback !== undefined) {
+    return fallback;
+  }
+
+  return translated;
+}
+
 function createBridge() {
   function makeCall(method: string) {
     return (...args: unknown[]) => postRequest('bridge-call', {
@@ -859,15 +889,16 @@ function createBridge() {
           });
         }
       },
-      extensionT: (key: string, params?: Record<string, string | number>, fallback?: string) => {
-        const namespacedKey = `${extensionNamespace}.${key}`;
-        const translated = translateInWorker(namespacedKey, params);
-
-        if (translated === namespacedKey && fallback !== undefined) {
-          return fallback;
-        }
-
-        return translated;
+      extensionT: extensionTInWorker,
+      formatMessage: formatExtensionMessage,
+      createExtensionTranslator(messages: Record<string, string>) {
+        return (key: string, params?: Record<string, string | number>): string => {
+          return extensionTInWorker(
+            key,
+            params,
+            formatExtensionMessage(messages[key] ?? key, params),
+          );
+        };
       },
     },
   };

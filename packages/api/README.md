@@ -27,6 +27,16 @@ async function activate(context) {
 }
 ```
 
+Bundled English defaults with locale JSON from `mergeFromPath`:
+
+```js
+import { extensionMessages } from './messages.js';
+
+export const t = sigma.i18n.createExtensionTranslator(extensionMessages);
+```
+
+`formatMessage` for `{placeholder}` strings is available as `sigma.i18n.formatMessage` when needed.
+
 ## Manifest schema
 
 Use this schema URL in your extension `package.json`:
