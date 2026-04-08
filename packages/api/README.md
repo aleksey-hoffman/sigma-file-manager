@@ -50,10 +50,10 @@ In extension `package.json`:
 
 Run `npm install` first so the local schema file exists.
 
-## Documentation
-
-See extensions API **[docs](https://github.com/sigma-hub/sfm-extensions-registry/wiki)** for more details.
-
 ## Release
 
 API package versions are independent from app releases and are published to npm as `@sigma-file-manager/api`.
+
+## Resources
+
+**[Docs](https://github.com/sigma-hub/sfm-extensions-registry/wiki)** - documentation for extension development
