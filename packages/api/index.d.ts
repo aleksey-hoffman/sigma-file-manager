@@ -152,6 +152,14 @@ export interface ManifestBinaryDefinition {
   assets: ManifestBinaryAsset[];
 }
 
+export type ExtensionManifestMediaType = 'image' | 'video';
+
+export interface ExtensionManifestMediaItem {
+  title: string;
+  src: string;
+  type: ExtensionManifestMediaType;
+}
+
 export interface ExtensionManifest {
   id: string;
   name: string;
@@ -162,6 +170,7 @@ export interface ExtensionManifest {
   license: string;
   icon?: string;
   banner?: string;
+  media?: ExtensionManifestMediaItem[];
   categories?: string[];
   tags?: string[];
   extensionType: ExtensionType;

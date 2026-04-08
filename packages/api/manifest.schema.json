@@ -69,6 +69,37 @@
       "type": "string",
       "description": "Relative path to banner image"
     },
+    "media": {
+      "type": "array",
+      "description": "Preview images or videos for the extension detail overview (paths relative to the extension root, or absolute http(s) URLs)",
+      "items": {
+        "type": "object",
+        "required": [
+          "title",
+          "src",
+          "type"
+        ],
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "Label shown under the preview"
+          },
+          "src": {
+            "type": "string",
+            "description": "Relative path to a file in the extension package, or an absolute http(s) URL"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "image",
+              "video"
+            ],
+            "description": "How the preview is rendered"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
     "categories": {
       "type": "array",
       "description": "Categories for extension classification",

@@ -27,7 +27,8 @@ import {
   determineFileType,
   getFileName,
   getFileExtension,
-  getFileAssetUrl,
+  getQuickViewDisplayUrl,
+  isHttpOrHttpsUrl,
   fetchQuickViewSiblingPathsFromDisk,
   QUICK_VIEW_DISPLAYED_PATH_CHANGED_EVENT,
   type QuickViewFileType,
@@ -100,7 +101,7 @@ const fileName = computed((): string => {
 
 const fileAssetUrl = computed((): string => {
   if (!currentFilePath.value) return '';
-  return getFileAssetUrl(currentFilePath.value);
+  return getQuickViewDisplayUrl(currentFilePath.value);
 });
 
 const textIsDirty = computed(() => {
@@ -432,6 +433,12 @@ async function selectPath(path: string) {
 }
 
 async function loadTextPreview(path: string) {
+  if (isHttpOrHttpsUrl(path)) {
+    textPreviewLoading.value = false;
+    textPreviewError.value = t('quickView.unsupportedFileType');
+    return;
+  }
+
   const pending = pendingTextEdits.value[path];
 
   if (pending) {
@@ -512,7 +519,7 @@ async function revertTextChanges() {
 async function saveTextFile() {
   const path = currentFilePath.value;
 
-  if (!path || determineFileType(path) !== 'text' || textWasTruncated.value || !canSaveText.value) {
+  if (!path || isHttpOrHttpsUrl(path) || determineFileType(path) !== 'text' || textWasTruncated.value || !canSaveText.value) {
     return;
   }
 
@@ -931,7 +938,7 @@ onUnmounted(() => {
               <img
                 v-if="thumb.kind === 'image'"
                 class="quick-view__thumb-image"
-                :src="getFileAssetUrl(thumb.path)"
+                :src="getQuickViewDisplayUrl(thumb.path)"
                 alt=""
               >
               <VideoIcon

@@ -43,10 +43,18 @@ import { getBinaryDisplayVersion } from '@/modules/extensions/utils/binary-metad
 import { isHttpUrl, openBinaryDownloadUrl } from '@/modules/extensions/utils/binary-download-url';
 import { getLucideIcon } from '@/utils/lucide-icons';
 import { renderMarkdownToSafeHtml } from '@/utils/safe-html';
+import { rewriteMarkdownAssetUrls } from '@/utils/readme-relative-urls';
 import { useExtensionsStore } from '@/stores/runtime/extensions';
 import { getKeybindingForCommand, formatKeybindingKeys } from '@/modules/extensions/api';
 import { ensurePlatformInfo } from '@/modules/extensions/api/platform';
 import { resolveManifestBinaryAsset } from '@/modules/extensions/utils/manifest-binaries';
+import {
+  resolveManifestMediaItems,
+  getGitHubRefForRemoteMedia,
+  manifestHasMediaItems,
+  type ResolvedManifestMediaItem,
+} from '@/modules/extensions/utils/resolve-manifest-media';
+import { useQuickViewStore } from '@/stores/runtime/quick-view';
 
 const props = defineProps<{
   extension: ExtensionWithManifest;
@@ -70,16 +78,22 @@ const emit = defineEmits<{
 
 const { t } = useI18n();
 const extensionsStore = useExtensionsStore();
+const quickViewStore = useQuickViewStore();
 
 const activeTab = ref('overview');
 const selectedVersion = ref(props.extension.installedVersion || props.extension.latestVersion || '');
 const readmeContent = ref<string | null>(null);
+const readmeRenderedHtml = ref('');
 const changelogContent = ref<string | null>(null);
+const changelogRenderedHtml = ref('');
 const isLoadingReadme = ref(false);
 const isLoadingChangelog = ref(false);
+let readmeLoadGeneration = 0;
+let changelogLoadGeneration = 0;
 const isCancelRequested = ref(false);
 const currentManifest = ref<ExtensionManifest | undefined>(props.extension.manifest);
 const currentPlatformInfo = ref<PlatformInfo | null>(null);
+const resolvedMediaItems = ref<ResolvedManifestMediaItem[]>([]);
 
 const displayName = computed(() => {
   return props.extension.name || currentManifest.value?.name || props.extension.id.split('.').pop() || props.extension.id;
@@ -178,16 +192,6 @@ const extensionCommands = computed(() => {
 
 const repositoryUrl = computed(() => {
   return props.extension.repository;
-});
-
-const parsedReadme = computed(() => {
-  if (!readmeContent.value) return '';
-  return renderMarkdownToSafeHtml(readmeContent.value);
-});
-
-const parsedChangelog = computed(() => {
-  if (!changelogContent.value) return '';
-  return renderMarkdownToSafeHtml(changelogContent.value);
 });
 
 const hasSelectedVersionChange = computed(() => {
@@ -345,71 +349,146 @@ async function readInstalledExtensionFile(fileName: string): Promise<string | nu
   }
 }
 
-async function loadReadme(forceReload = false) {
-  if ((!forceReload && readmeContent.value !== null) || isLoadingReadme.value) return;
+async function buildRenderedMarkdownHtml(
+  markdown: string,
+  useLocalImages: boolean,
+  remoteDocumentBaseUrl: string,
+): Promise<string> {
+  const markdownHtml = renderMarkdownToSafeHtml(markdown);
 
+  if (useLocalImages && props.extension.isInstalled) {
+    try {
+      const extensionPath = await invoke<string>('get_extension_path', { extensionId: props.extension.id });
+      return rewriteMarkdownAssetUrls(markdownHtml, {
+        kind: 'localExtension',
+        extensionRootPath: extensionPath,
+      });
+    }
+    catch {
+      return rewriteMarkdownAssetUrls(markdownHtml, {
+        kind: 'remoteGitHub',
+        documentBaseUrl: remoteDocumentBaseUrl,
+      });
+    }
+  }
+
+  return rewriteMarkdownAssetUrls(markdownHtml, {
+    kind: 'remoteGitHub',
+    documentBaseUrl: remoteDocumentBaseUrl,
+  });
+}
+
+async function loadReadme(forceReload = false) {
+  if (!forceReload && readmeContent.value !== null) return;
+
+  const generation = ++readmeLoadGeneration;
   isLoadingReadme.value = true;
   readmeContent.value = null;
+  readmeRenderedHtml.value = '';
 
   try {
+    let markdown: string;
+    let useLocalImages = false;
+
     if (props.extension.isInstalled) {
       const localContent = await readInstalledExtensionFile('README.md');
 
       if (localContent) {
-        readmeContent.value = localContent;
-        return;
+        markdown = localContent;
+        useLocalImages = true;
+      }
+      else {
+        const url = getExtensionReadmeUrl(props.extension.repository);
+        const response = await fetch(url);
+        markdown = response.ok ? await response.text() : t('extensions.readmeNotFound');
       }
     }
-
-    const url = getExtensionReadmeUrl(props.extension.repository);
-    const response = await fetch(url);
-
-    if (response.ok) {
-      readmeContent.value = await response.text();
-    }
     else {
-      readmeContent.value = t('extensions.readmeNotFound');
+      const url = getExtensionReadmeUrl(props.extension.repository);
+      const response = await fetch(url);
+      markdown = response.ok ? await response.text() : t('extensions.readmeNotFound');
     }
+
+    if (generation !== readmeLoadGeneration) return;
+
+    const renderedReadmeHtml = await buildRenderedMarkdownHtml(
+      markdown,
+      useLocalImages,
+      getExtensionReadmeUrl(props.extension.repository),
+    );
+
+    if (generation !== readmeLoadGeneration) return;
+
+    readmeContent.value = markdown;
+    readmeRenderedHtml.value = renderedReadmeHtml;
   }
   catch {
-    readmeContent.value = t('extensions.readmeLoadError');
+    if (generation !== readmeLoadGeneration) return;
+    const errorMessage = t('extensions.readmeLoadError');
+    readmeContent.value = errorMessage;
+    readmeRenderedHtml.value = renderMarkdownToSafeHtml(errorMessage);
   }
   finally {
-    isLoadingReadme.value = false;
+    if (generation === readmeLoadGeneration) {
+      isLoadingReadme.value = false;
+    }
   }
 }
 
 async function loadChangelog(forceReload = false) {
-  if ((!forceReload && changelogContent.value !== null) || isLoadingChangelog.value) return;
+  if (!forceReload && changelogContent.value !== null) return;
 
+  const generation = ++changelogLoadGeneration;
   isLoadingChangelog.value = true;
   changelogContent.value = null;
+  changelogRenderedHtml.value = '';
 
   try {
+    let markdown: string;
+    let useLocalImages = false;
+
     if (props.extension.isInstalled) {
       const localContent = await readInstalledExtensionFile('CHANGELOG.md');
 
       if (localContent) {
-        changelogContent.value = localContent;
-        return;
+        markdown = localContent;
+        useLocalImages = true;
+      }
+      else {
+        const url = getExtensionChangelogUrl(props.extension.repository);
+        const response = await fetch(url);
+        markdown = response.ok ? await response.text() : t('extensions.changelogNotFound');
       }
     }
-
-    const url = getExtensionChangelogUrl(props.extension.repository);
-    const response = await fetch(url);
-
-    if (response.ok) {
-      changelogContent.value = await response.text();
-    }
     else {
-      changelogContent.value = t('extensions.changelogNotFound');
+      const url = getExtensionChangelogUrl(props.extension.repository);
+      const response = await fetch(url);
+      markdown = response.ok ? await response.text() : t('extensions.changelogNotFound');
     }
+
+    if (generation !== changelogLoadGeneration) return;
+
+    const renderedChangelogHtml = await buildRenderedMarkdownHtml(
+      markdown,
+      useLocalImages,
+      getExtensionChangelogUrl(props.extension.repository),
+    );
+
+    if (generation !== changelogLoadGeneration) return;
+
+    changelogContent.value = markdown;
+    changelogRenderedHtml.value = renderedChangelogHtml;
   }
   catch {
-    changelogContent.value = t('extensions.changelogLoadError');
+    if (generation !== changelogLoadGeneration) return;
+    const errorMessage = t('extensions.changelogLoadError');
+    changelogContent.value = errorMessage;
+    changelogRenderedHtml.value = renderMarkdownToSafeHtml(errorMessage);
   }
   finally {
-    isLoadingChangelog.value = false;
+    if (generation === changelogLoadGeneration) {
+      isLoadingChangelog.value = false;
+    }
   }
 }
 
@@ -451,6 +530,21 @@ async function openPublisherProfile() {
   }
 }
 
+async function handleManifestMediaClick(item: ResolvedManifestMediaItem) {
+  if (item.quickViewPath) {
+    await quickViewStore.openFileFromMainWindow(
+      item.quickViewPath,
+      item.quickViewSiblingPaths ?? null,
+    );
+
+    return;
+  }
+
+  if (item.remoteOpenUrl) {
+    await openUrl(item.remoteOpenUrl);
+  }
+}
+
 watch(
   () => props.extension.installedVersion,
   (newInstalledVersion) => {
@@ -472,6 +566,65 @@ watch(
   ],
   () => {
     void loadSelectedManifest();
+  },
+  { immediate: true },
+);
+
+watch(
+  () => [
+    currentManifest.value,
+    props.extension.id,
+    props.extension.isInstalled,
+    props.extension.repository,
+    selectedVersion.value,
+    props.extension.latestVersion,
+    props.extension.installedVersion,
+    props.extension.manifest,
+  ],
+  async () => {
+    try {
+      let manifestForMedia = currentManifest.value;
+
+      if (props.extension.isInstalled && !manifestHasMediaItems(manifestForMedia)) {
+        const versionForRemoteMedia
+          = props.extension.installedVersion || selectedVersion.value || props.extension.latestVersion || '';
+
+        if (versionForRemoteMedia) {
+          try {
+            const remoteManifest = await extensionsStore.fetchExtensionManifest(
+              props.extension,
+              versionForRemoteMedia,
+            );
+
+            if (manifestHasMediaItems(remoteManifest)) {
+              const baseManifest = manifestForMedia ?? props.extension.manifest;
+              manifestForMedia = {
+                ...baseManifest,
+                media: remoteManifest.media,
+              } as ExtensionManifest;
+            }
+          }
+          catch {
+          }
+        }
+      }
+
+      resolvedMediaItems.value = await resolveManifestMediaItems({
+        manifest: manifestForMedia,
+        extensionId: props.extension.id,
+        isInstalled: props.extension.isInstalled,
+        repository: props.extension.repository,
+        remoteRef: getGitHubRefForRemoteMedia({
+          isInstalled: props.extension.isInstalled,
+          selectedVersion: selectedVersion.value,
+          installedVersion: props.extension.installedVersion ?? null,
+          latestVersion: props.extension.latestVersion,
+        }),
+      });
+    }
+    catch {
+      resolvedMediaItems.value = [];
+    }
   },
   { immediate: true },
 );
@@ -514,8 +667,23 @@ watchOperationCompletion(() => props.isUpdating);
 watchOperationCompletion(() => props.isInstalling);
 watchOperationCompletion(() => props.isUninstalling);
 
+watch(
+  () => props.extension.id,
+  () => {
+    readmeContent.value = null;
+    readmeRenderedHtml.value = '';
+    changelogContent.value = null;
+    changelogRenderedHtml.value = '';
+    void loadReadme();
+
+    if (activeTab.value === 'changelog') {
+      void loadChangelog();
+    }
+  },
+  { immediate: true },
+);
+
 onMounted(() => {
-  loadReadme();
   void loadPlatformInfo();
 });
 </script>
@@ -919,17 +1087,59 @@ onMounted(() => {
         value="overview"
         class="extension-detail__tab-content"
       >
-        <div class="extension-detail__readme">
-          <Skeleton
-            v-if="isLoadingReadme"
-            class="extension-detail__readme-skeleton"
-          />
+        <div class="extension-detail__overview">
           <div
-            v-else
-            class="extension-detail__readme-content markdown-content"
-            v-html="parsedReadme"
-            @click="handleMarkdownLinkClick"
-          />
+            v-if="resolvedMediaItems.length > 0"
+            class="extension-detail__media"
+          >
+            <div class="extension-detail__media-row">
+              <button
+                v-for="(mediaItem, mediaIndex) in resolvedMediaItems"
+                :key="`${mediaItem.title}-${mediaIndex}`"
+                type="button"
+                class="extension-detail__media-card"
+                :class="{
+                  'extension-detail__media-card--clickable':
+                    Boolean(mediaItem.quickViewPath || mediaItem.remoteOpenUrl),
+                }"
+                :aria-label="mediaItem.title"
+                :disabled="!mediaItem.quickViewPath && !mediaItem.remoteOpenUrl"
+                @click="handleManifestMediaClick(mediaItem)"
+              >
+                <div class="extension-detail__media-preview">
+                  <img
+                    v-if="mediaItem.type === 'image'"
+                    class="extension-detail__media-preview-content"
+                    :src="mediaItem.previewUrl"
+                    :alt="mediaItem.title"
+                    loading="lazy"
+                    decoding="async"
+                  >
+                  <video
+                    v-else
+                    class="extension-detail__media-preview-content"
+                    :src="mediaItem.previewUrl"
+                    muted
+                    playsinline
+                    preload="metadata"
+                  />
+                </div>
+                <span class="extension-detail__media-title">{{ mediaItem.title }}</span>
+              </button>
+            </div>
+          </div>
+          <div class="extension-detail__readme">
+            <Skeleton
+              v-if="isLoadingReadme"
+              class="extension-detail__readme-skeleton"
+            />
+            <div
+              v-else
+              class="extension-detail__readme-content markdown-content"
+              v-html="readmeRenderedHtml"
+              @click="handleMarkdownLinkClick"
+            />
+          </div>
         </div>
       </TabsContent>
 
@@ -1037,7 +1247,7 @@ onMounted(() => {
         <div
           v-else
           class="extension-detail__changelog-content markdown-content"
-          v-html="parsedChangelog"
+          v-html="changelogRenderedHtml"
           @click="handleMarkdownLinkClick"
         />
       </TabsContent>
@@ -1518,6 +1728,72 @@ onMounted(() => {
   gap: 16px;
 }
 
+.extension-detail__overview {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.extension-detail__media {
+  overflow: hidden;
+  width: 100%;
+  max-width: 100%;
+  padding: 12px;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  background-color: hsl(var(--card));
+}
+
+.extension-detail__media-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.extension-detail__media-card {
+  display: flex;
+  min-width: 0;
+  max-width: 180px;
+  flex: 1 1 100px;
+  flex-direction: column;
+  align-items: stretch;
+  padding: 0;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  background-color: hsl(var(--muted) / 20%);
+  cursor: default;
+  text-align: left;
+}
+
+.extension-detail__media-card--clickable:not(:disabled) {
+  cursor: pointer;
+}
+
+.extension-detail__media-preview {
+  overflow: hidden;
+  width: 100%;
+  border-radius: var(--radius) var(--radius) 0 0;
+  aspect-ratio: 16 / 10;
+  background-color: hsl(var(--muted) / 40%);
+}
+
+.extension-detail__media-preview-content {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.extension-detail__media-title {
+  display: block;
+  padding: 4px 8px;
+  color: hsl(var(--foreground));
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
 .extension-detail__readme,
 .extension-detail__changelog {
   overflow: hidden;
@@ -1765,7 +2041,8 @@ onMounted(() => {
   }
 
   .extension-detail__readme,
-  .extension-detail__changelog {
+  .extension-detail__changelog,
+  .extension-detail__media {
     padding: 12px;
   }
 

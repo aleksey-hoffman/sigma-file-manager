@@ -21,13 +21,42 @@ const AUDIO_EXTENSIONS = ['mp3', 'wav', 'ogg', 'oga', 'flac', 'aac', 'm4a', 'wma
 const PDF_EXTENSIONS = ['pdf'];
 const TEXT_EXTENSIONS = ['txt', 'md', 'json', 'xml', 'html', 'css', 'js', 'ts', 'vue', 'jsx', 'tsx', 'yaml', 'yml', 'toml', 'ini', 'cfg', 'conf', 'log', 'sh', 'bash', 'zsh', 'ps1', 'bat', 'cmd', 'py', 'rb', 'rs', 'go', 'java', 'c', 'cpp', 'h', 'hpp', 'cs', 'swift', 'kt', 'php', 'sql', 'graphql', 'env', 'gitignore', 'dockerignore', 'editorconfig', 'prettierrc', 'eslintrc'];
 
+export function isHttpOrHttpsUrl(value: string): boolean {
+  return /^https?:\/\//i.test(value);
+}
+
 export function getFileExtension(path: string): string {
-  const parts = path.split('.');
+  let candidate = path;
+
+  if (isHttpOrHttpsUrl(path)) {
+    try {
+      candidate = new URL(path).pathname;
+    }
+    catch {
+      candidate = path.split('?')[0]?.split('#')[0] ?? path;
+    }
+  }
+  else {
+    candidate = path.split('?')[0]?.split('#')[0] ?? path;
+  }
+
+  const parts = candidate.split('.');
   return parts.length > 1 ? parts[parts.length - 1].toLowerCase() : '';
 }
 
 export function getFileName(path: string): string {
-  const parts = path.split('/');
+  if (isHttpOrHttpsUrl(path)) {
+    try {
+      const parsed = new URL(path);
+      const segments = parsed.pathname.split('/').filter(Boolean);
+      return segments[segments.length - 1] || parsed.hostname;
+    }
+    catch {
+    }
+  }
+
+  const normalized = path.replace(/\\/g, '/');
+  const parts = normalized.split('/');
   return parts[parts.length - 1] || '';
 }
 
@@ -65,6 +94,10 @@ export function quickViewSupportedPathsFromVisibleEntries(
 }
 
 export async function fetchQuickViewSiblingPathsFromDisk(filePath: string): Promise<string[]> {
+  if (isHttpOrHttpsUrl(filePath)) {
+    return [filePath];
+  }
+
   const parentDir = getParentDirectory(filePath);
 
   if (!parentDir) {
@@ -100,6 +133,14 @@ export function getFileAssetUrl(path: string): string {
   return convertFileSrc(path);
 }
 
+export function getQuickViewDisplayUrl(pathOrUrl: string): string {
+  if (!pathOrUrl) return '';
+  if (isHttpOrHttpsUrl(pathOrUrl)) {
+    return pathOrUrl;
+  }
+  return convertFileSrc(pathOrUrl);
+}
+
 export const QUICK_VIEW_DISPLAYED_PATH_CHANGED_EVENT = 'quick-view:displayed-path-changed';
 
 export const useQuickViewStore = defineStore('quickView', () => {
@@ -121,7 +162,7 @@ export const useQuickViewStore = defineStore('quickView', () => {
 
   const fileAssetUrl = computed((): string => {
     if (!currentFilePath.value) return '';
-    return getFileAssetUrl(currentFilePath.value);
+    return getQuickViewDisplayUrl(currentFilePath.value);
   });
 
   async function getQuickViewWindow(): Promise<Window | null> {
