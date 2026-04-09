@@ -99,7 +99,7 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
       listSortDirection: 'asc',
     },
     globalSearch: {
-      scanDepth: 6,
+      scanDepth: 7,
       autoScanPeriodMinutes: 60,
       autoReindexWhenIdle: true,
       ignoredPaths: ['/node_modules'],

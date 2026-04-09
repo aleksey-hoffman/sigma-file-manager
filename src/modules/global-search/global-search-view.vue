@@ -517,7 +517,19 @@ onMounted(() => {
             :icon="SearchIcon"
             :title="t('globalSearch.searchStats.nothingFound')"
             :bordered="false"
-          />
+          >
+            <template #footer>
+              <Button
+                variant="outline"
+                size="sm"
+                class="global-search-view__settings-button"
+                @click="openSearchSettings"
+              >
+                <SettingsIcon :size="14" />
+                {{ t('globalSearch.showSearchSettings') }}
+              </Button>
+            </template>
+          </EmptyState>
 
           <template v-else-if="globalSearchStore.results.length > 0">
             <div
@@ -714,8 +726,9 @@ onMounted(() => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 64px 24px;
+  padding: 64px 16px;
   gap: 12px;
+  text-align: center;
 }
 
 .global-search-view__empty-icon {
@@ -755,10 +768,11 @@ onMounted(() => {
 
 .global-search-view__options {
   display: flex;
+  flex-wrap: wrap;
   padding: 12px 16px;
   border-radius: var(--radius-sm);
   border-bottom: 1px solid hsl(var(--border));
-  margin: 0 4px 16px;
+  margin: 8px 0 16px;
   background-color: hsl(var(--muted) / 30%);
   gap: 24px;
 }
