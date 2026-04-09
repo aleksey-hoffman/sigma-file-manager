@@ -135,9 +135,11 @@ export function getFileAssetUrl(path: string): string {
 
 export function getQuickViewDisplayUrl(pathOrUrl: string): string {
   if (!pathOrUrl) return '';
+
   if (isHttpOrHttpsUrl(pathOrUrl)) {
     return pathOrUrl;
   }
+
   return convertFileSrc(pathOrUrl);
 }
 

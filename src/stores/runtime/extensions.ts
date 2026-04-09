@@ -399,18 +399,18 @@ export const useExtensionsStore = defineStore('extensions', () => {
   }
 
   async function fetchExtensionManifest(
-    registryEntry: ExtensionRegistryEntry,
+    source: Pick<ExtensionRegistryEntry, 'repository' | 'releaseMetadata'>,
     version?: string,
   ): Promise<ExtensionManifest> {
     let targetVersion = version;
 
     if (!targetVersion) {
-      targetVersion = await getLatestVersion(registryEntry.repository) ?? undefined;
+      targetVersion = await getLatestVersion(source.repository) ?? undefined;
     }
 
     if (targetVersion) {
-      const manifestUrl = registryEntry.releaseMetadata?.[targetVersion]?.manifest
-        || getExtensionManifestUrl(registryEntry.repository, `v${targetVersion}`);
+      const manifestUrl = source.releaseMetadata?.[targetVersion]?.manifest
+        || getExtensionManifestUrl(source.repository, `v${targetVersion}`);
       const response = await fetchUrlText(manifestUrl);
 
       if (response.ok) {
@@ -425,7 +425,7 @@ export const useExtensionsStore = defineStore('extensions', () => {
       );
     }
 
-    const mainBranchUrl = getExtensionManifestUrl(registryEntry.repository, 'main');
+    const mainBranchUrl = getExtensionManifestUrl(source.repository, 'main');
     const mainResponse = await fetchUrlText(mainBranchUrl);
 
     if (!mainResponse.ok) {

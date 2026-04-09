@@ -47,7 +47,7 @@ const description = computed(() => {
 });
 
 const publisherName = computed(() => {
-  return props.extension.publisher || props.extension.manifest?.publisher?.name || t('extensions.unknownPublisher');
+  return props.extension.publisher.name || props.extension.manifest?.publisher?.name || t('extensions.unknownPublisher');
 });
 
 const isOfficial = computed(() => props.extension.isOfficial);

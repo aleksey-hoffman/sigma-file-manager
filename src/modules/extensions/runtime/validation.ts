@@ -250,6 +250,22 @@ function isValidRegistryVersionMetadata(value: unknown): value is RegistryVersio
   return true;
 }
 
+function isValidRegistryPublisher(value: unknown): boolean {
+  if (!isObjectRecord(value)) {
+    return false;
+  }
+
+  if (!isNonEmptyString(value.name)) {
+    return false;
+  }
+
+  if (value.url !== undefined && !isNonEmptyString(value.url)) {
+    return false;
+  }
+
+  return Object.keys(value).every(key => key === 'name' || key === 'url');
+}
+
 function isValidRegistryEntry(entryValue: unknown): entryValue is ExtensionRegistryEntry {
   if (!isObjectRecord(entryValue)) {
     return false;
@@ -267,11 +283,7 @@ function isValidRegistryEntry(entryValue: unknown): entryValue is ExtensionRegis
     return false;
   }
 
-  if (!isNonEmptyString(entryValue.publisher)) {
-    return false;
-  }
-
-  if (!isNonEmptyString(entryValue.publisherUrl)) {
+  if (!isValidRegistryPublisher(entryValue.publisher)) {
     return false;
   }
 

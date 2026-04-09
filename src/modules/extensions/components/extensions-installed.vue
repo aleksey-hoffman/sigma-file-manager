@@ -120,7 +120,7 @@ function getDisplayName(extension: ExtensionWithManifest): string {
 }
 
 function getPublisherName(extension: ExtensionWithManifest): string {
-  return extension.publisher || extension.manifest?.publisher?.name || t('extensions.unknownPublisher');
+  return extension.publisher.name || extension.manifest?.publisher?.name || t('extensions.unknownPublisher');
 }
 
 function getBinariesPreview(extension: ExtensionWithManifest): string {

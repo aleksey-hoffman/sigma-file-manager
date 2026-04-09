@@ -11,6 +11,7 @@ import type {
   ExtensionContextMenuItem,
   ExtensionKeybindingWhen,
   ExtensionManifest,
+  ExtensionPublisher,
   ExtensionScopedDirectory,
   ExtensionSidebarItem,
   ExtensionToolbarDropdown,
@@ -22,8 +23,7 @@ export type ExtensionRegistryEntry = {
   id: string;
   name: string;
   description: string;
-  publisher: string;
-  publisherUrl: string;
+  publisher: ExtensionPublisher;
   repository: string;
   featured: boolean;
   categories: string[];

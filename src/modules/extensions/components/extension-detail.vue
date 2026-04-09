@@ -104,11 +104,11 @@ const description = computed(() => {
 });
 
 const publisherName = computed(() => {
-  return props.extension.publisher || currentManifest.value?.publisher?.name || t('extensions.unknownPublisher');
+  return props.extension.publisher.name || currentManifest.value?.publisher?.name || t('extensions.unknownPublisher');
 });
 
 const publisherUrl = computed(() => {
-  return props.extension.publisherUrl || currentManifest.value?.publisher?.url;
+  return props.extension.publisher.url || currentManifest.value?.publisher?.url;
 });
 
 const isOfficial = computed(() => props.extension.isOfficial);

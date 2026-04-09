@@ -128,7 +128,11 @@ describe('resolve-manifest-media', () => {
         main: 'index.js',
         permissions: [],
         engines: { sigmaFileManager: '1.0.0' },
-        media: [{ title: 'A', src: 'a.png', type: 'image' }],
+        media: [{
+          title: 'A',
+          src: 'a.png',
+          type: 'image',
+        }],
       }),
     ).toBe(true);
   });
@@ -145,7 +149,11 @@ describe('resolve-manifest-media', () => {
         main: 'dist/index.js',
         permissions: [],
         engines: { sigmaFileManager: '2.0.0' },
-        media: [{ title: 'Preview', src: 'preview-1.png', type: 'image' }],
+        media: [{
+          title: 'Preview',
+          src: 'preview-1.png',
+          type: 'image',
+        }],
       },
       extensionId: 'sigma.video-downloader',
       isInstalled: false,

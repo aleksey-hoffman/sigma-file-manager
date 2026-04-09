@@ -148,8 +148,10 @@ function createRegistryEntry(extensionId: string, repository: string) {
     id: extensionId,
     name: extensionId,
     description: `${extensionId} description`,
-    publisher: 'sigma-hub',
-    publisherUrl: 'https://github.com/sigma-hub',
+    publisher: {
+      name: 'sigma-hub',
+      url: 'https://github.com/sigma-hub',
+    },
     repository,
     featured: false,
     categories: ['Media'],

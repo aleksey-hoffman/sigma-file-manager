@@ -6,9 +6,7 @@ import { markRaw } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
 import { useI18n } from 'vue-i18n';
 import { toast, ToastStatic } from '@/components/ui/toaster';
-import type {
-  ConflictItem,
-} from '@/stores/runtime/clipboard';
+import type { ConflictItem } from '@/stores/runtime/clipboard';
 import { useCopyMoveJobsStore } from '@/stores/runtime/copy-move-jobs';
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
 import { useConflictResolutionDialog } from '@/composables/use-conflict-resolution-dialog';

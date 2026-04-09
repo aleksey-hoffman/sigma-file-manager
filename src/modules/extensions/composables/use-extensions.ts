@@ -7,7 +7,12 @@ import { invoke } from '@tauri-apps/api/core';
 import { useI18n } from 'vue-i18n';
 import { useExtensionsStore } from '@/stores/runtime/extensions';
 import type {
-  ExtensionRegistryEntry, ExtensionManifest, BinaryInfo, ExtensionSettings, PlatformOS,
+  ExtensionManifest,
+  ExtensionPublisher,
+  ExtensionRegistryEntry,
+  BinaryInfo,
+  ExtensionSettings,
+  PlatformOS,
 } from '@/types/extension';
 import { useExtensionsStorageStore } from '@/stores/storage/extensions';
 import {
@@ -38,6 +43,24 @@ export type ExtensionWithManifest = ExtensionRegistryEntry & {
   platforms: PlatformOS[];
   isPlatformCompatible: boolean;
 };
+
+function publisherFromRegistryOrManifest(
+  registryEntry: ExtensionRegistryEntry | undefined,
+  manifest: ExtensionManifest,
+): ExtensionPublisher {
+  if (registryEntry) {
+    return registryEntry.publisher;
+  }
+
+  if (manifest.publisher) {
+    return {
+      name: manifest.publisher.name,
+      url: manifest.publisher.url,
+    };
+  }
+
+  return { name: '' };
+}
 
 export function useExtensions() {
   const { t } = useI18n();
@@ -362,7 +385,8 @@ export function useExtensions() {
         if (ext.name.toLowerCase().includes(query)) return true;
         if (ext.manifest?.previousName?.toLowerCase().includes(query)) return true;
         if (ext.description.toLowerCase().includes(query)) return true;
-        if (ext.publisher.toLowerCase().includes(query)) return true;
+        if (ext.publisher.name.toLowerCase().includes(query)) return true;
+        if (ext.publisher.url?.toLowerCase().includes(query)) return true;
         if (ext.categories.some(category => category.toLowerCase().includes(query))) return true;
         if (ext.tags?.some(tag => tag.toLowerCase().includes(query))) return true;
         if (ext.manifest?.tags?.some(tag => tag.toLowerCase().includes(query))) return true;
@@ -397,8 +421,7 @@ export function useExtensions() {
           id: inst.id,
           name: registryEntry?.name ?? inst.manifest.name,
           description: registryEntry?.description ?? t('extensions.noDescription'),
-          publisher: registryEntry?.publisher ?? inst.manifest.publisher?.name ?? '',
-          publisherUrl: registryEntry?.publisherUrl ?? inst.manifest.publisher?.url ?? '',
+          publisher: publisherFromRegistryOrManifest(registryEntry, inst.manifest),
           repository,
           featured: registryEntry?.featured ?? false,
           categories: registryEntry?.categories ?? inst.manifest.categories ?? [],
@@ -423,7 +446,7 @@ export function useExtensions() {
       });
   });
 
-  async function loadManifest(entry: ExtensionRegistryEntry): Promise<ExtensionManifest | null> {
+  async function loadManifest(entry: Pick<ExtensionRegistryEntry, 'id' | 'repository' | 'releaseMetadata'>): Promise<ExtensionManifest | null> {
     if (manifestCache.value.has(entry.id)) {
       return manifestCache.value.get(entry.id)!;
     }
@@ -461,7 +484,12 @@ export function useExtensions() {
     selectedExtension.value = ext;
 
     if (!ext.manifest) {
-      const manifest = await loadManifest(ext);
+      const registryEntry = extensionsStore.availableExtensions.find(e => e.id === ext.id);
+      const manifest = await loadManifest({
+        id: ext.id,
+        repository: registryEntry?.repository ?? ext.repository,
+        releaseMetadata: registryEntry?.releaseMetadata ?? ext.releaseMetadata,
+      });
 
       if (manifest && selectedExtension.value?.id === ext.id) {
         selectedExtension.value = {
@@ -503,8 +531,10 @@ export function useExtensions() {
       id: extensionId,
       name: registryEntry?.name ?? installed?.manifest.name ?? selectedExtension.value.name,
       description: registryEntry?.description ?? selectedExtension.value.description,
-      publisher: registryEntry?.publisher ?? installed?.manifest.publisher?.name ?? selectedExtension.value.publisher,
-      publisherUrl: registryEntry?.publisherUrl ?? installed?.manifest.publisher?.url ?? selectedExtension.value.publisherUrl,
+      publisher: registryEntry?.publisher
+        ?? (installed
+          ? publisherFromRegistryOrManifest(undefined, installed.manifest)
+          : selectedExtension.value.publisher),
       repository,
       featured: registryEntry?.featured ?? false,
       categories: registryEntry?.categories ?? installed?.manifest.categories ?? selectedExtension.value.categories,
