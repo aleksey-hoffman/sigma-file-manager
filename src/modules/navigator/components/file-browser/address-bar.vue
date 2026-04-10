@@ -46,6 +46,7 @@ import { toast, ToastStatic } from '@/components/ui/toaster';
 import type { DirContents } from '@/types/dir-entry';
 import { DirEntryInteractive } from '@/components/dir-entry-interactive';
 import { registerDropContainer, unregisterDropContainer } from '@/composables/use-drop-target-registry';
+import { useShortcutsStore } from '@/stores/runtime/shortcuts';
 import normalizePath, { getPathDisplayName, getPathSegments, isUncPath } from '@/utils/normalize-path';
 
 const props = defineProps<{
@@ -57,6 +58,7 @@ const emit = defineEmits<{
 }>();
 
 const { t } = useI18n();
+const shortcutsStore = useShortcutsStore();
 
 const isEditorOpen = ref(false);
 const isPinned = ref(false);
@@ -391,9 +393,13 @@ onUnmounted(() => {
           :align="'start'"
           class="address-bar__menu"
         >
-          <DropdownMenuItem @select="copyPathToClipboard">
+          <DropdownMenuItem
+            class="address-bar__menu-item-with-shortcut"
+            @select="copyPathToClipboard"
+          >
             <CopyIcon :size="16" />
             <span>{{ t('settings.addressBar.copyPathToClipboard') }}</span>
+            <ContextMenuShortcut>{{ shortcutsStore.getShortcutLabel('copyCurrentDirectoryPath') }}</ContextMenuShortcut>
           </DropdownMenuItem>
           <DropdownMenuItem @select="openCopiedPath">
             <ClipboardPasteIcon :size="16" />
@@ -747,6 +753,11 @@ onUnmounted(() => {
 
 .address-bar__menu .sigma-ui-dropdown-menu-item {
   gap: 8px;
+}
+
+.address-bar__menu-item-with-shortcut {
+  display: flex;
+  align-items: center;
 }
 
 .address-bar__path-input {

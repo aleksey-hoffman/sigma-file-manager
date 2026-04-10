@@ -88,7 +88,9 @@ provideFileBrowserContext({
 });
 
 defineExpose({
+  rootElement: fileBrowserRef,
   isFilterOpen: fb.isFilterOpen,
+  currentPath: fb.currentPath,
   selectedEntries: fb.selectedEntries,
   toggleFilter: fb.toggleFilter,
   openFilter: fb.openFilter,

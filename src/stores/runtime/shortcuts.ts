@@ -97,6 +97,21 @@ const DEFAULT_SHORTCUTS: ShortcutDefinition[] = [
     isReadOnly: false,
   },
   {
+    id: 'copyCurrentDirectoryPath',
+    labelKey: 'shortcuts.copyCurrentDirectoryPathToClipboard',
+    defaultKeys: {
+      ctrl: true,
+      shift: true,
+      key: 'c',
+    },
+    scope: 'navigator',
+    conditions: {
+      inputFieldIsActive: false,
+      dialogIsOpened: false,
+    },
+    isReadOnly: false,
+  },
+  {
     id: 'copy',
     labelKey: 'shortcuts.setSelectedItemsForCopying',
     defaultKeys: {

@@ -35,6 +35,8 @@ import { UI_CONSTANTS } from '@/constants';
 import type { DirEntry } from '@/types/dir-entry';
 
 type FileBrowserInstance = InstanceType<typeof FileBrowser> & {
+  rootElement?: HTMLElement | null;
+  currentPath?: string;
   navigateToPath?: (path: string) => Promise<void>;
   openFile?: (path: string) => Promise<void>;
   refresh?: () => void | Promise<void>;
@@ -241,6 +243,22 @@ function setPaneRef(element: FileBrowserInstance | null, tabId: string) {
   }
 }
 
+function getFocusedSplitPaneRef(): FileBrowserInstance | undefined {
+  const activeElement = document.activeElement;
+
+  if (!(activeElement instanceof HTMLElement)) {
+    return undefined;
+  }
+
+  for (const pane of paneRefsMap.value.values()) {
+    if (pane.rootElement?.contains(activeElement)) {
+      return pane;
+    }
+  }
+
+  return undefined;
+}
+
 function getNavigatorPaneRef(): FileBrowserInstance | undefined {
   if (!isSplitView.value) {
     const currentTabId = workspacesStore.currentTabGroup?.[0]?.id;
@@ -250,6 +268,12 @@ function getNavigatorPaneRef(): FileBrowserInstance | undefined {
     }
 
     return singlePaneRef.value || undefined;
+  }
+
+  const focusedPane = getFocusedSplitPaneRef();
+
+  if (focusedPane) {
+    return focusedPane;
   }
 
   if (activeTabId.value && paneRefsMap.value.has(activeTabId.value)) {
@@ -311,6 +335,16 @@ function getPasteTargetPath(): string | undefined {
   return workspacesStore.currentTabGroup?.[0]?.path;
 }
 
+function getActiveCurrentPath(): string | undefined {
+  const pane = getActivePaneRef();
+
+  if (pane?.currentPath) {
+    return pane.currentPath;
+  }
+
+  return getPasteTargetPath();
+}
+
 async function handleGlobalSearchOpenEntry(entry: DirEntry) {
   const pane = getNavigatorPaneRef();
   if (!pane) return;
@@ -364,6 +398,32 @@ function handleCopyShortcut() {
 
   if (selectedEntries.value.length > 0) {
     pane.copyItems(selectedEntries.value);
+  }
+}
+
+async function handleCopyCurrentDirectoryPathShortcut() {
+  const currentPath = getActiveCurrentPath();
+
+  if (!currentPath) {
+    return false;
+  }
+
+  try {
+    await navigator.clipboard.writeText(currentPath);
+    toast.custom(markRaw(ToastStatic), {
+      componentProps: {
+        data: {
+          title: t('dialogs.localShareManagerDialog.addressCopiedToClipboard'),
+          description: currentPath,
+        },
+      },
+      duration: 2000,
+    });
+    return true;
+  }
+  catch (error) {
+    console.error('Failed to copy current directory path:', error);
+    return false;
   }
 }
 
@@ -561,6 +621,7 @@ function callActivePaneMethod(method: keyof Pick<
 function registerShortcutHandlers() {
   shortcutsStore.registerHandler('toggleFilter', handleFilterShortcut);
   shortcutsStore.registerHandler('reloadCurrentDirectory', handleReloadShortcut);
+  shortcutsStore.registerHandler('copyCurrentDirectoryPath', handleCopyCurrentDirectoryPathShortcut);
   shortcutsStore.registerHandler('copy', handleCopyShortcut);
   shortcutsStore.registerHandler('cut', handleCutShortcut);
   shortcutsStore.registerHandler('paste', handlePasteShortcut);

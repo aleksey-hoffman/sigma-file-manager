@@ -132,6 +132,26 @@ describe('shortcuts store', () => {
     expect(fullscreenHandler).toHaveBeenCalledTimes(1);
   });
 
+  it('matches Ctrl+Shift+C for copying the current directory path', async () => {
+    const shortcutsStore = useShortcutsStore();
+    const copyCurrentDirectoryPathHandler = vi.fn();
+
+    shortcutsStore.registerHandler('copyCurrentDirectoryPath', copyCurrentDirectoryPathHandler);
+
+    const event = new KeyboardEvent('keydown', {
+      key: 'C',
+      code: 'KeyC',
+      ctrlKey: true,
+      shiftKey: true,
+      bubbles: true,
+      cancelable: true,
+    });
+
+    await expect(shortcutsStore.handleKeydown(event)).resolves.toBe(true);
+    expect(copyCurrentDirectoryPathHandler).toHaveBeenCalledTimes(1);
+    expect(event.defaultPrevented).toBe(true);
+  });
+
   it('does not trigger app or extension shortcuts while capture is active', async () => {
     const shortcutsStore = useShortcutsStore();
     const zoomInHandler = vi.fn();

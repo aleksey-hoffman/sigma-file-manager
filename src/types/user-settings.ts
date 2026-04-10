@@ -93,6 +93,7 @@ export type ShortcutId
     | 'toggleFilter'
     | 'toggleSettingsSearch'
     | 'toggleCommandPalette'
+    | 'copyCurrentDirectoryPath'
     | 'copy'
     | 'cut'
     | 'paste'
