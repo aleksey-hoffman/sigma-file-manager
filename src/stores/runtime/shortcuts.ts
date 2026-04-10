@@ -6,14 +6,8 @@ import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import type { ShortcutId, ShortcutKeys, UserShortcuts } from '@/types/user-settings';
-import {
-  getKeybindingRegistrations,
-  getCommandRegistrations,
-  getContextMenuRegistrations,
-  setAppKeybindingConflictChecker,
-  parseKeybindingString,
-} from '@/modules/extensions/api';
-import { getSelectedEntries, getCurrentPath } from '@/modules/extensions/context';
+import { setAppKeybindingConflictChecker } from '@/modules/extensions/api';
+import { getSelectedEntries } from '@/modules/extensions/context';
 import { useExtensionsStore } from '@/stores/runtime/extensions';
 import {
   KEYBOARD_MAIN_KEY_UNUSABLE,
@@ -1000,87 +994,22 @@ export const useShortcutsStore = defineStore('shortcuts', () => {
   }
 
   async function handleExtensionKeybindings(event: KeyboardEvent): Promise<boolean> {
-    const keybindings = getKeybindingRegistrations();
+    for (const keybinding of extensionsStore.keybindings) {
+      if (!keybinding.keys.key) continue;
+      if (!matchesShortcut(event, keybinding.keys)) continue;
+      if (!checkExtensionKeybindingCondition(keybinding.when)) continue;
 
-    for (const registration of keybindings) {
-      if (!matchesShortcut(event, registration.keys)) continue;
+      event.preventDefault();
+      event.stopPropagation();
 
-      if (!checkExtensionKeybindingCondition(registration.when)) continue;
-
-      const commandRegistrations = getCommandRegistrations();
-      const commandReg = commandRegistrations.find(
-        cmd => cmd.command.id === registration.commandId,
-      );
-
-      if (commandReg) {
-        event.preventDefault();
-        event.stopPropagation();
-
-        try {
-          await commandReg.handler();
-        }
-        catch (error) {
-          console.error(`Failed to execute extension command ${registration.commandId}:`, error);
-        }
-
-        return true;
+      try {
+        await extensionsStore.executeCommand(keybinding.commandId);
+      }
+      catch (error) {
+        console.error(`Failed to execute extension command ${keybinding.commandId}:`, error);
       }
 
-      const contextMenuRegistrations = getContextMenuRegistrations();
-      const contextMenuReg = contextMenuRegistrations.find(
-        item => item.item.id === registration.commandId,
-      );
-
-      if (contextMenuReg) {
-        event.preventDefault();
-        event.stopPropagation();
-
-        try {
-          const selectedEntries = getSelectedEntries().map(entry => ({
-            path: entry.path,
-            name: entry.name,
-            isDirectory: entry.isDirectory,
-            size: entry.size ?? undefined,
-            extension: entry.extension ?? undefined,
-          }));
-          const menuContext = {
-            currentPath: getCurrentPath() || '',
-            selectedEntries,
-          };
-          await contextMenuReg.handler(menuContext);
-        }
-        catch (error) {
-          console.error(`Failed to execute extension context menu ${registration.commandId}:`, error);
-        }
-
-        return true;
-      }
-    }
-
-    for (const extension of extensionsStore.enabledExtensions) {
-      const manifestKeybindings = extension.manifest.contributes?.keybindings ?? [];
-
-      for (const keybinding of manifestKeybindings) {
-        const parsedKeys = parseKeybindingString(keybinding.key);
-
-        if (!parsedKeys.key) continue;
-        if (!matchesShortcut(event, parsedKeys)) continue;
-        if (!checkExtensionKeybindingCondition(keybinding.when)) continue;
-
-        event.preventDefault();
-        event.stopPropagation();
-
-        const fullCommandId = `${extension.id}.${keybinding.command}`;
-
-        try {
-          await extensionsStore.executeCommand(fullCommandId);
-        }
-        catch (error) {
-          console.error(`Failed to execute extension command ${fullCommandId}:`, error);
-        }
-
-        return true;
-      }
+      return true;
     }
 
     return false;

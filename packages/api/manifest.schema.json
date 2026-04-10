@@ -299,6 +299,9 @@
               "url": {
                 "type": "string",
                 "format": "uri"
+              },
+              "shortcutCommandId": {
+                "type": "string"
               }
             }
           }

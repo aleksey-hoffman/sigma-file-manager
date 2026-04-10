@@ -126,6 +126,19 @@ export const BUILTIN_COMMANDS: BuiltinCommandDefinition[] = [
     showInPalette: true,
   },
   {
+    id: 'sigma.app.openExtensionPage',
+    title: 'Open Extension Page',
+    description: 'Open a specific extension page',
+    parameters: [
+      {
+        name: 'fullPageId',
+        type: 'string',
+        description: 'The full extension page id to open',
+        required: true,
+      },
+    ],
+  },
+  {
     id: 'sigma.app.reloadWindow',
     title: 'Reload Window',
     description: 'Reload the application window',
@@ -196,6 +209,17 @@ function initializeHandlers(): void {
 
   builtinCommandHandlers.set('sigma.app.openExtensions', async () => {
     await router.push({ name: 'extensions' });
+  });
+
+  builtinCommandHandlers.set('sigma.app.openExtensionPage', async (fullPageId: unknown) => {
+    if (typeof fullPageId !== 'string') {
+      throw new Error('sigma.app.openExtensionPage requires a string fullPageId argument');
+    }
+
+    await router.push({
+      name: 'extension-page',
+      params: { fullPageId },
+    });
   });
 
   builtinCommandHandlers.set('sigma.app.reloadWindow', async () => {

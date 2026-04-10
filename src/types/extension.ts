@@ -40,8 +40,11 @@ export type ExtensionRegistry = {
   extensions: ExtensionRegistryEntry[];
 };
 
+export type ExtensionShortcutScope = 'local' | 'global';
+
 export type ExtensionKeybindingOverride = {
   commandId: string;
+  scope?: ExtensionShortcutScope;
   keys: {
     ctrl?: boolean;
     alt?: boolean;

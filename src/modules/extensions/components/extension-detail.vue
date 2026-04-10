@@ -45,7 +45,7 @@ import { getLucideIcon } from '@/utils/lucide-icons';
 import { renderMarkdownToSafeHtml } from '@/utils/safe-html';
 import { rewriteMarkdownAssetUrls } from '@/utils/readme-relative-urls';
 import { useExtensionsStore } from '@/stores/runtime/extensions';
-import { getKeybindingForCommand, formatKeybindingKeys } from '@/modules/extensions/api';
+import { formatKeybindingKeys } from '@/modules/extensions/api';
 import { ensurePlatformInfo } from '@/modules/extensions/api/platform';
 import { resolveManifestBinaryAsset } from '@/modules/extensions/utils/manifest-binaries';
 import {
@@ -161,7 +161,7 @@ const extensionCommands = computed(() => {
   const result: CommandDisplay[] = [];
 
   for (const registration of runtimeRegistrations) {
-    const keybinding = getKeybindingForCommand(registration.command.id);
+    const keybinding = extensionsStore.getCommandShortcut(registration.command.id);
     const shortcut = keybinding?.keys?.key ? formatKeybindingKeys(keybinding.keys) : undefined;
     result.push({
       id: registration.command.id,
@@ -176,7 +176,7 @@ const extensionCommands = computed(() => {
     const fullCommandId = `${props.extension.id}.${manifestCmd.id}`;
     if (registeredIds.has(fullCommandId)) continue;
     registeredIds.add(fullCommandId);
-    const keybinding = getKeybindingForCommand(fullCommandId);
+    const keybinding = extensionsStore.getCommandShortcut(fullCommandId);
     const shortcut = keybinding?.keys?.key ? formatKeybindingKeys(keybinding.keys) : manifestCmd.shortcut;
     result.push({
       id: fullCommandId,

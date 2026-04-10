@@ -325,6 +325,7 @@ const editingExtensionKeybinding = ref<{
   extensionId: string;
   commandId: string;
   commandTitle: string;
+  scope: 'global' | 'local';
 } | null>(null);
 
 const isEditingExtension = computed(() => editingExtensionKeybinding.value !== null);
@@ -364,7 +365,41 @@ const recordedKeysLabel = computed(() => {
   return formatShortcutKeys(recordedKeys.value);
 });
 
-const conflictingShortcut = computed(() => {
+function shortcutKeysMatch(firstKeys: ShortcutKeys, secondKeys: ShortcutKeys): boolean {
+  return firstKeys.key.toLowerCase() === secondKeys.key.toLowerCase()
+    && (firstKeys.ctrl || false) === (secondKeys.ctrl || false)
+    && (firstKeys.alt || false) === (secondKeys.alt || false)
+    && (firstKeys.shift || false) === (secondKeys.shift || false)
+    && (firstKeys.meta || false) === (secondKeys.meta || false);
+}
+
+function findConflictingExtensionKeybinding(
+  keys: ShortcutKeys,
+  excludeCommandId?: string,
+) {
+  return extensionKeybindings.value.find((keybinding) => {
+    if (keybinding.commandId === excludeCommandId) {
+      return false;
+    }
+
+    return shortcutKeysMatch(keybinding.keys, keys);
+  }) ?? null;
+}
+
+function findConflictingGlobalExtensionShortcut(
+  keys: ShortcutKeys,
+  excludeCommandId?: string,
+) {
+  return globalExtensionShortcuts.value.find((shortcut) => {
+    if (shortcut.commandId === excludeCommandId) {
+      return false;
+    }
+
+    return shortcutKeysMatch(shortcut.keys, keys);
+  }) ?? null;
+}
+
+const conflictLabel = computed(() => {
   if (!recordedKeys.value) return null;
 
   if (editingGlobalShortcutId.value) {
@@ -376,27 +411,69 @@ const conflictingShortcut = computed(() => {
       const existingLabel = globalShortcutsStore.getShortcutLabel(definition.id);
 
       if (existingLabel === recordedLabel) {
-        return {
-          id: definition.id,
-          labelKey: definition.labelKey,
-        };
+        return t(definition.labelKey);
       }
+    }
+
+    const conflictingGlobalExtensionShortcut = findConflictingGlobalExtensionShortcut(recordedKeys.value);
+
+    if (conflictingGlobalExtensionShortcut) {
+      return `${conflictingGlobalExtensionShortcut.extensionName}: ${conflictingGlobalExtensionShortcut.commandTitle}`;
     }
 
     return null;
   }
 
-  if (!editingShortcutId.value) return null;
-  return shortcutsStore.findConflictingShortcut(recordedKeys.value, editingShortcutId.value);
+  if (editingExtensionKeybinding.value?.scope === 'global') {
+    for (const definition of globalShortcutsStore.definitions) {
+      const existingKeys = globalShortcutsStore.getShortcutKeys(definition.id);
+
+      if (shortcutKeysMatch(existingKeys, recordedKeys.value)) {
+        return t(definition.labelKey);
+      }
+    }
+
+    const conflictingGlobalExtensionShortcut = findConflictingGlobalExtensionShortcut(
+      recordedKeys.value,
+      editingExtensionKeybinding.value.commandId,
+    );
+
+    if (conflictingGlobalExtensionShortcut) {
+      return `${conflictingGlobalExtensionShortcut.extensionName}: ${conflictingGlobalExtensionShortcut.commandTitle}`;
+    }
+
+    return null;
+  }
+
+  const conflictingAppShortcut = shortcutsStore.findConflictingShortcut(
+    recordedKeys.value,
+    editingShortcutId.value ?? undefined,
+  );
+
+  if (conflictingAppShortcut) {
+    return t(conflictingAppShortcut.labelKey);
+  }
+
+  const conflictingExtensionKeybinding = findConflictingExtensionKeybinding(
+    recordedKeys.value,
+    editingExtensionKeybinding.value?.commandId,
+  );
+
+  if (conflictingExtensionKeybinding) {
+    return `${conflictingExtensionKeybinding.extensionName}: ${conflictingExtensionKeybinding.commandTitle}`;
+  }
+
+  return null;
 });
 
-const hasConflict = computed(() => conflictingShortcut.value !== null);
+const hasConflict = computed(() => conflictLabel.value !== null);
 
 function openShortcutEditor(shortcutId: ShortcutId) {
   const definition = shortcutsStore.getShortcutDefinition(shortcutId);
   if (definition?.isReadOnly) return;
 
   editingShortcutId.value = shortcutId;
+  editingExtensionKeybinding.value = null;
   editingGlobalShortcutId.value = null;
   recordedKeys.value = null;
   globalRegisterFailed.value = false;
@@ -410,6 +487,7 @@ function openShortcutEditor(shortcutId: ShortcutId) {
 
 function openGlobalShortcutEditor(globalShortcutId: GlobalShortcutId) {
   editingGlobalShortcutId.value = globalShortcutId;
+  editingExtensionKeybinding.value = null;
   editingShortcutId.value = null;
   recordedKeys.value = null;
   globalRegisterFailed.value = false;
@@ -556,6 +634,26 @@ function openExtensionKeybindingEditor(extensionId: string, commandId: string, c
     extensionId,
     commandId,
     commandTitle,
+    scope: 'local',
+  };
+  editingShortcutId.value = null;
+  editingGlobalShortcutId.value = null;
+  recordedKeys.value = null;
+  globalRegisterFailed.value = false;
+  isRecording.value = true;
+  isDialogOpen.value = true;
+
+  nextTick(() => {
+    focusRecordButton();
+  });
+}
+
+function openExtensionGlobalShortcutEditor(extensionId: string, commandId: string, commandTitle: string) {
+  editingExtensionKeybinding.value = {
+    extensionId,
+    commandId,
+    commandTitle,
+    scope: 'global',
   };
   editingShortcutId.value = null;
   editingGlobalShortcutId.value = null;
@@ -572,8 +670,22 @@ function openExtensionKeybindingEditor(extensionId: string, commandId: string, c
 async function saveExtensionKeybinding() {
   if (!editingExtensionKeybinding.value || !recordedKeys.value) return;
 
+  if (editingExtensionKeybinding.value.scope === 'global') {
+    globalRegisterFailed.value = false;
+    const registered = await globalShortcutsStore.setExtensionShortcut(
+      editingExtensionKeybinding.value.commandId,
+      recordedKeys.value,
+    );
+
+    if (!registered) {
+      globalRegisterFailed.value = true;
+      return;
+    }
+  }
+
   const override: ExtensionKeybindingOverride = {
     commandId: editingExtensionKeybinding.value.commandId,
+    scope: editingExtensionKeybinding.value.scope,
     keys: recordedKeys.value,
   };
 
@@ -582,13 +694,11 @@ async function saveExtensionKeybinding() {
     override,
   );
 
-  const keybinding = extensionsStore.keybindings.find(
-    kb => kb.commandId === editingExtensionKeybinding.value!.commandId,
-  );
-
-  if (keybinding) {
-    keybinding.keys = recordedKeys.value;
+  if (editingExtensionKeybinding.value.scope === 'local') {
+    extensionsStore.applyKeybindingOverride(editingExtensionKeybinding.value.commandId, recordedKeys.value);
   }
+
+  await globalShortcutsStore.syncExtensionShortcuts();
 
   isDialogOpen.value = false;
   editingExtensionKeybinding.value = null;
@@ -601,7 +711,14 @@ async function resetExtensionKeybinding() {
   await extensionsStorageStore.removeKeybindingOverride(
     editingExtensionKeybinding.value.extensionId,
     editingExtensionKeybinding.value.commandId,
+    editingExtensionKeybinding.value.scope,
   );
+
+  if (editingExtensionKeybinding.value.scope === 'local') {
+    extensionsStore.resetKeybindingOverride(editingExtensionKeybinding.value.commandId);
+  }
+
+  await globalShortcutsStore.syncExtensionShortcuts();
 
   isDialogOpen.value = false;
   editingExtensionKeybinding.value = null;
@@ -614,6 +731,7 @@ watch(isDialogOpen, (open) => {
     recordedKeys.value = null;
     editingShortcutId.value = null;
     editingGlobalShortcutId.value = null;
+    editingExtensionKeybinding.value = null;
   }
 });
 
@@ -659,21 +777,14 @@ const extensionKeybindings = computed(() => {
       keybindingLabel: formatKeybindingKeys(keybinding.keys),
       whenLabel: keybinding.when || 'always',
     };
-  });
+  }).filter(keybinding => keybinding.keys.key);
 });
 
-const extensionKeybindingsByExtension = computed(() => {
-  const groups: Record<string, typeof extensionKeybindings.value> = {};
-
-  for (const keybinding of extensionKeybindings.value) {
-    if (!groups[keybinding.extensionId]) {
-      groups[keybinding.extensionId] = [];
-    }
-
-    groups[keybinding.extensionId].push(keybinding);
-  }
-
-  return groups;
+const globalExtensionShortcuts = computed(() => {
+  return globalShortcutsStore.extensionDefinitions.map(shortcut => ({
+    ...shortcut,
+    keybindingLabel: formatKeybindingKeys(shortcut.keys),
+  }));
 });
 </script>
 
@@ -761,6 +872,47 @@ const extensionKeybindingsByExtension = computed(() => {
                     :size="12"
                   />
                   {{ getGlobalSourceLabel(definition.id) }}
+                </span>
+              </div>
+            </div>
+
+            <div
+              v-for="shortcut in globalExtensionShortcuts"
+              :key="shortcut.commandId"
+              class="shortcuts-table__row"
+              @click="openExtensionGlobalShortcutEditor(shortcut.extensionId, shortcut.commandId, shortcut.commandTitle)"
+            >
+              <div class="shortcuts-table__cell shortcuts-table__cell--command">
+                <BlocksIcon
+                  :size="14"
+                  class="shortcuts-table__cell-icon"
+                />
+                <span class="shortcuts-table__cell-text">
+                  {{ shortcut.commandTitle }}
+                </span>
+              </div>
+
+              <div class="shortcuts-table__cell shortcuts-table__cell--keybinding">
+                <kbd class="shortcuts-table__kbd">
+                  {{ shortcut.keybindingLabel }}
+                </kbd>
+              </div>
+
+              <div class="shortcuts-table__cell shortcuts-table__cell--when" />
+
+              <div class="shortcuts-table__cell shortcuts-table__cell--source">
+                <span
+                  class="shortcuts-table__source"
+                  :class="{
+                    'shortcuts-table__source--user': shortcut.source === 'user',
+                    'shortcuts-table__source--system': shortcut.source === 'system',
+                  }"
+                >
+                  <component
+                    :is="shortcut.source === 'user' ? UserIcon : SettingsIcon"
+                    :size="12"
+                  />
+                  {{ shortcut.extensionName }}
                 </span>
               </div>
             </div>
@@ -880,46 +1032,41 @@ const extensionKeybindingsByExtension = computed(() => {
           </div>
 
           <div class="shortcuts-table__body">
-            <template
-              v-for="(groupKeybindings, extensionId) in extensionKeybindingsByExtension"
-              :key="extensionId"
+            <div
+              v-for="keybinding in extensionKeybindings"
+              :key="keybinding.commandId"
+              class="shortcuts-table__row"
+              @click="openExtensionKeybindingEditor(keybinding.extensionId, keybinding.commandId, keybinding.commandTitle)"
             >
-              <div
-                v-for="keybinding in groupKeybindings"
-                :key="keybinding.commandId"
-                class="shortcuts-table__row"
-                @click="openExtensionKeybindingEditor(keybinding.extensionId, keybinding.commandId, keybinding.commandTitle)"
-              >
-                <div class="shortcuts-table__cell shortcuts-table__cell--command">
-                  <BlocksIcon
-                    :size="14"
-                    class="shortcuts-table__cell-icon"
-                  />
-                  <span class="shortcuts-table__cell-text">
-                    {{ keybinding.commandTitle }}
-                  </span>
-                </div>
-
-                <div class="shortcuts-table__cell shortcuts-table__cell--keybinding">
-                  <kbd class="shortcuts-table__kbd">
-                    {{ keybinding.keybindingLabel }}
-                  </kbd>
-                </div>
-
-                <div class="shortcuts-table__cell shortcuts-table__cell--when">
-                  <code class="shortcuts-table__when-code">
-                    {{ keybinding.whenLabel }}
-                  </code>
-                </div>
-
-                <div class="shortcuts-table__cell shortcuts-table__cell--source">
-                  <span class="shortcuts-table__source shortcuts-table__source--extension">
-                    <BlocksIcon :size="12" />
-                    {{ keybinding.extensionName }}
-                  </span>
-                </div>
+              <div class="shortcuts-table__cell shortcuts-table__cell--command">
+                <BlocksIcon
+                  :size="14"
+                  class="shortcuts-table__cell-icon"
+                />
+                <span class="shortcuts-table__cell-text">
+                  {{ keybinding.commandTitle }}
+                </span>
               </div>
-            </template>
+
+              <div class="shortcuts-table__cell shortcuts-table__cell--keybinding">
+                <kbd class="shortcuts-table__kbd">
+                  {{ keybinding.keybindingLabel }}
+                </kbd>
+              </div>
+
+              <div class="shortcuts-table__cell shortcuts-table__cell--when">
+                <code class="shortcuts-table__when-code">
+                  {{ keybinding.whenLabel }}
+                </code>
+              </div>
+
+              <div class="shortcuts-table__cell shortcuts-table__cell--source">
+                <span class="shortcuts-table__source shortcuts-table__source--extension">
+                  <BlocksIcon :size="12" />
+                  {{ keybinding.extensionName }}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       </template>
@@ -1009,11 +1156,11 @@ const extensionKeybindingsByExtension = computed(() => {
               </button>
 
               <div
-                v-if="hasConflict && conflictingShortcut"
+                v-if="hasConflict && conflictLabel"
                 class="shortcut-editor__conflict"
               >
                 <AlertTriangleIcon :size="14" />
-                <span>{{ t('conflict') }}: {{ t(conflictingShortcut.labelKey) }}</span>
+                <span>{{ t('conflict') }}: {{ conflictLabel }}</span>
               </div>
 
               <div

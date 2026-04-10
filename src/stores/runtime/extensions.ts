@@ -8,6 +8,7 @@ import { invoke } from '@tauri-apps/api/core';
 import { getVersion } from '@tauri-apps/api/app';
 import { ref, computed, watch } from 'vue';
 import type {
+  ContextMenuContext,
   ExtensionRegistry,
   ExtensionRegistryEntry,
   ExtensionManifest,
@@ -22,6 +23,7 @@ import type {
   InstalledExtensionData,
   SharedBinaryInfo,
 } from '@/types/extension';
+import { getCurrentPath, getSelectedEntries } from '@/modules/extensions/context';
 import externalLinks from '@/data/external-links';
 import {
   EXTENSION_REGISTRY_CACHE_TTL_MS,
@@ -39,7 +41,7 @@ import { loadExtensionRuntime, unloadExtensionRuntime, reactivateExtensionRuntim
 import { getBinaryLookupVersion } from '@/modules/extensions/utils/binary-metadata';
 import { invokeAsExtension } from '@/modules/extensions/runtime/extension-invoke';
 import {
-  getContextMenuRegistrations, getKeybindingRegistrations, getCommandRegistrations, getSidebarRegistrations, getToolbarRegistrations, clearExtensionRegistrations, clearBinaryDownloadCount, clearBinaryReuseCount, initPlatformInfo,
+  getContextMenuRegistrations, getKeybindingRegistrations, getCommandRegistrations, getSidebarRegistrations, getToolbarRegistrations, clearExtensionRegistrations, clearBinaryDownloadCount, clearBinaryReuseCount, initPlatformInfo, parseKeybindingString,
 } from '@/modules/extensions/api';
 import { isBuiltinCommand, getBuiltinCommandHandler, getBuiltinCommandDefinitions } from '@/modules/extensions/builtin-commands';
 import { assertValidManifestData, assertValidRegistryData, isVersionCompatibleWithRange } from '@/modules/extensions/runtime/validation';
@@ -111,8 +113,207 @@ export const useExtensionsStore = defineStore('extensions', () => {
     when?: ExtensionKeybindingWhen;
   };
 
+  type CommandShortcutRegistration = {
+    extensionId: string;
+    commandId: string;
+    commandTitle: string;
+    keys: ShortcutKeys;
+    source: 'system' | 'user';
+    scope: 'global' | 'local';
+    when?: ExtensionKeybindingWhen;
+  };
+
   const keybindings = ref<KeybindingRegistration[]>([]);
   let cachedAppVersion: string | null = null;
+
+  function getCommandKeybinding(commandId: string): KeybindingRegistration | undefined {
+    return keybindings.value.find(
+      keybinding => keybinding.commandId === commandId && keybinding.keys.key,
+    );
+  }
+
+  function getKeybindingOverride(
+    extensionId: string,
+    commandId: string,
+    scope: 'local' | 'global',
+  ) {
+    const installedExtension = storageStore.extensionsData.installedExtensions[extensionId];
+    return installedExtension?.settings?.keybindingOverrides?.find(
+      keybinding => keybinding.commandId === commandId && (keybinding.scope ?? 'local') === scope,
+    );
+  }
+
+  function getDefaultGlobalCommandShortcut(
+    commandId: string,
+    options?: { enabledOnly?: boolean },
+  ): {
+    extensionId: string;
+    commandTitle: string;
+    keys: ShortcutKeys;
+  } | undefined {
+    const runtimeCommand = commands.value.find(
+      registration => registration.command.id === commandId && registration.command.shortcut,
+    );
+
+    if (runtimeCommand?.command.shortcut) {
+      return {
+        extensionId: runtimeCommand.extensionId,
+        commandTitle: runtimeCommand.command.title,
+        keys: parseKeybindingString(runtimeCommand.command.shortcut),
+      };
+    }
+
+    const sourceExtensions = options?.enabledOnly
+      ? enabledExtensions.value
+      : installedExtensions.value;
+
+    for (const extension of sourceExtensions) {
+      const fullCommandIdPrefix = `${extension.id}.`;
+
+      if (!commandId.startsWith(fullCommandIdPrefix)) {
+        continue;
+      }
+
+      const shortCommandId = commandId.slice(fullCommandIdPrefix.length);
+      const manifestCommand = extension.manifest.contributes?.commands?.find(
+        command => command.id === shortCommandId && command.shortcut,
+      );
+
+      if (!manifestCommand?.shortcut) {
+        continue;
+      }
+
+      return {
+        extensionId: extension.id,
+        commandTitle: manifestCommand.title,
+        keys: parseKeybindingString(manifestCommand.shortcut),
+      };
+    }
+
+    return undefined;
+  }
+
+  function getLocalCommandShortcut(commandId: string): CommandShortcutRegistration | undefined {
+    const localKeybinding = getCommandKeybinding(commandId);
+
+    if (localKeybinding?.keys.key) {
+      return {
+        extensionId: localKeybinding.extensionId,
+        commandId: localKeybinding.commandId,
+        commandTitle: commands.value.find(
+          registration => registration.command.id === commandId,
+        )?.command.title ?? commandId,
+        keys: localKeybinding.keys,
+        source: getKeybindingOverride(localKeybinding.extensionId, commandId, 'local') ? 'user' : 'system',
+        scope: 'local',
+        when: localKeybinding.when,
+      };
+    }
+
+    return undefined;
+  }
+
+  function getGlobalCommandShortcut(commandId: string): CommandShortcutRegistration | undefined {
+    const globalShortcut = getDefaultGlobalCommandShortcut(commandId);
+
+    if (!globalShortcut?.keys.key) {
+      return undefined;
+    }
+
+    const override = getKeybindingOverride(globalShortcut.extensionId, commandId, 'global');
+
+    return {
+      extensionId: globalShortcut.extensionId,
+      commandId,
+      commandTitle: globalShortcut.commandTitle,
+      keys: override?.keys ?? globalShortcut.keys,
+      source: override ? 'user' : 'system',
+      scope: 'global',
+    };
+  }
+
+  function getCommandShortcut(commandId: string): CommandShortcutRegistration | undefined {
+    return getLocalCommandShortcut(commandId) ?? getGlobalCommandShortcut(commandId);
+  }
+
+  function getGlobalCommandShortcuts(): CommandShortcutRegistration[] {
+    const commandShortcuts: CommandShortcutRegistration[] = [];
+    const seenCommandIds = new Set<string>();
+
+    for (const registration of commands.value) {
+      const shortcut = getGlobalCommandShortcut(registration.command.id);
+
+      if (!shortcut || shortcut.scope !== 'global' || seenCommandIds.has(shortcut.commandId)) {
+        continue;
+      }
+
+      seenCommandIds.add(shortcut.commandId);
+      commandShortcuts.push(shortcut);
+    }
+
+    for (const extension of enabledExtensions.value) {
+      const manifestCommands = extension.manifest.contributes?.commands ?? [];
+
+      for (const manifestCommand of manifestCommands) {
+        const fullCommandId = `${extension.id}.${manifestCommand.id}`;
+
+        if (seenCommandIds.has(fullCommandId)) {
+          continue;
+        }
+
+        const shortcut = getGlobalCommandShortcut(fullCommandId);
+
+        if (!shortcut || shortcut.scope !== 'global') {
+          continue;
+        }
+
+        seenCommandIds.add(fullCommandId);
+        commandShortcuts.push(shortcut);
+      }
+    }
+
+    return commandShortcuts;
+  }
+
+  function getSidebarPageKeybinding(pageId: string): CommandShortcutRegistration | undefined {
+    const pageRegistration = sidebarPages.value.find(
+      registration => registration.page.id === pageId,
+    );
+
+    if (!pageRegistration?.page.shortcutCommandId) {
+      return undefined;
+    }
+
+    const fullCommandId = pageRegistration.page.shortcutCommandId.includes('.')
+      ? pageRegistration.page.shortcutCommandId
+      : `${pageRegistration.extensionId}.${pageRegistration.page.shortcutCommandId}`;
+
+    return getGlobalCommandShortcut(fullCommandId);
+  }
+
+  function applyKeybindingOverride(commandId: string, keys: ShortcutKeys): void {
+    const keybinding = keybindings.value.find(
+      registration => registration.commandId === commandId,
+    );
+
+    if (keybinding) {
+      keybinding.keys = keys;
+    }
+  }
+
+  function resetKeybindingOverride(commandId: string): void {
+    const registeredKeybinding = getKeybindingRegistrations().find(
+      registration => registration.commandId === commandId,
+    );
+    const keybinding = keybindings.value.find(
+      registration => registration.commandId === commandId,
+    );
+
+    if (keybinding && registeredKeybinding) {
+      keybinding.keys = registeredKeybinding.keys;
+      keybinding.when = registeredKeybinding.when;
+    }
+  }
 
   async function getCurrentAppVersion(): Promise<string> {
     if (!cachedAppVersion) {
@@ -1033,9 +1234,10 @@ export const useExtensionsStore = defineStore('extensions', () => {
 
       if (!exists) {
         const installedExtension = storageStore.extensionsData.installedExtensions[keybinding.extensionId];
-        const override = installedExtension?.settings?.keybindingOverrides?.find(
-          kb => kb.commandId === keybinding.commandId,
-        );
+        const override = installedExtension?.settings?.keybindingOverrides?.find((keybindingOverride) => {
+          return keybindingOverride.commandId === keybinding.commandId
+            && (keybindingOverride.scope ?? 'local') === 'local';
+        });
 
         keybindings.value.push({
           extensionId: keybinding.extensionId,
@@ -1253,6 +1455,31 @@ export const useExtensionsStore = defineStore('extensions', () => {
     return loaded?.state === 'loading' && shouldBlockCommandsForActivationEvent(loaded.activationEvent);
   }
 
+  async function tryExecuteContextMenuCommand(commandId: string): Promise<boolean> {
+    const contextMenuReg = contextMenuItems.value.find(
+      item => item.item.id === commandId,
+    );
+
+    if (!contextMenuReg) {
+      return false;
+    }
+
+    const selectedEntries = getSelectedEntries().map(entry => ({
+      path: entry.path,
+      name: entry.name,
+      isDirectory: entry.isDirectory,
+      size: entry.size ?? undefined,
+      extension: entry.extension ?? undefined,
+    }));
+
+    await contextMenuReg.handler({
+      currentPath: getCurrentPath() || '',
+      selectedEntries,
+    } as ContextMenuContext);
+
+    return true;
+  }
+
   async function executeCommand(commandId: string, ...args: unknown[]): Promise<unknown> {
     if (isBuiltinCommand(commandId)) {
       const handler = getBuiltinCommandHandler(commandId);
@@ -1278,6 +1505,11 @@ export const useExtensionsStore = defineStore('extensions', () => {
       const activated = await activateExtensionsForCommand(commandId);
 
       if (!activated) {
+        if (await tryExecuteContextMenuCommand(commandId)) {
+          addToRecentCommands(commandId);
+          return;
+        }
+
         throw new Error(`Command not found: ${commandId}`);
       }
 
@@ -1287,6 +1519,11 @@ export const useExtensionsStore = defineStore('extensions', () => {
       );
 
       if (!activatedRegistration) {
+        if (await tryExecuteContextMenuCommand(commandId)) {
+          addToRecentCommands(commandId);
+          return;
+        }
+
         throw new Error(`Command not found: ${commandId}`);
       }
 
@@ -1653,6 +1890,13 @@ export const useExtensionsStore = defineStore('extensions', () => {
     loadExtension,
     unloadExtension,
     executeCommand,
+    getCommandKeybinding,
+    getGlobalCommandShortcut,
+    getCommandShortcut,
+    getGlobalCommandShortcuts,
+    getSidebarPageKeybinding,
+    applyKeybindingOverride,
+    resetKeybindingOverride,
     getExtensionLoadState,
     isExtensionInstalled,
     isExtensionBroken,

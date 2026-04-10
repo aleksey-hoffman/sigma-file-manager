@@ -8,19 +8,13 @@ import {
 import { createPinia, setActivePinia } from 'pinia';
 
 const {
-  commandRegistrations,
-  keybindingRegistrations,
   setAppKeybindingConflictCheckerMock,
+  executeCommandMock,
+  extensionKeybindings,
   userSettingsStoreMock,
 } = vi.hoisted(() => ({
-  commandRegistrations: [] as Array<{
-    command: {
-      id: string;
-      title: string;
-    };
-    handler: (...args: unknown[]) => Promise<unknown> | unknown;
-  }>,
-  keybindingRegistrations: [] as Array<{
+  extensionKeybindings: [] as Array<{
+    extensionId: string;
     commandId: string;
     keys: {
       ctrl?: boolean;
@@ -32,6 +26,7 @@ const {
     when?: string;
   }>,
   setAppKeybindingConflictCheckerMock: vi.fn(),
+  executeCommandMock: vi.fn(),
   userSettingsStoreMock: {
     userSettings: {
       shortcuts: {},
@@ -47,16 +42,13 @@ vi.mock('@/stores/storage/user-settings', () => ({
 vi.mock('@/stores/runtime/extensions', () => ({
   useExtensionsStore: () => ({
     enabledExtensions: [],
-    executeCommand: vi.fn(),
+    keybindings: extensionKeybindings,
+    executeCommand: executeCommandMock,
   }),
 }));
 
 vi.mock('@/modules/extensions/api', () => ({
-  getKeybindingRegistrations: () => keybindingRegistrations,
-  getCommandRegistrations: () => commandRegistrations,
-  getContextMenuRegistrations: () => [],
   setAppKeybindingConflictChecker: setAppKeybindingConflictCheckerMock,
-  parseKeybindingString: () => ({ key: '' }),
 }));
 
 vi.mock('@/modules/extensions/context', () => ({
@@ -69,11 +61,11 @@ import { useShortcutsStore } from '@/stores/runtime/shortcuts';
 describe('shortcuts store', () => {
   beforeEach(() => {
     setActivePinia(createPinia());
-    commandRegistrations.splice(0, commandRegistrations.length);
-    keybindingRegistrations.splice(0, keybindingRegistrations.length);
+    extensionKeybindings.splice(0, extensionKeybindings.length);
     userSettingsStoreMock.userSettings.shortcuts = {};
     userSettingsStoreMock.setUserSettingsStorage.mockReset();
     setAppKeybindingConflictCheckerMock.mockReset();
+    executeCommandMock.mockReset();
     document.body.innerHTML = '';
   });
 
@@ -143,17 +135,10 @@ describe('shortcuts store', () => {
   it('does not trigger app or extension shortcuts while capture is active', async () => {
     const shortcutsStore = useShortcutsStore();
     const zoomInHandler = vi.fn();
-    const extensionHandler = vi.fn();
 
     shortcutsStore.registerHandler('uiZoomIncrease', zoomInHandler);
-    commandRegistrations.push({
-      command: {
-        id: 'test.extension.command',
-        title: 'Test Extension Command',
-      },
-      handler: extensionHandler,
-    });
-    keybindingRegistrations.push({
+    extensionKeybindings.push({
+      extensionId: 'test.extension',
       commandId: 'test.extension.command',
       keys: {
         ctrl: true,
@@ -183,7 +168,35 @@ describe('shortcuts store', () => {
     await expect(shortcutsStore.handleKeydown(extensionEvent)).resolves.toBe(false);
 
     expect(zoomInHandler).not.toHaveBeenCalled();
-    expect(extensionHandler).not.toHaveBeenCalled();
+    expect(executeCommandMock).not.toHaveBeenCalled();
+  });
+
+  it('executes extension shortcuts from the effective extensions store keybindings', async () => {
+    const shortcutsStore = useShortcutsStore();
+
+    extensionKeybindings.push({
+      extensionId: 'test.extension',
+      commandId: 'test.extension.command',
+      keys: {
+        ctrl: true,
+        shift: true,
+        key: 'e',
+      },
+      when: 'always',
+    });
+
+    const event = new KeyboardEvent('keydown', {
+      key: 'E',
+      code: 'KeyE',
+      ctrlKey: true,
+      shiftKey: true,
+      bubbles: true,
+      cancelable: true,
+    });
+
+    await expect(shortcutsStore.handleKeydown(event)).resolves.toBe(true);
+    expect(executeCommandMock).toHaveBeenCalledWith('test.extension.command');
+    expect(event.defaultPrevented).toBe(true);
   });
 
   it('prevents default synchronously for the reload directory shortcut before async work', async () => {

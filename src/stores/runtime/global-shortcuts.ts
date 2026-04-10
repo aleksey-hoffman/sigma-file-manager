@@ -3,7 +3,7 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 import { defineStore } from 'pinia';
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import {
   register,
   unregister,
@@ -15,6 +15,7 @@ import { invoke } from '@tauri-apps/api/core';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import type { GlobalShortcutId, UserGlobalShortcuts, ShortcutKeys } from '@/types/user-settings';
 import { formatShortcutKeys } from '@/stores/runtime/shortcuts';
+import { useExtensionsStore } from '@/stores/runtime/extensions';
 
 export type { GlobalShortcutId, UserGlobalShortcuts };
 
@@ -22,6 +23,15 @@ export type GlobalShortcutDefinition = {
   id: GlobalShortcutId;
   labelKey: string;
   defaultShortcut: string;
+};
+
+export type ExtensionGlobalShortcutDefinition = {
+  extensionId: string;
+  commandId: string;
+  commandTitle: string;
+  extensionName: string;
+  keys: ShortcutKeys;
+  source: 'system' | 'user';
 };
 
 const DEFAULT_GLOBAL_SHORTCUTS: GlobalShortcutDefinition[] = [
@@ -77,10 +87,13 @@ function normalizeShortcutString(shortcut: string): string {
 
 export const useGlobalShortcutsStore = defineStore('globalShortcuts', () => {
   const userSettingsStore = useUserSettingsStore();
+  const extensionsStore = useExtensionsStore();
 
   const definitions = ref<GlobalShortcutDefinition[]>(DEFAULT_GLOBAL_SHORTCUTS);
   const registeredShortcuts = ref<Map<GlobalShortcutId, string>>(new Map());
+  const registeredExtensionShortcuts = ref<Map<string, string>>(new Map());
   const isInitialized = ref(false);
+  let stopExtensionShortcutsWatch: (() => void) | null = null;
 
   const userGlobalShortcuts = computed({
     get: () => userSettingsStore.userSettings.globalShortcuts ?? {},
@@ -114,12 +127,36 @@ export const useGlobalShortcutsStore = defineStore('globalShortcuts', () => {
     return isCustomized(globalShortcutId) ? 'user' : 'system';
   }
 
+  const extensionDefinitions = computed<ExtensionGlobalShortcutDefinition[]>(() => {
+    return extensionsStore.getGlobalCommandShortcuts().map((shortcut) => {
+      const installedExtension = extensionsStore.installedExtensions.find(
+        extension => extension.id === shortcut.extensionId,
+      );
+
+      return {
+        extensionId: shortcut.extensionId,
+        commandId: shortcut.commandId,
+        commandTitle: shortcut.commandTitle,
+        extensionName: installedExtension?.manifest.name || shortcut.extensionId,
+        keys: shortcut.keys,
+        source: shortcut.source,
+      };
+    });
+  });
+
   async function focusAppWindow(): Promise<void> {
     const appWindow = await WebviewWindow.getByLabel('main');
     if (!appWindow) return;
     await appWindow.show();
     await appWindow.unminimize();
     await appWindow.setFocus();
+  }
+
+  function getExtensionHandler(commandId: string): () => Promise<void> {
+    return async () => {
+      await focusAppWindow();
+      await extensionsStore.executeCommand(commandId);
+    };
   }
 
   function getHandler(globalShortcutId: GlobalShortcutId): (() => Promise<void>) | null {
@@ -184,6 +221,147 @@ export const useGlobalShortcutsStore = defineStore('globalShortcuts', () => {
     catch (error) {
       console.error('Failed to sync tray shortcut hint:', error);
     }
+  }
+
+  function getExtensionShortcutLabel(commandId: string): string {
+    const definition = extensionDefinitions.value.find(
+      shortcut => shortcut.commandId === commandId,
+    );
+
+    return definition ? formatShortcutKeys(definition.keys) : '';
+  }
+
+  function getExtensionShortcutSource(commandId: string): 'system' | 'user' {
+    const definition = extensionDefinitions.value.find(
+      shortcut => shortcut.commandId === commandId,
+    );
+
+    return definition?.source ?? 'system';
+  }
+
+  function isExtensionShortcutCustomized(commandId: string): boolean {
+    return getExtensionShortcutSource(commandId) === 'user';
+  }
+
+  function getExtensionShortcutString(commandId: string): string {
+    const definition = extensionDefinitions.value.find(
+      shortcut => shortcut.commandId === commandId,
+    );
+
+    return definition ? shortcutKeysToTauriFormat(definition.keys) : '';
+  }
+
+  async function registerExtensionShortcut(commandId: string, shortcutKeys: ShortcutKeys): Promise<boolean> {
+    const shortcutString = shortcutKeysToTauriFormat(shortcutKeys);
+
+    if (!shortcutString) {
+      return false;
+    }
+
+    try {
+      await register(shortcutString, createGlobalShortcutCallback(getExtensionHandler(commandId)));
+      registeredExtensionShortcuts.value.set(commandId, shortcutString);
+      return true;
+    }
+    catch (error) {
+      console.error(`Failed to register global shortcut "${shortcutString}" for "${commandId}":`, error);
+      return false;
+    }
+  }
+
+  async function unregisterExtensionShortcut(commandId: string): Promise<void> {
+    const shortcutString = registeredExtensionShortcuts.value.get(commandId);
+
+    if (!shortcutString) {
+      return;
+    }
+
+    try {
+      await unregister(shortcutString);
+    }
+    catch (error) {
+      console.error(`Failed to unregister global shortcut "${shortcutString}" for "${commandId}":`, error);
+    }
+    finally {
+      registeredExtensionShortcuts.value.delete(commandId);
+    }
+  }
+
+  async function syncExtensionShortcuts(): Promise<void> {
+    if (!isInitialized.value) {
+      return;
+    }
+
+    const activeCommandIds = new Set(extensionDefinitions.value.map(
+      shortcut => shortcut.commandId,
+    ));
+
+    for (const commandId of [...registeredExtensionShortcuts.value.keys()]) {
+      if (!activeCommandIds.has(commandId)) {
+        await unregisterExtensionShortcut(commandId);
+      }
+    }
+
+    for (const definition of extensionDefinitions.value) {
+      const registeredShortcut = registeredExtensionShortcuts.value.get(definition.commandId);
+      const nextShortcut = shortcutKeysToTauriFormat(definition.keys);
+
+      if (registeredShortcut === nextShortcut) {
+        continue;
+      }
+
+      if (registeredShortcut) {
+        await unregisterExtensionShortcut(definition.commandId);
+      }
+
+      await registerExtensionShortcut(definition.commandId, definition.keys);
+    }
+  }
+
+  async function setExtensionShortcut(commandId: string, keys: ShortcutKeys): Promise<boolean> {
+    const previousShortcutString = registeredExtensionShortcuts.value.get(commandId)
+      || getExtensionShortcutString(commandId);
+
+    if (previousShortcutString) {
+      await unregisterExtensionShortcut(commandId);
+    }
+
+    const registered = await registerExtensionShortcut(commandId, keys);
+
+    if (registered) {
+      return true;
+    }
+
+    if (previousShortcutString) {
+      try {
+        await register(previousShortcutString, createGlobalShortcutCallback(getExtensionHandler(commandId)));
+        registeredExtensionShortcuts.value.set(commandId, previousShortcutString);
+      }
+      catch (error) {
+        console.error(`Failed to restore global shortcut "${previousShortcutString}" for "${commandId}":`, error);
+      }
+    }
+
+    return false;
+  }
+
+  function startExtensionShortcutWatcher(): void {
+    if (stopExtensionShortcutsWatch) {
+      return;
+    }
+
+    stopExtensionShortcutsWatch = watch(
+      extensionDefinitions,
+      () => {
+        void syncExtensionShortcuts();
+      },
+      { deep: true },
+    );
+  }
+
+  function stopExtensionShortcutWatcher(): void {
+    stopExtensionShortcutsWatch?.();
+    stopExtensionShortcutsWatch = null;
   }
 
   async function setShortcut(globalShortcutId: GlobalShortcutId, keys: ShortcutKeys): Promise<boolean> {
@@ -257,6 +435,7 @@ export const useGlobalShortcutsStore = defineStore('globalShortcuts', () => {
     try {
       await unregisterAll();
       registeredShortcuts.value.clear();
+      registeredExtensionShortcuts.value.clear();
     }
     catch (error) {
       console.error('Failed to unregister all global shortcuts:', error);
@@ -269,9 +448,12 @@ export const useGlobalShortcutsStore = defineStore('globalShortcuts', () => {
     isInitialized.value = true;
     await registerAllShortcuts();
     await syncTrayShortcutHint();
+    startExtensionShortcutWatcher();
+    await syncExtensionShortcuts();
   }
 
   async function cleanup(): Promise<void> {
+    stopExtensionShortcutWatcher();
     await unregisterAllShortcuts();
     isInitialized.value = false;
   }
@@ -284,10 +466,16 @@ export const useGlobalShortcutsStore = defineStore('globalShortcuts', () => {
     getShortcutKeys,
     isCustomized,
     getSource,
+    extensionDefinitions,
+    getExtensionShortcutLabel,
+    getExtensionShortcutSource,
+    isExtensionShortcutCustomized,
+    setExtensionShortcut,
     setShortcut,
     resetShortcut,
     registerAllShortcuts,
     unregisterAllShortcuts,
+    syncExtensionShortcuts,
     init,
     cleanup,
   };

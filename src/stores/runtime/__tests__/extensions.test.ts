@@ -18,6 +18,8 @@ const {
   reactivateExtensionRuntimeMock,
   clearBinaryDownloadCountMock,
   commandRegistrations,
+  keybindingRegistrations,
+  sidebarRegistrations,
 } = vi.hoisted(() => ({
   invokeMock: vi.fn(),
   getVersionMock: vi.fn(async () => '2.0.0'),
@@ -34,6 +36,27 @@ const {
       title: string;
     };
     handler: (...args: unknown[]) => Promise<unknown> | unknown;
+  }>,
+  keybindingRegistrations: [] as Array<{
+    extensionId: string;
+    commandId: string;
+    keys: {
+      ctrl?: boolean;
+      alt?: boolean;
+      shift?: boolean;
+      meta?: boolean;
+      key: string;
+    };
+    when?: string;
+  }>,
+  sidebarRegistrations: [] as Array<{
+    extensionId: string;
+    page: {
+      id: string;
+      title: string;
+      icon: string;
+      shortcutCommandId?: string;
+    };
   }>,
 }));
 
@@ -84,15 +107,53 @@ vi.mock('@/modules/extensions/runtime/loader', () => ({
 
 vi.mock('@/modules/extensions/api', () => ({
   getContextMenuRegistrations: () => [],
-  getKeybindingRegistrations: () => [],
+  getKeybindingRegistrations: () => keybindingRegistrations,
   getCommandRegistrations: () => commandRegistrations,
-  getSidebarRegistrations: () => [],
+  getSidebarRegistrations: () => sidebarRegistrations,
   getToolbarRegistrations: () => [],
+  parseKeybindingString: (shortcut: string) => {
+    const parts = shortcut.toLowerCase().split('+').map(part => part.trim());
+    const keys: {
+      ctrl?: boolean;
+      alt?: boolean;
+      shift?: boolean;
+      meta?: boolean;
+      key: string;
+    } = { key: '' };
+
+    for (const part of parts) {
+      if (part === 'ctrl' || part === 'control') {
+        keys.ctrl = true;
+      }
+      else if (part === 'alt') {
+        keys.alt = true;
+      }
+      else if (part === 'shift') {
+        keys.shift = true;
+      }
+      else if (part === 'meta' || part === 'cmd' || part === 'win') {
+        keys.meta = true;
+      }
+      else {
+        keys.key = part.length === 1 ? part : part.charAt(0).toUpperCase() + part.slice(1);
+      }
+    }
+
+    return keys;
+  },
   clearExtensionRegistrations: (extensionId: string) => {
     const remainingRegistrations = commandRegistrations.filter(
       registration => registration.extensionId !== extensionId,
     );
     commandRegistrations.splice(0, commandRegistrations.length, ...remainingRegistrations);
+    const remainingKeybindings = keybindingRegistrations.filter(
+      registration => registration.extensionId !== extensionId,
+    );
+    keybindingRegistrations.splice(0, keybindingRegistrations.length, ...remainingKeybindings);
+    const remainingSidebarPages = sidebarRegistrations.filter(
+      registration => registration.extensionId !== extensionId,
+    );
+    sidebarRegistrations.splice(0, sidebarRegistrations.length, ...remainingSidebarPages);
   },
   getBinaryDownloadCount: () => 0,
   clearBinaryDownloadCount: clearBinaryDownloadCountMock,
@@ -222,6 +283,8 @@ describe('extensions runtime store', () => {
   beforeEach(() => {
     setActivePinia(createPinia());
     commandRegistrations.splice(0, commandRegistrations.length);
+    keybindingRegistrations.splice(0, keybindingRegistrations.length);
+    sidebarRegistrations.splice(0, sidebarRegistrations.length);
     invokeMock.mockReset();
     getVersionMock.mockClear();
     toastCustomMock.mockReset();
@@ -832,5 +895,128 @@ describe('extensions runtime store', () => {
     await extensionsStore.reloadExtensionsLocale();
 
     expect(reactivateExtensionRuntimeMock).not.toHaveBeenCalled();
+  });
+
+  it('keeps local and global extension shortcuts separate for the same command', () => {
+    const extensionsStore = useExtensionsStore();
+    const storageStore = useExtensionsStorageStore();
+
+    installTestExtension({
+      ...createRemoteManifest(
+        'test.video',
+        'https://github.com/example/test-video',
+      ),
+      contributes: {
+        commands: [
+          {
+            id: 'open-page',
+            title: 'Open Excalidraw',
+            shortcut: 'Ctrl+Shift+E',
+          },
+        ],
+      },
+    });
+
+    extensionsStore.sidebarPages.push({
+      extensionId: 'test.video',
+      page: {
+        id: 'test.video.excalidraw',
+        title: 'Excalidraw',
+        icon: 'PencilRuler',
+        shortcutCommandId: 'open-page',
+      },
+    });
+
+    expect(extensionsStore.getSidebarPageKeybinding('test.video.excalidraw')).toMatchObject({
+      commandId: 'test.video.open-page',
+      keys: {
+        ctrl: true,
+        shift: true,
+        key: 'e',
+      },
+      scope: 'global',
+    });
+
+    storageStore.extensionsData.installedExtensions['test.video']!.settings.keybindingOverrides = [
+      {
+        commandId: 'test.video.open-page',
+        scope: 'global',
+        keys: {
+          ctrl: true,
+          shift: true,
+          alt: true,
+          key: 'e',
+        },
+      },
+      {
+        commandId: 'test.video.open-page',
+        scope: 'local',
+        keys: {
+          ctrl: true,
+          alt: true,
+          key: 'l',
+        },
+      },
+    ];
+
+    expect(extensionsStore.getSidebarPageKeybinding('test.video.excalidraw')).toMatchObject({
+      keys: {
+        ctrl: true,
+        shift: true,
+        alt: true,
+        key: 'e',
+      },
+      source: 'user',
+      scope: 'global',
+    });
+
+    keybindingRegistrations.push({
+      extensionId: 'test.video',
+      commandId: 'test.video.open-page',
+      keys: {
+        ctrl: true,
+        key: 'l',
+      },
+      when: 'always',
+    });
+
+    extensionsStore.keybindings.push({
+      extensionId: 'test.video',
+      commandId: 'test.video.open-page',
+      keys: {
+        ctrl: true,
+        key: 'l',
+      },
+      when: 'always',
+    });
+
+    extensionsStore.applyKeybindingOverride('test.video.open-page', {
+      ctrl: true,
+      alt: true,
+      key: 'l',
+    });
+
+    expect(extensionsStore.getCommandShortcut('test.video.open-page')).toMatchObject({
+      keys: {
+        ctrl: true,
+        alt: true,
+        key: 'l',
+      },
+      source: 'user',
+      scope: 'local',
+      when: 'always',
+    });
+
+    expect(extensionsStore.getGlobalCommandShortcuts()).toContainEqual(expect.objectContaining({
+      commandId: 'test.video.open-page',
+      keys: {
+        ctrl: true,
+        shift: true,
+        alt: true,
+        key: 'e',
+      },
+      source: 'user',
+      scope: 'global',
+    }));
   });
 });

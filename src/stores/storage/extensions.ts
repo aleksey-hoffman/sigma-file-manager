@@ -13,6 +13,7 @@ import type {
   ExtensionSettings,
   ExtensionScopedDirectory,
   ExtensionKeybindingOverride,
+  ExtensionShortcutScope,
   SharedBinaryInfo,
   InstalledExtensionData,
 } from '@/types/extension';
@@ -36,6 +37,10 @@ export const useExtensionsStorageStore = defineStore('extensionsStorage', () => 
     recentCommandIds: [],
   });
   const isInitialized = ref(false);
+
+  function normalizeOverrideScope(scope?: ExtensionShortcutScope): ExtensionShortcutScope {
+    return scope ?? 'local';
+  }
 
   async function init(bootstrapFile?: StartupStorageFileBootstrap): Promise<void> {
     if (isInitialized.value) return;
@@ -424,15 +429,21 @@ export const useExtensionsStorageStore = defineStore('extensionsStorage', () => 
       extension.settings.keybindingOverrides = [];
     }
 
-    const existingIndex = extension.settings.keybindingOverrides.findIndex(
-      kb => kb.commandId === override.commandId,
-    );
+    const targetScope = normalizeOverrideScope(override.scope);
+    const normalizedOverride: ExtensionKeybindingOverride = {
+      ...override,
+      scope: targetScope,
+    };
+    const existingIndex = extension.settings.keybindingOverrides.findIndex((keybindingOverride) => {
+      return keybindingOverride.commandId === override.commandId
+        && normalizeOverrideScope(keybindingOverride.scope) === targetScope;
+    });
 
     if (existingIndex !== -1) {
-      extension.settings.keybindingOverrides[existingIndex] = override;
+      extension.settings.keybindingOverrides[existingIndex] = normalizedOverride;
     }
     else {
-      extension.settings.keybindingOverrides.push(override);
+      extension.settings.keybindingOverrides.push(normalizedOverride);
     }
 
     await saveStorageData();
@@ -441,13 +452,16 @@ export const useExtensionsStorageStore = defineStore('extensionsStorage', () => 
   async function removeKeybindingOverride(
     extensionId: string,
     commandId: string,
+    scope: ExtensionShortcutScope = 'local',
   ): Promise<void> {
     const extension = extensionsData.value.installedExtensions[extensionId];
 
     if (!extension || !extension.settings.keybindingOverrides) return;
 
+    const targetScope = normalizeOverrideScope(scope);
     extension.settings.keybindingOverrides = extension.settings.keybindingOverrides.filter(
-      kb => kb.commandId !== commandId,
+      keybindingOverride => keybindingOverride.commandId !== commandId
+        || normalizeOverrideScope(keybindingOverride.scope) !== targetScope,
     );
 
     await saveStorageData();
@@ -456,9 +470,14 @@ export const useExtensionsStorageStore = defineStore('extensionsStorage', () => 
   function getKeybindingOverride(
     extensionId: string,
     commandId: string,
+    scope: ExtensionShortcutScope = 'local',
   ): ExtensionKeybindingOverride | undefined {
     const extension = extensionsData.value.installedExtensions[extensionId];
-    return extension?.settings.keybindingOverrides?.find(kb => kb.commandId === commandId);
+    const targetScope = normalizeOverrideScope(scope);
+    return extension?.settings.keybindingOverrides?.find((keybindingOverride) => {
+      return keybindingOverride.commandId === commandId
+        && normalizeOverrideScope(keybindingOverride.scope) === targetScope;
+    });
   }
 
   function getSharedBinaryKey(binaryId: string, version?: string): string {

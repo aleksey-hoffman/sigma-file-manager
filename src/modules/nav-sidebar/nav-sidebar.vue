@@ -20,7 +20,9 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
+import { ContextMenuShortcut } from '@/components/ui/context-menu';
 import { CONTEXT_MENU_OPEN_COUNT_KEY } from '@/components/dir-entry-interactive';
+import { formatKeybindingKeys } from '@/modules/extensions/api';
 import QuickAccessPanel from './components/quick-access-panel.vue';
 import UbuntuWslIcon from '@/components/icons/ubuntu-wsl-icon.vue';
 
@@ -67,6 +69,11 @@ function openExtensionPage(pageId: string) {
     name: 'extension-page',
     params: { fullPageId: pageId },
   });
+}
+
+function getExtensionPageShortcutLabel(pageId: string): string {
+  const keybinding = extensionsStore.getSidebarPageKeybinding(pageId);
+  return keybinding?.keys?.key ? formatKeybindingKeys(keybinding.keys) : '';
 }
 
 async function openDrive(path: string) {
@@ -185,7 +192,12 @@ function getDriveIcon(drive: {
           side="right"
           :side-offset="12"
         >
-          {{ registration.page.title }}
+          <div class="nav-sidebar__tooltip-row">
+            <span>{{ registration.page.title }}</span>
+            <ContextMenuShortcut v-if="getExtensionPageShortcutLabel(registration.page.id)">
+              {{ getExtensionPageShortcutLabel(registration.page.id) }}
+            </ContextMenuShortcut>
+          </div>
         </TooltipContent>
       </Tooltip>
     </div>
@@ -340,6 +352,13 @@ function getDriveIcon(drive: {
   padding: 0;
   border: none;
   background: transparent;
+}
+
+.nav-sidebar__tooltip-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 .nav-sidebar-drive-tooltip .drive-card {

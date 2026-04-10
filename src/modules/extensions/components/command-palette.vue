@@ -18,7 +18,7 @@ import {
   CommandList,
   CommandShortcut,
 } from '@/components/ui/command';
-import { getKeybindingForCommand, getKeybindingParts, parseKeybindingString } from '@/modules/extensions/api';
+import { getKeybindingParts } from '@/modules/extensions/api';
 import { getBuiltinCommandDefinitions } from '@/modules/extensions/builtin-commands';
 import { getPaletteCommandEntries } from '@/modules/extensions/utils/command-display';
 import { useShortcutsStore } from '@/stores/runtime/shortcuts';
@@ -144,27 +144,10 @@ function getExtensionIconPath(extensionId: string): string | undefined {
 }
 
 function getCommandShortcutParts(commandId: string): string[] {
-  const keybinding = getKeybindingForCommand(commandId);
+  const keybinding = extensionsStore.getCommandShortcut(commandId);
 
   if (keybinding?.keys?.key) {
     return getKeybindingParts(keybinding.keys);
-  }
-
-  const extension = extensionsStore.enabledExtensions.find(
-    extensionItem => commandId.startsWith(`${extensionItem.id}.`),
-  );
-
-  const manifestKeybinding = extension?.manifest.contributes?.keybindings?.find((binding) => {
-    const fullCommandId = `${extension.id}.${binding.command}`;
-    return fullCommandId === commandId;
-  });
-
-  if (manifestKeybinding) {
-    const parsedKeys = parseKeybindingString(manifestKeybinding.key);
-
-    if (parsedKeys.key) {
-      return getKeybindingParts(parsedKeys);
-    }
   }
 
   return [];

@@ -64,6 +64,7 @@ export interface ExtensionSidebarItem {
   icon: string;
   order?: number;
   url?: string;
+  shortcutCommandId?: string;
 }
 
 export interface ExtensionToolbarDropdownItem {
