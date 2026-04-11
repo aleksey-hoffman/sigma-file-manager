@@ -149,6 +149,7 @@ export type UserSettings = {
   navigator: UserSettingsNavigator;
   globalSearch: UserSettingsGlobalSearch;
   UIZoomLevel?: number;
+  showHomeBanner: boolean;
   homeBannerIndex: number;
   homeBannerMediaId: string;
   homeBannerPauseVideoWhenIdle: boolean;

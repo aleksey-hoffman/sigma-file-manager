@@ -112,6 +112,7 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
       typoTolerance: true,
     },
     UIZoomLevel: 1.0,
+    showHomeBanner: true,
     homeBannerIndex: 0,
     homeBannerMediaId: DEFAULT_BACKGROUND_FILE_NAME,
     homeBannerPauseVideoWhenIdle: true,

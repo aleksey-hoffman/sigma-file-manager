@@ -4,7 +4,8 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import {
   DrivesSection,
   HomeBanner,
@@ -15,8 +16,12 @@ import { usePageDropZone } from '@/composables/use-page-drop-zone';
 import { useFileDropOperation } from '@/composables/use-file-drop-operation';
 import FileBrowserConflictDialog from '@/modules/navigator/components/file-browser/file-browser-conflict-dialog.vue';
 import { getStaggerSlideUpBinding } from '@/utils/stagger-animation';
+import { useUserSettingsStore } from '@/stores/storage/user-settings';
 
 const dropContainerRef = ref<HTMLElement | null>(null);
+const { t } = useI18n();
+const userSettingsStore = useUserSettingsStore();
+const showHomeBanner = computed(() => userSettingsStore.userSettings.showHomeBanner);
 
 const {
   conflictDialogState,
@@ -35,12 +40,22 @@ usePageDropZone({
 
 <template>
   <PageHomeLayout>
-    <HomeBanner />
+    <HomeBanner v-if="showHomeBanner" />
 
     <div
       ref="dropContainerRef"
       class="home-page__content"
+      :class="{ 'home-page__content--without-banner': !showHomeBanner }"
     >
+      <header
+        v-if="!showHomeBanner"
+        class="home-page__header"
+      >
+        <h1 class="home-page__title">
+          {{ t('pages.home') }}
+        </h1>
+      </header>
+
       <UserDirectoriesSection v-bind="getStaggerSlideUpBinding(0, {initialDelayMs: 0, stepMs: 300})" />
       <DrivesSection v-bind="getStaggerSlideUpBinding(1, {initialDelayMs: 0, stepMs: 300})" />
     </div>
@@ -60,7 +75,25 @@ usePageDropZone({
 .home-page__content {
   display: flex;
   flex-direction: column;
-  padding: 16px 24px;
+  padding: 0 16px 24px;
   gap: 8px;
+}
+
+.home-page__content--without-banner {
+  margin-top: 52px;
+}
+
+.home-page__header {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 8px;
+  gap: 8px;
+}
+
+.home-page__title {
+  color: hsl(var(--foreground));
+  font-size: 2rem;
+  font-weight: 600;
+  letter-spacing: -0.025em;
 }
 </style>
