@@ -103,10 +103,13 @@ function renderMedia(alt: string, src: string): string {
   return `<div class="changelog-dialog__feature-media-container"><img src="${resolvedSrc}" alt="${alt}" class="changelog-dialog__feature-image"></div>`;
 }
 
-function renderInlineCode(text: string): string {
-  return text.replace(/`([^`]*)`/g, (_, code) =>
+function renderInlineFormatting(text: string): string {
+  let result = text;
+  result = result.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  result = result.replace(/`([^`]*)`/g, (_, code) =>
     `<code class="changelog-dialog__inline-code">${escapeHtml(code)}</code>`,
   );
+  return result;
 }
 
 function getListIndent(line: string): number {
@@ -155,7 +158,7 @@ function renderMarkdown(text: string): string {
     }
     else if (trimmedLine.startsWith('#### ')) {
       endList();
-      result.push(`<h4 class="changelog-dialog__feature-subheading">${renderInlineCode(trimmedLine.slice(5))}</h4>`);
+      result.push(`<h4 class="changelog-dialog__feature-subheading">${renderInlineFormatting(trimmedLine.slice(5))}</h4>`);
     }
     else {
       const listIndent = getListIndent(line);
@@ -179,12 +182,12 @@ function renderMarkdown(text: string): string {
           }
         }
 
-        result.push(`<li>${renderInlineCode(listContent)}`);
+        result.push(`<li>${renderInlineFormatting(listContent)}`);
         lastListLevel = listLevel;
       }
       else if (trimmedLine) {
         endList();
-        result.push(`<p>${renderInlineCode(trimmedLine)}</p>`);
+        result.push(`<p>${renderInlineFormatting(trimmedLine)}</p>`);
       }
     }
   }
