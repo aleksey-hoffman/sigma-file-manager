@@ -94,6 +94,7 @@ export const useGlobalShortcutsStore = defineStore('globalShortcuts', () => {
   const registeredExtensionShortcuts = ref<Map<string, string>>(new Map());
   const isInitialized = ref(false);
   let stopExtensionShortcutsWatch: (() => void) | null = null;
+  let extensionShortcutsSyncTail: Promise<void> = Promise.resolve();
 
   const userGlobalShortcuts = computed({
     get: () => userSettingsStore.userSettings.globalShortcuts ?? {},
@@ -287,11 +288,7 @@ export const useGlobalShortcutsStore = defineStore('globalShortcuts', () => {
     }
   }
 
-  async function syncExtensionShortcuts(): Promise<void> {
-    if (!isInitialized.value) {
-      return;
-    }
-
+  async function runSyncExtensionShortcuts(): Promise<void> {
     const activeCommandIds = new Set(extensionDefinitions.value.map(
       shortcut => shortcut.commandId,
     ));
@@ -316,6 +313,20 @@ export const useGlobalShortcutsStore = defineStore('globalShortcuts', () => {
 
       await registerExtensionShortcut(definition.commandId, definition.keys);
     }
+  }
+
+  async function syncExtensionShortcuts(): Promise<void> {
+    if (!isInitialized.value) {
+      return;
+    }
+
+    extensionShortcutsSyncTail = extensionShortcutsSyncTail
+      .then(() => runSyncExtensionShortcuts())
+      .catch((error) => {
+        console.error('syncExtensionShortcuts failed:', error);
+      });
+
+    return extensionShortcutsSyncTail;
   }
 
   async function setExtensionShortcut(commandId: string, keys: ShortcutKeys): Promise<boolean> {
@@ -355,7 +366,10 @@ export const useGlobalShortcutsStore = defineStore('globalShortcuts', () => {
       () => {
         void syncExtensionShortcuts();
       },
-      { deep: true },
+      {
+        deep: true,
+        flush: 'post',
+      },
     );
   }
 
