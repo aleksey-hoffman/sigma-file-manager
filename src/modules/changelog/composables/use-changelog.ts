@@ -2,10 +2,11 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { getVersion } from '@tauri-apps/api/app';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
-import changelogContent from '@/../CHANGELOG.md?raw';
+import { i18n } from '@/localization';
+import changelogContentEn from '@/../CHANGELOG.md?raw';
 
 export interface ReleaseFeature {
   title: string;
@@ -90,16 +91,72 @@ function parseFeature(title: string, content: string): ReleaseFeature {
   };
 }
 
-const releases = parseChangelog(changelogContent);
+const releasesEn = parseChangelog(changelogContentEn);
+const releases = ref<Release[]>(releasesEn);
 const isOpen = ref(false);
 const appVersion = ref<string>('');
 const isInitialized = ref(false);
+const loadedLocale = ref<string>('en');
+const fetchCache = new Map<string, Release[]>();
+
+fetchCache.set('en', releasesEn);
+
+async function fetchLocalizedChangelog(locale: string): Promise<Release[] | null> {
+  if (fetchCache.has(locale)) {
+    return fetchCache.get(locale)!;
+  }
+
+  try {
+    const response = await fetch(`/changelog/${locale}/changelog.md`);
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const markdown = await response.text();
+    const parsed = parseChangelog(markdown);
+
+    if (parsed.length === 0) {
+      return null;
+    }
+
+    fetchCache.set(locale, parsed);
+    return parsed;
+  }
+  catch {
+    return null;
+  }
+}
+
+async function loadChangelogForLocale(locale: string) {
+  if (locale === loadedLocale.value) {
+    return;
+  }
+
+  const localized = await fetchLocalizedChangelog(locale);
+
+  if (localized) {
+    releases.value = localized;
+    loadedLocale.value = locale;
+  }
+  else {
+    releases.value = releasesEn;
+    loadedLocale.value = 'en';
+  }
+}
+
+watch(
+  () => i18n.global.locale.value,
+  (newLocale) => {
+    loadChangelogForLocale(newLocale);
+  },
+);
 
 export function useChangelog() {
   const userSettingsStore = useUserSettingsStore();
 
   const currentRelease = computed(() => {
-    return releases.find(release => release.version === appVersion.value) || releases[0];
+    return releases.value.find(release => release.version === appVersion.value) || releases.value[0];
   });
 
   const hasUnseenUpdate = computed(() => {
@@ -126,9 +183,11 @@ export function useChangelog() {
     }
     catch (error) {
       console.error('Failed to get app version:', error);
-      appVersion.value = releases[0]?.version || '2.0.0-alpha.5';
+      appVersion.value = releases.value[0]?.version || '2.0.0-alpha.5';
       isInitialized.value = true;
     }
+
+    await loadChangelogForLocale(i18n.global.locale.value);
   }
 
   function open() {

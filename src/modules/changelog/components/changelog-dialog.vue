@@ -29,11 +29,11 @@ const { t } = useI18n();
 const userSettingsStore = useUserSettingsStore();
 const { releases, appVersion, isOpen, markAsSeen } = useChangelog();
 
-const selectedVersion = ref<string>(releases[0]?.version || '');
+const selectedVersion = ref<string>(releases.value[0]?.version || '');
 const isMobileNavOpen = ref(false);
 
 const selectedRelease = computed<Release | undefined>(() => {
-  return releases.find(release => release.version === selectedVersion.value);
+  return releases.value.find(release => release.version === selectedVersion.value);
 });
 
 const showOnUpdate = computed({
@@ -45,11 +45,16 @@ const showOnUpdate = computed({
 
 watch(isOpen, (newValue) => {
   if (newValue) {
-    const currentVersionRelease = releases.find(release => release.version === appVersion.value);
-    selectedVersion.value = currentVersionRelease?.version || releases[0]?.version || '';
+    const currentVersionRelease = releases.value.find(release => release.version === appVersion.value);
+    selectedVersion.value = currentVersionRelease?.version || releases.value[0]?.version || '';
     isMobileNavOpen.value = false;
     markAsSeen();
   }
+});
+
+watch(releases, () => {
+  const currentVersionRelease = releases.value.find(release => release.version === appVersion.value);
+  selectedVersion.value = currentVersionRelease?.version || releases.value[0]?.version || '';
 });
 
 function selectVersion(version: string) {
