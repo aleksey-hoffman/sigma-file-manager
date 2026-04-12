@@ -2,12 +2,6 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-
-#[cfg(any(target_os = "linux", target_os = "macos"))]
-use std::fs;
-#[cfg(any(target_os = "linux", target_os = "macos"))]
-use std::path::Path;
-
 pub fn mount_drive(device_path: String) -> Result<String, String> {
     #[cfg(target_os = "linux")]
     {

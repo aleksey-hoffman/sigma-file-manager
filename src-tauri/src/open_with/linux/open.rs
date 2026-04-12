@@ -4,7 +4,7 @@
 
 use super::desktop::{
     desktop_id_to_program, find_desktop_file, get_gio_mime_info, get_mimeapps_entries,
-    get_xdg_default_app, merge_desktop_ids, GioMimeInfo, MimeappsEntries,
+    get_xdg_default_app, merge_desktop_ids, GioMimeInfo,
 };
 use super::mime::get_mime_type;
 use crate::open_with::types::{AssociatedProgram, GetAssociatedProgramsResult, OpenWithResult};

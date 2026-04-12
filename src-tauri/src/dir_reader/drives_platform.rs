@@ -2,7 +2,7 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-
+#[cfg(any(target_os = "macos", windows))]
 use crate::utils::normalize_path;
 
 #[cfg(target_os = "macos")]
@@ -10,6 +10,7 @@ use std::fs;
 #[cfg(target_os = "macos")]
 use std::path::Path;
 
+#[cfg(any(target_os = "macos", windows))]
 use super::types::DriveInfo;
 
 // ---------------------------------------------------------------------------

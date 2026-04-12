@@ -4,8 +4,6 @@
 
 #[cfg(not(windows))]
 use std::fs;
-#[cfg(not(windows))]
-use std::path::Path;
 
 use super::types::NetworkShareParams;
 
