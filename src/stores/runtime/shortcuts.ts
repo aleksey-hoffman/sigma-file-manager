@@ -816,7 +816,7 @@ function isInputFieldActive(): boolean {
   const activeElement = document.activeElement;
   if (!activeElement) return false;
   const tagName = activeElement.tagName.toLowerCase();
-  return tagName === 'input' || tagName === 'textarea' || (activeElement as HTMLElement).isContentEditable;
+  return tagName === 'input' || tagName === 'textarea' || (activeElement as HTMLElement).isContentEditable === true;
 }
 
 function isDialogOpened(): boolean {
