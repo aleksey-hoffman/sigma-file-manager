@@ -1,13 +1,206 @@
 # Changelog
 
-All notable changes to Sigma File Manager will be documented in this file.
+## [2.0.0-beta.3] - April 2026
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+**Summary:** Extensions system with marketplace, LAN file sharing, quick access menu, zip archives, WSL drives, tag editing, enhanced quick view and search, visual effects improvements, and many UX and stability improvements.
 
----
+- [New Features](#new-features)
+  - [Extensions System](#extensions-system)
+  - [Default file manager](#default-file-manager)
+  - [LAN Sharing](#lan-sharing)
+  - [Quick Access Menu](#quick-access-menu)
+  - [Zip Archives](#zip-archives)
+  - [WSL Drives Detection](#wsl-drives-detection)
+  - [Tag Editing](#tag-editing)
+  - [In-App Updates](#in-app-updates)
+  - [Copy Path](#copy-path)
+  - [Close Duplicate Tabs](#close-duplicate-tabs)
+  - [Home & Dashboard Context Menus](#home--dashboard-context-menus)
+  - [Visual Effects Mix Blend Mode](#visual-effects-mix-blend-mode)
+- [New Settings](#new-settings)
+- [New Shortcuts](#new-shortcuts)
+- [New Languages](#new-languages)
+- [UX Improvements](#ux-improvements)
+  - [Quick View Enhancements](#quick-view-enhancements)
+  - [Quick Search Enhancements](#quick-search-enhancements)
+  - [File Operations](#file-operations)
+  - [Visual Effects](#visual-effects)
+- [UI Improvements](#ui-improvements)
+- [Bug Fixes](#bug-fixes)
 
-## Unreleased
+### New Features
+
+#### Extensions System
+
+Full extension system with open marketplace.
+
+- **Marketplace**: browse, install, and manage extensions from the marketplace;
+- **Local installation**: you can install extensions from local folder;
+- **Command palette**: new way to activate app and extension commands;
+- **Capabilities**: extensions can register local and global shortcuts, context menu items, settings, whole pages, and commands;
+- **Versioning**: you can install different versions of extensions and enable auto update;
+- **Localization**: extensions can provide translations for different langauges;
+- **Binary management**: extensions can use binaries (ffmpeg, deno, node, yt-dlp, 7z, and any other existing binary);
+- **Sandboxed execution**: extensions run in isolated ESM sandboxes with granular permissions;
+
+#### Default file manager
+
+You can now make SFM the default file manager on Windows (`Settings > Experimental`). When this setting is enabled, most system file actions will be routed to SFM:
+
+- File Explorer app icon;
+- `Ctrl+E` shortcut;
+- Reveal file in folder;
+- Show downloads (when you download a file in browser);
+- Terminal commands: "start {path}", "code {path}", etc.
+- And more;
+
+Native system views like "Recycle Bin", "Control panel", and such deeply integrated programs are delegated back to native File Explorer. 
+
+#### LAN Sharing
+
+Share and stream files and directories over your local network directly from the app.
+
+Access LAN sharing from the toolbar button in the navigator or from the context menu on any file or directory. When a share is active, a QR code and shareable URLs are displayed. Two modes are available:
+
+- **Stream**: stream files and directories to any device on your network via a web browser;
+- **FTP**: share files over FTP for direct access from other apps. You can both download and upload files from and to the computer from other device;
+
+#### Quick Access Menu
+
+The "Dashboard" button in the sidebar now acts as a quick access menu. Hovering over it opens a panel showing your Favorites and Tagged items.
+
+All items in the panel are real directory entries - you can drag and drop items in and out, open context menus with right click, and perform any standard file operations.
+
+Can be disabled in `Settings > UI appearance > Open quick access panel on hover`.
+
+#### Zip Archives
+
+Compress and extract zip archives directly from the file browser actions menu:
+
+- **Extract**: extract a `.zip` file to the current directory or to a named folder;
+- **Compress**: compress selected files and directories into a `.zip` archive;
+
+#### WSL Drives Detection
+
+On Windows, the app now automatically detects installed WSL distributions and displays their drives in the navigator, allowing you to browse WSL file systems natively.
+
+#### Tag Editing
+
+You can now edit tag names and colors. Open the tag selector on any file or directory to rename tags, change their color, or delete them.
+
+#### In-App Updates
+
+You can now download and install updates directly from the update notification without leaving the app.
+
+#### Copy Path
+
+Added "Copy path" option to the file and directory context menu.
+
+#### Close Duplicate Tabs
+
+Added the ability to close duplicate tabs from the tab bar, removing all tabs that point to the same directory.
+
+#### Home & Dashboard Context Menus
+
+Items on the home page and dashboard now have full context menus, matching the functionality available in the navigator.
+
+### New Settings
+
+- **Show home media banner**: show or hide the home page media banner (`Settings > UI appearance > Home page media banner`);
+- **Tooltip delay**: configure the delay before tooltips appear (`Settings > UI appearance > Tooltips`);
+- **Relative time**: display recent timestamps in relative format, e.g. "5 min ago" (`Settings > General > Date / time`);
+- **Date and time format**: configure month format, regional format, 12-hour clock, seconds, and milliseconds (`Settings > General > Date / time`);
+- **Dialog backdrop blur**: set the blur intensity for dialog backdrops (`Settings > UI appearance > Style settings`);
+- **Brightness and contrast filters**: adjust brightness and contrast style filters for the app UI (`Settings > UI appearance > Style settings`);
+- **Overlay media brightness**: adjust brightness of the visual effects overlay media (`Settings > UI appearance > Visual effects`);
+- **Visual Effects Mix Blend Mode**: adjust mix blend mode for visual effects, letting you choose how background media blends with the app UI (`Settings > UI appearance > Visual effects`);
+- **Pause background video**: pause the home banner and background video when the app is idle or minimized (`Settings > UI appearance > Visual effects`);
+- **Default file manager**: set Sigma File Manager as the default file explorer on Windows (`Settings > Experimental`);
+- **Launch on system login**: automatically launch the app when you log into your system (`Settings > General > Startup behavior`);
+
+### New Shortcuts
+
+- **Copy current directory path** (`Ctrl+Shift+C`): copy the current directory path to clipboard;
+- **Reload current directory** (`F5`): refresh the navigator file list;
+- **Zoom in / out** (`Ctrl+=` / `Ctrl+-`): increase or decrease UI zoom;
+- **Fullscreen** (`F11`): toggle full screen mode;
+
+### New Languages
+
+- **Hindi**;
+- **Urdu**;
+
+### UX Improvements
+
+#### Quick View Enhancements
+
+- **Media navigation**: navigate between files in the current directory without closing quick view;
+- **Text file preview**: improved text file preview with proper encoding detection, inline editing, and parsed markdown rendering;
+
+#### Quick Search Enhancements
+
+- **All properties**: search by any file property - name, size, item count, modified, created, accessed, path, or MIME type (e.g. `modified: today`, `mime: image`);
+- **Size ranges**: filter by size using comparisons and ranges (e.g. `size: >=2mb`, `size: 1mb..10mb`);
+
+#### File Operations
+
+- **Conflict resolution safety**: improved file safety within the conflict resolution modal to prevent accidental data loss;
+- **Single-use paste**: copied items can only be pasted once, preventing accidental duplicate pastes;
+- **Copy text**: allow copying UI text with `Ctrl+C` when no files are selected;
+
+#### Visual Effects
+
+- **Background manager**: added background manager to the settings page for centralized background customization;
+- **Background effects reset**: added a reset button to background effects settings;
+
+#### Other
+
+- **App size reduction**: reduced app bundle size by excluding high-res built-in backgrounds and using compressed previews in the media banner editor;
+- **Global search**: display a "show settings" button in empty state and increased default search depth;
+- **Windows shortcuts**: `.lnk` files now open their target in the navigator instead of launching externally;
+- **Dashboard**: improved tagged section layout;
+- **Address bar context menu**: added context menu to address bar items;
+- **Navigator context menu**: show context menu when clicking empty area in the navigator;
+- **Open in new tab**: open directories in a new tab with middle mouse click;
+- **Tab scroll**: scroll newly added tabs into view automatically;
+- **Menu focus**: menus no longer return focus to their trigger button when closed with a click outside;
+- **Close search**: close global search with `Escape`;
+- **Faster launch**: slightly improved app launch speed by preloading settings in Rust;
+- **User directories**: added ability to add and remove user directories on the home page;
+- **List limits**: decreased limits for frequent and history list entries to improve performance;
+
+### UI Improvements
+
+- **Toolbar icons**: unified toolbar icon colors across the app;
+- **Card animations**: added stagger and fade-in effects to cards;
+- **Light theme**: improved light theme colors and contrast;
+- **Launch stability**: improved visual stability during app launch to reduce flickering;
+- **Notifications**: improved notification design for better consistency;
+- **Tab auto-scroll**: auto scroll the selected tab into view when opening the navigator page;
+- **Root path labels**: normalized root path labels across tabs and info panel;
+- **Translations**: improved translations across the app;
+
+### Bug Fixes
+
+- Fixed copying or moving many items freezing the UI; added file operation progress to the status center;
+- Fixed deleting many items freezing the UI; added deletion progress to the status center;
+- Fixed context menu in grid layout not opening for the current directory when another item already has a menu open;
+- Fixed info panel not displaying all information for the current directory;
+- Fixed app shortcuts being registered on the quick view window instead of only the main window;
+- Fixed files dragged from web browsers not being handled;
+- Fixed filenames from external URL drops not keeping valid segments;
+- Fixed home banner being draggable;
+- Fixed system icon cache not being keyed by file path, causing incorrect icons;
+- Fixed inaccessible Windows root entries showing in the navigator;
+- Fixed custom shortcuts being unidentified on some keyboard layouts;
+- Fixed SSHFS connections on Linux;
+- Fixed address bar creating duplicate history entries on breadcrumb click;
+- Fixed global search results not responding to keyboard navigation;
+- Fixed global search results not opening on click;
+- Fixed global search status not syncing after incremental indexing;
+- Fixed outbound file drag-and-drop not working in some applications;
+- Fixed inconsistent shortcut badge design across the app;
+- Fixed navigator column visibility in narrow panes;
 
 ---
 
