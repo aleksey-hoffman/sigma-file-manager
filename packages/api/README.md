@@ -56,4 +56,4 @@ API package versions are independent from app releases and are published to npm 
 
 ## Resources
 
-**[Docs](https://github.com/sigma-hub/sfm-extensions-registry/wiki)** - documentation for extension development
+**[Docs](https://github.com/sigma-hub/sfm-marketplace/wiki)** - documentation for extension development
