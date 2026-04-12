@@ -22,6 +22,7 @@ import {
 } from '@/data/extensions';
 import { getPlatformInfo } from '@/modules/extensions/api';
 import { getBinaryDisplayVersion, getBinaryLookupVersion } from '@/modules/extensions/utils/binary-metadata';
+import { invokeAsExtension } from '@/modules/extensions/runtime/extension-invoke';
 
 export type ExtensionWithManifest = ExtensionRegistryEntry & {
   manifest?: ExtensionManifest;
@@ -166,7 +167,11 @@ export function useExtensions() {
 
     await Promise.all(installed.map(async (installedExtension) => {
       try {
-        const extensionPath = await invoke<string>('get_extension_path', { extensionId: installedExtension.id });
+        const extensionPath = await invokeAsExtension<string>(
+          installedExtension.id,
+          'get_extension_path',
+          { extensionId: installedExtension.id },
+        );
 
         if (extensionPath) {
           extensionIdByPath.set(normalizeFsPath(extensionPath), installedExtension.id);

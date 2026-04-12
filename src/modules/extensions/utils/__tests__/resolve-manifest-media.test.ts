@@ -2,7 +2,30 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-import { describe, expect, it } from 'vitest';
+import {
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from 'vitest';
+
+const mockInvokeAsExtension = vi.hoisted(() => vi.fn());
+const mockConvertFileSrc = vi.hoisted(() => vi.fn());
+const mockJoin = vi.hoisted(() => vi.fn());
+
+vi.mock('@/modules/extensions/runtime/extension-invoke', () => ({
+  invokeAsExtension: mockInvokeAsExtension,
+}));
+
+vi.mock('@tauri-apps/api/core', () => ({
+  convertFileSrc: (path: string) => mockConvertFileSrc(path),
+}));
+
+vi.mock('@tauri-apps/api/path', () => ({
+  join: (...parts: string[]) => mockJoin(...parts),
+}));
+
 import {
   normalizeManifestMediaItems,
   getGitHubRefForRemoteMedia,
@@ -11,6 +34,10 @@ import {
 } from '@/modules/extensions/utils/resolve-manifest-media';
 
 describe('resolve-manifest-media', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it('normalizes valid media entries', () => {
     const result = normalizeManifestMediaItems({
       id: 'x.y',
@@ -165,5 +192,48 @@ describe('resolve-manifest-media', () => {
       'https://raw.githubusercontent.com/sigma-hub/sfm-extension-video-downloader/v1.0.1/preview-1.png',
     );
     expect(result[0].remoteOpenUrl).toBeUndefined();
+    expect(mockInvokeAsExtension).not.toHaveBeenCalled();
+  });
+
+  it('resolves installed extension media from local paths', async () => {
+    mockInvokeAsExtension.mockResolvedValue('/data/extensions/sigma.video-downloader');
+    mockJoin.mockImplementation(async (...parts: string[]) => parts.join('/'));
+    mockConvertFileSrc.mockImplementation((path: string) => `asset://${path}`);
+
+    const result = await resolveManifestMediaItems({
+      manifest: {
+        id: 'sigma.video-downloader',
+        name: 'V',
+        version: '1.0.1',
+        repository: 'https://github.com/sigma-hub/sfm-extension-video-downloader',
+        license: 'MIT',
+        extensionType: 'api',
+        main: 'dist/index.js',
+        permissions: [],
+        engines: { sigmaFileManager: '2.0.0' },
+        media: [{
+          title: 'Preview',
+          src: 'preview-1.png',
+          type: 'image',
+        }],
+      },
+      extensionId: 'sigma.video-downloader',
+      isInstalled: true,
+      repository: 'https://github.com/sigma-hub/sfm-extension-video-downloader',
+      remoteRef: 'v1.0.1',
+    });
+
+    expect(mockInvokeAsExtension).toHaveBeenCalledWith(
+      'sigma.video-downloader',
+      'get_extension_path',
+      { extensionId: 'sigma.video-downloader' },
+    );
+    expect(result).toHaveLength(1);
+    expect(result[0].previewUrl).toBe(
+      'asset:///data/extensions/sigma.video-downloader/preview-1.png',
+    );
+    expect(result[0].quickViewPath).toBe(
+      '/data/extensions/sigma.video-downloader/preview-1.png',
+    );
   });
 });

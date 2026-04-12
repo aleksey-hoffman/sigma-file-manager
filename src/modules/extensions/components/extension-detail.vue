@@ -6,7 +6,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <script setup lang="ts">
 import { computed, ref, onMounted, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { invoke } from '@tauri-apps/api/core';
+import { invokeAsExtension } from '@/modules/extensions/runtime/extension-invoke';
 import { openUrl } from '@tauri-apps/plugin-opener';
 import {
   ArrowLeftIcon,
@@ -338,10 +338,14 @@ function getPermissionInfo(permission: string) {
 
 async function readInstalledExtensionFile(fileName: string): Promise<string | null> {
   try {
-    const fileBytes = await invoke<number[]>('read_extension_file', {
-      extensionId: props.extension.id,
-      filePath: fileName,
-    });
+    const fileBytes = await invokeAsExtension<number[]>(
+      props.extension.id,
+      'read_extension_file',
+      {
+        extensionId: props.extension.id,
+        filePath: fileName,
+      },
+    );
     return new TextDecoder().decode(new Uint8Array(fileBytes));
   }
   catch {
@@ -358,7 +362,11 @@ async function buildRenderedMarkdownHtml(
 
   if (useLocalImages && props.extension.isInstalled) {
     try {
-      const extensionPath = await invoke<string>('get_extension_path', { extensionId: props.extension.id });
+      const extensionPath = await invokeAsExtension<string>(
+        props.extension.id,
+        'get_extension_path',
+        { extensionId: props.extension.id },
+      );
       return rewriteMarkdownAssetUrls(markdownHtml, {
         kind: 'localExtension',
         extensionRootPath: extensionPath,

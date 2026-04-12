@@ -2,10 +2,11 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-import { convertFileSrc, invoke } from '@tauri-apps/api/core';
+import { convertFileSrc } from '@tauri-apps/api/core';
 import { join } from '@tauri-apps/api/path';
 import type { ExtensionManifest } from '@sigma-file-manager/api';
 import { getExtensionAssetUrl } from '@/data/extensions';
+import { invokeAsExtension } from '@/modules/extensions/runtime/extension-invoke';
 import { isQuickViewSupported } from '@/stores/runtime/quick-view';
 
 export type ResolvedManifestMediaItem = {
@@ -162,7 +163,11 @@ export async function resolveManifestMediaItems(options: {
 
   if (options.isInstalled) {
     try {
-      const extensionPath = await invoke<string>('get_extension_path', { extensionId: options.extensionId });
+      const extensionPath = await invokeAsExtension<string>(
+        options.extensionId,
+        'get_extension_path',
+        { extensionId: options.extensionId },
+      );
       const resolved: ResolvedManifestMediaItem[] = [];
       const pathsForQuickView: string[] = [];
 

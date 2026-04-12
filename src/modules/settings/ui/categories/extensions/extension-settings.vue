@@ -5,7 +5,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue';
-import { invoke } from '@tauri-apps/api/core';
+import { invokeAsExtension } from '@/modules/extensions/runtime/extension-invoke';
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -70,17 +70,25 @@ watch(locale, () => {
 async function loadExtensionMessages(): Promise<void> {
   try {
     const filePath = `locales/${locale.value}.json`;
-    const exists = await invoke<boolean>('extension_path_exists', {
-      extensionId: props.extension.id,
-      filePath,
-    });
+    const exists = await invokeAsExtension<boolean>(
+      props.extension.id,
+      'extension_path_exists',
+      {
+        extensionId: props.extension.id,
+        filePath,
+      },
+    );
 
     if (!exists) {
       const enPath = 'locales/en.json';
-      const enExists = await invoke<boolean>('extension_path_exists', {
-        extensionId: props.extension.id,
-        filePath: enPath,
-      });
+      const enExists = await invokeAsExtension<boolean>(
+        props.extension.id,
+        'extension_path_exists',
+        {
+          extensionId: props.extension.id,
+          filePath: enPath,
+        },
+      );
 
       if (!enExists) {
         extensionMessages.value = null;
@@ -88,20 +96,28 @@ async function loadExtensionMessages(): Promise<void> {
         return;
       }
 
-      const bytes = await invoke<number[]>('read_extension_file', {
-        extensionId: props.extension.id,
-        filePath: enPath,
-      });
+      const bytes = await invokeAsExtension<number[]>(
+        props.extension.id,
+        'read_extension_file',
+        {
+          extensionId: props.extension.id,
+          filePath: enPath,
+        },
+      );
       const content = new TextDecoder().decode(new Uint8Array(bytes));
       extensionMessages.value = JSON.parse(content) as Record<string, string>;
 
       return;
     }
 
-    const bytes = await invoke<number[]>('read_extension_file', {
-      extensionId: props.extension.id,
-      filePath,
-    });
+    const bytes = await invokeAsExtension<number[]>(
+      props.extension.id,
+      'read_extension_file',
+      {
+        extensionId: props.extension.id,
+        filePath,
+      },
+    );
 
     const content = new TextDecoder().decode(new Uint8Array(bytes));
     extensionMessages.value = JSON.parse(content) as Record<string, string>;
