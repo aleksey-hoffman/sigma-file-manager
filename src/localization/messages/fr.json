@@ -1814,7 +1814,6 @@
     "showOnUpdate": "Afficher le journal lors des mises à jour",
     "viewChangelog": "Voir le journal des modifications",
     "current": "Actuel",
-    "summary": "Résumé",
     "selectVersion": "Sélectionner la version"
   },
   "extensions": {

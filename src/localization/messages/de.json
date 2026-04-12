@@ -1814,7 +1814,6 @@
     "showOnUpdate": "Änderungsprotokoll bei App-Update anzeigen",
     "viewChangelog": "Änderungsprotokoll anzeigen",
     "current": "Aktuell",
-    "summary": "Zusammenfassung",
     "selectVersion": "Version auswählen"
   },
   "extensions": {

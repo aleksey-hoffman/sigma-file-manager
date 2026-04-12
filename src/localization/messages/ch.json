@@ -1814,7 +1814,6 @@
     "showOnUpdate": "应用更新时显示更新日志",
     "viewChangelog": "查看更新日志",
     "current": "当前",
-    "summary": "摘要",
     "selectVersion": "选择版本"
   },
   "extensions": {

@@ -332,10 +332,10 @@ function renderMarkdown(text: string): string {
                 </div>
               </header>
 
-              <p class="changelog-dialog__release-summary">
-                <span class="changelog-dialog__release-summary-label">{{ t('changelog.summary') }}:</span>
-                {{ selectedRelease.summary }}
-              </p>
+              <p
+                class="changelog-dialog__release-summary"
+                v-html="sanitizeHtml(renderInlineFormatting(selectedRelease.summary))"
+              />
 
               <div class="changelog-dialog__features">
                 <article
@@ -561,7 +561,7 @@ function renderMarkdown(text: string): string {
   line-height: 1.6;
 }
 
-.changelog-dialog__release-summary-label {
+.changelog-dialog__release-summary :deep(strong) {
   color: hsl(var(--foreground));
   font-weight: 500;
 }

@@ -1832,7 +1832,6 @@
       "showOnUpdate": "Pokaži dnevnik sprememb ob posodobitvi aplikacije",
       "viewChangelog": "Oglej si dnevnik sprememb",
       "current": "Trenutno",
-      "summary": "Povzetek",
       "selectVersion": "Izberite različico"
     },
     "extensions": {
@@ -1935,7 +1934,6 @@
     "showOnUpdate": "Show changelog on app update",
     "viewChangelog": "View changelog",
     "current": "Current",
-    "summary": "Summary",
     "selectVersion": "Select version"
   },
   "extensions": {

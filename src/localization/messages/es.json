@@ -1814,7 +1814,6 @@
     "showOnUpdate": "Mostrar registro de cambios al actualizar",
     "viewChangelog": "Ver registro de cambios",
     "current": "Actual",
-    "summary": "Resumen",
     "selectVersion": "Seleccionar versión"
   },
   "extensions": {

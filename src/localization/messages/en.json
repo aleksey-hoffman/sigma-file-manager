@@ -1834,7 +1834,6 @@
     "showOnUpdate": "Show changelog on app update",
     "viewChangelog": "View changelog",
     "current": "Current",
-    "summary": "Summary",
     "selectVersion": "Select version"
   },
   "extensions": {

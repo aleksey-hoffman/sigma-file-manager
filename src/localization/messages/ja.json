@@ -1814,7 +1814,6 @@
     "showOnUpdate": "アプリ更新時に更新履歴を表示",
     "viewChangelog": "更新履歴を表示",
     "current": "現在",
-    "summary": "概要",
     "selectVersion": "バージョンを選択"
   },
   "extensions": {

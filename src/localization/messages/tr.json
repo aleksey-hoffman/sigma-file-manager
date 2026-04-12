@@ -1814,7 +1814,6 @@
     "showOnUpdate": "Güncelleme sırasında değişiklik günlüğünü göster",
     "viewChangelog": "Değişiklik günlüğünü görüntüle",
     "current": "Mevcut",
-    "summary": "Özet",
     "selectVersion": "Sürüm seç"
   },
   "extensions": {

@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2.0.0-beta.2] - February 2026
 
-Global shortcuts, new settings, new features, improved file filtering, improved address bar, home banner improvements, and bug fixes.
+**Summary:** Global shortcuts, new settings, new features, improved file filtering, improved address bar, home banner improvements, and bug fixes.
 
 ### Global Shortcuts
 
@@ -74,7 +74,7 @@ The file filter was improved:
 
 ## [2.0.0-beta.1] - February 2026
 
-Major usability and design improvements including keyboard navigation, new shortcuts, open in terminal, directory auto-refresh, drag and drop, and enhanced search and list views.
+**Summary:** Major usability and design improvements including keyboard navigation, new shortcuts, open in terminal, directory auto-refresh, drag and drop, and enhanced search and list views.
 
 ### Keyboard Navigation
 
@@ -168,7 +168,7 @@ Open directories in your preferred terminal directly from the context menu.
 
 ## [2.0.0-alpha.6] - January 2026
 
-What's New window, Quick View, context menu enhancements, and new settings.
+**Summary:** What's New window, Quick View, context menu enhancements, and new settings.
 
 ### What's New window
 
@@ -251,7 +251,7 @@ Improved global search with a hybrid indexed + direct search system for more rel
 
 ## [2.0.0-alpha.5] - January 2026
 
-File operations, global search, and shortcut customization.
+**Summary:** File operations, global search, and shortcut customization.
 
 ### Global Search
 
@@ -275,7 +275,7 @@ Added option to display native system icons for files and directories instead of
 
 ## [2.0.0-alpha.4] - January 2026
 
-Home page, visual effects, and user customization options.
+**Summary:** Home page, visual effects, and user customization options.
 
 ### Home Page
 
@@ -302,7 +302,7 @@ Fine-tune the position of your home page banner backgrounds. Adjust zoom, horizo
 
 ## [2.0.0-alpha.3] - December 2025
 
-Navigator view with tabs, workspaces, and a new design system.
+**Summary:** Navigator view with tabs, workspaces, and a new design system.
 
 ### Navigator View
 
@@ -320,7 +320,7 @@ Migrated the app from Vuetify to Sigma-UI for a more spacious, modern design wit
 
 ## [2.0.0-alpha.1] - January 2024
 
-Complete rewrite using modern technologies.
+**Summary:** Complete rewrite using modern technologies.
 
 ### Tauri Migration
 
