@@ -2,13 +2,9 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-import {
-  describe, expect, it, vi,
-} from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
-const {
-  routerPushMock,
-} = vi.hoisted(() => ({
+const { routerPushMock } = vi.hoisted(() => ({
   routerPushMock: vi.fn(),
 }));
 

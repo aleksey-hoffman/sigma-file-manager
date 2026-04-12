@@ -297,8 +297,7 @@
                 "type": "number"
               },
               "url": {
-                "type": "string",
-                "format": "uri"
+                "type": "string"
               },
               "shortcutCommandId": {
                 "type": "string"
