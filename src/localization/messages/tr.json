@@ -1817,7 +1817,7 @@
     "selectVersion": "Sürüm seç"
   },
   "extensions": {
-    "subtitle": "Uygulama için topluluk eklentilerini keşfedin ve yönetin",
+    "subtitle": "Topluluktan gelen eklentilere göz atın ve yönetin",
     "toolbarOptions": "Uzantı seçenekleri",
     "createExtension": "Uzantı oluştur",
     "searchPlaceholder": "Eklenti ara...",

@@ -1817,7 +1817,7 @@
     "selectVersion": "Seleziona versione"
   },
   "extensions": {
-    "subtitle": "Scopri e gestisci le estensioni della community per l'app",
+    "subtitle": "Sfoglia e gestisci le estensioni della community",
     "toolbarOptions": "Opzioni estensioni",
     "createExtension": "Crea estensione",
     "searchPlaceholder": "Cerca estensioni...",

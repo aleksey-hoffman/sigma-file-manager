@@ -1835,7 +1835,7 @@
       "selectVersion": "Izberite različico"
     },
     "extensions": {
-      "subtitle": "Odkrijte in upravljajte razširitve skupnosti za aplikacijo",
+      "subtitle": "Pregledujte in upravljajte razširitve skupnosti",
       "loadingExtension": "Nalaganje razširitve...",
       "noPermissions": "Ta razširitev ne zahteva posebnih dovoljenj.",
       "noExtensionCommands": "Ta razširitev ne ponuja nobenih ukazov.",
@@ -1940,7 +1940,7 @@
     "excalidraw": {
       "exportToFolder": "Export to folder"
     },
-    "subtitle": "Discover and manage community extensions for the app",
+    "subtitle": "Pregledujte in upravljajte razširitve skupnosti",
     "toolbarOptions": "Možnosti razširitev",
     "createExtension": "Ustvari razširitev",
     "searchPlaceholder": "Search extensions...",

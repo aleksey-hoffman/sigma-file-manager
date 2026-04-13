@@ -1817,7 +1817,7 @@
     "selectVersion": "バージョンを選択"
   },
   "extensions": {
-    "subtitle": "アプリのコミュニティ拡張機能を見つけて管理する",
+    "subtitle": "コミュニティの拡張機能を参照して管理する",
     "toolbarOptions": "拡張機能のオプション",
     "createExtension": "拡張機能を作成",
     "searchPlaceholder": "拡張機能を検索...",

@@ -1829,7 +1829,7 @@
     "selectVersion": "Selecionar versão"
   },
   "extensions": {
-    "subtitle": "Descubra e gerencie extensões da comunidade para o aplicativo",
+    "subtitle": "Navegue e gerencie extensões da comunidade",
     "toolbarOptions": "Opções de extensões",
     "createExtension": "Criar extensão",
     "searchPlaceholder": "Pesquisar extensões...",
