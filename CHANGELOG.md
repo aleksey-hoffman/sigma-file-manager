@@ -43,6 +43,8 @@ Full extension system with open marketplace.
 - **Binary management**: extensions can use binaries (ffmpeg, deno, node, yt-dlp, 7z, and any other existing binary);
 - **Sandboxed execution**: extensions run in isolated ESM sandboxes with granular permissions;
 
+![extensions-1](./public/changelog/assets/beta-3/extensions.jpg)
+
 #### Default file manager
 
 You can now make SFM the default file manager on Windows (`Settings > Experimental`). When this setting is enabled, most system file actions will be routed to SFM:
@@ -65,6 +67,8 @@ Access LAN sharing from the toolbar button in the navigator or from the context 
 - **Stream**: stream files and directories to any device on your network via a web browser;
 - **FTP**: share files over FTP for direct access from other apps. You can both download and upload files from and to the computer from other device;
 
+![lan-sharing](./public/changelog/assets/beta-3/lan-sharing.jpg)
+
 #### Quick Access Menu
 
 The "Dashboard" button in the sidebar now acts as a quick access menu. Hovering over it opens a panel showing your Favorites and Tagged items.
@@ -73,6 +77,8 @@ All items in the panel are real directory entries - you can drag and drop items 
 
 Can be disabled in `Settings > UI appearance > Open quick access panel on hover`.
 
+![quick-access.jpg](./public/changelog/assets/beta-3/quick-access.jpg)
+
 #### Zip Archives
 
 Compress and extract zip archives directly from the file browser actions menu:
@@ -80,13 +86,19 @@ Compress and extract zip archives directly from the file browser actions menu:
 - **Extract**: extract a `.zip` file to the current directory or to a named folder;
 - **Compress**: compress selected files and directories into a `.zip` archive;
 
+![archiver.jpg](./public/changelog/assets/beta-3/archiver.jpg)
+
 #### WSL Drives Detection
 
 On Windows, the app now automatically detects installed WSL distributions and displays their drives in the navigator, allowing you to browse WSL file systems natively.
 
+![wsl.jpg](./public/changelog/assets/beta-3/wsl.jpg)
+
 #### Tag Editing
 
 You can now edit tag names and colors. Open the tag selector on any file or directory to rename tags, change their color, or delete them.
+
+![tag-editor.jpg](./public/changelog/assets/beta-3/tag-editor.jpg)
 
 #### In-App Updates
 
@@ -137,10 +149,14 @@ Items on the home page and dashboard now have full context menus, matching the f
 - **Media navigation**: navigate between files in the current directory without closing quick view;
 - **Text file preview**: improved text file preview with proper encoding detection, inline editing, and parsed markdown rendering;
 
+![quick-view.jpg](./public/changelog/assets/beta-3/quick-view.jpg)
+
 #### Quick Search Enhancements
 
 - **All properties**: search by any file property - name, size, item count, modified, created, accessed, path, or MIME type (e.g. `modified: today`, `mime: image`);
 - **Size ranges**: filter by size using comparisons and ranges (e.g. `size: >=2mb`, `size: 1mb..10mb`);
+
+![quick-search.jpg](./public/changelog/assets/beta-3/quick-search.jpg)
 
 #### File Operations
 
@@ -155,7 +171,7 @@ Items on the home page and dashboard now have full context menus, matching the f
 
 #### Other
 
-- **App size reduction**: reduced app bundle size by excluding high-res built-in backgrounds and using compressed previews in the media banner editor;
+- **App size reduction**: reduced app bundle size from 32 MB to 12 MB;
 - **Global search**: display a "show settings" button in empty state and increased default search depth;
 - **Windows shortcuts**: `.lnk` files now open their target in the navigator instead of launching externally;
 - **Dashboard**: improved tagged section layout;
