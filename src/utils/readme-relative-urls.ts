@@ -4,6 +4,7 @@
 
 import { convertFileSrc } from '@tauri-apps/api/core';
 import { join } from '@tauri-apps/api/path';
+import { getParentDirectory } from '@/utils/normalize-path';
 
 export type ReadmeAssetRewriteOptions
   = | {
@@ -13,6 +14,10 @@ export type ReadmeAssetRewriteOptions
   | {
     kind: 'localExtension';
     extensionRootPath: string;
+  }
+  | {
+    kind: 'localMarkdownFile';
+    markdownFilePath: string;
   };
 
 function urlNeedsRelativeRewrite(url: string): boolean {
@@ -90,6 +95,11 @@ export async function rewriteMarkdownAssetUrls(
 
     if (options.kind === 'remoteGitHub') {
       element.setAttribute('src', resolveAgainstDocumentBase(relativePath, options.documentBaseUrl));
+    }
+    else if (options.kind === 'localMarkdownFile') {
+      const baseDir = getParentDirectory(options.markdownFilePath);
+      const fullPath = await join(baseDir, relativePath);
+      element.setAttribute('src', convertFileSrc(fullPath));
     }
     else if (isSafeRelativePath(relativePath)) {
       const fullPath = await join(options.extensionRootPath, relativePath);

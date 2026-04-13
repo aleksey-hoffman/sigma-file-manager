@@ -38,6 +38,7 @@ import {
   encodeTextFileBytes,
   type TextFileSourceEncoding,
 } from '@/utils/decode-text-file-bytes';
+import { rewriteMarkdownAssetUrls } from '@/utils/readme-relative-urls';
 import { renderMarkdownToSafeHtml } from '@/utils/safe-html';
 
 const { t } = useI18n();
@@ -59,6 +60,7 @@ const textPreviewError = ref<string | null>(null);
 const textPreviewLoading = ref(false);
 const textSaveInProgress = ref(false);
 let textPreviewRequestId = 0;
+let markdownPreviewRequestId = 0;
 let unlistenLoadFile: UnlistenFn | null = null;
 let unlistenCloseRequested: UnlistenFn | null = null;
 
@@ -140,13 +142,48 @@ const isMarkdownQuickView = computed(() => {
   return getFileExtension(currentFilePath.value) === 'md';
 });
 
-const markdownPreviewHtml = computed(() => {
-  if (!isMarkdownQuickView.value) {
-    return '';
-  }
+const markdownPreviewHtml = ref('');
 
-  return renderMarkdownToSafeHtml(textEditorValue.value);
-});
+watch(
+  [textEditorValue, currentFilePath, isMarkdownQuickView, textPreviewLoading],
+  async () => {
+    if (!isMarkdownQuickView.value || textPreviewLoading.value) {
+      markdownPreviewHtml.value = '';
+      return;
+    }
+
+    const markdownPath = currentFilePath.value;
+
+    if (!markdownPath || isHttpOrHttpsUrl(markdownPath)) {
+      markdownPreviewHtml.value = renderMarkdownToSafeHtml(textEditorValue.value);
+      return;
+    }
+
+    const requestId = ++markdownPreviewRequestId;
+    const baseHtml = renderMarkdownToSafeHtml(textEditorValue.value);
+
+    try {
+      const rewritten = await rewriteMarkdownAssetUrls(baseHtml, {
+        kind: 'localMarkdownFile',
+        markdownFilePath: markdownPath,
+      });
+
+      if (requestId !== markdownPreviewRequestId) {
+        return;
+      }
+
+      markdownPreviewHtml.value = rewritten;
+    }
+    catch {
+      if (requestId !== markdownPreviewRequestId) {
+        return;
+      }
+
+      markdownPreviewHtml.value = baseHtml;
+    }
+  },
+  { immediate: true },
+);
 
 function thumbStripKind(path: string): 'image' | 'video' | 'audio' | 'document' {
   const type = determineFileType(path);
