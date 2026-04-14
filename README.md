@@ -18,6 +18,31 @@ Designed, developed, and maintained by [Aleksey Hoffman](https://github.com/alek
 [Discord](https://discord.gg/sxZTztFVwX) | [Reddit](https://www.reddit.com/r/SigmaFileManager) | [YouTube](https://www.youtube.com/@sigma-dev) | [X (Twitter)](https://twitter.com/sigma__dev) | [Telegram](https://t.me/sigma_devs)
 <br>Thanks to everyone who has been sharing this project with others!
 
+## Features
+
+#### Major features:
+
+- **Smart global search:** Finds files and folders in seconds (searches full `1TB` drive in ~2 seconds). Its typo correction system handles typos, wrong case, wrong word order, missing words, missing symbols, and missing file extension.
+- **Tabs:** Keep multiple directories open and switch between them instantly.
+- **Split view:** Any tab can be splitted into 2 panes which you can navigate indipendently and transfer files between them easily.
+- **Extensions and marketplace:** Install extensions from the built-in marketplace or local folders. Extensions can add commands, pages, shortcuts, settings, and more.
+- **Default file manager:** On Windows, Sigma can replace File Explorer for most everyday file actions.
+- **LAN file sharing:** Share or stream files and folders over your local network, with browser access, QR codes, and FTP support.
+- **Network locations (Alpha stage):** Connect to remote locations such as SSHFS, NFS, SMB, and CIFS.
+- **Address bar:** Navigate with the keyboard, autocomplete paths, and quickly jump to parent folders.
+- **Item filter:** Narrow large folders with glob patterns and property filters for size, dates, MIME type, and more.
+- **Smart drag and drop:** Move or copy local files more comfortably, and handle web drops more smoothly.
+- **Shortcuts and command palette:** Most actions are keyboard-friendly, with global shortcuts and a fast command palette for app and extension commands.
+- **Home banner and visual effects:** Personalize the UI with custom images, videos, built-in artwork, transparency, blend modes, and other style controls.
+- **Dashboard and quick access:** Reach favorites, tagged files, most visited locations, and history data from one central area.
+- **Tags:** Organize your files and folders with tags.
+- **Zip archives:** Compress files into `.zip` archives and extract them without leaving the app.
+- **In-app updates:** Download and install updates directly from update notifications.
+- **Quick view:** Instantly preview images, videos, audio, PDFs, and text files with `Space`, then move through files without opening external apps.
+- **WSL drives:** On Windows, browse detected WSL distributions directly in the navigator.
+- **Localization:** The app has translations for all most used languages. 
+- And more. Extensions provide additional features like video downloading (1000+ sites supported, including YouTube, Twitch, etc.), media converter, image size optimizer, etc.
+
 ## Sponsors
 
 <table>
