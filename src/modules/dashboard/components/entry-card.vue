@@ -86,15 +86,17 @@ function handleClick() {
   overflow: hidden;
   border-radius: var(--radius);
   background-color: hsl(var(--card));
-  transition: all 0.15s ease;
+  transition: background-color var(--hover-transition-duration-out) var(--hover-transition-easing-out);
 }
 
 .entry-card:hover {
   background-color: hsl(var(--muted));
+  transition: background-color var(--hover-transition-duration-in);
 }
 
 .entry-card:hover .entry-card__action {
   opacity: 1;
+  transition: opacity var(--hover-transition-duration-in);
 }
 
 .entry-card__main {
@@ -164,7 +166,7 @@ function handleClick() {
 .entry-card__action {
   flex-shrink: 0;
   opacity: 0;
-  transition: opacity 0.15s ease;
+  transition: opacity var(--hover-transition-duration-out) var(--hover-transition-easing-out);
 }
 
 .entry-card__action:hover {

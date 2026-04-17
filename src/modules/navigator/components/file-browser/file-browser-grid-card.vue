@@ -456,18 +456,18 @@ function isDirLoadingWithProgress(entry: DirEntry): boolean {
 .file-browser-grid-card__overlay--hover {
   background-color: hsl(var(--foreground) / 5%);
   opacity: 0;
-  transition: opacity 0.15s ease-out;
+  transition: opacity var(--hover-transition-duration-out) var(--hover-transition-easing-out);
 }
 
 .file-browser-grid-card:hover .file-browser-grid-card__overlay--hover {
   opacity: 1;
-  transition: opacity 0s;
+  transition: opacity var(--hover-transition-duration-in);
 }
 
 .file-browser-grid-card[data-drag-over] .file-browser-grid-card__overlay--hover {
   background-color: hsl(var(--primary) / 15%);
   box-shadow: inset 0 0 0 2px hsl(var(--primary) / 60%);
   opacity: 1;
-  transition: opacity 0s;
+  transition: opacity var(--hover-transition-duration-in);
 }
 </style>

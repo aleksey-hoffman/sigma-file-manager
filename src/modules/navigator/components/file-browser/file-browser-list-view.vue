@@ -388,19 +388,19 @@ const { clockRef: listModifiedClock } = useRelativeDateDisplayClock(shouldTrackL
 .file-browser-list-view__overlay--hover {
   background-color: hsl(var(--foreground) / 5%);
   opacity: 0;
-  transition: opacity 0.15s ease-out;
+  transition: opacity var(--hover-transition-duration-out) var(--hover-transition-easing-out);
 }
 
 .file-browser-list-view__entry:hover .file-browser-list-view__overlay--hover {
   opacity: 1;
-  transition: opacity 0s;
+  transition: opacity var(--hover-transition-duration-in);
 }
 
 .file-browser-list-view__entry[data-drag-over] .file-browser-list-view__overlay--hover {
   background-color: hsl(var(--primary) / 15%);
   box-shadow: inset 0 0 0 2px hsl(var(--primary) / 60%);
   opacity: 1;
-  transition: opacity 0s;
+  transition: opacity var(--hover-transition-duration-in);
 }
 
 .file-browser-list-view__header-size--with-info {

@@ -85,11 +85,12 @@ async function handleClick() {
   gap: 0;
   grid-template-columns: 48px 1fr;
   text-align: left;
-  transition: background-color 0.15s ease;
+  transition: background-color var(--hover-transition-duration-out) var(--hover-transition-easing-out);
 }
 
 .user-directory-card:hover {
   background-color: hsl(var(--muted));
+  transition: background-color var(--hover-transition-duration-in);
 }
 
 .user-directory-card:focus-visible {

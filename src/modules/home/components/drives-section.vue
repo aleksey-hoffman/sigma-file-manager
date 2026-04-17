@@ -124,12 +124,19 @@ const sectionTitle = computed(() => {
 
 .drives-section__add-button {
   opacity: 0;
-  transition: opacity 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+  transition:
+    opacity var(--hover-transition-duration-out) var(--hover-transition-easing-out),
+    background-color var(--hover-transition-duration-out) var(--hover-transition-easing-out),
+    color var(--hover-transition-duration-out) var(--hover-transition-easing-out);
 }
 
 .drives-section:hover .drives-section__add-button,
 .drives-section:focus-within .drives-section__add-button {
   opacity: 1;
+  transition:
+    opacity var(--hover-transition-duration-in),
+    background-color var(--hover-transition-duration-in),
+    color var(--hover-transition-duration-in);
 }
 
 .drives-section__grid {
@@ -180,11 +187,16 @@ const sectionTitle = computed(() => {
 
 .drives-section__grid .dir-entry-interactive {
   border-radius: var(--radius);
-  transition: box-shadow 0.15s ease, background-color 0.15s ease;
+  transition:
+    box-shadow var(--hover-transition-duration-out) var(--hover-transition-easing-out),
+    background-color var(--hover-transition-duration-out) var(--hover-transition-easing-out);
 }
 
 .drives-section__grid .dir-entry-interactive[data-drag-over] {
   background-color: hsl(var(--primary) / 8%);
   box-shadow: inset 0 0 0 2px hsl(var(--primary) / 60%);
+  transition:
+    box-shadow var(--hover-transition-duration-in),
+    background-color var(--hover-transition-duration-in);
 }
 </style>

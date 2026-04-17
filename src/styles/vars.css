@@ -1,6 +1,11 @@
 :root {
   color-scheme: light;
 
+  /* Hover transition timings: instant in, animated out */
+  --hover-transition-duration-in: 0s;
+  --hover-transition-duration-out: 0.15s;
+  --hover-transition-easing-out: ease-out;
+
   /* Drive progress indicator colors */
   --drive-progress-color-green: 174deg 100% 27%;
   --drive-progress-color-red: 4deg 82% 58%;

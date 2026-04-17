@@ -221,11 +221,12 @@ async function handleUnmount(clickEvent: MouseEvent) {
   gap: 0;
   grid-template-columns: 56px 1fr auto;
   text-align: left;
-  transition: background-color 0.15s ease;
+  transition: background-color var(--hover-transition-duration-out) var(--hover-transition-easing-out);
 }
 
 .drive-card:hover {
   background-color: hsl(var(--muted));
+  transition: background-color var(--hover-transition-duration-in);
 }
 
 .drive-card:focus-visible {
@@ -239,10 +240,12 @@ async function handleUnmount(clickEvent: MouseEvent) {
 
 .drive-card--unmounted {
   opacity: 0.6;
+  transition: background-color var(--hover-transition-duration-out) var(--hover-transition-easing-out), opacity var(--hover-transition-duration-out) var(--hover-transition-easing-out);
 }
 
 .drive-card--unmounted:hover {
   opacity: 1;
+  transition: background-color var(--hover-transition-duration-in), opacity var(--hover-transition-duration-in);
 }
 
 .drive-card__preview {
@@ -308,11 +311,15 @@ async function handleUnmount(clickEvent: MouseEvent) {
   color: hsl(var(--muted-foreground));
   cursor: pointer;
   opacity: 0;
-  transition: opacity 0.15s ease, color 0.15s ease, background-color 0.15s ease;
+  transition:
+    opacity var(--hover-transition-duration-out) var(--hover-transition-easing-out),
+    color var(--hover-transition-duration-out) var(--hover-transition-easing-out),
+    background-color var(--hover-transition-duration-out) var(--hover-transition-easing-out);
 }
 
 .drive-card:hover .drive-card__eject {
   opacity: 1;
+  transition: opacity var(--hover-transition-duration-in);
 }
 
 .drive-card__eject:hover {

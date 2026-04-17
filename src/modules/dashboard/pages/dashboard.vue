@@ -554,12 +554,17 @@ async function handleUpdateTagColor(tagId: string, color: string) {
 
 .dashboard-page__items-grid .dir-entry-interactive {
   border-radius: var(--radius);
-  transition: box-shadow 0.15s ease, background-color 0.15s ease;
+  transition:
+    box-shadow var(--hover-transition-duration-out) var(--hover-transition-easing-out),
+    background-color var(--hover-transition-duration-out) var(--hover-transition-easing-out);
 }
 
 .dashboard-page__items-grid .dir-entry-interactive[data-drag-over] {
   background-color: hsl(var(--primary) / 8%);
   box-shadow: inset 0 0 0 2px hsl(var(--primary) / 60%);
+  transition:
+    box-shadow var(--hover-transition-duration-in),
+    background-color var(--hover-transition-duration-in);
 }
 
 @media (width <= 768px) {
