@@ -826,6 +826,7 @@
     "focusUnfocusFilterField": "Champ de filtre Focus / Unfocus",
     "focusUnfocusSettingsSearch": "Focus / Unfocus recherche des paramètres",
     "showHideGlobalSearch": "Afficher / masquer la recherche globale",
+    "toggleSplitView": "Activer / désactiver la vue partagée",
     "createNewDirectoryInTheCurrentDirectory": "Créer un nouveau répertoire dans le répertoire courant",
     "createNewFileInCurrentDirectory": "Créer un nouveau fichier dans le répertoire courant",
     "renameSelectedItems": "Renommer les éléments sélectionnés",

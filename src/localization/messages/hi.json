@@ -846,6 +846,7 @@
     "focusUnfocusSettingsSearch": "Focus / unfocus settings search",
     "showHideGlobalSearch": "वैश्विक खोज दिखाएँ/छिपाएँ",
     "toggleCommandPalette": "कमांड पैलेट खोलें/बंद करें",
+    "toggleSplitView": "विभाजित दृश्य दिखाएँ/छिपाएँ",
     "createNewDirectoryInTheCurrentDirectory": "वर्तमान निर्देशिका में नई निर्देशिका बनाएँ",
     "createNewFileInCurrentDirectory": "वर्तमान निर्देशिका में नई फ़ाइल बनाएँ",
     "renameSelectedItems": "चयनित आइटम का नाम बदलें",

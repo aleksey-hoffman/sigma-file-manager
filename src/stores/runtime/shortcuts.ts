@@ -97,6 +97,20 @@ const DEFAULT_SHORTCUTS: ShortcutDefinition[] = [
     isReadOnly: false,
   },
   {
+    id: 'toggleSplitView',
+    labelKey: 'shortcuts.toggleSplitView',
+    defaultKeys: {
+      ctrl: true,
+      key: 's',
+    },
+    scope: 'navigator',
+    conditions: {
+      inputFieldIsActive: false,
+      dialogIsOpened: false,
+    },
+    isReadOnly: false,
+  },
+  {
     id: 'copyCurrentDirectoryPath',
     labelKey: 'shortcuts.copyCurrentDirectoryPathToClipboard',
     defaultKeys: {

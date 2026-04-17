@@ -20,6 +20,7 @@ import {
   TooltipContent,
 } from '@/components/ui/tooltip';
 import { Switch } from '@/components/ui/switch';
+import { ContextMenuShortcut } from '@/components/ui/context-menu';
 import {
   FlipHorizontalIcon,
   PanelRightIcon,
@@ -28,6 +29,7 @@ import {
   EllipsisVerticalIcon,
 } from '@lucide/vue';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
+import { useShortcutsStore } from '@/stores/runtime/shortcuts';
 
 type LayoutType = 'list' | 'grid';
 
@@ -44,6 +46,7 @@ const emit = defineEmits<{
 
 const { t } = useI18n();
 const userSettingsStore = useUserSettingsStore();
+const shortcutsStore = useShortcutsStore();
 
 const currentLayout = computed(() => {
   const layoutName = userSettingsStore.userSettings.navigator.layout.type.name;
@@ -151,7 +154,10 @@ function handleToggleHiddenFiles(checked: boolean) {
           </Button>
         </TooltipTrigger>
         <TooltipContent>
-          {{ t('splitView') }}
+          <div class="navigator-toolbar-actions__tooltip-row">
+            {{ t('splitView') }}
+            <ContextMenuShortcut>{{ shortcutsStore.getShortcutLabel('toggleSplitView') }}</ContextMenuShortcut>
+          </div>
         </TooltipContent>
       </Tooltip>
       <Tooltip>
@@ -194,6 +200,13 @@ function handleToggleHiddenFiles(checked: boolean) {
 
 .navigator-toolbar-actions__button--active {
   background-color: hsl(var(--secondary));
+}
+
+.navigator-toolbar-actions__tooltip-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 .navigator-toolbar-actions__button--active .navigator-toolbar-actions__icon {

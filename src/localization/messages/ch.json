@@ -826,6 +826,7 @@
     "focusUnfocusFilterField": "聚焦/不聚焦过滤字段",
     "focusUnfocusSettingsSearch": "聚焦/取消聚焦设置搜索",
     "showHideGlobalSearch": "显示/隐藏全局搜索",
+    "toggleSplitView": "切换分屏视图",
     "createNewDirectoryInTheCurrentDirectory": "在当前目录下新建目录",
     "createNewFileInCurrentDirectory": "在当前目录创建新文件",
     "renameSelectedItems": "重命名所选项目",

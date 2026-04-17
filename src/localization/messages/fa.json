@@ -825,6 +825,7 @@
     "focusUnfocusFilterField": "فیلد فیلتر فوکوس / عدم تمرکز",
     "focusUnfocusSettingsSearch": "فوکوس / عدم تمرکز جستجوی تنظیمات",
     "showHideGlobalSearch": "نمایش / پنهان کردن جستجوی جهانی",
+    "toggleSplitView": "نمایش / پنهان کردن نمای تقسیم‌شده",
     "createNewDirectoryInTheCurrentDirectory": "ایجاد فهرست جدید در فهرست فعلی",
     "createNewFileInCurrentDirectory": "ایجاد فایل جدید در فهرست فعلی",
     "renameSelectedItems": "تغییر نام موارد انتخاب شده",

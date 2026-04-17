@@ -845,6 +845,7 @@
     "focusUnfocusFilterField": "Fokusiraj / odstraniti fokus iz polja filtra",
     "focusUnfocusSettingsSearch": "Fokusiraj / odstraniti fokus iz iskanja nastavitev",
     "showHideGlobalSearch": "Pokaži / skrij globalno iskanje",
+    "toggleSplitView": "Preklopi razdeljen pogled",
     "createNewDirectoryInTheCurrentDirectory": "Ustvari novo mapo v trenutni mapi",
     "createNewFileInCurrentDirectory": "Ustvari novo datoteko v trenutni mapi",
     "renameSelectedItems": "Preimenuj izbrane predmete",

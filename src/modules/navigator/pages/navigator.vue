@@ -649,6 +649,10 @@ function registerShortcutHandlers() {
   shortcutsStore.registerHandler('navigateBack', () => callActivePaneMethod('navigateBack'));
   shortcutsStore.registerHandler('switchToLeftPane', () => switchToPane(0));
   shortcutsStore.registerHandler('switchToRightPane', () => switchToPane(1));
+  shortcutsStore.registerHandler('toggleSplitView', () => {
+    if (globalSearchStore.isOpen) return false;
+    handleToggleSplitView();
+  });
 }
 
 onMounted(() => {

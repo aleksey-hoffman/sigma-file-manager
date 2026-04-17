@@ -826,6 +826,7 @@
     "focusUnfocusFilterField": "フォーカス/フォーカス解除フィルタ フィールド",
     "focusUnfocusSettingsSearch": "設定検索のフォーカス/フォーカス解除",
     "showHideGlobalSearch": "グローバル検索の表示/非表示",
+    "toggleSplitView": "分割表示の切り替え",
     "createNewDirectoryInTheCurrentDirectory": "現在のディレクトリに新しいディレクトリを作成",
     "createNewFileInCurrentDirectory": "現在のディレクトリに新しいファイルを作成",
     "renameSelectedItems": "選択したアイテムの名前を変更",

@@ -828,6 +828,7 @@
     "focusUnfocusFilterField": "Campo de filtro de foco/desfoco",
     "focusUnfocusSettingsSearch": "Foco/desfoco pesquisa de configurações",
     "showHideGlobalSearch": "Mostrar/Ocultar pesquisa global",
+    "toggleSplitView": "Mostrar / ocultar visualização dividida",
     "createNewDirectoryInTheCurrentDirectory": "Criar novo diretório no diretório atual",
     "createNewFileInCurrentDirectory": "Criar novo arquivo no diretório atual",
     "renameSelectedItems": "Renomear itens selecionados",

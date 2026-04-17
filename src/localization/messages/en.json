@@ -846,6 +846,7 @@
     "focusUnfocusSettingsSearch": "Focus / unfocus settings search",
     "showHideGlobalSearch": "Show / hide global search",
     "toggleCommandPalette": "Open / close command palette",
+    "toggleSplitView": "Toggle split view",
     "createNewDirectoryInTheCurrentDirectory": "Create new directory in the current directory",
     "createNewFileInCurrentDirectory": "Create new file in current directory",
     "renameSelectedItems": "Rename selected items",

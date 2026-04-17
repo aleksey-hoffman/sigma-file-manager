@@ -90,6 +90,7 @@ const shortcutIcons: Record<ShortcutId, Component> = {
   reloadCurrentDirectory: RotateCcwIcon,
   toggleSettingsSearch: TextSearchIcon,
   toggleCommandPalette: TerminalSquareIcon,
+  toggleSplitView: FlipHorizontalIcon,
   copyCurrentDirectoryPath: CopyIcon,
   copy: CopyIcon,
   cut: FolderInputIcon,

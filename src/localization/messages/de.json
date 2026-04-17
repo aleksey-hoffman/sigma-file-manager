@@ -826,6 +826,7 @@
     "focusUnfocusFilterField": "Fokus-/Unfokus-Filterfeld",
     "focusUnfocusSettingsSearch": "Einstellungssuche fokussieren/entfokussieren",
     "showHideGlobalSearch": "Globale Suche ein-/ausblenden",
+    "toggleSplitView": "Geteilte Ansicht ein-/ausblenden",
     "createNewDirectoryInTheCurrentDirectory": "Neues Verzeichnis im aktuellen Verzeichnis erstellen",
     "createNewFileInCurrentDirectory": "Neue Datei im aktuellen Verzeichnis erstellen",
     "renameSelectedItems": "Ausgewählte Elemente umbenennen",

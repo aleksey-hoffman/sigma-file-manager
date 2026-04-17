@@ -826,6 +826,7 @@
     "focusUnfocusFilterField": "Odak / odak dışı filtre alanı",
     "focusUnfocusSettingsSearch": "Ayar aramasını odakla / odaktan çıkar",
     "showHideGlobalSearch": "Global aramayı göster / gizle",
+    "toggleSplitView": "Bölünmüş görünümü aç / kapat",
     "createNewDirectoryInTheCurrentDirectory": "Geçerli dizinde yeni dizin oluştur",
     "createNewFileInCurrentDirectory": "Geçerli dizinde yeni dosya oluştur",
     "renameSelectedItems": "Seçili öğeleri yeniden adlandır",

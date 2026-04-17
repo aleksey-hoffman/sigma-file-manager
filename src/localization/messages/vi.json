@@ -826,6 +826,7 @@
     "focusUnfocusFilterField": "Trường bộ lọc lấy nét/không lấy nét",
     "focusUnfocusSettingsSearch": "Lấy nét / không lấy nét tìm kiếm cài đặt",
     "showHideGlobalSearch": "Hiển thị / ẩn tìm kiếm toàn cầu",
+    "toggleSplitView": "Bật / tắt chế độ chia màn hình",
     "createNewDirectoryInTheCurrentDirectory": "Tạo thư mục mới trong thư mục hiện tại",
     "createNewFileInCurrentDirectory": "Tạo tệp mới trong thư mục hiện tại",
     "renameSelectedItems": "Đổi tên các mục đã chọn",
