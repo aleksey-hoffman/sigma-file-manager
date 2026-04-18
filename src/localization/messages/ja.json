@@ -2,7 +2,7 @@
   "app": {
     "name": "Sigma File Manager",
     "description": "はフリー、オープンソース、高機能、モダンなファイルマネージャーアプリで、GNU GPLv3またはそれ以降でライセンスされています。",
-    "copyright": "著作権 © 2021 - 現在 Aleksey Hoffman. すべての著作権を保有します。"
+    "copyright": "Copyright © 2021 - present Aleksey Hoffman. All rights reserved."
   },
   "units": {
     "px": "px",
@@ -23,7 +23,7 @@
     "navigator": "ナビゲーター",
     "dashboard": "ダッシュボード",
     "notes": "ノート",
-    "settings": "設定方法",
+    "settings": "環境設定",
     "extensions": "拡張機能"
   },
   "language": {
@@ -39,7 +39,7 @@
   "quickAccess": {
     "title": "クイックアクセス",
     "favorites": "お気に入り",
-    "tagged": "タグ付き",
+    "tagged": "タグ",
     "emptyFavorites": "お気に入りなし",
     "emptyTagged": "タグ付きアイテムなし",
     "unknownTagGroup": "不明なタグ"
@@ -83,7 +83,7 @@
     "appActions": "アプリ アクション",
     "openWindow": "ウィンドウを開く",
     "reloadWindow": "ウィンドウのリロード",
-    "quit": "「やめる」"
+    "quit": "終了"
   },
   "userDirs": {
     "home": "ホーム",
@@ -91,16 +91,16 @@
     "downloads": "ダウンロード",
     "documents": "ドキュメント",
     "screenshots": "スクリーンショット",
-    "pictures": "写真",
+    "pictures": "ピクチャ",
     "videos": "ビデオ",
-    "music": "音楽"
+    "music": "ミュージック"
   },
   "tabs": {
     "workspaceTabs": "ワークスペースタブ",
     "newTabInCurrentWorkspace": "現在のワークスペースの新しいタブ",
     "closeAllTabsInCurrentWorkspace": "現在のワークスペースのすべてのタブを閉じる",
     "noTabsInCurrentWorkspace": "現在のワークスペースにはタブがありません",
-    "tabs": "Tabs",
+    "tabs": "タブ",
     "newTab": "新しいタブ",
     "tabActions": "タブ操作",
     "closeTab": "タブを閉じる",
@@ -127,7 +127,7 @@
       "itemName": "アイテム名",
       "directoryItemCount": "ディレクトリ アイテム数",
       "fileSize": "ファイルサイズ",
-      "dateMetaModified": "日付のメタが変更されました",
+      "dateMetaModified": "メタデータ更新日",
       "noteTitle": "メモのタイトル",
       "noteContent": "メモの内容",
       "noteGroup": "ノート グループ",
@@ -148,13 +148,13 @@
     "closeGlobalSearch": "グローバル検索を閉じる",
     "searchData": "検索データ",
     "scanDepth": "スキャン深度",
-    "searchResults": "の検索結果",
+    "searchResults": "検索結果",
     "recentItems": "最近のアイテム",
     "globalItems": "グローバルアイテム",
     "statsStoringDisabled": "統計の保存は無効です",
     "onlyNamesMatchQuery": "クエリに正確に一致する名前のみが見つかります。",
     "caseDoesntMatter": "大文字と小文字は関係ありません。すべての単語は小文字に変換されます。",
-    "increasedTypoTolerance": "「タイプミス耐性の向上」",
+    "increasedTypoTolerance": "タイプミス耐性の向上",
     "showDirectoriesOnTop": "ディレクトリを一番上に表示",
     "searchAllDrives": "すべてのドライブを検索",
     "selectDrives": "インデックス化するドライブを選択",
@@ -199,7 +199,7 @@
       "searched": "{n} 件のアイテムをインデックス済み",
       "searchingLevelsDeep": "{n} レベルの深さ",
       "indexed": "{time}にインデックス作成",
-      "nothingFound": "「何も見つかりませんでした」"
+      "nothingFound": "何も見つかりませんでした"
     },
     "showSearchSettings": "検索設定を表示"
   },
@@ -244,18 +244,18 @@
     "appDoesntStoreStats": "アプリは、ディレクトリ/ファイルとのやり取りの統計を保存しません。",
     "enableTheOptionCalled": "というオプションを有効にする",
     "storeTheListOfOpenedDirectoryItems": "\"開いているディレクトリ項目のリストを保存\"",
-    "inTheStatsSectionOfSettings": "設定の\"統計\"セクション:",
+    "inTheStatsSectionOfSettings": "環境設定の「統計」セクション:",
     "openedWillBeShownHere": "開いているディレクトリ項目がここに表示されます",
     "subtitle": "お気に入り、タグ付け、よく使うアイテムへのクイックアクセス",
     "tabs": {
       "favorites": "お気に入り",
-      "tagged": "タグ付き",
+      "tagged": "タグ",
       "frequent": "よく使う",
       "history": "履歴"
     },
     "emptyFavorites": "お気に入りはまだありません",
     "emptyFavoritesDescription": "ナビゲーターでファイルまたはフォルダーを右クリックし、「お気に入りに追加」を選択してください。",
-    "emptyTagged": "タグ付きアイテムはありません",
+    "emptyTagged": "タグ付けされたアイテムはありません",
     "emptyTaggedDescription": "タグを使用してファイルとフォルダーを整理し、素早くアクセスできるようにしましょう。",
     "emptyFrequent": "よく使うアイテムはありません",
     "emptyFrequentDescription": "頻繁に開くアイテムは自動的にここに表示されます。",
@@ -288,10 +288,10 @@
       "downloadUpdatesAutomatically": "アップデートを自動的にダウンロードする",
       "installUpdatesAutomatically": "アップデートを自動的にインストールする",
       "windowControls": "ウィンドウコントロール",
-      "windowCloseButtonAction": "ウィンドウ \"閉じる\" ボタン アクション",
+      "windowCloseButtonAction": "ウィンドウ「閉じる」ボタン アクション",
       "startupBehavior": "起動動作",
-      "launchAppOnSystemLogin": "システムログイン時にアプリを起動",
-      "launchAppInHiddenState": "「隠し状態でアプリを起動」",
+      "launchAppOnSystemLogin": "ログイン時にアプリを起動",
+      "launchAppInHiddenState": "バックグラウンドで起動",
       "decreaseZoomLevel": "ズームレベルを下げる",
       "increaseZoomLevel": "ズームレベルを上げる",
       "resetZoomLevel": "ズームレベルをリセット"
@@ -330,7 +330,7 @@
     },
     "visualEffects": {
       "title": "視覚効果",
-      "windowTransparencyEffect": "「ウィンドウ透明効果」",
+      "windowTransparencyEffect": "ウィンドウ透明効果",
       "overlayBlur": "オーバーレイぼかし: {n}@:units.px",
       "overlayMediaContrast": "オーバーレイメディアのコントラスト: {n}%",
       "overlayMediaBrightness": "オーバーレイメディアの明るさ: {n}%",
@@ -362,7 +362,7 @@
       "makeEffectLessProminentOnHomePage": "ホームページで効果を目立たなくする",
       "useTheSameSettingsForAllPages": "すべてのページに同じ設定を使用する",
       "previewEffectForSelectedPage": "選択したページのプレビュー効果",
-      "previewEffectForSelectedPageTooltip": "選択したページのカスタマイズが終了したら無効にして、\"設定\" ページの効果を確認してください",
+      "previewEffectForSelectedPageTooltip": "選択したページのカスタマイズが終了したら無効にして、「環境設定」ページの効果を確認してください",
       "pageToCustomize": "カスタマイズするページ",
       "pageToCustomizeDescription1": "リストからページを選択し、設定を調整して保存します。",
       "pageToCustomizeDescription2": "効果のプレビューは、別のページにアクセスするまでこのページに表示されます。",
@@ -372,15 +372,15 @@
       "resetToDefaults": "ビジュアル効果を既定にリセット"
     },
     "homeBannerEffects": {
-      "title": "「ホームバナー効果」",
-      "backgroundGlowEffect": "「背景グロー効果」",
+      "title": "ホームバナー効果",
+      "backgroundGlowEffect": "背景グロー効果",
       "theme": {
         "title": "テーマ",
         "themeType": "テーマタイプ",
         "themeTypeRadio": {
           "dark": "暗い",
-          "lightFilter": "「光フィルター」",
-          "light": "「ライト（開発中）」"
+          "lightFilter": "光フィルター",
+          "light": "ライト（開発中）"
         }
       }
     },
@@ -401,7 +401,7 @@
       "title": "アニメーション",
       "homePageAnimations": "ホームページアニメーション",
       "homeBannerAnimation": {
-        "title": "「ホームバナーアニメーション」",
+        "title": "ホームバナーアニメーション",
         "hint": "設定は次のページ変更時に適用されます"
       }
     },
@@ -416,7 +416,7 @@
     "dateTime": {
       "dateTime": "日付時刻",
       "dateTimePreview": "日時のプレビュー:",
-      "dateTimeRegionalFormat": "「日付/時刻の地域形式」",
+      "dateTimeRegionalFormat": "日付/時刻の地域形式",
       "autoDetectRegionalFormat": "地域フォーマットを自動検出",
       "regionalFormatLocale": "地域形式のロケール",
       "resetRegionalFormatToDefault": "地域のフォーマットをデフォルトにリセット",
@@ -429,7 +429,7 @@
       "displayedDateProperties": "表示された日付のプロパティ",
       "showSeconds": "秒を表示",
       "showMilliseconds": "ミリ秒を表示",
-      "showRelativeDates": "直近の時刻を相対形式で表示する（例: 5分前、今日 15:15）"
+      "showRelativeDates": "最近の時刻を相対形式で表示する（例: 5分前、今日 15:15）"
     },
     "overlays": {
       "overlays": "オーバーレイ",
@@ -440,7 +440,7 @@
       "directoryItemIconBackgroundColor": "ディレクトリ項目アイコンの背景色",
       "none": "なし",
       "minimal": "最小限",
-      "homePageItemCardDesign": "「ホームページアイテムカードデザイン」",
+      "homePageItemCardDesign": "ホームページアイテムカードデザイン",
       "neoinfusiveExtruded": "Neoinfusive | 押し出された",
       "neoinfusiveFlatGlow": "Neoinfusive | flat-glow",
       "dashboardOptions": "ダッシュボードのオプション",
@@ -481,16 +481,16 @@
     },
     "addressBar": {
       "addressBarActions": "アドレスバーアクション",
-      "editAddress": "住所を編集",
+      "editAddress": "アドレスを編集",
       "enterValidPath": "ファイル/ディレクトリへの有効なパスを入力してください。",
       "keepEditorOpened": "外側をクリックしてもアドレスバーエディタを開いたままにする",
       "closeEditor": "アドレスバーエディターを閉じる",
       "toAutocomplete": "ディレクトリ項目をオートコンプリートして繰り返す",
-      "toOpenThePath": "「道を開く」",
+      "toOpenThePath": "パスを開く",
       "copyPathToClipboard": "パスをクリップボードにコピー",
       "openCopiedPath": "コピーしたパスを開く",
       "noMatchingDirectories": "一致するディレクトリがありません",
-      "showSiblingDirectories": "兄弟ディレクトリを表示"
+      "showSiblingDirectories": "同じ階層のディレクトリを表示"
     },
     "clipboard": {
       "inactiveUnselectable": "非アクティブ選択不可",
@@ -512,7 +512,7 @@
       "systemIcons": "システムアイコン",
       "systemIconsDirectories": "フォルダー",
       "systemIconsFiles": "ファイル",
-      "navigatorItemHoverEffect": "「ナビゲーターアイテムのホバー効果」",
+      "navigatorItemHoverEffect": "ナビゲーターアイテムのホバー効果",
       "navigatorItemList": "ナビゲーターアイテム一覧",
       "ocdNameColumnMaxWidth": "OCD | '名前' 列の最大幅:",
       "filesWithDisproportionatelyLongNames": "ファイル名が不釣り合いに長いと、ファイル リストが乱雑に見えるため、名前列の最大幅を 50% などの低い値に設定して、より整理された外観にすることをお勧めします",
@@ -520,7 +520,7 @@
     },
     "performance": {
       "gpuSystemMemory": "GPU / システムメモリ",
-      "useHighPerformanceGpu": "「高性能GPUを使用」",
+      "useHighPerformanceGpu": "高性能GPUを使用",
       "ifEnabled": "有効な場合:",
       "theAppPerformanceMightIncrease": "アプリのパフォーマンスが向上する可能性があります",
       "theAppSystemMemoryRamUsage": "アプリのシステム メモリ (RAM) の使用量が大幅に減少します (GPU メモリにオフロードされます)"
@@ -543,8 +543,8 @@
       "tabsBehaveAsPinnedDirectories": "有効にすると、タブは従来のタブではなくピン留めされたディレクトリとして動作します",
       "traditional": "トラディショナル (開発中)",
       "tabLayout": "タブレイアウト",
-      "compactVertical": "「縦型コンパクト」",
-      "compactVerticalTraditionalHorizontal": "「コンパクトタテ+トラディショナルヨコ」",
+      "compactVertical": "縦型コンパクト",
+      "compactVerticalTraditionalHorizontal": "縦型コンパクト+水平トラディショナル",
       "tabPreview": "タブプレビュー",
       "showTabPreview": "タブのプレビューを表示",
       "tabStorageIndicator": "タブストレージインジケータ",
@@ -559,19 +559,19 @@
       "sigmaDefault": "シグマのデフォルト",
       "sigmaDefaultDescription": "このカスタム シグマ ヒストリ スタイルを使用すると、ヒストリ スタックをナビゲートしながらヒストリに新しいパスを挿入した後でも、以前に開いたパスに戻ることができます。",
       "traditional": "伝統的",
-      "traditionalDescription": "「これは従来の履歴スタイルであり、大部分のアプリで使用されています。末尾以外の場所に新しいパスを挿入すると、後続のすべてのパスが上書きされます。つまり、履歴に戻って他のディレクトリを開くと、後続のすべてのエントリが上書きされます。消えてしまいます。",
+      "traditionalDescription": "これは従来の履歴スタイルであり、大部分のアプリで使用されています。末尾以外の場所に新しいパスを挿入すると、後続のすべてのパスが上書きされます。つまり、履歴に戻って他のディレクトリを開くと、後続のすべてのエントリが上書きされます。消えてしまいます。",
       "example": {
         "openDirectory": "ディレクトリを開く",
         "userPath": "/ユーザー",
-        "userPicturesPath": "/ユーザー/写真",
-        "userPicturesScreenshotsPath": "/user/pictures/screenshots",
+        "userPicturesPath": "/ユーザー/ピクチャ",
+        "userPicturesScreenshotsPath": "/ユーザー/ピクチャ/スクリーンショット",
         "ifYouNowGoBackToDirectory": "ディレクトリに戻ると",
         "andThenGoBackAgainTo": "そして、もう一度戻る",
         "andThenOpen": "そして開く",
         "and": "と",
         "userVideosPath": "/ユーザー/動画",
-        "sigmaDefaultExampleDescription": "\"戻る\" または \"進む\" ボタンを押すことで、履歴を以前のディレクトリに戻すことができます。",
-        "traditionalExampleDescription": "\"戻る\" または \"進む\" ボタンを押しても、履歴を以前のディレクトリに戻すことはできません。これらのディレクトリは上書きされており、履歴には 2 つのディレクトリしかないためです:"
+        "sigmaDefaultExampleDescription": "「戻る」または「進む」ボタンを押すことで、履歴を以前のディレクトリに戻すことができます。",
+        "traditionalExampleDescription": "「戻る」または 「進む」ボタンを押しても、履歴を以前のディレクトリに戻すことはできません。これらのディレクトリは上書きされており、履歴には 2 つのディレクトリしかないためです:"
       }
     },
     "input": {
@@ -580,7 +580,7 @@
       "showHiddenItems": "隠しアイテムを表示",
       "openWithSingleClick": "シングルクリックで開く",
       "hold": "所有",
-      "buttonToSelectWithoutOpening": "「アイテムを開かずに選択するボタン」",
+      "buttonToSelectWithoutOpening": "アイテムを開かずに選択するボタン",
       "doubleClickDelayMs": "ダブルクリック遅延 (ミリ秒)",
       "inputElements": "入力要素",
       "activateWhenTyping": "入力時にフィルタリングを有効にする",
@@ -613,9 +613,9 @@
       "searchOptions": "検索オプション",
       "autoScanPeriod": "自動スキャン期間",
       "scanDepth": "スキャン深度",
-      "higherDepthScansWillIncrease": "より深いスキャンは、スキャンと検索時間の両方を増やしますが、より深くネストされたディレクトリにあるファイルを見つけることができます.",
+      "higherDepthScansWillIncrease": "より深いスキャンは、スキャン時間と検索時間の両方を増やしますが、より深くネストされたディレクトリにあるファイルを見つけることができます.",
       "compressSearchData": "検索データの圧縮",
-      "compressionReduces": "圧縮により、検索データに必要な容量が大幅に削減されます (最大 20 分の 1) が、検索スキャンに時間がかかります (最大 2 分の 1)。",
+      "compressionReduces": "圧縮により、検索データに必要な容量が大幅に削減されます (最大 20 分の 1) が、スキャンに時間がかかります (最大 2 分の 1)。",
       "ignoredPaths": "無視されたパス",
       "enterPathToAddToIgnored": "無視リストに追加するパスを入力して押してください",
       "timeEstimates": "時間見積もり",
@@ -625,7 +625,7 @@
       "dependsOnFileLocation": "(検索ワードごとに 1 TB ドライブあたり) | ファイルの場所によって異なります"
     },
     "drives": {
-      "driveDetection": "「ドライブ検出」",
+      "driveDetection": "ドライブ検出",
       "focusAppWhenDriveConnected": "ドライブが接続されているときにアプリにフォーカス",
       "autoplaySettings": "自動再生の設定",
       "autoplaySettingsDescription": "ドライブ接続時にWindows エクスプローラーを自動的に開くかどうかを設定"
@@ -664,14 +664,14 @@
     "stars": "スター | {n}"
   },
   "settingsTabs": {
-    "general": "全般的",
-    "uiAppearance": "「UIの外観」",
+    "general": "全般",
+    "uiAppearance": "外観",
     "shortcuts": "ショートカット",
     "performance": "パフォーマンス",
     "tabsWorkspaces": "タブ",
     "input": "入力",
-    "search": "探す",
-    "dataStorage": "データストレージ",
+    "search": "検索",
+    "dataStorage": "データとストレージ",
     "stats": "統計",
     "experimental": "実験的",
     "extensions": "拡張機能"
@@ -752,21 +752,21 @@
     "columnType": "列タイプ",
     "typeTitles": {
       "name": "名前",
-      "dateModifiedContents": "コンテンツの変更日",
-      "dateModifiedMeta": "日付変更メタ",
-      "dateCreated": "作成日",
-      "dateModified": "変更日",
-      "dateAccessed": "アクセス日",
+      "dateModifiedContents": "内容更新日時",
+      "dateModifiedMeta": "メタデータ更新日時",
+      "dateCreated": "作成日時",
+      "dateModified": "更新日時",
+      "dateAccessed": "アクセス日時",
       "itemsSize": "アイテム/サイズ",
       "status": "スターテス"
     },
     "typeShortTitles": {
       "name": "名前",
-      "dateModifiedContents": "変更された内容",
-      "dateModifiedMeta": "変更されたメタ",
-      "dateCreated": "作成した",
-      "dateModified": "変更",
-      "dateAccessed": "アクセス",
+      "dateModifiedContents": "内容更新日時",
+      "dateModifiedMeta": "メタデータ更新日時",
+      "dateCreated": "作成日時",
+      "dateModified": "更新日時",
+      "dateAccessed": "アクセス日時",
       "itemsSize": "アイテム/サイズ",
       "status": "スターテス"
     }
@@ -774,7 +774,7 @@
   "errors": {
     "error": "エラー",
     "errorPathAlreadyExists": "エラー: パスは既に存在します",
-    "cannotOpenPath": "Error: cannot open the path"
+    "cannotOpenPath": "エラー: パスを開けません"
   },
   "shortcutsUI": {
     "sourceUser": "ユーザー",
@@ -790,7 +790,7 @@
     "shortcutRecorderGlobalCaptureHint": "キーを押しても何も表示されない場合、お使いのシステムや他のプログラムがこのウィンドウより先にキーを取っている可能性があります。別の組み合わせをお試しください。"
   },
   "shortcuts": {
-    "openCloseTheAppWindow": "アプリ ウィンドウを開く / 閉じる",
+    "openCloseTheAppWindow": "アプリ ウィンドウを開く/閉じる",
     "focusAppWindow": "アプリ ウィンドウをフォーカスする",
     "openGlobalSearch": "グローバル検索を開く",
     "openTheAppWindowCreateANewNote": "アプリ ウィンドウを開いて新しいメモを作成",
@@ -856,7 +856,7 @@
     "quickWindowPositioning": "クイックウィンドウ配置",
     "displaySystemEmojiAndSymbolPicker": "表示システム絵文字と記号ピッカー",
     "displaySystemClipboard": "システム クリップボードを表示します (システム設定でオンにする必要があります)",
-    "toggleCommandPalette": "Open / close command palette"
+    "toggleCommandPalette": "コマンドパレットを開く/閉じる"
   },
   "dialogs": {
     "errorDialog": {
@@ -870,7 +870,7 @@
       "pressButtonToCreateIssueAutomatically": "下のボタンを押すと、課題テンプレートが自動的に作成されます;",
       "openGeneratedLink": "ブラウザで生成されたリンクを開きます;",
       "reviewTemplate": "テンプレートを確認し、エラーに個人情報 (ユーザー名など) が含まれていないことを確認してください。",
-      "publishIssue": "そこにある「新しい問題を送信する」ボタンを押して、問題を公開",
+      "publishIssue": "「新しい問題を送信する」ボタンを押して、問題を公開",
       "error": "エラー",
       "errorTemplateLinkWasGenerated": "エラー テンプレート リンクが生成されました",
       "openTheLinkInYourBrowserToContinue": "続行するにはブラウザでリンクを開いてください",
@@ -883,7 +883,7 @@
     "confirmationDialog": {
       "localSharingFirewall": {
         "firewallPermissions": "ファイアウォールの許可",
-        "localSharingFeatureAllows": "\"ローカル共有\" 機能により、ローカル ネットワーク上のデバイス間でファイルを共有できます。",
+        "localSharingFeatureAllows": "「ローカル共有」機能により、ローカル ネットワーク上のデバイス間でファイルを共有できます。",
         "toUseLocalSharing": "ローカル共有を使用するには、プロンプトが表示されたらアプリがネットワークにアクセスできるようにする必要があります。"
       }
     },
@@ -902,7 +902,7 @@
       "permissions": "パーミッション",
       "warning": "警告",
       "warningDescription": "実験的な機能です。注意して使用してください。",
-      "path": "道",
+      "path": "パス",
       "owner": "オーナー",
       "readOnly": "読み取り専用",
       "protectedAppScope": "保護 (アプリ範囲)",
@@ -921,7 +921,7 @@
       "downloadUrlImage": "URL画像をダウンロード"
     },
     "homeBannerOverlayDialog": {
-      "overlayType": "「オーバーレイタイプ」",
+      "overlayType": "オーバーレイタイプ",
       "overlayOptions": "オーバーレイオプション",
       "topOverlayHeight": "トップ オーバーレイの高さ (CSS 単位)",
       "bottomOverlayHeight": "下部オーバーレイの高さ (CSS 単位)",
@@ -937,12 +937,12 @@
     },
     "homeBannerPositionDialog": {
       "positionXAxis": "X軸の位置",
-      "positionYAxis": "位置Y軸"
+      "positionYAxis": "Y軸の位置"
     },
     "imagePickerDialog": {
       "cancel": "キャンセル",
       "addImage": "画像を追加",
-      "imagePicker": "「画像ピッカー」",
+      "imagePicker": "画像ピッカー",
       "imagePath": "画像パス",
       "pathUrlBase64String": "パス / URL / base64 文字列",
       "pickImage": "画像を選択",
@@ -968,11 +968,11 @@
       "stream": "ストリーム",
       "sharedFile": "ファイルへのアクセス",
       "sharedDirectory": "フォルダーへのアクセス",
-      "doesnTWork": "「うまくいきませんか？」",
+      "doesnTWork": "うまくいきませんか？",
       "makeSurNetworkIsSetUp": "ネットワークが正しく設定されていることを確認してください:",
       "youShouldAllow": "ファイアウォールでネットワークへのアプリ アクセスを許可する必要があります",
       "thisDeviceShouldBeDiscoverable": "このデバイスはネットワーク上で検出可能である必要があります (プライベート プロファイルに接続されています)",
-      "yourWifiRouterShouldNotHaveClientIsolation": "お使いの WIFI ルーターでは、\"クライアント分離\" 機能がオフになっている必要があります。"
+      "yourWifiRouterShouldNotHaveClientIsolation": "お使いの WIFI ルーターでは、「クライアント分離」機能がオフになっている必要があります。"
     },
     "mathEditorDialog": {
       "addFormula": "数式を追加",
@@ -1001,18 +1001,18 @@
       "spellcheck": "スペルチェック",
       "convertMarkdownWhileTyping": "入力中に基本的なマークダウン構文を HTML に変換",
       "structure": "構造",
-      "chars": "チャーズ",
-      "created": "作成した",
-      "modified": "変更された",
+      "chars": "文字",
+      "created": "作成日時",
+      "modified": "更新日時",
       "markdownShortcuts": "マークダウンのショートカット",
       "withTheCursorOnANewLineType": "新しい行にカーソルを置き、指定されたシーケンスを入力して、対応する要素を追加します。",
       "tips": "チップ",
       "rightMouseButton": "マウスの右ボタン",
       "willSelectTheWordAndShowOptions": "単語を選択し、オプションを表示します",
       "pasteCopiedDataWithoutFormatting": "コピーしたデータをフォーマットせずに貼り付け",
-      "escapeBlockAddNewLine": "エスケープブロック; 新しい行を追加",
+      "escapeBlockAddNewLine": "エスケープブロック。新しい行を追加",
       "escapeBlock": "ブロックから抜ける",
-      "escapeBlockWhenEndIsReached": "「エスケープブロック(終了時)」",
+      "escapeBlockWhenEndIsReached": "エスケープブロック(終了時)",
       "1stLevelHeadline": "第 1 レベルの見出し",
       "n1to6LevelHeadline": "N[1-6] レベルの見出し",
       "multilineCodeBlock": "複数行コードブロック",
@@ -1048,7 +1048,7 @@
       "pathDoesNotExist": "パスが存在しません",
       "pathShouldBeAFile": "パスはファイルでなければなりません",
       "nameCannotBeEmpty": "名前を空にすることはできません",
-      "errorUnableToSelectTheProgram": "「エラー: プログラムを選択できません」"
+      "errorUnableToSelectTheProgram": "エラー: プログラムを選択できません"
     },
     "releaseNotesDialog": {
       "releaseNotes": "リリースノート"
@@ -1093,7 +1093,7 @@
       "createWorkspace": "ワークスペースを作成",
       "saveChanges": "変更内容を保存",
       "newWorkspace": "新しいワークスペース",
-      "newAction": "「新しいアクション」"
+      "newAction": "新しいアクション"
     },
     "archiveCompressionDialog": {
       "createArchive": "アーカイブを作成",
@@ -1102,7 +1102,7 @@
       "destinationPath": "宛先パス",
       "compression": "圧縮",
       "encryptWithPassword": "パスワードで暗号化",
-      "deleteFilesAfter": "後にファイルを削除",
+      "deleteFilesAfter": "圧縮後にファイルを削除",
       "itemsToAdd": "追加するアイテム",
       "nameCannotBeEmpty": "名前を空にすることはできません"
     },
@@ -1112,7 +1112,7 @@
       "gettingStats": "統計の取得"
     },
     "appGuideDialog": {
-      "appGuide": "「アプリガイド」",
+      "appGuide": "アプリガイド",
       "comingSoon": "近日公開",
       "moreGuidesWillBeAdded": "今後のアップデートでさらに多くのガイドが追加されます",
       "guideHeaderButtons": {
@@ -1122,7 +1122,7 @@
       },
       "nav": {
         "shortcuts": "ショートカット",
-        "introduction": "序章",
+        "introduction": "はじめに",
         "featureOverview": "機能概要",
         "mediaDownloading": "メディアのダウンロード",
         "navigatorTips": "ナビゲーターのヒント",
@@ -1131,7 +1131,7 @@
         "comingSoon": "近日公開"
       },
       "shortcuts": {
-        "about": "だいたい",
+        "about": "アバウト",
         "shortcutsInfo": "アプリ内のほとんどのアクションは、ショートカット (さまざまなキーボード キーの組み合わせ) で実行できます。アプリ自体でさえ、グローバル (システム全体) のカスタマイズ可能なショートカットで開いたり、フォーカスしたりできます。",
         "efficiencyBenefit": "この機能により、作業がより効率的になり、プロセスがより楽しくなります (たとえば、アプリをすぐに開いて、たった 1 つのショートカットで新しいメモを作成できます)。",
         "press": "プレス",
@@ -1142,17 +1142,17 @@
         "focusAppShortcut": "このアプリがフォーカスされていないときに押してください",
         "focusAppInstruction": "フォーカスする (最前面に移動する)。ショートカットをもう一度押すと、アプリが非表示になります。",
         "createNewNoteInfo": "新しいメモを作成",
-        "createNewNoteShortcut": "プレス",
+        "createNewNoteShortcut": "押す",
         "createNewNoteInstruction": "このアプリにフォーカスするには、すぐに新しいメモを作成し、メモ エディターを開きます。",
         "switchTabInfo": "タブを切り替える",
         "switchTabShortcut": "このアプリがフォーカスされていて、現在のワークスペースでいくつかのタブが開いている場合は、押してください",
         "switchTabInstruction": "指定されたタブを開く。"
       },
       "introduction": {
-        "getInvolved": "「参加する」",
+        "getInvolved": "参加する",
         "participationWays": "このアプリの開発に参加するには、さまざまな方法があります:",
         "participationOptions": "コミュニティに参加したり、機能リクエストを公開したり、問題を報告したり、新しいディスカッションを開いたり、このプロジェクトの Github ページで自分でコードを改善したりできます",
-        "rewards": "「プロジェクトを支援することで報酬を獲得することもできます」",
+        "rewards": "プロジェクトを支援することで報酬を獲得することもできます",
         "joinCommunity": "コミュニティに参加",
         "potentialErrors": "潜在的なエラー",
         "earlyDevelopment": "アプリは現在、初期開発 (プロトタイプ) 段階にあるため、以下に挙げる問題が発生することが予想されます。",
@@ -1160,8 +1160,8 @@
         "potentialProblems": "潜在的な問題",
         "nextUpdatesMightOverwrite": "次の更新により、アプリのユーザー設定の一部 (ショートカット、ピン留めされたアイテムなど) が上書き (削除) される可能性があります。そのため、開発の年次段階でそれらを複数回設定する必要がある場合があります。",
         "expectToSeeSomeErrors": "アプリの最初のバージョンでは、いくつかのエラーやパフォーマンスの問題が発生することが予想されます。ユーザーから報告を受け次第、問題を修正していきます。",
-        "notThoroughlyTestedYet": "「アプリはまだ完全にテストされていません。それ自体でコンピューター上のデータを削除または損傷することはありません (アプリの設定を除く)。ただし、すべての重要なデータを外部バックアップ ドライブ (ドライブ) にバックアップすることをお勧めします。このアプリをインストールして使用する前に、ほとんどの場合コンピューターから切断されている) またはクラウド ストレージに保存します。",
-        "notOptimizedYet": "「アプリはまだ最適化されていません。たとえば、大きな画像を含むディレクトリをスクロールしているときなど、RAM の使用量が急増して 1 GB を超えることがあります。したがって、今のところ、低層でアプリを使用しないでください。コンピュータ (つまり、RAM が 4 GB 以下のコンピュータ)"
+        "notThoroughlyTestedYet": "アプリはまだ完全にテストされていません。それ自体でコンピューター上のデータを削除または損傷することはありません (アプリの設定を除く)。ただし、すべての重要なデータを外部バックアップ ドライブ (ドライブ) にバックアップすることをお勧めします。このアプリをインストールして使用する前に、ほとんどの場合コンピューターから切断されている) またはクラウド ストレージに保存します。",
+        "notOptimizedYet": "アプリはまだ最適化されていません。例えば、大きな画像を含むディレクトリをスクロールしているときなど、RAM の使用量が急増して 1 GB を超えることがあります。今のところは、低スペックの PC でアプリを使用しないでください。 (RAM が 4 GB 以下の PC など)"
       },
       "mediaDownloading": {
         "videos": {
@@ -1170,15 +1170,15 @@
           "downloadingVideosFromAUrl": "URLから動画をダウンロード:",
           "justDragAndDrop": "動画ページの URL をアプリにドラッグ アンド ドロップし、ダウンロードする形式を選択するだけです。現在、サポートされているのは YouTube のみですが、今後さらに多くの Web サイトが追加される予定です。",
           "downloadingVideosFromADirectLink": "直接リンクからの動画のダウンロード (任意の Web サイト):",
-          "toDownloadAVideo": "「ビデオをダウンロードするには、直接リンクをアプリにドラッグ アンド ドロップするだけです。直接リンクはビデオ ファイルを直接指しています (例: https://example.com/video.mp4)。注:ブラウザの新しいタブで開くと、直接リンクになります。",
-          "pleaseKeepInMind": "「保護された動画の中には、リンクに追加のパラメーターが含まれているものがあることに注意してください。これらのパラメーターを含むリンク全体を選択してください。ただし、これらのリンクは、パラメーターに有効期限がある限りアクティブなままではないことに注意してください。日にち。",
+          "toDownloadAVideo": "ビデオをダウンロードするには、直接リンクをアプリにドラッグ アンド ドロップするだけです。直接リンクはビデオ ファイルを直接指しています (例: https://example.com/video.mp4)。注:ブラウザの新しいタブで開くと、直接リンクになります。",
+          "pleaseKeepInMind": "保護された動画の中には、リンクに追加のパラメーターが含まれているものがあることに注意してください。これらのパラメーターを含むリンク全体を選択してください。ただし、これらのリンクには、多くの場合有効期限があることに注意してください。",
           "downloadingVideoStreams": "ビデオストリームをダウンロードしています:",
           "videoStreamsCanBeDownloaded": "ビデオ ストリームは、直接リンクと同じ方法でダウンロードできます。ストリーム リンクは、認証トークンとタイムスタンプを含む場合と含まない場合があり、次のようになります:",
-          "warning": "「警告: この機能は責任を持って使用してください。特定のサービスから大量のコンテンツをダウンロードしている場合は、Web サイトで広告ブロッカーを無効にするか、プレミアム サブスクリプションを購入するなど、何らかの方法でサポートすることを検討してください。これは、サービスとサービスの両方に役立ちます。これらのプラットフォームをサポートしない場合、最終的に無料の教育、娯楽、創造の自由、およびそれらが提供するその他の利点へのアクセスを失う可能性があります。」"
+          "warning": "警告: この機能は責任を持って使用してください。特定のサービスから大量のコンテンツをダウンロードしている場合は、Web サイトで広告ブロッカーを無効にするか、プレミアム サブスクリプションを購入するなど、何らかの方法でサポートすることを検討してください。これは、サービスとサービスの両方に役立ちます。これらのプラットフォームをサポートしない場合、最終的に無料の教育、娯楽、創造の自由、およびそれらが提供するその他の利点へのアクセスを失う可能性があります。"
         }
       },
       "navigatorTips": {
-        "rangeItemSelection": "「範囲項目選択」",
+        "rangeItemSelection": "範囲項目選択",
         "toSelectMultipleDirectoryItems": "複数のディレクトリ項目を選択するには",
         "hold": "所有",
         "toSelectThe": "を選択する",
@@ -1188,7 +1188,7 @@
         "itemAnd": "アイテムと",
         "press": "押す",
         "onItToSelectTheRange": "その上で範囲を選択します。",
-        "singleItemSelection": "「単品選択」",
+        "singleItemSelection": "単品選択",
         "toSelectASingleDirectoryItemPress": "単一のディレクトリ項目を選択するには、押してください",
         "onTheItemToSelectIt": "アイテムを選択してください。",
         "keyboardItemNavigation": "キーボード項目のナビゲーション",
@@ -1207,11 +1207,11 @@
         "protectionIsAchieved": "保護は、特定のファイル属性を「拒否」状態に設定することによって実現されます。データは暗号化されません。属性が削除されても、保護されたファイルは引き続き読み取り/変更できます。",
         "goodWayToPreventYourself": "これは、自分自身やさまざまなアプリが重要なファイルを誤って/意図的に変更するのを防ぐ良い方法です。洗練されていない悪意のあるソフトウェアからデータを保護するのにも役立つ可能性があります.",
         "modes": "モード",
-        "simpleMode": "\"シンプル モード\" は、指定されたアイテム (ファイル / ディレクトリ) をこのアプリ内からのみ変更できないように保護します。アイテムは、他のプログラムから引き続き読み取りおよび変更できます。",
-        "advancedMode": "\"詳細モード\" は、上級ユーザーを対象としています。指定したアイテムにさまざまな属性を手動で設定できます。",
-        "immutableMode": "「\"不変モード\" は、ファイル/ディレクトリを不変にすることで保護する簡単な方法です。有効にすると、システムは指定されたファイル/ディレクトリのすべての属性を「拒否」状態に設定し、不変にします (つまり、プログラムは、属性をリセットせずに読み取り/書き込み/変更/削除することはできません)",
+        "simpleMode": "「シンプル モード」は、指定されたアイテム (ファイル / ディレクトリ) をこのアプリ内からのみ変更できないように保護します。アイテムは、他のプログラムから引き続き読み取りおよび変更できます。",
+        "advancedMode": "「詳細モード」は、上級ユーザーを対象としています。指定したアイテムにさまざまな属性を手動で設定できます。",
+        "immutableMode": "「不変モード」は、ファイル/ディレクトリを不変にすることで保護する簡単な方法です。有効にすると、システムは指定されたファイル/ディレクトリのすべての属性を「拒否」状態に設定し、不変にします (つまり、プログラムは、属性をリセットせずに読み取り/書き込み/変更/削除することはできません)",
         "warning": "警告",
-        "useWithCaution": "「注意して使用してください。\"拡張モード\" と \"不変モード\" はまだ開発の初期段階にあります。この機能はまだ完全にテストされていません。理論的には、ファイル / ディレクトリをロックすることができます。その内容にアクセスすることは不可能です.重要なデータで使用する前に、いくつかのテストファイル/ディレクトリでこの機能をテストしてください.問題が見つかった場合は、プロジェクトのGithubページで問題を作成して報告してください."
+        "useWithCaution": "注意して使用してください。「拡張モード」と「不変モード」はまだ開発の初期段階にあります。この機能はまだ完全にテストされていません。理論的には、ファイル / ディレクトリをロックすることができます。その内容にアクセスすることは不可能です.重要なデータで使用する前に、いくつかのテストファイル/ディレクトリでこの機能をテストしてください.問題が見つかった場合は、プロジェクトのGithubページで問題を作成して報告してください."
       },
       "addressBar": {
         "addressBarAllows": "アドレスバーにパスを入力して、ディレクトリやファイルをナビゲートできます。",
@@ -1228,58 +1228,58 @@
         "followsStandards": "基準に準拠",
         "onWindowsOsAllBackwardSlashes": "Windows OS では、すべてバックスラッシュ",
         "areAutomaticallyConverted": "自動的にスラッシュに変換されます",
-        "toProvideSeamless": "「シームレスな標準化されたワークフローを提供する」",
-        "whereToFindIt": "「それを見つける場所」",
+        "toProvideSeamless": "シームレスな標準化されたワークフローを提供する",
+        "whereToFindIt": "それを見つける場所",
         "addressBarCanBeOpened": "ショートカットでどのページからでもアドレスバーを開くことができます",
         "orByPressing": "または押すことによって",
         "typeInAddressManually": "アドレスを手動で入力",
-        "buttonInTheAddressBarMenu": "\"Navigator\"ページのアクションバーにあるアドレスバーメニューのボタン."
+        "buttonInTheAddressBarMenu": "「ナビゲーター」ページのアクションバーにあるアドレスバーメニューのボタン."
       }
     },
     "trashCurrentDir": {
-      "title": "Trashing current directory",
-      "description": "Selected items include the currently opened directory.",
-      "confirm": "Confirm, if this was intentional and you want to send it to trash.",
-      "trash": "Trash"
+      "title": "カレントディレクトリをゴミ箱に移動",
+      "description": "選択したアイテムは現在開かれているディレクトリを含んでいます。",
+      "confirm": "本当にゴミ箱に移動しますか？",
+      "trash": "ゴミ箱に移動"
     },
     "trashProtected": {
-      "title": "Trashing protected",
-      "description": "Selected items include {count} protected items.",
-      "confirm": "Confirm, if you want to send them to trash.",
-      "trashUnprotected": "Trash unprotected",
-      "trashAll": "Trash all"
+      "title": "保護されたアイテムをゴミ箱に移動",
+      "description": "選択したアイテムは {count} 個の保護されたアイテムを含みます。",
+      "confirm": "本当にゴミ箱に移動しますか？",
+      "trashUnprotected": "保護されていないアイテムをゴミ箱に移動",
+      "trashAll": "すべてゴミ箱に移動"
     },
     "deleteProtected": {
-      "title": "Deleting protected",
-      "description": "Selected items include {count} protected items.",
-      "confirm": "Confirm, if you want to delete them.",
-      "deleteUnprotected": "Delete unprotected",
-      "deleteAll": "Delete all"
+      "title": "保護されたアイテムの削除",
+      "description": "選択したアイテムは {count} 個の保護されたアイテムを含みます。",
+      "confirm": "この操作は取り消せません。本当に削除しますか？",
+      "deleteUnprotected": "保護されていないアイテムを削除",
+      "deleteAll": "すべて削除"
     },
     "deleteIrreversibly": {
       "title": "ドライブから完全削除",
       "descriptionSingle": "{path} は完全に削除されます。",
       "description": "この操作はコンピューターから {count} 個のアイテムを完全に削除します。",
-      "confirm": "この操作は取り消せません。理解したうえで承認してください。",
+      "confirm": "この操作は取り消せません。本当に削除しますか？",
       "delete": "削除"
     },
     "deleteCurrentDir": {
-      "title": "Deleting current directory",
-      "description": "Selected items include the currently opened directory.",
-      "confirm": "Confirm, if this was intentional and you want to delete it.",
-      "delete": "Delete"
+      "title": "カレントディレクトリの削除",
+      "description": "選択したアイテムは現在開かれているディレクトリを含んでいます。",
+      "confirm": "この操作は取り消せません。本当に削除しますか？",
+      "delete": "削除"
     },
     "deleteInRoot": {
-      "title": "Deleting root items",
-      "description": "Deleting system files in storage root might break the computer's operating system.",
-      "confirm": "Confirm, if you know what you are deleting.",
-      "delete": "Delete"
+      "title": "ルートアイテムの削除",
+      "description": "ストレージのルートにあるシステムアイテムを削除するとシステムを破壊する可能性があります。",
+      "confirm": "何を削除しようとしているのか理解したうえで承認してください。",
+      "delete": "削除"
     },
     "trashInRoot": {
-      "title": "Trashing root items",
-      "description": "Deleting system files in storage root might break the computer's operating system.",
-      "confirm": "Confirm, if you know what you are deleting.",
-      "trash": "Trash"
+      "title": "ルートアイテムをゴミ箱に移動",
+      "description": "ストレージのルートにあるシステムアイテムを削除するとシステムを破壊する可能性があります。",
+      "confirm": "何を削除しようとしているのか理解したうえで承認してください。",
+      "trash": "ゴミ箱に移動"
     }
   },
   "notifications": {
@@ -1325,28 +1325,28 @@
     "allItemsWereDeleted": "すべてのアイテムが削除されました",
     "deletedItems": "削除されたアイテム",
     "deletedItemsSize": "削除済みアイテムのサイズ",
-    "errorTrashItems": "エラー: ごみ箱",
+    "errorTrashItems": "エラー: ゴミ箱",
     "errorDeleteItems": "エラー: アイテムを削除",
     "failedToTrashSomeItems": "一部のアイテムをゴミ箱に移動できませんでした",
     "copied": "コピーしました",
     "moved": "移動しました",
     "skippedAll": "すべての項目をスキップしました",
     "skippedCount": "0件スキップ | 1件スキップ | {n}件スキップ | {n}件スキップ",
-    "trashed": "ごみ箱に入れられました",
+    "trashed": "ゴミ箱に入れられました",
     "deleted": "削除されました",
     "renamed": "名前を変更しました",
     "removedNItemsOfTotal": "{totalAmount} の {removedAmount}",
-    "trashedNItemsOfTotal": "{totalAmount} アイテムのうち {removedAmount} アイテムがごみ箱に入りました",
-    "deletedNItemsOfTotal": "{totalAmount} アイテムのうち {removedAmount} アイテムが削除されました",
-    "trashedNItems": "{totalAmount} アイテムがごみ箱に入りました",
-    "deletedNItems": "{totalAmount} アイテムが削除されました",
+    "trashedNItemsOfTotal": "{totalAmount} 個のアイテムのうち {removedAmount} アイテムがゴミ箱に入りました",
+    "deletedNItemsOfTotal": "{totalAmount} 個のアイテムのうち {removedAmount} アイテムが削除されました",
+    "trashedNItems": "{totalAmount} 個のアイテムがゴミ箱に入りました",
+    "deletedNItems": "{totalAmount} 個のアイテムが削除されました",
     "couldNotTrash": "ゴミ箱に移動できませんでした",
     "failedToDeleteSomeItems": "いくつかのアイテムを削除できませんでした",
     "couldNotDelete": "削除できませんでした",
-    "noteWasTrashed": "ノートはゴミ箱に捨てられました",
-    "switchToTrashedNotesList": "\"trashed notes\" リストに切り替えて、すべての破棄されたメモを表示します",
-    "removedNItemsFromPinned": "ピンから 0 アイテムを削除 | ピンから 1 アイテムを削除 | ピンから {n} アイテムを削除 | ピンから {n} アイテムを削除",
-    "addedNItemsToPinned": "固定に 0 アイテムを追加 | ピンに 1 アイテムを追加 | ピンに {n} アイテムを追加 | ピンに {n} アイテムを追加",
+    "noteWasTrashed": "ノートはゴミ箱に移動されました",
+    "switchToTrashedNotesList": "「削除済みノート」リストに切り替えて、すべての破棄されたメモを表示します",
+    "removedNItemsFromPinned": "ピンから 0 個のアイテムを削除 | ピンから 1 個のアイテムを削除 | ピンから {n} 個のアイテムを削除 | ピンから {n} 個のアイテムを削除",
+    "addedNItemsToPinned": "ピンに 0 個のアイテムを追加 | ピンに 1 個のアイテムを追加 | ピンに {n} 個のアイテムを追加 | ピンに {n} 個のアイテムを追加",
     "removedNItemsFromProtected": "保護対象から 0 個のアイテムを削除しました | 保護対象から 1 アイテムを削除しました | 保護対象から {n} 個のアイテムを削除しました | 保護対象から {n} 個のアイテムを削除しました",
     "addedNItemsToProtected": "保護対象に 0 個のアイテムを追加しました | 保護対象に 1 個のアイテムを追加しました | 保護対象に {n} 個のアイテムを追加しました | 保護対象に {n} 個のアイテムを追加しました",
     "actionFailed": "アクションに失敗しました",
@@ -1375,7 +1375,7 @@
     "localFileShareIsActive": "ローカルファイル共有がアクティブです",
     "cannotOpenThisItem": "このアイテムを開けません",
     "itemHasImmutableOrReadOnly": "アイテムには不変または読み取り専用の属性があります。",
-    "youCanResetItemPermissions": "\"パーミッション\" メニューでアイテムのパーミッションをリセットできます。",
+    "youCanResetItemPermissions": "「パーミッション」メニューでアイテムのパーミッションをリセットできます。",
     "cannotOpenPathFromClipboard": "クリップボードからパスを開けません",
     "pathDoesNotExistOnTheDrive": "ドライブにパスが存在しません。",
     "openedPathFromClipboard": "クリップボードからパスを開いた",
@@ -1395,8 +1395,8 @@
     "oneOfTheSearchFilesIsDamaged": "検索ファイルの 1 つが破損しています",
     "workspaceAdded": "ワークスペースが追加されました",
     "failedToFetchInstalledTerminals": "インストールされた端末の取得に失敗しました",
-    "removedFromFavorites": "Removed 0 items from favorites | Removed 1 item from favorites | Removed {n} items from favorites | Removed {n} items from favorites",
-    "addedToFavorites": "Added 0 items to favorites | Added 1 item to favorites | Added {n} items to favorites | Added {n} items to favorites"
+    "removedFromFavorites": "お気に入りから 0 個のアイテムを削除しました | お気に入りから 1 個のアイテムを削除しました | お気に入りから {n} 個のアイテムを削除しました | お気に入りから {n} 個のアイテムを削除しました",
+    "addedToFavorites": "お気に入りに 0 個のアイテムを追加しました | お気に入りに 1 個のアイテムを追加しました | 気に入りに {n} 個のアイテムをお追加しました | お気に入りに {n} 個のアイテムを追加しました"
   },
   "contextMenus": {
     "dirItem": {
@@ -1405,7 +1405,7 @@
       "openProgramEditor": "プログラムエディタを開く",
       "addProgram": "プログラムを追加",
       "tags": "タグ",
-      "protectItem": "「アイテムを守る」",
+      "protectItem": "アイテムを保護する",
       "protectedListDescription": "有効にすると、アイテムは保護リストに追加されます。このアプリ内からのみ変更/削除されないように保護されます。他のアプリは引き続き変更/削除できます。",
       "addToPinned": "固定に追加",
       "pinnedItemsLocation": "ピン留めされたアイテムはダッシュボード ページで見つけることができます",
@@ -1430,7 +1430,7 @@
       "ejectDrive": "ドライブを取り出す",
       "createSymbolicLink": "シンボリックリンクを作成",
       "windowsLinkLnk": "Windows リンク (.lnk)",
-      "errorOpenProgram": "「エラー: プログラムを開けませんでした」",
+      "errorOpenProgram": "エラー: プログラムを開けませんでした",
       "editCard": "カードを編集"
     }
   },
@@ -1456,7 +1456,7 @@
   "fullScreen": "全画面表示",
   "system": "システム",
   "extension": "拡張子",
-  "accessed": "アクセス",
+  "accessed": "アクセス日時",
   "symlink": "シンボリックリンク",
   "hidden": "隠し",
   "menu": "メニュー",
@@ -1493,7 +1493,7 @@
   "stop": "ストップ",
   "results": "結果",
   "tab": "タブ",
-  "or": "また",
+  "or": "または",
   "run": "走る",
   "spaceLeft": "左",
   "pathCannotBeOpened": "パスを開けません",
@@ -1543,11 +1543,11 @@
   "directorySize": "ディレクトリサイズ",
   "getSize": "サイズを取得",
   "calculating": "計算中",
-  "path": "道",
+  "path": "パス",
   "realPath": "リンク先パス",
-  "created": "作成した",
-  "modified": "変更された内容",
-  "changed": "変更されたメタ",
+  "created": "作成日時",
+  "modified": "更新日時",
+  "changed": "メタデータ更新日時",
   "protected": "保護",
   "pinned": "ピン留め",
   "timeline": "タイムライン",
@@ -1562,14 +1562,14 @@
   "dataType": "データ・タイプ",
   "position": "ポジション",
   "error": "エラー",
-  "address": "住所",
+  "address": "アドレス",
   "reason": "理由",
-  "undo": "「元に戻す」",
+  "undo": "元に戻す",
   "pause": "一時停止",
   "cancel": "キャンセル",
   "click": "クリック",
   "ok": "Ok",
-  "save": "セーブ",
+  "save": "保存",
   "browse": "参照",
   "create": "作成",
   "createNew": "新しく作る",
@@ -1582,18 +1582,18 @@
   "stopServer": "サーバーを停止",
   "copyAddress": "アドレスをコピー",
   "clearListMessage": "アイテムリストがクリアされました",
-  "allowGlobalSearchMessage": "「グローバル検索を使用すると、コンピューター上の任意のファイル/ディレクトリをすばやく見つけることができます。<br>ドライブを定期的にスキャンし、データ ファイル (マップ) を生成するため、ファイルをすばやく見つけることができます。<br>最後のスキャン後に作成されたファイルそれらはデータファイルにないため見つからないため、より頻繁な自動スキャン期間を選択することをお勧めします.",
+  "allowGlobalSearchMessage": "グローバル検索を使用すると、コンピューター上の任意のファイル/ディレクトリをすばやく見つけることができます。<br>ドライブを定期的にスキャンし、データファイル (マップ) を生成するため、ファイルをすばやく見つけることができます。<br>最後のスキャン後に作成されたファイルそれらはデータファイルにないため見つからないため、より頻繁な自動スキャン期間を選択することをお勧めします.",
   "experimentalFeature": "未完成の実験的機能",
   "min": "分",
   "sec": "秒",
   "mediaInfo": "メディア情報",
   "stream": "ストリーム",
-  "bitsPerRawSample": "生サンプルあたりのビット数",
+  "bitsPerRawSample": "サンプルあたりのビット数",
   "colorSpace": "色空間",
   "pixFmt": "ピクセルフォーマット",
-  "chromaLocation": "彩度の場所",
-  "bitRate": "「ビットレート」",
-  "duration": "間隔",
+  "chromaLocation": "クロマロケーション",
+  "bitRate": "ビットレート",
+  "duration": "再生時間",
   "encoder": "エンコーダー",
   "channelLayout": "チャンネルレイアウト",
   "channels": "チャンネル",
@@ -1602,7 +1602,7 @@
   "codecName": "コーデック名",
   "codecTagString": "コーデックタグ文字列",
   "width": "幅",
-  "height": "身長",
+  "height": "高さ",
   "left": "左",
   "right": "右",
   "none": "なし",
@@ -1612,7 +1612,7 @@
   "closedCaptions": "字幕",
   "protectedItemsShort": "保護された",
   "pinnedItemsShort": "添付",
-  "freeOf": "から自由である",
+  "freeOf": "空き /",
   "driveNotMounted": "未マウント",
   "mounting": "マウント中",
   "unmount": "アンマウント",
@@ -1679,9 +1679,9 @@
       "name": "名前と拡張子のみを検索します（フォルダーのパスは含みません）。",
       "size": "サイズで絞り込みます。数値と任意の単位（b、kb、mb、gb、tb）で比較（>=、<=、>、<、=、==）します。単位を省略するとMBとして扱います。例: size: >=2mb、size: >=2。範囲: size: 1mb..10mb。",
       "items": "フォルダー内の項目数で絞り込みます。整数で比較（>=、<=、>、<、=、==）します。例: items: >=5。範囲: items: 3..10。ファイルは対象外です。",
-      "modified": "表示されている更新日の文字列を検索します。",
-      "created": "表示されている作成日の文字列を検索します。",
-      "accessed": "表示されているアクセス日の文字列を検索します。",
+      "modified": "表示されている更新日時の文字列を検索します。",
+      "created": "表示されている作成日時の文字列を検索します。",
+      "accessed": "表示されているアクセス日時の文字列を検索します。",
       "path": "フルパスのみを検索します。",
       "mime": "MIMEタイプの文字列を検索します。"
     },
@@ -1732,7 +1732,7 @@
       "exact": "正確なサイズを計算済み",
       "loading": "サイズを計算中...",
       "notCalculated": "サイズ未計算、または時間制限により自動計算がキャンセルされました",
-      "note": "フォルダを選択し、情報パネルの「サイズを取得」をクリックして完全なサイズを計算してください。"
+      "note": "フォルダを選択し、情報パネルの「サイズを取得」をクリックして正確なサイズを計算してください。"
     },
     "actions": {
       "rename": "名前を変更",
@@ -1811,7 +1811,7 @@
   "changelog": {
     "title": "新機能",
     "settingsTitle": "新機能",
-    "settingsDescription": "リリースノートを表示し、更新通知を設定する",
+    "settingsDescription": "更新履歴を表示し、更新通知を設定する",
     "showOnUpdate": "アプリ更新時に更新履歴を表示",
     "viewChangelog": "更新履歴を表示",
     "current": "現在",
@@ -1918,26 +1918,26 @@
       "stop": "停止"
     },
     "excalidraw": {
-      "exportToFolder": "Export to folder"
+      "exportToFolder": "フォルダにエクスポート"
     },
-    "unknownPublisher": "Unknown publisher",
+    "unknownPublisher": "不明なパブリッシャー",
     "contextMenuLabel": "拡張機能",
-    "autoUpdate": "Auto-update",
+    "autoUpdate": "自動更新",
     "showExtensionsFolder": "拡張機能フォルダーを表示",
     "reinstalledSuccessfully": "再インストールが完了しました",
     "reusedDependencies": "既存の依存関係 {count} 件を再利用しました",
     "noLongerAvailable": "利用できなくなりました",
     "removedBecauseUnapproved": "この拡張機能は承認済みレジストリに存在しなくなったため削除されました。",
-    "enabled": "Enabled",
-    "disabled": "Disabled",
+    "enabled": "有効",
+    "disabled": "無効",
     "dependencies": {
-      "noDependencies": "No shared dependencies",
-      "noDependenciesDescription": "Shared binaries will appear here when extensions install dependencies like FFmpeg or Deno.",
-      "usedBy": "Used by",
-      "installedOn": "Installed",
-      "removeWarning": "This dependency is still used by extensions",
-      "removeConfirm": "This dependency is used by: {extensions}. They will need to re-download it on next use. Remove anyway?",
-      "removeError": "Failed to remove dependency",
+      "noDependencies": "依存関係はありません",
+      "noDependenciesDescription": "拡張機能によって共有バイナリ（FFmpeg や Deno など）がインストールされるとここに表示されます。",
+      "usedBy": "依存元",
+      "installedOn": "インストール日時",
+      "removeWarning": "拡張機能で使用されています",
+      "removeConfirm": "拡張機能 {extensions} で使用されています。削除すると該当の拡張機能を利用するときに再ダウンロードが必要になります。削除しますか？",
+      "removeError": "依存関係の削除に失敗しました",
       "downloadSource": "ダウンロードリンクを開く",
       "showFolder": "フォルダーを表示"
     }
@@ -1951,21 +1951,21 @@
     "run": "実行"
   },
   "statusCenter": {
-    "title": "Status center",
-    "clearCompleted": "Clear completed",
-    "noOperations": "No operations",
-    "active": "active",
-    "cancelAll": "Cancel all",
+    "title": "ステータスセンター",
+    "clearCompleted": "完了した操作を消去",
+    "noOperations": "実行中の操作はありません",
+    "active": "アクティブ",
+    "cancelAll": "すべてキャンセル",
     "cancelling": "キャンセルしています…",
     "deleteSelectedCount": "{count} 件",
     "selectedItemsCount": "{count} 件",
     "preparing": "準備中",
     "groups": {
-      "dir-size": "Directory size calculations",
-      "copy": "Copy operations",
-      "move": "Move operations",
+      "dir-size": "ディレクトリサイズ計算",
+      "copy": "アイテムコピー",
+      "move": "アイテム移動",
       "deleteTrash": "ゴミ箱へ移動",
-      "deletePermanent": "完全削除の操作",
+      "deletePermanent": "完全削除",
       "archive": "アーカイブ操作"
     }
   },
