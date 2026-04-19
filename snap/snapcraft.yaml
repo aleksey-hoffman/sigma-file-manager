@@ -1,0 +1,93 @@
+name: sigma-file-manager
+base: core22
+adopt-info: build-app
+summary: Modern, free, open-source file manager for Windows and Linux
+description: |
+  Sigma File Manager is a modern, feature-rich file manager (explorer)
+  for Linux and Windows. It includes a fast global search with typo
+  correction, tabs and split view, an extension marketplace, LAN file
+  sharing with browser access and QR codes, network locations
+  (SSHFS / NFS / SMB / CIFS), an address bar with autocomplete,
+  glob/property filters, smart drag and drop, a command palette,
+  zip archive support, tags, customizable visuals, and in-app updates.
+
+grade: stable
+confinement: strict
+
+layout:
+  /usr/lib/$CRAFT_ARCH_TRIPLET/webkit2gtk-4.1:
+    bind: $SNAP/usr/lib/$CRAFT_ARCH_TRIPLET/webkit2gtk-4.1
+
+apps:
+  sigma-file-manager:
+    command: usr/bin/sigma-file-manager
+    desktop: usr/share/applications/sigma-file-manager.desktop
+    extensions: [gnome]
+    plugs:
+      - home
+      - removable-media
+      - network
+      - network-bind
+      - network-status
+      - mount-observe
+      - hardware-observe
+      - system-observe
+      - cups-control
+      - udisks2
+      - single-instance-plug
+    slots:
+      - single-instance
+
+slots:
+  single-instance:
+    interface: dbus
+    bus: session
+    name: org.com_sigma_file_manager_app.SingleInstance
+
+plugs:
+  single-instance-plug:
+    interface: dbus
+    bus: session
+    name: org.com_sigma_file_manager_app.SingleInstance
+
+package-repositories:
+  - type: apt
+    components: [main]
+    suites: [noble]
+    key-id: 78E1918602959B9C59103100F1831DDAFC42E99D
+    url: http://ppa.launchpad.net/snappy-dev/snapcraft-daily/ubuntu
+
+parts:
+  build-app:
+    plugin: dump
+    source: .
+    build-snaps:
+      - node/20/stable
+      - rustup/latest/stable
+    build-packages:
+      - libwebkit2gtk-4.1-dev
+      - build-essential
+      - curl
+      - wget
+      - file
+      - libxdo-dev
+      - libssl-dev
+      - libayatana-appindicator3-dev
+      - librsvg2-dev
+      - dpkg
+    stage-packages:
+      - libwebkit2gtk-4.1-0
+      - libayatana-appindicator3-1
+    override-pull: |
+      craftctl default
+      version="$(grep -m1 '"version"' package.json | sed -E 's/.*"version": *"([^"]+)".*/\1/')"
+      craftctl set version="$version"
+    override-build: |
+      set -eu
+      npm ci
+      npm run sync-version
+      NO_STRIP=true npm run tauri build -- --bundles deb
+      dpkg -x src-tauri/target/release/bundle/deb/*.deb "$CRAFT_PART_INSTALL/"
+      sed -i \
+        -e "s|Icon=sigma-file-manager|Icon=/usr/share/icons/hicolor/32x32/apps/sigma-file-manager.png|g" \
+        "$CRAFT_PART_INSTALL/usr/share/applications/sigma-file-manager.desktop"

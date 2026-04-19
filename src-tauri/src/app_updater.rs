@@ -300,8 +300,22 @@ async fn fetch_release_installer_asset(tag: &str) -> Option<(String, String)> {
     pick_release_installer_asset(assets.as_slice())
 }
 
+fn is_managed_by_external_package_manager() -> bool {
+    std::env::var_os("SNAP").is_some() || std::env::var_os("FLATPAK_ID").is_some()
+}
+
 #[tauri::command]
 pub async fn check_for_updates(current_version: String) -> Result<UpdateCheckResult, String> {
+    if is_managed_by_external_package_manager() {
+        return Ok(UpdateCheckResult {
+            update_available: false,
+            latest_version: current_version,
+            release_url: String::new(),
+            installer_download_url: None,
+            installer_file_name: None,
+        });
+    }
+
     let client = build_http_client(UPDATE_CHECK_TIMEOUT_SECS)
         .map_err(|error| format!("Failed to create HTTP client: {}", error))?;
 
