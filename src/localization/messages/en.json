@@ -29,12 +29,7 @@
   "language": {
     "language": "Language",
     "isCorrectedLanguage": "Translation was reviewed and corrected by a native language speaker",
-    "isAutoTranslatedLanguage": "Auto-translated. Needs to be reviewed and corrected by a native language speaker",
-    "loadRemoteTranslations": "Load remote translations",
-    "autoFetch": "Auto translation updates",
-    "fetchLatestTranslationsTitle": "Fetch latest translations automatically from the project repository",
-    "autoFetchTranslationsOnAppLoad": "Every time the app is opened from fully closed state",
-    "autoFetchTranslationsPeriodically": "Periodically (every hour)"
+    "isAutoTranslatedLanguage": "Auto-translated. Needs to be reviewed and corrected by a native language speaker"
   },
   "quickAccess": {
     "title": "Quick access",
@@ -1474,7 +1469,8 @@
   "shortcutPlural": "Shortcuts",
   "fullScreen": "Full screen",
   "system": "System",
-  "extension": "Extension",
+  "fileExtension": "Extension",
+  "featureExtension": "Extension",
   "accessed": "Accessed",
   "symlink": "Symlink",
   "hidden": "Hidden",

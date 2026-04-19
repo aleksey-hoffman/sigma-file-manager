@@ -21,8 +21,6 @@ const githubIssueTemplateFeatureRequest = `${githubRepoLink}/issues/new?template
 const githubAllReleases = `${githubRepoLink}/releases`;
 const githubLatestRelease = `${githubRepoLink}/releases/latest`;
 const githubReadmeSupportSectionLink = `${githubRepoLink}#supporters`;
-const githubLocalesLink = `${githubRawApiUrl}/${githubFullRepoName}/${githubMainBranch}/src/localization/locales`;
-const githubLanguageInstructionsLink = `${githubDiscussionsLink}196`;
 
 const extensionsRegistryRepo = 'sfm-marketplace';
 const extensionsRegistryOrg = 'sigma-hub';
@@ -49,8 +47,6 @@ export default {
   githubAllReleases,
   githubLatestRelease,
   githubReadmeSupportSectionLink,
-  githubLocalesLink,
-  githubLanguageInstructionsLink,
   extensionsRegistryUrl,
   extensionsSubmissionGuideUrl,
   extensionsDevelopmentWikiUrl,

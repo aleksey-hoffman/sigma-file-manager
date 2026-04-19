@@ -29,12 +29,7 @@
   "language": {
     "language": "语言",
     "isCorrectedLanguage": "翻译由母语人士审阅和纠正",
-    "isAutoTranslatedLanguage": "自动翻译的，需要母语人士审阅和纠正",
-    "loadRemoteTranslations": "加载远程翻译",
-    "autoFetch": "自动翻译更新",
-    "fetchLatestTranslationsTitle": "自动从项目仓库获取最新翻译",
-    "autoFetchTranslationsOnAppLoad": "每次应用程序从完全关闭的状态打开时",
-    "autoFetchTranslationsPeriodically": "定期（每小时一次）"
+    "isAutoTranslatedLanguage": "自动翻译的，需要母语人士审阅和纠正"
   },
   "quickAccess": {
     "title": "快速访问",
@@ -1455,7 +1450,8 @@
   "shortcutPlural": "快捷键",
   "fullScreen": "全屏",
   "system": "系统",
-  "extension": "扩展名",
+  "fileExtension": "扩展名",
+  "featureExtension": "扩展",
   "accessed": "访问",
   "symlink": "符号链接",
   "hidden": "隐藏",

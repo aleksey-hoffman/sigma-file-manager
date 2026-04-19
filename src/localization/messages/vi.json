@@ -29,12 +29,7 @@
   "language": {
     "language": "Ngôn ngữ",
     "isCorrectedLanguage": "Bản dịch đã được xem xét và sửa chữa bởi một người bản ngữ",
-    "isAutoTranslatedLanguage": "Tự động dịch. Cần được xem xét và sửa chữa bởi một người nói ngôn ngữ bản địa",
-    "loadRemoteTranslations": "Tải bản dịch từ xa",
-    "autoFetch": "Cập nhật dịch tự động",
-    "fetchLatestTranslationsTitle": "Tự động tải các bản dịch mới nhất từ kho dự án",
-    "autoFetchTranslationsOnAppLoad": "Mỗi khi ứng dụng được mở từ trạng thái đóng hoàn toàn",
-    "autoFetchTranslationsPeriodically": "Định kỳ (mỗi giờ)"
+    "isAutoTranslatedLanguage": "Tự động dịch. Cần được xem xét và sửa chữa bởi một người nói ngôn ngữ bản địa"
   },
   "quickAccess": {
     "title": "Truy cập nhanh",
@@ -1455,7 +1450,8 @@
   "shortcutPlural": "Lối tắt",
   "fullScreen": "Toàn màn hình",
   "system": "Hệ thống",
-  "extension": "Phần mở rộng",
+  "fileExtension": "Phần mở rộng",
+  "featureExtension": "Tiện ích mở rộng",
   "accessed": "Đã truy cập",
   "symlink": "Liên kết tượng trưng",
   "hidden": "Ẩn",

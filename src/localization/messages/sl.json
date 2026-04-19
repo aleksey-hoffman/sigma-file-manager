@@ -29,12 +29,7 @@
   "language": {
     "language": "Jezik",
     "isCorrectedLanguage": "Prevod je pregledal in popravil izvorni govorec",
-    "isAutoTranslatedLanguage": "Samodejno prevedeno. Potrebuje pregled in popravke izvornega govorca",
-    "loadRemoteTranslations": "Naloži oddaljene prevode",
-    "autoFetch": "Samodejno posodabljanje prevodov",
-    "fetchLatestTranslationsTitle": "Samodejno pridobi najnovejše prevode iz repozitorija projekta",
-    "autoFetchTranslationsOnAppLoad": "Vsakič, ko se aplikacija odpre iz popolnoma zaprtnega stanja",
-    "autoFetchTranslationsPeriodically": "Periodično (vsako uro)"
+    "isAutoTranslatedLanguage": "Samodejno prevedeno. Potrebuje pregled in popravke izvornega govorca"
   },
   "quickAccess": {
     "title": "Hitri dostop",
@@ -1474,7 +1469,8 @@
   "shortcutPlural": "Bližnjice",
   "fullScreen": "Celozaslonski način",
   "system": "Sistem",
-  "extension": "Razširitev",
+  "fileExtension": "Razširitev",
+  "featureExtension": "Razširitev",
   "accessed": "Dostopano",
   "symlink": "Simbolna povezava",
   "hidden": "Skrito",

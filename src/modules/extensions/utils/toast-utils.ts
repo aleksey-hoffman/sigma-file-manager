@@ -24,7 +24,7 @@ export function getExtensionDisplayName(extensionId: string, fallbackName?: stri
 export function getExtensionToastTitle(extensionId: string, fallbackName?: string): string {
   const { t } = i18n.global;
   const extensionName = getExtensionDisplayName(extensionId, fallbackName);
-  return `${t('extension')} | ${extensionName}`;
+  return `${t('featureExtension')} | ${extensionName}`;
 }
 
 export function getExtensionToastIconPath(extensionId: string): string | undefined {

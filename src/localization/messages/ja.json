@@ -29,12 +29,7 @@
   "language": {
     "language": "言語",
     "isCorrectedLanguage": "翻訳はネイティブスピーカーによるレビューと修正を受けました",
-    "isAutoTranslatedLanguage": "自動翻訳されました。ネイティブスピーカーによるレビューと訂正が必要です",
-    "loadRemoteTranslations": "リモート翻訳をロードする",
-    "autoFetch": "自動翻訳更新",
-    "fetchLatestTranslationsTitle": "プロジェクトリポジトリから最新の翻訳を自動的に取得する",
-    "autoFetchTranslationsOnAppLoad": "アプリが完全に閉じた状態から開かれるたびに",
-    "autoFetchTranslationsPeriodically": "定期的に（毎時間）"
+    "isAutoTranslatedLanguage": "自動翻訳されました。ネイティブスピーカーによるレビューと訂正が必要です"
   },
   "quickAccess": {
     "title": "クイックアクセス",
@@ -1455,7 +1450,8 @@
   "shortcutPlural": "ショートカット",
   "fullScreen": "全画面表示",
   "system": "システム",
-  "extension": "拡張子",
+  "fileExtension": "拡張子",
+  "featureExtension": "拡張機能",
   "accessed": "アクセス日時",
   "symlink": "シンボリックリンク",
   "hidden": "隠し",

@@ -29,12 +29,7 @@
   "language": {
     "language": "Idioma",
     "isCorrectedLanguage": "A tradução foi revisada e corrigida por um falante nativo",
-    "isAutoTranslatedLanguage": "Tradução automática. Precisa ser revisado e corrigido por um falante nativo do idioma.",
-    "loadRemoteTranslations": "Carregar traduções remotas",
-    "autoFetch": "Atualizações de tradução automática",
-    "fetchLatestTranslationsTitle": "Obtenha automaticamente as traduções mais recentes do repositório do projeto",
-    "autoFetchTranslationsOnAppLoad": "Cada vez que o aplicativo é aberto em um estado completamente fechado",
-    "autoFetchTranslationsPeriodically": "busca automática de traduções periodicamente (cada hora)"
+    "isAutoTranslatedLanguage": "Tradução automática. Precisa ser revisado e corrigido por um falante nativo do idioma."
   },
   "quickAccess": {
     "title": "Acesso rápido",
@@ -1467,7 +1462,8 @@
   "shortcutPlural": "Atalhos",
   "fullScreen": "Tela inteira",
   "system": "Sistema",
-  "extension": "Extensão",
+  "fileExtension": "Extensão",
+  "featureExtension": "Extensão",
   "accessed": "Acessado",
   "symlink": "Link simbólico",
   "hidden": "Oculto",

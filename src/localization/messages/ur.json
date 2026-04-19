@@ -29,12 +29,7 @@
   "language": {
     "language": "زبان",
     "isCorrectedLanguage": "ترجمہ مقامی بولنے والے نے دیکھا اور درست کیا ہے",
-    "isAutoTranslatedLanguage": "خودکار ترجمہ۔ مقامی بولنے والے کی نظرثانی درکار ہے",
-    "loadRemoteTranslations": "ریموٹ ترجمے لوڈ کریں",
-    "autoFetch": "ترجمے خودکار اپ ڈیٹ",
-    "fetchLatestTranslationsTitle": "پروجیکٹ ریپوزٹری سے تازہ ترین ترجمے خودکار لائیں",
-    "autoFetchTranslationsOnAppLoad": "جب بھی ایپ مکمل بند ہو کر کھلے",
-    "autoFetchTranslationsPeriodically": "وقفے وقفے سے (ہر گھنٹے)"
+    "isAutoTranslatedLanguage": "خودکار ترجمہ۔ مقامی بولنے والے کی نظرثانی درکار ہے"
   },
   "quickAccess": {
     "title": "فوری رسائی",
@@ -1474,7 +1469,8 @@
   "shortcutPlural": "شارٹ کٹس",
   "fullScreen": "پوری سکرین",
   "system": "سسٹم",
-  "extension": "ایکسٹینشن",
+  "fileExtension": "ایکسٹینشن",
+  "featureExtension": "ایکسٹینشن",
   "accessed": "رسائی",
   "symlink": "سمبولک لنک",
   "hidden": "پوشیدہ",

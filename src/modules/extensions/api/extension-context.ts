@@ -187,7 +187,7 @@ export function createExtensionContext(
   }
 
   function getExtensionToastTitle(): string {
-    return `${t('extension')} | ${getExtensionName()}`;
+    return `${t('featureExtension')} | ${getExtensionName()}`;
   }
 
   const DIALOG_GRANT_EXPIRY_MS = 300_000;

@@ -29,12 +29,7 @@
   "language": {
     "language": "زبان",
     "isCorrectedLanguage": "ترجمه توسط یک متکلم به زبان مادری بررسی و تصحیح شد",
-    "isAutoTranslatedLanguage": "ترجمه خودکار نیاز به بررسی و تصحیح توسط یک متکلم به زبان مادری دارد",
-    "loadRemoteTranslations": "بارگیری ترجمه های از راه دور",
-    "autoFetch": "به روزرسانی خودکار ترجمه",
-    "fetchLatestTranslationsTitle": "بازیابی خودکار آخرین ترجمه ها از مخزن پروژه",
-    "autoFetchTranslationsOnAppLoad": "هر زمان که برنامه از حالت بسته کامل باز می شود",
-    "autoFetchTranslationsPeriodically": "دوره ای (هر ساعت)"
+    "isAutoTranslatedLanguage": "ترجمه خودکار نیاز به بررسی و تصحیح توسط یک متکلم به زبان مادری دارد"
   },
   "quickAccess": {
     "title": "دسترسی سریع",
@@ -1454,7 +1449,8 @@
   "shortcutPlural": "میانبرها",
   "fullScreen": "تمام صفحه",
   "system": "سیستم",
-  "extension": "پسوند",
+  "fileExtension": "پسوند",
+  "featureExtension": "افزونه",
   "accessed": "دسترسی",
   "symlink": "پیوند نمادین",
   "hidden": "مخفی",

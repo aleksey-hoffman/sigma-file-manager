@@ -29,12 +29,7 @@
   "language": {
     "language": "Язык",
     "isCorrectedLanguage": "Перевод был проверен и исправлен носителем языка",
-    "isAutoTranslatedLanguage": "Автоперевод. Нуждается в проверке и исправлении носителем языка",
-    "loadRemoteTranslations": "Загрузить удаленные переводы",
-    "autoFetch": "Автоматические обновления переводов",
-    "fetchLatestTranslationsTitle": "Автоматическое получение последних переводов из репозитория проекта",
-    "autoFetchTranslationsOnAppLoad": "Каждый раз при открытии приложения с полностью закрытого состояния",
-    "autoFetchTranslationsPeriodically": "Периодически (каждый час)"
+    "isAutoTranslatedLanguage": "Автоперевод. Нуждается в проверке и исправлении носителем языка"
   },
   "quickAccess": {
     "title": "Быстрый доступ",
@@ -1474,7 +1469,8 @@
   "shortcutPlural": "Шорткаты",
   "fullScreen": "Полноэкранный",
   "system": "Система",
-  "extension": "Расширение",
+  "fileExtension": "Расширение",
+  "featureExtension": "Расширение",
   "accessed": "Доступ",
   "symlink": "Символическая ссылка",
   "hidden": "Скрытый",

@@ -239,7 +239,7 @@ async function handleRefresh(extensionId: string) {
       duration: 3000,
       componentProps: {
         data: {
-          title: `${t('extension')} | ${extensionName}`,
+          title: `${t('featureExtension')} | ${extensionName}`,
           subtitle: t('extensions.reinstalledSuccessfully'),
           description: reusedBinaryCount > 0
             ? t('extensions.reusedDependencies', { count: reusedBinaryCount })

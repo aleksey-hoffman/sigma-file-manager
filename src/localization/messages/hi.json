@@ -29,12 +29,7 @@
   "language": {
     "language": "भाषा",
     "isCorrectedLanguage": "अनुवाद की समीक्षा और सुधार एक मूल भाषा वक्ता द्वारा किया गया",
-    "isAutoTranslatedLanguage": "स्वतः अनुवादित. किसी मूल भाषा वक्ता द्वारा समीक्षा और सुधार की आवश्यकता है",
-    "loadRemoteTranslations": "दूरस्थ अनुवाद लोड करें",
-    "autoFetch": "स्वचालित अनुवाद अद्यतन",
-    "fetchLatestTranslationsTitle": "प्रोजेक्ट रिपॉजिटरी से स्वचालित रूप से नवीनतम अनुवाद प्राप्त करें",
-    "autoFetchTranslationsOnAppLoad": "हर बार ऐप को पूरी तरह से बंद अवस्था से खोला जाता है",
-    "autoFetchTranslationsPeriodically": "समय-समय पर (हर घंटे)"
+    "isAutoTranslatedLanguage": "स्वतः अनुवादित. किसी मूल भाषा वक्ता द्वारा समीक्षा और सुधार की आवश्यकता है"
   },
   "quickAccess": {
     "title": "त्वरित पहुंच",
@@ -1474,7 +1469,8 @@
   "shortcutPlural": "शॉर्टकट",
   "fullScreen": "पूर्ण स्क्रीन",
   "system": "प्रणाली",
-  "extension": "विस्तार",
+  "fileExtension": "विस्तार",
+  "featureExtension": "एक्सटेंशन",
   "accessed": "एक्सेस किया गया",
   "symlink": "सिमलिंक",
   "hidden": "छिपा हुआ",

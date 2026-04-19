@@ -154,7 +154,7 @@ const properties = computed<PropertyItem[]>(() => {
 
   if (entry.ext) {
     items.push({
-      title: t('extension'),
+      title: t('fileExtension'),
       value: `.${entry.ext}`,
     });
   }
