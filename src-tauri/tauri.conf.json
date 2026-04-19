@@ -55,7 +55,8 @@
     "active": true,
     "targets": [
       "nsis",
-      "appimage"
+      "appimage",
+      "deb"
     ],
     "windows": {
       "nsis": {
