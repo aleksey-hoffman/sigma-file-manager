@@ -4,7 +4,8 @@
 
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import { platform, type Platform } from '@tauri-apps/plugin-os';
+import type { Platform } from '@tauri-apps/plugin-os';
+import { initPlatformInfo as initSharedPlatformInfo } from '@/utils/platform-info';
 
 export const usePlatformStore = defineStore('platform', () => {
   const currentPlatform = ref<Platform | null>(null);
@@ -15,13 +16,8 @@ export const usePlatformStore = defineStore('platform', () => {
   const isUnix = computed(() => isMacOS.value || isLinux.value);
 
   async function init() {
-    try {
-      currentPlatform.value = await platform();
-    }
-    catch (error) {
-      console.error('Failed to detect platform:', error);
-      currentPlatform.value = 'windows';
-    }
+    const platformInfo = await initSharedPlatformInfo();
+    currentPlatform.value = platformInfo.os;
   }
 
   return {

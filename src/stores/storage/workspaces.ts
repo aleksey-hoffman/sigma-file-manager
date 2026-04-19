@@ -34,8 +34,6 @@ import {
   type StartupStorageFileBootstrap,
 } from './utils/startup-storage-bootstrap';
 
-const DIR_ENTRIES_READ_TIMEOUT_MS = 5000;
-
 export const useWorkspacesStore = defineStore('workspaces', () => {
   const { t } = useI18n();
   const userPathsStore = useUserPathsStore();
@@ -456,11 +454,12 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
     try {
       const dirContents = await invoke<DirContents>('read_dir_with_timeout', {
         path: params.path,
-        timeoutMs: DIR_ENTRIES_READ_TIMEOUT_MS,
       });
       return dirContents.entries;
     }
-    catch {
+    catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      console.warn(`Failed to preload directory entries for ${params.path}: ${errorMessage}`);
       return [];
     }
   }

@@ -206,8 +206,48 @@ describe('workspaces storage duplicate tabs', () => {
     expect(workspacesStore.workspaces[0]?.tabGroups[0]?.[0]?.path).toBe('C:/Users/aleks/Projects');
     expect(invokeMock).toHaveBeenCalledWith('read_dir_with_timeout', {
       path: 'C:/Users/aleks/Projects',
-      timeoutMs: 5000,
     });
+  });
+
+  it('warns when preloading directory entries times out', async () => {
+    invokeMock.mockImplementation((command: string) => {
+      if (command === 'read_dir_with_timeout') {
+        return Promise.reject(new Error('Reading directory timed out after 5000 ms'));
+      }
+
+      if (command === 'get_dir_entry') {
+        return Promise.resolve({
+          path: 'C:/Users/aleks/Projects',
+        });
+      }
+
+      return Promise.resolve(null);
+    });
+
+    const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const workspacesStore = useWorkspacesStore();
+
+    await workspacesStore.init({
+      path: 'mock/user-workspaces.json',
+      status: 'ready',
+      data: {
+        __schemaVersion: 1,
+        currentTabGroupIndex: 0,
+        workspaces: [
+          createWorkspace([
+            [createTab('timed-out-tab', 'C:/Users/aleks/Projects')],
+          ]),
+        ],
+      },
+      schemaVersion: 1,
+      error: null,
+    });
+
+    expect(consoleWarnSpy).toHaveBeenCalledWith(
+      'Failed to preload directory entries for C:/Users/aleks/Projects: Reading directory timed out after 5000 ms',
+    );
+
+    consoleWarnSpy.mockRestore();
   });
 });
 

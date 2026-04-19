@@ -2,12 +2,12 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
+use super::blocking_timeout::{with_blocking_timeout, BlockingTimeoutError};
 use crate::utils::{
     is_hidden_path, metadata_times_unix_ms, normalize_path, path_extension_lowercase,
 };
 use std::fs;
 use std::path::Path;
-use std::time::Duration;
 
 use super::types::{DirContents, DirEntry, OpenedDirectoryTimes};
 
@@ -344,11 +344,12 @@ pub fn read_dir(path: String) -> Result<DirContents, String> {
 }
 
 pub async fn read_dir_with_timeout(path: String, timeout_ms: u64) -> Result<DirContents, String> {
-    let read_task = tauri::async_runtime::spawn_blocking(move || read_dir(path));
-    match tokio::time::timeout(Duration::from_millis(timeout_ms), read_task).await {
-        Ok(Ok(result)) => result,
-        Ok(Err(join_error)) => Err(format!("Failed to read directory: {}", join_error)),
-        Err(_) => Err(format!(
+    match with_blocking_timeout(timeout_ms, move || read_dir(path)).await {
+        Ok(result) => result,
+        Err(BlockingTimeoutError::JoinError(join_error)) => {
+            Err(format!("Failed to read directory: {}", join_error))
+        }
+        Err(BlockingTimeoutError::TimedOut(timeout_ms)) => Err(format!(
             "Reading directory timed out after {} ms",
             timeout_ms
         )),

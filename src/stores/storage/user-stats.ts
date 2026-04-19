@@ -27,13 +27,13 @@ import { reconcileMissingTagDefinitions as mergeTagDefinitionsFromTaggedItems } 
 
 const HISTORY_MAX_ITEMS = 100;
 const FREQUENT_ITEMS_MAX = 100;
-const PATH_EXISTS_TIMEOUT_MS = 2500;
 const PATH_EXISTS_BATCH_SIZE = 4;
 
 export const useUserStatsStore = defineStore('userStats', () => {
   const userPathsStore = useUserPathsStore();
   const userStatsStorage = ref<LazyStore | null>(null);
   const userStats = ref<UserStats>(structuredClone(DEFAULT_USER_STATS));
+  let deferredMaintenancePromise: Promise<void> | null = null;
 
   const favorites = computed(() => userStats.value.favorites);
   const tags = computed(() => userStats.value.tags);
@@ -486,7 +486,6 @@ export const useUserStatsStore = defineStore('userStats', () => {
         try {
           const exists = await invoke<boolean | null>('path_exists_with_timeout', {
             path,
-            timeoutMs: PATH_EXISTS_TIMEOUT_MS,
           });
           return {
             path,
@@ -550,7 +549,13 @@ export const useUserStatsStore = defineStore('userStats', () => {
   }
 
   async function runDeferredMaintenance() {
-    await removeNonExistentPaths();
+    if (!deferredMaintenancePromise) {
+      deferredMaintenancePromise = removeNonExistentPaths().finally(() => {
+        deferredMaintenancePromise = null;
+      });
+    }
+
+    await deferredMaintenancePromise;
   }
 
   return {

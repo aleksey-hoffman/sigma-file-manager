@@ -41,7 +41,7 @@ import { loadExtensionRuntime, unloadExtensionRuntime, reactivateExtensionRuntim
 import { getBinaryLookupVersion } from '@/modules/extensions/utils/binary-metadata';
 import { invokeAsExtension } from '@/modules/extensions/runtime/extension-invoke';
 import {
-  getContextMenuRegistrations, getKeybindingRegistrations, getCommandRegistrations, getSidebarRegistrations, getToolbarRegistrations, clearExtensionRegistrations, clearBinaryDownloadCount, clearBinaryReuseCount, initPlatformInfo, parseKeybindingString,
+  getContextMenuRegistrations, getKeybindingRegistrations, getCommandRegistrations, getSidebarRegistrations, getToolbarRegistrations, clearExtensionRegistrations, clearBinaryDownloadCount, clearBinaryReuseCount, parseKeybindingString,
 } from '@/modules/extensions/api';
 import { isBuiltinCommand, getBuiltinCommandHandler, getBuiltinCommandDefinitions } from '@/modules/extensions/builtin-commands';
 import { assertValidManifestData, assertValidRegistryData, isVersionCompatibleWithRange } from '@/modules/extensions/runtime/validation';
@@ -1778,7 +1778,6 @@ export const useExtensionsStore = defineStore('extensions', () => {
   async function init(): Promise<void> {
     if (isInitialized.value) return;
 
-    await initPlatformInfo();
     await storageStore.init();
     await reconcileInstalledExtensions();
     await cleanupOrphanedIncompleteExtensionInstalls();

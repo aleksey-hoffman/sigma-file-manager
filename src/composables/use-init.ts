@@ -59,6 +59,7 @@ export function useInit() {
   const { checkAndShowChangelog } = useChangelog();
   const { initAutoCheck } = useAppUpdater();
   let appLaunchArgsUnlisten: UnlistenFn | null = null;
+  const backgroundTasks = new Set<Promise<void>>();
 
   function isMainWebviewWindow(): boolean {
     return getCurrentWebviewWindow().label === 'main';
@@ -178,10 +179,22 @@ export function useInit() {
     appLaunchArgsUnlisten = null;
   }
 
-  function runDeferredTask(task: () => Promise<void>, errorMessage: string) {
-    task().catch((error) => {
-      console.error(errorMessage, error);
+  function runInBackground(task: () => Promise<void>, errorMessage: string) {
+    const backgroundTask: Promise<void> = new Promise<void>((resolve) => {
+      setTimeout(() => {
+        task().catch((error) => {
+          console.error(errorMessage, error);
+        }).finally(resolve);
+      }, 0);
+    }).finally(() => {
+      backgroundTasks.delete(backgroundTask);
     });
+
+    backgroundTasks.add(backgroundTask);
+  }
+
+  async function awaitBackgroundTasks() {
+    await Promise.allSettled([...backgroundTasks]);
   }
 
   async function init() {
@@ -200,6 +213,7 @@ export function useInit() {
 
     let initialLaunchContext: LaunchContext | undefined;
     let openedInitialLaunchTargets = false;
+    let loadedInitialTabGroup = false;
 
     await backgroundMediaStore.refreshCustomBackgrounds();
     await userStatsStore.init();
@@ -207,6 +221,17 @@ export function useInit() {
 
     if (isMainWindow) {
       initialLaunchContext = await invoke<LaunchContext>('get_launch_context');
+
+      if (initialLaunchContext.hadAbsorbedShellPaths) {
+        try {
+          await workspacesStore.loadCurrentTabGroup();
+          loadedInitialTabGroup = true;
+          openedInitialLaunchTargets = await openDirectoriesFromLaunchArgs(initialLaunchContext);
+        }
+        catch (error) {
+          console.error('Failed to prepare absorbed shell launch targets:', error);
+        }
+      }
     }
 
     await showMainWindow(initialLaunchContext, openedInitialLaunchTargets);
@@ -219,33 +244,35 @@ export function useInit() {
 
     disableWebViewFeatures();
 
-    runDeferredTask(async () => {
-      if (isMainWindow && initialLaunchContext) {
+    runInBackground(async () => {
+      if (!loadedInitialTabGroup) {
+        await workspacesStore.loadCurrentTabGroup();
+        loadedInitialTabGroup = true;
+      }
+
+      if (isMainWindow && initialLaunchContext && !openedInitialLaunchTargets) {
         openedInitialLaunchTargets = await openDirectoriesFromLaunchArgs(initialLaunchContext);
 
         if (openedInitialLaunchTargets) {
           await showMainWindow(initialLaunchContext, true);
-          return;
         }
       }
-
-      await workspacesStore.loadCurrentTabGroup();
     }, 'Failed to restore startup tabs:');
 
-    runDeferredTask(() => userStatsStore.runDeferredMaintenance(), 'Failed to run deferred user stats maintenance:');
-    runDeferredTask(() => globalSearchStore.initOnLaunch(), 'Failed to initialize global search on launch:');
-    runDeferredTask(() => terminalsStore.init(), 'Failed to initialize terminals:');
-    runDeferredTask(() => extensionsStore.init(), 'Failed to initialize extensions:');
-    runDeferredTask(() => archiveJobsStore.ensureEventListeners(), 'Failed to initialize archive jobs:');
-    runDeferredTask(() => deleteJobsStore.ensureEventListeners(), 'Failed to initialize delete jobs:');
-    runDeferredTask(() => copyMoveJobsStore.ensureEventListeners(), 'Failed to initialize copy and move jobs:');
-    runDeferredTask(() => quickViewStore.ensureMainWindowDisplayedPathListener(), 'Failed to initialize quick view listener:');
+    runInBackground(() => userStatsStore.runDeferredMaintenance(), 'Failed to run deferred user stats maintenance:');
+    runInBackground(() => globalSearchStore.initOnLaunch(), 'Failed to initialize global search on launch:');
+    runInBackground(() => terminalsStore.init(), 'Failed to initialize terminals:');
+    runInBackground(() => extensionsStore.init(), 'Failed to initialize extensions:');
+    runInBackground(() => archiveJobsStore.ensureEventListeners(), 'Failed to initialize archive jobs:');
+    runInBackground(() => deleteJobsStore.ensureEventListeners(), 'Failed to initialize delete jobs:');
+    runInBackground(() => copyMoveJobsStore.ensureEventListeners(), 'Failed to initialize copy and move jobs:');
+    runInBackground(() => quickViewStore.ensureMainWindowDisplayedPathListener(), 'Failed to initialize quick view listener:');
 
     if (isMainWindow) {
-      runDeferredTask(() => initAutoCheck(), 'Failed to initialize app updater:');
+      runInBackground(() => initAutoCheck(), 'Failed to initialize app updater:');
     }
 
-    runDeferredTask(() => checkAndShowChangelog(), 'Failed to check changelog:');
+    runInBackground(() => checkAndShowChangelog(), 'Failed to check changelog:');
   }
 
   onMounted(() => {
@@ -266,5 +293,6 @@ export function useInit() {
 
   return {
     init,
+    awaitBackgroundTasks,
   };
 }

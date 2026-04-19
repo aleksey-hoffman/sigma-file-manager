@@ -20,6 +20,7 @@ const RELEASES_ATOM_URL: &str =
 const GITHUB_REPO_OWNER: &str = "aleksey-hoffman";
 const GITHUB_REPO_NAME: &str = "sigma-file-manager";
 const MAX_INSTALLER_DOWNLOAD_BYTES: u64 = 512 * 1024 * 1024;
+const CONNECT_TIMEOUT_SECS: u64 = 5;
 const UPDATE_CHECK_TIMEOUT_SECS: u64 = 10;
 
 #[derive(Serialize)]
@@ -222,6 +223,13 @@ fn make_unique_path_in_dir(directory: &Path, file_name: &str) -> PathBuf {
     unique_path_with_index(&directory.join(file_name), 2, "download", None, Some(1000))
 }
 
+fn build_http_client(timeout_secs: u64) -> Result<reqwest::Client, reqwest::Error> {
+    reqwest::Client::builder()
+        .connect_timeout(Duration::from_secs(CONNECT_TIMEOUT_SECS))
+        .timeout(Duration::from_secs(timeout_secs))
+        .build()
+}
+
 #[cfg(target_os = "windows")]
 fn pick_release_installer_asset(assets: &[Value]) -> Option<(String, String)> {
     let mut fallback: Option<(String, String)> = None;
@@ -271,10 +279,7 @@ async fn fetch_release_installer_asset(tag: &str) -> Option<(String, String)> {
         GITHUB_REPO_OWNER, GITHUB_REPO_NAME, encoded_tag
     );
 
-    let client = reqwest::Client::builder()
-        .timeout(Duration::from_secs(60))
-        .build()
-        .ok()?;
+    let client = build_http_client(60).ok()?;
 
     let response = client
         .get(&api_url)
@@ -297,9 +302,7 @@ async fn fetch_release_installer_asset(tag: &str) -> Option<(String, String)> {
 
 #[tauri::command]
 pub async fn check_for_updates(current_version: String) -> Result<UpdateCheckResult, String> {
-    let client = reqwest::Client::builder()
-        .timeout(Duration::from_secs(UPDATE_CHECK_TIMEOUT_SECS))
-        .build()
+    let client = build_http_client(UPDATE_CHECK_TIMEOUT_SECS)
         .map_err(|error| format!("Failed to create HTTP client: {}", error))?;
 
     let response = client
@@ -368,9 +371,7 @@ pub async fn download_release_installer(
 
     let dest_path = make_unique_path_in_dir(&download_dir, &safe_file_name);
 
-    let client = reqwest::Client::builder()
-        .timeout(Duration::from_secs(900))
-        .build()
+    let client = build_http_client(900)
         .map_err(|error| format!("Failed to create HTTP client: {}", error))?;
 
     let response = client
