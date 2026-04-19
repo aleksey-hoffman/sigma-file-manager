@@ -1,0 +1,194 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing tag to (re)build (e.g. v2.0.0-beta.4)'
+        required: true
+        type: string
+      publish:
+        description: 'Publish the release immediately (instead of leaving as draft)'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.event.inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    name: Prepare release
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.context.outputs.tag }}
+      version: ${{ steps.context.outputs.version }}
+      is_prerelease: ${{ steps.context.outputs.is_prerelease }}
+      release_id: ${{ steps.release.outputs.id }}
+    steps:
+      - name: Resolve tag and version
+        id: context
+        shell: bash
+        run: |
+          tag="${{ github.event.inputs.tag || github.ref_name }}"
+          if [[ "$tag" != v* ]]; then
+            echo "::error::Tag '$tag' must start with 'v'"
+            exit 1
+          fi
+          version="${tag#v}"
+          if [[ "$version" == *-* ]]; then
+            is_prerelease=true
+          else
+            is_prerelease=false
+          fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "is_prerelease=$is_prerelease" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.context.outputs.tag }}
+
+      - name: Verify package.json version matches tag
+        shell: bash
+        env:
+          EXPECTED: ${{ steps.context.outputs.version }}
+        run: |
+          actual=$(node -p "require('./package.json').version")
+          if [[ "$actual" != "$EXPECTED" ]]; then
+            echo "::error::package.json version ($actual) does not match tag version ($EXPECTED)"
+            exit 1
+          fi
+
+      - name: Ensure draft release exists
+        id: release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.context.outputs.tag }}
+          VERSION: ${{ steps.context.outputs.version }}
+          IS_PRERELEASE: ${{ steps.context.outputs.is_prerelease }}
+        shell: bash
+        run: |
+          if ! gh release view "$TAG" >/dev/null 2>&1; then
+            flags=(--draft)
+            if [[ "$IS_PRERELEASE" == "true" ]]; then
+              flags+=(--prerelease)
+            fi
+            gh release create "$TAG" \
+              --title "Sigma File Manager v$VERSION" \
+              --generate-notes \
+              "${flags[@]}"
+          else
+            echo "Release $TAG already exists; assets will be added/replaced."
+          fi
+          release_id=$(gh release view "$TAG" --json databaseId --jq '.databaseId')
+          echo "id=$release_id" >> "$GITHUB_OUTPUT"
+
+  build:
+    name: Build (${{ matrix.platform }})
+    needs: prepare
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: windows
+            os: windows-latest
+          - platform: linux
+            os: ubuntu-22.04
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare.outputs.tag }}
+
+      - name: Setup Volta
+        uses: volta-cli/action@v4
+
+      - name: Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: Resolve npm cache directory
+        id: npm-cache-dir
+        shell: bash
+        run: echo "dir=$(npm config get cache)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache npm
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.npm-cache-dir.outputs.dir }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install Linux dependencies
+        if: matrix.platform == 'linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev \
+            patchelf
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Sync Cargo version with package.json
+        run: npm run sync-version
+
+      - name: Build and upload bundles
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NO_STRIP: ${{ matrix.platform == 'linux' && 'true' || '' }}
+        with:
+          releaseId: ${{ needs.prepare.outputs.release_id }}
+          projectPath: src-tauri
+          uploadUpdaterJson: false
+          uploadUpdaterSignatures: false
+          releaseAssetNamePattern: 'Sigma-File-Manager-[version]-${{ matrix.platform }}[setup][ext]'
+
+      - name: Upload Linux binary
+        if: matrix.platform == 'linux'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ needs.prepare.outputs.tag }}
+          VERSION: ${{ needs.prepare.outputs.version }}
+        shell: bash
+        run: |
+          binary="src-tauri/target/release/sigma-file-manager"
+          if [[ ! -f "$binary" ]]; then
+            echo "::error::Linux binary not found at $binary"
+            exit 1
+          fi
+          chmod +x "$binary"
+          mkdir -p staged
+          staged_binary="staged/Sigma-File-Manager-${VERSION}-linux-binary"
+          cp "$binary" "$staged_binary"
+          gh release upload "$TAG" "$staged_binary" --clobber
+
+  publish:
+    name: Publish release
+    needs: [prepare, build]
+    if: github.event_name == 'push' || github.event.inputs.publish == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Mark release as published
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ needs.prepare.outputs.tag }}
+        run: gh release edit "$TAG" --draft=false

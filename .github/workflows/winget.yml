@@ -1,0 +1,28 @@
+name: Publish to winget
+
+on:
+  release:
+    types: [released, prereleased]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing release tag to submit (e.g. v2.0.0)'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  submit:
+    name: Submit manifest to microsoft/winget-pkgs
+    runs-on: windows-latest
+    steps:
+      - name: Submit to winget-pkgs
+        uses: vedantmgoyal9/winget-releaser@v2
+        with:
+          identifier: AlekseyHoffman.SigmaFileManager
+          installers-regex: '-windows-setup\.exe$'
+          release-tag: ${{ github.event.inputs.tag || github.event.release.tag_name }}
+          token: ${{ secrets.WINGET_TOKEN }}
+          max-versions-to-keep: 10
