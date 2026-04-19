@@ -409,7 +409,7 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
     }));
   }
 
-  async function openTabGroup(tabGroup: TabGroup) {
+  async function openTabGroup(tabGroup: TabGroup, options: { dirEntryTimeoutMs?: number } = {}) {
     try {
       const tabGroupIndex = getTabGroupIndex(currentWorkspace.value, tabGroup);
 
@@ -419,7 +419,7 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
 
       setCurrentTabGroupIndex(tabGroupIndex);
       await loadTabGroupDirEntries(tabGroup);
-      updateInfoPanel(tabGroup);
+      updateInfoPanel(tabGroup, options);
     }
     catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
@@ -427,8 +427,11 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
     }
   }
 
-  async function updateInfoPanel(tabGroup: TabGroup) {
-    const dirEntry = await getDirEntry({ path: tabGroup[0].path });
+  async function updateInfoPanel(tabGroup: TabGroup, options: { dirEntryTimeoutMs?: number } = {}) {
+    const dirEntry = await getDirEntry({
+      path: tabGroup[0].path,
+      timeoutMs: options.dirEntryTimeoutMs,
+    });
     await navigatorStore.updateInfoPanel(dirEntry);
   }
 
@@ -436,10 +439,21 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
     return tabGroup.some(tab => tabs.value.some((_tab: Tab) => _tab.id === tab.id));
   }
 
-  async function getDirEntry(params: { path: string | null }): Promise<DirEntry | null> {
+  async function getDirEntry(params: {
+    path: string | null;
+    timeoutMs?: number;
+  }): Promise<DirEntry | null> {
     try {
       if (!params.path) {
         return null;
+      }
+
+      if (typeof params.timeoutMs === 'number') {
+        const dirEntry = await invoke<DirEntry>('get_dir_entry_with_timeout', {
+          path: params.path,
+          timeoutMs: params.timeoutMs,
+        });
+        return dirEntry;
       }
 
       const dirEntry = await invoke('get_dir_entry', { path: params.path }) satisfies DirEntry;
@@ -464,9 +478,9 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
     }
   }
 
-  async function loadCurrentTabGroup() {
+  async function loadCurrentTabGroup(options: { dirEntryTimeoutMs?: number } = {}) {
     if (currentTabGroup.value) {
-      await openTabGroup(currentTabGroup.value);
+      await openTabGroup(currentTabGroup.value, options);
     }
   }
 

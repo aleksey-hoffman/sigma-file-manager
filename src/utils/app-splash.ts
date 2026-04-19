@@ -12,15 +12,16 @@ export function removeAppSplash(): void {
   }
 
   const splashElement = document.getElementById(SPLASH_ELEMENT_ID);
+
   if (!splashElement) {
     return;
   }
 
   splashElement.classList.add(SPLASH_HIDDEN_CLASS);
 
-  const removeElement = () => {
-    splashElement.remove();
-  };
+  function removeElement() {
+    splashElement?.remove?.();
+  }
 
   splashElement.addEventListener('transitionend', removeElement, { once: true });
   setTimeout(removeElement, SPLASH_REMOVAL_FALLBACK_MS);

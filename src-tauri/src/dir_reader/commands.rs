@@ -29,6 +29,14 @@ pub fn get_dir_entry(path: String) -> Result<super::types::DirEntry, String> {
 }
 
 #[tauri::command]
+pub async fn get_dir_entry_with_timeout(
+    path: String,
+    timeout_ms: Option<u64>,
+) -> Result<super::types::DirEntry, String> {
+    read::get_dir_entry_with_timeout(path, timeout_ms.unwrap_or(2500)).await
+}
+
+#[tauri::command]
 pub fn resolve_windows_directory_shortcut(path: String) -> Result<Option<String>, String> {
     read::resolve_windows_directory_shortcut(path)
 }

@@ -292,6 +292,18 @@ pub fn get_dir_entry(path: String) -> Result<DirEntry, String> {
     read_entry(entry_path).ok_or_else(|| format!("Failed to read path: {}", path))
 }
 
+pub async fn get_dir_entry_with_timeout(path: String, timeout_ms: u64) -> Result<DirEntry, String> {
+    match with_blocking_timeout(timeout_ms, move || get_dir_entry(path)).await {
+        Ok(result) => result,
+        Err(BlockingTimeoutError::JoinError(join_error)) => {
+            Err(format!("Failed to read path: {}", join_error))
+        }
+        Err(BlockingTimeoutError::TimedOut(timeout_ms)) => {
+            Err(format!("Reading path timed out after {} ms", timeout_ms))
+        }
+    }
+}
+
 pub fn read_dir(path: String) -> Result<DirContents, String> {
     let directory = Path::new(&path);
 

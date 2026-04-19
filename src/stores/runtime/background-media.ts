@@ -23,7 +23,22 @@ const mediaExtensions = new Set([
   'mp4', 'webm', 'ogg', 'mov', 'avi', 'mkv',
 ]);
 
-async function readCustomBackgroundEntries(path: string): Promise<CustomBackgroundEntry[]> {
+type ReadCustomBackgroundEntriesOptions = {
+  timeoutMs?: number;
+};
+
+async function readCustomBackgroundEntries(
+  path: string,
+  options: ReadCustomBackgroundEntriesOptions = {},
+): Promise<CustomBackgroundEntry[]> {
+  const { timeoutMs } = options;
+  const command = typeof timeoutMs === 'number' ? 'read_dir_with_timeout' : 'read_dir';
+  const commandArgs: Record<string, unknown> = { path };
+
+  if (typeof timeoutMs === 'number') {
+    commandArgs.timeoutMs = timeoutMs;
+  }
+
   const result = await invoke<{
     entries: Array<{
       name: string;
@@ -31,9 +46,7 @@ async function readCustomBackgroundEntries(path: string): Promise<CustomBackgrou
       is_file: boolean;
       ext?: string;
     }>;
-  }>('read_dir', {
-    path,
-  });
+  }>(command, commandArgs);
 
   return (result.entries ?? [])
     .filter(entry => entry.is_file)
@@ -71,7 +84,9 @@ function mergeEntries(
 export const useBackgroundMediaStore = defineStore('backgroundMedia', () => {
   const customBackgrounds = ref<CustomBackgroundEntry[]>([]);
 
-  async function refreshCustomBackgrounds(): Promise<CustomBackgroundEntry[]> {
+  async function refreshCustomBackgrounds(
+    options: { timeoutMs?: number } = {},
+  ): Promise<CustomBackgroundEntry[]> {
     const userPathsStore = useUserPathsStore();
     const customBackgroundsPath = userPathsStore.customPaths.appStorageCustomBackgroundsPath;
 
@@ -81,7 +96,7 @@ export const useBackgroundMediaStore = defineStore('backgroundMedia', () => {
     }
 
     try {
-      const entries = await readCustomBackgroundEntries(customBackgroundsPath);
+      const entries = await readCustomBackgroundEntries(customBackgroundsPath, options);
 
       customBackgrounds.value = entries;
       return entries;

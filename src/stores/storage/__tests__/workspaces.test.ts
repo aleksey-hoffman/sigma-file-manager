@@ -249,6 +249,49 @@ describe('workspaces storage duplicate tabs', () => {
 
     consoleWarnSpy.mockRestore();
   });
+
+  it('uses the timeout-bounded backend command for getDirEntry when a timeout is provided', async () => {
+    invokeMock.mockImplementation((command: string) => {
+      if (command === 'get_dir_entry_with_timeout') {
+        return Promise.resolve({ path: 'C:/Users/aleks/Projects' });
+      }
+
+      return Promise.resolve(null);
+    });
+
+    const workspacesStore = useWorkspacesStore();
+
+    const dirEntry = await workspacesStore.getDirEntry({
+      path: 'C:/Users/aleks/Projects',
+      timeoutMs: 1500,
+    });
+
+    expect(dirEntry).toEqual({ path: 'C:/Users/aleks/Projects' });
+    expect(invokeMock).toHaveBeenCalledWith('get_dir_entry_with_timeout', {
+      path: 'C:/Users/aleks/Projects',
+      timeoutMs: 1500,
+    });
+    expect(invokeMock).not.toHaveBeenCalledWith('get_dir_entry', expect.anything());
+  });
+
+  it('returns null when the timeout-bounded getDirEntry rejects', async () => {
+    invokeMock.mockImplementation((command: string) => {
+      if (command === 'get_dir_entry_with_timeout') {
+        return Promise.reject(new Error('Reading path timed out after 2000 ms'));
+      }
+
+      return Promise.resolve(null);
+    });
+
+    const workspacesStore = useWorkspacesStore();
+
+    const dirEntry = await workspacesStore.getDirEntry({
+      path: 'C:/Users/aleks/Projects',
+      timeoutMs: 2000,
+    });
+
+    expect(dirEntry).toBeNull();
+  });
 });
 
 function createWorkspace(tabGroups: TabGroup[]): Workspace {

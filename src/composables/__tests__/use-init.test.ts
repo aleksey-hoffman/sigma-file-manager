@@ -420,6 +420,90 @@ describe('useInit startup restoration', () => {
     expect(removeAppSplashMock).toHaveBeenCalledTimes(1);
   });
 
+  it('passes a timeout when refreshing custom backgrounds during startup', async () => {
+    invokeMock.mockImplementation(async (command: string) => {
+      if (command === 'get_launch_context') {
+        return createLaunchContext({});
+      }
+
+      return null;
+    });
+
+    const { useInit } = await import('@/composables/use-init');
+    const { init } = useInit();
+    const initPromise = init();
+
+    await flushAsyncWork();
+    await initPromise;
+    await flushAsyncWork();
+
+    expect(backgroundMediaRefreshCustomBackgroundsMock).toHaveBeenCalledTimes(1);
+    expect(backgroundMediaRefreshCustomBackgroundsMock).toHaveBeenCalledWith(
+      expect.objectContaining({ timeoutMs: expect.any(Number) }),
+    );
+  });
+
+  it('passes a directory-entry timeout when loading the saved tab group on startup', async () => {
+    invokeMock.mockImplementation(async (command: string) => {
+      if (command === 'get_launch_context') {
+        return createLaunchContext({});
+      }
+
+      return null;
+    });
+
+    const { useInit } = await import('@/composables/use-init');
+    const { init, awaitBackgroundTasks } = useInit();
+
+    const initPromise = init();
+    await flushAsyncWork();
+    await initPromise;
+    await flushAsyncWork();
+    await awaitBackgroundTasks();
+
+    expect(workspacesLoadCurrentTabGroupMock).toHaveBeenCalledWith(
+      expect.objectContaining({ dirEntryTimeoutMs: expect.any(Number) }),
+    );
+  });
+
+  it('passes a directory-entry timeout when resolving launch targets', async () => {
+    const launchContext = createLaunchContext({
+      args: ['sigma-file-manager.exe', 'C:/Launch'],
+    });
+
+    invokeMock.mockImplementation(async (command: string) => {
+      if (command === 'get_launch_context') {
+        return launchContext;
+      }
+
+      return null;
+    });
+
+    resolveLaunchTargetsFromArgsMock.mockImplementation(async (
+      _context: unknown,
+      resolveDirEntry: (path: string) => Promise<unknown>,
+    ) => {
+      await resolveDirEntry('C:/Launch');
+      return [];
+    });
+
+    const { useInit } = await import('@/composables/use-init');
+    const { init, awaitBackgroundTasks } = useInit();
+
+    const initPromise = init();
+    await flushAsyncWork();
+    await initPromise;
+    await flushAsyncWork();
+    await awaitBackgroundTasks();
+
+    expect(getDirEntryMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        path: 'C:/Launch',
+        timeoutMs: expect.any(Number),
+      }),
+    );
+  });
+
   it('hides the main window when launched only with delegated shell paths', async () => {
     const launchContext = createLaunchContext({
       args: ['sigma-file-manager.exe'],

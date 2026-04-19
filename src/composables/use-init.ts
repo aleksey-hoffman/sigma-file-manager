@@ -38,6 +38,8 @@ import { toggleMainWindowFullscreen } from '@/utils/window-fullscreen';
 import { removeAppSplash } from '@/utils/app-splash';
 
 const APP_LAUNCH_ARGS_EVENT = 'app-launch-args';
+const STARTUP_BACKGROUND_REFRESH_TIMEOUT_MS = 1500;
+const STARTUP_DIR_ENTRY_TIMEOUT_MS = 2000;
 
 export function useInit() {
   const router = useRouter();
@@ -141,7 +143,10 @@ export function useInit() {
   async function openDirectoriesFromLaunchArgs(launchContext: LaunchContext): Promise<boolean> {
     const launchTargets = await resolveLaunchTargetsFromArgs(
       launchContext,
-      path => workspacesStore.getDirEntry({ path }),
+      path => workspacesStore.getDirEntry({
+        path,
+        timeoutMs: STARTUP_DIR_ENTRY_TIMEOUT_MS,
+      }),
     );
 
     if (launchTargets.length === 0) {
@@ -221,7 +226,9 @@ export function useInit() {
     let openedInitialLaunchTargets = false;
     let loadedInitialTabGroup = false;
 
-    await backgroundMediaStore.refreshCustomBackgrounds();
+    await backgroundMediaStore.refreshCustomBackgrounds({
+      timeoutMs: STARTUP_BACKGROUND_REFRESH_TIMEOUT_MS,
+    });
     await userStatsStore.init();
     await workspacesStore.init(undefined, { loadInitialTabGroup: false });
 
@@ -230,7 +237,9 @@ export function useInit() {
 
       if (initialLaunchContext.hadAbsorbedShellPaths) {
         try {
-          await workspacesStore.loadCurrentTabGroup();
+          await workspacesStore.loadCurrentTabGroup({
+            dirEntryTimeoutMs: STARTUP_DIR_ENTRY_TIMEOUT_MS,
+          });
           loadedInitialTabGroup = true;
           openedInitialLaunchTargets = await openDirectoriesFromLaunchArgs(initialLaunchContext);
         }
@@ -252,7 +261,9 @@ export function useInit() {
 
     runInBackground(async () => {
       if (!loadedInitialTabGroup) {
-        await workspacesStore.loadCurrentTabGroup();
+        await workspacesStore.loadCurrentTabGroup({
+          dirEntryTimeoutMs: STARTUP_DIR_ENTRY_TIMEOUT_MS,
+        });
         loadedInitialTabGroup = true;
       }
 
