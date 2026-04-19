@@ -229,6 +229,7 @@ pub fn run() {
             default_file_manager::set_default_file_manager,
             app_updater::check_for_updates,
             app_updater::download_release_installer,
+            app_updater::app_updates_managed_externally,
             system_tray::reload_webview,
             system_tray::update_tray_shortcut,
             dir_reader::read_dir,

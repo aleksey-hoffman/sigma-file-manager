@@ -221,13 +221,17 @@ export const useSettingsStore = defineStore('settings', () => {
         component: markRaw(WhatsNewSection),
         category: 'general',
       },
-      {
-        key: 'appUpdates',
-        titleKey: 'appUpdates',
-        tags: 'settingsTags.updates',
-        component: markRaw(AppUpdatesSection),
-        category: 'general',
-      },
+      ...(platformStore.appUpdatesManagedExternally
+        ? []
+        : [
+            {
+              key: 'appUpdates',
+              titleKey: 'appUpdates',
+              tags: 'settingsTags.updates',
+              component: markRaw(AppUpdatesSection),
+              category: 'general',
+            },
+          ]),
       {
         key: 'startup',
         titleKey: 'settings.general.startupBehavior',

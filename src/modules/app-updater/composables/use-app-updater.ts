@@ -9,6 +9,7 @@ import { getVersion } from '@tauri-apps/api/app';
 import { openUrl } from '@tauri-apps/plugin-opener';
 import { useI18n } from 'vue-i18n';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
+import { usePlatformStore } from '@/stores/runtime/platform';
 import { toast, ToastStatic, ToastProgress } from '@/components/ui/toaster';
 
 const CHECK_INTERVAL_MS = 6 * 60 * 60 * 1000;
@@ -83,6 +84,7 @@ function formatDownloadSize(
 export function useAppUpdater() {
   const { t } = useI18n();
   const userSettingsStore = useUserSettingsStore();
+  const platformStore = usePlatformStore();
 
   const isCooldownActive = computed(() => {
     const lastCheckTimestamp = userSettingsStore.userSettings.appUpdates.lastCheckTimestamp;
@@ -105,6 +107,10 @@ export function useAppUpdater() {
   }
 
   async function checkForUpdates(): Promise<UpdateInfo | null> {
+    if (platformStore.appUpdatesManagedExternally) {
+      return null;
+    }
+
     if (isCooldownActive.value && !EMULATE_INSTALLED_AS_BETA1_FOR_UPDATE_TEST) {
       return updateInfo.value;
     }
@@ -151,6 +157,10 @@ export function useAppUpdater() {
   }
 
   async function downloadReleaseInstaller(info: UpdateInfo) {
+    if (platformStore.appUpdatesManagedExternally) {
+      return;
+    }
+
     await runInstallerDownload(info, toastIdForUpdateNotification(info.latestVersion));
   }
 
@@ -359,6 +369,10 @@ export function useAppUpdater() {
     isInitialized.value = true;
     await initVersion();
 
+    if (platformStore.appUpdatesManagedExternally) {
+      return;
+    }
+
     const runInitialCheck
       = userSettingsStore.userSettings.appUpdates.autoCheck
         || EMULATE_INSTALLED_AS_BETA1_FOR_UPDATE_TEST;
@@ -378,6 +392,11 @@ export function useAppUpdater() {
   }
 
   async function onAutoCheckSettingChanged(enabled: boolean) {
+    if (platformStore.appUpdatesManagedExternally) {
+      stopPeriodicCheck();
+      return;
+    }
+
     if (enabled) {
       const result = await checkForUpdates();
 

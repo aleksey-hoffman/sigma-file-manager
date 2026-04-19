@@ -5,10 +5,12 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import type { Platform } from '@tauri-apps/plugin-os';
+import { invoke } from '@tauri-apps/api/core';
 import { initPlatformInfo as initSharedPlatformInfo } from '@/utils/platform-info';
 
 export const usePlatformStore = defineStore('platform', () => {
   const currentPlatform = ref<Platform | null>(null);
+  const appUpdatesManagedExternally = ref(false);
 
   const isWindows = computed(() => currentPlatform.value === 'windows');
   const isMacOS = computed(() => currentPlatform.value === 'macos');
@@ -18,10 +20,18 @@ export const usePlatformStore = defineStore('platform', () => {
   async function init() {
     const platformInfo = await initSharedPlatformInfo();
     currentPlatform.value = platformInfo.os;
+
+    try {
+      appUpdatesManagedExternally.value = await invoke<boolean>('app_updates_managed_externally');
+    }
+    catch {
+      appUpdatesManagedExternally.value = false;
+    }
   }
 
   return {
     currentPlatform,
+    appUpdatesManagedExternally,
     isWindows,
     isMacOS,
     isLinux,

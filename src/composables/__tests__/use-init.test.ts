@@ -147,6 +147,7 @@ vi.mock('@/stores/storage/workspaces', () => ({
 vi.mock('@/stores/runtime/platform', () => ({
   usePlatformStore: () => ({
     init: platformInitMock,
+    appUpdatesManagedExternally: false,
   }),
 }));
 

@@ -300,8 +300,31 @@ async fn fetch_release_installer_asset(tag: &str) -> Option<(String, String)> {
     pick_release_installer_asset(assets.as_slice())
 }
 
+#[cfg(windows)]
+fn is_running_in_windows_msix_package() -> bool {
+    use windows::core::PWSTR;
+    use windows::Win32::Foundation::{ERROR_INSUFFICIENT_BUFFER, ERROR_SUCCESS};
+    use windows::Win32::Storage::Packaging::Appx::GetCurrentPackageFamilyName;
+
+    let mut length = 0u32;
+    let result = unsafe { GetCurrentPackageFamilyName(&mut length, PWSTR::null()) };
+    result == ERROR_INSUFFICIENT_BUFFER || result == ERROR_SUCCESS
+}
+
+#[cfg(not(windows))]
+fn is_running_in_windows_msix_package() -> bool {
+    false
+}
+
 fn is_managed_by_external_package_manager() -> bool {
-    std::env::var_os("SNAP").is_some() || std::env::var_os("FLATPAK_ID").is_some()
+    std::env::var_os("SNAP").is_some()
+        || std::env::var_os("FLATPAK_ID").is_some()
+        || is_running_in_windows_msix_package()
+}
+
+#[tauri::command]
+pub fn app_updates_managed_externally() -> bool {
+    is_managed_by_external_package_manager()
 }
 
 #[tauri::command]
@@ -372,6 +395,10 @@ pub async fn download_release_installer(
     file_name: String,
     progress_event_id: Option<String>,
 ) -> Result<String, String> {
+    if is_managed_by_external_package_manager() {
+        return Err("Installer download is not available for this distribution.".to_string());
+    }
+
     let validated_url = validate_github_release_download_url(&download_url)?;
     let safe_file_name = sanitize_download_file_name(&file_name)?;
 
