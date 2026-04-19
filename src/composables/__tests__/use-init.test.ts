@@ -19,11 +19,13 @@ const {
   getDirEntryMock,
   globalSearchInitOnLaunchMock,
   globalShortcutsInitMock,
+  hideWindowMock,
   initAutoCheckMock,
   invokeMock,
   openOrFocusTabGroupMock,
   platformInitMock,
   quickViewEnsureMainWindowDisplayedPathListenerMock,
+  removeAppSplashMock,
   resolveLaunchTargetsFromArgsMock,
   routerPushMock,
   setPendingLaunchRevealMock,
@@ -49,11 +51,13 @@ const {
   getDirEntryMock: vi.fn(),
   globalSearchInitOnLaunchMock: vi.fn(),
   globalShortcutsInitMock: vi.fn(),
+  hideWindowMock: vi.fn(),
   initAutoCheckMock: vi.fn(),
   invokeMock: vi.fn(),
   openOrFocusTabGroupMock: vi.fn(),
   platformInitMock: vi.fn(),
   quickViewEnsureMainWindowDisplayedPathListenerMock: vi.fn(),
+  removeAppSplashMock: vi.fn(),
   resolveLaunchTargetsFromArgsMock: vi.fn(),
   routerPushMock: vi.fn(),
   setPendingLaunchRevealMock: vi.fn(),
@@ -102,6 +106,7 @@ vi.mock('@tauri-apps/api/window', () => ({
   getCurrentWindow: () => ({
     label: 'main',
     show: showWindowMock,
+    hide: hideWindowMock,
     setFocus: vi.fn(),
   }),
 }));
@@ -249,6 +254,10 @@ vi.mock('@/utils/window-fullscreen', () => ({
   toggleMainWindowFullscreen: vi.fn(),
 }));
 
+vi.mock('@/utils/app-splash', () => ({
+  removeAppSplash: removeAppSplashMock,
+}));
+
 describe('useInit startup restoration', () => {
   beforeEach(() => {
     vi.useFakeTimers();
@@ -264,11 +273,13 @@ describe('useInit startup restoration', () => {
     getDirEntryMock.mockReset().mockResolvedValue(null);
     globalSearchInitOnLaunchMock.mockReset().mockResolvedValue(undefined);
     globalShortcutsInitMock.mockReset().mockResolvedValue(undefined);
+    hideWindowMock.mockReset().mockResolvedValue(undefined);
     initAutoCheckMock.mockReset().mockResolvedValue(undefined);
     invokeMock.mockReset();
     openOrFocusTabGroupMock.mockReset().mockResolvedValue(undefined);
     platformInitMock.mockReset().mockResolvedValue(undefined);
     quickViewEnsureMainWindowDisplayedPathListenerMock.mockReset().mockResolvedValue(undefined);
+    removeAppSplashMock.mockReset();
     resolveLaunchTargetsFromArgsMock.mockReset().mockResolvedValue([]);
     routerPushMock.mockReset().mockResolvedValue(undefined);
     setPendingLaunchRevealMock.mockReset();
@@ -385,6 +396,55 @@ describe('useInit startup restoration', () => {
     expect(callOrder.indexOf('openOrFocusTabGroup:C:/Launch')).toBeLessThan(
       callOrder.indexOf('showMainWindow'),
     );
+  });
+
+  it('removes the app splash after init completes', async () => {
+    invokeMock.mockImplementation(async (command: string) => {
+      if (command === 'get_launch_context') {
+        return createLaunchContext({});
+      }
+
+      return null;
+    });
+
+    const { useInit } = await import('@/composables/use-init');
+    const { init } = useInit();
+    const initPromise = init();
+
+    await flushAsyncWork();
+    await initPromise;
+    await flushAsyncWork();
+
+    expect(showWindowMock).toHaveBeenCalledTimes(1);
+    expect(hideWindowMock).not.toHaveBeenCalled();
+    expect(removeAppSplashMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('hides the main window when launched only with delegated shell paths', async () => {
+    const launchContext = createLaunchContext({
+      args: ['sigma-file-manager.exe'],
+      hadDelegatedShellPaths: true,
+    });
+
+    invokeMock.mockImplementation(async (command: string) => {
+      if (command === 'get_launch_context') {
+        return launchContext;
+      }
+
+      return null;
+    });
+
+    const { useInit } = await import('@/composables/use-init');
+    const { init } = useInit();
+    const initPromise = init();
+
+    await flushAsyncWork();
+    await initPromise;
+    await flushAsyncWork();
+
+    expect(hideWindowMock).toHaveBeenCalledTimes(1);
+    expect(showWindowMock).not.toHaveBeenCalled();
+    expect(removeAppSplashMock).toHaveBeenCalledTimes(1);
   });
 
   it('schedules background startup work after init resolves', async () => {

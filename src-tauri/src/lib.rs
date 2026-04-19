@@ -28,6 +28,8 @@ pub mod utils;
 use serde::Serialize;
 use tauri::{Emitter, Manager};
 
+const SIGMA_AUTOSTART_CLI_FLAG: &str = "--sigma-autostart";
+
 #[derive(Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 struct LaunchContext {
@@ -110,6 +112,10 @@ fn delegate_shell_namespace_paths(paths: &[String]) {
     for path in paths {
         open_in_native_explorer(path);
     }
+}
+
+fn launched_from_autostart(args: &[String]) -> bool {
+    args.iter().any(|arg| arg == SIGMA_AUTOSTART_CLI_FLAG)
 }
 
 fn build_launch_context(
@@ -213,7 +219,7 @@ pub fn run() {
         .plugin(tauri_plugin_clipboard_manager::init())
         .plugin(
             tauri_plugin_autostart::Builder::new()
-                .args(["--sigma-autostart"])
+                .args([SIGMA_AUTOSTART_CLI_FLAG])
                 .build(),
         )
         .invoke_handler(tauri::generate_handler![
@@ -361,11 +367,28 @@ fn setup_handler(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>>
             .clone(),
     );
 
+    let raw_args: Vec<String> = std::env::args().collect();
+
     #[cfg(windows)]
-    {
-        let filter_result = filter_shell_namespace_args(std::env::args().collect());
+    let should_hide_main_window_on_startup = {
+        let filter_result = filter_shell_namespace_args(raw_args.clone());
         delegate_shell_namespace_paths(&filter_result.delegated_paths);
         url_drop::setup(app.handle());
+
+        let launched_only_with_delegated_paths = !filter_result.had_absorbed_paths
+            && filter_result.had_delegated_paths()
+            && filter_result.filtered_args.len() <= 1;
+
+        launched_from_autostart(&raw_args) || launched_only_with_delegated_paths
+    };
+
+    #[cfg(not(windows))]
+    let should_hide_main_window_on_startup = launched_from_autostart(&raw_args);
+
+    if !should_hide_main_window_on_startup {
+        if let Some(main_window) = app.get_webview_window("main") {
+            let _ = main_window.show();
+        }
     }
 
     #[cfg(feature = "devtools")]

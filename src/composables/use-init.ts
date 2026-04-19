@@ -35,6 +35,7 @@ import {
 } from '@/utils/launch-directories';
 import { applyUiZoomStep } from '@/utils/ui-zoom';
 import { toggleMainWindowFullscreen } from '@/utils/window-fullscreen';
+import { removeAppSplash } from '@/utils/app-splash';
 
 const APP_LAUNCH_ARGS_EVENT = 'app-launch-args';
 
@@ -108,7 +109,7 @@ export function useInit() {
     return launchContext.hadDelegatedShellPaths && launchContext.args.length <= 1;
   }
 
-  async function showMainWindow(
+  async function revealMainWindow(
     launchContextOverride?: LaunchContext,
     openedLaunchTargets = false,
   ) {
@@ -122,14 +123,19 @@ export function useInit() {
       const launchedFromOsAutostart = launchContext.args.includes(SIGMA_AUTOSTART_CLI_FLAG);
       const stayHiddenAfterAutostart = launchedFromOsAutostart
         && userSettingsStore.userSettings.launchAtStartupHidden;
+      const keepHidden = stayHiddenAfterAutostart
+        || shouldKeepMainWindowHidden(launchContext, openedLaunchTargets);
 
-      if (stayHiddenAfterAutostart || shouldKeepMainWindowHidden(launchContext, openedLaunchTargets)) {
-        return;
+      if (keepHidden) {
+        await currentWindow.hide();
       }
-
-      await currentWindow.show();
-      await currentWindow.setFocus();
+      else {
+        await currentWindow.show();
+        await currentWindow.setFocus();
+      }
     }
+
+    removeAppSplash();
   }
 
   async function openDirectoriesFromLaunchArgs(launchContext: LaunchContext): Promise<boolean> {
@@ -234,7 +240,7 @@ export function useInit() {
       }
     }
 
-    await showMainWindow(initialLaunchContext, openedInitialLaunchTargets);
+    await revealMainWindow(initialLaunchContext, openedInitialLaunchTargets);
     await appWindowStore.initMainWindowStateListeners();
 
     if (isMainWindow) {
@@ -254,7 +260,7 @@ export function useInit() {
         openedInitialLaunchTargets = await openDirectoriesFromLaunchArgs(initialLaunchContext);
 
         if (openedInitialLaunchTargets) {
-          await showMainWindow(initialLaunchContext, true);
+          await revealMainWindow(initialLaunchContext, true);
         }
       }
     }, 'Failed to restore startup tabs:');

@@ -6,9 +6,59 @@
   <link rel="icon" href="/favicon.ico">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sigma File Manager</title>
+  <style>
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #242227;
+    }
+
+    #app-splash,
+    #app-splash * {
+      box-sizing: border-box;
+    }
+
+    #app-splash {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      background-color: #242227;
+      z-index: 1000;
+      opacity: 1;
+      transition: opacity 200ms ease-out;
+      pointer-events: none;
+    }
+
+    #app-splash.app-splash--hidden {
+      opacity: 0;
+    }
+
+    #app-splash__spinner {
+      width: 40px;
+      height: 40px;
+      border: 2px solid rgba(255, 255, 255, 0.12);
+      border-top-color: rgba(255, 255, 255, 0.65);
+      border-radius: 50%;
+      animation: app-splash-spin 800ms linear infinite;
+    }
+
+    @keyframes app-splash-spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
 </head>
 
 <body>
+  <div id="app-splash">
+    <div id="app-splash__spinner"></div>
+  </div>
   <div id="app"></div>
   <script type="module" src="/src/main.ts"></script>
 </body>
