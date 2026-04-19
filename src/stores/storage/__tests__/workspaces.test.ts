@@ -160,8 +160,19 @@ describe('workspaces storage duplicate tabs', () => {
 
   it('hydrates from startup bootstrap without reading workspaces from LazyStore', async () => {
     invokeMock.mockImplementation((command: string) => {
-      if (command === 'get_dir_entries') {
-        return Promise.resolve([]);
+      if (command === 'read_dir_with_timeout') {
+        return Promise.resolve({
+          path: 'C:/Users/aleks/Projects',
+          entries: [],
+          total_count: 0,
+          dir_count: 0,
+          file_count: 0,
+          opened_directory_times: {
+            modified_time: 0,
+            accessed_time: 0,
+            created_time: 0,
+          },
+        });
       }
 
       if (command === 'get_dir_entry') {
@@ -193,7 +204,10 @@ describe('workspaces storage duplicate tabs', () => {
 
     expect(lazyStoreGetMock).not.toHaveBeenCalled();
     expect(workspacesStore.workspaces[0]?.tabGroups[0]?.[0]?.path).toBe('C:/Users/aleks/Projects');
-    expect(invokeMock).toHaveBeenCalledWith('get_dir_entries', { path: 'C:/Users/aleks/Projects' });
+    expect(invokeMock).toHaveBeenCalledWith('read_dir_with_timeout', {
+      path: 'C:/Users/aleks/Projects',
+      timeoutMs: 5000,
+    });
   });
 });
 

@@ -27,6 +27,8 @@ import { reconcileMissingTagDefinitions as mergeTagDefinitionsFromTaggedItems } 
 
 const HISTORY_MAX_ITEMS = 100;
 const FREQUENT_ITEMS_MAX = 100;
+const PATH_EXISTS_TIMEOUT_MS = 2500;
+const PATH_EXISTS_BATCH_SIZE = 4;
 
 export const useUserStatsStore = defineStore('userStats', () => {
   const userPathsStore = useUserPathsStore();
@@ -475,28 +477,44 @@ export const useUserStatsStore = defineStore('userStats', () => {
     if (allPaths.size === 0) return;
 
     const nonExistentPaths = new Set<string>();
-    let checkedCount = 0;
+    let resolvedCheckCount = 0;
+    const pathsToCheck = Array.from(allPaths);
 
-    await Promise.allSettled(
-      Array.from(allPaths).map(async (path) => {
+    for (let startIndex = 0; startIndex < pathsToCheck.length; startIndex += PATH_EXISTS_BATCH_SIZE) {
+      const batchPaths = pathsToCheck.slice(startIndex, startIndex + PATH_EXISTS_BATCH_SIZE);
+      const batchResults = await Promise.all(batchPaths.map(async (path) => {
         try {
-          const exists = await invoke<boolean>('path_exists', { path });
-
-          if (!exists) {
-            nonExistentPaths.add(path);
-          }
-
-          checkedCount++;
+          const exists = await invoke<boolean | null>('path_exists_with_timeout', {
+            path,
+            timeoutMs: PATH_EXISTS_TIMEOUT_MS,
+          });
+          return {
+            path,
+            exists,
+          };
         }
         catch {
-          checkedCount++;
+          return {
+            path,
+            exists: null,
+          };
         }
-      }),
-    );
+      }));
+
+      for (const batchResult of batchResults) {
+        if (batchResult.exists === false) {
+          nonExistentPaths.add(batchResult.path);
+        }
+
+        if (batchResult.exists !== null) {
+          resolvedCheckCount++;
+        }
+      }
+    }
 
     if (nonExistentPaths.size === 0) return;
 
-    if (checkedCount === 0 || nonExistentPaths.size === allPaths.size) {
+    if (resolvedCheckCount === 0 || nonExistentPaths.size === allPaths.size) {
       return;
     }
 
@@ -528,8 +546,11 @@ export const useUserStatsStore = defineStore('userStats', () => {
       await loadStats();
     }
 
-    await removeNonExistentPaths();
     await reconcileMissingTagDefinitions();
+  }
+
+  async function runDeferredMaintenance() {
+    await removeNonExistentPaths();
   }
 
   return {
@@ -542,6 +563,7 @@ export const useUserStatsStore = defineStore('userStats', () => {
     sortedHistory,
     sortedFrequentItems,
     init,
+    runDeferredMaintenance,
     isFavorite,
     addToFavorites,
     removeFromFavorites,

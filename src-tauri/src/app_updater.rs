@@ -20,6 +20,7 @@ const RELEASES_ATOM_URL: &str =
 const GITHUB_REPO_OWNER: &str = "aleksey-hoffman";
 const GITHUB_REPO_NAME: &str = "sigma-file-manager";
 const MAX_INSTALLER_DOWNLOAD_BYTES: u64 = 512 * 1024 * 1024;
+const UPDATE_CHECK_TIMEOUT_SECS: u64 = 10;
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -297,6 +298,7 @@ async fn fetch_release_installer_asset(tag: &str) -> Option<(String, String)> {
 #[tauri::command]
 pub async fn check_for_updates(current_version: String) -> Result<UpdateCheckResult, String> {
     let client = reqwest::Client::builder()
+        .timeout(Duration::from_secs(UPDATE_CHECK_TIMEOUT_SECS))
         .build()
         .map_err(|error| format!("Failed to create HTTP client: {}", error))?;
 

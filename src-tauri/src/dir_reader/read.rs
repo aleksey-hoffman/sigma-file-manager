@@ -7,6 +7,7 @@ use crate::utils::{
 };
 use std::fs;
 use std::path::Path;
+use std::time::Duration;
 
 use super::types::{DirContents, DirEntry, OpenedDirectoryTimes};
 
@@ -340,4 +341,16 @@ pub fn read_dir(path: String) -> Result<DirContents, String> {
             created_time: self_created,
         },
     })
+}
+
+pub async fn read_dir_with_timeout(path: String, timeout_ms: u64) -> Result<DirContents, String> {
+    let read_task = tauri::async_runtime::spawn_blocking(move || read_dir(path));
+    match tokio::time::timeout(Duration::from_millis(timeout_ms), read_task).await {
+        Ok(Ok(result)) => result,
+        Ok(Err(join_error)) => Err(format!("Failed to read directory: {}", join_error)),
+        Err(_) => Err(format!(
+            "Reading directory timed out after {} ms",
+            timeout_ms
+        )),
+    }
 }

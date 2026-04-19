@@ -18,7 +18,7 @@ import { UI_CONSTANTS } from '@/constants';
 import clone from '@/utils/clone';
 import normalizePath, { getPathDisplayName } from '@/utils/normalize-path';
 import uniqueId from '@/utils/unique-id';
-import type { DirEntry } from '@/types/dir-entry';
+import type { DirContents, DirEntry } from '@/types/dir-entry';
 import type { Workspace, Tab, TabGroup } from '@/types/workspaces';
 import type { ComputedRef } from 'vue';
 import {
@@ -33,6 +33,8 @@ import {
   getStartupStorageRecord,
   type StartupStorageFileBootstrap,
 } from './utils/startup-storage-bootstrap';
+
+const DIR_ENTRIES_READ_TIMEOUT_MS = 5000;
 
 export const useWorkspacesStore = defineStore('workspaces', () => {
   const { t } = useI18n();
@@ -452,11 +454,20 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
 
   async function getDirEntries(params: { path: string }): Promise<DirEntry[]> {
     try {
-      const dirEntries = await invoke('get_dir_entries', { path: params.path }) satisfies DirEntry[];
-      return dirEntries;
+      const dirContents = await invoke<DirContents>('read_dir_with_timeout', {
+        path: params.path,
+        timeoutMs: DIR_ENTRIES_READ_TIMEOUT_MS,
+      });
+      return dirContents.entries;
     }
     catch {
       return [];
+    }
+  }
+
+  async function loadCurrentTabGroup() {
+    if (currentTabGroup.value) {
+      await openTabGroup(currentTabGroup.value);
     }
   }
 
@@ -659,7 +670,10 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
     );
   }
 
-  async function init(bootstrapFile?: StartupStorageFileBootstrap) {
+  async function init(
+    bootstrapFile?: StartupStorageFileBootstrap,
+    options?: { loadInitialTabGroup?: boolean },
+  ) {
     try {
       const resolvedBootstrapFile = bootstrapFile ?? await getStartupStorageFile('workspaces');
       await initStorage();
@@ -680,8 +694,8 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
 
       isInitialized.value = true;
 
-      if (currentTabGroup.value) {
-        await openTabGroup(currentTabGroup.value);
+      if (options?.loadInitialTabGroup !== false) {
+        await loadCurrentTabGroup();
       }
     }
     catch (error) {
@@ -715,6 +729,7 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
     openOrFocusTabGroup,
     preloadDefaultTab,
     getDirEntry,
+    loadCurrentTabGroup,
     openTabGroup,
     closeTabGroup,
     closeAllTabGroups,

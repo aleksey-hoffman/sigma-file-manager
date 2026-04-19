@@ -16,6 +16,14 @@ pub fn read_dir(path: String) -> Result<DirContents, String> {
 }
 
 #[tauri::command]
+pub async fn read_dir_with_timeout(
+    path: String,
+    timeout_ms: Option<u64>,
+) -> Result<DirContents, String> {
+    read::read_dir_with_timeout(path, timeout_ms.unwrap_or(5000)).await
+}
+
+#[tauri::command]
 pub fn get_dir_entry(path: String) -> Result<super::types::DirEntry, String> {
     read::get_dir_entry(path)
 }
@@ -58,6 +66,11 @@ pub fn get_parent_dir(path: String) -> Option<String> {
 #[tauri::command]
 pub fn path_exists(path: String) -> bool {
     path_helpers::path_exists(path)
+}
+
+#[tauri::command]
+pub async fn path_exists_with_timeout(path: String, timeout_ms: Option<u64>) -> Option<bool> {
+    path_helpers::path_exists_with_timeout(path, timeout_ms.unwrap_or(2500)).await
 }
 
 #[tauri::command]

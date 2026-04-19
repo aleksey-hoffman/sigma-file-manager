@@ -23,7 +23,6 @@ import { useArchiveJobsStore } from '@/stores/runtime/archive-jobs';
 import { useDeleteJobsStore } from '@/stores/runtime/delete-jobs';
 import { useCopyMoveJobsStore } from '@/stores/runtime/copy-move-jobs';
 import { useQuickViewStore } from '@/stores/runtime/quick-view';
-import { initPlatformInfo } from '@/modules/extensions/api';
 import { invoke } from '@tauri-apps/api/core';
 import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
@@ -179,7 +178,15 @@ export function useInit() {
     appLaunchArgsUnlisten = null;
   }
 
+  function runDeferredTask(task: () => Promise<void>, errorMessage: string) {
+    task().catch((error) => {
+      console.error(errorMessage, error);
+    });
+  }
+
   async function init() {
+    const isMainWindow = isMainWebviewWindow();
+
     await platformStore.init();
     await userPathsStore.init();
     await userSettingsStore.init();
@@ -196,36 +203,49 @@ export function useInit() {
 
     await backgroundMediaStore.refreshCustomBackgrounds();
     await userStatsStore.init();
-    await workspacesStore.init();
+    await workspacesStore.init(undefined, { loadInitialTabGroup: false });
 
-    if (isMainWebviewWindow()) {
+    if (isMainWindow) {
       initialLaunchContext = await invoke<LaunchContext>('get_launch_context');
-      openedInitialLaunchTargets = await openDirectoriesFromLaunchArgs(initialLaunchContext);
     }
 
     await showMainWindow(initialLaunchContext, openedInitialLaunchTargets);
     await appWindowStore.initMainWindowStateListeners();
-    await globalSearchStore.initOnLaunch();
 
-    if (isMainWebviewWindow()) {
+    if (isMainWindow) {
       await shortcutsStore.init();
       await globalShortcutsStore.init();
     }
 
-    await terminalsStore.init();
-    await initPlatformInfo();
-    await extensionsStore.init();
-    void archiveJobsStore.ensureEventListeners();
-    void deleteJobsStore.ensureEventListeners();
-    void copyMoveJobsStore.ensureEventListeners();
-    void quickViewStore.ensureMainWindowDisplayedPathListener();
+    disableWebViewFeatures();
 
-    if (isMainWebviewWindow()) {
-      await initAutoCheck();
+    runDeferredTask(async () => {
+      if (isMainWindow && initialLaunchContext) {
+        openedInitialLaunchTargets = await openDirectoriesFromLaunchArgs(initialLaunchContext);
+
+        if (openedInitialLaunchTargets) {
+          await showMainWindow(initialLaunchContext, true);
+          return;
+        }
+      }
+
+      await workspacesStore.loadCurrentTabGroup();
+    }, 'Failed to restore startup tabs:');
+
+    runDeferredTask(() => userStatsStore.runDeferredMaintenance(), 'Failed to run deferred user stats maintenance:');
+    runDeferredTask(() => globalSearchStore.initOnLaunch(), 'Failed to initialize global search on launch:');
+    runDeferredTask(() => terminalsStore.init(), 'Failed to initialize terminals:');
+    runDeferredTask(() => extensionsStore.init(), 'Failed to initialize extensions:');
+    runDeferredTask(() => archiveJobsStore.ensureEventListeners(), 'Failed to initialize archive jobs:');
+    runDeferredTask(() => deleteJobsStore.ensureEventListeners(), 'Failed to initialize delete jobs:');
+    runDeferredTask(() => copyMoveJobsStore.ensureEventListeners(), 'Failed to initialize copy and move jobs:');
+    runDeferredTask(() => quickViewStore.ensureMainWindowDisplayedPathListener(), 'Failed to initialize quick view listener:');
+
+    if (isMainWindow) {
+      runDeferredTask(() => initAutoCheck(), 'Failed to initialize app updater:');
     }
 
-    await checkAndShowChangelog();
-    disableWebViewFeatures();
+    runDeferredTask(() => checkAndShowChangelog(), 'Failed to check changelog:');
   }
 
   onMounted(() => {
