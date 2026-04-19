@@ -80,9 +80,83 @@ Consider supporting the project on Patreon:
 
 The funding will be used for funding the development of this and my other big projects. I'm also working in collaboration with a few universities on a project that will help scientists speed up development of new medications and treatments for diseases, reducing the time need to find a new medication from 10 years (current average) to just a few months, and hopefully help humanity get rid of diseases (the project will be open-sourced later);
 
-## Download
+## Download & install
 
-[See releases](https://github.com/aleksey-hoffman/sigma-file-manager/releases)
+[![Github All Releases](https://img.shields.io/github/downloads/aleksey-hoffman/sigma-file-manager/total.svg)]()
+
+#### ⚡ Requirements:
+
+**OS:** 64-bit: Windows, Linux, MacOS is supported but builds are not provided;
+
+[All releases & changelog](https://github.com/aleksey-hoffman/sigma-file-manager/releases)
+
+<table>
+  <thead>
+    <tr>
+      <th>Platform</th>
+      <th>Link</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Windows | Winget</td>
+      <td width="320px">
+        <code>winget install sfm</code>
+      </td>
+    </tr>
+    <tr>
+      <td>Windows | Microsoft store</td>
+      <td>
+        <!-- <a target="_blank" href="https://www.microsoft.com/store/productId/9N7W62ND0NF9">
+          <img src="https://github.com/aleksey-hoffman/sigma-file-manager/raw/main/.github/media/get-from-microsoft.png" width="140px">
+        </a> -->
+        Soon
+      </td>
+    </tr>
+    <tr>
+      <td>Windows | Unsigned installable (might see antivirus errors)</td>
+      <td>
+        <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/releases/latest">
+          Installable (.exe)
+        </a>
+      </td>
+    </tr>
+    <tr>
+      <td>Linux | Portable (experimental)</td>
+      <td>
+        <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/releases/latest">
+          Portable (.AppImage)
+        </a>
+      </td>
+    </tr>
+    <tr>
+      <td>Linux | Snapcraft </td>
+      <td>
+        <!-- <a target="_blank" href="https://snapcraft.io/sigma-file-manager">
+          Download from snapcraft.io
+        </a> -->
+        Soon
+      </td>
+    </tr>
+    <tr>
+      <td>If there's no compiled binary for your MacOS, Linux distro, you can build the app from the source code yourself
+      </td>
+      <td>
+        <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/blob/main/CONTRIBUTING.md">
+          See this guide
+        </a>
+      </td>
+    </tr>
+    <tr>
+      <td>Linux utility for integrating AppImages into the system (launcher, dock)</td>
+      <td>
+        <a target="_blank" href="https://github.com/TheAssassin/AppImageLauncher">
+          AppImageLauncher
+        </a>
+      </td>
+    </tr>
+  </tbody>
+</table>
 
 ## For developers
 
