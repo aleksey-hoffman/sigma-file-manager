@@ -612,22 +612,31 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
     }
   }
 
+  const persistedWorkspaces = computed(() => workspaces.value.map(workspace => ({
+    id: workspace.id,
+    isPrimary: workspace.isPrimary,
+    isCurrent: workspace.isCurrent,
+    name: workspace.name,
+    actions: workspace.actions,
+    currentTabGroupIndex: workspace.currentTabGroupIndex,
+    currentTabIndex: workspace.currentTabIndex,
+    tabGroups: workspace.tabGroups.map(tabGroup =>
+      tabGroup.map(tab => ({
+        id: tab.id,
+        name: tab.name,
+        path: tab.path,
+        type: tab.type,
+        paneWidth: tab.paneWidth,
+        filterQuery: tab.filterQuery,
+      })),
+    ),
+  })));
+
   async function saveWorkspaces() {
     try {
       if (workspacesStorage.value && isInitialized.value) {
-        const workspacesToSave = workspaces.value.map(workspace => ({
-          ...workspace,
-          tabGroups: workspace.tabGroups.map(tabGroup =>
-            tabGroup.map(tab => ({
-              ...tab,
-              dirEntries: [],
-              selectedDirEntries: [],
-            })),
-          ),
-        }));
-
         await workspacesStorage.value.set(WORKSPACES_SCHEMA_VERSION_KEY, WORKSPACES_SCHEMA_VERSION);
-        await workspacesStorage.value.set('workspaces', workspacesToSave);
+        await workspacesStorage.value.set('workspaces', persistedWorkspaces.value);
         await workspacesStorage.value.set('currentTabGroupIndex', currentWorkspace.value?.currentTabGroupIndex ?? 0);
         await workspacesStorage.value.save();
       }
@@ -640,7 +649,7 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
   const debouncedSaveWorkspaces = useDebounceFn(saveWorkspaces, UI_CONSTANTS.WORKSPACE_SAVE_DEBOUNCE_MS);
 
   watch(
-    () => workspaces.value,
+    persistedWorkspaces,
     () => {
       debouncedSaveWorkspaces();
     },
