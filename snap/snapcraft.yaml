@@ -62,7 +62,7 @@ parts:
     plugin: dump
     source: .
     build-snaps:
-      - node/20/stable
+      - node/22/stable
       - rustup/latest/stable
     build-packages:
       - libwebkit2gtk-4.1-dev
@@ -84,10 +84,23 @@ parts:
       craftctl set version="$version"
     override-build: |
       set -eu
+      rustup default stable
       npm ci
       npm run sync-version
       NO_STRIP=true npm run tauri build -- --bundles deb
       dpkg -x src-tauri/target/release/bundle/deb/*.deb "$CRAFT_PART_INSTALL/"
+
+      desktop_dir="$CRAFT_PART_INSTALL/usr/share/applications"
+      target_desktop="$desktop_dir/sigma-file-manager.desktop"
+      source_desktop=$(find "$desktop_dir" -maxdepth 1 -name '*.desktop' -print -quit)
+      if [ -z "$source_desktop" ]; then
+        echo "::error:: No .desktop file produced by the deb bundler"
+        ls -la "$desktop_dir" || true
+        exit 1
+      fi
+      if [ "$source_desktop" != "$target_desktop" ]; then
+        mv "$source_desktop" "$target_desktop"
+      fi
       sed -i \
-        -e "s|Icon=sigma-file-manager|Icon=/usr/share/icons/hicolor/32x32/apps/sigma-file-manager.png|g" \
-        "$CRAFT_PART_INSTALL/usr/share/applications/sigma-file-manager.desktop"
+        -E "s|^Icon=.*|Icon=/usr/share/icons/hicolor/32x32/apps/sigma-file-manager.png|" \
+        "$target_desktop"
