@@ -235,7 +235,6 @@ pub fn run() {
             system_tray::update_tray_shortcut,
             dir_reader::read_dir,
             dir_reader::read_dir_with_timeout,
-            dir_reader::get_dir_entry,
             dir_reader::get_dir_entry_with_timeout,
             dir_reader::resolve_windows_directory_shortcut,
             dir_reader::get_system_drives,

@@ -301,26 +301,48 @@ pub(super) fn decode_windows_command_output(output: &[u8]) -> String {
 }
 
 #[cfg(windows)]
-fn get_windows_wsl_distributions() -> Vec<String> {
-    use std::sync::Mutex;
-    use std::time::{Duration, Instant};
+struct WslCacheEntry {
+    distributions: Vec<String>,
+    last_refresh_time: std::time::Instant,
+    is_refreshing: bool,
+}
 
-    struct WslCacheEntry {
-        distributions: Vec<String>,
-        last_refresh_time: Instant,
-        is_refreshing: bool,
-    }
+#[cfg(windows)]
+static WSL_CACHE: std::sync::OnceLock<std::sync::Mutex<WslCacheEntry>> = std::sync::OnceLock::new();
 
-    static WSL_CACHE: std::sync::OnceLock<Mutex<WslCacheEntry>> = std::sync::OnceLock::new();
-    const WSL_CACHE_TTL: Duration = Duration::from_secs(30);
+#[cfg(windows)]
+const WSL_CACHE_TTL: std::time::Duration = std::time::Duration::from_secs(30);
 
-    let cache = WSL_CACHE.get_or_init(|| {
-        Mutex::new(WslCacheEntry {
+#[cfg(windows)]
+fn wsl_cache() -> &'static std::sync::Mutex<WslCacheEntry> {
+    WSL_CACHE.get_or_init(|| {
+        std::sync::Mutex::new(WslCacheEntry {
             distributions: Vec::new(),
-            last_refresh_time: Instant::now() - WSL_CACHE_TTL,
+            last_refresh_time: std::time::Instant::now() - WSL_CACHE_TTL,
             is_refreshing: false,
         })
-    });
+    })
+}
+
+#[cfg(windows)]
+struct WslRefreshGuard {
+    cache: &'static std::sync::Mutex<WslCacheEntry>,
+}
+
+#[cfg(windows)]
+impl Drop for WslRefreshGuard {
+    fn drop(&mut self) {
+        let mut guard = self
+            .cache
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        guard.is_refreshing = false;
+    }
+}
+
+#[cfg(windows)]
+fn get_windows_wsl_distributions() -> Vec<String> {
+    let cache = wsl_cache();
 
     {
         let mut guard = cache
@@ -334,34 +356,45 @@ fn get_windows_wsl_distributions() -> Vec<String> {
         guard.is_refreshing = true;
     }
 
-    let distributions = fetch_wsl_distributions();
+    let refresh_guard = WslRefreshGuard { cache };
+    let fetch_result = fetch_wsl_distributions();
+    drop(refresh_guard);
 
     let mut guard = cache
         .lock()
         .unwrap_or_else(|poisoned| poisoned.into_inner());
-    guard.distributions = distributions.clone();
-    guard.last_refresh_time = Instant::now();
-    guard.is_refreshing = false;
-    distributions
+
+    match fetch_result {
+        Ok(distributions) => {
+            guard.distributions = distributions.clone();
+            guard.last_refresh_time = std::time::Instant::now();
+            distributions
+        }
+        Err(fetch_error) => {
+            eprintln!("Failed to refresh WSL distributions: {fetch_error:?}");
+            guard.distributions.clone()
+        }
+    }
 }
 
 #[cfg(windows)]
 const WSL_LIST_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(3);
 
 #[cfg(windows)]
-fn fetch_wsl_distributions() -> Vec<String> {
+fn fetch_wsl_distributions() -> Result<Vec<String>, crate::process_runner::ProcessRunError> {
     use crate::process_runner::run_command_blocking;
 
-    let command_output = match run_command_blocking("wsl", &["-l", "-q"], WSL_LIST_TIMEOUT) {
-        Ok(output) if output.is_success() => output.stdout,
-        _ => return Vec::new(),
-    };
+    let command_output = run_command_blocking("wsl", &["-l", "-q"], WSL_LIST_TIMEOUT)?;
 
-    decode_windows_command_output(&command_output)
+    if !command_output.is_success() {
+        return Ok(Vec::new());
+    }
+
+    Ok(decode_windows_command_output(&command_output.stdout)
         .lines()
         .map(|line| line.replace('\0', "").trim().to_string())
         .filter(|line| !line.is_empty())
-        .collect()
+        .collect())
 }
 
 #[cfg(windows)]

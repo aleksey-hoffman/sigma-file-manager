@@ -220,7 +220,9 @@ export function useInit() {
     errorMessage: string,
   ) {
     runInBackground(
-      () => traceInitStep(stepLabel, task).then(() => undefined),
+      () => traceInitStep(stepLabel, task)
+        .then(() => undefined)
+        .catch(() => undefined),
       errorMessage,
     );
   }

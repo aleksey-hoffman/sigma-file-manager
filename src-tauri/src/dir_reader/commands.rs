@@ -24,11 +24,6 @@ pub async fn read_dir_with_timeout(
 }
 
 #[tauri::command]
-pub fn get_dir_entry(path: String) -> Result<super::types::DirEntry, String> {
-    read::get_dir_entry(path)
-}
-
-#[tauri::command]
 pub async fn get_dir_entry_with_timeout(
     path: String,
     timeout_ms: Option<u64>,

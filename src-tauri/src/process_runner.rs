@@ -26,6 +26,15 @@ impl ProcessRunOutput {
 
 const POLL_INTERVAL: Duration = Duration::from_millis(20);
 
+/// Runs a child process to completion (or kills it on timeout) and returns its
+/// captured stdout.
+///
+/// IMPORTANT: stdout is captured via a pipe but is only drained AFTER the child
+/// reports exit via `try_wait`. This means callers must only use this helper
+/// for commands whose stdout fits in the OS pipe buffer (~64 KB on both
+/// Windows and Linux). A child that produces more output will block on its
+/// stdout write and be killed by the timeout even when it would otherwise
+/// have completed quickly. stderr is discarded to avoid the same risk.
 pub fn run_command_blocking(
     program: &str,
     args: &[&str],
@@ -36,7 +45,7 @@ pub fn run_command_blocking(
         .args(args)
         .stdin(Stdio::null())
         .stdout(Stdio::piped())
-        .stderr(Stdio::piped());
+        .stderr(Stdio::null());
 
     #[cfg(windows)]
     {

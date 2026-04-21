@@ -10,7 +10,7 @@ import { useUserSettingsStore } from '@/stores/storage/user-settings';
 
 const DRIVE_POLL_FAST_INTERVAL_MS = 1000;
 const DRIVE_POLL_SLOW_INTERVAL_MS = 5000;
-const DRIVE_FETCH_SLOW_THRESHOLD_MS = 1500;
+const DRIVE_FETCH_SLOW_THRESHOLD_MS = 3000;
 const DRIVE_FETCH_HEALTHY_RECOVERY_COUNT = 3;
 
 const drives = ref<DriveInfo[]>([]);
@@ -22,9 +22,19 @@ let activeSubscribers = 0;
 let previousDriveCount = 0;
 let isInitialFetch = true;
 let isFetchInFlight = false;
+let hasPendingTrailingRefresh = false;
 let pollIntervalMs = DRIVE_POLL_FAST_INTERVAL_MS;
 let consecutiveHealthyFetchCount = 0;
 let userSettingsStoreRef: ReturnType<typeof useUserSettingsStore> | null = null;
+
+function resetDrivePollingState() {
+  pollIntervalMs = DRIVE_POLL_FAST_INTERVAL_MS;
+  consecutiveHealthyFetchCount = 0;
+  previousDriveCount = 0;
+  isInitialFetch = true;
+  isFetchInFlight = false;
+  hasPendingTrailingRefresh = false;
+}
 
 async function focusWindowOnDriveConnected(newDriveCount: number) {
   const driveCountIncreased = newDriveCount > previousDriveCount;
@@ -48,9 +58,9 @@ async function focusWindowOnDriveConnected(newDriveCount: number) {
 }
 
 function recordFetchHealth(succeeded: boolean, durationMs: number) {
-  const isFetchHealthy = succeeded && durationMs < DRIVE_FETCH_SLOW_THRESHOLD_MS;
+  const fetchWasSlow = !succeeded || durationMs >= DRIVE_FETCH_SLOW_THRESHOLD_MS;
 
-  if (isFetchHealthy) {
+  if (!fetchWasSlow) {
     consecutiveHealthyFetchCount += 1;
 
     if (
@@ -94,6 +104,11 @@ async function fetchDrives() {
     recordFetchHealth(fetchSucceeded, fetchDurationMs);
     isFetchInFlight = false;
   }
+
+  if (hasPendingTrailingRefresh) {
+    hasPendingTrailingRefresh = false;
+    await fetchDrives();
+  }
 }
 
 async function initialFetch() {
@@ -131,6 +146,11 @@ function stopPolling() {
 }
 
 async function refresh() {
+  if (isFetchInFlight) {
+    hasPendingTrailingRefresh = true;
+    return;
+  }
+
   await fetchDrives();
 }
 
@@ -165,6 +185,7 @@ export function useDrives() {
 
     if (activeSubscribers === 0) {
       stopPolling();
+      resetDrivePollingState();
     }
   });
 
