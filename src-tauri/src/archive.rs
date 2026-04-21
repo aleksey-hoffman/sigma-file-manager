@@ -253,6 +253,7 @@ fn extract_zip_to_directory_with_sink(
                 return Err(ARCHIVE_ERROR_OUTPUT_ALREADY_EXISTS.to_string());
             }
 
+            let entry_unix_mode = file.unix_mode();
             let mut outfile = fs::File::create(&outpath)
                 .map_err(|error| format!("Failed to create file: {}", error))?;
 
@@ -265,6 +266,17 @@ fn extract_zip_to_directory_with_sink(
                     return Err(message);
                 }
             }
+
+            #[cfg(unix)]
+            {
+                use std::os::unix::fs::PermissionsExt;
+                if let Some(mode) = entry_unix_mode {
+                    fs::set_permissions(&outpath, fs::Permissions::from_mode(mode))
+                        .map_err(|error| format!("Failed to set file permissions: {}", error))?;
+                }
+            }
+            #[cfg(not(unix))]
+            let _ = entry_unix_mode;
         }
     }
 

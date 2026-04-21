@@ -102,17 +102,33 @@ fn extract_tar_from_reader<R: Read>(reader: R, dest_dir: &Path) -> Result<(), St
                         .map_err(|error| format!("Failed to create parent directory: {}", error))?;
                 }
             }
+            let entry_mode = entry.header().mode().ok();
             let mut outfile = fs::File::create(&outpath)
                 .map_err(|error| format!("Failed to create file: {}", error))?;
             io::copy(&mut entry, &mut outfile)
                 .map_err(|error| format!("Failed to extract file: {}", error))?;
+
+            #[cfg(unix)]
+            {
+                use std::os::unix::fs::PermissionsExt;
+                if let Some(mode) = entry_mode {
+                    fs::set_permissions(&outpath, fs::Permissions::from_mode(mode))
+                        .map_err(|error| format!("Failed to set file permissions: {}", error))?;
+                }
+            }
+            #[cfg(not(unix))]
+            let _ = entry_mode;
         }
     }
 
     Ok(())
 }
 
-pub fn extract_archive(archive_path: &Path, dest_dir: &Path, download_url: &str) -> Result<(), String> {
+pub fn extract_archive(
+    archive_path: &Path,
+    dest_dir: &Path,
+    download_url: &str,
+) -> Result<(), String> {
     let format = detect_archive_format(download_url)
         .ok_or_else(|| format!("Unsupported archive format for URL: {}", download_url))?;
 
