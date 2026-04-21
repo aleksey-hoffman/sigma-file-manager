@@ -404,7 +404,10 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
   async function loadTabGroupDirEntries(tabGroup: TabGroup, options: { timeoutMs?: number } = {}) {
     await Promise.all(tabGroup.map(async (tab: Tab) => {
       if (tab.type === 'directory') {
-        const dirEntries = await getDirEntries({ path: tab.path, timeoutMs: options.timeoutMs });
+        const dirEntries = await getDirEntries({
+          path: tab.path,
+          timeoutMs: options.timeoutMs,
+        });
         tab.dirEntries = dirEntries;
       }
     }));

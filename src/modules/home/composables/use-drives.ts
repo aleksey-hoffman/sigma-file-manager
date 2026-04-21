@@ -59,6 +59,7 @@ function recordFetchHealth(succeeded: boolean, durationMs: number) {
     ) {
       pollIntervalMs = DRIVE_POLL_FAST_INTERVAL_MS;
     }
+
     return;
   }
 

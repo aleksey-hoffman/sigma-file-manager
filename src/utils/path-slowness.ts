@@ -21,6 +21,7 @@ export function isWslPath(path: string): boolean {
 
 export function isUncNetworkPath(path: string): boolean {
   const normalized = normalizeSeparators(path);
+
   if (!normalized.startsWith('//')) {
     return false;
   }
