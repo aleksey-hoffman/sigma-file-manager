@@ -364,10 +364,11 @@ fn get_windows_wsl_distributions() -> Vec<String> {
         .lock()
         .unwrap_or_else(|poisoned| poisoned.into_inner());
 
+    guard.last_refresh_time = std::time::Instant::now();
+
     match fetch_result {
         Ok(distributions) => {
             guard.distributions = distributions.clone();
-            guard.last_refresh_time = std::time::Instant::now();
             distributions
         }
         Err(fetch_error) => {
