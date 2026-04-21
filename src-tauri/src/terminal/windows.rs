@@ -5,6 +5,8 @@
 use super::command_exists;
 use super::jsonc::parse_jsonc;
 use super::types::{GetAvailableTerminalsResult, OpenTerminalResult, TerminalInfo};
+use super::COMMAND_LOOKUP_TIMEOUT;
+use crate::process_runner::{run_command_blocking, ProcessRunOutput};
 use std::collections::HashMap;
 use std::path::Path;
 use std::process::Command;
@@ -322,18 +324,18 @@ fn find_executable_path(commandline: &str) -> Option<String> {
 }
 
 fn resolve_via_where(exe_name: &str) -> Option<String> {
-    use std::os::windows::process::CommandExt;
-    const CREATE_NO_WINDOW: u32 = 0x08000000;
-    let output = Command::new("where")
-        .arg(exe_name)
-        .creation_flags(CREATE_NO_WINDOW)
-        .output()
-        .ok()?;
-    if output.status.success() {
-        let stdout = String::from_utf8_lossy(&output.stdout);
-        return stdout.lines().next().map(|line| line.trim().to_string());
+    let ProcessRunOutput { stdout, status } =
+        run_command_blocking("where", &[exe_name], COMMAND_LOOKUP_TIMEOUT).ok()?;
+
+    if !status.success() {
+        return None;
     }
-    None
+
+    let decoded_stdout = String::from_utf8_lossy(&stdout);
+    decoded_stdout
+        .lines()
+        .next()
+        .map(|line| line.trim().to_string())
 }
 
 fn resolve_executable_icon(exe_name: &str) -> Option<String> {

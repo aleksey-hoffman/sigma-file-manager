@@ -16,6 +16,7 @@ mod file_operations;
 mod global_search;
 mod lan_share;
 mod open_with;
+mod process_runner;
 mod startup_storage_bootstrap;
 mod system_icons;
 mod system_tray;

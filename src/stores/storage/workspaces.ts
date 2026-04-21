@@ -17,6 +17,7 @@ import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { UI_CONSTANTS } from '@/constants';
 import clone from '@/utils/clone';
 import normalizePath, { getPathDisplayName } from '@/utils/normalize-path';
+import { getPathReadTimeoutMs } from '@/utils/path-slowness';
 import uniqueId from '@/utils/unique-id';
 import type { DirContents, DirEntry } from '@/types/dir-entry';
 import type { Workspace, Tab, TabGroup } from '@/types/workspaces';
@@ -400,10 +401,10 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
     setCurrentTabGroupIndex(newCurrentTabGroupIndex);
   }
 
-  async function loadTabGroupDirEntries(tabGroup: TabGroup) {
+  async function loadTabGroupDirEntries(tabGroup: TabGroup, options: { timeoutMs?: number } = {}) {
     await Promise.all(tabGroup.map(async (tab: Tab) => {
       if (tab.type === 'directory') {
-        const dirEntries = await getDirEntries({ path: tab.path });
+        const dirEntries = await getDirEntries({ path: tab.path, timeoutMs: options.timeoutMs });
         tab.dirEntries = dirEntries;
       }
     }));
@@ -418,7 +419,7 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
       }
 
       setCurrentTabGroupIndex(tabGroupIndex);
-      await loadTabGroupDirEntries(tabGroup);
+      await loadTabGroupDirEntries(tabGroup, { timeoutMs: options.dirEntryTimeoutMs });
       updateInfoPanel(tabGroup, options);
     }
     catch (error) {
@@ -448,15 +449,11 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
         return null;
       }
 
-      if (typeof params.timeoutMs === 'number') {
-        const dirEntry = await invoke<DirEntry>('get_dir_entry_with_timeout', {
-          path: params.path,
-          timeoutMs: params.timeoutMs,
-        });
-        return dirEntry;
-      }
-
-      const dirEntry = await invoke('get_dir_entry', { path: params.path }) satisfies DirEntry;
+      const effectiveTimeoutMs = params.timeoutMs ?? getPathReadTimeoutMs(params.path);
+      const dirEntry = await invoke<DirEntry>('get_dir_entry_with_timeout', {
+        path: params.path,
+        timeoutMs: effectiveTimeoutMs,
+      });
       return dirEntry;
     }
     catch {
@@ -464,10 +461,16 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
     }
   }
 
-  async function getDirEntries(params: { path: string }): Promise<DirEntry[]> {
+  async function getDirEntries(params: {
+    path: string;
+    timeoutMs?: number;
+  }): Promise<DirEntry[]> {
+    const effectiveTimeoutMs = params.timeoutMs ?? getPathReadTimeoutMs(params.path);
+
     try {
       const dirContents = await invoke<DirContents>('read_dir_with_timeout', {
         path: params.path,
+        timeoutMs: effectiveTimeoutMs,
       });
       return dirContents.entries;
     }

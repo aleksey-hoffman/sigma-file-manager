@@ -305,35 +305,55 @@ fn get_windows_wsl_distributions() -> Vec<String> {
     use std::sync::Mutex;
     use std::time::{Duration, Instant};
 
-    static WSL_CACHE: std::sync::OnceLock<Mutex<(Vec<String>, Instant)>> =
-        std::sync::OnceLock::new();
+    struct WslCacheEntry {
+        distributions: Vec<String>,
+        last_refresh_time: Instant,
+        is_refreshing: bool,
+    }
+
+    static WSL_CACHE: std::sync::OnceLock<Mutex<WslCacheEntry>> = std::sync::OnceLock::new();
     const WSL_CACHE_TTL: Duration = Duration::from_secs(30);
 
-    let cache = WSL_CACHE.get_or_init(|| Mutex::new((Vec::new(), Instant::now() - WSL_CACHE_TTL)));
-    let mut guard = cache
-        .lock()
-        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    let cache = WSL_CACHE.get_or_init(|| {
+        Mutex::new(WslCacheEntry {
+            distributions: Vec::new(),
+            last_refresh_time: Instant::now() - WSL_CACHE_TTL,
+            is_refreshing: false,
+        })
+    });
 
-    if guard.1.elapsed() < WSL_CACHE_TTL {
-        return guard.0.clone();
+    {
+        let mut guard = cache
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+
+        if guard.last_refresh_time.elapsed() < WSL_CACHE_TTL || guard.is_refreshing {
+            return guard.distributions.clone();
+        }
+
+        guard.is_refreshing = true;
     }
 
     let distributions = fetch_wsl_distributions();
-    *guard = (distributions.clone(), Instant::now());
+
+    let mut guard = cache
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    guard.distributions = distributions.clone();
+    guard.last_refresh_time = Instant::now();
+    guard.is_refreshing = false;
     distributions
 }
 
 #[cfg(windows)]
-fn fetch_wsl_distributions() -> Vec<String> {
-    use std::os::windows::process::CommandExt;
-    const CREATE_NO_WINDOW: u32 = 0x08000000;
+const WSL_LIST_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(3);
 
-    let command_output = match std::process::Command::new("wsl")
-        .args(["-l", "-q"])
-        .creation_flags(CREATE_NO_WINDOW)
-        .output()
-    {
-        Ok(output) if output.status.success() => output.stdout,
+#[cfg(windows)]
+fn fetch_wsl_distributions() -> Vec<String> {
+    use crate::process_runner::run_command_blocking;
+
+    let command_output = match run_command_blocking("wsl", &["-l", "-q"], WSL_LIST_TIMEOUT) {
+        Ok(output) if output.is_success() => output.stdout,
         _ => return Vec::new(),
     };
 

@@ -285,8 +285,15 @@ pub fn resolve_windows_directory_shortcut(path: String) -> Result<Option<String>
 pub fn get_dir_entry(path: String) -> Result<DirEntry, String> {
     let entry_path = Path::new(&path);
 
-    if !entry_path.exists() {
-        return Err(format!("Path does not exist: {}", path));
+    match entry_path.try_exists() {
+        Ok(true) => {}
+        Ok(false) => return Err(format!("Path does not exist: {}", path)),
+        Err(io_error) => {
+            return Err(format!(
+                "Failed to access path: {}: {}",
+                path, io_error
+            ));
+        }
     }
 
     read_entry(entry_path).ok_or_else(|| format!("Failed to read path: {}", path))
@@ -307,15 +314,23 @@ pub async fn get_dir_entry_with_timeout(path: String, timeout_ms: u64) -> Result
 pub fn read_dir(path: String) -> Result<DirContents, String> {
     let directory = Path::new(&path);
 
-    if !directory.exists() {
-        return Err(format!("Path does not exist: {}", path));
-    }
+    let self_metadata = match fs::metadata(directory) {
+        Ok(metadata) => metadata,
+        Err(io_error) if io_error.kind() == std::io::ErrorKind::NotFound => {
+            return Err(format!("Path does not exist: {}", path));
+        }
+        Err(io_error) => {
+            return Err(format!(
+                "Failed to access path: {}: {}",
+                path, io_error
+            ));
+        }
+    };
 
-    if !directory.is_dir() {
+    if !self_metadata.is_dir() {
         return Err(format!("Path is not a directory: {}", path));
     }
 
-    let self_metadata = fs::metadata(directory).map_err(|error| error.to_string())?;
     let (self_modified, self_accessed, self_created) = metadata_times_unix_ms(&self_metadata);
 
     let read_result = fs::read_dir(directory).map_err(|error| error.to_string())?;

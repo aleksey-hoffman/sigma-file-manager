@@ -255,9 +255,13 @@ vi.mock('@/utils/window-fullscreen', () => ({
   toggleMainWindowFullscreen: vi.fn(),
 }));
 
-vi.mock('@/utils/app-splash', () => ({
-  removeAppSplash: removeAppSplashMock,
-}));
+vi.mock('@/utils/app-splash', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/utils/app-splash')>();
+  return {
+    ...actual,
+    removeAppSplash: removeAppSplashMock,
+  };
+});
 
 describe('useInit startup restoration', () => {
   beforeEach(() => {

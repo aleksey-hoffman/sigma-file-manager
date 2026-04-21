@@ -42,8 +42,10 @@ pub fn resolve_windows_directory_shortcut(path: String) -> Result<Option<String>
 }
 
 #[tauri::command]
-pub fn get_system_drives() -> Result<Vec<DriveInfo>, String> {
-    drives::get_system_drives()
+pub async fn get_system_drives() -> Result<Vec<DriveInfo>, String> {
+    tauri::async_runtime::spawn_blocking(drives::get_system_drives)
+        .await
+        .map_err(|join_error| format!("Failed to enumerate system drives: {join_error}"))?
 }
 
 #[tauri::command]

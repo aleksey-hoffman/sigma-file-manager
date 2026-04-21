@@ -36,6 +36,7 @@ import {
 import { applyUiZoomStep } from '@/utils/ui-zoom';
 import { toggleMainWindowFullscreen } from '@/utils/window-fullscreen';
 import { removeAppSplash } from '@/utils/app-splash';
+import { logInitTrace, traceInitStep } from '@/utils/init-trace';
 
 const APP_LAUNCH_ARGS_EVENT = 'app-launch-args';
 const STARTUP_BACKGROUND_REFRESH_TIMEOUT_MS = 1500;
@@ -115,13 +116,18 @@ export function useInit() {
     launchContextOverride?: LaunchContext,
     openedLaunchTargets = false,
   ) {
-    await nextTick();
-    await new Promise(resolve => setTimeout(resolve, 0));
+    await traceInitStep('revealMainWindow:nextTick', async () => {
+      await nextTick();
+      await new Promise(resolve => setTimeout(resolve, 0));
+    });
 
     const currentWindow = getCurrentWindow();
 
     if (currentWindow.label === 'main') {
-      const launchContext = launchContextOverride ?? await invoke<LaunchContext>('get_launch_context');
+      const launchContext = launchContextOverride ?? await traceInitStep(
+        'revealMainWindow:get_launch_context',
+        () => invoke<LaunchContext>('get_launch_context'),
+      );
       const launchedFromOsAutostart = launchContext.args.includes(SIGMA_AUTOSTART_CLI_FLAG);
       const stayHiddenAfterAutostart = launchedFromOsAutostart
         && userSettingsStore.userSettings.launchAtStartupHidden;
@@ -129,11 +135,11 @@ export function useInit() {
         || shouldKeepMainWindowHidden(launchContext, openedLaunchTargets);
 
       if (keepHidden) {
-        await currentWindow.hide();
+        await traceInitStep('revealMainWindow:hide', () => currentWindow.hide());
       }
       else {
-        await currentWindow.show();
-        await currentWindow.setFocus();
+        await traceInitStep('revealMainWindow:show', () => currentWindow.show());
+        await traceInitStep('revealMainWindow:setFocus', () => currentWindow.setFocus());
       }
     }
 
@@ -208,58 +214,87 @@ export function useInit() {
     await Promise.allSettled([...backgroundTasks]);
   }
 
+  function runInBackgroundWithTrace(
+    stepLabel: string,
+    task: () => Promise<unknown>,
+    errorMessage: string,
+  ) {
+    runInBackground(
+      () => traceInitStep(stepLabel, task).then(() => undefined),
+      errorMessage,
+    );
+  }
+
   async function init() {
     const isMainWindow = isMainWebviewWindow();
 
-    await platformStore.init();
-    await userPathsStore.init();
-    await userSettingsStore.init();
+    logInitTrace(`init started (mainWindow=${isMainWindow})`);
 
-    try {
-      await applyLaunchAtStartupPreference(userSettingsStore.userSettings.launchAtStartup);
-    }
-    catch (error) {
-      console.error('Failed to apply launch at startup preference:', error);
-    }
+    await traceInitStep('platformStore.init', () => platformStore.init());
+    await traceInitStep('userPathsStore.init', () => userPathsStore.init());
+    await traceInitStep('userSettingsStore.init', () => userSettingsStore.init());
 
     let initialLaunchContext: LaunchContext | undefined;
     let openedInitialLaunchTargets = false;
     let loadedInitialTabGroup = false;
 
-    await backgroundMediaStore.refreshCustomBackgrounds({
-      timeoutMs: STARTUP_BACKGROUND_REFRESH_TIMEOUT_MS,
-    });
-    await userStatsStore.init();
-    await workspacesStore.init(undefined, { loadInitialTabGroup: false });
+    await traceInitStep(
+      'backgroundMediaStore.refreshCustomBackgrounds',
+      () => backgroundMediaStore.refreshCustomBackgrounds({
+        timeoutMs: STARTUP_BACKGROUND_REFRESH_TIMEOUT_MS,
+      }),
+    );
+    await traceInitStep('userStatsStore.init', () => userStatsStore.init());
+    await traceInitStep(
+      'workspacesStore.init',
+      () => workspacesStore.init(undefined, { loadInitialTabGroup: false }),
+    );
 
     if (isMainWindow) {
-      initialLaunchContext = await invoke<LaunchContext>('get_launch_context');
+      initialLaunchContext = await traceInitStep(
+        'invoke:get_launch_context',
+        () => invoke<LaunchContext>('get_launch_context'),
+      );
 
       if (initialLaunchContext.hadAbsorbedShellPaths) {
         try {
-          await workspacesStore.loadCurrentTabGroup({
-            dirEntryTimeoutMs: STARTUP_DIR_ENTRY_TIMEOUT_MS,
-          });
+          await traceInitStep(
+            'workspacesStore.loadCurrentTabGroup (absorbed shell)',
+            () => workspacesStore.loadCurrentTabGroup({
+              dirEntryTimeoutMs: STARTUP_DIR_ENTRY_TIMEOUT_MS,
+            }),
+          );
           loadedInitialTabGroup = true;
-          openedInitialLaunchTargets = await openDirectoriesFromLaunchArgs(initialLaunchContext);
+          openedInitialLaunchTargets = await traceInitStep(
+            'openDirectoriesFromLaunchArgs (absorbed shell)',
+            () => openDirectoriesFromLaunchArgs(initialLaunchContext as LaunchContext),
+          );
         }
-        catch (error) {
-          console.error('Failed to prepare absorbed shell launch targets:', error);
+        catch (absorbedShellError) {
+          console.error('Failed to prepare absorbed shell launch targets:', absorbedShellError);
         }
       }
     }
 
-    await revealMainWindow(initialLaunchContext, openedInitialLaunchTargets);
-    await appWindowStore.initMainWindowStateListeners();
+    await traceInitStep(
+      'revealMainWindow',
+      () => revealMainWindow(initialLaunchContext, openedInitialLaunchTargets),
+    );
+    await traceInitStep(
+      'appWindowStore.initMainWindowStateListeners',
+      () => appWindowStore.initMainWindowStateListeners(),
+    );
 
     if (isMainWindow) {
-      await shortcutsStore.init();
-      await globalShortcutsStore.init();
+      await traceInitStep('shortcutsStore.init', async () => {
+        shortcutsStore.init();
+      });
+      await traceInitStep('globalShortcutsStore.init', () => globalShortcutsStore.init());
     }
 
     disableWebViewFeatures();
 
-    runInBackground(async () => {
+    runInBackgroundWithTrace('background:restoreStartupTabs', async () => {
       if (!loadedInitialTabGroup) {
         await workspacesStore.loadCurrentTabGroup({
           dirEntryTimeoutMs: STARTUP_DIR_ENTRY_TIMEOUT_MS,
@@ -276,20 +311,65 @@ export function useInit() {
       }
     }, 'Failed to restore startup tabs:');
 
-    runInBackground(() => userStatsStore.runDeferredMaintenance(), 'Failed to run deferred user stats maintenance:');
-    runInBackground(() => globalSearchStore.initOnLaunch(), 'Failed to initialize global search on launch:');
-    runInBackground(() => terminalsStore.init(), 'Failed to initialize terminals:');
-    runInBackground(() => extensionsStore.init(), 'Failed to initialize extensions:');
-    runInBackground(() => archiveJobsStore.ensureEventListeners(), 'Failed to initialize archive jobs:');
-    runInBackground(() => deleteJobsStore.ensureEventListeners(), 'Failed to initialize delete jobs:');
-    runInBackground(() => copyMoveJobsStore.ensureEventListeners(), 'Failed to initialize copy and move jobs:');
-    runInBackground(() => quickViewStore.ensureMainWindowDisplayedPathListener(), 'Failed to initialize quick view listener:');
+    runInBackgroundWithTrace(
+      'background:applyLaunchAtStartupPreference',
+      () => applyLaunchAtStartupPreference(userSettingsStore.userSettings.launchAtStartup),
+      'Failed to apply launch at startup preference:',
+    );
+    runInBackgroundWithTrace(
+      'background:userStats.runDeferredMaintenance',
+      () => userStatsStore.runDeferredMaintenance(),
+      'Failed to run deferred user stats maintenance:',
+    );
+    runInBackgroundWithTrace(
+      'background:globalSearch.initOnLaunch',
+      () => globalSearchStore.initOnLaunch(),
+      'Failed to initialize global search on launch:',
+    );
+    runInBackgroundWithTrace(
+      'background:terminals.init',
+      () => terminalsStore.init(),
+      'Failed to initialize terminals:',
+    );
+    runInBackgroundWithTrace(
+      'background:extensions.init',
+      () => extensionsStore.init(),
+      'Failed to initialize extensions:',
+    );
+    runInBackgroundWithTrace(
+      'background:archiveJobs.ensureEventListeners',
+      () => archiveJobsStore.ensureEventListeners(),
+      'Failed to initialize archive jobs:',
+    );
+    runInBackgroundWithTrace(
+      'background:deleteJobs.ensureEventListeners',
+      () => deleteJobsStore.ensureEventListeners(),
+      'Failed to initialize delete jobs:',
+    );
+    runInBackgroundWithTrace(
+      'background:copyMoveJobs.ensureEventListeners',
+      () => copyMoveJobsStore.ensureEventListeners(),
+      'Failed to initialize copy and move jobs:',
+    );
+    runInBackgroundWithTrace(
+      'background:quickView.ensureMainWindowDisplayedPathListener',
+      () => quickViewStore.ensureMainWindowDisplayedPathListener(),
+      'Failed to initialize quick view listener:',
+    );
 
     if (isMainWindow) {
-      runInBackground(() => initAutoCheck(), 'Failed to initialize app updater:');
+      runInBackgroundWithTrace(
+        'background:appUpdater.initAutoCheck',
+        () => initAutoCheck(),
+        'Failed to initialize app updater:',
+      );
     }
 
-    runInBackground(() => checkAndShowChangelog(), 'Failed to check changelog:');
+    runInBackgroundWithTrace(
+      'background:changelog.checkAndShow',
+      () => checkAndShowChangelog(),
+      'Failed to check changelog:',
+    );
   }
 
   onMounted(() => {

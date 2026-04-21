@@ -8,16 +8,22 @@ import { getCurrentWindow } from '@tauri-apps/api/window';
 import type { DriveInfo } from '@/types/drive-info';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 
-const DRIVE_POLL_INTERVAL_MS = 1000;
+const DRIVE_POLL_FAST_INTERVAL_MS = 1000;
+const DRIVE_POLL_SLOW_INTERVAL_MS = 5000;
+const DRIVE_FETCH_SLOW_THRESHOLD_MS = 1500;
+const DRIVE_FETCH_HEALTHY_RECOVERY_COUNT = 3;
 
 const drives = ref<DriveInfo[]>([]);
 const isLoading = ref(false);
 const error = ref<string | null>(null);
 
-let pollIntervalId: ReturnType<typeof setInterval> | null = null;
+let pollTimeoutId: ReturnType<typeof setTimeout> | null = null;
 let activeSubscribers = 0;
 let previousDriveCount = 0;
 let isInitialFetch = true;
+let isFetchInFlight = false;
+let pollIntervalMs = DRIVE_POLL_FAST_INTERVAL_MS;
+let consecutiveHealthyFetchCount = 0;
 let userSettingsStoreRef: ReturnType<typeof useUserSettingsStore> | null = null;
 
 async function focusWindowOnDriveConnected(newDriveCount: number) {
@@ -41,39 +47,85 @@ async function focusWindowOnDriveConnected(newDriveCount: number) {
   isInitialFetch = false;
 }
 
+function recordFetchHealth(succeeded: boolean, durationMs: number) {
+  const isFetchHealthy = succeeded && durationMs < DRIVE_FETCH_SLOW_THRESHOLD_MS;
+
+  if (isFetchHealthy) {
+    consecutiveHealthyFetchCount += 1;
+
+    if (
+      pollIntervalMs !== DRIVE_POLL_FAST_INTERVAL_MS
+      && consecutiveHealthyFetchCount >= DRIVE_FETCH_HEALTHY_RECOVERY_COUNT
+    ) {
+      pollIntervalMs = DRIVE_POLL_FAST_INTERVAL_MS;
+    }
+    return;
+  }
+
+  consecutiveHealthyFetchCount = 0;
+  pollIntervalMs = DRIVE_POLL_SLOW_INTERVAL_MS;
+}
+
 async function fetchDrives() {
+  if (isFetchInFlight) {
+    return;
+  }
+
+  isFetchInFlight = true;
+  const fetchStartTime = performance.now();
+  let fetchSucceeded = false;
+
   try {
     const result = await invoke<DriveInfo[]>('get_system_drives');
     drives.value = result;
     error.value = null;
+    fetchSucceeded = true;
 
     await focusWindowOnDriveConnected(result.length);
   }
-  catch (err: unknown) {
-    const errorMessage = err instanceof Error ? err.message : String(err);
+  catch (fetchError: unknown) {
+    const errorMessage = fetchError instanceof Error ? fetchError.message : String(fetchError);
     error.value = errorMessage;
-    console.error('Failed to fetch drives:', err);
+    console.error('Failed to fetch drives:', fetchError);
+  }
+  finally {
+    const fetchDurationMs = performance.now() - fetchStartTime;
+    recordFetchHealth(fetchSucceeded, fetchDurationMs);
+    isFetchInFlight = false;
   }
 }
 
 async function initialFetch() {
   isLoading.value = true;
-  await fetchDrives();
-  isLoading.value = false;
+
+  try {
+    await fetchDrives();
+  }
+  finally {
+    isLoading.value = false;
+  }
 }
 
-function startPolling() {
-  if (pollIntervalId !== null) {
+function schedulePoll() {
+  if (pollTimeoutId !== null || activeSubscribers === 0) {
     return;
   }
 
-  pollIntervalId = setInterval(fetchDrives, DRIVE_POLL_INTERVAL_MS);
+  pollTimeoutId = setTimeout(async () => {
+    pollTimeoutId = null;
+    await fetchDrives();
+    schedulePoll();
+  }, pollIntervalMs);
+}
+
+function startPolling() {
+  schedulePoll();
 }
 
 function stopPolling() {
-  if (pollIntervalId !== null) {
-    clearInterval(pollIntervalId);
-    pollIntervalId = null;
+  if (pollTimeoutId !== null) {
+    clearTimeout(pollTimeoutId);
+    pollTimeoutId = null;
   }
 }
 
@@ -101,8 +153,9 @@ export function useDrives() {
     activeSubscribers++;
 
     if (activeSubscribers === 1) {
-      initialFetch();
-      startPolling();
+      void initialFetch().finally(() => {
+        startPolling();
+      });
     }
   });
 
