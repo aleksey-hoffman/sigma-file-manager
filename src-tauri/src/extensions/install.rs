@@ -9,7 +9,10 @@ use super::fs_ops::{
     cleanup_trash_directories, copy_dir_recursive, next_managed_temp_dir, remove_dir_force,
     replace_extension_dir,
 };
-use super::http::{build_http_client, stream_response_to_file_with_limit};
+use super::http::{
+    build_codeload_fallback_url, build_http_client, download_to_file_across_urls_with_retry,
+    UrlCandidates,
+};
 use super::paths::{get_extension_dir, get_extensions_base_dir};
 use super::processes::terminate_all_extension_processes;
 use super::security::{
@@ -68,29 +71,22 @@ pub async fn download_extension(
 
     let result = async {
         let client = build_http_client()?;
-        let response = client
-            .get(validated_url)
-            .send()
-            .await
-            .map_err(|error| format!("Failed to download extension: {}", error))?;
-
-        if !response.status().is_success() {
-            return Err(format!(
-                "Download failed with status: {}",
-                response.status()
-            ));
-        }
+        let candidates = UrlCandidates::new(validated_url.clone())
+            .with_fallback(build_codeload_fallback_url(&validated_url));
 
         let cancel_flag = get_extension_install_cancellation_flag(cancellation_id.as_ref());
+        let mut on_progress = |_downloaded: u64, _total: Option<u64>| {};
 
-        stream_response_to_file_with_limit(
-            response,
+        download_to_file_across_urls_with_retry(
+            &client,
+            candidates,
             &zip_path,
             MAX_EXTENSION_ARCHIVE_BYTES,
             "extension response",
             integrity.as_deref(),
-            |_downloaded, _total| {},
             cancel_flag,
+            &format!("download extension '{}'", extension_id),
+            &mut on_progress,
         )
         .await?;
 

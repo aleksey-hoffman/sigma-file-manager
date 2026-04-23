@@ -2,7 +2,11 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-use super::http::{build_http_client, read_response_bytes_with_limit};
+use super::http::{
+    build_http_client, build_jsdelivr_fallback_url, check_response_status, classify_reqwest_error,
+    fetch_text_across_urls_with_retry, read_response_bytes_with_limit, run_with_retry,
+    HttpRetryError, RetryConfig, UrlCandidates,
+};
 use super::security::validate_remote_url;
 use super::types::{FetchUrlResult, MAX_TEXT_FETCH_BYTES};
 
@@ -70,47 +74,46 @@ pub async fn fetch_github_tags(repository: String) -> Result<Vec<String>, String
         .ok_or_else(|| format!("Invalid GitHub repository URL: {}", repository))?;
 
     let atom_url = format!("https://github.com/{}/{}/tags.atom", owner, repo);
+    let parsed_url = reqwest::Url::parse(&atom_url)
+        .map_err(|error| format!("Invalid tags atom URL '{}': {}", atom_url, error))?;
 
     let client = build_http_client()?;
+    let config = RetryConfig::default();
+    let operation_label = format!("fetch GitHub tags for {}/{}", owner, repo);
 
-    let response = client
-        .get(&atom_url)
-        .send()
-        .await
-        .map_err(|error| format!("Failed to fetch tags feed: {}", error))?;
+    let body = run_with_retry(&operation_label, &config, None, |_attempt| {
+        let url = parsed_url.clone();
+        let label = operation_label.clone();
+        let client = client.clone();
+        async move {
+            let response = client
+                .get(url)
+                .send()
+                .await
+                .map_err(|error| classify_reqwest_error(&label, error))?;
 
-    if !response.status().is_success() {
-        return Err(format!(
-            "GitHub returned status {} for {}",
-            response.status(),
-            atom_url
-        ));
-    }
+            if let Some(error) = check_response_status(&label, &response) {
+                return Err(error);
+            }
 
-    let body = response
-        .text()
-        .await
-        .map_err(|error| format!("Failed to read response body: {}", error))?;
+            let body_bytes =
+                read_response_bytes_with_limit(response, MAX_TEXT_FETCH_BYTES, "tags atom feed")
+                    .await?;
+
+            Ok::<String, HttpRetryError>(String::from_utf8_lossy(&body_bytes).to_string())
+        }
+    })
+    .await
+    .map_err(HttpRetryError::into_message)?;
 
     Ok(parse_all_tags_from_atom(&body))
 }
 
 pub async fn fetch_url_text(url: String) -> Result<FetchUrlResult, String> {
     let validated_url = validate_remote_url(&url)?;
+    let candidates = UrlCandidates::new(validated_url.clone())
+        .with_fallback(build_jsdelivr_fallback_url(&validated_url));
+
     let client = build_http_client()?;
-
-    let response = client
-        .get(validated_url)
-        .send()
-        .await
-        .map_err(|error| format!("Failed to fetch URL: {}", error))?;
-
-    let status = response.status().as_u16();
-    let ok = response.status().is_success();
-
-    let body_bytes =
-        read_response_bytes_with_limit(response, MAX_TEXT_FETCH_BYTES, "response body").await?;
-    let body = String::from_utf8_lossy(&body_bytes).to_string();
-
-    Ok(FetchUrlResult { ok, status, body })
+    fetch_text_across_urls_with_retry(&client, candidates, MAX_TEXT_FETCH_BYTES, "fetch URL").await
 }

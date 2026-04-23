@@ -9,7 +9,7 @@ use tauri::Emitter;
 
 use super::archives::extract_archive;
 use super::fs_ops::{next_sibling_temp_dir, remove_dir_force};
-use super::http::{build_http_client, stream_response_to_file_with_limit};
+use super::http::{build_http_client, download_to_file_across_urls_with_retry, UrlCandidates};
 use super::paths::{ensure_app_data_subdir, get_extension_dir};
 use super::security::{
     authorize_extension_caller, require_integrity, validate_binary_path_component,
@@ -172,29 +172,23 @@ pub async fn download_extension_binary(
     }
 
     let client = build_http_client()?;
-    let response = client
-        .get(validated_url)
-        .send()
-        .await
-        .map_err(|error| format!("Failed to download binary: {}", error))?;
-
-    if !response.status().is_success() {
-        return Err(format!(
-            "Download failed with status: {}",
-            response.status()
-        ));
-    }
-
     let cancel_flag = get_extension_install_cancellation_flag(request.cancellation_id.as_ref());
+    let candidates = UrlCandidates::new(validated_url);
+    let mut on_progress = |_downloaded: u64, _total: Option<u64>| {};
 
-    stream_response_to_file_with_limit(
-        response,
+    download_to_file_across_urls_with_retry(
+        &client,
+        candidates,
         &binary_path,
         MAX_BINARY_DOWNLOAD_BYTES,
         "binary response",
         request.integrity.as_deref(),
-        |_downloaded, _total| {},
         cancel_flag,
+        &format!(
+            "download extension binary '{}' for '{}'",
+            binary_id, extension_id
+        ),
+        &mut on_progress,
     )
     .await?;
 
@@ -248,30 +242,23 @@ pub async fn download_and_extract_extension_binary(
     let archive_path = staging_root_dir.join("download_archive");
 
     let client = build_http_client()?;
-    let response = client
-        .get(validated_url)
-        .send()
-        .await
-        .map_err(|error| format!("Failed to download binary archive: {}", error))?;
-
-    if !response.status().is_success() {
-        remove_dir_force(&staging_root_dir).ok();
-        return Err(format!(
-            "Binary archive download failed with status: {}",
-            response.status()
-        ));
-    }
-
     let cancel_flag = get_extension_install_cancellation_flag(request.cancellation_id.as_ref());
+    let candidates = UrlCandidates::new(validated_url);
+    let mut on_progress = |_downloaded: u64, _total: Option<u64>| {};
 
-    if let Err(error) = stream_response_to_file_with_limit(
-        response,
+    if let Err(error) = download_to_file_across_urls_with_retry(
+        &client,
+        candidates,
         &archive_path,
         MAX_BINARY_DOWNLOAD_BYTES,
-        "response",
+        "binary archive response",
         request.integrity.as_deref(),
-        |_downloaded, _total| {},
         cancel_flag,
+        &format!(
+            "download extension binary archive '{}' for '{}'",
+            binary_id, extension_id
+        ),
+        &mut on_progress,
     )
     .await
     {
@@ -511,40 +498,21 @@ async fn run_download_shared_binary(
     }
 
     let client = build_http_client()?;
-    let response = client
-        .get(validated_url)
-        .send()
-        .await
-        .map_err(|error| format!("Failed to download binary: {}", error))?;
-
-    if !response.status().is_success() {
-        return Err(format!(
-            "Binary download failed with status: {}",
-            response.status()
-        ));
-    }
-
-    let total = response.content_length();
-    if total.unwrap_or(0) > MAX_BINARY_DOWNLOAD_BYTES {
-        return Err(format!(
-            "Download exceeds size limit of {} bytes",
-            MAX_BINARY_DOWNLOAD_BYTES
-        ));
-    }
-
-    let on_progress =
+    let cancel_flag = get_extension_install_cancellation_flag(cancellation_id.as_ref());
+    let candidates = UrlCandidates::new(validated_url);
+    let mut on_progress =
         make_shared_binary_progress_emitter(app_handle.clone(), progress_event_id.clone());
 
-    let cancel_flag = get_extension_install_cancellation_flag(cancellation_id.as_ref());
-
-    stream_response_to_file_with_limit(
-        response,
+    download_to_file_across_urls_with_retry(
+        &client,
+        candidates,
         &binary_path,
         MAX_BINARY_DOWNLOAD_BYTES,
         "binary response",
         integrity.as_deref(),
-        on_progress,
         cancel_flag,
+        &format!("download shared binary '{}'", binary_id),
+        &mut on_progress,
     )
     .await?;
 
@@ -675,42 +643,21 @@ async fn run_download_and_extract_shared_binary(
     let archive_path = staging_root_dir.join("download_archive");
 
     let client = build_http_client()?;
-    let response = client
-        .get(validated_url)
-        .send()
-        .await
-        .map_err(|error| format!("Failed to download binary archive: {}", error))?;
-
-    if !response.status().is_success() {
-        remove_dir_force(&staging_root_dir).ok();
-        return Err(format!(
-            "Binary archive download failed with status: {}",
-            response.status()
-        ));
-    }
-
-    let total = response.content_length();
-    if total.unwrap_or(0) > MAX_BINARY_DOWNLOAD_BYTES {
-        remove_dir_force(&staging_root_dir).ok();
-        return Err(format!(
-            "Download exceeds size limit of {} bytes",
-            MAX_BINARY_DOWNLOAD_BYTES
-        ));
-    }
-
-    let on_progress =
+    let cancel_flag = get_extension_install_cancellation_flag(cancellation_id.as_ref());
+    let candidates = UrlCandidates::new(validated_url);
+    let mut on_progress =
         make_shared_binary_progress_emitter(app_handle.clone(), progress_event_id.clone());
 
-    let cancel_flag = get_extension_install_cancellation_flag(cancellation_id.as_ref());
-
-    if let Err(error) = stream_response_to_file_with_limit(
-        response,
+    if let Err(error) = download_to_file_across_urls_with_retry(
+        &client,
+        candidates,
         &archive_path,
         MAX_BINARY_DOWNLOAD_BYTES,
         "archive response",
         integrity.as_deref(),
-        on_progress,
         cancel_flag,
+        &format!("download shared binary archive '{}'", binary_id),
+        &mut on_progress,
     )
     .await
     {
