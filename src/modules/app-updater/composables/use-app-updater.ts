@@ -169,21 +169,19 @@ export function useAppUpdater() {
       return;
     }
 
-    let progressValue = 0;
+    let pendingPlaceholderProgress = 0;
     let downloadedBytes: number | null = null;
     let totalBytes: number | null = null;
 
-    const progressInterval = setInterval(() => {
-      if (progressValue < 90 && (downloadedBytes === null || totalBytes === null || totalBytes === 0)) {
-        progressValue = Math.min(90, progressValue + 3);
+    function getDisplayProgress(): number {
+      if (downloadedBytes !== null && totalBytes !== null && totalBytes > 0) {
+        return Math.min(99, Math.round((downloadedBytes / totalBytes) * 100));
       }
 
-      const sizeLabel = formatDownloadSize(downloadedBytes, totalBytes);
-      const realProgress = (downloadedBytes !== null && totalBytes !== null && totalBytes > 0)
-        ? Math.min(99, Math.round((downloadedBytes / totalBytes) * 100))
-        : null;
-      const displayProgress = realProgress ?? progressValue;
+      return pendingPlaceholderProgress;
+    }
 
+    function showProgressToast() {
       toast.custom(markRaw(ToastProgress), {
         id: toastId,
         duration: Infinity,
@@ -193,34 +191,15 @@ export function useAppUpdater() {
             title: `${t('notifications.updateAvailable')}: v${info.latestVersion}`,
             subtitle: t('notifications.downloadingUpdate'),
             description: info.installerFileName,
-            downloadSize: sizeLabel,
-            progress: displayProgress,
+            downloadSize: formatDownloadSize(downloadedBytes, totalBytes),
+            progress: getDisplayProgress(),
             timer: 0,
             actionText: '',
             cleanup: () => {},
           },
         },
       });
-    }, 200);
-
-    const initialSizeLabel = formatDownloadSize(null, null);
-    toast.custom(markRaw(ToastProgress), {
-      id: toastId,
-      duration: Infinity,
-      componentProps: {
-        data: {
-          id: toastId,
-          title: `${t('notifications.updateAvailable')}: v${info.latestVersion}`,
-          subtitle: t('notifications.downloadingUpdate'),
-          description: info.installerFileName,
-          downloadSize: initialSizeLabel,
-          progress: 0,
-          timer: 0,
-          actionText: '',
-          cleanup: () => {},
-        },
-      },
-    });
+    }
 
     const unlistenProgress = await listen<{
       progressEventId: string;
@@ -232,9 +211,24 @@ export function useAppUpdater() {
         if (event.payload?.progressEventId === toastId && event.payload.downloaded !== undefined) {
           downloadedBytes = event.payload.downloaded;
           totalBytes = event.payload.total ?? null;
+          showProgressToast();
         }
       },
     );
+
+    showProgressToast();
+    const placeholderInterval = setInterval(() => {
+      if (downloadedBytes !== null) {
+        return;
+      }
+
+      if (pendingPlaceholderProgress >= 10) {
+        return;
+      }
+
+      pendingPlaceholderProgress = Math.min(10, pendingPlaceholderProgress + 1);
+      showProgressToast();
+    }, 200);
 
     try {
       const downloadedPath = await invoke<string>('download_release_installer', {
@@ -244,13 +238,13 @@ export function useAppUpdater() {
       });
 
       unlistenProgress();
-      clearInterval(progressInterval);
+      clearInterval(placeholderInterval);
 
       showUpdateToast(info, { downloadedPath });
     }
     catch (error) {
       unlistenProgress();
-      clearInterval(progressInterval);
+      clearInterval(placeholderInterval);
       const message = error instanceof Error ? error.message : String(error);
       toast.error(`${t('notifications.downloadInstallerFailed')}: ${message}`);
       showUpdateToast(info);

@@ -76,14 +76,31 @@ pub struct RetryConfig {
     pub max_attempts: u32,
     pub initial_backoff: Duration,
     pub max_backoff: Duration,
+    pub max_retry_after: Duration,
 }
 
 impl Default for RetryConfig {
     fn default() -> Self {
+        Self::for_downloads()
+    }
+}
+
+impl RetryConfig {
+    pub fn for_downloads() -> Self {
         Self {
             max_attempts: 4,
             initial_backoff: Duration::from_millis(500),
             max_backoff: Duration::from_secs(8),
+            max_retry_after: Duration::from_secs(60),
+        }
+    }
+
+    pub fn for_metadata() -> Self {
+        Self {
+            max_attempts: 2,
+            initial_backoff: Duration::from_millis(500),
+            max_backoff: Duration::from_secs(2),
+            max_retry_after: Duration::from_secs(5),
         }
     }
 }
@@ -197,8 +214,7 @@ pub fn compute_backoff_delay(
     retry_after: Option<Duration>,
 ) -> Duration {
     if let Some(value) = retry_after {
-        let cap = config.max_backoff.max(value);
-        return value.min(cap);
+        return value.min(config.max_retry_after);
     }
     let initial_ms = config.initial_backoff.as_millis() as u64;
     let max_ms = config.max_backoff.as_millis() as u64;
@@ -537,6 +553,23 @@ pub async fn fetch_text_across_urls_with_retry(
     max_bytes: u64,
     operation_label: &str,
 ) -> Result<FetchUrlResult, String> {
+    fetch_text_across_urls_with_config(
+        client,
+        candidates,
+        max_bytes,
+        operation_label,
+        &RetryConfig::for_metadata(),
+    )
+    .await
+}
+
+pub async fn fetch_text_across_urls_with_config(
+    client: &reqwest::Client,
+    candidates: UrlCandidates,
+    max_bytes: u64,
+    operation_label: &str,
+    config: &RetryConfig,
+) -> Result<FetchUrlResult, String> {
     let urls = candidates.ordered();
     let mut last_error: Option<String> = None;
 
@@ -549,9 +582,7 @@ pub async fn fetch_text_across_urls_with_retry(
             format!("{} via fallback ({})", operation_label, url_label)
         };
 
-        let config = RetryConfig::default();
-
-        let result = run_with_retry(&attempt_label, &config, None, |_attempt| {
+        let result = run_with_retry(&attempt_label, config, None, |_attempt| {
             let url = url.clone();
             let label = attempt_label.clone();
             async move {
@@ -616,6 +647,8 @@ pub async fn download_to_file_across_urls_with_retry(
     let urls = candidates.ordered();
     let config = RetryConfig::default();
     let mut last_error: Option<String> = None;
+
+    on_progress(0, None);
 
     for (index, url) in urls.iter().enumerate() {
         let url_label = describe_url_for_log(url);
@@ -860,6 +893,7 @@ mod tests {
             max_attempts: 4,
             initial_backoff: Duration::from_millis(500),
             max_backoff: Duration::from_secs(8),
+            max_retry_after: Duration::from_secs(60),
         };
         let attempt_one = compute_backoff_delay(&config, 1, None);
         let attempt_three = compute_backoff_delay(&config, 3, None);
@@ -966,6 +1000,7 @@ mod tests {
             max_attempts: 5,
             initial_backoff: Duration::from_secs(30),
             max_backoff: Duration::from_secs(60),
+            max_retry_after: Duration::from_secs(60),
         };
 
         let counter_for_op = attempt_counter.clone();
@@ -1000,5 +1035,165 @@ mod tests {
             1,
             "operation should not retry after cancellation"
         );
+    }
+
+    mod end_to_end {
+        use super::*;
+        use axum::http::{HeaderMap, StatusCode};
+        use axum::response::IntoResponse;
+        use axum::routing::get;
+        use axum::Router;
+        use std::net::SocketAddr;
+        use std::sync::atomic::AtomicU32;
+
+        async fn spawn_test_server(router: Router) -> SocketAddr {
+            let listener = tokio::net::TcpListener::bind("127.0.0.1:0")
+                .await
+                .expect("bind ephemeral port");
+            let addr = listener.local_addr().expect("local addr");
+            tokio::spawn(async move {
+                axum::serve(listener, router).await.expect("serve");
+            });
+            addr
+        }
+
+        fn fast_metadata_config() -> RetryConfig {
+            RetryConfig {
+                max_attempts: 3,
+                initial_backoff: Duration::from_millis(20),
+                max_backoff: Duration::from_millis(50),
+                max_retry_after: Duration::from_secs(1),
+            }
+        }
+
+        async fn fetch(
+            url: reqwest::Url,
+            fallback: Option<reqwest::Url>,
+            config: &RetryConfig,
+        ) -> Result<FetchUrlResult, String> {
+            let client = build_http_client().expect("client");
+            let candidates = UrlCandidates::new(url).with_fallback(fallback);
+            fetch_text_across_urls_with_config(
+                &client,
+                candidates,
+                MAX_TEXT_FETCH_BYTES,
+                "test",
+                config,
+            )
+            .await
+        }
+
+        #[tokio::test(flavor = "current_thread")]
+        async fn fetch_text_returns_ok_false_for_404() {
+            let app = Router::new().route(
+                "/missing",
+                get(|| async { (StatusCode::NOT_FOUND, "no such manifest") }),
+            );
+            let addr = spawn_test_server(app).await;
+            let url = reqwest::Url::parse(&format!("http://{}/missing", addr)).unwrap();
+
+            let result = fetch(url, None, &fast_metadata_config())
+                .await
+                .expect("expected Ok for permanent non-success status");
+
+            assert!(!result.ok);
+            assert_eq!(result.status, 404);
+            assert_eq!(result.body, "no such manifest");
+        }
+
+        #[tokio::test(flavor = "current_thread")]
+        async fn fetch_text_retries_on_500_then_errors_after_budget() {
+            let attempts = Arc::new(AtomicU32::new(0));
+            let attempts_for_handler = attempts.clone();
+            let app = Router::new().route(
+                "/flaky",
+                get(move || {
+                    let attempts = attempts_for_handler.clone();
+                    async move {
+                        attempts.fetch_add(1, Ordering::SeqCst);
+                        (StatusCode::INTERNAL_SERVER_ERROR, "boom")
+                    }
+                }),
+            );
+            let addr = spawn_test_server(app).await;
+            let url = reqwest::Url::parse(&format!("http://{}/flaky", addr)).unwrap();
+
+            let result = fetch(url, None, &fast_metadata_config()).await;
+
+            let error_message = result.expect_err("expected transient error after retries");
+            assert!(
+                error_message.contains("HTTP 500"),
+                "unexpected error: {}",
+                error_message
+            );
+            assert_eq!(attempts.load(Ordering::SeqCst), 3);
+        }
+
+        #[tokio::test(flavor = "current_thread")]
+        async fn fetch_text_recovers_via_fallback_when_primary_keeps_failing() {
+            let app = Router::new()
+                .route(
+                    "/primary",
+                    get(|| async { (StatusCode::INTERNAL_SERVER_ERROR, "down") }),
+                )
+                .route(
+                    "/fallback",
+                    get(|| async { (StatusCode::OK, "served from mirror") }),
+                );
+            let addr = spawn_test_server(app).await;
+            let primary = reqwest::Url::parse(&format!("http://{}/primary", addr)).unwrap();
+            let fallback = reqwest::Url::parse(&format!("http://{}/fallback", addr)).unwrap();
+
+            let result = fetch(primary, Some(fallback), &fast_metadata_config())
+                .await
+                .expect("expected fallback to succeed");
+
+            assert!(result.ok);
+            assert_eq!(result.status, 200);
+            assert_eq!(result.body, "served from mirror");
+        }
+
+        #[tokio::test(flavor = "current_thread")]
+        async fn fetch_text_honors_retry_after_clamped_by_config() {
+            let attempts = Arc::new(AtomicU32::new(0));
+            let attempts_for_handler = attempts.clone();
+            let app = Router::new().route(
+                "/throttled",
+                get(move || {
+                    let attempts = attempts_for_handler.clone();
+                    async move {
+                        attempts.fetch_add(1, Ordering::SeqCst);
+                        let mut headers = HeaderMap::new();
+                        headers.insert("retry-after", "1".parse().unwrap());
+                        (StatusCode::TOO_MANY_REQUESTS, headers, "slow down").into_response()
+                    }
+                }),
+            );
+            let addr = spawn_test_server(app).await;
+            let url = reqwest::Url::parse(&format!("http://{}/throttled", addr)).unwrap();
+            let config = fast_metadata_config();
+
+            let started = std::time::Instant::now();
+            let result = fetch(url, None, &config).await;
+            let elapsed = started.elapsed();
+
+            let error_message = result.expect_err("expected transient error after retries");
+            assert!(
+                error_message.contains("HTTP 429"),
+                "unexpected error: {}",
+                error_message
+            );
+            assert_eq!(attempts.load(Ordering::SeqCst), config.max_attempts);
+            assert!(
+                elapsed >= Duration::from_secs(1),
+                "expected to honor Retry-After 1s, waited only {:?}",
+                elapsed
+            );
+            assert!(
+                elapsed < Duration::from_secs(5),
+                "did not clamp Retry-After to config.max_retry_after, waited {:?}",
+                elapsed
+            );
+        }
     }
 }

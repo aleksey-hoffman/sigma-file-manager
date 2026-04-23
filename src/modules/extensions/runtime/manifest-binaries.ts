@@ -127,7 +127,15 @@ async function installManifestBinary(
   const binaryLabel = `${binaryDefinition.name} ${binaryDefinition.version}`;
   let downloadedBytes: number | null = null;
   let totalBytes: number | null = null;
-  let progressValue = 0;
+  let pendingPlaceholderProgress = 0;
+
+  function getDisplayProgress(): number {
+    if (downloadedBytes !== null && totalBytes !== null && totalBytes > 0) {
+      return Math.min(99, Math.round((downloadedBytes / totalBytes) * 100));
+    }
+
+    return pendingPlaceholderProgress;
+  }
 
   function showProgressToast() {
     toast.custom(markRaw(ToastProgress), {
@@ -140,7 +148,7 @@ async function installManifestBinary(
           subtitle: i18n.global.t('extensions.api.downloadingDependencies'),
           description: binaryLabel,
           downloadSize: formatDownloadSize(downloadedBytes, totalBytes),
-          progress: progressValue,
+          progress: getDisplayProgress(),
           timer: 0,
           actionText: '',
           cleanup: () => {},
@@ -151,17 +159,6 @@ async function installManifestBinary(
     });
   }
 
-  showProgressToast();
-  const progressInterval = setInterval(() => {
-    if (downloadedBytes !== null && totalBytes !== null && totalBytes > 0) {
-      progressValue = Math.min(99, Math.round((downloadedBytes / totalBytes) * 100));
-    }
-    else if (progressValue < 95) {
-      progressValue = Math.min(95, progressValue + 3);
-    }
-
-    showProgressToast();
-  }, 200);
   const unlistenProgress = await listen<{
     progressEventId: string;
     downloaded: number;
@@ -173,7 +170,22 @@ async function installManifestBinary(
 
     downloadedBytes = event.payload.downloaded;
     totalBytes = event.payload.total ?? null;
+    showProgressToast();
   });
+
+  showProgressToast();
+  const placeholderInterval = setInterval(() => {
+    if (downloadedBytes !== null) {
+      return;
+    }
+
+    if (pendingPlaceholderProgress >= 10) {
+      return;
+    }
+
+    pendingPlaceholderProgress = Math.min(10, pendingPlaceholderProgress + 1);
+    showProgressToast();
+  }, 200);
 
   let binaryPath: string;
 
@@ -192,7 +204,7 @@ async function installManifestBinary(
   }
   finally {
     unlistenProgress();
-    clearInterval(progressInterval);
+    clearInterval(placeholderInterval);
     toast.dismiss(toastId);
   }
 

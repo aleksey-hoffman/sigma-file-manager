@@ -78,7 +78,7 @@ pub async fn fetch_github_tags(repository: String) -> Result<Vec<String>, String
         .map_err(|error| format!("Invalid tags atom URL '{}': {}", atom_url, error))?;
 
     let client = build_http_client()?;
-    let config = RetryConfig::default();
+    let config = RetryConfig::for_metadata();
     let operation_label = format!("fetch GitHub tags for {}/{}", owner, repo);
 
     let body = run_with_retry(&operation_label, &config, None, |_attempt| {
