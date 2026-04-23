@@ -39,6 +39,8 @@ function isArchiveBinaryAsset(asset: ManifestBinaryAsset): boolean {
   return /\.(zip|tar\.xz|txz|tar\.gz|tgz)$/i.test(asset.downloadUrl);
 }
 
+type BinaryDownloadStage = 'downloading' | 'installing';
+
 function createBinaryInfo(binaryDefinition: ManifestBinaryDefinition, binaryAsset: ManifestBinaryAsset, binaryPath: string, installedAt: number): BinaryInfo {
   return {
     id: binaryDefinition.id,
@@ -128,13 +130,34 @@ async function installManifestBinary(
   let downloadedBytes: number | null = null;
   let totalBytes: number | null = null;
   let pendingPlaceholderProgress = 0;
+  let downloadStage: BinaryDownloadStage = 'downloading';
 
   function getDisplayProgress(): number {
+    if (downloadStage === 'installing') {
+      return 99;
+    }
+
     if (downloadedBytes !== null && totalBytes !== null && totalBytes > 0) {
       return Math.min(99, Math.round((downloadedBytes / totalBytes) * 100));
     }
 
     return pendingPlaceholderProgress;
+  }
+
+  function getProgressSubtitle(): string {
+    if (downloadStage === 'installing') {
+      return i18n.global.t('extensions.installing');
+    }
+
+    return i18n.global.t('extensions.api.downloadingDependencies');
+  }
+
+  function getDownloadSizeText(): string | undefined {
+    if (downloadStage === 'installing') {
+      return undefined;
+    }
+
+    return formatDownloadSize(downloadedBytes, totalBytes);
   }
 
   function showProgressToast() {
@@ -145,9 +168,9 @@ async function installManifestBinary(
         data: {
           id: toastId,
           title: getExtensionToastTitle(extensionId),
-          subtitle: i18n.global.t('extensions.api.downloadingDependencies'),
+          subtitle: getProgressSubtitle(),
           description: binaryLabel,
-          downloadSize: formatDownloadSize(downloadedBytes, totalBytes),
+          downloadSize: getDownloadSizeText(),
           progress: getDisplayProgress(),
           timer: 0,
           actionText: '',
@@ -170,6 +193,18 @@ async function installManifestBinary(
 
     downloadedBytes = event.payload.downloaded;
     totalBytes = event.payload.total ?? null;
+    showProgressToast();
+  });
+
+  const unlistenStage = await listen<{
+    progressEventId: string;
+    stage: BinaryDownloadStage;
+  }>('binary-download-stage', (event) => {
+    if (event.payload?.progressEventId !== toastId || event.payload.stage !== 'installing') {
+      return;
+    }
+
+    downloadStage = 'installing';
     showProgressToast();
   });
 
@@ -204,6 +239,7 @@ async function installManifestBinary(
   }
   finally {
     unlistenProgress();
+    unlistenStage();
     clearInterval(placeholderInterval);
     toast.dismiss(toastId);
   }

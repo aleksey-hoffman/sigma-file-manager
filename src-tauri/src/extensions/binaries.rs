@@ -365,6 +365,13 @@ struct BinaryDownloadProgress {
     total: Option<u64>,
 }
 
+#[derive(Clone, Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct BinaryDownloadStage {
+    progress_event_id: String,
+    stage: String,
+}
+
 fn make_shared_binary_progress_emitter(
     app_handle: tauri::AppHandle,
     progress_event_id: Option<String>,
@@ -378,6 +385,20 @@ fn make_shared_binary_progress_emitter(
             };
             let _ = app_handle.emit("binary-download-progress", payload);
         }
+    }
+}
+
+fn emit_shared_binary_stage(
+    app_handle: &tauri::AppHandle,
+    progress_event_id: &Option<String>,
+    stage: &str,
+) {
+    if let Some(progress_id) = progress_event_id {
+        let payload = BinaryDownloadStage {
+            progress_event_id: progress_id.clone(),
+            stage: stage.to_string(),
+        };
+        let _ = app_handle.emit("binary-download-stage", payload);
     }
 }
 
@@ -665,6 +686,7 @@ async fn run_download_and_extract_shared_binary(
         return Err(error);
     }
 
+    emit_shared_binary_stage(&app_handle, &progress_event_id, "installing");
     extract_archive(&archive_path, &staging_extract_dir, &download_url)?;
 
     if !staged_binary_path.exists() {
