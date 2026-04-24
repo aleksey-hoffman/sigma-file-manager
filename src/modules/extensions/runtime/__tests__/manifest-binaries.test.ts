@@ -182,9 +182,9 @@ describe('syncManifestBinariesForExtension', () => {
     const toastStates = toastCustomMock.mock.calls.map(([, options]) => options.componentProps.data);
 
     expect(toastStates[0].subtitle).toBe('extensions.api.downloadingDependencies');
-    expect(toastStates.at(-1)?.subtitle).toBe('extensions.installing');
-    expect(toastStates.at(-1)?.downloadSize).toBeUndefined();
-    expect(toastStates.at(-1)?.progress).toBe(99);
+    expect(toastStates[toastStates.length - 1]?.subtitle).toBe('extensions.installing');
+    expect(toastStates[toastStates.length - 1]?.downloadSize).toBeUndefined();
+    expect(toastStates[toastStates.length - 1]?.progress).toBe(99);
     expect(toastDismissMock).toHaveBeenCalledWith('binary-download-test.extension-ffmpeg');
   });
 });
