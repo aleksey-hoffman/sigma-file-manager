@@ -48,8 +48,8 @@ const forwarded = useForwardPropsEmits(props, emits);
 }
 
 .sigma-ui-checkbox:focus-visible {
-  outline: 2px solid hsl(var(--ring));
-  outline-offset: 2px;
+  outline: 2px solid hsl(var(--ring) / 50%);
+  outline-offset: var(--ring-outline-offset);
 }
 
 .sigma-ui-checkbox:disabled {

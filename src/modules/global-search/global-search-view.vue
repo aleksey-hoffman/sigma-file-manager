@@ -836,7 +836,7 @@ onMounted(() => {
 }
 
 .global-search-view__drive-header:focus-visible {
-  outline: 2px solid hsl(var(--ring));
+  outline: 2px solid hsl(var(--ring) / 50%);
   outline-offset: -2px;
 }
 

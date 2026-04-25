@@ -32,8 +32,8 @@ import { NumberFieldInput } from 'reka-ui';
 }
 
 .sigma-ui-number-field-input:focus-visible {
-  outline: 2px solid hsl(var(--ring));
-  outline-offset: 2px;
+  outline: 2px solid hsl(var(--ring) / 50%);
+  outline-offset: var(--ring-outline-offset);
 }
 
 .sigma-ui-number-field-input:disabled {

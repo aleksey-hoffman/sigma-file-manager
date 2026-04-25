@@ -703,8 +703,8 @@ onUnmounted(() => {
 }
 
 .address-bar__part:focus-visible {
-  outline: 2px solid hsl(var(--ring));
-  outline-offset: 2px;
+  outline: 2px solid hsl(var(--ring) / 50%);
+  outline-offset: var(--ring-outline-offset);
 }
 
 .address-bar__part:hover:not(:disabled) {
@@ -733,8 +733,8 @@ onUnmounted(() => {
 }
 
 .address-bar__separator:focus-visible {
-  outline: 2px solid hsl(var(--ring));
-  outline-offset: 2px;
+  outline: 2px solid hsl(var(--ring) / 50%);
+  outline-offset: var(--ring-outline-offset);
 }
 
 .address-bar__separator-icon--open {
@@ -803,7 +803,7 @@ onUnmounted(() => {
 }
 
 .address-bar__suggestion:focus-visible {
-  outline: 2px solid hsl(var(--ring));
+  outline: 2px solid hsl(var(--ring) / 50%);
   outline-offset: -2px;
 }
 

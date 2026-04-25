@@ -30,6 +30,7 @@
   --tab-height: calc(var(--window-toolbar-height) - 16px);
   --control-button-width: 46px;
   --dir-entry-transition: all 0.3s ease-in-out;
+  --ring-outline-offset: 0px;
 
   /* SIGMA-UI */
 

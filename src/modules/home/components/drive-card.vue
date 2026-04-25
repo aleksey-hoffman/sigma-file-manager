@@ -230,8 +230,8 @@ async function handleUnmount(clickEvent: MouseEvent) {
 }
 
 .drive-card:focus-visible {
-  outline: 2px solid hsl(var(--ring));
-  outline-offset: 2px;
+  outline: 2px solid hsl(var(--ring) / 20%);
+  outline-offset: var(--ring-outline-offset);
 }
 
 .drive-card--circular {

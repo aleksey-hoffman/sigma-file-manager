@@ -39,8 +39,8 @@ const forwardedProps = useForwardProps(props);
 }
 
 .sigma-ui-tabs-trigger:focus-visible {
-  outline: 2px solid hsl(var(--ring));
-  outline-offset: 2px;
+  outline: 2px solid hsl(var(--ring) / 50%);
+  outline-offset: var(--ring-outline-offset);
 }
 
 .sigma-ui-tabs-trigger:disabled {

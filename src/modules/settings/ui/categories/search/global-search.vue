@@ -958,8 +958,8 @@ onUnmounted(() => {
 }
 
 .global-search-settings__drive-item:focus-visible {
-  outline: 2px solid hsl(var(--ring));
-  outline-offset: 2px;
+  outline: 2px solid hsl(var(--ring) / 50%);
+  outline-offset: var(--ring-outline-offset);
 }
 
 .global-search-settings__drive-icon {
