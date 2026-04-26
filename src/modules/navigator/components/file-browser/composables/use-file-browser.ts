@@ -37,6 +37,7 @@ import { useFileBrowserDrag } from './use-file-browser-drag';
 import { useFileBrowserExternalDrop } from './use-file-browser-external-drop';
 import { useVideoThumbnails } from './use-video-thumbnails';
 import { sortFileBrowserEntries } from '@/modules/navigator/components/file-browser/utils/file-browser-sort';
+import { getFileBrowserGridEntryOrder } from '../file-browser-entry-groups';
 
 export interface UseFileBrowserOptions {
   tab: () => Tab | undefined;
@@ -230,9 +231,16 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
         selection.clearSelection();
         selection.resetMouseState();
       });
+  const visualEntries = computed(() => {
+    if (options.layout() === 'grid') {
+      return getFileBrowserGridEntryOrder(dataSource.entries.value);
+    }
+
+    return dataSource.entries.value;
+  });
 
   const selection = useFileBrowserSelection(
-    dataSource.entries,
+    visualEntries,
     dataSource.currentPath,
     selectedItems => options.onSelectedEntriesChange(selectedItems),
     async (entry) => {
@@ -252,7 +260,7 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
   );
 
   const { entriesContainerRef, setEntriesContainerRef } = useFileBrowserFocus({
-    entries: dataSource.entries,
+    entries: visualEntries,
     pendingFocusRequest: selection.pendingFocusRequest,
     currentPath: dataSource.currentPath,
     selectEntryByPath: selection.selectEntryByPath,
@@ -310,7 +318,7 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
   const actions = useFileBrowserActions({
     contextMenu: selection.contextMenu,
     selectedEntries: selection.selectedEntries,
-    visibleEntries: dataSource.entries,
+    visibleEntries: visualEntries,
     quickViewStore,
     handleContextMenuAction: selection.handleContextMenuAction,
     openOpenWithDialog: dialogs.openOpenWithDialog,
@@ -321,7 +329,7 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
   });
 
   const keyboardNav = useFileBrowserKeyboardNavigation({
-    entries: dataSource.entries,
+    entries: visualEntries,
     selectedEntries: selection.selectedEntries,
     layout: options.layout,
     selectEntryByPath: selection.selectEntryByPath,
@@ -340,9 +348,9 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
   });
 
   async function selectFirstEntry() {
-    if (dataSource.entries.value.length === 0) return;
+    if (visualEntries.value.length === 0) return;
 
-    const firstEntry = dataSource.entries.value[0];
+    const firstEntry = visualEntries.value[0];
     selection.selectEntryByPath(firstEntry.path);
     await nextTick();
 
@@ -361,7 +369,7 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
     }
   }
 
-  watch([dataSource.filterQuery, dataSource.entries], ([filterQuery, entries]) => {
+  watch([dataSource.filterQuery, visualEntries], ([filterQuery, entries]) => {
     if (!filterQuery.trim()) {
       return;
     }
@@ -401,7 +409,7 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
   return {
     isExternalMode,
 
-    entries: dataSource.entries,
+    entries: visualEntries,
     currentPath: dataSource.currentPath,
     isDirectoryEmpty: dataSource.isDirectoryEmpty,
     dirContents: dataSource.dirContents,

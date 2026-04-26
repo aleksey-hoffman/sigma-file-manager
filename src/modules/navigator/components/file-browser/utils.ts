@@ -18,20 +18,20 @@ import type { DirEntry } from '@/types/dir-entry';
 import { i18n } from '@/localization';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import {
+  isFileBrowserImageEntry,
+  isFileBrowserVideoEntry,
+} from './file-browser-entry-groups';
+import {
   formatAbsoluteDateDisplay,
   formatRelativeDateDisplay,
 } from '@/utils/relative-date-display';
 
 export function isImageFile(entry: DirEntry): boolean {
-  if (entry.is_dir) return false;
-  const extension = entry.ext?.toLowerCase();
-  return extension ? FILE_EXTENSIONS.IMAGE.includes(extension) : false;
+  return isFileBrowserImageEntry(entry);
 }
 
 export function isVideoFile(entry: DirEntry): boolean {
-  if (entry.is_dir) return false;
-  const extension = entry.ext?.toLowerCase();
-  return extension ? FILE_EXTENSIONS.VIDEO.includes(extension) : false;
+  return isFileBrowserVideoEntry(entry);
 }
 
 export function getImageSrc(entry: DirEntry): string {
