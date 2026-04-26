@@ -285,6 +285,18 @@ export function useFileBrowserSelection(
     }
   }
 
+  function handleEntryFocus(entry: DirEntry, event: FocusEvent) {
+    const target = event.currentTarget;
+
+    if (!(target instanceof HTMLElement) || !target.matches(':focus-visible')) {
+      return;
+    }
+
+    if (selectedEntries.value.length !== 1 || !isEntrySelected(entry)) {
+      replaceSelection(entry);
+    }
+  }
+
   function handleEntryContextMenu(entry: DirEntry) {
     const isEntryAlreadySelected = isEntrySelected(entry);
 
@@ -988,6 +1000,7 @@ export function useFileBrowserSelection(
     replaceSelection,
     handleEntryMouseDown,
     handleEntryMouseUp,
+    handleEntryFocus,
     handleEntryContextMenu,
     handleBackgroundContextMenu,
     closeContextMenu,

@@ -79,6 +79,7 @@ provideFileBrowserContext({
   setEntriesContainerRef: fb.setEntriesContainerRef,
   onEntryMouseDown: fb.onEntryMouseDown,
   onEntryMouseUp: fb.onEntryMouseUp,
+  handleEntryFocus: fb.handleEntryFocus,
   handleEntryContextMenu: fb.handleEntryContextMenu,
   handleBackgroundContextMenu: fb.handleBackgroundContextMenu,
   onContextMenuAction: fb.onContextMenuAction,

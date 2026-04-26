@@ -614,6 +614,7 @@ onUnmounted(() => {
   height: 36px;
   flex: 1;
   align-items: center;
+  padding: 0 2px;
   border: 1px solid hsl(var(--border) / 50%);
   border-radius: var(--radius-md);
   background-color: hsl(var(--background) / 50%);
@@ -674,6 +675,7 @@ onUnmounted(() => {
   height: 100%;
   flex: 1;
   align-items: center;
+  padding: 0 2px;
   cursor: text;
   overflow-x: auto;
   scrollbar-width: none;

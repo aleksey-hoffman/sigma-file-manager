@@ -103,6 +103,7 @@ function isDirLoadingWithProgress(entry: DirEntry): boolean {
     :data-drop-target="props.variant === 'dir' || undefined"
     @mousedown="ctx.onEntryMouseDown(props.entry, $event)"
     @mouseup="ctx.onEntryMouseUp(props.entry, $event)"
+    @focus="ctx.handleEntryFocus(props.entry, $event)"
     @contextmenu="ctx.handleEntryContextMenu(props.entry)"
     @keydown="handleEntryKeydown"
   >

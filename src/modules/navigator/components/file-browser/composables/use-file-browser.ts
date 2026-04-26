@@ -440,6 +440,7 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
     selectEntryByPath: selection.selectEntryByPath,
     requestFocusEntryAfterRefresh: selection.requestFocusEntryAfterRefresh,
     removeFromSelection: selection.removeFromSelection,
+    handleEntryFocus: selection.handleEntryFocus,
     handleEntryContextMenu: selection.handleEntryContextMenu,
     handleBackgroundContextMenu: selection.handleBackgroundContextMenu,
     copyItems: selection.copyItems,

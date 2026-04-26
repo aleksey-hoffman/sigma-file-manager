@@ -128,6 +128,7 @@ const { clockRef: listModifiedClock } = useRelativeDateDisplayClock(shouldTrackL
         :data-drop-target="entry.is_dir || undefined"
         @mousedown="ctx.onEntryMouseDown(entry, $event)"
         @mouseup="ctx.onEntryMouseUp(entry, $event)"
+        @focus="ctx.handleEntryFocus(entry, $event)"
         @contextmenu="ctx.handleEntryContextMenu(entry)"
         @keydown="handleEntryKeydown"
       >

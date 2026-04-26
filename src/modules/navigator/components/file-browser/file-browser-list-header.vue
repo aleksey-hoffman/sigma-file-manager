@@ -235,12 +235,16 @@ function toggleColumnVisibility(column: 'items' | 'size' | 'modified', checked: 
 
 .file-browser-list-view__header-item {
   display: flex;
+  width: fit-content;
   align-items: center;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
   gap: 8px;
 }
 
 .file-browser-list-view__header-item--sortable {
   border: none;
+  margin: -2px -6px;
   background: transparent;
   color: inherit;
   cursor: pointer;
@@ -250,6 +254,11 @@ function toggleColumnVisibility(column: 'items' | 'size' | 'modified', checked: 
 
 .file-browser-list-view__header-item--sortable:hover {
   color: hsl(var(--foreground));
+}
+
+.file-browser-list-view__header-item--sortable:focus-visible {
+  outline: 2px solid hsl(var(--ring) / 50%);
+  outline-offset: var(--ring-outline-offset);
 }
 
 .file-browser-list-view__header-sort-icon {
