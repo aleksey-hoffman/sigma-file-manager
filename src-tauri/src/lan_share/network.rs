@@ -4,9 +4,7 @@
 
 use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 
-use super::types::{
-    HTTP_DEFAULT_PORT, HTTPS_DEFAULT_PORT, PORT_RANGE_END, PORT_RANGE_START,
-};
+use super::types::{HTTPS_DEFAULT_PORT, HTTP_DEFAULT_PORT, PORT_RANGE_END, PORT_RANGE_START};
 
 pub(super) fn get_local_ipv4() -> Result<Ipv4Addr, String> {
     let interfaces = local_ip_address::list_afinet_netifas()

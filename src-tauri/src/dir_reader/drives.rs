@@ -2,16 +2,17 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-
 use crate::utils::normalize_path;
 use std::collections::HashSet;
 
-#[cfg(target_os = "linux")]
-use super::drives_platform::{mount_point_last_component, should_skip_linux_mount};
 #[cfg(target_os = "macos")]
-use super::drives_platform::{append_macos_network_volumes, mount_point_last_component, should_skip_macos_mount};
+use super::drives_platform::{
+    append_macos_network_volumes, mount_point_last_component, should_skip_macos_mount,
+};
 #[cfg(windows)]
 use super::drives_platform::{append_windows_network_drives, append_windows_wsl_drives};
+#[cfg(target_os = "linux")]
+use super::drives_platform::{mount_point_last_component, should_skip_linux_mount};
 use super::types::DriveInfo;
 use sysinfo::Disks;
 

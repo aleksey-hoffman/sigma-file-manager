@@ -13,8 +13,8 @@ use super::network::{
 use super::streaming::canonicalize_hub_paths;
 use super::tls::generate_self_signed_tls;
 use super::types::{
-    ActiveServer, HTTP_DEFAULT_PORT, HTTPS_DEFAULT_PORT, LanShareResult, MDNS_DOMAIN, ShareState,
-    ACTIVE_SERVER,
+    ActiveServer, LanShareResult, ShareState, ACTIVE_SERVER, HTTPS_DEFAULT_PORT, HTTP_DEFAULT_PORT,
+    MDNS_DOMAIN,
 };
 
 pub async fn start_lan_share(

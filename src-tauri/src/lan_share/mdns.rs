@@ -4,9 +4,7 @@
 
 use std::net::Ipv4Addr;
 
-use super::types::{
-    MDNS_HOSTNAME, MDNS_INSTANCE_NAME, MDNS_SERVICE_TYPE,
-};
+use super::types::{MDNS_HOSTNAME, MDNS_INSTANCE_NAME, MDNS_SERVICE_TYPE};
 
 pub(super) fn register_mdns(port: u16, ip: Ipv4Addr) -> Result<mdns_sd::ServiceDaemon, String> {
     let daemon = mdns_sd::ServiceDaemon::new()

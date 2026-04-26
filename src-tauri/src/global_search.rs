@@ -6,8 +6,8 @@ mod commands;
 mod ignore;
 mod index;
 mod query;
-mod scoring;
 mod scan;
+mod scoring;
 mod state;
 mod types;
 

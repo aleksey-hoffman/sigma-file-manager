@@ -289,10 +289,7 @@ pub fn get_dir_entry(path: String) -> Result<DirEntry, String> {
         Ok(true) => {}
         Ok(false) => return Err(format!("Path does not exist: {}", path)),
         Err(io_error) => {
-            return Err(format!(
-                "Failed to access path: {}: {}",
-                path, io_error
-            ));
+            return Err(format!("Failed to access path: {}: {}", path, io_error));
         }
     }
 
@@ -320,10 +317,7 @@ pub fn read_dir(path: String) -> Result<DirContents, String> {
             return Err(format!("Path does not exist: {}", path));
         }
         Err(io_error) => {
-            return Err(format!(
-                "Failed to access path: {}: {}",
-                path, io_error
-            ));
+            return Err(format!("Failed to access path: {}: {}", path, io_error));
         }
     };
 

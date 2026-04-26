@@ -19,10 +19,8 @@ pub(super) const PORT_RANGE_START: u16 = 55000;
 pub(super) const PORT_RANGE_END: u16 = 55999;
 pub(super) const FTP_MAX_UPLOAD_BYTES: usize = 512 * 1024 * 1024;
 
-pub(super) static FTP_HTML: &str =
-    include_str!("../../assets/lan_share/lan_share_ftp.html");
-pub(super) static STREAM_HTML: &str =
-    include_str!("../../assets/lan_share/lan_share_stream.html");
+pub(super) static FTP_HTML: &str = include_str!("../../assets/lan_share/lan_share_ftp.html");
+pub(super) static STREAM_HTML: &str = include_str!("../../assets/lan_share/lan_share_stream.html");
 pub(super) static APP_ICON_PNG: &[u8] = include_bytes!("../../icons/128x128.png");
 
 #[derive(Clone)]

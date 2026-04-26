@@ -19,9 +19,9 @@ mod types;
 
 #[allow(unused_imports)]
 pub use types::{
-    ExtensionCommandComplete, ExtensionCommandProgress, ExtensionCommandResult, ExtensionOperationResult,
-    FetchUrlResult, InstalledExtensionInfo, LocalExtensionInstallResult, PlatformInfo,
-    ReadTextPreviewResult,
+    ExtensionCommandComplete, ExtensionCommandProgress, ExtensionCommandResult,
+    ExtensionOperationResult, FetchUrlResult, InstalledExtensionInfo, LocalExtensionInstallResult,
+    PlatformInfo, ReadTextPreviewResult,
 };
 
 pub use commands::*;

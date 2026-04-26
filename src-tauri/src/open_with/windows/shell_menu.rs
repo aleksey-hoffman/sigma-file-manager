@@ -11,9 +11,8 @@ use windows::core::{HSTRING, PSTR};
 use windows::Win32::Foundation::TRUE;
 use windows::Win32::System::Com::{CoInitializeEx, CoUninitialize, COINIT_APARTMENTTHREADED};
 use windows::Win32::UI::Shell::{
-    IContextMenu, IShellItem, SHCreateItemFromParsingName, ShellExecuteExW,
-    CMINVOKECOMMANDINFOEX, CMF_NORMAL, SEE_MASK_ASYNCOK, SEE_MASK_UNICODE,
-    SHELLEXECUTEINFOW,
+    IContextMenu, IShellItem, SHCreateItemFromParsingName, ShellExecuteExW, CMF_NORMAL,
+    CMINVOKECOMMANDINFOEX, SEE_MASK_ASYNCOK, SEE_MASK_UNICODE, SHELLEXECUTEINFOW,
 };
 use windows::Win32::UI::WindowsAndMessaging::{
     CreatePopupMenu, DestroyMenu, GetMenuItemCount, GetMenuItemInfoW, MENUITEMINFOW, MIIM_BITMAP,
@@ -467,7 +466,8 @@ pub fn invoke_shell_command(
                                             error: None,
                                         },
                                         Err(verb_invoke_err) => {
-                                            let fallback_result = invoke_shell_verb(file_path, verb);
+                                            let fallback_result =
+                                                invoke_shell_verb(file_path, verb);
                                             if fallback_result.success {
                                                 fallback_result
                                             } else {
