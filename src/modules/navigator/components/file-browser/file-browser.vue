@@ -30,6 +30,7 @@ const props = withDefaults(defineProps<{
   hideStatusBar?: boolean;
   entryDescription?: (entry: DirEntry) => string | undefined;
   trackRelativeTime?: boolean;
+  isActivePane?: boolean;
 }>(), {
   tab: undefined,
   paneIndex: undefined,
@@ -38,6 +39,7 @@ const props = withDefaults(defineProps<{
   basePath: undefined,
   entryDescription: undefined,
   trackRelativeTime: true,
+  isActivePane: undefined,
 });
 
 const emit = defineEmits<{
@@ -58,6 +60,7 @@ const fb = useFileBrowser({
   onOpenEntry: entry => emit('openEntry', entry),
   componentRef: fileBrowserRef,
   isDefaultPane: props.paneIndex === 0 || props.paneIndex === undefined,
+  isActivePane: () => props.isActivePane ?? (props.paneIndex === 0 || props.paneIndex === undefined),
 });
 
 const permanentDeleteIsOpen = fb.permanentDeleteConfirm.isOpen;
@@ -90,9 +93,11 @@ provideFileBrowserContext({
 defineExpose({
   rootElement: fileBrowserRef,
   isFilterOpen: fb.isFilterOpen,
+  filterQuery: fb.filterQuery,
   currentPath: fb.currentPath,
   selectedEntries: fb.selectedEntries,
   toggleFilter: fb.toggleFilter,
+  focusFilter: fb.focusFilter,
   openFilter: fb.openFilter,
   closeFilter: fb.closeFilter,
   navigateToPath: fb.navigateToPath,
@@ -127,6 +132,7 @@ defineExpose({
       v-model:path-input="fb.pathInput.value"
       v-model:filter-query="fb.filterQuery.value"
       v-model:is-filter-open="fb.isFilterOpen.value"
+      :focus-filter-input="fb.shouldFocusFilterInput.value"
       :can-go-back="fb.canGoBack.value"
       :can-go-forward="fb.canGoForward.value"
       :can-go-up="!!fb.parentPath.value"
@@ -140,6 +146,7 @@ defineExpose({
       @navigate-to="fb.navigateToPath"
       @create-new-directory="fb.openNewItemDialog('directory')"
       @create-new-file="fb.openNewItemDialog('file')"
+      @filter-input-focused="fb.clearFilterInputFocusRequest"
     />
 
     <FileBrowserContent

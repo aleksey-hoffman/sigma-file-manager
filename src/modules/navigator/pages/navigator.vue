@@ -36,7 +36,10 @@ import type { DirEntry } from '@/types/dir-entry';
 
 type FileBrowserInstance = InstanceType<typeof FileBrowser> & {
   rootElement?: HTMLElement | null;
+  filterQuery?: string;
+  isFilterOpen?: boolean;
   currentPath?: string;
+  focusFilter?: () => void;
   navigateToPath?: (path: string) => Promise<void>;
   openFile?: (path: string) => Promise<void>;
   refresh?: () => void | Promise<void>;
@@ -361,7 +364,7 @@ function handleFilterShortcut() {
   const pane = getActivePaneRef();
 
   if (pane) {
-    pane.toggleFilter();
+    pane.focusFilter?.();
   }
 }
 
@@ -598,15 +601,35 @@ function switchToPane(paneIndex: number): boolean {
   return true;
 }
 
+function hasBlockingDismissalLayersForNavigatorShortcuts(): boolean {
+  for (const layer of dismissalLayerStore.layers.values()) {
+    if (layer.type !== 'filter') {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function hasBlockingRekaDismissableLayersForNavigatorShortcuts(): boolean {
+  const nodes = document.querySelectorAll('[data-dismissable-layer]');
+
+  for (const node of nodes) {
+    if (!node.closest('[data-file-browser-toolbar-filter-popover]')) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 function callActivePaneMethod(method: keyof Pick<
   FileBrowserInstance,
   'navigateUp' | 'navigateDown' | 'navigateLeft' | 'navigateRight' | 'openSelected' | 'navigateBack'
 >): boolean {
-  if (dismissalLayerStore.hasLayers) return false;
+  if (hasBlockingDismissalLayersForNavigatorShortcuts()) return false;
 
-  const hasRekaDismissableLayers = document.querySelectorAll('[data-dismissable-layer]').length > 0;
-
-  if (hasRekaDismissableLayers) return false;
+  if (hasBlockingRekaDismissableLayersForNavigatorShortcuts()) return false;
 
   const pane = getActivePaneRef();
 
@@ -616,6 +639,21 @@ function callActivePaneMethod(method: keyof Pick<
   }
 
   return false;
+}
+
+function handleNavigateBackShortcut(): boolean {
+  const pane = getActivePaneRef();
+
+  if (
+    pane?.isFilterOpen
+    && typeof pane.filterQuery === 'string'
+    && pane.filterQuery.length > 0
+  ) {
+    pane.filterQuery = pane.filterQuery.slice(0, -1);
+    return true;
+  }
+
+  return callActivePaneMethod('navigateBack');
 }
 
 function registerShortcutHandlers() {
@@ -646,7 +684,7 @@ function registerShortcutHandlers() {
   shortcutsStore.registerHandler('navigateLeft', () => callActivePaneMethod('navigateLeft'));
   shortcutsStore.registerHandler('navigateRight', () => callActivePaneMethod('navigateRight'));
   shortcutsStore.registerHandler('openSelected', () => callActivePaneMethod('openSelected'), { checkItemSelected: hasSelectedItems });
-  shortcutsStore.registerHandler('navigateBack', () => callActivePaneMethod('navigateBack'));
+  shortcutsStore.registerHandler('navigateBack', handleNavigateBackShortcut);
   shortcutsStore.registerHandler('switchToLeftPane', () => switchToPane(0));
   shortcutsStore.registerHandler('switchToRightPane', () => switchToPane(1));
   shortcutsStore.registerHandler('toggleSplitView', () => {
@@ -724,6 +762,7 @@ onUnmounted(() => {
                     :pane-index="index"
                     :layout="currentLayout"
                     :track-relative-time="trackNavigatorRelativeTime"
+                    :is-active-pane="activeTabId ? activeTabId === tab.id : index === 0"
                     class="navigator-page__pane"
                     @update:selected-entries="(entries) => handleSelectionChange(entries, tab.id)"
                     @update:current-dir-entry="handleCurrentDirChange"
@@ -744,6 +783,7 @@ onUnmounted(() => {
                   :pane-index="0"
                   :layout="currentLayout"
                   :track-relative-time="trackNavigatorRelativeTime"
+                  :is-active-pane="true"
                   class="navigator-page__pane"
                   @update:selected-entries="(entries) => handleSelectionChange(entries, workspacesStore.currentTabGroup![0].id)"
                   @update:current-dir-entry="handleCurrentDirChange"
@@ -758,6 +798,7 @@ onUnmounted(() => {
                 ref="singlePaneRef"
                 :layout="currentLayout"
                 :track-relative-time="trackNavigatorRelativeTime"
+                :is-active-pane="true"
                 class="navigator-page__pane"
                 @update:selected-entries="(entries) => handleSelectionChange(entries)"
                 @update:current-dir-entry="handleCurrentDirChange"

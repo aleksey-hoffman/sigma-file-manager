@@ -588,21 +588,6 @@
         "traditionalExampleDescription": "تب آپ \"پیچھے\" / \"آگے\" سے پچھلے فولڈرز پر نہیں جا پائیں گے—وہ مٹ چکے ہیں اور سابقات میں صرف 2 فولڈر بچے ہیں:"
       }
     },
-    "input": {
-      "navigator": "نیویگیٹر",
-      "directoryItems": "فولڈر آئٹم",
-      "showHiddenItems": "پوشیدہ اشیاء دکھائیں",
-      "openWithSingleClick": "ایک کلک سے کھولیں",
-      "hold": "دبائے رکھیں",
-      "buttonToSelectWithoutOpening": "بٹن—بغیر کھولے آئٹم چننے کے لیے",
-      "doubleClickDelayMs": "ڈبل کلک تاخیر (میلی)",
-      "inputElements": "ان پٹ عناصر",
-      "activateWhenTyping": "ٹائپ کرتے ہی فلٹر چالو کریں",
-      "activateWhenDirectoryChanges": "فولڈر بدلنے پر فلٹر چالو کریں",
-      "helpers": "مددگار",
-      "spellcheck": "ہجے کی جانچ",
-      "valueRangeFrom200To1000ms": "قدر 200 سے 1000 (میلی) کے درمیان ہونی چاہیے"
-    },
     "mouseButtons": {
       "mouseButtons": "ماؤس بٹن",
       "buttonActions": "بٹن اعمال",
@@ -683,7 +668,6 @@
     "shortcuts": "شارٹ کٹس",
     "performance": "کارکردگی",
     "tabsWorkspaces": "ٹیب",
-    "input": "ان پٹ",
     "search": "تلاش",
     "dataStorage": "ڈیٹا اور اسٹوریج",
     "extensions": "ایکسٹینشن",
@@ -716,8 +700,6 @@
     "workspaces": "ورک اسپیس",
     "tabs": "ٹیب, لے آؤٹ",
     "navigatorHistory": "نیویگیٹر, سابقات",
-    "inputNavigator": "ان پٹ, کلک, ڈبل کلک, ماؤس",
-    "inputElements": "فلٹر, ٹائپنگ, ہجے",
     "mouseButtons": "ماؤس, بٹن",
     "globalSearch": "عالمی تلاش, تلاش, اسکین",
     "stats": "اعداد و شمار, پسندیدہ, ٹیگ, سابقات",

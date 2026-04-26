@@ -569,21 +569,6 @@
         "traditionalExampleDescription": "bạn sẽ KHÔNG thể quay lại lịch sử tới các thư mục trước đó bằng cách nhấn nút \"quay lại\" hoặc \"tiến tới\", vì chúng đã bị ghi đè và lịch sử hiện chỉ có 2 thư mục:"
       }
     },
-    "input": {
-      "navigator": "Hoa tiêu",
-      "directoryItems": "Mục thư mục",
-      "showHiddenItems": "Hiển thị mục ẩn",
-      "openWithSingleClick": "Mở bằng một cú nhấp chuột",
-      "hold": "Giữ",
-      "buttonToSelectWithoutOpening": "nút để chọn mục mà không cần mở",
-      "doubleClickDelayMs": "Độ trễ nhấp đúp (ms)",
-      "inputElements": "Yếu tố đầu vào",
-      "activateWhenTyping": "Kích hoạt tính năng lọc khi nhập",
-      "activateWhenDirectoryChanges": "Kích hoạt tính năng lọc khi thư mục thay đổi",
-      "helpers": "Người trợ giúp",
-      "spellcheck": "kiểm tra chính tả",
-      "valueRangeFrom200To1000ms": "Giá trị phải nằm trong khoảng 200 - 1000 (ms)"
-    },
     "mouseButtons": {
       "mouseButtons": "Nút chuột",
       "buttonActions": "Hành động của nút",
@@ -664,7 +649,6 @@
     "shortcuts": "Lối tắt",
     "performance": "Hiệu suất",
     "tabsWorkspaces": "Tab",
-    "input": "Đầu vào",
     "search": "Tìm kiếm",
     "dataStorage": "Dữ liệu & lưu trữ",
     "stats": "Số liệu thống kê",
@@ -697,8 +681,6 @@
     "workspaces": "không gian làm việc",
     "tabs": "tab, bố cục",
     "navigatorHistory": "điều hướng, điều hướng, lịch sử",
-    "inputNavigator": "nhập, điều hướng, nhấp, đơn, đôi, chuột, độ trễ, mở,",
-    "inputElements": "nhập, lọc, nhập, gõ, thư mục, kiểm tra chính tả",
     "mouseButtons": "chuột, nút, đầu vào, hành động",
     "globalSearch": "toàn cầu, tìm kiếm, tìm, xem, lọc, quét",
     "stats": "thống kê, dữ liệu, người dùng, yêu thích, thẻ, lịch sử, gần đây, bảng điều khiển, lưu trữ",

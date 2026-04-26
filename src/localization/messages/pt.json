@@ -569,21 +569,6 @@
         "traditionalExampleDescription": "Você NÃO poderá voltar no histórico para diretórios anteriores pressionando o botão \"voltar\" ou \"avançar\", pois eles foram sobrescritos e o histórico agora possui apenas 2 diretórios:"
       }
     },
-    "input": {
-      "navigator": "Navegador",
-      "directoryItems": "Itens de diretório",
-      "showHiddenItems": "Mostrar itens ocultos",
-      "openWithSingleClick": "Abra com um clique",
-      "hold": "Segurar",
-      "buttonToSelectWithoutOpening": "botão para selecionar o item sem abri-lo",
-      "doubleClickDelayMs": "Atraso de clique duplo (ms)",
-      "inputElements": "Elementos de entrada",
-      "activateWhenTyping": "Ativar filtragem ao digitar",
-      "activateWhenDirectoryChanges": "Ativar filtragem quando o diretório for alterado",
-      "helpers": "Ajudantes",
-      "spellcheck": "corretor ortográfico",
-      "valueRangeFrom200To1000ms": "O valor deve estar no intervalo 200 - 1000 (ms)"
-    },
     "mouseButtons": {
       "mouseButtons": "Botões do mouse",
       "buttonActions": "Botão de ações",
@@ -664,7 +649,6 @@
     "shortcuts": "Atalhos",
     "performance": "Atuação",
     "tabsWorkspaces": "Guias",
-    "input": "Entrada",
     "search": "Pesquisar",
     "dataStorage": "Armazenamento de dados",
     "stats": "Estatísticas",
@@ -697,8 +681,6 @@
     "workspaces": "espaços de trabalho",
     "tabs": "guias, layout",
     "navigatorHistory": "navegador, navegação, histórico",
-    "inputNavigator": "entrada, navegador, clique, simples, duplo, mouse, atraso, abrir",
-    "inputElements": "entrada, filtragem, tipo, escrita, diretório, verificação ortográfica",
     "mouseButtons": "mouse, botões, entrada, ações",
     "globalSearch": "global, pesquisar, localizar, pesquisar, filtrar, verificar",
     "stats": "estatísticas, dados, usuário, favoritos, etiquetas, histórico, recente, painel, armazenamento",

@@ -569,21 +569,6 @@
         "traditionalExampleDescription": "\"geri dön\" veya \"ileri git\" düğmesine basarak tarihte önceki dizinlere GERİ DÖNEMEZSİNİZ, çünkü bunların üzerine yazıldılar ve geçmişte artık yalnızca 2 dizin var:"
       }
     },
-    "input": {
-      "navigator": "Gezgin",
-      "directoryItems": "Dizin öğeleri",
-      "showHiddenItems": "Gizli Öğeleri Göster",
-      "openWithSingleClick": "Tek tıkla aç",
-      "hold": "Tutmak",
-      "buttonToSelectWithoutOpening": "öğeyi açmadan seçmek için düğme",
-      "doubleClickDelayMs": "Çift tıklama gecikmesi (ms)",
-      "inputElements": "Giriş öğeleri",
-      "activateWhenTyping": "Yazarken filtrelemeyi etkinleştir",
-      "activateWhenDirectoryChanges": "Dizin değiştiğinde filtrelemeyi etkinleştir",
-      "helpers": "Yardımcılar",
-      "spellcheck": "yazım denetimi",
-      "valueRangeFrom200To1000ms": "Değer 200 - 1000 (ms) aralığında olmalıdır"
-    },
     "mouseButtons": {
       "mouseButtons": "Fare düğmeleri",
       "buttonActions": "Düğme eylemleri",
@@ -664,7 +649,6 @@
     "shortcuts": "Kısayollar",
     "performance": "Verim",
     "tabsWorkspaces": "Sekmeler",
-    "input": "Giriş",
     "search": "Arama",
     "dataStorage": "Veri depolama",
     "stats": "İstatistikler",
@@ -697,8 +681,6 @@
     "workspaces": "çalışma alanları",
     "tabs": "sekmeler, düzen",
     "navigatorHistory": "gezgin, navigasyon, geçmiş",
-    "inputNavigator": "giriş, gezgin, tıkla, tek, çift, fare, gecikme, aç",
-    "inputElements": "giriş, filtreleme, yazma, yazma, dizin, yazım denetimi",
     "mouseButtons": "fare, düğmeler, giriş, eylemler",
     "globalSearch": "global, ara, bul, bak, filtrele, tara",
     "stats": "istatistikler, veri, kullanıcı, favoriler, etiketler, geçmiş, son, gösterge paneli, depolama",

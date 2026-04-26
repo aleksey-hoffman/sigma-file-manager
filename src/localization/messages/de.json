@@ -569,21 +569,6 @@
         "traditionalExampleDescription": "Sie können im Verlauf NICHT zu den vorherigen Verzeichnissen zurückkehren, indem Sie die Schaltflächen \"Zurück\" oder \"Vorwärts\" drücken, da diese überschrieben wurden und der Verlauf jetzt nur noch 2 Verzeichnisse enthält:"
       }
     },
-    "input": {
-      "navigator": "Navigator",
-      "directoryItems": "Verzeichniseinträge",
-      "showHiddenItems": "Ausgeblendete Elemente anzeigen",
-      "openWithSingleClick": "Öffnen mit einem Klick",
-      "hold": "Halt",
-      "buttonToSelectWithoutOpening": "Schaltfläche zum Auswählen des Elements, ohne es zu öffnen",
-      "doubleClickDelayMs": "Doppelklick-Verzögerung (ms)",
-      "inputElements": "Eingabeelemente",
-      "activateWhenTyping": "Filterung beim Tippen aktivieren",
-      "activateWhenDirectoryChanges": "Filterung bei Verzeichniswechsel aktivieren",
-      "helpers": "Helfer",
-      "spellcheck": "Rechtschreibprüfung",
-      "valueRangeFrom200To1000ms": "Der Wert sollte im Bereich 200 - 1000 (ms) liegen"
-    },
     "mouseButtons": {
       "mouseButtons": "Maustasten",
       "buttonActions": "Tastenaktionen",
@@ -664,7 +649,6 @@
     "shortcuts": "Tastenkürzel",
     "performance": "Leistung",
     "tabsWorkspaces": "Registerkarten",
-    "input": "Eingang",
     "search": "Suche",
     "dataStorage": "Datenspeicher",
     "stats": "Statistiken",
@@ -697,8 +681,6 @@
     "workspaces": "Arbeitsplätze",
     "tabs": "Tabs, Layout",
     "navigatorHistory": "navigator, navigation, geschichte",
-    "inputNavigator": "Eingabe, Navigator, Klick, Einfach, Doppelt, Maus, Verzögerung, Öffnen,",
-    "inputElements": "Eingabe, Filtern, Typ, Typisierung, Verzeichnis, Rechtschreibprüfung",
     "mouseButtons": "Maus, Tasten, Eingaben, Aktionen",
     "globalSearch": "global, suchen, finden, suchen, filtern, scannen",
     "stats": "Statistiken, Daten, Benutzer, Favoriten, Tags, Verlauf, kürzlich, Dashboard, Speicher",

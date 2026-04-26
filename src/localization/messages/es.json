@@ -569,21 +569,6 @@
         "traditionalExampleDescription": "NO podrá retroceder en el historial a los directorios anteriores presionando el botón \"regresar\" o \"avanzar\", porque se sobrescribieron y el historial ahora solo tiene 2 directorios:"
       }
     },
-    "input": {
-      "navigator": "Navegador",
-      "directoryItems": "Elementos del directorio",
-      "showHiddenItems": "Mostrar elementos ocultos",
-      "openWithSingleClick": "Abrir con un solo clic",
-      "hold": "Mantener",
-      "buttonToSelectWithoutOpening": "botón para seleccionar el elemento sin abrirlo",
-      "doubleClickDelayMs": "Retardo de doble clic (ms)",
-      "inputElements": "Elementos de entrada",
-      "activateWhenTyping": "Activar filtrado al escribir",
-      "activateWhenDirectoryChanges": "Activar filtrado cuando cambia de directorio",
-      "helpers": "Ayudantes",
-      "spellcheck": "corrector ortográfico",
-      "valueRangeFrom200To1000ms": "El valor debe estar en el rango 200 - 1000 (ms)"
-    },
     "mouseButtons": {
       "mouseButtons": "Botones del ratón",
       "buttonActions": "Botón de acciones",
@@ -664,7 +649,6 @@
     "shortcuts": "Accesos directos",
     "performance": "Actuación",
     "tabsWorkspaces": "Pestañas",
-    "input": "Aporte",
     "search": "Buscar",
     "dataStorage": "Almacenamiento de datos",
     "stats": "Estadísticas",
@@ -697,8 +681,6 @@
     "workspaces": "espacios de trabajo",
     "tabs": "pestañas, diseño",
     "navigatorHistory": "navegador, navegación, historial",
-    "inputNavigator": "entrada, navegador, clic, sencillo, doble, ratón, retraso, abierto",
-    "inputElements": "entrada, filtrado, tipo, escritura, directorio, corrector ortográfico",
     "mouseButtons": "ratón, botones, entrada, acciones",
     "globalSearch": "global, buscar, encontrar, buscar, filtrar, escanear",
     "stats": "estadísticas, datos, usuario, favoritos, etiquetas, historial, reciente, panel, almacenamiento",

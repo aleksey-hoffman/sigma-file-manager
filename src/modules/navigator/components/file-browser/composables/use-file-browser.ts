@@ -48,6 +48,7 @@ export interface UseFileBrowserOptions {
   onOpenEntry: (entry: DirEntry) => void;
   componentRef: Ref<HTMLElement | null>;
   isDefaultPane?: boolean;
+  isActivePane?: () => boolean;
 }
 
 interface DataSource {
@@ -74,8 +75,11 @@ interface DataSource {
   silentRefresh: () => void;
   filterQuery: Ref<string>;
   isFilterOpen: Ref<boolean>;
+  shouldFocusFilterInput: Ref<boolean>;
   toggleFilter: () => void;
   openFilter: () => void;
+  focusFilter: () => void;
+  clearFilterInputFocusRequest: () => void;
   closeFilter: () => void;
 }
 
@@ -94,12 +98,12 @@ function setupNavigationDataSource(
   );
 
   const filter = useFileBrowserFilter({
-    userSettingsStore,
     dismissalLayerStore,
     globalSearchStore,
     currentPath: navigation.currentPath,
     componentRef: options.componentRef,
     isDefaultPane: options.isDefaultPane ?? true,
+    isActivePane: options.isActivePane,
   });
 
   const showHiddenFiles = computed(() => userSettingsStore.userSettings.navigator.showHiddenFiles);
@@ -150,8 +154,11 @@ function setupNavigationDataSource(
     silentRefresh: navigation.silentRefresh,
     filterQuery: filter.filterQuery,
     isFilterOpen: filter.isFilterOpen,
+    shouldFocusFilterInput: filter.shouldFocusFilterInput,
     toggleFilter: filter.toggleFilter,
     openFilter: filter.openFilter,
+    focusFilter: filter.focusFilter,
+    clearFilterInputFocusRequest: filter.clearFilterInputFocusRequest,
     closeFilter: filter.closeFilter,
   };
 }
@@ -203,8 +210,11 @@ function setupExternalDataSource(options: UseFileBrowserOptions): DataSource {
     },
     filterQuery: ref(''),
     isFilterOpen: ref(false),
+    shouldFocusFilterInput: ref(false),
     toggleFilter: () => {},
     openFilter: () => {},
+    focusFilter: () => {},
+    clearFilterInputFocusRequest: () => {},
     closeFilter: () => {},
   };
 }
@@ -351,6 +361,19 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
     }
   }
 
+  watch([dataSource.filterQuery, dataSource.entries], ([filterQuery, entries]) => {
+    if (!filterQuery.trim()) {
+      return;
+    }
+
+    if (entries.length === 0) {
+      selection.clearSelection();
+      return;
+    }
+
+    selection.selectEntryByPath(entries[0].path);
+  });
+
   if (!isExternalMode) {
     onMounted(() => {
       registerNavigationProvider({
@@ -401,8 +424,11 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
 
     filterQuery: dataSource.filterQuery,
     isFilterOpen: dataSource.isFilterOpen,
+    shouldFocusFilterInput: dataSource.shouldFocusFilterInput,
     toggleFilter: dataSource.toggleFilter,
     openFilter: dataSource.openFilter,
+    focusFilter: dataSource.focusFilter,
+    clearFilterInputFocusRequest: dataSource.clearFilterInputFocusRequest,
     closeFilter: dataSource.closeFilter,
 
     selectedEntries: selection.selectedEntries,

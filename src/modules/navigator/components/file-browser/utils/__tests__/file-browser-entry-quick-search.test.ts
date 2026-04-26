@@ -96,10 +96,10 @@ describe('fileBrowserEntryMatchesQuickSearch', () => {
     expect(fileBrowserEntryMatchesQuickSearch(entry, 'items', store)).toBe(true);
   });
 
-  it('matches by path segment', () => {
+  it('does not match by path segment without a property prefix', () => {
     const entry = createFileEntry({ path: 'C:/Users/projects/demo.txt' });
     const store = createMockDirSizesStore();
-    expect(fileBrowserEntryMatchesQuickSearch(entry, 'projects', store)).toBe(true);
+    expect(fileBrowserEntryMatchesQuickSearch(entry, 'projects', store)).toBe(false);
   });
 
   it('matches by formatted date only, not raw timestamp', () => {

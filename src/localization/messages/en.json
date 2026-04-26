@@ -588,21 +588,6 @@
         "traditionalExampleDescription": "you will NOT be able to go back in history to the previous directories by pressing \"go back\" or \"go forward\" button, because they were overwritten and the history now only has 2 directories:"
       }
     },
-    "input": {
-      "navigator": "Navigator",
-      "directoryItems": "Directory items",
-      "showHiddenItems": "Show Hidden Items",
-      "openWithSingleClick": "Open with single click",
-      "hold": "Hold",
-      "buttonToSelectWithoutOpening": "button to select the item without opening it",
-      "doubleClickDelayMs": "Double-click delay (ms)",
-      "inputElements": "Input elements",
-      "activateWhenTyping": "Activate filtering when typing",
-      "activateWhenDirectoryChanges": "Activate filtering when directory changes",
-      "helpers": "Helpers",
-      "spellcheck": "Spellcheck",
-      "valueRangeFrom200To1000ms": "The value should be in range 200 - 1000 (ms)"
-    },
     "mouseButtons": {
       "mouseButtons": "Mouse buttons",
       "buttonActions": "Button actions",
@@ -683,7 +668,6 @@
     "shortcuts": "Shortcuts",
     "performance": "Performance",
     "tabsWorkspaces": "Tabs",
-    "input": "Input",
     "search": "Search",
     "dataStorage": "Data & storage",
     "extensions": "Extensions",
@@ -716,8 +700,6 @@
     "workspaces": "workspaces",
     "tabs": "tabs, layout",
     "navigatorHistory": "navigator, navigation, history",
-    "inputNavigator": "input, navigator, click, single, double, mouse, delay, open,",
-    "inputElements": "input, filtering, type, typing, directory, spellcheck",
     "mouseButtons": "mouse, buttons, input, actions",
     "globalSearch": "global, search, find, look, filter, scan",
     "stats": "stats, data, user, favorites, tags, history, recent, dashboard, storage",

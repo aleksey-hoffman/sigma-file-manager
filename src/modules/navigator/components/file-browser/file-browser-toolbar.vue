@@ -18,6 +18,7 @@ defineProps<{
   canGoUp: boolean;
   isLoading: boolean;
   isFilterOpen: boolean;
+  focusFilterInput: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -33,6 +34,7 @@ const emit = defineEmits<{
   (event: 'navigateTo', path: string): void;
   (event: 'createNewDirectory'): void;
   (event: 'createNewFile'): void;
+  (event: 'filterInputFocused'): void;
 }>();
 
 function handleAddressBarNavigate(path: string) {
@@ -67,8 +69,10 @@ function handleAddressBarNavigate(path: string) {
       <FileBrowserToolbarFilter
         :filter-query="filterQuery"
         :is-filter-open="isFilterOpen"
+        :focus-input="focusFilterInput"
         @update:filter-query="emit('update:filterQuery', $event)"
         @update:is-filter-open="emit('update:isFilterOpen', $event)"
+        @filter-input-focused="emit('filterInputFocused')"
       />
       <FileBrowserCurrentDirMenu />
     </div>

@@ -89,7 +89,6 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
       showHiddenFiles: false,
       useSystemIconsForDirectories: false,
       useSystemIconsForFiles: false,
-      focusFilterOnTyping: true,
       listColumnVisibility: {
         items: true,
         size: true,

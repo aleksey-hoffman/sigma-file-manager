@@ -569,21 +569,6 @@
         "traditionalExampleDescription": "NON sarà possibile tornare indietro nella cronologia alle cartelle precedenti premendo il pulsante \"indietro\" o \"avanti\", perché sono state sovrascritte e la cronologia ora ha solo 2 cartelle:"
       }
     },
-    "input": {
-      "navigator": "Navigatore",
-      "directoryItems": "Voci delle cartelle",
-      "showHiddenItems": "Mostra elementi nascosti",
-      "openWithSingleClick": "Apri con un singolo click",
-      "hold": "Tieni premuto",
-      "buttonToSelectWithoutOpening": "il tasto per selezionare un elemento senza aprirlo",
-      "doubleClickDelayMs": "Ritardo del doppio click (ms)",
-      "inputElements": "Elementi di input",
-      "activateWhenTyping": "Attiva il filtraggio durante la digitazione",
-      "activateWhenDirectoryChanges": "Attiva il filtraggio quando la directory cambia",
-      "helpers": "Aiutanti",
-      "spellcheck": "Controllo ortografico",
-      "valueRangeFrom200To1000ms": "Il valore deve essere compreso tra 200 - 1000 (ms)"
-    },
     "mouseButtons": {
       "mouseButtons": "Pulsanti del mouse",
       "buttonActions": "Azioni dei pulsanti",
@@ -664,7 +649,6 @@
     "shortcuts": "Scorciatoie",
     "performance": "Prestazioni",
     "tabsWorkspaces": "Schede",
-    "input": "Input",
     "search": "Ricerca",
     "dataStorage": "Dati & archiviazione",
     "stats": "Statistiche",
@@ -697,8 +681,6 @@
     "workspaces": "spazi di lavoro",
     "tabs": "schede, layout",
     "navigatorHistory": "navigatore, navigazione, cronologia",
-    "inputNavigator": "input, navigatore, click, singolo, doppio, mouse, ritardo, apertura,",
-    "inputElements": "input, filtraggio, tipo, digitazione, cartella, controllo ortografico",
     "mouseButtons": "mouse, tasti, input, azioni",
     "globalSearch": "globale, ricerca, trova, visualizza, filtra, scansiona",
     "stats": "statistiche, dati, utente, preferiti, etichette, cronologia, recente, dashboard, archiviazione",

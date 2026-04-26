@@ -569,21 +569,6 @@
         "traditionalExampleDescription": "「戻る」または 「進む」ボタンを押しても、履歴を以前のディレクトリに戻すことはできません。これらのディレクトリは上書きされており、履歴には 2 つのディレクトリしかないためです:"
       }
     },
-    "input": {
-      "navigator": "ナビゲーター",
-      "directoryItems": "ディレクトリ項目",
-      "showHiddenItems": "隠しアイテムを表示",
-      "openWithSingleClick": "シングルクリックで開く",
-      "hold": "所有",
-      "buttonToSelectWithoutOpening": "アイテムを開かずに選択するボタン",
-      "doubleClickDelayMs": "ダブルクリック遅延 (ミリ秒)",
-      "inputElements": "入力要素",
-      "activateWhenTyping": "入力時にフィルタリングを有効にする",
-      "activateWhenDirectoryChanges": "ディレクトリの変更時にフィルタリングを有効にする",
-      "helpers": "ヘルパー",
-      "spellcheck": "スペルチェック",
-      "valueRangeFrom200To1000ms": "値は 200 ～ 1000 (ミリ秒) の範囲内である必要があります"
-    },
     "mouseButtons": {
       "mouseButtons": "マウスボタン",
       "buttonActions": "ボタンアクション",
@@ -664,7 +649,6 @@
     "shortcuts": "ショートカット",
     "performance": "パフォーマンス",
     "tabsWorkspaces": "タブ",
-    "input": "入力",
     "search": "検索",
     "dataStorage": "データとストレージ",
     "stats": "統計",
@@ -697,8 +681,6 @@
     "workspaces": "ワークスペース",
     "tabs": "タブ、レイアウト",
     "navigatorHistory": "ナビゲーター、ナビゲーション、履歴",
-    "inputNavigator": "インプット、ナビゲーター、クリック、シングル、ダブル、マウス、ディレイ、オープン",
-    "inputElements": "入力、フィルタリング、タイプ、入力、ディレクトリ、スペルチェック",
     "mouseButtons": "マウス、ボタン、入力、アクション",
     "globalSearch": "グローバル、検索、検索、検索、フィルター、スキャン",
     "stats": "統計、データ、ユーザー、お気に入り、タグ、履歴、最近、ダッシュボード、ストレージ",

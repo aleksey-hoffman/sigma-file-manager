@@ -204,6 +204,7 @@ function isDirLoadingWithProgress(entry: DirEntry): boolean {
   border-radius: 8px;
   background: hsl(var(--background-2));
   cursor: default;
+  scroll-margin-top: calc(var(--file-browser-grid-section-header-height) + 8px);
   text-align: left;
 }
 

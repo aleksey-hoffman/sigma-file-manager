@@ -30,6 +30,7 @@ defineProps<{
   font-size: 12px;
   font-weight: 500;
   gap: 8px;
+  line-height: 1rem;
   text-transform: uppercase;
 }
 

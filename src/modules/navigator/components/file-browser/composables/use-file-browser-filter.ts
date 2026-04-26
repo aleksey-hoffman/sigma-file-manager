@@ -9,35 +9,30 @@ import type { DismissalLayerType } from '@/stores/runtime/dismissal-layer';
 type DismissalLayerStore = {
   registerLayer: (type: DismissalLayerType, dismiss: () => void, priority?: number, customId?: string) => string;
   unregisterLayer: (id: string) => void;
-  hasLayers: boolean;
+  layers: Map<string, { type: DismissalLayerType }>;
+  hasLayerOfType: (type: DismissalLayerType) => boolean;
 };
 
 type GlobalSearchStore = {
   isOpen: boolean;
 };
 
-type UserSettingsStore = {
-  userSettings: {
-    navigator: {
-      focusFilterOnTyping: boolean;
-    };
-  };
-};
-
 export function useFileBrowserFilter(options: {
-  userSettingsStore: UserSettingsStore;
   dismissalLayerStore: DismissalLayerStore;
   globalSearchStore: GlobalSearchStore;
   currentPath?: Ref<string>;
   componentRef?: Ref<HTMLElement | null>;
   isDefaultPane?: boolean;
+  isActivePane?: () => boolean;
 }) {
   const filterQuery = ref('');
   const isFilterOpen = ref(false);
+  const shouldFocusFilterInput = ref(false);
   const filterDismissalLayerId = ref<string | null>(null);
 
   function closeFilter() {
     isFilterOpen.value = false;
+    shouldFocusFilterInput.value = false;
     filterQuery.value = '';
   }
 
@@ -54,7 +49,21 @@ export function useFileBrowserFilter(options: {
       return;
     }
 
+    shouldFocusFilterInput.value = false;
     isFilterOpen.value = true;
+  }
+
+  function focusFilter() {
+    if (options.globalSearchStore.isOpen) {
+      return;
+    }
+
+    shouldFocusFilterInput.value = true;
+    isFilterOpen.value = true;
+  }
+
+  function clearFilterInputFocusRequest() {
+    shouldFocusFilterInput.value = false;
   }
 
   function isCursorInsideTextField(): boolean {
@@ -71,41 +80,121 @@ export function useFileBrowserFilter(options: {
     return isTextInput || isContentEditable;
   }
 
-  function handleKeydownForFilter(event: KeyboardEvent) {
-    if (!options.userSettingsStore.userSettings.navigator.focusFilterOnTyping) {
+  function isActiveInThisFileBrowserPane(): boolean {
+    const rootEl = options.componentRef?.value;
+    const activeElement = document.activeElement;
+    const isActivePane = options.isActivePane?.() ?? (options.isDefaultPane ?? true);
+
+    if (!rootEl) {
+      return isActivePane;
+    }
+
+    if (activeElement && rootEl.contains(activeElement)) {
+      return true;
+    }
+
+    const focusInAnyPane = Array.from(document.querySelectorAll('.file-browser')).some(
+      paneEl => paneEl.contains(activeElement),
+    );
+
+    if (focusInAnyPane) {
+      return false;
+    }
+
+    return isActivePane;
+  }
+
+  function hasBlockingRekaDismissableLayers(): boolean {
+    const nodes = document.querySelectorAll('[data-dismissable-layer]');
+
+    for (const node of nodes) {
+      if (!node.closest('[data-file-browser-toolbar-filter-popover]')) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  function hasBlockingDismissalLayers(): boolean {
+    for (const layer of options.dismissalLayerStore.layers.values()) {
+      if (layer.type !== 'filter') {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  function isFilterTypingKey(key: string): boolean {
+    return /^[a-z0-9]$/i.test(key);
+  }
+
+  function shouldApplyKeyToFilterQuery(event: KeyboardEvent): boolean {
+    if (event.ctrlKey || event.altKey || event.metaKey) {
+      return false;
+    }
+
+    if (event.key === 'Backspace') {
+      return isFilterOpen.value;
+    }
+
+    return isFilterTypingKey(event.key);
+  }
+
+  function applyKeyToFilterQuery(event: KeyboardEvent) {
+    if (event.key === 'Backspace') {
+      filterQuery.value = filterQuery.value.slice(0, -1);
+      event.preventDefault();
       return;
     }
 
+    if (isFilterTypingKey(event.key)) {
+      filterQuery.value += event.key;
+      event.preventDefault();
+    }
+  }
+
+  function handleKeydownForFilter(event: KeyboardEvent) {
     if (isCursorInsideTextField()) {
       return;
     }
 
-    if (options.dismissalLayerStore.hasLayers) {
+    if (options.dismissalLayerStore.hasLayerOfType('drag')) {
       return;
     }
 
-    const hasRekaDismissableLayers = document.querySelectorAll('[data-dismissable-layer]').length > 0;
+    const extendOpenFilter = isFilterOpen.value && shouldApplyKeyToFilterQuery(event);
 
-    if (hasRekaDismissableLayers) {
+    if (extendOpenFilter) {
+      if (hasBlockingRekaDismissableLayers()) {
+        return;
+      }
+
+      if (!isActiveInThisFileBrowserPane()) {
+        return;
+      }
+
+      applyKeyToFilterQuery(event);
       return;
     }
 
-    const keyIsAlphaNum = (event.keyCode >= 48 && event.keyCode <= 90);
-    const hasModifiers = event.ctrlKey || event.altKey || event.shiftKey || event.metaKey;
+    if (hasBlockingDismissalLayers()) {
+      return;
+    }
 
-    if (keyIsAlphaNum && !hasModifiers) {
-      const rootEl = options.componentRef?.value;
-      const activeElement = document.activeElement;
-      const focusInAnyPane = Array.from(document.querySelectorAll('.file-browser')).some(
-        paneEl => paneEl.contains(activeElement),
-      );
-      const isDefaultPane = options.isDefaultPane ?? true;
+    if (hasBlockingRekaDismissableLayers()) {
+      return;
+    }
 
-      if (rootEl && !rootEl.contains(activeElement) && (focusInAnyPane || !isDefaultPane)) {
+    if (shouldApplyKeyToFilterQuery(event)) {
+      if (!isActiveInThisFileBrowserPane()) {
         return;
       }
 
       openFilter();
+      filterQuery.value += event.key;
+      event.preventDefault();
     }
   }
 
@@ -123,6 +212,7 @@ export function useFileBrowserFilter(options: {
         filterDismissalLayerId.value = null;
       }
 
+      shouldFocusFilterInput.value = false;
       filterQuery.value = '';
     }
   });
@@ -156,8 +246,11 @@ export function useFileBrowserFilter(options: {
   return {
     filterQuery,
     isFilterOpen,
+    shouldFocusFilterInput,
     toggleFilter,
     openFilter,
+    focusFilter,
+    clearFilterInputFocusRequest,
     closeFilter,
   };
 }

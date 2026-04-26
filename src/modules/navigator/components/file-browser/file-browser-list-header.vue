@@ -220,6 +220,7 @@ function toggleColumnVisibility(column: 'items' | 'size' | 'modified', checked: 
   font-size: 12px;
   font-weight: 500;
   grid-template-columns: var(--file-browser-list-columns);
+  line-height: 1rem;
   text-transform: uppercase;
 }
 

@@ -13,7 +13,6 @@ import AppearanceCategory from './categories/appearance/index.vue';
 import ExperimentalCategory from './categories/experimental/index.vue';
 import ExtensionsCategory from './categories/extensions/index.vue';
 import GeneralCategory from './categories/general/index.vue';
-import InputCategory from './categories/input/index.vue';
 import SearchCategory from './categories/search/index.vue';
 import ShortcutsCategory from './categories/shortcuts/index.vue';
 import StatsCategory from './categories/stats/index.vue';
@@ -34,7 +33,6 @@ const categoryComponentMap: Record<string, unknown> = {
   general: GeneralCategory,
   appearance: AppearanceCategory,
   experimental: ExperimentalCategory,
-  input: InputCategory,
   search: SearchCategory,
   shortcuts: ShortcutsCategory,
   tabs: TabsCategory,

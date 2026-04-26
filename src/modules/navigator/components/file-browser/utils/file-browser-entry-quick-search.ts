@@ -40,8 +40,6 @@ export function buildFileBrowserQuickSearchHaystack(entry: DirEntry, dirSizesSto
     parts.push(extensionLower, `.${extensionLower}`);
   }
 
-  parts.push(entry.path.toLowerCase());
-
   if (entry.mime) {
     parts.push(entry.mime.toLowerCase());
   }

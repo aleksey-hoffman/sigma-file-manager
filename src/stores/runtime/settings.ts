@@ -28,10 +28,6 @@ export interface SettingsTab {
   labelKey: string;
 }
 
-function normalizeSettingsTabName(tabName: string): string {
-  return tabName === 'advanced' ? 'experimental' : tabName;
-}
-
 const settingsTabs: SettingsTab[] = [
   {
     name: 'general',
@@ -48,10 +44,6 @@ const settingsTabs: SettingsTab[] = [
   {
     name: 'tabs',
     labelKey: 'settingsTabs.tabsWorkspaces',
-  },
-  {
-    name: 'input',
-    labelKey: 'settingsTabs.input',
   },
   {
     name: 'search',
@@ -74,6 +66,10 @@ const settingsTabs: SettingsTab[] = [
     labelKey: 'settingsTabs.experimental',
   },
 ];
+
+function normalizeSettingsTabName(tabName: string): string {
+  return settingsTabs.some(tab => tab.name === tabName) ? tabName : 'general';
+}
 
 function getNestedValue(obj: Record<string, unknown>, path: string): string | undefined {
   const keys = path.split('.');
@@ -129,15 +125,10 @@ export const useSettingsStore = defineStore('settings', () => {
   const isInitialized = ref(false);
 
   const tabs = computed(() =>
-    settingsTabs
-      .filter((tab) => {
-        if (tab.name !== 'advanced') return true;
-        return sections.value.some(section => section.category === 'advanced');
-      })
-      .map(tab => ({
-        name: tab.name,
-        label: t(tab.labelKey),
-      })),
+    settingsTabs.map(tab => ({
+      name: tab.name,
+      label: t(tab.labelKey),
+    })),
   );
 
   async function init() {
@@ -162,7 +153,6 @@ export const useSettingsStore = defineStore('settings', () => {
       { default: TooltipsSection },
       { default: GlobalSearchSection },
       { default: ShortcutsSection },
-      { default: FilterOnTypingSection },
       { default: UserDataSection },
       { default: DriveDetectionSection },
       { default: AutoplaySection },
@@ -189,7 +179,6 @@ export const useSettingsStore = defineStore('settings', () => {
       import('@/modules/settings/ui/categories/appearance/tooltips.vue'),
       import('@/modules/settings/ui/categories/search/global-search.vue'),
       import('@/modules/settings/ui/categories/shortcuts/shortcuts.vue'),
-      import('@/modules/settings/ui/categories/input/filter-on-typing.vue'),
       import('@/modules/settings/ui/categories/stats/user-data.vue'),
       import('@/modules/settings/ui/categories/storage/drive-detection.vue'),
       import('@/modules/settings/ui/categories/storage/autoplay.vue'),
@@ -336,13 +325,6 @@ export const useSettingsStore = defineStore('settings', () => {
         tags: 'settingsTags.shortcuts',
         component: markRaw(ShortcutsSection),
         category: 'shortcuts',
-      },
-      {
-        key: 'filterOnTyping',
-        titleKey: 'settings.input.activateWhenTyping',
-        tags: 'settingsTags.inputElements',
-        component: markRaw(FilterOnTypingSection),
-        category: 'input',
       },
       {
         key: 'lastTabCloseBehavior',

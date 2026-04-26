@@ -86,6 +86,8 @@ const listColumnsTemplate = computed(() => {
   --file-browser-list-row-padding-x: 16px;
   --file-browser-list-header-padding-x: 16px;
   --file-browser-list-header-padding-y: 10px;
+  --file-browser-list-header-height: calc((var(--file-browser-list-header-padding-y) * 2) + 1rem + 1px);
+  --file-browser-grid-section-header-height: calc(8px + 2px + 1rem + 16px);
   --file-browser-list-column-gap: 16px;
   --file-browser-scrollbar-gutter: 24px;
   --file-browser-list-columns: minmax(300px, 1fr) minmax(70px, 90px) minmax(50px, 100px) minmax(60px, 160px);

@@ -237,7 +237,6 @@ export type UserSettingsNavigator = {
   showHiddenFiles: boolean;
   useSystemIconsForDirectories: boolean;
   useSystemIconsForFiles: boolean;
-  focusFilterOnTyping: boolean;
   listColumnVisibility: ListColumnVisibility;
   listSortColumn: ListSortColumn | null;
   listSortDirection: ListSortDirection;

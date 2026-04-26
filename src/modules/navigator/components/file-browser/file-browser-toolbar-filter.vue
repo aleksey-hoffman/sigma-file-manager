@@ -4,7 +4,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, nextTick, ref, watch } from 'vue';
 import type { ComponentPublicInstance } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Button } from '@/components/ui/button';
@@ -28,11 +28,13 @@ import {
 const props = defineProps<{
   filterQuery: string;
   isFilterOpen: boolean;
+  focusInput: boolean;
 }>();
 
 const emit = defineEmits<{
   (event: 'update:filterQuery', value: string): void;
   (event: 'update:isFilterOpen', value: boolean): void;
+  (event: 'filterInputFocused'): void;
 }>();
 
 const { t } = useI18n();
@@ -41,12 +43,22 @@ const shortcutsStore = useShortcutsStore();
 const filterInputRef = ref<InstanceType<typeof Input> | null>(null);
 const filterTriggerRef = ref<HTMLElement | ComponentPublicInstance | null>(null);
 const isPropertyPanelOpen = ref(false);
+const shouldFocusOnButtonOpen = ref(false);
 
 const activeProperty = computed(() => parseQuickSearchQuery(props.filterQuery.trim()).property);
 
-watch(() => props.isFilterOpen, (open) => {
+watch(() => [props.isFilterOpen, props.focusInput] as const, async ([open, focusInput]) => {
   if (!open) {
     isPropertyPanelOpen.value = false;
+    shouldFocusOnButtonOpen.value = false;
+    return;
+  }
+
+  if (focusInput || shouldFocusOnButtonOpen.value) {
+    await nextTick();
+    filterInputRef.value?.$el?.focus();
+    shouldFocusOnButtonOpen.value = false;
+    emit('filterInputFocused');
   }
 });
 
@@ -71,7 +83,6 @@ function tooltipForProperty(property: QuickSearchProperty): string {
 
 function handleFilterAutoFocus(event: Event) {
   event.preventDefault();
-  filterInputRef.value?.$el?.focus();
 }
 
 function clearFilter() {
@@ -81,6 +92,12 @@ function clearFilter() {
 
 function handleFilterQueryUpdate(value: string | number | undefined) {
   emit('update:filterQuery', String(value ?? ''));
+}
+
+function handleFilterButtonClick() {
+  if (!props.isFilterOpen) {
+    shouldFocusOnButtonOpen.value = true;
+  }
 }
 
 function getFilterTriggerElement(): HTMLElement | null {
@@ -133,6 +150,7 @@ function selectProperty(property: QuickSearchProperty) {
             size="icon"
             class="file-browser-toolbar-filter__button"
             :class="{ 'file-browser-toolbar-filter__button--active': filterQuery }"
+            @click="handleFilterButtonClick"
           >
             <TextSearchIcon class="file-browser-toolbar-filter__icon" />
           </Button>
@@ -145,8 +163,9 @@ function selectProperty(property: QuickSearchProperty) {
         </div>
       </TooltipContent>
       <PopoverContent
-        :side="'bottom'"
-        :align="'end'"
+        data-file-browser-toolbar-filter-popover
+        :side="'left'"
+        :align="'center'"
         class="file-browser-toolbar-filter__popover"
         @open-auto-focus="handleFilterAutoFocus"
         @close-auto-focus.prevent
@@ -256,18 +275,18 @@ function selectProperty(property: QuickSearchProperty) {
 .file-browser-toolbar-filter__field-row {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
 }
 
 .file-browser-toolbar-filter__input {
   min-width: 0;
-  height: 36px;
+  height: 28px;
   flex: 1 1 auto;
 }
 
 .file-browser-toolbar-filter__suffix-btn {
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   flex-shrink: 0;
 }
 
@@ -284,9 +303,9 @@ function selectProperty(property: QuickSearchProperty) {
 }
 
 .file-browser-toolbar-filter__property-panel {
-  padding-top: 10px;
+  padding: 4px;
   border-top: 1px solid hsl(var(--border) / 50%);
-  margin-top: 10px;
+  margin-top: 4px;
 }
 
 .file-browser-toolbar-filter__property-panel-title {
@@ -334,7 +353,7 @@ function selectProperty(property: QuickSearchProperty) {
 <style>
 .file-browser-toolbar-filter__popover.sigma-ui-popover-content {
   width: min(340px, calc(100vw - 32px));
-  padding: 8px;
+  padding: 4px;
 }
 
 .file-browser-toolbar-filter__property-tooltip.sigma-ui-tooltip-content {

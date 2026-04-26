@@ -568,21 +568,6 @@
         "traditionalExampleDescription": "شما نمی توانید با فشار دادن دکمه \"go back\" یا \"go forward\" به تاریخچه به دایرکتوری های قبلی برگردید، زیرا آنها رونویسی شده اند و تاریخ اکنون فقط 2 فهرست دارد:"
       }
     },
-    "input": {
-      "navigator": "ناوبر",
-      "directoryItems": "اقلام دایرکتوری",
-      "showHiddenItems": "نمایش موارد پنهان",
-      "openWithSingleClick": "باز کردن با یک کلیک",
-      "hold": "نگه دار",
-      "buttonToSelectWithoutOpening": "دکمه برای انتخاب مورد بدون باز کردن آن",
-      "doubleClickDelayMs": "تاخیر دوبار کلیک (ms)",
-      "inputElements": "عناصر ورودی",
-      "activateWhenTyping": "فعال کردن فیلتر هنگام تایپ کردن",
-      "activateWhenDirectoryChanges": "فعال کردن فیلتر در هنگام تغییر دایرکتوری",
-      "helpers": "یاوران",
-      "spellcheck": "بررسی املا",
-      "valueRangeFrom200To1000ms": "مقدار باید در محدوده 200 - 1000 (ms) باشد"
-    },
     "mouseButtons": {
       "mouseButtons": "دکمه های ماوس",
       "buttonActions": "عملکردهای دکمه",
@@ -663,7 +648,6 @@
     "shortcuts": "میانبرها",
     "performance": "کارایی",
     "tabsWorkspaces": "برگه ها",
-    "input": "ورودی",
     "search": "جستجو کردن",
     "dataStorage": "داده ها و ذخیره سازی",
     "stats": "آمار",
@@ -696,8 +680,6 @@
     "workspaces": "فضاهای کاری",
     "tabs": "برگه ها، طرح بندی",
     "navigatorHistory": "ناوبر، ناوبری، تاریخ",
-    "inputNavigator": "ورودی، ناوبر، کلیک، تک، دوتایی، ماوس، تاخیر، باز کردن،",
-    "inputElements": "ورودی، فیلتر کردن، نوع، تایپ، دایرکتوری، بررسی املا",
     "mouseButtons": "ماوس، دکمه ها، ورودی، اقدامات",
     "globalSearch": "جهانی، جستجو، یافتن، جستجو، فیلتر، اسکن",
     "stats": "آمار، داده، کاربر، موارد دلخواه، برچسب ها، تاریخچه، اخیر، داشبورد، ذخیره سازی",

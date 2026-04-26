@@ -588,21 +588,6 @@
         "traditionalExampleDescription": "NE boste mogli iti nazaj v zgodovino do prejšnjih map s pritiskom na gumb \"nazaj\" ali \"naprej\", ker so bili prepisani in zgodovina zdaj vsebuje le 2 mapi:"
       }
     },
-    "input": {
-      "navigator": "Navigator",
-      "directoryItems": "Predmeti mape",
-      "showHiddenItems": "Pokaži skrite predmete",
-      "openWithSingleClick": "Odpri z enim klikom",
-      "hold": "Zadrži",
-      "buttonToSelectWithoutOpening": "gumb za izbiranje predmeta brez odpiranja",
-      "doubleClickDelayMs": "Zakasnitev dvojnega klika (ms)",
-      "inputElements": "Vnosni elementi",
-      "activateWhenTyping": "Aktiviraj filtriranje med tipkanjem",
-      "activateWhenDirectoryChanges": "Aktiviraj filtriranje ob spremembi mape",
-      "helpers": "Pomočniki",
-      "spellcheck": "Preverjanje črkovanja",
-      "valueRangeFrom200To1000ms": "Vrednost mora biti v razponu 200 - 1000 (ms)"
-    },
     "mouseButtons": {
       "mouseButtons": "Miškini gumbi",
       "buttonActions": "Dejanja gumbov",
@@ -683,7 +668,6 @@
     "shortcuts": "Bližnjice",
     "performance": "Zmogljivost",
     "tabsWorkspaces": "Zavihki",
-    "input": "Vnos",
     "search": "Iskanje",
     "dataStorage": "Podatki & shranjevanje",
     "stats": "Statistika",
@@ -716,8 +700,6 @@
     "workspaces": "workspaces",
     "tabs": "tabs, layout",
     "navigatorHistory": "navigator, navigation, history",
-    "inputNavigator": "input, navigator, click, single, double, mouse, delay, open,",
-    "inputElements": "input, filtering, type, typing, directory, spellcheck",
     "mouseButtons": "mouse, buttons, input, actions",
     "globalSearch": "global, search, find, look, filter, scan",
     "stats": "stats, data, user, favorites, tags, history, recent, dashboard, storage",
