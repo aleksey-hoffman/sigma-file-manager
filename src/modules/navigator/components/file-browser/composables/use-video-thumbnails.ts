@@ -25,16 +25,22 @@ interface VideoThumbnailRequest {
   targetSize: VideoThumbnailSize;
 }
 
-function normalizeVideoThumbnailSize(targetSize?: VideoThumbnailSize): VideoThumbnailSize {
+function normalizeVideoThumbnailDimension(dimension: number | undefined, fallbackDimension: number): number {
+  if (!dimension || !Number.isFinite(dimension)) {
+    return fallbackDimension;
+  }
+
+  return Math.max(1, Math.round(dimension));
+}
+
+export function normalizeVideoThumbnailSize(targetSize?: VideoThumbnailSize): VideoThumbnailSize {
+  const width = normalizeVideoThumbnailDimension(targetSize?.width, DEFAULT_VIDEO_THUMBNAIL_SIZE.width);
+  const height = normalizeVideoThumbnailDimension(targetSize?.height, DEFAULT_VIDEO_THUMBNAIL_SIZE.height);
+  const scale = Math.min(1, MAX_VIDEO_THUMBNAIL_DIMENSION / Math.max(width, height));
+
   return {
-    width: Math.min(
-      MAX_VIDEO_THUMBNAIL_DIMENSION,
-      Math.max(1, Math.round(targetSize?.width || DEFAULT_VIDEO_THUMBNAIL_SIZE.width)),
-    ),
-    height: Math.min(
-      MAX_VIDEO_THUMBNAIL_DIMENSION,
-      Math.max(1, Math.round(targetSize?.height || DEFAULT_VIDEO_THUMBNAIL_SIZE.height)),
-    ),
+    width: Math.max(1, Math.round(width * scale)),
+    height: Math.max(1, Math.round(height * scale)),
   };
 }
 
