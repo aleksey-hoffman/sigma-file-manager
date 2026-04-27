@@ -206,12 +206,15 @@ const { clockRef: listModifiedClock } = useRelativeDateDisplayClock(shouldTrackL
 .file-browser-list-view__entry {
   position: relative;
   display: grid;
+  min-height: var(--navigator-list-view-entry-height);
   padding: var(--file-browser-list-row-padding-y) var(--file-browser-list-row-padding-x);
   border: none;
   border-bottom: 1px solid hsl(var(--border) / 50%);
   background: transparent;
   color: hsl(var(--foreground));
   column-gap: var(--file-browser-list-column-gap);
+  contain-intrinsic-size: auto var(--navigator-list-view-entry-height);
+  content-visibility: auto;
   cursor: default;
   font-size: 13px;
   grid-template-columns: var(--file-browser-list-columns);

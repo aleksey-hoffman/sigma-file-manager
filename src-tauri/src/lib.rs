@@ -14,6 +14,7 @@ mod dir_watcher;
 mod extensions;
 mod file_operations;
 mod global_search;
+mod image_thumbnails;
 mod lan_share;
 mod open_with;
 mod process_runner;
@@ -273,6 +274,7 @@ pub fn run() {
             global_search::global_search_index_paths,
             global_search::global_search_query,
             global_search::global_search_query_paths,
+            image_thumbnails::generate_image_thumbnail,
             open_with::get_associated_programs,
             open_with::open_with_program,
             open_with::open_with_default,

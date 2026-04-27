@@ -4,10 +4,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useI18n } from 'vue-i18n';
-import { FileVideoIcon, LoaderCircleIcon } from '@lucide/vue';
+import { FileImageIcon, FileVideoIcon, LoaderCircleIcon } from '@lucide/vue';
 import type { DirEntry } from '@/types/dir-entry';
 import { formatBytes } from './utils';
 import { useClipboardStore } from '@/stores/runtime/clipboard';
@@ -16,6 +16,11 @@ import { Skeleton } from '@/components/ui/skeleton';
 import FileBrowserEntryIcon from './file-browser-entry-icon.vue';
 import { useFileBrowserContext } from './composables/use-file-browser-context';
 import { getImageSrc } from './utils';
+
+const DEFAULT_GRID_THUMBNAIL_SIZE = {
+  width: 340,
+  height: 240,
+};
 
 const props = defineProps<{
   entry: DirEntry;
@@ -27,6 +32,11 @@ const clipboardStore = useClipboardStore();
 const dirSizesStore = useDirSizesStore();
 const { clipboardItems, clipboardType, isToolbarSuppressed } = storeToRefs(clipboardStore);
 const { t } = useI18n();
+const previewRef = ref<HTMLElement | null>(null);
+const previewSize = ref(DEFAULT_GRID_THUMBNAIL_SIZE);
+const isPreviewInLoadRange = ref(false);
+let previewResizeObserver: ResizeObserver | null = null;
+let previewIntersectionObserver: IntersectionObserver | null = null;
 
 const clipboardPathsMap = computed(() => {
   if (isToolbarSuppressed.value) {
@@ -41,6 +51,101 @@ const clipboardPathsMap = computed(() => {
 
   return map;
 });
+const imageThumbnailMaxDimension = computed(() => Math.max(previewSize.value.width, previewSize.value.height));
+const canUseOriginalImagePreview = computed(() => props.entry.ext?.toLowerCase() === 'svg');
+const imagePreviewSrc = computed(() => {
+  if (props.variant !== 'image' || !isPreviewInLoadRange.value) {
+    return undefined;
+  }
+
+  return ctx.getImageThumbnail(props.entry, imageThumbnailMaxDimension.value)
+    ?? (canUseOriginalImagePreview.value ? getImageSrc(props.entry) : undefined);
+});
+const videoThumbnail = computed(() => {
+  if (props.variant !== 'video' || !isPreviewInLoadRange.value) {
+    return undefined;
+  }
+
+  return ctx.getVideoThumbnail(props.entry, previewSize.value);
+});
+
+function shouldLoadPreviewNearViewport(): boolean {
+  return props.variant === 'image' || props.variant === 'video';
+}
+
+function getDevicePixelRatio(): number {
+  if (typeof window === 'undefined') {
+    return 1;
+  }
+
+  return Math.max(1, window.devicePixelRatio || 1);
+}
+
+function getMeasuredPreviewSize(): {
+  width: number;
+  height: number;
+} | null {
+  const previewElement = previewRef.value;
+
+  if (!previewElement) {
+    return null;
+  }
+
+  const pixelRatio = getDevicePixelRatio();
+  const measuredWidth = Math.round(previewElement.clientWidth * pixelRatio);
+  const measuredHeight = Math.round(previewElement.clientHeight * pixelRatio);
+
+  if (measuredWidth <= 0 || measuredHeight <= 0) {
+    return null;
+  }
+
+  return {
+    width: measuredWidth,
+    height: measuredHeight,
+  };
+}
+
+function updatePreviewSize(): void {
+  const measuredSize = getMeasuredPreviewSize();
+
+  if (!measuredSize) {
+    return;
+  }
+
+  if (
+    previewSize.value.width === measuredSize.width
+    && previewSize.value.height === measuredSize.height
+  ) {
+    return;
+  }
+
+  previewSize.value = measuredSize;
+}
+
+function disconnectPreviewIntersectionObserver(): void {
+  previewIntersectionObserver?.disconnect();
+  previewIntersectionObserver = null;
+}
+
+function startPreviewResizeObserver(): void {
+  if (previewResizeObserver || typeof ResizeObserver === 'undefined' || !previewRef.value) {
+    return;
+  }
+
+  previewResizeObserver = new ResizeObserver(updatePreviewSize);
+  previewResizeObserver.observe(previewRef.value);
+}
+
+function markPreviewInLoadRange(): void {
+  if (isPreviewInLoadRange.value) {
+    return;
+  }
+
+  updatePreviewSize();
+  isPreviewInLoadRange.value = true;
+  startPreviewResizeObserver();
+  disconnectPreviewIntersectionObserver();
+}
 
 function handleEntryKeydown(event: KeyboardEvent): void {
   if (event.code === 'Space') {
@@ -82,6 +187,33 @@ function isDirLoadingWithProgress(entry: DirEntry): boolean {
   const sizeInfo = dirSizesStore.getSize(entry.path);
   return !!(sizeInfo && sizeInfo.status === 'Loading' && sizeInfo.size > 0);
 }
+
+onMounted(() => {
+  if (!shouldLoadPreviewNearViewport()) {
+    return;
+  }
+
+  if (typeof IntersectionObserver === 'undefined' || !previewRef.value) {
+    markPreviewInLoadRange();
+    return;
+  }
+
+  previewIntersectionObserver = new IntersectionObserver((entries) => {
+    if (entries.some(entry => entry.isIntersecting)) {
+      markPreviewInLoadRange();
+    }
+  }, {
+    rootMargin: '800px 0px',
+    threshold: 0,
+  });
+  previewIntersectionObserver.observe(previewRef.value);
+});
+
+onBeforeUnmount(() => {
+  disconnectPreviewIntersectionObserver();
+  previewResizeObserver?.disconnect();
+  previewResizeObserver = null;
+});
 </script>
 
 <template>
@@ -92,8 +224,8 @@ function isDirLoadingWithProgress(entry: DirEntry): boolean {
       `file-browser-grid-card--${props.variant}`,
       {
         'file-browser-grid-card--hidden': props.entry.is_hidden,
-        'file-browser-grid-card--image': props.variant === 'video' && ctx.getVideoThumbnail(props.entry),
-        'file-browser-grid-card--icon-full': props.variant === 'other' || (props.variant === 'video' && !ctx.getVideoThumbnail(props.entry)),
+        'file-browser-grid-card--image': props.variant === 'video' && videoThumbnail,
+        'file-browser-grid-card--icon-full': props.variant === 'other' || (props.variant === 'video' && !videoThumbnail),
       },
     ]"
     :data-entry-path="props.entry.path"
@@ -113,26 +245,36 @@ function isDirLoadingWithProgress(entry: DirEntry): boolean {
       <div class="file-browser-grid-card__overlay file-browser-grid-card__overlay--hover" />
     </div>
 
-    <div class="file-browser-grid-card__preview">
+    <div
+      ref="previewRef"
+      class="file-browser-grid-card__preview"
+    >
       <FileBrowserEntryIcon
         v-if="props.variant === 'dir'"
         :entry="props.entry"
         :size="24"
         class="file-browser-grid-card__icon file-browser-grid-card__icon--folder"
       />
-      <img
-        v-else-if="props.variant === 'image'"
-        :src="getImageSrc(props.entry)"
-        :alt="props.entry.name"
-        class="file-browser-grid-card__image"
-        loading="lazy"
-      >
+      <template v-else-if="props.variant === 'image'">
+        <img
+          v-if="imagePreviewSrc"
+          :src="imagePreviewSrc"
+          :alt="props.entry.name"
+          class="file-browser-grid-card__image animate-fade-in-x2"
+          loading="lazy"
+        >
+        <FileImageIcon
+          v-else
+          :size="48"
+          class="file-browser-grid-card__icon"
+        />
+      </template>
       <template v-else-if="props.variant === 'video'">
         <img
-          v-if="ctx.getVideoThumbnail(props.entry)"
-          :src="ctx.getVideoThumbnail(props.entry)"
+          v-if="videoThumbnail"
+          :src="videoThumbnail"
           :alt="props.entry.name"
-          class="file-browser-grid-card__image"
+          class="file-browser-grid-card__image animate-fade-in-x2"
         >
         <FileVideoIcon
           v-else
@@ -200,10 +342,13 @@ function isDirLoadingWithProgress(entry: DirEntry): boolean {
   position: relative;
   display: flex;
   overflow: hidden;
+  height: var(--navigator-grid-view-entry-height);
   flex-direction: column;
   border: 1px solid hsl(var(--border));
   border-radius: 8px;
   background: hsl(var(--background-2));
+  contain-intrinsic-size: auto var(--navigator-grid-view-entry-height);
+  content-visibility: auto;
   cursor: default;
   scroll-margin-top: calc(var(--file-browser-grid-section-header-height) + 8px);
   text-align: left;
@@ -218,10 +363,11 @@ function isDirLoadingWithProgress(entry: DirEntry): boolean {
 }
 
 .file-browser-grid-card--dir {
-  height: 52px;
+  height: var(--navigator-grid-view-dir-entry-height);
   flex-direction: row;
   align-items: center;
   padding: 8px 12px;
+  contain-intrinsic-size: auto var(--navigator-grid-view-dir-entry-height);
   gap: 10px;
 }
 
@@ -247,7 +393,7 @@ function isDirLoadingWithProgress(entry: DirEntry): boolean {
 .file-browser-grid-card--image,
 .file-browser-grid-card--video,
 .file-browser-grid-card--other {
-  height: 120px;
+  height: var(--navigator-grid-view-entry-height);
 }
 
 .file-browser-grid-card__preview {

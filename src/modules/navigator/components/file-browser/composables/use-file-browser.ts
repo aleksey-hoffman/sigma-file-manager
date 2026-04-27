@@ -35,6 +35,7 @@ import { useFileBrowserKeyboardNavigation } from './use-file-browser-keyboard-na
 import { useFileBrowserLifecycle } from './use-file-browser-lifecycle';
 import { useFileBrowserDrag } from './use-file-browser-drag';
 import { useFileBrowserExternalDrop } from './use-file-browser-external-drop';
+import { useImageThumbnails } from './use-image-thumbnails';
 import { useVideoThumbnails } from './use-video-thumbnails';
 import { sortFileBrowserEntries } from '@/modules/navigator/components/file-browser/utils/file-browser-sort';
 import { getFileBrowserGridEntryOrder } from '../file-browser-entry-groups';
@@ -269,7 +270,16 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
 
   const videoThumbnails = !isExternalMode
     ? useVideoThumbnails()
-    : { getVideoThumbnail: () => undefined };
+    : {
+        getVideoThumbnail: () => undefined,
+        clearThumbnails: () => undefined,
+      };
+  const imageThumbnails = !isExternalMode
+    ? useImageThumbnails()
+    : {
+        getImageThumbnail: () => undefined,
+        clearThumbnails: () => undefined,
+      };
 
   const dialogs = useFileBrowserDialogs({
     renameState: selection.renameState,
@@ -398,6 +408,8 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
     });
 
     watch(dataSource.currentPath, (newPath) => {
+      imageThumbnails.clearThumbnails();
+      videoThumbnails.clearThumbnails();
       emitPathChange(newPath);
     });
 
@@ -461,6 +473,7 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
     handleConflictCancel: selection.handleConflictCancel,
     permanentDeleteConfirm: selection.permanentDeleteConfirm,
 
+    getImageThumbnail: imageThumbnails.getImageThumbnail,
     getVideoThumbnail: videoThumbnails.getVideoThumbnail,
     entriesContainerRef,
     setEntriesContainerRef,

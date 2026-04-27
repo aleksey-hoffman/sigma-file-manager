@@ -7,13 +7,77 @@ import { convertFileSrc } from '@tauri-apps/api/core';
 import type { DirEntry } from '@/types/dir-entry';
 
 const MAX_CONCURRENT_THUMBNAILS = 3;
+const DEFAULT_VIDEO_THUMBNAIL_SIZE = {
+  width: 340,
+  height: 240,
+};
+
+export interface VideoThumbnailSize {
+  width: number;
+  height: number;
+}
+
+interface VideoThumbnailRequest {
+  generation: number;
+  videoPath: string;
+  thumbnailKey: string;
+  targetSize: VideoThumbnailSize;
+}
+
+function normalizeVideoThumbnailSize(targetSize?: VideoThumbnailSize): VideoThumbnailSize {
+  return {
+    width: Math.max(1, Math.round(targetSize?.width || DEFAULT_VIDEO_THUMBNAIL_SIZE.width)),
+    height: Math.max(1, Math.round(targetSize?.height || DEFAULT_VIDEO_THUMBNAIL_SIZE.height)),
+  };
+}
+
+function getVideoThumbnailKey(videoPath: string, targetSize: VideoThumbnailSize): string {
+  return `${videoPath}|${targetSize.width}x${targetSize.height}`;
+}
+
+function getProcessingVideoThumbnailKey(thumbnailKey: string, generation: number): string {
+  return `${generation}|${thumbnailKey}`;
+}
+
+function getCoverDrawRect(
+  sourceWidth: number,
+  sourceHeight: number,
+  targetWidth: number,
+  targetHeight: number,
+) {
+  const sourceAspectRatio = sourceWidth / sourceHeight;
+  const targetAspectRatio = targetWidth / targetHeight;
+
+  if (sourceAspectRatio > targetAspectRatio) {
+    const drawHeight = targetHeight;
+    const drawWidth = drawHeight * sourceAspectRatio;
+
+    return {
+      drawX: (targetWidth - drawWidth) / 2,
+      drawY: 0,
+      drawWidth,
+      drawHeight,
+    };
+  }
+
+  const drawWidth = targetWidth;
+  const drawHeight = drawWidth / sourceAspectRatio;
+
+  return {
+    drawX: 0,
+    drawY: (targetHeight - drawHeight) / 2,
+    drawWidth,
+    drawHeight,
+  };
+}
 
 export function useVideoThumbnails() {
   const videoThumbnails = ref<Record<string, string>>({});
-  const thumbnailQueue: string[] = [];
+  const thumbnailQueue: VideoThumbnailRequest[] = [];
   const processingThumbnails = new Set<string>();
+  let thumbnailGeneration = 0;
 
-  function processVideoThumbnail(videoPath: string): Promise<void> {
+  function processVideoThumbnail(request: VideoThumbnailRequest): Promise<void> {
     return new Promise((resolve) => {
       const video = document.createElement('video');
       video.preload = 'metadata';
@@ -22,7 +86,7 @@ export function useVideoThumbnails() {
       video.crossOrigin = 'anonymous';
 
       function cleanup() {
-        processingThumbnails.delete(videoPath);
+        processingThumbnails.delete(getProcessingVideoThumbnailKey(request.thumbnailKey, request.generation));
         video.src = '';
         video.remove();
         resolve();
@@ -35,24 +99,39 @@ export function useVideoThumbnails() {
 
       video.onseeked = () => {
         const canvas = document.createElement('canvas');
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        const ctx = canvas.getContext('2d');
+        canvas.width = request.targetSize.width;
+        canvas.height = request.targetSize.height;
+        const canvasContext = canvas.getContext('2d');
 
-        if (ctx && canvas.width > 0 && canvas.height > 0) {
-          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        if (canvasContext && video.videoWidth > 0 && video.videoHeight > 0) {
+          const drawRect = getCoverDrawRect(
+            video.videoWidth,
+            video.videoHeight,
+            canvas.width,
+            canvas.height,
+          );
+          canvasContext.drawImage(
+            video,
+            drawRect.drawX,
+            drawRect.drawY,
+            drawRect.drawWidth,
+            drawRect.drawHeight,
+          );
           const thumbnail = canvas.toDataURL('image/jpeg', 0.7);
-          videoThumbnails.value = {
-            ...videoThumbnails.value,
-            [videoPath]: thumbnail,
-          };
+
+          if (request.generation === thumbnailGeneration) {
+            videoThumbnails.value = {
+              ...videoThumbnails.value,
+              [request.thumbnailKey]: thumbnail,
+            };
+          }
         }
 
         cleanup();
       };
 
       video.onerror = cleanup;
-      video.src = convertFileSrc(videoPath);
+      video.src = convertFileSrc(request.videoPath);
     });
   }
 
@@ -61,35 +140,48 @@ export function useVideoThumbnails() {
       return;
     }
 
-    const nextPath = thumbnailQueue.shift();
+    const nextRequest = thumbnailQueue.shift();
 
-    if (!nextPath) {
+    if (!nextRequest) {
       return;
     }
 
-    if (videoThumbnails.value[nextPath] || processingThumbnails.has(nextPath)) {
+    if (
+      videoThumbnails.value[nextRequest.thumbnailKey]
+      || processingThumbnails.has(getProcessingVideoThumbnailKey(nextRequest.thumbnailKey, nextRequest.generation))
+    ) {
       processNextThumbnail();
       return;
     }
 
-    processingThumbnails.add(nextPath);
-    processVideoThumbnail(nextPath);
+    processingThumbnails.add(getProcessingVideoThumbnailKey(nextRequest.thumbnailKey, nextRequest.generation));
+    processVideoThumbnail(nextRequest);
   }
 
-  async function generateVideoThumbnail(videoPath: string): Promise<string> {
-    if (videoThumbnails.value[videoPath] || processingThumbnails.has(videoPath)) {
-      return videoThumbnails.value[videoPath] || '';
+  async function generateVideoThumbnail(videoPath: string, targetSize?: VideoThumbnailSize): Promise<string> {
+    const normalizedTargetSize = normalizeVideoThumbnailSize(targetSize);
+    const thumbnailKey = getVideoThumbnailKey(videoPath, normalizedTargetSize);
+    const requestGeneration = thumbnailGeneration;
+    const processingKey = getProcessingVideoThumbnailKey(thumbnailKey, requestGeneration);
+
+    if (videoThumbnails.value[thumbnailKey] || processingThumbnails.has(processingKey)) {
+      return videoThumbnails.value[thumbnailKey] || '';
     }
 
     if (processingThumbnails.size >= MAX_CONCURRENT_THUMBNAILS) {
-      if (!thumbnailQueue.includes(videoPath)) {
-        thumbnailQueue.push(videoPath);
+      if (!thumbnailQueue.some(request => request.thumbnailKey === thumbnailKey)) {
+        thumbnailQueue.push({
+          generation: requestGeneration,
+          videoPath,
+          thumbnailKey,
+          targetSize: normalizedTargetSize,
+        });
       }
 
       return '';
     }
 
-    processingThumbnails.add(videoPath);
+    processingThumbnails.add(processingKey);
 
     return new Promise((resolve) => {
       const video = document.createElement('video');
@@ -99,7 +191,7 @@ export function useVideoThumbnails() {
       video.crossOrigin = 'anonymous';
 
       function cleanup() {
-        processingThumbnails.delete(videoPath);
+        processingThumbnails.delete(processingKey);
         video.src = '';
         video.remove();
         processNextThumbnail();
@@ -111,17 +203,33 @@ export function useVideoThumbnails() {
 
       video.onseeked = () => {
         const canvas = document.createElement('canvas');
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        const ctx = canvas.getContext('2d');
+        canvas.width = normalizedTargetSize.width;
+        canvas.height = normalizedTargetSize.height;
+        const canvasContext = canvas.getContext('2d');
 
-        if (ctx && canvas.width > 0 && canvas.height > 0) {
-          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        if (canvasContext && video.videoWidth > 0 && video.videoHeight > 0) {
+          const drawRect = getCoverDrawRect(
+            video.videoWidth,
+            video.videoHeight,
+            canvas.width,
+            canvas.height,
+          );
+          canvasContext.drawImage(
+            video,
+            drawRect.drawX,
+            drawRect.drawY,
+            drawRect.drawWidth,
+            drawRect.drawHeight,
+          );
           const thumbnail = canvas.toDataURL('image/jpeg', 0.7);
-          videoThumbnails.value = {
-            ...videoThumbnails.value,
-            [videoPath]: thumbnail,
-          };
+
+          if (requestGeneration === thumbnailGeneration) {
+            videoThumbnails.value = {
+              ...videoThumbnails.value,
+              [thumbnailKey]: thumbnail,
+            };
+          }
+
           resolve(thumbnail);
         }
         else {
@@ -140,17 +248,21 @@ export function useVideoThumbnails() {
     });
   }
 
-  function getVideoThumbnail(entry: DirEntry): string | undefined {
-    const cached = videoThumbnails.value[entry.path];
+  function getVideoThumbnail(entry: DirEntry, targetSize?: VideoThumbnailSize): string | undefined {
+    const normalizedTargetSize = normalizeVideoThumbnailSize(targetSize);
+    const thumbnailKey = getVideoThumbnailKey(entry.path, normalizedTargetSize);
+    const cached = videoThumbnails.value[thumbnailKey];
+    const processingKey = getProcessingVideoThumbnailKey(thumbnailKey, thumbnailGeneration);
 
-    if (!cached && !processingThumbnails.has(entry.path)) {
-      generateVideoThumbnail(entry.path);
+    if (!cached && !processingThumbnails.has(processingKey)) {
+      generateVideoThumbnail(entry.path, normalizedTargetSize);
     }
 
     return cached;
   }
 
   function clearThumbnails() {
+    thumbnailGeneration += 1;
     videoThumbnails.value = {};
     thumbnailQueue.length = 0;
   }

@@ -27,6 +27,9 @@
   --info-panel-sub-header-height: 16px;
   --info-panel-properties-header-height: 36px;
   --navigator-sorting-header-height: 36px;
+  --navigator-list-view-entry-height: 42px;
+  --navigator-grid-view-dir-entry-height: 52px;
+  --navigator-grid-view-entry-height: 120px;
   --tab-height: calc(var(--window-toolbar-height) - 16px);
   --control-button-width: 46px;
   --dir-entry-transition: all 0.3s ease-in-out;

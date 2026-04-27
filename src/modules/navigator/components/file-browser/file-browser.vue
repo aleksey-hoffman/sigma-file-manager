@@ -75,6 +75,7 @@ provideFileBrowserContext({
   selectedEntries: fb.selectedEntries,
   isEntrySelected: fb.isEntrySelected,
   contextMenu: fb.contextMenu,
+  getImageThumbnail: fb.getImageThumbnail,
   getVideoThumbnail: fb.getVideoThumbnail,
   setEntriesContainerRef: fb.setEntriesContainerRef,
   onEntryMouseDown: fb.onEntryMouseDown,
