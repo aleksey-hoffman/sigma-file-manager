@@ -7,7 +7,7 @@ use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Mutex;
 
-use image::imageops::FilterType;
+use image::{imageops::FilterType, ImageReader, Limits};
 use once_cell::sync::Lazy;
 use sha2::{Digest, Sha256};
 use tauri::Manager;
@@ -20,6 +20,10 @@ const MAX_THUMBNAIL_MAX_DIMENSION: u32 = 1024;
 const MAX_THUMBNAIL_CACHE_ITEM_COUNT: usize = 5000;
 const MAX_THUMBNAIL_CACHE_SIZE_BYTES: u64 = 1024 * 1024 * 1024;
 const THUMBNAIL_CACHE_LIMIT_CHECK_INTERVAL: usize = 100;
+const MAX_THUMBNAIL_SOURCE_FILE_SIZE_BYTES: u64 = 128 * 1024 * 1024;
+const MAX_THUMBNAIL_SOURCE_DIMENSION: u32 = 32_768;
+const MAX_THUMBNAIL_SOURCE_PIXELS: u64 = 50_000_000;
+const MAX_THUMBNAIL_DECODE_ALLOCATION_BYTES: u64 = 192 * 1024 * 1024;
 
 static IMAGE_THUMBNAIL_CACHE_FILE_LOCK: Lazy<Mutex<()>> = Lazy::new(|| Mutex::new(()));
 static IMAGE_THUMBNAIL_CACHE_MAINTENANCE: Lazy<Mutex<ThumbnailCacheMaintenanceState>> =
@@ -189,6 +193,56 @@ fn temporary_thumbnail_path(thumbnail_path: &Path) -> PathBuf {
     thumbnail_path.with_extension(format!("tmp-{temporary_id}"))
 }
 
+fn thumbnail_decode_limits() -> Limits {
+    let mut limits = Limits::default();
+    limits.max_image_width = Some(MAX_THUMBNAIL_SOURCE_DIMENSION);
+    limits.max_image_height = Some(MAX_THUMBNAIL_SOURCE_DIMENSION);
+    limits.max_alloc = Some(MAX_THUMBNAIL_DECODE_ALLOCATION_BYTES);
+    limits
+}
+
+fn validate_image_thumbnail_source(
+    source_size: u64,
+    width: u32,
+    height: u32,
+) -> Result<(), String> {
+    if source_size > MAX_THUMBNAIL_SOURCE_FILE_SIZE_BYTES {
+        return Err("Image is too large to thumbnail".to_string());
+    }
+
+    let pixel_count = u64::from(width).saturating_mul(u64::from(height));
+
+    if width == 0 || height == 0 || pixel_count > MAX_THUMBNAIL_SOURCE_PIXELS {
+        return Err("Image dimensions are too large to thumbnail".to_string());
+    }
+
+    Ok(())
+}
+
+fn image_dimensions(source_path: &Path) -> Result<(u32, u32), String> {
+    let mut reader = ImageReader::open(source_path)
+        .map_err(|error| format!("Failed to open image thumbnail source: {error}"))?
+        .with_guessed_format()
+        .map_err(|error| format!("Failed to detect image thumbnail format: {error}"))?;
+    reader.limits(thumbnail_decode_limits());
+
+    reader
+        .into_dimensions()
+        .map_err(|error| format!("Failed to read image thumbnail dimensions: {error}"))
+}
+
+fn decode_image_thumbnail_source(source_path: &Path) -> Result<image::DynamicImage, String> {
+    let mut reader = ImageReader::open(source_path)
+        .map_err(|error| format!("Failed to open image thumbnail source: {error}"))?
+        .with_guessed_format()
+        .map_err(|error| format!("Failed to detect image thumbnail format: {error}"))?;
+    reader.limits(thumbnail_decode_limits());
+
+    reader
+        .decode()
+        .map_err(|error| format!("Failed to decode image thumbnail source: {error}"))
+}
+
 fn generate_image_thumbnail_file(
     cache_dir: PathBuf,
     path: String,
@@ -235,8 +289,10 @@ fn generate_image_thumbnail_file(
         }
     }
 
-    let image = image::open(source_path)
-        .map_err(|error| format!("Failed to decode image thumbnail source: {error}"))?;
+    let (source_width, source_height) = image_dimensions(source_path)?;
+    validate_image_thumbnail_source(source_metadata.len(), source_width, source_height)?;
+
+    let image = decode_image_thumbnail_source(source_path)?;
     let thumbnail = image.resize(max_dimension, max_dimension, FilterType::Triangle);
     let temporary_path = temporary_thumbnail_path(&thumbnail_path);
 
@@ -293,8 +349,10 @@ mod tests {
     use super::{
         enforce_thumbnail_cache_limits, generate_image_thumbnail_file,
         normalize_thumbnail_max_dimension, path_is_same_or_descendant, thumbnail_cache_key,
-        thumbnail_cache_stats, DEFAULT_THUMBNAIL_MAX_DIMENSION, MAX_THUMBNAIL_CACHE_ITEM_COUNT,
-        MAX_THUMBNAIL_CACHE_SIZE_BYTES, MAX_THUMBNAIL_MAX_DIMENSION, MIN_THUMBNAIL_MAX_DIMENSION,
+        thumbnail_cache_stats, validate_image_thumbnail_source, DEFAULT_THUMBNAIL_MAX_DIMENSION,
+        MAX_THUMBNAIL_CACHE_ITEM_COUNT, MAX_THUMBNAIL_CACHE_SIZE_BYTES,
+        MAX_THUMBNAIL_MAX_DIMENSION, MAX_THUMBNAIL_SOURCE_FILE_SIZE_BYTES,
+        MAX_THUMBNAIL_SOURCE_PIXELS, MIN_THUMBNAIL_MAX_DIMENSION,
     };
     use std::fs;
     use std::fs::File;
@@ -361,6 +419,22 @@ mod tests {
             result,
             thumbnail_path.canonicalize().unwrap().to_string_lossy()
         );
+    }
+
+    #[test]
+    fn thumbnail_source_size_is_limited() {
+        let result =
+            validate_image_thumbnail_source(MAX_THUMBNAIL_SOURCE_FILE_SIZE_BYTES + 1, 100, 100);
+
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn thumbnail_source_dimensions_are_limited() {
+        let oversized_height = (MAX_THUMBNAIL_SOURCE_PIXELS / 100) + 1;
+        let result = validate_image_thumbnail_source(1024, 100, oversized_height as u32);
+
+        assert!(result.is_err());
     }
 
     #[test]

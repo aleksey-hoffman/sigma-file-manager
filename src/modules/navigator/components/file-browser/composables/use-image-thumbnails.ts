@@ -9,7 +9,7 @@ import type { DirEntry } from '@/types/dir-entry';
 const DEFAULT_IMAGE_THUMBNAIL_MAX_DIMENSION = 384;
 const MIN_IMAGE_THUMBNAIL_MAX_DIMENSION = 64;
 const MAX_IMAGE_THUMBNAIL_MAX_DIMENSION = 1024;
-const MAX_CONCURRENT_IMAGE_THUMBNAILS = 8;
+const MAX_CONCURRENT_IMAGE_THUMBNAILS = 3;
 const UNSUPPORTED_IMAGE_THUMBNAIL_EXTENSIONS = new Set(['svg']);
 
 interface ImageThumbnailRequest {

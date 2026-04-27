@@ -11,6 +11,7 @@ const DEFAULT_VIDEO_THUMBNAIL_SIZE = {
   width: 340,
   height: 240,
 };
+const MAX_VIDEO_THUMBNAIL_DIMENSION = 512;
 
 export interface VideoThumbnailSize {
   width: number;
@@ -26,8 +27,14 @@ interface VideoThumbnailRequest {
 
 function normalizeVideoThumbnailSize(targetSize?: VideoThumbnailSize): VideoThumbnailSize {
   return {
-    width: Math.max(1, Math.round(targetSize?.width || DEFAULT_VIDEO_THUMBNAIL_SIZE.width)),
-    height: Math.max(1, Math.round(targetSize?.height || DEFAULT_VIDEO_THUMBNAIL_SIZE.height)),
+    width: Math.min(
+      MAX_VIDEO_THUMBNAIL_DIMENSION,
+      Math.max(1, Math.round(targetSize?.width || DEFAULT_VIDEO_THUMBNAIL_SIZE.width)),
+    ),
+    height: Math.min(
+      MAX_VIDEO_THUMBNAIL_DIMENSION,
+      Math.max(1, Math.round(targetSize?.height || DEFAULT_VIDEO_THUMBNAIL_SIZE.height)),
+    ),
   };
 }
 
