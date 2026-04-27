@@ -191,6 +191,36 @@ describe('shortcuts store', () => {
     expect(executeCommandMock).not.toHaveBeenCalled();
   });
 
+  it('executes a registered shortcut action without matching keyboard keys', async () => {
+    userSettingsStoreMock.userSettings.shortcuts = {
+      toggleCommandPalette: {
+        ctrl: true,
+        alt: true,
+        key: 'k',
+      },
+    };
+
+    const shortcutsStore = useShortcutsStore();
+    const toggleCommandPaletteHandler = vi.fn();
+
+    shortcutsStore.registerHandler('toggleCommandPalette', toggleCommandPaletteHandler);
+
+    const defaultShortcutEvent = new KeyboardEvent('keydown', {
+      key: 'P',
+      code: 'KeyP',
+      ctrlKey: true,
+      shiftKey: true,
+      bubbles: true,
+      cancelable: true,
+    });
+
+    await expect(shortcutsStore.handleKeydown(defaultShortcutEvent)).resolves.toBe(false);
+    expect(toggleCommandPaletteHandler).not.toHaveBeenCalled();
+
+    await expect(shortcutsStore.executeShortcut('toggleCommandPalette')).resolves.toBe(true);
+    expect(toggleCommandPaletteHandler).toHaveBeenCalledTimes(1);
+  });
+
   it('executes extension shortcuts from the effective extensions store keybindings', async () => {
     const shortcutsStore = useShortcutsStore();
 

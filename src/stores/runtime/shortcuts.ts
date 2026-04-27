@@ -846,6 +846,7 @@ function isDialogOpened(): boolean {
 }
 
 type ShortcutHandler = () => void | boolean | Promise<void | boolean>;
+type ShortcutHandlerResult = ReturnType<ShortcutHandler>;
 
 type HandlerRegistration = {
   handler: ShortcutHandler;
@@ -956,6 +957,32 @@ export const useShortcutsStore = defineStore('shortcuts', () => {
     isShortcutCaptureActive.value = isActive;
   }
 
+  function callShortcutHandler(shortcutId: ShortcutId): ShortcutHandlerResult | null {
+    const definition = getShortcutDefinition(shortcutId);
+    if (!definition) return null;
+
+    const registration = handlers.value.get(shortcutId);
+    if (!registration) return null;
+
+    if (!checkConditions(definition, registration)) {
+      return null;
+    }
+
+    return registration.handler();
+  }
+
+  async function executeShortcut(shortcutId: ShortcutId): Promise<boolean> {
+    const result = callShortcutHandler(shortcutId);
+    if (result === null) return false;
+
+    if (result instanceof Promise) {
+      const asyncResult = await result;
+      return asyncResult !== false;
+    }
+
+    return result !== false;
+  }
+
   function findMatchingShortcut(event: KeyboardEvent): ShortcutId | null {
     for (const definition of definitions.value) {
       const keys = getShortcutKeys(definition.id);
@@ -1063,17 +1090,8 @@ export const useShortcutsStore = defineStore('shortcuts', () => {
     if (matchingShortcutIds.length === 0) return false;
 
     for (const shortcutId of matchingShortcutIds) {
-      const definition = getShortcutDefinition(shortcutId);
-      if (!definition) continue;
-
-      const registration = handlers.value.get(shortcutId);
-      if (!registration) continue;
-
-      if (!checkConditions(definition, registration)) {
-        continue;
-      }
-
-      const result = registration.handler();
+      const result = callShortcutHandler(shortcutId);
+      if (result === null) continue;
 
       if (result instanceof Promise) {
         event.preventDefault();
@@ -1157,6 +1175,7 @@ export const useShortcutsStore = defineStore('shortcuts', () => {
     registerHandler,
     unregisterHandler,
     setShortcutCaptureActive,
+    executeShortcut,
     findMatchingShortcut,
     findConflictingShortcut,
     handleKeydown,

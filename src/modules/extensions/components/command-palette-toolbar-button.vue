@@ -14,16 +14,8 @@ import { useShortcutsStore } from '@/stores/runtime/shortcuts';
 const { t } = useI18n();
 const shortcutsStore = useShortcutsStore();
 
-function handleClick() {
-  const keyboardEvent = new KeyboardEvent('keydown', {
-    key: 'P',
-    ctrlKey: true,
-    shiftKey: true,
-    bubbles: true,
-    cancelable: true,
-  });
-
-  shortcutsStore.handleKeydown(keyboardEvent);
+async function handleClick() {
+  await shortcutsStore.executeShortcut('toggleCommandPalette');
 }
 </script>
 
