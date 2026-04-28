@@ -146,3 +146,72 @@ describe('manifest binary validation', () => {
     expect(() => assertValidManifestData(manifest)).toThrow('Invalid manifest: binaries are invalid');
   });
 });
+
+describe('manifest theme validation', () => {
+  it('accepts valid theme contributions', () => {
+    const manifest = {
+      ...createManifest(),
+      contributes: {
+        themes: [
+          {
+            id: 'midnight',
+            title: 'Midnight',
+            baseTheme: 'dark',
+            variables: {
+              '--background': '230 20% 10%',
+              '--primary': '200 80% 60%',
+            },
+          },
+        ],
+      },
+    };
+
+    expect(() => assertValidManifestData(manifest)).not.toThrow();
+  });
+
+  it('rejects theme contributions without css variables', () => {
+    const manifest = {
+      ...createManifest(),
+      contributes: {
+        themes: [
+          {
+            id: 'broken-theme',
+            title: 'Broken Theme',
+            baseTheme: 'dark',
+            variables: {},
+          },
+        ],
+      },
+    };
+
+    expect(() => assertValidManifestData(manifest)).toThrow('Invalid manifest: contributes are invalid');
+  });
+
+  it('rejects duplicate theme ids within one extension', () => {
+    const manifest = {
+      ...createManifest(),
+      contributes: {
+        themes: [
+          {
+            id: 'midnight',
+            title: 'Midnight',
+            baseTheme: 'dark',
+            variables: {
+              '--background': '230 20% 10%',
+            },
+          },
+          {
+            id: 'midnight',
+            title: 'Midnight 2',
+            baseTheme: 'dark',
+            variables: {
+              '--background': '230 20% 12%',
+            },
+          },
+        ],
+      },
+    };
+
+    expect(() => assertValidManifestData(manifest)).toThrow('Invalid manifest: contributes are invalid');
+  });
+});

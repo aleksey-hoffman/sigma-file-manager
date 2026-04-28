@@ -104,6 +104,16 @@ export interface ExtensionConfiguration {
   properties: Record<string, ExtensionConfigurationProperty>;
 }
 
+export type ExtensionThemeBase = 'light' | 'dark';
+
+export interface ExtensionThemeContribution {
+  id: string;
+  title: string;
+  description?: string;
+  baseTheme: ExtensionThemeBase;
+  variables: Record<`--${string}`, string>;
+}
+
 export type ExtensionKeybindingWhen
   = | 'always'
     | 'fileSelected'
@@ -123,6 +133,7 @@ export interface ExtensionContributions {
   contextMenu?: ExtensionContextMenuItem[];
   sidebar?: ExtensionSidebarItem[];
   toolbar?: ExtensionToolbarDropdown[];
+  themes?: ExtensionThemeContribution[];
   configuration?: ExtensionConfiguration;
   keybindings?: ExtensionKeybinding[];
 }

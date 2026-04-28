@@ -38,6 +38,30 @@ Call `await sigma.i18n.mergeFromPath('locales')` in `activate` before registerin
 
 `sigma.i18n.formatMessage` is available when you need `{placeholder}` formatting outside the translator.
 
+## Theme contributions
+
+Extensions can contribute color themes declaratively from `package.json`:
+
+```json
+{
+  "contributes": {
+    "themes": [
+      {
+        "id": "midnight",
+        "title": "Midnight",
+        "baseTheme": "dark",
+        "variables": {
+          "--background": "230 20% 10%",
+          "--primary": "200 80% 60%"
+        }
+      }
+    ]
+  }
+}
+```
+
+Theme contributions extend the host app's built-in light/dark token sets, so you usually only need to override the variables you want to change.
+
 ## Manifest schema
 
 In extension `package.json`:

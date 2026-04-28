@@ -28,6 +28,7 @@ const VALID_PERMISSIONS: string[] = [
 
 const VALID_PLATFORMS = ['windows', 'macos', 'linux'] as const;
 const VALID_ARCHES = ['x64', 'arm64'] as const;
+const EXTENSION_THEME_ID_PATTERN = /^[a-z0-9-]+$/;
 
 function isObjectRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
@@ -78,6 +79,75 @@ function isSafeRelativePath(value: string): boolean {
 
 function isValidIntegrity(value: unknown): value is string {
   return typeof value === 'string' && /^sha256:[a-f0-9]{64}$/i.test(value.trim());
+}
+
+function isValidThemeVariables(value: unknown): value is Record<`--${string}`, string> {
+  if (!isObjectRecord(value)) {
+    return false;
+  }
+
+  const entries = Object.entries(value);
+
+  if (entries.length === 0) {
+    return false;
+  }
+
+  return entries.every(([key, cssValue]) => {
+    return /^--[a-zA-Z0-9-]+$/.test(key)
+      && isNonEmptyString(cssValue);
+  });
+}
+
+function isValidThemeContribution(value: unknown): boolean {
+  if (!isObjectRecord(value)) {
+    return false;
+  }
+
+  if (!isNonEmptyString(value.id) || !EXTENSION_THEME_ID_PATTERN.test(value.id)) {
+    return false;
+  }
+
+  if (!isNonEmptyString(value.title)) {
+    return false;
+  }
+
+  if (value.description !== undefined && !isNonEmptyString(value.description)) {
+    return false;
+  }
+
+  if (value.baseTheme !== 'light' && value.baseTheme !== 'dark') {
+    return false;
+  }
+
+  if (!isValidThemeVariables(value.variables)) {
+    return false;
+  }
+
+  return true;
+}
+
+function isValidManifestContributions(value: unknown): boolean {
+  if (!isObjectRecord(value)) {
+    return false;
+  }
+
+  if (value.themes !== undefined) {
+    if (!Array.isArray(value.themes) || value.themes.some(theme => !isValidThemeContribution(theme))) {
+      return false;
+    }
+
+    const seenThemeIds = new Set<string>();
+
+    for (const theme of value.themes) {
+      if (!isObjectRecord(theme) || !isNonEmptyString(theme.id) || seenThemeIds.has(theme.id)) {
+        return false;
+      }
+
+      seenThemeIds.add(theme.id);
+    }
+  }
+
+  return true;
 }
 
 function isValidManifestBinaryAsset(value: unknown): boolean {
@@ -387,6 +457,10 @@ export function assertValidManifestData(data: unknown): asserts data is Extensio
     if (!Array.isArray(data.binaries) || data.binaries.some(binary => !isValidManifestBinaryDefinition(binary))) {
       throw new Error('Invalid manifest: binaries are invalid');
     }
+  }
+
+  if (data.contributes !== undefined && !isValidManifestContributions(data.contributes)) {
+    throw new Error('Invalid manifest: contributes are invalid');
   }
 
   if (!isObjectRecord(data.engines) || !isNonEmptyString(data.engines.sigmaFileManager)) {
