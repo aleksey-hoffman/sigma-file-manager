@@ -416,6 +416,10 @@ async function loadIframeExtension(
 ): Promise<void> {
   const { id: extensionId, manifest } = runtime;
 
+  if (!manifest.main) {
+    throw new Error('Invalid manifest: main is missing');
+  }
+
   const iframe = document.createElement('iframe');
   iframe.id = `extension-iframe-${extensionId}`;
   iframe.setAttribute('sandbox', 'allow-scripts');
@@ -423,7 +427,7 @@ async function loadIframeExtension(
 
   const extensionPath = await invokeAsExtension<string>(extensionId, 'get_extension_path', { extensionId });
   const storagePath = await invokeAsExtension<string>(extensionId, 'get_extension_storage_path', { extensionId });
-  const mainFile = manifest.main || 'index.html';
+  const mainFile = manifest.main;
 
   const iframeSource = getExtensionAssetUrl(extensionPath, mainFile);
   iframe.src = iframeSource;
@@ -471,6 +475,11 @@ async function loadWebviewExtension(
   activationEvent: ExtensionActivationEvent,
 ): Promise<void> {
   void activationEvent;
+
+  if (!runtime.manifest.main) {
+    throw new Error('Invalid manifest: main is missing');
+  }
+
   runtime.instance = createPlaceholderInstance();
 }
 

@@ -5,7 +5,7 @@
 import {
   afterEach, beforeEach, describe, expect, it, vi,
 } from 'vitest';
-import type { ExtensionManifest } from '@/types/extension';
+import type { ApiExtensionManifest, ExtensionManifest } from '@/types/extension';
 
 const {
   invokeMock,
@@ -68,7 +68,7 @@ vi.mock('@/modules/extensions/runtime/worker-runtime', () => ({
 
 import { getLoadedRuntime, loadExtensionRuntime, unloadExtensionRuntime } from '@/modules/extensions/runtime/loader';
 
-function createManifest(): ExtensionManifest {
+function createManifest(): ApiExtensionManifest {
   return {
     id: 'test.video',
     name: 'Test Video',
@@ -211,6 +211,30 @@ describe('extension runtime loader', () => {
       instance: null,
       workerHost: null,
     });
+  });
+
+  it('rejects iframe extensions without an entry module if validation is bypassed', async () => {
+    const { main: omittedMain, ...manifest } = {
+      ...createManifest(),
+      extensionType: 'iframe',
+    };
+
+    expect(omittedMain).toBe('index.js');
+    await expect(loadExtensionRuntime('test.video', manifest as unknown as ExtensionManifest, 'onStartup'))
+      .rejects.toThrow('Invalid manifest: main is missing');
+    expect(invokeMock).not.toHaveBeenCalled();
+    expect(document.querySelector('#extension-iframe-test\\.video')).toBeNull();
+  });
+
+  it('rejects webview extensions without an entry module if validation is bypassed', async () => {
+    const { main: omittedMain, ...manifest } = {
+      ...createManifest(),
+      extensionType: 'webview',
+    };
+
+    expect(omittedMain).toBe('index.js');
+    await expect(loadExtensionRuntime('test.video', manifest as unknown as ExtensionManifest, 'onStartup'))
+      .rejects.toThrow('Invalid manifest: main is missing');
   });
 
   it('loads Windows api extensions through blob module URLs', async () => {

@@ -6,7 +6,7 @@ import {
   beforeEach, describe, expect, it, vi,
 } from 'vitest';
 import { createPinia, setActivePinia } from 'pinia';
-import type { ExtensionManifest } from '@/types/extension';
+import type { ApiExtensionManifest, ExtensionManifest } from '@/types/extension';
 
 const {
   invokeMock,
@@ -179,7 +179,7 @@ import externalLinks from '@/data/external-links';
 import { useExtensionsStore } from '@/stores/runtime/extensions';
 import { useExtensionsStorageStore } from '@/stores/storage/extensions';
 
-function createManifest(): ExtensionManifest {
+function createManifest(): ApiExtensionManifest {
   return {
     id: 'test.video',
     name: 'Test Video',
@@ -220,7 +220,7 @@ function createRegistryEntry(extensionId: string, repository: string) {
   };
 }
 
-function createRemoteManifest(extensionId: string, repository: string): ExtensionManifest {
+function createRemoteManifest(extensionId: string, repository: string): ApiExtensionManifest {
   return {
     id: extensionId,
     name: extensionId,

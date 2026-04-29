@@ -5,7 +5,7 @@
 import {
   beforeEach, describe, expect, it, vi,
 } from 'vitest';
-import type { ExtensionManifest, InstalledExtensionData } from '@/types/extension';
+import type { ExtensionManifest, InstalledExtensionData, ThemeOnlyApiExtensionManifest } from '@/types/extension';
 
 const {
   installedExtensions,
@@ -58,7 +58,7 @@ vi.mock('@/localization', () => ({
 
 import { showThemesInstalledToast } from '@/modules/extensions/utils/toast-utils';
 
-function createThemeManifest(): ExtensionManifest {
+function createThemeManifest(): ThemeOnlyApiExtensionManifest {
   return {
     id: 'test.palette',
     name: 'Test Palette',
@@ -142,9 +142,26 @@ describe('extension toast utilities', () => {
   });
 
   it('does not show a toast when the extension contributes no themes', () => {
-    const manifest = {
-      ...createThemeManifest(),
-      contributes: {},
+    const manifest: ExtensionManifest = {
+      id: 'test.commands',
+      name: 'Test Commands',
+      version: '1.0.0',
+      repository: 'https://github.com/example/test-commands',
+      license: 'MIT',
+      extensionType: 'api',
+      main: 'index.js',
+      permissions: ['commands'],
+      contributes: {
+        commands: [
+          {
+            id: 'open',
+            title: 'Open',
+          },
+        ],
+      },
+      engines: {
+        sigmaFileManager: '>=2.0.0',
+      },
     };
 
     showThemesInstalledToast(manifest.id, manifest);

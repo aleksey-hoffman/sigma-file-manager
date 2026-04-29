@@ -172,7 +172,7 @@ export interface ExtensionManifestMediaItem {
   type: ExtensionManifestMediaType;
 }
 
-export interface ExtensionManifest {
+export interface ExtensionManifestBase {
   id: string;
   name: string;
   previousName?: string;
@@ -185,15 +185,52 @@ export interface ExtensionManifest {
   media?: ExtensionManifestMediaItem[];
   categories?: string[];
   tags?: string[];
-  extensionType: ExtensionType;
-  main?: string;
   permissions: ExtensionPermission[];
   activationEvents?: ExtensionActivationEvent[];
-  contributes?: ExtensionContributions;
   platforms?: PlatformOS[];
   binaries?: ManifestBinaryDefinition[];
   engines: ExtensionEngines;
 }
+
+export interface ThemeOnlyExtensionContributions {
+  themes: ExtensionThemeContribution[];
+  commands?: never;
+  contextMenu?: never;
+  sidebar?: never;
+  toolbar?: never;
+  configuration?: never;
+  keybindings?: never;
+}
+
+export interface ApiExtensionManifest extends ExtensionManifestBase {
+  extensionType: 'api';
+  main: string;
+  contributes?: ExtensionContributions;
+}
+
+export interface ThemeOnlyApiExtensionManifest extends ExtensionManifestBase {
+  extensionType: 'api';
+  main?: never;
+  contributes: ThemeOnlyExtensionContributions;
+}
+
+export interface IframeExtensionManifest extends ExtensionManifestBase {
+  extensionType: 'iframe';
+  main: string;
+  contributes?: ExtensionContributions;
+}
+
+export interface WebviewExtensionManifest extends ExtensionManifestBase {
+  extensionType: 'webview';
+  main: string;
+  contributes?: ExtensionContributions;
+}
+
+export type ExtensionManifest
+  = | ApiExtensionManifest
+    | ThemeOnlyApiExtensionManifest
+    | IframeExtensionManifest
+    | WebviewExtensionManifest;
 
 export interface Disposable {
   dispose(): void;
