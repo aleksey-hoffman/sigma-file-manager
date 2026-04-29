@@ -169,6 +169,65 @@ describe('manifest theme validation', () => {
     expect(() => assertValidManifestData(manifest)).not.toThrow();
   });
 
+  it('accepts theme-only api extensions without a main entry', () => {
+    const { main: omittedMain, ...manifest } = {
+      ...createManifest(),
+      permissions: [],
+      contributes: {
+        themes: [
+          {
+            id: 'midnight',
+            title: 'Midnight',
+            baseTheme: 'dark',
+            variables: {
+              '--background': '230 20% 10%',
+            },
+          },
+        ],
+      },
+    };
+
+    expect(omittedMain).toBe('index.js');
+    expect(() => assertValidManifestData(manifest)).not.toThrow();
+  });
+
+  it('rejects api extensions without a main entry unless they only contribute themes', () => {
+    const { main: omittedMain, ...manifest } = {
+      ...createManifest(),
+      contributes: {
+        themes: [
+          {
+            id: 'midnight',
+            title: 'Midnight',
+            baseTheme: 'dark',
+            variables: {
+              '--background': '230 20% 10%',
+            },
+          },
+        ],
+        commands: [
+          {
+            id: 'open',
+            title: 'Open',
+          },
+        ],
+      },
+    };
+
+    expect(omittedMain).toBe('index.js');
+    expect(() => assertValidManifestData(manifest)).toThrow('Invalid manifest: main is missing');
+  });
+
+  it('rejects iframe extensions without a main entry', () => {
+    const { main: omittedMain, ...manifest } = {
+      ...createManifest(),
+      extensionType: 'iframe',
+    };
+
+    expect(omittedMain).toBe('index.js');
+    expect(() => assertValidManifestData(manifest)).toThrow('Invalid manifest: main is missing');
+  });
+
   it('rejects theme contributions without css variables', () => {
     const manifest = {
       ...createManifest(),

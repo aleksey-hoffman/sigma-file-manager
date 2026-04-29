@@ -147,6 +147,16 @@ function getExtensionAssetUrl(extensionPath: string, mainFile: string): string {
   return convertFileSrc(`${normalizedExtensionPath}/${normalizedMainFile}`);
 }
 
+function registerManifestContributions(extensionId: string, manifest: ExtensionManifest): void {
+  if (manifest.contributes?.configuration) {
+    registerExtensionConfiguration(extensionId, manifest.contributes.configuration);
+  }
+
+  if (manifest.contributes?.keybindings) {
+    registerExtensionKeybindings(extensionId, manifest.contributes.keybindings);
+  }
+}
+
 function normalizeExtensionRelativePath(path: string): string {
   return normalizePath(path).replace(/^\/+/, '');
 }
@@ -312,9 +322,15 @@ async function loadApiExtension(
 ): Promise<void> {
   const { id: extensionId, manifest } = runtime;
 
+  registerManifestContributions(extensionId, manifest);
+
+  if (!manifest.main) {
+    return;
+  }
+
   const extensionPath = await invokeAsExtension<string>(extensionId, 'get_extension_path', { extensionId });
   const storagePath = await invokeAsExtension<string>(extensionId, 'get_extension_storage_path', { extensionId });
-  const mainFile = manifest.main || 'index.js';
+  const mainFile = manifest.main;
 
   const fileExists = await invokeAsExtension<boolean>(extensionId, 'extension_path_exists', {
     extensionId,
@@ -323,14 +339,6 @@ async function loadApiExtension(
 
   if (!fileExists) {
     throw new Error(`Extension ${extensionId} main file not found: ${mainFile}`);
-  }
-
-  if (manifest.contributes?.configuration) {
-    registerExtensionConfiguration(extensionId, manifest.contributes.configuration);
-  }
-
-  if (manifest.contributes?.keybindings) {
-    registerExtensionKeybindings(extensionId, manifest.contributes.keybindings);
   }
 
   const api = createExtensionAPI(extensionId, manifest.permissions);
@@ -421,13 +429,7 @@ async function loadIframeExtension(
   iframe.src = iframeSource;
   runtime.iframeOrigin = new URL(iframeSource).origin;
 
-  if (manifest.contributes?.configuration) {
-    registerExtensionConfiguration(extensionId, manifest.contributes.configuration);
-  }
-
-  if (manifest.contributes?.keybindings) {
-    registerExtensionKeybindings(extensionId, manifest.contributes.keybindings);
-  }
+  registerManifestContributions(extensionId, manifest);
 
   const api = createExtensionAPI(extensionId, manifest.permissions);
   runtime.api = api;

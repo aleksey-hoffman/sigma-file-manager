@@ -150,6 +150,21 @@ function isValidManifestContributions(value: unknown): boolean {
   return true;
 }
 
+function hasThemeContributions(value: unknown): boolean {
+  return isObjectRecord(value)
+    && Array.isArray(value.themes)
+    && value.themes.length > 0;
+}
+
+function canOmitManifestMain(value: Record<string, unknown>): boolean {
+  if (value.extensionType !== 'api' || !hasThemeContributions(value.contributes)) {
+    return false;
+  }
+
+  return isObjectRecord(value.contributes)
+    && Object.keys(value.contributes).every(contributionKey => contributionKey === 'themes');
+}
+
 function isValidManifestBinaryAsset(value: unknown): boolean {
   if (!isObjectRecord(value)) {
     return false;
@@ -441,7 +456,15 @@ export function assertValidManifestData(data: unknown): asserts data is Extensio
     throw new Error('Invalid manifest: extension type is invalid');
   }
 
-  if (!isNonEmptyString(data.main)) {
+  if (data.contributes !== undefined && !isValidManifestContributions(data.contributes)) {
+    throw new Error('Invalid manifest: contributes are invalid');
+  }
+
+  if (data.main !== undefined && !isNonEmptyString(data.main)) {
+    throw new Error('Invalid manifest: main is missing');
+  }
+
+  if (data.main === undefined && !canOmitManifestMain(data)) {
     throw new Error('Invalid manifest: main is missing');
   }
 
@@ -457,10 +480,6 @@ export function assertValidManifestData(data: unknown): asserts data is Extensio
     if (!Array.isArray(data.binaries) || data.binaries.some(binary => !isValidManifestBinaryDefinition(binary))) {
       throw new Error('Invalid manifest: binaries are invalid');
     }
-  }
-
-  if (data.contributes !== undefined && !isValidManifestContributions(data.contributes)) {
-    throw new Error('Invalid manifest: contributes are invalid');
   }
 
   if (!isObjectRecord(data.engines) || !isNonEmptyString(data.engines.sigmaFileManager)) {

@@ -186,7 +186,7 @@ export interface ExtensionManifest {
   categories?: string[];
   tags?: string[];
   extensionType: ExtensionType;
-  main: string;
+  main?: string;
   permissions: ExtensionPermission[];
   activationEvents?: ExtensionActivationEvent[];
   contributes?: ExtensionContributions;
