@@ -13,6 +13,7 @@ import {
   FileCodeIcon,
   FileArchiveIcon,
 } from '@lucide/vue';
+import type { Component } from 'vue';
 import { FILE_EXTENSIONS } from '@/constants';
 import type { DirEntry } from '@/types/dir-entry';
 import { i18n } from '@/localization';
@@ -38,10 +39,13 @@ export function getImageSrc(entry: DirEntry): string {
   return convertFileSrc(entry.path);
 }
 
-export function getFileIcon(entry: DirEntry) {
-  if (entry.is_dir) return FolderIcon;
+export function getDefaultFileIconComponent(options: {
+  isDirectory: boolean;
+  extension?: string | null;
+}): Component {
+  if (options.isDirectory) return FolderIcon;
 
-  const extension = entry.ext?.toLowerCase();
+  const extension = options.extension?.toLowerCase();
   if (!extension) return FileIcon;
 
   if (FILE_EXTENSIONS.IMAGE.includes(extension)) return FileImageIcon;
@@ -52,6 +56,13 @@ export function getFileIcon(entry: DirEntry) {
   if (FILE_EXTENSIONS.TEXT.includes(extension)) return FileTextIcon;
 
   return FileIcon;
+}
+
+export function getFileIcon(entry: DirEntry): Component {
+  return getDefaultFileIconComponent({
+    isDirectory: entry.is_dir,
+    extension: entry.ext,
+  });
 }
 
 export function formatBytes(bytes: number): string {

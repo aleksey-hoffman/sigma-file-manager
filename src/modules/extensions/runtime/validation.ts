@@ -72,8 +72,11 @@ function isSafeRelativePath(value: string): boolean {
     return false;
   }
 
-  const pathSegments = value.split(/[\\/]+/).filter(segment => segment.length > 0);
-  return pathSegments.length > 0 && pathSegments.every(segment => segment !== '.' && segment !== '..');
+  const pathSegments = value
+    .split(/[\\/]+/)
+    .filter(segment => segment.length > 0 && segment !== '.');
+
+  return pathSegments.length > 0 && pathSegments.every(segment => segment !== '..');
 }
 
 function isValidIntegrity(value: unknown): value is string {
@@ -161,6 +164,28 @@ function isValidManifestBinaryDefinition(value: unknown): boolean {
   }
 
   return true;
+}
+
+function isValidIconThemeContribution(value: unknown): boolean {
+  if (!isObjectRecord(value)) {
+    return false;
+  }
+
+  if (!isNonEmptyString(value.id) || !isNonEmptyString(value.label)) {
+    return false;
+  }
+
+  if (!isNonEmptyString(value.path) || !isSafeRelativePath(value.path)) {
+    return false;
+  }
+
+  return true;
+}
+
+function isValidIconThemeContributionList(value: unknown): boolean {
+  return Array.isArray(value)
+    && value.length > 0
+    && value.every(isValidIconThemeContribution);
 }
 
 function parseVersionComparator(value: string): {
@@ -386,6 +411,19 @@ export function assertValidManifestData(data: unknown): asserts data is Extensio
   if (data.binaries !== undefined) {
     if (!Array.isArray(data.binaries) || data.binaries.some(binary => !isValidManifestBinaryDefinition(binary))) {
       throw new Error('Invalid manifest: binaries are invalid');
+    }
+  }
+
+  if (data.contributes !== undefined) {
+    if (!isObjectRecord(data.contributes)) {
+      throw new Error('Invalid manifest: contributes must be an object');
+    }
+
+    if (
+      data.contributes.iconThemes !== undefined
+      && !isValidIconThemeContributionList(data.contributes.iconThemes)
+    ) {
+      throw new Error('Invalid manifest: contributes.iconThemes are invalid');
     }
   }
 

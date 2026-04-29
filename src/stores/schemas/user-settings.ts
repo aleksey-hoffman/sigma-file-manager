@@ -13,9 +13,10 @@ import {
   homeBannerStorageKeys,
   legacyBackgroundStorageKeys,
 } from '@/modules/home/background-storage-keys';
+import { BUILTIN_NAVIGATOR_ICON_THEME_IDS } from '@/types/icon-theme';
 
 export const USER_SETTINGS_SCHEMA_VERSION_KEY = '__schemaVersion';
-export const USER_SETTINGS_SCHEMA_VERSION = 9;
+export const USER_SETTINGS_SCHEMA_VERSION = 10;
 
 function generateShortId(): string {
   return crypto.randomUUID().replace(/-/g, '').slice(0, 8);
@@ -290,6 +291,20 @@ async function migrateUserSettingsStep(storage: StorageAdapter, fromVersion: num
         'dateTime.showRelativeDates',
         typeof previous === 'boolean' ? previous : true,
       );
+    }
+  }
+
+  if (fromVersion === 9 && toVersion === 10) {
+    const existingIconTheme = await storage.get<string>('navigator.iconTheme');
+
+    if (typeof existingIconTheme !== 'string' || existingIconTheme.trim().length === 0) {
+      const useSystemIconsForDirectories = await storage.get<boolean>('navigator.useSystemIconsForDirectories');
+      const useSystemIconsForFiles = await storage.get<boolean>('navigator.useSystemIconsForFiles');
+      const nextIconTheme = useSystemIconsForDirectories || useSystemIconsForFiles
+        ? BUILTIN_NAVIGATOR_ICON_THEME_IDS.system
+        : BUILTIN_NAVIGATOR_ICON_THEME_IDS.default;
+
+      await storage.set('navigator.iconTheme', nextIconTheme);
     }
   }
 
