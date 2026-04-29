@@ -1853,6 +1853,7 @@
     "reinstall": "पुन: इंस्टॉल",
     "reinstalledSuccessfully": "सफलतापूर्वक पुनः स्थापित किया गया",
     "reusedDependencies": "पुन: उपयोग किया गया {count} मौजूदा निर्भरताएँ",
+    "themesInstalled": "थीम इंस्टॉल हो गईं",
     "noLongerAvailable": "अब उपलब्ध नहीं है",
     "removedBecauseUnapproved": "यह एक्सटेंशन हटा दिया गया क्योंकि यह अब स्वीकृत रजिस्ट्री में नहीं है।",
     "update": "अद्यतन",

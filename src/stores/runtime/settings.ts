@@ -10,8 +10,8 @@ import {
   markRaw,
   type Component,
 } from 'vue';
-import { useI18n } from 'vue-i18n';
 import { messages } from '@/localization/data';
+import { i18n } from '@/localization';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { usePlatformStore } from '@/stores/runtime/platform';
 
@@ -107,7 +107,6 @@ function matchesAnyLocale(key: string, searchTerm: string): boolean {
 }
 
 export const useSettingsStore = defineStore('settings', () => {
-  const { t } = useI18n();
   const userSettingsStore = useUserSettingsStore();
   const platformStore = usePlatformStore();
 
@@ -127,7 +126,7 @@ export const useSettingsStore = defineStore('settings', () => {
   const tabs = computed(() =>
     settingsTabs.map(tab => ({
       name: tab.name,
-      label: t(tab.labelKey),
+      label: i18n.global.t(tab.labelKey),
     })),
   );
 

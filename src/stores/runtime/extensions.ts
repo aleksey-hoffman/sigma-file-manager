@@ -60,6 +60,7 @@ import {
 import {
   getExtensionDisplayName,
   showDependenciesInstalledToast,
+  showThemesInstalledToast,
   showExtensionNoLongerAvailableToast,
   showExtensionBusyToast,
 } from '@/modules/extensions/utils/toast-utils';
@@ -723,6 +724,7 @@ export const useExtensionsStore = defineStore('extensions', () => {
         await storageStore.completeExtensionInstall(extensionId);
 
         showDependenciesInstalledToast(extensionId);
+        showThemesInstalledToast(extensionId, manifest);
       }
       catch (error) {
         if (persistedInstall) {
@@ -815,6 +817,7 @@ export const useExtensionsStore = defineStore('extensions', () => {
         await storageStore.completeExtensionInstall(extensionId);
 
         showDependenciesInstalledToast(extensionId);
+        showThemesInstalledToast(extensionId, manifest);
       }
       catch (error) {
         if (persistedInstall) {
@@ -899,6 +902,8 @@ export const useExtensionsStore = defineStore('extensions', () => {
         if (extensionData.enabled && shouldActivateOnStartup(manifest)) {
           await loadExtension(extensionId, 'onStartup');
         }
+
+        showThemesInstalledToast(extensionId, manifest);
       }
       catch (error) {
         await storageStore.restoreExtensionSnapshot(
@@ -1059,6 +1064,7 @@ export const useExtensionsStore = defineStore('extensions', () => {
         }
 
         showDependenciesInstalledToast(extensionId);
+        showThemesInstalledToast(extensionId, manifest);
       }
       catch (error) {
         await storageStore.restoreExtensionSnapshot(

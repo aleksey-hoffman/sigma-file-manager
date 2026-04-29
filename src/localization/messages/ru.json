@@ -1923,6 +1923,7 @@
     "showExtensionsFolder": "Показать папку расширений",
     "reinstalledSuccessfully": "Успешно переустановлено",
     "reusedDependencies": "Использовано {count} существующих зависимостей",
+    "themesInstalled": "Темы установлены",
     "noLongerAvailable": "Больше недоступно",
     "removedBecauseUnapproved": "Это расширение было удалено, потому что его больше нет в одобренном реестре.",
     "enabled": "Enabled",

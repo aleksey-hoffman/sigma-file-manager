@@ -1853,6 +1853,7 @@
     "reinstall": "Re-install",
     "reinstalledSuccessfully": "Re-installed successfully",
     "reusedDependencies": "Reused {count} existing dependencies",
+    "themesInstalled": "Themes were installed",
     "noLongerAvailable": "No longer available",
     "removedBecauseUnapproved": "This extension was removed because it is no longer in the approved registry.",
     "update": "Update",

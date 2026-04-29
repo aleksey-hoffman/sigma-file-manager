@@ -585,6 +585,18 @@ describe('extensions runtime store', () => {
       'test.video',
       'https://github.com/example/test-video',
     );
+    manifest.contributes = {
+      themes: [
+        {
+          id: 'midnight',
+          title: 'Midnight',
+          baseTheme: 'dark',
+          variables: {
+            '--background': '230 20% 10%',
+          },
+        },
+      ],
+    };
     const registryEntry = createRegistryEntry('test.video', manifest.repository);
     const extensionsStore = useExtensionsStore();
     extensionsStore.registry = {
@@ -628,6 +640,13 @@ describe('extensions runtime store', () => {
         cancellationId: expect.any(String),
       }),
     );
+    expect(toastCustomMock).toHaveBeenCalledTimes(1);
+    expect(toastCustomMock.mock.calls[0]?.[1]?.componentProps?.data).toMatchObject({
+      title: 'Extension | test.video',
+      subtitle: 'Themes were installed',
+      actionText: 'Open settings',
+      extensionId: 'test.video',
+    });
   });
 
   it('passes install cancellation ids to extension archive updates', async () => {

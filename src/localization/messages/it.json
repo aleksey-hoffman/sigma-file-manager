@@ -1904,6 +1904,7 @@
     "showExtensionsFolder": "Mostra cartella estensioni",
     "reinstalledSuccessfully": "Reinstallato con successo",
     "reusedDependencies": "Riusate {count} dipendenze esistenti",
+    "themesInstalled": "I temi sono stati installati",
     "noLongerAvailable": "Non è più disponibile",
     "removedBecauseUnapproved": "Questa estensione è stata rimossa perché non è più presente nel registro approvato.",
     "enabled": "Enabled",

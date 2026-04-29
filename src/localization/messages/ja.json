@@ -1904,6 +1904,7 @@
     "showExtensionsFolder": "拡張機能フォルダーを表示",
     "reinstalledSuccessfully": "再インストールが完了しました",
     "reusedDependencies": "既存の依存関係 {count} 件を再利用しました",
+    "themesInstalled": "テーマがインストールされました",
     "noLongerAvailable": "利用できなくなりました",
     "removedBecauseUnapproved": "この拡張機能は承認済みレジストリに存在しなくなったため削除されました。",
     "enabled": "有効",

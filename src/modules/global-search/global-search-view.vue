@@ -11,7 +11,7 @@ import {
   ref,
   watch,
 } from 'vue';
-import { useRouter, useRoute } from 'vue-router';
+import { useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import {
   ChevronDownIcon, HardDriveIcon, LoaderCircleIcon, SearchIcon, SettingsIcon, SlidersHorizontalIcon, UsbIcon, XIcon,
@@ -28,7 +28,7 @@ import {
 } from '@/components/ui/number-field';
 import { useGlobalSearchStore } from '@/stores/runtime/global-search';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
-import { useSettingsStore } from '@/stores/runtime/settings';
+import { openSettingsTab } from '@/modules/settings/utils/open-settings';
 import { getDriveByPath } from '@/modules/home/composables/use-drives';
 import type { DirEntry } from '@/types/dir-entry';
 import type { DriveInfo } from '@/types/drive-info';
@@ -43,11 +43,9 @@ const emit = defineEmits<{
   'update:selectedEntries': [entries: DirEntry[]];
 }>();
 
-const router = useRouter();
 const route = useRoute();
 const globalSearchStore = useGlobalSearchStore();
 const userSettingsStore = useUserSettingsStore();
-const settingsStore = useSettingsStore();
 const { t } = useI18n();
 
 const inputRef = ref<InstanceType<typeof Input> | null>(null);
@@ -61,8 +59,7 @@ const typoTolerance = computed(() => userSettingsStore.userSettings.globalSearch
 const scanDepth = computed(() => userSettingsStore.userSettings.globalSearch.scanDepth);
 
 function openSearchSettings() {
-  settingsStore.setCurrentTab('search');
-  router.push({ name: 'settings' });
+  void openSettingsTab('search');
 }
 
 function setResultLimit(value: string | number | undefined) {

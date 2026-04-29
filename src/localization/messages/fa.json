@@ -1903,6 +1903,7 @@
     "showExtensionsFolder": "نمایش پوشه افزونه‌ها",
     "reinstalledSuccessfully": "با موفقیت نصب مجدد شد",
     "reusedDependencies": "{count} وابستگی موجود مجدداً استفاده شد",
+    "themesInstalled": "تم‌ها نصب شدند",
     "noLongerAvailable": "دیگر در دسترس نیست",
     "removedBecauseUnapproved": "این افزونه حذف شد چون دیگر در رجیستری مورد تأیید وجود ندارد.",
     "enabled": "Enabled",

@@ -1904,6 +1904,7 @@
     "showExtensionsFolder": "Mostrar carpeta de extensiones",
     "reinstalledSuccessfully": "Reinstalado correctamente",
     "reusedDependencies": "Reutilizadas {count} dependencias existentes",
+    "themesInstalled": "Los temas se instalaron",
     "noLongerAvailable": "Ya no está disponible",
     "removedBecauseUnapproved": "Esta extensión se eliminó porque ya no está en el registro aprobado.",
     "enabled": "Enabled",

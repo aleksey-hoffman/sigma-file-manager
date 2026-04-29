@@ -1904,6 +1904,7 @@
     "showExtensionsFolder": "显示扩展程序文件夹",
     "reinstalledSuccessfully": "重新安装成功",
     "reusedDependencies": "重复使用了 {count} 个现有依赖",
+    "themesInstalled": "主题已安装",
     "noLongerAvailable": "不再可用",
     "removedBecauseUnapproved": "此扩展已被移除，因为它已不在已批准的注册表中。",
     "enabled": "Enabled",

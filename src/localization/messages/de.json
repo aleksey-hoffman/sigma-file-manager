@@ -1904,6 +1904,7 @@
     "showExtensionsFolder": "Erweiterungsordner anzeigen",
     "reinstalledSuccessfully": "Erneut erfolgreich installiert",
     "reusedDependencies": "{count} vorhandene Abhängigkeiten wiederverwendet",
+    "themesInstalled": "Designs wurden installiert",
     "noLongerAvailable": "Nicht mehr verfügbar",
     "removedBecauseUnapproved": "Diese Erweiterung wurde entfernt, weil sie nicht mehr in der genehmigten Registry enthalten ist.",
     "enabled": "Enabled",

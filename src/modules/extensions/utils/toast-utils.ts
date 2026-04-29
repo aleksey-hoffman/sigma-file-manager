@@ -6,6 +6,8 @@ import { markRaw } from 'vue';
 import { toast, ToastStatic } from '@/components/ui/toaster';
 import { i18n } from '@/localization';
 import { useExtensionsStorageStore } from '@/stores/storage/extensions';
+import { openSettingsTab } from '@/modules/settings/utils/open-settings';
+import type { ExtensionManifest } from '@/types/extension';
 import {
   getBinaryDownloadCount, clearBinaryDownloadCount,
   getBinaryReuseCount, clearBinaryReuseCount,
@@ -68,6 +70,36 @@ export function showDependenciesInstalledToast(extensionId: string): void {
   setTimeout(() => {
     toast.dismiss(toastId);
   }, 3000);
+}
+
+export function manifestContributesThemes(manifest: ExtensionManifest): boolean {
+  return (manifest.contributes?.themes?.length ?? 0) > 0;
+}
+
+export function showThemesInstalledToast(extensionId: string, manifest: ExtensionManifest): void {
+  if (!manifestContributesThemes(manifest)) return;
+
+  const { t } = i18n.global;
+  const toastId = `ext-themes-installed-${extensionId}`;
+
+  toast.custom(markRaw(ToastStatic), {
+    id: toastId,
+    duration: Infinity,
+    componentProps: {
+      data: {
+        title: getExtensionToastTitle(extensionId),
+        subtitle: t('extensions.themesInstalled'),
+        actionText: t('openSettings'),
+        onAction: () => {
+          toast.dismiss(toastId);
+          void openSettingsTab('appearance');
+        },
+        onDismiss: () => toast.dismiss(toastId),
+        extensionId,
+        extensionIconPath: getExtensionToastIconPath(extensionId),
+      },
+    },
+  });
 }
 
 export function showExtensionNoLongerAvailableToast(extensionId: string, extensionName: string): void {

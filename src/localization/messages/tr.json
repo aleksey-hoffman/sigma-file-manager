@@ -1904,6 +1904,7 @@
     "showExtensionsFolder": "Uzantılar klasörünü göster",
     "reinstalledSuccessfully": "Başarıyla yeniden yüklendi",
     "reusedDependencies": "{count} mevcut bağımlılık yeniden kullanıldı",
+    "themesInstalled": "Temalar yüklendi",
     "noLongerAvailable": "Artık kullanılamıyor",
     "removedBecauseUnapproved": "Bu uzantı, artık onaylı kayıt listesinde olmadığı için kaldırıldı.",
     "enabled": "Enabled",
