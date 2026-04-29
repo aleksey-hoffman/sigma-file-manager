@@ -42,8 +42,11 @@ const { openNewTabGroup, closeTabGroup, setTabs } = workspacesStore;
 
 const previewEnabled = ref(true);
 const scrollContainerRef = ref<HTMLElement | null>(null);
+const scrollContentRef = ref<HTMLElement | null>(null);
 let scrollDisableTimeoutId: number | null = null;
-const { scrollFadeClass, scrollFadeStyle, updateScrollFade } = useHorizontalScrollFade(scrollContainerRef);
+const { scrollFadeClass, scrollFadeStyle, updateScrollFade } = useHorizontalScrollFade(scrollContainerRef, {
+  scrollContentRef,
+});
 
 watch(tabGroupCount, (newCount, previousCount) => {
   nextTick(() => {
@@ -125,7 +128,10 @@ onBeforeUnmount(() => {
         @wheel.prevent="handleWheel"
         @scroll="onScroll"
       >
-        <div class="tab-bar__base">
+        <div
+          ref="scrollContentRef"
+          class="tab-bar__base"
+        >
           <TabDraggable
             :items="workspacesStore.currentWorkspace?.tabGroups || []"
             :draggable-bg-color-var="'window-toolbar-color'"

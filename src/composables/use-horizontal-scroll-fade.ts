@@ -9,6 +9,7 @@ interface HorizontalScrollFadeOptions {
   animationDurationMs?: number;
   edgeThreshold?: number;
   fadeWidth?: number;
+  scrollContentRef?: Ref<HTMLElement | null>;
 }
 
 const DEFAULT_ANIMATION_DURATION_MS = 150;
@@ -122,6 +123,11 @@ export function useHorizontalScrollFade(
   }
 
   useResizeObserver(scrollContainerRef, updateScrollFade);
+
+  if (options.scrollContentRef) {
+    useResizeObserver(options.scrollContentRef, updateScrollFade);
+  }
+
   useEventListener(window, 'resize', updateScrollFade);
   onUnmounted(cancelFadeAnimation);
 
