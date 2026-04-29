@@ -18,6 +18,7 @@ import {
 import { ContextMenuShortcut } from '@/components/ui/context-menu';
 import { useWorkspacesStore } from '@/stores/storage/workspaces';
 import { useShortcutsStore } from '@/stores/runtime/shortcuts';
+import { useHorizontalScrollFade } from '@/composables/use-horizontal-scroll-fade';
 import type { Tab as TabType, TabGroup } from '@/types/workspaces';
 import { PlusIcon } from '@lucide/vue';
 
@@ -35,19 +36,6 @@ const workspacesStore = useWorkspacesStore();
 const shortcutsStore = useShortcutsStore();
 
 const tabGroupCount = computed(() => workspacesStore.currentWorkspace?.tabGroups?.length ?? 0);
-
-watch(tabGroupCount, (newCount, previousCount) => {
-  if (previousCount !== undefined && newCount > previousCount) {
-    nextTick(() => {
-      const container = scrollContainerRef.value;
-
-      if (container) {
-        container.scrollLeft = container.scrollWidth;
-      }
-    });
-  }
-});
-
 const teleportDisabled = computed(() => !props.teleportTarget);
 const teleportTo = computed(() => props.teleportTarget || 'body');
 const { openNewTabGroup, closeTabGroup, setTabs } = workspacesStore;
@@ -55,6 +43,19 @@ const { openNewTabGroup, closeTabGroup, setTabs } = workspacesStore;
 const previewEnabled = ref(true);
 const scrollContainerRef = ref<HTMLElement | null>(null);
 let scrollDisableTimeoutId: number | null = null;
+const { scrollFadeClass, scrollFadeStyle, updateScrollFade } = useHorizontalScrollFade(scrollContainerRef);
+
+watch(tabGroupCount, (newCount, previousCount) => {
+  nextTick(() => {
+    const container = scrollContainerRef.value;
+
+    if (previousCount !== undefined && newCount > previousCount && container) {
+      container.scrollLeft = container.scrollWidth;
+    }
+
+    updateScrollFade();
+  });
+});
 
 function handleScrollActivity() {
   previewEnabled.value = false;
@@ -77,6 +78,7 @@ function handleWheel(event: WheelEvent) {
 
 function onScroll() {
   handleScrollActivity();
+  updateScrollFade();
 }
 
 function scrollSelectedTabGroupIntoView() {
@@ -90,6 +92,8 @@ function scrollSelectedTabGroupIntoView() {
         behavior: 'instant',
       });
     }
+
+    updateScrollFade();
   });
 }
 
@@ -116,6 +120,8 @@ onBeforeUnmount(() => {
       <div
         ref="scrollContainerRef"
         class="tab-bar__base-container"
+        :class="scrollFadeClass"
+        :style="scrollFadeStyle"
         @wheel.prevent="handleWheel"
         @scroll="onScroll"
       >

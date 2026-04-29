@@ -45,6 +45,26 @@
     white-space: nowrap;
   }
 
+  .horizontal-scroll-fade {
+    --horizontal-scroll-left-fade-width: 0;
+    --horizontal-scroll-right-fade-width: 0;
+
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent 0,
+      black var(--horizontal-scroll-left-fade-width),
+      black calc(100% - var(--horizontal-scroll-right-fade-width)),
+      transparent 100%
+    );
+    mask-image: linear-gradient(
+      to right,
+      transparent 0,
+      black var(--horizontal-scroll-left-fade-width),
+      black calc(100% - var(--horizontal-scroll-right-fade-width)),
+      transparent 100%
+    );
+  }
+
   /* Shared keyframes */
   @keyframes sigma-ui-fade-in {
     from {

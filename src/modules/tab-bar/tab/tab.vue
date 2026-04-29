@@ -256,6 +256,7 @@ function closeAllTabs() {
 .tab {
   position: relative;
   display: flex;
+  overflow: hidden;
   width: var(--tab-width, 100px);
   min-width: 0;
   height: var(--tab-height);
@@ -281,17 +282,18 @@ function closeAllTabs() {
 .tab::after {
   position: absolute;
   bottom: 0;
-  left: 0;
-  width: 100%;
+  left: 50%;
+  width: 92%;
   height: 1px;
   background-color: hsl(var(--background-2) / 0%);
   box-shadow: 0 0 6px hsl(var(--background-2) / 0%);
   content: "";
+  transform: translateX(-50%);
 }
 
 .tab[is-active="true"]::after {
-  background-color: hsl(var(--background-2) / 50%);
-  box-shadow: 0 0 6px hsl(var(--background-2) / 100%);
+  background-color: hsl(var(--primary) / 40%);
+  box-shadow: 0 0 8px hsl(var(--primary) / 90%);
 }
 
 .tab:hover {
