@@ -65,6 +65,29 @@
     );
   }
 
+  .progressive-blur {
+    position: absolute;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .progressive-blur__layer {
+    position: absolute;
+    -webkit-backdrop-filter: blur(var(--progressive-blur-amount, 0));
+    backdrop-filter: blur(var(--progressive-blur-amount, 0));
+    inset: 0;
+    -webkit-mask-image: linear-gradient(
+      var(--progressive-blur-direction, to bottom),
+      black var(--progressive-blur-start, 0%),
+      transparent var(--progressive-blur-end, 100%)
+    );
+    mask-image: linear-gradient(
+      var(--progressive-blur-direction, to bottom),
+      black var(--progressive-blur-start, 0%),
+      transparent var(--progressive-blur-end, 100%)
+    );
+  }
+
   /* Shared keyframes */
   @keyframes sigma-ui-fade-in {
     from {

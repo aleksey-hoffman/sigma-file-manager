@@ -12,6 +12,7 @@ import { GlobalSearchToolbarButton } from '@/modules/global-search';
 import { LanShareReplaceDialog, LanShareToolbarButton } from '@/modules/lan-share';
 import { StatusCenterToolbarButton } from '@/modules/status-center';
 import CommandPaletteToolbarButton from '@/modules/extensions/components/command-palette-toolbar-button.vue';
+import { ProgressiveBlur, type ProgressiveBlurLayer } from '@/components/ui/progressive-blur';
 
 const route = useRoute();
 
@@ -30,6 +31,29 @@ const shouldShowGlobalSearchButton = computed(() => {
 const shouldShowNavigatorToolbarExtras = computed(() => {
   return route.name === 'navigator';
 });
+
+const toolbarProgressiveBlurLayers: ProgressiveBlurLayer[] = [
+  {
+    amount: '2px',
+    start: '0%',
+    end: '45%',
+  },
+  {
+    amount: '4px',
+    start: '15%',
+    end: '60%',
+  },
+  {
+    amount: '8px',
+    start: '30%',
+    end: '75%',
+  },
+  {
+    amount: '16px',
+    start: '45%',
+    end: '100%',
+  },
+];
 </script>
 
 <template>
@@ -40,6 +64,11 @@ const shouldShowNavigatorToolbarExtras = computed(() => {
       'window-toolbar--absolute': isAbsolute
     }"
   >
+    <ProgressiveBlur
+      v-if="isBlurred"
+      class="window-toolbar-progressive-blur"
+      :layers="toolbarProgressiveBlurLayers"
+    />
     <div
       data-tauri-drag-region
       class="window-toolbar-drag-layer"
@@ -95,7 +124,15 @@ const shouldShowNavigatorToolbarExtras = computed(() => {
 }
 
 .window-toolbar--blurred {
-  backdrop-filter: blur(32px);
+  background-color: hsl(var(--background-3) / 20%);
+}
+
+.window-toolbar-progressive-blur {
+  z-index: 1;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: calc(var(--window-toolbar-height) + 48px);
 }
 
 .window-toolbar--absolute {
