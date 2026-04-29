@@ -17,6 +17,10 @@ import { invokeAsExtension } from '@/modules/extensions/runtime/extension-invoke
 
 const iconThemeCache = new Map<string, Promise<LoadedIconThemeDefinition | null>>();
 
+export function clearInstalledIconThemeCache(): void {
+  iconThemeCache.clear();
+}
+
 function normalizeRelativePath(path: string, options?: { allowParentSegments?: boolean }): string {
   const trimmedPath = path.trim();
 

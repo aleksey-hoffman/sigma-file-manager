@@ -72,8 +72,11 @@ function isSafeRelativePath(value: string): boolean {
     return false;
   }
 
-  const pathSegments = value.split(/[\\/]+/).filter(segment => segment.length > 0);
-  return pathSegments.length > 0 && pathSegments.every(segment => segment !== '.' && segment !== '..');
+  const pathSegments = value
+    .split(/[\\/]+/)
+    .filter(segment => segment.length > 0 && segment !== '.');
+
+  return pathSegments.length > 0 && pathSegments.every(segment => segment !== '..');
 }
 
 function isValidIntegrity(value: unknown): value is string {
