@@ -7,25 +7,23 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 import { computed } from 'vue';
 import type { Component } from 'vue';
 import type { DirEntry } from '@/types/dir-entry';
-import { getFileIcon } from './utils';
-import { useSystemIcon } from '@/composables/use-system-icon';
+import { useNavigatorItemIcon } from '@/composables/use-navigator-item-icon';
 
 const props = defineProps<{
   entry: DirEntry;
   size: number;
 }>();
 
-const { systemIconSrc, useSystemIcons } = useSystemIcon({
+const { iconSrc, fallbackIconComponent } = useNavigatorItemIcon({
   path: () => props.entry.path,
+  name: () => props.entry.name,
   isDir: () => props.entry.is_dir,
   extension: () => props.entry.ext,
   size: () => props.size,
 });
 
-const fallbackIconComponent = computed<Component>(() => getFileIcon(props.entry));
-
 const rootComponent = computed<Component | 'img'>(() => {
-  if (!useSystemIcons.value || !systemIconSrc.value) {
+  if (!iconSrc.value) {
     return fallbackIconComponent.value;
   }
 
@@ -35,7 +33,7 @@ const rootComponent = computed<Component | 'img'>(() => {
 const rootProps = computed<Record<string, unknown>>(() => {
   if (rootComponent.value === 'img') {
     return {
-      src: systemIconSrc.value,
+      src: iconSrc.value,
       width: props.size,
       height: props.size,
       draggable: false,

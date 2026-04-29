@@ -6,24 +6,52 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { Switch } from '@/components/ui/switch';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectItemText,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { SettingsItem } from '@/modules/settings';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
+import { useExtensionsStore } from '@/stores/runtime/extensions';
 import { ImageIcon } from '@lucide/vue';
+import {
+  BUILTIN_NAVIGATOR_ICON_THEME_IDS,
+  normalizeNavigatorIconThemeId,
+  type NavigatorIconThemeOption,
+} from '@/types/icon-theme';
+import {
+  getBuiltinNavigatorIconThemeOptions,
+  getExtensionNavigatorIconThemeOptions,
+} from '@/modules/icon-theme/extension-icon-themes';
 
 const userSettingsStore = useUserSettingsStore();
+const extensionsStore = useExtensionsStore();
 const { t } = useI18n();
 
-const useSystemIconsForDirectories = computed(() => userSettingsStore.userSettings.navigator.useSystemIconsForDirectories);
-const useSystemIconsForFiles = computed(() => userSettingsStore.userSettings.navigator.useSystemIconsForFiles);
+const themeOptions = computed<NavigatorIconThemeOption[]>(() => {
+  return [
+    ...getBuiltinNavigatorIconThemeOptions(t),
+    ...getExtensionNavigatorIconThemeOptions(extensionsStore.enabledExtensions),
+  ];
+});
 
-function setUseSystemIconsForDirectories(checked: boolean) {
-  userSettingsStore.set('navigator.useSystemIconsForDirectories', checked);
-}
-
-function setUseSystemIconsForFiles(checked: boolean) {
-  userSettingsStore.set('navigator.useSystemIconsForFiles', checked);
-}
+const selectedIconTheme = computed({
+  get: () => {
+    const selectedId = normalizeNavigatorIconThemeId(userSettingsStore.userSettings.navigator.iconTheme);
+    return themeOptions.value.find(option => option.id === selectedId)
+      ?? themeOptions.value.find(option => option.id === BUILTIN_NAVIGATOR_ICON_THEME_IDS.default)
+      ?? null;
+  },
+  set: (option: NavigatorIconThemeOption | null) => {
+    if (option) {
+      userSettingsStore.set('navigator.iconTheme', option.id);
+    }
+  },
+});
 </script>
 
 <template>
@@ -31,49 +59,32 @@ function setUseSystemIconsForFiles(checked: boolean) {
     :title="t('settings.navigator.systemIcons')"
     :icon="ImageIcon"
   >
-    <div class="system-icons-settings">
-      <div class="system-icons-settings__row">
-        <span class="system-icons-settings__label">
-          {{ t('settings.navigator.systemIconsDirectories') }}
-        </span>
-        <Switch
-          :model-value="useSystemIconsForDirectories"
-          @update:model-value="setUseSystemIconsForDirectories"
-        />
-      </div>
-
-      <div class="system-icons-settings__row">
-        <span class="system-icons-settings__label">
-          {{ t('settings.navigator.systemIconsFiles') }}
-        </span>
-        <Switch
-          :model-value="useSystemIconsForFiles"
-          @update:model-value="setUseSystemIconsForFiles"
-        />
-      </div>
-    </div>
+    <Select
+      v-model="selectedIconTheme"
+      by="id"
+    >
+      <SelectTrigger class="system-icons-select-trigger">
+        <SelectValue>
+          {{ selectedIconTheme?.label }}
+        </SelectValue>
+      </SelectTrigger>
+      <SelectContent align="end">
+        <SelectItem
+          v-for="option in themeOptions"
+          :key="option.id"
+          :value="option"
+        >
+          <SelectItemText>
+            {{ option.label }}
+          </SelectItemText>
+        </SelectItem>
+      </SelectContent>
+    </Select>
   </SettingsItem>
 </template>
 
 <style scoped>
-.system-icons-settings {
-  display: flex;
-  width: 100%;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.system-icons-settings__row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-}
-
-.system-icons-settings__label {
-  flex-shrink: 0;
-  color: hsl(var(--foreground));
-  font-size: 0.875rem;
+.system-icons-select-trigger {
+  min-width: 160px;
 }
 </style>

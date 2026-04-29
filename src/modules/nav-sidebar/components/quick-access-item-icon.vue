@@ -5,8 +5,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { FileIcon, FolderIcon } from '@lucide/vue';
-import { useSystemIcon } from '@/composables/use-system-icon';
+import { useNavigatorItemIcon } from '@/composables/use-navigator-item-icon';
 
 const props = defineProps<{
   path: string;
@@ -22,7 +21,7 @@ const extension = computed(() => {
   return props.path.substring(lastDot + 1);
 });
 
-const { systemIconSrc, useSystemIcons } = useSystemIcon({
+const { iconSrc, fallbackIconComponent } = useNavigatorItemIcon({
   path: () => props.path,
   isDir: () => !props.isFile,
   extension: () => extension.value,
@@ -32,19 +31,15 @@ const { systemIconSrc, useSystemIcons } = useSystemIcon({
 
 <template>
   <img
-    v-if="useSystemIcons && systemIconSrc"
-    :src="systemIconSrc"
+    v-if="iconSrc"
+    :src="iconSrc"
     :width="size"
     :height="size"
     draggable="false"
     class="quick-access-panel__item-icon"
   >
-  <FolderIcon
-    v-else-if="!isFile"
-    :size="size"
-    class="quick-access-panel__item-icon"
-  />
-  <FileIcon
+  <component
+    :is="fallbackIconComponent"
     v-else
     :size="size"
     class="quick-access-panel__item-icon"

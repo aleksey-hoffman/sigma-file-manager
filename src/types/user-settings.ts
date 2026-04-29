@@ -202,6 +202,7 @@ export type LocalizationLanguage = {
 };
 
 export type Theme = 'light' | 'dark' | 'system';
+export type NavigatorIconTheme = string;
 
 export type DateTime = {
   month: 'numeric' | 'short' | 'long';
@@ -235,8 +236,7 @@ export type UserSettingsNavigator = {
   layout: NavigatorLayout;
   infoPanel: UserSettingsNavigatorInfoPanel;
   showHiddenFiles: boolean;
-  useSystemIconsForDirectories: boolean;
-  useSystemIconsForFiles: boolean;
+  iconTheme: NavigatorIconTheme;
   listColumnVisibility: ListColumnVisibility;
   listSortColumn: ListSortColumn | null;
   listSortDirection: ListSortDirection;

@@ -145,4 +145,38 @@ describe('manifest binary validation', () => {
 
     expect(() => assertValidManifestData(manifest)).toThrow('Invalid manifest: binaries are invalid');
   });
+
+  it('accepts icon theme contributions with relative theme paths', () => {
+    const manifest = {
+      ...createManifest(),
+      contributes: {
+        iconThemes: [
+          {
+            id: 'ocean',
+            label: 'Ocean',
+            path: 'themes/ocean-icon-theme.json',
+          },
+        ],
+      },
+    };
+
+    expect(() => assertValidManifestData(manifest)).not.toThrow();
+  });
+
+  it('rejects icon theme contributions with unsafe paths', () => {
+    const manifest = {
+      ...createManifest(),
+      contributes: {
+        iconThemes: [
+          {
+            id: 'ocean',
+            label: 'Ocean',
+            path: '../themes/ocean-icon-theme.json',
+          },
+        ],
+      },
+    };
+
+    expect(() => assertValidManifestData(manifest)).toThrow('Invalid manifest: contributes.iconThemes are invalid');
+  });
 });

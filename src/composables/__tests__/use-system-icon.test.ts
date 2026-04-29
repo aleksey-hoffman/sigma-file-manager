@@ -13,17 +13,6 @@ vi.mock('@tauri-apps/api/core', () => ({
   invoke: invokeMock,
 }));
 
-vi.mock('@/stores/storage/user-settings', () => ({
-  useUserSettingsStore: () => ({
-    userSettings: {
-      navigator: {
-        useSystemIconsForDirectories: true,
-        useSystemIconsForFiles: true,
-      },
-    },
-  }),
-}));
-
 describe('useSystemIcon', () => {
   beforeEach(() => {
     vi.resetModules();
