@@ -1,6 +1,6 @@
 {
   "name": "@sigma-file-manager/api",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "description": "Type definitions and manifest schema for Sigma File Manager extensions",
   "license": "GPL-3.0-or-later",
   "repository": {
