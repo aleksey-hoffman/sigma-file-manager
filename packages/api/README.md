@@ -24,7 +24,7 @@ export async function activate(context: ExtensionActivationContext): Promise<voi
 export async function deactivate(): Promise<void> {}
 ```
 
-Point `package.json` `"main"` at your compiled file (for example `dist/index.js`), set `"type": "module"`, and build with `tsc` or your bundler. Commit build output if installs come from a Git tag archive without running a build on the client.
+When the extension runs code, point `package.json` `"main"` at your compiled file (for example `dist/index.js`), set `"type": "module"`, and build with `tsc` or your bundler. Manifest-only API extensions that only contribute themes can omit `"main"`. Commit build output if installs come from a Git tag archive without running a build on the client.
 
 ## i18n
 

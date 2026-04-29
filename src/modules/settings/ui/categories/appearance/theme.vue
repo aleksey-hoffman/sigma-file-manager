@@ -13,35 +13,52 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { SettingsItem } from '@/modules/settings';
+import {
+  getAvailableThemeOptions,
+  normalizeThemeSelection,
+} from '@/modules/themes/registry';
+import { useExtensionsStorageStore } from '@/stores/storage/extensions';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
-import type { Theme } from '@/types/user-settings';
 import { useI18n } from 'vue-i18n';
 import { computed } from 'vue';
 import { SunMoonIcon } from '@lucide/vue';
 
+const extensionsStorageStore = useExtensionsStorageStore();
 const userSettingsStore = useUserSettingsStore();
 const { t } = useI18n();
 
-const themeOptions: {
-  name: string;
-  value: Theme;
-}[] = [
-  {
-    name: t('settings.homeBannerEffects.theme.themeTypeRadio.dark'),
-    value: 'dark',
-  },
-  {
-    name: t('settings.homeBannerEffects.theme.themeTypeRadio.light'),
-    value: 'light',
-  },
-  {
-    name: t('system'),
-    value: 'system',
-  },
-];
+const themeOptions = computed(() => {
+  return getAvailableThemeOptions(extensionsStorageStore.extensionsData.installedExtensions).map((option) => {
+    if (option.source === 'builtin') {
+      return {
+        name: option.builtinThemeId === 'dark'
+          ? t('settings.homeBannerEffects.theme.themeTypeRadio.dark')
+          : option.builtinThemeId === 'light'
+            ? t('settings.homeBannerEffects.theme.themeTypeRadio.light')
+            : t('system'),
+        value: option.id,
+      };
+    }
+
+    return {
+      name: option.title,
+      value: option.id,
+    };
+  });
+});
+
+const selectedThemeId = computed(() => {
+  return normalizeThemeSelection(
+    userSettingsStore.userSettings.theme,
+    extensionsStorageStore.extensionsData.installedExtensions,
+  );
+});
 
 const selectedTheme = computed({
-  get: () => themeOptions.find(option => option.value === userSettingsStore.userSettings.theme),
+  get: () => {
+    return themeOptions.value.find(option => option.value === selectedThemeId.value)
+      ?? themeOptions.value[0];
+  },
   set: (option) => {
     if (option) {
       userSettingsStore.set('theme', option.value);

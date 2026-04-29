@@ -180,6 +180,39 @@ describe('extension runtime loader', () => {
     });
   });
 
+  it('loads theme-only api extensions without an entry module', async () => {
+    const { main: omittedMain, ...manifest } = {
+      ...createManifest(),
+      permissions: [],
+      contributes: {
+        themes: [
+          {
+            id: 'midnight',
+            title: 'Midnight',
+            baseTheme: 'dark' as const,
+            variables: {
+              '--background': '230 20% 10%',
+            },
+          },
+        ],
+      },
+    };
+
+    expect(omittedMain).toBe('index.js');
+
+    await loadExtensionRuntime('test.video', manifest, 'onStartup');
+
+    expect(invokeMock).not.toHaveBeenCalled();
+    expect(createExtensionAPIMock).not.toHaveBeenCalled();
+    expect(initializeWorkerMock).not.toHaveBeenCalled();
+    expect(activateWorkerMock).not.toHaveBeenCalled();
+    expect(getLoadedRuntime('test.video')).toMatchObject({
+      id: 'test.video',
+      instance: null,
+      workerHost: null,
+    });
+  });
+
   it('loads Windows api extensions through blob module URLs', async () => {
     invokeMock.mockImplementation(async (command: string, args?: { filePath?: string }) => {
       switch (command) {

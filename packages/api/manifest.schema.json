@@ -11,9 +11,72 @@
     "repository",
     "license",
     "extensionType",
-    "main",
     "permissions",
     "engines"
+  ],
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "extensionType": {
+            "enum": [
+              "iframe",
+              "webview"
+            ]
+          }
+        },
+        "required": [
+          "extensionType"
+        ]
+      },
+      "then": {
+        "required": [
+          "main"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "extensionType": {
+            "enum": [
+              "api"
+            ]
+          }
+        },
+        "required": [
+          "extensionType"
+        ]
+      },
+      "then": {
+        "anyOf": [
+          {
+            "required": [
+              "main"
+            ]
+          },
+          {
+            "required": [
+              "contributes"
+            ],
+            "properties": {
+              "contributes": {
+                "required": [
+                  "themes"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "themes": {
+                    "type": "array",
+                    "minItems": 1
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
   ],
   "properties": {
     "id": {
@@ -144,7 +207,7 @@
     },
     "main": {
       "type": "string",
-      "description": "Entry point file"
+      "description": "Entry point file. Required for iframe/webview extensions and API extensions that run code."
     },
     "permissions": {
       "type": "array",
@@ -349,6 +412,49 @@
                       "type": "boolean"
                     }
                   }
+                }
+              }
+            }
+          }
+        },
+        "themes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "title",
+              "baseTheme",
+              "variables"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z0-9-]+$"
+              },
+              "title": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "baseTheme": {
+                "type": "string",
+                "enum": [
+                  "light",
+                  "dark"
+                ]
+              },
+              "variables": {
+                "type": "object",
+                "minProperties": 1,
+                "propertyNames": {
+                  "type": "string",
+                  "pattern": "^--[a-zA-Z0-9-]+$"
+                },
+                "additionalProperties": {
+                  "type": "string",
+                  "minLength": 1
                 }
               }
             }

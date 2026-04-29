@@ -201,7 +201,8 @@ export type LocalizationLanguage = {
   isRtl: boolean;
 };
 
-export type Theme = 'light' | 'dark' | 'system';
+export type BuiltinThemeId = 'light' | 'dark' | 'system';
+export type Theme = BuiltinThemeId | `extension:${string}:${string}`;
 
 export type DateTime = {
   month: 'numeric' | 'short' | 'long';

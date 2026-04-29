@@ -14,8 +14,10 @@ import {
   DEFAULT_BACKGROUND_FILE_NAME,
   DEFAULT_INFUSION_BACKGROUND_FILE_NAME,
 } from '@/data/background-media';
+import { normalizeThemeSelection } from '@/modules/themes/registry';
 import { useTheme } from './composables/use-theme';
 import { useUserPathsStore } from './user-paths';
+import { useExtensionsStorageStore } from './extensions';
 import { i18n } from '@/localization';
 import { getCurrentWebview } from '@tauri-apps/api/webview';
 import {
@@ -34,6 +36,7 @@ import {
 
 export const useUserSettingsStore = defineStore('userSettings', () => {
   const userPathsStore = useUserPathsStore();
+  const extensionsStorageStore = useExtensionsStorageStore();
 
   const userSettingsStorage = ref<LazyStore | null>(null);
   const userSettingsDefault = ref<UserSettings | null>(null);
@@ -241,6 +244,16 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
     () => userSettings.value.text?.font ?? 'system-ui',
   );
   const themeSettingRef = computed(() => userSettings.value.theme);
+  const normalizedThemeSelection = computed(() => {
+    if (!extensionsStorageStore.isInitialized) {
+      return userSettings.value.theme;
+    }
+
+    return normalizeThemeSelection(
+      userSettings.value.theme,
+      extensionsStorageStore.extensionsData.installedExtensions,
+    );
+  });
   const { setTheme } = useTheme(themeSettingRef);
 
   watch(
@@ -258,6 +271,14 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
     },
     { immediate: true },
   );
+
+  watch(normalizedThemeSelection, (normalizedTheme) => {
+    if (!extensionsStorageStore.isInitialized || normalizedTheme === userSettings.value.theme) {
+      return;
+    }
+
+    void set('theme', normalizedTheme);
+  });
 
   function applyUserSettingsEntries(settingsEntries: Iterable<[string, unknown]>) {
     for (const [key, value] of settingsEntries) {
