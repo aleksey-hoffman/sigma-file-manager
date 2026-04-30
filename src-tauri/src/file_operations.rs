@@ -707,7 +707,15 @@ fn should_fallback_to_copy_delete(error: &std::io::Error) -> bool {
     if error.kind() == std::io::ErrorKind::AlreadyExists {
         return true;
     }
-    if cfg!(unix) {
+    if cfg!(target_os = "macos") {
+        // macOS returns EXDEV (18) for cross-filesystem moves on most paths,
+        // but also returns EINVAL (22) when the operation crosses APFS volume
+        // boundaries (e.g., system volume <-> data volume, mounted external
+        // disks under /Volumes). Both cases must trigger the copy+delete
+        // fallback for moves to work on macOS.
+        let errno = error.raw_os_error();
+        errno == Some(18) || errno == Some(22)
+    } else if cfg!(unix) {
         error.raw_os_error() == Some(18)
     } else if cfg!(windows) {
         error.raw_os_error() == Some(17)
