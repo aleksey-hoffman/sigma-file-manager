@@ -55,6 +55,8 @@ export interface FileBrowserContext {
 
   requestFocusEntryAfterRefresh: (parentDirectoryPath: string, entryPath: string) => void;
 
+  isActivePane: () => boolean;
+
   entryDescription?: (entry: DirEntry) => string | undefined;
 }
 

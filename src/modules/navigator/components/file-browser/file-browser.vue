@@ -105,6 +105,7 @@ provideFileBrowserContext({
   navigateToHome: fb.navigateToHome,
   refresh: fb.refresh,
   requestFocusEntryAfterRefresh: fb.requestFocusEntryAfterRefresh,
+  isActivePane: () => props.isActivePane ?? (props.paneIndex === 0 || props.paneIndex === undefined),
   entryDescription: props.entryDescription,
 });
 

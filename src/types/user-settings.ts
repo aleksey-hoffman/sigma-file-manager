@@ -131,7 +131,8 @@ export type ShortcutId
     | 'reloadCurrentDirectory'
     | 'uiZoomIncrease'
     | 'uiZoomDecrease'
-    | 'toggleFullscreen';
+    | 'toggleFullscreen'
+    | 'editAddressBar';
 
 export type UserShortcuts = Partial<Record<ShortcutId, UserShortcutStoredValue>>;
 

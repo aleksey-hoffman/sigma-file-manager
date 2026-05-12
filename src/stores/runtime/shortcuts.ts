@@ -213,6 +213,20 @@ const DEFAULT_SHORTCUTS: ShortcutDefinition[] = [
     isReadOnly: false,
   },
   {
+    id: 'editAddressBar',
+    labelKey: 'shortcuts.toggleAddressBar',
+    defaultKeys: {
+      ctrl: true,
+      key: 'p',
+    },
+    scope: 'navigator',
+    conditions: {
+      inputFieldIsActive: false,
+      dialogIsOpened: false,
+    },
+    isReadOnly: false,
+  },
+  {
     id: 'copyCurrentDirectoryPath',
     labelKey: 'shortcuts.copyCurrentDirectoryPathToClipboard',
     defaultKeys: {

@@ -3,6 +3,16 @@ License: GNU GPLv3 or later. See the license file in the project root for more i
 Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
+<script lang="ts">
+type AddressBarController = {
+  isActivePane: () => boolean;
+  openEditor: () => Promise<void>;
+};
+
+const addressBarInstances: AddressBarController[] = [];
+let shortcutHandlerRegistered = false;
+</script>
+
 <script setup lang="ts">
 import {
   ref,
@@ -20,6 +30,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { onClickOutside, useDebounceFn } from '@vueuse/core';
+import { useFileBrowserContext } from './composables/use-file-browser-context';
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -59,6 +70,7 @@ const emit = defineEmits<{
 
 const { t } = useI18n();
 const shortcutsStore = useShortcutsStore();
+const fileBrowserCtx = useFileBrowserContext();
 
 const isEditorOpen = ref(false);
 const isPinned = ref(false);
@@ -70,6 +82,15 @@ const breadcrumbsContainerRef = ref<HTMLElement | null>(null);
 const pathInputRef = ref<InstanceType<typeof Input> | null>(null);
 const separatorDropdowns = ref<{ [key: number]: string[] }>({});
 const openSeparatorIndex = ref<number | null>(null);
+
+function handleEditAddressBarShortcut() {
+  for (const instance of addressBarInstances) {
+    if (instance.isActivePane()) {
+      instance.openEditor();
+      return;
+    }
+  }
+}
 
 onClickOutside(
   addressBarRef,
@@ -340,13 +361,6 @@ async function openCopiedPath() {
   }
 }
 
-function handleGlobalKeydown(event: KeyboardEvent) {
-  if (event.ctrlKey && event.key === 'p') {
-    event.preventDefault();
-    openEditor();
-  }
-}
-
 let dropContainerId: number | null = null;
 
 onMounted(() => {
@@ -360,7 +374,15 @@ onMounted(() => {
     disableBackgroundDrop: true,
   });
 
-  window.addEventListener('keydown', handleGlobalKeydown);
+  addressBarInstances.push({
+    isActivePane: () => fileBrowserCtx.isActivePane(),
+    openEditor,
+  });
+
+  if (!shortcutHandlerRegistered) {
+    shortcutHandlerRegistered = true;
+    shortcutsStore.registerHandler('editAddressBar', handleEditAddressBarShortcut);
+  }
 });
 
 onUnmounted(() => {
@@ -368,7 +390,12 @@ onUnmounted(() => {
     unregisterDropContainer(dropContainerId);
   }
 
-  window.removeEventListener('keydown', handleGlobalKeydown);
+  const index = addressBarInstances.findIndex(
+    instance => instance.openEditor === openEditor,
+  );
+  if (index >= 0) {
+    addressBarInstances.splice(index, 1);
+  }
 });
 </script>
 
@@ -599,7 +626,7 @@ onUnmounted(() => {
         <TooltipContent>
           <div class="address-bar__tooltip-row">
             {{ t('settings.addressBar.editAddress') }}
-            <ContextMenuShortcut>Ctrl+P</ContextMenuShortcut>
+            <ContextMenuShortcut>{{ shortcutsStore.getShortcutLabel('editAddressBar') }}</ContextMenuShortcut>
           </div>
         </TooltipContent>
       </Tooltip>

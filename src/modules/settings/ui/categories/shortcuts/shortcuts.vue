@@ -62,6 +62,7 @@ import {
   HomeIcon,
   FolderClosedIcon,
   BookmarkIcon,
+  TextCursorIcon,
 } from '@lucide/vue';
 import type { Component } from 'vue';
 import {
@@ -133,6 +134,7 @@ const shortcutIcons: Record<ShortcutId, Component> = {
   uiZoomIncrease: PlusIcon,
   uiZoomDecrease: MinusIcon,
   toggleFullscreen: FullscreenIcon,
+  editAddressBar: TextCursorIcon,
 };
 
 const globalShortcutIcons: Record<GlobalShortcutId, Component> = {

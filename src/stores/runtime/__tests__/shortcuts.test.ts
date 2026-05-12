@@ -591,4 +591,24 @@ describe('shortcuts store', () => {
 
     await expect(handlePromise).resolves.toBe(false);
   });
+
+  it('matches Ctrl+P for the default editAddressBar shortcut', async () => {
+    const shortcutsStore = useShortcutsStore();
+    const editAddressBarHandler = vi.fn();
+
+    shortcutsStore.registerHandler('editAddressBar', editAddressBarHandler);
+
+    const event = new KeyboardEvent('keydown', {
+      key: 'p',
+      code: 'KeyP',
+      ctrlKey: true,
+      bubbles: true,
+      cancelable: true,
+    });
+
+    await expect(shortcutsStore.handleKeydown(event)).resolves.toBe(true);
+    expect(editAddressBarHandler).toHaveBeenCalledTimes(1);
+    expect(event.defaultPrevented).toBe(true);
+  });
+
 });
