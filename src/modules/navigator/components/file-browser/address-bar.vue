@@ -191,7 +191,9 @@ async function openEditor() {
   isEditorOpen.value = true;
 
   await nextTick();
-  pathInputRef.value?.$el?.focus();
+  const el = pathInputRef.value?.$el;
+  el?.focus();
+  el?.select();
   await updateAutocompleteList(initialPath);
 }
 
