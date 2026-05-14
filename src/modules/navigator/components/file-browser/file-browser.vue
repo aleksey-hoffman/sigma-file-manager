@@ -153,6 +153,7 @@ defineExpose({
   goBack: fb.goBack,
   goForward: fb.goForward,
   navigateToParent: fb.navigateToParent,
+  openNewItemDialog: fb.openNewItemDialog,
   copyItems: fb.copyItems,
   cutItems: fb.cutItems,
   pasteItems: fb.pasteItems,

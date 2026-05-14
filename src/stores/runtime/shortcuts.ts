@@ -239,6 +239,36 @@ const DEFAULT_SHORTCUTS: ShortcutDefinition[] = [
     isReadOnly: false,
   },
   {
+    id: 'createNewFile',
+    labelKey: 'shortcuts.createNewFileInCurrentDirectory',
+    defaultKeys: {
+      ctrl: true,
+      shift: true,
+      key: 'm',
+    },
+    scope: 'navigator',
+    conditions: {
+      inputFieldIsActive: false,
+      dialogIsOpened: false,
+    },
+    isReadOnly: false,
+  },
+  {
+    id: 'createNewDirectory',
+    labelKey: 'shortcuts.createNewDirectoryInTheCurrentDirectory',
+    defaultKeys: {
+      ctrl: true,
+      shift: true,
+      key: 'n',
+    },
+    scope: 'navigator',
+    conditions: {
+      inputFieldIsActive: false,
+      dialogIsOpened: false,
+    },
+    isReadOnly: false,
+  },
+  {
     id: 'copyCurrentDirectoryPath',
     labelKey: 'shortcuts.copyCurrentDirectoryPathToClipboard',
     defaultKeys: {

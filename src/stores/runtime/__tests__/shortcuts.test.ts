@@ -440,6 +440,42 @@ describe('shortcuts store', () => {
     expect(event.defaultPrevented).toBe(true);
   });
 
+  it('matches default create-new item shortcuts', async () => {
+    const shortcutsStore = useShortcutsStore();
+    const createNewFileHandler = vi.fn();
+    const createNewDirectoryHandler = vi.fn();
+
+    shortcutsStore.registerHandler('createNewFile', createNewFileHandler);
+    shortcutsStore.registerHandler('createNewDirectory', createNewDirectoryHandler);
+
+    expect(shortcutsStore.getShortcutLabel('createNewFile')).toBe('Ctrl+Shift+M');
+    expect(shortcutsStore.getShortcutLabel('createNewDirectory')).toBe('Ctrl+Shift+N');
+
+    const newFileEvent = new KeyboardEvent('keydown', {
+      key: 'M',
+      code: 'KeyM',
+      ctrlKey: true,
+      shiftKey: true,
+      bubbles: true,
+      cancelable: true,
+    });
+    const newDirectoryEvent = new KeyboardEvent('keydown', {
+      key: 'N',
+      code: 'KeyN',
+      ctrlKey: true,
+      shiftKey: true,
+      bubbles: true,
+      cancelable: true,
+    });
+
+    await expect(shortcutsStore.handleKeydown(newFileEvent)).resolves.toBe(true);
+    await expect(shortcutsStore.handleKeydown(newDirectoryEvent)).resolves.toBe(true);
+    expect(createNewFileHandler).toHaveBeenCalledTimes(1);
+    expect(createNewDirectoryHandler).toHaveBeenCalledTimes(1);
+    expect(newFileEvent.defaultPrevented).toBe(true);
+    expect(newDirectoryEvent.defaultPrevented).toBe(true);
+  });
+
   it('prevents Ctrl+Shift+C default behavior before async shortcut handlers finish', async () => {
     const shortcutsStore = useShortcutsStore();
 

@@ -63,6 +63,7 @@ type FileBrowserInstance = InstanceType<typeof FileBrowser> & {
   goBack?: () => void | Promise<void>;
   goForward?: () => void | Promise<void>;
   navigateToParent?: () => void | Promise<void>;
+  openNewItemDialog?: (type: 'file' | 'directory') => void;
   printEntry?: (entry?: DirEntry) => Promise<void>;
 };
 
@@ -754,11 +755,30 @@ function handleGoUpDirectoryShortcut(): boolean {
   return callActivePaneMethod('navigateToParent');
 }
 
+function handleCreateNewItemShortcut(type: 'file' | 'directory'): boolean {
+  if (globalSearchStore.isOpen) return false;
+
+  if (hasBlockingDismissalLayersForNavigatorShortcuts()) return false;
+
+  if (hasBlockingRekaDismissableLayersForNavigatorShortcuts()) return false;
+
+  const pane = getNavigatorPaneRef();
+
+  if (pane?.openNewItemDialog) {
+    pane.openNewItemDialog(type);
+    return true;
+  }
+
+  return false;
+}
+
 function registerShortcutHandlers() {
   shortcutsStore.registerHandler('toggleAddressBar', () => openAddressBarEditor('path'));
   shortcutsStore.registerHandler('openEntry', () => openAddressBarEditor('entry'));
   shortcutsStore.registerHandler('toggleFilter', handleFilterShortcut);
   shortcutsStore.registerHandler('reloadCurrentDirectory', handleReloadShortcut);
+  shortcutsStore.registerHandler('createNewFile', () => handleCreateNewItemShortcut('file'));
+  shortcutsStore.registerHandler('createNewDirectory', () => handleCreateNewItemShortcut('directory'));
   shortcutsStore.registerHandler('copyCurrentDirectoryPath', handleCopyCurrentDirectoryPathShortcut);
   shortcutsStore.registerHandler('openCopiedPath', () => callActivePaneMethod('openCopiedPath'));
   shortcutsStore.registerHandler('copy', handleCopyShortcut);

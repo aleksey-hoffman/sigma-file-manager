@@ -105,6 +105,8 @@ export type ShortcutId
     | 'toggleAddressBar'
     | 'openEntry'
     | 'toggleSplitView'
+    | 'createNewFile'
+    | 'createNewDirectory'
     | 'copyCurrentDirectoryPath'
     | 'openCopiedPath'
     | 'copy'

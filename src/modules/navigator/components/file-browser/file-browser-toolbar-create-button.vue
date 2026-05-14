@@ -17,7 +17,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { ContextMenuShortcut } from '@/components/ui/context-menu';
 import { FilePlusIcon, FolderPlusIcon, PlusIcon } from '@lucide/vue';
+import { useShortcutsStore } from '@/stores/runtime/shortcuts';
 
 const emit = defineEmits<{
   (event: 'createNewDirectory'): void;
@@ -25,6 +27,7 @@ const emit = defineEmits<{
 }>();
 
 const { t } = useI18n();
+const shortcutsStore = useShortcutsStore();
 </script>
 
 <template>
@@ -49,13 +52,25 @@ const { t } = useI18n();
         side="bottom"
         class="file-browser-toolbar-create-button__dropdown"
       >
-        <DropdownMenuItem @click="emit('createNewDirectory')">
+        <DropdownMenuItem
+          class="file-browser-toolbar-create-button__menu-item-with-shortcut"
+          @click="emit('createNewDirectory')"
+        >
           <FolderPlusIcon :size="14" />
-          {{ t('navigator.newDirectory') }}
+          <span>{{ t('navigator.newDirectory') }}</span>
+          <ContextMenuShortcut>
+            {{ shortcutsStore.getShortcutLabel('createNewDirectory') }}
+          </ContextMenuShortcut>
         </DropdownMenuItem>
-        <DropdownMenuItem @click="emit('createNewFile')">
+        <DropdownMenuItem
+          class="file-browser-toolbar-create-button__menu-item-with-shortcut"
+          @click="emit('createNewFile')"
+        >
           <FilePlusIcon :size="14" />
-          {{ t('navigator.newFile') }}
+          <span>{{ t('navigator.newFile') }}</span>
+          <ContextMenuShortcut>
+            {{ shortcutsStore.getShortcutLabel('createNewFile') }}
+          </ContextMenuShortcut>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
@@ -75,5 +90,14 @@ const { t } = useI18n();
 
 .file-browser-toolbar-create-button__dropdown {
   min-width: 180px;
+}
+
+.file-browser-toolbar-create-button__dropdown :deep(.sigma-ui-dropdown-menu-item) {
+  gap: 8px;
+}
+
+.file-browser-toolbar-create-button__menu-item-with-shortcut {
+  display: flex;
+  align-items: center;
 }
 </style>
