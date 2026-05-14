@@ -121,7 +121,9 @@ pub fn get_associated_programs_impl(file_path: &str) -> GetAssociatedProgramsRes
         }
     }
 
-    if is_directory && crate::default_file_manager::is_default_file_manager().unwrap_or(false) {
+    if is_directory
+        && crate::default_file_manager::is_current_default_file_manager().unwrap_or(false)
+    {
         if let Some(explorer_program) = get_file_explorer_program(&seen_paths) {
             seen_paths.insert(explorer_program.name.to_lowercase());
             seen_paths.insert(explorer_program.path.to_lowercase());
