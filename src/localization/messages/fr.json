@@ -1858,7 +1858,6 @@
     "loadingExtension": "Chargement de l'extension...",
     "loadingRegistry": "Chargement des extensions...",
     "noDescription": "Aucune description disponible",
-    "unknownAuthor": "Auteur inconnu",
     "unknownPermission": "Permission inconnue",
     "unknownVersion": "Version inconnue",
     "version": "Version",
@@ -1979,8 +1978,7 @@
     "noResults": "Aucune commande trouvée.",
     "noCommands": "Aucune commande enregistrée. Installez et activez des extensions pour ajouter des commandes.",
     "recentHeading": "Récent",
-    "otherCommandsHeading": "Autres",
-    "run": "Exécuter"
+    "otherCommandsHeading": "Autres"
   },
   "statusCenter": {
     "title": "Centre d'état",

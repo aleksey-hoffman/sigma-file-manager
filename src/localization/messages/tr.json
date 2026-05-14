@@ -1855,7 +1855,6 @@
     "loadingExtension": "Uzantı yükleniyor...",
     "loadingRegistry": "Eklentiler yükleniyor...",
     "noDescription": "Açıklama yok",
-    "unknownAuthor": "Bilinmeyen yazar",
     "unknownPermission": "Bilinmeyen izin",
     "unknownVersion": "Bilinmeyen sürüm",
     "version": "Sürüm",
@@ -1979,8 +1978,7 @@
     "noResults": "Komut bulunamadı.",
     "noCommands": "Kayıtlı komut yok. Komut eklemek için uzantıları yükleyip etkinleştirin.",
     "recentHeading": "Son Kullanılan",
-    "otherCommandsHeading": "Diğer",
-    "run": "Çalıştır"
+    "otherCommandsHeading": "Diğer"
   },
   "statusCenter": {
     "title": "Durum merkezi",

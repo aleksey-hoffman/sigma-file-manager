@@ -1898,7 +1898,6 @@
     "loadingExtension": "Загрузка расширения...",
     "loadingRegistry": "Загрузка расширений...",
     "noDescription": "Описание отсутствует",
-    "unknownAuthor": "Неизвестный автор",
     "unknownPermission": "Неизвестное разрешение",
     "unknownVersion": "Неизвестная версия",
     "version": "Версия",
@@ -2019,8 +2018,7 @@
     "noResults": "Команды не найдены.",
     "noCommands": "Команды не зарегистрированы. Установите и включите расширения, чтобы добавить команды.",
     "recentHeading": "Недавние",
-    "otherCommandsHeading": "Другие",
-    "run": "Выполнить"
+    "otherCommandsHeading": "Другие"
   },
   "lanShare": {
     "serverActive": "Общий доступ по сети активен",

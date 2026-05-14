@@ -1854,7 +1854,6 @@
     "loadingExtension": "در حال بارگذاری افزونه...",
     "loadingRegistry": "بارگذاری افزونه‌ها...",
     "noDescription": "توضیحی موجود نیست",
-    "unknownAuthor": "نویسنده ناشناخته",
     "unknownPermission": "مجوز ناشناخته",
     "unknownVersion": "نسخه ناشناخته",
     "version": "نسخه",
@@ -1978,8 +1977,7 @@
     "noResults": "هیچ فرمانی پیدا نشد.",
     "noCommands": "هیچ فرمانی ثبت نشده است. برای افزودن فرمان‌ها افزونه‌ها را نصب و فعال کنید.",
     "recentHeading": "اخیر",
-    "otherCommandsHeading": "سایر",
-    "run": "اجرا"
+    "otherCommandsHeading": "سایر"
   },
   "splitView": "Split view",
   "statusCenter": {

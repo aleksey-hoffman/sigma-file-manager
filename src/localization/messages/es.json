@@ -1858,7 +1858,6 @@
     "loadingExtension": "Cargando extensión...",
     "loadingRegistry": "Cargando extensiones...",
     "noDescription": "Sin descripción disponible",
-    "unknownAuthor": "Autor desconocido",
     "unknownPermission": "Permiso desconocido",
     "unknownVersion": "Versión desconocida",
     "version": "Versión",
@@ -1979,8 +1978,7 @@
     "noResults": "No se encontraron comandos.",
     "noCommands": "No hay comandos registrados. Instala y habilita extensiones para agregar comandos.",
     "recentHeading": "Reciente",
-    "otherCommandsHeading": "Otros",
-    "run": "Ejecutar"
+    "otherCommandsHeading": "Otros"
   },
   "statusCenter": {
     "title": "Centro de estado",

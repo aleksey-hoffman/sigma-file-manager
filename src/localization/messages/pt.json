@@ -1867,7 +1867,6 @@
     "loadingExtension": "Carregando extensão...",
     "loadingRegistry": "Carregando extensões...",
     "noDescription": "Sem descrição disponível",
-    "unknownAuthor": "Autor desconhecido",
     "unknownPermission": "Permissão desconhecida",
     "unknownVersion": "Versão desconhecida",
     "version": "Versão",
@@ -1991,8 +1990,7 @@
     "noResults": "Nenhum comando encontrado.",
     "noCommands": "Nenhum comando registrado. Instale e habilite extensões para adicionar comandos.",
     "recentHeading": "Recente",
-    "otherCommandsHeading": "Outros",
-    "run": "Executar"
+    "otherCommandsHeading": "Outros"
   },
   "statusCenter": {
     "title": "Central de status",

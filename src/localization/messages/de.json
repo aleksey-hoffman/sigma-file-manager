@@ -1858,7 +1858,6 @@
     "loadingExtension": "Erweiterung wird geladen...",
     "loadingRegistry": "Erweiterungen werden geladen...",
     "noDescription": "Keine Beschreibung verfügbar",
-    "unknownAuthor": "Unbekannter Autor",
     "unknownPermission": "Unbekannte Berechtigung",
     "unknownVersion": "Unbekannte Version",
     "version": "Version",
@@ -1979,8 +1978,7 @@
     "noResults": "Keine Befehle gefunden.",
     "noCommands": "Keine Befehle registriert. Installiere und aktiviere Erweiterungen, um Befehle hinzuzufügen.",
     "recentHeading": "Zuletzt verwendet",
-    "otherCommandsHeading": "Andere",
-    "run": "Ausführen"
+    "otherCommandsHeading": "Andere"
   },
   "statusCenter": {
     "title": "Statuscenter",

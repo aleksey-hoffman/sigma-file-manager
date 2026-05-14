@@ -1858,7 +1858,6 @@
     "loadingExtension": "正在加载扩展...",
     "loadingRegistry": "加载扩展程序...",
     "noDescription": "无描述",
-    "unknownAuthor": "未知作者",
     "unknownPermission": "未知权限",
     "unknownVersion": "未知版本",
     "version": "版本",
@@ -1979,8 +1978,7 @@
     "noResults": "未找到命令。",
     "noCommands": "未注册任何命令。安装并启用扩展以添加命令。",
     "recentHeading": "最近",
-    "otherCommandsHeading": "其他",
-    "run": "运行"
+    "otherCommandsHeading": "其他"
   },
   "statusCenter": {
     "title": "状态中心",

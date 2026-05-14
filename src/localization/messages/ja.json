@@ -1855,7 +1855,6 @@
     "loadingExtension": "拡張機能を読み込み中...",
     "loadingRegistry": "拡張機能を読み込み中...",
     "noDescription": "説明がありません",
-    "unknownAuthor": "不明な作者",
     "unknownPermission": "不明な権限",
     "unknownVersion": "不明なバージョン",
     "version": "バージョン",
@@ -1979,8 +1978,7 @@
     "noResults": "コマンドが見つかりません。",
     "noCommands": "コマンドが登録されていません。拡張機能をインストールして有効化するとコマンドが追加されます。",
     "recentHeading": "最近",
-    "otherCommandsHeading": "その他",
-    "run": "実行"
+    "otherCommandsHeading": "その他"
   },
   "statusCenter": {
     "title": "ステータスセンター",
