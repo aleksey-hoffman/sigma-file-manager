@@ -111,7 +111,7 @@ export const languages: LocalizationLanguage[] = [
     isRtl: false,
   },
   {
-    name: 'tiếng việt (㗂越)',
+    name: 'Tiếng Việt (Vietnamese)',
     locale: 'vi',
     isCorrected: false,
     isRtl: false,
