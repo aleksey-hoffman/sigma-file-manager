@@ -70,6 +70,9 @@
     "markdownSource": "منبع مارک‌داون",
     "markdownPreview": "پیش‌نمایش رندرشده"
   },
+  "printView": {
+    "unsupportedFileType": "این نوع فایل برای چاپ پشتیبانی نمی‌شود"
+  },
   "trayMenu": {
     "globalShortcuts": "میانبرهای جهانی",
     "toggleWindowVisibility": "تغییر دید پنجره",
@@ -813,6 +816,7 @@
     "displayShortcutList": "نمایش لیست میانبر",
     "closeOpenedDialogOverlay": "بستن گفتگو / همپوشانی / منو / انتخاب",
     "openCloseSelectedFileInQuickView": "باز کردن / بستن فایل انتخاب‌شده در پنجره نمایش سریع",
+    "printSelectedFile": "چاپ فایل انتخاب‌شده",
     "toggleFullScreen": "تغییر تمام صفحه",
     "uiZoomIncrease": "افزایش بزرگنمایی UI",
     "uiZoomDecrease": "کاهش زوم UI",
@@ -1411,6 +1415,7 @@
     "deletedWorkspaceName": "فضای کاری حذف شده: {name}",
     "openedWorkspaceName": "فضای کاری باز شده: {name}",
     "quickViewFileIsNotSupported": "نمایش سریع: فایل پشتیبانی نمی شود",
+    "printViewFileIsNotSupported": "چاپ: فایل پشتیبانی نمی‌شود",
     "driveWasConnected": "درایو متصل شد",
     "driveScanInitiated": "فهرست‌بندی درایو آغاز شد",
     "oneOfTheSearchFilesIsDamaged": "یکی از فایل های جستجو آسیب دیده است",
@@ -1766,6 +1771,7 @@
       "delete": "حذف",
       "openWith": "باز کردن با...",
       "quickView": "نمای سریع",
+      "print": "چاپ",
       "share": "اشتراک‌گذاری در شبکه محلی",
       "openInNewTab": "باز کردن در برگه جدید",
       "addToFavorites": "افزودن به موردعلاقه‌ها",

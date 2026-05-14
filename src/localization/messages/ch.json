@@ -70,6 +70,9 @@
     "markdownSource": "Markdown 源码",
     "markdownPreview": "渲染预览"
   },
+  "printView": {
+    "unsupportedFileType": "此文件类型不支持打印"
+  },
   "trayMenu": {
     "globalShortcuts": "全局快捷键",
     "toggleWindowVisibility": "切换窗口可见性",
@@ -814,6 +817,7 @@
     "displayShortcutList": "显示快捷键列表",
     "closeOpenedDialogOverlay": "关闭对话框 / 浮层 / 菜单 / 选择",
     "openCloseSelectedFileInQuickView": "在快速查看窗口中打开 / 关闭所选文件",
+    "printSelectedFile": "打印所选文件",
     "toggleFullScreen": "切换全屏",
     "uiZoomIncrease": "用户界面缩放增加",
     "uiZoomDecrease": "用户界面缩放减少",
@@ -1412,6 +1416,7 @@
     "deletedWorkspaceName": "已删除的工作区：{name}",
     "openedWorkspaceName": "打开的工作区：{name}",
     "quickViewFileIsNotSupported": "快速查看：文件不支持",
+    "printViewFileIsNotSupported": "打印：不支持此文件",
     "driveWasConnected": "驱动器已连接",
     "driveScanInitiated": "驱动器索引已启动",
     "oneOfTheSearchFilesIsDamaged": "其中一个搜索文件被损坏",
@@ -1767,6 +1772,7 @@
       "delete": "删除",
       "openWith": "打开方式...",
       "quickView": "快速查看",
+      "print": "打印",
       "share": "局域网共享",
       "openInNewTab": "在新标签页中打开",
       "addToFavorites": "添加到收藏",

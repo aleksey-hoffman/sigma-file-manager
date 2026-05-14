@@ -70,6 +70,9 @@
     "markdownSource": "Sorgente Markdown",
     "markdownPreview": "Anteprima resa"
   },
+  "printView": {
+    "unsupportedFileType": "Questo tipo di file non è supportato per la stampa"
+  },
   "trayMenu": {
     "globalShortcuts": "SCORCIATOIE GLOBALI",
     "toggleWindowVisibility": "Attiva/disattiva la visibilità della finestra",
@@ -814,6 +817,7 @@
     "displayShortcutList": "Mostra la lista delle scorciatoie",
     "closeOpenedDialogOverlay": "Chiudi dialogo / sovrapposizione / menu / selezione",
     "openCloseSelectedFileInQuickView": "Apri / chiudi il file selezionato nella finestra Quick View",
+    "printSelectedFile": "Stampa il file selezionato",
     "toggleFullScreen": "Attiva lo schermo intero",
     "uiZoomIncrease": "Aumento zoom della UI",
     "uiZoomDecrease": "Diminuzione zoom della UI",
@@ -1410,6 +1414,7 @@
     "deletedWorkspaceName": "Spazio di lavoro eliminato: {name}",
     "openedWorkspaceName": "Spazio di lavoro aperto: {name}",
     "quickViewFileIsNotSupported": "Visualizzazione rapida: il file non è supportato",
+    "printViewFileIsNotSupported": "Stampa: file non supportato",
     "driveWasConnected": "L'unità è stata collegata",
     "driveScanInitiated": "Indicizzazione dell'unità avviata",
     "oneOfTheSearchFilesIsDamaged": "Uno dei file di ricerca è danneggiato",
@@ -1767,6 +1772,7 @@
       "delete": "Elimina",
       "openWith": "Apri con...",
       "quickView": "Anteprima rapida",
+      "print": "Stampa",
       "share": "Condividi in rete locale",
       "openInNewTab": "Apri in nuova scheda",
       "addToFavorites": "Aggiungi ai preferiti",

@@ -569,6 +569,7 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
     onEntryMouseUp: actions.onEntryMouseUp,
 
     quickView: actions.quickView,
+    printEntry: actions.printEntry,
     selectFirstEntry,
 
     navigateUp: keyboardNav.navigateUp,

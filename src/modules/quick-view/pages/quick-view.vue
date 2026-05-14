@@ -31,6 +31,7 @@ import {
   isHttpOrHttpsUrl,
   fetchQuickViewSiblingPathsFromDisk,
   QUICK_VIEW_DISPLAYED_PATH_CHANGED_EVENT,
+  QUICK_VIEW_LOAD_FILE_EVENT,
   type QuickViewFileType,
 } from '@/stores/runtime/quick-view';
 import {
@@ -50,6 +51,7 @@ const resolvedSiblingPaths = ref<string[]>([]);
 const siblingPathsProvidedByMain = ref(false);
 const isLoading = ref(true);
 const stripScrollElement = ref<HTMLElement | null>(null);
+const pdfIframeRef = ref<HTMLIFrameElement | null>(null);
 const textEditorRef = ref<HTMLTextAreaElement | null>(null);
 const textEditorValue = ref('');
 const textSavedBaseline = ref('');
@@ -645,6 +647,28 @@ async function handleKeydown(event: KeyboardEvent) {
     return;
   }
 
+  const printPdfShortcut = (event.ctrlKey || event.metaKey)
+    && event.code === 'KeyP'
+    && !event.altKey;
+
+  if (printPdfShortcut) {
+    if (
+      currentFilePath.value
+      && determineFileType(currentFilePath.value) === 'pdf'
+      && !isEditableKeyboardTarget(event.target)
+    ) {
+      const pdfInnerWindow = pdfIframeRef.value?.contentWindow;
+
+      if (pdfInnerWindow) {
+        event.preventDefault();
+        event.stopPropagation();
+        pdfInnerWindow.focus();
+        pdfInnerWindow.print();
+        return;
+      }
+    }
+  }
+
   if (event.code === 'Escape') {
     event.preventDefault();
     await closeWindow();
@@ -674,7 +698,7 @@ async function setupEventListeners() {
     path: string;
     siblingPaths: string[] | null;
   }>(
-    'quick-view:load-file',
+    QUICK_VIEW_LOAD_FILE_EVENT,
     async (event) => {
       stashCurrentTextIfDirty();
       currentFilePath.value = event.payload.path;
@@ -750,6 +774,7 @@ watch(currentFilePath, (path) => {
 onMounted(async () => {
   window.addEventListener('keydown', handleKeydown, true);
   await setupEventListeners();
+  void invoke('configure_webview_hide_pdf_more_settings').catch(() => {});
   isLoading.value = false;
 });
 
@@ -811,6 +836,7 @@ onUnmounted(() => {
         />
 
         <iframe
+          ref="pdfIframeRef"
           v-else-if="fileType === 'pdf'"
           :key="`${currentFilePath}-pdf`"
           :src="fileAssetUrl"

@@ -63,6 +63,7 @@ type FileBrowserInstance = InstanceType<typeof FileBrowser> & {
   goBack?: () => void | Promise<void>;
   goForward?: () => void | Promise<void>;
   navigateToParent?: () => void | Promise<void>;
+  printEntry?: (entry?: DirEntry) => Promise<void>;
 };
 
 type GlobalSearchViewInstance = InstanceType<typeof GlobalSearchView> & {
@@ -631,6 +632,18 @@ async function handleQuickViewShortcut() {
   }
 }
 
+async function handlePrintShortcut() {
+  const pane = getActivePaneRef();
+
+  if (pane && selectedEntries.value.length > 0) {
+    const lastSelected = selectedEntries.value[selectedEntries.value.length - 1];
+
+    if (lastSelected.is_file) {
+      await pane.printEntry?.(lastSelected);
+    }
+  }
+}
+
 async function openTerminalWithOptions(asAdmin: boolean) {
   if (!currentActivePath.value) return;
 
@@ -763,6 +776,7 @@ function registerShortcutHandlers() {
   }, { checkItemSelected: hasSelectedItems });
   shortcutsStore.registerHandler('escape', handleEscapeKey);
   shortcutsStore.registerHandler('quickView', handleQuickViewShortcut, { checkItemSelected: hasSelectedItems });
+  shortcutsStore.registerHandler('print', handlePrintShortcut, { checkItemSelected: hasSelectedItems });
   shortcutsStore.registerHandler('openNewTab', handleOpenNewTabShortcut);
   shortcutsStore.registerHandler('closeCurrentTab', handleCloseCurrentTabShortcut);
   shortcutsStore.registerHandler('restoreLastClosedTab', handleRestoreLastClosedTabShortcut);

@@ -45,6 +45,11 @@ const CONTEXT_MENU_ITEMS: ContextMenuItemConfig[] = [
     entryTypes: ['file'],
   },
   {
+    action: 'print',
+    selectionTypes: ['single'],
+    entryTypes: ['file'],
+  },
+  {
     action: 'share',
     selectionTypes: ['single', 'multiple'],
     entryTypes: ['file', 'directory'],

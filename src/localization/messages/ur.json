@@ -70,6 +70,9 @@
     "markdownSource": "Markdown ماخذ",
     "markdownPreview": "رینڈ شدہ پیش نظارہ"
   },
+  "printView": {
+    "unsupportedFileType": "یہ فائل کی قسم پرنٹنگ کے لیے معاون نہیں"
+  },
   "trayMenu": {
     "globalShortcuts": "عالمی شارٹ کٹس",
     "toggleWindowVisibility": "ونڈو دکھائیں / چھپائیں",
@@ -853,6 +856,7 @@
     "displayShortcutList": "شارٹ کٹ فہرست دکھائیں",
     "closeOpenedDialogOverlay": "ڈائیلاگ / اوورلے / مینو / انتخاب برخاست کریں",
     "openCloseSelectedFileInQuickView": "فوری نظارے میں منتخب فائل کھولیں / بند کریں",
+    "printSelectedFile": "منتخب فائل پرنٹ کریں",
     "toggleFullScreen": "مکمل اسکرین ٹوگل کریں",
     "uiZoomIncrease": "UI زوم بڑھائیں",
     "uiZoomDecrease": "UI زوم کم کریں",
@@ -1453,6 +1457,7 @@
     "deletedWorkspaceName": "حذف شدہ ورک اسپیس: {name}",
     "openedWorkspaceName": "کھلا ورک اسپیس: {name}",
     "quickViewFileIsNotSupported": "فوری نظر: فائل سپورٹ نہیں",
+    "printViewFileIsNotSupported": "پرنٹ: فائل معاون نہیں",
     "driveWasConnected": "ڈرائیو منسلک ہوئی",
     "driveScanInitiated": "ڈرائیو انڈیکسنگ شروع ہوئی",
     "oneOfTheSearchFilesIsDamaged": "سرچ فائلوں میں سے ایک خراب ہے",
@@ -1807,6 +1812,7 @@
       "delete": "حذف",
       "openWith": "اس کے ساتھ کھولیں…",
       "quickView": "فوری نظر",
+      "print": "پرنٹ",
       "share": "LAN شیئر",
       "openInNewTab": "نئے ٹیب میں",
       "addToFavorites": "پسندیدہ میں",

@@ -70,6 +70,9 @@
     "markdownSource": "Markdown-Quelltext",
     "markdownPreview": "Gerenderte Vorschau"
   },
+  "printView": {
+    "unsupportedFileType": "Dieser Dateityp wird zum Drucken nicht unterstützt"
+  },
   "trayMenu": {
     "globalShortcuts": "GLOBALE VERKNÜPFUNGEN",
     "toggleWindowVisibility": "Fenstersichtbarkeit umschalten",
@@ -814,6 +817,7 @@
     "displayShortcutList": "Kurzwahlliste anzeigen",
     "closeOpenedDialogOverlay": "Dialog / Overlay / Menü / Auswahl schließen",
     "openCloseSelectedFileInQuickView": "Ausgewählte Datei im Schnellansichtsfenster öffnen / schließen",
+    "printSelectedFile": "Ausgewählte Datei drucken",
     "toggleFullScreen": "Vollbild umschalten",
     "uiZoomIncrease": "UI-Zoom erhöhen",
     "uiZoomDecrease": "UI-Zoom verringern",
@@ -1412,6 +1416,7 @@
     "deletedWorkspaceName": "Gelöschter Arbeitsbereich: {name}",
     "openedWorkspaceName": "Geöffneter Arbeitsbereich: {name}",
     "quickViewFileIsNotSupported": "Schnellansicht: Datei wird nicht unterstützt",
+    "printViewFileIsNotSupported": "Drucken: Datei wird nicht unterstützt",
     "driveWasConnected": "Laufwerk wurde angeschlossen",
     "driveScanInitiated": "Laufwerk-Indexierung gestartet",
     "oneOfTheSearchFilesIsDamaged": "Eine der Suchdateien ist beschädigt",
@@ -1767,6 +1772,7 @@
       "delete": "Löschen",
       "openWith": "Öffnen mit...",
       "quickView": "Schnellansicht",
+      "print": "Drucken",
       "share": "Im Netzwerk teilen",
       "openInNewTab": "In neuem Tab öffnen",
       "addToFavorites": "Zu Favoriten hinzufügen",

@@ -70,6 +70,9 @@
     "markdownSource": "मार्कडाउन स्रोत",
     "markdownPreview": "पूर्वावलोकन प्रस्तुत किया गया"
   },
+  "printView": {
+    "unsupportedFileType": "यह फ़ाइल प्रकार मुद्रण के लिए समर्थित नहीं है"
+  },
   "trayMenu": {
     "globalShortcuts": "वैश्विक शॉर्टकट",
     "toggleWindowVisibility": "विंडो दृश्यता टॉगल करें",
@@ -853,6 +856,7 @@
     "displayShortcutList": "शॉर्टकट सूची प्रदर्शित करें",
     "closeOpenedDialogOverlay": "संवाद / ओवरले / मेनू / चयन बंद करें",
     "openCloseSelectedFileInQuickView": "त्वरित दृश्य विंडो में चयनित फ़ाइल खोलें / बंद करें",
+    "printSelectedFile": "चयनित फ़ाइल प्रिंट करें",
     "toggleFullScreen": "संपूर्ण स्क्रीन टॉगल करें",
     "uiZoomIncrease": "यूआई ज़ूम वृद्धि",
     "uiZoomDecrease": "यूआई ज़ूम में कमी",
@@ -1453,6 +1457,7 @@
     "deletedWorkspaceName": "हटाया गया कार्यक्षेत्र: {name}",
     "openedWorkspaceName": "खुला कार्यक्षेत्र: {name}",
     "quickViewFileIsNotSupported": "त्वरित दृश्य: फ़ाइल समर्थित नहीं है",
+    "printViewFileIsNotSupported": "मुद्रण: फ़ाइल समर्थित नहीं है",
     "driveWasConnected": "ड्राइव कनेक्ट था",
     "driveScanInitiated": "ड्राइव अनुक्रमण प्रारंभ किया गया",
     "oneOfTheSearchFilesIsDamaged": "खोज फ़ाइलों में से एक क्षतिग्रस्त है",
@@ -1807,6 +1812,7 @@
       "delete": "मिटाना",
       "openWith": "के साथ खोलें...",
       "quickView": "त्वरित देखें",
+      "print": "प्रिंट",
       "share": "LAN पर साझा करें",
       "openInNewTab": "वेब टेब में खोलें",
       "addToFavorites": "पसंदीदा में जोड़े",

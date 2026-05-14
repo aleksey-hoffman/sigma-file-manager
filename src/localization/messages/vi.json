@@ -70,6 +70,9 @@
     "markdownSource": "Mã nguồn Markdown",
     "markdownPreview": "Bản xem trước đã kết xuất"
   },
+  "printView": {
+    "unsupportedFileType": "Loại tệp này không được hỗ trợ để in"
+  },
   "trayMenu": {
     "globalShortcuts": "CÁCH TẮT TOÀN CẦU",
     "toggleWindowVisibility": "Chuyển đổi chế độ hiển thị của cửa sổ",
@@ -814,6 +817,7 @@
     "displayShortcutList": "Hiển thị danh sách phím tắt",
     "closeOpenedDialogOverlay": "Đóng hộp thoại / lớp phủ / menu / lựa chọn",
     "openCloseSelectedFileInQuickView": "Mở / đóng tệp đã chọn trong cửa sổ Xem nhanh",
+    "printSelectedFile": "In tệp đã chọn",
     "toggleFullScreen": "Bật chế độ toàn màn hình",
     "uiZoomIncrease": "Tăng thu phóng giao diện người dùng",
     "uiZoomDecrease": "Giảm thu phóng giao diện người dùng",
@@ -1412,6 +1416,7 @@
     "deletedWorkspaceName": "Không gian làm việc đã xóa: {name}",
     "openedWorkspaceName": "Không gian làm việc đã mở: {name}",
     "quickViewFileIsNotSupported": "Xem nhanh: tập tin không được hỗ trợ",
+    "printViewFileIsNotSupported": "In: tập tin không được hỗ trợ",
     "driveWasConnected": "Ổ đĩa đã được kết nối",
     "driveScanInitiated": "Đã bắt đầu lập chỉ mục ổ đĩa",
     "oneOfTheSearchFilesIsDamaged": "Một trong các tệp tìm kiếm bị hỏng",
@@ -1767,6 +1772,7 @@
       "delete": "Xóa",
       "openWith": "Mở bằng...",
       "quickView": "Xem nhanh",
+      "print": "In",
       "share": "Chia sẻ qua mạng LAN",
       "openInNewTab": "Mở trong tab mới",
       "addToFavorites": "Thêm vào yêu thích",

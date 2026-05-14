@@ -166,12 +166,15 @@ describe('shortcuts store', () => {
     const shortcutsStore = useShortcutsStore();
     const toggleAddressBarHandler = vi.fn();
     const openEntryHandler = vi.fn();
+    const printHandler = vi.fn();
 
     shortcutsStore.registerHandler('toggleAddressBar', toggleAddressBarHandler);
     shortcutsStore.registerHandler('openEntry', openEntryHandler);
+    shortcutsStore.registerHandler('print', printHandler, { checkItemSelected: () => true });
 
     expect(shortcutsStore.getShortcutLabel('toggleAddressBar')).toBe('Ctrl+L');
     expect(shortcutsStore.getShortcutLabel('openEntry')).toBe('Ctrl+P');
+    expect(shortcutsStore.getShortcutLabel('print')).toBe('Ctrl+O');
 
     const editAddressEvent = new KeyboardEvent('keydown', {
       key: 'l',
@@ -187,13 +190,23 @@ describe('shortcuts store', () => {
       bubbles: true,
       cancelable: true,
     });
+    const printEvent = new KeyboardEvent('keydown', {
+      key: 'o',
+      code: 'KeyO',
+      ctrlKey: true,
+      bubbles: true,
+      cancelable: true,
+    });
 
     await expect(shortcutsStore.handleKeydown(editAddressEvent)).resolves.toBe(true);
     await expect(shortcutsStore.handleKeydown(openEntryEvent)).resolves.toBe(true);
+    await expect(shortcutsStore.handleKeydown(printEvent)).resolves.toBe(true);
     expect(toggleAddressBarHandler).toHaveBeenCalledTimes(1);
     expect(openEntryHandler).toHaveBeenCalledTimes(1);
+    expect(printHandler).toHaveBeenCalledTimes(1);
     expect(editAddressEvent.defaultPrevented).toBe(true);
     expect(openEntryEvent.defaultPrevented).toBe(true);
+    expect(printEvent.defaultPrevented).toBe(true);
   });
 
   it('matches mouse shortcuts for page history navigation when assigned', async () => {

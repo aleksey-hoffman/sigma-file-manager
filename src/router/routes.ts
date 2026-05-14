@@ -15,6 +15,13 @@ export const quickViewRoute: RouteRecordRaw = {
   meta: { layout: 'quick-view' },
 };
 
+export const printViewRoute: RouteRecordRaw = {
+  path: '/print-view',
+  name: 'print-view',
+  component: () => import('@/modules/print-view/pages/print-view.vue'),
+  meta: { layout: 'quick-view' },
+};
+
 export const extensionPageRoute: RouteRecordRaw = {
   path: '/extension/:fullPageId',
   name: 'extension-page',

@@ -70,6 +70,9 @@
     "markdownSource": "Исходный Markdown",
     "markdownPreview": "Предпросмотр"
   },
+  "printView": {
+    "unsupportedFileType": "Этот тип файла не поддерживается для печати"
+  },
   "trayMenu": {
     "globalShortcuts": "ГЛОБАЛЬНЫЕ ШОРТКАТЫ",
     "toggleWindowVisibility": "Переключить видимость окна",
@@ -853,6 +856,7 @@
     "displayShortcutList": "Показать список шорткатов",
     "closeOpenedDialogOverlay": "Закрыть диалог / оверлей / меню / выделение",
     "openCloseSelectedFileInQuickView": "Открыть / закрыть выбранный файл в окне быстрого просмотра",
+    "printSelectedFile": "Печать выбранного файла",
     "toggleFullScreen": "Включить полноэкранный режим",
     "uiZoomIncrease": "Увеличение масштаба интерфейса",
     "uiZoomDecrease": "уменьшение масштаба интерфейса",
@@ -1453,6 +1457,7 @@
     "deletedWorkspaceName": "Удалено рабочее пространство: {name}",
     "openedWorkspaceName": "Открыто рабочее пространство: {name}",
     "quickViewFileIsNotSupported": "Быстрый просмотр: файл не поддерживается",
+    "printViewFileIsNotSupported": "Печать: файл не поддерживается",
     "driveWasConnected": "Диск подключен",
     "driveScanInitiated": "Индексация диска запущена",
     "oneOfTheSearchFilesIsDamaged": "Один из файлов поиска поврежден",
@@ -1807,6 +1812,7 @@
       "delete": "Удалить",
       "openWith": "Открыть с помощью...",
       "quickView": "Быстрый просмотр",
+      "print": "Печать",
       "share": "Поделиться по сети",
       "openInNewTab": "Открыть в новой вкладке",
       "addToFavorites": "Добавить в избранное",

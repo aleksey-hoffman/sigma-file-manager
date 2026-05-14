@@ -70,6 +70,9 @@
     "markdownSource": "Markdown source",
     "markdownPreview": "Rendered preview"
   },
+  "printView": {
+    "unsupportedFileType": "This file type is not supported for printing"
+  },
   "trayMenu": {
     "globalShortcuts": "GLOBAL SHORTCUTS",
     "toggleWindowVisibility": "Toggle window visibility",
@@ -853,6 +856,7 @@
     "displayShortcutList": "Display shortcut list",
     "closeOpenedDialogOverlay": "Dismiss dialog / overlay / menu / selection",
     "openCloseSelectedFileInQuickView": "Open / close selected file in Quick View window",
+    "printSelectedFile": "Print selected file",
     "toggleFullScreen": "Toggle full screen",
     "uiZoomIncrease": "UI zoom increase",
     "uiZoomDecrease": "UI zoom decrease",
@@ -1453,6 +1457,7 @@
     "deletedWorkspaceName": "Deleted workspace: {name}",
     "openedWorkspaceName": "Opened workspace: {name}",
     "quickViewFileIsNotSupported": "Quick view: file is not supported",
+    "printViewFileIsNotSupported": "Print: file is not supported",
     "driveWasConnected": "Drive was connected",
     "driveScanInitiated": "Drive indexing initiated",
     "oneOfTheSearchFilesIsDamaged": "One of the search files is damaged",
@@ -1807,6 +1812,7 @@
       "delete": "Delete",
       "openWith": "Open with...",
       "quickView": "Quick view",
+      "print": "Print",
       "share": "Share over LAN",
       "openInNewTab": "Open in new tab",
       "addToFavorites": "Add to favorites",

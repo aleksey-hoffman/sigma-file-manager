@@ -3,11 +3,11 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 import { createRouter, createWebHistory } from 'vue-router';
-import { routes, quickViewRoute, extensionPageRoute } from './routes';
+import { routes, quickViewRoute, printViewRoute, extensionPageRoute } from './routes';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
-  routes: [...routes, extensionPageRoute, quickViewRoute],
+  routes: [...routes, extensionPageRoute, quickViewRoute, printViewRoute],
 });
 
 export default router;

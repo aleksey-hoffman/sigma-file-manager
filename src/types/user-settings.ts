@@ -116,6 +116,7 @@ export type ShortcutId
     | 'rename'
     | 'escape'
     | 'quickView'
+    | 'print'
     | 'openNewTab'
     | 'closeCurrentTab'
     | 'restoreLastClosedTab'

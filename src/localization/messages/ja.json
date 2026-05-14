@@ -70,6 +70,9 @@
     "markdownSource": "Markdown ソース",
     "markdownPreview": "レンダリング結果のプレビュー"
   },
+  "printView": {
+    "unsupportedFileType": "このファイル形式は印刷に対応していません"
+  },
   "trayMenu": {
     "globalShortcuts": "グローバル ショートカット",
     "toggleWindowVisibility": "ウィンドウの表示を切り替え",
@@ -814,6 +817,7 @@
     "displayShortcutList": "ショートカット一覧を表示",
     "closeOpenedDialogOverlay": "ダイアログ / オーバーレイ / メニュー / 選択を閉じる",
     "openCloseSelectedFileInQuickView": "クイック ビュー ウィンドウで選択したファイルを開く / 閉じる",
+    "printSelectedFile": "選択したファイルを印刷",
     "toggleFullScreen": "フルスクリーン切り替え",
     "uiZoomIncrease": "UI ズーム増加",
     "uiZoomDecrease": "UIズーム減少",
@@ -1412,6 +1416,7 @@
     "deletedWorkspaceName": "削除されたワークスペース: {name}",
     "openedWorkspaceName": "開いたワークスペース: {name}",
     "quickViewFileIsNotSupported": "クイック ビュー: ファイルはサポートされていません",
+    "printViewFileIsNotSupported": "印刷: ファイルはサポートされていません",
     "driveWasConnected": "ドライブが接続されました",
     "driveScanInitiated": "ドライブのインデックス作成が開始されました",
     "oneOfTheSearchFilesIsDamaged": "検索ファイルの 1 つが破損しています",
@@ -1767,6 +1772,7 @@
       "delete": "削除",
       "openWith": "アプリで開く...",
       "quickView": "クイックビュー",
+      "print": "印刷",
       "share": "LAN で共有",
       "openInNewTab": "新しいタブで開く",
       "addToFavorites": "お気に入りに追加",

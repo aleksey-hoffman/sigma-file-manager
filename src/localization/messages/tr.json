@@ -70,6 +70,9 @@
     "markdownSource": "Markdown kaynağı",
     "markdownPreview": "İşlenmiş önizleme"
   },
+  "printView": {
+    "unsupportedFileType": "Bu dosya türü yazdırma için desteklenmiyor"
+  },
   "trayMenu": {
     "globalShortcuts": "GLOBAL KISAYOLLAR",
     "toggleWindowVisibility": "Pencere görünürlüğünü değiştir",
@@ -814,6 +817,7 @@
     "displayShortcutList": "Kısayol listesini görüntüle",
     "closeOpenedDialogOverlay": "İletişim kutusu / yer paylaşımı / menü / seçimi kapat",
     "openCloseSelectedFileInQuickView": "Hızlı Görünüm penceresinde seçilen dosyayı aç / kapat",
+    "printSelectedFile": "Seçili dosyayı yazdır",
     "toggleFullScreen": "Tam ekrana geç",
     "uiZoomIncrease": "UI yakınlaştırma artışı",
     "uiZoomDecrease": "UI yakınlaştırma azaltma",
@@ -1412,6 +1416,7 @@
     "deletedWorkspaceName": "Silinen çalışma alanı: {name}",
     "openedWorkspaceName": "Açık çalışma alanı: {name}",
     "quickViewFileIsNotSupported": "Hızlı görünüm: dosya desteklenmiyor",
+    "printViewFileIsNotSupported": "Yazdırma: dosya desteklenmiyor",
     "driveWasConnected": "Sürücü bağlandı",
     "driveScanInitiated": "Sürücü indeksleme başlatıldı",
     "oneOfTheSearchFilesIsDamaged": "Arama dosyalarından biri hasarlı",
@@ -1767,6 +1772,7 @@
       "delete": "Sil",
       "openWith": "Birlikte aç...",
       "quickView": "Hızlı görünüm",
+      "print": "Yazdır",
       "share": "Yerel ağda paylaş",
       "openInNewTab": "Yeni sekmede aç",
       "addToFavorites": "Favorilere ekle",

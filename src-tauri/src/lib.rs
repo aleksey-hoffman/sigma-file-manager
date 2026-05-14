@@ -24,6 +24,8 @@ mod system_tray;
 mod terminal;
 #[cfg(windows)]
 mod url_drop;
+#[cfg(windows)]
+mod windows_print_view_webview;
 mod user_storage_files_config;
 pub mod utils;
 
@@ -147,6 +149,24 @@ fn build_launch_context(
 }
 
 #[tauri::command]
+fn configure_webview_hide_pdf_more_settings(window: tauri::WebviewWindow) {
+    #[cfg(windows)]
+    {
+        match window.label() {
+            "print-view" | "quick-view" => {
+                windows_print_view_webview::hide_pdf_more_settings_toolbar(&window);
+            }
+            _ => {}
+        }
+    }
+
+    #[cfg(not(windows))]
+    {
+        let _ = window;
+    }
+}
+
+#[tauri::command]
 fn get_launch_context() -> LaunchContext {
     let raw_args: Vec<String> = std::env::args().collect();
 
@@ -225,6 +245,7 @@ pub fn run() {
                 .build(),
         )
         .invoke_handler(tauri::generate_handler![
+            configure_webview_hide_pdf_more_settings,
             get_launch_context,
             startup_storage_bootstrap::get_startup_storage_bootstrap,
             default_file_manager::is_default_file_manager,

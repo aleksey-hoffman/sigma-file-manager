@@ -345,6 +345,14 @@ export function useDirEntryActions() {
     }
   }
 
+  async function printEntry(entries: DirEntry[]) {
+    const fileEntry = entries.find(entry => entry.is_file);
+
+    if (fileEntry) {
+      await quickViewStore.openPrintViewFromMainWindow(fileEntry.path);
+    }
+  }
+
   function copyPath(entries: DirEntry[]) {
     if (entries.length === 0) return;
 
@@ -404,6 +412,9 @@ export function useDirEntryActions() {
         break;
       case 'quick-view':
         quickView(entries);
+        break;
+      case 'print':
+        printEntry(entries);
         break;
       case 'share':
         startShare(entries);

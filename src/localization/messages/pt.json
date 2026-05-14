@@ -70,6 +70,9 @@
     "markdownSource": "Fonte Markdown",
     "markdownPreview": "Pré-visualização renderizada"
   },
+  "printView": {
+    "unsupportedFileType": "Este tipo de arquivo não é compatível com impressão"
+  },
   "trayMenu": {
     "globalShortcuts": "ACESSO DIRETO GLOBAL",
     "toggleWindowVisibility": "Alternar visibilidade da janela",
@@ -816,6 +819,7 @@
     "displayShortcutList": "Exibir lista de atalhos",
     "closeOpenedDialogOverlay": "Fechar diálogo / sobreposição / menu / seleção",
     "openCloseSelectedFileInQuickView": "Abrir / fechar arquivo selecionado na janela Quick View",
+    "printSelectedFile": "Imprimir arquivo selecionado",
     "toggleFullScreen": "Alternar tela inteira",
     "uiZoomIncrease": "Aumento de zoom da interface do usuário",
     "uiZoomDecrease": "Diminuir zoom da interface do usuário",
@@ -1421,6 +1425,7 @@
     "deletedWorkspaceName": "Espaço de trabalho excluído: {name}",
     "openedWorkspaceName": "Área de trabalho aberta: {name}",
     "quickViewFileIsNotSupported": "QuickView: Arquivo não suportado",
+    "printViewFileIsNotSupported": "Imprimir: arquivo não compatível",
     "driveWasConnected": "A unidade foi conectada",
     "driveScanInitiated": "Indexação do disco iniciada",
     "oneOfTheSearchFilesIsDamaged": "Um dos arquivos de pesquisa está danificado",
@@ -1779,6 +1784,7 @@
       "delete": "Excluir",
       "openWith": "Abrir com...",
       "quickView": "Visualização rápida",
+      "print": "Imprimir",
       "share": "Compartilhar na rede local",
       "openInNewTab": "Abrir em nova aba",
       "addToFavorites": "Adicionar aos favoritos",

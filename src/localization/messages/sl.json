@@ -70,6 +70,9 @@
     "markdownSource": "Markdown izvorna koda",
     "markdownPreview": "Upodobljen predogled"
   },
+  "printView": {
+    "unsupportedFileType": "Ta vrsta datoteke ni podprta za tiskanje"
+  },
   "trayMenu": {
     "globalShortcuts": "GLOBALNE BLIŽNICE",
     "toggleWindowVisibility": "Preklopi vidnost okna",
@@ -853,6 +856,7 @@
     "displayShortcutList": "Prikaži seznam bližnjic",
     "closeOpenedDialogOverlay": "Zapri dialog / prekrivanje / meni / izbiro",
     "openCloseSelectedFileInQuickView": "Odpri / zapri izbrano datoteko v oknu Quick View",
+    "printSelectedFile": "Natisni izbrano datoteko",
     "toggleFullScreen": "Preklopi celozaslonski način",
     "uiZoomIncrease": "Povečaj UI povečavo",
     "uiZoomDecrease": "Zmanjšaj UI povečavo",
@@ -1453,6 +1457,7 @@
     "deletedWorkspaceName": "Izbrisan delovni prostor: {name}",
     "openedWorkspaceName": "Odprt delovni prostor: {name}",
     "quickViewFileIsNotSupported": "Quick view: datoteka ni podprta",
+    "printViewFileIsNotSupported": "Tiskanje: datoteka ni podprta",
     "driveWasConnected": "Pogon je bil povezan",
     "driveScanInitiated": "Indeksiranje pogona se je začelo",
     "oneOfTheSearchFilesIsDamaged": "Ena od datotek iskanja je poškodovana",
@@ -1806,6 +1811,7 @@
       "delete": "Izbriši",
       "openWith": "Odpri z...",
       "quickView": "Hitri pregled",
+      "print": "Natisni",
       "share": "Deli prek omrežja",
       "openInNewTab": "Odpri v novem zavihku",
       "addToFavorites": "Dodaj med priljubljene",

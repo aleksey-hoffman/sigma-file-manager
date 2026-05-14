@@ -159,6 +159,7 @@ defineExpose({
   deleteItems: fb.deleteItems,
   startRename: fb.startRename,
   quickView: fb.quickView,
+  printEntry: fb.printEntry,
   refresh: fb.refresh,
 });
 </script>

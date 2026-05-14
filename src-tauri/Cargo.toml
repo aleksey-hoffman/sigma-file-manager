@@ -78,6 +78,8 @@ libc = "0.2"
 
 [target.'cfg(windows)'.dependencies]
 winreg = "0.55"
+webview-com-bindings-core = { package = "windows-core", version = "0.61.2" }
+webview2-com = "0.38.2"
 windows-core = "0.58"
 windows = { version = "0.58", features = [
     "implement",

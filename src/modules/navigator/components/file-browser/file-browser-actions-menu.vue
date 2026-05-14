@@ -16,6 +16,7 @@ import {
   Trash2Icon,
   ShredderIcon,
   EyeIcon,
+  PrinterIcon,
   Share2Icon,
   SquarePlusIcon,
   StarIcon,
@@ -331,6 +332,18 @@ function handleDeleteClick() {
     <span>{{ t('fileBrowser.actions.quickView') }}</span>
     <ContextMenuShortcut v-if="shortcutsStore.getShortcutLabel('quickView')">
       {{ shortcutsStore.getShortcutLabel('quickView') }}
+    </ContextMenuShortcut>
+  </component>
+  <component
+    :is="menuItemComponent"
+    v-if="isActionVisible('print')"
+    class="file-browser-actions-menu__item-with-shortcut"
+    @select="emitAction('print')"
+  >
+    <PrinterIcon :size="16" />
+    <span>{{ t('fileBrowser.actions.print') }}</span>
+    <ContextMenuShortcut v-if="shortcutsStore.getShortcutLabel('print')">
+      {{ shortcutsStore.getShortcutLabel('print') }}
     </ContextMenuShortcut>
   </component>
   <component

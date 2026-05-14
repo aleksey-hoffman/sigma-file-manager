@@ -390,6 +390,21 @@ const DEFAULT_SHORTCUTS: ShortcutDefinition[] = [
     isReadOnly: false,
   },
   {
+    id: 'print',
+    labelKey: 'shortcuts.printSelectedFile',
+    defaultKeys: {
+      ctrl: true,
+      key: 'o',
+    },
+    scope: 'navigator',
+    conditions: {
+      inputFieldIsActive: false,
+      dialogIsOpened: false,
+      dirItemIsSelected: true,
+    },
+    isReadOnly: false,
+  },
+  {
     id: 'openNewTab',
     labelKey: 'shortcuts.openCurrentDirInNewTab',
     defaultKeys: {

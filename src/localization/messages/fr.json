@@ -70,6 +70,9 @@
     "markdownSource": "Source Markdown",
     "markdownPreview": "Aperçu rendu"
   },
+  "printView": {
+    "unsupportedFileType": "Ce type de fichier n'est pas pris en charge pour l'impression"
+  },
   "trayMenu": {
     "globalShortcuts": "RACCOURCIS GLOBAUX",
     "toggleWindowVisibility": "Basculer la visibilité de la fenêtre",
@@ -814,6 +817,7 @@
     "displayShortcutList": "Afficher la liste des raccourcis",
     "closeOpenedDialogOverlay": "Fermer dialogue / superposition / menu / sélection",
     "openCloseSelectedFileInQuickView": "Ouvrir / fermer le fichier sélectionné dans la fenêtre Quick View",
+    "printSelectedFile": "Imprimer le fichier sélectionné",
     "toggleFullScreen": "Passer en plein écran",
     "uiZoomIncrease": "Augmentation du zoom de l'interface utilisateur",
     "uiZoomDecrease": "diminution du zoom de l'interface utilisateur",
@@ -1412,6 +1416,7 @@
     "deletedWorkspaceName": "Espace de travail supprimé : {name}",
     "openedWorkspaceName": "Espace de travail ouvert : {name}",
     "quickViewFileIsNotSupported": "Vue rapide: le fichier n'est pas pris en charge",
+    "printViewFileIsNotSupported": "Impression : fichier non pris en charge",
     "driveWasConnected": "Le lecteur était connecté",
     "driveScanInitiated": "Indexation du lecteur initiée",
     "oneOfTheSearchFilesIsDamaged": "L'un des fichiers de recherche est endommagé",
@@ -1767,6 +1772,7 @@
       "delete": "Supprimer",
       "openWith": "Ouvrir avec...",
       "quickView": "Aperçu rapide",
+      "print": "Imprimer",
       "share": "Partager en réseau local",
       "openInNewTab": "Ouvrir dans un nouvel onglet",
       "addToFavorites": "Ajouter aux favoris",

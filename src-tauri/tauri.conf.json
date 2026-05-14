@@ -38,6 +38,20 @@
         "shadow": true,
         "visible": false,
         "url": "/quick-view"
+      },
+      {
+        "label": "print-view",
+        "title": "Sigma File Manager | Print",
+        "width": 1280,
+        "height": 720,
+        "minWidth": 300,
+        "minHeight": 200,
+        "resizable": true,
+        "fullscreen": false,
+        "decorations": true,
+        "shadow": true,
+        "visible": false,
+        "url": "/print-view"
       }
     ],
     "security": {
