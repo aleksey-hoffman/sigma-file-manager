@@ -132,6 +132,7 @@ function setupNavigationDataSource(
 
   useFileBrowserLifecycle({
     tabRef,
+    currentPath: navigation.currentPath,
     readDir: navigation.readDir,
     init: navigation.init,
   });

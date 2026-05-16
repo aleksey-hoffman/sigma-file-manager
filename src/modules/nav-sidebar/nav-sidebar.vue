@@ -90,7 +90,7 @@ function getExtensionPageShortcutLabel(pageId: string): string {
 }
 
 async function openDrive(path: string) {
-  await workspacesStore.openNewTabGroup(path);
+  await workspacesStore.openPathInCurrentTab(path);
   router.push({ name: 'navigator' });
 }
 

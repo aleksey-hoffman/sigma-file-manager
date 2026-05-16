@@ -158,6 +158,52 @@ describe('workspaces storage duplicate tabs', () => {
     ]);
   });
 
+  it('opens a path in the current tab without creating a new tab group', async () => {
+    mockDirectoryReadResponses();
+
+    const currentTab = createTab('current-tab', 'C:/Users/aleks/Projects');
+    const otherTab = createTab('other-tab', 'C:/Users/aleks/Documents');
+    const workspacesStore = useWorkspacesStore();
+    workspacesStore.workspaces = [
+      createWorkspace([
+        [currentTab],
+        [otherTab],
+      ]),
+    ];
+    currentTab.filterQuery = 'notes';
+
+    await workspacesStore.openPathInCurrentTab('D:/');
+
+    expect(workspacesStore.currentWorkspace?.tabGroups).toHaveLength(2);
+    expect(workspacesStore.currentTab?.id).toBe('current-tab');
+    expect(workspacesStore.currentTab?.path).toBe('D:/');
+    expect(workspacesStore.currentTab?.filterQuery).toBe('');
+    expect(invokeMock).toHaveBeenCalledWith('read_dir_with_timeout', {
+      path: 'D:/',
+      timeoutMs: expect.any(Number),
+    });
+  });
+
+  it('opens a path in the focused split pane tab', async () => {
+    mockDirectoryReadResponses();
+
+    const leftTab = createTab('left-tab', 'C:/Users/aleks/Projects');
+    const rightTab = createTab('right-tab', 'C:/Users/aleks/Documents');
+    const workspacesStore = useWorkspacesStore();
+    workspacesStore.workspaces = [
+      createWorkspace([
+        [leftTab, rightTab],
+      ]),
+    ];
+    workspacesStore.setCurrentTabIndex(1);
+
+    await workspacesStore.openPathInCurrentTab('D:/');
+
+    expect(leftTab.path).toBe('C:/Users/aleks/Projects');
+    expect(rightTab.path).toBe('D:/');
+    expect(workspacesStore.currentTab?.id).toBe('right-tab');
+  });
+
   it('restores the most recently closed tab group at its previous position', async () => {
     mockDirectoryReadResponses();
 

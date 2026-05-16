@@ -227,6 +227,16 @@ function handleToggleInfoPanel() {
   showInfoPanel.value = !showInfoPanel.value;
 }
 
+function activateTabPane(tabId: string) {
+  const tabIndex = workspacesStore.currentTabGroup?.findIndex(tab => tab.id === tabId) ?? -1;
+
+  activeTabId.value = tabId;
+
+  if (tabIndex >= 0) {
+    workspacesStore.setCurrentTabIndex(tabIndex);
+  }
+}
+
 function handleSelectionChange(entries: DirEntry[], tabId?: string) {
   if (entries.length > 0) {
     isSearchSelectionActive.value = false;
@@ -234,7 +244,7 @@ function handleSelectionChange(entries: DirEntry[], tabId?: string) {
     selectedEntries.value = entries;
 
     if (tabId) {
-      activeTabId.value = tabId;
+      activateTabPane(tabId);
 
       paneRefsMap.value.forEach((pane, paneTabId) => {
         if (paneTabId !== tabId) {
@@ -270,7 +280,7 @@ function handleCurrentDirChange(entry: DirEntry | null) {
 }
 
 function handlePaneFocus(tabId: string) {
-  activeTabId.value = tabId;
+  activateTabPane(tabId);
 }
 
 function setPaneRef(element: FileBrowserInstance | null, tabId: string) {
@@ -686,7 +696,7 @@ function switchToPane(paneIndex: number): boolean {
   if (!tabGroup || !tabGroup[paneIndex]) return false;
 
   const targetTab = tabGroup[paneIndex];
-  activeTabId.value = targetTab.id;
+  activateTabPane(targetTab.id);
 
   paneRefsMap.value.forEach((pane, tabId) => {
     if (tabId !== targetTab.id) {

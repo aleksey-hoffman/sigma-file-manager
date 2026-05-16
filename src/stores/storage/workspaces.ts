@@ -448,6 +448,19 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
     }
   }
 
+  async function openPathInCurrentTab(path: string) {
+    if (!currentTab.value || !currentTabGroup.value) {
+      await openNewTabGroup(path);
+      return;
+    }
+
+    updateTabPath(currentTab.value, path);
+    currentTab.value.dirEntries = [];
+    currentTab.value.selectedDirEntries = [];
+    currentTab.value.filterQuery = '';
+    await loadCurrentTabGroup();
+  }
+
   async function restoreLastClosedTabGroup(): Promise<boolean> {
     if (!currentWorkspace.value) {
       showNoClosedTabToRestoreToast();
@@ -884,6 +897,7 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
     init,
     addNewTabGroup,
     openNewTabGroup,
+    openPathInCurrentTab,
     restoreLastClosedTabGroup,
     openOrFocusTabGroup,
     preloadDefaultTab,
@@ -894,6 +908,7 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
     closeAllTabGroups,
     closeOtherTabGroups,
     closeDuplicatePathTabs,
+    setCurrentTabIndex,
     setTabs,
     toggleSplitView,
     setTabFilterQuery,
