@@ -72,6 +72,10 @@ const isLoading = ref(true);
 const stripScrollAreaRef = ref<InstanceType<typeof ScrollArea> | null>(null);
 const stripScrollViewportRef = ref<HTMLElement | null>(null);
 
+function uniqueSiblingPaths(paths: string[]): string[] {
+  return Array.from(new Set(paths));
+}
+
 function syncQuickViewStripViewportRef() {
   const instance = stripScrollAreaRef.value as unknown as ComponentPublicInstance | null;
   const rawElement = instance && '$el' in instance ? instance.$el : null;
@@ -152,6 +156,12 @@ watch(
       }
 
       stripDirEntryByPath.value = {};
+      stripThumbnailParentKey = null;
+      stripThumbnails.clearThumbnails();
+      stripVirtualThumbRangePrevious = {
+        start: 0,
+        end: 0,
+      };
       return;
     }
 
@@ -357,7 +367,13 @@ function cancelQuickViewStripThumbnailForSiblingIndex(entryIndex: number) {
     return;
   }
 
-  const path = paths[entryIndex];
+  cancelQuickViewStripThumbnailForPath(paths[entryIndex]);
+}
+
+function cancelQuickViewStripThumbnailForPath(path: string | undefined) {
+  if (!path) {
+    return;
+  }
 
   if (determineFileType(path) !== 'image' || isHttpOrHttpsUrl(path)) {
     return;
@@ -411,18 +427,22 @@ watch(
 
     const pathsChanged = !previous || next.paths !== previous.paths;
 
-    if (pathsChanged) {
-      stripVirtualThumbRangePrevious = {
-        start: 0,
-        end: 0,
-      };
-    }
-
     const { start: rangeStart, end: rangeEnd } = next;
     const { start: previousStart, end: previousEnd } = stripVirtualThumbRangePrevious;
+    const nextVisiblePaths = pathsChanged ? new Set(next.paths.slice(rangeStart, rangeEnd)) : null;
 
     for (let entryIndex = previousStart; entryIndex < previousEnd; entryIndex += 1) {
-      if (entryIndex < rangeStart || entryIndex >= rangeEnd) {
+      const previousPath = previous?.paths[entryIndex];
+      const shouldCancel = pathsChanged
+        ? !nextVisiblePaths?.has(previousPath ?? '')
+        : entryIndex < rangeStart || entryIndex >= rangeEnd;
+
+      if (shouldCancel) {
+        if (pathsChanged) {
+          cancelQuickViewStripThumbnailForPath(previousPath);
+          continue;
+        }
+
         cancelQuickViewStripThumbnailForSiblingIndex(entryIndex);
       }
     }
@@ -645,6 +665,7 @@ async function ensureResolvedSiblingPaths(): Promise<string[]> {
 
   if (paths.length <= 1 && !siblingPathsProvidedByMain.value) {
     paths = await fetchQuickViewSiblingPathsFromDisk(currentFilePath.value);
+    paths = uniqueSiblingPaths(paths);
     resolvedSiblingPaths.value = paths;
   }
 
@@ -933,7 +954,7 @@ async function setupEventListeners() {
     async (event) => {
       stashCurrentTextIfDirty();
       currentFilePath.value = event.payload.path;
-      resolvedSiblingPaths.value = event.payload.siblingPaths ?? [];
+      resolvedSiblingPaths.value = uniqueSiblingPaths(event.payload.siblingPaths ?? []);
       siblingPathsProvidedByMain.value = event.payload.siblingPaths !== null;
       isLoading.value = false;
       await setQuickViewWindowTitle(event.payload.path);
