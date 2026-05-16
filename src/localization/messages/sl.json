@@ -795,6 +795,7 @@
       "yesterdayAt": "Včeraj ob {time}"
     },
     "columns": "Stolpci",
+    "tags": "Oznake",
     "folders": "Mape",
     "images": "Slike",
     "videos": "Videi",

@@ -765,6 +765,7 @@
       "yesterdayAt": "昨日 {time}"
     },
     "columns": "列",
+    "tags": "タグ",
     "folders": "フォルダー",
     "images": "画像",
     "videos": "動画",

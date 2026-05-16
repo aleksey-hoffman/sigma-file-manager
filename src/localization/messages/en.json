@@ -795,6 +795,7 @@
       "yesterdayAt": "Yesterday, {time}"
     },
     "columns": "Columns",
+    "tags": "Tags",
     "folders": "Folders",
     "images": "Images",
     "videos": "Videos",

@@ -795,6 +795,7 @@
       "yesterdayAt": "Вчера в {time}"
     },
     "columns": "Столбцы",
+    "tags": "Теги",
     "folders": "Папки",
     "images": "Изображения",
     "videos": "Видео",

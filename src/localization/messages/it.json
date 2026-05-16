@@ -765,6 +765,7 @@
       "yesterdayAt": "Ieri alle {time}"
     },
     "columns": "Colonne",
+    "tags": "Tag",
     "folders": "Cartelle",
     "images": "Immagini",
     "videos": "Video",

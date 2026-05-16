@@ -244,9 +244,11 @@ export type ListColumnVisibility = {
   items: boolean;
   size: boolean;
   modified: boolean;
+  created: boolean;
+  tags: boolean;
 };
 
-export type ListSortColumn = 'name' | 'items' | 'size' | 'modified';
+export type ListSortColumn = 'name' | 'items' | 'size' | 'modified' | 'created' | 'tags';
 
 export type ListSortDirection = 'asc' | 'desc';
 

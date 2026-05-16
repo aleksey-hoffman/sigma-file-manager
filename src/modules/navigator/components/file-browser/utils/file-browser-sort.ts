@@ -5,8 +5,14 @@
 import type { DirEntry } from '@/types/dir-entry';
 import type { ListSortColumn, ListSortDirection } from '@/types/user-settings';
 import type { useDirSizesStore } from '@/stores/runtime/dir-sizes';
+import type { ItemTag, TaggedItem } from '@/types/user-stats';
 
 export type DirSizesStore = ReturnType<typeof useDirSizesStore>;
+
+export type FileBrowserEntrySortTagContext = {
+  tags: ItemTag[];
+  taggedItems: TaggedItem[];
+};
 
 const nameCollator = new Intl.Collator(undefined, { numeric: true });
 
@@ -29,8 +35,10 @@ export function sortFileBrowserEntries(
   column: ListSortColumn,
   direction: ListSortDirection,
   dirSizesStore: DirSizesStore,
+  tagContext?: FileBrowserEntrySortTagContext,
 ): DirEntry[] {
   const multiplier = direction === 'asc' ? 1 : -1;
+  const tagNamesByPath = tagContext ? createTagNamesByPath(tagContext) : new Map<string, string[]>();
 
   return [...items].sort((entryA, entryB) => {
     const dirsFirst = (entryA.is_dir === entryB.is_dir) ? 0 : (entryA.is_dir ? -1 : 1);
@@ -57,10 +65,53 @@ export function sortFileBrowserEntries(
     else if (column === 'modified') {
       comparison = Number(entryA.modified_time) - Number(entryB.modified_time);
     }
+    else if (column === 'created') {
+      comparison = Number(entryA.created_time) - Number(entryB.created_time);
+    }
+    else if (column === 'tags') {
+      comparison = compareTagNameLists(
+        tagNamesByPath.get(entryA.path) ?? [],
+        tagNamesByPath.get(entryB.path) ?? [],
+      );
+
+      if (comparison === 0) {
+        comparison = nameCollator.compare(entryA.name, entryB.name);
+      }
+    }
     else {
       return 0;
     }
 
     return comparison * multiplier;
   });
+}
+
+function createTagNamesByPath(tagContext: FileBrowserEntrySortTagContext): Map<string, string[]> {
+  const tagsById = new Map(tagContext.tags.map(tag => [tag.id, tag]));
+  const tagNamesByPath = new Map<string, string[]>();
+
+  for (const taggedItem of tagContext.taggedItems) {
+    const tagNames = taggedItem.tagIds
+      .map(tagId => tagsById.get(tagId)?.name.trim())
+      .filter((tagName): tagName is string => !!tagName)
+      .sort(nameCollator.compare);
+
+    tagNamesByPath.set(taggedItem.path, tagNames);
+  }
+
+  return tagNamesByPath;
+}
+
+function compareTagNameLists(tagNamesA: string[], tagNamesB: string[]): number {
+  const sharedLength = Math.min(tagNamesA.length, tagNamesB.length);
+
+  for (let tagNameIndex = 0; tagNameIndex < sharedLength; tagNameIndex++) {
+    const comparison = nameCollator.compare(tagNamesA[tagNameIndex], tagNamesB[tagNameIndex]);
+
+    if (comparison !== 0) {
+      return comparison;
+    }
+  }
+
+  return tagNamesA.length - tagNamesB.length;
 }

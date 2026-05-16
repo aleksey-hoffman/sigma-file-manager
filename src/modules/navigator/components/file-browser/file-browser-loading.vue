@@ -40,6 +40,14 @@ const columnVisibility = computed(() => userSettingsStore.userSettings.navigator
           v-if="columnVisibility.modified"
           class="file-browser-loading__modified"
         />
+        <Skeleton
+          v-if="columnVisibility.created"
+          class="file-browser-loading__created"
+        />
+        <Skeleton
+          v-if="columnVisibility.tags"
+          class="file-browser-loading__tags"
+        />
       </div>
     </div>
   </ScrollArea>
@@ -93,9 +101,16 @@ const columnVisibility = computed(() => userSettingsStore.userSettings.navigator
   border-radius: 4px;
 }
 
-.file-browser-loading__modified {
+.file-browser-loading__modified,
+.file-browser-loading__created {
   width: 100px;
   height: 14px;
+  border-radius: 4px;
+}
+
+.file-browser-loading__tags {
+  width: 90px;
+  height: 20px;
   border-radius: 4px;
 }
 </style>

@@ -765,6 +765,7 @@
       "yesterdayAt": "Gestern um {time}"
     },
     "columns": "Spalten",
+    "tags": "Tags",
     "folders": "Ordner",
     "images": "Bilder",
     "videos": "Videos",

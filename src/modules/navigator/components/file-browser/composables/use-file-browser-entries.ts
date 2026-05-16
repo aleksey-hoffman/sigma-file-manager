@@ -8,6 +8,7 @@ import {
 import type { DirEntry } from '@/types/dir-entry';
 import type { ListSortColumn, ListSortDirection } from '@/types/user-settings';
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
+import { useUserStatsStore } from '@/stores/storage/user-stats';
 import { sortFileBrowserEntries } from '@/modules/navigator/components/file-browser/utils/file-browser-sort';
 import {
   createFileBrowserQuickSearchCache,
@@ -27,6 +28,7 @@ export function useFileBrowserEntries(
   applySort: ComputedRef<boolean>,
 ) {
   const dirSizesStore = useDirSizesStore();
+  const userStatsStore = useUserStatsStore();
   const quickSearchCache = shallowRef(createFileBrowserQuickSearchCache());
 
   watch(dirContents, () => {
@@ -57,7 +59,10 @@ export function useFileBrowserEntries(
 
     if (applySort.value) {
       const column = sortColumn.value ?? 'name';
-      items = sortFileBrowserEntries(items, column, sortDirection.value, dirSizesStore);
+      items = sortFileBrowserEntries(items, column, sortDirection.value, dirSizesStore, {
+        tags: userStatsStore.tags,
+        taggedItems: userStatsStore.taggedItems,
+      });
     }
 
     return items;

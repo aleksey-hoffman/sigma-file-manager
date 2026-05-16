@@ -45,6 +45,14 @@ const listColumnsTemplate = computed(() => {
     columns.push('minmax(120px, 160px)');
   }
 
+  if (columnVisibility.value.created) {
+    columns.push('minmax(120px, 160px)');
+  }
+
+  if (columnVisibility.value.tags) {
+    columns.push('minmax(140px, 180px)');
+  }
+
   return columns.join(' ');
 });
 </script>
@@ -96,7 +104,7 @@ const listColumnsTemplate = computed(() => {
   --file-browser-grid-section-header-height: calc(8px + 2px + 1rem + 16px);
   --file-browser-list-column-gap: 16px;
   --file-browser-scrollbar-gutter: 24px;
-  --file-browser-list-columns: minmax(300px, 1fr) minmax(70px, 90px) minmax(50px, 100px) minmax(60px, 160px);
+  --file-browser-list-columns: minmax(300px, 1fr) minmax(70px, 90px) minmax(50px, 100px) minmax(60px, 160px) minmax(120px, 160px) minmax(140px, 180px);
 }
 
 .file-browser__content-scroll {

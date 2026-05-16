@@ -12,6 +12,7 @@ import { useQuickViewStore } from '@/stores/runtime/quick-view';
 import { useGlobalSearchStore } from '@/stores/runtime/global-search';
 import { useClipboardStore } from '@/stores/runtime/clipboard';
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
+import { useUserStatsStore } from '@/stores/storage/user-stats';
 import {
   registerNavigationProvider,
   unregisterNavigationProvider,
@@ -172,6 +173,7 @@ function setupExternalDataSource(options: UseFileBrowserOptions): DataSource {
   const globalSearchStore = useGlobalSearchStore();
   const userSettingsStore = useUserSettingsStore();
   const dirSizesStore = useDirSizesStore();
+  const userStatsStore = useUserStatsStore();
   const getEntries = options.externalEntries ?? (() => []);
   const getBasePath = options.basePath ?? (() => '');
 
@@ -186,7 +188,10 @@ function setupExternalDataSource(options: UseFileBrowserOptions): DataSource {
     }
 
     const column = listSortColumn.value ?? 'name';
-    return sortFileBrowserEntries(rawEntries, column, listSortDirection.value, dirSizesStore);
+    return sortFileBrowserEntries(rawEntries, column, listSortDirection.value, dirSizesStore, {
+      tags: userStatsStore.tags,
+      taggedItems: userStatsStore.taggedItems,
+    });
   });
 
   return {

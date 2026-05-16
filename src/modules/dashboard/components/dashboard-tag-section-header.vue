@@ -27,7 +27,7 @@ const tagsRef = computed(() => [props.tag]);
 const {
   editingTagId,
   editDraft,
-  renameInputRef,
+  setRenameInputRef,
   displayColor,
   colorHexForPicker,
   cancelEdit,
@@ -74,9 +74,10 @@ const {
     >{{ tag.name }}</span>
     <input
       v-else
-      ref="renameInputRef"
+      :ref="setRenameInputRef"
       v-model="editDraft"
       class="sigma-ui-input tag-selector__rename-input"
+      autofocus
       @keydown="stopSpaceKeyPropagation"
       @keydown.enter.prevent="commitEdit"
       @keydown.esc.prevent="cancelEdit"
@@ -123,6 +124,36 @@ const {
 
 .dashboard-tag-section-header .tag-selector__item-actions {
   margin-left: 0;
+}
+
+.dashboard-tag-section-header .tag-selector__edit,
+.dashboard-tag-section-header .tag-selector__delete {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: hsl(var(--muted-foreground));
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s, color 0.15s, background-color 0.15s;
+}
+
+.dashboard-tag-section-header:hover .tag-selector__edit,
+.dashboard-tag-section-header:hover .tag-selector__delete {
+  opacity: 1;
+}
+
+.dashboard-tag-section-header .tag-selector__edit:hover {
+  background-color: hsl(var(--primary) / 10%);
+  color: hsl(var(--primary));
+}
+
+.dashboard-tag-section-header .tag-selector__delete:hover {
+  background-color: hsl(var(--destructive) / 10%);
+  color: hsl(var(--destructive));
 }
 
 .dashboard-tag-section-header .tag-selector__rename-input {

@@ -7,7 +7,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import {
-  CheckIcon, CirclePlusIcon, PencilIcon, TagIcon, Trash2Icon,
+  CheckIcon, CirclePlusIcon, PencilIcon, TagIcon,
 } from '@lucide/vue';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -49,7 +49,6 @@ const props = withDefaults(defineProps<{
 const emit = defineEmits<{
   'toggle-tag': [tagId: string];
   'create-tag': [name: string];
-  'delete-tag': [tagId: string];
   'rename-tag': [tagId: string, name: string];
   'update-tag-color': [tagId: string, color: string];
 }>();
@@ -64,20 +63,18 @@ const tagsRef = computed(() => props.tags);
 const {
   editingTagId,
   editDraft,
-  renameInputRef,
+  setRenameInputRef,
   displayColor,
   colorHexForPicker,
   cancelEdit,
   commitEdit,
   startEdit,
-  deleteTag,
   onColorInput,
   onColorBlur,
   resetEditState,
 } = useTagInlineEditor({
   tags: tagsRef,
   onRename: (tagId, name) => emit('rename-tag', tagId, name),
-  onDelete: tagId => emit('delete-tag', tagId),
   onUpdateColor: (tagId, color) => emit('update-tag-color', tagId, color),
 });
 
@@ -267,9 +264,10 @@ function clearSearch() {
               >{{ tag.name }}</span>
               <input
                 v-else
-                ref="renameInputRef"
+                :ref="setRenameInputRef"
                 v-model="editDraft"
                 class="sigma-ui-input tag-selector__rename-input"
+                autofocus
                 @keydown="stopSpaceKeyPropagation"
                 @keydown.enter.prevent="commitEdit"
                 @keydown.esc.prevent="cancelEdit"
@@ -285,14 +283,6 @@ function clearSearch() {
                   @click="(event) => startEdit(event, tag)"
                 >
                   <PencilIcon :size="14" />
-                </button>
-                <button
-                  type="button"
-                  class="tag-selector__delete"
-                  :title="t('tags.deleteTag')"
-                  @click="(event) => deleteTag(event, tag.id)"
-                >
-                  <Trash2Icon :size="14" />
                 </button>
               </div>
             </CommandItem>
@@ -505,8 +495,7 @@ function clearSearch() {
   gap: 2px;
 }
 
-.tag-selector__edit,
-.tag-selector__delete {
+.tag-selector__edit {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -520,19 +509,13 @@ function clearSearch() {
   transition: opacity 0.15s, color 0.15s, background-color 0.15s;
 }
 
-.tag-selector__item:hover .tag-selector__edit,
-.tag-selector__item:hover .tag-selector__delete {
+.tag-selector__item:hover .tag-selector__edit {
   opacity: 1;
 }
 
 .tag-selector__edit:hover {
   background-color: hsl(var(--primary) / 10%);
   color: hsl(var(--primary));
-}
-
-.tag-selector__delete:hover {
-  background-color: hsl(var(--destructive) / 10%);
-  color: hsl(var(--destructive));
 }
 
 .tag-selector__footer {

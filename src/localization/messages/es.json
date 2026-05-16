@@ -765,6 +765,7 @@
       "yesterdayAt": "Ayer, {time}"
     },
     "columns": "Columnas",
+    "tags": "Etiquetas",
     "folders": "Carpetas",
     "images": "Imágenes",
     "videos": "Videos",

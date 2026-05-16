@@ -765,6 +765,7 @@
       "yesterdayAt": "昨天 {time}"
     },
     "columns": "列",
+    "tags": "标签",
     "folders": "文件夹",
     "images": "图片",
     "videos": "视频",

@@ -3,7 +3,7 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 import { useThrottleFn } from '@vueuse/core';
-import { nextTick, ref, watch, type Ref } from 'vue';
+import { nextTick, ref, watch, type Ref, type ComponentPublicInstance } from 'vue';
 import type { ItemTag } from '@/types/user-stats';
 
 export function colorHexForPicker(color: string): string {
@@ -29,7 +29,7 @@ export function stopSpaceKeyPropagation(event: KeyboardEvent) {
 export function useTagInlineEditor(options: {
   tags: Ref<ItemTag[]>;
   onRename: (tagId: string, name: string) => void;
-  onDelete: (tagId: string) => void;
+  onDelete?: (tagId: string) => void;
   onUpdateColor: (tagId: string, color: string) => void;
 }) {
   const { tags, onRename, onDelete, onUpdateColor } = options;
@@ -42,6 +42,10 @@ export function useTagInlineEditor(options: {
 
   function displayColor(tag: ItemTag): string {
     return previewTagColors.value[tag.id] ?? tag.color;
+  }
+
+  function setRenameInputRef(element: Element | ComponentPublicInstance | null) {
+    renameInputRef.value = element instanceof HTMLInputElement ? element : null;
   }
 
   function flushPendingColorsToParent() {
@@ -112,7 +116,7 @@ export function useTagInlineEditor(options: {
 
     editingTagId.value = tag.id;
     editDraft.value = tag.name;
-    void nextTick(() => {
+    nextTick(() => {
       renameInputRef.value?.focus();
       renameInputRef.value?.select();
     });
@@ -125,7 +129,7 @@ export function useTagInlineEditor(options: {
       cancelEdit();
     }
 
-    onDelete(tagId);
+    onDelete?.(tagId);
   }
 
   function onColorInput(event: Event, tagId: string) {
@@ -207,6 +211,7 @@ export function useTagInlineEditor(options: {
     editingTagId,
     editDraft,
     renameInputRef,
+    setRenameInputRef,
     colorHexForPicker,
     displayColor,
     cancelEdit,

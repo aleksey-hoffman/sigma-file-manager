@@ -105,6 +105,8 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
         items: true,
         size: true,
         modified: true,
+        created: false,
+        tags: false,
       },
       listSortColumn: null,
       listSortDirection: 'asc',

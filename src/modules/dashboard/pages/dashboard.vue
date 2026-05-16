@@ -364,7 +364,6 @@ async function handleUpdateTagColor(tagId: string, color: string) {
                         trigger-variant="compact"
                         @toggle-tag="(tagId) => handleToggleTagOnItem(item, tagId)"
                         @create-tag="(name) => handleCreateTagForItem(item, name)"
-                        @delete-tag="handleDeleteTag"
                         @rename-tag="handleRenameTag"
                         @update-tag-color="handleUpdateTagColor"
                       />
