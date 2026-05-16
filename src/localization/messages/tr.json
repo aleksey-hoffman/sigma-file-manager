@@ -769,6 +769,7 @@
     "images": "Resimler",
     "videos": "Videolar",
     "video": "Video",
+    "pdfPreviewFrameTitle": "PDF önizlemesi",
     "otherFiles": "Diğer dosyalar",
     "itemCount": "{count} öğe",
     "itemCountShort": "{count} öğe",

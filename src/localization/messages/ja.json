@@ -769,6 +769,7 @@
     "images": "画像",
     "videos": "動画",
     "video": "動画",
+    "pdfPreviewFrameTitle": "PDFプレビュー",
     "otherFiles": "その他のファイル",
     "itemCount": "{count} 項目",
     "itemCountShort": "{count} 項目",

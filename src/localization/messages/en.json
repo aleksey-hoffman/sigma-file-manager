@@ -799,6 +799,7 @@
     "images": "Images",
     "videos": "Videos",
     "video": "Video",
+    "pdfPreviewFrameTitle": "PDF preview",
     "otherFiles": "Other Files",
     "itemCount": "{count} items",
     "itemCountShort": "{count} items",

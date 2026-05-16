@@ -799,6 +799,7 @@
     "images": "Slike",
     "videos": "Videi",
     "video": "Video",
+    "pdfPreviewFrameTitle": "Predogled PDF",
     "otherFiles": "Drugi datoteki",
     "itemCount": "{count} predmetov",
     "itemCountShort": "{count} pr.",

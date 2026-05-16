@@ -769,6 +769,7 @@
     "images": "图片",
     "videos": "视频",
     "video": "视频",
+    "pdfPreviewFrameTitle": "PDF 预览",
     "otherFiles": "其他文件",
     "itemCount": "{count} 个项目",
     "itemCountShort": "{count}项",

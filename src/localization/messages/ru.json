@@ -799,6 +799,7 @@
     "images": "Изображения",
     "videos": "Видео",
     "video": "Видео",
+    "pdfPreviewFrameTitle": "Предпросмотр PDF",
     "otherFiles": "Другие файлы",
     "itemCount": "{count} элементов",
     "itemCountShort": "{count} эл.",

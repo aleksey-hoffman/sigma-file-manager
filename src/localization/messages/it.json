@@ -769,6 +769,7 @@
     "images": "Immagini",
     "videos": "Video",
     "video": "Video",
+    "pdfPreviewFrameTitle": "Anteprima PDF",
     "otherFiles": "Altri file",
     "itemCount": "{count} elementi",
     "itemCountShort": "{count} elem.",

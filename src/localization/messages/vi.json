@@ -769,6 +769,7 @@
     "images": "Hình ảnh",
     "videos": "Video",
     "video": "Video",
+    "pdfPreviewFrameTitle": "Xem trước PDF",
     "otherFiles": "Tập tin khác",
     "itemCount": "{count} mục",
     "itemCountShort": "{count} mục",
