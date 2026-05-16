@@ -770,6 +770,7 @@
     "video": "ویدیو",
     "otherFiles": "فایل‌های دیگر",
     "itemCount": "{count} مورد",
+    "itemCountShort": "{count} مورد",
     "fileCount": "0 فایل | 1 فایل | {count} فایل | {count} فایل",
     "directoryCount": "0 پوشه | 1 پوشه | {count} پوشه | {count} پوشه",
     "itemsTotal": "{count} مورد",

@@ -801,6 +801,7 @@
     "video": "Video",
     "otherFiles": "Drugi datoteki",
     "itemCount": "{count} predmetov",
+    "itemCountShort": "{count} pr.",
     "fileCount": "0 datotek | 1 datoteka | {count} datotek | {count} datotek",
     "directoryCount": "0 map | 1 mapa | {count} map | {count} map",
     "itemsTotal": "{count} predmetov",

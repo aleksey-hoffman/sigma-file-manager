@@ -771,6 +771,7 @@
     "video": "動画",
     "otherFiles": "その他のファイル",
     "itemCount": "{count} 項目",
+    "itemCountShort": "{count} 項目",
     "fileCount": "0 ファイル | 1 ファイル | {count} ファイル | {count} ファイル",
     "directoryCount": "0 フォルダ | 1 フォルダ | {count} フォルダ | {count} フォルダ",
     "itemsTotal": "{count} 項目",

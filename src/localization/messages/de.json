@@ -771,6 +771,7 @@
     "video": "Video",
     "otherFiles": "Andere Dateien",
     "itemCount": "{count} Elemente",
+    "itemCountShort": "{count} El.",
     "fileCount": "0 Dateien | 1 Datei | {count} Dateien | {count} Dateien",
     "directoryCount": "0 Ordner | 1 Ordner | {count} Ordner | {count} Ordner",
     "itemsTotal": "{count} Elemente",

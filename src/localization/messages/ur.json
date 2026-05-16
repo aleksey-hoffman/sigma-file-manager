@@ -801,6 +801,7 @@
     "video": "ویڈیو",
     "otherFiles": "دیگر فائلیں",
     "itemCount": "{count} اشیاء",
+    "itemCountShort": "{count} اش.",
     "fileCount": "0 فائلیں | 1 فائل | {count} فائلیں | {count} فائلیں",
     "directoryCount": "0 فولڈر | 1 فولڈر | {count} فولڈر | {count} فولڈر",
     "itemsTotal": "{count} اشیاء",

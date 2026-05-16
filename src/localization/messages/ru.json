@@ -801,6 +801,7 @@
     "video": "Видео",
     "otherFiles": "Другие файлы",
     "itemCount": "{count} элементов",
+    "itemCountShort": "{count} эл.",
     "fileCount": "0 файлов | 1 файл | {count} файла | {count} файлов",
     "directoryCount": "0 папок | 1 папка | {count} папки | {count} папок",
     "itemsTotal": "{count} элементов",

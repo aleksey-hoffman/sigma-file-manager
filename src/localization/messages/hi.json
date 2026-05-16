@@ -801,6 +801,7 @@
     "video": "वीडियो",
     "otherFiles": "अन्य फ़ाइलें",
     "itemCount": "{count} आइटम",
+    "itemCountShort": "{count} आइटम",
     "fileCount": "0 फ़ाइलें | 1 फ़ाइल | {count} फ़ाइलें | {count} फ़ाइलें",
     "directoryCount": "0 फ़ोल्डर | 1 फ़ोल्डर | {count} फोल्डर | {count} फोल्डर",
     "itemsTotal": "{count} आइटम",

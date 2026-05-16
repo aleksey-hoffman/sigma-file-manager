@@ -771,6 +771,7 @@
     "video": "Video",
     "otherFiles": "Tập tin khác",
     "itemCount": "{count} mục",
+    "itemCountShort": "{count} mục",
     "fileCount": "0 tệp | 1 tệp | {count} tệp | {count} tệp",
     "directoryCount": "0 thư mục | 1 thư mục | {count} thư mục | {count} thư mục",
     "itemsTotal": "{count} mục",

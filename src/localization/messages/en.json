@@ -801,6 +801,7 @@
     "video": "Video",
     "otherFiles": "Other Files",
     "itemCount": "{count} items",
+    "itemCountShort": "{count} items",
     "fileCount": "0 files | 1 file | {count} files | {count} files",
     "directoryCount": "0 folders | 1 folder | {count} folders | {count} folders",
     "itemsTotal": "{count} items",

@@ -770,6 +770,7 @@
     "video": "Vídeo",
     "otherFiles": "Outros arquivos",
     "itemCount": "{count} itens",
+    "itemCountShort": "{count} itens",
     "fileCount": "0 arquivos | 1 arquivo | {count} arquivos | {count} arquivos",
     "directoryCount": "0 pastas | 1 pasta | {count} pastas | {count} pastas",
     "itemsTotal": "{count} itens",

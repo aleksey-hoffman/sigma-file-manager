@@ -239,7 +239,7 @@ function cancelPreviewThumbnail(): void {
 
 function getDirSizeDisplay(entry: DirEntry): string | null {
   const sizeInfo = dirSizesStore.getSize(entry.path);
-  const itemCountStr = entry.item_count !== null ? t('fileBrowser.itemCount', { count: entry.item_count }) : null;
+  const itemCountStr = entry.item_count !== null ? t('fileBrowser.itemCountShort', { count: entry.item_count }) : null;
 
   if (!sizeInfo) {
     return itemCountStr || '—';

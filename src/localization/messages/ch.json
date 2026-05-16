@@ -771,6 +771,7 @@
     "video": "视频",
     "otherFiles": "其他文件",
     "itemCount": "{count} 个项目",
+    "itemCountShort": "{count}项",
     "fileCount": "0 个文件 | 1 个文件 | {count} 个文件 | {count} 个文件",
     "directoryCount": "0 个文件夹 | 1 个文件夹 | {count} 个文件夹 | {count} 个文件夹",
     "itemsTotal": "{count} 个项目",
