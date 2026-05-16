@@ -2,60 +2,66 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-import { messages } from 'src/localization/data';
 import fs from 'node:fs';
 import path from 'node:path';
 
-const localeDirPath = path.resolve('src/localization/messages');
-
-async function syncFiles() {
-  for (const locale in messages) {
-    if (locale !== 'en') {
-      let otherLocaleData = messages[locale];
-      otherLocaleData = addMissingKeys(messages.en, messages[locale]);
-      otherLocaleData = removeUneededKeys(messages.en, messages[locale]);
-      const otherLocalePath = path.join(localeDirPath, `${locale}.json`);
-
-      let currentState = {};
-
-      try {
-        currentState = JSON.parse(fs.readFileSync(otherLocalePath, 'utf8'));
-      }
-      catch (error) {
-        console.error(`Error reading file ${otherLocalePath}:`, error);
-      }
-
-      if (JSON.stringify(currentState) !== JSON.stringify(otherLocaleData)) {
-        fs.writeFileSync(otherLocalePath, JSON.stringify(otherLocaleData, null, 2));
-      }
-    }
-  }
-}
+const localeDirectoryPath = path.resolve('src/localization/messages');
 
 function addMissingKeys(enLocale, otherLocale) {
-  for (const key in enLocale) {
-    if (!otherLocale[key]) {
-      otherLocale[key] = enLocale[key];
+  for (const key of Object.keys(enLocale)) {
+    const enChild = enLocale[key];
+    if (!Object.hasOwn(otherLocale, key)) {
+      otherLocale[key] = structuredClone(enChild);
     }
-    else if (typeof enLocale[key] === 'object') {
-      addMissingKeys(enLocale[key], otherLocale[key]);
+    else if (
+      enChild !== null
+      && typeof enChild === 'object'
+      && !Array.isArray(enChild)
+      && otherLocale[key] !== null
+      && typeof otherLocale[key] === 'object'
+      && !Array.isArray(otherLocale[key])
+    ) {
+      addMissingKeys(enChild, otherLocale[key]);
     }
   }
-
   return otherLocale;
 }
 
-function removeUneededKeys(enLocale, otherLocale) {
-  for (const key in otherLocale) {
-    if (!enLocale[key]) {
+function removeUnneededKeys(enLocale, otherLocale) {
+  for (const key of Object.keys({ ...otherLocale })) {
+    if (!Object.hasOwn(enLocale, key)) {
       delete otherLocale[key];
+      continue;
     }
-    else if (typeof otherLocale[key] === 'object') {
-      removeUneededKeys(enLocale[key], otherLocale[key]);
+    const enChild = enLocale[key];
+    if (
+      enChild !== null
+      && typeof enChild === 'object'
+      && !Array.isArray(enChild)
+      && otherLocale[key] !== null
+      && typeof otherLocale[key] === 'object'
+      && !Array.isArray(otherLocale[key])
+    ) {
+      removeUnneededKeys(enChild, otherLocale[key]);
     }
   }
-
   return otherLocale;
+}
+
+function syncFiles() {
+  const englishPayload = JSON.parse(fs.readFileSync(path.join(localeDirectoryPath, 'en.json'), 'utf8'));
+
+  const localeFileNames = fs.readdirSync(localeDirectoryPath).filter(
+    name => name.endsWith('.json') && name !== 'en.json',
+  );
+
+  for (const fileName of localeFileNames) {
+    const filePath = path.join(localeDirectoryPath, fileName);
+    const localePayload = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+    addMissingKeys(englishPayload, localePayload);
+    removeUnneededKeys(englishPayload, localePayload);
+    fs.writeFileSync(filePath, `${JSON.stringify(localePayload, null, 2)}\n`);
+  }
 }
 
 syncFiles();

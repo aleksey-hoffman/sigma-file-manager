@@ -5,6 +5,10 @@
   --hover-transition-duration-in: 0s;
   --hover-transition-duration-out: 0.15s;
   --hover-transition-easing-out: ease-out;
+  --drop-target-background: hsl(var(--primary) / 15%);
+  --drop-target-subtle-background: hsl(var(--primary) / 8%);
+  --drop-target-outline: 2px dashed hsl(var(--primary) / 60%);
+  --drop-target-outline-offset: -2px;
 
   /* Drive progress indicator colors */
   --drive-progress-color-green: 174deg 100% 27%;
@@ -51,6 +55,8 @@
     monospace;
   --shadow-md:
     0 4px 6px -1px rgb(0 0 0 / 2%), 0 2px 4px -1px rgb(0 0 0 / 2%), 0 12px 24px rgb(0 0 0 / 5%);
+  --shadow-lg:
+    0 10px 15px -3px rgb(0 0 0 / 10%), 0 4px 6px -4px rgb(0 0 0 / 7%), 0 20px 40px rgb(0 0 0 / 30%);
 
   /* Light theme */
   --light: 0 0% 100%;
@@ -97,8 +103,8 @@
   --foreground: 0 0% 75%;
   --muted: 225 10% 20%;
   --muted-foreground: 0 0% 62%;
-  --popover: 225 10% 16% / 20%;
-  --popover-foreground: 210 20% 98%;
+  --popover: 225 10% 16% / 50%;
+  --popover-foreground: 0 0% 75%;
   --card: 225 10% 16% / 80%;
   --card-foreground: 210 20% 98%;
   --border: 225 10% 20%;

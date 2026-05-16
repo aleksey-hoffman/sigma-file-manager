@@ -35,6 +35,13 @@ import {
   type StartupStorageFileBootstrap,
 } from './utils/startup-storage-bootstrap';
 
+type ClosedTabGroupHistoryEntry = {
+  tabGroup: TabGroup;
+  index: number;
+};
+
+const CLOSED_TAB_GROUP_HISTORY_LIMIT = 20;
+
 export const useWorkspacesStore = defineStore('workspaces', () => {
   const { t } = useI18n();
   const userPathsStore = useUserPathsStore();
@@ -48,6 +55,7 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
     parentPath: string;
     entryPath: string;
   }>>([]);
+  const closedTabGroupHistory = ref<ClosedTabGroupHistoryEntry[]>([]);
   const pendingLaunchReveal = computed(() => pendingLaunchRevealQueue.value[0] ?? null);
 
   const primaryWorkspace: ComputedRef<Workspace | null> = computed(() => (
@@ -134,6 +142,93 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
     currentWorkspace.value?.tabGroups?.push(tabGroup);
   }
 
+  function createClosedTabSnapshot(tab: Tab): Tab {
+    const tabSnapshot = clone(tab);
+    tabSnapshot.id = uniqueId();
+    tabSnapshot.dirEntries = [];
+    tabSnapshot.selectedDirEntries = [];
+    return tabSnapshot;
+  }
+
+  function createClosedTabGroupSnapshot(tabGroup: TabGroup): TabGroup {
+    return tabGroup.map(createClosedTabSnapshot);
+  }
+
+  function recordClosedTabGroup(tabGroup: TabGroup, index: number) {
+    if (!tabGroup.length) {
+      return;
+    }
+
+    closedTabGroupHistory.value.push({
+      tabGroup: createClosedTabGroupSnapshot(tabGroup),
+      index,
+    });
+
+    const overflowCount = closedTabGroupHistory.value.length - CLOSED_TAB_GROUP_HISTORY_LIMIT;
+
+    if (overflowCount > 0) {
+      closedTabGroupHistory.value.splice(0, overflowCount);
+    }
+  }
+
+  function recordClosedTabGroups(entries: ClosedTabGroupHistoryEntry[]) {
+    entries.forEach(entry => recordClosedTabGroup(entry.tabGroup, entry.index));
+  }
+
+  function updateTabPath(tab: Tab, path: string) {
+    tab.path = path;
+    tab.name = getPathDisplayName(path) || path;
+  }
+
+  function updateTabGroupPathsAfterRename(tabGroup: TabGroup, oldPath: string, newPath: string) {
+    for (const tab of tabGroup) {
+      const updatedPath = replacePathPrefix(tab.path, oldPath, newPath);
+
+      if (updatedPath !== null) {
+        updateTabPath(tab, updatedPath);
+      }
+    }
+  }
+
+  function isPathAffectedByDeletedPath(path: string, deletedPath: string): boolean {
+    return path === deletedPath || path.startsWith(deletedPath + '/');
+  }
+
+  function updateTabGroupPathsAfterDelete(tabGroup: TabGroup, deletedPaths: string[], fallbackPath: string) {
+    for (const tab of tabGroup) {
+      const isAffected = deletedPaths.some(deletedPath =>
+        isPathAffectedByDeletedPath(tab.path, deletedPath),
+      );
+
+      if (isAffected) {
+        updateTabPath(tab, fallbackPath);
+      }
+    }
+  }
+
+  function showClosedTabRestoredToast(path: string) {
+    toast.custom(markRaw(ToastStatic), {
+      componentProps: {
+        data: {
+          title: t('tabs.closedTabRestored'),
+          description: path,
+        },
+      },
+      duration: 2000,
+    });
+  }
+
+  function showNoClosedTabToRestoreToast() {
+    toast.custom(markRaw(ToastStatic), {
+      componentProps: {
+        data: {
+          title: t('tabs.noClosedTabsToRestore'),
+        },
+      },
+      duration: 2000,
+    });
+  }
+
   async function closeTabGroup(tabGroup: Tab[]) {
     if (tabGroupCount.value <= 1) {
       await closeAllTabGroups();
@@ -148,6 +243,7 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
 
     if (typeof initialClosingTabGroupIndex === 'number' && initialClosingTabGroupIndex !== -1) {
       const previousTabGroupIndex = Math.max(0, initialClosingTabGroupIndex);
+      recordClosedTabGroup(tabGroup, initialClosingTabGroupIndex);
       currentWorkspace.value?.tabGroups?.splice(initialClosingTabGroupIndex, 1);
       setCurrentTabGroupAfterClosing({
         initialCurrentTabGroupIndex,
@@ -171,7 +267,13 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
       return;
     }
 
+    const closedTabGroups = currentWorkspace.value.tabGroups.map((tabGroup, index) => ({
+      tabGroup,
+      index,
+    }));
+
     if (behavior === 'navigateToHomePage') {
+      recordClosedTabGroups(closedTabGroups);
       const newTab = await createNewTab(userPathsStore.userPaths.homeDir);
       const newTabGroup = [newTab];
       currentWorkspace.value.tabGroups = [newTabGroup];
@@ -182,6 +284,7 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
       return;
     }
 
+    recordClosedTabGroups(closedTabGroups);
     const newTab = await createNewTab();
     const newTabGroup = [newTab];
     currentWorkspace.value.tabGroups = [newTabGroup];
@@ -208,6 +311,15 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
     if (!tabGroupToKeep) {
       return;
     }
+
+    const closedTabGroups = currentWorkspace.value.tabGroups
+      .map((tabGroup, index) => ({
+        tabGroup,
+        index,
+      }))
+      .filter(entry => entry.tabGroup[0]?.id !== tabGroupToKeep[0]?.id);
+
+    recordClosedTabGroups(closedTabGroups);
 
     const tabGroupCopy = [...tabGroupToKeep];
     currentWorkspace.value.tabGroups = [tabGroupCopy];
@@ -334,6 +446,45 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
     if (options?.activate !== false) {
       openTabGroup(newTabGroup);
     }
+  }
+
+  async function openPathInCurrentTab(path: string) {
+    if (!currentTab.value || !currentTabGroup.value) {
+      await openNewTabGroup(path);
+      return;
+    }
+
+    updateTabPath(currentTab.value, path);
+    currentTab.value.dirEntries = [];
+    currentTab.value.selectedDirEntries = [];
+    currentTab.value.filterQuery = '';
+    await loadCurrentTabGroup();
+  }
+
+  async function restoreLastClosedTabGroup(): Promise<boolean> {
+    if (!currentWorkspace.value) {
+      showNoClosedTabToRestoreToast();
+      return false;
+    }
+
+    const historyEntry = closedTabGroupHistory.value.pop();
+
+    if (!historyEntry) {
+      showNoClosedTabToRestoreToast();
+      return false;
+    }
+
+    const restoredTabGroup = createClosedTabGroupSnapshot(historyEntry.tabGroup);
+    const restoredTabGroupIndex = Math.min(
+      Math.max(historyEntry.index, 0),
+      currentWorkspace.value.tabGroups.length,
+    );
+
+    currentWorkspace.value.tabGroups.splice(restoredTabGroupIndex, 0, restoredTabGroup);
+    setCurrentTabIndex(0);
+    await openTabGroup(restoredTabGroup);
+    showClosedTabRestoredToast(restoredTabGroup[0].path);
+    return true;
   }
 
   function findTabGroupIndexByPath(path: string): number {
@@ -549,15 +700,12 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
   function handlePathRenamed(oldPath: string, newPath: string) {
     for (const workspace of workspaces.value) {
       for (const tabGroup of workspace.tabGroups) {
-        for (const tab of tabGroup) {
-          const updatedPath = replacePathPrefix(tab.path, oldPath, newPath);
-
-          if (updatedPath !== null) {
-            tab.path = updatedPath;
-            tab.name = getPathDisplayName(updatedPath) || updatedPath;
-          }
-        }
+        updateTabGroupPathsAfterRename(tabGroup, oldPath, newPath);
       }
+    }
+
+    for (const historyEntry of closedTabGroupHistory.value) {
+      updateTabGroupPathsAfterRename(historyEntry.tabGroup, oldPath, newPath);
     }
 
     lastRenamedPath.value = {
@@ -574,21 +722,15 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
 
   function handlePathsDeleted(paths: string[]) {
     const homePath = userPathsStore.userPaths.homeDir;
-    const homeName = getPathDisplayName(homePath) || homePath;
 
     for (const workspace of workspaces.value) {
       for (const tabGroup of workspace.tabGroups) {
-        for (const tab of tabGroup) {
-          const isAffected = paths.some(deletedPath =>
-            tab.path === deletedPath || tab.path.startsWith(deletedPath + '/'),
-          );
-
-          if (isAffected) {
-            tab.path = homePath;
-            tab.name = homeName;
-          }
-        }
+        updateTabGroupPathsAfterDelete(tabGroup, paths, homePath);
       }
+    }
+
+    for (const historyEntry of closedTabGroupHistory.value) {
+      updateTabGroupPathsAfterDelete(historyEntry.tabGroup, paths, homePath);
     }
 
     lastDeletedPaths.value = paths;
@@ -750,10 +892,13 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
     tabs,
     currentTabGroup,
     currentTab,
+    closedTabGroupHistory,
     pendingLaunchReveal,
     init,
     addNewTabGroup,
     openNewTabGroup,
+    openPathInCurrentTab,
+    restoreLastClosedTabGroup,
     openOrFocusTabGroup,
     preloadDefaultTab,
     getDirEntry,
@@ -763,6 +908,7 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
     closeAllTabGroups,
     closeOtherTabGroups,
     closeDuplicatePathTabs,
+    setCurrentTabIndex,
     setTabs,
     toggleSplitView,
     setTabFilterQuery,

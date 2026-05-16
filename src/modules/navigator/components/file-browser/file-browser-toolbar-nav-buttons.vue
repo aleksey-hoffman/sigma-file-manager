@@ -61,7 +61,12 @@ const shortcutsStore = useShortcutsStore();
           <ArrowLeftIcon class="file-browser-toolbar-nav-buttons__icon" />
         </Button>
       </TooltipTrigger>
-      <TooltipContent>{{ t('fileBrowser.goBack') }}</TooltipContent>
+      <TooltipContent>
+        <div class="file-browser-toolbar-nav-buttons__tooltip-row">
+          {{ t('fileBrowser.goBack') }}
+          <ContextMenuShortcut>{{ shortcutsStore.getShortcutLabel('navigateHistoryBack') }}</ContextMenuShortcut>
+        </div>
+      </TooltipContent>
     </Tooltip>
     <Tooltip>
       <TooltipTrigger as-child>
@@ -75,7 +80,12 @@ const shortcutsStore = useShortcutsStore();
           <ArrowRightIcon class="file-browser-toolbar-nav-buttons__icon" />
         </Button>
       </TooltipTrigger>
-      <TooltipContent>{{ t('fileBrowser.goForward') }}</TooltipContent>
+      <TooltipContent>
+        <div class="file-browser-toolbar-nav-buttons__tooltip-row">
+          {{ t('fileBrowser.goForward') }}
+          <ContextMenuShortcut>{{ shortcutsStore.getShortcutLabel('navigateHistoryForward') }}</ContextMenuShortcut>
+        </div>
+      </TooltipContent>
     </Tooltip>
     <Tooltip>
       <TooltipTrigger as-child>
@@ -89,7 +99,12 @@ const shortcutsStore = useShortcutsStore();
           <ArrowUpIcon class="file-browser-toolbar-nav-buttons__icon" />
         </Button>
       </TooltipTrigger>
-      <TooltipContent>{{ t('fileBrowser.goUp') }}</TooltipContent>
+      <TooltipContent>
+        <div class="file-browser-toolbar-nav-buttons__tooltip-row">
+          {{ t('fileBrowser.goUp') }}
+          <ContextMenuShortcut>{{ shortcutsStore.getShortcutLabel('goUpDirectory') }}</ContextMenuShortcut>
+        </div>
+      </TooltipContent>
     </Tooltip>
     <Tooltip>
       <TooltipTrigger as-child>
@@ -232,7 +247,7 @@ const shortcutsStore = useShortcutsStore();
   gap: 12px;
 }
 
-@container (width < 400px) {
+@container (width < 600px) {
   .file-browser-toolbar-nav-buttons--expanded {
     display: none;
   }

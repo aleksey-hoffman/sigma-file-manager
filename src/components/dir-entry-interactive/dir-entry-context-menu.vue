@@ -20,8 +20,10 @@ import { useDirEntryActions } from '@/composables/use-dir-entry-actions';
 const props = withDefaults(defineProps<{
   entries: DirEntry[];
   disableDestructiveActions?: boolean;
+  isCurrentDirectoryContext?: boolean;
 }>(), {
   disableDestructiveActions: false,
+  isCurrentDirectoryContext: false,
 });
 
 const emit = defineEmits<{
@@ -89,6 +91,7 @@ async function handleExtensionAction(registration: ContextMenuItemRegistration) 
       :menu-item-component="ContextMenuItem"
       :menu-separator-component="ContextMenuSeparator"
       :disable-destructive-actions="props.disableDestructiveActions"
+      :is-current-directory-context="props.isCurrentDirectoryContext"
       @action="handleAction"
     />
     <FileBrowserExtensionMenuItems

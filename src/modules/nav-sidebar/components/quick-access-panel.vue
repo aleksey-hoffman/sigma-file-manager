@@ -22,10 +22,10 @@ import {
 } from '@lucide/vue';
 import QuickAccessItemIcon from './quick-access-item-icon.vue';
 import {
+  Collapsible,
   CollapsibleContent,
-  CollapsibleRoot,
   CollapsibleTrigger,
-} from 'reka-ui';
+} from '@/components/ui/collapsible';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { DirEntryInteractive } from '@/components/dir-entry-interactive';
 import { useUserStatsStore } from '@/stores/storage/user-stats';
@@ -34,6 +34,7 @@ import { registerDropContainer, unregisterDropContainer } from '@/composables/us
 import type { FavoriteItem, ItemTag, TaggedItem } from '@/types/user-stats';
 import { getPathDisplayName } from '@/utils/normalize-path';
 import { resolveNavigableItemTarget } from '@/utils/resolve-navigable-item-target';
+import { arePathsEquivalent } from '@/utils/file-operation-paths';
 
 const { t } = useI18n();
 const router = useRouter();
@@ -110,6 +111,11 @@ function isFavoriteFile(item: FavoriteItem): boolean {
   return !item.path.endsWith('/') && item.path.includes('.');
 }
 
+function isCurrentDirectoryItem(path: string, isFile: boolean): boolean {
+  const currentPath = workspacesStore.currentTab?.path;
+  return !isFile && !!currentPath && arePathsEquivalent(path, currentPath);
+}
+
 async function openItem(path: string, isFile: boolean) {
   try {
     const navigableItemTarget = await resolveNavigableItemTarget(path, isFile);
@@ -152,12 +158,11 @@ function openTaggedItem(item: TaggedItem) {
 
     <ScrollArea class="quick-access-panel__scroll">
       <div class="quick-access-panel__content">
-        <CollapsibleRoot
+        <Collapsible
           v-model:open="favoritesOpen"
           class="quick-access-panel__section"
         >
           <CollapsibleTrigger
-            as-child
             class="quick-access-panel__section-trigger"
           >
             <button
@@ -199,6 +204,7 @@ function openTaggedItem(item: TaggedItem) {
               :key="item.path"
               :path="item.path"
               :is-file="isFavoriteFile(item)"
+              :is-current-directory-context="isCurrentDirectoryItem(item.path, isFavoriteFile(item))"
             >
               <button
                 type="button"
@@ -214,14 +220,13 @@ function openTaggedItem(item: TaggedItem) {
               </button>
             </DirEntryInteractive>
           </CollapsibleContent>
-        </CollapsibleRoot>
+        </Collapsible>
 
-        <CollapsibleRoot
+        <Collapsible
           v-model:open="tagsOpen"
           class="quick-access-panel__section"
         >
           <CollapsibleTrigger
-            as-child
             class="quick-access-panel__section-trigger"
           >
             <button
@@ -276,6 +281,7 @@ function openTaggedItem(item: TaggedItem) {
                 :key="item.path"
                 :path="item.path"
                 :is-file="item.isFile"
+                :is-current-directory-context="isCurrentDirectoryItem(item.path, item.isFile)"
               >
                 <button
                   type="button"
@@ -305,6 +311,7 @@ function openTaggedItem(item: TaggedItem) {
                 :key="item.path"
                 :path="item.path"
                 :is-file="item.isFile"
+                :is-current-directory-context="isCurrentDirectoryItem(item.path, item.isFile)"
               >
                 <button
                   type="button"
@@ -321,7 +328,7 @@ function openTaggedItem(item: TaggedItem) {
               </DirEntryInteractive>
             </div>
           </CollapsibleContent>
-        </CollapsibleRoot>
+        </Collapsible>
       </div>
     </ScrollArea>
   </div>
@@ -329,20 +336,19 @@ function openTaggedItem(item: TaggedItem) {
 
 <style scoped>
 .quick-access-panel {
-  --header-height: 45px;
-  --max-height: calc(100vh - 12px);
+  --tooltip-height: 40px;
+  --header-height: 32px;
+  --max-height: calc(100vh - 12px - var(--tooltip-height));
 
   width: var(--quick-access-panel-width);
   max-height: var(--max-height);
-  border: 1px solid hsl(var(--border));
   border-radius: var(--radius-sm);
   box-shadow: var(--shadow-md);
 }
 
 .quick-access-panel__header {
   height: var(--header-height);
-  padding: 12px 16px;
-  border-bottom: 1px solid hsl(var(--border));
+  padding: 6px 16px;
 }
 
 .quick-access-panel__title {
@@ -363,6 +369,7 @@ function openTaggedItem(item: TaggedItem) {
   display: flex;
   flex-direction: column;
   padding: 8px;
+  padding-top: 0;
   gap: 4px;
 }
 
@@ -430,20 +437,14 @@ function openTaggedItem(item: TaggedItem) {
 }
 
 .quick-access-panel__section-content {
-  overflow: hidden;
   padding-bottom: 4px;
   padding-left: 20px;
   margin-right: 8px;
 }
 
-.quick-access-panel__section-content[data-state="open"] {
-  animation: sigma-ui-collapsible-down 0.2s ease-out;
-}
-
 .quick-access-panel__section-content[data-state="closed"] {
   padding-top: 0;
   padding-bottom: 0;
-  animation: sigma-ui-collapsible-up 0.2s ease-out;
 }
 
 .quick-access-panel__empty {
@@ -471,8 +472,9 @@ function openTaggedItem(item: TaggedItem) {
 }
 
 :deep(.dir-entry-interactive[data-drag-over]) > .quick-access-panel__item {
-  background-color: hsl(var(--primary) / 15%);
-  box-shadow: inset 0 0 0 2px hsl(var(--primary) / 60%);
+  background-color: var(--drop-target-background);
+  outline: var(--drop-target-outline);
+  outline-offset: var(--drop-target-outline-offset);
 }
 
 .quick-access-panel__item-icon {

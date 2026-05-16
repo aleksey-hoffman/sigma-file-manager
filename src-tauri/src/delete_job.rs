@@ -2,7 +2,9 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-use crate::utils::{minimize_delete_paths, normalize_path};
+use crate::utils::{
+    format_trash_error, minimize_delete_paths, normalize_path,
+};
 use serde::Serialize;
 use std::collections::HashMap;
 use std::fs;
@@ -97,7 +99,7 @@ fn run_delete_blocking(
         }
 
         let result = if use_trash {
-            trash::delete(path).map_err(|error| error.to_string())
+            trash::delete(path).map_err(format_trash_error)
         } else if path.is_dir() {
             fs::remove_dir_all(path).map_err(|error| error.to_string())
         } else {

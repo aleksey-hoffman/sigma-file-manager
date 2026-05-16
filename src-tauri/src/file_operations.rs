@@ -3,8 +3,8 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 use crate::utils::{
-    minimize_delete_paths, path_is_descendant_of, source_and_destination_same_directory,
-    unique_path_with_index,
+    format_trash_error, minimize_delete_paths, path_is_descendant_of,
+    source_and_destination_same_directory, unique_path_with_index,
 };
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -1852,7 +1852,7 @@ pub fn delete_items(paths: Vec<String>, use_trash: bool) -> FileOperationResult 
         }
 
         let result = if use_trash {
-            trash::delete(path).map_err(|error| error.to_string())
+            trash::delete(path).map_err(format_trash_error)
         } else if path.is_dir() {
             fs::remove_dir_all(path).map_err(|error| error.to_string())
         } else {

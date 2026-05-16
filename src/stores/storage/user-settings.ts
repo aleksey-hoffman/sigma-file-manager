@@ -7,7 +7,12 @@ import { defineStore } from 'pinia';
 import { LazyStore } from '@tauri-apps/plugin-store';
 import { ref, computed, watch } from 'vue';
 import type {
-  UserSettings, LocalizationLanguage, UserSettingsPath, UserSettingsValue, InfusionPageSettings, VisualFiltersSettings,
+  UserSettings,
+  LocalizationLanguage,
+  UserSettingsPath,
+  UserSettingsValue,
+  InfusionPageSettings,
+  VisualFiltersSettings,
 } from '@/types/user-settings';
 import {
   backgroundMedia,
@@ -16,6 +21,7 @@ import {
 } from '@/data/background-media';
 import { normalizeThemeSelection } from '@/modules/themes/registry';
 import { useTheme } from './composables/use-theme';
+import type { ThemeTransitionOrigin } from './composables/use-theme';
 import { useUserPathsStore } from './user-paths';
 import { useExtensionsStorageStore } from './extensions';
 import { i18n } from '@/localization';
@@ -40,6 +46,8 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
 
   const userSettingsStorage = ref<LazyStore | null>(null);
   const userSettingsDefault = ref<UserSettings | null>(null);
+  const themeTransitionOrigin = ref<ThemeTransitionOrigin | null>(null);
+  const themeTransitionsEnabled = ref(false);
   const allowedUserSettingsStorageKeys = ref<Set<string>>(new Set());
   const userSettings = ref<UserSettings>({
     language: {
@@ -69,6 +77,7 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
     },
     navigator: {
       lastTabCloseBehavior: 'createDefaultTab',
+      boldActiveTabTitle: false,
       layout: {
         type: {
           title: 'listLayout',
@@ -96,6 +105,8 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
         items: true,
         size: true,
         modified: true,
+        created: false,
+        tags: false,
       },
       listSortColumn: null,
       listSortDirection: 'asc',
@@ -142,6 +153,7 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
     visualFilters: createDefaultVisualFiltersSettings(),
     settingsCurrentTab: 'general',
     shortcuts: {},
+    shortcutUserAlternateChordSlots: {},
     globalShortcuts: {},
     focusWindowOnDriveConnected: true,
     preventDropdownCloseFocusReturn: false,
@@ -254,7 +266,7 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
       extensionsStorageStore.extensionsData.installedExtensions,
     );
   });
-  const { setTheme } = useTheme(themeSettingRef);
+  const { setTheme } = useTheme(themeSettingRef, themeTransitionOrigin, themeTransitionsEnabled);
 
   watch(
     () => [
@@ -373,6 +385,10 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
     setTheme(userSettings.value.theme);
   }
 
+  function setThemeTransitionOrigin(origin: ThemeTransitionOrigin | null) {
+    themeTransitionOrigin.value = origin;
+  }
+
   function initLanguage() {
     i18n.global.locale.value = userSettings.value.language.locale as typeof i18n.global.locale.value;
   }
@@ -433,6 +449,7 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
     }
 
     initTheme();
+    themeTransitionsEnabled.value = true;
     initLanguage();
     await initZoom();
   }
@@ -445,6 +462,7 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
     set,
     setUserSettingsStorage,
     setLanguage,
+    setThemeTransitionOrigin,
     toggleInfoPanel,
   };
 });

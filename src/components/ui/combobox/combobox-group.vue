@@ -44,9 +44,8 @@ const props = defineProps<ComboboxGroupProps & {
 
 .sigma-ui-combobox-group__heading {
   padding: 0.375rem 0.5rem;
-  color: hsl(var(--muted-foreground));
+  color: hsl(var(--muted-foreground) / 60%);
   font-size: 0.75rem;
-  font-weight: 500;
   line-height: 1rem;
 }
 </style>

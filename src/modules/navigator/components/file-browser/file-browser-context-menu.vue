@@ -4,6 +4,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import {
   ContextMenuContent,
   ContextMenuItem,
@@ -14,8 +15,17 @@ import FileBrowserActionsMenu from './file-browser-actions-menu.vue';
 import type { ContextMenuItemRegistration } from '@/types/extension';
 import FileBrowserExtensionMenuItems from './file-browser-extension-menu-items.vue';
 import { useFileBrowserContext } from './composables/use-file-browser-context';
+import { arePathsEquivalent } from '@/utils/file-operation-paths';
 
 const ctx = useFileBrowserContext();
+
+const isCurrentDirectoryContext = computed(() => {
+  const entries = ctx.contextMenu.value.selectedEntries;
+  if (entries.length !== 1) return false;
+
+  const entry = entries[0];
+  return entry.is_dir && arePathsEquivalent(entry.path, ctx.currentPath.value);
+});
 
 function handleAction(action: Parameters<typeof ctx.onContextMenuAction>[0]) {
   if (action === 'create-file' || action === 'create-directory') {
@@ -59,6 +69,7 @@ async function handleExtensionAction(registration: ContextMenuItemRegistration) 
       :selected-entries="ctx.contextMenu.value.selectedEntries"
       :menu-item-component="ContextMenuItem"
       :menu-separator-component="ContextMenuSeparator"
+      :is-current-directory-context="isCurrentDirectoryContext"
       @action="handleAction"
       @open-custom-dialog="handleOpenCustomDialog"
     />

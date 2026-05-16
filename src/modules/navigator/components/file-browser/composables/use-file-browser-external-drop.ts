@@ -41,6 +41,10 @@ export function useFileBrowserExternalDrop(options: {
   let unlistenUrlDrop: UnlistenFn | null = null;
   let dismissalLayerId: string | null = null;
   let currentDragHasPaths = false;
+  let latestDragLogicalPosition: {
+    x: number;
+    y: number;
+  } | null = null;
 
   function toLogicalPosition(physicalX: number, physicalY: number): {
     x: number;
@@ -86,6 +90,18 @@ export function useFileBrowserExternalDrop(options: {
           });
         }
       });
+    }
+  }
+
+  function refreshDropTargets() {
+    if (!isExternalDragActive.value) {
+      return;
+    }
+
+    collectDropTargets();
+
+    if (latestDragLogicalPosition) {
+      updateTargetAtLogicalPosition(latestDragLogicalPosition.x, latestDragLogicalPosition.y, true);
     }
   }
 
@@ -135,14 +151,14 @@ export function useFileBrowserExternalDrop(options: {
     }
   }
 
-  function updateTargetAtLogicalPosition(logicalX: number, logicalY: number) {
+  function updateTargetAtLogicalPosition(logicalX: number, logicalY: number, forceAttributeUpdate = false) {
     if (!isCurrentDirLocked.value) {
       const target = findDropTarget(logicalX, logicalY);
       const newTargetPath = target ? target.path : '';
 
       isTargetingEntry.value = !!newTargetPath;
 
-      if (currentDropTargetPath !== newTargetPath) {
+      if (currentDropTargetPath !== newTargetPath || forceAttributeUpdate) {
         currentDropTargetPath = newTargetPath;
         updateDropTargetAttributes(newTargetPath);
       }
@@ -159,8 +175,8 @@ export function useFileBrowserExternalDrop(options: {
   }
 
   function updateTargetAtPhysicalPosition(physicalX: number, physicalY: number) {
-    const { x, y } = toLogicalPosition(physicalX, physicalY);
-    updateTargetAtLogicalPosition(x, y);
+    latestDragLogicalPosition = toLogicalPosition(physicalX, physicalY);
+    updateTargetAtLogicalPosition(latestDragLogicalPosition.x, latestDragLogicalPosition.y);
   }
 
   function handleKeyDown(event: KeyboardEvent) {
@@ -193,6 +209,7 @@ export function useFileBrowserExternalDrop(options: {
     isCurrentDirLocked.value = false;
     isTargetingEntry.value = false;
     currentDropTargetPath = '';
+    latestDragLogicalPosition = null;
     dropTargets = [];
 
     if (dismissalLayerId) {
@@ -371,5 +388,6 @@ export function useFileBrowserExternalDrop(options: {
     isUrlDrop,
     isCurrentDirLocked,
     isTargetingEntry,
+    refreshDropTargets,
   };
 }

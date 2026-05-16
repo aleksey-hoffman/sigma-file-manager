@@ -10,6 +10,11 @@ import type { ConflictItem } from '@/stores/runtime/clipboard';
 import { useCopyMoveJobsStore } from '@/stores/runtime/copy-move-jobs';
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
 import { useConflictResolutionDialog } from '@/composables/use-conflict-resolution-dialog';
+import {
+  arePathsEquivalent,
+  getSharedSourceDirectory,
+  isDestinationInsideAnySourceDirectory,
+} from '@/utils/file-operation-paths';
 
 export function useFileDropOperation() {
   const { t } = useI18n();
@@ -26,28 +31,12 @@ export function useFileDropOperation() {
     sourcePaths: string[],
     targetPath: string,
     operation: 'copy' | 'move',
-  ) {
+  ): Promise<boolean> {
     if (sourcePaths.length === 0) {
-      return;
+      return false;
     }
 
     const isCopy = operation === 'copy';
-
-    const resolutionPayload = await showConflictDialog(operation, () =>
-      invoke<ConflictItem[]>('check_conflicts', {
-        sourcePaths,
-        destinationPath: targetPath,
-      }),
-    );
-
-    if (resolutionPayload === null) {
-      return;
-    }
-
-    const conflictPayload
-      = resolutionPayload === undefined ? undefined : resolutionPayload;
-
-    const displayPath = targetPath.split(/[/\\]/).pop() ?? targetPath;
 
     let sourcePathIsDir: boolean[];
 
@@ -59,6 +48,38 @@ export function useFileDropOperation() {
     catch {
       sourcePathIsDir = sourcePaths.map(() => true);
     }
+
+    if (isDestinationInsideAnySourceDirectory(targetPath, sourcePaths, sourcePathIsDir)) {
+      toast.error(t('fileBrowser.cannotPasteIntoItself'));
+      return false;
+    }
+
+    const sharedSourceDirectory = getSharedSourceDirectory(sourcePaths);
+
+    if (
+      operation === 'move'
+      && sharedSourceDirectory !== null
+      && arePathsEquivalent(sharedSourceDirectory, targetPath)
+    ) {
+      toast.error(t('fileBrowser.cannotMoveToSameDirectory'));
+      return false;
+    }
+
+    const resolutionPayload = await showConflictDialog(operation, () =>
+      invoke<ConflictItem[]>('check_conflicts', {
+        sourcePaths,
+        destinationPath: targetPath,
+      }),
+    );
+
+    if (resolutionPayload === null) {
+      return false;
+    }
+
+    const conflictPayload
+      = resolutionPayload === undefined ? undefined : resolutionPayload;
+
+    const displayPath = targetPath.split(/[/\\]/).pop() ?? targetPath;
 
     try {
       const result = await copyMoveJobsStore.startJob(
@@ -75,13 +96,16 @@ export function useFileDropOperation() {
 
       const copiedCount = result.copied_count ?? 0;
 
-      if (!result.cancelled && copiedCount > 0) {
+      if (!result.cancelled && result.success && copiedCount > 0) {
         const sourcesForSizes = sourcePaths.map((path, index) => ({
           path,
           is_dir: sourcePathIsDir[index] ?? false,
         }));
         await dirSizesStore.refreshSizesAfterCopyMove(sourcesForSizes, targetPath, [targetPath]);
+        return true;
       }
+
+      return false;
     }
     catch (error: unknown) {
       toast.custom(markRaw(ToastStatic), {
@@ -93,6 +117,7 @@ export function useFileDropOperation() {
         },
         duration: 5000,
       });
+      return false;
     }
   }
 

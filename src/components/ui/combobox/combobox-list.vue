@@ -5,7 +5,16 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <script setup lang="ts">
 import type { ComboboxContentEmits, ComboboxContentProps } from 'reka-ui';
-import { ComboboxContent, ComboboxPortal, ComboboxViewport, useForwardPropsEmits } from 'reka-ui';
+import {
+  ComboboxContent,
+  ComboboxPortal,
+  ComboboxViewport,
+  ScrollAreaCorner,
+  ScrollAreaRoot,
+  ScrollAreaViewport,
+  useForwardPropsEmits,
+} from 'reka-ui';
+import ScrollBar from '@/components/ui/scroll-area/scroll-bar.vue';
 
 const props = withDefaults(defineProps<ComboboxContentProps>(), {
   position: 'popper',
@@ -23,9 +32,18 @@ const forwarded = useForwardPropsEmits(props, emits);
       v-bind="{ ...forwarded, ...$attrs }"
       :class="['sigma-ui-combobox-list', $attrs.class]"
     >
-      <ComboboxViewport>
-        <slot />
-      </ComboboxViewport>
+      <ScrollAreaRoot
+        class="sigma-ui-combobox-list__scroll-area"
+        type="always"
+      >
+        <ScrollAreaViewport class="sigma-ui-combobox-list__viewport">
+          <ComboboxViewport>
+            <slot />
+          </ComboboxViewport>
+        </ScrollAreaViewport>
+        <ScrollBar orientation="vertical" />
+        <ScrollAreaCorner />
+      </ScrollAreaRoot>
     </ComboboxContent>
   </ComboboxPortal>
 </template>
@@ -42,6 +60,25 @@ const forwarded = useForwardPropsEmits(props, emits);
   background-color: hsl(var(--popover));
   color: hsl(var(--popover-foreground));
   transform-origin: var(--reka-popover-content-transform-origin);
+}
+
+.sigma-ui-combobox-list__scroll-area {
+  position: relative;
+  overflow: hidden;
+  max-height: inherit;
+  border-radius: var(--radius-md);
+}
+
+.sigma-ui-combobox-list__viewport {
+  width: 100%;
+  height: 100%;
+  max-height: inherit;
+  overscroll-behavior: contain;
+}
+
+.sigma-ui-combobox-list__viewport > div {
+  width: 100%;
+  max-width: 100%;
 }
 
 .sigma-ui-combobox-list[data-state="open"][data-side="bottom"] {

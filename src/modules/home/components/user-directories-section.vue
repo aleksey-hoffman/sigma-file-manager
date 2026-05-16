@@ -238,15 +238,16 @@ async function handleDeleteDirectory(directoryId: string) {
 .user-directories-section__grid .dir-entry-interactive {
   border-radius: var(--radius);
   transition:
-    box-shadow var(--hover-transition-duration-out) var(--hover-transition-easing-out),
+    outline-color var(--hover-transition-duration-out) var(--hover-transition-easing-out),
     background-color var(--hover-transition-duration-out) var(--hover-transition-easing-out);
 }
 
 .user-directories-section__grid .dir-entry-interactive[data-drag-over] {
-  background-color: hsl(var(--primary) / 8%);
-  box-shadow: inset 0 0 0 2px hsl(var(--primary) / 60%);
+  background-color: var(--drop-target-subtle-background);
+  outline: var(--drop-target-outline);
+  outline-offset: var(--drop-target-outline-offset);
   transition:
-    box-shadow var(--hover-transition-duration-in),
+    outline-color var(--hover-transition-duration-in),
     background-color var(--hover-transition-duration-in);
 }
 </style>

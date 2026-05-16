@@ -4,6 +4,7 @@
 
 mod blocking_timeout;
 mod commands;
+mod path_volume;
 mod drives;
 mod drives_platform;
 mod mount;

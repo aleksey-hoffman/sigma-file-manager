@@ -67,6 +67,10 @@ export function parseKeybindingString(keyString: string): ShortcutKeys {
 }
 
 export function formatKeybindingKeys(keys: ShortcutKeys): string {
+  if (!keys.key) {
+    return '';
+  }
+
   return getKeybindingParts(keys).join('+');
 }
 

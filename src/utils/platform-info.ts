@@ -63,6 +63,10 @@ export function getPlatformInfo(): PlatformInfo {
   return platformInfo;
 }
 
+export function isPlatformInfoInitialized(): boolean {
+  return platformInfo !== null;
+}
+
 export async function ensurePlatformInfo(): Promise<PlatformInfo> {
   return platformInfo ?? initPlatformInfo();
 }

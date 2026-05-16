@@ -32,7 +32,7 @@ export default defineConfig({
       {
         name: 'Sync i18n Files',
         run: ['npm', 'run', 'sync-i18n'],
-        pattern: ['src/localization/**/*.json'],
+        pattern: ['src/localization/messages/en.json'],
       },
     ]),
   ],

@@ -5,7 +5,6 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from 'vue';
-import type { AcceptableValue } from 'reka-ui';
 import cloneDeep from 'lodash.clonedeep';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
@@ -21,6 +20,10 @@ import { backgroundMedia, DEFAULT_INFUSION_BACKGROUND_FILE_NAME } from '@/data/b
 import type { InfusionPage, MixBlendMode } from '@/types/user-settings';
 import { Button } from '@/components/ui/button';
 import { BaseCombobox } from '@/components/base';
+import {
+  getComboboxHighlightedOptionValue,
+  type ComboboxHighlightPayload,
+} from '@/components/base/combobox-utils';
 import BackgroundManagerDialog from '@/components/ui/background-manager/background-manager-dialog.vue';
 import { useDropOverlayStore } from '@/stores/runtime/drop-overlay';
 
@@ -246,23 +249,11 @@ const selectedMixBlendMode = computed({
   },
 });
 
-function onMixBlendModeComboboxHighlight(
-  payload:
-    | {
-      ref: HTMLElement;
-      value: AcceptableValue;
-    }
-    | undefined,
-) {
-  const highlighted = payload?.value;
+function onMixBlendModeComboboxKeyboardHighlight(payload: ComboboxHighlightPayload) {
+  const highlightedMixBlendMode = getComboboxHighlightedOptionValue<MixBlendMode>(payload);
 
-  if (
-    highlighted !== null
-    && highlighted !== undefined
-    && typeof highlighted === 'object'
-    && 'value' in highlighted
-  ) {
-    dropOverlayStore.setMixBlendModePreview((highlighted as { value: MixBlendMode }).value);
+  if (highlightedMixBlendMode) {
+    dropOverlayStore.setMixBlendModePreview(highlightedMixBlendMode);
   }
 }
 
@@ -580,7 +571,8 @@ async function resetVisualEffectsSection(): Promise<void> {
                 :options="mixBlendModeOptions"
                 by="value"
                 :search-placeholder="t('search')"
-                @highlight="onMixBlendModeComboboxHighlight"
+                :empty-text="t('noData')"
+                @keyboard-highlight="onMixBlendModeComboboxKeyboardHighlight"
                 @update:open="onMixBlendModeComboboxOpen"
               />
             </div>

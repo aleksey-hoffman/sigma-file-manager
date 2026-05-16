@@ -16,6 +16,7 @@ import {
   Trash2Icon,
   ShredderIcon,
   EyeIcon,
+  PrinterIcon,
   Share2Icon,
   SquarePlusIcon,
   StarIcon,
@@ -26,6 +27,7 @@ import { useShortcutsStore } from '@/stores/runtime/shortcuts';
 import type { DirEntry } from '@/types/dir-entry';
 import type { ContextMenuAction } from './types';
 import { useContextMenuItems } from './composables/use-context-menu-items';
+import { useFileBrowserTags } from './composables/use-file-browser-tags';
 import {
   toRef,
   computed,
@@ -45,8 +47,10 @@ const props = withDefaults(defineProps<{
   menuItemComponent: object;
   menuSeparatorComponent: object;
   disableDestructiveActions?: boolean;
+  isCurrentDirectoryContext?: boolean;
 }>(), {
   disableDestructiveActions: false,
+  isCurrentDirectoryContext: false,
 });
 
 const emit = defineEmits<{
@@ -75,9 +79,10 @@ const { t } = useI18n();
 const clipboardStore = useClipboardStore();
 const userStatsStore = useUserStatsStore();
 const shortcutsStore = useShortcutsStore();
+const selectedEntriesRef = toRef(props, 'selectedEntries');
 
 const { isActionVisible, selectionStats } = useContextMenuItems(
-  toRef(props, 'selectedEntries'),
+  selectedEntriesRef,
   { disableDestructiveActions: toRef(props, 'disableDestructiveActions') },
 );
 
@@ -85,66 +90,32 @@ const allSelectedAreFavorites = computed(() => {
   return props.selectedEntries.every(entry => userStatsStore.isFavorite(entry.path));
 });
 
-const availableTags = computed(() => userStatsStore.tags);
-
-const selectedItemTagIds = computed(() => {
-  if (props.selectedEntries.length === 0) return [];
-
-  if (props.selectedEntries.length === 1) {
-    const taggedItem = userStatsStore.taggedItems.find(
-      item => item.path === props.selectedEntries[0].path,
-    );
-
-    return taggedItem?.tagIds ?? [];
-  }
-
-  const allTagIds = props.selectedEntries.map((entry) => {
-    const taggedItem = userStatsStore.taggedItems.find(item => item.path === entry.path);
-
-    return new Set(taggedItem?.tagIds ?? []);
-  });
-
-  const firstSet = allTagIds[0] ?? new Set();
-
-  return Array.from(firstSet).filter(tagId =>
-    allTagIds.every(tagSet => tagSet.has(tagId)),
-  );
-});
+const {
+  availableTags,
+  getEntriesSharedTagIds,
+  toggleTagForEntries,
+  createTagForEntries,
+  renameTag,
+  updateTagColor,
+} = useFileBrowserTags();
 
 async function handleToggleTag(tagId: string) {
-  const isCurrentlySelected = selectedItemTagIds.value.includes(tagId);
-
-  for (const entry of props.selectedEntries) {
-    if (isCurrentlySelected) {
-      await userStatsStore.removeTagFromItem(entry.path, tagId);
-    }
-    else {
-      await userStatsStore.addTagToItem(entry.path, tagId, entry.is_file);
-    }
-  }
+  await toggleTagForEntries(props.selectedEntries, tagId);
 }
 
 async function handleCreateTag(name: string) {
-  const colors = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#14b8a6', '#3b82f6', '#8b5cf6', '#ec4899'];
-  const randomColor = colors[Math.floor(Math.random() * colors.length)];
-  const newTag = await userStatsStore.createTag(name, randomColor);
-
-  for (const entry of props.selectedEntries) {
-    await userStatsStore.addTagToItem(entry.path, newTag.id, entry.is_file);
-  }
-}
-
-async function handleDeleteTag(tagId: string) {
-  await userStatsStore.deleteTag(tagId);
+  await createTagForEntries(props.selectedEntries, name);
 }
 
 async function handleRenameTag(tagId: string, name: string) {
-  await userStatsStore.renameTag(tagId, name);
+  await renameTag(tagId, name);
 }
 
 async function handleUpdateTagColor(tagId: string, color: string) {
-  await userStatsStore.updateTagColor(tagId, color);
+  await updateTagColor(tagId, color);
 }
+
+const selectedItemTagIds = computed(() => getEntriesSharedTagIds(selectedEntriesRef.value));
 
 const selectedDirectory = computed(() => {
   return props.selectedEntries.find(entry => entry.is_dir);
@@ -159,6 +130,14 @@ const canPasteToSelectedDirectory = computed(() => {
 });
 
 const isShiftHeld = ref(false);
+
+const trashTooltipKey = computed(() => props.isCurrentDirectoryContext
+  ? 'shortcuts.moveCurrentDirectoryToTrash'
+  : 'shortcuts.moveSelectedItemsToTrash');
+
+const deleteTooltipKey = computed(() => props.isCurrentDirectoryContext
+  ? 'shortcuts.deleteCurrentDirectoryFromDrive'
+  : 'shortcuts.deleteSelectedItemsFromDrive');
 
 function handleKeyDown(event: KeyboardEvent) {
   if (event.key === 'Shift') {
@@ -287,11 +266,11 @@ function handleDeleteClick() {
       </TooltipTrigger>
       <TooltipContent class="file-browser-actions-menu__tooltip">
         <div class="file-browser-actions-menu__tooltip-row">
-          {{ t('shortcuts.moveSelectedItemsToTrash') }}
+          {{ t(trashTooltipKey) }}
           <ContextMenuShortcut>{{ shortcutsStore.getShortcutLabel('delete') }}</ContextMenuShortcut>
         </div>
         <div class="file-browser-actions-menu__tooltip-row">
-          {{ t('shortcuts.deleteSelectedItemsFromDrive') }}
+          {{ t(deleteTooltipKey) }}
           <ContextMenuShortcut>{{ shortcutsStore.getShortcutLabel('deletePermanently') }}</ContextMenuShortcut>
         </div>
       </TooltipContent>
@@ -321,6 +300,18 @@ function handleDeleteClick() {
     <span>{{ t('fileBrowser.actions.quickView') }}</span>
     <ContextMenuShortcut v-if="shortcutsStore.getShortcutLabel('quickView')">
       {{ shortcutsStore.getShortcutLabel('quickView') }}
+    </ContextMenuShortcut>
+  </component>
+  <component
+    :is="menuItemComponent"
+    v-if="isActionVisible('print')"
+    class="file-browser-actions-menu__item-with-shortcut"
+    @select="emitAction('print')"
+  >
+    <PrinterIcon :size="16" />
+    <span>{{ t('fileBrowser.actions.print') }}</span>
+    <ContextMenuShortcut v-if="shortcutsStore.getShortcutLabel('print')">
+      {{ shortcutsStore.getShortcutLabel('print') }}
     </ContextMenuShortcut>
   </component>
   <component
@@ -384,7 +375,6 @@ function handleDeleteClick() {
       :side-offset="16"
       @toggle-tag="handleToggleTag"
       @create-tag="handleCreateTag"
-      @delete-tag="handleDeleteTag"
       @rename-tag="handleRenameTag"
       @update-tag-color="handleUpdateTagColor"
     />

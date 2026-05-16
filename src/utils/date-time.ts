@@ -28,6 +28,8 @@ import type { DateTime } from '@/types/user-settings';
 dayjs.extend(dayjsCustomParseFormat);
 dayjs.extend(dayjsDuration);
 
+const dateTimeFormatters = new Map<string, Intl.DateTimeFormat>();
+
 export function formatDateTime(date: Date, format: string, locale: AppLocale = 'en'): string {
   if (!date) {
     return '';
@@ -76,6 +78,32 @@ function monthToIntlOption(month: DateTime['month']): Intl.DateTimeFormatOptions
   return 'short';
 }
 
+function getDateTimeFormatOptionsKey(options: DateTime): string {
+  return [
+    options.month,
+    options.hour12,
+    options.properties.showSeconds,
+    options.properties.showMilliseconds,
+  ].join('|');
+}
+
+function getDateTimeFormatter(
+  locale: string | undefined,
+  options: Intl.DateTimeFormatOptions,
+  key: string,
+): Intl.DateTimeFormat {
+  const cacheKey = `${locale ?? 'auto'}|${key}`;
+  const existingFormatter = dateTimeFormatters.get(cacheKey);
+
+  if (existingFormatter) {
+    return existingFormatter;
+  }
+
+  const formatter = new Intl.DateTimeFormat(locale, options);
+  dateTimeFormatters.set(cacheKey, formatter);
+  return formatter;
+}
+
 export function isSameLocalCalendarDay(left: Date, right: Date): boolean {
   return (
     left.getFullYear() === right.getFullYear()
@@ -112,7 +140,11 @@ export function formatTimeOnly(
       formatOptions.fractionalSecondDigits = 3;
     }
 
-    return new Intl.DateTimeFormat(localeTag, formatOptions).format(date);
+    return getDateTimeFormatter(
+      localeTag,
+      formatOptions,
+      `time|${getDateTimeFormatOptionsKey(options)}`,
+    ).format(date);
   }
   catch {
     return '';
@@ -129,11 +161,17 @@ export function formatDateTimeDisplay(
     const localeTag = resolveFormattingLocale(options, appLocale);
 
     if (!includeTimePart) {
-      return new Intl.DateTimeFormat(localeTag, {
+      const formatOptions: Intl.DateTimeFormatOptions = {
         year: 'numeric',
         month: monthToIntlOption(options.month),
         day: 'numeric',
-      }).format(date);
+      };
+
+      return getDateTimeFormatter(
+        localeTag,
+        formatOptions,
+        `date|${getDateTimeFormatOptionsKey(options)}`,
+      ).format(date);
     }
 
     const formatOptions: Intl.DateTimeFormatOptions & { fractionalSecondDigits?: 1 | 2 | 3 } = {
@@ -153,7 +191,11 @@ export function formatDateTimeDisplay(
       formatOptions.fractionalSecondDigits = 3;
     }
 
-    return new Intl.DateTimeFormat(localeTag, formatOptions).format(date);
+    return getDateTimeFormatter(
+      localeTag,
+      formatOptions,
+      `date-time|${getDateTimeFormatOptionsKey(options)}`,
+    ).format(date);
   }
   catch {
     return '';

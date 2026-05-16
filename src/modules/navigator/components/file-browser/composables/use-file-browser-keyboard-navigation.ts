@@ -13,6 +13,9 @@ export function useFileBrowserKeyboardNavigation(options: {
   selectedEntries: Ref<DirEntry[]>;
   layout: () => 'list' | 'grid' | undefined;
   selectEntryByPath: (path: string) => boolean;
+  scrollToPath?: (path: string, align?: ScrollLogicalPosition) => Promise<boolean>;
+  getEntryElement?: (path: string) => HTMLElement | null;
+  getGridNavigationEntry?: (path: string, direction: 'up' | 'down') => DirEntry | null;
   goBack: () => void;
   openEntry: (entry: DirEntry) => void;
   entriesContainerRef: Ref<HTMLElement | null>;
@@ -26,6 +29,12 @@ export function useFileBrowserKeyboardNavigation(options: {
   }
 
   function getEntryElement(path: string): HTMLElement | null {
+    const virtualEntryElement = options.getEntryElement?.(path);
+
+    if (virtualEntryElement) {
+      return virtualEntryElement;
+    }
+
     const container = options.entriesContainerRef.value;
 
     if (!container) return null;
@@ -44,54 +53,41 @@ export function useFileBrowserKeyboardNavigation(options: {
 
   async function selectAndFocusEntry(entry: DirEntry) {
     options.selectEntryByPath(entry.path);
+    await options.scrollToPath?.(entry.path);
     await nextTick();
 
     const element = getEntryElement(entry.path);
 
     if (element) {
-      element.scrollIntoView({
-        block: 'nearest',
-        inline: 'nearest',
-      });
       element.focus({ preventScroll: true });
     }
   }
 
   function navigateFlat(direction: 'previous' | 'next') {
-    const allElements = getAllEntryElements();
+    const entries = options.entries.value;
 
-    if (allElements.length === 0) return;
+    if (entries.length === 0) return;
 
     const lastSelected = getLastSelectedEntry();
     let targetIndex: number;
 
     if (!lastSelected) {
-      targetIndex = direction === 'next' ? 0 : allElements.length - 1;
+      targetIndex = direction === 'next' ? 0 : entries.length - 1;
     }
     else {
-      const currentIndex = allElements.findIndex(
-        element => element.dataset.entryPath === lastSelected.path,
-      );
+      const currentIndex = entries.findIndex(entry => entry.path === lastSelected.path);
 
       if (currentIndex === -1) {
-        targetIndex = direction === 'next' ? 0 : allElements.length - 1;
+        targetIndex = direction === 'next' ? 0 : entries.length - 1;
       }
       else {
         targetIndex = direction === 'next' ? currentIndex + 1 : currentIndex - 1;
       }
     }
 
-    if (targetIndex < 0 || targetIndex >= allElements.length) return;
+    if (targetIndex < 0 || targetIndex >= entries.length) return;
 
-    const targetPath = allElements[targetIndex].dataset.entryPath;
-
-    if (!targetPath) return;
-
-    const targetEntry = findEntryByPath(targetPath);
-
-    if (targetEntry) {
-      selectAndFocusEntry(targetEntry);
-    }
+    selectAndFocusEntry(entries[targetIndex]);
   }
 
   function navigateGridVertical(direction: 'up' | 'down') {
@@ -103,6 +99,13 @@ export function useFileBrowserKeyboardNavigation(options: {
 
     if (!lastSelected) {
       selectAndFocusEntry(direction === 'down' ? entries[0] : entries[entries.length - 1]);
+      return;
+    }
+
+    const virtualTargetEntry = options.getGridNavigationEntry?.(lastSelected.path, direction);
+
+    if (virtualTargetEntry) {
+      selectAndFocusEntry(virtualTargetEntry);
       return;
     }
 
@@ -211,16 +214,11 @@ export function useFileBrowserKeyboardNavigation(options: {
     }
   }
 
-  function navigateBack() {
-    options.goBack();
-  }
-
   return {
     navigateUp,
     navigateDown,
     navigateLeft,
     navigateRight,
     openSelected,
-    navigateBack,
   };
 }

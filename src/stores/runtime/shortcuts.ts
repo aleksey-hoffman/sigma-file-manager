@@ -5,7 +5,12 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
-import type { ShortcutId, ShortcutKeys, UserShortcuts } from '@/types/user-settings';
+import type {
+  ShortcutId,
+  ShortcutKeys,
+  ShortcutUserAlternateChordSlots,
+  UserShortcuts,
+} from '@/types/user-settings';
 import { setAppKeybindingConflictChecker } from '@/modules/extensions/api';
 import { getSelectedEntries } from '@/modules/extensions/context';
 import { useExtensionsStore } from '@/stores/runtime/extensions';
@@ -13,8 +18,10 @@ import {
   KEYBOARD_MAIN_KEY_UNUSABLE,
   shortcutMainKeyDisplayLabel,
 } from '@/localization/shortcut-main-key-label';
+import { isDialogOpened, isInputFieldActive } from '@/utils/dom-interaction-state';
 
 export type { ShortcutId, ShortcutKeys, UserShortcuts };
+export type { UserShortcutStoredValue, ShortcutUserAlternateChordSlots } from '@/types/user-settings';
 
 export type ShortcutConditions = {
   inputFieldIsActive?: boolean;
@@ -24,12 +31,72 @@ export type ShortcutConditions = {
 
 export type ShortcutDefinition = {
   id: ShortcutId;
+  bindingSlot?: number;
+  alternateChordRow?: boolean;
+  userDefinedAlternateChord?: boolean;
   labelKey: string;
   defaultKeys: ShortcutKeys;
   scope: 'global' | 'navigator' | 'settings';
   conditions: ShortcutConditions;
   isReadOnly: boolean;
 };
+
+type BuiltinNavigationPageRouteName = 'home' | 'navigator' | 'dashboard' | 'settings' | 'extensions';
+
+type BuiltinNavigationPageShortcut = {
+  id: ShortcutId;
+  routeName: BuiltinNavigationPageRouteName;
+  labelKey: string;
+  defaultKeys: ShortcutKeys;
+};
+
+export const BUILTIN_NAVIGATION_PAGE_SHORTCUTS: BuiltinNavigationPageShortcut[] = [
+  {
+    id: 'switchToHomePage',
+    routeName: 'home',
+    labelKey: 'shortcuts.switchToHomePage',
+    defaultKeys: {
+      alt: true,
+      key: '1',
+    },
+  },
+  {
+    id: 'switchToNavigatorPage',
+    routeName: 'navigator',
+    labelKey: 'shortcuts.switchToNavigatorPage',
+    defaultKeys: {
+      alt: true,
+      key: '2',
+    },
+  },
+  {
+    id: 'switchToDashboardPage',
+    routeName: 'dashboard',
+    labelKey: 'shortcuts.switchToDashboardPage',
+    defaultKeys: {
+      alt: true,
+      key: '3',
+    },
+  },
+  {
+    id: 'switchToSettingsPage',
+    routeName: 'settings',
+    labelKey: 'shortcuts.switchToSettingsPage',
+    defaultKeys: {
+      alt: true,
+      key: '4',
+    },
+  },
+  {
+    id: 'switchToExtensionsPage',
+    routeName: 'extensions',
+    labelKey: 'shortcuts.switchToExtensionsPage',
+    defaultKeys: {
+      alt: true,
+      key: '5',
+    },
+  },
+];
 
 const DEFAULT_SHORTCUTS: ShortcutDefinition[] = [
   {
@@ -97,11 +164,102 @@ const DEFAULT_SHORTCUTS: ShortcutDefinition[] = [
     isReadOnly: false,
   },
   {
+    id: 'toggleAddressBar',
+    labelKey: 'shortcuts.toggleAddressBar',
+    defaultKeys: {
+      ctrl: true,
+      key: 'l',
+    },
+    scope: 'navigator',
+    conditions: {
+      dialogIsOpened: false,
+    },
+    isReadOnly: false,
+  },
+  {
+    id: 'openEntry',
+    labelKey: 'shortcuts.openEntry',
+    defaultKeys: {
+      ctrl: true,
+      key: 'p',
+    },
+    scope: 'navigator',
+    conditions: {
+      dialogIsOpened: false,
+    },
+    isReadOnly: false,
+  },
+  ...BUILTIN_NAVIGATION_PAGE_SHORTCUTS.map((shortcut): ShortcutDefinition => ({
+    id: shortcut.id,
+    labelKey: shortcut.labelKey,
+    defaultKeys: shortcut.defaultKeys,
+    scope: 'global',
+    conditions: {
+      inputFieldIsActive: false,
+      dialogIsOpened: false,
+    },
+    isReadOnly: false,
+  })),
+  {
+    id: 'navigatePageBack',
+    labelKey: 'shortcuts.navigatePageBack',
+    defaultKeys: {
+      key: '',
+    },
+    scope: 'global',
+    conditions: {
+      dialogIsOpened: false,
+    },
+    isReadOnly: false,
+  },
+  {
+    id: 'navigatePageForward',
+    labelKey: 'shortcuts.navigatePageForward',
+    defaultKeys: {
+      key: '',
+    },
+    scope: 'global',
+    conditions: {
+      dialogIsOpened: false,
+    },
+    isReadOnly: false,
+  },
+  {
     id: 'toggleSplitView',
     labelKey: 'shortcuts.toggleSplitView',
     defaultKeys: {
       ctrl: true,
       key: 's',
+    },
+    scope: 'navigator',
+    conditions: {
+      inputFieldIsActive: false,
+      dialogIsOpened: false,
+    },
+    isReadOnly: false,
+  },
+  {
+    id: 'createNewFile',
+    labelKey: 'shortcuts.createNewFileInCurrentDirectory',
+    defaultKeys: {
+      ctrl: true,
+      shift: true,
+      key: 'm',
+    },
+    scope: 'navigator',
+    conditions: {
+      inputFieldIsActive: false,
+      dialogIsOpened: false,
+    },
+    isReadOnly: false,
+  },
+  {
+    id: 'createNewDirectory',
+    labelKey: 'shortcuts.createNewDirectoryInTheCurrentDirectory',
+    defaultKeys: {
+      ctrl: true,
+      shift: true,
+      key: 'n',
     },
     scope: 'navigator',
     conditions: {
@@ -117,6 +275,21 @@ const DEFAULT_SHORTCUTS: ShortcutDefinition[] = [
       ctrl: true,
       shift: true,
       key: 'c',
+    },
+    scope: 'navigator',
+    conditions: {
+      inputFieldIsActive: false,
+      dialogIsOpened: false,
+    },
+    isReadOnly: false,
+  },
+  {
+    id: 'openCopiedPath',
+    labelKey: 'shortcuts.openCopiedPath',
+    defaultKeys: {
+      ctrl: true,
+      shift: true,
+      key: 'v',
     },
     scope: 'navigator',
     conditions: {
@@ -247,6 +420,21 @@ const DEFAULT_SHORTCUTS: ShortcutDefinition[] = [
     isReadOnly: false,
   },
   {
+    id: 'print',
+    labelKey: 'shortcuts.printSelectedFile',
+    defaultKeys: {
+      ctrl: true,
+      key: 'o',
+    },
+    scope: 'navigator',
+    conditions: {
+      inputFieldIsActive: false,
+      dialogIsOpened: false,
+      dirItemIsSelected: true,
+    },
+    isReadOnly: false,
+  },
+  {
     id: 'openNewTab',
     labelKey: 'shortcuts.openCurrentDirInNewTab',
     defaultKeys: {
@@ -266,6 +454,21 @@ const DEFAULT_SHORTCUTS: ShortcutDefinition[] = [
     defaultKeys: {
       ctrl: true,
       key: 'w',
+    },
+    scope: 'navigator',
+    conditions: {
+      inputFieldIsActive: false,
+      dialogIsOpened: false,
+    },
+    isReadOnly: false,
+  },
+  {
+    id: 'restoreLastClosedTab',
+    labelKey: 'shortcuts.restoreLastClosedTab',
+    defaultKeys: {
+      ctrl: true,
+      shift: true,
+      key: 't',
     },
     scope: 'navigator',
     conditions: {
@@ -370,10 +573,71 @@ const DEFAULT_SHORTCUTS: ShortcutDefinition[] = [
     isReadOnly: false,
   },
   {
-    id: 'navigateBack',
-    labelKey: 'shortcuts.navigateBack',
+    id: 'navigateHistoryBack',
+    bindingSlot: 0,
+    labelKey: 'shortcuts.navigateHistoryBack',
     defaultKeys: {
-      key: 'Backspace',
+      alt: true,
+      key: 'ArrowLeft',
+    },
+    scope: 'navigator',
+    conditions: {
+      inputFieldIsActive: false,
+      dialogIsOpened: false,
+    },
+    isReadOnly: false,
+  },
+  {
+    id: 'navigateHistoryBack',
+    bindingSlot: 1,
+    alternateChordRow: true,
+    labelKey: 'shortcuts.navigateHistoryBack',
+    defaultKeys: {
+      key: 'MouseButton4',
+    },
+    scope: 'navigator',
+    conditions: {
+      inputFieldIsActive: false,
+      dialogIsOpened: false,
+    },
+    isReadOnly: false,
+  },
+  {
+    id: 'navigateHistoryForward',
+    bindingSlot: 0,
+    labelKey: 'shortcuts.navigateHistoryForward',
+    defaultKeys: {
+      alt: true,
+      key: 'ArrowRight',
+    },
+    scope: 'navigator',
+    conditions: {
+      inputFieldIsActive: false,
+      dialogIsOpened: false,
+    },
+    isReadOnly: false,
+  },
+  {
+    id: 'navigateHistoryForward',
+    bindingSlot: 1,
+    alternateChordRow: true,
+    labelKey: 'shortcuts.navigateHistoryForward',
+    defaultKeys: {
+      key: 'MouseButton5',
+    },
+    scope: 'navigator',
+    conditions: {
+      inputFieldIsActive: false,
+      dialogIsOpened: false,
+    },
+    isReadOnly: false,
+  },
+  {
+    id: 'goUpDirectory',
+    labelKey: 'shortcuts.goUpDirectory',
+    defaultKeys: {
+      alt: true,
+      key: 'ArrowUp',
     },
     scope: 'navigator',
     conditions: {
@@ -443,6 +707,53 @@ const DEFAULT_SHORTCUTS: ShortcutDefinition[] = [
     isReadOnly: false,
   },
 ];
+
+function mergeShortcutDefinitionsWithUserAlternateRows(
+  baseDefinitions: ShortcutDefinition[],
+  userAlternateChordSlots: ShortcutUserAlternateChordSlots,
+): ShortcutDefinition[] {
+  const merged: ShortcutDefinition[] = [];
+  let baseWalkIndex = 0;
+
+  while (baseWalkIndex < baseDefinitions.length) {
+    const currentShortcutId = baseDefinitions[baseWalkIndex].id;
+
+    while (
+      baseWalkIndex < baseDefinitions.length
+      && baseDefinitions[baseWalkIndex].id === currentShortcutId
+    ) {
+      merged.push(baseDefinitions[baseWalkIndex]);
+      baseWalkIndex += 1;
+    }
+
+    const extraSlots = userAlternateChordSlots[currentShortcutId];
+    if (!extraSlots?.length) continue;
+
+    const primaryTemplate = baseDefinitions.find(
+      definition =>
+        definition.id === currentShortcutId
+        && (definition.bindingSlot ?? 0) === 0,
+    );
+
+    if (!primaryTemplate) continue;
+
+    for (const bindingSlot of extraSlots) {
+      merged.push({
+        id: primaryTemplate.id,
+        bindingSlot,
+        labelKey: primaryTemplate.labelKey,
+        defaultKeys: { key: '' },
+        scope: primaryTemplate.scope,
+        conditions: { ...primaryTemplate.conditions },
+        isReadOnly: primaryTemplate.isReadOnly,
+        alternateChordRow: true,
+        userDefinedAlternateChord: true,
+      });
+    }
+  }
+
+  return merged;
+}
 
 const MODIFIER_ONLY_KEYBOARD_CODES = new Set([
   'MetaLeft',
@@ -645,7 +956,13 @@ export function resolveShortcutKeyFromKeyboardEvent(
 function formatShortcutMainKeyForDisplay(rawKey: string): string {
   let keyDisplay = shortcutMainKeyDisplayLabel(rawKey);
 
-  if (keyDisplay === ' ') {
+  if (keyDisplay === 'MouseButton4') {
+    keyDisplay = 'Mouse Button 4';
+  }
+  else if (keyDisplay === 'MouseButton5') {
+    keyDisplay = 'Mouse Button 5';
+  }
+  else if (keyDisplay === ' ') {
     keyDisplay = 'Space';
   }
   else if (keyDisplay.length === 1) {
@@ -697,6 +1014,10 @@ export function formatCaptureChordLabel(
 }
 
 export function formatShortcutKeys(keys: ShortcutKeys): string {
+  if (!keys.key) {
+    return '';
+  }
+
   const parts: string[] = [];
 
   if (keys.ctrl) parts.push('Ctrl');
@@ -739,7 +1060,28 @@ export function parseShortcutString(shortcutString: string): ShortcutKeys | null
   return keys;
 }
 
-function matchesShortcut(event: KeyboardEvent, keys: ShortcutKeys): boolean {
+function mouseButtonToShortcutKey(button: number): string | null {
+  if (button === 3) return 'MouseButton4';
+  if (button === 4) return 'MouseButton5';
+
+  return null;
+}
+
+function modifiersMatch(event: KeyboardEvent | MouseEvent, keys: ShortcutKeys): boolean {
+  const eventCtrl = event.ctrlKey || event.metaKey;
+  const expectedCtrl = keys.ctrl || keys.meta || false;
+
+  if (eventCtrl !== expectedCtrl) return false;
+  if (event.altKey !== (keys.alt || false)) return false;
+  if (event.shiftKey !== (keys.shift || false)) return false;
+
+  return true;
+}
+
+export function matchesShortcut(event: KeyboardEvent, keys: ShortcutKeys): boolean {
+  if (!keys.key) return false;
+  if (keys.key.startsWith('MouseButton')) return false;
+
   const eventCtrl = event.ctrlKey || event.metaKey;
   const expectedCtrl = keys.ctrl || keys.meta || false;
 
@@ -781,6 +1123,52 @@ function matchesShortcut(event: KeyboardEvent, keys: ShortcutKeys): boolean {
 
   const codeLower = event.code.toLowerCase();
   return eventKey === expectedKey || codeLower === `key${expectedKey}`;
+}
+
+function matchesMouseShortcut(event: MouseEvent, keys: ShortcutKeys): boolean {
+  if (!keys.key) return false;
+  if (!modifiersMatch(event, keys)) return false;
+
+  const eventKey = mouseButtonToShortcutKey(event.button);
+  return eventKey !== null && eventKey.toLowerCase() === keys.key.toLowerCase();
+}
+
+const ADDRESS_BAR_PATH_EDITOR_YIELD_NAVIGATOR_IDS: ReadonlySet<ShortcutId> = new Set([
+  'goUpDirectory',
+  'navigateHistoryBack',
+  'navigateHistoryForward',
+]);
+
+const EARLY_PREVENT_DEFAULT_SHORTCUT_IDS: ReadonlySet<ShortcutId> = new Set([
+  'copyCurrentDirectoryPath',
+]);
+
+function keyboardEventTouchesAddressBarPathEditor(event: KeyboardEvent): boolean {
+  const composedPathSegments
+    = typeof event.composedPath === 'function'
+      ? [...event.composedPath()]
+      : [];
+
+  const candidateTargets = [...composedPathSegments];
+
+  if (
+    typeof event.target === 'object'
+    && event.target !== null
+    && !composedPathSegments.some(candidate => candidate === event.target)
+  ) {
+    candidateTargets.unshift(event.target);
+  }
+
+  for (const candidate of candidateTargets) {
+    if (
+      candidate instanceof Element
+      && candidate.getAttribute('data-address-bar-editor-path') === 'open'
+    ) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 export function formatConditionsLabel(conditions: ShortcutConditions): string {
@@ -826,25 +1214,6 @@ export function getSelectedTextForCopy(): string | null {
   return text;
 }
 
-function isInputFieldActive(): boolean {
-  const activeElement = document.activeElement;
-  if (!activeElement) return false;
-  const tagName = activeElement.tagName.toLowerCase();
-  return tagName === 'input' || tagName === 'textarea' || (activeElement as HTMLElement).isContentEditable === true;
-}
-
-function isDialogOpened(): boolean {
-  const dialogs = document.querySelectorAll('[role="dialog"]');
-
-  for (const dialog of dialogs) {
-    if (!dialog.classList.contains('sigma-ui-popover-content')) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
 type ShortcutHandler = () => void | boolean | Promise<void | boolean>;
 type ShortcutHandlerResult = ReturnType<ShortcutHandler>;
 
@@ -857,7 +1226,12 @@ export const useShortcutsStore = defineStore('shortcuts', () => {
   const userSettingsStore = useUserSettingsStore();
   const extensionsStore = useExtensionsStore();
 
-  const definitions = ref<ShortcutDefinition[]>(DEFAULT_SHORTCUTS);
+  const definitions = computed(() =>
+    mergeShortcutDefinitionsWithUserAlternateRows(
+      DEFAULT_SHORTCUTS,
+      userSettingsStore.userSettings.shortcutUserAlternateChordSlots ?? {},
+    ),
+  );
   const handlers = ref<Map<ShortcutId, HandlerRegistration>>(new Map());
   const isInitialized = ref(false);
   const isListenerActive = ref(false);
@@ -871,13 +1245,95 @@ export const useShortcutsStore = defineStore('shortcuts', () => {
     },
   });
 
+  async function persistShortcutUserAlternateChordSlots(next: ShortcutUserAlternateChordSlots): Promise<void> {
+    const cleaned: ShortcutUserAlternateChordSlots = {};
+
+    for (const shortcutId of Object.keys(next) as ShortcutId[]) {
+      const slots = next[shortcutId];
+
+      if (slots?.length) {
+        cleaned[shortcutId] = slots;
+      }
+    }
+
+    userSettingsStore.userSettings.shortcutUserAlternateChordSlots = cleaned;
+    await userSettingsStore.setUserSettingsStorage('shortcutUserAlternateChordSlots', cleaned);
+  }
+
+  function getMaxBindingSlotIndex(shortcutId: ShortcutId): number {
+    let maxSlot = 0;
+
+    for (const definition of definitions.value) {
+      if (definition.id !== shortcutId) continue;
+
+      const slotIndex = definition.bindingSlot ?? 0;
+
+      if (slotIndex > maxSlot) {
+        maxSlot = slotIndex;
+      }
+    }
+
+    return maxSlot;
+  }
+
+  function resolveShortcutBindingKeys(definition: ShortcutDefinition): ShortcutKeys {
+    const bindingSlot = definition.bindingSlot ?? 0;
+    const shortcutId = definition.id;
+    const entry = userShortcuts.value[shortcutId];
+    const defaultKeys = definition.defaultKeys;
+
+    if (entry === undefined) {
+      return defaultKeys;
+    }
+
+    if (!Array.isArray(entry)) {
+      return bindingSlot === 0 ? entry : defaultKeys;
+    }
+
+    const slotValue = entry[bindingSlot];
+
+    return slotValue != null ? slotValue : defaultKeys;
+  }
+
+  function getShortcutBindingLabel(definition: ShortcutDefinition): string {
+    return formatShortcutKeys(resolveShortcutBindingKeys(definition));
+  }
+
+  function isShortcutBindingCustomized(definition: ShortcutDefinition): boolean {
+    const bindingSlot = definition.bindingSlot ?? 0;
+    const entry = userShortcuts.value[definition.id];
+
+    if (entry === undefined) {
+      return false;
+    }
+
+    if (!Array.isArray(entry)) {
+      return bindingSlot === 0;
+    }
+
+    return entry[bindingSlot] != null;
+  }
+
+  function getShortcutBindingSource(definition: ShortcutDefinition): 'system' | 'user' {
+    return isShortcutBindingCustomized(definition) ? 'user' : 'system';
+  }
+
+  function getPrimaryShortcutDefinition(shortcutId: ShortcutId): ShortcutDefinition | undefined {
+    return definitions.value.find(
+      definitionItem =>
+        definitionItem.id === shortcutId
+        && (definitionItem.bindingSlot ?? 0) === 0,
+    );
+  }
+
   function getShortcutKeys(shortcutId: ShortcutId): ShortcutKeys {
-    const userKeys = userShortcuts.value[shortcutId];
-    if (userKeys) return userKeys;
+    const definition = getPrimaryShortcutDefinition(shortcutId);
 
-    const definition = definitions.value.find(definitionItem => definitionItem.id === shortcutId);
+    if (!definition) {
+      return { key: '' };
+    }
 
-    return definition?.defaultKeys ?? { key: '' };
+    return resolveShortcutBindingKeys(definition);
   }
 
   function getShortcutLabel(shortcutId: ShortcutId): string {
@@ -885,7 +1341,7 @@ export const useShortcutsStore = defineStore('shortcuts', () => {
   }
 
   function getShortcutDefinition(shortcutId: ShortcutId): ShortcutDefinition | undefined {
-    return definitions.value.find(definitionItem => definitionItem.id === shortcutId);
+    return getPrimaryShortcutDefinition(shortcutId);
   }
 
   function isCustomized(shortcutId: ShortcutId): boolean {
@@ -896,22 +1352,211 @@ export const useShortcutsStore = defineStore('shortcuts', () => {
     return isCustomized(shortcutId) ? 'user' : 'system';
   }
 
-  async function setShortcut(shortcutId: ShortcutId, keys: ShortcutKeys): Promise<void> {
-    const newShortcuts = {
+  async function setShortcut(
+    shortcutId: ShortcutId,
+    keys: ShortcutKeys,
+    bindingSlot = 0,
+  ): Promise<void> {
+    const arrayLength = getMaxBindingSlotIndex(shortcutId) + 1;
+
+    if (arrayLength <= 1) {
+      const newShortcuts = {
+        ...userShortcuts.value,
+        [shortcutId]: keys,
+      };
+      userShortcuts.value = newShortcuts;
+      return;
+    }
+
+    const current = userShortcuts.value[shortcutId];
+    const nextArray: Array<ShortcutKeys | null> = Array.from({ length: arrayLength }, () => null);
+
+    if (Array.isArray(current)) {
+      for (let slotIndex = 0; slotIndex < arrayLength; slotIndex += 1) {
+        nextArray[slotIndex] = current[slotIndex] ?? null;
+      }
+    }
+    else if (current !== undefined) {
+      nextArray[0] = current;
+    }
+
+    nextArray[bindingSlot] = keys;
+
+    if (nextArray.every(slotValue => slotValue == null)) {
+      const newShortcuts = { ...userShortcuts.value };
+      delete newShortcuts[shortcutId];
+      userShortcuts.value = newShortcuts;
+      return;
+    }
+
+    userShortcuts.value = {
       ...userShortcuts.value,
-      [shortcutId]: keys,
+      [shortcutId]: nextArray,
     };
-    userShortcuts.value = newShortcuts;
   }
 
-  async function resetShortcut(shortcutId: ShortcutId): Promise<void> {
-    const newShortcuts = { ...userShortcuts.value };
-    delete newShortcuts[shortcutId];
-    userShortcuts.value = newShortcuts;
+  async function resetShortcut(shortcutId: ShortcutId, bindingSlot?: number): Promise<void> {
+    const arrayLength = getMaxBindingSlotIndex(shortcutId) + 1;
+
+    if (bindingSlot === undefined) {
+      const newShortcuts = { ...userShortcuts.value };
+      delete newShortcuts[shortcutId];
+      userShortcuts.value = newShortcuts;
+
+      const clearedExtras: ShortcutUserAlternateChordSlots = {
+        ...(userSettingsStore.userSettings.shortcutUserAlternateChordSlots ?? {}),
+      };
+      delete clearedExtras[shortcutId];
+      await persistShortcutUserAlternateChordSlots(clearedExtras);
+      return;
+    }
+
+    if (arrayLength <= 1) {
+      const newShortcuts = { ...userShortcuts.value };
+      delete newShortcuts[shortcutId];
+      userShortcuts.value = newShortcuts;
+      return;
+    }
+
+    const current = userShortcuts.value[shortcutId];
+    const nextArray: Array<ShortcutKeys | null> = Array.from({ length: arrayLength }, () => null);
+
+    if (Array.isArray(current)) {
+      for (let slotIndex = 0; slotIndex < arrayLength; slotIndex += 1) {
+        nextArray[slotIndex] = current[slotIndex] ?? null;
+      }
+    }
+    else if (current !== undefined) {
+      nextArray[0] = current;
+    }
+
+    nextArray[bindingSlot] = null;
+
+    if (nextArray.every(slotValue => slotValue == null)) {
+      const newShortcuts = { ...userShortcuts.value };
+      delete newShortcuts[shortcutId];
+      userShortcuts.value = newShortcuts;
+      return;
+    }
+
+    userShortcuts.value = {
+      ...userShortcuts.value,
+      [shortcutId]: nextArray,
+    };
+  }
+
+  function trimUserShortcutEntryToMaxSlot(shortcutId: ShortcutId): void {
+    const maxSlotIndex = getMaxBindingSlotIndex(shortcutId);
+    const arrayLength = maxSlotIndex + 1;
+    const currentEntry = userShortcuts.value[shortcutId];
+
+    if (!Array.isArray(currentEntry)) return;
+
+    const trimmed = currentEntry.slice(0, arrayLength);
+
+    if (trimmed.every(slotValue => slotValue == null)) {
+      const newShortcuts = { ...userShortcuts.value };
+      delete newShortcuts[shortcutId];
+      userShortcuts.value = newShortcuts;
+      return;
+    }
+
+    userShortcuts.value = {
+      ...userShortcuts.value,
+      [shortcutId]: trimmed,
+    };
+  }
+
+  async function addUserAlternateChordBinding(
+    shortcutId: ShortcutId,
+    originDefinition: ShortcutDefinition,
+  ): Promise<void> {
+    const primaryTemplate = DEFAULT_SHORTCUTS.find(
+      definition =>
+        definition.id === shortcutId
+        && (definition.bindingSlot ?? 0) === 0,
+    );
+
+    if (!primaryTemplate || primaryTemplate.isReadOnly) return;
+
+    const slotsBefore = userSettingsStore.userSettings.shortcutUserAlternateChordSlots ?? {};
+    const mergedBefore = mergeShortcutDefinitionsWithUserAlternateRows(DEFAULT_SHORTCUTS, slotsBefore);
+
+    const originBindingSlot = originDefinition.bindingSlot ?? 0;
+
+    const originIdx = mergedBefore.findIndex(
+      definition =>
+        definition.id === shortcutId
+        && (definition.bindingSlot ?? 0) === originBindingSlot,
+    );
+
+    if (originIdx < 0) return;
+
+    let endIdx = originIdx;
+
+    while (
+      endIdx + 1 < mergedBefore.length
+      && mergedBefore[endIdx + 1].id === shortcutId
+    ) {
+      endIdx += 1;
+    }
+
+    const insertMergedIndex = endIdx + 1;
+
+    const builtinCountForId = DEFAULT_SHORTCUTS.filter(definition => definition.id === shortcutId).length;
+    const groupStart = mergedBefore.findIndex(definition => definition.id === shortcutId);
+
+    if (groupStart < 0) return;
+
+    const userVisualStart = groupStart + builtinCountForId;
+    const rawInsertPosition = insertMergedIndex - userVisualStart;
+    const current: ShortcutUserAlternateChordSlots = { ...slotsBefore };
+    const userSlots = [...(current[shortcutId] ?? [])];
+
+    const insertIntoUserArray = Math.max(0, Math.min(rawInsertPosition, userSlots.length));
+
+    const maxBuiltinSlot = Math.max(
+      0,
+      ...DEFAULT_SHORTCUTS
+        .filter(definition => definition.id === shortcutId)
+        .map(definition => definition.bindingSlot ?? 0),
+    );
+
+    const maxFromUserSlots = userSlots.length ? Math.max(...userSlots) : -1;
+    const maxSlotOverall = Math.max(maxBuiltinSlot, maxFromUserSlots);
+    const newSlot = maxSlotOverall + 1;
+
+    userSlots.splice(insertIntoUserArray, 0, newSlot);
+    current[shortcutId] = userSlots;
+
+    await persistShortcutUserAlternateChordSlots(current);
+  }
+
+  async function removeUserAlternateChordBindingRow(shortcutId: ShortcutId, bindingSlot: number): Promise<void> {
+    await resetShortcut(shortcutId, bindingSlot);
+
+    const current: ShortcutUserAlternateChordSlots = {
+      ...(userSettingsStore.userSettings.shortcutUserAlternateChordSlots ?? {}),
+    };
+    const userSlots = [...(current[shortcutId] ?? [])];
+    const filtered = userSlots.filter(slot => slot !== bindingSlot);
+
+    if (filtered.length === userSlots.length) return;
+
+    if (filtered.length) {
+      current[shortcutId] = filtered;
+    }
+    else {
+      delete current[shortcutId];
+    }
+
+    await persistShortcutUserAlternateChordSlots(current);
+    trimUserShortcutEntryToMaxSlot(shortcutId);
   }
 
   async function resetAllShortcuts(): Promise<void> {
     userShortcuts.value = {};
+    await persistShortcutUserAlternateChordSlots({});
   }
 
   function checkConditions(definition: ShortcutDefinition, registration?: HandlerRegistration): boolean {
@@ -971,6 +1616,16 @@ export const useShortcutsStore = defineStore('shortcuts', () => {
     return registration.handler();
   }
 
+  function canCallShortcutHandler(shortcutId: ShortcutId): boolean {
+    const definition = getShortcutDefinition(shortcutId);
+    if (!definition) return false;
+
+    const registration = handlers.value.get(shortcutId);
+    if (!registration) return false;
+
+    return checkConditions(definition, registration);
+  }
+
   async function executeShortcut(shortcutId: ShortcutId): Promise<boolean> {
     const result = callShortcutHandler(shortcutId);
     if (result === null) return false;
@@ -985,7 +1640,7 @@ export const useShortcutsStore = defineStore('shortcuts', () => {
 
   function findMatchingShortcut(event: KeyboardEvent): ShortcutId | null {
     for (const definition of definitions.value) {
-      const keys = getShortcutKeys(definition.id);
+      const keys = resolveShortcutBindingKeys(definition);
 
       if (matchesShortcut(event, keys)) {
         return definition.id;
@@ -999,7 +1654,7 @@ export const useShortcutsStore = defineStore('shortcuts', () => {
     const matchingShortcuts: ShortcutId[] = [];
 
     for (const definition of definitions.value) {
-      const keys = getShortcutKeys(definition.id);
+      const keys = resolveShortcutBindingKeys(definition);
 
       if (matchesShortcut(event, keys)) {
         matchingShortcuts.push(definition.id);
@@ -1009,13 +1664,36 @@ export const useShortcutsStore = defineStore('shortcuts', () => {
     return matchingShortcuts;
   }
 
-  function findConflictingShortcut(keys: ShortcutKeys, excludeShortcutId?: ShortcutId): ShortcutDefinition | null {
+  function findAllMatchingMouseShortcuts(event: MouseEvent): ShortcutId[] {
+    const matchingShortcuts: ShortcutId[] = [];
+
+    for (const definition of definitions.value) {
+      const keys = resolveShortcutBindingKeys(definition);
+
+      if (matchesMouseShortcut(event, keys)) {
+        matchingShortcuts.push(definition.id);
+      }
+    }
+
+    return matchingShortcuts;
+  }
+
+  function findConflictingShortcut(
+    keys: ShortcutKeys,
+    excludeDefinition?: ShortcutDefinition,
+  ): ShortcutDefinition | null {
     const keysLabel = formatShortcutKeys(keys);
 
     for (const definition of definitions.value) {
-      if (definition.id === excludeShortcutId) continue;
+      if (
+        excludeDefinition
+        && definition.id === excludeDefinition.id
+        && (definition.bindingSlot ?? 0) === (excludeDefinition.bindingSlot ?? 0)
+      ) {
+        continue;
+      }
 
-      const existingLabel = getShortcutLabel(definition.id);
+      const existingLabel = formatShortcutKeys(resolveShortcutBindingKeys(definition));
 
       if (existingLabel === keysLabel) {
         return definition;
@@ -1049,6 +1727,15 @@ export const useShortcutsStore = defineStore('shortcuts', () => {
     }
   }
 
+  async function executeExtensionKeybinding(commandId: string): Promise<void> {
+    try {
+      await extensionsStore.executeCommand(commandId);
+    }
+    catch (error) {
+      console.error(`Failed to execute extension command ${commandId}:`, error);
+    }
+  }
+
   async function handleExtensionKeybindings(event: KeyboardEvent): Promise<boolean> {
     for (const keybinding of extensionsStore.keybindings) {
       if (!keybinding.keys.key) continue;
@@ -1058,12 +1745,24 @@ export const useShortcutsStore = defineStore('shortcuts', () => {
       event.preventDefault();
       event.stopPropagation();
 
-      try {
-        await extensionsStore.executeCommand(keybinding.commandId);
-      }
-      catch (error) {
-        console.error(`Failed to execute extension command ${keybinding.commandId}:`, error);
-      }
+      await executeExtensionKeybinding(keybinding.commandId);
+
+      return true;
+    }
+
+    return false;
+  }
+
+  async function handleExtensionMouseKeybindings(event: MouseEvent): Promise<boolean> {
+    for (const keybinding of extensionsStore.keybindings) {
+      if (!keybinding.keys.key) continue;
+      if (!matchesMouseShortcut(event, keybinding.keys)) continue;
+      if (!checkExtensionKeybindingCondition(keybinding.when)) continue;
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      await executeExtensionKeybinding(keybinding.commandId);
 
       return true;
     }
@@ -1083,30 +1782,74 @@ export const useShortcutsStore = defineStore('shortcuts', () => {
       event.stopPropagation();
     }
 
+    const matchingShortcutCandidates = findAllMatchingShortcuts(event);
+
+    let matchingShortcutIds = matchingShortcutCandidates;
+
+    if (keyboardEventTouchesAddressBarPathEditor(event)) {
+      matchingShortcutIds = matchingShortcutCandidates.filter(candidateShortcutId =>
+        !ADDRESS_BAR_PATH_EDITOR_YIELD_NAVIGATOR_IDS.has(candidateShortcutId),
+      );
+    }
+
+    const shouldPreventDefaultEarly = matchingShortcutIds.some(shortcutId =>
+      EARLY_PREVENT_DEFAULT_SHORTCUT_IDS.has(shortcutId) && canCallShortcutHandler(shortcutId),
+    );
+
+    if (shouldPreventDefaultEarly) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+
     const extensionHandled = await handleExtensionKeybindings(event);
     if (extensionHandled) return true;
 
-    const matchingShortcutIds = findAllMatchingShortcuts(event);
     if (matchingShortcutIds.length === 0) return false;
 
     for (const shortcutId of matchingShortcutIds) {
       const result = callShortcutHandler(shortcutId);
       if (result === null) continue;
 
-      if (result instanceof Promise) {
+      const isHandled = result instanceof Promise
+        ? (await result) !== false
+        : result !== false;
+
+      if (isHandled) {
         event.preventDefault();
         event.stopPropagation();
-        const asyncResult = await result;
-        return asyncResult !== false;
       }
-      else {
-        if (result !== false) {
-          event.preventDefault();
-          event.stopPropagation();
-        }
 
-        return result !== false;
+      return isHandled;
+    }
+
+    return false;
+  }
+
+  async function handleMouseDown(event: MouseEvent): Promise<boolean> {
+    if (isShortcutCaptureActive.value) {
+      return false;
+    }
+
+    const extensionHandled = await handleExtensionMouseKeybindings(event);
+    if (extensionHandled) return true;
+
+    const matchingShortcutIds = findAllMatchingMouseShortcuts(event);
+    if (matchingShortcutIds.length === 0) return false;
+
+    for (const shortcutId of matchingShortcutIds) {
+      const result = callShortcutHandler(shortcutId);
+      if (result === null) continue;
+
+      const isHandled = result instanceof Promise
+        ? (await result) !== false
+        : result !== false;
+
+      if (isHandled) {
+        event.preventDefault();
+        event.stopPropagation();
       }
+
+      return isHandled;
     }
 
     return false;
@@ -1116,21 +1859,27 @@ export const useShortcutsStore = defineStore('shortcuts', () => {
     handleKeydown(event);
   }
 
+  function globalMouseDownHandler(event: MouseEvent): void {
+    handleMouseDown(event);
+  }
+
   function startGlobalListener(): void {
     if (isListenerActive.value) return;
     document.addEventListener('keydown', globalKeydownHandler, { capture: true });
+    document.addEventListener('mousedown', globalMouseDownHandler, { capture: true });
     isListenerActive.value = true;
   }
 
   function stopGlobalListener(): void {
     if (!isListenerActive.value) return;
     document.removeEventListener('keydown', globalKeydownHandler, { capture: true });
+    document.removeEventListener('mousedown', globalMouseDownHandler, { capture: true });
     isListenerActive.value = false;
   }
 
   function hasConflictWithAppShortcut(keys: ShortcutKeys): boolean {
     for (const definition of definitions.value) {
-      const shortcutKeys = getShortcutKeys(definition.id);
+      const shortcutKeys = resolveShortcutBindingKeys(definition);
 
       if (
         shortcutKeys.key.toLowerCase() === keys.key.toLowerCase()
@@ -1167,11 +1916,17 @@ export const useShortcutsStore = defineStore('shortcuts', () => {
     getShortcutKeys,
     getShortcutLabel,
     getShortcutDefinition,
+    resolveShortcutBindingKeys,
+    getShortcutBindingLabel,
+    getShortcutBindingSource,
+    isShortcutBindingCustomized,
     isCustomized,
     getSource,
     setShortcut,
     resetShortcut,
     resetAllShortcuts,
+    addUserAlternateChordBinding,
+    removeUserAlternateChordBindingRow,
     registerHandler,
     unregisterHandler,
     setShortcutCaptureActive,
@@ -1179,6 +1934,7 @@ export const useShortcutsStore = defineStore('shortcuts', () => {
     findMatchingShortcut,
     findConflictingShortcut,
     handleKeydown,
+    handleMouseDown,
     startGlobalListener,
     stopGlobalListener,
     init,

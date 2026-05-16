@@ -14,6 +14,7 @@ type ContextMenuState = {
 
 type QuickViewStore = {
   toggleQuickView: (path: string, siblingPaths?: string[] | null) => Promise<boolean>;
+  openPrintViewFromMainWindow: (path: string) => Promise<boolean>;
 };
 
 export function useFileBrowserActions(options: {
@@ -37,6 +38,14 @@ export function useFileBrowserActions(options: {
     }
   }
 
+  async function printEntry(entry?: DirEntry) {
+    const targetEntry = entry || options.selectedEntries.value[options.selectedEntries.value.length - 1];
+
+    if (targetEntry && targetEntry.is_file) {
+      await options.quickViewStore.openPrintViewFromMainWindow(targetEntry.path);
+    }
+  }
+
   function onContextMenuAction(action: ContextMenuAction) {
     if (action === 'open-with') {
       const entries = options.contextMenu.value.selectedEntries;
@@ -53,6 +62,16 @@ export function useFileBrowserActions(options: {
 
       if (entries.length > 0 && entries[0].is_file) {
         void quickView(entries[0]);
+      }
+
+      return;
+    }
+
+    if (action === 'print') {
+      const entries = options.contextMenu.value.selectedEntries;
+
+      if (entries.length > 0 && entries[0].is_file) {
+        void printEntry(entries[0]);
       }
 
       return;
@@ -79,6 +98,7 @@ export function useFileBrowserActions(options: {
 
   return {
     quickView,
+    printEntry,
     onContextMenuAction,
     onEntryMouseDown,
     onEntryMouseUp,

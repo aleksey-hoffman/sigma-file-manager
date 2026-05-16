@@ -22,9 +22,11 @@ const props = withDefaults(defineProps<{
   path: string;
   isFile?: boolean;
   disableDestructiveActions?: boolean;
+  isCurrentDirectoryContext?: boolean;
 }>(), {
   isFile: false,
   disableDestructiveActions: false,
+  isCurrentDirectoryContext: false,
 });
 
 const {
@@ -175,6 +177,7 @@ function handleNewItemCancel() {
     <DirEntryContextMenu
       :entries="[dirEntry]"
       :disable-destructive-actions="props.disableDestructiveActions"
+      :is-current-directory-context="props.isCurrentDirectoryContext"
       @rename="handleRename"
       @paste="handlePaste"
       @create-new-item="handleCreateNewItem"

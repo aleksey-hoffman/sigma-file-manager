@@ -46,238 +46,244 @@ const isHubSession = computed(() => (activeSession.value?.hubPaths?.length ?? 0)
 
 <template>
   <div class="lan-share-toolbar-button animate-fade-in">
-    <Popover v-model:open="isPopoverOpen">
-      <PopoverTrigger as-child>
-        <Button
-          variant="ghost"
-          size="icon"
-          class="lan-share-toolbar-button__trigger"
-          :class="{ 'lan-share-toolbar-button__trigger--active': activeSession }"
-          :aria-label="t('lanShare.toolbarTooltip')"
-          :title="t('lanShare.toolbarTooltip')"
-        >
-          <Share2Icon
-            :size="16"
-            class="lan-share-toolbar-button__icon"
-          />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent
-        align="end"
-        :side-offset="8"
-        class="lan-share-toolbar-popover"
-      >
-        <div
-          v-if="activeSession"
-          class="lan-share-toolbar__active"
-        >
-          <div class="lan-share-toolbar__header">
-            <span class="lan-share-toolbar__header-title">{{ t('lanShare.serverActive') }}</span>
-            <Tooltip>
-              <TooltipTrigger as-child>
-                <button
-                  type="button"
-                  class="lan-share-toolbar__not-working"
-                >
-                  {{ t('lanShare.notWorkingHint') }}
-                </button>
-              </TooltipTrigger>
-              <TooltipContent
-                side="bottom"
-                align="end"
-                class="lan-share-toolbar__not-working-tooltip"
-              >
-                <ul class="lan-share-toolbar__not-working-list">
-                  <li>{{ t('lanShare.notWorkingReasonVpn') }}</li>
-                  <li>{{ t('lanShare.notWorkingReasonFirewall') }}</li>
-                </ul>
-              </TooltipContent>
-            </Tooltip>
-          </div>
-
-          <div class="lan-share-toolbar__body">
-            <div class="lan-share-toolbar__qr-section">
-              <img
-                v-if="qrDataUrl"
-                class="lan-share-toolbar__qr-image"
-                :src="qrDataUrl"
-                alt=""
-                width="128"
-                height="128"
-              >
-            </div>
-
-            <div class="lan-share-toolbar__info">
-              <div class="lan-share-toolbar__address-group">
-                <div class="lan-share-toolbar__address-label-row">
-                  <div class="lan-share-toolbar__address-label">
-                    {{ t('dialogs.localShareManagerDialog.localServerAddress') }}
-                  </div>
-                  <Tooltip>
-                    <TooltipTrigger as-child>
-                      <button
-                        type="button"
-                        class="lan-share-toolbar__info-icon"
-                        @click="copyLanShareAddress(activeSession.address)"
-                      >
-                        <InfoIcon :size="13" />
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent side="top">
-                      <p class="lan-share-toolbar__tooltip-text">
-                        {{ t('lanShare.urlHintDirect') }}: {{ activeSession.address }}
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
-                </div>
-                <div
-                  v-if="activeSession.mdnsAddress"
-                  class="lan-share-toolbar__address-row"
-                >
-                  <span class="lan-share-toolbar__hint">{{ t('lanShare.urlHintMain') }}:</span>
-                  <button
-                    type="button"
-                    class="lan-share-toolbar__address"
-                    @click="copyLanShareAddress(activeSession.mdnsAddress!)"
-                  >
-                    {{ activeSession.mdnsAddress }}
-                  </button>
-                </div>
-                <div
-                  v-else
-                  class="lan-share-toolbar__address-row"
-                >
-                  <span class="lan-share-toolbar__hint">{{ t('lanShare.urlHintMain') }}:</span>
-                  <button
-                    type="button"
-                    class="lan-share-toolbar__address"
-                    @click="copyLanShareAddress(activeSession.address)"
-                  >
-                    {{ activeSession.address }}
-                  </button>
-                </div>
-                <div
-                  v-if="activeSession.iosAddress"
-                  class="lan-share-toolbar__address-row"
-                >
-                  <span class="lan-share-toolbar__hint">{{ t('lanShare.secondaryHint') }}:</span>
-                  <button
-                    type="button"
-                    class="lan-share-toolbar__address"
-                    @click="copyLanShareAddress(activeSession.iosAddress!)"
-                  >
-                    {{ activeSession.iosAddress }}
-                  </button>
-                </div>
-              </div>
-
-              <div class="lan-share-toolbar__path-group">
-                <div class="lan-share-toolbar__path-label">
-                  {{ activeSession.isFile
-                    ? t('dialogs.localShareManagerDialog.sharedFile')
-                    : t('dialogs.localShareManagerDialog.sharedDirectory')
-                  }}
-                </div>
-                <div class="lan-share-toolbar__path">
-                  {{ activeSession.sharedPath }}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="lan-share-toolbar__mode-selector">
-            <button
-              type="button"
-              class="lan-share-toolbar__mode-card"
-              :class="{ 'lan-share-toolbar__mode-card--active': activeSession.mode === 'stream' }"
-              @click="switchLanShareMode('stream')"
-            >
-              <PlayIcon
-                :size="18"
-                class="lan-share-toolbar__mode-card-icon"
-              />
-              <div class="lan-share-toolbar__mode-card-text">
-                <div class="lan-share-toolbar__mode-card-title">
-                  {{ t('lanShare.modeStream') }}
-                </div>
-                <div class="lan-share-toolbar__mode-card-description">
-                  {{ t('lanShare.modeStreamDescription') }}
-                </div>
-              </div>
-            </button>
-            <button
-              type="button"
-              class="lan-share-toolbar__mode-card"
-              :class="{
-                'lan-share-toolbar__mode-card--active': activeSession.mode === 'ftp',
-                'lan-share-toolbar__mode-card--disabled': isHubSession,
-              }"
-              :disabled="isHubSession"
-              @click="switchLanShareMode('ftp')"
-            >
-              <FolderIcon
-                :size="18"
-                class="lan-share-toolbar__mode-card-icon"
-              />
-              <div class="lan-share-toolbar__mode-card-text">
-                <div class="lan-share-toolbar__mode-card-title">
-                  {{ t('lanShare.modeFtp') }}
-                </div>
-                <div class="lan-share-toolbar__mode-card-description">
-                  {{ t('lanShare.modeFtpDescription') }}
-                </div>
-              </div>
-            </button>
-          </div>
-
-          <div class="lan-share-toolbar__footer">
+    <Tooltip>
+      <Popover v-model:open="isPopoverOpen">
+        <TooltipTrigger as-child>
+          <PopoverTrigger as-child>
             <Button
-              variant="secondary"
-              size="xs"
-              @click="stopShare()"
+              variant="ghost"
+              size="icon"
+              class="lan-share-toolbar-button__trigger"
+              :class="{ 'lan-share-toolbar-button__trigger--active': activeSession || isPopoverOpen }"
+              :aria-label="t('lanShare.toolbarTooltip')"
             >
-              {{ t('lanShare.stopSharing') }}
+              <Share2Icon
+                :size="16"
+                class="lan-share-toolbar-button__icon"
+              />
             </Button>
-          </div>
-        </div>
-
-        <div
-          v-else
-          class="lan-share-toolbar__idle"
+          </PopoverTrigger>
+        </TooltipTrigger>
+        <TooltipContent>
+          {{ t('lanShare.toolbarTooltip') }}
+        </TooltipContent>
+        <PopoverContent
+          align="end"
+          :side-offset="8"
+          class="lan-share-toolbar-popover"
         >
-          <EmptyState
-            class="lan-share-toolbar__idle-empty"
-            :icon="Share2Icon"
-            :icon-size="40"
-            :title="t('lanShare.idleEmptyTitle')"
-            :description="t('lanShare.idleHint')"
-            :bordered="true"
+          <div
+            v-if="activeSession"
+            class="lan-share-toolbar__active"
           >
-            <template #footer>
-              <div class="lan-share-toolbar__idle-actions">
-                <Button
-                  size="sm"
-                  class="lan-share-toolbar__idle-btn"
-                  :disabled="!canShareCurrentDirectory"
-                  @click="startShareCurrentDirectory"
+            <div class="lan-share-toolbar__header">
+              <span class="lan-share-toolbar__header-title">{{ t('lanShare.serverActive') }}</span>
+              <Tooltip>
+                <TooltipTrigger as-child>
+                  <button
+                    type="button"
+                    class="lan-share-toolbar__not-working"
+                  >
+                    {{ t('lanShare.notWorkingHint') }}
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent
+                  side="bottom"
+                  align="end"
+                  class="lan-share-toolbar__not-working-tooltip"
                 >
-                  {{ t('lanShare.shareCurrentDirectory') }}
-                </Button>
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  class="lan-share-toolbar__idle-btn"
-                  :disabled="!canShareSelectedItems"
-                  @click="startShareSelectedItems"
+                  <ul class="lan-share-toolbar__not-working-list">
+                    <li>{{ t('lanShare.notWorkingReasonVpn') }}</li>
+                    <li>{{ t('lanShare.notWorkingReasonFirewall') }}</li>
+                  </ul>
+                </TooltipContent>
+              </Tooltip>
+            </div>
+
+            <div class="lan-share-toolbar__body">
+              <div class="lan-share-toolbar__qr-section">
+                <img
+                  v-if="qrDataUrl"
+                  class="lan-share-toolbar__qr-image"
+                  :src="qrDataUrl"
+                  alt=""
+                  width="128"
+                  height="128"
                 >
-                  {{ t('lanShare.shareSelectedItemsWithCount', { count: selectedItemCount }) }}
-                </Button>
               </div>
-            </template>
-          </EmptyState>
-        </div>
-      </PopoverContent>
-    </Popover>
+
+              <div class="lan-share-toolbar__info">
+                <div class="lan-share-toolbar__address-group">
+                  <div class="lan-share-toolbar__address-label-row">
+                    <div class="lan-share-toolbar__address-label">
+                      {{ t('dialogs.localShareManagerDialog.localServerAddress') }}
+                    </div>
+                    <Tooltip>
+                      <TooltipTrigger as-child>
+                        <button
+                          type="button"
+                          class="lan-share-toolbar__info-icon"
+                          @click="copyLanShareAddress(activeSession.address)"
+                        >
+                          <InfoIcon :size="13" />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top">
+                        <p class="lan-share-toolbar__tooltip-text">
+                          {{ t('lanShare.urlHintDirect') }}: {{ activeSession.address }}
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+                  <div
+                    v-if="activeSession.mdnsAddress"
+                    class="lan-share-toolbar__address-row"
+                  >
+                    <span class="lan-share-toolbar__hint">{{ t('lanShare.urlHintMain') }}:</span>
+                    <button
+                      type="button"
+                      class="lan-share-toolbar__address"
+                      @click="copyLanShareAddress(activeSession.mdnsAddress!)"
+                    >
+                      {{ activeSession.mdnsAddress }}
+                    </button>
+                  </div>
+                  <div
+                    v-else
+                    class="lan-share-toolbar__address-row"
+                  >
+                    <span class="lan-share-toolbar__hint">{{ t('lanShare.urlHintMain') }}:</span>
+                    <button
+                      type="button"
+                      class="lan-share-toolbar__address"
+                      @click="copyLanShareAddress(activeSession.address)"
+                    >
+                      {{ activeSession.address }}
+                    </button>
+                  </div>
+                  <div
+                    v-if="activeSession.iosAddress"
+                    class="lan-share-toolbar__address-row"
+                  >
+                    <span class="lan-share-toolbar__hint">{{ t('lanShare.secondaryHint') }}:</span>
+                    <button
+                      type="button"
+                      class="lan-share-toolbar__address"
+                      @click="copyLanShareAddress(activeSession.iosAddress!)"
+                    >
+                      {{ activeSession.iosAddress }}
+                    </button>
+                  </div>
+                </div>
+
+                <div class="lan-share-toolbar__path-group">
+                  <div class="lan-share-toolbar__path-label">
+                    {{ activeSession.isFile
+                      ? t('dialogs.localShareManagerDialog.sharedFile')
+                      : t('dialogs.localShareManagerDialog.sharedDirectory')
+                    }}
+                  </div>
+                  <div class="lan-share-toolbar__path">
+                    {{ activeSession.sharedPath }}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="lan-share-toolbar__mode-selector">
+              <button
+                type="button"
+                class="lan-share-toolbar__mode-card"
+                :class="{ 'lan-share-toolbar__mode-card--active': activeSession.mode === 'stream' }"
+                @click="switchLanShareMode('stream')"
+              >
+                <PlayIcon
+                  :size="18"
+                  class="lan-share-toolbar__mode-card-icon"
+                />
+                <div class="lan-share-toolbar__mode-card-text">
+                  <div class="lan-share-toolbar__mode-card-title">
+                    {{ t('lanShare.modeStream') }}
+                  </div>
+                  <div class="lan-share-toolbar__mode-card-description">
+                    {{ t('lanShare.modeStreamDescription') }}
+                  </div>
+                </div>
+              </button>
+              <button
+                type="button"
+                class="lan-share-toolbar__mode-card"
+                :class="{
+                  'lan-share-toolbar__mode-card--active': activeSession.mode === 'ftp',
+                  'lan-share-toolbar__mode-card--disabled': isHubSession,
+                }"
+                :disabled="isHubSession"
+                @click="switchLanShareMode('ftp')"
+              >
+                <FolderIcon
+                  :size="18"
+                  class="lan-share-toolbar__mode-card-icon"
+                />
+                <div class="lan-share-toolbar__mode-card-text">
+                  <div class="lan-share-toolbar__mode-card-title">
+                    {{ t('lanShare.modeFtp') }}
+                  </div>
+                  <div class="lan-share-toolbar__mode-card-description">
+                    {{ t('lanShare.modeFtpDescription') }}
+                  </div>
+                </div>
+              </button>
+            </div>
+
+            <div class="lan-share-toolbar__footer">
+              <Button
+                variant="secondary"
+                size="xs"
+                @click="stopShare()"
+              >
+                {{ t('lanShare.stopSharing') }}
+              </Button>
+            </div>
+          </div>
+
+          <div
+            v-else
+            class="lan-share-toolbar__idle"
+          >
+            <EmptyState
+              class="lan-share-toolbar__idle-empty"
+              :icon="Share2Icon"
+              :icon-size="40"
+              :title="t('lanShare.idleEmptyTitle')"
+              :description="t('lanShare.idleHint')"
+              :bordered="true"
+            >
+              <template #footer>
+                <div class="lan-share-toolbar__idle-actions">
+                  <Button
+                    size="sm"
+                    class="lan-share-toolbar__idle-btn"
+                    :disabled="!canShareCurrentDirectory"
+                    @click="startShareCurrentDirectory"
+                  >
+                    {{ t('lanShare.shareCurrentDirectory') }}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    class="lan-share-toolbar__idle-btn"
+                    :disabled="!canShareSelectedItems"
+                    @click="startShareSelectedItems"
+                  >
+                    {{ t('lanShare.shareSelectedItemsWithCount', { count: selectedItemCount }) }}
+                  </Button>
+                </div>
+              </template>
+            </EmptyState>
+          </div>
+        </PopoverContent>
+      </Popover>
+    </Tooltip>
   </div>
 </template>
 
@@ -292,8 +298,8 @@ const isHubSession = computed(() => (activeSession.value?.hubPaths?.length ?? 0)
   stroke: hsl(var(--foreground) / 50%);
 }
 
-.lan-share-toolbar-button__trigger--active :deep(.sigma-ui-button) {
-  background: hsl(var(--primary) / 10%);
+.lan-share-toolbar-button__trigger--active {
+  background-color: hsl(var(--secondary));
 }
 
 .lan-share-toolbar-button__trigger--active .lan-share-toolbar-button__icon {

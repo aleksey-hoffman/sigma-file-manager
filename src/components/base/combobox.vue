@@ -5,6 +5,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <script setup lang="ts">
 import type { AcceptableValue } from 'reka-ui';
+import { computed } from 'vue';
 import { Button } from '@/components/ui/button';
 import {
   Combobox,
@@ -15,6 +16,7 @@ import {
   ComboboxItem,
   ComboboxItemIndicator,
   ComboboxList,
+  ComboboxSeparator,
   ComboboxTrigger,
 } from '@/components/ui/combobox';
 import { ChevronsUpDownIcon, SearchIcon, CheckIcon } from '@lucide/vue';
@@ -23,22 +25,31 @@ interface ComboboxOption {
   [key: string]: unknown;
 }
 
+interface ComboboxOptionGroup {
+  heading?: string;
+  options: ComboboxOption[];
+}
+
 const props = withDefaults(
   defineProps<{
     modelValue: ComboboxOption | null | undefined;
     options: ComboboxOption[];
+    optionGroups?: ComboboxOptionGroup[];
     by: string;
     displayKey?: string;
     searchPlaceholder?: string;
     emptyText?: string;
     selectOnHighlight?: boolean;
+    closeOnSelect?: boolean;
     triggerWidth?: string;
   }>(),
   {
     displayKey: 'name',
+    optionGroups: undefined,
     searchPlaceholder: 'Search',
     emptyText: undefined,
     selectOnHighlight: false,
+    closeOnSelect: true,
     triggerWidth: '200px',
   },
 );
@@ -46,11 +57,33 @@ const props = withDefaults(
 const emit = defineEmits<{
   'update:modelValue': [value: ComboboxOption | null];
   'update:open': [value: boolean];
+  'select': [payload: {
+    ref: HTMLElement;
+    value: AcceptableValue;
+  }];
   'highlight': [payload: {
     ref: HTMLElement;
     value: AcceptableValue;
   } | undefined];
+  'keyboardHighlight': [payload: {
+    ref: HTMLElement;
+    value: AcceptableValue;
+  } | undefined];
 }>();
+
+let lastHighlightInput: 'keyboard' | 'pointer' | null = null;
+
+const displayOptionGroups = computed<ComboboxOptionGroup[]>(() => {
+  if (props.optionGroups?.length) {
+    return props.optionGroups.filter(group => group.options.length > 0);
+  }
+
+  return [
+    {
+      options: props.options,
+    },
+  ];
+});
 
 function getDisplayValue(option: ComboboxOption | null | undefined): string {
   if (!option) return '';
@@ -66,6 +99,10 @@ function getOptionKey(option: ComboboxOption): string {
   return String(value ?? '');
 }
 
+function getGroupKey(group: ComboboxOptionGroup, groupIndex: number): string {
+  return group.heading ?? `group-${groupIndex}`;
+}
+
 function onModelValueUpdate(value: AcceptableValue): void {
   const option = value !== null && value !== undefined && typeof value === 'object'
     ? (value as ComboboxOption)
@@ -78,10 +115,67 @@ function onHighlight(payload: {
   ref: HTMLElement;
   value: AcceptableValue;
 } | undefined): void {
+  const highlightedByKeyboard = lastHighlightInput === 'keyboard';
   emit('highlight', payload);
 
-  if (props.selectOnHighlight && payload?.value) {
+  if (highlightedByKeyboard) {
+    emit('keyboardHighlight', payload);
+    lastHighlightInput = null;
+  }
+
+  if (props.selectOnHighlight && highlightedByKeyboard && payload?.value) {
     onModelValueUpdate(payload.value);
+  }
+}
+
+function onKeydown(event: KeyboardEvent): void {
+  if (
+    event.key === 'ArrowDown'
+    || event.key === 'ArrowUp'
+    || event.key === 'Home'
+    || event.key === 'End'
+    || event.key === 'PageDown'
+    || event.key === 'PageUp'
+  ) {
+    lastHighlightInput = 'keyboard';
+  }
+}
+
+function onPointerMove(): void {
+  lastHighlightInput = 'pointer';
+}
+
+function onItemMousedown(event: MouseEvent): void {
+  if (!props.closeOnSelect) {
+    event.preventDefault();
+  }
+}
+
+function getItemSelectElement(event: Event): HTMLElement | null {
+  if (event.currentTarget instanceof HTMLElement) {
+    return event.currentTarget;
+  }
+
+  if (event.target instanceof HTMLElement) {
+    return event.target.closest('[role="option"]');
+  }
+
+  return null;
+}
+
+function onItemSelect(event: Event, option: ComboboxOption): void {
+  const itemElement = getItemSelectElement(event);
+
+  if (itemElement) {
+    emit('select', {
+      ref: itemElement,
+      value: option,
+    });
+  }
+
+  if (!props.closeOnSelect) {
+    event.preventDefault();
+    onModelValueUpdate(option);
   }
 }
 </script>
@@ -93,6 +187,7 @@ function onHighlight(payload: {
     @update:model-value="onModelValueUpdate"
     @update:open="emit('update:open', $event)"
     @highlight="onHighlight"
+    @pointermove="onPointerMove"
   >
     <ComboboxAnchor as-child>
       <ComboboxTrigger as-child>
@@ -100,6 +195,7 @@ function onHighlight(payload: {
           variant="outline"
           class="combobox__trigger"
           :style="{ width: triggerWidth }"
+          @keydown.capture="onKeydown"
         >
           {{ getDisplayValue(modelValue) }}
           <ChevronsUpDownIcon class="combobox__chevron" />
@@ -118,6 +214,7 @@ function onHighlight(payload: {
         <ComboboxInput
           class="combobox__input"
           :placeholder="searchPlaceholder"
+          @keydown.capture="onKeydown"
         />
       </div>
 
@@ -127,18 +224,28 @@ function onHighlight(payload: {
         {{ emptyText }}
       </ComboboxEmpty>
 
-      <ComboboxGroup>
-        <ComboboxItem
-          v-for="option in options"
-          :key="getOptionKey(option)"
-          :value="option"
+      <template
+        v-for="(group, groupIndex) in displayOptionGroups"
+        :key="getGroupKey(group, groupIndex)"
+      >
+        <ComboboxSeparator v-if="groupIndex > 0" />
+        <ComboboxGroup
+          :heading="group.heading"
         >
-          {{ getDisplayValue(option) }}
-          <ComboboxItemIndicator>
-            <CheckIcon class="combobox__check" />
-          </ComboboxItemIndicator>
-        </ComboboxItem>
-      </ComboboxGroup>
+          <ComboboxItem
+            v-for="option in group.options"
+            :key="getOptionKey(option)"
+            :value="option"
+            @mousedown="onItemMousedown"
+            @select="onItemSelect($event, option)"
+          >
+            {{ getDisplayValue(option) }}
+            <ComboboxItemIndicator>
+              <CheckIcon class="combobox__check" />
+            </ComboboxItemIndicator>
+          </ComboboxItem>
+        </ComboboxGroup>
+      </template>
     </ComboboxList>
   </Combobox>
 </template>
@@ -161,6 +268,8 @@ function onHighlight(payload: {
 .combobox__content {
   position: relative;
   padding: 0;
+  border-bottom: 1px solid hsl(var(--border));
+  background-color: hsl(var(--popover));
 }
 
 .combobox__search-icon {

@@ -144,6 +144,40 @@ pub fn unique_path_with_index(
     }
 }
 
+pub fn format_trash_error(error: trash::Error) -> String {
+    match error {
+        trash::Error::Unknown { description } => description,
+        trash::Error::Os { description, .. } => description,
+        #[cfg(all(
+            unix,
+            not(target_os = "macos"),
+            not(target_os = "ios"),
+            not(target_os = "android")
+        ))]
+        trash::Error::FileSystem { path, source } => {
+            format!("{}: {}", path.display(), source)
+        }
+        trash::Error::TargetedRoot => "Cannot move a root folder to the trash.".to_string(),
+        trash::Error::CouldNotAccess { target } => format!("Could not access: {target}"),
+        trash::Error::CanonicalizePath { original } => {
+            format!("Could not resolve path: {}", original.display())
+        }
+        trash::Error::ConvertOsString { original } => original.to_string_lossy().into_owned(),
+        trash::Error::RestoreCollision { path, .. } => {
+            format!(
+                "Could not complete the trash operation (collision at {}).",
+                path.display()
+            )
+        }
+        trash::Error::RestoreTwins { path, .. } => {
+            format!(
+                "Could not complete the trash operation (duplicate item at {}).",
+                path.display()
+            )
+        }
+    }
+}
+
 #[cfg(test)]
 mod path_minimize_tests {
     use super::{minimize_delete_paths, path_is_descendant_of};

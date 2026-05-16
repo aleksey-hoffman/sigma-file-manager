@@ -157,6 +157,7 @@ export const useSettingsStore = defineStore('settings', () => {
       { default: AutoplaySection },
       { default: AppUpdatesSection },
       { default: LastTabCloseBehaviorSection },
+      { default: TabAppearanceSection },
       { default: ExtensionsListSection },
       { default: DefaultFileManagerSection },
     ] = await Promise.all([
@@ -183,6 +184,7 @@ export const useSettingsStore = defineStore('settings', () => {
       import('@/modules/settings/ui/categories/storage/autoplay.vue'),
       import('@/modules/settings/ui/categories/general/app-updates.vue'),
       import('@/modules/settings/ui/categories/tabs/last-tab-close-behavior.vue'),
+      import('@/modules/settings/ui/categories/tabs/tab-appearance.vue'),
       import('@/modules/settings/ui/categories/extensions/extensions-list.vue'),
       import('@/modules/settings/ui/categories/experimental/default-file-manager.vue'),
     ]);
@@ -330,6 +332,13 @@ export const useSettingsStore = defineStore('settings', () => {
         titleKey: 'settings.tabs.lastTabCloseBehavior.title',
         tags: 'settingsTags.tabsWorkspaces',
         component: markRaw(LastTabCloseBehaviorSection),
+        category: 'tabs',
+      },
+      {
+        key: 'tabAppearance',
+        titleKey: 'settings.tabs.tabAppearance.title',
+        tags: 'settingsTags.tabAppearance',
+        component: markRaw(TabAppearanceSection),
         category: 'tabs',
       },
       {

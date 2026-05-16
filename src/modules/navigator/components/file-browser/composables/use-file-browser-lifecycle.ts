@@ -5,9 +5,11 @@
 import { onMounted, watch } from 'vue';
 import type { Ref } from 'vue';
 import type { Tab } from '@/types/workspaces';
+import normalizePath from '@/utils/normalize-path';
 
 export function useFileBrowserLifecycle(options: {
   tabRef: Ref<Tab | undefined>;
+  currentPath: Ref<string>;
   readDir: (path: string, shouldRefresh: boolean) => Promise<void>;
   init: () => void;
 }) {
@@ -15,9 +17,18 @@ export function useFileBrowserLifecycle(options: {
     options.init();
   });
 
-  watch(() => options.tabRef.value?.id, async (newTabId, oldTabId) => {
-    if (newTabId && newTabId !== oldTabId && options.tabRef.value?.path) {
-      await options.readDir(options.tabRef.value.path, false);
+  watch(() => ({
+    id: options.tabRef.value?.id,
+    path: options.tabRef.value?.path,
+  }), async (currentTab, previousTab) => {
+    if (!currentTab.id || !currentTab.path) {
+      return;
+    }
+
+    const pathChangedExternally = normalizePath(currentTab.path) !== normalizePath(options.currentPath.value);
+
+    if (currentTab.id !== previousTab?.id || pathChangedExternally) {
+      await options.readDir(currentTab.path, false);
     }
   });
 }

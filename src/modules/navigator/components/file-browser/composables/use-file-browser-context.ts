@@ -7,7 +7,10 @@ import {
 } from 'vue';
 import type { DirEntry } from '@/types/dir-entry';
 import type { ContextMenuAction, ContextMenuState } from '@/modules/navigator/components/file-browser/types';
-import type { VideoThumbnailSize } from './use-video-thumbnails';
+import type {
+  FileBrowserGridSectionVirtualRow,
+  FileBrowserVirtualRow,
+} from './use-file-browser-virtual-layout';
 
 export interface FileBrowserContext {
   entries: ComputedRef<DirEntry[]>;
@@ -21,8 +24,22 @@ export interface FileBrowserContext {
   contextMenu: Ref<ContextMenuState>;
 
   getImageThumbnail: (entry: DirEntry, maxDimension?: number) => string | undefined;
-  getVideoThumbnail: (entry: DirEntry, targetSize?: VideoThumbnailSize) => string | undefined;
+  getImageThumbnailPlaceholder: (entry: DirEntry, maxDimension?: number) => string | undefined;
+  shouldShowImageThumbnailFallback: (entry: DirEntry, maxDimension?: number) => boolean;
+  cancelImageThumbnail: (entry: DirEntry, maxDimension?: number) => void;
+  getVideoThumbnail: (entry: DirEntry) => string | undefined;
+  cancelVideoThumbnail: (entry: DirEntry) => void;
   setEntriesContainerRef: (element: Element | ComponentPublicInstance | null) => void;
+  setScrollViewportRef: (element: Element | ComponentPublicInstance | null) => void;
+  handleVirtualScroll: (event: Event) => void;
+  virtualRows: ComputedRef<FileBrowserVirtualRow[]>;
+  visibleVirtualRows: ComputedRef<FileBrowserVirtualRow[]>;
+  activeGridSectionRow: ComputedRef<FileBrowserGridSectionVirtualRow | null>;
+  virtualTotalSize: ComputedRef<number>;
+  virtualOffsetY: ComputedRef<number>;
+  virtualSpacerStyle: ComputedRef<Record<string, string>>;
+  virtualWindowStyle: ComputedRef<Record<string, string>>;
+  virtualGridColumnCount: ComputedRef<number>;
 
   onEntryMouseDown: (entry: DirEntry, event: MouseEvent) => void;
   onEntryMouseUp: (entry: DirEntry, event: MouseEvent) => void;

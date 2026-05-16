@@ -90,3 +90,13 @@ pub fn paths_are_directories(paths: Vec<String>) -> Vec<bool> {
         })
         .collect()
 }
+
+#[tauri::command]
+pub fn path_volume_is_case_sensitive(path: String) -> Result<bool, String> {
+    super::path_volume::resolve_path_volume_case_sensitive(&path)
+}
+
+#[tauri::command]
+pub fn path_comparison_volume_roots() -> Result<Vec<String>, String> {
+    super::path_volume::resolve_path_comparison_volume_roots()
+}

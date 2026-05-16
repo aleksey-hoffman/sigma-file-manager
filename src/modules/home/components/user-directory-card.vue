@@ -9,6 +9,7 @@ import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useWorkspacesStore } from '@/stores/storage/workspaces';
 import { type UserDirectory, getIconComponent } from '@/modules/home/composables/use-user-directories';
+import normalizePath, { getParentPath } from '@/utils/normalize-path';
 
 const props = defineProps<{
   directory: UserDirectory;
@@ -37,7 +38,34 @@ const iconComponent = computed(() => {
 
 async function handleClick() {
   try {
-    await workspacesStore.openNewTabGroup(props.directory.path);
+    const rawPath = props.directory.path;
+    const dirEntry = await workspacesStore.getDirEntry({ path: rawPath });
+
+    let tabDirectoryPath = rawPath;
+    let revealEntryPath: string | null = null;
+
+    if (dirEntry) {
+      const resolvedPath = normalizePath(dirEntry.path);
+
+      if (dirEntry.is_file) {
+        const parentPath = getParentPath(resolvedPath);
+
+        if (parentPath) {
+          tabDirectoryPath = normalizePath(parentPath);
+          revealEntryPath = resolvedPath;
+        }
+      }
+      else if (dirEntry.is_dir) {
+        tabDirectoryPath = resolvedPath;
+      }
+    }
+
+    await workspacesStore.openNewTabGroup(tabDirectoryPath);
+
+    if (revealEntryPath) {
+      workspacesStore.setPendingLaunchReveal(tabDirectoryPath, revealEntryPath);
+    }
+
     router.push({ name: 'navigator' });
   }
   catch (error) {

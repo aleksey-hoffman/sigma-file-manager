@@ -2,10 +2,19 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-import { describe, expect, it, vi } from 'vitest';
+import {
+  describe,
+  expect,
+  it,
+  vi,
+} from 'vitest';
 import type { DirEntry } from '@/types/dir-entry';
 import type { DirSizesStore } from '../file-browser-sort';
-import { fileBrowserEntryMatchesQuickSearch } from '../file-browser-entry-quick-search';
+import {
+  createFileBrowserQuickSearchCache,
+  createFileBrowserQuickSearchMatcher,
+  fileBrowserEntryMatchesQuickSearch,
+} from '../file-browser-entry-quick-search';
 
 vi.mock('@/stores/storage/user-settings', () => ({
   useUserSettingsStore: () => ({
@@ -178,5 +187,54 @@ describe('fileBrowserEntryMatchesQuickSearch', () => {
     expect(fileBrowserEntryMatchesQuickSearch(entry, 'mb', store)).toBe(true);
     expect(fileBrowserEntryMatchesQuickSearch(entry, '5000000', store)).toBe(false);
     expect(fileBrowserEntryMatchesQuickSearch(entry, '3', store)).toBe(true);
+  });
+
+  it('invalidates cached haystacks when directory size info changes', () => {
+    const entry = createFileEntry({
+      name: 'cached-dir',
+      path: 'D:/cached-dir',
+      is_file: false,
+      is_dir: true,
+    });
+    let fileCount = 3;
+    const store = createMockDirSizesStore({
+      getSize: () => ({
+        size: 5_000_000,
+        status: 'Complete',
+        fileCount,
+        dirCount: 1,
+        calculatedAt: fileCount,
+      }),
+    });
+    const cache = createFileBrowserQuickSearchCache();
+
+    expect(createFileBrowserQuickSearchMatcher('7', store, cache)(entry)).toBe(false);
+    fileCount = 7;
+    expect(createFileBrowserQuickSearchMatcher('7', store, cache)(entry)).toBe(true);
+  });
+
+  it('invalidates cached relative modified labels at elapsed second boundaries', () => {
+    vi.useFakeTimers();
+
+    try {
+      const referenceNowMs = Date.UTC(2024, 0, 1, 12, 0, 10);
+      vi.setSystemTime(referenceNowMs);
+
+      const entry = createFileEntry({
+        modified_time: referenceNowMs - 5000,
+      });
+      const store = createMockDirSizesStore();
+      const cache = createFileBrowserQuickSearchCache();
+
+      expect(createFileBrowserQuickSearchMatcher('5 sec', store, cache)(entry)).toBe(true);
+
+      vi.setSystemTime(referenceNowMs + 1000);
+
+      expect(createFileBrowserQuickSearchMatcher('6 sec', store, cache)(entry)).toBe(true);
+      expect(createFileBrowserQuickSearchMatcher('5 sec', store, cache)(entry)).toBe(false);
+    }
+    finally {
+      vi.useRealTimers();
+    }
   });
 });

@@ -35,77 +35,72 @@ export interface Operation {
   completedAt?: number;
 }
 
-export interface OperationGroup {
-  type: OperationType;
-  label: string;
-  operations: Operation[];
+function isActiveOperationStatus(status: OperationStatus): boolean {
+  return (
+    status === 'in-progress'
+    || status === 'pending'
+    || status === 'cancelling'
+  );
 }
 
-const AUTO_OPEN_DISMISS_SUPPRESSION_MS = 900;
+function isCompletedOperationStatus(status: OperationStatus): boolean {
+  return (
+    status === 'completed'
+    || status === 'cancelled'
+    || status === 'error'
+  );
+}
+
+const MAX_COMPLETED_OPERATIONS_PER_TYPE = 10;
+
+let lastOperationTimelineTick = 0;
+
+function nextOperationTimelineTick(): number {
+  const candidate = Date.now();
+
+  if (candidate > lastOperationTimelineTick) {
+    lastOperationTimelineTick = candidate;
+  }
+  else {
+    lastOperationTimelineTick += 1;
+  }
+
+  return lastOperationTimelineTick;
+}
 
 export const useStatusCenterStore = defineStore('status-center', () => {
   const operations = ref<Map<string, Operation>>(new Map());
   const isOpen = ref(false);
-  let suppressOutsideDismissUntilMs = 0;
 
   const operationsList = computed(() => Array.from(operations.value.values()));
 
   const activeOperations = computed(() =>
-    operationsList.value.filter(
-      op =>
-        op.status === 'in-progress'
-        || op.status === 'pending'
-        || op.status === 'cancelling',
-    ),
+    operationsList.value
+      .filter(operation => isActiveOperationStatus(operation.status))
+      .sort((operationA, operationB) => operationB.startedAt - operationA.startedAt),
   );
 
   const completedOperations = computed(() =>
-    operationsList.value.filter(op => op.status === 'completed' || op.status === 'cancelled' || op.status === 'error'),
+    operationsList.value
+      .filter(operation => isCompletedOperationStatus(operation.status))
+      .sort(
+        (operationA, operationB) =>
+          (operationB.completedAt ?? operationB.startedAt)
+          - (operationA.completedAt ?? operationA.startedAt),
+      ),
   );
 
   const activeCount = computed(() => activeOperations.value.length);
+  const completedCount = computed(() => completedOperations.value.length);
   const hasActiveOperations = computed(() => activeCount.value > 0);
 
-  const groupedOperations = computed<OperationGroup[]>(() => {
-    const groups = new Map<OperationType, Operation[]>();
-
-    for (const op of operationsList.value) {
-      const existing = groups.get(op.type) || [];
-      existing.push(op);
-      groups.set(op.type, existing);
-    }
-
-    const typeLabels: Record<OperationType, string> = {
-      'dir-size': 'Directory Size Calculations',
-      'copy': 'Copy Operations',
-      'move': 'Move Operations',
-      'deleteTrash': 'Trash Operations',
-      'deletePermanent': 'Permanent Delete Operations',
-      'archive': 'Archive operations',
-    };
-
-    return Array.from(groups.entries()).map(([type, ops]) => ({
-      type,
-      label: typeLabels[type],
-      operations: ops.sort((a, b) => b.startedAt - a.startedAt),
-    }));
-  });
-
   function addOperation(operation: Omit<Operation, 'startedAt'>): Operation {
-    const op: Operation = {
+    const operationWithStartedAt: Operation = {
       ...operation,
-      startedAt: Date.now(),
+      startedAt: nextOperationTimelineTick(),
     };
-    operations.value.set(op.id, op);
-    setTimeout(() => {
-      isOpen.value = true;
-      suppressOutsideDismissUntilMs = Date.now() + AUTO_OPEN_DISMISS_SUPPRESSION_MS;
-    }, 0);
-    return op;
-  }
-
-  function isOutsideDismissSuppressed(): boolean {
-    return Date.now() < suppressOutsideDismissUntilMs;
+    operations.value.set(operationWithStartedAt.id, operationWithStartedAt);
+    return operationWithStartedAt;
   }
 
   function getOperation(id: string): Operation | undefined {
@@ -126,9 +121,42 @@ export const useStatusCenterStore = defineStore('status-center', () => {
   function completeOperation(id: string, status: 'completed' | 'cancelled' | 'error' = 'completed', message?: string) {
     updateOperation(id, {
       status,
-      completedAt: Date.now(),
+      completedAt: nextOperationTimelineTick(),
       message,
     });
+
+    const completedOperation = operations.value.get(id);
+
+    if (completedOperation) {
+      pruneCompletedOperationsOfType(completedOperation.type);
+    }
+  }
+
+  function pruneCompletedOperationsOfType(type: OperationType) {
+    const completedOperationsOfType: Operation[] = [];
+
+    for (const operation of operations.value.values()) {
+      if (operation.type === type && isCompletedOperationStatus(operation.status)) {
+        completedOperationsOfType.push(operation);
+      }
+    }
+
+    if (completedOperationsOfType.length <= MAX_COMPLETED_OPERATIONS_PER_TYPE) {
+      return;
+    }
+
+    completedOperationsOfType.sort(
+      (operationA, operationB) =>
+        (operationA.completedAt ?? operationA.startedAt)
+        - (operationB.completedAt ?? operationB.startedAt),
+    );
+
+    const operationsToRemoveCount
+      = completedOperationsOfType.length - MAX_COMPLETED_OPERATIONS_PER_TYPE;
+
+    for (let index = 0; index < operationsToRemoveCount; index += 1) {
+      operations.value.delete(completedOperationsOfType[index].id);
+    }
   }
 
   function removeOperation(id: string) {
@@ -136,8 +164,8 @@ export const useStatusCenterStore = defineStore('status-center', () => {
   }
 
   function clearCompleted() {
-    for (const [id, op] of operations.value) {
-      if (op.status === 'completed' || op.status === 'cancelled' || op.status === 'error') {
+    for (const [id, operation] of operations.value) {
+      if (isCompletedOperationStatus(operation.status)) {
         operations.value.delete(id);
       }
     }
@@ -147,16 +175,20 @@ export const useStatusCenterStore = defineStore('status-center', () => {
     operations.value.clear();
   }
 
+  function setOpen(open: boolean) {
+    isOpen.value = open;
+  }
+
   function open() {
-    isOpen.value = true;
+    setOpen(true);
   }
 
   function close() {
-    isOpen.value = false;
+    setOpen(false);
   }
 
   function toggle() {
-    isOpen.value = !isOpen.value;
+    setOpen(!isOpen.value);
   }
 
   return {
@@ -165,17 +197,17 @@ export const useStatusCenterStore = defineStore('status-center', () => {
     activeOperations,
     completedOperations,
     activeCount,
+    completedCount,
     hasActiveOperations,
-    groupedOperations,
     isOpen,
     addOperation,
-    isOutsideDismissSuppressed,
     getOperation,
     updateOperation,
     completeOperation,
     removeOperation,
     clearCompleted,
     clearAll,
+    setOpen,
     open,
     close,
     toggle,

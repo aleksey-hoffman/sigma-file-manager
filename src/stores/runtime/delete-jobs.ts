@@ -41,6 +41,23 @@ export interface StartDeleteJobOptions {
   displayPath: string;
 }
 
+function toastDeleteSuccess(payload: DeleteJobFinishedPayload) {
+  const deletedCount = payload.deletedPaths.length;
+  const titleKey = payload.useTrash
+    ? 'notifications.trashedNItems'
+    : 'notifications.deletedNItems';
+
+  toast.custom(markRaw(ToastStatic), {
+    componentProps: {
+      data: {
+        title: i18n.global.t(titleKey, { totalAmount: deletedCount }),
+        description: '',
+      },
+    },
+    duration: 2500,
+  });
+}
+
 export const useDeleteJobsStore = defineStore('delete-jobs', () => {
   const eventUnlisteners = shallowRef<UnlistenFn[]>([]);
   const completionHandlers = new Map<
@@ -109,6 +126,7 @@ export const useDeleteJobsStore = defineStore('delete-jobs', () => {
         }
         else if (payload.success) {
           statusCenterStore.completeOperation(payload.jobId, 'completed');
+          toastDeleteSuccess(payload);
           handlers.resolve({
             success: true,
             cancelled: false,

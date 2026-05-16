@@ -8,6 +8,7 @@ import { ref } from 'vue';
 import type { DirEntry } from '@/types/dir-entry';
 import type { Tab } from '@/types/workspaces';
 import { useFileBrowser } from './composables/use-file-browser';
+import { useOpenCopiedPath } from './composables/use-open-copied-path';
 import { provideFileBrowserContext } from './composables/use-file-browser-context';
 import FileBrowserContent from './file-browser-content.vue';
 import FileBrowserToolbar from './file-browser-toolbar.vue';
@@ -15,10 +16,11 @@ import FileBrowserStatusBar from './file-browser-status-bar.vue';
 import FileBrowserRenameDialog from './file-browser-rename-dialog.vue';
 import FileBrowserNewItemDialog from './file-browser-new-item-dialog.vue';
 import FileBrowserOpenWithDialog from './file-browser-open-with-dialog.vue';
-import FileBrowserDragOverlay from './file-browser-drag-overlay.vue';
 import FileBrowserInboundDragOverlay from './file-browser-inbound-drag-overlay.vue';
 import FileBrowserConflictDialog from './file-browser-conflict-dialog.vue';
 import PermanentDeleteConfirmDialog from './permanent-delete-confirm-dialog.vue';
+import AddressBarEditorDialog from './address-bar-editor-dialog.vue';
+import type { AddressBarEditorMode } from './address-bar-editor-utils';
 
 const props = withDefaults(defineProps<{
   tab?: Tab;
@@ -31,6 +33,7 @@ const props = withDefaults(defineProps<{
   entryDescription?: (entry: DirEntry) => string | undefined;
   trackRelativeTime?: boolean;
   isActivePane?: boolean;
+  isSplitView?: boolean;
 }>(), {
   tab: undefined,
   paneIndex: undefined,
@@ -40,6 +43,7 @@ const props = withDefaults(defineProps<{
   entryDescription: undefined,
   trackRelativeTime: true,
   isActivePane: undefined,
+  isSplitView: false,
 });
 
 const emit = defineEmits<{
@@ -49,6 +53,7 @@ const emit = defineEmits<{
 }>();
 
 const fileBrowserRef = ref<HTMLElement | null>(null);
+const addressBarEditorRef = ref<InstanceType<typeof AddressBarEditorDialog> | null>(null);
 
 const fb = useFileBrowser({
   tab: () => props.tab,
@@ -61,10 +66,25 @@ const fb = useFileBrowser({
   componentRef: fileBrowserRef,
   isDefaultPane: props.paneIndex === 0 || props.paneIndex === undefined,
   isActivePane: () => props.isActivePane ?? (props.paneIndex === 0 || props.paneIndex === undefined),
+  entryDescription: props.entryDescription,
 });
 
 const permanentDeleteIsOpen = fb.permanentDeleteConfirm.isOpen;
 const permanentDeletePendingEntries = fb.permanentDeleteConfirm.pendingEntries;
+const { openCopiedPath } = useOpenCopiedPath({
+  openDirectory: fb.navigateToPath,
+  openFile: fb.openFile,
+});
+
+function openAddressBarEditor(mode: AddressBarEditorMode) {
+  addressBarEditorRef.value?.open(mode);
+}
+
+async function revealAddressBarEntry(parentPath: string, entryPath: string) {
+  fb.armFocusRevealStaleRestoreGuard();
+  fb.requestFocusEntryAfterRefresh(parentPath, entryPath);
+  await fb.navigateToPath(parentPath);
+}
 
 provideFileBrowserContext({
   entries: fb.entries,
@@ -76,8 +96,22 @@ provideFileBrowserContext({
   isEntrySelected: fb.isEntrySelected,
   contextMenu: fb.contextMenu,
   getImageThumbnail: fb.getImageThumbnail,
+  getImageThumbnailPlaceholder: fb.getImageThumbnailPlaceholder,
+  shouldShowImageThumbnailFallback: fb.shouldShowImageThumbnailFallback,
+  cancelImageThumbnail: fb.cancelImageThumbnail,
   getVideoThumbnail: fb.getVideoThumbnail,
+  cancelVideoThumbnail: fb.cancelVideoThumbnail,
   setEntriesContainerRef: fb.setEntriesContainerRef,
+  setScrollViewportRef: fb.setScrollViewportRef,
+  handleVirtualScroll: fb.handleVirtualScroll,
+  virtualRows: fb.virtualRows,
+  visibleVirtualRows: fb.visibleVirtualRows,
+  activeGridSectionRow: fb.activeGridSectionRow,
+  virtualTotalSize: fb.virtualTotalSize,
+  virtualOffsetY: fb.virtualOffsetY,
+  virtualSpacerStyle: fb.virtualSpacerStyle,
+  virtualWindowStyle: fb.virtualWindowStyle,
+  virtualGridColumnCount: fb.virtualGridColumnCount,
   onEntryMouseDown: fb.onEntryMouseDown,
   onEntryMouseUp: fb.onEntryMouseUp,
   handleEntryFocus: fb.handleEntryFocus,
@@ -103,23 +137,30 @@ defineExpose({
   openFilter: fb.openFilter,
   closeFilter: fb.closeFilter,
   navigateToPath: fb.navigateToPath,
+  openAddressBarEditor,
+  openCopiedPath,
   openFile: fb.openFile,
   clearSelection: fb.clearSelection,
   selectAll: fb.selectAll,
   requestFocusEntryAfterRefresh: fb.requestFocusEntryAfterRefresh,
+  armFocusRevealStaleRestoreGuard: fb.armFocusRevealStaleRestoreGuard,
   selectFirstEntry: fb.selectFirstEntry,
   navigateUp: fb.navigateUp,
   navigateDown: fb.navigateDown,
   navigateLeft: fb.navigateLeft,
   navigateRight: fb.navigateRight,
   openSelected: fb.openSelected,
-  navigateBack: fb.navigateBack,
+  goBack: fb.goBack,
+  goForward: fb.goForward,
+  navigateToParent: fb.navigateToParent,
+  openNewItemDialog: fb.openNewItemDialog,
   copyItems: fb.copyItems,
   cutItems: fb.cutItems,
   pasteItems: fb.pasteItems,
   deleteItems: fb.deleteItems,
   startRename: fb.startRename,
   quickView: fb.quickView,
+  printEntry: fb.printEntry,
   refresh: fb.refresh,
 });
 </script>
@@ -139,6 +180,7 @@ defineExpose({
       :can-go-forward="fb.canGoForward.value"
       :can-go-up="!!fb.parentPath.value"
       :is-loading="fb.isLoading.value || fb.isRefreshing.value"
+      :is-split-view="props.isSplitView"
       @go-back="fb.goBack"
       @go-forward="fb.goForward"
       @go-up="fb.navigateToParent"
@@ -146,9 +188,18 @@ defineExpose({
       @refresh="fb.refresh"
       @submit-path="fb.handlePathSubmit"
       @navigate-to="fb.navigateToPath"
+      @open-file="fb.openFile"
+      @open-address-editor="openAddressBarEditor('path')"
       @create-new-directory="fb.openNewItemDialog('directory')"
       @create-new-file="fb.openNewItemDialog('file')"
       @filter-input-focused="fb.clearFilterInputFocusRequest"
+    />
+    <AddressBarEditorDialog
+      ref="addressBarEditorRef"
+      :current-path="fb.pathInput.value"
+      @open-directory="fb.navigateToPath"
+      @open-file="fb.openFile"
+      @reveal="revealAddressBarEntry"
     />
 
     <FileBrowserContent
@@ -185,14 +236,6 @@ defineExpose({
       v-model:open="fb.openWithState.value.isOpen"
       :entries="fb.openWithState.value.entries"
       @close="fb.closeOpenWithDialog"
-    />
-
-    <FileBrowserDragOverlay
-      :is-active="fb.isDragging.value"
-      :item-count="fb.dragItems.value.length"
-      :operation-type="fb.dragOperationType.value"
-      :cursor-x="fb.dragCursorX.value"
-      :cursor-y="fb.dragCursorY.value"
     />
 
     <Transition name="cross-pane-drop-overlay">

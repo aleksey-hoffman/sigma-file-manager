@@ -50,10 +50,9 @@ const { scrollFadeClass, scrollFadeStyle, updateScrollFade } = useHorizontalScro
 
 watch(tabGroupCount, (newCount, previousCount) => {
   nextTick(() => {
-    const container = scrollContainerRef.value;
-
-    if (previousCount !== undefined && newCount > previousCount && container) {
-      container.scrollLeft = container.scrollWidth;
+    if (previousCount !== undefined && newCount > previousCount) {
+      scrollSelectedTabGroupIntoView();
+      return;
     }
 
     updateScrollFade();
@@ -211,17 +210,13 @@ onBeforeUnmount(() => {
 
 .tab-bar--compact {
   width: 100%;
-  height: 36px;
-  padding: 4px 0;
+  height: var(--window-toolbar-height);
+  padding: 0;
 }
 
 .tab-bar--compact .tab-bar__base-container {
   overflow: auto hidden;
   min-width: 0;
   flex: 1;
-}
-
-.tab-bar--compact .tab-bar__base {
-  height: 28px;
 }
 </style>

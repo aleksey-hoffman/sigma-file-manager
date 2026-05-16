@@ -27,12 +27,19 @@ import { useTerminalsStore } from '@/stores/runtime/terminals';
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
 import { useNavigatorSelectionStore } from '@/stores/runtime/navigator-selection';
 import { FileBrowser } from '@/modules/navigator/components/file-browser';
+import type { AddressBarEditorMode } from '@/modules/navigator/components/file-browser/address-bar-editor-utils';
+import FileBrowserConflictDialog from '@/modules/navigator/components/file-browser/file-browser-conflict-dialog.vue';
+import FileBrowserDragOverlay from '@/modules/navigator/components/file-browser/file-browser-drag-overlay.vue';
+import { useActiveFileBrowserDragState } from '@/modules/navigator/components/file-browser/composables/use-file-browser-drag';
+import { provideFileBrowserInternalDropHandler } from '@/modules/navigator/components/file-browser/composables/use-file-browser-internal-drop';
 import { InfoPanel } from '@/modules/navigator/components/info-panel';
 import { NavigatorToolbarActions } from '@/modules/navigator/components/navigator-toolbar-actions';
 import { ClipboardToolbar } from '@/modules/navigator/components/clipboard-toolbar';
 import { GlobalSearchView } from '@/modules/global-search';
-import { UI_CONSTANTS } from '@/constants';
 import type { DirEntry } from '@/types/dir-entry';
+import { useIsSmallScreen } from '@/composables/use-responsive-query';
+import { useFileDropOperation } from '@/composables/use-file-drop-operation';
+import { arePathsEquivalent, getParentPath } from '@/utils/file-operation-paths';
 
 type FileBrowserInstance = InstanceType<typeof FileBrowser> & {
   rootElement?: HTMLElement | null;
@@ -40,6 +47,8 @@ type FileBrowserInstance = InstanceType<typeof FileBrowser> & {
   isFilterOpen?: boolean;
   currentPath?: string;
   focusFilter?: () => void;
+  openAddressBarEditor?: (mode: AddressBarEditorMode) => void;
+  openCopiedPath?: () => Promise<boolean>;
   navigateToPath?: (path: string) => Promise<void>;
   openFile?: (path: string) => Promise<void>;
   refresh?: () => void | Promise<void>;
@@ -51,7 +60,11 @@ type FileBrowserInstance = InstanceType<typeof FileBrowser> & {
   navigateLeft?: () => void;
   navigateRight?: () => void;
   openSelected?: () => void;
-  navigateBack?: () => void;
+  goBack?: () => void | Promise<void>;
+  goForward?: () => void | Promise<void>;
+  navigateToParent?: () => void | Promise<void>;
+  openNewItemDialog?: (type: 'file' | 'directory') => void;
+  printEntry?: (entry?: DirEntry) => Promise<void>;
 };
 
 type GlobalSearchViewInstance = InstanceType<typeof GlobalSearchView> & {
@@ -69,6 +82,35 @@ const terminalsStore = useTerminalsStore();
 const dirSizesStore = useDirSizesStore();
 const navigatorSelectionStore = useNavigatorSelectionStore();
 const { t } = useI18n();
+const activeFileBrowserDragState = useActiveFileBrowserDragState();
+const {
+  conflictDialogState: internalDropConflictDialogState,
+  handleConflictResolution: handleInternalDropConflictResolution,
+  handleConflictCancel: handleInternalDropConflictCancel,
+  performDrop: performInternalDrop,
+} = useFileDropOperation();
+
+provideFileBrowserInternalDropHandler(async (items, destinationPath, operation) => {
+  const didCompleteSuccessfully = await performInternalDrop(
+    items.map(item => item.path),
+    destinationPath,
+    operation,
+  );
+
+  if (!didCompleteSuccessfully) {
+    return;
+  }
+
+  const pathsToRefresh = new Set<string>([destinationPath]);
+
+  if (operation === 'move') {
+    for (const item of items) {
+      pathsToRefresh.add(getParentPath(item.path));
+    }
+  }
+
+  await refreshFileBrowsersAtPaths([...pathsToRefresh]);
+});
 
 const TEXT_COPY_PREVIEW_MAX_LENGTH = 400;
 
@@ -93,8 +135,7 @@ watch(selectedEntries, (entries) => {
 
 const currentDirEntry = ref<DirEntry | null>(null);
 const activeTabId = ref<string | null>(null);
-const smallScreenMediaQuery = window.matchMedia(`(max-width: ${UI_CONSTANTS.SMALL_SCREEN_BREAKPOINT}px)`);
-const isSmallScreen = ref(smallScreenMediaQuery.matches);
+const isSmallScreen = useIsSmallScreen();
 
 watch(() => workspacesStore.currentTabGroup, (newGroup, oldGroup) => {
   const currentTabIds = new Set(
@@ -119,10 +160,6 @@ watch(() => workspacesStore.currentTabGroup, (newGroup, oldGroup) => {
     }
   }
 });
-
-function handleSmallScreenChange(event: MediaQueryListEvent) {
-  isSmallScreen.value = event.matches;
-}
 
 const currentLayout = computed(() => {
   const layoutName = userSettingsStore.userSettings.navigator.layout.type.name;
@@ -190,6 +227,16 @@ function handleToggleInfoPanel() {
   showInfoPanel.value = !showInfoPanel.value;
 }
 
+function activateTabPane(tabId: string) {
+  const tabIndex = workspacesStore.currentTabGroup?.findIndex(tab => tab.id === tabId) ?? -1;
+
+  activeTabId.value = tabId;
+
+  if (tabIndex >= 0) {
+    workspacesStore.setCurrentTabIndex(tabIndex);
+  }
+}
+
 function handleSelectionChange(entries: DirEntry[], tabId?: string) {
   if (entries.length > 0) {
     isSearchSelectionActive.value = false;
@@ -197,7 +244,7 @@ function handleSelectionChange(entries: DirEntry[], tabId?: string) {
     selectedEntries.value = entries;
 
     if (tabId) {
-      activeTabId.value = tabId;
+      activateTabPane(tabId);
 
       paneRefsMap.value.forEach((pane, paneTabId) => {
         if (paneTabId !== tabId) {
@@ -233,7 +280,7 @@ function handleCurrentDirChange(entry: DirEntry | null) {
 }
 
 function handlePaneFocus(tabId: string) {
-  activeTabId.value = tabId;
+  activateTabPane(tabId);
 }
 
 function setPaneRef(element: FileBrowserInstance | null, tabId: string) {
@@ -244,6 +291,44 @@ function setPaneRef(element: FileBrowserInstance | null, tabId: string) {
   else {
     paneRefsMap.value.delete(tabId);
   }
+}
+
+async function refreshFileBrowsersAtPaths(directoryPaths: string[]) {
+  if (directoryPaths.length === 0) {
+    return;
+  }
+
+  const seenPanes = new Set<FileBrowserInstance>();
+  const refreshTasks: Promise<unknown>[] = [];
+
+  function scheduleRefresh(pane: FileBrowserInstance | null | undefined) {
+    if (!pane?.refresh || !pane.currentPath) {
+      return;
+    }
+
+    const matchesPath = directoryPaths.some(directoryPath =>
+      arePathsEquivalent(pane.currentPath!, directoryPath),
+    );
+
+    if (!matchesPath || seenPanes.has(pane)) {
+      return;
+    }
+
+    seenPanes.add(pane);
+    refreshTasks.push(
+      Promise.resolve(pane.refresh()).catch((error: unknown) => {
+        console.error('File browser refresh failed:', error);
+      }),
+    );
+  }
+
+  for (const pane of paneRefsMap.value.values()) {
+    scheduleRefresh(pane);
+  }
+
+  scheduleRefresh(singlePaneRef.value);
+
+  await Promise.all(refreshTasks);
 }
 
 function getFocusedSplitPaneRef(): FileBrowserInstance | undefined {
@@ -366,6 +451,17 @@ function handleFilterShortcut() {
   if (pane) {
     pane.focusFilter?.();
   }
+}
+
+function openAddressBarEditor(mode: AddressBarEditorMode): boolean {
+  const pane = getNavigatorPaneRef();
+
+  if (!pane?.openAddressBarEditor) {
+    return false;
+  }
+
+  pane.openAddressBarEditor(mode);
+  return true;
 }
 
 async function handleReloadShortcut() {
@@ -547,6 +643,18 @@ async function handleQuickViewShortcut() {
   }
 }
 
+async function handlePrintShortcut() {
+  const pane = getActivePaneRef();
+
+  if (pane && selectedEntries.value.length > 0) {
+    const lastSelected = selectedEntries.value[selectedEntries.value.length - 1];
+
+    if (lastSelected.is_file) {
+      await pane.printEntry?.(lastSelected);
+    }
+  }
+}
+
 async function openTerminalWithOptions(asAdmin: boolean) {
   if (!currentActivePath.value) return;
 
@@ -568,6 +676,10 @@ async function handleCloseCurrentTabShortcut() {
   }
 }
 
+async function handleRestoreLastClosedTabShortcut() {
+  return workspacesStore.restoreLastClosedTabGroup();
+}
+
 async function handleOpenTerminalShortcut() {
   await openTerminalWithOptions(false);
 }
@@ -584,7 +696,7 @@ function switchToPane(paneIndex: number): boolean {
   if (!tabGroup || !tabGroup[paneIndex]) return false;
 
   const targetTab = tabGroup[paneIndex];
-  activeTabId.value = targetTab.id;
+  activateTabPane(targetTab.id);
 
   paneRefsMap.value.forEach((pane, tabId) => {
     if (tabId !== targetTab.id) {
@@ -625,7 +737,7 @@ function hasBlockingRekaDismissableLayersForNavigatorShortcuts(): boolean {
 
 function callActivePaneMethod(method: keyof Pick<
   FileBrowserInstance,
-  'navigateUp' | 'navigateDown' | 'navigateLeft' | 'navigateRight' | 'openSelected' | 'navigateBack'
+  'navigateUp' | 'navigateDown' | 'navigateLeft' | 'navigateRight' | 'openSelected' | 'goBack' | 'goForward' | 'navigateToParent' | 'openCopiedPath'
 >): boolean {
   if (hasBlockingDismissalLayersForNavigatorShortcuts()) return false;
 
@@ -641,25 +753,44 @@ function callActivePaneMethod(method: keyof Pick<
   return false;
 }
 
-function handleNavigateBackShortcut(): boolean {
-  const pane = getActivePaneRef();
+function handleNavigateHistoryBackShortcut(): boolean {
+  return callActivePaneMethod('goBack');
+}
 
-  if (
-    pane?.isFilterOpen
-    && typeof pane.filterQuery === 'string'
-    && pane.filterQuery.length > 0
-  ) {
-    pane.filterQuery = pane.filterQuery.slice(0, -1);
+function handleNavigateHistoryForwardShortcut(): boolean {
+  return callActivePaneMethod('goForward');
+}
+
+function handleGoUpDirectoryShortcut(): boolean {
+  return callActivePaneMethod('navigateToParent');
+}
+
+function handleCreateNewItemShortcut(type: 'file' | 'directory'): boolean {
+  if (globalSearchStore.isOpen) return false;
+
+  if (hasBlockingDismissalLayersForNavigatorShortcuts()) return false;
+
+  if (hasBlockingRekaDismissableLayersForNavigatorShortcuts()) return false;
+
+  const pane = getNavigatorPaneRef();
+
+  if (pane?.openNewItemDialog) {
+    pane.openNewItemDialog(type);
     return true;
   }
 
-  return callActivePaneMethod('navigateBack');
+  return false;
 }
 
 function registerShortcutHandlers() {
+  shortcutsStore.registerHandler('toggleAddressBar', () => openAddressBarEditor('path'));
+  shortcutsStore.registerHandler('openEntry', () => openAddressBarEditor('entry'));
   shortcutsStore.registerHandler('toggleFilter', handleFilterShortcut);
   shortcutsStore.registerHandler('reloadCurrentDirectory', handleReloadShortcut);
+  shortcutsStore.registerHandler('createNewFile', () => handleCreateNewItemShortcut('file'));
+  shortcutsStore.registerHandler('createNewDirectory', () => handleCreateNewItemShortcut('directory'));
   shortcutsStore.registerHandler('copyCurrentDirectoryPath', handleCopyCurrentDirectoryPathShortcut);
+  shortcutsStore.registerHandler('openCopiedPath', () => callActivePaneMethod('openCopiedPath'));
   shortcutsStore.registerHandler('copy', handleCopyShortcut);
   shortcutsStore.registerHandler('cut', handleCutShortcut);
   shortcutsStore.registerHandler('paste', handlePasteShortcut);
@@ -675,8 +806,10 @@ function registerShortcutHandlers() {
   }, { checkItemSelected: hasSelectedItems });
   shortcutsStore.registerHandler('escape', handleEscapeKey);
   shortcutsStore.registerHandler('quickView', handleQuickViewShortcut, { checkItemSelected: hasSelectedItems });
+  shortcutsStore.registerHandler('print', handlePrintShortcut, { checkItemSelected: hasSelectedItems });
   shortcutsStore.registerHandler('openNewTab', handleOpenNewTabShortcut);
   shortcutsStore.registerHandler('closeCurrentTab', handleCloseCurrentTabShortcut);
+  shortcutsStore.registerHandler('restoreLastClosedTab', handleRestoreLastClosedTabShortcut);
   shortcutsStore.registerHandler('openTerminal', handleOpenTerminalShortcut);
   shortcutsStore.registerHandler('openTerminalAdmin', handleOpenTerminalAdminShortcut);
   shortcutsStore.registerHandler('navigateUp', () => callActivePaneMethod('navigateUp'));
@@ -684,7 +817,9 @@ function registerShortcutHandlers() {
   shortcutsStore.registerHandler('navigateLeft', () => callActivePaneMethod('navigateLeft'));
   shortcutsStore.registerHandler('navigateRight', () => callActivePaneMethod('navigateRight'));
   shortcutsStore.registerHandler('openSelected', () => callActivePaneMethod('openSelected'), { checkItemSelected: hasSelectedItems });
-  shortcutsStore.registerHandler('navigateBack', handleNavigateBackShortcut);
+  shortcutsStore.registerHandler('navigateHistoryBack', handleNavigateHistoryBackShortcut);
+  shortcutsStore.registerHandler('navigateHistoryForward', handleNavigateHistoryForwardShortcut);
+  shortcutsStore.registerHandler('goUpDirectory', handleGoUpDirectoryShortcut);
   shortcutsStore.registerHandler('switchToLeftPane', () => switchToPane(0));
   shortcutsStore.registerHandler('switchToRightPane', () => switchToPane(1));
   shortcutsStore.registerHandler('toggleSplitView', () => {
@@ -695,14 +830,12 @@ function registerShortcutHandlers() {
 
 onMounted(() => {
   registerShortcutHandlers();
-  smallScreenMediaQuery.addEventListener('change', handleSmallScreenChange);
 
   // Recover any in-progress directory size calculations from backend
   dirSizesStore.recoverActiveCalculations();
 });
 
 onUnmounted(() => {
-  smallScreenMediaQuery.removeEventListener('change', handleSmallScreenChange);
   navigatorSelectionStore.setSelectedDirEntries([]);
 });
 </script>
@@ -763,6 +896,7 @@ onUnmounted(() => {
                     :layout="currentLayout"
                     :track-relative-time="trackNavigatorRelativeTime"
                     :is-active-pane="activeTabId ? activeTabId === tab.id : index === 0"
+                    :is-split-view="true"
                     class="navigator-page__pane"
                     @update:selected-entries="(entries) => handleSelectionChange(entries, tab.id)"
                     @update:current-dir-entry="handleCurrentDirChange"
@@ -813,6 +947,21 @@ onUnmounted(() => {
           :pane2-path="workspacesStore.currentTabGroup?.[1]?.path"
           @paste="handlePasteShortcut"
           @paste-to-pane="handlePasteToPane"
+        />
+        <FileBrowserDragOverlay
+          :is-active="activeFileBrowserDragState.isActive"
+          :item-count="activeFileBrowserDragState.items.length"
+          :operation-type="activeFileBrowserDragState.operationType"
+          :cursor-x="activeFileBrowserDragState.cursorX"
+          :cursor-y="activeFileBrowserDragState.cursorY"
+        />
+        <FileBrowserConflictDialog
+          v-model:open="internalDropConflictDialogState.isOpen"
+          :conflicts="internalDropConflictDialogState.conflicts"
+          :operation-type="internalDropConflictDialogState.operationType"
+          :is-checking-conflicts="internalDropConflictDialogState.isCheckingConflicts"
+          @resolve="handleInternalDropConflictResolution"
+          @cancel="handleInternalDropConflictCancel"
         />
       </div>
       <InfoPanel

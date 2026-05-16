@@ -21,6 +21,8 @@ import { toast, ToastStatic } from '@/components/ui/toaster';
 import { useLanShare } from '@/composables/use-lan-share';
 import { useConflictResolutionDialog } from '@/composables/use-conflict-resolution-dialog';
 import { getParentDirectory } from '@/utils/normalize-path';
+import { getSharedSourceDirectory } from '@/utils/file-operation-paths';
+import { basenameFromPath } from '@/utils/source-display-name';
 import { resolveNavigableItemTarget } from '@/utils/resolve-navigable-item-target';
 import { usePermanentDeleteConfirm } from '@/composables/use-permanent-delete-confirm';
 
@@ -100,6 +102,7 @@ export function useDirEntryActions() {
       path: item.path,
       is_dir: item.is_dir,
     }));
+    const sourceDirectoryBeforePaste = clipboardStore.sourceDirectory;
     const result = await clipboardStore.pasteItems(destinationPath, conflictPayload?.perPathResolutions);
 
     if (!result.success && result.error && !result.fromStatusCenterJob) {
@@ -109,24 +112,15 @@ export function useDirEntryActions() {
     if (!result.cancelled && (result.copied_count ?? 0) > 0) {
       await dirSizesStore.refreshSizesAfterCopyMove(sourcesForSizes, destinationPath, [
         destinationPath,
-        clipboardStore.sourceDirectory,
+        sourceDirectoryBeforePaste,
       ].filter((pathItem): pathItem is string => Boolean(pathItem)));
     }
 
-    if (result.success) {
+    if (result.success || (!result.cancelled && (result.copied_count ?? 0) > 0)) {
       const pathsToInvalidate = [destinationPath];
 
-      if (clipboardStore.sourceDirectory) {
-        pathsToInvalidate.push(clipboardStore.sourceDirectory);
-      }
-
-      workspacesStore.handleDirectoryContentsChanged(pathsToInvalidate);
-    }
-    else if (!result.cancelled && (result.copied_count ?? 0) > 0) {
-      const pathsToInvalidate = [destinationPath];
-
-      if (clipboardStore.sourceDirectory) {
-        pathsToInvalidate.push(clipboardStore.sourceDirectory);
+      if (sourceDirectoryBeforePaste) {
+        pathsToInvalidate.push(sourceDirectoryBeforePaste);
       }
 
       workspacesStore.handleDirectoryContentsChanged(pathsToInvalidate);
@@ -149,9 +143,10 @@ export function useDirEntryActions() {
     }
 
     const paths = entries.map(entry => entry.path);
-    const displayPath = entries.length === 1
-      ? entries[0].name
-      : t('statusCenter.deleteSelectedCount', { count: entries.length });
+    const sharedParentDirectory = getSharedSourceDirectory(paths);
+    const displayPath = sharedParentDirectory
+      ? basenameFromPath(sharedParentDirectory)
+      : '';
 
     try {
       const result = await deleteJobsStore.startJob(paths, useTrash, {
@@ -350,6 +345,14 @@ export function useDirEntryActions() {
     }
   }
 
+  async function printEntry(entries: DirEntry[]) {
+    const fileEntry = entries.find(entry => entry.is_file);
+
+    if (fileEntry) {
+      await quickViewStore.openPrintViewFromMainWindow(fileEntry.path);
+    }
+  }
+
   function copyPath(entries: DirEntry[]) {
     if (entries.length === 0) return;
 
@@ -409,6 +412,9 @@ export function useDirEntryActions() {
         break;
       case 'quick-view':
         quickView(entries);
+        break;
+      case 'print':
+        printEntry(entries);
         break;
       case 'share':
         startShare(entries);

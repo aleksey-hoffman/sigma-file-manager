@@ -7,7 +7,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { InfoIcon, Columns3Icon, ArrowUpIcon, ArrowDownIcon } from '@lucide/vue';
-import type { ListSortColumn } from '@/types/user-settings';
+import type { ListColumnVisibility, ListSortColumn } from '@/types/user-settings';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
@@ -37,7 +37,7 @@ function handleColumnHeaderClick(column: ListSortColumn) {
   }
 }
 
-function toggleColumnVisibility(column: 'items' | 'size' | 'modified', checked: boolean) {
+function toggleColumnVisibility(column: keyof ListColumnVisibility, checked: boolean) {
   userSettingsStore.set(`navigator.listColumnVisibility.${column}`, checked);
 }
 </script>
@@ -155,6 +155,42 @@ function toggleColumnVisibility(column: 'items' | 'size' | 'modified', checked: 
           class="file-browser-list-view__header-sort-icon"
         />
       </button>
+      <button
+        v-if="columnVisibility.created"
+        type="button"
+        class="file-browser-list-view__header-item file-browser-list-view__header-item--sortable file-browser-list-view__header-created"
+        @click="handleColumnHeaderClick('created')"
+      >
+        {{ t('created') }}
+        <ArrowUpIcon
+          v-if="listSortColumn === 'created' && listSortDirection === 'asc'"
+          :size="12"
+          class="file-browser-list-view__header-sort-icon"
+        />
+        <ArrowDownIcon
+          v-else-if="listSortColumn === 'created' && listSortDirection === 'desc'"
+          :size="12"
+          class="file-browser-list-view__header-sort-icon"
+        />
+      </button>
+      <button
+        v-if="columnVisibility.tags"
+        type="button"
+        class="file-browser-list-view__header-item file-browser-list-view__header-item--sortable file-browser-list-view__header-tags"
+        @click="handleColumnHeaderClick('tags')"
+      >
+        {{ t('fileBrowser.tags') }}
+        <ArrowUpIcon
+          v-if="listSortColumn === 'tags' && listSortDirection === 'asc'"
+          :size="12"
+          class="file-browser-list-view__header-sort-icon"
+        />
+        <ArrowDownIcon
+          v-else-if="listSortColumn === 'tags' && listSortDirection === 'desc'"
+          :size="12"
+          class="file-browser-list-view__header-sort-icon"
+        />
+      </button>
     </div>
     <Popover
       :open="isColumnsPopoverOpen"
@@ -200,6 +236,22 @@ function toggleColumnVisibility(column: 'items' | 'size' | 'modified', checked: 
               @update:model-value="toggleColumnVisibility('modified', $event as boolean)"
             />
             <Label for="column-modified">{{ t('fileBrowser.modified') }}</Label>
+          </div>
+          <div class="file-browser-list-view__columns-option">
+            <Checkbox
+              id="column-created"
+              :model-value="columnVisibility.created"
+              @update:model-value="toggleColumnVisibility('created', $event as boolean)"
+            />
+            <Label for="column-created">{{ t('created') }}</Label>
+          </div>
+          <div class="file-browser-list-view__columns-option">
+            <Checkbox
+              id="column-tags"
+              :model-value="columnVisibility.tags"
+              @update:model-value="toggleColumnVisibility('tags', $event as boolean)"
+            />
+            <Label for="column-tags">{{ t('fileBrowser.tags') }}</Label>
           </div>
         </PopoverContent>
         <TooltipContent>

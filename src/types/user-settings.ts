@@ -88,13 +88,27 @@ export type ShortcutKeys = {
   key: string;
 };
 
+export type UserShortcutStoredValue = ShortcutKeys | Array<ShortcutKeys | null>;
+
 export type ShortcutId
   = 'toggleGlobalSearch'
+    | 'switchToHomePage'
+    | 'switchToNavigatorPage'
+    | 'switchToDashboardPage'
+    | 'switchToSettingsPage'
+    | 'switchToExtensionsPage'
+    | 'navigatePageBack'
+    | 'navigatePageForward'
     | 'toggleFilter'
     | 'toggleSettingsSearch'
     | 'toggleCommandPalette'
+    | 'toggleAddressBar'
+    | 'openEntry'
     | 'toggleSplitView'
+    | 'createNewFile'
+    | 'createNewDirectory'
     | 'copyCurrentDirectoryPath'
+    | 'openCopiedPath'
     | 'copy'
     | 'cut'
     | 'paste'
@@ -104,8 +118,10 @@ export type ShortcutId
     | 'rename'
     | 'escape'
     | 'quickView'
+    | 'print'
     | 'openNewTab'
     | 'closeCurrentTab'
+    | 'restoreLastClosedTab'
     | 'openTerminal'
     | 'openTerminalAdmin'
     | 'navigateUp'
@@ -113,7 +129,9 @@ export type ShortcutId
     | 'navigateLeft'
     | 'navigateRight'
     | 'openSelected'
-    | 'navigateBack'
+    | 'navigateHistoryBack'
+    | 'navigateHistoryForward'
+    | 'goUpDirectory'
     | 'switchToLeftPane'
     | 'switchToRightPane'
     | 'reloadCurrentDirectory'
@@ -121,7 +139,9 @@ export type ShortcutId
     | 'uiZoomDecrease'
     | 'toggleFullscreen';
 
-export type UserShortcuts = Partial<Record<ShortcutId, ShortcutKeys>>;
+export type UserShortcuts = Partial<Record<ShortcutId, UserShortcutStoredValue>>;
+
+export type ShortcutUserAlternateChordSlots = Partial<Record<ShortcutId, number[]>>;
 
 export type GlobalShortcutId = 'launchApp';
 
@@ -162,6 +182,7 @@ export type UserSettings = {
   visualFilters: VisualFiltersSettings;
   settingsCurrentTab: string;
   shortcuts?: UserShortcuts;
+  shortcutUserAlternateChordSlots?: ShortcutUserAlternateChordSlots;
   globalShortcuts?: UserGlobalShortcuts;
   focusWindowOnDriveConnected: boolean;
   preventDropdownCloseFocusReturn: boolean;
@@ -223,9 +244,11 @@ export type ListColumnVisibility = {
   items: boolean;
   size: boolean;
   modified: boolean;
+  created: boolean;
+  tags: boolean;
 };
 
-export type ListSortColumn = 'name' | 'items' | 'size' | 'modified';
+export type ListSortColumn = 'name' | 'items' | 'size' | 'modified' | 'created' | 'tags';
 
 export type ListSortDirection = 'asc' | 'desc';
 
@@ -233,6 +256,7 @@ export type LastTabCloseBehavior = 'createDefaultTab' | 'closeWindow' | 'navigat
 
 export type UserSettingsNavigator = {
   lastTabCloseBehavior: LastTabCloseBehavior;
+  boldActiveTabTitle: boolean;
   layout: NavigatorLayout;
   infoPanel: UserSettingsNavigatorInfoPanel;
   showHiddenFiles: boolean;

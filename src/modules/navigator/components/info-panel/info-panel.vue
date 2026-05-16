@@ -4,35 +4,22 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref } from 'vue';
 import { InfoIcon, XIcon } from '@lucide/vue';
 import { Button } from '@/components/ui/button';
 import InfoPanelHeader from './info-panel-header.vue';
 import InfoPanelPreview from './info-panel-preview.vue';
 import InfoPanelProperties from './info-panel-properties.vue';
 import type { DirEntry } from '@/types/dir-entry';
+import { useIsSmallScreen } from '@/composables/use-responsive-query';
 
 defineProps<{
   selectedEntry: DirEntry | null;
   isCurrentDir?: boolean;
 }>();
 
-const isCompact = ref(false);
+const isCompact = useIsSmallScreen();
 const isDrawerOpen = ref(false);
-const mediaQuery = window.matchMedia('(max-width: 800px)');
-
-function handleMediaChange(event: MediaQueryListEvent | MediaQueryList) {
-  isCompact.value = event.matches;
-}
-
-onMounted(() => {
-  handleMediaChange(mediaQuery);
-  mediaQuery.addEventListener('change', handleMediaChange);
-});
-
-onUnmounted(() => {
-  mediaQuery.removeEventListener('change', handleMediaChange);
-});
 </script>
 
 <template>

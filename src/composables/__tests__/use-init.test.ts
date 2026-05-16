@@ -28,6 +28,7 @@ const {
   removeAppSplashMock,
   resolveLaunchTargetsFromArgsMock,
   routerPushMock,
+  setFocusMock,
   setPendingLaunchRevealMock,
   shortcutsInitMock,
   showWindowMock,
@@ -60,6 +61,7 @@ const {
   removeAppSplashMock: vi.fn(),
   resolveLaunchTargetsFromArgsMock: vi.fn(),
   routerPushMock: vi.fn(),
+  setFocusMock: vi.fn(),
   setPendingLaunchRevealMock: vi.fn(),
   shortcutsInitMock: vi.fn(),
   showWindowMock: vi.fn(),
@@ -107,7 +109,7 @@ vi.mock('@tauri-apps/api/window', () => ({
     label: 'main',
     show: showWindowMock,
     hide: hideWindowMock,
-    setFocus: vi.fn(),
+    setFocus: setFocusMock,
   }),
 }));
 
@@ -168,6 +170,28 @@ vi.mock('@/stores/runtime/app-window', () => ({
 }));
 
 vi.mock('@/stores/runtime/shortcuts', () => ({
+  BUILTIN_NAVIGATION_PAGE_SHORTCUTS: [
+    {
+      id: 'switchToHomePage',
+      routeName: 'home',
+    },
+    {
+      id: 'switchToNavigatorPage',
+      routeName: 'navigator',
+    },
+    {
+      id: 'switchToDashboardPage',
+      routeName: 'dashboard',
+    },
+    {
+      id: 'switchToSettingsPage',
+      routeName: 'settings',
+    },
+    {
+      id: 'switchToExtensionsPage',
+      routeName: 'extensions',
+    },
+  ],
   useShortcutsStore: () => ({
     init: shortcutsInitMock,
     registerHandler: vi.fn(),
@@ -283,6 +307,7 @@ describe('useInit startup restoration', () => {
     removeAppSplashMock.mockReset();
     resolveLaunchTargetsFromArgsMock.mockReset().mockResolvedValue([]);
     routerPushMock.mockReset().mockResolvedValue(undefined);
+    setFocusMock.mockReset().mockResolvedValue(undefined);
     setPendingLaunchRevealMock.mockReset();
     shortcutsInitMock.mockReset().mockResolvedValue(undefined);
     showWindowMock.mockReset().mockResolvedValue(undefined);
@@ -293,9 +318,13 @@ describe('useInit startup restoration', () => {
     userStatsRunDeferredMaintenanceMock.mockReset().mockResolvedValue(undefined);
     workspacesInitMock.mockReset().mockResolvedValue(undefined);
     workspacesLoadCurrentTabGroupMock.mockReset().mockResolvedValue(undefined);
+    vi.spyOn(performance, 'getEntriesByType').mockReturnValue([
+      { type: 'navigate' } as PerformanceNavigationTiming,
+    ]);
   });
 
   afterEach(() => {
+    vi.restoreAllMocks();
     vi.useRealTimers();
   });
 
@@ -417,7 +446,34 @@ describe('useInit startup restoration', () => {
     await flushAsyncWork();
 
     expect(showWindowMock).toHaveBeenCalledTimes(1);
+    expect(setFocusMock).toHaveBeenCalledTimes(1);
     expect(hideWindowMock).not.toHaveBeenCalled();
+    expect(removeAppSplashMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not focus the main window after a webview reload', async () => {
+    vi.mocked(performance.getEntriesByType).mockReturnValue([
+      { type: 'reload' } as PerformanceNavigationTiming,
+    ]);
+
+    invokeMock.mockImplementation(async (command: string) => {
+      if (command === 'get_launch_context') {
+        return createLaunchContext({});
+      }
+
+      return null;
+    });
+
+    const { useInit } = await import('@/composables/use-init');
+    const { init } = useInit();
+    const initPromise = init();
+
+    await flushAsyncWork();
+    await initPromise;
+    await flushAsyncWork();
+
+    expect(showWindowMock).toHaveBeenCalledTimes(1);
+    expect(setFocusMock).not.toHaveBeenCalled();
     expect(removeAppSplashMock).toHaveBeenCalledTimes(1);
   });
 

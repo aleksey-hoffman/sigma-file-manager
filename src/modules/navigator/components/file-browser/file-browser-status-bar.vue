@@ -60,6 +60,8 @@ const dirSizesStore = useDirSizesStore();
 
 const showItemsPopoverOpen = ref(false);
 const itemsFilterQuery = ref('');
+const selectedItemsMenuOpen = ref(false);
+const collapsedActionsMenuOpen = ref(false);
 
 const totalCount = computed(() => props.dirContents?.entries.length ?? 0);
 
@@ -201,7 +203,13 @@ function applyContextMenuState() {
   };
 }
 
+function closeActionMenus() {
+  selectedItemsMenuOpen.value = false;
+  collapsedActionsMenuOpen.value = false;
+}
+
 function handleAction(action: ContextMenuAction) {
+  closeActionMenus();
   applyContextMenuState();
 
   if (action === 'create-file' || action === 'create-directory') {
@@ -216,11 +224,13 @@ function handleAction(action: ContextMenuAction) {
 }
 
 function handleOpenCustomDialog() {
+  closeActionMenus();
   applyContextMenuState();
   ctx.openOpenWithDialog(ctx.contextMenu.value.selectedEntries);
 }
 
 async function handleExtensionAction(registration: ContextMenuItemRegistration) {
+  closeActionMenus();
   applyContextMenuState();
   const context = {
     selectedEntries: ctx.contextMenu.value.selectedEntries.map(entry => ({
@@ -299,7 +309,7 @@ async function handleExtensionAction(registration: ContextMenuItemRegistration) 
                 <span class="file-browser-status-bar__button-text">{{ t('fileBrowser.deselectAll') }}</span>
               </Button>
 
-              <DropdownMenu>
+              <DropdownMenu v-model:open="selectedItemsMenuOpen">
                 <DropdownMenuTrigger as-child>
                   <Button
                     variant="ghost"
@@ -335,7 +345,7 @@ async function handleExtensionAction(registration: ContextMenuItemRegistration) 
             </div>
 
             <div class="file-browser-status-bar__actions--collapsed">
-              <DropdownMenu>
+              <DropdownMenu v-model:open="collapsedActionsMenuOpen">
                 <DropdownMenuTrigger as-child>
                   <Button
                     variant="ghost"

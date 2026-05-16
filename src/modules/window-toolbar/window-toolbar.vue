@@ -80,9 +80,11 @@ const toolbarProgressiveBlurLayers: ProgressiveBlurLayer[] = [
       <div class="window-toolbar-primary-teleport-target" />
       <Spacer class="window-toolbar-spacer" />
       <div class="window-toolbar-secondary-teleport-target" />
-      <LanShareToolbarButton v-if="shouldShowNavigatorToolbarExtras" />
-      <StatusCenterToolbarButton v-if="shouldShowNavigatorToolbarExtras" />
-      <GlobalSearchToolbarButton v-if="shouldShowGlobalSearchButton" />
+      <div class="window-toolbar-tertiary">
+        <LanShareToolbarButton v-if="shouldShowNavigatorToolbarExtras" />
+        <StatusCenterToolbarButton v-if="shouldShowNavigatorToolbarExtras" />
+        <GlobalSearchToolbarButton v-if="shouldShowGlobalSearchButton" />
+      </div>
       <WindowActions />
     </div>
   </div>
@@ -105,11 +107,23 @@ const toolbarProgressiveBlurLayers: ProgressiveBlurLayer[] = [
   max-width: 50%;
 }
 
+@media (width <= 1024px) {
+  .window-toolbar-primary-teleport-target {
+    display: flex;
+    max-width: 30%;
+  }
+}
+
 .window-toolbar-secondary-teleport-target {
   display: flex;
   max-width: 50%;
   align-items: center;
   justify-content: flex-end;
+  gap: 4px;
+}
+
+.window-toolbar-tertiary {
+  display: flex;
   gap: 4px;
 }
 

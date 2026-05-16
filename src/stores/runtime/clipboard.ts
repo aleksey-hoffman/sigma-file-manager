@@ -7,6 +7,11 @@ import { ref, computed } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
 import type { DirEntry } from '@/types/dir-entry';
 import { i18n } from '@/localization';
+import {
+  arePathsEquivalent,
+  getSharedSourceDirectory,
+  isDestinationInsideAnySourceDirectory,
+} from '@/utils/file-operation-paths';
 
 export type ClipboardOperationType = 'copy' | 'move' | '';
 export type ConflictResolution = 'replace' | 'skip' | 'auto-rename';
@@ -48,23 +53,6 @@ export interface ConflictItem {
   relative_path: string;
 }
 
-/**
- * Gets the parent directory path from a file/folder path
- */
-function getParentPath(path: string): string {
-  const lastSeparatorIndex = path.lastIndexOf('/');
-
-  if (lastSeparatorIndex <= 0) {
-    return path;
-  }
-
-  return path.substring(0, lastSeparatorIndex);
-}
-
-function normalizePathForComparison(path: string): string {
-  return path.toLowerCase();
-}
-
 export const useClipboardStore = defineStore('clipboard', () => {
   const clipboardType = ref<ClipboardOperationType>('');
   const clipboardItems = ref<DirEntry[]>([]);
@@ -81,18 +69,9 @@ export const useClipboardStore = defineStore('clipboard', () => {
    * Gets the source directory (parent directory of clipboard items)
    * Returns null if items are from different directories
    */
-  const sourceDirectory = computed(() => {
-    if (clipboardItems.value.length === 0) {
-      return null;
-    }
-
-    const firstItemParent = getParentPath(clipboardItems.value[0].path);
-    const allFromSameDir = clipboardItems.value.every(
-      item => normalizePathForComparison(getParentPath(item.path)) === normalizePathForComparison(firstItemParent),
-    );
-
-    return allFromSameDir ? firstItemParent : null;
-  });
+  const sourceDirectory = computed(() =>
+    getSharedSourceDirectory(clipboardItems.value.map(item => item.path)),
+  );
 
   function setClipboard(
     type: ClipboardOperationType,
@@ -139,8 +118,22 @@ export const useClipboardStore = defineStore('clipboard', () => {
     isToolbarSuppressed.value = false;
   }
 
-  function finalizeSuccessfulPaste() {
-    clearClipboard();
+  function snapshotClipboard(): {
+    type: ClipboardOperationType;
+    items: DirEntry[];
+    suppressed: boolean;
+  } {
+    return {
+      type: clipboardType.value,
+      items: clipboardItems.value.map(item => ({ ...item })),
+      suppressed: isToolbarSuppressed.value,
+    };
+  }
+
+  function restoreClipboardFromSnapshot(snapshot: ReturnType<typeof snapshotClipboard>) {
+    clipboardType.value = snapshot.type;
+    clipboardItems.value = snapshot.items;
+    isToolbarSuppressed.value = snapshot.suppressed;
   }
 
   function isItemInClipboard(item: DirEntry): boolean {
@@ -158,7 +151,7 @@ export const useClipboardStore = defineStore('clipboard', () => {
       return false;
     }
 
-    return normalizePathForComparison(destinationPath) === normalizePathForComparison(sourceDirectory.value);
+    return arePathsEquivalent(destinationPath, sourceDirectory.value);
   }
 
   /**
@@ -166,15 +159,11 @@ export const useClipboardStore = defineStore('clipboard', () => {
    * (can't move/copy a folder into itself)
    */
   function isDestinationInsideClipboardItem(destinationPath: string): boolean {
-    const normalizedDest = normalizePathForComparison(destinationPath);
-    return clipboardItems.value.some((item) => {
-      if (!item.is_dir) {
-        return false;
-      }
-
-      const normalizedItemPath = normalizePathForComparison(item.path);
-      return normalizedDest.startsWith(normalizedItemPath + '/');
-    });
+    return isDestinationInsideAnySourceDirectory(
+      destinationPath,
+      clipboardItems.value.map(item => item.path),
+      clipboardItems.value.map(item => item.is_dir),
+    );
   }
 
   /**
@@ -237,59 +226,54 @@ export const useClipboardStore = defineStore('clipboard', () => {
     }
 
     const sourcePaths = clipboardItems.value.map(item => item.path);
+    const operationType = clipboardType.value;
+    const clipboardSnapshot = snapshotClipboard();
     isOperationInProgress.value = true;
 
     const displayPath = destinationPath.split(/[/\\]/).pop() ?? destinationPath;
 
-    try {
-      const { useCopyMoveJobsStore } = await import('@/stores/runtime/copy-move-jobs');
-      const copyMoveJobsStore = useCopyMoveJobsStore();
-
-      if (clipboardType.value === 'copy') {
-        const result = await copyMoveJobsStore.startJob(
-          'copy',
-          sourcePaths,
-          destinationPath,
-          null,
-          perPathResolutions,
-          {
-            label: i18n.global.t('notifications.copyingItems'),
-            displayPath,
-          },
-        );
-
-        if (result.success) {
-          finalizeSuccessfulPaste();
-        }
-
-        return result;
-      }
-      else if (clipboardType.value === 'move') {
-        const result = await copyMoveJobsStore.startJob(
-          'move',
-          sourcePaths,
-          destinationPath,
-          null,
-          perPathResolutions,
-          {
-            label: i18n.global.t('notifications.movingItems'),
-            displayPath,
-          },
-        );
-
-        if (result.success) {
-          finalizeSuccessfulPaste();
-        }
-
-        return result;
-      }
-
+    if (operationType !== 'copy' && operationType !== 'move') {
+      isOperationInProgress.value = false;
       return {
         success: false,
         error: i18n.global.t('fileBrowser.invalidClipboardOperation'),
       };
     }
+
+    // Clear immediately so the clipboard toolbar disappears as soon as the job is queued.
+    // The backend already received `sourcePaths` and does not depend on the clipboard.
+    // Restore the snapshot if the job ends up failing or being cancelled so the user can retry.
+    clearClipboard();
+
+    try {
+      const { useCopyMoveJobsStore } = await import('@/stores/runtime/copy-move-jobs');
+      const copyMoveJobsStore = useCopyMoveJobsStore();
+
+      const result = await copyMoveJobsStore.startJob(
+        operationType,
+        sourcePaths,
+        destinationPath,
+        null,
+        perPathResolutions,
+        {
+          label: operationType === 'copy'
+            ? i18n.global.t('notifications.copyingItems')
+            : i18n.global.t('notifications.movingItems'),
+          displayPath,
+        },
+      );
+
+      if (!result.success && !clipboardItems.value.length) {
+        restoreClipboardFromSnapshot(clipboardSnapshot);
+      }
+
+      return result;
+    }
     catch (error) {
+      if (!clipboardItems.value.length) {
+        restoreClipboardFromSnapshot(clipboardSnapshot);
+      }
+
       return {
         success: false,
         error: String(error),

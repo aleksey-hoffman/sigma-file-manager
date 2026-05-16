@@ -12,6 +12,7 @@ import { useQuickViewStore } from '@/stores/runtime/quick-view';
 import { useGlobalSearchStore } from '@/stores/runtime/global-search';
 import { useClipboardStore } from '@/stores/runtime/clipboard';
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
+import { useUserStatsStore } from '@/stores/storage/user-stats';
 import {
   registerNavigationProvider,
   unregisterNavigationProvider,
@@ -34,7 +35,9 @@ import { useFileBrowserActions } from './use-file-browser-actions';
 import { useFileBrowserKeyboardNavigation } from './use-file-browser-keyboard-navigation';
 import { useFileBrowserLifecycle } from './use-file-browser-lifecycle';
 import { useFileBrowserDrag } from './use-file-browser-drag';
+import { useFileBrowserInternalDropHandler } from './use-file-browser-internal-drop';
 import { useFileBrowserExternalDrop } from './use-file-browser-external-drop';
+import { useFileBrowserVirtualLayout } from './use-file-browser-virtual-layout';
 import { useImageThumbnails } from './use-image-thumbnails';
 import { useVideoThumbnails } from './use-video-thumbnails';
 import { sortFileBrowserEntries } from '@/modules/navigator/components/file-browser/utils/file-browser-sort';
@@ -51,6 +54,7 @@ export interface UseFileBrowserOptions {
   componentRef: Ref<HTMLElement | null>;
   isDefaultPane?: boolean;
   isActivePane?: () => boolean;
+  entryDescription?: (entry: DirEntry) => string | undefined;
 }
 
 interface DataSource {
@@ -128,6 +132,7 @@ function setupNavigationDataSource(
 
   useFileBrowserLifecycle({
     tabRef,
+    currentPath: navigation.currentPath,
     readDir: navigation.readDir,
     init: navigation.init,
   });
@@ -169,6 +174,7 @@ function setupExternalDataSource(options: UseFileBrowserOptions): DataSource {
   const globalSearchStore = useGlobalSearchStore();
   const userSettingsStore = useUserSettingsStore();
   const dirSizesStore = useDirSizesStore();
+  const userStatsStore = useUserStatsStore();
   const getEntries = options.externalEntries ?? (() => []);
   const getBasePath = options.basePath ?? (() => '');
 
@@ -183,7 +189,10 @@ function setupExternalDataSource(options: UseFileBrowserOptions): DataSource {
     }
 
     const column = listSortColumn.value ?? 'name';
-    return sortFileBrowserEntries(rawEntries, column, listSortDirection.value, dirSizesStore);
+    return sortFileBrowserEntries(rawEntries, column, listSortDirection.value, dirSizesStore, {
+      tags: userStatsStore.tags,
+      taggedItems: userStatsStore.taggedItems,
+    });
   });
 
   return {
@@ -225,6 +234,7 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
   const isExternalMode = !!options.externalEntries;
   const quickViewStore = useQuickViewStore();
   const clipboardStore = useClipboardStore();
+  const internalDropHandler = useFileBrowserInternalDropHandler();
 
   const dataSource = isExternalMode
     ? setupExternalDataSource(options)
@@ -260,24 +270,36 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
     dataSource.silentRefresh,
   );
 
+  const virtualLayout = useFileBrowserVirtualLayout({
+    entries: visualEntries,
+    layout: options.layout,
+    entryDescription: options.entryDescription,
+  });
+
   const { entriesContainerRef, setEntriesContainerRef } = useFileBrowserFocus({
     entries: visualEntries,
     pendingFocusRequest: selection.pendingFocusRequest,
     currentPath: dataSource.currentPath,
     selectEntryByPath: selection.selectEntryByPath,
     clearPendingFocusRequest: selection.clearPendingFocusRequest,
+    scrollToPath: virtualLayout.scrollToPath,
+    getEntryElement: virtualLayout.getEntryElement,
   });
 
   const videoThumbnails = !isExternalMode
     ? useVideoThumbnails()
     : {
         getVideoThumbnail: () => undefined,
+        cancelVideoThumbnail: () => undefined,
         clearThumbnails: () => undefined,
       };
   const imageThumbnails = !isExternalMode
     ? useImageThumbnails()
     : {
         getImageThumbnail: () => undefined,
+        getImageThumbnailPlaceholder: () => undefined,
+        shouldShowImageThumbnailFallback: () => true,
+        cancelImageThumbnail: () => undefined,
         clearThumbnails: () => undefined,
       };
 
@@ -296,6 +318,7 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
     replaceSelection: selection.replaceSelection,
     entriesContainerRef,
     disableBackgroundDrop: isExternalMode,
+    fallbackDropHandler: internalDropHandler,
     onDrop: async (items, destinationPath, operation) => {
       if (operation === 'copy') {
         clipboardStore.setClipboard('copy', items, { keepToolbarHidden: true });
@@ -343,6 +366,9 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
     selectedEntries: selection.selectedEntries,
     layout: options.layout,
     selectEntryByPath: selection.selectEntryByPath,
+    scrollToPath: virtualLayout.scrollToPath,
+    getEntryElement: virtualLayout.getEntryElement,
+    getGridNavigationEntry: virtualLayout.getGridNavigationEntry,
     goBack: dataSource.goBack,
     openEntry: isExternalMode
       ? (entry) => { options.onOpenEntry(entry); }
@@ -362,25 +388,28 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
 
     const firstEntry = visualEntries.value[0];
     selection.selectEntryByPath(firstEntry.path);
+    await virtualLayout.scrollToPath(firstEntry.path);
     await nextTick();
 
-    if (entriesContainerRef.value) {
-      const element = entriesContainerRef.value.querySelector<HTMLElement>(
-        `[data-entry-path="${CSS.escape(firstEntry.path)}"]`,
-      );
+    const element = virtualLayout.getEntryElement(firstEntry.path);
 
-      if (element) {
-        element.scrollIntoView({
-          block: 'nearest',
-          inline: 'nearest',
-        });
-        element.focus({ preventScroll: true });
-      }
+    if (element) {
+      element.focus({ preventScroll: true });
     }
   }
 
-  watch([dataSource.filterQuery, visualEntries], ([filterQuery, entries]) => {
-    if (!filterQuery.trim()) {
+  function handleVirtualScroll(event: Event) {
+    virtualLayout.handleScroll(event);
+
+    if (externalDrop.isExternalDragActive.value) {
+      externalDrop.refreshDropTargets();
+    }
+  }
+
+  async function applyFilteredFirstEntrySelection(entries: DirEntry[], isCancelled: () => boolean) {
+    await nextTick();
+
+    if (isCancelled()) {
       return;
     }
 
@@ -389,7 +418,27 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
       return;
     }
 
-    selection.selectEntryByPath(entries[0].path);
+    const firstEntry = entries[0];
+    selection.selectEntryByPath(firstEntry.path);
+    await virtualLayout.scrollToPath(firstEntry.path);
+  }
+
+  watch([dataSource.filterQuery, visualEntries], ([filterQuery, entries], _oldValue, onCleanup) => {
+    let isCancelled = false;
+
+    onCleanup(() => {
+      isCancelled = true;
+    });
+
+    if (!filterQuery.trim()) {
+      return;
+    }
+
+    if (selection.pendingFocusRequest.value != null) {
+      return;
+    }
+
+    applyFilteredFirstEntrySelection(entries, () => isCancelled);
   });
 
   if (!isExternalMode) {
@@ -403,6 +452,8 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
     });
 
     onUnmounted(() => {
+      imageThumbnails.clearThumbnails();
+      videoThumbnails.clearThumbnails();
       unregisterNavigationProvider();
       unregisterNavigateToPath();
     });
@@ -459,6 +510,7 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
     selectAll: selection.selectAll,
     selectEntryByPath: selection.selectEntryByPath,
     requestFocusEntryAfterRefresh: selection.requestFocusEntryAfterRefresh,
+    armFocusRevealStaleRestoreGuard: selection.armFocusRevealStaleRestoreGuard,
     removeFromSelection: selection.removeFromSelection,
     handleEntryFocus: selection.handleEntryFocus,
     handleEntryContextMenu: selection.handleEntryContextMenu,
@@ -474,9 +526,23 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
     permanentDeleteConfirm: selection.permanentDeleteConfirm,
 
     getImageThumbnail: imageThumbnails.getImageThumbnail,
+    getImageThumbnailPlaceholder: imageThumbnails.getImageThumbnailPlaceholder,
+    shouldShowImageThumbnailFallback: imageThumbnails.shouldShowImageThumbnailFallback,
+    cancelImageThumbnail: imageThumbnails.cancelImageThumbnail,
     getVideoThumbnail: videoThumbnails.getVideoThumbnail,
+    cancelVideoThumbnail: videoThumbnails.cancelVideoThumbnail,
     entriesContainerRef,
     setEntriesContainerRef,
+    setScrollViewportRef: virtualLayout.setScrollViewportRef,
+    handleVirtualScroll,
+    virtualRows: virtualLayout.rows,
+    visibleVirtualRows: virtualLayout.visibleRows,
+    activeGridSectionRow: virtualLayout.activeGridSectionRow,
+    virtualTotalSize: virtualLayout.totalSize,
+    virtualOffsetY: virtualLayout.offsetY,
+    virtualSpacerStyle: virtualLayout.spacerStyle,
+    virtualWindowStyle: virtualLayout.windowStyle,
+    virtualGridColumnCount: virtualLayout.gridColumnCount,
 
     openWithState: dialogs.openWithState,
     newItemDialogState: dialogs.newItemDialogState,
@@ -509,6 +575,7 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
     onEntryMouseUp: actions.onEntryMouseUp,
 
     quickView: actions.quickView,
+    printEntry: actions.printEntry,
     selectFirstEntry,
 
     navigateUp: keyboardNav.navigateUp,
@@ -516,6 +583,5 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
     navigateLeft: keyboardNav.navigateLeft,
     navigateRight: keyboardNav.navigateRight,
     openSelected: keyboardNav.openSelected,
-    navigateBack: keyboardNav.navigateBack,
   };
 }

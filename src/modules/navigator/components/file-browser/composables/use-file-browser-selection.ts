@@ -22,9 +22,13 @@ import { useLanShare } from '@/composables/use-lan-share';
 import { useConflictResolutionDialog } from '@/composables/use-conflict-resolution-dialog';
 import { UI_CONSTANTS } from '@/constants';
 import normalizePath from '@/utils/normalize-path';
+import { getSharedSourceDirectory } from '@/utils/file-operation-paths';
 import { createIndexedFileName, safeFileNameFromUrl } from '@/utils/remote-file';
+import { basenameFromPath } from '@/utils/source-display-name';
 import { usePermanentDeleteConfirm } from '@/composables/use-permanent-delete-confirm';
 import { resolveNavigableItemTarget } from '@/utils/resolve-navigable-item-target';
+
+export const FILE_BROWSER_REVEAL_STALE_FOCUS_GUARD_MS = 500;
 
 export function useFileBrowserSelection(
   entriesRef: Ref<DirEntry[]>,
@@ -83,9 +87,20 @@ export function useFileBrowserSelection(
     };
 
   const pendingFocusRequest = ref<PendingFocusRequest | null>(null);
+  const focusRevealStaleRestoreGuardUntil = ref(0);
 
   function clearPendingFocusRequest() {
     pendingFocusRequest.value = null;
+  }
+
+  function armFocusRevealStaleRestoreGuard(
+    durationMs: number = FILE_BROWSER_REVEAL_STALE_FOCUS_GUARD_MS,
+  ) {
+    const until = performance.now() + durationMs;
+    focusRevealStaleRestoreGuardUntil.value = Math.max(
+      focusRevealStaleRestoreGuardUntil.value,
+      until,
+    );
   }
 
   function requestFocusEntryAfterRefresh(parentDirectoryPath: string, entryPath: string) {
@@ -286,6 +301,17 @@ export function useFileBrowserSelection(
   }
 
   function handleEntryFocus(entry: DirEntry, event: FocusEvent) {
+    if (pendingFocusRequest.value != null) {
+      return;
+    }
+
+    if (
+      performance.now() < focusRevealStaleRestoreGuardUntil.value
+      && !isEntrySelected(entry)
+    ) {
+      return;
+    }
+
     const target = event.currentTarget;
 
     if (!(target instanceof HTMLElement) || !target.matches(':focus-visible')) {
@@ -386,6 +412,7 @@ export function useFileBrowserSelection(
       path: item.path,
       is_dir: item.is_dir,
     }));
+    const sourceDirectoryBeforePaste = clipboardStore.sourceDirectory;
     const result = await clipboardStore.pasteItems(targetPath, conflictPayload?.perPathResolutions);
 
     if (!result.success && result.error && !result.fromStatusCenterJob) {
@@ -396,7 +423,7 @@ export function useFileBrowserSelection(
       await dirSizesStore.refreshSizesAfterCopyMove(sourcesForSizes, targetPath, [
         targetPath,
         currentPathRef.value,
-        clipboardStore.sourceDirectory,
+        sourceDirectoryBeforePaste,
       ].filter((pathItem): pathItem is string => Boolean(pathItem)));
     }
 
@@ -953,9 +980,10 @@ export function useFileBrowserSelection(
     }
 
     const paths = entries.map(entry => entry.path);
-    const displayPath = entries.length === 1
-      ? entries[0].name
-      : t('statusCenter.deleteSelectedCount', { count: entries.length });
+    const sharedParentDirectory = getSharedSourceDirectory(paths);
+    const displayPath = sharedParentDirectory
+      ? basenameFromPath(sharedParentDirectory)
+      : '';
 
     try {
       const result = await deleteJobsStore.startJob(paths, useTrash, {
@@ -1022,6 +1050,7 @@ export function useFileBrowserSelection(
     pendingFocusRequest,
     clearPendingFocusRequest,
     requestFocusEntryAfterRefresh,
+    armFocusRevealStaleRestoreGuard,
     conflictDialogState,
     handleConflictResolution,
     handleConflictCancel,

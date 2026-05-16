@@ -4,580 +4,440 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import { storeToRefs } from 'pinia';
-import { computed } from 'vue';
-import { useI18n } from 'vue-i18n';
 import {
-  ActivityIcon, LoaderCircleIcon, XIcon, CheckIcon, FolderIcon, FileArchiveIcon,
-  BanIcon, Trash2Icon, CopyIcon, ArrowRightLeftIcon,
-} from '@lucide/vue';
-import type { FocusOutsideEvent, PointerDownOutsideEvent } from 'reka-ui';
+  computed,
+  nextTick,
+  onScopeDispose,
+  ref,
+  watch,
+} from 'vue';
+import { useI18n } from 'vue-i18n';
+import { ActivityIcon, ChevronDownIcon, ChevronRightIcon, LoaderCircleIcon } from '@lucide/vue';
 import { Button } from '@/components/ui/button';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useStatusCenterStore } from '@/stores/runtime/status-center';
-import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
-import { useArchiveJobsStore } from '@/stores/runtime/archive-jobs';
-import { useDeleteJobsStore } from '@/stores/runtime/delete-jobs';
-import { useCopyMoveJobsStore } from '@/stores/runtime/copy-move-jobs';
-import { formatBytes } from '@/modules/navigator/components/file-browser/utils';
+import StatusCenterOperationRow from './status-center-operation-row.vue';
+import { useCancelOperation } from './use-cancel-operation';
 
 const { t } = useI18n();
 const statusCenterStore = useStatusCenterStore();
-const { isOpen: statusCenterPopoverOpen } = storeToRefs(statusCenterStore);
-const dirSizesStore = useDirSizesStore();
-const archiveJobsStore = useArchiveJobsStore();
-const deleteJobsStore = useDeleteJobsStore();
-const copyMoveJobsStore = useCopyMoveJobsStore();
+const { cancelOperations } = useCancelOperation();
 
+const statusCenterPopoverOpen = computed({
+  get: () => statusCenterStore.isOpen,
+  set: (open) => {
+    statusCenterStore.setOpen(open);
+  },
+});
 const hasOperations = computed(() => statusCenterStore.operationsList.length > 0);
 const hasCompletedOperations = computed(() => statusCenterStore.completedOperations.length > 0);
+const hasActiveOperations = computed(() => statusCenterStore.activeCount > 0);
+const isPopoverOpenWithoutActiveOperations = computed(
+  () => statusCenterStore.isOpen && !hasActiveOperations.value,
+);
 
-function getOperationIcon(type: string) {
-  switch (type) {
-    case 'dir-size':
-      return FolderIcon;
-    case 'archive':
-      return FileArchiveIcon;
-    case 'deleteTrash':
-    case 'deletePermanent':
-      return Trash2Icon;
-    case 'copy':
-      return CopyIcon;
-    case 'move':
-      return ArrowRightLeftIcon;
-    default:
-      return ActivityIcon;
+const activeOperationsToolbarLabel = computed(() =>
+  t(
+    'statusCenter.toolbarActiveCount',
+    { n: statusCenterStore.activeCount },
+    statusCenterStore.activeCount,
+  ),
+);
+
+const statusCenterTriggerAriaLabel = computed(() => {
+  if (statusCenterStore.activeCount > 0) {
+    return `${t('statusCenter.title')}: ${activeOperationsToolbarLabel.value}`;
+  }
+
+  return t('statusCenter.title');
+});
+
+const hasCancellableActiveOperations = computed(() =>
+  statusCenterStore.activeOperations.some(
+    operation => operation.status === 'in-progress' || operation.status === 'pending',
+  ),
+);
+
+const completedSectionOpen = ref(true);
+const scrollAreaRef = ref<InstanceType<typeof ScrollArea> | null>(null);
+const pillInnerRef = ref<HTMLElement | null>(null);
+const expandedPillMaxWidthPx = ref(28);
+const PILL_MAX_WIDTH_CAP_PX = 240;
+const PILL_MIN_EXPANDED_WIDTH_PX = 56;
+
+let pillResizeObserver: ResizeObserver | null = null;
+
+function disconnectPillResizeObserver() {
+  if (pillResizeObserver) {
+    pillResizeObserver.disconnect();
+    pillResizeObserver = null;
   }
 }
 
-function getStatusIcon(status: string) {
-  switch (status) {
-    case 'in-progress':
-    case 'pending':
-    case 'cancelling':
-      return LoaderCircleIcon;
-    case 'completed':
-      return CheckIcon;
-    case 'cancelled':
-    case 'error':
-      return BanIcon;
-    default:
-      return ActivityIcon;
+function measureExpandedPillMaxWidthPx() {
+  const inner = pillInnerRef.value;
+
+  if (!inner) {
+    return;
   }
+
+  const measured = Math.ceil(inner.scrollWidth);
+  expandedPillMaxWidthPx.value = Math.min(
+    PILL_MAX_WIDTH_CAP_PX,
+    Math.max(measured, PILL_MIN_EXPANDED_WIDTH_PX),
+  );
 }
 
-function getGroupActiveCount(operations: typeof statusCenterStore.operationsList) {
-  return operations.filter(
-    op =>
-      op.status === 'in-progress'
-      || op.status === 'pending'
-      || op.status === 'cancelling',
-  ).length;
-}
-
-async function handleCancelOperation(operation: typeof statusCenterStore.operationsList[0]) {
-  if (operation.type === 'dir-size') {
-    await dirSizesStore.cancelSize(operation.path);
+const statusCenterPillButtonStyle = computed(() => {
+  if (!hasActiveOperations.value) {
+    return undefined;
   }
-  else if (operation.type === 'archive') {
-    if (operation.status === 'cancelling') {
-      return;
-    }
 
-    statusCenterStore.updateOperation(operation.id, {
-      status: 'cancelling',
-      message: t('statusCenter.cancelling'),
+  return { maxWidth: `${expandedPillMaxWidthPx.value}px` };
+});
+
+watch(hasActiveOperations, async (active) => {
+  disconnectPillResizeObserver();
+
+  if (!active) {
+    expandedPillMaxWidthPx.value = 28;
+    return;
+  }
+
+  expandedPillMaxWidthPx.value = 28;
+  await nextTick();
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      measureExpandedPillMaxWidthPx();
+      const inner = pillInnerRef.value;
+
+      if (!inner) {
+        return;
+      }
+
+      pillResizeObserver = new ResizeObserver(() => {
+        measureExpandedPillMaxWidthPx();
+      });
+      pillResizeObserver.observe(inner);
     });
-    await archiveJobsStore.cancelJob(operation.id);
-  }
-  else if (operation.type === 'deleteTrash' || operation.type === 'deletePermanent') {
-    if (operation.status === 'cancelling') {
-      return;
-    }
+  });
+});
 
-    statusCenterStore.updateOperation(operation.id, {
-      status: 'cancelling',
-      message: t('statusCenter.cancelling'),
-    });
-    await deleteJobsStore.cancelJob(operation.id);
+watch(activeOperationsToolbarLabel, async () => {
+  if (!hasActiveOperations.value) {
+    return;
   }
-  else if (operation.type === 'copy' || operation.type === 'move') {
-    if (operation.status === 'cancelling') {
-      return;
-    }
 
-    statusCenterStore.updateOperation(operation.id, {
-      status: 'cancelling',
-      message: t('statusCenter.cancelling'),
-    });
-    await copyMoveJobsStore.cancelJob(operation.id);
+  await nextTick();
+  measureExpandedPillMaxWidthPx();
+});
+
+onScopeDispose(() => {
+  disconnectPillResizeObserver();
+});
+
+function scrollOperationsToTop() {
+  const scrollAreaInstance = scrollAreaRef.value;
+
+  if (!scrollAreaInstance) {
+    return;
+  }
+
+  const rootElement = (scrollAreaInstance as unknown as { $el?: HTMLElement }).$el;
+  const viewportElement = rootElement?.querySelector<HTMLElement>(
+    '.sigma-ui-scroll-area__viewport',
+  );
+
+  if (viewportElement) {
+    viewportElement.scrollTop = 0;
   }
 }
 
-async function handleCancelGroup(operations: typeof statusCenterStore.operationsList) {
-  for (const op of operations) {
-    if (op.status === 'in-progress' || op.status === 'pending') {
-      await handleCancelOperation(op);
+watch(
+  () => statusCenterStore.operationsList.length,
+  (currentCount, previousCount) => {
+    if (currentCount > (previousCount ?? 0)) {
+      nextTick(scrollOperationsToTop);
     }
-  }
+  },
+);
+
+async function handleCancelAllActive() {
+  await cancelOperations(statusCenterStore.activeOperations);
 }
 
 function handleClearCompleted() {
   statusCenterStore.clearCompleted();
 }
-
-function handleDismiss(id: string) {
-  statusCenterStore.removeOperation(id);
-}
-
-function formatPath(path: string): string {
-  const parts = path.split(/[/\\]/);
-  return parts[parts.length - 1] || path;
-}
-
-function formatItemCountLine(processed: number | undefined, total: number | undefined): string | null {
-  if (processed === undefined && total === undefined) {
-    return null;
-  }
-
-  if (processed !== undefined && total !== undefined) {
-    return `${processed.toLocaleString()} / ${total.toLocaleString()}`;
-  }
-
-  if (processed !== undefined) {
-    return `${processed.toLocaleString()} / …`;
-  }
-
-  return null;
-}
-
-function parseCopyMoveInnerMessage(message: string | undefined): string {
-  if (!message) {
-    return '';
-  }
-
-  const separator = ' · ';
-  const index = message.indexOf(separator);
-
-  if (index === -1) {
-    return message;
-  }
-
-  return message.slice(index + separator.length).trim();
-}
-
-function isRedundantDeleteProgressMessage(
-  sourceDisplayName: string,
-  currentItemMessage: string,
-): boolean {
-  if (!currentItemMessage) {
-    return true;
-  }
-
-  if (currentItemMessage === sourceDisplayName) {
-    return true;
-  }
-
-  if (sourceDisplayName.startsWith(`${currentItemMessage} (`)) {
-    return true;
-  }
-
-  return false;
-}
-
-function operationPrimaryLabel(operation: typeof statusCenterStore.operationsList[0]): string {
-  if (
-    operation.type === 'archive'
-    || operation.type === 'deleteTrash'
-    || operation.type === 'deletePermanent'
-    || operation.type === 'copy'
-    || operation.type === 'move'
-  ) {
-    return operation.label;
-  }
-
-  return formatPath(operation.path);
-}
-
-function handleStatusCenterPointerDownOutside(event: PointerDownOutsideEvent) {
-  if (statusCenterStore.isOutsideDismissSuppressed()) {
-    event.preventDefault();
-  }
-}
-
-function handleStatusCenterFocusOutside(event: FocusOutsideEvent) {
-  if (statusCenterStore.isOutsideDismissSuppressed()) {
-    event.preventDefault();
-  }
-}
-
-function getOperationDetails(operation: typeof statusCenterStore.operationsList[0]): string {
-  if (operation.type === 'dir-size') {
-    if (operation.status === 'error') {
-      return formatPath(operation.path);
-    }
-
-    const sizeInfo = dirSizesStore.getSize(operation.path);
-
-    if (sizeInfo && sizeInfo.size > 0) {
-      return formatBytes(sizeInfo.size);
-    }
-  }
-
-  if (operation.type === 'copy' || operation.type === 'move') {
-    if (operation.status === 'error') {
-      return operation.sourceDisplayName ?? '';
-    }
-
-    if (
-      operation.status === 'in-progress'
-      || operation.status === 'pending'
-      || operation.status === 'cancelling'
-    ) {
-      const sourceName = operation.sourceDisplayName ?? '';
-      const segments: string[] = [];
-
-      if (sourceName) {
-        segments.push(sourceName);
-      }
-
-      if (operation.progress != null) {
-        segments.push(`${operation.progress}%`);
-      }
-
-      const itemCountLine = formatItemCountLine(operation.processedCount, operation.totalCount);
-
-      if (itemCountLine) {
-        segments.push(itemCountLine);
-      }
-
-      let inner = parseCopyMoveInnerMessage(operation.message);
-
-      if (inner === 'Preparing') {
-        inner = t('statusCenter.preparing');
-      }
-
-      if (inner) {
-        segments.push(inner);
-      }
-
-      if (segments.length > 0) {
-        return segments.join(' · ');
-      }
-    }
-
-    return operation.sourceDisplayName ?? operation.message ?? '';
-  }
-
-  if (operation.type === 'deleteTrash' || operation.type === 'deletePermanent') {
-    if (operation.status === 'error') {
-      return operation.sourceDisplayName ?? '';
-    }
-
-    if (
-      operation.status === 'in-progress'
-      || operation.status === 'pending'
-      || operation.status === 'cancelling'
-    ) {
-      const sourceName = operation.sourceDisplayName ?? '';
-      const segments: string[] = [];
-
-      if (sourceName) {
-        segments.push(sourceName);
-      }
-
-      if (operation.progress != null) {
-        segments.push(`${operation.progress}%`);
-      }
-
-      const itemCountLine = formatItemCountLine(operation.processedCount, operation.totalCount);
-
-      if (itemCountLine) {
-        segments.push(itemCountLine);
-      }
-
-      if (
-        operation.message
-        && !isRedundantDeleteProgressMessage(sourceName, operation.message)
-      ) {
-        segments.push(operation.message);
-      }
-
-      if (segments.length > 0) {
-        return segments.join(' · ');
-      }
-    }
-
-    return operation.sourceDisplayName ?? operation.message ?? '';
-  }
-
-  if (operation.type === 'archive') {
-    const name = formatPath(operation.path);
-
-    if (operation.status === 'error') {
-      return name;
-    }
-
-    const segments: string[] = [];
-
-    if (
-      operation.progress != null
-      && (
-        operation.status === 'in-progress'
-        || operation.status === 'pending'
-        || operation.status === 'cancelling'
-      )
-    ) {
-      segments.push(`${operation.progress}%`);
-    }
-
-    const itemCountLine = formatItemCountLine(operation.processedCount, operation.totalCount);
-
-    if (itemCountLine) {
-      segments.push(itemCountLine);
-    }
-
-    if (
-      operation.message
-      && (
-        operation.status === 'in-progress'
-        || operation.status === 'pending'
-        || operation.status === 'cancelling'
-      )
-    ) {
-      segments.push(operation.message);
-    }
-
-    if (segments.length > 0) {
-      return `${name} · ${segments.join(' · ')}`;
-    }
-
-    return name;
-  }
-
-  return operation.message || '';
-}
 </script>
 
 <template>
   <div class="status-center-toolbar-button animate-fade-in">
-    <Popover v-model:open="statusCenterPopoverOpen">
-      <PopoverTrigger as-child>
-        <Button
-          variant="ghost"
-          size="icon"
-          class="status-center-toolbar-button__button"
-          :class="{ 'status-center-toolbar-button__button--active': statusCenterStore.hasActiveOperations }"
-        >
-          <LoaderCircleIcon
-            v-if="statusCenterStore.hasActiveOperations"
-            :size="16"
-            class="status-center-toolbar-button__icon status-center-toolbar-button__icon--spinning"
-          />
-          <ActivityIcon
-            v-else
-            :size="16"
-            class="status-center-toolbar-button__icon"
-          />
-          <span
-            v-if="statusCenterStore.activeCount > 0"
-            class="status-center-toolbar-button__badge"
-          >
-            {{ statusCenterStore.activeCount }}
-          </span>
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent
-        align="end"
-        :side-offset="8"
-        class="status-center-popover"
-        @pointer-down-outside="handleStatusCenterPointerDownOutside"
-        @focus-outside="handleStatusCenterFocusOutside"
-      >
-        <div class="status-center">
-          <div class="status-center__header">
-            <h3 class="status-center__title">
-              {{ t('statusCenter.title') }}
-            </h3>
+    <Tooltip>
+      <Popover v-model:open="statusCenterPopoverOpen">
+        <TooltipTrigger as-child>
+          <PopoverTrigger as-child>
             <Button
-              variant="secondary"
-              size="xs"
-              class="status-center__clear-btn"
-              :class="{ 'status-center__clear-btn--hidden': !hasCompletedOperations }"
-              :disabled="!hasCompletedOperations"
-              @click="handleClearCompleted"
+              variant="ghost"
+              class="status-center-toolbar-button__button"
+              :class="{
+                'status-center-toolbar-button__button--expanded': hasActiveOperations,
+                'status-center-toolbar-button__button--open-idle': isPopoverOpenWithoutActiveOperations,
+              }"
+              :style="statusCenterPillButtonStyle"
+              :aria-label="statusCenterTriggerAriaLabel"
             >
-              {{ t('statusCenter.clearCompleted') }}
-            </Button>
-          </div>
-
-          <ScrollArea
-            v-if="hasOperations"
-            class="status-center__content"
-          >
-            <div
-              v-for="group in statusCenterStore.groupedOperations"
-              :key="group.type"
-              class="status-center__group"
-            >
-              <div class="status-center__group-header">
-                <div class="status-center__group-title-wrapper">
-                  <component
-                    :is="getOperationIcon(group.type)"
-                    :size="14"
-                    class="status-center__group-icon"
+              <span
+                ref="pillInnerRef"
+                class="status-center-toolbar-button__inner"
+              >
+                <span class="status-center-toolbar-button__icon-wrap">
+                  <ActivityIcon
+                    :size="16"
+                    class="status-center-toolbar-button__icon"
+                    :class="{ 'status-center-toolbar-button__icon--active': hasActiveOperations }"
                   />
-                  <span class="status-center__group-title">{{ t(`statusCenter.groups.${group.type}`) }}</span>
-                </div>
-                <div
-                  v-if="getGroupActiveCount(group.operations) > 0"
-                  class="status-center__group-actions"
-                >
-                  <span class="status-center__group-count">
-                    {{ getGroupActiveCount(group.operations) }} {{ t('statusCenter.active') }}
-                  </span>
-                  <Button
-                    variant="ghost"
-                    size="xs"
-                    class="status-center__group-cancel"
-                    @click="handleCancelGroup(group.operations)"
-                  >
-                    {{ t('statusCenter.cancelAll') }}
-                  </Button>
-                </div>
-              </div>
+                </span>
+                <LoaderCircleIcon
+                  v-if="hasActiveOperations"
+                  :size="12"
+                  class="status-center-toolbar-button__loader"
+                />
+                <span class="status-center-toolbar-button__label">
+                  {{ activeOperationsToolbarLabel }}
+                </span>
+              </span>
+            </Button>
+          </PopoverTrigger>
+        </TooltipTrigger>
+        <TooltipContent>
+          {{ t('statusCenter.title') }}
+        </TooltipContent>
+        <PopoverContent
+          align="end"
+          :side-offset="8"
+          class="status-center-popover"
+        >
+          <div class="status-center">
+            <div class="status-center__header">
+              <h3 class="status-center__title">
+                {{ t('statusCenter.title') }}
+              </h3>
+              <Button
+                variant="secondary"
+                size="xs"
+                class="status-center__clear-btn"
+                :class="{ 'status-center__clear-btn--hidden': !hasCompletedOperations }"
+                :disabled="!hasCompletedOperations"
+                @click="handleClearCompleted"
+              >
+                {{ t('statusCenter.clearCompleted') }}
+              </Button>
+            </div>
 
-              <div class="status-center__operations">
-                <div
-                  v-for="operation in group.operations"
-                  :key="operation.id"
-                  class="status-center__operation"
-                  :class="`status-center__operation--${operation.status}`"
+            <ScrollArea
+              v-if="hasOperations"
+              ref="scrollAreaRef"
+              class="status-center__content"
+            >
+              <div class="status-center__sections">
+                <section
+                  v-if="hasActiveOperations"
+                  class="status-center__section"
                 >
-                  <div class="status-center__operation-icon">
-                    <component
-                      :is="getStatusIcon(operation.status)"
-                      :size="14"
-                      :class="{
-                        'status-center__spinner':
-                          operation.status === 'in-progress'
-                          || operation.status === 'pending'
-                          || operation.status === 'cancelling',
-                        'status-center__check': operation.status === 'completed',
-                        'status-center__error': operation.status === 'cancelled' || operation.status === 'error',
-                      }"
+                  <div class="status-center__section-header">
+                    <div class="status-center__section-title-wrapper">
+                      <LoaderCircleIcon
+                        :size="14"
+                        class="status-center__section-icon status-center__section-icon--spinning"
+                      />
+                      <span class="status-center__section-title">
+                        {{ t('statusCenter.activeOperations') }}
+                      </span>
+                      <span class="status-center__section-count">
+                        {{ statusCenterStore.activeCount }}
+                      </span>
+                    </div>
+                    <Button
+                      v-if="hasCancellableActiveOperations"
+                      variant="ghost"
+                      size="xs"
+                      class="status-center__section-cancel"
+                      @click="handleCancelAllActive"
+                    >
+                      {{ t('statusCenter.cancelAll') }}
+                    </Button>
+                  </div>
+
+                  <div class="status-center__operations">
+                    <StatusCenterOperationRow
+                      v-for="operation in statusCenterStore.activeOperations"
+                      :key="operation.id"
+                      :operation="operation"
                     />
                   </div>
-                  <div class="status-center__operation-info">
-                    <span class="status-center__operation-label">{{ operationPrimaryLabel(operation) }}</span>
-                    <div
-                      v-if="
-                        operation.progress != null
-                          && (
-                            operation.status === 'in-progress'
-                            || operation.status === 'pending'
-                            || operation.status === 'cancelling'
-                          )
-                      "
-                      class="status-center__operation-progress"
+                </section>
+
+                <Collapsible
+                  v-if="hasCompletedOperations"
+                  v-model:open="completedSectionOpen"
+                  class="status-center__section"
+                >
+                  <CollapsibleTrigger>
+                    <button
+                      type="button"
+                      class="status-center__section-header status-center__section-header--collapsible"
                     >
-                      <div
-                        class="status-center__operation-progress-bar"
-                        :style="{ width: `${Math.min(100, Math.max(0, operation.progress))}%` }"
+                      <div class="status-center__section-title-wrapper">
+                        <ChevronDownIcon
+                          v-if="completedSectionOpen"
+                          :size="14"
+                          class="status-center__section-icon"
+                        />
+                        <ChevronRightIcon
+                          v-else
+                          :size="14"
+                          class="status-center__section-icon"
+                        />
+                        <span class="status-center__section-title">
+                          {{ t('statusCenter.completedOperations') }}
+                        </span>
+                        <span class="status-center__section-count">
+                          {{ statusCenterStore.completedCount }}
+                        </span>
+                      </div>
+                    </button>
+                  </CollapsibleTrigger>
+
+                  <CollapsibleContent>
+                    <div class="status-center__operations">
+                      <StatusCenterOperationRow
+                        v-for="operation in statusCenterStore.completedOperations"
+                        :key="operation.id"
+                        :operation="operation"
                       />
                     </div>
-                    <span
-                      v-if="getOperationDetails(operation)"
-                      class="status-center__operation-details"
-                    >
-                      {{ getOperationDetails(operation) }}
-                    </span>
-                    <span
-                      v-if="operation.status === 'error' && operation.message"
-                      class="status-center__operation-error"
-                    >
-                      {{ operation.message }}
-                    </span>
-                  </div>
-                  <Button
-                    v-if="operation.status === 'in-progress' || operation.status === 'pending'"
-                    variant="ghost"
-                    size="sm"
-                    class="status-center__operation-cancel"
-                    @click="handleCancelOperation(operation)"
-                  >
-                    <BanIcon :size="12" />
-                  </Button>
-                  <div
-                    v-else-if="operation.status === 'cancelling'"
-                    class="status-center__operation-action-slot"
-                    aria-hidden="true"
-                  />
-                  <Button
-                    v-else
-                    variant="ghost"
-                    size="sm"
-                    class="status-center__operation-dismiss"
-                    @click="handleDismiss(operation.id)"
-                  >
-                    <XIcon :size="12" />
-                  </Button>
-                </div>
+                  </CollapsibleContent>
+                </Collapsible>
               </div>
-            </div>
-          </ScrollArea>
+            </ScrollArea>
 
-          <div
-            v-else
-            class="status-center__empty"
-          >
-            <ActivityIcon
-              :size="24"
-              class="status-center__empty-icon"
-            />
-            <span>{{ t('statusCenter.noOperations') }}</span>
+            <div
+              v-else
+              class="status-center__empty"
+            >
+              <ActivityIcon
+                :size="24"
+                class="status-center__empty-icon"
+              />
+              <span>{{ t('statusCenter.noOperations') }}</span>
+            </div>
           </div>
-        </div>
-      </PopoverContent>
-    </Popover>
+        </PopoverContent>
+      </Popover>
+    </Tooltip>
   </div>
 </template>
 
 <style scoped>
-.status-center-toolbar-button :deep(.sigma-ui-button) {
+.status-center-toolbar-button :deep(.sigma-ui-button.status-center-toolbar-button__button) {
   position: relative;
-  width: 28px;
+  display: inline-flex;
+  overflow: hidden;
+  width: max-content;
+  max-width: 28px;
   height: 28px;
+  min-height: 28px;
+  padding: 0;
+  border-radius: var(--radius);
+  transition:
+    max-width 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    border-radius 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    background-color 0.25s ease,
+    color 0.25s ease;
 }
 
-.status-center-toolbar-button__icon {
-  stroke: hsl(var(--foreground) / 50%);
+.status-center-toolbar-button :deep(.sigma-ui-button.status-center-toolbar-button__button--open-idle) {
+  background-color: hsl(var(--secondary));
 }
 
-.status-center-toolbar-button__icon--spinning {
-  animation: spin 1.5s linear infinite;
+.status-center-toolbar-button
+  :deep(.sigma-ui-button.status-center-toolbar-button__button--open-idle)
+  .status-center-toolbar-button__icon {
   stroke: hsl(var(--primary));
 }
 
-.status-center-toolbar-button__button--active :deep(.sigma-ui-button) {
-  background: hsl(var(--primary) / 10%);
+.status-center-toolbar-button :deep(.sigma-ui-button.status-center-toolbar-button__button--expanded) {
+  border-radius: 9999px;
+  background: hsl(var(--primary) / 18%);
+  color: hsl(var(--primary));
 }
 
-.status-center-toolbar-button__badge {
-  position: absolute;
-  top: -2px;
-  right: -2px;
+.status-center-toolbar-button :deep(.sigma-ui-button.status-center-toolbar-button__button--expanded:hover) {
+  background: hsl(var(--primary) / 26%);
+}
+
+.status-center-toolbar-button__inner {
+  display: inline-flex;
+  max-width: 100%;
+  align-items: center;
+  gap: 0;
+  transition: gap 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.status-center-toolbar-button :deep(.sigma-ui-button.status-center-toolbar-button__button--expanded) .status-center-toolbar-button__inner {
+  gap: 6px;
+}
+
+.status-center-toolbar-button__icon-wrap {
   display: flex;
-  width: 16px;
-  height: 16px;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
-  background: hsl(var(--primary));
-  color: hsl(var(--primary-foreground));
-  font-size: 10px;
+}
+
+.status-center-toolbar-button__icon {
+  flex-shrink: 0;
+  stroke: hsl(var(--foreground) / 50%);
+  transition: stroke 0.25s ease;
+}
+
+.status-center-toolbar-button__icon--active {
+  stroke: hsl(var(--primary));
+}
+
+.status-center-toolbar-button__loader {
+  flex-shrink: 0;
+  animation: spin 1s linear infinite;
+  opacity: 0;
+  stroke: hsl(var(--primary));
+  transition: opacity 0.28s ease;
+}
+
+.status-center-toolbar-button__button--expanded .status-center-toolbar-button__loader {
+  opacity: 1;
+}
+
+.status-center-toolbar-button__label {
+  flex-shrink: 0;
+  padding-right: 10px;
+  margin-left: 2px;
+  font-size: 11px;
   font-weight: 600;
+  letter-spacing: 0.01em;
+  line-height: 1;
+  opacity: 0;
+  transition: opacity 0.28s ease, margin-left 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.status-center-toolbar-button__button--expanded .status-center-toolbar-button__label {
+  margin-left: 4px;
+  opacity: 1;
 }
 
 :global(.status-center-popover) {
@@ -620,51 +480,72 @@ function getOperationDetails(operation: typeof statusCenterStore.operationsList[
 }
 
 .status-center__content {
-  max-height: 400px;
+  --status-center-scroll-max: min(400px, calc(100vh - 82px));
+
+  max-height: var(--status-center-scroll-max);
 }
 
-.status-center__group {
+.status-center__content :deep(.sigma-ui-scroll-area__viewport) {
+  max-height: var(--status-center-scroll-max);
+}
+
+.status-center__content :deep(.sigma-ui-scroll-area-scrollbar) {
+  right: -6px;
+}
+
+.status-center__sections {
+  padding-bottom: 4px;
+}
+
+.status-center__section {
   padding: 8px 10px;
   border-bottom: 1px solid hsl(var(--border) / 50%);
 }
 
-.status-center__group:last-child {
+.status-center__section:last-child {
   border-bottom: none;
 }
 
-.status-center__group-header {
+.status-center__section-header {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 8px;
   gap: 4px 8px;
 }
 
-.status-center__group-icon {
-  color: hsl(var(--muted-foreground));
+.status-center__section-header--collapsible {
+  width: 100%;
+  padding: 0;
+  border: none;
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
 }
 
-.status-center__group-title-wrapper {
+.status-center__section-title-wrapper {
   display: flex;
   align-items: center;
   gap: 5px;
 }
 
-.status-center__group-title {
+.status-center__section-icon {
+  color: hsl(var(--muted-foreground));
+}
+
+.status-center__section-icon--spinning {
+  animation: spin 1s linear infinite;
+  color: hsl(var(--primary));
+}
+
+.status-center__section-title {
   color: hsl(var(--muted-foreground));
   font-size: 11px;
   font-weight: 500;
   text-transform: uppercase;
 }
 
-.status-center__group-actions {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.status-center__group-count {
+.status-center__section-count {
   padding: 2px 6px;
   border-radius: 3px;
   background: hsl(var(--primary) / 15%);
@@ -673,138 +554,22 @@ function getOperationDetails(operation: typeof statusCenterStore.operationsList[
   font-weight: 500;
 }
 
-.status-center__group-cancel {
+.status-center__section-cancel {
   height: 22px;
   padding: 0 8px;
   color: hsl(var(--muted-foreground));
   font-size: 11px;
 }
 
-.status-center__group-cancel:hover {
+.status-center__section-cancel:hover {
   color: hsl(var(--destructive));
 }
 
 .status-center__operations {
   display: flex;
   flex-direction: column;
+  padding-top: 8px;
   gap: 3px;
-}
-
-.status-center__operation {
-  display: flex;
-  align-items: center;
-  padding: 6px 8px;
-  border-radius: 5px;
-  background: hsl(var(--muted) / 30%);
-  gap: 8px;
-  transition: background 0.15s ease;
-}
-
-.status-center__operation:hover {
-  background: hsl(var(--muted) / 50%);
-}
-
-.status-center__operation-action-slot {
-  width: 28px;
-  height: 28px;
-  flex-shrink: 0;
-}
-
-.status-center__operation--completed {
-  opacity: 0.7;
-}
-
-.status-center__operation--cancelled,
-.status-center__operation--error {
-  opacity: 0.6;
-}
-
-.status-center__operation-icon {
-  display: flex;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-}
-
-.status-center__spinner {
-  animation: spin 1s linear infinite;
-  color: hsl(var(--primary));
-}
-
-.status-center__check {
-  color: hsl(var(--success, 142 76% 36%));
-}
-
-.status-center__error {
-  color: hsl(var(--muted-foreground));
-}
-
-.status-center__operation-info {
-  display: flex;
-  min-width: 0;
-  flex: 1;
-  flex-direction: column;
-  gap: 1px;
-}
-
-.status-center__operation-label {
-  overflow: hidden;
-  min-width: 0;
-  color: hsl(var(--foreground) / 80%);
-  font-size: 12px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.status-center__operation-details {
-  display: block;
-  overflow: hidden;
-  min-width: 0;
-  max-width: 100%;
-  color: hsl(var(--muted-foreground));
-  font-size: 10px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.status-center__operation-error {
-  display: block;
-  min-width: 0;
-  max-width: 100%;
-  margin-top: 2px;
-  color: hsl(var(--destructive));
-  font-size: 10px;
-  line-height: 1.4;
-  overflow-wrap: anywhere;
-}
-
-.status-center__operation-progress {
-  overflow: hidden;
-  width: 100%;
-  height: 3px;
-  flex-shrink: 0;
-  border-radius: 2px;
-  background: hsl(var(--muted) / 60%);
-}
-
-.status-center__operation-progress-bar {
-  height: 100%;
-  border-radius: 2px;
-  background: hsl(var(--primary));
-  transition: width 0.2s ease;
-}
-
-.status-center__operation-cancel,
-.status-center__operation-dismiss {
-  width: 20px;
-  height: 20px;
-  flex-shrink: 0;
-  padding: 0;
-  color: hsl(var(--muted-foreground));
-}
-
-.status-center__operation-cancel:hover {
-  color: hsl(var(--destructive));
 }
 
 .status-center__empty {

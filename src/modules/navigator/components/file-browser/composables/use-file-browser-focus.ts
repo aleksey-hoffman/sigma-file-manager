@@ -26,6 +26,8 @@ export function useFileBrowserFocus(options: {
   currentPath: Ref<string>;
   selectEntryByPath: (path: string) => boolean;
   clearPendingFocusRequest: () => void;
+  scrollToPath?: (path: string, align?: ScrollLogicalPosition) => Promise<boolean>;
+  getEntryElement?: (path: string) => HTMLElement | null;
 }) {
   const entriesContainerRef = ref<HTMLElement | null>(null);
 
@@ -34,6 +36,12 @@ export function useFileBrowserFocus(options: {
   }
 
   function getEntryElement(path: string): HTMLElement | null {
+    const virtualEntryElement = options.getEntryElement?.(path);
+
+    if (virtualEntryElement) {
+      return virtualEntryElement;
+    }
+
     const container = entriesContainerRef.value;
 
     if (!container) {
@@ -48,6 +56,7 @@ export function useFileBrowserFocus(options: {
   }
 
   async function focusEntryInView(path: string): Promise<boolean> {
+    await options.scrollToPath?.(path, 'center');
     await nextTick();
     const entryElement = getEntryElement(path);
 

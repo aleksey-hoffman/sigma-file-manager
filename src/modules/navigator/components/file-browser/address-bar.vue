@@ -15,11 +15,8 @@ import {
 } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { invoke } from '@tauri-apps/api/core';
-import { dirname } from '@tauri-apps/api/path';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { onClickOutside, useDebounceFn } from '@vueuse/core';
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -36,8 +33,6 @@ import {
   TextCursorIcon,
   CopyIcon,
   ClipboardPasteIcon,
-  PinIcon,
-  XIcon,
   EllipsisVerticalIcon,
   FolderIcon,
   ChevronRightIcon,
@@ -48,6 +43,7 @@ import { DirEntryInteractive } from '@/components/dir-entry-interactive';
 import { registerDropContainer, unregisterDropContainer } from '@/composables/use-drop-target-registry';
 import { useShortcutsStore } from '@/stores/runtime/shortcuts';
 import normalizePath, { getPathDisplayName, getPathSegments, isUncPath } from '@/utils/normalize-path';
+import { useOpenCopiedPath } from './composables/use-open-copied-path';
 
 const props = defineProps<{
   currentPath: string;
@@ -55,31 +51,22 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   navigate: [path: string];
+  openFile: [path: string];
+  edit: [];
 }>();
 
 const { t } = useI18n();
 const shortcutsStore = useShortcutsStore();
+const { openCopiedPath } = useOpenCopiedPath({
+  openDirectory: path => emit('navigate', path),
+  openFile: path => emit('openFile', path),
+});
+const openCopiedPathShortcutLabel = computed(() => shortcutsStore.getShortcutLabel('openCopiedPath'));
 
-const isEditorOpen = ref(false);
-const isPinned = ref(false);
-const pathQuery = ref('');
-const autocompleteList = ref<string[]>([]);
-const selectedIndex = ref(-1);
 const addressBarRef = ref<HTMLElement | null>(null);
 const breadcrumbsContainerRef = ref<HTMLElement | null>(null);
-const pathInputRef = ref<InstanceType<typeof Input> | null>(null);
 const separatorDropdowns = ref<{ [key: number]: string[] }>({});
 const openSeparatorIndex = ref<number | null>(null);
-
-onClickOutside(
-  addressBarRef,
-  () => {
-    if (isEditorOpen.value && !isPinned.value) {
-      isEditorOpen.value = false;
-    }
-  },
-  { ignore: [] },
-);
 
 const addressParts = computed(() => {
   if (!props.currentPath) return [];
@@ -160,19 +147,6 @@ function handleSeparatorNavigate(path: string) {
   emit('navigate', path);
 }
 
-function scrollSelectedIntoView() {
-  nextTick(() => {
-    const selectedElement = document.querySelector('.address-bar__suggestion--selected');
-
-    if (selectedElement) {
-      selectedElement.scrollIntoView({
-        block: 'nearest',
-        behavior: 'smooth',
-      });
-    }
-  });
-}
-
 function handleBreadcrumbsWheel(event: WheelEvent) {
   if (breadcrumbsContainerRef.value) {
     event.preventDefault();
@@ -184,127 +158,8 @@ function navigateToPart(path: string) {
   emit('navigate', path);
 }
 
-async function openEditor() {
-  const initialPath = props.currentPath;
-  pathQuery.value = initialPath;
-  selectedIndex.value = -1;
-  isEditorOpen.value = true;
-
-  await nextTick();
-  pathInputRef.value?.$el?.focus();
-  await updateAutocompleteList(initialPath);
-}
-
-const debouncedUpdateAutocomplete = useDebounceFn(updateAutocompleteList, 120);
-
-function handlePathInput(value: string | number | undefined) {
-  const stringValue = normalizePath(String(value ?? ''));
-  pathQuery.value = stringValue;
-  selectedIndex.value = -1;
-  debouncedUpdateAutocomplete(stringValue);
-}
-
-async function updateAutocompleteList(queryValue: string) {
-  const normalizedQuery = normalizePath(queryValue).trim();
-
-  if (!normalizedQuery) {
-    autocompleteList.value = [];
-    return;
-  }
-
-  try {
-    const result = await invoke<DirContents>('read_dir', { path: normalizedQuery });
-    const entries = result.entries
-      .filter(entry => entry.is_dir)
-      .map(entry => entry.path)
-      .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
-    autocompleteList.value = entries;
-  }
-  catch {
-    try {
-      const parentPath = normalizePath(await dirname(normalizedQuery));
-      const result = await invoke<DirContents>('read_dir', { path: parentPath });
-      const lastSegment = normalizedQuery.split('/').pop()?.toLowerCase() ?? '';
-      const entries = result.entries
-        .filter(entry => entry.is_dir && entry.name.toLowerCase().startsWith(lastSegment))
-        .map(entry => entry.path)
-        .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
-      autocompleteList.value = entries;
-    }
-    catch {
-      autocompleteList.value = [];
-    }
-  }
-}
-
-function handlePathSelect(path: string) {
-  pathQuery.value = path;
-  emit('navigate', path);
-
-  if (!isPinned.value) {
-    isEditorOpen.value = false;
-  }
-}
-
-function handleKeydown(event: KeyboardEvent) {
-  if (event.key === 'Enter') {
-    event.preventDefault();
-
-    if (selectedIndex.value >= 0 && autocompleteList.value[selectedIndex.value]) {
-      handlePathSelect(autocompleteList.value[selectedIndex.value]);
-    }
-    else if (pathQuery.value.trim()) {
-      emit('navigate', pathQuery.value.trim());
-
-      if (!isPinned.value) {
-        isEditorOpen.value = false;
-      }
-    }
-  }
-  else if (event.key === 'Escape') {
-    isEditorOpen.value = false;
-  }
-  else if (event.key === 'ArrowDown') {
-    event.preventDefault();
-
-    if (autocompleteList.value.length > 0) {
-      selectedIndex.value = (selectedIndex.value + 1) % autocompleteList.value.length;
-      scrollSelectedIntoView();
-    }
-  }
-  else if (event.key === 'ArrowUp') {
-    event.preventDefault();
-
-    if (autocompleteList.value.length > 0) {
-      selectedIndex.value = selectedIndex.value <= 0
-        ? autocompleteList.value.length - 1
-        : selectedIndex.value - 1;
-      scrollSelectedIntoView();
-    }
-  }
-  else if (event.key === 'Tab') {
-    event.preventDefault();
-    event.stopPropagation();
-
-    if (autocompleteList.value.length > 0) {
-      if (event.shiftKey) {
-        selectedIndex.value = selectedIndex.value <= 0
-          ? autocompleteList.value.length - 1
-          : selectedIndex.value - 1;
-      }
-      else {
-        selectedIndex.value = (selectedIndex.value + 1) % autocompleteList.value.length;
-      }
-
-      if (autocompleteList.value[selectedIndex.value]) {
-        pathQuery.value = autocompleteList.value[selectedIndex.value];
-      }
-
-      scrollSelectedIntoView();
-    }
-
-    pathInputRef.value?.$el?.focus();
-  }
+function openEditor() {
+  emit('edit');
 }
 
 async function copyPathToClipboard() {
@@ -325,26 +180,6 @@ async function copyPathToClipboard() {
   }
 }
 
-async function openCopiedPath() {
-  try {
-    const clipboardText = await navigator.clipboard.readText();
-
-    if (clipboardText) {
-      emit('navigate', clipboardText);
-    }
-  }
-  catch (error) {
-    console.error('Failed to read clipboard:', error);
-  }
-}
-
-function handleGlobalKeydown(event: KeyboardEvent) {
-  if (event.ctrlKey && event.key === 'p') {
-    event.preventDefault();
-    openEditor();
-  }
-}
-
 let dropContainerId: number | null = null;
 
 onMounted(() => {
@@ -357,16 +192,12 @@ onMounted(() => {
     entriesContainerRef: addressBarRef,
     disableBackgroundDrop: true,
   });
-
-  window.addEventListener('keydown', handleGlobalKeydown);
 });
 
 onUnmounted(() => {
   if (dropContainerId !== null) {
     unregisterDropContainer(dropContainerId);
   }
-
-  window.removeEventListener('keydown', handleGlobalKeydown);
 });
 </script>
 
@@ -401,9 +232,13 @@ onUnmounted(() => {
             <span>{{ t('settings.addressBar.copyPathToClipboard') }}</span>
             <ContextMenuShortcut>{{ shortcutsStore.getShortcutLabel('copyCurrentDirectoryPath') }}</ContextMenuShortcut>
           </DropdownMenuItem>
-          <DropdownMenuItem @select="openCopiedPath">
+          <DropdownMenuItem
+            class="address-bar__menu-item-with-shortcut"
+            @select="openCopiedPath"
+          >
             <ClipboardPasteIcon :size="16" />
             <span>{{ t('settings.addressBar.openCopiedPath') }}</span>
+            <ContextMenuShortcut>{{ openCopiedPathShortcutLabel }}</ContextMenuShortcut>
           </DropdownMenuItem>
         </DropdownMenuContent>
         <TooltipContent>
@@ -411,197 +246,100 @@ onUnmounted(() => {
         </TooltipContent>
       </Tooltip>
     </DropdownMenu>
-    <template v-if="isEditorOpen">
-      <div class="address-bar__editor-row">
-        <Input
-          ref="pathInputRef"
-          :model-value="pathQuery"
-          :placeholder="t('settings.addressBar.enterValidPath')"
-          class="address-bar__path-input"
-          @update:model-value="handlePathInput"
-          @keydown="handleKeydown"
-        />
-        <Tooltip>
-          <TooltipTrigger as-child>
-            <Button
-              variant="ghost"
-              size="icon"
-              tabindex="-1"
-              class="address-bar__pin-button"
-              :class="{ 'address-bar__pin-button--active': isPinned }"
-              @click="isPinned = !isPinned"
-            >
-              <PinIcon :size="14" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            {{ t('settings.addressBar.keepEditorOpened') }}
-            <span
-              v-if="isPinned"
-              class="address-bar__tooltip-status"
-            >{{ t('enabled') }}
-            </span>
-            <span
-              v-else
-              class="address-bar__tooltip-status"
-            >{{ t('disabled') }}
-            </span>
-          </TooltipContent>
-        </Tooltip>
-        <Tooltip>
-          <TooltipTrigger as-child>
-            <Button
-              variant="ghost"
-              size="icon"
-              tabindex="-1"
-              class="address-bar__close-button"
-              @click="isEditorOpen = false"
-            >
-              <XIcon :size="14" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <div class="address-bar__tooltip-row">
-              {{ t('settings.addressBar.closeEditor') }}
-              <ContextMenuShortcut>Esc</ContextMenuShortcut>
-            </div>
-          </TooltipContent>
-        </Tooltip>
-      </div>
-      <div class="address-bar__editor-dropdown">
-        <ScrollArea
-          v-if="autocompleteList.length > 0"
-          class="address-bar__suggestions"
+    <div
+      ref="breadcrumbsContainerRef"
+      class="address-bar__breadcrumbs"
+      data-e2e-root="address-bar-breadcrumbs"
+      :data-e2e-current-path="props.currentPath ?? ''"
+      @wheel="handleBreadcrumbsWheel"
+      @click="openEditor"
+    >
+      <div class="address-bar__breadcrumbs-inner">
+        <template
+          v-for="(part, index) in addressParts"
+          :key="index"
         >
-          <button
-            v-for="(path, index) in autocompleteList"
-            :key="path"
-            tabindex="-1"
-            class="address-bar__suggestion"
-            :class="{ 'address-bar__suggestion--selected': index === selectedIndex }"
-            @click="handlePathSelect(path)"
-            @mouseenter="selectedIndex = index"
+          <DirEntryInteractive
+            :path="part.path"
+            :is-file="false"
+            :is-current-directory-context="part.isLast"
           >
-            <FolderIcon
-              :size="14"
-              class="address-bar__suggestion-icon"
-            />
-            <span class="address-bar__suggestion-path">{{ path }}</span>
-          </button>
-        </ScrollArea>
-        <div
-          v-else
-          class="address-bar__empty"
-        >
-          {{ t('settings.addressBar.noMatchingDirectories') }}
-        </div>
-        <div class="address-bar__editor-hints">
-          <span class="address-bar__hint-key">↑↓</span>
-          /
-          <span class="address-bar__hint-key">Tab</span>
-          /
-          <span class="address-bar__hint-key">Shift+Tab</span>
-          {{ t('settings.addressBar.toAutocomplete') }};
-          <span class="address-bar__hint-key">Enter</span>
-          {{ t('settings.addressBar.toOpenThePath') }}
-        </div>
-      </div>
-    </template>
-    <template v-else>
-      <div
-        ref="breadcrumbsContainerRef"
-        class="address-bar__breadcrumbs"
-        data-e2e-root="address-bar-breadcrumbs"
-        :data-e2e-current-path="props.currentPath ?? ''"
-        @wheel="handleBreadcrumbsWheel"
-        @click="openEditor"
-      >
-        <div class="address-bar__breadcrumbs-inner">
-          <template
-            v-for="(part, index) in addressParts"
-            :key="index"
-          >
-            <DirEntryInteractive
-              :path="part.path"
-              :is-file="false"
+            <button
+              class="address-bar__part"
+              :class="{ 'address-bar__part--last': part.isLast }"
+              :title="part.path"
+              @click.stop="!part.isLast && navigateToPart(part.path)"
             >
+              {{ part.name }}
+            </button>
+          </DirEntryInteractive>
+          <DropdownMenu
+            v-if="!part.isLast"
+            @update:open="(open: boolean) => {
+              if (open) {
+                loadSeparatorDirectories(index);
+                openSeparatorIndex = index;
+              } else {
+                openSeparatorIndex = null;
+              }
+            }"
+          >
+            <DropdownMenuTrigger as-child>
               <button
-                class="address-bar__part"
-                :class="{ 'address-bar__part--last': part.isLast }"
-                :title="part.path"
-                @click.stop="!part.isLast && navigateToPart(part.path)"
+                class="address-bar__separator"
+                :title="t('settings.addressBar.showSiblingDirectories')"
+                @click.stop
               >
-                {{ part.name }}
+                <ChevronRightIcon
+                  :size="12"
+                  :class="{ 'address-bar__separator-icon--open': openSeparatorIndex === index }"
+                />
               </button>
-            </DirEntryInteractive>
-            <DropdownMenu
-              v-if="!part.isLast"
-              @update:open="(open: boolean) => {
-                if (open) {
-                  loadSeparatorDirectories(index);
-                  openSeparatorIndex = index;
-                } else {
-                  openSeparatorIndex = null;
-                }
-              }"
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              :side="'bottom'"
+              :align="'start'"
+              class="address-bar__separator-menu"
             >
-              <DropdownMenuTrigger as-child>
-                <button
-                  class="address-bar__separator"
-                  :title="t('settings.addressBar.showSiblingDirectories')"
-                  @click.stop
-                >
-                  <ChevronRightIcon
-                    :size="12"
-                    :class="{ 'address-bar__separator-icon--open': openSeparatorIndex === index }"
-                  />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                :side="'bottom'"
-                :align="'start'"
-                class="address-bar__separator-menu"
+              <ScrollArea
+                as-child
+                class="address-bar__separator-menu-scroll"
               >
-                <ScrollArea
-                  as-child
-                  class="address-bar__separator-menu-scroll"
+                <DropdownMenuItem
+                  v-for="dirPath in separatorDropdowns[index]"
+                  :key="dirPath"
+                  @select="handleSeparatorNavigate(dirPath)"
                 >
-                  <DropdownMenuItem
-                    v-for="dirPath in separatorDropdowns[index]"
-                    :key="dirPath"
-                    @select="handleSeparatorNavigate(dirPath)"
-                  >
-                    <FolderIcon
-                      :size="14"
-                      class="address-bar__separator-menu-icon"
-                    />
-                    <span class="address-bar__separator-menu-path">{{ getPathDisplayName(dirPath) || dirPath }}</span>
-                  </DropdownMenuItem>
-                </ScrollArea>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </template>
-        </div>
+                  <FolderIcon
+                    :size="14"
+                    class="address-bar__separator-menu-icon"
+                  />
+                  <span class="address-bar__separator-menu-path">{{ getPathDisplayName(dirPath) || dirPath }}</span>
+                </DropdownMenuItem>
+              </ScrollArea>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </template>
       </div>
-      <Tooltip>
-        <TooltipTrigger as-child>
-          <Button
-            variant="ghost"
-            size="icon"
-            class="address-bar__edit-button"
-            @click="openEditor"
-          >
-            <TextCursorIcon :size="14" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>
-          <div class="address-bar__tooltip-row">
-            {{ t('settings.addressBar.editAddress') }}
-            <ContextMenuShortcut>Ctrl+P</ContextMenuShortcut>
-          </div>
-        </TooltipContent>
-      </Tooltip>
-    </template>
+    </div>
+    <Tooltip>
+      <TooltipTrigger as-child>
+        <Button
+          variant="ghost"
+          size="icon"
+          class="address-bar__edit-button"
+          @click="openEditor"
+        >
+          <TextCursorIcon :size="14" />
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent>
+        <div class="address-bar__tooltip-row">
+          {{ t('settings.addressBar.editAddress') }}
+          <ContextMenuShortcut>{{ shortcutsStore.getShortcutLabel('toggleAddressBar') }}</ContextMenuShortcut>
+        </div>
+      </TooltipContent>
+    </Tooltip>
   </div>
 </template>
 
@@ -620,34 +358,6 @@ onUnmounted(() => {
   background-color: hsl(var(--background) / 50%);
   gap: 2px;
   transition: background-color 0.15s, border-color 0.15s;
-}
-
-.address-bar:has(.address-bar__editor-row) {
-  overflow: visible;
-}
-
-.address-bar__editor-row {
-  display: flex;
-  min-width: 0;
-  height: 100%;
-  flex: 1;
-  align-items: center;
-  padding: 0 4px;
-  gap: 4px;
-}
-
-.address-bar__editor-dropdown {
-  position: absolute;
-  z-index: 50;
-  top: 100%;
-  right: 0;
-  left: 0;
-  overflow: hidden;
-  border: 1px solid hsl(var(--border));
-  border-radius: var(--radius-lg);
-  margin-top: 4px;
-  background-color: hsl(var(--background-3));
-  color: hsl(var(--popover-foreground));
 }
 
 .address-bar:hover {
@@ -697,7 +407,7 @@ onUnmounted(() => {
   border: none;
   border-radius: var(--radius-sm);
   background: transparent;
-  color: hsl(var(--foreground) / 80%);
+  color: hsl(var(--muted-foreground) / 70%);
   cursor: pointer;
   font-size: 13px;
   transition: background-color 0.1s, color 0.1s;
@@ -762,99 +472,6 @@ onUnmounted(() => {
   align-items: center;
 }
 
-.address-bar__path-input {
-  min-width: 0;
-  height: calc(100% - 8px);
-  flex: 1;
-  font-size: 13px;
-}
-
-.address-bar__pin-button,
-.address-bar__close-button {
-  width: 24px;
-  height: 24px;
-  flex-shrink: 0;
-}
-
-.address-bar__pin-button--active {
-  background-color: hsl(var(--primary) / 15%);
-  color: hsl(var(--primary));
-}
-
-.address-bar__pin-button--active svg {
-  stroke: hsl(var(--primary));
-}
-
-.address-bar__suggestions {
-  max-height: 140px;
-  padding: 4px 0;
-}
-
-.address-bar__suggestion {
-  display: flex;
-  width: 100%;
-  align-items: center;
-  padding: 4px 12px;
-  border: none;
-  background: transparent;
-  color: hsl(var(--foreground));
-  cursor: pointer;
-  gap: 8px;
-  text-align: left;
-  transition: background-color 0.1s;
-}
-
-.address-bar__suggestion:focus-visible {
-  outline: 2px solid hsl(var(--ring) / 50%);
-  outline-offset: -2px;
-}
-
-.address-bar__suggestion:hover,
-.address-bar__suggestion--selected {
-  background-color: hsl(var(--secondary));
-  color: hsl(var(--secondary-foreground));
-}
-
-.address-bar__suggestion-icon {
-  flex-shrink: 0;
-  color: hsl(var(--muted-foreground));
-}
-
-.address-bar__suggestion-path {
-  overflow: hidden;
-  font-size: 12px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.address-bar__empty {
-  padding: 12px;
-  border-top: 1px solid hsl(var(--border));
-  color: hsl(var(--muted-foreground));
-  font-size: 12px;
-  text-align: center;
-}
-
-.address-bar__editor-hints {
-  padding: 6px 10px;
-  border-top: 1px solid hsl(var(--border));
-  color: hsl(var(--muted-foreground));
-  font-size: 10px;
-}
-
-.address-bar__hint-key {
-  padding: 2px 5px;
-  border-radius: var(--radius-sm);
-  background-color: hsl(var(--muted));
-  font-size: 10px;
-}
-
-.address-bar__tooltip-status {
-  margin-left: 6px;
-  color: hsl(var(--primary));
-  font-weight: 500;
-}
-
 .address-bar__separator-menu.sigma-ui-dropdown-menu-content {
   min-width: 180px;
   max-width: 300px;
@@ -879,7 +496,8 @@ onUnmounted(() => {
 }
 
 .address-bar .dir-entry-interactive[data-drag-over] > .address-bar__part {
-  background-color: hsl(var(--primary) / 15%);
-  box-shadow: inset 0 0 0 2px hsl(var(--primary) / 60%);
+  background-color: var(--drop-target-background);
+  outline: var(--drop-target-outline);
+  outline-offset: var(--drop-target-outline-offset);
 }
 </style>

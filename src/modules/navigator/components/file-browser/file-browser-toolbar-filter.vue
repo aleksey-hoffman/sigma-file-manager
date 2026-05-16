@@ -24,6 +24,7 @@ import {
   toggleQuickSearchPropertyInQuery,
   type QuickSearchProperty,
 } from '@/modules/navigator/components/file-browser/utils/file-browser-quick-search-query';
+import { useIsSmallScreen } from '@/composables/use-responsive-query';
 
 const props = defineProps<{
   filterQuery: string;
@@ -44,8 +45,10 @@ const filterInputRef = ref<InstanceType<typeof Input> | null>(null);
 const filterTriggerRef = ref<HTMLElement | ComponentPublicInstance | null>(null);
 const isPropertyPanelOpen = ref(false);
 const shouldFocusOnButtonOpen = ref(false);
+const isSmallScreen = useIsSmallScreen();
 
 const activeProperty = computed(() => parseQuickSearchQuery(props.filterQuery.trim()).property);
+const quickSearchPopoverSide = computed<'bottom' | 'left'>(() => isSmallScreen.value ? 'bottom' : 'left');
 
 watch(() => [props.isFilterOpen, props.focusInput] as const, async ([open, focusInput]) => {
   if (!open) {
@@ -164,7 +167,7 @@ function selectProperty(property: QuickSearchProperty) {
       </TooltipContent>
       <PopoverContent
         data-file-browser-toolbar-filter-popover
-        :side="'left'"
+        :side="quickSearchPopoverSide"
         :align="'center'"
         class="file-browser-toolbar-filter__popover"
         @open-auto-focus="handleFilterAutoFocus"
