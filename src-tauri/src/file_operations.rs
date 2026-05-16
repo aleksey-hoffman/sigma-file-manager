@@ -3,13 +3,13 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 use crate::utils::{
-    format_trash_error, minimize_delete_paths, path_is_descendant_of,
-    source_and_destination_same_directory, unique_path_with_index,
+    format_trash_error, minimize_delete_paths, source_and_destination_same_directory,
+    unique_path_with_index,
 };
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -704,15 +704,37 @@ fn is_dir_empty(path: &Path) -> bool {
         .unwrap_or(true)
 }
 
+fn resolve_existing_prefix(path: &Path) -> Option<PathBuf> {
+    let mut existing_path = path;
+    let mut missing_components = Vec::new();
+
+    while !existing_path.exists() {
+        missing_components.push(existing_path.file_name()?.to_os_string());
+        existing_path = existing_path.parent()?;
+    }
+
+    let mut resolved_path = existing_path.canonicalize().ok()?;
+    for component in missing_components.iter().rev() {
+        resolved_path.push(component);
+    }
+
+    Some(resolved_path)
+}
+
 fn destination_is_inside_source_directory(source: &Path, dest: &Path) -> bool {
     if !source.is_dir() {
         return false;
     }
 
-    let source_path = crate::utils::normalize_path(&source.to_string_lossy());
-    let dest_path = crate::utils::normalize_path(&dest.to_string_lossy());
+    let Ok(source_path) = source.canonicalize() else {
+        return false;
+    };
 
-    path_is_descendant_of(&dest_path, &source_path)
+    let Some(dest_path) = resolve_existing_prefix(dest) else {
+        return false;
+    };
+
+    dest_path != source_path && dest_path.starts_with(&source_path)
 }
 
 fn should_fallback_to_copy_delete(error: &std::io::Error, source: &Path, dest: &Path) -> bool {
@@ -751,6 +773,21 @@ fn try_rename_or_copy_delete(source: &Path, dest: &Path) -> Result<(), String> {
         }
     } else {
         Ok(())
+    }
+}
+
+fn record_completed_move_after_copy_delete(
+    source: &Path,
+    moved_count: &mut u32,
+    failed_count: &mut u32,
+    last_error: &mut Option<String>,
+) {
+    match remove_dir_or_file(source) {
+        Ok(()) => *moved_count += 1,
+        Err(error) => {
+            *failed_count += 1;
+            *last_error = Some(error);
+        }
     }
 }
 
@@ -1697,8 +1734,12 @@ pub(crate) fn move_items_impl(
                     match copy_result {
                         Ok(()) => {
                             if inner_failed == 0 {
-                                let _ = remove_dir_or_file(source);
-                                moved_count += 1;
+                                record_completed_move_after_copy_delete(
+                                    source,
+                                    &mut moved_count,
+                                    &mut failed_count,
+                                    &mut last_error,
+                                );
                             } else {
                                 failed_count += inner_failed;
                                 if inner_last_error.is_some() {
@@ -2034,6 +2075,27 @@ mod tests {
         ));
     }
 
+    #[cfg(unix)]
+    #[test]
+    fn copy_delete_fallback_rejects_destination_symlinked_inside_source_directory() {
+        use std::os::unix::fs::symlink;
+
+        let temp = tempdir().unwrap();
+        let source_folder = temp.path().join("source");
+        let inner_folder = source_folder.join("inner");
+        let destination_link = temp.path().join("destination-link");
+        fs::create_dir_all(&inner_folder).unwrap();
+        symlink(&inner_folder, &destination_link).unwrap();
+
+        let error = std::io::Error::new(std::io::ErrorKind::AlreadyExists, "exists");
+
+        assert!(!should_fallback_to_copy_delete(
+            &error,
+            &source_folder,
+            &destination_link.join("source")
+        ));
+    }
+
     #[test]
     fn copy_delete_fallback_allows_non_descendant_destination() {
         let temp = tempdir().unwrap();
@@ -2048,6 +2110,26 @@ mod tests {
             &source_folder,
             &destination
         ));
+    }
+
+    #[test]
+    fn completed_move_after_copy_delete_reports_source_delete_failure() {
+        let temp = tempdir().unwrap();
+        let missing_source = temp.path().join("missing-source");
+        let mut moved_count = 0;
+        let mut failed_count = 0;
+        let mut last_error = None;
+
+        record_completed_move_after_copy_delete(
+            &missing_source,
+            &mut moved_count,
+            &mut failed_count,
+            &mut last_error,
+        );
+
+        assert_eq!(moved_count, 0);
+        assert_eq!(failed_count, 1);
+        assert!(last_error.is_some());
     }
 
     #[test]
