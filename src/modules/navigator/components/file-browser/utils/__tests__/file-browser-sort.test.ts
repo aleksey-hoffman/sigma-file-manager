@@ -40,14 +40,41 @@ describe('sortFileBrowserEntries', () => {
 
     const sorted = sortFileBrowserEntries(entries, 'tags', 'asc', dirSizesStore, {
       tags: [
-        { id: 'beta', name: 'Beta', color: '#3b82f6' },
-        { id: 'alpha', name: 'Alpha', color: '#ef4444' },
-        { id: 'zeta', name: 'Zeta', color: '#22c55e' },
+        {
+          id: 'beta',
+          name: 'Beta',
+          color: '#3b82f6',
+        },
+        {
+          id: 'alpha',
+          name: 'Alpha',
+          color: '#ef4444',
+        },
+        {
+          id: 'zeta',
+          name: 'Zeta',
+          color: '#22c55e',
+        },
       ],
       taggedItems: [
-        { path: '/alpha-beta', tagIds: ['beta', 'alpha'], addedAt: 0, isFile: true },
-        { path: '/zeta', tagIds: ['zeta'], addedAt: 0, isFile: true },
-        { path: '/alpha', tagIds: ['alpha'], addedAt: 0, isFile: true },
+        {
+          path: '/alpha-beta',
+          tagIds: ['beta', 'alpha'],
+          addedAt: 0,
+          isFile: true,
+        },
+        {
+          path: '/zeta',
+          tagIds: ['zeta'],
+          addedAt: 0,
+          isFile: true,
+        },
+        {
+          path: '/alpha',
+          tagIds: ['alpha'],
+          addedAt: 0,
+          isFile: true,
+        },
       ],
     });
 

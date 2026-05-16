@@ -26,6 +26,7 @@ export default defineConfigWithVueTs(
       'func-style': ['error', 'declaration', { allowTypeAnnotation: true }],
       'vue/max-attributes-per-line': 'error',
       'vue/multi-word-component-names': 'off',
+      'vue/one-component-per-file': 'off',
       'vue/component-name-in-template-casing': ['error', 'PascalCase', {
         registeredComponentsOnly: true,
         ignores: [],

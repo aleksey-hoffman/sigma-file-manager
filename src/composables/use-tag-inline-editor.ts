@@ -3,7 +3,9 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 import { useThrottleFn } from '@vueuse/core';
-import { nextTick, ref, watch, type Ref, type ComponentPublicInstance } from 'vue';
+import {
+  nextTick, ref, watch, type Ref, type ComponentPublicInstance,
+} from 'vue';
 import type { ItemTag } from '@/types/user-stats';
 
 export function colorHexForPicker(color: string): string {
