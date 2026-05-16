@@ -6,6 +6,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <script setup lang="ts">
 import {
   ref, computed, onMounted, onUnmounted, watch, nextTick,
+  type ComponentPublicInstance,
 } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { invoke } from '@tauri-apps/api/core';
@@ -14,6 +15,7 @@ import { emit, listen, type UnlistenFn } from '@tauri-apps/api/event';
 import {
   Loader2Icon,
   FileWarningIcon,
+  FileImageIcon,
   FileTextIcon,
   Music2Icon,
   SaveIcon,
@@ -41,6 +43,10 @@ import {
 } from '@/utils/decode-text-file-bytes';
 import { rewriteMarkdownAssetUrls } from '@/utils/readme-relative-urls';
 import { renderMarkdownToSafeHtml } from '@/utils/safe-html';
+import type { DirContents, DirEntry } from '@/types/dir-entry';
+import { getParentDirectory } from '@/utils/normalize-path';
+import { useImageThumbnails } from '@/modules/navigator/components/file-browser/composables/use-image-thumbnails';
+import { useHorizontalFixedVirtualList } from '@/composables/use-horizontal-fixed-virtual-list';
 
 const { t } = useI18n();
 
@@ -49,8 +55,34 @@ const QUICK_VIEW_TEXT_PREVIEW_MAX_BYTES = 4 * 1024 * 1024;
 const currentFilePath = ref<string | null>(null);
 const resolvedSiblingPaths = ref<string[]>([]);
 const siblingPathsProvidedByMain = ref(false);
+
+const stripThumbnails = useImageThumbnails();
+const stripDirEntryByPath = ref<Record<string, DirEntry>>({});
+let stripEntryLoadToken = 0;
+let stripThumbnailParentKey: string | null = null;
+let stripVirtualThumbRangePrevious: {
+  start: number;
+  end: number;
+} = {
+  start: 0,
+  end: 0,
+};
+
 const isLoading = ref(true);
-const stripScrollElement = ref<HTMLElement | null>(null);
+const stripScrollAreaRef = ref<InstanceType<typeof ScrollArea> | null>(null);
+const stripScrollViewportRef = ref<HTMLElement | null>(null);
+
+function syncQuickViewStripViewportRef() {
+  const instance = stripScrollAreaRef.value as unknown as ComponentPublicInstance | null;
+  const rawElement = instance && '$el' in instance ? instance.$el : null;
+  const root = rawElement instanceof HTMLElement ? rawElement : null;
+  stripScrollViewportRef.value = root?.querySelector<HTMLElement>('.sigma-ui-scroll-area__viewport') ?? null;
+}
+
+watch([stripScrollAreaRef, () => resolvedSiblingPaths.value.length], () => {
+  void nextTick(syncQuickViewStripViewportRef);
+}, { immediate: true });
+
 const pdfIframeRef = ref<HTMLIFrameElement | null>(null);
 const textEditorRef = ref<HTMLTextAreaElement | null>(null);
 const textEditorValue = ref('');
@@ -65,6 +97,72 @@ let textPreviewRequestId = 0;
 let markdownPreviewRequestId = 0;
 let unlistenLoadFile: UnlistenFn | null = null;
 let unlistenCloseRequested: UnlistenFn | null = null;
+
+watch(
+  resolvedSiblingPaths,
+  async (paths) => {
+    const loadToken = ++stripEntryLoadToken;
+
+    if (paths.length === 0) {
+      stripDirEntryByPath.value = {};
+      stripThumbnailParentKey = null;
+      stripThumbnails.clearThumbnails();
+      return;
+    }
+
+    const localPaths = paths.filter(pathItem => !isHttpOrHttpsUrl(pathItem));
+    const parentDirs = [...new Set(
+      localPaths
+        .map(pathItem => getParentDirectory(pathItem))
+        .filter((directory): directory is string => Boolean(directory)),
+    )].sort();
+
+    const nextParentKey = parentDirs.join('\0');
+
+    if (nextParentKey !== stripThumbnailParentKey) {
+      stripThumbnailParentKey = nextParentKey;
+      stripThumbnails.clearThumbnails();
+      stripVirtualThumbRangePrevious = {
+        start: 0,
+        end: 0,
+      };
+    }
+
+    const nextMap: Record<string, DirEntry> = {};
+    const pathSet = new Set(paths);
+
+    try {
+      for (const parentDir of parentDirs) {
+        const contents = await invoke<DirContents>('read_dir', { path: parentDir });
+
+        if (loadToken !== stripEntryLoadToken) {
+          return;
+        }
+
+        for (const entry of contents.entries) {
+          if (entry.is_file && pathSet.has(entry.path)) {
+            nextMap[entry.path] = entry;
+          }
+        }
+      }
+    }
+    catch {
+      if (loadToken !== stripEntryLoadToken) {
+        return;
+      }
+
+      stripDirEntryByPath.value = {};
+      return;
+    }
+
+    if (loadToken !== stripEntryLoadToken) {
+      return;
+    }
+
+    stripDirEntryByPath.value = nextMap;
+  },
+  { immediate: true },
+);
 
 interface PendingTextState {
   text: string;
@@ -204,6 +302,137 @@ const thumbsWithKind = computed(() =>
     hasUnsavedBadge: Boolean(pendingTextEdits.value[path])
       || (path === currentFilePath.value && textIsDirty.value),
   })),
+);
+
+function quickViewStripImageSrc(path: string): string | undefined {
+  if (determineFileType(path) !== 'image') {
+    return undefined;
+  }
+
+  if (isHttpOrHttpsUrl(path) || getFileExtension(path) === 'svg') {
+    return getQuickViewDisplayUrl(path);
+  }
+
+  void stripThumbnails.imageThumbnails.value;
+
+  const entry = stripDirEntryByPath.value[path];
+
+  if (!entry) {
+    return undefined;
+  }
+
+  return stripThumbnails.getImageThumbnail(entry);
+}
+
+function quickViewStripImageShowsSpinner(path: string): boolean {
+  if (determineFileType(path) !== 'image') {
+    return false;
+  }
+
+  if (isHttpOrHttpsUrl(path) || getFileExtension(path) === 'svg') {
+    return false;
+  }
+
+  void stripThumbnails.imageThumbnails.value;
+
+  const entry = stripDirEntryByPath.value[path];
+
+  if (!entry) {
+    return true;
+  }
+
+  const readySrc = stripThumbnails.getImageThumbnail(entry);
+
+  if (readySrc) {
+    return false;
+  }
+
+  return !stripThumbnails.shouldShowImageThumbnailFallback(entry);
+}
+
+function cancelQuickViewStripThumbnailForSiblingIndex(entryIndex: number) {
+  const paths = resolvedSiblingPaths.value;
+
+  if (entryIndex < 0 || entryIndex >= paths.length) {
+    return;
+  }
+
+  const path = paths[entryIndex];
+
+  if (determineFileType(path) !== 'image' || isHttpOrHttpsUrl(path)) {
+    return;
+  }
+
+  if (getFileExtension(path) === 'svg') {
+    return;
+  }
+
+  const entry = stripDirEntryByPath.value[path];
+
+  if (entry) {
+    stripThumbnails.cancelImageThumbnail(entry);
+  }
+}
+
+const QUICK_VIEW_STRIP_THUMB_WIDTH = 64;
+const QUICK_VIEW_STRIP_THUMB_GAP = 8;
+
+const stripVirtualItemCount = computed(() => resolvedSiblingPaths.value.length);
+
+const stripVirtual = useHorizontalFixedVirtualList({
+  itemCount: stripVirtualItemCount,
+  itemWidthPx: QUICK_VIEW_STRIP_THUMB_WIDTH,
+  itemGapPx: QUICK_VIEW_STRIP_THUMB_GAP,
+  viewportRef: stripScrollViewportRef,
+});
+
+const stripVirtualTotalWidthPx = stripVirtual.totalWidthPx;
+const stripVirtualRowLeftPx = stripVirtual.rowAbsoluteLeftPx;
+
+const stripVirtualVisibleThumbs = computed(() => {
+  const { start, end } = stripVirtual.visibleRange.value;
+  return thumbsWithKind.value.slice(start, end);
+});
+
+watch(
+  () => ({
+    paths: resolvedSiblingPaths.value,
+    start: stripVirtual.visibleRange.value.start,
+    end: stripVirtual.visibleRange.value.end,
+  }),
+  (next, previous) => {
+    if (next.paths.length === 0) {
+      stripVirtualThumbRangePrevious = {
+        start: 0,
+        end: 0,
+      };
+      return;
+    }
+
+    const pathsChanged = !previous || next.paths !== previous.paths;
+
+    if (pathsChanged) {
+      stripVirtualThumbRangePrevious = {
+        start: 0,
+        end: 0,
+      };
+    }
+
+    const { start: rangeStart, end: rangeEnd } = next;
+    const { start: previousStart, end: previousEnd } = stripVirtualThumbRangePrevious;
+
+    for (let entryIndex = previousStart; entryIndex < previousEnd; entryIndex += 1) {
+      if (entryIndex < rangeStart || entryIndex >= rangeEnd) {
+        cancelQuickViewStripThumbnailForSiblingIndex(entryIndex);
+      }
+    }
+
+    stripVirtualThumbRangePrevious = {
+      start: rangeStart,
+      end: rangeEnd,
+    };
+  },
+  { flush: 'post' },
 );
 
 function getScrollViewportFromPane(pane: HTMLElement | null): HTMLElement | null {
@@ -615,20 +844,22 @@ async function goToSibling(offset: number) {
 }
 
 function scrollActiveThumbIntoView() {
-  const strip = stripScrollElement.value;
+  const activePath = currentFilePath.value;
 
-  if (!strip || !currentFilePath.value) {
+  if (!activePath) {
     return;
   }
 
-  const active = strip.querySelector<HTMLElement>(
-    `[data-quick-view-thumb="${CSS.escape(currentFilePath.value)}"]`,
-  );
+  const activeIndex = resolvedSiblingPaths.value.indexOf(activePath);
 
-  active?.scrollIntoView({
-    inline: 'center',
-    block: 'nearest',
-    behavior: 'smooth',
+  if (activeIndex < 0) {
+    return;
+  }
+
+  void nextTick(() => {
+    requestAnimationFrame(() => {
+      stripVirtual.scrollItemIntoViewCentered(activeIndex, 'auto');
+    });
   });
 }
 
@@ -781,6 +1012,7 @@ onMounted(async () => {
 onUnmounted(() => {
   window.removeEventListener('keydown', handleKeydown, true);
   teardownMarkdownScrollSync();
+  stripThumbnails.clearThumbnails();
 
   if (unlistenLoadFile) {
     unlistenLoadFile();
@@ -974,60 +1206,83 @@ onUnmounted(() => {
 
       <div
         v-if="resolvedSiblingPaths.length > 0"
-        ref="stripScrollElement"
         class="quick-view__strip"
       >
         <ScrollArea
+          ref="stripScrollAreaRef"
           orientation="horizontal"
           class="quick-view__strip-scroll"
         >
           <div
-            class="quick-view__strip-row"
-            role="tablist"
-            :aria-label="t('quickView.thumbnailStripLabel')"
+            class="quick-view__strip-virtual-spacer"
+            :style="{
+              width: `${stripVirtualTotalWidthPx}px`,
+              minHeight: `${QUICK_VIEW_STRIP_THUMB_WIDTH}px`,
+            }"
           >
-            <button
-              v-for="thumb in thumbsWithKind"
-              :key="thumb.path"
-              type="button"
-              role="tab"
-              class="quick-view__thumb"
-              :class="{ 'quick-view__thumb--active': thumb.path === currentFilePath }"
-              :aria-selected="thumb.path === currentFilePath"
-              :data-quick-view-thumb="thumb.path"
-              :title="thumb.hasUnsavedBadge ? t('quickView.thumbnailUnsavedHint') : undefined"
-              @click="void selectPath(thumb.path)"
+            <div
+              class="quick-view__strip-row quick-view__strip-row--virtual"
+              role="tablist"
+              :aria-label="t('quickView.thumbnailStripLabel')"
+              :style="{ left: `${stripVirtualRowLeftPx}px` }"
             >
-              <img
-                v-if="thumb.kind === 'image'"
-                class="quick-view__thumb-image"
-                :src="getQuickViewDisplayUrl(thumb.path)"
-                alt=""
+              <button
+                v-for="thumb in stripVirtualVisibleThumbs"
+                :key="thumb.path"
+                type="button"
+                role="tab"
+                class="quick-view__thumb"
+                :class="{ 'quick-view__thumb--active': thumb.path === currentFilePath }"
+                :aria-selected="thumb.path === currentFilePath"
+                :aria-setsize="resolvedSiblingPaths.length"
+                :aria-posinset="resolvedSiblingPaths.indexOf(thumb.path) + 1"
+                :data-quick-view-thumb="thumb.path"
+                :title="thumb.hasUnsavedBadge ? t('quickView.thumbnailUnsavedHint') : undefined"
+                @click="void selectPath(thumb.path)"
               >
-              <VideoIcon
-                v-else-if="thumb.kind === 'video'"
-                class="quick-view__thumb-icon"
-                :size="28"
-                aria-hidden="true"
-              />
-              <Music2Icon
-                v-else-if="thumb.kind === 'audio'"
-                class="quick-view__thumb-icon"
-                :size="28"
-                aria-hidden="true"
-              />
-              <FileTextIcon
-                v-else-if="thumb.kind === 'document'"
-                class="quick-view__thumb-icon"
-                :size="28"
-                aria-hidden="true"
-              />
-              <span
-                v-if="thumb.hasUnsavedBadge"
-                class="quick-view__thumb-unsaved-badge"
-                aria-hidden="true"
-              />
-            </button>
+                <img
+                  v-if="thumb.kind === 'image' && quickViewStripImageSrc(thumb.path)"
+                  class="quick-view__thumb-image"
+                  :src="quickViewStripImageSrc(thumb.path)"
+                  alt=""
+                >
+                <Loader2Icon
+                  v-else-if="thumb.kind === 'image' && quickViewStripImageShowsSpinner(thumb.path)"
+                  :size="28"
+                  class="quick-view__thumb-loading-icon"
+                  aria-hidden="true"
+                />
+                <FileImageIcon
+                  v-else-if="thumb.kind === 'image'"
+                  class="quick-view__thumb-icon"
+                  :size="28"
+                  aria-hidden="true"
+                />
+                <VideoIcon
+                  v-else-if="thumb.kind === 'video'"
+                  class="quick-view__thumb-icon"
+                  :size="28"
+                  aria-hidden="true"
+                />
+                <Music2Icon
+                  v-else-if="thumb.kind === 'audio'"
+                  class="quick-view__thumb-icon"
+                  :size="28"
+                  aria-hidden="true"
+                />
+                <FileTextIcon
+                  v-else-if="thumb.kind === 'document'"
+                  class="quick-view__thumb-icon"
+                  :size="28"
+                  aria-hidden="true"
+                />
+                <span
+                  v-if="thumb.hasUnsavedBadge"
+                  class="quick-view__thumb-unsaved-badge"
+                  aria-hidden="true"
+                />
+              </button>
+            </div>
           </div>
         </ScrollArea>
       </div>
@@ -1294,6 +1549,17 @@ onUnmounted(() => {
   max-width: none;
 }
 
+.quick-view__strip-virtual-spacer {
+  position: relative;
+  box-sizing: border-box;
+}
+
+.quick-view__strip-row--virtual {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
 .quick-view__strip-row {
   display: flex;
   flex-flow: row nowrap;
@@ -1349,6 +1615,12 @@ onUnmounted(() => {
 }
 
 .quick-view__thumb-icon {
+  color: hsl(var(--muted-foreground, 0 0% 45%));
+  opacity: 0.85;
+}
+
+.quick-view__thumb-loading-icon {
+  animation: spin 1s linear infinite;
   color: hsl(var(--muted-foreground, 0 0% 45%));
   opacity: 0.85;
 }
