@@ -1905,7 +1905,7 @@
     "latestVersionLabel": "नवीनतम संस्करण",
     "selectedVersionLabel": "चयनित संस्करण",
     "versionPrefix": "वी",
-    "metaSeparator": null,
+    "metaSeparator": "•",
     "contextMenuLabel": "एक्सटेंशन",
     "autoUpdate": "ऑटो अपडेट",
     "status": "स्थिति",

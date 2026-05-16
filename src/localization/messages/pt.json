@@ -757,8 +757,6 @@
   },
   "sorting": {
     "options": "Opções de classificação",
-    "descendenteOrder": "Ordem decrescente",
-    "ascendenteOrder": "Ordem crescente",
     "columnType": "Tipo de coluna",
     "typeTitles": {
       "name": "nome",
@@ -780,8 +778,8 @@
       "itemsSize": "Itens/tamanho",
       "status": "Estado"
     },
-    "descendingOrder": "Descending order",
-    "ascendingOrder": "Ascending order"
+    "descendingOrder": "Ordem decrescente",
+    "ascendingOrder": "Ordem crescente"
   },
   "errors": {
     "error": "Erro",
@@ -895,7 +893,6 @@
       "youCanIgnoreError": "Você pode ignorar o erro e continuar usando o aplicativo, mas ele pode não funcionar corretamente até que você o recarregue",
       "reportError": "Reportar o erro",
       "ifYouHaveGithub": "Se você possui uma conta no Github, você pode reportar este bug para corrigi-lo:",
-      "pressButtonToCreateIssueAutomaticamente": "Pressione o botão abaixo para criar o modelo de problema automaticamente;",
       "openGeneratedLink": "Abra o link gerado em seu navegador;",
       "reviewTemplate": "Revise o modelo e certifique-se de que o erro não contém nenhuma informação pessoal (por exemplo, seu nome de usuário);",
       "publishIssue": "Publique o problema pressionando o botão \"Enviar novo problema\" lá",
@@ -907,7 +904,7 @@
       "openLinkInDefaultBrowser": "Abrir link no navegador padrão",
       "operationFailed": "Operação falhou",
       "errorDuringTemplateGeneration": "Erro durante a geração do modelo",
-      "pressButtonToCreateIssueAutomatically": "Press the button below to create the issue template automatically;"
+      "pressButtonToCreateIssueAutomatically": "Pressione o botão abaixo para criar o modelo de problema automaticamente;"
     },
     "confirmationDialog": {
       "localSharingFirewall": {
@@ -1062,7 +1059,6 @@
       "saveProgram": "Salvar programa",
       "externalProgramEditor": "Editor de Programa Externo",
       "chooseProgram": "Escolher programa",
-      "programa": "Programa",
       "removeProgramFromTheList": "Remover programa da lista",
       "programPath": "Caminho do Programa",
       "pickAProgram": "Escolha um programa",
@@ -1078,7 +1074,7 @@
       "pathShouldBeAFile": "O caminho deve ser um arquivo",
       "nameCannotBeEmpty": "O nome não pode estar vazio",
       "errorUnableToSelectTheProgram": "Erro: Não é possível selecionar o programa",
-      "program": "Program"
+      "program": "Programa"
     },
     "releaseNotesDialog": {
       "releaseNotes": "Notas de versão"
@@ -1148,8 +1144,7 @@
       "guideHeaderButtons": {
         "projectPage": "Página do projeto",
         "requestsIssues": "Solicitações e problemas",
-        "discussões": "Discussões",
-        "discussions": "Discussions"
+        "discussions": "Discussões"
       },
       "nav": {
         "shortcuts": "Atalhos",
@@ -1241,9 +1236,8 @@
         "simpleMode": "\"Modo Simples\" protege itens específicos (arquivos/diretórios) contra modificação somente por este aplicativo. Itens ainda podem ser lidos e modificados por qualquer outro programa.",
         "advancedMode": "\"Modo Avançado\" é voltado para usuários avançados. Ele permite que você defina manualmente diferentes atributos para elementos específicos.",
         "immutableMode": "\"Modo Imutável\" é uma maneira rápida de proteger um arquivo/diretório tornando-o imutável. Quando ativado, o sistema definirá todos os atributos do arquivo/diretório especificado para o estado 'negado' e o tornará imutável (o que significa que os programas não serão capazes de ler/escrever/modificar/excluir sem redefinir os atributos).",
-        "Warning": "Aviso",
         "useWithCaution": "Use com cautela. \"Modo Avançado\" e \"Modo Imutável\" ainda estão nos estágios iniciais de desenvolvimento. O recurso ainda não foi totalmente testado. Em teoria, ele pode travar um arquivo/diretório de uma forma que impossibilitará o acesso ao seu conteúdo. Certifique-se de testar este recurso em alguns arquivos/diretórios de teste antes de usá-lo em dados importantes E reportar problemas se encontrar algum criando um problema na página do Projeto Github.",
-        "warning": "Warning"
+        "warning": "Aviso"
       },
       "addressBar": {
         "addressBarAllows": "A barra de endereço permite que você navegue em diretórios e arquivos digitando seu caminho.",
@@ -1259,14 +1253,13 @@
         "namesThatHaveSpaces": "nomes que possuem espaços não precisam ser colocados entre aspas",
         "followsStandards": "Siga os padrões",
         "onWindowsOsAllBackwardSlashes": "no sistema operacional Windows, todas as barras invertidas",
-        "areAutomaticamenteConverted": "são automaticamente convertidos em barras",
         "toProvideSeamless": "para fornecer um fluxo de trabalho padronizado e contínuo",
         "whereToFindIt": "Onde encontrar",
         "addressBarCanBeOpened": "A barra de endereço pode ser aberta de qualquer página com o atalho",
         "orByPressing": "ou pressionando",
         "typeInAddressManually": "Digite o endereço manualmente",
         "buttonInTheAddressBarMenu": "botão no menu da barra de endereço, localizado na barra de ação da página \"Navegador\".",
-        "areAutomaticallyConverted": "are automatically converted to forward slashes"
+        "areAutomaticallyConverted": "são automaticamente convertidos em barras normais (/)"
       }
     },
     "trashCurrentDir": {
@@ -1300,15 +1293,13 @@
       "title": "Excluindo diretório atual",
       "description": "Os itens selecionados incluem o diretório atualmente aberto.",
       "confirm": "Confirme se isso foi intencional e você deseja excluí-lo.",
-      "Delete": "Excluir",
-      "delete": "Delete"
+      "delete": "Excluir"
     },
     "deleteInRoot": {
       "title": "Excluindo itens raiz",
       "description": "Excluir arquivos do sistema na raiz do armazenamento pode danificar o sistema operacional do computador.",
       "confirm": "Confirme, se você sabe o que está excluindo.",
-      "Delete": "Excluir",
-      "delete": "Delete"
+      "delete": "Excluir"
     },
     "trashInRoot": {
       "title": "Lixeira de itens raiz",
@@ -1366,7 +1357,6 @@
     "removedNItemsOfTotal": "{removedAmount} de {totalAmount}",
     "trashedNItemsOfTotal": "{removedAmount} excluído de {totalAmount} elementos",
     "deletedNItemsOfTotal": "Excluído {removedAmount} de {totalAmount} elementos",
-    "trashedNItms": "Elementos {totalAmount} excluídos",
     "deletedNItems": "Elementos {totalAmount} excluídos",
     "copied": "Copiado",
     "moved": "Movido",
@@ -1431,13 +1421,12 @@
     "oneOfTheSearchFilesIsDamaged": "Um dos arquivos de pesquisa está danificado",
     "workspaceAdded": "O espaço de trabalho foi adicionado",
     "failedToFetchInstalledTerminals": "Falha ao buscar terminais instalados",
-    "trashedNItems": "Trashed {totalAmount} items",
+    "trashedNItems": "Excluídos {totalAmount} itens",
     "removedFromFavorites": "Removed 0 items from favorites | Removed 1 item from favorites | Removed {n} items from favorites | Removed {n} items from favorites",
     "addedToFavorites": "Added 0 items to favorites | Added 1 item to favorites | Added {n} items to favorites | Added {n} items to favorites"
   },
   "contextMenus": {
     "dirItem": {
-      "modificadores": "Modificadores",
       "goBackToMainMenu": "Voltar ao menu principal",
       "openProgramEditor": "Abrir editor de programa",
       "addProgram": "Adicionar programa",
@@ -1463,14 +1452,13 @@
       "shareFileWithLocalDevices": "Compartilhar arquivo com dispositivos locais",
       "compressToArchive": "Compactar para arquivar",
       "extractArchive": "Extrair arquivo",
-      "permissões": "Permissões",
       "ejectDrive": "Ejetar unidade",
       "createSymbolicLink": "Criar link simbólico",
       "windowsLinkLnk": "Link do Windows (.lnk)",
       "errorOpenProgram": "Erro: Não foi possível abrir o programa",
       "editCard": "Editar cartão",
-      "modifiers": "Modifiers",
-      "permissions": "Permissions"
+      "modifiers": "Modificadores",
+      "permissions": "Permissões"
     }
   },
   "version": "Versão",
@@ -1577,7 +1565,6 @@
   "nFiles": "0 arquivos | 1 arquivo | {n} arquivos | {n} arquivos",
   "destinationPath": "Caminho de destino",
   "sourcePath": "Caminho de origem",
-  "itens": "elementos",
   "size": "Tamanho",
   "fileSize": "Tamanho do arquivo",
   "directorySize": "Tamanho do diretório",
@@ -1625,7 +1612,6 @@
   "allowGlobalSearchMessage": "A pesquisa global permite que você encontre rapidamente qualquer arquivo/diretório em seu computador.<br>Ela verifica periodicamente suas unidades e gera arquivos de dados (mapas) para que você possa encontrar seus arquivos rapidamente.<br>Os arquivos que estão criados após a última verificação não serão encontrados porque não estarão nos arquivos de dados, por isso é recomendado escolher um período de verificação automática mais frequente.",
   "experimentalFeature": "recurso experimental inacabado",
   "min": "min",
-  "seg": "segundo",
   "mediaInfo": "Informações sobre mídia",
   "stream": "fluxo",
   "bitsPerRawSample": "bits por amostra bruta",
@@ -2033,7 +2019,7 @@
   },
   "items": "itens",
   "recalculate": "Recalculate",
-  "sec": "sec",
+  "sec": "s",
   "lanShare": {
     "serverActive": "Compartilhamento na rede local ativo",
     "notWorkingHint": "Não está funcionando?",
