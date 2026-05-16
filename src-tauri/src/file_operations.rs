@@ -3,7 +3,8 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 use crate::utils::{
-    minimize_delete_paths, source_and_destination_same_directory, unique_path_with_index,
+    minimize_delete_paths, path_is_descendant_of, source_and_destination_same_directory,
+    unique_path_with_index,
 };
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -703,16 +704,26 @@ fn is_dir_empty(path: &Path) -> bool {
         .unwrap_or(true)
 }
 
-fn should_fallback_to_copy_delete(error: &std::io::Error) -> bool {
+fn destination_is_inside_source_directory(source: &Path, dest: &Path) -> bool {
+    if !source.is_dir() {
+        return false;
+    }
+
+    let source_path = crate::utils::normalize_path(&source.to_string_lossy());
+    let dest_path = crate::utils::normalize_path(&dest.to_string_lossy());
+
+    path_is_descendant_of(&dest_path, &source_path)
+}
+
+fn should_fallback_to_copy_delete(error: &std::io::Error, source: &Path, dest: &Path) -> bool {
+    if destination_is_inside_source_directory(source, dest) {
+        return false;
+    }
+
     if error.kind() == std::io::ErrorKind::AlreadyExists {
         return true;
     }
     if cfg!(target_os = "macos") {
-        // macOS returns EXDEV (18) for cross-filesystem moves on most paths,
-        // but also returns EINVAL (22) when the operation crosses APFS volume
-        // boundaries (e.g., system volume <-> data volume, mounted external
-        // disks under /Volumes). Both cases must trigger the copy+delete
-        // fallback for moves to work on macOS.
         let errno = error.raw_os_error();
         errno == Some(18) || errno == Some(22)
     } else if cfg!(unix) {
@@ -726,7 +737,7 @@ fn should_fallback_to_copy_delete(error: &std::io::Error) -> bool {
 
 fn try_rename_or_copy_delete(source: &Path, dest: &Path) -> Result<(), String> {
     if let Err(rename_error) = fs::rename(source, dest) {
-        if should_fallback_to_copy_delete(&rename_error) {
+        if should_fallback_to_copy_delete(&rename_error, source, dest) {
             if source.is_dir() {
                 copy_dir_recursive(source, dest)?;
                 remove_dir_or_file(source)?;
@@ -1547,7 +1558,7 @@ pub(crate) fn move_items_impl(
         match result {
             Ok(()) => moved_count += 1,
             Err(error) => {
-                if should_fallback_to_copy_delete(&error) {
+                if should_fallback_to_copy_delete(&error, source, &final_dest_path) {
                     let mut weighted_local_total = 1u64;
                     let mut count_failed = false;
                     if progress.is_some() && source.is_dir() {
@@ -2005,6 +2016,38 @@ mod tests {
 
     fn read_file(path: &Path) -> Vec<u8> {
         fs::read(path).unwrap()
+    }
+
+    #[test]
+    fn copy_delete_fallback_rejects_destination_inside_source_directory() {
+        let temp = tempdir().unwrap();
+        let source_folder = temp.path().join("source");
+        let nested_destination = source_folder.join("nested").join("source");
+        fs::create_dir_all(&source_folder).unwrap();
+
+        let error = std::io::Error::new(std::io::ErrorKind::AlreadyExists, "exists");
+
+        assert!(!should_fallback_to_copy_delete(
+            &error,
+            &source_folder,
+            &nested_destination
+        ));
+    }
+
+    #[test]
+    fn copy_delete_fallback_allows_non_descendant_destination() {
+        let temp = tempdir().unwrap();
+        let source_folder = temp.path().join("source");
+        let destination = temp.path().join("destination").join("source");
+        fs::create_dir_all(&source_folder).unwrap();
+
+        let error = std::io::Error::new(std::io::ErrorKind::AlreadyExists, "exists");
+
+        assert!(should_fallback_to_copy_delete(
+            &error,
+            &source_folder,
+            &destination
+        ));
     }
 
     #[test]
