@@ -42,7 +42,7 @@ const forwardedProps = useForwardProps(props);
 }
 
 .sigma-ui-context-menu-item:focus {
-  background-color: hsl(var(--secondary));
+  background-color: hsl(var(--secondary) / 50%);
   color: hsl(var(--popover-foreground) / 80%);
 }
 
