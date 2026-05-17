@@ -361,7 +361,7 @@
     "navigator": {
       "navigatorViewLayout": "لے آؤٹ",
       "navigatorOptions": "نیویگیٹر اختیارات",
-      "systemIcons": "سسٹم آئیکن",
+      "systemIcons": "آئیکن تھیم",
       "systemIconsDirectories": "فولڈر",
       "systemIconsFiles": "فائلیں"
     },
@@ -434,7 +434,7 @@
     "updates": "اپ ڈیٹ, ورژن, ایپ",
     "visualEffects": "بصری, اثر, blur, اوورلے, شفافیت, تھیم",
     "theme": "تھیم, رنگ, ڈارک, لائٹ",
-    "systemIcons": "سسٹم, آئیکن, فائل, فولڈر, explorer",
+    "systemIcons": "آئیکن, تھیم, طے شدہ, سسٹم, فائل, فولڈر, ایکسٹینشن, explorer",
     "driveCard": "ڈرائیو, جگہ, اسٹوریج, پیش رفت",
     "visualFilters": "فلٹر, کنٹراسٹ, چمک, تصویر, ویڈیو, ڈائیلاگ, پس‌منظر, دھندلاپن",
     "fonts": "فونٹ, متن",

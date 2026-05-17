@@ -13,9 +13,10 @@ import {
   homeBannerStorageKeys,
   legacyBackgroundStorageKeys,
 } from '@/modules/home/background-storage-keys';
+import { BUILTIN_NAVIGATOR_ICON_THEME_IDS } from '@/types/icon-theme';
 
 export const USER_SETTINGS_SCHEMA_VERSION_KEY = '__schemaVersion';
-export const USER_SETTINGS_SCHEMA_VERSION = 9;
+export const USER_SETTINGS_SCHEMA_VERSION = 11;
 
 function generateShortId(): string {
   return crypto.randomUUID().replace(/-/g, '').slice(0, 8);
@@ -290,6 +291,54 @@ async function migrateUserSettingsStep(storage: StorageAdapter, fromVersion: num
         'dateTime.showRelativeDates',
         typeof previous === 'boolean' ? previous : true,
       );
+    }
+  }
+
+  if (fromVersion === 9 && toVersion === 10) {
+    const existingIconTheme = await storage.get<string>('navigator.iconTheme');
+    const existingFolderIconTheme = await storage.get<string>('navigator.folderIconTheme');
+    const existingFileIconTheme = await storage.get<string>('navigator.fileIconTheme');
+    const useSystemIconsForDirectories = await storage.get<boolean>('navigator.useSystemIconsForDirectories');
+    const useSystemIconsForFiles = await storage.get<boolean>('navigator.useSystemIconsForFiles');
+    const folderIconTheme = useSystemIconsForDirectories
+      ? BUILTIN_NAVIGATOR_ICON_THEME_IDS.system
+      : BUILTIN_NAVIGATOR_ICON_THEME_IDS.default;
+    const fileIconTheme = useSystemIconsForFiles
+      ? BUILTIN_NAVIGATOR_ICON_THEME_IDS.system
+      : BUILTIN_NAVIGATOR_ICON_THEME_IDS.default;
+
+    if (typeof existingIconTheme !== 'string' || existingIconTheme.trim().length === 0) {
+      const nextIconTheme = useSystemIconsForDirectories || useSystemIconsForFiles
+        ? BUILTIN_NAVIGATOR_ICON_THEME_IDS.system
+        : BUILTIN_NAVIGATOR_ICON_THEME_IDS.default;
+
+      await storage.set('navigator.iconTheme', nextIconTheme);
+    }
+
+    if (typeof existingFolderIconTheme !== 'string' || existingFolderIconTheme.trim().length === 0) {
+      await storage.set('navigator.folderIconTheme', folderIconTheme);
+    }
+
+    if (typeof existingFileIconTheme !== 'string' || existingFileIconTheme.trim().length === 0) {
+      await storage.set('navigator.fileIconTheme', fileIconTheme);
+    }
+  }
+
+  if (fromVersion === 10 && toVersion === 11) {
+    const existingIconTheme = await storage.get<string>('navigator.iconTheme');
+    const existingFolderIconTheme = await storage.get<string>('navigator.folderIconTheme');
+    const existingFileIconTheme = await storage.get<string>('navigator.fileIconTheme');
+
+    const fallbackIconTheme = typeof existingIconTheme === 'string' && existingIconTheme.trim().length > 0
+      ? existingIconTheme
+      : BUILTIN_NAVIGATOR_ICON_THEME_IDS.default;
+
+    if (typeof existingFolderIconTheme !== 'string' || existingFolderIconTheme.trim().length === 0) {
+      await storage.set('navigator.folderIconTheme', fallbackIconTheme);
+    }
+
+    if (typeof existingFileIconTheme !== 'string' || existingFileIconTheme.trim().length === 0) {
+      await storage.set('navigator.fileIconTheme', fallbackIconTheme);
     }
   }
 

@@ -332,7 +332,7 @@
     "navigator": {
       "navigatorViewLayout": "Bố cục",
       "navigatorOptions": "Tùy chọn điều hướng",
-      "systemIcons": "Biểu tượng hệ thống",
+      "systemIcons": "Chủ đề biểu tượng",
       "systemIconsDirectories": "Thư mục",
       "systemIconsFiles": "Tệp"
     },
@@ -405,7 +405,7 @@
     "updates": "cập nhật, phiên bản, ứng dụng",
     "visualEffects": "hình ảnh, hiệu ứng, làm mờ, độ mờ, thị sai, lớp phủ, nền, độ trong suốt, phương tiện, màu sắc, chủ đề, trang chủ, trang",
     "theme": "chủ đề, phong cách, ánh sáng, bóng tối, màu sắc",
-    "systemIcons": "hệ thống, biểu tượng, gốc, tệp, thư mục, explorer, finder",
+    "systemIcons": "biểu tượng, chủ đề, mặc định, hệ thống, tệp, thư mục, tiện ích mở rộng, explorer, finder",
     "driveCard": "ổ đĩa, thẻ, không gian, chỉ báo, lưu trữ, tiến trình, hình tròn, tuyến tính",
     "visualFilters": "hình ảnh, bộ lọc, màu sắc, độ tương phản, độ sáng, độ bão hòa, hình ảnh, video, chủ đề, hộp thoại, nền, mờ",
     "fonts": "phông chữ, văn bản",

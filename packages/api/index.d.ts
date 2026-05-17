@@ -128,6 +128,12 @@ export interface ExtensionKeybinding {
   when?: ExtensionKeybindingWhen;
 }
 
+export interface ExtensionIconThemeContribution {
+  id: string;
+  label: string;
+  path: string;
+}
+
 export interface ExtensionContributions {
   commands?: ExtensionCommand[];
   contextMenu?: ExtensionContextMenuItem[];
@@ -136,6 +142,7 @@ export interface ExtensionContributions {
   themes?: ExtensionThemeContribution[];
   configuration?: ExtensionConfiguration;
   keybindings?: ExtensionKeybinding[];
+  iconThemes?: ExtensionIconThemeContribution[];
 }
 
 export interface ExtensionEngines {
@@ -192,15 +199,25 @@ export interface ExtensionManifestBase {
   engines: ExtensionEngines;
 }
 
-export interface ThemeOnlyExtensionContributions {
-  themes: ExtensionThemeContribution[];
+type DeclarativeOnlyExtensionContributionGuards = {
   commands?: never;
   contextMenu?: never;
   sidebar?: never;
   toolbar?: never;
   configuration?: never;
   keybindings?: never;
-}
+};
+
+export type ThemeOnlyExtensionContributions = DeclarativeOnlyExtensionContributionGuards & (
+  | {
+    themes: ExtensionThemeContribution[];
+    iconThemes?: ExtensionIconThemeContribution[];
+  }
+  | {
+    themes?: ExtensionThemeContribution[];
+    iconThemes: ExtensionIconThemeContribution[];
+  }
+);
 
 export interface ApiExtensionManifest extends ExtensionManifestBase {
   extensionType: 'api';

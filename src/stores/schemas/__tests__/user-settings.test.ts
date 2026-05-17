@@ -9,6 +9,7 @@ import {
   migrateUserSettingsStorage,
 } from '@/stores/schemas/user-settings';
 import type { StorageAdapter } from '@/stores/schemas/schema-utils';
+import { BUILTIN_NAVIGATOR_ICON_THEME_IDS } from '@/types/icon-theme';
 
 function createStorageAdapter(initialEntries: Record<string, unknown>): StorageAdapter & {
   values: Map<string, unknown>;
@@ -51,6 +52,52 @@ describe('migrateUserSettingsStorage', () => {
     await migrateUserSettingsStorage(storage);
 
     expect(storage.values.get('dateTime.showRelativeDates')).toBe(false);
+    expect(storage.values.get(USER_SETTINGS_SCHEMA_VERSION_KEY)).toBe(USER_SETTINGS_SCHEMA_VERSION);
+    expect(storage.save).toHaveBeenCalledOnce();
+  });
+
+  it('migrates legacy system icon preferences to separate icon theme settings', async () => {
+    const storage = createStorageAdapter({
+      [USER_SETTINGS_SCHEMA_VERSION_KEY]: 9,
+      'navigator.useSystemIconsForDirectories': false,
+      'navigator.useSystemIconsForFiles': true,
+    });
+
+    await migrateUserSettingsStorage(storage);
+
+    expect(storage.values.get('navigator.folderIconTheme')).toBe(BUILTIN_NAVIGATOR_ICON_THEME_IDS.default);
+    expect(storage.values.get('navigator.fileIconTheme')).toBe(BUILTIN_NAVIGATOR_ICON_THEME_IDS.system);
+    expect(storage.values.get(USER_SETTINGS_SCHEMA_VERSION_KEY)).toBe(USER_SETTINGS_SCHEMA_VERSION);
+    expect(storage.save).toHaveBeenCalledOnce();
+  });
+
+  it('defaults legacy navigator icon themes when system icons were disabled', async () => {
+    const storage = createStorageAdapter({
+      [USER_SETTINGS_SCHEMA_VERSION_KEY]: 9,
+      'navigator.useSystemIconsForDirectories': false,
+      'navigator.useSystemIconsForFiles': false,
+    });
+
+    await migrateUserSettingsStorage(storage);
+
+    expect(storage.values.get('navigator.folderIconTheme')).toBe(BUILTIN_NAVIGATOR_ICON_THEME_IDS.default);
+    expect(storage.values.get('navigator.fileIconTheme')).toBe(BUILTIN_NAVIGATOR_ICON_THEME_IDS.default);
+    expect(storage.values.get(USER_SETTINGS_SCHEMA_VERSION_KEY)).toBe(USER_SETTINGS_SCHEMA_VERSION);
+    expect(storage.save).toHaveBeenCalledOnce();
+  });
+
+  it('migrates the previous shared icon theme to both folder and file settings', async () => {
+    const storage = createStorageAdapter({
+      [USER_SETTINGS_SCHEMA_VERSION_KEY]: 10,
+      'navigator.iconTheme': 'extension:acme.example-icons:frappe',
+      'navigator.useSystemIconsForDirectories': true,
+      'navigator.useSystemIconsForFiles': false,
+    });
+
+    await migrateUserSettingsStorage(storage);
+
+    expect(storage.values.get('navigator.folderIconTheme')).toBe('extension:acme.example-icons:frappe');
+    expect(storage.values.get('navigator.fileIconTheme')).toBe('extension:acme.example-icons:frappe');
     expect(storage.values.get(USER_SETTINGS_SCHEMA_VERSION_KEY)).toBe(USER_SETTINGS_SCHEMA_VERSION);
     expect(storage.save).toHaveBeenCalledOnce();
   });

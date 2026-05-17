@@ -6,7 +6,8 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { getFileIcon } from '@/modules/navigator/components/file-browser/utils';
+import type { Component } from 'vue';
+import { useNavigatorItemIcon } from '@/composables/use-navigator-item-icon';
 import UbuntuWslIcon from '@/components/icons/ubuntu-wsl-icon.vue';
 import { isWslPath } from '@/utils/normalize-path';
 import type { DirEntry } from '@/types/dir-entry';
@@ -17,27 +18,48 @@ const props = defineProps<{
 
 const { t } = useI18n();
 
-const entryIcon = computed(() => {
-  if (!props.selectedEntry) {
-    return getFileIcon({
-      is_dir: false,
-      ext: '',
-    } as DirEntry);
-  }
+const { iconSrc, fallbackIconComponent } = useNavigatorItemIcon({
+  path: () => props.selectedEntry?.path ?? '',
+  name: () => props.selectedEntry?.name ?? null,
+  isDir: () => props.selectedEntry?.is_dir ?? false,
+  extension: () => props.selectedEntry?.ext ?? null,
+  size: () => 24,
+  enabled: () => props.selectedEntry !== null,
+});
 
-  if (props.selectedEntry.is_dir && isWslPath(props.selectedEntry.path)) {
+const entryFallbackIconComponent = computed<Component>(() => {
+  if (props.selectedEntry?.is_dir && isWslPath(props.selectedEntry.path)) {
     return UbuntuWslIcon;
   }
 
-  return getFileIcon(props.selectedEntry);
+  return fallbackIconComponent.value;
+});
+
+const rootComponent = computed<Component | 'img'>(() => {
+  return iconSrc.value ? 'img' : entryFallbackIconComponent.value;
+});
+
+const rootProps = computed<Record<string, unknown>>(() => {
+  if (rootComponent.value === 'img') {
+    return {
+      src: iconSrc.value,
+      width: 24,
+      height: 24,
+      draggable: false,
+    };
+  }
+
+  return {
+    size: 24,
+  };
 });
 </script>
 
 <template>
   <div class="info-panel-header">
     <component
-      :is="entryIcon"
-      :size="24"
+      :is="rootComponent"
+      v-bind="rootProps"
       class="info-panel-header__icon"
       :class="{ 'info-panel-header__icon--folder': selectedEntry?.is_dir }"
     />

@@ -4,7 +4,6 @@
 
 import { computed, ref, watchEffect, type Ref } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
-import { useUserSettingsStore } from '@/stores/storage/user-settings';
 
 const systemIconCache = new Map<string, string | null>();
 const systemIconInFlight = new Map<string, Promise<string | null>>();
@@ -14,21 +13,23 @@ interface SystemIconParams {
   isDir: Ref<boolean> | (() => boolean);
   extension: Ref<string | null> | (() => string | null);
   size: Ref<number> | (() => number);
+  enabled?: Ref<boolean> | (() => boolean);
 }
 
 export function useSystemIcon(params: SystemIconParams) {
-  const userSettingsStore = useUserSettingsStore();
-
   const path = computed(() => (typeof params.path === 'function' ? params.path() : params.path.value));
   const isDir = computed(() => (typeof params.isDir === 'function' ? params.isDir() : params.isDir.value));
   const extension = computed(() => (typeof params.extension === 'function' ? params.extension() : params.extension.value));
   const size = computed(() => (typeof params.size === 'function' ? params.size() : params.size.value));
+  const useSystemIcons = computed(() => {
+    if (!params.enabled) {
+      return true;
+    }
 
-  const useSystemIcons = computed(() => (
-    isDir.value
-      ? userSettingsStore.userSettings.navigator.useSystemIconsForDirectories
-      : userSettingsStore.userSettings.navigator.useSystemIconsForFiles
-  ));
+    return typeof params.enabled === 'function'
+      ? params.enabled()
+      : params.enabled.value;
+  });
 
   const cacheKey = computed(() => {
     const entryType = isDir.value ? 'dir' : 'file';

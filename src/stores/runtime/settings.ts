@@ -244,6 +244,13 @@ export const useSettingsStore = defineStore('settings', () => {
         category: 'appearance',
       },
       {
+        key: 'systemIcons',
+        titleKey: 'settings.navigator.systemIcons',
+        tags: 'settingsTags.systemIcons',
+        component: markRaw(SystemIconsSection),
+        category: 'appearance',
+      },
+      {
         key: 'homePageMediaBanner',
         titleKey: 'settings.homePageMediaBanner.title',
         tags: 'settingsTags.homePageMediaBanner',
@@ -269,13 +276,6 @@ export const useSettingsStore = defineStore('settings', () => {
         titleKey: 'settings.uiElements.showDriveSpaceIndicator',
         tags: 'settingsTags.driveCard',
         component: markRaw(DriveCardSection),
-        category: 'appearance',
-      },
-      {
-        key: 'systemIcons',
-        titleKey: 'settings.navigator.systemIcons',
-        tags: 'settingsTags.systemIcons',
-        component: markRaw(SystemIconsSection),
         category: 'appearance',
       },
       {

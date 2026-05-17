@@ -332,7 +332,7 @@
     "navigator": {
       "navigatorViewLayout": "Layout",
       "navigatorOptions": "Opzioni navigatore",
-      "systemIcons": "Icone di sistema",
+      "systemIcons": "Tema icone",
       "systemIconsDirectories": "Cartelle",
       "systemIconsFiles": "File"
     },
@@ -405,7 +405,7 @@
     "updates": "aggiornamenti, versione, app",
     "visualEffects": "visivo, effetti, sfocatura, opacità, parallasse, sovrimpressione, sfondo, trasparenza, media, colore, tema, pagina, iniziale",
     "theme": "tema, stile, chiaro, scuro, colore",
-    "systemIcons": "sistema, icone, nativo, file, cartella, directory, explorer, finder",
+    "systemIcons": "icone, tema, predefinito, sistema, file, cartella, directory, estensione, explorer, finder",
     "driveCard": "unità, scheda, spazio, indicatore, archiviazione, progresso, circolare, lineare",
     "visualFilters": "visivo, filtri, colore, contrasto, luminosità, saturazione, immagine, video, tema, finestra, sfondo, sfocatura",
     "fonts": "font, testo",

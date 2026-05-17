@@ -39,6 +39,7 @@ import {
   getStartupStorageRecord,
   type StartupStorageFileBootstrap,
 } from './utils/startup-storage-bootstrap';
+import { BUILTIN_NAVIGATOR_ICON_THEME_IDS } from '@/types/icon-theme';
 
 export const useUserSettingsStore = defineStore('userSettings', () => {
   const userPathsStore = useUserPathsStore();
@@ -99,8 +100,8 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
         show: false,
       },
       showHiddenFiles: false,
-      useSystemIconsForDirectories: false,
-      useSystemIconsForFiles: false,
+      folderIconTheme: BUILTIN_NAVIGATOR_ICON_THEME_IDS.default,
+      fileIconTheme: BUILTIN_NAVIGATOR_ICON_THEME_IDS.default,
       listColumnVisibility: {
         items: true,
         size: true,

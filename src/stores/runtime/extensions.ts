@@ -75,6 +75,7 @@ import {
 import { i18n } from '@/localization';
 import type { ShortcutKeys } from '@/types/user-settings';
 import type { ExtensionKeybindingWhen } from '@/types/extension';
+import { clearInstalledIconThemeCache } from '@/modules/icon-theme/extension-icon-themes';
 
 export const useExtensionsStore = defineStore('extensions', () => {
   const storageStore = useExtensionsStorageStore();
@@ -475,6 +476,17 @@ export const useExtensionsStore = defineStore('extensions', () => {
     );
   });
 
+  const enabledIconThemeContributorsSignature = computed(() => {
+    return enabledExtensions.value
+      .filter(extension => extension.manifest.contributes?.iconThemes?.length)
+      .map((extension) => {
+        const iconThemeManifest = JSON.stringify(extension.manifest.contributes?.iconThemes ?? []);
+        return `${extension.id}:${extension.version}:${extension.installedAt}:${iconThemeManifest}`;
+      })
+      .sort()
+      .join('|');
+  });
+
   const featuredExtensions = computed(() => {
     return availableExtensions.value.filter(extension => extension.featured);
   });
@@ -701,6 +713,7 @@ export const useExtensionsStore = defineStore('extensions', () => {
           await storageStore.addInstalledExtension(extensionId, targetVersion, manifest, {
             installPendingDependencies: true,
           });
+          clearInstalledIconThemeCache();
         }
         catch (storageError) {
           await invoke('delete_extension', { extensionId }).catch(() => {});
@@ -800,6 +813,7 @@ export const useExtensionsStore = defineStore('extensions', () => {
           localSourcePath: sourcePath,
           installPendingDependencies: true,
         });
+        clearInstalledIconThemeCache();
         persistedInstall = true;
 
         brokenExtensionIds.value = new Set([...brokenExtensionIds.value].filter(id => id !== extensionId));
@@ -886,6 +900,7 @@ export const useExtensionsStore = defineStore('extensions', () => {
         throwIfInstallAborted(signal);
 
         await storageStore.refreshLocalExtension(extensionId, manifest.version, manifest);
+        clearInstalledIconThemeCache();
         brokenExtensionIds.value = new Set([...brokenExtensionIds.value].filter(id => id !== extensionId));
 
         clearBinaryDownloadCount(extensionId);
@@ -965,6 +980,7 @@ export const useExtensionsStore = defineStore('extensions', () => {
         await cleanupOrphanedSharedBinaries(orphanedBinaries);
 
         await storageStore.removeInstalledExtension(extensionId);
+        clearInstalledIconThemeCache();
         brokenExtensionIds.value = new Set([...brokenExtensionIds.value].filter(id => id !== extensionId));
 
         filterRecentCommandsToExisting();
@@ -1041,6 +1057,7 @@ export const useExtensionsStore = defineStore('extensions', () => {
         throwIfInstallAborted(signal);
 
         await storageStore.updateInstalledExtension(extensionId, targetVersion, manifest);
+        clearInstalledIconThemeCache();
         brokenExtensionIds.value = new Set([...brokenExtensionIds.value].filter(id => id !== extensionId));
 
         clearBinaryDownloadCount(extensionId);
@@ -1095,6 +1112,7 @@ export const useExtensionsStore = defineStore('extensions', () => {
 
   async function enableExtension(extensionId: string): Promise<void> {
     await storageStore.setExtensionEnabled(extensionId, true);
+    clearInstalledIconThemeCache();
     const installed = installedExtensions.value.find(
       extension => extension.id === extensionId,
     );
@@ -1119,6 +1137,7 @@ export const useExtensionsStore = defineStore('extensions', () => {
 
     await unloadExtension(extensionId);
     await storageStore.setExtensionEnabled(extensionId, false);
+    clearInstalledIconThemeCache();
   }
 
   async function loadExtensionForEvent(
@@ -1831,6 +1850,10 @@ export const useExtensionsStore = defineStore('extensions', () => {
 
     watch(i18n.global.locale, () => {
       void reloadExtensionsLocale();
+    });
+
+    watch(enabledIconThemeContributorsSignature, () => {
+      clearInstalledIconThemeCache();
     });
 
     isInitialized.value = true;

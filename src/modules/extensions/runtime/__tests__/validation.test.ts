@@ -145,6 +145,122 @@ describe('manifest binary validation', () => {
 
     expect(() => assertValidManifestData(manifest)).toThrow('Invalid manifest: binaries are invalid');
   });
+
+  it('accepts icon theme contributions with relative theme paths', () => {
+    const manifest = {
+      ...createManifest(),
+      contributes: {
+        iconThemes: [
+          {
+            id: 'ocean',
+            label: 'Ocean',
+            path: 'themes/ocean-icon-theme.json',
+          },
+        ],
+      },
+    };
+
+    expect(() => assertValidManifestData(manifest)).not.toThrow();
+  });
+
+  it('accepts icon-theme-only api extensions without a main entry', () => {
+    const { main: omittedMain, ...manifest } = {
+      ...createManifest(),
+      permissions: [],
+      contributes: {
+        iconThemes: [
+          {
+            id: 'ocean',
+            label: 'Ocean',
+            path: 'themes/ocean-icon-theme.json',
+          },
+        ],
+      },
+    };
+
+    expect(omittedMain).toBe('index.js');
+    expect(() => assertValidManifestData(manifest)).not.toThrow();
+  });
+
+  it('accepts icon theme contributions with dot-prefixed relative theme paths', () => {
+    const manifest = {
+      ...createManifest(),
+      contributes: {
+        iconThemes: [
+          {
+            id: 'ocean',
+            label: 'Ocean',
+            path: './themes/ocean-icon-theme.json',
+          },
+        ],
+      },
+    };
+
+    expect(() => assertValidManifestData(manifest)).not.toThrow();
+  });
+
+  it('rejects duplicate icon theme ids within one extension', () => {
+    const manifest = {
+      ...createManifest(),
+      contributes: {
+        iconThemes: [
+          {
+            id: 'ocean',
+            label: 'Ocean',
+            path: 'themes/ocean-icon-theme.json',
+          },
+          {
+            id: 'ocean',
+            label: 'Ocean Alternate',
+            path: 'themes/ocean-alternate-icon-theme.json',
+          },
+        ],
+      },
+    };
+
+    expect(() => assertValidManifestData(manifest)).toThrow('Invalid manifest: contributes.iconThemes are invalid');
+  });
+
+  it('rejects icon theme contributions with unsafe paths', () => {
+    const manifest = {
+      ...createManifest(),
+      contributes: {
+        iconThemes: [
+          {
+            id: 'ocean',
+            label: 'Ocean',
+            path: '../themes/ocean-icon-theme.json',
+          },
+        ],
+      },
+    };
+
+    expect(() => assertValidManifestData(manifest)).toThrow('Invalid manifest: contributes.iconThemes are invalid');
+  });
+
+  it('rejects icon-theme-only api extensions without a main entry when they include runtime contributions', () => {
+    const { main: omittedMain, ...manifest } = {
+      ...createManifest(),
+      contributes: {
+        iconThemes: [
+          {
+            id: 'ocean',
+            label: 'Ocean',
+            path: 'themes/ocean-icon-theme.json',
+          },
+        ],
+        commands: [
+          {
+            id: 'open',
+            title: 'Open',
+          },
+        ],
+      },
+    };
+
+    expect(omittedMain).toBe('index.js');
+    expect(() => assertValidManifestData(manifest)).toThrow('Invalid manifest: main is missing');
+  });
 });
 
 describe('manifest theme validation', () => {

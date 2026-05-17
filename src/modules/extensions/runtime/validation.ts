@@ -73,8 +73,11 @@ function isSafeRelativePath(value: string): boolean {
     return false;
   }
 
-  const pathSegments = value.split(/[\\/]+/).filter(segment => segment.length > 0);
-  return pathSegments.length > 0 && pathSegments.every(segment => segment !== '.' && segment !== '..');
+  const pathSegments = value
+    .split(/[\\/]+/)
+    .filter(segment => segment.length > 0 && segment !== '.');
+
+  return pathSegments.length > 0 && pathSegments.every(segment => segment !== '..');
 }
 
 function isValidIntegrity(value: unknown): value is string {
@@ -150,19 +153,23 @@ function isValidManifestContributions(value: unknown): boolean {
   return true;
 }
 
-function hasThemeContributions(value: unknown): boolean {
+function hasDeclarativeThemeContributions(value: unknown): boolean {
   return isObjectRecord(value)
-    && Array.isArray(value.themes)
-    && value.themes.length > 0;
+    && (
+      (Array.isArray(value.themes) && value.themes.length > 0)
+      || (Array.isArray(value.iconThemes) && value.iconThemes.length > 0)
+    );
 }
 
 function canOmitManifestMain(value: Record<string, unknown>): boolean {
-  if (value.extensionType !== 'api' || !hasThemeContributions(value.contributes)) {
+  if (value.extensionType !== 'api' || !hasDeclarativeThemeContributions(value.contributes)) {
     return false;
   }
 
   return isObjectRecord(value.contributes)
-    && Object.keys(value.contributes).every(contributionKey => contributionKey === 'themes');
+    && Object.keys(value.contributes).every(
+      contributionKey => contributionKey === 'themes' || contributionKey === 'iconThemes',
+    );
 }
 
 function isValidManifestBinaryAsset(value: unknown): boolean {
@@ -243,6 +250,40 @@ function isValidManifestBinaryDefinition(value: unknown): boolean {
     }
 
     seenTargets.add(targetKey);
+  }
+
+  return true;
+}
+
+function isValidIconThemeContribution(value: unknown): boolean {
+  if (!isObjectRecord(value)) {
+    return false;
+  }
+
+  if (!isNonEmptyString(value.id) || !isNonEmptyString(value.label)) {
+    return false;
+  }
+
+  if (!isNonEmptyString(value.path) || !isSafeRelativePath(value.path)) {
+    return false;
+  }
+
+  return true;
+}
+
+function isValidIconThemeContributionList(value: unknown): boolean {
+  if (!Array.isArray(value) || value.length === 0 || !value.every(isValidIconThemeContribution)) {
+    return false;
+  }
+
+  const seenThemeIds = new Set<string>();
+
+  for (const iconTheme of value) {
+    if (!isObjectRecord(iconTheme) || !isNonEmptyString(iconTheme.id) || seenThemeIds.has(iconTheme.id)) {
+      return false;
+    }
+
+    seenThemeIds.add(iconTheme.id);
   }
 
   return true;
@@ -479,6 +520,19 @@ export function assertValidManifestData(data: unknown): asserts data is Extensio
   if (data.binaries !== undefined) {
     if (!Array.isArray(data.binaries) || data.binaries.some(binary => !isValidManifestBinaryDefinition(binary))) {
       throw new Error('Invalid manifest: binaries are invalid');
+    }
+  }
+
+  if (data.contributes !== undefined) {
+    if (!isObjectRecord(data.contributes)) {
+      throw new Error('Invalid manifest: contributes must be an object');
+    }
+
+    if (
+      data.contributes.iconThemes !== undefined
+      && !isValidIconThemeContributionList(data.contributes.iconThemes)
+    ) {
+      throw new Error('Invalid manifest: contributes.iconThemes are invalid');
     }
   }
 
