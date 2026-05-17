@@ -110,6 +110,10 @@ describe('extension icon theme asset path resolution', () => {
         return 'C:/extensions/acme.example-icon-themes';
       }
 
+      if (command === 'extension_path_exists') {
+        return true;
+      }
+
       throw new Error(`Unexpected command: ${command}`);
     });
 
@@ -135,5 +139,44 @@ describe('extension icon theme asset path resolution', () => {
     const reloadedTheme = await loadInstalledIconTheme([extension], iconThemeId);
     expect(reloadedTheme?.iconDefinitions.file.src)
       .toBe('asset:C:/extensions/acme.example-icon-themes/dist/example-dark/icons/file-updated.svg');
+  });
+
+  it('skips icon assets rejected by the extension path containment check', async () => {
+    const encoder = new TextEncoder();
+    const extension = createInstalledExtension();
+    const iconThemeId = createExtensionNavigatorIconThemeId(extension.id, 'example-dark');
+    const themeJson = JSON.stringify({
+      iconDefinitions: {
+        safeFile: {
+          iconPath: 'icons/file.svg',
+        },
+        unsafeFile: {
+          iconPath: 'icons/outside.svg',
+        },
+      },
+      file: 'safeFile',
+    });
+
+    invokeAsExtensionMock.mockImplementation(async (_extensionId: string, command: string, payload: unknown) => {
+      if (command === 'read_extension_file') {
+        return Array.from(encoder.encode(themeJson));
+      }
+
+      if (command === 'get_extension_path') {
+        return 'C:/extensions/acme.example-icon-themes';
+      }
+
+      if (command === 'extension_path_exists') {
+        return (payload as { filePath: string }).filePath.endsWith('icons/file.svg');
+      }
+
+      throw new Error(`Unexpected command: ${command}`);
+    });
+
+    const theme = await loadInstalledIconTheme([extension], iconThemeId);
+
+    expect(theme?.iconDefinitions.safeFile.src)
+      .toBe('asset:C:/extensions/acme.example-icon-themes/dist/example-dark/icons/file.svg');
+    expect(theme?.iconDefinitions.unsafeFile).toBeUndefined();
   });
 });

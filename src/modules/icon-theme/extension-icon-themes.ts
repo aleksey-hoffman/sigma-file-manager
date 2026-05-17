@@ -119,6 +119,19 @@ async function loadContributedIconTheme(
 
     try {
       const relativeAssetPath = resolveThemeRelativePath(themeFilePath, definitionValue.iconPath);
+      const assetExists = await invokeAsExtension<boolean>(
+        extension.id,
+        'extension_path_exists',
+        {
+          extensionId: extension.id,
+          filePath: relativeAssetPath,
+        },
+      );
+
+      if (!assetExists) {
+        continue;
+      }
+
       const assetPath = await join(extensionPath, relativeAssetPath);
       iconDefinitions[definitionId] = {
         src: convertFileSrc(assetPath),

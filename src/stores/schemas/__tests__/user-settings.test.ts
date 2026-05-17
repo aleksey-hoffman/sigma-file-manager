@@ -90,6 +90,8 @@ describe('migrateUserSettingsStorage', () => {
     const storage = createStorageAdapter({
       [USER_SETTINGS_SCHEMA_VERSION_KEY]: 10,
       'navigator.iconTheme': 'extension:acme.example-icons:frappe',
+      'navigator.useSystemIconsForDirectories': true,
+      'navigator.useSystemIconsForFiles': false,
     });
 
     await migrateUserSettingsStorage(storage);
