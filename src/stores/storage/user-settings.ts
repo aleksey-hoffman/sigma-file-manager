@@ -13,6 +13,7 @@ import type {
   UserSettingsValue,
   InfusionPageSettings,
   VisualFiltersSettings,
+  Theme,
 } from '@/types/user-settings';
 import {
   backgroundMedia,
@@ -26,6 +27,7 @@ import { useUserPathsStore } from './user-paths';
 import { useExtensionsStorageStore } from './extensions';
 import { i18n } from '@/localization';
 import { getCurrentWebview } from '@tauri-apps/api/webview';
+import { emit, listen, type UnlistenFn } from '@tauri-apps/api/event';
 import {
   buildAllowedUserSettingsStorageKeys,
   migrateUserSettingsStorage,
@@ -41,6 +43,12 @@ import {
 } from './utils/startup-storage-bootstrap';
 import { BUILTIN_NAVIGATOR_ICON_THEME_IDS } from '@/types/icon-theme';
 
+export const USER_SETTINGS_THEME_CHANGED_EVENT = 'user-settings:theme-changed';
+
+type ThemeChangedEventPayload = {
+  theme: Theme;
+};
+
 export const useUserSettingsStore = defineStore('userSettings', () => {
   const userPathsStore = useUserPathsStore();
   const extensionsStorageStore = useExtensionsStorageStore();
@@ -49,6 +57,7 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
   const userSettingsDefault = ref<UserSettings | null>(null);
   const themeTransitionOrigin = ref<ThemeTransitionOrigin | null>(null);
   const themeTransitionsEnabled = ref(false);
+  const themeChangeEventUnlisten = ref<UnlistenFn | null>(null);
   const allowedUserSettingsStorageKeys = ref<Set<string>>(new Set());
   const userSettings = ref<UserSettings>({
     language: {
@@ -377,6 +386,37 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
     }
   }
 
+  async function broadcastThemeChange(theme: Theme) {
+    try {
+      await emit(USER_SETTINGS_THEME_CHANGED_EVENT, { theme } satisfies ThemeChangedEventPayload);
+    }
+    catch (error) {
+      console.error('Failed to broadcast theme change:', error);
+    }
+  }
+
+  async function ensureThemeChangeListener() {
+    if (themeChangeEventUnlisten.value) {
+      return;
+    }
+
+    try {
+      themeChangeEventUnlisten.value = await listen<ThemeChangedEventPayload>(
+        USER_SETTINGS_THEME_CHANGED_EVENT,
+        (event) => {
+          if (event.payload.theme === userSettings.value.theme) {
+            return;
+          }
+
+          userSettings.value.theme = event.payload.theme;
+        },
+      );
+    }
+    catch (error) {
+      console.error('Failed to listen for theme changes:', error);
+    }
+  }
+
   async function setLanguage(newLanguage: LocalizationLanguage) {
     userSettings.value.language = newLanguage;
     await setUserSettingsStorage('language', newLanguage);
@@ -414,6 +454,11 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
     }
 
     current[keys[keys.length - 1]] = value;
+
+    if (key === 'theme') {
+      await broadcastThemeChange(value as Theme);
+    }
+
     await setUserSettingsStorage(key, value);
   }
 
@@ -451,6 +496,7 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
 
     initTheme();
     themeTransitionsEnabled.value = true;
+    await ensureThemeChangeListener();
     initLanguage();
     await initZoom();
   }
