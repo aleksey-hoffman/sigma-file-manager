@@ -93,7 +93,13 @@ export function useNavigatorItemIcon(params: NavigatorItemIconParams) {
     enabled: useSystemIcons,
   });
 
-  watchEffect(async () => {
+  watchEffect(async (onCleanup) => {
+    let isCurrentLoad = true;
+
+    onCleanup(() => {
+      isCurrentLoad = false;
+    });
+
     if (parsedTheme.value?.kind !== 'extension') {
       loadedExtensionTheme.value = null;
       return;
@@ -105,7 +111,7 @@ export function useNavigatorItemIcon(params: NavigatorItemIconParams) {
       requestThemeId,
     );
 
-    if (selectedIconTheme.value === requestThemeId) {
+    if (isCurrentLoad && selectedIconTheme.value === requestThemeId) {
       loadedExtensionTheme.value = loadedTheme;
     }
   });

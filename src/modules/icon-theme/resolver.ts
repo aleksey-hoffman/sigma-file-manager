@@ -117,7 +117,15 @@ export function resolveLoadedIconThemeIcon(
       normalizedParentName,
     );
 
-    return getDefinitionSrc(theme, folderNameMatch ?? theme.folder ?? theme.folderExpanded);
+    if (folderNameMatch) {
+      const folderNameIconSrc = getDefinitionSrc(theme, folderNameMatch);
+
+      if (folderNameIconSrc) {
+        return folderNameIconSrc;
+      }
+    }
+
+    return getDefinitionSrc(theme, theme.folder ?? theme.folderExpanded);
   }
 
   const fileNameMatch = resolveAssociationRecord(
@@ -127,7 +135,11 @@ export function resolveLoadedIconThemeIcon(
   );
 
   if (fileNameMatch) {
-    return getDefinitionSrc(theme, fileNameMatch);
+    const fileNameIconSrc = getDefinitionSrc(theme, fileNameMatch);
+
+    if (fileNameIconSrc) {
+      return fileNameIconSrc;
+    }
   }
 
   const normalizedExtension = target.extension?.trim().toLowerCase() || null;
@@ -145,7 +157,11 @@ export function resolveLoadedIconThemeIcon(
     );
 
     if (extensionMatch) {
-      return getDefinitionSrc(theme, extensionMatch);
+      const extensionIconSrc = getDefinitionSrc(theme, extensionMatch);
+
+      if (extensionIconSrc) {
+        return extensionIconSrc;
+      }
     }
   }
 

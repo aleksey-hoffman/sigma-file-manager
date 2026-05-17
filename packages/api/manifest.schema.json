@@ -590,16 +590,19 @@
             "properties": {
               "id": {
                 "type": "string",
-                "minLength": 1
+                "minLength": 1,
+                "pattern": "\\S"
               },
               "label": {
                 "type": "string",
-                "minLength": 1
+                "minLength": 1,
+                "pattern": "\\S"
               },
               "path": {
                 "type": "string",
                 "description": "Relative path to the icon theme JSON file",
-                "minLength": 1
+                "minLength": 1,
+                "pattern": "^(?!\\s*$)(?!\\s*(?:[A-Za-z]:|[\\\\/]))(?!\\s*\\.\\.(?:[\\\\/]|\\s*$))(?!.*[\\\\/]\\.\\.(?:[\\\\/]|\\s*$))(?=.*[^.\\\\/\\s]).*$"
               }
             }
           }

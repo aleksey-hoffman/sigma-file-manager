@@ -69,11 +69,13 @@ function isValidArchList(value: unknown): boolean {
 }
 
 function isSafeRelativePath(value: string): boolean {
-  if (!value.trim() || /^[a-zA-Z]:/.test(value) || value.startsWith('/') || value.startsWith('\\')) {
+  const normalizedValue = value.trim();
+
+  if (!normalizedValue || /^[a-zA-Z]:/.test(normalizedValue) || normalizedValue.startsWith('/') || normalizedValue.startsWith('\\')) {
     return false;
   }
 
-  const pathSegments = value
+  const pathSegments = normalizedValue
     .split(/[\\/]+/)
     .filter(segment => segment.length > 0 && segment !== '.');
 

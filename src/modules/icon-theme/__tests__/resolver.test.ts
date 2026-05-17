@@ -78,6 +78,57 @@ describe('icon theme resolver', () => {
     expect(icon).toBe('file.svg');
   });
 
+  it('falls back to the extension icon when a file name definition is missing', () => {
+    const theme = createTheme();
+    theme.fileNames = {
+      ...theme.fileNames,
+      'app.ts': 'missingIcon',
+    };
+
+    const icon = resolveLoadedIconThemeIcon(theme, {
+      name: 'app.ts',
+      parentName: 'src',
+      extension: 'ts',
+      isDirectory: false,
+    });
+
+    expect(icon).toBe('ts.svg');
+  });
+
+  it('falls back to the generic file icon when an extension definition is missing', () => {
+    const theme = createTheme();
+    theme.fileExtensions = {
+      ...theme.fileExtensions,
+      zip: 'missingIcon',
+    };
+
+    const icon = resolveLoadedIconThemeIcon(theme, {
+      name: 'archive.zip',
+      parentName: 'downloads',
+      extension: 'zip',
+      isDirectory: false,
+    });
+
+    expect(icon).toBe('file.svg');
+  });
+
+  it('falls back to the generic folder icon when a folder name definition is missing', () => {
+    const theme = createTheme();
+    theme.folderNames = {
+      ...theme.folderNames,
+      cache: 'missingIcon',
+    };
+
+    const icon = resolveLoadedIconThemeIcon(theme, {
+      name: 'cache',
+      parentName: 'workspace',
+      extension: null,
+      isDirectory: true,
+    });
+
+    expect(icon).toBe('folder.svg');
+  });
+
   it('produces extension candidates from longest to shortest', () => {
     expect(getFileExtensionCandidates('archive.tar.gz')).toEqual(['tar.gz', 'gz']);
   });

@@ -5,7 +5,8 @@
 import {
   beforeEach, describe, expect, it, vi,
 } from 'vitest';
-import { effectScope, ref } from 'vue';
+import { effectScope, nextTick, ref } from 'vue';
+import type { LoadedIconThemeDefinition } from '@/types/icon-theme';
 import { BUILTIN_NAVIGATOR_ICON_THEME_IDS } from '@/types/icon-theme';
 
 const {
@@ -148,7 +149,90 @@ describe('useNavigatorItemIcon', () => {
     folderScope.stop();
     fileScope.stop();
   });
+
+  it('ignores stale extension theme loads after a newer load starts', async () => {
+    userSettingsStoreMock.userSettings.navigator.folderIconTheme = 'extension:acme.icons:shared';
+    userSettingsStoreMock.userSettings.navigator.fileIconTheme = 'extension:acme.icons:shared';
+
+    const staleThemeLoad = createDeferredThemeLoad();
+    const currentThemeLoad = createDeferredThemeLoad();
+
+    loadInstalledIconThemeMock
+      .mockImplementationOnce(() => staleThemeLoad.promise)
+      .mockImplementationOnce(() => currentThemeLoad.promise);
+
+    const { useNavigatorItemIcon } = await import('@/composables/use-navigator-item-icon');
+    const iconScope = effectScope();
+    const iconResolutionEnabled = ref(true);
+    const iconResult = iconScope.run(() => useNavigatorItemIcon({
+      path: ref('C:/Projects/app.ts'),
+      name: ref('app.ts'),
+      isDir: ref(false),
+      extension: ref('ts'),
+      size: ref(32),
+      enabled: iconResolutionEnabled,
+    }));
+
+    await waitForLoadCount(1);
+
+    iconResolutionEnabled.value = false;
+    await nextTick();
+    iconResolutionEnabled.value = true;
+    await nextTick();
+    await waitForLoadCount(2);
+
+    currentThemeLoad.resolveTheme(createLoadedTheme('current'));
+    await waitForIcon(() => iconResult?.iconSrc.value, 'current:file');
+
+    staleThemeLoad.resolveTheme(createLoadedTheme('stale'));
+    await Promise.resolve();
+    await new Promise(resolveTimer => setTimeout(resolveTimer, 0));
+
+    expect(iconResult?.iconSrc.value).toBe('current:file');
+
+    iconScope.stop();
+  });
 });
+
+function createLoadedTheme(iconPrefix: string): LoadedIconThemeDefinition {
+  return {
+    iconDefinitions: {
+      file: {
+        src: `${iconPrefix}:file`,
+      },
+      folder: {
+        src: `${iconPrefix}:folder`,
+      },
+    },
+    file: 'file',
+    folder: 'folder',
+  };
+}
+
+function createDeferredThemeLoad() {
+  let resolveTheme: (theme: LoadedIconThemeDefinition) => void = () => {};
+  const promise = new Promise<LoadedIconThemeDefinition>((resolvePromise) => {
+    resolveTheme = resolvePromise;
+  });
+
+  return {
+    promise,
+    resolveTheme,
+  };
+}
+
+async function waitForLoadCount(expectedCallCount: number) {
+  for (let attemptIndex = 0; attemptIndex < 20; attemptIndex += 1) {
+    if (loadInstalledIconThemeMock.mock.calls.length >= expectedCallCount) {
+      return;
+    }
+
+    await Promise.resolve();
+    await new Promise(resolveTimer => setTimeout(resolveTimer, 0));
+  }
+
+  expect(loadInstalledIconThemeMock.mock.calls.length).toBeGreaterThanOrEqual(expectedCallCount);
+}
 
 async function waitForIcon(readValue: () => string | null | undefined, expectedValue: string) {
   for (let attemptIndex = 0; attemptIndex < 20; attemptIndex += 1) {

@@ -238,6 +238,23 @@ describe('manifest binary validation', () => {
     expect(() => assertValidManifestData(manifest)).toThrow('Invalid manifest: contributes.iconThemes are invalid');
   });
 
+  it('rejects icon theme contributions with trimmed unsafe paths', () => {
+    const manifest = {
+      ...createManifest(),
+      contributes: {
+        iconThemes: [
+          {
+            id: 'ocean',
+            label: 'Ocean',
+            path: ' ../themes/ocean-icon-theme.json',
+          },
+        ],
+      },
+    };
+
+    expect(() => assertValidManifestData(manifest)).toThrow('Invalid manifest: contributes.iconThemes are invalid');
+  });
+
   it('rejects icon-theme-only api extensions without a main entry when they include runtime contributions', () => {
     const { main: omittedMain, ...manifest } = {
       ...createManifest(),
