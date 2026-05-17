@@ -100,7 +100,8 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
         show: false,
       },
       showHiddenFiles: false,
-      iconTheme: BUILTIN_NAVIGATOR_ICON_THEME_IDS.default,
+      folderIconTheme: BUILTIN_NAVIGATOR_ICON_THEME_IDS.default,
+      fileIconTheme: BUILTIN_NAVIGATOR_ICON_THEME_IDS.default,
       listColumnVisibility: {
         items: true,
         size: true,

@@ -22,6 +22,7 @@ interface NavigatorItemIconParams {
   isDir: Ref<boolean> | (() => boolean);
   extension: Ref<string | null> | (() => string | null);
   size: Ref<number> | (() => number);
+  enabled?: Ref<boolean> | (() => boolean);
 }
 
 function readMaybeRef<T>(value: Ref<T> | (() => T) | undefined, fallback: T): T {
@@ -66,9 +67,18 @@ export function useNavigatorItemIcon(params: NavigatorItemIconParams) {
   const isDir = computed(() => readMaybeRef(params.isDir, false));
   const extension = computed(() => readMaybeRef(params.extension, null));
   const size = computed(() => readMaybeRef(params.size, 32));
-  const selectedIconTheme = computed(() => normalizeNavigatorIconThemeId(
-    userSettingsStore.userSettings.navigator.iconTheme,
-  ));
+  const enabled = computed(() => readMaybeRef(params.enabled, true));
+  const selectedIconTheme = computed(() => {
+    if (!enabled.value) {
+      return BUILTIN_NAVIGATOR_ICON_THEME_IDS.default;
+    }
+
+    return normalizeNavigatorIconThemeId(
+      isDir.value
+        ? userSettingsStore.userSettings.navigator.folderIconTheme
+        : userSettingsStore.userSettings.navigator.fileIconTheme,
+    );
+  });
   const parsedTheme = computed(() => parseNavigatorIconThemeId(selectedIconTheme.value));
   const useSystemIcons = computed(() => {
     return parsedTheme.value?.kind === 'builtin'

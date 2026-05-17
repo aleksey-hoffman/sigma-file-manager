@@ -256,7 +256,8 @@ export type UserSettingsNavigator = {
   layout: NavigatorLayout;
   infoPanel: UserSettingsNavigatorInfoPanel;
   showHiddenFiles: boolean;
-  iconTheme: NavigatorIconTheme;
+  folderIconTheme: NavigatorIconTheme;
+  fileIconTheme: NavigatorIconTheme;
   listColumnVisibility: ListColumnVisibility;
   listSortColumn: ListSortColumn | null;
   listSortDirection: ListSortDirection;
