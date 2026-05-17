@@ -61,12 +61,25 @@
             ],
             "properties": {
               "contributes": {
-                "required": [
-                  "themes"
+                "anyOf": [
+                  {
+                    "required": [
+                      "themes"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "iconThemes"
+                    ]
+                  }
                 ],
                 "additionalProperties": false,
                 "properties": {
                   "themes": {
+                    "type": "array",
+                    "minItems": 1
+                  },
+                  "iconThemes": {
                     "type": "array",
                     "minItems": 1
                   }

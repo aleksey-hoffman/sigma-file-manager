@@ -199,16 +199,25 @@ export interface ExtensionManifestBase {
   engines: ExtensionEngines;
 }
 
-export interface ThemeOnlyExtensionContributions {
-  themes: ExtensionThemeContribution[];
+type DeclarativeOnlyExtensionContributionGuards = {
   commands?: never;
   contextMenu?: never;
   sidebar?: never;
   toolbar?: never;
   configuration?: never;
   keybindings?: never;
-  iconThemes?: never;
-}
+};
+
+export type ThemeOnlyExtensionContributions = DeclarativeOnlyExtensionContributionGuards & (
+  | {
+    themes: ExtensionThemeContribution[];
+    iconThemes?: ExtensionIconThemeContribution[];
+  }
+  | {
+    themes?: ExtensionThemeContribution[];
+    iconThemes: ExtensionIconThemeContribution[];
+  }
+);
 
 export interface ApiExtensionManifest extends ExtensionManifestBase {
   extensionType: 'api';

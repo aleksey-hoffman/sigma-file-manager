@@ -153,19 +153,23 @@ function isValidManifestContributions(value: unknown): boolean {
   return true;
 }
 
-function hasThemeContributions(value: unknown): boolean {
+function hasDeclarativeThemeContributions(value: unknown): boolean {
   return isObjectRecord(value)
-    && Array.isArray(value.themes)
-    && value.themes.length > 0;
+    && (
+      (Array.isArray(value.themes) && value.themes.length > 0)
+      || (Array.isArray(value.iconThemes) && value.iconThemes.length > 0)
+    );
 }
 
 function canOmitManifestMain(value: Record<string, unknown>): boolean {
-  if (value.extensionType !== 'api' || !hasThemeContributions(value.contributes)) {
+  if (value.extensionType !== 'api' || !hasDeclarativeThemeContributions(value.contributes)) {
     return false;
   }
 
   return isObjectRecord(value.contributes)
-    && Object.keys(value.contributes).every(contributionKey => contributionKey === 'themes');
+    && Object.keys(value.contributes).every(
+      contributionKey => contributionKey === 'themes' || contributionKey === 'iconThemes',
+    );
 }
 
 function isValidManifestBinaryAsset(value: unknown): boolean {
@@ -268,9 +272,21 @@ function isValidIconThemeContribution(value: unknown): boolean {
 }
 
 function isValidIconThemeContributionList(value: unknown): boolean {
-  return Array.isArray(value)
-    && value.length > 0
-    && value.every(isValidIconThemeContribution);
+  if (!Array.isArray(value) || value.length === 0 || !value.every(isValidIconThemeContribution)) {
+    return false;
+  }
+
+  const seenThemeIds = new Set<string>();
+
+  for (const iconTheme of value) {
+    if (!isObjectRecord(iconTheme) || !isNonEmptyString(iconTheme.id) || seenThemeIds.has(iconTheme.id)) {
+      return false;
+    }
+
+    seenThemeIds.add(iconTheme.id);
+  }
+
+  return true;
 }
 
 function parseVersionComparator(value: string): {
