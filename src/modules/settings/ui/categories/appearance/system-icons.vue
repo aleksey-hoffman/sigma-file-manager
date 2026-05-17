@@ -6,17 +6,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectItemText,
-  SelectLabel,
-  SelectSeparator,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { BaseCombobox } from '@/components/base';
 import { SettingsItem } from '@/modules/settings';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { useExtensionsStore } from '@/stores/runtime/extensions';
@@ -111,74 +101,28 @@ const selectedFileIconTheme = computed({
       <div class="system-icons-settings">
         <div class="system-icons-settings__row">
           <span class="system-icons-settings__label">{{ t('settings.navigator.systemIconsDirectories') }}</span>
-          <Select
+          <BaseCombobox
             v-model="selectedFolderIconTheme"
+            :options="themeOptions"
+            :option-groups="iconThemeOptionGroups"
             by="id"
-          >
-            <SelectTrigger class="system-icons-settings__select-trigger">
-              <SelectValue>
-                {{ selectedFolderIconTheme?.label }}
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent align="end">
-              <SelectGroup
-                v-for="group in iconThemeOptionGroups"
-                :key="group.heading ?? 'builtin'"
-              >
-                <template v-if="group.heading">
-                  <SelectSeparator />
-                  <SelectLabel class="system-icons-settings__group-label">
-                    {{ group.heading }}
-                  </SelectLabel>
-                </template>
-                <SelectItem
-                  v-for="option in group.options"
-                  :key="option.id"
-                  :value="option"
-                >
-                  <SelectItemText>
-                    {{ option.label }}
-                  </SelectItemText>
-                </SelectItem>
-              </SelectGroup>
-            </SelectContent>
-          </Select>
+            display-key="label"
+            :search-placeholder="t('search')"
+            :empty-text="t('noData')"
+          />
         </div>
 
         <div class="system-icons-settings__row">
           <span class="system-icons-settings__label">{{ t('settings.navigator.systemIconsFiles') }}</span>
-          <Select
+          <BaseCombobox
             v-model="selectedFileIconTheme"
+            :options="themeOptions"
+            :option-groups="iconThemeOptionGroups"
             by="id"
-          >
-            <SelectTrigger class="system-icons-settings__select-trigger">
-              <SelectValue>
-                {{ selectedFileIconTheme?.label }}
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent align="end">
-              <SelectGroup
-                v-for="group in iconThemeOptionGroups"
-                :key="group.heading ?? 'builtin'"
-              >
-                <template v-if="group.heading">
-                  <SelectSeparator />
-                  <SelectLabel class="system-icons-settings__group-label">
-                    {{ group.heading }}
-                  </SelectLabel>
-                </template>
-                <SelectItem
-                  v-for="option in group.options"
-                  :key="option.id"
-                  :value="option"
-                >
-                  <SelectItemText>
-                    {{ option.label }}
-                  </SelectItemText>
-                </SelectItem>
-              </SelectGroup>
-            </SelectContent>
-          </Select>
+            display-key="label"
+            :search-placeholder="t('search')"
+            :empty-text="t('noData')"
+          />
         </div>
       </div>
     </template>
@@ -207,15 +151,4 @@ const selectedFileIconTheme = computed({
   font-size: 0.875rem;
 }
 
-.system-icons-settings__select-trigger {
-  width: 180px;
-}
-
-.system-icons-settings__group-label {
-  padding: 0.375rem 0.5rem;
-  color: hsl(var(--muted-foreground) / 60%);
-  font-size: 0.75rem;
-  font-weight: 400;
-  line-height: 1rem;
-}
 </style>

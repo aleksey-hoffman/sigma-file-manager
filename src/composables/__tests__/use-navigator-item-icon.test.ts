@@ -211,6 +211,7 @@ function createLoadedTheme(iconPrefix: string): LoadedIconThemeDefinition {
 
 function createDeferredThemeLoad() {
   let resolveTheme: (theme: LoadedIconThemeDefinition) => void = () => {};
+
   const promise = new Promise<LoadedIconThemeDefinition>((resolvePromise) => {
     resolveTheme = resolvePromise;
   });
