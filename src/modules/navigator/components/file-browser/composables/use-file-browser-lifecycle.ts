@@ -10,8 +10,9 @@ import normalizePath from '@/utils/normalize-path';
 export function useFileBrowserLifecycle(options: {
   tabRef: Ref<Tab | undefined>;
   currentPath: Ref<string>;
-  readDir: (path: string, shouldRefresh: boolean) => Promise<void>;
+  readDir: (path: string, addToHistory: boolean) => Promise<void>;
   init: () => void;
+  shouldAddExternalPathToHistory?: (tabId: string, path: string) => boolean;
 }) {
   onMounted(() => {
     options.init();
@@ -28,7 +29,11 @@ export function useFileBrowserLifecycle(options: {
     const pathChangedExternally = normalizePath(currentTab.path) !== normalizePath(options.currentPath.value);
 
     if (currentTab.id !== previousTab?.id || pathChangedExternally) {
-      await options.readDir(currentTab.path, false);
+      const addToHistory = currentTab.id === previousTab?.id
+        && pathChangedExternally
+        && (options.shouldAddExternalPathToHistory?.(currentTab.id, currentTab.path) ?? false);
+
+      await options.readDir(currentTab.path, addToHistory);
     }
   });
 }

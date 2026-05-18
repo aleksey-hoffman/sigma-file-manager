@@ -178,10 +178,28 @@ describe('workspaces storage duplicate tabs', () => {
     expect(workspacesStore.currentTab?.id).toBe('current-tab');
     expect(workspacesStore.currentTab?.path).toBe('D:/');
     expect(workspacesStore.currentTab?.filterQuery).toBe('');
+    expect(workspacesStore.consumeCurrentTabPathNavigationRequest('current-tab', 'D:/')).toBe(true);
+    expect(workspacesStore.consumeCurrentTabPathNavigationRequest('current-tab', 'D:/')).toBe(false);
     expect(invokeMock).toHaveBeenCalledWith('read_dir_with_timeout', {
       path: 'D:/',
       timeoutMs: expect.any(Number),
     });
+  });
+
+  it('does not request history when reopening the current tab path', async () => {
+    mockDirectoryReadResponses();
+
+    const currentTab = createTab('current-tab', 'D:/');
+    const workspacesStore = useWorkspacesStore();
+    workspacesStore.workspaces = [
+      createWorkspace([
+        [currentTab],
+      ]),
+    ];
+
+    await workspacesStore.openPathInCurrentTab('D:/');
+
+    expect(workspacesStore.consumeCurrentTabPathNavigationRequest('current-tab', 'D:/')).toBe(false);
   });
 
   it('opens a path in the focused split pane tab', async () => {

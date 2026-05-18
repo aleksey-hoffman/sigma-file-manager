@@ -40,6 +40,11 @@ type ClosedTabGroupHistoryEntry = {
   index: number;
 };
 
+type CurrentTabPathNavigationRequest = {
+  tabId: string;
+  path: string;
+};
+
 const CLOSED_TAB_GROUP_HISTORY_LIMIT = 20;
 
 export const useWorkspacesStore = defineStore('workspaces', () => {
@@ -56,6 +61,7 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
     entryPath: string;
   }>>([]);
   const closedTabGroupHistory = ref<ClosedTabGroupHistoryEntry[]>([]);
+  const currentTabPathNavigationRequest = ref<CurrentTabPathNavigationRequest | null>(null);
   const pendingLaunchReveal = computed(() => pendingLaunchRevealQueue.value[0] ?? null);
 
   const primaryWorkspace: ComputedRef<Workspace | null> = computed(() => (
@@ -454,11 +460,32 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
       return;
     }
 
+    currentTabPathNavigationRequest.value = normalizePath(currentTab.value.path) === normalizePath(path)
+      ? null
+      : {
+          tabId: currentTab.value.id,
+          path,
+        };
     updateTabPath(currentTab.value, path);
     currentTab.value.dirEntries = [];
     currentTab.value.selectedDirEntries = [];
     currentTab.value.filterQuery = '';
     await loadCurrentTabGroup();
+  }
+
+  function consumeCurrentTabPathNavigationRequest(tabId: string, path: string): boolean {
+    const request = currentTabPathNavigationRequest.value;
+
+    if (
+      !request
+      || request.tabId !== tabId
+      || normalizePath(request.path) !== normalizePath(path)
+    ) {
+      return false;
+    }
+
+    currentTabPathNavigationRequest.value = null;
+    return true;
   }
 
   async function restoreLastClosedTabGroup(): Promise<boolean> {
@@ -898,6 +925,7 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
     addNewTabGroup,
     openNewTabGroup,
     openPathInCurrentTab,
+    consumeCurrentTabPathNavigationRequest,
     restoreLastClosedTabGroup,
     openOrFocusTabGroup,
     preloadDefaultTab,

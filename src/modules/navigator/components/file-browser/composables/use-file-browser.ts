@@ -13,6 +13,7 @@ import { useGlobalSearchStore } from '@/stores/runtime/global-search';
 import { useClipboardStore } from '@/stores/runtime/clipboard';
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
 import { useUserStatsStore } from '@/stores/storage/user-stats';
+import { useWorkspacesStore } from '@/stores/storage/workspaces';
 import {
   registerNavigationProvider,
   unregisterNavigationProvider,
@@ -96,6 +97,7 @@ function setupNavigationDataSource(
   const userSettingsStore = useUserSettingsStore();
   const dismissalLayerStore = useDismissalLayerStore();
   const globalSearchStore = useGlobalSearchStore();
+  const workspacesStore = useWorkspacesStore();
 
   const navigation = useFileBrowserNavigation(
     options.tab,
@@ -135,6 +137,7 @@ function setupNavigationDataSource(
     currentPath: navigation.currentPath,
     readDir: navigation.readDir,
     init: navigation.init,
+    shouldAddExternalPathToHistory: workspacesStore.consumeCurrentTabPathNavigationRequest,
   });
 
   return {

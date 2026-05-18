@@ -90,8 +90,13 @@ function getExtensionPageShortcutLabel(pageId: string): string {
 }
 
 async function openDrive(path: string) {
-  await workspacesStore.openPathInCurrentTab(path);
-  router.push({ name: 'navigator' });
+  if (router.currentRoute.value.name === 'navigator') {
+    await workspacesStore.openPathInCurrentTab(path);
+    return;
+  }
+
+  await workspacesStore.openNewTabGroup(path);
+  await router.push({ name: 'navigator' });
 }
 
 function getDriveIcon(drive: {

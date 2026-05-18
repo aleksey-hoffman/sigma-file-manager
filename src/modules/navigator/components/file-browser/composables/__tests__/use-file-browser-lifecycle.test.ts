@@ -47,6 +47,34 @@ describe('useFileBrowserLifecycle', () => {
     expect(readDir).toHaveBeenCalledWith('D:/', false);
   });
 
+  it('records external current-tab navigation in history when requested', async () => {
+    const currentPath = ref('C:/Users/aleks/Projects');
+    const tabRef = ref<Tab | undefined>(createTab('C:/Users/aleks/Projects'));
+    const readDir = vi.fn();
+    const init = vi.fn();
+    const shouldAddExternalPathToHistory = vi.fn().mockReturnValue(true);
+
+    mount(defineComponent({
+      setup() {
+        useFileBrowserLifecycle({
+          tabRef,
+          currentPath,
+          readDir,
+          init,
+          shouldAddExternalPathToHistory,
+        });
+        return {};
+      },
+      template: '<div />',
+    }));
+
+    tabRef.value = createTab('D:/');
+    await nextTick();
+
+    expect(shouldAddExternalPathToHistory).toHaveBeenCalledWith('current-tab', 'D:/');
+    expect(readDir).toHaveBeenCalledWith('D:/', true);
+  });
+
   it('does not reload when readDir already synchronized the current path', async () => {
     const currentPath = ref('D:/');
     const tabRef = ref<Tab | undefined>(createTab('C:/Users/aleks/Projects'));
