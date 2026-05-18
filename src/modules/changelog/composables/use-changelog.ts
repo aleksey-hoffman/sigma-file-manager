@@ -17,6 +17,7 @@ export interface Release {
   version: string;
   date: string;
   summary: string;
+  contents: string;
   features: ReleaseFeature[];
 }
 
@@ -35,6 +36,7 @@ function parseChangelog(markdown: string): Release[] {
 
     const lines = releaseContent.split('\n');
     let summary = '';
+    const contents: string[] = [];
     const features: ReleaseFeature[] = [];
 
     let currentFeatureTitle = '';
@@ -67,6 +69,9 @@ function parseChangelog(markdown: string): Release[] {
       else if (trimmedLine && !summary) {
         summary = trimmedLine;
       }
+      else if (trimmedLine) {
+        contents.push(/^\s*-\s/.test(line) ? line : trimmedLine);
+      }
     }
 
     if (currentFeatureTitle) {
@@ -77,6 +82,7 @@ function parseChangelog(markdown: string): Release[] {
       version,
       date,
       summary,
+      contents: contents.join('\n'),
       features,
     });
   }

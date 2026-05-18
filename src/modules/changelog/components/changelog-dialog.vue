@@ -4,7 +4,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
 import {
   SparklesIcon,
@@ -31,6 +31,7 @@ const { releases, appVersion, isOpen, markAsSeen } = useChangelog();
 
 const selectedVersion = ref<string>(releases.value[0]?.version || '');
 const isMobileNavOpen = ref(false);
+const contentElementRef = ref<HTMLElement | null>(null);
 
 const selectedRelease = computed<Release | undefined>(() => {
   return releases.value.find(release => release.version === selectedVersion.value);
@@ -61,6 +62,20 @@ function selectVersion(version: string) {
   selectedVersion.value = version;
   isMobileNavOpen.value = false;
 }
+
+async function scrollContentToTop() {
+  await nextTick();
+
+  const viewportElement = contentElementRef.value?.querySelector<HTMLElement>('.sigma-ui-scroll-area__viewport');
+
+  if (viewportElement) {
+    viewportElement.scrollTop = 0;
+  }
+}
+
+watch(selectedVersion, () => {
+  scrollContentToTop();
+});
 
 function isSelected(version: string) {
   return selectedVersion.value === version;
@@ -111,10 +126,20 @@ function renderMedia(alt: string, src: string): string {
 function renderInlineFormatting(text: string): string {
   let result = text;
   result = result.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-  result = result.replace(/`([^`]*)`/g, (_, code) =>
-    `<code class="changelog-dialog__inline-code">${escapeHtml(code)}</code>`,
-  );
+  result = result.replace(/`([^`]*)`/g, (matchedCode) => {
+    const code = matchedCode.slice(1, -1);
+    return `<code class="changelog-dialog__inline-code">${escapeHtml(code)}</code>`;
+  });
+  result = result.replace(/\[([^\]]+)\]\((#[^)]+)\)/g, '<a class="changelog-dialog__content-link" href="$2">$1</a>');
   return result;
+}
+
+function createAnchorId(text: string): string {
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/\s/g, '-')
+    .replace(/[^\p{L}\p{N}-]/gu, '');
 }
 
 function getListIndent(line: string): number {
@@ -163,7 +188,8 @@ function renderMarkdown(text: string): string {
     }
     else if (trimmedLine.startsWith('#### ')) {
       endList();
-      result.push(`<h4 class="changelog-dialog__feature-subheading">${renderInlineFormatting(trimmedLine.slice(5))}</h4>`);
+      const headingText = trimmedLine.slice(5);
+      result.push(`<h4 id="${createAnchorId(headingText)}" class="changelog-dialog__feature-subheading">${renderInlineFormatting(headingText)}</h4>`);
     }
     else {
       const listIndent = getListIndent(line);
@@ -201,7 +227,7 @@ function renderMarkdown(text: string): string {
 
   return sanitizeHtml(result.join(''), {
     ADD_TAGS: ['video', 'source'],
-    ADD_ATTR: ['class', 'controls', 'muted', 'loop', 'playsinline', 'src', 'type', 'alt'],
+    ADD_ATTR: ['class', 'controls', 'muted', 'loop', 'playsinline', 'src', 'type', 'alt', 'href', 'id'],
   });
 }
 </script>
@@ -318,14 +344,17 @@ function renderMarkdown(text: string): string {
           @click="closeMobileNav"
         />
 
-        <main class="changelog-dialog__content">
+        <main
+          ref="contentElementRef"
+          class="changelog-dialog__content"
+        >
           <ScrollArea class="changelog-dialog__content-scroll">
             <div
               v-if="selectedRelease"
               class="changelog-dialog__release"
             >
               <header class="changelog-dialog__release-header">
-                <span class="changelog-dialog__release-label">{{ t('changelog.title') }}</span>
+                <span class="changelog-dialog__release-label">{{ t('extensions.tabs.changelog') }}</span>
                 <div class="changelog-dialog__release-title-row">
                   <h2 class="changelog-dialog__release-title">
                     {{ selectedRelease.version }}
@@ -342,13 +371,22 @@ function renderMarkdown(text: string): string {
                 v-html="sanitizeHtml(renderInlineFormatting(selectedRelease.summary))"
               />
 
+              <div
+                v-if="selectedRelease.contents"
+                class="changelog-dialog__release-contents"
+                v-html="renderMarkdown(selectedRelease.contents)"
+              />
+
               <div class="changelog-dialog__features">
                 <article
                   v-for="(feature, featureIndex) in selectedRelease.features"
                   :key="featureIndex"
                   class="changelog-dialog__feature"
                 >
-                  <h3 class="changelog-dialog__feature-title">
+                  <h3
+                    :id="createAnchorId(feature.title)"
+                    class="changelog-dialog__feature-title"
+                  >
                     {{ feature.title }}
                   </h3>
                   <div
@@ -571,6 +609,21 @@ function renderMarkdown(text: string): string {
   font-weight: 500;
 }
 
+.changelog-dialog__release-contents {
+  padding: 1rem 1.25rem;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  margin-bottom: 2rem;
+  background-color: hsl(var(--muted) / 20%);
+  color: hsl(var(--muted-foreground));
+  font-size: 0.9375rem;
+  line-height: 1.6;
+}
+
+.changelog-dialog__release-contents .changelog-dialog__feature-list {
+  margin: 0;
+}
+
 .changelog-dialog__features {
   display: flex;
   flex-direction: column;
@@ -629,6 +682,15 @@ function renderMarkdown(text: string): string {
 
 .changelog-dialog__feature-list li {
   margin-bottom: 0.25rem;
+}
+
+.changelog-dialog__content-link {
+  color: hsl(var(--primary));
+  text-decoration: none;
+}
+
+.changelog-dialog__content-link:hover {
+  text-decoration: underline;
 }
 
 .changelog-dialog__inline-code {
