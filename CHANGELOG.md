@@ -1,5 +1,215 @@
 # Changelog
 
+## [2.1.0] - May 2026
+
+**Summary:** Navigator performance improvements, generated thumbnails, extension themes, printing, file previews, new shortcuts, address editor improvements, status center redesign, and tab/navigation polish.
+
+- [New Features](#new-features)
+  - [Printing](#printing)
+  - [File Drop To Tabs](#file-drop-to-tabs)
+  - [File Preview In Info Panel](#file-preview-in-info-panel)
+  - [Navigator List Columns](#navigator-list-columns)
+- [Extensions](#extensions)
+  - [App Themes From Extensions](#app-themes-from-extensions)
+  - [Icon Themes From Extensions](#icon-themes-from-extensions)
+- [New Settings](#new-settings)
+- [New Shortcuts](#new-shortcuts)
+- [UX Improvements](#ux-improvements)
+  - [Large Directory Performance](#large-directory-performance)
+  - [Quick Search](#quick-search)
+  - [Address Editor](#address-editor)
+  - [Status Center](#status-center)
+  - [Navigation And Tabs](#navigation-and-tabs)
+  - [Shortcut Management](#shortcut-management)
+- [UI Improvements](#ui-improvements)
+- [Bug Fixes](#bug-fixes)
+
+### New Features
+
+#### Printing
+
+Print selected files directly from the navigator using the context menu, actions menu, or `Ctrl+O`.
+
+- **Supported formats**: images, PDF, text formats;
+- **Quick exit**: close the print view with `Escape`;
+
+![printing](./public/changelog/assets/2.1.0/printing.webp)
+
+#### File Drop To Tabs
+
+Drag files or directories onto tabs to move or copy them into another tab's directory.
+
+- **Drop target tabs**: tabs become drop targets while dragging files in the navigator;
+- **Hover activation**: hovering over a tab while dragging can switch to that tab before dropping;
+- **Split tabs**: directory tab groups keep their normal drop behavior while preserving split-view tab structure;
+
+![file-drop-to-tabs](./public/changelog/assets/2.1.0/file-drop-to-tabs.webp)
+
+#### File Preview In Info Panel
+
+The info panel can now preview all Quick View-supported file types, not just images and videos.
+
+- **Media previews**: images use generated thumbnails, videos and audio include native controls, and PDFs render inline;
+- **Text previews**: text files show a compact decoded preview with a safe size limit;
+- **Fallbacks**: unsupported files and folders keep simple icon placeholders;
+
+![info-panel-file-preview](./public/changelog/assets/2.1.0/info-panel-file-preview.webp)
+
+#### Navigator List Columns
+
+List view has more optional columns and better inline metadata control.
+
+- **Created column**: show and sort by creation date;
+- **Tags column**: show tags directly in list view and add, remove, or edit tags from the column;
+
+![navigator-list-columns](./public/changelog/assets/2.1.0/navigator-list-columns.webp)
+
+### Extensions
+
+#### App Themes From Extensions
+
+Extensions can now contribute full app color themes. Installed theme extensions appear in the theme selector.
+
+#### Icon Themes From Extensions
+
+Extensions can now contribute navigator icon themes for folders and files.
+
+- **Separate choices**: choose folder and file icon themes independently in `Settings > UI appearance > Icon Theme`;
+- **Built-in and extension themes**: use the built-in default/system icon themes or any enabled extension-provided theme;
+- **Theme matching**: contributed themes can define icons by file extension, file name, folder name, and expanded folder state;
+
+### New Settings
+
+- **Bold active tab text**: make the active tab title bold (`Settings > Tabs > Tab appearance > Bold active tab text`);
+
+![bold-active-tab-text-setting](./public/changelog/assets/2.1.0/bold-active-tab-text-setting.webp)
+
+### New Shortcuts
+
+- **Toggle split view** (`Ctrl+S`): show or hide split view in the navigator;
+- **Restore closed tab** (`Ctrl+Shift+T`): restore the most recently closed tab group;
+- **Create file / directory** (`Ctrl+Shift+M` / `Ctrl+Shift+N`): create a new file or directory in the current directory;
+- **Print selected file** (`Ctrl+O`): print the selected file;
+- **Open copied path** (`Ctrl+Shift+V`): open a valid path from the clipboard;
+- **Switch pages** (`Alt+1` - `Alt+5`): switch between Home, Navigator, Dashboard, Settings, and Extensions;
+- **Navigate directory history** (`Alt+Left` / `Alt+Right`): go back or forward in navigator history;
+- **Navigate to parent directory** (`Alt+Up`): go to the parent directory;
+- **Mouse history buttons** (`Mouse Button 4` / `Mouse Button 5`): navigate back and forward with mouse side buttons;
+
+![create-file-directory-shortcuts](./public/changelog/assets/2.1.0/create-file-directory-shortcuts.webp)
+
+![navigator-shortcuts](./public/changelog/assets/2.1.0/navigator-shortcuts.webp)
+
+### UX Improvements
+
+#### Large Directory Performance
+
+Navigation, quick search, and media-heavy folders are more responsive and use less memory.
+
+- **Generated thumbnails**: image and video thumbnails are generated at smaller sizes instead of loading full media into every file card;
+- **Progressive images**: grid image cards can show a blurred low-resolution thumbnail before the final thumbnail is ready;
+- **Thumbnail cancellation**: thumbnail generation can be cancelled when the folder or visible entries change;
+- **Rendering performance**: large directory entries use more efficient rendering and Quick View uses generated thumbnails with a virtual list;
+
+![low-res-image-thumbnail-preview](./public/changelog/assets/2.1.0/low-res-image-thumbnail-preview.webp)
+
+#### Quick Search
+
+Quick search now has 2 modes: passive and active:
+
+- **Passive mode**: acitvates automatically when you start typing. It filters entries without focusing search input and doesn't prevent navigation. 
+- **Active mode**: activates with `Ctrl+F`. It focuses search input and prevents navigation but allows more fine-grained control over entered query.
+
+Other changes:
+
+- **Type to filter**: typing alphanumeric keys now always starts quick search (passive mode) in the active pane;
+- **Keyboard navigation**: the first matching item is auto-selected;
+- **Popover design**: the quick search popover is more compact and avoids covering directory items;
+
+![quick-search](./public/changelog/assets/2.1.0/quick-search.webp)
+
+#### Address Editor
+
+The address editor can now be used as a broader path launcher.
+
+- **Files and directories**: open files as well as directories from the address editor;
+- **Frequent paths**: switch to a mode focused on quickly opening frequently used paths;
+- **Suggestions**: browse directory entries, exact matches, recent paths, tagged items, user folders, and system drives;
+- **Keyboard actions**: navigate backward, forward, upward, and reveal an entry in its parent directory from the editor;
+
+![address-editor](./public/changelog/assets/2.1.0/address-editor.webp)
+
+#### Status Center
+
+The status center is now a compact toolbar widget with clearer operation groups.
+
+- **Active count**: the toolbar button expands into a pill that shows active operation count;
+- **Operation groups**: active and completed operations are separated, with completed operations in a collapsible section;
+- **Cancel all**: cancel active operations in parallel from the section header;
+- **Job cards**: operation cards show clearer type and status labels such as `Copy | Success` or `Archive | Error`;
+- **Clipboard recovery**: paste clears the clipboard as soon as a job is queued and restores it if the job fails;
+
+![status-center](./public/changelog/assets/2.1.0/status-center.webp)
+
+#### Navigation And Tabs
+
+Navigator movement and tab behavior are more predictable.
+
+- **Sidebar drives**: clicking a drive in the navigation sidebar opens it in the current tab;
+- **Current directory**: the current address part is more pronounced, and its context menu opens from right click on the last address part;
+- **Closed tabs**: restored tabs return to their previous position, preserve renamed paths, and redirect deleted paths to home;
+- **Responsive layout**: toolbar navigation buttons collapse earlier, split-view address bars move to a second row in very narrow panes, and compact tabs keep consistent height;
+
+![nav-sidebar-drive-current-tab](./public/changelog/assets/2.1.0/nav-sidebar-drive-current-tab.webp)
+
+![current-directory-address-bar](./public/changelog/assets/2.1.0/current-directory-address-bar.webp)
+
+#### Shortcut Management
+
+Shortcut editing now handles conflicts and customization more clearly.
+
+- **Multiple bindings**: assign multiple shortcuts to one action;
+- **Unassigned shortcuts**: unassign shortcuts;
+- **Conflict replacement**: replace a conflicting shortcut directly from the conflict prompt;
+- **Shortcut list menu**: manage shortcuts from a context menu in the shortcuts list;
+
+![shortcut-editor](./public/changelog/assets/2.1.0/shortcut-editor.webp)
+
+### UI Improvements
+
+- **Selection ring**: improved navigator selection ring opacity, offset, pane-header styling, and keyboard focus behavior;
+- **Tab bar**: improved tab bar styles and active tab readability;
+- **Theme selection**: improved theme selection design;
+- **Quick access**: refined quick access panel styling;
+- **Splash screen**: added an app splash screen during startup;
+- **Popover visibility**: improved visibility for translucent popover elements;
+- **Tooltips**: added tooltips to more toolbar buttons;
+- **Translations**: improved Japanese and Vietnamese language strings and cleaned up locale structure;
+
+![selection-ring](./public/changelog/assets/2.1.0/selection-ring.webp)
+
+![tab-bar-styles](./public/changelog/assets/2.1.0/tab-bar-styles.webp)
+
+![narrow-window-layout](./public/changelog/assets/2.1.0/narrow-window-layout.webp)
+
+### Bug Fixes
+
+- **Keyboard scrolling**: fixed the issue with the first row hiding behind the sticky header;
+- **Startup freeze**: fixed rare multi-minute startup freezes on Windows caused by slow synchronous system calls during startup and update checks;
+- **Archive extraction**: preserved Unix file modes when extracting archives;
+- **Extension HTTP**: restored permanent non-2xx response handling and made retry waits cancellable;
+- **Command palette**: fixed the command palette toolbar button when its shortcut is customized;
+- **Grid range selection**: fixed range selection in grid view selecting entries outside its scope;
+- **Context menus**: fixed selected-item and current-directory context menus staying open after action clicks;
+- **Shortcut registration**: fixed shortcut registration errors after window reload;
+- **Theme application**: fixed selected themes not applying in all windows;
+- **macOS moves**: fixed cross-volume move handling on macOS and enabled bundle targets;
+- **Default file manager**: made Windows default file manager registry restore safer when enabling fails or when restoring previous system values;
+
+![keyboard-scroll-floating-header](./public/changelog/assets/2.1.0/keyboard-scroll-floating-header.webp)
+
+---
+
 ## [2.0.0-beta.3] - April 2026
 
 **Summary:** Extensions system with marketplace, LAN file sharing, quick access menu, zip archives, WSL drives, tag editing, enhanced quick view and search, visual effects improvements, and many UX and stability improvements.
