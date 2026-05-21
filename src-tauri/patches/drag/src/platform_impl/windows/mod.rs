@@ -29,6 +29,7 @@ use windows::{
             IDropSource, IDropSource_Impl, CF_HDROP, DROPEFFECT, DROPEFFECT_COPY, DROPEFFECT_MOVE,
         },
         System::SystemServices::{MK_LBUTTON, MODIFIERKEYS_FLAGS},
+        Storage::FileSystem::GetDriveTypeW,
         UI::{
             Shell::{
                 BHID_DataObject, CLSID_DragDropHelper, Common, IDragSourceHelper, IShellItem,
@@ -41,6 +42,8 @@ use windows::{
 };
 
 mod image;
+
+const REMOTE_DRIVE_TYPE: u32 = 4;
 
 static mut OLE_RESULT: Result<()> = Ok(());
 static OLE_UNINITIALIZE: Once = Once::new();
@@ -159,8 +162,8 @@ impl IDataObject_Impl for DataObject {
         }
     }
 
-    fn GetDataHere(&self, _pformatetc: *const FORMATETC, _pmedium: *mut STGMEDIUM) -> Result<()> {
-        Err(Error::new(DV_E_FORMATETC, HSTRING::new()))
+    fn GetDataHere(&self, pformatetc: *const FORMATETC, pmedium: *mut STGMEDIUM) -> Result<()> {
+        unsafe { self.inner_shell_obj.GetDataHere(pformatetc, pmedium) }
     }
 
     fn QueryGetData(&self, pformatetc: *const FORMATETC) -> HRESULT {
@@ -175,11 +178,13 @@ impl IDataObject_Impl for DataObject {
 
     fn GetCanonicalFormatEtc(
         &self,
-        _pformatectin: *const FORMATETC,
+        pformatectin: *const FORMATETC,
         pformatetcout: *mut FORMATETC,
     ) -> HRESULT {
-        unsafe { (*pformatetcout).ptd = std::ptr::null_mut() };
-        E_NOTIMPL
+        unsafe {
+            self.inner_shell_obj
+                .GetCanonicalFormatEtc(pformatectin, pformatetcout)
+        }
     }
 
     fn SetData(
@@ -191,8 +196,8 @@ impl IDataObject_Impl for DataObject {
         unsafe { self.inner_shell_obj.SetData(pformatetc, pmedium, frelease) }
     }
 
-    fn EnumFormatEtc(&self, _dwdirection: u32) -> Result<IEnumFORMATETC> {
-        Err(Error::new(E_NOTIMPL, HSTRING::new()))
+    fn EnumFormatEtc(&self, dwdirection: u32) -> Result<IEnumFORMATETC> {
+        unsafe { self.inner_shell_obj.EnumFormatEtc(dwdirection) }
     }
 
     fn DAdvise(
@@ -388,20 +393,60 @@ fn format_hdrop_path(path: &Path) -> PathBuf {
     PathBuf::from(path_str)
 }
 
+fn needs_custom_hdrop_paths(shell_paths: &[PathBuf]) -> bool {
+    shell_paths
+        .iter()
+        .any(|path| is_network_drag_path(path))
+}
+
+fn is_network_drag_path(path: &Path) -> bool {
+    let path_str = path.to_string_lossy();
+    if path_str.starts_with(r"\\?\UNC\") {
+        return true;
+    }
+    if path_str.starts_with(r"\\") && !path_str.starts_with(r"\\?\") {
+        return true;
+    }
+    is_remote_drive_letter(path)
+}
+
+fn is_remote_drive_letter(path: &Path) -> bool {
+    let path_str = path.to_string_lossy();
+    let Some(first_char) = path_str.chars().next() else {
+        return false;
+    };
+    if !first_char.is_ascii_alphabetic() {
+        return false;
+    }
+    let Some(':') = path_str.chars().nth(1) else {
+        return false;
+    };
+
+    let drive_root = format!("{}:\\", first_char.to_ascii_uppercase());
+    let wide_drive_root: Vec<u16> = drive_root.encode_utf16().chain(once(0)).collect();
+    unsafe {
+        GetDriveTypeW(PCWSTR::from_raw(wide_drive_root.as_ptr())) == REMOTE_DRIVE_TYPE
+    }
+}
+
 fn get_file_data_object(
     shell_paths: &[PathBuf],
     hdrop_paths: Vec<PathBuf>,
 ) -> crate::Result<IDataObject> {
+    let use_custom_hdrop = needs_custom_hdrop_paths(shell_paths);
+
     unsafe {
         let inner_shell_obj = match get_shell_item_array(shell_paths) {
-            Ok(shell_item_array) => match shell_item_array.BindToHandler(None, &BHID_DataObject) {
-                Ok(data_object) => data_object,
-                Err(_) => SHCreateDataObject(None, None, None)?,
-            },
-            Err(_) => SHCreateDataObject(None, None, None)?,
+            Ok(shell_item_array) => shell_item_array.BindToHandler(None, &BHID_DataObject)?,
+            Err(_) if use_custom_hdrop => SHCreateDataObject(None, None, None)?,
+            Err(error) => return Err(error),
         };
 
-        Ok(DataObject::from_paths(hdrop_paths, inner_shell_obj).into())
+        if use_custom_hdrop {
+            Ok(DataObject::from_paths(hdrop_paths, inner_shell_obj).into())
+        } else {
+            Ok(inner_shell_obj)
+        }
     }
 }
 
@@ -481,5 +526,22 @@ mod tests {
             format_hdrop_path(&path),
             PathBuf::from(r"Y:\data\file.txt")
         );
+    }
+
+    #[test]
+    fn is_network_drag_path_detects_unc_paths() {
+        assert!(is_network_drag_path(&PathBuf::from(
+            r"\\?\UNC\server\share\file.txt"
+        )));
+        assert!(is_network_drag_path(&PathBuf::from(
+            r"\\server\share\file.txt"
+        )));
+    }
+
+    #[test]
+    fn is_network_drag_path_does_not_flag_local_extended_paths() {
+        assert!(!is_network_drag_path(&PathBuf::from(
+            r"\\?\C:\Users\aleks\file.txt"
+        )));
     }
 }

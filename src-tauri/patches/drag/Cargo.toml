@@ -93,6 +93,7 @@ features = [
     "Win32_UI_WindowsAndMessaging",
     "Win32_Graphics_Imaging",
     "Win32_Graphics_Gdi",
+    "Win32_Storage_FileSystem",
 ]
 
 [target.'cfg(target_os = "windows")'.dependencies.windows-core]
