@@ -194,6 +194,7 @@ Shortcut editing now handles conflicts and customization more clearly.
 
 ### Bug Fixes
 
+- **Mapped drives**: fixed mapped network drive dnd out is not working;
 - **Keyboard scrolling**: fixed the issue with the first row hiding behind the sticky header;
 - **Startup freeze**: fixed rare multi-minute startup freezes on Windows caused by slow synchronous system calls during startup and update checks;
 - **Archive extraction**: preserved Unix file modes when extracting archives;
