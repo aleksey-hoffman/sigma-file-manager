@@ -175,6 +175,10 @@ Shortcut editing now handles conflicts and customization more clearly.
 
 ![shortcut-editor](./public/changelog/assets/2.1.0/shortcut-editor.webp)
 
+#### Drag-and-drop
+
+Allow to start outbound drag by switching apps. Now files can be dragged out with Alt+Tab (not only by cursor leaving window);
+
 ### UI Improvements
 
 - **Selection ring**: improved navigator selection ring opacity, offset, pane-header styling, and keyboard focus behavior;
