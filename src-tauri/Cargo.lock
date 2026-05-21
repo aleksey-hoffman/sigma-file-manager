@@ -1489,8 +1489,6 @@ dependencies = [
 [[package]]
 name = "drag"
 version = "2.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "67fd9ae1736d6ebb2e472740fbee86fb2178b8d56feb98a6751411d4c95b7e72"
 dependencies = [
  "cocoa",
  "core-graphics 0.24.0",

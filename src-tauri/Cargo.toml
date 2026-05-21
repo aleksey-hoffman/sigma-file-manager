@@ -69,6 +69,11 @@ rcgen = "0.14"
 axum-server = { version = "0.8", features = ["tls-rustls"] }
 rustls = { version = "0.23", features = ["ring"] }
 
+# TODO: Remove this patch once drag-rs ships a fix for network-path outbound drag on Windows.
+# Upstream: https://github.com/crabnebula-dev/drag-rs/issues/72
+[patch.crates-io]
+drag = { path = "./patches/drag" }
+
 [dev-dependencies]
 tempfile = "3"
 tokio = { version = "1", features = ["macros", "test-util"] }

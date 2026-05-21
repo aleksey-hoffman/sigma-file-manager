@@ -207,13 +207,19 @@ async function initiateOutboundDrag() {
 
   cancelDrag();
 
-  await startOutboundDrag({
-    item: filePaths,
-    icon: iconPath,
-    mode: 'copy',
-  });
-
-  isOutboundDragActive = false;
+  try {
+    await startOutboundDrag({
+      item: filePaths,
+      icon: iconPath,
+      mode: 'copy',
+    });
+  }
+  catch (error) {
+    console.error('Failed to start outbound drag:', error);
+  }
+  finally {
+    isOutboundDragActive = false;
+  }
 }
 
 function updateTargetAtPosition(clientX: number, clientY: number) {
