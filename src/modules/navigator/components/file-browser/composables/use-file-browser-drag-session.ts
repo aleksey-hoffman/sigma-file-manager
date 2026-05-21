@@ -5,6 +5,7 @@
 import { ref, type Ref } from 'vue';
 import { startDrag as startOutboundDrag } from '@crabnebula/tauri-plugin-drag';
 import { resolveResource } from '@tauri-apps/api/path';
+import { getCurrentWindow } from '@tauri-apps/api/window';
 import type { DirEntry } from '@/types/dir-entry';
 import { useDismissalLayerStore } from '@/stores/runtime/dismissal-layer';
 import {
@@ -72,6 +73,7 @@ let currentTargetElement: Element | null = null;
 let isOutboundDragActive = false;
 let cachedDragIconPath: string | null = null;
 let dismissalLayerId: string | null = null;
+let windowFocusUnlisten: (() => void) | null = null;
 
 function collectDropTargets() {
   dropTargets = [];
@@ -222,6 +224,50 @@ async function initiateOutboundDrag() {
   }
 }
 
+function tryInitiateOutboundDragOnContextExit() {
+  if (!activeSession || isOutboundDragActive) {
+    return;
+  }
+
+  void initiateOutboundDrag();
+}
+
+function handleWindowBlur() {
+  tryInitiateOutboundDragOnContextExit();
+}
+
+function handleVisibilityChange() {
+  if (document.hidden) {
+    tryInitiateOutboundDragOnContextExit();
+  }
+}
+
+async function attachOutboundDragTriggers() {
+  window.addEventListener('blur', handleWindowBlur);
+  document.addEventListener('visibilitychange', handleVisibilityChange);
+
+  try {
+    const appWindow = getCurrentWindow();
+    windowFocusUnlisten = await appWindow.onFocusChanged(({ payload: focused }) => {
+      if (!focused) {
+        tryInitiateOutboundDragOnContextExit();
+      }
+    });
+  }
+  catch {
+  }
+}
+
+function detachOutboundDragTriggers() {
+  window.removeEventListener('blur', handleWindowBlur);
+  document.removeEventListener('visibilitychange', handleVisibilityChange);
+
+  if (windowFocusUnlisten) {
+    windowFocusUnlisten();
+    windowFocusUnlisten = null;
+  }
+}
+
 function updateTargetAtPosition(clientX: number, clientY: number) {
   const target = findDropTarget(clientX, clientY);
   let newTargetPath = target ? target.path : '';
@@ -319,6 +365,8 @@ function cleanupDragSession() {
   window.removeEventListener('mouseup', handleMouseUp);
   window.removeEventListener('keydown', handleKeyDown);
   window.removeEventListener('keyup', handleKeyUp);
+
+  detachOutboundDragTriggers();
 }
 
 function startDragSession(options: DragSessionOptions) {
@@ -350,6 +398,8 @@ function startDragSession(options: DragSessionOptions) {
   window.addEventListener('mouseup', handleMouseUp);
   window.addEventListener('keydown', handleKeyDown);
   window.addEventListener('keyup', handleKeyUp);
+
+  void attachOutboundDragTriggers();
 }
 
 function markSourceDetached(sourcePaneId: number) {
