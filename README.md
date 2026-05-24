@@ -130,6 +130,16 @@ The funding will be used for funding the development of this and my other big pr
       </td>
     </tr>
     <tr>
+      <td>Linux | Flatpak</td>
+      <td>
+        <a target="_blank" href="https://github.com/aleksey-hoffman/sigma-file-manager/releases/latest">
+          Installable (.flatpak)
+        </a>
+        <br>
+        <code>flatpak install ./Sigma-File-Manager-*-linux.flatpak</code>
+      </td>
+    </tr>
+    <tr>
       <td>Linux | Snapcraft </td>
       <td>
         <!-- <a target="_blank" href="https://snapcraft.io/sigma-file-manager">

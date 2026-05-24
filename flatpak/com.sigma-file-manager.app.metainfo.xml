@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>com.sigma-file-manager.app</id>
+  <name>Sigma File Manager</name>
+  <summary>Modern, free, open-source file manager</summary>
+  <description>
+    <p>
+      Sigma File Manager is a modern, feature-rich file manager for Linux and Windows.
+      It includes a fast global search with typo correction, tabs and split view,
+      an extension marketplace, LAN file sharing with browser access and QR codes,
+      network locations (SSHFS / NFS / SMB / CIFS), an address bar with autocomplete,
+      glob/property filters, smart drag and drop, a command palette, zip archive support,
+      tags, and customizable visuals.
+    </p>
+  </description>
+  <launchable type="desktop-id">com.sigma-file-manager.app.desktop</launchable>
+  <url type="homepage">https://github.com/aleksey-hoffman/sigma-file-manager</url>
+  <url type="bugtracker">https://github.com/aleksey-hoffman/sigma-file-manager/issues</url>
+  <developer_name>Aleksey Hoffman</developer_name>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+  <content_rating type="oars-1.1"/>
+</component>

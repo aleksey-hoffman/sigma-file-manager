@@ -1,0 +1,58 @@
+id: com.sigma-file-manager.app
+runtime: org.gnome.Platform
+runtime-version: '48'
+sdk: org.gnome.Sdk
+command: sigma-file-manager
+
+finish-args:
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --device=dri
+  - --share=ipc
+  - --share=network
+  - --talk-name=org.kde.StatusNotifierWatcher
+  - --filesystem=xdg-run/tray-icon:create
+  - --filesystem=host
+  - --filesystem=/run/media
+  - --filesystem=/media
+  - --filesystem=/mnt
+  - --system-talk-name=org.freedesktop.UDisks2
+  - --talk-name=org.freedesktop.DBus
+  - --filesystem=xdg-config/autostart:create
+
+modules:
+  - name: sigma-file-manager
+    buildsystem: simple
+    sources:
+      - type: file
+        path: .deb-input/sigma-file-manager.deb
+      - type: file
+        path: com.sigma-file-manager.app.metainfo.xml
+    build-commands:
+      - set -e
+      - mkdir deb-extract
+      - ar -x sigma-file-manager.deb --output deb-extract
+      - tar -C deb-extract -xf deb-extract/data.tar.*
+      - install -Dm755 deb-extract/usr/bin/sigma-file-manager /app/bin/sigma-file-manager
+      - |
+        if [ -d deb-extract/usr/lib/sigma-file-manager ]; then
+          mkdir -p /app/lib/sigma-file-manager
+          cp -a deb-extract/usr/lib/sigma-file-manager/. /app/lib/sigma-file-manager/
+          find /app/lib/sigma-file-manager -type f -exec chmod 644 {} \;
+        fi
+      - |
+        desktop_file=$(find deb-extract/usr/share/applications -maxdepth 1 -name '*.desktop' -print -quit)
+        if [ -z "$desktop_file" ]; then
+          echo "No desktop file found in deb package"
+          exit 1
+        fi
+        sed -i 's/^Icon=.*/Icon=com.sigma-file-manager.app/' "$desktop_file"
+        install -Dm644 "$desktop_file" /app/share/applications/com.sigma-file-manager.app.desktop
+      - |
+        for icon_size in 32x32 128x128 256x256@2; do
+          icon_source=$(find "deb-extract/usr/share/icons/hicolor/${icon_size}/apps" -name '*.png' -print -quit 2>/dev/null || true)
+          if [ -n "$icon_source" ]; then
+            install -Dm644 "$icon_source" "/app/share/icons/hicolor/${icon_size}/apps/com.sigma-file-manager.app.png"
+          fi
+        done
+      - install -Dm644 com.sigma-file-manager.app.metainfo.xml /app/share/metainfo/com.sigma-file-manager.app.metainfo.xml

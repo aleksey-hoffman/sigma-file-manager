@@ -181,6 +181,32 @@ jobs:
           cp "$binary" "$staged_binary"
           gh release upload "$TAG" "$staged_binary" --clobber
 
+      - name: Install Flatpak toolchain
+        if: matrix.platform == 'linux'
+        run: |
+          sudo apt-get install -y flatpak flatpak-builder
+          flatpak remote-add --if-not-exists --user flathub https://flathub.org/repo/flathub.flatpakrepo
+          flatpak install -y --noninteractive --user flathub org.gnome.Platform//48 org.gnome.Sdk//48
+
+      - name: Build Flatpak bundle
+        if: matrix.platform == 'linux'
+        run: bash flatpak/build-flatpak.sh
+
+      - name: Upload Flatpak bundle
+        if: matrix.platform == 'linux'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ needs.prepare.outputs.tag }}
+          VERSION: ${{ needs.prepare.outputs.version }}
+        shell: bash
+        run: |
+          flatpak_bundle="flatpak/output/Sigma-File-Manager-${VERSION}-linux.flatpak"
+          if [[ ! -f "$flatpak_bundle" ]]; then
+            echo "::error::Flatpak bundle not found at $flatpak_bundle"
+            exit 1
+          fi
+          gh release upload "$TAG" "$flatpak_bundle" --clobber
+
   publish:
     name: Publish release
     needs: [prepare, build]

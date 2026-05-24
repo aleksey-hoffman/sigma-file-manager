@@ -28,3 +28,8 @@ coverage
 *.sw?
 
 *.tsbuildinfo
+
+flatpak/.deb-input/
+flatpak/.build/
+flatpak/.repo/
+flatpak/output/
