@@ -3,6 +3,9 @@
   <id>com.sigmafilemanager.app</id>
   <name>Sigma File Manager</name>
   <summary>Modern, free, open-source file manager</summary>
+  <developer id="io.github.alekseyhoffman">
+    <name>Aleksey Hoffman</name>
+  </developer>
   <description>
     <p>
       Sigma File Manager is a modern, feature-rich file manager for Linux and Windows.
@@ -14,9 +17,19 @@
     </p>
   </description>
   <launchable type="desktop-id">com.sigmafilemanager.app.desktop</launchable>
+  <categories>
+    <category>Utility</category>
+    <category>FileManager</category>
+  </categories>
+  <releases>
+    <release version="2.1.0" date="2026-05-24">
+      <description>
+        <p>Navigator performance improvements, generated thumbnails, extension themes, printing, file previews, new shortcuts, address editor improvements, status center redesign, and tab/navigation polish.</p>
+      </description>
+    </release>
+  </releases>
   <url type="homepage">https://github.com/aleksey-hoffman/sigma-file-manager</url>
   <url type="bugtracker">https://github.com/aleksey-hoffman/sigma-file-manager/issues</url>
-  <developer_name>Aleksey Hoffman</developer_name>
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>GPL-3.0-or-later</project_license>
   <content_rating type="oars-1.1"/>

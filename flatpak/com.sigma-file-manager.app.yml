@@ -47,6 +47,11 @@ modules:
           exit 1
         fi
         sed -i 's/^Icon=.*/Icon=com.sigmafilemanager.app/' "$desktop_file"
+        if grep -q '^Categories=' "$desktop_file"; then
+          sed -i 's/^Categories=.*/Categories=Utility;FileManager;/' "$desktop_file"
+        else
+          printf '\nCategories=Utility;FileManager;\n' >> "$desktop_file"
+        fi
         install -Dm644 "$desktop_file" /app/share/applications/com.sigmafilemanager.app.desktop
       - |
         for icon_size in 32x32 128x128 256x256@2; do
