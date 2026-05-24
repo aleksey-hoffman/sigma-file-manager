@@ -144,6 +144,10 @@
     "noDrivesSelected": "Ni izbranih pogonov",
     "lastScan": "Zadnje skeniranje",
     "indexedItems": "Indeksirani predmeti",
+    "driveIndexStatus": {
+      "indexed": "Indeksirano",
+      "notIndexed": "Ni indeksirano"
+    },
     "indexSize": "Velikost indeksa",
     "scanning": "Indeksiranje",
     "scanningInParallel": "Indeksiranje vseh pogonov vzporedno",
@@ -392,7 +396,13 @@
       "scanDepth": "Globina skeniranja",
       "higherDepthScansWillIncrease": "Globlje skeniranje bo podaljšalo tako skeniranje kot čas iskanja, vendar bo omogočilo najdbo datotek v globlje zakoreninjenih mapah.",
       "ignoredPaths": "Prezrte poti",
-      "enterPathToAddToIgnored": "Vnesite pot za dodajanje na seznam prezrtih in pritisnite"
+      "enterPathToAddToIgnored": "Vnesite pot za dodajanje na seznam prezrtih in pritisnite",
+      "ignoredPathsHelpNodeModules": "Preskoči mape z imenom node_modules kjer koli.",
+      "ignoredPathsHelpThumbsDb": "Preskoči ime datoteke ali mape kjer koli.",
+      "ignoredPathsHelpDownloads": "Preskoči to predpono poti.",
+      "ignoredPathsHelpTestFolder": "Preskoči mape z imenom test in njihovo vsebino kjer koli.",
+      "ignoredPathsHelpExtensionMask": "Preskoči datoteke s končnico .log kjer koli.",
+      "ignoredPathsHelpNestedExtensionMask": "Preskoči datoteke s končnico .tmp v kateri koli mapi."
     },
     "drives": {
       "driveDetection": "Zaznavanje pogonov",

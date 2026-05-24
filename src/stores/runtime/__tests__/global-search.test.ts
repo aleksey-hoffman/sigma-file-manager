@@ -6,6 +6,7 @@ import {
   beforeEach, describe, expect, it, vi,
 } from 'vitest';
 import { createPinia, setActivePinia } from 'pinia';
+import { nextTick } from 'vue';
 import type { GlobalSearchScanReason } from '@/stores/runtime/global-search';
 import { useGlobalSearchStore } from '@/stores/runtime/global-search';
 
@@ -118,8 +119,10 @@ function createStatus(overrides: Partial<{
   last_scan_error: string | null;
   indexed_item_count: number;
   scan_indexed_item_count: number;
+  indexed_drive_roots: string[];
   index_size_bytes: number;
   current_drive_root: string | null;
+  current_scan_path: string | null;
   drive_scan_errors: Array<{
     drive_root: string;
     message: string;
@@ -144,8 +147,10 @@ function createStatus(overrides: Partial<{
     last_scan_error: null,
     indexed_item_count: 42,
     scan_indexed_item_count: 0,
+    indexed_drive_roots: ['C:/'],
     index_size_bytes: 1024,
     current_drive_root: null,
+    current_scan_path: null,
     drive_scan_errors: [],
     is_index_valid: true,
     scanned_drives_count: 1,
@@ -158,7 +163,7 @@ function resetUserSettings() {
   userSettings.globalSearch.scanDepth = 7;
   userSettings.globalSearch.autoScanPeriodMinutes = 60;
   userSettings.globalSearch.autoReindexWhenIdle = true;
-  userSettings.globalSearch.ignoredPaths = ['/node_modules'];
+  userSettings.globalSearch.ignoredPaths = ['/node_modules', '/ProgramData/Microsoft'];
   userSettings.globalSearch.selectedDriveRoots = [];
   userSettings.globalSearch.parallelScan = false;
   userSettings.globalSearch.lastManualCancelTime = null;
@@ -192,6 +197,77 @@ describe('global search store', () => {
         scan_reason: 'manual',
       }),
     });
+  });
+
+  it('maps committed indexed drive roots from backend status', async () => {
+    invokeMock.mockImplementation(async (command: string) => {
+      if (command === 'global_search_get_status') {
+        return createStatus({
+          indexed_drive_roots: ['C:/', 'D:/'],
+        });
+      }
+
+      return undefined;
+    });
+
+    const globalSearchStore = useGlobalSearchStore();
+    await globalSearchStore.refreshStatus();
+
+    expect(globalSearchStore.indexedDriveRoots).toEqual(['C:/', 'D:/']);
+  });
+
+  it('ignores stale search results from earlier input', async () => {
+    vi.useFakeTimers();
+
+    const pendingSearches = new Map<string, (value: unknown) => void>();
+    invokeMock.mockImplementation((command: string, args?: { query?: string }) => {
+      if (command === 'global_search_query') {
+        return new Promise(resolve => pendingSearches.set(args?.query ?? '', resolve));
+      }
+
+      return Promise.resolve([]);
+    });
+
+    const globalSearchStore = useGlobalSearchStore();
+    globalSearchStore.indexedItemCount = 1;
+
+    globalSearchStore.setQuery('ex');
+    await nextTick();
+    await vi.advanceTimersByTimeAsync(200);
+    expect(pendingSearches.has('ex')).toBe(true);
+
+    globalSearchStore.setQuery('exile');
+    await nextTick();
+    await vi.advanceTimersByTimeAsync(200);
+    expect(pendingSearches.has('exile')).toBe(true);
+
+    pendingSearches.get('exile')?.([
+      {
+        name: 'Exile by Aleksey Hoffman.jpg',
+        path: 'C:/current.jpg',
+        score: 1,
+        is_file: true,
+        is_dir: false,
+      },
+    ]);
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(globalSearchStore.results.map(result => result.path)).toEqual(['C:/current.jpg']);
+
+    pendingSearches.get('ex')?.([
+      {
+        name: 'Example.jpg',
+        path: 'C:/stale.jpg',
+        score: 1,
+        is_file: true,
+        is_dir: false,
+      },
+    ]);
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(globalSearchStore.results.map(result => result.path)).toEqual(['C:/current.jpg']);
   });
 
   it('clears manual cancel suppression for settings-change scans', async () => {

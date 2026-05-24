@@ -144,6 +144,10 @@
     "noDrivesSelected": "No drives selected",
     "lastScan": "Last scan",
     "indexedItems": "Indexed items",
+    "driveIndexStatus": {
+      "indexed": "Indexed",
+      "notIndexed": "Not indexed"
+    },
     "indexSize": "Index size",
     "scanning": "Indexing",
     "scanningInParallel": "Indexing all drives in parallel",
@@ -392,7 +396,13 @@
       "scanDepth": "Scan depth",
       "higherDepthScansWillIncrease": "Higher depth scans will increase both the scan and the search time, but will allow you to find files located in more deeply nested directories.",
       "ignoredPaths": "Ignored paths",
-      "enterPathToAddToIgnored": "Enter a path to add to the ignored list and press"
+      "enterPathToAddToIgnored": "Enter a path to add to the ignored list and press",
+      "ignoredPathsHelpNodeModules": "Skips folders named node_modules anywhere.",
+      "ignoredPathsHelpThumbsDb": "Skips a file or folder name anywhere.",
+      "ignoredPathsHelpDownloads": "Skips that path prefix.",
+      "ignoredPathsHelpTestFolder": "Skips folders named test and their contents anywhere.",
+      "ignoredPathsHelpExtensionMask": "Skips files with the .log extension anywhere.",
+      "ignoredPathsHelpNestedExtensionMask": "Skips files with the .tmp extension in any folder."
     },
     "drives": {
       "driveDetection": "Drive detection",

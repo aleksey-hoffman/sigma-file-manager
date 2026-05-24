@@ -144,6 +144,10 @@
     "noDrivesSelected": "कोई ड्राइव चयनित नहीं",
     "lastScan": "अंतिम स्कैन",
     "indexedItems": "अनुक्रमित आइटम",
+    "driveIndexStatus": {
+      "indexed": "अनुक्रमित",
+      "notIndexed": "अनुक्रमित नहीं"
+    },
     "indexSize": "सूचकांक आकार",
     "scanning": "इंडेक्सिंग",
     "scanningInParallel": "सभी ड्राइव को समानांतर में अनुक्रमित करना",
@@ -392,7 +396,13 @@
       "scanDepth": "गहराई से स्कैन करें",
       "higherDepthScansWillIncrease": "अधिक गहराई वाले स्कैन से स्कैन और खोज समय दोनों बढ़ जाएंगे, लेकिन आपको अधिक गहराई से नेस्टेड निर्देशिकाओं में स्थित फ़ाइलों को ढूंढने की अनुमति मिल जाएगी।",
       "ignoredPaths": "उपेक्षित पथ",
-      "enterPathToAddToIgnored": "उपेक्षित सूची में जोड़ने के लिए पथ दर्ज करें और दबाएँ"
+      "enterPathToAddToIgnored": "उपेक्षित सूची में जोड़ने के लिए पथ दर्ज करें और दबाएँ",
+      "ignoredPathsHelpNodeModules": "कहीं भी node_modules नाम वाले फ़ोल्डर छोड़ता है।",
+      "ignoredPathsHelpThumbsDb": "कहीं भी किसी फ़ाइल या फ़ोल्डर नाम को छोड़ता है।",
+      "ignoredPathsHelpDownloads": "उस पथ उपसर्ग को छोड़ता है।",
+      "ignoredPathsHelpTestFolder": "कहीं भी test नाम वाले फ़ोल्डर और उनकी सामग्री छोड़ता है।",
+      "ignoredPathsHelpExtensionMask": "कहीं भी .log एक्सटेंशन वाली फ़ाइलें छोड़ता है।",
+      "ignoredPathsHelpNestedExtensionMask": "किसी भी फ़ोल्डर में .tmp एक्सटेंशन वाली फ़ाइलें छोड़ता है।"
     },
     "drives": {
       "driveDetection": "ड्राइव का पता लगाना",

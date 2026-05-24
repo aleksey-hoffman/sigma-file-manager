@@ -10,7 +10,7 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use tantivy::schema::{
     IndexRecordOption, Schema, TextFieldIndexing, TextOptions, FAST, STORED, STRING,
 };
-use tantivy::{Index, IndexReader};
+use tantivy::{Index, IndexReader, ReloadPolicy};
 
 pub(super) fn build_schema() -> (Schema, GlobalSearchIndexFields) {
     let mut schema_builder = Schema::builder();
@@ -110,6 +110,8 @@ pub(super) struct GlobalSearchMeta {
     pub(super) last_scan_duration_ms: Option<u64>,
     pub(super) last_scan_indexed_item_count: Option<u64>,
     pub(super) last_scan_error: Option<String>,
+    #[serde(default)]
+    pub(super) indexed_drive_roots: Vec<String>,
 }
 
 pub(super) const SCHEMA_VERSION: u32 = 1;
@@ -261,7 +263,11 @@ pub(super) fn validate_index(index_path: &Path, base_dir: &Path) -> bool {
     }
 
     match Index::open_in_dir(index_path) {
-        Ok(index) => match index.reader_builder().try_into() {
+        Ok(index) => match index
+            .reader_builder()
+            .reload_policy(ReloadPolicy::Manual)
+            .try_into()
+        {
             Ok(reader) => {
                 let searcher = reader.searcher();
                 searcher.num_docs() > 0
@@ -299,6 +305,7 @@ pub(super) fn open_or_create_index(
 
     let reader = index
         .reader_builder()
+        .reload_policy(ReloadPolicy::Manual)
         .try_into()
         .map_err(|error| error.to_string())?;
 
@@ -307,7 +314,7 @@ pub(super) fn open_or_create_index(
 
 pub(super) fn create_fresh_index(
     index_path: &Path,
-) -> Result<(Index, IndexReader, GlobalSearchIndexFields), String> {
+) -> Result<(Index, GlobalSearchIndexFields), String> {
     if index_path.exists() {
         remove_dir_force(index_path)?;
     }
@@ -315,12 +322,8 @@ pub(super) fn create_fresh_index(
 
     let (schema, fields) = build_schema();
     let index = Index::create_in_dir(index_path, schema).map_err(|error| error.to_string())?;
-    let reader = index
-        .reader_builder()
-        .try_into()
-        .map_err(|error| error.to_string())?;
 
-    Ok((index, reader, fields))
+    Ok((index, fields))
 }
 
 pub(super) fn validate_staged_index(
@@ -336,6 +339,7 @@ pub(super) fn validate_staged_index(
 
     let reader: IndexReader = index
         .reader_builder()
+        .reload_policy(ReloadPolicy::Manual)
         .try_into()
         .map_err(|error| error.to_string())?;
     let doc_count = reader.searcher().num_docs();
@@ -405,7 +409,7 @@ mod tests {
     use tempfile::TempDir;
 
     fn write_single_doc(index_path: &Path, path: &str) -> u64 {
-        let (index, reader, fields) = create_fresh_index(index_path).unwrap();
+        let (index, fields) = create_fresh_index(index_path).unwrap();
         let mut writer = index.writer(50_000_000).unwrap();
         writer
             .add_document(doc!(
@@ -419,7 +423,12 @@ mod tests {
             ))
             .unwrap();
         writer.commit().unwrap();
-        reader.reload().unwrap();
+
+        let reader = index
+            .reader_builder()
+            .reload_policy(ReloadPolicy::Manual)
+            .try_into()
+            .unwrap();
         reader.searcher().num_docs()
     }
 

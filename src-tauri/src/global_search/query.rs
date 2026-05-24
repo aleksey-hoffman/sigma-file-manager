@@ -8,12 +8,12 @@ use crate::utils::{
 use rayon::prelude::*;
 use std::path::{Path, PathBuf};
 use tantivy::collector::TopDocs;
-use tantivy::query::{AllQuery, BooleanQuery, FuzzyTermQuery, Query, TermQuery};
+use tantivy::query::{AllQuery, BooleanQuery, FuzzyTermQuery, Occur, Query, TermQuery};
 use tantivy::schema::{IndexRecordOption, Value};
 use tantivy::Term;
 use tauri::Manager;
 
-use super::ignore::{builtin_ignored_paths, get_drive_root, is_ignored_path, normalize_case};
+use super::ignore::{builtin_ignored_paths, get_drive_root, normalize_case, IgnoredPathMatcher};
 use super::index::{index_dir, open_or_create_index};
 use super::scoring::{calculate_similarity_score, get_min_score_for_query_length};
 use super::state::{GlobalSearchIndexFields, GLOBAL_SEARCH_STATE};
@@ -31,17 +31,10 @@ pub(super) fn build_query(
     }
 
     if options.exact_match {
-        let term = Term::from_field_text(fields.name_lower, &normalized);
-        return Box::new(TermQuery::new(term, IndexRecordOption::Basic));
+        return build_exact_match_query(fields, &normalized);
     }
 
-    let words: Vec<String> = normalized
-        .split(|character: char| {
-            character.is_whitespace() || character == '.' || character == '_' || character == '-'
-        })
-        .filter(|segment| !segment.is_empty())
-        .map(|segment| segment.to_string())
-        .collect();
+    let words = split_query_tokens(&normalized);
 
     let max_distance = if options.typo_tolerance { 2 } else { 1 };
 
@@ -50,7 +43,7 @@ pub(super) fn build_query(
     for word in &words {
         let term = Term::from_field_text(fields.name, word);
         let fuzzy = FuzzyTermQuery::new(term, max_distance, true);
-        subqueries.push((tantivy::query::Occur::Should, Box::new(fuzzy)));
+        subqueries.push((Occur::Should, Box::new(fuzzy)));
     }
 
     let whitespace_words: Vec<&str> = normalized.split_whitespace().collect();
@@ -58,11 +51,64 @@ pub(super) fn build_query(
         if word.contains('.') || word.contains('_') || word.contains('-') {
             let term = Term::from_field_text(fields.name, word);
             let fuzzy = FuzzyTermQuery::new(term, max_distance, true);
-            subqueries.push((tantivy::query::Occur::Should, Box::new(fuzzy)));
+            subqueries.push((Occur::Should, Box::new(fuzzy)));
         }
     }
 
     Box::new(BooleanQuery::from(subqueries))
+}
+
+fn build_exact_match_query(
+    fields: &GlobalSearchIndexFields,
+    normalized_query: &str,
+) -> Box<dyn Query> {
+    let words = split_query_tokens(normalized_query);
+
+    if words.is_empty() {
+        return Box::new(AllQuery);
+    }
+
+    if words.len() == 1 {
+        let term = Term::from_field_text(fields.name, &words[0]);
+        return Box::new(TermQuery::new(term, IndexRecordOption::Basic));
+    }
+
+    let subqueries: Vec<(Occur, Box<dyn Query>)> = words
+        .iter()
+        .map(|word| {
+            let term = Term::from_field_text(fields.name, word);
+            (
+                Occur::Must,
+                Box::new(TermQuery::new(term, IndexRecordOption::Basic)) as Box<dyn Query>,
+            )
+        })
+        .collect();
+
+    Box::new(BooleanQuery::from(subqueries))
+}
+
+fn split_query_tokens(value: &str) -> Vec<String> {
+    value
+        .split(|character: char| {
+            character.is_whitespace() || character == '.' || character == '_' || character == '-'
+        })
+        .filter(|segment| !segment.is_empty())
+        .map(|segment| segment.to_string())
+        .collect()
+}
+
+fn matches_exact_name(query: &str, name: &str) -> bool {
+    let query_tokens = split_query_tokens(&normalize_case(query));
+    if query_tokens.is_empty() {
+        return true;
+    }
+
+    let name_tokens = split_query_tokens(&normalize_case(name));
+    query_tokens.iter().all(|query_token| {
+        name_tokens
+            .iter()
+            .any(|name_token| name_token == query_token)
+    })
 }
 
 pub(super) fn matches_type(
@@ -85,20 +131,35 @@ pub async fn global_search_query(
         .path()
         .app_data_dir()
         .map_err(|error: tauri::Error| error.to_string())?;
+
+    tauri::async_runtime::spawn_blocking(move || {
+        global_search_query_blocking(base_dir, query, options)
+    })
+    .await
+    .map_err(|join_error| format!("Global search query task failed: {join_error}"))?
+}
+
+fn global_search_query_blocking(
+    base_dir: PathBuf,
+    query: String,
+    options: GlobalSearchQueryOptions,
+) -> Result<Vec<GlobalSearchResultEntry>, String> {
     let index_path = index_dir(&base_dir);
 
-    {
+    let needs_open = {
         let state = GLOBAL_SEARCH_STATE
             .read()
             .map_err(|error| error.to_string())?;
-        if state.index.is_some() && state.reader.is_some() && state.fields.is_some() {
-            drop(state);
-        } else {
-            drop(state);
-            let mut state = GLOBAL_SEARCH_STATE
-                .write()
-                .map_err(|error| error.to_string())?;
-            let (index, reader, fields) = open_or_create_index(&index_path)?;
+        state.index.is_none() || state.reader.is_none() || state.fields.is_none()
+    };
+
+    if needs_open {
+        let (index, reader, fields) = open_or_create_index(&index_path)?;
+        let mut state = GLOBAL_SEARCH_STATE
+            .write()
+            .map_err(|error| error.to_string())?;
+
+        if state.index.is_none() || state.reader.is_none() || state.fields.is_none() {
             state.index = Some(index);
             state.reader = Some(reader);
             state.fields = Some(fields);
@@ -134,6 +195,7 @@ pub async fn global_search_query(
         .iter()
         .map(|path| path.to_string())
         .collect();
+    let internal_ignored_matcher = IgnoredPathMatcher::new(&internal_ignored);
 
     let min_score = options
         .min_score_threshold
@@ -149,7 +211,7 @@ pub async fn global_search_query(
                 .and_then(|value| value.as_str())?
                 .to_string();
 
-            if is_ignored_path(&path_value, &internal_ignored) {
+            if internal_ignored_matcher.is_ignored(&path_value) {
                 return None;
             }
 
@@ -157,6 +219,10 @@ pub async fn global_search_query(
                 .get_first(fields.name)
                 .and_then(|value| value.as_str())?
                 .to_string();
+
+            if options.exact_match && !matches_exact_name(&normalized_query, &name_value) {
+                return None;
+            }
 
             let name_score = calculate_similarity_score(&normalized_query, &name_value);
 
@@ -246,6 +312,18 @@ pub async fn global_search_query_paths(
         return Ok(Vec::new());
     }
 
+    tauri::async_runtime::spawn_blocking(move || {
+        global_search_query_paths_blocking(paths, query, options)
+    })
+    .await
+    .map_err(|join_error| format!("Global search path query task failed: {join_error}"))?
+}
+
+fn global_search_query_paths_blocking(
+    paths: Vec<String>,
+    query: String,
+    options: GlobalSearchQueryOptions,
+) -> Result<Vec<GlobalSearchResultEntry>, String> {
     let normalized_query = normalize_case(&query);
     let min_score = get_min_score_for_query_length(normalized_query.len());
 
@@ -278,6 +356,10 @@ pub async fn global_search_query_paths(
                 .file_name()
                 .and_then(|segment| segment.to_str())?
                 .to_string();
+
+            if options.exact_match && !matches_exact_name(&normalized_query, &name) {
+                return None;
+            }
 
             let name_score = calculate_similarity_score(&normalized_query, &name);
 
@@ -339,4 +421,89 @@ pub async fn global_search_query_paths(
     }
 
     Ok(sorted_results)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::global_search::index::build_schema;
+    use tantivy::doc;
+
+    fn create_options(exact_match: bool) -> GlobalSearchQueryOptions {
+        GlobalSearchQueryOptions {
+            limit: 10,
+            include_files: true,
+            include_directories: true,
+            exact_match,
+            typo_tolerance: true,
+            min_score_threshold: Some(0.0),
+        }
+    }
+
+    fn search_names(query_text: &str, exact_match: bool) -> Vec<String> {
+        let (schema, fields) = build_schema();
+        let index = tantivy::Index::create_in_ram(schema);
+        let mut writer = index.writer(50_000_000).unwrap();
+
+        for name in [
+            "Exile by Aleksey Hoffman.jpg",
+            "Exiled by Aleksey Hoffman.jpg",
+            "Example.jpg",
+        ] {
+            writer
+                .add_document(doc!(
+                    fields.path => format!("C:/test/{name}"),
+                    fields.name => name.to_string(),
+                    fields.name_lower => name.to_lowercase(),
+                    fields.is_file => 1u64,
+                    fields.is_dir => 0u64,
+                    fields.modified_time => 0u64,
+                    fields.size => 0u64,
+                ))
+                .unwrap();
+        }
+
+        writer.commit().unwrap();
+
+        let reader = index.reader().unwrap();
+        let searcher = reader.searcher();
+        let query = build_query(&fields, query_text, &create_options(exact_match));
+        let top_docs = searcher.search(&query, &TopDocs::with_limit(10)).unwrap();
+
+        top_docs
+            .into_iter()
+            .filter_map(|(_score, address)| {
+                let doc: tantivy::TantivyDocument = searcher.doc(address).ok()?;
+                doc.get_first(fields.name)
+                    .and_then(|value| value.as_str())
+                    .map(|value| value.to_string())
+            })
+            .collect()
+    }
+
+    #[test]
+    fn exact_match_query_matches_exact_filename_token() {
+        let names = search_names("exile", true);
+
+        assert!(names.contains(&"Exile by Aleksey Hoffman.jpg".to_string()));
+    }
+
+    #[test]
+    fn exact_match_query_does_not_match_prefixed_token() {
+        let names = search_names("exile", true);
+
+        assert!(!names.contains(&"Exiled by Aleksey Hoffman.jpg".to_string()));
+    }
+
+    #[test]
+    fn exact_name_filter_matches_all_query_tokens() {
+        assert!(matches_exact_name(
+            "exile hoffman",
+            "Exile by Aleksey Hoffman.jpg"
+        ));
+        assert!(!matches_exact_name(
+            "exile missing",
+            "Exile by Aleksey Hoffman.jpg"
+        ));
+    }
 }

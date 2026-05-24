@@ -16,7 +16,14 @@ import {
 import { BUILTIN_NAVIGATOR_ICON_THEME_IDS } from '@/types/icon-theme';
 
 export const USER_SETTINGS_SCHEMA_VERSION_KEY = '__schemaVersion';
-export const USER_SETTINGS_SCHEMA_VERSION = 11;
+export const USER_SETTINGS_SCHEMA_VERSION = 13;
+
+export const DEFAULT_GLOBAL_SEARCH_IGNORED_PATHS = [
+  '/node_modules',
+  '/ProgramData/Microsoft',
+  '/Windows/WinSxS',
+];
+const WINDOWS_WINSXS_IGNORED_PATH = '/Windows/WinSxS';
 
 function generateShortId(): string {
   return crypto.randomUUID().replace(/-/g, '').slice(0, 8);
@@ -342,6 +349,14 @@ async function migrateUserSettingsStep(storage: StorageAdapter, fromVersion: num
     }
   }
 
+  if (fromVersion === 11 && toVersion === 12) {
+    await addDefaultGlobalSearchIgnoredPaths(storage);
+  }
+
+  if (fromVersion === 12 && toVersion === 13) {
+    await addDefaultGlobalSearchIgnoredPaths(storage, [WINDOWS_WINSXS_IGNORED_PATH]);
+  }
+
   if (fromVersion === 6 && toVersion === 7) {
     const appData = await appDataDir();
     const mediaDir = `${appData.replace(/\\/g, '/')}/user-data/media`.replace(/\/+/g, '/');
@@ -364,6 +379,26 @@ async function migrateUserSettingsStep(storage: StorageAdapter, fromVersion: num
   }
 
   void storage;
+}
+
+async function addDefaultGlobalSearchIgnoredPaths(
+  storage: StorageAdapter,
+  defaultPaths = DEFAULT_GLOBAL_SEARCH_IGNORED_PATHS,
+) {
+  const ignoredPathsValue = await storage.get<unknown>('globalSearch.ignoredPaths');
+  const ignoredPaths = Array.isArray(ignoredPathsValue)
+    ? ignoredPathsValue.filter((path): path is string => typeof path === 'string')
+    : [];
+  const normalizedPaths = new Set(ignoredPaths.map(path => path.toLowerCase()));
+  const nextIgnoredPaths = [...ignoredPaths];
+
+  for (const defaultPath of defaultPaths) {
+    if (!normalizedPaths.has(defaultPath.toLowerCase())) {
+      nextIgnoredPaths.push(defaultPath);
+    }
+  }
+
+  await storage.set('globalSearch.ignoredPaths', nextIgnoredPaths);
 }
 
 export async function migrateUserSettingsStorage(storage: StorageAdapter) {

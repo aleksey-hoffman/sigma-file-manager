@@ -115,6 +115,10 @@
     "noDrivesSelected": "Sürücü seçilmedi",
     "lastScan": "Son tarama",
     "indexedItems": "Dizine eklenen öğeler",
+    "driveIndexStatus": {
+      "indexed": "Dizine eklendi",
+      "notIndexed": "Dizine eklenmedi"
+    },
     "indexSize": "Dizin boyutu",
     "scanning": "İndeksleme",
     "scanningInParallel": "Tüm sürücüler paralel indeksleniyor",
@@ -363,7 +367,13 @@
       "scanDepth": "Tarama derinliği",
       "higherDepthScansWillIncrease": "Daha derin taramalar, hem tarama hem de arama süresini artıracak, ancak daha derine yerleştirilmiş dizinlerde bulunan dosyaları bulmanızı sağlayacaktır.",
       "ignoredPaths": "Yok sayılan yollar",
-      "enterPathToAddToIgnored": "Yok sayılanlar listesine eklemek için bir yol girin ve basın"
+      "enterPathToAddToIgnored": "Yok sayılanlar listesine eklemek için bir yol girin ve basın",
+      "ignoredPathsHelpNodeModules": "Adı node_modules olan klasörleri her yerde atlar.",
+      "ignoredPathsHelpThumbsDb": "Bir dosya veya klasör adını her yerde atlar.",
+      "ignoredPathsHelpDownloads": "Bu yol önekini atlar.",
+      "ignoredPathsHelpTestFolder": "Adı test olan klasörleri ve içeriklerini her yerde atlar.",
+      "ignoredPathsHelpExtensionMask": ".log uzantılı dosyaları her yerde atlar.",
+      "ignoredPathsHelpNestedExtensionMask": "Herhangi bir klasördeki .tmp uzantılı dosyaları atlar."
     },
     "drives": {
       "driveDetection": "Sürücü algılama",

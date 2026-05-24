@@ -115,6 +115,10 @@
     "noDrivesSelected": "Keine Laufwerke ausgewählt",
     "lastScan": "Letzter Scan",
     "indexedItems": "Indizierte Elemente",
+    "driveIndexStatus": {
+      "indexed": "Indiziert",
+      "notIndexed": "Nicht indiziert"
+    },
     "indexSize": "Indexgröße",
     "scanning": "Indexierung",
     "scanningInParallel": "Alle Laufwerke parallel indexieren",
@@ -363,7 +367,13 @@
       "scanDepth": "Scantiefe",
       "higherDepthScansWillIncrease": "Scans mit höherer Tiefe verlängern sowohl die Scan- als auch die Suchzeit, ermöglichen Ihnen jedoch, Dateien zu finden, die sich in tiefer verschachtelten Verzeichnissen befinden.",
       "ignoredPaths": "Ignorierte Pfade",
-      "enterPathToAddToIgnored": "Geben Sie einen Pfad ein, der der ignorierten Liste hinzugefügt werden soll, und drücken Sie"
+      "enterPathToAddToIgnored": "Geben Sie einen Pfad ein, der der ignorierten Liste hinzugefügt werden soll, und drücken Sie",
+      "ignoredPathsHelpNodeModules": "Überspringt Ordner mit dem Namen node_modules überall.",
+      "ignoredPathsHelpThumbsDb": "Überspringt einen Datei- oder Ordnernamen überall.",
+      "ignoredPathsHelpDownloads": "Überspringt diesen Pfadpräfix.",
+      "ignoredPathsHelpTestFolder": "Überspringt Ordner mit dem Namen test und ihre Inhalte überall.",
+      "ignoredPathsHelpExtensionMask": "Überspringt Dateien mit der Erweiterung .log überall.",
+      "ignoredPathsHelpNestedExtensionMask": "Überspringt Dateien mit der Erweiterung .tmp in jedem Ordner."
     },
     "drives": {
       "driveDetection": "Laufwerkserkennung",

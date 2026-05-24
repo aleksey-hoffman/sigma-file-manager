@@ -277,6 +277,7 @@ function focusInput() {
 
 watch(() => globalSearchStore.isOpen, async (isOpen) => {
   if (isOpen) {
+    showOptions.value = true;
     await globalSearchStore.refreshStatus();
     globalSearchStore.startStatusPolling();
     focusInput();
@@ -454,21 +455,15 @@ onMounted(() => {
           >
             {{ globalSearchStore.currentDriveRoot }}
           </span>
-          <span
-            v-if="!isCommitting"
-            class="global-search-view__scan-count"
-          >
-            {{ t('drives') }}: {{ globalSearchStore.scannedDrivesCount }} / {{ globalSearchStore.totalDrivesCount }}
-          </span>
-        </div>
-        <div class="global-search-view__scan-progress-bar">
-          <div
-            class="global-search-view__scan-progress-bar-fill"
-            :style="{ width: isCommitting ? '100%' : `${globalSearchStore.scanProgress}%` }"
-          />
         </div>
         <div class="global-search-view__scan-items">
           {{ t('globalSearch.indexedItems') }}: {{ globalSearchStore.scanIndexedItemCount.toLocaleString() }}
+        </div>
+        <div
+          v-if="globalSearchStore.currentScanPath"
+          class="global-search-view__scan-debug-path"
+        >
+          {{ globalSearchStore.currentScanPath }}
         </div>
       </div>
 
@@ -649,6 +644,8 @@ onMounted(() => {
 
 .global-search-view__content {
   display: flex;
+  overflow: hidden;
+  min-width: 0;
   min-height: 0;
   flex: 1;
   flex-direction: column;
@@ -658,6 +655,9 @@ onMounted(() => {
 
 .global-search-view__scan-status {
   display: flex;
+  overflow: hidden;
+  min-width: 0;
+  max-width: 100%;
   flex-direction: column;
   padding: 12px 16px;
   background-color: hsl(var(--primary) / 5%);
@@ -666,6 +666,7 @@ onMounted(() => {
 
 .global-search-view__scan-info {
   display: flex;
+  min-width: 0;
   flex-wrap: wrap;
   align-items: center;
   font-size: 13px;
@@ -677,6 +678,9 @@ onMounted(() => {
 }
 
 .global-search-view__scan-drive {
+  overflow: hidden;
+  min-width: 0;
+  max-width: 100%;
   padding: 2px 8px;
   border-radius: var(--radius-sm);
   background-color: hsl(var(--primary) / 15%);
@@ -684,32 +688,31 @@ onMounted(() => {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   font-size: 12px;
   font-weight: 500;
-}
-
-.global-search-view__scan-count {
-  margin-left: auto;
-  color: hsl(var(--muted-foreground));
-  font-size: 12px;
-}
-
-.global-search-view__scan-progress-bar {
-  position: relative;
-  overflow: hidden;
-  height: 4px;
-  border-radius: 9999px;
-  background-color: hsl(var(--secondary));
-}
-
-.global-search-view__scan-progress-bar-fill {
-  height: 100%;
-  border-radius: 9999px;
-  background-color: hsl(var(--primary));
-  transition: width 0.2s ease-out;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .global-search-view__scan-items {
   color: hsl(var(--muted-foreground));
   font-size: 12px;
+}
+
+.global-search-view__scan-debug-path {
+  display: -webkit-box;
+  overflow: hidden;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  height: 36px;
+  -webkit-box-orient: vertical;
+  color: hsl(var(--muted-foreground));
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 11px;
+  -webkit-line-clamp: 2;
+  line-height: 18px;
+  overflow-wrap: anywhere;
+  white-space: normal;
+  word-break: break-all;
 }
 
 .global-search-view__results {

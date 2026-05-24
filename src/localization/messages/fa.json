@@ -114,6 +114,10 @@
     "noDrivesSelected": "هیچ درایوی انتخاب نشده است",
     "lastScan": "آخرین اسکن",
     "indexedItems": "موارد ایندکس شده",
+    "driveIndexStatus": {
+      "indexed": "ایندکس شده",
+      "notIndexed": "ایندکس نشده"
+    },
     "indexSize": "اندازه شاخص",
     "scanning": "فهرست‌بندی",
     "scanningInParallel": "فهرست‌بندی همزمان همه درایوها",
@@ -362,7 +366,13 @@
       "scanDepth": "عمق اسکن",
       "higherDepthScansWillIncrease": "اسکن‌های عمیق‌تر هم زمان اسکن و هم زمان جستجو را افزایش می‌دهد، اما به شما امکان می‌دهد فایل‌هایی را که در دایرکتوری‌های عمیق‌تر تودرتو قرار دارند پیدا کنید.",
       "ignoredPaths": "مسیرهای نادیده گرفته شده",
-      "enterPathToAddToIgnored": "مسیری را برای افزودن به لیست نادیده گرفته شده وارد کنید و فشار دهید"
+      "enterPathToAddToIgnored": "مسیری را برای افزودن به لیست نادیده گرفته شده وارد کنید و فشار دهید",
+      "ignoredPathsHelpNodeModules": "پوشه‌هایی با نام node_modules را در هرجا رد می‌کند.",
+      "ignoredPathsHelpThumbsDb": "نام یک فایل یا پوشه را در هرجا رد می‌کند.",
+      "ignoredPathsHelpDownloads": "این پیشوند مسیر را رد می‌کند.",
+      "ignoredPathsHelpTestFolder": "پوشه‌هایی با نام test و محتوای آن‌ها را در هرجا رد می‌کند.",
+      "ignoredPathsHelpExtensionMask": "فایل‌های دارای پسوند .log را در هرجا رد می‌کند.",
+      "ignoredPathsHelpNestedExtensionMask": "فایل‌های دارای پسوند .tmp را در هر پوشه‌ای رد می‌کند."
     },
     "drives": {
       "driveDetection": "تشخیص درایو",

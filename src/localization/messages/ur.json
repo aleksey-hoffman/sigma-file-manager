@@ -144,6 +144,10 @@
     "noDrivesSelected": "کوئی ڈرائیو منتخب نہیں",
     "lastScan": "آخری اسکین",
     "indexedItems": "انڈیکس شدہ اشیاء",
+    "driveIndexStatus": {
+      "indexed": "انڈیکس شدہ",
+      "notIndexed": "انڈیکس نہیں ہوا"
+    },
     "indexSize": "انڈیکس سائز",
     "scanning": "انڈیکسنگ",
     "scanningInParallel": "تمام ڈرائیوز متوازی انڈیکس ہو رہی ہیں",
@@ -392,7 +396,13 @@
       "scanDepth": "اسکین گہرائی",
       "higherDepthScansWillIncrease": "زیادہ گہرائی سے اسکین اور تلاش دونوں میں وقت بڑھتا ہے، مگر گہرے نیسٹڈ فائلیں ملتی ہیں۔",
       "ignoredPaths": "نظر انداز راستے",
-      "enterPathToAddToIgnored": "نظر انداز فہرست میں شامل کرنے کے لیے راستہ درج کریں اور دبائیں"
+      "enterPathToAddToIgnored": "نظر انداز فہرست میں شامل کرنے کے لیے راستہ درج کریں اور دبائیں",
+      "ignoredPathsHelpNodeModules": "ہر جگہ node_modules نام والے فولڈرز چھوڑتا ہے۔",
+      "ignoredPathsHelpThumbsDb": "ہر جگہ کسی فائل یا فولڈر کے نام کو چھوڑتا ہے۔",
+      "ignoredPathsHelpDownloads": "اس راستے کے سابقے کو چھوڑتا ہے۔",
+      "ignoredPathsHelpTestFolder": "ہر جگہ test نام والے فولڈرز اور ان کے مواد کو چھوڑتا ہے۔",
+      "ignoredPathsHelpExtensionMask": "ہر جگہ .log ایکسٹینشن والی فائلز چھوڑتا ہے۔",
+      "ignoredPathsHelpNestedExtensionMask": "کسی بھی فولڈر میں .tmp ایکسٹینشن والی فائلز چھوڑتا ہے۔"
     },
     "drives": {
       "driveDetection": "ڈرائیو پہچان",

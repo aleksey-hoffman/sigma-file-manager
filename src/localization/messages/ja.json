@@ -115,6 +115,10 @@
     "noDrivesSelected": "ドライブが選択されていません",
     "lastScan": "最後のスキャン",
     "indexedItems": "インデックス済みアイテム",
+    "driveIndexStatus": {
+      "indexed": "インデックス済み",
+      "notIndexed": "未インデックス"
+    },
     "indexSize": "インデックスサイズ",
     "scanning": "インデックス作成",
     "scanningInParallel": "すべてのドライブを並列インデックス作成中",
@@ -363,7 +367,13 @@
       "scanDepth": "スキャン深度",
       "higherDepthScansWillIncrease": "より深いスキャンは、スキャン時間と検索時間の両方を増やしますが、より深くネストされたディレクトリにあるファイルを見つけることができます.",
       "ignoredPaths": "無視されたパス",
-      "enterPathToAddToIgnored": "無視リストに追加するパスを入力して押してください"
+      "enterPathToAddToIgnored": "無視リストに追加するパスを入力して押してください",
+      "ignoredPathsHelpNodeModules": "任意の場所にある node_modules という名前のフォルダーをスキップします。",
+      "ignoredPathsHelpThumbsDb": "任意の場所にあるファイル名またはフォルダー名をスキップします。",
+      "ignoredPathsHelpDownloads": "そのパス接頭辞をスキップします。",
+      "ignoredPathsHelpTestFolder": "任意の場所にある test という名前のフォルダーとその内容をスキップします。",
+      "ignoredPathsHelpExtensionMask": "任意の場所にある .log 拡張子のファイルをスキップします。",
+      "ignoredPathsHelpNestedExtensionMask": "任意のフォルダー内にある .tmp 拡張子のファイルをスキップします。"
     },
     "drives": {
       "driveDetection": "ドライブ検出",

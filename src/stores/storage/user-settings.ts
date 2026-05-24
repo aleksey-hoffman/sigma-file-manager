@@ -30,6 +30,7 @@ import { getCurrentWebview } from '@tauri-apps/api/webview';
 import { emit, listen, type UnlistenFn } from '@tauri-apps/api/event';
 import {
   buildAllowedUserSettingsStorageKeys,
+  DEFAULT_GLOBAL_SEARCH_IGNORED_PATHS,
   migrateUserSettingsStorage,
   USER_SETTINGS_SCHEMA_VERSION_KEY,
   USER_SETTINGS_SCHEMA_VERSION,
@@ -125,7 +126,7 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
       scanDepth: 7,
       autoScanPeriodMinutes: 60,
       autoReindexWhenIdle: true,
-      ignoredPaths: ['/node_modules'],
+      ignoredPaths: [...DEFAULT_GLOBAL_SEARCH_IGNORED_PATHS],
       selectedDriveRoots: [],
       parallelScan: false,
       resultLimit: SEARCH_CONSTANTS.DEFAULT_RESULT_LIMIT,

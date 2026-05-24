@@ -38,8 +38,10 @@ type GlobalSearchStatus = {
   last_scan_error: string | null;
   indexed_item_count: number;
   scan_indexed_item_count: number;
+  indexed_drive_roots: string[];
   index_size_bytes: number;
   current_drive_root: string | null;
+  current_scan_path: string | null;
   drive_scan_errors: GlobalSearchDriveScanError[];
   is_index_valid: boolean;
   scanned_drives_count: number;
@@ -75,8 +77,10 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
   const lastScanError = ref<string | null>(null);
   const indexedItemCount = ref<number>(0);
   const scanIndexedItemCount = ref<number>(0);
+  const indexedDriveRoots = ref<string[]>([]);
   const indexSizeBytes = ref<number>(0);
   const currentDriveRoot = ref<string | null>(null);
+  const currentScanPath = ref<string | null>(null);
   const driveScanErrors = ref<GlobalSearchDriveScanError[]>([]);
   const isIndexValid = ref(false);
   const scannedDrivesCount = ref(0);
@@ -89,6 +93,7 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
   const searchAbortController = ref<AbortController | null>(null);
   const driveChangeDebounceTimerId = ref<ReturnType<typeof setTimeout> | null>(null);
   const lastKnownDriveCount = ref<number>(0);
+  let searchRequestSequence = 0;
 
   const userSettingsStore = useUserSettingsStore();
   const userStatsStore = useUserStatsStore();
@@ -178,8 +183,10 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
     lastScanError.value = status.last_scan_error ?? null;
     indexedItemCount.value = status.indexed_item_count ?? 0;
     scanIndexedItemCount.value = status.scan_indexed_item_count ?? 0;
+    indexedDriveRoots.value = Array.isArray(status.indexed_drive_roots) ? status.indexed_drive_roots : [];
     indexSizeBytes.value = status.index_size_bytes ?? 0;
     currentDriveRoot.value = status.current_drive_root ?? null;
+    currentScanPath.value = status.current_scan_path ?? null;
     driveScanErrors.value = Array.isArray(status.drive_scan_errors) ? status.drive_scan_errors : [];
     isIndexValid.value = status.is_index_valid ?? false;
     scannedDrivesCount.value = status.scanned_drives_count ?? 0;
@@ -336,15 +343,23 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
       searchAbortController.value.abort();
       searchAbortController.value = null;
     }
+
+    searchRequestSequence += 1;
   }
 
   async function executeSearch(searchQuery: string) {
-    if (!searchQuery.trim()) {
+    const trimmedSearchQuery = searchQuery.trim();
+    const requestSequence = searchRequestSequence + 1;
+    searchRequestSequence = requestSequence;
+
+    if (!trimmedSearchQuery) {
       results.value = [];
+      isSearching.value = false;
       return;
     }
 
-    searchAbortController.value = new AbortController();
+    const abortController = new AbortController();
+    searchAbortController.value = abortController;
     isSearching.value = true;
 
     try {
@@ -365,7 +380,7 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
       if (indexedItemCount.value > 0) {
         searchPromises.push(
           invoke<Array<DirEntry & { score?: number }>>('global_search_query', {
-            query: searchQuery.trim(),
+            query: trimmedSearchQuery,
             options: queryOptions,
           }),
         );
@@ -378,7 +393,7 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
         searchPromises.push(
           invoke<Array<DirEntry & { score?: number }>>('global_search_query_paths', {
             paths: priorityPaths,
-            query: searchQuery.trim(),
+            query: trimmedSearchQuery,
             options: queryOptions,
           }),
         );
@@ -389,7 +404,7 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
 
       const [indexedResults, priorityResults] = await Promise.all(searchPromises);
 
-      if (searchAbortController.value?.signal.aborted) {
+      if (abortController.signal.aborted || requestSequence !== searchRequestSequence) {
         return;
       }
 
@@ -414,14 +429,19 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
       lastError.value = null;
     }
     catch (error) {
-      if (!searchAbortController.value?.signal.aborted) {
+      if (!abortController.signal.aborted && requestSequence === searchRequestSequence) {
         lastError.value = String(error);
         results.value = [];
       }
     }
     finally {
-      isSearching.value = false;
-      searchAbortController.value = null;
+      if (requestSequence === searchRequestSequence) {
+        isSearching.value = false;
+
+        if (searchAbortController.value === abortController) {
+          searchAbortController.value = null;
+        }
+      }
     }
   }
 
@@ -457,6 +477,12 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
 
   function search() {
     cancelPendingSearch();
+
+    if (!query.value.trim()) {
+      results.value = [];
+      isSearching.value = false;
+      return;
+    }
 
     debounceTimerId.value = setTimeout(() => {
       executeSearch(query.value);
@@ -585,6 +611,7 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
 
   async function startScanWithCurrentDrives(scanReasonValue: GlobalSearchScanReason) {
     if (!isInitialized.value) return;
+    if (isScanInProgress.value) return;
 
     const settings = userSettingsStore.userSettings.globalSearch;
     const selectedRoots = settings.selectedDriveRoots;
@@ -605,14 +632,18 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
 
     try {
       await clearAutoReindexSuppression();
+      startStatusPolling();
+
       await invoke('global_search_start_scan', {
         settings: createScanSettings(driveRoots, scanReasonValue),
       });
 
-      startStatusPolling();
+      await refreshStatus();
+      lastError.value = null;
     }
     catch (error) {
       lastError.value = String(error);
+      isScanInProgress.value = false;
     }
   }
 
@@ -662,8 +693,10 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
     lastScanError,
     indexedItemCount,
     scanIndexedItemCount,
+    indexedDriveRoots,
     indexSizeBytes,
     currentDriveRoot,
+    currentScanPath,
     driveScanErrors,
     isIndexValid,
     scannedDrivesCount,

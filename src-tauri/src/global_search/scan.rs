@@ -3,6 +3,7 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 use crate::utils::{metadata_modified_time_unix_ms, normalize_path};
+use std::fs::Metadata;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::Mutex;
@@ -10,7 +11,7 @@ use tantivy::{doc, Index, IndexReader, IndexWriter, Term};
 use tauri::Manager;
 use walkdir::WalkDir;
 
-use super::ignore::{builtin_ignored_paths, is_ignored_path, normalize_case};
+use super::ignore::{builtin_ignored_paths, normalize_case, IgnoredPathMatcher};
 use super::index::{
     calculate_dir_size, cleanup_orphan_index_dirs, clear_index, create_fresh_index, index_dir,
     open_or_create_index, read_meta, remove_dir_force, replace_index_dir, staging_index_dir,
@@ -21,12 +22,28 @@ use super::types::{
     GlobalSearchDriveScanError, GlobalSearchScanOutcome, GlobalSearchScanPhase,
     GlobalSearchSettings, GlobalSearchStatus, IndexPathsSettings,
 };
+
+const STATUS_UPDATE_INTERVAL: u64 = 500;
+
+#[cfg(windows)]
+fn is_reparse_point(metadata: &Metadata) -> bool {
+    use std::os::windows::fs::MetadataExt;
+
+    const FILE_ATTRIBUTE_REPARSE_POINT: u32 = 0x400;
+    metadata.file_attributes() & FILE_ATTRIBUTE_REPARSE_POINT != 0
+}
+
+#[cfg(not(windows))]
+fn is_reparse_point(_metadata: &Metadata) -> bool {
+    false
+}
 struct CommittedIndexUpdate {
     doc_count: u64,
     index_size_bytes: u64,
     index: Index,
     reader: IndexReader,
     fields: GlobalSearchIndexFields,
+    indexed_drive_roots: Option<Vec<String>>,
 }
 
 fn meta_from_status(state: &GlobalSearchState) -> GlobalSearchMeta {
@@ -41,6 +58,7 @@ fn meta_from_status(state: &GlobalSearchState) -> GlobalSearchMeta {
         last_scan_duration_ms: state.status.last_scan_duration_ms,
         last_scan_indexed_item_count: state.status.last_scan_indexed_item_count,
         last_scan_error: state.status.last_scan_error.clone(),
+        indexed_drive_roots: state.status.indexed_drive_roots.clone(),
     }
 }
 
@@ -51,6 +69,43 @@ fn scan_outcome_for_result(result_succeeded: bool, was_cancelled: bool) -> Globa
         GlobalSearchScanOutcome::Completed
     } else {
         GlobalSearchScanOutcome::Failed
+    }
+}
+
+fn set_current_scan_path(path: Option<String>) {
+    if let Ok(mut state) = GLOBAL_SEARCH_STATE.write() {
+        state.status.current_scan_path = path;
+    }
+}
+
+fn should_skip_link_metadata(metadata: &Metadata) -> bool {
+    metadata.file_type().is_symlink() || is_reparse_point(metadata)
+}
+
+fn maybe_set_current_scan_path(path: String, update_counter: &AtomicU64) {
+    let update_count = update_counter.fetch_add(1, Ordering::Relaxed);
+    if update_count % STATUS_UPDATE_INTERVAL == 0 {
+        set_current_scan_path(Some(path));
+    }
+}
+
+fn should_scan_walk_entry(
+    path: &Path,
+    ignored_matcher: &IgnoredPathMatcher,
+    path_update_counter: &AtomicU64,
+) -> bool {
+    let path_string = path.to_string_lossy().to_string();
+    let normalized = normalize_path(&path_string);
+
+    maybe_set_current_scan_path(normalized.clone(), path_update_counter);
+
+    if ignored_matcher.is_ignored(&normalized) {
+        return false;
+    }
+
+    match std::fs::symlink_metadata(path) {
+        Ok(metadata) => !should_skip_link_metadata(&metadata),
+        Err(_) => false,
     }
 }
 
@@ -66,6 +121,7 @@ fn apply_committed_index_status(
         index,
         reader,
         fields,
+        indexed_drive_roots,
     } = update;
     state.index = Some(index);
     state.reader = Some(reader);
@@ -73,6 +129,9 @@ fn apply_committed_index_status(
     state.status.indexed_item_count = doc_count;
     state.status.index_size_bytes = index_size_bytes;
     state.status.is_index_valid = doc_count > 0;
+    if let Some(drive_roots) = indexed_drive_roots {
+        state.status.indexed_drive_roots = drive_roots;
+    }
     if advance_last_scan_time {
         state.status.last_scan_time = Some(now_millis());
     }
@@ -130,10 +189,18 @@ pub fn global_search_init(app: tauri::AppHandle) -> Result<GlobalSearchStatus, S
     state.status.last_scan_error = meta
         .as_ref()
         .and_then(|meta_entry| meta_entry.last_scan_error.clone());
+    state.status.indexed_drive_roots = if is_valid {
+        meta.as_ref()
+            .map(|meta_entry| meta_entry.indexed_drive_roots.clone())
+            .unwrap_or_default()
+    } else {
+        vec![]
+    };
     state.status.is_index_valid = is_valid && indexed_item_count > 0;
     state.status.scan_phase = GlobalSearchScanPhase::Idle;
     state.status.scan_reason = None;
     state.status.scan_indexed_item_count = 0;
+    state.status.current_scan_path = None;
     state.index = Some(index);
     state.reader = Some(reader);
     state.fields = Some(fields);
@@ -141,22 +208,26 @@ pub fn global_search_init(app: tauri::AppHandle) -> Result<GlobalSearchStatus, S
     Ok(state.status.clone())
 }
 
-fn add_path_doc(writer: &mut IndexWriter, fields: &GlobalSearchIndexFields, path: &Path) -> bool {
-    let metadata = match std::fs::metadata(path) {
+fn add_path_doc(
+    writer: &mut IndexWriter,
+    fields: &GlobalSearchIndexFields,
+    path: &Path,
+    path_string: &str,
+) -> bool {
+    let metadata = match std::fs::symlink_metadata(path) {
         Ok(meta) => meta,
         Err(_) => return false,
     };
+
+    if should_skip_link_metadata(&metadata) {
+        return false;
+    }
 
     let is_dir = metadata.is_dir();
     let is_file = metadata.is_file();
 
     let name = match path.file_name().and_then(|segment| segment.to_str()) {
         Some(segment) => segment.to_string(),
-        None => return false,
-    };
-
-    let path_string = match path.to_str() {
-        Some(path_str) => normalize_path(path_str),
         None => return false,
     };
 
@@ -167,7 +238,7 @@ fn add_path_doc(writer: &mut IndexWriter, fields: &GlobalSearchIndexFields, path
 
     writer
         .add_document(doc!(
-            fields.path => path_string,
+            fields.path => path_string.to_string(),
             fields.name => name,
             fields.name_lower => name_lower,
             fields.is_file => if is_file { 1u64 } else { 0u64 },
@@ -196,12 +267,11 @@ pub fn global_search_cancel_scan() -> Result<(), String> {
     Ok(())
 }
 
-const STATUS_UPDATE_INTERVAL: u64 = 500;
-
 fn scan_drive(
     root: &str,
     scan_depth: usize,
-    ignored_paths: &[String],
+    ignored_matcher: &IgnoredPathMatcher,
+    path_update_counter: &AtomicU64,
     fields: &GlobalSearchIndexFields,
     writer: &Mutex<IndexWriter>,
     indexed_count: &AtomicU64,
@@ -224,9 +294,7 @@ fn scan_drive(
         .max_depth(scan_depth.max(1))
         .into_iter()
         .filter_entry(|entry| {
-            let path_string = entry.path().to_string_lossy().to_string();
-            let normalized = normalize_path(&path_string);
-            !is_ignored_path(&normalized, ignored_paths)
+            should_scan_walk_entry(entry.path(), ignored_matcher, path_update_counter)
         })
     {
         if cancel_flag.load(Ordering::SeqCst) {
@@ -244,7 +312,7 @@ fn scan_drive(
             None => continue,
         };
 
-        if is_ignored_path(&path_string, ignored_paths) {
+        if ignored_matcher.is_ignored(&path_string) {
             continue;
         }
 
@@ -253,7 +321,7 @@ fn scan_drive(
         }
 
         let did_add_doc = if let Ok(mut writer_locked) = writer.lock() {
-            add_path_doc(&mut writer_locked, fields, path)
+            add_path_doc(&mut writer_locked, fields, path, &path_string)
         } else {
             false
         };
@@ -276,6 +344,14 @@ fn scan_drive(
     Ok(())
 }
 
+fn should_skip_commit_after_failed_scan(
+    valid_drive_count: usize,
+    indexed_drive_roots: &[String],
+    errors: &[GlobalSearchDriveScanError],
+) -> bool {
+    valid_drive_count > 0 && indexed_drive_roots.is_empty() && errors.len() == valid_drive_count
+}
+
 pub async fn global_search_start_scan(
     app: tauri::AppHandle,
     settings: GlobalSearchSettings,
@@ -295,6 +371,7 @@ pub async fn global_search_start_scan(
         state.status.scan_phase = GlobalSearchScanPhase::Scanning;
         state.status.scan_reason = Some(scan_reason.clone());
         state.status.current_drive_root = None;
+        state.status.current_scan_path = None;
         state.status.scan_indexed_item_count = 0;
         state.status.drive_scan_errors = vec![];
         state.status.scanned_drives_count = 0;
@@ -317,11 +394,11 @@ pub async fn global_search_start_scan(
         state.cancel_flag.clone()
     };
 
-    tauri::async_runtime::spawn(async move {
+    tauri::async_runtime::spawn_blocking(move || {
         let cleanup_staging_path = staging_path.clone();
         let result =
-            (|| -> Result<(u64, Index, IndexReader, GlobalSearchIndexFields, u64), String> {
-                let (index, _reader, fields) = create_fresh_index(&staging_path)?;
+            (|| -> Result<(u64, Vec<String>, Index, IndexReader, GlobalSearchIndexFields, u64), String> {
+                let (index, fields) = create_fresh_index(&staging_path)?;
 
                 let writer = index
                     .writer(100_000_000)
@@ -332,9 +409,10 @@ pub async fn global_search_start_scan(
                 let ignored_paths: Vec<String> = settings
                     .ignored_paths
                     .iter()
-                    .map(|path| normalize_path(path))
+                    .map(|path| path.to_string())
                     .chain(builtin_ignored_paths().iter().map(|path| path.to_string()))
                     .collect();
+                let ignored_matcher = IgnoredPathMatcher::new(&ignored_paths);
 
                 let valid_drive_roots: Vec<String> = settings
                     .drive_roots
@@ -360,8 +438,10 @@ pub async fn global_search_start_scan(
                 }
 
                 let indexed_count = AtomicU64::new(0);
+                let path_update_counter = AtomicU64::new(0);
                 let mut errors: Vec<GlobalSearchDriveScanError> = Vec::new();
                 let mut scanned_count: u32 = 0;
+                let mut indexed_drive_roots: Vec<String> = Vec::new();
 
                 if settings.parallel_scan && valid_drive_roots.len() > 1 {
                     use std::thread;
@@ -371,9 +451,10 @@ pub async fn global_search_start_scan(
                             .iter()
                             .map(|root| {
                                 let root = root.clone();
-                                let ignored_paths = ignored_paths.clone();
+                                let ignored_matcher_ref = &ignored_matcher;
                                 let writer_ref = &writer;
                                 let indexed_count_ref = &indexed_count;
+                                let path_update_counter_ref = &path_update_counter;
                                 let cancel_flag_ref = &cancel_flag;
                                 let scan_depth = settings.scan_depth;
 
@@ -386,7 +467,8 @@ pub async fn global_search_start_scan(
                                     let result = scan_drive(
                                         &root,
                                         scan_depth,
-                                        &ignored_paths,
+                                        ignored_matcher_ref,
+                                        path_update_counter_ref,
                                         &fields,
                                         writer_ref,
                                         indexed_count_ref,
@@ -399,14 +481,20 @@ pub async fn global_search_start_scan(
                                             indexed_count_ref.load(Ordering::Relaxed);
                                     }
 
-                                    result
+                                    (root, result)
                                 })
                             })
                             .collect();
 
                         for handle in results {
-                            if let Ok(Err(error)) = handle.join() {
-                                errors.push(error);
+                            match handle.join() {
+                                Ok((root, Ok(()))) => {
+                                    indexed_drive_roots.push(normalize_path(&root));
+                                }
+                                Ok((_root, Err(error))) => {
+                                    errors.push(error);
+                                }
+                                Err(_) => {}
                             }
                         }
                     });
@@ -425,7 +513,8 @@ pub async fn global_search_start_scan(
                         let result = scan_drive(
                             root,
                             settings.scan_depth,
-                            &ignored_paths,
+                            &ignored_matcher,
+                            &path_update_counter,
                             &fields,
                             &writer,
                             &indexed_count,
@@ -439,11 +528,22 @@ pub async fn global_search_start_scan(
                                 indexed_count.load(Ordering::Relaxed);
                         }
 
-                        if let Err(error) = result {
-                            errors.push(error);
+                        match result {
+                            Ok(()) => {
+                                indexed_drive_roots.push(root_string);
+                            }
+                            Err(error) => {
+                                errors.push(error);
+                            }
                         }
                     }
                 }
+
+                let should_skip_commit = should_skip_commit_after_failed_scan(
+                    valid_drive_roots.len(),
+                    &indexed_drive_roots,
+                    &errors,
+                );
 
                 {
                     let mut state = GLOBAL_SEARCH_STATE
@@ -456,6 +556,11 @@ pub async fn global_search_start_scan(
 
                     state.status.drive_scan_errors = errors;
                     state.status.current_drive_root = None;
+
+                    if should_skip_commit {
+                        return Err("All selected drives failed to scan".to_string());
+                    }
+
                     state.status.is_committing = true;
                     state.status.scan_phase = GlobalSearchScanPhase::Committing;
                 }
@@ -482,6 +587,7 @@ pub async fn global_search_start_scan(
 
                 Ok((
                     final_count,
+                    indexed_drive_roots,
                     live_index,
                     live_reader,
                     live_fields,
@@ -507,6 +613,7 @@ pub async fn global_search_start_scan(
             state.status.scan_phase = GlobalSearchScanPhase::Idle;
             state.status.scan_reason = None;
             state.status.current_drive_root = None;
+            state.status.current_scan_path = None;
             state.status.last_scan_outcome = Some(scan_outcome.clone());
             state.status.last_scan_reason = Some(scan_reason);
             state.status.last_scan_started_time = Some(scan_started_time);
@@ -519,7 +626,7 @@ pub async fn global_search_start_scan(
             };
             state.status.scan_indexed_item_count = 0;
 
-            if let Ok((count, index, reader, fields, index_size)) = result {
+            if let Ok((count, indexed_drive_roots, index, reader, fields, index_size)) = result {
                 state.status.last_scan_indexed_item_count = Some(count);
                 apply_committed_index_status(
                     &mut state,
@@ -530,6 +637,7 @@ pub async fn global_search_start_scan(
                         index,
                         reader,
                         fields,
+                        indexed_drive_roots: Some(indexed_drive_roots),
                     },
                     !was_cancelled,
                 );
@@ -577,6 +685,18 @@ pub async fn global_search_index_paths(
         .path()
         .app_data_dir()
         .map_err(|error: tauri::Error| error.to_string())?;
+
+    tauri::async_runtime::spawn_blocking(move || {
+        global_search_index_paths_blocking(base_dir, settings)
+    })
+    .await
+    .map_err(|join_error| format!("Global search path indexing task failed: {join_error}"))?
+}
+
+fn global_search_index_paths_blocking(
+    base_dir: PathBuf,
+    settings: IndexPathsSettings,
+) -> Result<u64, String> {
     let index_path = index_dir(&base_dir);
 
     let (index, reader, fields) = open_or_create_index(&index_path)?;
@@ -588,9 +708,11 @@ pub async fn global_search_index_paths(
     let ignored_paths: Vec<String> = settings
         .ignored_paths
         .iter()
-        .map(|path| normalize_path(path))
+        .map(|path| path.to_string())
         .chain(builtin_ignored_paths().iter().map(|path| path.to_string()))
         .collect();
+    let ignored_matcher = IgnoredPathMatcher::new(&ignored_paths);
+    let path_update_counter = AtomicU64::new(0);
 
     let mut indexed_count: u64 = 0;
     let mut did_mutate_index = false;
@@ -605,7 +727,7 @@ pub async fn global_search_index_paths(
 
         let normalized_dir = normalize_path(dir_path);
 
-        if is_ignored_path(&normalized_dir, &ignored_paths) {
+        if ignored_matcher.is_ignored(&normalized_dir) {
             continue;
         }
 
@@ -621,9 +743,7 @@ pub async fn global_search_index_paths(
             .max_depth(scan_depth)
             .into_iter()
             .filter_entry(|entry| {
-                let path_string = entry.path().to_string_lossy().to_string();
-                let normalized = normalize_path(&path_string);
-                !is_ignored_path(&normalized, &ignored_paths)
+                should_scan_walk_entry(entry.path(), &ignored_matcher, &path_update_counter)
             })
         {
             let entry = match entry_result {
@@ -641,11 +761,13 @@ pub async fn global_search_index_paths(
                 None => continue,
             };
 
-            if is_ignored_path(&path_string, &ignored_paths) {
+            if ignored_matcher.is_ignored(&path_string) {
                 continue;
             }
 
-            if add_path_doc(&mut writer, &fields, entry_path) {
+            let did_add_doc = add_path_doc(&mut writer, &fields, entry_path, &path_string);
+
+            if did_add_doc {
                 indexed_count += 1;
             }
         }
@@ -668,6 +790,7 @@ pub async fn global_search_index_paths(
                     index,
                     reader,
                     fields,
+                    indexed_drive_roots: None,
                 },
                 true,
             );
@@ -711,8 +834,10 @@ mod tests {
                 last_scan_error: None,
                 indexed_item_count: 999,
                 scan_indexed_item_count: 0,
+                indexed_drive_roots: vec!["C:/".to_string()],
                 index_size_bytes: 0,
                 current_drive_root: None,
+                current_scan_path: None,
                 drive_scan_errors: vec![],
                 is_index_valid: true,
                 scanned_drives_count: 0,
@@ -733,16 +858,19 @@ mod tests {
                 index,
                 reader,
                 fields,
+                indexed_drive_roots: Some(vec![]),
             },
             true,
         );
 
         assert!(!state.status.is_index_valid);
         assert_eq!(state.status.indexed_item_count, 0);
+        assert!(state.status.indexed_drive_roots.is_empty());
         assert!(state.status.last_scan_time.unwrap() > 1);
         let meta = read_meta(base_dir).expect("meta written");
         assert_eq!(meta.indexed_item_count, 0);
         assert_eq!(meta.indexed_item_count, state.status.indexed_item_count);
+        assert!(meta.indexed_drive_roots.is_empty());
         assert_eq!(meta.last_scan_time, state.status.last_scan_time);
     }
 
@@ -803,5 +931,26 @@ mod tests {
             scan_outcome_for_result(true, true),
             GlobalSearchScanOutcome::Canceled
         );
+    }
+
+    #[test]
+    fn failed_full_scan_without_successful_drives_skips_commit() {
+        let errors = vec![GlobalSearchDriveScanError {
+            drive_root: "C:/".to_string(),
+            message: "Access denied".to_string(),
+        }];
+
+        assert!(should_skip_commit_after_failed_scan(1, &[], &errors));
+    }
+
+    #[test]
+    fn empty_successful_full_scan_can_commit() {
+        let indexed_drive_roots = vec!["C:/".to_string()];
+
+        assert!(!should_skip_commit_after_failed_scan(
+            1,
+            &indexed_drive_roots,
+            &[]
+        ));
     }
 }

@@ -24,10 +24,10 @@ mod system_tray;
 mod terminal;
 #[cfg(windows)]
 mod url_drop;
-#[cfg(windows)]
-mod windows_print_view_webview;
 mod user_storage_files_config;
 pub mod utils;
+#[cfg(windows)]
+mod windows_print_view_webview;
 
 use serde::Serialize;
 use tauri::{Emitter, Manager};

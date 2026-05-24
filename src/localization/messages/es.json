@@ -115,6 +115,10 @@
     "noDrivesSelected": "Ninguna unidad seleccionada",
     "lastScan": "Último escaneo",
     "indexedItems": "Elementos indexados",
+    "driveIndexStatus": {
+      "indexed": "Indexada",
+      "notIndexed": "No indexada"
+    },
     "indexSize": "Tamaño del índice",
     "scanning": "Indexación",
     "scanningInParallel": "Indexando todas las unidades en paralelo",
@@ -363,7 +367,13 @@
       "scanDepth": "Profundidad de escaneo",
       "higherDepthScansWillIncrease": "Los escaneos de mayor profundidad aumentarán tanto el tiempo de escaneo como el de búsqueda, pero le permitirán encontrar archivos ubicados en directorios anidados más profundos",
       "ignoredPaths": "Rutas ignoradas",
-      "enterPathToAddToIgnored": "Ingrese una ruta para agregar a la lista de ignorados y presione"
+      "enterPathToAddToIgnored": "Ingrese una ruta para agregar a la lista de ignorados y presione",
+      "ignoredPathsHelpNodeModules": "Omite carpetas llamadas node_modules en cualquier lugar.",
+      "ignoredPathsHelpThumbsDb": "Omite un nombre de archivo o carpeta en cualquier lugar.",
+      "ignoredPathsHelpDownloads": "Omite ese prefijo de ruta.",
+      "ignoredPathsHelpTestFolder": "Omite carpetas llamadas test y su contenido en cualquier lugar.",
+      "ignoredPathsHelpExtensionMask": "Omite archivos con la extensión .log en cualquier lugar.",
+      "ignoredPathsHelpNestedExtensionMask": "Omite archivos con la extensión .tmp en cualquier carpeta."
     },
     "drives": {
       "driveDetection": "Detección de unidades",

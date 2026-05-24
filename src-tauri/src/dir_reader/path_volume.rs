@@ -31,14 +31,12 @@ pub(crate) fn resolve_path_volume_case_sensitive(path: &str) -> Result<bool, Str
             let mount_name_ptr = stat.f_mntonname.as_ptr() as *const c_char;
             if mount_name_ptr.is_null() {
                 c_path.clone()
-            }
-            else {
+            } else {
                 let mount_name = unsafe { CStr::from_ptr(mount_name_ptr) };
                 CString::new(mount_name.to_bytes())
                     .map_err(|_| "Mount point name contained an interior NUL byte".to_string())?
             }
-        }
-        else {
+        } else {
             c_path.clone()
         }
     };

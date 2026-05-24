@@ -101,4 +101,37 @@ describe('migrateUserSettingsStorage', () => {
     expect(storage.values.get(USER_SETTINGS_SCHEMA_VERSION_KEY)).toBe(USER_SETTINGS_SCHEMA_VERSION);
     expect(storage.save).toHaveBeenCalledOnce();
   });
+
+  it('adds editable global search ignored path defaults when migrating', async () => {
+    const storage = createStorageAdapter({
+      [USER_SETTINGS_SCHEMA_VERSION_KEY]: 11,
+      'globalSearch.ignoredPaths': ['/node_modules'],
+    });
+
+    await migrateUserSettingsStorage(storage);
+
+    expect(storage.values.get('globalSearch.ignoredPaths')).toEqual([
+      '/node_modules',
+      '/ProgramData/Microsoft',
+      '/Windows/WinSxS',
+    ]);
+    expect(storage.values.get(USER_SETTINGS_SCHEMA_VERSION_KEY)).toBe(USER_SETTINGS_SCHEMA_VERSION);
+    expect(storage.save).toHaveBeenCalledOnce();
+  });
+
+  it('adds the WinSxS ignored path default when migrating existing v12 settings', async () => {
+    const storage = createStorageAdapter({
+      [USER_SETTINGS_SCHEMA_VERSION_KEY]: 12,
+      'globalSearch.ignoredPaths': ['/ProgramData/Microsoft'],
+    });
+
+    await migrateUserSettingsStorage(storage);
+
+    expect(storage.values.get('globalSearch.ignoredPaths')).toEqual([
+      '/ProgramData/Microsoft',
+      '/Windows/WinSxS',
+    ]);
+    expect(storage.values.get(USER_SETTINGS_SCHEMA_VERSION_KEY)).toBe(USER_SETTINGS_SCHEMA_VERSION);
+    expect(storage.save).toHaveBeenCalledOnce();
+  });
 });

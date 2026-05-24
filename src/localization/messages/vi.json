@@ -115,6 +115,10 @@
     "noDrivesSelected": "Không có ổ nào được chọn",
     "lastScan": "Quét lần cuối",
     "indexedItems": "Mục đã lập chỉ mục",
+    "driveIndexStatus": {
+      "indexed": "Đã lập chỉ mục",
+      "notIndexed": "Chưa lập chỉ mục"
+    },
     "indexSize": "Kích thước chỉ mục",
     "scanning": "Lập chỉ mục",
     "scanningInParallel": "Đang lập chỉ mục song song tất cả các ổ đĩa",
@@ -363,7 +367,13 @@
       "scanDepth": "Độ sâu quét",
       "higherDepthScansWillIncrease": "Quét sâu hơn sẽ tăng cả thời gian quét và tìm kiếm, nhưng sẽ cho phép bạn tìm các tệp nằm trong các thư mục được lồng sâu hơn.",
       "ignoredPaths": "Đường dẫn bị bỏ qua",
-      "enterPathToAddToIgnored": "Nhập đường dẫn để thêm vào danh sách bỏ qua và nhấn"
+      "enterPathToAddToIgnored": "Nhập đường dẫn để thêm vào danh sách bỏ qua và nhấn",
+      "ignoredPathsHelpNodeModules": "Bỏ qua các thư mục tên node_modules ở mọi nơi.",
+      "ignoredPathsHelpThumbsDb": "Bỏ qua tên tệp hoặc thư mục ở mọi nơi.",
+      "ignoredPathsHelpDownloads": "Bỏ qua tiền tố đường dẫn đó.",
+      "ignoredPathsHelpTestFolder": "Bỏ qua các thư mục tên test và nội dung của chúng ở mọi nơi.",
+      "ignoredPathsHelpExtensionMask": "Bỏ qua các tệp có phần mở rộng .log ở mọi nơi.",
+      "ignoredPathsHelpNestedExtensionMask": "Bỏ qua các tệp có phần mở rộng .tmp trong bất kỳ thư mục nào."
     },
     "drives": {
       "driveDetection": "Phát hiện ổ đĩa",

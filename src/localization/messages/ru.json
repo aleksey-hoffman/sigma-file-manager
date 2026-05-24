@@ -144,6 +144,10 @@
     "noDrivesSelected": "Диски не выбраны",
     "lastScan": "Последнее сканирование",
     "indexedItems": "Индексировано",
+    "driveIndexStatus": {
+      "indexed": "Проиндексирован",
+      "notIndexed": "Не проиндексирован"
+    },
     "indexSize": "Размер индекса",
     "scanning": "Индексация",
     "scanningInParallel": "Индексация всех дисков параллельно",
@@ -392,7 +396,13 @@
       "scanDepth": "Глубина сканирования",
       "higherDepthScansWillIncrease": "Сканирование с большей глубиной увеличит как время сканирования, так и время поиска, но позволит вам найти файлы, расположенные в более глубоко вложенных папок.",
       "ignoredPaths": "Игнорируемые пути",
-      "enterPathToAddToIgnored": "Введите путь для добавления в список игнорируемых и нажмите"
+      "enterPathToAddToIgnored": "Введите путь для добавления в список игнорируемых и нажмите",
+      "ignoredPathsHelpNodeModules": "Пропускает папки с именем node_modules в любом месте.",
+      "ignoredPathsHelpThumbsDb": "Пропускает имя файла или папки в любом месте.",
+      "ignoredPathsHelpDownloads": "Пропускает этот префикс пути.",
+      "ignoredPathsHelpTestFolder": "Пропускает папки с именем test и их содержимое в любом месте.",
+      "ignoredPathsHelpExtensionMask": "Пропускает файлы с расширением .log в любом месте.",
+      "ignoredPathsHelpNestedExtensionMask": "Пропускает файлы с расширением .tmp в любой папке."
     },
     "drives": {
       "driveDetection": "Обнаружение диска",

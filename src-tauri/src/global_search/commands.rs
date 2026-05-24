@@ -8,8 +8,10 @@ use super::types::{
 };
 
 #[tauri::command]
-pub fn global_search_init(app: tauri::AppHandle) -> Result<GlobalSearchStatus, String> {
-    super::scan::global_search_init(app)
+pub async fn global_search_init(app: tauri::AppHandle) -> Result<GlobalSearchStatus, String> {
+    tauri::async_runtime::spawn_blocking(move || super::scan::global_search_init(app))
+        .await
+        .map_err(|join_error| format!("Global search init task failed: {join_error}"))?
 }
 
 #[tauri::command]

@@ -9,10 +9,11 @@ import { storeToRefs } from 'pinia';
 import { useI18n } from 'vue-i18n';
 import {
   BanIcon, CheckIcon, CircleAlertIcon, ClockIcon, DatabaseIcon, FolderTreeIcon, HardDriveIcon,
-  ListIcon, LoaderCircleIcon, RefreshCcwIcon, UsbIcon, XIcon, ZapIcon,
+  CircleHelpIcon, ListIcon, LoaderCircleIcon, RefreshCcwIcon, RotateCcwIcon, UsbIcon, XIcon, ZapIcon,
 } from '@lucide/vue';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   NumberField,
   NumberFieldContent,
@@ -27,6 +28,7 @@ import { useGlobalSearchStore } from '@/stores/runtime/global-search';
 import { useDrives } from '@/modules/home/composables/use-drives';
 import { formatBytes } from '@/modules/navigator/components/file-browser/utils';
 import { SEARCH_CONSTANTS } from '@/constants';
+import { DEFAULT_GLOBAL_SEARCH_IGNORED_PATHS } from '@/stores/schemas/user-settings';
 import normalizePath from '@/utils/normalize-path';
 
 const { t } = useI18n();
@@ -43,6 +45,37 @@ const parallelScan = computed(() => userSettingsStore.userSettings.globalSearch.
 const autoReindexWhenIdle = computed(() => userSettingsStore.userSettings.globalSearch.autoReindexWhenIdle);
 const autoScanPeriodMinutes = computed(() => userSettingsStore.userSettings.globalSearch.autoScanPeriodMinutes);
 const resultLimit = computed(() => userSettingsStore.userSettings.globalSearch.resultLimit);
+
+const ignoredPathHelpExamples = [
+  {
+    pathPattern: '/node_modules',
+    descriptionKey: 'settings.globalSearch.ignoredPathsHelpNodeModules',
+  },
+  {
+    pathPattern: '/Thumbs.db',
+    descriptionKey: 'settings.globalSearch.ignoredPathsHelpThumbsDb',
+  },
+  {
+    pathPattern: 'C:/Users/Alex/Downloads',
+    descriptionKey: 'settings.globalSearch.ignoredPathsHelpDownloads',
+  },
+  {
+    pathPattern: '/test',
+    descriptionKey: 'settings.globalSearch.ignoredPathsHelpTestFolder',
+  },
+  {
+    pathPattern: '**/test/**',
+    descriptionKey: 'settings.globalSearch.ignoredPathsHelpTestFolder',
+  },
+  {
+    pathPattern: '*.log',
+    descriptionKey: 'settings.globalSearch.ignoredPathsHelpExtensionMask',
+  },
+  {
+    pathPattern: '**/*.tmp',
+    descriptionKey: 'settings.globalSearch.ignoredPathsHelpNestedExtensionMask',
+  },
+];
 
 function formatRelativeTime(timestamp: number): string {
   const now = Date.now();
@@ -120,6 +153,8 @@ const lastScanSummary = computed(() => {
   return parts.join(' / ');
 });
 
+const showLastScanSummary = computed(() => globalSearchStore.scanPhase === 'idle' && lastScanSummary.value);
+
 const formattedIndexSize = computed(() => {
   if (globalSearchStore.indexSizeBytes === 0) return '-';
   return formatBytes(globalSearchStore.indexSizeBytes);
@@ -135,6 +170,19 @@ const selectedDriveCount = computed(() => {
 
   return drives.value.length;
 });
+
+const indexedDriveRootKeys = computed(() => new Set(globalSearchStore.indexedDriveRoots.map(path =>
+  normalizePath(path).replace(/\/+$/, '').toLowerCase(),
+)));
+
+function getDriveIndexStatus(drivePath: string) {
+  if (!globalSearchStore.isIndexValid || globalSearchStore.indexedItemCount === 0) {
+    return 'notIndexed';
+  }
+
+  const driveRootKey = normalizePath(drivePath).replace(/\/+$/, '').toLowerCase();
+  return indexedDriveRootKeys.value.has(driveRootKey) ? 'indexed' : 'notIndexed';
+}
 
 const indexStatus = computed(() => {
   void displayTick.value;
@@ -238,6 +286,10 @@ function addIgnoredPathFromFilter(value: string) {
 
 function setIgnoredPaths(value: string[]) {
   ignoredPaths.value = value;
+}
+
+function resetIgnoredPaths() {
+  ignoredPaths.value = [...DEFAULT_GLOBAL_SEARCH_IGNORED_PATHS];
 }
 
 function toggleDriveRoot(path: string) {
@@ -366,14 +418,14 @@ onUnmounted(() => {
                 {{ globalSearchStore.currentDriveRoot }}
               </span>
               <span class="global-search-settings__scan-progress-count">
-                {{ t('drives') }}: {{ globalSearchStore.scannedDrivesCount }} / {{ globalSearchStore.totalDrivesCount }}
+                {{ t('globalSearch.indexedItems') }}: {{ globalSearchStore.scanIndexedItemCount.toLocaleString() }}
               </span>
             </div>
-            <div class="global-search-settings__progress-bar">
-              <div
-                class="global-search-settings__progress-bar-fill"
-                :style="{ width: `${globalSearchStore.scanPhase === 'committing' ? 100 : globalSearchStore.scanProgress}%` }"
-              />
+            <div
+              v-if="globalSearchStore.currentScanPath"
+              class="global-search-settings__scan-debug-path"
+            >
+              {{ globalSearchStore.currentScanPath }}
             </div>
           </div>
 
@@ -413,7 +465,7 @@ onUnmounted(() => {
           </div>
 
           <div
-            v-if="lastScanSummary"
+            v-if="showLastScanSummary"
             class="global-search-settings__last-scan-summary"
           >
             {{ lastScanSummary }}
@@ -466,7 +518,15 @@ onUnmounted(() => {
               class="global-search-settings__drive-icon"
             />
             <div class="global-search-settings__drive-main">
-              <span class="global-search-settings__drive-name">{{ drive.name }}</span>
+              <div class="global-search-settings__drive-title-row">
+                <span class="global-search-settings__drive-name">{{ drive.name }}</span>
+                <span
+                  class="global-search-settings__drive-index-status"
+                  :data-status="getDriveIndexStatus(drive.path)"
+                >
+                  {{ t(`globalSearch.driveIndexStatus.${getDriveIndexStatus(drive.path)}`) }}
+                </span>
+              </div>
             </div>
             <div class="global-search-settings__drive-checkbox">
               <CheckIcon
@@ -476,6 +536,68 @@ onUnmounted(() => {
               />
             </div>
           </button>
+        </div>
+      </template>
+    </SettingsItem>
+
+    <SettingsItem
+      :title="t('settings.globalSearch.ignoredPaths')"
+      :description="t('settings.globalSearch.enterPathToAddToIgnored')"
+      :icon="BanIcon"
+    >
+      <div class="global-search-settings__ignored-paths-header-controls">
+        <Tooltip>
+          <TooltipTrigger as-child>
+            <Button
+              variant="outline"
+              size="icon"
+              @click="resetIgnoredPaths"
+            >
+              <RotateCcwIcon class="global-search-settings__header-action-icon" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            {{ t('settings.visualEffects.resetToDefaults') }}
+          </TooltipContent>
+        </Tooltip>
+      </div>
+
+      <template #nested>
+        <div class="global-search-settings__ignored-paths-controls">
+          <div class="global-search-settings__ignored-paths-input-row">
+            <FacetedFilter
+              :title="t('settings.globalSearch.ignoredPaths')"
+              :options="ignoredPathsForDisplay"
+              :model-value="ignoredPathsForDisplay"
+              :min-width="400"
+              allow-create
+              @update:model-value="setIgnoredPaths"
+              @create="addIgnoredPathFromFilter"
+            />
+            <Tooltip>
+              <TooltipTrigger as-child>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  class="global-search-settings__ignored-paths-help-button"
+                >
+                  <CircleHelpIcon class="global-search-settings__ignored-paths-help-icon" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent class="global-search-settings__ignored-paths-help-tooltip">
+                <div class="global-search-settings__ignored-paths-help-list">
+                  <div
+                    v-for="example in ignoredPathHelpExamples"
+                    :key="example.pathPattern"
+                    class="global-search-settings__ignored-paths-help-row"
+                  >
+                    <span class="shortcut">{{ example.pathPattern }}</span>
+                    <span>{{ t(example.descriptionKey) }}</span>
+                  </div>
+                </div>
+              </TooltipContent>
+            </Tooltip>
+          </div>
         </div>
       </template>
     </SettingsItem>
@@ -585,22 +707,6 @@ onUnmounted(() => {
         </div>
       </template>
     </SettingsItem>
-
-    <SettingsItem
-      :title="t('settings.globalSearch.ignoredPaths')"
-      :description="t('settings.globalSearch.enterPathToAddToIgnored')"
-      :icon="BanIcon"
-    >
-      <FacetedFilter
-        :title="t('settings.globalSearch.ignoredPaths')"
-        :options="ignoredPathsForDisplay"
-        :model-value="ignoredPathsForDisplay"
-        :min-width="400"
-        allow-create
-        @update:model-value="setIgnoredPaths"
-        @create="addIgnoredPathFromFilter"
-      />
-    </SettingsItem>
   </div>
 </template>
 
@@ -613,6 +719,9 @@ onUnmounted(() => {
 
 .global-search-settings__status-container {
   display: flex;
+  overflow: hidden;
+  min-width: 0;
+  max-width: 100%;
   flex-direction: column;
   padding: 16px;
   border: 1px solid hsl(var(--border));
@@ -716,6 +825,9 @@ onUnmounted(() => {
 
 .global-search-settings__scan-progress {
   display: flex;
+  overflow: hidden;
+  min-width: 0;
+  max-width: 100%;
   flex-direction: column;
   padding: 12px;
   border-radius: var(--radius-sm);
@@ -725,6 +837,7 @@ onUnmounted(() => {
 
 .global-search-settings__scan-progress-info {
   display: flex;
+  min-width: 0;
   flex-wrap: wrap;
   align-items: center;
   font-size: 13px;
@@ -736,9 +849,13 @@ onUnmounted(() => {
 }
 
 .global-search-settings__scan-progress-drive {
+  overflow: hidden;
+  min-width: 0;
   color: hsl(var(--foreground));
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .global-search-settings__scan-progress-count {
@@ -747,19 +864,22 @@ onUnmounted(() => {
   font-size: 12px;
 }
 
-.global-search-settings__progress-bar {
-  position: relative;
+.global-search-settings__scan-debug-path {
+  display: -webkit-box;
   overflow: hidden;
-  height: 4px;
-  border-radius: 9999px;
-  background-color: hsl(var(--muted));
-}
-
-.global-search-settings__progress-bar-fill {
-  height: 100%;
-  border-radius: 9999px;
-  background-color: hsl(var(--primary));
-  transition: width 0.2s ease-out;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  height: 36px;
+  -webkit-box-orient: vertical;
+  color: hsl(var(--muted-foreground));
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 11px;
+  -webkit-line-clamp: 2;
+  line-height: 18px;
+  overflow-wrap: anywhere;
+  white-space: normal;
+  word-break: break-all;
 }
 
 .global-search-settings__last-scan-summary {
@@ -878,16 +998,19 @@ onUnmounted(() => {
 }
 
 .global-search-settings > :deep(.settings-view-item:first-child .settings-view-item__main) {
+  min-width: 0;
   flex-direction: column;
   align-items: stretch;
 }
 
 .global-search-settings > :deep(.settings-view-item:first-child .settings-view-item__header) {
+  min-width: 0;
   flex: 1;
 }
 
 .global-search-settings > :deep(.settings-view-item:first-child .settings-view-item__header > div) {
   width: 100%;
+  min-width: 0;
 }
 
 .global-search-settings > :deep(.settings-view-item:first-child .settings-view-item__content:empty) {
@@ -1091,6 +1214,28 @@ onUnmounted(() => {
   font-weight: 500;
 }
 
+.global-search-settings__drive-title-row {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+}
+
+.global-search-settings__drive-index-status {
+  flex-shrink: 0;
+  padding: 2px 6px;
+  border-radius: 9999px;
+  background: hsl(var(--muted));
+  color: hsl(var(--muted-foreground));
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.global-search-settings__drive-index-status[data-status="indexed"] {
+  background: hsl(var(--success) / 15%);
+  color: hsl(var(--success));
+}
+
 .global-search-settings__drive-checkbox {
   display: flex;
   width: 18px;
@@ -1110,6 +1255,76 @@ onUnmounted(() => {
 
 .global-search-settings__drive-checkbox-icon {
   color: hsl(var(--primary));
+}
+
+.global-search-settings__ignored-paths-header-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.global-search-settings__header-action-icon {
+  width: 1rem;
+  height: 1rem;
+}
+
+.global-search-settings__ignored-paths-controls {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  flex-direction: column;
+}
+
+.global-search-settings__ignored-paths-input-row {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 6px;
+}
+
+.global-search-settings__ignored-paths-controls :deep(.faceted-filter__trigger) {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.global-search-settings__ignored-paths-controls :deep(.faceted-filter__badge) {
+  overflow: hidden;
+  max-width: 180px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.global-search-settings__ignored-paths-help-button {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  color: hsl(var(--muted-foreground));
+}
+
+.global-search-settings__ignored-paths-help-icon {
+  width: 1rem;
+  height: 1rem;
+}
+
+.global-search-settings__ignored-paths-help-tooltip {
+  max-width: 360px;
+  line-height: 1.4;
+}
+
+.global-search-settings__ignored-paths-help-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.global-search-settings__ignored-paths-help-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.global-search-settings__ignored-paths-help-row .shortcut {
+  flex-shrink: 0;
 }
 
 @media (width <= 720px) {

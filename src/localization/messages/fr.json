@@ -115,6 +115,10 @@
     "noDrivesSelected": "Aucun lecteur sélectionné",
     "lastScan": "Dernier scan",
     "indexedItems": "Éléments indexés",
+    "driveIndexStatus": {
+      "indexed": "Indexé",
+      "notIndexed": "Non indexé"
+    },
     "indexSize": "Taille de l'index",
     "scanning": "Indexation",
     "scanningInParallel": "Indexation de tous les lecteurs en parallèle",
@@ -363,7 +367,13 @@
       "scanDepth": "Profondeur de numérisation",
       "higherDepthScansWillIncrease": "Des analyses plus approfondies augmenteront à la fois le temps d'analyse et de recherche, mais vous permettront de trouver des fichiers situés dans des répertoires plus profondément imbriqués.",
       "ignoredPaths": "Chemins ignorés",
-      "enterPathToAddToIgnored": "Entrez un chemin à ajouter à la liste ignorée et appuyez sur"
+      "enterPathToAddToIgnored": "Entrez un chemin à ajouter à la liste ignorée et appuyez sur",
+      "ignoredPathsHelpNodeModules": "Ignore les dossiers nommés node_modules partout.",
+      "ignoredPathsHelpThumbsDb": "Ignore un nom de fichier ou de dossier partout.",
+      "ignoredPathsHelpDownloads": "Ignore ce préfixe de chemin.",
+      "ignoredPathsHelpTestFolder": "Ignore les dossiers nommés test et leur contenu partout.",
+      "ignoredPathsHelpExtensionMask": "Ignore les fichiers avec l'extension .log partout.",
+      "ignoredPathsHelpNestedExtensionMask": "Ignore les fichiers avec l'extension .tmp dans n'importe quel dossier."
     },
     "drives": {
       "driveDetection": "Détection de lecteur",

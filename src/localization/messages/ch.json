@@ -115,6 +115,10 @@
     "noDrivesSelected": "没有选择驱动器",
     "lastScan": "上次扫描",
     "indexedItems": "已索引项目",
+    "driveIndexStatus": {
+      "indexed": "已索引",
+      "notIndexed": "未索引"
+    },
     "indexSize": "索引大小",
     "scanning": "索引",
     "scanningInParallel": "正在并行索引所有驱动器",
@@ -363,7 +367,13 @@
       "scanDepth": "扫描深度",
       "higherDepthScansWillIncrease": "更高深度的扫描会增加扫描和搜索时间，但可以让您找到位于更深嵌套目录中的文件。",
       "ignoredPaths": "忽略的路径",
-      "enterPathToAddToIgnored": "输入要添加到忽略列表的路径并按"
+      "enterPathToAddToIgnored": "输入要添加到忽略列表的路径并按",
+      "ignoredPathsHelpNodeModules": "跳过任意位置名为 node_modules 的文件夹。",
+      "ignoredPathsHelpThumbsDb": "跳过任意位置的文件或文件夹名称。",
+      "ignoredPathsHelpDownloads": "跳过该路径前缀。",
+      "ignoredPathsHelpTestFolder": "跳过任意位置名为 test 的文件夹及其内容。",
+      "ignoredPathsHelpExtensionMask": "跳过任意位置扩展名为 .log 的文件。",
+      "ignoredPathsHelpNestedExtensionMask": "跳过任意文件夹中扩展名为 .tmp 的文件。"
     },
     "drives": {
       "driveDetection": "驱动检测",
