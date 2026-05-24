@@ -49,6 +49,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ steps.context.outputs.tag }}
+          fetch-depth: 0
 
       - name: Verify package.json version matches tag
         shell: bash
@@ -64,11 +65,36 @@ jobs:
       - name: Ensure draft release exists
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
           TAG: ${{ steps.context.outputs.tag }}
           VERSION: ${{ steps.context.outputs.version }}
           IS_PRERELEASE: ${{ steps.context.outputs.is_prerelease }}
         shell: bash
         run: |
+          previous_tag=""
+          while read -r candidate_tag; do
+            if [[ "$candidate_tag" == "$TAG" ]]; then
+              break
+            fi
+            previous_tag="$candidate_tag"
+          done < <(git tag --list 'v[0-9]*' --sort=v:refname)
+
+          notes_args=(-f "tag_name=$TAG" -f "target_commitish=$TAG")
+          if [[ -n "$previous_tag" ]]; then
+            notes_args+=(-f "previous_tag_name=$previous_tag")
+          fi
+
+          generated_notes_file="$(mktemp)"
+          gh api "repos/$REPOSITORY/releases/generate-notes" "${notes_args[@]}" --jq '.body // ""' \
+            | awk '!/^\*\*Full Changelog\*\*: /' > "$generated_notes_file"
+
+          notes_marker="<!-- generated-release-notes:$TAG -->"
+          release_notes_file="$(mktemp)"
+          {
+            echo "$notes_marker"
+            cat "$generated_notes_file"
+          } > "$release_notes_file"
+
           if ! gh release view "$TAG" >/dev/null 2>&1; then
             flags=(--draft)
             if [[ "$IS_PRERELEASE" == "true" ]]; then
@@ -76,9 +102,28 @@ jobs:
             fi
             gh release create "$TAG" \
               --title "Sigma File Manager v$VERSION" \
-              --generate-notes \
+              --notes-file "$release_notes_file" \
               "${flags[@]}"
           else
+            existing_notes_file="$(mktemp)"
+            cleaned_notes_file="$(mktemp)"
+            updated_notes_file="$(mktemp)"
+            gh release view "$TAG" --json body --jq '.body // ""' > "$existing_notes_file"
+            awk '!/^\*\*Full Changelog\*\*: /' "$existing_notes_file" > "$cleaned_notes_file"
+
+            if grep -Fq "$notes_marker" "$cleaned_notes_file"; then
+              cp "$cleaned_notes_file" "$updated_notes_file"
+            elif [[ -s "$cleaned_notes_file" ]]; then
+              {
+                cat "$cleaned_notes_file"
+                echo
+                cat "$release_notes_file"
+              } > "$updated_notes_file"
+            else
+              cp "$release_notes_file" "$updated_notes_file"
+            fi
+
+            gh release edit "$TAG" --notes-file "$updated_notes_file"
             echo "Release $TAG already exists; assets will be added/replaced."
           fi
 

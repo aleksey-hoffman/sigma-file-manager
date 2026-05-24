@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component type="desktop-application">
-  <id>com.sigma-file-manager.app</id>
+  <id>com.sigmafilemanager.app</id>
   <name>Sigma File Manager</name>
   <summary>Modern, free, open-source file manager</summary>
   <description>
@@ -13,7 +13,7 @@
       tags, and customizable visuals.
     </p>
   </description>
-  <launchable type="desktop-id">com.sigma-file-manager.app.desktop</launchable>
+  <launchable type="desktop-id">com.sigmafilemanager.app.desktop</launchable>
   <url type="homepage">https://github.com/aleksey-hoffman/sigma-file-manager</url>
   <url type="bugtracker">https://github.com/aleksey-hoffman/sigma-file-manager/issues</url>
   <developer_name>Aleksey Hoffman</developer_name>

@@ -9,7 +9,7 @@ build_directory="$flatpak_directory/.build"
 repo_directory="$flatpak_directory/.repo"
 output_directory="$flatpak_directory/output"
 manifest_path="$flatpak_directory/com.sigma-file-manager.app.yml"
-app_id="com.sigma-file-manager.app"
+app_id="com.sigmafilemanager.app"
 runtime_ref="org.gnome.Platform/x86_64/48"
 
 version="$(node -p "require('$root_directory/package.json').version")"

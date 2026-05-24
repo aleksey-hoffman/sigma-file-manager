@@ -1,4 +1,4 @@
-id: com.sigma-file-manager.app
+id: com.sigmafilemanager.app
 runtime: org.gnome.Platform
 runtime-version: '48'
 sdk: org.gnome.Sdk
@@ -46,13 +46,13 @@ modules:
           echo "No desktop file found in deb package"
           exit 1
         fi
-        sed -i 's/^Icon=.*/Icon=com.sigma-file-manager.app/' "$desktop_file"
-        install -Dm644 "$desktop_file" /app/share/applications/com.sigma-file-manager.app.desktop
+        sed -i 's/^Icon=.*/Icon=com.sigmafilemanager.app/' "$desktop_file"
+        install -Dm644 "$desktop_file" /app/share/applications/com.sigmafilemanager.app.desktop
       - |
         for icon_size in 32x32 128x128 256x256@2; do
           icon_source=$(find "deb-extract/usr/share/icons/hicolor/${icon_size}/apps" -name '*.png' -print -quit 2>/dev/null || true)
           if [ -n "$icon_source" ]; then
-            install -Dm644 "$icon_source" "/app/share/icons/hicolor/${icon_size}/apps/com.sigma-file-manager.app.png"
+            install -Dm644 "$icon_source" "/app/share/icons/hicolor/${icon_size}/apps/com.sigmafilemanager.app.png"
           fi
         done
-      - install -Dm644 com.sigma-file-manager.app.metainfo.xml /app/share/metainfo/com.sigma-file-manager.app.metainfo.xml
+      - install -Dm644 com.sigma-file-manager.app.metainfo.xml /app/share/metainfo/com.sigmafilemanager.app.metainfo.xml
