@@ -275,11 +275,7 @@ jobs:
       - name: Install Flatpak toolchain
         if: matrix.platform == 'linux'
         run: |
-          sudo apt-get install -y flatpak flatpak-builder appstream-util
-          if ! command -v appstream-compose >/dev/null 2>&1; then
-            echo "::error::appstream-compose is required by flatpak-builder but was not installed"
-            exit 1
-          fi
+          sudo apt-get install -y flatpak flatpak-builder
           flatpak remote-add --if-not-exists --user flathub https://flathub.org/repo/flathub.flatpakrepo
           flatpak install -y --noninteractive --user flathub org.gnome.Platform//48 org.gnome.Sdk//48
 
