@@ -2,7 +2,7 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-use super::types::GlobalSearchStatus;
+use super::types::{GlobalSearchScanPhase, GlobalSearchStatus};
 use once_cell::sync::Lazy;
 use std::sync::atomic::AtomicBool;
 use std::sync::{Arc, RwLock};
@@ -35,8 +35,18 @@ pub(super) static GLOBAL_SEARCH_STATE: Lazy<Arc<RwLock<GlobalSearchState>>> = La
             is_scan_in_progress: false,
             is_committing: false,
             is_parallel_scan: false,
+            scan_phase: GlobalSearchScanPhase::Idle,
+            scan_reason: None,
             last_scan_time: None,
+            last_scan_outcome: None,
+            last_scan_reason: None,
+            last_scan_started_time: None,
+            last_scan_finished_time: None,
+            last_scan_duration_ms: None,
+            last_scan_indexed_item_count: None,
+            last_scan_error: None,
             indexed_item_count: 0,
+            scan_indexed_item_count: 0,
             index_size_bytes: 0,
             current_drive_root: None,
             drive_scan_errors: vec![],

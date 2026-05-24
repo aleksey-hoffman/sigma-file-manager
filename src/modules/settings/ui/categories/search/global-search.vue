@@ -66,6 +66,60 @@ const lastScanRelative = computed(() => {
   return formatRelativeTime(globalSearchStore.lastScanTime);
 });
 
+const formattedLastScanDuration = computed(() => {
+  const durationMs = globalSearchStore.lastScanDurationMs;
+  if (!durationMs) return null;
+
+  const seconds = Math.max(1, Math.round(durationMs / 1000));
+  if (seconds < 60) return `${seconds}s`;
+
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  return remainingSeconds > 0 ? `${minutes}m ${remainingSeconds}s` : `${minutes}m`;
+});
+
+const lastScanOutcomeLabel = computed(() => {
+  switch (globalSearchStore.lastScanOutcome) {
+    case 'completed':
+      return t('statusCenter.operationStatusShort.completed');
+    case 'canceled':
+      return t('statusCenter.operationStatusShort.cancelled');
+    case 'failed':
+      return t('statusCenter.operationStatusShort.error');
+    default:
+      return null;
+  }
+});
+
+const lastScanItemCountLabel = computed(() => {
+  const itemCount = globalSearchStore.lastScanIndexedItemCount;
+  if (itemCount === null) return null;
+
+  const formattedItemCount = itemCount.toLocaleString();
+
+  if (globalSearchStore.lastScanOutcome === 'completed') {
+    return `${formattedItemCount} ${t('globalSearch.indexedItems').toLowerCase()}`;
+  }
+
+  return `${formattedItemCount} ${t('items')}`;
+});
+
+const lastScanSummary = computed(() => {
+  if (!lastScanOutcomeLabel.value) return null;
+
+  const parts = [lastScanOutcomeLabel.value];
+
+  if (lastScanItemCountLabel.value) {
+    parts.push(lastScanItemCountLabel.value);
+  }
+
+  if (formattedLastScanDuration.value) {
+    parts.push(formattedLastScanDuration.value);
+  }
+
+  return parts.join(' / ');
+});
+
 const formattedIndexSize = computed(() => {
   if (globalSearchStore.indexSizeBytes === 0) return '-';
   return formatBytes(globalSearchStore.indexSizeBytes);
@@ -84,8 +138,9 @@ const selectedDriveCount = computed(() => {
 
 const indexStatus = computed(() => {
   void displayTick.value;
-  if (globalSearchStore.isCommitting) return 'committing';
-  if (globalSearchStore.isScanInProgress) return 'scanning';
+  if (globalSearchStore.scanPhase === 'canceling') return 'canceling';
+  if (globalSearchStore.scanPhase === 'committing' || globalSearchStore.isCommitting) return 'committing';
+  if (globalSearchStore.scanPhase === 'scanning' || globalSearchStore.isScanInProgress) return 'scanning';
   if (globalSearchStore.driveScanErrors.length > 0 && globalSearchStore.indexedItemCount === 0) return 'error';
   if (globalSearchStore.indexedItemCount === 0) return 'empty';
   if (!globalSearchStore.lastScanTime) return 'empty';
@@ -94,6 +149,26 @@ const indexStatus = computed(() => {
   if (hoursSinceLastScan > 24) return 'outdated';
 
   return 'ready';
+});
+
+const indexStatusLabel = computed(() => {
+  if (indexStatus.value === 'canceling') {
+    return t('statusCenter.cancelling');
+  }
+
+  return t(`globalSearch.indexStatus.${indexStatus.value}`);
+});
+
+const scanProgressLabel = computed(() => {
+  if (globalSearchStore.scanPhase === 'committing') {
+    return t('globalSearch.indexStatus.committing');
+  }
+
+  if (globalSearchStore.scanPhase === 'canceling') {
+    return t('statusCenter.cancelling');
+  }
+
+  return globalSearchStore.isParallelScan ? t('globalSearch.scanningInParallel') : t('globalSearch.scanning');
 });
 
 const internalIgnoredPaths = new Set<string>([
@@ -219,7 +294,7 @@ onUnmounted(() => {
               :data-status="indexStatus"
             >
               <LoaderCircleIcon
-                v-if="indexStatus === 'scanning' || indexStatus === 'committing'"
+                v-if="indexStatus === 'scanning' || indexStatus === 'canceling' || indexStatus === 'committing'"
                 :size="14"
                 class="global-search-settings__status-badge-icon global-search-settings__status-badge-icon--spinning"
               />
@@ -233,18 +308,32 @@ onUnmounted(() => {
                 :size="14"
                 class="global-search-settings__status-badge-icon"
               />
-              <span>{{ t(`globalSearch.indexStatus.${indexStatus}`) }}</span>
+              <span>{{ indexStatusLabel }}</span>
             </div>
             <div class="global-search-settings__status-actions">
               <Button
-                v-if="globalSearchStore.isScanInProgress && !globalSearchStore.isCommitting"
+                v-if="globalSearchStore.scanPhase === 'scanning' || globalSearchStore.scanPhase === 'canceling'"
                 variant="outline"
                 size="sm"
                 class="global-search-settings__cancel-button"
+                :disabled="globalSearchStore.scanPhase === 'canceling'"
                 @click="cancelScan"
               >
                 <XIcon :size="14" />
-                <span>{{ t('cancel') }}</span>
+                <span>{{ globalSearchStore.scanPhase === 'canceling' ? t('statusCenter.cancelling') : t('cancel') }}</span>
+              </Button>
+              <Button
+                v-else-if="globalSearchStore.scanPhase === 'committing'"
+                variant="outline"
+                size="sm"
+                class="global-search-settings__cancel-button"
+                disabled
+              >
+                <LoaderCircleIcon
+                  :size="14"
+                  class="global-search-settings__status-badge-icon--spinning"
+                />
+                <span>{{ t('globalSearch.indexStatus.committing') }}</span>
               </Button>
               <Button
                 variant="outline"
@@ -268,7 +357,7 @@ onUnmounted(() => {
           >
             <div class="global-search-settings__scan-progress-info">
               <span class="global-search-settings__scan-progress-label">
-                {{ globalSearchStore.isParallelScan ? t('globalSearch.scanningInParallel') : t('globalSearch.scanning') }}
+                {{ scanProgressLabel }}
               </span>
               <span
                 v-if="globalSearchStore.currentDriveRoot && !globalSearchStore.isParallelScan"
@@ -277,13 +366,13 @@ onUnmounted(() => {
                 {{ globalSearchStore.currentDriveRoot }}
               </span>
               <span class="global-search-settings__scan-progress-count">
-                {{ globalSearchStore.scannedDrivesCount }} / {{ globalSearchStore.totalDrivesCount }}
+                {{ t('drives') }}: {{ globalSearchStore.scannedDrivesCount }} / {{ globalSearchStore.totalDrivesCount }}
               </span>
             </div>
             <div class="global-search-settings__progress-bar">
               <div
                 class="global-search-settings__progress-bar-fill"
-                :style="{ width: `${globalSearchStore.scanProgress}%` }"
+                :style="{ width: `${globalSearchStore.scanPhase === 'committing' ? 100 : globalSearchStore.scanProgress}%` }"
               />
             </div>
           </div>
@@ -324,6 +413,13 @@ onUnmounted(() => {
           </div>
 
           <div
+            v-if="lastScanSummary"
+            class="global-search-settings__last-scan-summary"
+          >
+            {{ lastScanSummary }}
+          </div>
+
+          <div
             v-if="globalSearchStore.driveScanErrors.length > 0"
             class="global-search-settings__errors"
           >
@@ -346,6 +442,40 @@ onUnmounted(() => {
               </div>
             </div>
           </div>
+        </div>
+      </template>
+    </SettingsItem>
+
+    <SettingsItem
+      :title="t('drives')"
+      :description="t('globalSearch.selectDrives')"
+      :icon="HardDriveIcon"
+    >
+      <template #nested>
+        <div class="global-search-settings__drives">
+          <button
+            v-for="drive in drives"
+            :key="drive.path"
+            class="global-search-settings__drive-item"
+            :data-selected="selectedDriveRoots.includes(drive.path) || undefined"
+            @click="toggleDriveRoot(drive.path)"
+          >
+            <component
+              :is="drive.is_removable ? UsbIcon : HardDriveIcon"
+              :size="18"
+              class="global-search-settings__drive-icon"
+            />
+            <div class="global-search-settings__drive-main">
+              <span class="global-search-settings__drive-name">{{ drive.name }}</span>
+            </div>
+            <div class="global-search-settings__drive-checkbox">
+              <CheckIcon
+                v-if="selectedDriveRoots.includes(drive.path)"
+                :size="14"
+                class="global-search-settings__drive-checkbox-icon"
+              />
+            </div>
+          </button>
         </div>
       </template>
     </SettingsItem>
@@ -471,40 +601,6 @@ onUnmounted(() => {
         @create="addIgnoredPathFromFilter"
       />
     </SettingsItem>
-
-    <SettingsItem
-      :title="t('drives')"
-      :description="t('globalSearch.selectDrives')"
-      :icon="HardDriveIcon"
-    >
-      <template #nested>
-        <div class="global-search-settings__drives">
-          <button
-            v-for="drive in drives"
-            :key="drive.path"
-            class="global-search-settings__drive-item"
-            :data-selected="selectedDriveRoots.includes(drive.path) || undefined"
-            @click="toggleDriveRoot(drive.path)"
-          >
-            <component
-              :is="drive.is_removable ? UsbIcon : HardDriveIcon"
-              :size="18"
-              class="global-search-settings__drive-icon"
-            />
-            <div class="global-search-settings__drive-main">
-              <span class="global-search-settings__drive-name">{{ drive.name }}</span>
-            </div>
-            <div class="global-search-settings__drive-checkbox">
-              <CheckIcon
-                v-if="selectedDriveRoots.includes(drive.path)"
-                :size="14"
-                class="global-search-settings__drive-checkbox-icon"
-              />
-            </div>
-          </button>
-        </div>
-      </template>
-    </SettingsItem>
   </div>
 </template>
 
@@ -555,7 +651,8 @@ onUnmounted(() => {
   color: hsl(var(--success));
 }
 
-.global-search-settings__status-badge[data-status="scanning"] {
+.global-search-settings__status-badge[data-status="scanning"],
+.global-search-settings__status-badge[data-status="canceling"] {
   background-color: hsl(var(--primary) / 15%);
   color: hsl(var(--primary));
 }
@@ -609,6 +706,10 @@ onUnmounted(() => {
   background-color: hsl(0deg 85% 60% / 15%);
 }
 
+.global-search-settings__cancel-button:disabled {
+  opacity: 0.75;
+}
+
 .global-search-settings__rescan-icon--spinning {
   animation: spin 1s linear infinite;
 }
@@ -659,6 +760,12 @@ onUnmounted(() => {
   border-radius: 9999px;
   background-color: hsl(var(--primary));
   transition: width 0.2s ease-out;
+}
+
+.global-search-settings__last-scan-summary {
+  color: hsl(var(--muted-foreground));
+  font-size: 12px;
+  text-align: center;
 }
 
 .global-search-settings__metrics {

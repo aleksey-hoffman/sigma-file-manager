@@ -87,21 +87,39 @@ pub async fn global_search_query(
         .map_err(|error: tauri::Error| error.to_string())?;
     let index_path = index_dir(&base_dir);
 
-    let (_index, reader, fields) = {
-        let mut state = GLOBAL_SEARCH_STATE
-            .write()
+    {
+        let state = GLOBAL_SEARCH_STATE
+            .read()
             .map_err(|error| error.to_string())?;
-        if state.index.is_none() || state.reader.is_none() || state.fields.is_none() {
+        if state.index.is_some() && state.reader.is_some() && state.fields.is_some() {
+            drop(state);
+        } else {
+            drop(state);
+            let mut state = GLOBAL_SEARCH_STATE
+                .write()
+                .map_err(|error| error.to_string())?;
             let (index, reader, fields) = open_or_create_index(&index_path)?;
             state.index = Some(index);
             state.reader = Some(reader);
             state.fields = Some(fields);
         }
-        (
-            state.index.as_ref().unwrap().clone(),
-            state.reader.as_ref().unwrap().clone(),
-            *state.fields.as_ref().unwrap(),
-        )
+    }
+
+    let (reader, fields) = {
+        let state = GLOBAL_SEARCH_STATE
+            .read()
+            .map_err(|error| error.to_string())?;
+        let reader = state
+            .reader
+            .as_ref()
+            .ok_or_else(|| "Search index reader is not initialized".to_string())?
+            .clone();
+        let fields = *state
+            .fields
+            .as_ref()
+            .ok_or_else(|| "Search index fields are not initialized".to_string())?;
+
+        (reader, fields)
     };
 
     let searcher = reader.searcher();

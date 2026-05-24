@@ -18,12 +18,26 @@ type GlobalSearchDriveScanError = {
   message: string;
 };
 
+export type GlobalSearchScanReason = 'manual' | 'startup' | 'idle' | 'driveChange' | 'settingsChange';
+export type GlobalSearchScanPhase = 'idle' | 'scanning' | 'canceling' | 'committing';
+export type GlobalSearchScanOutcome = 'completed' | 'canceled' | 'failed';
+
 type GlobalSearchStatus = {
   is_scan_in_progress: boolean;
   is_committing: boolean;
   is_parallel_scan: boolean;
+  scan_phase: GlobalSearchScanPhase;
+  scan_reason: GlobalSearchScanReason | null;
   last_scan_time: number | null;
+  last_scan_outcome: GlobalSearchScanOutcome | null;
+  last_scan_reason: GlobalSearchScanReason | null;
+  last_scan_started_time: number | null;
+  last_scan_finished_time: number | null;
+  last_scan_duration_ms: number | null;
+  last_scan_indexed_item_count: number | null;
+  last_scan_error: string | null;
   indexed_item_count: number;
+  scan_indexed_item_count: number;
   index_size_bytes: number;
   current_drive_root: string | null;
   drive_scan_errors: GlobalSearchDriveScanError[];
@@ -32,9 +46,14 @@ type GlobalSearchStatus = {
   total_drives_count: number;
 };
 
+type CancelScanOptions = {
+  suppressAutoReindex?: boolean;
+};
+
 const DEBOUNCE_DELAY_MS = 200;
 const POLL_INTERVAL_ACTIVE_MS = 300;
 const POLL_INTERVAL_IDLE_MS = 5000;
+const MIN_AUTO_REINDEX_SUPPRESSION_MS = 60 * 1000;
 
 export const useGlobalSearchStore = defineStore('globalSearch', () => {
   const isOpen = ref(false);
@@ -44,8 +63,18 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
   const isScanInProgress = ref(false);
   const isCommitting = ref(false);
   const isParallelScan = ref(false);
+  const scanPhase = ref<GlobalSearchScanPhase>('idle');
+  const scanReason = ref<GlobalSearchScanReason | null>(null);
   const lastScanTime = ref<number | null>(null);
+  const lastScanOutcome = ref<GlobalSearchScanOutcome | null>(null);
+  const lastScanReason = ref<GlobalSearchScanReason | null>(null);
+  const lastScanStartedTime = ref<number | null>(null);
+  const lastScanFinishedTime = ref<number | null>(null);
+  const lastScanDurationMs = ref<number | null>(null);
+  const lastScanIndexedItemCount = ref<number | null>(null);
+  const lastScanError = ref<string | null>(null);
   const indexedItemCount = ref<number>(0);
+  const scanIndexedItemCount = ref<number>(0);
   const indexSizeBytes = ref<number>(0);
   const currentDriveRoot = ref<string | null>(null);
   const driveScanErrors = ref<GlobalSearchDriveScanError[]>([]);
@@ -89,6 +118,36 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
     return timeSinceLastScan > staleThresholdMs;
   }
 
+  function getAutoReindexSuppressionDurationMs() {
+    const settings = userSettingsStore.userSettings.globalSearch;
+    const configuredPeriodMs = (settings.autoScanPeriodMinutes ?? 60) * 60 * 1000;
+    return Math.max(MIN_AUTO_REINDEX_SUPPRESSION_MS, configuredPeriodMs);
+  }
+
+  async function suppressAutoReindexTemporarily() {
+    await userSettingsStore.set('globalSearch.lastManualCancelTime', Date.now());
+  }
+
+  async function clearAutoReindexSuppression() {
+    if (userSettingsStore.userSettings.globalSearch.lastManualCancelTime !== null) {
+      await userSettingsStore.set('globalSearch.lastManualCancelTime', null);
+    }
+  }
+
+  function getIsAutoReindexSuppressed() {
+    const lastManualCancelTime = userSettingsStore.userSettings.globalSearch.lastManualCancelTime;
+    if (typeof lastManualCancelTime !== 'number') return false;
+
+    const suppressedUntil = lastManualCancelTime + getAutoReindexSuppressionDurationMs();
+
+    if (Date.now() < suppressedUntil) {
+      return true;
+    }
+
+    void clearAutoReindexSuppression();
+    return false;
+  }
+
   async function getDriveRoots(): Promise<string[]> {
     const selected = userSettingsStore.userSettings.globalSearch.selectedDriveRoots;
     if (selected.length > 0) return selected;
@@ -107,8 +166,18 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
     isScanInProgress.value = status.is_scan_in_progress;
     isCommitting.value = status.is_committing ?? false;
     isParallelScan.value = status.is_parallel_scan ?? false;
+    scanPhase.value = status.scan_phase ?? (status.is_committing ? 'committing' : (status.is_scan_in_progress ? 'scanning' : 'idle'));
+    scanReason.value = status.scan_reason ?? null;
     lastScanTime.value = status.last_scan_time ?? null;
+    lastScanOutcome.value = status.last_scan_outcome ?? null;
+    lastScanReason.value = status.last_scan_reason ?? null;
+    lastScanStartedTime.value = status.last_scan_started_time ?? null;
+    lastScanFinishedTime.value = status.last_scan_finished_time ?? null;
+    lastScanDurationMs.value = status.last_scan_duration_ms ?? null;
+    lastScanIndexedItemCount.value = status.last_scan_indexed_item_count ?? null;
+    lastScanError.value = status.last_scan_error ?? null;
     indexedItemCount.value = status.indexed_item_count ?? 0;
+    scanIndexedItemCount.value = status.scan_indexed_item_count ?? 0;
     indexSizeBytes.value = status.index_size_bytes ?? 0;
     currentDriveRoot.value = status.current_drive_root ?? null;
     driveScanErrors.value = Array.isArray(status.drive_scan_errors) ? status.drive_scan_errors : [];
@@ -142,10 +211,11 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
       wireUserIdleDetectionToReindex();
 
       const settings = userSettingsStore.userSettings.globalSearch;
-      const shouldRescanOnLaunch = needsScan.value || (settings.autoReindexWhenIdle && getIsIndexStale());
+      const shouldRescanOnLaunch = !getIsAutoReindexSuppressed()
+        && (needsScan.value || (settings.autoReindexWhenIdle && getIsIndexStale()));
 
       if (shouldRescanOnLaunch) {
-        await startScan();
+        await startScan('startup');
       }
     }
     catch (error) {
@@ -178,11 +248,25 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
     statusPollTimerId.value = null;
   }
 
-  async function startScan() {
+  function createScanSettings(driveRoots: string[], scanReasonValue: GlobalSearchScanReason) {
+    const settings = userSettingsStore.userSettings.globalSearch;
+    return {
+      scan_depth: Math.max(1, Math.floor(settings.scanDepth)),
+      ignored_paths: settings.ignoredPaths,
+      drive_roots: driveRoots,
+      parallel_scan: settings.parallelScan ?? false,
+      scan_reason: scanReasonValue,
+    };
+  }
+
+  async function startScan(scanReasonValue: GlobalSearchScanReason = 'manual') {
     if (isScanInProgress.value) return;
 
     try {
-      const settings = userSettingsStore.userSettings.globalSearch;
+      if (scanReasonValue === 'manual' || scanReasonValue === 'driveChange' || scanReasonValue === 'settingsChange') {
+        await clearAutoReindexSuppression();
+      }
+
       const driveRoots = await getDriveRoots();
 
       if (driveRoots.length === 0) {
@@ -193,12 +277,7 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
       startStatusPolling();
 
       await invoke('global_search_start_scan', {
-        settings: {
-          scan_depth: Math.max(1, Math.floor(settings.scanDepth)),
-          ignored_paths: settings.ignoredPaths,
-          drive_roots: driveRoots,
-          parallel_scan: settings.parallelScan ?? false,
-        },
+        settings: createScanSettings(driveRoots, scanReasonValue),
       });
 
       await refreshStatus();
@@ -210,11 +289,22 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
     }
   }
 
-  async function cancelScan() {
+  async function cancelScan(options: CancelScanOptions = {}) {
     if (!isScanInProgress.value) return;
 
     try {
       await invoke('global_search_cancel_scan');
+      await refreshStatus();
+
+      const wasCancelAccepted = scanPhase.value === 'canceling' || lastScanOutcome.value === 'canceled';
+
+      if (wasCancelAccepted && isScanInProgress.value) {
+        scanPhase.value = 'canceling';
+      }
+
+      if (wasCancelAccepted && (options.suppressAutoReindex ?? true)) {
+        await suppressAutoReindexTemporarily();
+      }
 
       const maxWaitMs = 5000;
       const pollIntervalMs = 100;
@@ -414,13 +504,14 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
 
     if (!settings.autoReindexWhenIdle) return;
     if (isScanInProgress.value) return;
+    if (getIsAutoReindexSuppressed()) return;
     if (!isInitialized.value) return;
     if (!getIsIndexStale()) return;
 
     const appStateStore = useAppStateStore();
     if (!appStateStore.getIsUserIdle()) return;
 
-    startScan();
+    startScan('idle');
   }
 
   function wireUserIdleDetectionToReindex() {
@@ -482,17 +573,17 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
       }
 
       if (isScanInProgress.value) {
-        await cancelScan();
+        await cancelScan({ suppressAutoReindex: false });
       }
 
       driveChangeDebounceTimerId.value = setTimeout(() => {
         driveChangeDebounceTimerId.value = null;
-        startScanWithCurrentDrives();
+        startScanWithCurrentDrives('driveChange');
       }, 2000);
     }
   }
 
-  async function startScanWithCurrentDrives() {
+  async function startScanWithCurrentDrives(scanReasonValue: GlobalSearchScanReason) {
     if (!isInitialized.value) return;
 
     const settings = userSettingsStore.userSettings.globalSearch;
@@ -513,13 +604,9 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
     }
 
     try {
+      await clearAutoReindexSuppression();
       await invoke('global_search_start_scan', {
-        settings: {
-          scan_depth: Math.max(1, Math.floor(settings.scanDepth)),
-          ignored_paths: settings.ignoredPaths,
-          drive_roots: driveRoots,
-          parallel_scan: settings.parallelScan ?? false,
-        },
+        settings: createScanSettings(driveRoots, scanReasonValue),
       });
 
       startStatusPolling();
@@ -546,10 +633,10 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
 
       if (pathsChanged) {
         if (isScanInProgress.value) {
-          await cancelScan();
+          await cancelScan({ suppressAutoReindex: false });
         }
 
-        startScan();
+        startScan('settingsChange');
       }
     },
     { deep: true },
@@ -563,8 +650,18 @@ export const useGlobalSearchStore = defineStore('globalSearch', () => {
     isScanInProgress,
     isCommitting,
     isParallelScan,
+    scanPhase,
+    scanReason,
     lastScanTime,
+    lastScanOutcome,
+    lastScanReason,
+    lastScanStartedTime,
+    lastScanFinishedTime,
+    lastScanDurationMs,
+    lastScanIndexedItemCount,
+    lastScanError,
     indexedItemCount,
+    scanIndexedItemCount,
     indexSizeBytes,
     currentDriveRoot,
     driveScanErrors,

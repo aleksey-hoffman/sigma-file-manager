@@ -133,6 +133,7 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
       includeDirectories: true,
       exactMatch: false,
       typoTolerance: true,
+      lastManualCancelTime: null,
     },
     UIZoomLevel: 1.0,
     showHomeBanner: true,

@@ -206,6 +206,7 @@ export type UserSettingsGlobalSearch = {
   includeDirectories: boolean;
   exactMatch: boolean;
   typoTolerance: boolean;
+  lastManualCancelTime: number | null;
 };
 
 export type DriveSpaceIndicatorStyle = 'linearVertical' | 'linearHorizontal' | 'linearHorizontalCentered' | 'circular';

@@ -101,8 +101,14 @@ function toggleOptions() {
 const collapsedDrives = ref<Set<string>>(new Set());
 
 const hasIndexData = computed(() => globalSearchStore.indexedItemCount > 0);
-const showScanProgress = computed(() => (globalSearchStore.isScanInProgress || globalSearchStore.isCommitting) && globalSearchStore.totalDrivesCount > 0);
-const isCommitting = computed(() => globalSearchStore.isCommitting);
+const showScanProgress = computed(() => globalSearchStore.scanPhase !== 'idle' && globalSearchStore.totalDrivesCount > 0);
+const isCommitting = computed(() => globalSearchStore.scanPhase === 'committing' || globalSearchStore.isCommitting);
+const isCanceling = computed(() => globalSearchStore.scanPhase === 'canceling');
+const scanStatusText = computed(() => {
+  if (isCommitting.value) return t('globalSearch.indexStatus.committing');
+  if (isCanceling.value) return t('statusCenter.cancelling');
+  return globalSearchStore.isParallelScan ? t('globalSearch.scanningInParallel') : t('globalSearch.driveScanInProgress');
+});
 
 function formatRelativeTime(timestamp: number): string {
   const now = Date.now();
@@ -316,7 +322,7 @@ onMounted(() => {
           :model-value="globalSearchStore.query"
           :placeholder="t('globalSearch.globalSearch')"
           class="global-search-view__input"
-          :disabled="!hasIndexData && !globalSearchStore.isScanInProgress && !globalSearchStore.isCommitting"
+          :disabled="!hasIndexData && globalSearchStore.scanPhase === 'idle'"
           @update:model-value="globalSearchStore.setQuery(String($event ?? ''))"
         />
         <Button
@@ -440,10 +446,10 @@ onMounted(() => {
       >
         <div class="global-search-view__scan-info">
           <span class="global-search-view__scan-text">
-            {{ isCommitting ? t('globalSearch.indexStatus.committing') : (globalSearchStore.isParallelScan ? t('globalSearch.scanningInParallel') : t('globalSearch.driveScanInProgress')) }}
+            {{ scanStatusText }}
           </span>
           <span
-            v-if="globalSearchStore.currentDriveRoot && !isCommitting && !globalSearchStore.isParallelScan"
+            v-if="globalSearchStore.currentDriveRoot && !isCommitting && !isCanceling && !globalSearchStore.isParallelScan"
             class="global-search-view__scan-drive"
           >
             {{ globalSearchStore.currentDriveRoot }}
@@ -452,7 +458,7 @@ onMounted(() => {
             v-if="!isCommitting"
             class="global-search-view__scan-count"
           >
-            {{ globalSearchStore.scannedDrivesCount }} / {{ globalSearchStore.totalDrivesCount }}
+            {{ t('drives') }}: {{ globalSearchStore.scannedDrivesCount }} / {{ globalSearchStore.totalDrivesCount }}
           </span>
         </div>
         <div class="global-search-view__scan-progress-bar">
@@ -462,7 +468,7 @@ onMounted(() => {
           />
         </div>
         <div class="global-search-view__scan-items">
-          {{ t('globalSearch.indexedItems') }}: {{ globalSearchStore.indexedItemCount.toLocaleString() }}
+          {{ t('globalSearch.indexedItems') }}: {{ globalSearchStore.scanIndexedItemCount.toLocaleString() }}
         </div>
       </div>
 

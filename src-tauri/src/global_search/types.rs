@@ -4,12 +4,45 @@
 
 use serde::{Deserialize, Serialize};
 
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub enum GlobalSearchScanReason {
+    Manual,
+    Startup,
+    Idle,
+    DriveChange,
+    SettingsChange,
+}
+
+fn default_scan_reason() -> GlobalSearchScanReason {
+    GlobalSearchScanReason::Manual
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub enum GlobalSearchScanPhase {
+    Idle,
+    Scanning,
+    Canceling,
+    Committing,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub enum GlobalSearchScanOutcome {
+    Completed,
+    Canceled,
+    Failed,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GlobalSearchSettings {
     pub scan_depth: usize,
     pub ignored_paths: Vec<String>,
     pub drive_roots: Vec<String>,
     pub parallel_scan: bool,
+    #[serde(default = "default_scan_reason")]
+    pub scan_reason: GlobalSearchScanReason,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -51,8 +84,18 @@ pub struct GlobalSearchStatus {
     pub is_scan_in_progress: bool,
     pub is_committing: bool,
     pub is_parallel_scan: bool,
+    pub scan_phase: GlobalSearchScanPhase,
+    pub scan_reason: Option<GlobalSearchScanReason>,
     pub last_scan_time: Option<u64>,
+    pub last_scan_outcome: Option<GlobalSearchScanOutcome>,
+    pub last_scan_reason: Option<GlobalSearchScanReason>,
+    pub last_scan_started_time: Option<u64>,
+    pub last_scan_finished_time: Option<u64>,
+    pub last_scan_duration_ms: Option<u64>,
+    pub last_scan_indexed_item_count: Option<u64>,
+    pub last_scan_error: Option<String>,
     pub indexed_item_count: u64,
+    pub scan_indexed_item_count: u64,
     pub index_size_bytes: u64,
     pub current_drive_root: Option<String>,
     pub drive_scan_errors: Vec<GlobalSearchDriveScanError>,
