@@ -1,0 +1,115 @@
+name: Build Microsoft Store MSIX
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Branch, tag, or commit SHA to build'
+        required: true
+        default: main
+        type: string
+      architectures:
+        description: 'Architectures to include'
+        required: true
+        default: x64,arm64
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: msix-${{ github.event.inputs.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build MSIX bundle
+    runs-on: windows-latest
+    env:
+      RUSTC_WRAPPER: sccache
+      SCCACHE_GHA_ENABLED: "true"
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.inputs.ref }}
+
+      - name: Setup Volta
+        uses: volta-cli/action@v4
+
+      - name: Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install Windows Rust targets
+        run: rustup target add x86_64-pc-windows-msvc aarch64-pc-windows-msvc
+
+      - name: Setup sccache
+        uses: mozilla-actions/sccache-action@v0.0.9
+
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v1-rust
+          shared-key: msix-windows
+          workspaces: src-tauri
+          cache-on-failure: true
+
+      - name: Resolve npm cache directory
+        id: npm-cache-dir
+        shell: bash
+        run: echo "dir=$(npm config get cache)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache npm
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.npm-cache-dir.outputs.dir }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Install MSIX bundle tool
+        run: cargo install msixbundle-cli
+
+      - name: Configure Microsoft Store package
+        shell: pwsh
+        env:
+          MSIX_PUBLISHER: ${{ secrets.MSIX_PUBLISHER }}
+          MSIX_PUBLISHER_DISPLAY_NAME: ${{ secrets.MSIX_PUBLISHER_DISPLAY_NAME }}
+          MSIX_PFX_BASE64: ${{ secrets.MSIX_PFX_BASE64 }}
+        run: |
+          if (-not $env:MSIX_PUBLISHER) {
+            throw "MSIX_PUBLISHER secret is required to build a Microsoft Store package in CI."
+          }
+
+          $configPath = "src-tauri/gen/windows/bundle.config.json"
+          $config = Get-Content $configPath -Raw | ConvertFrom-Json
+          $config.publisher = $env:MSIX_PUBLISHER
+
+          if ($env:MSIX_PUBLISHER_DISPLAY_NAME) {
+            $config.publisherDisplayName = $env:MSIX_PUBLISHER_DISPLAY_NAME
+          }
+
+          if ($env:MSIX_PFX_BASE64) {
+            $pfxPath = Join-Path $env:RUNNER_TEMP "msix-signing.pfx"
+            [IO.File]::WriteAllBytes($pfxPath, [Convert]::FromBase64String($env:MSIX_PFX_BASE64))
+            $config.signing.pfx = $pfxPath
+            $config.signing.pfxPassword = $null
+          }
+
+          $config | ConvertTo-Json -Depth 20 | Set-Content $configPath
+
+      - name: Build Microsoft Store MSIX bundle
+        shell: bash
+        env:
+          MSIX_PFX_PASSWORD: ${{ secrets.MSIX_PFX_PASSWORD }}
+        run: npm run tauri:windows:build -- --arch "${{ github.event.inputs.architectures }}" --runner npm --verbose
+
+      - name: Upload MSIX artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sigma-file-manager-windows-store-msix
+          path: src-tauri/target/msix/*.msixbundle
+          if-no-files-found: error
