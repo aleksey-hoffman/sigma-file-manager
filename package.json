@@ -41,7 +41,8 @@
     "tauri:cargo-update": "cd ./src-tauri && cargo update",
     "tauri:cargo-build": "npm run sync-version && cd ./src-tauri && cargo build",
     "sync-i18n": "npx tsx ./scripts/sync-i18n.js",
-    "sync-license": "npx tsx ./scripts/sync-license.js"
+    "sync-license": "npx tsx ./scripts/sync-license.js",
+    "tauri:windows:build": "npm run sync-version && tauri-windows-bundle build"
   },
   "dependencies": {
     "@crabnebula/tauri-plugin-drag": "^2.1.0",
@@ -75,6 +76,7 @@
     "vue3-smooth-dnd": "^0.0.6"
   },
   "devDependencies": {
+    "@choochmeque/tauri-windows-bundle": "^0.1.20",
     "@intlify/eslint-plugin-vue-i18n": "^4.3.0",
     "@stylistic/eslint-plugin": "^5.10.0",
     "@tauri-apps/cli": "^2.10.1",

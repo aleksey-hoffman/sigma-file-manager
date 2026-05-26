@@ -155,6 +155,10 @@ jobs:
       - name: Rust toolchain
         uses: dtolnay/rust-toolchain@stable
 
+      - name: Install Windows Rust targets
+        if: matrix.platform == 'windows'
+        run: rustup target add x86_64-pc-windows-msvc aarch64-pc-windows-msvc
+
       - name: Setup sccache
         uses: mozilla-actions/sccache-action@v0.0.9
 
@@ -249,6 +253,71 @@ jobs:
                 ;;
             esac
 
+            cp "$bundle" "$staged_asset"
+            gh release upload "$TAG" "$staged_asset" --clobber
+          done
+
+      - name: Install MSIX bundle tool
+        if: matrix.platform == 'windows'
+        run: cargo install msixbundle-cli
+
+      - name: Configure Microsoft Store package
+        if: matrix.platform == 'windows'
+        shell: pwsh
+        env:
+          MSIX_PUBLISHER: ${{ secrets.MSIX_PUBLISHER }}
+          MSIX_PUBLISHER_DISPLAY_NAME: ${{ secrets.MSIX_PUBLISHER_DISPLAY_NAME }}
+          MSIX_PFX_BASE64: ${{ secrets.MSIX_PFX_BASE64 }}
+        run: |
+          if (-not $env:MSIX_PUBLISHER) {
+            throw "MSIX_PUBLISHER secret is required to build a Microsoft Store package in CI."
+          }
+
+          $configPath = "src-tauri/gen/windows/bundle.config.json"
+          $config = Get-Content $configPath -Raw | ConvertFrom-Json
+
+          if ($env:MSIX_PUBLISHER) {
+            $config.publisher = $env:MSIX_PUBLISHER
+          }
+
+          if ($env:MSIX_PUBLISHER_DISPLAY_NAME) {
+            $config.publisherDisplayName = $env:MSIX_PUBLISHER_DISPLAY_NAME
+          }
+
+          if ($env:MSIX_PFX_BASE64) {
+            $pfxPath = Join-Path $env:RUNNER_TEMP "msix-signing.pfx"
+            [IO.File]::WriteAllBytes($pfxPath, [Convert]::FromBase64String($env:MSIX_PFX_BASE64))
+            $config.signing.pfx = $pfxPath
+            $config.signing.pfxPassword = $null
+          }
+
+          $config | ConvertTo-Json -Depth 20 | Set-Content $configPath
+
+      - name: Build Microsoft Store MSIX bundle
+        if: matrix.platform == 'windows'
+        env:
+          MSIX_PFX_PASSWORD: ${{ secrets.MSIX_PFX_PASSWORD }}
+        run: npm run tauri:windows:build -- --arch x64,arm64 --runner npm --verbose
+
+      - name: Upload Microsoft Store MSIX bundle
+        if: matrix.platform == 'windows'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ needs.prepare.outputs.tag }}
+          VERSION: ${{ needs.prepare.outputs.version }}
+        shell: bash
+        run: |
+          mkdir -p staged
+          shopt -s nullglob
+
+          bundles=(src-tauri/target/msix/*.msixbundle)
+          if (( ${#bundles[@]} == 0 )); then
+            echo "::error::No Microsoft Store MSIX bundle found"
+            exit 1
+          fi
+
+          for bundle in "${bundles[@]}"; do
+            staged_asset="staged/Sigma-File-Manager-${VERSION}-windows-store.msixbundle"
             cp "$bundle" "$staged_asset"
             gh release upload "$TAG" "$staged_asset" --clobber
           done

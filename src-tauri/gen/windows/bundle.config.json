@@ -1,0 +1,22 @@
+{
+  "publisher": "CN=Microsoft Store Publisher",
+  "publisherDisplayName": "Aleksey Hoffman",
+  "capabilities": {
+    "general": [
+      "internetClient"
+    ]
+  },
+  "extensions": {
+    "shareTarget": false,
+    "fileAssociations": [],
+    "protocolHandlers": []
+  },
+  "signing": {
+    "pfx": null,
+    "pfxPassword": null
+  },
+  "resourceIndex": {
+    "enabled": false,
+    "keepConfig": false
+  }
+}
