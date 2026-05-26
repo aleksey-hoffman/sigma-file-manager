@@ -34,6 +34,30 @@
   margin-bottom: 12px;
 }
 
+.markdown-content .markdown-align-left {
+  text-align: left;
+}
+
+.markdown-content .markdown-align-center {
+  text-align: center;
+}
+
+.markdown-content .markdown-align-right {
+  text-align: right;
+}
+
+.markdown-content .markdown-align-justify {
+  text-align: justify;
+}
+
+.markdown-content .markdown-align-left img,
+.markdown-content .markdown-align-center img,
+.markdown-content .markdown-align-right img,
+.markdown-content .markdown-align-justify img {
+  display: inline-block;
+  vertical-align: middle;
+}
+
 .markdown-content ul,
 .markdown-content ol {
   padding-left: 24px;

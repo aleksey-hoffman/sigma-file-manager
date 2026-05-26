@@ -21,6 +21,20 @@ describe('safe-html', () => {
     expect(html).not.toContain('href="javascript:alert(\'boom\')"');
   });
 
+  it('preserves safe markdown alignment as local classes', () => {
+    const html = renderMarkdownToSafeHtml(`
+<h3 align="center">Centered title</h3>
+<p style="text-align: right; color: red;">Right aligned text</p>
+<p style="text-align: start;">Unsupported alignment</p>
+`);
+
+    expect(html).toContain('class="markdown-align-center"');
+    expect(html).toContain('class="markdown-align-right"');
+    expect(html).not.toContain('style=');
+    expect(html).not.toContain('markdown-align-start');
+    expect(html).not.toContain('color: red');
+  });
+
   it('escapes text before turning urls into links', () => {
     const html = renderTextWithLinksToSafeHtml(
       '<img src=x onerror=alert(1)> https://example.com',
