@@ -85,9 +85,18 @@ jobs:
             throw "MSIX_PUBLISHER secret is required to build a Microsoft Store package in CI."
           }
 
+          $publisher = $env:MSIX_PUBLISHER.Trim()
+          if ($publisher -notmatch '^(CN|L|O|OU|E|C|S|STREET|T|G|I|SN|DC|SERIALNUMBER|Description|PostalCode|POBox|Phone|X21Address|dnQualifier|OID\.(0|[1-9][0-9]*)(\.(0|[1-9][0-9]*))+)=') {
+            $publisher = "CN=$publisher"
+          }
+
+          if ($publisher -notmatch '^(CN|L|O|OU|E|C|S|STREET|T|G|I|SN|DC|SERIALNUMBER|Description|PostalCode|POBox|Phone|X21Address|dnQualifier|OID\.(0|[1-9][0-9]*)(\.(0|[1-9][0-9]*))+)=([^,+=""<>#;]+|"[^""]+")(, (CN|L|O|OU|E|C|S|STREET|T|G|I|SN|DC|SERIALNUMBER|Description|PostalCode|POBox|Phone|X21Address|dnQualifier|OID\.(0|[1-9][0-9]*)(\.(0|[1-9][0-9]*))+)=([^,+=""<>#;]+|"[^""]+"))*$') {
+            throw "MSIX_PUBLISHER must be a valid MSIX publisher distinguished name, for example 'CN=Publisher Name'."
+          }
+
           $configPath = "src-tauri/gen/windows/bundle.config.json"
           $config = Get-Content $configPath -Raw | ConvertFrom-Json
-          $config.publisher = $env:MSIX_PUBLISHER
+          $config.publisher = $publisher
 
           if ($env:MSIX_PACKAGE_NAME) {
             $config.identifier = $env:MSIX_PACKAGE_NAME
