@@ -81,18 +81,17 @@ jobs:
           MSIX_PUBLISHER_DISPLAY_NAME: ${{ secrets.MSIX_PUBLISHER_DISPLAY_NAME }}
           MSIX_PFX_BASE64: ${{ secrets.MSIX_PFX_BASE64 }}
         run: |
-          if (-not $env:MSIX_PACKAGE_NAME) {
-            throw "MSIX_PACKAGE_NAME secret is required to build a Microsoft Store package in CI."
-          }
-
           if (-not $env:MSIX_PUBLISHER) {
             throw "MSIX_PUBLISHER secret is required to build a Microsoft Store package in CI."
           }
 
           $configPath = "src-tauri/gen/windows/bundle.config.json"
           $config = Get-Content $configPath -Raw | ConvertFrom-Json
-          $config.identifier = $env:MSIX_PACKAGE_NAME
           $config.publisher = $env:MSIX_PUBLISHER
+
+          if ($env:MSIX_PACKAGE_NAME) {
+            $config.identifier = $env:MSIX_PACKAGE_NAME
+          }
 
           if ($env:MSIX_PUBLISHER_DISPLAY_NAME) {
             $config.publisherDisplayName = $env:MSIX_PUBLISHER_DISPLAY_NAME
