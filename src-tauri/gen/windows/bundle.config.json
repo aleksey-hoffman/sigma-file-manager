@@ -1,6 +1,7 @@
 {
   "publisher": "CN=Microsoft Store Publisher",
   "publisherDisplayName": "Aleksey Hoffman",
+  "executable": "sigma-file-manager.exe",
   "capabilities": {
     "general": [
       "internetClient"

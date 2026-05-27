@@ -42,7 +42,8 @@
     "tauri:cargo-build": "npm run sync-version && cd ./src-tauri && cargo build",
     "sync-i18n": "npx tsx ./scripts/sync-i18n.js",
     "sync-license": "npx tsx ./scripts/sync-license.js",
-    "tauri:windows:build": "npm run sync-version && tauri-windows-bundle build"
+    "patch-tauri-windows-bundle": "node ./scripts/patch-tauri-windows-bundle.js",
+    "tauri:windows:build": "npm run sync-version && npm run patch-tauri-windows-bundle && tauri-windows-bundle build"
   },
   "dependencies": {
     "@crabnebula/tauri-plugin-drag": "^2.1.0",
