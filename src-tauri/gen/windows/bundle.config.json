@@ -1,4 +1,5 @@
 {
+  "identifier": "SigmaFileManager",
   "publisher": "CN=Microsoft Store Publisher",
   "publisherDisplayName": "Aleksey Hoffman",
   "executable": "sigma-file-manager.exe",
