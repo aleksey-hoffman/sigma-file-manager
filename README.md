@@ -115,7 +115,9 @@ The funding will be used for funding the development of this and my other big pr
         <!-- <a target="_blank" href="https://www.microsoft.com/store/productId/9N7W62ND0NF9">
           <img src="https://github.com/aleksey-hoffman/sigma-file-manager/raw/main/.github/media/get-from-microsoft.png" width="140px">
         </a> -->
-        Soon
+        <a href="https://apps.microsoft.com/detail/9n7w62nd0nf9?referrer=appbadge&mode=full" target="_blank"  rel="noopener noreferrer">
+        	<img src="https://get.microsoft.com/images/en-us%20dark.svg" width="200"/>
+        </a>
       </td>
     </tr>
     <tr>
