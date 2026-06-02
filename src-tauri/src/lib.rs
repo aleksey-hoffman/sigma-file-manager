@@ -306,6 +306,8 @@ pub fn run() {
             open_with::open_native_open_with_dialog,
             open_with::get_shell_context_menu,
             open_with::invoke_shell_context_menu_item,
+            open_with::get_modern_context_menu,
+            open_with::invoke_modern_context_menu_item,
             system_icons::get_system_icon,
             terminal::get_available_terminals,
             terminal::get_terminal_icons,

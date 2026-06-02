@@ -4,13 +4,14 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { invoke } from '@tauri-apps/api/core';
 import type { DirEntry } from '@/types/dir-entry';
 import { ContextMenuSub } from 'reka-ui';
 import {
   ContextMenuItem,
+  ContextMenuSeparator,
   ContextMenuSubTrigger,
   ContextMenuSubContent,
 } from '@/components/ui/context-menu';
@@ -19,13 +20,28 @@ import {
   Loader2Icon,
 } from '@lucide/vue';
 
+type MenuItemSource = 'legacy' | 'modern';
+
 interface ShellContextMenuItem {
   id: number;
   name: string;
   verb: string | null;
   icon: string | null;
   children: ShellContextMenuItem[] | null;
+  source?: MenuItemSource;
+  isSeparator?: false;
 }
+
+interface MenuSeparatorItem {
+  id: 0;
+  name: string;
+  verb: null;
+  icon: null;
+  children: null;
+  isSeparator: true;
+}
+
+type MenuListItem = ShellContextMenuItem | MenuSeparatorItem;
 
 interface GetShellContextMenuResult {
   success: boolean;
@@ -44,47 +60,121 @@ const props = defineProps<{
 
 const { t } = useI18n();
 
+const triggerLabel = computed(() =>
+  t('moreOptions.shellExtensions'),
+);
+
 const isLoading = ref(false);
-const menuItems = ref<ShellContextMenuItem[]>([]);
+const menuItems = ref<MenuListItem[]>([]);
 const loadError = ref<string | null>(null);
 const hasLoadedForPath = ref<string | null>(null);
 
-function filterMenuItems(items: ShellContextMenuItem[]): ShellContextMenuItem[] {
+function normalizeMenuItemName(name: string) {
+  return name.trim().replace(/\s+/g, ' ').toLocaleLowerCase();
+}
+
+function filterMenuItems(items: ShellContextMenuItem[], source: MenuItemSource): ShellContextMenuItem[] {
   return items
     .filter(item => item.name && !item.name.startsWith('-'))
     .filter(item => item.id > 0 || (item.children && item.children.length > 0))
     .map(item => ({
       ...item,
-      children: item.children ? filterMenuItems(item.children) : null,
+      source,
+      children: item.children ? filterMenuItems(item.children, source) : null,
     }));
 }
 
-async function loadShellContextMenu() {
-  const firstEntry = props.selectedEntries[0];
-  if (!firstEntry) return;
+function uniqueModernItems(
+  modernItems: ShellContextMenuItem[],
+  legacyItems: ShellContextMenuItem[],
+) {
+  const legacyNames = new Set(
+    legacyItems.map(item => normalizeMenuItemName(item.name)),
+  );
 
-  const currentPath = firstEntry.path;
-  if (currentPath === hasLoadedForPath.value && menuItems.value.length > 0) return;
+  return modernItems.filter(item => !legacyNames.has(normalizeMenuItemName(item.name)));
+}
+
+function buildCombinedMenuItems(
+  modernItems: ShellContextMenuItem[],
+  legacyItems: ShellContextMenuItem[],
+): MenuListItem[] {
+  if (modernItems.length === 0) {
+    return legacyItems;
+  }
+
+  if (legacyItems.length === 0) {
+    return modernItems;
+  }
+
+  return [
+    ...modernItems,
+    {
+      id: 0,
+      name: '__separator__',
+      verb: null,
+      icon: null,
+      children: null,
+      isSeparator: true,
+    },
+    ...legacyItems,
+  ];
+}
+
+async function loadShellContextMenu() {
+  const entries = props.selectedEntries;
+  if (entries.length === 0) return;
+
+  const cacheKey = entries.map(entry => entry.path).join('|');
+  if (cacheKey === hasLoadedForPath.value && menuItems.value.length > 0) return;
 
   isLoading.value = true;
   loadError.value = null;
 
-  if (hasLoadedForPath.value !== currentPath) {
+  if (hasLoadedForPath.value !== cacheKey) {
     menuItems.value = [];
   }
 
-  hasLoadedForPath.value = currentPath;
+  hasLoadedForPath.value = cacheKey;
 
   try {
-    const result = await invoke<GetShellContextMenuResult>('get_shell_context_menu', {
-      filePath: currentPath,
-    });
+    const [legacyResult, modernResult] = await Promise.all([
+      invoke<GetShellContextMenuResult>('get_shell_context_menu', {
+        filePath: entries[0].path,
+      }).catch(invokeError => ({
+        success: false,
+        items: [],
+        error: String(invokeError),
+      })),
+      invoke<GetShellContextMenuResult>('get_modern_context_menu', {
+        filePaths: entries.map(entry => entry.path),
+      }).catch(invokeError => ({
+        success: false,
+        items: [],
+        error: String(invokeError),
+      })),
+    ]);
 
-    if (result.success) {
-      menuItems.value = filterMenuItems(result.items);
+    if (legacyResult.success || modernResult.success) {
+      const legacyItems = legacyResult.success
+        ? filterMenuItems(legacyResult.items, 'legacy')
+        : [];
+      const modernItems = modernResult.success
+        ? uniqueModernItems(filterMenuItems(modernResult.items, 'modern'), legacyItems)
+        : [];
+
+      if (!legacyResult.success) {
+        console.error('Failed to load shell context menu:', legacyResult.error);
+      }
+
+      if (!modernResult.success) {
+        console.error('Failed to load modern context menu:', modernResult.error);
+      }
+
+      menuItems.value = buildCombinedMenuItems(modernItems, legacyItems);
     }
     else {
-      loadError.value = result.error || t('moreOptions.failedToLoad');
+      loadError.value = legacyResult.error || modernResult.error || t('moreOptions.failedToLoad');
     }
   }
   catch (invokeError) {
@@ -99,10 +189,24 @@ onMounted(() => {
   loadShellContextMenu();
 });
 
-async function invokeMenuItem(item: ShellContextMenuItem) {
+async function invokeMenuItem(item: MenuListItem) {
+  if (item.isSeparator) return;
   if (props.selectedEntries.length === 0 || !item.id) return;
 
   try {
+    if (item.source === 'modern') {
+      const result = await invoke<OpenWithResult>('invoke_modern_context_menu_item', {
+        filePaths: props.selectedEntries.map(entry => entry.path),
+        commandId: item.id,
+      });
+
+      if (!result.success) {
+        console.error('Failed to invoke modern context menu command:', result.error);
+      }
+
+      return;
+    }
+
     for (const entry of props.selectedEntries) {
       const result = await invoke<OpenWithResult>('invoke_shell_context_menu_item', {
         filePath: entry.path,
@@ -126,7 +230,7 @@ async function invokeMenuItem(item: ShellContextMenuItem) {
   <ContextMenuSub>
     <ContextMenuSubTrigger>
       <MoreHorizontalIcon :size="16" />
-      <span>{{ t('moreOptions.shellExtensions') }}</span>
+      <span>{{ triggerLabel }}</span>
     </ContextMenuSubTrigger>
     <ContextMenuSubContent class="more-options-submenu">
       <div class="more-options-submenu__scroll-container">
@@ -151,9 +255,10 @@ async function invokeMenuItem(item: ShellContextMenuItem) {
           <template v-if="menuItems.length > 0">
             <template
               v-for="item in menuItems"
-              :key="item.id || item.name"
+              :key="item.isSeparator ? item.name : `${item.source}-${item.id}-${item.name}`"
             >
-              <ContextMenuSub v-if="item.children && item.children.length > 0">
+              <ContextMenuSeparator v-if="item.isSeparator" />
+              <ContextMenuSub v-else-if="item.children && item.children.length > 0">
                 <ContextMenuSubTrigger class="more-options-submenu__item">
                   <span class="more-options-submenu__item-icon">
                     <img
@@ -220,8 +325,8 @@ async function invokeMenuItem(item: ShellContextMenuItem) {
 }
 
 .more-options-submenu__scroll-container {
+  overflow: hidden auto;
   max-height: 400px;
-  overflow-y: auto;
   scrollbar-color: hsl(var(--border)) transparent;
   scrollbar-width: thin;
 }
@@ -280,8 +385,16 @@ async function invokeMenuItem(item: ShellContextMenuItem) {
 
 .more-options-submenu__item {
   display: flex;
+  min-width: 0;
   align-items: center;
   gap: 8px;
+}
+
+.more-options-submenu__item > span:last-child {
+  overflow: hidden;
+  min-width: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .more-options-submenu__item-icon {

@@ -4,15 +4,19 @@
 
 use crate::open_with::types::{GetShellContextMenuResult, OpenWithResult, ShellContextMenuItem};
 use crate::open_with::utils::canonicalize_path;
+use crate::open_with::windows::icon_utils::hbitmap_to_base64_png;
 use std::ffi::OsStr;
 use std::os::windows::ffi::OsStrExt;
 use std::path::Path;
 use windows::core::{HSTRING, PSTR};
-use windows::Win32::Foundation::TRUE;
-use windows::Win32::System::Com::{CoInitializeEx, CoUninitialize, COINIT_APARTMENTTHREADED};
+use windows::Win32::Foundation::{HWND, TRUE};
+use windows::Win32::System::Com::{
+    CoInitializeEx, CoTaskMemFree, CoUninitialize, COINIT_APARTMENTTHREADED,
+};
+use windows::Win32::UI::Shell::Common::ITEMIDLIST;
 use windows::Win32::UI::Shell::{
-    IContextMenu, IShellItem, SHCreateItemFromParsingName, ShellExecuteExW, CMF_NORMAL,
-    CMINVOKECOMMANDINFOEX, SEE_MASK_ASYNCOK, SEE_MASK_UNICODE, SHELLEXECUTEINFOW,
+    IContextMenu, IShellFolder, SHBindToParent, SHParseDisplayName, ShellExecuteExW, CMF_EXPLORE,
+    CMF_NORMAL, CMINVOKECOMMANDINFOEX, SEE_MASK_ASYNCOK, SEE_MASK_UNICODE, SHELLEXECUTEINFOW,
 };
 use windows::Win32::UI::WindowsAndMessaging::{
     CreatePopupMenu, DestroyMenu, GetMenuItemCount, GetMenuItemInfoW, MENUITEMINFOW, MIIM_BITMAP,
@@ -30,6 +34,28 @@ const EXCLUDED_VERBS: &[&str] = &[
 ];
 
 const UNSUPPORTED_VERBS: &[&str] = &["pintostartscreen"];
+
+struct ShellContextMenu {
+    menu: IContextMenu,
+    absolute_pidl: *mut ITEMIDLIST,
+}
+
+impl Drop for ShellContextMenu {
+    fn drop(&mut self) {
+        unsafe {
+            if !self.absolute_pidl.is_null() {
+                CoTaskMemFree(Some(self.absolute_pidl as *const _));
+            }
+        }
+    }
+}
+
+fn is_excluded_menu_title(menu_text: &str) -> bool {
+    matches!(
+        menu_text.to_lowercase().as_str(),
+        "pin to quick access" | "unpin from quick access"
+    )
+}
 
 unsafe fn extract_menu_items(
     context_menu: &IContextMenu,
@@ -62,11 +88,15 @@ unsafe fn extract_menu_items(
             continue;
         }
 
+        if is_excluded_menu_title(&menu_text) {
+            continue;
+        }
+
         if !mii.hSubMenu.is_invalid() {
             let children = extract_menu_items(context_menu, mii.hSubMenu);
             if !children.is_empty() {
                 let icon = if !mii.hbmpItem.is_invalid() {
-                    extract_bitmap_to_base64(mii.hbmpItem)
+                    hbitmap_to_base64_png(mii.hbmpItem)
                 } else {
                     None
                 };
@@ -122,7 +152,7 @@ unsafe fn extract_menu_items(
         }
 
         let icon = if !mii.hbmpItem.is_invalid() {
-            extract_bitmap_to_base64(mii.hbmpItem)
+            hbitmap_to_base64_png(mii.hbmpItem)
         } else {
             None
         };
@@ -137,100 +167,6 @@ unsafe fn extract_menu_items(
     }
 
     items
-}
-
-unsafe fn extract_bitmap_to_base64(
-    hbitmap: windows::Win32::Graphics::Gdi::HBITMAP,
-) -> Option<String> {
-    use base64::{engine::general_purpose, Engine as _};
-    use windows::Win32::Graphics::Gdi::{
-        CreateCompatibleDC, DeleteDC, GetDIBits, GetObjectW, SelectObject, BITMAP, BITMAPINFO,
-        BITMAPINFOHEADER, BI_RGB, DIB_RGB_COLORS,
-    };
-
-    let hdc = CreateCompatibleDC(None);
-    if hdc.is_invalid() {
-        return None;
-    }
-
-    let mut bmp: BITMAP = std::mem::zeroed();
-    if GetObjectW(
-        hbitmap,
-        std::mem::size_of::<BITMAP>() as i32,
-        Some(&mut bmp as *mut _ as *mut _),
-    ) == 0
-    {
-        let _ = DeleteDC(hdc);
-        return None;
-    }
-
-    let width = bmp.bmWidth;
-    let height = bmp.bmHeight.abs();
-
-    if width <= 0 || height <= 0 || width > 256 || height > 256 {
-        let _ = DeleteDC(hdc);
-        return None;
-    }
-
-    let mut bi: BITMAPINFO = std::mem::zeroed();
-    bi.bmiHeader.biSize = std::mem::size_of::<BITMAPINFOHEADER>() as u32;
-    bi.bmiHeader.biWidth = width;
-    bi.bmiHeader.biHeight = -height;
-    bi.bmiHeader.biPlanes = 1;
-    bi.bmiHeader.biBitCount = 32;
-    bi.bmiHeader.biCompression = BI_RGB.0;
-
-    let pixel_count = (width * height) as usize;
-    let mut pixels: Vec<u8> = vec![0; pixel_count * 4];
-
-    let old_bitmap = SelectObject(hdc, hbitmap);
-    let result = GetDIBits(
-        hdc,
-        hbitmap,
-        0,
-        height as u32,
-        Some(pixels.as_mut_ptr() as *mut _),
-        &mut bi,
-        DIB_RGB_COLORS,
-    );
-    SelectObject(hdc, old_bitmap);
-    let _ = DeleteDC(hdc);
-
-    if result == 0 {
-        return None;
-    }
-
-    let mut rgba_pixels: Vec<u8> = Vec::with_capacity(pixel_count * 4);
-    for pixel_idx in 0..pixel_count {
-        let byte_idx = pixel_idx * 4;
-        let blue = pixels[byte_idx];
-        let green = pixels[byte_idx + 1];
-        let red = pixels[byte_idx + 2];
-        let alpha = pixels[byte_idx + 3];
-        rgba_pixels.push(red);
-        rgba_pixels.push(green);
-        rgba_pixels.push(blue);
-        rgba_pixels.push(alpha);
-    }
-
-    let mut png_data: Vec<u8> = Vec::new();
-    {
-        let mut encoder = png::Encoder::new(&mut png_data, width as u32, height as u32);
-        encoder.set_color(png::ColorType::Rgba);
-        encoder.set_depth(png::BitDepth::Eight);
-
-        match encoder.write_header() {
-            Ok(mut writer) => {
-                if writer.write_image_data(&rgba_pixels).is_err() {
-                    return None;
-                }
-            }
-            Err(_) => return None,
-        }
-    }
-
-    let base64_str = general_purpose::STANDARD.encode(&png_data);
-    Some(format!("data:image/png;base64,{}", base64_str))
 }
 
 pub fn get_shell_context_menu_impl(file_path: &str) -> GetShellContextMenuResult {
@@ -258,31 +194,13 @@ unsafe fn get_context_menu_items(file_path: &str) -> GetShellContextMenuResult {
         };
     }
 
-    let absolute_path = canonicalize_path(path);
-    let file_hstring = HSTRING::from(&absolute_path);
-    let shell_item: Result<IShellItem, _> = SHCreateItemFromParsingName(&file_hstring, None);
-
-    let shell_item = match shell_item {
-        Ok(item) => item,
-        Err(shell_err) => {
+    let shell_context_menu = match create_shell_context_menu(file_path) {
+        Ok(shell_context_menu) => shell_context_menu,
+        Err(error) => {
             return GetShellContextMenuResult {
                 success: false,
                 items: vec![],
-                error: Some(format!("Failed to create shell item: {}", shell_err)),
-            };
-        }
-    };
-
-    let context_menu: Result<IContextMenu, _> =
-        shell_item.BindToHandler(None, &windows::Win32::UI::Shell::BHID_SFUIObject);
-
-    let context_menu = match context_menu {
-        Ok(menu) => menu,
-        Err(menu_err) => {
-            return GetShellContextMenuResult {
-                success: false,
-                items: vec![],
-                error: Some(format!("Failed to get context menu: {}", menu_err)),
+                error: Some(error),
             };
         }
     };
@@ -297,7 +215,9 @@ unsafe fn get_context_menu_items(file_path: &str) -> GetShellContextMenuResult {
     }
     let hmenu = hmenu.unwrap();
 
-    let query_result = context_menu.QueryContextMenu(hmenu, 0, 1, 0x7FFF, CMF_NORMAL);
+    let query_result = shell_context_menu
+        .menu
+        .QueryContextMenu(hmenu, 0, 1, 0x7FFF, CMF_NORMAL | CMF_EXPLORE);
 
     if query_result.is_err() {
         let _ = DestroyMenu(hmenu);
@@ -308,7 +228,7 @@ unsafe fn get_context_menu_items(file_path: &str) -> GetShellContextMenuResult {
         };
     }
 
-    let items = extract_menu_items(&context_menu, hmenu);
+    let items = extract_menu_items(&shell_context_menu.menu, hmenu);
 
     let _ = DestroyMenu(hmenu);
 
@@ -317,6 +237,45 @@ unsafe fn get_context_menu_items(file_path: &str) -> GetShellContextMenuResult {
         items,
         error: None,
     }
+}
+
+unsafe fn create_shell_context_menu(file_path: &str) -> Result<ShellContextMenu, String> {
+    let absolute_path = canonicalize_path(Path::new(file_path));
+    let file_hstring = HSTRING::from(&absolute_path);
+    let mut absolute_pidl: *mut ITEMIDLIST = std::ptr::null_mut();
+
+    SHParseDisplayName(&file_hstring, None, &mut absolute_pidl, 0, None).map_err(
+        |parse_error| format!("Failed to parse path '{}': {}", absolute_path, parse_error),
+    )?;
+
+    let mut child_pidl: *mut ITEMIDLIST = std::ptr::null_mut();
+    let parent_folder: IShellFolder = match SHBindToParent(absolute_pidl, Some(&mut child_pidl)) {
+        Ok(parent_folder) => parent_folder,
+        Err(parent_error) => {
+            CoTaskMemFree(Some(absolute_pidl as *const _));
+            return Err(format!("Failed to bind to parent folder: {}", parent_error));
+        }
+    };
+
+    if child_pidl.is_null() {
+        CoTaskMemFree(Some(absolute_pidl as *const _));
+        return Err("Failed to resolve selected shell item".to_string());
+    }
+
+    let child_items = [child_pidl as *const ITEMIDLIST];
+    let menu =
+        match parent_folder.GetUIObjectOf::<_, IContextMenu>(HWND::default(), &child_items, None) {
+            Ok(menu) => menu,
+            Err(menu_error) => {
+                CoTaskMemFree(Some(absolute_pidl as *const _));
+                return Err(format!("Failed to get context menu: {}", menu_error));
+            }
+        };
+
+    Ok(ShellContextMenu {
+        menu,
+        absolute_pidl,
+    })
 }
 
 fn invoke_shell_verb(file_path: &str, command_verb: &str) -> OpenWithResult {
@@ -416,96 +375,77 @@ pub fn invoke_shell_command(
         let coinit_result = CoInitializeEx(None, COINIT_APARTMENTTHREADED);
         let needs_uninit = coinit_result.is_ok();
 
-        let absolute_path = canonicalize_path(path);
-        let file_hstring = HSTRING::from(&absolute_path);
-        let shell_item: Result<IShellItem, _> = SHCreateItemFromParsingName(&file_hstring, None);
+        let result = match create_shell_context_menu(file_path) {
+            Ok(shell_context_menu) => {
+                use windows::Win32::UI::WindowsAndMessaging::{CreatePopupMenu, DestroyMenu};
 
-        let result = match shell_item {
-            Ok(item) => {
-                let context_menu: Result<IContextMenu, _> =
-                    item.BindToHandler(None, &windows::Win32::UI::Shell::BHID_SFUIObject);
+                let menu = &shell_context_menu.menu;
+                let hmenu = CreatePopupMenu();
+                if hmenu.is_err() {
+                    return OpenWithResult {
+                        success: false,
+                        error: Some("Failed to create popup menu".to_string()),
+                    };
+                }
+                let hmenu = hmenu.unwrap();
 
-                match context_menu {
-                    Ok(menu) => {
-                        use windows::Win32::UI::WindowsAndMessaging::{
-                            CreatePopupMenu, DestroyMenu,
-                        };
+                let query_result =
+                    menu.QueryContextMenu(hmenu, 0, 1, 0x7FFF, CMF_NORMAL | CMF_EXPLORE);
 
-                        let hmenu = CreatePopupMenu();
-                        if hmenu.is_err() {
-                            return OpenWithResult {
-                                success: false,
-                                error: Some("Failed to create popup menu".to_string()),
-                            };
-                        }
-                        let hmenu = hmenu.unwrap();
+                if query_result.is_err() {
+                    let _ = DestroyMenu(hmenu);
+                    return OpenWithResult {
+                        success: false,
+                        error: Some("Failed to query context menu".to_string()),
+                    };
+                }
 
-                        let query_result = menu.QueryContextMenu(hmenu, 0, 1, 0x7FFF, CMF_NORMAL);
+                let invoke_result = invoke_context_menu_command_by_id(menu, command_id);
+                let _ = DestroyMenu(hmenu);
 
-                        if query_result.is_err() {
-                            let _ = DestroyMenu(hmenu);
-                            return OpenWithResult {
-                                success: false,
-                                error: Some("Failed to query context menu".to_string()),
-                            };
-                        }
-
-                        let invoke_result = invoke_context_menu_command_by_id(&menu, command_id);
-                        let _ = DestroyMenu(hmenu);
-
-                        match invoke_result {
-                            Ok(_) => OpenWithResult {
-                                success: true,
-                                error: None,
-                            },
-                            Err(invoke_err) => {
-                                if let Some(verb) = command_verb {
-                                    match invoke_context_menu_command_by_verb(&menu, verb) {
-                                        Ok(_) => OpenWithResult {
-                                            success: true,
-                                            error: None,
-                                        },
-                                        Err(verb_invoke_err) => {
-                                            let fallback_result =
-                                                invoke_shell_verb(file_path, verb);
-                                            if fallback_result.success {
+                match invoke_result {
+                    Ok(_) => OpenWithResult {
+                        success: true,
+                        error: None,
+                    },
+                    Err(invoke_err) => {
+                        if let Some(verb) = command_verb {
+                            match invoke_context_menu_command_by_verb(menu, verb) {
+                                Ok(_) => OpenWithResult {
+                                    success: true,
+                                    error: None,
+                                },
+                                Err(verb_invoke_err) => {
+                                    let fallback_result = invoke_shell_verb(file_path, verb);
+                                    if fallback_result.success {
+                                        fallback_result
+                                    } else {
+                                        OpenWithResult {
+                                            success: false,
+                                            error: Some(format!(
+                                                "Failed to invoke command: {}; verb invoke failed: {}; fallback failed: {}",
+                                                invoke_err,
+                                                verb_invoke_err,
                                                 fallback_result
-                                            } else {
-                                                OpenWithResult {
-                                                    success: false,
-                                                    error: Some(format!(
-                                                        "Failed to invoke command: {}; verb invoke failed: {}; fallback failed: {}",
-                                                        invoke_err,
-                                                        verb_invoke_err,
-                                                        fallback_result
-                                                            .error
-                                                            .unwrap_or_else(|| "unknown error".to_string())
-                                                    )),
-                                                }
-                                            }
+                                                    .error
+                                                    .unwrap_or_else(|| "unknown error".to_string())
+                                            )),
                                         }
-                                    }
-                                } else {
-                                    OpenWithResult {
-                                        success: false,
-                                        error: Some(format!(
-                                            "Failed to invoke command: {}",
-                                            invoke_err
-                                        )),
                                     }
                                 }
                             }
+                        } else {
+                            OpenWithResult {
+                                success: false,
+                                error: Some(format!("Failed to invoke command: {}", invoke_err)),
+                            }
                         }
                     }
-                    Err(menu_err) => OpenWithResult {
-                        success: false,
-                        error: Some(format!("Failed to get context menu: {}", menu_err)),
-                    },
                 }
             }
-            Err(item_err) => OpenWithResult {
+            Err(error) => OpenWithResult {
                 success: false,
-                error: Some(format!("Failed to create shell item: {}", item_err)),
+                error: Some(error),
             },
         };
 

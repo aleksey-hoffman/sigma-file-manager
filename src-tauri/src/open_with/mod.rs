@@ -231,3 +231,36 @@ pub fn invoke_shell_context_menu_item(
         }
     }
 }
+
+#[tauri::command]
+pub fn get_modern_context_menu(file_paths: Vec<String>) -> GetShellContextMenuResult {
+    #[cfg(target_os = "windows")]
+    {
+        windows::get_modern_context_menu_impl(&file_paths)
+    }
+    #[cfg(not(target_os = "windows"))]
+    {
+        let _ = file_paths;
+        GetShellContextMenuResult {
+            success: false,
+            items: vec![],
+            error: Some("Modern context menu is only supported on Windows".to_string()),
+        }
+    }
+}
+
+#[tauri::command]
+pub fn invoke_modern_context_menu_item(file_paths: Vec<String>, command_id: u32) -> OpenWithResult {
+    #[cfg(target_os = "windows")]
+    {
+        windows::invoke_modern_context_menu_item_impl(&file_paths, command_id)
+    }
+    #[cfg(not(target_os = "windows"))]
+    {
+        let _ = (file_paths, command_id);
+        OpenWithResult {
+            success: false,
+            error: Some("Modern context menu is only supported on Windows".to_string()),
+        }
+    }
+}
