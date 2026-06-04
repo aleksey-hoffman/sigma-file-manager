@@ -4,7 +4,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, nextTick } from 'vue';
 import {
   ContextMenuContent,
   ContextMenuItem,
@@ -45,11 +45,13 @@ function handleOpenCustomDialog() {
 }
 
 async function handleCreateLink(linkKind: LinkCreationKind) {
-  await ctx.createLinksForEntries(
-    ctx.contextMenu.value.selectedEntries,
-    linkKind,
-    ctx.currentPath.value,
-  );
+  const entries = [...ctx.contextMenu.value.selectedEntries];
+
+  void nextTick(() => {
+    ctx.closeContextMenu();
+  });
+
+  await ctx.createLinksForEntries(entries, linkKind, ctx.currentPath.value);
 }
 
 async function handleExtensionAction(registration: ContextMenuItemRegistration) {

@@ -74,20 +74,12 @@ fn shortcut_destination_name(file_name: &str) -> String {
     }
 }
 
-fn split_name_for_index(file_name: &str) -> (&str, &str) {
-    match file_name.rfind('.') {
-        Some(dot_index) if dot_index > 0 => (&file_name[..dot_index], &file_name[dot_index..]),
-        _ => (file_name, ""),
-    }
-}
-
 fn indexed_file_name(file_name: &str, index: usize) -> String {
     if index == 0 {
         return file_name.to_string();
     }
 
-    let (stem, extension) = split_name_for_index(file_name);
-    format!("{stem} {}{extension}", index + 1)
+    format!("{file_name} ({index})")
 }
 
 fn destination_path_exists(path: &Path) -> bool {
@@ -237,6 +229,11 @@ fn command_prompt_path(path: &Path) -> String {
 }
 
 #[cfg(windows)]
+fn windows_command_line_path(path: &Path) -> PathBuf {
+    PathBuf::from(command_prompt_path(path))
+}
+
+#[cfg(windows)]
 fn command_prompt_quoted_path(path: &Path) -> String {
     let escaped_path = command_prompt_path(path)
         .replace('^', "^^")
@@ -349,15 +346,11 @@ fn create_junction(
     }
 
     const CREATE_NO_WINDOW: u32 = 0x08000000;
-    let command = format!(
-        "mklink /J {} {}",
-        command_prompt_quoted_path(link_path),
-        command_prompt_quoted_path(source_path)
-    );
 
     let output = std::process::Command::new("cmd")
-        .args(["/D", "/V:OFF", "/C"])
-        .arg(command)
+        .args(["/D", "/V:OFF", "/C", "mklink", "/J"])
+        .arg(windows_command_line_path(link_path))
+        .arg(windows_command_line_path(source_path))
         .creation_flags(CREATE_NO_WINDOW)
         .output()?;
 
@@ -633,10 +626,11 @@ mod tests {
     use tempfile::tempdir;
 
     #[test]
-    fn indexes_file_names_before_extension() {
+    fn indexes_duplicate_link_names_with_parentheses() {
         assert_eq!(indexed_file_name("photo.jpg", 0), "photo.jpg");
-        assert_eq!(indexed_file_name("photo.jpg", 1), "photo 2.jpg");
-        assert_eq!(indexed_file_name(".env", 1), ".env 2");
+        assert_eq!(indexed_file_name("photo.jpg", 1), "photo.jpg (1)");
+        assert_eq!(indexed_file_name("cpu-z_2.19-en", 1), "cpu-z_2.19-en (1)");
+        assert_eq!(indexed_file_name(".env", 1), ".env (1)");
     }
 
     #[test]
@@ -649,7 +643,7 @@ mod tests {
         let second = resolve_available_destination(temp.path(), "file.txt", &mut reserved);
 
         assert_eq!(first.file_name().unwrap(), "file.txt");
-        assert_eq!(second.file_name().unwrap(), "file 2.txt");
+        assert_eq!(second.file_name().unwrap(), "file.txt (1)");
     }
 
     #[cfg(unix)]
@@ -662,7 +656,7 @@ mod tests {
 
         let next_path = resolve_available_destination(temp.path(), "file.txt", &mut HashSet::new());
 
-        assert_eq!(next_path.file_name().unwrap(), "file 2.txt");
+        assert_eq!(next_path.file_name().unwrap(), "file.txt (1)");
     }
 
     #[test]
@@ -734,6 +728,39 @@ mod tests {
             ),
             "/C mklink /D \"C:\\Users\\aleks\\Desktop\\source\" \"C:\\Users\\aleks\\Downloads\\source\""
         );
+    }
+
+    #[cfg(windows)]
+    #[test]
+    fn creates_junction_for_forward_slash_paths() {
+        let temp = tempdir().unwrap();
+        let source = temp.path().join("qa-tools");
+        let link = temp.path().join("qa-tools (1)");
+        fs::create_dir(&source).unwrap();
+
+        let source_path_string = source.to_string_lossy().replace('\\', "/");
+        let link_path_string = link.to_string_lossy().replace('\\', "/");
+        let source_path = Path::new(&source_path_string);
+        let link_path = Path::new(&link_path_string);
+
+        create_junction(source_path, link_path, true).unwrap();
+
+        assert!(link.exists());
+        assert!(source.exists());
+    }
+
+    #[cfg(windows)]
+    #[test]
+    fn creates_junction_for_directory_with_dots_in_name() {
+        let temp = tempdir().unwrap();
+        let source = temp.path().join("cpu-z_2.19-en");
+        let link = temp.path().join("cpu-z_2.19-en (1)");
+        fs::create_dir(&source).unwrap();
+
+        create_junction(&source, &link, true).unwrap();
+
+        assert!(link.exists());
+        assert!(source.exists());
     }
 
     #[test]

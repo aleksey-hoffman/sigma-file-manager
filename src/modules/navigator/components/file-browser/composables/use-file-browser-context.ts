@@ -49,6 +49,7 @@ export interface FileBrowserContext {
   handleEntryFocus: (entry: DirEntry, event: FocusEvent) => void;
   handleEntryContextMenu: (entry: DirEntry) => void;
   handleBackgroundContextMenu: () => void;
+  closeContextMenu: () => void;
   onContextMenuAction: (action: ContextMenuAction) => void;
   openProperties: (entries: DirEntry[]) => Promise<void>;
   createLinksForEntries: (entries: DirEntry[], linkKind: LinkCreationKind, destinationPath?: string) => Promise<boolean>;

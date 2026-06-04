@@ -544,6 +544,7 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
     handleEntryFocus: selection.handleEntryFocus,
     handleEntryContextMenu: selection.handleEntryContextMenu,
     handleBackgroundContextMenu: selection.handleBackgroundContextMenu,
+    closeContextMenu: selection.closeContextMenu,
     copyItems: selection.copyItems,
     cutItems: selection.cutItems,
     createLinksForEntries: selection.createLinksForEntries,

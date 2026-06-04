@@ -119,6 +119,7 @@ provideFileBrowserContext({
   handleEntryFocus: fb.handleEntryFocus,
   handleEntryContextMenu: fb.handleEntryContextMenu,
   handleBackgroundContextMenu: fb.handleBackgroundContextMenu,
+  closeContextMenu: fb.closeContextMenu,
   onContextMenuAction: fb.onContextMenuAction,
   openProperties: fb.openProperties,
   createLinksForEntries: fb.createLinksForEntries,
