@@ -15,6 +15,7 @@ import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
 import { useLinkMetadataStore } from '@/stores/runtime/link-metadata';
 import { useItemCountsStore } from '@/stores/runtime/item-counts';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
+import { usePlatformStore } from '@/stores/runtime/platform';
 import { Skeleton } from '@/components/ui/skeleton';
 import { TagSelector } from '@/components/ui/tag-selector';
 import FileBrowserEntryIcon from './file-browser-entry-icon.vue';
@@ -102,6 +103,7 @@ const dirSizesStore = useDirSizesStore();
 const linkMetadataStore = useLinkMetadataStore();
 const itemCountsStore = useItemCountsStore();
 const userSettingsStore = useUserSettingsStore();
+const platformStore = usePlatformStore();
 const { clipboardItems, clipboardType, isToolbarSuppressed } = storeToRefs(clipboardStore);
 const { t, locale } = useI18n();
 const activeTagSelectorPath = ref<string | null>(null);
@@ -278,9 +280,21 @@ function handleEntryTagsOpenChange(entryPath: string, open: boolean) {
   }
 }
 
-function handleEntryKeydown(event: KeyboardEvent): void {
+function handleEntryKeydown(event: KeyboardEvent, entry: DirEntry): void {
   if (event.code === 'Space') {
     event.preventDefault();
+    return;
+  }
+
+  if (event.key === 'Enter' && event.altKey) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const entriesForProperties = ctx.selectedEntries.value.length > 0
+      ? [...ctx.selectedEntries.value]
+      : [entry];
+
+    void ctx.openProperties(entriesForProperties);
   }
 }
 
@@ -418,7 +432,7 @@ const visibleRows = computed<FileBrowserListDisplayRow[]>(() => {
           @mouseup="ctx.onEntryMouseUp(row.entry, $event)"
           @focus="ctx.handleEntryFocus(row.entry, $event)"
           @contextmenu="ctx.handleEntryContextMenu(row.entry)"
-          @keydown="handleEntryKeydown"
+          @keydown="handleEntryKeydown($event, row.entry)"
         >
           <div class="file-browser-list-view__entry-name">
             <FileBrowserEntryIcon

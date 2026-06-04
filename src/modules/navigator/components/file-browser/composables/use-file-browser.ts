@@ -255,6 +255,8 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
     return dataSource.entries.value;
   });
 
+  let openPropertiesForSelection: (entries: DirEntry[]) => void = () => {};
+
   const selection = useFileBrowserSelection(
     visualEntries,
     dataSource.currentPath,
@@ -271,6 +273,9 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
       else {
         await dataSource.openFile(entry.path);
       }
+    },
+    (entries) => {
+      openPropertiesForSelection(entries);
     },
     dataSource.silentRefresh,
   );
@@ -379,6 +384,10 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
     handleDragMouseDown: drag.handleDragMouseDown,
     isDragging: drag.isDragging,
   });
+
+  openPropertiesForSelection = (entries) => {
+    void actions.openProperties(entries);
+  };
 
   const keyboardNav = useFileBrowserKeyboardNavigation({
     entries: visualEntries,
@@ -597,6 +606,7 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
 
     quickView: actions.quickView,
     printEntry: actions.printEntry,
+    openProperties: actions.openProperties,
     selectFirstEntry,
 
     navigateUp: keyboardNav.navigateUp,

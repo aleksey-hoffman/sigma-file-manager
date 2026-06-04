@@ -119,6 +119,7 @@ export type ShortcutId
     | 'escape'
     | 'quickView'
     | 'print'
+    | 'properties'
     | 'openNewTab'
     | 'closeCurrentTab'
     | 'restoreLastClosedTab'

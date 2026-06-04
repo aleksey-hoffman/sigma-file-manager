@@ -45,6 +45,11 @@ const CONTEXT_MENU_ITEMS: ContextMenuItemConfig[] = [
     entryTypes: ['file', 'directory'],
   },
   {
+    action: 'properties',
+    selectionTypes: ['single', 'multiple'],
+    entryTypes: ['file', 'directory'],
+  },
+  {
     action: 'quick-view',
     selectionTypes: ['single'],
     entryTypes: ['file'],
@@ -82,6 +87,8 @@ const CONTEXT_MENU_ITEMS: ContextMenuItemConfig[] = [
 ];
 
 const PROTECTED_ACTIONS = new Set<ContextMenuAction>(['rename', 'cut', 'delete', 'delete-permanently']);
+
+const WINDOWS_ONLY_ACTIONS = new Set<ContextMenuAction>(['properties']);
 
 export function useContextMenuItems(
   selectedEntries: Ref<DirEntry[]>,
@@ -124,6 +131,10 @@ export function useContextMenuItems(
     );
 
     if (!allEntriesMatchAllowedTypes) return false;
+
+    if (WINDOWS_ONLY_ACTIONS.has(action) && !platformStore.isWindows) {
+      return false;
+    }
 
     if (PROTECTED_ACTIONS.has(action)) {
       if (options?.disableDestructiveActions?.value) return false;

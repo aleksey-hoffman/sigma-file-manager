@@ -50,6 +50,7 @@ export interface FileBrowserContext {
   handleEntryContextMenu: (entry: DirEntry) => void;
   handleBackgroundContextMenu: () => void;
   onContextMenuAction: (action: ContextMenuAction) => void;
+  openProperties: (entries: DirEntry[]) => Promise<void>;
   createLinksForEntries: (entries: DirEntry[], linkKind: LinkCreationKind, destinationPath?: string) => Promise<boolean>;
   openOpenWithDialog: (entries: DirEntry[]) => void;
   openNewItemDialog: (type: 'file' | 'directory', targetPaths?: string[]) => void;

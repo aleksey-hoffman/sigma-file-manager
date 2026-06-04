@@ -22,6 +22,7 @@ import {
   SquarePlusIcon,
   StarIcon,
   UnplugIcon,
+  InfoIcon,
 } from '@lucide/vue';
 import { useClipboardStore } from '@/stores/runtime/clipboard';
 import { usePlatformStore } from '@/stores/runtime/platform';
@@ -405,6 +406,18 @@ function handleCreateLink(linkKind: LinkCreationKind) {
   >
     <Share2Icon :size="16" />
     <span>{{ t('fileBrowser.actions.share') }}</span>
+  </component>
+  <component
+    :is="menuItemComponent"
+    v-if="isActionVisible('properties')"
+    class="file-browser-actions-menu__item-with-shortcut"
+    @select="emitAction('properties')"
+  >
+    <InfoIcon :size="16" />
+    <span>{{ t('fileBrowser.actions.properties') }}</span>
+    <ContextMenuShortcut v-if="shortcutsStore.getShortcutLabel('properties')">
+      {{ shortcutsStore.getShortcutLabel('properties') }}
+    </ContextMenuShortcut>
   </component>
   <component :is="menuSeparatorComponent" />
   <component

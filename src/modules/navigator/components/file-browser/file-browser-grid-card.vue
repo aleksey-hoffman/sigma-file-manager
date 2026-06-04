@@ -169,6 +169,18 @@ function markPreviewInLoadRange(): void {
 function handleEntryKeydown(event: KeyboardEvent): void {
   if (event.code === 'Space') {
     event.preventDefault();
+    return;
+  }
+
+  if (event.key === 'Enter' && event.altKey) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const entriesForProperties = ctx.selectedEntries.value.length > 0
+      ? [...ctx.selectedEntries.value]
+      : [props.entry];
+
+    void ctx.openProperties(entriesForProperties);
   }
 }
 

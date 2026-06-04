@@ -30,6 +30,7 @@ import {
 import { createIndexedFileName, safeFileNameFromUrl } from '@/utils/remote-file';
 import { basenameFromPath } from '@/utils/source-display-name';
 import { usePermanentDeleteConfirm } from '@/composables/use-permanent-delete-confirm';
+import { usePlatformStore } from '@/stores/runtime/platform';
 import { resolveNavigableItemTarget } from '@/utils/resolve-navigable-item-target';
 import type { CreateLinksResult, LinkCreationKind } from '@/utils/link-operations';
 
@@ -40,9 +41,11 @@ export function useFileBrowserSelection(
   currentPathRef: Ref<string>,
   onSelect: (entries: DirEntry[]) => void,
   onOpen: (entry: DirEntry) => void,
+  onOpenProperties: (entries: DirEntry[]) => void,
   onRefresh: () => void,
 ) {
   const { t } = useI18n();
+  const platformStore = usePlatformStore();
   const workspacesStore = useWorkspacesStore();
   const userStatsStore = useUserStatsStore();
   const clipboardStore = useClipboardStore();
@@ -273,7 +276,17 @@ export function useFileBrowserSelection(
     if (isDoubleClick && !ctrlKey && !shiftKey) {
       mouseDownState.value.awaitsSecondClick = false;
       mouseDownState.value.lastMouseUpTime = 0;
-      onOpen(entry);
+
+      if (event.altKey && platformStore.isWindows) {
+        const entriesForProperties = selectedEntries.value.length > 0
+          ? [...selectedEntries.value]
+          : [entry];
+        onOpenProperties(entriesForProperties);
+      }
+      else {
+        onOpen(entry);
+      }
+
       return;
     }
 

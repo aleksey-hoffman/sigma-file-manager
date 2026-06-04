@@ -120,6 +120,7 @@ provideFileBrowserContext({
   handleEntryContextMenu: fb.handleEntryContextMenu,
   handleBackgroundContextMenu: fb.handleBackgroundContextMenu,
   onContextMenuAction: fb.onContextMenuAction,
+  openProperties: fb.openProperties,
   createLinksForEntries: fb.createLinksForEntries,
   openOpenWithDialog: fb.openOpenWithDialog,
   openNewItemDialog: fb.openNewItemDialog,
@@ -164,6 +165,7 @@ defineExpose({
   startRename: fb.startRename,
   quickView: fb.quickView,
   printEntry: fb.printEntry,
+  openProperties: fb.openProperties,
   refresh: fb.refresh,
 });
 </script>
