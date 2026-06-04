@@ -660,8 +660,7 @@ mod tests {
         let missing_target_path = temp.path().join("missing-target.txt");
         std::os::unix::fs::symlink(&missing_target_path, &occupied_path).unwrap();
 
-        let next_path =
-            resolve_available_destination(temp.path(), "file.txt", &mut HashSet::new());
+        let next_path = resolve_available_destination(temp.path(), "file.txt", &mut HashSet::new());
 
         assert_eq!(next_path.file_name().unwrap(), "file 2.txt");
     }

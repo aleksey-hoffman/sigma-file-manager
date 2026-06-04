@@ -36,6 +36,7 @@ import { useFileBrowserActions } from './use-file-browser-actions';
 import { useFileBrowserKeyboardNavigation } from './use-file-browser-keyboard-navigation';
 import { useFileBrowserLifecycle } from './use-file-browser-lifecycle';
 import { useFileBrowserLinkMetadata } from './use-file-browser-link-metadata';
+import { useFileBrowserItemCounts } from './use-file-browser-item-counts';
 import { useFileBrowserDrag } from './use-file-browser-drag';
 import { useFileBrowserInternalDropHandler } from './use-file-browser-internal-drop';
 import { useFileBrowserExternalDrop } from './use-file-browser-external-drop';
@@ -280,6 +281,13 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
     entryDescription: options.entryDescription,
   });
   const linkMetadata = useFileBrowserLinkMetadata({
+    enabled: !isExternalMode,
+    currentPath: dataSource.currentPath,
+    directoryEntries: computed(() => dataSource.dirContents.value?.entries ?? []),
+    visibleRows: virtualLayout.visibleRows,
+    layout: options.layout,
+  });
+  useFileBrowserItemCounts({
     enabled: !isExternalMode,
     currentPath: dataSource.currentPath,
     directoryEntries: computed(() => dataSource.dirContents.value?.entries ?? []),

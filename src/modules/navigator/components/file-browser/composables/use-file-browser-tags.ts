@@ -5,28 +5,39 @@
 import { computed } from 'vue';
 import type { DirEntry } from '@/types/dir-entry';
 import { useUserStatsStore } from '@/stores/storage/user-stats';
+import type { ItemTag } from '@/types/user-stats';
 
 const tagColors = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#14b8a6', '#3b82f6', '#8b5cf6', '#ec4899'];
 
 export function useFileBrowserTags() {
   const userStatsStore = useUserStatsStore();
   const availableTags = computed(() => userStatsStore.tags);
+  const tagIdsByPath = computed(() => {
+    return new Map(userStatsStore.taggedItems.map(item => [item.path, item.tagIds]));
+  });
+  const tagsById = computed(() => {
+    return new Map(userStatsStore.tags.map(tag => [tag.id, tag]));
+  });
+
+  function getEntryTagIds(entry: DirEntry): string[] {
+    return tagIdsByPath.value.get(entry.path) ?? [];
+  }
+
+  function getEntryTags(entry: DirEntry): ItemTag[] {
+    return getEntryTagIds(entry)
+      .map(tagId => tagsById.value.get(tagId))
+      .filter((tag): tag is ItemTag => !!tag);
+  }
 
   function getEntriesSharedTagIds(entries: DirEntry[]): string[] {
     if (entries.length === 0) return [];
 
     if (entries.length === 1) {
-      const taggedItem = userStatsStore.taggedItems.find(
-        item => item.path === entries[0].path,
-      );
-
-      return taggedItem?.tagIds ?? [];
+      return getEntryTagIds(entries[0]);
     }
 
     const allTagIds = entries.map((entry) => {
-      const taggedItem = userStatsStore.taggedItems.find(item => item.path === entry.path);
-
-      return new Set(taggedItem?.tagIds ?? []);
+      return new Set(getEntryTagIds(entry));
     });
 
     const firstSet = allTagIds[0] ?? new Set<string>();
@@ -60,6 +71,8 @@ export function useFileBrowserTags() {
 
   return {
     availableTags,
+    getEntryTagIds,
+    getEntryTags,
     getEntriesSharedTagIds,
     toggleTagForEntries,
     createTagForEntries,

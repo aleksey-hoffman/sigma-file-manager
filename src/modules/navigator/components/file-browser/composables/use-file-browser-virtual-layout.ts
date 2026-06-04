@@ -24,7 +24,7 @@ const GRID_VIEW_PADDING_X = 8;
 const GRID_SECTION_HEADER_HEIGHT = 42;
 const GRID_DIR_ENTRY_HEIGHT = 52;
 const GRID_ENTRY_HEIGHT = 120;
-const VIRTUAL_OVERSCAN_PX = 700;
+const VIRTUAL_OVERSCAN_PX = 420;
 const SCROLL_TO_PATH_DOM_SYNC_ATTEMPTS = 12;
 const STATUS_BAR_BORDER_CLEARANCE = 2;
 const SCROLL_VIEWPORT_SELECTOR = '.file-browser__scroll-area-viewport';
@@ -416,7 +416,7 @@ export function useFileBrowserVirtualLayout(options: {
   }));
 
   const windowStyle = computed(() => ({
-    transform: `translateY(${offsetY.value}px)`,
+    transform: `translate3d(0, ${offsetY.value}px, 0)`,
   }));
 
   function updateViewportSize() {

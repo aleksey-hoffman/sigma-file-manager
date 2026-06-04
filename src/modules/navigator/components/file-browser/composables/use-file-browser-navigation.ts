@@ -17,8 +17,10 @@ import type { DirEntry, DirContents, ReadDirOptions } from '@/types/dir-entry';
 import type { Tab } from '@/types/workspaces';
 import { useWorkspacesStore } from '@/stores/storage/workspaces';
 import { useUserStatsStore } from '@/stores/storage/user-stats';
+import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
 import { useLinkMetadataStore } from '@/stores/runtime/link-metadata';
+import { useItemCountsStore } from '@/stores/runtime/item-counts';
 import { useStatusCenterStore } from '@/stores/runtime/status-center';
 import { DIR_SIZE_CONSTANTS } from '@/constants';
 import normalizePath, {
@@ -54,8 +56,10 @@ export function useFileBrowserNavigation(
 ) {
   const workspacesStore = useWorkspacesStore();
   const userStatsStore = useUserStatsStore();
+  const userSettingsStore = useUserSettingsStore();
   const dirSizesStore = useDirSizesStore();
   const linkMetadataStore = useLinkMetadataStore();
+  const itemCountsStore = useItemCountsStore();
   const statusCenterStore = useStatusCenterStore();
 
   function isCopyOrMoveInProgress(): boolean {
@@ -80,18 +84,26 @@ export function useFileBrowserNavigation(
   let watcherRefreshTimer: ReturnType<typeof setTimeout> | null = null;
   let watcherValidationTimer: ReturnType<typeof setTimeout> | null = null;
 
-  const readDirOptions: ReadDirOptions = {
-    includeShortcutTargets: false,
-    includeHardLinkCounts: false,
-  };
-
   const readDirExistenceOptions: ReadDirOptions = {
     includeShortcutTargets: false,
     includeHardLinkCounts: false,
+    includeItemCounts: false,
   };
+
+  function createReadDirOptions(): ReadDirOptions {
+    return {
+      includeShortcutTargets: false,
+      includeHardLinkCounts: false,
+      includeItemCounts: userSettingsStore.userSettings.navigator.listSortColumn === 'items',
+    };
+  }
 
   function invalidateDirectoryLinkMetadata(contents: DirContents): void {
     linkMetadataStore.invalidate(contents.entries.map(entry => entry.path));
+  }
+
+  function invalidateDirectoryItemCounts(contents: DirContents): void {
+    itemCountsStore.invalidate(contents.entries.map(entry => entry.path));
   }
 
   function cancelPendingDirectoryRecord() {
@@ -207,11 +219,12 @@ export function useFileBrowserNavigation(
     try {
       const result = await invoke<DirContents>('read_dir', {
         path: currentPath.value,
-        options: readDirOptions,
+        options: createReadDirOptions(),
       });
 
       dirContents.value = result;
       invalidateDirectoryLinkMetadata(result);
+      invalidateDirectoryItemCounts(result);
 
       const currentTab = tab();
 
@@ -317,13 +330,14 @@ export function useFileBrowserNavigation(
     try {
       const result = await invoke<DirContents>('read_dir', {
         path,
-        options: readDirOptions,
+        options: createReadDirOptions(),
       });
 
       dirContents.value = result;
 
       if (invalidateLinkMetadata) {
         invalidateDirectoryLinkMetadata(result);
+        invalidateDirectoryItemCounts(result);
       }
 
       currentPath.value = result.path;

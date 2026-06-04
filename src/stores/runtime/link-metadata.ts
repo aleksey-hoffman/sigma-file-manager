@@ -38,7 +38,8 @@ type LinkMetadataRequestOptions = {
 };
 
 const MAX_LINK_METADATA_CACHE_ENTRIES = 5000;
-const MIN_LINK_METADATA_SKELETON_VISIBLE_MS = 1000;
+const LINK_METADATA_SKELETON_DELAY_MS = 100;
+const MIN_LINK_METADATA_SKELETON_VISIBLE_MS = 500;
 const LINK_METADATA_LOADING_RETRY_MS = 15000;
 
 export const useLinkMetadataStore = defineStore('link-metadata', () => {
@@ -49,6 +50,7 @@ export const useLinkMetadataStore = defineStore('link-metadata', () => {
   const displayRevision = ref(0);
   const sortRevision = ref(0);
   const skeletonVisibilityTimers = new Map<string, ReturnType<typeof setTimeout>>();
+  const skeletonDelayTimers = new Map<string, ReturnType<typeof setTimeout>>();
   let requestSequence = 0;
 
   function getMetadata(path: string): LinkMetadataCacheEntry | undefined {
@@ -117,9 +119,7 @@ export const useLinkMetadataStore = defineStore('link-metadata', () => {
     const normalizedPath = normalizePath(path);
     const existing = metadataByPath.get(normalizedPath);
 
-    if (showSkeleton) {
-      showSkeletonForMinimumDuration(normalizedPath);
-    }
+    cancelSkeletonDelay(normalizedPath);
 
     metadataByPath.delete(normalizedPath);
     metadataByPath.set(normalizedPath, {
@@ -133,8 +133,12 @@ export const useLinkMetadataStore = defineStore('link-metadata', () => {
       includeHardLinkCounts: options.includeHardLinkCounts,
       requestId,
       loadingStartedAt: Date.now(),
-      showSkeleton,
+      showSkeleton: false,
     });
+
+    if (showSkeleton) {
+      scheduleSkeletonDisplay(normalizedPath, requestId);
+    }
   }
 
   function mergeEntry(entry: DirEntry): DirEntry {
@@ -226,6 +230,8 @@ export const useLinkMetadataStore = defineStore('link-metadata', () => {
         }
 
         const result = resultsByPath.get(path);
+        const showSkeleton = existing.showSkeleton;
+        cancelSkeletonDelay(path);
 
         metadataByPath.delete(path);
         metadataByPath.set(path, {
@@ -259,6 +265,9 @@ export const useLinkMetadataStore = defineStore('link-metadata', () => {
         if (existing?.requestId !== requestId) {
           continue;
         }
+
+        const showSkeleton = existing.showSkeleton;
+        cancelSkeletonDelay(path);
 
         metadataByPath.delete(path);
         metadataByPath.set(path, {
@@ -294,7 +303,12 @@ export const useLinkMetadataStore = defineStore('link-metadata', () => {
       clearTimeout(timer);
     }
 
+    for (const timer of skeletonDelayTimers.values()) {
+      clearTimeout(timer);
+    }
+
     skeletonVisibilityTimers.clear();
+    skeletonDelayTimers.clear();
     skeletonVisibilityClock.value = Date.now();
     bumpRevision({
       display: true,
@@ -308,6 +322,7 @@ export const useLinkMetadataStore = defineStore('link-metadata', () => {
 
       metadataByPath.delete(normalizedPath);
       sortMetadataScopePaths.delete(normalizedPath);
+      cancelSkeletonDelay(normalizedPath);
       stopSkeletonVisibility(normalizedPath);
     }
 
@@ -356,6 +371,7 @@ export const useLinkMetadataStore = defineStore('link-metadata', () => {
 
     for (const path of pathsToEvict) {
       metadataByPath.delete(path);
+      cancelSkeletonDelay(path);
       stopSkeletonVisibility(path);
     }
 
@@ -368,6 +384,38 @@ export const useLinkMetadataStore = defineStore('link-metadata', () => {
     skeletonVisibleUntilByPath.set(path, visibleUntil);
     scheduleSkeletonVisibilityCleanup(path, visibleUntil);
     skeletonVisibilityClock.value = Date.now();
+  }
+
+  function scheduleSkeletonDisplay(path: string, requestId: number): void {
+    const timer = setTimeout(() => {
+      skeletonDelayTimers.delete(path);
+      const metadata = metadataByPath.get(path);
+
+      if (metadata?.status !== 'loading' || metadata.requestId !== requestId) {
+        return;
+      }
+
+      metadataByPath.delete(path);
+      metadataByPath.set(path, {
+        ...metadata,
+        showSkeleton: true,
+      });
+      showSkeletonForMinimumDuration(path);
+      displayRevision.value++;
+    }, LINK_METADATA_SKELETON_DELAY_MS);
+
+    skeletonDelayTimers.set(path, timer);
+  }
+
+  function cancelSkeletonDelay(path: string): void {
+    const timer = skeletonDelayTimers.get(path);
+
+    if (!timer) {
+      return;
+    }
+
+    clearTimeout(timer);
+    skeletonDelayTimers.delete(path);
   }
 
   function scheduleSkeletonVisibilityCleanup(path: string, visibleUntil: number): void {

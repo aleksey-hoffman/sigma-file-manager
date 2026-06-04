@@ -14,6 +14,7 @@ import type { DirEntry } from '@/types/dir-entry';
 import { formatBytes } from './utils';
 import { useClipboardStore } from '@/stores/runtime/clipboard';
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
+import { useItemCountsStore } from '@/stores/runtime/item-counts';
 import { Skeleton } from '@/components/ui/skeleton';
 import FileBrowserEntryIcon from './file-browser-entry-icon.vue';
 import { useFileBrowserContext } from './composables/use-file-browser-context';
@@ -32,6 +33,7 @@ const props = defineProps<{
 const ctx = useFileBrowserContext();
 const clipboardStore = useClipboardStore();
 const dirSizesStore = useDirSizesStore();
+const itemCountsStore = useItemCountsStore();
 const { clipboardItems, clipboardType, isToolbarSuppressed } = storeToRefs(clipboardStore);
 const { t } = useI18n();
 const previewRef = ref<HTMLElement | null>(null);
@@ -239,7 +241,8 @@ function cancelPreviewThumbnail(): void {
 
 function getDirSizeDisplay(entry: DirEntry): string | null {
   const sizeInfo = dirSizesStore.getSize(entry.path);
-  const itemCountStr = entry.item_count !== null ? t('fileBrowser.itemCountShort', { count: entry.item_count }) : null;
+  const itemCount = getDirItemCount(entry);
+  const itemCountStr = itemCount !== null ? t('fileBrowser.itemCountShort', { count: itemCount }) : null;
 
   if (!sizeInfo) {
     return itemCountStr || '—';
@@ -260,6 +263,10 @@ function getDirSizeDisplay(entry: DirEntry): string | null {
   }
 
   return itemCountStr || '—';
+}
+
+function getDirItemCount(entry: DirEntry): number | null {
+  return itemCountsStore.getItemCount(entry.path) ?? entry.item_count;
 }
 
 function shouldShowSizeSkeleton(entry: DirEntry): boolean {
@@ -423,7 +430,7 @@ watch(imagePreviewPlaceholderSrc, () => {
           <template v-if="getDirSizeDisplay(props.entry)">{{ getDirSizeDisplay(props.entry) }}</template>
           <template v-else-if="shouldShowSizeSkeleton(props.entry)">
             <span
-              v-if="props.entry.item_count !== null"
+              v-if="getDirItemCount(props.entry) !== null"
               class="file-browser-grid-card__separator"
             />
             <Skeleton class="file-browser-grid-card__size-skeleton" />

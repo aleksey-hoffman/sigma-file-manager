@@ -243,7 +243,7 @@ describe('link metadata store', () => {
     });
   });
 
-  it('keeps skeletons visible briefly after fast metadata responses', async () => {
+  it('does not show skeletons for fast metadata responses', async () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2026-01-01T00:00:00.000Z'));
     invokeMock.mockResolvedValueOnce([
@@ -262,14 +262,51 @@ describe('link metadata store', () => {
       includeHardLinkCounts: true,
     });
 
+    expect(store.isSkeletonVisible('/item')).toBe(false);
+
+    await requestPromise;
+
+    expect(store.isLoading('/item')).toBe(false);
+    expect(store.isSkeletonVisible('/item')).toBe(false);
+  });
+
+  it('keeps skeletons visible briefly after they appear', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-01-01T00:00:00.000Z'));
+    const request = createDeferred<unknown[]>();
+    invokeMock.mockReturnValueOnce(request.promise);
+    const store = useLinkMetadataStore();
+
+    const requestPromise = store.requestMetadataBatch(['/item'], {
+      includeShortcutTargets: false,
+      includeHardLinkCounts: true,
+    });
+
+    expect(store.isSkeletonVisible('/item')).toBe(false);
+
+    vi.advanceTimersByTime(99);
+
+    expect(store.isSkeletonVisible('/item')).toBe(false);
+
+    vi.advanceTimersByTime(1);
+
     expect(store.isSkeletonVisible('/item')).toBe(true);
 
+    request.resolve([
+      {
+        path: '/item',
+        link_type: 'hardlink',
+        link_target: null,
+        link_status: 'valid',
+        hard_link_count: 2,
+      },
+    ]);
     await requestPromise;
 
     expect(store.isLoading('/item')).toBe(false);
     expect(store.isSkeletonVisible('/item')).toBe(true);
 
-    vi.advanceTimersByTime(999);
+    vi.advanceTimersByTime(499);
 
     expect(store.isSkeletonVisible('/item')).toBe(true);
 

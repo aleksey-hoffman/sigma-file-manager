@@ -37,6 +37,12 @@ const showItemsColumn = computed(() => columnVisibility.value.items);
 const listSortColumn = computed(() => userSettingsStore.userSettings.navigator.listSortColumn);
 const listSortDirection = computed(() => userSettingsStore.userSettings.navigator.listSortDirection);
 const showLinkColumnPerformanceWarning = computed(() => ctx.directoryEntryCount.value >= LINK_COLUMN_WARNING_MIN_ITEMS);
+const showCheckedLinkColumnPerformanceWarning = computed(() => {
+  const visibility = columnVisibility.value;
+
+  return showLinkColumnPerformanceWarning.value
+    && (visibility.kind || visibility.links || visibility.linkTarget || visibility.linkStatus);
+});
 
 function handleColumnHeaderClick(column: ListSortColumn) {
   if (listSortColumn.value === column) {
@@ -286,7 +292,7 @@ function toggleColumnVisibility(column: keyof ListColumnVisibility, checked: boo
             >
               <Columns3Icon :size="14" />
               <span
-                v-if="showLinkColumnPerformanceWarning"
+                v-if="showCheckedLinkColumnPerformanceWarning"
                 class="file-browser-list-view__columns-button-warning"
                 :aria-label="t('fileBrowser.linkMetadataPerformanceWarning')"
               >

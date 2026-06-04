@@ -20,6 +20,7 @@ export interface DirContents {
 export interface ReadDirOptions {
   includeShortcutTargets: boolean;
   includeHardLinkCounts: boolean;
+  includeItemCounts?: boolean;
 }
 
 export type ExtendedVirtualEntry = {
@@ -54,6 +55,11 @@ export type DirEntryLinkMetadata = {
   link_target?: string | null;
   link_status?: DirEntryLinkStatus | null;
   hard_link_count?: number | null;
+};
+
+export type DirEntryItemCount = {
+  path: string;
+  item_count: number;
 };
 
 export type DirEntryLinkType = 'symlink' | 'shortcut' | 'junction' | 'hardlink';

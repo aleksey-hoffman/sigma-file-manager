@@ -12,14 +12,15 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use super::types::{
-    DirContents, DirEntry, DirEntryLinkMetadata, DirEntryLinkStatus, DirEntryLinkType,
-    OpenedDirectoryTimes,
+    DirContents, DirEntry, DirEntryItemCount, DirEntryLinkMetadata, DirEntryLinkStatus,
+    DirEntryLinkType, OpenedDirectoryTimes,
 };
 
 #[derive(Debug, Clone, Copy, Default)]
 struct ReadEntryOptions {
     include_shortcut_targets: bool,
     include_hard_link_counts: bool,
+    include_item_counts: bool,
 }
 
 impl ReadEntryOptions {
@@ -27,6 +28,7 @@ impl ReadEntryOptions {
         Self {
             include_shortcut_targets: true,
             include_hard_link_counts: true,
+            include_item_counts: true,
         }
     }
 }
@@ -36,6 +38,7 @@ impl ReadEntryOptions {
 pub struct ReadDirOptions {
     include_shortcut_targets: bool,
     include_hard_link_counts: bool,
+    include_item_counts: Option<bool>,
 }
 
 impl From<Option<ReadDirOptions>> for ReadEntryOptions {
@@ -45,6 +48,7 @@ impl From<Option<ReadDirOptions>> for ReadEntryOptions {
         Self {
             include_shortcut_targets: options.include_shortcut_targets,
             include_hard_link_counts: options.include_hard_link_counts,
+            include_item_counts: options.include_item_counts.unwrap_or(true),
         }
     }
 }
@@ -511,10 +515,8 @@ fn read_entry(path: &Path, options: ReadEntryOptions) -> Option<DirEntry> {
 
     let symlink_metadata = fs::symlink_metadata(path).ok()?;
     let is_symlink = symlink_metadata.is_symlink();
-    let is_windows_junction = is_windows_junction_reparse_tag(windows_reparse_tag(
-        path,
-        &symlink_metadata,
-    ));
+    let is_windows_junction =
+        is_windows_junction_reparse_tag(windows_reparse_tag(path, &symlink_metadata));
     let metadata = fs::metadata(path).ok();
 
     if metadata.is_none() && !is_symlink && !is_windows_junction {
@@ -545,7 +547,7 @@ fn read_entry(path: &Path, options: ReadEntryOptions) -> Option<DirEntry> {
         0
     };
 
-    let item_count = if is_dir {
+    let item_count = if is_dir && options.include_item_counts {
         let directory_entries = match fs::read_dir(path) {
             Ok(entries) => entries,
             Err(_) => return None,
@@ -582,6 +584,25 @@ fn read_entry(path: &Path, options: ReadEntryOptions) -> Option<DirEntry> {
         link_target,
         link_status,
         hard_link_count,
+    })
+}
+
+fn read_dir_item_count(path: &Path) -> Option<DirEntryItemCount> {
+    if should_skip_path(path) {
+        return None;
+    }
+
+    let metadata = fs::metadata(path).ok()?;
+
+    if !metadata.is_dir() {
+        return None;
+    }
+
+    let item_count = fs::read_dir(path).ok()?.count() as u32;
+
+    Some(DirEntryItemCount {
+        path: normalize_path(path.to_str()?),
+        item_count,
     })
 }
 
@@ -705,8 +726,7 @@ pub fn get_dir_entry(path: String) -> Result<DirEntry, String> {
                 .map(|metadata| {
                     metadata.is_symlink()
                         || is_windows_junction_reparse_tag(windows_reparse_tag(
-                            entry_path,
-                            &metadata,
+                            entry_path, &metadata,
                         ))
                 })
                 .unwrap_or(false);
@@ -745,6 +765,25 @@ pub fn get_link_metadata_batch(
     }
 
     metadata_items
+}
+
+pub fn get_dir_item_counts_batch(paths: Vec<String>) -> Vec<DirEntryItemCount> {
+    let mut seen_paths = HashSet::new();
+    let mut item_counts = Vec::new();
+
+    for path in paths {
+        let normalized_path = normalize_path(&path);
+
+        if !seen_paths.insert(normalized_path) {
+            continue;
+        }
+
+        if let Some(item_count) = read_dir_item_count(Path::new(&path)) {
+            item_counts.push(item_count);
+        }
+    }
+
+    item_counts
 }
 
 pub async fn get_dir_entry_with_timeout(path: String, timeout_ms: u64) -> Result<DirEntry, String> {
@@ -889,6 +928,7 @@ mod tests {
             Some(ReadDirOptions {
                 include_shortcut_targets: true,
                 include_hard_link_counts: true,
+                include_item_counts: None,
             }),
         );
 
@@ -896,5 +936,49 @@ mod tests {
         assert_eq!(results[0].link_type, Some(DirEntryLinkType::Hardlink));
         assert_eq!(results[0].link_status, Some(DirEntryLinkStatus::Valid));
         assert!(results[0].hard_link_count.unwrap_or(0) >= 2);
+    }
+
+    #[test]
+    fn read_dir_can_skip_item_counts() {
+        let temp_dir = tempfile::tempdir().expect("create temp dir");
+        let child_dir_path = temp_dir.path().join("child");
+        fs::create_dir(&child_dir_path).expect("create child dir");
+        fs::write(child_dir_path.join("nested.txt"), b"contents").expect("write nested file");
+
+        let contents = read_dir(
+            temp_dir.path().to_string_lossy().to_string(),
+            Some(ReadDirOptions {
+                include_shortcut_targets: false,
+                include_hard_link_counts: false,
+                include_item_counts: Some(false),
+            }),
+        )
+        .expect("read dir");
+        let child_entry = contents
+            .entries
+            .iter()
+            .find(|entry| entry.name == "child")
+            .expect("child entry");
+
+        assert_eq!(child_entry.item_count, None);
+    }
+
+    #[test]
+    fn item_count_batch_counts_directories_and_skips_files() {
+        let temp_dir = tempfile::tempdir().expect("create temp dir");
+        let child_dir_path = temp_dir.path().join("child");
+        let file_path = temp_dir.path().join("file.txt");
+        fs::create_dir(&child_dir_path).expect("create child dir");
+        fs::write(child_dir_path.join("one.txt"), b"contents").expect("write child file");
+        fs::write(&file_path, b"contents").expect("write file");
+
+        let results = get_dir_item_counts_batch(vec![
+            child_dir_path.to_string_lossy().to_string(),
+            file_path.to_string_lossy().to_string(),
+            child_dir_path.to_string_lossy().to_string(),
+        ]);
+
+        assert_eq!(results.len(), 1);
+        assert_eq!(results[0].item_count, 1);
     }
 }

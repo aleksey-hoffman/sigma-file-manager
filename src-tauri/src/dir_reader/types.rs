@@ -53,6 +53,12 @@ pub struct DirEntryLinkMetadata {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+pub struct DirEntryItemCount {
+    pub path: String,
+    pub item_count: u32,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 pub struct OpenedDirectoryTimes {
     pub modified_time: u64,
     pub accessed_time: u64,
