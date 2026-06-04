@@ -15,6 +15,7 @@ import {
   type ConflictItem,
 } from '@/stores/runtime/clipboard';
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
+import { useLinkMetadataStore } from '@/stores/runtime/link-metadata';
 import { useDeleteJobsStore } from '@/stores/runtime/delete-jobs';
 import { useCopyMoveJobsStore } from '@/stores/runtime/copy-move-jobs';
 import { toast, ToastProgress, ToastStatic } from '@/components/ui/toaster';
@@ -22,11 +23,15 @@ import { useLanShare } from '@/composables/use-lan-share';
 import { useConflictResolutionDialog } from '@/composables/use-conflict-resolution-dialog';
 import { UI_CONSTANTS } from '@/constants';
 import normalizePath from '@/utils/normalize-path';
-import { getSharedSourceDirectory } from '@/utils/file-operation-paths';
+import {
+  getSharedSourceDirectory,
+  isDestinationInsideAnySourceDirectory,
+} from '@/utils/file-operation-paths';
 import { createIndexedFileName, safeFileNameFromUrl } from '@/utils/remote-file';
 import { basenameFromPath } from '@/utils/source-display-name';
 import { usePermanentDeleteConfirm } from '@/composables/use-permanent-delete-confirm';
 import { resolveNavigableItemTarget } from '@/utils/resolve-navigable-item-target';
+import type { CreateLinksResult, LinkCreationKind } from '@/utils/link-operations';
 
 export const FILE_BROWSER_REVEAL_STALE_FOCUS_GUARD_MS = 500;
 
@@ -42,6 +47,7 @@ export function useFileBrowserSelection(
   const userStatsStore = useUserStatsStore();
   const clipboardStore = useClipboardStore();
   const dirSizesStore = useDirSizesStore();
+  const linkMetadataStore = useLinkMetadataStore();
   const deleteJobsStore = useDeleteJobsStore();
   const copyMoveJobsStore = useCopyMoveJobsStore();
   const { startShare } = useLanShare();
@@ -381,6 +387,123 @@ export function useFileBrowserSelection(
 
   function cutItems(entries: DirEntry[]) {
     clipboardStore.setClipboard('move', entries);
+  }
+
+  async function createLinksForEntries(
+    entries: DirEntry[],
+    linkKind: LinkCreationKind,
+    destinationPath?: string,
+  ): Promise<boolean> {
+    if (entries.length === 0) {
+      return false;
+    }
+
+    const targetPath = destinationPath || currentPathRef.value;
+
+    if (isDestinationInsideAnySourceDirectory(
+      targetPath,
+      entries.map(entry => entry.path),
+      entries.map(entry => entry.is_dir),
+    )) {
+      toast.custom(markRaw(ToastStatic), {
+        componentProps: {
+          data: {
+            title: t('fileBrowser.createLinkFailed'),
+            description: t('fileBrowser.cannotCreateLinkInsideItself'),
+          },
+        },
+      });
+
+      return false;
+    }
+
+    const shouldFocusCreatedLinks = targetPath === currentPathRef.value;
+    const previousPaths = shouldFocusCreatedLinks
+      ? new Set(entriesRef.value.map(entry => entry.path))
+      : null;
+    let result: CreateLinksResult;
+
+    try {
+      result = await invoke<CreateLinksResult>('create_links', {
+        sourcePaths: entries.map(entry => entry.path),
+        destinationPath: targetPath,
+        linkKind,
+      });
+    }
+    catch (error) {
+      result = {
+        success: false,
+        createdPaths: [],
+        failedItems: [{
+          sourcePath: '',
+          error: String(error),
+        }],
+      };
+    }
+
+    if (result.createdPaths.length > 0) {
+      dirSizesStore.invalidate([targetPath]);
+      linkMetadataStore.invalidate([
+        ...entries.map(entry => entry.path),
+        ...result.createdPaths,
+      ]);
+      workspacesStore.handleDirectoryContentsChanged([targetPath]);
+
+      if (shouldFocusCreatedLinks && previousPaths) {
+        pendingFocusRequest.value = {
+          type: 'diff',
+          targetPath,
+          previousPaths,
+        };
+      }
+
+      onRefresh();
+    }
+
+    if (result.success) {
+      toast.custom(markRaw(ToastStatic), {
+        componentProps: {
+          data: {
+            title: t('notifications.createdNLinks', result.createdPaths.length),
+            description: '',
+          },
+        },
+      });
+
+      return true;
+    }
+
+    if (result.createdPaths.length > 0) {
+      const firstError = result.failedItems[0]?.error || t('fileBrowser.createLinkFailed');
+      toast.custom(markRaw(ToastStatic), {
+        componentProps: {
+          data: {
+            title: t('notifications.createdNOfNLinks', {
+              created: result.createdPaths.length,
+              total: result.createdPaths.length + result.failedItems.length,
+            }),
+            description: t('notifications.linkCreationPartialFailureDescription', {
+              count: result.failedItems.length,
+              error: firstError,
+            }),
+          },
+        },
+      });
+
+      return false;
+    }
+
+    const firstError = result.failedItems[0]?.error || t('fileBrowser.createLinkFailed');
+    toast.custom(markRaw(ToastStatic), {
+      componentProps: {
+        data: {
+          title: t('fileBrowser.createLinkFailed'),
+          description: firstError,
+        },
+      },
+    });
+
+    return false;
   }
 
   async function pasteItems(destinationPath?: string): Promise<boolean> {
@@ -1039,6 +1162,7 @@ export function useFileBrowserSelection(
     removeFromSelection,
     copyItems,
     cutItems,
+    createLinksForEntries,
     pasteItems,
     handleExternalDrop,
     handleExternalUrlDrop,

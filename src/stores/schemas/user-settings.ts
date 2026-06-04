@@ -16,7 +16,7 @@ import {
 import { BUILTIN_NAVIGATOR_ICON_THEME_IDS } from '@/types/icon-theme';
 
 export const USER_SETTINGS_SCHEMA_VERSION_KEY = '__schemaVersion';
-export const USER_SETTINGS_SCHEMA_VERSION = 13;
+export const USER_SETTINGS_SCHEMA_VERSION = 14;
 
 export const DEFAULT_GLOBAL_SEARCH_IGNORED_PATHS = [
   '/node_modules',
@@ -357,6 +357,13 @@ async function migrateUserSettingsStep(storage: StorageAdapter, fromVersion: num
     await addDefaultGlobalSearchIgnoredPaths(storage, [WINDOWS_WINSXS_IGNORED_PATH]);
   }
 
+  if (fromVersion === 13 && toVersion === 14) {
+    await setDefaultBooleanIfMissing(storage, 'navigator.listColumnVisibility.kind', true);
+    await setDefaultBooleanIfMissing(storage, 'navigator.listColumnVisibility.links', false);
+    await setDefaultBooleanIfMissing(storage, 'navigator.listColumnVisibility.linkTarget', false);
+    await setDefaultBooleanIfMissing(storage, 'navigator.listColumnVisibility.linkStatus', false);
+  }
+
   if (fromVersion === 6 && toVersion === 7) {
     const appData = await appDataDir();
     const mediaDir = `${appData.replace(/\\/g, '/')}/user-data/media`.replace(/\/+/g, '/');
@@ -399,6 +406,18 @@ async function addDefaultGlobalSearchIgnoredPaths(
   }
 
   await storage.set('globalSearch.ignoredPaths', nextIgnoredPaths);
+}
+
+async function setDefaultBooleanIfMissing(
+  storage: StorageAdapter,
+  key: string,
+  defaultValue: boolean,
+) {
+  const existingValue = await storage.get<unknown>(key);
+
+  if (typeof existingValue !== 'boolean') {
+    await storage.set(key, defaultValue);
+  }
 }
 
 export async function migrateUserSettingsStorage(storage: StorageAdapter) {

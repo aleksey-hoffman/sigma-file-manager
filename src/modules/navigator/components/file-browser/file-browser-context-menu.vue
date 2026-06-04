@@ -16,6 +16,7 @@ import type { ContextMenuItemRegistration } from '@/types/extension';
 import FileBrowserExtensionMenuItems from './file-browser-extension-menu-items.vue';
 import { useFileBrowserContext } from './composables/use-file-browser-context';
 import { arePathsEquivalent } from '@/utils/file-operation-paths';
+import type { LinkCreationKind } from '@/utils/link-operations';
 
 const ctx = useFileBrowserContext();
 
@@ -41,6 +42,14 @@ function handleAction(action: Parameters<typeof ctx.onContextMenuAction>[0]) {
 
 function handleOpenCustomDialog() {
   ctx.openOpenWithDialog(ctx.contextMenu.value.selectedEntries);
+}
+
+async function handleCreateLink(linkKind: LinkCreationKind) {
+  await ctx.createLinksForEntries(
+    ctx.contextMenu.value.selectedEntries,
+    linkKind,
+    ctx.currentPath.value,
+  );
 }
 
 async function handleExtensionAction(registration: ContextMenuItemRegistration) {
@@ -71,6 +80,7 @@ async function handleExtensionAction(registration: ContextMenuItemRegistration) 
       :menu-separator-component="ContextMenuSeparator"
       :is-current-directory-context="isCurrentDirectoryContext"
       @action="handleAction"
+      @create-link="handleCreateLink"
       @open-custom-dialog="handleOpenCustomDialog"
     />
     <FileBrowserExtensionMenuItems

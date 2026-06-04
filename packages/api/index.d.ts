@@ -315,6 +315,10 @@ export interface ExtensionDirEntry {
   isDirectory: boolean;
   size?: number;
   modifiedAt?: number;
+  linkType?: 'symlink' | 'shortcut' | 'junction' | 'hardlink' | null;
+  linkTarget?: string | null;
+  linkStatus?: 'valid' | 'broken' | 'unknown' | 'unsupported' | null;
+  hardLinkCount?: number | null;
 }
 
 export interface ExtensionScopedDirectory {

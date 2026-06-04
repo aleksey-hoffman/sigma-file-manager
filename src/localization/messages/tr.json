@@ -596,7 +596,10 @@
     "quickViewFileIsNotSupported": "Hızlı görünüm: dosya desteklenmiyor",
     "printViewFileIsNotSupported": "Yazdırma: dosya desteklenmiyor",
     "removedFromFavorites": "Removed 0 items from favorites | Removed 1 item from favorites | Removed {n} items from favorites | Removed {n} items from favorites",
-    "addedToFavorites": "Added 0 items to favorites | Added 1 item to favorites | Added {n} items to favorites | Added {n} items to favorites"
+    "addedToFavorites": "Added 0 items to favorites | Added 1 item to favorites | Added {n} items to favorites | Added {n} items to favorites",
+    "createdNLinks": "0 bağlantı oluşturuldu | 1 bağlantı oluşturuldu | {n} bağlantı oluşturuldu | {n} bağlantı oluşturuldu",
+    "createdNOfNLinks": "{total} bağlantıdan {created} tanesi oluşturuldu",
+    "linkCreationPartialFailureDescription": "{count} bağlantı başarısız oldu. İlk hata: {error}"
   },
   "contextMenus": {
     "dirItem": {
@@ -806,10 +809,12 @@
     "discardClipboard": "İptal",
     "cannotMoveToSameDirectory": "Öğeler aynı dizine taşınamaz",
     "cannotPasteIntoItself": "Klasör kendisine yapıştırılamaz",
+    "cannotCreateLinkInsideItself": "Bir klasör bağlantısı kendi içinde oluşturulamaz",
     "noItemsInClipboard": "Pano öğe içermiyor",
     "invalidClipboardOperation": "Geçersiz pano işlemi",
     "copyFailed": "Kopyalama başarısız",
     "moveFailed": "Taşıma başarısız",
+    "createLinkFailed": "Bağlantı oluşturma başarısız",
     "sizeTooltip": {
       "title": "Klasör Boyutu Açıklaması",
       "exact": "Tam boyut hesaplandı",
@@ -831,7 +836,17 @@
       "share": "Yerel ağda paylaş",
       "openInNewTab": "Yeni sekmede aç",
       "addToFavorites": "Favorilere ekle",
-      "removeFromFavorites": "Favorilerden kaldır"
+      "removeFromFavorites": "Favorilerden kaldır",
+      "createLink": "Bağlantı oluştur"
+    },
+    "linkTypes": {
+      "symlink": "Sembolik bağlantı",
+      "shortcut": "Kısayol",
+      "hardlink": "Sabit bağlantı",
+      "junction": "Junction",
+      "shortcutWindows": "Kısayol (.lnk)",
+      "shortcutMacos": "Alias",
+      "shortcutLinux": "Masaüstü girdisi (.desktop)"
     },
     "archive": {
       "extract": "Çıkar",
@@ -850,7 +865,26 @@
       "errors": {
         "destinationInsideSelectedFolder": "Hedef arşiv seçilen bir klasörün içinde"
       }
-    }
+    },
+    "kind": "Tür",
+    "links": "Bağlantılar",
+    "linkTarget": "Bağlantı hedefi",
+    "linkStatus": "Bağlantı durumu",
+    "kinds": {
+      "folder": "Klasör",
+      "file": "Dosya",
+      "symlink": "Sembolik bağlantı",
+      "shortcut": "Kısayol",
+      "junction": "Bağlantı noktası",
+      "hardlinkedFile": "Sabit bağlantılı dosya"
+    },
+    "linkStatuses": {
+      "valid": "Geçerli",
+      "broken": "Bozuk",
+      "unknown": "Bilinmiyor",
+      "unsupported": "Desteklenmiyor"
+    },
+    "linkMetadataPerformanceWarning": "Bellek kullanımını artırabilir ve performansı düşürebilir."
   },
   "openWith": {
     "loadingPrograms": "Programlar yükleniyor...",

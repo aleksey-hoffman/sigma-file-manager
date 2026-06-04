@@ -13,11 +13,12 @@ import { invoke } from '@tauri-apps/api/core';
 import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 import { homeDir, basename } from '@tauri-apps/api/path';
 import { openPath } from '@tauri-apps/plugin-opener';
-import type { DirEntry, DirContents } from '@/types/dir-entry';
+import type { DirEntry, DirContents, ReadDirOptions } from '@/types/dir-entry';
 import type { Tab } from '@/types/workspaces';
 import { useWorkspacesStore } from '@/stores/storage/workspaces';
 import { useUserStatsStore } from '@/stores/storage/user-stats';
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
+import { useLinkMetadataStore } from '@/stores/runtime/link-metadata';
 import { useStatusCenterStore } from '@/stores/runtime/status-center';
 import { DIR_SIZE_CONSTANTS } from '@/constants';
 import normalizePath, {
@@ -54,6 +55,7 @@ export function useFileBrowserNavigation(
   const workspacesStore = useWorkspacesStore();
   const userStatsStore = useUserStatsStore();
   const dirSizesStore = useDirSizesStore();
+  const linkMetadataStore = useLinkMetadataStore();
   const statusCenterStore = useStatusCenterStore();
 
   function isCopyOrMoveInProgress(): boolean {
@@ -77,6 +79,20 @@ export function useFileBrowserNavigation(
   let dirChangeUnlisten: UnlistenFn | null = null;
   let watcherRefreshTimer: ReturnType<typeof setTimeout> | null = null;
   let watcherValidationTimer: ReturnType<typeof setTimeout> | null = null;
+
+  const readDirOptions: ReadDirOptions = {
+    includeShortcutTargets: false,
+    includeHardLinkCounts: false,
+  };
+
+  const readDirExistenceOptions: ReadDirOptions = {
+    includeShortcutTargets: false,
+    includeHardLinkCounts: false,
+  };
+
+  function invalidateDirectoryLinkMetadata(contents: DirContents): void {
+    linkMetadataStore.invalidate(contents.entries.map(entry => entry.path));
+  }
 
   function cancelPendingDirectoryRecord() {
     if (pendingDirectoryRecordTimer) {
@@ -189,9 +205,13 @@ export function useFileBrowserNavigation(
     isRefreshing.value = true;
 
     try {
-      const result = await invoke<DirContents>('read_dir', { path: currentPath.value });
+      const result = await invoke<DirContents>('read_dir', {
+        path: currentPath.value,
+        options: readDirOptions,
+      });
 
       dirContents.value = result;
+      invalidateDirectoryLinkMetadata(result);
 
       const currentTab = tab();
 
@@ -221,7 +241,10 @@ export function useFileBrowserNavigation(
 
     while (pathToTry) {
       try {
-        await invoke<DirContents>('read_dir', { path: pathToTry });
+        await invoke<DirContents>('read_dir', {
+          path: pathToTry,
+          options: readDirExistenceOptions,
+        });
         await readDir(pathToTry);
         return;
       }
@@ -237,7 +260,10 @@ export function useFileBrowserNavigation(
     if (!currentPath.value) return;
 
     try {
-      await invoke<DirContents>('read_dir', { path: currentPath.value });
+      await invoke<DirContents>('read_dir', {
+        path: currentPath.value,
+        options: readDirExistenceOptions,
+      });
     }
     catch {
       await navigateToNearestExistingAncestor();
@@ -270,7 +296,12 @@ export function useFileBrowserNavigation(
     };
   });
 
-  async function readDir(path: string, addToHistory = true, forceLoading = false) {
+  async function readDir(
+    path: string,
+    addToHistory = true,
+    forceLoading = false,
+    invalidateLinkMetadata = false,
+  ) {
     const normalizedPath = normalizePath(path);
     const isNewDirectory = normalizedPath !== currentPath.value;
 
@@ -284,9 +315,17 @@ export function useFileBrowserNavigation(
     }
 
     try {
-      const result = await invoke<DirContents>('read_dir', { path });
+      const result = await invoke<DirContents>('read_dir', {
+        path,
+        options: readDirOptions,
+      });
 
       dirContents.value = result;
+
+      if (invalidateLinkMetadata) {
+        invalidateDirectoryLinkMetadata(result);
+      }
+
       currentPath.value = result.path;
       pathInput.value = result.path;
 
@@ -408,7 +447,7 @@ export function useFileBrowserNavigation(
     cancelPendingDirectoryRecord();
 
     if (currentPath.value) {
-      await readDir(currentPath.value, false, true);
+      await readDir(currentPath.value, false, true, true);
     }
   }
 
@@ -480,7 +519,7 @@ export function useFileBrowserNavigation(
     if (!modifiedPaths || !currentPath.value) return;
 
     if (modifiedPaths.includes(currentPath.value)) {
-      await readDir(currentPath.value, false);
+      await readDir(currentPath.value, false, false, true);
     }
   });
 

@@ -6,12 +6,19 @@ import type { DirEntry } from '@/types/dir-entry';
 import type { ListSortColumn, ListSortDirection } from '@/types/user-settings';
 import type { useDirSizesStore } from '@/stores/runtime/dir-sizes';
 import type { ItemTag, TaggedItem } from '@/types/user-stats';
+import {
+  getDirEntryKindKeyFromFields,
+  getDirEntryLinksSortValueFromFields,
+  getDirEntryLinkStatusKeyFromFields,
+} from '@/utils/dir-entry-link-metadata';
+import type { LinkMetadataSortFields } from '@/stores/runtime/link-metadata';
 
 export type DirSizesStore = ReturnType<typeof useDirSizesStore>;
 
 export type FileBrowserEntrySortTagContext = {
   tags: ItemTag[];
   taggedItems: TaggedItem[];
+  getLinkSortFields?: (entry: DirEntry) => LinkMetadataSortFields;
 };
 
 const nameCollator = new Intl.Collator(undefined, { numeric: true });
@@ -39,6 +46,7 @@ export function sortFileBrowserEntries(
 ): DirEntry[] {
   const multiplier = direction === 'asc' ? 1 : -1;
   const tagNamesByPath = tagContext ? createTagNamesByPath(tagContext) : new Map<string, string[]>();
+  const getLinkSortFields = tagContext?.getLinkSortFields;
 
   return [...items].sort((entryA, entryB) => {
     const dirsFirst = (entryA.is_dir === entryB.is_dir) ? 0 : (entryA.is_dir ? -1 : 1);
@@ -51,6 +59,27 @@ export function sortFileBrowserEntries(
 
     if (column === 'name') {
       comparison = nameCollator.compare(entryA.name, entryB.name);
+    }
+    else if (column === 'kind') {
+      const linkFieldsA = getLinkSortFields?.(entryA);
+      const linkFieldsB = getLinkSortFields?.(entryB);
+
+      comparison = nameCollator.compare(
+        getDirEntryKindKeyFromFields(entryA.is_dir, linkFieldsA?.link_type ?? entryA.link_type),
+        getDirEntryKindKeyFromFields(entryB.is_dir, linkFieldsB?.link_type ?? entryB.link_type),
+      );
+    }
+    else if (column === 'links') {
+      const linkFieldsA = getLinkSortFields?.(entryA);
+      const linkFieldsB = getLinkSortFields?.(entryB);
+
+      comparison = getDirEntryLinksSortValueFromFields(
+        entryA.is_file,
+        linkFieldsA?.hard_link_count ?? entryA.hard_link_count,
+      ) - getDirEntryLinksSortValueFromFields(
+        entryB.is_file,
+        linkFieldsB?.hard_link_count ?? entryB.hard_link_count,
+      );
     }
     else if (column === 'items') {
       const itemsA = Number(entryA.item_count ?? -1);
@@ -67,6 +96,21 @@ export function sortFileBrowserEntries(
     }
     else if (column === 'created') {
       comparison = Number(entryA.created_time) - Number(entryB.created_time);
+    }
+    else if (column === 'linkStatus') {
+      const linkFieldsA = getLinkSortFields?.(entryA);
+      const linkFieldsB = getLinkSortFields?.(entryB);
+
+      comparison = nameCollator.compare(
+        getDirEntryLinkStatusKeyFromFields(
+          linkFieldsA?.link_type ?? entryA.link_type,
+          linkFieldsA?.link_status ?? entryA.link_status,
+        ) ?? '',
+        getDirEntryLinkStatusKeyFromFields(
+          linkFieldsB?.link_type ?? entryB.link_type,
+          linkFieldsB?.link_status ?? entryB.link_status,
+        ) ?? '',
+      );
     }
     else if (column === 'tags') {
       comparison = compareTagNameLists(

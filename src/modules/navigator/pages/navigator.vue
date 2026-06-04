@@ -541,9 +541,10 @@ function handleCutShortcut() {
 
 async function handlePasteShortcut() {
   const pane = getActivePaneRef();
+  const pasteTargetPath = getPasteTargetPath();
 
-  if (pane && clipboardStore.hasItems) {
-    await pane.pasteItems(getPasteTargetPath());
+  if (pane && pasteTargetPath && clipboardStore.canPasteTo(pasteTargetPath)) {
+    await pane.pasteItems(pasteTargetPath);
   }
 }
 

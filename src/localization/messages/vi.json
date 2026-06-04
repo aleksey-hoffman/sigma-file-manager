@@ -596,7 +596,10 @@
     "quickViewFileIsNotSupported": "Xem nhanh: tệp không được hỗ trợ",
     "printViewFileIsNotSupported": "In: tập tin không được hỗ trợ",
     "removedFromFavorites": "Đã xóa 0 mục khỏi mục yêu thích | Đã xóa 1 mục khỏi mục yêu thích | Đã xóa {n} mục khỏi mục yêu thích | Đã xóa {n} mục khỏi mục yêu thích",
-    "addedToFavorites": "Đã thêm 0 mục vào mục yêu thích | Đã thêm 1 mục vào mục yêu thích | Đã thêm {n} mục vào mục yêu thích | Đã thêm {n} mục vào mục yêu thích"
+    "addedToFavorites": "Đã thêm 0 mục vào mục yêu thích | Đã thêm 1 mục vào mục yêu thích | Đã thêm {n} mục vào mục yêu thích | Đã thêm {n} mục vào mục yêu thích",
+    "createdNLinks": "Đã tạo 0 liên kết | Đã tạo 1 liên kết | Đã tạo {n} liên kết | Đã tạo {n} liên kết",
+    "createdNOfNLinks": "Đã tạo {created} trên {total} liên kết",
+    "linkCreationPartialFailureDescription": "{count} liên kết thất bại. Lỗi đầu tiên: {error}"
   },
   "contextMenus": {
     "dirItem": {
@@ -806,10 +809,12 @@
     "discardClipboard": "Hủy bỏ",
     "cannotMoveToSameDirectory": "Không thể di chuyển các mục vào cùng thư mục",
     "cannotPasteIntoItself": "Không thể dán thư mục vào chính nó",
+    "cannotCreateLinkInsideItself": "Không thể tạo liên kết thư mục bên trong chính nó",
     "noItemsInClipboard": "Không có mục nào trong clipboard",
     "invalidClipboardOperation": "Thao tác clipboard không hợp lệ",
     "copyFailed": "Sao chép thất bại",
     "moveFailed": "Di chuyển thất bại",
+    "createLinkFailed": "Tạo liên kết thất bại",
     "sizeTooltip": {
       "title": "Chú giải Kích thước Thư mục",
       "exact": "Đã tính kích thước chính xác",
@@ -831,7 +836,17 @@
       "share": "Chia sẻ qua mạng LAN",
       "openInNewTab": "Mở trong thẻ mới",
       "addToFavorites": "Thêm vào yêu thích",
-      "removeFromFavorites": "Xóa khỏi yêu thích"
+      "removeFromFavorites": "Xóa khỏi yêu thích",
+      "createLink": "Tạo liên kết"
+    },
+    "linkTypes": {
+      "symlink": "Liên kết tượng trưng",
+      "shortcut": "Lối tắt",
+      "hardlink": "Liên kết cứng",
+      "junction": "Junction",
+      "shortcutWindows": "Lối tắt (.lnk)",
+      "shortcutMacos": "Bí danh",
+      "shortcutLinux": "Mục desktop (.desktop)"
     },
     "archive": {
       "extract": "Giải nén",
@@ -850,7 +865,26 @@
       "errors": {
         "destinationInsideSelectedFolder": "Tệp lưu trữ đích nằm trong một thư mục đã chọn"
       }
-    }
+    },
+    "kind": "Loại",
+    "links": "Liên kết",
+    "linkTarget": "Đích liên kết",
+    "linkStatus": "Trạng thái liên kết",
+    "kinds": {
+      "folder": "Thư mục",
+      "file": "Tệp",
+      "symlink": "Liên kết tượng trưng",
+      "shortcut": "Lối tắt",
+      "junction": "Điểm nối",
+      "hardlinkedFile": "Tệp liên kết cứng"
+    },
+    "linkStatuses": {
+      "valid": "Hợp lệ",
+      "broken": "Bị hỏng",
+      "unknown": "Không xác định",
+      "unsupported": "Không được hỗ trợ"
+    },
+    "linkMetadataPerformanceWarning": "Có thể tăng mức sử dụng bộ nhớ và giảm hiệu năng."
   },
   "openWith": {
     "loadingPrograms": "Đang tải chương trình...",

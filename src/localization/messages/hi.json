@@ -625,7 +625,10 @@
     "updateDownloaded": "अद्यतन डाउनलोड किया गया",
     "installerSavedAs": "इस रूप में सहेजा गया: {name}",
     "quickViewFileIsNotSupported": "त्वरित दृश्य: फ़ाइल समर्थित नहीं है",
-    "printViewFileIsNotSupported": "मुद्रण: फ़ाइल समर्थित नहीं है"
+    "printViewFileIsNotSupported": "मुद्रण: फ़ाइल समर्थित नहीं है",
+    "createdNLinks": "0 लिंक बनाए गए | 1 लिंक बनाया गया | {n} लिंक बनाए गए | {n} लिंक बनाए गए",
+    "createdNOfNLinks": "{total} में से {created} लिंक बनाए गए",
+    "linkCreationPartialFailureDescription": "{count} लिंक विफल रहे। पहली त्रुटि: {error}"
   },
   "contextMenus": {
     "dirItem": {
@@ -836,10 +839,12 @@
     "discardClipboard": "खारिज करना",
     "cannotMoveToSameDirectory": "आइटमों को एक ही निर्देशिका में नहीं ले जाया जा सकता",
     "cannotPasteIntoItself": "किसी फ़ोल्डर को स्वयं में चिपकाया नहीं जा सकता",
+    "cannotCreateLinkInsideItself": "किसी फ़ोल्डर लिंक को उसी के अंदर नहीं बना सकते",
     "noItemsInClipboard": "क्लिपबोर्ड में कोई आइटम नहीं",
     "invalidClipboardOperation": "अमान्य क्लिपबोर्ड ऑपरेशन",
     "copyFailed": "प्रतिलिपि विफल",
     "moveFailed": "स्थानांतरण विफल",
+    "createLinkFailed": "लिंक बनाना विफल",
     "sizeTooltip": {
       "title": "निर्देशिका आकार किंवदंती",
       "exact": "सटीक आकार की गणना की गई",
@@ -861,7 +866,17 @@
       "share": "LAN पर साझा करें",
       "openInNewTab": "वेब टेब में खोलें",
       "addToFavorites": "पसंदीदा में जोड़े",
-      "removeFromFavorites": "पसंदीदा से हटाएँ"
+      "removeFromFavorites": "पसंदीदा से हटाएँ",
+      "createLink": "लिंक बनाएं"
+    },
+    "linkTypes": {
+      "symlink": "प्रतीकात्मक लिंक",
+      "shortcut": "शॉर्टकट",
+      "hardlink": "हार्ड लिंक",
+      "junction": "जंक्शन",
+      "shortcutWindows": "शॉर्टकट (.lnk)",
+      "shortcutMacos": "उपनाम",
+      "shortcutLinux": "डेस्कटॉप प्रविष्टि (.desktop)"
     },
     "archive": {
       "extract": "निकालना",
@@ -880,7 +895,26 @@
       "errors": {
         "destinationInsideSelectedFolder": "गंतव्य संग्रह एक चयनित फ़ोल्डर के अंदर है"
       }
-    }
+    },
+    "kind": "प्रकार",
+    "links": "लिंक",
+    "linkTarget": "लिंक लक्ष्य",
+    "linkStatus": "लिंक स्थिति",
+    "kinds": {
+      "folder": "फ़ोल्डर",
+      "file": "फ़ाइल",
+      "symlink": "प्रतीकात्मक लिंक",
+      "shortcut": "शॉर्टकट",
+      "junction": "जंक्शन",
+      "hardlinkedFile": "हार्ड लिंक फ़ाइल"
+    },
+    "linkStatuses": {
+      "valid": "मान्य",
+      "broken": "टूटा हुआ",
+      "unknown": "अज्ञात",
+      "unsupported": "असमर्थित"
+    },
+    "linkMetadataPerformanceWarning": "मेमोरी उपयोग बढ़ा सकता है और प्रदर्शन घटा सकता है।"
   },
   "openWith": {
     "loadingPrograms": "प्रोग्राम लोड हो रहे हैं...",

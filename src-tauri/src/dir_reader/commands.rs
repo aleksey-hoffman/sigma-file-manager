@@ -8,19 +8,23 @@ use super::mountable;
 use super::network_shares;
 use super::path_helpers;
 use super::read;
-use super::types::{DirContents, DriveInfo, MountableDevice, NetworkShareParams};
+use super::read::ReadDirOptions;
+use super::types::{
+    DirContents, DirEntryLinkMetadata, DriveInfo, MountableDevice, NetworkShareParams,
+};
 
 #[tauri::command]
-pub fn read_dir(path: String) -> Result<DirContents, String> {
-    read::read_dir(path)
+pub fn read_dir(path: String, options: Option<ReadDirOptions>) -> Result<DirContents, String> {
+    read::read_dir(path, options)
 }
 
 #[tauri::command]
 pub async fn read_dir_with_timeout(
     path: String,
     timeout_ms: Option<u64>,
+    options: Option<ReadDirOptions>,
 ) -> Result<DirContents, String> {
-    read::read_dir_with_timeout(path, timeout_ms.unwrap_or(5000)).await
+    read::read_dir_with_timeout(path, timeout_ms.unwrap_or(5000), options).await
 }
 
 #[tauri::command]
@@ -29,6 +33,16 @@ pub async fn get_dir_entry_with_timeout(
     timeout_ms: Option<u64>,
 ) -> Result<super::types::DirEntry, String> {
     read::get_dir_entry_with_timeout(path, timeout_ms.unwrap_or(2500)).await
+}
+
+#[tauri::command]
+pub async fn get_link_metadata_batch(
+    paths: Vec<String>,
+    options: Option<ReadDirOptions>,
+) -> Result<Vec<DirEntryLinkMetadata>, String> {
+    tauri::async_runtime::spawn_blocking(move || read::get_link_metadata_batch(paths, options))
+        .await
+        .map_err(|join_error| format!("Failed to read link metadata: {join_error}"))
 }
 
 #[tauri::command]

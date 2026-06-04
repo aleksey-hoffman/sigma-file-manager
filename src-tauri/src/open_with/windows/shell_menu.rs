@@ -215,9 +215,10 @@ unsafe fn get_context_menu_items(file_path: &str) -> GetShellContextMenuResult {
     }
     let hmenu = hmenu.unwrap();
 
-    let query_result = shell_context_menu
-        .menu
-        .QueryContextMenu(hmenu, 0, 1, 0x7FFF, CMF_NORMAL | CMF_EXPLORE);
+    let query_result =
+        shell_context_menu
+            .menu
+            .QueryContextMenu(hmenu, 0, 1, 0x7FFF, CMF_NORMAL | CMF_EXPLORE);
 
     if query_result.is_err() {
         let _ = DestroyMenu(hmenu);

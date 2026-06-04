@@ -8,8 +8,12 @@ import {
 import type { DirEntry } from '@/types/dir-entry';
 import type { ListSortColumn, ListSortDirection } from '@/types/user-settings';
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
+import { useLinkMetadataStore } from '@/stores/runtime/link-metadata';
 import { useUserStatsStore } from '@/stores/storage/user-stats';
-import { sortFileBrowserEntries } from '@/modules/navigator/components/file-browser/utils/file-browser-sort';
+import {
+  sortFileBrowserEntries,
+  type FileBrowserEntrySortTagContext,
+} from '@/modules/navigator/components/file-browser/utils/file-browser-sort';
 import {
   createFileBrowserQuickSearchCache,
   createFileBrowserQuickSearchMatcher,
@@ -28,6 +32,7 @@ export function useFileBrowserEntries(
   applySort: ComputedRef<boolean>,
 ) {
   const dirSizesStore = useDirSizesStore();
+  const linkMetadataStore = useLinkMetadataStore();
   const userStatsStore = useUserStatsStore();
   const quickSearchCache = shallowRef(createFileBrowserQuickSearchCache());
 
@@ -59,10 +64,16 @@ export function useFileBrowserEntries(
 
     if (applySort.value) {
       const column = sortColumn.value ?? 'name';
-      items = sortFileBrowserEntries(items, column, sortDirection.value, dirSizesStore, {
+      const sortContext: FileBrowserEntrySortTagContext = {
         tags: userStatsStore.tags,
         taggedItems: userStatsStore.taggedItems,
-      });
+      };
+
+      if (isLinkMetadataSortColumn(column) && linkMetadataStore.sortRevision >= 0) {
+        sortContext.getLinkSortFields = entry => linkMetadataStore.getSortFields(entry);
+      }
+
+      items = sortFileBrowserEntries(items, column, sortDirection.value, dirSizesStore, sortContext);
     }
 
     return items;
@@ -77,4 +88,8 @@ export function useFileBrowserEntries(
     entries,
     isDirectoryEmpty,
   };
+}
+
+function isLinkMetadataSortColumn(column: ListSortColumn): boolean {
+  return column === 'kind' || column === 'links' || column === 'linkStatus';
 }

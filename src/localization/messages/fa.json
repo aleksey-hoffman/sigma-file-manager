@@ -595,7 +595,10 @@
     "quickViewFileIsNotSupported": "نمایش سریع: فایل پشتیبانی نمی شود",
     "printViewFileIsNotSupported": "چاپ: فایل پشتیبانی نمی‌شود",
     "removedFromFavorites": "Removed 0 items from favorites | Removed 1 item from favorites | Removed {n} items from favorites | Removed {n} items from favorites",
-    "addedToFavorites": "Added 0 items to favorites | Added 1 item to favorites | Added {n} items to favorites | Added {n} items to favorites"
+    "addedToFavorites": "Added 0 items to favorites | Added 1 item to favorites | Added {n} items to favorites | Added {n} items to favorites",
+    "createdNLinks": "۰ پیوند ایجاد شد | ۱ پیوند ایجاد شد | {n} پیوند ایجاد شد | {n} پیوند ایجاد شد",
+    "createdNOfNLinks": "{created} از {total} لینک ایجاد شد",
+    "linkCreationPartialFailureDescription": "{count} لینک ناموفق بود. اولین خطا: {error}"
   },
   "contextMenus": {
     "dirItem": {
@@ -805,10 +808,12 @@
     "discardClipboard": "لغو",
     "cannotMoveToSameDirectory": "امکان انتقال موارد به همان پوشه نیست",
     "cannotPasteIntoItself": "امکان چسباندن پوشه در خودش نیست",
+    "cannotCreateLinkInsideItself": "امکان ایجاد پیوند پوشه در داخل خودش نیست",
     "noItemsInClipboard": "هیچ موردی در کلیپ‌بورد نیست",
     "invalidClipboardOperation": "عملیات کلیپ‌بورد نامعتبر",
     "copyFailed": "کپی ناموفق",
     "moveFailed": "انتقال ناموفق",
+    "createLinkFailed": "ایجاد پیوند ناموفق",
     "sizeTooltip": {
       "title": "راهنمای اندازه پوشه",
       "exact": "اندازه دقیق محاسبه شده",
@@ -830,7 +835,17 @@
       "share": "اشتراک‌گذاری در شبکه محلی",
       "openInNewTab": "باز کردن در برگه جدید",
       "addToFavorites": "افزودن به موردعلاقه‌ها",
-      "removeFromFavorites": "حذف از موردعلاقه‌ها"
+      "removeFromFavorites": "حذف از موردعلاقه‌ها",
+      "createLink": "ایجاد پیوند"
+    },
+    "linkTypes": {
+      "symlink": "پیوند نمادین",
+      "shortcut": "میان‌بر",
+      "hardlink": "پیوند سخت",
+      "junction": "Junction",
+      "shortcutWindows": "میانبر (.lnk)",
+      "shortcutMacos": "نام مستعار",
+      "shortcutLinux": "ورودی دسکتاپ (.desktop)"
     },
     "archive": {
       "extract": "استخراج",
@@ -849,7 +864,26 @@
       "errors": {
         "destinationInsideSelectedFolder": "آرشیو مقصد داخل یکی از پوشه‌های انتخاب‌شده است"
       }
-    }
+    },
+    "kind": "نوع",
+    "links": "لینک‌ها",
+    "linkTarget": "مقصد لینک",
+    "linkStatus": "وضعیت لینک",
+    "kinds": {
+      "folder": "پوشه",
+      "file": "فایل",
+      "symlink": "لینک نمادین",
+      "shortcut": "میانبر",
+      "junction": "جانکشن",
+      "hardlinkedFile": "فایل با لینک سخت"
+    },
+    "linkStatuses": {
+      "valid": "معتبر",
+      "broken": "شکسته",
+      "unknown": "نامشخص",
+      "unsupported": "پشتیبانی‌نشده"
+    },
+    "linkMetadataPerformanceWarning": "ممکن است مصرف حافظه را افزایش دهد و عملکرد را کاهش دهد."
   },
   "openWith": {
     "loadingPrograms": "در حال بارگذاری برنامه‌ها...",

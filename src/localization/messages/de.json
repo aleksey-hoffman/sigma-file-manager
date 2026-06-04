@@ -596,7 +596,10 @@
     "quickViewFileIsNotSupported": "Schnellansicht: Datei wird nicht unterstützt",
     "printViewFileIsNotSupported": "Drucken: Datei wird nicht unterstützt",
     "removedFromFavorites": "Removed 0 items from favorites | Removed 1 item from favorites | Removed {n} items from favorites | Removed {n} items from favorites",
-    "addedToFavorites": "Added 0 items to favorites | Added 1 item to favorites | Added {n} items to favorites | Added {n} items to favorites"
+    "addedToFavorites": "Added 0 items to favorites | Added 1 item to favorites | Added {n} items to favorites | Added {n} items to favorites",
+    "createdNLinks": "0 Links erstellt | 1 Link erstellt | {n} Links erstellt | {n} Links erstellt",
+    "createdNOfNLinks": "{created} von {total} Links erstellt",
+    "linkCreationPartialFailureDescription": "{count} Links fehlgeschlagen. Erster Fehler: {error}"
   },
   "contextMenus": {
     "dirItem": {
@@ -806,10 +809,12 @@
     "discardClipboard": "Verwerfen",
     "cannotMoveToSameDirectory": "Elemente können nicht in dasselbe Verzeichnis verschoben werden",
     "cannotPasteIntoItself": "Ein Ordner kann nicht in sich selbst eingefügt werden",
+    "cannotCreateLinkInsideItself": "Ein Ordner-Link kann nicht im Ordner selbst erstellt werden",
     "noItemsInClipboard": "Keine Elemente in der Zwischenablage",
     "invalidClipboardOperation": "Ungültiger Zwischenablage-Vorgang",
     "copyFailed": "Kopieren fehlgeschlagen",
     "moveFailed": "Verschieben fehlgeschlagen",
+    "createLinkFailed": "Link-Erstellung fehlgeschlagen",
     "sizeTooltip": {
       "title": "Verzeichnisgröße Legende",
       "exact": "Exakte Größe berechnet",
@@ -831,7 +836,17 @@
       "share": "Im Netzwerk teilen",
       "openInNewTab": "In neuem Tab öffnen",
       "addToFavorites": "Zu Favoriten hinzufügen",
-      "removeFromFavorites": "Aus Favoriten entfernen"
+      "removeFromFavorites": "Aus Favoriten entfernen",
+      "createLink": "Link erstellen"
+    },
+    "linkTypes": {
+      "symlink": "Symbolischer Link",
+      "shortcut": "Verknüpfung",
+      "hardlink": "Hardlink",
+      "junction": "Junction",
+      "shortcutWindows": "Verknüpfung (.lnk)",
+      "shortcutMacos": "Alias",
+      "shortcutLinux": "Desktop-Eintrag (.desktop)"
     },
     "archive": {
       "extract": "Entpacken",
@@ -850,7 +865,26 @@
       "errors": {
         "destinationInsideSelectedFolder": "Das Ziel-Archiv liegt in einem ausgewählten Ordner"
       }
-    }
+    },
+    "kind": "Art",
+    "links": "Links",
+    "linkTarget": "Link-Ziel",
+    "linkStatus": "Link-Status",
+    "kinds": {
+      "folder": "Ordner",
+      "file": "Datei",
+      "symlink": "Symbolischer Link",
+      "shortcut": "Verknüpfung",
+      "junction": "Junction",
+      "hardlinkedFile": "Hart verknüpfte Datei"
+    },
+    "linkStatuses": {
+      "valid": "Gültig",
+      "broken": "Defekt",
+      "unknown": "Unbekannt",
+      "unsupported": "Nicht unterstützt"
+    },
+    "linkMetadataPerformanceWarning": "Kann die Speichernutzung erhöhen und die Leistung verringern."
   },
   "openWith": {
     "loadingPrograms": "Programme werden geladen...",

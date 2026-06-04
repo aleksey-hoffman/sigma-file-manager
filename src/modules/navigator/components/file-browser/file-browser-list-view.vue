@@ -7,12 +7,13 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 import { storeToRefs } from 'pinia';
 import { useI18n } from 'vue-i18n';
 import { computed } from 'vue';
-import { LoaderCircleIcon } from '@lucide/vue';
+import { LinkIcon, LoaderCircleIcon } from '@lucide/vue';
 import type { DirEntry } from '@/types/dir-entry';
 import { formatBytes } from './utils';
 import DateHoverDisplay from '@/components/ui/date-hover-display/date-hover-display.vue';
 import { useClipboardStore } from '@/stores/runtime/clipboard';
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
+import { useLinkMetadataStore } from '@/stores/runtime/link-metadata';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { Skeleton } from '@/components/ui/skeleton';
 import { TagSelector } from '@/components/ui/tag-selector';
@@ -21,6 +22,11 @@ import { useRelativeDateDisplayClock } from '@/composables/use-relative-date-dis
 import { useFileBrowserContext } from './composables/use-file-browser-context';
 import { useFileBrowserTags } from './composables/use-file-browser-tags';
 import type { FileBrowserListVirtualRow } from './composables/use-file-browser-virtual-layout';
+import {
+  getDirEntryKindKey,
+  getDirEntryLinksDisplay,
+  getDirEntryLinkStatusKey,
+} from '@/utils/dir-entry-link-metadata';
 
 const props = withDefaults(defineProps<{
   trackRelativeTime?: boolean;
@@ -32,6 +38,7 @@ const ctx = useFileBrowserContext();
 
 const clipboardStore = useClipboardStore();
 const dirSizesStore = useDirSizesStore();
+const linkMetadataStore = useLinkMetadataStore();
 const userSettingsStore = useUserSettingsStore();
 const { clipboardItems, clipboardType, isToolbarSuppressed } = storeToRefs(clipboardStore);
 
@@ -41,13 +48,21 @@ const showSizeColumn = computed(() => columnVisibility.value.size);
 const showModifiedColumn = computed(() => columnVisibility.value.modified);
 const showCreatedColumn = computed(() => columnVisibility.value.created);
 const showTagsColumn = computed(() => columnVisibility.value.tags);
+const showKindColumn = computed(() => columnVisibility.value.kind);
+const showLinksColumn = computed(() => columnVisibility.value.links);
+const showLinkStatusColumn = computed(() => columnVisibility.value.linkStatus);
 const shouldTrackListRelativeTime = computed(() => {
   return props.trackRelativeTime
     && (showModifiedColumn.value || showCreatedColumn.value)
     && ctx.entries.value.some(entry => entry.modified_time > 0 || entry.created_time > 0);
 });
-const visibleRows = computed(() => {
-  return ctx.visibleVirtualRows.value.filter((row): row is FileBrowserListVirtualRow => row.type === 'list-entry');
+const visibleRows = computed<FileBrowserListVirtualRow[]>(() => {
+  return ctx.visibleVirtualRows.value
+    .filter((row): row is FileBrowserListVirtualRow => row.type === 'list-entry')
+    .map(row => ({
+      ...row,
+      entry: linkMetadataStore.mergeEntry(row.entry),
+    }));
 });
 const {
   availableTags,
@@ -102,6 +117,12 @@ function getItemsDisplay(entry: DirEntry): string {
   return entry.item_count !== null ? t('fileBrowser.itemCount', { count: entry.item_count }) : '—';
 }
 
+function getLinkStatusDisplay(entry: DirEntry): string {
+  const statusKey = getDirEntryLinkStatusKey(entry);
+
+  return statusKey ? t(statusKey) : '—';
+}
+
 function getEntryTagIds(entry: DirEntry): string[] {
   return getEntriesSharedTagIds([entry]);
 }
@@ -118,6 +139,10 @@ function isDirLoadingWithProgress(entry: DirEntry): boolean {
   if (entry.is_file) return false;
   const sizeInfo = dirSizesStore.getSize(entry.path);
   return !!(sizeInfo && sizeInfo.status === 'Loading' && sizeInfo.size > 0);
+}
+
+function isSizeSkeletonVisible(entry: DirEntry): boolean {
+  return getSizeDisplay(entry) === null;
 }
 
 function handleEntryKeydown(event: KeyboardEvent): void {
@@ -169,6 +194,7 @@ const { clockRef: listModifiedClock } = useRelativeDateDisplayClock(shouldTrackL
           :data-selected="ctx.isEntrySelected(row.entry) || undefined"
           :data-in-clipboard="clipboardPathsMap.has(row.entry.path) || undefined"
           :data-clipboard-type="clipboardPathsMap.get(row.entry.path) || undefined"
+          :data-link-status="row.entry.link_status || undefined"
           :data-drop-target="row.entry.is_dir || undefined"
           @mousedown="ctx.onEntryMouseDown(row.entry, $event)"
           @mouseup="ctx.onEntryMouseUp(row.entry, $event)"
@@ -189,7 +215,27 @@ const { clockRef: listModifiedClock } = useRelativeDateDisplayClock(shouldTrackL
               :class="{ 'file-browser-list-view__entry-icon--folder': row.entry.is_dir }"
             />
             <div class="file-browser-list-view__entry-name-content">
-              <span class="file-browser-list-view__entry-text">{{ row.entry.name }}</span>
+              <div class="file-browser-list-view__entry-name-row">
+                <span class="file-browser-list-view__entry-text">{{ row.entry.name }}</span>
+                <span
+                  v-if="columnVisibility.linkTarget && row.entry.link_target"
+                  class="file-browser-list-view__entry-link-target"
+                >
+                  <LinkIcon
+                    :size="11"
+                    class="file-browser-list-view__entry-link-target-icon"
+                  />
+                  <span
+                    v-if="row.entry.link_type"
+                    class="file-browser-list-view__entry-link-target-type"
+                  >
+                    {{ t(getDirEntryKindKey(row.entry)) }}:
+                  </span>
+                  <span class="file-browser-list-view__entry-link-target-text">
+                    {{ row.entry.link_target }}
+                  </span>
+                </span>
+              </div>
               <span
                 v-if="ctx.entryDescription?.(row.entry)"
                 class="file-browser-list-view__entry-description"
@@ -211,11 +257,20 @@ const { clockRef: listModifiedClock } = useRelativeDateDisplayClock(shouldTrackL
               :size="12"
               class="file-browser-list-view__spinner"
             />
-            <Skeleton
-              v-if="getSizeDisplay(row.entry) === null"
-              class="file-browser-list-view__size-skeleton"
-            />
-            <template v-else>{{ getSizeDisplay(row.entry) }}</template>
+            <span class="file-browser-list-view__column-fade-stack">
+              <span
+                class="file-browser-list-view__column-fade-item"
+                :class="{ 'file-browser-list-view__column-fade-item--visible': isSizeSkeletonVisible(row.entry) }"
+              >
+                <Skeleton class="file-browser-list-view__size-skeleton animate-fade-in" />
+              </span>
+              <span
+                class="file-browser-list-view__column-fade-item"
+                :class="{ 'file-browser-list-view__column-fade-item--visible': !isSizeSkeletonVisible(row.entry) }"
+              >
+                <span class="file-browser-list-view__column-fade-value">{{ getSizeDisplay(row.entry) }}</span>
+              </span>
+            </span>
           </span>
           <span
             v-if="showModifiedColumn"
@@ -257,6 +312,50 @@ const { clockRef: listModifiedClock } = useRelativeDateDisplayClock(shouldTrackL
               @rename-tag="renameTag"
               @update-tag-color="updateTagColor"
             />
+          </span>
+          <span
+            v-if="showKindColumn"
+            class="file-browser-list-view__entry-kind"
+          >
+            {{ t(getDirEntryKindKey(row.entry)) }}
+          </span>
+          <span
+            v-if="showLinksColumn"
+            class="file-browser-list-view__entry-links"
+          >
+            <span class="file-browser-list-view__column-fade-stack">
+              <span
+                class="file-browser-list-view__column-fade-item"
+                :class="{ 'file-browser-list-view__column-fade-item--visible': linkMetadataStore.isSkeletonVisible(row.entry.path) }"
+              >
+                <Skeleton class="file-browser-list-view__metadata-skeleton animate-fade-in" />
+              </span>
+              <span
+                class="file-browser-list-view__column-fade-item"
+                :class="{ 'file-browser-list-view__column-fade-item--visible': !linkMetadataStore.isSkeletonVisible(row.entry.path) }"
+              >
+                <span class="file-browser-list-view__column-fade-value">{{ getDirEntryLinksDisplay(row.entry) }}</span>
+              </span>
+            </span>
+          </span>
+          <span
+            v-if="showLinkStatusColumn"
+            class="file-browser-list-view__entry-link-status"
+          >
+            <span class="file-browser-list-view__column-fade-stack">
+              <span
+                class="file-browser-list-view__column-fade-item"
+                :class="{ 'file-browser-list-view__column-fade-item--visible': linkMetadataStore.isSkeletonVisible(row.entry.path) }"
+              >
+                <Skeleton class="file-browser-list-view__metadata-skeleton animate-fade-in" />
+              </span>
+              <span
+                class="file-browser-list-view__column-fade-item"
+                :class="{ 'file-browser-list-view__column-fade-item--visible': !linkMetadataStore.isSkeletonVisible(row.entry.path) }"
+              >
+                <span class="file-browser-list-view__column-fade-value">{{ getLinkStatusDisplay(row.entry) }}</span>
+              </span>
+            </span>
           </span>
         </div>
       </div>
@@ -319,6 +418,17 @@ const { clockRef: listModifiedClock } = useRelativeDateDisplayClock(shouldTrackL
   opacity: 0.5;
 }
 
+.file-browser-list-view__entry[data-link-status="broken"] .file-browser-list-view__entry-icon,
+.file-browser-list-view__entry[data-link-status="broken"] .file-browser-list-view__entry-text {
+  color: hsl(var(--warning));
+}
+
+.file-browser-list-view__entry[data-link-status="broken"] .file-browser-list-view__entry-text {
+  text-decoration: line-through;
+  text-decoration-color: hsl(var(--warning) / 70%);
+  text-decoration-thickness: 1px;
+}
+
 .file-browser-list-view__entry-name {
   position: relative;
   z-index: 1;
@@ -346,13 +456,24 @@ const { clockRef: listModifiedClock } = useRelativeDateDisplayClock(shouldTrackL
   gap: 2px;
 }
 
+.file-browser-list-view__entry-name-row {
+  display: flex;
+  overflow: hidden;
+  min-width: 0;
+  align-items: baseline;
+  gap: 8px;
+}
+
 .file-browser-list-view__entry-text {
   overflow: hidden;
+  min-width: 0;
+  flex-shrink: 0;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.file-browser-list-view__entry-description {
+.file-browser-list-view__entry-description,
+.file-browser-list-view__entry-link-target {
   overflow: hidden;
   color: hsl(var(--muted-foreground));
   font-size: 11px;
@@ -360,6 +481,70 @@ const { clockRef: listModifiedClock } = useRelativeDateDisplayClock(shouldTrackL
   white-space: nowrap;
 }
 
+.file-browser-list-view__entry-link-target {
+  display: inline-flex;
+  min-width: 0;
+  flex: 1;
+  align-items: center;
+  gap: 4px;
+  opacity: 0.85;
+}
+
+.file-browser-list-view__entry-link-target-icon {
+  flex-shrink: 0;
+}
+
+.file-browser-list-view__entry-link-target-type {
+  flex-shrink: 0;
+  font-weight: 500;
+}
+
+.file-browser-list-view__entry-link-target-text {
+  overflow: hidden;
+  min-width: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-browser-list-view__entry-link-target-skeleton {
+  width: 180px;
+  height: 10px;
+}
+
+.file-browser-list-view__metadata-skeleton {
+  width: 42px;
+  height: 10px;
+}
+
+.file-browser-list-view__column-fade-stack {
+  position: relative;
+  display: inline-block;
+  min-width: 0;
+  flex: 0 1 auto;
+}
+
+.file-browser-list-view__column-fade-item {
+  position: absolute;
+  overflow: hidden;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.file-browser-list-view__column-fade-item--visible {
+  opacity: 1;
+}
+
+.file-browser-list-view__column-fade-value {
+  overflow: hidden;
+  min-width: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-browser-list-view__entry-kind,
+.file-browser-list-view__entry-links,
+.file-browser-list-view__entry-link-status,
 .file-browser-list-view__entry-items,
 .file-browser-list-view__entry-size,
 .file-browser-list-view__entry-modified,
@@ -394,6 +579,34 @@ const { clockRef: listModifiedClock } = useRelativeDateDisplayClock(shouldTrackL
   display: flex;
   align-items: center;
   gap: 6px;
+}
+
+.file-browser-list-view__entry-links,
+.file-browser-list-view__entry-link-status {
+  display: flex;
+  align-items: center;
+}
+
+.file-browser-list-view__entry-size .file-browser-list-view__column-fade-stack {
+  display: block;
+  min-width: 50px;
+  flex: 1;
+  align-self: stretch;
+}
+
+.file-browser-list-view__entry-links .file-browser-list-view__column-fade-stack,
+.file-browser-list-view__entry-link-status .file-browser-list-view__column-fade-stack {
+  display: block;
+  min-width: 42px;
+  flex: 1;
+  align-self: stretch;
+}
+
+.file-browser-list-view__entry-size .file-browser-list-view__column-fade-item,
+.file-browser-list-view__entry-links .file-browser-list-view__column-fade-item,
+.file-browser-list-view__entry-link-status .file-browser-list-view__column-fade-item {
+  display: flex;
+  align-items: center;
 }
 
 .file-browser-list-view__size-skeleton {
@@ -478,9 +691,12 @@ const { clockRef: listModifiedClock } = useRelativeDateDisplayClock(shouldTrackL
 
 .file-browser-list-view__entry[data-selected][data-in-clipboard][data-clipboard-type="move"] .file-browser-list-view__entry-text,
 .file-browser-list-view__entry[data-selected][data-in-clipboard][data-clipboard-type="move"] .file-browser-list-view__entry-items,
+.file-browser-list-view__entry[data-selected][data-in-clipboard][data-clipboard-type="move"] .file-browser-list-view__entry-kind,
+.file-browser-list-view__entry[data-selected][data-in-clipboard][data-clipboard-type="move"] .file-browser-list-view__entry-links,
 .file-browser-list-view__entry[data-selected][data-in-clipboard][data-clipboard-type="move"] .file-browser-list-view__entry-size,
 .file-browser-list-view__entry[data-selected][data-in-clipboard][data-clipboard-type="move"] .file-browser-list-view__entry-modified,
 .file-browser-list-view__entry[data-selected][data-in-clipboard][data-clipboard-type="move"] .file-browser-list-view__entry-created,
+.file-browser-list-view__entry[data-selected][data-in-clipboard][data-clipboard-type="move"] .file-browser-list-view__entry-link-status,
 .file-browser-list-view__entry[data-selected][data-in-clipboard][data-clipboard-type="move"] .file-browser-list-view__entry-tags,
 .file-browser-list-view__entry[data-selected][data-in-clipboard][data-clipboard-type="move"] .file-browser-list-view__entry-tags :deep(.tag-selector__trigger) {
   color: hsl(var(--warning));

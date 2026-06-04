@@ -625,7 +625,10 @@
     "updateDownloaded": "Update downloaded",
     "installerSavedAs": "Saved as: {name}",
     "quickViewFileIsNotSupported": "Quick view: file is not supported",
-    "printViewFileIsNotSupported": "Print: file is not supported"
+    "printViewFileIsNotSupported": "Print: file is not supported",
+    "createdNLinks": "Created 0 links | Created 1 link | Created {n} links | Created {n} links",
+    "createdNOfNLinks": "Created {created} of {total} links",
+    "linkCreationPartialFailureDescription": "{count} links failed. First error: {error}"
   },
   "contextMenus": {
     "dirItem": {
@@ -836,10 +839,12 @@
     "discardClipboard": "Discard",
     "cannotMoveToSameDirectory": "Cannot move items to the same directory",
     "cannotPasteIntoItself": "Cannot paste a folder into itself",
+    "cannotCreateLinkInsideItself": "Cannot create a folder link inside itself",
     "noItemsInClipboard": "No items in clipboard",
     "invalidClipboardOperation": "Invalid clipboard operation",
     "copyFailed": "Copy failed",
     "moveFailed": "Move failed",
+    "createLinkFailed": "Create link failed",
     "sizeTooltip": {
       "title": "Directory Size Legend",
       "exact": "Exact size calculated",
@@ -851,6 +856,7 @@
       "rename": "Rename",
       "copy": "Copy",
       "move": "Move",
+      "createLink": "Create link",
       "paste": "Paste",
       "pasteToPane1": "Paste to pane 1",
       "pasteToPane2": "Paste to pane 2",
@@ -862,6 +868,15 @@
       "openInNewTab": "Open in new tab",
       "addToFavorites": "Add to favorites",
       "removeFromFavorites": "Remove from favorites"
+    },
+    "linkTypes": {
+      "symlink": "Symbolic link",
+      "shortcut": "Shortcut",
+      "shortcutWindows": "Shortcut (.lnk)",
+      "shortcutMacos": "Alias",
+      "shortcutLinux": "Desktop entry (.desktop)",
+      "hardlink": "Hard link",
+      "junction": "Junction"
     },
     "archive": {
       "extract": "Extract",
@@ -880,7 +895,26 @@
       "errors": {
         "destinationInsideSelectedFolder": "Destination archive is inside a selected folder"
       }
-    }
+    },
+    "kind": "Kind",
+    "links": "Links",
+    "linkTarget": "Link target",
+    "linkStatus": "Link status",
+    "kinds": {
+      "folder": "Folder",
+      "file": "File",
+      "symlink": "Symbolic link",
+      "shortcut": "Shortcut",
+      "junction": "Junction",
+      "hardlinkedFile": "Hard linked file"
+    },
+    "linkStatuses": {
+      "valid": "Valid",
+      "broken": "Broken",
+      "unknown": "Unknown",
+      "unsupported": "Unsupported"
+    },
+    "linkMetadataPerformanceWarning": "May increase memory usage and reduce performance."
   },
   "openWith": {
     "loadingPrograms": "Loading programs...",

@@ -596,7 +596,10 @@
     "printViewFileIsNotSupported": "Imprimir: arquivo não compatível",
     "trashedNItems": "Excluídos {totalAmount} itens",
     "removedFromFavorites": "Removed 0 items from favorites | Removed 1 item from favorites | Removed {n} items from favorites | Removed {n} items from favorites",
-    "addedToFavorites": "Added 0 items to favorites | Added 1 item to favorites | Added {n} items to favorites | Added {n} items to favorites"
+    "addedToFavorites": "Added 0 items to favorites | Added 1 item to favorites | Added {n} items to favorites | Added {n} items to favorites",
+    "createdNLinks": "Criados 0 links | Criado 1 link | Criados {n} links | Criados {n} links",
+    "createdNOfNLinks": "{created} de {total} links criados",
+    "linkCreationPartialFailureDescription": "{count} links falharam. Primeiro erro: {error}"
   },
   "contextMenus": {
     "dirItem": {
@@ -805,10 +808,12 @@
     "discardClipboard": "Descartar",
     "cannotMoveToSameDirectory": "Não é possível mover itens para o mesmo diretório",
     "cannotPasteIntoItself": "Não é possível colar uma pasta em si mesma",
+    "cannotCreateLinkInsideItself": "Não é possível criar um link de pasta dentro dela mesma",
     "noItemsInClipboard": "Nenhum item na área de transferência",
     "invalidClipboardOperation": "Operação de área de transferência inválida",
     "copyFailed": "Falha ao copiar",
     "moveFailed": "Falha ao mover",
+    "createLinkFailed": "Falha ao criar link",
     "sizeTooltip": {
       "title": "Legenda de Tamanho de Pastas",
       "exact": "Tamanho exato calculado",
@@ -830,7 +835,17 @@
       "share": "Compartilhar na rede local",
       "openInNewTab": "Abrir em nova aba",
       "addToFavorites": "Adicionar aos favoritos",
-      "removeFromFavorites": "Remover dos favoritos"
+      "removeFromFavorites": "Remover dos favoritos",
+      "createLink": "Criar link"
+    },
+    "linkTypes": {
+      "symlink": "Link simbólico",
+      "shortcut": "Atalho",
+      "hardlink": "Link físico",
+      "junction": "Junction",
+      "shortcutWindows": "Atalho (.lnk)",
+      "shortcutMacos": "Alias",
+      "shortcutLinux": "Entrada desktop (.desktop)"
     },
     "archive": {
       "extract": "Extrair",
@@ -849,7 +864,26 @@
       "errors": {
         "destinationInsideSelectedFolder": "O arquivo de destino está dentro de uma pasta selecionada"
       }
-    }
+    },
+    "kind": "Tipo",
+    "links": "Links",
+    "linkTarget": "Destino do link",
+    "linkStatus": "Status do link",
+    "kinds": {
+      "folder": "Pasta",
+      "file": "Arquivo",
+      "symlink": "Link simbólico",
+      "shortcut": "Atalho",
+      "junction": "Junção",
+      "hardlinkedFile": "Arquivo com hard link"
+    },
+    "linkStatuses": {
+      "valid": "Válido",
+      "broken": "Quebrado",
+      "unknown": "Desconhecido",
+      "unsupported": "Sem suporte"
+    },
+    "linkMetadataPerformanceWarning": "Pode aumentar o uso de memória e reduzir o desempenho."
   },
   "openWith": {
     "loadingPrograms": "Carregando programas...",

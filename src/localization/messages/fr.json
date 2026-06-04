@@ -596,7 +596,10 @@
     "quickViewFileIsNotSupported": "Vue rapide: le fichier n'est pas pris en charge",
     "printViewFileIsNotSupported": "Impression : fichier non pris en charge",
     "removedFromFavorites": "Removed 0 items from favorites | Removed 1 item from favorites | Removed {n} items from favorites | Removed {n} items from favorites",
-    "addedToFavorites": "Added 0 items to favorites | Added 1 item to favorites | Added {n} items to favorites | Added {n} items to favorites"
+    "addedToFavorites": "Added 0 items to favorites | Added 1 item to favorites | Added {n} items to favorites | Added {n} items to favorites",
+    "createdNLinks": "0 liens créés | 1 lien créé | {n} liens créés | {n} liens créés",
+    "createdNOfNLinks": "{created} liens créés sur {total}",
+    "linkCreationPartialFailureDescription": "{count} liens ont échoué. Première erreur : {error}"
   },
   "contextMenus": {
     "dirItem": {
@@ -806,10 +809,12 @@
     "discardClipboard": "Abandonner",
     "cannotMoveToSameDirectory": "Impossible de déplacer les éléments vers le même répertoire",
     "cannotPasteIntoItself": "Impossible de coller un dossier dans lui-même",
+    "cannotCreateLinkInsideItself": "Impossible de créer un lien de dossier dans lui-même",
     "noItemsInClipboard": "Aucun élément dans le presse-papiers",
     "invalidClipboardOperation": "Opération de presse-papiers invalide",
     "copyFailed": "Échec de la copie",
     "moveFailed": "Échec du déplacement",
+    "createLinkFailed": "Échec de la création du lien",
     "sizeTooltip": {
       "title": "Légende Taille des Dossiers",
       "exact": "Taille exacte calculée",
@@ -831,7 +836,17 @@
       "share": "Partager en réseau local",
       "openInNewTab": "Ouvrir dans un nouvel onglet",
       "addToFavorites": "Ajouter aux favoris",
-      "removeFromFavorites": "Retirer des favoris"
+      "removeFromFavorites": "Retirer des favoris",
+      "createLink": "Créer un lien"
+    },
+    "linkTypes": {
+      "symlink": "Lien symbolique",
+      "shortcut": "Raccourci",
+      "hardlink": "Lien physique",
+      "junction": "Jonction",
+      "shortcutWindows": "Raccourci (.lnk)",
+      "shortcutMacos": "Alias",
+      "shortcutLinux": "Entrée de bureau (.desktop)"
     },
     "archive": {
       "extract": "Extraire",
@@ -850,7 +865,26 @@
       "errors": {
         "destinationInsideSelectedFolder": "L'archive de destination se trouve dans un dossier sélectionné"
       }
-    }
+    },
+    "kind": "Type",
+    "links": "Liens",
+    "linkTarget": "Cible du lien",
+    "linkStatus": "État du lien",
+    "kinds": {
+      "folder": "Dossier",
+      "file": "Fichier",
+      "symlink": "Lien symbolique",
+      "shortcut": "Raccourci",
+      "junction": "Jonction",
+      "hardlinkedFile": "Fichier à lien physique"
+    },
+    "linkStatuses": {
+      "valid": "Valide",
+      "broken": "Rompu",
+      "unknown": "Inconnu",
+      "unsupported": "Non pris en charge"
+    },
+    "linkMetadataPerformanceWarning": "Peut augmenter l'utilisation de la mémoire et réduire les performances."
   },
   "openWith": {
     "loadingPrograms": "Chargement des programmes...",

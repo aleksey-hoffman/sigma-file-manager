@@ -16,6 +16,7 @@ mod file_operations;
 mod global_search;
 mod image_thumbnails;
 mod lan_share;
+mod link_operations;
 mod open_with;
 mod process_runner;
 mod startup_storage_bootstrap;
@@ -258,6 +259,7 @@ pub fn run() {
             dir_reader::read_dir,
             dir_reader::read_dir_with_timeout,
             dir_reader::get_dir_entry_with_timeout,
+            dir_reader::get_link_metadata_batch,
             dir_reader::resolve_windows_directory_shortcut,
             dir_reader::get_system_drives,
             dir_reader::get_parent_dir,
@@ -284,6 +286,7 @@ pub fn run() {
             file_operations::rename_item,
             file_operations::delete_items,
             file_operations::create_item,
+            link_operations::create_links,
             archive::start_archive_job,
             archive::cancel_archive_job,
             copy_move_job::start_copy_move_job,

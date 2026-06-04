@@ -596,7 +596,10 @@
     "quickViewFileIsNotSupported": "クイック ビュー: ファイルはサポートされていません",
     "printViewFileIsNotSupported": "印刷: ファイルはサポートされていません",
     "removedFromFavorites": "お気に入りから 0 個のアイテムを削除しました | お気に入りから 1 個のアイテムを削除しました | お気に入りから {n} 個のアイテムを削除しました | お気に入りから {n} 個のアイテムを削除しました",
-    "addedToFavorites": "お気に入りに 0 個のアイテムを追加しました | お気に入りに 1 個のアイテムを追加しました | 気に入りに {n} 個のアイテムをお追加しました | お気に入りに {n} 個のアイテムを追加しました"
+    "addedToFavorites": "お気に入りに 0 個のアイテムを追加しました | お気に入りに 1 個のアイテムを追加しました | 気に入りに {n} 個のアイテムをお追加しました | お気に入りに {n} 個のアイテムを追加しました",
+    "createdNLinks": "0 個のリンクを作成しました | 1 個のリンクを作成しました | {n} 個のリンクを作成しました | {n} 個のリンクを作成しました",
+    "createdNOfNLinks": "{total} 件中 {created} 件のリンクを作成しました",
+    "linkCreationPartialFailureDescription": "{count} 件のリンクに失敗しました。最初のエラー: {error}"
   },
   "contextMenus": {
     "dirItem": {
@@ -806,10 +809,12 @@
     "discardClipboard": "破棄",
     "cannotMoveToSameDirectory": "同じディレクトリに移動できません",
     "cannotPasteIntoItself": "フォルダを自身に貼り付けることはできません",
+    "cannotCreateLinkInsideItself": "フォルダリンクをそのフォルダ自身の中に作成できません",
     "noItemsInClipboard": "クリップボードに項目がありません",
     "invalidClipboardOperation": "無効なクリップボード操作",
     "copyFailed": "コピー失敗",
     "moveFailed": "移動失敗",
+    "createLinkFailed": "リンク作成失敗",
     "sizeTooltip": {
       "title": "フォルダサイズの凡例",
       "exact": "正確なサイズを計算済み",
@@ -831,7 +836,17 @@
       "share": "LAN で共有",
       "openInNewTab": "新しいタブで開く",
       "addToFavorites": "お気に入りに追加",
-      "removeFromFavorites": "お気に入りから削除"
+      "removeFromFavorites": "お気に入りから削除",
+      "createLink": "リンクを作成"
+    },
+    "linkTypes": {
+      "symlink": "シンボリックリンク",
+      "shortcut": "ショートカット",
+      "hardlink": "ハードリンク",
+      "junction": "ジャンクション",
+      "shortcutWindows": "ショートカット (.lnk)",
+      "shortcutMacos": "エイリアス",
+      "shortcutLinux": "デスクトップエントリ (.desktop)"
     },
     "archive": {
       "extract": "展開",
@@ -850,7 +865,26 @@
       "errors": {
         "destinationInsideSelectedFolder": "出力先のアーカイブが選択したフォルダー内にあります"
       }
-    }
+    },
+    "kind": "種類",
+    "links": "リンク数",
+    "linkTarget": "リンク先",
+    "linkStatus": "リンク状態",
+    "kinds": {
+      "folder": "フォルダー",
+      "file": "ファイル",
+      "symlink": "シンボリックリンク",
+      "shortcut": "ショートカット",
+      "junction": "ジャンクション",
+      "hardlinkedFile": "ハードリンクされたファイル"
+    },
+    "linkStatuses": {
+      "valid": "有効",
+      "broken": "壊れています",
+      "unknown": "不明",
+      "unsupported": "未対応"
+    },
+    "linkMetadataPerformanceWarning": "メモリ使用量が増え、パフォーマンスが低下する可能性があります。"
   },
   "openWith": {
     "loadingPrograms": "プログラムを読み込み中...",

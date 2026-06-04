@@ -35,6 +35,7 @@ import { useFileBrowserDialogs } from './use-file-browser-dialogs';
 import { useFileBrowserActions } from './use-file-browser-actions';
 import { useFileBrowserKeyboardNavigation } from './use-file-browser-keyboard-navigation';
 import { useFileBrowserLifecycle } from './use-file-browser-lifecycle';
+import { useFileBrowserLinkMetadata } from './use-file-browser-link-metadata';
 import { useFileBrowserDrag } from './use-file-browser-drag';
 import { useFileBrowserInternalDropHandler } from './use-file-browser-internal-drop';
 import { useFileBrowserExternalDrop } from './use-file-browser-external-drop';
@@ -278,6 +279,13 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
     layout: options.layout,
     entryDescription: options.entryDescription,
   });
+  const linkMetadata = useFileBrowserLinkMetadata({
+    enabled: !isExternalMode,
+    currentPath: dataSource.currentPath,
+    directoryEntries: computed(() => dataSource.dirContents.value?.entries ?? []),
+    visibleRows: virtualLayout.visibleRows,
+    layout: options.layout,
+  });
 
   const { entriesContainerRef, setEntriesContainerRef } = useFileBrowserFocus({
     entries: visualEntries,
@@ -480,6 +488,7 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
     isDirectoryEmpty: dataSource.isDirectoryEmpty,
     dirContents: dataSource.dirContents,
     isLoading: dataSource.isLoading,
+    isLinkMetadataLoading: linkMetadata.isLinkMetadataLoading,
     isRefreshing: dataSource.isRefreshing,
     error: dataSource.error,
 
@@ -520,6 +529,7 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
     handleBackgroundContextMenu: selection.handleBackgroundContextMenu,
     copyItems: selection.copyItems,
     cutItems: selection.cutItems,
+    createLinksForEntries: selection.createLinksForEntries,
     pasteItems: selection.pasteItems,
     deleteItems: selection.deleteItems,
     startRename: selection.startRename,

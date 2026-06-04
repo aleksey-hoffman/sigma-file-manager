@@ -243,6 +243,10 @@ export type DateTime = {
 };
 
 export type ListColumnVisibility = {
+  kind: boolean;
+  links: boolean;
+  linkTarget: boolean;
+  linkStatus: boolean;
   items: boolean;
   size: boolean;
   modified: boolean;
@@ -250,7 +254,7 @@ export type ListColumnVisibility = {
   tags: boolean;
 };
 
-export type ListSortColumn = 'name' | 'items' | 'size' | 'modified' | 'created' | 'tags';
+export type ListSortColumn = 'name' | 'kind' | 'links' | 'items' | 'size' | 'modified' | 'created' | 'linkStatus' | 'tags';
 
 export type ListSortDirection = 'asc' | 'desc';
 

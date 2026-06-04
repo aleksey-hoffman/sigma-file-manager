@@ -37,6 +37,7 @@ import FileBrowserActionsMenu from './file-browser-actions-menu.vue';
 import FileBrowserExtensionMenuItems from './file-browser-extension-menu-items.vue';
 import { useFileBrowserContext } from './composables/use-file-browser-context';
 import { formatBytes } from './utils';
+import type { LinkCreationKind } from '@/utils/link-operations';
 
 const MAX_VISIBLE_ITEMS = 100;
 
@@ -229,6 +230,12 @@ function handleOpenCustomDialog() {
   ctx.openOpenWithDialog(ctx.contextMenu.value.selectedEntries);
 }
 
+async function handleCreateLink(linkKind: LinkCreationKind) {
+  closeActionMenus();
+  applyContextMenuState();
+  await ctx.createLinksForEntries(ctx.contextMenu.value.selectedEntries, linkKind, ctx.currentPath.value);
+}
+
 async function handleExtensionAction(registration: ContextMenuItemRegistration) {
   closeActionMenus();
   applyContextMenuState();
@@ -331,6 +338,7 @@ async function handleExtensionAction(registration: ContextMenuItemRegistration) 
                     :menu-item-component="DropdownMenuItem"
                     :menu-separator-component="DropdownMenuSeparator"
                     @action="handleAction"
+                    @create-link="handleCreateLink"
                     @open-custom-dialog="handleOpenCustomDialog"
                   />
                   <FileBrowserExtensionMenuItems
@@ -379,6 +387,7 @@ async function handleExtensionAction(registration: ContextMenuItemRegistration) 
                     :menu-item-component="DropdownMenuItem"
                     :menu-separator-component="DropdownMenuSeparator"
                     @action="handleAction"
+                    @create-link="handleCreateLink"
                     @open-custom-dialog="handleOpenCustomDialog"
                   />
                   <FileBrowserExtensionMenuItems

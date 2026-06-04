@@ -7,6 +7,7 @@ import {
 } from 'vue';
 import type { DirEntry } from '@/types/dir-entry';
 import type { ContextMenuAction, ContextMenuState } from '@/modules/navigator/components/file-browser/types';
+import type { LinkCreationKind } from '@/utils/link-operations';
 import type {
   FileBrowserGridSectionVirtualRow,
   FileBrowserVirtualRow,
@@ -14,8 +15,10 @@ import type {
 
 export interface FileBrowserContext {
   entries: ComputedRef<DirEntry[]>;
+  directoryEntryCount: ComputedRef<number>;
   currentPath: ComputedRef<string>;
   isLoading: Ref<boolean>;
+  isLinkMetadataLoading: ComputedRef<boolean>;
   isDirectoryEmpty: ComputedRef<boolean>;
   error: Ref<string | null>;
 
@@ -47,6 +50,7 @@ export interface FileBrowserContext {
   handleEntryContextMenu: (entry: DirEntry) => void;
   handleBackgroundContextMenu: () => void;
   onContextMenuAction: (action: ContextMenuAction) => void;
+  createLinksForEntries: (entries: DirEntry[], linkKind: LinkCreationKind, destinationPath?: string) => Promise<boolean>;
   openOpenWithDialog: (entries: DirEntry[]) => void;
   openNewItemDialog: (type: 'file' | 'directory', targetPaths?: string[]) => void;
   navigateToHome: () => void | Promise<void>;

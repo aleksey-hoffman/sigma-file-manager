@@ -4,6 +4,24 @@
 
 use serde::{Deserialize, Serialize};
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum DirEntryLinkType {
+    Symlink,
+    Shortcut,
+    Junction,
+    Hardlink,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum DirEntryLinkStatus {
+    Valid,
+    Broken,
+    Unknown,
+    Unsupported,
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DirEntry {
     pub name: String,
@@ -19,6 +37,19 @@ pub struct DirEntry {
     pub is_dir: bool,
     pub is_symlink: bool,
     pub is_hidden: bool,
+    pub link_type: Option<DirEntryLinkType>,
+    pub link_target: Option<String>,
+    pub link_status: Option<DirEntryLinkStatus>,
+    pub hard_link_count: Option<u64>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct DirEntryLinkMetadata {
+    pub path: String,
+    pub link_type: Option<DirEntryLinkType>,
+    pub link_target: Option<String>,
+    pub link_status: Option<DirEntryLinkStatus>,
+    pub hard_link_count: Option<u64>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

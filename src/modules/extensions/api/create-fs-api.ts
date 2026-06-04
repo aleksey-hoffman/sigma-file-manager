@@ -7,9 +7,36 @@ import type {
   ExtensionDirEntry,
   ExtensionScopedDirectory,
 } from '@/types/extension';
+import type { DirContents, DirEntry } from '@/types/dir-entry';
 import { useExtensionsStorageStore } from '@/stores/storage/extensions';
 import type { ExtensionContext } from '@/modules/extensions/api/extension-context';
 import { invokeAsExtension } from '@/modules/extensions/runtime/extension-invoke';
+
+function toExtensionDirEntry(entry: DirEntry): ExtensionDirEntry {
+  return {
+    path: entry.path,
+    name: entry.name,
+    isDirectory: entry.is_dir,
+    size: entry.is_file ? entry.size : undefined,
+    modifiedAt: entry.modified_time || undefined,
+    linkType: entry.link_type ?? null,
+    linkTarget: entry.link_target ?? null,
+    linkStatus: entry.link_status ?? null,
+    hardLinkCount: entry.hard_link_count ?? null,
+  };
+}
+
+async function readExtensionDir(extensionId: string, path: string): Promise<ExtensionDirEntry[]> {
+  const contents = await invokeAsExtension<DirContents>(extensionId, 'read_dir', {
+    path,
+    options: {
+      includeShortcutTargets: true,
+      includeHardLinkCounts: true,
+    },
+  });
+
+  return contents.entries.map(toExtensionDirEntry);
+}
 
 export function createFsAPI(context: ExtensionContext) {
   function requirePermission(permission: 'fs.read' | 'fs.write'): void {
@@ -68,7 +95,7 @@ export function createFsAPI(context: ExtensionContext) {
     },
     readDir: async (path: string): Promise<ExtensionDirEntry[]> => {
       await requireReadAccess(path);
-      return invokeAsExtension<ExtensionDirEntry[]>(context.extensionId, 'read_dir', { path });
+      return readExtensionDir(context.extensionId, path);
     },
     exists: async (path: string): Promise<boolean> => {
       await requireReadAccess(path);
@@ -108,7 +135,7 @@ export function createFsAPI(context: ExtensionContext) {
         const resolvedPath = relativePath.trim().length > 0
           ? await context.resolvePrivatePath(relativePath)
           : await context.getExtensionPath();
-        return invokeAsExtension<ExtensionDirEntry[]>(context.extensionId, 'read_dir', { path: resolvedPath });
+        return readExtensionDir(context.extensionId, resolvedPath);
       },
       exists: async (relativePath: string): Promise<boolean> => {
         requirePermission('fs.read');
@@ -140,7 +167,7 @@ export function createFsAPI(context: ExtensionContext) {
         const resolvedPath = relativePath.trim().length > 0
           ? await context.resolveStoragePath(relativePath)
           : await context.getExtensionStoragePath();
-        return invokeAsExtension<ExtensionDirEntry[]>(context.extensionId, 'read_dir', { path: resolvedPath });
+        return readExtensionDir(context.extensionId, resolvedPath);
       },
       exists: async (relativePath: string): Promise<boolean> => {
         requirePermission('fs.read');
@@ -244,7 +271,7 @@ export function createFsAPI(context: ExtensionContext) {
       },
       readDir: async (path: string): Promise<ExtensionDirEntry[]> => {
         await requireScopedReadAccess(path);
-        return invokeAsExtension<ExtensionDirEntry[]>(context.extensionId, 'read_dir', { path });
+        return readExtensionDir(context.extensionId, path);
       },
       exists: async (path: string): Promise<boolean> => {
         await requireScopedReadAccess(path);

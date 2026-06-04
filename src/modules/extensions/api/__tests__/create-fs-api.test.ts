@@ -97,6 +97,67 @@ describe('createFsAPI', () => {
     });
   });
 
+  it('maps readDir entries to the public extension shape with link metadata', async () => {
+    const context = createContext(['fs.read']);
+    context.isInAllowedReadDir = vi.fn(async () => true);
+    invokeAsExtensionMock.mockResolvedValueOnce({
+      path: '/workspace',
+      entries: [
+        {
+          path: '/workspace/link',
+          name: 'link',
+          ext: null,
+          size: 0,
+          item_count: null,
+          modified_time: 42,
+          accessed_time: 0,
+          created_time: 0,
+          mime: null,
+          is_file: true,
+          is_dir: false,
+          is_symlink: true,
+          is_hidden: false,
+          link_type: 'symlink',
+          link_target: '/workspace/target',
+          link_status: 'valid',
+          hard_link_count: null,
+        },
+      ],
+      total_count: 1,
+      dir_count: 0,
+      file_count: 1,
+      opened_directory_times: {
+        modified_time: 0,
+        accessed_time: 0,
+        created_time: 0,
+      },
+    });
+    const fsApi = createFsAPI(context);
+
+    await expect(fsApi.readDir('/workspace')).resolves.toEqual([
+      {
+        path: '/workspace/link',
+        name: 'link',
+        isDirectory: false,
+        size: 0,
+        modifiedAt: 42,
+        linkType: 'symlink',
+        linkTarget: '/workspace/target',
+        linkStatus: 'valid',
+        hardLinkCount: null,
+      },
+    ]);
+
+    expect(context.isInAllowedReadDir).toHaveBeenCalledWith('/workspace');
+    expect(invokeAsExtensionMock).toHaveBeenCalledWith('test.extension', 'read_dir', {
+      path: '/workspace',
+      options: {
+        includeShortcutTargets: true,
+        includeHardLinkCounts: true,
+      },
+    });
+  });
+
   it('allows importing a file selected from a dialog', async () => {
     const context = createContext(['fs.read', 'fs.write']);
     context.isInAllowedReadDir = vi.fn(async () => true);
