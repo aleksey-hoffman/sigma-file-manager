@@ -286,6 +286,7 @@ pub fn run() {
             file_operations::create_item,
             archive::start_archive_job,
             archive::cancel_archive_job,
+            archive::check_archive,
             copy_move_job::start_copy_move_job,
             copy_move_job::cancel_copy_move_job,
             delete_job::start_delete_job,
