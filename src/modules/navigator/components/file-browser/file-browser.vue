@@ -4,7 +4,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import type { DirEntry } from '@/types/dir-entry';
 import type { Tab } from '@/types/workspaces';
 import { useFileBrowser } from './composables/use-file-browser';
@@ -117,8 +117,10 @@ async function revealAddressBarEntry(parentPath: string, entryPath: string) {
 
 provideFileBrowserContext({
   entries: fb.entries,
+  directoryEntryCount: computed(() => fb.dirContents.value?.total_count ?? 0),
   currentPath: fb.currentPath,
   isLoading: fb.isLoading,
+  isLinkMetadataLoading: fb.isLinkMetadataLoading,
   isDirectoryEmpty: fb.isDirectoryEmpty,
   error: fb.error,
   selectedEntries: fb.selectedEntries,
@@ -146,7 +148,10 @@ provideFileBrowserContext({
   handleEntryFocus: fb.handleEntryFocus,
   handleEntryContextMenu: fb.handleEntryContextMenu,
   handleBackgroundContextMenu: fb.handleBackgroundContextMenu,
+  closeContextMenu: fb.closeContextMenu,
   onContextMenuAction: fb.onContextMenuAction,
+  openProperties: fb.openProperties,
+  createLinksForEntries: fb.createLinksForEntries,
   openOpenWithDialog: fb.openOpenWithDialog,
   openNewItemDialog: fb.openNewItemDialog,
   navigateToHome: fb.navigateToHome,
@@ -191,6 +196,7 @@ defineExpose({
   startRename: fb.startRename,
   quickView: fb.quickView,
   printEntry: fb.printEntry,
+  openProperties: fb.openProperties,
   refresh: fb.refresh,
 });
 </script>

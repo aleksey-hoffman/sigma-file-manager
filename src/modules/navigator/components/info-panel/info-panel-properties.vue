@@ -4,7 +4,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, watch } from 'vue';
 import { LoaderCircleIcon, XIcon, RefreshCwIcon } from '@lucide/vue';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
@@ -16,11 +16,17 @@ import {
 } from '@/modules/navigator/components/file-browser/utils';
 import { useRelativeDateDisplayClock } from '@/composables/use-relative-date-display';
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
+import { useLinkMetadataStore } from '@/stores/runtime/link-metadata';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import type { DirEntry } from '@/types/dir-entry';
 import type { RelativeTimeTranslations } from '@/modules/navigator/components/file-browser/utils';
 import { getPathDisplayValue } from '@/utils/normalize-path';
 import { formatRelativeDateDisplay } from '@/utils/relative-date-display';
+import {
+  getDirEntryKindKey,
+  getDirEntryLinksDisplay,
+  getDirEntryLinkStatusKey,
+} from '@/utils/dir-entry-link-metadata';
 const props = defineProps<{
   selectedEntry: DirEntry | null;
   orientation?: 'vertical' | 'compact';
@@ -28,7 +34,14 @@ const props = defineProps<{
 
 const { t, locale } = useI18n();
 const dirSizesStore = useDirSizesStore();
+const linkMetadataStore = useLinkMetadataStore();
 const userSettingsStore = useUserSettingsStore();
+
+const selectedEntryWithMetadata = computed(() => {
+  return props.selectedEntry
+    ? linkMetadataStore.mergeEntry(props.selectedEntry)
+    : null;
+});
 
 const { clockRef: relativeDateClock } = useRelativeDateDisplayClock(() => {
   const entry = props.selectedEntry;
@@ -124,10 +137,11 @@ interface PropertyDateItem {
 type PropertyItem = PropertyValueItem | PropertyDateItem;
 
 const properties = computed<PropertyItem[]>(() => {
-  if (!props.selectedEntry) return [];
+  if (!selectedEntryWithMetadata.value) return [];
 
-  const entry = props.selectedEntry;
+  const entry = selectedEntryWithMetadata.value;
   const items: PropertyItem[] = [];
+  const linkStatusKey = getDirEntryLinkStatusKey(entry);
 
   items.push({
     title: t('type'),
@@ -137,13 +151,6 @@ const properties = computed<PropertyItem[]>(() => {
     title: t('path'),
     value: getPathDisplayValue(entry.path),
   });
-
-  if (entry.is_file) {
-    items.push({
-      title: t('size'),
-      value: formatBytes(entry.size),
-    });
-  }
 
   if (entry.is_dir && entry.item_count !== null) {
     items.push({
@@ -181,7 +188,7 @@ const properties = computed<PropertyItem[]>(() => {
     });
   }
 
-  if (entry.is_symlink) {
+  if (entry.is_symlink && !entry.link_type) {
     items.push({
       title: t('symlink'),
       value: t('yes'),
@@ -195,16 +202,37 @@ const properties = computed<PropertyItem[]>(() => {
     });
   }
 
+  items.push({
+    title: t('fileBrowser.kind'),
+    value: t(getDirEntryKindKey(entry)),
+  });
+  items.push({
+    title: t('fileBrowser.links'),
+    value: getDirEntryLinksDisplay(entry),
+  });
+  items.push({
+    title: t('fileBrowser.linkTarget'),
+    value: entry.link_target ? getPathDisplayValue(entry.link_target) : '—',
+  });
+  items.push({
+    title: t('fileBrowser.linkStatus'),
+    value: linkStatusKey ? t(linkStatusKey) : '—',
+  });
+
   return items;
 });
 
 const compactItems = computed<string[]>(() => {
-  if (!props.selectedEntry) return [];
+  if (!selectedEntryWithMetadata.value) return [];
 
-  const entry = props.selectedEntry;
+  const entry = selectedEntryWithMetadata.value;
   const items: string[] = [];
 
-  items.push(entry.is_dir ? t('directory') : (entry.ext ? `.${entry.ext}` : t('file')));
+  const kindDisplay = entry.link_type
+    ? t(getDirEntryKindKey(entry))
+    : (entry.is_dir ? t('directory') : (entry.ext ? `.${entry.ext}` : t('file')));
+
+  items.push(kindDisplay);
 
   if (entry.is_file) {
     items.push(formatBytes(entry.size));
@@ -225,6 +253,25 @@ const compactItems = computed<string[]>(() => {
 
   return items;
 });
+
+watch(
+  () => props.selectedEntry?.path,
+  (path) => {
+    if (!path) {
+      return;
+    }
+
+    linkMetadataStore
+      .requestMetadataBatch([path], {
+        includeShortcutTargets: true,
+        includeHardLinkCounts: true,
+      })
+      .catch((error: unknown) => {
+        console.error('Failed to load selected entry link metadata:', error);
+      });
+  },
+  { immediate: true },
+);
 </script>
 
 <template>
@@ -255,14 +302,17 @@ const compactItems = computed<string[]>(() => {
       class="info-panel-properties__list"
     >
       <div
-        v-if="selectedEntry?.is_dir"
+        v-if="selectedEntryWithMetadata?.is_file || selectedEntry?.is_dir"
         class="info-panel-properties__item"
       >
         <div class="info-panel-properties__title">
           {{ t('size') }}
         </div>
         <div class="info-panel-properties__value info-panel-properties__value--action">
-          <template v-if="isDirSizeLoading">
+          <template v-if="selectedEntryWithMetadata?.is_file">
+            {{ formatBytes(selectedEntryWithMetadata.size) }}
+          </template>
+          <template v-else-if="isDirSizeLoading">
             <LoaderCircleIcon
               :size="14"
               class="info-panel-properties__spinner"

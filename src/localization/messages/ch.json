@@ -481,6 +481,7 @@
     "closeOpenedDialogOverlay": "关闭对话框 / 浮层 / 菜单 / 选择",
     "openCloseSelectedFileInQuickView": "在快速查看窗口中打开 / 关闭所选文件",
     "printSelectedFile": "打印所选文件",
+    "openNativeProperties": "打开所选项目的原生属性",
     "toggleFullScreen": "切换全屏",
     "uiZoomIncrease": "用户界面缩放增加",
     "uiZoomDecrease": "用户界面缩放减少",
@@ -596,7 +597,10 @@
     "quickViewFileIsNotSupported": "快速查看：文件不支持",
     "printViewFileIsNotSupported": "打印：不支持此文件",
     "removedFromFavorites": "Removed 0 items from favorites | Removed 1 item from favorites | Removed {n} items from favorites | Removed {n} items from favorites",
-    "addedToFavorites": "Added 0 items to favorites | Added 1 item to favorites | Added {n} items to favorites | Added {n} items to favorites"
+    "addedToFavorites": "Added 0 items to favorites | Added 1 item to favorites | Added {n} items to favorites | Added {n} items to favorites",
+    "createdNLinks": "已创建 0 个链接 | 已创建 1 个链接 | 已创建 {n} 个链接 | 已创建 {n} 个链接",
+    "createdNOfNLinks": "已创建 {total} 个链接中的 {created} 个",
+    "linkCreationPartialFailureDescription": "{count} 个链接失败。第一个错误：{error}"
   },
   "contextMenus": {
     "dirItem": {
@@ -806,10 +810,12 @@
     "discardClipboard": "丢弃",
     "cannotMoveToSameDirectory": "无法将项目移动到同一目录",
     "cannotPasteIntoItself": "无法将文件夹粘贴到自身",
+    "cannotCreateLinkInsideItself": "无法在文件夹自身内部创建文件夹链接",
     "noItemsInClipboard": "剪贴板中没有项目",
     "invalidClipboardOperation": "无效的剪贴板操作",
     "copyFailed": "复制失败",
     "moveFailed": "移动失败",
+    "createLinkFailed": "创建链接失败",
     "sizeTooltip": {
       "title": "文件夹大小图例",
       "exact": "已计算精确大小",
@@ -826,12 +832,24 @@
       "pasteToPane2": "粘贴到面板 2",
       "delete": "删除",
       "openWith": "打开方式...",
+      "properties": "属性",
+      "propertiesFailed": "无法打开属性",
       "quickView": "快速查看",
       "print": "打印",
       "share": "局域网共享",
       "openInNewTab": "在新标签页中打开",
       "addToFavorites": "添加到收藏",
-      "removeFromFavorites": "从收藏中移除"
+      "removeFromFavorites": "从收藏中移除",
+      "createLink": "创建链接"
+    },
+    "linkTypes": {
+      "symlink": "符号链接",
+      "shortcut": "快捷方式",
+      "hardlink": "硬链接",
+      "junction": "联接",
+      "shortcutWindows": "快捷方式 (.lnk)",
+      "shortcutMacos": "替身",
+      "shortcutLinux": "桌面项 (.desktop)"
     },
     "archive": {
       "extract": "解压",
@@ -871,7 +889,26 @@
         "encodingTitle": "File name encoding",
         "encodingDescription": "Some file names in this archive use a non-UTF-8 encoding. Select the correct encoding to display them properly."
       }
-    }
+    },
+    "kind": "类型",
+    "links": "链接数",
+    "linkTarget": "链接目标",
+    "linkStatus": "链接状态",
+    "kinds": {
+      "folder": "文件夹",
+      "file": "文件",
+      "symlink": "符号链接",
+      "shortcut": "快捷方式",
+      "junction": "连接点",
+      "hardlinkedFile": "硬链接文件"
+    },
+    "linkStatuses": {
+      "valid": "有效",
+      "broken": "已断开",
+      "unknown": "未知",
+      "unsupported": "不支持"
+    },
+    "linkMetadataPerformanceWarning": "可能会增加内存使用量并降低性能。"
   },
   "openWith": {
     "loadingPrograms": "正在加载程序...",

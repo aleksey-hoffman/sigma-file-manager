@@ -170,7 +170,7 @@ export const useClipboardStore = defineStore('clipboard', () => {
    * Checks if paste operation is allowed for the given destination
    */
   function canPasteTo(destinationPath: string): boolean {
-    if (!hasItems.value) {
+    if (!hasItems.value || (!isCopyOperation.value && !isMoveOperation.value)) {
       return false;
     }
 

@@ -6,7 +6,14 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { InfoIcon, Columns3Icon, ArrowUpIcon, ArrowDownIcon } from '@lucide/vue';
+import {
+  InfoIcon,
+  Columns3Icon,
+  ArrowUpIcon,
+  ArrowDownIcon,
+  LoaderCircleIcon,
+  TriangleAlertIcon,
+} from '@lucide/vue';
 import type { ListColumnVisibility, ListSortColumn } from '@/types/user-settings';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -15,10 +22,13 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
+import { useFileBrowserContext } from './composables/use-file-browser-context';
 
 const { t } = useI18n();
 const legendSizeText = '1.5 GB';
+const LINK_COLUMN_WARNING_MIN_ITEMS = 1000;
 const userSettingsStore = useUserSettingsStore();
+const ctx = useFileBrowserContext();
 const isColumnsPopoverOpen = ref(false);
 
 const columnVisibility = computed(() => userSettingsStore.userSettings.navigator.listColumnVisibility);
@@ -26,6 +36,13 @@ const showItemsColumn = computed(() => columnVisibility.value.items);
 
 const listSortColumn = computed(() => userSettingsStore.userSettings.navigator.listSortColumn);
 const listSortDirection = computed(() => userSettingsStore.userSettings.navigator.listSortDirection);
+const showLinkColumnPerformanceWarning = computed(() => ctx.directoryEntryCount.value >= LINK_COLUMN_WARNING_MIN_ITEMS);
+const showCheckedLinkColumnPerformanceWarning = computed(() => {
+  const visibility = columnVisibility.value;
+
+  return showLinkColumnPerformanceWarning.value
+    && (visibility.kind || visibility.links || visibility.linkTarget || visibility.linkStatus);
+});
 
 function handleColumnHeaderClick(column: ListSortColumn) {
   if (listSortColumn.value === column) {
@@ -191,6 +208,75 @@ function toggleColumnVisibility(column: keyof ListColumnVisibility, checked: boo
           class="file-browser-list-view__header-sort-icon"
         />
       </button>
+      <button
+        v-if="columnVisibility.kind"
+        type="button"
+        class="file-browser-list-view__header-item file-browser-list-view__header-item--sortable file-browser-list-view__header-kind"
+        @click="handleColumnHeaderClick('kind')"
+      >
+        {{ t('fileBrowser.kind') }}
+        <LoaderCircleIcon
+          v-if="ctx.isLinkMetadataLoading.value"
+          :size="12"
+          class="file-browser-list-view__header-loading-icon"
+        />
+        <ArrowUpIcon
+          v-if="listSortColumn === 'kind' && listSortDirection === 'asc'"
+          :size="12"
+          class="file-browser-list-view__header-sort-icon"
+        />
+        <ArrowDownIcon
+          v-else-if="listSortColumn === 'kind' && listSortDirection === 'desc'"
+          :size="12"
+          class="file-browser-list-view__header-sort-icon"
+        />
+      </button>
+      <button
+        v-if="columnVisibility.links"
+        type="button"
+        class="file-browser-list-view__header-item file-browser-list-view__header-item--sortable file-browser-list-view__header-links"
+        @click="handleColumnHeaderClick('links')"
+      >
+        {{ t('fileBrowser.links') }}
+        <LoaderCircleIcon
+          v-if="ctx.isLinkMetadataLoading.value"
+          :size="12"
+          class="file-browser-list-view__header-loading-icon"
+        />
+        <ArrowUpIcon
+          v-if="listSortColumn === 'links' && listSortDirection === 'asc'"
+          :size="12"
+          class="file-browser-list-view__header-sort-icon"
+        />
+        <ArrowDownIcon
+          v-else-if="listSortColumn === 'links' && listSortDirection === 'desc'"
+          :size="12"
+          class="file-browser-list-view__header-sort-icon"
+        />
+      </button>
+      <button
+        v-if="columnVisibility.linkStatus"
+        type="button"
+        class="file-browser-list-view__header-item file-browser-list-view__header-item--sortable file-browser-list-view__header-link-status"
+        @click="handleColumnHeaderClick('linkStatus')"
+      >
+        {{ t('fileBrowser.linkStatus') }}
+        <LoaderCircleIcon
+          v-if="ctx.isLinkMetadataLoading.value"
+          :size="12"
+          class="file-browser-list-view__header-loading-icon"
+        />
+        <ArrowUpIcon
+          v-if="listSortColumn === 'linkStatus' && listSortDirection === 'asc'"
+          :size="12"
+          class="file-browser-list-view__header-sort-icon"
+        />
+        <ArrowDownIcon
+          v-else-if="listSortColumn === 'linkStatus' && listSortDirection === 'desc'"
+          :size="12"
+          class="file-browser-list-view__header-sort-icon"
+        />
+      </button>
     </div>
     <Popover
       :open="isColumnsPopoverOpen"
@@ -205,6 +291,13 @@ function toggleColumnVisibility(column: keyof ListColumnVisibility, checked: boo
               class="file-browser-list-view__columns-button"
             >
               <Columns3Icon :size="14" />
+              <span
+                v-if="showCheckedLinkColumnPerformanceWarning"
+                class="file-browser-list-view__columns-button-warning"
+                :aria-label="t('fileBrowser.linkMetadataPerformanceWarning')"
+              >
+                <TriangleAlertIcon :size="9" />
+              </span>
             </Button>
           </PopoverTrigger>
         </TooltipTrigger>
@@ -252,6 +345,106 @@ function toggleColumnVisibility(column: keyof ListColumnVisibility, checked: boo
               @update:model-value="toggleColumnVisibility('tags', $event as boolean)"
             />
             <Label for="column-tags">{{ t('fileBrowser.tags') }}</Label>
+          </div>
+          <div class="file-browser-list-view__columns-option">
+            <Checkbox
+              id="column-kind"
+              :model-value="columnVisibility.kind"
+              @update:model-value="toggleColumnVisibility('kind', $event as boolean)"
+            />
+            <Label for="column-kind">{{ t('fileBrowser.kind') }}</Label>
+            <Tooltip v-if="showLinkColumnPerformanceWarning">
+              <TooltipTrigger as-child>
+                <span
+                  class="file-browser-list-view__columns-warning"
+                  :aria-label="t('fileBrowser.linkMetadataPerformanceWarning')"
+                  tabindex="0"
+                >
+                  <TriangleAlertIcon :size="13" />
+                </span>
+              </TooltipTrigger>
+              <TooltipContent
+                side="right"
+                class="file-browser-list-view__columns-warning-tooltip"
+              >
+                {{ t('fileBrowser.linkMetadataPerformanceWarning') }}
+              </TooltipContent>
+            </Tooltip>
+          </div>
+          <div class="file-browser-list-view__columns-option">
+            <Checkbox
+              id="column-links"
+              :model-value="columnVisibility.links"
+              @update:model-value="toggleColumnVisibility('links', $event as boolean)"
+            />
+            <Label for="column-links">{{ t('fileBrowser.links') }}</Label>
+            <Tooltip v-if="showLinkColumnPerformanceWarning">
+              <TooltipTrigger as-child>
+                <span
+                  class="file-browser-list-view__columns-warning"
+                  :aria-label="t('fileBrowser.linkMetadataPerformanceWarning')"
+                  tabindex="0"
+                >
+                  <TriangleAlertIcon :size="13" />
+                </span>
+              </TooltipTrigger>
+              <TooltipContent
+                side="right"
+                class="file-browser-list-view__columns-warning-tooltip"
+              >
+                {{ t('fileBrowser.linkMetadataPerformanceWarning') }}
+              </TooltipContent>
+            </Tooltip>
+          </div>
+          <div class="file-browser-list-view__columns-option">
+            <Checkbox
+              id="column-link-target"
+              :model-value="columnVisibility.linkTarget"
+              @update:model-value="toggleColumnVisibility('linkTarget', $event as boolean)"
+            />
+            <Label for="column-link-target">{{ t('fileBrowser.linkTarget') }}</Label>
+            <Tooltip v-if="showLinkColumnPerformanceWarning">
+              <TooltipTrigger as-child>
+                <span
+                  class="file-browser-list-view__columns-warning"
+                  :aria-label="t('fileBrowser.linkMetadataPerformanceWarning')"
+                  tabindex="0"
+                >
+                  <TriangleAlertIcon :size="13" />
+                </span>
+              </TooltipTrigger>
+              <TooltipContent
+                side="right"
+                class="file-browser-list-view__columns-warning-tooltip"
+              >
+                {{ t('fileBrowser.linkMetadataPerformanceWarning') }}
+              </TooltipContent>
+            </Tooltip>
+          </div>
+          <div class="file-browser-list-view__columns-option">
+            <Checkbox
+              id="column-link-status"
+              :model-value="columnVisibility.linkStatus"
+              @update:model-value="toggleColumnVisibility('linkStatus', $event as boolean)"
+            />
+            <Label for="column-link-status">{{ t('fileBrowser.linkStatus') }}</Label>
+            <Tooltip v-if="showLinkColumnPerformanceWarning">
+              <TooltipTrigger as-child>
+                <span
+                  class="file-browser-list-view__columns-warning"
+                  :aria-label="t('fileBrowser.linkMetadataPerformanceWarning')"
+                  tabindex="0"
+                >
+                  <TriangleAlertIcon :size="13" />
+                </span>
+              </TooltipTrigger>
+              <TooltipContent
+                side="right"
+                class="file-browser-list-view__columns-warning-tooltip"
+              >
+                {{ t('fileBrowser.linkMetadataPerformanceWarning') }}
+              </TooltipContent>
+            </Tooltip>
           </div>
         </PopoverContent>
         <TooltipContent>
@@ -316,6 +509,18 @@ function toggleColumnVisibility(column: keyof ListColumnVisibility, checked: boo
 .file-browser-list-view__header-sort-icon {
   flex-shrink: 0;
   opacity: 0.8;
+}
+
+.file-browser-list-view__header-loading-icon {
+  flex-shrink: 0;
+  animation: file-browser-list-view-spin 1s linear infinite;
+  opacity: 0.55;
+}
+
+@keyframes file-browser-list-view-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .file-browser-list-view__header-info-icon {
@@ -412,6 +617,21 @@ function toggleColumnVisibility(column: keyof ListColumnVisibility, checked: boo
   color: hsl(var(--muted-foreground));
   transform: translateY(-50%);
 }
+
+.file-browser-list-view__columns-button-warning {
+  position: absolute;
+  right: 1px;
+  bottom: 1px;
+  display: inline-flex;
+  width: 12px;
+  height: 12px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background-color: hsl(var(--background-3));
+  color: hsl(38deg 92% 50%);
+  pointer-events: none;
+}
 </style>
 
 <style>
@@ -434,5 +654,16 @@ function toggleColumnVisibility(column: keyof ListColumnVisibility, checked: boo
   cursor: pointer;
   font-size: 13px;
   user-select: none;
+}
+
+.file-browser-list-view__columns-warning {
+  display: inline-flex;
+  margin-left: auto;
+  color: hsl(38deg 92% 50%);
+}
+
+.file-browser-list-view__columns-warning-tooltip.sigma-ui-tooltip-content {
+  max-width: 220px;
+  line-height: 1.35;
 }
 </style>

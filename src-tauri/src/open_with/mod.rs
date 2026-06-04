@@ -250,6 +250,22 @@ pub fn get_modern_context_menu(file_paths: Vec<String>) -> GetShellContextMenuRe
 }
 
 #[tauri::command]
+pub fn open_native_properties(file_paths: Vec<String>) -> OpenWithResult {
+    #[cfg(target_os = "windows")]
+    {
+        windows::open_native_properties_impl(&file_paths)
+    }
+    #[cfg(not(target_os = "windows"))]
+    {
+        let _ = file_paths;
+        OpenWithResult {
+            success: false,
+            error: Some("Native properties dialog is only supported on Windows".to_string()),
+        }
+    }
+}
+
+#[tauri::command]
 pub fn invoke_modern_context_menu_item(file_paths: Vec<String>, command_id: u32) -> OpenWithResult {
     #[cfg(target_os = "windows")]
     {

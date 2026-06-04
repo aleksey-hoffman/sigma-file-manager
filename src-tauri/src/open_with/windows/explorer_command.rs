@@ -87,7 +87,10 @@ pub fn get_modern_context_menu_impl(file_paths: &[String]) -> GetShellContextMen
     }
 }
 
-pub fn invoke_modern_context_menu_item_impl(file_paths: &[String], command_id: u32) -> OpenWithResult {
+pub fn invoke_modern_context_menu_item_impl(
+    file_paths: &[String],
+    command_id: u32,
+) -> OpenWithResult {
     if file_paths.is_empty() {
         return OpenWithResult {
             success: false,
@@ -202,14 +205,11 @@ unsafe fn build_menu(
         }
 
         let clsid = registration.clsid;
-        let command: IExplorerCommand = match CoCreateInstance(
-            &clsid,
-            None,
-            CLSCTX_INPROC_SERVER | CLSCTX_LOCAL_SERVER,
-        ) {
-            Ok(command) => command,
-            Err(_) => continue,
-        };
+        let command: IExplorerCommand =
+            match CoCreateInstance(&clsid, None, CLSCTX_INPROC_SERVER | CLSCTX_LOCAL_SERVER) {
+                Ok(command) => command,
+                Err(_) => continue,
+            };
 
         if let Ok(object_with_selection) = command.cast::<IObjectWithSelection>() {
             let _ = object_with_selection.SetSelection(array);
@@ -247,7 +247,14 @@ unsafe fn build_menu(
 
         let has_sub_commands = command.GetFlags().unwrap_or(0) & ECF_HASSUBCOMMANDS.0 as u32 != 0;
         let children = if has_sub_commands {
-            collect_sub_commands(&command, array, clsid, with_icons, &mut next_id, &mut targets)
+            collect_sub_commands(
+                &command,
+                array,
+                clsid,
+                with_icons,
+                &mut next_id,
+                &mut targets,
+            )
         } else {
             None
         };
@@ -364,13 +371,18 @@ unsafe fn create_shell_item_array(file_paths: &[String]) -> Result<IShellItemArr
                 for allocated in &id_lists {
                     CoTaskMemFree(Some(*allocated as *const _));
                 }
-                return Err(format!("Failed to parse path '{}': {}", normalized_path, parse_error));
+                return Err(format!(
+                    "Failed to parse path '{}': {}",
+                    normalized_path, parse_error
+                ));
             }
         }
     }
 
-    let id_list_refs: Vec<*const ITEMIDLIST> =
-        id_lists.iter().map(|pointer| *pointer as *const _).collect();
+    let id_list_refs: Vec<*const ITEMIDLIST> = id_lists
+        .iter()
+        .map(|pointer| *pointer as *const _)
+        .collect();
     let array_result = SHCreateShellItemArrayFromIDLists(&id_list_refs);
 
     for allocated in &id_lists {
@@ -440,8 +452,7 @@ fn package_install_path(package_full_name: &str) -> Option<String> {
     let mut path_length: u32 = 0;
 
     unsafe {
-        let sizing_result =
-            GetPackagePathByFullName(&wide_name, &mut path_length, PWSTR::null());
+        let sizing_result = GetPackagePathByFullName(&wide_name, &mut path_length, PWSTR::null());
         if sizing_result != ERROR_INSUFFICIENT_BUFFER || path_length == 0 {
             return None;
         }
@@ -601,7 +612,5 @@ fn parse_clsid(value: &str) -> Option<GUID> {
         return None;
     }
 
-    u128::from_str_radix(&cleaned, 16)
-        .ok()
-        .map(GUID::from_u128)
+    u128::from_str_radix(&cleaned, 16).ok().map(GUID::from_u128)
 }

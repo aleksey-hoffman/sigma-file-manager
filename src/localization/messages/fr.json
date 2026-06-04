@@ -481,6 +481,7 @@
     "closeOpenedDialogOverlay": "Fermer dialogue / superposition / menu / sélection",
     "openCloseSelectedFileInQuickView": "Ouvrir / fermer le fichier sélectionné dans la fenêtre Quick View",
     "printSelectedFile": "Imprimer le fichier sélectionné",
+    "openNativeProperties": "Ouvrir les propriétés natives des éléments sélectionnés",
     "toggleFullScreen": "Passer en plein écran",
     "uiZoomIncrease": "Augmentation du zoom de l'interface utilisateur",
     "uiZoomDecrease": "diminution du zoom de l'interface utilisateur",
@@ -596,7 +597,10 @@
     "quickViewFileIsNotSupported": "Vue rapide: le fichier n'est pas pris en charge",
     "printViewFileIsNotSupported": "Impression : fichier non pris en charge",
     "removedFromFavorites": "Removed 0 items from favorites | Removed 1 item from favorites | Removed {n} items from favorites | Removed {n} items from favorites",
-    "addedToFavorites": "Added 0 items to favorites | Added 1 item to favorites | Added {n} items to favorites | Added {n} items to favorites"
+    "addedToFavorites": "Added 0 items to favorites | Added 1 item to favorites | Added {n} items to favorites | Added {n} items to favorites",
+    "createdNLinks": "0 liens créés | 1 lien créé | {n} liens créés | {n} liens créés",
+    "createdNOfNLinks": "{created} liens créés sur {total}",
+    "linkCreationPartialFailureDescription": "{count} liens ont échoué. Première erreur : {error}"
   },
   "contextMenus": {
     "dirItem": {
@@ -806,10 +810,12 @@
     "discardClipboard": "Abandonner",
     "cannotMoveToSameDirectory": "Impossible de déplacer les éléments vers le même répertoire",
     "cannotPasteIntoItself": "Impossible de coller un dossier dans lui-même",
+    "cannotCreateLinkInsideItself": "Impossible de créer un lien de dossier dans lui-même",
     "noItemsInClipboard": "Aucun élément dans le presse-papiers",
     "invalidClipboardOperation": "Opération de presse-papiers invalide",
     "copyFailed": "Échec de la copie",
     "moveFailed": "Échec du déplacement",
+    "createLinkFailed": "Échec de la création du lien",
     "sizeTooltip": {
       "title": "Légende Taille des Dossiers",
       "exact": "Taille exacte calculée",
@@ -826,12 +832,24 @@
       "pasteToPane2": "Coller dans le panneau 2",
       "delete": "Supprimer",
       "openWith": "Ouvrir avec...",
+      "properties": "Propriétés",
+      "propertiesFailed": "Impossible d'ouvrir les propriétés",
       "quickView": "Aperçu rapide",
       "print": "Imprimer",
       "share": "Partager en réseau local",
       "openInNewTab": "Ouvrir dans un nouvel onglet",
       "addToFavorites": "Ajouter aux favoris",
-      "removeFromFavorites": "Retirer des favoris"
+      "removeFromFavorites": "Retirer des favoris",
+      "createLink": "Créer un lien"
+    },
+    "linkTypes": {
+      "symlink": "Lien symbolique",
+      "shortcut": "Raccourci",
+      "hardlink": "Lien physique",
+      "junction": "Jonction",
+      "shortcutWindows": "Raccourci (.lnk)",
+      "shortcutMacos": "Alias",
+      "shortcutLinux": "Entrée de bureau (.desktop)"
     },
     "archive": {
       "extract": "Extraire",
@@ -871,7 +889,26 @@
         "encodingTitle": "File name encoding",
         "encodingDescription": "Some file names in this archive use a non-UTF-8 encoding. Select the correct encoding to display them properly."
       }
-    }
+    },
+    "kind": "Type",
+    "links": "Liens",
+    "linkTarget": "Cible du lien",
+    "linkStatus": "État du lien",
+    "kinds": {
+      "folder": "Dossier",
+      "file": "Fichier",
+      "symlink": "Lien symbolique",
+      "shortcut": "Raccourci",
+      "junction": "Jonction",
+      "hardlinkedFile": "Fichier à lien physique"
+    },
+    "linkStatuses": {
+      "valid": "Valide",
+      "broken": "Rompu",
+      "unknown": "Inconnu",
+      "unsupported": "Non pris en charge"
+    },
+    "linkMetadataPerformanceWarning": "Peut augmenter l'utilisation de la mémoire et réduire les performances."
   },
   "openWith": {
     "loadingPrograms": "Chargement des programmes...",

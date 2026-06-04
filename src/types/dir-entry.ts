@@ -17,6 +17,12 @@ export interface DirContents {
   opened_directory_times: OpenedDirectoryTimes;
 }
 
+export interface ReadDirOptions {
+  includeShortcutTargets: boolean;
+  includeHardLinkCounts: boolean;
+  includeItemCounts?: boolean;
+}
+
 export type ExtendedVirtualEntry = {
   type: 'dirs' | 'files' | 'dirs-divider' | 'files-divider' | 'top-spacer' | 'bottom-spacer';
   items: DirEntry[] | Divider[] | Spacer[];
@@ -37,7 +43,28 @@ export type DirEntry = {
   is_dir: boolean;
   is_symlink: boolean;
   is_hidden: boolean;
+  link_type?: DirEntryLinkType | null;
+  link_target?: string | null;
+  link_status?: DirEntryLinkStatus | null;
+  hard_link_count?: number | null;
 };
+
+export type DirEntryLinkMetadata = {
+  path: string;
+  link_type?: DirEntryLinkType | null;
+  link_target?: string | null;
+  link_status?: DirEntryLinkStatus | null;
+  hard_link_count?: number | null;
+};
+
+export type DirEntryItemCount = {
+  path: string;
+  item_count: number;
+};
+
+export type DirEntryLinkType = 'symlink' | 'shortcut' | 'junction' | 'hardlink';
+
+export type DirEntryLinkStatus = 'valid' | 'broken' | 'unknown' | 'unsupported';
 
 export type Divider = {
   title: string;

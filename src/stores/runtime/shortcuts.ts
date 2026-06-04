@@ -435,6 +435,21 @@ const DEFAULT_SHORTCUTS: ShortcutDefinition[] = [
     isReadOnly: false,
   },
   {
+    id: 'properties',
+    labelKey: 'shortcuts.openNativeProperties',
+    defaultKeys: {
+      alt: true,
+      key: 'Enter',
+    },
+    scope: 'navigator',
+    conditions: {
+      inputFieldIsActive: false,
+      dialogIsOpened: false,
+      dirItemIsSelected: true,
+    },
+    isReadOnly: false,
+  },
+  {
     id: 'openNewTab',
     labelKey: 'shortcuts.openCurrentDirInNewTab',
     defaultKeys: {

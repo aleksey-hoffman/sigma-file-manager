@@ -481,6 +481,7 @@
     "closeOpenedDialogOverlay": "Cerrar diálogo / superposición / menú / selección",
     "openCloseSelectedFileInQuickView": "Abrir / cerrar archivo seleccionado en ventana Vista rápida",
     "printSelectedFile": "Imprimir archivo seleccionado",
+    "openNativeProperties": "Abrir propiedades nativas de los elementos seleccionados",
     "toggleFullScreen": "Alternar pantalla completa",
     "uiZoomIncrease": "Aumento del zoom de la interfaz de usuario",
     "uiZoomDecrease": "Disminución del zoom de la interfaz de usuario",
@@ -596,7 +597,10 @@
     "quickViewFileIsNotSupported": "Vista rápida: el archivo no es compatible",
     "printViewFileIsNotSupported": "Imprimir: el archivo no es compatible",
     "removedFromFavorites": "Removed 0 items from favorites | Removed 1 item from favorites | Removed {n} items from favorites | Removed {n} items from favorites",
-    "addedToFavorites": "Added 0 items to favorites | Added 1 item to favorites | Added {n} items to favorites | Added {n} items to favorites"
+    "addedToFavorites": "Added 0 items to favorites | Added 1 item to favorites | Added {n} items to favorites | Added {n} items to favorites",
+    "createdNLinks": "Creados 0 enlaces | Creado 1 enlace | Creados {n} enlaces | Creados {n} enlaces",
+    "createdNOfNLinks": "Creados {created} de {total} enlaces",
+    "linkCreationPartialFailureDescription": "Fallaron {count} enlaces. Primer error: {error}"
   },
   "contextMenus": {
     "dirItem": {
@@ -806,10 +810,12 @@
     "discardClipboard": "Descartar",
     "cannotMoveToSameDirectory": "No se pueden mover elementos al mismo directorio",
     "cannotPasteIntoItself": "No se puede pegar una carpeta en sí misma",
+    "cannotCreateLinkInsideItself": "No se puede crear un enlace de carpeta dentro de sí misma",
     "noItemsInClipboard": "No hay elementos en el portapapeles",
     "invalidClipboardOperation": "Operación de portapapeles no válida",
     "copyFailed": "Error al copiar",
     "moveFailed": "Error al mover",
+    "createLinkFailed": "Error al crear enlace",
     "sizeTooltip": {
       "title": "Leyenda de Tamaño de Carpetas",
       "exact": "Tamaño exacto calculado",
@@ -826,12 +832,24 @@
       "pasteToPane2": "Pegar en panel 2",
       "delete": "Eliminar",
       "openWith": "Abrir con...",
+      "properties": "Propiedades",
+      "propertiesFailed": "No se pudieron abrir las propiedades",
       "quickView": "Vista rápida",
       "print": "Imprimir",
       "share": "Compartir en red local",
       "openInNewTab": "Abrir en nueva pestaña",
       "addToFavorites": "Añadir a favoritos",
-      "removeFromFavorites": "Quitar de favoritos"
+      "removeFromFavorites": "Quitar de favoritos",
+      "createLink": "Crear enlace"
+    },
+    "linkTypes": {
+      "symlink": "Enlace simbólico",
+      "shortcut": "Acceso directo",
+      "hardlink": "Enlace físico",
+      "junction": "Junction",
+      "shortcutWindows": "Acceso directo (.lnk)",
+      "shortcutMacos": "Alias",
+      "shortcutLinux": "Entrada de escritorio (.desktop)"
     },
     "archive": {
       "extract": "Extraer",
@@ -871,7 +889,26 @@
         "encodingTitle": "File name encoding",
         "encodingDescription": "Some file names in this archive use a non-UTF-8 encoding. Select the correct encoding to display them properly."
       }
-    }
+    },
+    "kind": "Tipo",
+    "links": "Enlaces",
+    "linkTarget": "Destino del enlace",
+    "linkStatus": "Estado del enlace",
+    "kinds": {
+      "folder": "Carpeta",
+      "file": "Archivo",
+      "symlink": "Enlace simbólico",
+      "shortcut": "Acceso directo",
+      "junction": "Unión",
+      "hardlinkedFile": "Archivo con enlace duro"
+    },
+    "linkStatuses": {
+      "valid": "Válido",
+      "broken": "Roto",
+      "unknown": "Desconocido",
+      "unsupported": "No compatible"
+    },
+    "linkMetadataPerformanceWarning": "Puede aumentar el uso de memoria y reducir el rendimiento."
   },
   "openWith": {
     "loadingPrograms": "Cargando programas...",

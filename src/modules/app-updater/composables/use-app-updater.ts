@@ -16,12 +16,13 @@ const CHECK_INTERVAL_MS = 6 * 60 * 60 * 1000;
 const CHECK_COOLDOWN_MS = 10 * 60 * 1000;
 
 const EMULATE_UPDATE_CHECK_IN_DEV = false;
-const EMULATED_CURRENT_VERSION_FOR_UPDATE_CHECK = '2.0.0-beta.1';
+const EMULATED_CURRENT_VERSION_FOR_UPDATE_CHECK = '2.0.0';
 
-const EMULATE_INSTALLED_AS_BETA1_FOR_UPDATE_TEST = import.meta.env.DEV && EMULATE_UPDATE_CHECK_IN_DEV;
+const EMULATE_OLDER_INSTALLED_VERSION_FOR_UPDATE_TEST
+  = import.meta.env.DEV && EMULATE_UPDATE_CHECK_IN_DEV;
 
-function currentVersionSentToUpdateCheck(realVersion: string): string {
-  if (!EMULATE_INSTALLED_AS_BETA1_FOR_UPDATE_TEST) {
+function effectiveCurrentVersionForUpdater(realVersion: string): string {
+  if (!EMULATE_OLDER_INSTALLED_VERSION_FOR_UPDATE_TEST) {
     return realVersion;
   }
 
@@ -98,10 +99,11 @@ export function useAppUpdater() {
   async function initVersion() {
     if (!currentVersion.value) {
       try {
-        currentVersion.value = await getVersion();
+        const realVersion = await getVersion();
+        currentVersion.value = effectiveCurrentVersionForUpdater(realVersion);
       }
       catch {
-        currentVersion.value = '0.0.0';
+        currentVersion.value = effectiveCurrentVersionForUpdater('0.0.0');
       }
     }
   }
@@ -111,7 +113,7 @@ export function useAppUpdater() {
       return null;
     }
 
-    if (isCooldownActive.value && !EMULATE_INSTALLED_AS_BETA1_FOR_UPDATE_TEST) {
+    if (isCooldownActive.value && !EMULATE_OLDER_INSTALLED_VERSION_FOR_UPDATE_TEST) {
       return updateInfo.value;
     }
 
@@ -121,18 +123,20 @@ export function useAppUpdater() {
     try {
       await initVersion();
 
+      const effectiveCurrentVersion = effectiveCurrentVersionForUpdater(currentVersion.value);
+
       const result = await invoke<UpdateCheckResult>('check_for_updates', {
-        currentVersion: currentVersionSentToUpdateCheck(currentVersion.value),
+        currentVersion: effectiveCurrentVersion,
       });
 
-      if (!EMULATE_INSTALLED_AS_BETA1_FOR_UPDATE_TEST) {
+      if (!EMULATE_OLDER_INSTALLED_VERSION_FOR_UPDATE_TEST) {
         await persistCheckTimestamp();
       }
 
       if (result.updateAvailable) {
         const info: UpdateInfo = {
           latestVersion: result.latestVersion,
-          currentVersion: currentVersion.value,
+          currentVersion: effectiveCurrentVersion,
           releaseUrl: result.releaseUrl,
           installerDownloadUrl: result.installerDownloadUrl ?? null,
           installerFileName: result.installerFileName ?? null,
@@ -251,6 +255,14 @@ export function useAppUpdater() {
     }
   }
 
+  function dismissActiveUpdateToast() {
+    if (!updateInfo.value) {
+      return;
+    }
+
+    toast.dismiss(toastIdForUpdateNotification(updateInfo.value.latestVersion));
+  }
+
   function showUpdateToast(info: UpdateInfo, options?: { downloadedPath?: string }) {
     const toastId = toastIdForUpdateNotification(info.latestVersion);
     const downloadedPath = options?.downloadedPath;
@@ -367,27 +379,24 @@ export function useAppUpdater() {
       return;
     }
 
-    const runInitialCheck
-      = userSettingsStore.userSettings.appUpdates.autoCheck
-        || EMULATE_INSTALLED_AS_BETA1_FOR_UPDATE_TEST;
-
-    if (runInitialCheck) {
-      const result = await checkForUpdates();
-
-      if (result) {
-        await nextTick();
-        showUpdateToast(result);
-      }
+    if (!userSettingsStore.userSettings.appUpdates.autoCheck) {
+      return;
     }
 
-    if (userSettingsStore.userSettings.appUpdates.autoCheck) {
-      startPeriodicCheck();
+    const result = await checkForUpdates();
+
+    if (result) {
+      await nextTick();
+      showUpdateToast(result);
     }
+
+    startPeriodicCheck();
   }
 
   async function onAutoCheckSettingChanged(enabled: boolean) {
     if (platformStore.appUpdatesManagedExternally) {
       stopPeriodicCheck();
+      dismissActiveUpdateToast();
       return;
     }
 
@@ -399,10 +408,11 @@ export function useAppUpdater() {
       }
 
       startPeriodicCheck();
+      return;
     }
-    else {
-      stopPeriodicCheck();
-    }
+
+    stopPeriodicCheck();
+    dismissActiveUpdateToast();
   }
 
   return {

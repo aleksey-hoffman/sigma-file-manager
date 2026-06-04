@@ -163,7 +163,10 @@ fn split_icon_location(location: &str) -> (String, Option<i32>) {
     if let Some(comma_index) = location.rfind(',') {
         let candidate_index = &location[comma_index + 1..];
         if let Ok(parsed_index) = candidate_index.trim().parse::<i32>() {
-            return (location[..comma_index].trim().to_string(), Some(parsed_index));
+            return (
+                location[..comma_index].trim().to_string(),
+                Some(parsed_index),
+            );
         }
     }
     (location.to_string(), None)

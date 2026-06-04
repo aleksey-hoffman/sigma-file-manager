@@ -53,6 +53,18 @@ const listColumnsTemplate = computed(() => {
     columns.push('minmax(140px, 180px)');
   }
 
+  if (columnVisibility.value.kind) {
+    columns.push('minmax(90px, 130px)');
+  }
+
+  if (columnVisibility.value.links) {
+    columns.push('minmax(50px, 80px)');
+  }
+
+  if (columnVisibility.value.linkStatus) {
+    columns.push('minmax(90px, 120px)');
+  }
+
   return columns.join(' ');
 });
 </script>
@@ -104,7 +116,7 @@ const listColumnsTemplate = computed(() => {
   --file-browser-grid-section-header-height: calc(8px + 2px + 1rem + 16px);
   --file-browser-list-column-gap: 16px;
   --file-browser-scrollbar-gutter: 24px;
-  --file-browser-list-columns: minmax(300px, 1fr) minmax(70px, 90px) minmax(50px, 100px) minmax(60px, 160px) minmax(120px, 160px) minmax(140px, 180px);
+  --file-browser-list-columns: minmax(300px, 1fr) minmax(70px, 90px) minmax(50px, 100px) minmax(60px, 160px) minmax(120px, 160px) minmax(140px, 180px) minmax(90px, 130px) minmax(50px, 80px) minmax(90px, 120px);
 }
 
 .file-browser__content-scroll {

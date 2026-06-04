@@ -11,6 +11,7 @@ import { TagSelector } from '@/components/ui/tag-selector';
 import {
   PencilIcon,
   CopyIcon,
+  LinkIcon,
   FolderInputIcon,
   ClipboardPasteIcon,
   Trash2Icon,
@@ -20,8 +21,11 @@ import {
   Share2Icon,
   SquarePlusIcon,
   StarIcon,
+  UnplugIcon,
+  InfoIcon,
 } from '@lucide/vue';
 import { useClipboardStore } from '@/stores/runtime/clipboard';
+import { usePlatformStore } from '@/stores/runtime/platform';
 import { useUserStatsStore } from '@/stores/storage/user-stats';
 import { useShortcutsStore } from '@/stores/runtime/shortcuts';
 import type { DirEntry } from '@/types/dir-entry';
@@ -40,7 +44,17 @@ import FileBrowserOpenWithSubmenu from './file-browser-open-with-submenu.vue';
 import FileBrowserMoreOptionsSubmenu from './file-browser-more-options-submenu.vue';
 import FileBrowserArchiveSubmenu from './file-browser-archive-submenu.vue';
 import FileBrowserTerminalSubmenu from './file-browser-terminal-submenu.vue';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { ContextMenuShortcut } from '@/components/ui/context-menu';
+import {
+  getAvailableLinkCreationOptions,
+  type LinkCreationKind,
+} from '@/utils/link-operations';
 
 const props = withDefaults(defineProps<{
   selectedEntries: DirEntry[];
@@ -55,6 +69,7 @@ const props = withDefaults(defineProps<{
 
 const emit = defineEmits<{
   action: [action: ContextMenuAction];
+  createLink: [linkKind: LinkCreationKind];
   openCustomDialog: [];
 }>();
 
@@ -77,6 +92,7 @@ function handleCutClick() {
 const { t } = useI18n();
 
 const clipboardStore = useClipboardStore();
+const platformStore = usePlatformStore();
 const userStatsStore = useUserStatsStore();
 const shortcutsStore = useShortcutsStore();
 const selectedEntriesRef = toRef(props, 'selectedEntries');
@@ -116,6 +132,9 @@ async function handleUpdateTagColor(tagId: string, color: string) {
 }
 
 const selectedItemTagIds = computed(() => getEntriesSharedTagIds(selectedEntriesRef.value));
+const linkCreationOptions = computed(() =>
+  getAvailableLinkCreationOptions(props.selectedEntries, platformStore.currentPlatform),
+);
 
 const selectedDirectory = computed(() => {
   return props.selectedEntries.find(entry => entry.is_dir);
@@ -163,6 +182,10 @@ onUnmounted(() => {
 
 function handleDeleteClick() {
   emitAction(isShiftHeld.value ? 'delete-permanently' : 'delete');
+}
+
+function handleCreateLink(linkKind: LinkCreationKind) {
+  emit('createLink', linkKind);
 }
 </script>
 
@@ -224,6 +247,44 @@ function handleDeleteClick() {
           <ContextMenuShortcut>{{ shortcutsStore.getShortcutLabel('cut') }}</ContextMenuShortcut>
         </div>
       </TooltipContent>
+    </Tooltip>
+    <Tooltip v-if="isActionVisible('link') && linkCreationOptions.length > 0">
+      <DropdownMenu>
+        <TooltipTrigger as-child>
+          <DropdownMenuTrigger as-child>
+            <Button
+              variant="ghost"
+              size="icon"
+            >
+              <LinkIcon :size="16" />
+            </Button>
+          </DropdownMenuTrigger>
+        </TooltipTrigger>
+        <TooltipContent class="file-browser-actions-menu__tooltip">
+          {{ t('fileBrowser.actions.createLink') }}
+        </TooltipContent>
+        <DropdownMenuContent
+          align="start"
+          side="bottom"
+          class="file-browser-actions-menu__link-dropdown"
+        >
+          <DropdownMenuItem
+            v-for="option in linkCreationOptions"
+            :key="option.kind"
+            @select="handleCreateLink(option.kind)"
+          >
+            <UnplugIcon
+              v-if="option.kind === 'shortcut'"
+              :size="14"
+            />
+            <LinkIcon
+              v-else
+              :size="14"
+            />
+            <span>{{ t(option.labelKey) }}</span>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </Tooltip>
     <Tooltip
       v-if="canPasteToSelectedDirectory"
@@ -346,6 +407,18 @@ function handleDeleteClick() {
     <Share2Icon :size="16" />
     <span>{{ t('fileBrowser.actions.share') }}</span>
   </component>
+  <component
+    :is="menuItemComponent"
+    v-if="isActionVisible('properties')"
+    class="file-browser-actions-menu__item-with-shortcut"
+    @select="emitAction('properties')"
+  >
+    <InfoIcon :size="16" />
+    <span>{{ t('fileBrowser.actions.properties') }}</span>
+    <ContextMenuShortcut v-if="shortcutsStore.getShortcutLabel('properties')">
+      {{ shortcutsStore.getShortcutLabel('properties') }}
+    </ContextMenuShortcut>
+  </component>
   <component :is="menuSeparatorComponent" />
   <component
     :is="menuItemComponent"
@@ -386,6 +459,10 @@ function handleDeleteClick() {
   display: flex;
   justify-content: flex-start;
   gap: 4px;
+}
+
+.file-browser-actions-menu__link-dropdown {
+  min-width: 160px;
 }
 
 .file-browser-actions-menu__action--danger:hover {

@@ -65,6 +65,7 @@ type FileBrowserInstance = InstanceType<typeof FileBrowser> & {
   navigateToParent?: () => void | Promise<void>;
   openNewItemDialog?: (type: 'file' | 'directory') => void;
   printEntry?: (entry?: DirEntry) => Promise<void>;
+  openProperties?: (entries: DirEntry[]) => Promise<void>;
 };
 
 type GlobalSearchViewInstance = InstanceType<typeof GlobalSearchView> & {
@@ -541,9 +542,10 @@ function handleCutShortcut() {
 
 async function handlePasteShortcut() {
   const pane = getActivePaneRef();
+  const pasteTargetPath = getPasteTargetPath();
 
-  if (pane && clipboardStore.hasItems) {
-    await pane.pasteItems(getPasteTargetPath());
+  if (pane && pasteTargetPath && clipboardStore.canPasteTo(pasteTargetPath)) {
+    await pane.pasteItems(pasteTargetPath);
   }
 }
 
@@ -652,6 +654,14 @@ async function handlePrintShortcut() {
     if (lastSelected.is_file) {
       await pane.printEntry?.(lastSelected);
     }
+  }
+}
+
+async function handlePropertiesShortcut() {
+  const pane = getActivePaneRef();
+
+  if (pane && selectedEntries.value.length > 0) {
+    await pane.openProperties?.(selectedEntries.value);
   }
 }
 
@@ -807,6 +817,7 @@ function registerShortcutHandlers() {
   shortcutsStore.registerHandler('escape', handleEscapeKey);
   shortcutsStore.registerHandler('quickView', handleQuickViewShortcut, { checkItemSelected: hasSelectedItems });
   shortcutsStore.registerHandler('print', handlePrintShortcut, { checkItemSelected: hasSelectedItems });
+  shortcutsStore.registerHandler('properties', handlePropertiesShortcut, { checkItemSelected: hasSelectedItems });
   shortcutsStore.registerHandler('openNewTab', handleOpenNewTabShortcut);
   shortcutsStore.registerHandler('closeCurrentTab', handleCloseCurrentTabShortcut);
   shortcutsStore.registerHandler('restoreLastClosedTab', handleRestoreLastClosedTabShortcut);

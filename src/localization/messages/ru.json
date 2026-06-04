@@ -510,6 +510,7 @@
     "closeOpenedDialogOverlay": "Закрыть диалог / оверлей / меню / выделение",
     "openCloseSelectedFileInQuickView": "Открыть / закрыть выбранный файл в окне быстрого просмотра",
     "printSelectedFile": "Печать выбранного файла",
+    "openNativeProperties": "Открыть системные свойства выбранных элементов",
     "toggleFullScreen": "Включить полноэкранный режим",
     "uiZoomIncrease": "Увеличение масштаба интерфейса",
     "uiZoomDecrease": "уменьшение масштаба интерфейса",
@@ -625,7 +626,10 @@
     "updateDownloaded": "Обновление загружено",
     "installerSavedAs": "Сохранено как: {name}",
     "quickViewFileIsNotSupported": "Быстрый просмотр: файл не поддерживается",
-    "printViewFileIsNotSupported": "Печать: файл не поддерживается"
+    "printViewFileIsNotSupported": "Печать: файл не поддерживается",
+    "createdNLinks": "Создано 0 ссылок | Создана 1 ссылка | Создано {n} ссылки | Создано {n} ссылок",
+    "createdNOfNLinks": "Создано ссылок: {created} из {total}",
+    "linkCreationPartialFailureDescription": "Не удалось создать ссылок: {count}. Первая ошибка: {error}"
   },
   "contextMenus": {
     "dirItem": {
@@ -836,10 +840,12 @@
     "discardClipboard": "Отменить",
     "cannotMoveToSameDirectory": "Невозможно переместить элементы в ту же папку",
     "cannotPasteIntoItself": "Невозможно вставить папку в саму себя",
+    "cannotCreateLinkInsideItself": "Нельзя создать ссылку на папку внутри нее самой",
     "noItemsInClipboard": "В буфере обмена нет элементов",
     "invalidClipboardOperation": "Недопустимая операция буфера обмена",
     "copyFailed": "Ошибка копирования",
     "moveFailed": "Ошибка перемещения",
+    "createLinkFailed": "Ошибка создания ссылки",
     "sizeTooltip": {
       "title": "Легенда размера папок",
       "exact": "Точный размер рассчитан",
@@ -856,12 +862,24 @@
       "pasteToPane2": "Вставить в панель 2",
       "delete": "Удалить",
       "openWith": "Открыть с помощью...",
+      "properties": "Свойства",
+      "propertiesFailed": "Не удалось открыть свойства",
       "quickView": "Быстрый просмотр",
       "print": "Печать",
       "share": "Поделиться по сети",
       "openInNewTab": "Открыть в новой вкладке",
       "addToFavorites": "Добавить в избранное",
-      "removeFromFavorites": "Удалить из избранного"
+      "removeFromFavorites": "Удалить из избранного",
+      "createLink": "Создать ссылку"
+    },
+    "linkTypes": {
+      "symlink": "Символическая ссылка",
+      "shortcut": "Ярлык",
+      "hardlink": "Жесткая ссылка",
+      "junction": "Точка соединения",
+      "shortcutWindows": "Ярлык (.lnk)",
+      "shortcutMacos": "Алиас",
+      "shortcutLinux": "Desktop-файл (.desktop)"
     },
     "archive": {
       "extract": "Извлечь",
@@ -901,7 +919,26 @@
         "encodingTitle": "File name encoding",
         "encodingDescription": "Some file names in this archive use a non-UTF-8 encoding. Select the correct encoding to display them properly."
       }
-    }
+    },
+    "kind": "Тип",
+    "links": "Ссылки",
+    "linkTarget": "Цель ссылки",
+    "linkStatus": "Статус ссылки",
+    "kinds": {
+      "folder": "Папка",
+      "file": "Файл",
+      "symlink": "Символическая ссылка",
+      "shortcut": "Ярлык",
+      "junction": "Точка соединения",
+      "hardlinkedFile": "Файл с жесткой ссылкой"
+    },
+    "linkStatuses": {
+      "valid": "Действительна",
+      "broken": "Не работает",
+      "unknown": "Неизвестно",
+      "unsupported": "Не поддерживается"
+    },
+    "linkMetadataPerformanceWarning": "Может увеличить использование памяти и снизить производительность."
   },
   "openWith": {
     "loadingPrograms": "Загрузка программ...",

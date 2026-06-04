@@ -481,6 +481,7 @@
     "closeOpenedDialogOverlay": "Chiudi dialogo / sovrapposizione / menu / selezione",
     "openCloseSelectedFileInQuickView": "Apri / chiudi il file selezionato nella finestra Quick View",
     "printSelectedFile": "Stampa il file selezionato",
+    "openNativeProperties": "Apri le proprietà native degli elementi selezionati",
     "toggleFullScreen": "Attiva lo schermo intero",
     "uiZoomIncrease": "Aumento zoom della UI",
     "uiZoomDecrease": "Diminuzione zoom della UI",
@@ -596,7 +597,10 @@
     "trashedNItems": "Spostati nel cestino {totalAmount} elementi",
     "deletedNItems": "Eliminati {totalAmount} elementi",
     "removedFromFavorites": "Removed 0 items from favorites | Removed 1 item from favorites | Removed {n} items from favorites | Removed {n} items from favorites",
-    "addedToFavorites": "Added 0 items to favorites | Added 1 item to favorites | Added {n} items to favorites | Added {n} items to favorites"
+    "addedToFavorites": "Added 0 items to favorites | Added 1 item to favorites | Added {n} items to favorites | Added {n} items to favorites",
+    "createdNLinks": "Creati 0 collegamenti | Creato 1 collegamento | Creati {n} collegamenti | Creati {n} collegamenti",
+    "createdNOfNLinks": "Creati {created} link su {total}",
+    "linkCreationPartialFailureDescription": "{count} link non riusciti. Primo errore: {error}"
   },
   "contextMenus": {
     "dirItem": {
@@ -806,10 +810,12 @@
     "discardClipboard": "Scarta",
     "cannotMoveToSameDirectory": "Impossibile spostare gli elementi nella stessa directory",
     "cannotPasteIntoItself": "Impossibile incollare una cartella in se stessa",
+    "cannotCreateLinkInsideItself": "Impossibile creare un collegamento della cartella dentro se stessa",
     "noItemsInClipboard": "Nessun elemento negli appunti",
     "invalidClipboardOperation": "Operazione degli appunti non valida",
     "copyFailed": "Copia fallita",
     "moveFailed": "Spostamento fallito",
+    "createLinkFailed": "Creazione collegamento fallita",
     "sizeTooltip": {
       "title": "Legenda Dimensione Cartelle",
       "exact": "Dimensione esatta calcolata",
@@ -826,12 +832,24 @@
       "pasteToPane2": "Incolla nel pannello 2",
       "delete": "Elimina",
       "openWith": "Apri con...",
+      "properties": "Proprietà",
+      "propertiesFailed": "Impossibile aprire le proprietà",
       "quickView": "Anteprima rapida",
       "print": "Stampa",
       "share": "Condividi in rete locale",
       "openInNewTab": "Apri in nuova scheda",
       "addToFavorites": "Aggiungi ai preferiti",
-      "removeFromFavorites": "Rimuovi dai preferiti"
+      "removeFromFavorites": "Rimuovi dai preferiti",
+      "createLink": "Crea collegamento"
+    },
+    "linkTypes": {
+      "symlink": "Collegamento simbolico",
+      "shortcut": "Scorciatoia",
+      "hardlink": "Collegamento fisico",
+      "junction": "Junction",
+      "shortcutWindows": "Collegamento (.lnk)",
+      "shortcutMacos": "Alias",
+      "shortcutLinux": "Voce desktop (.desktop)"
     },
     "archive": {
       "extract": "Estrai",
@@ -871,7 +889,26 @@
         "encodingTitle": "File name encoding",
         "encodingDescription": "Some file names in this archive use a non-UTF-8 encoding. Select the correct encoding to display them properly."
       }
-    }
+    },
+    "kind": "Tipo",
+    "links": "Collegamenti",
+    "linkTarget": "Destinazione link",
+    "linkStatus": "Stato link",
+    "kinds": {
+      "folder": "Cartella",
+      "file": "File",
+      "symlink": "Collegamento simbolico",
+      "shortcut": "Collegamento",
+      "junction": "Giunzione",
+      "hardlinkedFile": "File con hard link"
+    },
+    "linkStatuses": {
+      "valid": "Valido",
+      "broken": "Interrotto",
+      "unknown": "Sconosciuto",
+      "unsupported": "Non supportato"
+    },
+    "linkMetadataPerformanceWarning": "Può aumentare l'uso della memoria e ridurre le prestazioni."
   },
   "openWith": {
     "loadingPrograms": "Caricamento programmi...",

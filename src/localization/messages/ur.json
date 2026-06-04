@@ -510,6 +510,7 @@
     "closeOpenedDialogOverlay": "ڈائیلاگ / اوورلے / مینو / انتخاب برخاست کریں",
     "openCloseSelectedFileInQuickView": "فوری نظارے میں منتخب فائل کھولیں / بند کریں",
     "printSelectedFile": "منتخب فائل پرنٹ کریں",
+    "openNativeProperties": "منتخب اشیاء کی مقامی خصوصیات کھولیں",
     "toggleFullScreen": "مکمل اسکرین ٹوگل کریں",
     "uiZoomIncrease": "UI زوم بڑھائیں",
     "uiZoomDecrease": "UI زوم کم کریں",
@@ -625,7 +626,10 @@
     "updateDownloaded": "اپ ڈیٹ ڈاؤن لوڈ ہو گیا",
     "installerSavedAs": "محفوظ: {name}",
     "quickViewFileIsNotSupported": "فوری نظر: فائل سپورٹ نہیں",
-    "printViewFileIsNotSupported": "پرنٹ: فائل معاون نہیں"
+    "printViewFileIsNotSupported": "پرنٹ: فائل معاون نہیں",
+    "createdNLinks": "0 لنکس بنائے گئے | 1 لنک بنایا گیا | {n} لنکس بنائے گئے | {n} لنکس بنائے گئے",
+    "createdNOfNLinks": "{total} میں سے {created} لنکس بنائے گئے",
+    "linkCreationPartialFailureDescription": "{count} لنکس ناکام ہوئے۔ پہلی خرابی: {error}"
   },
   "contextMenus": {
     "dirItem": {
@@ -836,10 +840,12 @@
     "discardClipboard": "منسوخ",
     "cannotMoveToSameDirectory": "اسی فولڈر میں منتقل نہیں",
     "cannotPasteIntoItself": "فولڈر اپنے اندر نہیں چسپاں",
+    "cannotCreateLinkInsideItself": "فولڈر لنک کو اسی کے اندر نہیں بنایا جا سکتا",
     "noItemsInClipboard": "کلپ بورڈ میں کوئی آئٹم نہیں",
     "invalidClipboardOperation": "غلط کلپ بورڈ عمل",
     "copyFailed": "کاپی ناکام",
     "moveFailed": "منتقل ناکام",
+    "createLinkFailed": "لنک بنانا ناکام",
     "sizeTooltip": {
       "title": "فولڈر سائز",
       "exact": "درست حساب شدہ سائز",
@@ -856,12 +862,24 @@
       "pasteToPane2": "پین 2 میں چسپاں",
       "delete": "حذف",
       "openWith": "اس کے ساتھ کھولیں…",
+      "properties": "خصوصیات",
+      "propertiesFailed": "خصوصیات نہیں کھل سکیں",
       "quickView": "فوری نظر",
       "print": "پرنٹ",
       "share": "LAN شیئر",
       "openInNewTab": "نئے ٹیب میں",
       "addToFavorites": "پسندیدہ میں",
-      "removeFromFavorites": "پسندیدہ سے"
+      "removeFromFavorites": "پسندیدہ سے",
+      "createLink": "لنک بنائیں"
+    },
+    "linkTypes": {
+      "symlink": "علامتی لنک",
+      "shortcut": "شارٹ کٹ",
+      "hardlink": "ہارڈ لنک",
+      "junction": "جنکشن",
+      "shortcutWindows": "شارٹ کٹ (.lnk)",
+      "shortcutMacos": "عرف",
+      "shortcutLinux": "ڈیسک ٹاپ اندراج (.desktop)"
     },
     "archive": {
       "extract": "نکالیں",
@@ -901,7 +919,26 @@
         "encodingTitle": "File name encoding",
         "encodingDescription": "Some file names in this archive use a non-UTF-8 encoding. Select the correct encoding to display them properly."
       }
-    }
+    },
+    "kind": "قسم",
+    "links": "لنکس",
+    "linkTarget": "لنک ہدف",
+    "linkStatus": "لنک حالت",
+    "kinds": {
+      "folder": "فولڈر",
+      "file": "فائل",
+      "symlink": "علامتی لنک",
+      "shortcut": "شارٹ کٹ",
+      "junction": "جنکشن",
+      "hardlinkedFile": "ہارڈ لنک فائل"
+    },
+    "linkStatuses": {
+      "valid": "درست",
+      "broken": "ٹوٹا ہوا",
+      "unknown": "نامعلوم",
+      "unsupported": "غیر معاون"
+    },
+    "linkMetadataPerformanceWarning": "میموری کے استعمال کو بڑھا سکتا ہے اور کارکردگی کو کم کر سکتا ہے۔"
   },
   "openWith": {
     "loadingPrograms": "پروگرامز لوڈ ہو رہے ہیں…",

@@ -113,6 +113,10 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
       folderIconTheme: BUILTIN_NAVIGATOR_ICON_THEME_IDS.system,
       fileIconTheme: BUILTIN_NAVIGATOR_ICON_THEME_IDS.system,
       listColumnVisibility: {
+        kind: true,
+        links: false,
+        linkTarget: false,
+        linkStatus: false,
         items: true,
         size: true,
         modified: true,

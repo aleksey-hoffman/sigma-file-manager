@@ -6,6 +6,11 @@ import type { ComputedRef, Ref } from 'vue';
 import type { DirEntry } from '@/types/dir-entry';
 import type { ContextMenuAction } from '@/modules/navigator/components/file-browser/types';
 import { quickViewSupportedPathsFromVisibleEntries } from '@/stores/runtime/quick-view';
+import { usePlatformStore } from '@/stores/runtime/platform';
+import { openNativeProperties } from '@/utils/open-native-properties';
+import { toast, ToastStatic } from '@/components/ui/toaster';
+import { markRaw } from 'vue';
+import { useI18n } from 'vue-i18n';
 
 type ContextMenuState = {
   targetEntry: DirEntry | null;
@@ -29,6 +34,28 @@ export function useFileBrowserActions(options: {
   handleDragMouseDown?: (entry: DirEntry, event: MouseEvent) => void;
   isDragging?: Ref<boolean>;
 }) {
+  const { t } = useI18n();
+  const platformStore = usePlatformStore();
+
+  async function openProperties(entries: DirEntry[]) {
+    if (!platformStore.isWindows || entries.length === 0) {
+      return;
+    }
+
+    const result = await openNativeProperties(entries);
+
+    if (!result.success) {
+      toast.custom(markRaw(ToastStatic), {
+        componentProps: {
+          data: {
+            title: t('fileBrowser.actions.propertiesFailed'),
+            description: result.error || '',
+          },
+        },
+      });
+    }
+  }
+
   async function quickView(entry?: DirEntry) {
     const targetEntry = entry || options.selectedEntries.value[options.selectedEntries.value.length - 1];
 
@@ -77,6 +104,16 @@ export function useFileBrowserActions(options: {
       return;
     }
 
+    if (action === 'properties') {
+      const entries = options.contextMenu.value.selectedEntries;
+
+      if (entries.length > 0) {
+        void openProperties(entries);
+      }
+
+      return;
+    }
+
     options.handleContextMenuAction(action);
   }
 
@@ -99,6 +136,7 @@ export function useFileBrowserActions(options: {
   return {
     quickView,
     printEntry,
+    openProperties,
     onContextMenuAction,
     onEntryMouseDown,
     onEntryMouseUp,

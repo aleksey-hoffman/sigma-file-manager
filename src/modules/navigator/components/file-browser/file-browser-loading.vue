@@ -48,6 +48,18 @@ const columnVisibility = computed(() => userSettingsStore.userSettings.navigator
           v-if="columnVisibility.tags"
           class="file-browser-loading__tags"
         />
+        <Skeleton
+          v-if="columnVisibility.kind"
+          class="file-browser-loading__kind"
+        />
+        <Skeleton
+          v-if="columnVisibility.links"
+          class="file-browser-loading__links"
+        />
+        <Skeleton
+          v-if="columnVisibility.linkStatus"
+          class="file-browser-loading__link-status"
+        />
       </div>
     </div>
   </ScrollArea>
@@ -89,6 +101,13 @@ const columnVisibility = computed(() => userSettingsStore.userSettings.navigator
   border-radius: 4px;
 }
 
+.file-browser-loading__kind {
+  width: 70px;
+  height: 14px;
+  border-radius: 4px;
+}
+
+.file-browser-loading__links,
 .file-browser-loading__items {
   width: 30px;
   height: 14px;
@@ -102,6 +121,7 @@ const columnVisibility = computed(() => userSettingsStore.userSettings.navigator
 }
 
 .file-browser-loading__modified,
+.file-browser-loading__link-status,
 .file-browser-loading__created {
   width: 100px;
   height: 14px;

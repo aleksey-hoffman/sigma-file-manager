@@ -29,6 +29,7 @@ const props = withDefaults(defineProps<{
   triggerVariant?: 'default' | 'compact' | 'icon';
   maxBadges?: number;
   fullWidth?: boolean;
+  openOnMount?: boolean;
   align?: PopoverContentProps['align'];
   side?: PopoverContentProps['side'];
   alignOffset?: PopoverContentProps['alignOffset'];
@@ -38,6 +39,7 @@ const props = withDefaults(defineProps<{
   triggerVariant: 'default',
   maxBadges: 2,
   fullWidth: false,
+  openOnMount: false,
   align: 'start',
   side: 'bottom',
   alignOffset: 0,
@@ -49,11 +51,12 @@ const emit = defineEmits<{
   'create-tag': [name: string];
   'rename-tag': [tagId: string, name: string];
   'update-tag-color': [tagId: string, color: string];
+  'open-change': [open: boolean];
 }>();
 
 const { t } = useI18n();
 const searchQuery = ref('');
-const isOpen = ref(false);
+const isOpen = ref(props.openOnMount);
 const commandKey = ref(0);
 
 const tagsRef = computed(() => props.tags);
@@ -110,6 +113,8 @@ function onSelectTag(tag: ItemTag) {
 }
 
 watch(isOpen, (open) => {
+  emit('open-change', open);
+
   if (!open) {
     resetEditState();
   }

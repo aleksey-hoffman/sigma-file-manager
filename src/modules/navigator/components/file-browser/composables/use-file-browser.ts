@@ -12,6 +12,7 @@ import { useQuickViewStore } from '@/stores/runtime/quick-view';
 import { useGlobalSearchStore } from '@/stores/runtime/global-search';
 import { useClipboardStore } from '@/stores/runtime/clipboard';
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
+import { useItemCountsStore } from '@/stores/runtime/item-counts';
 import { useUserStatsStore } from '@/stores/storage/user-stats';
 import { useWorkspacesStore } from '@/stores/storage/workspaces';
 import {
@@ -35,6 +36,8 @@ import { useFileBrowserDialogs } from './use-file-browser-dialogs';
 import { useFileBrowserActions } from './use-file-browser-actions';
 import { useFileBrowserKeyboardNavigation } from './use-file-browser-keyboard-navigation';
 import { useFileBrowserLifecycle } from './use-file-browser-lifecycle';
+import { useFileBrowserLinkMetadata } from './use-file-browser-link-metadata';
+import { useFileBrowserItemCounts } from './use-file-browser-item-counts';
 import { useFileBrowserDrag } from './use-file-browser-drag';
 import { useFileBrowserInternalDropHandler } from './use-file-browser-internal-drop';
 import { useFileBrowserExternalDrop } from './use-file-browser-external-drop';
@@ -177,6 +180,7 @@ function setupExternalDataSource(options: UseFileBrowserOptions): DataSource {
   const globalSearchStore = useGlobalSearchStore();
   const userSettingsStore = useUserSettingsStore();
   const dirSizesStore = useDirSizesStore();
+  const itemCountsStore = useItemCountsStore();
   const userStatsStore = useUserStatsStore();
   const getEntries = options.externalEntries ?? (() => []);
   const getBasePath = options.basePath ?? (() => '');
@@ -192,7 +196,14 @@ function setupExternalDataSource(options: UseFileBrowserOptions): DataSource {
     }
 
     const column = listSortColumn.value ?? 'name';
-    return sortFileBrowserEntries(rawEntries, column, listSortDirection.value, dirSizesStore, {
+    let entriesForSort = rawEntries;
+
+    if (column === 'items') {
+      void itemCountsStore.sortRevision;
+      entriesForSort = rawEntries.map(entry => itemCountsStore.mergeEntry(entry));
+    }
+
+    return sortFileBrowserEntries(entriesForSort, column, listSortDirection.value, dirSizesStore, {
       tags: userStatsStore.tags,
       taggedItems: userStatsStore.taggedItems,
     });
@@ -253,6 +264,8 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
     return dataSource.entries.value;
   });
 
+  let openPropertiesForSelection: (entries: DirEntry[]) => void = () => {};
+
   const selection = useFileBrowserSelection(
     visualEntries,
     dataSource.currentPath,
@@ -270,6 +283,9 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
         await dataSource.openFile(entry.path);
       }
     },
+    (entries) => {
+      openPropertiesForSelection(entries);
+    },
     dataSource.silentRefresh,
   );
 
@@ -277,6 +293,20 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
     entries: visualEntries,
     layout: options.layout,
     entryDescription: options.entryDescription,
+  });
+  const linkMetadata = useFileBrowserLinkMetadata({
+    enabled: !isExternalMode,
+    currentPath: dataSource.currentPath,
+    directoryEntries: computed(() => dataSource.dirContents.value?.entries ?? []),
+    visibleRows: virtualLayout.visibleRows,
+    layout: options.layout,
+  });
+  useFileBrowserItemCounts({
+    enabled: !isExternalMode,
+    currentPath: dataSource.currentPath,
+    directoryEntries: computed(() => dataSource.dirContents.value?.entries ?? []),
+    visibleRows: virtualLayout.visibleRows,
+    layout: options.layout,
   });
 
   const { entriesContainerRef, setEntriesContainerRef } = useFileBrowserFocus({
@@ -363,6 +393,10 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
     handleDragMouseDown: drag.handleDragMouseDown,
     isDragging: drag.isDragging,
   });
+
+  openPropertiesForSelection = (entries) => {
+    void actions.openProperties(entries);
+  };
 
   const keyboardNav = useFileBrowserKeyboardNavigation({
     entries: visualEntries,
@@ -480,6 +514,7 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
     isDirectoryEmpty: dataSource.isDirectoryEmpty,
     dirContents: dataSource.dirContents,
     isLoading: dataSource.isLoading,
+    isLinkMetadataLoading: linkMetadata.isLinkMetadataLoading,
     isRefreshing: dataSource.isRefreshing,
     error: dataSource.error,
 
@@ -518,8 +553,10 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
     handleEntryFocus: selection.handleEntryFocus,
     handleEntryContextMenu: selection.handleEntryContextMenu,
     handleBackgroundContextMenu: selection.handleBackgroundContextMenu,
+    closeContextMenu: selection.closeContextMenu,
     copyItems: selection.copyItems,
     cutItems: selection.cutItems,
+    createLinksForEntries: selection.createLinksForEntries,
     pasteItems: selection.pasteItems,
     deleteItems: selection.deleteItems,
     startRename: selection.startRename,
@@ -579,6 +616,7 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
 
     quickView: actions.quickView,
     printEntry: actions.printEntry,
+    openProperties: actions.openProperties,
     selectFirstEntry,
 
     navigateUp: keyboardNav.navigateUp,

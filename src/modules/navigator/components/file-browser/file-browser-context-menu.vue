@@ -4,7 +4,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, nextTick } from 'vue';
 import {
   ContextMenuContent,
   ContextMenuItem,
@@ -16,6 +16,7 @@ import type { ContextMenuItemRegistration } from '@/types/extension';
 import FileBrowserExtensionMenuItems from './file-browser-extension-menu-items.vue';
 import { useFileBrowserContext } from './composables/use-file-browser-context';
 import { arePathsEquivalent } from '@/utils/file-operation-paths';
+import type { LinkCreationKind } from '@/utils/link-operations';
 
 const ctx = useFileBrowserContext();
 
@@ -41,6 +42,16 @@ function handleAction(action: Parameters<typeof ctx.onContextMenuAction>[0]) {
 
 function handleOpenCustomDialog() {
   ctx.openOpenWithDialog(ctx.contextMenu.value.selectedEntries);
+}
+
+async function handleCreateLink(linkKind: LinkCreationKind) {
+  const entries = [...ctx.contextMenu.value.selectedEntries];
+
+  void nextTick(() => {
+    ctx.closeContextMenu();
+  });
+
+  await ctx.createLinksForEntries(entries, linkKind, ctx.currentPath.value);
 }
 
 async function handleExtensionAction(registration: ContextMenuItemRegistration) {
@@ -71,6 +82,7 @@ async function handleExtensionAction(registration: ContextMenuItemRegistration) 
       :menu-separator-component="ContextMenuSeparator"
       :is-current-directory-context="isCurrentDirectoryContext"
       @action="handleAction"
+      @create-link="handleCreateLink"
       @open-custom-dialog="handleOpenCustomDialog"
     />
     <FileBrowserExtensionMenuItems

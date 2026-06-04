@@ -11,14 +11,10 @@ use futures_util::StreamExt;
 use serde::Serialize;
 use serde_json::Value;
 use tauri::Emitter;
-use urlencoding::encode;
-
 use crate::utils::unique_path_with_index;
 
-const RELEASES_ATOM_URL: &str =
-    "https://github.com/aleksey-hoffman/sigma-file-manager/releases.atom";
-const GITHUB_REPO_OWNER: &str = "aleksey-hoffman";
-const GITHUB_REPO_NAME: &str = "sigma-file-manager";
+const GITHUB_RELEASES_API_URL: &str =
+    "https://api.github.com/repos/aleksey-hoffman/sigma-file-manager/releases?per_page=100";
 const MAX_INSTALLER_DOWNLOAD_BYTES: u64 = 512 * 1024 * 1024;
 const CONNECT_TIMEOUT_SECS: u64 = 5;
 const UPDATE_CHECK_TIMEOUT_SECS: u64 = 10;
@@ -41,9 +37,10 @@ struct BinaryDownloadProgress {
     total: Option<u64>,
 }
 
-struct AtomEntry {
+struct GithubRelease {
     tag: String,
     url: String,
+    assets: Vec<Value>,
 }
 
 fn is_semver_app_release_tag(tag: &str) -> bool {
@@ -67,46 +64,69 @@ fn is_semver_app_release_tag(tag: &str) -> bool {
         .all(|segment| !segment.is_empty() && segment.chars().all(|ch| ch.is_ascii_digit()))
 }
 
-fn parse_single_atom_entry(entry_chunk: &str) -> Option<AtomEntry> {
-    let id_start = entry_chunk.find("<id>")? + "<id>".len();
-    let id_end = entry_chunk[id_start..].find("</id>")?;
-    let id_value = entry_chunk[id_start..id_start + id_end].trim();
-    let tag = id_value.rsplit('/').next()?.to_string();
-
-    let link_marker = "rel=\"alternate\"";
-    let link_pos = entry_chunk.find(link_marker)?;
-    let link_chunk = &entry_chunk[..link_pos + link_marker.len() + 200];
-    let href_start = link_chunk.find("href=\"")? + "href=\"".len();
-    let href_end = link_chunk[href_start..].find('"')?;
-    let url = link_chunk[href_start..href_start + href_end].to_string();
-
-    Some(AtomEntry { tag, url })
-}
-
-fn parse_all_entries_from_atom(body: &str) -> Vec<AtomEntry> {
-    let mut entries = Vec::new();
-    let mut search_index = 0usize;
-    while let Some(relative_start) = body[search_index..].find("<entry>") {
-        let absolute_start = search_index + relative_start;
-        let after_entry = &body[absolute_start..];
-        let entry_len = after_entry
-            .find("</entry>")
-            .map(|index| index + "</entry>".len())
-            .unwrap_or(after_entry.len());
-        let chunk = &after_entry[..entry_len];
-        if let Some(entry) = parse_single_atom_entry(chunk) {
-            entries.push(entry);
-        }
-        search_index = absolute_start + entry_len;
+fn parse_github_release(value: &Value) -> Option<GithubRelease> {
+    if value.get("draft")?.as_bool()? {
+        return None;
     }
-    entries
+
+    let tag = value.get("tag_name")?.as_str()?.trim().to_string();
+    if !is_semver_app_release_tag(&tag) {
+        return None;
+    }
+
+    let url = value
+        .get("html_url")
+        .and_then(|field| field.as_str())
+        .unwrap_or_default()
+        .to_string();
+
+    let assets = value
+        .get("assets")
+        .and_then(|field| field.as_array())
+        .cloned()
+        .unwrap_or_default();
+
+    Some(GithubRelease { tag, url, assets })
 }
 
-fn pick_best_release_entry(entries: Vec<AtomEntry>) -> Option<AtomEntry> {
-    entries
+fn parse_github_releases(body: &str) -> Vec<GithubRelease> {
+    let releases: Vec<Value> = serde_json::from_str(body).unwrap_or_default();
+    releases
+        .iter()
+        .filter_map(parse_github_release)
+        .collect()
+}
+
+fn pick_best_installable_upgrade(
+    releases: Vec<GithubRelease>,
+    current_version: &str,
+) -> Option<(GithubRelease, String, String)> {
+    let current_version_number = parse_version_to_number(current_version);
+
+    releases
         .into_iter()
-        .filter(|entry| is_semver_app_release_tag(&entry.tag))
-        .max_by_key(|entry| parse_version_to_number(&entry.tag))
+        .filter_map(|release| {
+            let release_version_number = parse_version_to_number(&release.tag);
+            if release_version_number <= current_version_number {
+                return None;
+            }
+
+            let (installer_download_url, installer_file_name) =
+                pick_release_installer_asset(release.assets.as_slice())?;
+
+            Some((
+                release_version_number,
+                release,
+                installer_download_url,
+                installer_file_name,
+            ))
+        })
+        .max_by_key(|(version_number, _, _, _)| *version_number)
+        .map(
+            |(_, release, installer_download_url, installer_file_name)| {
+                (release, installer_download_url, installer_file_name)
+            },
+        )
 }
 
 fn pre_release_label_weight(label: &str) -> u64 {
@@ -272,32 +292,9 @@ fn pick_release_installer_asset(_assets: &[Value]) -> Option<(String, String)> {
     None
 }
 
-async fn fetch_release_installer_asset(tag: &str) -> Option<(String, String)> {
-    let encoded_tag = encode(tag);
-    let api_url = format!(
-        "https://api.github.com/repos/{}/{}/releases/tags/{}",
-        GITHUB_REPO_OWNER, GITHUB_REPO_NAME, encoded_tag
-    );
-
-    let client = build_http_client(60).ok()?;
-
-    let response = client
-        .get(&api_url)
-        .header("Accept", "application/vnd.github+json")
-        .header("User-Agent", "sigma-file-manager")
-        .send()
-        .await
-        .ok()?;
-
-    if !response.status().is_success() {
-        return None;
-    }
-
-    let body_text = response.text().await.ok()?;
-    let body: Value = serde_json::from_str(&body_text).ok()?;
-    let assets = body.get("assets")?.as_array()?;
-
-    pick_release_installer_asset(assets.as_slice())
+fn executable_path_indicates_windows_store_install(executable_path: &str) -> bool {
+    let lower = executable_path.to_lowercase();
+    lower.contains("\\windowsapps\\") || lower.contains("\\program files\\windowsapps\\")
 }
 
 #[cfg(windows)]
@@ -316,10 +313,27 @@ fn is_running_in_windows_msix_package() -> bool {
     false
 }
 
+#[cfg(windows)]
+fn is_windows_store_installation() -> bool {
+    if is_running_in_windows_msix_package() {
+        return true;
+    }
+
+    std::env::current_exe()
+        .ok()
+        .map(|path| executable_path_indicates_windows_store_install(&path.to_string_lossy()))
+        .unwrap_or(false)
+}
+
+#[cfg(not(windows))]
+fn is_windows_store_installation() -> bool {
+    false
+}
+
 fn is_managed_by_external_package_manager() -> bool {
     std::env::var_os("SNAP").is_some()
         || std::env::var_os("FLATPAK_ID").is_some()
-        || is_running_in_windows_msix_package()
+        || is_windows_store_installation()
 }
 
 #[tauri::command]
@@ -343,7 +357,8 @@ pub async fn check_for_updates(current_version: String) -> Result<UpdateCheckRes
         .map_err(|error| format!("Failed to create HTTP client: {}", error))?;
 
     let response = client
-        .get(RELEASES_ATOM_URL)
+        .get(GITHUB_RELEASES_API_URL)
+        .header("Accept", "application/vnd.github+json")
         .header("User-Agent", "sigma-file-manager")
         .send()
         .await
@@ -358,33 +373,28 @@ pub async fn check_for_updates(current_version: String) -> Result<UpdateCheckRes
         .await
         .map_err(|error| format!("Failed to read response body: {}", error))?;
 
-    let entry = pick_best_release_entry(parse_all_entries_from_atom(&body))
-        .ok_or_else(|| "Failed to parse latest version from releases feed".to_string())?;
+    let releases = parse_github_releases(&body);
 
-    let latest_version = entry.tag.trim_start_matches('v').to_string();
-    let release_url = entry.url;
-
-    let latest_version_number = parse_version_to_number(&latest_version);
-    let current_version_number = parse_version_to_number(&current_version);
-
-    let update_available = latest_version_number > current_version_number;
-
-    let (installer_download_url, installer_file_name) = if update_available {
-        if let Some((url, file_name)) = fetch_release_installer_asset(&entry.tag).await {
-            (Some(url), Some(file_name))
-        } else {
-            (None, None)
-        }
-    } else {
-        (None, None)
+    let Some((release, installer_download_url, installer_file_name)) =
+        pick_best_installable_upgrade(releases, &current_version)
+    else {
+        return Ok(UpdateCheckResult {
+            update_available: false,
+            latest_version: current_version,
+            release_url: String::new(),
+            installer_download_url: None,
+            installer_file_name: None,
+        });
     };
 
+    let latest_version = release.tag.trim_start_matches('v').to_string();
+
     Ok(UpdateCheckResult {
-        update_available,
+        update_available: true,
         latest_version,
-        release_url,
-        installer_download_url,
-        installer_file_name,
+        release_url: release.url,
+        installer_download_url: Some(installer_download_url),
+        installer_file_name: Some(installer_file_name),
     })
 }
 
@@ -526,24 +536,58 @@ mod tests {
     }
 
     #[test]
-    fn pick_best_ignores_api_and_picks_highest_semver() {
-        let best = pick_best_release_entry(vec![
-            AtomEntry {
-                tag: "api-v1.3.0".to_string(),
-                url: "https://a".to_string(),
-            },
-            AtomEntry {
-                tag: "v2.0.0-beta.1".to_string(),
-                url: "https://b".to_string(),
-            },
-            AtomEntry {
-                tag: "v2.0.0-beta.2".to_string(),
-                url: "https://c".to_string(),
-            },
-        ])
-        .expect("expected a release");
-        assert_eq!(best.tag, "v2.0.0-beta.2");
-        assert_eq!(best.url, "https://c");
+    fn pick_best_installable_upgrade_requires_platform_installer() {
+        let upgrade = pick_best_installable_upgrade(
+            vec![GithubRelease {
+                tag: "v2.1.1".to_string(),
+                url: "https://example.com/v2.1.1".to_string(),
+                assets: vec![serde_json::json!({
+                    "name": "Sigma-File-Manager-2.1.1-windows.msixbundle",
+                    "browser_download_url": "https://example.com/store.msixbundle"
+                })],
+            }],
+            "2.1.0",
+        );
+        assert!(upgrade.is_none());
+    }
+
+    #[test]
+    fn pick_best_installable_upgrade_picks_highest_with_setup_exe() {
+        let upgrade = pick_best_installable_upgrade(
+            vec![
+                GithubRelease {
+                    tag: "v2.0.0-beta.1".to_string(),
+                    url: "https://example.com/beta1".to_string(),
+                    assets: vec![serde_json::json!({
+                        "name": "Sigma-File-Manager-2.0.0-beta.1-windows-setup.exe",
+                        "browser_download_url": "https://example.com/beta1.exe"
+                    })],
+                },
+                GithubRelease {
+                    tag: "v2.0.0-beta.2".to_string(),
+                    url: "https://example.com/beta2".to_string(),
+                    assets: vec![serde_json::json!({
+                        "name": "Sigma-File-Manager-2.0.0-beta.2-windows-setup.exe",
+                        "browser_download_url": "https://example.com/beta2.exe"
+                    })],
+                },
+            ],
+            "2.0.0-alpha.6",
+        )
+        .expect("expected upgrade");
+        assert_eq!(upgrade.0.tag, "v2.0.0-beta.2");
+        assert_eq!(upgrade.1, "https://example.com/beta2.exe");
+        assert_eq!(upgrade.2, "Sigma-File-Manager-2.0.0-beta.2-windows-setup.exe");
+    }
+
+    #[test]
+    fn executable_path_indicates_windows_store_install_matches_windows_apps() {
+        assert!(executable_path_indicates_windows_store_install(
+            r"C:\Program Files\WindowsApps\6609AlekseyHoffman.SigmaFileManager_2.1.0.0_x64__abc123\sigma-file-manager.exe"
+        ));
+        assert!(!executable_path_indicates_windows_store_install(
+            r"C:\Program Files\Sigma File Manager\sigma-file-manager.exe"
+        ));
     }
 
     #[test]

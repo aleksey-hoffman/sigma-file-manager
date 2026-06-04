@@ -510,6 +510,7 @@
     "closeOpenedDialogOverlay": "Zapri dialog / prekrivanje / meni / izbiro",
     "openCloseSelectedFileInQuickView": "Odpri / zapri izbrano datoteko v oknu Quick View",
     "printSelectedFile": "Natisni izbrano datoteko",
+    "openNativeProperties": "Odpri izvorne lastnosti izbranih elementov",
     "toggleFullScreen": "Preklopi celozaslonski način",
     "uiZoomIncrease": "Povečaj UI povečavo",
     "uiZoomDecrease": "Zmanjšaj UI povečavo",
@@ -625,7 +626,10 @@
     "updateDownloaded": "Posodobitev je bila prenesena",
     "installerSavedAs": "Shranjeno kot: {name}",
     "quickViewFileIsNotSupported": "Quick view: datoteka ni podprta",
-    "printViewFileIsNotSupported": "Tiskanje: datoteka ni podprta"
+    "printViewFileIsNotSupported": "Tiskanje: datoteka ni podprta",
+    "createdNLinks": "Ustvarjenih 0 povezav | Ustvarjena 1 povezava | Ustvarjene {n} povezave | Ustvarjenih {n} povezav",
+    "createdNOfNLinks": "Ustvarjenih {created} od {total} povezav",
+    "linkCreationPartialFailureDescription": "{count} povezav ni uspelo. Prva napaka: {error}"
   },
   "contextMenus": {
     "dirItem": {
@@ -836,10 +840,12 @@
     "discardClipboard": "Zavrzi",
     "cannotMoveToSameDirectory": "Ni mogoče premakniti elementov v isti imenik",
     "cannotPasteIntoItself": "Ni mogoče prilepiti mape v samo sebe",
+    "cannotCreateLinkInsideItself": "Povezave do mape ni mogoče ustvariti znotraj nje same",
     "noItemsInClipboard": "V odložišču ni elementov",
     "invalidClipboardOperation": "Neveljavna operacija odložišča",
     "copyFailed": "Kopiranje ni uspelo",
     "moveFailed": "Premikanje ni uspelo",
+    "createLinkFailed": "Ustvarjanje povezave ni uspelo",
     "sizeTooltip": {
       "title": "Legenda velikosti imenika",
       "exact": "Natančna velikost izračunana",
@@ -856,12 +862,24 @@
       "pasteToPane2": "Prilepi v podokno 2",
       "delete": "Izbriši",
       "openWith": "Odpri z...",
+      "properties": "Lastnosti",
+      "propertiesFailed": "Lastnosti ni bilo mogoče odpreti",
       "quickView": "Hitri pregled",
       "print": "Natisni",
       "share": "Deli prek omrežja",
       "openInNewTab": "Odpri v novem zavihku",
       "addToFavorites": "Dodaj med priljubljene",
-      "removeFromFavorites": "Odstrani iz priljubljenih"
+      "removeFromFavorites": "Odstrani iz priljubljenih",
+      "createLink": "Ustvari povezavo"
+    },
+    "linkTypes": {
+      "symlink": "Simbolična povezava",
+      "shortcut": "Bližnjica",
+      "hardlink": "Trda povezava",
+      "junction": "Junction",
+      "shortcutWindows": "Bližnjica (.lnk)",
+      "shortcutMacos": "Alias",
+      "shortcutLinux": "Namizni vnos (.desktop)"
     },
     "archive": {
       "extract": "Razširi",
@@ -901,7 +919,26 @@
         "encodingTitle": "File name encoding",
         "encodingDescription": "Some file names in this archive use a non-UTF-8 encoding. Select the correct encoding to display them properly."
       }
-    }
+    },
+    "kind": "Vrsta",
+    "links": "Povezave",
+    "linkTarget": "Cilj povezave",
+    "linkStatus": "Stanje povezave",
+    "kinds": {
+      "folder": "Mapa",
+      "file": "Datoteka",
+      "symlink": "Simbolna povezava",
+      "shortcut": "Bližnjica",
+      "junction": "Stičišče",
+      "hardlinkedFile": "Datoteka s trdo povezavo"
+    },
+    "linkStatuses": {
+      "valid": "Veljavna",
+      "broken": "Prekinjena",
+      "unknown": "Neznano",
+      "unsupported": "Ni podprto"
+    },
+    "linkMetadataPerformanceWarning": "Lahko poveča porabo pomnilnika in zmanjša zmogljivost."
   },
   "openWith": {
     "loadingPrograms": "Nalagam programe...",

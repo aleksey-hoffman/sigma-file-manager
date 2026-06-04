@@ -195,11 +195,15 @@
 
   /* CSS animations */
   .animate-fade-in {
-    animation: sigma-ui-fade-in 0.5s ease;
+    --animate-fade-in-duration: 0.5s;
+
+    animation: sigma-ui-fade-in var(--animate-fade-in-duration) ease;
   }
 
   .animate-fade-in-x2 {
-    animation: sigma-ui-fade-in 1s ease;
+    --animate-fade-in-duration: 1s;
+
+    animation: sigma-ui-fade-in var(--animate-fade-in-duration) ease;
   }
 
   .animate-sigma-ui-spin {
@@ -218,4 +222,13 @@
     opacity: 0;
     transform: translateY(8px);
   }
+}
+
+/* Skeleton fade-in support (must be unlayered to override the component's base animation rule) */
+.sigma-ui-skeleton.animate-fade-in {
+  animation: sigma-ui-fade-in var(--animate-fade-in-duration, 0.5s) ease forwards, sigma-ui-skeleton-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) var(--animate-fade-in-duration, 0.5s) infinite;
+}
+
+.sigma-ui-skeleton.animate-fade-in-x2 {
+  animation: sigma-ui-fade-in var(--animate-fade-in-duration, 1s) ease forwards, sigma-ui-skeleton-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) var(--animate-fade-in-duration, 1s) infinite;
 }

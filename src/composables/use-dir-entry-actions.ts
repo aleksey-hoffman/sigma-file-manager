@@ -25,9 +25,12 @@ import { getSharedSourceDirectory } from '@/utils/file-operation-paths';
 import { basenameFromPath } from '@/utils/source-display-name';
 import { resolveNavigableItemTarget } from '@/utils/resolve-navigable-item-target';
 import { usePermanentDeleteConfirm } from '@/composables/use-permanent-delete-confirm';
+import { usePlatformStore } from '@/stores/runtime/platform';
+import { openNativeProperties } from '@/utils/open-native-properties';
 
 export function useDirEntryActions() {
   const { t } = useI18n();
+  const platformStore = usePlatformStore();
   const router = useRouter();
   const workspacesStore = useWorkspacesStore();
   const userStatsStore = useUserStatsStore();
@@ -372,6 +375,25 @@ export function useDirEntryActions() {
     });
   }
 
+  async function openProperties(entries: DirEntry[]) {
+    if (!platformStore.isWindows || entries.length === 0) {
+      return;
+    }
+
+    const result = await openNativeProperties(entries);
+
+    if (!result.success) {
+      toast.custom(markRaw(ToastStatic), {
+        componentProps: {
+          data: {
+            title: t('fileBrowser.actions.propertiesFailed'),
+            description: result.error || '',
+          },
+        },
+      });
+    }
+  }
+
   function handleContextMenuAction(action: ContextMenuAction, entries: DirEntry[]) {
     if (entries.length === 0) return;
 
@@ -418,6 +440,9 @@ export function useDirEntryActions() {
         break;
       case 'share':
         startShare(entries);
+        break;
+      case 'properties':
+        void openProperties(entries);
         break;
       case 'rename':
       case 'open-with':

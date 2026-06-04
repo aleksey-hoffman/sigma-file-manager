@@ -80,6 +80,14 @@ const canPasteToPane2 = computed(() => {
   return clipboardStore.canPasteTo(props.pane2Path);
 });
 
+const toolbarTitle = computed(() => {
+  if (clipboardStore.isCopyOperation) {
+    return t('fileBrowser.preparedForCopying');
+  }
+
+  return t('fileBrowser.preparedForMoving');
+});
+
 const filteredClipboardItems = computed(() => {
   if (!clipboardItemsFilterQuery.value) {
     return clipboardStore.clipboardItems;
@@ -176,7 +184,7 @@ function openCollapsedPopover() {
               </div>
               <div class="clipboard-toolbar__text">
                 <span class="clipboard-toolbar__title">
-                  {{ clipboardStore.isCopyOperation ? t('fileBrowser.preparedForCopying') : t('fileBrowser.preparedForMoving') }}
+                  {{ toolbarTitle }}
                 </span>
                 <span class="clipboard-toolbar__count-tag">
                   {{ t('fileBrowser.itemsPrepared', { count: clipboardStore.itemCount }) }}
