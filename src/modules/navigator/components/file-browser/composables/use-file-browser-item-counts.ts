@@ -19,6 +19,7 @@ interface UseFileBrowserItemCountsOptions {
 const VISIBLE_ITEM_COUNT_REQUEST_DELAY_MS = 50;
 const DIRECTORY_ITEM_COUNT_REQUEST_DELAY_MS = 250;
 const DIRECTORY_ITEM_COUNT_BATCH_SIZE = 300;
+const SORT_ITEM_COUNT_REVISION_DEBOUNCE_MS = 250;
 
 export function useFileBrowserItemCounts(options: UseFileBrowserItemCountsOptions): void {
   const userSettingsStore = useUserSettingsStore();
@@ -31,6 +32,10 @@ export function useFileBrowserItemCounts(options: UseFileBrowserItemCountsOption
     return options.layout() === 'grid'
       || navigatorSettings.listColumnVisibility.items
       || navigatorSettings.listSortColumn === 'items';
+  });
+  const shouldHydrateDirectoryItemCountsForSort = computed(() => {
+    return options.layout() === 'list'
+      && userSettingsStore.userSettings.navigator.listSortColumn === 'items';
   });
 
   if (!options.enabled) {
@@ -71,9 +76,10 @@ export function useFileBrowserItemCounts(options: UseFileBrowserItemCountsOption
     [
       options.directoryEntries,
       shouldHydrateItemCounts,
+      shouldHydrateDirectoryItemCountsForSort,
       options.currentPath,
     ],
-    ([entries, shouldHydrate], _previousValue, onCleanup) => {
+    ([entries, shouldHydrate, shouldHydrateForSort], _previousValue, onCleanup) => {
       const generation = ++hydrationGeneration;
 
       if (!shouldHydrate || !options.currentPath.value || entries.length === 0) {
@@ -81,6 +87,37 @@ export function useFileBrowserItemCounts(options: UseFileBrowserItemCountsOption
       }
 
       let isCancelled = false;
+      let sortRevisionTimer: ReturnType<typeof setTimeout> | null = null;
+
+      function scheduleSortRevision() {
+        if (!shouldHydrateForSort || sortRevisionTimer) {
+          return;
+        }
+
+        sortRevisionTimer = setTimeout(() => {
+          sortRevisionTimer = null;
+
+          if (!isCancelled && generation === hydrationGeneration) {
+            itemCountsStore.refreshSortRevision();
+          }
+        }, SORT_ITEM_COUNT_REVISION_DEBOUNCE_MS);
+      }
+
+      function flushSortRevision() {
+        if (!shouldHydrateForSort) {
+          return;
+        }
+
+        if (sortRevisionTimer) {
+          clearTimeout(sortRevisionTimer);
+          sortRevisionTimer = null;
+        }
+
+        if (!isCancelled && generation === hydrationGeneration) {
+          itemCountsStore.refreshSortRevision();
+        }
+      }
+
       const timer = setTimeout(async () => {
         const paths = entries
           .filter(entry => entry.is_dir)
@@ -100,16 +137,28 @@ export function useFileBrowserItemCounts(options: UseFileBrowserItemCountsOption
             return;
           }
 
-          await itemCountsStore.requestItemCountsBatch(
+          const didUpdateItemCounts = await itemCountsStore.requestItemCountsBatch(
             pathsNeedingItemCounts.slice(startIndex, startIndex + DIRECTORY_ITEM_COUNT_BATCH_SIZE),
           );
+
+          if (didUpdateItemCounts) {
+            scheduleSortRevision();
+          }
+
           await nextTick();
         }
+
+        flushSortRevision();
       }, DIRECTORY_ITEM_COUNT_REQUEST_DELAY_MS);
 
       onCleanup(() => {
         isCancelled = true;
         clearTimeout(timer);
+
+        if (sortRevisionTimer) {
+          clearTimeout(sortRevisionTimer);
+          sortRevisionTimer = null;
+        }
       });
     },
     { immediate: true },

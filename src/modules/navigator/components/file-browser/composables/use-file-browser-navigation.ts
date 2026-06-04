@@ -537,6 +537,19 @@ export function useFileBrowserNavigation(
     }
   });
 
+  watch(
+    () => userSettingsStore.userSettings.navigator.listSortColumn,
+    (column, previousColumn) => {
+      if (!currentPath.value || !dirContents.value) {
+        return;
+      }
+
+      if (column === 'items' && previousColumn !== 'items') {
+        void silentRefresh();
+      }
+    },
+  );
+
   return {
     currentPath,
     dirContents,

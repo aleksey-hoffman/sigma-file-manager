@@ -8,6 +8,7 @@ import {
 import type { DirEntry } from '@/types/dir-entry';
 import type { ListSortColumn, ListSortDirection } from '@/types/user-settings';
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
+import { useItemCountsStore } from '@/stores/runtime/item-counts';
 import { useLinkMetadataStore } from '@/stores/runtime/link-metadata';
 import { useUserStatsStore } from '@/stores/storage/user-stats';
 import {
@@ -32,6 +33,7 @@ export function useFileBrowserEntries(
   applySort: ComputedRef<boolean>,
 ) {
   const dirSizesStore = useDirSizesStore();
+  const itemCountsStore = useItemCountsStore();
   const linkMetadataStore = useLinkMetadataStore();
   const userStatsStore = useUserStatsStore();
   const quickSearchCache = shallowRef(createFileBrowserQuickSearchCache());
@@ -64,16 +66,28 @@ export function useFileBrowserEntries(
 
     if (applySort.value) {
       const column = sortColumn.value ?? 'name';
+      let entriesForSort = items;
       const sortContext: FileBrowserEntrySortTagContext = {
         tags: userStatsStore.tags,
         taggedItems: userStatsStore.taggedItems,
       };
 
+      if (column === 'items') {
+        void itemCountsStore.sortRevision.value;
+        entriesForSort = items.map(entry => itemCountsStore.mergeEntry(entry));
+      }
+
       if (isLinkMetadataSortColumn(column) && linkMetadataStore.sortRevision >= 0) {
         sortContext.getLinkSortFields = entry => linkMetadataStore.getSortFields(entry);
       }
 
-      items = sortFileBrowserEntries(items, column, sortDirection.value, dirSizesStore, sortContext);
+      items = sortFileBrowserEntries(
+        entriesForSort,
+        column,
+        sortDirection.value,
+        dirSizesStore,
+        sortContext,
+      );
     }
 
     return items;

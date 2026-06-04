@@ -12,6 +12,7 @@ import { useQuickViewStore } from '@/stores/runtime/quick-view';
 import { useGlobalSearchStore } from '@/stores/runtime/global-search';
 import { useClipboardStore } from '@/stores/runtime/clipboard';
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
+import { useItemCountsStore } from '@/stores/runtime/item-counts';
 import { useUserStatsStore } from '@/stores/storage/user-stats';
 import { useWorkspacesStore } from '@/stores/storage/workspaces';
 import {
@@ -179,6 +180,7 @@ function setupExternalDataSource(options: UseFileBrowserOptions): DataSource {
   const globalSearchStore = useGlobalSearchStore();
   const userSettingsStore = useUserSettingsStore();
   const dirSizesStore = useDirSizesStore();
+  const itemCountsStore = useItemCountsStore();
   const userStatsStore = useUserStatsStore();
   const getEntries = options.externalEntries ?? (() => []);
   const getBasePath = options.basePath ?? (() => '');
@@ -194,7 +196,14 @@ function setupExternalDataSource(options: UseFileBrowserOptions): DataSource {
     }
 
     const column = listSortColumn.value ?? 'name';
-    return sortFileBrowserEntries(rawEntries, column, listSortDirection.value, dirSizesStore, {
+    let entriesForSort = rawEntries;
+
+    if (column === 'items') {
+      void itemCountsStore.sortRevision.value;
+      entriesForSort = rawEntries.map(entry => itemCountsStore.mergeEntry(entry));
+    }
+
+    return sortFileBrowserEntries(entriesForSort, column, listSortDirection.value, dirSizesStore, {
       tags: userStatsStore.tags,
       taggedItems: userStatsStore.taggedItems,
     });

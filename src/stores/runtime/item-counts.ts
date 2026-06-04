@@ -22,6 +22,7 @@ const ITEM_COUNT_LOADING_RETRY_MS = 15000;
 export const useItemCountsStore = defineStore('item-counts', () => {
   const countsByPath = new Map<string, ItemCountCacheEntry>();
   const displayRevision = ref(0);
+  const sortRevision = ref(0);
   let requestSequence = 0;
 
   function getItemCount(path: string): number | undefined {
@@ -169,6 +170,10 @@ export const useItemCountsStore = defineStore('item-counts', () => {
     displayRevision.value++;
   }
 
+  function refreshSortRevision(): void {
+    sortRevision.value++;
+  }
+
   function trimCache(): void {
     while (countsByPath.size > MAX_ITEM_COUNT_CACHE_ENTRIES) {
       const oldestPath = countsByPath.keys().next().value;
@@ -187,6 +192,8 @@ export const useItemCountsStore = defineStore('item-counts', () => {
 
   return {
     displayRevision,
+    sortRevision,
+    refreshSortRevision,
     getItemCount,
     isLoading,
     hasSufficientItemCount,
