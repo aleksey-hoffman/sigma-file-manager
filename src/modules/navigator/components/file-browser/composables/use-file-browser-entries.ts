@@ -73,7 +73,7 @@ export function useFileBrowserEntries(
       };
 
       if (column === 'items') {
-        void itemCountsStore.sortRevision.value;
+        void itemCountsStore.sortRevision;
         entriesForSort = items.map(entry => itemCountsStore.mergeEntry(entry));
       }
 

@@ -199,7 +199,7 @@ function setupExternalDataSource(options: UseFileBrowserOptions): DataSource {
     let entriesForSort = rawEntries;
 
     if (column === 'items') {
-      void itemCountsStore.sortRevision.value;
+      void itemCountsStore.sortRevision;
       entriesForSort = rawEntries.map(entry => itemCountsStore.mergeEntry(entry));
     }
 
