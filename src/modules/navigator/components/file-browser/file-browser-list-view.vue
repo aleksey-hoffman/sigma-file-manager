@@ -286,7 +286,7 @@ function handleEntryKeydown(event: KeyboardEvent, entry: DirEntry): void {
     return;
   }
 
-  if (event.key === 'Enter' && event.altKey) {
+  if (event.key === 'Enter' && event.altKey && platformStore.isWindows) {
     event.preventDefault();
     event.stopPropagation();
 

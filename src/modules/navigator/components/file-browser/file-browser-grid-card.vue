@@ -18,6 +18,7 @@ import { useItemCountsStore } from '@/stores/runtime/item-counts';
 import { Skeleton } from '@/components/ui/skeleton';
 import FileBrowserEntryIcon from './file-browser-entry-icon.vue';
 import { useFileBrowserContext } from './composables/use-file-browser-context';
+import { usePlatformStore } from '@/stores/runtime/platform';
 import { getImageSrc } from './utils';
 
 const DEFAULT_GRID_THUMBNAIL_SIZE = {
@@ -31,6 +32,7 @@ const props = defineProps<{
 }>();
 
 const ctx = useFileBrowserContext();
+const platformStore = usePlatformStore();
 const clipboardStore = useClipboardStore();
 const dirSizesStore = useDirSizesStore();
 const itemCountsStore = useItemCountsStore();
@@ -172,7 +174,7 @@ function handleEntryKeydown(event: KeyboardEvent): void {
     return;
   }
 
-  if (event.key === 'Enter' && event.altKey) {
+  if (event.key === 'Enter' && event.altKey && platformStore.isWindows) {
     event.preventDefault();
     event.stopPropagation();
 
