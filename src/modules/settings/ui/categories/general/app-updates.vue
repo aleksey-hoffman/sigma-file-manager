@@ -14,12 +14,14 @@ import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
+import { usePlatformStore } from '@/stores/runtime/platform';
 import { useAppUpdater } from '@/modules/app-updater';
 import externalLinks from '@/data/external-links';
 import { openUrl } from '@tauri-apps/plugin-opener';
 
 const { t } = useI18n();
 const userSettingsStore = useUserSettingsStore();
+const platformStore = usePlatformStore();
 const {
   isChecking,
   updateAvailable,
@@ -80,6 +82,7 @@ async function handleUpdateAcquireAction() {
 
 <template>
   <SettingsItem
+    v-if="!platformStore.appUpdatesManagedExternally"
     :title="t('appUpdates')"
     :icon="ArrowUpCircleIcon"
   >

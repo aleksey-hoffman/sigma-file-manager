@@ -129,6 +129,36 @@ describe('useAppUpdater external update management', () => {
     expect(userSettingsSetMock).not.toHaveBeenCalled();
   });
 
+  it('does not auto-check or show toast when automatic updates are disabled', async () => {
+    userSettingsStoreState.userSettings.appUpdates.autoCheck = false;
+
+    const { useAppUpdater } = await import('@/modules/app-updater/composables/use-app-updater');
+    const { initAutoCheck } = useAppUpdater();
+
+    await initAutoCheck();
+
+    expect(invokeMock).not.toHaveBeenCalled();
+    expect(toastCustomMock).not.toHaveBeenCalled();
+  });
+
+  it('dismisses update toast when automatic updates are turned off', async () => {
+    invokeMock.mockResolvedValue({
+      updateAvailable: true,
+      latestVersion: '2.1.0',
+      releaseUrl: 'https://example.com/release',
+      installerDownloadUrl: 'https://example.com/installer.exe',
+      installerFileName: 'Sigma-File-Manager-2.1.0-windows-setup.exe',
+    });
+
+    const { useAppUpdater } = await import('@/modules/app-updater/composables/use-app-updater');
+    const { checkForUpdates, onAutoCheckSettingChanged } = useAppUpdater();
+
+    await checkForUpdates();
+    await onAutoCheckSettingChanged(false);
+
+    expect(toastDismissMock).toHaveBeenCalledWith('app-update-2.1.0');
+  });
+
   it('blocks installer downloads for externally managed builds', async () => {
     platformStoreState.appUpdatesManagedExternally = true;
 
