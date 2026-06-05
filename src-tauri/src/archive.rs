@@ -16,6 +16,7 @@ use tokio::sync::mpsc::UnboundedSender;
 use walkdir::WalkDir;
 use zip::write::SimpleFileOptions;
 use zip::CompressionMethod;
+use zip::result::ZipError;
 use zip::{ZipArchive, ZipWriter};
 
 use crate::utils::{normalize_path, unique_path_with_index};
@@ -57,6 +58,13 @@ pub struct ArchiveCheckResult {
     pub encoding_undetermined: bool,
 }
 
+fn is_zip_password_required(error: &ZipError) -> bool {
+    matches!(
+        error,
+        ZipError::UnsupportedArchive(ZipError::PASSWORD_REQUIRED)
+    )
+}
+
 #[tauri::command]
 pub fn check_archive(archive_path: String) -> Result<ArchiveCheckResult, String> {
     let path = PathBuf::from(normalize_path(&archive_path));
@@ -81,14 +89,13 @@ pub fn check_archive(archive_path: String) -> Result<ArchiveCheckResult, String>
                 }
                 e
             }
-            Err(e) => {
-                let err_string = e.to_string();
-                if err_string.contains("Password required") {
+            Err(error) => {
+                if is_zip_password_required(&error) {
                     encrypted = true;
                     continue;
                 }
 
-                return Err(format!("Failed to read entry: {}", e));
+                return Err(format!("Failed to read entry: {}", error));
             }
         };
 
