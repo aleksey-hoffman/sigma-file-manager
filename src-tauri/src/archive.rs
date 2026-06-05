@@ -84,10 +84,8 @@ pub fn check_archive(archive_path: String) -> Result<ArchiveCheckResult, String>
             Err(e) => {
                 let err_string = e.to_string();
                 if err_string.contains("Password required") {
-                    encrypted = true; 
-                    encoding_undetermined = true;
-                    
-                    continue; 
+                    encrypted = true;
+                    continue;
                 }
 
                 return Err(format!("Failed to read entry: {}", e));
