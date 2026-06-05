@@ -195,28 +195,28 @@ pub fn is_safe_archive_relative_path(path: &Path) -> bool {
         .all(|component| matches!(component, Component::Normal(_) | Component::CurDir))
 }
 
+fn decode_zip_entry_path_str(raw: &[u8], encoding: &str) -> Result<String, String> {
+    if raw.contains(&0) {
+        return Err("Zip entry name contains null bytes".to_string());
+    }
+
+    let enc = Encoding::for_label(encoding.as_bytes())
+        .ok_or_else(|| format!("Unknown encoding: {}", encoding))?;
+    let (decoded, _encoding, _had_errors) = enc.decode(raw);
+    let cleaned = decoded
+        .trim_start_matches(|c| c == '/' || c == '\\')
+        .trim_start_matches("./");
+
+    if cleaned.is_empty() {
+        return Err("Zip entry with empty path".to_string());
+    }
+
+    Ok(cleaned.into_owned())
+}
+
 fn get_entry_path<R: Read + ?Sized>(file: &zip::read::ZipFile<'_, R>, encoding: Option<&str>) -> Result<PathBuf, String> {
     if let Some(enc_label) = encoding {
-        let raw = file.name_raw();
-
-        if raw.contains(&0) {
-            return Err("Zip entry name contains null bytes".to_string());
-        }
-
-        let enc = Encoding::for_label(enc_label.as_bytes())
-            .ok_or_else(|| format!("Unknown encoding: {}", enc_label))?;
-        let (decoded, _encoding, _had_errors) = enc.decode(raw);
-        let path_str = decoded.as_ref();
-
-        let cleaned = path_str
-            .trim_start_matches(|c| c == '/' || c == '\\')
-            .trim_start_matches("./");
-
-        if cleaned.is_empty() {
-            return Err("Zip entry with empty path".to_string());
-        }
-
-        let path = PathBuf::from(cleaned);
+        let path = PathBuf::from(decode_zip_entry_path_str(file.name_raw(), enc_label)?);
 
         if !is_safe_archive_relative_path(&path) {
             return Err("Zip contains unsafe path entry".to_string());
@@ -240,10 +240,10 @@ pub fn extract_zip_to_directory(
 }
 
 fn extract_entry_name<R: Read + ?Sized>(file: &zip::read::ZipFile<'_, R>, encoding: Option<&str>) -> String {
-    if encoding.is_some() {
-        String::from_utf8_lossy(file.name_raw()).to_string()
-    } else {
-        file.name().to_string()
+    match encoding {
+        Some(encoding_label) => decode_zip_entry_path_str(file.name_raw(), encoding_label)
+            .unwrap_or_else(|_| file.name().to_string()),
+        None => file.name().to_string(),
     }
 }
 
