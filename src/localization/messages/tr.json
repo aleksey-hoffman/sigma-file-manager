@@ -867,27 +867,27 @@
       "operationErrorTitle": "Arşiv işlemi başarısız",
       "errors": {
         "destinationInsideSelectedFolder": "Hedef arşiv seçilen bir klasörün içinde",
-        "wrongPassword": "Incorrect password. The archive could not be decrypted.",
-        "encodingError": "Failed to decode file names with the selected encoding."
+        "wrongPassword": "Yanlış parola. Arşiv şifresi çözülemedi.",
+        "encodingError": "Seçilen kodlama ile dosya adları çözülemedi."
       },
       "optionsDialog": {
-        "title": "Archive extraction options",
-        "description": "Configure extraction settings for password-protected or non-UTF-8 encoded archives",
-        "passwordLabel": "Password (leave empty if not encrypted)",
-        "passwordPlaceholder": "Enter archive password",
-        "encodingLabel": "File name encoding",
-        "encodingSystemDefault": "System Default",
+        "title": "Arşiv çıkarma seçenekleri",
+        "description": "Parola korumalı veya UTF-8 dışı kodlamalı arşivler için çıkarma ayarlarını yapılandırın",
+        "passwordTitle": "Arşiv parolası gerekli",
+        "passwordDescription": "Bu arşiv şifrelenmiş. İçeriği çıkarmak için parolayı girin.",
+        "encodingTitle": "Dosya adı kodlaması",
+        "encodingDescription": "Bu arşivdeki bazı dosya adları UTF-8 olmayan bir kodlama kullanıyor. Doğru kodlamayı seçin.",
+        "passwordLabel": "Parola (şifrelenmemişse boş bırakın)",
+        "passwordPlaceholder": "Arşiv parolasını girin",
+        "encodingLabel": "Dosya adı kodlaması",
+        "encodingSystemDefault": "Sistem varsayılanı",
         "encodingGroup": {
-          "eastAsian": "East Asian",
-          "southeastAsian": "Southeast Asian",
-          "middleEast": "Middle East",
-          "european": "European"
+          "eastAsian": "Doğu Asya",
+          "southeastAsian": "Güneydoğu Asya",
+          "middleEast": "Orta Doğu",
+          "european": "Avrupa"
         },
-        "extract": "Extract",
-        "passwordTitle": "Archive password required",
-        "passwordDescription": "This archive is encrypted. Enter the password to extract its contents.",
-        "encodingTitle": "File name encoding",
-        "encodingDescription": "Some file names in this archive use a non-UTF-8 encoding. Select the correct encoding to display them properly."
+        "extract": "Çıkar"
       }
     },
     "kind": "Tür",

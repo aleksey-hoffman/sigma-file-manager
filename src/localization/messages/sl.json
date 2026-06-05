@@ -897,27 +897,27 @@
       "operationErrorTitle": "Arhivska operacija ni uspela",
       "errors": {
         "destinationInsideSelectedFolder": "Ciljni arhiv je znotraj izbrane mape",
-        "wrongPassword": "Incorrect password. The archive could not be decrypted.",
-        "encodingError": "Failed to decode file names with the selected encoding."
+        "wrongPassword": "Napačno geslo. Arhiva ni bilo mogoče dešifrirati.",
+        "encodingError": "Imen datotek ni bilo mogoče dekodirati z izbranim kodiranjem."
       },
       "optionsDialog": {
-        "title": "Archive extraction options",
-        "description": "Configure extraction settings for password-protected or non-UTF-8 encoded archives",
-        "passwordLabel": "Password (leave empty if not encrypted)",
-        "passwordPlaceholder": "Enter archive password",
-        "encodingLabel": "File name encoding",
-        "encodingSystemDefault": "System Default",
+        "title": "Možnosti razširjanja arhiva",
+        "description": "Nastavite razširjanje za arhive, zaščitene z geslom ali kodirane ne v UTF-8",
+        "passwordTitle": "Potrebno je geslo arhiva",
+        "passwordDescription": "Ta arhiv je šifriran. Vnesite geslo za razširitev vsebine.",
+        "encodingTitle": "Kodiranje imen datotek",
+        "encodingDescription": "Nekatera imena datotek v tem arhivu uporabljajo kodiranje, ki ni UTF-8. Izberite pravilno kodiranje.",
+        "passwordLabel": "Geslo (pustite prazno, če ni šifrirano)",
+        "passwordPlaceholder": "Vnesite geslo arhiva",
+        "encodingLabel": "Kodiranje imen datotek",
+        "encodingSystemDefault": "Sistemsko privzeto",
         "encodingGroup": {
-          "eastAsian": "East Asian",
-          "southeastAsian": "Southeast Asian",
-          "middleEast": "Middle East",
-          "european": "European"
+          "eastAsian": "Vzhodna Azija",
+          "southeastAsian": "Jugovzhodna Azija",
+          "middleEast": "Bližnji vzhod",
+          "european": "Evropa"
         },
-        "extract": "Extract",
-        "passwordTitle": "Archive password required",
-        "passwordDescription": "This archive is encrypted. Enter the password to extract its contents.",
-        "encodingTitle": "File name encoding",
-        "encodingDescription": "Some file names in this archive use a non-UTF-8 encoding. Select the correct encoding to display them properly."
+        "extract": "Razširi"
       }
     },
     "kind": "Vrsta",

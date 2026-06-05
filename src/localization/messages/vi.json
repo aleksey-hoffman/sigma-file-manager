@@ -867,27 +867,27 @@
       "operationErrorTitle": "Thao tác lưu trữ thất bại",
       "errors": {
         "destinationInsideSelectedFolder": "Tệp lưu trữ đích nằm trong một thư mục đã chọn",
-        "wrongPassword": "Incorrect password. The archive could not be decrypted.",
-        "encodingError": "Failed to decode file names with the selected encoding."
+        "wrongPassword": "Mật khẩu không đúng. Không thể giải mã tệp nén.",
+        "encodingError": "Không thể giải mã tên tệp bằng bảng mã đã chọn."
       },
       "optionsDialog": {
-        "title": "Archive extraction options",
-        "description": "Configure extraction settings for password-protected or non-UTF-8 encoded archives",
-        "passwordLabel": "Password (leave empty if not encrypted)",
-        "passwordPlaceholder": "Enter archive password",
-        "encodingLabel": "File name encoding",
-        "encodingSystemDefault": "System Default",
+        "title": "Tùy chọn giải nén tệp nén",
+        "description": "Cấu hình giải nén cho tệp nén được bảo vệ bằng mật khẩu hoặc không dùng UTF-8",
+        "passwordTitle": "Yêu cầu mật khẩu tệp nén",
+        "passwordDescription": "Tệp nén này đã được mã hóa. Nhập mật khẩu để giải nén nội dung.",
+        "encodingTitle": "Bảng mã tên tệp",
+        "encodingDescription": "Một số tên tệp trong tệp nén này dùng bảng mã khác UTF-8. Hãy chọn bảng mã đúng.",
+        "passwordLabel": "Mật khẩu (để trống nếu không mã hóa)",
+        "passwordPlaceholder": "Nhập mật khẩu tệp nén",
+        "encodingLabel": "Bảng mã tên tệp",
+        "encodingSystemDefault": "Mặc định hệ thống",
         "encodingGroup": {
-          "eastAsian": "East Asian",
-          "southeastAsian": "Southeast Asian",
-          "middleEast": "Middle East",
-          "european": "European"
+          "eastAsian": "Đông Á",
+          "southeastAsian": "Đông Nam Á",
+          "middleEast": "Trung Đông",
+          "european": "Châu Âu"
         },
-        "extract": "Extract",
-        "passwordTitle": "Archive password required",
-        "passwordDescription": "This archive is encrypted. Enter the password to extract its contents.",
-        "encodingTitle": "File name encoding",
-        "encodingDescription": "Some file names in this archive use a non-UTF-8 encoding. Select the correct encoding to display them properly."
+        "extract": "Giải nén"
       }
     },
     "kind": "Loại",

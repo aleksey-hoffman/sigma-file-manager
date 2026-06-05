@@ -867,27 +867,27 @@
       "operationErrorTitle": "アーカイブ操作に失敗しました",
       "errors": {
         "destinationInsideSelectedFolder": "出力先のアーカイブが選択したフォルダー内にあります",
-        "wrongPassword": "Incorrect password. The archive could not be decrypted.",
-        "encodingError": "Failed to decode file names with the selected encoding."
+        "wrongPassword": "パスワードが正しくありません。アーカイブを復号できませんでした。",
+        "encodingError": "選択したエンコーディングでファイル名をデコードできませんでした。"
       },
       "optionsDialog": {
-        "title": "Archive extraction options",
-        "description": "Configure extraction settings for password-protected or non-UTF-8 encoded archives",
-        "passwordLabel": "Password (leave empty if not encrypted)",
-        "passwordPlaceholder": "Enter archive password",
-        "encodingLabel": "File name encoding",
-        "encodingSystemDefault": "System Default",
+        "title": "アーカイブ展開オプション",
+        "description": "パスワード保護または非 UTF-8 エンコードのアーカイブの展開設定",
+        "passwordTitle": "アーカイブのパスワードが必要です",
+        "passwordDescription": "このアーカイブは暗号化されています。展開するにはパスワードを入力してください。",
+        "encodingTitle": "ファイル名のエンコーディング",
+        "encodingDescription": "このアーカイブの一部のファイル名は非 UTF-8 エンコーディングを使用しています。正しいエンコーディングを選択してください。",
+        "passwordLabel": "パスワード（暗号化されていない場合は空欄）",
+        "passwordPlaceholder": "アーカイブのパスワードを入力",
+        "encodingLabel": "ファイル名のエンコーディング",
+        "encodingSystemDefault": "システム既定",
         "encodingGroup": {
-          "eastAsian": "East Asian",
-          "southeastAsian": "Southeast Asian",
-          "middleEast": "Middle East",
-          "european": "European"
+          "eastAsian": "東アジア",
+          "southeastAsian": "東南アジア",
+          "middleEast": "中東",
+          "european": "ヨーロッパ"
         },
-        "extract": "Extract",
-        "passwordTitle": "Archive password required",
-        "passwordDescription": "This archive is encrypted. Enter the password to extract its contents.",
-        "encodingTitle": "File name encoding",
-        "encodingDescription": "Some file names in this archive use a non-UTF-8 encoding. Select the correct encoding to display them properly."
+        "extract": "展開"
       }
     },
     "kind": "種類",

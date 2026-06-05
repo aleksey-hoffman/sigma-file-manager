@@ -866,27 +866,27 @@
       "operationErrorTitle": "عملیات آرشیو ناموفق بود",
       "errors": {
         "destinationInsideSelectedFolder": "آرشیو مقصد داخل یکی از پوشه‌های انتخاب‌شده است",
-        "wrongPassword": "Incorrect password. The archive could not be decrypted.",
-        "encodingError": "Failed to decode file names with the selected encoding."
+        "wrongPassword": "رمز عبور نادرست است. آرشیو رمزگشایی نشد.",
+        "encodingError": "نام فایل‌ها با کدگذاری انتخاب‌شده رمزگشایی نشد."
       },
       "optionsDialog": {
-        "title": "Archive extraction options",
-        "description": "Configure extraction settings for password-protected or non-UTF-8 encoded archives",
-        "passwordLabel": "Password (leave empty if not encrypted)",
-        "passwordPlaceholder": "Enter archive password",
-        "encodingLabel": "File name encoding",
-        "encodingSystemDefault": "System Default",
+        "title": "گزینه‌های استخراج آرشیو",
+        "description": "تنظیمات استخراج را برای آرشیوهای محافظت‌شده با رمز عبور یا کدگذاری غیر UTF-8 پیکربندی کنید",
+        "passwordTitle": "رمز عبور آرشیو لازم است",
+        "passwordDescription": "این آرشیو رمزگذاری شده است. برای استخراج محتوا رمز عبور را وارد کنید.",
+        "encodingTitle": "کدگذاری نام فایل",
+        "encodingDescription": "برخی نام‌های فایل در این آرشیو از کدگذاری غیر UTF-8 استفاده می‌کنند. کدگذاری صحیح را انتخاب کنید.",
+        "passwordLabel": "رمز عبور (در صورت رمزگذاری نشدن خالی بگذارید)",
+        "passwordPlaceholder": "رمز عبور آرشیو را وارد کنید",
+        "encodingLabel": "کدگذاری نام فایل",
+        "encodingSystemDefault": "پیش‌فرض سیستم",
         "encodingGroup": {
-          "eastAsian": "East Asian",
-          "southeastAsian": "Southeast Asian",
-          "middleEast": "Middle East",
-          "european": "European"
+          "eastAsian": "شرق آسیا",
+          "southeastAsian": "جنوب شرق آسیا",
+          "middleEast": "خاورمیانه",
+          "european": "اروپا"
         },
-        "extract": "Extract",
-        "passwordTitle": "Archive password required",
-        "passwordDescription": "This archive is encrypted. Enter the password to extract its contents.",
-        "encodingTitle": "File name encoding",
-        "encodingDescription": "Some file names in this archive use a non-UTF-8 encoding. Select the correct encoding to display them properly."
+        "extract": "استخراج"
       }
     },
     "kind": "نوع",

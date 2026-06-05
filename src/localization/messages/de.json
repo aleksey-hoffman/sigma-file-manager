@@ -867,27 +867,27 @@
       "operationErrorTitle": "Archivvorgang fehlgeschlagen",
       "errors": {
         "destinationInsideSelectedFolder": "Das Ziel-Archiv liegt in einem ausgewählten Ordner",
-        "wrongPassword": "Incorrect password. The archive could not be decrypted.",
-        "encodingError": "Failed to decode file names with the selected encoding."
+        "wrongPassword": "Falsches Passwort. Das Archiv konnte nicht entschlüsselt werden.",
+        "encodingError": "Dateinamen konnten mit der gewählten Kodierung nicht dekodiert werden."
       },
       "optionsDialog": {
-        "title": "Archive extraction options",
-        "description": "Configure extraction settings for password-protected or non-UTF-8 encoded archives",
-        "passwordLabel": "Password (leave empty if not encrypted)",
-        "passwordPlaceholder": "Enter archive password",
-        "encodingLabel": "File name encoding",
-        "encodingSystemDefault": "System Default",
+        "title": "Archiv-Entpackoptionen",
+        "description": "Entpack-Einstellungen für passwortgeschützte oder nicht-UTF-8-kodierte Archive konfigurieren",
+        "passwordTitle": "Archivpasswort erforderlich",
+        "passwordDescription": "Dieses Archiv ist verschlüsselt. Geben Sie das Passwort ein, um den Inhalt zu entpacken.",
+        "encodingTitle": "Dateinamen-Kodierung",
+        "encodingDescription": "Einige Dateinamen in diesem Archiv verwenden eine Nicht-UTF-8-Kodierung. Wählen Sie die richtige Kodierung aus.",
+        "passwordLabel": "Passwort (leer lassen, wenn nicht verschlüsselt)",
+        "passwordPlaceholder": "Archivpasswort eingeben",
+        "encodingLabel": "Dateinamen-Kodierung",
+        "encodingSystemDefault": "Systemstandard",
         "encodingGroup": {
-          "eastAsian": "East Asian",
-          "southeastAsian": "Southeast Asian",
-          "middleEast": "Middle East",
-          "european": "European"
+          "eastAsian": "Ostasien",
+          "southeastAsian": "Südostasien",
+          "middleEast": "Naher Osten",
+          "european": "Europa"
         },
-        "extract": "Extract",
-        "passwordTitle": "Archive password required",
-        "passwordDescription": "This archive is encrypted. Enter the password to extract its contents.",
-        "encodingTitle": "File name encoding",
-        "encodingDescription": "Some file names in this archive use a non-UTF-8 encoding. Select the correct encoding to display them properly."
+        "extract": "Entpacken"
       }
     },
     "kind": "Art",
