@@ -4,7 +4,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import {
   Dialog,
@@ -59,6 +59,13 @@ const dialogDescription = computed(() => {
 
 const password = ref('');
 const encoding = ref('__system_default__');
+
+watch(() => props.open, (open) => {
+  if (open) {
+    password.value = '';
+    encoding.value = '__system_default__';
+  }
+});
 
 const encodingOptions = [
   { value: '__system_default__', label: t('fileBrowser.archive.optionsDialog.encodingSystemDefault') },
