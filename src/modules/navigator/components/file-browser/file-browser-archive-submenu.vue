@@ -207,8 +207,18 @@ async function resolveArchiveOptions(archivePath: string): Promise<{ password?: 
       encoding: options.encoding,
     };
   }
-  catch {
-    return {};
+  catch (error) {
+    const rawMessage = error instanceof Error ? error.message : String(error);
+    toast.custom(markRaw(ToastStatic), {
+      componentProps: {
+        data: {
+          title: t('fileBrowser.archive.operationErrorTitle'),
+          description: translateArchiveErrorMessage(rawMessage),
+        },
+      },
+      duration: 5000,
+    });
+    return null;
   }
 }
 
