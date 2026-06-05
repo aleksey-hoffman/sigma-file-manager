@@ -211,7 +211,7 @@ fn decode_zip_entry_path_str(raw: &[u8], encoding: &str) -> Result<String, Strin
         return Err("Zip entry with empty path".to_string());
     }
 
-    Ok(cleaned.into_owned())
+    Ok(cleaned.to_string())
 }
 
 fn get_entry_path<R: Read + ?Sized>(file: &zip::read::ZipFile<'_, R>, encoding: Option<&str>) -> Result<PathBuf, String> {
@@ -739,6 +739,7 @@ pub fn cancel_archive_job(job_id: String) -> bool {
 mod tests {
     use super::*;
     use std::io::Write;
+    use zip::unstable::write::FileOptionsExt;
 
     #[test]
     fn rejects_zip_slip_path_components() {
@@ -802,5 +803,63 @@ mod tests {
 
         let result = extract_zip_to_directory(&zip_path, &extract_dir, None, None);
         assert_eq!(result.unwrap_err(), ARCHIVE_ERROR_OUTPUT_ALREADY_EXISTS);
+    }
+
+    #[test]
+    fn check_archive_reports_clean_utf8_zip() {
+        let temp = tempfile::tempdir().unwrap();
+        let zip_path = temp.path().join("clean.zip");
+        let mut zip_writer = ZipWriter::new(fs::File::create(&zip_path).unwrap());
+        let options = zip_file_options();
+        zip_writer.start_file("hello.txt", options).unwrap();
+        zip_writer.write_all(b"content").unwrap();
+        zip_writer.finish().unwrap();
+
+        let result = check_archive(zip_path.to_string_lossy().to_string()).unwrap();
+        assert!(!result.encrypted);
+        assert!(!result.encoding_undetermined);
+    }
+
+    #[test]
+    fn check_archive_detects_encrypted_zip_without_encoding_prompt() {
+        let temp = tempfile::tempdir().unwrap();
+        let zip_path = temp.path().join("encrypted.zip");
+        let mut zip_writer = ZipWriter::new(fs::File::create(&zip_path).unwrap());
+        let options = zip_file_options()
+            .with_deprecated_encryption(b"aaaaaa")
+            .unwrap();
+        zip_writer.start_file("secret.txt", options).unwrap();
+        zip_writer.write_all(b"hidden").unwrap();
+        zip_writer.finish().unwrap();
+
+        let result = check_archive(zip_path.to_string_lossy().to_string()).unwrap();
+        assert!(result.encrypted);
+        assert!(!result.encoding_undetermined);
+    }
+
+    #[test]
+    fn decode_zip_entry_path_str_decodes_shift_jis_filename() {
+        let raw = [0x82, 0xa0, b'.', b't', b'x', b't'];
+        let decoded = decode_zip_entry_path_str(&raw, "shift_jis").unwrap();
+        assert_eq!(decoded, "あ.txt");
+    }
+
+    #[test]
+    fn extract_encrypted_zip_rejects_wrong_password() {
+        let temp = tempfile::tempdir().unwrap();
+        let zip_path = temp.path().join("encrypted.zip");
+        let mut zip_writer = ZipWriter::new(fs::File::create(&zip_path).unwrap());
+        let options = zip_file_options()
+            .with_deprecated_encryption(b"aaaaaa")
+            .unwrap();
+        zip_writer.start_file("secret.txt", options).unwrap();
+        zip_writer.write_all(b"hidden").unwrap();
+        zip_writer.finish().unwrap();
+
+        let extract_dir = temp.path().join("extracted");
+        fs::create_dir_all(&extract_dir).unwrap();
+        let result = extract_zip_to_directory(&zip_path, &extract_dir, Some(b"wrong"), None);
+        let error = result.unwrap_err().to_lowercase();
+        assert!(error.contains("password"));
     }
 }
