@@ -887,7 +887,9 @@
       "unknown": "Không xác định",
       "unsupported": "Không được hỗ trợ"
     },
-    "linkMetadataPerformanceWarning": "Có thể tăng mức sử dụng bộ nhớ và giảm hiệu năng."
+    "linkMetadataPerformanceWarning": "Có thể tăng mức sử dụng bộ nhớ và giảm hiệu năng.",
+    "fillColumnWidth": "Fill available width",
+    "setMinimumColumnWidths": "Đặt độ rộng tối thiểu"
   },
   "openWith": {
     "loadingPrograms": "Đang tải chương trình...",

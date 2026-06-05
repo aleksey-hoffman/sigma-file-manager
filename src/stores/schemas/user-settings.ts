@@ -16,7 +16,7 @@ import {
 import { BUILTIN_NAVIGATOR_ICON_THEME_IDS } from '@/types/icon-theme';
 
 export const USER_SETTINGS_SCHEMA_VERSION_KEY = '__schemaVersion';
-export const USER_SETTINGS_SCHEMA_VERSION = 14;
+export const USER_SETTINGS_SCHEMA_VERSION = 15;
 
 export const DEFAULT_GLOBAL_SEARCH_IGNORED_PATHS = [
   '/node_modules',
@@ -362,6 +362,32 @@ async function migrateUserSettingsStep(storage: StorageAdapter, fromVersion: num
     await setDefaultBooleanIfMissing(storage, 'navigator.listColumnVisibility.links', false);
     await setDefaultBooleanIfMissing(storage, 'navigator.listColumnVisibility.linkTarget', false);
     await setDefaultBooleanIfMissing(storage, 'navigator.listColumnVisibility.linkStatus', false);
+  }
+
+  if (fromVersion === 14 && toVersion === 15) {
+    const existingColumnWidths = await storage.get<unknown>('navigator.listColumnWidths');
+    const isValidColumnWidths = existingColumnWidths
+      && typeof existingColumnWidths === 'object'
+      && !Array.isArray(existingColumnWidths);
+    const hasSavedColumnWidths = isValidColumnWidths && Object.keys(existingColumnWidths).length > 0;
+
+    if (!isValidColumnWidths) {
+      await storage.set('navigator.listColumnWidths', {});
+    }
+
+    const existingColumnOrder = await storage.get<unknown>('navigator.listColumnOrder');
+
+    if (!Array.isArray(existingColumnOrder)) {
+      await storage.set('navigator.listColumnOrder', ['items', 'size', 'modified', 'created', 'tags', 'kind', 'links', 'linkStatus']);
+    }
+
+    await setDefaultBooleanIfMissing(storage, 'navigator.listColumnFillWidth', !hasSavedColumnWidths);
+
+    const existingColumnFlexWeights = await storage.get<unknown>('navigator.listColumnFlexWeights');
+
+    if (!existingColumnFlexWeights || typeof existingColumnFlexWeights !== 'object' || Array.isArray(existingColumnFlexWeights)) {
+      await storage.set('navigator.listColumnFlexWeights', {});
+    }
   }
 
   if (fromVersion === 6 && toVersion === 7) {

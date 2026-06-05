@@ -779,6 +779,8 @@
       "yesterdayAt": "Ayer, {time}"
     },
     "columns": "Columnas",
+    "fillColumnWidth": "Rellenar el ancho disponible",
+    "setMinimumColumnWidths": "Establecer anchos mínimos",
     "tags": "Etiquetas",
     "folders": "Carpetas",
     "images": "Imágenes",

@@ -809,6 +809,8 @@
       "yesterdayAt": "Yesterday, {time}"
     },
     "columns": "Columns",
+    "fillColumnWidth": "Fill available width",
+    "setMinimumColumnWidths": "Set minimum widths",
     "tags": "Tags",
     "folders": "Folders",
     "images": "Images",

@@ -887,7 +887,9 @@
       "unknown": "未知",
       "unsupported": "不支持"
     },
-    "linkMetadataPerformanceWarning": "可能会增加内存使用量并降低性能。"
+    "linkMetadataPerformanceWarning": "可能会增加内存使用量并降低性能。",
+    "fillColumnWidth": "填充可用宽度",
+    "setMinimumColumnWidths": "设置最小宽度"
   },
   "openWith": {
     "loadingPrograms": "正在加载程序...",

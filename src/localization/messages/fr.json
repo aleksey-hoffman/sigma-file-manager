@@ -779,6 +779,8 @@
       "yesterdayAt": "Hier à {time}"
     },
     "columns": "Colonnes",
+    "fillColumnWidth": "Remplir la largeur disponible",
+    "setMinimumColumnWidths": "Définir les largeurs minimales",
     "tags": "Tags",
     "folders": "Dossiers",
     "images": "Images",

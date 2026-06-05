@@ -255,6 +255,42 @@ export type ListColumnVisibility = {
   tags: boolean;
 };
 
+export type ListColumnWidths = {
+  name?: number;
+  items?: number;
+  size?: number;
+  modified?: number;
+  created?: number;
+  tags?: number;
+  kind?: number;
+  links?: number;
+  linkStatus?: number;
+};
+
+export type ListColumnFlexWeights = {
+  name?: number;
+  items?: number;
+  size?: number;
+  modified?: number;
+  created?: number;
+  tags?: number;
+  kind?: number;
+  links?: number;
+  linkStatus?: number;
+};
+
+export type ListReorderableColumnId =
+  | 'items'
+  | 'size'
+  | 'modified'
+  | 'created'
+  | 'tags'
+  | 'kind'
+  | 'links'
+  | 'linkStatus';
+
+export type ListColumnOrder = ListReorderableColumnId[];
+
 export type ListSortColumn = 'name' | 'kind' | 'links' | 'items' | 'size' | 'modified' | 'created' | 'linkStatus' | 'tags';
 
 export type ListSortDirection = 'asc' | 'desc';
@@ -270,6 +306,10 @@ export type UserSettingsNavigator = {
   folderIconTheme: NavigatorIconTheme;
   fileIconTheme: NavigatorIconTheme;
   listColumnVisibility: ListColumnVisibility;
+  listColumnFillWidth: boolean;
+  listColumnWidths: ListColumnWidths;
+  listColumnFlexWeights: ListColumnFlexWeights;
+  listColumnOrder: ListColumnOrder;
   listSortColumn: ListSortColumn | null;
   listSortDirection: ListSortDirection;
 };
