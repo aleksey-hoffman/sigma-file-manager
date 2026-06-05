@@ -57,6 +57,13 @@ const dialogDescription = computed(() => {
   return t('fileBrowser.archive.optionsDialog.encodingDescription');
 });
 
+const canConfirm = computed(() => {
+  if (props.needsPassword && !password.value.trim()) {
+    return false;
+  }
+  return true;
+});
+
 const password = ref('');
 const encoding = ref('__system_default__');
 
@@ -101,6 +108,10 @@ function onOpenChange(open: boolean) {
 }
 
 function handleConfirm() {
+  if (!canConfirm.value) {
+    return;
+  }
+
   emit('confirm', {
     password: password.value,
     encoding: encoding.value === '__system_default__' ? undefined : encoding.value,
@@ -175,7 +186,7 @@ function handleCancel() {
         <Button variant="outline" @click="handleCancel">
           {{ t('cancel') }}
         </Button>
-        <Button @click="handleConfirm">
+        <Button :disabled="!canConfirm" @click="handleConfirm">
           {{ t('fileBrowser.archive.optionsDialog.extract') }}
         </Button>
       </DialogFooter>
