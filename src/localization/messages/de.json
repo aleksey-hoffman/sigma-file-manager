@@ -779,6 +779,8 @@
       "yesterdayAt": "Gestern um {time}"
     },
     "columns": "Spalten",
+    "fillColumnWidth": "Verfügbare Breite ausfüllen",
+    "setMinimumColumnWidths": "Minimale Breiten festlegen",
     "tags": "Tags",
     "folders": "Ordner",
     "images": "Bilder",

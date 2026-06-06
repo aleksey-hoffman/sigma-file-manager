@@ -908,7 +908,9 @@
       "unknown": "Sconosciuto",
       "unsupported": "Non supportato"
     },
-    "linkMetadataPerformanceWarning": "Può aumentare l'uso della memoria e ridurre le prestazioni."
+    "linkMetadataPerformanceWarning": "Può aumentare l'uso della memoria e ridurre le prestazioni.",
+    "fillColumnWidth": "Riempi la larghezza disponibile",
+    "setMinimumColumnWidths": "Imposta larghezze minime"
   },
   "openWith": {
     "loadingPrograms": "Caricamento programmi...",

@@ -938,7 +938,9 @@
       "unknown": "Неизвестно",
       "unsupported": "Не поддерживается"
     },
-    "linkMetadataPerformanceWarning": "Может увеличить использование памяти и снизить производительность."
+    "linkMetadataPerformanceWarning": "Может увеличить использование памяти и снизить производительность.",
+    "fillColumnWidth": "Fill available width",
+    "setMinimumColumnWidths": "Установить минимальную ширину"
   },
   "openWith": {
     "loadingPrograms": "Загрузка программ...",

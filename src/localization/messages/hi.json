@@ -938,7 +938,9 @@
       "unknown": "अज्ञात",
       "unsupported": "असमर्थित"
     },
-    "linkMetadataPerformanceWarning": "मेमोरी उपयोग बढ़ा सकता है और प्रदर्शन घटा सकता है।"
+    "linkMetadataPerformanceWarning": "मेमोरी उपयोग बढ़ा सकता है और प्रदर्शन घटा सकता है।",
+    "fillColumnWidth": "उपलब्ध चौड़ाई भरें",
+    "setMinimumColumnWidths": "न्यूनतम चौड़ाई सेट करें"
   },
   "openWith": {
     "loadingPrograms": "प्रोग्राम लोड हो रहे हैं...",

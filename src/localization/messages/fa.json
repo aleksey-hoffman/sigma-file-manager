@@ -907,7 +907,9 @@
       "unknown": "نامشخص",
       "unsupported": "پشتیبانی‌نشده"
     },
-    "linkMetadataPerformanceWarning": "ممکن است مصرف حافظه را افزایش دهد و عملکرد را کاهش دهد."
+    "linkMetadataPerformanceWarning": "ممکن است مصرف حافظه را افزایش دهد و عملکرد را کاهش دهد.",
+    "fillColumnWidth": "پر کردن عرض موجود",
+    "setMinimumColumnWidths": "تنظیم حداقل عرض‌ها"
   },
   "openWith": {
     "loadingPrograms": "در حال بارگذاری برنامه‌ها...",

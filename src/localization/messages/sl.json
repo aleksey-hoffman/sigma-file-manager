@@ -938,7 +938,9 @@
       "unknown": "Neznano",
       "unsupported": "Ni podprto"
     },
-    "linkMetadataPerformanceWarning": "Lahko poveča porabo pomnilnika in zmanjša zmogljivost."
+    "linkMetadataPerformanceWarning": "Lahko poveča porabo pomnilnika in zmanjša zmogljivost.",
+    "fillColumnWidth": "Fill available width",
+    "setMinimumColumnWidths": "Nastavi minimalne širine"
   },
   "openWith": {
     "loadingPrograms": "Nalagam programe...",

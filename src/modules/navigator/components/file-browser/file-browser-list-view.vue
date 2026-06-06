@@ -7,7 +7,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 import { storeToRefs } from 'pinia';
 import { useI18n } from 'vue-i18n';
 import { computed, ref } from 'vue';
-import { LinkIcon, LoaderCircleIcon } from '@lucide/vue';
+import { LinkIcon } from '@lucide/vue';
 import type { DirEntry } from '@/types/dir-entry';
 import { formatBytes } from './utils';
 import { useClipboardStore } from '@/stores/runtime/clipboard';
@@ -16,12 +16,15 @@ import { useLinkMetadataStore } from '@/stores/runtime/link-metadata';
 import { useItemCountsStore } from '@/stores/runtime/item-counts';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { usePlatformStore } from '@/stores/runtime/platform';
-import { Skeleton } from '@/components/ui/skeleton';
-import { TagSelector } from '@/components/ui/tag-selector';
 import FileBrowserEntryIcon from './file-browser-entry-icon.vue';
 import { useRelativeDateDisplayClock } from '@/composables/use-relative-date-display';
 import { useFileBrowserContext } from './composables/use-file-browser-context';
 import { useFileBrowserTags } from './composables/use-file-browser-tags';
+import {
+  useFileBrowserVisibleListColumns,
+  type FileBrowserVisibleOptionalListColumn,
+} from './composables/use-file-browser-visible-list-columns';
+import FileBrowserListViewColumnCell from './file-browser-list-view-column-cell.vue';
 import type { FileBrowserListVirtualRow } from './composables/use-file-browser-virtual-layout';
 import type { ItemTag } from '@/types/user-stats';
 import {
@@ -29,6 +32,7 @@ import {
   getDirEntryLinksDisplay,
   getDirEntryLinkStatusKey,
 } from '@/utils/dir-entry-link-metadata';
+import { getVisibleListColumnDefinitions } from './utils/file-browser-list-columns';
 import {
   formatAbsoluteDateDisplay,
   formatRelativeDateDisplay,
@@ -109,14 +113,20 @@ const { t, locale } = useI18n();
 const activeTagSelectorPath = ref<string | null>(null);
 
 const columnVisibility = computed(() => userSettingsStore.userSettings.navigator.listColumnVisibility);
-const showItemsColumn = computed(() => columnVisibility.value.items);
-const showSizeColumn = computed(() => columnVisibility.value.size);
+const { visibleOptionalListColumns, visibleListColumnOrderKey } = useFileBrowserVisibleListColumns();
+const visibleListColumns = computed(() => {
+  return getVisibleListColumnDefinitions(
+    columnVisibility.value,
+    userSettingsStore.userSettings.navigator.listColumnOrder,
+  );
+});
+
+function getOptionalColumnId(column: FileBrowserVisibleOptionalListColumn) {
+  return column.id;
+}
+
 const showModifiedColumn = computed(() => columnVisibility.value.modified);
 const showCreatedColumn = computed(() => columnVisibility.value.created);
-const showTagsColumn = computed(() => columnVisibility.value.tags);
-const showKindColumn = computed(() => columnVisibility.value.kind);
-const showLinksColumn = computed(() => columnVisibility.value.links);
-const showLinkStatusColumn = computed(() => columnVisibility.value.linkStatus);
 const shouldTrackListRelativeTime = computed(() => {
   return props.trackRelativeTime
     && (showModifiedColumn.value || showCreatedColumn.value)
@@ -127,6 +137,7 @@ const visibleColumnMemoKey = computed(() => {
   const visible = columnVisibility.value;
 
   return [
+    visibleListColumnOrderKey.value,
     visible.items && 'items',
     visible.size && 'size',
     visible.modified && 'modified',
@@ -399,6 +410,15 @@ const visibleRows = computed<FileBrowserListDisplayRow[]>(() => {
     @contextmenu.self="ctx.handleBackgroundContextMenu"
   >
     <div
+      class="file-browser-list-view__column-width-sizer"
+      aria-hidden="true"
+    >
+      <span
+        v-for="column in visibleListColumns"
+        :key="column.id"
+      />
+    </div>
+    <div
       :key="ctx.currentPath.value"
       class="file-browser-list-view__list file-browser-list-view__list--animate"
       :style="ctx.virtualSpacerStyle.value"
@@ -469,148 +489,19 @@ const visibleRows = computed<FileBrowserListDisplayRow[]>(() => {
               >{{ row.entryDescription }}</span>
             </div>
           </div>
-          <span
-            v-if="showItemsColumn"
-            class="file-browser-list-view__entry-items"
-          >
-            {{ row.itemsDisplay }}
-          </span>
-          <span
-            v-if="showSizeColumn"
-            class="file-browser-list-view__entry-size"
-          >
-            <LoaderCircleIcon
-              v-if="row.isDirLoadingWithProgress"
-              :size="12"
-              class="file-browser-list-view__spinner"
-            />
-            <Skeleton
-              v-if="row.isSizeSkeletonVisible"
-              class="file-browser-list-view__size-skeleton"
-            />
-            <span
-              v-else
-              class="file-browser-list-view__column-value"
-            >{{ row.sizeDisplay }}</span>
-          </span>
-          <span
-            v-if="showModifiedColumn"
-            class="file-browser-list-view__entry-modified"
-          >
-            <span
-              v-if="row.modifiedDate.showHoverSwap"
-              class="file-browser-list-view__date-hover file-browser-list-view__date-hover--relative"
-            >
-              <span class="file-browser-list-view__date-hover-primary">{{ row.modifiedDate.primary }}</span>
-              <span class="file-browser-list-view__date-hover-absolute">{{ row.modifiedDate.absolute }}</span>
-            </span>
-            <span
-              v-else
-              class="file-browser-list-view__date-hover"
-            >{{ row.modifiedDate.primary }}</span>
-          </span>
-          <span
-            v-if="showCreatedColumn"
-            class="file-browser-list-view__entry-created"
-          >
-            <span
-              v-if="row.createdDate.showHoverSwap"
-              class="file-browser-list-view__date-hover file-browser-list-view__date-hover--relative"
-            >
-              <span class="file-browser-list-view__date-hover-primary">{{ row.createdDate.primary }}</span>
-              <span class="file-browser-list-view__date-hover-absolute">{{ row.createdDate.absolute }}</span>
-            </span>
-            <span
-              v-else
-              class="file-browser-list-view__date-hover"
-            >{{ row.createdDate.primary }}</span>
-          </span>
-          <span
-            v-if="showTagsColumn"
-            class="file-browser-list-view__entry-tags"
-            @mousedown.stop
-            @mouseup.stop
-            @click.stop
-            @contextmenu.stop
-          >
-            <TagSelector
-              v-if="row.isTagSelectorMounted"
-              :tags="availableTags"
-              :selected-tag-ids="row.selectedTagIds"
-              :allow-create="true"
-              :max-badges="1"
-              :full-width="true"
-              :open-on-mount="true"
-              trigger-variant="default"
-              align="end"
-              side="bottom"
-              @toggle-tag="tagId => handleToggleEntryTag(row.entry, tagId)"
-              @create-tag="name => handleCreateEntryTag(row.entry, name)"
-              @rename-tag="renameTag"
-              @update-tag-color="updateTagColor"
-              @open-change="open => handleEntryTagsOpenChange(row.entry.path, open)"
-            />
-            <button
-              v-else
-              type="button"
-              class="file-browser-list-view__entry-tags-static"
-              :title="row.tagSummary"
-              @click="openEntryTagSelector(row.entry.path)"
-            >
-              <template v-if="row.tagBadges.length > 0">
-                <span
-                  v-for="tag in row.tagBadges"
-                  :key="tag.id"
-                  class="file-browser-list-view__tag-badge"
-                  :style="tag.style"
-                >
-                  {{ tag.name }}
-                </span>
-                <span
-                  v-if="row.hiddenTagCount > 0"
-                  class="file-browser-list-view__tag-badge file-browser-list-view__tag-badge--more"
-                >
-                  +{{ row.hiddenTagCount }}
-                </span>
-              </template>
-              <span
-                v-else
-                class="file-browser-list-view__entry-tags-empty"
-              >—</span>
-            </button>
-          </span>
-          <span
-            v-if="showKindColumn"
-            class="file-browser-list-view__entry-kind"
-          >
-            {{ row.kindLabel }}
-          </span>
-          <span
-            v-if="showLinksColumn"
-            class="file-browser-list-view__entry-links"
-          >
-            <Skeleton
-              v-if="row.isLinkSkeletonVisible"
-              class="file-browser-list-view__metadata-skeleton"
-            />
-            <span
-              v-else
-              class="file-browser-list-view__column-value"
-            >{{ row.linksDisplay }}</span>
-          </span>
-          <span
-            v-if="showLinkStatusColumn"
-            class="file-browser-list-view__entry-link-status"
-          >
-            <Skeleton
-              v-if="row.isLinkSkeletonVisible"
-              class="file-browser-list-view__metadata-skeleton"
-            />
-            <span
-              v-else
-              class="file-browser-list-view__column-value"
-            >{{ row.linkStatusLabel }}</span>
-          </span>
+          <FileBrowserListViewColumnCell
+            v-for="column in visibleOptionalListColumns"
+            :key="column.id"
+            :column-id="getOptionalColumnId(column)"
+            :row="row"
+            :available-tags="availableTags"
+            @toggle-tag="handleToggleEntryTag"
+            @create-tag="handleCreateEntryTag"
+            @rename-tag="renameTag"
+            @update-tag-color="updateTagColor"
+            @tags-open-change="handleEntryTagsOpenChange"
+            @open-tag-selector="openEntryTagSelector"
+          />
         </div>
       </div>
     </div>
@@ -622,6 +513,22 @@ const visibleRows = computed<FileBrowserListDisplayRow[]>(() => {
   display: flex;
   flex: 1;
   flex-direction: column;
+}
+
+.file-browser-list-view__column-width-sizer {
+  display: grid;
+  overflow: hidden;
+  width: max-content;
+  min-width: 100%;
+  height: 0;
+  padding: 0 var(--file-browser-list-row-padding-x);
+  padding-right: calc(var(--file-browser-list-row-padding-x) + var(--file-browser-list-columns-button-width));
+  border: 0;
+  margin: 0;
+  column-gap: var(--file-browser-list-column-gap);
+  grid-template-columns: var(--file-browser-list-columns);
+  pointer-events: none;
+  visibility: hidden;
 }
 
 .file-browser-list-view__list {
@@ -646,9 +553,11 @@ const visibleRows = computed<FileBrowserListDisplayRow[]>(() => {
 .file-browser-list-view__entry {
   position: relative;
   display: grid;
-  width: 100%;
+  width: max-content;
+  min-width: 100%;
   min-height: var(--navigator-list-view-entry-height);
   padding: var(--file-browser-list-row-padding-y) var(--file-browser-list-row-padding-x);
+  padding-right: calc(var(--file-browser-list-row-padding-x) + var(--file-browser-list-columns-button-width));
   border: none;
   border-bottom: 1px solid hsl(var(--border) / 50%);
   background: transparent;
@@ -891,40 +800,40 @@ const visibleRows = computed<FileBrowserListDisplayRow[]>(() => {
   }
 }
 
-.file-browser-list-view__date-hover {
+:deep(.file-browser-list-view__date-hover) {
   display: inline-block;
   max-width: 100%;
   vertical-align: bottom;
 }
 
-.file-browser-list-view__date-hover--relative {
+:deep(.file-browser-list-view__date-hover--relative) {
   display: inline-grid;
   cursor: default;
   grid-template-columns: max-content;
   grid-template-rows: max-content;
 }
 
-.file-browser-list-view__date-hover-primary,
-.file-browser-list-view__date-hover-absolute {
+:deep(.file-browser-list-view__date-hover-primary),
+:deep(.file-browser-list-view__date-hover-absolute) {
   grid-area: 1 / 1;
   place-self: start;
   pointer-events: none;
   transition: opacity 0.22s ease-out;
 }
 
-.file-browser-list-view__date-hover-primary {
+:deep(.file-browser-list-view__date-hover-primary) {
   opacity: 1;
 }
 
-.file-browser-list-view__date-hover-absolute {
+:deep(.file-browser-list-view__date-hover-absolute) {
   opacity: 0;
 }
 
-.file-browser-list-view__date-hover--relative:hover .file-browser-list-view__date-hover-primary {
+:deep(.file-browser-list-view__date-hover--relative:hover .file-browser-list-view__date-hover-primary) {
   opacity: 0;
 }
 
-.file-browser-list-view__date-hover--relative:hover .file-browser-list-view__date-hover-absolute {
+:deep(.file-browser-list-view__date-hover--relative:hover .file-browser-list-view__date-hover-absolute) {
   opacity: 1;
 }
 
@@ -1027,8 +936,8 @@ const visibleRows = computed<FileBrowserListDisplayRow[]>(() => {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .file-browser-list-view__date-hover-primary,
-  .file-browser-list-view__date-hover-absolute {
+  :deep(.file-browser-list-view__date-hover-primary),
+  :deep(.file-browser-list-view__date-hover-absolute) {
     transition-duration: 0.01ms;
   }
 }

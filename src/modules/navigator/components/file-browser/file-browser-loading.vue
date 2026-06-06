@@ -4,13 +4,23 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import { computed } from 'vue';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useUserSettingsStore } from '@/stores/storage/user-settings';
+import { useFileBrowserVisibleListColumns } from './composables/use-file-browser-visible-list-columns';
+import type { ListReorderableColumnId } from '@/types/user-settings';
 
-const userSettingsStore = useUserSettingsStore();
-const columnVisibility = computed(() => userSettingsStore.userSettings.navigator.listColumnVisibility);
+const { visibleOptionalListColumns } = useFileBrowserVisibleListColumns();
+
+const columnSkeletonClassMap: Record<ListReorderableColumnId, string> = {
+  items: 'file-browser-loading__items',
+  size: 'file-browser-loading__size',
+  modified: 'file-browser-loading__modified',
+  created: 'file-browser-loading__created',
+  tags: 'file-browser-loading__tags',
+  kind: 'file-browser-loading__kind',
+  links: 'file-browser-loading__links',
+  linkStatus: 'file-browser-loading__link-status',
+};
 </script>
 
 <template>
@@ -29,36 +39,9 @@ const columnVisibility = computed(() => userSettingsStore.userSettings.navigator
           <Skeleton class="file-browser-loading__text" />
         </div>
         <Skeleton
-          v-if="columnVisibility.items"
-          class="file-browser-loading__items"
-        />
-        <Skeleton
-          v-if="columnVisibility.size"
-          class="file-browser-loading__size"
-        />
-        <Skeleton
-          v-if="columnVisibility.modified"
-          class="file-browser-loading__modified"
-        />
-        <Skeleton
-          v-if="columnVisibility.created"
-          class="file-browser-loading__created"
-        />
-        <Skeleton
-          v-if="columnVisibility.tags"
-          class="file-browser-loading__tags"
-        />
-        <Skeleton
-          v-if="columnVisibility.kind"
-          class="file-browser-loading__kind"
-        />
-        <Skeleton
-          v-if="columnVisibility.links"
-          class="file-browser-loading__links"
-        />
-        <Skeleton
-          v-if="columnVisibility.linkStatus"
-          class="file-browser-loading__link-status"
+          v-for="column in visibleOptionalListColumns"
+          :key="column.id"
+          :class="columnSkeletonClassMap[column.id]"
         />
       </div>
     </div>
@@ -77,7 +60,10 @@ const columnVisibility = computed(() => userSettingsStore.userSettings.navigator
 
 .file-browser-loading__row {
   display: grid;
+  width: max-content;
+  min-width: 100%;
   padding: var(--file-browser-list-row-padding-y) var(--file-browser-list-row-padding-x);
+  padding-right: calc(var(--file-browser-list-row-padding-x) + var(--file-browser-list-columns-button-width));
   column-gap: var(--file-browser-list-column-gap);
   grid-template-columns: var(--file-browser-list-columns);
 }

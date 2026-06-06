@@ -908,7 +908,9 @@
       "unknown": "Bilinmiyor",
       "unsupported": "Desteklenmiyor"
     },
-    "linkMetadataPerformanceWarning": "Bellek kullanımını artırabilir ve performansı düşürebilir."
+    "linkMetadataPerformanceWarning": "Bellek kullanımını artırabilir ve performansı düşürebilir.",
+    "fillColumnWidth": "Fill available width",
+    "setMinimumColumnWidths": "Minimum genişlikleri ayarla"
   },
   "openWith": {
     "loadingPrograms": "Programlar yükleniyor...",

@@ -938,7 +938,9 @@
       "unknown": "نامعلوم",
       "unsupported": "غیر معاون"
     },
-    "linkMetadataPerformanceWarning": "میموری کے استعمال کو بڑھا سکتا ہے اور کارکردگی کو کم کر سکتا ہے۔"
+    "linkMetadataPerformanceWarning": "میموری کے استعمال کو بڑھا سکتا ہے اور کارکردگی کو کم کر سکتا ہے۔",
+    "fillColumnWidth": "Fill available width",
+    "setMinimumColumnWidths": "کم از کم چوڑائیاں مقرر کریں"
   },
   "openWith": {
     "loadingPrograms": "پروگرامز لوڈ ہو رہے ہیں…",
