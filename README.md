@@ -18,6 +18,8 @@ Designed, developed, and maintained by [Aleksey Hoffman](https://github.com/alek
 [Discord](https://discord.gg/sxZTztFVwX) | [Reddit](https://www.reddit.com/r/SigmaFileManager) | [YouTube](https://www.youtube.com/@sigma-dev) | [X (Twitter)](https://twitter.com/sigma__dev) | [Telegram](https://t.me/sigma_devs)
 <br>Thanks to everyone who has been sharing this project with others!
 
+<a href="https://www.producthunt.com/products/sigma-file-manager?embed=true&amp;utm_source=badge-featured&amp;utm_medium=badge&amp;utm_campaign=badge-sigma-file-manager" target="_blank" rel="noopener noreferrer"><img alt="Sigma File Manager - Free, open-source, cross-platform, modern file manager app | Product Hunt" width="250" height="54" src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1161635&amp;theme=light&amp;t=1780918567069"></a>
+
 ## Features
 
 #### Major features:
