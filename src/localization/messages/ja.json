@@ -1102,5 +1102,8 @@
     "replaceShareDialogTitle": "現在の共有を置き換えますか？",
     "replaceShareDialogDescription": "すでにネットワーク上でファイルが共有されています。現在の共有を停止し、新しいものに置き換えます。",
     "replaceShareDialogConfirm": "置き換え"
-  }
+  },
+  "splitViewMode": "分割表示モード",
+  "splitViewModeSplit": "分割",
+  "splitViewModeLinked": "連動"
 }

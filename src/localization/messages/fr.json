@@ -1102,5 +1102,8 @@
     "replaceShareDialogTitle": "Remplacer le partage en cours ?",
     "replaceShareDialogDescription": "Des fichiers sont déjà partagés sur le réseau. Le partage actuel sera arrêté et remplacé par le nouveau.",
     "replaceShareDialogConfirm": "Remplacer"
-  }
+  },
+  "splitViewMode": "Split view mode",
+  "splitViewModeSplit": "Split",
+  "splitViewModeLinked": "Linked"
 }

@@ -1102,5 +1102,8 @@
     "replaceShareDialogTitle": "Aktuelle Freigabe ersetzen?",
     "replaceShareDialogDescription": "Es werden bereits Dateien im Netzwerk freigegeben. Die aktuelle Freigabe wird gestoppt und durch eine neue ersetzt.",
     "replaceShareDialogConfirm": "Ersetzen"
-  }
+  },
+  "splitViewMode": "Split view mode",
+  "splitViewModeSplit": "Split",
+  "splitViewModeLinked": "Linked"
 }
