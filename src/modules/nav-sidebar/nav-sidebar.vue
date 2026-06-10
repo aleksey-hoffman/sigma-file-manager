@@ -116,9 +116,13 @@ function getDriveIcon(drive: {
     class="nav-sidebar"
     data-e2e-root="nav-sidebar"
   >
-    <div class="nav-sidebar-header">
+    <div
+      class="nav-sidebar-header"
+      data-tauri-drag-region
+    >
       <div class="nav-sidebar-header-logo">
         <img
+          data-tauri-drag-region
           src="@/assets/icons/logo-32x32.png"
           width="20"
           height="20"
@@ -233,7 +237,10 @@ function getDriveIcon(drive: {
       </Tooltip>
     </div>
 
-    <div class="nav-sidebar-spacer" />
+    <div
+      class="nav-sidebar-spacer"
+      data-tauri-drag-region
+    />
 
     <div class="nav-sidebar-drives">
       <Tooltip
