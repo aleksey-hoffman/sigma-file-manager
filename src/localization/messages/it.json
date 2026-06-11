@@ -304,7 +304,10 @@
       "title": "Banner multimediale nella pagina iniziale"
     },
     "infoPanel": {
-      "title": "Pannello informativo"
+      "title": "Pannello informativo",
+      "resetSize": "Reimposta dimensione pannello",
+      "dynamicSize": "Dimensione dinamica del pannello informativo",
+      "dynamicSizeTooltip": "Se ridimensioni manualmente il pannello, questa opzione si disattiva e le dimensioni personalizzate vengono salvate."
     },
     "addressBar": {
       "addressBarActions": "Azioni della barra degli indirizzi",

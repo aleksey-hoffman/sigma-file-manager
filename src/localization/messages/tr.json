@@ -304,7 +304,10 @@
       "title": "Ana sayfa medya banner'ı"
     },
     "infoPanel": {
-      "title": "Bilgi paneli"
+      "title": "Bilgi paneli",
+      "resetSize": "Panel boyutunu sıfırla",
+      "dynamicSize": "Dinamik bilgi paneli boyutu",
+      "dynamicSizeTooltip": "Bilgi panelini manuel olarak yeniden boyutlandırırsanız bu seçenek kapanır ve özel boyutlarınız kaydedilir."
     },
     "addressBar": {
       "addressBarActions": "Adres çubuğu işlemleri",

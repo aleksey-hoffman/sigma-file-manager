@@ -304,7 +304,10 @@
       "title": "Homepage-Medienbanner"
     },
     "infoPanel": {
-      "title": "Infotafel"
+      "title": "Infotafel",
+      "resetSize": "Panelgröße zurücksetzen",
+      "dynamicSize": "Dynamische Infotafelgröße",
+      "dynamicSizeTooltip": "Wenn Sie die Infotafel manuell in der Größe ändern, wird diese Option deaktiviert und Ihre angepassten Größen gespeichert."
     },
     "addressBar": {
       "addressBarActions": "Aktionen in der Adressleiste",

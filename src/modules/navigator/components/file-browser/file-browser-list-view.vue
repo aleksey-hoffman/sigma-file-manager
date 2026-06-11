@@ -718,7 +718,7 @@ const visibleRows = computed<FileBrowserListDisplayRow[]>(() => {
   display: none;
 }
 
-.file-browser-list-view__entry-tags-static {
+.file-browser-list-view__entry-tags :deep(.file-browser-list-view__entry-tags-static) {
   display: flex;
   overflow: hidden;
   width: 100%;
@@ -733,27 +733,7 @@ const visibleRows = computed<FileBrowserListDisplayRow[]>(() => {
   gap: 4px;
 }
 
-.file-browser-list-view__tag-badge {
-  display: inline-flex;
-  overflow: hidden;
-  max-width: 100%;
-  height: 18px;
-  align-items: center;
-  padding: 0 6px;
-  border-radius: 4px;
-  font-size: 11px;
-  font-weight: 500;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.file-browser-list-view__tag-badge--more {
-  flex-shrink: 0;
-  background-color: hsl(var(--muted));
-  color: hsl(var(--muted-foreground));
-}
-
-.file-browser-list-view__entry-tags-empty {
+.file-browser-list-view__entry-tags :deep(.file-browser-list-view__entry-tags-empty) {
   color: hsl(var(--muted-foreground));
 }
 

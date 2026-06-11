@@ -108,6 +108,9 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
       },
       infoPanel: {
         show: false,
+        dynamicSize: false,
+        widthPx: null,
+        previewHeightPx: null,
       },
       showHiddenFiles: false,
       splitViewMode: 'split',

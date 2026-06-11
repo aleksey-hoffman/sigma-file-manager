@@ -336,7 +336,10 @@
       "title": "Home page media banner"
     },
     "infoPanel": {
-      "title": "Info panel"
+      "title": "Info panel",
+      "dynamicSize": "Dynamic info panel size",
+      "dynamicSizeTooltip": "Manually resizing the info panel turns this off and saves your custom sizes.",
+      "resetSize": "Reset panel size"
     },
     "addressBar": {
       "addressBarActions": "Address bar actions",

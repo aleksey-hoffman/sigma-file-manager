@@ -319,6 +319,9 @@ export type UserSettingsNavigator = {
 
 export type UserSettingsNavigatorInfoPanel = {
   show: boolean;
+  dynamicSize: boolean;
+  widthPx: number | null;
+  previewHeightPx: number | null;
 };
 
 export type NavigatorLayout = {

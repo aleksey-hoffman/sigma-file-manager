@@ -5,15 +5,18 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { InfoIcon, XIcon } from '@lucide/vue';
+import { InfoIcon } from '@lucide/vue';
 import { Button } from '@/components/ui/button';
+import { Drawer, DrawerContent } from '@/components/ui/drawer';
 import InfoPanelHeader from './info-panel-header.vue';
 import InfoPanelPreview from './info-panel-preview.vue';
 import InfoPanelProperties from './info-panel-properties.vue';
+import InfoPanelResizableLayout from './info-panel-resizable-layout.vue';
+import InfoPanelDrawerLayout from './info-panel-drawer-layout.vue';
 import type { DirEntry } from '@/types/dir-entry';
 import { useIsSmallScreen } from '@/composables/use-responsive-query';
 
-defineProps<{
+const props = defineProps<{
   selectedEntry: DirEntry | null;
   isCurrentDir?: boolean;
 }>();
@@ -23,68 +26,61 @@ const isDrawerOpen = ref(false);
 </script>
 
 <template>
-  <div class="info-panel">
-    <InfoPanelPreview
-      :selected-entry="selectedEntry"
-      :is-current-dir="isCurrentDir"
+  <div class="info-panel info-panel-hover-reveal">
+    <InfoPanelResizableLayout
+      v-if="!isCompact"
+      :selected-entry="props.selectedEntry"
+      :is-current-dir="props.isCurrentDir"
     />
-    <InfoPanelHeader :selected-entry="selectedEntry" />
-    <InfoPanelProperties
-      :selected-entry="selectedEntry"
-      :orientation="isCompact ? 'compact' : 'vertical'"
-    />
-    <Button
-      v-if="isCompact"
-      size="xs"
-      variant="ghost"
-      class="info-panel__expand-btn"
-      @click="isDrawerOpen = true"
-    >
-      <InfoIcon :size="16" />
-    </Button>
-
-    <Teleport to="body">
-      <Transition name="info-panel-drawer">
-        <div
-          v-if="isDrawerOpen"
-          class="info-panel-drawer__backdrop"
-          @click="isDrawerOpen = false"
-        >
-          <div
-            class="info-panel-drawer"
-            @click.stop
-          >
-            <div class="info-panel-drawer__close">
-              <Button
-                size="xs"
-                variant="ghost"
-                @click="isDrawerOpen = false"
-              >
-                <XIcon :size="16" />
-              </Button>
-            </div>
-            <InfoPanelPreview
-              :selected-entry="selectedEntry"
-              :is-current-dir="isCurrentDir"
-            />
-            <InfoPanelHeader :selected-entry="selectedEntry" />
-            <InfoPanelProperties
-              :selected-entry="selectedEntry"
-              orientation="vertical"
-            />
-          </div>
-        </div>
-      </Transition>
-    </Teleport>
+    <template v-else>
+      <InfoPanelPreview
+        :selected-entry="props.selectedEntry"
+        :is-current-dir="props.isCurrentDir"
+      />
+      <InfoPanelHeader
+        :selected-entry="props.selectedEntry"
+        :show-reset-button="false"
+      />
+      <InfoPanelProperties
+        :selected-entry="props.selectedEntry"
+        orientation="compact"
+      />
+      <Button
+        size="xs"
+        variant="ghost"
+        class="info-panel__expand-btn"
+        @click="isDrawerOpen = true"
+      >
+        <InfoIcon :size="16" />
+      </Button>
+    </template>
   </div>
+
+  <Drawer
+    v-if="isCompact"
+    :open="isDrawerOpen"
+    direction="bottom"
+    :should-scale-background="false"
+    @update:open="isDrawerOpen = $event"
+  >
+    <DrawerContent class="info-panel-compact-drawer">
+      <div class="info-panel-compact-drawer__body">
+        <InfoPanelDrawerLayout
+          :selected-entry="props.selectedEntry"
+          :is-current-dir="props.isCurrentDir"
+        />
+      </div>
+    </DrawerContent>
+  </Drawer>
 </template>
 
 <style scoped>
 .info-panel {
   display: flex;
   overflow: hidden;
-  width: 280px;
-  min-width: 280px;
+  width: max(100%, var(--info-panel-content-min-width, 0px));
+  min-width: var(--info-panel-content-min-width, 0);
+  height: 100%;
   flex-direction: column;
   flex-shrink: 0;
   padding: 6px;
@@ -121,6 +117,8 @@ const isDrawerOpen = ref(false);
 
   .info-panel :deep(.info-panel-header) {
     overflow: hidden;
+    height: auto;
+    min-height: unset;
     align-self: end;
     padding: 0;
     border-bottom: none;
@@ -157,56 +155,40 @@ const isDrawerOpen = ref(false);
 </style>
 
 <style>
-.info-panel-drawer__backdrop {
-  position: fixed;
-  z-index: 50;
-  background-color: rgb(0 0 0 / 50%);
-  inset: 0;
-}
-
-.info-panel-drawer {
-  position: absolute;
-  top: 0;
-  right: 0;
+.info-panel-compact-drawer.sigma-ui-drawer-content {
   display: flex;
   overflow: hidden;
-  width: 280px;
-  height: 100%;
+  width: 100%;
+  height: min(65vh, calc(100vh - var(--window-toolbar-height) - 8px));
+  min-height: 240px;
+  max-height: calc(100vh - var(--window-toolbar-height) - 8px);
   flex-direction: column;
   padding: 6px;
+  padding-top: 0;
+  border-color: hsl(var(--border));
+  margin-top: 0;
   background-color: hsl(var(--background-2));
-  box-shadow: -4px 0 16px rgb(0 0 0 / 20%);
 }
 
-.info-panel-drawer__close {
+.info-panel-compact-drawer__body {
   display: flex;
-  justify-content: flex-end;
-  padding: 4px;
+  overflow: hidden;
+  width: 100%;
+  min-height: 0;
+  flex: 1;
+  padding-top: 8px;
 }
 
-.info-panel-drawer-enter-active .info-panel-drawer__backdrop,
-.info-panel-drawer-leave-active .info-panel-drawer__backdrop {
-  transition: opacity 0.25s ease;
+.info-panel-compact-drawer__body > .info-panel-drawer-layout {
+  min-height: 0;
+  flex: 1;
 }
 
-.info-panel-drawer-enter-active .info-panel-drawer,
-.info-panel-drawer-leave-active .info-panel-drawer {
-  transition: transform 0.25s ease;
+.info-panel-compact-drawer__body > .info-panel-drawer-layout.sigma-ui-scroll-area {
+  height: 100%;
 }
 
-.info-panel-drawer-enter-from {
-  opacity: 0;
-}
-
-.info-panel-drawer-enter-from .info-panel-drawer {
-  transform: translateX(100%);
-}
-
-.info-panel-drawer-leave-to {
-  opacity: 0;
-}
-
-.info-panel-drawer-leave-to .info-panel-drawer {
-  transform: translateX(100%);
+.info-panel-compact-drawer__body .sigma-ui-scroll-area__viewport {
+  max-height: 100%;
 }
 </style>

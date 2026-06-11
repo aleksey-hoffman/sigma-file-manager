@@ -333,7 +333,10 @@
       "title": "Medijska pasica domače strani"
     },
     "infoPanel": {
-      "title": "Info panel"
+      "title": "Info panel",
+      "resetSize": "Ponastavi velikost panela",
+      "dynamicSize": "Dinamična velikost info panela",
+      "dynamicSizeTooltip": "Če ročno spremenite velikost info panela, se ta možnost izklopi in shranijo vaše prilagojene velikosti."
     },
     "addressBar": {
       "addressBarActions": "Dejanja naslovne vrstice",

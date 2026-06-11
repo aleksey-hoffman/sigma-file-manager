@@ -27,10 +27,13 @@ import {
   getDirEntryLinksDisplay,
   getDirEntryLinkStatusKey,
 } from '@/utils/dir-entry-link-metadata';
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   selectedEntry: DirEntry | null;
   orientation?: 'vertical' | 'compact';
-}>();
+  useInternalScroll?: boolean;
+}>(), {
+  useInternalScroll: true,
+});
 
 const { t, locale } = useI18n();
 const dirSizesStore = useDirSizesStore();
@@ -286,10 +289,12 @@ watch(
       {{ compactItems.join(' · ') }}
     </span>
   </div>
-  <ScrollArea
+  <component
+    :is="useInternalScroll ? ScrollArea : 'div'"
     v-else
     class="info-panel-properties"
-    orientation="vertical"
+    :class="{ 'info-panel-properties--inline': !useInternalScroll }"
+    :orientation="useInternalScroll ? 'vertical' : undefined"
   >
     <div
       v-if="!selectedEntry"
@@ -381,13 +386,17 @@ watch(
         </div>
       </div>
     </div>
-  </ScrollArea>
+  </component>
 </template>
 
 <style scoped>
 .info-panel-properties {
   flex: 1;
   padding: 12px 16px;
+}
+
+.info-panel-properties--inline {
+  flex: none;
 }
 
 .info-panel-properties__empty {

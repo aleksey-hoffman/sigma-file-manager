@@ -304,7 +304,10 @@
       "title": "ホームページメディアバナー"
     },
     "infoPanel": {
-      "title": "情報パネル"
+      "title": "情報パネル",
+      "resetSize": "パネルサイズをリセット",
+      "dynamicSize": "情報パネルの動的サイズ",
+      "dynamicSizeTooltip": "情報パネルのサイズを手動で変更すると、この設定はオフになり、カスタムサイズが保存されます。"
     },
     "addressBar": {
       "addressBarActions": "アドレスバーアクション",
