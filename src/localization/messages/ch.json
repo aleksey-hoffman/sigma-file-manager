@@ -304,7 +304,10 @@
       "title": "主页媒体横幅"
     },
     "infoPanel": {
-      "title": "信息面板"
+      "title": "信息面板",
+      "resetSize": "重置面板大小",
+      "dynamicSize": "动态信息面板大小",
+      "dynamicSizeTooltip": "手动调整信息面板大小后，此选项会自动关闭，并保存你的自定义尺寸。"
     },
     "addressBar": {
       "addressBarActions": "地址栏操作",

@@ -26,10 +26,12 @@ import {
   PanelRightIcon,
   LayoutGridIcon,
   ListIcon,
+  CircleHelpIcon,
   EllipsisVerticalIcon,
 } from '@lucide/vue';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { useShortcutsStore } from '@/stores/runtime/shortcuts';
+import { useInfoPanelLayout } from '@/modules/navigator/components/info-panel/composables/use-info-panel-layout';
 
 type LayoutType = 'list' | 'grid';
 
@@ -54,6 +56,11 @@ const currentLayout = computed(() => {
 });
 
 const showHiddenFiles = computed(() => userSettingsStore.userSettings.navigator.showHiddenFiles);
+const {
+  isDynamicSize: infoPanelDynamicSize,
+  enableDynamicSize,
+  disableDynamicSize,
+} = useInfoPanelLayout();
 
 async function setLayout(layoutName: LayoutType) {
   const layoutTitle = layoutName === 'grid' ? 'gridLayout' : 'listLayout';
@@ -65,6 +72,15 @@ async function setLayout(layoutName: LayoutType) {
 
 function handleToggleHiddenFiles(checked: boolean) {
   userSettingsStore.set('navigator.showHiddenFiles', checked);
+}
+
+function handleToggleInfoPanelDynamicSize(enabled: boolean) {
+  if (enabled) {
+    void enableDynamicSize();
+    return;
+  }
+
+  void disableDynamicSize();
 }
 </script>
 
@@ -130,6 +146,37 @@ function handleToggleHiddenFiles(checked: boolean) {
                 :model-value="showHiddenFiles"
                 @update:model-value="handleToggleHiddenFiles(!showHiddenFiles)"
               />
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              class="navigator-settings-menu__item"
+              @select.prevent
+            >
+              <span class="navigator-settings-menu__item-label">{{ t('settings.infoPanel.dynamicSize') }}</span>
+              <div class="navigator-settings-menu__item-controls">
+                <Tooltip>
+                  <TooltipTrigger as-child>
+                    <button
+                      type="button"
+                      class="navigator-settings-menu__info-trigger"
+                      :aria-label="t('settings.infoPanel.dynamicSizeTooltip')"
+                      @click.stop
+                    >
+                      <CircleHelpIcon :size="14" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent
+                    side="top"
+                    class="navigator-settings-menu__info-tooltip"
+                  >
+                    {{ t('settings.infoPanel.dynamicSizeTooltip') }}
+                  </TooltipContent>
+                </Tooltip>
+                <Switch
+                  class="navigator-settings-menu__switch"
+                  :model-value="infoPanelDynamicSize"
+                  @update:model-value="handleToggleInfoPanelDynamicSize"
+                />
+              </div>
             </DropdownMenuItem>
           </DropdownMenuContent>
           <TooltipContent>
@@ -290,6 +337,36 @@ function handleToggleHiddenFiles(checked: boolean) {
 
 .navigator-settings-menu__item-label {
   flex: 1;
+}
+
+.navigator-settings-menu__item-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.navigator-settings-menu__info-trigger {
+  display: flex;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: hsl(var(--muted-foreground));
+  cursor: help;
+  line-height: 0;
+}
+
+.navigator-settings-menu__info-trigger:hover {
+  color: hsl(var(--foreground));
+}
+
+.navigator-settings-menu__info-trigger:focus-visible {
+  outline: 2px solid hsl(var(--ring) / 50%);
+  outline-offset: 2px;
+  border-radius: var(--radius-xs);
+}
+
+.navigator-settings-menu__info-tooltip.sigma-ui-tooltip-content {
+  max-width: 240px;
 }
 
 .navigator-settings-menu__switch.sigma-ui-switch {

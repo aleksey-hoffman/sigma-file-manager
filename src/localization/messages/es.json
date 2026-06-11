@@ -304,7 +304,10 @@
       "title": "Banner de medios de la página de inicio"
     },
     "infoPanel": {
-      "title": "Panel de información"
+      "title": "Panel de información",
+      "resetSize": "Restablecer tamaño del panel",
+      "dynamicSize": "Tamaño dinámico del panel de información",
+      "dynamicSizeTooltip": "Si cambias el tamaño del panel manualmente, esta opción se desactiva y se guardan tus tamaños personalizados."
     },
     "addressBar": {
       "addressBarActions": "Acciones de la barra de direcciones",

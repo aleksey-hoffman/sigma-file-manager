@@ -304,7 +304,10 @@
       "title": "Bannière média de la page d'accueil"
     },
     "infoPanel": {
-      "title": "Panneau d'informations"
+      "title": "Panneau d'informations",
+      "resetSize": "Réinitialiser la taille du panneau",
+      "dynamicSize": "Taille dynamique du panneau d'informations",
+      "dynamicSizeTooltip": "Si vous redimensionnez le panneau manuellement, cette option se désactive et vos tailles personnalisées sont enregistrées."
     },
     "addressBar": {
       "addressBarActions": "Actions de la barre d'adresse",

@@ -9,6 +9,10 @@ import type { DialogContentEmits, DialogContentProps } from 'reka-ui';
 import { useForwardPropsEmits } from 'reka-ui';
 import DrawerOverlay from './drawer-overlay.vue';
 
+defineOptions({
+  inheritAttrs: false,
+});
+
 const props = defineProps<DialogContentProps>();
 const emits = defineEmits<DialogContentEmits>();
 
@@ -19,9 +23,10 @@ const forwarded = useForwardPropsEmits(props, emits);
   <DrawerPortal>
     <DrawerOverlay />
     <DrawerContent
-      v-bind="forwarded"
+      v-bind="{ ...forwarded, ...$attrs }"
       class="sigma-ui-drawer-content"
-      :class="[$attrs.class]"
+      :class="$attrs.class"
+      :style="$attrs.style"
     >
       <div class="sigma-ui-drawer-content__handle" />
       <slot />

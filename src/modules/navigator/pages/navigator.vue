@@ -33,13 +33,16 @@ import FileBrowserDragOverlay from '@/modules/navigator/components/file-browser/
 import { useActiveFileBrowserDragState } from '@/modules/navigator/components/file-browser/composables/use-file-browser-drag';
 import { provideFileBrowserInternalDropHandler } from '@/modules/navigator/components/file-browser/composables/use-file-browser-internal-drop';
 import { InfoPanel } from '@/modules/navigator/components/info-panel';
+import { useInfoPanelLayout } from '@/modules/navigator/components/info-panel/composables/use-info-panel-layout';
 import { NavigatorToolbarActions } from '@/modules/navigator/components/navigator-toolbar-actions';
 import { ClipboardToolbar } from '@/modules/navigator/components/clipboard-toolbar';
 import { GlobalSearchView } from '@/modules/global-search';
 import type { DirEntry } from '@/types/dir-entry';
+import type { Tab } from '@/types/workspaces';
 import { useIsSmallScreen } from '@/composables/use-responsive-query';
 import { useFileDropOperation } from '@/composables/use-file-drop-operation';
 import { arePathsEquivalent, getParentPath } from '@/utils/file-operation-paths';
+import { getPathDisplayName } from '@/utils/normalize-path';
 
 type FileBrowserInstance = InstanceType<typeof FileBrowser> & {
   rootElement?: HTMLElement | null;
@@ -123,18 +126,73 @@ function truncateTextCopyPreview(text: string): string {
   return `${text.slice(0, TEXT_COPY_PREVIEW_MAX_LENGTH)}…`;
 }
 
+function getDirectoryDirEntryFromTab(tab: Tab | null | undefined): DirEntry | null {
+  if (!tab?.path) {
+    return null;
+  }
+
+  return {
+    name: getPathDisplayName(tab.path) || tab.path,
+    path: tab.path,
+    is_dir: true,
+    is_file: false,
+    is_hidden: false,
+    is_symlink: false,
+    size: 0,
+    created_time: 0,
+    modified_time: 0,
+    accessed_time: 0,
+    item_count: tab.dirEntries.length > 0 ? tab.dirEntries.length : null,
+    ext: null,
+    mime: null,
+  };
+}
+
 const paneRefsMap = ref<Map<string, FileBrowserInstance>>(new Map());
 const singlePaneRef = ref<FileBrowserInstance | null>(null);
 const globalSearchViewRef = ref<GlobalSearchViewInstance | null>(null);
 const isSearchSelectionActive = ref(false);
+const {
+  layoutSizingKey: infoPanelLayoutSizingKey,
+  setInfoPanelWidthPanelRef,
+  handleInfoPanelWidthHandleDragging,
+  showInfoPanelAnimated,
+  hideInfoPanelAnimated,
+  isInfoPanelVisibilityAnimating,
+  infoPanelWidthDefault,
+  infoPanelLayout,
+} = useInfoPanelLayout();
+
 const showInfoPanel = ref(true);
+const infoPanelSlideVisible = ref(true);
+
+const mainPanelMinSize = computed(() => {
+  return showInfoPanel.value || isInfoPanelVisibilityAnimating.value
+    ? infoPanelLayout.MAIN_MIN_WIDTH_PERCENT
+    : 100;
+});
+
+const isInfoPanelHandleCollapsed = computed(() => {
+  if (isInfoPanelVisibilityAnimating.value) {
+    return !infoPanelSlideVisible.value;
+  }
+
+  return !showInfoPanel.value;
+});
+
+const infoPanelTransitionStyle = {
+  '--info-panel-visibility-transition-ms': `${infoPanelLayout.SIZE_TRANSITION_MS}ms`,
+  '--info-panel-visibility-transition-easing': infoPanelLayout.VISIBILITY_TRANSITION_EASING,
+};
 const selectedEntries = ref<DirEntry[]>([]);
 
 watch(selectedEntries, (entries) => {
   navigatorSelectionStore.setSelectedDirEntries(entries);
 }, { deep: true });
 
-const currentDirEntry = ref<DirEntry | null>(null);
+const currentDirEntry = ref<DirEntry | null>(
+  getDirectoryDirEntryFromTab(workspacesStore.currentTab),
+);
 const activeTabId = ref<string | null>(null);
 const isSmallScreen = useIsSmallScreen();
 
@@ -154,7 +212,7 @@ watch(() => workspacesStore.currentTabGroup, (newGroup, oldGroup) => {
 
   if (oldPrimaryTabId !== undefined && newPrimaryTabId !== oldPrimaryTabId) {
     selectedEntries.value = [];
-    currentDirEntry.value = null;
+    currentDirEntry.value = getDirectoryDirEntryFromTab(newGroup?.[0]);
 
     if (newPrimaryTabId !== undefined) {
       activeTabId.value = newPrimaryTabId;
@@ -224,8 +282,22 @@ function handleToggleSplitView() {
   workspacesStore.toggleSplitView();
 }
 
-function handleToggleInfoPanel() {
-  showInfoPanel.value = !showInfoPanel.value;
+async function handleToggleInfoPanel() {
+  if (isSmallScreen.value) {
+    showInfoPanel.value = !showInfoPanel.value;
+    return;
+  }
+
+  if (showInfoPanel.value) {
+    infoPanelSlideVisible.value = false;
+    await hideInfoPanelAnimated();
+    showInfoPanel.value = false;
+    return;
+  }
+
+  infoPanelSlideVisible.value = true;
+  showInfoPanel.value = true;
+  await showInfoPanelAnimated();
 }
 
 function activateTabPane(tabId: string) {
@@ -839,10 +911,20 @@ function registerShortcutHandlers() {
   });
 }
 
+watch(isInfoPanelVisibilityAnimating, (isAnimating, wasAnimating) => {
+  if (!isAnimating && wasAnimating && showInfoPanel.value) {
+    infoPanelSlideVisible.value = true;
+    return;
+  }
+
+  if (!isAnimating && !showInfoPanel.value) {
+    infoPanelSlideVisible.value = false;
+  }
+});
+
 onMounted(() => {
   registerShortcutHandlers();
 
-  // Recover any in-progress directory size calculations from backend
   dirSizesStore.recoverActiveCalculations();
 });
 
@@ -876,7 +958,154 @@ onUnmounted(() => {
           :is-current-dir="selectedEntries.length === 0 && !!currentDirEntry"
         />
       </div>
-      <div class="navigator-page__panes-wrapper">
+      <ResizablePanelGroup
+        v-if="!isSmallScreen"
+        :key="`info-panel-width-${infoPanelLayoutSizingKey}`"
+        direction="horizontal"
+        class="navigator-page__main-resizable"
+        :class="{ 'navigator-page__main-resizable--info-panel-closed': isInfoPanelHandleCollapsed }"
+        :style="infoPanelTransitionStyle"
+      >
+        <ResizablePanel
+          :order="1"
+          :default-size="100"
+          :min-size="mainPanelMinSize"
+        >
+          <div class="navigator-page__panes-wrapper">
+            <div class="navigator-page__panes-container">
+              <GlobalSearchView
+                ref="globalSearchViewRef"
+                v-show="globalSearchStore.isOpen"
+                class="navigator-page__search-panel"
+                @close="globalSearchStore.close()"
+                @open-entry="handleGlobalSearchOpenEntry"
+                @update:selected-entries="handleSearchSelectionChange"
+              />
+              <ResizablePanelGroup
+                direction="horizontal"
+                class="navigator-page__panes"
+              >
+                <template v-if="workspacesStore.currentTabGroup && isSplitView">
+                  <template
+                    v-for="(tab, index) in workspacesStore.currentTabGroup"
+                    :key="tab.id"
+                  >
+                    <ResizablePanel
+                      :default-size="50"
+                      :min-size="15"
+                      @mousedown="handlePaneFocus(tab.id)"
+                    >
+                      <FileBrowser
+                        :ref="(el) => setPaneRef(el as FileBrowserInstance, tab.id)"
+                        :tab="tab"
+                        :pane-index="index"
+                        :layout="currentLayout"
+                        :track-relative-time="trackNavigatorRelativeTime"
+                        :is-active-pane="activeTabId ? activeTabId === tab.id : index === 0"
+                        :is-split-view="true"
+                        class="navigator-page__pane"
+                        @update:selected-entries="(entries) => handleSelectionChange(entries, tab.id)"
+                        @update:current-dir-entry="handleCurrentDirChange"
+                      />
+                    </ResizablePanel>
+                    <ResizableHandle
+                      v-if="index === 0"
+                      with-handle
+                    />
+                  </template>
+                </template>
+                <template v-else-if="workspacesStore.currentTabGroup">
+                  <ResizablePanel :default-size="100">
+                    <FileBrowser
+                      :key="workspacesStore.currentTabGroup[0].id"
+                      :ref="(el) => setPaneRef(el as FileBrowserInstance, workspacesStore.currentTabGroup![0].id)"
+                      :tab="workspacesStore.currentTabGroup[0]"
+                      :pane-index="0"
+                      :layout="currentLayout"
+                      :track-relative-time="trackNavigatorRelativeTime"
+                      :is-active-pane="true"
+                      class="navigator-page__pane"
+                      @update:selected-entries="(entries) => handleSelectionChange(entries, workspacesStore.currentTabGroup![0].id)"
+                      @update:current-dir-entry="handleCurrentDirChange"
+                    />
+                  </ResizablePanel>
+                </template>
+                <ResizablePanel
+                  v-else
+                  :default-size="100"
+                >
+                  <FileBrowser
+                    ref="singlePaneRef"
+                    :layout="currentLayout"
+                    :track-relative-time="trackNavigatorRelativeTime"
+                    :is-active-pane="true"
+                    class="navigator-page__pane"
+                    @update:selected-entries="(entries) => handleSelectionChange(entries)"
+                    @update:current-dir-entry="handleCurrentDirChange"
+                  />
+                </ResizablePanel>
+              </ResizablePanelGroup>
+            </div>
+            <ClipboardToolbar
+              :current-path="currentActivePath"
+              :is-split-view="isSplitView"
+              :pane1-path="workspacesStore.currentTabGroup?.[0]?.path"
+              :pane2-path="workspacesStore.currentTabGroup?.[1]?.path"
+              @paste="handlePasteShortcut"
+              @paste-to-pane="handlePasteToPane"
+            />
+            <FileBrowserDragOverlay
+              :is-active="activeFileBrowserDragState.isActive"
+              :item-count="activeFileBrowserDragState.items.length"
+              :operation-type="activeFileBrowserDragState.operationType"
+              :cursor-x="activeFileBrowserDragState.cursorX"
+              :cursor-y="activeFileBrowserDragState.cursorY"
+            />
+            <FileBrowserConflictDialog
+              v-model:open="internalDropConflictDialogState.isOpen"
+              :conflicts="internalDropConflictDialogState.conflicts"
+              :operation-type="internalDropConflictDialogState.operationType"
+              :is-checking-conflicts="internalDropConflictDialogState.isCheckingConflicts"
+              @resolve="handleInternalDropConflictResolution"
+              @cancel="handleInternalDropConflictCancel"
+            />
+          </div>
+        </ResizablePanel>
+        <ResizableHandle
+          class="navigator-page__info-panel-handle"
+          :class="{ 'navigator-page__info-panel-handle--collapsed': isInfoPanelHandleCollapsed }"
+          with-handle
+          @dragging="handleInfoPanelWidthHandleDragging"
+        />
+        <ResizablePanel
+          :ref="setInfoPanelWidthPanelRef"
+          :order="2"
+          :default-size="infoPanelWidthDefault"
+          collapsible
+          :collapsed-size="0"
+          size-unit="px"
+          :min-size="0"
+          :max-size="infoPanelLayout.MAX_WIDTH_PX"
+        >
+          <div
+            class="navigator-page__info-panel-slide"
+            :class="{ 'navigator-page__info-panel-slide--visible': infoPanelSlideVisible }"
+            :style="{
+              ...infoPanelTransitionStyle,
+              '--info-panel-content-min-width': `${infoPanelLayout.MIN_WIDTH_PX}px`,
+            }"
+          >
+            <InfoPanel
+              :selected-entry="infoPanelEntry"
+              :is-current-dir="selectedEntries.length === 0 && !!currentDirEntry"
+            />
+          </div>
+        </ResizablePanel>
+      </ResizablePanelGroup>
+      <div
+        v-else
+        class="navigator-page__panes-wrapper"
+      >
         <div class="navigator-page__panes-container">
           <GlobalSearchView
             ref="globalSearchViewRef"
@@ -975,11 +1204,6 @@ onUnmounted(() => {
           @cancel="handleInternalDropConflictCancel"
         />
       </div>
-      <InfoPanel
-        v-if="showInfoPanel && !isSmallScreen"
-        :selected-entry="infoPanelEntry"
-        :is-current-dir="selectedEntries.length === 0 && !!currentDirEntry"
-      />
     </div>
   </div>
 </template>
@@ -996,28 +1220,90 @@ onUnmounted(() => {
 }
 
 .navigator-page__main {
-  display: grid;
+  display: flex;
   overflow: hidden;
   flex: 1;
+  flex-direction: column;
   gap: 6px;
-  grid-template-columns: minmax(0, 1fr) auto;
 }
 
-.navigator-page__main:not(:has(.info-panel)) {
-  grid-template-columns: 1fr;
+.navigator-page__main-resizable {
+  overflow: hidden;
+  min-width: 0;
+  min-height: 0;
+  flex: 1;
+  gap: 6px;
+  transition: gap var(--info-panel-visibility-transition-ms) var(--info-panel-visibility-transition-easing);
+}
+
+.navigator-page__main-resizable--info-panel-closed {
+  gap: 0;
+}
+
+.navigator-page__main-resizable :deep(.navigator-page__info-panel-handle) {
+  overflow: visible;
+  flex-shrink: 0;
+  min-width: 0;
+  max-width: 16px;
+  opacity: 1;
+  transition:
+    max-width var(--info-panel-visibility-transition-ms) var(--info-panel-visibility-transition-easing),
+    opacity var(--info-panel-visibility-transition-ms) var(--info-panel-visibility-transition-easing);
+}
+
+.navigator-page__main-resizable :deep(.navigator-page__info-panel-handle--collapsed) {
+  overflow: hidden;
+  max-width: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.navigator-page__main-resizable :deep([data-panel]) {
+  display: flex;
+  overflow: hidden;
+  min-width: 0;
+  min-height: 0;
+  flex-direction: column;
+}
+
+.navigator-page__info-panel-slide {
+  overflow: hidden;
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  transform: translateX(100%);
+  transition: transform var(--info-panel-visibility-transition-ms) var(--info-panel-visibility-transition-easing);
+}
+
+.navigator-page__info-panel-slide--visible {
+  transform: translateX(0);
 }
 
 .navigator-page__panes {
   overflow: hidden;
+  width: 100%;
   min-width: 0;
+  height: 100%;
+  min-height: 0;
   flex: 1;
   gap: 6px;
+}
+
+.navigator-page__panes :deep([data-panel]) {
+  display: flex;
+  overflow: hidden;
+  min-width: 0;
+  min-height: 0;
 }
 
 .navigator-page__panes-wrapper {
   display: flex;
   overflow: hidden;
+  width: 100%;
   min-width: 0;
+  height: 100%;
+  min-height: 0;
+  flex: 1;
   flex-direction: column;
   gap: 6px;
 }
@@ -1058,8 +1344,7 @@ onUnmounted(() => {
 
 @media (width <= 800px) {
   .navigator-page__main {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto minmax(0, 1fr);
+    flex-direction: column;
   }
 }
 </style>

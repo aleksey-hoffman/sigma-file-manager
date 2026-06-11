@@ -341,7 +341,9 @@ onBeforeUnmount(() => {
 .info-panel-preview {
   display: flex;
   overflow: hidden;
-  height: 180px;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-sm);

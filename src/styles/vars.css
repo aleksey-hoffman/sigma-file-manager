@@ -26,7 +26,7 @@
   --workspace-toolbar-height: 48px;
   --info-panel-width-value: 280;
   --info-panel-width: calc(var(--info-panel-width-value) * 1px);
-  --info-panel-preview-height: 158px;
+  --info-panel-preview-height: 180px;
   --info-panel-header-height: 32px;
   --info-panel-sub-header-height: 16px;
   --info-panel-properties-header-height: 36px;

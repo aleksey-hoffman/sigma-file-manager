@@ -304,7 +304,10 @@
       "title": "Biểu ngữ truyền thông trang chủ"
     },
     "infoPanel": {
-      "title": "Bảng thông tin"
+      "title": "Bảng thông tin",
+      "resetSize": "Đặt lại kích thước bảng",
+      "dynamicSize": "Kích thước bảng thông tin động",
+      "dynamicSizeTooltip": "Nếu bạn thay đổi kích thước bảng thông tin bằng tay, tùy chọn này sẽ tắt và lưu kích thước tùy chỉnh của bạn."
     },
     "addressBar": {
       "addressBarActions": "Hành động trên thanh địa chỉ",

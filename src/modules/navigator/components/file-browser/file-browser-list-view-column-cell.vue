@@ -152,14 +152,14 @@ const tagsColumnInteractionAttrs = computed(() => {
           <span
             v-for="tag in props.row.tagBadges"
             :key="tag.id"
-            class="file-browser-list-view__tag-badge"
+            class="tag-selector__badge"
             :style="tag.style"
           >
             {{ tag.name }}
           </span>
           <span
             v-if="props.row.hiddenTagCount > 0"
-            class="file-browser-list-view__tag-badge file-browser-list-view__tag-badge--more"
+            class="tag-selector__badge tag-selector__badge--more"
           >
             +{{ props.row.hiddenTagCount }}
           </span>

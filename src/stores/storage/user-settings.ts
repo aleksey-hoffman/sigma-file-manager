@@ -108,6 +108,9 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
       },
       infoPanel: {
         show: false,
+        dynamicSize: false,
+        widthPx: null,
+        previewHeightPx: null,
       },
       showHiddenFiles: false,
       folderIconTheme: BUILTIN_NAVIGATOR_ICON_THEME_IDS.system,
