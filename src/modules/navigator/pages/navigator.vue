@@ -331,9 +331,6 @@ async function syncLinkedPane(entries: DirEntry[], tabId: string) {
   }
 }
 
-function handleToggleInfoPanel() {
-  showInfoPanel.value = !showInfoPanel.value;
-
 async function handleToggleInfoPanel() {
   if (isSmallScreen.value) {
     showInfoPanel.value = !showInfoPanel.value;
