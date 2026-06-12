@@ -26,6 +26,7 @@ import type { ThemeTransitionOrigin } from './composables/use-theme';
 import { useUserPathsStore } from './user-paths';
 import { useExtensionsStorageStore } from './extensions';
 import { i18n } from '@/localization';
+import { getLanguage } from '@/localization/data';
 import { getCurrentWebview } from '@tauri-apps/api/webview';
 import { emit, listen, type UnlistenFn } from '@tauri-apps/api/event';
 import {
@@ -430,8 +431,20 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
     }
   }
 
+  function applyTextDirection(locale: string) {
+    // Resolve the canonical language definition so the text direction stays
+    // correct even if older stored settings predate the `isRtl` flag.
+    const language = getLanguage(locale);
+    const isRtl = language?.isRtl ?? false;
+    const root = document.documentElement;
+    root.setAttribute('dir', isRtl ? 'rtl' : 'ltr');
+    root.setAttribute('lang', locale);
+  }
+
   async function setLanguage(newLanguage: LocalizationLanguage) {
     userSettings.value.language = newLanguage;
+    i18n.global.locale.value = newLanguage.locale as typeof i18n.global.locale.value;
+    applyTextDirection(newLanguage.locale);
     await setUserSettingsStorage('language', newLanguage);
   }
 
@@ -445,6 +458,7 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
 
   function initLanguage() {
     i18n.global.locale.value = userSettings.value.language.locale as typeof i18n.global.locale.value;
+    applyTextDirection(userSettings.value.language.locale);
   }
 
   async function initZoom() {
