@@ -8,6 +8,7 @@ import en from './messages/en.json';
 import es from './messages/es.json';
 import fa from './messages/fa.json';
 import fr from './messages/fr.json';
+import he from './messages/he.json';
 import hi from './messages/hi.json';
 import it from './messages/it.json';
 import ja from './messages/ja.json';
@@ -35,6 +36,7 @@ export const messages = {
   sl,
   hi,
   ur,
+  he,
 };
 
 export const languages: LocalizationLanguage[] = [
@@ -128,6 +130,12 @@ export const languages: LocalizationLanguage[] = [
     isCorrected: false,
     isRtl: true,
   },
+  {
+    name: 'עברית',
+    locale: 'he',
+    isCorrected: true,
+    isRtl: true,
+  },
 ] as const;
 
 export function getLanguage(locale: string) {
@@ -152,6 +160,7 @@ export const dayjsLocaleMapping: Record<AppLocale, string> = {
   sl: 'sl',
   hi: 'hi',
   ur: 'ur',
+  he: 'he',
 };
 
 export const intlLocaleMapping: Record<AppLocale, string> = {
@@ -170,4 +179,5 @@ export const intlLocaleMapping: Record<AppLocale, string> = {
   sl: 'sl',
   hi: 'hi-IN',
   ur: 'ur-PK',
+  he: 'he-IL',
 };
