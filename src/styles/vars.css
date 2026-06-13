@@ -30,6 +30,7 @@
   --info-panel-header-height: 32px;
   --info-panel-sub-header-height: 16px;
   --info-panel-properties-header-height: 36px;
+  --info-panel-properties-rows-min-width: 250px;
   --navigator-sorting-header-height: 36px;
   --navigator-list-view-entry-height: 42px;
   --navigator-grid-view-dir-entry-height: 52px;

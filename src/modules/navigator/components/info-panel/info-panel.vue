@@ -86,6 +86,8 @@ const isDrawerOpen = ref(false);
   padding: 6px;
   border-radius: var(--radius-sm);
   background-color: hsl(var(--background-2));
+  container-name: info-panel;
+  container-type: inline-size;
 }
 
 @media (width <= 800px) {
@@ -95,6 +97,7 @@ const isDrawerOpen = ref(false);
     width: 100%;
     min-width: unset;
     height: auto;
+    container-type: normal;
     gap: 2px 10px;
     grid-template-columns: 48px minmax(0, 1fr) auto;
     grid-template-rows: auto auto;
