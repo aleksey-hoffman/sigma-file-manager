@@ -899,7 +899,28 @@
       "unknownError": "Neznana napaka",
       "operationErrorTitle": "Arhivska operacija ni uspela",
       "errors": {
-        "destinationInsideSelectedFolder": "Ciljni arhiv je znotraj izbrane mape"
+        "destinationInsideSelectedFolder": "Ciljni arhiv je znotraj izbrane mape",
+        "wrongPassword": "Napačno geslo. Arhiva ni bilo mogoče dešifrirati.",
+        "encodingError": "Imen datotek ni bilo mogoče dekodirati z izbranim kodiranjem."
+      },
+      "optionsDialog": {
+        "title": "Možnosti razširjanja arhiva",
+        "description": "Nastavite razširjanje za arhive, zaščitene z geslom ali kodirane ne v UTF-8",
+        "passwordTitle": "Potrebno je geslo arhiva",
+        "passwordDescription": "Ta arhiv je šifriran. Vnesite geslo za razširitev vsebine.",
+        "encodingTitle": "Kodiranje imen datotek",
+        "encodingDescription": "Nekatera imena datotek v tem arhivu uporabljajo kodiranje, ki ni UTF-8. Izberite pravilno kodiranje.",
+        "passwordLabel": "Geslo (pustite prazno, če ni šifrirano)",
+        "passwordPlaceholder": "Vnesite geslo arhiva",
+        "encodingLabel": "Kodiranje imen datotek",
+        "encodingSystemDefault": "Sistemsko privzeto",
+        "encodingGroup": {
+          "eastAsian": "Vzhodna Azija",
+          "southeastAsian": "Jugovzhodna Azija",
+          "middleEast": "Bližnji vzhod",
+          "european": "Evropa"
+        },
+        "extract": "Razširi"
       }
     },
     "kind": "Vrsta",

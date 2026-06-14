@@ -869,7 +869,28 @@
       "unknownError": "未知错误",
       "operationErrorTitle": "归档操作失败",
       "errors": {
-        "destinationInsideSelectedFolder": "目标归档位于所选文件夹内"
+        "destinationInsideSelectedFolder": "目标归档位于所选文件夹内",
+        "wrongPassword": "密码错误，无法解密压缩包。",
+        "encodingError": "无法使用所选编码解码文件名。"
+      },
+      "optionsDialog": {
+        "title": "压缩包解压选项",
+        "description": "为受密码保护或非 UTF-8 编码的压缩包配置解压设置",
+        "passwordTitle": "需要压缩包密码",
+        "passwordDescription": "此压缩包已加密。请输入密码以解压其内容。",
+        "encodingTitle": "文件名编码",
+        "encodingDescription": "此压缩包中的部分文件名使用非 UTF-8 编码。请选择正确的编码以正常显示。",
+        "passwordLabel": "密码（未加密时请留空）",
+        "passwordPlaceholder": "输入压缩包密码",
+        "encodingLabel": "文件名编码",
+        "encodingSystemDefault": "系统默认",
+        "encodingGroup": {
+          "eastAsian": "东亚",
+          "southeastAsian": "东南亚",
+          "middleEast": "中东",
+          "european": "欧洲"
+        },
+        "extract": "解压"
       }
     },
     "kind": "类型",

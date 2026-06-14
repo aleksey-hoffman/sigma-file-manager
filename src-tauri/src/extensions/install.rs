@@ -90,7 +90,7 @@ pub async fn download_extension(
         )
         .await?;
 
-        crate::archive::extract_zip_to_directory(&zip_path, &staging_dir)?;
+        crate::archive::extract_zip_to_directory(&zip_path, &staging_dir, None, None)?;
 
         terminate_all_extension_processes(&extension_id);
         replace_extension_dir(&staging_dir, &extension_dir)

@@ -133,7 +133,7 @@ pub fn extract_archive(
         .ok_or_else(|| format!("Unsupported archive format for URL: {}", download_url))?;
 
     match format {
-        ArchiveFormat::Zip => crate::archive::extract_zip_to_directory(archive_path, dest_dir),
+        ArchiveFormat::Zip => crate::archive::extract_zip_to_directory(archive_path, dest_dir, None, None),
         ArchiveFormat::TarXz => {
             let file = fs::File::open(archive_path)
                 .map_err(|error| format!("Failed to open tar.xz file: {}", error))?;

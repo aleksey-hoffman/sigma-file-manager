@@ -871,7 +871,28 @@
       "unknownError": "Erreur inconnue",
       "operationErrorTitle": "Échec de l'opération d'archive",
       "errors": {
-        "destinationInsideSelectedFolder": "L'archive de destination se trouve dans un dossier sélectionné"
+        "destinationInsideSelectedFolder": "L'archive de destination se trouve dans un dossier sélectionné",
+        "wrongPassword": "Mot de passe incorrect. L'archive n'a pas pu être déchiffrée.",
+        "encodingError": "Impossible de décoder les noms de fichiers avec l'encodage sélectionné."
+      },
+      "optionsDialog": {
+        "title": "Options d'extraction de l'archive",
+        "description": "Configurez l'extraction pour les archives protégées par mot de passe ou non encodées en UTF-8",
+        "passwordTitle": "Mot de passe de l'archive requis",
+        "passwordDescription": "Cette archive est chiffrée. Saisissez le mot de passe pour en extraire le contenu.",
+        "encodingTitle": "Encodage des noms de fichiers",
+        "encodingDescription": "Certains noms de fichiers de cette archive utilisent un encodage autre que UTF-8. Sélectionnez le bon encodage.",
+        "passwordLabel": "Mot de passe (laisser vide si non chiffré)",
+        "passwordPlaceholder": "Saisir le mot de passe de l'archive",
+        "encodingLabel": "Encodage des noms de fichiers",
+        "encodingSystemDefault": "Par défaut du système",
+        "encodingGroup": {
+          "eastAsian": "Asie de l'Est",
+          "southeastAsian": "Asie du Sud-Est",
+          "middleEast": "Moyen-Orient",
+          "european": "Europe"
+        },
+        "extract": "Extraire"
       }
     },
     "kind": "Type",

@@ -2,10 +2,11 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
+use encoding_rs::Encoding;
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use std::fs;
-use std::io::{Read, Write};
+use std::io::{Read, Seek, Write};
 use std::path::{Component, Path, PathBuf};
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::{Arc, LazyLock, Mutex};
@@ -15,6 +16,7 @@ use tokio::sync::mpsc::UnboundedSender;
 use walkdir::WalkDir;
 use zip::write::SimpleFileOptions;
 use zip::CompressionMethod;
+use zip::result::ZipError;
 use zip::{ZipArchive, ZipWriter};
 
 use crate::utils::{normalize_path, unique_path_with_index};
@@ -35,14 +37,80 @@ pub enum ArchiveJobRequest {
     ExtractHere {
         archive_path: String,
         destination_dir: String,
+        password: Option<String>,
+        encoding: Option<String>,
     },
     ExtractToNamedFolder {
         archive_path: String,
+        password: Option<String>,
+        encoding: Option<String>,
     },
     Compress {
         source_paths: Vec<String>,
         destination_zip_path: String,
     },
+}
+
+#[derive(Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ArchiveCheckResult {
+    pub encrypted: bool,
+    pub encoding_undetermined: bool,
+}
+
+fn is_zip_password_required(error: &ZipError) -> bool {
+    matches!(
+        error,
+        ZipError::UnsupportedArchive(ZipError::PASSWORD_REQUIRED)
+    )
+}
+
+#[tauri::command]
+pub fn check_archive(archive_path: String) -> Result<ArchiveCheckResult, String> {
+    let path = PathBuf::from(normalize_path(&archive_path));
+    let file =
+        fs::File::open(&path).map_err(|e| format!("Failed to open archive: {}", e))?;
+    let mut archive =
+        ZipArchive::new(file).map_err(|e| format!("Failed to read archive: {}", e))?;
+
+    let mut encrypted = false;
+    let mut encoding_undetermined = false;
+
+    for i in 0..archive.len() {
+        if encrypted && encoding_undetermined {
+            break;
+        }
+
+        let entry_result = archive.by_index(i);
+        let entry = match entry_result {
+            Ok(e) => {
+                if !encrypted && e.encrypted() {
+                    encrypted = true;
+                }
+                e
+            }
+            Err(error) => {
+                if is_zip_password_required(&error) {
+                    encrypted = true;
+                    continue;
+                }
+
+                return Err(format!("Failed to read entry: {}", error));
+            }
+        };
+
+        if !encoding_undetermined {
+            let raw = entry.name_raw();
+            if std::str::from_utf8(raw).is_err() {
+                encoding_undetermined = true;
+            }
+        }
+    }
+
+    Ok(ArchiveCheckResult {
+        encrypted,
+        encoding_undetermined,
+    })
 }
 
 #[derive(Clone, Serialize)]
@@ -127,13 +195,78 @@ pub fn is_safe_archive_relative_path(path: &Path) -> bool {
         .all(|component| matches!(component, Component::Normal(_) | Component::CurDir))
 }
 
-pub fn extract_zip_to_directory(zip_path: &Path, dest_dir: &Path) -> Result<(), String> {
-    extract_zip_to_directory_with_sink(zip_path, dest_dir, None)
+fn decode_zip_entry_path_str(raw: &[u8], encoding: &str) -> Result<String, String> {
+    if raw.contains(&0) {
+        return Err("Zip entry name contains null bytes".to_string());
+    }
+
+    let enc = Encoding::for_label(encoding.as_bytes())
+        .ok_or_else(|| format!("Unknown encoding: {}", encoding))?;
+    let (decoded, _encoding, _had_errors) = enc.decode(raw);
+    let cleaned = decoded
+        .trim_start_matches(|c| c == '/' || c == '\\')
+        .trim_start_matches("./");
+
+    if cleaned.is_empty() {
+        return Err("Zip entry with empty path".to_string());
+    }
+
+    Ok(cleaned.to_string())
+}
+
+fn get_entry_path<R: Read + ?Sized>(file: &zip::read::ZipFile<'_, R>, encoding: Option<&str>) -> Result<PathBuf, String> {
+    if let Some(enc_label) = encoding {
+        let path = PathBuf::from(decode_zip_entry_path_str(file.name_raw(), enc_label)?);
+
+        if !is_safe_archive_relative_path(&path) {
+            return Err("Zip contains unsafe path entry".to_string());
+        }
+
+        Ok(path)
+    } else {
+        file.enclosed_name()
+            .ok_or_else(|| "Zip contains unsafe path entry".to_string())
+            .map(PathBuf::from)
+    }
+}
+
+pub fn extract_zip_to_directory(
+    zip_path: &Path,
+    dest_dir: &Path,
+    password: Option<&[u8]>,
+    encoding: Option<&str>,
+) -> Result<(), String> {
+    extract_zip_to_directory_with_sink(zip_path, dest_dir, password, encoding, None)
+}
+
+fn extract_entry_name<R: Read + ?Sized>(file: &zip::read::ZipFile<'_, R>, encoding: Option<&str>) -> String {
+    match encoding {
+        Some(encoding_label) => decode_zip_entry_path_str(file.name_raw(), encoding_label)
+            .unwrap_or_else(|_| file.name().to_string()),
+        None => file.name().to_string(),
+    }
+}
+
+fn read_entry<'a, R: Read + Seek>(
+    archive: &'a mut ZipArchive<R>,
+    index: usize,
+    password: Option<&[u8]>,
+) -> Result<zip::read::ZipFile<'a, R>, String> {
+    match password {
+        Some(pwd) => archive
+            .by_index_decrypt(index, pwd)
+            .map_err(|e| format!("Failed to read zip entry (wrong password?): {}", e)),
+        None => archive
+            .by_index(index)
+            .map_err(|e| format!("Failed to read zip entry: {}", e)),
+    }
 }
 
 fn extract_zip_to_directory_with_sink(
     zip_path: &Path,
     dest_dir: &Path,
+    password: Option<&[u8]>,
+    encoding: Option<&str>,
     sink: Option<&ProgressSink>,
 ) -> Result<(), String> {
     fs::create_dir_all(dest_dir)
@@ -155,12 +288,8 @@ fn extract_zip_to_directory_with_sink(
             progress_sink.check_cancelled()?;
         }
 
-        let file = archive
-            .by_index(archive_index)
-            .map_err(|error| format!("Failed to read zip entry: {}", error))?;
-        let enclosed_path = file
-            .enclosed_name()
-            .ok_or_else(|| "Zip contains unsafe path entry".to_string())?;
+        let file = read_entry(&mut archive, archive_index, password)?;
+        let enclosed_path = get_entry_path(&file, encoding)?;
         if !is_safe_archive_relative_path(&enclosed_path) {
             return Err("Zip contains unsafe path entry".to_string());
         }
@@ -180,19 +309,15 @@ fn extract_zip_to_directory_with_sink(
             progress_sink.check_cancelled()?;
         }
 
-        let mut file = archive
-            .by_index(archive_index)
-            .map_err(|error| format!("Failed to read zip entry: {}", error))?;
+        let mut file = read_entry(&mut archive, archive_index, password)?;
 
         if let Some(progress_sink) = sink {
             let pct = ((archive_index as u32 + 1) * 100 / total_entries).min(100);
-            let detail = file.name().to_string();
+            let detail = extract_entry_name(&file, encoding);
             progress_sink.report(pct, detail);
         }
 
-        let enclosed_path = file
-            .enclosed_name()
-            .ok_or_else(|| "Zip contains unsafe path entry".to_string())?;
+        let enclosed_path = get_entry_path(&file, encoding)?;
         if !is_safe_archive_relative_path(&enclosed_path) {
             return Err("Zip contains unsafe path entry".to_string());
         }
@@ -441,16 +566,32 @@ fn run_archive_job_blocking(
         ArchiveJobRequest::ExtractHere {
             archive_path,
             destination_dir,
+            password,
+            encoding,
         } => {
             let archive = PathBuf::from(normalize_path(&archive_path));
             let destination = PathBuf::from(normalize_path(&destination_dir));
+            let pwd_bytes = password.as_deref().map(|s| s.as_bytes());
+            let enc_str = encoding.as_deref();
             fs::create_dir_all(&destination)
                 .map_err(|error| format!("Failed to create destination: {}", error))?;
-            extract_zip_to_directory_with_sink(&archive, &destination, Some(sink))?;
+            extract_zip_to_directory_with_sink(
+                &archive,
+                &destination,
+                pwd_bytes,
+                enc_str,
+                Some(sink),
+            )?;
             Ok(None)
         }
-        ArchiveJobRequest::ExtractToNamedFolder { archive_path } => {
+        ArchiveJobRequest::ExtractToNamedFolder {
+            archive_path,
+            password,
+            encoding,
+        } => {
             let archive = PathBuf::from(normalize_path(&archive_path));
+            let pwd_bytes = password.as_deref().map(|s| s.as_bytes());
+            let enc_str = encoding.as_deref();
             let Some(parent) = archive.parent() else {
                 return Err("Invalid archive path".to_string());
             };
@@ -466,7 +607,13 @@ fn run_archive_job_blocking(
             }
             fs::create_dir_all(&destination)
                 .map_err(|error| format!("Failed to create folder: {}", error))?;
-            extract_zip_to_directory_with_sink(&archive, &destination, Some(sink))?;
+            extract_zip_to_directory_with_sink(
+                &archive,
+                &destination,
+                pwd_bytes,
+                enc_str,
+                Some(sink),
+            )?;
             Ok(None)
         }
         ArchiveJobRequest::Compress {
@@ -592,6 +739,7 @@ pub fn cancel_archive_job(job_id: String) -> bool {
 mod tests {
     use super::*;
     use std::io::Write;
+    use zip::unstable::write::FileOptionsExt;
 
     #[test]
     fn rejects_zip_slip_path_components() {
@@ -617,7 +765,7 @@ mod tests {
 
         let extract_dir = temp.path().join("extracted");
         fs::create_dir_all(&extract_dir).unwrap();
-        extract_zip_to_directory(&zip_path, &extract_dir).unwrap();
+        extract_zip_to_directory(&zip_path, &extract_dir, None, None).unwrap();
 
         let extracted = extract_dir.join("hello.txt");
         assert_eq!(fs::read(&extracted).unwrap(), b"content");
@@ -635,7 +783,7 @@ mod tests {
 
         let extract_dir = temp.path().join("safe");
         fs::create_dir_all(&extract_dir).unwrap();
-        let result = extract_zip_to_directory(&zip_path, &extract_dir);
+        let result = extract_zip_to_directory(&zip_path, &extract_dir, None, None);
         assert!(result.is_err());
     }
 
@@ -653,7 +801,65 @@ mod tests {
         fs::create_dir_all(&extract_dir).unwrap();
         fs::write(extract_dir.join("hello.txt"), b"existing").unwrap();
 
-        let result = extract_zip_to_directory(&zip_path, &extract_dir);
+        let result = extract_zip_to_directory(&zip_path, &extract_dir, None, None);
         assert_eq!(result.unwrap_err(), ARCHIVE_ERROR_OUTPUT_ALREADY_EXISTS);
+    }
+
+    #[test]
+    fn check_archive_reports_clean_utf8_zip() {
+        let temp = tempfile::tempdir().unwrap();
+        let zip_path = temp.path().join("clean.zip");
+        let mut zip_writer = ZipWriter::new(fs::File::create(&zip_path).unwrap());
+        let options = zip_file_options();
+        zip_writer.start_file("hello.txt", options).unwrap();
+        zip_writer.write_all(b"content").unwrap();
+        zip_writer.finish().unwrap();
+
+        let result = check_archive(zip_path.to_string_lossy().to_string()).unwrap();
+        assert!(!result.encrypted);
+        assert!(!result.encoding_undetermined);
+    }
+
+    #[test]
+    fn check_archive_detects_encrypted_zip_without_encoding_prompt() {
+        let temp = tempfile::tempdir().unwrap();
+        let zip_path = temp.path().join("encrypted.zip");
+        let mut zip_writer = ZipWriter::new(fs::File::create(&zip_path).unwrap());
+        let options = zip_file_options()
+            .with_deprecated_encryption(b"aaaaaa")
+            .unwrap();
+        zip_writer.start_file("secret.txt", options).unwrap();
+        zip_writer.write_all(b"hidden").unwrap();
+        zip_writer.finish().unwrap();
+
+        let result = check_archive(zip_path.to_string_lossy().to_string()).unwrap();
+        assert!(result.encrypted);
+        assert!(!result.encoding_undetermined);
+    }
+
+    #[test]
+    fn decode_zip_entry_path_str_decodes_shift_jis_filename() {
+        let raw = [0x82, 0xa0, b'.', b't', b'x', b't'];
+        let decoded = decode_zip_entry_path_str(&raw, "shift_jis").unwrap();
+        assert_eq!(decoded, "あ.txt");
+    }
+
+    #[test]
+    fn extract_encrypted_zip_rejects_wrong_password() {
+        let temp = tempfile::tempdir().unwrap();
+        let zip_path = temp.path().join("encrypted.zip");
+        let mut zip_writer = ZipWriter::new(fs::File::create(&zip_path).unwrap());
+        let options = zip_file_options()
+            .with_deprecated_encryption(b"aaaaaa")
+            .unwrap();
+        zip_writer.start_file("secret.txt", options).unwrap();
+        zip_writer.write_all(b"hidden").unwrap();
+        zip_writer.finish().unwrap();
+
+        let extract_dir = temp.path().join("extracted");
+        fs::create_dir_all(&extract_dir).unwrap();
+        let result = extract_zip_to_directory(&zip_path, &extract_dir, Some(b"wrong"), None);
+        let error = result.unwrap_err().to_lowercase();
+        assert!(error.contains("password"));
     }
 }

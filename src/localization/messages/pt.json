@@ -868,7 +868,28 @@
       "unknownError": "Erro desconhecido",
       "operationErrorTitle": "Falha na operação de arquivo",
       "errors": {
-        "destinationInsideSelectedFolder": "O arquivo de destino está dentro de uma pasta selecionada"
+        "destinationInsideSelectedFolder": "O arquivo de destino está dentro de uma pasta selecionada",
+        "wrongPassword": "Senha incorreta. O arquivo não pôde ser descriptografado.",
+        "encodingError": "Falha ao decodificar nomes de arquivo com a codificação selecionada."
+      },
+      "optionsDialog": {
+        "title": "Opções de extração do arquivo",
+        "description": "Configure a extração para arquivos protegidos por senha ou codificados sem UTF-8",
+        "passwordTitle": "Senha do arquivo necessária",
+        "passwordDescription": "Este arquivo está criptografado. Digite a senha para extrair o conteúdo.",
+        "encodingTitle": "Codificação dos nomes de arquivo",
+        "encodingDescription": "Alguns nomes de arquivo neste arquivo usam codificação diferente de UTF-8. Selecione a codificação correta.",
+        "passwordLabel": "Senha (deixe vazio se não criptografado)",
+        "passwordPlaceholder": "Digite a senha do arquivo",
+        "encodingLabel": "Codificação dos nomes de arquivo",
+        "encodingSystemDefault": "Padrão do sistema",
+        "encodingGroup": {
+          "eastAsian": "Leste asiático",
+          "southeastAsian": "Sudeste asiático",
+          "middleEast": "Oriente Médio",
+          "european": "Europa"
+        },
+        "extract": "Extrair"
       }
     },
     "kind": "Tipo",

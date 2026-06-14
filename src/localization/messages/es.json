@@ -871,7 +871,28 @@
       "unknownError": "Error desconocido",
       "operationErrorTitle": "Error en la operación de archivo",
       "errors": {
-        "destinationInsideSelectedFolder": "El archivo de destino está dentro de una carpeta seleccionada"
+        "destinationInsideSelectedFolder": "El archivo de destino está dentro de una carpeta seleccionada",
+        "wrongPassword": "Contraseña incorrecta. No se pudo descifrar el archivo.",
+        "encodingError": "No se pudieron decodificar los nombres de archivo con la codificación seleccionada."
+      },
+      "optionsDialog": {
+        "title": "Opciones de extracción del archivo",
+        "description": "Configura la extracción para archivos protegidos con contraseña o codificados sin UTF-8",
+        "passwordTitle": "Se requiere contraseña del archivo",
+        "passwordDescription": "Este archivo está cifrado. Introduce la contraseña para extraer su contenido.",
+        "encodingTitle": "Codificación de nombres de archivo",
+        "encodingDescription": "Algunos nombres de archivo de este archivo usan una codificación distinta de UTF-8. Selecciona la codificación correcta.",
+        "passwordLabel": "Contraseña (dejar vacío si no está cifrado)",
+        "passwordPlaceholder": "Introducir contraseña del archivo",
+        "encodingLabel": "Codificación de nombres de archivo",
+        "encodingSystemDefault": "Predeterminado del sistema",
+        "encodingGroup": {
+          "eastAsian": "Asia oriental",
+          "southeastAsian": "Sudeste asiático",
+          "middleEast": "Oriente Medio",
+          "european": "Europa"
+        },
+        "extract": "Extraer"
       }
     },
     "kind": "Tipo",

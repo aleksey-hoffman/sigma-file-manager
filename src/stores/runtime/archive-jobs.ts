@@ -17,10 +17,14 @@ export type StartArchiveJobRequest
     kind: 'extractHere';
     archivePath: string;
     destinationDir: string;
+    password?: string;
+    encoding?: string;
   }
   | {
     kind: 'extractToNamedFolder';
     archivePath: string;
+    password?: string;
+    encoding?: string;
   }
   | {
     kind: 'compress';

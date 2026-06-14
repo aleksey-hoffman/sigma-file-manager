@@ -899,7 +899,28 @@
       "unknownError": "अज्ञात त्रुटि",
       "operationErrorTitle": "पुरालेख कार्रवाई विफल रही",
       "errors": {
-        "destinationInsideSelectedFolder": "गंतव्य संग्रह एक चयनित फ़ोल्डर के अंदर है"
+        "destinationInsideSelectedFolder": "गंतव्य संग्रह एक चयनित फ़ोल्डर के अंदर है",
+        "wrongPassword": "गलत पासवर्ड। आर्काइव डिक्रिप्ट नहीं हो सका।",
+        "encodingError": "चयनित एन्कोडिंग से फ़ाइल नाम डिकोड नहीं हो सके।"
+      },
+      "optionsDialog": {
+        "title": "आर्काइव निष्कर्षण विकल्प",
+        "description": "पासवर्ड-सुरक्षित या गैर-UTF-8 एन्कोडेड आर्काइव के लिए निष्कर्षण सेटिंग कॉन्फ़िगर करें",
+        "passwordTitle": "आर्काइव पासवर्ड आवश्यक",
+        "passwordDescription": "यह आर्काइव एन्क्रिप्टेड है। सामग्री निकालने के लिए पासवर्ड दर्ज करें।",
+        "encodingTitle": "फ़ाइल नाम एन्कोडिंग",
+        "encodingDescription": "इस आर्काइव में कुछ फ़ाइल नाम गैर-UTF-8 एन्कोडिंग का उपयोग करते हैं। सही एन्कोडिंग चुनें।",
+        "passwordLabel": "पासवर्ड (यदि एन्क्रिप्टेड न हो तो खाली छोड़ें)",
+        "passwordPlaceholder": "आर्काइव पासवर्ड दर्ज करें",
+        "encodingLabel": "फ़ाइल नाम एन्कोडिंग",
+        "encodingSystemDefault": "सिस्टम डिफ़ॉल्ट",
+        "encodingGroup": {
+          "eastAsian": "पूर्वी एशिया",
+          "southeastAsian": "दक्षिण पूर्व एशिया",
+          "middleEast": "मध्य पूर्व",
+          "european": "यूरोप"
+        },
+        "extract": "निकालें"
       }
     },
     "kind": "प्रकार",

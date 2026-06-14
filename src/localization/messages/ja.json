@@ -869,7 +869,28 @@
       "unknownError": "不明なエラー",
       "operationErrorTitle": "アーカイブ操作に失敗しました",
       "errors": {
-        "destinationInsideSelectedFolder": "出力先のアーカイブが選択したフォルダー内にあります"
+        "destinationInsideSelectedFolder": "出力先のアーカイブが選択したフォルダー内にあります",
+        "wrongPassword": "パスワードが正しくありません。アーカイブを復号できませんでした。",
+        "encodingError": "選択したエンコーディングでファイル名をデコードできませんでした。"
+      },
+      "optionsDialog": {
+        "title": "アーカイブ展開オプション",
+        "description": "パスワード保護または非 UTF-8 エンコードのアーカイブの展開設定",
+        "passwordTitle": "アーカイブのパスワードが必要です",
+        "passwordDescription": "このアーカイブは暗号化されています。展開するにはパスワードを入力してください。",
+        "encodingTitle": "ファイル名のエンコーディング",
+        "encodingDescription": "このアーカイブの一部のファイル名は非 UTF-8 エンコーディングを使用しています。正しいエンコーディングを選択してください。",
+        "passwordLabel": "パスワード（暗号化されていない場合は空欄）",
+        "passwordPlaceholder": "アーカイブのパスワードを入力",
+        "encodingLabel": "ファイル名のエンコーディング",
+        "encodingSystemDefault": "システム既定",
+        "encodingGroup": {
+          "eastAsian": "東アジア",
+          "southeastAsian": "東南アジア",
+          "middleEast": "中東",
+          "european": "ヨーロッパ"
+        },
+        "extract": "展開"
       }
     },
     "kind": "種類",
