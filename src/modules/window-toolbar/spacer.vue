@@ -12,6 +12,8 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <style scoped>
 .spacer {
+  min-width: 0;
   flex: 1;
+  align-self: stretch;
 }
 </style>

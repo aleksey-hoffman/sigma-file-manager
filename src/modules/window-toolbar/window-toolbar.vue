@@ -69,10 +69,6 @@ const toolbarProgressiveBlurLayers: ProgressiveBlurLayer[] = [
       class="window-toolbar-progressive-blur"
       :layers="toolbarProgressiveBlurLayers"
     />
-    <div
-      data-tauri-drag-region
-      class="window-toolbar-drag-layer"
-    />
     <div class="window-toolbar-action-layer">
       <LanShareReplaceDialog />
       <CommandPaletteToolbarButton />
@@ -116,10 +112,16 @@ const toolbarProgressiveBlurLayers: ProgressiveBlurLayer[] = [
 
 .window-toolbar-secondary-teleport-target {
   display: flex;
+  min-width: 0;
   max-width: 50%;
   align-items: center;
+  align-self: stretch;
   justify-content: flex-end;
   gap: 4px;
+}
+
+.window-toolbar-secondary-teleport-target :deep(> *) {
+  align-self: stretch;
 }
 
 .window-toolbar-tertiary {
@@ -157,15 +159,6 @@ const toolbarProgressiveBlurLayers: ProgressiveBlurLayer[] = [
   background: transparent;
 }
 
-.window-toolbar-drag-layer {
-  position: absolute;
-  z-index: 5;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-}
-
 .window-toolbar-spacer {
   z-index: 4;
 }
@@ -180,13 +173,21 @@ const toolbarProgressiveBlurLayers: ProgressiveBlurLayer[] = [
   flex: 1 1 auto;
   align-items: center;
   justify-content: center;
-  margin-left: 4px;
+  padding-left: 4px;
   gap: 8px;
 }
 
-.window-toolbar-action-layer
-  > * {
-    z-index: 6;
-    -webkit-app-region: no-drag;
-  }
+.window-toolbar-action-layer,
+.window-toolbar-action-layer :deep(*) {
+  -webkit-app-region: drag;
+}
+
+.window-toolbar-action-layer :deep(.tab-bar),
+.window-toolbar-action-layer :deep(.tab-bar *) {
+  -webkit-app-region: no-drag;
+}
+
+.window-toolbar-action-layer > * {
+  z-index: 6;
+}
 </style>

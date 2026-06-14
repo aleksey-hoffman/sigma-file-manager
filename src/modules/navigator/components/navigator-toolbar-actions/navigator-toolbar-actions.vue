@@ -233,6 +233,7 @@ function handleToggleInfoPanelDynamicSize(enabled: boolean) {
 .navigator-toolbar-actions {
   display: flex;
   align-items: center;
+  align-self: stretch;
   gap: 4px;
 }
 
