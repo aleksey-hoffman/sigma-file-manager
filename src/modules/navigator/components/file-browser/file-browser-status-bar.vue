@@ -577,7 +577,7 @@ async function handleExtensionAction(registration: ContextMenuItemRegistration) 
 }
 
 .file-browser-status-bar__scroll-area :deep(.sigma-ui-scroll-area-scrollbar) {
-  right: -6px;
+  inset-inline-end: -6px;
 }
 
 .file-browser-status-bar__items-list {

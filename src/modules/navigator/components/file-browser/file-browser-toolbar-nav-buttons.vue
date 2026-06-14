@@ -4,6 +4,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Button } from '@/components/ui/button';
 import {
@@ -27,6 +28,7 @@ import {
   HomeIcon,
   RefreshCwIcon,
 } from '@lucide/vue';
+import { useTextDirection } from '@/composables/use-text-direction';
 
 defineProps<{
   canGoBack: boolean;
@@ -45,6 +47,9 @@ const emit = defineEmits<{
 
 const { t } = useI18n();
 const shortcutsStore = useShortcutsStore();
+const { isRtl } = useTextDirection();
+const backHistoryIcon = computed(() => isRtl.value ? ArrowRightIcon : ArrowLeftIcon);
+const forwardHistoryIcon = computed(() => isRtl.value ? ArrowLeftIcon : ArrowRightIcon);
 </script>
 
 <template>
@@ -58,7 +63,10 @@ const shortcutsStore = useShortcutsStore();
           :disabled="!canGoBack"
           @click="emit('goBack')"
         >
-          <ArrowLeftIcon class="file-browser-toolbar-nav-buttons__icon" />
+          <component
+            :is="backHistoryIcon"
+            class="file-browser-toolbar-nav-buttons__icon"
+          />
         </Button>
       </TooltipTrigger>
       <TooltipContent>
@@ -77,7 +85,10 @@ const shortcutsStore = useShortcutsStore();
           :disabled="!canGoForward"
           @click="emit('goForward')"
         >
-          <ArrowRightIcon class="file-browser-toolbar-nav-buttons__icon" />
+          <component
+            :is="forwardHistoryIcon"
+            class="file-browser-toolbar-nav-buttons__icon"
+          />
         </Button>
       </TooltipTrigger>
       <TooltipContent>
@@ -164,14 +175,20 @@ const shortcutsStore = useShortcutsStore();
           :disabled="!canGoBack"
           @click="emit('goBack')"
         >
-          <ArrowLeftIcon :size="14" />
+          <component
+            :is="backHistoryIcon"
+            :size="14"
+          />
           {{ t('fileBrowser.goBack') }}
         </DropdownMenuItem>
         <DropdownMenuItem
           :disabled="!canGoForward"
           @click="emit('goForward')"
         >
-          <ArrowRightIcon :size="14" />
+          <component
+            :is="forwardHistoryIcon"
+            :size="14"
+          />
           {{ t('fileBrowser.goForward') }}
         </DropdownMenuItem>
         <DropdownMenuItem

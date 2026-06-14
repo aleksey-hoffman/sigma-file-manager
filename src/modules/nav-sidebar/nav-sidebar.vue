@@ -29,6 +29,7 @@ import { CONTEXT_MENU_OPEN_COUNT_KEY } from '@/components/dir-entry-interactive'
 import { formatKeybindingKeys } from '@/modules/extensions/api';
 import QuickAccessPanel from './components/quick-access-panel.vue';
 import UbuntuWslIcon from '@/components/icons/ubuntu-wsl-icon.vue';
+import { useTextDirection } from '@/composables/use-text-direction';
 
 const router = useRouter();
 const appStore = useAppStore();
@@ -37,6 +38,7 @@ const shortcutsStore = useShortcutsStore();
 const userSettingsStore = useUserSettingsStore();
 const workspacesStore = useWorkspacesStore();
 const { drives } = useDrives();
+const { inlineEndSide } = useTextDirection();
 
 const quickAccessOnHover = computed(() => userSettingsStore.userSettings.quickAccessOnHover);
 
@@ -156,7 +158,7 @@ function getDriveIcon(drive: {
             </Button>
           </TooltipTrigger>
           <TooltipContent
-            side="right"
+            :side="inlineEndSide"
             align="start"
             :side-offset="12"
             :collision-padding="6"
@@ -192,7 +194,7 @@ function getDriveIcon(drive: {
             </Button>
           </TooltipTrigger>
           <TooltipContent
-            side="right"
+            :side="inlineEndSide"
             :side-offset="12"
           >
             <div class="nav-sidebar__tooltip-row">
@@ -224,7 +226,7 @@ function getDriveIcon(drive: {
           </Button>
         </TooltipTrigger>
         <TooltipContent
-          side="right"
+          :side="inlineEndSide"
           :side-offset="12"
         >
           <div class="nav-sidebar__tooltip-row">
@@ -264,7 +266,7 @@ function getDriveIcon(drive: {
           </Button>
         </TooltipTrigger>
         <TooltipContent
-          side="right"
+          :side="inlineEndSide"
           :side-offset="12"
           :collision-padding="6"
           class="nav-sidebar-drive-tooltip"

@@ -484,7 +484,7 @@ watch(imagePreviewPlaceholderSrc, () => {
   content-visibility: auto;
   cursor: default;
   scroll-margin-top: calc(var(--file-browser-grid-section-header-height) + 8px);
-  text-align: left;
+  text-align: start;
   user-select: none;
 }
 
@@ -589,22 +589,20 @@ watch(imagePreviewPlaceholderSrc, () => {
 .file-browser-grid-card__info--overlay {
   position: absolute;
   z-index: 2;
-  right: 0;
   bottom: 0;
-  left: 0;
   padding: 8px 10px;
   background: linear-gradient(to top, hsl(0deg 0% 0% / 80%) 0%, transparent 100%);
   color: white;
+  inset-inline: 0;
 }
 
 .file-browser-grid-card--other .file-browser-grid-card__info--bottom {
   position: absolute;
   z-index: 2;
-  right: 0;
   bottom: 0;
-  left: 0;
   padding: 8px 10px;
   color: hsl(var(--foreground));
+  inset-inline: 0;
 }
 
 .file-browser-grid-card--icon-full .file-browser-grid-card__preview {

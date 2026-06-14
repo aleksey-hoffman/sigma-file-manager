@@ -123,7 +123,7 @@ function getMenuItemIcon(registration: ContextMenuItemRegistration) {
 
 .file-browser-extension-menu-items__icon {
   flex-shrink: 0;
-  margin-right: 8px;
+  margin-inline-end: 8px;
   opacity: 0.7;
 }
 

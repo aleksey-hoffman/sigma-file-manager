@@ -399,7 +399,7 @@ onUnmounted(() => {
   display: flex;
   min-width: max-content;
   align-items: center;
-  padding-right: 8px;
+  padding-inline-end: 8px;
 }
 
 .address-bar__part {

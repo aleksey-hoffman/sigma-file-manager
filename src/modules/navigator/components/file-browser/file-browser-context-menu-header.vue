@@ -147,8 +147,8 @@ const selectionSizeDisplay = computed(() => {
 
 .file-browser-context-menu-header__icon {
   flex-shrink: 0;
-  margin-right: 6px;
   color: hsl(var(--muted-foreground));
+  margin-inline-end: 6px;
 }
 
 .file-browser-context-menu-header__separator {

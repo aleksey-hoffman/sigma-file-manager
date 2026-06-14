@@ -146,17 +146,15 @@ const toolbarProgressiveBlurLayers: ProgressiveBlurLayer[] = [
 .window-toolbar-progressive-blur {
   z-index: 1;
   top: 0;
-  right: 0;
-  left: 0;
   height: calc(var(--window-toolbar-height) + 48px);
+  inset-inline: 0;
 }
 
 .window-toolbar--absolute {
   position: absolute;
   top: 0;
-  right: 0;
-  left: 0;
   background: transparent;
+  inset-inline: 0;
 }
 
 .window-toolbar-spacer {
@@ -166,15 +164,15 @@ const toolbarProgressiveBlurLayers: ProgressiveBlurLayer[] = [
 .window-toolbar-action-layer {
   position: absolute;
   top: 0;
-  left: 0;
   display: flex;
   width: 100%;
   height: 100%;
   flex: 1 1 auto;
   align-items: center;
   justify-content: center;
-  padding-left: 4px;
   gap: 8px;
+  inset-inline-start: 0;
+  padding-inline-start: 4px;
 }
 
 .window-toolbar-action-layer,

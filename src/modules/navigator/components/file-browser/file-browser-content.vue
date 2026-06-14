@@ -112,7 +112,7 @@ function handleViewportScroll(event: Event) {
 .file-browser__list-header-shell {
   width: 100%;
   flex-shrink: 0;
-  padding-right: var(--file-browser-scrollbar-gutter);
+  padding-inline-end: var(--file-browser-scrollbar-gutter);
 }
 
 .file-browser__content-scroll {
@@ -149,7 +149,7 @@ function handleViewportScroll(event: Event) {
   min-height: 0;
   flex: 1;
   flex-direction: column;
-  padding-right: var(--file-browser-scrollbar-gutter);
+  padding-inline-end: var(--file-browser-scrollbar-gutter);
 }
 
 :deep(.file-browser-list-view) :global(.sigma-ui-scroll-area-scrollbar) {

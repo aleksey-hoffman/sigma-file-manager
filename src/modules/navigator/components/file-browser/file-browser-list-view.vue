@@ -522,11 +522,11 @@ const visibleRows = computed<FileBrowserListDisplayRow[]>(() => {
   min-width: 100%;
   height: 0;
   padding: 0 var(--file-browser-list-row-padding-x);
-  padding-right: calc(var(--file-browser-list-row-padding-x) + var(--file-browser-list-columns-button-width));
   border: 0;
   margin: 0;
   column-gap: var(--file-browser-list-column-gap);
   grid-template-columns: var(--file-browser-list-columns);
+  padding-inline-end: calc(var(--file-browser-list-row-padding-x) + var(--file-browser-list-columns-button-width));
   pointer-events: none;
   visibility: hidden;
 }
@@ -539,10 +539,9 @@ const visibleRows = computed<FileBrowserListDisplayRow[]>(() => {
 
 .file-browser-list-view__virtual-window {
   position: absolute;
-  right: 0;
-  left: 0;
   display: flex;
   flex-direction: column;
+  inset-inline: 0;
   will-change: transform;
 }
 
@@ -557,7 +556,6 @@ const visibleRows = computed<FileBrowserListDisplayRow[]>(() => {
   min-width: 100%;
   min-height: var(--navigator-list-view-entry-height);
   padding: var(--file-browser-list-row-padding-y) var(--file-browser-list-row-padding-x);
-  padding-right: calc(var(--file-browser-list-row-padding-x) + var(--file-browser-list-columns-button-width));
   border: none;
   border-bottom: 1px solid hsl(var(--border) / 50%);
   background: transparent;
@@ -567,8 +565,9 @@ const visibleRows = computed<FileBrowserListDisplayRow[]>(() => {
   cursor: default;
   font-size: 13px;
   grid-template-columns: var(--file-browser-list-columns);
+  padding-inline-end: calc(var(--file-browser-list-row-padding-x) + var(--file-browser-list-columns-button-width));
   scroll-margin-top: var(--file-browser-list-header-height);
-  text-align: left;
+  text-align: start;
   user-select: none;
 }
 

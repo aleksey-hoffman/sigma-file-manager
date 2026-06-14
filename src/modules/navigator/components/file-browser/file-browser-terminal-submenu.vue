@@ -173,9 +173,9 @@ async function handleOpenTerminal(terminalId: string) {
 }
 
 .terminal-submenu__default-badge {
-  margin-left: auto;
   color: hsl(var(--muted-foreground));
   font-size: 11px;
+  margin-inline-start: auto;
   opacity: 0.7;
 }
 </style>

@@ -131,7 +131,7 @@ function handleAddressBarNavigate(path: string) {
   }
 
   .file-browser-toolbar__layout--split-view .file-browser-toolbar__actions {
-    margin-left: auto;
+    margin-inline-start: auto;
   }
 }
 </style>

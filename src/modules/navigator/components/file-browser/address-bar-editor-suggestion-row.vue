@@ -105,7 +105,7 @@ function handleRemoveRecentClick(event: MouseEvent) {
   color: hsl(var(--foreground));
   font-size: 13px;
   grid-template-columns: var(--address-bar-editor-grid-columns);
-  text-align: left;
+  text-align: start;
   user-select: none;
 }
 
@@ -120,7 +120,7 @@ function handleRemoveRecentClick(event: MouseEvent) {
   color: inherit;
   cursor: default;
   font: inherit;
-  text-align: left;
+  text-align: start;
 }
 
 .address-bar-editor-suggestion-row__activate:focus-visible {
@@ -231,7 +231,6 @@ function handleRemoveRecentClick(event: MouseEvent) {
   position: absolute;
   z-index: 2;
   top: 50%;
-  right: max(6px, calc(var(--address-bar-editor-row-px) - 6px));
   display: inline-flex;
   width: 26px;
   height: 26px;
@@ -243,6 +242,7 @@ function handleRemoveRecentClick(event: MouseEvent) {
   background: transparent;
   color: hsl(var(--muted-foreground));
   cursor: default;
+  inset-inline-end: max(6px, calc(var(--address-bar-editor-row-px) - 6px));
   transform: translateY(-50%);
 }
 

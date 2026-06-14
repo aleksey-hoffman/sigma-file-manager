@@ -4,8 +4,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import { useFileBrowserListColumns } from './composables/use-file-browser-list-columns';
 import type { FileBrowserListColumnId } from './utils/file-browser-list-columns';
+import { useTextDirection } from '@/composables/use-text-direction';
 
 const props = withDefaults(defineProps<{
   columnId: FileBrowserListColumnId;
@@ -21,6 +23,8 @@ const {
   finishColumnResize,
   cancelColumnResize,
 } = useFileBrowserListColumns();
+const { isRtl } = useTextDirection();
+const resizeDeltaMultiplier = computed(() => isRtl.value ? -1 : 1);
 
 function handleResizePointerDown(event: PointerEvent) {
   if (event.button !== 0) {
@@ -48,7 +52,7 @@ function handleResizePointerDown(event: PointerEvent) {
       return;
     }
 
-    const delta = moveEvent.clientX - pointerStartX;
+    const delta = (moveEvent.clientX - pointerStartX) * resizeDeltaMultiplier.value;
     updateColumnResize(props.columnId, definitionStartWidth + delta);
   }
 
@@ -104,11 +108,11 @@ function handleResizePointerDown(event: PointerEvent) {
   position: absolute;
   z-index: 2;
   top: -2px;
-  right: calc((var(--file-browser-list-column-gap) / -2) - 3px);
   bottom: -2px;
   width: 7px;
   border-radius: 2px;
   cursor: col-resize;
+  inset-inline-end: calc((var(--file-browser-list-column-gap) / -2) - 3px);
   opacity: 0;
   touch-action: none;
   transition: opacity 0.15s ease;
@@ -122,12 +126,11 @@ function handleResizePointerDown(event: PointerEvent) {
   position: absolute;
   top: 18%;
   bottom: 18%;
-  left: 50%;
   width: 2px;
   border-radius: 1px;
   background-color: hsl(var(--border));
   content: '';
-  transform: translateX(-50%);
+  inset-inline-start: calc(50% - 1px);
   transition: background-color 0.15s ease;
 }
 
