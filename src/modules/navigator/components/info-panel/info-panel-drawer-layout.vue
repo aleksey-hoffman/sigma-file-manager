@@ -147,6 +147,7 @@ onBeforeUnmount(() => {
       <InfoPanelProperties
         :selected-entry="props.selectedEntry"
         orientation="vertical"
+        property-layout="stacked"
         :use-internal-scroll="false"
       />
     </div>

@@ -173,6 +173,11 @@ onBeforeUnmount(() => {
 </template>
 
 <style>
+.tab-bar,
+.tab-bar * {
+  -webkit-app-region: no-drag;
+}
+
 .tab-bar {
   display: flex;
   max-width: 100%;
@@ -185,7 +190,6 @@ onBeforeUnmount(() => {
   display: flex;
   overflow: auto;
   align-items: center;
-  -webkit-app-region: no-drag;
   scrollbar-width: none;
 }
 

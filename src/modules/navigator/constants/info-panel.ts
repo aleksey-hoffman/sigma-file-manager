@@ -18,6 +18,7 @@ export const INFO_PANEL_LAYOUT = {
   COMPACT_DRAWER_PREFERRED_HEIGHT_VH: 65,
   COMPACT_DRAWER_MIN_HEIGHT_PX: 240,
   COMPACT_DRAWER_MAX_PREVIEW_HEIGHT_PX: 300,
+  PROPERTIES_ROWS_MIN_WIDTH_PX: 250,
 } as const;
 
 export function clampInfoPanelPx(value: number, minPx: number, maxPx: number): number {

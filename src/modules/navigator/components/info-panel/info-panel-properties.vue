@@ -30,8 +30,10 @@ import {
 const props = withDefaults(defineProps<{
   selectedEntry: DirEntry | null;
   orientation?: 'vertical' | 'compact';
+  propertyLayout?: 'rows' | 'stacked';
   useInternalScroll?: boolean;
 }>(), {
+  propertyLayout: 'rows',
   useInternalScroll: true,
 });
 
@@ -293,7 +295,10 @@ watch(
     :is="useInternalScroll ? ScrollArea : 'div'"
     v-else
     class="info-panel-properties"
-    :class="{ 'info-panel-properties--inline': !useInternalScroll }"
+    :class="{
+      'info-panel-properties--inline': !useInternalScroll,
+      'info-panel-properties--stacked': propertyLayout === 'stacked',
+    }"
     :orientation="useInternalScroll ? 'vertical' : undefined"
   >
     <div
@@ -308,7 +313,7 @@ watch(
     >
       <div
         v-if="selectedEntryWithMetadata?.is_file || selectedEntry?.is_dir"
-        class="info-panel-properties__item"
+        class="info-panel-properties__item info-panel-properties__item--size"
       >
         <div class="info-panel-properties__title">
           {{ t('size') }}
@@ -395,6 +400,12 @@ watch(
   padding: 12px 16px;
 }
 
+.info-panel-properties--compact {
+  overflow: hidden;
+  min-width: 0;
+  padding: 0;
+}
+
 .info-panel-properties--inline {
   flex: none;
 }
@@ -411,7 +422,7 @@ watch(
 .info-panel-properties__list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
 }
 
 .info-panel-properties__item {
@@ -420,22 +431,35 @@ watch(
   gap: 2px;
 }
 
+@container info-panel (width >= 250px) {
+  .info-panel-properties:not(.info-panel-properties--stacked) .info-panel-properties__item {
+    display: grid;
+    align-items: start;
+    gap: 2px 12px;
+    grid-template-columns: minmax(80px, 24%) minmax(0, 1fr);
+  }
+
+  .info-panel-properties:not(.info-panel-properties--stacked) .info-panel-properties__item--size {
+    align-items: center;
+  }
+
+  .info-panel-properties:not(.info-panel-properties--stacked) .info-panel-properties__title {
+    line-height: 1.4;
+  }
+}
+
 .info-panel-properties__title {
   color: hsl(var(--muted-foreground));
   font-size: 11px;
+  line-height: inherit;
   text-transform: uppercase;
 }
 
 .info-panel-properties__value {
   color: hsl(var(--foreground));
   font-size: 13px;
+  line-height: 1.4;
   word-break: break-all;
-}
-
-.info-panel-properties--compact {
-  overflow: hidden;
-  min-width: 0;
-  padding: 0;
 }
 
 .info-panel-properties__compact-text {
@@ -446,22 +470,38 @@ watch(
   white-space: nowrap;
 }
 
+.info-panel-properties__item--size {
+  min-height: var(--info-panel-properties-header-height);
+  align-items: stretch;
+}
+
 .info-panel-properties__value--action {
   display: flex;
-  height: 38px;
+  width: 100%;
+  height: var(--info-panel-properties-header-height);
+  min-height: var(--info-panel-properties-header-height);
   align-items: center;
   gap: 6px;
 }
 
 .info-panel-properties__size-content {
   display: flex;
+  overflow: hidden;
+  min-width: 0;
+  flex: 1;
   flex-direction: column;
-  gap: 2px;
+  justify-content: center;
+  gap: 0;
+  line-height: 1.15;
 }
 
 .info-panel-properties__calculated-ago {
+  overflow: hidden;
   color: hsl(var(--muted-foreground) / 70%);
   font-size: 11px;
+  line-height: 1.15;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .info-panel-properties__spinner {
