@@ -1105,5 +1105,8 @@
     "replaceShareDialogTitle": "اشتراک‌گذاری فعلی جایگزین شود؟",
     "replaceShareDialogDescription": "فایل‌ها از قبل از طریق شبکه به اشتراک گذاشته شده‌اند. اشتراک‌گذاری فعلی متوقف و با مورد جدید جایگزین خواهد شد.",
     "replaceShareDialogConfirm": "جایگزینی"
-  }
+  },
+  "splitViewMode": "Split view mode",
+  "splitViewModeSplit": "Split",
+  "splitViewModeLinked": "Linked"
 }

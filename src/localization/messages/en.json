@@ -85,6 +85,9 @@
     "noClosedTabsToRestore": "No closed tabs to restore"
   },
   "splitView": "Split view",
+  "splitViewMode": "Split view mode",
+  "splitViewModeSplit": "Split",
+  "splitViewModeLinked": "Linked",
   "filter": {
     "filter": "Filter",
     "showHiddenItems": "Show Hidden Items",

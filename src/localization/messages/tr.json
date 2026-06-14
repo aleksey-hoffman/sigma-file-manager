@@ -1105,5 +1105,8 @@
     "replaceShareDialogTitle": "Mevcut paylaşım değiştirilsin mi?",
     "replaceShareDialogDescription": "Ağ üzerinden zaten dosyalar paylaşılıyor. Mevcut paylaşım durdurulup yenisiyle değiştirilecek.",
     "replaceShareDialogConfirm": "Değiştir"
-  }
+  },
+  "splitViewMode": "Split view mode",
+  "splitViewModeSplit": "Split",
+  "splitViewModeLinked": "Linked"
 }

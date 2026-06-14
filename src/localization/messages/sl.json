@@ -1105,5 +1105,8 @@
     "replaceShareDialogTitle": "Zamenjaj trenutno deljenje?",
     "replaceShareDialogDescription": "Datoteke se že delijo po omrežju. Trenutno deljenje bo ustavljeno in zamenjano z novim.",
     "replaceShareDialogConfirm": "Zamenjaj"
-  }
+  },
+  "splitViewMode": "Split view mode",
+  "splitViewModeSplit": "Split",
+  "splitViewModeLinked": "Linked"
 }

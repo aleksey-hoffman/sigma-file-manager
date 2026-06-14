@@ -23,6 +23,7 @@ import { Switch } from '@/components/ui/switch';
 import { ContextMenuShortcut } from '@/components/ui/context-menu';
 import {
   FlipHorizontalIcon,
+  Columns2Icon,
   PanelRightIcon,
   LayoutGridIcon,
   ListIcon,
@@ -31,6 +32,7 @@ import {
 } from '@lucide/vue';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { useShortcutsStore } from '@/stores/runtime/shortcuts';
+import type { SplitViewMode } from '@/types/user-settings';
 import { useInfoPanelLayout } from '@/modules/navigator/components/info-panel/composables/use-info-panel-layout';
 
 type LayoutType = 'list' | 'grid';
@@ -44,6 +46,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   'toggle-split-view': [];
   'toggle-info-panel': [];
+  'set-split-view-mode': [mode: SplitViewMode];
 }>();
 
 const { t } = useI18n();
@@ -61,6 +64,12 @@ const {
   enableDynamicSize,
   disableDynamicSize,
 } = useInfoPanelLayout();
+
+const splitViewMode = computed(() => userSettingsStore.userSettings.navigator.splitViewMode);
+
+function setSplitViewMode(mode: SplitViewMode) {
+  emit('set-split-view-mode', mode);
+}
 
 async function setLayout(layoutName: LayoutType) {
   const layoutTitle = layoutName === 'grid' ? 'gridLayout' : 'listLayout';
@@ -132,6 +141,35 @@ function handleToggleInfoPanelDynamicSize(enabled: boolean) {
                 >
                   <LayoutGridIcon :size="20" />
                   <span>{{ t('grid') }}</span>
+                </button>
+              </div>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              @select.prevent
+              class="navigator-settings-menu__item navigator-settings-menu__item--layout"
+            >
+              <div class="navigator-settings-menu__layout-label">
+                {{ t('splitViewMode') }}
+              </div>
+              <div class="navigator-settings-menu__layout-row">
+                <button
+                  type="button"
+                  class="navigator-settings-menu__layout-option"
+                  :class="{ 'navigator-settings-menu__layout-option--active': splitViewMode === 'split' }"
+                  @click="setSplitViewMode('split')"
+                >
+                  <Columns2Icon :size="20" />
+                  <span>{{ t('splitViewModeSplit') }}</span>
+                </button>
+                <button
+                  type="button"
+                  class="navigator-settings-menu__layout-option"
+                  :class="{ 'navigator-settings-menu__layout-option--active': splitViewMode === 'linked' }"
+                  @click="setSplitViewMode('linked')"
+                >
+                  <FlipHorizontalIcon :size="20" />
+                  <span>{{ t('splitViewModeLinked') }}</span>
                 </button>
               </div>
             </DropdownMenuItem>

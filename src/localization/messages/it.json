@@ -1105,5 +1105,8 @@
     "replaceShareDialogTitle": "Sostituire la condivisione attuale?",
     "replaceShareDialogDescription": "Ci sono già file condivisi in rete. La condivisione attuale verrà interrotta e sostituita con quella nuova.",
     "replaceShareDialogConfirm": "Sostituisci"
-  }
+  },
+  "splitViewMode": "Split view mode",
+  "splitViewModeSplit": "Split",
+  "splitViewModeLinked": "Linked"
 }
