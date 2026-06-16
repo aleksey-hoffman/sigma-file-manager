@@ -3,8 +3,10 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 use std::fs;
-use std::iter::once;
 use std::path::{Path, PathBuf};
+
+#[cfg(target_os = "windows")]
+use std::iter::once;
 
 #[cfg(not(target_os = "windows"))]
 use image::codecs::png::PngEncoder;
@@ -174,11 +176,9 @@ fn set_system_clipboard_files_sync(paths: &[String], operation: &str) -> Result<
         return Ok(());
     }
 
-    let is_move = operation == "move";
-
     #[cfg(target_os = "windows")]
     {
-        windows_set_file_clipboard(paths, is_move)?;
+        windows_set_file_clipboard(paths, operation == "move")?;
     }
 
     #[cfg(not(target_os = "windows"))]
@@ -682,7 +682,7 @@ fn unix_clear_file_clipboard() -> Result<(), String> {
 #[cfg(not(target_os = "windows"))]
 fn unix_set_file_clipboard(paths: &[String]) -> Result<(), String> {
     let path_bufs: Vec<PathBuf> = paths.iter().map(PathBuf::from).collect();
-    let clipboard = arboard::Clipboard::new().map_err(|error| error.to_string())?;
+    let mut clipboard = arboard::Clipboard::new().map_err(|error| error.to_string())?;
     clipboard
         .set()
         .file_list(&path_bufs)
@@ -692,7 +692,7 @@ fn unix_set_file_clipboard(paths: &[String]) -> Result<(), String> {
 
 #[cfg(not(target_os = "windows"))]
 fn unix_read_file_clipboard() -> Result<SystemClipboardFiles, String> {
-    let clipboard = arboard::Clipboard::new().map_err(|error| error.to_string())?;
+    let mut clipboard = arboard::Clipboard::new().map_err(|error| error.to_string())?;
     let paths = clipboard
         .get()
         .file_list()
