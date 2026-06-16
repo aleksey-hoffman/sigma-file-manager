@@ -29,6 +29,7 @@ import { useNavigatorSelectionStore } from '@/stores/runtime/navigator-selection
 import { FileBrowser } from '@/modules/navigator/components/file-browser';
 import type { AddressBarEditorMode } from '@/modules/navigator/components/file-browser/address-bar-editor-utils';
 import FileBrowserConflictDialog from '@/modules/navigator/components/file-browser/file-browser-conflict-dialog.vue';
+import FileBrowserTopLevelConflictDialog from '@/modules/navigator/components/file-browser/file-browser-top-level-conflict-dialog.vue';
 import FileBrowserDragOverlay from '@/modules/navigator/components/file-browser/file-browser-drag-overlay.vue';
 import { useActiveFileBrowserDragState } from '@/modules/navigator/components/file-browser/composables/use-file-browser-drag';
 import { provideFileBrowserInternalDropHandler } from '@/modules/navigator/components/file-browser/composables/use-file-browser-internal-drop';
@@ -91,6 +92,10 @@ const {
   conflictDialogState: internalDropConflictDialogState,
   handleConflictResolution: handleInternalDropConflictResolution,
   handleConflictCancel: handleInternalDropConflictCancel,
+  topLevelNameConflictDialogState: internalDropTopLevelNameConflictDialogState,
+  handleTopLevelNameConflictRename: handleInternalDropTopLevelNameConflictRename,
+  handleTopLevelNameConflictMerge: handleInternalDropTopLevelNameConflictMerge,
+  handleTopLevelNameConflictCancel: handleInternalDropTopLevelNameConflictCancel,
   performDrop: performInternalDrop,
 } = useFileDropOperation();
 
@@ -571,6 +576,8 @@ function handleCopyShortcut() {
   if (selectedEntries.value.length > 0) {
     pane.copyItems(selectedEntries.value);
   }
+
+  return true;
 }
 
 async function handleCopyCurrentDirectoryPathShortcut() {
@@ -610,29 +617,35 @@ function handleCutShortcut() {
   if (selectedEntries.value.length > 0) {
     pane.cutItems(selectedEntries.value);
   }
+
+  return true;
 }
 
 async function handlePasteShortcut() {
   const pane = getActivePaneRef();
   const pasteTargetPath = getPasteTargetPath();
 
-  if (pane && pasteTargetPath && clipboardStore.canPasteTo(pasteTargetPath)) {
-    await pane.pasteItems(pasteTargetPath);
+  if (!pane || !pasteTargetPath) {
+    return;
   }
+
+  await pane.pasteItems(pasteTargetPath);
 }
 
 async function handlePasteToPane(paneIndex: number) {
   const tabGroup = workspacesStore.currentTabGroup;
-  if (!tabGroup || !clipboardStore.hasItems) return;
+  if (!tabGroup) return;
 
   const tab = tabGroup[paneIndex];
   if (!tab) return;
 
   const pane = paneRefsMap.value.get(tab.id);
 
-  if (pane) {
-    await pane.pasteItems(tab.path);
+  if (!pane) {
+    return;
   }
+
+  await pane.pasteItems(tab.path);
 }
 
 function handleSelectAllShortcut() {
@@ -684,7 +697,7 @@ function handleEscapeKey(): boolean {
   }
 
   if (clipboardStore.hasItems) {
-    clipboardStore.clearClipboard();
+    clipboardStore.discardClipboard();
     return true;
   }
 
@@ -924,7 +937,6 @@ watch(isInfoPanelVisibilityAnimating, (isAnimating, wasAnimating) => {
 
 onMounted(() => {
   registerShortcutHandlers();
-
   dirSizesStore.recoverActiveCalculations();
 });
 
@@ -1069,6 +1081,13 @@ onUnmounted(() => {
               @resolve="handleInternalDropConflictResolution"
               @cancel="handleInternalDropConflictCancel"
             />
+            <FileBrowserTopLevelConflictDialog
+              v-model:open="internalDropTopLevelNameConflictDialogState.isOpen"
+              :conflicts="internalDropTopLevelNameConflictDialogState.conflicts"
+              @rename="handleInternalDropTopLevelNameConflictRename"
+              @merge="handleInternalDropTopLevelNameConflictMerge"
+              @cancel="handleInternalDropTopLevelNameConflictCancel"
+            />
           </div>
         </ResizablePanel>
         <ResizableHandle
@@ -1203,6 +1222,13 @@ onUnmounted(() => {
           @resolve="handleInternalDropConflictResolution"
           @cancel="handleInternalDropConflictCancel"
         />
+        <FileBrowserTopLevelConflictDialog
+          v-model:open="internalDropTopLevelNameConflictDialogState.isOpen"
+          :conflicts="internalDropTopLevelNameConflictDialogState.conflicts"
+          @rename="handleInternalDropTopLevelNameConflictRename"
+          @merge="handleInternalDropTopLevelNameConflictMerge"
+          @cancel="handleInternalDropTopLevelNameConflictCancel"
+        />
       </div>
     </div>
   </div>
@@ -1242,9 +1268,9 @@ onUnmounted(() => {
 
 .navigator-page__main-resizable :deep(.navigator-page__info-panel-handle) {
   overflow: visible;
-  flex-shrink: 0;
   min-width: 0;
   max-width: 16px;
+  flex-shrink: 0;
   opacity: 1;
   transition:
     max-width var(--info-panel-visibility-transition-ms) var(--info-panel-visibility-transition-easing),

@@ -751,6 +751,14 @@
     "checkingConflicts": "Đang kiểm tra xung đột…",
     "skipIdenticalFiles": "Bỏ qua {n} tệp có cùng kích thước và ngày | Bỏ qua {n} tệp có cùng kích thước và ngày"
   },
+  "topLevelConflictDialog": {
+    "title": "Mục đã tồn tại",
+    "description": "0 mục có các tên này đã tồn tại trong thư mục này. | 1 mục có tên này đã tồn tại trong thư mục này. | {n} mục có các tên này đã tồn tại trong thư mục này. | {n} mục có các tên này đã tồn tại trong thư mục này.",
+    "hint": "Chọn Đổi tên để tạo các mục được đổi tên, hoặc Gộp để xem các xung đột bên trong các mục hiện có.",
+    "rename": "Đổi tên",
+    "merge": "Gộp",
+    "moreItems": "+ {count} mục khác | + {count} mục khác"
+  },
   "command": "Lệnh",
   "keybinding": "Phím tắt",
   "when": "Khi nào",

@@ -12,21 +12,34 @@ import { useWorkspacesStore } from '@/stores/storage/workspaces';
 import { useUserStatsStore } from '@/stores/storage/user-stats';
 import {
   useClipboardStore,
+  type ConflictItem,
+  type ConflictResolution,
   type FileOperationResult,
+  type PathResolutionEntry,
 } from '@/stores/runtime/clipboard';
+import { useCopyMoveJobsStore } from '@/stores/runtime/copy-move-jobs';
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
 import { useDeleteJobsStore } from '@/stores/runtime/delete-jobs';
 import { useQuickViewStore } from '@/stores/runtime/quick-view';
 import { toast, ToastStatic } from '@/components/ui/toaster';
 import { useLanShare } from '@/composables/use-lan-share';
 import { useConflictResolutionDialog } from '@/composables/use-conflict-resolution-dialog';
+import { useTopLevelNameConflictDialog } from '@/composables/use-top-level-name-conflict-dialog';
 import { getParentDirectory } from '@/utils/normalize-path';
-import { getSharedSourceDirectory } from '@/utils/file-operation-paths';
+import {
+  arePathsEquivalent,
+  getSharedSourceDirectory,
+  isDestinationInsideAnySourceDirectory,
+} from '@/utils/file-operation-paths';
 import { basenameFromPath } from '@/utils/source-display-name';
 import { resolveNavigableItemTarget } from '@/utils/resolve-navigable-item-target';
 import { usePermanentDeleteConfirm } from '@/composables/use-permanent-delete-confirm';
 import { usePlatformStore } from '@/stores/runtime/platform';
 import { openNativeProperties } from '@/utils/open-native-properties';
+import {
+  getTopLevelNameConflicts,
+  splitTopLevelSamePathSources,
+} from '@/utils/top-level-name-conflicts';
 
 export function useDirEntryActions() {
   const { t } = useI18n();
@@ -37,6 +50,7 @@ export function useDirEntryActions() {
   const clipboardStore = useClipboardStore();
   const dirSizesStore = useDirSizesStore();
   const deleteJobsStore = useDeleteJobsStore();
+  const copyMoveJobsStore = useCopyMoveJobsStore();
   const quickViewStore = useQuickViewStore();
   const { startShare } = useLanShare();
   const permanentDeleteConfirm = usePermanentDeleteConfirm();
@@ -46,6 +60,13 @@ export function useDirEntryActions() {
     handleConflictResolution,
     handleConflictCancel,
   } = useConflictResolutionDialog();
+  const {
+    topLevelNameConflictDialogState,
+    showTopLevelNameConflictDialog,
+    handleTopLevelNameConflictRename,
+    handleTopLevelNameConflictMerge,
+    handleTopLevelNameConflictCancel,
+  } = useTopLevelNameConflictDialog();
 
   async function openEntriesInNewTabs(entries: DirEntry[]) {
     for (const entry of entries) {
@@ -83,53 +104,216 @@ export function useDirEntryActions() {
   }
 
   async function pasteItems(destinationPath: string): Promise<boolean> {
-    if (!clipboardStore.hasItems) {
-      return false;
-    }
+    const systemClipboard = await clipboardStore.readSystemClipboardFiles();
 
-    const isCopy = clipboardStore.isCopyOperation;
-    const operationType = isCopy ? 'copy' : 'move';
+    if (!systemClipboard?.paths.length) {
+      if (clipboardStore.hasFileItems) {
+        const clipboardItems = clipboardStore.clipboardItems.map(item => ({ ...item }));
+        const isCopy = clipboardStore.isCopyOperation;
+        const result = await clipboardStore.pasteItems(destinationPath);
 
-    const resolutionPayload = await showConflictDialog(operationType, () =>
-      clipboardStore.checkConflicts(destinationPath),
-    );
+        if (!result.success) {
+          if (result.error) {
+            toast.error(result.error);
+          }
 
-    if (resolutionPayload === null) {
-      return false;
-    }
+          return false;
+        }
 
-    const conflictPayload
-      = resolutionPayload === undefined ? undefined : resolutionPayload;
+        const sourcePaths = clipboardItems.map(item => item.path);
+        const sourcesForSizes = clipboardItems.map(item => ({
+          path: item.path,
+          is_dir: item.is_dir,
+        }));
+        const sourceDirectoriesToRefresh = isCopy
+          ? []
+          : [...new Set(sourcePaths.map(path => getParentDirectory(path)))];
 
-    const sourcesForSizes = clipboardStore.clipboardItems.map(item => ({
-      path: item.path,
-      is_dir: item.is_dir,
-    }));
-    const sourceDirectoryBeforePaste = clipboardStore.sourceDirectory;
-    const result = await clipboardStore.pasteItems(destinationPath, conflictPayload?.perPathResolutions);
+        await dirSizesStore.refreshSizesAfterCopyMove(
+          sourcesForSizes,
+          destinationPath,
+          [destinationPath, ...sourceDirectoriesToRefresh],
+        );
+        workspacesStore.handleDirectoryContentsChanged([
+          destinationPath,
+          ...sourceDirectoriesToRefresh,
+        ]);
 
-    if (!result.success && result.error && !result.fromStatusCenterJob) {
-      toast.error(result.error);
-    }
-
-    if (!result.cancelled && (result.copied_count ?? 0) > 0) {
-      await dirSizesStore.refreshSizesAfterCopyMove(sourcesForSizes, destinationPath, [
-        destinationPath,
-        sourceDirectoryBeforePaste,
-      ].filter((pathItem): pathItem is string => Boolean(pathItem)));
-    }
-
-    if (result.success || (!result.cancelled && (result.copied_count ?? 0) > 0)) {
-      const pathsToInvalidate = [destinationPath];
-
-      if (sourceDirectoryBeforePaste) {
-        pathsToInvalidate.push(sourceDirectoryBeforePaste);
+        return true;
       }
 
-      workspacesStore.handleDirectoryContentsChanged(pathsToInvalidate);
+      return await pasteSystemClipboardImage(destinationPath);
     }
 
-    return result.success;
+    const operationType = systemClipboard.operation;
+
+    let sourcePathIsDir: boolean[];
+
+    try {
+      sourcePathIsDir = await invoke<boolean[]>('paths_are_directories', {
+        paths: systemClipboard.paths,
+      });
+    }
+    catch {
+      sourcePathIsDir = systemClipboard.paths.map(() => true);
+    }
+
+    if (isDestinationInsideAnySourceDirectory(destinationPath, systemClipboard.paths, sourcePathIsDir)) {
+      toast.error(t('fileBrowser.cannotPasteIntoItself'));
+      return false;
+    }
+
+    const {
+      samePathSourcePaths,
+      remainingSourcePaths,
+    } = splitTopLevelSamePathSources(systemClipboard.paths, destinationPath);
+
+    if (operationType === 'move' && samePathSourcePaths.length > 0) {
+      toast.error(t('fileBrowser.cannotMoveToSameDirectory'));
+      return false;
+    }
+
+    const sharedSourceDirectory = getSharedSourceDirectory(remainingSourcePaths);
+
+    if (
+      remainingSourcePaths.length > 0
+      && operationType === 'move'
+      && sharedSourceDirectory !== null
+      && arePathsEquivalent(sharedSourceDirectory, destinationPath)
+    ) {
+      toast.error(t('fileBrowser.cannotMoveToSameDirectory'));
+      return false;
+    }
+
+    let conflictResolution: ConflictResolution | null = null;
+    let perPathResolutions: PathResolutionEntry[] | undefined;
+    const topLevelConflicts = await getTopLevelNameConflicts(remainingSourcePaths, destinationPath);
+
+    if (topLevelConflicts.length > 0) {
+      const topLevelConflictDecision = await showTopLevelNameConflictDialog(topLevelConflicts);
+
+      if (topLevelConflictDecision === null) {
+        return false;
+      }
+
+      if (topLevelConflictDecision === 'rename') {
+        conflictResolution = 'auto-rename';
+      }
+      else {
+        const resolutionPayload = await showConflictDialog(operationType, () =>
+          invoke<ConflictItem[]>('check_conflicts', {
+            sourcePaths: remainingSourcePaths,
+            destinationPath,
+          }),
+        );
+
+        if (resolutionPayload === null) {
+          return false;
+        }
+
+        perPathResolutions = resolutionPayload?.perPathResolutions ?? [];
+      }
+    }
+
+    const sourcesForSizes = systemClipboard.paths.map((path, index) => ({
+      path,
+      is_dir: sourcePathIsDir[index] ?? false,
+    }));
+
+    const displayPath = destinationPath.split(/[/\\]/).pop() ?? destinationPath;
+    const isCopy = operationType === 'copy';
+    const sourceDirectoriesToRefresh = isCopy
+      ? []
+      : [...new Set(systemClipboard.paths.map(path => getParentDirectory(path)))];
+    const pathsToRefresh = [
+      destinationPath,
+      ...sourceDirectoriesToRefresh,
+    ];
+
+    try {
+      const samePathCopyResult = samePathSourcePaths.length > 0
+        ? await copyMoveJobsStore.startJob(
+            'copy',
+            samePathSourcePaths,
+            destinationPath,
+            'auto-rename',
+            undefined,
+            {
+              label: t('notifications.copyingItems'),
+              displayPath,
+            },
+          )
+        : null;
+      const normalResult = remainingSourcePaths.length > 0
+        ? await copyMoveJobsStore.startJob(
+            operationType,
+            remainingSourcePaths,
+            destinationPath,
+            conflictResolution,
+            perPathResolutions,
+            {
+              label: isCopy ? t('notifications.copyingItems') : t('notifications.movingItems'),
+              displayPath,
+            },
+          )
+        : null;
+      const result = normalResult ?? samePathCopyResult;
+
+      if (!result) {
+        return false;
+      }
+
+      const copiedCount = (normalResult?.copied_count ?? 0) + (samePathCopyResult?.copied_count ?? 0);
+
+      if (copiedCount > 0) {
+        await dirSizesStore.refreshSizesAfterCopyMove(
+          sourcesForSizes,
+          destinationPath,
+          pathsToRefresh,
+        );
+      }
+
+      if (normalResult?.success || samePathCopyResult?.success || copiedCount > 0) {
+        workspacesStore.handleDirectoryContentsChanged(pathsToRefresh);
+      }
+
+      const pasted = Boolean(normalResult?.success || samePathCopyResult?.success);
+
+      if (pasted) {
+        clipboardStore.discardClipboard();
+      }
+
+      return pasted;
+    }
+    catch (error: unknown) {
+      toast.custom(markRaw(ToastStatic), {
+        componentProps: {
+          data: {
+            title: isCopy ? t('fileBrowser.copyFailed') : t('fileBrowser.moveFailed'),
+            description: String(error),
+          },
+        },
+        duration: 5000,
+      });
+      return false;
+    }
+  }
+
+  async function pasteSystemClipboardImage(destinationPath: string): Promise<boolean> {
+    const result = await clipboardStore.pasteSystemClipboardImage(destinationPath);
+
+    if (!result.success) {
+      if (result.error) {
+        toast.error(result.error);
+      }
+
+      return false;
+    }
+
+    await dirSizesStore.refreshSizesAfterCopyMove([], destinationPath, [destinationPath]);
+    workspacesStore.handleDirectoryContentsChanged([destinationPath]);
+    clipboardStore.discardClipboard();
+    return true;
   }
 
   async function deleteItems(entries: DirEntry[], useTrash: boolean = true): Promise<boolean> {
@@ -468,6 +652,10 @@ export function useDirEntryActions() {
     conflictDialogState,
     handleConflictResolution,
     handleConflictCancel,
+    topLevelNameConflictDialogState,
+    handleTopLevelNameConflictRename,
+    handleTopLevelNameConflictMerge,
+    handleTopLevelNameConflictCancel,
     permanentDeleteConfirm,
   };
 }

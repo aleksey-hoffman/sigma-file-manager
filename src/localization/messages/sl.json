@@ -781,6 +781,14 @@
     "checkingConflicts": "Preverjanje sporov …",
     "skipIdenticalFiles": "Preskoči {n} datoteko z enako velikostjo in datumom | Preskoči {n} datoteki z enako velikostjo in datumom | Preskoči {n} datoteke z enako velikostjo in datumom | Preskoči {n} datotek z enako velikostjo in datumom"
   },
+  "topLevelConflictDialog": {
+    "title": "Predmeti že obstajajo",
+    "description": "0 predmetov s temi imeni že obstaja v tej mapi. | 1 predmet s tem imenom že obstaja v tej mapi. | {n} predmeta s temi imeni že obstajata v tej mapi. | {n} predmetov s temi imeni že obstaja v tej mapi.",
+    "hint": "Izberite Preimenuj, da ustvarite preimenovane predmete, ali Združi, da pregledate spore znotraj obstoječih predmetov.",
+    "rename": "Preimenuj",
+    "merge": "Združi",
+    "moreItems": "+ še {count} predmet | + še {count} predmeta | + še {count} predmeti | + še {count} predmetov"
+  },
   "command": "Ukaz",
   "keybinding": "Tipkovna bližnjica",
   "when": "Kdaj",

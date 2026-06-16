@@ -751,6 +751,14 @@
     "checkingConflicts": "Konflikte werden geprüft…",
     "skipIdenticalFiles": "Überspringe {n} Datei mit derselben Größe und demselben Datum | Überspringe {n} Dateien mit derselben Größe und demselben Datum"
   },
+  "topLevelConflictDialog": {
+    "title": "Elemente sind bereits vorhanden",
+    "description": "0 Elemente mit diesen Namen sind in diesem Ordner bereits vorhanden. | 1 Element mit diesem Namen ist in diesem Ordner bereits vorhanden. | {n} Elemente mit diesen Namen sind in diesem Ordner bereits vorhanden. | {n} Elemente mit diesen Namen sind in diesem Ordner bereits vorhanden.",
+    "hint": "Wähle Umbenennen, um umbenannte Elemente zu erstellen, oder Zusammenführen, um Konflikte in den vorhandenen Elementen zu prüfen.",
+    "rename": "Umbenennen",
+    "merge": "Zusammenführen",
+    "moreItems": "+ {count} weiteres Element | + {count} weitere Elemente"
+  },
   "command": "Befehl",
   "keybinding": "Tastenkombination",
   "when": "Wenn",

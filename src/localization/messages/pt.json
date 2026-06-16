@@ -750,6 +750,14 @@
     "checkingConflicts": "A verificar conflitos…",
     "skipIdenticalFiles": "Ignorar {n} ficheiro com o mesmo tamanho e data | Ignorar {n} ficheiros com o mesmo tamanho e data"
   },
+  "topLevelConflictDialog": {
+    "title": "Itens já existem",
+    "description": "0 itens com estes nomes já existem neste diretório. | 1 item com este nome já existe neste diretório. | {n} itens com estes nomes já existem neste diretório. | {n} itens com estes nomes já existem neste diretório.",
+    "hint": "Escolha Renomear para criar itens renomeados, ou Mesclar para revisar conflitos dentro dos itens existentes.",
+    "rename": "Renomear",
+    "merge": "Mesclar",
+    "moreItems": "+ {count} item a mais | + {count} itens a mais"
+  },
   "command": "Comando",
   "keybinding": "Combinação de teclas",
   "when": "Quando",

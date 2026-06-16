@@ -7,6 +7,7 @@ import {
 } from 'vitest';
 import {
   arePathsEquivalent,
+  isDestinationInsideAnySourceDirectory,
   normalizePathForComparison,
 } from '@/utils/file-operation-paths';
 import * as pathComparisonCache from '@/utils/path-comparison-volume-cache';
@@ -42,6 +43,42 @@ describe('file-operation-paths', () => {
       vi.spyOn(pathComparisonCache, 'shouldFoldPathCaseForComparison').mockReturnValue(false);
       expect(arePathsEquivalent('/tmp/Foo', '/tmp/foo')).toBe(false);
     });
+  });
+});
+
+describe('isDestinationInsideAnySourceDirectory', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('treats a directory as inside itself', () => {
+    vi.spyOn(pathComparisonCache, 'shouldFoldPathCaseForComparison').mockReturnValue(true);
+
+    expect(isDestinationInsideAnySourceDirectory(
+      'C:/Users/aleks/test/mapped-drive',
+      ['C:/Users/aleks/test/mapped-drive'],
+      [true],
+    )).toBe(true);
+  });
+
+  it('does not block copying a directory to its parent directory', () => {
+    vi.spyOn(pathComparisonCache, 'shouldFoldPathCaseForComparison').mockReturnValue(true);
+
+    expect(isDestinationInsideAnySourceDirectory(
+      'C:/Users/aleks/test',
+      ['C:/Users/aleks/test/mapped-drive'],
+      [true],
+    )).toBe(false);
+  });
+
+  it('ignores file sources when checking nested destinations', () => {
+    vi.spyOn(pathComparisonCache, 'shouldFoldPathCaseForComparison').mockReturnValue(true);
+
+    expect(isDestinationInsideAnySourceDirectory(
+      'C:/Users/aleks/test/file.txt',
+      ['C:/Users/aleks/test/file.txt'],
+      [false],
+    )).toBe(false);
   });
 });
 

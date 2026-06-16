@@ -781,6 +781,14 @@
     "checkingConflicts": "Checking for conflicts…",
     "skipIdenticalFiles": "Skip {n} file with the same size and date | Skip {n} files with the same size and date"
   },
+  "topLevelConflictDialog": {
+    "title": "Items already exist",
+    "description": "0 items with these names already exist in this directory. | 1 item with this name already exists in this directory. | {n} items with these names already exist in this directory. | {n} items with these names already exist in this directory.",
+    "hint": "Choose Rename to create renamed items, or Merge to review conflicts inside the existing items.",
+    "rename": "Rename",
+    "merge": "Merge",
+    "moreItems": "+ {count} more item | + {count} more items"
+  },
   "command": "Command",
   "keybinding": "Keybinding",
   "when": "When",

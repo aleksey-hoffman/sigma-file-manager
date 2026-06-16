@@ -751,6 +751,14 @@
     "checkingConflicts": "Comprobando conflictos…",
     "skipIdenticalFiles": "Omitir {n} archivo con el mismo tamaño y fecha | Omitir {n} archivos con el mismo tamaño y fecha"
   },
+  "topLevelConflictDialog": {
+    "title": "Los elementos ya existen",
+    "description": "0 elementos con estos nombres ya existen en este directorio. | 1 elemento con este nombre ya existe en este directorio. | {n} elementos con estos nombres ya existen en este directorio. | {n} elementos con estos nombres ya existen en este directorio.",
+    "hint": "Elige Renombrar para crear elementos con nombres nuevos, o Fusionar para revisar conflictos dentro de los elementos existentes.",
+    "rename": "Renombrar",
+    "merge": "Fusionar",
+    "moreItems": "+ {count} elemento más | + {count} elementos más"
+  },
   "command": "Comando",
   "keybinding": "Combinación de teclas",
   "when": "Cuando",

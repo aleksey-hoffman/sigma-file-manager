@@ -279,15 +279,15 @@ export type ListColumnFlexWeights = {
   linkStatus?: number;
 };
 
-export type ListReorderableColumnId =
-  | 'items'
-  | 'size'
-  | 'modified'
-  | 'created'
-  | 'tags'
-  | 'kind'
-  | 'links'
-  | 'linkStatus';
+export type ListReorderableColumnId
+  = | 'items'
+    | 'size'
+    | 'modified'
+    | 'created'
+    | 'tags'
+    | 'kind'
+    | 'links'
+    | 'linkStatus';
 
 export type ListColumnOrder = ListReorderableColumnId[];
 

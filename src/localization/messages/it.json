@@ -751,6 +751,14 @@
     "checkingConflicts": "Verifica conflitti in corso…",
     "skipIdenticalFiles": "Salta {n} file con stessa dimensione e data | Salta {n} file con stessa dimensione e data"
   },
+  "topLevelConflictDialog": {
+    "title": "Elementi già esistenti",
+    "description": "0 elementi con questi nomi esistono già in questa cartella. | 1 elemento con questo nome esiste già in questa cartella. | {n} elementi con questi nomi esistono già in questa cartella. | {n} elementi con questi nomi esistono già in questa cartella.",
+    "hint": "Scegli Rinomina per creare elementi rinominati, oppure Unisci per rivedere i conflitti negli elementi esistenti.",
+    "rename": "Rinomina",
+    "merge": "Unisci",
+    "moreItems": "+ {count} altro elemento | + {count} altri elementi"
+  },
   "command": "Comando",
   "keybinding": "Combinazione tasti",
   "when": "Quando",

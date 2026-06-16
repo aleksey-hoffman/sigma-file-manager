@@ -6,15 +6,20 @@ import { markRaw } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
 import { useI18n } from 'vue-i18n';
 import { toast, ToastStatic } from '@/components/ui/toaster';
-import type { ConflictItem } from '@/stores/runtime/clipboard';
+import type { ConflictItem, ConflictResolution, PathResolutionEntry } from '@/stores/runtime/clipboard';
 import { useCopyMoveJobsStore } from '@/stores/runtime/copy-move-jobs';
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
 import { useConflictResolutionDialog } from '@/composables/use-conflict-resolution-dialog';
+import { useTopLevelNameConflictDialog } from '@/composables/use-top-level-name-conflict-dialog';
 import {
   arePathsEquivalent,
   getSharedSourceDirectory,
   isDestinationInsideAnySourceDirectory,
 } from '@/utils/file-operation-paths';
+import {
+  getTopLevelNameConflicts,
+  splitTopLevelSamePathSources,
+} from '@/utils/top-level-name-conflicts';
 
 export function useFileDropOperation() {
   const { t } = useI18n();
@@ -26,6 +31,13 @@ export function useFileDropOperation() {
     handleConflictResolution,
     handleConflictCancel,
   } = useConflictResolutionDialog();
+  const {
+    topLevelNameConflictDialogState,
+    showTopLevelNameConflictDialog,
+    handleTopLevelNameConflictRename,
+    handleTopLevelNameConflictMerge,
+    handleTopLevelNameConflictCancel,
+  } = useTopLevelNameConflictDialog();
 
   async function performDrop(
     sourcePaths: string[],
@@ -54,10 +66,21 @@ export function useFileDropOperation() {
       return false;
     }
 
-    const sharedSourceDirectory = getSharedSourceDirectory(sourcePaths);
+    const {
+      samePathSourcePaths,
+      remainingSourcePaths,
+    } = splitTopLevelSamePathSources(sourcePaths, targetPath);
+
+    if (operation === 'move' && samePathSourcePaths.length > 0) {
+      toast.error(t('fileBrowser.cannotMoveToSameDirectory'));
+      return false;
+    }
+
+    const sharedSourceDirectory = getSharedSourceDirectory(remainingSourcePaths);
 
     if (
-      operation === 'move'
+      remainingSourcePaths.length > 0
+      && operation === 'move'
       && sharedSourceDirectory !== null
       && arePathsEquivalent(sharedSourceDirectory, targetPath)
     ) {
@@ -65,38 +88,74 @@ export function useFileDropOperation() {
       return false;
     }
 
-    const resolutionPayload = await showConflictDialog(operation, () =>
-      invoke<ConflictItem[]>('check_conflicts', {
-        sourcePaths,
-        destinationPath: targetPath,
-      }),
-    );
+    let conflictResolution: ConflictResolution | null = null;
+    let perPathResolutions: PathResolutionEntry[] | undefined;
+    const topLevelConflicts = await getTopLevelNameConflicts(remainingSourcePaths, targetPath);
 
-    if (resolutionPayload === null) {
-      return false;
+    if (topLevelConflicts.length > 0) {
+      const topLevelConflictDecision = await showTopLevelNameConflictDialog(topLevelConflicts);
+
+      if (topLevelConflictDecision === null) {
+        return false;
+      }
+
+      if (topLevelConflictDecision === 'rename') {
+        conflictResolution = 'auto-rename';
+      }
+      else {
+        const resolutionPayload = await showConflictDialog(operation, () =>
+          invoke<ConflictItem[]>('check_conflicts', {
+            sourcePaths: remainingSourcePaths,
+            destinationPath: targetPath,
+          }),
+        );
+
+        if (resolutionPayload === null) {
+          return false;
+        }
+
+        perPathResolutions = resolutionPayload?.perPathResolutions ?? [];
+      }
     }
-
-    const conflictPayload
-      = resolutionPayload === undefined ? undefined : resolutionPayload;
 
     const displayPath = targetPath.split(/[/\\]/).pop() ?? targetPath;
 
     try {
-      const result = await copyMoveJobsStore.startJob(
-        isCopy ? 'copy' : 'move',
-        sourcePaths,
-        targetPath,
-        null,
-        conflictPayload?.perPathResolutions,
-        {
-          label: isCopy ? t('notifications.copyingItems') : t('notifications.movingItems'),
-          displayPath,
-        },
-      );
+      const samePathCopyResult = samePathSourcePaths.length > 0
+        ? await copyMoveJobsStore.startJob(
+            'copy',
+            samePathSourcePaths,
+            targetPath,
+            'auto-rename',
+            undefined,
+            {
+              label: t('notifications.copyingItems'),
+              displayPath,
+            },
+          )
+        : null;
+      const normalResult = remainingSourcePaths.length > 0
+        ? await copyMoveJobsStore.startJob(
+            isCopy ? 'copy' : 'move',
+            remainingSourcePaths,
+            targetPath,
+            conflictResolution,
+            perPathResolutions,
+            {
+              label: isCopy ? t('notifications.copyingItems') : t('notifications.movingItems'),
+              displayPath,
+            },
+          )
+        : null;
+      const result = normalResult ?? samePathCopyResult;
 
-      const copiedCount = result.copied_count ?? 0;
+      if (!result) {
+        return false;
+      }
 
-      if (!result.cancelled && result.success && copiedCount > 0) {
+      const copiedCount = (normalResult?.copied_count ?? 0) + (samePathCopyResult?.copied_count ?? 0);
+
+      if ((normalResult?.success || samePathCopyResult?.success) && copiedCount > 0) {
         const sourcesForSizes = sourcePaths.map((path, index) => ({
           path,
           is_dir: sourcePathIsDir[index] ?? false,
@@ -125,6 +184,10 @@ export function useFileDropOperation() {
     conflictDialogState,
     handleConflictResolution,
     handleConflictCancel,
+    topLevelNameConflictDialogState,
+    handleTopLevelNameConflictRename,
+    handleTopLevelNameConflictMerge,
+    handleTopLevelNameConflictCancel,
     performDrop,
   };
 }

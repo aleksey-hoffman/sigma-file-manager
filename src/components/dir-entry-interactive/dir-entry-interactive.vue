@@ -12,6 +12,7 @@ import DirEntryContextMenu from './dir-entry-context-menu.vue';
 import FileBrowserRenameDialog from '@/modules/navigator/components/file-browser/file-browser-rename-dialog.vue';
 import FileBrowserNewItemDialog from '@/modules/navigator/components/file-browser/file-browser-new-item-dialog.vue';
 import FileBrowserConflictDialog from '@/modules/navigator/components/file-browser/file-browser-conflict-dialog.vue';
+import FileBrowserTopLevelConflictDialog from '@/modules/navigator/components/file-browser/file-browser-top-level-conflict-dialog.vue';
 import PermanentDeleteConfirmDialog from '@/modules/navigator/components/file-browser/permanent-delete-confirm-dialog.vue';
 import { useDirEntryActions } from '@/composables/use-dir-entry-actions';
 import { CONTEXT_MENU_OPEN_COUNT_KEY } from './index';
@@ -37,6 +38,10 @@ const {
   conflictDialogState,
   handleConflictResolution,
   handleConflictCancel,
+  topLevelNameConflictDialogState,
+  handleTopLevelNameConflictRename,
+  handleTopLevelNameConflictMerge,
+  handleTopLevelNameConflictCancel,
   permanentDeleteConfirm,
 } = useDirEntryActions();
 
@@ -212,6 +217,14 @@ function handleNewItemCancel() {
     :is-checking-conflicts="conflictDialogState.isCheckingConflicts"
     @resolve="handleConflictResolution"
     @cancel="handleConflictCancel"
+  />
+
+  <FileBrowserTopLevelConflictDialog
+    v-model:open="topLevelNameConflictDialogState.isOpen"
+    :conflicts="topLevelNameConflictDialogState.conflicts"
+    @rename="handleTopLevelNameConflictRename"
+    @merge="handleTopLevelNameConflictMerge"
+    @cancel="handleTopLevelNameConflictCancel"
   />
 
   <PermanentDeleteConfirmDialog

@@ -751,6 +751,14 @@
     "checkingConflicts": "Çakışmalar denetleniyor…",
     "skipIdenticalFiles": "Aynı boyut ve tarihe sahip {n} dosyayı atla | Aynı boyut ve tarihe sahip {n} dosyayı atla"
   },
+  "topLevelConflictDialog": {
+    "title": "Öğeler zaten var",
+    "description": "Bu dizinde bu adlara sahip 0 öğe zaten var. | Bu dizinde bu ada sahip 1 öğe zaten var. | Bu dizinde bu adlara sahip {n} öğe zaten var. | Bu dizinde bu adlara sahip {n} öğe zaten var.",
+    "hint": "Yeniden adlandır, yeni adlarla öğeler oluşturur. Birleştir, mevcut öğelerin içindeki çakışmaları gözden geçirir.",
+    "rename": "Yeniden adlandır",
+    "merge": "Birleştir",
+    "moreItems": "+ {count} öğe daha | + {count} öğe daha"
+  },
   "command": "Komut",
   "keybinding": "Tuş bağlama",
   "when": "Ne zaman",

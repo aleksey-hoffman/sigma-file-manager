@@ -383,12 +383,6 @@ const resolutionSelectOptions = computed(() => {
       <DialogFooter class="conflict-dialog__footer">
         <div class="conflict-dialog__actions">
           <Button
-            variant="outline"
-            @click="handleCancel"
-          >
-            {{ t('cancel') }}
-          </Button>
-          <Button
             class="conflict-dialog__action-btn--primary"
             :disabled="isCheckingConflicts"
             @click="handleConfirm"

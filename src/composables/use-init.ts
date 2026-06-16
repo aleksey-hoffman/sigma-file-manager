@@ -37,6 +37,7 @@ import {
   type LaunchContext,
 } from '@/utils/launch-directories';
 import { applyUiZoomStep } from '@/utils/ui-zoom';
+import { useClipboardFocusSync } from '@/composables/use-clipboard-focus-sync';
 import { toggleMainWindowFullscreen } from '@/utils/window-fullscreen';
 import { removeAppSplash } from '@/utils/app-splash';
 import { logInitTrace, traceInitStep } from '@/utils/init-trace';
@@ -66,6 +67,7 @@ export function useInit() {
   const quickViewStore = useQuickViewStore();
   const { checkAndShowChangelog } = useChangelog();
   const { initAutoCheck } = useAppUpdater();
+  useClipboardFocusSync();
   let appLaunchArgsUnlisten: UnlistenFn | null = null;
   const backgroundTasks = new Set<Promise<void>>();
 

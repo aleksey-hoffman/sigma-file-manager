@@ -45,37 +45,75 @@ describe('file-browser-list-columns', () => {
 
   it('keeps default grid tracks when no widths are saved', () => {
     expect(getListColumnGridTrack(
-      { id: 'items', visibilityKey: 'items', defaultMin: 70, defaultMax: 90 },
+      {
+        id: 'items',
+        visibilityKey: 'items',
+        defaultMin: 70,
+        defaultMax: 90,
+      },
       undefined,
     )).toBe('minmax(70px, 90px)');
     expect(getListColumnGridTrack(
-      { id: 'name', visibilityKey: null, defaultMin: 200, defaultMax: Number.POSITIVE_INFINITY, isFlex: true },
+      {
+        id: 'name',
+        visibilityKey: null,
+        defaultMin: 200,
+        defaultMax: Number.POSITIVE_INFINITY,
+        isFlex: true,
+      },
       undefined,
     )).toBe('minmax(200px, 500px)');
   });
 
   it('builds flex tracks with default and saved weights', () => {
     expect(getListColumnFlexGridTrack(
-      { id: 'name', visibilityKey: null, defaultMin: 200, defaultMax: Number.POSITIVE_INFINITY, isFlex: true },
+      {
+        id: 'name',
+        visibilityKey: null,
+        defaultMin: 200,
+        defaultMax: Number.POSITIVE_INFINITY,
+        isFlex: true,
+      },
       undefined,
     )).toBe('minmax(200px, 4fr)');
     expect(getListColumnFlexGridTrack(
-      { id: 'size', visibilityKey: 'size', defaultMin: 50, defaultMax: 100 },
+      {
+        id: 'size',
+        visibilityKey: 'size',
+        defaultMin: 50,
+        defaultMax: 100,
+      },
       3,
     )).toBe('minmax(50px, 3fr)');
   });
 
   it('applies saved widths as fixed tracks without going below defaults', () => {
     expect(getListColumnGridTrack(
-      { id: 'size', visibilityKey: 'size', defaultMin: 50, defaultMax: 100 },
+      {
+        id: 'size',
+        visibilityKey: 'size',
+        defaultMin: 50,
+        defaultMax: 100,
+      },
       120,
     )).toBe('120px');
     expect(getListColumnGridTrack(
-      { id: 'size', visibilityKey: 'size', defaultMin: 50, defaultMax: 100 },
+      {
+        id: 'size',
+        visibilityKey: 'size',
+        defaultMin: 50,
+        defaultMax: 100,
+      },
       30,
     )).toBe('50px');
     expect(getListColumnGridTrack(
-      { id: 'name', visibilityKey: null, defaultMin: 200, defaultMax: Number.POSITIVE_INFINITY, isFlex: true },
+      {
+        id: 'name',
+        visibilityKey: null,
+        defaultMin: 200,
+        defaultMax: Number.POSITIVE_INFINITY,
+        isFlex: true,
+      },
       640,
     )).toBe('640px');
   });
@@ -118,7 +156,10 @@ describe('file-browser-list-columns', () => {
       {
         fillWidth: true,
         columnWidths: {},
-        flexWeights: { name: 6, size: 2 },
+        flexWeights: {
+          name: 6,
+          size: 2,
+        },
         resizePreviewWidths: {},
         resizePreviewFlexWeights: {},
         isResizing: false,

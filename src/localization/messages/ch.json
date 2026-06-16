@@ -751,6 +751,14 @@
     "checkingConflicts": "正在检查冲突…",
     "skipIdenticalFiles": "跳过 {n} 个大小和日期相同的文件 | 跳过 {n} 个大小和日期相同的文件"
   },
+  "topLevelConflictDialog": {
+    "title": "项目已存在",
+    "description": "此目录中已存在 0 个同名项目。 | 此目录中已存在 1 个同名项目。 | 此目录中已存在 {n} 个同名项目。 | 此目录中已存在 {n} 个同名项目。",
+    "hint": "选择重命名会创建带新名称的项目，选择合并会检查现有项目内部的冲突。",
+    "rename": "重命名",
+    "merge": "合并",
+    "moreItems": "+ 另外 {count} 个项目 | + 另外 {count} 个项目"
+  },
   "command": "命令",
   "keybinding": "键盘绑定",
   "when": "条件",
