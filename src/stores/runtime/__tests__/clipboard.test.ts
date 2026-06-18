@@ -460,6 +460,10 @@ describe('clipboard store', () => {
         };
       }
 
+      if (commandName === 'read_system_clipboard_image_info') {
+        return null;
+      }
+
       return undefined;
     });
     const store = useClipboardStore();

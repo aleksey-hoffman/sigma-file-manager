@@ -12,35 +12,25 @@ import { useUserStatsStore } from '@/stores/storage/user-stats';
 import {
   useClipboardStore,
   type FileOperationResult,
-  type ConflictItem,
-  type ConflictResolution,
-  type PathResolutionEntry,
 } from '@/stores/runtime/clipboard';
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
 import { useLinkMetadataStore } from '@/stores/runtime/link-metadata';
 import { useDeleteJobsStore } from '@/stores/runtime/delete-jobs';
-import { useCopyMoveJobsStore } from '@/stores/runtime/copy-move-jobs';
 import { toast, ToastProgress, ToastStatic } from '@/components/ui/toaster';
 import { useLanShare } from '@/composables/use-lan-share';
-import { useConflictResolutionDialog } from '@/composables/use-conflict-resolution-dialog';
-import { useTopLevelNameConflictDialog } from '@/composables/use-top-level-name-conflict-dialog';
+import { useCopyMoveWithConflicts } from '@/composables/use-copy-move-with-conflicts';
 import normalizePath from '@/utils/normalize-path';
-import { useFileBrowserClickSelection } from '@/modules/navigator/components/file-browser/composables/use-file-browser-click-selection';
 import {
-  arePathsEquivalent,
   getSharedSourceDirectory,
   isDestinationInsideAnySourceDirectory,
 } from '@/utils/file-operation-paths';
+import { useFileBrowserClickSelection } from '@/modules/navigator/components/file-browser/composables/use-file-browser-click-selection';
 import { createIndexedFileName, safeFileNameFromUrl } from '@/utils/remote-file';
 import { basenameFromPath } from '@/utils/source-display-name';
 import { usePermanentDeleteConfirm } from '@/composables/use-permanent-delete-confirm';
 import { usePlatformStore } from '@/stores/runtime/platform';
 import { resolveNavigableItemTarget } from '@/utils/resolve-navigable-item-target';
 import type { CreateLinksResult, LinkCreationKind } from '@/utils/link-operations';
-import {
-  getTopLevelNameConflicts,
-  splitTopLevelSamePathSources,
-} from '@/utils/top-level-name-conflicts';
 
 export const FILE_BROWSER_REVEAL_STALE_FOCUS_GUARD_MS = 500;
 
@@ -60,9 +50,18 @@ export function useFileBrowserSelection(
   const dirSizesStore = useDirSizesStore();
   const linkMetadataStore = useLinkMetadataStore();
   const deleteJobsStore = useDeleteJobsStore();
-  const copyMoveJobsStore = useCopyMoveJobsStore();
   const { startShare } = useLanShare();
   const permanentDeleteConfirm = usePermanentDeleteConfirm();
+  const {
+    performCopyMoveWithConflicts,
+    conflictDialogState,
+    handleConflictResolution,
+    handleConflictCancel,
+    topLevelNameConflictDialogState,
+    handleTopLevelNameConflictRename,
+    handleTopLevelNameConflictMerge,
+    handleTopLevelNameConflictCancel,
+  } = useCopyMoveWithConflicts();
   const selectedEntries = ref<DirEntry[]>([]);
   const lastSelectedEntry = ref<DirEntry | null>(null);
 
@@ -70,19 +69,6 @@ export function useFileBrowserSelection(
     targetEntry: null as DirEntry | null,
     selectedEntries: [] as DirEntry[],
   });
-  const {
-    conflictDialogState,
-    showConflictDialog,
-    handleConflictResolution,
-    handleConflictCancel,
-  } = useConflictResolutionDialog();
-  const {
-    topLevelNameConflictDialogState,
-    showTopLevelNameConflictDialog,
-    handleTopLevelNameConflictRename,
-    handleTopLevelNameConflictMerge,
-    handleTopLevelNameConflictCancel,
-  } = useTopLevelNameConflictDialog();
 
   const renameState = ref({
     isActive: false,
@@ -459,36 +445,15 @@ export function useFileBrowserSelection(
 
     if (!systemClipboard?.paths.length) {
       if (clipboardStore.hasFileItems) {
-        const clipboardItems = clipboardStore.clipboardItems.map(item => ({ ...item }));
-        const result = await clipboardStore.pasteItems(targetPath);
+        const sourcePaths = clipboardStore.clipboardItems.map(item => item.path);
+        const operation = clipboardStore.isCopyOperation ? 'copy' : 'move';
+        const pasted = await handleExternalDrop(sourcePaths, targetPath, operation);
 
-        if (!result.success) {
-          if (result.error) {
-            toast.error(result.error);
-          }
-
-          return false;
+        if (pasted) {
+          clipboardStore.discardClipboard();
         }
 
-        await dirSizesStore.refreshSizesAfterCopyMove(
-          clipboardItems.map(item => ({
-            path: item.path,
-            is_dir: item.is_dir,
-          })),
-          targetPath,
-          [targetPath, currentPathRef.value],
-        );
-
-        if (targetPath === currentPathRef.value) {
-          pendingFocusRequest.value = {
-            type: 'diff',
-            targetPath,
-            previousPaths: new Set(entriesRef.value.map(entry => entry.path)),
-          };
-        }
-
-        onRefresh();
-        return true;
+        return pasted;
       }
 
       return await pasteSystemClipboardImage(targetPath);
@@ -550,165 +515,45 @@ export function useFileBrowserSelection(
   }
 
   async function handleExternalDrop(sourcePaths: string[], targetPath: string, operation: 'copy' | 'move' = 'copy'): Promise<boolean> {
-    if (sourcePaths.length === 0) {
-      return false;
-    }
-
-    const isCopy = operation === 'copy';
-
-    let sourcePathIsDir: boolean[];
-
-    try {
-      sourcePathIsDir = await invoke<boolean[]>('paths_are_directories', {
-        paths: sourcePaths,
-      });
-    }
-    catch {
-      sourcePathIsDir = sourcePaths.map(() => true);
-    }
-
-    if (isDestinationInsideAnySourceDirectory(targetPath, sourcePaths, sourcePathIsDir)) {
-      toast.error(t('fileBrowser.cannotPasteIntoItself'));
-      return false;
-    }
-
-    const {
-      samePathSourcePaths,
-      remainingSourcePaths,
-    } = splitTopLevelSamePathSources(sourcePaths, targetPath);
-
-    if (operation === 'move' && samePathSourcePaths.length > 0) {
-      toast.error(t('fileBrowser.cannotMoveToSameDirectory'));
-      return false;
-    }
-
-    const sharedSourceDirectory = getSharedSourceDirectory(remainingSourcePaths);
-
-    if (
-      remainingSourcePaths.length > 0
-      && operation === 'move'
-      && sharedSourceDirectory !== null
-      && arePathsEquivalent(sharedSourceDirectory, targetPath)
-    ) {
-      toast.error(t('fileBrowser.cannotMoveToSameDirectory'));
-      return false;
-    }
-
-    let conflictResolution: ConflictResolution | null = null;
-    let perPathResolutions: PathResolutionEntry[] | undefined;
-    const topLevelConflicts = await getTopLevelNameConflicts(remainingSourcePaths, targetPath);
-
-    if (topLevelConflicts.length > 0) {
-      const topLevelConflictDecision = await showTopLevelNameConflictDialog(topLevelConflicts);
-
-      if (topLevelConflictDecision === null) {
-        return false;
-      }
-
-      if (topLevelConflictDecision === 'rename') {
-        conflictResolution = 'auto-rename';
-      }
-      else {
-        const resolutionPayload = await showConflictDialog(operation, () =>
-          invoke<ConflictItem[]>('check_conflicts', {
-            sourcePaths: remainingSourcePaths,
-            destinationPath: targetPath,
-          }),
-        );
-
-        if (resolutionPayload === null) {
-          return false;
-        }
-
-        perPathResolutions = resolutionPayload?.perPathResolutions ?? [];
-      }
-    }
-
     const shouldFocusPaste = targetPath === currentPathRef.value;
     const previousPaths = shouldFocusPaste
       ? new Set(entriesRef.value.map(entry => entry.path))
       : null;
+    const result = await performCopyMoveWithConflicts(sourcePaths, targetPath, operation);
 
-    const displayPath = targetPath.split(/[/\\]/).pop() ?? targetPath;
+    if (!result || result.cancelled) {
+      return false;
+    }
 
-    try {
-      const samePathCopyResult = samePathSourcePaths.length > 0
-        ? await copyMoveJobsStore.startJob(
-            'copy',
-            samePathSourcePaths,
-            targetPath,
-            'auto-rename',
-            undefined,
-            {
-              label: t('notifications.copyingItems'),
-              displayPath,
-            },
-          )
-        : null;
-      const normalResult = remainingSourcePaths.length > 0
-        ? await copyMoveJobsStore.startJob(
-            isCopy ? 'copy' : 'move',
-            remainingSourcePaths,
-            targetPath,
-            conflictResolution,
-            perPathResolutions,
-            {
-              label: isCopy ? t('notifications.copyingItems') : t('notifications.movingItems'),
-              displayPath,
-            },
-          )
-        : null;
-      const result = normalResult ?? samePathCopyResult;
+    if (result.copiedCount > 0) {
+      const sourcesForSizes = sourcePaths.map((path, index) => ({
+        path,
+        is_dir: result.sourcePathIsDir[index] ?? false,
+      }));
+      await dirSizesStore.refreshSizesAfterCopyMove(sourcesForSizes, targetPath, [
+        targetPath,
+        currentPathRef.value,
+      ]);
+    }
 
-      if (!result) {
-        return false;
-      }
-
-      const copiedCount = (normalResult?.copied_count ?? 0) + (samePathCopyResult?.copied_count ?? 0);
-
-      if (copiedCount > 0) {
-        const sourcesForSizes = sourcePaths.map((path, index) => ({
-          path,
-          is_dir: sourcePathIsDir[index] ?? false,
-        }));
-        await dirSizesStore.refreshSizesAfterCopyMove(sourcesForSizes, targetPath, [
+    if (result.success) {
+      if (shouldFocusPaste && previousPaths) {
+        pendingFocusRequest.value = {
+          type: 'diff',
           targetPath,
-          currentPathRef.value,
-        ]);
+          previousPaths,
+        };
       }
 
-      if (Boolean(normalResult?.success || samePathCopyResult?.success)) {
-        if (shouldFocusPaste && previousPaths) {
-          pendingFocusRequest.value = {
-            type: 'diff',
-            targetPath,
-            previousPaths,
-          };
-        }
-
-        onRefresh();
-
-        return true;
-      }
-
-      if (!result.cancelled && copiedCount > 0) {
-        onRefresh();
-      }
-
-      return false;
+      onRefresh();
+      return true;
     }
-    catch (error: unknown) {
-      toast.custom(markRaw(ToastStatic), {
-        componentProps: {
-          data: {
-            title: isCopy ? t('fileBrowser.copyFailed') : t('fileBrowser.moveFailed'),
-            description: String(error),
-          },
-        },
-        duration: 5000,
-      });
-      return false;
+
+    if (result.copiedCount > 0) {
+      onRefresh();
     }
+
+    return false;
   }
 
   async function handleExternalUrlDrop(urls: string[], targetPath: string): Promise<boolean> {

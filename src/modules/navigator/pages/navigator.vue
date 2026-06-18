@@ -42,6 +42,7 @@ import type { DirEntry } from '@/types/dir-entry';
 import type { Tab } from '@/types/workspaces';
 import { useIsSmallScreen } from '@/composables/use-responsive-query';
 import { useFileDropOperation } from '@/composables/use-file-drop-operation';
+import { provideNavigatorImageThumbnails } from '@/modules/navigator/composables/use-navigator-image-thumbnails';
 import { arePathsEquivalent, getParentPath } from '@/utils/file-operation-paths';
 import { getPathDisplayName } from '@/utils/normalize-path';
 
@@ -85,6 +86,7 @@ const globalSearchStore = useGlobalSearchStore();
 const shortcutsStore = useShortcutsStore();
 const terminalsStore = useTerminalsStore();
 const dirSizesStore = useDirSizesStore();
+provideNavigatorImageThumbnails();
 const navigatorSelectionStore = useNavigatorSelectionStore();
 const { t } = useI18n();
 const activeFileBrowserDragState = useActiveFileBrowserDragState();

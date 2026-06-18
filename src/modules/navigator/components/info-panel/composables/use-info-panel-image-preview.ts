@@ -6,13 +6,12 @@ import {
   computed,
   ref,
   toValue,
-  watch,
   type MaybeRefOrGetter,
 } from 'vue';
 import { convertFileSrc } from '@tauri-apps/api/core';
 import { isImageFile as checkIsImage } from '@/modules/navigator/components/file-browser/utils';
 import { useDevicePixelPreviewSize } from '@/modules/navigator/composables/use-device-pixel-preview-size';
-import { useImageThumbnails } from '@/modules/navigator/components/file-browser/composables/use-image-thumbnails';
+import { useNavigatorImageThumbnails } from '@/modules/navigator/composables/use-navigator-image-thumbnails';
 import {
   resolveImageDisplaySrc,
   shouldUseImageThumbnail,
@@ -26,7 +25,7 @@ const DEFAULT_INFO_PANEL_THUMBNAIL_SIZE = {
 };
 
 export function useInfoPanelImagePreview(selectedEntry: MaybeRefOrGetter<DirEntry | null>) {
-  const { getImageThumbnail, clearThumbnails } = useImageThumbnails();
+  const { getImageThumbnail } = useNavigatorImageThumbnails();
   const userSettingsStore = useUserSettingsStore();
 
   const isImageFile = computed(() => {
@@ -90,19 +89,6 @@ export function useInfoPanelImagePreview(selectedEntry: MaybeRefOrGetter<DirEntr
       getThumbnail: getImageThumbnail,
     }) ?? '';
   });
-
-  watch(
-    [() => toValue(selectedEntry)?.path, showFullSizeImagePreview],
-    ([path, preferOriginal], [previousPath, previousPreferOriginal]) => {
-      const pathChanged = path !== previousPath;
-      const switchedToThumbnail = previousPreferOriginal === true && preferOriginal === false;
-
-      if ((pathChanged || switchedToThumbnail) && !preferOriginal) {
-        clearThumbnails();
-      }
-    },
-    { immediate: true },
-  );
 
   return {
     previewRef,

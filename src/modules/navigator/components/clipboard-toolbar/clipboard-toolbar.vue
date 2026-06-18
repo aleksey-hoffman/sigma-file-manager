@@ -37,7 +37,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import type { DirEntry } from '@/types/dir-entry';
-import { useImageThumbnails } from '@/modules/navigator/components/file-browser/composables/use-image-thumbnails';
+import { useNavigatorImageThumbnails } from '@/modules/navigator/composables/use-navigator-image-thumbnails';
 import { formatBytes, getImageSrc, isImageFile } from '@/modules/navigator/components/file-browser/utils';
 
 const MAX_VISIBLE_ITEMS = 100;
@@ -67,7 +67,7 @@ const { t } = useI18n();
 
 const clipboardStore = useClipboardStore();
 const shortcutsStore = useShortcutsStore();
-const imageThumbnails = useImageThumbnails();
+const imageThumbnails = useNavigatorImageThumbnails();
 
 const clipboardItemsPopoverOpen = ref(false);
 const clipboardItemsFilterQuery = ref('');

@@ -41,7 +41,7 @@ import { useFileBrowserDrag } from './use-file-browser-drag';
 import { useFileBrowserInternalDropHandler } from './use-file-browser-internal-drop';
 import { useFileBrowserExternalDrop } from './use-file-browser-external-drop';
 import { useFileBrowserVirtualLayout } from './use-file-browser-virtual-layout';
-import { useImageThumbnails } from './use-image-thumbnails';
+import { useNavigatorImageThumbnails } from '@/modules/navigator/composables/use-navigator-image-thumbnails';
 import { useVideoThumbnails } from './use-video-thumbnails';
 import { sortFileBrowserEntries } from '@/modules/navigator/components/file-browser/utils/file-browser-sort';
 import { getFileBrowserGridEntryOrder } from '../file-browser-entry-groups';
@@ -325,7 +325,7 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
         clearThumbnails: () => undefined,
       };
   const imageThumbnails = !isExternalMode
-    ? useImageThumbnails()
+    ? useNavigatorImageThumbnails()
     : {
         getImageThumbnail: () => undefined,
         getImageThumbnailPlaceholder: () => undefined,

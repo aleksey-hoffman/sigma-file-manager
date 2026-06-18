@@ -436,6 +436,13 @@ export const useClipboardStore = defineStore('clipboard', () => {
     }
 
     if (systemClipboard.paths.length === 0) {
+      const systemClipboardImage = await readSystemClipboardImageInfo();
+
+      if (systemClipboardImage) {
+        setClipboardImage(getClipboardImageWithSavedFile(systemClipboardImage));
+        return true;
+      }
+
       discardClipboard();
       return true;
     }
@@ -632,19 +639,6 @@ export const useClipboardStore = defineStore('clipboard', () => {
     return true;
   }
 
-  async function checkConflicts(destinationPath: string): Promise<ConflictItem[]> {
-    if (!hasItems.value || hasImageContent.value) {
-      return [];
-    }
-
-    const sourcePaths = clipboardItems.value.map(item => item.path);
-
-    return await invoke<ConflictItem[]>('check_conflicts', {
-      sourcePaths,
-      destinationPath,
-    });
-  }
-
   async function pasteItems(
     destinationPath: string,
     perPathResolutions?: PathResolutionEntry[],
@@ -763,7 +757,6 @@ export const useClipboardStore = defineStore('clipboard', () => {
     isSameAsSourceDirectory,
     isDestinationInsideClipboardItem,
     canPasteTo,
-    checkConflicts,
     pasteItems,
     readSystemClipboardFiles,
     readSystemClipboardImageInfo,

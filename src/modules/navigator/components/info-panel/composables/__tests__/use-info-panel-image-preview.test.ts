@@ -60,8 +60,8 @@ vi.mock('@/stores/storage/user-paths', () => ({
   }),
 }));
 
-vi.mock('@/modules/navigator/components/file-browser/composables/use-image-thumbnails', () => ({
-  useImageThumbnails: () => ({
+vi.mock('@/modules/navigator/composables/use-navigator-image-thumbnails', () => ({
+  useNavigatorImageThumbnails: () => ({
     getImageThumbnail: mockGetImageThumbnail,
     clearThumbnails: mockClearThumbnails,
   }),
@@ -160,7 +160,7 @@ describe('useInfoPanelImagePreview', () => {
     expect(preview.imagePreviewSrc.value).toBe('asset://C:/media/photo.svg');
   });
 
-  it('clears thumbnails when switching between image entries in thumbnail mode', async () => {
+  it('keeps the shared thumbnail cache when switching between image entries in thumbnail mode', async () => {
     const selectedEntry = ref<DirEntry | null>(createImageEntry('png'));
     mountInfoPanelImagePreview(selectedEntry);
     mockClearThumbnails.mockClear();
@@ -168,7 +168,7 @@ describe('useInfoPanelImagePreview', () => {
     selectedEntry.value = createImageEntry('jpg', 'jpg');
     await nextTick();
 
-    expect(mockClearThumbnails).toHaveBeenCalled();
+    expect(mockClearThumbnails).not.toHaveBeenCalled();
   });
 
   it('does not clear thumbnails when original preview is enabled', async () => {
@@ -186,7 +186,7 @@ describe('useInfoPanelImagePreview', () => {
     expect(mockClearThumbnails).not.toHaveBeenCalled();
   });
 
-  it('clears thumbnails when switching from original preview back to thumbnails', async () => {
+  it('keeps the shared thumbnail cache when switching from original preview back to thumbnails', async () => {
     const userSettingsStore = useUserSettingsStore();
     userSettingsStore.userSettings.navigator.infoPanel.showFullSizeImagePreview = true;
 
@@ -198,6 +198,6 @@ describe('useInfoPanelImagePreview', () => {
     userSettingsStore.userSettings.navigator.infoPanel.showFullSizeImagePreview = false;
     await nextTick();
 
-    expect(mockClearThumbnails).toHaveBeenCalled();
+    expect(mockClearThumbnails).not.toHaveBeenCalled();
   });
 });

@@ -8,14 +8,10 @@ use std::path::{Path, PathBuf};
 #[cfg(target_os = "windows")]
 use std::iter::once;
 
-#[cfg(not(target_os = "windows"))]
 use image::codecs::png::PngEncoder;
-#[cfg(not(target_os = "windows"))]
 use image::ImageEncoder;
 use serde::Serialize;
-#[cfg(not(target_os = "windows"))]
 use std::fs::File;
-#[cfg(not(target_os = "windows"))]
 use std::io::BufWriter;
 
 use crate::utils::unique_path_with_index;
@@ -24,22 +20,36 @@ use crate::utils::unique_path_with_index;
 static WINDOWS_CLIPBOARD_MUTEX: std::sync::Mutex<()> = std::sync::Mutex::new(());
 
 #[cfg(target_os = "windows")]
+static WINDOWS_OLE_INITIALIZED: std::sync::Once = std::sync::Once::new();
+
+#[cfg(target_os = "windows")]
 const MAX_CLIPBOARD_PNG_BYTES: usize = 100 * 1024 * 1024;
+
+struct ClipboardImageBytes {
+    width: u32,
+    height: u32,
+    bytes: Vec<u8>,
+}
+
+#[cfg(target_os = "windows")]
+fn ensure_windows_ole_initialized() {
+    use windows::Win32::System::Ole::OleInitialize;
+
+    WINDOWS_OLE_INITIALIZED.call_once(|| unsafe {
+        let _ = OleInitialize(Some(std::ptr::null_mut()));
+    });
+}
 
 #[cfg(target_os = "windows")]
 fn with_windows_clipboard<F, T>(operation: F) -> Result<T, String>
 where
     F: FnOnce() -> Result<T, String>,
 {
-    use windows::Win32::System::Ole::OleInitialize;
-
     let _guard = WINDOWS_CLIPBOARD_MUTEX
         .lock()
         .map_err(|_| "Failed to lock clipboard mutex".to_string())?;
 
-    unsafe {
-        let _ = OleInitialize(Some(std::ptr::null_mut()));
-    }
+    ensure_windows_ole_initialized();
 
     operation()
 }
@@ -80,13 +90,6 @@ pub struct SystemClipboardImageInfo {
 pub struct SystemClipboardSavedImage {
     path: String,
     size_bytes: u64,
-}
-
-#[cfg(not(target_os = "windows"))]
-struct ClipboardImageBytes {
-    width: u32,
-    height: u32,
-    bytes: Vec<u8>,
 }
 
 #[tauri::command]
@@ -227,29 +230,39 @@ fn unix_read_clipboard_image_info() -> Result<Option<SystemClipboardImageInfo>, 
 
 fn save_system_clipboard_image_to_temp_sync() -> Result<Option<SystemClipboardSavedImage>, String> {
     let temp_dir = system_clipboard_image_temp_dir()?;
+    let destination_file = temp_dir.join("clipboard-image.png");
 
     #[cfg(target_os = "windows")]
     {
-        return windows_save_system_clipboard_png(&temp_dir.join("clipboard-image.png"));
+        if let Some(saved_image) = windows_save_system_clipboard_png(&destination_file)? {
+            Ok(Some(saved_image))
+        } else {
+            save_clipboard_image_bytes_to_temp(&destination_file)
+        }
     }
 
     #[cfg(not(target_os = "windows"))]
     {
-        let image = match read_system_clipboard_image_bytes()? {
-            Some(image) => image,
-            None => return Ok(None),
-        };
-        let destination_file = temp_dir.join("clipboard-image.png");
-        write_clipboard_image_to_png(&destination_file, image)?;
-        let size_bytes = fs::metadata(&destination_file)
-            .map_err(|error| error.to_string())?
-            .len();
-
-        Ok(Some(SystemClipboardSavedImage {
-            path: destination_file.to_string_lossy().into_owned(),
-            size_bytes,
-        }))
+        save_clipboard_image_bytes_to_temp(&destination_file)
     }
+}
+
+fn save_clipboard_image_bytes_to_temp(
+    destination_file: &Path,
+) -> Result<Option<SystemClipboardSavedImage>, String> {
+    let image = match read_system_clipboard_image_bytes()? {
+        Some(image) => image,
+        None => return Ok(None),
+    };
+    write_clipboard_image_to_png(destination_file, image)?;
+    let size_bytes = fs::metadata(destination_file)
+        .map_err(|error| error.to_string())?
+        .len();
+
+    Ok(Some(SystemClipboardSavedImage {
+        path: destination_file.to_string_lossy().into_owned(),
+        size_bytes,
+    }))
 }
 
 #[cfg(target_os = "windows")]
@@ -478,13 +491,13 @@ fn paste_system_clipboard_image_sync(
 
     #[cfg(target_os = "windows")]
     {
-        return Ok(clipboard_image_paste_result(
+        Ok(clipboard_image_paste_result(
             false,
             Some("Clipboard image must be saved before paste".to_string()),
             Some(0),
             Some(1),
             None,
-        ));
+        ))
     }
 
     #[cfg(not(target_os = "windows"))]
@@ -530,7 +543,6 @@ fn paste_system_clipboard_image_sync(
     }
 }
 
-#[cfg(not(target_os = "windows"))]
 fn read_system_clipboard_image_bytes() -> Result<Option<ClipboardImageBytes>, String> {
     let mut clipboard = arboard::Clipboard::new().map_err(|error| error.to_string())?;
     let image = match clipboard.get_image() {
@@ -560,7 +572,6 @@ fn read_system_clipboard_image_bytes() -> Result<Option<ClipboardImageBytes>, St
     }))
 }
 
-#[cfg(not(target_os = "windows"))]
 fn write_clipboard_image_to_png(
     destination_file: &Path,
     image: ClipboardImageBytes,

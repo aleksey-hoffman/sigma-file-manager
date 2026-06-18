@@ -20,6 +20,10 @@ export type FileBrowserMouseDownState = {
   shiftKey: boolean;
 };
 
+export function areEntryPathsEqual(firstPath: string, secondPath: string): boolean {
+  return normalizePath(firstPath) === normalizePath(secondPath);
+}
+
 export function isDoubleClick(
   pendingDoubleClick: PendingDoubleClick | null,
   entryPath: string,
@@ -30,7 +34,7 @@ export function isDoubleClick(
     return false;
   }
 
-  return normalizePath(pendingDoubleClick.path) === normalizePath(entryPath)
+  return areEntryPathsEqual(pendingDoubleClick.path, entryPath)
     && currentTime - pendingDoubleClick.time <= doubleClickDelayMs;
 }
 
@@ -103,7 +107,7 @@ export function useFileBrowserClickSelection(options: {
       return;
     }
 
-    if (mouseDownState.value.item?.path !== entry.path) {
+    if (!areEntryPathsEqual(mouseDownState.value.item?.path ?? '', entry.path)) {
       return;
     }
 

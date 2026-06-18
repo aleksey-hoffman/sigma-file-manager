@@ -40,7 +40,13 @@ export function normalizeImageThumbnailMaxDimension(maxDimension?: number): numb
     return IMAGE_THUMBNAIL_MAX_DIMENSION;
   }
 
-  return IMAGE_THUMBNAIL_MAX_DIMENSION;
+  const roundedDimension = Math.round(maxDimension);
+
+  if (roundedDimension <= 0) {
+    return IMAGE_THUMBNAIL_MAX_DIMENSION;
+  }
+
+  return Math.min(roundedDimension, IMAGE_THUMBNAIL_MAX_DIMENSION);
 }
 
 function getImageThumbnailKey(entry: DirEntry, maxDimension: number): string {
