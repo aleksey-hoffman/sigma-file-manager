@@ -128,9 +128,7 @@ describe('linked pane sync queue', () => {
 
     expect(drainQueue).toHaveBeenCalledTimes(1);
     expect(navigateToPath).toHaveBeenCalledTimes(2);
-    expect(navigateToPath.mock.calls.map(call => call[0])).toEqual([
-      'C:/Dir/first',
-      'C:/Dir/second',
-    ]);
+    expect(navigateToPath).toHaveBeenNthCalledWith(1, 'C:/Dir/first');
+    expect(navigateToPath).toHaveBeenNthCalledWith(2, 'C:/Dir/second');
   });
 });
