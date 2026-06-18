@@ -85,6 +85,9 @@
     "noClosedTabsToRestore": "Ni zaprtih zavihkov za obnovitev"
   },
   "splitView": "Razdeljen pogled",
+  "splitViewMode": "Način razdeljenega pogleda",
+  "splitViewModeSplit": "Razdeljen",
+  "splitViewModeLinked": "Povezan",
   "filter": {
     "filter": "Filter",
     "showHiddenItems": "Pokaži skrite predmete",
@@ -1105,8 +1108,5 @@
     "replaceShareDialogTitle": "Zamenjaj trenutno deljenje?",
     "replaceShareDialogDescription": "Datoteke se že delijo po omrežju. Trenutno deljenje bo ustavljeno in zamenjano z novim.",
     "replaceShareDialogConfirm": "Zamenjaj"
-  },
-  "splitViewMode": "Split view mode",
-  "splitViewModeSplit": "Split",
-  "splitViewModeLinked": "Linked"
+  }
 }

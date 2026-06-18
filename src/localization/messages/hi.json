@@ -85,6 +85,9 @@
     "noClosedTabsToRestore": "पुनर्स्थापित करने के लिए कोई बंद टैब नहीं"
   },
   "splitView": "भाजित दृश्य",
+  "splitViewMode": "भाजित दृश्य मोड",
+  "splitViewModeSplit": "भाजित",
+  "splitViewModeLinked": "लिंक",
   "filter": {
     "filter": "फ़िल्टर",
     "showHiddenItems": "छुपे हुए आइटम दिखाएँ",
@@ -1105,8 +1108,5 @@
     "replaceShareDialogTitle": "वर्तमान शेयर बदलें?",
     "replaceShareDialogDescription": "फ़ाइलें पहले से ही नेटवर्क पर साझा की जा रही हैं. वर्तमान शेयर बंद कर दिया जाएगा और उसके स्थान पर नया शेयर ले लिया जाएगा।",
     "replaceShareDialogConfirm": "प्रतिस्थापित करें"
-  },
-  "splitViewMode": "Split view mode",
-  "splitViewModeSplit": "Split",
-  "splitViewModeLinked": "Linked"
+  }
 }

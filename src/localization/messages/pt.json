@@ -85,6 +85,9 @@
     "noClosedTabsToRestore": "Nenhuma guia fechada para restaurar"
   },
   "splitView": "Visualização dividida",
+  "splitViewMode": "Modo de visualização dividida",
+  "splitViewModeSplit": "Dividida",
+  "splitViewModeLinked": "Vinculada",
   "filter": {
     "filter": "filtro",
     "showHiddenItems": "Mostrar itens ocultos",
@@ -1105,8 +1108,5 @@
     "replaceShareDialogTitle": "Substituir o compartilhamento atual?",
     "replaceShareDialogDescription": "Já existem arquivos sendo compartilhados na rede. O compartilhamento atual será interrompido e substituído pelo novo.",
     "replaceShareDialogConfirm": "Substituir"
-  },
-  "splitViewMode": "Split view mode",
-  "splitViewModeSplit": "Split",
-  "splitViewModeLinked": "Linked"
+  }
 }

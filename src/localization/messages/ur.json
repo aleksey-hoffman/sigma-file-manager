@@ -85,6 +85,9 @@
     "noClosedTabsToRestore": "بحال کرنے کے لیے کوئی بند ٹیب نہیں"
   },
   "splitView": "تقسیم شدہ منظر",
+  "splitViewMode": "تقسیم شدہ منظر کا موڈ",
+  "splitViewModeSplit": "تقسیم شدہ",
+  "splitViewModeLinked": "منسلک",
   "filter": {
     "filter": "فلٹر",
     "showHiddenItems": "پوشیدہ اشیاء دکھائیں",
@@ -1105,8 +1108,5 @@
     "replaceShareDialogTitle": "موجودہ شیئر بدلیں؟",
     "replaceShareDialogDescription": "فائلیں پہلے سے نیٹ ورک پر ہیں۔ موجودہ شیئر بند ہو کر نئے سے بدل جائے گا۔",
     "replaceShareDialogConfirm": "بدل دیں"
-  },
-  "splitViewMode": "Split view mode",
-  "splitViewModeSplit": "Split",
-  "splitViewModeLinked": "Linked"
+  }
 }

@@ -85,6 +85,9 @@
     "noClosedTabsToRestore": "No hay pestañas cerradas para restaurar"
   },
   "splitView": "Vista dividida",
+  "splitViewMode": "Modo de vista dividida",
+  "splitViewModeSplit": "Dividida",
+  "splitViewModeLinked": "Vinculada",
   "filter": {
     "filter": "Filtrar",
     "showHiddenItems": "Mostrar elementos ocultos",
@@ -1105,8 +1108,5 @@
     "replaceShareDialogTitle": "¿Reemplazar el recurso compartido?",
     "replaceShareDialogDescription": "Ya se están compartiendo archivos en la red. El recurso compartido actual se detendrá y será reemplazado por uno nuevo.",
     "replaceShareDialogConfirm": "Reemplazar"
-  },
-  "splitViewMode": "Split view mode",
-  "splitViewModeSplit": "Split",
-  "splitViewModeLinked": "Linked"
+  }
 }

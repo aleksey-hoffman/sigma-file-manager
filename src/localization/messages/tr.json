@@ -85,6 +85,9 @@
     "noClosedTabsToRestore": "Geri yüklenecek kapatılmış sekme yok"
   },
   "splitView": "Bölünmüş görünüm",
+  "splitViewMode": "Bölünmüş görünüm modu",
+  "splitViewModeSplit": "Bölünmüş",
+  "splitViewModeLinked": "Bağlı",
   "filter": {
     "filter": "Filtre",
     "showHiddenItems": "Gizli Öğeleri Göster",
@@ -1105,8 +1108,5 @@
     "replaceShareDialogTitle": "Mevcut paylaşım değiştirilsin mi?",
     "replaceShareDialogDescription": "Ağ üzerinden zaten dosyalar paylaşılıyor. Mevcut paylaşım durdurulup yenisiyle değiştirilecek.",
     "replaceShareDialogConfirm": "Değiştir"
-  },
-  "splitViewMode": "Split view mode",
-  "splitViewModeSplit": "Split",
-  "splitViewModeLinked": "Linked"
+  }
 }

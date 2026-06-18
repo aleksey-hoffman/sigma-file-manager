@@ -85,6 +85,9 @@
     "noClosedTabsToRestore": "Нет закрытых вкладок для восстановления"
   },
   "splitView": "Разделённый вид",
+  "splitViewMode": "Режим разделённого вида",
+  "splitViewModeSplit": "Разделённый",
+  "splitViewModeLinked": "Связанный",
   "filter": {
     "filter": "Фильтр",
     "showHiddenItems": "Показать скрытые элементы",
@@ -1105,8 +1108,5 @@
     "replaceShareDialogTitle": "Заменить текущий доступ?",
     "replaceShareDialogDescription": "Файлы уже доступны по сети. Текущий доступ будет остановлен и заменён новым.",
     "replaceShareDialogConfirm": "Заменить"
-  },
-  "splitViewMode": "Split view mode",
-  "splitViewModeSplit": "Split",
-  "splitViewModeLinked": "Linked"
+  }
 }

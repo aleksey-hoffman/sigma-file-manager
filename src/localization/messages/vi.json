@@ -85,6 +85,9 @@
     "noClosedTabsToRestore": "Không có thẻ đã đóng nào để khôi phục"
   },
   "splitView": "Chế độ chia màn hình",
+  "splitViewMode": "Chế độ chia màn hình",
+  "splitViewModeSplit": "Chia",
+  "splitViewModeLinked": "Liên kết",
   "filter": {
     "filter": "Lọc",
     "showHiddenItems": "Hiển thị mục ẩn",
@@ -1105,8 +1108,5 @@
     "replaceShareDialogTitle": "Thay thế chia sẻ hiện tại?",
     "replaceShareDialogDescription": "Các tập tin đang được chia sẻ qua mạng. Chia sẻ hiện tại sẽ bị dừng và thay thế bằng chia sẻ mới.",
     "replaceShareDialogConfirm": "Thay thế"
-  },
-  "splitViewMode": "Split view mode",
-  "splitViewModeSplit": "Split",
-  "splitViewModeLinked": "Linked"
+  }
 }
