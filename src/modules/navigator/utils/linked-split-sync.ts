@@ -47,6 +47,7 @@ export async function drainLinkedPaneSyncQueue(
   }
 
   queue.isSyncing = true;
+
   try {
     while (queue.pendingPath) {
       if (getTabGroupLength() < 2) {
@@ -54,6 +55,7 @@ export async function drainLinkedPaneSyncQueue(
       }
 
       const navigateToPath = getRightPaneNavigate();
+
       if (!navigateToPath) {
         return;
       }

@@ -90,8 +90,10 @@ describe('linked pane sync queue', () => {
   it('processes only the latest path when selection changes during navigation', async () => {
     const queue = createLinkedPaneSyncQueueState();
     const navigationOrder: string[] = [];
+
     let resolveFirstNavigation: () => void = () => {};
-    const firstNavigation = new Promise<void>(resolve => {
+
+    const firstNavigation = new Promise<void>((resolve) => {
       resolveFirstNavigation = resolve;
     });
     const navigateToPath = vi.fn(async (path: string) => {
