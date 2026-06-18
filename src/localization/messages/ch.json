@@ -85,6 +85,9 @@
     "noClosedTabsToRestore": "没有可恢复的已关闭标签页"
   },
   "splitView": "分屏视图",
+  "splitViewMode": "分屏模式",
+  "splitViewModeSplit": "分割",
+  "splitViewModeLinked": "联动",
   "filter": {
     "filter": "筛选",
     "showHiddenItems": "显示隐藏的项目",

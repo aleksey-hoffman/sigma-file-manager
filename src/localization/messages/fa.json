@@ -1064,6 +1064,9 @@
     "otherCommandsHeading": "سایر"
   },
   "splitView": "Split view",
+  "splitViewMode": "حالت نمای تقسیم‌شده",
+  "splitViewModeSplit": "تقسیم",
+  "splitViewModeLinked": "پیوند",
   "statusCenter": {
     "title": "Status center",
     "clearCompleted": "Clear completed",

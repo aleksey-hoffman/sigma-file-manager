@@ -115,6 +115,7 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
         showFullSizeImagePreview: false,
       },
       showHiddenFiles: false,
+      splitViewMode: 'split',
       folderIconTheme: BUILTIN_NAVIGATOR_ICON_THEME_IDS.system,
       fileIconTheme: BUILTIN_NAVIGATOR_ICON_THEME_IDS.system,
       listColumnVisibility: {

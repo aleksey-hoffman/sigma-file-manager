@@ -297,12 +297,15 @@ export type ListSortDirection = 'asc' | 'desc';
 
 export type LastTabCloseBehavior = 'createDefaultTab' | 'closeWindow' | 'navigateToHomePage';
 
+export type SplitViewMode = 'split' | 'linked';
+
 export type UserSettingsNavigator = {
   lastTabCloseBehavior: LastTabCloseBehavior;
   boldActiveTabTitle: boolean;
   layout: NavigatorLayout;
   infoPanel: UserSettingsNavigatorInfoPanel;
   showHiddenFiles: boolean;
+  splitViewMode: SplitViewMode;
   folderIconTheme: NavigatorIconTheme;
   fileIconTheme: NavigatorIconTheme;
   listColumnVisibility: ListColumnVisibility;

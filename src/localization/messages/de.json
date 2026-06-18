@@ -85,6 +85,9 @@
     "noClosedTabsToRestore": "Keine geschlossenen Tabs zum Wiederherstellen"
   },
   "splitView": "Geteilte Ansicht",
+  "splitViewMode": "Geteilte Ansicht-Modus",
+  "splitViewModeSplit": "Geteilt",
+  "splitViewModeLinked": "Verknüpft",
   "filter": {
     "filter": "Filter",
     "showHiddenItems": "Ausgeblendete Elemente anzeigen",

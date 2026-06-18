@@ -85,6 +85,9 @@
     "noClosedTabsToRestore": "Нет закрытых вкладок для восстановления"
   },
   "splitView": "Разделённый вид",
+  "splitViewMode": "Режим разделённого вида",
+  "splitViewModeSplit": "Разделённый",
+  "splitViewModeLinked": "Связанный",
   "filter": {
     "filter": "Фильтр",
     "showHiddenItems": "Показать скрытые элементы",

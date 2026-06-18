@@ -85,6 +85,9 @@
     "noClosedTabsToRestore": "Ni zaprtih zavihkov za obnovitev"
   },
   "splitView": "Razdeljen pogled",
+  "splitViewMode": "Način razdeljenega pogleda",
+  "splitViewModeSplit": "Razdeljen",
+  "splitViewModeLinked": "Povezan",
   "filter": {
     "filter": "Filter",
     "showHiddenItems": "Pokaži skrite predmete",

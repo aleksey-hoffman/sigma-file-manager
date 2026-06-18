@@ -85,6 +85,9 @@
     "noClosedTabsToRestore": "بحال کرنے کے لیے کوئی بند ٹیب نہیں"
   },
   "splitView": "تقسیم شدہ منظر",
+  "splitViewMode": "تقسیم شدہ منظر کا موڈ",
+  "splitViewModeSplit": "تقسیم شدہ",
+  "splitViewModeLinked": "منسلک",
   "filter": {
     "filter": "فلٹر",
     "showHiddenItems": "پوشیدہ اشیاء دکھائیں",

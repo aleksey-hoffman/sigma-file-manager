@@ -85,6 +85,9 @@
     "noClosedTabsToRestore": "पुनर्स्थापित करने के लिए कोई बंद टैब नहीं"
   },
   "splitView": "भाजित दृश्य",
+  "splitViewMode": "भाजित दृश्य मोड",
+  "splitViewModeSplit": "भाजित",
+  "splitViewModeLinked": "लिंक",
   "filter": {
     "filter": "फ़िल्टर",
     "showHiddenItems": "छुपे हुए आइटम दिखाएँ",

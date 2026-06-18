@@ -85,6 +85,9 @@
     "noClosedTabsToRestore": "Không có thẻ đã đóng nào để khôi phục"
   },
   "splitView": "Chế độ chia màn hình",
+  "splitViewMode": "Chế độ chia màn hình",
+  "splitViewModeSplit": "Chia",
+  "splitViewModeLinked": "Liên kết",
   "filter": {
     "filter": "Lọc",
     "showHiddenItems": "Hiển thị mục ẩn",

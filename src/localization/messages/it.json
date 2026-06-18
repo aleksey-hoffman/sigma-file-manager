@@ -85,6 +85,9 @@
     "noClosedTabsToRestore": "Nessuna scheda chiusa da ripristinare"
   },
   "splitView": "Vista divisa",
+  "splitViewMode": "Modalità vista divisa",
+  "splitViewModeSplit": "Divisa",
+  "splitViewModeLinked": "Collegata",
   "filter": {
     "filter": "Filtro",
     "showHiddenItems": "Mostra elementi nascosti",

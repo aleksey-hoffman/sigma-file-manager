@@ -85,6 +85,9 @@
     "noClosedTabsToRestore": "No hay pestañas cerradas para restaurar"
   },
   "splitView": "Vista dividida",
+  "splitViewMode": "Modo de vista dividida",
+  "splitViewModeSplit": "Dividida",
+  "splitViewModeLinked": "Vinculada",
   "filter": {
     "filter": "Filtrar",
     "showHiddenItems": "Mostrar elementos ocultos",

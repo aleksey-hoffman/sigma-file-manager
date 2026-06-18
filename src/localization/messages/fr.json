@@ -85,6 +85,9 @@
     "noClosedTabsToRestore": "Aucun onglet fermé à restaurer"
   },
   "splitView": "Vue partagée",
+  "splitViewMode": "Mode vue partagée",
+  "splitViewModeSplit": "Partagée",
+  "splitViewModeLinked": "Liée",
   "filter": {
     "filter": "Filtre",
     "showHiddenItems": "Afficher les éléments cachés",

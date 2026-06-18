@@ -85,6 +85,9 @@
     "noClosedTabsToRestore": "Nenhuma guia fechada para restaurar"
   },
   "splitView": "Visualização dividida",
+  "splitViewMode": "Modo de visualização dividida",
+  "splitViewModeSplit": "Dividida",
+  "splitViewModeLinked": "Vinculada",
   "filter": {
     "filter": "filtro",
     "showHiddenItems": "Mostrar itens ocultos",

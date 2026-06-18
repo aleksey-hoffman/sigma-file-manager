@@ -85,6 +85,9 @@
     "noClosedTabsToRestore": "Geri yüklenecek kapatılmış sekme yok"
   },
   "splitView": "Bölünmüş görünüm",
+  "splitViewMode": "Bölünmüş görünüm modu",
+  "splitViewModeSplit": "Bölünmüş",
+  "splitViewModeLinked": "Bağlı",
   "filter": {
     "filter": "Filtre",
     "showHiddenItems": "Gizli Öğeleri Göster",

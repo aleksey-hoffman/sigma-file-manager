@@ -39,11 +39,19 @@ import { NavigatorToolbarActions } from '@/modules/navigator/components/navigato
 import { ClipboardToolbar } from '@/modules/navigator/components/clipboard-toolbar';
 import { GlobalSearchView } from '@/modules/global-search';
 import type { DirEntry } from '@/types/dir-entry';
+import type { SplitViewMode } from '@/types/user-settings';
 import type { Tab } from '@/types/workspaces';
+
 import { useIsSmallScreen } from '@/composables/use-responsive-query';
 import { useFileDropOperation } from '@/composables/use-file-drop-operation';
 import { provideNavigatorImageThumbnails } from '@/modules/navigator/composables/use-navigator-image-thumbnails';
 import { arePathsEquivalent, getParentPath } from '@/utils/file-operation-paths';
+import {
+  createLinkedPaneSyncQueueState,
+  drainLinkedPaneSyncQueue,
+  getLinkedPaneNavigationTarget,
+  queueLinkedPaneNavigation,
+} from '@/modules/navigator/utils/linked-split-sync';
 import { getPathDisplayName } from '@/utils/normalize-path';
 
 type FileBrowserInstance = InstanceType<typeof FileBrowser> & {
@@ -289,6 +297,50 @@ function handleToggleSplitView() {
   workspacesStore.toggleSplitView();
 }
 
+const splitViewMode = computed(() => userSettingsStore.userSettings.navigator.splitViewMode);
+
+const isLinkedMode = computed(() => splitViewMode.value === 'linked' && isSplitView.value);
+
+const linkedPaneSyncQueue = createLinkedPaneSyncQueueState();
+
+async function handleSetSplitViewMode(mode: SplitViewMode) {
+  if (globalSearchStore.isOpen) return;
+
+  await userSettingsStore.set('navigator.splitViewMode', mode);
+}
+
+function syncLinkedPane(entries: DirEntry[], tabId: string) {
+  const tabGroup = workspacesStore.currentTabGroup;
+  const targetPath = getLinkedPaneNavigationTarget(
+    entries,
+    tabId,
+    tabGroup?.[0]?.id ?? null,
+    tabGroup?.length ?? 0,
+  );
+
+  if (!targetPath) {
+    return;
+  }
+
+  queueLinkedPaneNavigation(
+    linkedPaneSyncQueue,
+    targetPath,
+    () => drainLinkedPaneSyncQueue(
+      linkedPaneSyncQueue,
+      () => workspacesStore.currentTabGroup?.length ?? 0,
+      () => {
+        const latestTabGroup = workspacesStore.currentTabGroup;
+
+        if (!latestTabGroup || latestTabGroup.length < 2) {
+          return undefined;
+        }
+
+        return paneRefsMap.value.get(latestTabGroup[1].id)?.navigateToPath;
+      },
+    ),
+  );
+}
+
 async function handleToggleInfoPanel() {
   if (isSmallScreen.value) {
     showInfoPanel.value = !showInfoPanel.value;
@@ -318,6 +370,10 @@ function activateTabPane(tabId: string) {
 }
 
 function handleSelectionChange(entries: DirEntry[], tabId?: string) {
+  if (isLinkedMode.value && tabId) {
+    syncLinkedPane(entries, tabId);
+  }
+
   if (entries.length > 0) {
     isSearchSelectionActive.value = false;
     globalSearchViewRef.value?.clearSelections?.();
@@ -954,6 +1010,7 @@ onUnmounted(() => {
     :is-global-search-open="globalSearchStore.isOpen"
     @toggle-split-view="handleToggleSplitView"
     @toggle-info-panel="handleToggleInfoPanel"
+    @set-split-view-mode="handleSetSplitViewMode"
   />
   <div class="navigator-page">
     <TabBar v-if="!isSmallScreen" />
