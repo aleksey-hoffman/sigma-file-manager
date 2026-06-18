@@ -112,6 +112,7 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
         dynamicSize: false,
         widthPx: null,
         previewHeightPx: null,
+        showFullSizeImagePreview: false,
       },
       showHiddenFiles: false,
       folderIconTheme: BUILTIN_NAVIGATOR_ICON_THEME_IDS.system,

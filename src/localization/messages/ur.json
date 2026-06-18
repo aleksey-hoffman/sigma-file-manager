@@ -336,7 +336,10 @@
       "title": "معلوماتی پینل",
       "resetSize": "پینل کا سائز ری سیٹ کریں",
       "dynamicSize": "معلوماتی پینل کا متحرک سائز",
-      "dynamicSizeTooltip": "اگر آپ معلوماتی پینل کا سائز دستی طور پر تبدیل کریں تو یہ آپشن بند ہو جائے گا اور آپ کے حسبِ منظر سائز محفوظ ہو جائیں گے۔"
+      "dynamicSizeTooltip": "اگر آپ معلوماتی پینل کا سائز دستی طور پر تبدیل کریں تو یہ آپشن بند ہو جائے گا اور آپ کے حسبِ منظر سائز محفوظ ہو جائیں گے۔",
+      "showFullSizeImagePreview": "معلوماتی پینل پری ویو ایریا میں مکمل سائز کی تصویر دکھائیں",
+      "showFullSizeImagePreviewDescription": "متبادل کے طور پر، آپ کسی تصویر کو منتخب کر کے {shortcut} دبا کر فوری نظر میں مکمل سائز کی تصویر دیکھ سکتے ہیں۔",
+      "showFullSizeImagePreviewMemoryWarning": "میموری کا استعمال بڑھاتا ہے"
     },
     "addressBar": {
       "addressBarActions": "پتہ پٹی کے اعمال",
@@ -466,7 +469,8 @@
     "experimental": "تجرباتی, ٹرمینل, رجسٹری, ڈیفالٹ فائل مینیجر",
     "whatsNew": "نیا کیا ہے, changelog, ریلیز",
     "autostart": "سٹارٹ اپ, بوٹ, لاگ ان",
-    "extensions": "ایکسٹینشن, plugins, addons"
+    "extensions": "ایکسٹینشن, plugins, addons",
+    "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original"
   },
   "drag": {
     "holdShiftToChangeMode": "موڈ بدلنے کے لیے [Shift] دبائے رکھیں",

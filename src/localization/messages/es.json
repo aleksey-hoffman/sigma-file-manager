@@ -307,7 +307,10 @@
       "title": "Panel de información",
       "resetSize": "Restablecer tamaño del panel",
       "dynamicSize": "Tamaño dinámico del panel de información",
-      "dynamicSizeTooltip": "Si cambias el tamaño del panel manualmente, esta opción se desactiva y se guardan tus tamaños personalizados."
+      "dynamicSizeTooltip": "Si cambias el tamaño del panel manualmente, esta opción se desactiva y se guardan tus tamaños personalizados.",
+      "showFullSizeImagePreview": "Mostrar imagen a tamaño completo en la vista previa del panel de información",
+      "showFullSizeImagePreviewDescription": "Como alternativa, puedes seleccionar una imagen y pulsar {shortcut} para ver la imagen a tamaño completo en la vista rápida.",
+      "showFullSizeImagePreviewMemoryWarning": "Aumenta el uso de memoria"
     },
     "addressBar": {
       "addressBarActions": "Acciones de la barra de direcciones",
@@ -437,7 +440,8 @@
     "experimental": "avanzado, experimental, gestor de archivos predeterminado, explorador de archivos, registro, terminal, shell",
     "whatsNew": "novedades, registro de cambios, notas de versión, versión, actualización, noticias",
     "autostart": "inicio automático, arranque, inicio de sesión, sistema, arranque del sistema",
-    "extensions": "extensions, plugins, addons, configuration, settings"
+    "extensions": "extensions, plugins, addons, configuration, settings",
+    "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original"
   },
   "drag": {
     "holdShiftToChangeMode": "Mantén presionado [Shift] para cambiar de modo",

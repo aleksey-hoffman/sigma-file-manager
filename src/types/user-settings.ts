@@ -319,6 +319,7 @@ export type UserSettingsNavigatorInfoPanel = {
   dynamicSize: boolean;
   widthPx: number | null;
   previewHeightPx: number | null;
+  showFullSizeImagePreview: boolean;
 };
 
 export type NavigatorLayout = {

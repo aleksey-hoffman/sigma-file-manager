@@ -417,7 +417,7 @@ const resolutionSelectOptions = computed(() => {
   width: 20px;
   height: 20px;
   flex-shrink: 0;
-  color: hsl(var(--warning, 38 92% 50%));
+  color: hsl(var(--warning));
 }
 
 .conflict-dialog__description {
@@ -553,7 +553,7 @@ const resolutionSelectOptions = computed(() => {
 }
 
 .conflict-dialog__row-hint {
-  color: hsl(var(--warning, 38 92% 50%));
+  color: hsl(var(--warning));
   font-size: 11px;
   line-height: 1.3;
 }

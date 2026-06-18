@@ -307,7 +307,10 @@
       "title": "情報パネル",
       "resetSize": "パネルサイズをリセット",
       "dynamicSize": "情報パネルの動的サイズ",
-      "dynamicSizeTooltip": "情報パネルのサイズを手動で変更すると、この設定はオフになり、カスタムサイズが保存されます。"
+      "dynamicSizeTooltip": "情報パネルのサイズを手動で変更すると、この設定はオフになり、カスタムサイズが保存されます。",
+      "showFullSizeImagePreview": "情報パネルのプレビュー領域にフルサイズ画像を表示",
+      "showFullSizeImagePreviewDescription": "別の方法として、画像を選択して {shortcut} を押すと、クイックビューでフルサイズの画像を表示できます。",
+      "showFullSizeImagePreviewMemoryWarning": "メモリ使用量が増加します"
     },
     "addressBar": {
       "addressBarActions": "アドレスバーアクション",
@@ -437,7 +440,8 @@
     "experimental": "高度, 実験的, 既定のファイルマネージャー, エクスプローラー, レジストリ, ターミナル, シェル",
     "whatsNew": "新機能, 更新履歴, リリースノート, バージョン, アップデート, ニュース",
     "autostart": "自動起動, スタートアップ, ログイン, システム, 起動",
-    "extensions": "extensions, plugins, addons, configuration, settings"
+    "extensions": "extensions, plugins, addons, configuration, settings",
+    "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original"
   },
   "drag": {
     "holdShiftToChangeMode": "[Shift] を押してモードを変更",

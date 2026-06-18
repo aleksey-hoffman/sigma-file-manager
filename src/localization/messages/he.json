@@ -336,7 +336,10 @@
       "title": "חלונית מידע",
       "dynamicSize": "גודל דינמי לחלונית המידע",
       "dynamicSizeTooltip": "שינוי ידני של גודל חלונית המידע מבטל אפשרות זו ושומר את הגדלים המותאמים שלך.",
-      "resetSize": "אפס את גודל החלונית"
+      "resetSize": "אפס את גודל החלונית",
+      "showFullSizeImagePreview": "הצג תמונה בגודל מלא באזור התצוגה המקדימה של חלונית המידע",
+      "showFullSizeImagePreviewDescription": "לחלופין, ניתן לבחור תמונה וללחוץ על {shortcut} כדי לצפות בתמונה בגודל מלא בתצוגה המהירה.",
+      "showFullSizeImagePreviewMemoryWarning": "מגבירה את השימוש בזיכרון"
     },
     "addressBar": {
       "addressBarActions": "פעולות שורת הכתובת",
@@ -466,7 +469,8 @@
     "experimental": "מתקדם, ניסיוני, מנהל קבצים ברירת מחדל, סייר קבצים, רישום, מסוף, מעטפת",
     "whatsNew": "מה חדש, יומן שינויים, הערות גרסה, גרסה, עדכון, חדשות",
     "autostart": "הפעלה אוטומטית, אתחול, כניסה, התחברות, הפעלה, מערכת",
-    "extensions": "תוספים, תוספות, הרחבות, תצורה, הגדרות"
+    "extensions": "תוספים, תוספות, הרחבות, תצורה, הגדרות",
+    "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original"
   },
   "drag": {
     "holdShiftToChangeMode": "החזק [Shift] כדי לשנות מצב",

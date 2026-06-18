@@ -581,12 +581,12 @@ const visibleRows = computed<FileBrowserListDisplayRow[]>(() => {
 
 .file-browser-list-view__entry[data-link-status="broken"] .file-browser-list-view__entry-icon,
 .file-browser-list-view__entry[data-link-status="broken"] .file-browser-list-view__entry-text {
-  color: hsl(var(--warning));
+  color: hsl(var(--dangerous));
 }
 
 .file-browser-list-view__entry[data-link-status="broken"] .file-browser-list-view__entry-text {
   text-decoration: line-through;
-  text-decoration-color: hsl(var(--warning) / 70%);
+  text-decoration-color: hsl(var(--dangerous) / 70%);
   text-decoration-thickness: 1px;
 }
 
@@ -842,8 +842,8 @@ const visibleRows = computed<FileBrowserListDisplayRow[]>(() => {
 }
 
 .file-browser-list-view__entry[data-in-clipboard][data-clipboard-type="move"]::before {
-  background-color: hsl(var(--warning) / 6%);
-  box-shadow: inset 0 0 0 1px hsl(var(--warning) / 30%), inset 3px 0 0 0 hsl(var(--warning) / 50%);
+  background-color: hsl(var(--dangerous) / 6%);
+  box-shadow: inset 0 0 0 1px hsl(var(--dangerous) / 30%), inset 3px 0 0 0 hsl(var(--dangerous) / 50%);
   opacity: 1;
 }
 
@@ -854,8 +854,8 @@ const visibleRows = computed<FileBrowserListDisplayRow[]>(() => {
 }
 
 .file-browser-list-view__entry[data-selected][data-in-clipboard][data-clipboard-type="move"]::before {
-  background-color: hsl(var(--warning) / 10%);
-  box-shadow: inset 0 0 0 1px hsl(var(--warning) / 50%), inset 3px 0 0 0 hsl(var(--warning) / 70%);
+  background-color: hsl(var(--dangerous) / 10%);
+  box-shadow: inset 0 0 0 1px hsl(var(--dangerous) / 50%), inset 3px 0 0 0 hsl(var(--dangerous) / 70%);
   opacity: 1;
 }
 
@@ -870,7 +870,7 @@ const visibleRows = computed<FileBrowserListDisplayRow[]>(() => {
 .file-browser-list-view__entry[data-selected][data-in-clipboard][data-clipboard-type="move"] .file-browser-list-view__entry-tags,
 .file-browser-list-view__entry[data-selected][data-in-clipboard][data-clipboard-type="move"] .file-browser-list-view__entry-tags-static,
 .file-browser-list-view__entry[data-selected][data-in-clipboard][data-clipboard-type="move"] .file-browser-list-view__entry-tags :deep(.tag-selector__trigger) {
-  color: hsl(var(--warning));
+  color: hsl(var(--dangerous));
 }
 
 .file-browser-list-view__entry[data-in-clipboard][data-clipboard-type="copy"] .file-browser-list-view__entry-text,
@@ -892,7 +892,7 @@ const visibleRows = computed<FileBrowserListDisplayRow[]>(() => {
 .file-browser-list-view__entry[data-in-clipboard][data-clipboard-type="move"] .file-browser-list-view__entry-tags,
 .file-browser-list-view__entry[data-in-clipboard][data-clipboard-type="move"] .file-browser-list-view__entry-tags-static,
 .file-browser-list-view__entry[data-in-clipboard][data-clipboard-type="move"] .file-browser-list-view__entry-tags :deep(.tag-selector__trigger) {
-  color: hsl(var(--warning));
+  color: hsl(var(--dangerous));
 }
 
 .file-browser-list-view__entry::after {

@@ -309,7 +309,7 @@ defineExpose({
   justify-content: center;
   border-radius: 999px;
   background-color: hsl(var(--background-3));
-  color: hsl(38deg 92% 50%);
+  color: hsl(var(--warning));
   inset-inline-end: 1px;
   pointer-events: none;
 }

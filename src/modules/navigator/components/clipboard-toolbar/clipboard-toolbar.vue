@@ -573,11 +573,11 @@ function removeClipboardItem(entry: ClipboardToolbarItem) {
 
   background: linear-gradient(
     135deg,
-    hsl(var(--warning) / 20%) 0%,
-    hsl(var(--warning) / 12%) 50%,
-    hsl(var(--warning) / 8%) 100%
+    hsl(var(--dangerous) / 20%) 0%,
+    hsl(var(--dangerous) / 12%) 50%,
+    hsl(var(--dangerous) / 8%) 100%
   );
-  color: hsl(var(--warning));
+  color: hsl(var(--dangerous));
 }
 
 .clipboard-slide-enter-active {

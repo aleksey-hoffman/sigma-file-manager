@@ -307,7 +307,10 @@
       "title": "Pannello informativo",
       "resetSize": "Reimposta dimensione pannello",
       "dynamicSize": "Dimensione dinamica del pannello informativo",
-      "dynamicSizeTooltip": "Se ridimensioni manualmente il pannello, questa opzione si disattiva e le dimensioni personalizzate vengono salvate."
+      "dynamicSizeTooltip": "Se ridimensioni manualmente il pannello, questa opzione si disattiva e le dimensioni personalizzate vengono salvate.",
+      "showFullSizeImagePreview": "Mostra l'immagine a dimensione piena nell'anteprima del pannello informativo",
+      "showFullSizeImagePreviewDescription": "In alternativa, puoi selezionare un'immagine e premere {shortcut} per visualizzare l'immagine a dimensione piena nell'anteprima rapida.",
+      "showFullSizeImagePreviewMemoryWarning": "Aumenta l'utilizzo della memoria"
     },
     "addressBar": {
       "addressBarActions": "Azioni della barra degli indirizzi",
@@ -437,7 +440,8 @@
     "experimental": "avanzato, sperimentale, file manager predefinito, esplora file, registro, terminale, shell",
     "whatsNew": "novità, registro modifiche, note di rilascio, versione, aggiornamento, notizie",
     "autostart": "avvio automatico, avvio, boot, accesso, sistema, login",
-    "extensions": "extensions, plugins, addons, configuration, settings"
+    "extensions": "extensions, plugins, addons, configuration, settings",
+    "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original"
   },
   "drag": {
     "holdShiftToChangeMode": "Tieni premuto il tasto [Shift] per cambiare modalità",

@@ -336,7 +336,10 @@
       "title": "Информационная панель",
       "resetSize": "Сбросить размер панели",
       "dynamicSize": "Динамический размер информационной панели",
-      "dynamicSizeTooltip": "При ручном изменении размера панели эта опция отключается, а ваши размеры сохраняются."
+      "dynamicSizeTooltip": "При ручном изменении размера панели эта опция отключается, а ваши размеры сохраняются.",
+      "showFullSizeImagePreview": "Показывать изображение в полном размере в области предпросмотра информационной панели",
+      "showFullSizeImagePreviewDescription": "В качестве альтернативы вы можете выбрать изображение и нажать {shortcut}, чтобы просмотреть его в полном размере в быстром просмотре.",
+      "showFullSizeImagePreviewMemoryWarning": "Увеличивает использование памяти"
     },
     "addressBar": {
       "addressBarActions": "Действия адресной строки",
@@ -466,7 +469,8 @@
     "experimental": "расширенный, экспериментальный, файловый менеджер по умолчанию, проводник, реестр, терминал, оболочка",
     "whatsNew": "что нового, журнал изменений, примечания к выпуску, версия, обновление, новости",
     "autostart": "автозапуск, запуск, вход в систему, загрузка, система",
-    "extensions": "extensions, plugins, addons, configuration, settings"
+    "extensions": "extensions, plugins, addons, configuration, settings",
+    "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original"
   },
   "drag": {
     "holdShiftToChangeMode": "Удерживайте [Shift], чтобы изменить режим",

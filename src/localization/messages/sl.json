@@ -336,7 +336,10 @@
       "title": "Info panel",
       "resetSize": "Ponastavi velikost panela",
       "dynamicSize": "Dinamična velikost info panela",
-      "dynamicSizeTooltip": "Če ročno spremenite velikost info panela, se ta možnost izklopi in shranijo vaše prilagojene velikosti."
+      "dynamicSizeTooltip": "Če ročno spremenite velikost info panela, se ta možnost izklopi in shranijo vaše prilagojene velikosti.",
+      "showFullSizeImagePreview": "Prikaži sliko v polni velikosti v predoglednem območju info panela",
+      "showFullSizeImagePreviewDescription": "Kot alternativo lahko izberete sliko in pritisnete {shortcut}, da si jo v hitrem ogledu ogledate v polni velikosti.",
+      "showFullSizeImagePreviewMemoryWarning": "Poveča porabo pomnilnika"
     },
     "addressBar": {
       "addressBarActions": "Dejanja naslovne vrstice",
@@ -466,7 +469,8 @@
     "experimental": "napredno, eksperimentalno, privzeti upravljalnik datotek, raziskovalec datotek, register, terminal, lupina",
     "whatsNew": "what's new, changelog, release notes, version, update, news",
     "autostart": "autostart, zagon, sistem, prijava, zagon ob zagonu",
-    "extensions": "extensions, plugins, addons, configuration, settings"
+    "extensions": "extensions, plugins, addons, configuration, settings",
+    "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original"
   },
   "drag": {
     "holdShiftToChangeMode": "Zadržite [Shift] za spremembo načina",

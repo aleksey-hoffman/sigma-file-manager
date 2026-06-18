@@ -133,7 +133,7 @@ function handleMerge() {
   width: 20px;
   height: 20px;
   flex-shrink: 0;
-  color: hsl(var(--warning, 38 92% 50%));
+  color: hsl(var(--warning));
 }
 
 .top-level-conflict-dialog__description,

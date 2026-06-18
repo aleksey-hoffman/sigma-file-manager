@@ -314,7 +314,7 @@ async function compactColumnWidths() {
 .file-browser-list-view__columns-warning {
   display: inline-flex;
   flex-shrink: 0;
-  color: hsl(38deg 92% 50%);
+  color: hsl(var(--warning));
   margin-inline-start: auto;
 }
 
