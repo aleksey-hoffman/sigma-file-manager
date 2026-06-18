@@ -44,6 +44,12 @@ import type { Tab } from '@/types/workspaces';
 import { useIsSmallScreen } from '@/composables/use-responsive-query';
 import { useFileDropOperation } from '@/composables/use-file-drop-operation';
 import { arePathsEquivalent, getParentPath } from '@/utils/file-operation-paths';
+import {
+  createLinkedPaneSyncQueueState,
+  drainLinkedPaneSyncQueue,
+  getLinkedPaneNavigationTarget,
+  queueLinkedPaneNavigation,
+} from '@/modules/navigator/utils/linked-split-sync';
 import { getPathDisplayName } from '@/utils/normalize-path';
 
 type FileBrowserInstance = InstanceType<typeof FileBrowser> & {
@@ -288,9 +294,7 @@ const splitViewMode = computed(() => userSettingsStore.userSettings.navigator.sp
 
 const isLinkedMode = computed(() => splitViewMode.value === 'linked' && isSplitView.value);
 
-// Ignore selection changes triggered by programmatic navigation of the right pane to avoid sync loops
-const isSyncingLinkedPane = ref(false);
-const pendingLinkedPanePath = ref<string | null>(null);
+const linkedPaneSyncQueue = createLinkedPaneSyncQueueState();
 
 async function handleSetSplitViewMode(mode: SplitViewMode) {
   if (globalSearchStore.isOpen) return;
@@ -298,37 +302,36 @@ async function handleSetSplitViewMode(mode: SplitViewMode) {
   await userSettingsStore.set('navigator.splitViewMode', mode);
 }
 
-// Reflect a single-folder selection in the left pane onto the right pane in Linked mode
-async function syncLinkedPane(entries: DirEntry[], tabId: string) {
+function syncLinkedPane(entries: DirEntry[], tabId: string) {
   const tabGroup = workspacesStore.currentTabGroup;
+  const targetPath = getLinkedPaneNavigationTarget(
+    entries,
+    tabId,
+    tabGroup?.[0]?.id ?? null,
+    tabGroup?.length ?? 0,
+  );
 
-  if (!tabGroup || tabGroup.length < 2) return;
-  if (tabId !== tabGroup[0].id) return;
-  if (entries.length !== 1 || !entries[0].is_dir) return;
-
-  pendingLinkedPanePath.value = entries[0].path;
-
-  if (isSyncingLinkedPane.value) return;
-
-  isSyncingLinkedPane.value = true;
-  try {
-    while (pendingLinkedPanePath.value) {
-      const latestTabGroup = workspacesStore.currentTabGroup;
-
-      if (!latestTabGroup || latestTabGroup.length < 2) return;
-
-      const rightPane = paneRefsMap.value.get(latestTabGroup[1].id);
-
-      if (!rightPane?.navigateToPath) return;
-
-      const targetPath = pendingLinkedPanePath.value;
-      pendingLinkedPanePath.value = null;
-      await rightPane.navigateToPath(targetPath);
-    }
+  if (!targetPath) {
+    return;
   }
-  finally {
-    isSyncingLinkedPane.value = false;
-  }
+
+  queueLinkedPaneNavigation(
+    linkedPaneSyncQueue,
+    targetPath,
+    () => drainLinkedPaneSyncQueue(
+      linkedPaneSyncQueue,
+      () => workspacesStore.currentTabGroup?.length ?? 0,
+      () => {
+        const latestTabGroup = workspacesStore.currentTabGroup;
+
+        if (!latestTabGroup || latestTabGroup.length < 2) {
+          return undefined;
+        }
+
+        return paneRefsMap.value.get(latestTabGroup[1].id)?.navigateToPath;
+      },
+    ),
+  );
 }
 
 async function handleToggleInfoPanel() {
@@ -361,7 +364,7 @@ function activateTabPane(tabId: string) {
 
 function handleSelectionChange(entries: DirEntry[], tabId?: string) {
   if (isLinkedMode.value && tabId) {
-    void syncLinkedPane(entries, tabId);
+    syncLinkedPane(entries, tabId);
   }
 
   if (entries.length > 0) {
