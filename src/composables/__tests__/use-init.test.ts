@@ -263,6 +263,10 @@ vi.mock('@/modules/app-updater', () => ({
   }),
 }));
 
+vi.mock('@/composables/use-clipboard-focus-sync', () => ({
+  useClipboardFocusSync: vi.fn(),
+}));
+
 vi.mock('@/utils/autostart-sync', () => ({
   applyLaunchAtStartupPreference: applyLaunchAtStartupPreferenceMock,
 }));

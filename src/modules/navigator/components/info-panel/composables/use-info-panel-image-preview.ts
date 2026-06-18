@@ -55,9 +55,7 @@ export function useInfoPanelImagePreview(selectedEntry: MaybeRefOrGetter<DirEntr
 
   const previewRef = ref<HTMLElement | null>(null);
 
-  const {
-    previewSize,
-  } = useDevicePixelPreviewSize({
+  const { previewSize } = useDevicePixelPreviewSize({
     previewRef,
     defaultSize: DEFAULT_INFO_PANEL_THUMBNAIL_SIZE,
     enabled: usesThumbnailImagePreview,

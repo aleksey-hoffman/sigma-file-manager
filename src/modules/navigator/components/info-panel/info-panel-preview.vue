@@ -4,9 +4,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import {
-  computed, nextTick, ref, watch,
-} from 'vue';
+import { computed, nextTick, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { invoke } from '@tauri-apps/api/core';
 import {
@@ -16,9 +14,7 @@ import {
   FileImageIcon,
   Loader2Icon,
 } from '@lucide/vue';
-import {
-  isVideoFile as checkIsVideo,
-} from '@/modules/navigator/components/file-browser/utils';
+import { isVideoFile as checkIsVideo } from '@/modules/navigator/components/file-browser/utils';
 import { useInfoPanelImagePreview } from '@/modules/navigator/components/info-panel/composables/use-info-panel-image-preview';
 import UbuntuWslIcon from '@/components/icons/ubuntu-wsl-icon.vue';
 import { ScrollArea } from '@/components/ui/scroll-area';

@@ -33,6 +33,7 @@ const props = withDefaults(defineProps<{
   propertyLayout?: 'rows' | 'stacked';
   useInternalScroll?: boolean;
 }>(), {
+  orientation: 'vertical',
   propertyLayout: 'rows',
   useInternalScroll: true,
 });
