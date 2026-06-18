@@ -293,6 +293,7 @@ defineExpose({
 }
 
 .file-browser-list-view__columns-button {
+  position: relative;
   width: 28px;
   height: 28px;
   flex-shrink: 0;
