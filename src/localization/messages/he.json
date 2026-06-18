@@ -85,6 +85,9 @@
     "noClosedTabsToRestore": "אין לשוניות סגורות לשחזור"
   },
   "splitView": "תצוגה מפוצלת",
+  "splitViewMode": "מצב תצוגה מפוצלת",
+  "splitViewModeSplit": "מפוצל",
+  "splitViewModeLinked": "מקושר",
   "filter": {
     "filter": "סינון",
     "showHiddenItems": "הצג פריטים מוסתרים",
