@@ -24,6 +24,7 @@ import { ContextMenuShortcut } from '@/components/ui/context-menu';
 import {
   FlipHorizontalIcon,
   Columns2Icon,
+  LinkIcon,
   PanelRightIcon,
   LayoutGridIcon,
   ListIcon,
@@ -168,7 +169,12 @@ function handleToggleInfoPanelDynamicSize(enabled: boolean) {
                   :class="{ 'navigator-settings-menu__layout-option--active': splitViewMode === 'linked' }"
                   @click="setSplitViewMode('linked')"
                 >
-                  <FlipHorizontalIcon :size="20" />
+                  <span class="navigator-settings-menu__layout-option-icon">
+                    <Columns2Icon :size="20" />
+                    <span class="navigator-settings-menu__layout-option-badge">
+                      <LinkIcon :size="9" />
+                    </span>
+                  </span>
                   <span>{{ t('splitViewModeLinked') }}</span>
                 </button>
               </div>
@@ -355,6 +361,28 @@ function handleToggleInfoPanelDynamicSize(enabled: boolean) {
 
 .navigator-settings-menu__layout-option svg {
   flex-shrink: 0;
+}
+
+.navigator-settings-menu__layout-option-icon {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.navigator-settings-menu__layout-option-badge {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  display: inline-flex;
+  width: 12px;
+  height: 12px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background-color: hsl(var(--background));
+  color: hsl(var(--primary));
+  pointer-events: none;
 }
 
 .navigator-settings-menu.sigma-ui-dropdown-menu-content {
