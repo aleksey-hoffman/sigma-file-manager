@@ -24,8 +24,8 @@ import { toast, ToastProgress, ToastStatic } from '@/components/ui/toaster';
 import { useLanShare } from '@/composables/use-lan-share';
 import { useConflictResolutionDialog } from '@/composables/use-conflict-resolution-dialog';
 import { useTopLevelNameConflictDialog } from '@/composables/use-top-level-name-conflict-dialog';
-import { UI_CONSTANTS } from '@/constants';
 import normalizePath from '@/utils/normalize-path';
+import { useFileBrowserClickSelection } from '@/modules/navigator/components/file-browser/composables/use-file-browser-click-selection';
 import {
   arePathsEquivalent,
   getSharedSourceDirectory,
@@ -65,15 +65,6 @@ export function useFileBrowserSelection(
   const permanentDeleteConfirm = usePermanentDeleteConfirm();
   const selectedEntries = ref<DirEntry[]>([]);
   const lastSelectedEntry = ref<DirEntry | null>(null);
-
-  const mouseDownState = ref({
-    item: null as DirEntry | null,
-    wasSelected: false,
-    awaitsSecondClick: false,
-    lastMouseUpTime: 0,
-    ctrlKey: false,
-    shiftKey: false,
-  });
 
   const contextMenu = ref({
     targetEntry: null as DirEntry | null,
@@ -240,99 +231,27 @@ export function useFileBrowserSelection(
     return true;
   }
 
-  function clearDocumentTextSelection() {
-    window.getSelection()?.removeAllRanges();
-  }
-
-  function handleEntryMouseDown(entry: DirEntry, event: MouseEvent) {
-    clearDocumentTextSelection();
-
-    if (event.button === 1 && entry.is_dir) {
-      event.preventDefault();
-      event.stopPropagation();
-      openEntriesInNewTabs([entry]);
-      return;
-    }
-
-    const wasSelected = isEntrySelected(entry);
-    const ctrlKey = event.ctrlKey || event.metaKey;
-    const shiftKey = event.shiftKey;
-
-    mouseDownState.value.item = entry;
-    mouseDownState.value.wasSelected = wasSelected;
-    mouseDownState.value.ctrlKey = ctrlKey;
-    mouseDownState.value.shiftKey = shiftKey;
-
-    if (shiftKey && lastSelectedEntry.value) {
-      selectRange(lastSelectedEntry.value, entry);
-    }
-    else if (ctrlKey) {
-      // Ctrl+click handled in mouseup
-    }
-    else if (!wasSelected) {
-      replaceSelection(entry);
-    }
-  }
-
-  function handleEntryMouseUp(entry: DirEntry, event: MouseEvent) {
-    if (event.button === 2) {
-      return;
-    }
-
-    if (mouseDownState.value.item?.path !== entry.path) {
-      return;
-    }
-
-    const { wasSelected, awaitsSecondClick, lastMouseUpTime, ctrlKey, shiftKey } = mouseDownState.value;
-    const currentTime = Date.now();
-    const timeSinceLastClick = currentTime - lastMouseUpTime;
-    const isDoubleClick = awaitsSecondClick && timeSinceLastClick <= UI_CONSTANTS.DOUBLE_CLICK_DELAY;
-
-    if (isDoubleClick && !ctrlKey && !shiftKey) {
-      mouseDownState.value.awaitsSecondClick = false;
-      mouseDownState.value.lastMouseUpTime = 0;
-
-      if (event.altKey && platformStore.isWindows) {
-        const entriesForProperties = selectedEntries.value.length > 0
-          ? [...selectedEntries.value]
-          : [entry];
-        onOpenProperties(entriesForProperties);
-      }
-      else {
-        onOpen(entry);
-      }
-
-      return;
-    }
-
-    mouseDownState.value.awaitsSecondClick = true;
-    mouseDownState.value.lastMouseUpTime = currentTime;
-
-    if (shiftKey) {
-      // Already handled in mousedown
-      return;
-    }
-
-    if (ctrlKey) {
-      if (wasSelected) {
-        removeFromSelection(entry);
-      }
-      else {
-        addToSelection(entry);
-      }
-
-      return;
-    }
-
-    if (wasSelected) {
-      if (selectedEntries.value.length > 1) {
-        replaceSelection(entry);
-      }
-      else {
-        clearSelection();
-      }
-    }
-  }
+  const {
+    mouseDownState,
+    handleEntryMouseDown,
+    handleEntryMouseUp,
+    resetMouseState,
+  } = useFileBrowserClickSelection({
+    selectedEntries,
+    lastSelectedEntry,
+    isEntrySelected,
+    selectRange,
+    addToSelection,
+    removeFromSelection,
+    replaceSelection,
+    clearSelection,
+    onOpen,
+    onOpenProperties,
+    onMiddleClickOpenInNewTab: (entry) => {
+      void openEntriesInNewTabs([entry]);
+    },
+    isWindows: platformStore.isWindows,
+  });
 
   function handleEntryFocus(entry: DirEntry, event: FocusEvent) {
     if (pendingFocusRequest.value != null) {
@@ -1198,11 +1117,6 @@ export function useFileBrowserSelection(
         },
       },
     });
-  }
-
-  function resetMouseState() {
-    mouseDownState.value.awaitsSecondClick = false;
-    mouseDownState.value.lastMouseUpTime = 0;
   }
 
   function selectAll() {
