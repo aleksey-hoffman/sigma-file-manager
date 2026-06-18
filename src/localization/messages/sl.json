@@ -339,7 +339,10 @@
       "title": "Info panel",
       "resetSize": "Ponastavi velikost panela",
       "dynamicSize": "Dinamična velikost info panela",
-      "dynamicSizeTooltip": "Če ročno spremenite velikost info panela, se ta možnost izklopi in shranijo vaše prilagojene velikosti."
+      "dynamicSizeTooltip": "Če ročno spremenite velikost info panela, se ta možnost izklopi in shranijo vaše prilagojene velikosti.",
+      "showFullSizeImagePreview": "Prikaži sliko v polni velikosti v predoglednem območju info panela",
+      "showFullSizeImagePreviewDescription": "Kot alternativo lahko izberete sliko in pritisnete {shortcut}, da si jo v hitrem ogledu ogledate v polni velikosti.",
+      "showFullSizeImagePreviewMemoryWarning": "Poveča porabo pomnilnika"
     },
     "addressBar": {
       "addressBarActions": "Dejanja naslovne vrstice",
@@ -469,7 +472,8 @@
     "experimental": "napredno, eksperimentalno, privzeti upravljalnik datotek, raziskovalec datotek, register, terminal, lupina",
     "whatsNew": "what's new, changelog, release notes, version, update, news",
     "autostart": "autostart, zagon, sistem, prijava, zagon ob zagonu",
-    "extensions": "extensions, plugins, addons, configuration, settings"
+    "extensions": "extensions, plugins, addons, configuration, settings",
+    "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original"
   },
   "drag": {
     "holdShiftToChangeMode": "Zadržite [Shift] za spremembo načina",
@@ -783,6 +787,14 @@
     "replaceOverview": "{replaced} od {total} predmetov bo zamenjanih na cilju",
     "checkingConflicts": "Preverjanje sporov …",
     "skipIdenticalFiles": "Preskoči {n} datoteko z enako velikostjo in datumom | Preskoči {n} datoteki z enako velikostjo in datumom | Preskoči {n} datoteke z enako velikostjo in datumom | Preskoči {n} datotek z enako velikostjo in datumom"
+  },
+  "topLevelConflictDialog": {
+    "title": "Predmeti že obstajajo",
+    "description": "0 predmetov s temi imeni že obstaja v tej mapi. | 1 predmet s tem imenom že obstaja v tej mapi. | {n} predmeta s temi imeni že obstajata v tej mapi. | {n} predmetov s temi imeni že obstaja v tej mapi.",
+    "hint": "Izberite Preimenuj, da ustvarite preimenovane predmete, ali Združi, da pregledate spore znotraj obstoječih predmetov.",
+    "rename": "Preimenuj",
+    "merge": "Združi",
+    "moreItems": "+ še {count} predmet | + še {count} predmeta | + še {count} predmeti | + še {count} predmetov"
   },
   "command": "Ukaz",
   "keybinding": "Tipkovna bližnjica",

@@ -10,7 +10,6 @@ import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { useDismissalLayerStore } from '@/stores/runtime/dismissal-layer';
 import { useQuickViewStore } from '@/stores/runtime/quick-view';
 import { useGlobalSearchStore } from '@/stores/runtime/global-search';
-import { useClipboardStore } from '@/stores/runtime/clipboard';
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
 import { useItemCountsStore } from '@/stores/runtime/item-counts';
 import { useUserStatsStore } from '@/stores/storage/user-stats';
@@ -42,7 +41,7 @@ import { useFileBrowserDrag } from './use-file-browser-drag';
 import { useFileBrowserInternalDropHandler } from './use-file-browser-internal-drop';
 import { useFileBrowserExternalDrop } from './use-file-browser-external-drop';
 import { useFileBrowserVirtualLayout } from './use-file-browser-virtual-layout';
-import { useImageThumbnails } from './use-image-thumbnails';
+import { useNavigatorImageThumbnails } from '@/modules/navigator/composables/use-navigator-image-thumbnails';
 import { useVideoThumbnails } from './use-video-thumbnails';
 import { sortFileBrowserEntries } from '@/modules/navigator/components/file-browser/utils/file-browser-sort';
 import { getFileBrowserGridEntryOrder } from '../file-browser-entry-groups';
@@ -247,7 +246,6 @@ function setupExternalDataSource(options: UseFileBrowserOptions): DataSource {
 export function useFileBrowser(options: UseFileBrowserOptions) {
   const isExternalMode = !!options.externalEntries;
   const quickViewStore = useQuickViewStore();
-  const clipboardStore = useClipboardStore();
   const internalDropHandler = useFileBrowserInternalDropHandler();
 
   const dataSource = isExternalMode
@@ -327,7 +325,7 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
         clearThumbnails: () => undefined,
       };
   const imageThumbnails = !isExternalMode
-    ? useImageThumbnails()
+    ? useNavigatorImageThumbnails()
     : {
         getImageThumbnail: () => undefined,
         getImageThumbnailPlaceholder: () => undefined,
@@ -353,18 +351,11 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
     disableBackgroundDrop: isExternalMode,
     fallbackDropHandler: internalDropHandler,
     onDrop: async (items, destinationPath, operation) => {
-      if (operation === 'copy') {
-        clipboardStore.setClipboard('copy', items, { keepToolbarHidden: true });
-      }
-      else {
-        clipboardStore.setClipboard('move', items, { keepToolbarHidden: true });
-      }
-
-      const success = await selection.pasteItems(destinationPath);
-
-      if (!success && clipboardStore.hasItems) {
-        clipboardStore.clearClipboard();
-      }
+      await selection.handleExternalDrop(
+        items.map(item => item.path),
+        destinationPath,
+        operation,
+      );
     },
   });
 
@@ -563,6 +554,10 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
     conflictDialogState: selection.conflictDialogState,
     handleConflictResolution: selection.handleConflictResolution,
     handleConflictCancel: selection.handleConflictCancel,
+    topLevelNameConflictDialogState: selection.topLevelNameConflictDialogState,
+    handleTopLevelNameConflictRename: selection.handleTopLevelNameConflictRename,
+    handleTopLevelNameConflictMerge: selection.handleTopLevelNameConflictMerge,
+    handleTopLevelNameConflictCancel: selection.handleTopLevelNameConflictCancel,
     permanentDeleteConfirm: selection.permanentDeleteConfirm,
 
     getImageThumbnail: imageThumbnails.getImageThumbnail,

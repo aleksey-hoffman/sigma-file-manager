@@ -310,7 +310,10 @@
       "title": "情報パネル",
       "resetSize": "パネルサイズをリセット",
       "dynamicSize": "情報パネルの動的サイズ",
-      "dynamicSizeTooltip": "情報パネルのサイズを手動で変更すると、この設定はオフになり、カスタムサイズが保存されます。"
+      "dynamicSizeTooltip": "情報パネルのサイズを手動で変更すると、この設定はオフになり、カスタムサイズが保存されます。",
+      "showFullSizeImagePreview": "情報パネルのプレビュー領域にフルサイズ画像を表示",
+      "showFullSizeImagePreviewDescription": "別の方法として、画像を選択して {shortcut} を押すと、クイックビューでフルサイズの画像を表示できます。",
+      "showFullSizeImagePreviewMemoryWarning": "メモリ使用量が増加します"
     },
     "addressBar": {
       "addressBarActions": "アドレスバーアクション",
@@ -440,7 +443,8 @@
     "experimental": "高度, 実験的, 既定のファイルマネージャー, エクスプローラー, レジストリ, ターミナル, シェル",
     "whatsNew": "新機能, 更新履歴, リリースノート, バージョン, アップデート, ニュース",
     "autostart": "自動起動, スタートアップ, ログイン, システム, 起動",
-    "extensions": "extensions, plugins, addons, configuration, settings"
+    "extensions": "extensions, plugins, addons, configuration, settings",
+    "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original"
   },
   "drag": {
     "holdShiftToChangeMode": "[Shift] を押してモードを変更",
@@ -753,6 +757,14 @@
     "replaceOverview": "{total} 件中 {replaced} 件がコピー先で置き換えられます",
     "checkingConflicts": "競合を確認しています…",
     "skipIdenticalFiles": "サイズと更新日時が同じ {n} 件のファイルをスキップ | サイズと更新日時が同じ {n} 件のファイルをスキップ"
+  },
+  "topLevelConflictDialog": {
+    "title": "項目はすでに存在します",
+    "description": "このディレクトリには同じ名前の項目が 0 件すでに存在します。 | このディレクトリには同じ名前の項目が 1 件すでに存在します。 | このディレクトリには同じ名前の項目が {n} 件すでに存在します。 | このディレクトリには同じ名前の項目が {n} 件すでに存在します。",
+    "hint": "名前を変更を選ぶと名前を変えた項目を作成し、マージを選ぶと既存項目内の競合を確認します。",
+    "rename": "名前を変更",
+    "merge": "マージ",
+    "moreItems": "+ 他 {count} 件 | + 他 {count} 件"
   },
   "command": "コマンド",
   "keybinding": "キーバインド",

@@ -29,6 +29,7 @@ import DashboardEmptyState from '@/modules/dashboard/components/dashboard-empty-
 import DashboardTagSectionHeader from '@/modules/dashboard/components/dashboard-tag-section-header.vue';
 import EntryCard from '@/modules/dashboard/components/entry-card.vue';
 import FileBrowserConflictDialog from '@/modules/navigator/components/file-browser/file-browser-conflict-dialog.vue';
+import FileBrowserTopLevelConflictDialog from '@/modules/navigator/components/file-browser/file-browser-top-level-conflict-dialog.vue';
 import type {
   FavoriteItem,
   HistoryItem,
@@ -56,6 +57,10 @@ const {
   conflictDialogState,
   handleConflictResolution,
   handleConflictCancel,
+  topLevelNameConflictDialogState,
+  handleTopLevelNameConflictRename,
+  handleTopLevelNameConflictMerge,
+  handleTopLevelNameConflictCancel,
   performDrop,
 } = useFileDropOperation();
 
@@ -465,6 +470,13 @@ async function handleUpdateTagColor(tagId: string, color: string) {
       :is-checking-conflicts="conflictDialogState.isCheckingConflicts"
       @resolve="handleConflictResolution"
       @cancel="handleConflictCancel"
+    />
+    <FileBrowserTopLevelConflictDialog
+      v-model:open="topLevelNameConflictDialogState.isOpen"
+      :conflicts="topLevelNameConflictDialogState.conflicts"
+      @rename="handleTopLevelNameConflictRename"
+      @merge="handleTopLevelNameConflictMerge"
+      @cancel="handleTopLevelNameConflictCancel"
     />
   </PageDefaultLayout>
 </template>

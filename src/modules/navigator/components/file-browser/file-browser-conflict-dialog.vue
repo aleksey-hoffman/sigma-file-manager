@@ -383,12 +383,6 @@ const resolutionSelectOptions = computed(() => {
       <DialogFooter class="conflict-dialog__footer">
         <div class="conflict-dialog__actions">
           <Button
-            variant="outline"
-            @click="handleCancel"
-          >
-            {{ t('cancel') }}
-          </Button>
-          <Button
             class="conflict-dialog__action-btn--primary"
             :disabled="isCheckingConflicts"
             @click="handleConfirm"
@@ -423,7 +417,7 @@ const resolutionSelectOptions = computed(() => {
   width: 20px;
   height: 20px;
   flex-shrink: 0;
-  color: hsl(var(--warning, 38 92% 50%));
+  color: hsl(var(--warning));
 }
 
 .conflict-dialog__description {
@@ -559,7 +553,7 @@ const resolutionSelectOptions = computed(() => {
 }
 
 .conflict-dialog__row-hint {
-  color: hsl(var(--warning, 38 92% 50%));
+  color: hsl(var(--warning));
   font-size: 11px;
   line-height: 1.3;
 }

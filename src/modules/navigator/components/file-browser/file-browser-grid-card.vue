@@ -19,6 +19,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import FileBrowserEntryIcon from './file-browser-entry-icon.vue';
 import { useFileBrowserContext } from './composables/use-file-browser-context';
 import { usePlatformStore } from '@/stores/runtime/platform';
+import { resolveImageDisplaySrc } from '@/modules/navigator/utils/resolve-image-display-src';
+import { useDevicePixelPreviewSize } from '@/modules/navigator/composables/use-device-pixel-preview-size';
 import { getImageSrc } from './utils';
 
 const DEFAULT_GRID_THUMBNAIL_SIZE = {
@@ -39,14 +41,18 @@ const itemCountsStore = useItemCountsStore();
 const { clipboardItems, clipboardType, isToolbarSuppressed } = storeToRefs(clipboardStore);
 const { t } = useI18n();
 const previewRef = ref<HTMLElement | null>(null);
-const previewSize = ref(DEFAULT_GRID_THUMBNAIL_SIZE);
 const isPreviewInLoadRange = ref(false);
 const loadedImagePreviewSrc = ref<string | undefined>();
 const loadedImagePreviewPlaceholderSrc = ref<string | undefined>();
-let previewResizeObserver: ResizeObserver | null = null;
 let previewIntersectionObserver: IntersectionObserver | null = null;
 let imagePreviewLoadFrame: number | null = null;
 let imagePreviewPlaceholderLoadFrame: number | null = null;
+
+const { previewSize } = useDevicePixelPreviewSize({
+  previewRef,
+  defaultSize: DEFAULT_GRID_THUMBNAIL_SIZE,
+  enabled: isPreviewInLoadRange,
+});
 
 const clipboardPathsMap = computed(() => {
   if (isToolbarSuppressed.value) {
@@ -62,14 +68,18 @@ const clipboardPathsMap = computed(() => {
   return map;
 });
 const imageThumbnailMaxDimension = computed(() => Math.max(previewSize.value.width, previewSize.value.height));
-const canUseOriginalImagePreview = computed(() => props.entry.ext?.toLowerCase() === 'svg');
 const imagePreviewSrc = computed(() => {
   if (props.variant !== 'image' || !isPreviewInLoadRange.value) {
     return undefined;
   }
 
-  return ctx.getImageThumbnail(props.entry, imageThumbnailMaxDimension.value)
-    ?? (canUseOriginalImagePreview.value ? getImageSrc(props.entry) : undefined);
+  return resolveImageDisplaySrc({
+    entry: props.entry,
+    preferOriginal: false,
+    originalSrc: getImageSrc(props.entry),
+    maxDimension: imageThumbnailMaxDimension.value,
+    getThumbnail: (entry, maxDimension) => ctx.getImageThumbnail(entry, maxDimension),
+  });
 });
 const imagePreviewPlaceholderSrc = computed(() => {
   if (props.variant !== 'image' || !isPreviewInLoadRange.value) {
@@ -94,67 +104,9 @@ function shouldLoadPreviewNearViewport(): boolean {
   return props.variant === 'image' || props.variant === 'video';
 }
 
-function getDevicePixelRatio(): number {
-  if (typeof window === 'undefined') {
-    return 1;
-  }
-
-  return Math.max(1, window.devicePixelRatio || 1);
-}
-
-function getMeasuredPreviewSize(): {
-  width: number;
-  height: number;
-} | null {
-  const previewElement = previewRef.value;
-
-  if (!previewElement) {
-    return null;
-  }
-
-  const pixelRatio = getDevicePixelRatio();
-  const measuredWidth = Math.round(previewElement.clientWidth * pixelRatio);
-  const measuredHeight = Math.round(previewElement.clientHeight * pixelRatio);
-
-  if (measuredWidth <= 0 || measuredHeight <= 0) {
-    return null;
-  }
-
-  return {
-    width: measuredWidth,
-    height: measuredHeight,
-  };
-}
-
-function updatePreviewSize(): void {
-  const measuredSize = getMeasuredPreviewSize();
-
-  if (!measuredSize) {
-    return;
-  }
-
-  if (
-    previewSize.value.width === measuredSize.width
-    && previewSize.value.height === measuredSize.height
-  ) {
-    return;
-  }
-
-  previewSize.value = measuredSize;
-}
-
 function disconnectPreviewIntersectionObserver(): void {
   previewIntersectionObserver?.disconnect();
   previewIntersectionObserver = null;
-}
-
-function startPreviewResizeObserver(): void {
-  if (previewResizeObserver || typeof ResizeObserver === 'undefined' || !previewRef.value) {
-    return;
-  }
-
-  previewResizeObserver = new ResizeObserver(updatePreviewSize);
-  previewResizeObserver.observe(previewRef.value);
 }
 
 function markPreviewInLoadRange(): void {
@@ -162,9 +114,7 @@ function markPreviewInLoadRange(): void {
     return;
   }
 
-  updatePreviewSize();
   isPreviewInLoadRange.value = true;
-  startPreviewResizeObserver();
   disconnectPreviewIntersectionObserver();
 }
 
@@ -319,8 +269,6 @@ onBeforeUnmount(() => {
   disconnectPreviewIntersectionObserver();
   cancelImagePreviewLoadFrame();
   cancelImagePreviewPlaceholderLoadFrame();
-  previewResizeObserver?.disconnect();
-  previewResizeObserver = null;
 });
 
 watch(imagePreviewSrc, () => {
@@ -484,7 +432,7 @@ watch(imagePreviewPlaceholderSrc, () => {
   content-visibility: auto;
   cursor: default;
   scroll-margin-top: calc(var(--file-browser-grid-section-header-height) + 8px);
-  text-align: left;
+  text-align: start;
   user-select: none;
 }
 
@@ -589,22 +537,20 @@ watch(imagePreviewPlaceholderSrc, () => {
 .file-browser-grid-card__info--overlay {
   position: absolute;
   z-index: 2;
-  right: 0;
   bottom: 0;
-  left: 0;
   padding: 8px 10px;
   background: linear-gradient(to top, hsl(0deg 0% 0% / 80%) 0%, transparent 100%);
   color: white;
+  inset-inline: 0;
 }
 
 .file-browser-grid-card--other .file-browser-grid-card__info--bottom {
   position: absolute;
   z-index: 2;
-  right: 0;
   bottom: 0;
-  left: 0;
   padding: 8px 10px;
   color: hsl(var(--foreground));
+  inset-inline: 0;
 }
 
 .file-browser-grid-card--icon-full .file-browser-grid-card__preview {
@@ -718,8 +664,8 @@ watch(imagePreviewPlaceholderSrc, () => {
 }
 
 .file-browser-grid-card[data-in-clipboard][data-clipboard-type="move"] .file-browser-grid-card__overlay--clipboard {
-  background-color: hsl(var(--warning) / 6%);
-  box-shadow: inset 0 0 0 2px hsl(var(--warning) / 40%);
+  background-color: hsl(var(--dangerous) / 6%);
+  box-shadow: inset 0 0 0 2px hsl(var(--dangerous) / 40%);
   opacity: 1;
 }
 
@@ -730,14 +676,14 @@ watch(imagePreviewPlaceholderSrc, () => {
 }
 
 .file-browser-grid-card[data-selected][data-in-clipboard][data-clipboard-type="move"] .file-browser-grid-card__overlay--clipboard {
-  background-color: hsl(var(--warning) / 10%);
-  box-shadow: inset 0 0 0 2px hsl(var(--warning) / 60%);
+  background-color: hsl(var(--dangerous) / 10%);
+  box-shadow: inset 0 0 0 2px hsl(var(--dangerous) / 60%);
   opacity: 1;
 }
 
 .file-browser-grid-card[data-selected][data-in-clipboard][data-clipboard-type="move"] .file-browser-grid-card__name,
 .file-browser-grid-card[data-selected][data-in-clipboard][data-clipboard-type="move"] .file-browser-grid-card__meta {
-  color: hsl(var(--warning));
+  color: hsl(var(--dangerous));
 }
 
 .file-browser-grid-card[data-in-clipboard][data-clipboard-type="copy"] .file-browser-grid-card__name,
@@ -747,7 +693,7 @@ watch(imagePreviewPlaceholderSrc, () => {
 
 .file-browser-grid-card[data-in-clipboard][data-clipboard-type="move"] .file-browser-grid-card__name,
 .file-browser-grid-card[data-in-clipboard][data-clipboard-type="move"] .file-browser-grid-card__meta {
-  color: hsl(var(--warning));
+  color: hsl(var(--dangerous));
 }
 
 .file-browser-grid-card--image[data-in-clipboard][data-clipboard-type="copy"] .file-browser-grid-card__overlay--clipboard {
@@ -756,7 +702,7 @@ watch(imagePreviewPlaceholderSrc, () => {
 }
 
 .file-browser-grid-card--image[data-in-clipboard][data-clipboard-type="move"] .file-browser-grid-card__overlay--clipboard {
-  background-color: hsl(var(--warning) / 15%);
+  background-color: hsl(var(--dangerous) / 15%);
   opacity: 1;
 }
 

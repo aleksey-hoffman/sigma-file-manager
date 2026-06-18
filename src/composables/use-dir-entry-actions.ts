@@ -19,7 +19,7 @@ import { useDeleteJobsStore } from '@/stores/runtime/delete-jobs';
 import { useQuickViewStore } from '@/stores/runtime/quick-view';
 import { toast, ToastStatic } from '@/components/ui/toaster';
 import { useLanShare } from '@/composables/use-lan-share';
-import { useConflictResolutionDialog } from '@/composables/use-conflict-resolution-dialog';
+import { useCopyMoveWithConflicts } from '@/composables/use-copy-move-with-conflicts';
 import { getParentDirectory } from '@/utils/normalize-path';
 import { getSharedSourceDirectory } from '@/utils/file-operation-paths';
 import { basenameFromPath } from '@/utils/source-display-name';
@@ -41,11 +41,15 @@ export function useDirEntryActions() {
   const { startShare } = useLanShare();
   const permanentDeleteConfirm = usePermanentDeleteConfirm();
   const {
+    performCopyMoveWithConflicts,
     conflictDialogState,
-    showConflictDialog,
     handleConflictResolution,
     handleConflictCancel,
-  } = useConflictResolutionDialog();
+    topLevelNameConflictDialogState,
+    handleTopLevelNameConflictRename,
+    handleTopLevelNameConflictMerge,
+    handleTopLevelNameConflictCancel,
+  } = useCopyMoveWithConflicts();
 
   async function openEntriesInNewTabs(entries: DirEntry[]) {
     for (const entry of entries) {
@@ -83,53 +87,108 @@ export function useDirEntryActions() {
   }
 
   async function pasteItems(destinationPath: string): Promise<boolean> {
-    if (!clipboardStore.hasItems) {
-      return false;
-    }
+    const systemClipboard = await clipboardStore.readSystemClipboardFiles();
 
-    const isCopy = clipboardStore.isCopyOperation;
-    const operationType = isCopy ? 'copy' : 'move';
+    if (!systemClipboard?.paths.length) {
+      if (clipboardStore.hasFileItems) {
+        const sourcePaths = clipboardStore.clipboardItems.map(item => item.path);
+        const operation = clipboardStore.isCopyOperation ? 'copy' : 'move';
+        const result = await performCopyMoveWithConflicts(sourcePaths, destinationPath, operation);
 
-    const resolutionPayload = await showConflictDialog(operationType, () =>
-      clipboardStore.checkConflicts(destinationPath),
-    );
+        if (!result || result.cancelled) {
+          return false;
+        }
 
-    if (resolutionPayload === null) {
-      return false;
-    }
+        if (!result.success) {
+          return false;
+        }
 
-    const conflictPayload
-      = resolutionPayload === undefined ? undefined : resolutionPayload;
+        const isCopy = operation === 'copy';
+        const sourcesForSizes = clipboardStore.clipboardItems.map(item => ({
+          path: item.path,
+          is_dir: item.is_dir,
+        }));
+        const sourceDirectoriesToRefresh = isCopy
+          ? []
+          : [...new Set(sourcePaths.map(path => getParentDirectory(path)))];
+        const pathsToRefresh = [
+          destinationPath,
+          ...sourceDirectoriesToRefresh,
+        ];
 
-    const sourcesForSizes = clipboardStore.clipboardItems.map(item => ({
-      path: item.path,
-      is_dir: item.is_dir,
-    }));
-    const sourceDirectoryBeforePaste = clipboardStore.sourceDirectory;
-    const result = await clipboardStore.pasteItems(destinationPath, conflictPayload?.perPathResolutions);
+        if (result.copiedCount > 0) {
+          await dirSizesStore.refreshSizesAfterCopyMove(
+            sourcesForSizes,
+            destinationPath,
+            pathsToRefresh,
+          );
+        }
 
-    if (!result.success && result.error && !result.fromStatusCenterJob) {
-      toast.error(result.error);
-    }
-
-    if (!result.cancelled && (result.copied_count ?? 0) > 0) {
-      await dirSizesStore.refreshSizesAfterCopyMove(sourcesForSizes, destinationPath, [
-        destinationPath,
-        sourceDirectoryBeforePaste,
-      ].filter((pathItem): pathItem is string => Boolean(pathItem)));
-    }
-
-    if (result.success || (!result.cancelled && (result.copied_count ?? 0) > 0)) {
-      const pathsToInvalidate = [destinationPath];
-
-      if (sourceDirectoryBeforePaste) {
-        pathsToInvalidate.push(sourceDirectoryBeforePaste);
+        workspacesStore.handleDirectoryContentsChanged(pathsToRefresh);
+        clipboardStore.discardClipboard();
+        return true;
       }
 
-      workspacesStore.handleDirectoryContentsChanged(pathsToInvalidate);
+      return await pasteSystemClipboardImage(destinationPath);
+    }
+
+    const result = await performCopyMoveWithConflicts(
+      systemClipboard.paths,
+      destinationPath,
+      systemClipboard.operation,
+    );
+
+    if (!result || result.cancelled) {
+      return false;
+    }
+
+    const isCopy = systemClipboard.operation === 'copy';
+    const sourcesForSizes = systemClipboard.paths.map((path, index) => ({
+      path,
+      is_dir: result.sourcePathIsDir[index] ?? false,
+    }));
+    const sourceDirectoriesToRefresh = isCopy
+      ? []
+      : [...new Set(systemClipboard.paths.map(path => getParentDirectory(path)))];
+    const pathsToRefresh = [
+      destinationPath,
+      ...sourceDirectoriesToRefresh,
+    ];
+
+    if (result.copiedCount > 0) {
+      await dirSizesStore.refreshSizesAfterCopyMove(
+        sourcesForSizes,
+        destinationPath,
+        pathsToRefresh,
+      );
+    }
+
+    if (result.success || result.copiedCount > 0) {
+      workspacesStore.handleDirectoryContentsChanged(pathsToRefresh);
+    }
+
+    if (result.success) {
+      clipboardStore.discardClipboard();
     }
 
     return result.success;
+  }
+
+  async function pasteSystemClipboardImage(destinationPath: string): Promise<boolean> {
+    const result = await clipboardStore.pasteSystemClipboardImage(destinationPath);
+
+    if (!result.success) {
+      if (result.error) {
+        toast.error(result.error);
+      }
+
+      return false;
+    }
+
+    await dirSizesStore.refreshSizesAfterCopyMove([], destinationPath, [destinationPath]);
+    workspacesStore.handleDirectoryContentsChanged([destinationPath]);
+    clipboardStore.discardClipboard();
+    return true;
   }
 
   async function deleteItems(entries: DirEntry[], useTrash: boolean = true): Promise<boolean> {
@@ -468,6 +527,10 @@ export function useDirEntryActions() {
     conflictDialogState,
     handleConflictResolution,
     handleConflictCancel,
+    topLevelNameConflictDialogState,
+    handleTopLevelNameConflictRename,
+    handleTopLevelNameConflictMerge,
+    handleTopLevelNameConflictCancel,
     permanentDeleteConfirm,
   };
 }

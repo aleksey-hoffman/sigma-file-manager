@@ -4,7 +4,14 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
+import {
+  computed,
+  nextTick,
+  onMounted,
+  onUnmounted,
+  ref,
+  watch,
+} from 'vue';
 import { useI18n } from 'vue-i18n';
 import {
   Columns3Icon,
@@ -286,6 +293,7 @@ defineExpose({
 }
 
 .file-browser-list-view__columns-button {
+  position: relative;
   width: 28px;
   height: 28px;
   flex-shrink: 0;
@@ -294,7 +302,6 @@ defineExpose({
 
 .file-browser-list-view__columns-button-warning {
   position: absolute;
-  right: 1px;
   bottom: 1px;
   display: inline-flex;
   width: 12px;
@@ -303,7 +310,8 @@ defineExpose({
   justify-content: center;
   border-radius: 999px;
   background-color: hsl(var(--background-3));
-  color: hsl(38deg 92% 50%);
+  color: hsl(var(--warning));
+  inset-inline-end: 1px;
   pointer-events: none;
 }
 </style>

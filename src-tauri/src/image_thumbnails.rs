@@ -49,8 +49,11 @@ struct ThumbnailCacheMaintenanceState {
     generated_since_check: usize,
 }
 
-fn normalize_thumbnail_max_dimension(_max_dimension: Option<u32>) -> u32 {
-    THUMBNAIL_MAX_DIMENSION
+fn normalize_thumbnail_max_dimension(max_dimension: Option<u32>) -> u32 {
+    match max_dimension {
+        Some(dimension) if dimension > 0 => dimension.min(THUMBNAIL_MAX_DIMENSION),
+        _ => THUMBNAIL_MAX_DIMENSION,
+    }
 }
 
 fn hash_to_hex(bytes: &[u8]) -> String {
@@ -653,13 +656,14 @@ mod tests {
     }
 
     #[test]
-    fn thumbnail_dimension_is_fixed() {
+    fn thumbnail_dimension_is_clamped_to_backend_cap() {
         assert_eq!(
             normalize_thumbnail_max_dimension(None),
             THUMBNAIL_MAX_DIMENSION
         );
+        assert_eq!(normalize_thumbnail_max_dimension(Some(1)), 1);
         assert_eq!(
-            normalize_thumbnail_max_dimension(Some(1)),
+            normalize_thumbnail_max_dimension(Some(0)),
             THUMBNAIL_MAX_DIMENSION
         );
         assert_eq!(

@@ -1986,8 +1986,8 @@ const globalExtensionShortcuts = computed(() => {
 }
 
 .shortcut-editor__record-button--conflict {
-  border-color: hsl(var(--warning));
-  background-color: hsl(var(--warning) / 10%);
+  border-color: hsl(var(--dangerous));
+  background-color: hsl(var(--dangerous) / 10%);
 }
 
 .shortcut-editor__record-pulse {
@@ -2045,8 +2045,8 @@ const globalExtensionShortcuts = computed(() => {
   justify-content: center;
   padding: 0.5rem;
   border-radius: var(--radius);
-  background-color: hsl(var(--warning) / 15%);
-  color: hsl(var(--warning));
+  background-color: hsl(var(--dangerous) / 15%);
+  color: hsl(var(--dangerous));
   font-size: 0.75rem;
   gap: 0.5rem;
 }

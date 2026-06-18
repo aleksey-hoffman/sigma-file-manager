@@ -388,7 +388,7 @@ function handleCancelClick(event: MouseEvent) {
 .extension-card__incompatible {
   display: flex;
   align-items: center;
-  color: hsl(38deg 92% 50%);
+  color: hsl(var(--warning));
   font-size: 0.75rem;
   gap: 3px;
 }

@@ -10,7 +10,7 @@ import { toast, ToastStatic } from '@/components/ui/toaster';
 import { i18n } from '@/localization';
 import uniqueId from '@/utils/unique-id';
 import { sourceDisplayNameFromPaths } from '@/utils/source-display-name';
-import type { FileOperationResult, PathResolutionEntry } from '@/stores/runtime/clipboard';
+import type { ConflictResolution, FileOperationResult, PathResolutionEntry } from '@/stores/runtime/clipboard';
 import { useStatusCenterStore } from './status-center';
 
 interface CopyMoveJobProgressPayload {
@@ -199,7 +199,7 @@ export const useCopyMoveJobsStore = defineStore('copy-move-jobs', () => {
     kind: 'copy' | 'move',
     sourcePaths: string[],
     destinationPath: string,
-    conflictResolution: null,
+    conflictResolution: ConflictResolution | null,
     perPathResolutions: PathResolutionEntry[] | undefined,
     options: StartCopyMoveJobOptions,
   ): Promise<FileOperationResult> {
@@ -225,13 +225,12 @@ export const useCopyMoveJobsStore = defineStore('copy-move-jobs', () => {
           sourcePaths,
           destinationPath,
           conflictResolution,
-          perPathResolutions:
-            perPathResolutions && perPathResolutions.length > 0
-              ? perPathResolutions.map(entry => ({
-                  destination_path: entry.destination_path,
-                  resolution: entry.resolution,
-                }))
-              : null,
+          perPathResolutions: perPathResolutions
+            ? perPathResolutions.map(entry => ({
+                destination_path: entry.destination_path,
+                resolution: entry.resolution,
+              }))
+            : null,
           jobId,
         },
       }).catch((error: unknown) => {

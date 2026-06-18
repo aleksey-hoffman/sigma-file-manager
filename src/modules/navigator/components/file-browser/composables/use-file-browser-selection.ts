@@ -12,21 +12,19 @@ import { useUserStatsStore } from '@/stores/storage/user-stats';
 import {
   useClipboardStore,
   type FileOperationResult,
-  type ConflictItem,
 } from '@/stores/runtime/clipboard';
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
 import { useLinkMetadataStore } from '@/stores/runtime/link-metadata';
 import { useDeleteJobsStore } from '@/stores/runtime/delete-jobs';
-import { useCopyMoveJobsStore } from '@/stores/runtime/copy-move-jobs';
 import { toast, ToastProgress, ToastStatic } from '@/components/ui/toaster';
 import { useLanShare } from '@/composables/use-lan-share';
-import { useConflictResolutionDialog } from '@/composables/use-conflict-resolution-dialog';
-import { UI_CONSTANTS } from '@/constants';
+import { useCopyMoveWithConflicts } from '@/composables/use-copy-move-with-conflicts';
 import normalizePath from '@/utils/normalize-path';
 import {
   getSharedSourceDirectory,
   isDestinationInsideAnySourceDirectory,
 } from '@/utils/file-operation-paths';
+import { useFileBrowserClickSelection } from '@/modules/navigator/components/file-browser/composables/use-file-browser-click-selection';
 import { createIndexedFileName, safeFileNameFromUrl } from '@/utils/remote-file';
 import { basenameFromPath } from '@/utils/source-display-name';
 import { usePermanentDeleteConfirm } from '@/composables/use-permanent-delete-confirm';
@@ -52,31 +50,25 @@ export function useFileBrowserSelection(
   const dirSizesStore = useDirSizesStore();
   const linkMetadataStore = useLinkMetadataStore();
   const deleteJobsStore = useDeleteJobsStore();
-  const copyMoveJobsStore = useCopyMoveJobsStore();
   const { startShare } = useLanShare();
   const permanentDeleteConfirm = usePermanentDeleteConfirm();
+  const {
+    performCopyMoveWithConflicts,
+    conflictDialogState,
+    handleConflictResolution,
+    handleConflictCancel,
+    topLevelNameConflictDialogState,
+    handleTopLevelNameConflictRename,
+    handleTopLevelNameConflictMerge,
+    handleTopLevelNameConflictCancel,
+  } = useCopyMoveWithConflicts();
   const selectedEntries = ref<DirEntry[]>([]);
   const lastSelectedEntry = ref<DirEntry | null>(null);
-
-  const mouseDownState = ref({
-    item: null as DirEntry | null,
-    wasSelected: false,
-    awaitsSecondClick: false,
-    lastMouseUpTime: 0,
-    ctrlKey: false,
-    shiftKey: false,
-  });
 
   const contextMenu = ref({
     targetEntry: null as DirEntry | null,
     selectedEntries: [] as DirEntry[],
   });
-  const {
-    conflictDialogState,
-    showConflictDialog,
-    handleConflictResolution,
-    handleConflictCancel,
-  } = useConflictResolutionDialog();
 
   const renameState = ref({
     isActive: false,
@@ -225,99 +217,27 @@ export function useFileBrowserSelection(
     return true;
   }
 
-  function clearDocumentTextSelection() {
-    window.getSelection()?.removeAllRanges();
-  }
-
-  function handleEntryMouseDown(entry: DirEntry, event: MouseEvent) {
-    clearDocumentTextSelection();
-
-    if (event.button === 1 && entry.is_dir) {
-      event.preventDefault();
-      event.stopPropagation();
-      openEntriesInNewTabs([entry]);
-      return;
-    }
-
-    const wasSelected = isEntrySelected(entry);
-    const ctrlKey = event.ctrlKey || event.metaKey;
-    const shiftKey = event.shiftKey;
-
-    mouseDownState.value.item = entry;
-    mouseDownState.value.wasSelected = wasSelected;
-    mouseDownState.value.ctrlKey = ctrlKey;
-    mouseDownState.value.shiftKey = shiftKey;
-
-    if (shiftKey && lastSelectedEntry.value) {
-      selectRange(lastSelectedEntry.value, entry);
-    }
-    else if (ctrlKey) {
-      // Ctrl+click handled in mouseup
-    }
-    else if (!wasSelected) {
-      replaceSelection(entry);
-    }
-  }
-
-  function handleEntryMouseUp(entry: DirEntry, event: MouseEvent) {
-    if (event.button === 2) {
-      return;
-    }
-
-    if (mouseDownState.value.item?.path !== entry.path) {
-      return;
-    }
-
-    const { wasSelected, awaitsSecondClick, lastMouseUpTime, ctrlKey, shiftKey } = mouseDownState.value;
-    const currentTime = Date.now();
-    const timeSinceLastClick = currentTime - lastMouseUpTime;
-    const isDoubleClick = awaitsSecondClick && timeSinceLastClick <= UI_CONSTANTS.DOUBLE_CLICK_DELAY;
-
-    if (isDoubleClick && !ctrlKey && !shiftKey) {
-      mouseDownState.value.awaitsSecondClick = false;
-      mouseDownState.value.lastMouseUpTime = 0;
-
-      if (event.altKey && platformStore.isWindows) {
-        const entriesForProperties = selectedEntries.value.length > 0
-          ? [...selectedEntries.value]
-          : [entry];
-        onOpenProperties(entriesForProperties);
-      }
-      else {
-        onOpen(entry);
-      }
-
-      return;
-    }
-
-    mouseDownState.value.awaitsSecondClick = true;
-    mouseDownState.value.lastMouseUpTime = currentTime;
-
-    if (shiftKey) {
-      // Already handled in mousedown
-      return;
-    }
-
-    if (ctrlKey) {
-      if (wasSelected) {
-        removeFromSelection(entry);
-      }
-      else {
-        addToSelection(entry);
-      }
-
-      return;
-    }
-
-    if (wasSelected) {
-      if (selectedEntries.value.length > 1) {
-        replaceSelection(entry);
-      }
-      else {
-        clearSelection();
-      }
-    }
-  }
+  const {
+    mouseDownState,
+    handleEntryMouseDown,
+    handleEntryMouseUp,
+    resetMouseState,
+  } = useFileBrowserClickSelection({
+    selectedEntries,
+    lastSelectedEntry,
+    isEntrySelected,
+    selectRange,
+    addToSelection,
+    removeFromSelection,
+    replaceSelection,
+    clearSelection,
+    onOpen,
+    onOpenProperties,
+    onMiddleClickOpenInNewTab: (entry) => {
+      void openEntriesInNewTabs([entry]);
+    },
+    isWindows: platformStore.isWindows,
+  });
 
   function handleEntryFocus(entry: DirEntry, event: FocusEvent) {
     if (pendingFocusRequest.value != null) {
@@ -520,47 +440,100 @@ export function useFileBrowserSelection(
   }
 
   async function pasteItems(destinationPath?: string): Promise<boolean> {
-    if (!clipboardStore.hasItems) {
-      return false;
+    const targetPath = destinationPath || currentPathRef.value;
+    const systemClipboard = await clipboardStore.readSystemClipboardFiles();
+
+    if (!systemClipboard?.paths.length) {
+      if (clipboardStore.hasFileItems) {
+        const sourcePaths = clipboardStore.clipboardItems.map(item => item.path);
+        const operation = clipboardStore.isCopyOperation ? 'copy' : 'move';
+        const pasted = await handleExternalDrop(sourcePaths, targetPath, operation);
+
+        if (pasted) {
+          clipboardStore.discardClipboard();
+        }
+
+        return pasted;
+      }
+
+      return await pasteSystemClipboardImage(targetPath);
     }
 
-    const isCopy = clipboardStore.isCopyOperation;
-    const operationType = isCopy ? 'copy' : 'move';
-    const targetPath = destinationPath || currentPathRef.value;
-
-    const resolutionPayload = await showConflictDialog(operationType, () =>
-      clipboardStore.checkConflicts(targetPath),
+    const pasted = await handleExternalDrop(
+      systemClipboard.paths,
+      targetPath,
+      systemClipboard.operation,
     );
 
-    if (resolutionPayload === null) {
-      return false;
+    if (pasted) {
+      clipboardStore.discardClipboard();
     }
 
-    const conflictPayload
-      = resolutionPayload === undefined ? undefined : resolutionPayload;
+    return pasted;
+  }
 
+  async function pasteSystemClipboardImage(targetPath: string): Promise<boolean> {
     const shouldFocusPaste = targetPath === currentPathRef.value;
     const previousPaths = shouldFocusPaste
       ? new Set(entriesRef.value.map(entry => entry.path))
       : null;
+    const result = await clipboardStore.pasteSystemClipboardImage(targetPath);
 
-    const sourcesForSizes = clipboardStore.clipboardItems.map(item => ({
-      path: item.path,
-      is_dir: item.is_dir,
-    }));
-    const sourceDirectoryBeforePaste = clipboardStore.sourceDirectory;
-    const result = await clipboardStore.pasteItems(targetPath, conflictPayload?.perPathResolutions);
+    if (!result.success) {
+      if (result.error) {
+        toast.error(result.error);
+      }
 
-    if (!result.success && result.error && !result.fromStatusCenterJob) {
-      toast.error(result.error);
+      return false;
     }
 
-    if (!result.cancelled && (result.copied_count ?? 0) > 0) {
+    await dirSizesStore.refreshSizesAfterCopyMove([], targetPath, [
+      targetPath,
+      currentPathRef.value,
+    ]);
+
+    if (shouldFocusPaste && previousPaths) {
+      if (result.path) {
+        pendingFocusRequest.value = {
+          type: 'path',
+          targetPath,
+          path: result.path,
+        };
+      }
+      else {
+        pendingFocusRequest.value = {
+          type: 'diff',
+          targetPath,
+          previousPaths,
+        };
+      }
+    }
+
+    onRefresh();
+    clipboardStore.discardClipboard();
+    return true;
+  }
+
+  async function handleExternalDrop(sourcePaths: string[], targetPath: string, operation: 'copy' | 'move' = 'copy'): Promise<boolean> {
+    const shouldFocusPaste = targetPath === currentPathRef.value;
+    const previousPaths = shouldFocusPaste
+      ? new Set(entriesRef.value.map(entry => entry.path))
+      : null;
+    const result = await performCopyMoveWithConflicts(sourcePaths, targetPath, operation);
+
+    if (!result || result.cancelled) {
+      return false;
+    }
+
+    if (result.copiedCount > 0) {
+      const sourcesForSizes = sourcePaths.map((path, index) => ({
+        path,
+        is_dir: result.sourcePathIsDir[index] ?? false,
+      }));
       await dirSizesStore.refreshSizesAfterCopyMove(sourcesForSizes, targetPath, [
         targetPath,
         currentPathRef.value,
-        sourceDirectoryBeforePaste,
-      ].filter((pathItem): pathItem is string => Boolean(pathItem)));
+      ]);
     }
 
     if (result.success) {
@@ -573,111 +546,14 @@ export function useFileBrowserSelection(
       }
 
       onRefresh();
+      return true;
     }
-    else if (!result.cancelled && (result.copied_count ?? 0) > 0) {
+
+    if (result.copiedCount > 0) {
       onRefresh();
     }
 
-    return result.success;
-  }
-
-  async function handleExternalDrop(sourcePaths: string[], targetPath: string, operation: 'copy' | 'move' = 'copy'): Promise<boolean> {
-    if (sourcePaths.length === 0) {
-      return false;
-    }
-
-    const isCopy = operation === 'copy';
-
-    const resolutionPayload = await showConflictDialog(operation, () =>
-      invoke<ConflictItem[]>('check_conflicts', {
-        sourcePaths,
-        destinationPath: targetPath,
-      }),
-    );
-
-    if (resolutionPayload === null) {
-      return false;
-    }
-
-    const conflictPayload
-      = resolutionPayload === undefined ? undefined : resolutionPayload;
-
-    const shouldFocusPaste = targetPath === currentPathRef.value;
-    const previousPaths = shouldFocusPaste
-      ? new Set(entriesRef.value.map(entry => entry.path))
-      : null;
-
-    const displayPath = targetPath.split(/[/\\]/).pop() ?? targetPath;
-
-    let sourcePathIsDir: boolean[];
-
-    try {
-      sourcePathIsDir = await invoke<boolean[]>('paths_are_directories', {
-        paths: sourcePaths,
-      });
-    }
-    catch {
-      sourcePathIsDir = sourcePaths.map(() => true);
-    }
-
-    try {
-      const result = await copyMoveJobsStore.startJob(
-        isCopy ? 'copy' : 'move',
-        sourcePaths,
-        targetPath,
-        null,
-        conflictPayload?.perPathResolutions,
-        {
-          label: isCopy ? t('notifications.copyingItems') : t('notifications.movingItems'),
-          displayPath,
-        },
-      );
-
-      const copiedCount = result.copied_count ?? 0;
-
-      if (!result.cancelled && copiedCount > 0) {
-        const sourcesForSizes = sourcePaths.map((path, index) => ({
-          path,
-          is_dir: sourcePathIsDir[index] ?? false,
-        }));
-        await dirSizesStore.refreshSizesAfterCopyMove(sourcesForSizes, targetPath, [
-          targetPath,
-          currentPathRef.value,
-        ]);
-      }
-
-      if (result.success) {
-        if (shouldFocusPaste && previousPaths) {
-          pendingFocusRequest.value = {
-            type: 'diff',
-            targetPath,
-            previousPaths,
-          };
-        }
-
-        onRefresh();
-
-        return true;
-      }
-
-      if (!result.cancelled && copiedCount > 0) {
-        onRefresh();
-      }
-
-      return false;
-    }
-    catch (error: unknown) {
-      toast.custom(markRaw(ToastStatic), {
-        componentProps: {
-          data: {
-            title: isCopy ? t('fileBrowser.copyFailed') : t('fileBrowser.moveFailed'),
-            description: String(error),
-          },
-        },
-        duration: 5000,
-      });
-      return false;
-    }
+    return false;
   }
 
   async function handleExternalUrlDrop(urls: string[], targetPath: string): Promise<boolean> {
@@ -1088,11 +964,6 @@ export function useFileBrowserSelection(
     });
   }
 
-  function resetMouseState() {
-    mouseDownState.value.awaitsSecondClick = false;
-    mouseDownState.value.lastMouseUpTime = 0;
-  }
-
   function selectAll() {
     selectedEntries.value = [...entriesRef.value];
     const lastEntry = selectedEntries.value.length > 0
@@ -1191,6 +1062,10 @@ export function useFileBrowserSelection(
     conflictDialogState,
     handleConflictResolution,
     handleConflictCancel,
+    topLevelNameConflictDialogState,
+    handleTopLevelNameConflictRename,
+    handleTopLevelNameConflictMerge,
+    handleTopLevelNameConflictCancel,
     permanentDeleteConfirm,
   };
 }

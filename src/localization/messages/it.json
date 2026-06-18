@@ -310,7 +310,10 @@
       "title": "Pannello informativo",
       "resetSize": "Reimposta dimensione pannello",
       "dynamicSize": "Dimensione dinamica del pannello informativo",
-      "dynamicSizeTooltip": "Se ridimensioni manualmente il pannello, questa opzione si disattiva e le dimensioni personalizzate vengono salvate."
+      "dynamicSizeTooltip": "Se ridimensioni manualmente il pannello, questa opzione si disattiva e le dimensioni personalizzate vengono salvate.",
+      "showFullSizeImagePreview": "Mostra l'immagine a dimensione piena nell'anteprima del pannello informativo",
+      "showFullSizeImagePreviewDescription": "In alternativa, puoi selezionare un'immagine e premere {shortcut} per visualizzare l'immagine a dimensione piena nell'anteprima rapida.",
+      "showFullSizeImagePreviewMemoryWarning": "Aumenta l'utilizzo della memoria"
     },
     "addressBar": {
       "addressBarActions": "Azioni della barra degli indirizzi",
@@ -440,7 +443,8 @@
     "experimental": "avanzato, sperimentale, file manager predefinito, esplora file, registro, terminale, shell",
     "whatsNew": "novità, registro modifiche, note di rilascio, versione, aggiornamento, notizie",
     "autostart": "avvio automatico, avvio, boot, accesso, sistema, login",
-    "extensions": "extensions, plugins, addons, configuration, settings"
+    "extensions": "extensions, plugins, addons, configuration, settings",
+    "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original"
   },
   "drag": {
     "holdShiftToChangeMode": "Tieni premuto il tasto [Shift] per cambiare modalità",
@@ -753,6 +757,14 @@
     "replaceOverview": "{replaced} di {total} elementi saranno sostituiti nella destinazione",
     "checkingConflicts": "Verifica conflitti in corso…",
     "skipIdenticalFiles": "Salta {n} file con stessa dimensione e data | Salta {n} file con stessa dimensione e data"
+  },
+  "topLevelConflictDialog": {
+    "title": "Elementi già esistenti",
+    "description": "0 elementi con questi nomi esistono già in questa cartella. | 1 elemento con questo nome esiste già in questa cartella. | {n} elementi con questi nomi esistono già in questa cartella. | {n} elementi con questi nomi esistono già in questa cartella.",
+    "hint": "Scegli Rinomina per creare elementi rinominati, oppure Unisci per rivedere i conflitti negli elementi esistenti.",
+    "rename": "Rinomina",
+    "merge": "Unisci",
+    "moreItems": "+ {count} altro elemento | + {count} altri elementi"
   },
   "command": "Comando",
   "keybinding": "Combinazione tasti",

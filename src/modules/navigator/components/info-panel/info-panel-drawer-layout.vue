@@ -184,8 +184,8 @@ onBeforeUnmount(() => {
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  touch-action: none;
   cursor: row-resize;
+  touch-action: none;
 }
 
 .info-panel-drawer-layout__resize-handle::after {

@@ -427,9 +427,9 @@ function handleToggleInfoPanelDynamicSize(enabled: boolean) {
 }
 
 .navigator-settings-menu__info-trigger:focus-visible {
+  border-radius: var(--radius-xs);
   outline: 2px solid hsl(var(--ring) / 50%);
   outline-offset: 2px;
-  border-radius: var(--radius-xs);
 }
 
 .navigator-settings-menu__info-tooltip.sigma-ui-tooltip-content {

@@ -81,7 +81,10 @@ export function animatePanelSize(
 }
 
 export function animatePanelSizes(
-  animations: Array<{ panel: AnimatablePanelInstance | null | undefined; targetSize: number }>,
+  animations: Array<{
+    panel: AnimatablePanelInstance | null | undefined;
+    targetSize: number;
+  }>,
   durationMs = INFO_PANEL_LAYOUT.SIZE_TRANSITION_MS,
 ): Promise<void> {
   return Promise.all(

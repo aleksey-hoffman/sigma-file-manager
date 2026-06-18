@@ -20,6 +20,7 @@ mod link_operations;
 mod open_with;
 mod process_runner;
 mod startup_storage_bootstrap;
+mod system_clipboard;
 mod system_icons;
 mod system_tray;
 mod terminal;
@@ -313,6 +314,13 @@ pub fn run() {
             open_with::get_modern_context_menu,
             open_with::invoke_modern_context_menu_item,
             open_with::open_native_properties,
+            system_clipboard::set_system_clipboard_files,
+            system_clipboard::read_system_clipboard_files,
+            system_clipboard::clear_system_clipboard_files,
+            system_clipboard::read_system_clipboard_image_info,
+            system_clipboard::save_system_clipboard_image_to_temp,
+            system_clipboard::paste_system_clipboard_image,
+            system_clipboard::paste_saved_clipboard_image,
             system_icons::get_system_icon,
             terminal::get_available_terminals,
             terminal::get_terminal_icons,

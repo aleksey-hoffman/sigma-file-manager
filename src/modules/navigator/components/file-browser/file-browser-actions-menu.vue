@@ -55,6 +55,7 @@ import {
   getAvailableLinkCreationOptions,
   type LinkCreationKind,
 } from '@/utils/link-operations';
+import { useTextDirection } from '@/composables/use-text-direction';
 
 const props = withDefaults(defineProps<{
   selectedEntries: DirEntry[];
@@ -96,6 +97,7 @@ const platformStore = usePlatformStore();
 const userStatsStore = useUserStatsStore();
 const shortcutsStore = useShortcutsStore();
 const selectedEntriesRef = toRef(props, 'selectedEntries');
+const { inlineEndSide } = useTextDirection();
 
 const { isActionVisible, selectionStats } = useContextMenuItems(
   selectedEntriesRef,
@@ -443,7 +445,7 @@ function handleCreateLink(linkKind: LinkCreationKind) {
       :full-width="true"
       trigger-variant="default"
       align="end"
-      side="right"
+      :side="inlineEndSide"
       :align-offset="-16"
       :side-offset="16"
       @toggle-tag="handleToggleTag"

@@ -55,6 +55,9 @@ export function isDestinationInsideAnySourceDirectory(
     }
 
     const normalizedSourcePath = normalizePathForComparison(sourcePath);
-    return normalizedDestinationPath.startsWith(`${normalizedSourcePath}/`);
+    return (
+      arePathsEquivalent(normalizedDestinationPath, normalizedSourcePath)
+      || normalizedDestinationPath.startsWith(`${normalizedSourcePath}/`)
+    );
   });
 }

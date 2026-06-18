@@ -281,7 +281,8 @@ export function useInfoPanelLayout() {
       }
 
       await animatePanelSize(panel, infoPanelWidthDefault.value);
-    } finally {
+    }
+    finally {
       await finishInfoPanelVisibilityAnimation(true);
     }
   }
@@ -343,10 +344,17 @@ export function useInfoPanelLayout() {
       await nextTick();
 
       await animatePanelSizes([
-        { panel: infoPanelWidthPanelRef.value, targetSize: getDynamicInfoPanelWidthPx() },
-        { panel: previewPanelRef.value, targetSize: getDynamicPreviewHeightPx() },
+        {
+          panel: infoPanelWidthPanelRef.value,
+          targetSize: getDynamicInfoPanelWidthPx(),
+        },
+        {
+          panel: previewPanelRef.value,
+          targetSize: getDynamicPreviewHeightPx(),
+        },
       ]);
-    } finally {
+    }
+    finally {
       endLayoutAnimation(animationGeneration);
     }
   }
@@ -361,10 +369,17 @@ export function useInfoPanelLayout() {
         await nextTick();
 
         await animatePanelSizes([
-          { panel: infoPanelWidthPanelRef.value, targetSize: width },
-          { panel: previewPanelRef.value, targetSize: preview },
+          {
+            panel: infoPanelWidthPanelRef.value,
+            targetSize: width,
+          },
+          {
+            panel: previewPanelRef.value,
+            targetSize: preview,
+          },
         ]);
-      } finally {
+      }
+      finally {
         endLayoutAnimation(animationGeneration);
       }
 
@@ -395,17 +410,30 @@ export function useInfoPanelLayout() {
 
       if (isDynamicSize.value) {
         await animatePanelSizes([
-          { panel: infoPanelWidthPanelRef.value, targetSize: getDynamicInfoPanelWidthPx() },
-          { panel: previewPanelRef.value, targetSize: getDynamicPreviewHeightPx() },
+          {
+            panel: infoPanelWidthPanelRef.value,
+            targetSize: getDynamicInfoPanelWidthPx(),
+          },
+          {
+            panel: previewPanelRef.value,
+            targetSize: getDynamicPreviewHeightPx(),
+          },
         ]);
         return;
       }
 
       await animatePanelSizes([
-        { panel: infoPanelWidthPanelRef.value, targetSize: INFO_PANEL_LAYOUT.DEFAULT_WIDTH_PX },
-        { panel: previewPanelRef.value, targetSize: INFO_PANEL_LAYOUT.DEFAULT_PREVIEW_HEIGHT_PX },
+        {
+          panel: infoPanelWidthPanelRef.value,
+          targetSize: INFO_PANEL_LAYOUT.DEFAULT_WIDTH_PX,
+        },
+        {
+          panel: previewPanelRef.value,
+          targetSize: INFO_PANEL_LAYOUT.DEFAULT_PREVIEW_HEIGHT_PX,
+        },
       ]);
-    } finally {
+    }
+    finally {
       endLayoutAnimation(animationGeneration);
     }
   }
@@ -513,7 +541,8 @@ export function useInfoPanelLayout() {
       }
 
       await animatePanelSize(panel, 0);
-    } finally {
+    }
+    finally {
       await finishInfoPanelVisibilityAnimation(false);
     }
   }

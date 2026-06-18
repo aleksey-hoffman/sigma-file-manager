@@ -18,6 +18,7 @@ import FileBrowserNewItemDialog from './file-browser-new-item-dialog.vue';
 import FileBrowserOpenWithDialog from './file-browser-open-with-dialog.vue';
 import FileBrowserInboundDragOverlay from './file-browser-inbound-drag-overlay.vue';
 import FileBrowserConflictDialog from './file-browser-conflict-dialog.vue';
+import FileBrowserTopLevelConflictDialog from './file-browser-top-level-conflict-dialog.vue';
 import PermanentDeleteConfirmDialog from './permanent-delete-confirm-dialog.vue';
 import AddressBarEditorDialog from './address-bar-editor-dialog.vue';
 import type { AddressBarEditorMode } from './address-bar-editor-utils';
@@ -268,6 +269,14 @@ defineExpose({
       :is-checking-conflicts="fb.conflictDialogState.value.isCheckingConflicts"
       @resolve="fb.handleConflictResolution"
       @cancel="fb.handleConflictCancel"
+    />
+
+    <FileBrowserTopLevelConflictDialog
+      v-model:open="fb.topLevelNameConflictDialogState.value.isOpen"
+      :conflicts="fb.topLevelNameConflictDialogState.value.conflicts"
+      @rename="fb.handleTopLevelNameConflictRename"
+      @merge="fb.handleTopLevelNameConflictMerge"
+      @cancel="fb.handleTopLevelNameConflictCancel"
     />
 
     <PermanentDeleteConfirmDialog

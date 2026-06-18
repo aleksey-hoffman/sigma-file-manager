@@ -16,7 +16,7 @@ import {
 import { BUILTIN_NAVIGATOR_ICON_THEME_IDS } from '@/types/icon-theme';
 
 export const USER_SETTINGS_SCHEMA_VERSION_KEY = '__schemaVersion';
-export const USER_SETTINGS_SCHEMA_VERSION = 15;
+export const USER_SETTINGS_SCHEMA_VERSION = 16;
 
 export const DEFAULT_GLOBAL_SEARCH_IGNORED_PATHS = [
   '/node_modules',
@@ -388,6 +388,10 @@ async function migrateUserSettingsStep(storage: StorageAdapter, fromVersion: num
     if (!existingColumnFlexWeights || typeof existingColumnFlexWeights !== 'object' || Array.isArray(existingColumnFlexWeights)) {
       await storage.set('navigator.listColumnFlexWeights', {});
     }
+  }
+
+  if (fromVersion === 15 && toVersion === 16) {
+    await setDefaultBooleanIfMissing(storage, 'navigator.infoPanel.showFullSizeImagePreview', false);
   }
 
   if (fromVersion === 6 && toVersion === 7) {

@@ -392,13 +392,13 @@ function openTaggedItem(item: TaggedItem) {
   width: 100%;
   align-items: center;
   padding: 8px 12px;
-  padding-left: 8px;
   border: none;
   border-radius: var(--radius-sm);
   background: none;
   cursor: pointer;
   gap: 8px;
-  text-align: left;
+  padding-inline-start: 8px;
+  text-align: start;
   transition: background-color 0.15s ease;
 }
 
@@ -438,8 +438,8 @@ function openTaggedItem(item: TaggedItem) {
 
 .quick-access-panel__section-content {
   padding-bottom: 4px;
-  padding-left: 20px;
-  margin-right: 8px;
+  margin-inline-end: 8px;
+  padding-inline-start: 20px;
 }
 
 .quick-access-panel__section-content[data-state="closed"] {
@@ -463,7 +463,7 @@ function openTaggedItem(item: TaggedItem) {
   background: none;
   cursor: pointer;
   gap: 8px;
-  text-align: left;
+  text-align: start;
   transition: background-color 0.15s ease;
 }
 

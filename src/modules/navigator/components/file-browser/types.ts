@@ -26,19 +26,6 @@ export interface NavigationState {
   pathInput: string;
 }
 
-export interface SelectionState {
-  selectedEntries: DirEntry[];
-  lastSelectedEntry: DirEntry | null;
-  mouseDownState: {
-    item: DirEntry | null;
-    wasSelected: boolean;
-    awaitsSecondClick: boolean;
-    lastMouseUpTime: number;
-    ctrlKey: boolean;
-    shiftKey: boolean;
-  };
-}
-
 export interface ContextMenuState {
   targetEntry: DirEntry | null;
   selectedEntries: DirEntry[];

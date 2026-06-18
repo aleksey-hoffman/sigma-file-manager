@@ -212,7 +212,7 @@ async function handleUnmount(clickEvent: MouseEvent) {
   width: 100%;
   height: 100%;
   align-items: center;
-  padding: 0 8px 0 0;
+  padding: 0;
   border: none;
   border-radius: var(--radius);
   background-color: hsl(var(--card));
@@ -220,7 +220,8 @@ async function handleUnmount(clickEvent: MouseEvent) {
   cursor: pointer;
   gap: 0;
   grid-template-columns: 56px 1fr auto;
-  text-align: left;
+  padding-inline-end: 8px;
+  text-align: start;
   transition: background-color var(--hover-transition-duration-out) var(--hover-transition-easing-out);
 }
 

@@ -310,7 +310,10 @@
       "title": "Infotafel",
       "resetSize": "Panelgröße zurücksetzen",
       "dynamicSize": "Dynamische Infotafelgröße",
-      "dynamicSizeTooltip": "Wenn Sie die Infotafel manuell in der Größe ändern, wird diese Option deaktiviert und Ihre angepassten Größen gespeichert."
+      "dynamicSizeTooltip": "Wenn Sie die Infotafel manuell in der Größe ändern, wird diese Option deaktiviert und Ihre angepassten Größen gespeichert.",
+      "showFullSizeImagePreview": "Bild in voller Größe in Infotafel-Vorschau anzeigen",
+      "showFullSizeImagePreviewDescription": "Alternativ können Sie ein Bild auswählen und {shortcut} drücken, um das Bild in voller Größe in der Schnellansicht anzuzeigen.",
+      "showFullSizeImagePreviewMemoryWarning": "Erhöht die Speichernutzung"
     },
     "addressBar": {
       "addressBarActions": "Aktionen in der Adressleiste",
@@ -440,7 +443,8 @@
     "experimental": "erweitert, experimentell, Standard-Dateimanager, Datei-Explorer, Registrierung, Terminal, Shell",
     "whatsNew": "neuigkeiten, änderungsprotokoll, versionshinweise, version, aktualisierung, news",
     "autostart": "Autostart, Start, Systemstart, Boot, Anmeldung, Login, System",
-    "extensions": "extensions, plugins, addons, configuration, settings"
+    "extensions": "extensions, plugins, addons, configuration, settings",
+    "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original"
   },
   "drag": {
     "holdShiftToChangeMode": "Halten Sie [Shift] gedrückt, um den Modus zu ändern",
@@ -753,6 +757,14 @@
     "replaceOverview": "{replaced} von {total} Elementen werden im Ziel ersetzt",
     "checkingConflicts": "Konflikte werden geprüft…",
     "skipIdenticalFiles": "Überspringe {n} Datei mit derselben Größe und demselben Datum | Überspringe {n} Dateien mit derselben Größe und demselben Datum"
+  },
+  "topLevelConflictDialog": {
+    "title": "Elemente sind bereits vorhanden",
+    "description": "0 Elemente mit diesen Namen sind in diesem Ordner bereits vorhanden. | 1 Element mit diesem Namen ist in diesem Ordner bereits vorhanden. | {n} Elemente mit diesen Namen sind in diesem Ordner bereits vorhanden. | {n} Elemente mit diesen Namen sind in diesem Ordner bereits vorhanden.",
+    "hint": "Wähle Umbenennen, um umbenannte Elemente zu erstellen, oder Zusammenführen, um Konflikte in den vorhandenen Elementen zu prüfen.",
+    "rename": "Umbenennen",
+    "merge": "Zusammenführen",
+    "moreItems": "+ {count} weiteres Element | + {count} weitere Elemente"
   },
   "command": "Befehl",
   "keybinding": "Tastenkombination",

@@ -15,6 +15,7 @@ import { PageHomeLayout } from '@/layouts';
 import { usePageDropZone } from '@/composables/use-page-drop-zone';
 import { useFileDropOperation } from '@/composables/use-file-drop-operation';
 import FileBrowserConflictDialog from '@/modules/navigator/components/file-browser/file-browser-conflict-dialog.vue';
+import FileBrowserTopLevelConflictDialog from '@/modules/navigator/components/file-browser/file-browser-top-level-conflict-dialog.vue';
 import { getStaggerSlideUpBinding } from '@/utils/stagger-animation';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 
@@ -27,6 +28,10 @@ const {
   conflictDialogState,
   handleConflictResolution,
   handleConflictCancel,
+  topLevelNameConflictDialogState,
+  handleTopLevelNameConflictRename,
+  handleTopLevelNameConflictMerge,
+  handleTopLevelNameConflictCancel,
   performDrop,
 } = useFileDropOperation();
 
@@ -67,6 +72,14 @@ usePageDropZone({
       :is-checking-conflicts="conflictDialogState.isCheckingConflicts"
       @resolve="handleConflictResolution"
       @cancel="handleConflictCancel"
+    />
+
+    <FileBrowserTopLevelConflictDialog
+      v-model:open="topLevelNameConflictDialogState.isOpen"
+      :conflicts="topLevelNameConflictDialogState.conflicts"
+      @rename="handleTopLevelNameConflictRename"
+      @merge="handleTopLevelNameConflictMerge"
+      @cancel="handleTopLevelNameConflictCancel"
     />
   </PageHomeLayout>
 </template>

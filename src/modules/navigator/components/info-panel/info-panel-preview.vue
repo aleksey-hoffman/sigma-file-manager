@@ -4,11 +4,9 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import {
-  computed, nextTick, onBeforeUnmount, onMounted, ref, watch,
-} from 'vue';
+import { computed, nextTick, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { convertFileSrc, invoke } from '@tauri-apps/api/core';
+import { invoke } from '@tauri-apps/api/core';
 import {
   FolderIcon,
   FolderOpenIcon,
@@ -16,11 +14,8 @@ import {
   FileImageIcon,
   Loader2Icon,
 } from '@lucide/vue';
-import {
-  isImageFile as checkIsImage,
-  isVideoFile as checkIsVideo,
-} from '@/modules/navigator/components/file-browser/utils';
-import { useImageThumbnails } from '@/modules/navigator/components/file-browser/composables/use-image-thumbnails';
+import { isVideoFile as checkIsVideo } from '@/modules/navigator/components/file-browser/utils';
+import { useInfoPanelImagePreview } from '@/modules/navigator/components/info-panel/composables/use-info-panel-image-preview';
 import UbuntuWslIcon from '@/components/icons/ubuntu-wsl-icon.vue';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { isWslPath } from '@/utils/normalize-path';
@@ -37,31 +32,22 @@ interface ReadTextPreviewResult {
 
 const INFO_PANEL_TEXT_PREVIEW_MAX_BYTES = 48 * 1024;
 
-const DEFAULT_INFO_PANEL_THUMBNAIL_SIZE = {
-  width: 560,
-  height: 360,
-};
-
 const props = defineProps<{
   selectedEntry: DirEntry | null;
   isCurrentDir?: boolean;
 }>();
 
-const previewRef = ref<HTMLElement | null>(null);
-const previewSize = ref(DEFAULT_INFO_PANEL_THUMBNAIL_SIZE);
-let previewResizeObserver: ResizeObserver | null = null;
-const { getImageThumbnail, clearThumbnails } = useImageThumbnails();
+const {
+  previewRef,
+  isImageFile,
+  mediaSrc,
+  imagePreviewSrc,
+} = useInfoPanelImagePreview(() => props.selectedEntry);
 
 const textPreviewContent = ref('');
 const textPreviewLoading = ref(false);
 const textPreviewFailed = ref(false);
 let textPreviewRequestSequence = 0;
-
-const isImageFile = computed(() => {
-  if (!props.selectedEntry) return false;
-
-  return checkIsImage(props.selectedEntry);
-});
 
 const isVideoFile = computed(() => {
   if (!props.selectedEntry) return false;
@@ -79,81 +65,15 @@ const infoPanelPreviewKind = computed(() => {
   return determineFileType(entry.path);
 });
 
-const mediaSrc = computed(() => {
-  if (!props.selectedEntry?.path) return '';
-
-  return convertFileSrc(props.selectedEntry.path);
-});
-const imageThumbnailMaxDimension = computed(() => Math.max(previewSize.value.width, previewSize.value.height));
-const canUseOriginalImagePreview = computed(() => props.selectedEntry?.ext?.toLowerCase() === 'svg');
-const imagePreviewSrc = computed(() => {
-  if (!props.selectedEntry?.path || !isImageFile.value) {
-    return '';
-  }
-
-  return getImageThumbnail(props.selectedEntry, imageThumbnailMaxDimension.value)
-    ?? (canUseOriginalImagePreview.value ? mediaSrc.value : '');
-});
-
 const showWslDirectoryIcon = computed(() => {
   if (!props.selectedEntry?.is_dir) return false;
 
   return isWslPath(props.selectedEntry.path);
 });
 
-function getDevicePixelRatio(): number {
-  if (typeof window === 'undefined') {
-    return 1;
-  }
-
-  return Math.max(1, window.devicePixelRatio || 1);
-}
-
-function updatePreviewSize(): void {
-  const previewElement = previewRef.value;
-
-  if (!previewElement) {
-    return;
-  }
-
-  const pixelRatio = getDevicePixelRatio();
-  const measuredWidth = Math.round(previewElement.clientWidth * pixelRatio);
-  const measuredHeight = Math.round(previewElement.clientHeight * pixelRatio);
-
-  if (
-    measuredWidth <= 0
-    || measuredHeight <= 0
-    || (previewSize.value.width === measuredWidth && previewSize.value.height === measuredHeight)
-  ) {
-    return;
-  }
-
-  previewSize.value = {
-    width: measuredWidth,
-    height: measuredHeight,
-  };
-}
-
-function disconnectPreviewResizeObserver(): void {
-  previewResizeObserver?.disconnect();
-  previewResizeObserver = null;
-}
-
-function startPreviewResizeObserver(): void {
-  if (typeof ResizeObserver === 'undefined' || previewResizeObserver || !previewRef.value) {
-    return;
-  }
-
-  previewResizeObserver = new ResizeObserver(updatePreviewSize);
-  previewResizeObserver.observe(previewRef.value);
-}
-
 watch(
   () => props.selectedEntry?.path,
   async () => {
-    clearThumbnails();
-    disconnectPreviewResizeObserver();
-
     const entryAtStart = props.selectedEntry;
     const pathAtStart = entryAtStart?.path;
 
@@ -204,27 +124,9 @@ watch(
         }
       }
     }
-
-    if (props.selectedEntry?.path !== pathAtStart) {
-      return;
-    }
-
-    if (props.selectedEntry && checkIsImage(props.selectedEntry)) {
-      updatePreviewSize();
-      startPreviewResizeObserver();
-    }
   },
   { immediate: true },
 );
-
-onMounted(() => {
-  updatePreviewSize();
-  startPreviewResizeObserver();
-});
-
-onBeforeUnmount(() => {
-  disconnectPreviewResizeObserver();
-});
 </script>
 
 <template>

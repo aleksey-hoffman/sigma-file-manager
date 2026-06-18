@@ -3,8 +3,8 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 use crate::utils::{
-    format_trash_error, minimize_delete_paths, source_and_destination_same_directory,
-    unique_path_with_index,
+    format_trash_error, minimize_delete_paths, normalize_path,
+    source_and_destination_same_directory, unique_path_with_index,
 };
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -503,6 +503,34 @@ fn get_unique_destination_path(destination: &Path, name: &str) -> std::path::Pat
     unique_path_with_index(&destination.join(name), 1, name, None, None)
 }
 
+fn path_resolution_key(path: &Path) -> String {
+    normalize_path(&path.to_string_lossy())
+}
+
+fn path_resolution_from_entries(
+    entries: Vec<PathResolution>,
+) -> HashMap<String, ConflictResolution> {
+    entries
+        .into_iter()
+        .map(|entry| {
+            (
+                normalize_path(&entry.destination_path),
+                ConflictResolution::from_str(&entry.resolution),
+            )
+        })
+        .collect()
+}
+
+fn get_path_resolution(
+    resolutions: &HashMap<String, ConflictResolution>,
+    destination: &Path,
+) -> ConflictResolution {
+    resolutions
+        .get(&path_resolution_key(destination))
+        .copied()
+        .unwrap_or(ConflictResolution::AutoRename)
+}
+
 fn join_relative(prefix: &str, name: &str) -> String {
     let normalized_name = name.replace('\\', "/");
     if prefix.is_empty() {
@@ -637,12 +665,6 @@ fn check_conflicts_sync(source_paths: Vec<String>, destination_path: String) -> 
         let source = Path::new(source_path_str);
 
         if !source.exists() {
-            continue;
-        }
-
-        let is_same_directory = source_and_destination_same_directory(source, destination);
-
-        if is_same_directory {
             continue;
         }
 
@@ -801,6 +823,39 @@ fn copy_merge(
         return Err(format!("Source path does not exist: {}", source.display()));
     }
 
+    if normalize_path(&source.to_string_lossy()) == normalize_path(&dest.to_string_lossy()) {
+        if source.is_file() {
+            return match get_path_resolution(resolutions, dest) {
+                ConflictResolution::Skip => {
+                    *skipped_count += 1;
+                    Ok(())
+                }
+                ConflictResolution::Replace => Ok(()),
+                ConflictResolution::AutoRename => {
+                    let parent = dest.parent().ok_or("No parent directory")?;
+                    let name = dest.file_name().ok_or("Invalid destination file name")?;
+                    let unique_dest =
+                        get_unique_destination_path(parent, name.to_string_lossy().as_ref());
+                    copy_file_resilient(source, &unique_dest)
+                        .map(|_| ())
+                        .map_err(|error| error.to_string())
+                }
+            };
+        }
+
+        let child_paths: Vec<PathBuf> = fs::read_dir(source)
+            .map_err(|error| error.to_string())?
+            .map(|entry| entry.map(|dir_entry| dir_entry.path()))
+            .collect::<Result<_, _>>()
+            .map_err(|error| error.to_string())?;
+
+        for source_path in child_paths {
+            copy_merge(&source_path, &source_path, resolutions, skipped_count)?;
+        }
+
+        return Ok(());
+    }
+
     if source.is_file() {
         if !dest.exists() {
             if let Some(parent) = dest.parent() {
@@ -812,12 +867,7 @@ fn copy_merge(
         }
 
         if dest.is_file() {
-            let key = dest.to_string_lossy().to_string();
-            match resolutions
-                .get(&key)
-                .copied()
-                .unwrap_or(ConflictResolution::AutoRename)
-            {
+            match get_path_resolution(resolutions, dest) {
                 ConflictResolution::Skip => {
                     *skipped_count += 1;
                     Ok(())
@@ -836,12 +886,7 @@ fn copy_merge(
                 }
             }
         } else {
-            let key = dest.to_string_lossy().to_string();
-            match resolutions
-                .get(&key)
-                .copied()
-                .unwrap_or(ConflictResolution::AutoRename)
-            {
+            match get_path_resolution(resolutions, dest) {
                 ConflictResolution::Skip => {
                     *skipped_count += 1;
                     Ok(())
@@ -878,12 +923,7 @@ fn copy_merge(
         }
         Ok(())
     } else if dest.is_file() {
-        let key = dest.to_string_lossy().to_string();
-        match resolutions
-            .get(&key)
-            .copied()
-            .unwrap_or(ConflictResolution::AutoRename)
-        {
+        match get_path_resolution(resolutions, dest) {
             ConflictResolution::Skip => {
                 *skipped_count += 1;
                 Ok(())
@@ -959,12 +999,7 @@ fn move_merge(
         }
 
         if dest.is_file() {
-            let key = dest.to_string_lossy().to_string();
-            match resolutions
-                .get(&key)
-                .copied()
-                .unwrap_or(ConflictResolution::AutoRename)
-            {
+            match get_path_resolution(resolutions, dest) {
                 ConflictResolution::Skip => {
                     *skipped_count += 1;
                     Ok(())
@@ -982,12 +1017,7 @@ fn move_merge(
                 }
             }
         } else {
-            let key = dest.to_string_lossy().to_string();
-            match resolutions
-                .get(&key)
-                .copied()
-                .unwrap_or(ConflictResolution::AutoRename)
-            {
+            match get_path_resolution(resolutions, dest) {
                 ConflictResolution::Skip => {
                     *skipped_count += 1;
                     Ok(())
@@ -1011,12 +1041,7 @@ fn move_merge(
         }
         try_rename_or_copy_delete(source, dest)
     } else if dest.is_file() {
-        let key = dest.to_string_lossy().to_string();
-        match resolutions
-            .get(&key)
-            .copied()
-            .unwrap_or(ConflictResolution::AutoRename)
-        {
+        match get_path_resolution(resolutions, dest) {
             ConflictResolution::Skip => {
                 *skipped_count += 1;
                 Ok(())
@@ -1096,23 +1121,7 @@ pub(crate) fn copy_items_impl(
         .map(|value| ConflictResolution::from_str(value.as_str()));
 
     let merge_map: Option<HashMap<String, ConflictResolution>> =
-        per_path_resolutions.and_then(|entries| {
-            if entries.is_empty() {
-                None
-            } else {
-                Some(
-                    entries
-                        .into_iter()
-                        .map(|entry| {
-                            (
-                                entry.destination_path,
-                                ConflictResolution::from_str(&entry.resolution),
-                            )
-                        })
-                        .collect(),
-                )
-            }
-        });
+        per_path_resolutions.map(path_resolution_from_entries);
 
     if !destination.exists() {
         return (
@@ -1190,11 +1199,7 @@ pub(crate) fn copy_items_impl(
         };
 
         if let Some(ref map) = merge_map {
-            let dest_path = if is_same_directory {
-                get_unique_destination_path(destination, &file_name)
-            } else {
-                destination.join(&file_name)
-            };
+            let dest_path = destination.join(&file_name);
             let mut merge_skipped: u32 = 0;
             match copy_merge(source, &dest_path, map, &mut merge_skipped) {
                 Ok(()) => {
@@ -1388,9 +1393,7 @@ pub(crate) fn copy_items_impl(
                 }
             }
         }
-        if merge_map.is_some() || progress.is_none() {
-            report_progress_for_item(progress, index, total, &detail, false);
-        } else if copy_failed {
+        if merge_map.is_some() || progress.is_none() || copy_failed {
             report_progress_for_item(progress, index, total, &detail, false);
         }
     }
@@ -1446,23 +1449,7 @@ pub(crate) fn move_items_impl(
         .map(|value| ConflictResolution::from_str(value.as_str()));
 
     let merge_map: Option<HashMap<String, ConflictResolution>> =
-        per_path_resolutions.and_then(|entries| {
-            if entries.is_empty() {
-                None
-            } else {
-                Some(
-                    entries
-                        .into_iter()
-                        .map(|entry| {
-                            (
-                                entry.destination_path,
-                                ConflictResolution::from_str(&entry.resolution),
-                            )
-                        })
-                        .collect(),
-                )
-            }
-        });
+        per_path_resolutions.map(path_resolution_from_entries);
 
     if !destination.exists() {
         return (
@@ -1762,9 +1749,7 @@ pub(crate) fn move_items_impl(
                 }
             }
         }
-        if merge_map.is_some() || progress.is_none() {
-            report_progress_for_item(progress, index, total, &detail, false);
-        } else if !skip_end_progress_report {
+        if merge_map.is_some() || progress.is_none() || !skip_end_progress_report {
             report_progress_for_item(progress, index, total, &detail, false);
         }
     }
@@ -2191,6 +2176,40 @@ mod tests {
         assert_eq!(
             read_file(&destination_folder.join("only-source.txt")),
             b"only-source"
+        );
+        assert!(source_folder.exists());
+    }
+
+    #[test]
+    fn copy_items_merges_directory_and_keeps_both_conflicting_files() {
+        let temp = tempdir().unwrap();
+        let src_root = temp.path().join("source");
+        let dest_root = temp.path().join("destination");
+        let source_folder = src_root.join("project");
+        let destination_folder = dest_root.join("project");
+        let destination_conflict = destination_folder.join("common.txt");
+
+        write_file(&source_folder.join("common.txt"), b"source");
+        write_file(&destination_conflict, b"destination");
+
+        let result = copy_items(
+            vec![source_folder.to_string_lossy().to_string()],
+            dest_root.to_string_lossy().to_string(),
+            None,
+            Some(vec![PathResolution {
+                destination_path: destination_conflict.to_string_lossy().to_string(),
+                resolution: "auto-rename".to_string(),
+            }]),
+        );
+
+        assert!(result.success);
+        assert_eq!(
+            read_file(&destination_folder.join("common.txt")),
+            b"destination"
+        );
+        assert_eq!(
+            read_file(&destination_folder.join("common (1).txt")),
+            b"source"
         );
         assert!(source_folder.exists());
     }

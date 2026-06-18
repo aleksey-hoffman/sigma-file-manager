@@ -10,9 +10,9 @@ import type {
   ListReorderableColumnId,
 } from '@/types/user-settings';
 
-export type FileBrowserListColumnId =
-  | 'name'
-  | ListReorderableColumnId;
+export type FileBrowserListColumnId
+  = | 'name'
+    | ListReorderableColumnId;
 
 export interface FileBrowserListColumnDefinition {
   id: FileBrowserListColumnId;
@@ -34,15 +34,61 @@ export const FILE_BROWSER_LIST_REORDERABLE_COLUMN_IDS: readonly ListReorderableC
 ];
 
 export const FILE_BROWSER_LIST_COLUMN_DEFINITIONS: readonly FileBrowserListColumnDefinition[] = [
-  { id: 'name', visibilityKey: null, defaultMin: 200, defaultMax: Number.POSITIVE_INFINITY, isFlex: true },
-  { id: 'items', visibilityKey: 'items', defaultMin: 70, defaultMax: 90 },
-  { id: 'size', visibilityKey: 'size', defaultMin: 50, defaultMax: 100 },
-  { id: 'modified', visibilityKey: 'modified', defaultMin: 120, defaultMax: 160 },
-  { id: 'created', visibilityKey: 'created', defaultMin: 120, defaultMax: 160 },
-  { id: 'tags', visibilityKey: 'tags', defaultMin: 140, defaultMax: 180 },
-  { id: 'kind', visibilityKey: 'kind', defaultMin: 90, defaultMax: 130 },
-  { id: 'links', visibilityKey: 'links', defaultMin: 50, defaultMax: 80 },
-  { id: 'linkStatus', visibilityKey: 'linkStatus', defaultMin: 90, defaultMax: 120 },
+  {
+    id: 'name',
+    visibilityKey: null,
+    defaultMin: 200,
+    defaultMax: Number.POSITIVE_INFINITY,
+    isFlex: true,
+  },
+  {
+    id: 'items',
+    visibilityKey: 'items',
+    defaultMin: 70,
+    defaultMax: 90,
+  },
+  {
+    id: 'size',
+    visibilityKey: 'size',
+    defaultMin: 50,
+    defaultMax: 100,
+  },
+  {
+    id: 'modified',
+    visibilityKey: 'modified',
+    defaultMin: 120,
+    defaultMax: 160,
+  },
+  {
+    id: 'created',
+    visibilityKey: 'created',
+    defaultMin: 120,
+    defaultMax: 160,
+  },
+  {
+    id: 'tags',
+    visibilityKey: 'tags',
+    defaultMin: 140,
+    defaultMax: 180,
+  },
+  {
+    id: 'kind',
+    visibilityKey: 'kind',
+    defaultMin: 90,
+    defaultMax: 130,
+  },
+  {
+    id: 'links',
+    visibilityKey: 'links',
+    defaultMin: 50,
+    defaultMax: 80,
+  },
+  {
+    id: 'linkStatus',
+    visibilityKey: 'linkStatus',
+    defaultMin: 90,
+    defaultMax: 120,
+  },
 ];
 
 const DEFAULT_LIST_COLUMN_FLEX_WEIGHTS: Record<FileBrowserListColumnId, number> = {

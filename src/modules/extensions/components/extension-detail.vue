@@ -1548,10 +1548,10 @@ onMounted(() => {
   display: flex;
   align-items: flex-start;
   padding: 8px 10px;
-  border: 1px solid hsl(38deg 92% 50% / 30%);
+  border: 1px solid hsl(var(--warning) / 30%);
   border-radius: var(--radius);
-  background-color: hsl(38deg 92% 50% / 8%);
-  color: hsl(38deg 92% 50%);
+  background-color: hsl(var(--warning) / 8%);
+  color: hsl(var(--warning));
   font-size: 0.8rem;
   gap: 6px;
   line-height: 1.4;

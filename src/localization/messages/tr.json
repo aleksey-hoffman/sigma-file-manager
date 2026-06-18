@@ -310,7 +310,10 @@
       "title": "Bilgi paneli",
       "resetSize": "Panel boyutunu sıfırla",
       "dynamicSize": "Dinamik bilgi paneli boyutu",
-      "dynamicSizeTooltip": "Bilgi panelini manuel olarak yeniden boyutlandırırsanız bu seçenek kapanır ve özel boyutlarınız kaydedilir."
+      "dynamicSizeTooltip": "Bilgi panelini manuel olarak yeniden boyutlandırırsanız bu seçenek kapanır ve özel boyutlarınız kaydedilir.",
+      "showFullSizeImagePreview": "Bilgi paneli önizleme alanında tam boyutlu görüntüyü göster",
+      "showFullSizeImagePreviewDescription": "Alternatif olarak, bir görüntü seçip {shortcut} tuşuna basarak görüntüyü Hızlı görünümde tam boyutta görüntüleyebilirsiniz.",
+      "showFullSizeImagePreviewMemoryWarning": "Bellek kullanımını artırır"
     },
     "addressBar": {
       "addressBarActions": "Adres çubuğu işlemleri",
@@ -440,7 +443,8 @@
     "experimental": "gelişmiş, deneysel, varsayılan dosya yöneticisi, dosya gezgini, kayıt defteri, terminal, shell",
     "whatsNew": "yenilikler, değişiklik günlüğü, sürüm notları, sürüm, güncelleme, haberler",
     "autostart": "otomatik başlatma, başlangıç, oturum açma, sistem, açılış",
-    "extensions": "extensions, plugins, addons, configuration, settings"
+    "extensions": "extensions, plugins, addons, configuration, settings",
+    "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original"
   },
   "drag": {
     "holdShiftToChangeMode": "Modu değiştirmek için [Shift]'e basılı tutun",
@@ -753,6 +757,14 @@
     "replaceOverview": "{total} öğeden {replaced} tanesi hedefte değiştirilecek",
     "checkingConflicts": "Çakışmalar denetleniyor…",
     "skipIdenticalFiles": "Aynı boyut ve tarihe sahip {n} dosyayı atla | Aynı boyut ve tarihe sahip {n} dosyayı atla"
+  },
+  "topLevelConflictDialog": {
+    "title": "Öğeler zaten var",
+    "description": "Bu dizinde bu adlara sahip 0 öğe zaten var. | Bu dizinde bu ada sahip 1 öğe zaten var. | Bu dizinde bu adlara sahip {n} öğe zaten var. | Bu dizinde bu adlara sahip {n} öğe zaten var.",
+    "hint": "Yeniden adlandır, yeni adlarla öğeler oluşturur. Birleştir, mevcut öğelerin içindeki çakışmaları gözden geçirir.",
+    "rename": "Yeniden adlandır",
+    "merge": "Birleştir",
+    "moreItems": "+ {count} öğe daha | + {count} öğe daha"
   },
   "command": "Komut",
   "keybinding": "Tuş bağlama",

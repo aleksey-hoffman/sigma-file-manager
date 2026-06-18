@@ -2,129 +2,53 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-import { markRaw } from 'vue';
-import { invoke } from '@tauri-apps/api/core';
-import { useI18n } from 'vue-i18n';
-import { toast, ToastStatic } from '@/components/ui/toaster';
-import type { ConflictItem } from '@/stores/runtime/clipboard';
-import { useCopyMoveJobsStore } from '@/stores/runtime/copy-move-jobs';
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
-import { useConflictResolutionDialog } from '@/composables/use-conflict-resolution-dialog';
-import {
-  arePathsEquivalent,
-  getSharedSourceDirectory,
-  isDestinationInsideAnySourceDirectory,
-} from '@/utils/file-operation-paths';
+import { useCopyMoveWithConflicts } from '@/composables/use-copy-move-with-conflicts';
 
 export function useFileDropOperation() {
-  const { t } = useI18n();
-  const copyMoveJobsStore = useCopyMoveJobsStore();
   const dirSizesStore = useDirSizesStore();
   const {
+    performCopyMoveWithConflicts,
     conflictDialogState,
-    showConflictDialog,
     handleConflictResolution,
     handleConflictCancel,
-  } = useConflictResolutionDialog();
+    topLevelNameConflictDialogState,
+    handleTopLevelNameConflictRename,
+    handleTopLevelNameConflictMerge,
+    handleTopLevelNameConflictCancel,
+  } = useCopyMoveWithConflicts();
 
   async function performDrop(
     sourcePaths: string[],
     targetPath: string,
     operation: 'copy' | 'move',
   ): Promise<boolean> {
-    if (sourcePaths.length === 0) {
+    const result = await performCopyMoveWithConflicts(sourcePaths, targetPath, operation);
+
+    if (!result || result.cancelled) {
       return false;
     }
 
-    const isCopy = operation === 'copy';
-
-    let sourcePathIsDir: boolean[];
-
-    try {
-      sourcePathIsDir = await invoke<boolean[]>('paths_are_directories', {
-        paths: sourcePaths,
-      });
-    }
-    catch {
-      sourcePathIsDir = sourcePaths.map(() => true);
+    if (result.success && result.copiedCount > 0) {
+      const sourcesForSizes = sourcePaths.map((path, index) => ({
+        path,
+        is_dir: result.sourcePathIsDir[index] ?? false,
+      }));
+      await dirSizesStore.refreshSizesAfterCopyMove(sourcesForSizes, targetPath, [targetPath]);
+      return true;
     }
 
-    if (isDestinationInsideAnySourceDirectory(targetPath, sourcePaths, sourcePathIsDir)) {
-      toast.error(t('fileBrowser.cannotPasteIntoItself'));
-      return false;
-    }
-
-    const sharedSourceDirectory = getSharedSourceDirectory(sourcePaths);
-
-    if (
-      operation === 'move'
-      && sharedSourceDirectory !== null
-      && arePathsEquivalent(sharedSourceDirectory, targetPath)
-    ) {
-      toast.error(t('fileBrowser.cannotMoveToSameDirectory'));
-      return false;
-    }
-
-    const resolutionPayload = await showConflictDialog(operation, () =>
-      invoke<ConflictItem[]>('check_conflicts', {
-        sourcePaths,
-        destinationPath: targetPath,
-      }),
-    );
-
-    if (resolutionPayload === null) {
-      return false;
-    }
-
-    const conflictPayload
-      = resolutionPayload === undefined ? undefined : resolutionPayload;
-
-    const displayPath = targetPath.split(/[/\\]/).pop() ?? targetPath;
-
-    try {
-      const result = await copyMoveJobsStore.startJob(
-        isCopy ? 'copy' : 'move',
-        sourcePaths,
-        targetPath,
-        null,
-        conflictPayload?.perPathResolutions,
-        {
-          label: isCopy ? t('notifications.copyingItems') : t('notifications.movingItems'),
-          displayPath,
-        },
-      );
-
-      const copiedCount = result.copied_count ?? 0;
-
-      if (!result.cancelled && result.success && copiedCount > 0) {
-        const sourcesForSizes = sourcePaths.map((path, index) => ({
-          path,
-          is_dir: sourcePathIsDir[index] ?? false,
-        }));
-        await dirSizesStore.refreshSizesAfterCopyMove(sourcesForSizes, targetPath, [targetPath]);
-        return true;
-      }
-
-      return false;
-    }
-    catch (error: unknown) {
-      toast.custom(markRaw(ToastStatic), {
-        componentProps: {
-          data: {
-            title: isCopy ? t('fileBrowser.copyFailed') : t('fileBrowser.moveFailed'),
-            description: String(error),
-          },
-        },
-        duration: 5000,
-      });
-      return false;
-    }
+    return false;
   }
 
   return {
     conflictDialogState,
     handleConflictResolution,
     handleConflictCancel,
+    topLevelNameConflictDialogState,
+    handleTopLevelNameConflictRename,
+    handleTopLevelNameConflictMerge,
+    handleTopLevelNameConflictCancel,
     performDrop,
   };
 }

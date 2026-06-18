@@ -522,11 +522,11 @@ const visibleRows = computed<FileBrowserListDisplayRow[]>(() => {
   min-width: 100%;
   height: 0;
   padding: 0 var(--file-browser-list-row-padding-x);
-  padding-right: calc(var(--file-browser-list-row-padding-x) + var(--file-browser-list-columns-button-width));
   border: 0;
   margin: 0;
   column-gap: var(--file-browser-list-column-gap);
   grid-template-columns: var(--file-browser-list-columns);
+  padding-inline-end: calc(var(--file-browser-list-row-padding-x) + var(--file-browser-list-columns-button-width));
   pointer-events: none;
   visibility: hidden;
 }
@@ -539,10 +539,9 @@ const visibleRows = computed<FileBrowserListDisplayRow[]>(() => {
 
 .file-browser-list-view__virtual-window {
   position: absolute;
-  right: 0;
-  left: 0;
   display: flex;
   flex-direction: column;
+  inset-inline: 0;
   will-change: transform;
 }
 
@@ -557,7 +556,6 @@ const visibleRows = computed<FileBrowserListDisplayRow[]>(() => {
   min-width: 100%;
   min-height: var(--navigator-list-view-entry-height);
   padding: var(--file-browser-list-row-padding-y) var(--file-browser-list-row-padding-x);
-  padding-right: calc(var(--file-browser-list-row-padding-x) + var(--file-browser-list-columns-button-width));
   border: none;
   border-bottom: 1px solid hsl(var(--border) / 50%);
   background: transparent;
@@ -567,8 +565,9 @@ const visibleRows = computed<FileBrowserListDisplayRow[]>(() => {
   cursor: default;
   font-size: 13px;
   grid-template-columns: var(--file-browser-list-columns);
+  padding-inline-end: calc(var(--file-browser-list-row-padding-x) + var(--file-browser-list-columns-button-width));
   scroll-margin-top: var(--file-browser-list-header-height);
-  text-align: left;
+  text-align: start;
   user-select: none;
 }
 
@@ -582,12 +581,12 @@ const visibleRows = computed<FileBrowserListDisplayRow[]>(() => {
 
 .file-browser-list-view__entry[data-link-status="broken"] .file-browser-list-view__entry-icon,
 .file-browser-list-view__entry[data-link-status="broken"] .file-browser-list-view__entry-text {
-  color: hsl(var(--warning));
+  color: hsl(var(--dangerous));
 }
 
 .file-browser-list-view__entry[data-link-status="broken"] .file-browser-list-view__entry-text {
   text-decoration: line-through;
-  text-decoration-color: hsl(var(--warning) / 70%);
+  text-decoration-color: hsl(var(--dangerous) / 70%);
   text-decoration-thickness: 1px;
 }
 
@@ -843,8 +842,8 @@ const visibleRows = computed<FileBrowserListDisplayRow[]>(() => {
 }
 
 .file-browser-list-view__entry[data-in-clipboard][data-clipboard-type="move"]::before {
-  background-color: hsl(var(--warning) / 6%);
-  box-shadow: inset 0 0 0 1px hsl(var(--warning) / 30%), inset 3px 0 0 0 hsl(var(--warning) / 50%);
+  background-color: hsl(var(--dangerous) / 6%);
+  box-shadow: inset 0 0 0 1px hsl(var(--dangerous) / 30%), inset 3px 0 0 0 hsl(var(--dangerous) / 50%);
   opacity: 1;
 }
 
@@ -855,8 +854,8 @@ const visibleRows = computed<FileBrowserListDisplayRow[]>(() => {
 }
 
 .file-browser-list-view__entry[data-selected][data-in-clipboard][data-clipboard-type="move"]::before {
-  background-color: hsl(var(--warning) / 10%);
-  box-shadow: inset 0 0 0 1px hsl(var(--warning) / 50%), inset 3px 0 0 0 hsl(var(--warning) / 70%);
+  background-color: hsl(var(--dangerous) / 10%);
+  box-shadow: inset 0 0 0 1px hsl(var(--dangerous) / 50%), inset 3px 0 0 0 hsl(var(--dangerous) / 70%);
   opacity: 1;
 }
 
@@ -871,7 +870,7 @@ const visibleRows = computed<FileBrowserListDisplayRow[]>(() => {
 .file-browser-list-view__entry[data-selected][data-in-clipboard][data-clipboard-type="move"] .file-browser-list-view__entry-tags,
 .file-browser-list-view__entry[data-selected][data-in-clipboard][data-clipboard-type="move"] .file-browser-list-view__entry-tags-static,
 .file-browser-list-view__entry[data-selected][data-in-clipboard][data-clipboard-type="move"] .file-browser-list-view__entry-tags :deep(.tag-selector__trigger) {
-  color: hsl(var(--warning));
+  color: hsl(var(--dangerous));
 }
 
 .file-browser-list-view__entry[data-in-clipboard][data-clipboard-type="copy"] .file-browser-list-view__entry-text,
@@ -893,7 +892,7 @@ const visibleRows = computed<FileBrowserListDisplayRow[]>(() => {
 .file-browser-list-view__entry[data-in-clipboard][data-clipboard-type="move"] .file-browser-list-view__entry-tags,
 .file-browser-list-view__entry[data-in-clipboard][data-clipboard-type="move"] .file-browser-list-view__entry-tags-static,
 .file-browser-list-view__entry[data-in-clipboard][data-clipboard-type="move"] .file-browser-list-view__entry-tags :deep(.tag-selector__trigger) {
-  color: hsl(var(--warning));
+  color: hsl(var(--dangerous));
 }
 
 .file-browser-list-view__entry::after {

@@ -1278,7 +1278,6 @@ defineExpose({
   width: 100%;
   align-items: center;
   padding: 0.375rem 0.5rem;
-  padding-right: 1rem;
   border: 0;
   border-radius: var(--radius-sm);
   background: transparent;
@@ -1287,7 +1286,8 @@ defineExpose({
   font-size: 0.75rem;
   font-weight: 500;
   gap: 0.375rem;
-  text-align: left;
+  padding-inline-end: 1rem;
+  text-align: start;
 }
 
 .address-bar-editor__group-trigger:hover:not([data-selected]) {

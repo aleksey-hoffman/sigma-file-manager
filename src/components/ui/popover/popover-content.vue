@@ -49,7 +49,7 @@ const forwarded = useForwardPropsEmits(props, emits);
   border-radius: var(--radius);
   backdrop-filter: blur(var(--backdrop-filter-blur));
   background-color: hsl(var(--popover));
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 10%), 0 2px 4px -2px rgb(0 0 0 / 10%);
+  box-shadow: 0 18px 45px -12px rgb(0 0 0 / 35%), 0 8px 20px -10px rgb(0 0 0 / 28%);
   color: hsl(var(--popover-foreground));
   outline: none;
   transform-origin: var(--reka-popover-content-transform-origin);

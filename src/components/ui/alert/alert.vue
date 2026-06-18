@@ -70,9 +70,9 @@ const iconComponent = computed(() => {
 }
 
 .sigma-ui-alert--warning {
-  border-color: hsl(38deg 92% 50% / 30%);
-  background-color: hsl(38deg 92% 50% / 10%);
-  color: hsl(38deg 92% 50%);
+  border-color: hsl(var(--warning) / 30%);
+  background-color: hsl(var(--warning) / 10%);
+  color: hsl(var(--warning));
 }
 
 .sigma-ui-alert--error {

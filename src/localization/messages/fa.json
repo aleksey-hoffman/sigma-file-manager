@@ -306,7 +306,10 @@
       "title": "پانل اطلاعات",
       "resetSize": "بازنشانی اندازه پنل",
       "dynamicSize": "اندازه پویای پانل اطلاعات",
-      "dynamicSizeTooltip": "اگر اندازه پانل اطلاعات را به صورت دستی تغییر دهید، این گزینه خاموش می‌شود و اندازه‌های سفارشی شما ذخیره می‌شود."
+      "dynamicSizeTooltip": "اگر اندازه پانل اطلاعات را به صورت دستی تغییر دهید، این گزینه خاموش می‌شود و اندازه‌های سفارشی شما ذخیره می‌شود.",
+      "showFullSizeImagePreview": "نمایش تصویر در اندازه کامل در ناحیه پیش‌نمایش پانل اطلاعات",
+      "showFullSizeImagePreviewDescription": "به‌عنوان جایگزین، می‌توانید یک تصویر را انتخاب کنید و {shortcut} را بزنید تا تصویر را در اندازه کامل در نمای سریع ببینید.",
+      "showFullSizeImagePreviewMemoryWarning": "مصرف حافظه را افزایش می‌دهد"
     },
     "addressBar": {
       "addressBarActions": "عملکردهای نوار آدرس",
@@ -436,7 +439,8 @@
     "experimental": "پیشرفته، آزمایشی، مدیر فایل پیش فرض، فایل اکسپلورر، رجیستری، ترمینال، شل",
     "whatsNew": "تازه‌ها، تغییرات، یادداشت‌های نسخه، نسخه، به‌روزرسانی، اخبار",
     "autostart": "اجرای خودکار، راه‌اندازی، ورود، سیستم، بوت",
-    "extensions": "extensions, plugins, addons, configuration, settings"
+    "extensions": "extensions, plugins, addons, configuration, settings",
+    "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original"
   },
   "drag": {
     "holdShiftToChangeMode": "برای تغییر حالت، [Shift] را نگه دارید",
@@ -749,6 +753,14 @@
     "replaceOverview": "{replaced} مورد از {total} مورد در مقصد جایگزین می‌شوند",
     "checkingConflicts": "در حال بررسی تداخل‌ها…",
     "skipIdenticalFiles": "رد کردن {n} پرونده با اندازه و تاریخ یکسان | رد کردن {n} پرونده با اندازه و تاریخ یکسان"
+  },
+  "topLevelConflictDialog": {
+    "title": "موارد از قبل وجود دارند",
+    "description": "0 مورد با این نام‌ها از قبل در این پوشه وجود دارد. | 1 مورد با این نام از قبل در این پوشه وجود دارد. | {n} مورد با این نام‌ها از قبل در این پوشه وجود دارد. | {n} مورد با این نام‌ها از قبل در این پوشه وجود دارد.",
+    "hint": "تغییر نام، مواردی با نام تازه می‌سازد. ادغام، تداخل‌های داخل موارد موجود را بررسی می‌کند.",
+    "rename": "تغییر نام",
+    "merge": "ادغام",
+    "moreItems": "+ {count} مورد دیگر | + {count} مورد دیگر"
   },
   "command": "فرمان",
   "keybinding": "کلید میانبر",

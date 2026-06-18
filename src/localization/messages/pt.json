@@ -310,7 +310,10 @@
       "title": "Painel de informações",
       "resetSize": "Redefinir tamanho do painel",
       "dynamicSize": "Tamanho dinâmico do painel de informações",
-      "dynamicSizeTooltip": "Se você redimensionar o painel manualmente, esta opção é desativada e seus tamanhos personalizados são salvos."
+      "dynamicSizeTooltip": "Se você redimensionar o painel manualmente, esta opção é desativada e seus tamanhos personalizados são salvos.",
+      "showFullSizeImagePreview": "Mostrar imagem em tamanho completo na previsualização do painel de informações",
+      "showFullSizeImagePreviewDescription": "Como alternativa, pode selecionar uma imagem e premir {shortcut} para ver a imagem em tamanho completo na visualização rápida.",
+      "showFullSizeImagePreviewMemoryWarning": "Aumenta a utilização de memória"
     },
     "addressBar": {
       "addressBarActions": "Ações da barra de endereço",
@@ -440,7 +443,8 @@
     "experimental": "avançado, experimental, gerenciador de arquivos padrão, explorador de arquivos, registro, terminal, shell",
     "whatsNew": "novidades, registro de alterações, notas de versão, versão, atualização, notícias",
     "autostart": "início automático, arranque, inicialização, login, sistema, boot",
-    "extensions": "extensions, plugins, addons, configuration, settings"
+    "extensions": "extensions, plugins, addons, configuration, settings",
+    "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original"
   },
   "drag": {
     "holdShiftToChangeMode": "Segure [Shift] para alterar os modos",
@@ -752,6 +756,14 @@
     "replaceOverview": "{replaced} de {total} itens serão substituídos no destino",
     "checkingConflicts": "A verificar conflitos…",
     "skipIdenticalFiles": "Ignorar {n} ficheiro com o mesmo tamanho e data | Ignorar {n} ficheiros com o mesmo tamanho e data"
+  },
+  "topLevelConflictDialog": {
+    "title": "Itens já existem",
+    "description": "0 itens com estes nomes já existem neste diretório. | 1 item com este nome já existe neste diretório. | {n} itens com estes nomes já existem neste diretório. | {n} itens com estes nomes já existem neste diretório.",
+    "hint": "Escolha Renomear para criar itens renomeados, ou Mesclar para revisar conflitos dentro dos itens existentes.",
+    "rename": "Renomear",
+    "merge": "Mesclar",
+    "moreItems": "+ {count} item a mais | + {count} itens a mais"
   },
   "command": "Comando",
   "keybinding": "Combinação de teclas",

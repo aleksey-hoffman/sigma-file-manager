@@ -63,9 +63,9 @@ const columnSkeletonClassMap: Record<ListReorderableColumnId, string> = {
   width: max-content;
   min-width: 100%;
   padding: var(--file-browser-list-row-padding-y) var(--file-browser-list-row-padding-x);
-  padding-right: calc(var(--file-browser-list-row-padding-x) + var(--file-browser-list-columns-button-width));
   column-gap: var(--file-browser-list-column-gap);
   grid-template-columns: var(--file-browser-list-columns);
+  padding-inline-end: calc(var(--file-browser-list-row-padding-x) + var(--file-browser-list-columns-button-width));
 }
 
 .file-browser-loading__name {

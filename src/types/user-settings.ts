@@ -279,15 +279,15 @@ export type ListColumnFlexWeights = {
   linkStatus?: number;
 };
 
-export type ListReorderableColumnId =
-  | 'items'
-  | 'size'
-  | 'modified'
-  | 'created'
-  | 'tags'
-  | 'kind'
-  | 'links'
-  | 'linkStatus';
+export type ListReorderableColumnId
+  = | 'items'
+    | 'size'
+    | 'modified'
+    | 'created'
+    | 'tags'
+    | 'kind'
+    | 'links'
+    | 'linkStatus';
 
 export type ListColumnOrder = ListReorderableColumnId[];
 
@@ -322,6 +322,7 @@ export type UserSettingsNavigatorInfoPanel = {
   dynamicSize: boolean;
   widthPx: number | null;
   previewHeightPx: number | null;
+  showFullSizeImagePreview: boolean;
 };
 
 export type NavigatorLayout = {

@@ -125,7 +125,7 @@ const descriptionText = computed(() => {
 
 <style>
 .sigma-ui-toast-progress--delete .sigma-ui-toast-progress__icon {
-  color: hsl(var(--warning));
+  color: hsl(var(--dangerous));
 }
 
 .sigma-ui-toast-progress__toolbar {

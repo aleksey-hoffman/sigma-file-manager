@@ -54,7 +54,10 @@ function handleViewportScroll(event: Event) {
 <template>
   <div
     class="file-browser__content"
-    :class="{ 'file-browser__content--fill-column-width': listColumnFillWidth }"
+    :class="{
+      'file-browser__content--fill-column-width': listColumnFillWidth,
+      'file-browser__content--grid': props.layout === 'grid',
+    }"
     :style="{ '--file-browser-list-columns': listColumnsTemplate }"
   >
     <div
@@ -102,6 +105,7 @@ function handleViewportScroll(event: Event) {
   --file-browser-list-header-padding-y: 10px;
   --file-browser-list-header-height: calc((var(--file-browser-list-header-padding-y) * 2) + 1rem + 1px);
   --file-browser-grid-section-header-height: calc(8px + 2px + 1rem + 16px);
+  --file-browser-grid-section-header-bleed: 1px;
   --file-browser-list-column-gap: 16px;
   --file-browser-list-columns-button-width: 36px;
   --file-browser-list-fill-width-inset: var(--file-browser-list-row-padding-x);
@@ -109,10 +113,18 @@ function handleViewportScroll(event: Event) {
   --file-browser-list-columns: minmax(300px, 1fr) minmax(70px, 90px) minmax(50px, 100px) minmax(60px, 160px) minmax(120px, 160px) minmax(140px, 180px) minmax(90px, 130px) minmax(50px, 80px) minmax(90px, 120px);
 }
 
+.file-browser__content--grid {
+  --file-browser-scrollbar-gutter: 1.25rem;
+}
+
+.file-browser__content--grid .file-browser__content-inner {
+  padding-inline: var(--file-browser-scrollbar-gutter);
+}
+
 .file-browser__list-header-shell {
   width: 100%;
   flex-shrink: 0;
-  padding-right: var(--file-browser-scrollbar-gutter);
+  padding-inline-end: var(--file-browser-scrollbar-gutter);
 }
 
 .file-browser__content-scroll {
@@ -149,7 +161,7 @@ function handleViewportScroll(event: Event) {
   min-height: 0;
   flex: 1;
   flex-direction: column;
-  padding-right: var(--file-browser-scrollbar-gutter);
+  padding-inline-end: var(--file-browser-scrollbar-gutter);
 }
 
 :deep(.file-browser-list-view) :global(.sigma-ui-scroll-area-scrollbar) {

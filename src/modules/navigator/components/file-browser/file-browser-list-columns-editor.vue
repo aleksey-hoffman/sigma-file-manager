@@ -15,6 +15,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
+import { useTextDirection } from '@/composables/use-text-direction';
 import { useFileBrowserListColumns } from './composables/use-file-browser-list-columns';
 import { buildCompactListColumnWidths, normalizeListColumnOrder } from './utils/file-browser-list-columns';
 
@@ -25,6 +26,7 @@ const props = defineProps<{
 const { t } = useI18n();
 const userSettingsStore = useUserSettingsStore();
 const { setMeasuredColumnWidths } = useFileBrowserListColumns();
+const { inlineEndSide } = useTextDirection();
 
 const columnVisibility = computed(() => userSettingsStore.userSettings.navigator.listColumnVisibility);
 const listColumnFillWidth = computed(() => userSettingsStore.userSettings.navigator.listColumnFillWidth);
@@ -174,7 +176,7 @@ async function compactColumnWidths() {
               </span>
             </TooltipTrigger>
             <TooltipContent
-              side="right"
+              :side="inlineEndSide"
               class="file-browser-list-view__columns-warning-tooltip"
             >
               {{ t('fileBrowser.linkMetadataPerformanceWarning') }}
@@ -209,7 +211,7 @@ async function compactColumnWidths() {
           </span>
         </TooltipTrigger>
         <TooltipContent
-          side="right"
+          :side="inlineEndSide"
           class="file-browser-list-view__columns-warning-tooltip"
         >
           {{ t('fileBrowser.linkMetadataPerformanceWarning') }}
@@ -312,8 +314,8 @@ async function compactColumnWidths() {
 .file-browser-list-view__columns-warning {
   display: inline-flex;
   flex-shrink: 0;
-  margin-left: auto;
-  color: hsl(38deg 92% 50%);
+  color: hsl(var(--warning));
+  margin-inline-start: auto;
 }
 
 .file-browser-list-view__columns-warning-tooltip.sigma-ui-tooltip-content {
