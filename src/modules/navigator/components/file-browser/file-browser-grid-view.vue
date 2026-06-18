@@ -192,8 +192,14 @@ function getSectionRowStyle(row: FileBrowserGridSectionVirtualRow): Record<strin
   position: absolute;
   display: flex;
   flex-direction: column;
-  inset-inline: 8px 0;
+  inset-inline: 0;
   will-change: transform;
+}
+
+.file-browser-grid-view__section-bar-wrapper,
+.file-browser-grid-view__sticky-section-content {
+  margin-inline: calc(-1 * var(--file-browser-grid-section-header-bleed));
+  padding-inline: var(--file-browser-grid-section-header-bleed);
 }
 
 .file-browser-grid-view__section-bar-wrapper {
@@ -223,7 +229,6 @@ function getSectionRowStyle(row: FileBrowserGridSectionVirtualRow): Record<strin
   color: hsl(var(--muted-foreground));
   font-size: 12px;
   font-weight: 500;
-  margin-inline-start: 8px;
   text-transform: uppercase;
 }
 
