@@ -20,6 +20,7 @@ import FileBrowserEntryIcon from './file-browser-entry-icon.vue';
 import { useRelativeDateDisplayClock } from '@/composables/use-relative-date-display';
 import { useFileBrowserContext } from './composables/use-file-browser-context';
 import { useFileBrowserTags } from './composables/use-file-browser-tags';
+import { getDriveEntryVolumeSizeBytes } from '@/utils/drive-icon';
 import {
   useFileBrowserVisibleListColumns,
   type FileBrowserVisibleOptionalListColumn,
@@ -177,6 +178,16 @@ function getEntrySizeDisplay(entry: DirEntry): FileBrowserListSizeDisplay {
   if (entry.is_file) {
     return {
       display: formatBytes(entry.size),
+      isLoadingWithProgress: false,
+      isSkeletonVisible: false,
+    };
+  }
+
+  const driveVolumeSize = getDriveEntryVolumeSizeBytes(entry);
+
+  if (driveVolumeSize !== null) {
+    return {
+      display: formatBytes(driveVolumeSize),
       isLoadingWithProgress: false,
       isSkeletonVisible: false,
     };

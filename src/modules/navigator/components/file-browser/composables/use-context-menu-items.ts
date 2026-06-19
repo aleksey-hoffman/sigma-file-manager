@@ -4,91 +4,12 @@
 
 import { computed, type Ref } from 'vue';
 import type { DirEntry } from '@/types/dir-entry';
-import type { ContextMenuAction, ContextMenuItemConfig, SelectionType, EntryType } from '@/modules/navigator/components/file-browser/types';
+import type { ContextMenuAction } from '@/modules/navigator/components/file-browser/types';
 import { usePlatformStore } from '@/stores/runtime/platform';
-import { isProtectedSystemPath } from '@/utils/is-protected-system-path';
-
-const CONTEXT_MENU_ITEMS: ContextMenuItemConfig[] = [
-  {
-    action: 'rename',
-    selectionTypes: ['single'],
-    entryTypes: ['file', 'directory'],
-  },
-  {
-    action: 'copy',
-    selectionTypes: ['single', 'multiple'],
-    entryTypes: ['file', 'directory'],
-  },
-  {
-    action: 'cut',
-    selectionTypes: ['single', 'multiple'],
-    entryTypes: ['file', 'directory'],
-  },
-  {
-    action: 'link',
-    selectionTypes: ['single', 'multiple'],
-    entryTypes: ['file', 'directory'],
-  },
-  {
-    action: 'paste',
-    selectionTypes: ['single', 'multiple'],
-    entryTypes: ['file', 'directory'],
-  },
-  {
-    action: 'delete',
-    selectionTypes: ['single', 'multiple'],
-    entryTypes: ['file', 'directory'],
-  },
-  {
-    action: 'open-with',
-    selectionTypes: ['single', 'multiple'],
-    entryTypes: ['file', 'directory'],
-  },
-  {
-    action: 'properties',
-    selectionTypes: ['single', 'multiple'],
-    entryTypes: ['file', 'directory'],
-  },
-  {
-    action: 'quick-view',
-    selectionTypes: ['single'],
-    entryTypes: ['file'],
-  },
-  {
-    action: 'print',
-    selectionTypes: ['single'],
-    entryTypes: ['file'],
-  },
-  {
-    action: 'share',
-    selectionTypes: ['single', 'multiple'],
-    entryTypes: ['file', 'directory'],
-  },
-  {
-    action: 'open-in-new-tab',
-    selectionTypes: ['single', 'multiple'],
-    entryTypes: ['directory'],
-  },
-  {
-    action: 'toggle-favorite',
-    selectionTypes: ['single', 'multiple'],
-    entryTypes: ['file', 'directory'],
-  },
-  {
-    action: 'edit-tags',
-    selectionTypes: ['single', 'multiple'],
-    entryTypes: ['file', 'directory'],
-  },
-  {
-    action: 'copy-path',
-    selectionTypes: ['single', 'multiple'],
-    entryTypes: ['file', 'directory'],
-  },
-];
-
-const PROTECTED_ACTIONS = new Set<ContextMenuAction>(['rename', 'cut', 'delete', 'delete-permanently']);
-
-const WINDOWS_ONLY_ACTIONS = new Set<ContextMenuAction>(['properties']);
+import {
+  getContextMenuSelectionStats,
+  isContextMenuActionVisible,
+} from '@/modules/navigator/components/file-browser/utils/context-menu-action-visibility';
 
 export function useContextMenuItems(
   selectedEntries: Ref<DirEntry[]>,
@@ -96,57 +17,13 @@ export function useContextMenuItems(
 ) {
   const platformStore = usePlatformStore();
 
-  const selectionStats = computed(() => {
-    const entries = selectedEntries.value;
-    const selectionType: SelectionType = entries.length === 1 ? 'single' : 'multiple';
-    const entryTypes = new Set<EntryType>();
-
-    for (const entry of entries) {
-      entryTypes.add(entry.is_dir ? 'directory' : 'file');
-    }
-
-    return {
-      selectionType,
-      entryTypes: Array.from(entryTypes),
-      hasDirectories: entryTypes.has('directory'),
-      hasFiles: entryTypes.has('file'),
-      isMixed: entryTypes.size > 1,
-    };
-  });
+  const selectionStats = computed(() => getContextMenuSelectionStats(selectedEntries.value));
 
   function isActionVisible(action: ContextMenuAction): boolean {
-    const entries = selectedEntries.value;
-    if (entries.length === 0) return false;
-
-    const config = CONTEXT_MENU_ITEMS.find(item => item.action === action);
-    if (!config) return false;
-
-    const stats = selectionStats.value;
-
-    const matchesSelectionType = config.selectionTypes.includes(stats.selectionType);
-    if (!matchesSelectionType) return false;
-
-    const allEntriesMatchAllowedTypes = stats.entryTypes.every(
-      entryType => config.entryTypes.includes(entryType),
-    );
-
-    if (!allEntriesMatchAllowedTypes) return false;
-
-    if (WINDOWS_ONLY_ACTIONS.has(action) && !platformStore.isWindows) {
-      return false;
-    }
-
-    if (PROTECTED_ACTIONS.has(action)) {
-      if (options?.disableDestructiveActions?.value) return false;
-
-      const hasProtectedEntry = entries.some(
-        entry => isProtectedSystemPath(entry.path, platformStore.currentPlatform),
-      );
-
-      if (hasProtectedEntry) return false;
-    }
-
-    return true;
+    return isContextMenuActionVisible(action, selectedEntries.value, {
+      platform: platformStore.currentPlatform,
+      disableDestructiveActions: options?.disableDestructiveActions?.value,
+    });
   }
 
   return {

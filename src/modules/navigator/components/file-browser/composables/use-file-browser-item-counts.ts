@@ -47,6 +47,10 @@ export function useFileBrowserItemCounts(options: UseFileBrowserItemCountsOption
     return (options.layout() === 'list' || options.layout() === 'grid')
       && activeSortColumn === 'items';
   });
+  const showHiddenFiles = computed(() => userSettingsStore.userSettings.navigator.showHiddenFiles);
+  const itemCountRequestOptions = computed(() => ({
+    includeHiddenFiles: showHiddenFiles.value,
+  }));
 
   if (!options.enabled) {
     return;
@@ -57,6 +61,7 @@ export function useFileBrowserItemCounts(options: UseFileBrowserItemCountsOption
       options.visibleRows,
       shouldHydrateItemCounts,
       options.currentPath,
+      showHiddenFiles,
     ],
     ([visibleRows, shouldHydrate], _previousValue, onCleanup) => {
       if (!shouldHydrate || !options.currentPath.value) {
@@ -72,7 +77,7 @@ export function useFileBrowserItemCounts(options: UseFileBrowserItemCountsOption
       }
 
       const timer = setTimeout(() => {
-        itemCountsStore.requestItemCountsBatch(visiblePaths);
+        itemCountsStore.requestItemCountsBatch(visiblePaths, itemCountRequestOptions.value);
       }, VISIBLE_ITEM_COUNT_REQUEST_DELAY_MS);
 
       onCleanup(() => {
@@ -88,6 +93,7 @@ export function useFileBrowserItemCounts(options: UseFileBrowserItemCountsOption
       shouldHydrateItemCounts,
       shouldHydrateDirectoryItemCountsForSort,
       options.currentPath,
+      showHiddenFiles,
     ],
     ([entries, shouldHydrate, shouldHydrateForSort], _previousValue, onCleanup) => {
       const generation = ++hydrationGeneration;
@@ -149,6 +155,7 @@ export function useFileBrowserItemCounts(options: UseFileBrowserItemCountsOption
 
           const didUpdateItemCounts = await itemCountsStore.requestItemCountsBatch(
             pathsNeedingItemCounts.slice(startIndex, startIndex + DIRECTORY_ITEM_COUNT_BATCH_SIZE),
+            itemCountRequestOptions.value,
           );
 
           if (didUpdateItemCounts) {

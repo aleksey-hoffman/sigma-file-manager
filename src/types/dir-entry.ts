@@ -2,6 +2,8 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
+import type { DriveEntryMetadata } from '@/types/drive-info';
+
 export interface OpenedDirectoryTimes {
   modified_time: number;
   accessed_time: number;
@@ -43,6 +45,7 @@ export type DirEntry = {
   is_dir: boolean;
   is_symlink: boolean;
   is_hidden: boolean;
+  drive_metadata?: DriveEntryMetadata | null;
   link_type?: DirEntryLinkType | null;
   link_target?: string | null;
   link_status?: DirEntryLinkStatus | null;
@@ -60,6 +63,10 @@ export type DirEntryLinkMetadata = {
 export type DirEntryItemCount = {
   path: string;
   item_count: number;
+};
+
+export type DirItemCountOptions = {
+  includeHidden?: boolean;
 };
 
 export type DirEntryLinkType = 'symlink' | 'shortcut' | 'junction' | 'hardlink';

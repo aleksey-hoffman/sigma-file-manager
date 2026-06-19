@@ -124,10 +124,16 @@ export function getNavigatorSortColumnChangeUpdates(
   const updates: Array<{
     key: NavigatorSortSettingKeys['column'] | NavigatorSortSettingKeys['direction'];
     value: ListSortColumn | ListSortDirection;
-  }> = [{ key: settingKeys.column, value: column }];
+  }> = [{
+    key: settingKeys.column,
+    value: column,
+  }];
 
   if (currentColumn !== column) {
-    updates.push({ key: settingKeys.direction, value: 'asc' });
+    updates.push({
+      key: settingKeys.direction,
+      value: 'asc',
+    });
   }
 
   return updates;

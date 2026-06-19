@@ -50,6 +50,11 @@ import { matchesShortcut, useShortcutsStore } from '@/stores/runtime/shortcuts';
 import { resolveNavigableItemTarget } from '@/utils/resolve-navigable-item-target';
 import normalizePath, { getParentPath, getPathDisplayName } from '@/utils/normalize-path';
 import {
+  resolveDirEntry,
+  resolveDirectoryContents,
+  virtualLocationPathExists,
+} from '@/utils/virtual-locations';
+import {
   createFileBrowserQuickSearchCache,
   createFileBrowserQuickSearchMatcher,
 } from './utils/file-browser-entry-quick-search';
@@ -59,6 +64,7 @@ import {
   createRecentSuggestionGroup,
   createTaggedSuggestionGroups,
   createSystemDrivesSuggestionGroup,
+  createLocationsSuggestionGroup,
   createUserDirectoriesSuggestionGroup,
   ensureAddressBarDirectoryQuery,
   flattenAddressBarSuggestionGroups,
@@ -159,7 +165,9 @@ function getUserDirectorySuggestionDisplayName(directory: UserDirectory): string
 }
 
 const entryModeGroups = computed(() => {
-  const groups: AddressBarSuggestionGroup[] = [];
+  const groups: AddressBarSuggestionGroup[] = [
+    createLocationsSuggestionGroup(t('locations')),
+  ];
 
   const recentGroup = createRecentSuggestionGroup(
     userStatsStore.sortedHistory,
@@ -298,17 +306,24 @@ watch(entryModeGroups, (groups) => {
 }, { immediate: true });
 
 async function readDir(path: string): Promise<DirContents> {
-  return invoke<DirContents>('read_dir', { path });
+  return resolveDirectoryContents(path);
 }
 
 async function getDirEntry(path: string): Promise<DirEntry> {
-  return invoke<DirEntry>('get_dir_entry_with_timeout', {
-    path,
-    timeoutMs: PATH_LOOKUP_TIMEOUT_MS,
-  });
+  const dirEntry = await resolveDirEntry(path, PATH_LOOKUP_TIMEOUT_MS);
+
+  if (!dirEntry) {
+    throw new Error(`Path does not exist: ${path}`);
+  }
+
+  return dirEntry;
 }
 
 async function invokePathExistsForAddressBar(pathArgument: string): Promise<boolean> {
+  if (virtualLocationPathExists(pathArgument)) {
+    return true;
+  }
+
   try {
     const existsFlag = await invoke<boolean | null>('path_exists_with_timeout', {
       path: pathArgument,

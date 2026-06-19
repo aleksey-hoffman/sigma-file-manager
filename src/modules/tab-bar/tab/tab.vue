@@ -125,7 +125,7 @@ function getTabDisplayName(tab: Tab | undefined): string {
     return '';
   }
 
-  return getPathDisplayName(tab.name) || getPathDisplayName(tab.path) || tab.name || tab.path;
+  return getPathDisplayName(tab.path, t) || getPathDisplayName(tab.name, t) || tab.name || tab.path;
 }
 
 const tabName = computed(() => {

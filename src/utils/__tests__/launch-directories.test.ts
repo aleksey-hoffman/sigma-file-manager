@@ -9,6 +9,7 @@ import {
   resolveLaunchTargetsFromArgs,
   type LaunchContext,
 } from '@/utils/launch-directories';
+import { LOCATIONS_VIRTUAL_PATH } from '@/utils/virtual-locations';
 
 function createDirEntry(path: string, overrides?: Partial<DirEntry>): DirEntry {
   return {
@@ -114,12 +115,12 @@ describe('launch-directories', () => {
     ]);
   });
 
-  it('falls back to cwd for absorbed shell launches without path arguments', () => {
+  it('opens locations for absorbed shell launches without path arguments', () => {
     expect(getLaunchDirectoryCandidates(createLaunchContext({
       cwd: 'C:/Users/aleks/Documents',
       hadAbsorbedShellPaths: true,
     }))).toEqual([
-      'C:/Users/aleks/Documents',
+      LOCATIONS_VIRTUAL_PATH,
     ]);
   });
 
@@ -129,28 +130,32 @@ describe('launch-directories', () => {
     }))).toEqual([]);
   });
 
-  it('normalizes cwd fallback paths before returning them', () => {
+  it('opens locations for absorbed shell launches regardless of cwd normalization', () => {
     expect(getLaunchDirectoryCandidates(createLaunchContext({
       cwd: 'C:\\Users\\aleks\\Documents',
       hadAbsorbedShellPaths: true,
     }))).toEqual([
-      'C:/Users/aleks/Documents',
+      LOCATIONS_VIRTUAL_PATH,
     ]);
   });
 
-  it('does not fall back to cwd when cwd matches the executable directory', () => {
+  it('opens locations when cwd matches the executable directory during absorbed shell launch', () => {
     expect(getLaunchDirectoryCandidates(createLaunchContext({
       cwd: 'C:/Apps',
       hadAbsorbedShellPaths: true,
-    }))).toEqual([]);
+    }))).toEqual([
+      LOCATIONS_VIRTUAL_PATH,
+    ]);
   });
 
-  it('does not fall back to Windows shell cwd paths', () => {
+  it('opens locations for absorbed shell launches with Windows shell cwd paths', () => {
     expect(getLaunchDirectoryCandidates(createLaunchContext({
       cwd: 'C:/Windows/System32',
       executableDir: 'C:/Program Files/Sigma File Manager',
       hadAbsorbedShellPaths: true,
-    }))).toEqual([]);
+    }))).toEqual([
+      LOCATIONS_VIRTUAL_PATH,
+    ]);
   });
 
   it('keeps only resolved directory entries', async () => {

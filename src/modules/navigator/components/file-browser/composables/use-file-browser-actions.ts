@@ -8,6 +8,7 @@ import type { ContextMenuAction } from '@/modules/navigator/components/file-brow
 import { quickViewSupportedPathsFromVisibleEntries } from '@/stores/runtime/quick-view';
 import { usePlatformStore } from '@/stores/runtime/platform';
 import { openNativeProperties } from '@/utils/open-native-properties';
+import { isContextMenuActionVisible } from '@/modules/navigator/components/file-browser/utils/context-menu-action-visibility';
 import { toast, ToastStatic } from '@/components/ui/toaster';
 import { markRaw } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -37,7 +38,17 @@ export function useFileBrowserActions(options: {
   const { t } = useI18n();
   const platformStore = usePlatformStore();
 
+  function canPerformAction(action: ContextMenuAction, entries: DirEntry[]): boolean {
+    return isContextMenuActionVisible(action, entries, {
+      platform: platformStore.currentPlatform,
+    });
+  }
+
   async function openProperties(entries: DirEntry[]) {
+    if (!canPerformAction('properties', entries)) {
+      return;
+    }
+
     if (!platformStore.isWindows || entries.length === 0) {
       return;
     }
@@ -59,7 +70,11 @@ export function useFileBrowserActions(options: {
   async function quickView(entry?: DirEntry) {
     const targetEntry = entry || options.selectedEntries.value[options.selectedEntries.value.length - 1];
 
-    if (targetEntry && targetEntry.is_file) {
+    if (!targetEntry || !canPerformAction('quick-view', [targetEntry])) {
+      return;
+    }
+
+    if (targetEntry.is_file) {
       const siblingPaths = quickViewSupportedPathsFromVisibleEntries(options.visibleEntries.value);
       await options.quickViewStore.toggleQuickView(targetEntry.path, siblingPaths);
     }
@@ -68,7 +83,11 @@ export function useFileBrowserActions(options: {
   async function printEntry(entry?: DirEntry) {
     const targetEntry = entry || options.selectedEntries.value[options.selectedEntries.value.length - 1];
 
-    if (targetEntry && targetEntry.is_file) {
+    if (!targetEntry || !canPerformAction('print', [targetEntry])) {
+      return;
+    }
+
+    if (targetEntry.is_file) {
       await options.quickViewStore.openPrintViewFromMainWindow(targetEntry.path);
     }
   }
@@ -77,7 +96,7 @@ export function useFileBrowserActions(options: {
     if (action === 'open-with') {
       const entries = options.contextMenu.value.selectedEntries;
 
-      if (entries.length > 0) {
+      if (entries.length > 0 && canPerformAction('open-with', entries)) {
         options.openOpenWithDialog(entries);
       }
 

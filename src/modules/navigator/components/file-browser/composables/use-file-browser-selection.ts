@@ -19,7 +19,8 @@ import { useDeleteJobsStore } from '@/stores/runtime/delete-jobs';
 import { toast, ToastProgress, ToastStatic } from '@/components/ui/toaster';
 import { useLanShare } from '@/composables/use-lan-share';
 import { useCopyMoveWithConflicts } from '@/composables/use-copy-move-with-conflicts';
-import normalizePath from '@/utils/normalize-path';
+import normalizePath, { getPathDisplayName } from '@/utils/normalize-path';
+import { isVirtualLocationPath } from '@/utils/virtual-locations';
 import {
   getSharedSourceDirectory,
   isDestinationInsideAnySourceDirectory,
@@ -29,6 +30,7 @@ import { createIndexedFileName, safeFileNameFromUrl } from '@/utils/remote-file'
 import { basenameFromPath } from '@/utils/source-display-name';
 import { usePermanentDeleteConfirm } from '@/composables/use-permanent-delete-confirm';
 import { usePlatformStore } from '@/stores/runtime/platform';
+import { isContextMenuActionVisible } from '@/modules/navigator/components/file-browser/utils/context-menu-action-visibility';
 import { resolveNavigableItemTarget } from '@/utils/resolve-navigable-item-target';
 import type { CreateLinksResult, LinkCreationKind } from '@/utils/link-operations';
 
@@ -276,9 +278,8 @@ export function useFileBrowserSelection(
   }
 
   function handleBackgroundContextMenu() {
-    const pathParts = currentPathRef.value.split('/').filter(Boolean);
     const currentDirEntry: DirEntry = {
-      name: pathParts.length > 0 ? pathParts[pathParts.length - 1] : currentPathRef.value,
+      name: getPathDisplayName(currentPathRef.value) || currentPathRef.value,
       path: currentPathRef.value,
       is_dir: true,
       is_file: false,
@@ -314,11 +315,25 @@ export function useFileBrowserSelection(
     }
   }
 
+  function canPerformAction(action: ContextMenuAction, entries: DirEntry[]): boolean {
+    return isContextMenuActionVisible(action, entries, {
+      platform: platformStore.currentPlatform,
+    });
+  }
+
   function copyItems(entries: DirEntry[]) {
+    if (!canPerformAction('copy', entries)) {
+      return;
+    }
+
     clipboardStore.setClipboard('copy', entries);
   }
 
   function cutItems(entries: DirEntry[]) {
+    if (!canPerformAction('cut', entries)) {
+      return;
+    }
+
     clipboardStore.setClipboard('move', entries);
   }
 
@@ -328,6 +343,10 @@ export function useFileBrowserSelection(
     destinationPath?: string,
   ): Promise<boolean> {
     if (entries.length === 0) {
+      return false;
+    }
+
+    if (!canPerformAction('link', entries)) {
       return false;
     }
 
@@ -441,6 +460,11 @@ export function useFileBrowserSelection(
 
   async function pasteItems(destinationPath?: string): Promise<boolean> {
     const targetPath = destinationPath || currentPathRef.value;
+
+    if (isVirtualLocationPath(targetPath)) {
+      return false;
+    }
+
     const systemClipboard = await clipboardStore.readSystemClipboardFiles();
 
     if (!systemClipboard?.paths.length) {
@@ -515,6 +539,10 @@ export function useFileBrowserSelection(
   }
 
   async function handleExternalDrop(sourcePaths: string[], targetPath: string, operation: 'copy' | 'move' = 'copy'): Promise<boolean> {
+    if (isVirtualLocationPath(targetPath)) {
+      return false;
+    }
+
     const shouldFocusPaste = targetPath === currentPathRef.value;
     const previousPaths = shouldFocusPaste
       ? new Set(entriesRef.value.map(entry => entry.path))
@@ -684,6 +712,10 @@ export function useFileBrowserSelection(
   }
 
   function startRename(entry: DirEntry) {
+    if (!canPerformAction('rename', [entry])) {
+      return;
+    }
+
     renameState.value = {
       isActive: true,
       entry,
@@ -790,6 +822,10 @@ export function useFileBrowserSelection(
     const directoryPaths = targetPaths && targetPaths.length > 0
       ? targetPaths
       : [currentPathRef.value];
+
+    if (directoryPaths.some(directoryPath => isVirtualLocationPath(directoryPath))) {
+      return false;
+    }
 
     let successCount = 0;
     let lastError: string | null = null;
@@ -926,7 +962,7 @@ export function useFileBrowserSelection(
 
         break;
       case 'share':
-        if (entries.length > 0) {
+        if (entries.length > 0 && canPerformAction('share', entries)) {
           startShare(entries);
         }
 
@@ -975,6 +1011,12 @@ export function useFileBrowserSelection(
 
   async function deleteItems(entries: DirEntry[], useTrash: boolean = true): Promise<boolean> {
     if (entries.length === 0) {
+      return false;
+    }
+
+    const deleteAction: ContextMenuAction = useTrash ? 'delete' : 'delete-permanently';
+
+    if (!canPerformAction(deleteAction, entries)) {
       return false;
     }
 

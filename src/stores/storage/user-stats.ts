@@ -24,6 +24,7 @@ import {
 } from './utils/startup-storage-bootstrap';
 import { i18n } from '@/localization';
 import { reconcileMissingTagDefinitions as mergeTagDefinitionsFromTaggedItems } from '@/utils/reconcile-user-stats-tags';
+import { isVirtualLocationPath } from '@/utils/virtual-path-constants';
 
 const HISTORY_MAX_ITEMS = 100;
 const FREQUENT_ITEMS_MAX = 100;
@@ -478,7 +479,9 @@ export const useUserStatsStore = defineStore('userStats', () => {
 
     const nonExistentPaths = new Set<string>();
     let resolvedCheckCount = 0;
-    const pathsToCheck = Array.from(allPaths);
+    const pathsToCheck = Array.from(allPaths).filter(path => !isVirtualLocationPath(path));
+
+    if (pathsToCheck.length === 0) return;
 
     for (let startIndex = 0; startIndex < pathsToCheck.length; startIndex += PATH_EXISTS_BATCH_SIZE) {
       const batchPaths = pathsToCheck.slice(startIndex, startIndex + PATH_EXISTS_BATCH_SIZE);

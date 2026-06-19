@@ -7,8 +7,7 @@ use super::mount;
 use super::mountable;
 use super::network_shares;
 use super::path_helpers;
-use super::read;
-use super::read::ReadDirOptions;
+use super::read::{self, DirItemCountOptions, ReadDirOptions};
 use super::types::{
     DirContents, DirEntryItemCount, DirEntryLinkMetadata, DriveInfo, MountableDevice,
     NetworkShareParams,
@@ -49,8 +48,9 @@ pub async fn get_link_metadata_batch(
 #[tauri::command]
 pub async fn get_dir_item_counts_batch(
     paths: Vec<String>,
+    options: Option<DirItemCountOptions>,
 ) -> Result<Vec<DirEntryItemCount>, String> {
-    tauri::async_runtime::spawn_blocking(move || read::get_dir_item_counts_batch(paths))
+    tauri::async_runtime::spawn_blocking(move || read::get_dir_item_counts_batch(paths, options))
         .await
         .map_err(|join_error| format!("Failed to read directory item counts: {join_error}"))
 }

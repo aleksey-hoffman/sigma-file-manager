@@ -23,10 +23,12 @@ const props = withDefaults(defineProps<{
   path: string;
   isFile?: boolean;
   disableDestructiveActions?: boolean;
+  disableDropTarget?: boolean;
   isCurrentDirectoryContext?: boolean;
 }>(), {
   isFile: false,
   disableDestructiveActions: false,
+  disableDropTarget: false,
   isCurrentDirectoryContext: false,
 });
 
@@ -172,8 +174,8 @@ function handleNewItemCancel() {
     >
       <div
         class="dir-entry-interactive"
-        :data-drop-target="!isFile || undefined"
-        :data-entry-path="!isFile ? path : undefined"
+        :data-drop-target="!isFile && !props.disableDropTarget || undefined"
+        :data-entry-path="!isFile && !props.disableDropTarget ? path : undefined"
         @mousedown="handleMiddleClick"
       >
         <slot />

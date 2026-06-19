@@ -18,6 +18,11 @@ export type DriveInfo = {
   device_path: string;
 };
 
+export type DriveEntryMetadata = {
+  drive_type: string;
+  is_removable: boolean;
+};
+
 export type MountableDevice = {
   name: string;
   device_path: string;

@@ -22,13 +22,18 @@ import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
 import { useLinkMetadataStore } from '@/stores/runtime/link-metadata';
 import { useItemCountsStore } from '@/stores/runtime/item-counts';
 import { useStatusCenterStore } from '@/stores/runtime/status-center';
+import { usePlatformStore } from '@/stores/runtime/platform';
 import { DIR_SIZE_CONSTANTS } from '@/constants';
 import normalizePath, {
-  getParentPath,
   getPathDisplayName,
   isWslHostRootUncPath,
 } from '@/utils/normalize-path';
 import { resolveNavigableItemTarget } from '@/utils/resolve-navigable-item-target';
+import {
+  getNavigableParentPath,
+  isVirtualLocationPath,
+  resolveDirectoryContents,
+} from '@/utils/virtual-locations';
 import { shouldIncludeItemCountsForSort } from '@/modules/navigator/components/file-browser/utils/file-browser-sort-columns';
 
 interface DirChangePayload {
@@ -39,10 +44,6 @@ interface DirChangePayload {
 
 const DIRECTORY_DWELL_TIME_MS = 3000;
 const WATCHER_DEBOUNCE_MS = 500;
-
-function getParentOfPath(path: string): string | null {
-  return getParentPath(path);
-}
 
 function replacePathPrefix(path: string, oldPrefix: string, newPrefix: string): string | null {
   if (path === oldPrefix) return newPrefix;
@@ -62,6 +63,32 @@ export function useFileBrowserNavigation(
   const linkMetadataStore = useLinkMetadataStore();
   const itemCountsStore = useItemCountsStore();
   const statusCenterStore = useStatusCenterStore();
+  const platformStore = usePlatformStore();
+
+  function getParentOfPath(path: string): string | null {
+    return getNavigableParentPath(path, platformStore.currentPlatform);
+  }
+
+  async function loadDirectoryContents(path: string, options?: ReadDirOptions): Promise<DirContents> {
+    return resolveDirectoryContents(path, options ?? createReadDirOptions());
+  }
+
+  async function directoryPathExists(path: string): Promise<boolean> {
+    if (isVirtualLocationPath(path)) {
+      return true;
+    }
+
+    try {
+      await invoke<DirContents>('read_dir', {
+        path,
+        options: readDirExistenceOptions,
+      });
+      return true;
+    }
+    catch {
+      return false;
+    }
+  }
 
   function isCopyOrMoveInProgress(): boolean {
     return statusCenterStore.activeOperations.some(
@@ -218,10 +245,7 @@ export function useFileBrowserNavigation(
     isRefreshing.value = true;
 
     try {
-      const result = await invoke<DirContents>('read_dir', {
-        path: currentPath.value,
-        options: createReadDirOptions(),
-      });
+      const result = await loadDirectoryContents(currentPath.value, createReadDirOptions());
 
       dirContents.value = result;
       invalidateDirectoryLinkMetadata(result);
@@ -238,7 +262,7 @@ export function useFileBrowserNavigation(
         .slice(0, DIR_SIZE_CONSTANTS.BATCH_LIMIT)
         .map(entry => entry.path);
 
-      if (dirPaths.length > 0 && !isCopyOrMoveInProgress()) {
+      if (dirPaths.length > 0 && !isCopyOrMoveInProgress() && !isVirtualLocationPath(result.path)) {
         dirSizesStore.requestSizesBatch(dirPaths);
       }
     }
@@ -254,17 +278,14 @@ export function useFileBrowserNavigation(
     let pathToTry = getParentOfPath(currentPath.value);
 
     while (pathToTry) {
-      try {
-        await invoke<DirContents>('read_dir', {
-          path: pathToTry,
-          options: readDirExistenceOptions,
-        });
+      const pathIsAccessible = await directoryPathExists(pathToTry);
+
+      if (pathIsAccessible) {
         await readDir(pathToTry);
         return;
       }
-      catch {
-        pathToTry = getParentOfPath(pathToTry);
-      }
+
+      pathToTry = getParentOfPath(pathToTry);
     }
 
     await navigateToHome();
@@ -273,13 +294,9 @@ export function useFileBrowserNavigation(
   async function validateCurrentPath(): Promise<void> {
     if (!currentPath.value) return;
 
-    try {
-      await invoke<DirContents>('read_dir', {
-        path: currentPath.value,
-        options: readDirExistenceOptions,
-      });
-    }
-    catch {
+    const pathIsAccessible = await directoryPathExists(currentPath.value);
+
+    if (!pathIsAccessible) {
       await navigateToNearestExistingAncestor();
     }
   }
@@ -329,10 +346,7 @@ export function useFileBrowserNavigation(
     }
 
     try {
-      const result = await invoke<DirContents>('read_dir', {
-        path,
-        options: createReadDirOptions(),
-      });
+      const result = await loadDirectoryContents(path, createReadDirOptions());
 
       dirContents.value = result;
 
@@ -349,11 +363,16 @@ export function useFileBrowserNavigation(
       if (currentTab) {
         currentTab.path = result.path;
 
-        try {
-          currentTab.name = await basename(result.path);
-        }
-        catch {
+        if (isVirtualLocationPath(result.path)) {
           currentTab.name = result.path;
+        }
+        else {
+          try {
+            currentTab.name = await basename(result.path);
+          }
+          catch {
+            currentTab.name = result.path;
+          }
         }
 
         currentTab.dirEntries = result.entries;
@@ -377,11 +396,13 @@ export function useFileBrowserNavigation(
         .slice(0, DIR_SIZE_CONSTANTS.BATCH_LIMIT)
         .map(entry => entry.path);
 
-      if (dirPaths.length > 0 && !isCopyOrMoveInProgress()) {
+      if (dirPaths.length > 0 && !isCopyOrMoveInProgress() && !isVirtualLocationPath(result.path)) {
         dirSizesStore.requestSizesBatch(dirPaths);
       }
 
-      await startWatching(result.path);
+      if (!isVirtualLocationPath(result.path)) {
+        await startWatching(result.path);
+      }
     }
     catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : String(err);

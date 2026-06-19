@@ -14,6 +14,7 @@ import {
   isDestinationInsideAnySourceDirectory,
 } from '@/utils/file-operation-paths';
 import { getPathLeafName } from '@/utils/normalize-path';
+import { isVirtualLocationPath } from '@/utils/virtual-locations';
 
 export type ClipboardOperationType = 'copy' | 'move' | '';
 export type ConflictResolution = 'replace' | 'skip' | 'auto-rename';
@@ -618,6 +619,10 @@ export const useClipboardStore = defineStore('clipboard', () => {
    * Checks if paste operation is allowed for the given destination
    */
   function canPasteTo(destinationPath: string): boolean {
+    if (isVirtualLocationPath(destinationPath)) {
+      return false;
+    }
+
     if (hasImageContent.value) {
       return Boolean(destinationPath);
     }

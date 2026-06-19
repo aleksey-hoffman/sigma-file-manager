@@ -2,6 +2,8 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
+import { isVirtualLocationPath } from '@/utils/virtual-path-constants';
+
 const MOUNT_POINT_ROOTS: Array<{
   prefix: string;
   maxDepth: number;
@@ -26,6 +28,10 @@ const MOUNT_POINT_ROOTS: Array<{
 
 export function isProtectedSystemPath(path: string, platform: string | null): boolean {
   if (!path) return false;
+
+  if (isVirtualLocationPath(path)) {
+    return true;
+  }
 
   const normalized = path.replace(/\\/g, '/').replace(/\/+$/, '');
 

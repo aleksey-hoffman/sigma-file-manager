@@ -16,11 +16,23 @@ use super::types::{
     DirEntryLinkType, OpenedDirectoryTimes,
 };
 
-#[derive(Debug, Clone, Copy, Default)]
+#[derive(Debug, Clone, Copy)]
 struct ReadEntryOptions {
     include_shortcut_targets: bool,
     include_hard_link_counts: bool,
     include_item_counts: bool,
+    include_hidden: bool,
+}
+
+impl Default for ReadEntryOptions {
+    fn default() -> Self {
+        Self {
+            include_shortcut_targets: false,
+            include_hard_link_counts: false,
+            include_item_counts: true,
+            include_hidden: true,
+        }
+    }
 }
 
 impl ReadEntryOptions {
@@ -29,8 +41,16 @@ impl ReadEntryOptions {
             include_shortcut_targets: true,
             include_hard_link_counts: true,
             include_item_counts: true,
+            include_hidden: true,
         }
     }
+}
+
+#[derive(Debug, Clone, Copy, Default, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DirItemCountOptions {
+    #[serde(default)]
+    include_hidden: bool,
 }
 
 #[derive(Debug, Clone, Copy, Default, Deserialize)]
@@ -49,6 +69,7 @@ impl From<Option<ReadDirOptions>> for ReadEntryOptions {
             include_shortcut_targets: options.include_shortcut_targets,
             include_hard_link_counts: options.include_hard_link_counts,
             include_item_counts: options.include_item_counts.unwrap_or(true),
+            include_hidden: true,
         }
     }
 }
@@ -110,7 +131,7 @@ fn get_mime_type(extension: &Option<String>) -> Option<String> {
     })
 }
 
-#[cfg(windows)]
+#[cfg(all(test, windows))]
 pub(super) fn windows_system_drive_root() -> String {
     let system_drive = std::env::var("SystemDrive").unwrap_or_else(|_| "C:".to_string());
     let trimmed_system_drive = system_drive.trim_end_matches('\\').trim_end_matches('/');
@@ -118,14 +139,28 @@ pub(super) fn windows_system_drive_root() -> String {
 }
 
 #[cfg(windows)]
+fn is_windows_drive_root_path(path: &str) -> bool {
+    let normalized = normalize_path(path);
+    let bytes = normalized.as_bytes();
+
+    bytes.len() == 3
+        && bytes[0].is_ascii_alphabetic()
+        && bytes[1] == b':'
+        && bytes[2] == b'/'
+}
+
+#[cfg(windows)]
 pub(super) fn is_blacklisted_windows_system_path(path: &Path) -> bool {
     let parent_path = path
         .parent()
         .and_then(|parent| parent.to_str())
-        .map(normalize_path)
-        .map(|normalized_path| normalized_path.to_lowercase());
+        .map(normalize_path);
 
-    if parent_path.as_deref() != Some(windows_system_drive_root().as_str()) {
+    let Some(parent_path) = parent_path else {
+        return false;
+    };
+
+    if !is_windows_drive_root_path(&parent_path) {
         return false;
     }
 
@@ -136,7 +171,12 @@ pub(super) fn is_blacklisted_windows_system_path(path: &Path) -> bool {
 
     matches!(
         entry_name.as_str(),
-        "hiberfil.sys"
+        "$recycle.bin"
+            | "config.msi"
+            | "system volume information"
+            | "onedrivetemp"
+            | "recovery"
+            | "hiberfil.sys"
             | "pagefile.sys"
             | "swapfile.sys"
             | "dumpstack.log.tmp"
@@ -548,12 +588,7 @@ fn read_entry(path: &Path, options: ReadEntryOptions) -> Option<DirEntry> {
     };
 
     let item_count = if is_dir && options.include_item_counts {
-        let directory_entries = match fs::read_dir(path) {
-            Ok(entries) => entries,
-            Err(_) => return None,
-        };
-
-        Some(directory_entries.count() as u32)
+        count_listable_dir_entries(path, options)
     } else {
         None
     };
@@ -587,7 +622,36 @@ fn read_entry(path: &Path, options: ReadEntryOptions) -> Option<DirEntry> {
     })
 }
 
-fn read_dir_item_count(path: &Path) -> Option<DirEntryItemCount> {
+fn is_entry_hidden(entry: &DirEntry) -> bool {
+    entry.is_hidden || entry.name.starts_with('.')
+}
+
+fn count_listable_dir_entries(path: &Path, options: ReadEntryOptions) -> Option<u32> {
+    let directory_entries = fs::read_dir(path).ok()?;
+    let child_options = ReadEntryOptions {
+        include_item_counts: false,
+        include_shortcut_targets: options.include_shortcut_targets,
+        include_hard_link_counts: options.include_hard_link_counts,
+        include_hidden: options.include_hidden,
+    };
+
+    let count = directory_entries
+        .flatten()
+        .filter_map(|entry| {
+            let dir_entry = read_entry(&entry.path(), child_options)?;
+
+            if !options.include_hidden && is_entry_hidden(&dir_entry) {
+                return None;
+            }
+
+            Some(())
+        })
+        .count() as u32;
+
+    Some(count)
+}
+
+fn read_dir_item_count(path: &Path, include_hidden: bool) -> Option<DirEntryItemCount> {
     if should_skip_path(path) {
         return None;
     }
@@ -598,7 +662,13 @@ fn read_dir_item_count(path: &Path) -> Option<DirEntryItemCount> {
         return None;
     }
 
-    let item_count = fs::read_dir(path).ok()?.count() as u32;
+    let item_count = count_listable_dir_entries(
+        path,
+        ReadEntryOptions {
+            include_hidden,
+            ..Default::default()
+        },
+    )?;
 
     Some(DirEntryItemCount {
         path: normalize_path(path.to_str()?),
@@ -767,7 +837,11 @@ pub fn get_link_metadata_batch(
     metadata_items
 }
 
-pub fn get_dir_item_counts_batch(paths: Vec<String>) -> Vec<DirEntryItemCount> {
+pub fn get_dir_item_counts_batch(
+    paths: Vec<String>,
+    options: Option<DirItemCountOptions>,
+) -> Vec<DirEntryItemCount> {
+    let include_hidden = options.unwrap_or_default().include_hidden;
     let mut seen_paths = HashSet::new();
     let mut item_counts = Vec::new();
 
@@ -778,7 +852,7 @@ pub fn get_dir_item_counts_batch(paths: Vec<String>) -> Vec<DirEntryItemCount> {
             continue;
         }
 
-        if let Some(item_count) = read_dir_item_count(Path::new(&path)) {
+        if let Some(item_count) = read_dir_item_count(Path::new(&path), include_hidden) {
             item_counts.push(item_count);
         }
     }
@@ -972,13 +1046,41 @@ mod tests {
         fs::write(child_dir_path.join("one.txt"), b"contents").expect("write child file");
         fs::write(&file_path, b"contents").expect("write file");
 
-        let results = get_dir_item_counts_batch(vec![
-            child_dir_path.to_string_lossy().to_string(),
-            file_path.to_string_lossy().to_string(),
-            child_dir_path.to_string_lossy().to_string(),
-        ]);
+        let results = get_dir_item_counts_batch(
+            vec![
+                child_dir_path.to_string_lossy().to_string(),
+                file_path.to_string_lossy().to_string(),
+                child_dir_path.to_string_lossy().to_string(),
+            ],
+            None,
+        );
 
         assert_eq!(results.len(), 1);
         assert_eq!(results[0].item_count, 1);
+    }
+
+    #[test]
+    fn item_count_batch_can_exclude_hidden_entries() {
+        let temp_dir = tempfile::tempdir().expect("create temp dir");
+        let visible_dir_path = temp_dir.path().join("visible");
+        let hidden_dir_path = temp_dir.path().join(".hidden");
+        fs::create_dir(&visible_dir_path).expect("create visible dir");
+        fs::create_dir(&hidden_dir_path).expect("create hidden dir");
+
+        let with_hidden = get_dir_item_counts_batch(
+            vec![temp_dir.path().to_string_lossy().to_string()],
+            Some(DirItemCountOptions {
+                include_hidden: true,
+            }),
+        );
+        let without_hidden = get_dir_item_counts_batch(
+            vec![temp_dir.path().to_string_lossy().to_string()],
+            Some(DirItemCountOptions {
+                include_hidden: false,
+            }),
+        );
+
+        assert_eq!(with_hidden[0].item_count, 2);
+        assert_eq!(without_hidden[0].item_count, 1);
     }
 }

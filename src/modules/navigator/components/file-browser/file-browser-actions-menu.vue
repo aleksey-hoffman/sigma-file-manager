@@ -56,6 +56,7 @@ import {
   type LinkCreationKind,
 } from '@/utils/link-operations';
 import { useTextDirection } from '@/composables/use-text-direction';
+import { isVirtualLocationPath } from '@/utils/virtual-locations';
 
 const props = withDefaults(defineProps<{
   selectedEntries: DirEntry[];
@@ -142,8 +143,12 @@ const selectedDirectory = computed(() => {
   return props.selectedEntries.find(entry => entry.is_dir);
 });
 
+const hasVirtualLocationSelection = computed(() => {
+  return props.selectedEntries.some(entry => isVirtualLocationPath(entry.path));
+});
+
 const canPasteToSelectedDirectory = computed(() => {
-  if (!clipboardStore.hasItems || !selectedDirectory.value) {
+  if (hasVirtualLocationSelection.value || !clipboardStore.hasItems || !selectedDirectory.value) {
     return false;
   }
 
@@ -346,13 +351,18 @@ function handleCreateLink(linkKind: LinkCreationKind) {
     @open-custom-dialog="handleOpenCustomDialog"
   />
   <FileBrowserMoreOptionsSubmenu
+    v-if="!hasVirtualLocationSelection"
     :selected-entries="selectedEntries"
   />
   <FileBrowserTerminalSubmenu
+    v-if="!hasVirtualLocationSelection"
     :selected-entries="selectedEntries"
     :is-shift-held="isShiftHeld"
   />
-  <FileBrowserArchiveSubmenu :selected-entries="selectedEntries" />
+  <FileBrowserArchiveSubmenu
+    v-if="!hasVirtualLocationSelection"
+    :selected-entries="selectedEntries"
+  />
   <component
     :is="menuItemComponent"
     v-if="isActionVisible('quick-view')"
@@ -398,7 +408,7 @@ function handleCreateLink(linkKind: LinkCreationKind) {
     <span>{{ t('settings.addressBar.copyPathToClipboard') }}</span>
   </component>
   <FileBrowserNewSubmenu
-    v-if="selectionStats.hasDirectories"
+    v-if="selectionStats.hasDirectories && !hasVirtualLocationSelection"
     @action="emitAction"
   />
   <component

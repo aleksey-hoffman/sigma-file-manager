@@ -7,6 +7,7 @@ import normalizePath, {
   getParentDirectory,
   isWindowsDriveRootPath,
 } from '@/utils/normalize-path';
+import { LOCATIONS_VIRTUAL_PATH } from '@/utils/virtual-locations';
 
 export interface LaunchContext {
   args: string[];
@@ -58,27 +59,6 @@ function normalizeLaunchPathCandidate(path: string): string {
   return normalizedPath;
 }
 
-function shouldIgnoreCwdFallback(path: string): boolean {
-  const normalizedPath = normalizePath(path).replace(/\/+$/, '').toLowerCase();
-  return /\/windows(?:\/system32|\/syswow64)?$/.test(normalizedPath);
-}
-
-function shouldUseCwdFallback(context: LaunchContext, candidatePaths: string[]): boolean {
-  if (candidatePaths.length > 0 || !context.cwd || !context.hadAbsorbedShellPaths) {
-    return false;
-  }
-
-  if (shouldIgnoreCwdFallback(context.cwd)) {
-    return false;
-  }
-
-  if (!context.executableDir) {
-    return true;
-  }
-
-  return getPathDedupeKey(normalizePath(context.cwd)) !== getPathDedupeKey(normalizePath(context.executableDir));
-}
-
 export function getLaunchDirectoryCandidates(context: LaunchContext): string[] {
   const candidates: string[] = [];
   const seenPaths = new Set<string>();
@@ -100,15 +80,8 @@ export function getLaunchDirectoryCandidates(context: LaunchContext): string[] {
     candidates.push(candidatePath);
   }
 
-  const shouldFallbackToCwd = shouldUseCwdFallback(context, candidates);
-
-  if (shouldFallbackToCwd) {
-    const normalizedCwd = normalizeLaunchPathCandidate(context.cwd!);
-    const cwdDedupeKey = getPathDedupeKey(normalizedCwd);
-
-    if (!seenPaths.has(cwdDedupeKey)) {
-      candidates.push(normalizedCwd);
-    }
+  if (candidates.length === 0 && context.hadAbsorbedShellPaths) {
+    candidates.push(LOCATIONS_VIRTUAL_PATH);
   }
 
   return candidates;

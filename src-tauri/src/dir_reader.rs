@@ -57,6 +57,13 @@ mod tests {
             format!("{system_drive_root}swapfile.sys"),
             format!("{system_drive_root}dumpstack.log.tmp"),
             format!("{system_drive_root}documents and settings"),
+            format!("{system_drive_root}$Recycle.Bin"),
+            format!("{system_drive_root}Config.Msi"),
+            format!("{system_drive_root}System Volume Information"),
+            format!("{system_drive_root}OneDriveTemp"),
+            format!("{system_drive_root}Recovery"),
+            "D:/pagefile.sys".to_string(),
+            "D:/$RECYCLE.BIN".to_string(),
         ];
 
         for blacklisted_path in blacklisted_paths {
@@ -73,6 +80,9 @@ mod tests {
             format!("{system_drive_root}users"),
             format!("{system_drive_root}documents"),
             format!("{system_drive_root}documents and settings/desktop"),
+            format!("{system_drive_root}ProgramData"),
+            "D:/Apps".to_string(),
+            "D:/Games".to_string(),
         ];
 
         for visible_path in visible_paths {

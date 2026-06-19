@@ -11,6 +11,11 @@ import normalizePath, {
   isUncPath,
   isWindowsDriveRootPath,
 } from '@/utils/normalize-path';
+import {
+  driveInfoToDirEntry,
+  isVirtualLocationPath,
+  LOCATIONS_VIRTUAL_PATH,
+} from '@/utils/virtual-locations';
 
 export type AddressBarEditorMode = 'path' | 'entry';
 
@@ -167,14 +172,23 @@ export function createSystemDrivesSuggestionGroup(drives: DriveInfo[], label: st
     id: 'systemDrives',
     label,
     collapsible: true,
-    items: drives.map((drive) => {
-      const displayName = drive.name.trim() || getPathDisplayName(drive.path) || drive.path;
+    items: drives.map(drive =>
+      createAddressBarSuggestion(driveInfoToDirEntry(drive), 'systemDrive'),
+    ),
+  };
+}
 
-      return createAddressBarSuggestion(
-        createAddressBarUserDirectoryEntry(drive.path, displayName),
-        'systemDrive',
-      );
-    }),
+export function createLocationsSuggestionGroup(label: string): AddressBarSuggestionGroup {
+  return {
+    id: 'locationsVirtual',
+    label,
+    collapsible: false,
+    items: [
+      createAddressBarSuggestion(
+        createAddressBarUserDirectoryEntry(LOCATIONS_VIRTUAL_PATH, label),
+        'userDirectory',
+      ),
+    ],
   };
 }
 
@@ -258,6 +272,10 @@ export function ensureAddressBarDirectoryQuery(path: string): string {
 export function addressBarPathHasNoParentDirectory(trimmedNormalizedQuery: string): boolean {
   if (!trimmedNormalizedQuery) {
     return false;
+  }
+
+  if (isVirtualLocationPath(trimmedNormalizedQuery)) {
+    return true;
   }
 
   let pathStem = trimmedNormalizedQuery.replace(/\/+$/, '');

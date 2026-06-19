@@ -20,6 +20,7 @@ const { iconSrc, fallbackIconComponent } = useNavigatorItemIcon({
   isDir: () => props.entry.is_dir,
   extension: () => props.entry.ext,
   size: () => props.size,
+  driveMetadata: () => props.entry.drive_metadata,
 });
 
 const rootComponent = computed<Component | 'img'>(() => {

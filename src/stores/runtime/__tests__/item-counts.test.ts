@@ -71,6 +71,9 @@ describe('item counts store', () => {
 
     expect(invokeMock).toHaveBeenCalledExactlyOnceWith('get_dir_item_counts_batch', {
       paths: ['/folder'],
+      options: {
+        includeHidden: false,
+      },
     });
     expect(store.getItemCount('/folder')).toBe(3);
     expect(store.mergeEntry(createEntry({ path: '/folder' }))).toMatchObject({
@@ -117,6 +120,35 @@ describe('item counts store', () => {
 
     firstRequest.resolve([]);
     await firstRequestPromise;
+  });
+
+  it('clears cached counts when hidden-file visibility changes', async () => {
+    invokeMock
+      .mockResolvedValueOnce([
+        {
+          path: '/folder',
+          item_count: 2,
+        },
+      ])
+      .mockResolvedValueOnce([
+        {
+          path: '/folder',
+          item_count: 5,
+        },
+      ]);
+    const store = useItemCountsStore();
+
+    await store.requestItemCountsBatch(['/folder'], { includeHiddenFiles: false });
+    expect(store.getItemCount('/folder')).toBe(2);
+
+    await store.requestItemCountsBatch(['/folder'], { includeHiddenFiles: true });
+    expect(invokeMock).toHaveBeenLastCalledWith('get_dir_item_counts_batch', {
+      paths: ['/folder'],
+      options: {
+        includeHidden: true,
+      },
+    });
+    expect(store.getItemCount('/folder')).toBe(5);
   });
 
   it('invalidates selected paths', async () => {

@@ -20,6 +20,7 @@ import {
   createFileBrowserQuickSearchCache,
   createFileBrowserQuickSearchMatcher,
 } from '@/modules/navigator/components/file-browser/utils/file-browser-entry-quick-search';
+import { isAlwaysHiddenWindowsSystemEntry } from '@/utils/is-always-hidden-windows-system-entry';
 
 type DirectoryContents = {
   entries: DirEntry[];
@@ -50,6 +51,8 @@ export function useFileBrowserEntries(
   const entries = computed(() => {
     if (!dirContents.value) return [];
     let items = dirContents.value.entries;
+
+    items = items.filter(item => !isAlwaysHiddenWindowsSystemEntry(item.path, item.name));
 
     if (!showHiddenFiles.value) {
       items = items.filter(item => !isHiddenFile(item));

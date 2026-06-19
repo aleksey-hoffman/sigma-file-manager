@@ -17,6 +17,11 @@ import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { UI_CONSTANTS } from '@/constants';
 import clone from '@/utils/clone';
 import normalizePath, { getPathDisplayName } from '@/utils/normalize-path';
+import {
+  isVirtualLocationPath,
+  resolveDirEntry,
+  resolveDirectoryContents,
+} from '@/utils/virtual-locations';
 import { getPathReadTimeoutMs } from '@/utils/path-slowness';
 import uniqueId from '@/utils/unique-id';
 import type { DirContents, DirEntry } from '@/types/dir-entry';
@@ -625,30 +630,25 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
     path: string | null;
     timeoutMs?: number;
   }): Promise<DirEntry | null> {
-    try {
-      if (!params.path) {
-        return null;
-      }
-
-      const effectiveTimeoutMs = params.timeoutMs ?? getPathReadTimeoutMs(params.path);
-      const dirEntry = await invoke<DirEntry>('get_dir_entry_with_timeout', {
-        path: params.path,
-        timeoutMs: effectiveTimeoutMs,
-      });
-      return dirEntry;
-    }
-    catch {
+    if (!params.path) {
       return null;
     }
+
+    const effectiveTimeoutMs = params.timeoutMs ?? getPathReadTimeoutMs(params.path);
+    return resolveDirEntry(params.path, effectiveTimeoutMs);
   }
 
   async function getDirEntries(params: {
     path: string;
     timeoutMs?: number;
   }): Promise<DirEntry[]> {
-    const effectiveTimeoutMs = params.timeoutMs ?? getPathReadTimeoutMs(params.path);
-
     try {
+      if (isVirtualLocationPath(params.path)) {
+        const dirContents = await resolveDirectoryContents(params.path);
+        return dirContents.entries;
+      }
+
+      const effectiveTimeoutMs = params.timeoutMs ?? getPathReadTimeoutMs(params.path);
       const dirContents = await invoke<DirContents>('read_dir_with_timeout', {
         path: params.path,
         timeoutMs: effectiveTimeoutMs,

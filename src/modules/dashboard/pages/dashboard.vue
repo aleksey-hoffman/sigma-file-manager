@@ -24,6 +24,7 @@ import { useWorkspacesStore } from '@/stores/storage/workspaces';
 import { usePageDropZone } from '@/composables/use-page-drop-zone';
 import { useFileDropOperation } from '@/composables/use-file-drop-operation';
 import { resolveNavigableItemTarget } from '@/utils/resolve-navigable-item-target';
+import { isVirtualLocationPath } from '@/utils/virtual-locations';
 import DashboardActionBar from '@/modules/dashboard/components/dashboard-action-bar.vue';
 import DashboardEmptyState from '@/modules/dashboard/components/dashboard-empty-state.vue';
 import DashboardTagSectionHeader from '@/modules/dashboard/components/dashboard-tag-section-header.vue';
@@ -141,6 +142,10 @@ async function openItem(path: string, isFile: boolean) {
 }
 
 function isFavoriteFile(item: FavoriteItem): boolean {
+  if (isVirtualLocationPath(item.path)) {
+    return false;
+  }
+
   return !item.path.endsWith('/') && item.path.includes('.');
 }
 

@@ -22,6 +22,7 @@ import { usePlatformStore } from '@/stores/runtime/platform';
 import { resolveImageDisplaySrc } from '@/modules/navigator/utils/resolve-image-display-src';
 import { useDevicePixelPreviewSize } from '@/modules/navigator/composables/use-device-pixel-preview-size';
 import { getImageSrc } from './utils';
+import { getDriveEntryVolumeSizeBytes } from '@/utils/drive-icon';
 
 const DEFAULT_GRID_THUMBNAIL_SIZE = {
   width: 340,
@@ -204,9 +205,16 @@ function cancelPreviewThumbnail(): void {
 }
 
 function getDirSizeDisplay(entry: DirEntry): string | null {
-  const sizeInfo = dirSizesStore.getSize(entry.path);
   const itemCount = getDirItemCount(entry);
   const itemCountStr = itemCount !== null ? t('fileBrowser.itemCountShort', { count: itemCount }) : null;
+  const driveVolumeSize = getDriveEntryVolumeSizeBytes(entry);
+
+  if (driveVolumeSize !== null) {
+    const sizeStr = formatBytes(driveVolumeSize);
+    return itemCountStr ? `${itemCountStr} · ${sizeStr}` : sizeStr;
+  }
+
+  const sizeInfo = dirSizesStore.getSize(entry.path);
 
   if (!sizeInfo) {
     return itemCountStr || '—';

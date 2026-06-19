@@ -5,7 +5,7 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
-import type { DirEntry, DirEntryItemCount } from '@/types/dir-entry';
+import type { DirEntry, DirEntryItemCount, DirItemCountOptions } from '@/types/dir-entry';
 import normalizePath from '@/utils/normalize-path';
 
 export type ItemCountStatus = 'loading' | 'loaded' | 'error';
@@ -16,6 +16,10 @@ export type ItemCountCacheEntry = DirEntryItemCount & {
   loadingStartedAt?: number;
 };
 
+export type ItemCountBatchRequestOptions = {
+  includeHiddenFiles?: boolean;
+};
+
 const MAX_ITEM_COUNT_CACHE_ENTRIES = 5000;
 const ITEM_COUNT_LOADING_RETRY_MS = 15000;
 
@@ -24,6 +28,17 @@ export const useItemCountsStore = defineStore('item-counts', () => {
   const displayRevision = ref(0);
   const sortRevision = ref(0);
   let requestSequence = 0;
+  let includeHiddenFiles = false;
+
+  function syncIncludeHiddenFiles(includeHidden: boolean): void {
+    if (includeHiddenFiles === includeHidden) {
+      return;
+    }
+
+    includeHiddenFiles = includeHidden;
+    countsByPath.clear();
+    displayRevision.value++;
+  }
 
   function getItemCount(path: string): number | undefined {
     if (!isDisplayRevisionActive()) {
@@ -74,7 +89,12 @@ export const useItemCountsStore = defineStore('item-counts', () => {
     };
   }
 
-  async function requestItemCountsBatch(paths: string[]): Promise<boolean> {
+  async function requestItemCountsBatch(
+    paths: string[],
+    options?: ItemCountBatchRequestOptions,
+  ): Promise<boolean> {
+    const includeHidden = options?.includeHiddenFiles ?? includeHiddenFiles;
+    syncIncludeHiddenFiles(includeHidden);
     const pathsToFetch = getPathsNeedingItemCounts(paths);
 
     if (pathsToFetch.length === 0) {
@@ -100,6 +120,9 @@ export const useItemCountsStore = defineStore('item-counts', () => {
     try {
       const results = await invoke<DirEntryItemCount[]>('get_dir_item_counts_batch', {
         paths: pathsToFetch,
+        options: {
+          includeHidden,
+        } satisfies DirItemCountOptions,
       });
       const resultsByPath = new Map(results.map(result => [normalizePath(result.path), result]));
       let updatedEntries = 0;
@@ -200,6 +223,7 @@ export const useItemCountsStore = defineStore('item-counts', () => {
     getPathsNeedingItemCounts,
     mergeEntry,
     requestItemCountsBatch,
+    syncIncludeHiddenFiles,
     invalidate,
     clear,
   };

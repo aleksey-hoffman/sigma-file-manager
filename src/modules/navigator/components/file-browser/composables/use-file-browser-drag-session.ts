@@ -12,6 +12,7 @@ import {
   getDropTargetRegistry,
   getCrossPaneDropTargetPaneId,
 } from '@/composables/use-drop-target-registry';
+import { isVirtualLocationPath } from '@/utils/virtual-locations';
 
 export type DragOperationType = 'move' | 'copy';
 
@@ -409,7 +410,7 @@ function markSourceDetached(sourcePaneId: number) {
 }
 
 function dropOn(destinationPath: string, operationType?: DragOperationType): boolean {
-  if (!activeSession || !destinationPath || dragState.value.items.length === 0) {
+  if (!activeSession || !destinationPath || dragState.value.items.length === 0 || isVirtualLocationPath(destinationPath)) {
     return false;
   }
 

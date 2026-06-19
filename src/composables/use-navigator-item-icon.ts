@@ -4,6 +4,7 @@
 
 import { computed, ref, watchEffect, type Ref } from 'vue';
 import type { Component } from 'vue';
+import { HardDriveIcon } from '@lucide/vue';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { useExtensionsStore } from '@/stores/runtime/extensions';
 import { useSystemIcon } from './use-system-icon';
@@ -15,6 +16,9 @@ import {
 } from '@/types/icon-theme';
 import { loadInstalledIconTheme } from '@/modules/icon-theme/extension-icon-themes';
 import { resolveLoadedIconThemeIcon } from '@/modules/icon-theme/resolver';
+import { isVirtualLocationPath } from '@/utils/virtual-locations';
+import type { DriveEntryMetadata } from '@/types/drive-info';
+import { getDriveIconComponent } from '@/utils/drive-icon';
 
 interface NavigatorItemIconParams {
   path: Ref<string> | (() => string);
@@ -23,6 +27,7 @@ interface NavigatorItemIconParams {
   extension: Ref<string | null> | (() => string | null);
   size: Ref<number> | (() => number);
   enabled?: Ref<boolean> | (() => boolean);
+  driveMetadata?: Ref<DriveEntryMetadata | null | undefined> | (() => DriveEntryMetadata | null | undefined);
 }
 
 function readMaybeRef<T>(value: Ref<T> | (() => T) | undefined, fallback: T): T {
@@ -68,6 +73,7 @@ export function useNavigatorItemIcon(params: NavigatorItemIconParams) {
   const extension = computed(() => readMaybeRef(params.extension, null));
   const size = computed(() => readMaybeRef(params.size, 32));
   const enabled = computed(() => readMaybeRef(params.enabled, true));
+  const driveMetadata = computed(() => readMaybeRef(params.driveMetadata, null));
   const selectedIconTheme = computed(() => {
     if (!enabled.value) {
       return BUILTIN_NAVIGATOR_ICON_THEME_IDS.default;
@@ -130,6 +136,10 @@ export function useNavigatorItemIcon(params: NavigatorItemIconParams) {
   });
 
   const iconSrc = computed(() => {
+    if (driveMetadata.value) {
+      return null;
+    }
+
     if (useSystemIcons.value) {
       return systemIconSrc.value;
     }
@@ -137,10 +147,20 @@ export function useNavigatorItemIcon(params: NavigatorItemIconParams) {
     return extensionThemeIconSrc.value;
   });
 
-  const fallbackIconComponent = computed<Component>(() => getDefaultFileIconComponent({
-    isDirectory: isDir.value,
-    extension: extension.value,
-  }));
+  const fallbackIconComponent = computed<Component>(() => {
+    if (driveMetadata.value) {
+      return getDriveIconComponent(driveMetadata.value);
+    }
+
+    if (isVirtualLocationPath(path.value)) {
+      return HardDriveIcon;
+    }
+
+    return getDefaultFileIconComponent({
+      isDirectory: isDir.value,
+      extension: extension.value,
+    });
+  });
 
   return {
     iconSrc,

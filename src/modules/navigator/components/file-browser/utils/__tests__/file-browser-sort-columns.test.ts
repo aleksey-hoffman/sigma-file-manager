@@ -122,8 +122,14 @@ describe('file browser sort columns', () => {
     });
 
     expect(getNavigatorSortColumnChangeUpdates(navigator, 'list', 'modified')).toEqual([
-      { key: 'navigator.listSortColumn', value: 'modified' },
-      { key: 'navigator.listSortDirection', value: 'asc' },
+      {
+        key: 'navigator.listSortColumn',
+        value: 'modified',
+      },
+      {
+        key: 'navigator.listSortDirection',
+        value: 'asc',
+      },
     ]);
   });
 
@@ -134,7 +140,10 @@ describe('file browser sort columns', () => {
     });
 
     expect(getNavigatorSortColumnChangeUpdates(navigator, 'grid', 'size')).toEqual([
-      { key: 'navigator.gridSortColumn', value: 'size' },
+      {
+        key: 'navigator.gridSortColumn',
+        value: 'size',
+      },
     ]);
   });
 

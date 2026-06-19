@@ -83,6 +83,11 @@ describe('normalizePath', () => {
     expect(getPathDisplayName('//wsl.localhost/Ubuntu-24.04/')).toBe('Ubuntu-24.04');
   });
 
+  it('formats the virtual locations path with and without translation', () => {
+    expect(getPathDisplayName('sfm://locations')).toBe('Locations');
+    expect(getPathDisplayName('sfm://locations', key => `t:${key}`)).toBe('t:locations');
+  });
+
   it('formats display path values for root paths', () => {
     expect(getPathDisplayValue('C:/')).toBe('C:');
     expect(getPathDisplayValue('/')).toBe('/');

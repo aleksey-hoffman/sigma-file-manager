@@ -5,7 +5,10 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <script setup lang="ts">
 import { computed, useSlots } from 'vue';
-import { FolderIcon, FileIcon } from '@lucide/vue';
+import { useI18n } from 'vue-i18n';
+import { FolderIcon, FileIcon, HardDriveIcon } from '@lucide/vue';
+import { getPathDisplayName } from '@/utils/normalize-path';
+import { isVirtualLocationPath } from '@/utils/virtual-locations';
 
 const props = defineProps<{
   path: string;
@@ -16,29 +19,35 @@ const emit = defineEmits<{
   click: [];
 }>();
 
+const { t } = useI18n();
 const slots = useSlots();
 
 const hasFooter = computed(() => !!slots.footer);
 
 const itemName = computed(() => {
   if (!props.path) return '';
-  const segments = props.path.split('/').filter(Boolean);
-  return segments[segments.length - 1] || props.path;
+  return getPathDisplayName(props.path, t) || props.path;
 });
 
 const itemDirectory = computed(() => {
-  if (!props.path) return '';
+  if (!props.path || isVirtualLocationPath(props.path)) return '';
   const lastSlashIndex = props.path.lastIndexOf('/');
   return lastSlashIndex > 0 ? props.path.substring(0, lastSlashIndex) : props.path;
 });
 
 const isDirectory = computed(() => {
+  if (isVirtualLocationPath(props.path)) {
+    return true;
+  }
+
   if (props.isFile !== undefined) {
     return !props.isFile;
   }
 
   return props.path.endsWith('/') || !props.path.includes('.');
 });
+
+const showLocationsIcon = computed(() => isVirtualLocationPath(props.path));
 
 function handleClick() {
   emit('click');
@@ -56,8 +65,12 @@ function handleClick() {
       @click="handleClick"
     >
       <div class="entry-card__icon">
+        <HardDriveIcon
+          v-if="showLocationsIcon"
+          :size="20"
+        />
         <FolderIcon
-          v-if="isDirectory"
+          v-else-if="isDirectory"
           :size="20"
         />
         <FileIcon

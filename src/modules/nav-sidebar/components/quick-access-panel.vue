@@ -33,6 +33,7 @@ import { useWorkspacesStore } from '@/stores/storage/workspaces';
 import { registerDropContainer, unregisterDropContainer } from '@/composables/use-drop-target-registry';
 import type { FavoriteItem, ItemTag, TaggedItem } from '@/types/user-stats';
 import { getPathDisplayName } from '@/utils/normalize-path';
+import { isVirtualLocationPath } from '@/utils/virtual-locations';
 import { resolveNavigableItemTarget } from '@/utils/resolve-navigable-item-target';
 import { arePathsEquivalent } from '@/utils/file-operation-paths';
 
@@ -104,10 +105,14 @@ const tagsOpen = computed({
 
 function getItemName(path: string): string {
   if (!path) return '';
-  return getPathDisplayName(path) || path;
+  return getPathDisplayName(path, t) || path;
 }
 
 function isFavoriteFile(item: FavoriteItem): boolean {
+  if (isVirtualLocationPath(item.path)) {
+    return false;
+  }
+
   return !item.path.endsWith('/') && item.path.includes('.');
 }
 

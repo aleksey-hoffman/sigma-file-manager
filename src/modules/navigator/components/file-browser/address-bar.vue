@@ -35,6 +35,7 @@ import {
   ClipboardPasteIcon,
   EllipsisVerticalIcon,
   FolderIcon,
+  FolderRootIcon,
   ChevronRightIcon,
 } from '@lucide/vue';
 import { toast, ToastStatic } from '@/components/ui/toaster';
@@ -42,7 +43,14 @@ import type { DirContents } from '@/types/dir-entry';
 import { DirEntryInteractive } from '@/components/dir-entry-interactive';
 import { registerDropContainer, unregisterDropContainer } from '@/composables/use-drop-target-registry';
 import { useShortcutsStore } from '@/stores/runtime/shortcuts';
+import { usePlatformStore } from '@/stores/runtime/platform';
 import normalizePath, { getPathDisplayName, getPathSegments, isUncPath } from '@/utils/normalize-path';
+import {
+  getLocationsDrivePaths,
+  isVirtualLocationPath,
+  LOCATIONS_VIRTUAL_PATH,
+  shouldPrependLocationsCrumb,
+} from '@/utils/virtual-locations';
 import { useOpenCopiedPath } from './composables/use-open-copied-path';
 
 const props = defineProps<{
@@ -57,6 +65,7 @@ const emit = defineEmits<{
 
 const { t } = useI18n();
 const shortcutsStore = useShortcutsStore();
+const platformStore = usePlatformStore();
 const { openCopiedPath } = useOpenCopiedPath({
   openDirectory: path => emit('navigate', path),
   openFile: path => emit('openFile', path),
@@ -68,17 +77,29 @@ const breadcrumbsContainerRef = ref<HTMLElement | null>(null);
 const separatorDropdowns = ref<{ [key: number]: string[] }>({});
 const openSeparatorIndex = ref<number | null>(null);
 
+interface AddressBarPart {
+  path: string;
+  name: string;
+  isLast: boolean;
+  virtual?: boolean;
+}
+
 const addressParts = computed(() => {
   if (!props.currentPath) return [];
+
+  if (isVirtualLocationPath(props.currentPath)) {
+    return [{
+      path: LOCATIONS_VIRTUAL_PATH,
+      name: t('locations'),
+      isLast: true,
+      virtual: true,
+    }];
+  }
 
   const normalizedPath = normalizePath(props.currentPath).replace(/\/+$/, '');
   const parts = getPathSegments(normalizedPath);
   const uncPath = isUncPath(normalizedPath);
-  const formattedParts: Array<{
-    path: string;
-    name: string;
-    isLast: boolean;
-  }> = [];
+  const formattedParts: AddressBarPart[] = [];
 
   parts.forEach((part, index) => {
     const pathSegments = parts.slice(0, index + 1);
@@ -108,7 +129,19 @@ const addressParts = computed(() => {
     });
   });
 
-  return formattedParts;
+  if (!shouldPrependLocationsCrumb(props.currentPath, platformStore.currentPlatform)) {
+    return formattedParts;
+  }
+
+  return [
+    {
+      path: LOCATIONS_VIRTUAL_PATH,
+      name: t('locations'),
+      isLast: false,
+      virtual: true,
+    },
+    ...formattedParts,
+  ];
 });
 
 watch(() => props.currentPath, () => {
@@ -126,6 +159,17 @@ function scrollBreadcrumbsToEnd() {
 async function loadSeparatorDirectories(index: number) {
   const part = addressParts.value[index];
   if (!part) return;
+
+  if (part.virtual) {
+    try {
+      separatorDropdowns.value[index] = await getLocationsDrivePaths();
+    }
+    catch {
+      separatorDropdowns.value[index] = [];
+    }
+
+    return;
+  }
 
   try {
     const result = await invoke<DirContents>('read_dir', { path: part.path });
@@ -262,15 +306,24 @@ onUnmounted(() => {
           <DirEntryInteractive
             :path="part.path"
             :is-file="false"
+            :disable-drop-target="part.virtual"
             :is-current-directory-context="part.isLast"
           >
             <button
               class="address-bar__part"
               :class="{ 'address-bar__part--last': part.isLast }"
-              :title="part.path"
+              :title="part.virtual ? t('locations') : part.path"
+              :aria-label="part.virtual ? t('locations') : part.name"
               @click.stop="!part.isLast && navigateToPart(part.path)"
             >
-              {{ part.name }}
+              <FolderRootIcon
+                v-if="part.virtual"
+                :size="14"
+                class="address-bar__part-icon"
+              />
+              <template v-else>
+                {{ part.name }}
+              </template>
             </button>
           </DirEntryInteractive>
           <DropdownMenu
@@ -403,6 +456,10 @@ onUnmounted(() => {
 }
 
 .address-bar__part {
+  display: inline-flex;
+  min-height: 26px;
+  align-items: center;
+  justify-content: center;
   padding: 4px 6px;
   border: none;
   border-radius: var(--radius-sm);
@@ -410,6 +467,7 @@ onUnmounted(() => {
   color: hsl(var(--muted-foreground) / 70%);
   cursor: pointer;
   font-size: 13px;
+  line-height: 18px;
   transition: background-color 0.1s, color 0.1s;
   white-space: nowrap;
 }
@@ -426,6 +484,10 @@ onUnmounted(() => {
 
 .address-bar__part--last {
   color: hsl(var(--muted-foreground));
+}
+
+.address-bar__part-icon {
+  flex-shrink: 0;
 }
 
 .address-bar__separator {
