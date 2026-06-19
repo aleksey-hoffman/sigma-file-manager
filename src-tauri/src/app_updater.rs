@@ -552,6 +552,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(target_os = "windows")]
     fn pick_best_installable_upgrade_picks_highest_with_setup_exe() {
         let upgrade = pick_best_installable_upgrade(
             vec![
@@ -578,6 +579,36 @@ mod tests {
         assert_eq!(upgrade.0.tag, "v2.0.0-beta.2");
         assert_eq!(upgrade.1, "https://example.com/beta2.exe");
         assert_eq!(upgrade.2, "Sigma-File-Manager-2.0.0-beta.2-windows-setup.exe");
+    }
+
+    #[test]
+    #[cfg(target_os = "linux")]
+    fn pick_best_installable_upgrade_picks_highest_with_appimage() {
+        let upgrade = pick_best_installable_upgrade(
+            vec![
+                GithubRelease {
+                    tag: "v2.0.0-beta.1".to_string(),
+                    url: "https://example.com/beta1".to_string(),
+                    assets: vec![serde_json::json!({
+                        "name": "Sigma-File-Manager-2.0.0-beta.1-linux.AppImage",
+                        "browser_download_url": "https://example.com/beta1.AppImage"
+                    })],
+                },
+                GithubRelease {
+                    tag: "v2.0.0-beta.2".to_string(),
+                    url: "https://example.com/beta2".to_string(),
+                    assets: vec![serde_json::json!({
+                        "name": "Sigma-File-Manager-2.0.0-beta.2-linux.AppImage",
+                        "browser_download_url": "https://example.com/beta2.AppImage"
+                    })],
+                },
+            ],
+            "2.0.0-alpha.6",
+        )
+        .expect("expected upgrade");
+        assert_eq!(upgrade.0.tag, "v2.0.0-beta.2");
+        assert_eq!(upgrade.1, "https://example.com/beta2.AppImage");
+        assert_eq!(upgrade.2, "Sigma-File-Manager-2.0.0-beta.2-linux.AppImage");
     }
 
     #[test]
