@@ -263,6 +263,16 @@ export function useInit() {
   }
 
   async function init() {
+    try {
+      await runInit();
+    }
+    catch (error) {
+      console.error('Failed to initialize app:', error);
+      removeAppSplash();
+    }
+  }
+
+  async function runInit() {
     const isMainWindow = isMainWebviewWindow();
 
     logInitTrace(`init started (mainWindow=${isMainWindow})`);

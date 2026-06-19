@@ -592,6 +592,21 @@ describe('useInit startup restoration', () => {
     expect(removeAppSplashMock).toHaveBeenCalledTimes(1);
   });
 
+  it('removes the app splash when init fails', async () => {
+    platformInitMock.mockRejectedValue(new Error('Platform init failed'));
+
+    const { useInit } = await import('@/composables/use-init');
+    const { init } = useInit();
+    const initPromise = init();
+
+    await flushAsyncWork();
+    await initPromise;
+    await flushAsyncWork();
+
+    expect(removeAppSplashMock).toHaveBeenCalledTimes(1);
+    expect(showWindowMock).not.toHaveBeenCalled();
+  });
+
   it('schedules background startup work after init resolves', async () => {
     invokeMock.mockImplementation(async (command: string) => {
       if (command === 'get_launch_context') {

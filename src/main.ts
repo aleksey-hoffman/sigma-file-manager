@@ -8,8 +8,11 @@ import App from './app.vue';
 import router from './router';
 import { i18n } from '@/localization';
 import VWave from 'v-wave';
+import { installModuleLoadRecovery } from '@/utils/module-load-recovery';
 
 import './styles/index.css';
+
+installModuleLoadRecovery({ router });
 
 const app = createApp(App);
 
