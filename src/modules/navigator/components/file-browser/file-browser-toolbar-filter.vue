@@ -68,7 +68,7 @@ watch(() => [props.isFilterOpen, props.focusInput] as const, async ([open, focus
 const propertyLabelKeys: Record<QuickSearchProperty, string> = {
   name: 'fileBrowser.name',
   size: 'fileBrowser.size',
-  items: 'items',
+  items: 'fileBrowser.items',
   modified: 'fileBrowser.modified',
   created: 'created',
   accessed: 'accessed',

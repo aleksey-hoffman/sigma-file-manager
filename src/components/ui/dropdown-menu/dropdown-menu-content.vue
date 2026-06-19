@@ -67,7 +67,7 @@ function handleCloseAutoFocus(event: Event) {
   border-radius: var(--radius-md);
   backdrop-filter: blur(var(--backdrop-filter-blur));
   background-color: hsl(var(--popover));
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-lg);
   color: hsl(var(--popover-foreground));
   transform-origin: var(--reka-dropdown-menu-content-transform-origin);
 }

@@ -135,6 +135,8 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
       listColumnOrder: ['items', 'size', 'modified', 'created', 'tags', 'kind', 'links', 'linkStatus'],
       listSortColumn: null,
       listSortDirection: 'asc',
+      gridSortColumn: 'name',
+      gridSortDirection: 'asc',
     },
     globalSearch: {
       scanDepth: 7,

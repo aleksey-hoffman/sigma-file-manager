@@ -376,7 +376,10 @@
       "navigatorOptions": "אפשרויות ניווט",
       "systemIcons": "ערכת סמלים",
       "systemIconsDirectories": "תיקיות",
-      "systemIconsFiles": "קבצים"
+      "systemIconsFiles": "קבצים",
+      "sortBy": "מיין לפי",
+      "sortAscending": "עולה",
+      "sortDescending": "יורד"
     },
     "tabs": {
       "lastTabCloseBehavior": {
@@ -937,7 +940,8 @@
       "unknown": "לא ידוע",
       "unsupported": "לא נתמך"
     },
-    "linkMetadataPerformanceWarning": "עלול להגדיל את צריכת הזיכרון ולפגוע בביצועים."
+    "linkMetadataPerformanceWarning": "עלול להגדיל את צריכת הזיכרון ולפגוע בביצועים.",
+    "items": "פריטים"
   },
   "openWith": {
     "loadingPrograms": "טוען תוכניות...",

@@ -15,6 +15,7 @@ import {
   sortFileBrowserEntries,
   type FileBrowserEntrySortTagContext,
 } from '@/modules/navigator/components/file-browser/utils/file-browser-sort';
+import { isLinkMetadataSortColumn } from '@/modules/navigator/components/file-browser/utils/file-browser-sort-columns';
 import {
   createFileBrowserQuickSearchCache,
   createFileBrowserQuickSearchMatcher,
@@ -102,8 +103,4 @@ export function useFileBrowserEntries(
     entries,
     isDirectoryEmpty,
   };
-}
-
-function isLinkMetadataSortColumn(column: ListSortColumn): boolean {
-  return column === 'kind' || column === 'links' || column === 'linkStatus';
 }

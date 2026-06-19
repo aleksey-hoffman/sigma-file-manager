@@ -315,6 +315,8 @@ export type UserSettingsNavigator = {
   listColumnOrder: ListColumnOrder;
   listSortColumn: ListSortColumn | null;
   listSortDirection: ListSortDirection;
+  gridSortColumn: ListSortColumn | null;
+  gridSortDirection: ListSortDirection;
 };
 
 export type UserSettingsNavigatorInfoPanel = {

@@ -347,7 +347,10 @@
       "navigatorOptions": "导航器选项",
       "systemIcons": "图标主题",
       "systemIconsDirectories": "文件夹",
-      "systemIconsFiles": "文件"
+      "systemIconsFiles": "文件",
+      "sortBy": "排序依据",
+      "sortAscending": "升序",
+      "sortDescending": "降序"
     },
     "tabs": {
       "lastTabCloseBehavior": {
@@ -907,7 +910,8 @@
     },
     "linkMetadataPerformanceWarning": "可能会增加内存使用量并降低性能。",
     "fillColumnWidth": "填充可用宽度",
-    "setMinimumColumnWidths": "设置最小宽度"
+    "setMinimumColumnWidths": "设置最小宽度",
+    "items": "项目"
   },
   "openWith": {
     "loadingPrograms": "正在加载程序...",

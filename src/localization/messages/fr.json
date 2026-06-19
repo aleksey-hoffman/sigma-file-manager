@@ -347,7 +347,10 @@
       "navigatorOptions": "Options du navigateur",
       "systemIcons": "Thème d'icônes",
       "systemIconsDirectories": "Dossiers",
-      "systemIconsFiles": "Fichiers"
+      "systemIconsFiles": "Fichiers",
+      "sortBy": "Trier par",
+      "sortAscending": "Ascendant",
+      "sortDescending": "Descendant"
     },
     "tabs": {
       "lastTabCloseBehavior": {
@@ -907,7 +910,8 @@
       "unknown": "Inconnu",
       "unsupported": "Non pris en charge"
     },
-    "linkMetadataPerformanceWarning": "Peut augmenter l'utilisation de la mémoire et réduire les performances."
+    "linkMetadataPerformanceWarning": "Peut augmenter l'utilisation de la mémoire et réduire les performances.",
+    "items": "Éléments"
   },
   "openWith": {
     "loadingPrograms": "Chargement des programmes...",

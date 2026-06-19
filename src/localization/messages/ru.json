@@ -376,7 +376,10 @@
       "navigatorOptions": "Параметры навигатора",
       "systemIcons": "Тема значков",
       "systemIconsDirectories": "Папки",
-      "systemIconsFiles": "Файлы"
+      "systemIconsFiles": "Файлы",
+      "sortBy": "Сортировать по",
+      "sortAscending": "По возрастанию",
+      "sortDescending": "По убыванию"
     },
     "tabs": {
       "lastTabCloseBehavior": {
@@ -937,7 +940,8 @@
     },
     "linkMetadataPerformanceWarning": "Может увеличить использование памяти и снизить производительность.",
     "fillColumnWidth": "Fill available width",
-    "setMinimumColumnWidths": "Установить минимальную ширину"
+    "setMinimumColumnWidths": "Установить минимальную ширину",
+    "items": "Элементы"
   },
   "openWith": {
     "loadingPrograms": "Загрузка программ...",

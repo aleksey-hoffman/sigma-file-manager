@@ -376,7 +376,10 @@
       "navigatorOptions": "नेविगेटर विकल्प",
       "systemIcons": "आइकन थीम",
       "systemIconsDirectories": "निर्देशिका",
-      "systemIconsFiles": "फ़ाइलें"
+      "systemIconsFiles": "फ़ाइलें",
+      "sortBy": "क्रमबद्ध करें",
+      "sortAscending": "आरोही",
+      "sortDescending": "अवरोही"
     },
     "tabs": {
       "lastTabCloseBehavior": {
@@ -937,7 +940,8 @@
     },
     "linkMetadataPerformanceWarning": "मेमोरी उपयोग बढ़ा सकता है और प्रदर्शन घटा सकता है।",
     "fillColumnWidth": "उपलब्ध चौड़ाई भरें",
-    "setMinimumColumnWidths": "न्यूनतम चौड़ाई सेट करें"
+    "setMinimumColumnWidths": "न्यूनतम चौड़ाई सेट करें",
+    "items": "सामान"
   },
   "openWith": {
     "loadingPrograms": "प्रोग्राम लोड हो रहे हैं...",

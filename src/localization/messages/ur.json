@@ -376,7 +376,10 @@
       "navigatorOptions": "نیویگیٹر اختیارات",
       "systemIcons": "آئیکن تھیم",
       "systemIconsDirectories": "فولڈر",
-      "systemIconsFiles": "فائلیں"
+      "systemIconsFiles": "فائلیں",
+      "sortBy": "ترتیب دیں",
+      "sortAscending": "چڑھتی",
+      "sortDescending": "اترتی"
     },
     "tabs": {
       "lastTabCloseBehavior": {
@@ -937,7 +940,8 @@
     },
     "linkMetadataPerformanceWarning": "میموری کے استعمال کو بڑھا سکتا ہے اور کارکردگی کو کم کر سکتا ہے۔",
     "fillColumnWidth": "Fill available width",
-    "setMinimumColumnWidths": "کم از کم چوڑائیاں مقرر کریں"
+    "setMinimumColumnWidths": "کم از کم چوڑائیاں مقرر کریں",
+    "items": "اشیاء"
   },
   "openWith": {
     "loadingPrograms": "پروگرامز لوڈ ہو رہے ہیں…",

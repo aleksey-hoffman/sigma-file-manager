@@ -29,6 +29,7 @@ import normalizePath, {
   isWslHostRootUncPath,
 } from '@/utils/normalize-path';
 import { resolveNavigableItemTarget } from '@/utils/resolve-navigable-item-target';
+import { shouldIncludeItemCountsForSort } from '@/modules/navigator/components/file-browser/utils/file-browser-sort-columns';
 
 interface DirChangePayload {
   watchedPath: string;
@@ -94,7 +95,7 @@ export function useFileBrowserNavigation(
     return {
       includeShortcutTargets: false,
       includeHardLinkCounts: false,
-      includeItemCounts: userSettingsStore.userSettings.navigator.listSortColumn === 'items',
+      includeItemCounts: shouldIncludeItemCountsForSort(userSettingsStore.userSettings.navigator),
     };
   }
 
@@ -538,13 +539,19 @@ export function useFileBrowserNavigation(
   });
 
   watch(
-    () => userSettingsStore.userSettings.navigator.listSortColumn,
-    (column, previousColumn) => {
+    () => [
+      userSettingsStore.userSettings.navigator.listSortColumn,
+      userSettingsStore.userSettings.navigator.gridSortColumn,
+    ] as const,
+    ([listSortColumn, gridSortColumn], [previousListSortColumn, previousGridSortColumn]) => {
       if (!currentPath.value || !dirContents.value) {
         return;
       }
 
-      if (column === 'items' && previousColumn !== 'items') {
+      const switchedToItemsSort = (listSortColumn === 'items' && previousListSortColumn !== 'items')
+        || (gridSortColumn === 'items' && previousGridSortColumn !== 'items');
+
+      if (switchedToItemsSort) {
         void silentRefresh();
       }
     },

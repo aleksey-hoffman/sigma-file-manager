@@ -34,6 +34,7 @@ import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { useShortcutsStore } from '@/stores/runtime/shortcuts';
 import type { SplitViewMode } from '@/types/user-settings';
 import { useInfoPanelLayout } from '@/modules/navigator/components/info-panel/composables/use-info-panel-layout';
+import NavigatorLayoutSortControls from './navigator-layout-sort-controls.vue';
 
 type LayoutType = 'list' | 'grid';
 
@@ -143,6 +144,7 @@ function handleToggleInfoPanelDynamicSize(enabled: boolean) {
                   <span>{{ t('grid') }}</span>
                 </button>
               </div>
+              <NavigatorLayoutSortControls :sort-layout="currentLayout" />
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
@@ -312,10 +314,10 @@ function handleToggleInfoPanelDynamicSize(enabled: boolean) {
 .navigator-settings-menu__layout-row {
   display: flex;
   width: 100%;
-  height: 64px;
+  height: 56px;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 4px;
 }
 
 .navigator-settings-menu__item--layout.sigma-ui-dropdown-menu-item {
@@ -336,8 +338,8 @@ function handleToggleInfoPanelDynamicSize(enabled: boolean) {
   background: transparent;
   color: hsl(var(--foreground));
   cursor: pointer;
-  font-size: 11px;
-  gap: 2px;
+  font-size: 12px;
+  gap: 0;
   transition: background-color 0.15s, color 0.15s;
 }
 

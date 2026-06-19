@@ -10,9 +10,6 @@ import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { useDismissalLayerStore } from '@/stores/runtime/dismissal-layer';
 import { useQuickViewStore } from '@/stores/runtime/quick-view';
 import { useGlobalSearchStore } from '@/stores/runtime/global-search';
-import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
-import { useItemCountsStore } from '@/stores/runtime/item-counts';
-import { useUserStatsStore } from '@/stores/storage/user-stats';
 import { useWorkspacesStore } from '@/stores/storage/workspaces';
 import {
   registerNavigationProvider,
@@ -26,6 +23,7 @@ import {
 } from '@/modules/extensions/builtin-commands';
 import type { DirEntry, DirContents } from '@/types/dir-entry';
 import type { Tab } from '@/types/workspaces';
+import type { UserSettingsNavigator } from '@/types/user-settings';
 import { useFileBrowserNavigation } from './use-file-browser-navigation';
 import { useFileBrowserSelection } from './use-file-browser-selection';
 import { useFileBrowserEntries } from './use-file-browser-entries';
@@ -43,8 +41,18 @@ import { useFileBrowserExternalDrop } from './use-file-browser-external-drop';
 import { useFileBrowserVirtualLayout } from './use-file-browser-virtual-layout';
 import { useNavigatorImageThumbnails } from '@/modules/navigator/composables/use-navigator-image-thumbnails';
 import { useVideoThumbnails } from './use-video-thumbnails';
-import { sortFileBrowserEntries } from '@/modules/navigator/components/file-browser/utils/file-browser-sort';
-import { getFileBrowserGridEntryOrder } from '../file-browser-entry-groups';
+import { getNavigatorSortSettingsForLayout } from '@/modules/navigator/components/file-browser/utils/file-browser-sort-columns';
+
+function createNavigatorSortSettingsComputed(
+  getNavigator: () => UserSettingsNavigator,
+  layout: () => 'list' | 'grid' | undefined,
+) {
+  return computed(() => getNavigatorSortSettingsForLayout(getNavigator(), layout()));
+}
+
+function shouldApplyNavigatorSort(layout: 'list' | 'grid' | undefined) {
+  return layout === 'list' || layout === 'grid';
+}
 
 export interface UseFileBrowserOptions {
   tab: () => Tab | undefined;
@@ -117,9 +125,13 @@ function setupNavigationDataSource(
   });
 
   const showHiddenFiles = computed(() => userSettingsStore.userSettings.navigator.showHiddenFiles);
-  const listSortColumn = computed(() => userSettingsStore.userSettings.navigator.listSortColumn);
-  const listSortDirection = computed(() => userSettingsStore.userSettings.navigator.listSortDirection);
-  const applyListSort = computed(() => options.layout() === 'list');
+  const sortSettings = createNavigatorSortSettingsComputed(
+    () => userSettingsStore.userSettings.navigator,
+    options.layout,
+  );
+  const sortColumn = computed(() => sortSettings.value.column);
+  const sortDirection = computed(() => sortSettings.value.direction);
+  const applySort = computed(() => shouldApplyNavigatorSort(options.layout()));
   const {
     entries: filteredEntries,
     isDirectoryEmpty: filteredIsDirectoryEmpty,
@@ -127,9 +139,9 @@ function setupNavigationDataSource(
     navigation.dirContents,
     filter.filterQuery,
     showHiddenFiles,
-    listSortColumn,
-    listSortDirection,
-    applyListSort,
+    sortColumn,
+    sortDirection,
+    applySort,
   );
 
   const tabRef = toRef(options.tab);
@@ -178,40 +190,35 @@ function setupNavigationDataSource(
 function setupExternalDataSource(options: UseFileBrowserOptions): DataSource {
   const globalSearchStore = useGlobalSearchStore();
   const userSettingsStore = useUserSettingsStore();
-  const dirSizesStore = useDirSizesStore();
-  const itemCountsStore = useItemCountsStore();
-  const userStatsStore = useUserStatsStore();
   const getEntries = options.externalEntries ?? (() => []);
   const getBasePath = options.basePath ?? (() => '');
 
-  const listSortColumn = computed(() => userSettingsStore.userSettings.navigator.listSortColumn);
-  const listSortDirection = computed(() => userSettingsStore.userSettings.navigator.listSortDirection);
-
-  const entries = computed(() => {
-    const rawEntries = getEntries();
-
-    if (options.layout() !== 'list') {
-      return rawEntries;
-    }
-
-    const column = listSortColumn.value ?? 'name';
-    let entriesForSort = rawEntries;
-
-    if (column === 'items') {
-      void itemCountsStore.sortRevision;
-      entriesForSort = rawEntries.map(entry => itemCountsStore.mergeEntry(entry));
-    }
-
-    return sortFileBrowserEntries(entriesForSort, column, listSortDirection.value, dirSizesStore, {
-      tags: userStatsStore.tags,
-      taggedItems: userStatsStore.taggedItems,
-    });
-  });
+  const externalDirContents = computed(() => ({ entries: getEntries() }));
+  const showAllEntries = computed(() => true);
+  const emptyFilterQuery = ref('');
+  const sortSettings = createNavigatorSortSettingsComputed(
+    () => userSettingsStore.userSettings.navigator,
+    options.layout,
+  );
+  const sortColumn = computed(() => sortSettings.value.column);
+  const sortDirection = computed(() => sortSettings.value.direction);
+  const applySort = computed(() => shouldApplyNavigatorSort(options.layout()));
+  const {
+    entries: sortedEntries,
+    isDirectoryEmpty,
+  } = useFileBrowserEntries(
+    externalDirContents,
+    emptyFilterQuery,
+    showAllEntries,
+    sortColumn,
+    sortDirection,
+    applySort,
+  );
 
   return {
-    entries,
+    entries: sortedEntries,
     currentPath: computed(() => getBasePath()),
-    isDirectoryEmpty: computed(() => getEntries().length === 0),
+    isDirectoryEmpty,
     dirContents: ref(null),
     isLoading: ref(false),
     isRefreshing: ref(false),
@@ -254,13 +261,7 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
         selection.clearSelection();
         selection.resetMouseState();
       });
-  const visualEntries = computed(() => {
-    if (options.layout() === 'grid') {
-      return getFileBrowserGridEntryOrder(dataSource.entries.value);
-    }
-
-    return dataSource.entries.value;
-  });
+  const visualEntries = computed(() => dataSource.entries.value);
 
   let openPropertiesForSelection: (entries: DirEntry[]) => void = () => {};
 

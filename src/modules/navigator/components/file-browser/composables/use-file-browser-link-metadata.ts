@@ -8,8 +8,11 @@ import {
 import type { DirEntry, ReadDirOptions } from '@/types/dir-entry';
 import { useLinkMetadataStore } from '@/stores/runtime/link-metadata';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
-import type { ListSortColumn } from '@/types/user-settings';
 import type { FileBrowserVirtualRow } from './use-file-browser-virtual-layout';
+import {
+  getNavigatorSortSettingsForLayout,
+  isLinkMetadataSortColumn,
+} from '@/modules/navigator/components/file-browser/utils/file-browser-sort-columns';
 
 interface UseFileBrowserLinkMetadataOptions {
   enabled: boolean;
@@ -32,14 +35,17 @@ export function useFileBrowserLinkMetadata(options: UseFileBrowserLinkMetadataOp
 
   const metadataOptions = computed<ReadDirOptions>(() => {
     const columnVisibility = userSettingsStore.userSettings.navigator.listColumnVisibility;
-    const listSortColumn = userSettingsStore.userSettings.navigator.listSortColumn;
+    const activeSortColumn = getNavigatorSortSettingsForLayout(
+      userSettingsStore.userSettings.navigator,
+      options.layout(),
+    ).column;
     const includeShortcutTargets = columnVisibility.linkTarget
       || columnVisibility.linkStatus
-      || listSortColumn === 'linkStatus';
+      || activeSortColumn === 'linkStatus';
     const includeHardLinkCounts = columnVisibility.kind
       || columnVisibility.links
       || columnVisibility.linkStatus
-      || isLinkMetadataSortColumn(listSortColumn);
+      || isLinkMetadataSortColumn(activeSortColumn);
 
     return {
       includeShortcutTargets,
@@ -58,8 +64,14 @@ export function useFileBrowserLinkMetadata(options: UseFileBrowserLinkMetadataOp
     );
   });
   const shouldHydrateDirectoryMetadata = computed(() => {
-    return options.layout() === 'list'
-      && isLinkMetadataSortColumn(userSettingsStore.userSettings.navigator.listSortColumn);
+    const activeSortColumn = getNavigatorSortSettingsForLayout(
+      userSettingsStore.userSettings.navigator,
+      options.layout(),
+    ).column;
+
+    return options.layout() === 'list' || options.layout() === 'grid'
+      ? isLinkMetadataSortColumn(activeSortColumn)
+      : false;
   });
 
   if (options.enabled) {
@@ -222,10 +234,6 @@ function getVisibleLinkMetadataEntries(rows: FileBrowserVirtualRow[]): DirEntry[
   }
 
   return entries;
-}
-
-function isLinkMetadataSortColumn(column: ListSortColumn | null): boolean {
-  return column === 'kind' || column === 'links' || column === 'linkStatus';
 }
 
 function getPrioritizedLinkMetadataPaths(

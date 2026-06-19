@@ -347,7 +347,10 @@
       "navigatorOptions": "Navigator-Optionen",
       "systemIcons": "Icon-Theme",
       "systemIconsDirectories": "Verzeichnisse",
-      "systemIconsFiles": "Dateien"
+      "systemIconsFiles": "Dateien",
+      "sortBy": "Sortieren nach",
+      "sortAscending": "Aufsteigend",
+      "sortDescending": "Absteigend"
     },
     "tabs": {
       "lastTabCloseBehavior": {
@@ -907,7 +910,8 @@
       "unknown": "Unbekannt",
       "unsupported": "Nicht unterstützt"
     },
-    "linkMetadataPerformanceWarning": "Kann die Speichernutzung erhöhen und die Leistung verringern."
+    "linkMetadataPerformanceWarning": "Kann die Speichernutzung erhöhen und die Leistung verringern.",
+    "items": "Elemente"
   },
   "openWith": {
     "loadingPrograms": "Programme werden geladen...",

@@ -18,6 +18,7 @@ import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { useTextDirection } from '@/composables/use-text-direction';
 import { useFileBrowserListColumns } from './composables/use-file-browser-list-columns';
 import { buildCompactListColumnWidths, normalizeListColumnOrder } from './utils/file-browser-list-columns';
+import { getFileBrowserListColumnLabel } from './utils/file-browser-sort-columns';
 
 const props = defineProps<{
   showLinkColumnPerformanceWarning: boolean;
@@ -35,22 +36,8 @@ const reorderableColumnIds = computed(() => {
   return normalizeListColumnOrder(userSettingsStore.userSettings.navigator.listColumnOrder);
 });
 
-const columnLabels: Record<ListReorderableColumnId | 'linkTarget', string> = {
-  items: 'items',
-  size: 'fileBrowser.size',
-  modified: 'fileBrowser.modified',
-  created: 'created',
-  tags: 'fileBrowser.tags',
-  kind: 'fileBrowser.kind',
-  links: 'fileBrowser.links',
-  linkStatus: 'fileBrowser.linkStatus',
-  linkTarget: 'fileBrowser.linkTarget',
-};
-
 function getColumnLabel(columnId: ListReorderableColumnId | 'linkTarget') {
-  const labelKey = columnLabels[columnId];
-
-  return labelKey.includes('.') ? t(labelKey) : t(labelKey);
+  return getFileBrowserListColumnLabel(t, columnId);
 }
 
 function toggleColumnVisibility(column: keyof ListColumnVisibility, checked: boolean) {

@@ -16,6 +16,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import FileBrowserListHeaderCell from './file-browser-list-header-cell.vue';
 import { useFileBrowserContext } from './composables/use-file-browser-context';
+import { getFileBrowserListColumnLabel } from './utils/file-browser-sort-columns';
 
 const props = defineProps<{
   columnId: ListReorderableColumnId;
@@ -31,21 +32,8 @@ const { t } = useI18n();
 const ctx = useFileBrowserContext();
 const legendSizeText = '1.5 GB';
 
-const columnLabels: Record<ListReorderableColumnId, string> = {
-  items: 'items',
-  size: 'fileBrowser.size',
-  modified: 'fileBrowser.modified',
-  created: 'created',
-  tags: 'fileBrowser.tags',
-  kind: 'fileBrowser.kind',
-  links: 'fileBrowser.links',
-  linkStatus: 'fileBrowser.linkStatus',
-};
-
 function getColumnLabel() {
-  const labelKey = columnLabels[props.columnId];
-
-  return labelKey.includes('.') ? t(labelKey) : t(labelKey);
+  return getFileBrowserListColumnLabel(t, props.columnId);
 }
 </script>
 

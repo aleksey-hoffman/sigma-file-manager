@@ -16,7 +16,7 @@ import {
 import { BUILTIN_NAVIGATOR_ICON_THEME_IDS } from '@/types/icon-theme';
 
 export const USER_SETTINGS_SCHEMA_VERSION_KEY = '__schemaVersion';
-export const USER_SETTINGS_SCHEMA_VERSION = 16;
+export const USER_SETTINGS_SCHEMA_VERSION = 17;
 
 export const DEFAULT_GLOBAL_SEARCH_IGNORED_PATHS = [
   '/node_modules',
@@ -392,6 +392,20 @@ async function migrateUserSettingsStep(storage: StorageAdapter, fromVersion: num
 
   if (fromVersion === 15 && toVersion === 16) {
     await setDefaultBooleanIfMissing(storage, 'navigator.infoPanel.showFullSizeImagePreview', false);
+  }
+
+  if (fromVersion === 16 && toVersion === 17) {
+    const existingGridSortColumn = await storage.get<unknown>('navigator.gridSortColumn');
+
+    if (existingGridSortColumn === undefined || existingGridSortColumn === null) {
+      await storage.set('navigator.gridSortColumn', 'name');
+    }
+
+    const existingGridSortDirection = await storage.get<unknown>('navigator.gridSortDirection');
+
+    if (existingGridSortDirection !== 'asc' && existingGridSortDirection !== 'desc') {
+      await storage.set('navigator.gridSortDirection', 'asc');
+    }
   }
 
   if (fromVersion === 6 && toVersion === 7) {

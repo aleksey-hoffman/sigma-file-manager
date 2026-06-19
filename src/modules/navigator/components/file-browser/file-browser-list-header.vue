@@ -20,6 +20,10 @@ import {
   TriangleAlertIcon,
 } from '@lucide/vue';
 import type { ListSortColumn } from '@/types/user-settings';
+import {
+  getNavigatorSortSettingKeys,
+  getNextNavigatorSortDirection,
+} from '@/modules/navigator/components/file-browser/utils/file-browser-sort-columns';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
@@ -55,13 +59,18 @@ const showCheckedLinkColumnPerformanceWarning = computed(() => {
 });
 
 function handleColumnHeaderClick(column: ListSortColumn) {
+  const settingKeys = getNavigatorSortSettingKeys('list');
+
   if (listSortColumn.value === column) {
-    userSettingsStore.set('navigator.listSortDirection', listSortDirection.value === 'asc' ? 'desc' : 'asc');
+    userSettingsStore.set(
+      settingKeys.direction,
+      getNextNavigatorSortDirection(listSortDirection.value),
+    );
+    return;
   }
-  else {
-    userSettingsStore.set('navigator.listSortColumn', column);
-    userSettingsStore.set('navigator.listSortDirection', 'asc');
-  }
+
+  userSettingsStore.set(settingKeys.column, column);
+  userSettingsStore.set(settingKeys.direction, 'asc');
 }
 
 const headerScrollRef = ref<HTMLElement | null>(null);

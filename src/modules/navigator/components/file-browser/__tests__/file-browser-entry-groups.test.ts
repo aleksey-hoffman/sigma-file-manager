@@ -8,6 +8,7 @@ import {
   getFileBrowserGridEntryOrder,
   groupFileBrowserEntries,
 } from '../file-browser-entry-groups';
+import { sortFileBrowserEntries, type DirSizesStore } from '../utils/file-browser-sort';
 
 function createEntry(name: string, overrides: Partial<DirEntry> = {}): DirEntry {
   const isDirectory = overrides.is_dir ?? false;
@@ -71,5 +72,30 @@ describe('file browser entry groups', () => {
       'document.pdf',
       'readme.md',
     ]);
+  });
+
+  it('sorts entries within each grid section group', () => {
+    const entries = [
+      createEntry('zebra.png', { ext: 'png' }),
+      createEntry('alpha.png', { ext: 'png' }),
+      createEntry('folder-b', {
+        is_dir: true,
+        is_file: false,
+      }),
+      createEntry('folder-a', {
+        is_dir: true,
+        is_file: false,
+      }),
+      createEntry('notes.txt', { ext: 'txt' }),
+    ];
+    const dirSizesStore = {
+      getSize: () => undefined,
+    } as unknown as DirSizesStore;
+    const sortedEntries = sortFileBrowserEntries(entries, 'name', 'asc', dirSizesStore);
+    const groupedEntries = groupFileBrowserEntries(sortedEntries);
+
+    expect(groupedEntries.dirs.map(entry => entry.name)).toEqual(['folder-a', 'folder-b']);
+    expect(groupedEntries.images.map(entry => entry.name)).toEqual(['alpha.png', 'zebra.png']);
+    expect(groupedEntries.others.map(entry => entry.name)).toEqual(['notes.txt']);
   });
 });

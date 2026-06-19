@@ -347,7 +347,10 @@
       "navigatorOptions": "Gezgin seçenekleri",
       "systemIcons": "Simge teması",
       "systemIconsDirectories": "Klasörler",
-      "systemIconsFiles": "Dosyalar"
+      "systemIconsFiles": "Dosyalar",
+      "sortBy": "Sıralama",
+      "sortAscending": "Artan",
+      "sortDescending": "Azalan"
     },
     "tabs": {
       "lastTabCloseBehavior": {
@@ -907,7 +910,8 @@
     },
     "linkMetadataPerformanceWarning": "Bellek kullanımını artırabilir ve performansı düşürebilir.",
     "fillColumnWidth": "Fill available width",
-    "setMinimumColumnWidths": "Minimum genişlikleri ayarla"
+    "setMinimumColumnWidths": "Minimum genişlikleri ayarla",
+    "items": "Öğeler"
   },
   "openWith": {
     "loadingPrograms": "Programlar yükleniyor...",

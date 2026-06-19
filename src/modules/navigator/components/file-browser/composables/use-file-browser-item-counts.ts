@@ -7,6 +7,7 @@ import type { DirEntry } from '@/types/dir-entry';
 import { useItemCountsStore } from '@/stores/runtime/item-counts';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import type { FileBrowserVirtualRow } from './use-file-browser-virtual-layout';
+import { getNavigatorSortSettingsForLayout } from '@/modules/navigator/components/file-browser/utils/file-browser-sort-columns';
 
 interface UseFileBrowserItemCountsOptions {
   enabled: boolean;
@@ -28,14 +29,23 @@ export function useFileBrowserItemCounts(options: UseFileBrowserItemCountsOption
 
   const shouldHydrateItemCounts = computed(() => {
     const navigatorSettings = userSettingsStore.userSettings.navigator;
+    const activeSortColumn = getNavigatorSortSettingsForLayout(
+      navigatorSettings,
+      options.layout(),
+    ).column;
 
     return options.layout() === 'grid'
       || navigatorSettings.listColumnVisibility.items
-      || navigatorSettings.listSortColumn === 'items';
+      || activeSortColumn === 'items';
   });
   const shouldHydrateDirectoryItemCountsForSort = computed(() => {
-    return options.layout() === 'list'
-      && userSettingsStore.userSettings.navigator.listSortColumn === 'items';
+    const activeSortColumn = getNavigatorSortSettingsForLayout(
+      userSettingsStore.userSettings.navigator,
+      options.layout(),
+    ).column;
+
+    return (options.layout() === 'list' || options.layout() === 'grid')
+      && activeSortColumn === 'items';
   });
 
   if (!options.enabled) {

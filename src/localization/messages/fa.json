@@ -343,7 +343,10 @@
       "navigatorOptions": "گزینه‌های ناوبر",
       "systemIcons": "تم آیکون",
       "systemIconsDirectories": "پوشه‌ها",
-      "systemIconsFiles": "فایل‌ها"
+      "systemIconsFiles": "فایل‌ها",
+      "sortBy": "مرتب‌سازی بر اساس",
+      "sortAscending": "صعودی",
+      "sortDescending": "نزولی"
     },
     "tabs": {
       "lastTabCloseBehavior": {
@@ -903,7 +906,8 @@
     },
     "linkMetadataPerformanceWarning": "ممکن است مصرف حافظه را افزایش دهد و عملکرد را کاهش دهد.",
     "fillColumnWidth": "پر کردن عرض موجود",
-    "setMinimumColumnWidths": "تنظیم حداقل عرض‌ها"
+    "setMinimumColumnWidths": "تنظیم حداقل عرض‌ها",
+    "items": "موارد"
   },
   "openWith": {
     "loadingPrograms": "در حال بارگذاری برنامه‌ها...",

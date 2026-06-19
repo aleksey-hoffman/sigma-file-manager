@@ -376,7 +376,10 @@
       "navigatorOptions": "Navigator options",
       "systemIcons": "Icon Theme",
       "systemIconsDirectories": "Directories",
-      "systemIconsFiles": "Files"
+      "systemIconsFiles": "Files",
+      "sortBy": "Sort by",
+      "sortAscending": "Ascending",
+      "sortDescending": "Descending"
     },
     "tabs": {
       "lastTabCloseBehavior": {
@@ -937,7 +940,8 @@
       "unknown": "Unknown",
       "unsupported": "Unsupported"
     },
-    "linkMetadataPerformanceWarning": "May increase memory usage and reduce performance."
+    "linkMetadataPerformanceWarning": "May increase memory usage and reduce performance.",
+    "items": "Items"
   },
   "openWith": {
     "loadingPrograms": "Loading programs...",

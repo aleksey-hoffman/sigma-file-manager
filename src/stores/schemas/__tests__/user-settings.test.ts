@@ -146,4 +146,17 @@ describe('migrateUserSettingsStorage', () => {
     expect(storage.values.get(USER_SETTINGS_SCHEMA_VERSION_KEY)).toBe(USER_SETTINGS_SCHEMA_VERSION);
     expect(storage.save).toHaveBeenCalledOnce();
   });
+
+  it('defaults grid sort settings when migrating from schema version 16', async () => {
+    const storage = createStorageAdapter({
+      [USER_SETTINGS_SCHEMA_VERSION_KEY]: 16,
+    });
+
+    await migrateUserSettingsStorage(storage);
+
+    expect(storage.values.get('navigator.gridSortColumn')).toBe('name');
+    expect(storage.values.get('navigator.gridSortDirection')).toBe('asc');
+    expect(storage.values.get(USER_SETTINGS_SCHEMA_VERSION_KEY)).toBe(USER_SETTINGS_SCHEMA_VERSION);
+    expect(storage.save).toHaveBeenCalledOnce();
+  });
 });

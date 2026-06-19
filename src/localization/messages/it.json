@@ -347,7 +347,10 @@
       "navigatorOptions": "Opzioni navigatore",
       "systemIcons": "Tema icone",
       "systemIconsDirectories": "Cartelle",
-      "systemIconsFiles": "File"
+      "systemIconsFiles": "File",
+      "sortBy": "Ordina per",
+      "sortAscending": "Crescente",
+      "sortDescending": "Decrescente"
     },
     "tabs": {
       "lastTabCloseBehavior": {
@@ -907,7 +910,8 @@
     },
     "linkMetadataPerformanceWarning": "Può aumentare l'uso della memoria e ridurre le prestazioni.",
     "fillColumnWidth": "Riempi la larghezza disponibile",
-    "setMinimumColumnWidths": "Imposta larghezze minime"
+    "setMinimumColumnWidths": "Imposta larghezze minime",
+    "items": "Elementi"
   },
   "openWith": {
     "loadingPrograms": "Caricamento programmi...",

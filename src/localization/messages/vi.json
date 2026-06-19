@@ -347,7 +347,10 @@
       "navigatorOptions": "Tùy chọn điều hướng",
       "systemIcons": "Chủ đề biểu tượng",
       "systemIconsDirectories": "Thư mục",
-      "systemIconsFiles": "Tệp"
+      "systemIconsFiles": "Tệp",
+      "sortBy": "Sắp xếp theo",
+      "sortAscending": "Tăng dần",
+      "sortDescending": "Giảm dần"
     },
     "tabs": {
       "lastTabCloseBehavior": {
@@ -907,7 +910,8 @@
     },
     "linkMetadataPerformanceWarning": "Có thể tăng mức sử dụng bộ nhớ và giảm hiệu năng.",
     "fillColumnWidth": "Fill available width",
-    "setMinimumColumnWidths": "Đặt độ rộng tối thiểu"
+    "setMinimumColumnWidths": "Đặt độ rộng tối thiểu",
+    "items": "Mục"
   },
   "openWith": {
     "loadingPrograms": "Đang tải chương trình...",
