@@ -24,7 +24,7 @@ import { ContextMenuShortcut } from '@/components/ui/context-menu';
 import {
   FlipHorizontalIcon,
   PanelLeftRightDashedIcon,
-  PanelRightIcon,
+  PanelRightOpenIcon,
   LayoutGridIcon,
   ListIcon,
   CircleHelpIcon,
@@ -259,7 +259,7 @@ function handleToggleInfoPanelDynamicSize(enabled: boolean) {
             :class="{ 'navigator-toolbar-actions__button--active': props.showInfoPanel }"
             @click="emit('toggle-info-panel')"
           >
-            <PanelRightIcon
+            <PanelRightOpenIcon
               :size="16"
               class="navigator-toolbar-actions__icon"
             />
