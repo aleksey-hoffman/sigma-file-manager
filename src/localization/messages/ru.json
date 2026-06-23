@@ -1059,6 +1059,9 @@
       "noExtensions": "Нет расширений с настройками",
       "noExtensionsDescription": "Установите и включите расширения с настраиваемыми параметрами, чтобы увидеть их здесь."
     },
+    "modal": {
+      "otherActions": "Other actions"
+    },
     "api": {
       "permissionDenied": "Доступ запрещён: {permission}",
       "permissionDeniedBinary": "Доступ запрещён: shell (требуется для управления бинарными файлами)",

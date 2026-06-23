@@ -1030,6 +1030,9 @@
       "noExtensions": "Không có tiện ích mở rộng có cài đặt",
       "noExtensionsDescription": "Cài đặt và bật các tiện ích mở rộng có cài đặt có thể cấu hình để xem chúng ở đây."
     },
+    "modal": {
+      "otherActions": "Other actions"
+    },
     "api": {
       "permissionDenied": "Quyền bị từ chối: {permission}",
       "permissionDeniedBinary": "Quyền bị từ chối: shell (cần thiết để quản lý tệp nhị phân)",

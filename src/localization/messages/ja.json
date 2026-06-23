@@ -1030,6 +1030,9 @@
       "noExtensions": "設定可能な拡張機能がありません",
       "noExtensionsDescription": "設定可能な拡張機能をインストールして有効化すると、ここに表示されます。"
     },
+    "modal": {
+      "otherActions": "Other actions"
+    },
     "api": {
       "permissionDenied": "権限が拒否されました: {permission}",
       "permissionDeniedBinary": "権限が拒否されました: shell（バイナリ管理に必要）",

@@ -17,9 +17,12 @@ type CommandDialogProps = DialogRootProps & {
   commandResetSearchTermOnSelect?: boolean;
   accessibleTitle?: string;
   accessibleDescription?: string;
+  useCommandRoot?: boolean;
 };
 
-const props = defineProps<CommandDialogProps>();
+const props = withDefaults(defineProps<CommandDialogProps>(), {
+  useCommandRoot: true,
+});
 const emits = defineEmits<DialogRootEmits>();
 
 const delegatedDialogProps = reactiveOmit(
@@ -28,6 +31,7 @@ const delegatedDialogProps = reactiveOmit(
   'commandResetSearchTermOnSelect',
   'accessibleTitle',
   'accessibleDescription',
+  'useCommandRoot',
 );
 const forwarded = useForwardPropsEmits(delegatedDialogProps, emits);
 
@@ -59,11 +63,18 @@ const commandComboboxBindings = computed(() => ({
         {{ resolvedAccessibleDescription }}
       </DialogDescription>
       <Command
+        v-if="useCommandRoot"
         class="sigma-ui-command-dialog__command"
         v-bind="commandComboboxBindings"
       >
         <slot />
       </Command>
+      <div
+        v-else
+        class="sigma-ui-command-dialog__content"
+      >
+        <slot />
+      </div>
     </DialogContent>
   </Dialog>
 </template>
@@ -85,6 +96,15 @@ const commandComboboxBindings = computed(() => ({
   overflow: hidden;
   padding: 0;
   box-shadow: var(--shadow-lg);
+}
+
+.sigma-ui-command-dialog__content {
+  display: flex;
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  flex-direction: column;
 }
 
 .sigma-ui-command-dialog:focus-visible {

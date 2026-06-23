@@ -1082,6 +1082,9 @@
       "noExtensions": "אין תוספים עם הגדרות",
       "noExtensionsDescription": "התקן ואפשר תוספים בעלי הגדרות הניתנות לתצורה כדי לראותם כאן."
     },
+    "modal": {
+      "otherActions": "פעולות נוספות"
+    },
     "api": {
       "permissionDenied": "ההרשאה נדחתה: {permission}",
       "permissionDeniedBinary": "ההרשאה נדחתה: מעטפת (נדרשת לניהול רכיבים בינאריים)",

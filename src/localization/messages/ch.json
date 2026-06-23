@@ -1030,6 +1030,9 @@
       "noExtensions": "没有可配置的扩展",
       "noExtensionsDescription": "安装并启用具有可配置设置的扩展程序，即可在此查看。"
     },
+    "modal": {
+      "otherActions": "其他操作"
+    },
     "api": {
       "permissionDenied": "权限被拒绝：{permission}",
       "permissionDeniedBinary": "权限被拒绝：shell（二进制文件管理需要此权限）",

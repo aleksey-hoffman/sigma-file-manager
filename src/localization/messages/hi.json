@@ -1082,6 +1082,9 @@
       "noExtensions": "सेटिंग्स के साथ कोई एक्सटेंशन नहीं",
       "noExtensionsDescription": "कॉन्फ़िगर करने योग्य सेटिंग्स वाले एक्सटेंशन इंस्टॉल और सक्षम करें ताकि उन्हें यहां देखा जा सके।"
     },
+    "modal": {
+      "otherActions": "Other actions"
+    },
     "api": {
       "permissionDenied": "अनुमति अस्वीकृत: {permission}",
       "permissionDeniedBinary": "अनुमति अस्वीकृत: शेल (बाइनरी प्रबंधन के लिए आवश्यक)",

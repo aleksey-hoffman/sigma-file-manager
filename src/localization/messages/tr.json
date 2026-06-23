@@ -1030,6 +1030,9 @@
       "noExtensions": "Ayarları olan eklenti yok",
       "noExtensionsDescription": "Yapılandırılabilir ayarları olan eklentileri yükleyin ve etkinleştirin, burada görmek için."
     },
+    "modal": {
+      "otherActions": "Other actions"
+    },
     "api": {
       "permissionDenied": "İzin reddedildi: {permission}",
       "permissionDeniedBinary": "İzin reddedildi: shell (ikili dosya yönetimi için gerekli)",

@@ -16,10 +16,13 @@ import {
   closeModal,
 } from '@/modules/extensions/api/modal-state';
 import ExtensionFormView from './extension-form-view.vue';
+import { useExtensionDisplayInfo } from '@/modules/extensions/composables/use-extension-display-info';
 
 const props = defineProps<{
   modal: ModalInstance;
 }>();
+
+const extensionDisplay = useExtensionDisplayInfo(() => props.modal.extensionId);
 
 const isOpen = computed({
   get: () => true,
@@ -57,7 +60,10 @@ function handleClose(): void {
       <div class="ext-modal__body">
         <ExtensionFormView
           :title="modal.options.title"
-          :content="modal.options.content"
+          :extension-id="modal.extensionId"
+          :extension-icon-path="extensionDisplay.extensionIconPath"
+          :extension-name="extensionDisplay.extensionName"
+          :content="modal.options.content ?? []"
           :buttons="modal.options.buttons"
           :values="modal.values"
           :on-close="handleClose"

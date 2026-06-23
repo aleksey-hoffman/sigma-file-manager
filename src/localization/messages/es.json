@@ -1030,6 +1030,9 @@
       "noExtensions": "No hay extensiones con configuración",
       "noExtensionsDescription": "Instala y habilita extensiones con configuraciones ajustables para verlas aquí."
     },
+    "modal": {
+      "otherActions": "Otras acciones"
+    },
     "api": {
       "permissionDenied": "Permiso denegado: {permission}",
       "permissionDeniedBinary": "Permiso denegado: shell (requerido para gestión de binarios)",

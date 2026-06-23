@@ -1030,6 +1030,9 @@
       "noExtensions": "Keine Erweiterungen mit Einstellungen",
       "noExtensionsDescription": "Installiere und aktiviere Erweiterungen mit konfigurierbaren Einstellungen, um sie hier zu sehen."
     },
+    "modal": {
+      "otherActions": "Weitere Aktionen"
+    },
     "api": {
       "permissionDenied": "Berechtigung verweigert: {permission}",
       "permissionDeniedBinary": "Berechtigung verweigert: shell (erforderlich für Binärverwaltung)",

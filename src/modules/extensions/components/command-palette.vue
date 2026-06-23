@@ -34,6 +34,7 @@ import {
 } from '@/modules/extensions/api/modal-state';
 import ExtensionIcon from './extension-icon.vue';
 import ExtensionFormView from './extension-form-view.vue';
+import { useExtensionDisplayInfo } from '@/modules/extensions/composables/use-extension-display-info';
 
 const { t } = useI18n();
 const shortcutsStore = useShortcutsStore();
@@ -47,8 +48,13 @@ const builtinCommandTitleKeys: Record<string, string> = {
 
 const isOpen = ref(false);
 const paletteModal = ref<ModalInstance | null>(null);
+const paletteCommandTitle = ref<string | undefined>(undefined);
 
 const isInFormMode = computed(() => paletteModal.value !== null);
+
+const paletteExtensionDisplay = useExtensionDisplayInfo(
+  computed(() => paletteModal.value?.extensionId),
+);
 
 const dialogOpen = computed({
   get: () => isOpen.value,
@@ -172,9 +178,13 @@ function exitFormMode(): void {
     closeModal(paletteModal.value.id);
     paletteModal.value = null;
   }
+
+  paletteCommandTitle.value = undefined;
 }
 
 async function handleSelect(_extensionId: string, command: ExtensionCommand) {
+  paletteCommandTitle.value = getCommandTitle(command);
+
   extensionsStore.executeCommand(command.id).catch((error) => {
     console.error(`Failed to execute command ${command.id}:`, error);
   });
@@ -272,7 +282,10 @@ defineExpose({
 </script>
 
 <template>
-  <CommandDialog v-model:open="dialogOpen">
+  <CommandDialog
+    v-model:open="dialogOpen"
+    :use-command-root="!isInFormMode"
+  >
     <template v-if="!isInFormMode">
       <CommandInput :placeholder="t('commandPalette.searchPlaceholder')" />
       <CommandList>
@@ -299,7 +312,7 @@ defineExpose({
               class="command-palette__icon"
               :extension-id="cmd.extensionId"
               :icon-path="getExtensionIconPath(cmd.extensionId)"
-              :size="16"
+              :size="18"
             />
             <span class="command-palette__extension-name">{{ getExtensionName(cmd.extensionId) }}:</span>
             <span>{{ getCommandTitle(cmd.command) }}</span>
@@ -323,7 +336,7 @@ defineExpose({
               class="command-palette__icon"
               :extension-id="cmd.extensionId"
               :icon-path="getExtensionIconPath(cmd.extensionId)"
-              :size="16"
+              :size="18"
             />
             <span class="command-palette__extension-name">{{ getExtensionName(cmd.extensionId) }}:</span>
             <span>{{ getCommandTitle(cmd.command) }}</span>
@@ -339,7 +352,11 @@ defineExpose({
       <div class="command-palette__form-view">
         <ExtensionFormView
           :title="paletteModal!.options.title"
-          :content="paletteModal!.options.content"
+          :extension-id="paletteModal!.extensionId"
+          :extension-icon-path="paletteExtensionDisplay.extensionIconPath"
+          :extension-name="paletteExtensionDisplay.extensionName"
+          :command-title="paletteCommandTitle"
+          :content="paletteModal!.options.content ?? []"
           :buttons="paletteModal!.options.buttons"
           :values="paletteModal!.values"
           :on-back="handleFormBack"
@@ -354,8 +371,8 @@ defineExpose({
 
 <style>
 .command-palette__icon {
-  width: 1rem;
-  height: 1rem;
+  width: 18px;
+  height: 18px;
   margin-right: 0.5rem;
   color: hsl(var(--primary));
 }

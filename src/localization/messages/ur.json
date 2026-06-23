@@ -1082,6 +1082,9 @@
       "noExtensions": "ترتیب والا کوئی ایکسٹینشن نہیں",
       "noExtensionsDescription": "قابل ترتیب ایکسٹینشنز انسٹال اور چالو کریں تاکہ یہاں دکھیں۔"
     },
+    "modal": {
+      "otherActions": "Other actions"
+    },
     "api": {
       "permissionDenied": "رسائی مسترد: {permission}",
       "permissionDeniedBinary": "رسائی مسترد: shell (بائنری بندوبست کے لیے)",

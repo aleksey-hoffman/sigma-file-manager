@@ -12,10 +12,8 @@ import {
   watch,
 } from 'vue';
 import { openUrl } from '@tauri-apps/plugin-opener';
-import { ArrowLeftIcon, XIcon } from '@lucide/vue';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { ContextMenuShortcut } from '@/components/ui/context-menu';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
@@ -29,14 +27,27 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { UIElement, ModalButton, KeyboardShortcut } from '@/types/extension';
+import type { UIElement, ModalButton } from '@/types/extension';
 import { renderTextWithLinksToSafeHtml } from '@/utils/safe-html';
+import { keyboardShortcutMatches } from '@/modules/extensions/utils/modal-keyboard-shortcut';
+import { getPrimaryModalButton, resolveModalActionButtons } from '@/modules/extensions/utils/modal-action-buttons';
+import { useExtensionModalOtherActionsShortcut } from '@/modules/extensions/composables/use-extension-modal-other-actions-shortcut';
+import ExtensionModalHeader from './extension-modal-header.vue';
+import ExtensionModalActionFooter from './extension-modal-action-footer.vue';
+
+type ExtensionModalActionFooterExpose = {
+  openOtherActions: () => void;
+};
 
 const props = defineProps<{
   title: string;
   content: UIElement[];
   buttons?: ModalButton[];
   values: Record<string, unknown>;
+  extensionId?: string;
+  extensionIconPath?: string;
+  extensionName?: string;
+  commandTitle?: string;
   onBack?: () => void;
   onClose?: () => void;
 }>();
@@ -48,6 +59,7 @@ const emit = defineEmits<{
 }>();
 
 const formRootElement = ref<HTMLElement | null>(null);
+const actionFooterRef = ref<ExtensionModalActionFooterExpose | null>(null);
 
 function getElementValue(element: UIElement): unknown {
   if (!element.id) return element.value;
@@ -62,46 +74,49 @@ function handleButtonClick(buttonId: string): void {
   emit('buttonClick', buttonId);
 }
 
-const buttonsWithShortcuts = computed(() => {
-  return (props.buttons ?? []).filter(
-    (button: ModalButton) => button.shortcut,
-  );
+const actionButtons = computed(() => props.buttons ?? []);
+const hasSecondaryActions = computed(() => {
+  return resolveModalActionButtons(actionButtons.value).secondaryButtons.length > 0;
 });
 
-function matchesShortcut(event: KeyboardEvent, shortcut: KeyboardShortcut): boolean {
-  const modifiers = shortcut.modifiers ?? [];
-  const needsCtrl = modifiers.includes('ctrl');
-  const needsShift = modifiers.includes('shift');
-  const needsAlt = modifiers.includes('alt');
-  const needsMeta = modifiers.includes('meta');
+const { tryOpenOtherActions, focusModalRoot } = useExtensionModalOtherActionsShortcut({
+  rootElement: formRootElement,
+  actionFooterRef,
+  hasSecondaryActions,
+});
 
-  if (event.ctrlKey !== needsCtrl) return false;
-  if (event.shiftKey !== needsShift) return false;
-  if (event.altKey !== needsAlt) return false;
-  if (event.metaKey !== needsMeta) return false;
+function triggerPrimaryAction(): void {
+  const primaryButton = getPrimaryModalButton(actionButtons.value);
 
-  return event.key.toLowerCase() === shortcut.key.toLowerCase()
-    || event.code.toLowerCase() === shortcut.key.toLowerCase();
-}
-
-function getShortcutParts(shortcut: KeyboardShortcut): string[] {
-  const parts: string[] = [];
-  const modifiers = shortcut.modifiers ?? [];
-
-  if (modifiers.includes('ctrl')) parts.push('Ctrl');
-  if (modifiers.includes('shift')) parts.push('Shift');
-  if (modifiers.includes('alt')) parts.push('Alt');
-  if (modifiers.includes('meta')) parts.push('⌘');
-
-  const keyName = shortcut.key === 'Enter' ? '↵' : shortcut.key.toUpperCase();
-  parts.push(keyName);
-
-  return parts;
+  if (primaryButton) {
+    handleButtonClick(primaryButton.id);
+  }
 }
 
 function handleFormKeydown(event: KeyboardEvent): void {
-  for (const button of buttonsWithShortcuts.value) {
-    if (button.shortcut && matchesShortcut(event, button.shortcut)) {
+  if (tryOpenOtherActions(event)) {
+    return;
+  }
+
+  const target = event.target;
+
+  if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      triggerPrimaryAction();
+    }
+
+    return;
+  }
+
+  if (event.key === 'Enter') {
+    event.preventDefault();
+    triggerPrimaryAction();
+    return;
+  }
+
+  for (const button of actionButtons.value) {
+    if (button.shortcut && keyboardShortcutMatches(event, button.shortcut)) {
       event.preventDefault();
       handleButtonClick(button.id);
       return;
@@ -201,23 +216,15 @@ watch(
     @keydown="handleFormKeydown"
     @click="handleFormLinkClick"
   >
-    <div class="ext-form-view__header">
-      <button
-        v-if="onBack"
-        class="ext-form-view__header-action"
-        @click="onBack"
-      >
-        <ArrowLeftIcon :size="16" />
-      </button>
-      <button
-        v-else-if="onClose"
-        class="ext-form-view__header-action"
-        @click="onClose"
-      >
-        <XIcon :size="16" />
-      </button>
-      <span class="ext-form-view__title">{{ title }}</span>
-    </div>
+    <ExtensionModalHeader
+      :title="title"
+      :extension-id="extensionId"
+      :extension-icon-path="extensionIconPath"
+      :extension-name="extensionName"
+      :command-title="commandTitle"
+      :on-back="onBack"
+      :on-close="onClose"
+    />
 
     <ScrollArea class="ext-form-view__scroll-area">
       <div class="ext-form-view__content">
@@ -418,28 +425,13 @@ watch(
       </div>
     </ScrollArea>
 
-    <div
-      v-if="buttonsWithShortcuts.length > 0"
-      class="ext-form-view__footer"
-    >
-      <div class="ext-form-view__action-bar">
-        <button
-          v-for="button in buttonsWithShortcuts"
-          :key="button.id"
-          :class="[
-            'ext-form-view__action-button',
-            button.variant === 'primary' && 'ext-form-view__action-button--primary',
-            button.variant === 'danger' && 'ext-form-view__action-button--danger',
-          ]"
-          @click="handleButtonClick(button.id)"
-        >
-          <span class="ext-form-view__action-label">{{ button.label }}</span>
-          <ContextMenuShortcut v-if="button.shortcut">
-            {{ getShortcutParts(button.shortcut).join('+') }}
-          </ContextMenuShortcut>
-        </button>
-      </div>
-    </div>
+    <ExtensionModalActionFooter
+      ref="actionFooterRef"
+      :buttons="actionButtons"
+      :modal-focus-target="formRootElement"
+      @button-click="handleButtonClick"
+      @other-actions-closed="focusModalRoot"
+    />
   </div>
 </template>
 
@@ -452,41 +444,6 @@ watch(
   flex-direction: column;
   gap: 8px;
   outline: none;
-}
-
-.ext-form-view__header {
-  display: flex;
-  align-items: center;
-  padding: 2px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid hsl(var(--border));
-  gap: 8px;
-}
-
-.ext-form-view__header-action {
-  display: flex;
-  width: 28px;
-  height: 28px;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  border: 1px solid hsl(var(--border));
-  border-radius: 6px;
-  background: transparent;
-  color: hsl(var(--muted-foreground));
-  cursor: pointer;
-  transition: background-color 0.15s, color 0.15s;
-}
-
-.ext-form-view__header-action:hover {
-  background: hsl(var(--accent));
-  color: hsl(var(--accent-foreground));
-}
-
-.ext-form-view__title {
-  font-size: 0.875rem;
-  font-weight: 500;
 }
 
 .ext-form-view__scroll-area {
@@ -677,63 +634,5 @@ watch(
 
 .ext-form-view__inline-button {
   align-self: flex-start;
-}
-
-.ext-form-view__footer {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  padding-top: 8px;
-  border-top: 1px solid hsl(var(--border));
-  gap: 8px;
-}
-
-.ext-form-view__action-bar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.ext-form-view__action-button {
-  display: inline-flex;
-  align-items: center;
-  padding: 6px 12px;
-  border: 1px solid hsl(var(--border));
-  border-radius: 6px;
-  background: transparent;
-  color: hsl(var(--foreground));
-  cursor: pointer;
-  font-size: 0.875rem;
-  gap: 8px;
-  transition: background-color 0.15s, color 0.15s;
-}
-
-.ext-form-view__action-button:hover {
-  background: hsl(var(--accent));
-  color: hsl(var(--accent-foreground));
-}
-
-.ext-form-view__action-button--primary {
-  border-color: hsl(var(--border));
-  background: transparent;
-  color: hsl(var(--foreground));
-}
-
-.ext-form-view__action-button--primary:hover {
-  background: hsl(var(--secondary));
-  color: hsl(var(--secondary-foreground));
-}
-
-.ext-form-view__action-button--danger {
-  color: hsl(var(--destructive));
-}
-
-.ext-form-view__action-button--danger:hover {
-  background: hsl(var(--destructive) / 10%);
-  color: hsl(var(--destructive));
-}
-
-.ext-form-view__action-label {
-  white-space: nowrap;
 }
 </style>

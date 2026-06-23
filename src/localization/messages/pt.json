@@ -1028,6 +1028,9 @@
       "noExtensions": "Nenhuma extensão com configurações",
       "noExtensionsDescription": "Instale e ative extensões com configurações ajustáveis para vê-las aqui."
     },
+    "modal": {
+      "otherActions": "Other actions"
+    },
     "api": {
       "permissionDenied": "Permissão negada: {permission}",
       "permissionDeniedBinary": "Permissão negada: shell (necessário para gerenciamento de binários)",

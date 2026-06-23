@@ -1026,6 +1026,9 @@
       "noExtensions": "افزونه‌ای با تنظیمات وجود ندارد",
       "noExtensionsDescription": "افزونه‌هایی با تنظیمات قابل پیکربندی را نصب و فعال کنید تا در اینجا نمایش داده شوند."
     },
+    "modal": {
+      "otherActions": "سایر عملیات"
+    },
     "api": {
       "permissionDenied": "دسترسی رد شد: {permission}",
       "permissionDeniedBinary": "دسترسی رد شد: shell (برای مدیریت فایل‌های باینری لازم است)",

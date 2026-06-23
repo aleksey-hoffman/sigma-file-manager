@@ -1082,6 +1082,9 @@
       "noExtensions": "No extensions with settings",
       "noExtensionsDescription": "Install and enable extensions that have configurable settings to see them here."
     },
+    "modal": {
+      "otherActions": "Other actions"
+    },
     "api": {
       "permissionDenied": "Dovoljenje zavrnjeno: {permission}",
       "permissionDeniedBinary": "Dovoljenje zavrnjeno: shell (potrebno za upravljanje binarnih datotek)",
