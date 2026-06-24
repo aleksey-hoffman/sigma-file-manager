@@ -10,6 +10,7 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use tantivy::schema::{
     IndexRecordOption, Schema, TextFieldIndexing, TextOptions, FAST, STORED, STRING,
 };
+use tantivy::indexer::{IndexWriter, NoMergePolicy};
 use tantivy::{Index, IndexReader, ReloadPolicy};
 
 pub(super) fn build_schema() -> (Schema, GlobalSearchIndexFields) {
@@ -115,6 +116,7 @@ pub(super) struct GlobalSearchMeta {
 }
 
 pub(super) const SCHEMA_VERSION: u32 = 1;
+pub(super) const BULK_INDEX_MEMORY_BUDGET_BYTES: usize = 100_000_000;
 const INDEX_RENAME_MAX_ATTEMPTS: usize = 100;
 const INDEX_RENAME_RETRY_DELAY: Duration = Duration::from_millis(100);
 
@@ -280,6 +282,14 @@ pub(super) fn validate_index(index_path: &Path, base_dir: &Path) -> bool {
 
 pub(super) fn clear_index(index_path: &Path) -> Result<(), String> {
     remove_dir_force(index_path)
+}
+
+pub(super) fn create_bulk_index_writer(index: &Index) -> Result<IndexWriter, String> {
+    let writer = index
+        .writer_with_num_threads(1, BULK_INDEX_MEMORY_BUDGET_BYTES)
+        .map_err(|error| error.to_string())?;
+    writer.set_merge_policy(Box::new(NoMergePolicy));
+    Ok(writer)
 }
 
 pub(super) fn open_or_create_index(

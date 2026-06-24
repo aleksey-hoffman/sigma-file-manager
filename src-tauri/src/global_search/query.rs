@@ -150,6 +150,9 @@ fn global_search_query_blocking(
         let state = GLOBAL_SEARCH_STATE
             .read()
             .map_err(|error| error.to_string())?;
+        if state.status.is_committing {
+            return Ok(Vec::new());
+        }
         state.index.is_none() || state.reader.is_none() || state.fields.is_none()
     };
 
@@ -159,6 +162,10 @@ fn global_search_query_blocking(
             .write()
             .map_err(|error| error.to_string())?;
 
+        if state.status.is_committing {
+            return Ok(Vec::new());
+        }
+
         if state.index.is_none() || state.reader.is_none() || state.fields.is_none() {
             state.index = Some(index);
             state.reader = Some(reader);
@@ -166,22 +173,22 @@ fn global_search_query_blocking(
         }
     }
 
-    let (reader, fields) = {
-        let state = GLOBAL_SEARCH_STATE
-            .read()
-            .map_err(|error| error.to_string())?;
-        let reader = state
-            .reader
-            .as_ref()
-            .ok_or_else(|| "Search index reader is not initialized".to_string())?
-            .clone();
-        let fields = *state
-            .fields
-            .as_ref()
-            .ok_or_else(|| "Search index fields are not initialized".to_string())?;
+    let state = GLOBAL_SEARCH_STATE
+        .read()
+        .map_err(|error| error.to_string())?;
 
-        (reader, fields)
-    };
+    if state.status.is_committing {
+        return Ok(Vec::new());
+    }
+
+    let reader = state
+        .reader
+        .as_ref()
+        .ok_or_else(|| "Search index reader is not initialized".to_string())?;
+    let fields = *state
+        .fields
+        .as_ref()
+        .ok_or_else(|| "Search index fields are not initialized".to_string())?;
 
     let searcher = reader.searcher();
     let normalized_query = normalize_case(&query);

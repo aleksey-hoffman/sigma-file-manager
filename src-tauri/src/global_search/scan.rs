@@ -6,16 +6,16 @@ use crate::utils::{metadata_modified_time_unix_ms, normalize_path};
 use std::fs::Metadata;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
-use std::sync::Mutex;
 use tantivy::{doc, Index, IndexReader, IndexWriter, Term};
 use tauri::Manager;
 use walkdir::WalkDir;
 
 use super::ignore::{builtin_ignored_paths, normalize_case, IgnoredPathMatcher};
 use super::index::{
-    calculate_dir_size, cleanup_orphan_index_dirs, clear_index, create_fresh_index, index_dir,
-    open_or_create_index, read_meta, remove_dir_force, replace_index_dir, staging_index_dir,
-    validate_index, validate_staged_index, write_meta, GlobalSearchMeta, SCHEMA_VERSION,
+    calculate_dir_size, cleanup_orphan_index_dirs, clear_index, create_bulk_index_writer,
+    create_fresh_index, index_dir, open_or_create_index, read_meta, remove_dir_force,
+    replace_index_dir, staging_index_dir, validate_index, validate_staged_index, write_meta,
+    GlobalSearchMeta, SCHEMA_VERSION,
 };
 use super::state::{now_millis, GlobalSearchIndexFields, GlobalSearchState, GLOBAL_SEARCH_STATE};
 use super::types::{
@@ -209,7 +209,7 @@ pub fn global_search_init(app: tauri::AppHandle) -> Result<GlobalSearchStatus, S
 }
 
 fn add_path_doc(
-    writer: &mut IndexWriter,
+    writer: &IndexWriter,
     fields: &GlobalSearchIndexFields,
     path: &Path,
     path_string: &str,
@@ -273,7 +273,7 @@ fn scan_drive(
     ignored_matcher: &IgnoredPathMatcher,
     path_update_counter: &AtomicU64,
     fields: &GlobalSearchIndexFields,
-    writer: &Mutex<IndexWriter>,
+    writer: &IndexWriter,
     indexed_count: &AtomicU64,
     cancel_flag: &AtomicBool,
 ) -> Result<(), GlobalSearchDriveScanError> {
@@ -320,11 +320,7 @@ fn scan_drive(
             continue;
         }
 
-        let did_add_doc = if let Ok(mut writer_locked) = writer.lock() {
-            add_path_doc(&mut writer_locked, fields, path, &path_string)
-        } else {
-            false
-        };
+        let did_add_doc = add_path_doc(writer, fields, path, &path_string);
 
         if !did_add_doc {
             continue;
@@ -400,11 +396,7 @@ pub async fn global_search_start_scan(
             (|| -> Result<(u64, Vec<String>, Index, IndexReader, GlobalSearchIndexFields, u64), String> {
                 let (index, fields) = create_fresh_index(&staging_path)?;
 
-                let writer = index
-                    .writer(100_000_000)
-                    .map_err(|error| error.to_string())?;
-
-                let writer = Mutex::new(writer);
+                let mut writer = create_bulk_index_writer(&index)?;
 
                 let ignored_paths: Vec<String> = settings
                     .ignored_paths
@@ -452,7 +444,7 @@ pub async fn global_search_start_scan(
                             .map(|root| {
                                 let root = root.clone();
                                 let ignored_matcher_ref = &ignored_matcher;
-                                let writer_ref = &writer;
+                                let writer_ref: &IndexWriter = &writer;
                                 let indexed_count_ref = &indexed_count;
                                 let path_update_counter_ref = &path_update_counter;
                                 let cancel_flag_ref = &cancel_flag;
@@ -565,9 +557,7 @@ pub async fn global_search_start_scan(
                     state.status.scan_phase = GlobalSearchScanPhase::Committing;
                 }
 
-                let mut writer_locked = writer.lock().map_err(|error| error.to_string())?;
-                writer_locked.commit().map_err(|error| error.to_string())?;
-                drop(writer_locked);
+                writer.commit().map_err(|error| error.to_string())?;
                 drop(writer);
                 drop(index);
 
@@ -701,9 +691,7 @@ fn global_search_index_paths_blocking(
 
     let (index, reader, fields) = open_or_create_index(&index_path)?;
 
-    let mut writer = index
-        .writer(50_000_000)
-        .map_err(|error| error.to_string())?;
+    let mut writer = create_bulk_index_writer(&index)?;
 
     let ignored_paths: Vec<String> = settings
         .ignored_paths
@@ -765,7 +753,7 @@ fn global_search_index_paths_blocking(
                 continue;
             }
 
-            let did_add_doc = add_path_doc(&mut writer, &fields, entry_path, &path_string);
+            let did_add_doc = add_path_doc(&writer, &fields, entry_path, &path_string);
 
             if did_add_doc {
                 indexed_count += 1;
