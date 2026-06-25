@@ -313,7 +313,11 @@
       "dynamicSizeTooltip": "Si vous redimensionnez le panneau manuellement, cette option se désactive et vos tailles personnalisées sont enregistrées.",
       "showFullSizeImagePreview": "Afficher l'image en taille réelle dans l'aperçu du panneau d'informations",
       "showFullSizeImagePreviewDescription": "En alternative, vous pouvez sélectionner une image et appuyer sur {shortcut} pour afficher l'image en taille réelle dans l'aperçu rapide.",
-      "showFullSizeImagePreviewMemoryWarning": "Augmente l'utilisation de la mémoire"
+      "showFullSizeImagePreviewMemoryWarning": "Augmente l'utilisation de la mémoire",
+      "muteVideoPreviewByDefault": "Couper le son de l'aperçu vidéo par défaut",
+      "muteVideoPreviewByDefaultDescription": "Coupe automatiquement le son des vidéos dans l'aperçu du panneau d'informations pour éviter un audio inattendu lors de la navigation dans les dossiers.",
+      "autoplayVideoPreview": "Lire automatiquement les aperçus vidéo",
+      "autoplayVideoPreviewDescription": "Démarre la lecture dans l'aperçu du panneau d'informations lorsque vous sélectionnez un fichier vidéo."
     },
     "addressBar": {
       "addressBarActions": "Actions de la barre d'adresse",
@@ -447,7 +451,7 @@
     "whatsNew": "nouveautés, journal des modifications, notes de version, version, mise à jour, actualités",
     "autostart": "démarrage automatique, démarrage, connexion, système, boot",
     "extensions": "extensions, plugins, addons, configuration, settings",
-    "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original"
+    "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, video, mute, autoplay"
   },
   "drag": {
     "holdShiftToChangeMode": "Maintenez [Shift] pour changer de mode",

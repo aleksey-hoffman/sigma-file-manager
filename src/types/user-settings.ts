@@ -325,6 +325,8 @@ export type UserSettingsNavigatorInfoPanel = {
   widthPx: number | null;
   previewHeightPx: number | null;
   showFullSizeImagePreview: boolean;
+  muteVideoPreviewByDefault: boolean;
+  autoplayVideoPreview: boolean;
 };
 
 export type NavigatorLayout = {

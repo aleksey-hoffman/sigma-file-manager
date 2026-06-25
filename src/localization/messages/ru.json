@@ -342,7 +342,11 @@
       "dynamicSizeTooltip": "При ручном изменении размера панели эта опция отключается, а ваши размеры сохраняются.",
       "showFullSizeImagePreview": "Показывать изображение в полном размере в области предпросмотра информационной панели",
       "showFullSizeImagePreviewDescription": "В качестве альтернативы вы можете выбрать изображение и нажать {shortcut}, чтобы просмотреть его в полном размере в быстром просмотре.",
-      "showFullSizeImagePreviewMemoryWarning": "Увеличивает использование памяти"
+      "showFullSizeImagePreviewMemoryWarning": "Увеличивает использование памяти",
+      "muteVideoPreviewByDefault": "Отключать звук предпросмотра видео по умолчанию",
+      "muteVideoPreviewByDefaultDescription": "Автоматически отключает звук видео в предпросмотре информационной панели, чтобы избежать неожиданного аудио при просмотре папок.",
+      "autoplayVideoPreview": "Автоматически воспроизводить предпросмотр видео",
+      "autoplayVideoPreviewDescription": "Начинает воспроизведение в предпросмотре информационной панели при выборе видеофайла."
     },
     "addressBar": {
       "addressBarActions": "Действия адресной строки",
@@ -476,7 +480,7 @@
     "whatsNew": "что нового, журнал изменений, примечания к выпуску, версия, обновление, новости",
     "autostart": "автозапуск, запуск, вход в систему, загрузка, система",
     "extensions": "extensions, plugins, addons, configuration, settings",
-    "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original"
+    "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, video, mute, autoplay"
   },
   "drag": {
     "holdShiftToChangeMode": "Удерживайте [Shift], чтобы изменить режим",

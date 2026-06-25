@@ -342,7 +342,11 @@
       "resetSize": "Reset panel size",
       "showFullSizeImagePreview": "Show full-size image in info panel preview",
       "showFullSizeImagePreviewDescription": "Alternatively, you can select an image and press {shortcut} to view the full-size image in Quick view.",
-      "showFullSizeImagePreviewMemoryWarning": "Increases memory usage"
+      "showFullSizeImagePreviewMemoryWarning": "Increases memory usage",
+      "muteVideoPreviewByDefault": "Mute video preview by default",
+      "muteVideoPreviewByDefaultDescription": "Automatically mutes videos in the info panel preview to prevent unexpected audio while browsing.",
+      "autoplayVideoPreview": "Automatically play video previews",
+      "autoplayVideoPreviewDescription": "Starts playback in the info panel preview when you select a video file."
     },
     "addressBar": {
       "addressBarActions": "Address bar actions",
@@ -465,7 +469,7 @@
     "quickAccess": "quick, access, panel, hover, sidebar, dashboard",
     "tooltips": "tooltip, tooltips, hover, delay, timing",
     "homePageMediaBanner": "home, page, media, banner, background, image, video",
-    "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, full-size, quick view",
+    "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, full-size, quick view, video, mute, autoplay",
     "navigator": "design, ui, navigator, dividers, titles, sorting, view, layout, list, grid, item, file, directory, hover, scale, highlight, OCD",
     "shortcuts": "shortcuts",
     "tabAppearance": "tabs, active tab, bold, text",

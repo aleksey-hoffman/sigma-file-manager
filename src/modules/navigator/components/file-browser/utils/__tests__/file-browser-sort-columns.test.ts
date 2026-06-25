@@ -38,6 +38,8 @@ function createNavigatorSettings(overrides: Partial<UserSettingsNavigator> = {})
       widthPx: null,
       previewHeightPx: null,
       showFullSizeImagePreview: false,
+      muteVideoPreviewByDefault: false,
+      autoplayVideoPreview: false,
     },
     showHiddenFiles: false,
     folderIconTheme: 'sigma',

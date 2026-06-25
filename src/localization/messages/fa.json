@@ -309,7 +309,11 @@
       "dynamicSizeTooltip": "اگر اندازه پانل اطلاعات را به صورت دستی تغییر دهید، این گزینه خاموش می‌شود و اندازه‌های سفارشی شما ذخیره می‌شود.",
       "showFullSizeImagePreview": "نمایش تصویر در اندازه کامل در ناحیه پیش‌نمایش پانل اطلاعات",
       "showFullSizeImagePreviewDescription": "به‌عنوان جایگزین، می‌توانید یک تصویر را انتخاب کنید و {shortcut} را بزنید تا تصویر را در اندازه کامل در نمای سریع ببینید.",
-      "showFullSizeImagePreviewMemoryWarning": "مصرف حافظه را افزایش می‌دهد"
+      "showFullSizeImagePreviewMemoryWarning": "مصرف حافظه را افزایش می‌دهد",
+      "muteVideoPreviewByDefault": "بی‌صدا کردن پیش‌نمایش ویدیو به‌صورت پیش‌فرض",
+      "muteVideoPreviewByDefaultDescription": "ویدیوها را در پیش‌نمایش پانل اطلاعات به‌صورت خودکار بی‌صدا می‌کند تا هنگام مرور پوشه‌ها صدای ناخواسته پخش نشود.",
+      "autoplayVideoPreview": "پخش خودکار پیش‌نمایش ویدیو",
+      "autoplayVideoPreviewDescription": "هنگام انتخاب یک فایل ویدیویی، پخش را در پیش‌نمایش پانل اطلاعات آغاز می‌کند."
     },
     "addressBar": {
       "addressBarActions": "عملکردهای نوار آدرس",
@@ -443,7 +447,7 @@
     "whatsNew": "تازه‌ها، تغییرات، یادداشت‌های نسخه، نسخه، به‌روزرسانی، اخبار",
     "autostart": "اجرای خودکار، راه‌اندازی، ورود، سیستم، بوت",
     "extensions": "extensions, plugins, addons, configuration, settings",
-    "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original"
+    "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, video, mute, autoplay"
   },
   "drag": {
     "holdShiftToChangeMode": "برای تغییر حالت، [Shift] را نگه دارید",

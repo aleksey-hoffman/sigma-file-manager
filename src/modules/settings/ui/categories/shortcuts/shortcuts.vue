@@ -1209,19 +1209,28 @@ const globalExtensionShortcuts = computed(() => {
                   <div class="shortcuts-table__cell shortcuts-table__cell--when" />
 
                   <div class="shortcuts-table__cell shortcuts-table__cell--source">
-                    <span
-                      class="shortcuts-table__source"
-                      :class="{
-                        'shortcuts-table__source--user': globalShortcutsStore.getSource(definition.id) === 'user',
-                        'shortcuts-table__source--system': globalShortcutsStore.getSource(definition.id) === 'system',
-                      }"
-                    >
-                      <component
-                        :is="globalShortcutsStore.getSource(definition.id) === 'user' ? UserIcon : SettingsIcon"
-                        :size="12"
-                      />
-                      {{ getGlobalSourceLabel(definition.id) }}
-                    </span>
+                    <Tooltip>
+                      <TooltipTrigger as-child>
+                        <span
+                          class="shortcuts-table__source"
+                          :class="{
+                            'shortcuts-table__source--user': globalShortcutsStore.getSource(definition.id) === 'user',
+                            'shortcuts-table__source--system': globalShortcutsStore.getSource(definition.id) === 'system',
+                          }"
+                        >
+                          <component
+                            :is="globalShortcutsStore.getSource(definition.id) === 'user' ? UserIcon : SettingsIcon"
+                            :size="12"
+                          />
+                          {{ getGlobalSourceLabel(definition.id) }}
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent side="top">
+                        <span class="shortcuts-table__source-tooltip-label">
+                          {{ getGlobalSourceLabel(definition.id) }}
+                        </span>
+                      </TooltipContent>
+                    </Tooltip>
                   </div>
                 </div>
               </ContextMenuTrigger>
@@ -1272,19 +1281,28 @@ const globalExtensionShortcuts = computed(() => {
                   <div class="shortcuts-table__cell shortcuts-table__cell--when" />
 
                   <div class="shortcuts-table__cell shortcuts-table__cell--source">
-                    <span
-                      class="shortcuts-table__source"
-                      :class="{
-                        'shortcuts-table__source--user': shortcut.source === 'user',
-                        'shortcuts-table__source--system': shortcut.source === 'system',
-                      }"
-                    >
-                      <component
-                        :is="shortcut.source === 'user' ? UserIcon : SettingsIcon"
-                        :size="12"
-                      />
-                      {{ shortcut.extensionName }}
-                    </span>
+                    <Tooltip>
+                      <TooltipTrigger as-child>
+                        <span
+                          class="shortcuts-table__source"
+                          :class="{
+                            'shortcuts-table__source--user': shortcut.source === 'user',
+                            'shortcuts-table__source--system': shortcut.source === 'system',
+                          }"
+                        >
+                          <component
+                            :is="shortcut.source === 'user' ? UserIcon : SettingsIcon"
+                            :size="12"
+                          />
+                          {{ shortcut.extensionName }}
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent side="top">
+                        <span class="shortcuts-table__source-tooltip-label">
+                          {{ shortcut.extensionName }}
+                        </span>
+                      </TooltipContent>
+                    </Tooltip>
                   </div>
                 </div>
               </ContextMenuTrigger>
@@ -1389,19 +1407,28 @@ const globalExtensionShortcuts = computed(() => {
                   </div>
 
                   <div class="shortcuts-table__cell shortcuts-table__cell--source">
-                    <span
-                      class="shortcuts-table__source"
-                      :class="{
-                        'shortcuts-table__source--user': shortcutsStore.getShortcutBindingSource(definition) === 'user',
-                        'shortcuts-table__source--system': shortcutsStore.getShortcutBindingSource(definition) === 'system',
-                      }"
-                    >
-                      <component
-                        :is="getShortcutBindingSourceIcon(definition)"
-                        :size="12"
-                      />
-                      {{ getShortcutBindingSourceLabel(definition) }}
-                    </span>
+                    <Tooltip>
+                      <TooltipTrigger as-child>
+                        <span
+                          class="shortcuts-table__source"
+                          :class="{
+                            'shortcuts-table__source--user': shortcutsStore.getShortcutBindingSource(definition) === 'user',
+                            'shortcuts-table__source--system': shortcutsStore.getShortcutBindingSource(definition) === 'system',
+                          }"
+                        >
+                          <component
+                            :is="getShortcutBindingSourceIcon(definition)"
+                            :size="12"
+                          />
+                          {{ getShortcutBindingSourceLabel(definition) }}
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent side="top">
+                        <span class="shortcuts-table__source-tooltip-label">
+                          {{ getShortcutBindingSourceLabel(definition) }}
+                        </span>
+                      </TooltipContent>
+                    </Tooltip>
                     <LockIcon
                       v-if="definition.isReadOnly"
                       :size="10"
@@ -1497,10 +1524,19 @@ const globalExtensionShortcuts = computed(() => {
                   </div>
 
                   <div class="shortcuts-table__cell shortcuts-table__cell--source">
-                    <span class="shortcuts-table__source shortcuts-table__source--extension">
-                      <BlocksIcon :size="12" />
-                      {{ keybinding.extensionName }}
-                    </span>
+                    <Tooltip>
+                      <TooltipTrigger as-child>
+                        <span class="shortcuts-table__source shortcuts-table__source--extension">
+                          <BlocksIcon :size="12" />
+                          {{ keybinding.extensionName }}
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent side="top">
+                        <span class="shortcuts-table__source-tooltip-label">
+                          {{ keybinding.extensionName }}
+                        </span>
+                      </TooltipContent>
+                    </Tooltip>
                   </div>
                 </div>
               </ContextMenuTrigger>
@@ -1876,11 +1912,31 @@ const globalExtensionShortcuts = computed(() => {
   white-space: nowrap;
 }
 
+.shortcuts-table__cell--source {
+  overflow: hidden;
+  min-width: 0;
+}
+
 .shortcuts-table__source {
   display: flex;
+  overflow: hidden;
+  min-width: 0;
+  flex: 1 1 auto;
   align-items: center;
+  cursor: help;
   font-size: 0.75rem;
   gap: 0.25rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.shortcuts-table__source svg {
+  flex-shrink: 0;
+}
+
+.shortcuts-table__source-tooltip-label {
+  font-size: 0.75rem;
+  white-space: nowrap;
 }
 
 .shortcuts-table__source--system {

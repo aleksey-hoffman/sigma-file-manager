@@ -342,7 +342,11 @@
       "dynamicSizeTooltip": "यदि आप जानकारी पैनल का आकार मैन्युअल रूप से बदलते हैं, तो यह विकल्प बंद हो जाता है और आपके कस्टम आकार सहेजे जाते हैं।",
       "showFullSizeImagePreview": "जानकारी पैनल पूर्वावलोकन में पूर्ण आकार की छवि दिखाएं",
       "showFullSizeImagePreviewDescription": "विकल्प के रूप में, आप किसी छवि को चुनकर {shortcut} दबाकर क्विक व्यू में उसे पूर्ण आकार में देख सकते हैं।",
-      "showFullSizeImagePreviewMemoryWarning": "मेमोरी उपयोग बढ़ाता है"
+      "showFullSizeImagePreviewMemoryWarning": "मेमोरी उपयोग बढ़ाता है",
+      "muteVideoPreviewByDefault": "डिफ़ॉल्ट रूप से वीडियो पूर्वावलोकन म्यूट करें",
+      "muteVideoPreviewByDefaultDescription": "फ़ोल्डर ब्राउज़ करते समय अप्रत्याशित ऑडियो से बचने के लिए जानकारी पैनल पूर्वावलोकन में वीडियो को स्वचालित रूप से म्यूट करता है।",
+      "autoplayVideoPreview": "वीडियो पूर्वावलोकन स्वचालित रूप से चलाएं",
+      "autoplayVideoPreviewDescription": "जब आप कोई वीडियो फ़ाइल चुनते हैं, तो जानकारी पैनल पूर्वावलोकन में प्लेबैक शुरू करता है।"
     },
     "addressBar": {
       "addressBarActions": "पता बार क्रियाएँ",
@@ -476,7 +480,7 @@
     "whatsNew": "नया क्या है, चेंजलॉग, रिलीज़ नोट्स, संस्करण, अपडेट, समाचार",
     "autostart": "ऑटोस्टार्ट, स्टार्टअप, बूट, लॉगिन, लॉन्च, सिस्टम, वेक",
     "extensions": "एक्सटेंशन, प्लगइन्स, ऐडऑन, कॉन्फ़िगरेशन, सेटिंग्स",
-    "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original"
+    "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, video, mute, autoplay"
   },
   "drag": {
     "holdShiftToChangeMode": "मोड बदलने के लिए [Shift] दबाए रखें",

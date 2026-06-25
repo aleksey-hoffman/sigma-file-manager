@@ -342,7 +342,11 @@
       "dynamicSizeTooltip": "اگر آپ معلوماتی پینل کا سائز دستی طور پر تبدیل کریں تو یہ آپشن بند ہو جائے گا اور آپ کے حسبِ منظر سائز محفوظ ہو جائیں گے۔",
       "showFullSizeImagePreview": "معلوماتی پینل پری ویو ایریا میں مکمل سائز کی تصویر دکھائیں",
       "showFullSizeImagePreviewDescription": "متبادل کے طور پر، آپ کسی تصویر کو منتخب کر کے {shortcut} دبا کر فوری نظر میں مکمل سائز کی تصویر دیکھ سکتے ہیں۔",
-      "showFullSizeImagePreviewMemoryWarning": "میموری کا استعمال بڑھاتا ہے"
+      "showFullSizeImagePreviewMemoryWarning": "میموری کا استعمال بڑھاتا ہے",
+      "muteVideoPreviewByDefault": "ویڈیو پری ویو کو بطور ڈیفالٹ خاموش کریں",
+      "muteVideoPreviewByDefaultDescription": "فولڈرز براؤز کرتے وقت غیر متوقع آڈیو سے بچنے کے لیے معلوماتی پینل پری ویو میں ویڈیوز کو خودکار طور پر خاموش کرتا ہے۔",
+      "autoplayVideoPreview": "ویڈیو پری ویوز خودکار طور پر چلائیں",
+      "autoplayVideoPreviewDescription": "جب آپ ویڈیو فائل منتخب کرتے ہیں تو معلوماتی پینل پری ویو میں پلے بیک شروع کرتا ہے۔"
     },
     "addressBar": {
       "addressBarActions": "پتہ پٹی کے اعمال",
@@ -476,7 +480,7 @@
     "whatsNew": "نیا کیا ہے, changelog, ریلیز",
     "autostart": "سٹارٹ اپ, بوٹ, لاگ ان",
     "extensions": "ایکسٹینشن, plugins, addons",
-    "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original"
+    "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, video, mute, autoplay"
   },
   "drag": {
     "holdShiftToChangeMode": "موڈ بدلنے کے لیے [Shift] دبائے رکھیں",

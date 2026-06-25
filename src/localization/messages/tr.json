@@ -313,7 +313,11 @@
       "dynamicSizeTooltip": "Bilgi panelini manuel olarak yeniden boyutlandırırsanız bu seçenek kapanır ve özel boyutlarınız kaydedilir.",
       "showFullSizeImagePreview": "Bilgi paneli önizleme alanında tam boyutlu görüntüyü göster",
       "showFullSizeImagePreviewDescription": "Alternatif olarak, bir görüntü seçip {shortcut} tuşuna basarak görüntüyü Hızlı görünümde tam boyutta görüntüleyebilirsiniz.",
-      "showFullSizeImagePreviewMemoryWarning": "Bellek kullanımını artırır"
+      "showFullSizeImagePreviewMemoryWarning": "Bellek kullanımını artırır",
+      "muteVideoPreviewByDefault": "Video önizlemesini varsayılan olarak sessize al",
+      "muteVideoPreviewByDefaultDescription": "Klasörlerde gezinirken beklenmedik sesleri önlemek için bilgi paneli önizlemesindeki videoları otomatik olarak sessize alır.",
+      "autoplayVideoPreview": "Video önizlemelerini otomatik oynat",
+      "autoplayVideoPreviewDescription": "Bir video dosyası seçtiğinizde bilgi paneli önizlemesinde oynatmayı başlatır."
     },
     "addressBar": {
       "addressBarActions": "Adres çubuğu işlemleri",
@@ -447,7 +451,7 @@
     "whatsNew": "yenilikler, değişiklik günlüğü, sürüm notları, sürüm, güncelleme, haberler",
     "autostart": "otomatik başlatma, başlangıç, oturum açma, sistem, açılış",
     "extensions": "extensions, plugins, addons, configuration, settings",
-    "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original"
+    "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, video, mute, autoplay"
   },
   "drag": {
     "holdShiftToChangeMode": "Modu değiştirmek için [Shift]'e basılı tutun",

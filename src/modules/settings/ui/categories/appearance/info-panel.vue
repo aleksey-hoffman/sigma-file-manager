@@ -9,11 +9,10 @@ import { useI18n } from 'vue-i18n';
 import { PanelRightIcon } from '@lucide/vue';
 import { Switch } from '@/components/ui/switch';
 import { SettingsItem } from '@/modules/settings';
+import { useInfoPanelBooleanSetting } from '@/modules/settings/composables/use-info-panel-boolean-setting';
 import { useInfoPanelLayout } from '@/modules/navigator/components/info-panel/composables/use-info-panel-layout';
-import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { useShortcutsStore } from '@/stores/runtime/shortcuts';
 
-const userSettingsStore = useUserSettingsStore();
 const shortcutsStore = useShortcutsStore();
 const { t } = useI18n();
 const {
@@ -22,12 +21,9 @@ const {
   disableDynamicSize,
 } = useInfoPanelLayout();
 
-const showFullSizeImagePreview = computed({
-  get: () => userSettingsStore.userSettings.navigator.infoPanel.showFullSizeImagePreview,
-  set: (value: boolean) => {
-    userSettingsStore.set('navigator.infoPanel.showFullSizeImagePreview', value);
-  },
-});
+const showFullSizeImagePreview = useInfoPanelBooleanSetting('showFullSizeImagePreview');
+const muteVideoPreviewByDefault = useInfoPanelBooleanSetting('muteVideoPreviewByDefault');
+const autoplayVideoPreview = useInfoPanelBooleanSetting('autoplayVideoPreview');
 
 const quickViewShortcutLabel = computed(() => shortcutsStore.getShortcutLabel('quickView'));
 
@@ -94,6 +90,36 @@ function handleToggleInfoPanelDynamicSize(enabled: boolean) {
             />
           </div>
         </div>
+
+        <div class="info-panel-settings__row">
+          <div class="info-panel-settings__copy">
+            <span class="info-panel-settings__label">
+              {{ t('settings.infoPanel.muteVideoPreviewByDefault') }}
+            </span>
+            <p class="info-panel-settings__description">
+              {{ t('settings.infoPanel.muteVideoPreviewByDefaultDescription') }}
+            </p>
+          </div>
+          <Switch
+            :model-value="muteVideoPreviewByDefault"
+            @update:model-value="muteVideoPreviewByDefault = $event"
+          />
+        </div>
+
+        <div class="info-panel-settings__row">
+          <div class="info-panel-settings__copy">
+            <span class="info-panel-settings__label">
+              {{ t('settings.infoPanel.autoplayVideoPreview') }}
+            </span>
+            <p class="info-panel-settings__description">
+              {{ t('settings.infoPanel.autoplayVideoPreviewDescription') }}
+            </p>
+          </div>
+          <Switch
+            :model-value="autoplayVideoPreview"
+            @update:model-value="autoplayVideoPreview = $event"
+          />
+        </div>
       </div>
     </template>
   </SettingsItem>
@@ -120,7 +146,6 @@ function handleToggleInfoPanelDynamicSize(enabled: boolean) {
   min-width: min(100%, 16rem);
   flex: 1 1 12rem;
   flex-direction: column;
-  gap: 0.375rem;
 }
 
 .info-panel-settings__label {

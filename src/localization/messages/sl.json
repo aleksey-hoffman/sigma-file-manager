@@ -342,7 +342,11 @@
       "dynamicSizeTooltip": "Če ročno spremenite velikost info panela, se ta možnost izklopi in shranijo vaše prilagojene velikosti.",
       "showFullSizeImagePreview": "Prikaži sliko v polni velikosti v predoglednem območju info panela",
       "showFullSizeImagePreviewDescription": "Kot alternativo lahko izberete sliko in pritisnete {shortcut}, da si jo v hitrem ogledu ogledate v polni velikosti.",
-      "showFullSizeImagePreviewMemoryWarning": "Poveča porabo pomnilnika"
+      "showFullSizeImagePreviewMemoryWarning": "Poveča porabo pomnilnika",
+      "muteVideoPreviewByDefault": "Privzeto utišaj predogled videoposnetka",
+      "muteVideoPreviewByDefaultDescription": "Samodejno utiša videoposnetke v predogledu info panela, da prepreči nepričakovano zvočno predvajanje med brskanjem po mapah.",
+      "autoplayVideoPreview": "Samodejno predvajaj predogled videoposnetka",
+      "autoplayVideoPreviewDescription": "Začne predvajanje v predogledu info panela, ko izberete video datoteko."
     },
     "addressBar": {
       "addressBarActions": "Dejanja naslovne vrstice",
@@ -476,7 +480,7 @@
     "whatsNew": "what's new, changelog, release notes, version, update, news",
     "autostart": "autostart, zagon, sistem, prijava, zagon ob zagonu",
     "extensions": "extensions, plugins, addons, configuration, settings",
-    "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original"
+    "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, video, mute, autoplay"
   },
   "drag": {
     "holdShiftToChangeMode": "Zadržite [Shift] za spremembo načina",

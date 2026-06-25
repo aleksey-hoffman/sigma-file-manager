@@ -113,6 +113,8 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
         widthPx: null,
         previewHeightPx: null,
         showFullSizeImagePreview: false,
+        muteVideoPreviewByDefault: false,
+        autoplayVideoPreview: false,
       },
       showHiddenFiles: false,
       splitViewMode: 'split',

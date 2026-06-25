@@ -342,7 +342,11 @@
       "resetSize": "אפס את גודל החלונית",
       "showFullSizeImagePreview": "הצג תמונה בגודל מלא באזור התצוגה המקדימה של חלונית המידע",
       "showFullSizeImagePreviewDescription": "לחלופין, ניתן לבחור תמונה וללחוץ על {shortcut} כדי לצפות בתמונה בגודל מלא בתצוגה המהירה.",
-      "showFullSizeImagePreviewMemoryWarning": "מגבירה את השימוש בזיכרון"
+      "showFullSizeImagePreviewMemoryWarning": "מגבירה את השימוש בזיכרון",
+      "muteVideoPreviewByDefault": "השתקת תצוגה מקדימה של וידאו כברירת מחדל",
+      "muteVideoPreviewByDefaultDescription": "משתיקה אוטומטית סרטונים בתצוגה המקדימה של חלונית המידע כדי למנוע שמע בלתי צפוי בעת דפדוף בתיקיות.",
+      "autoplayVideoPreview": "הפעלת תצוגה מקדימה של וידאו באופן אוטומטי",
+      "autoplayVideoPreviewDescription": "מתחילה השמעה בתצוגה המקדימה של חלונית המידע כשבוחרים קובץ וידאו."
     },
     "addressBar": {
       "addressBarActions": "פעולות שורת הכתובת",
@@ -476,7 +480,7 @@
     "whatsNew": "מה חדש, יומן שינויים, הערות גרסה, גרסה, עדכון, חדשות",
     "autostart": "הפעלה אוטומטית, אתחול, כניסה, התחברות, הפעלה, מערכת",
     "extensions": "תוספים, תוספות, הרחבות, תצורה, הגדרות",
-    "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original"
+    "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, video, mute, autoplay"
   },
   "drag": {
     "holdShiftToChangeMode": "החזק [Shift] כדי לשנות מצב",

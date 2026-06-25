@@ -14,8 +14,8 @@ import {
   FileImageIcon,
   Loader2Icon,
 } from '@lucide/vue';
-import { isVideoFile as checkIsVideo } from '@/modules/navigator/components/file-browser/utils';
 import { useInfoPanelImagePreview } from '@/modules/navigator/components/info-panel/composables/use-info-panel-image-preview';
+import { useInfoPanelVideoPreview } from '@/modules/navigator/components/info-panel/composables/use-info-panel-video-preview';
 import UbuntuWslIcon from '@/components/icons/ubuntu-wsl-icon.vue';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { isWslPath } from '@/utils/normalize-path';
@@ -44,16 +44,16 @@ const {
   imagePreviewSrc,
 } = useInfoPanelImagePreview(() => props.selectedEntry);
 
+const {
+  videoPreviewRef,
+  isVideoFile,
+  muteVideoPreviewByDefault,
+} = useInfoPanelVideoPreview(() => props.selectedEntry);
+
 const textPreviewContent = ref('');
 const textPreviewLoading = ref(false);
 const textPreviewFailed = ref(false);
 let textPreviewRequestSequence = 0;
-
-const isVideoFile = computed(() => {
-  if (!props.selectedEntry) return false;
-
-  return checkIsVideo(props.selectedEntry);
-});
 
 const infoPanelPreviewKind = computed(() => {
   const entry = props.selectedEntry;
@@ -175,10 +175,12 @@ watch(
       class="info-panel-preview__media-container"
     >
       <video
+        ref="videoPreviewRef"
         :src="mediaSrc"
         class="info-panel-preview__video animate-fade-in-x2"
         controls
         preload="metadata"
+        :muted="muteVideoPreviewByDefault"
       />
     </div>
     <div

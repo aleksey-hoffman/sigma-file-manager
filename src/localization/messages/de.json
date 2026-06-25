@@ -313,7 +313,11 @@
       "dynamicSizeTooltip": "Wenn Sie die Infotafel manuell in der Größe ändern, wird diese Option deaktiviert und Ihre angepassten Größen gespeichert.",
       "showFullSizeImagePreview": "Bild in voller Größe in Infotafel-Vorschau anzeigen",
       "showFullSizeImagePreviewDescription": "Alternativ können Sie ein Bild auswählen und {shortcut} drücken, um das Bild in voller Größe in der Schnellansicht anzuzeigen.",
-      "showFullSizeImagePreviewMemoryWarning": "Erhöht die Speichernutzung"
+      "showFullSizeImagePreviewMemoryWarning": "Erhöht die Speichernutzung",
+      "muteVideoPreviewByDefault": "Videovorschau standardmäßig stummschalten",
+      "muteVideoPreviewByDefaultDescription": "Schaltet Videos in der Infotafel-Vorschau automatisch stumm, um unerwartete Geräusche beim Durchsuchen von Ordnern zu vermeiden.",
+      "autoplayVideoPreview": "Videovorschau automatisch abspielen",
+      "autoplayVideoPreviewDescription": "Startet die Wiedergabe in der Infotafel-Vorschau, wenn Sie eine Videodatei auswählen."
     },
     "addressBar": {
       "addressBarActions": "Aktionen in der Adressleiste",
@@ -447,7 +451,7 @@
     "whatsNew": "neuigkeiten, änderungsprotokoll, versionshinweise, version, aktualisierung, news",
     "autostart": "Autostart, Start, Systemstart, Boot, Anmeldung, Login, System",
     "extensions": "extensions, plugins, addons, configuration, settings",
-    "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original"
+    "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, video, mute, autoplay"
   },
   "drag": {
     "holdShiftToChangeMode": "Halten Sie [Shift] gedrückt, um den Modus zu ändern",
