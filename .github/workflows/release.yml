@@ -137,7 +137,7 @@ jobs:
           - platform: windows
             os: windows-latest
           - platform: linux
-            os: ubuntu-22.04
+            os: ubuntu-24.04
 
     runs-on: ${{ matrix.os }}
     env:
@@ -181,13 +181,7 @@ jobs:
 
       - name: Install Linux dependencies
         if: matrix.platform == 'linux'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            libwebkit2gtk-4.1-dev \
-            libayatana-appindicator3-dev \
-            librsvg2-dev \
-            patchelf
+        uses: ./.github/actions/install-linux-tauri-deps
 
       - name: Install npm dependencies
         run: npm ci

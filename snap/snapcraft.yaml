@@ -1,5 +1,5 @@
 name: sigma-file-manager
-base: core22
+base: core24
 adopt-info: build-app
 summary: Modern, free, open-source file manager for Windows and Linux
 description: |
@@ -50,13 +50,6 @@ plugs:
     bus: session
     name: org.com_sigma_file_manager_app.SingleInstance
 
-package-repositories:
-  - type: apt
-    components: [main]
-    suites: [noble]
-    key-id: 78E1918602959B9C59103100F1831DDAFC42E99D
-    url: http://ppa.launchpad.net/snappy-dev/snapcraft-daily/ubuntu
-
 parts:
   build-app:
     plugin: dump
@@ -65,7 +58,12 @@ parts:
       - node/22/stable
       - rustup/latest/stable
     build-packages:
-      - libwebkit2gtk-4.1-dev
+      - libwebkit2gtk-4.1-0=2.44.0-2
+      - libwebkit2gtk-4.1-dev=2.44.0-2
+      - libjavascriptcoregtk-4.1-0=2.44.0-2
+      - libjavascriptcoregtk-4.1-dev=2.44.0-2
+      - gir1.2-javascriptcoregtk-4.1=2.44.0-2
+      - gir1.2-webkit2-4.1=2.44.0-2
       - build-essential
       - curl
       - wget
@@ -76,7 +74,8 @@ parts:
       - librsvg2-dev
       - dpkg
     stage-packages:
-      - libwebkit2gtk-4.1-0
+      - libwebkit2gtk-4.1-0=2.44.0-2
+      - libjavascriptcoregtk-4.1-0=2.44.0-2
       - libayatana-appindicator3-1
     override-pull: |
       craftctl default

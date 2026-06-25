@@ -45,15 +45,13 @@ jobs:
         run: npm run test
 
   tauri-linux:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@v5
 
       - name: Install Linux dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev patchelf
+        uses: ./.github/actions/install-linux-tauri-deps
 
       - name: Rust toolchain
         uses: dtolnay/rust-toolchain@stable
