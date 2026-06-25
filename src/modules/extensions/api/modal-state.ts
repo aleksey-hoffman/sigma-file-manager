@@ -2,7 +2,9 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-import { ref, reactive, nextTick, type Ref } from 'vue';
+import {
+  ref, reactive, nextTick, toRaw, type Ref,
+} from 'vue';
 import type {
   ModalOptions,
   ModalHandle,
@@ -10,6 +12,10 @@ import type {
   ModalSubmitCallback,
   ModalCloseCallback,
   ModalValueChangeCallback,
+  ListDetailState,
+  ListDetailSelectionChangeCallback,
+  ListDetailSearchChangeCallback,
+  ListDetailFilterChangeCallback,
   UIElement,
 } from '@/types/extension';
 import {
@@ -17,6 +23,11 @@ import {
   toPlainValues,
   initializeFormValues,
 } from '@/modules/extensions/utils/ui-element-values';
+import {
+  createDefaultListDetailState,
+  getListDetailValues,
+  mergeListDetailState,
+} from '@/modules/extensions/utils/list-detail-state';
 
 const ERROR_PREFIX = '[Extensions]';
 
@@ -24,6 +35,9 @@ const CALLBACK_ERROR_LABELS = {
   close: 'Modal close callback error',
   valueChange: 'Modal valueChange callback error',
   submit: 'Modal submit callback error',
+  selectionChange: 'Modal selectionChange callback error',
+  searchChange: 'Modal searchChange callback error',
+  filterChange: 'Modal filterChange callback error',
 } as const;
 
 export type ModalInstance = {
@@ -31,9 +45,13 @@ export type ModalInstance = {
   extensionId: string;
   options: ModalOptions;
   values: Record<string, unknown>;
+  listDetail: ListDetailState | null;
   submitCallbacks: ModalSubmitCallback[];
   closeCallbacks: ModalCloseCallback[];
   valueChangeCallbacks: ModalValueChangeCallback[];
+  selectionChangeCallbacks: ListDetailSelectionChangeCallback[];
+  searchChangeCallbacks: ListDetailSearchChangeCallback[];
+  filterChangeCallbacks: ListDetailFilterChangeCallback[];
   renderedInPalette: boolean;
 };
 
@@ -43,7 +61,60 @@ const activeModals: Ref<ModalInstance[]> = ref([]);
 const modalState = {
   idCounter: 0,
   paletteFormHandler: null as PaletteFormHandler | null,
+  pendingCommandTitleByExtension: new Map<string, string[]>(),
 };
+
+export function setPendingModalCommandTitle(extensionId: string, commandTitle: string): void {
+  const pendingTitles = modalState.pendingCommandTitleByExtension.get(extensionId) ?? [];
+  pendingTitles.push(commandTitle);
+  modalState.pendingCommandTitleByExtension.set(extensionId, pendingTitles);
+}
+
+function consumePendingModalCommandTitle(extensionId: string): string | undefined {
+  const pendingTitles = modalState.pendingCommandTitleByExtension.get(extensionId);
+
+  if (!pendingTitles?.length) {
+    return undefined;
+  }
+
+  const commandTitle = pendingTitles.shift();
+
+  if (!pendingTitles.length) {
+    modalState.pendingCommandTitleByExtension.delete(extensionId);
+  }
+  else {
+    modalState.pendingCommandTitleByExtension.set(extensionId, pendingTitles);
+  }
+
+  return commandTitle;
+}
+
+function resolveModalOptions(extensionId: string, options: ModalOptions): ModalOptions {
+  const commandTitle = options.commandTitle ?? consumePendingModalCommandTitle(extensionId);
+
+  if (!commandTitle) {
+    return options;
+  }
+
+  return {
+    ...options,
+    commandTitle,
+  };
+}
+
+function closeDuplicateStandaloneModals(extensionId: string, options: ModalOptions): void {
+  const layout = options.layout ?? 'form';
+  const duplicates = activeModals.value.filter(
+    modal => !modal.renderedInPalette
+      && modal.extensionId === extensionId
+      && modal.options.layout === layout
+      && modal.options.title === options.title,
+  );
+
+  for (const modal of duplicates) {
+    closeModal(modal.id);
+  }
+}
 
 function invokeSyncCallbacks(
   callbacks: (() => void)[],
@@ -82,6 +153,21 @@ async function invokeSubmitCallbacks(
   return shouldClose;
 }
 
+async function invokeAsyncCallbacks<T extends unknown[]>(
+  callbacks: ((...args: T) => void | Promise<void>)[],
+  errorLabel: string,
+  ...args: T
+): Promise<void> {
+  for (const callback of callbacks) {
+    try {
+      await callback(...args);
+    }
+    catch (error) {
+      console.error(`${ERROR_PREFIX} ${errorLabel}:`, error);
+    }
+  }
+}
+
 function invokeValueChangeCallbacks(
   callbacks: ModalValueChangeCallback[],
   elementId: string,
@@ -115,10 +201,15 @@ export function unregisterPaletteFormHandler(): void {
   modalState.paletteFormHandler = null;
 }
 
+function isListDetailModal(options: ModalOptions): boolean {
+  return options.layout === 'listDetail';
+}
+
 function createModalInstance(
   extensionId: string,
   options: ModalOptions,
   values: Record<string, unknown>,
+  listDetail: ListDetailState | null,
   renderedInPalette: boolean,
   modalId: string,
 ): ModalInstance {
@@ -127,9 +218,13 @@ function createModalInstance(
     extensionId,
     options: { ...options },
     values,
+    listDetail,
     submitCallbacks: [],
     closeCallbacks: [],
     valueChangeCallbacks: [],
+    selectionChangeCallbacks: [],
+    searchChangeCallbacks: [],
+    filterChangeCallbacks: [],
     renderedInPalette,
   });
 }
@@ -168,15 +263,19 @@ function createModalHandle(modalId: string, instance: ModalInstance): ModalHandl
     },
     updateElement: (elementId: string, updates: Partial<UIElement>) => {
       const mutableInstance = resolveInstance(modalId, instance);
-      const elementIndex = mutableInstance.options.content.findIndex(element => element.id === elementId);
+      const content = mutableInstance.options.content ?? [];
+      const elementIndex = content.findIndex(element => element.id === elementId);
 
       if (elementIndex !== -1) {
-        const currentElement = mutableInstance.options.content[elementIndex];
+        const currentElement = content[elementIndex];
+        const nextContent = [...content];
 
-        mutableInstance.options.content[elementIndex] = {
+        nextContent[elementIndex] = {
           ...currentElement,
           ...updates,
         };
+
+        mutableInstance.options.content = nextContent;
 
         if (hasValue(currentElement) && updates.value !== undefined) {
           mutableInstance.values[currentElement.id!] = updates.value;
@@ -198,10 +297,56 @@ function createModalHandle(modalId: string, instance: ModalInstance): ModalHandl
     },
     setButtons: (buttons: ModalButton[]) => {
       const mutableInstance = resolveInstance(modalId, instance);
-      mutableInstance.options.buttons = buttons;
+      mutableInstance.options = {
+        ...mutableInstance.options,
+        buttons,
+      };
+    },
+    setListDetail: (updates: Partial<ListDetailState>) => {
+      const mutableInstance = resolveInstance(modalId, instance);
+
+      if (!mutableInstance.listDetail) {
+        throw new Error(`${ERROR_PREFIX} setListDetail is only available for list-detail modals`);
+      }
+
+      const currentListDetail = toRaw(mutableInstance.listDetail) as ListDetailState;
+      mutableInstance.listDetail = structuredClone(
+        mergeListDetailState(currentListDetail, updates),
+      ) as ListDetailState;
+      const listDetailValues = getListDetailValues(mutableInstance.listDetail);
+      mutableInstance.values = {
+        ...mutableInstance.values,
+        ...listDetailValues,
+      };
+    },
+    getListDetail: () => {
+      const mutableInstance = resolveInstance(modalId, instance);
+
+      if (!mutableInstance.listDetail) {
+        return createDefaultListDetailState();
+      }
+
+      return structuredClone(mutableInstance.listDetail);
+    },
+    onSelectionChange: (callback: ListDetailSelectionChangeCallback) => {
+      instance.selectionChangeCallbacks.push(callback);
+    },
+    onSearchChange: (callback: ListDetailSearchChangeCallback) => {
+      instance.searchChangeCallbacks.push(callback);
+    },
+    onFilterChange: (callback: ListDetailFilterChangeCallback) => {
+      instance.filterChangeCallbacks.push(callback);
     },
     getValues: () => {
       const mutableInstance = resolveInstance(modalId, instance);
+
+      if (mutableInstance.listDetail) {
+        return {
+          ...toPlainValues(mutableInstance.values),
+          ...getListDetailValues(mutableInstance.listDetail),
+        };
+      }
+
       return toPlainValues(mutableInstance.values);
     },
   };
@@ -209,13 +354,29 @@ function createModalHandle(modalId: string, instance: ModalInstance): ModalHandl
 
 export function createModal(extensionId: string, options: ModalOptions): ModalHandle {
   const modalId = generateModalId();
-  const values = initializeFormValues(options.content);
+  const resolvedOptions = resolveModalOptions(extensionId, options);
+  const listDetailLayout = isListDetailModal(resolvedOptions);
+  const listDetail = listDetailLayout
+    ? createDefaultListDetailState(resolvedOptions.listDetail)
+    : null;
+  const values = listDetailLayout
+    ? getListDetailValues(listDetail!)
+    : initializeFormValues(resolvedOptions.content ?? []);
   const shouldRouteToPalette = modalState.paletteFormHandler !== null;
+
+  if (!shouldRouteToPalette) {
+    closeDuplicateStandaloneModals(extensionId, resolvedOptions);
+  }
 
   const instance = createModalInstance(
     extensionId,
-    options,
+    {
+      ...resolvedOptions,
+      content: resolvedOptions.content ?? [],
+      layout: listDetailLayout ? 'listDetail' : (resolvedOptions.layout ?? 'form'),
+    },
     values,
+    listDetail,
     shouldRouteToPalette,
     modalId,
   );
@@ -259,7 +420,12 @@ export async function submitModal(modalId: string, buttonId: string): Promise<bo
     return false;
   }
 
-  const values = toPlainValues(instance.values);
+  const values = instance.listDetail
+    ? {
+        ...toPlainValues(instance.values),
+        ...getListDetailValues(instance.listDetail),
+      }
+    : toPlainValues(instance.values);
   const shouldCloseModal = await invokeSubmitCallbacks(
     instance.submitCallbacks,
     values,
@@ -272,6 +438,54 @@ export async function submitModal(modalId: string, buttonId: string): Promise<bo
   }
 
   return false;
+}
+
+export async function updateModalSelection(modalId: string, itemId: string | null): Promise<void> {
+  const instance = getModalInstance(modalId);
+
+  if (!instance?.listDetail) {
+    return;
+  }
+
+  await invokeAsyncCallbacks(
+    instance.selectionChangeCallbacks,
+    CALLBACK_ERROR_LABELS.selectionChange,
+    itemId,
+  );
+}
+
+export async function updateModalSearch(modalId: string, searchQuery: string): Promise<void> {
+  const instance = getModalInstance(modalId);
+
+  if (!instance?.listDetail) {
+    return;
+  }
+
+  instance.listDetail.searchQuery = searchQuery;
+  instance.values.searchQuery = searchQuery;
+
+  await invokeAsyncCallbacks(
+    instance.searchChangeCallbacks,
+    CALLBACK_ERROR_LABELS.searchChange,
+    searchQuery,
+  );
+}
+
+export async function updateModalFilter(modalId: string, filterValue: string): Promise<void> {
+  const instance = getModalInstance(modalId);
+
+  if (!instance?.listDetail) {
+    return;
+  }
+
+  instance.listDetail.filterValue = filterValue;
+  instance.values.filterValue = filterValue;
+
+  await invokeAsyncCallbacks(
+    instance.filterChangeCallbacks,
+    CALLBACK_ERROR_LABELS.filterChange,
+    filterValue,
+  );
 }
 
 export function closeModal(modalId: string): void {

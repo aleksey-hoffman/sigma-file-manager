@@ -25,12 +25,12 @@ const subtitle = computed(() => {
   const title = props.title.trim();
   const commandTitle = props.commandTitle?.trim();
 
-  if (extensionName && title && extensionName !== title) {
-    return title;
-  }
-
   if (commandTitle && commandTitle !== displayName.value) {
     return commandTitle;
+  }
+
+  if (extensionName && title && extensionName !== title) {
+    return title;
   }
 
   return '';
@@ -110,9 +110,9 @@ const showSubtitle = computed(() => Boolean(subtitle.value));
 }
 
 .ext-modal-header__icon {
+  overflow: hidden;
   flex-shrink: 0;
   border-radius: 6px;
-  overflow: hidden;
 }
 
 .ext-modal-header__title-wrap {
@@ -125,19 +125,19 @@ const showSubtitle = computed(() => Boolean(subtitle.value));
 
 .ext-modal-header__title {
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   font-size: 0.875rem;
   font-weight: 500;
   line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .ext-modal-header__subtitle {
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   color: hsl(var(--muted-foreground));
   font-size: 0.75rem;
   line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 </style>

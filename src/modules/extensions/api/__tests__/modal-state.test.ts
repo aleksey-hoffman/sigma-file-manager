@@ -12,9 +12,11 @@ import {
   closeModal,
   submitModal,
   updateModalValue,
+  updateModalSelection,
   clearExtensionModals,
   registerPaletteFormHandler,
   unregisterPaletteFormHandler,
+  setPendingModalCommandTitle,
 } from '@/modules/extensions/api/modal-state';
 
 function createOptions() {
@@ -57,6 +59,12 @@ function createOptions() {
 }
 
 describe('modal-state', () => {
+  async function waitForStandaloneModal(): Promise<void> {
+    await new Promise<void>((resolve) => {
+      requestAnimationFrame(() => resolve());
+    });
+  }
+
   beforeEach(() => {
     unregisterPaletteFormHandler();
     registerPaletteFormHandler(() => {});
@@ -202,5 +210,79 @@ describe('modal-state', () => {
     );
 
     unregisterPaletteFormHandler();
+  });
+
+  it('awaits async list-detail selection callbacks', async () => {
+    unregisterPaletteFormHandler();
+    const handle = createModal('test.ext', {
+      title: 'History',
+      layout: 'listDetail',
+      listDetail: {
+        items: [{
+          id: 'a',
+          title: 'Entry A',
+        }],
+        selectedItemId: 'a',
+        searchQuery: '',
+        filterValue: 'all',
+        filterOptions: [],
+        detail: null,
+        detailFields: [],
+      },
+    });
+    await waitForStandaloneModal();
+    const instance = getActiveModals().value[0];
+    let detailLoaded = false;
+
+    handle.onSelectionChange(async () => {
+      await new Promise(resolve => setTimeout(resolve, 10));
+      handle.setListDetail({
+        selectedItemId: 'a',
+        detail: {
+          type: 'text',
+          text: 'Entry A body',
+        },
+        detailFields: [{
+          label: 'Type',
+          value: 'Text',
+        }],
+      });
+      detailLoaded = true;
+    });
+
+    await updateModalSelection(instance.id, 'a');
+
+    expect(detailLoaded).toBe(true);
+    expect(instance.listDetail?.detail).toEqual({
+      type: 'text',
+      text: 'Entry A body',
+    });
+    closeModal(instance.id);
+    registerPaletteFormHandler(() => {});
+  });
+
+  it('consumes pending command title when modal omits commandTitle', async () => {
+    unregisterPaletteFormHandler();
+    setPendingModalCommandTitle('test.ext', 'Open History');
+
+    createModal('test.ext', {
+      title: 'Clipboard History',
+      layout: 'listDetail',
+      listDetail: {
+        items: [],
+        selectedItemId: null,
+        searchQuery: '',
+        filterValue: 'all',
+        filterOptions: [],
+        detail: null,
+        detailFields: [],
+      },
+    });
+    await waitForStandaloneModal();
+
+    const instance = getActiveModals().value[0];
+    expect(instance.options.commandTitle).toBe('Open History');
+    closeModal(instance.id);
+    registerPaletteFormHandler(() => {});
   });
 });

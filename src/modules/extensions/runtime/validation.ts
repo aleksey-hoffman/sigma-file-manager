@@ -541,4 +541,11 @@ export function assertValidManifestData(data: unknown): asserts data is Extensio
   if (!isObjectRecord(data.engines) || !isNonEmptyString(data.engines.sigmaFileManager)) {
     throw new Error('Invalid manifest: engines.sigmaFileManager is required');
   }
+
+  if (
+    data.engines.extensionApi !== undefined
+    && !isNonEmptyString(data.engines.extensionApi)
+  ) {
+    throw new Error('Invalid manifest: engines.extensionApi must be a non-empty string');
+  }
 }

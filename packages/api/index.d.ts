@@ -67,6 +67,39 @@ export interface ExtensionSidebarItem {
   shortcutCommandId?: string;
 }
 
+export type ExtensionClipboardContentType = 'text' | 'image' | 'files' | 'empty';
+
+export interface ExtensionClipboardImageMeta {
+  width: number;
+  height: number;
+  sizeBytes: number;
+}
+
+export interface ExtensionClipboardImagePayload extends ExtensionClipboardImageMeta {
+  pngBytes: Uint8Array;
+  contentFingerprint: string;
+}
+
+export interface ExtensionClipboardSnapshot {
+  type: ExtensionClipboardContentType;
+  changeToken: string;
+  fingerprint: string;
+  preview: string;
+  text?: string;
+  image?: ExtensionClipboardImageMeta;
+  files?: {
+    paths: string[];
+    operation: 'copy' | 'move';
+  };
+}
+
+export interface ExtensionClipboardSourceContext {
+  windowTitle?: string;
+  processName?: string;
+  processPath?: string;
+  processIconUrl?: string;
+}
+
 export interface ExtensionToolbarDropdownItem {
   id: string;
   title: string;
@@ -147,6 +180,7 @@ export interface ExtensionContributions {
 
 export interface ExtensionEngines {
   sigmaFileManager: string;
+  extensionApi?: string;
 }
 
 export type PlatformOS = 'windows' | 'macos' | 'linux';
@@ -420,23 +454,86 @@ export interface ModalButton {
   label: string;
   variant?: 'primary' | 'secondary' | 'danger';
   shortcut?: KeyboardShortcut;
+  disabled?: boolean;
 }
+
+export type ListDetailItemIcon = 'text' | 'image' | 'files';
+
+export interface ListDetailItem {
+  id: string;
+  title: string;
+  subtitle?: string;
+  thumbnailUrl?: string;
+  icon?: ListDetailItemIcon;
+  badge?: string;
+  pinned?: boolean;
+}
+
+export interface ListDetailField {
+  label: string;
+  value: string;
+  iconUrl?: string;
+  systemIconPath?: string;
+}
+
+export interface ListDetailPreview {
+  type: 'text' | 'image' | 'files' | 'empty';
+  text?: string;
+  imageUrl?: string;
+  imageStoragePath?: string;
+  filePaths?: string[];
+}
+
+export interface ListDetailGroupLabels {
+  pinned?: string;
+  recent?: string;
+}
+
+export interface ListDetailState {
+  items: ListDetailItem[];
+  selectedItemId: string | null;
+  searchQuery: string;
+  filterValue: string;
+  filterOptions: UISelectOption[];
+  searchPlaceholder?: string;
+  detail: ListDetailPreview | null;
+  detailFields: ListDetailField[];
+  listGroupLabels?: ListDetailGroupLabels;
+  emptyListTitle?: string;
+  emptyListDescription?: string;
+  emptyDetailTitle?: string;
+  emptyDetailDescription?: string;
+}
+
+export type ModalLayout = 'form' | 'listDetail';
 
 export interface ModalOptions {
   title: string;
+  commandTitle?: string;
   width?: number;
-  content: UIElement[];
+  layout?: ModalLayout;
+  content?: UIElement[];
+  listDetail?: ListDetailState;
   buttons?: ModalButton[];
 }
+
+export type ListDetailSelectionChangeCallback = (itemId: string | null) => void | Promise<void>;
+export type ListDetailSearchChangeCallback = (searchQuery: string) => void | Promise<void>;
+export type ListDetailFilterChangeCallback = (filterValue: string) => void | Promise<void>;
 
 export interface ModalHandle {
   onSubmit(callback: (values: Record<string, unknown>, buttonId: string) => void | boolean | Promise<void | boolean>): void;
   onClose(callback: () => void): void;
   onValueChange(callback: (elementId: string, value: unknown, allValues: Record<string, unknown>) => void): void;
+  onSelectionChange(callback: ListDetailSelectionChangeCallback): void;
+  onSearchChange(callback: ListDetailSearchChangeCallback): void;
+  onFilterChange(callback: ListDetailFilterChangeCallback): void;
   close(): void;
   updateElement(id: string, updates: Partial<UIElement>): void;
   setContent(content: UIElement[]): void;
-  setButtons(buttons: ModalButton[]): void;
+  setButtons(buttons: ModalButton[]): void | Promise<void>;
+  setListDetail(updates: Partial<ListDetailState>): void | Promise<void>;
+  getListDetail(): ListDetailState;
   getValues(): Record<string, unknown>;
 }
 
@@ -548,6 +645,30 @@ export interface SigmaExtensionAPI {
      * Throws if only unsupported types are provided.
      */
     clipboardWrite(items: Record<string, Uint8Array>[]): Promise<void>;
+    restoreClipboardImageFromStorage(relativePath: string): Promise<void>;
+    pathExists(path: string): Promise<boolean>;
+    /**
+     * Reads the current system clipboard content.
+     * Priority: files, image, plain text.
+     */
+    clipboardRead(): Promise<ExtensionClipboardSnapshot>;
+    /**
+     * Returns best-effort metadata about the current foreground window.
+     * Intended to be sampled when a new clipboard entry is captured.
+     */
+    getClipboardSource(): Promise<ExtensionClipboardSourceContext>;
+    /**
+     * Reads the current clipboard image bytes. Returns null when no image is available.
+     */
+    clipboardReadImage(): Promise<ExtensionClipboardImagePayload | null>;
+    /**
+     * Subscribes to system clipboard changes detected by the app.
+     */
+    onClipboardChange(callback: () => void | Promise<void>): Disposable;
+    /**
+     * Writes file paths to the system clipboard.
+     */
+    clipboardWriteFiles(paths: string[], operation?: 'copy' | 'move'): Promise<void>;
     withProgress<T>(
       options: ProgressOptions,
       task: (progress: Progress, token: CancellationToken) => Promise<T>

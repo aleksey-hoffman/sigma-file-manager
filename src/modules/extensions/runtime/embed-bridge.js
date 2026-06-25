@@ -4,8 +4,15 @@
 
 const pending = new Map();
 const toolbarHandlers = new Map();
+const clipboardChangeHandlers = new Map();
+const embedModalHandlers = new Map();
+const embedModalState = new Map();
 const extensionLocaleMessages = {};
 let currentLocale = 'en';
+
+function createEmbedRequestId(prefix) {
+  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+}
 
 function createMemoryStorage() {
   const storage = new Map();
@@ -180,6 +187,47 @@ window.addEventListener('message', async (event) => {
     if (handler) {
       await handler(message.buttonId);
     }
+    return;
+  }
+
+  if (message.type === 'embed-clipboard-changed' && message.handlerId) {
+    const handler = clipboardChangeHandlers.get(message.handlerId);
+    if (handler) {
+      await handler();
+    }
+    return;
+  }
+
+  if (message.type === 'embed-modal-event' && message.requestId && message.handlerId) {
+    const handler = embedModalHandlers.get(message.handlerId);
+
+    if (!handler) {
+      parent.postMessage({
+        bridgeToken,
+        type: 'embed-handler-result',
+        requestId: message.requestId,
+        error: `Missing embed modal handler: ${message.handlerId}`,
+      }, '*');
+      return;
+    }
+
+    try {
+      const result = await handler(...(message.args ?? []));
+      parent.postMessage({
+        bridgeToken,
+        type: 'embed-handler-result',
+        requestId: message.requestId,
+        result,
+      }, '*');
+    }
+    catch (error) {
+      parent.postMessage({
+        bridgeToken,
+        type: 'embed-handler-result',
+        requestId: message.requestId,
+        error: error instanceof Error ? error.message : String(error),
+      }, '*');
+    }
   }
 });
 
@@ -256,6 +304,307 @@ const sigma = {
       size: options.size || 'xs',
       disabled: options.disabled,
     }),
+    copyText: text => callHost('ui.copyText', text),
+    clipboardWrite: items => callHost('ui.clipboardWrite', items),
+    restoreClipboardImageFromStorage: relativePath => callHost('ui.restoreClipboardImageFromStorage', relativePath),
+    pathExists: path => callHost('ui.pathExists', path),
+    clipboardRead: () => callHost('ui.clipboardRead'),
+    clipboardReadImage: () => callHost('ui.clipboardReadImage'),
+    getClipboardSource: () => callHost('ui.getClipboardSource'),
+    clipboardWriteFiles: (paths, operation) => callHost('ui.clipboardWriteFiles', paths, operation),
+    showNotification: options => callHost('ui.showNotification', options),
+    onClipboardChange(callback) {
+      const handlerId = createEmbedRequestId('clipboard');
+      clipboardChangeHandlers.set(handlerId, callback);
+      parent.postMessage({
+        bridgeToken,
+        type: 'embed-subscribe-clipboard',
+        handlerId,
+      }, '*');
+
+      return {
+        dispose: () => {
+          clipboardChangeHandlers.delete(handlerId);
+          parent.postMessage({
+            bridgeToken,
+            type: 'embed-unsubscribe-clipboard',
+            handlerId,
+          }, '*');
+        },
+      };
+    },
+    createModal(options) {
+      const modalId = createEmbedRequestId('modal');
+      const submitHandlerId = `${modalId}:submit`;
+      const closeHandlerId = `${modalId}:close`;
+      const valueChangeHandlerId = `${modalId}:valueChange`;
+      const selectionChangeHandlerId = `${modalId}:selectionChange`;
+      const searchChangeHandlerId = `${modalId}:searchChange`;
+      const filterChangeHandlerId = `${modalId}:filterChange`;
+      const submitCallbacks = [];
+      const closeCallbacks = [];
+      const valueChangeCallbacks = [];
+      const selectionChangeCallbacks = [];
+      const searchChangeCallbacks = [];
+      const filterChangeCallbacks = [];
+      let currentValues = {};
+      let currentListDetail = options.listDetail && typeof options.listDetail === 'object'
+        ? { ...options.listDetail }
+        : null;
+
+      function initializeValues(content) {
+        const nextValues = {};
+
+        for (const element of Array.isArray(content) ? content : []) {
+          if (!element || typeof element !== 'object' || !('id' in element) || !element.id) {
+            continue;
+          }
+
+          if (Object.prototype.hasOwnProperty.call(element, 'value')) {
+            nextValues[String(element.id)] = element.value;
+          }
+        }
+
+        return nextValues;
+      }
+
+      if (Array.isArray(options?.content)) {
+        currentValues = initializeValues(options.content);
+      }
+      else if (currentListDetail) {
+        currentValues = {
+          selectedItemId: currentListDetail.selectedItemId ?? null,
+          searchQuery: currentListDetail.searchQuery ?? '',
+          filterValue: currentListDetail.filterValue ?? 'all',
+        };
+      }
+
+      embedModalHandlers.set(submitHandlerId, async (...args) => {
+        let shouldClose = true;
+
+        for (const callback of submitCallbacks) {
+          const result = await callback(...args);
+
+          if (result === false) {
+            shouldClose = false;
+          }
+        }
+
+        return shouldClose;
+      });
+      embedModalHandlers.set(closeHandlerId, async () => {
+        for (const callback of closeCallbacks) {
+          await callback();
+        }
+      });
+      embedModalHandlers.set(valueChangeHandlerId, async (...args) => {
+        if (args[0]) {
+          currentValues[String(args[0])] = args[1];
+        }
+
+        for (const callback of valueChangeCallbacks) {
+          await callback(...args);
+        }
+      });
+      embedModalHandlers.set(selectionChangeHandlerId, async (...args) => {
+        currentValues.selectedItemId = args[0];
+
+        if (currentListDetail) {
+          currentListDetail = {
+            ...currentListDetail,
+            selectedItemId: args[0],
+          };
+        }
+
+        for (const callback of selectionChangeCallbacks) {
+          await callback(...args);
+        }
+      });
+      embedModalHandlers.set(searchChangeHandlerId, async (...args) => {
+        currentValues.searchQuery = args[0];
+
+        if (currentListDetail) {
+          currentListDetail = {
+            ...currentListDetail,
+            searchQuery: args[0],
+          };
+        }
+
+        for (const callback of searchChangeCallbacks) {
+          await callback(...args);
+        }
+      });
+      embedModalHandlers.set(filterChangeHandlerId, async (...args) => {
+        currentValues.filterValue = args[0];
+
+        if (currentListDetail) {
+          currentListDetail = {
+            ...currentListDetail,
+            filterValue: args[0],
+          };
+        }
+
+        for (const callback of filterChangeCallbacks) {
+          await callback(...args);
+        }
+      });
+
+      const setupPromise = new Promise((resolve, reject) => {
+        function handleReady(event) {
+          const readyMessage = event.data;
+
+          if (!readyMessage || readyMessage.bridgeToken !== bridgeToken || readyMessage.type !== 'embed-modal-ready' || readyMessage.modalId !== modalId) {
+            return;
+          }
+
+          window.removeEventListener('message', handleReady);
+          resolve(true);
+        }
+
+        window.addEventListener('message', handleReady);
+        parent.postMessage({
+          bridgeToken,
+          type: 'embed-create-modal',
+          modalId,
+          options,
+          submitHandlerId,
+          closeHandlerId,
+          valueChangeHandlerId,
+          selectionChangeHandlerId,
+          searchChangeHandlerId,
+          filterChangeHandlerId,
+        }, '*');
+        setTimeout(() => {
+          window.removeEventListener('message', handleReady);
+          reject(new Error('Timed out waiting for embed modal setup'));
+        }, 10000);
+      });
+
+      embedModalState.set(modalId, { setupPromise });
+
+      return {
+        onSubmit(callback) {
+          submitCallbacks.push(callback);
+        },
+        onClose(callback) {
+          closeCallbacks.push(callback);
+        },
+        onValueChange(callback) {
+          valueChangeCallbacks.push(callback);
+        },
+        onSelectionChange(callback) {
+          selectionChangeCallbacks.push(callback);
+        },
+        onSearchChange(callback) {
+          searchChangeCallbacks.push(callback);
+        },
+        onFilterChange(callback) {
+          filterChangeCallbacks.push(callback);
+        },
+        close() {
+          setupPromise.then(() => {
+            parent.postMessage({
+              bridgeToken,
+              type: 'embed-modal-close',
+              modalId,
+            }, '*');
+          }).catch(() => {});
+        },
+        updateElement(elementId, updates) {
+          if (Object.prototype.hasOwnProperty.call(updates, 'value')) {
+            currentValues[elementId] = updates.value;
+          }
+
+          setupPromise.then(() => {
+            parent.postMessage({
+              bridgeToken,
+              type: 'embed-modal-update-element',
+              modalId,
+              elementId,
+              updates,
+            }, '*');
+          }).catch(() => {});
+        },
+        setContent(content) {
+          const nextValues = initializeValues(content);
+
+          for (const key of Object.keys(nextValues)) {
+            if (Object.prototype.hasOwnProperty.call(currentValues, key)) {
+              nextValues[key] = currentValues[key];
+            }
+          }
+
+          currentValues = nextValues;
+
+          setupPromise.then(() => {
+            parent.postMessage({
+              bridgeToken,
+              type: 'embed-modal-set-content',
+              modalId,
+              content,
+            }, '*');
+          }).catch(() => {});
+        },
+        setButtons(buttons) {
+          setupPromise.then(() => {
+            parent.postMessage({
+              bridgeToken,
+              type: 'embed-modal-set-buttons',
+              modalId,
+              buttons,
+            }, '*');
+          }).catch(() => {});
+        },
+        setListDetail(updates) {
+          if (currentListDetail) {
+            const nextListDetail = { ...currentListDetail, ...updates };
+
+            if (Array.isArray(updates.items)) {
+              nextListDetail.items = updates.items;
+            }
+
+            if (Array.isArray(updates.filterOptions)) {
+              nextListDetail.filterOptions = updates.filterOptions;
+            }
+
+            if (Object.prototype.hasOwnProperty.call(updates, 'detail')) {
+              nextListDetail.detail = updates.detail;
+            }
+
+            if (Array.isArray(updates.detailFields)) {
+              nextListDetail.detailFields = updates.detailFields;
+            }
+
+            currentListDetail = nextListDetail;
+          }
+
+          return setupPromise.then(() => {
+            parent.postMessage({
+              bridgeToken,
+              type: 'embed-modal-set-list-detail',
+              modalId,
+              updates,
+            }, '*');
+          });
+        },
+        getListDetail() {
+          return currentListDetail
+            ? structuredClone(currentListDetail)
+            : {
+                items: [],
+                selectedItemId: null,
+                searchQuery: '',
+                filterValue: 'all',
+                filterOptions: [],
+                detail: null,
+                detailFields: [],
+              };
+        },
+        getValues() {
+          return { ...currentValues };
+        },
+      };
+    },
     showModal: options => callHost('ui.showModal', options),
     renderToolbar: (_container, elements, onButtonClick) => {
       const toolbarId = 'toolbar-' + Date.now() + '-' + Math.random().toString(36).slice(2, 10);
@@ -284,6 +633,10 @@ const sigma = {
     get: key => callHost('storage.get', key),
     set: (key, value) => callHost('storage.set', key, value),
     remove: key => callHost('storage.remove', key),
+  },
+  settings: {
+    get: key => callHost('settings.get', key),
+    getAll: () => callHost('settings.getAll'),
   },
   path: {
     dirname(filePath) {

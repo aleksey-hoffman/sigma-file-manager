@@ -5,12 +5,15 @@
 mod app_updater;
 mod archive;
 mod background_sources;
+mod clipboard_source;
+mod clipboard_watcher;
 mod copy_move_job;
 mod default_file_manager;
 mod delete_job;
 mod dir_reader;
 mod dir_size;
 mod dir_watcher;
+mod input_simulation;
 mod extensions;
 mod file_operations;
 mod global_search;
@@ -321,6 +324,14 @@ pub fn run() {
             system_clipboard::save_system_clipboard_image_to_temp,
             system_clipboard::paste_system_clipboard_image,
             system_clipboard::paste_saved_clipboard_image,
+            system_clipboard::set_system_clipboard_image_from_png_bytes,
+            system_clipboard::set_system_clipboard_image_from_path,
+            input_simulation::simulate_paste_shortcut,
+            system_clipboard::read_system_clipboard_text,
+            system_clipboard::read_system_clipboard_change_token,
+            system_clipboard::read_system_clipboard_image_png_bytes,
+            clipboard_source::get_clipboard_source_context,
+            clipboard_watcher::ensure_system_clipboard_watcher,
             system_icons::get_system_icon,
             terminal::get_available_terminals,
             terminal::get_terminal_icons,

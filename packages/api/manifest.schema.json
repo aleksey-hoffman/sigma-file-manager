@@ -731,6 +731,10 @@
         "sigmaFileManager": {
           "type": "string",
           "description": "Required Sigma File Manager version range"
+        },
+        "extensionApi": {
+          "type": "string",
+          "description": "Required @sigma-file-manager/api version range"
         }
       }
     }

@@ -37,8 +37,12 @@ let isReopeningOtherActions = false;
 const resolvedButtons = computed(() => resolveModalActionButtons(props.buttons));
 const otherActionsShortcutParts = formatOtherActionsShortcut();
 
-function handleButtonClick(buttonId: string): void {
-  emit('buttonClick', buttonId);
+function handleButtonClick(button: ModalButton): void {
+  if (button.disabled) {
+    return;
+  }
+
+  emit('buttonClick', button.id);
 }
 
 async function openOtherActions(): Promise<void> {
@@ -90,12 +94,13 @@ defineExpose({
           'ext-modal-action-footer__action',
           resolvedButtons.primaryButton.variant === 'danger' && 'ext-modal-action-footer__action--danger',
         ]"
-        @click="handleButtonClick(resolvedButtons.primaryButton.id)"
+        @click="handleButtonClick(resolvedButtons.primaryButton)"
       >
         <span class="ext-modal-action-footer__label">{{ resolvedButtons.primaryButton.label }}</span>
         <ExtensionModalShortcutKeys
           v-if="resolvedButtons.primaryButton.shortcut"
           :shortcut="resolvedButtons.primaryButton.shortcut"
+          :danger="resolvedButtons.primaryButton.variant === 'danger'"
         />
       </button>
 
@@ -124,12 +129,16 @@ defineExpose({
           <DropdownMenuItem
             v-for="button in resolvedButtons.secondaryButtons"
             :key="button.id"
-            :class="button.variant === 'danger' ? 'text-destructive focus:text-destructive' : undefined"
-            @select="handleButtonClick(button.id)"
+            :disabled="button.disabled"
+            :class="button.variant === 'danger' ? 'ext-modal-action-footer__menu-item--danger' : undefined"
+            @select="handleButtonClick(button)"
           >
             <span>{{ button.label }}</span>
             <DropdownMenuShortcut v-if="button.shortcut">
-              <ExtensionModalShortcutKeys :shortcut="button.shortcut" />
+              <ExtensionModalShortcutKeys
+                :shortcut="button.shortcut"
+                :danger="button.variant === 'danger'"
+              />
             </DropdownMenuShortcut>
           </DropdownMenuItem>
         </DropdownMenuContent>
@@ -172,12 +181,12 @@ defineExpose({
 }
 
 .ext-modal-action-footer__action--danger {
-  color: hsl(var(--destructive));
+  color: hsl(var(--dangerous));
 }
 
 .ext-modal-action-footer__action--danger:hover {
-  background: hsl(var(--destructive) / 10%);
-  color: hsl(var(--destructive));
+  background: hsl(var(--dangerous) / 10%);
+  color: hsl(var(--dangerous));
 }
 
 .ext-modal-action-footer__menu-trigger {
@@ -186,5 +195,17 @@ defineExpose({
 
 .ext-modal-action-footer__label {
   white-space: nowrap;
+}
+</style>
+
+<style>
+.sigma-ui-dropdown-menu-item.ext-modal-action-footer__menu-item--danger {
+  color: hsl(var(--dangerous));
+}
+
+.sigma-ui-dropdown-menu-item.ext-modal-action-footer__menu-item--danger:hover,
+.sigma-ui-dropdown-menu-item.ext-modal-action-footer__menu-item--danger:focus {
+  background: hsl(var(--dangerous) / 10%);
+  color: hsl(var(--dangerous));
 }
 </style>

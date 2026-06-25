@@ -124,6 +124,16 @@ export const EXTENSION_PERMISSIONS_INFO: Record<string, {
     description: 'Execute shell commands and external programs on your system',
     risk: 'highest',
   },
+  'clipboard': {
+    title: 'Clipboard',
+    description: 'Read and write system clipboard content including text, images, and files',
+    risk: 'medium',
+  },
+  'openUrl': {
+    title: 'Open URLs',
+    description: 'Open web links in the default browser',
+    risk: 'low',
+  },
 };
 
 export const EXTENSION_TYPES_INFO: Record<string, {

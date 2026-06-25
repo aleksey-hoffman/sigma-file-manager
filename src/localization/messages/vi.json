@@ -1063,7 +1063,13 @@
       "removeError": "Không thể xóa phụ thuộc",
       "downloadSource": "Mở liên kết tải xuống",
       "showFolder": "Hiển thị thư mục"
-    }
+    },
+    "engineIncompatibleShort": "Cần cập nhật",
+    "engineAppWarning": "Yêu cầu Sigma File Manager {range} (bạn đang dùng {current})",
+    "engineApiWarning": "Yêu cầu API extension {range} (bạn đang dùng {current})",
+    "engineRequirements": "Yêu cầu",
+    "requiresSigmaFileManager": "Sigma File Manager",
+    "requiresExtensionApi": "API extension"
   },
   "commandPalette": {
     "accessibleDialogTitle": "Bảng lệnh",

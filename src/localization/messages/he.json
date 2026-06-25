@@ -1093,7 +1093,13 @@
       "waitForDependencies": "המתן עד שהתוסף יסיים להוריד את התלויות שלו",
       "dismiss": "סגור",
       "stop": "עצור"
-    }
+    },
+    "engineIncompatibleShort": "נדרש עדכון",
+    "engineAppWarning": "דורש Sigma File Manager {range} (הגרסה שלך {current})",
+    "engineApiWarning": "דורש API של תוספים {range} (הגרסה שלך {current})",
+    "engineRequirements": "דרישות",
+    "requiresSigmaFileManager": "Sigma File Manager",
+    "requiresExtensionApi": "API של תוספים"
   },
   "commandPalette": {
     "accessibleDialogTitle": "לוח הפקודות",

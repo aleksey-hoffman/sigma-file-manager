@@ -11,6 +11,7 @@ import type {
   Disposable,
 } from '@/types/extension';
 import { clearExtensionContextListeners } from '@/modules/extensions/context';
+import { clearExtensionClipboardChangeListeners } from '@/modules/extensions/api/clipboard-change';
 import {
   clearKeybindingRegistrationsForExtension,
   clearAllKeybindingRegistrations,
@@ -134,6 +135,7 @@ export function clearAllRegistrations(): void {
 
 export function clearExtensionActivationRegistrations(extensionId: string): void {
   clearExtensionContextListeners(extensionId);
+  clearExtensionClipboardChangeListeners(extensionId);
   clearExtensionSettingsChangeListeners(extensionId);
 
   for (let registrationIndex = contextMenuRegistrations.length - 1; registrationIndex >= 0; registrationIndex--) {

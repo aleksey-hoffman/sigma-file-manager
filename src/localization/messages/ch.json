@@ -1063,7 +1063,13 @@
       "removeError": "Failed to remove dependency",
       "downloadSource": "打开下载链接",
       "showFolder": "显示文件夹"
-    }
+    },
+    "engineIncompatibleShort": "需要更新",
+    "engineAppWarning": "需要 Sigma File Manager {range}（当前为 {current}）",
+    "engineApiWarning": "需要扩展 API {range}（当前为 {current}）",
+    "engineRequirements": "要求",
+    "requiresSigmaFileManager": "Sigma File Manager",
+    "requiresExtensionApi": "扩展 API"
   },
   "commandPalette": {
     "accessibleDialogTitle": "命令面板",

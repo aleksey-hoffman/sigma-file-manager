@@ -8,6 +8,7 @@ import {
   formatKeyboardShortcut,
   formatOtherActionsShortcut,
   isOtherActionsKeyboardShortcut,
+  isUnmodifiedEnterKey,
 } from '@/modules/extensions/utils/modal-keyboard-shortcut';
 
 describe('modal-keyboard-shortcut', () => {
@@ -31,5 +32,18 @@ describe('modal-keyboard-shortcut', () => {
     } as KeyboardEvent;
 
     expect(isOtherActionsKeyboardShortcut(matchingEvent)).toBe(true);
+  });
+
+  it('does not treat modified enter as plain enter', () => {
+    const altEnterEvent = {
+      key: 'Enter',
+      code: 'Enter',
+      ctrlKey: false,
+      shiftKey: false,
+      altKey: true,
+      metaKey: false,
+    } as KeyboardEvent;
+
+    expect(isUnmodifiedEnterKey(altEnterEvent)).toBe(false);
   });
 });

@@ -32,8 +32,10 @@ import {
   closeModal,
   type ModalInstance,
 } from '@/modules/extensions/api/modal-state';
+import { createListDetailModalHandlers } from '@/modules/extensions/utils/list-detail-modal-handlers';
 import ExtensionIcon from './extension-icon.vue';
 import ExtensionFormView from './extension-form-view.vue';
+import ExtensionListDetailView from './extension-list-detail-view.vue';
 import { useExtensionDisplayInfo } from '@/modules/extensions/composables/use-extension-display-info';
 
 const { t } = useI18n();
@@ -51,6 +53,8 @@ const paletteModal = ref<ModalInstance | null>(null);
 const paletteCommandTitle = ref<string | undefined>(undefined);
 
 const isInFormMode = computed(() => paletteModal.value !== null);
+
+const isListDetailMode = computed(() => paletteModal.value?.options.layout === 'listDetail');
 
 const paletteExtensionDisplay = useExtensionDisplayInfo(
   computed(() => paletteModal.value?.extensionId),
@@ -231,6 +235,12 @@ function handleFormBack(): void {
   exitFormMode();
 }
 
+const {
+  handleSelectionChange: handleListDetailSelectionChange,
+  handleSearchChange: handleListDetailSearchChange,
+  handleFilterChange: handleListDetailFilterChange,
+} = createListDetailModalHandlers(() => paletteModal.value?.id);
+
 function handlePaletteFormRequest(modal: ModalInstance): void {
   paletteModal.value = modal;
 }
@@ -349,13 +359,35 @@ defineExpose({
     </template>
 
     <template v-else>
-      <div class="command-palette__form-view">
-        <ExtensionFormView
+      <div
+        :class="[
+          'command-palette__form-view',
+          { 'command-palette__form-view--list-detail': isListDetailMode },
+        ]"
+      >
+        <ExtensionListDetailView
+          v-if="isListDetailMode && paletteModal?.listDetail"
           :title="paletteModal!.options.title"
           :extension-id="paletteModal!.extensionId"
           :extension-icon-path="paletteExtensionDisplay.extensionIconPath"
           :extension-name="paletteExtensionDisplay.extensionName"
-          :command-title="paletteCommandTitle"
+          :command-title="paletteModal!.options.commandTitle ?? paletteCommandTitle"
+          :list-detail="paletteModal!.listDetail"
+          :buttons="paletteModal!.options.buttons"
+          :on-back="handleFormBack"
+          @selection-change="handleListDetailSelectionChange"
+          @search-change="handleListDetailSearchChange"
+          @filter-change="handleListDetailFilterChange"
+          @button-click="handleFormButtonClick"
+          @close="handleFormClose"
+        />
+        <ExtensionFormView
+          v-else
+          :title="paletteModal!.options.title"
+          :extension-id="paletteModal!.extensionId"
+          :extension-icon-path="paletteExtensionDisplay.extensionIconPath"
+          :extension-name="paletteExtensionDisplay.extensionName"
+          :command-title="paletteModal!.options.commandTitle ?? paletteCommandTitle"
           :content="paletteModal!.options.content ?? []"
           :buttons="paletteModal!.options.buttons"
           :values="paletteModal!.values"
@@ -406,10 +438,27 @@ defineExpose({
   padding: 12px;
 }
 
+.command-palette__form-view--list-detail {
+  width: 100%;
+  max-height: min(85vh, 720px);
+}
+
+.sigma-ui-command-dialog.sigma-ui-dialog-content:has(.command-palette__form-view--list-detail) {
+  width: min(92vw, 920px);
+  max-width: min(92vw, 920px);
+}
+
 .sigma-ui-command-dialog .command-palette__form-view .ext-form-view {
   width: 100%;
   height: 100%;
   min-height: 0;
+  max-height: none;
+}
+
+.sigma-ui-command-dialog .command-palette__form-view .ext-list-detail-view {
+  width: 100%;
+  height: 100%;
+  min-height: 420px;
   max-height: none;
 }
 </style>

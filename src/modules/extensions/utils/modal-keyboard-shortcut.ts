@@ -42,6 +42,14 @@ export function isOtherActionsKeyboardShortcut(event: KeyboardEvent): boolean {
   return keyboardShortcutMatches(event, OTHER_ACTIONS_KEYBOARD_SHORTCUT);
 }
 
+export function isUnmodifiedEnterKey(event: KeyboardEvent): boolean {
+  return event.key === 'Enter'
+    && !event.ctrlKey
+    && !event.shiftKey
+    && !event.altKey
+    && !event.metaKey;
+}
+
 export function formatShortcutKeyLabel(key: string): string {
   if (key.toLowerCase() === 'enter') {
     return ENTER_KEY_LABEL;

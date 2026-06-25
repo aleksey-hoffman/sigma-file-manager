@@ -7,6 +7,7 @@ import { messages as appMessages } from '@/localization/data';
 import { pluralRules } from '@/localization/plural-rules';
 import { createRequestId } from '@/modules/extensions/runtime/worker-protocol';
 import { isExtensionInstallCancelledError } from '@/modules/extensions/utils/install-cancellation-error';
+import { cloneForWorkerMessage } from '@/modules/extensions/utils/worker-message-clone';
 import type {
   HostToWorkerMessage,
   WorkerRuntimeMessage,
@@ -192,11 +193,11 @@ function restrictWorkerGlobals(): void {
 
 function postRequest(type: WorkerToHostMessage['type'], payload: Record<string, unknown>): Promise<unknown> {
   const id = typeof payload.id === 'string' ? payload.id : createRequestId('bridge');
-  emitToHost({
+  emitToHost(cloneForWorkerMessage({
     type,
     ...payload,
     id,
-  } as WorkerToHostMessage);
+  }) as WorkerToHostMessage);
   return new Promise((resolve, reject) => {
     pendingRequests.set(id, {
       resolve,
@@ -210,6 +211,10 @@ async function unwrapPromisesForPostMessage(value: unknown): Promise<unknown> {
 
   while (current instanceof Promise) {
     current = await current;
+  }
+
+  if (typeof current === 'function' || typeof current === 'symbol') {
+    return undefined;
   }
 
   if (current === null || typeof current !== 'object') {
@@ -460,6 +465,22 @@ function createBridge() {
       showDialog: makeCall('ui.showDialog'),
       copyText: makeCall('ui.copyText'),
       clipboardWrite: makeCall('ui.clipboardWrite'),
+      restoreClipboardImageFromStorage: makeCall('ui.restoreClipboardImageFromStorage'),
+      pathExists: makeCall('ui.pathExists'),
+      clipboardRead: makeCall('ui.clipboardRead'),
+      getClipboardSource: makeCall('ui.getClipboardSource'),
+      clipboardReadImage: makeCall('ui.clipboardReadImage'),
+      clipboardWriteFiles: makeCall('ui.clipboardWriteFiles'),
+      onClipboardChange(callback: (...args: unknown[]) => unknown) {
+        const resourceId = createRequestId('clipboard-listener');
+        handlerMap.set(resourceId, callback);
+        const setupPromise = postRequest('subscribe-clipboard-change', {
+          resourceId,
+          handlerId: resourceId,
+        });
+        pendingActivationTasks.push(setupPromise);
+        return createDisposable(resourceId, setupPromise);
+      },
       withProgress(options: unknown, task: (progress: unknown, token: unknown) => Promise<unknown>) {
         const resourceId = createRequestId('progress');
         const cancellationListeners: Array<() => void> = [];
@@ -529,9 +550,15 @@ function createBridge() {
         const submitHandlerId = `${resourceId}:submit`;
         const closeHandlerId = `${resourceId}:close`;
         const valueChangeHandlerId = `${resourceId}:valueChange`;
+        const selectionChangeHandlerId = `${resourceId}:selectionChange`;
+        const searchChangeHandlerId = `${resourceId}:searchChange`;
+        const filterChangeHandlerId = `${resourceId}:filterChange`;
         const submitCallbacks: Array<(...args: unknown[]) => unknown> = [];
         const closeCallbacks: Array<(...args: unknown[]) => unknown> = [];
         const valueChangeCallbacks: Array<(...args: unknown[]) => unknown> = [];
+        const selectionChangeCallbacks: Array<(...args: unknown[]) => unknown> = [];
+        const searchChangeCallbacks: Array<(...args: unknown[]) => unknown> = [];
+        const filterChangeCallbacks: Array<(...args: unknown[]) => unknown> = [];
         let currentValues: Record<string, unknown> = {};
 
         function initializeValues(content: unknown[]) {
@@ -553,6 +580,18 @@ function createBridge() {
         if (Array.isArray(options?.content)) {
           currentValues = initializeValues(options.content);
         }
+        else if (options.listDetail && typeof options.listDetail === 'object') {
+          const listDetail = options.listDetail as Record<string, unknown>;
+          currentValues = {
+            selectedItemId: listDetail.selectedItemId ?? null,
+            searchQuery: listDetail.searchQuery ?? '',
+            filterValue: listDetail.filterValue ?? 'all',
+          };
+        }
+
+        let currentListDetail = options.listDetail && typeof options.listDetail === 'object'
+          ? { ...(options.listDetail as Record<string, unknown>) }
+          : null;
 
         handlerMap.set(submitHandlerId, async (...args) => {
           let shouldClose = true;
@@ -584,11 +623,59 @@ function createBridge() {
           }
         });
 
+        handlerMap.set(selectionChangeHandlerId, async (...args) => {
+          currentValues.selectedItemId = args[0];
+
+          if (currentListDetail) {
+            currentListDetail = {
+              ...currentListDetail,
+              selectedItemId: args[0],
+            };
+          }
+
+          for (const callback of selectionChangeCallbacks) {
+            await callback(...args);
+          }
+        });
+
+        handlerMap.set(searchChangeHandlerId, async (...args) => {
+          currentValues.searchQuery = args[0];
+
+          if (currentListDetail) {
+            currentListDetail = {
+              ...currentListDetail,
+              searchQuery: args[0],
+            };
+          }
+
+          for (const callback of searchChangeCallbacks) {
+            await callback(...args);
+          }
+        });
+
+        handlerMap.set(filterChangeHandlerId, async (...args) => {
+          currentValues.filterValue = args[0];
+
+          if (currentListDetail) {
+            currentListDetail = {
+              ...currentListDetail,
+              filterValue: args[0],
+            };
+          }
+
+          for (const callback of filterChangeCallbacks) {
+            await callback(...args);
+          }
+        });
+
         const setupPromise = postRequest('create-modal', {
           resourceId,
           options,
           submitHandlerId,
           valueChangeHandlerId,
+          selectionChangeHandlerId,
+          searchChangeHandlerId,
+          filterChangeHandlerId,
         });
 
         pendingActivationTasks.push(setupPromise);
@@ -602,6 +689,15 @@ function createBridge() {
           },
           onValueChange(callback: (...args: unknown[]) => unknown) {
             valueChangeCallbacks.push(callback);
+          },
+          onSelectionChange(callback: (...args: unknown[]) => unknown) {
+            selectionChangeCallbacks.push(callback);
+          },
+          onSearchChange(callback: (...args: unknown[]) => unknown) {
+            searchChangeCallbacks.push(callback);
+          },
+          onFilterChange(callback: (...args: unknown[]) => unknown) {
+            filterChangeCallbacks.push(callback);
           },
           close() {
             setupPromise.then(() => {
@@ -640,12 +736,54 @@ function createBridge() {
             }).catch(() => {});
           },
           setButtons(buttons: unknown[]) {
-            setupPromise.then(() => {
-              postRequest('modal-set-buttons', {
-                resourceId,
-                buttons,
-              }).catch(() => {});
-            }).catch(() => {});
+            return setupPromise.then(() => postRequest('modal-set-buttons', {
+              resourceId,
+              buttons,
+            }));
+          },
+          setListDetail(updates: Record<string, unknown>) {
+            if (currentListDetail) {
+              const nextListDetail = {
+                ...currentListDetail,
+                ...updates,
+              };
+
+              if (Array.isArray(updates.items)) {
+                nextListDetail.items = updates.items;
+              }
+
+              if (Array.isArray(updates.filterOptions)) {
+                nextListDetail.filterOptions = updates.filterOptions;
+              }
+
+              if (Object.prototype.hasOwnProperty.call(updates, 'detail')) {
+                nextListDetail.detail = updates.detail;
+              }
+
+              if (Array.isArray(updates.detailFields)) {
+                nextListDetail.detailFields = updates.detailFields;
+              }
+
+              currentListDetail = nextListDetail;
+            }
+
+            return setupPromise.then(() => postRequest('modal-set-list-detail', {
+              resourceId,
+              updates,
+            }));
+          },
+          getListDetail() {
+            return currentListDetail
+              ? { ...currentListDetail }
+              : {
+                  items: [],
+                  selectedItemId: null,
+                  searchQuery: '',
+                  filterValue: 'all',
+                  filterOptions: [],
+                  detail: null,
+                  detailFields: [],
+                };
           },
           getValues() {
             return { ...currentValues };
@@ -995,7 +1133,7 @@ async function handleWorkerMessage(message: HostToWorkerMessage): Promise<void> 
     }
 
     try {
-      const result = await unwrapPromisesForPostMessage(handler(...(message.args || [])));
+      const result = cloneForWorkerMessage(await unwrapPromisesForPostMessage(handler(...(message.args || []))));
       emitToHost({
         type: 'invoke-worker-handler-result',
         callId: message.callId,

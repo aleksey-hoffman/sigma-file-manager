@@ -319,7 +319,9 @@ describe('extensions runtime store', () => {
     const firstLoadPromise = extensionsStore.loadExtension(manifest.id, 'onStartup');
     const secondLoadPromise = extensionsStore.loadExtension(manifest.id, 'onStartup');
 
-    expect(loadExtensionRuntimeMock).toHaveBeenCalledTimes(1);
+    await vi.waitFor(() => {
+      expect(loadExtensionRuntimeMock).toHaveBeenCalledTimes(1);
+    });
     expect(extensionsStore.loadedExtensions.get(manifest.id)).toMatchObject({
       id: manifest.id,
       state: 'loading',

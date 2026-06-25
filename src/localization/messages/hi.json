@@ -1093,7 +1093,13 @@
       "waitForDependencies": "तब तक प्रतीक्षा करें जब तक एक्सटेंशन अपनी निर्भरताओं को डाउनलोड करना समाप्त न कर ले",
       "dismiss": "नकार देना",
       "stop": "रुकना"
-    }
+    },
+    "engineIncompatibleShort": "अपडेट आवश्यक",
+    "engineAppWarning": "Sigma File Manager {range} आवश्यक है (आपके पास {current})",
+    "engineApiWarning": "एक्सटेंशन API {range} आवश्यक है (आपके पास {current})",
+    "engineRequirements": "आवश्यकताएँ",
+    "requiresSigmaFileManager": "Sigma File Manager",
+    "requiresExtensionApi": "एक्सटेंशन API"
   },
   "commandPalette": {
     "accessibleDialogTitle": "कमांड पैलेट",

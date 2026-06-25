@@ -1093,7 +1093,13 @@
       "waitForDependencies": "Čakajte, da razširitev dokonča prenos svojih odvisnosti",
       "dismiss": "Zapri",
       "stop": "Ustavi"
-    }
+    },
+    "engineIncompatibleShort": "Potrebna posodobitev",
+    "engineAppWarning": "Zahteva Sigma File Manager {range} (imate {current})",
+    "engineApiWarning": "Zahteva API razširitev {range} (imate {current})",
+    "engineRequirements": "Zahteve",
+    "requiresSigmaFileManager": "Sigma File Manager",
+    "requiresExtensionApi": "API razširitev"
   },
   "commandPalette": {
     "accessibleDialogTitle": "Ukazna paleta",

@@ -14,6 +14,7 @@ import {
 const props = defineProps<{
   shortcut?: KeyboardShortcut;
   parts?: string[];
+  danger?: boolean;
 }>();
 
 const shortcutParts = computed(() => {
@@ -34,7 +35,10 @@ function isEnterKeyLabel(part: string): boolean {
 </script>
 
 <template>
-  <span class="ext-modal-shortcut-keys">
+  <span
+    class="ext-modal-shortcut-keys"
+    :class="{ 'ext-modal-shortcut-keys--danger': danger }"
+  >
     <span
       v-for="(part, partIndex) in shortcutParts"
       :key="`${part}-${partIndex}`"
@@ -71,5 +75,11 @@ function isEnterKeyLabel(part: string): boolean {
 .ext-modal-shortcut-keys__key--enter {
   font-size: 0.875rem;
   line-height: 1;
+}
+
+.ext-modal-shortcut-keys--danger .ext-modal-shortcut-keys__key {
+  border-color: hsl(var(--dangerous) / 30%);
+  background: hsl(var(--dangerous) / 10%);
+  color: hsl(var(--dangerous));
 }
 </style>

@@ -3,9 +3,11 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 import type { SigmaExtensionAPI } from '@/modules/extensions/api';
+import { ensureClipboardChangeBridge } from '@/modules/extensions/api/clipboard-change-bridge';
 import type { Disposable, ExtensionActivateContext, ModalHandle } from '@/types/extension';
 import { createExtensionApiMethodMap } from '@/modules/extensions/runtime/api-method-map';
 import { createRequestId } from '@/modules/extensions/runtime/worker-protocol';
+import { cloneBridgeResult } from '@/modules/extensions/utils/worker-message-clone';
 import type {
   HostToWorkerMessage,
   WorkerRuntimeMessage,
@@ -124,7 +126,7 @@ export function createWorkerHost(
       worker.postMessage({
         type: 'bridge-response',
         id: messageId,
-        result,
+        result: error ? undefined : cloneBridgeResult(result),
         error,
       } satisfies HostToWorkerMessage);
     }
@@ -235,6 +237,23 @@ export function createWorkerHost(
         return;
       }
 
+      if (message.type === 'subscribe-clipboard-change') {
+        void ensureClipboardChangeBridge().then(() => {
+          const disposable = api.ui.onClipboardChange(() => {
+            worker.postMessage({
+              type: 'emit-worker-listener',
+              handlerId: message.handlerId,
+              args: [],
+            } satisfies HostToWorkerMessage);
+          });
+          resourceDisposables.set(message.resourceId, disposable);
+          reply(true);
+        }).catch((error: unknown) => {
+          reply(undefined, error instanceof Error ? error.message : String(error));
+        });
+        return;
+      }
+
       if (message.type === 'create-modal') {
         const modalHandle = api.ui.createModal(message.options as never);
         modalHandle.onSubmit(async (values, buttonId) => {
@@ -253,6 +272,25 @@ export function createWorkerHost(
         modalHandle.onValueChange((elementId, value, allValues) => {
           void invokeWorkerHandler(message.valueChangeHandlerId, [elementId, value, allValues]).catch(() => {});
         });
+
+        if (message.selectionChangeHandlerId) {
+          modalHandle.onSelectionChange(async (itemId) => {
+            await invokeWorkerHandler(message.selectionChangeHandlerId!, [itemId]).catch(() => {});
+          });
+        }
+
+        if (message.searchChangeHandlerId) {
+          modalHandle.onSearchChange(async (searchQuery) => {
+            await invokeWorkerHandler(message.searchChangeHandlerId!, [searchQuery]).catch(() => {});
+          });
+        }
+
+        if (message.filterChangeHandlerId) {
+          modalHandle.onFilterChange(async (filterValue) => {
+            await invokeWorkerHandler(message.filterChangeHandlerId!, [filterValue]).catch(() => {});
+          });
+        }
+
         modalHandles.set(message.resourceId, modalHandle);
         resourceDisposables.set(message.resourceId, {
           dispose: () => {
@@ -284,6 +322,12 @@ export function createWorkerHost(
 
       if (message.type === 'modal-set-buttons') {
         modalHandles.get(message.resourceId)?.setButtons(message.buttons as never);
+        reply(true);
+        return;
+      }
+
+      if (message.type === 'modal-set-list-detail') {
+        modalHandles.get(message.resourceId)?.setListDetail(message.updates as never);
         reply(true);
         return;
       }

@@ -3,25 +3,28 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 import { onMounted, onUnmounted } from 'vue';
+import { invoke } from '@tauri-apps/api/core';
+import { listen } from '@tauri-apps/api/event';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import type { UnlistenFn } from '@tauri-apps/api/event';
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import { useClipboardStore } from '@/stores/runtime/clipboard';
 
-const CLIPBOARD_FOCUS_SYNC_DEBOUNCE_MS = 50;
+const CLIPBOARD_SYNC_DEBOUNCE_MS = 50;
 
 export function useClipboardFocusSync() {
   const clipboardStore = useClipboardStore();
   let clipboardFocusUnlisten: UnlistenFn | null = null;
+  let clipboardChangedUnlisten: UnlistenFn | null = null;
   let syncTimeoutId: ReturnType<typeof setTimeout> | null = null;
 
   function handleVisibilityChange() {
     if (document.visibilityState === 'visible') {
-      scheduleClipboardOwnerCheck();
+      scheduleClipboardSync();
     }
   }
 
-  function scheduleClipboardOwnerCheck() {
+  function scheduleClipboardSync() {
     if (syncTimeoutId !== null) {
       clearTimeout(syncTimeoutId);
     }
@@ -29,14 +32,14 @@ export function useClipboardFocusSync() {
     syncTimeoutId = setTimeout(() => {
       syncTimeoutId = null;
       void clipboardStore.syncFromSystemClipboard();
-    }, CLIPBOARD_FOCUS_SYNC_DEBOUNCE_MS);
+    }, CLIPBOARD_SYNC_DEBOUNCE_MS);
   }
 
   async function setupClipboardFocusSync() {
     try {
       clipboardFocusUnlisten = await getCurrentWindow().onFocusChanged(({ payload: focused }) => {
         if (focused) {
-          scheduleClipboardOwnerCheck();
+          scheduleClipboardSync();
         }
       });
     }
@@ -45,14 +48,27 @@ export function useClipboardFocusSync() {
     }
   }
 
+  async function setupClipboardChangeSync() {
+    try {
+      await invoke('ensure_system_clipboard_watcher');
+      clipboardChangedUnlisten = await listen<string>('system-clipboard-changed', () => {
+        scheduleClipboardSync();
+      });
+    }
+    catch (error) {
+      console.error('Failed to set up clipboard change sync:', error);
+    }
+  }
+
   onMounted(() => {
     if (getCurrentWebviewWindow().label !== 'main') {
       return;
     }
 
-    scheduleClipboardOwnerCheck();
+    scheduleClipboardSync();
     void setupClipboardFocusSync();
-    window.addEventListener('focus', scheduleClipboardOwnerCheck);
+    void setupClipboardChangeSync();
+    window.addEventListener('focus', scheduleClipboardSync);
     document.addEventListener('visibilitychange', handleVisibilityChange);
   });
 
@@ -67,7 +83,12 @@ export function useClipboardFocusSync() {
       clipboardFocusUnlisten = null;
     }
 
-    window.removeEventListener('focus', scheduleClipboardOwnerCheck);
+    if (clipboardChangedUnlisten) {
+      clipboardChangedUnlisten();
+      clipboardChangedUnlisten = null;
+    }
+
+    window.removeEventListener('focus', scheduleClipboardSync);
     document.removeEventListener('visibilitychange', handleVisibilityChange);
   });
 }

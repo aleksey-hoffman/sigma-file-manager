@@ -2,11 +2,15 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
+import { invoke } from '@tauri-apps/api/core';
+import { getCurrentWindow } from '@tauri-apps/api/window';
 import { ref, type Ref } from 'vue';
 import { open, save } from '@tauri-apps/plugin-dialog';
 import type { ExtensionPermission } from '@/types/extension';
 import { useQuickViewStore } from '@/stores/runtime/quick-view';
 import router from '@/router';
+import normalizePath from '@/utils/normalize-path';
+import type { DirEntry } from '@/types/dir-entry';
 
 export type BuiltinCommandDefinition = {
   id: string;
@@ -42,8 +46,14 @@ export type SaveFileDialogOptions = {
 };
 
 type NavigateToPathFn = (path: string) => Promise<void>;
+type OpenNavigatorFileFn = (path: string) => Promise<void>;
+
+const NAVIGATOR_PATH_LOOKUP_TIMEOUT_MS = 750;
+const NAVIGATOR_HANDLER_WAIT_ATTEMPTS = 40;
+const NAVIGATOR_HANDLER_WAIT_INTERVAL_MS = 50;
 
 const navigateToPathFn: Ref<NavigateToPathFn | null> = ref(null);
+const openNavigatorFileFn: Ref<OpenNavigatorFileFn | null> = ref(null);
 
 export function registerNavigateToPath(fn: NavigateToPathFn): void {
   navigateToPathFn.value = fn;
@@ -51,6 +61,65 @@ export function registerNavigateToPath(fn: NavigateToPathFn): void {
 
 export function unregisterNavigateToPath(): void {
   navigateToPathFn.value = null;
+}
+
+export function registerOpenNavigatorFile(fn: OpenNavigatorFileFn): void {
+  openNavigatorFileFn.value = fn;
+}
+
+export function unregisterOpenNavigatorFile(): void {
+  openNavigatorFileFn.value = null;
+}
+
+async function waitForNavigatorHandler<T>(
+  getHandler: () => T | null,
+  errorMessage: string,
+): Promise<T> {
+  for (let attempt = 0; attempt < NAVIGATOR_HANDLER_WAIT_ATTEMPTS; attempt += 1) {
+    const handler = getHandler();
+
+    if (handler) {
+      return handler;
+    }
+
+    await new Promise(resolve => setTimeout(resolve, NAVIGATOR_HANDLER_WAIT_INTERVAL_MS));
+  }
+
+  throw new Error(errorMessage);
+}
+
+async function openPathInNavigator(path: string): Promise<void> {
+  const normalizedPath = normalizePath(path.trim());
+
+  if (!normalizedPath) {
+    throw new Error('Invalid path');
+  }
+
+  await router.push({ name: 'navigator' });
+
+  const entry = await invoke<DirEntry | null>('get_dir_entry_with_timeout', {
+    path: normalizedPath,
+    timeoutMs: NAVIGATOR_PATH_LOOKUP_TIMEOUT_MS,
+  });
+
+  if (!entry) {
+    throw new Error('Path does not exist');
+  }
+
+  if (entry.is_dir) {
+    const navigate = await waitForNavigatorHandler(
+      () => navigateToPathFn.value,
+      'Navigation is not available',
+    );
+    await navigate(entry.path);
+    return;
+  }
+
+  const openFile = await waitForNavigatorHandler(
+    () => openNavigatorFileFn.value,
+    'Navigation is not available',
+  );
+  await openFile(entry.path);
 }
 
 export const BUILTIN_COMMANDS: BuiltinCommandDefinition[] = [
@@ -144,6 +213,16 @@ export const BUILTIN_COMMANDS: BuiltinCommandDefinition[] = [
     description: 'Reload the application window',
     showInPalette: true,
   },
+  {
+    id: 'sigma.app.hideMainWindow',
+    title: 'Hide Main Window',
+    description: 'Hide the main application window',
+  },
+  {
+    id: 'sigma.app.pasteToForeground',
+    title: 'Paste to Foreground',
+    description: 'Minimize the main window and paste clipboard contents into the foreground app',
+  },
 ];
 
 type BuiltinCommandHandler = (...args: unknown[]) => Promise<unknown>;
@@ -156,11 +235,7 @@ function initializeHandlers(): void {
       throw new Error('sigma.navigator.openPath requires a string path argument');
     }
 
-    if (!navigateToPathFn.value) {
-      throw new Error('Navigation is not available');
-    }
-
-    await navigateToPathFn.value(path);
+    await openPathInNavigator(path);
   });
 
   builtinCommandHandlers.set('sigma.quickView.open', async (path: unknown) => {
@@ -225,6 +300,16 @@ function initializeHandlers(): void {
   builtinCommandHandlers.set('sigma.app.reloadWindow', async () => {
     await new Promise(resolve => setTimeout(resolve, 1000));
     window.location.reload();
+  });
+
+  builtinCommandHandlers.set('sigma.app.hideMainWindow', async () => {
+    await getCurrentWindow().hide();
+  });
+
+  builtinCommandHandlers.set('sigma.app.pasteToForeground', async () => {
+    await getCurrentWindow().minimize();
+    await new Promise(resolve => setTimeout(resolve, 300));
+    await invoke('simulate_paste_shortcut');
   });
 }
 

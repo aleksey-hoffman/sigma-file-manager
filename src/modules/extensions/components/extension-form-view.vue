@@ -29,14 +29,17 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import type { UIElement, ModalButton } from '@/types/extension';
 import { renderTextWithLinksToSafeHtml } from '@/utils/safe-html';
-import { keyboardShortcutMatches } from '@/modules/extensions/utils/modal-keyboard-shortcut';
+import {
+  keyboardShortcutMatches,
+  isUnmodifiedEnterKey,
+} from '@/modules/extensions/utils/modal-keyboard-shortcut';
 import { getPrimaryModalButton, resolveModalActionButtons } from '@/modules/extensions/utils/modal-action-buttons';
 import { useExtensionModalOtherActionsShortcut } from '@/modules/extensions/composables/use-extension-modal-other-actions-shortcut';
 import ExtensionModalHeader from './extension-modal-header.vue';
 import ExtensionModalActionFooter from './extension-modal-action-footer.vue';
 
 type ExtensionModalActionFooterExpose = {
-  openOtherActions: () => void;
+  openOtherActions: () => Promise<void>;
 };
 
 const props = defineProps<{
@@ -70,6 +73,32 @@ function handleValueChange(elementId: string, value: unknown): void {
   emit('valueChange', elementId, value);
 }
 
+function resizeTextareaToContent(textarea: HTMLTextAreaElement): void {
+  textarea.style.height = 'auto';
+  textarea.style.height = `${textarea.scrollHeight}px`;
+}
+
+function resizeTextareas(): void {
+  const textareas = formRootElement.value?.querySelectorAll<HTMLTextAreaElement>(
+    '.ext-form-view__textarea',
+  );
+
+  textareas?.forEach(resizeTextareaToContent);
+}
+
+function handleTextareaInput(event: Event, elementId: string): void {
+  const textarea = event.target as HTMLTextAreaElement;
+  handleValueChange(elementId, textarea.value);
+  resizeTextareaToContent(textarea);
+}
+
+function getTextareaScrollStyle(rows: number | undefined): Record<string, string> {
+  const rowCount = Math.max(rows ?? 4, 2);
+  return {
+    height: `${rowCount * 1.5 + 1}rem`,
+  };
+}
+
 function handleButtonClick(buttonId: string): void {
   emit('buttonClick', buttonId);
 }
@@ -98,10 +127,18 @@ function handleFormKeydown(event: KeyboardEvent): void {
     return;
   }
 
+  for (const button of actionButtons.value) {
+    if (button.shortcut && keyboardShortcutMatches(event, button.shortcut)) {
+      event.preventDefault();
+      handleButtonClick(button.id);
+      return;
+    }
+  }
+
   const target = event.target;
 
   if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) {
-    if (event.key === 'Enter' && !event.shiftKey) {
+    if (isUnmodifiedEnterKey(event)) {
       event.preventDefault();
       triggerPrimaryAction();
     }
@@ -109,18 +146,10 @@ function handleFormKeydown(event: KeyboardEvent): void {
     return;
   }
 
-  if (event.key === 'Enter') {
+  if (isUnmodifiedEnterKey(event)) {
     event.preventDefault();
     triggerPrimaryAction();
     return;
-  }
-
-  for (const button of actionButtons.value) {
-    if (button.shortcut && keyboardShortcutMatches(event, button.shortcut)) {
-      event.preventDefault();
-      handleButtonClick(button.id);
-      return;
-    }
   }
 }
 
@@ -185,6 +214,7 @@ async function focusFirstInteractiveField(): Promise<void> {
 
 onMounted(() => {
   void focusFirstInteractiveField();
+  void nextTick(resizeTextareas);
 });
 
 async function scrollContentToTop(): Promise<void> {
@@ -202,6 +232,7 @@ watch(
   () => props.content,
   async () => {
     await scrollContentToTop();
+    resizeTextareas();
     void focusFirstInteractiveField();
   },
   { deep: true },
@@ -270,15 +301,20 @@ watch(
             >
               {{ element.label }}
             </Label>
-            <textarea
-              :id="element.id"
-              :value="String(getElementValue(element) ?? '')"
-              :placeholder="element.placeholder"
-              :rows="element.rows || 4"
-              :disabled="element.disabled"
-              class="ext-form-view__textarea"
-              @input="(event: Event) => handleValueChange(element.id!, (event.target as HTMLTextAreaElement).value)"
-            />
+            <ScrollArea
+              class="ext-form-view__textarea-scroll"
+              :style="getTextareaScrollStyle(element.rows)"
+            >
+              <textarea
+                :id="element.id"
+                :value="String(getElementValue(element) ?? '')"
+                :placeholder="element.placeholder"
+                :rows="element.rows || 4"
+                :disabled="element.disabled"
+                class="ext-form-view__textarea"
+                @input="(event: Event) => handleTextareaInput(event, element.id!)"
+              />
+            </ScrollArea>
           </div>
 
           <div
@@ -608,28 +644,46 @@ watch(
   max-width: none;
 }
 
-.ext-form-view__textarea {
-  display: flex;
+.ext-form-view__textarea-scroll {
   width: 100%;
   min-height: 80px;
-  padding: 0.5rem 0.75rem;
   border: 1px solid hsl(var(--input));
   border-radius: var(--radius);
   background-color: transparent;
-  color: inherit;
-  font-family: inherit;
-  font-size: 0.875rem;
   resize: vertical;
 }
 
-.ext-form-view__textarea:focus {
+.ext-form-view__textarea-scroll:focus-within {
   outline: 2px solid hsl(var(--ring) / 50%);
   outline-offset: var(--ring-outline-offset);
 }
 
+.ext-form-view__textarea-scroll:has(.ext-form-view__textarea:disabled) {
+  opacity: 0.5;
+}
+
+.ext-form-view__textarea {
+  display: block;
+  overflow: hidden;
+  width: 100%;
+  min-height: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 0;
+  background-color: transparent;
+  color: inherit;
+  font-family: inherit;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  outline: none;
+  resize: none;
+}
+
+.ext-form-view__textarea::placeholder {
+  color: hsl(var(--muted-foreground));
+}
+
 .ext-form-view__textarea:disabled {
   cursor: not-allowed;
-  opacity: 0.5;
 }
 
 .ext-form-view__inline-button {

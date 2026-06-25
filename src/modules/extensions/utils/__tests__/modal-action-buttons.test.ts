@@ -16,9 +16,20 @@ describe('resolveModalActionButtons', () => {
 
   it('uses the primary variant button as the main action', () => {
     const buttons = [
-      { id: 'pin', label: 'Pin' },
-      { id: 'paste', label: 'Paste', variant: 'primary' as const },
-      { id: 'delete', label: 'Delete', variant: 'danger' as const },
+      {
+        id: 'pin',
+        label: 'Pin',
+      },
+      {
+        id: 'paste',
+        label: 'Paste',
+        variant: 'primary' as const,
+      },
+      {
+        id: 'delete',
+        label: 'Delete',
+        variant: 'danger' as const,
+      },
     ];
 
     expect(resolveModalActionButtons(buttons)).toEqual({
@@ -30,8 +41,14 @@ describe('resolveModalActionButtons', () => {
 
   it('falls back to the first button when no primary action is marked', () => {
     const buttons = [
-      { id: 'cancel', label: 'Cancel' },
-      { id: 'save', label: 'Save' },
+      {
+        id: 'cancel',
+        label: 'Cancel',
+      },
+      {
+        id: 'save',
+        label: 'Save',
+      },
     ];
 
     expect(resolveModalActionButtons(buttons)).toEqual({
@@ -43,8 +60,15 @@ describe('resolveModalActionButtons', () => {
 
   it('prefers enter shortcut over non-primary first button', () => {
     const buttons = [
-      { id: 'cancel', label: 'Cancel' },
-      { id: 'submit', label: 'Submit', shortcut: { key: 'Enter' } },
+      {
+        id: 'cancel',
+        label: 'Cancel',
+      },
+      {
+        id: 'submit',
+        label: 'Submit',
+        shortcut: { key: 'Enter' },
+      },
     ];
 
     expect(getPrimaryModalButton(buttons)?.id).toBe('submit');

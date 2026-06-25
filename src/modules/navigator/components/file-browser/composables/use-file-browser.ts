@@ -19,7 +19,9 @@ import {
 } from '@/modules/extensions/context';
 import {
   registerNavigateToPath,
+  registerOpenNavigatorFile,
   unregisterNavigateToPath,
+  unregisterOpenNavigatorFile,
 } from '@/modules/extensions/builtin-commands';
 import type { DirEntry, DirContents } from '@/types/dir-entry';
 import type { Tab } from '@/types/workspaces';
@@ -478,6 +480,7 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
       });
 
       registerNavigateToPath(dataSource.navigateToPath);
+      registerOpenNavigatorFile(dataSource.openFile);
     });
 
     onUnmounted(() => {
@@ -485,6 +488,7 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
       videoThumbnails.clearThumbnails();
       unregisterNavigationProvider();
       unregisterNavigateToPath();
+      unregisterOpenNavigatorFile();
     });
 
     watch(dataSource.currentPath, (newPath) => {

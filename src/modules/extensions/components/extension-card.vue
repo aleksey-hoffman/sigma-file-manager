@@ -55,6 +55,8 @@ const isOfficial = computed(() => props.extension.isOfficial);
 const isLocal = computed(() => props.extension.isLocal);
 
 const isPlatformCompatible = computed(() => props.extension.isPlatformCompatible);
+const isEngineCompatible = computed(() => props.extension.isEngineCompatible);
+const isInstallAllowed = computed(() => isPlatformCompatible.value && isEngineCompatible.value);
 
 const displayVersion = computed(() => {
   if (props.extension.isInstalled) {
@@ -162,7 +164,15 @@ function handleCancelClick(event: MouseEvent) {
           {{ t('extensions.versionPrefix') }}{{ displayVersion }}
         </span>
         <span
-          v-if="!isPlatformCompatible"
+          v-if="!isEngineCompatible"
+          class="extension-card__incompatible"
+          :title="t('extensions.engineIncompatibleShort')"
+        >
+          <TriangleAlertIcon :size="12" />
+          {{ t('extensions.engineIncompatibleShort') }}
+        </span>
+        <span
+          v-else-if="!isPlatformCompatible"
           class="extension-card__incompatible"
           :title="t('extensions.platformIncompatibleShort')"
         >
@@ -176,7 +186,7 @@ function handleCancelClick(event: MouseEvent) {
           <Button
             variant="default"
             size="xs"
-            :disabled="(isInstallDisabled ?? isInstalling) || !isPlatformCompatible"
+            :disabled="(isInstallDisabled ?? isInstalling) || !isInstallAllowed"
             @click="handleInstallClick"
           >
             <DownloadIcon

@@ -4,6 +4,7 @@
 
 import { ref, computed, onMounted, watch } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
+import { getVersion } from '@tauri-apps/api/app';
 import { useI18n } from 'vue-i18n';
 import { useExtensionsStore } from '@/stores/runtime/extensions';
 import type {
@@ -23,6 +24,12 @@ import {
 import { getPlatformInfo } from '@/modules/extensions/api';
 import { getBinaryDisplayVersion, getBinaryLookupVersion } from '@/modules/extensions/utils/binary-metadata';
 import { invokeAsExtension } from '@/modules/extensions/runtime/extension-invoke';
+import { EXTENSION_API_VERSION } from '@/modules/extensions/constants/extension-api-version';
+import {
+  checkEngineCompatibility,
+  isExtensionVisibleInMarketplace,
+  type EngineCompatibilityResult,
+} from '@/modules/extensions/utils/engine-compatibility';
 
 export type ExtensionWithManifest = ExtensionRegistryEntry & {
   manifest?: ExtensionManifest;
@@ -43,6 +50,13 @@ export type ExtensionWithManifest = ExtensionRegistryEntry & {
   binaries: BinaryInfo[];
   platforms: PlatformOS[];
   isPlatformCompatible: boolean;
+  isEngineCompatible: boolean;
+  engineRequirements?: {
+    sigmaFileManager: string;
+    extensionApi?: string;
+  };
+  engineCompatibility?: EngineCompatibilityResult | null;
+  currentAppVersion?: string | null;
 };
 
 function publisherFromRegistryOrManifest(
@@ -77,6 +91,7 @@ export function useExtensions() {
   const extensionSizes = ref<Map<string, number>>(new Map());
   const latestBinaryVersionByRepository = ref<Map<string, string>>(new Map());
   const BINARY_VERSION_CHECK_TTL_MS = 12 * 60 * 60 * 1000;
+  const currentAppVersion = ref<string | null>(null);
 
   type DirSizeResult = {
     path: string;
@@ -98,6 +113,87 @@ export function useExtensions() {
     const platforms = getExtensionPlatforms(manifest);
     const currentOS = getPlatformInfo().os;
     return platforms.includes(currentOS);
+  }
+
+  function getEngineCompatibilityContext() {
+    if (!currentAppVersion.value) {
+      return null;
+    }
+
+    return {
+      appVersion: currentAppVersion.value,
+      extensionApiVersion: EXTENSION_API_VERSION,
+    };
+  }
+
+  function getEngineRequirements(manifest?: ExtensionManifest) {
+    if (!manifest) {
+      return undefined;
+    }
+
+    return {
+      sigmaFileManager: manifest.engines.sigmaFileManager,
+      ...(manifest.engines.extensionApi ? { extensionApi: manifest.engines.extensionApi } : {}),
+    };
+  }
+
+  function evaluateEngineCompatibility(manifest?: ExtensionManifest): {
+    isCompatible: boolean;
+    details: EngineCompatibilityResult | null;
+  } {
+    const compatibilityContext = getEngineCompatibilityContext();
+
+    if (!manifest || !compatibilityContext) {
+      return {
+        isCompatible: true,
+        details: null,
+      };
+    }
+
+    const details = checkEngineCompatibility(manifest, compatibilityContext);
+
+    return {
+      isCompatible: details.isCompatible,
+      details,
+    };
+  }
+
+  type ExtensionBeforeCompatibilityEnrichment = Omit<
+    ExtensionWithManifest,
+    | 'platforms'
+    | 'isPlatformCompatible'
+    | 'isEngineCompatible'
+    | 'engineRequirements'
+    | 'engineCompatibility'
+    | 'currentAppVersion'
+  >;
+
+  function enrichExtensionWithCompatibility(
+    extension: ExtensionBeforeCompatibilityEnrichment,
+    manifest?: ExtensionManifest,
+  ): ExtensionWithManifest {
+    const resolvedManifest = manifest ?? extension.manifest;
+    const engineEvaluation = evaluateEngineCompatibility(resolvedManifest);
+
+    return {
+      ...extension,
+      manifest: resolvedManifest,
+      platforms: getExtensionPlatforms(resolvedManifest),
+      isPlatformCompatible: checkPlatformCompatibility(resolvedManifest),
+      isEngineCompatible: engineEvaluation.isCompatible,
+      engineRequirements: getEngineRequirements(resolvedManifest),
+      engineCompatibility: engineEvaluation.details,
+      currentAppVersion: currentAppVersion.value,
+    };
+  }
+
+  async function loadCurrentAppVersion(): Promise<void> {
+    try {
+      currentAppVersion.value = await getVersion();
+    }
+    catch {
+      currentAppVersion.value = null;
+    }
   }
 
   function getBinariesFromSettings(settings: ExtensionSettings | undefined): BinaryInfo[] {
@@ -358,7 +454,7 @@ export function useExtensions() {
       const latestVersion = versions.length > 0 ? versions[0] : null;
       const manifest = installedExt?.manifest || manifestCache.value.get(entry.id);
 
-      return {
+      return enrichExtensionWithCompatibility({
         ...entry,
         manifest,
         isInstalled: Boolean(installedExt && !installedExt.installPendingDependencies),
@@ -378,10 +474,20 @@ export function useExtensions() {
         binaries: installedExt
           ? enrichBinariesWithSharedStore(getBinariesFromSettings(installedExt.settings))
           : [],
-        platforms: getExtensionPlatforms(manifest),
-        isPlatformCompatible: checkPlatformCompatibility(manifest),
-      };
+      }, manifest);
     });
+
+    const compatibilityContext = getEngineCompatibilityContext();
+
+    if (compatibilityContext) {
+      extensions = extensions.filter((extension) => {
+        return isExtensionVisibleInMarketplace(
+          extension.manifest,
+          extension.isInstalled,
+          compatibilityContext,
+        );
+      });
+    }
 
     if (searchQuery.value.trim()) {
       const query = searchQuery.value.toLowerCase();
@@ -422,7 +528,7 @@ export function useExtensions() {
         const versions = extensionsStore.getCachedVersions(repository);
         const latestVersion = versions.length > 0 ? versions[0] : inst.version;
 
-        return {
+        return enrichExtensionWithCompatibility({
           id: inst.id,
           name: registryEntry?.name ?? inst.manifest.name,
           description: registryEntry?.description ?? t('extensions.noDescription'),
@@ -445,9 +551,7 @@ export function useExtensions() {
           latestVersion,
           sizeBytes: extensionSizes.value.get(inst.id),
           binaries: enrichBinariesWithSharedStore(getBinariesFromSettings(inst.settings)),
-          platforms: getExtensionPlatforms(inst.manifest),
-          isPlatformCompatible: checkPlatformCompatibility(inst.manifest),
-        };
+        }, inst.manifest);
       });
   });
 
@@ -467,7 +571,9 @@ export function useExtensions() {
     const manifestLoadPromise = (async () => {
       try {
         const manifest = await extensionsStore.fetchExtensionManifest(entry);
-        manifestCache.value.set(entry.id, manifest);
+        const nextManifestCache = new Map(manifestCache.value);
+        nextManifestCache.set(entry.id, manifest);
+        manifestCache.value = nextManifestCache;
         return manifest;
       }
       catch (error) {
@@ -497,10 +603,10 @@ export function useExtensions() {
       });
 
       if (manifest && selectedExtension.value?.id === ext.id) {
-        selectedExtension.value = {
+        selectedExtension.value = enrichExtensionWithCompatibility({
           ...ext,
           manifest,
-        };
+        }, manifest);
       }
     }
   }
@@ -532,7 +638,7 @@ export function useExtensions() {
     const latestVersion = versions.length > 0 ? versions[0] : null;
     const rebuildManifest = installed?.manifest ?? manifestCache.value.get(extensionId) ?? selectedExtension.value.manifest;
 
-    selectedExtension.value = {
+    selectedExtension.value = enrichExtensionWithCompatibility({
       id: extensionId,
       name: registryEntry?.name ?? installed?.manifest.name ?? selectedExtension.value.name,
       description: registryEntry?.description ?? selectedExtension.value.description,
@@ -562,9 +668,7 @@ export function useExtensions() {
       binaries: installed
         ? enrichBinariesWithSharedStore(getBinariesFromSettings(installed.settings))
         : [],
-      platforms: getExtensionPlatforms(rebuildManifest),
-      isPlatformCompatible: checkPlatformCompatibility(rebuildManifest),
-    };
+    }, rebuildManifest);
   }
 
   async function installExtension(extensionId: string, version?: string) {
@@ -673,6 +777,7 @@ export function useExtensions() {
       await extensionsStore.init();
     }
 
+    await loadCurrentAppVersion();
     await extensionsStore.reconcileInstalledExtensions();
     void prefetchMarketplaceManifests();
     await refreshInstalledExtensionSizes();
@@ -722,6 +827,9 @@ export function useExtensions() {
     searchQuery,
     selectedExtension,
     isLoadingManifest,
+
+    currentAppVersion,
+    extensionApiVersion: EXTENSION_API_VERSION,
 
     filteredExtensions,
     featuredExtensions,

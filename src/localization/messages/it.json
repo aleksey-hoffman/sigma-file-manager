@@ -1063,7 +1063,13 @@
       "removeError": "Failed to remove dependency",
       "downloadSource": "Apri link di download",
       "showFolder": "Mostra cartella"
-    }
+    },
+    "engineIncompatibleShort": "Aggiornamento richiesto",
+    "engineAppWarning": "Richiede Sigma File Manager {range} (versione attuale: {current})",
+    "engineApiWarning": "Richiede API estensioni {range} (versione attuale: {current})",
+    "engineRequirements": "Requisiti",
+    "requiresSigmaFileManager": "Sigma File Manager",
+    "requiresExtensionApi": "API estensioni"
   },
   "commandPalette": {
     "accessibleDialogTitle": "Tavolozza comandi",

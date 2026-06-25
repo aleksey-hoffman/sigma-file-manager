@@ -43,7 +43,7 @@ export function useExtensionDisplayInfo(
     if (registryEntry?.name) {
       return {
         extensionName: registryEntry.name,
-        extensionIconPath: registryEntry.icon,
+        extensionIconPath: undefined,
       };
     }
 

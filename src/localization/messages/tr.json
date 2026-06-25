@@ -1063,7 +1063,13 @@
       "removeError": "Failed to remove dependency",
       "downloadSource": "İndirme bağlantısını aç",
       "showFolder": "Klasörü göster"
-    }
+    },
+    "engineIncompatibleShort": "Güncelleme gerekli",
+    "engineAppWarning": "Sigma File Manager {range} gerektirir (sizde {current})",
+    "engineApiWarning": "Uzantı API {range} gerektirir (sizde {current})",
+    "engineRequirements": "Gereksinimler",
+    "requiresSigmaFileManager": "Sigma File Manager",
+    "requiresExtensionApi": "Uzantı API"
   },
   "commandPalette": {
     "accessibleDialogTitle": "Komut paleti",

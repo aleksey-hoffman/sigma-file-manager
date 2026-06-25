@@ -30,6 +30,7 @@ const { t } = useI18n();
       v-bind="forwarded"
       class="sigma-ui-dialog-content"
       :class="[$attrs.class]"
+      :style="$attrs.style"
     >
       <slot />
 

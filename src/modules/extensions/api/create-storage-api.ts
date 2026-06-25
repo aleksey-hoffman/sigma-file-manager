@@ -4,13 +4,14 @@
 
 import { useExtensionsStorageStore } from '@/stores/storage/extensions';
 import type { ExtensionContext } from '@/modules/extensions/api/extension-context';
+import { cloneBridgeResult } from '@/modules/extensions/utils/worker-message-clone';
 
 export function createStorageAPI(context: ExtensionContext) {
   return {
     get: async <T>(key: string): Promise<T | undefined> => {
       const storageStore = useExtensionsStorageStore();
       const settings = await storageStore.getExtensionSettings(context.extensionId);
-      return settings?.customSettings?.[key] as T | undefined;
+      return cloneBridgeResult(settings?.customSettings?.[key]) as T | undefined;
     },
     set: async <T>(key: string, value: T): Promise<void> => {
       const storageStore = useExtensionsStorageStore();

@@ -3,8 +3,8 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 import { createApp, markRaw } from 'vue';
-import { writeText as tauriWriteText, writeImage as tauriWriteImage, writeHtml as tauriWriteHtml } from '@tauri-apps/plugin-clipboard-manager';
-import { Image as TauriImage } from '@tauri-apps/api/image';
+import { invoke } from '@tauri-apps/api/core';
+import { writeText as tauriWriteText, writeHtml as tauriWriteHtml } from '@tauri-apps/plugin-clipboard-manager';
 import type {
   NotificationOptions,
   DialogOptions,
@@ -18,6 +18,13 @@ import type {
   UIElement,
   UISelectOption,
 } from '@/types/extension';
+import {
+  readExtensionClipboardImagePayload,
+  readExtensionClipboardSnapshot,
+} from '@/modules/extensions/api/clipboard-read';
+import { addClipboardChangeListener } from '@/modules/extensions/api/clipboard-change';
+import { ensureClipboardChangeBridge } from '@/modules/extensions/api/clipboard-change-bridge';
+import { readExtensionClipboardSourceContext } from '@/modules/extensions/api/clipboard-source';
 import { toast, ToastStatic, ToastProgress } from '@/components/ui/toaster';
 import { createModal } from '@/modules/extensions/api/modal-state';
 import { showExtensionDialog } from '@/modules/extensions/api/dialog-state';
@@ -27,6 +34,38 @@ import type { Disposable } from '@/types/extension';
 
 const DISMISS_DELAY = 2000;
 const CANCELLED_DISMISS_DELAY = 1500;
+
+export function normalizeClipboardBytes(data: unknown): Uint8Array {
+  if (data instanceof Uint8Array) {
+    return data;
+  }
+
+  if (data instanceof ArrayBuffer) {
+    return new Uint8Array(data);
+  }
+
+  if (Array.isArray(data)) {
+    return new Uint8Array(data.map(value => Number(value)));
+  }
+
+  if (data && typeof data === 'object') {
+    const record = data as Record<string, unknown>;
+    const numericKeys = Object.keys(record)
+      .filter(key => /^\d+$/.test(key))
+      .map(key => Number(key))
+      .sort((left, right) => left - right);
+
+    if (numericKeys.length > 0) {
+      return new Uint8Array(numericKeys.map(key => Number(record[String(key)])));
+    }
+  }
+
+  if (ArrayBuffer.isView(data)) {
+    return new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
+  }
+
+  throw new Error('Invalid clipboard byte payload');
+}
 
 export function createUiAPI(context: ExtensionContext) {
   return {
@@ -70,28 +109,26 @@ export function createUiAPI(context: ExtensionContext) {
         throw new Error(context.t('extensions.api.permissionDenied', { permission: 'clipboard' }));
       }
 
-      function toBytes(data: Uint8Array | ArrayLike<number>): Uint8Array {
-        return data instanceof Uint8Array ? data : new Uint8Array(data);
-      }
-
       for (const typesData of items) {
         if (typesData['image/png']) {
-          const image = await TauriImage.fromBytes(toBytes(typesData['image/png']));
-          await tauriWriteImage(image);
+          const pngBytes = normalizeClipboardBytes(typesData['image/png']);
+          await invoke('set_system_clipboard_image_from_png_bytes', {
+            pngBytes: Array.from(pngBytes),
+          });
           return;
         }
 
         if (typesData['text/html']) {
-          const html = new TextDecoder().decode(toBytes(typesData['text/html']));
+          const html = new TextDecoder().decode(normalizeClipboardBytes(typesData['text/html']));
           const altText = typesData['text/plain']
-            ? new TextDecoder().decode(toBytes(typesData['text/plain']))
+            ? new TextDecoder().decode(normalizeClipboardBytes(typesData['text/plain']))
             : undefined;
           await tauriWriteHtml(html, altText);
           return;
         }
 
         if (typesData['text/plain']) {
-          const text = new TextDecoder().decode(toBytes(typesData['text/plain']));
+          const text = new TextDecoder().decode(normalizeClipboardBytes(typesData['text/plain']));
           await tauriWriteText(text);
           return;
         }
@@ -102,6 +139,65 @@ export function createUiAPI(context: ExtensionContext) {
       if (allTypes.length > 0) {
         throw new Error(`No supported clipboard types found in: ${allTypes.join(', ')}. Supported: image/png, text/html, text/plain`);
       }
+    },
+    restoreClipboardImageFromStorage: async (relativePath: string): Promise<void> => {
+      if (!context.hasPermission('clipboard')) {
+        throw new Error(context.t('extensions.api.permissionDenied', { permission: 'clipboard' }));
+      }
+
+      const resolvedPath = await context.resolveStoragePath(relativePath);
+      await invoke('set_system_clipboard_image_from_path', { path: resolvedPath });
+    },
+    pathExists: async (path: string): Promise<boolean> => {
+      if (!context.hasPermission('clipboard')) {
+        throw new Error(context.t('extensions.api.permissionDenied', { permission: 'clipboard' }));
+      }
+
+      return invoke<boolean>('path_exists', { path });
+    },
+    clipboardRead: async () => {
+      if (!context.hasPermission('clipboard')) {
+        throw new Error(context.t('extensions.api.permissionDenied', { permission: 'clipboard' }));
+      }
+
+      return readExtensionClipboardSnapshot();
+    },
+    getClipboardSource: async () => {
+      if (!context.hasPermission('clipboard')) {
+        throw new Error(context.t('extensions.api.permissionDenied', { permission: 'clipboard' }));
+      }
+
+      return readExtensionClipboardSourceContext();
+    },
+    clipboardReadImage: async () => {
+      if (!context.hasPermission('clipboard')) {
+        throw new Error(context.t('extensions.api.permissionDenied', { permission: 'clipboard' }));
+      }
+
+      return readExtensionClipboardImagePayload();
+    },
+    onClipboardChange: (callback: () => void | Promise<void>): Disposable => {
+      if (!context.hasPermission('clipboard')) {
+        throw new Error(context.t('extensions.api.permissionDenied', { permission: 'clipboard' }));
+      }
+
+      void ensureClipboardChangeBridge();
+
+      return addClipboardChangeListener(context.extensionId, callback);
+    },
+    clipboardWriteFiles: async (paths: string[], operation: 'copy' | 'move' = 'copy') => {
+      if (!context.hasPermission('clipboard')) {
+        throw new Error(context.t('extensions.api.permissionDenied', { permission: 'clipboard' }));
+      }
+
+      if (paths.length === 0) {
+        return;
+      }
+
+      await invoke('set_system_clipboard_files', {
+        paths,
+        operation,
+      });
     },
     withProgress: async <T>(
       options: ProgressOptions,

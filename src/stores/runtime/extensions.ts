@@ -38,13 +38,16 @@ import {
 } from '@/data/extensions';
 import { useExtensionsStorageStore } from '@/stores/storage/extensions';
 import { loadExtensionRuntime, unloadExtensionRuntime, reactivateExtensionRuntime } from '@/modules/extensions/runtime/loader';
+import { setPendingModalCommandTitle } from '@/modules/extensions/api/modal-state';
 import { getBinaryLookupVersion } from '@/modules/extensions/utils/binary-metadata';
 import { invokeAsExtension } from '@/modules/extensions/runtime/extension-invoke';
 import {
   getContextMenuRegistrations, getKeybindingRegistrations, getCommandRegistrations, getSidebarRegistrations, getToolbarRegistrations, clearExtensionRegistrations, clearBinaryDownloadCount, clearBinaryReuseCount, parseKeybindingString,
 } from '@/modules/extensions/api';
 import { isBuiltinCommand, getBuiltinCommandHandler, getBuiltinCommandDefinitions } from '@/modules/extensions/builtin-commands';
-import { assertValidManifestData, assertValidRegistryData, isVersionCompatibleWithRange } from '@/modules/extensions/runtime/validation';
+import { assertValidManifestData, assertValidRegistryData } from '@/modules/extensions/runtime/validation';
+import { EXTENSION_API_VERSION } from '@/modules/extensions/constants/extension-api-version';
+import { checkEngineCompatibility } from '@/modules/extensions/utils/engine-compatibility';
 import {
   getActivationEvents,
   getCommandIdParts,
@@ -327,13 +330,32 @@ export const useExtensionsStore = defineStore('extensions', () => {
 
   async function assertManifestEngineCompatibility(manifest: ExtensionManifest): Promise<void> {
     const appVersion = await getCurrentAppVersion();
-    const range = manifest.engines.sigmaFileManager;
+    const compatibility = checkEngineCompatibility(manifest, {
+      appVersion,
+      extensionApiVersion: EXTENSION_API_VERSION,
+    });
 
-    if (!isVersionCompatibleWithRange(appVersion, range)) {
-      throw new Error(
-        `Extension "${manifest.id}" requires Sigma File Manager ${range}, current version is ${appVersion}`,
+    if (compatibility.isCompatible) {
+      return;
+    }
+
+    const requirements: string[] = [];
+
+    if (!compatibility.isAppCompatible) {
+      requirements.push(
+        `Sigma File Manager ${compatibility.appRequirement} (current: ${appVersion})`,
       );
     }
+
+    if (!compatibility.isExtensionApiCompatible && compatibility.extensionApiRequirement) {
+      requirements.push(
+        `extension API ${compatibility.extensionApiRequirement} (current: ${EXTENSION_API_VERSION})`,
+      );
+    }
+
+    throw new Error(
+      `Extension "${manifest.id}" requires ${requirements.join(' and ')}`,
+    );
   }
 
   const installingExtensions = ref<Set<string>>(new Set());
@@ -1220,6 +1242,7 @@ export const useExtensionsStore = defineStore('extensions', () => {
       throw new Error(`Extension not installed: ${extensionId}`);
     }
 
+    await assertManifestEngineCompatibility(installed.manifest);
     await loadExtensionForEvent(extensionId, installed.manifest, activationEvent);
   }
 
@@ -1505,6 +1528,11 @@ export const useExtensionsStore = defineStore('extensions', () => {
     return true;
   }
 
+  function runRegisteredCommand(registration: CommandRegistration, ...args: unknown[]): Promise<unknown> | unknown {
+    setPendingModalCommandTitle(registration.extensionId, registration.command.title);
+    return registration.handler(...args);
+  }
+
   async function executeCommand(commandId: string, ...args: unknown[]): Promise<unknown> {
     if (isBuiltinCommand(commandId)) {
       const handler = getBuiltinCommandHandler(commandId);
@@ -1553,11 +1581,11 @@ export const useExtensionsStore = defineStore('extensions', () => {
       }
 
       addToRecentCommands(commandId);
-      return activatedRegistration.handler(...args);
+      return runRegisteredCommand(activatedRegistration, ...args);
     }
 
     addToRecentCommands(commandId);
-    return registration.handler(...args);
+    return runRegisteredCommand(registration, ...args);
   }
 
   function addToRecentCommands(commandId: string): void {

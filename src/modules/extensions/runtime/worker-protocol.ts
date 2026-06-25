@@ -118,6 +118,13 @@ export type HostSubscribeSettingsChangeMessage = {
   handlerId: string;
 };
 
+export type HostSubscribeClipboardChangeMessage = {
+  type: 'subscribe-clipboard-change';
+  id: string;
+  resourceId: string;
+  handlerId: string;
+};
+
 export type HostCreateModalMessage = {
   type: 'create-modal';
   id: string;
@@ -125,6 +132,9 @@ export type HostCreateModalMessage = {
   options: unknown;
   submitHandlerId: string;
   valueChangeHandlerId: string;
+  selectionChangeHandlerId?: string;
+  searchChangeHandlerId?: string;
+  filterChangeHandlerId?: string;
 };
 
 export type HostModalCloseMessage = {
@@ -153,6 +163,13 @@ export type HostModalSetButtonsMessage = {
   id: string;
   resourceId: string;
   buttons: unknown;
+};
+
+export type HostModalSetListDetailMessage = {
+  type: 'modal-set-list-detail';
+  id: string;
+  resourceId: string;
+  updates: unknown;
 };
 
 export type HostProgressStartMessage = {
@@ -236,11 +253,13 @@ export type WorkerToHostMessage
     | HostSubscribeContextPathMessage
     | HostSubscribeContextSelectionMessage
     | HostSubscribeSettingsChangeMessage
+    | HostSubscribeClipboardChangeMessage
     | HostCreateModalMessage
     | HostModalCloseMessage
     | HostModalUpdateElementMessage
     | HostModalSetContentMessage
     | HostModalSetButtonsMessage
+    | HostModalSetListDetailMessage
     | HostProgressStartMessage
     | HostProgressReportMessage
     | HostProgressFinishMessage

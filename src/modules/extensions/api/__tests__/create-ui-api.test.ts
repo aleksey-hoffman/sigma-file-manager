@@ -8,24 +8,22 @@ import {
 import type { ExtensionPermission } from '@/types/extension';
 import type { ExtensionContext } from '@/modules/extensions/api/extension-context';
 
-const { writeTextMock, writeImageMock, writeHtmlMock } = vi.hoisted(() => ({
+const { writeTextMock, writeHtmlMock } = vi.hoisted(() => ({
   writeTextMock: vi.fn(),
-  writeImageMock: vi.fn(),
   writeHtmlMock: vi.fn(),
 }));
 
-const { fromBytesMock } = vi.hoisted(() => ({
-  fromBytesMock: vi.fn(),
+const { invokeMock } = vi.hoisted(() => ({
+  invokeMock: vi.fn(),
 }));
 
 vi.mock('@tauri-apps/plugin-clipboard-manager', () => ({
   writeText: writeTextMock,
-  writeImage: writeImageMock,
   writeHtml: writeHtmlMock,
 }));
 
-vi.mock('@tauri-apps/api/image', () => ({
-  Image: { fromBytes: fromBytesMock },
+vi.mock('@tauri-apps/api/core', () => ({
+  invoke: invokeMock,
 }));
 
 vi.mock('vue-sonner', () => ({
@@ -60,7 +58,7 @@ vi.mock('@/modules/extensions/components/extension-toolbar-view.vue', () => ({
   default: {},
 }));
 
-import { createUiAPI } from '@/modules/extensions/api/create-ui-api';
+import { createUiAPI, normalizeClipboardBytes } from '@/modules/extensions/api/create-ui-api';
 
 function createContext(permissions: ExtensionPermission[] = []): ExtensionContext {
   return {
@@ -94,9 +92,8 @@ function createContext(permissions: ExtensionPermission[] = []): ExtensionContex
 describe('createUiAPI', () => {
   beforeEach(() => {
     writeTextMock.mockReset();
-    writeImageMock.mockReset();
     writeHtmlMock.mockReset();
-    fromBytesMock.mockReset();
+    invokeMock.mockReset();
   });
 
   describe('copyText', () => {
@@ -135,21 +132,38 @@ describe('createUiAPI', () => {
       await uiApi.clipboardWrite([{ 'text/plain': textBytes }]);
 
       expect(writeTextMock).toHaveBeenCalledWith('hello');
-      expect(writeImageMock).not.toHaveBeenCalled();
+      expect(invokeMock).not.toHaveBeenCalled();
     });
 
     it('writes image/png', async () => {
-      const fakeImage = { type: 'tauri-image' };
-      fromBytesMock.mockResolvedValueOnce(fakeImage);
-      writeImageMock.mockResolvedValueOnce(undefined);
+      invokeMock.mockResolvedValueOnce(undefined);
       const uiApi = createUiAPI(createContext(['clipboard' as ExtensionPermission]));
       const pngBytes = new Uint8Array([137, 80, 78, 71]);
 
       await uiApi.clipboardWrite([{ 'image/png': pngBytes }]);
 
-      expect(fromBytesMock).toHaveBeenCalledWith(pngBytes);
-      expect(writeImageMock).toHaveBeenCalledWith(fakeImage);
+      expect(invokeMock).toHaveBeenCalledWith('set_system_clipboard_image_from_png_bytes', {
+        pngBytes: [137, 80, 78, 71],
+      });
       expect(writeTextMock).not.toHaveBeenCalled();
+    });
+
+    it('writes image/png from serialized byte objects', async () => {
+      invokeMock.mockResolvedValueOnce(undefined);
+      const uiApi = createUiAPI(createContext(['clipboard' as ExtensionPermission]));
+
+      await uiApi.clipboardWrite([{
+        'image/png': {
+          0: 137,
+          1: 80,
+          2: 78,
+          3: 71,
+        } as unknown as Uint8Array,
+      }]);
+
+      expect(invokeMock).toHaveBeenCalledWith('set_system_clipboard_image_from_png_bytes', {
+        pngBytes: [137, 80, 78, 71],
+      });
     });
 
     it('writes text/html with text/plain fallback', async () => {
@@ -178,9 +192,7 @@ describe('createUiAPI', () => {
     });
 
     it('prioritizes image/png over text types', async () => {
-      const fakeImage = { type: 'tauri-image' };
-      fromBytesMock.mockResolvedValueOnce(fakeImage);
-      writeImageMock.mockResolvedValueOnce(undefined);
+      invokeMock.mockResolvedValueOnce(undefined);
       const uiApi = createUiAPI(createContext(['clipboard' as ExtensionPermission]));
 
       await uiApi.clipboardWrite([{
@@ -188,7 +200,9 @@ describe('createUiAPI', () => {
         'image/png': new Uint8Array([137, 80, 78, 71]),
       }]);
 
-      expect(writeImageMock).toHaveBeenCalled();
+      expect(invokeMock).toHaveBeenCalledWith('set_system_clipboard_image_from_png_bytes', {
+        pngBytes: [137, 80, 78, 71],
+      });
       expect(writeTextMock).not.toHaveBeenCalled();
       expect(writeHtmlMock).not.toHaveBeenCalled();
     });
@@ -214,8 +228,7 @@ describe('createUiAPI', () => {
         uiApi.clipboardWrite([{ 'image/jpeg': jpegBytes }]),
       ).rejects.toThrow('No supported clipboard types found');
 
-      expect(fromBytesMock).not.toHaveBeenCalled();
-      expect(writeImageMock).not.toHaveBeenCalled();
+      expect(invokeMock).not.toHaveBeenCalled();
     });
 
     it('throws for unsupported MIME types only', async () => {
@@ -242,6 +255,86 @@ describe('createUiAPI', () => {
       const uiApi = createUiAPI(createContext(['clipboard' as ExtensionPermission]));
 
       await expect(uiApi.clipboardWrite([])).resolves.toBeUndefined();
+    });
+  });
+
+  describe('restoreClipboardImageFromStorage', () => {
+    it('restores image/png from extension storage path', async () => {
+      invokeMock.mockResolvedValueOnce(undefined);
+      const context = createContext(['clipboard' as ExtensionPermission]);
+      vi.mocked(context.resolveStoragePath).mockResolvedValueOnce('C:/storage/entries/image.png');
+      const uiApi = createUiAPI(context);
+
+      await uiApi.restoreClipboardImageFromStorage('entries/image.png');
+
+      expect(context.resolveStoragePath).toHaveBeenCalledWith('entries/image.png');
+      expect(invokeMock).toHaveBeenCalledWith('set_system_clipboard_image_from_path', {
+        path: 'C:/storage/entries/image.png',
+      });
+    });
+  });
+
+  describe('pathExists', () => {
+    it('checks path existence without fs sandbox restrictions', async () => {
+      invokeMock.mockResolvedValueOnce(true);
+      const uiApi = createUiAPI(createContext(['clipboard' as ExtensionPermission]));
+
+      await expect(uiApi.pathExists('C:\\Users\\demo\\Downloads\\icon.png')).resolves.toBe(true);
+
+      expect(invokeMock).toHaveBeenCalledWith('path_exists', {
+        path: 'C:\\Users\\demo\\Downloads\\icon.png',
+      });
+    });
+
+    it('blocks without permission', async () => {
+      const uiApi = createUiAPI(createContext());
+
+      await expect(uiApi.pathExists('C:\\demo.txt')).rejects.toThrow(
+        'extensions.api.permissionDenied:clipboard',
+      );
+    });
+  });
+
+  describe('normalizeClipboardBytes', () => {
+    it('converts numeric-key objects to Uint8Array', () => {
+      expect(Array.from(normalizeClipboardBytes({
+        0: 137,
+        1: 80,
+        2: 78,
+        3: 71,
+      }))).toEqual([
+        137, 80, 78, 71,
+      ]);
+    });
+  });
+
+  describe('clipboardRead', () => {
+    it('blocks without permission', async () => {
+      const uiApi = createUiAPI(createContext());
+
+      await expect(uiApi.clipboardRead()).rejects.toThrow(
+        'extensions.api.permissionDenied:clipboard',
+      );
+    });
+  });
+
+  describe('getClipboardSource', () => {
+    it('blocks without permission', async () => {
+      const uiApi = createUiAPI(createContext());
+
+      await expect(uiApi.getClipboardSource()).rejects.toThrow(
+        'extensions.api.permissionDenied:clipboard',
+      );
+    });
+  });
+
+  describe('clipboardWriteFiles', () => {
+    it('blocks without permission', async () => {
+      const uiApi = createUiAPI(createContext());
+
+      await expect(uiApi.clipboardWriteFiles(['C:\\demo.txt'])).rejects.toThrow(
+        'extensions.api.permissionDenied:clipboard',
+      );
     });
   });
 });

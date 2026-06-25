@@ -34,6 +34,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
 import ExtensionBadge from './extension-badge.vue';
 import ExtensionIcon from './extension-icon.vue';
+import ExtensionEngineRequirements from './extension-engine-requirements.vue';
 import type { ExtensionWithManifest } from '@/modules/extensions/composables/use-extensions';
 import type { ExtensionManifest, PlatformInfo } from '@/types/extension';
 import { EXTENSION_PERMISSIONS_INFO } from '@/data/extensions';
@@ -257,6 +258,30 @@ const isCrossPlatform = computed(() => {
 
 const isPlatformCompatible = computed(() => {
   return props.extension.isPlatformCompatible;
+});
+
+const isEngineCompatible = computed(() => {
+  return props.extension.isEngineCompatible;
+});
+
+const isInstallAllowed = computed(() => {
+  return isPlatformCompatible.value && isEngineCompatible.value;
+});
+
+const engineRequirements = computed(() => {
+  return props.extension.engineRequirements;
+});
+
+const engineCompatibility = computed(() => {
+  return props.extension.engineCompatibility ?? null;
+});
+
+const currentAppVersion = computed(() => {
+  return props.extension.currentAppVersion ?? null;
+});
+
+const isEnableToggleDisabled = computed(() => {
+  return Boolean(props.extension.isBroken || !isEngineCompatible.value);
 });
 
 const isShowingCancelButton = computed(() => {
@@ -721,7 +746,7 @@ onMounted(() => {
           <Switch
             :id="`enabled-${extension.id}`"
             :model-value="extension.isEnabled"
-            :disabled="isBroken"
+            :disabled="isEnableToggleDisabled"
             @update:model-value="emit('toggle')"
           />
         </div>
@@ -874,6 +899,12 @@ onMounted(() => {
             {{ t('extensions.versionPrefix') }}{{ extension.installedVersion }}
           </span>
 
+          <ExtensionEngineRequirements
+            :engine-compatibility="engineCompatibility"
+            :current-app-version="currentAppVersion"
+            :show-requirements-list="false"
+          />
+
           <div
             v-if="!isPlatformCompatible"
             class="extension-detail__platform-warning"
@@ -886,7 +917,7 @@ onMounted(() => {
             <Button
               class="extension-detail__controls-button"
               size="sm"
-              :disabled="(isInstallDisabled ?? isInstalling) || !isPlatformCompatible"
+              :disabled="(isInstallDisabled ?? isInstalling) || !isInstallAllowed"
               @click="handleInstall"
             >
               <DownloadIcon
@@ -1000,6 +1031,11 @@ onMounted(() => {
               />
             </div>
           </template>
+
+          <ExtensionEngineRequirements
+            :engine-requirements="engineRequirements"
+            :show-compatibility-warning="false"
+          />
 
           <div
             v-if="extensionPlatforms.length > 0"

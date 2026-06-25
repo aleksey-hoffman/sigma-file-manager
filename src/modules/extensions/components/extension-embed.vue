@@ -10,6 +10,7 @@ import ExtensionIcon from '@/modules/extensions/components/extension-icon.vue';
 import ExtensionToolbarView from '@/modules/extensions/components/extension-toolbar-view.vue';
 import { getExtensionAPI } from '@/modules/extensions/runtime/loader';
 import { createExtensionApiMethodMap } from '@/modules/extensions/runtime/api-method-map';
+import { clearEmbedHostState, handleEmbedBridgeMessage } from '@/modules/extensions/runtime/embed-host-bridge';
 import { invokeAsExtension } from '@/modules/extensions/runtime/extension-invoke';
 import embedBridgeScript from '@/modules/extensions/runtime/embed-bridge.js?raw';
 
@@ -147,6 +148,16 @@ function handleMessage(event: MessageEvent) {
     return;
   }
 
+  if (message.type?.startsWith('embed-')) {
+    const api = getExtensionAPI(props.extensionId);
+
+    if (api) {
+      void handleEmbedBridgeMessage(props.extensionId, api, message, postMessageToEmbed);
+    }
+
+    return;
+  }
+
   if (message.type === 'api-call' && message.id && message.method) {
     const api = getExtensionAPI(props.extensionId);
     const methodMap = api ? createExtensionApiMethodMap(api) : null;
@@ -205,6 +216,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('message', handleMessage);
+  clearEmbedHostState(props.extensionId);
   unmountEmbed();
 });
 </script>

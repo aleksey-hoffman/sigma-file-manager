@@ -1093,7 +1093,13 @@
       "waitForDependencies": "Wait until the extension finishes downloading its dependencies",
       "dismiss": "Dismiss",
       "stop": "Stop"
-    }
+    },
+    "engineIncompatibleShort": "Update required",
+    "engineAppWarning": "Requires Sigma File Manager {range} (you have {current})",
+    "engineApiWarning": "Requires extension API {range} (you have {current})",
+    "engineRequirements": "Requirements",
+    "requiresSigmaFileManager": "Sigma File Manager",
+    "requiresExtensionApi": "Extension API"
   },
   "commandPalette": {
     "accessibleDialogTitle": "Command palette",

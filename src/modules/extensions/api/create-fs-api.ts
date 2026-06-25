@@ -45,6 +45,12 @@ export function createFsAPI(context: ExtensionContext) {
     }
   }
 
+  function requireStorageReadPermission(): void {
+    if (!context.hasPermission('fs.read') && !context.hasPermission('fs.write')) {
+      throw new Error(context.t('extensions.api.permissionDenied', { permission: 'fs.read' }));
+    }
+  }
+
   async function requireReadAccess(path: string): Promise<void> {
     requirePermission('fs.read');
 
@@ -149,7 +155,7 @@ export function createFsAPI(context: ExtensionContext) {
     },
     storage: {
       readFile: async (relativePath: string): Promise<Uint8Array> => {
-        requirePermission('fs.read');
+        requireStorageReadPermission();
         const resolvedPath = await context.resolveStoragePath(relativePath);
         const result = await invokeAsExtension<number[]>(context.extensionId, 'read_file_binary', { path: resolvedPath });
         return new Uint8Array(result);
@@ -163,19 +169,19 @@ export function createFsAPI(context: ExtensionContext) {
         });
       },
       readDir: async (relativePath = ''): Promise<ExtensionDirEntry[]> => {
-        requirePermission('fs.read');
+        requireStorageReadPermission();
         const resolvedPath = relativePath.trim().length > 0
           ? await context.resolveStoragePath(relativePath)
           : await context.getExtensionStoragePath();
         return readExtensionDir(context.extensionId, resolvedPath);
       },
       exists: async (relativePath: string): Promise<boolean> => {
-        requirePermission('fs.read');
+        requireStorageReadPermission();
         const resolvedPath = await context.resolveStoragePath(relativePath);
         return invokeAsExtension<boolean>(context.extensionId, 'path_exists', { path: resolvedPath });
       },
       resolvePath: async (relativePath: string): Promise<string> => {
-        requirePermission('fs.read');
+        requireStorageReadPermission();
         return context.resolveStoragePath(relativePath);
       },
       importFile: async (sourcePath: string, targetRelativePath: string): Promise<string> => {

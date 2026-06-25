@@ -176,6 +176,26 @@ function getPropertyDescription(key: string, fallback: string | undefined): stri
 function isEnumProperty(prop: ExtensionConfigurationProperty): boolean {
   return Array.isArray(prop.enum) && prop.enum.length > 0;
 }
+
+function formatEnumDisplayValue(value: string): string {
+  const compactDuration = value.match(/^(\d+)(day|week|month|year|hour|minute|second)s?$/i);
+
+  if (compactDuration) {
+    return `${compactDuration[1]} ${compactDuration[2]}`;
+  }
+
+  return value;
+}
+
+function getEnumLabel(key: string, enumValue: string): string {
+  const translated = extensionMessages.value?.[`settings.${key}.${enumValue}`];
+
+  if (translated) {
+    return translated;
+  }
+
+  return formatEnumDisplayValue(enumValue);
+}
 </script>
 
 <template>
@@ -222,7 +242,7 @@ function isEnumProperty(prop: ExtensionConfigurationProperty): boolean {
             >
               <SelectTrigger class="extension-settings__select">
                 <SelectValue>
-                  {{ settingsValues[key] }}
+                  {{ getEnumLabel(String(key), String(settingsValues[key] ?? '')) }}
                 </SelectValue>
               </SelectTrigger>
               <SelectContent>
@@ -232,7 +252,7 @@ function isEnumProperty(prop: ExtensionConfigurationProperty): boolean {
                   :value="enumValue"
                 >
                   <SelectItemText>
-                    {{ enumValue }}
+                    {{ getEnumLabel(String(key), String(enumValue)) }}
                     <span
                       v-if="prop.enumDescriptions?.[enumIndex]"
                       class="extension-settings__enum-description"

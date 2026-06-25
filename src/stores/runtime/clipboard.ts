@@ -15,6 +15,7 @@ import {
 } from '@/utils/file-operation-paths';
 import { getPathLeafName } from '@/utils/normalize-path';
 import { isVirtualLocationPath } from '@/utils/virtual-locations';
+import { isTransientClipboardAccessError } from '@/utils/system-clipboard-errors';
 
 export type ClipboardOperationType = 'copy' | 'move' | '';
 export type ConflictResolution = 'replace' | 'skip' | 'auto-rename';
@@ -219,13 +220,6 @@ export const useClipboardStore = defineStore('clipboard', () => {
     clipboardItems.value = snapshot.items;
     clipboardImage.value = snapshot.image ? { ...snapshot.image } : null;
     isToolbarSuppressed.value = snapshot.suppressed;
-  }
-
-  function isTransientClipboardAccessError(error: unknown): boolean {
-    const message = String(error);
-
-    return message.includes('OpenClipboard failed')
-      && message.includes('Access is denied');
   }
 
   async function readSystemClipboardFiles(): Promise<{

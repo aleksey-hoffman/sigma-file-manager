@@ -1063,7 +1063,13 @@
       "removeError": "依存関係の削除に失敗しました",
       "downloadSource": "ダウンロードリンクを開く",
       "showFolder": "フォルダーを表示"
-    }
+    },
+    "engineIncompatibleShort": "更新が必要",
+    "engineAppWarning": "Sigma File Manager {range} が必要です（現在: {current}）",
+    "engineApiWarning": "拡張機能 API {range} が必要です（現在: {current}）",
+    "engineRequirements": "要件",
+    "requiresSigmaFileManager": "Sigma File Manager",
+    "requiresExtensionApi": "拡張機能 API"
   },
   "commandPalette": {
     "accessibleDialogTitle": "コマンドパレット",

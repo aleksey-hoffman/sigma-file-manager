@@ -1059,7 +1059,13 @@
       "removeError": "Failed to remove dependency",
       "downloadSource": "باز کردن لینک دانلود",
       "showFolder": "نمایش پوشه"
-    }
+    },
+    "engineIncompatibleShort": "به‌روزرسانی لازم است",
+    "engineAppWarning": "به Sigma File Manager {range} نیاز دارد (نسخه شما {current})",
+    "engineApiWarning": "به API افزونه {range} نیاز دارد (نسخه شما {current})",
+    "engineRequirements": "نیازمندی‌ها",
+    "requiresSigmaFileManager": "Sigma File Manager",
+    "requiresExtensionApi": "API افزونه"
   },
   "commandPalette": {
     "accessibleDialogTitle": "پالت فرمان",

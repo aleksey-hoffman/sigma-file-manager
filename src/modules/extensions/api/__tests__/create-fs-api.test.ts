@@ -158,6 +158,20 @@ describe('createFsAPI', () => {
     });
   });
 
+  it('allows storage readFile with fs.write permission only', async () => {
+    const context = createContext(['fs.write']);
+    context.resolveStoragePath = vi.fn(async (relativePath: string) => `/extension-storage/${relativePath}`);
+    invokeAsExtensionMock.mockResolvedValueOnce([4, 5, 6]);
+    const fsApi = createFsAPI(context);
+
+    await expect(fsApi.storage.readFile('entries/image.png')).resolves.toEqual(new Uint8Array([4, 5, 6]));
+
+    expect(context.resolveStoragePath).toHaveBeenCalledWith('entries/image.png');
+    expect(invokeAsExtensionMock).toHaveBeenCalledWith('test.extension', 'read_file_binary', {
+      path: '/extension-storage/entries/image.png',
+    });
+  });
+
   it('allows importing a file selected from a dialog', async () => {
     const context = createContext(['fs.read', 'fs.write']);
     context.isInAllowedReadDir = vi.fn(async () => true);

@@ -1093,7 +1093,13 @@
       "waitForDependencies": "وابستگیاں مکمل ہونے تک انتظار",
       "dismiss": "بند",
       "stop": "روکیں"
-    }
+    },
+    "engineIncompatibleShort": "اپ ڈیٹ درکار",
+    "engineAppWarning": "Sigma File Manager {range} درکار ہے (آپ کے پاس {current})",
+    "engineApiWarning": "ایکسٹینشن API {range} درکار ہے (آپ کے پاس {current})",
+    "engineRequirements": "ضروریات",
+    "requiresSigmaFileManager": "Sigma File Manager",
+    "requiresExtensionApi": "ایکسٹینشن API"
   },
   "commandPalette": {
     "accessibleDialogTitle": "کمانڈ پیلیٹ",
