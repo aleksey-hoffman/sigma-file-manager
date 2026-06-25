@@ -5,6 +5,7 @@
 import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
 import { notifyClipboardChange } from '@/modules/extensions/api/clipboard-change';
+import { startLinuxWebClipboardChangePoller } from '@/modules/extensions/api/web-clipboard-linux';
 
 let bridgeStarted = false;
 let bridgeStartPromise: Promise<void> | null = null;
@@ -22,6 +23,9 @@ export async function ensureClipboardChangeBridge(): Promise<void> {
   bridgeStartPromise = (async () => {
     await invoke('ensure_system_clipboard_watcher');
     await listen<string>('system-clipboard-changed', () => {
+      notifyClipboardChange();
+    });
+    startLinuxWebClipboardChangePoller(() => {
       notifyClipboardChange();
     });
     bridgeStarted = true;

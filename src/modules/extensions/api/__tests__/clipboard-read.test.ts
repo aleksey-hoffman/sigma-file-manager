@@ -11,8 +11,24 @@ const { invokeMock } = vi.hoisted(() => ({
   invokeMock: vi.fn(),
 }));
 
+const { getPlatformInfoMock } = vi.hoisted(() => ({
+  getPlatformInfoMock: vi.fn(() => ({
+    os: 'windows',
+    arch: 'x64',
+    pathSeparator: '\\',
+    isWindows: true,
+    isMacos: false,
+    isLinux: false,
+  })),
+}));
+
 vi.mock('@tauri-apps/api/core', () => ({
   invoke: invokeMock,
+}));
+
+vi.mock('@/utils/platform-info', () => ({
+  getPlatformInfo: getPlatformInfoMock,
+  ensurePlatformInfo: vi.fn(async () => getPlatformInfoMock()),
 }));
 
 function mockChangeToken(token = '42'): void {
@@ -22,6 +38,14 @@ function mockChangeToken(token = '42'): void {
 describe('readExtensionClipboardSnapshot', () => {
   beforeEach(() => {
     invokeMock.mockReset();
+    getPlatformInfoMock.mockReturnValue({
+      os: 'windows',
+      arch: 'x64',
+      pathSeparator: '\\',
+      isWindows: true,
+      isMacos: false,
+      isLinux: false,
+    });
   });
 
   it('returns files snapshot when clipboard contains file paths', async () => {
@@ -125,6 +149,42 @@ describe('readExtensionClipboardSnapshot', () => {
     });
     expect(consoleErrorSpy).not.toHaveBeenCalled();
     consoleErrorSpy.mockRestore();
+  });
+
+  it('falls back to the web clipboard on Linux when Rust returns empty text', async () => {
+    getPlatformInfoMock.mockReturnValue({
+      os: 'linux',
+      arch: 'x64',
+      pathSeparator: '/',
+      isWindows: false,
+      isMacos: false,
+      isLinux: true,
+    });
+
+    const readTextMock = vi.fn().mockResolvedValue('hello from web clipboard');
+    Object.defineProperty(globalThis.navigator, 'clipboard', {
+      configurable: true,
+      value: {
+        readText: readTextMock,
+      },
+    });
+
+    mockChangeToken('rust-token');
+    invokeMock
+      .mockResolvedValueOnce({
+        paths: [],
+        operation: 'copy',
+      })
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce('');
+
+    const snapshot = await readExtensionClipboardSnapshot();
+
+    expect(readTextMock).toHaveBeenCalled();
+    expect(snapshot.type).toBe('text');
+    expect(snapshot.text).toBe('hello from web clipboard');
+    expect(snapshot.changeToken).toContain('rust-token');
+    expect(snapshot.changeToken).toContain('web:');
   });
 });
 

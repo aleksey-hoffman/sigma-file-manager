@@ -10,6 +10,11 @@ import {
   hashTextSample,
   isValidPngBytes,
 } from '@/modules/extensions/utils/clipboard-fingerprint';
+import {
+  buildLinuxWebClipboardChangeTokenSuffix,
+  readLinuxWebClipboardText,
+} from '@/modules/extensions/api/web-clipboard-linux';
+import { getPlatformInfo } from '@/utils/platform-info';
 import { isTransientClipboardAccessError } from '@/utils/system-clipboard-errors';
 
 interface SystemClipboardFiles {
@@ -42,16 +47,22 @@ function truncatePreview(text: string, maxLength = 240): string {
 }
 
 async function readClipboardChangeToken(): Promise<string> {
+  let rustChangeToken = '';
+
   try {
-    return await invoke<string>('read_system_clipboard_change_token');
+    rustChangeToken = await invoke<string>('read_system_clipboard_change_token');
   }
   catch (error) {
     if (!isTransientClipboardAccessError(error)) {
       console.error('Failed to read clipboard change token:', error);
     }
-
-    return '';
   }
+
+  if (!getPlatformInfo().isLinux) {
+    return rustChangeToken;
+  }
+
+  return `${rustChangeToken}${await buildLinuxWebClipboardChangeTokenSuffix()}`;
 }
 
 async function readClipboardImageInfo(): Promise<SystemClipboardImageInfo | null> {
@@ -69,15 +80,20 @@ async function readClipboardImageInfo(): Promise<SystemClipboardImageInfo | null
 
 async function readClipboardText(): Promise<string> {
   try {
-    return await invoke<string>('read_system_clipboard_text');
+    const text = await invoke<string>('read_system_clipboard_text');
+
+    if (text.length > 0) {
+      return text;
+    }
   }
   catch (error) {
     if (!isTransientClipboardAccessError(error)) {
       console.error('Failed to read clipboard text:', error);
     }
-
-    return '';
   }
+
+  const webText = await readLinuxWebClipboardText();
+  return webText ?? '';
 }
 
 function buildImageChangeToken(imageInfo: SystemClipboardImageInfo): string {

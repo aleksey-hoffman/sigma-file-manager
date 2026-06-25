@@ -17,6 +17,10 @@ export function isExpectedClipboardReadError(error: unknown): boolean {
     return true;
   }
 
+  if (message.includes('ContentNotAvailable')) {
+    return true;
+  }
+
   return false;
 }
 

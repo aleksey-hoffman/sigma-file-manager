@@ -77,10 +77,12 @@ fn unix_set_file_clipboard(paths: &[String]) -> Result<(), String> {
 #[cfg(not(target_os = "windows"))]
 fn unix_read_file_clipboard() -> Result<SystemClipboardFiles, String> {
     let mut clipboard = arboard::Clipboard::new().map_err(|error| error.to_string())?;
-    let paths = clipboard
-        .get()
-        .file_list()
-        .map_err(|error| error.to_string())?
+    let file_paths = match clipboard.get().file_list() {
+        Ok(paths) => paths,
+        Err(arboard::Error::ContentNotAvailable) => Vec::new(),
+        Err(error) => return Err(error.to_string()),
+    };
+    let paths = file_paths
         .into_iter()
         .map(|path| path.to_string_lossy().into_owned())
         .collect();
