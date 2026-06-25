@@ -100,9 +100,7 @@ describe('extension runtime loader', () => {
     validateExtensionCodeMock.mockClear();
     createObjectUrlMock.mockReset();
     revokeObjectUrlMock.mockReset();
-    createObjectUrlMock
-      .mockReturnValueOnce('blob:test.video:helper')
-      .mockReturnValueOnce('blob:test.video:index');
+    createObjectUrlMock.mockReturnValue('blob:test.video:module');
     Object.defineProperty(URL, 'createObjectURL', {
       configurable: true,
       writable: true,
@@ -168,10 +166,18 @@ describe('extension runtime loader', () => {
           callerExtensionId: 'test.video',
         },
       ],
+      [
+        'read_extension_file',
+        {
+          extensionId: 'test.video',
+          filePath: 'index.js',
+          callerExtensionId: 'test.video',
+        },
+      ],
     ]);
 
     expect(createExtensionAPIMock).toHaveBeenCalledWith('test.video', ['commands']);
-    expect(initializeWorkerMock).toHaveBeenCalledWith(expect.stringMatching(/^asset:\/\/\/extensions\/test\.video\/index\.js\?runtime=\d+$/));
+    expect(initializeWorkerMock).toHaveBeenCalledWith('blob:test.video:module');
     expect(activateWorkerMock).toHaveBeenCalledWith({
       extensionId: 'test.video',
       extensionPath: '/extensions/test.video',
@@ -237,7 +243,50 @@ describe('extension runtime loader', () => {
       .rejects.toThrow('Invalid manifest: main is missing');
   });
 
+  it('loads api extensions with relative imports through blob module URLs', async () => {
+    createObjectUrlMock
+      .mockReturnValueOnce('blob:test.video:helper')
+      .mockReturnValueOnce('blob:test.video:index');
+
+    invokeMock.mockImplementation(async (command: string, args?: { filePath?: string }) => {
+      switch (command) {
+        case 'get_extension_path':
+          return '/home/alex/.local/share/com.sigma-file-manager.app/extensions/test.video';
+        case 'get_extension_storage_path':
+          return '/home/alex/.local/share/com.sigma-file-manager.app/extension-storage/test.video';
+        case 'extension_path_exists':
+          return true;
+        case 'read_extension_file':
+          if (args?.filePath === 'index.js') {
+            return Array.from(new TextEncoder().encode('import "./lib/helper.js"; export {};'));
+          }
+
+          if (args?.filePath === 'lib/helper.js') {
+            return Array.from(new TextEncoder().encode('export const helper = () => "ok";'));
+          }
+
+          throw new Error(`Unexpected filePath: ${args?.filePath}`);
+        default:
+          throw new Error(`Unexpected invoke command: ${command}`);
+      }
+    });
+
+    await loadExtensionRuntime('test.video', createManifest(), 'onStartup');
+
+    expect(createObjectUrlMock).toHaveBeenCalledTimes(2);
+    expect(initializeWorkerMock).toHaveBeenCalledWith('blob:test.video:index');
+
+    await unloadExtensionRuntime('test.video');
+
+    expect(revokeObjectUrlMock).toHaveBeenCalledWith('blob:test.video:index');
+    expect(revokeObjectUrlMock).toHaveBeenCalledWith('blob:test.video:helper');
+  });
+
   it('loads Windows api extensions through blob module URLs', async () => {
+    createObjectUrlMock
+      .mockReturnValueOnce('blob:test.video:helper')
+      .mockReturnValueOnce('blob:test.video:index');
+
     invokeMock.mockImplementation(async (command: string, args?: { filePath?: string }) => {
       switch (command) {
         case 'get_extension_path':

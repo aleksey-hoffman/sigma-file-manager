@@ -137,10 +137,6 @@ export function getAllLoadedRuntimes(): LoadedExtensionRuntime[] {
   return Array.from(loadedRuntimes.values());
 }
 
-function isWindowsAbsolutePath(path: string): boolean {
-  return /^[A-Za-z]:[\\/]/.test(path);
-}
-
 function getExtensionAssetUrl(extensionPath: string, mainFile: string): string {
   const normalizedExtensionPath = normalizePath(extensionPath).replace(/\/+$/, '');
   const normalizedMainFile = normalizePath(mainFile).replace(/^\/+/, '');
@@ -354,12 +350,7 @@ async function loadApiExtension(
     const decoder = new TextDecoder();
     const code = decoder.decode(new Uint8Array(fileContent));
     const validationResult = validateExtensionCode(code);
-    const moduleEntry = isWindowsAbsolutePath(extensionPath)
-      ? await createBlobModuleEntry(extensionId, mainFile)
-      : {
-          entryUrl: `${getExtensionAssetUrl(extensionPath, mainFile)}?runtime=${Date.now()}`,
-          dispose: () => {},
-        };
+    const moduleEntry = await createBlobModuleEntry(extensionId, mainFile);
 
     if (!validationResult.valid) {
       throw new Error(`Extension code validation failed: ${validationResult.errors.join(', ')}`);
