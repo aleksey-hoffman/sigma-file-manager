@@ -1031,7 +1031,7 @@
       "noExtensionsDescription": "Installa e abilita estensioni con impostazioni configurabili per vederle qui."
     },
     "modal": {
-      "otherActions": "Other actions"
+      "otherActions": "Altre azioni"
     },
     "api": {
       "permissionDenied": "Permesso negato: {permission}",

@@ -1060,7 +1060,7 @@
       "noExtensionsDescription": "Установите и включите расширения с настраиваемыми параметрами, чтобы увидеть их здесь."
     },
     "modal": {
-      "otherActions": "Other actions"
+      "otherActions": "Другие действия"
     },
     "api": {
       "permissionDenied": "Доступ запрещён: {permission}",

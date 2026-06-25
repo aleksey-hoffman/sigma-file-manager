@@ -1031,7 +1031,7 @@
       "noExtensionsDescription": "設定可能な拡張機能をインストールして有効化すると、ここに表示されます。"
     },
     "modal": {
-      "otherActions": "Other actions"
+      "otherActions": "その他の操作"
     },
     "api": {
       "permissionDenied": "権限が拒否されました: {permission}",

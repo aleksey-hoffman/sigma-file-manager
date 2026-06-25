@@ -1031,7 +1031,7 @@
       "noExtensionsDescription": "Cài đặt và bật các tiện ích mở rộng có cài đặt có thể cấu hình để xem chúng ở đây."
     },
     "modal": {
-      "otherActions": "Other actions"
+      "otherActions": "Các thao tác khác"
     },
     "api": {
       "permissionDenied": "Quyền bị từ chối: {permission}",

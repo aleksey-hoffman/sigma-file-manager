@@ -1031,7 +1031,7 @@
       "noExtensionsDescription": "Yapılandırılabilir ayarları olan eklentileri yükleyin ve etkinleştirin, burada görmek için."
     },
     "modal": {
-      "otherActions": "Other actions"
+      "otherActions": "Diğer eylemler"
     },
     "api": {
       "permissionDenied": "İzin reddedildi: {permission}",
