@@ -891,7 +891,28 @@
       "unknownError": "Bilinmeyen hata",
       "operationErrorTitle": "Arşiv işlemi başarısız",
       "errors": {
-        "destinationInsideSelectedFolder": "Hedef arşiv seçilen bir klasörün içinde"
+        "destinationInsideSelectedFolder": "Hedef arşiv seçilen bir klasörün içinde",
+        "wrongPassword": "Yanlış parola. Arşiv şifresi çözülemedi.",
+        "encodingError": "Seçilen kodlama ile dosya adları çözülemedi."
+      },
+      "optionsDialog": {
+        "title": "Arşiv çıkarma seçenekleri",
+        "description": "Parola korumalı veya UTF-8 dışı kodlamalı arşivler için çıkarma ayarlarını yapılandırın",
+        "passwordTitle": "Arşiv parolası gerekli",
+        "passwordDescription": "Bu arşiv şifrelenmiş. İçeriği çıkarmak için parolayı girin.",
+        "encodingTitle": "Dosya adı kodlaması",
+        "encodingDescription": "Bu arşivdeki bazı dosya adları UTF-8 olmayan bir kodlama kullanıyor. Doğru kodlamayı seçin.",
+        "passwordLabel": "Parola (şifrelenmemişse boş bırakın)",
+        "passwordPlaceholder": "Arşiv parolasını girin",
+        "encodingLabel": "Dosya adı kodlaması",
+        "encodingSystemDefault": "Sistem varsayılanı",
+        "encodingGroup": {
+          "eastAsian": "Doğu Asya",
+          "southeastAsian": "Güneydoğu Asya",
+          "middleEast": "Orta Doğu",
+          "european": "Avrupa"
+        },
+        "extract": "Çıkar"
       }
     },
     "kind": "Tür",

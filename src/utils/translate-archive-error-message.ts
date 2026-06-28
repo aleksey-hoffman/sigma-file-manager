@@ -26,5 +26,13 @@ export function translateArchiveErrorMessage(raw: string): string {
     return i18n.global.t('errors.errorPathAlreadyExists');
   }
 
+  if (/wrong password/i.test(trimmed)) {
+    return i18n.global.t('fileBrowser.archive.errors.wrongPassword');
+  }
+
+  if (/encoding/i.test(trimmed)) {
+    return i18n.global.t('fileBrowser.archive.errors.encodingError');
+  }
+
   return raw;
 }

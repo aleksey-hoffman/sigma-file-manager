@@ -921,7 +921,28 @@
       "unknownError": "نامعلوم خرابی",
       "operationErrorTitle": "آرکائیو عمل ناکام",
       "errors": {
-        "destinationInsideSelectedFolder": "منزل آرکائیو منتخب فولڈرز میں سے ایک کے اندر ہے"
+        "destinationInsideSelectedFolder": "منزل آرکائیو منتخب فولڈرز میں سے ایک کے اندر ہے",
+        "wrongPassword": "غلط پاس ورڈ۔ آرکائیو ڈی کرپٹ نہیں ہو سکا۔",
+        "encodingError": "منتخب انکوڈنگ سے فائل نام ڈی کوڈ نہیں ہو سکے۔"
+      },
+      "optionsDialog": {
+        "title": "آرکائیو نکالنے کے اختیارات",
+        "description": "پاس ورڈ سے محفوظ یا غیر UTF-8 انکوڈڈ آرکائیوز کے لیے نکالنے کی ترتیبات ترتیب دیں",
+        "passwordTitle": "آرکائیو پاس ورڈ درکار ہے",
+        "passwordDescription": "یہ آرکائیو خفیہ شدہ ہے۔ مواد نکالنے کے لیے پاس ورڈ درج کریں۔",
+        "encodingTitle": "فائل نام کی انکوڈنگ",
+        "encodingDescription": "اس آرکائیو میں کچھ فائل نام غیر UTF-8 انکوڈنگ استعمال کرتے ہیں۔ درست انکوڈنگ منتخب کریں۔",
+        "passwordLabel": "پاس ورڈ (اگر خفیہ شدہ نہ ہو تو خالی چھوڑیں)",
+        "passwordPlaceholder": "آرکائیو پاس ورڈ درج کریں",
+        "encodingLabel": "فائل نام کی انکوڈنگ",
+        "encodingSystemDefault": "سسٹم ڈیفالٹ",
+        "encodingGroup": {
+          "eastAsian": "مشرقی ایشیا",
+          "southeastAsian": "جنوب مشرقی ایشیا",
+          "middleEast": "مشرق وسطی",
+          "european": "یورپ"
+        },
+        "extract": "نکالیں"
       }
     },
     "kind": "قسم",

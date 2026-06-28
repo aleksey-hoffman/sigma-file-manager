@@ -22,6 +22,7 @@ import FileBrowserTopLevelConflictDialog from './file-browser-top-level-conflict
 import PermanentDeleteConfirmDialog from './permanent-delete-confirm-dialog.vue';
 import AddressBarEditorDialog from './address-bar-editor-dialog.vue';
 import type { AddressBarEditorMode } from './address-bar-editor-utils';
+import ArchiveOptionsDialog, { type ArchiveOptions } from './archive-options-dialog.vue';
 
 const props = withDefaults(defineProps<{
   tab?: Tab;
@@ -72,6 +73,34 @@ const fb = useFileBrowser({
 
 const permanentDeleteIsOpen = fb.permanentDeleteConfirm.isOpen;
 const permanentDeletePendingEntries = fb.permanentDeleteConfirm.pendingEntries;
+
+const showArchiveOptions = ref(false);
+const archiveNeedsPassword = ref(false);
+const archiveNeedsEncoding = ref(false);
+const archiveOptionsResolver = ref<((options: ArchiveOptions | null) => void) | null>(null);
+
+function requestArchiveOptions(needsPassword = false, needsEncoding = false): Promise<ArchiveOptions | null> {
+  archiveNeedsPassword.value = needsPassword;
+  archiveNeedsEncoding.value = needsEncoding;
+  showArchiveOptions.value = true;
+  return new Promise((resolve) => {
+    archiveOptionsResolver.value = resolve;
+  });
+}
+
+function onArchiveOptionsConfirmed(options: ArchiveOptions) {
+  showArchiveOptions.value = false;
+  const resolve = archiveOptionsResolver.value;
+  archiveOptionsResolver.value = null;
+  resolve?.(options);
+}
+
+function onArchiveOptionsCancelled() {
+  showArchiveOptions.value = false;
+  const resolve = archiveOptionsResolver.value;
+  archiveOptionsResolver.value = null;
+  resolve?.(null);
+}
 const { openCopiedPath } = useOpenCopiedPath({
   openDirectory: fb.navigateToPath,
   openFile: fb.openFile,
@@ -130,6 +159,7 @@ provideFileBrowserContext({
   refresh: fb.refresh,
   requestFocusEntryAfterRefresh: fb.requestFocusEntryAfterRefresh,
   entryDescription: props.entryDescription,
+  requestArchiveOptions,
 });
 
 defineExpose({
@@ -285,6 +315,15 @@ defineExpose({
       :entries="permanentDeletePendingEntries"
       @update:open="fb.permanentDeleteConfirm.handleOpenChange"
       @confirm="fb.permanentDeleteConfirm.handleConfirm"
+    />
+
+    <ArchiveOptionsDialog
+      :open="showArchiveOptions"
+      :needs-password="archiveNeedsPassword"
+      :needs-encoding="archiveNeedsEncoding"
+      @update:open="(v: boolean) => { if (!v) onArchiveOptionsCancelled() }"
+      @confirm="onArchiveOptionsConfirmed"
+      @cancel="onArchiveOptionsCancelled"
     />
   </div>
 </template>

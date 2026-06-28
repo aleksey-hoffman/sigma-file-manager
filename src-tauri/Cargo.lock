@@ -5649,6 +5649,7 @@ dependencies = [
  "axum-server",
  "base64 0.22.1",
  "dirs 5.0.1",
+ "encoding_rs",
  "dunce",
  "file_icon_provider",
  "flate2",

@@ -887,7 +887,28 @@
       "unknownError": "خطای ناشناخته",
       "operationErrorTitle": "عملیات آرشیو ناموفق بود",
       "errors": {
-        "destinationInsideSelectedFolder": "آرشیو مقصد داخل یکی از پوشه‌های انتخاب‌شده است"
+        "destinationInsideSelectedFolder": "آرشیو مقصد داخل یکی از پوشه‌های انتخاب‌شده است",
+        "wrongPassword": "رمز عبور نادرست است. آرشیو رمزگشایی نشد.",
+        "encodingError": "نام فایل‌ها با کدگذاری انتخاب‌شده رمزگشایی نشد."
+      },
+      "optionsDialog": {
+        "title": "گزینه‌های استخراج آرشیو",
+        "description": "تنظیمات استخراج را برای آرشیوهای محافظت‌شده با رمز عبور یا کدگذاری غیر UTF-8 پیکربندی کنید",
+        "passwordTitle": "رمز عبور آرشیو لازم است",
+        "passwordDescription": "این آرشیو رمزگذاری شده است. برای استخراج محتوا رمز عبور را وارد کنید.",
+        "encodingTitle": "کدگذاری نام فایل",
+        "encodingDescription": "برخی نام‌های فایل در این آرشیو از کدگذاری غیر UTF-8 استفاده می‌کنند. کدگذاری صحیح را انتخاب کنید.",
+        "passwordLabel": "رمز عبور (در صورت رمزگذاری نشدن خالی بگذارید)",
+        "passwordPlaceholder": "رمز عبور آرشیو را وارد کنید",
+        "encodingLabel": "کدگذاری نام فایل",
+        "encodingSystemDefault": "پیش‌فرض سیستم",
+        "encodingGroup": {
+          "eastAsian": "شرق آسیا",
+          "southeastAsian": "جنوب شرق آسیا",
+          "middleEast": "خاورمیانه",
+          "european": "اروپا"
+        },
+        "extract": "استخراج"
       }
     },
     "kind": "نوع",
