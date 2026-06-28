@@ -30,7 +30,7 @@ import { createIndexedFileName, safeFileNameFromUrl } from '@/utils/remote-file'
 import { basenameFromPath } from '@/utils/source-display-name';
 import { usePermanentDeleteConfirm } from '@/composables/use-permanent-delete-confirm';
 import { usePlatformStore } from '@/stores/runtime/platform';
-import { isContextMenuActionVisible } from '@/modules/navigator/components/file-browser/utils/context-menu-action-visibility';
+import { canPerformContextMenuAction } from '@/modules/navigator/components/file-browser/utils/context-menu-action-visibility';
 import { resolveNavigableItemTarget } from '@/utils/resolve-navigable-item-target';
 import type { CreateLinksResult, LinkCreationKind } from '@/utils/link-operations';
 
@@ -316,7 +316,7 @@ export function useFileBrowserSelection(
   }
 
   function canPerformAction(action: ContextMenuAction, entries: DirEntry[]): boolean {
-    return isContextMenuActionVisible(action, entries, {
+    return canPerformContextMenuAction(action, entries, {
       platform: platformStore.currentPlatform,
     });
   }
@@ -887,8 +887,8 @@ export function useFileBrowserSelection(
     return false;
   }
 
-  function handleContextMenuAction(action: ContextMenuAction) {
-    const entries = contextMenu.value.selectedEntries;
+  function handleContextMenuAction(action: ContextMenuAction, entriesOverride?: DirEntry[]) {
+    const entries = entriesOverride ?? contextMenu.value.selectedEntries;
 
     switch (action) {
       case 'rename':
@@ -1066,6 +1066,20 @@ export function useFileBrowserSelection(
     }
   }
 
+  function performSelectionAction(action: ContextMenuAction) {
+    const entries = selectedEntries.value;
+
+    if (entries.length === 0) {
+      return;
+    }
+
+    if (!canPerformAction(action, entries)) {
+      return;
+    }
+
+    handleContextMenuAction(action, entries);
+  }
+
   return {
     selectedEntries,
     lastSelectedEntry,
@@ -1082,6 +1096,7 @@ export function useFileBrowserSelection(
     handleBackgroundContextMenu,
     closeContextMenu,
     handleContextMenuAction,
+    performSelectionAction,
     resetMouseState,
     selectAll,
     selectEntryByPath,

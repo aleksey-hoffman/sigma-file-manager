@@ -8,11 +8,12 @@ import type { DriveInfo } from '@/types/drive-info';
 import normalizePath, {
   getParentPath,
   getPathDisplayName,
-  isWindowsDriveRootPath,
-  isWslHostRootUncPath,
-  isWslPath,
 } from '@/utils/normalize-path';
 import { isProtectedSystemPath } from '@/utils/is-protected-system-path';
+import {
+  isUnderUnixSystemMount,
+  isWindowsLocationsScopePath,
+} from '@/utils/system-mount-roots';
 import {
   isVirtualLocationPath,
   LOCATIONS_VIRTUAL_PATH,
@@ -20,13 +21,6 @@ import {
 import { createDriveEntryMetadata } from '@/utils/drive-icon';
 
 export { isVirtualLocationPath, LOCATIONS_VIRTUAL_PATH } from '@/utils/virtual-path-constants';
-
-const SYSTEM_MOUNT_PREFIXES = [
-  '/Volumes/',
-  '/mnt/',
-  '/media/',
-  '/run/media/',
-] as const;
 
 export function virtualLocationPathExists(path: string): boolean {
   return isVirtualLocationPath(path);
@@ -137,21 +131,6 @@ export async function getLocationsDrivePaths(): Promise<string[]> {
   return contents.entries.map(entry => entry.path);
 }
 
-function isWindowsDrivePath(path: string): boolean {
-  const normalizedPath = normalizePath(path);
-  return /^[A-Za-z]:/.test(normalizedPath);
-}
-
-function isUnderUnixSystemMount(path: string): boolean {
-  const normalizedPath = normalizePath(path).replace(/\/+$/, '');
-
-  if (!normalizedPath || normalizedPath === '/') {
-    return false;
-  }
-
-  return SYSTEM_MOUNT_PREFIXES.some(prefix => normalizedPath.startsWith(prefix));
-}
-
 export function getNavigableParentPath(path: string, platform: string | null): string | null {
   const normalizedPath = normalizePath(path);
 
@@ -159,21 +138,9 @@ export function getNavigableParentPath(path: string, platform: string | null): s
     return null;
   }
 
-  if (platform === 'windows') {
-    const pathWithoutTrailingSlash = normalizedPath.replace(/\/+$/, '');
+  const pathWithoutTrailingSlash = normalizedPath.replace(/\/+$/, '');
 
-    if (isWindowsDriveRootPath(pathWithoutTrailingSlash)) {
-      return LOCATIONS_VIRTUAL_PATH;
-    }
-
-    if (isWslHostRootUncPath(normalizedPath)) {
-      return LOCATIONS_VIRTUAL_PATH;
-    }
-
-    return getParentPath(normalizedPath);
-  }
-
-  if (isProtectedSystemPath(normalizedPath.replace(/\/+$/, ''), platform)) {
+  if (isProtectedSystemPath(pathWithoutTrailingSlash, platform)) {
     return LOCATIONS_VIRTUAL_PATH;
   }
 
@@ -188,15 +155,7 @@ export function shouldPrependLocationsCrumb(path: string, platform: string | nul
   }
 
   if (platform === 'windows') {
-    if (isWindowsDrivePath(normalizedPath)) {
-      return true;
-    }
-
-    if (isWslPath(normalizedPath)) {
-      return true;
-    }
-
-    return false;
+    return isWindowsLocationsScopePath(normalizedPath);
   }
 
   return isUnderUnixSystemMount(normalizedPath);

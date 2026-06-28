@@ -58,4 +58,25 @@ describe('isContextMenuActionVisible', () => {
     expect(isContextMenuActionVisible('delete', entries, { platform: 'windows' })).toBe(false);
     expect(isContextMenuActionVisible('delete-permanently', entries, { platform: 'windows' })).toBe(false);
   });
+
+  it('blocks destructive actions on wsl distribution roots but keeps copy available', () => {
+    const entries = [createDirectoryEntry('//wsl.localhost/Ubuntu-24.04/')];
+
+    expect(isContextMenuActionVisible('copy', entries, { platform: 'windows' })).toBe(true);
+    expect(isContextMenuActionVisible('copy-path', entries, { platform: 'windows' })).toBe(true);
+    expect(isContextMenuActionVisible('open-in-new-tab', entries, { platform: 'windows' })).toBe(true);
+
+    expect(isContextMenuActionVisible('rename', entries, { platform: 'windows' })).toBe(false);
+    expect(isContextMenuActionVisible('cut', entries, { platform: 'windows' })).toBe(false);
+    expect(isContextMenuActionVisible('link', entries, { platform: 'windows' })).toBe(false);
+    expect(isContextMenuActionVisible('delete', entries, { platform: 'windows' })).toBe(false);
+    expect(isContextMenuActionVisible('delete-permanently', entries, { platform: 'windows' })).toBe(false);
+  });
+
+  it('allows destructive actions inside wsl distributions', () => {
+    const entries = [createDirectoryEntry('//wsl.localhost/Ubuntu-24.04/home/user/file.txt')];
+
+    expect(isContextMenuActionVisible('delete', entries, { platform: 'windows' })).toBe(true);
+    expect(isContextMenuActionVisible('rename', entries, { platform: 'windows' })).toBe(true);
+  });
 });

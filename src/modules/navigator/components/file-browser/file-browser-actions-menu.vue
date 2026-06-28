@@ -56,7 +56,7 @@ import {
   type LinkCreationKind,
 } from '@/utils/link-operations';
 import { useTextDirection } from '@/composables/use-text-direction';
-import { isVirtualLocationPath } from '@/utils/virtual-locations';
+import { isSelectionVirtualLocation } from '@/utils/entry-action-policy';
 
 const props = withDefaults(defineProps<{
   selectedEntries: DirEntry[];
@@ -144,7 +144,7 @@ const selectedDirectory = computed(() => {
 });
 
 const hasVirtualLocationSelection = computed(() => {
-  return props.selectedEntries.some(entry => isVirtualLocationPath(entry.path));
+  return isSelectionVirtualLocation(props.selectedEntries);
 });
 
 const canPasteToSelectedDirectory = computed(() => {

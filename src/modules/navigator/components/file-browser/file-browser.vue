@@ -168,6 +168,7 @@ defineExpose({
   quickView: fb.quickView,
   printEntry: fb.printEntry,
   openProperties: fb.openProperties,
+  performSelectionAction: fb.performSelectionAction,
   refresh: fb.refresh,
 });
 </script>

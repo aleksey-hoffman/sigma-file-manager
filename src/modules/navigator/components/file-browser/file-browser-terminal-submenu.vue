@@ -18,6 +18,10 @@ import {
 } from '@/components/ui/context-menu';
 import { useShortcutsStore } from '@/stores/runtime/shortcuts';
 import { useTerminalsStore } from '@/stores/runtime/terminals';
+import {
+  getDirectoryPathFromEntry,
+} from '@/utils/terminal-directory-path';
+import { isVirtualLocationPath } from '@/utils/virtual-path-constants';
 import { TerminalSquareIcon } from '@lucide/vue';
 
 const props = defineProps<{
@@ -33,22 +37,18 @@ const ADMIN_MODIFIER_KEY = 'Shift';
 
 const targetDirectoryPath = computed(() => {
   const firstEntry = props.selectedEntries[0];
-  if (!firstEntry) return null;
 
-  if (firstEntry.is_dir) {
-    return firstEntry.path;
+  if (!firstEntry) {
+    return null;
   }
 
-  const lastSeparator = Math.max(
-    firstEntry.path.lastIndexOf('/'),
-    firstEntry.path.lastIndexOf('\\'),
-  );
+  const path = getDirectoryPathFromEntry(firstEntry);
 
-  if (lastSeparator > 0) {
-    return firstEntry.path.substring(0, lastSeparator);
+  if (!path || isVirtualLocationPath(path)) {
+    return null;
   }
 
-  return firstEntry.path;
+  return path;
 });
 
 async function handleOpenTerminal(terminalId: string) {

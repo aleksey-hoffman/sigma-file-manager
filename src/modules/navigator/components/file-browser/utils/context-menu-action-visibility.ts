@@ -4,8 +4,7 @@
 
 import type { DirEntry } from '@/types/dir-entry';
 import type { ContextMenuAction, ContextMenuItemConfig, EntryType, SelectionType } from '@/modules/navigator/components/file-browser/types';
-import { isProtectedSystemPath } from '@/utils/is-protected-system-path';
-import { isVirtualLocationPath } from '@/utils/virtual-locations';
+import { isActionBlockedByEntryPolicy } from '@/utils/entry-action-policy';
 
 const CONTEXT_MENU_ITEMS: ContextMenuItemConfig[] = [
   {
@@ -85,23 +84,6 @@ const CONTEXT_MENU_ITEMS: ContextMenuItemConfig[] = [
   },
 ];
 
-const PROTECTED_ACTIONS = new Set<ContextMenuAction>(['rename', 'cut', 'delete', 'delete-permanently']);
-
-const VIRTUAL_LOCATION_HIDDEN_ACTIONS = new Set<ContextMenuAction>([
-  'rename',
-  'copy',
-  'cut',
-  'link',
-  'paste',
-  'delete',
-  'delete-permanently',
-  'open-with',
-  'properties',
-  'quick-view',
-  'print',
-  'share',
-]);
-
 const WINDOWS_ONLY_ACTIONS = new Set<ContextMenuAction>(['properties']);
 
 function getSelectionStats(entries: DirEntry[]) {
@@ -121,12 +103,15 @@ function getSelectionStats(entries: DirEntry[]) {
   };
 }
 
-function isHiddenForVirtualLocation(action: ContextMenuAction): boolean {
-  return VIRTUAL_LOCATION_HIDDEN_ACTIONS.has(action);
-}
-
-function isProtectedAction(action: ContextMenuAction): boolean {
-  return PROTECTED_ACTIONS.has(action);
+export function canPerformContextMenuAction(
+  action: ContextMenuAction,
+  entries: DirEntry[],
+  options?: {
+    platform?: string | null;
+    disableDestructiveActions?: boolean;
+  },
+): boolean {
+  return isContextMenuActionVisible(action, entries, options);
 }
 
 export function isContextMenuActionVisible(
@@ -172,24 +157,8 @@ export function isContextMenuActionVisible(
     return false;
   }
 
-  const hasVirtualLocationEntry = entries.some(entry => isVirtualLocationPath(entry.path));
-
-  if (hasVirtualLocationEntry && isHiddenForVirtualLocation(action)) {
+  if (isActionBlockedByEntryPolicy(action, entries, platform, options)) {
     return false;
-  }
-
-  if (isProtectedAction(action)) {
-    if (options?.disableDestructiveActions) {
-      return false;
-    }
-
-    const hasProtectedEntry = entries.some(
-      entry => isProtectedSystemPath(entry.path, platform),
-    );
-
-    if (hasProtectedEntry) {
-      return false;
-    }
   }
 
   return true;

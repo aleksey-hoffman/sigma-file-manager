@@ -23,11 +23,14 @@ import { useDismissalLayerStore } from '@/stores/runtime/dismissal-layer';
 import { useGlobalSearchStore } from '@/stores/runtime/global-search';
 import { useShortcutsStore, getSelectedTextForCopy } from '@/stores/runtime/shortcuts';
 import { toast, ToastStatic } from '@/components/ui/toaster';
+import { resolveTerminalDirectoryPath, getActionTargetEntries } from '@/utils/terminal-directory-path';
+import { isVirtualLocationPath } from '@/utils/virtual-path-constants';
 import { useTerminalsStore } from '@/stores/runtime/terminals';
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
 import { useNavigatorSelectionStore } from '@/stores/runtime/navigator-selection';
 import { FileBrowser } from '@/modules/navigator/components/file-browser';
 import type { AddressBarEditorMode } from '@/modules/navigator/components/file-browser/address-bar-editor-utils';
+import type { ContextMenuAction } from '@/modules/navigator/components/file-browser/types';
 import FileBrowserConflictDialog from '@/modules/navigator/components/file-browser/file-browser-conflict-dialog.vue';
 import FileBrowserTopLevelConflictDialog from '@/modules/navigator/components/file-browser/file-browser-top-level-conflict-dialog.vue';
 import FileBrowserDragOverlay from '@/modules/navigator/components/file-browser/file-browser-drag-overlay.vue';
@@ -82,6 +85,7 @@ type FileBrowserInstance = InstanceType<typeof FileBrowser> & {
   openNewItemDialog?: (type: 'file' | 'directory') => void;
   printEntry?: (entry?: DirEntry) => Promise<void>;
   openProperties?: (entries: DirEntry[]) => Promise<void>;
+  performSelectionAction?: (action: ContextMenuAction) => void;
 };
 
 type GlobalSearchViewInstance = InstanceType<typeof GlobalSearchView> & {
@@ -551,6 +555,12 @@ function getActivePaneRef(): FileBrowserInstance | undefined {
 }
 
 function getPasteTargetPath(): string | undefined {
+  const currentPath = getActiveCurrentPath();
+
+  if (isVirtualLocationPath(currentPath ?? '')) {
+    return resolveTerminalDirectoryPath(selectedEntries.value, currentPath) ?? undefined;
+  }
+
   if (isSplitView.value && activeTabId.value) {
     const activeTab = workspacesStore.currentTabGroup?.find(
       tab => tab.id === activeTabId.value,
@@ -645,6 +655,34 @@ function handleCopyShortcut() {
 
 async function handleCopyCurrentDirectoryPathShortcut() {
   const currentPath = getActiveCurrentPath();
+
+  if (isVirtualLocationPath(currentPath ?? '')) {
+    const targetEntries = getActionTargetEntries(selectedEntries.value, currentPath);
+
+    if (targetEntries.length === 0) {
+      return false;
+    }
+
+    const pathText = targetEntries.map(entry => entry.path).join('\n');
+
+    try {
+      await navigator.clipboard.writeText(pathText);
+      toast.custom(markRaw(ToastStatic), {
+        componentProps: {
+          data: {
+            title: t('dialogs.localShareManagerDialog.addressCopiedToClipboard'),
+            description: pathText,
+          },
+        },
+        duration: 2000,
+      });
+      return true;
+    }
+    catch (error) {
+      console.error('Failed to copy selected path:', error);
+      return false;
+    }
+  }
 
   if (!currentPath) {
     return false;
@@ -814,16 +852,34 @@ async function handlePropertiesShortcut() {
 }
 
 async function openTerminalWithOptions(asAdmin: boolean) {
-  if (!currentActivePath.value) return;
+  const directoryPath = resolveTerminalDirectoryPath(
+    selectedEntries.value,
+    currentActivePath.value,
+  );
+
+  if (!directoryPath) {
+    return;
+  }
 
   const defaultTerminal = terminalsStore.terminals[0];
   if (!defaultTerminal) return;
 
-  await terminalsStore.openTerminal(currentActivePath.value, defaultTerminal.id, asAdmin);
+  await terminalsStore.openTerminal(directoryPath, defaultTerminal.id, asAdmin);
 }
 
 async function handleOpenNewTabShortcut() {
-  await workspacesStore.openNewTabGroup(currentActivePath.value);
+  const currentPath = currentActivePath.value;
+
+  if (isVirtualLocationPath(currentPath ?? '') && selectedEntries.value.length > 0) {
+    getActivePaneRef()?.performSelectionAction?.('open-in-new-tab');
+    return;
+  }
+
+  if (!currentPath || isVirtualLocationPath(currentPath)) {
+    return;
+  }
+
+  await workspacesStore.openNewTabGroup(currentPath);
 }
 
 async function handleCloseCurrentTabShortcut() {

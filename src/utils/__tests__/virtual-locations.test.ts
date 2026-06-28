@@ -65,11 +65,12 @@ describe('virtual-locations', () => {
       expect(getNavigableParentPath('sfm://locations', 'windows')).toBeNull();
     });
 
-    it('maps windows drive roots and wsl host root to locations', () => {
+    it('maps windows drive roots and wsl mount roots to locations', () => {
       expect(getNavigableParentPath('C:/', 'windows')).toBe(LOCATIONS_VIRTUAL_PATH);
       expect(getNavigableParentPath('C:/Users', 'windows')).toBe('C:/');
       expect(getNavigableParentPath('//wsl.localhost', 'windows')).toBe(LOCATIONS_VIRTUAL_PATH);
-      expect(getNavigableParentPath('//wsl.localhost/Ubuntu', 'windows')).toBe('//wsl.localhost');
+      expect(getNavigableParentPath('//wsl.localhost/Ubuntu', 'windows')).toBe(LOCATIONS_VIRTUAL_PATH);
+      expect(getNavigableParentPath('//wsl.localhost/Ubuntu/home', 'windows')).toBe('//wsl.localhost/Ubuntu');
     });
 
     it('maps unix mount roots to locations', () => {
