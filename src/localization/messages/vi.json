@@ -986,6 +986,7 @@
     "previouslyKnownAs": "Trước đây được gọi là \"{name}\"",
     "featured": "Nổi bật",
     "allExtensions": "Tất cả tiện ích mở rộng",
+    "otherExtensions": "Tiện ích khác",
     "searchResults": "Kết quả tìm kiếm",
     "noResults": "Không tìm thấy tiện ích mở rộng",
     "noResultsDescription": "Không có tiện ích mở rộng nào khớp với \"{query}\". Hãy thử từ khóa tìm kiếm khác.",
@@ -1020,7 +1021,9 @@
       "local": "Cục bộ",
       "localTooltip": "Tiện ích này được cài đặt từ thư mục cục bộ",
       "broken": "Lỗi",
-      "brokenTooltip": "Thiếu tệp tiện ích mở rộng. Gỡ cài đặt để xóa khỏi danh sách."
+      "brokenTooltip": "Thiếu tệp tiện ích mở rộng. Gỡ cài đặt để xóa khỏi danh sách.",
+      "disabled": "Đã tắt",
+      "disabledTooltip": "Tiện ích mở rộng này đã bị tắt"
     },
     "stats": {
       "total": "Tổng",
@@ -1073,7 +1076,13 @@
     "engineApiWarning": "Yêu cầu API extension {range} (bạn đang dùng {current})",
     "engineRequirements": "Yêu cầu",
     "requiresSigmaFileManager": "Sigma File Manager",
-    "requiresExtensionApi": "API extension"
+    "requiresExtensionApi": "API extension",
+    "marketplaceUnavailable": "Marketplace unavailable",
+    "marketplaceUnavailableDescription": "Could not connect to the extension registry. Check your internet connection and try again.",
+    "githubConnectivityIssue": "Không thể kết nối GitHub",
+    "githubConnectivityIssueDescription": "Một số kiểm tra phiên bản tiện ích thất bại vì ứng dụng không thể kết nối tới GitHub. Hãy kiểm tra kết nối Internet, VPN hoặc tường lửa và thử lại sau.",
+    "offlineIssue": "You are offline",
+    "offlineIssueDescription": "Extension installs, updates, and version checks require an internet connection. Reconnect to the network to use marketplace features."
   },
   "commandPalette": {
     "accessibleDialogTitle": "Bảng lệnh",

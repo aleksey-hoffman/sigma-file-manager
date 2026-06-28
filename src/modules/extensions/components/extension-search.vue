@@ -68,6 +68,7 @@ function clearSearch() {
 <style>
 .extension-search {
   display: flex;
+  min-width: 0;
   align-items: center;
   gap: 12px;
 }
@@ -75,6 +76,7 @@ function clearSearch() {
 .extension-search__input-wrapper {
   position: relative;
   display: flex;
+  min-width: 0;
   flex: 1;
   align-items: center;
 }
@@ -109,6 +111,12 @@ function clearSearch() {
 
   to {
     transform: rotate(360deg);
+  }
+}
+
+@media (width <= 768px) {
+  .extension-search {
+    width: 100%;
   }
 }
 </style>

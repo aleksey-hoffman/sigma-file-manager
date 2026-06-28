@@ -18,6 +18,20 @@ import {
 } from '@/modules/navigator/components/info-panel/utils/animate-info-panel-size';
 
 const layoutResetKey = ref(0);
+let navigatorLayoutResetPending = false;
+
+export function markNavigatorLayoutResetPending(): void {
+  navigatorLayoutResetPending = true;
+}
+
+export function consumeNavigatorLayoutResetPending(): boolean {
+  if (!navigatorLayoutResetPending) {
+    return false;
+  }
+
+  navigatorLayoutResetPending = false;
+  return true;
+}
 const isLayoutAnimating = ref(false);
 const isInfoPanelVisibilityAnimating = ref(false);
 const viewportWidthPx = ref(0);
@@ -462,6 +476,16 @@ export function useInfoPanelLayout() {
     previewPanelRef.value = instance as AnimatablePanelInstance | null;
   }
 
+  function clearPanelRefs() {
+    infoPanelWidthPanelRef.value = null;
+    previewPanelRef.value = null;
+  }
+
+  function requestLayoutReset() {
+    clearPanelRefs();
+    layoutResetKey.value += 1;
+  }
+
   function syncInfoPanelCssVariables() {
     if (typeof document === 'undefined') {
       return;
@@ -566,6 +590,8 @@ export function useInfoPanelLayout() {
     disableDynamicSize,
     handleInfoPanelWidthHandleDragging,
     handlePreviewHeightHandleDragging,
+    clearPanelRefs,
+    requestLayoutReset,
     infoPanelLayout: INFO_PANEL_LAYOUT,
   };
 }

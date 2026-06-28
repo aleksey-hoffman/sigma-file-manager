@@ -22,6 +22,8 @@ type CommandDialogProps = DialogRootProps & {
 
 const props = withDefaults(defineProps<CommandDialogProps>(), {
   useCommandRoot: true,
+  accessibleTitle: undefined,
+  accessibleDescription: undefined,
 });
 const emits = defineEmits<DialogRootEmits>();
 

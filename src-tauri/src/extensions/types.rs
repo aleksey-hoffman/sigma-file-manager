@@ -64,6 +64,14 @@ pub struct LocalExtensionInstallResult {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct LocalExtensionManifestPreview {
+    pub extension_id: String,
+    pub name: Option<String>,
+    pub version: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ReadTextPreviewResult {
     pub bytes: Vec<u8>,
     pub truncated: bool,

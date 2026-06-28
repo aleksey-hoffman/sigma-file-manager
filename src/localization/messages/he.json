@@ -1027,6 +1027,7 @@
     "previouslyKnownAs": "היה ידוע בעבר בשם \"{name}\"",
     "featured": "מומלץ",
     "allExtensions": "כל התוספים",
+    "otherExtensions": "תוספים אחרים",
     "searchResults": "תוצאות החיפוש",
     "noResults": "לא נמצאו תוספים",
     "noResultsDescription": "אין תוספים התואמים ל\"{query}\". נסה מונח חיפוש אחר.",
@@ -1072,7 +1073,9 @@
       "local": "מקומי",
       "localTooltip": "תוסף זה הותקן מתיקייה מקומית",
       "broken": "שבור",
-      "brokenTooltip": "קובצי התוסף חסרים. הסר את ההתקנה כדי להסירו מהרשימה."
+      "brokenTooltip": "קובצי התוסף חסרים. הסר את ההתקנה כדי להסירו מהרשימה.",
+      "disabled": "מושבת",
+      "disabledTooltip": "התוסף הזה מושבת"
     },
     "stats": {
       "total": "סך הכול",
@@ -1103,7 +1106,13 @@
     "engineApiWarning": "דורש API של תוספים {range} (הגרסה שלך {current})",
     "engineRequirements": "דרישות",
     "requiresSigmaFileManager": "Sigma File Manager",
-    "requiresExtensionApi": "API של תוספים"
+    "requiresExtensionApi": "API של תוספים",
+    "marketplaceUnavailable": "Marketplace unavailable",
+    "marketplaceUnavailableDescription": "Could not connect to the extension registry. Check your internet connection and try again.",
+    "githubConnectivityIssue": "לא ניתן להגיע ל-GitHub",
+    "githubConnectivityIssueDescription": "חלק מבדיקות הגרסאות של התוספים נכשלו כי האפליקציה לא הצליחה להתחבר ל-GitHub. בדוק את חיבור האינטרנט, ה-VPN או הגדרות חומת האש ונסה שוב מאוחר יותר.",
+    "offlineIssue": "You are offline",
+    "offlineIssueDescription": "Extension installs, updates, and version checks require an internet connection. Reconnect to the network to use marketplace features."
   },
   "commandPalette": {
     "accessibleDialogTitle": "לוח הפקודות",

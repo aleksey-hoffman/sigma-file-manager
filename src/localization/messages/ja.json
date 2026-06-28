@@ -986,6 +986,7 @@
     "previouslyKnownAs": "以前の名前: \"{name}\"",
     "featured": "注目",
     "allExtensions": "すべての拡張機能",
+    "otherExtensions": "その他の拡張機能",
     "searchResults": "検索結果",
     "noResults": "拡張機能が見つかりません",
     "noResultsDescription": "\"{query}\"に一致する拡張機能がありません。別の検索語をお試しください。",
@@ -1020,7 +1021,9 @@
       "local": "ローカル",
       "localTooltip": "この拡張機能はローカルフォルダからインストールされました",
       "broken": "破損",
-      "brokenTooltip": "拡張機能のファイルが見つかりません。リストから削除するにはアンインストールしてください。"
+      "brokenTooltip": "拡張機能のファイルが見つかりません。リストから削除するにはアンインストールしてください。",
+      "disabled": "無効",
+      "disabledTooltip": "この拡張機能は無効です"
     },
     "stats": {
       "total": "合計",
@@ -1073,7 +1076,13 @@
     "engineApiWarning": "拡張機能 API {range} が必要です（現在: {current}）",
     "engineRequirements": "要件",
     "requiresSigmaFileManager": "Sigma File Manager",
-    "requiresExtensionApi": "拡張機能 API"
+    "requiresExtensionApi": "拡張機能 API",
+    "marketplaceUnavailable": "Marketplace unavailable",
+    "marketplaceUnavailableDescription": "Could not connect to the extension registry. Check your internet connection and try again.",
+    "githubConnectivityIssue": "GitHub に接続できません",
+    "githubConnectivityIssueDescription": "アプリが GitHub に接続できなかったため、一部の拡張機能のバージョン確認に失敗しました。インターネット接続、VPN、ファイアウォール設定を確認し、後でもう一度お試しください。",
+    "offlineIssue": "You are offline",
+    "offlineIssueDescription": "Extension installs, updates, and version checks require an internet connection. Reconnect to the network to use marketplace features."
   },
   "commandPalette": {
     "accessibleDialogTitle": "コマンドパレット",

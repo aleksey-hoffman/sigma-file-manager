@@ -1016,6 +1016,7 @@
     "previouslyKnownAs": "Ранее известно как \"{name}\"",
     "featured": "Рекомендуемые",
     "allExtensions": "Все расширения",
+    "otherExtensions": "Другие расширения",
     "searchResults": "Результаты поиска",
     "noResults": "Расширения не найдены",
     "noResultsDescription": "Нет расширений, соответствующих \"{query}\". Попробуйте другой поисковый запрос.",
@@ -1049,7 +1050,9 @@
       "local": "Локальное",
       "localTooltip": "Это расширение было установлено из локальной папки",
       "broken": "Повреждено",
-      "brokenTooltip": "Файлы расширения отсутствуют. Удалите расширение, чтобы убрать его из списка."
+      "brokenTooltip": "Файлы расширения отсутствуют. Удалите расширение, чтобы убрать его из списка.",
+      "disabled": "Отключено",
+      "disabledTooltip": "Это расширение отключено"
     },
     "stats": {
       "total": "Всего",
@@ -1077,15 +1080,15 @@
     },
     "unknownPublisher": "Unknown publisher",
     "contextMenuLabel": "Расширения",
-    "autoUpdate": "Auto-update",
+    "autoUpdate": "Автообновление",
     "showExtensionsFolder": "Показать папку расширений",
     "reinstalledSuccessfully": "Успешно переустановлено",
     "reusedDependencies": "Использовано {count} существующих зависимостей",
     "themesInstalled": "Темы установлены",
     "noLongerAvailable": "Больше недоступно",
     "removedBecauseUnapproved": "Это расширение было удалено, потому что его больше нет в одобренном реестре.",
-    "enabled": "Enabled",
-    "disabled": "Disabled",
+    "enabled": "Включено",
+    "disabled": "Отключено",
     "noExtensionCommands": "This extension does not provide any commands.",
     "dependencies": {
       "noDependencies": "No shared dependencies",
@@ -1103,7 +1106,13 @@
     "engineApiWarning": "Требуется API расширений {range} (у вас {current})",
     "engineRequirements": "Требования",
     "requiresSigmaFileManager": "Sigma File Manager",
-    "requiresExtensionApi": "API расширений"
+    "requiresExtensionApi": "API расширений",
+    "marketplaceUnavailable": "Marketplace unavailable",
+    "marketplaceUnavailableDescription": "Could not connect to the extension registry. Check your internet connection and try again.",
+    "githubConnectivityIssue": "Не удаётся подключиться к GitHub",
+    "githubConnectivityIssueDescription": "Не удалось проверить версии некоторых расширений, потому что приложение не смогло подключиться к GitHub. Проверьте подключение к интернету, VPN или настройки брандмауэра и повторите попытку позже.",
+    "offlineIssue": "You are offline",
+    "offlineIssueDescription": "Extension installs, updates, and version checks require an internet connection. Reconnect to the network to use marketplace features."
   },
   "commandPalette": {
     "accessibleDialogTitle": "Палитра команд",

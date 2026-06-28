@@ -19,20 +19,26 @@ defineProps<{
       class="page-layout__container"
       :style="{ maxWidth: maxWidth ?? '1200px' }"
     >
-      <header
-        v-if="title"
-        class="page-layout__header"
+      <div
+        v-if="$slots.prepend || title"
+        class="page-layout__top"
       >
-        <h1 class="page-layout__title">
-          {{ title }}
-        </h1>
-        <p
-          v-if="subtitle"
-          class="page-layout__subtitle"
+        <slot name="prepend" />
+        <header
+          v-if="title"
+          class="page-layout__header"
         >
-          {{ subtitle }}
-        </p>
-      </header>
+          <h1 class="page-layout__title">
+            {{ title }}
+          </h1>
+          <p
+            v-if="subtitle"
+            class="page-layout__subtitle"
+          >
+            {{ subtitle }}
+          </p>
+        </header>
+      </div>
       <slot />
     </div>
   </ScrollArea>
@@ -42,6 +48,7 @@ defineProps<{
 .page-layout {
   overflow: hidden;
   width: 100%;
+  min-width: 0;
   max-width: 100%;
   height: calc(100vh - var(--window-toolbar-height));
   user-select: none;
@@ -57,6 +64,11 @@ defineProps<{
   padding-right: 46px;
   margin: 0 auto;
   gap: 24px;
+}
+
+.page-layout__top {
+  display: flex;
+  flex-direction: column;
 }
 
 .page-layout__header {

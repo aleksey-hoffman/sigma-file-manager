@@ -982,6 +982,7 @@
     "previouslyKnownAs": "قبلاً با نام \"{name}\" شناخته می‌شد",
     "featured": "ویژه",
     "allExtensions": "همه افزونه‌ها",
+    "otherExtensions": "سایر افزونه‌ها",
     "searchResults": "نتایج جستجو",
     "noResults": "افزونه‌ای یافت نشد",
     "noResultsDescription": "هیچ افزونه‌ای با \"{query}\" مطابقت ندارد. عبارت جستجوی دیگری را امتحان کنید.",
@@ -1016,7 +1017,9 @@
       "local": "محلی",
       "localTooltip": "این افزونه از یک پوشه محلی نصب شده است",
       "broken": "خراب",
-      "brokenTooltip": "فایل‌های افزونه یافت نشدند. برای حذف از لیست، افزونه را حذف نصب کنید."
+      "brokenTooltip": "فایل‌های افزونه یافت نشدند. برای حذف از لیست، افزونه را حذف نصب کنید.",
+      "disabled": "غیرفعال",
+      "disabledTooltip": "این افزونه غیرفعال است"
     },
     "stats": {
       "total": "مجموع",
@@ -1044,15 +1047,15 @@
     },
     "unknownPublisher": "Unknown publisher",
     "contextMenuLabel": "برنامه های افزودنی",
-    "autoUpdate": "Auto-update",
+    "autoUpdate": "به‌روزرسانی خودکار",
     "showExtensionsFolder": "نمایش پوشه افزونه‌ها",
     "reinstalledSuccessfully": "با موفقیت نصب مجدد شد",
     "reusedDependencies": "{count} وابستگی موجود مجدداً استفاده شد",
     "themesInstalled": "تم‌ها نصب شدند",
     "noLongerAvailable": "دیگر در دسترس نیست",
     "removedBecauseUnapproved": "این افزونه حذف شد چون دیگر در رجیستری مورد تأیید وجود ندارد.",
-    "enabled": "Enabled",
-    "disabled": "Disabled",
+    "enabled": "فعال",
+    "disabled": "غیرفعال",
     "dependencies": {
       "noDependencies": "No shared dependencies",
       "noDependenciesDescription": "Shared binaries will appear here when extensions install dependencies like FFmpeg or Deno.",
@@ -1069,7 +1072,13 @@
     "engineApiWarning": "به API افزونه {range} نیاز دارد (نسخه شما {current})",
     "engineRequirements": "نیازمندی‌ها",
     "requiresSigmaFileManager": "Sigma File Manager",
-    "requiresExtensionApi": "API افزونه"
+    "requiresExtensionApi": "API افزونه",
+    "marketplaceUnavailable": "Marketplace unavailable",
+    "marketplaceUnavailableDescription": "Could not connect to the extension registry. Check your internet connection and try again.",
+    "githubConnectivityIssue": "اتصال به GitHub برقرار نشد",
+    "githubConnectivityIssueDescription": "برخی بررسی‌های نسخه افزونه‌ها به‌دلیل عدم اتصال برنامه به GitHub ناموفق بود. اتصال اینترنت، VPN یا تنظیمات فایروال را بررسی کنید و بعداً دوباره تلاش کنید.",
+    "offlineIssue": "You are offline",
+    "offlineIssueDescription": "Extension installs, updates, and version checks require an internet connection. Reconnect to the network to use marketplace features."
   },
   "commandPalette": {
     "accessibleDialogTitle": "پالت فرمان",

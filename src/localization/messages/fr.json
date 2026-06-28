@@ -986,6 +986,7 @@
     "previouslyKnownAs": "Anciennement connu sous le nom \"{name}\"",
     "featured": "En vedette",
     "allExtensions": "Toutes les extensions",
+    "otherExtensions": "Autres extensions",
     "searchResults": "Résultats de recherche",
     "noResults": "Aucune extension trouvée",
     "noResultsDescription": "Aucune extension ne correspond à \"{query}\". Essayez un autre terme de recherche.",
@@ -1020,7 +1021,9 @@
       "local": "Local",
       "localTooltip": "Cette extension a été installée depuis un dossier local",
       "broken": "Défectueuse",
-      "brokenTooltip": "Les fichiers de l'extension sont manquants. Désinstallez pour retirer de la liste."
+      "brokenTooltip": "Les fichiers de l'extension sont manquants. Désinstallez pour retirer de la liste.",
+      "disabled": "Désactivée",
+      "disabledTooltip": "Cette extension est désactivée"
     },
     "stats": {
       "total": "Total",
@@ -1048,15 +1051,15 @@
     },
     "unknownPublisher": "Unknown publisher",
     "contextMenuLabel": "Extensions",
-    "autoUpdate": "Auto-update",
+    "autoUpdate": "Mise à jour automatique",
     "showExtensionsFolder": "Afficher le dossier des extensions",
     "reinstalledSuccessfully": "Réinstallation réussie",
     "reusedDependencies": "{count} dépendances existantes réutilisées",
     "themesInstalled": "Les thèmes ont été installés",
     "noLongerAvailable": "N'est plus disponible",
     "removedBecauseUnapproved": "Cette extension a été supprimée, car elle ne figure plus dans le registre approuvé.",
-    "enabled": "Enabled",
-    "disabled": "Disabled",
+    "enabled": "Activé",
+    "disabled": "Désactivé",
     "dependencies": {
       "noDependencies": "No shared dependencies",
       "noDependenciesDescription": "Shared binaries will appear here when extensions install dependencies like FFmpeg or Deno.",
@@ -1073,7 +1076,13 @@
     "engineApiWarning": "Nécessite l'API d'extensions {range} (vous avez {current})",
     "engineRequirements": "Prérequis",
     "requiresSigmaFileManager": "Sigma File Manager",
-    "requiresExtensionApi": "API d'extensions"
+    "requiresExtensionApi": "API d'extensions",
+    "marketplaceUnavailable": "Marketplace unavailable",
+    "marketplaceUnavailableDescription": "Could not connect to the extension registry. Check your internet connection and try again.",
+    "githubConnectivityIssue": "Impossible de joindre GitHub",
+    "githubConnectivityIssueDescription": "Certaines vérifications de version d'extension ont échoué car l'application n'a pas pu se connecter à GitHub. Vérifiez votre connexion Internet, votre VPN ou votre pare-feu, puis réessayez plus tard.",
+    "offlineIssue": "You are offline",
+    "offlineIssueDescription": "Extension installs, updates, and version checks require an internet connection. Reconnect to the network to use marketplace features."
   },
   "commandPalette": {
     "accessibleDialogTitle": "Palette de commandes",

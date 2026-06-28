@@ -46,6 +46,7 @@ const props = withDefaults(defineProps<Props>(), {
 .sigma-ui-scroll-area {
   position: relative;
   overflow: hidden;
+  min-width: 0;
 }
 
 .sigma-ui-scroll-area__viewport {

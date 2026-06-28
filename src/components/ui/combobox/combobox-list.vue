@@ -4,6 +4,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
+import { computed, nextTick, watch } from 'vue';
 import type { ComboboxContentEmits, ComboboxContentProps } from 'reka-ui';
 import {
   ComboboxContent,
@@ -12,18 +13,45 @@ import {
   ScrollAreaCorner,
   ScrollAreaRoot,
   ScrollAreaViewport,
+  injectComboboxRootContext,
   useForwardPropsEmits,
 } from 'reka-ui';
+import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import ScrollBar from '@/components/ui/scroll-area/scroll-bar.vue';
 
-const props = withDefaults(defineProps<ComboboxContentProps>(), {
-  position: 'popper',
-  align: 'center',
-  sideOffset: 4,
-});
+const props = withDefaults(
+  defineProps<ComboboxContentProps & { preventCloseFocusReturn?: boolean }>(),
+  {
+    position: 'popper',
+    align: 'center',
+    sideOffset: 4,
+    preventCloseFocusReturn: undefined,
+  },
+);
 const emits = defineEmits<ComboboxContentEmits>();
 
+const userSettingsStore = useUserSettingsStore();
+const comboboxRootContext = injectComboboxRootContext();
+const preventCloseFocusReturn = computed(() =>
+  props.preventCloseFocusReturn ?? userSettingsStore.userSettings.preventDropdownCloseFocusReturn ?? false,
+);
+
 const forwarded = useForwardPropsEmits(props, emits);
+
+watch(
+  () => comboboxRootContext.open.value,
+  (isOpen, wasOpen) => {
+    if (wasOpen && !isOpen && preventCloseFocusReturn.value) {
+      nextTick(() => {
+        const triggerElement = comboboxRootContext.triggerElement.value;
+
+        if (triggerElement && document.activeElement === triggerElement) {
+          triggerElement.blur();
+        }
+      });
+    }
+  },
+);
 </script>
 
 <template>

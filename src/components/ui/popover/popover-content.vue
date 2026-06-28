@@ -4,6 +4,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import {
   PopoverContent,
   type PopoverContentEmits,
@@ -11,27 +12,44 @@ import {
   PopoverPortal,
   useForwardPropsEmits,
 } from 'reka-ui';
+import { useUserSettingsStore } from '@/stores/storage/user-settings';
 
 defineOptions({
   inheritAttrs: false,
 });
 
 const props = withDefaults(
-  defineProps<PopoverContentProps>(),
+  defineProps<PopoverContentProps & { preventCloseFocusReturn?: boolean }>(),
   {
     align: 'center',
     sideOffset: 4,
+    preventCloseFocusReturn: undefined,
   },
 );
 const emits = defineEmits<PopoverContentEmits>();
 
+const userSettingsStore = useUserSettingsStore();
+const preventCloseFocusReturn = computed(() =>
+  props.preventCloseFocusReturn ?? userSettingsStore.userSettings.preventDropdownCloseFocusReturn ?? false,
+);
+
 const forwarded = useForwardPropsEmits(props, emits);
+
+function handleCloseAutoFocus(event: Event) {
+  if (preventCloseFocusReturn.value) {
+    event.preventDefault();
+  }
+}
 </script>
 
 <template>
   <PopoverPortal>
     <PopoverContent
-      v-bind="{ ...forwarded, ...$attrs }"
+      v-bind="{
+        ...forwarded,
+        ...$attrs,
+        ...(preventCloseFocusReturn ? { onCloseAutoFocus: handleCloseAutoFocus } : {}),
+      }"
       class="sigma-ui-popover-content"
       :class="$attrs.class"
     >

@@ -26,8 +26,12 @@ import ExtensionsInstalled from '@/modules/extensions/components/extensions-inst
 import ExtensionDetail from '@/modules/extensions/components/extension-detail.vue';
 import DependenciesTab from '@/modules/extensions/components/dependencies-tab.vue';
 import type { ExtensionWithManifest } from '@/modules/extensions/composables/use-extensions';
+import { useGitHubConnectivityStatus } from '@/modules/extensions/utils/github-connectivity-status';
+import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
+import { Alert } from '@/components/ui/alert';
 
 const { t } = useI18n();
+const { hasGitHubConnectivityIssue } = useGitHubConnectivityStatus();
 
 const {
   searchQuery,
@@ -40,8 +44,10 @@ const {
   isLoadingManifest,
   registryError,
   installingExtensions,
+  pendingFolderInstalls,
   uninstallingExtensions,
   updatingExtensions,
+  togglingExtensions,
   isAnyInstallInProgress,
   selectExtension,
   clearSelection,
@@ -64,7 +70,6 @@ const showExtensionsTopLoader = computed(() => {
 });
 
 const extensionsStorageStore = useExtensionsStorageStore();
-const refreshingExtensions = ref<Set<string>>(new Set());
 const removingDependencies = ref<Set<string>>(new Set());
 
 const sharedBinariesCount = computed(() => {
@@ -151,13 +156,11 @@ function getAnimatableElements() {
 
   const sharedCard = detailContainerRef.value.querySelector('[data-animate="shared-card"]') as HTMLElement | null;
   const headerRow = detailContainerRef.value.querySelector('[data-animate="header-row"]') as HTMLElement | null;
-  const statusAlert = detailContainerRef.value.querySelector('[data-animate="status-alert"]') as HTMLElement | null;
   const controls = detailContainerRef.value.querySelector('[data-animate="controls"]') as HTMLElement | null;
   const tabs = detailContainerRef.value.querySelector('[data-animate="tabs"]') as HTMLElement | null;
 
   const contentElements: HTMLElement[] = [];
   if (headerRow) contentElements.push(headerRow);
-  if (statusAlert) contentElements.push(statusAlert);
   if (controls) contentElements.push(controls);
   if (tabs) contentElements.push(tabs);
 
@@ -222,9 +225,7 @@ async function handleUninstall(extensionId: string) {
 }
 
 async function handleRefresh(extensionId: string) {
-  if (refreshingExtensions.value.has(extensionId)) return;
-
-  refreshingExtensions.value = new Set(refreshingExtensions.value).add(extensionId);
+  if (installingExtensions.value.has(extensionId)) return;
 
   try {
     await refreshLocalExtension(extensionId);
@@ -254,11 +255,6 @@ async function handleRefresh(extensionId: string) {
     if (isUserCancelledError(error)) return;
     handleError(t('extensions.installLocalError'), error);
   }
-  finally {
-    const next = new Set(refreshingExtensions.value);
-    next.delete(extensionId);
-    refreshingExtensions.value = next;
-  }
 }
 
 async function handleUpdate(extensionId: string, version?: string) {
@@ -286,6 +282,8 @@ async function handleToggleAutoUpdate(extensionId: string) {
 
 async function handleInstallLocal(sourcePath: string) {
   if (isAnyInstallInProgress.value) return;
+
+  activeTab.value = 'installed';
 
   try {
     await installLocalExtension(sourcePath);
@@ -330,6 +328,23 @@ onUnmounted(() => {
     :title="t('pages.extensions')"
     :subtitle="t('extensions.subtitle')"
   >
+    <template #prepend>
+      <Collapsible
+        :open="hasGitHubConnectivityIssue"
+        class="extensions-page__network-alert-collapsible"
+      >
+        <CollapsibleContent class="extensions-page__network-alert-content">
+          <div class="extensions-page__network-alert-inner">
+            <Alert
+              tone="warning"
+              class="extensions-page__network-alert"
+              :title="t('extensions.githubConnectivityIssue')"
+              :description="t('extensions.githubConnectivityIssueDescription')"
+            />
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
+    </template>
     <Tabs
       v-model="activeTab"
       class="extensions-page__tabs"
@@ -414,6 +429,7 @@ onUnmounted(() => {
           @install="handleInstall"
           @update="handleUpdate"
           @cancel="handleCancelInstall"
+          @refresh="refreshRegistry"
         />
       </TabsContent>
 
@@ -423,10 +439,11 @@ onUnmounted(() => {
       >
         <ExtensionsInstalled
           :extensions="installedExtensionsWithManifest"
+          :pending-folder-installs="pendingFolderInstalls"
           :installing-extensions="installingExtensions"
           :updating-extensions="updatingExtensions"
           :uninstalling-extensions="uninstallingExtensions"
-          :refreshing-extensions="refreshingExtensions"
+          :toggling-extensions="togglingExtensions"
           :is-installing-local="isAnyInstallInProgress"
           @select="handleSelectExtension"
           @toggle="handleToggle"
@@ -475,7 +492,7 @@ onUnmounted(() => {
                 :is-install-disabled="installingExtensions.has(selectedExtension.id) || isAnyInstallInProgress"
                 :is-uninstalling="uninstallingExtensions.has(selectedExtension.id)"
                 :is-updating="updatingExtensions.has(selectedExtension.id)"
-                :is-refreshing="refreshingExtensions.has(selectedExtension.id)"
+                :is-toggling-enabled="togglingExtensions.has(selectedExtension.id)"
                 @back="handleBack"
                 @install="(version) => handleInstall(selectedExtension!.id, version)"
                 @uninstall="handleUninstall(selectedExtension!.id)"
@@ -528,14 +545,39 @@ onUnmounted(() => {
   }
 }
 
+.extensions-page {
+  min-width: 0;
+  max-width: 100%;
+}
+
 .extensions-page__tabs {
   display: flex;
+  min-width: 0;
+  max-width: 100%;
   flex-direction: column;
   gap: 20px;
 }
 
+.extensions-page__network-alert-collapsible {
+  width: 100%;
+}
+
+.extensions-page__network-alert-content {
+  overflow: hidden;
+}
+
+.extensions-page__network-alert-inner {
+  padding-bottom: 16px;
+}
+
+.extensions-page__network-alert {
+  width: 100%;
+}
+
 .extensions-page__header {
   display: flex;
+  min-width: 0;
+  max-width: 100%;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
@@ -578,6 +620,8 @@ onUnmounted(() => {
 }
 
 .extensions-page__content {
+  min-width: 0;
+  max-width: 100%;
   animation: fade-in 0.2s ease-out;
   outline: none !important;
 }
@@ -595,7 +639,7 @@ onUnmounted(() => {
 }
 
 .extension-modal {
-  position: fixed;
+  position: absolute;
   z-index: 2;
   overflow: hidden;
   inset: 0;
@@ -658,15 +702,20 @@ onUnmounted(() => {
 
   .extensions-page__tabs-list {
     width: 100%;
+    max-width: 100%;
     height: auto;
     min-height: auto;
   }
 
   .extensions-page__tabs-list .extensions-page__tab-trigger {
+    min-width: 0;
     height: 48px;
+    flex: 1 1 0;
     flex-direction: column;
     padding-top: 2px;
+    font-size: 0.75rem;
     gap: 0;
+    white-space: normal;
   }
 
   .extensions-page__tabs-list .extensions-page__tab-icon-wrap {
@@ -691,7 +740,9 @@ onUnmounted(() => {
   }
 
   .extension-modal__content {
-    padding: 64px 24px;
+    max-width: 100%;
+    box-sizing: border-box;
+    padding: 48px 16px;
   }
 }
 </style>

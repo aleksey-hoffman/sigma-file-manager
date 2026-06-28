@@ -6,10 +6,12 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { CheckCircle2Icon, AlertTriangleIcon, HardDriveIcon, AlertCircleIcon } from '@lucide/vue';
+import {
+  CheckCircle2Icon, AlertTriangleIcon, HardDriveIcon, AlertCircleIcon, CircleOffIcon,
+} from '@lucide/vue';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
-type BadgeType = 'official' | 'community' | 'local' | 'broken';
+type BadgeType = 'official' | 'community' | 'local' | 'broken' | 'disabled';
 
 const props = defineProps<{
   type: BadgeType;
@@ -41,14 +43,25 @@ const badgeConfig = computed(() => {
         tooltip: t('extensions.badges.officialTooltip'),
         class: 'extension-badge--official',
       };
+    case 'disabled':
+      return {
+        icon: CircleOffIcon,
+        label: t('extensions.badges.disabled'),
+        tooltip: t('extensions.badges.disabledTooltip'),
+        class: 'extension-badge--disabled',
+      };
     case 'community':
-    default:
       return {
         icon: AlertTriangleIcon,
         label: t('extensions.badges.community'),
         tooltip: t('extensions.badges.communityTooltip'),
         class: 'extension-badge--community',
       };
+
+    default: {
+      const unreachable: never = props.type;
+      throw new Error(`Unhandled extension badge type: ${unreachable}`);
+    }
   }
 });
 </script>
@@ -111,5 +124,10 @@ const badgeConfig = computed(() => {
 .extension-badge--broken {
   background-color: hsl(0deg 0% 50% / 15%);
   color: hsl(0deg 0% 45%);
+}
+
+.extension-badge--disabled {
+  background-color: hsl(0deg 84% 60% / 15%);
+  color: hsl(0deg 84% 60%);
 }
 </style>

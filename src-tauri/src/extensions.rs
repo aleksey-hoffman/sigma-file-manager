@@ -21,6 +21,7 @@ mod types;
 pub use types::{
     ExtensionCommandComplete, ExtensionCommandProgress, ExtensionCommandResult,
     ExtensionOperationResult, FetchUrlResult, InstalledExtensionInfo, LocalExtensionInstallResult,
+    LocalExtensionManifestPreview,
     PlatformInfo, ReadTextPreviewResult,
 };
 

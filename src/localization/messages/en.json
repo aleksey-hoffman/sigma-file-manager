@@ -1027,10 +1027,17 @@
     "previouslyKnownAs": "Previously known as \"{name}\"",
     "featured": "Featured",
     "allExtensions": "All Extensions",
+    "otherExtensions": "Other Extensions",
     "searchResults": "Search Results",
     "noResults": "No extensions found",
     "noResultsDescription": "No extensions match \"{query}\". Try a different search term.",
     "noExtensionsAvailable": "No extensions available in the registry",
+    "marketplaceUnavailable": "Marketplace unavailable",
+    "marketplaceUnavailableDescription": "Could not connect to the extension registry. Check your internet connection and try again.",
+    "githubConnectivityIssue": "Unable to reach GitHub",
+    "githubConnectivityIssueDescription": "Some extension version checks failed because the app could not connect to GitHub. Check your internet connection, VPN, or firewall settings and try again later.",
+    "offlineIssue": "You are offline",
+    "offlineIssueDescription": "Extension installs, updates, and version checks require an internet connection. Reconnect to the network to use marketplace features.",
     "noInstalledExtensions": "No extensions installed",
     "noInstalledExtensionsDescription": "Browse the marketplace to discover extensions that enhance your file manager experience.",
     "noPermissions": "This extension does not require any special permissions.",
@@ -1072,7 +1079,9 @@
       "local": "Local",
       "localTooltip": "This extension was installed from a local folder",
       "broken": "Broken",
-      "brokenTooltip": "Extension files are missing. Uninstall to remove from the list."
+      "brokenTooltip": "Extension files are missing. Uninstall to remove from the list.",
+      "disabled": "Disabled",
+      "disabledTooltip": "This extension is disabled"
     },
     "stats": {
       "total": "Total",

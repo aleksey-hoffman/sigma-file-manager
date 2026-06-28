@@ -17,7 +17,6 @@ import {
 import { PageDefaultLayout } from '@/layouts';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { TagSelector } from '@/components/ui/tag-selector';
 import { DirEntryInteractive } from '@/components/dir-entry-interactive';
 import { useUserStatsStore } from '@/stores/storage/user-stats';
 import { useWorkspacesStore } from '@/stores/storage/workspaces';
@@ -29,6 +28,7 @@ import DashboardActionBar from '@/modules/dashboard/components/dashboard-action-
 import DashboardEmptyState from '@/modules/dashboard/components/dashboard-empty-state.vue';
 import DashboardTagSectionHeader from '@/modules/dashboard/components/dashboard-tag-section-header.vue';
 import EntryCard from '@/modules/dashboard/components/entry-card.vue';
+import EntryCardTags from '@/modules/dashboard/components/entry-card-tags.vue';
 import FileBrowserConflictDialog from '@/modules/navigator/components/file-browser/file-browser-conflict-dialog.vue';
 import FileBrowserTopLevelConflictDialog from '@/modules/navigator/components/file-browser/file-browser-top-level-conflict-dialog.vue';
 import type {
@@ -39,6 +39,11 @@ import type {
   TaggedItem,
 } from '@/types/user-stats';
 import { getStaggerSlideUpBinding } from '@/utils/stagger-animation';
+
+type ActiveTagSelector = {
+  sectionTagId: string;
+  itemPath: string;
+};
 
 type TaggedSection = {
   tag: ItemTag;
@@ -53,6 +58,7 @@ const workspacesStore = useWorkspacesStore();
 
 const activeTab = ref('favorites');
 const dropContainerRef = ref<HTMLElement | null>(null);
+const activeTagSelector = ref<ActiveTagSelector | null>(null);
 
 const {
   conflictDialogState,
@@ -100,8 +106,26 @@ const taggedSections = computed((): TaggedSection[] => {
   return sections;
 });
 
-function getTagById(tagId: string): ItemTag | undefined {
-  return tags.value.find(tag => tag.id === tagId);
+function isTagSelectorActive(sectionTagId: string, itemPath: string): boolean {
+  return activeTagSelector.value?.sectionTagId === sectionTagId
+    && activeTagSelector.value?.itemPath === itemPath;
+}
+
+function openEntryTagSelector(sectionTagId: string, itemPath: string) {
+  activeTagSelector.value = {
+    sectionTagId,
+    itemPath,
+  };
+}
+
+function handleEntryTagsOpenChange(sectionTagId: string, itemPath: string, open: boolean) {
+  if (
+    !open
+    && activeTagSelector.value?.sectionTagId === sectionTagId
+    && activeTagSelector.value?.itemPath === itemPath
+  ) {
+    activeTagSelector.value = null;
+  }
 }
 
 function getItemDirectory(path: string): string {
@@ -357,21 +381,12 @@ async function handleUpdateTagColor(tagId: string, color: string) {
                     @click="openItem(item.path, item.isFile)"
                   >
                     <template #footer>
-                      <div class="entry-card__tags">
-                        <span
-                          v-for="tagId in item.tagIds"
-                          :key="tagId"
-                          class="entry-card__tag"
-                          :style="{ backgroundColor: getTagById(tagId)?.color + '25', color: getTagById(tagId)?.color }"
-                        >
-                          {{ getTagById(tagId)?.name }}
-                        </span>
-                      </div>
-                      <TagSelector
+                      <EntryCardTags
+                        :item="item"
                         :tags="tags"
-                        :selected-tag-ids="item.tagIds"
-                        :allow-create="true"
-                        trigger-variant="compact"
+                        :is-selector-active="isTagSelectorActive(section.tag.id, item.path)"
+                        @open="openEntryTagSelector(section.tag.id, item.path)"
+                        @open-change="open => handleEntryTagsOpenChange(section.tag.id, item.path, open)"
                         @toggle-tag="(tagId) => handleToggleTagOnItem(item, tagId)"
                         @create-tag="(name) => handleCreateTagForItem(item, name)"
                         @rename-tag="handleRenameTag"

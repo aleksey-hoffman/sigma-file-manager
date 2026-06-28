@@ -7,6 +7,13 @@
     cursor: pointer;
   }
 
+  button:not(:disabled):focus,
+  button:not(:disabled):focus-visible,
+  [role="button"]:not(:disabled):focus,
+  [role="button"]:not(:disabled):focus-visible {
+    outline: none;
+  }
+
   * {
     border-color: hsl(var(--border));
   }

@@ -21,6 +21,10 @@ import {
   fetchGitHubTagsWithRetry,
   pickDisplayVersionFromGitHubTags,
 } from '@/data/extensions';
+import {
+  markGitHubRepositoryReachable,
+  markGitHubRepositoryUnreachable,
+} from '@/modules/extensions/utils/github-connectivity-status';
 import { getPlatformInfo } from '@/modules/extensions/api';
 import { getBinaryDisplayVersion, getBinaryLookupVersion } from '@/modules/extensions/utils/binary-metadata';
 import { invokeAsExtension } from '@/modules/extensions/runtime/extension-invoke';
@@ -320,6 +324,7 @@ export function useExtensions() {
 
     try {
       const tags = await fetchGitHubTagsWithRetry(repository);
+      markGitHubRepositoryReachable();
       const picked = pickDisplayVersionFromGitHubTags(tags);
 
       if (picked) {
@@ -327,7 +332,8 @@ export function useExtensions() {
         return picked;
       }
     }
-    catch {
+    catch (error) {
+      markGitHubRepositoryUnreachable(repository, error);
     }
 
     return undefined;
@@ -462,7 +468,7 @@ export function useExtensions() {
         installedVersion: installedExt?.version,
         installedAt: installedExt?.installedAt,
         hasUpdate: installedExt ? extensionsStore.hasUpdate(entry.id) : false,
-        isEnabled: installedExt?.enabled ?? false,
+        isEnabled: extensionsStore.getExtensionEnabledForDisplay(entry.id),
         autoUpdate: installedExt?.autoUpdate ?? true,
         isOfficial: extensionsStore.isExtensionOfficial(entry.id),
         isLocal: installedExt?.isLocal ?? false,
@@ -541,7 +547,7 @@ export function useExtensions() {
           installedVersion: inst.version,
           installedAt: inst.installedAt,
           hasUpdate: registryEntry ? extensionsStore.hasUpdate(inst.id) : false,
-          isEnabled: inst.enabled,
+          isEnabled: extensionsStore.getExtensionEnabledForDisplay(inst.id),
           autoUpdate: inst.autoUpdate,
           isOfficial: extensionsStore.isExtensionOfficial(inst.id),
           isLocal: inst.isLocal ?? false,
@@ -656,7 +662,7 @@ export function useExtensions() {
       installedVersion: installed?.version,
       installedAt: installed?.installedAt,
       hasUpdate: installed ? extensionsStore.hasUpdate(extensionId) : false,
-      isEnabled: installed?.enabled ?? false,
+      isEnabled: extensionsStore.getExtensionEnabledForDisplay(extensionId),
       autoUpdate: installed?.autoUpdate ?? true,
       isOfficial: extensionsStore.isExtensionOfficial(extensionId),
       isLocal: installed?.isLocal ?? false,
@@ -691,19 +697,9 @@ export function useExtensions() {
   }
 
   async function toggleExtension(extensionId: string) {
-    const installed = extensionsStore.installedExtensions.find(
-      ext => ext.id === extensionId && !ext.installPendingDependencies,
-    );
-
-    if (!installed) return;
-
-    if (installed.enabled) {
-      await extensionsStore.disableExtension(extensionId);
-    }
-    else {
-      await extensionsStore.enableExtension(extensionId);
-    }
-
+    const togglePromise = extensionsStore.toggleExtensionEnabled(extensionId);
+    rebuildSelectedExtension(extensionId);
+    await togglePromise;
     rebuildSelectedExtension(extensionId);
   }
 
@@ -755,6 +751,7 @@ export function useExtensions() {
 
   async function refreshRegistry() {
     await extensionsStore.fetchRegistry(true);
+    await extensionsStore.prefetchAllVersions();
   }
 
   async function prefetchMarketplaceManifests() {
@@ -842,8 +839,10 @@ export function useExtensions() {
     ),
     registryError: computed(() => extensionsStore.registryError),
     installingExtensions: computed(() => extensionsStore.installingExtensions),
+    pendingFolderInstalls: computed(() => extensionsStore.pendingFolderInstalls),
     uninstallingExtensions: computed(() => extensionsStore.uninstallingExtensions),
     updatingExtensions: computed(() => extensionsStore.updatingExtensions),
+    togglingExtensions: computed(() => extensionsStore.togglingExtensions),
     isAnyInstallInProgress: computed(() => extensionsStore.isAnyInstallInProgress),
 
     selectExtension,

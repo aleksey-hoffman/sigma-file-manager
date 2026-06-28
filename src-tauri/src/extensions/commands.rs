@@ -12,7 +12,7 @@ use super::processes;
 use super::state;
 use super::types::{
     ExtensionCommandResult, ExtensionOperationResult, FetchUrlResult, InstalledExtensionInfo,
-    LocalExtensionInstallResult, PlatformInfo, ReadTextPreviewResult,
+    LocalExtensionInstallResult, LocalExtensionManifestPreview, PlatformInfo, ReadTextPreviewResult,
 };
 use serde::Deserialize;
 
@@ -103,12 +103,26 @@ pub async fn delete_extension(
 }
 
 #[tauri::command]
+pub async fn read_local_extension_manifest(
+    source_path: String,
+) -> Result<LocalExtensionManifestPreview, String> {
+    install::read_local_extension_manifest(source_path).await
+}
+
+#[tauri::command]
 pub async fn install_local_extension(
     app_handle: tauri::AppHandle,
     source_path: String,
     expected_extension_id: Option<String>,
+    cancellation_id: Option<String>,
 ) -> Result<LocalExtensionInstallResult, String> {
-    install::install_local_extension(app_handle, source_path, expected_extension_id).await
+    install::install_local_extension(
+        app_handle,
+        source_path,
+        expected_extension_id,
+        cancellation_id,
+    )
+    .await
 }
 
 #[tauri::command]

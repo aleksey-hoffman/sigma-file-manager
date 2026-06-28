@@ -1000,7 +1000,7 @@
     "versionPrefix": "v",
     "metaSeparator": "•",
     "contextMenuLabel": "Razširitve",
-    "autoUpdate": "Auto-update",
+    "autoUpdate": "Samodejna posodobitev",
     "latest": "latest",
     "install": "Install",
     "installing": "Installing...",
@@ -1021,12 +1021,13 @@
     "update": "Update",
     "updateAvailable": "Update available",
     "installed": "Installed",
-    "enabled": "Enabled",
-    "disabled": "Disabled",
+    "enabled": "Omogočeno",
+    "disabled": "Onemogočeno",
     "viewSource": "View source",
     "previouslyKnownAs": "Previously known as \"{name}\"",
     "featured": "Featured",
     "allExtensions": "All Extensions",
+    "otherExtensions": "Druge razširitve",
     "searchResults": "Search Results",
     "noResults": "No extensions found",
     "noResultsDescription": "No extensions match \"{query}\". Try a different search term.",
@@ -1072,12 +1073,14 @@
       "local": "Lokalna",
       "localTooltip": "Ta razširitev je bila nameščena iz lokalne mape",
       "broken": "Poškodovana",
-      "brokenTooltip": "Datoteke razširitve manjkajo. Odstranite namestitev, da jo odstranite s seznama."
+      "brokenTooltip": "Datoteke razširitve manjkajo. Odstranite namestitev, da jo odstranite s seznama.",
+      "disabled": "Onemogočeno",
+      "disabledTooltip": "Ta razširitev je onemogočena"
     },
     "stats": {
       "total": "Total",
-      "enabled": "Enabled",
-      "disabled": "Disabled",
+      "enabled": "Omogočeno",
+      "disabled": "Onemogočeno",
       "local": "Local",
       "updates": "Updates"
     },
@@ -1103,7 +1106,13 @@
     "engineApiWarning": "Zahteva API razširitev {range} (imate {current})",
     "engineRequirements": "Zahteve",
     "requiresSigmaFileManager": "Sigma File Manager",
-    "requiresExtensionApi": "API razširitev"
+    "requiresExtensionApi": "API razširitev",
+    "marketplaceUnavailable": "Marketplace unavailable",
+    "marketplaceUnavailableDescription": "Could not connect to the extension registry. Check your internet connection and try again.",
+    "githubConnectivityIssue": "GitHub ni dosegljiv",
+    "githubConnectivityIssueDescription": "Nekatera preverjanja različic razširitev niso uspela, ker se aplikacija ni mogla povezati z GitHubom. Preverite internetno povezavo, VPN ali požarni zid in poskusite znova pozneje.",
+    "offlineIssue": "You are offline",
+    "offlineIssueDescription": "Extension installs, updates, and version checks require an internet connection. Reconnect to the network to use marketplace features."
   },
   "commandPalette": {
     "accessibleDialogTitle": "Ukazna paleta",

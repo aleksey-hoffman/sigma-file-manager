@@ -3,7 +3,8 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
+use std::sync::atomic::Ordering;
 
 use super::fs_ops::{
     cleanup_trash_directories, copy_dir_recursive, next_managed_temp_dir, remove_dir_force,
@@ -21,8 +22,68 @@ use super::security::{
 use super::state::get_extension_install_cancellation_flag;
 use super::types::{
     ExtensionOperationResult, InstalledExtensionInfo, LocalExtensionInstallResult,
-    EXTENSION_MANIFEST_FILE, MAX_EXTENSION_ARCHIVE_BYTES,
+    LocalExtensionManifestPreview, EXTENSION_MANIFEST_FILE, MAX_EXTENSION_ARCHIVE_BYTES,
 };
+
+struct ParsedLocalExtensionManifest {
+    extension_id: String,
+    name: Option<String>,
+    version: String,
+}
+
+fn parse_local_extension_manifest(source_dir: &Path) -> Result<ParsedLocalExtensionManifest, String> {
+    if !source_dir.exists() || !source_dir.is_dir() {
+        return Err("Source path does not exist or is not a directory".to_string());
+    }
+
+    let manifest_path = source_dir.join(EXTENSION_MANIFEST_FILE);
+
+    if !manifest_path.exists() {
+        return Err(format!(
+            "No {} found in the selected folder",
+            EXTENSION_MANIFEST_FILE
+        ));
+    }
+
+    let manifest_content = fs::read_to_string(&manifest_path)
+        .map_err(|error| format!("Failed to read {}: {}", EXTENSION_MANIFEST_FILE, error))?;
+
+    let manifest: serde_json::Value = serde_json::from_str(&manifest_content)
+        .map_err(|error| format!("Failed to parse {}: {}", EXTENSION_MANIFEST_FILE, error))?;
+
+    let extension_id = manifest
+        .get("id")
+        .and_then(|extension_id| extension_id.as_str())
+        .ok_or_else(|| format!("{} missing required 'id' field", EXTENSION_MANIFEST_FILE))?
+        .to_string();
+
+    let name = manifest
+        .get("name")
+        .and_then(|name| name.as_str())
+        .map(str::to_string);
+
+    let version = manifest
+        .get("version")
+        .and_then(|version| version.as_str())
+        .unwrap_or("0.0.0")
+        .to_string();
+
+    Ok(ParsedLocalExtensionManifest {
+        extension_id,
+        name,
+        version,
+    })
+}
+
+fn ensure_install_not_cancelled(cancellation_id: Option<&String>) -> Result<(), String> {
+    if let Some(flag) = get_extension_install_cancellation_flag(cancellation_id) {
+        if flag.load(Ordering::SeqCst) {
+            return Err("Install cancelled".to_string());
+        }
+    }
+
+    Ok(())
+}
 
 pub async fn cancel_all_extension_commands(
     extension_id: String,
@@ -128,47 +189,40 @@ pub async fn delete_extension(
     })
 }
 
+pub async fn read_local_extension_manifest(
+    source_path: String,
+) -> Result<LocalExtensionManifestPreview, String> {
+    let source_dir = PathBuf::from(&source_path);
+    let parsed_manifest = parse_local_extension_manifest(&source_dir)?;
+
+    Ok(LocalExtensionManifestPreview {
+        extension_id: parsed_manifest.extension_id,
+        name: parsed_manifest.name,
+        version: parsed_manifest.version,
+    })
+}
+
 pub async fn install_local_extension(
     app_handle: tauri::AppHandle,
     source_path: String,
     expected_extension_id: Option<String>,
+    cancellation_id: Option<String>,
 ) -> Result<LocalExtensionInstallResult, String> {
     let source_dir = PathBuf::from(&source_path);
 
-    if !source_dir.exists() || !source_dir.is_dir() {
-        return Ok(LocalExtensionInstallResult {
-            success: false,
-            extension_id: None,
-            version: None,
-            error: Some("Source path does not exist or is not a directory".to_string()),
-        });
-    }
+    let parsed_manifest = match parse_local_extension_manifest(&source_dir) {
+        Ok(parsed_manifest) => parsed_manifest,
+        Err(error) => {
+            return Ok(LocalExtensionInstallResult {
+                success: false,
+                extension_id: None,
+                version: None,
+                error: Some(error),
+            });
+        }
+    };
 
-    let manifest_path = source_dir.join(EXTENSION_MANIFEST_FILE);
-
-    if !manifest_path.exists() {
-        return Ok(LocalExtensionInstallResult {
-            success: false,
-            extension_id: None,
-            version: None,
-            error: Some(format!(
-                "No {} found in the selected folder",
-                EXTENSION_MANIFEST_FILE
-            )),
-        });
-    }
-
-    let manifest_content = fs::read_to_string(&manifest_path)
-        .map_err(|error| format!("Failed to read {}: {}", EXTENSION_MANIFEST_FILE, error))?;
-
-    let manifest: serde_json::Value = serde_json::from_str(&manifest_content)
-        .map_err(|error| format!("Failed to parse {}: {}", EXTENSION_MANIFEST_FILE, error))?;
-
-    let extension_id = manifest
-        .get("id")
-        .and_then(|extension_id| extension_id.as_str())
-        .ok_or_else(|| format!("{} missing required 'id' field", EXTENSION_MANIFEST_FILE))?
-        .to_string();
+    let extension_id = parsed_manifest.extension_id;
 
     if let Some(expected_id) = expected_extension_id.as_ref() {
         if expected_id != &extension_id {
@@ -183,11 +237,9 @@ pub async fn install_local_extension(
         }
     }
 
-    let version = manifest
-        .get("version")
-        .and_then(|version| version.as_str())
-        .unwrap_or("0.0.0")
-        .to_string();
+    let version = parsed_manifest.version;
+
+    ensure_install_not_cancelled(cancellation_id.as_ref())?;
 
     let _install_lock = acquire_extension_install_lock(&extension_id).await?;
     let extension_dir = get_extension_dir(&app_handle, &extension_id)?;
@@ -197,7 +249,12 @@ pub async fn install_local_extension(
         remove_dir_force(&staging_dir)?;
     }
 
+    ensure_install_not_cancelled(cancellation_id.as_ref())?;
+
     copy_dir_recursive(&source_dir, &staging_dir)?;
+
+    ensure_install_not_cancelled(cancellation_id.as_ref())?;
+
     terminate_all_extension_processes(&extension_id);
     replace_extension_dir(&staging_dir, &extension_dir)?;
     remove_dir_force(&staging_dir).ok();

@@ -42,61 +42,75 @@ onBeforeUnmount(() => {
 
 <template>
   <Teleport to=".window-toolbar-secondary-teleport-target">
-    <Tooltip>
-      <Popover
-        :open="isSearchOpen"
-        :modal="false"
-        @update:open="isSearchOpen = $event"
-      >
-        <TooltipTrigger as-child>
-          <PopoverTrigger
-            as-child
-            class="animate-fade-in"
-          >
-            <Button
-              variant="ghost"
-              size="icon"
-            >
-              <SearchIcon
-                class="settings-search-icon"
-                :size="16"
-              />
-            </Button>
-          </PopoverTrigger>
-        </TooltipTrigger>
-        <TooltipContent>
-          <div class="settings-search__tooltip-row">
-            {{ t('settings.searchSettings') }}
-            <ContextMenuShortcut>{{ shortcutsStore.getShortcutLabel('toggleSettingsSearch') }}</ContextMenuShortcut>
-          </div>
-        </TooltipContent>
-        <PopoverContent
-          :side="'left'"
-          :align="'end'"
-          class="settings-search-popover"
-          @open-auto-focus="handleSearchAutoFocus"
+    <div class="settings-search-toolbar-button animate-fade-in">
+      <Tooltip>
+        <Popover
+          :open="isSearchOpen"
+          :modal="false"
+          @update:open="isSearchOpen = $event"
         >
-          <Input
-            ref="searchInputRef"
-            v-model="settingsStore.search"
-            type="text"
-            :placeholder="t('settings.searchSettings')"
-            class="settings-search-input"
-          />
-        </PopoverContent>
-      </Popover>
-    </Tooltip>
+          <TooltipTrigger as-child>
+            <PopoverTrigger as-child>
+              <Button
+                variant="ghost"
+                size="icon"
+                :class="{ 'settings-search-toolbar-button__button--active': isSearchOpen }"
+              >
+                <SearchIcon
+                  class="settings-search-toolbar-button__icon"
+                  :size="16"
+                />
+              </Button>
+            </PopoverTrigger>
+          </TooltipTrigger>
+          <TooltipContent>
+            <div class="settings-search__tooltip-row">
+              {{ t('settings.searchSettings') }}
+              <ContextMenuShortcut>{{ shortcutsStore.getShortcutLabel('toggleSettingsSearch') }}</ContextMenuShortcut>
+            </div>
+          </TooltipContent>
+          <PopoverContent
+            :side="'left'"
+            :align="'center'"
+            class="settings-search-popover"
+            @open-auto-focus="handleSearchAutoFocus"
+          >
+            <Input
+              ref="searchInputRef"
+              v-model="settingsStore.search"
+              type="text"
+              :placeholder="t('settings.searchSettings')"
+              class="settings-search-input"
+            />
+          </PopoverContent>
+        </Popover>
+      </Tooltip>
+    </div>
   </Teleport>
 </template>
 
 <style scoped>
-.settings-search-icon {
-  stroke: hsl(var(--foreground) / 50%);
-  transition: opacity 0.2s ease;
+.settings-search-toolbar-button {
+  display: flex;
+  align-items: center;
+  align-self: stretch;
 }
 
-.settings-search-icon:hover {
-  opacity: 0.7;
+.settings-search-toolbar-button :deep(.sigma-ui-button) {
+  width: 28px;
+  height: 28px;
+}
+
+.settings-search-toolbar-button__icon {
+  stroke: hsl(var(--foreground) / 50%);
+}
+
+.settings-search-toolbar-button__button--active {
+  background-color: hsl(var(--secondary));
+}
+
+.settings-search-toolbar-button__button--active .settings-search-toolbar-button__icon {
+  stroke: hsl(var(--primary));
 }
 
 .settings-search__tooltip-row {

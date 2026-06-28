@@ -1027,6 +1027,7 @@
     "previouslyKnownAs": "پہلے \"{name}\" کے نام سے",
     "featured": "نمایاں",
     "allExtensions": "تمام ایکسٹینشنز",
+    "otherExtensions": "دیگر ایکسٹینشنز",
     "searchResults": "تلاش نتائج",
     "noResults": "کوئی ایکسٹینشن نہیں",
     "noResultsDescription": "\"{query}\" سے کوئی میل نہیں۔ دوسری تلاش آزمائیں۔",
@@ -1072,7 +1073,9 @@
       "local": "مقامی",
       "localTooltip": "مقامی فولڈر سے انسٹال",
       "broken": "خراب",
-      "brokenTooltip": "فائلیں نہیں ملیں۔ فہرست سے ہٹانے کے لیے اَن انسٹال کریں۔"
+      "brokenTooltip": "فائلیں نہیں ملیں۔ فہرست سے ہٹانے کے لیے اَن انسٹال کریں۔",
+      "disabled": "بند",
+      "disabledTooltip": "یہ ایکسٹینشن بند ہے"
     },
     "stats": {
       "total": "کل",
@@ -1103,7 +1106,13 @@
     "engineApiWarning": "ایکسٹینشن API {range} درکار ہے (آپ کے پاس {current})",
     "engineRequirements": "ضروریات",
     "requiresSigmaFileManager": "Sigma File Manager",
-    "requiresExtensionApi": "ایکسٹینشن API"
+    "requiresExtensionApi": "ایکسٹینشن API",
+    "marketplaceUnavailable": "Marketplace unavailable",
+    "marketplaceUnavailableDescription": "Could not connect to the extension registry. Check your internet connection and try again.",
+    "githubConnectivityIssue": "GitHub تک نہیں پہنچا جا سکا",
+    "githubConnectivityIssueDescription": "کچھ ایکسٹینشن ورژن چیک ناکام ہوئے کیونکہ ایپ GitHub سے منسلک نہیں ہو سکی۔ اپنا انternet کنکشن، VPN یا فائر وال سیٹنگز چیک کریں اور بعد میں دوبارہ کوشش کریں۔",
+    "offlineIssue": "You are offline",
+    "offlineIssueDescription": "Extension installs, updates, and version checks require an internet connection. Reconnect to the network to use marketplace features."
   },
   "commandPalette": {
     "accessibleDialogTitle": "کمانڈ پیلیٹ",

@@ -1027,6 +1027,7 @@
     "previouslyKnownAs": "पहले \"{name}\" के नाम से जाना जाता था",
     "featured": "प्रदर्शित",
     "allExtensions": "सभी एक्सटेंशन",
+    "otherExtensions": "अन्य एक्सटेंशन",
     "searchResults": "खोज के परिणाम",
     "noResults": "कोई एक्सटेंशन नहीं मिला",
     "noResultsDescription": "कोई भी एक्सटेंशन \"{query}\" से मेल नहीं खाता। कोई भिन्न खोज शब्द आज़माएँ.",
@@ -1072,7 +1073,9 @@
       "local": "स्थानीय",
       "localTooltip": "यह एक्सटेंशन एक स्थानीय फ़ोल्डर से इंस्टॉल किया गया था",
       "broken": "टूटा हुआ",
-      "brokenTooltip": "एक्सटेंशन फ़ाइलें अनुपलब्ध हैं. सूची से हटाने के लिए अनइंस्टॉल करें."
+      "brokenTooltip": "एक्सटेंशन फ़ाइलें अनुपलब्ध हैं. सूची से हटाने के लिए अनइंस्टॉल करें.",
+      "disabled": "अक्षम",
+      "disabledTooltip": "यह एक्सटेंशन अक्षम है"
     },
     "stats": {
       "total": "कुल",
@@ -1103,7 +1106,13 @@
     "engineApiWarning": "एक्सटेंशन API {range} आवश्यक है (आपके पास {current})",
     "engineRequirements": "आवश्यकताएँ",
     "requiresSigmaFileManager": "Sigma File Manager",
-    "requiresExtensionApi": "एक्सटेंशन API"
+    "requiresExtensionApi": "एक्सटेंशन API",
+    "marketplaceUnavailable": "Marketplace unavailable",
+    "marketplaceUnavailableDescription": "Could not connect to the extension registry. Check your internet connection and try again.",
+    "githubConnectivityIssue": "GitHub तक पहुँच नहीं हो सकी",
+    "githubConnectivityIssueDescription": "ऐप GitHub से कनेक्ट नहीं हो सका, इसलिए कुछ एक्सटेंशन संस्करण जांच विफल रही। अपना इंटरनेट कनेक्शन, VPN या फ़ायरवॉल सेटिंग जांचें और बाद में फिर कोशिश करें।",
+    "offlineIssue": "You are offline",
+    "offlineIssueDescription": "Extension installs, updates, and version checks require an internet connection. Reconnect to the network to use marketplace features."
   },
   "commandPalette": {
     "accessibleDialogTitle": "कमांड पैलेट",

@@ -4,6 +4,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import {
   SelectContent,
   type SelectContentEmits,
@@ -13,6 +14,7 @@ import {
 
   useForwardPropsEmits,
 } from 'reka-ui';
+import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { SelectScrollDownButton, SelectScrollUpButton } from '.';
 
 defineOptions({
@@ -20,20 +22,36 @@ defineOptions({
 });
 
 const props = withDefaults(
-  defineProps<SelectContentProps>(),
+  defineProps<SelectContentProps & { preventCloseFocusReturn?: boolean }>(),
   {
     position: 'popper',
+    preventCloseFocusReturn: undefined,
   },
 );
 const emits = defineEmits<SelectContentEmits>();
 
+const userSettingsStore = useUserSettingsStore();
+const preventCloseFocusReturn = computed(() =>
+  props.preventCloseFocusReturn ?? userSettingsStore.userSettings.preventDropdownCloseFocusReturn ?? false,
+);
+
 const forwarded = useForwardPropsEmits(props, emits);
+
+function handleCloseAutoFocus(event: Event) {
+  if (preventCloseFocusReturn.value) {
+    event.preventDefault();
+  }
+}
 </script>
 
 <template>
   <SelectPortal>
     <SelectContent
-      v-bind="{ ...forwarded, ...$attrs }"
+      v-bind="{
+        ...forwarded,
+        ...$attrs,
+        ...(preventCloseFocusReturn ? { onCloseAutoFocus: handleCloseAutoFocus } : {}),
+      }"
       class="sigma-ui-select-content"
       :class="[$attrs.class]"
     >

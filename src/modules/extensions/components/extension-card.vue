@@ -254,6 +254,13 @@ function handleCancelClick(event: MouseEvent) {
             >
               {{ t('extensions.metaSeparator') }} {{ formatBytes(extension.sizeBytes) }}
             </span>
+            <span
+              v-if="!extension.isEnabled"
+              class="extension-card__installed-disabled-badge"
+              @click.stop
+            >
+              <ExtensionBadge type="disabled" />
+            </span>
           </span>
         </template>
       </div>
@@ -393,6 +400,11 @@ function handleCancelClick(event: MouseEvent) {
 .extension-card__installed-size {
   color: hsl(var(--muted-foreground));
   font-weight: 400;
+}
+
+.extension-card__installed-disabled-badge {
+  display: inline-flex;
+  align-items: center;
 }
 
 .extension-card__incompatible {

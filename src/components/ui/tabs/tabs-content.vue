@@ -24,8 +24,8 @@ const props = defineProps<TabsContentProps>();
   margin-top: 0.75rem;
 }
 
+.sigma-ui-tabs-content:focus,
 .sigma-ui-tabs-content:focus-visible {
-  outline: 2px solid hsl(var(--ring) / 50%);
-  outline-offset: var(--ring-outline-offset);
+  outline: none;
 }
 </style>

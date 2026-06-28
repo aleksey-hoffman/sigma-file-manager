@@ -11,35 +11,26 @@ import { openUrl } from '@tauri-apps/plugin-opener';
 import {
   ArrowLeftIcon,
   PackageIcon,
-  DownloadIcon,
-  TrashIcon,
-  RefreshCwIcon,
-  ArrowBigUpDashIcon,
   ExternalLinkIcon,
   ShieldIcon,
   BookOpenIcon,
   UserIcon,
   CalendarIcon,
   GitBranchIcon,
-  TriangleAlertIcon,
   TerminalIcon,
-  XIcon,
 } from '@lucide/vue';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
 import ExtensionBadge from './extension-badge.vue';
 import ExtensionIcon from './extension-icon.vue';
-import ExtensionEngineRequirements from './extension-engine-requirements.vue';
+import ExtensionDetailControls from './extension-detail-controls.vue';
 import type { ExtensionWithManifest } from '@/modules/extensions/composables/use-extensions';
-import type { ExtensionManifest, PlatformInfo } from '@/types/extension';
+import type { ExtensionManifest, PlatformInfo, PlatformOS } from '@/types/extension';
 import { EXTENSION_PERMISSIONS_INFO } from '@/data/extensions';
 import { getExtensionReadmeUrl, getExtensionChangelogUrl } from '@/data/extensions';
-import { formatBytes, formatDate } from '@/modules/navigator/components/file-browser/utils';
+import { formatDate } from '@/modules/navigator/components/file-browser/utils';
 import { getBinaryDisplayVersion } from '@/modules/extensions/utils/binary-metadata';
 import { isHttpUrl, openBinaryDownloadUrl } from '@/modules/extensions/utils/binary-download-url';
 import { getLucideIcon } from '@/utils/lucide-icons';
@@ -63,7 +54,7 @@ const props = defineProps<{
   isInstallDisabled?: boolean;
   isUninstalling?: boolean;
   isUpdating?: boolean;
-  isRefreshing?: boolean;
+  isTogglingEnabled?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -195,17 +186,11 @@ const repositoryUrl = computed(() => {
   return props.extension.repository;
 });
 
-const hasSelectedVersionChange = computed(() => {
-  return props.extension.isInstalled
-    && selectedVersion.value.length > 0
-    && selectedVersion.value !== props.extension.installedVersion;
-});
-
 const showUpdateButton = computed(() => {
   return props.extension.isInstalled
     && !isLocal.value
     && !isBroken.value
-    && (props.extension.hasUpdate || hasSelectedVersionChange.value);
+    && props.extension.hasUpdate;
 });
 
 const extensionBinaries = computed(() => {
@@ -281,14 +266,14 @@ const currentAppVersion = computed(() => {
 });
 
 const isEnableToggleDisabled = computed(() => {
-  return Boolean(props.extension.isBroken || !isEngineCompatible.value);
+  return Boolean(
+    props.extension.isBroken
+    || !isEngineCompatible.value
+    || props.isTogglingEnabled,
+  );
 });
 
-const isShowingCancelButton = computed(() => {
-  return Boolean(props.isInstalling || props.isUpdating || props.isRefreshing);
-});
-
-function getPlatformDisplayName(platform: string): string {
+function getPlatformDisplayName(platform: PlatformOS): string {
   return PLATFORM_DISPLAY_NAMES[platform] || platform;
 }
 
@@ -320,37 +305,6 @@ async function loadPlatformInfo(): Promise<void> {
   catch {
     currentPlatformInfo.value = null;
   }
-}
-
-function handleStatusEnter(element: Element) {
-  const htmlElement = element as HTMLElement;
-  htmlElement.style.height = '0px';
-  htmlElement.style.opacity = '0';
-  htmlElement.style.marginBottom = '0px';
-  const contentHeight = htmlElement.scrollHeight;
-  requestAnimationFrame(() => {
-    htmlElement.style.height = `${contentHeight}px`;
-    htmlElement.style.opacity = '1';
-    htmlElement.style.marginBottom = '12px';
-  });
-}
-
-function handleStatusAfterEnter(element: Element) {
-  const htmlElement = element as HTMLElement;
-  htmlElement.style.height = 'auto';
-}
-
-function handleStatusLeave(element: Element) {
-  const htmlElement = element as HTMLElement;
-  const contentHeight = htmlElement.scrollHeight;
-  htmlElement.style.height = `${contentHeight}px`;
-  htmlElement.style.opacity = '1';
-  htmlElement.style.marginBottom = '12px';
-  requestAnimationFrame(() => {
-    htmlElement.style.height = '0px';
-    htmlElement.style.opacity = '0';
-    htmlElement.style.marginBottom = '0px';
-  });
 }
 
 function getPermissionInfo(permission: string) {
@@ -542,7 +496,7 @@ function handleInstall() {
 }
 
 function handleUpdate() {
-  emit('update', hasSelectedVersionChange.value ? selectedVersion.value : undefined);
+  emit('update');
 }
 
 function handleCancel() {
@@ -662,11 +616,14 @@ watch(
   { immediate: true },
 );
 
-watch(isShowingCancelButton, (isShowing) => {
-  if (!isShowing) {
-    isCancelRequested.value = false;
-  }
-});
+watch(
+  () => Boolean(props.isInstalling || props.isUpdating),
+  (isShowing) => {
+    if (!isShowing) {
+      isCancelRequested.value = false;
+    }
+  },
+);
 
 function handleMarkdownLinkClick(event: MouseEvent) {
   const anchor = (event.target as HTMLElement).closest('a');
@@ -695,7 +652,6 @@ function watchOperationCompletion(getter: () => boolean | undefined) {
   });
 }
 
-watchOperationCompletion(() => props.isRefreshing);
 watchOperationCompletion(() => props.isUpdating);
 watchOperationCompletion(() => props.isInstalling);
 watchOperationCompletion(() => props.isUninstalling);
@@ -745,31 +701,14 @@ onMounted(() => {
           </span>
           <Switch
             :id="`enabled-${extension.id}`"
+            class="extension-detail__enabled-switch"
+            :class="{ 'extension-detail__enabled-switch--off': !extension.isEnabled }"
             :model-value="extension.isEnabled"
             :disabled="isEnableToggleDisabled"
             @update:model-value="emit('toggle')"
           />
         </div>
       </div>
-
-      <Transition
-        name="extension-status-alert"
-        @enter="handleStatusEnter"
-        @after-enter="handleStatusAfterEnter"
-        @leave="handleStatusLeave"
-      >
-        <div
-          v-if="extension.isInstalled && !isInstalling && !extension.isEnabled"
-          class="extension-detail__status-alert-wrapper"
-          data-animate="status-alert"
-        >
-          <div class="extension-detail__status-alert">
-            <span class="extension-detail__status-alert-text">
-              {{ t('extensions.disabled') }}
-            </span>
-          </div>
-        </div>
-      </Transition>
 
       <div class="extension-detail__cards">
         <div
@@ -787,7 +726,7 @@ onMounted(() => {
                 :repository="extension.repository"
                 :version="extension.installedVersion || extension.latestVersion || extension.manifest?.version"
                 :is-installed="extension.isInstalled"
-                :size="42"
+                :size="64"
                 :cache-key="extension.installedAt"
               />
             </div>
@@ -865,219 +804,33 @@ onMounted(() => {
           </div>
         </div>
 
-        <div
-          class="extension-detail__controls"
-          data-animate="controls"
-        >
-          <Select
-            v-if="!isLocal && availableVersions.length > 0"
-            v-model="selectedVersion"
-          >
-            <SelectTrigger class="extension-detail__version-trigger">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem
-                v-for="version in availableVersions"
-                :key="version"
-                :value="version"
-              >
-                {{ t('extensions.versionPrefix') }}{{ version }}
-                <span
-                  v-if="version === extension.latestVersion"
-                  class="extension-detail__latest-tag"
-                >
-                  {{ t('extensions.latest') }}
-                </span>
-              </SelectItem>
-            </SelectContent>
-          </Select>
-          <span
-            v-else-if="extension.installedVersion"
-            class="extension-detail__version-display"
-          >
-            {{ t('extensions.versionPrefix') }}{{ extension.installedVersion }}
-          </span>
-
-          <ExtensionEngineRequirements
-            :engine-compatibility="engineCompatibility"
-            :current-app-version="currentAppVersion"
-            :show-requirements-list="false"
-          />
-
-          <div
-            v-if="!isPlatformCompatible"
-            class="extension-detail__platform-warning"
-          >
-            <TriangleAlertIcon :size="14" />
-            <span>{{ t('extensions.platformWarning', { platforms: extensionPlatforms.map(getPlatformDisplayName).join(', ') }) }}</span>
-          </div>
-
-          <template v-if="!extension.isInstalled || isInstalling">
-            <Button
-              class="extension-detail__controls-button"
-              size="sm"
-              :disabled="(isInstallDisabled ?? isInstalling) || !isInstallAllowed"
-              @click="handleInstall"
-            >
-              <DownloadIcon
-                v-if="!isInstalling"
-                :size="16"
-              />
-              <RefreshCwIcon
-                v-else
-                :size="16"
-                class="extension-detail__spinner"
-              />
-              {{ isInstalling ? (isCancelRequested ? t('extensions.cancellingInstall') : t('extensions.installing')) : t('extensions.install') }}
-            </Button>
-
-            <Button
-              v-if="isInstalling && !isCancelRequested"
-              variant="outline"
-              size="sm"
-              class="extension-detail__controls-button"
-              @click="handleCancel"
-            >
-              <XIcon :size="16" />
-              {{ t('extensions.cancelInstall') }}
-            </Button>
-          </template>
-
-          <template v-else>
-            <Button
-              v-if="showUpdateButton"
-              class="extension-detail__controls-button"
-              size="sm"
-              :disabled="isUpdating"
-              @click="handleUpdate"
-            >
-              <RefreshCwIcon
-                v-if="isUpdating"
-                :size="16"
-                class="extension-detail__spinner"
-              />
-              <ArrowBigUpDashIcon
-                v-else
-                :size="16"
-              />
-              {{ t('extensions.update') }}
-            </Button>
-
-            <Button
-              v-if="showUpdateButton && isUpdating && !isCancelRequested"
-              variant="outline"
-              size="sm"
-              class="extension-detail__controls-button"
-              @click="handleCancel"
-            >
-              <XIcon :size="16" />
-              {{ t('extensions.cancelInstall') }}
-            </Button>
-
-            <Button
-              v-if="isLocal"
-              variant="outline"
-              size="sm"
-              class="extension-detail__controls-button"
-              :disabled="isRefreshing"
-              @click="emit('refresh')"
-            >
-              <RefreshCwIcon
-                :size="16"
-                :class="{ 'extension-detail__spinner': isRefreshing }"
-              />
-              {{ t('extensions.reinstall') }}
-            </Button>
-
-            <Button
-              v-if="isLocal && isRefreshing && !isCancelRequested"
-              variant="outline"
-              size="sm"
-              class="extension-detail__controls-button"
-              @click="handleCancel"
-            >
-              <XIcon :size="16" />
-              {{ t('extensions.cancelInstall') }}
-            </Button>
-
-            <Button
-              variant="outline"
-              size="sm"
-              class="extension-detail__controls-button"
-              :disabled="isUninstalling"
-              @click="emit('uninstall')"
-            >
-              <RefreshCwIcon
-                v-if="isUninstalling"
-                :size="16"
-                class="extension-detail__spinner"
-              />
-              <TrashIcon
-                v-else
-                :size="16"
-              />
-              {{ t('extensions.uninstall') }}
-            </Button>
-            <div
-              v-if="!isLocal"
-              class="extension-detail__auto-update"
-            >
-              <span class="extension-detail__auto-update-label">{{ t('extensions.autoUpdate') }}</span>
-              <Switch
-                :id="`auto-update-${extension.id}`"
-                :model-value="extension.autoUpdate"
-                @update:model-value="emit('toggleAutoUpdate')"
-              />
-            </div>
-          </template>
-
-          <ExtensionEngineRequirements
-            :engine-requirements="engineRequirements"
-            :show-compatibility-warning="false"
-          />
-
-          <div
-            v-if="extensionPlatforms.length > 0"
-            class="extension-detail__metadata-block"
-          >
-            <span class="extension-detail__metadata-label">
-              {{ t('extensions.platforms') }}
-            </span>
-            <div class="extension-detail__platforms">
-              <span
-                v-if="isCrossPlatform"
-                class="extension-detail__platform-badge"
-              >
-                {{ t('extensions.allPlatforms') }}
-              </span>
-              <template v-else>
-                <span
-                  v-for="platform in extensionPlatforms"
-                  :key="platform"
-                  class="extension-detail__platform-badge"
-                  :class="{ 'extension-detail__platform-badge--inactive': !isPlatformCompatible && !extension.platforms?.includes(platform) }"
-                >
-                  {{ getPlatformDisplayName(platform) }}
-                </span>
-              </template>
-            </div>
-          </div>
-          <div
-            v-if="typeof extension.sizeBytes === 'number'"
-            class="extension-detail__metadata-block"
-          >
-            <span class="extension-detail__metadata-label">{{ t('size') }}</span>
-            <span class="extension-detail__metadata-value">{{ formatBytes(extension.sizeBytes) }}</span>
-          </div>
-          <div
-            v-if="dependencyRows.length > 0"
-            class="extension-detail__metadata-block"
-          >
-            <span class="extension-detail__metadata-label">{{ t('extensions.tabs.dependencies') }}</span>
-            <span class="extension-detail__metadata-value">{{ dependencyRows.length }}</span>
-          </div>
-        </div>
+        <ExtensionDetailControls
+          :extension="extension"
+          v-model:selected-version="selectedVersion"
+          :available-versions="availableVersions"
+          :is-installing="isInstalling"
+          :is-install-disabled="isInstallDisabled"
+          :is-uninstalling="isUninstalling"
+          :is-updating="isUpdating"
+          :is-install-allowed="isInstallAllowed"
+          :show-update-button="showUpdateButton"
+          :engine-compatibility="engineCompatibility"
+          :current-app-version="currentAppVersion"
+          :engine-requirements="engineRequirements"
+          :extension-platforms="extensionPlatforms"
+          :is-cross-platform="isCrossPlatform"
+          :is-platform-compatible="isPlatformCompatible"
+          :dependency-count="dependencyRows.length"
+          :size-bytes="typeof extension.sizeBytes === 'number' ? extension.sizeBytes : undefined"
+          :is-cancel-requested="isCancelRequested"
+          :get-platform-display-name="getPlatformDisplayName"
+          @install="handleInstall"
+          @update="handleUpdate"
+          @refresh="emit('refresh')"
+          @uninstall="emit('uninstall')"
+          @cancel="handleCancel"
+          @toggle-auto-update="emit('toggleAutoUpdate')"
+        />
       </div>
     </div>
 
@@ -1367,40 +1120,6 @@ onMounted(() => {
   box-sizing: border-box;
 }
 
-.extension-detail__status-alert-wrapper {
-  overflow: hidden;
-  height: auto;
-  margin-bottom: 12px;
-  transition:
-    height 0.25s ease,
-    opacity 0.2s ease,
-    margin-bottom 0.2s ease;
-}
-
-.extension-detail__status-alert {
-  display: flex;
-  align-items: center;
-  padding: 0 12px;
-  border: 1px solid hsl(0deg 84% 60% / 30%);
-  border-radius: var(--radius);
-  background-color: hsl(0deg 84% 60% / 12%);
-  color: hsl(0deg 84% 60%);
-  font-size: 0.875rem;
-  font-weight: 600;
-}
-
-.extension-detail__status-alert-text {
-  padding: 10px 0;
-}
-
-.extension-status-alert-enter-active,
-.extension-status-alert-leave-active {
-  transition:
-    height 0.25s ease,
-    opacity 0.2s ease,
-    margin-bottom 0.2s ease;
-}
-
 .extension-detail__header {
   position: relative;
   z-index: 1;
@@ -1444,39 +1163,6 @@ onMounted(() => {
   background-color: hsl(var(--card));
 }
 
-.extension-detail__controls {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  width: 200px;
-  min-width: 200px;
-  flex-direction: column;
-  padding: 16px;
-  border: 1px solid hsl(var(--border));
-  border-radius: var(--radius);
-  backdrop-filter: blur(20px);
-  background-color: hsl(var(--card));
-  gap: 8px;
-}
-
-.extension-detail__controls-button {
-  width: 100%;
-}
-
-.extension-detail__auto-update {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 12px;
-  border: 1px solid hsl(var(--border));
-  border-radius: var(--radius);
-  gap: 8px;
-}
-
-.extension-detail__auto-update-label {
-  font-size: 0.875rem;
-}
-
 .extension-detail__banner-content {
   position: relative;
   display: flex;
@@ -1487,12 +1173,12 @@ onMounted(() => {
 
 .extension-detail__icon {
   display: flex;
-  width: 42px;
-  min-width: 42px;
-  height: 42px;
+  width: 64px;
+  height: 64px;
   align-items: center;
   justify-content: center;
   border-radius: var(--radius);
+  margin-top: 8px;
   background-color: hsl(var(--background));
   color: hsl(var(--primary));
 }
@@ -1538,59 +1224,6 @@ onMounted(() => {
   flex-wrap: wrap;
   margin-top: 4px;
   gap: 16px;
-}
-
-.extension-detail__metadata-block {
-  display: flex;
-  align-items: center;
-  margin-top: 2px;
-  gap: 8px;
-}
-
-.extension-detail__metadata-label {
-  display: flex;
-  align-items: center;
-  color: hsl(var(--muted-foreground));
-  font-size: 0.8rem;
-  gap: 4px;
-  text-transform: uppercase;
-}
-
-.extension-detail__metadata-value {
-  color: hsl(var(--foreground));
-  font-family: var(--font-mono, monospace);
-  font-size: 0.8rem;
-}
-
-.extension-detail__platforms {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-}
-
-.extension-detail__platform-badge {
-  padding: 1px 8px;
-  border-radius: 4px;
-  background-color: hsl(var(--muted));
-  color: hsl(var(--muted-foreground));
-  font-size: 0.75rem;
-}
-
-.extension-detail__platform-badge--inactive {
-  opacity: 0.4;
-}
-
-.extension-detail__platform-warning {
-  display: flex;
-  align-items: flex-start;
-  padding: 8px 10px;
-  border: 1px solid hsl(var(--warning) / 30%);
-  border-radius: var(--radius);
-  background-color: hsl(var(--warning) / 8%);
-  color: hsl(var(--warning));
-  font-size: 0.8rem;
-  gap: 6px;
-  line-height: 1.4;
 }
 
 .extension-detail__binary-list {
@@ -1684,32 +1317,6 @@ onMounted(() => {
   opacity: 0.5;
 }
 
-.extension-detail__version-trigger {
-  width: 100%;
-  height: 32px;
-}
-
-.extension-detail__version-display {
-  display: flex;
-  height: 32px;
-  align-items: center;
-  justify-content: center;
-  padding: 0 12px;
-  border: 1px solid hsl(var(--border));
-  border-radius: var(--radius);
-  color: hsl(var(--muted-foreground));
-  font-family: var(--font-mono, monospace);
-  font-size: 0.875rem;
-}
-
-.extension-detail__latest-tag {
-  padding: 2px 6px;
-  border-radius: 4px;
-  margin-left: 8px;
-  background-color: hsl(var(--primary) / 20%);
-  color: hsl(var(--primary));
-}
-
 .extension-detail__category {
   padding: 2px 8px;
   border-radius: 4px;
@@ -1724,10 +1331,6 @@ onMounted(() => {
   flex-wrap: wrap;
   margin-top: 8px;
   gap: 8px;
-}
-
-.extension-detail__spinner {
-  animation: spin 1s linear infinite;
 }
 
 .extension-detail__tabs {
@@ -1981,54 +1584,15 @@ onMounted(() => {
   font-size: 0.75rem;
 }
 
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 @media (width <= 900px) {
   .extension-detail__cards {
     flex-direction: column;
-  }
-
-  .extension-detail__controls {
-    width: 100%;
-    min-width: 100%;
-    flex-flow: row wrap;
-    gap: 8px;
-  }
-
-  .extension-detail__controls-button {
-    min-width: 120px;
-    flex: 1;
-  }
-
-  .extension-detail__version-trigger {
-    min-width: 140px;
-  }
-
-  .extension-detail__auto-update {
-    min-width: 120px;
-    flex: 1;
   }
 }
 
 @media (width <= 640px) {
   .extension-detail {
     gap: 16px;
-  }
-
-  .extension-detail__controls {
-    flex-direction: column;
-  }
-
-  .extension-detail__controls-button {
-    width: 100%;
   }
 
   .extension-detail__banner {
@@ -2077,10 +1641,6 @@ onMounted(() => {
   }
 
   .extension-detail__action-buttons {
-    justify-content: center;
-  }
-
-  .extension-detail__auto-update {
     justify-content: center;
   }
 

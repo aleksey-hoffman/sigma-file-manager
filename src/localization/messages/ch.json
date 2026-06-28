@@ -986,6 +986,7 @@
     "previouslyKnownAs": "曾用名：\"{name}\"",
     "featured": "精选",
     "allExtensions": "所有扩展",
+    "otherExtensions": "其他扩展",
     "searchResults": "搜索结果",
     "noResults": "未找到扩展程序",
     "noResultsDescription": "没有与 \"{query}\" 匹配的扩展程序。请尝试其他搜索词。",
@@ -1020,7 +1021,9 @@
       "local": "本地",
       "localTooltip": "此扩展是从本地文件夹安装的",
       "broken": "损坏",
-      "brokenTooltip": "扩展文件缺失。卸载以从列表中移除。"
+      "brokenTooltip": "扩展文件缺失。卸载以从列表中移除。",
+      "disabled": "已禁用",
+      "disabledTooltip": "此扩展已禁用"
     },
     "stats": {
       "total": "总计",
@@ -1048,15 +1051,15 @@
     },
     "unknownPublisher": "Unknown publisher",
     "contextMenuLabel": "拓展功能",
-    "autoUpdate": "Auto-update",
+    "autoUpdate": "自动更新",
     "showExtensionsFolder": "显示扩展程序文件夹",
     "reinstalledSuccessfully": "重新安装成功",
     "reusedDependencies": "重复使用了 {count} 个现有依赖",
     "themesInstalled": "主题已安装",
     "noLongerAvailable": "不再可用",
     "removedBecauseUnapproved": "此扩展已被移除，因为它已不在已批准的注册表中。",
-    "enabled": "Enabled",
-    "disabled": "Disabled",
+    "enabled": "已启用",
+    "disabled": "已禁用",
     "dependencies": {
       "noDependencies": "No shared dependencies",
       "noDependenciesDescription": "Shared binaries will appear here when extensions install dependencies like FFmpeg or Deno.",
@@ -1073,7 +1076,13 @@
     "engineApiWarning": "需要扩展 API {range}（当前为 {current}）",
     "engineRequirements": "要求",
     "requiresSigmaFileManager": "Sigma File Manager",
-    "requiresExtensionApi": "扩展 API"
+    "requiresExtensionApi": "扩展 API",
+    "marketplaceUnavailable": "Marketplace unavailable",
+    "marketplaceUnavailableDescription": "Could not connect to the extension registry. Check your internet connection and try again.",
+    "githubConnectivityIssue": "无法连接 GitHub",
+    "githubConnectivityIssueDescription": "部分扩展版本检查失败，因为应用无法连接到 GitHub。请检查网络连接、VPN 或防火墙设置，稍后再试。",
+    "offlineIssue": "You are offline",
+    "offlineIssueDescription": "Extension installs, updates, and version checks require an internet connection. Reconnect to the network to use marketplace features."
   },
   "commandPalette": {
     "accessibleDialogTitle": "命令面板",

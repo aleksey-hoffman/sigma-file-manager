@@ -32,8 +32,8 @@ const forwarded = useForwardPropsEmits(props, emits);
 <style>
 .sigma-ui-switch {
   display: inline-flex;
-  width: 2.75rem;
-  height: 1.5rem;
+  width: 40px;
+  height: 20px;
   flex-shrink: 0;
   align-items: center;
   border: 2px solid transparent;
@@ -56,6 +56,7 @@ const forwarded = useForwardPropsEmits(props, emits);
 
 .sigma-ui-switch[data-state="checked"] {
   background-color: hsl(var(--primary));
+  box-shadow: 0 4px 16px hsl(var(--primary) / 30%);
 }
 
 .sigma-ui-switch[data-state="unchecked"] {
@@ -64,11 +65,12 @@ const forwarded = useForwardPropsEmits(props, emits);
 
 .sigma-ui-switch__thumb {
   display: block;
-  width: 1.25rem;
-  height: 1.25rem;
+  width: 16px;
+  height: 16px;
+  border: 1px solid hsl(var(--border));
   border-radius: var(--radius-full);
   animation: none;
-  background-color: hsl(var(--background));
+  background-color: hsl(var(--background) / 90%);
   box-shadow: 0 2px 4px rgb(0 0 0 / 10%);
   pointer-events: none;
   transition: transform 150ms cubic-bezier(0.4, 0, 0.2, 1);

@@ -985,6 +985,7 @@
     "previouslyKnownAs": "Anteriormente conhecido como \"{name}\"",
     "featured": "Em destaque",
     "allExtensions": "Todas as extensões",
+    "otherExtensions": "Outras extensões",
     "searchResults": "Resultados da pesquisa",
     "noResults": "Nenhuma extensão encontrada",
     "noResultsDescription": "Nenhuma extensão corresponde a \"{query}\". Tente outro termo de pesquisa.",
@@ -1018,7 +1019,9 @@
       "local": "Local",
       "localTooltip": "Esta extensão foi instalada de uma pasta local",
       "broken": "Quebrada",
-      "brokenTooltip": "Arquivos da extensão ausentes. Desinstale para remover da lista."
+      "brokenTooltip": "Arquivos da extensão ausentes. Desinstale para remover da lista.",
+      "disabled": "Desativada",
+      "disabledTooltip": "Esta extensão está desativada"
     },
     "stats": {
       "total": "Total",
@@ -1046,15 +1049,15 @@
     },
     "unknownPublisher": "Unknown publisher",
     "contextMenuLabel": "Extensões",
-    "autoUpdate": "Auto-update",
+    "autoUpdate": "Atualização automática",
     "showExtensionsFolder": "Mostrar pasta de extensões",
     "reinstalledSuccessfully": "Reinstalado com sucesso",
     "reusedDependencies": "Reutilizadas {count} dependências existentes",
     "themesInstalled": "Os temas foram instalados",
     "noLongerAvailable": "Não está mais disponível",
     "removedBecauseUnapproved": "Esta extensão foi removida porque não está mais no registro aprovado.",
-    "enabled": "Enabled",
-    "disabled": "Disabled",
+    "enabled": "Ativado",
+    "disabled": "Desativado",
     "noExtensionCommands": "This extension does not provide any commands.",
     "dependencies": {
       "noDependencies": "No shared dependencies",
@@ -1072,7 +1075,13 @@
     "engineApiWarning": "Requer API de extensões {range} (você tem {current})",
     "engineRequirements": "Requisitos",
     "requiresSigmaFileManager": "Sigma File Manager",
-    "requiresExtensionApi": "API de extensões"
+    "requiresExtensionApi": "API de extensões",
+    "marketplaceUnavailable": "Marketplace unavailable",
+    "marketplaceUnavailableDescription": "Could not connect to the extension registry. Check your internet connection and try again.",
+    "githubConnectivityIssue": "Não foi possível acessar o GitHub",
+    "githubConnectivityIssueDescription": "Algumas verificações de versão de extensões falharam porque o aplicativo não conseguiu se conectar ao GitHub. Verifique sua conexão com a Internet, VPN ou firewall e tente novamente mais tarde.",
+    "offlineIssue": "You are offline",
+    "offlineIssueDescription": "Extension installs, updates, and version checks require an internet connection. Reconnect to the network to use marketplace features."
   },
   "commandPalette": {
     "accessibleDialogTitle": "Paleta de comandos",

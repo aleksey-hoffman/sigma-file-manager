@@ -4,7 +4,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import {
   TrashIcon,
@@ -16,19 +16,24 @@ import {
 } from '@lucide/vue';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { formatBytes } from '@/modules/navigator/components/file-browser/utils';
 import ExtensionBadge from './extension-badge.vue';
 import ExtensionIcon from './extension-icon.vue';
+import ExtensionInstallProgressItem from './extension-install-progress-item.vue';
 import type { ExtensionWithManifest } from '@/modules/extensions/composables/use-extensions';
+import type { PendingFolderInstall } from '@/modules/extensions/utils/extension-active-operations';
 import { getStaggerSlideUpBinding } from '@/utils/stagger-animation';
 import { useExtensionsFolderActions } from '@/modules/extensions/composables/use-extensions-folder-actions';
+import { useExtensionInstallCancelUi } from '@/modules/extensions/composables/use-extension-install-cancel-ui';
 
 const props = defineProps<{
   extensions: ExtensionWithManifest[];
+  pendingFolderInstalls: PendingFolderInstall[];
   installingExtensions: Set<string>;
   updatingExtensions: Set<string>;
   uninstallingExtensions: Set<string>;
-  refreshingExtensions?: Set<string>;
+  togglingExtensions: Set<string>;
   isInstallingLocal?: boolean;
 }>();
 
@@ -44,7 +49,6 @@ const emit = defineEmits<{
 
 const { t } = useI18n();
 const { navigateToExtensionsFolder, pickExtensionFolderPath } = useExtensionsFolderActions();
-const cancelRequestedExtensionIds = ref<Set<string>>(new Set());
 
 async function handleInstallLocal() {
   const sourcePath = await pickExtensionFolderPath();
@@ -90,30 +94,25 @@ const visibleCancelableExtensionIds = computed(() => {
   for (const extension of props.extensions) {
     const isInstalling = props.installingExtensions.has(extension.id);
     const isUpdating = props.updatingExtensions.has(extension.id);
-    const isRefreshing = props.refreshingExtensions?.has(extension.id);
     const canCancelLocalInstall = extension.isLocal && isInstalling;
     const canCancelUpdate = extension.hasUpdate && !extension.isLocal && !extension.isBroken && isUpdating;
-    const canCancelRefresh = extension.isLocal && Boolean(isRefreshing);
 
-    if (canCancelLocalInstall || canCancelUpdate || canCancelRefresh) {
+    if (canCancelLocalInstall || canCancelUpdate) {
       cancelableIds.add(extension.id);
     }
+  }
+
+  for (const pendingInstall of props.pendingFolderInstalls) {
+    cancelableIds.add(pendingInstall.extensionId);
   }
 
   return cancelableIds;
 });
 
-watch(visibleCancelableExtensionIds, (cancelableIds) => {
-  const nextRequestedIds = new Set<string>();
-
-  for (const extensionId of cancelRequestedExtensionIds.value) {
-    if (cancelableIds.has(extensionId)) {
-      nextRequestedIds.add(extensionId);
-    }
-  }
-
-  cancelRequestedExtensionIds.value = nextRequestedIds;
-});
+const {
+  requestCancel,
+  isCancelRequested,
+} = useExtensionInstallCancelUi(visibleCancelableExtensionIds);
 
 function getDisplayName(extension: ExtensionWithManifest): string {
   return extension.name || extension.manifest?.name || extension.id.split('.').pop() || extension.id;
@@ -132,16 +131,16 @@ function getBinariesPreview(extension: ExtensionWithManifest): string {
 }
 
 function handleCancel(extensionId: string) {
-  if (cancelRequestedExtensionIds.value.has(extensionId)) return;
-
-  const nextRequestedIds = new Set(cancelRequestedExtensionIds.value);
-  nextRequestedIds.add(extensionId);
-  cancelRequestedExtensionIds.value = nextRequestedIds;
+  if (!requestCancel(extensionId)) return;
   emit('cancel', extensionId);
 }
 
+function isLocalExtensionInstalling(extension: ExtensionWithManifest): boolean {
+  return extension.isLocal && props.installingExtensions.has(extension.id);
+}
+
 function getLocalReinstallButtonTitle(extensionId: string): string {
-  if (cancelRequestedExtensionIds.value.has(extensionId)) {
+  if (isCancelRequested(extensionId)) {
     return t('extensions.cancellingInstall');
   }
 
@@ -157,7 +156,7 @@ function getLocalReinstallButtonTitle(extensionId: string): string {
 <template>
   <div class="extensions-installed">
     <div
-      v-if="extensions.length === 0"
+      v-if="extensions.length === 0 && pendingFolderInstalls.length === 0"
       class="extensions-installed__empty"
     >
       <PackageOpenIcon
@@ -180,7 +179,22 @@ function getLocalReinstallButtonTitle(extensionId: string): string {
       </Button>
     </div>
 
-    <template v-else>
+    <div
+      v-if="pendingFolderInstalls.length > 0"
+      class="extensions-installed__list"
+    >
+      <ExtensionInstallProgressItem
+        v-for="pendingInstall in pendingFolderInstalls"
+        :key="pendingInstall.extensionId"
+        :extension-id="pendingInstall.extensionId"
+        :display-name="pendingInstall.displayName"
+        :is-cancelling="isCancelRequested(pendingInstall.extensionId)"
+        :is-cancel-disabled="isCancelRequested(pendingInstall.extensionId)"
+        @cancel="handleCancel"
+      />
+    </div>
+
+    <template v-if="extensions.length > 0">
       <div class="extensions-installed__stats">
         <div class="extensions-installed__stats-left">
           <div class="extensions-installed__stat">
@@ -314,7 +328,7 @@ function getLocalReinstallButtonTitle(extensionId: string): string {
                 variant="outline"
                 size="icon"
                 :title="t('extensions.cancelInstall')"
-                :disabled="cancelRequestedExtensionIds.has(extension.id)"
+                :disabled="isCancelRequested(extension.id)"
                 @click.stop="handleCancel(extension.id)"
               >
                 <XIcon :size="16" />
@@ -324,11 +338,11 @@ function getLocalReinstallButtonTitle(extensionId: string): string {
                 variant="ghost"
                 size="icon"
                 :title="getLocalReinstallButtonTitle(extension.id)"
-                :disabled="refreshingExtensions?.has(extension.id) || installingExtensions.has(extension.id)"
+                :disabled="isLocalExtensionInstalling(extension)"
                 @click.stop="emit('refresh', extension.id)"
               >
                 <RefreshCwIcon
-                  v-if="refreshingExtensions?.has(extension.id) || installingExtensions.has(extension.id)"
+                  v-if="isLocalExtensionInstalling(extension)"
                   :size="16"
                   class="extensions-installed__spinner"
                 />
@@ -338,21 +352,11 @@ function getLocalReinstallButtonTitle(extensionId: string): string {
                 />
               </Button>
               <Button
-                v-if="extension.isLocal && installingExtensions.has(extension.id)"
+                v-if="isLocalExtensionInstalling(extension)"
                 variant="outline"
                 size="icon"
                 :title="t('extensions.cancelInstall')"
-                :disabled="cancelRequestedExtensionIds.has(extension.id)"
-                @click.stop="handleCancel(extension.id)"
-              >
-                <XIcon :size="16" />
-              </Button>
-              <Button
-                v-if="extension.isLocal && refreshingExtensions?.has(extension.id)"
-                variant="outline"
-                size="icon"
-                :title="t('extensions.cancelInstall')"
-                :disabled="cancelRequestedExtensionIds.has(extension.id)"
+                :disabled="isCancelRequested(extension.id)"
                 @click.stop="handleCancel(extension.id)"
               >
                 <XIcon :size="16" />
@@ -367,12 +371,24 @@ function getLocalReinstallButtonTitle(extensionId: string): string {
               </Button>
             </div>
 
-            <Switch
-              @click.stop
-              :model-value="extension.isEnabled"
-              :disabled="extension.isBroken || installingExtensions.has(extension.id)"
-              @update:model-value="emit('toggle', extension.id)"
-            />
+            <Tooltip :disabled="extension.isEnabled">
+              <TooltipTrigger as-child>
+                <span
+                  class="extensions-installed__enable-switch"
+                  @click.stop
+                >
+                  <Switch
+                    :model-value="extension.isEnabled"
+                    :class="{ 'extensions-installed__enable-switch--off': !extension.isEnabled }"
+                    :disabled="extension.isBroken || installingExtensions.has(extension.id) || togglingExtensions.has(extension.id)"
+                    @update:model-value="emit('toggle', extension.id)"
+                  />
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{{ t('extensions.badges.disabledTooltip') }}</p>
+              </TooltipContent>
+            </Tooltip>
           </div>
         </div>
       </div>
@@ -499,7 +515,8 @@ function getLocalReinstallButtonTitle(extensionId: string): string {
   border-color: hsl(var(--border) / 80%);
 }
 
-.extensions-installed__item--disabled {
+.extensions-installed__item--disabled .extensions-installed__item-icon,
+.extensions-installed__item--disabled .extensions-installed__item-info {
   opacity: 0.6;
 }
 
@@ -563,6 +580,11 @@ function getLocalReinstallButtonTitle(extensionId: string): string {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.extensions-installed__enable-switch {
+  display: inline-flex;
+  flex-shrink: 0;
 }
 
 .extensions-installed__item-actions-dynamic-container {

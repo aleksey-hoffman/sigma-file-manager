@@ -165,15 +165,8 @@ function handleClick() {
   display: flex;
   width: 100%;
   min-width: 0;
-  align-items: flex-start;
-  padding: 0 16px;
-  padding-bottom: 8px;
-  gap: 8px;
-}
-
-.entry-card__footer > *:not(.entry-card__tags) {
-  flex-shrink: 0;
-  align-self: center;
+  align-items: center;
+  padding: 0 16px 8px;
 }
 
 .entry-card__action {
@@ -205,24 +198,5 @@ function handleClick() {
   flex-shrink: 0;
   color: hsl(var(--muted-foreground));
   font-size: 0.8rem;
-}
-
-.entry-card__tags {
-  display: flex;
-  min-width: 0;
-  flex: 1;
-  flex-wrap: wrap;
-  gap: 4px;
-}
-
-.entry-card__tag {
-  overflow: hidden;
-  max-width: 100%;
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  font-weight: 500;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 </style>

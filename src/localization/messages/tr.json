@@ -986,6 +986,7 @@
     "previouslyKnownAs": "Önceki adı: \"{name}\"",
     "featured": "Öne çıkan",
     "allExtensions": "Tüm eklentiler",
+    "otherExtensions": "Diğer eklentiler",
     "searchResults": "Arama sonuçları",
     "noResults": "Eklenti bulunamadı",
     "noResultsDescription": "\"{query}\" ile eşleşen eklenti yok. Başka bir arama terimi deneyin.",
@@ -1020,7 +1021,9 @@
       "local": "Yerel",
       "localTooltip": "Bu eklenti yerel bir klasörden yüklendi",
       "broken": "Bozuk",
-      "brokenTooltip": "Eklenti dosyaları eksik. Listeden kaldırmak için kaldırın."
+      "brokenTooltip": "Eklenti dosyaları eksik. Listeden kaldırmak için kaldırın.",
+      "disabled": "Devre dışı",
+      "disabledTooltip": "Bu uzantı devre dışı"
     },
     "stats": {
       "total": "Toplam",
@@ -1048,15 +1051,15 @@
     },
     "unknownPublisher": "Unknown publisher",
     "contextMenuLabel": "Uzantılar",
-    "autoUpdate": "Auto-update",
+    "autoUpdate": "Otomatik güncelleme",
     "showExtensionsFolder": "Uzantılar klasörünü göster",
     "reinstalledSuccessfully": "Başarıyla yeniden yüklendi",
     "reusedDependencies": "{count} mevcut bağımlılık yeniden kullanıldı",
     "themesInstalled": "Temalar yüklendi",
     "noLongerAvailable": "Artık kullanılamıyor",
     "removedBecauseUnapproved": "Bu uzantı, artık onaylı kayıt listesinde olmadığı için kaldırıldı.",
-    "enabled": "Enabled",
-    "disabled": "Disabled",
+    "enabled": "Etkin",
+    "disabled": "Devre dışı",
     "dependencies": {
       "noDependencies": "No shared dependencies",
       "noDependenciesDescription": "Shared binaries will appear here when extensions install dependencies like FFmpeg or Deno.",
@@ -1073,7 +1076,13 @@
     "engineApiWarning": "Uzantı API {range} gerektirir (sizde {current})",
     "engineRequirements": "Gereksinimler",
     "requiresSigmaFileManager": "Sigma File Manager",
-    "requiresExtensionApi": "Uzantı API"
+    "requiresExtensionApi": "Uzantı API",
+    "marketplaceUnavailable": "Marketplace unavailable",
+    "marketplaceUnavailableDescription": "Could not connect to the extension registry. Check your internet connection and try again.",
+    "githubConnectivityIssue": "GitHub'a erişilemiyor",
+    "githubConnectivityIssueDescription": "Uygulama GitHub'a bağlanamadığı için bazı eklenti sürüm kontrolleri başarısız oldu. İnternet bağlantınızı, VPN'inizi veya güvenlik duvarı ayarlarınızı kontrol edip daha sonra tekrar deneyin.",
+    "offlineIssue": "You are offline",
+    "offlineIssueDescription": "Extension installs, updates, and version checks require an internet connection. Reconnect to the network to use marketplace features."
   },
   "commandPalette": {
     "accessibleDialogTitle": "Komut paleti",

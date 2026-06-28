@@ -6,7 +6,9 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { SparklesIcon, SearchXIcon, AlertCircleIcon, Loader2Icon } from '@lucide/vue';
+import { SparklesIcon, SearchXIcon, Loader2Icon, WifiOffIcon } from '@lucide/vue';
+import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/ui/empty-state';
 import ExtensionCard from './extension-card.vue';
 import type { ExtensionWithManifest } from '@/modules/extensions/composables/use-extensions';
 import { getStaggerSlideUpBinding } from '@/utils/stagger-animation';
@@ -27,6 +29,7 @@ const emit = defineEmits<{
   install: [extensionId: string];
   update: [extensionId: string];
   cancel: [extensionId: string];
+  refresh: [];
 }>();
 
 const { t } = useI18n();
@@ -48,6 +51,10 @@ const displayExtensions = computed(() => {
 const noResults = computed(() => {
   return hasSearchQuery.value && props.extensions.length === 0;
 });
+
+const showMarketplaceUnavailable = computed(() => {
+  return Boolean(props.error) && props.extensions.length === 0 && !hasSearchQuery.value;
+});
 </script>
 
 <template>
@@ -64,11 +71,23 @@ const noResults = computed(() => {
     </div>
 
     <div
-      v-else-if="error"
-      class="extensions-marketplace__error"
+      v-else-if="showMarketplaceUnavailable"
+      class="extensions-marketplace__unavailable"
     >
-      <AlertCircleIcon :size="32" />
-      <p>{{ error }}</p>
+      <EmptyState
+        :icon="WifiOffIcon"
+        :title="t('extensions.marketplaceUnavailable')"
+        :description="t('extensions.marketplaceUnavailableDescription')"
+      >
+        <template #footer>
+          <Button
+            variant="outline"
+            @click="emit('refresh')"
+          >
+            {{ t('extensions.refresh') }}
+          </Button>
+        </template>
+      </EmptyState>
     </div>
 
     <template v-else>
@@ -115,7 +134,7 @@ const noResults = computed(() => {
           class="extensions-marketplace__section"
         >
           <div class="extensions-marketplace__section-header">
-            <h2>{{ hasSearchQuery ? t('extensions.searchResults') : t('extensions.allExtensions') }}</h2>
+            <h2>{{ hasSearchQuery ? t('extensions.searchResults') : t('extensions.otherExtensions') }}</h2>
             <span class="extensions-marketplace__count">{{ displayExtensions.length }}</span>
           </div>
           <div class="extensions-marketplace__grid">
@@ -149,12 +168,14 @@ const noResults = computed(() => {
 <style>
 .extensions-marketplace {
   display: flex;
+  min-width: 0;
+  max-width: 100%;
   flex-direction: column;
   gap: 32px;
 }
 
 .extensions-marketplace__loading,
-.extensions-marketplace__error {
+.extensions-marketplace__unavailable {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -169,8 +190,8 @@ const noResults = computed(() => {
   animation: spin 1s linear infinite;
 }
 
-.extensions-marketplace__error {
-  color: hsl(0deg 84% 60%);
+.extensions-marketplace__unavailable :deep(.empty-state) {
+  padding: 48px 24px;
 }
 
 .extensions-marketplace__no-results {

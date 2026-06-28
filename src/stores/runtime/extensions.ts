@@ -40,6 +40,10 @@ import { useExtensionsStorageStore } from '@/stores/storage/extensions';
 import { loadExtensionRuntime, unloadExtensionRuntime, reactivateExtensionRuntime } from '@/modules/extensions/runtime/loader';
 import { setPendingModalCommandTitle } from '@/modules/extensions/api/modal-state';
 import { getBinaryLookupVersion } from '@/modules/extensions/utils/binary-metadata';
+import {
+  markGitHubRepositoryReachable,
+  markGitHubRepositoryUnreachable,
+} from '@/modules/extensions/utils/github-connectivity-status';
 import { invokeAsExtension } from '@/modules/extensions/runtime/extension-invoke';
 import {
   getContextMenuRegistrations, getKeybindingRegistrations, getCommandRegistrations, getSidebarRegistrations, getToolbarRegistrations, clearExtensionRegistrations, clearBinaryDownloadCount, clearBinaryReuseCount, parseKeybindingString,
@@ -73,8 +77,15 @@ import {
   beginExtensionInstall,
   cancelExtensionInstall as requestExtensionInstallCancel,
   endExtensionInstall,
+  getExtensionInstallCancellationIdForExtension,
   isUserCancelledError,
 } from '@/modules/extensions/utils/extension-install-cancellation';
+import {
+  clearExtensionActiveOperation,
+  getPendingFolderInstalls,
+  setExtensionActiveOperation,
+  type ExtensionActiveOperation,
+} from '@/modules/extensions/utils/extension-active-operations';
 import { i18n } from '@/localization';
 import type { ShortcutKeys } from '@/types/user-settings';
 import type { ExtensionKeybindingWhen } from '@/types/extension';
@@ -359,8 +370,11 @@ export const useExtensionsStore = defineStore('extensions', () => {
   }
 
   const installingExtensions = ref<Set<string>>(new Set());
+  const extensionActiveOperations = ref<Map<string, ExtensionActiveOperation>>(new Map());
   const uninstallingExtensions = ref<Set<string>>(new Set());
   const updatingExtensions = ref<Set<string>>(new Set());
+  const togglingExtensions = ref<Set<string>>(new Set());
+  const extensionEnabledOverrides = ref<Map<string, boolean>>(new Map());
   const installQueueDepth = ref(0);
   let installQueueTail: Promise<void> = Promise.resolve();
 
@@ -407,6 +421,69 @@ export const useExtensionsStore = defineStore('extensions', () => {
     brokenExtensionIds.value = new Set([...brokenExtensionIds.value].filter(id => id !== extensionId));
   }
 
+  function trackActiveOperation(extensionId: string, operation: ExtensionActiveOperation): void {
+    extensionActiveOperations.value = setExtensionActiveOperation(
+      extensionActiveOperations.value,
+      extensionId,
+      operation,
+    );
+  }
+
+  function untrackActiveOperation(extensionId: string): void {
+    extensionActiveOperations.value = clearExtensionActiveOperation(
+      extensionActiveOperations.value,
+      extensionId,
+    );
+  }
+
+  async function cleanupCancelledInstall(
+    extensionId: string,
+    persistedInstall: boolean,
+    prePersistStrategy: 'rollback' | 'delete-files',
+  ): Promise<void> {
+    if (persistedInstall || prePersistStrategy === 'rollback') {
+      await rollbackInstallAfterCancel(extensionId);
+      return;
+    }
+
+    await invoke('delete_extension', { extensionId }).catch(() => {});
+  }
+
+  async function finalizeExtensionActivation(
+    extensionId: string,
+    manifest: ExtensionManifest,
+    activationEvent: ExtensionActivationEvent,
+    options: { shouldLoadOnStartup?: boolean } = {},
+  ): Promise<void> {
+    brokenExtensionIds.value = new Set([...brokenExtensionIds.value].filter(id => id !== extensionId));
+
+    clearBinaryDownloadCount(extensionId);
+    clearBinaryReuseCount(extensionId);
+
+    await syncManifestBinariesForExtension(extensionId, manifest);
+    await loadExtensionForEvent(extensionId, manifest, activationEvent, { allowWhenDisabled: true });
+
+    const shouldLoadOnStartup = options.shouldLoadOnStartup ?? shouldActivateOnStartup(manifest);
+
+    if (shouldLoadOnStartup) {
+      await loadExtension(extensionId, 'onStartup');
+    }
+  }
+
+  async function completeNewExtensionInstall(
+    extensionId: string,
+    manifest: ExtensionManifest,
+    version: string,
+    storageOptions: Parameters<typeof storageStore.addInstalledExtension>[3],
+  ): Promise<void> {
+    await storageStore.addInstalledExtension(extensionId, version, manifest, storageOptions);
+    clearInstalledIconThemeCache();
+    await finalizeExtensionActivation(extensionId, manifest, 'onInstall');
+    await storageStore.completeExtensionInstall(extensionId);
+    showDependenciesInstalledToast(extensionId);
+    showThemesInstalledToast(extensionId, manifest);
+  }
+
   async function runInInstallQueue<T>(task: () => Promise<T>): Promise<T> {
     installQueueDepth.value += 1;
     const previous = installQueueTail;
@@ -427,6 +504,10 @@ export const useExtensionsStore = defineStore('extensions', () => {
   }
 
   const isAnyInstallInProgress = computed(() => installQueueDepth.value > 0);
+  const pendingFolderInstalls = computed(() => {
+    const installedExtensionIds = new Set(Object.keys(storageStore.extensionsData.installedExtensions));
+    return getPendingFolderInstalls(extensionActiveOperations.value, installedExtensionIds);
+  });
   const pendingExtensionLoads = new Map<string, Promise<void>>();
   const extensionLoadGeneration = new Map<string, number>();
 
@@ -536,6 +617,7 @@ export const useExtensionsStore = defineStore('extensions', () => {
 
     try {
       const tagNames = await fetchGitHubTagsWithRetry(repository);
+      markGitHubRepositoryReachable();
       const versions: string[] = [];
 
       for (const tagName of tagNames) {
@@ -556,6 +638,7 @@ export const useExtensionsStore = defineStore('extensions', () => {
       return sortedVersions;
     }
     catch (error) {
+      markGitHubRepositoryUnreachable(repository, error);
       console.warn(`Error fetching versions for ${repository}:`, error);
       return cached?.versions ?? [];
     }
@@ -598,6 +681,8 @@ export const useExtensionsStore = defineStore('extensions', () => {
         throw new Error(`Failed to fetch registry: ${response.status}`);
       }
 
+      markGitHubRepositoryReachable();
+
       const parsedData = JSON.parse(response.body) as unknown;
       assertValidRegistryData(parsedData);
       const data = parsedData as ExtensionRegistry;
@@ -615,6 +700,7 @@ export const useExtensionsStore = defineStore('extensions', () => {
       await removeUnapprovedInstalledExtensions(filteredRegistry);
     }
     catch (error) {
+      markGitHubRepositoryUnreachable('registry', error);
       registryError.value = error instanceof Error ? error.message : String(error);
 
       const cached = storageStore.extensionsData.registryCache;
@@ -624,6 +710,7 @@ export const useExtensionsStore = defineStore('extensions', () => {
           assertValidRegistryData(cached.data);
           registry.value = cached.data;
           registryFetchedAt.value = cached.fetchedAt;
+          registryError.value = null;
         }
         catch {
         }
@@ -690,6 +777,7 @@ export const useExtensionsStore = defineStore('extensions', () => {
 
       const { cancellationId, signal } = await beginExtensionInstall(extensionId);
       installingExtensions.value.add(extensionId);
+      trackActiveOperation(extensionId, { kind: 'registry-install' });
 
       let persistedInstall = false;
 
@@ -732,45 +820,24 @@ export const useExtensionsStore = defineStore('extensions', () => {
         throwIfInstallAborted(signal);
 
         try {
-          await storageStore.addInstalledExtension(extensionId, targetVersion, manifest, {
+          await completeNewExtensionInstall(extensionId, manifest, targetVersion, {
             installPendingDependencies: true,
           });
-          clearInstalledIconThemeCache();
+          persistedInstall = true;
         }
         catch (storageError) {
           await invoke('delete_extension', { extensionId }).catch(() => {});
           throw storageError;
         }
-
-        persistedInstall = true;
-
-        brokenExtensionIds.value = new Set([...brokenExtensionIds.value].filter(id => id !== extensionId));
-
-        clearBinaryDownloadCount(extensionId);
-        clearBinaryReuseCount(extensionId);
-
-        await syncManifestBinariesForExtension(extensionId, manifest);
-        await loadExtensionForEvent(extensionId, manifest, 'onInstall', { allowWhenDisabled: true });
-
-        if (shouldActivateOnStartup(manifest)) {
-          await loadExtension(extensionId, 'onStartup');
-        }
-
-        await storageStore.completeExtensionInstall(extensionId);
-
-        showDependenciesInstalledToast(extensionId);
-        showThemesInstalledToast(extensionId, manifest);
       }
       catch (error) {
-        if (persistedInstall) {
-          await rollbackInstallAfterCancel(extensionId);
-        }
-        else if (signal.aborted || isUserCancelledError(error)) {
-          await rollbackInstallAfterCancel(extensionId);
+        if (signal.aborted || isUserCancelledError(error)) {
+          await cleanupCancelledInstall(extensionId, persistedInstall, 'rollback');
+          return;
         }
 
-        if (signal.aborted || isUserCancelledError(error)) {
-          return;
+        if (persistedInstall) {
+          await cleanupCancelledInstall(extensionId, true, 'rollback');
         }
 
         throw error;
@@ -778,6 +845,7 @@ export const useExtensionsStore = defineStore('extensions', () => {
       finally {
         await endExtensionInstall(extensionId);
         installingExtensions.value.delete(extensionId);
+        untrackActiveOperation(extensionId);
       }
     });
   }
@@ -793,24 +861,47 @@ export const useExtensionsStore = defineStore('extensions', () => {
     error?: string;
   };
 
+  type LocalExtensionManifestPreview = {
+    extensionId: string;
+    name?: string;
+    version: string;
+  };
+
   async function installLocalExtension(sourcePath: string): Promise<void> {
     return runInInstallQueue(async () => {
-      const result = await invoke<LocalExtensionInstallResult>('install_local_extension', {
+      const manifestPreview = await invoke<LocalExtensionManifestPreview>('read_local_extension_manifest', {
         sourcePath,
       });
-
-      if (!result.success || !result.extension_id) {
-        throw new Error(result.error || 'Failed to install local extension');
-      }
-
-      const extensionId = result.extension_id;
+      const extensionId = manifestPreview.extensionId;
+      const folderInstallDisplayName = manifestPreview.name
+        || extensionId.split('.').pop()
+        || extensionId;
 
       const { signal } = await beginExtensionInstall(extensionId);
       installingExtensions.value.add(extensionId);
+      trackActiveOperation(extensionId, {
+        kind: 'folder-install',
+        displayName: folderInstallDisplayName,
+      });
 
       let persistedInstall = false;
 
       try {
+        throwIfInstallAborted(signal);
+
+        const result = await invoke<LocalExtensionInstallResult>('install_local_extension', {
+          sourcePath,
+          cancellationId: getExtensionInstallCancellationIdForExtension(extensionId),
+        });
+
+        if (!result.success || !result.extension_id) {
+          throw new Error(result.error || 'Failed to install local extension');
+        }
+
+        if (result.extension_id !== extensionId) {
+          throw new Error(`Local extension id changed from "${extensionId}" to "${result.extension_id}". Reinstall from folder instead.`);
+        }
+
         const wasAlreadyLoaded = loadedExtensions.value.has(extensionId);
 
         if (wasAlreadyLoaded) {
@@ -830,41 +921,21 @@ export const useExtensionsStore = defineStore('extensions', () => {
 
         throwIfInstallAborted(signal);
 
-        await storageStore.addInstalledExtension(extensionId, manifest.version, manifest, {
+        await completeNewExtensionInstall(extensionId, manifest, manifest.version, {
           isLocal: true,
           localSourcePath: sourcePath,
           installPendingDependencies: true,
         });
-        clearInstalledIconThemeCache();
         persistedInstall = true;
-
-        brokenExtensionIds.value = new Set([...brokenExtensionIds.value].filter(id => id !== extensionId));
-
-        clearBinaryDownloadCount(extensionId);
-        clearBinaryReuseCount(extensionId);
-
-        await syncManifestBinariesForExtension(extensionId, manifest);
-        await loadExtensionForEvent(extensionId, manifest, 'onInstall', { allowWhenDisabled: true });
-
-        if (shouldActivateOnStartup(manifest)) {
-          await loadExtension(extensionId, 'onStartup');
-        }
-
-        await storageStore.completeExtensionInstall(extensionId);
-
-        showDependenciesInstalledToast(extensionId);
-        showThemesInstalledToast(extensionId, manifest);
       }
       catch (error) {
-        if (persistedInstall) {
-          await rollbackInstallAfterCancel(extensionId);
-        }
-        else if (signal.aborted || isUserCancelledError(error)) {
-          await rollbackInstallAfterCancel(extensionId);
+        if (signal.aborted || isUserCancelledError(error)) {
+          await cleanupCancelledInstall(extensionId, persistedInstall, 'delete-files');
+          return;
         }
 
-        if (signal.aborted || isUserCancelledError(error)) {
-          return;
+        if (persistedInstall) {
+          await cleanupCancelledInstall(extensionId, true, 'delete-files');
         }
 
         throw error;
@@ -872,6 +943,7 @@ export const useExtensionsStore = defineStore('extensions', () => {
       finally {
         await endExtensionInstall(extensionId);
         installingExtensions.value.delete(extensionId);
+        untrackActiveOperation(extensionId);
       }
     });
   }
@@ -889,6 +961,7 @@ export const useExtensionsStore = defineStore('extensions', () => {
 
       const { signal } = await beginExtensionInstall(extensionId);
       installingExtensions.value.add(extensionId);
+      trackActiveOperation(extensionId, { kind: 'folder-refresh' });
 
       try {
         await unloadExtension(extensionId);
@@ -899,6 +972,7 @@ export const useExtensionsStore = defineStore('extensions', () => {
         const result = await invoke<LocalExtensionInstallResult>('install_local_extension', {
           sourcePath,
           expectedExtensionId: extensionId,
+          cancellationId: getExtensionInstallCancellationIdForExtension(extensionId),
         });
 
         if (!result.success || !result.extension_id) {
@@ -923,22 +997,15 @@ export const useExtensionsStore = defineStore('extensions', () => {
 
         await storageStore.refreshLocalExtension(extensionId, manifest.version, manifest);
         clearInstalledIconThemeCache();
-        brokenExtensionIds.value = new Set([...brokenExtensionIds.value].filter(id => id !== extensionId));
-
-        clearBinaryDownloadCount(extensionId);
-        clearBinaryReuseCount(extensionId);
 
         const orphanedBinaries = await storageStore.removeAllSharedBinaryUsages(extensionId);
         await cleanupOrphanedSharedBinaries(orphanedBinaries);
 
         await storageStore.clearExtensionBinaryStorage(extensionId);
-        await syncManifestBinariesForExtension(extensionId, manifest);
 
-        await loadExtensionForEvent(extensionId, manifest, 'onUpdate', { allowWhenDisabled: true });
-
-        if (extensionData.enabled && shouldActivateOnStartup(manifest)) {
-          await loadExtension(extensionId, 'onStartup');
-        }
+        await finalizeExtensionActivation(extensionId, manifest, 'onUpdate', {
+          shouldLoadOnStartup: extensionData.enabled && shouldActivateOnStartup(manifest),
+        });
 
         showThemesInstalledToast(extensionId, manifest);
       }
@@ -965,6 +1032,7 @@ export const useExtensionsStore = defineStore('extensions', () => {
       finally {
         await endExtensionInstall(extensionId);
         installingExtensions.value.delete(extensionId);
+        untrackActiveOperation(extensionId);
       }
     });
   }
@@ -1160,6 +1228,53 @@ export const useExtensionsStore = defineStore('extensions', () => {
     await unloadExtension(extensionId);
     await storageStore.setExtensionEnabled(extensionId, false);
     clearInstalledIconThemeCache();
+  }
+
+  function getExtensionEnabledForDisplay(extensionId: string): boolean {
+    const optimisticEnabled = extensionEnabledOverrides.value.get(extensionId);
+
+    if (optimisticEnabled !== undefined) {
+      return optimisticEnabled;
+    }
+
+    const installed = installedExtensions.value.find(
+      extension => extension.id === extensionId,
+    );
+
+    return installed?.enabled ?? false;
+  }
+
+  async function toggleExtensionEnabled(extensionId: string): Promise<void> {
+    if (togglingExtensions.value.has(extensionId)) {
+      return;
+    }
+
+    const installed = installedExtensions.value.find(
+      extension => extension.id === extensionId && !extension.installPendingDependencies,
+    );
+
+    if (!installed) {
+      return;
+    }
+
+    const currentEnabled = getExtensionEnabledForDisplay(extensionId);
+    const nextEnabled = !currentEnabled;
+
+    togglingExtensions.value.add(extensionId);
+    extensionEnabledOverrides.value.set(extensionId, nextEnabled);
+
+    try {
+      if (currentEnabled) {
+        await disableExtension(extensionId);
+      }
+      else {
+        await enableExtension(extensionId);
+      }
+    }
+    finally {
+      togglingExtensions.value.delete(extensionId);
+      extensionEnabledOverrides.value.delete(extensionId);
+    }
   }
 
   async function loadExtensionForEvent(
@@ -1917,8 +2032,11 @@ export const useExtensionsStore = defineStore('extensions', () => {
     recentCommandIds,
 
     installingExtensions,
+    extensionActiveOperations,
+    pendingFolderInstalls,
     uninstallingExtensions,
     updatingExtensions,
+    togglingExtensions,
     isAnyInstallInProgress,
 
     availableExtensions,
@@ -1929,6 +2047,7 @@ export const useExtensionsStore = defineStore('extensions', () => {
     isRegistryCacheValid,
 
     fetchRegistry,
+    prefetchAllVersions,
     fetchExtensionManifest,
     fetchExtensionVersions,
     getLatestVersion,
@@ -1943,6 +2062,8 @@ export const useExtensionsStore = defineStore('extensions', () => {
     updateExtension,
     enableExtension,
     disableExtension,
+    toggleExtensionEnabled,
+    getExtensionEnabledForDisplay,
     loadExtension,
     unloadExtension,
     executeCommand,

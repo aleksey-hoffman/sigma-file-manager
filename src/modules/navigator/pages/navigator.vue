@@ -34,7 +34,10 @@ import FileBrowserDragOverlay from '@/modules/navigator/components/file-browser/
 import { useActiveFileBrowserDragState } from '@/modules/navigator/components/file-browser/composables/use-file-browser-drag';
 import { provideFileBrowserInternalDropHandler } from '@/modules/navigator/components/file-browser/composables/use-file-browser-internal-drop';
 import { InfoPanel } from '@/modules/navigator/components/info-panel';
-import { useInfoPanelLayout } from '@/modules/navigator/components/info-panel/composables/use-info-panel-layout';
+import {
+  consumeNavigatorLayoutResetPending,
+  useInfoPanelLayout,
+} from '@/modules/navigator/components/info-panel/composables/use-info-panel-layout';
 import { NavigatorToolbarActions } from '@/modules/navigator/components/navigator-toolbar-actions';
 import { ClipboardToolbar } from '@/modules/navigator/components/clipboard-toolbar';
 import { GlobalSearchView } from '@/modules/global-search';
@@ -176,6 +179,8 @@ const {
   isInfoPanelVisibilityAnimating,
   infoPanelWidthDefault,
   infoPanelLayout,
+  clearPanelRefs,
+  requestLayoutReset,
 } = useInfoPanelLayout();
 
 const showInfoPanel = ref(true);
@@ -993,13 +998,23 @@ watch(isInfoPanelVisibilityAnimating, (isAnimating, wasAnimating) => {
   }
 });
 
-onMounted(() => {
+onMounted(async () => {
   registerShortcutHandlers();
   dirSizesStore.recoverActiveCalculations();
+
+  if (!consumeNavigatorLayoutResetPending()) {
+    return;
+  }
+
+  await nextTick();
+  requestAnimationFrame(() => {
+    requestLayoutReset();
+  });
 });
 
 onUnmounted(() => {
   navigatorSelectionStore.setSelectedDirEntries([]);
+  clearPanelRefs();
 });
 </script>
 

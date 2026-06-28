@@ -348,6 +348,7 @@ pub fn run() {
             extensions::download_extension,
             extensions::delete_extension,
             extensions::install_local_extension,
+            extensions::read_local_extension_manifest,
             extensions::get_installed_extensions,
             extensions::read_extension_manifest,
             extensions::read_extension_file,
