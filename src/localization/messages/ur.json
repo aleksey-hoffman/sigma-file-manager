@@ -932,7 +932,7 @@
         "passwordDescription": "یہ آرکائیو خفیہ شدہ ہے۔ مواد نکالنے کے لیے پاس ورڈ درج کریں۔",
         "encodingTitle": "فائل نام کی انکوڈنگ",
         "encodingDescription": "اس آرکائیو میں کچھ فائل نام غیر UTF-8 انکوڈنگ استعمال کرتے ہیں۔ درست انکوڈنگ منتخب کریں۔",
-        "passwordLabel": "پاس ورڈ (اگر خفیہ شدہ نہ ہو تو خالی چھوڑیں)",
+        "passwordLabel": "پاس ورڈ",
         "passwordPlaceholder": "آرکائیو پاس ورڈ درج کریں",
         "encodingLabel": "فائل نام کی انکوڈنگ",
         "encodingSystemDefault": "سسٹم ڈیفالٹ",

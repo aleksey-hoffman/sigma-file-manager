@@ -904,7 +904,7 @@
         "passwordDescription": "Dieses Archiv ist verschlüsselt. Geben Sie das Passwort ein, um den Inhalt zu entpacken.",
         "encodingTitle": "Dateinamen-Kodierung",
         "encodingDescription": "Einige Dateinamen in diesem Archiv verwenden eine Nicht-UTF-8-Kodierung. Wählen Sie die richtige Kodierung aus.",
-        "passwordLabel": "Passwort (leer lassen, wenn nicht verschlüsselt)",
+        "passwordLabel": "Passwort",
         "passwordPlaceholder": "Archivpasswort eingeben",
         "encodingLabel": "Dateinamen-Kodierung",
         "encodingSystemDefault": "Systemstandard",

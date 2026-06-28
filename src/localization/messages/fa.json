@@ -898,7 +898,7 @@
         "passwordDescription": "این آرشیو رمزگذاری شده است. برای استخراج محتوا رمز عبور را وارد کنید.",
         "encodingTitle": "کدگذاری نام فایل",
         "encodingDescription": "برخی نام‌های فایل در این آرشیو از کدگذاری غیر UTF-8 استفاده می‌کنند. کدگذاری صحیح را انتخاب کنید.",
-        "passwordLabel": "رمز عبور (در صورت رمزگذاری نشدن خالی بگذارید)",
+        "passwordLabel": "رمز عبور",
         "passwordPlaceholder": "رمز عبور آرشیو را وارد کنید",
         "encodingLabel": "کدگذاری نام فایل",
         "encodingSystemDefault": "پیش‌فرض سیستم",

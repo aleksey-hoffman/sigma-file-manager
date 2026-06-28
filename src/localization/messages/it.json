@@ -902,7 +902,7 @@
         "passwordDescription": "Questo archivio è crittografato. Inserisci la password per estrarne il contenuto.",
         "encodingTitle": "Codifica nomi file",
         "encodingDescription": "Alcuni nomi file in questo archivio usano una codifica diversa da UTF-8. Seleziona la codifica corretta.",
-        "passwordLabel": "Password (lascia vuoto se non crittografato)",
+        "passwordLabel": "Password",
         "passwordPlaceholder": "Inserisci password archivio",
         "encodingLabel": "Codifica nomi file",
         "encodingSystemDefault": "Predefinito di sistema",

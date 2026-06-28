@@ -32,6 +32,7 @@ export function consumeNavigatorLayoutResetPending(): boolean {
   navigatorLayoutResetPending = false;
   return true;
 }
+
 const isLayoutAnimating = ref(false);
 const isInfoPanelVisibilityAnimating = ref(false);
 const viewportWidthPx = ref(0);

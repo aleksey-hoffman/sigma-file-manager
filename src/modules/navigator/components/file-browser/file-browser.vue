@@ -101,6 +101,7 @@ function onArchiveOptionsCancelled() {
   archiveOptionsResolver.value = null;
   resolve?.(null);
 }
+
 const { openCopiedPath } = useOpenCopiedPath({
   openDirectory: fb.navigateToPath,
   openFile: fb.openFile,
@@ -321,9 +322,8 @@ defineExpose({
       :open="showArchiveOptions"
       :needs-password="archiveNeedsPassword"
       :needs-encoding="archiveNeedsEncoding"
-      @update:open="(v: boolean) => { if (!v) onArchiveOptionsCancelled() }"
+      @update:open="(open: boolean) => { if (!open) onArchiveOptionsCancelled() }"
       @confirm="onArchiveOptionsConfirmed"
-      @cancel="onArchiveOptionsCancelled"
     />
   </div>
 </template>

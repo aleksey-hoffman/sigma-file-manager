@@ -188,9 +188,15 @@ async function startArchiveJob(
   }
 }
 
-async function resolveArchiveOptions(archivePath: string): Promise<{ password?: string; encoding?: string } | null> {
+async function resolveArchiveOptions(archivePath: string): Promise<{
+  password?: string;
+  encoding?: string;
+} | null> {
   try {
-    const info = await invoke<{ encrypted: boolean; encodingUndetermined: boolean }>('check_archive', { archivePath });
+    const info = await invoke<{
+      encrypted: boolean;
+      encodingUndetermined: boolean;
+    }>('check_archive', { archivePath });
 
     if (!info.encrypted && !info.encodingUndetermined) {
       return {};
@@ -425,7 +431,6 @@ async function handleCompressWithDialog() {
       </ContextMenuItem>
     </ContextMenuSubContent>
   </ContextMenuSub>
-
 </template>
 
 <style>

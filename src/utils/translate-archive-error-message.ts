@@ -8,6 +8,8 @@ export const ARCHIVE_ERROR_CODE_DESTINATION_INSIDE_SELECTED_FOLDER
   = '__ARCHIVE_DESTINATION_INSIDE_SELECTED_FOLDER__';
 export const ARCHIVE_ERROR_CODE_OUTPUT_ALREADY_EXISTS
   = '__ARCHIVE_OUTPUT_ALREADY_EXISTS__';
+export const ARCHIVE_ERROR_CODE_WRONG_PASSWORD
+  = '__ARCHIVE_WRONG_PASSWORD__';
 
 const LEGACY_EN_DESTINATION_INSIDE_SELECTED_FOLDER
   = 'Destination archive is inside a selected folder';
@@ -26,7 +28,7 @@ export function translateArchiveErrorMessage(raw: string): string {
     return i18n.global.t('errors.errorPathAlreadyExists');
   }
 
-  if (/wrong password/i.test(trimmed)) {
+  if (trimmed === ARCHIVE_ERROR_CODE_WRONG_PASSWORD) {
     return i18n.global.t('fileBrowser.archive.errors.wrongPassword');
   }
 

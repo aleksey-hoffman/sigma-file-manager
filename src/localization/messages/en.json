@@ -929,7 +929,7 @@
         "passwordDescription": "This archive is encrypted. Enter the password to extract its contents.",
         "encodingTitle": "File name encoding",
         "encodingDescription": "Some file names in this archive use a non-UTF-8 encoding. Select the correct encoding to display them properly.",
-        "passwordLabel": "Password (leave empty if not encrypted)",
+        "passwordLabel": "Password",
         "passwordPlaceholder": "Enter archive password",
         "encodingLabel": "File name encoding",
         "encodingSystemDefault": "System Default",

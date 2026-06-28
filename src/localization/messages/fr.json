@@ -904,7 +904,7 @@
         "passwordDescription": "Cette archive est chiffrée. Saisissez le mot de passe pour en extraire le contenu.",
         "encodingTitle": "Encodage des noms de fichiers",
         "encodingDescription": "Certains noms de fichiers de cette archive utilisent un encodage autre que UTF-8. Sélectionnez le bon encodage.",
-        "passwordLabel": "Mot de passe (laisser vide si non chiffré)",
+        "passwordLabel": "Mot de passe",
         "passwordPlaceholder": "Saisir le mot de passe de l'archive",
         "encodingLabel": "Encodage des noms de fichiers",
         "encodingSystemDefault": "Par défaut du système",

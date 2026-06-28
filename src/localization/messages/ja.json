@@ -902,7 +902,7 @@
         "passwordDescription": "このアーカイブは暗号化されています。展開するにはパスワードを入力してください。",
         "encodingTitle": "ファイル名のエンコーディング",
         "encodingDescription": "このアーカイブの一部のファイル名は非 UTF-8 エンコーディングを使用しています。正しいエンコーディングを選択してください。",
-        "passwordLabel": "パスワード（暗号化されていない場合は空欄）",
+        "passwordLabel": "パスワード",
         "passwordPlaceholder": "アーカイブのパスワードを入力",
         "encodingLabel": "ファイル名のエンコーディング",
         "encodingSystemDefault": "システム既定",

@@ -904,7 +904,7 @@
         "passwordDescription": "Este archivo está cifrado. Introduce la contraseña para extraer su contenido.",
         "encodingTitle": "Codificación de nombres de archivo",
         "encodingDescription": "Algunos nombres de archivo de este archivo usan una codificación distinta de UTF-8. Selecciona la codificación correcta.",
-        "passwordLabel": "Contraseña (dejar vacío si no está cifrado)",
+        "passwordLabel": "Contraseña",
         "passwordPlaceholder": "Introducir contraseña del archivo",
         "encodingLabel": "Codificación de nombres de archivo",
         "encodingSystemDefault": "Predeterminado del sistema",

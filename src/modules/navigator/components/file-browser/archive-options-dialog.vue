@@ -39,8 +39,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   'update:open': [value: boolean];
-  confirm: [options: ArchiveOptions];
-  cancel: [];
+  'confirm': [options: ArchiveOptions];
 }>();
 
 const { t } = useI18n();
@@ -61,6 +60,7 @@ const canConfirm = computed(() => {
   if (props.needsPassword && !password.value.trim()) {
     return false;
   }
+
   return true;
 });
 
@@ -75,35 +75,101 @@ watch(() => props.open, (open) => {
 });
 
 const encodingOptions = [
-  { value: '__system_default__', label: t('fileBrowser.archive.optionsDialog.encodingSystemDefault') },
-  { value: 'UTF-8', label: 'UTF-8' },
-  { value: '---east-asian', label: '', disabled: true, group: 'eastAsian' },
-  { value: 'shift_jis', label: 'Shift JIS (Japanese)' },
-  { value: 'gb2312', label: 'GB2312 (Simplified Chinese)' },
-  { value: 'big5', label: 'Big5 (Traditional Chinese)' },
-  { value: 'ks_c_5601-1987', label: 'Korean (ks_c_5601-1987)' },
-  { value: '---southeast-asian', label: '', disabled: true, group: 'southeastAsian' },
-  { value: 'Windows-1258', label: 'Windows-1258 (Vietnamese)' },
-  { value: 'Windows-874', label: 'Windows-874 (Thai)' },
-  { value: '---middle-east', label: '', disabled: true, group: 'middleEast' },
-  { value: 'Windows-1256', label: 'Windows-1256 (Arabic)' },
-  { value: 'Windows-1255', label: 'Windows-1255 (Hebrew)' },
-  { value: 'Windows-1254', label: 'Windows-1254 (Turkish)' },
-  { value: '---european', label: '', disabled: true, group: 'european' },
-  { value: 'Windows-1252', label: 'Windows-1252 (Western European)' },
-  { value: 'Windows-1250', label: 'Windows-1250 (Central European)' },
-  { value: 'Windows-1251', label: 'Windows-1251 (Cyrillic)' },
-  { value: 'Windows-1253', label: 'Windows-1253 (Greek)' },
-  { value: 'Windows-1257', label: 'Windows-1257 (Baltic)' },
-  { value: 'macintosh', label: 'Macintosh' },
+  {
+    value: '__system_default__',
+    label: t('fileBrowser.archive.optionsDialog.encodingSystemDefault'),
+  },
+  {
+    value: 'UTF-8',
+    label: 'UTF-8',
+  },
+  {
+    value: '---east-asian',
+    label: '',
+    disabled: true,
+    group: 'eastAsian',
+  },
+  {
+    value: 'shift_jis',
+    label: 'Shift JIS (Japanese)',
+  },
+  {
+    value: 'gb2312',
+    label: 'GB2312 (Simplified Chinese)',
+  },
+  {
+    value: 'big5',
+    label: 'Big5 (Traditional Chinese)',
+  },
+  {
+    value: 'ks_c_5601-1987',
+    label: 'Korean (ks_c_5601-1987)',
+  },
+  {
+    value: '---southeast-asian',
+    label: '',
+    disabled: true,
+    group: 'southeastAsian',
+  },
+  {
+    value: 'Windows-1258',
+    label: 'Windows-1258 (Vietnamese)',
+  },
+  {
+    value: 'Windows-874',
+    label: 'Windows-874 (Thai)',
+  },
+  {
+    value: '---middle-east',
+    label: '',
+    disabled: true,
+    group: 'middleEast',
+  },
+  {
+    value: 'Windows-1256',
+    label: 'Windows-1256 (Arabic)',
+  },
+  {
+    value: 'Windows-1255',
+    label: 'Windows-1255 (Hebrew)',
+  },
+  {
+    value: 'Windows-1254',
+    label: 'Windows-1254 (Turkish)',
+  },
+  {
+    value: '---european',
+    label: '',
+    disabled: true,
+    group: 'european',
+  },
+  {
+    value: 'Windows-1252',
+    label: 'Windows-1252 (Western European)',
+  },
+  {
+    value: 'Windows-1250',
+    label: 'Windows-1250 (Central European)',
+  },
+  {
+    value: 'Windows-1251',
+    label: 'Windows-1251 (Cyrillic)',
+  },
+  {
+    value: 'Windows-1253',
+    label: 'Windows-1253 (Greek)',
+  },
+  {
+    value: 'Windows-1257',
+    label: 'Windows-1257 (Baltic)',
+  },
+  {
+    value: 'macintosh',
+    label: 'Macintosh',
+  },
 ];
 
-const isGroupItem = (value: string) => value.startsWith('---');
-
 function onOpenChange(open: boolean) {
-  if (!open) {
-    emit('cancel');
-  }
   emit('update:open', open);
 }
 
@@ -119,13 +185,15 @@ function handleConfirm() {
 }
 
 function handleCancel() {
-  emit('cancel');
   emit('update:open', false);
 }
 </script>
 
 <template>
-  <Dialog :open="props.open" @update:open="onOpenChange">
+  <Dialog
+    :open="props.open"
+    @update:open="onOpenChange"
+  >
     <DialogContent class="archive-options-dialog">
       <DialogHeader>
         <DialogTitle>{{ dialogTitle }}</DialogTitle>
@@ -162,7 +230,10 @@ function handleCancel() {
               <SelectValue :placeholder="t('fileBrowser.archive.optionsDialog.encodingSystemDefault')" />
             </SelectTrigger>
             <SelectContent>
-              <template v-for="opt in encodingOptions" :key="opt.value">
+              <template
+                v-for="opt in encodingOptions"
+                :key="opt.value"
+              >
                 <div
                   v-if="opt.group"
                   class="archive-options-dialog__group-label"
@@ -183,10 +254,16 @@ function handleCancel() {
       </div>
 
       <DialogFooter>
-        <Button variant="outline" @click="handleCancel">
+        <Button
+          variant="outline"
+          @click="handleCancel"
+        >
           {{ t('cancel') }}
         </Button>
-        <Button :disabled="!canConfirm" @click="handleConfirm">
+        <Button
+          :disabled="!canConfirm"
+          @click="handleConfirm"
+        >
           {{ t('fileBrowser.archive.optionsDialog.extract') }}
         </Button>
       </DialogFooter>
@@ -209,8 +286,8 @@ function handleCancel() {
 .archive-options-dialog__fields {
   display: flex;
   flex-direction: column;
-  gap: 16px;
   padding: 8px 0;
+  gap: 16px;
 }
 
 .archive-options-dialog__field {
@@ -221,12 +298,12 @@ function handleCancel() {
 
 .archive-options-dialog__group-label {
   padding: 6px 8px 2px;
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
   color: hsl(var(--muted-foreground));
   cursor: default;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
   user-select: none;
 }
 </style>

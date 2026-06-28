@@ -923,7 +923,28 @@
       "unknownError": "שגיאה לא ידועה",
       "operationErrorTitle": "פעולת הארכיון נכשלה",
       "errors": {
-        "destinationInsideSelectedFolder": "ארכיון היעד נמצא בתוך תיקייה נבחרת"
+        "destinationInsideSelectedFolder": "ארכיון היעד נמצא בתוך תיקייה נבחרת",
+        "wrongPassword": "Incorrect password. The archive could not be decrypted.",
+        "encodingError": "Failed to decode file names with the selected encoding."
+      },
+      "optionsDialog": {
+        "title": "Archive extraction options",
+        "description": "Configure extraction settings for password-protected or non-UTF-8 encoded archives",
+        "passwordTitle": "Archive password required",
+        "passwordDescription": "This archive is encrypted. Enter the password to extract its contents.",
+        "encodingTitle": "File name encoding",
+        "encodingDescription": "Some file names in this archive use a non-UTF-8 encoding. Select the correct encoding to display them properly.",
+        "passwordLabel": "Password",
+        "passwordPlaceholder": "Enter archive password",
+        "encodingLabel": "File name encoding",
+        "encodingSystemDefault": "System Default",
+        "encodingGroup": {
+          "eastAsian": "East Asian",
+          "southeastAsian": "Southeast Asian",
+          "middleEast": "Middle East",
+          "european": "European"
+        },
+        "extract": "Extract"
       }
     },
     "kind": "סוג",

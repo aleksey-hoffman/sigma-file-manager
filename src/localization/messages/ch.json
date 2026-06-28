@@ -902,7 +902,7 @@
         "passwordDescription": "此压缩包已加密。请输入密码以解压其内容。",
         "encodingTitle": "文件名编码",
         "encodingDescription": "此压缩包中的部分文件名使用非 UTF-8 编码。请选择正确的编码以正常显示。",
-        "passwordLabel": "密码（未加密时请留空）",
+        "passwordLabel": "密码",
         "passwordPlaceholder": "输入压缩包密码",
         "encodingLabel": "文件名编码",
         "encodingSystemDefault": "系统默认",

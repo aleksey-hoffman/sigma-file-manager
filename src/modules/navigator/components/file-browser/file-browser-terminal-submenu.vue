@@ -18,9 +18,7 @@ import {
 } from '@/components/ui/context-menu';
 import { useShortcutsStore } from '@/stores/runtime/shortcuts';
 import { useTerminalsStore } from '@/stores/runtime/terminals';
-import {
-  getDirectoryPathFromEntry,
-} from '@/utils/virtual-location-action-target';
+import { getDirectoryPathFromEntry } from '@/utils/virtual-location-action-target';
 import { isVirtualLocationPath } from '@/utils/virtual-path-constants';
 import { TerminalSquareIcon } from '@lucide/vue';
 

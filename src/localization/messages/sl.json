@@ -932,7 +932,7 @@
         "passwordDescription": "Ta arhiv je šifriran. Vnesite geslo za razširitev vsebine.",
         "encodingTitle": "Kodiranje imen datotek",
         "encodingDescription": "Nekatera imena datotek v tem arhivu uporabljajo kodiranje, ki ni UTF-8. Izberite pravilno kodiranje.",
-        "passwordLabel": "Geslo (pustite prazno, če ni šifrirano)",
+        "passwordLabel": "Geslo",
         "passwordPlaceholder": "Vnesite geslo arhiva",
         "encodingLabel": "Kodiranje imen datotek",
         "encodingSystemDefault": "Sistemsko privzeto",

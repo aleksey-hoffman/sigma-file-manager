@@ -902,7 +902,7 @@
         "passwordDescription": "Bu arşiv şifrelenmiş. İçeriği çıkarmak için parolayı girin.",
         "encodingTitle": "Dosya adı kodlaması",
         "encodingDescription": "Bu arşivdeki bazı dosya adları UTF-8 olmayan bir kodlama kullanıyor. Doğru kodlamayı seçin.",
-        "passwordLabel": "Parola (şifrelenmemişse boş bırakın)",
+        "passwordLabel": "Parola",
         "passwordPlaceholder": "Arşiv parolasını girin",
         "encodingLabel": "Dosya adı kodlaması",
         "encodingSystemDefault": "Sistem varsayılanı",

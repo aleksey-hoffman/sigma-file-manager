@@ -26,6 +26,7 @@ const ARCHIVE_JOB_CANCELLED: &str = "__ARCHIVE_JOB_CANCELLED__";
 const ARCHIVE_ERROR_DESTINATION_INSIDE_SELECTED_FOLDER: &str =
     "__ARCHIVE_DESTINATION_INSIDE_SELECTED_FOLDER__";
 const ARCHIVE_ERROR_OUTPUT_ALREADY_EXISTS: &str = "__ARCHIVE_OUTPUT_ALREADY_EXISTS__";
+const ARCHIVE_ERROR_WRONG_PASSWORD: &str = "__ARCHIVE_WRONG_PASSWORD__";
 
 #[derive(Debug, Deserialize)]
 #[serde(
@@ -63,6 +64,10 @@ fn is_zip_password_required(error: &ZipError) -> bool {
         error,
         ZipError::UnsupportedArchive(ZipError::PASSWORD_REQUIRED)
     )
+}
+
+fn is_zip_password_incorrect(error: &ZipError) -> bool {
+    matches!(error, ZipError::InvalidPassword)
 }
 
 #[tauri::command]
@@ -204,7 +209,7 @@ fn decode_zip_entry_path_str(raw: &[u8], encoding: &str) -> Result<String, Strin
         .ok_or_else(|| format!("Unknown encoding: {}", encoding))?;
     let (decoded, _encoding, _had_errors) = enc.decode(raw);
     let cleaned = decoded
-        .trim_start_matches(|c| c == '/' || c == '\\')
+        .trim_start_matches(['/', '\\'])
         .trim_start_matches("./");
 
     if cleaned.is_empty() {
@@ -226,7 +231,7 @@ fn get_entry_path<R: Read + ?Sized>(file: &zip::read::ZipFile<'_, R>, encoding: 
     } else {
         file.enclosed_name()
             .ok_or_else(|| "Zip contains unsafe path entry".to_string())
-            .map(PathBuf::from)
+            .map(|path| path.to_path_buf())
     }
 }
 
@@ -240,11 +245,9 @@ pub fn extract_zip_to_directory(
 }
 
 fn extract_entry_name<R: Read + ?Sized>(file: &zip::read::ZipFile<'_, R>, encoding: Option<&str>) -> String {
-    match encoding {
-        Some(encoding_label) => decode_zip_entry_path_str(file.name_raw(), encoding_label)
-            .unwrap_or_else(|_| file.name().to_string()),
-        None => file.name().to_string(),
-    }
+    get_entry_path(file, encoding)
+        .map(|path| path.display().to_string())
+        .unwrap_or_else(|_| file.name().to_string())
 }
 
 fn read_entry<'a, R: Read + Seek>(
@@ -253,9 +256,13 @@ fn read_entry<'a, R: Read + Seek>(
     password: Option<&[u8]>,
 ) -> Result<zip::read::ZipFile<'a, R>, String> {
     match password {
-        Some(pwd) => archive
-            .by_index_decrypt(index, pwd)
-            .map_err(|e| format!("Failed to read zip entry (wrong password?): {}", e)),
+        Some(pwd) => archive.by_index_decrypt(index, pwd).map_err(|error| {
+            if is_zip_password_incorrect(&error) || is_zip_password_required(&error) {
+                ARCHIVE_ERROR_WRONG_PASSWORD.to_string()
+            } else {
+                format!("Failed to read zip entry: {}", error)
+            }
+        }),
         None => archive
             .by_index(index)
             .map_err(|e| format!("Failed to read zip entry: {}", e)),
@@ -290,9 +297,6 @@ fn extract_zip_to_directory_with_sink(
 
         let file = read_entry(&mut archive, archive_index, password)?;
         let enclosed_path = get_entry_path(&file, encoding)?;
-        if !is_safe_archive_relative_path(&enclosed_path) {
-            return Err("Zip contains unsafe path entry".to_string());
-        }
 
         if root_dir.is_none() {
             let mut components = enclosed_path.components();
@@ -318,9 +322,6 @@ fn extract_zip_to_directory_with_sink(
         }
 
         let enclosed_path = get_entry_path(&file, encoding)?;
-        if !is_safe_archive_relative_path(&enclosed_path) {
-            return Err("Zip contains unsafe path entry".to_string());
-        }
 
         let relative_path = if let Some(root) = &root_dir {
             enclosed_path
@@ -859,7 +860,6 @@ mod tests {
         let extract_dir = temp.path().join("extracted");
         fs::create_dir_all(&extract_dir).unwrap();
         let result = extract_zip_to_directory(&zip_path, &extract_dir, Some(b"wrong"), None);
-        let error = result.unwrap_err().to_lowercase();
-        assert!(error.contains("password"));
+        assert_eq!(result.unwrap_err(), ARCHIVE_ERROR_WRONG_PASSWORD);
     }
 }
