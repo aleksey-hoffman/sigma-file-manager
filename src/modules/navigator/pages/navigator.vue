@@ -23,8 +23,7 @@ import { useDismissalLayerStore } from '@/stores/runtime/dismissal-layer';
 import { useGlobalSearchStore } from '@/stores/runtime/global-search';
 import { useShortcutsStore, getSelectedTextForCopy } from '@/stores/runtime/shortcuts';
 import { toast, ToastStatic } from '@/components/ui/toaster';
-import { resolveTerminalDirectoryPath, getActionTargetEntries } from '@/utils/terminal-directory-path';
-import { isVirtualLocationPath } from '@/utils/virtual-path-constants';
+import { getVirtualLocationActionContext } from '@/utils/virtual-location-action-target';
 import { useTerminalsStore } from '@/stores/runtime/terminals';
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
 import { useNavigatorSelectionStore } from '@/stores/runtime/navigator-selection';
@@ -554,11 +553,16 @@ function getActivePaneRef(): FileBrowserInstance | undefined {
   return getNavigatorPaneRef();
 }
 
+function getNavigatorActionContext(currentDirectoryPath: string | undefined) {
+  return getVirtualLocationActionContext(selectedEntries.value, currentDirectoryPath);
+}
+
 function getPasteTargetPath(): string | undefined {
   const currentPath = getActiveCurrentPath();
+  const actionContext = getNavigatorActionContext(currentPath);
 
-  if (isVirtualLocationPath(currentPath ?? '')) {
-    return resolveTerminalDirectoryPath(selectedEntries.value, currentPath) ?? undefined;
+  if (actionContext.isBrowsingVirtualLocations) {
+    return actionContext.actionDirectoryPath ?? undefined;
   }
 
   if (isSplitView.value && activeTabId.value) {
@@ -655,23 +659,20 @@ function handleCopyShortcut() {
 
 async function handleCopyCurrentDirectoryPathShortcut() {
   const currentPath = getActiveCurrentPath();
+  const actionContext = getNavigatorActionContext(currentPath);
 
-  if (isVirtualLocationPath(currentPath ?? '')) {
-    const targetEntries = getActionTargetEntries(selectedEntries.value, currentPath);
-
-    if (targetEntries.length === 0) {
+  if (actionContext.isBrowsingVirtualLocations) {
+    if (actionContext.actionTargetEntries.length === 0) {
       return false;
     }
 
-    const pathText = targetEntries.map(entry => entry.path).join('\n');
-
     try {
-      await navigator.clipboard.writeText(pathText);
+      await navigator.clipboard.writeText(actionContext.actionTargetPathsText);
       toast.custom(markRaw(ToastStatic), {
         componentProps: {
           data: {
             title: t('dialogs.localShareManagerDialog.addressCopiedToClipboard'),
-            description: pathText,
+            description: actionContext.actionTargetPathsText,
           },
         },
         duration: 2000,
@@ -852,30 +853,32 @@ async function handlePropertiesShortcut() {
 }
 
 async function openTerminalWithOptions(asAdmin: boolean) {
-  const directoryPath = resolveTerminalDirectoryPath(
-    selectedEntries.value,
-    currentActivePath.value,
-  );
+  const actionContext = getNavigatorActionContext(currentActivePath.value);
 
-  if (!directoryPath) {
+  if (!actionContext.actionDirectoryPath) {
     return;
   }
 
   const defaultTerminal = terminalsStore.terminals[0];
   if (!defaultTerminal) return;
 
-  await terminalsStore.openTerminal(directoryPath, defaultTerminal.id, asAdmin);
+  await terminalsStore.openTerminal(actionContext.actionDirectoryPath, defaultTerminal.id, asAdmin);
 }
 
 async function handleOpenNewTabShortcut() {
-  const currentPath = currentActivePath.value;
+  const actionContext = getNavigatorActionContext(currentActivePath.value);
 
-  if (isVirtualLocationPath(currentPath ?? '') && selectedEntries.value.length > 0) {
-    getActivePaneRef()?.performSelectionAction?.('open-in-new-tab');
+  if (actionContext.isBrowsingVirtualLocations) {
+    if (actionContext.actionTargetEntries.length > 0) {
+      getActivePaneRef()?.performSelectionAction?.('open-in-new-tab');
+    }
+
     return;
   }
 
-  if (!currentPath || isVirtualLocationPath(currentPath)) {
+  const currentPath = currentActivePath.value;
+
+  if (!currentPath) {
     return;
   }
 

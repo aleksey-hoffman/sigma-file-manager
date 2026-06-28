@@ -8,7 +8,7 @@ import type { ContextMenuAction } from '@/modules/navigator/components/file-brow
 import { quickViewSupportedPathsFromVisibleEntries } from '@/stores/runtime/quick-view';
 import { usePlatformStore } from '@/stores/runtime/platform';
 import { openNativeProperties } from '@/utils/open-native-properties';
-import { canPerformContextMenuAction } from '@/modules/navigator/components/file-browser/utils/context-menu-action-visibility';
+import { isContextMenuActionVisible } from '@/modules/navigator/components/file-browser/utils/context-menu-action-visibility';
 import { toast, ToastStatic } from '@/components/ui/toaster';
 import { markRaw } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -39,7 +39,7 @@ export function useFileBrowserActions(options: {
   const platformStore = usePlatformStore();
 
   function canPerformAction(action: ContextMenuAction, entries: DirEntry[]): boolean {
-    return canPerformContextMenuAction(action, entries, {
+    return isContextMenuActionVisible(action, entries, {
       platform: platformStore.currentPlatform,
     });
   }

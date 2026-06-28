@@ -7,14 +7,15 @@ import type { DirEntry } from '@/types/dir-entry';
 import {
   getActionTargetEntries,
   getDirectoryPathFromEntry,
-  resolveTerminalDirectoryPath,
-} from '@/utils/terminal-directory-path';
+  getVirtualLocationActionContext,
+  isBrowsingVirtualLocations,
+  resolveActionDirectoryPath,
+} from '@/utils/virtual-location-action-target';
 import { LOCATIONS_VIRTUAL_PATH } from '@/utils/virtual-path-constants';
 
 function createEntry(overrides: Partial<DirEntry> & Pick<DirEntry, 'path'>): DirEntry {
   return {
     name: overrides.path,
-    path: overrides.path,
     is_file: false,
     is_dir: true,
     is_hidden: false,
@@ -30,7 +31,14 @@ function createEntry(overrides: Partial<DirEntry> & Pick<DirEntry, 'path'>): Dir
   };
 }
 
-describe('terminal-directory-path', () => {
+describe('virtual-location-action-target', () => {
+  describe('isBrowsingVirtualLocations', () => {
+    it('detects the locations virtual path', () => {
+      expect(isBrowsingVirtualLocations(LOCATIONS_VIRTUAL_PATH)).toBe(true);
+      expect(isBrowsingVirtualLocations('C:/Users')).toBe(false);
+    });
+  });
+
   describe('getDirectoryPathFromEntry', () => {
     it('returns directory paths unchanged', () => {
       expect(getDirectoryPathFromEntry(createEntry({ path: 'C:/Users' }))).toBe('C:/Users');
@@ -64,24 +72,51 @@ describe('terminal-directory-path', () => {
     });
   });
 
-  describe('resolveTerminalDirectoryPath', () => {
+  describe('resolveActionDirectoryPath', () => {
     it('uses the current directory for normal paths', () => {
-      expect(resolveTerminalDirectoryPath([], 'C:/Users')).toBe('C:/Users');
+      expect(resolveActionDirectoryPath([], 'C:/Users')).toBe('C:/Users');
     });
 
     it('uses the selected directory when browsing virtual locations', () => {
       const selectedEntries = [createEntry({ path: '//wsl.localhost/docker-desktop' })];
 
-      expect(resolveTerminalDirectoryPath(selectedEntries, LOCATIONS_VIRTUAL_PATH))
+      expect(resolveActionDirectoryPath(selectedEntries, LOCATIONS_VIRTUAL_PATH))
         .toBe('//wsl.localhost/docker-desktop');
     });
 
     it('returns null when browsing virtual locations without a valid selection', () => {
-      expect(resolveTerminalDirectoryPath([], LOCATIONS_VIRTUAL_PATH)).toBeNull();
-      expect(resolveTerminalDirectoryPath(
+      expect(resolveActionDirectoryPath([], LOCATIONS_VIRTUAL_PATH)).toBeNull();
+      expect(resolveActionDirectoryPath(
         [createEntry({ path: LOCATIONS_VIRTUAL_PATH })],
         LOCATIONS_VIRTUAL_PATH,
       )).toBeNull();
+    });
+  });
+
+  describe('getVirtualLocationActionContext', () => {
+    it('returns a full action context for virtual locations', () => {
+      const selectedEntries = [
+        createEntry({ path: '//wsl.localhost/docker-desktop' }),
+        createEntry({ path: '//wsl.localhost/Ubuntu-24.04' }),
+      ];
+
+      expect(getVirtualLocationActionContext(selectedEntries, LOCATIONS_VIRTUAL_PATH)).toEqual({
+        isBrowsingVirtualLocations: true,
+        actionDirectoryPath: '//wsl.localhost/docker-desktop',
+        actionTargetEntries: selectedEntries,
+        actionTargetPathsText: '//wsl.localhost/docker-desktop\n//wsl.localhost/Ubuntu-24.04',
+      });
+    });
+
+    it('returns the current directory context for normal paths', () => {
+      const selectedEntries = [createEntry({ path: 'C:/Users' })];
+
+      expect(getVirtualLocationActionContext(selectedEntries, 'C:/Users')).toEqual({
+        isBrowsingVirtualLocations: false,
+        actionDirectoryPath: 'C:/Users',
+        actionTargetEntries: selectedEntries,
+        actionTargetPathsText: 'C:/Users',
+      });
     });
   });
 });

@@ -103,17 +103,6 @@ function getSelectionStats(entries: DirEntry[]) {
   };
 }
 
-export function canPerformContextMenuAction(
-  action: ContextMenuAction,
-  entries: DirEntry[],
-  options?: {
-    platform?: string | null;
-    disableDestructiveActions?: boolean;
-  },
-): boolean {
-  return isContextMenuActionVisible(action, entries, options);
-}
-
 export function isContextMenuActionVisible(
   action: ContextMenuAction,
   entries: DirEntry[],

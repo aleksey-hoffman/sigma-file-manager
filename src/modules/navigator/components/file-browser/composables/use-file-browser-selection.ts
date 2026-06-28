@@ -30,7 +30,7 @@ import { createIndexedFileName, safeFileNameFromUrl } from '@/utils/remote-file'
 import { basenameFromPath } from '@/utils/source-display-name';
 import { usePermanentDeleteConfirm } from '@/composables/use-permanent-delete-confirm';
 import { usePlatformStore } from '@/stores/runtime/platform';
-import { canPerformContextMenuAction } from '@/modules/navigator/components/file-browser/utils/context-menu-action-visibility';
+import { isContextMenuActionVisible } from '@/modules/navigator/components/file-browser/utils/context-menu-action-visibility';
 import { resolveNavigableItemTarget } from '@/utils/resolve-navigable-item-target';
 import type { CreateLinksResult, LinkCreationKind } from '@/utils/link-operations';
 
@@ -316,7 +316,7 @@ export function useFileBrowserSelection(
   }
 
   function canPerformAction(action: ContextMenuAction, entries: DirEntry[]): boolean {
-    return canPerformContextMenuAction(action, entries, {
+    return isContextMenuActionVisible(action, entries, {
       platform: platformStore.currentPlatform,
     });
   }
