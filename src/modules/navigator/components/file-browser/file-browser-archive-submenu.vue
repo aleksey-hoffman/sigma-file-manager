@@ -196,13 +196,18 @@ async function resolveArchiveOptions(archivePath: string): Promise<{
     const info = await invoke<{
       encrypted: boolean;
       encodingUndetermined: boolean;
+      detectedEncoding?: string | null;
     }>('check_archive', { archivePath });
 
     if (!info.encrypted && !info.encodingUndetermined) {
       return {};
     }
 
-    const options = await fileBrowserContext?.requestArchiveOptions(info.encrypted, info.encodingUndetermined);
+    const options = await fileBrowserContext?.requestArchiveOptions(
+      info.encrypted,
+      info.encodingUndetermined,
+      info.detectedEncoding ?? undefined,
+    );
 
     if (!options) {
       return null;

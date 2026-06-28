@@ -62,10 +62,11 @@ export interface FileBrowserContext {
   requestFocusEntryAfterRefresh: (parentDirectoryPath: string, entryPath: string) => void;
 
   entryDescription?: (entry: DirEntry) => string | undefined;
-  requestArchiveOptions: (needsPassword?: boolean, needsEncoding?: boolean) => Promise<{
-    password: string;
-    encoding: string | undefined;
-  } | null>;
+  requestArchiveOptions: (
+    needsPassword?: boolean,
+    needsEncoding?: boolean,
+    detectedEncoding?: string,
+  ) => Promise<{ password: string; encoding: string | undefined } | null>;
 }
 
 export const FILE_BROWSER_CONTEXT_KEY: InjectionKey<FileBrowserContext> = Symbol('FileBrowserContext');

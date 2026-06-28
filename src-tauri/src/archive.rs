@@ -57,7 +57,29 @@ pub enum ArchiveJobRequest {
 pub struct ArchiveCheckResult {
     pub encrypted: bool,
     pub encoding_undetermined: bool,
+    pub detected_encoding: Option<String>,
 }
+
+const MAX_ZIP_ENCODING_SAMPLES: usize = 32;
+
+const ZIP_ENTRY_ENCODING_CANDIDATES: &[&str] = &[
+    "shift_jis",
+    "gb2312",
+    "big5",
+    "ks_c_5601-1987",
+    "Windows-1258",
+    "Windows-874",
+    "Windows-1256",
+    "Windows-1255",
+    "Windows-1254",
+    "IBM437",
+    "Windows-1252",
+    "Windows-1250",
+    "Windows-1251",
+    "Windows-1253",
+    "Windows-1257",
+    "macintosh",
+];
 
 fn is_zip_password_required(error: &ZipError) -> bool {
     matches!(
@@ -70,6 +92,64 @@ fn is_zip_password_incorrect(error: &ZipError) -> bool {
     matches!(error, ZipError::InvalidPassword)
 }
 
+fn score_encoding_for_zip_names(raw_names: &[Vec<u8>], encoding_label: &str) -> u32 {
+    let Some(encoding) = Encoding::for_label(encoding_label.as_bytes()) else {
+        return 0;
+    };
+
+    let mut score = 0u32;
+
+    for raw in raw_names {
+        let (_, _, had_errors) = encoding.decode(raw);
+        if had_errors || decode_zip_entry_path_str(raw, encoding_label).is_err() {
+            continue;
+        }
+
+        let weight = if raw.iter().any(|byte| *byte >= 0x80) {
+            10
+        } else {
+            1
+        };
+        score += weight;
+    }
+
+    score
+}
+
+fn detect_zip_entry_encoding(raw_names: &[Vec<u8>]) -> Option<String> {
+    if raw_names.is_empty() {
+        return None;
+    }
+
+    let max_score: u32 = raw_names
+        .iter()
+        .map(|raw| {
+            if raw.iter().any(|byte| *byte >= 0x80) {
+                10
+            } else {
+                1
+            }
+        })
+        .sum();
+
+    let mut best_label: Option<&str> = None;
+    let mut best_score = 0u32;
+
+    for &label in ZIP_ENTRY_ENCODING_CANDIDATES {
+        let score = score_encoding_for_zip_names(raw_names, label);
+        if score > best_score {
+            best_score = score;
+            best_label = Some(label);
+        }
+    }
+
+    if best_score >= max_score {
+        best_label.map(str::to_string)
+    } else {
+        None
+    }
+}
+
 #[tauri::command]
 pub fn check_archive(archive_path: String) -> Result<ArchiveCheckResult, String> {
     let path = PathBuf::from(normalize_path(&archive_path));
@@ -80,19 +160,23 @@ pub fn check_archive(archive_path: String) -> Result<ArchiveCheckResult, String>
 
     let mut encrypted = false;
     let mut encoding_undetermined = false;
+    let mut non_utf8_name_samples: Vec<Vec<u8>> = Vec::new();
 
     for i in 0..archive.len() {
-        if encrypted && encoding_undetermined {
+        if encrypted
+            && encoding_undetermined
+            && non_utf8_name_samples.len() >= MAX_ZIP_ENCODING_SAMPLES
+        {
             break;
         }
 
         let entry_result = archive.by_index(i);
         let entry = match entry_result {
-            Ok(e) => {
-                if !encrypted && e.encrypted() {
+            Ok(entry) => {
+                if !encrypted && entry.encrypted() {
                     encrypted = true;
                 }
-                e
+                entry
             }
             Err(error) => {
                 if is_zip_password_required(&error) {
@@ -104,17 +188,25 @@ pub fn check_archive(archive_path: String) -> Result<ArchiveCheckResult, String>
             }
         };
 
-        if !encoding_undetermined {
-            let raw = entry.name_raw();
-            if std::str::from_utf8(raw).is_err() {
-                encoding_undetermined = true;
+        let raw = entry.name_raw();
+        if std::str::from_utf8(raw).is_err() {
+            encoding_undetermined = true;
+            if non_utf8_name_samples.len() < MAX_ZIP_ENCODING_SAMPLES {
+                non_utf8_name_samples.push(raw.to_vec());
             }
         }
     }
 
+    let detected_encoding = if encoding_undetermined {
+        detect_zip_entry_encoding(&non_utf8_name_samples)
+    } else {
+        None
+    };
+
     Ok(ArchiveCheckResult {
         encrypted,
         encoding_undetermined,
+        detected_encoding,
     })
 }
 
@@ -819,6 +911,7 @@ mod tests {
         let result = check_archive(zip_path.to_string_lossy().to_string()).unwrap();
         assert!(!result.encrypted);
         assert!(!result.encoding_undetermined);
+        assert!(result.detected_encoding.is_none());
     }
 
     #[test]
@@ -836,6 +929,17 @@ mod tests {
         let result = check_archive(zip_path.to_string_lossy().to_string()).unwrap();
         assert!(result.encrypted);
         assert!(!result.encoding_undetermined);
+        assert!(result.detected_encoding.is_none());
+    }
+
+    #[test]
+    fn detect_zip_entry_encoding_detects_shift_jis() {
+        let raw = [0x82, 0xa0, b'.', b't', b'x', b't'];
+        let samples = vec![raw.to_vec()];
+        assert_eq!(
+            detect_zip_entry_encoding(&samples).as_deref(),
+            Some("shift_jis")
+        );
     }
 
     #[test]

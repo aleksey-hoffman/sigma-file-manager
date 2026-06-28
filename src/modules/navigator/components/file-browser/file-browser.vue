@@ -77,11 +77,17 @@ const permanentDeletePendingEntries = fb.permanentDeleteConfirm.pendingEntries;
 const showArchiveOptions = ref(false);
 const archiveNeedsPassword = ref(false);
 const archiveNeedsEncoding = ref(false);
+const archiveDetectedEncoding = ref<string | undefined>(undefined);
 const archiveOptionsResolver = ref<((options: ArchiveOptions | null) => void) | null>(null);
 
-function requestArchiveOptions(needsPassword = false, needsEncoding = false): Promise<ArchiveOptions | null> {
+function requestArchiveOptions(
+  needsPassword = false,
+  needsEncoding = false,
+  detectedEncoding?: string,
+): Promise<ArchiveOptions | null> {
   archiveNeedsPassword.value = needsPassword;
   archiveNeedsEncoding.value = needsEncoding;
+  archiveDetectedEncoding.value = detectedEncoding;
   showArchiveOptions.value = true;
   return new Promise((resolve) => {
     archiveOptionsResolver.value = resolve;
@@ -322,6 +328,7 @@ defineExpose({
       :open="showArchiveOptions"
       :needs-password="archiveNeedsPassword"
       :needs-encoding="archiveNeedsEncoding"
+      :detected-encoding="archiveDetectedEncoding"
       @update:open="(open: boolean) => { if (!open) onArchiveOptionsCancelled() }"
       @confirm="onArchiveOptionsConfirmed"
     />

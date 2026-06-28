@@ -35,6 +35,7 @@ const props = defineProps<{
   open: boolean;
   needsPassword?: boolean;
   needsEncoding?: boolean;
+  detectedEncoding?: string;
 }>();
 
 const emit = defineEmits<{
@@ -66,13 +67,6 @@ const canConfirm = computed(() => {
 
 const password = ref('');
 const encoding = ref('__system_default__');
-
-watch(() => props.open, (open) => {
-  if (open) {
-    password.value = '';
-    encoding.value = '__system_default__';
-  }
-});
 
 const encodingOptions = [
   {
@@ -144,6 +138,10 @@ const encodingOptions = [
     group: 'european',
   },
   {
+    value: 'IBM437',
+    label: 'IBM437 (ZIP default)',
+  },
+  {
     value: 'Windows-1252',
     label: 'Windows-1252 (Western European)',
   },
@@ -168,6 +166,27 @@ const encodingOptions = [
     label: 'Macintosh',
   },
 ];
+
+const selectableEncodingValues = new Set(
+  encodingOptions
+    .filter(option => !option.group && !option.disabled)
+    .map(option => option.value),
+);
+
+function resolveInitialEncoding(detectedEncoding?: string): string {
+  if (detectedEncoding && selectableEncodingValues.has(detectedEncoding)) {
+    return detectedEncoding;
+  }
+
+  return '__system_default__';
+}
+
+watch(() => props.open, (open) => {
+  if (open) {
+    password.value = '';
+    encoding.value = resolveInitialEncoding(props.detectedEncoding);
+  }
+});
 
 function onOpenChange(open: boolean) {
   emit('update:open', open);
@@ -229,7 +248,10 @@ function handleCancel() {
             <SelectTrigger id="archive-encoding">
               <SelectValue :placeholder="t('fileBrowser.archive.optionsDialog.encodingSystemDefault')" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent
+              class="archive-options-dialog__encoding-select-content"
+              :collision-padding="10"
+            >
               <template
                 v-for="opt in encodingOptions"
                 :key="opt.value"
@@ -305,5 +327,9 @@ function handleCancel() {
   letter-spacing: 0.05em;
   text-transform: uppercase;
   user-select: none;
+}
+
+.archive-options-dialog__encoding-select-content.sigma-ui-select-content {
+  max-height: min(400px, var(--reka-select-content-available-height, 400px));
 }
 </style>
