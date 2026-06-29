@@ -5,7 +5,7 @@
 import {
   ref, computed, nextTick, toRef, onMounted, onUnmounted, watch,
 } from 'vue';
-import type { Ref, ComputedRef } from 'vue';
+import type { Ref, ComputedRef, ComponentPublicInstance } from 'vue';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { useDismissalLayerStore } from '@/stores/runtime/dismissal-layer';
 import { useQuickViewStore } from '@/stores/runtime/quick-view';
@@ -310,7 +310,7 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
     layout: options.layout,
   });
 
-  const { entriesContainerRef, setEntriesContainerRef } = useFileBrowserFocus({
+  const { entriesContainerRef, setEntriesContainerRef: setFocusEntriesContainerRef } = useFileBrowserFocus({
     entries: visualEntries,
     pendingFocusRequest: selection.pendingFocusRequest,
     currentPath: dataSource.currentPath,
@@ -319,6 +319,11 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
     scrollToPath: virtualLayout.scrollToPath,
     getEntryElement: virtualLayout.getEntryElement,
   });
+
+  function setEntriesContainerRef(element: Element | ComponentPublicInstance | null) {
+    setFocusEntriesContainerRef(element);
+    virtualLayout.scheduleViewportSizeUpdate();
+  }
 
   const videoThumbnails = !isExternalMode
     ? useVideoThumbnails()

@@ -7,6 +7,8 @@ import type { DirEntry } from '@/types/dir-entry';
 import {
   createFileBrowserVirtualRows,
   getFileBrowserGridNavigationEntry,
+  getGridColumnCount,
+  resolveViewportContentWidth,
 } from '../use-file-browser-virtual-layout';
 
 function createEntry(name: string, options: Partial<DirEntry> = {}): DirEntry {
@@ -138,5 +140,47 @@ describe('getFileBrowserGridNavigationEntry', () => {
     expect(getFileBrowserGridNavigationEntry(rows, '/dir-2', 'down')?.path).toBe('/dir-4');
     expect(getFileBrowserGridNavigationEntry(rows, '/dir-4', 'down')?.path).toBe('/image-2');
     expect(getFileBrowserGridNavigationEntry(rows, '/image-2', 'up')?.path).toBe('/dir-4');
+  });
+});
+
+describe('getGridColumnCount', () => {
+  it('derives column count from minimum card width and gap', () => {
+    expect(getGridColumnCount(500)).toBe(2);
+    expect(getGridColumnCount(850)).toBe(4);
+    expect(getGridColumnCount(950)).toBe(5);
+  });
+});
+
+describe('resolveViewportContentWidth', () => {
+  it('prefers entries container width over viewport width', () => {
+    const viewport = document.createElement('div');
+    const contentInner = document.createElement('div');
+    const entriesContainer = document.createElement('div');
+
+    contentInner.className = 'file-browser__content-inner';
+    entriesContainer.className = 'file-browser__entries-container';
+    contentInner.appendChild(entriesContainer);
+    viewport.appendChild(contentInner);
+
+    Object.defineProperty(viewport, 'clientWidth', { value: 950, configurable: true });
+    Object.defineProperty(contentInner, 'clientWidth', { value: 900, configurable: true });
+    Object.defineProperty(entriesContainer, 'clientWidth', { value: 850, configurable: true });
+
+    expect(resolveViewportContentWidth(viewport)).toBe(850);
+  });
+
+  it('falls back to content inner width while entries container is absent', () => {
+    const viewport = document.createElement('div');
+    const contentInner = document.createElement('div');
+
+    contentInner.className = 'file-browser__content-inner';
+    viewport.appendChild(contentInner);
+
+    Object.defineProperty(viewport, 'clientWidth', { value: 950, configurable: true });
+    Object.defineProperty(contentInner, 'clientWidth', { value: 850, configurable: true });
+
+    expect(resolveViewportContentWidth(viewport)).toBe(850);
+    expect(getGridColumnCount(resolveViewportContentWidth(viewport))).toBe(4);
+    expect(getGridColumnCount(viewport.clientWidth)).toBe(5);
   });
 });

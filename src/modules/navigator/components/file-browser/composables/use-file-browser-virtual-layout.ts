@@ -29,6 +29,7 @@ const SCROLL_TO_PATH_DOM_SYNC_ATTEMPTS = 12;
 const STATUS_BAR_BORDER_CLEARANCE = 2;
 const SCROLL_VIEWPORT_SELECTOR = '.file-browser__scroll-area-viewport';
 const ENTRIES_CONTAINER_SELECTOR = '.file-browser__entries-container';
+const CONTENT_INNER_SELECTOR = '.file-browser__content-inner';
 const FILE_BROWSER_SELECTOR = '.file-browser';
 const STATUS_BAR_SELECTOR = '.file-browser-status-bar';
 const VIRTUAL_SPACER_SELECTOR = '.file-browser-list-view__list, .file-browser-grid-view__spacer';
@@ -184,9 +185,25 @@ function getEntryDescriptionHeight(
   return entryDescription?.(entry) ? LIST_ENTRY_WITH_DESCRIPTION_HEIGHT : LIST_ENTRY_HEIGHT;
 }
 
-function getGridColumnCount(viewportWidth: number): number {
+export function getGridColumnCount(viewportWidth: number): number {
   const availableWidth = Math.max(0, viewportWidth - GRID_VIEW_PADDING_X);
   return Math.max(1, Math.floor((availableWidth + GRID_COLUMN_GAP) / (GRID_MIN_COLUMN_WIDTH + GRID_COLUMN_GAP)));
+}
+
+export function resolveViewportContentWidth(viewport: HTMLElement): number {
+  const entriesContainer = viewport.querySelector<HTMLElement>(ENTRIES_CONTAINER_SELECTOR);
+
+  if (entriesContainer) {
+    return entriesContainer.clientWidth;
+  }
+
+  const contentInner = viewport.querySelector<HTMLElement>(CONTENT_INNER_SELECTOR);
+
+  if (contentInner) {
+    return contentInner.clientWidth;
+  }
+
+  return viewport.clientWidth;
 }
 
 function createListRows(
@@ -430,12 +447,11 @@ export function useFileBrowserVirtualLayout(options: {
       return;
     }
 
-    const entriesContainer = viewport.querySelector<HTMLElement>(ENTRIES_CONTAINER_SELECTOR);
     const fileBrowser = viewport.closest<HTMLElement>(FILE_BROWSER_SELECTOR);
     const statusBar = fileBrowser?.querySelector<HTMLElement>(STATUS_BAR_SELECTOR);
 
     viewportHeight.value = viewport.clientHeight;
-    viewportWidth.value = entriesContainer?.clientWidth ?? viewport.clientWidth;
+    viewportWidth.value = resolveViewportContentWidth(viewport);
     virtualContentOffset.value = getVirtualContentOffset(viewport);
     bottomScrollMargin.value = getStatusBarOverlap(viewport, statusBar);
     scrollTop.value = Math.max(0, viewport.scrollTop);
@@ -458,7 +474,21 @@ export function useFileBrowserVirtualLayout(options: {
 
     viewportResizeObserver = new ResizeObserver(updateViewportSize);
     viewportResizeObserver.observe(viewport);
+
+    const contentInner = viewport.querySelector<HTMLElement>(CONTENT_INNER_SELECTOR);
+
+    if (contentInner) {
+      viewportResizeObserver.observe(contentInner);
+    }
+
     updateViewportSize();
+  }
+
+  function scheduleViewportSizeUpdate() {
+    nextTick(() => {
+      updateViewportSize();
+      requestAnimationFrame(updateViewportSize);
+    });
   }
 
   function setScrollViewportRef(element: Element | ComponentPublicInstance | null) {
@@ -672,11 +702,11 @@ export function useFileBrowserVirtualLayout(options: {
   });
 
   watch(options.entries, () => {
-    nextTick(updateViewportSize);
+    scheduleViewportSizeUpdate();
   });
 
   watch(() => options.layout(), () => {
-    nextTick(updateViewportSize);
+    scheduleViewportSizeUpdate();
   });
 
   onBeforeUnmount(() => {
@@ -697,6 +727,7 @@ export function useFileBrowserVirtualLayout(options: {
     spacerStyle,
     windowStyle,
     setScrollViewportRef,
+    scheduleViewportSizeUpdate,
     handleScroll,
     getEntryElement,
     scrollToPath,
