@@ -78,7 +78,7 @@
   "tabs": {
     "newTab": "新しいタブ",
     "closeOtherTabs": "他のタブを閉じる",
-    "closeDuplicateTabs": "重複を閉じる",
+    "closeDuplicateTabs": "すべての重複を閉じる",
     "closeAllTabs": "すべてのタブを閉じる",
     "defaultTabOpened": "デフォルトタブが開きました",
     "closedTabRestored": "閉じたタブを復元しました",

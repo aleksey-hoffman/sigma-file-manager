@@ -343,12 +343,10 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
     return /^[A-Za-z]:/.test(normalizedPath) ? normalizedPath.toLowerCase() : normalizedPath;
   }
 
-  async function closeDuplicatePathTabs(keepTabId: string) {
-    if (!currentWorkspace.value) {
-      return;
-    }
-
-    const workspace = currentWorkspace.value;
+  function getSingleTabGroupsByPathDedupKey(workspace: Workspace): Map<string, {
+    index: number;
+    tab: Tab;
+  }[]> {
     const pathToSingleTabGroups = new Map<string, {
       index: number;
       tab: Tab;
@@ -369,6 +367,30 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
       pathToSingleTabGroups.set(key, list);
     });
 
+    return pathToSingleTabGroups;
+  }
+
+  const hasDuplicatePathTabs = computed(() => {
+    if (!currentWorkspace.value) {
+      return false;
+    }
+
+    for (const entries of getSingleTabGroupsByPathDedupKey(currentWorkspace.value).values()) {
+      if (entries.length > 1) {
+        return true;
+      }
+    }
+
+    return false;
+  });
+
+  async function closeAllDuplicatePathTabs() {
+    if (!currentWorkspace.value) {
+      return;
+    }
+
+    const workspace = currentWorkspace.value;
+    const pathToSingleTabGroups = getSingleTabGroupsByPathDedupKey(workspace);
     const indicesToRemove = new Set<number>();
 
     for (const entries of pathToSingleTabGroups.values()) {
@@ -377,7 +399,7 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
       }
 
       const sortedByIndex = [...entries].sort((left, right) => left.index - right.index);
-      const keepEntry = sortedByIndex.find(entry => entry.tab.id === keepTabId) ?? sortedByIndex[0];
+      const keepEntry = sortedByIndex[0];
 
       for (const entry of sortedByIndex) {
         if (entry.index !== keepEntry.index) {
@@ -935,7 +957,8 @@ export const useWorkspacesStore = defineStore('workspaces', () => {
     closeTabGroup,
     closeAllTabGroups,
     closeOtherTabGroups,
-    closeDuplicatePathTabs,
+    closeAllDuplicatePathTabs,
+    hasDuplicatePathTabs,
     setCurrentTabIndex,
     setTabs,
     toggleSplitView,

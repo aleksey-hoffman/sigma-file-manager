@@ -78,7 +78,7 @@
   "tabs": {
     "newTab": "नया टैब",
     "closeOtherTabs": "अन्य टैब बंद करें",
-    "closeDuplicateTabs": "डुप्लिकेट बंद करें",
+    "closeDuplicateTabs": "सभी डुप्लिकेट बंद करें",
     "closeAllTabs": "सभी टैब को बंद करें",
     "defaultTabOpened": "डिफ़ॉल्ट टैब खोला गया था",
     "closedTabRestored": "बंद टैब पुनर्स्थापित किया गया",

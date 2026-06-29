@@ -78,7 +78,7 @@
   "tabs": {
     "newTab": "Nueva pestaña",
     "closeOtherTabs": "Cerrar otras pestañas",
-    "closeDuplicateTabs": "Cerrar duplicados",
+    "closeDuplicateTabs": "Cerrar todos los duplicados",
     "closeAllTabs": "Cerrar todas las pestañas",
     "defaultTabOpened": "Se abrió la pestaña predeterminada",
     "closedTabRestored": "Pestaña cerrada restaurada",

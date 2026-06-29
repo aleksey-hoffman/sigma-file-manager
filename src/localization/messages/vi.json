@@ -78,7 +78,7 @@
   "tabs": {
     "newTab": "Thẻ mới",
     "closeOtherTabs": "Đóng các thẻ khác",
-    "closeDuplicateTabs": "Đóng bản trùng",
+    "closeDuplicateTabs": "Đóng tất cả bản trùng",
     "closeAllTabs": "Đóng tất cả thẻ",
     "defaultTabOpened": "Đã mở thẻ mặc định",
     "closedTabRestored": "Đã khôi phục thẻ đã đóng",

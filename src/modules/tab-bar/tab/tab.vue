@@ -104,7 +104,7 @@ const isActive = computed(() => (
   props.tabGroup?.[0]?.id === workspacesStore.currentTabGroup?.[0]?.id
 ));
 
-const canCloseDuplicateTabs = computed(() => props.tabGroup.length === 1);
+const canCloseAllDuplicateTabs = computed(() => workspacesStore.hasDuplicatePathTabs);
 const dropTargetTab = computed(() => props.tabGroup.find(tab => tab.type === 'directory'));
 const isFileBrowserDragActive = computed(() => activeFileBrowserDragState.value.isActive);
 const isTabPreviewDisabled = computed(() =>
@@ -196,11 +196,9 @@ function closeOtherTabs() {
   workspacesStore.closeOtherTabGroups(props.tabGroup);
 }
 
-function closeDuplicateTabs() {
-  const keepTab = props.tabGroup[0];
-
-  if (canCloseDuplicateTabs.value && keepTab) {
-    workspacesStore.closeDuplicatePathTabs(keepTab.id);
+function closeAllDuplicateTabs() {
+  if (canCloseAllDuplicateTabs.value) {
+    workspacesStore.closeAllDuplicatePathTabs();
   }
 }
 
@@ -282,8 +280,8 @@ onBeforeUnmount(() => {
           {{ t('tabs.closeAllTabs') }}
         </DropdownMenuItem>
         <DropdownMenuItem
-          :disabled="!canCloseDuplicateTabs"
-          @select="closeDuplicateTabs"
+          :disabled="!canCloseAllDuplicateTabs"
+          @select="closeAllDuplicateTabs"
         >
           <Layers
             class="tab__menu-button-icon"

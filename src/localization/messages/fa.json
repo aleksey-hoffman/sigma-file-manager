@@ -78,7 +78,7 @@
   "tabs": {
     "newTab": "برگه جدید",
     "closeOtherTabs": "بستن سایر برگه ها",
-    "closeDuplicateTabs": "بستن تکراری‌ها",
+    "closeDuplicateTabs": "بستن همه تکراری‌ها",
     "closeAllTabs": "بستن همه برگه ها",
     "defaultTabOpened": "برگه پیش‌فرض باز شد",
     "closedTabRestored": "برگه بسته‌شده بازیابی شد",

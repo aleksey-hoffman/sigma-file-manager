@@ -78,7 +78,7 @@
   "tabs": {
     "newTab": "Новая вкладка",
     "closeOtherTabs": "Закрыть другие вкладки",
-    "closeDuplicateTabs": "Закрыть дубликаты",
+    "closeDuplicateTabs": "Закрыть все дубликаты",
     "closeAllTabs": "Закрыть все вкладки",
     "defaultTabOpened": "Открыта вкладка по умолчанию",
     "closedTabRestored": "Закрытая вкладка восстановлена",

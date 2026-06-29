@@ -78,7 +78,7 @@
   "tabs": {
     "newTab": "新标签页",
     "closeOtherTabs": "关闭其他标签",
-    "closeDuplicateTabs": "关闭重复标签",
+    "closeDuplicateTabs": "关闭所有重复标签",
     "closeAllTabs": "关闭所有标签",
     "defaultTabOpened": "已打开默认标签页",
     "closedTabRestored": "已恢复关闭的标签页",

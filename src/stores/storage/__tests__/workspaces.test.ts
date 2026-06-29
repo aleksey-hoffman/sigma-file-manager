@@ -110,7 +110,7 @@ describe('workspaces storage duplicate tabs', () => {
     updateInfoPanelMock.mockReset();
   });
 
-  it('closes duplicate single-tab groups for matching Windows paths and keeps the requested tab', async () => {
+  it('closes duplicate single-tab groups for matching Windows paths and keeps the leftmost tab', async () => {
     const keepTab = createTab('keep-tab', 'C:\\Users\\aleks\\Projects\\');
     const duplicateTab = createTab('duplicate-tab', 'c:/users/aleks/projects');
     const thirdDuplicateTab = createTab('third-duplicate-tab', 'C:/USERS/ALEKS/PROJECTS///');
@@ -129,12 +129,39 @@ describe('workspaces storage duplicate tabs', () => {
       ]),
     ];
 
-    await workspacesStore.closeDuplicatePathTabs(keepTab.id);
+    await workspacesStore.closeAllDuplicatePathTabs();
 
     expect(workspacesStore.currentWorkspace?.tabGroups).toEqual([
       [keepTab],
       [splitLeftTab, splitRightTab],
       [uniqueTab],
+    ]);
+  });
+
+  it('closes duplicate paths across the workspace and keeps the leftmost tab for each path', async () => {
+    const firstFooTab = createTab('first-foo-tab', 'C:/Projects/Foo');
+    const secondFooTab = createTab('second-foo-tab', 'c:/projects/foo');
+    const firstBarTab = createTab('first-bar-tab', 'D:/Archive/Bar');
+    const secondBarTab = createTab('second-bar-tab', 'd:/archive/bar');
+    const uniqueTab = createTab('unique-tab', 'E:/Docs');
+
+    const workspacesStore = useWorkspacesStore();
+    workspacesStore.workspaces = [
+      createWorkspace([
+        [firstFooTab],
+        [uniqueTab],
+        [secondFooTab],
+        [firstBarTab],
+        [secondBarTab],
+      ]),
+    ];
+
+    await workspacesStore.closeAllDuplicatePathTabs();
+
+    expect(workspacesStore.currentWorkspace?.tabGroups).toEqual([
+      [firstFooTab],
+      [uniqueTab],
+      [firstBarTab],
     ]);
   });
 
@@ -150,7 +177,7 @@ describe('workspaces storage duplicate tabs', () => {
       ]),
     ];
 
-    await workspacesStore.closeDuplicatePathTabs(lowerCaseTab.id);
+    await workspacesStore.closeAllDuplicatePathTabs();
 
     expect(workspacesStore.currentWorkspace?.tabGroups).toEqual([
       [lowerCaseTab],

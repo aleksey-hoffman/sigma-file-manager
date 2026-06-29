@@ -78,7 +78,7 @@
   "tabs": {
     "newTab": "Nuova scheda",
     "closeOtherTabs": "Chiudi altre schede",
-    "closeDuplicateTabs": "Chiudi duplicati",
+    "closeDuplicateTabs": "Chiudi tutti i duplicati",
     "closeAllTabs": "Chiudi tutte le schede",
     "defaultTabOpened": "La scheda predefinita è stata aperta",
     "closedTabRestored": "Scheda chiusa ripristinata",

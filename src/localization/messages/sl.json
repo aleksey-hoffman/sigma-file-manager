@@ -78,7 +78,7 @@
   "tabs": {
     "newTab": "Nov zavihek",
     "closeOtherTabs": "Zapri druge zavihke",
-    "closeDuplicateTabs": "Zapri podvojene",
+    "closeDuplicateTabs": "Zapri vse podvojene",
     "closeAllTabs": "Zapri vse zavihke",
     "defaultTabOpened": "Privzeti zavihek je bil odprt",
     "closedTabRestored": "Zaprt zavihek je bil obnovljen",

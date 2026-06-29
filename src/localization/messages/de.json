@@ -78,7 +78,7 @@
   "tabs": {
     "newTab": "Neuer Tab",
     "closeOtherTabs": "Andere Tabs schließen",
-    "closeDuplicateTabs": "Duplikate schließen",
+    "closeDuplicateTabs": "Alle Duplikate schließen",
     "closeAllTabs": "Alle Tabs schließen",
     "defaultTabOpened": "Standard-Tab wurde geöffnet",
     "closedTabRestored": "Geschlossener Tab wiederhergestellt",

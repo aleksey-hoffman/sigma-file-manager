@@ -78,7 +78,7 @@
   "tabs": {
     "newTab": "Yeni sekme",
     "closeOtherTabs": "Diğer sekmeleri kapat",
-    "closeDuplicateTabs": "Yinelenenleri kapat",
+    "closeDuplicateTabs": "Tüm yinelenenleri kapat",
     "closeAllTabs": "Tüm sekmeleri kapat",
     "defaultTabOpened": "Varsayılan sekme açıldı",
     "closedTabRestored": "Kapatılan sekme geri yüklendi",

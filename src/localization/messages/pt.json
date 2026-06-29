@@ -78,7 +78,7 @@
   "tabs": {
     "newTab": "Nova guia",
     "closeOtherTabs": "Fechar outras guias",
-    "closeDuplicateTabs": "Fechar duplicados",
+    "closeDuplicateTabs": "Fechar todos os duplicados",
     "closeAllTabs": "Fechar todas as guias",
     "defaultTabOpened": "Guia padrão foi aberta",
     "closedTabRestored": "Guia fechada restaurada",
