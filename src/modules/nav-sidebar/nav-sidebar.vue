@@ -14,7 +14,7 @@ import {
   useShortcutsStore,
 } from '@/stores/runtime/shortcuts';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
-import { useWorkspacesStore } from '@/stores/storage/workspaces';
+import { openNavigatorPath } from '@/utils/open-navigator-directory';
 import { useDrives } from '@/modules/home/composables';
 import { DriveCard } from '@/modules/home/components';
 import { getLucideIcon } from '@/utils/lucide-icons';
@@ -36,7 +36,6 @@ const appStore = useAppStore();
 const extensionsStore = useExtensionsStore();
 const shortcutsStore = useShortcutsStore();
 const userSettingsStore = useUserSettingsStore();
-const workspacesStore = useWorkspacesStore();
 const { drives } = useDrives();
 const { inlineEndSide } = useTextDirection();
 
@@ -91,14 +90,8 @@ function getExtensionPageShortcutLabel(pageId: string): string {
   return keybinding?.keys?.key ? formatKeybindingKeys(keybinding.keys) : '';
 }
 
-async function openDrive(path: string) {
-  if (router.currentRoute.value.name === 'navigator') {
-    await workspacesStore.openPathInCurrentTab(path);
-    return;
-  }
-
-  await workspacesStore.openNewTabGroup(path);
-  await router.push({ name: 'navigator' });
+function openDrive(path: string) {
+  openNavigatorPath(router, path);
 }
 
 function getDriveIcon(drive: {

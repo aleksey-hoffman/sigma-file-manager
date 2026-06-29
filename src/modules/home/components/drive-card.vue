@@ -9,8 +9,8 @@ import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { invoke } from '@tauri-apps/api/core';
 import { HardDriveIcon, NetworkIcon, UsbIcon, UnplugIcon } from '@lucide/vue';
-import { useWorkspacesStore } from '@/stores/storage/workspaces';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
+import { openNavigatorPath } from '@/utils/open-navigator-directory';
 import { usePlatformStore } from '@/stores/runtime/platform';
 import toReadableBytes from '@/utils/to-readable-bytes';
 import { getPathDisplayValue } from '@/utils/normalize-path';
@@ -24,7 +24,6 @@ const props = defineProps<{
 
 const router = useRouter();
 const { t } = useI18n();
-const workspacesStore = useWorkspacesStore();
 const userSettingsStore = useUserSettingsStore();
 const platformStore = usePlatformStore();
 
@@ -94,14 +93,8 @@ async function mountAndNavigate() {
   }
 }
 
-async function navigateToDrive(drivePath: string) {
-  try {
-    await workspacesStore.openNewTabGroup(drivePath);
-    router.push({ name: 'navigator' });
-  }
-  catch (navigationError) {
-    console.error('Failed to navigate to directory:', navigationError);
-  }
+function navigateToDrive(drivePath: string) {
+  openNavigatorPath(router, drivePath);
 }
 
 async function handleUnmount(clickEvent: MouseEvent) {

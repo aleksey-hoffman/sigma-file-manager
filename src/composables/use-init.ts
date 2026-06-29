@@ -42,6 +42,7 @@ import { toggleMainWindowFullscreen } from '@/utils/window-fullscreen';
 import { removeAppSplash } from '@/utils/app-splash';
 import { logInitTrace, traceInitStep } from '@/utils/init-trace';
 import { warmPathComparisonVolumeCache } from '@/utils/path-comparison-volume-cache';
+import { preloadNavigatorRoute } from '@/utils/open-navigator-directory';
 
 const APP_LAUNCH_ARGS_EVENT = 'app-launch-args';
 const STARTUP_BACKGROUND_REFRESH_TIMEOUT_MS = 1500;
@@ -341,6 +342,10 @@ export function useInit() {
     }
 
     disableWebViewFeatures(isMainWindow);
+
+    runInBackgroundWithTrace('background:preloadNavigatorRoute', async () => {
+      preloadNavigatorRoute();
+    }, 'Failed to preload navigator route:');
 
     runInBackgroundWithTrace('background:restoreStartupTabs', async () => {
       if (!loadedInitialTabGroup) {

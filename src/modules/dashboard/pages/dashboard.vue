@@ -19,10 +19,9 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { DirEntryInteractive } from '@/components/dir-entry-interactive';
 import { useUserStatsStore } from '@/stores/storage/user-stats';
-import { useWorkspacesStore } from '@/stores/storage/workspaces';
 import { usePageDropZone } from '@/composables/use-page-drop-zone';
 import { useFileDropOperation } from '@/composables/use-file-drop-operation';
-import { resolveNavigableItemTarget } from '@/utils/resolve-navigable-item-target';
+import { openNavigatorNavigablePath } from '@/utils/open-navigator-directory';
 import { isVirtualLocationPath } from '@/utils/virtual-locations';
 import DashboardActionBar from '@/modules/dashboard/components/dashboard-action-bar.vue';
 import DashboardEmptyState from '@/modules/dashboard/components/dashboard-empty-state.vue';
@@ -54,7 +53,6 @@ type TaggedSection = {
 const { t } = useI18n();
 const router = useRouter();
 const userStatsStore = useUserStatsStore();
-const workspacesStore = useWorkspacesStore();
 
 const activeTab = ref('favorites');
 const dropContainerRef = ref<HTMLElement | null>(null);
@@ -128,9 +126,16 @@ function handleEntryTagsOpenChange(sectionTagId: string, itemPath: string, open:
   }
 }
 
-function getItemDirectory(path: string): string {
-  const lastSlashIndex = path.lastIndexOf('/');
-  return lastSlashIndex > 0 ? path.substring(0, lastSlashIndex) : path;
+function openItem(path: string, isFile: boolean) {
+  openNavigatorNavigablePath(router, path, isFile);
+}
+
+function isFavoriteFile(item: FavoriteItem): boolean {
+  if (isVirtualLocationPath(item.path)) {
+    return false;
+  }
+
+  return !item.path.endsWith('/') && item.path.includes('.');
 }
 
 function formatRelativeTime(timestamp: number): string {
@@ -146,43 +151,16 @@ function formatRelativeTime(timestamp: number): string {
   return t('dashboard.daysAgo', diffDays);
 }
 
-async function openItem(path: string, isFile: boolean) {
-  try {
-    const navigableItemTarget = await resolveNavigableItemTarget(path, isFile);
-
-    if (navigableItemTarget.opensAsFile) {
-      const directory = getItemDirectory(navigableItemTarget.targetPath);
-      await workspacesStore.openNewTabGroup(directory);
-    }
-    else {
-      await workspacesStore.openNewTabGroup(navigableItemTarget.targetPath);
-    }
-
-    router.push({ name: 'navigator' });
-  }
-  catch (error) {
-    console.error('Failed to open item:', error);
-  }
+function openFavoriteItem(item: FavoriteItem) {
+  openItem(item.path, isFavoriteFile(item));
 }
 
-function isFavoriteFile(item: FavoriteItem): boolean {
-  if (isVirtualLocationPath(item.path)) {
-    return false;
-  }
-
-  return !item.path.endsWith('/') && item.path.includes('.');
+function openHistoryItem(item: HistoryItem) {
+  openItem(item.path, item.isFile);
 }
 
-async function openFavoriteItem(item: FavoriteItem) {
-  await openItem(item.path, isFavoriteFile(item));
-}
-
-async function openHistoryItem(item: HistoryItem) {
-  await openItem(item.path, item.isFile);
-}
-
-async function openFrequentItem(item: FrequentItem) {
-  await openItem(item.path, item.isFile);
+function openFrequentItem(item: FrequentItem) {
+  openItem(item.path, item.isFile);
 }
 
 async function removeFavorite(path: string, event: MouseEvent) {

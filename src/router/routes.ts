@@ -8,6 +8,10 @@ import {
 } from '@lucide/vue';
 import type { RouteRecordRaw } from 'vue-router';
 
+export function loadNavigatorRoute() {
+  return import('@/modules/navigator/pages/navigator.vue');
+}
+
 export const quickViewRoute: RouteRecordRaw = {
   path: '/quick-view',
   name: 'quick-view',
@@ -40,7 +44,7 @@ export const routes: Array<RouteRecordRaw & { icon: typeof XIcon }> = [
     path: '/navigator',
     name: 'navigator',
     icon: FolderClosedIcon,
-    component: () => import('@/modules/navigator/pages/navigator.vue'),
+    component: loadNavigatorRoute,
   },
   {
     path: '/dashboard',

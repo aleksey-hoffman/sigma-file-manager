@@ -34,18 +34,16 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import externalLinks from '@/data/external-links';
-import { useWorkspacesStore } from '@/stores/storage/workspaces';
+import { openNavigatorPath } from '@/utils/open-navigator-directory';
 import { useChangelog } from '@/modules/changelog';
 import normalizePath from '@/utils/normalize-path';
 
 const { t } = useI18n();
 const router = useRouter();
-const workspacesStore = useWorkspacesStore();
 const { open: openChangelog } = useChangelog();
 
-async function navigateToDirectory(path: string) {
-  await workspacesStore.openNewTabGroup(path);
-  router.push({ name: 'navigator' });
+function navigateToDirectory(path: string) {
+  openNavigatorPath(router, path);
 }
 
 async function openAppDataDirectory() {

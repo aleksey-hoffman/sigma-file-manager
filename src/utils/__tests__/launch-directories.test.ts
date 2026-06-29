@@ -7,6 +7,7 @@ import type { DirEntry } from '@/types/dir-entry';
 import {
   getLaunchDirectoryCandidates,
   resolveLaunchTargetsFromArgs,
+  resolvePathLaunchTarget,
   type LaunchContext,
 } from '@/utils/launch-directories';
 import { LOCATIONS_VIRTUAL_PATH } from '@/utils/virtual-locations';
@@ -192,5 +193,22 @@ describe('launch-directories', () => {
         focusPath: 'C:/Users/aleks/file.txt',
       },
     ]);
+  });
+
+  it('resolves directory paths from dir entry metadata', async () => {
+    const getDirEntry = vi.fn(async () => createDirEntry('D:/Resolved/Documents'));
+
+    await expect(resolvePathLaunchTarget('C:/Users/aleks/Documents', getDirEntry))
+      .resolves.toEqual({
+        directoryPath: 'D:/Resolved/Documents',
+        focusPath: null,
+      });
+  });
+
+  it('returns null when dir entry lookup fails', async () => {
+    const getDirEntry = vi.fn(async () => null);
+
+    await expect(resolvePathLaunchTarget('C:/Users/aleks/missing', getDirEntry))
+      .resolves.toBeNull();
   });
 });

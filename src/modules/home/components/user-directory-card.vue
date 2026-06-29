@@ -7,9 +7,8 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
-import { useWorkspacesStore } from '@/stores/storage/workspaces';
 import { type UserDirectory, getIconComponent } from '@/modules/home/composables/use-user-directories';
-import normalizePath, { getParentPath } from '@/utils/normalize-path';
+import { openNavigatorPath } from '@/utils/open-navigator-directory';
 
 const props = defineProps<{
   directory: UserDirectory;
@@ -17,7 +16,6 @@ const props = defineProps<{
 
 const router = useRouter();
 const { t } = useI18n();
-const workspacesStore = useWorkspacesStore();
 
 const displayTitle = computed(() => {
   if (props.directory.customTitle) {
@@ -36,41 +34,8 @@ const iconComponent = computed(() => {
   return getIconComponent(props.directory.iconName);
 });
 
-async function handleClick() {
-  try {
-    const rawPath = props.directory.path;
-    const dirEntry = await workspacesStore.getDirEntry({ path: rawPath });
-
-    let tabDirectoryPath = rawPath;
-    let revealEntryPath: string | null = null;
-
-    if (dirEntry) {
-      const resolvedPath = normalizePath(dirEntry.path);
-
-      if (dirEntry.is_file) {
-        const parentPath = getParentPath(resolvedPath);
-
-        if (parentPath) {
-          tabDirectoryPath = normalizePath(parentPath);
-          revealEntryPath = resolvedPath;
-        }
-      }
-      else if (dirEntry.is_dir) {
-        tabDirectoryPath = resolvedPath;
-      }
-    }
-
-    await workspacesStore.openNewTabGroup(tabDirectoryPath);
-
-    if (revealEntryPath) {
-      workspacesStore.setPendingLaunchReveal(tabDirectoryPath, revealEntryPath);
-    }
-
-    router.push({ name: 'navigator' });
-  }
-  catch (error) {
-    console.error('Failed to navigate to directory:', error);
-  }
+function handleClick() {
+  openNavigatorPath(router, props.directory.path, { resolvePath: true });
 }
 
 </script>

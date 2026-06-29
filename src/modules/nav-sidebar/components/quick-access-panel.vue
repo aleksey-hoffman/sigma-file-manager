@@ -34,7 +34,7 @@ import { registerDropContainer, unregisterDropContainer } from '@/composables/us
 import type { FavoriteItem, ItemTag, TaggedItem } from '@/types/user-stats';
 import { getPathDisplayName } from '@/utils/normalize-path';
 import { isVirtualLocationPath } from '@/utils/virtual-locations';
-import { resolveNavigableItemTarget } from '@/utils/resolve-navigable-item-target';
+import { openNavigatorNavigablePath } from '@/utils/open-navigator-directory';
 import { arePathsEquivalent } from '@/utils/file-operation-paths';
 
 const { t } = useI18n();
@@ -121,30 +121,12 @@ function isCurrentDirectoryItem(path: string, isFile: boolean): boolean {
   return !isFile && !!currentPath && arePathsEquivalent(path, currentPath);
 }
 
-async function openItem(path: string, isFile: boolean) {
-  try {
-    const navigableItemTarget = await resolveNavigableItemTarget(path, isFile);
-
-    if (navigableItemTarget.opensAsFile) {
-      const lastSlashIndex = navigableItemTarget.targetPath.lastIndexOf('/');
-      const directory = lastSlashIndex > 0
-        ? navigableItemTarget.targetPath.substring(0, lastSlashIndex)
-        : navigableItemTarget.targetPath;
-      await workspacesStore.openNewTabGroup(directory);
-    }
-    else {
-      await workspacesStore.openNewTabGroup(navigableItemTarget.targetPath);
-    }
-
-    router.push({ name: 'navigator' });
-  }
-  catch (error) {
-    console.error('Failed to open item:', error);
-  }
+function openItem(path: string, isFile: boolean) {
+  openNavigatorNavigablePath(router, path, isFile);
 }
 
-async function openFavoriteItem(item: FavoriteItem) {
-  await openItem(item.path, isFavoriteFile(item));
+function openFavoriteItem(item: FavoriteItem) {
+  openItem(item.path, isFavoriteFile(item));
 }
 
 function openTaggedItem(item: TaggedItem) {

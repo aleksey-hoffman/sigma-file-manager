@@ -6,19 +6,17 @@ import { invoke } from '@tauri-apps/api/core';
 import { useRouter } from 'vue-router';
 import { open as openDialog } from '@tauri-apps/plugin-dialog';
 import { useI18n } from 'vue-i18n';
-import { useWorkspacesStore } from '@/stores/storage/workspaces';
+import { openNavigatorPath } from '@/utils/open-navigator-directory';
 
 export function useExtensionsFolderActions() {
   const router = useRouter();
-  const workspacesStore = useWorkspacesStore();
   const { t } = useI18n();
 
   async function navigateToExtensionsFolder(): Promise<void> {
     const extensionsDir = await invoke<string>('get_extensions_dir');
 
     if (extensionsDir) {
-      await workspacesStore.openNewTabGroup(extensionsDir);
-      router.push({ name: 'navigator' });
+      openNavigatorPath(router, extensionsDir);
     }
   }
 

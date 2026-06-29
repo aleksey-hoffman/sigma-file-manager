@@ -24,6 +24,7 @@ import { getParentDirectory } from '@/utils/normalize-path';
 import { getSharedSourceDirectory } from '@/utils/file-operation-paths';
 import { basenameFromPath } from '@/utils/source-display-name';
 import { resolveNavigableItemTarget } from '@/utils/resolve-navigable-item-target';
+import { openNavigatorNavigablePath } from '@/utils/open-navigator-directory';
 import { usePermanentDeleteConfirm } from '@/composables/use-permanent-delete-confirm';
 import { usePlatformStore } from '@/stores/runtime/platform';
 import { openNativeProperties } from '@/utils/open-native-properties';
@@ -61,21 +62,8 @@ export function useDirEntryActions() {
     }
   }
 
-  async function openEntry(path: string, isFile: boolean) {
-    const navigableItemTarget = await resolveNavigableItemTarget(path, isFile);
-
-    if (navigableItemTarget.opensAsFile) {
-      const lastSlashIndex = navigableItemTarget.targetPath.lastIndexOf('/');
-      const directory = lastSlashIndex > 0
-        ? navigableItemTarget.targetPath.substring(0, lastSlashIndex)
-        : navigableItemTarget.targetPath;
-      await workspacesStore.openNewTabGroup(directory);
-    }
-    else {
-      await workspacesStore.openNewTabGroup(navigableItemTarget.targetPath);
-    }
-
-    router.push({ name: 'navigator' });
+  function openEntry(path: string, isFile: boolean) {
+    openNavigatorNavigablePath(router, path, isFile);
   }
 
   function copyItems(entries: DirEntry[]) {

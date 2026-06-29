@@ -87,6 +87,35 @@ export function getLaunchDirectoryCandidates(context: LaunchContext): string[] {
   return candidates;
 }
 
+export async function resolvePathLaunchTarget(
+  rawPath: string,
+  getDirEntry: (path: string) => Promise<DirEntry | null>,
+): Promise<LaunchTarget | null> {
+  const dirEntry = await getDirEntry(rawPath);
+
+  if (!dirEntry) {
+    return null;
+  }
+
+  const resolvedPath = normalizePath(dirEntry.path);
+
+  if (dirEntry.is_dir) {
+    return {
+      directoryPath: resolvedPath,
+      focusPath: null,
+    };
+  }
+
+  if (dirEntry.is_file) {
+    return {
+      directoryPath: getParentDirectory(resolvedPath),
+      focusPath: resolvedPath,
+    };
+  }
+
+  return null;
+}
+
 export async function resolveLaunchTargetsFromArgs(
   context: LaunchContext,
   getDirEntry: (path: string) => Promise<DirEntry | null>,
@@ -95,19 +124,10 @@ export async function resolveLaunchTargetsFromArgs(
   const candidatePaths = getLaunchDirectoryCandidates(context);
 
   for (const candidatePath of candidatePaths) {
-    const dirEntry = await getDirEntry(candidatePath);
+    const launchTarget = await resolvePathLaunchTarget(candidatePath, getDirEntry);
 
-    if (dirEntry?.is_dir) {
-      launchTargets.push({
-        directoryPath: candidatePath,
-        focusPath: null,
-      });
-    }
-    else if (dirEntry?.is_file) {
-      launchTargets.push({
-        directoryPath: getParentDirectory(candidatePath),
-        focusPath: candidatePath,
-      });
+    if (launchTarget) {
+      launchTargets.push(launchTarget);
     }
   }
 

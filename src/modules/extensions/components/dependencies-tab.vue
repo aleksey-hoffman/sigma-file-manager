@@ -19,7 +19,7 @@ import {
 } from '@lucide/vue';
 import { Button } from '@/components/ui/button';
 import { formatBytes, formatDate } from '@/modules/navigator/components/file-browser/utils';
-import { useWorkspacesStore } from '@/stores/storage/workspaces';
+import { openNavigatorPath } from '@/utils/open-navigator-directory';
 import { useExtensionsStorageStore } from '@/stores/storage/extensions';
 import type { SharedBinaryInfo } from '@/types/extension';
 import { getBinaryDisplayVersion, getBinaryLookupVersion } from '@/modules/extensions/utils/binary-metadata';
@@ -44,7 +44,6 @@ const emit = defineEmits<{
 
 const { t } = useI18n();
 const router = useRouter();
-const workspacesStore = useWorkspacesStore();
 const extensionsStorageStore = useExtensionsStorageStore();
 const binarySizes = ref<Map<string, number>>(new Map());
 
@@ -52,8 +51,7 @@ async function navigateToDependenciesFolder() {
   const binariesDir = await invoke<string>('get_shared_binaries_base_dir');
 
   if (binariesDir) {
-    await workspacesStore.openNewTabGroup(binariesDir);
-    router.push({ name: 'navigator' });
+    openNavigatorPath(router, binariesDir);
   }
 }
 

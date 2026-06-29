@@ -9,20 +9,18 @@ import { useRouter } from 'vue-router';
 import { Button } from '@/components/ui/button';
 import { SettingsItem } from '@/modules/settings';
 import { useUserPathsStore } from '@/stores/storage/user-paths';
-import { useWorkspacesStore } from '@/stores/storage/workspaces';
+import { openNavigatorPath } from '@/utils/open-navigator-directory';
 import { DatabaseIcon, FolderOpenIcon } from '@lucide/vue';
 
 const { t } = useI18n();
 const router = useRouter();
 const userPathsStore = useUserPathsStore();
-const workspacesStore = useWorkspacesStore();
 
-async function navigateToUserDataDirectory() {
+function navigateToUserDataDirectory() {
   const userDataDir = userPathsStore.customPaths.appUserDataDir;
 
   if (userDataDir) {
-    await workspacesStore.openNewTabGroup(userDataDir);
-    router.push({ name: 'navigator' });
+    openNavigatorPath(router, userDataDir);
   }
 }
 </script>
