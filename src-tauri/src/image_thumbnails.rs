@@ -4,15 +4,16 @@
 
 use std::fs;
 use std::fs::File;
-use std::io::BufWriter;
+use std::io::{BufReader, BufWriter};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Mutex;
 
 use base64::engine::general_purpose::STANDARD as BASE64_STANDARD;
 use base64::Engine;
+use image::codecs::gif::GifDecoder;
 use image::codecs::png::{CompressionType, FilterType as PngFilterType, PngEncoder};
-use image::{imageops::FilterType, ImageReader, Limits};
+use image::{imageops::FilterType, ImageDecoder, ImageReader, Limits};
 use once_cell::sync::Lazy;
 use sha2::{Digest, Sha256};
 use tauri::Manager;
@@ -280,6 +281,13 @@ fn is_browser_renderable_image_path(source_path: &Path) -> bool {
     )
 }
 
+fn is_gif_path(source_path: &Path) -> bool {
+    source_path
+        .extension()
+        .and_then(|extension| extension.to_str())
+        .is_some_and(|extension| extension.eq_ignore_ascii_case("gif"))
+}
+
 fn should_use_original_image_thumbnail(
     source_path: &Path,
     source_size: u64,
@@ -287,6 +295,10 @@ fn should_use_original_image_thumbnail(
     height: u32,
     max_dimension: u32,
 ) -> bool {
+    if is_gif_path(source_path) {
+        return false;
+    }
+
     source_size <= MAX_ORIGINAL_IMAGE_THUMBNAIL_SOURCE_SIZE_BYTES
         && width <= max_dimension
         && height <= max_dimension
@@ -305,7 +317,39 @@ fn image_dimensions(source_path: &Path) -> Result<(u32, u32), String> {
         .map_err(|error| format!("Failed to read image thumbnail dimensions: {error}"))
 }
 
+fn decode_gif_first_frame(source_path: &Path) -> Result<image::DynamicImage, String> {
+    let file = File::open(source_path)
+        .map_err(|error| format!("Failed to open GIF thumbnail source: {error}"))?;
+    let mut decoder = GifDecoder::new(BufReader::new(file))
+        .map_err(|error| format!("Failed to read GIF thumbnail source: {error}"))?;
+
+    decoder
+        .set_limits(thumbnail_decode_limits())
+        .map_err(|error| format!("Failed to set GIF thumbnail limits: {error}"))?;
+
+    let (screen_width, screen_height) = decoder.dimensions();
+
+    if screen_width == 0 || screen_height == 0 {
+        return Err("GIF dimensions are invalid".to_string());
+    }
+
+    let mut buffer = vec![0u8; decoder.total_bytes() as usize];
+
+    decoder
+        .read_image(&mut buffer)
+        .map_err(|error| format!("Failed to decode GIF thumbnail frame: {error}"))?;
+
+    let rgba_image = image::RgbaImage::from_raw(screen_width, screen_height, buffer)
+        .ok_or_else(|| "GIF frame canvas size is invalid".to_string())?;
+
+    Ok(image::DynamicImage::ImageRgba8(rgba_image))
+}
+
 fn decode_image_thumbnail_source(source_path: &Path) -> Result<image::DynamicImage, String> {
+    if is_gif_path(source_path) {
+        return decode_gif_first_frame(source_path);
+    }
+
     let mut reader = ImageReader::open(source_path)
         .map_err(|error| format!("Failed to open image thumbnail source: {error}"))?
         .with_guessed_format()
@@ -645,6 +689,30 @@ mod tests {
             .unwrap();
     }
 
+    fn write_test_animated_gif(path: &Path, width: u32, height: u32, frame_count: u16) {
+        use image::codecs::gif::{GifEncoder, Repeat};
+        use image::ExtendedColorType;
+        use std::io::BufWriter;
+
+        let file = File::create(path).unwrap();
+        let mut encoder = GifEncoder::new(BufWriter::new(file));
+        encoder.set_repeat(Repeat::Infinite).unwrap();
+
+        for frame_index in 0..frame_count {
+            let red = frame_index.saturating_mul(40).min(255) as u8;
+            let pixel_count = (width as usize) * (height as usize);
+            let mut pixels = Vec::with_capacity(pixel_count * 3);
+
+            for _ in 0..pixel_count {
+                pixels.extend_from_slice(&[red, 0, 0]);
+            }
+
+            encoder
+                .encode(&pixels, width, height, ExtendedColorType::Rgb8)
+                .unwrap();
+        }
+    }
+
     #[test]
     fn thumbnail_cache_key_changes_when_metadata_changes() {
         let first_key = thumbnail_cache_key("C:/photos/image.jpg", 100, 200, 384);
@@ -764,6 +832,33 @@ mod tests {
         write_test_bmp(&source_path, 384, 384);
         assert!(
             source_path.metadata().unwrap().len() > MAX_ORIGINAL_IMAGE_THUMBNAIL_SOURCE_SIZE_BYTES
+        );
+
+        let result = generate_image_thumbnail_file(
+            cache_dir.clone(),
+            source_path.to_string_lossy().to_string(),
+            100,
+            source_path.metadata().unwrap().len(),
+            THUMBNAIL_MAX_DIMENSION,
+        )
+        .unwrap();
+
+        assert_ne!(
+            result,
+            source_path.canonicalize().unwrap().to_string_lossy()
+        );
+        assert!(result.ends_with(".png"));
+        assert_eq!(thumbnail_cache_stats(&cache_dir).unwrap().item_count, 1);
+    }
+
+    #[test]
+    fn small_gif_sources_generate_cached_png() {
+        let temp_dir = tempfile::tempdir().unwrap();
+        let source_path = temp_dir.path().join("source.gif");
+        let cache_dir = temp_dir.path().join("cache");
+        write_test_animated_gif(&source_path, 128, 128, 4);
+        assert!(
+            source_path.metadata().unwrap().len() <= MAX_ORIGINAL_IMAGE_THUMBNAIL_SOURCE_SIZE_BYTES
         );
 
         let result = generate_image_thumbnail_file(

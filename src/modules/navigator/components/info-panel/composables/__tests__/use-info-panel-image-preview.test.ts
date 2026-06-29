@@ -131,14 +131,14 @@ describe('useInfoPanelImagePreview', () => {
     expect(preview.usesThumbnailImagePreview.value).toBe(false);
   });
 
-  it('uses the original image for gif files even when the setting is disabled', async () => {
+  it('uses thumbnails for gif files when the setting is disabled', async () => {
     const selectedEntry = ref<DirEntry | null>(createImageEntry('gif'));
     const preview = mountInfoPanelImagePreview(selectedEntry);
     await nextTick();
 
-    expect(preview.imagePreviewSrc.value).toBe('asset://C:/media/photo.gif');
-    expect(mockGetImageThumbnail).not.toHaveBeenCalled();
-    expect(preview.usesThumbnailImagePreview.value).toBe(false);
+    expect(preview.imagePreviewSrc.value).toBe('asset://thumb');
+    expect(mockGetImageThumbnail).toHaveBeenCalled();
+    expect(preview.usesThumbnailImagePreview.value).toBe(true);
   });
 
   it('uses thumbnails when the setting is disabled', async () => {

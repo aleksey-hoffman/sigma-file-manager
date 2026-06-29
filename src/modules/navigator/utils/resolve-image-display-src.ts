@@ -4,7 +4,7 @@
 
 import type { DirEntry } from '@/types/dir-entry';
 
-const ORIGINAL_ONLY_IMAGE_EXTENSIONS = new Set(['svg', 'gif']);
+const ORIGINAL_ONLY_IMAGE_EXTENSIONS = new Set(['svg']);
 
 export function shouldAlwaysUseOriginalImageEntry(entry: DirEntry): boolean {
   const extension = entry.ext?.toLowerCase();

@@ -286,6 +286,22 @@ describe('useImageThumbnails', () => {
     expect(thumbnails.imageThumbnailPlaceholders.value).toEqual({});
   });
 
+  it('does not generate placeholders for gif files', async () => {
+    setupImagePlaceholderMocks();
+
+    const thumbnails = useImageThumbnails();
+    const entry = {
+      ...createImageEntry('animation.gif'),
+      ext: 'gif',
+    };
+
+    expect(thumbnails.getImageThumbnailPlaceholder(entry)).toBeUndefined();
+    await flushThumbnailWork();
+
+    expect(mockFetch).not.toHaveBeenCalled();
+    expect(thumbnails.imageThumbnailPlaceholders.value).toEqual({});
+  });
+
   it('removes queued placeholder requests when they are cancelled', async () => {
     setupImagePlaceholderMocks();
     const pendingResponse = createDeferred<Response>();

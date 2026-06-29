@@ -66,6 +66,10 @@ function canGenerateImageThumbnailPlaceholder(entry: DirEntry): boolean {
     return false;
   }
 
+  if (extension === 'gif') {
+    return false;
+  }
+
   return BROWSER_RENDERABLE_IMAGE_THUMBNAIL_EXTENSIONS.has(extension);
 }
 

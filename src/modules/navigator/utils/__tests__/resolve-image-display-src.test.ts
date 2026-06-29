@@ -29,11 +29,14 @@ function createImageEntry(extension: string): DirEntry {
 }
 
 describe('shouldAlwaysUseOriginalImageEntry', () => {
-  it('returns true for svg and gif files regardless of case', () => {
+  it('returns true for svg files regardless of case', () => {
     expect(shouldAlwaysUseOriginalImageEntry(createImageEntry('svg'))).toBe(true);
     expect(shouldAlwaysUseOriginalImageEntry(createImageEntry('SVG'))).toBe(true);
-    expect(shouldAlwaysUseOriginalImageEntry(createImageEntry('gif'))).toBe(true);
-    expect(shouldAlwaysUseOriginalImageEntry(createImageEntry('GIF'))).toBe(true);
+  });
+
+  it('returns false for gif files', () => {
+    expect(shouldAlwaysUseOriginalImageEntry(createImageEntry('gif'))).toBe(false);
+    expect(shouldAlwaysUseOriginalImageEntry(createImageEntry('GIF'))).toBe(false);
   });
 
   it('returns false for other image files', () => {
@@ -46,9 +49,12 @@ describe('shouldUseImageThumbnail', () => {
     expect(shouldUseImageThumbnail(createImageEntry('png'), true)).toBe(false);
   });
 
-  it('returns false for svg and gif files', () => {
+  it('returns false for svg files', () => {
     expect(shouldUseImageThumbnail(createImageEntry('svg'), false)).toBe(false);
-    expect(shouldUseImageThumbnail(createImageEntry('gif'), false)).toBe(false);
+  });
+
+  it('returns true for gif files when original preview is disabled', () => {
+    expect(shouldUseImageThumbnail(createImageEntry('gif'), false)).toBe(true);
   });
 
   it('returns true for other image files when original preview is disabled', () => {
@@ -100,7 +106,7 @@ describe('resolveImageDisplaySrc', () => {
     })).toBe('asset://original');
   });
 
-  it('returns the original source for gif even when a thumbnail exists', () => {
+  it('returns a cached thumbnail for gif files', () => {
     const entry = createImageEntry('gif');
     const getThumbnail = vi.fn(() => 'asset://thumb');
 
@@ -110,9 +116,9 @@ describe('resolveImageDisplaySrc', () => {
       originalSrc: 'asset://original',
       maxDimension: 512,
       getThumbnail,
-    })).toBe('asset://original');
+    })).toBe('asset://thumb');
 
-    expect(getThumbnail).not.toHaveBeenCalled();
+    expect(getThumbnail).toHaveBeenCalledWith(entry, 512);
   });
 
   it('returns undefined for other files when no thumbnail exists', () => {

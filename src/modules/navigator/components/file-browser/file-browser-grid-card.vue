@@ -110,13 +110,29 @@ function disconnectPreviewIntersectionObserver(): void {
   previewIntersectionObserver = null;
 }
 
-function markPreviewInLoadRange(): void {
-  if (isPreviewInLoadRange.value) {
+function markPreviewOutOfLoadRange(): void {
+  if (!isPreviewInLoadRange.value) {
     return;
   }
 
-  isPreviewInLoadRange.value = true;
-  disconnectPreviewIntersectionObserver();
+  isPreviewInLoadRange.value = false;
+  cancelPreviewThumbnail();
+  cancelImagePreviewLoadFrame();
+  cancelImagePreviewPlaceholderLoadFrame();
+  loadedImagePreviewSrc.value = undefined;
+  loadedImagePreviewPlaceholderSrc.value = undefined;
+}
+
+function handlePreviewIntersection(entries: IntersectionObserverEntry[]): void {
+  if (entries.some(entry => entry.isIntersecting)) {
+    if (!isPreviewInLoadRange.value) {
+      isPreviewInLoadRange.value = true;
+    }
+
+    return;
+  }
+
+  markPreviewOutOfLoadRange();
 }
 
 function handleEntryKeydown(event: KeyboardEvent): void {
@@ -257,15 +273,11 @@ onMounted(() => {
   }
 
   if (typeof IntersectionObserver === 'undefined' || !previewRef.value) {
-    markPreviewInLoadRange();
+    isPreviewInLoadRange.value = true;
     return;
   }
 
-  previewIntersectionObserver = new IntersectionObserver((entries) => {
-    if (entries.some(entry => entry.isIntersecting)) {
-      markPreviewInLoadRange();
-    }
-  }, {
+  previewIntersectionObserver = new IntersectionObserver(handlePreviewIntersection, {
     rootMargin: '800px 0px',
     threshold: 0,
   });
