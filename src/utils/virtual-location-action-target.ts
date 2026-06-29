@@ -36,22 +36,26 @@ export function getDirectoryPathFromEntry(entry: DirEntry): string | null {
 }
 
 export function getActionTargetEntries(
-  selectedEntries: DirEntry[],
+  selectedEntries: DirEntry[] | null | undefined,
   currentDirectoryPath: string | null | undefined,
 ): DirEntry[] {
+  const entries = selectedEntries ?? [];
+
   if (!isBrowsingVirtualLocations(currentDirectoryPath)) {
-    return selectedEntries;
+    return entries;
   }
 
-  return selectedEntries.filter(entry => !isVirtualLocationPath(entry.path));
+  return entries.filter(entry => !isVirtualLocationPath(entry.path));
 }
 
 export function resolveActionDirectoryPath(
-  selectedEntries: DirEntry[],
+  selectedEntries: DirEntry[] | null | undefined,
   currentDirectoryPath: string | null | undefined,
 ): string | null {
+  const entries = selectedEntries ?? [];
+
   if (isBrowsingVirtualLocations(currentDirectoryPath)) {
-    const firstTargetEntry = getActionTargetEntries(selectedEntries, currentDirectoryPath)[0];
+    const firstTargetEntry = getActionTargetEntries(entries, currentDirectoryPath)[0];
 
     if (!firstTargetEntry) {
       return null;
@@ -66,6 +70,14 @@ export function resolveActionDirectoryPath(
     return selectionPath;
   }
 
+  if (entries.length > 0) {
+    const selectionPath = getDirectoryPathFromEntry(entries[0]);
+
+    if (selectionPath && !isVirtualLocationPath(selectionPath)) {
+      return selectionPath;
+    }
+  }
+
   if (!currentDirectoryPath) {
     return null;
   }
@@ -74,14 +86,15 @@ export function resolveActionDirectoryPath(
 }
 
 export function getVirtualLocationActionContext(
-  selectedEntries: DirEntry[],
+  selectedEntries: DirEntry[] | null | undefined,
   currentDirectoryPath: string | null | undefined,
 ): VirtualLocationActionContext {
-  const actionTargetEntries = getActionTargetEntries(selectedEntries, currentDirectoryPath);
+  const entries = selectedEntries ?? [];
+  const actionTargetEntries = getActionTargetEntries(entries, currentDirectoryPath);
 
   return {
     isBrowsingVirtualLocations: isBrowsingVirtualLocations(currentDirectoryPath),
-    actionDirectoryPath: resolveActionDirectoryPath(selectedEntries, currentDirectoryPath),
+    actionDirectoryPath: resolveActionDirectoryPath(entries, currentDirectoryPath),
     actionTargetEntries,
     actionTargetPathsText: actionTargetEntries.map(entry => entry.path).join('\n'),
   };

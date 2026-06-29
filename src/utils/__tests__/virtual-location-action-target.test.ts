@@ -73,8 +73,28 @@ describe('virtual-location-action-target', () => {
   });
 
   describe('resolveActionDirectoryPath', () => {
-    it('uses the current directory for normal paths', () => {
+    it('uses the current directory for normal paths when nothing is selected', () => {
       expect(resolveActionDirectoryPath([], 'C:/Users')).toBe('C:/Users');
+    });
+
+    it('uses the selected directory for normal paths', () => {
+      const selectedEntries = [createEntry({ path: 'C:/Users/Projects' })];
+
+      expect(resolveActionDirectoryPath(selectedEntries, 'C:/Users')).toBe('C:/Users/Projects');
+    });
+
+    it('uses the parent directory when a file is selected', () => {
+      const selectedEntries = [createEntry({
+        path: 'C:/Users/file.txt',
+        is_file: true,
+        is_dir: false,
+      })];
+
+      expect(resolveActionDirectoryPath(selectedEntries, 'C:/')).toBe('C:/Users');
+    });
+
+    it('treats missing selection as empty', () => {
+      expect(resolveActionDirectoryPath(undefined, 'C:/Users')).toBe('C:/Users');
     });
 
     it('uses the selected directory when browsing virtual locations', () => {
@@ -108,14 +128,23 @@ describe('virtual-location-action-target', () => {
       });
     });
 
-    it('returns the current directory context for normal paths', () => {
-      const selectedEntries = [createEntry({ path: 'C:/Users' })];
+    it('returns the selected directory context for normal paths', () => {
+      const selectedEntries = [createEntry({ path: 'C:/Users/Projects' })];
 
       expect(getVirtualLocationActionContext(selectedEntries, 'C:/Users')).toEqual({
         isBrowsingVirtualLocations: false,
-        actionDirectoryPath: 'C:/Users',
+        actionDirectoryPath: 'C:/Users/Projects',
         actionTargetEntries: selectedEntries,
-        actionTargetPathsText: 'C:/Users',
+        actionTargetPathsText: 'C:/Users/Projects',
+      });
+    });
+
+    it('returns the current directory context when nothing is selected', () => {
+      expect(getVirtualLocationActionContext([], 'C:/Users')).toEqual({
+        isBrowsingVirtualLocations: false,
+        actionDirectoryPath: 'C:/Users',
+        actionTargetEntries: [],
+        actionTargetPathsText: '',
       });
     });
   });

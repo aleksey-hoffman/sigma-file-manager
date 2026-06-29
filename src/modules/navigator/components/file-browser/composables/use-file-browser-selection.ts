@@ -26,6 +26,7 @@ import {
   isDestinationInsideAnySourceDirectory,
 } from '@/utils/file-operation-paths';
 import { useFileBrowserClickSelection } from '@/modules/navigator/components/file-browser/composables/use-file-browser-click-selection';
+import { blurFocusedDirEntry } from '@/modules/navigator/utils/blur-focused-dir-entry';
 import { createIndexedFileName, safeFileNameFromUrl } from '@/utils/remote-file';
 import { basenameFromPath } from '@/utils/source-display-name';
 import { usePermanentDeleteConfirm } from '@/composables/use-permanent-delete-confirm';
@@ -150,6 +151,7 @@ export function useFileBrowserSelection(
     selectedEntries.value = [];
     lastSelectedEntry.value = null;
     onSelect([]);
+    blurFocusedDirEntry();
   }
 
   function isEntrySelected(entry: DirEntry): boolean {

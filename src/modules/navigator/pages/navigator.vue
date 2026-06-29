@@ -12,6 +12,7 @@ import {
   onUnmounted,
   watch,
   nextTick,
+  type Ref,
 } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { TabBar } from '@/modules/tab-bar';
@@ -24,6 +25,7 @@ import { useGlobalSearchStore } from '@/stores/runtime/global-search';
 import { useShortcutsStore, getSelectedTextForCopy } from '@/stores/runtime/shortcuts';
 import { toast, ToastStatic } from '@/components/ui/toaster';
 import { getVirtualLocationActionContext } from '@/utils/virtual-location-action-target';
+import { blurFocusedDirEntry } from '@/modules/navigator/utils/blur-focused-dir-entry';
 import { useTerminalsStore } from '@/stores/runtime/terminals';
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
 import { useNavigatorSelectionStore } from '@/stores/runtime/navigator-selection';
@@ -64,6 +66,7 @@ type FileBrowserInstance = InstanceType<typeof FileBrowser> & {
   filterQuery?: string;
   isFilterOpen?: boolean;
   currentPath?: string;
+  selectedEntries?: Ref<DirEntry[]> | DirEntry[];
   focusFilter?: () => void;
   openAddressBarEditor?: (mode: AddressBarEditorMode) => void;
   openCopiedPath?: () => Promise<boolean>;
@@ -397,8 +400,10 @@ function handleSelectionChange(entries: DirEntry[], tabId?: string) {
       });
     }
   }
-  else if (!isSearchSelectionActive.value && (!tabId || tabId === activeTabId.value)) {
-    selectedEntries.value = [];
+  else if (!isSearchSelectionActive.value && entries.length === 0) {
+    if (!tabId || tabId === activeTabId.value || activeTabId.value === null) {
+      selectedEntries.value = [];
+    }
   }
 }
 
@@ -425,6 +430,7 @@ function handleCurrentDirChange(entry: DirEntry | null) {
 
 function handlePaneFocus(tabId: string) {
   activateTabPane(tabId);
+  syncActivePaneSelectionToGlobal();
 }
 
 function setPaneRef(element: FileBrowserInstance | null, tabId: string) {
@@ -553,8 +559,45 @@ function getActivePaneRef(): FileBrowserInstance | undefined {
   return getNavigatorPaneRef();
 }
 
-function getNavigatorActionContext(currentDirectoryPath: string | undefined) {
-  return getVirtualLocationActionContext(selectedEntries.value, currentDirectoryPath);
+function readPaneSelectedEntries(pane: FileBrowserInstance): DirEntry[] {
+  const paneSelection = pane.selectedEntries;
+
+  if (!paneSelection) {
+    return [];
+  }
+
+  if (Array.isArray(paneSelection)) {
+    return [...paneSelection];
+  }
+
+  return [...(paneSelection.value ?? [])];
+}
+
+function syncActivePaneSelectionToGlobal() {
+  const pane = getActivePaneRef();
+
+  if (!pane) {
+    return;
+  }
+
+  selectedEntries.value = readPaneSelectedEntries(pane);
+}
+
+function getActivePaneSelectedEntries(): DirEntry[] {
+  const pane = getActivePaneRef();
+
+  if (pane) {
+    return readPaneSelectedEntries(pane);
+  }
+
+  return selectedEntries.value;
+}
+
+function getNavigatorActionContext(currentDirectoryPath?: string) {
+  return getVirtualLocationActionContext(
+    getActivePaneSelectedEntries(),
+    currentDirectoryPath ?? getActiveCurrentPath(),
+  );
 }
 
 function getPasteTargetPath(): string | undefined {
@@ -650,8 +693,10 @@ function handleCopyShortcut() {
   const pane = getActivePaneRef();
   if (!pane) return;
 
-  if (selectedEntries.value.length > 0) {
-    pane.copyItems(selectedEntries.value);
+  const activePaneSelection = getActivePaneSelectedEntries();
+
+  if (activePaneSelection.length > 0) {
+    pane.copyItems(activePaneSelection);
   }
 
   return true;
@@ -716,8 +761,10 @@ function handleCutShortcut() {
   const pane = getActivePaneRef();
   if (!pane) return;
 
-  if (selectedEntries.value.length > 0) {
-    pane.cutItems(selectedEntries.value);
+  const activePaneSelection = getActivePaneSelectedEntries();
+
+  if (activePaneSelection.length > 0) {
+    pane.cutItems(activePaneSelection);
   }
 
   return true;
@@ -762,8 +809,10 @@ async function handleDeleteShortcut() {
   const pane = getActivePaneRef();
   if (!pane) return;
 
-  if (selectedEntries.value.length > 0) {
-    await pane.deleteItems(selectedEntries.value, true);
+  const activePaneSelection = getActivePaneSelectedEntries();
+
+  if (activePaneSelection.length > 0) {
+    await pane.deleteItems(activePaneSelection, true);
   }
 }
 
@@ -771,8 +820,10 @@ async function handleDeletePermanentlyShortcut() {
   const pane = getActivePaneRef();
   if (!pane) return;
 
-  if (selectedEntries.value.length > 0) {
-    await pane.deleteItems(selectedEntries.value, false);
+  const activePaneSelection = getActivePaneSelectedEntries();
+
+  if (activePaneSelection.length > 0) {
+    await pane.deleteItems(activePaneSelection, false);
   }
 }
 
@@ -817,14 +868,15 @@ function handleEscapeKey(): boolean {
 }
 
 function hasSelectedItems(): boolean {
-  return selectedEntries.value.length > 0;
+  return getActivePaneSelectedEntries().length > 0;
 }
 
 async function handleQuickViewShortcut() {
   const pane = getActivePaneRef();
+  const activePaneSelection = getActivePaneSelectedEntries();
 
-  if (pane && selectedEntries.value.length > 0) {
-    const lastSelected = selectedEntries.value[selectedEntries.value.length - 1];
+  if (pane && activePaneSelection.length > 0) {
+    const lastSelected = activePaneSelection[activePaneSelection.length - 1];
 
     if (lastSelected.is_file) {
       await pane.quickView(lastSelected);
@@ -834,9 +886,10 @@ async function handleQuickViewShortcut() {
 
 async function handlePrintShortcut() {
   const pane = getActivePaneRef();
+  const activePaneSelection = getActivePaneSelectedEntries();
 
-  if (pane && selectedEntries.value.length > 0) {
-    const lastSelected = selectedEntries.value[selectedEntries.value.length - 1];
+  if (pane && activePaneSelection.length > 0) {
+    const lastSelected = activePaneSelection[activePaneSelection.length - 1];
 
     if (lastSelected.is_file) {
       await pane.printEntry?.(lastSelected);
@@ -846,14 +899,16 @@ async function handlePrintShortcut() {
 
 async function handlePropertiesShortcut() {
   const pane = getActivePaneRef();
+  const activePaneSelection = getActivePaneSelectedEntries();
 
-  if (pane && selectedEntries.value.length > 0) {
-    await pane.openProperties?.(selectedEntries.value);
+  if (pane && activePaneSelection.length > 0) {
+    await pane.openProperties?.(activePaneSelection);
   }
 }
 
 async function openTerminalWithOptions(asAdmin: boolean) {
-  const actionContext = getNavigatorActionContext(currentActivePath.value);
+  blurFocusedDirEntry();
+  const actionContext = getNavigatorActionContext();
 
   if (!actionContext.actionDirectoryPath) {
     return;
@@ -866,7 +921,7 @@ async function openTerminalWithOptions(asAdmin: boolean) {
 }
 
 async function handleOpenNewTabShortcut() {
-  const actionContext = getNavigatorActionContext(currentActivePath.value);
+  const actionContext = getNavigatorActionContext();
 
   if (actionContext.isBrowsingVirtualLocations) {
     if (actionContext.actionTargetEntries.length > 0) {
@@ -876,7 +931,7 @@ async function handleOpenNewTabShortcut() {
     return;
   }
 
-  const currentPath = currentActivePath.value;
+  const currentPath = getActiveCurrentPath();
 
   if (!currentPath) {
     return;
@@ -1016,9 +1071,10 @@ function registerShortcutHandlers() {
   shortcutsStore.registerHandler('deletePermanently', handleDeletePermanentlyShortcut);
   shortcutsStore.registerHandler('rename', () => {
     const pane = getActivePaneRef();
+    const activePaneSelection = getActivePaneSelectedEntries();
 
-    if (pane && selectedEntries.value.length > 0) {
-      pane.startRename(selectedEntries.value[0]);
+    if (pane && activePaneSelection.length > 0) {
+      pane.startRename(activePaneSelection[0]);
     }
   }, { checkItemSelected: hasSelectedItems });
   shortcutsStore.registerHandler('escape', handleEscapeKey);
