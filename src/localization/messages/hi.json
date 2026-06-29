@@ -850,6 +850,7 @@
     "selectedItems": "{count} आइटम चयनित",
     "currentDirectory": "वर्तमान निर्देशिका",
     "selectAll": "सबका चयन करें",
+    "activePane": "Active pane",
     "deselectAll": "सबको अचयनित करो",
     "showingNOfItems": "{total} आइटम ({hidden} छिपा हुआ)",
     "matchedNOfItems": "{total} आइटमों में से {matched} का मिलान हुआ",

@@ -820,6 +820,7 @@
     "selectedItems": "{count} 件を選択中",
     "currentDirectory": "現在のフォルダ",
     "selectAll": "すべて選択",
+    "activePane": "アクティブペイン",
     "deselectAll": "選択解除",
     "showingNOfItems": "{total} 個のアイテム（{hidden} 個非表示）",
     "matchedNOfItems": "{total} 個のアイテムの {matched} 個が一致しました",

@@ -852,6 +852,7 @@
     "selectedItems": "{count} items selected",
     "currentDirectory": "Current directory",
     "selectAll": "Select all",
+    "activePane": "Active pane",
     "deselectAll": "Deselect all",
     "showingNOfItems": "{total} items ({hidden} hidden)",
     "matchedNOfItems": "Matched {matched} of {total} items",

@@ -822,6 +822,7 @@
     "selectedItems": "{count} éléments sélectionnés",
     "currentDirectory": "Dossier actuel",
     "selectAll": "Tout sélectionner",
+    "activePane": "Volet actif",
     "deselectAll": "Tout désélectionner",
     "showingNOfItems": "{total} éléments ({hidden} masqués)",
     "matchedNOfItems": "Correspond à {matched} articles sur {total}",

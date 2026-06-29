@@ -14,6 +14,7 @@ import {
   EllipsisVerticalIcon,
 } from '@lucide/vue';
 import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useDirSizesStore } from '@/stores/runtime/dir-sizes';
@@ -41,12 +42,17 @@ import type { LinkCreationKind } from '@/utils/link-operations';
 
 const MAX_VISIBLE_ITEMS = 100;
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   dirContents: DirContents | null;
   filteredCount: number;
   selectedCount?: number;
   selectedEntries?: DirEntry[];
-}>();
+  isSplitView?: boolean;
+  isActivePane?: boolean;
+}>(), {
+  isSplitView: false,
+  isActivePane: false,
+});
 
 const emit = defineEmits<{
   selectAll: [];
@@ -69,6 +75,8 @@ const totalCount = computed(() => props.dirContents?.entries.length ?? 0);
 const isFiltered = computed(() => props.filteredCount !== totalCount.value);
 const hiddenCount = computed(() => Math.max(totalCount.value - props.filteredCount, 0));
 const hasSelection = computed(() => (props.selectedCount ?? 0) > 0);
+
+const showActivePaneIndicator = computed(() => props.isSplitView && props.isActivePane);
 
 const selectedEntriesArray = computed(() => props.selectedEntries ?? []);
 
@@ -259,209 +267,225 @@ async function handleExtensionAction(registration: ContextMenuItemRegistration) 
 </script>
 
 <template>
-  <div class="file-browser-status-bar">
-    <template v-if="hasSelection">
-      <span class="file-browser-status-bar__selected-count">
-        {{ t('fileBrowser.selectedItems', { count: selectedCount }) }}
-        <template v-if="selectionSizeDisplay">
-          <span class="file-browser-status-bar__separator">·</span>
-          <span class="file-browser-status-bar__size-info">
-            <template v-if="selectionSizeDisplay.sizeStr">
-              {{ selectionSizeDisplay.sizeStr }}
-              <span
-                v-if="selectionSizeDisplay.countStr"
-                class="file-browser-status-bar__count-detail"
-              >({{ selectionSizeDisplay.countStr }})</span>
-            </template>
-            <template v-else>
-              {{ selectionSizeDisplay.countStr }}
-            </template>
-          </span>
-        </template>
-      </span>
-      <Popover v-model:open="showItemsPopoverOpen">
-        <PopoverAnchor as-child>
-          <div class="file-browser-status-bar__actions">
-            <div class="file-browser-status-bar__actions--expanded">
-              <Button
-                variant="ghost"
-                size="sm"
-                class="file-browser-status-bar__button"
-                :title="t('showItems')"
-                @click="showItemsPopoverOpen = true"
-              >
-                <EyeIcon :size="14" />
-                <span class="file-browser-status-bar__button-text">{{ t('showItems') }}</span>
-              </Button>
+  <div
+    class="file-browser-status-bar"
+    :class="{ 'file-browser-status-bar--active-pane': showActivePaneIndicator }"
+  >
+    <Tooltip v-if="showActivePaneIndicator">
+      <TooltipTrigger as-child>
+        <span
+          class="file-browser-status-bar__active-pane-indicator"
+          :aria-label="t('fileBrowser.activePane')"
+        />
+      </TooltipTrigger>
+      <TooltipContent>
+        {{ t('fileBrowser.activePane') }}
+      </TooltipContent>
+    </Tooltip>
+    <div class="file-browser-status-bar__main">
+      <template v-if="hasSelection">
+        <span class="file-browser-status-bar__selected-count">
+          {{ t('fileBrowser.selectedItems', { count: selectedCount }) }}
+          <template v-if="selectionSizeDisplay">
+            <span class="file-browser-status-bar__separator">·</span>
+            <span class="file-browser-status-bar__size-info">
+              <template v-if="selectionSizeDisplay.sizeStr">
+                {{ selectionSizeDisplay.sizeStr }}
+                <span
+                  v-if="selectionSizeDisplay.countStr"
+                  class="file-browser-status-bar__count-detail"
+                >({{ selectionSizeDisplay.countStr }})</span>
+              </template>
+              <template v-else>
+                {{ selectionSizeDisplay.countStr }}
+              </template>
+            </span>
+          </template>
+        </span>
+        <Popover v-model:open="showItemsPopoverOpen">
+          <PopoverAnchor as-child>
+            <div class="file-browser-status-bar__actions">
+              <div class="file-browser-status-bar__actions--expanded">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  class="file-browser-status-bar__button"
+                  :title="t('showItems')"
+                  @click="showItemsPopoverOpen = true"
+                >
+                  <EyeIcon :size="14" />
+                  <span class="file-browser-status-bar__button-text">{{ t('showItems') }}</span>
+                </Button>
 
-              <Button
-                variant="ghost"
-                size="sm"
-                class="file-browser-status-bar__button"
-                :title="t('shortcuts.selectAllItemsInCurrentDirectory')"
-                @click="emit('selectAll')"
-              >
-                <CheckCheckIcon :size="14" />
-                <span class="file-browser-status-bar__button-text">{{ t('fileBrowser.selectAll') }}</span>
-              </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  class="file-browser-status-bar__button"
+                  :title="t('shortcuts.selectAllItemsInCurrentDirectory')"
+                  @click="emit('selectAll')"
+                >
+                  <CheckCheckIcon :size="14" />
+                  <span class="file-browser-status-bar__button-text">{{ t('fileBrowser.selectAll') }}</span>
+                </Button>
 
-              <Button
-                variant="ghost"
-                size="sm"
-                class="file-browser-status-bar__button"
-                :title="t('fileBrowser.deselectAll')"
-                @click="emit('deselectAll')"
-              >
-                <XIcon :size="14" />
-                <span class="file-browser-status-bar__button-text">{{ t('fileBrowser.deselectAll') }}</span>
-              </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  class="file-browser-status-bar__button"
+                  :title="t('fileBrowser.deselectAll')"
+                  @click="emit('deselectAll')"
+                >
+                  <XIcon :size="14" />
+                  <span class="file-browser-status-bar__button-text">{{ t('fileBrowser.deselectAll') }}</span>
+                </Button>
 
-              <DropdownMenu v-model:open="selectedItemsMenuOpen">
-                <DropdownMenuTrigger as-child>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    class="file-browser-status-bar__button"
-                    :title="t('menu')"
+                <DropdownMenu v-model:open="selectedItemsMenuOpen">
+                  <DropdownMenuTrigger as-child>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      class="file-browser-status-bar__button"
+                      :title="t('menu')"
+                    >
+                      <MenuIcon :size="14" />
+                      <span class="file-browser-status-bar__button-text">{{ t('menu') }}</span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    align="end"
+                    side="top"
+                    class="file-browser-status-bar__menu"
                   >
-                    <MenuIcon :size="14" />
-                    <span class="file-browser-status-bar__button-text">{{ t('menu') }}</span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent
-                  align="end"
-                  side="top"
-                  class="file-browser-status-bar__menu"
-                >
-                  <FileBrowserActionsMenu
-                    :selected-entries="selectedEntriesArray"
-                    :menu-item-component="DropdownMenuItem"
-                    :menu-separator-component="DropdownMenuSeparator"
-                    @action="handleAction"
-                    @create-link="handleCreateLink"
-                    @open-custom-dialog="handleOpenCustomDialog"
-                  />
-                  <FileBrowserExtensionMenuItems
-                    :selected-entries="selectedEntriesArray"
-                    :menu-item-component="DropdownMenuItem"
-                    :menu-separator-component="DropdownMenuSeparator"
-                    :menu-label-component="DropdownMenuLabel"
-                    @extension-action="handleExtensionAction"
-                  />
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-
-            <div class="file-browser-status-bar__actions--collapsed">
-              <DropdownMenu v-model:open="collapsedActionsMenuOpen">
-                <DropdownMenuTrigger as-child>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    class="file-browser-status-bar__button"
-                    :title="t('actions')"
-                  >
-                    <EllipsisVerticalIcon :size="16" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent
-                  align="end"
-                  side="top"
-                  class="file-browser-status-bar__dropdown"
-                >
-                  <DropdownMenuItem @click="openCollapsedPopover">
-                    <EyeIcon :size="14" />
-                    {{ t('showItems') }}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem @click="emit('selectAll')">
-                    <CheckCheckIcon :size="14" />
-                    {{ t('fileBrowser.selectAll') }}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem @click="emit('deselectAll')">
-                    <XIcon :size="14" />
-                    {{ t('fileBrowser.deselectAll') }}
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <FileBrowserActionsMenu
-                    :selected-entries="selectedEntriesArray"
-                    :menu-item-component="DropdownMenuItem"
-                    :menu-separator-component="DropdownMenuSeparator"
-                    @action="handleAction"
-                    @create-link="handleCreateLink"
-                    @open-custom-dialog="handleOpenCustomDialog"
-                  />
-                  <FileBrowserExtensionMenuItems
-                    :selected-entries="selectedEntriesArray"
-                    :menu-item-component="DropdownMenuItem"
-                    :menu-separator-component="DropdownMenuSeparator"
-                    :menu-label-component="DropdownMenuLabel"
-                    @extension-action="handleExtensionAction"
-                  />
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          </div>
-        </PopoverAnchor>
-        <PopoverContent
-          align="start"
-          side="top"
-          class="file-browser-status-bar__popover"
-        >
-          <div class="file-browser-status-bar__popover-content">
-            <div class="file-browser-status-bar__filter-wrapper">
-              <Input
-                v-model="itemsFilterQuery"
-                :placeholder="t('filter.filter')"
-                class="file-browser-status-bar__filter-input"
-              />
-            </div>
-            <div
-              v-if="showItemsHeader"
-              class="file-browser-status-bar__items-header"
-            >
-              {{ showItemsHeader }}
-            </div>
-            <ScrollArea class="file-browser-status-bar__scroll-area">
-              <div class="file-browser-status-bar__items-list">
-                <div
-                  v-for="entry in displayedEntries"
-                  :key="entry.path"
-                  class="file-browser-status-bar__item"
-                >
-                  <div class="file-browser-status-bar__item-info">
-                    <span class="file-browser-status-bar__item-name">{{ entry.name }}</span>
-                    <span class="file-browser-status-bar__item-path">{{ entry.path }}</span>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    class="file-browser-status-bar__item-remove"
-                    :title="t('fileBrowser.removeFromSelection')"
-                    @click="removeItem(entry)"
-                  >
-                    <XIcon :size="18" />
-                  </Button>
-                </div>
-                <div
-                  v-if="displayedEntries.length === 0"
-                  class="file-browser-status-bar__no-items"
-                >
-                  {{ t('fileBrowser.noMatchingItems') }}
-                </div>
+                    <FileBrowserActionsMenu
+                      :selected-entries="selectedEntriesArray"
+                      :menu-item-component="DropdownMenuItem"
+                      :menu-separator-component="DropdownMenuSeparator"
+                      @action="handleAction"
+                      @create-link="handleCreateLink"
+                      @open-custom-dialog="handleOpenCustomDialog"
+                    />
+                    <FileBrowserExtensionMenuItems
+                      :selected-entries="selectedEntriesArray"
+                      :menu-item-component="DropdownMenuItem"
+                      :menu-separator-component="DropdownMenuSeparator"
+                      :menu-label-component="DropdownMenuLabel"
+                      @extension-action="handleExtensionAction"
+                    />
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
-            </ScrollArea>
-          </div>
-        </PopoverContent>
-      </Popover>
-    </template>
-    <template v-else>
-      <span v-if="isFiltered">
-        {{ t('fileBrowser.showingFiltered', { hidden: hiddenCount, total: totalCount }) }}
-      </span>
-      <span v-else>
-        {{ t('fileBrowser.itemsTotal', { count: totalCount }) }}
-      </span>
-    </template>
+
+              <div class="file-browser-status-bar__actions--collapsed">
+                <DropdownMenu v-model:open="collapsedActionsMenuOpen">
+                  <DropdownMenuTrigger as-child>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      class="file-browser-status-bar__button"
+                      :title="t('actions')"
+                    >
+                      <EllipsisVerticalIcon :size="16" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    align="end"
+                    side="top"
+                    class="file-browser-status-bar__dropdown"
+                  >
+                    <DropdownMenuItem @click="openCollapsedPopover">
+                      <EyeIcon :size="14" />
+                      {{ t('showItems') }}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem @click="emit('selectAll')">
+                      <CheckCheckIcon :size="14" />
+                      {{ t('fileBrowser.selectAll') }}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem @click="emit('deselectAll')">
+                      <XIcon :size="14" />
+                      {{ t('fileBrowser.deselectAll') }}
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <FileBrowserActionsMenu
+                      :selected-entries="selectedEntriesArray"
+                      :menu-item-component="DropdownMenuItem"
+                      :menu-separator-component="DropdownMenuSeparator"
+                      @action="handleAction"
+                      @create-link="handleCreateLink"
+                      @open-custom-dialog="handleOpenCustomDialog"
+                    />
+                    <FileBrowserExtensionMenuItems
+                      :selected-entries="selectedEntriesArray"
+                      :menu-item-component="DropdownMenuItem"
+                      :menu-separator-component="DropdownMenuSeparator"
+                      :menu-label-component="DropdownMenuLabel"
+                      @extension-action="handleExtensionAction"
+                    />
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </div>
+          </PopoverAnchor>
+          <PopoverContent
+            align="start"
+            side="top"
+            class="file-browser-status-bar__popover"
+          >
+            <div class="file-browser-status-bar__popover-content">
+              <div class="file-browser-status-bar__filter-wrapper">
+                <Input
+                  v-model="itemsFilterQuery"
+                  :placeholder="t('filter.filter')"
+                  class="file-browser-status-bar__filter-input"
+                />
+              </div>
+              <div
+                v-if="showItemsHeader"
+                class="file-browser-status-bar__items-header"
+              >
+                {{ showItemsHeader }}
+              </div>
+              <ScrollArea class="file-browser-status-bar__scroll-area">
+                <div class="file-browser-status-bar__items-list">
+                  <div
+                    v-for="entry in displayedEntries"
+                    :key="entry.path"
+                    class="file-browser-status-bar__item"
+                  >
+                    <div class="file-browser-status-bar__item-info">
+                      <span class="file-browser-status-bar__item-name">{{ entry.name }}</span>
+                      <span class="file-browser-status-bar__item-path">{{ entry.path }}</span>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      class="file-browser-status-bar__item-remove"
+                      :title="t('fileBrowser.removeFromSelection')"
+                      @click="removeItem(entry)"
+                    >
+                      <XIcon :size="18" />
+                    </Button>
+                  </div>
+                  <div
+                    v-if="displayedEntries.length === 0"
+                    class="file-browser-status-bar__no-items"
+                  >
+                    {{ t('fileBrowser.noMatchingItems') }}
+                  </div>
+                </div>
+              </ScrollArea>
+            </div>
+          </PopoverContent>
+        </Popover>
+      </template>
+      <template v-else>
+        <span v-if="isFiltered">
+          {{ t('fileBrowser.showingFiltered', { hidden: hiddenCount, total: totalCount }) }}
+        </span>
+        <span v-else>
+          {{ t('fileBrowser.itemsTotal', { count: totalCount }) }}
+        </span>
+      </template>
+    </div>
   </div>
 </template>
 
@@ -471,7 +495,6 @@ async function handleExtensionAction(registration: ContextMenuItemRegistration) 
   height: 32px;
   flex-shrink: 0;
   align-items: center;
-  justify-content: space-between;
   padding: 4px 8px;
   border-radius: var(--radius-sm);
   border-top: 1px solid hsl(var(--border));
@@ -479,6 +502,49 @@ async function handleExtensionAction(registration: ContextMenuItemRegistration) 
   color: hsl(var(--muted-foreground));
   container-type: inline-size;
   font-size: 12px;
+  gap: 8px;
+}
+
+.file-browser-status-bar--active-pane {
+  background:
+    linear-gradient(
+      90deg,
+      hsl(var(--primary) / 30%) 0%,
+      hsl(var(--primary) / 14%) 36px,
+      hsl(var(--primary) / 5%) 72px,
+      transparent 112px
+    ),
+    hsl(var(--background-2));
+  box-shadow: inset 0 0 28px hsl(var(--primary) / 16%);
+}
+
+.file-browser-status-bar__active-pane-indicator {
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+  border-radius: var(--radius-full);
+  background: radial-gradient(
+    circle at center,
+    hsl(0deg 0% 100%) 0%,
+    hsl(0deg 0% 100% / 85%) 18%,
+    hsl(var(--primary)) 55%,
+    hsl(var(--primary)) 100%
+  );
+  box-shadow:
+    0 0 2px hsl(0deg 0% 100% / 95%),
+    0 0 4px hsl(var(--primary)),
+    0 0 8px hsl(var(--primary)),
+    0 0 14px 3px hsl(var(--primary) / 95%),
+    0 0 24px 8px hsl(var(--primary) / 75%);
+  filter: blur(1px);
+}
+
+.file-browser-status-bar__main {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  align-items: center;
+  justify-content: space-between;
   gap: 8px;
 }
 

@@ -850,6 +850,7 @@
     "selectedItems": "{count} izbranih predmetov",
     "currentDirectory": "Trenutna mapa",
     "selectAll": "Izberi vse",
+    "activePane": "Active pane",
     "deselectAll": "Odznači vse",
     "showingNOfItems": "{total} predmetov ({hidden} skritih)",
     "matchedNOfItems": "Ujemajo {matched} od {total} predmetov",

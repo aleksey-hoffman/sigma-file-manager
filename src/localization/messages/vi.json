@@ -820,6 +820,7 @@
     "selectedItems": "{count} mục đã chọn",
     "currentDirectory": "Thư mục hiện tại",
     "selectAll": "Chọn tất cả",
+    "activePane": "Active pane",
     "deselectAll": "Bỏ chọn tất cả",
     "showingNOfItems": "{total} mục ({hidden} ẩn)",
     "matchedNOfItems": "Đã khớp {matched} của {total} mục",

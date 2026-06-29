@@ -820,6 +820,7 @@
     "selectedItems": "{count} öğe seçildi",
     "currentDirectory": "Geçerli dizin",
     "selectAll": "Tümünü seç",
+    "activePane": "Active pane",
     "deselectAll": "Seçimi kaldır",
     "showingNOfItems": "{total} öğe ({hidden} gizli)",
     "matchedNOfItems": "{total} öğeden {matched} ile eşleşti",

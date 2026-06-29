@@ -820,6 +820,7 @@
     "selectedItems": "{count} elementi selezionati",
     "currentDirectory": "Directory corrente",
     "selectAll": "Seleziona tutto",
+    "activePane": "Active pane",
     "deselectAll": "Deseleziona tutto",
     "showingNOfItems": "{total} elementi ({hidden} nascosti)",
     "matchedNOfItems": "Corrispondente a {matched} su {total} elementi",

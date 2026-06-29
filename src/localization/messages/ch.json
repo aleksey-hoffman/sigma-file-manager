@@ -820,6 +820,7 @@
     "selectedItems": "已选择 {count} 个项目",
     "currentDirectory": "当前目录",
     "selectAll": "全选",
+    "activePane": "活动窗格",
     "deselectAll": "取消全选",
     "showingNOfItems": "{total} 个项目（隐藏 {hidden} 个）",
     "matchedNOfItems": "匹配了 {matched} 个项目，共 {total} 个项目",

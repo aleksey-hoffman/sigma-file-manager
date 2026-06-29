@@ -850,6 +850,7 @@
     "selectedItems": "{count} элементов выбрано",
     "currentDirectory": "Текущая папка",
     "selectAll": "Выбрать все",
+    "activePane": "Active pane",
     "deselectAll": "Снять выделение",
     "showingNOfItems": "{total} элементов ({hidden} скрытых)",
     "matchedNOfItems": "Сопоставлено {matched} из {total} элементов",

@@ -852,6 +852,7 @@
     "selectedItems": "{count} פריטים נבחרו",
     "currentDirectory": "התיקייה הנוכחית",
     "selectAll": "בחר הכול",
+    "activePane": "Active pane",
     "deselectAll": "בטל בחירת הכול",
     "showingNOfItems": "{total} פריטים ({hidden} מוסתרים)",
     "matchedNOfItems": "הותאמו {matched} מתוך {total} פריטים",

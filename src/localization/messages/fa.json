@@ -816,6 +816,7 @@
     "selectedItems": "{count} مورد انتخاب شده",
     "currentDirectory": "پوشه جاری",
     "selectAll": "انتخاب همه",
+    "activePane": "Active pane",
     "deselectAll": "لغو انتخاب همه",
     "showingNOfItems": "{total} مورد ({hidden} پنهان)",
     "matchedNOfItems": "مطابقت {matched} از {total} مورد",

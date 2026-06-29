@@ -850,6 +850,7 @@
     "selectedItems": "{count} منتخب",
     "currentDirectory": "موجودہ فولڈر",
     "selectAll": "سب منتخب",
+    "activePane": "Active pane",
     "deselectAll": "سب غیر منتخب",
     "showingNOfItems": "{total} اشیاء ({hidden} چھپے)",
     "matchedNOfItems": "{matched} / {total} میل",

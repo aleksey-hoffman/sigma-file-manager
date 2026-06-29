@@ -822,6 +822,7 @@
     "selectedItems": "{count} Elemente ausgewählt",
     "currentDirectory": "Aktuelles Verzeichnis",
     "selectAll": "Alle auswählen",
+    "activePane": "Active pane",
     "deselectAll": "Auswahl aufheben",
     "showingNOfItems": "{total} Elemente ({hidden} ausgeblendet)",
     "matchedNOfItems": "Übereinstimmung mit {matched} von {total} Elementen",
