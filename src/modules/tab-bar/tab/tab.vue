@@ -101,7 +101,7 @@ function handlePointerDown(event: PointerEvent) {
 }
 
 const isActive = computed(() => (
-  props.tabGroup?.[0]?.id === workspacesStore.currentTab?.id
+  props.tabGroup?.[0]?.id === workspacesStore.currentTabGroup?.[0]?.id
 ));
 
 const canCloseDuplicateTabs = computed(() => props.tabGroup.length === 1);
