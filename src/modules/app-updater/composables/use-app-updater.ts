@@ -7,6 +7,7 @@ import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
 import { getVersion } from '@tauri-apps/api/app';
 import { openUrl } from '@tauri-apps/plugin-opener';
+import { openPathDefault } from '@/utils/open-path-default';
 import { useI18n } from 'vue-i18n';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
 import { usePlatformStore } from '@/stores/runtime/platform';
@@ -285,15 +286,11 @@ export function useAppUpdater() {
               + t('notifications.installerSavedAs', { name: savedName }),
             actionText: t('openWith.open'),
             onAction: async () => {
-              const result = await invoke<{
-                success: boolean;
-                error?: string;
-              }>('open_with_default', {
-                filePath: downloadedPath,
-              });
-
-              if (!result.success && result.error) {
-                toast.error(result.error);
+              try {
+                await openPathDefault(downloadedPath);
+              }
+              catch (error) {
+                toast.error(error instanceof Error ? error.message : String(error));
               }
             },
             secondaryActionText: t('notifications.viewRelease'),

@@ -118,6 +118,12 @@ pub fn open_with_program(
         command.creation_flags(DETACHED_PROCESS);
     }
 
+    if let Some(parent_directory) = Path::new(&absolute_file_path).parent() {
+        if parent_directory.exists() {
+            command.current_dir(parent_directory);
+        }
+    }
+
     match command.spawn() {
         Ok(_) => OpenWithResult {
             success: true,
@@ -134,22 +140,7 @@ pub fn open_with_program(
 pub fn open_with_default(file_path: String) -> OpenWithResult {
     #[cfg(target_os = "windows")]
     {
-        use std::os::windows::process::CommandExt;
-        const CREATE_NO_WINDOW: u32 = 0x08000000;
-        match Command::new("cmd")
-            .args(["/C", "start", "", &file_path])
-            .creation_flags(CREATE_NO_WINDOW)
-            .spawn()
-        {
-            Ok(_) => OpenWithResult {
-                success: true,
-                error: None,
-            },
-            Err(spawn_error) => OpenWithResult {
-                success: false,
-                error: Some(format!("Failed to open file: {}", spawn_error)),
-            },
-        }
+        windows::open_path_default_impl(&file_path)
     }
     #[cfg(target_os = "macos")]
     {

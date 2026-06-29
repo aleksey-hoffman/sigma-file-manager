@@ -12,7 +12,7 @@ import {
 import { invoke } from '@tauri-apps/api/core';
 import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 import { homeDir, basename } from '@tauri-apps/api/path';
-import { openPath } from '@tauri-apps/plugin-opener';
+import { openPathDefault } from '@/utils/open-path-default';
 import type { DirEntry, DirContents, ReadDirOptions } from '@/types/dir-entry';
 import type { Tab } from '@/types/workspaces';
 import { useWorkspacesStore } from '@/stores/storage/workspaces';
@@ -541,7 +541,7 @@ export function useFileBrowserNavigation(
       return;
     }
 
-    await openPath(navigableItemTarget.targetPath);
+    await openPathDefault(navigableItemTarget.targetPath);
     userStatsStore.recordItemOpen(navigableItemTarget.targetPath, true);
   }
 
