@@ -45,6 +45,23 @@ interface DirChangePayload {
 const DIRECTORY_DWELL_TIME_MS = 3000;
 const WATCHER_DEBOUNCE_MS = 500;
 
+function dirWatcherDiagEnabled(): boolean {
+  return import.meta.env.DEV && localStorage.getItem('SFM_DIR_WATCHER_DIAG') === '1';
+}
+
+function logDirWatcherDiag(message: string, details?: Record<string, unknown>) {
+  if (!dirWatcherDiagEnabled()) {
+    return;
+  }
+
+  if (details) {
+    console.debug(`[dir-watcher-diag] ${message}`, details);
+    return;
+  }
+
+  console.debug(`[dir-watcher-diag] ${message}`);
+}
+
 function replacePathPrefix(path: string, oldPrefix: string, newPrefix: string): string | null {
   if (path === oldPrefix) return newPrefix;
   if (path.startsWith(oldPrefix + '/')) return newPrefix + path.slice(oldPrefix.length);
@@ -159,14 +176,22 @@ export function useFileBrowserNavigation(
     const normalizedPath = normalizePath(path);
 
     if (watchedPath === normalizedPath) {
+      logDirWatcherDiag('startWatching skipped already watching', { path: normalizedPath });
       return;
     }
+
+    logDirWatcherDiag('startWatching begin', {
+      path: normalizedPath,
+      previousPath: watchedPath,
+    });
 
     await stopWatching();
 
     try {
       await invoke('watch_directory', { path: normalizedPath });
       watchedPath = normalizedPath;
+
+      logDirWatcherDiag('startWatching complete', { path: normalizedPath });
 
       if (!dirChangeUnlisten) {
         dirChangeUnlisten = await listen<DirChangePayload>('dir-change', (event) => {
@@ -197,7 +222,7 @@ export function useFileBrowserNavigation(
       }
     }
     catch (err) {
-      console.error('Failed to start directory watcher:', err);
+      console.error('[dir-watcher-diag] Failed to start directory watcher:', err);
     }
   }
 
@@ -213,11 +238,15 @@ export function useFileBrowserNavigation(
     }
 
     if (watchedPath) {
+      const pathToStop = watchedPath;
+      logDirWatcherDiag('stopWatching begin', { path: pathToStop });
+
       try {
-        await invoke('unwatch_directory', { path: watchedPath });
+        await invoke('unwatch_directory', { path: pathToStop });
+        logDirWatcherDiag('stopWatching complete', { path: pathToStop });
       }
       catch (err) {
-        console.error('Failed to stop directory watcher:', err);
+        console.error('[dir-watcher-diag] Failed to stop directory watcher:', err);
       }
 
       watchedPath = null;
@@ -342,10 +371,15 @@ export function useFileBrowserNavigation(
     onSelectionClear?.();
 
     if (watchedPath && watchedPath !== normalizedPath) {
+      logDirWatcherDiag('readDir stopping watcher before navigation', {
+        from: watchedPath,
+        to: normalizedPath,
+      });
       await stopWatching();
     }
 
     try {
+      logDirWatcherDiag('readDir loading directory', { path: normalizedPath });
       const result = await loadDirectoryContents(path, createReadDirOptions());
 
       dirContents.value = result;
@@ -401,6 +435,10 @@ export function useFileBrowserNavigation(
       }
 
       if (!isVirtualLocationPath(result.path)) {
+        logDirWatcherDiag('readDir starting watcher after load', {
+          path: result.path,
+          entryCount: result.entries.length,
+        });
         await startWatching(result.path);
       }
     }

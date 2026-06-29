@@ -183,13 +183,20 @@ fn resolve_all_wt_profile_icons() -> Option<HashMap<String, String>> {
 fn resolve_wt_profile_icon(profile: &serde_json::Value) -> Option<String> {
     if let Some(icon_value) = profile.get("icon").and_then(|v| v.as_str()) {
         if !icon_value.starts_with("ms-appx") && !icon_value.starts_with("ms-appdata") {
-            let expanded_icon_path = expand_env_vars(icon_value);
-            if Path::new(&expanded_icon_path).exists() {
+            let expanded_icon_path =
+                crate::system_icons::strip_shell_icon_index(&expand_env_vars(icon_value));
+            if Path::new(&expanded_icon_path).exists()
+                && !crate::system_icons::is_windows_apps_alias_path(&expanded_icon_path)
+            {
                 if let Some(base64_icon) = load_image_as_base64(&expanded_icon_path) {
                     return Some(base64_icon);
                 }
-                if let Some(base64_icon) = get_executable_icon_base64(&expanded_icon_path) {
-                    return Some(base64_icon);
+                if crate::system_icons::has_shell_executable_icon_extension(Path::new(
+                    &expanded_icon_path,
+                )) {
+                    if let Some(base64_icon) = get_executable_icon_base64(&expanded_icon_path) {
+                        return Some(base64_icon);
+                    }
                 }
             }
         }
@@ -292,7 +299,15 @@ fn find_executable_path(commandline: &str) -> Option<String> {
 
         let expanded_path = Path::new(&expanded);
         if expanded_path.is_absolute() && expanded_path.exists() {
-            return Some(expanded);
+            if crate::system_icons::is_windows_apps_alias_path(&expanded) {
+                if let Some(file_name) = expanded_path.file_name().and_then(|name| name.to_str()) {
+                    if let Some(resolved) = resolve_via_where(file_name) {
+                        return Some(resolved);
+                    }
+                }
+            } else {
+                return Some(expanded);
+            }
         }
 
         return resolve_via_where(&expanded);
@@ -305,7 +320,15 @@ fn find_executable_path(commandline: &str) -> Option<String> {
 
         let expanded_path = Path::new(&expanded);
         if expanded_path.is_absolute() && expanded_path.exists() {
-            return Some(expanded);
+            if crate::system_icons::is_windows_apps_alias_path(&expanded) {
+                if let Some(file_name) = expanded_path.file_name().and_then(|name| name.to_str()) {
+                    if let Some(resolved) = resolve_via_where(file_name) {
+                        return Some(resolved);
+                    }
+                }
+            } else {
+                return Some(expanded);
+            }
         }
 
         if expanded.ends_with(".exe") || expanded.ends_with(".cmd") || expanded.ends_with(".com") {
@@ -332,10 +355,25 @@ fn resolve_via_where(exe_name: &str) -> Option<String> {
     }
 
     let decoded_stdout = String::from_utf8_lossy(&stdout);
-    decoded_stdout
-        .lines()
-        .next()
-        .map(|line| line.trim().to_string())
+    let mut windows_apps_fallback: Option<String> = None;
+
+    for line in decoded_stdout.lines() {
+        let trimmed = line.trim();
+        if trimmed.is_empty() || !Path::new(trimmed).exists() {
+            continue;
+        }
+
+        if crate::system_icons::is_windows_apps_alias_path(trimmed) {
+            if windows_apps_fallback.is_none() {
+                windows_apps_fallback = Some(trimmed.to_string());
+            }
+            continue;
+        }
+
+        return Some(trimmed.to_string());
+    }
+
+    windows_apps_fallback
 }
 
 fn resolve_executable_icon(exe_name: &str) -> Option<String> {
@@ -344,55 +382,48 @@ fn resolve_executable_icon(exe_name: &str) -> Option<String> {
 }
 
 fn get_executable_icon_base64(exe_path: &str) -> Option<String> {
-    use base64::engine::general_purpose::STANDARD;
-    use base64::Engine;
-    use file_icon_provider::get_file_icon;
-    use image::codecs::png::PngEncoder;
-    use image::ImageEncoder;
-
-    let path = Path::new(exe_path);
-    if !path.exists() {
-        return None;
-    }
-
-    let icon = get_file_icon(path, 32).ok()?;
-    if icon.width == 0 || icon.height == 0 {
-        return None;
-    }
-
-    let expected_len = (icon.width * icon.height * 4) as usize;
-    if icon.pixels.len() != expected_len {
-        return None;
-    }
-
-    let mut png_bytes: Vec<u8> = Vec::new();
-    let encoder = PngEncoder::new(&mut png_bytes);
-    encoder
-        .write_image(
-            &icon.pixels,
-            icon.width,
-            icon.height,
-            image::ExtendedColorType::Rgba8,
-        )
-        .ok()?;
-
-    let base64_png = STANDARD.encode(&png_bytes);
-    Some(format!("data:image/png;base64,{}", base64_png))
+    let normalized_path =
+        crate::system_icons::strip_shell_icon_index(&expand_env_vars(exe_path));
+    crate::system_icons::get_path_icon_data_url(Path::new(&normalized_path), 32)
 }
 
 fn load_image_as_base64(file_path: &str) -> Option<String> {
     use base64::engine::general_purpose::STANDARD;
     use base64::Engine;
+    use image::codecs::png::PngEncoder;
+    use image::ImageEncoder;
 
     let data = std::fs::read(file_path).ok()?;
 
     if data.starts_with(&[0x89, 0x50, 0x4E, 0x47]) {
-        Some(format!("data:image/png;base64,{}", STANDARD.encode(&data)))
-    } else if data.starts_with(&[0xFF, 0xD8]) {
-        Some(format!("data:image/jpeg;base64,{}", STANDARD.encode(&data)))
-    } else {
-        None
+        return Some(format!("data:image/png;base64,{}", STANDARD.encode(&data)));
     }
+
+    if data.starts_with(&[0xFF, 0xD8]) {
+        return Some(format!("data:image/jpeg;base64,{}", STANDARD.encode(&data)));
+    }
+
+    let image = image::ImageReader::open(file_path)
+        .ok()?
+        .with_guessed_format()
+        .ok()?
+        .decode()
+        .ok()?;
+
+    let rgba_image = image.to_rgba8();
+    let (width, height) = rgba_image.dimensions();
+    let mut png_bytes: Vec<u8> = Vec::new();
+    let png_encoder = PngEncoder::new(&mut png_bytes);
+    png_encoder
+        .write_image(
+            rgba_image.as_raw(),
+            width,
+            height,
+            image::ExtendedColorType::Rgba8,
+        )
+        .ok()?;
+
+    Some(format!("data:image/png;base64,{}", STANDARD.encode(&png_bytes)))
 }
 
 fn expand_env_vars(input: &str) -> String {

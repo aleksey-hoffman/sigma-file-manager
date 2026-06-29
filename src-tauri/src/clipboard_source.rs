@@ -117,6 +117,16 @@ unsafe fn get_windows_process_image_path(process_id: u32) -> Option<String> {
 
 #[cfg(windows)]
 fn resolve_process_icon_url(process_path: &str) -> Option<String> {
+    let trimmed = process_path.trim();
+    if trimmed.is_empty() || trimmed.contains("://") {
+        return None;
+    }
+
+    let lower = trimmed.to_ascii_lowercase();
+    if trimmed.starts_with("::{") || lower.starts_with("shell:") {
+        return None;
+    }
+
     crate::system_icons::get_system_icon(
         process_path.to_string(),
         false,

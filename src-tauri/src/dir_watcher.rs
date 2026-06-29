@@ -19,6 +19,20 @@ struct WatcherHandle {
     stop_signal: Arc<Mutex<bool>>,
 }
 
+fn active_watcher_count() -> usize {
+    ACTIVE_WATCHERS
+        .lock()
+        .map(|watchers| watchers.len())
+        .unwrap_or(0)
+}
+
+fn active_watcher_paths() -> Vec<String> {
+    ACTIVE_WATCHERS
+        .lock()
+        .map(|watchers| watchers.keys().cloned().collect())
+        .unwrap_or_default()
+}
+
 fn is_relevant_event(kind: &EventKind) -> bool {
     matches!(
         kind,
@@ -36,22 +50,59 @@ fn event_kind_to_string(kind: &EventKind) -> &'static str {
     }
 }
 
+fn dir_watcher_diag_enabled() -> bool {
+    std::env::var("SFM_DIR_WATCHER_DIAG")
+        .ok()
+        .is_some_and(|value| value == "1")
+}
+
+macro_rules! dir_watcher_diag {
+    ($($arg:tt)*) => {
+        if dir_watcher_diag_enabled() {
+            log::debug!($($arg)*);
+        }
+    };
+}
+
 #[tauri::command]
 pub async fn watch_directory(app: AppHandle, path: String) -> Result<(), String> {
     let normalized_path = normalize_path(&path);
     let watch_path = PathBuf::from(&path);
 
+    dir_watcher_diag!(
+        "[dir-watcher-diag] watch_directory request path={} normalized={} active_count={} active_paths={:?}",
+        path,
+        normalized_path,
+        active_watcher_count(),
+        active_watcher_paths(),
+    );
+
     if !watch_path.exists() {
+        log::warn!(
+            "[dir-watcher-diag] watch_directory rejected missing path={} normalized={}",
+            path,
+            normalized_path,
+        );
         return Err(format!("Path does not exist: {}", path));
     }
 
     if !watch_path.is_dir() {
+        log::warn!(
+            "[dir-watcher-diag] watch_directory rejected non-directory path={} normalized={}",
+            path,
+            normalized_path,
+        );
         return Err(format!("Path is not a directory: {}", path));
     }
 
     {
         let watchers = ACTIVE_WATCHERS.lock().map_err(|err| err.to_string())?;
         if watchers.contains_key(&normalized_path) {
+        dir_watcher_diag!(
+            "[dir-watcher-diag] watch_directory skipped already-active path={} active_count={}",
+            normalized_path,
+            watchers.len(),
+        );
             return Ok(());
         }
     }
@@ -60,9 +111,26 @@ pub async fn watch_directory(app: AppHandle, path: String) -> Result<(), String>
     let stop_signal_clone = Arc::clone(&stop_signal);
     let app_handle = app.clone();
     let path_for_thread = normalized_path.clone();
+    let watch_path_for_thread = watch_path.clone();
+
+    dir_watcher_diag!(
+        "[dir-watcher-diag] watch_directory spawning thread path={} watch_path={}",
+        path_for_thread,
+        watch_path_for_thread.display(),
+    );
 
     thread::spawn(move || {
+        dir_watcher_diag!(
+            "[dir-watcher-diag] watcher thread started path={}",
+            path_for_thread,
+        );
+
         let (tx, rx) = std::sync::mpsc::channel();
+
+        dir_watcher_diag!(
+            "[dir-watcher-diag] creating RecommendedWatcher path={}",
+            path_for_thread,
+        );
 
         let watcher_result = RecommendedWatcher::new(
             move |res: Result<notify::Event, notify::Error>| {
@@ -74,19 +142,40 @@ pub async fn watch_directory(app: AppHandle, path: String) -> Result<(), String>
         );
 
         let mut watcher = match watcher_result {
-            Ok(watcher) => watcher,
+            Ok(watcher) => {
+                dir_watcher_diag!(
+                    "[dir-watcher-diag] RecommendedWatcher created path={}",
+                    path_for_thread,
+                );
+                watcher
+            }
             Err(err) => {
-                log::error!("Failed to create watcher for {}: {}", path_for_thread, err);
+                log::error!(
+                    "[dir-watcher-diag] Failed to create watcher path={} error={}",
+                    path_for_thread,
+                    err,
+                );
                 return;
             }
         };
 
-        if let Err(err) = watcher.watch(&watch_path, RecursiveMode::NonRecursive) {
-            log::error!("Failed to watch {}: {}", path_for_thread, err);
+        dir_watcher_diag!(
+            "[dir-watcher-diag] registering watch path={} watch_path={}",
+            path_for_thread,
+            watch_path_for_thread.display(),
+        );
+
+        if let Err(err) = watcher.watch(&watch_path_for_thread, RecursiveMode::NonRecursive) {
+            log::error!(
+                "[dir-watcher-diag] Failed to watch path={} watch_path={} error={}",
+                path_for_thread,
+                watch_path_for_thread.display(),
+                err,
+            );
             return;
         }
 
-        log::info!("Started watching directory: {}", path_for_thread);
+        dir_watcher_diag!("[dir-watcher-diag] Started watching directory: {}", path_for_thread);
 
         let debounce_duration = Duration::from_millis(300);
         let mut last_emit_time: Option<Instant> = None;
@@ -98,7 +187,10 @@ pub async fn watch_directory(app: AppHandle, path: String) -> Result<(), String>
                     .lock()
                     .unwrap_or_else(|err| err.into_inner());
                 if *should_stop {
-                    log::info!("Stopping watcher for: {}", path_for_thread);
+                    dir_watcher_diag!(
+                        "[dir-watcher-diag] watcher thread stop requested path={}",
+                        path_for_thread,
+                    );
                     break;
                 }
             }
@@ -160,7 +252,10 @@ pub async fn watch_directory(app: AppHandle, path: String) -> Result<(), String>
                     }
                 }
                 Err(std::sync::mpsc::RecvTimeoutError::Disconnected) => {
-                    log::info!("Watcher channel disconnected for: {}", path_for_thread);
+                    dir_watcher_diag!(
+                        "[dir-watcher-diag] watcher channel disconnected path={}",
+                        path_for_thread,
+                    );
                     break;
                 }
             }
@@ -169,10 +264,24 @@ pub async fn watch_directory(app: AppHandle, path: String) -> Result<(), String>
         if let Ok(mut watchers) = ACTIVE_WATCHERS.lock() {
             watchers.remove(&path_for_thread);
         }
+
+        dir_watcher_diag!(
+            "[dir-watcher-diag] watcher thread exited path={} active_count={} active_paths={:?}",
+            path_for_thread,
+            active_watcher_count(),
+            active_watcher_paths(),
+        );
     });
 
     let mut watchers = ACTIVE_WATCHERS.lock().map_err(|err| err.to_string())?;
-    watchers.insert(normalized_path, WatcherHandle { stop_signal });
+    watchers.insert(normalized_path.clone(), WatcherHandle { stop_signal });
+
+    dir_watcher_diag!(
+        "[dir-watcher-diag] watch_directory registered path={} active_count={} active_paths={:?}",
+        normalized_path,
+        watchers.len(),
+        watchers.keys().cloned().collect::<Vec<_>>(),
+    );
 
     Ok(())
 }
@@ -180,6 +289,14 @@ pub async fn watch_directory(app: AppHandle, path: String) -> Result<(), String>
 #[tauri::command]
 pub async fn unwatch_directory(path: String) -> Result<(), String> {
     let normalized_path = normalize_path(&path);
+
+    dir_watcher_diag!(
+        "[dir-watcher-diag] unwatch_directory request path={} normalized={} active_count={} active_paths={:?}",
+        path,
+        normalized_path,
+        active_watcher_count(),
+        active_watcher_paths(),
+    );
 
     let mut watchers = ACTIVE_WATCHERS.lock().map_err(|err| err.to_string())?;
 
@@ -189,7 +306,18 @@ pub async fn unwatch_directory(path: String) -> Result<(), String> {
             .lock()
             .unwrap_or_else(|err| err.into_inner());
         *should_stop = true;
-        log::info!("Signaled watcher to stop for: {}", normalized_path);
+        dir_watcher_diag!(
+            "[dir-watcher-diag] unwatch_directory signaled stop path={} remaining_active_count={} remaining_active_paths={:?}",
+            normalized_path,
+            watchers.len(),
+            watchers.keys().cloned().collect::<Vec<_>>(),
+        );
+    } else {
+        log::warn!(
+            "[dir-watcher-diag] unwatch_directory no active watcher path={} active_count={}",
+            normalized_path,
+            watchers.len(),
+        );
     }
 
     Ok(())

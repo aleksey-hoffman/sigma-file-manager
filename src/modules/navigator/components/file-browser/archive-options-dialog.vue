@@ -25,6 +25,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  ARCHIVE_ENCODING_SYSTEM_DEFAULT_VALUE,
+  createArchiveEncodingSelectOptions,
+  getSelectableArchiveEncodingValues,
+} from '@/constants/archive-encoding-options';
 
 export interface ArchiveOptions {
   password: string;
@@ -66,119 +71,18 @@ const canConfirm = computed(() => {
 });
 
 const password = ref('');
-const encoding = ref('__system_default__');
+const encoding = ref(ARCHIVE_ENCODING_SYSTEM_DEFAULT_VALUE);
 
-const encodingOptions = [
-  {
-    value: '__system_default__',
-    label: t('fileBrowser.archive.optionsDialog.encodingSystemDefault'),
-  },
-  {
-    value: 'UTF-8',
-    label: 'UTF-8',
-  },
-  {
-    value: '---east-asian',
-    label: '',
-    disabled: true,
-    group: 'eastAsian',
-  },
-  {
-    value: 'shift_jis',
-    label: 'Shift JIS (Japanese)',
-  },
-  {
-    value: 'gb2312',
-    label: 'GB2312 (Simplified Chinese)',
-  },
-  {
-    value: 'big5',
-    label: 'Big5 (Traditional Chinese)',
-  },
-  {
-    value: 'ks_c_5601-1987',
-    label: 'Korean (ks_c_5601-1987)',
-  },
-  {
-    value: '---southeast-asian',
-    label: '',
-    disabled: true,
-    group: 'southeastAsian',
-  },
-  {
-    value: 'Windows-1258',
-    label: 'Windows-1258 (Vietnamese)',
-  },
-  {
-    value: 'Windows-874',
-    label: 'Windows-874 (Thai)',
-  },
-  {
-    value: '---middle-east',
-    label: '',
-    disabled: true,
-    group: 'middleEast',
-  },
-  {
-    value: 'Windows-1256',
-    label: 'Windows-1256 (Arabic)',
-  },
-  {
-    value: 'Windows-1255',
-    label: 'Windows-1255 (Hebrew)',
-  },
-  {
-    value: 'Windows-1254',
-    label: 'Windows-1254 (Turkish)',
-  },
-  {
-    value: '---european',
-    label: '',
-    disabled: true,
-    group: 'european',
-  },
-  {
-    value: 'IBM437',
-    label: 'IBM437 (ZIP default)',
-  },
-  {
-    value: 'Windows-1252',
-    label: 'Windows-1252 (Western European)',
-  },
-  {
-    value: 'Windows-1250',
-    label: 'Windows-1250 (Central European)',
-  },
-  {
-    value: 'Windows-1251',
-    label: 'Windows-1251 (Cyrillic)',
-  },
-  {
-    value: 'Windows-1253',
-    label: 'Windows-1253 (Greek)',
-  },
-  {
-    value: 'Windows-1257',
-    label: 'Windows-1257 (Baltic)',
-  },
-  {
-    value: 'macintosh',
-    label: 'Macintosh',
-  },
-];
+const encodingOptions = computed(() => createArchiveEncodingSelectOptions(t));
 
-const selectableEncodingValues = new Set(
-  encodingOptions
-    .filter(option => !option.group && !option.disabled)
-    .map(option => option.value),
-);
+const selectableEncodingValues = computed(() => getSelectableArchiveEncodingValues(encodingOptions.value));
 
 function resolveInitialEncoding(detectedEncoding?: string): string {
-  if (detectedEncoding && selectableEncodingValues.has(detectedEncoding)) {
+  if (detectedEncoding && selectableEncodingValues.value.has(detectedEncoding)) {
     return detectedEncoding;
   }
 
-  return '__system_default__';
+  return ARCHIVE_ENCODING_SYSTEM_DEFAULT_VALUE;
 }
 
 watch(() => props.open, (open) => {
@@ -199,7 +103,7 @@ function handleConfirm() {
 
   emit('confirm', {
     password: password.value,
-    encoding: encoding.value === '__system_default__' ? undefined : encoding.value,
+    encoding: encoding.value === ARCHIVE_ENCODING_SYSTEM_DEFAULT_VALUE ? undefined : encoding.value,
   });
 }
 

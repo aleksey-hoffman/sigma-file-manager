@@ -1097,7 +1097,7 @@ async function initializeExtensionModule(entryUrl: string): Promise<void> {
 
   restrictWorkerGlobals();
 
-  const importedModule = await import(entryUrl);
+  const importedModule = await import(/* @vite-ignore */ entryUrl);
   extensionModule = importedModule as ExtensionModule;
 }
 

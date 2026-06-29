@@ -8,6 +8,20 @@ import { invoke } from '@tauri-apps/api/core';
 const systemIconCache = new Map<string, string | null>();
 const systemIconInFlight = new Map<string, Promise<string | null>>();
 
+function isSystemIconRequestPath(path: string): boolean {
+  const trimmed = path.trim();
+  if (!trimmed || trimmed.includes('://')) {
+    return false;
+  }
+
+  const lower = trimmed.toLowerCase();
+  if (trimmed.startsWith('::{') || lower.startsWith('shell:')) {
+    return false;
+  }
+
+  return true;
+}
+
 interface SystemIconParams {
   path: Ref<string> | (() => string);
   isDir: Ref<boolean> | (() => boolean);
@@ -44,6 +58,11 @@ export function useSystemIcon(params: SystemIconParams) {
     const requestPath = path.value;
     const requestIsDir = isDir.value;
     const requestExtension = extension.value;
+
+    if (!isSystemIconRequestPath(requestPath)) {
+      return null;
+    }
+
     const cached = systemIconCache.get(requestCacheKey);
 
     if (cached !== undefined) {
