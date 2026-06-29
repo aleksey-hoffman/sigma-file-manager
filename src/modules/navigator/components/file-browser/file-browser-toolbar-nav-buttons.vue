@@ -18,6 +18,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
@@ -25,6 +26,8 @@ import {
   ArrowRightIcon,
   ArrowUpIcon,
   EllipsisIcon,
+  FilePlusIcon,
+  FolderPlusIcon,
   HomeIcon,
   RefreshCwIcon,
 } from '@lucide/vue';
@@ -43,6 +46,8 @@ const emit = defineEmits<{
   (event: 'goUp'): void;
   (event: 'goHome'): void;
   (event: 'refresh'): void;
+  (event: 'createNewDirectory'): void;
+  (event: 'createNewFile'): void;
 }>();
 
 const { t } = useI18n();
@@ -209,6 +214,27 @@ const forwardHistoryIcon = computed(() => isRtl.value ? ArrowLeftIcon : ArrowRig
           <RefreshCwIcon :size="14" />
           {{ t('fileBrowser.refresh') }}
         </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          class="file-browser-toolbar-nav-buttons__menu-item-with-shortcut"
+          @click="emit('createNewDirectory')"
+        >
+          <FolderPlusIcon :size="14" />
+          <span>{{ t('navigator.newDirectory') }}</span>
+          <ContextMenuShortcut>
+            {{ shortcutsStore.getShortcutLabel('createNewDirectory') }}
+          </ContextMenuShortcut>
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          class="file-browser-toolbar-nav-buttons__menu-item-with-shortcut"
+          @click="emit('createNewFile')"
+        >
+          <FilePlusIcon :size="14" />
+          <span>{{ t('navigator.newFile') }}</span>
+          <ContextMenuShortcut>
+            {{ shortcutsStore.getShortcutLabel('createNewFile') }}
+          </ContextMenuShortcut>
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   </div>
@@ -262,6 +288,11 @@ const forwardHistoryIcon = computed(() => isRtl.value ? ArrowLeftIcon : ArrowRig
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+}
+
+.file-browser-toolbar-nav-buttons__menu-item-with-shortcut {
+  display: flex;
+  align-items: center;
 }
 
 @container (width < 600px) {

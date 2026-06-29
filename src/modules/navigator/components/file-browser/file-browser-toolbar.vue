@@ -63,6 +63,8 @@ function handleAddressBarNavigate(path: string) {
         @go-up="emit('goUp')"
         @go-home="emit('goHome')"
         @refresh="emit('refresh')"
+        @create-new-directory="emit('createNewDirectory')"
+        @create-new-file="emit('createNewFile')"
       />
 
       <FileBrowserToolbarAddressBar
@@ -74,10 +76,12 @@ function handleAddressBarNavigate(path: string) {
       />
 
       <div class="file-browser-toolbar__actions">
-        <FileBrowserToolbarCreateButton
-          @create-new-directory="emit('createNewDirectory')"
-          @create-new-file="emit('createNewFile')"
-        />
+        <div class="file-browser-toolbar__create-button">
+          <FileBrowserToolbarCreateButton
+            @create-new-directory="emit('createNewDirectory')"
+            @create-new-file="emit('createNewFile')"
+          />
+        </div>
         <FileBrowserToolbarFilter
           :filter-query="filterQuery"
           :is-filter-open="isFilterOpen"
@@ -117,20 +121,26 @@ function handleAddressBarNavigate(path: string) {
   gap: 4px;
 }
 
-@container (width < 400px) {
-  .file-browser-toolbar__layout--split-view {
+@container (width < 600px) {
+  .file-browser-toolbar__create-button {
+    display: none;
+  }
+}
+
+@container (width < 300px) {
+  .file-browser-toolbar__layout {
     height: auto;
     min-height: 48px;
     flex-wrap: wrap;
     gap: 4px 12px;
   }
 
-  .file-browser-toolbar__layout--split-view .file-browser-toolbar__address-bar {
+  .file-browser-toolbar__address-bar {
     flex-basis: 100%;
     order: 2;
   }
 
-  .file-browser-toolbar__layout--split-view .file-browser-toolbar__actions {
+  .file-browser-toolbar__actions {
     margin-inline-start: auto;
   }
 }
