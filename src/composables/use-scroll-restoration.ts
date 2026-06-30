@@ -13,7 +13,7 @@ import { onBeforeRouteLeave } from 'vue-router';
 import { useScrollRestorationStore } from '@/stores/runtime/scroll-restoration';
 
 function waitForNextFrame(): Promise<void> {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     requestAnimationFrame(() => {
       resolve();
     });

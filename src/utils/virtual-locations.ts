@@ -96,7 +96,7 @@ function formatLocationsDriveDisplaySignaturePart(
   path: string,
   name: string,
   size: number,
-  driveMetadata: DriveEntryMetadata | undefined,
+  driveMetadata: DriveEntryMetadata | null | undefined,
 ): string {
   return [
     normalizePath(path),

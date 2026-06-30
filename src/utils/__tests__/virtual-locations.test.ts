@@ -104,8 +104,14 @@ describe('virtual-locations', () => {
       device_path: '\\\\.\\C:',
     };
 
-    const renamedDrive = { ...baseDrive, name: 'System (C:)' };
-    const resizedDrive = { ...baseDrive, total_space: 2000 };
+    const renamedDrive = {
+      ...baseDrive,
+      name: 'System (C:)',
+    };
+    const resizedDrive = {
+      ...baseDrive,
+      total_space: 2000,
+    };
     const entries = buildLocationsDirectoryFromDrives([baseDrive]).entries;
     const baseSignature = getLocationsDriveListDisplaySignature([baseDrive]);
 

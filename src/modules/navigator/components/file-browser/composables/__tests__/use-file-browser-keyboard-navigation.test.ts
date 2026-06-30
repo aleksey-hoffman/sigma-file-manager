@@ -105,7 +105,10 @@ describe('useFileBrowserKeyboardNavigation', () => {
 
   it('uses flat entry order in list layout', () => {
     const first = createEntry('alpha.txt', { ext: 'txt' });
-    const second = createEntry('beta.png', { ext: 'png', mime: 'image/png' });
+    const second = createEntry('beta.png', {
+      ext: 'png',
+      mime: 'image/png',
+    });
     const { navigation, selectedEntries } = createKeyboardNavigationHarness({
       entries: [first, second],
       layout: () => 'list',
