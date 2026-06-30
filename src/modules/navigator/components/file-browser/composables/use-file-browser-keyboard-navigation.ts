@@ -4,6 +4,7 @@
 
 import { nextTick, type Ref } from 'vue';
 import type { DirEntry } from '@/types/dir-entry';
+import { getFileBrowserGridEntryOrder } from '../file-browser-entry-groups';
 
 const ROW_TOLERANCE_PX = 30;
 const OVERLAP_TOLERANCE_PX = 2;
@@ -51,6 +52,14 @@ export function useFileBrowserKeyboardNavigation(options: {
     return options.entries.value.find(entry => entry.path === path);
   }
 
+  function getNavigationEntries(): DirEntry[] {
+    if (options.layout() === 'grid') {
+      return getFileBrowserGridEntryOrder(options.entries.value);
+    }
+
+    return options.entries.value;
+  }
+
   async function selectAndFocusEntry(entry: DirEntry) {
     options.selectEntryByPath(entry.path);
     await options.scrollToPath?.(entry.path);
@@ -64,7 +73,7 @@ export function useFileBrowserKeyboardNavigation(options: {
   }
 
   function navigateFlat(direction: 'previous' | 'next') {
-    const entries = options.entries.value;
+    const entries = getNavigationEntries();
 
     if (entries.length === 0) return;
 
@@ -91,14 +100,16 @@ export function useFileBrowserKeyboardNavigation(options: {
   }
 
   function navigateGridVertical(direction: 'up' | 'down') {
-    const entries = options.entries.value;
+    const navigationEntries = getNavigationEntries();
 
-    if (entries.length === 0) return;
+    if (navigationEntries.length === 0) return;
 
     const lastSelected = getLastSelectedEntry();
 
     if (!lastSelected) {
-      selectAndFocusEntry(direction === 'down' ? entries[0] : entries[entries.length - 1]);
+      selectAndFocusEntry(
+        direction === 'down' ? navigationEntries[0] : navigationEntries[navigationEntries.length - 1],
+      );
       return;
     }
 

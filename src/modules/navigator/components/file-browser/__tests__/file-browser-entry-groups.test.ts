@@ -98,4 +98,25 @@ describe('file browser entry groups', () => {
     expect(groupedEntries.images.map(entry => entry.name)).toEqual(['alpha.png', 'zebra.png']);
     expect(groupedEntries.others.map(entry => entry.name)).toEqual(['notes.txt']);
   });
+
+  it('uses section grouping order instead of flat sorted order for grid navigation', () => {
+    const dirSizesStore = {
+      getSize: () => undefined,
+    } as unknown as DirSizesStore;
+    const sortedEntries = sortFileBrowserEntries([
+      createEntry('photo.png', { ext: 'png' }),
+      createEntry('clips', {
+        is_dir: true,
+        is_file: false,
+      }),
+      createEntry('notes.txt', { ext: 'txt' }),
+    ], 'name', 'asc', dirSizesStore);
+
+    expect(sortedEntries.map(entry => entry.name)).toEqual(['clips', 'notes.txt', 'photo.png']);
+    expect(getFileBrowserGridEntryOrder(sortedEntries).map(entry => entry.name)).toEqual([
+      'clips',
+      'photo.png',
+      'notes.txt',
+    ]);
+  });
 });
