@@ -269,7 +269,7 @@ function removeClipboardItem(entry: ClipboardToolbarItem) {
 <template>
   <Transition name="clipboard-slide">
     <div
-      v-if="clipboardStore.showToolbar"
+      v-if="clipboardStore.showClipboardUi"
       class="clipboard-toolbar-container"
     >
       <Popover

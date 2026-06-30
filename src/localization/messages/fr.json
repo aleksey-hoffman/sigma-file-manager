@@ -310,6 +310,12 @@
       "title": "Info-bulles",
       "delay": "Délai de l'info-bulle ({n} ms)"
     },
+    "clipboard": {
+      "title": "Presse-papiers",
+      "showToolbarForExternalImages": "Afficher la barre d'outils du presse-papiers pour les images copiées dans d'autres apps",
+      "showToolbarForExternalPaths": "Afficher la barre d'outils du presse-papiers pour les chemins de fichiers copiés dans d'autres apps",
+      "pasteStillWorksWhenHidden": "Coller avec {shortcut} fonctionnera toujours lorsque ces options sont désactivées. Vous ne verrez simplement pas la barre d'outils du presse-papiers."
+    },
     "homePageMediaBanner": {
       "title": "Bannière média de la page d'accueil"
     },
@@ -446,6 +452,7 @@
     "uiElements": "interface utilisateur, éléments, visuel, entrée, accent, couleur, chronologie, tableau de bord, page, récent, cartes, accueil, lecteur, espace, indicateur, style",
     "quickAccess": "quick, access, panel, hover, sidebar, dashboard",
     "tooltips": "tooltip, tooltips, hover, delay, timing",
+    "clipboard": "presse-papiers, coller, copier, couper, barre d'outils, image, capture, chemin, fichiers",
     "homePageMediaBanner": "accueil, page, média, bannière, arrière-plan, image, vidéo",
     "navigator": "conception, interface utilisateur, navigateur, séparateurs, titres, tri, vue, mise en page, liste, grille, élément, fichier, répertoire, survol, échelle, surbrillance, OCD",
     "shortcuts": "raccourcis",

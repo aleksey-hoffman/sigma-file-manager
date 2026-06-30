@@ -39,7 +39,7 @@ const platformStore = usePlatformStore();
 const clipboardStore = useClipboardStore();
 const dirSizesStore = useDirSizesStore();
 const itemCountsStore = useItemCountsStore();
-const { clipboardItems, clipboardType, isToolbarSuppressed } = storeToRefs(clipboardStore);
+const { clipboardItems, clipboardType, showClipboardUi } = storeToRefs(clipboardStore);
 const { t } = useI18n();
 const previewRef = ref<HTMLElement | null>(null);
 const isPreviewInLoadRange = ref(false);
@@ -56,7 +56,7 @@ const { previewSize } = useDevicePixelPreviewSize({
 });
 
 const clipboardPathsMap = computed(() => {
-  if (isToolbarSuppressed.value) {
+  if (!showClipboardUi.value) {
     return new Map<string, string>();
   }
 

@@ -17,9 +17,21 @@ const invokeMock = vi.hoisted(() => vi.fn());
 const copyMoveStartJobMock = vi.hoisted(() => vi.fn());
 const handleDirectoryContentsChangedMock = vi.hoisted(() => vi.fn());
 const invalidateDirSizesMock = vi.hoisted(() => vi.fn());
+const clipboardSettingsMock = vi.hoisted(() => ({
+  showToolbarForExternalImages: true,
+  showToolbarForExternalPaths: true,
+}));
 
 vi.mock('@tauri-apps/api/core', () => ({
   invoke: invokeMock,
+}));
+
+vi.mock('@/stores/storage/user-settings', () => ({
+  useUserSettingsStore: () => ({
+    userSettings: {
+      clipboard: clipboardSettingsMock,
+    },
+  }),
 }));
 
 vi.mock('@/stores/runtime/copy-move-jobs', () => ({
@@ -92,6 +104,8 @@ describe('clipboard store', () => {
     copyMoveStartJobMock.mockReset();
     handleDirectoryContentsChangedMock.mockReset();
     invalidateDirSizesMock.mockReset();
+    clipboardSettingsMock.showToolbarForExternalImages = true;
+    clipboardSettingsMock.showToolbarForExternalPaths = true;
   });
 
   afterEach(() => {
@@ -113,7 +127,7 @@ describe('clipboard store', () => {
     });
     expect(store.hasFileItems).toBe(true);
     expect(store.hasImageContent).toBe(false);
-    expect(store.showToolbar).toBe(true);
+    expect(store.showClipboardUi).toBe(true);
   });
 
   it('waits for a pending system clipboard write before syncing from the system clipboard', async () => {
@@ -162,9 +176,45 @@ describe('clipboard store', () => {
     expect(invokeMock).toHaveBeenCalledWith('read_system_clipboard_files');
     expect(store.clipboardItems).toHaveLength(1);
     expect(store.clipboardItems[0].path).toBe('C:/Source/file.txt');
+    expect(store.showClipboardUi).toBe(true);
   });
 
-  it('syncs file-list clipboard content from the system clipboard before checking for images', async () => {
+  it('preserves internal clipboard UI after syncing equivalent system paths', async () => {
+    invokeMock.mockImplementation(async (commandName: string, args?: unknown) => {
+      if (commandName === 'read_system_clipboard_files') {
+        return {
+          paths: ['c:/source/file.txt'],
+          operation: 'copy',
+        };
+      }
+
+      if (commandName === 'paths_are_directories') {
+        return [false];
+      }
+
+      if (commandName === 'get_dir_entry_with_timeout') {
+        return createEntry({
+          path: (args as { path: string }).path,
+        });
+      }
+
+      return undefined;
+    });
+    const store = useClipboardStore();
+
+    store.setClipboard('copy', [
+      createEntry({ path: 'C:/Source/file.txt' }),
+    ], {
+      syncToSystemClipboard: false,
+    });
+
+    await store.syncFromSystemClipboard();
+
+    expect(store.showClipboardUi).toBe(true);
+    expect(store.hasFileItems).toBe(true);
+  });
+
+  it('marks file paths synced from the system clipboard as external', async () => {
     invokeMock.mockImplementation(async (commandName: string, args?: unknown) => {
       if (commandName === 'read_system_clipboard_files') {
         return {
@@ -202,6 +252,7 @@ describe('clipboard store', () => {
     expect(store.hasFileItems).toBe(true);
     expect(store.hasImageContent).toBe(false);
     expect(store.clipboardItems[0].path).toBe('C:/External/photo.png');
+    expect(store.showClipboardUi).toBe(true);
     expect(invokeMock).not.toHaveBeenCalledWith('read_system_clipboard_image_info');
   });
 
@@ -239,6 +290,7 @@ describe('clipboard store', () => {
     expect(store.hasItems).toBe(true);
     expect(store.hasFileItems).toBe(false);
     expect(store.hasImageContent).toBe(true);
+    expect(store.showClipboardUi).toBe(true);
     expect(store.itemCount).toBe(1);
     expect(store.clipboardImage).toEqual({
       width: 252,
@@ -507,5 +559,82 @@ describe('clipboard store', () => {
 
     expect(consumed).toBe(false);
     expect(store.hasFileItems).toBe(true);
+  });
+
+  it('hides the toolbar for external file paths when the setting is disabled', async () => {
+    clipboardSettingsMock.showToolbarForExternalPaths = false;
+
+    invokeMock.mockImplementation(async (commandName: string, args?: unknown) => {
+      if (commandName === 'read_system_clipboard_files') {
+        return {
+          paths: ['C:/External/file.txt'],
+          operation: 'copy',
+        };
+      }
+
+      if (commandName === 'paths_are_directories') {
+        return [false];
+      }
+
+      if (commandName === 'get_dir_entry_with_timeout') {
+        return createEntry({
+          path: (args as { path: string }).path,
+        });
+      }
+
+      return undefined;
+    });
+    const store = useClipboardStore();
+
+    await store.syncFromSystemClipboard();
+
+    expect(store.hasItems).toBe(true);
+    expect(store.showClipboardUi).toBe(false);
+  });
+
+  it('hides the clipboard UI for external images when the setting is disabled', async () => {
+    clipboardSettingsMock.showToolbarForExternalImages = false;
+
+    invokeMock.mockImplementation(async (commandName: string) => {
+      if (commandName === 'read_system_clipboard_files') {
+        return {
+          paths: [],
+          operation: 'copy',
+        };
+      }
+
+      if (commandName === 'read_system_clipboard_image_info') {
+        return {
+          width: 100,
+          height: 50,
+          sizeBytes: 20000,
+          clipboardSequence: 4,
+        };
+      }
+
+      return undefined;
+    });
+    const store = useClipboardStore();
+
+    await store.syncFromSystemClipboard();
+
+    expect(store.hasItems).toBe(true);
+    expect(store.showClipboardUi).toBe(false);
+    expect(store.canPasteTo('C:/Target')).toBe(true);
+  });
+
+  it('always shows the clipboard UI for internal clipboard even when external settings are disabled', async () => {
+    clipboardSettingsMock.showToolbarForExternalImages = false;
+    clipboardSettingsMock.showToolbarForExternalPaths = false;
+    invokeMock.mockResolvedValue(undefined);
+    const store = useClipboardStore();
+
+    store.setClipboard('copy', [
+      createEntry({ path: 'C:/Source/file.txt' }),
+    ], {
+      syncToSystemClipboard: false,
+    });
+
+    expect(store.showClipboardUi).toBe(true);
   });
 });

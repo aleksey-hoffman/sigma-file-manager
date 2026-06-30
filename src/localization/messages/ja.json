@@ -310,6 +310,12 @@
       "title": "ツールチップ",
       "delay": "ツールチップ表示までの遅延（{n} ms）"
     },
+    "clipboard": {
+      "title": "クリップボード",
+      "showToolbarForExternalImages": "他のアプリでコピーした画像のクリップボードツールバーを表示",
+      "showToolbarForExternalPaths": "他のアプリでコピーしたファイルパスのクリップボードツールバーを表示",
+      "pasteStillWorksWhenHidden": "これらのオプションを無効にしても {shortcut} による貼り付けは引き続き利用できます。クリップボードツールバーだけが表示されなくなります。"
+    },
     "homePageMediaBanner": {
       "title": "ホームページメディアバナー"
     },
@@ -446,6 +452,7 @@
     "uiElements": "UI、要素、ビジュアル、入力、アクセント、色、タイムライン、ダッシュボード、ページ、最近、カード、ホーム、ドライブ、スペース、インジケーター、スタイル",
     "quickAccess": "quick, access, panel, hover, sidebar, dashboard",
     "tooltips": "tooltip, tooltips, hover, delay, timing",
+    "clipboard": "クリップボード, 貼り付け, コピー, 切り取り, ツールバー, 画像, スクリーンショット, パス, ファイル",
     "homePageMediaBanner": "ホーム、ページ、メディア、バナー、背景、画像、動画",
     "navigator": "デザイン、UI、ナビゲーター、ディバイダー、タイトル、ソート、ビュー、レイアウト、リスト、グリッド、アイテム、ファイル、ディレクトリ、ホバー、スケール、ハイライト、OCD",
     "shortcuts": "ショートカット",

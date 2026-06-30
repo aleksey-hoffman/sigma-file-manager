@@ -165,6 +165,10 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
       showSpaceIndicator: true,
       spaceIndicatorStyle: 'linearVertical',
     },
+    clipboard: {
+      showToolbarForExternalImages: true,
+      showToolbarForExternalPaths: true,
+    },
     userDirectories: {},
     infusion: {
       enabled: true,

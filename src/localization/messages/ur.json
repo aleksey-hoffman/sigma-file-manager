@@ -339,6 +339,12 @@
       "title": "ٹول ٹپس",
       "delay": "ٹول ٹپ میں تاخیر ({n} ms)"
     },
+    "clipboard": {
+      "title": "کلپ بورڈ",
+      "showToolbarForExternalImages": "دوسری ایپس میں کاپی کی گئی تصاویر کے لیے کلپ بورڈ ٹول بار دکھائیں",
+      "showToolbarForExternalPaths": "دوسری ایپس میں کاپی کیے گئے فائل راستوں کے لیے کلپ بورڈ ٹول بار دکھائیں",
+      "pasteStillWorksWhenHidden": "جب یہ اختیارات غیر فعال ہوں، {shortcut} سے پیسٹ کرنا پھر بھی کام کرے گا۔ آپ کو صرف کلپ بورڈ ٹول بار نظر نہیں آئے گا۔"
+    },
     "homePageMediaBanner": {
       "title": "ہوم صفحے میڈیا بینر"
     },
@@ -475,6 +481,7 @@
     "uiElements": "ui, عناصر, ڈیش بورڈ, کارڈ, ٹائم لائن",
     "quickAccess": "فوری رسائی, سائیڈ بار, ہوور",
     "tooltips": "tooltip, tooltips, hover, delay, timing",
+    "clipboard": "کلپ بورڈ, پیسٹ, کاپی, کٹ, ٹول بار, تصویر, اسکرین شاٹ, راستہ, فائل",
     "homePageMediaBanner": "ہوم, میڈیا, بینر, پس منظر",
     "navigator": "نیویگیٹر, لے آؤٹ, فہرست, گرڈ, ترتیب",
     "shortcuts": "شارٹ کٹس",

@@ -310,6 +310,12 @@
       "title": "Chú thích",
       "delay": "Độ trễ chú thích ({n} ms)"
     },
+    "clipboard": {
+      "title": "Bảng nhớ tạm",
+      "showToolbarForExternalImages": "Hiển thị thanh công cụ bảng nhớ tạm cho hình ảnh được sao chép trong ứng dụng khác",
+      "showToolbarForExternalPaths": "Hiển thị thanh công cụ bảng nhớ tạm cho đường dẫn tệp được sao chép trong ứng dụng khác",
+      "pasteStillWorksWhenHidden": "Dán bằng {shortcut} vẫn hoạt động khi các tùy chọn này bị tắt. Bạn chỉ sẽ không thấy thanh công cụ bảng nhớ tạm."
+    },
     "homePageMediaBanner": {
       "title": "Biểu ngữ truyền thông trang chủ"
     },
@@ -446,6 +452,7 @@
     "uiElements": "ui, thành phần, hình ảnh, đầu vào, dấu, màu sắc, dòng thời gian, bảng điều khiển, trang, gần đây, thẻ, nhà, ổ đĩa, không gian, chỉ báo, kiểu",
     "quickAccess": "quick, access, panel, hover, sidebar, dashboard",
     "tooltips": "tooltip, tooltips, hover, delay, timing",
+    "clipboard": "bảng nhớ tạm, dán, sao chép, cắt, thanh công cụ, hình ảnh, ảnh chụp màn hình, đường dẫn, tệp",
     "homePageMediaBanner": "trang chủ, trang, phương tiện, biểu ngữ, nền, hình ảnh, video",
     "navigator": "thiết kế, giao diện người dùng, bộ điều hướng, bộ chia, tiêu đề, sắp xếp, chế độ xem, bố cục, danh sách, lưới, mục, tệp, thư mục, di chuột, tỷ lệ, đánh dấu, OCD",
     "shortcuts": "phím tắt",

@@ -18,6 +18,18 @@ import ClipboardToolbar from '../clipboard-toolbar.vue';
 
 const invokeMock = vi.hoisted(() => vi.fn());
 const convertFileSrcMock = vi.hoisted(() => vi.fn((path: string) => `asset://${path}`));
+const clipboardSettingsMock = vi.hoisted(() => ({
+  showToolbarForExternalImages: true,
+  showToolbarForExternalPaths: true,
+}));
+
+vi.mock('@/stores/storage/user-settings', () => ({
+  useUserSettingsStore: () => ({
+    userSettings: {
+      clipboard: clipboardSettingsMock,
+    },
+  }),
+}));
 
 vi.mock('@tauri-apps/api/core', () => ({
   convertFileSrc: (path: string) => convertFileSrcMock(path),

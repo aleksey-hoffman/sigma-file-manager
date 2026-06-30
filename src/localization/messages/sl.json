@@ -339,6 +339,12 @@
       "title": "Namigi",
       "delay": "Zakasnitev namiga ({n} ms)"
     },
+    "clipboard": {
+      "title": "Odložišče",
+      "showToolbarForExternalImages": "Prikaži orodno vrstico odložišča za slike, kopirane v drugih aplikacijah",
+      "showToolbarForExternalPaths": "Prikaži orodno vrstico odložišča za poti datotek, kopirane v drugih aplikacijah",
+      "pasteStillWorksWhenHidden": "Lepljenje s {shortcut} bo še vedno delovalo, ko so te možnosti onemogočene. Orodna vrstica odložišča se samo ne bo prikazala."
+    },
     "homePageMediaBanner": {
       "title": "Medijska pasica domače strani"
     },
@@ -475,6 +481,7 @@
     "uiElements": "ui, elements, visual, input, accent, color, timeline, dashboard, page, recent, cards, home, drive, space, indicator, style",
     "quickAccess": "quick, access, panel, hover, sidebar, dashboard",
     "tooltips": "tooltip, tooltips, hover, delay, timing",
+    "clipboard": "odložišče, prilepi, kopiraj, izreži, orodna vrstica, slika, posnetek zaslona, pot, datoteke",
     "homePageMediaBanner": "home, page, media, banner, background, image, video",
     "navigator": "design, ui, navigator, dividers, titles, sorting, view, layout, list, grid, item, file, directory, hover, scale, highlight, OCD",
     "shortcuts": "shortcuts",

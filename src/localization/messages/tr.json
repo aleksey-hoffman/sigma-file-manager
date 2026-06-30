@@ -310,6 +310,12 @@
       "title": "İpuçları",
       "delay": "İpucu gecikmesi ({n} ms)"
     },
+    "clipboard": {
+      "title": "Pano",
+      "showToolbarForExternalImages": "Diğer uygulamalarda kopyalanan görseller için pano araç çubuğunu göster",
+      "showToolbarForExternalPaths": "Diğer uygulamalarda kopyalanan dosya yolları için pano araç çubuğunu göster",
+      "pasteStillWorksWhenHidden": "Bu seçenekler devre dışı bırakıldığında {shortcut} ile yapıştırma yine de çalışır. Yalnızca pano araç çubuğu görünmez."
+    },
     "homePageMediaBanner": {
       "title": "Ana sayfa medya banner'ı"
     },
@@ -446,6 +452,7 @@
     "uiElements": "ui, öğeler, görsel, giriş, vurgu, renk, zaman çizelgesi, pano, sayfa, son, kartlar, ev, sürücü, boşluk, gösterge, stil",
     "quickAccess": "quick, access, panel, hover, sidebar, dashboard",
     "tooltips": "tooltip, tooltips, hover, delay, timing",
+    "clipboard": "pano, yapıştır, kopyala, kes, araç çubuğu, görsel, ekran görüntüsü, yol, dosya",
     "homePageMediaBanner": "ana sayfa, sayfa, medya, afiş, arka plan, resim, video",
     "navigator": "tasarım, kullanıcı arabirimi, gezgin, bölücüler, başlıklar, sıralama, görünüm, düzen, liste, ızgara, öğe, dosya, dizin, vurgulu, ölçek, vurgulama, OKB",
     "shortcuts": "kısayollar",

@@ -310,6 +310,12 @@
       "title": "工具提示",
       "delay": "工具提示延迟（{n} 毫秒）"
     },
+    "clipboard": {
+      "title": "剪贴板",
+      "showToolbarForExternalImages": "显示在其他应用中复制的图像的剪贴板工具栏",
+      "showToolbarForExternalPaths": "显示在其他应用中复制的文件路径的剪贴板工具栏",
+      "pasteStillWorksWhenHidden": "禁用这些选项后，使用 {shortcut} 粘贴仍然有效，只是不会显示剪贴板工具栏。"
+    },
     "homePageMediaBanner": {
       "title": "主页媒体横幅"
     },
@@ -446,6 +452,7 @@
     "uiElements": "ui、元素、视觉、输入、重音、颜色、时间线、仪表板、页面、最近、卡片、主页、驱动器、空间、指示器、样式",
     "quickAccess": "quick, access, panel, hover, sidebar, dashboard",
     "tooltips": "tooltip, tooltips, hover, delay, timing",
+    "clipboard": "剪贴板, 粘贴, 复制, 剪切, 工具栏, 图像, 截图, 路径, 文件",
     "homePageMediaBanner": "主页、页面、媒体、横幅、背景、图像、视频",
     "navigator": "设计、用户界面、导航器、分隔线、标题、排序、视图、布局、列表、网格、项目、文件、目录、悬停、缩放、突出显示、强迫症",
     "shortcuts": "快捷键",

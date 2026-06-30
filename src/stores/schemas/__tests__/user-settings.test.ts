@@ -172,4 +172,17 @@ describe('migrateUserSettingsStorage', () => {
     expect(storage.values.get(USER_SETTINGS_SCHEMA_VERSION_KEY)).toBe(USER_SETTINGS_SCHEMA_VERSION);
     expect(storage.save).toHaveBeenCalledOnce();
   });
+
+  it('defaults clipboard toolbar settings when migrating from schema version 19', async () => {
+    const storage = createStorageAdapter({
+      [USER_SETTINGS_SCHEMA_VERSION_KEY]: 19,
+    });
+
+    await migrateUserSettingsStorage(storage);
+
+    expect(storage.values.get('clipboard.showToolbarForExternalImages')).toBe(true);
+    expect(storage.values.get('clipboard.showToolbarForExternalPaths')).toBe(true);
+    expect(storage.values.get(USER_SETTINGS_SCHEMA_VERSION_KEY)).toBe(USER_SETTINGS_SCHEMA_VERSION);
+    expect(storage.save).toHaveBeenCalledOnce();
+  });
 });

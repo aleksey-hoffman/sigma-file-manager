@@ -310,6 +310,12 @@
       "title": "Tooltips",
       "delay": "Tooltip-Verzögerung ({n} ms)"
     },
+    "clipboard": {
+      "title": "Zwischenablage",
+      "showToolbarForExternalImages": "Zwischenablage-Symbolleiste für in anderen Apps kopierte Bilder anzeigen",
+      "showToolbarForExternalPaths": "Zwischenablage-Symbolleiste für in anderen Apps kopierte Dateipfade anzeigen",
+      "pasteStillWorksWhenHidden": "Einfügen mit {shortcut} funktioniert weiterhin, wenn diese Optionen deaktiviert sind. Die Zwischenablage-Symbolleiste wird nur ausgeblendet."
+    },
     "homePageMediaBanner": {
       "title": "Homepage-Medienbanner"
     },
@@ -446,6 +452,7 @@
     "uiElements": "UI, Elemente, visuell, Eingabe, Akzent, Farbe, Zeitleiste, Dashboard, Seite, aktuell, Karten, Startseite, Laufwerk, Raum, Anzeige, Stil",
     "quickAccess": "quick, access, panel, hover, sidebar, dashboard",
     "tooltips": "tooltip, tooltips, hover, delay, timing",
+    "clipboard": "Zwischenablage, einfügen, kopieren, ausschneiden, Symbolleiste, Bild, Screenshot, Pfad, Dateien",
     "homePageMediaBanner": "Startseite, Seite, Medien, Banner, Hintergrund, Bild, Video",
     "navigator": "design, ui, navigator, dividers, titles, sorting, view, layout, list, grid, item, file, directory, hover, scale, highlight, OCD",
     "shortcuts": "Abkürzungen",

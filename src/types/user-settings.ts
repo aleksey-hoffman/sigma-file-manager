@@ -167,6 +167,11 @@ export type TextSettings = {
   font: string;
 };
 
+export type ClipboardSettings = {
+  showToolbarForExternalImages: boolean;
+  showToolbarForExternalPaths: boolean;
+};
+
 export type UserSettings = {
   language: LocalizationLanguage;
   theme: Theme;
@@ -183,6 +188,7 @@ export type UserSettings = {
   customBackgroundMedia: CustomBackgroundMedia;
   homeBannerPositions: HomeBannerPositions;
   driveCard: DriveCardSettings;
+  clipboard: ClipboardSettings;
   userDirectories: UserDirectoriesCustomizations;
   infusion: InfusionSettings;
   visualFilters: VisualFiltersSettings;

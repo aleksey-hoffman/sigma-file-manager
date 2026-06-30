@@ -109,7 +109,7 @@ const linkMetadataStore = useLinkMetadataStore();
 const itemCountsStore = useItemCountsStore();
 const userSettingsStore = useUserSettingsStore();
 const platformStore = usePlatformStore();
-const { clipboardItems, clipboardType, isToolbarSuppressed } = storeToRefs(clipboardStore);
+const { clipboardItems, clipboardType, showClipboardUi } = storeToRefs(clipboardStore);
 const { t, locale } = useI18n();
 const activeTagSelectorPath = ref<string | null>(null);
 
@@ -161,7 +161,7 @@ const {
 } = useFileBrowserTags();
 
 const clipboardPathsMap = computed(() => {
-  if (isToolbarSuppressed.value) {
+  if (!showClipboardUi.value) {
     return new Map<string, string>();
   }
 

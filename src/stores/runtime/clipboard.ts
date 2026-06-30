@@ -16,7 +16,14 @@ import {
 import { getPathLeafName } from '@/utils/normalize-path';
 import { isVirtualLocationPath } from '@/utils/virtual-locations';
 import { isTransientClipboardAccessError } from '@/utils/system-clipboard-errors';
+import { useUserSettingsStore } from '@/stores/storage/user-settings';
+import {
+  hasSameFileClipboardContent,
+  shouldShowClipboardUi,
+  type ClipboardOrigin,
+} from '@/stores/runtime/clipboard-visibility';
 
+export type { ClipboardOrigin } from '@/stores/runtime/clipboard-visibility';
 export type ClipboardOperationType = 'copy' | 'move' | '';
 export type ConflictResolution = 'replace' | 'skip' | 'auto-rename';
 
@@ -77,18 +84,25 @@ export interface ConflictItem {
 }
 
 export const useClipboardStore = defineStore('clipboard', () => {
+  const userSettingsStore = useUserSettingsStore();
   const clipboardType = ref<ClipboardOperationType>('');
   const clipboardItems = ref<DirEntry[]>([]);
   const clipboardImage = ref<SystemClipboardImageInfo | null>(null);
+  const clipboardOrigin = ref<ClipboardOrigin>('');
   const isOperationInProgress = ref(false);
-  const isToolbarSuppressed = ref(false);
   let pendingSystemClipboardMutation: Promise<void> | null = null;
   let pendingSystemClipboardImageSave: Promise<SystemClipboardImageInfo | null> | null = null;
 
   const hasFileItems = computed(() => clipboardItems.value.length > 0);
   const hasImageContent = computed(() => clipboardImage.value !== null);
   const hasItems = computed(() => hasFileItems.value || hasImageContent.value);
-  const showToolbar = computed(() => hasItems.value && !isToolbarSuppressed.value);
+  const showClipboardUi = computed(() => shouldShowClipboardUi({
+    hasItems: hasItems.value,
+    origin: clipboardOrigin.value,
+    hasImageContent: hasImageContent.value,
+    hasFileItems: hasFileItems.value,
+    settings: userSettingsStore.userSettings.clipboard,
+  }));
   const itemCount = computed(() => hasImageContent.value ? 1 : clipboardItems.value.length);
   const isCopyOperation = computed(() => clipboardType.value === 'copy');
   const isMoveOperation = computed(() => clipboardType.value === 'move');
@@ -105,14 +119,13 @@ export const useClipboardStore = defineStore('clipboard', () => {
     type: ClipboardOperationType,
     items: DirEntry[],
     options?: {
-      keepToolbarHidden?: boolean;
       syncToSystemClipboard?: boolean;
     },
   ) {
     clipboardType.value = type;
     clipboardItems.value = items.map(item => ({ ...item }));
     clipboardImage.value = null;
-    isToolbarSuppressed.value = options?.keepToolbarHidden === true;
+    clipboardOrigin.value = 'internal';
 
     if (options?.syncToSystemClipboard !== false) {
       void syncToSystemClipboard();
@@ -123,13 +136,12 @@ export const useClipboardStore = defineStore('clipboard', () => {
     type: ClipboardOperationType,
     items: DirEntry[],
     options?: {
-      keepToolbarHidden?: boolean;
       syncToSystemClipboard?: boolean;
     },
   ) {
     clipboardType.value = type;
     clipboardImage.value = null;
-    isToolbarSuppressed.value = options?.keepToolbarHidden === true;
+    clipboardOrigin.value = 'internal';
 
     for (const item of items) {
       const itemAlreadyAdded = clipboardItems.value.some(
@@ -163,7 +175,7 @@ export const useClipboardStore = defineStore('clipboard', () => {
     clipboardType.value = '';
     clipboardItems.value = [];
     clipboardImage.value = null;
-    isToolbarSuppressed.value = false;
+    clipboardOrigin.value = '';
   }
 
   function trackSystemClipboardMutation(mutation: Promise<void>): Promise<void> {
@@ -205,13 +217,13 @@ export const useClipboardStore = defineStore('clipboard', () => {
     type: ClipboardOperationType;
     items: DirEntry[];
     image: SystemClipboardImageInfo | null;
-    suppressed: boolean;
+    origin: ClipboardOrigin;
   } {
     return {
       type: clipboardType.value,
       items: clipboardItems.value.map(item => ({ ...item })),
       image: clipboardImage.value ? { ...clipboardImage.value } : null,
-      suppressed: isToolbarSuppressed.value,
+      origin: clipboardOrigin.value,
     };
   }
 
@@ -219,7 +231,7 @@ export const useClipboardStore = defineStore('clipboard', () => {
     clipboardType.value = snapshot.type;
     clipboardItems.value = snapshot.items;
     clipboardImage.value = snapshot.image ? { ...snapshot.image } : null;
-    isToolbarSuppressed.value = snapshot.suppressed;
+    clipboardOrigin.value = snapshot.origin;
   }
 
   async function readSystemClipboardFiles(): Promise<{
@@ -266,11 +278,14 @@ export const useClipboardStore = defineStore('clipboard', () => {
     }
   }
 
-  function setClipboardImage(imageInfo: SystemClipboardImageInfo) {
+  function setClipboardImage(
+    imageInfo: SystemClipboardImageInfo,
+    origin: Exclude<ClipboardOrigin, ''> = 'external',
+  ) {
     clipboardType.value = 'copy';
     clipboardItems.value = [];
     clipboardImage.value = { ...imageInfo };
-    isToolbarSuppressed.value = false;
+    clipboardOrigin.value = origin;
   }
 
   async function syncToSystemClipboard(): Promise<void> {
@@ -482,10 +497,18 @@ export const useClipboardStore = defineStore('clipboard', () => {
       return;
     }
 
+    const preserveInternalOrigin = clipboardOrigin.value === 'internal'
+      && hasSameFileClipboardContent(
+        clipboardItems.value,
+        clipboardType.value,
+        systemClipboard.paths,
+        systemClipboard.operation,
+      );
+
     clipboardType.value = systemClipboard.operation;
     clipboardItems.value = systemClipboardItems;
     clipboardImage.value = null;
-    isToolbarSuppressed.value = false;
+    clipboardOrigin.value = preserveInternalOrigin ? 'internal' : 'external';
   }
 
   function canReuseSavedClipboardImage(imageInfo: SystemClipboardImageInfo): boolean {
@@ -738,11 +761,10 @@ export const useClipboardStore = defineStore('clipboard', () => {
     clipboardItems,
     clipboardImage,
     isOperationInProgress,
-    isToolbarSuppressed,
     hasFileItems,
     hasImageContent,
     hasItems,
-    showToolbar,
+    showClipboardUi,
     itemCount,
     isCopyOperation,
     isMoveOperation,

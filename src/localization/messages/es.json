@@ -310,6 +310,12 @@
       "title": "Información emergente",
       "delay": "Retraso del tooltip ({n} ms)"
     },
+    "clipboard": {
+      "title": "Portapapeles",
+      "showToolbarForExternalImages": "Mostrar barra de herramientas del portapapeles para imágenes copiadas en otras apps",
+      "showToolbarForExternalPaths": "Mostrar barra de herramientas del portapapeles para rutas de archivos copiadas en otras apps",
+      "pasteStillWorksWhenHidden": "Pegar con {shortcut} seguirá funcionando cuando estas opciones estén desactivadas. Simplemente no verás la barra de herramientas del portapapeles."
+    },
     "homePageMediaBanner": {
       "title": "Banner de medios de la página de inicio"
     },
@@ -446,6 +452,7 @@
     "uiElements": "ui, elementos, visual, entrada, acento, color, línea de tiempo, tablero, página, reciente, tarjetas, inicio, unidad, espacio, indicador, estilo",
     "quickAccess": "quick, access, panel, hover, sidebar, dashboard",
     "tooltips": "tooltip, tooltips, hover, delay, timing",
+    "clipboard": "portapapeles, pegar, copiar, cortar, barra de herramientas, imagen, captura, ruta, archivos",
     "homePageMediaBanner": "inicio, página, medios, banner, fondo, imagen, video",
     "navigator": "diseño, interfaz de usuario, navegador, divisores, títulos, clasificación, vista, diseño, lista, cuadrícula, elemento, archivo, directorio, desplazamiento, escala, resaltado, OCD",
     "shortcuts": "atajos",
