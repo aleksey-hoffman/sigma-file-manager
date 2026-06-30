@@ -2,7 +2,7 @@
   "app": {
     "name": "سگما فائل مینیجر",
     "description": "یہ ایک مفت، اوپن سورس، جدید اور پیشَرفتہ فائل مینیجر ایپ ہے، جو GNU GPLv3 یا اس کے بعد کے ورژن کے تحت لائسنس یافتہ ہے۔",
-    "copyright": "کاپی رائٹ © 2021 - حال الیکسی ہافمین۔ تمام حقوق محفوظ۔"
+    "copyright": "Copyright © 2021 - present Aleksey Hoffman. All rights reserved."
   },
   "units": {
     "px": "px"

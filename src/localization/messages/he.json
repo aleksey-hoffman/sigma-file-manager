@@ -2,7 +2,7 @@
   "app": {
     "name": "Sigma File Manager",
     "description": "הוא יישום מתקדם ומודרני לניהול קבצים, חופשי ובקוד פתוח, המופץ ברישיון GNU GPLv3 או מתקדם יותר.",
-    "copyright": "כל הזכויות שמורות © 2021 - עד היום Aleksey Hoffman."
+    "copyright": "Copyright © 2021 - present Aleksey Hoffman. All rights reserved."
   },
   "units": {
     "px": "px"

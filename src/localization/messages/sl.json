@@ -2,7 +2,7 @@
   "app": {
     "name": "Sigma File Manager",
     "description": "je brezplačni, odprtokodni, napredni, moderen upravitelj datotek, licenciran pod GNU GPLv3 ali poznejšo licenco.",
-    "copyright": "Avtorske pravice © 2021 - danes Aleksey Hoffman. Vse pravice pridržane."
+    "copyright": "Copyright © 2021 - present Aleksey Hoffman. All rights reserved."
   },
   "units": {
     "px": "px"

@@ -2,7 +2,7 @@
   "app": {
     "name": "Sigma File Manager",
     "description": "ücretsiz, açık kaynaklı, gelişmiş, modern bir dosya yöneticisi uygulamasıdır, GNU GPLv3 veya üstü altında lisanslanmıştır.",
-    "copyright": "Telif Hakkı © 2021 - günümüze kadar Aleksey Hoffman. Tüm hakları saklıdır."
+    "copyright": "Copyright © 2021 - present Aleksey Hoffman. All rights reserved."
   },
   "units": {
     "px": "px"

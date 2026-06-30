@@ -2,7 +2,7 @@
   "app": {
     "name": "Sigma File Manager",
     "description": "это бесплатный, продвинутый, современный файловый менеджер с открытым исходным кодом, лицензированный по GNU GPLv3 или более поздней версии.",
-    "copyright": "Copyright © 2021 - настоящее время Алексей Хоффман. Все права защищены."
+    "copyright": "Copyright © 2021 - present Aleksey Hoffman. All rights reserved."
   },
   "units": {
     "px": "px"
