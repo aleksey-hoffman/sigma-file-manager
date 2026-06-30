@@ -5,7 +5,12 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <script setup lang="ts">
 import {
-  ref, computed, nextTick, onMounted, onUnmounted, markRaw,
+  ref,
+  computed,
+  nextTick,
+  onMounted,
+  onUnmounted,
+  markRaw,
 } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { invoke } from '@tauri-apps/api/core';
@@ -14,6 +19,7 @@ import { toast, ToastStatic } from '@/components/ui/toaster';
 import { PageDefaultLayout } from '@/layouts';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useRestoredActiveTab } from '@/composables/use-restored-active-tab';
 import { useExtensions } from '@/modules/extensions/composables/use-extensions';
 import { useExtensionAnimation } from '@/modules/extensions/composables/use-extension-animation';
 import { useExtensionsStorageStore } from '@/stores/storage/extensions';
@@ -141,8 +147,9 @@ const {
   animateClose,
 } = useExtensionAnimation();
 
-const activeTab = ref('marketplace');
+const activeTab = useRestoredActiveTab('extensions', 'marketplace');
 const showDetailModal = ref(false);
+
 const detailOverlayRef = ref<HTMLElement | null>(null);
 const detailContainerRef = ref<HTMLElement | null>(null);
 

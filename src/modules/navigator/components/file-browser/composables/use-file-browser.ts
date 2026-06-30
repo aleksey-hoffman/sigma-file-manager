@@ -23,6 +23,7 @@ import {
   unregisterNavigateToPath,
   unregisterOpenNavigatorFile,
 } from '@/modules/extensions/builtin-commands';
+import { useScrollRestoration } from '@/composables/use-scroll-restoration';
 import type { DirEntry, DirContents } from '@/types/dir-entry';
 import type { Tab } from '@/types/workspaces';
 import type { UserSettingsNavigator } from '@/types/user-settings';
@@ -68,6 +69,7 @@ export interface UseFileBrowserOptions {
   isDefaultPane?: boolean;
   isActivePane?: () => boolean;
   entryDescription?: (entry: DirEntry) => string | undefined;
+  scrollStateKey?: () => string | undefined;
 }
 
 interface DataSource {
@@ -296,6 +298,15 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
     layout: options.layout,
     entryDescription: options.entryDescription,
   });
+  const scrollStateKey = computed(() => options.scrollStateKey?.());
+
+  useScrollRestoration({
+    stateKey: scrollStateKey,
+    scrollContainerRef: virtualLayout.scrollViewportRef,
+    setScrollTop: virtualLayout.setScrollTop,
+    restoreTriggers: [dataSource.isLoading, virtualLayout.totalSize],
+  });
+
   const linkMetadata = useFileBrowserLinkMetadata({
     enabled: !isExternalMode,
     currentPath: dataSource.currentPath,

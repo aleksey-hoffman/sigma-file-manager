@@ -4,17 +4,34 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
+import { ref } from 'vue';
+import type { ComponentPublicInstance } from 'vue';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { getScrollViewportFromElement } from '@/utils/scroll-viewport';
 
 defineProps<{
   title?: string;
   subtitle?: string;
   maxWidth?: string;
 }>();
+
+const scrollAreaRef = ref<ComponentPublicInstance | null>(null);
+
+function getScrollViewport(): HTMLElement | null {
+  const root = scrollAreaRef.value?.$el;
+  return root instanceof HTMLElement ? getScrollViewportFromElement(root) : null;
+}
+
+defineExpose({
+  getScrollViewport,
+});
 </script>
 
 <template>
-  <ScrollArea class="page-layout">
+  <ScrollArea
+    ref="scrollAreaRef"
+    class="page-layout"
+  >
     <div
       class="page-layout__container"
       :style="{ maxWidth: maxWidth ?? '1200px' }"

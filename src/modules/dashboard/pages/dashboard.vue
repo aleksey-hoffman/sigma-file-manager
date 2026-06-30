@@ -20,6 +20,7 @@ import { Button } from '@/components/ui/button';
 import { DirEntryInteractive } from '@/components/dir-entry-interactive';
 import { useUserStatsStore } from '@/stores/storage/user-stats';
 import { usePageDropZone } from '@/composables/use-page-drop-zone';
+import { useRestoredActiveTab } from '@/composables/use-restored-active-tab';
 import { useFileDropOperation } from '@/composables/use-file-drop-operation';
 import { openNavigatorNavigablePath } from '@/utils/open-navigator-directory';
 import { isVirtualLocationPath } from '@/utils/virtual-locations';
@@ -54,7 +55,7 @@ const { t } = useI18n();
 const router = useRouter();
 const userStatsStore = useUserStatsStore();
 
-const activeTab = ref('favorites');
+const activeTab = useRestoredActiveTab('dashboard', 'favorites');
 const dropContainerRef = ref<HTMLElement | null>(null);
 const activeTagSelector = ref<ActiveTagSelector | null>(null);
 

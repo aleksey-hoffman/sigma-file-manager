@@ -727,6 +727,7 @@ export function useFileBrowserVirtualLayout(options: {
     spacerStyle,
     windowStyle,
     setScrollViewportRef,
+    setScrollTop,
     scheduleViewportSizeUpdate,
     handleScroll,
     getEntryElement,

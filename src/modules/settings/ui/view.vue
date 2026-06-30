@@ -4,8 +4,13 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 -->
 
 <script setup lang="ts">
+import { useScrollRestoration } from '@/composables/use-scroll-restoration';
+import {
+  getScrollRestorationKey,
+  useScrollRestorationStore,
+} from '@/stores/runtime/scroll-restoration';
 import { useSettingsStore } from '@/stores/runtime/settings';
-import { computed, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { resetSettingsItemStaggerIndex } from '@/utils/settings-item-stagger';
 
@@ -22,7 +27,20 @@ import TabsCategory from './categories/tabs/index.vue';
 import { Button } from '@/components/ui/button';
 
 const settingsStore = useSettingsStore();
+const scrollStore = useScrollRestorationStore();
 const { t } = useI18n();
+const scrollContainerRef = ref<HTMLElement | null>(null);
+const scrollStateKey = computed(() => getScrollRestorationKey(
+  'settings',
+  scrollStore.getResetVersion('settings'),
+  settingsStore.search ? 'search' : settingsStore.currentTab,
+  'panel',
+));
+
+useScrollRestoration({
+  stateKey: scrollStateKey,
+  scrollContainerRef,
+});
 
 const currentTabLabel = computed(() => {
   const currentTab = settingsStore.tabs.find(tab => tab.name === settingsStore.currentTab);
@@ -76,7 +94,10 @@ watch(
       </div>
     </div>
 
-    <div class="settings-view__content">
+    <div
+      ref="scrollContainerRef"
+      class="settings-view__content"
+    >
       <component
         v-if="!settingsStore.search && getComponentForTab(settingsStore.currentTab)"
         :is="getComponentForTab(settingsStore.currentTab)"

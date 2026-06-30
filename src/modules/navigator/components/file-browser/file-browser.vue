@@ -7,6 +7,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 import { computed, ref } from 'vue';
 import type { DirEntry } from '@/types/dir-entry';
 import type { Tab } from '@/types/workspaces';
+import { getScrollRestorationKey } from '@/stores/runtime/scroll-restoration';
 import { useFileBrowser } from './composables/use-file-browser';
 import { useOpenCopiedPath } from './composables/use-open-copied-path';
 import { provideFileBrowserContext } from './composables/use-file-browser-context';
@@ -57,6 +58,10 @@ const emit = defineEmits<{
 const fileBrowserRef = ref<HTMLElement | null>(null);
 const addressBarEditorRef = ref<InstanceType<typeof AddressBarEditorDialog> | null>(null);
 
+function getScrollStateKey(): string | undefined {
+  return props.tab ? getScrollRestorationKey('navigator', props.tab.id, props.paneIndex ?? 0) : undefined;
+}
+
 const fb = useFileBrowser({
   tab: () => props.tab,
   layout: () => props.layout,
@@ -69,6 +74,7 @@ const fb = useFileBrowser({
   isDefaultPane: props.paneIndex === 0 || props.paneIndex === undefined,
   isActivePane: () => props.isActivePane ?? (props.paneIndex === 0 || props.paneIndex === undefined),
   entryDescription: props.entryDescription,
+  scrollStateKey: getScrollStateKey,
 });
 
 const permanentDeleteIsOpen = fb.permanentDeleteConfirm.isOpen;
