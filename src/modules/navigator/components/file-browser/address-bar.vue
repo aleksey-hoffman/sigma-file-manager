@@ -46,11 +46,11 @@ import { useShortcutsStore } from '@/stores/runtime/shortcuts';
 import { usePlatformStore } from '@/stores/runtime/platform';
 import normalizePath, { getPathDisplayName, getPathSegments, isUncPath } from '@/utils/normalize-path';
 import {
-  getLocationsDrivePaths,
   isVirtualLocationPath,
   LOCATIONS_VIRTUAL_PATH,
   shouldPrependLocationsCrumb,
 } from '@/utils/virtual-locations';
+import { useDrives } from '@/modules/home/composables/use-drives';
 import { useOpenCopiedPath } from './composables/use-open-copied-path';
 
 const props = defineProps<{
@@ -66,6 +66,8 @@ const emit = defineEmits<{
 const { t } = useI18n();
 const shortcutsStore = useShortcutsStore();
 const platformStore = usePlatformStore();
+const { drives } = useDrives();
+const locationsDrivePaths = computed(() => drives.value.map(drive => normalizePath(drive.path)));
 const { openCopiedPath } = useOpenCopiedPath({
   openDirectory: path => emit('navigate', path),
   openFile: path => emit('openFile', path),
@@ -161,13 +163,6 @@ async function loadSeparatorDirectories(index: number) {
   if (!part) return;
 
   if (part.virtual) {
-    try {
-      separatorDropdowns.value[index] = await getLocationsDrivePaths();
-    }
-    catch {
-      separatorDropdowns.value[index] = [];
-    }
-
     return;
   }
 
@@ -359,7 +354,7 @@ onUnmounted(() => {
                 class="address-bar__separator-menu-scroll"
               >
                 <DropdownMenuItem
-                  v-for="dirPath in separatorDropdowns[index]"
+                  v-for="dirPath in part.virtual ? locationsDrivePaths : separatorDropdowns[index]"
                   :key="dirPath"
                   @select="handleSeparatorNavigate(dirPath)"
                 >

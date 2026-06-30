@@ -34,6 +34,7 @@ import {
   isVirtualLocationPath,
   resolveDirectoryContents,
 } from '@/utils/virtual-locations';
+import { sharedDrives } from '@/modules/home/composables/use-drives';
 import { shouldIncludeItemCountsForSort } from '@/modules/navigator/components/file-browser/utils/file-browser-sort-columns';
 
 interface DirChangePayload {
@@ -44,6 +45,13 @@ interface DirChangePayload {
 
 const DIRECTORY_DWELL_TIME_MS = 3000;
 const WATCHER_DEBOUNCE_MS = 500;
+
+function getDrivePathListSignature(paths: string[]): string {
+  return paths
+    .map(path => normalizePath(path))
+    .sort()
+    .join('\0');
+}
 
 function dirWatcherDiagEnabled(): boolean {
   return import.meta.env.DEV && localStorage.getItem('SFM_DIR_WATCHER_DIAG') === '1';
@@ -252,6 +260,21 @@ export function useFileBrowserNavigation(
       watchedPath = null;
     }
   }
+
+  watch(sharedDrives, () => {
+    if (!isVirtualLocationPath(currentPath.value) || !dirContents.value) {
+      return;
+    }
+
+    const displayedDrivePaths = dirContents.value.entries.map(entry => entry.path);
+    const liveDrivePaths = sharedDrives.value.map(drive => drive.path);
+
+    if (getDrivePathListSignature(displayedDrivePaths) === getDrivePathListSignature(liveDrivePaths)) {
+      return;
+    }
+
+    void silentRefresh();
+  }, { deep: true });
 
   onUnmounted(() => {
     cancelPendingDirectoryRecord();
