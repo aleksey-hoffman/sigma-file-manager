@@ -2,7 +2,7 @@
   "app": {
     "name": "Sigma File Manager",
     "description": "là một ứng dụng quản lý tệp hiện đại, mã nguồn mở, miễn phí, được cấp phép theo GNU GPLv3 trở lên.",
-    "copyright": "Bản quyền © 2021 - thời điểm hiện tại Aleksey Hoffman. Đã đăng ký Bản quyền."
+    "copyright": "Bản quyền © 2021 - đến nay Aleksey Hoffman. Đã đăng ký Bản quyền."
   },
   "units": {
     "px": "px"
@@ -40,7 +40,7 @@
     "noUserDirectoriesFound": "Không tìm thấy thư mục người dùng"
   },
   "window": {
-    "minimizeWindow": "thu nhỏ cửa sổ",
+    "minimizeWindow": "Thu nhỏ cửa sổ",
     "toggleWindowSize": "Chuyển đổi kích thước cửa sổ",
     "closeWindow": "Đóng cửa sổ"
   },

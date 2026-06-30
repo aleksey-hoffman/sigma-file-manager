@@ -2,7 +2,7 @@
   "app": {
     "name": "Sigma File Manager",
     "description": "是一个免费、开源、先进、现代的文件管理器应用程序，在 GNU GPLv3 或更高版本下授权。",
-    "copyright": "Copyright © 2021 - 当今时代 Aleksey Hoffman. 保留所有权利。"
+    "copyright": "Copyright © 2021 - 至今 Aleksey Hoffman. 保留所有权利。"
   },
   "units": {
     "px": "px"
@@ -15,14 +15,14 @@
     "hoursAgo": "0小时前 | 1小时前 | {n}小时前 | {n}小时前",
     "daysAgo": "0天前 | 1天前 | {n}天前 | {n}天前"
   },
-  "calculatedAgo": "{time}计算",
+  "calculatedAgo": "计算于 {time}",
   "pages": {
     "home": "主页",
-    "navigator": "导航仪",
+    "navigator": "导航器",
     "dashboard": "仪表板",
     "notes": "笔记",
     "settings": "设置",
-    "extensions": "拓展功能"
+    "extensions": "扩展功能"
   },
   "language": {
     "language": "语言"

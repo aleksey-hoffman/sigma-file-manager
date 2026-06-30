@@ -19,7 +19,7 @@
   "pages": {
     "home": "Главная",
     "navigator": "Навигатор",
-    "dashboard": "Панель инструментов",
+    "dashboard": "Дашборд",
     "notes": "Заметки",
     "settings": "Настройки",
     "extensions": "Расширения"

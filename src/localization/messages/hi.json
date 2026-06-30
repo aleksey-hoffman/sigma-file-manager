@@ -18,7 +18,7 @@
   "calculatedAgo": "परिकलित {time}",
   "pages": {
     "home": "होम पेज",
-    "navigator": "नाविक",
+    "navigator": "फ़ाइल एक्सप्लोरर",
     "dashboard": "डैशबोर्ड",
     "notes": "टिप्पणियाँ",
     "settings": "सेटिंग्स",
@@ -30,7 +30,7 @@
   "quickAccess": {
     "title": "त्वरित पहुंच",
     "favorites": "पसंदीदा",
-    "tagged": "टैग",
+    "tagged": "टैग किए गए",
     "emptyFavorites": "कोई पसंदीदा नहीं",
     "emptyTagged": "कोई टैग किया गया आइटम नहीं",
     "unknownTagGroup": "अज्ञात टैग"
@@ -42,7 +42,7 @@
   "window": {
     "minimizeWindow": "विंडो को छोटा करें",
     "toggleWindowSize": "विंडो का आकार टॉगल करें",
-    "closeWindow": "विंडो बंद"
+    "closeWindow": "विंडो बंद करें"
   },
   "quickView": {
     "unsupportedFileType": "यह फ़ाइल प्रकार त्वरित दृश्य के लिए समर्थित नहीं है",
@@ -402,7 +402,7 @@
       "lastTabCloseBehavior": {
         "title": "जब आखिरी टैब बंद हो",
         "createDefaultTab": "डिफ़ॉल्ट टैब बनाएं",
-        "closeWindow": "विंडो बंद",
+        "closeWindow": "विंडो बंद करें",
         "navigateToHomePage": "होम पेज पर नेविगेट करें"
       },
       "tabAppearance": {
@@ -721,7 +721,7 @@
   "search": "खोज",
   "results": "परिणाम",
   "tab": "टैब",
-  "run": "दौड़ना",
+  "run": "चलाएँ",
   "list": "सूची",
   "grid": "ग्रिड",
   "listLayout": "सूची लेआउट",

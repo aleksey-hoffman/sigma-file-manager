@@ -2,7 +2,7 @@
   "app": {
     "name": "Sigma File Manager",
     "description": "ist eine freie, quelloffene, fortschrittliche, moderne Dateimanager-Anwendung, lizenziert unter GNU GPLv3 oder höher.",
-    "copyright": "Copyright © 2021 - gegenwärtige Zeit Aleksey Hoffman. Alle Rechte vorbehalten."
+    "copyright": "Copyright © 2021 - heute Aleksey Hoffman. Alle Rechte vorbehalten."
   },
   "units": {
     "px": "px"
@@ -10,10 +10,10 @@
   "minutes": "Minuten",
   "relativeTime": {
     "justNow": "Gerade eben",
-    "secondsAgo": "0 Sek. her | 1 Sek. her | {n} Sek. her | {n} Sek. her",
-    "minutesAgo": "0 Min. her | 1 Min. her | {n} Min. her | {n} Min. her",
-    "hoursAgo": "0 Std. her | 1 Std. her | {n} Std. her | {n} Std. her",
-    "daysAgo": "0 Tage her | 1 Tag her | {n} Tage her | {n} Tage her"
+    "secondsAgo": "vor 0 Sek. | vor 1 Sek. | vor {n} Sek. | vor {n} Sek.",
+    "minutesAgo": "vor 0 Min. | vor 1 Min. | vor {n} Min. | vor {n} Min.",
+    "hoursAgo": "vor 0 Std. | vor 1 Std. | vor {n} Std. | vor {n} Std.",
+    "daysAgo": "vor 0 Tagen | vor 1 Tag | vor {n} Tagen | vor {n} Tagen"
   },
   "calculatedAgo": "Berechnet {time}",
   "pages": {
@@ -33,7 +33,7 @@
     "tagged": "Markiert",
     "emptyFavorites": "Keine Favoriten",
     "emptyTagged": "Keine markierten Elemente",
-    "unknownTagGroup": "Unbekannte Markierung"
+    "unknownTagGroup": "Unbekanntes Tag"
   },
   "placeholders": {
     "noDrivesFound": "Keine Laufwerke gefunden",

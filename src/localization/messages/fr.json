@@ -2,7 +2,7 @@
   "app": {
     "name": "Sigma File Manager",
     "description": "est une application gratuite, open source, avancée et moderne de gestion de fichiers, sous licence GNU GPLv3 ou ultérieure.",
-    "copyright": "Copyright © 2021 - moment présent Aleksey Hoffman. Tous droits réservés."
+    "copyright": "Copyright © 2021 - à ce jour Aleksey Hoffman. Tous droits réservés."
   },
   "units": {
     "px": "px"
@@ -692,7 +692,7 @@
   "search": "Rechercher",
   "results": "Résultats",
   "tab": "Languette",
-  "run": "Cours",
+  "run": "Exécuter",
   "list": "Liste",
   "grid": "Grille",
   "listLayout": "Mise en page de la liste",

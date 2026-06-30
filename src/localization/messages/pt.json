@@ -1,8 +1,8 @@
 {
   "app": {
     "name": "Sigma File Manager",
-    "description": "es una aplicación gratuita, de código abierto, avanzada y moderna de gestión de archivos, licenciada bajo GNU GPLv3 o posterior.",
-    "copyright": "Copyright © 2021 - tiempo presente Aleksey Hoffman. Todos los derechos reservados."
+    "description": "é um aplicativo gratuito, de código aberto, avançado e moderno de gerenciamento de arquivos, licenciado sob GNU GPLv3 ou posterior.",
+    "copyright": "Copyright © 2021 - presente Aleksey Hoffman. Todos os direitos reservados."
   },
   "units": {
     "px": "px"
@@ -18,8 +18,8 @@
   "calculatedAgo": "Calculado {time}",
   "pages": {
     "home": "Página de inicio",
-    "navigator": "Navegador",
-    "dashboard": "Panel de controle",
+    "navigator": "Explorador",
+    "dashboard": "Painel",
     "notes": "Notas",
     "settings": "Configuração",
     "extensions": "Extensões"
@@ -692,7 +692,7 @@
   "search": "Pesquisar",
   "results": "Resultados",
   "tab": "Aba",
-  "run": "correr",
+  "run": "Executar",
   "list": "Lista",
   "grid": "Grade",
   "listLayout": "Layout da lista",
