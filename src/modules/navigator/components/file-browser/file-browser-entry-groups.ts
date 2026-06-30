@@ -56,3 +56,14 @@ export function getFileBrowserGridEntryOrder(entries: readonly DirEntry[]): DirE
     ...groupedEntries.others,
   ];
 }
+
+export function getFileBrowserVisualEntryOrder(
+  entries: readonly DirEntry[],
+  layout: 'list' | 'grid' | undefined,
+): DirEntry[] {
+  if (layout === 'grid') {
+    return getFileBrowserGridEntryOrder(entries);
+  }
+
+  return [...entries];
+}

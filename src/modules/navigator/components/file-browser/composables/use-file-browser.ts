@@ -288,6 +288,7 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
       openPropertiesForSelection(entries);
     },
     dataSource.silentRefresh,
+    options.layout,
   );
 
   const virtualLayout = useFileBrowserVirtualLayout({

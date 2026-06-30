@@ -4,7 +4,7 @@
 
 import { nextTick, type Ref } from 'vue';
 import type { DirEntry } from '@/types/dir-entry';
-import { getFileBrowserGridEntryOrder } from '../file-browser-entry-groups';
+import { getFileBrowserVisualEntryOrder } from '../file-browser-entry-groups';
 
 const ROW_TOLERANCE_PX = 30;
 const OVERLAP_TOLERANCE_PX = 2;
@@ -53,11 +53,7 @@ export function useFileBrowserKeyboardNavigation(options: {
   }
 
   function getNavigationEntries(): DirEntry[] {
-    if (options.layout() === 'grid') {
-      return getFileBrowserGridEntryOrder(options.entries.value);
-    }
-
-    return options.entries.value;
+    return getFileBrowserVisualEntryOrder(options.entries.value, options.layout());
   }
 
   async function selectAndFocusEntry(entry: DirEntry) {

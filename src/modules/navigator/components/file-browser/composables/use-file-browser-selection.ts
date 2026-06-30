@@ -34,6 +34,7 @@ import { usePlatformStore } from '@/stores/runtime/platform';
 import { isContextMenuActionVisible } from '@/modules/navigator/components/file-browser/utils/context-menu-action-visibility';
 import { resolveNavigableItemTarget } from '@/utils/resolve-navigable-item-target';
 import type { CreateLinksResult, LinkCreationKind } from '@/utils/link-operations';
+import { getFileBrowserVisualEntryOrder } from '../file-browser-entry-groups';
 
 export const FILE_BROWSER_REVEAL_STALE_FOCUS_GUARD_MS = 500;
 
@@ -44,6 +45,7 @@ export function useFileBrowserSelection(
   onOpen: (entry: DirEntry) => void,
   onOpenProperties: (entries: DirEntry[]) => void,
   onRefresh: () => void,
+  layout?: () => 'list' | 'grid' | undefined,
 ) {
   const { t } = useI18n();
   const platformStore = usePlatformStore();
@@ -158,12 +160,16 @@ export function useFileBrowserSelection(
     return selectedEntries.value.some(selectedEntry => selectedEntry.path === entry.path);
   }
 
+  function getOrderedEntries(): DirEntry[] {
+    return getFileBrowserVisualEntryOrder(entriesRef.value, layout?.());
+  }
+
   function getEntryIndex(entry: DirEntry): number {
-    return entriesRef.value.findIndex(item => item.path === entry.path);
+    return getOrderedEntries().findIndex(item => item.path === entry.path);
   }
 
   function selectRange(fromEntry: DirEntry, toEntry: DirEntry) {
-    const entries = entriesRef.value;
+    const entries = getOrderedEntries();
     let startIndex = getEntryIndex(fromEntry);
     let endIndex = getEntryIndex(toEntry);
 

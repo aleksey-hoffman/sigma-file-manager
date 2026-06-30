@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest';
 import type { DirEntry } from '@/types/dir-entry';
 import {
   getFileBrowserGridEntryOrder,
+  getFileBrowserVisualEntryOrder,
   groupFileBrowserEntries,
 } from '../file-browser-entry-groups';
 import { sortFileBrowserEntries, type DirSizesStore } from '../utils/file-browser-sort';
@@ -114,6 +115,28 @@ describe('file browser entry groups', () => {
 
     expect(sortedEntries.map(entry => entry.name)).toEqual(['clips', 'notes.txt', 'photo.png']);
     expect(getFileBrowserGridEntryOrder(sortedEntries).map(entry => entry.name)).toEqual([
+      'clips',
+      'photo.png',
+      'notes.txt',
+    ]);
+  });
+
+  it('returns flat order for list layout and grid order for grid layout', () => {
+    const entries = [
+      createEntry('photo.png', { ext: 'png' }),
+      createEntry('clips', {
+        is_dir: true,
+        is_file: false,
+      }),
+      createEntry('notes.txt', { ext: 'txt' }),
+    ];
+
+    expect(getFileBrowserVisualEntryOrder(entries, 'list').map(entry => entry.name)).toEqual([
+      'photo.png',
+      'clips',
+      'notes.txt',
+    ]);
+    expect(getFileBrowserVisualEntryOrder(entries, 'grid').map(entry => entry.name)).toEqual([
       'clips',
       'photo.png',
       'notes.txt',
