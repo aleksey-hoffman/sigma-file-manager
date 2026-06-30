@@ -4,7 +4,7 @@
 
 import { invoke } from '@tauri-apps/api/core';
 import type { DirContents, DirEntry, ReadDirOptions } from '@/types/dir-entry';
-import type { DriveInfo } from '@/types/drive-info';
+import type { DriveEntryMetadata, DriveInfo } from '@/types/drive-info';
 import normalizePath, {
   getParentPath,
   getPathDisplayName,
@@ -74,8 +74,7 @@ export function createLocationsDirEntry(): DirEntry {
   };
 }
 
-export async function readLocationsDirectory(): Promise<DirContents> {
-  const drives = await invoke<DriveInfo[]>('get_system_drives');
+export function buildLocationsDirectoryFromDrives(drives: DriveInfo[]): DirContents {
   const entries = drives.map(drive => driveInfoToDirEntry(drive));
   const directoryCount = entries.length;
 
@@ -91,6 +90,53 @@ export async function readLocationsDirectory(): Promise<DirContents> {
       created_time: 0,
     },
   };
+}
+
+function formatLocationsDriveDisplaySignaturePart(
+  path: string,
+  name: string,
+  size: number,
+  driveMetadata: DriveEntryMetadata | undefined,
+): string {
+  return [
+    normalizePath(path),
+    name,
+    String(size),
+    driveMetadata?.drive_type ?? '',
+    driveMetadata?.is_removable ? '1' : '0',
+  ].join('\x1f');
+}
+
+export function getLocationsDriveListDisplaySignature(drives: DriveInfo[]): string {
+  return drives
+    .map((drive) => {
+      const entry = driveInfoToDirEntry(drive);
+      return formatLocationsDriveDisplaySignaturePart(
+        entry.path,
+        entry.name,
+        entry.size,
+        entry.drive_metadata,
+      );
+    })
+    .sort()
+    .join('\0');
+}
+
+export function getLocationsEntriesDisplaySignature(entries: DirEntry[]): string {
+  return entries
+    .map(entry => formatLocationsDriveDisplaySignaturePart(
+      entry.path,
+      entry.name,
+      entry.size,
+      entry.drive_metadata,
+    ))
+    .sort()
+    .join('\0');
+}
+
+export async function readLocationsDirectory(): Promise<DirContents> {
+  const drives = await invoke<DriveInfo[]>('get_system_drives');
+  return buildLocationsDirectoryFromDrives(drives);
 }
 
 export async function resolveDirectoryContents(

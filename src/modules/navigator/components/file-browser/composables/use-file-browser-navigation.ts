@@ -33,6 +33,9 @@ import {
   getNavigableParentPath,
   isVirtualLocationPath,
   resolveDirectoryContents,
+  buildLocationsDirectoryFromDrives,
+  getLocationsDriveListDisplaySignature,
+  getLocationsEntriesDisplaySignature,
 } from '@/utils/virtual-locations';
 import { sharedDrives } from '@/modules/home/composables/use-drives';
 import { shouldIncludeItemCountsForSort } from '@/modules/navigator/components/file-browser/utils/file-browser-sort-columns';
@@ -45,13 +48,6 @@ interface DirChangePayload {
 
 const DIRECTORY_DWELL_TIME_MS = 3000;
 const WATCHER_DEBOUNCE_MS = 500;
-
-function getDrivePathListSignature(paths: string[]): string {
-  return paths
-    .map(path => normalizePath(path))
-    .sort()
-    .join('\0');
-}
 
 function dirWatcherDiagEnabled(): boolean {
   return import.meta.env.DEV && localStorage.getItem('SFM_DIR_WATCHER_DIAG') === '1';
@@ -266,10 +262,10 @@ export function useFileBrowserNavigation(
       return;
     }
 
-    const displayedDrivePaths = dirContents.value.entries.map(entry => entry.path);
-    const liveDrivePaths = sharedDrives.value.map(drive => drive.path);
+    const displayedSignature = getLocationsEntriesDisplaySignature(dirContents.value.entries);
+    const liveSignature = getLocationsDriveListDisplaySignature(sharedDrives.value);
 
-    if (getDrivePathListSignature(displayedDrivePaths) === getDrivePathListSignature(liveDrivePaths)) {
+    if (displayedSignature === liveSignature) {
       return;
     }
 
@@ -290,14 +286,22 @@ export function useFileBrowserNavigation(
   const canGoForward = computed(() => historyIndex.value < history.value.length - 1);
 
   async function silentRefresh(): Promise<void> {
-    if (!currentPath.value) {
+    const refreshPath = currentPath.value;
+
+    if (!refreshPath) {
       return;
     }
 
     isRefreshing.value = true;
 
     try {
-      const result = await loadDirectoryContents(currentPath.value, createReadDirOptions());
+      const result = isVirtualLocationPath(refreshPath)
+        ? buildLocationsDirectoryFromDrives(sharedDrives.value)
+        : await loadDirectoryContents(refreshPath, createReadDirOptions());
+
+      if (currentPath.value !== refreshPath) {
+        return;
+      }
 
       dirContents.value = result;
       invalidateDirectoryLinkMetadata(result);
@@ -319,6 +323,10 @@ export function useFileBrowserNavigation(
       }
     }
     catch {
+      if (currentPath.value !== refreshPath) {
+        return;
+      }
+
       await navigateToNearestExistingAncestor();
     }
     finally {

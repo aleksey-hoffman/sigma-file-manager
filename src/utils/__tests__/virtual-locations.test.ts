@@ -5,8 +5,11 @@
 import { describe, expect, it } from 'vitest';
 import {
   LOCATIONS_VIRTUAL_PATH,
+  buildLocationsDirectoryFromDrives,
   createLocationsDirEntry,
   driveInfoToDirEntry,
+  getLocationsDriveListDisplaySignature,
+  getLocationsEntriesDisplaySignature,
   getNavigableParentPath,
   getVirtualLocationDisplayName,
   isVirtualLocationPath,
@@ -58,6 +61,57 @@ describe('virtual-locations', () => {
       is_removable: false,
     });
     expect(driveEntry.item_count).toBeNull();
+  });
+
+  it('builds locations directory contents from drive snapshots', () => {
+    const drivePayload: DriveInfo = {
+      name: 'Local Disk (C:)',
+      path: 'C:/',
+      mount_point: 'C:\\',
+      file_system: 'NTFS',
+      drive_type: 'SSD',
+      total_space: 1000,
+      available_space: 500,
+      used_space: 500,
+      percent_used: 50,
+      is_removable: false,
+      is_read_only: false,
+      is_mounted: true,
+      device_path: '\\\\.\\C:',
+    };
+
+    const contents = buildLocationsDirectoryFromDrives([drivePayload]);
+
+    expect(contents.path).toBe(LOCATIONS_VIRTUAL_PATH);
+    expect(contents.entries).toHaveLength(1);
+    expect(contents.entries[0]?.path).toBe('C:/');
+  });
+
+  it('detects drive metadata changes in locations display signatures', () => {
+    const baseDrive: DriveInfo = {
+      name: 'Local Disk (C:)',
+      path: 'C:/',
+      mount_point: 'C:\\',
+      file_system: 'NTFS',
+      drive_type: 'SSD',
+      total_space: 1000,
+      available_space: 500,
+      used_space: 500,
+      percent_used: 50,
+      is_removable: false,
+      is_read_only: false,
+      is_mounted: true,
+      device_path: '\\\\.\\C:',
+    };
+
+    const renamedDrive = { ...baseDrive, name: 'System (C:)' };
+    const resizedDrive = { ...baseDrive, total_space: 2000 };
+    const entries = buildLocationsDirectoryFromDrives([baseDrive]).entries;
+    const baseSignature = getLocationsDriveListDisplaySignature([baseDrive]);
+
+    expect(getLocationsEntriesDisplaySignature(entries)).toBe(baseSignature);
+    expect(getLocationsDriveListDisplaySignature([renamedDrive])).not.toBe(baseSignature);
+    expect(getLocationsDriveListDisplaySignature([resizedDrive])).not.toBe(baseSignature);
   });
 
   describe('getNavigableParentPath', () => {
