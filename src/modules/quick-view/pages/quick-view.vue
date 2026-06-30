@@ -11,7 +11,7 @@ import {
 import { useI18n } from 'vue-i18n';
 import { invoke } from '@tauri-apps/api/core';
 import { getCurrentWindow } from '@tauri-apps/api/window';
-import { emit, listen, type UnlistenFn } from '@tauri-apps/api/event';
+import { emitTo, listen, type UnlistenFn } from '@tauri-apps/api/event';
 import {
   Loader2Icon,
   FileWarningIcon,
@@ -45,6 +45,11 @@ import { rewriteMarkdownAssetUrls } from '@/utils/readme-relative-urls';
 import { renderMarkdownToSafeHtml } from '@/utils/safe-html';
 import type { DirContents, DirEntry } from '@/types/dir-entry';
 import { getParentDirectory } from '@/utils/normalize-path';
+import {
+  buildAuxiliaryWindowReadyPayload,
+  QUICK_VIEW_WINDOW_READY_EVENT,
+  releaseAuxiliaryWindow,
+} from '@/utils/auxiliary-windows';
 import { useImageThumbnails } from '@/modules/navigator/components/file-browser/composables/use-image-thumbnails';
 import { useHorizontalFixedVirtualList } from '@/composables/use-horizontal-fixed-virtual-list';
 
@@ -640,15 +645,29 @@ function isEditableKeyboardTarget(target: EventTarget | null): boolean {
   return tag === 'TEXTAREA' || tag === 'INPUT' || tag === 'SELECT';
 }
 
-async function closeWindow() {
+function resetQuickViewWindowState(shouldNotifyMainWindow = true) {
   pendingTextEdits.value = {};
-
-  const currentWindow = getCurrentWindow();
-  await currentWindow.hide();
   currentFilePath.value = null;
   resolvedSiblingPaths.value = [];
   siblingPathsProvidedByMain.value = false;
-  void emit(QUICK_VIEW_DISPLAYED_PATH_CHANGED_EVENT, { path: null });
+
+  if (shouldNotifyMainWindow) {
+    void emitTo(
+      {
+        kind: 'WebviewWindow',
+        label: 'main',
+      },
+      QUICK_VIEW_DISPLAYED_PATH_CHANGED_EVENT,
+      { path: null },
+    );
+  }
+}
+
+async function closeWindow() {
+  resetQuickViewWindowState(true);
+  await nextTick();
+
+  await releaseAuxiliaryWindow('quick-view');
 }
 
 async function setQuickViewWindowTitle(path: string) {
@@ -718,7 +737,14 @@ async function selectPath(path: string) {
 
   currentFilePath.value = path;
   await setQuickViewWindowTitle(path);
-  void emit(QUICK_VIEW_DISPLAYED_PATH_CHANGED_EVENT, { path });
+  void emitTo(
+    {
+      kind: 'WebviewWindow',
+      label: 'main',
+    },
+    QUICK_VIEW_DISPLAYED_PATH_CHANGED_EVENT,
+    { path },
+  );
 }
 
 async function loadTextPreview(path: string) {
@@ -861,7 +887,14 @@ async function goToSibling(offset: number) {
 
   currentFilePath.value = nextPath;
   await setQuickViewWindowTitle(nextPath);
-  void emit(QUICK_VIEW_DISPLAYED_PATH_CHANGED_EVENT, { path: nextPath });
+  void emitTo(
+    {
+      kind: 'WebviewWindow',
+      label: 'main',
+    },
+    QUICK_VIEW_DISPLAYED_PATH_CHANGED_EVENT,
+    { path: nextPath },
+  );
 }
 
 function scrollActiveThumbIntoView() {
@@ -1026,6 +1059,14 @@ watch(currentFilePath, (path) => {
 onMounted(async () => {
   window.addEventListener('keydown', handleKeydown, true);
   await setupEventListeners();
+  void emitTo(
+    {
+      kind: 'WebviewWindow',
+      label: 'main',
+    },
+    QUICK_VIEW_WINDOW_READY_EVENT,
+    buildAuxiliaryWindowReadyPayload(),
+  );
   void invoke('configure_webview_hide_pdf_more_settings').catch(() => {});
   isLoading.value = false;
 });

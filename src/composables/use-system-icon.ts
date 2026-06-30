@@ -10,11 +10,13 @@ const systemIconInFlight = new Map<string, Promise<string | null>>();
 
 function isSystemIconRequestPath(path: string): boolean {
   const trimmed = path.trim();
+
   if (!trimmed || trimmed.includes('://')) {
     return false;
   }
 
   const lower = trimmed.toLowerCase();
+
   if (trimmed.startsWith('::{') || lower.startsWith('shell:')) {
     return false;
   }

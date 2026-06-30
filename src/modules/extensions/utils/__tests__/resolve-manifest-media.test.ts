@@ -22,6 +22,10 @@ vi.mock('@tauri-apps/api/core', () => ({
   convertFileSrc: (path: string) => mockConvertFileSrc(path),
 }));
 
+vi.mock('@/stores/runtime/quick-view', () => ({
+  isQuickViewSupported: (path: string) => /\.(png|jpe?g|gif|webp|mp4|webm)$/i.test(path),
+}));
+
 vi.mock('@tauri-apps/api/path', () => ({
   join: (...parts: string[]) => mockJoin(...parts),
 }));

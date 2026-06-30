@@ -2,7 +2,9 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-import { describe, expect, it, vi, beforeEach } from 'vitest';
+import {
+  describe, expect, it, vi, beforeEach,
+} from 'vitest';
 import { ref } from 'vue';
 import type { Router } from 'vue-router';
 import type { DirEntry } from '@/types/dir-entry';

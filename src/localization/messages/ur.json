@@ -234,7 +234,14 @@
       "launchAppInHiddenState": "چھپی حالت میں ایپ چالو کریں",
       "decreaseZoomLevel": "زوم کم کریں",
       "increaseZoomLevel": "زوم بڑھائیں",
-      "resetZoomLevel": "زوم ری سیٹ کریں"
+      "resetZoomLevel": "زوم ری سیٹ کریں",
+      "performance": {
+        "title": "کارکردگی",
+        "prelaunchQuickViewWindow": "Quick View ونڈو میموری میں رکھیں",
+        "prelaunchQuickViewWindowDescription": "تقریباً 200 MB میموری استعمال کرتا ہے، لیکن فوراً کھل جاتا ہے۔",
+        "prelaunchPrintViewWindow": "پرنٹ ونڈو میموری میں رکھیں",
+        "prelaunchPrintViewWindowDescription": "تقریباً 200 MB میموری استعمال کرتا ہے، لیکن فوراً کھل جاتا ہے۔"
+      }
     },
     "actions": {
       "appDirectories": "ایپ فولڈر",
@@ -480,7 +487,8 @@
     "whatsNew": "نیا کیا ہے, changelog, ریلیز",
     "autostart": "سٹارٹ اپ, بوٹ, لاگ ان",
     "extensions": "ایکسٹینشن, plugins, addons",
-    "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, video, mute, autoplay"
+    "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, video, mute, autoplay",
+    "performance": "performance, memory, quick view, print, window, launch, preload"
   },
   "drag": {
     "holdShiftToChangeMode": "موڈ بدلنے کے لیے [Shift] دبائے رکھیں",

@@ -191,6 +191,10 @@ export const useUserSettingsStore = defineStore('userSettings', () => {
     tooltipDelayMs: 0,
     launchAtStartup: false,
     launchAtStartupHidden: false,
+    performance: {
+      prelaunchQuickViewWindow: true,
+      prelaunchPrintViewWindow: false,
+    },
     appUpdates: {
       autoCheck: true,
       lastCheckTimestamp: 0,

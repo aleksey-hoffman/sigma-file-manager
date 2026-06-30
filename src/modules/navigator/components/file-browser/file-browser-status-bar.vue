@@ -50,6 +50,8 @@ const props = withDefaults(defineProps<{
   isSplitView?: boolean;
   isActivePane?: boolean;
 }>(), {
+  selectedCount: undefined,
+  selectedEntries: undefined,
   isSplitView: false,
   isActivePane: false,
 });

@@ -234,7 +234,14 @@
       "launchAppInHiddenState": "Запустить приложение в скрытом состоянии",
       "decreaseZoomLevel": "Уменьшить масштаб",
       "increaseZoomLevel": "Увеличить масштаб",
-      "resetZoomLevel": "Сбросить уровень масштабирования"
+      "resetZoomLevel": "Сбросить уровень масштабирования",
+      "performance": {
+        "title": "Производительность",
+        "prelaunchQuickViewWindow": "Держать окно Quick View в памяти",
+        "prelaunchQuickViewWindowDescription": "Занимает около 200 МБ памяти, но открывается мгновенно.",
+        "prelaunchPrintViewWindow": "Держать окно печати в памяти",
+        "prelaunchPrintViewWindowDescription": "Занимает около 200 МБ памяти, но открывается мгновенно."
+      }
     },
     "actions": {
       "appDirectories": "Директории приложения",
@@ -480,7 +487,8 @@
     "whatsNew": "что нового, журнал изменений, примечания к выпуску, версия, обновление, новости",
     "autostart": "автозапуск, запуск, вход в систему, загрузка, система",
     "extensions": "extensions, plugins, addons, configuration, settings",
-    "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, video, mute, autoplay"
+    "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, video, mute, autoplay",
+    "performance": "performance, memory, quick view, print, window, launch, preload"
   },
   "drag": {
     "holdShiftToChangeMode": "Удерживайте [Shift], чтобы изменить режим",

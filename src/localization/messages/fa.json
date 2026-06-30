@@ -201,7 +201,14 @@
       "launchAppInHiddenState": "راه اندازی برنامه در حالت مخفی",
       "decreaseZoomLevel": "کاهش سطح زوم",
       "increaseZoomLevel": "افزایش سطح زوم",
-      "resetZoomLevel": "بازنشانی سطح بزرگنمایی"
+      "resetZoomLevel": "بازنشانی سطح بزرگنمایی",
+      "performance": {
+        "title": "عملکرد",
+        "prelaunchQuickViewWindow": "نگه داشتن پنجره Quick View در حافظه",
+        "prelaunchQuickViewWindowDescription": "حدود ۲۰۰ مگابایت حافظه مصرف می‌کند، اما فوراً باز می‌شود.",
+        "prelaunchPrintViewWindow": "نگه داشتن پنجره چاپ در حافظه",
+        "prelaunchPrintViewWindowDescription": "حدود ۲۰۰ مگابایت حافظه مصرف می‌کند، اما فوراً باز می‌شود."
+      }
     },
     "actions": {
       "appDirectories": "پوشه‌های برنامه",
@@ -447,7 +454,8 @@
     "whatsNew": "تازه‌ها، تغییرات، یادداشت‌های نسخه، نسخه، به‌روزرسانی، اخبار",
     "autostart": "اجرای خودکار، راه‌اندازی، ورود، سیستم، بوت",
     "extensions": "extensions, plugins, addons, configuration, settings",
-    "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, video, mute, autoplay"
+    "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, video, mute, autoplay",
+    "performance": "performance, memory, quick view, print, window, launch, preload"
   },
   "drag": {
     "holdShiftToChangeMode": "برای تغییر حالت، [Shift] را نگه دارید",

@@ -205,7 +205,14 @@
       "launchAppInHiddenState": "Uygulamayı gizli durumda başlat",
       "decreaseZoomLevel": "Yakınlaştırma seviyesini azalt",
       "increaseZoomLevel": "Yakınlaştırma seviyesini artır",
-      "resetZoomLevel": "Zoom seviyesini sıfırla"
+      "resetZoomLevel": "Zoom seviyesini sıfırla",
+      "performance": {
+        "title": "Performans",
+        "prelaunchQuickViewWindow": "Quick View penceresini bellekte tut",
+        "prelaunchQuickViewWindowDescription": "Yaklaşık 200 MB bellek kullanır, ancak anında açılır.",
+        "prelaunchPrintViewWindow": "Yazdırma penceresini bellekte tut",
+        "prelaunchPrintViewWindowDescription": "Yaklaşık 200 MB bellek kullanır, ancak anında açılır."
+      }
     },
     "actions": {
       "appDirectories": "Uygulama dizinleri",
@@ -451,7 +458,8 @@
     "whatsNew": "yenilikler, değişiklik günlüğü, sürüm notları, sürüm, güncelleme, haberler",
     "autostart": "otomatik başlatma, başlangıç, oturum açma, sistem, açılış",
     "extensions": "extensions, plugins, addons, configuration, settings",
-    "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, video, mute, autoplay"
+    "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, video, mute, autoplay",
+    "performance": "performance, memory, quick view, print, window, launch, preload"
   },
   "drag": {
     "holdShiftToChangeMode": "Modu değiştirmek için [Shift]'e basılı tutun",

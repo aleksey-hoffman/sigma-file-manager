@@ -234,7 +234,14 @@
       "launchAppInHiddenState": "छुपी हुई स्थिति में ऐप लॉन्च करें",
       "decreaseZoomLevel": "ज़ूम स्तर घटाएँ",
       "increaseZoomLevel": "ज़ूम स्तर बढ़ाएँ",
-      "resetZoomLevel": "ज़ूम स्तर रीसेट करें"
+      "resetZoomLevel": "ज़ूम स्तर रीसेट करें",
+      "performance": {
+        "title": "प्रदर्शन",
+        "prelaunchQuickViewWindow": "Quick View विंडो को मेमोरी में रखें",
+        "prelaunchQuickViewWindowDescription": "लगभग 200 MB मेमोरी लेता है, लेकिन तुरंत खुलता है।",
+        "prelaunchPrintViewWindow": "प्रिंट विंडो को मेमोरी में रखें",
+        "prelaunchPrintViewWindowDescription": "लगभग 200 MB मेमोरी लेता है, लेकिन तुरंत खुलता है।"
+      }
     },
     "actions": {
       "appDirectories": "ऐप निर्देशिकाएँ",
@@ -480,7 +487,8 @@
     "whatsNew": "नया क्या है, चेंजलॉग, रिलीज़ नोट्स, संस्करण, अपडेट, समाचार",
     "autostart": "ऑटोस्टार्ट, स्टार्टअप, बूट, लॉगिन, लॉन्च, सिस्टम, वेक",
     "extensions": "एक्सटेंशन, प्लगइन्स, ऐडऑन, कॉन्फ़िगरेशन, सेटिंग्स",
-    "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, video, mute, autoplay"
+    "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, video, mute, autoplay",
+    "performance": "performance, memory, quick view, print, window, launch, preload"
   },
   "drag": {
     "holdShiftToChangeMode": "मोड बदलने के लिए [Shift] दबाए रखें",

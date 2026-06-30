@@ -10,6 +10,7 @@
   "permissions": [
     "core:default",
     "core:window:allow-close",
+    "core:window:allow-destroy",
     "core:window:allow-minimize",
     "core:window:allow-unminimize",
     "core:window:allow-toggle-maximize",
@@ -23,6 +24,7 @@
     "core:window:allow-set-title",
     "core:window:allow-get-all-windows",
     "core:window:allow-is-visible",
+    "core:webview:allow-create-webview-window",
     "core:event:default",
     "core:webview:allow-set-webview-zoom",
     "core:webview:allow-get-all-webviews",

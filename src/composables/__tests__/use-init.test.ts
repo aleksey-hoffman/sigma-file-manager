@@ -84,10 +84,20 @@ vi.mock('vue', async () => {
   };
 });
 
-vi.mock('vue-router', () => ({
-  useRouter: () => ({
+vi.mock('vue-router', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('vue-router')>();
+  return {
+    ...actual,
+    useRouter: () => ({
+      push: routerPushMock,
+    }),
+  };
+});
+
+vi.mock('@/router', () => ({
+  default: {
     push: routerPushMock,
-  }),
+  },
 }));
 
 vi.mock('@tauri-apps/api/core', () => ({
@@ -271,6 +281,12 @@ vi.mock('@/utils/autostart-sync', () => ({
   applyLaunchAtStartupPreference: applyLaunchAtStartupPreferenceMock,
 }));
 
+vi.mock('@/utils/auxiliary-windows', () => ({
+  prelaunchConfiguredAuxiliaryWindows: vi.fn().mockResolvedValue(undefined),
+  setupAuxiliaryWindowLifecycle: vi.fn().mockResolvedValue(vi.fn()),
+  acquireAuxiliaryWindow: vi.fn().mockResolvedValue(null),
+}));
+
 vi.mock('@/utils/launch-directories', () => ({
   resolveLaunchTargetsFromArgs: resolveLaunchTargetsFromArgsMock,
 }));
@@ -285,6 +301,14 @@ vi.mock('@/utils/window-fullscreen', () => ({
 
 vi.mock('@/utils/app-splash', () => ({
   removeAppSplash: removeAppSplashMock,
+}));
+
+vi.mock('@/utils/open-navigator-directory', () => ({
+  preloadNavigatorRoute: vi.fn(),
+}));
+
+vi.mock('@/utils/path-comparison-volume-cache', () => ({
+  warmPathComparisonVolumeCache: vi.fn().mockResolvedValue(undefined),
 }));
 
 describe('useInit startup restoration', () => {
@@ -366,12 +390,9 @@ describe('useInit startup restoration', () => {
     ]);
 
     const { useInit } = await import('@/composables/use-init');
-    const { init } = useInit();
-    const initPromise = init();
+    const { init, awaitBackgroundTasks } = useInit();
 
-    await flushAsyncWork();
-    await initPromise;
-    await flushAsyncWork();
+    await completeInit(init, awaitBackgroundTasks);
 
     expect(workspacesInitMock).toHaveBeenCalledWith(undefined, { loadInitialTabGroup: false });
     expect(callOrder.indexOf('loadCurrentTabGroup')).toBeGreaterThan(-1);
@@ -417,11 +438,8 @@ describe('useInit startup restoration', () => {
 
     const { useInit } = await import('@/composables/use-init');
     const { init } = useInit();
-    const initPromise = init();
 
-    await flushAsyncWork();
-    await initPromise;
-    await flushAsyncWork();
+    await completeInit(init);
 
     expect(workspacesLoadCurrentTabGroupMock).toHaveBeenCalledTimes(1);
     expect(openOrFocusTabGroupMock).toHaveBeenCalledTimes(1);
@@ -443,11 +461,8 @@ describe('useInit startup restoration', () => {
 
     const { useInit } = await import('@/composables/use-init');
     const { init } = useInit();
-    const initPromise = init();
 
-    await flushAsyncWork();
-    await initPromise;
-    await flushAsyncWork();
+    await completeInit(init);
 
     expect(showWindowMock).toHaveBeenCalledTimes(1);
     expect(setFocusMock).toHaveBeenCalledTimes(1);
@@ -470,11 +485,8 @@ describe('useInit startup restoration', () => {
 
     const { useInit } = await import('@/composables/use-init');
     const { init } = useInit();
-    const initPromise = init();
 
-    await flushAsyncWork();
-    await initPromise;
-    await flushAsyncWork();
+    await completeInit(init);
 
     expect(showWindowMock).toHaveBeenCalledTimes(1);
     expect(setFocusMock).not.toHaveBeenCalled();
@@ -492,11 +504,8 @@ describe('useInit startup restoration', () => {
 
     const { useInit } = await import('@/composables/use-init');
     const { init } = useInit();
-    const initPromise = init();
 
-    await flushAsyncWork();
-    await initPromise;
-    await flushAsyncWork();
+    await completeInit(init);
 
     expect(backgroundMediaRefreshCustomBackgroundsMock).toHaveBeenCalledTimes(1);
     expect(backgroundMediaRefreshCustomBackgroundsMock).toHaveBeenCalledWith(
@@ -516,11 +525,7 @@ describe('useInit startup restoration', () => {
     const { useInit } = await import('@/composables/use-init');
     const { init, awaitBackgroundTasks } = useInit();
 
-    const initPromise = init();
-    await flushAsyncWork();
-    await initPromise;
-    await flushAsyncWork();
-    await awaitBackgroundTasks();
+    await completeInit(init, awaitBackgroundTasks);
 
     expect(workspacesLoadCurrentTabGroupMock).toHaveBeenCalledWith(
       expect.objectContaining({ dirEntryTimeoutMs: expect.any(Number) }),
@@ -551,11 +556,7 @@ describe('useInit startup restoration', () => {
     const { useInit } = await import('@/composables/use-init');
     const { init, awaitBackgroundTasks } = useInit();
 
-    const initPromise = init();
-    await flushAsyncWork();
-    await initPromise;
-    await flushAsyncWork();
-    await awaitBackgroundTasks();
+    await completeInit(init, awaitBackgroundTasks);
 
     expect(getDirEntryMock).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -581,11 +582,8 @@ describe('useInit startup restoration', () => {
 
     const { useInit } = await import('@/composables/use-init');
     const { init } = useInit();
-    const initPromise = init();
 
-    await flushAsyncWork();
-    await initPromise;
-    await flushAsyncWork();
+    await completeInit(init);
 
     expect(hideWindowMock).toHaveBeenCalledTimes(1);
     expect(showWindowMock).not.toHaveBeenCalled();
@@ -597,11 +595,8 @@ describe('useInit startup restoration', () => {
 
     const { useInit } = await import('@/composables/use-init');
     const { init } = useInit();
-    const initPromise = init();
 
-    await flushAsyncWork();
-    await initPromise;
-    await flushAsyncWork();
+    await completeInit(init);
 
     expect(removeAppSplashMock).toHaveBeenCalledTimes(1);
     expect(showWindowMock).not.toHaveBeenCalled();
@@ -631,8 +626,9 @@ describe('useInit startup restoration', () => {
 
     expect(callOrder).toEqual([]);
 
-    const backgroundTasksPromise = awaitBackgroundTasks();
     await vi.runAllTimersAsync();
+    const backgroundTasksPromise = awaitBackgroundTasks();
+    await drainBackgroundWork(backgroundTasksPromise);
     await backgroundTasksPromise;
 
     expect(callOrder).toContain('globalSearch');
@@ -656,9 +652,36 @@ function createLaunchContext(overrides: Partial<{
   };
 }
 
-async function flushAsyncWork() {
-  for (let attemptIndex = 0; attemptIndex < 5; attemptIndex += 1) {
+async function completeInit(
+  init: () => Promise<void>,
+  awaitBackgroundTasks?: () => Promise<void>,
+) {
+  const initPromise = init();
+  await vi.runOnlyPendingTimersAsync();
+  await initPromise;
+
+  if (!awaitBackgroundTasks) {
+    return;
+  }
+
+  await vi.runAllTimersAsync();
+  const backgroundTasksPromise = awaitBackgroundTasks();
+  await drainBackgroundWork(backgroundTasksPromise);
+  await backgroundTasksPromise;
+}
+
+async function drainBackgroundWork(settledPromise: Promise<unknown>) {
+  for (let attemptIndex = 0; attemptIndex < 50; attemptIndex += 1) {
     await Promise.resolve();
-    await vi.runAllTimersAsync();
+    await vi.runOnlyPendingTimersAsync();
+
+    const settled = await Promise.race([
+      settledPromise.then(() => true, () => true),
+      Promise.resolve(false),
+    ]);
+
+    if (settled) {
+      return;
+    }
   }
 }

@@ -234,7 +234,14 @@
       "launchAppInHiddenState": "Zaženi aplikacijo v skritem stanju",
       "decreaseZoomLevel": "Zmanjšaj stopnjo povečave",
       "increaseZoomLevel": "Povečaj stopnjo povečave",
-      "resetZoomLevel": "Ponastavi stopnjo povečave"
+      "resetZoomLevel": "Ponastavi stopnjo povečave",
+      "performance": {
+        "title": "Zmogljivost",
+        "prelaunchQuickViewWindow": "Obdrži okno Quick View v pomnilniku",
+        "prelaunchQuickViewWindowDescription": "Porabi približno 200 MB pomnilnika, vendar se odpre takoj.",
+        "prelaunchPrintViewWindow": "Obdrži okno za tisk v pomnilniku",
+        "prelaunchPrintViewWindowDescription": "Porabi približno 200 MB pomnilnika, vendar se odpre takoj."
+      }
     },
     "actions": {
       "appDirectories": "Mape aplikacije",
@@ -480,7 +487,8 @@
     "whatsNew": "what's new, changelog, release notes, version, update, news",
     "autostart": "autostart, zagon, sistem, prijava, zagon ob zagonu",
     "extensions": "extensions, plugins, addons, configuration, settings",
-    "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, video, mute, autoplay"
+    "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, video, mute, autoplay",
+    "performance": "performance, memory, quick view, print, window, launch, preload"
   },
   "drag": {
     "holdShiftToChangeMode": "Zadržite [Shift] za spremembo načina",

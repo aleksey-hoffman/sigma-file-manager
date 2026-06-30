@@ -38,6 +38,36 @@ use serde::Serialize;
 use tauri::{Emitter, Manager};
 
 const SIGMA_AUTOSTART_CLI_FLAG: &str = "--sigma-autostart";
+const AUXILIARY_WINDOW_RELEASE_EVENT: &str = "auxiliary-window:release";
+const PRINT_VIEW_NATIVE_CLOSE_REQUESTED_EVENT: &str = "print-view:native-close-requested";
+
+fn handle_auxiliary_window_close_requested(
+    window: &tauri::Window,
+    api: &tauri::CloseRequestApi,
+) {
+    let label = window.label();
+
+    if label != "print-view" && label != "quick-view" {
+        return;
+    }
+
+    api.prevent_close();
+
+    if label == "print-view" {
+        let _ = window.emit_to(
+            "print-view",
+            PRINT_VIEW_NATIVE_CLOSE_REQUESTED_EVENT,
+            (),
+        );
+    }
+
+    let _ = window.hide();
+    let _ = window.emit_to(
+        "main",
+        AUXILIARY_WINDOW_RELEASE_EVENT,
+        serde_json::json!({ "label": label }),
+    );
+}
 
 #[derive(Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -393,6 +423,9 @@ pub fn run() {
                 if window.label() == "main" {
                     let _ = window.hide();
                     api.prevent_close();
+                }
+                else {
+                    handle_auxiliary_window_close_requested(window, api);
                 }
             }
             if let tauri::WindowEvent::Destroyed = event {

@@ -234,7 +234,14 @@
       "launchAppInHiddenState": "הפעל את היישום במצב מוסתר",
       "decreaseZoomLevel": "הקטן את רמת הזום",
       "increaseZoomLevel": "הגדל את רמת הזום",
-      "resetZoomLevel": "אפס את רמת הזום"
+      "resetZoomLevel": "אפס את רמת הזום",
+      "performance": {
+        "title": "ביצועים",
+        "prelaunchQuickViewWindow": "השארת חלון Quick View בזיכרון",
+        "prelaunchQuickViewWindowDescription": "משתמש בכ-200 MB זיכרון, אך נפתח מיד.",
+        "prelaunchPrintViewWindow": "השארת חלון ההדפסה בזיכרון",
+        "prelaunchPrintViewWindowDescription": "משתמש בכ-200 MB זיכרון, אך נפתח מיד."
+      }
     },
     "actions": {
       "appDirectories": "תיקיות היישום",
@@ -480,7 +487,8 @@
     "whatsNew": "מה חדש, יומן שינויים, הערות גרסה, גרסה, עדכון, חדשות",
     "autostart": "הפעלה אוטומטית, אתחול, כניסה, התחברות, הפעלה, מערכת",
     "extensions": "תוספים, תוספות, הרחבות, תצורה, הגדרות",
-    "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, video, mute, autoplay"
+    "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, video, mute, autoplay",
+    "performance": "performance, memory, quick view, print, window, launch, preload"
   },
   "drag": {
     "holdShiftToChangeMode": "החזק [Shift] כדי לשנות מצב",

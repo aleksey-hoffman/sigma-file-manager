@@ -158,6 +158,11 @@ export type ChangelogSettings = {
   lastSeenVersion: string;
 };
 
+export type PerformanceSettings = {
+  prelaunchQuickViewWindow: boolean;
+  prelaunchPrintViewWindow: boolean;
+};
+
 export type TextSettings = {
   font: string;
 };
@@ -191,6 +196,7 @@ export type UserSettings = {
   tooltipDelayMs: number;
   launchAtStartup: boolean;
   launchAtStartupHidden: boolean;
+  performance: PerformanceSettings;
   appUpdates: AppUpdatesSettings;
   changelog: ChangelogSettings;
 };

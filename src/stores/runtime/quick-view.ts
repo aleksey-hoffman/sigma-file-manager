@@ -4,14 +4,19 @@
 
 import { defineStore } from 'pinia';
 import { ref, computed, markRaw, shallowRef } from 'vue';
-import { getAllWindows, Window, getCurrentWindow } from '@tauri-apps/api/window';
-import { emit, listen, type UnlistenFn } from '@tauri-apps/api/event';
+import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
 import { convertFileSrc, invoke } from '@tauri-apps/api/core';
 import { toast, ToastStatic } from '@/components/ui/toaster';
 import { i18n } from '@/localization';
 import type { DirContents } from '@/types/dir-entry';
 import { getParentDirectory } from '@/utils/normalize-path';
+import {
+  emitAuxiliaryWindowEvent,
+  findAuxiliaryWindow,
+  releaseAuxiliaryWindow,
+  runAuxiliaryWindowTask,
+} from '@/utils/auxiliary-windows';
 
 export type QuickViewFileType = 'image' | 'video' | 'audio' | 'pdf' | 'text' | 'unsupported';
 
@@ -147,11 +152,28 @@ export const QUICK_VIEW_DISPLAYED_PATH_CHANGED_EVENT = 'quick-view:displayed-pat
 export const QUICK_VIEW_LOAD_FILE_EVENT = 'quick-view:load-file';
 export const PRINT_VIEW_LOAD_FILE_EVENT = 'quick-view:load-file:print-view';
 
+async function runAuxiliaryWindowSteps(
+  isCurrent: () => boolean,
+  steps: Array<() => Promise<void | boolean>>,
+): Promise<boolean> {
+  for (const step of steps) {
+    if (!isCurrent()) {
+      return false;
+    }
+
+    const stepResult = await step();
+
+    if (stepResult === false) {
+      return false;
+    }
+  }
+
+  return isCurrent();
+}
+
 export const useQuickViewStore = defineStore('quickView', () => {
   const currentFilePath = ref<string | null>(null);
   const isLoading = ref(false);
-  const quickViewWindow = ref<Window | null>(null);
-  const printViewWindow = ref<Window | null>(null);
   const lastOpenedPath = ref<string | null>(null);
   const displayedPathEventUnlisteners = shallowRef<UnlistenFn[]>([]);
 
@@ -170,34 +192,12 @@ export const useQuickViewStore = defineStore('quickView', () => {
     return getQuickViewDisplayUrl(currentFilePath.value);
   });
 
-  async function getQuickViewWindow(): Promise<Window | null> {
-    if (quickViewWindow.value) {
-      return quickViewWindow.value;
-    }
-
-    const allWindows = await getAllWindows();
-    const quickView = allWindows.find(windowItem => windowItem.label === 'quick-view');
-
-    if (quickView) {
-      quickViewWindow.value = quickView;
-    }
-
-    return quickViewWindow.value;
+  async function getQuickViewWindow() {
+    return findAuxiliaryWindow('quick-view');
   }
 
-  async function getPrintViewWindow(): Promise<Window | null> {
-    if (printViewWindow.value) {
-      return printViewWindow.value;
-    }
-
-    const allWindows = await getAllWindows();
-    const printView = allWindows.find(windowItem => windowItem.label === 'print-view');
-
-    if (printView) {
-      printViewWindow.value = printView;
-    }
-
-    return printViewWindow.value;
+  async function getPrintViewWindow() {
+    return findAuxiliaryWindow('print-view');
   }
 
   function showUnsupportedFileToast(
@@ -231,28 +231,27 @@ export const useQuickViewStore = defineStore('quickView', () => {
       return false;
     }
 
-    lastOpenedPath.value = path;
+    const opened = await runAuxiliaryWindowTask('quick-view', async ({ window: quickWindow, isCurrent }) => {
+      return runAuxiliaryWindowSteps(isCurrent, [
+        () => quickWindow.setTitle(`Sigma File Manager | Quick View - ${getFileName(path)}`),
+        () => emitAuxiliaryWindowEvent('quick-view', QUICK_VIEW_LOAD_FILE_EVENT, {
+          path,
+          siblingPaths:
+            siblingPaths === undefined || siblingPaths === null || siblingPaths.length === 0
+              ? null
+              : siblingPaths,
+        }),
+        () => quickWindow.center(),
+        () => quickWindow.show(),
+        () => quickWindow.setFocus(),
+      ]);
+    });
 
-    const quickWindow = await getQuickViewWindow();
-
-    if (quickWindow) {
-      const title = `Sigma File Manager | Quick View - ${getFileName(path)}`;
-      await quickWindow.setTitle(title);
-
-      await emit(QUICK_VIEW_LOAD_FILE_EVENT, {
-        path,
-        siblingPaths:
-          siblingPaths === undefined || siblingPaths === null || siblingPaths.length === 0
-            ? null
-            : siblingPaths,
-      });
-
-      await quickWindow.center();
-      await quickWindow.show();
-      await quickWindow.setFocus();
+    if (opened) {
+      lastOpenedPath.value = path;
     }
 
-    return true;
+    return opened ?? false;
   }
 
   async function openPrintViewFromMainWindow(path: string): Promise<boolean> {
@@ -263,22 +262,24 @@ export const useQuickViewStore = defineStore('quickView', () => {
       return false;
     }
 
-    const printWindow = await getPrintViewWindow();
+    const opened = await runAuxiliaryWindowTask('print-view', async ({ window: printWindow, isCurrent }) => {
+      return runAuxiliaryWindowSteps(isCurrent, [
+        () => printWindow.setTitle(`Sigma File Manager | Print - ${getFileName(path)}`),
+        () => printWindow.center(),
+        () => printWindow.show(),
+        () => printWindow.setFocus(),
+        async () => {
+          const didEmitLoadEvent = await emitAuxiliaryWindowEvent('print-view', PRINT_VIEW_LOAD_FILE_EVENT, {
+            path,
+            siblingPaths: null,
+          });
 
-    if (!printWindow) {
-      return false;
-    }
-
-    await printWindow.setTitle(`Sigma File Manager | Print - ${getFileName(path)}`);
-    await emit(PRINT_VIEW_LOAD_FILE_EVENT, {
-      path,
-      siblingPaths: null,
+          return didEmitLoadEvent;
+        },
+      ]);
     });
-    await printWindow.center();
-    await printWindow.show();
-    await printWindow.setFocus();
 
-    return true;
+    return opened ?? false;
   }
 
   function loadFile(path: string): void {
@@ -287,21 +288,8 @@ export const useQuickViewStore = defineStore('quickView', () => {
   }
 
   async function closeWindow(): Promise<void> {
-    const currentWindow = getCurrentWindow();
-
-    if (currentWindow.label === 'quick-view') {
-      await currentWindow.hide();
-      currentFilePath.value = null;
-    }
-    else {
-      const quickWindow = await getQuickViewWindow();
-
-      if (quickWindow) {
-        await quickWindow.hide();
-      }
-
-      lastOpenedPath.value = null;
-    }
+    await releaseAuxiliaryWindow('quick-view');
+    lastOpenedPath.value = null;
   }
 
   async function isWindowVisible(): Promise<boolean> {

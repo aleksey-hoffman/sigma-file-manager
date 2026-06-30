@@ -234,7 +234,14 @@
       "launchAppInHiddenState": "Launch app in hidden state",
       "decreaseZoomLevel": "Decrease zoom level",
       "increaseZoomLevel": "Increase zoom level",
-      "resetZoomLevel": "Reset zoom level"
+      "resetZoomLevel": "Reset zoom level",
+      "performance": {
+        "title": "Performance",
+        "prelaunchQuickViewWindow": "Keep Quick View window in memory",
+        "prelaunchQuickViewWindowDescription": "Uses about 200 MB of memory, but opens instantly.",
+        "prelaunchPrintViewWindow": "Keep Print window in memory",
+        "prelaunchPrintViewWindowDescription": "Uses about 200 MB of memory, but opens instantly."
+      }
     },
     "actions": {
       "appDirectories": "App directories",
@@ -480,6 +487,7 @@
     "experimental": "advanced, experimental, default file manager, file explorer, registry, terminal, shell",
     "whatsNew": "what's new, changelog, release notes, version, update, news",
     "autostart": "autostart, startup, boot, login, launch, system, wake",
+    "performance": "performance, memory, quick view, print, window, launch, preload",
     "extensions": "extensions, plugins, addons, configuration, settings"
   },
   "drag": {

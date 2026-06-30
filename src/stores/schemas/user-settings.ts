@@ -16,7 +16,7 @@ import {
 import { BUILTIN_NAVIGATOR_ICON_THEME_IDS } from '@/types/icon-theme';
 
 export const USER_SETTINGS_SCHEMA_VERSION_KEY = '__schemaVersion';
-export const USER_SETTINGS_SCHEMA_VERSION = 18;
+export const USER_SETTINGS_SCHEMA_VERSION = 19;
 
 export const DEFAULT_GLOBAL_SEARCH_IGNORED_PATHS = [
   '/node_modules',
@@ -411,6 +411,11 @@ async function migrateUserSettingsStep(storage: StorageAdapter, fromVersion: num
   if (fromVersion === 17 && toVersion === 18) {
     await setDefaultBooleanIfMissing(storage, 'navigator.infoPanel.muteVideoPreviewByDefault', false);
     await setDefaultBooleanIfMissing(storage, 'navigator.infoPanel.autoplayVideoPreview', false);
+  }
+
+  if (fromVersion === 18 && toVersion === 19) {
+    await setDefaultBooleanIfMissing(storage, 'performance.prelaunchQuickViewWindow', true);
+    await setDefaultBooleanIfMissing(storage, 'performance.prelaunchPrintViewWindow', false);
   }
 
   if (fromVersion === 6 && toVersion === 7) {

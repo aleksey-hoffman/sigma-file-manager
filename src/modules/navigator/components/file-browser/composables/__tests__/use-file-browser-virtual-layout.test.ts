@@ -162,9 +162,18 @@ describe('resolveViewportContentWidth', () => {
     contentInner.appendChild(entriesContainer);
     viewport.appendChild(contentInner);
 
-    Object.defineProperty(viewport, 'clientWidth', { value: 950, configurable: true });
-    Object.defineProperty(contentInner, 'clientWidth', { value: 900, configurable: true });
-    Object.defineProperty(entriesContainer, 'clientWidth', { value: 850, configurable: true });
+    Object.defineProperty(viewport, 'clientWidth', {
+      value: 950,
+      configurable: true,
+    });
+    Object.defineProperty(contentInner, 'clientWidth', {
+      value: 900,
+      configurable: true,
+    });
+    Object.defineProperty(entriesContainer, 'clientWidth', {
+      value: 850,
+      configurable: true,
+    });
 
     expect(resolveViewportContentWidth(viewport)).toBe(850);
   });
@@ -176,8 +185,14 @@ describe('resolveViewportContentWidth', () => {
     contentInner.className = 'file-browser__content-inner';
     viewport.appendChild(contentInner);
 
-    Object.defineProperty(viewport, 'clientWidth', { value: 950, configurable: true });
-    Object.defineProperty(contentInner, 'clientWidth', { value: 850, configurable: true });
+    Object.defineProperty(viewport, 'clientWidth', {
+      value: 950,
+      configurable: true,
+    });
+    Object.defineProperty(contentInner, 'clientWidth', {
+      value: 850,
+      configurable: true,
+    });
 
     expect(resolveViewportContentWidth(viewport)).toBe(850);
     expect(getGridColumnCount(resolveViewportContentWidth(viewport))).toBe(4);

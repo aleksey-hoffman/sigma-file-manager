@@ -33,6 +33,10 @@ import { getCurrentWindow } from '@tauri-apps/api/window';
 import { SIGMA_AUTOSTART_CLI_FLAG } from '@/constants/autostart';
 import { applyLaunchAtStartupPreference } from '@/utils/autostart-sync';
 import {
+  prelaunchConfiguredAuxiliaryWindows,
+  setupAuxiliaryWindowLifecycle,
+} from '@/utils/auxiliary-windows';
+import {
   resolveLaunchTargetsFromArgs,
   type LaunchContext,
 } from '@/utils/launch-directories';
@@ -70,6 +74,7 @@ export function useInit() {
   const { initAutoCheck } = useAppUpdater();
   useClipboardFocusSync();
   let appLaunchArgsUnlisten: UnlistenFn | null = null;
+  let auxiliaryWindowLifecycleUnlisten: UnlistenFn | null = null;
   const backgroundTasks = new Set<Promise<void>>();
 
   function isMainWebviewWindow(): boolean {
@@ -412,6 +417,21 @@ export function useInit() {
 
     if (isMainWindow) {
       runInBackgroundWithTrace(
+        'background:auxiliaryWindows.prelaunchConfigured',
+        () => prelaunchConfiguredAuxiliaryWindows(),
+        'Failed to prelaunch auxiliary windows:',
+      );
+      runInBackgroundWithTrace(
+        'background:auxiliaryWindows.setupLifecycle',
+        async () => {
+          auxiliaryWindowLifecycleUnlisten = await setupAuxiliaryWindowLifecycle();
+        },
+        'Failed to set up auxiliary window lifecycle:',
+      );
+    }
+
+    if (isMainWindow) {
+      runInBackgroundWithTrace(
         'background:appUpdater.initAutoCheck',
         () => initAutoCheck(),
         'Failed to initialize app updater:',
@@ -439,6 +459,11 @@ export function useInit() {
     }
 
     appWindowStore.disposeMainWindowStateListeners();
+
+    if (auxiliaryWindowLifecycleUnlisten) {
+      void auxiliaryWindowLifecycleUnlisten();
+      auxiliaryWindowLifecycleUnlisten = null;
+    }
   });
 
   return {

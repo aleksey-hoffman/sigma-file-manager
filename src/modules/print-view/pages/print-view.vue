@@ -8,7 +8,7 @@ import {
   computed, nextTick, onMounted, onUnmounted, ref,
 } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { listen, type UnlistenFn } from '@tauri-apps/api/event';
+import { listen, emitTo, type UnlistenFn } from '@tauri-apps/api/event';
 import { invoke } from '@tauri-apps/api/core';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { FileWarningIcon } from '@lucide/vue';
@@ -21,6 +21,13 @@ import {
   type QuickViewFileType,
 } from '@/stores/runtime/quick-view';
 import { decodeTextFileBytesWithEncoding } from '@/utils/decode-text-file-bytes';
+import {
+  buildAuxiliaryWindowReadyPayload,
+  isAuxiliaryWindowPrelaunchEnabled,
+  PRINT_VIEW_NATIVE_CLOSE_REQUESTED_EVENT,
+  PRINT_VIEW_WINDOW_READY_EVENT,
+  releaseAuxiliaryWindow,
+} from '@/utils/auxiliary-windows';
 
 const PRINT_ROOT_CLASS = 'sfm-print-view-active';
 
@@ -37,12 +44,13 @@ const printSurfaceEpoch = ref(0);
 
 let unlistenLoadFile: UnlistenFn | null = null;
 let unlistenCloseRequested: UnlistenFn | null = null;
+let unlistenNativeCloseRequested: UnlistenFn | null = null;
 let textPreviewRequestId = 0;
 let loadPrintRequestId = 0;
 let printFallbackTimeout: number | null = null;
-let isClosingAfterPrint = false;
 let awaitingMediaForPrint = false;
 let printAutoCloseEpoch = 0;
+let closePrintWindowGeneration = 0;
 
 function bumpPrintAutoCloseEpoch(): number {
   printAutoCloseEpoch += 1;
@@ -79,35 +87,71 @@ function schedulePrintFallback() {
   printFallbackTimeout = window.setTimeout(() => {
     if (awaitingMediaForPrint) {
       awaitingMediaForPrint = false;
-      void runNativeWebviewPrint();
+      initiatePrintAfterStablePaint();
     }
   }, 5000);
 }
 
-async function closePrintWindow() {
-  if (isClosingAfterPrint) {
-    return;
-  }
-
-  isClosingAfterPrint = true;
+function cancelPendingPrintWork() {
   bumpPrintAutoCloseEpoch();
   clearPrintFallback();
   awaitingMediaForPrint = false;
   ++textPreviewRequestId;
   ++loadPrintRequestId;
+}
+
+async function resetPrintWindowState() {
+  cancelPendingPrintWork();
+  currentFilePath.value = null;
+  textPreview.value = '';
+  textPreviewError.value = null;
+  await nextTick();
+  printSurfaceEpoch.value += 1;
+  await nextTick();
+}
+
+function isClosePrintWindowGenerationCurrent(closeGeneration: number) {
+  return closeGeneration === closePrintWindowGeneration;
+}
+
+async function closePrintWindow(options: {
+  delayBeforeRelease?: boolean;
+  userInitiated?: boolean;
+} = {}) {
+  cancelPendingPrintWork();
+  const closeGeneration = ++closePrintWindowGeneration;
+
+  const shouldDelayRelease = Boolean(
+    options.delayBeforeRelease
+    && !options.userInitiated
+    && !isAuxiliaryWindowPrelaunchEnabled('print-view'),
+  );
+
+  await resetPrintWindowState();
+
+  if (!isClosePrintWindowGenerationCurrent(closeGeneration)) {
+    return;
+  }
 
   try {
-    currentFilePath.value = null;
-    textPreview.value = '';
-    textPreviewError.value = null;
-    await nextTick();
-    printSurfaceEpoch.value += 1;
-    await nextTick();
     await currentWindow.hide();
   }
-  finally {
-    isClosingAfterPrint = false;
+  catch {
   }
+
+  if (!isClosePrintWindowGenerationCurrent(closeGeneration)) {
+    return;
+  }
+
+  if (shouldDelayRelease) {
+    await new Promise<void>(resolve => setTimeout(resolve, 300));
+
+    if (!isClosePrintWindowGenerationCurrent(closeGeneration)) {
+      return;
+    }
+  }
+
+  await releaseAuxiliaryWindow('print-view');
 }
 
 function runNativeWebviewPrint() {
@@ -124,31 +168,27 @@ function runNativeWebviewPrint() {
       return;
     }
 
-    void closePrintWindow();
+    void closePrintWindow({ delayBeforeRelease: true });
   }, { once: true });
 
   window.focus();
   window.print();
 }
 
-function initiatePrintAfterStablePaint() {
-  void nextTick(() => {
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        runNativeWebviewPrint();
-      });
-    });
-  });
+async function waitForStablePrintPaint() {
+  await nextTick();
+  await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+  await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+  await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
 }
 
-function notifyPrintableLoaded() {
-  if (!awaitingMediaForPrint) {
-    return;
-  }
+function initiatePrintAfterStablePaint() {
+  void waitForStablePrintPaint().then(runNativeWebviewPrint);
+}
 
+function handlePrintMediaError() {
   awaitingMediaForPrint = false;
   clearPrintFallback();
-  initiatePrintAfterStablePaint();
 }
 
 async function loadTextFileForPrint(path: string) {
@@ -183,52 +223,168 @@ async function loadTextFileForPrint(path: string) {
   }
 }
 
-async function maybeNotifyPrintableAlreadyReady(
+async function waitForDocumentVisible(timeoutMs = 3000) {
+  const deadline = Date.now() + timeoutMs;
+
+  while (document.visibilityState === 'hidden' && Date.now() < deadline) {
+    await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+  }
+}
+
+async function waitForPrintSurfaceElement(
   requestIdSnapshot: number,
   mediaKind: QuickViewFileType,
-) {
-  await nextTick();
+): Promise<HTMLImageElement | HTMLVideoElement | HTMLIFrameElement | null> {
+  for (let attemptIndex = 0; attemptIndex < 20; attemptIndex += 1) {
+    if (requestIdSnapshot !== loadPrintRequestId) {
+      return null;
+    }
 
-  if (
-    requestIdSnapshot !== loadPrintRequestId
-    || !awaitingMediaForPrint
-  ) {
-    return;
-  }
+    await nextTick();
 
-  await new Promise<void>((resolve) => {
-    requestAnimationFrame(() => resolve());
-  });
+    if (fileType.value !== mediaKind) {
+      return null;
+    }
 
-  if (
-    requestIdSnapshot !== loadPrintRequestId
-    || !awaitingMediaForPrint
-  ) {
-    return;
-  }
+    if (mediaKind === 'image') {
+      const imageElement = printImageRef.value;
 
-  if (mediaKind === 'image') {
-    const imageElement = printImageRef.value;
+      if (imageElement) {
+        return imageElement;
+      }
+    }
 
-    if (
-      imageElement?.complete
-      && imageElement.naturalWidth > 0
-    ) {
-      notifyPrintableLoaded();
+    if (mediaKind === 'video') {
+      const videoElement = printVideoRef.value;
 
-      return;
+      if (videoElement) {
+        return videoElement;
+      }
+    }
+
+    if (mediaKind === 'pdf') {
+      const pdfElement = pdfIframeRef.value;
+
+      if (pdfElement) {
+        return pdfElement;
+      }
     }
   }
 
-  if (
-    mediaKind === 'video'
-    && printVideoRef.value !== null
-    && printVideoRef.value.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA
-  ) {
-    notifyPrintableLoaded();
+  return null;
+}
 
+async function waitForImagePrintReady(
+  imageElement: HTMLImageElement,
+  requestIdSnapshot: number,
+) {
+  if (!imageElement.complete) {
+    await new Promise<void>((resolve, reject) => {
+      imageElement.addEventListener('load', () => resolve(), { once: true });
+      imageElement.addEventListener('error', () => reject(new Error('Image load failed')), { once: true });
+    });
+  }
+
+  if (requestIdSnapshot !== loadPrintRequestId) {
+    return false;
+  }
+
+  if (imageElement.naturalWidth === 0) {
+    return false;
+  }
+
+  try {
+    await imageElement.decode();
+  }
+  catch {
+  }
+
+  if (requestIdSnapshot !== loadPrintRequestId || !awaitingMediaForPrint) {
+    return false;
+  }
+
+  await waitForStablePrintPaint();
+
+  return requestIdSnapshot === loadPrintRequestId && awaitingMediaForPrint;
+}
+
+async function waitForVideoPrintReady(
+  videoElement: HTMLVideoElement,
+  requestIdSnapshot: number,
+) {
+  if (videoElement.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) {
+    await new Promise<void>((resolve, reject) => {
+      videoElement.addEventListener('loadeddata', () => resolve(), { once: true });
+      videoElement.addEventListener('error', () => reject(new Error('Video load failed')), { once: true });
+    });
+  }
+
+  if (requestIdSnapshot !== loadPrintRequestId || !awaitingMediaForPrint) {
+    return false;
+  }
+
+  await waitForStablePrintPaint();
+
+  return requestIdSnapshot === loadPrintRequestId && awaitingMediaForPrint;
+}
+
+async function waitForPdfPrintReady(
+  pdfElement: HTMLIFrameElement,
+  requestIdSnapshot: number,
+) {
+  const isAlreadyLoaded = pdfElement.contentDocument?.readyState === 'complete';
+
+  if (!isAlreadyLoaded) {
+    await new Promise<void>((resolve, reject) => {
+      pdfElement.addEventListener('load', () => resolve(), { once: true });
+      pdfElement.addEventListener('error', () => reject(new Error('PDF load failed')), { once: true });
+    });
+  }
+
+  if (requestIdSnapshot !== loadPrintRequestId) {
+    return false;
+  }
+
+  await waitForStablePrintPaint();
+
+  return requestIdSnapshot === loadPrintRequestId;
+}
+
+async function waitForMediaPrintReady(
+  requestIdSnapshot: number,
+  mediaKind: QuickViewFileType,
+) {
+  await waitForDocumentVisible();
+
+  if (requestIdSnapshot !== loadPrintRequestId || !awaitingMediaForPrint) {
+    return false;
+  }
+
+  const mediaElement = await waitForPrintSurfaceElement(requestIdSnapshot, mediaKind);
+
+  if (!mediaElement) {
+    return false;
+  }
+
+  if (mediaKind === 'image') {
+    return waitForImagePrintReady(mediaElement as HTMLImageElement, requestIdSnapshot);
+  }
+
+  if (mediaKind === 'video') {
+    return waitForVideoPrintReady(mediaElement as HTMLVideoElement, requestIdSnapshot);
+  }
+
+  return false;
+}
+
+function completeMediaPrintWhenReady(isReady: boolean) {
+  if (!isReady || !awaitingMediaForPrint) {
     return;
   }
+
+  awaitingMediaForPrint = false;
+  clearPrintFallback();
+  runNativeWebviewPrint();
 }
 
 async function loadPrintFile(path: string) {
@@ -242,13 +398,9 @@ async function loadPrintFile(path: string) {
   textPreviewError.value = null;
 
   const mediaType = determineFileType(path);
+  const shouldAutoPrintAfterMediaReady = mediaType === 'image' || mediaType === 'video';
 
-  if (
-    mediaType !== 'text'
-    && mediaType !== 'unsupported'
-    && mediaType !== 'audio'
-    && mediaType !== 'pdf'
-  ) {
+  if (shouldAutoPrintAfterMediaReady) {
     awaitingMediaForPrint = true;
     schedulePrintFallback();
   }
@@ -280,7 +432,39 @@ async function loadPrintFile(path: string) {
     return;
   }
 
-  await maybeNotifyPrintableAlreadyReady(requestId, mediaType);
+  if (mediaType === 'pdf') {
+    await waitForDocumentVisible();
+
+    if (requestId !== loadPrintRequestId) {
+      return;
+    }
+
+    const pdfElement = await waitForPrintSurfaceElement(requestId, 'pdf');
+
+    if (pdfElement) {
+      try {
+        await waitForPdfPrintReady(pdfElement as HTMLIFrameElement, requestId);
+      }
+      catch {
+      }
+    }
+
+    if (requestId !== loadPrintRequestId) {
+      return;
+    }
+
+    void invoke('configure_webview_hide_pdf_more_settings').catch(() => {});
+    return;
+  }
+
+  try {
+    const isReady = await waitForMediaPrintReady(requestId, mediaType);
+    completeMediaPrintWhenReady(isReady);
+  }
+  catch {
+    awaitingMediaForPrint = false;
+    clearPrintFallback();
+  }
 }
 
 function handleKeydown(event: KeyboardEvent) {
@@ -289,7 +473,11 @@ function handleKeydown(event: KeyboardEvent) {
   }
 
   event.preventDefault();
-  void closePrintWindow();
+  void closePrintWindow({ userInitiated: true });
+}
+
+async function handleNativeCloseRequested() {
+  await resetPrintWindowState();
 }
 
 async function setupEventListeners() {
@@ -300,9 +488,16 @@ async function setupEventListeners() {
     },
   );
 
-  unlistenCloseRequested = await currentWindow.onCloseRequested(async (event) => {
+  unlistenNativeCloseRequested = await listen(
+    PRINT_VIEW_NATIVE_CLOSE_REQUESTED_EVENT,
+    () => {
+      void handleNativeCloseRequested();
+    },
+  );
+
+  unlistenCloseRequested = await currentWindow.onCloseRequested((event) => {
     event.preventDefault();
-    await closePrintWindow();
+    void closePrintWindow({ userInitiated: true });
   });
 }
 
@@ -310,6 +505,14 @@ onMounted(async () => {
   document.documentElement.classList.add(PRINT_ROOT_CLASS);
   window.addEventListener('keydown', handleKeydown, true);
   await setupEventListeners();
+  void emitTo(
+    {
+      kind: 'WebviewWindow',
+      label: 'main',
+    },
+    PRINT_VIEW_WINDOW_READY_EVENT,
+    buildAuxiliaryWindowReadyPayload(),
+  );
   void invoke('configure_webview_hide_pdf_more_settings').catch(() => {});
 });
 
@@ -324,6 +527,10 @@ onUnmounted(() => {
 
   if (unlistenCloseRequested) {
     unlistenCloseRequested();
+  }
+
+  if (unlistenNativeCloseRequested) {
+    unlistenNativeCloseRequested();
   }
 });
 </script>
@@ -341,7 +548,7 @@ onUnmounted(() => {
         :src="fileAssetUrl"
         :alt="fileName"
         class="print-view-mount__image"
-        @load="notifyPrintableLoaded"
+        @error="handlePrintMediaError"
       >
 
       <video
@@ -350,7 +557,7 @@ onUnmounted(() => {
         :key="`${currentFilePath}-video`"
         :src="fileAssetUrl"
         class="print-view-mount__video"
-        @loadeddata="notifyPrintableLoaded"
+        @error="handlePrintMediaError"
       />
 
       <iframe
@@ -359,7 +566,7 @@ onUnmounted(() => {
         :key="`${currentFilePath}-pdf`"
         :src="fileAssetUrl"
         class="print-view-mount__pdf"
-        @load="notifyPrintableLoaded"
+        @error="handlePrintMediaError"
       />
 
       <pre

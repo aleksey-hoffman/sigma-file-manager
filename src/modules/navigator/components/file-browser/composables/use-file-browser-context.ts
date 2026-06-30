@@ -66,7 +66,10 @@ export interface FileBrowserContext {
     needsPassword?: boolean,
     needsEncoding?: boolean,
     detectedEncoding?: string,
-  ) => Promise<{ password: string; encoding: string | undefined } | null>;
+  ) => Promise<{
+    password: string;
+    encoding: string | undefined;
+  } | null>;
 }
 
 export const FILE_BROWSER_CONTEXT_KEY: InjectionKey<FileBrowserContext> = Symbol('FileBrowserContext');

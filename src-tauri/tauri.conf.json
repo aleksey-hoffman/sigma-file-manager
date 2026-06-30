@@ -28,6 +28,7 @@
       },
       {
         "label": "quick-view",
+        "create": false,
         "title": "Sigma File Manager | Quick View",
         "width": 1280,
         "height": 720,
@@ -42,6 +43,7 @@
       },
       {
         "label": "print-view",
+        "create": false,
         "title": "Sigma File Manager | Print",
         "width": 1280,
         "height": 720,

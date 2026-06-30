@@ -560,7 +560,7 @@ function getActivePaneRef(): FileBrowserInstance | undefined {
 }
 
 function readPaneSelectedEntries(pane: FileBrowserInstance): DirEntry[] {
-  const paneSelection = pane.selectedEntries;
+  const paneSelection = pane.selectedEntries as Ref<DirEntry[]> | DirEntry[] | undefined;
 
   if (!paneSelection) {
     return [];
@@ -570,7 +570,7 @@ function readPaneSelectedEntries(pane: FileBrowserInstance): DirEntry[] {
     return [...paneSelection];
   }
 
-  return [...(paneSelection.value ?? [])];
+  return [...paneSelection.value];
 }
 
 function syncActivePaneSelectionToGlobal() {

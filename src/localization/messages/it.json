@@ -205,7 +205,14 @@
       "launchAppInHiddenState": "Avvia app in uno stato nascosto",
       "decreaseZoomLevel": "Diminuisci il livello di zoom",
       "increaseZoomLevel": "Aumenta il livello di zoom",
-      "resetZoomLevel": "Reimposta livello di zoom"
+      "resetZoomLevel": "Reimposta livello di zoom",
+      "performance": {
+        "title": "Prestazioni",
+        "prelaunchQuickViewWindow": "Mantieni la finestra Quick View in memoria",
+        "prelaunchQuickViewWindowDescription": "Usa circa 200 MB di memoria, ma si apre all'istante.",
+        "prelaunchPrintViewWindow": "Mantieni la finestra di stampa in memoria",
+        "prelaunchPrintViewWindowDescription": "Usa circa 200 MB di memoria, ma si apre all'istante."
+      }
     },
     "actions": {
       "appDirectories": "Directory dell'applicazione",
@@ -451,7 +458,8 @@
     "whatsNew": "novità, registro modifiche, note di rilascio, versione, aggiornamento, notizie",
     "autostart": "avvio automatico, avvio, boot, accesso, sistema, login",
     "extensions": "extensions, plugins, addons, configuration, settings",
-    "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, video, mute, autoplay"
+    "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, video, mute, autoplay",
+    "performance": "performance, memory, quick view, print, window, launch, preload"
   },
   "drag": {
     "holdShiftToChangeMode": "Tieni premuto il tasto [Shift] per cambiare modalità",
