@@ -35,3 +35,13 @@ export function resolveManifestBinaryAsset(
 
   return exactArchAsset ?? matchingAssets[0];
 }
+
+export function filterPlatformBinaryDefinitions(
+  binaryDefinitions: ManifestBinaryDefinition[],
+  platform: PlatformOS,
+  arch: PlatformArch | string,
+): ManifestBinaryDefinition[] {
+  return binaryDefinitions.filter((binaryDefinition) => {
+    return resolveManifestBinaryAsset(binaryDefinition, platform, arch) !== null;
+  });
+}

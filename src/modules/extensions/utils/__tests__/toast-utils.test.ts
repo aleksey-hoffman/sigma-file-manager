@@ -9,11 +9,16 @@ import type { ExtensionManifest, InstalledExtensionData, ThemeOnlyApiExtensionMa
 
 const {
   installedExtensions,
+  customBinaryPreferences,
   openSettingsTabMock,
   toastCustomMock,
   toastDismissMock,
 } = vi.hoisted(() => ({
   installedExtensions: {} as Record<string, InstalledExtensionData>,
+  customBinaryPreferences: {} as Record<string, {
+    mode: 'managed' | 'custom';
+    customPath?: string;
+  }>,
   openSettingsTabMock: vi.fn(),
   toastCustomMock: vi.fn(),
   toastDismissMock: vi.fn(),
@@ -27,7 +32,9 @@ vi.mock('@/stores/storage/extensions', () => ({
   useExtensionsStorageStore: () => ({
     extensionsData: {
       installedExtensions,
+      customBinaryPreferences,
     },
+    getBinaryPathPreference: (binaryId: string) => customBinaryPreferences[binaryId] ?? { mode: 'managed' },
   }),
 }));
 
@@ -47,16 +54,27 @@ vi.mock('@/localization', () => ({
       locale: {
         value: 'en',
       },
-      t: (key: string) => ({
+      t: (key: string, params?: Record<string, unknown>) => ({
         'featureExtension': 'Extension',
         'openSettings': 'Open settings',
         'extensions.themesInstalled': 'Themes were installed',
+        'extensions.api.extensionReady': 'Extension is ready',
+        'extensions.reusedDependencies': `Reused ${params?.count} existing dependencies`,
+        'extensions.binaries.savedUsingLocalBinary': `${params?.name} binary is now handled locally`,
+        'extensions.binaries.savedManagedAutomatically': `${params?.name} binary is now handled automatically`,
       })[key] ?? key,
     },
   },
 }));
 
-import { showThemesInstalledToast } from '@/modules/extensions/utils/toast-utils';
+vi.mock('@/modules/extensions/api', () => ({
+  getBinaryDownloadCount: () => 0,
+  clearBinaryDownloadCount: vi.fn(),
+  getBinaryReuseCount: () => 0,
+  clearBinaryReuseCount: vi.fn(),
+}));
+
+import { getBinarySetupSavedMessage, getExtensionReadyDescription, showDependenciesInstalledToast, showThemesInstalledToast } from '@/modules/extensions/utils/toast-utils';
 
 function createThemeManifest(): ThemeOnlyApiExtensionManifest {
   return {
@@ -167,5 +185,210 @@ describe('extension toast utilities', () => {
     showThemesInstalledToast(manifest.id, manifest);
 
     expect(toastCustomMock).not.toHaveBeenCalled();
+  });
+});
+
+describe('getBinarySetupSavedMessage', () => {
+  it('returns managed message with binary name when all rows use managed download', () => {
+    expect(getBinarySetupSavedMessage([
+      {
+        name: 'FFmpeg',
+        useManagedDownload: true,
+      },
+    ])).toEqual({
+      key: 'extensions.binaries.savedManagedAutomatically',
+      params: { name: 'FFmpeg' },
+    });
+  });
+
+  it('returns local message with binary name when all rows use custom paths', () => {
+    expect(getBinarySetupSavedMessage([
+      {
+        name: 'FFmpeg',
+        useManagedDownload: false,
+      },
+    ])).toEqual({
+      key: 'extensions.binaries.savedUsingLocalBinary',
+      params: { name: 'FFmpeg' },
+    });
+  });
+
+  it('returns plural local message when multiple rows use custom paths', () => {
+    expect(getBinarySetupSavedMessage([
+      {
+        name: 'FFmpeg',
+        useManagedDownload: false,
+      },
+      {
+        name: 'FFprobe',
+        useManagedDownload: false,
+      },
+    ])).toEqual({
+      key: 'extensions.binaries.savedUsingLocalBinaries',
+      params: { names: 'FFmpeg, FFprobe' },
+    });
+  });
+
+  it('returns updated message when rows use mixed modes', () => {
+    expect(getBinarySetupSavedMessage([
+      {
+        name: 'FFmpeg',
+        useManagedDownload: true,
+      },
+      {
+        name: 'FFprobe',
+        useManagedDownload: false,
+      },
+    ])).toEqual({
+      key: 'extensions.binaries.savedUpdated',
+      params: {},
+    });
+  });
+});
+
+describe('getExtensionReadyDescription', () => {
+  beforeEach(() => {
+    Object.keys(installedExtensions).forEach((extensionId) => {
+      delete installedExtensions[extensionId];
+    });
+    Object.keys(customBinaryPreferences).forEach((binaryId) => {
+      delete customBinaryPreferences[binaryId];
+    });
+  });
+
+  function installExtensionWithBinaries(extensionId: string, binaryIds: Array<{
+    id: string;
+    name: string;
+  }>) {
+    installedExtensions[extensionId] = {
+      version: '1.0.0',
+      enabled: true,
+      autoUpdate: true,
+      installedAt: 1,
+      manifest: {
+        id: extensionId,
+        name: 'Test Extension',
+        version: '1.0.0',
+        repository: 'https://github.com/example/test',
+        license: 'MIT',
+        extensionType: 'api',
+        main: 'index.js',
+        permissions: [],
+        binaries: binaryIds.map(binary => ({
+          id: binary.id,
+          name: binary.name,
+          version: '1.0.0',
+          repository: 'https://github.com/example/binary',
+          assets: [],
+        })),
+        engines: {
+          sigmaFileManager: '>=2.0.0',
+        },
+      },
+      settings: {
+        scopedDirectories: [],
+        customSettings: {},
+      },
+    };
+  }
+
+  it('returns reuse description when managed binaries were reused', () => {
+    installExtensionWithBinaries('test.media', [{
+      id: 'ffmpeg',
+      name: 'FFmpeg',
+    }]);
+
+    expect(getExtensionReadyDescription('test.media', { reuseCount: 1 })).toBe(
+      'Reused 1 existing dependencies',
+    );
+  });
+
+  it('returns local handling description for custom binary installs', () => {
+    installExtensionWithBinaries('test.media', [{
+      id: 'ffmpeg',
+      name: 'FFmpeg',
+    }]);
+    customBinaryPreferences.ffmpeg = {
+      mode: 'custom',
+      customPath: 'C:/tools/ffmpeg.exe',
+    };
+
+    expect(getExtensionReadyDescription('test.media', { reuseCount: 0 })).toBe(
+      'FFmpeg binary is now handled locally',
+    );
+  });
+
+  it('returns automatic handling description for fresh managed installs', () => {
+    installExtensionWithBinaries('test.media', [{
+      id: 'ffmpeg',
+      name: 'FFmpeg',
+    }]);
+
+    expect(getExtensionReadyDescription('test.media', { reuseCount: 0 })).toBe(
+      'FFmpeg binary is now handled automatically',
+    );
+  });
+});
+
+describe('showDependenciesInstalledToast', () => {
+  beforeEach(() => {
+    Object.keys(installedExtensions).forEach((extensionId) => {
+      delete installedExtensions[extensionId];
+    });
+    Object.keys(customBinaryPreferences).forEach((binaryId) => {
+      delete customBinaryPreferences[binaryId];
+    });
+    toastCustomMock.mockReset();
+    toastDismissMock.mockReset();
+  });
+
+  it('shows extension ready toast with local handling description for custom binaries', () => {
+    installedExtensions['test.media'] = {
+      version: '1.0.0',
+      enabled: true,
+      autoUpdate: true,
+      installedAt: 1,
+      manifest: {
+        id: 'test.media',
+        name: 'Media Converter',
+        version: '1.0.0',
+        repository: 'https://github.com/example/media',
+        license: 'MIT',
+        extensionType: 'api',
+        main: 'index.js',
+        permissions: [],
+        binaries: [{
+          id: 'ffmpeg',
+          name: 'FFmpeg',
+          version: '8.1',
+          repository: 'https://github.com/example/ffmpeg',
+          assets: [],
+        }],
+        engines: {
+          sigmaFileManager: '>=2.0.0',
+        },
+      },
+      settings: {
+        scopedDirectories: [],
+        customSettings: {},
+      },
+    };
+    customBinaryPreferences.ffmpeg = {
+      mode: 'custom',
+      customPath: 'C:/tools/ffmpeg.exe',
+    };
+
+    showDependenciesInstalledToast('test.media');
+
+    expect(toastCustomMock).toHaveBeenCalledTimes(1);
+    expect(toastCustomMock.mock.calls[0]?.[1]).toMatchObject({
+      id: 'ext-ready-test.media',
+      componentProps: {
+        data: {
+          subtitle: 'Extension is ready',
+          description: 'FFmpeg binary is now handled locally',
+        },
+      },
+    });
   });
 });

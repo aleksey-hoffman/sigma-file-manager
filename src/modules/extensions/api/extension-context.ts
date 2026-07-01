@@ -4,7 +4,8 @@
 
 import { invoke } from '@tauri-apps/api/core';
 import { i18n } from '@/localization';
-import type { ExtensionPermission } from '@/types/extension';
+import type { ContextMenuContext, ExtensionPermission } from '@/types/extension';
+import { getCurrentPath, getSelectedEntries } from '@/modules/extensions/context';
 import { useExtensionsStorageStore } from '@/stores/storage/extensions';
 import { getPlatformInfo } from '@/modules/extensions/api/platform';
 import { invokeAsExtension } from '@/modules/extensions/runtime/extension-invoke';
@@ -32,6 +33,8 @@ export type ExtensionContext = {
   hasDialogReadAccess: (filePath: string) => boolean;
   grantDialogWriteAccess: (filePath: string) => void;
   consumeDialogWriteAccess: (filePath: string) => boolean;
+  grantSessionAccessFromNavigation: (navigationContext: ContextMenuContext & { currentPath?: string | null }) => void;
+  grantSessionAccessFromCurrentNavigation: () => void;
 };
 
 export function createExtensionContext(
@@ -103,16 +106,84 @@ export function createExtensionContext(
     return isPathWithinDirectory(path, sharedDir);
   }
 
+  function isDriveRootDirectory(directoryPath: string): boolean {
+    const normalizedDirectory = directoryPath.trim().replace(/\\/g, '/');
+    return /^[A-Za-z]:\/?$/.test(normalizedDirectory);
+  }
+
+  async function isInCustomBinaryDir(path: string): Promise<boolean> {
+    const storageStore = useExtensionsStorageStore();
+
+    for (const sharedBinary of Object.values(storageStore.extensionsData.sharedBinaries)) {
+      if (sharedBinary.source !== 'custom') {
+        continue;
+      }
+
+      const customBinaryPath = sharedBinary.path.trim();
+
+      if (customBinaryPath.length === 0 || !sharedBinary.usedBy.includes(extensionId)) {
+        continue;
+      }
+
+      if (path === customBinaryPath) {
+        return true;
+      }
+
+      const parentDirectory = getParentDirectoryPath(customBinaryPath);
+
+      if (!parentDirectory || isDriveRootDirectory(parentDirectory)) {
+        continue;
+      }
+
+      if (await isPathWithinDirectory(path, parentDirectory)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  async function hasSessionReadAccess(path: string): Promise<boolean> {
+    for (const grant of sessionDirectoryGrants) {
+      if (!grant.permissions.has('read') && !grant.permissions.has('write')) {
+        continue;
+      }
+
+      if (await isPathWithinDirectory(path, grant.directory)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  async function hasSessionWriteAccess(path: string): Promise<boolean> {
+    for (const grant of sessionDirectoryGrants) {
+      if (!grant.permissions.has('write')) {
+        continue;
+      }
+
+      if (await isPathWithinDirectory(path, grant.directory)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   async function isInAllowedReadDir(path: string): Promise<boolean> {
     if (hasDialogReadAccess(path)) return true;
+    if (await hasSessionReadAccess(path)) return true;
     if (await isInExtensionDir(path)) return true;
     if (await isInExtensionStorageDir(path)) return true;
     if (await isInSharedBinariesDir(path)) return true;
+    if (await isInCustomBinaryDir(path)) return true;
     const storageStore = useExtensionsStorageStore();
     return storageStore.hasScopedAccess(extensionId, path, 'read');
   }
 
   async function isInAllowedWriteDir(path: string): Promise<boolean> {
+    if (await hasSessionWriteAccess(path)) return true;
     if (await isInExtensionDir(path)) return true;
     if (await isInExtensionStorageDir(path)) return true;
     const storageStore = useExtensionsStorageStore();
@@ -193,6 +264,122 @@ export function createExtensionContext(
   const DIALOG_GRANT_EXPIRY_MS = 300_000;
   const dialogReadablePaths = new Map<string, ReturnType<typeof setTimeout>>();
   const dialogGrantedPaths = new Map<string, ReturnType<typeof setTimeout>>();
+  type SessionDirectoryGrant = {
+    directory: string;
+    permissions: Set<'read' | 'write'>;
+    timer: ReturnType<typeof setTimeout>;
+  };
+  const sessionDirectoryGrants: SessionDirectoryGrant[] = [];
+
+  function getParentDirectoryPath(filePath: string): string | null {
+    const trimmedPath = filePath.trim();
+
+    if (trimmedPath.length === 0) {
+      return null;
+    }
+
+    const normalizedPath = trimmedPath.replace(/\\/g, '/');
+    const lastSeparatorIndex = normalizedPath.lastIndexOf('/');
+
+    if (lastSeparatorIndex <= 0) {
+      return null;
+    }
+
+    const parentPath = trimmedPath.slice(0, lastSeparatorIndex);
+    return parentPath.length > 0 ? parentPath : null;
+  }
+
+  function grantSessionDirectoryAccess(
+    directory: string,
+    permissions: ('read' | 'write')[],
+  ): void {
+    const trimmedDirectory = directory.trim();
+
+    if (trimmedDirectory.length === 0 || permissions.length === 0) {
+      return;
+    }
+
+    const existingGrant = sessionDirectoryGrants.find(grant => grant.directory === trimmedDirectory);
+
+    if (existingGrant) {
+      clearTimeout(existingGrant.timer);
+
+      for (const permission of permissions) {
+        existingGrant.permissions.add(permission);
+      }
+
+      existingGrant.timer = setTimeout(() => {
+        const grantIndex = sessionDirectoryGrants.indexOf(existingGrant);
+
+        if (grantIndex !== -1) {
+          sessionDirectoryGrants.splice(grantIndex, 1);
+        }
+      }, DIALOG_GRANT_EXPIRY_MS);
+
+      return;
+    }
+
+    const grant: SessionDirectoryGrant = {
+      directory: trimmedDirectory,
+      permissions: new Set(permissions),
+      timer: setTimeout(() => {
+        const grantIndex = sessionDirectoryGrants.indexOf(grant);
+
+        if (grantIndex !== -1) {
+          sessionDirectoryGrants.splice(grantIndex, 1);
+        }
+      }, DIALOG_GRANT_EXPIRY_MS),
+    };
+    sessionDirectoryGrants.push(grant);
+  }
+
+  function grantSessionAccessFromNavigation(
+    navigationContext: ContextMenuContext & { currentPath?: string | null },
+  ): void {
+    const currentPath = navigationContext.currentPath?.trim();
+
+    if (currentPath && currentPath.length > 0) {
+      grantSessionDirectoryAccess(currentPath, ['read', 'write']);
+    }
+
+    for (const entry of navigationContext.selectedEntries) {
+      grantDialogReadAccess(entry.path);
+
+      if (entry.isDirectory) {
+        grantSessionDirectoryAccess(entry.path, ['read', 'write']);
+        continue;
+      }
+
+      const parentDirectory = getParentDirectoryPath(entry.path);
+
+      if (parentDirectory) {
+        grantSessionDirectoryAccess(parentDirectory, ['read', 'write']);
+      }
+    }
+  }
+
+  function grantSessionAccessFromCurrentNavigation(): void {
+    const currentPath = getCurrentPath()?.trim();
+
+    if (currentPath && currentPath.length > 0) {
+      grantSessionDirectoryAccess(currentPath, ['read', 'write']);
+    }
+
+    for (const entry of getSelectedEntries()) {
+      grantDialogReadAccess(entry.path);
+
+      if (entry.isDirectory) {
+        grantSessionDirectoryAccess(entry.path, ['read', 'write']);
+        continue;
+      }
+
+      const parentDirectory = getParentDirectoryPath(entry.path);
+
+      if (parentDirectory) {
+        grantSessionDirectoryAccess(parentDirectory, ['read', 'write']);
+      }
+    }
+  }
 
   function grantDialogReadAccess(filePath: string): void {
     const existingTimer = dialogReadablePaths.get(filePath);
@@ -259,5 +446,7 @@ export function createExtensionContext(
     hasDialogReadAccess,
     grantDialogWriteAccess,
     consumeDialogWriteAccess,
+    grantSessionAccessFromNavigation,
+    grantSessionAccessFromCurrentNavigation,
   };
 }

@@ -1083,8 +1083,8 @@ onMounted(() => {
             </div>
             <Button
               v-if="binary.downloadUrl && isHttpUrl(binary.downloadUrl)"
-              variant="ghost"
-              size="sm"
+              variant="link"
+              size="xs"
               class="extension-detail__binary-download"
               :title="binary.downloadUrl"
               @click="openBinaryDownloadUrl(binary.downloadUrl)"
@@ -1253,7 +1253,6 @@ onMounted(() => {
 
 .extension-detail__binary-download {
   max-width: 100%;
-  padding: 0 8px;
   color: hsl(var(--primary));
   font-size: 0.8125rem;
   gap: 6px;

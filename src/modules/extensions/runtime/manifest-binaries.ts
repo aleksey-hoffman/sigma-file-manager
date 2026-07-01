@@ -8,6 +8,7 @@ import { markRaw } from 'vue';
 import type { BinaryInfo, ExtensionManifest, ManifestBinaryAsset, ManifestBinaryDefinition } from '@/types/extension';
 import { ensurePlatformInfo } from '@/modules/extensions/api/platform';
 import { incrementBinaryDownloadCount, incrementBinaryReuseCount } from '@/modules/extensions/api/binary-download-counts';
+import { beginBinaryInstallActivity, endBinaryInstallActivity } from '@/modules/extensions/api/binary-install-activity';
 import { toast, ToastProgress } from '@/components/ui/toaster';
 import { i18n } from '@/localization';
 import { useExtensionsStorageStore } from '@/stores/storage/extensions';
@@ -41,19 +42,66 @@ function isArchiveBinaryAsset(asset: ManifestBinaryAsset): boolean {
 
 type BinaryDownloadStage = 'downloading' | 'installing';
 
-function createBinaryInfo(binaryDefinition: ManifestBinaryDefinition, binaryAsset: ManifestBinaryAsset, binaryPath: string, installedAt: number): BinaryInfo {
+function createBinaryInfo(
+  binaryDefinition: ManifestBinaryDefinition,
+  binaryAsset: ManifestBinaryAsset,
+  binaryPath: string,
+  installedAt: number,
+  source: 'managed' | 'custom' = 'managed',
+): BinaryInfo {
   return {
     id: binaryDefinition.id,
     path: binaryPath,
     version: binaryDefinition.version,
-    storageVersion: binaryDefinition.version,
+    storageVersion: source === 'custom' ? null : binaryDefinition.version,
     repository: binaryDefinition.repository,
     downloadUrl: binaryAsset.downloadUrl,
     latestVersion: binaryDefinition.version,
     hasUpdate: false,
     latestCheckedAt: installedAt,
     installedAt,
+    source,
   };
+}
+
+async function installCustomManifestBinary(
+  extensionId: string,
+  binaryDefinition: ManifestBinaryDefinition,
+  binaryAsset: ManifestBinaryAsset,
+  customPath: string,
+): Promise<BinaryInfo> {
+  const storageStore = useExtensionsStorageStore();
+  const trimmedPath = customPath.trim();
+  const pathExists = await invoke<boolean>('path_exists', { path: trimmedPath });
+
+  if (!pathExists) {
+    throw new Error(`Custom binary path does not exist: ${trimmedPath}`);
+  }
+
+  const existingSharedBinary = storageStore.getSharedBinary(binaryDefinition.id, binaryDefinition.version);
+  const installedAt = existingSharedBinary?.installedAt ?? Date.now();
+  const binaryInfo = existingSharedBinary?.source === 'custom' && existingSharedBinary.path === trimmedPath
+    ? {
+        ...existingSharedBinary,
+        id: binaryDefinition.id,
+        path: trimmedPath,
+        version: binaryDefinition.version,
+        repository: existingSharedBinary.repository ?? binaryDefinition.repository,
+        downloadUrl: existingSharedBinary.downloadUrl ?? binaryAsset.downloadUrl,
+        latestVersion: existingSharedBinary.latestVersion ?? binaryDefinition.version,
+        hasUpdate: existingSharedBinary.hasUpdate ?? false,
+        latestCheckedAt: existingSharedBinary.latestCheckedAt ?? installedAt,
+        installedAt,
+        source: 'custom' as const,
+      }
+    : createBinaryInfo(binaryDefinition, binaryAsset, trimmedPath, installedAt, 'custom');
+
+  await storageStore.setSharedBinary(binaryDefinition.id, binaryDefinition.version, {
+    ...binaryInfo,
+    usedBy: [extensionId],
+  });
+
+  return binaryInfo;
 }
 
 function resolveBinaryExecutableName(binaryDefinition: ManifestBinaryDefinition, binaryAsset: ManifestBinaryAsset, isWindows: boolean): string {
@@ -79,12 +127,37 @@ async function installManifestBinary(
   extensionId: string,
   binaryDefinition: ManifestBinaryDefinition,
 ): Promise<BinaryInfo | null> {
+  beginBinaryInstallActivity(binaryDefinition.id);
+
+  try {
+    return await installManifestBinaryInner(extensionId, binaryDefinition);
+  }
+  finally {
+    endBinaryInstallActivity(binaryDefinition.id);
+  }
+}
+
+async function installManifestBinaryInner(
+  extensionId: string,
+  binaryDefinition: ManifestBinaryDefinition,
+): Promise<BinaryInfo | null> {
   const storageStore = useExtensionsStorageStore();
   const platformInfo = await ensurePlatformInfo();
   const binaryAsset = resolveManifestBinaryAsset(binaryDefinition, platformInfo.os, platformInfo.arch);
 
   if (!binaryAsset) {
     return null;
+  }
+
+  const preference = storageStore.getBinaryPathPreference(binaryDefinition.id);
+
+  if (preference.mode === 'custom' && preference.customPath?.trim()) {
+    return installCustomManifestBinary(
+      extensionId,
+      binaryDefinition,
+      binaryAsset,
+      preference.customPath,
+    );
   }
 
   const executableName = resolveBinaryExecutableName(binaryDefinition, binaryAsset, platformInfo.isWindows);
@@ -112,10 +185,11 @@ async function installManifestBinary(
           latestCheckedAt: existingSharedBinary.latestCheckedAt ?? installedAt,
           installedAt,
         }
-      : createBinaryInfo(binaryDefinition, binaryAsset, existingSharedPath, installedAt);
+      : createBinaryInfo(binaryDefinition, binaryAsset, existingSharedPath, installedAt, 'managed');
 
     await storageStore.setSharedBinary(binaryDefinition.id, binaryDefinition.version, {
       ...binaryInfo,
+      source: 'managed',
       usedBy: [extensionId],
     });
 
@@ -246,10 +320,11 @@ async function installManifestBinary(
 
   incrementBinaryDownloadCount(extensionId);
   const installedAt = Date.now();
-  const binaryInfo = createBinaryInfo(binaryDefinition, binaryAsset, binaryPath, installedAt);
+  const binaryInfo = createBinaryInfo(binaryDefinition, binaryAsset, binaryPath, installedAt, 'managed');
 
   await storageStore.setSharedBinary(binaryDefinition.id, binaryDefinition.version, {
     ...binaryInfo,
+    source: 'managed',
     usedBy: [extensionId],
   });
 

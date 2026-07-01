@@ -10,9 +10,11 @@ import {
   nextTick,
   onMounted,
   onUnmounted,
+  watch,
   markRaw,
 } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useRoute } from 'vue-router';
 import { invoke } from '@tauri-apps/api/core';
 import { StoreIcon, CircleCheckIcon, PackageIcon } from '@lucide/vue';
 import { toast, ToastStatic } from '@/components/ui/toaster';
@@ -24,7 +26,14 @@ import { useExtensions } from '@/modules/extensions/composables/use-extensions';
 import { useExtensionAnimation } from '@/modules/extensions/composables/use-extension-animation';
 import { useExtensionsStorageStore } from '@/stores/storage/extensions';
 import { isUserCancelledError } from '@/modules/extensions/utils/extension-install-cancellation';
+import { isBinarySetupCancelledError } from '@/modules/extensions/utils/binary-setup-cancelled-error';
 import { handleError } from '@/utils/error-handler';
+import ExtensionBinarySetupModal from '@/modules/extensions/components/extension-binary-setup-modal.vue';
+import { useExtensionBinarySetupRoute } from '@/modules/extensions/composables/use-extension-binary-setup';
+import { openBinarySetupForExtension, openBinarySetupForAllDependencies, getExtensionIdsUsingBinary } from '@/modules/extensions/utils/extension-binary-setup-state';
+import { useBinaryEditAvailability } from '@/modules/extensions/utils/binary-edit-availability';
+import { showBinaryEditBlockedToast } from '@/modules/extensions/utils/toast-utils';
+import { useExtensionsStore } from '@/stores/runtime/extensions';
 import ExtensionsToolbarActions from '@/modules/extensions/components/extensions-toolbar-actions.vue';
 import ExtensionSearch from '@/modules/extensions/components/extension-search.vue';
 import ExtensionsMarketplace from '@/modules/extensions/components/extensions-marketplace.vue';
@@ -37,7 +46,11 @@ import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
 import { Alert } from '@/components/ui/alert';
 
 const { t } = useI18n();
+const route = useRoute();
+const extensionsStore = useExtensionsStore();
+const { isBinaryEditBlocked } = useBinaryEditAvailability();
 const { hasGitHubConnectivityIssue } = useGitHubConnectivityStatus();
+useExtensionBinarySetupRoute();
 
 const {
   searchQuery,
@@ -150,6 +163,84 @@ const {
 const activeTab = useRestoredActiveTab('extensions', 'marketplace');
 const showDetailModal = ref(false);
 
+onMounted(() => {
+  const tabQuery = route.query.tab;
+
+  if (tabQuery === 'installed' || tabQuery === 'dependencies' || tabQuery === 'marketplace') {
+    activeTab.value = tabQuery;
+  }
+
+  document.addEventListener('keydown', handleKeydown);
+});
+
+watch(
+  () => route.query.tab,
+  (tabQuery) => {
+    if (tabQuery === 'installed' || tabQuery === 'dependencies' || tabQuery === 'marketplace') {
+      activeTab.value = tabQuery;
+    }
+  },
+);
+
+async function reloadExtensionsAfterBinaryEdit(extensionIds: string[]): Promise<void> {
+  for (const extensionId of extensionIds) {
+    const installedExtension = installedExtensionsWithManifest.value.find(
+      extensionItem => extensionItem.id === extensionId,
+    );
+
+    if (!installedExtension?.isEnabled) {
+      continue;
+    }
+
+    try {
+      await extensionsStore.unloadExtension(extensionId);
+      await extensionsStore.loadExtension(extensionId, 'onStartup');
+    }
+    catch (error) {
+      handleError(t('extensions.binaries.reloadFailed'), error);
+    }
+  }
+}
+
+function handleEditBinaries(extension: ExtensionWithManifest) {
+  if (isBinaryEditBlocked.value) {
+    showBinaryEditBlockedToast();
+    return;
+  }
+
+  if (!extension.manifest) {
+    return;
+  }
+
+  openBinarySetupForExtension(
+    extension.id,
+    extension.name || extension.manifest.name || extension.id,
+    extension.manifest,
+    async () => {
+      await reloadExtensionsAfterBinaryEdit([extension.id]);
+    },
+  );
+}
+
+function handleEditDependencies() {
+  if (isBinaryEditBlocked.value) {
+    showBinaryEditBlockedToast();
+    return;
+  }
+
+  openBinarySetupForAllDependencies(async () => {
+    const extensionIds = new Set<string>();
+
+    for (const sharedBinary of Object.values(extensionsStorageStore.extensionsData.sharedBinaries)) {
+      for (const extensionId of getExtensionIdsUsingBinary(sharedBinary.id)) {
+        extensionIds.add(extensionId);
+      }
+    }
+
+    await reloadExtensionsAfterBinaryEdit([...extensionIds]);
+  });
+}
+
 const detailOverlayRef = ref<HTMLElement | null>(null);
 const detailContainerRef = ref<HTMLElement | null>(null);
 
@@ -218,7 +309,7 @@ async function handleInstall(extensionId: string, version?: string) {
     await installExtension(extensionId, version);
   }
   catch (error) {
-    if (isUserCancelledError(error)) return;
+    if (isUserCancelledError(error) || isBinarySetupCancelledError(error)) return;
     handleError(t('extensions.installFailed'), error);
   }
 }
@@ -296,7 +387,7 @@ async function handleInstallLocal(sourcePath: string) {
     await installLocalExtension(sourcePath);
   }
   catch (error) {
-    if (isUserCancelledError(error)) return;
+    if (isUserCancelledError(error) || isBinarySetupCancelledError(error)) return;
     handleError(t('extensions.installLocalError'), error);
   }
 }
@@ -307,16 +398,13 @@ function handleKeydown(event: KeyboardEvent) {
   }
 }
 
-onMounted(() => {
-  document.addEventListener('keydown', handleKeydown);
-});
-
 onUnmounted(() => {
   document.removeEventListener('keydown', handleKeydown);
 });
 </script>
 
 <template>
+  <ExtensionBinarySetupModal />
   <Teleport to="body">
     <div
       v-if="showExtensionsTopLoader"
@@ -452,6 +540,7 @@ onUnmounted(() => {
           :uninstalling-extensions="uninstallingExtensions"
           :toggling-extensions="togglingExtensions"
           :is-installing-local="isAnyInstallInProgress"
+          :is-binary-edit-disabled="isBinaryEditBlocked"
           @select="handleSelectExtension"
           @toggle="handleToggle"
           @update="handleUpdate"
@@ -459,6 +548,7 @@ onUnmounted(() => {
           @uninstall="handleUninstall"
           @install-local="handleInstallLocal"
           @cancel="handleCancelInstall"
+          @edit-binaries="handleEditBinaries"
         />
       </TabsContent>
 
@@ -468,7 +558,9 @@ onUnmounted(() => {
       >
         <DependenciesTab
           :is-removing="removingDependencies"
+          :is-binary-edit-disabled="isBinaryEditBlocked"
           @remove="handleRemoveDependency"
+          @edit="handleEditDependencies"
         />
       </TabsContent>
     </Tabs>

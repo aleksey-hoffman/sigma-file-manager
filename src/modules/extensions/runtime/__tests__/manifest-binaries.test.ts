@@ -13,6 +13,7 @@ const {
   getExtensionSettingsMock,
   getExtensionToastIconPathMock,
   getExtensionToastTitleMock,
+  getBinaryPathPreferenceMock,
   getSharedBinaryMock,
   incrementBinaryDownloadCountMock,
   incrementBinaryReuseCountMock,
@@ -32,6 +33,10 @@ const {
   getExtensionSettingsMock: vi.fn(async () => ({ customSettings: {} })),
   getExtensionToastIconPathMock: vi.fn(() => '/icon.png'),
   getExtensionToastTitleMock: vi.fn(() => 'Test Extension'),
+  getBinaryPathPreferenceMock: vi.fn((): {
+    mode: 'managed' | 'custom';
+    customPath?: string;
+  } => ({ mode: 'managed' })),
   getSharedBinaryMock: vi.fn(() => null),
   incrementBinaryDownloadCountMock: vi.fn(),
   incrementBinaryReuseCountMock: vi.fn(),
@@ -80,6 +85,7 @@ vi.mock('@/stores/storage/extensions', () => ({
   useExtensionsStorageStore: () => ({
     getExtensionSettings: getExtensionSettingsMock,
     updateExtensionSettings: updateExtensionSettingsMock,
+    getBinaryPathPreference: getBinaryPathPreferenceMock,
     getSharedBinary: getSharedBinaryMock,
     setSharedBinary: setSharedBinaryMock,
   }),
@@ -126,6 +132,7 @@ describe('syncManifestBinariesForExtension', () => {
     getExtensionSettingsMock.mockReset().mockResolvedValue({ customSettings: {} });
     updateExtensionSettingsMock.mockReset().mockResolvedValue(undefined);
     getSharedBinaryMock.mockReset().mockReturnValue(null);
+    getBinaryPathPreferenceMock.mockReset().mockReturnValue({ mode: 'managed' });
     setSharedBinaryMock.mockReset().mockResolvedValue(undefined);
     ensurePlatformInfoMock.mockReset().mockResolvedValue({
       os: 'windows',
@@ -186,5 +193,43 @@ describe('syncManifestBinariesForExtension', () => {
     expect(toastStates[toastStates.length - 1]?.downloadSize).toBeUndefined();
     expect(toastStates[toastStates.length - 1]?.progress).toBe(99);
     expect(toastDismissMock).toHaveBeenCalledWith('binary-download-test.extension-ffmpeg');
+  });
+
+  it('registers a custom binary path without downloading when preference is custom', async () => {
+    getBinaryPathPreferenceMock.mockReturnValue({
+      mode: 'custom',
+      customPath: 'C:/tools/ffmpeg.exe',
+    });
+
+    invokeMock.mockImplementation(async (command: string) => {
+      if (command === 'path_exists') {
+        return true;
+      }
+
+      throw new Error(`Unexpected invoke command: ${command}`);
+    });
+
+    const { syncManifestBinariesForExtension } = await import('@/modules/extensions/runtime/manifest-binaries');
+
+    await syncManifestBinariesForExtension('test.extension', createManifest());
+
+    expect(invokeMock).not.toHaveBeenCalledWith('get_shared_binary_path', expect.anything());
+    expect(invokeMock).not.toHaveBeenCalledWith('download_shared_binary', expect.anything());
+    expect(setSharedBinaryMock).toHaveBeenCalledWith('ffmpeg', '7.1.0', expect.objectContaining({
+      id: 'ffmpeg',
+      path: 'C:/tools/ffmpeg.exe',
+      source: 'custom',
+      usedBy: ['test.extension'],
+    }));
+    expect(updateExtensionSettingsMock).toHaveBeenCalledWith('test.extension', expect.objectContaining({
+      customSettings: expect.objectContaining({
+        __binaries: expect.objectContaining({
+          ffmpeg: expect.objectContaining({
+            path: 'C:/tools/ffmpeg.exe',
+            source: 'custom',
+          }),
+        }),
+      }),
+    }));
   });
 });

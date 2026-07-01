@@ -7,6 +7,7 @@ import { LazyStore } from '@tauri-apps/plugin-store';
 import { invoke } from '@tauri-apps/api/core';
 import { ref } from 'vue';
 import type {
+  BinaryPathPreference,
   ExtensionStorageData,
   ExtensionRegistry,
   ExtensionManifest,
@@ -17,7 +18,14 @@ import type {
   SharedBinaryInfo,
   InstalledExtensionData,
 } from '@/types/extension';
-import { mergeSharedBinaryInfo } from '@/modules/extensions/utils/shared-binary';
+import {
+  consolidateSharedBinariesRecord,
+  findSharedBinaryEntry,
+  getSharedBinaryStorageKey,
+  listSharedBinaryStorageKeys,
+  mergeSharedBinaryInfo,
+  resolveSharedBinaryStorageVersion,
+} from '@/modules/extensions/utils/shared-binary';
 import { useUserPathsStore } from './user-paths';
 import {
   canUseStartupStorageFastPath,
@@ -33,6 +41,7 @@ export const useExtensionsStorageStore = defineStore('extensionsStorage', () => 
   const extensionsData = ref<ExtensionStorageData>({
     installedExtensions: {},
     sharedBinaries: {},
+    customBinaryPreferences: {},
     registryCache: undefined,
     recentCommandIds: [],
   });
@@ -67,6 +76,7 @@ export const useExtensionsStorageStore = defineStore('extensionsStorage', () => 
   function applyExtensionsDataRecord(record: Record<string, unknown>) {
     const installedExtensions = record.installedExtensions as ExtensionStorageData['installedExtensions'] | undefined;
     const sharedBinaries = record.sharedBinaries as ExtensionStorageData['sharedBinaries'] | undefined;
+    const customBinaryPreferences = record.customBinaryPreferences as ExtensionStorageData['customBinaryPreferences'] | undefined;
     const registryCache = record.registryCache as ExtensionStorageData['registryCache'] | undefined;
     const recentCommandIds = record.recentCommandIds as ExtensionStorageData['recentCommandIds'] | undefined;
 
@@ -75,7 +85,14 @@ export const useExtensionsStorageStore = defineStore('extensionsStorage', () => 
     }
 
     if (sharedBinaries) {
-      extensionsData.value.sharedBinaries = sharedBinaries;
+      extensionsData.value.sharedBinaries = consolidateSharedBinariesRecord(sharedBinaries);
+    }
+
+    if (customBinaryPreferences) {
+      extensionsData.value.customBinaryPreferences = customBinaryPreferences;
+    }
+    else if (!extensionsData.value.customBinaryPreferences) {
+      extensionsData.value.customBinaryPreferences = {};
     }
 
     if (registryCache) {
@@ -93,15 +110,22 @@ export const useExtensionsStorageStore = defineStore('extensionsStorage', () => 
     try {
       const installedExtensions = await storage.value.get<ExtensionStorageData['installedExtensions']>('installedExtensions');
       const sharedBinaries = await storage.value.get<ExtensionStorageData['sharedBinaries']>('sharedBinaries');
+      const customBinaryPreferences = await storage.value.get<ExtensionStorageData['customBinaryPreferences']>('customBinaryPreferences');
       const registryCache = await storage.value.get<ExtensionStorageData['registryCache']>('registryCache');
       const recentCommandIds = await storage.value.get<ExtensionStorageData['recentCommandIds']>('recentCommandIds');
+      const sharedBinaryKeyCountBeforeLoad = sharedBinaries ? Object.keys(sharedBinaries).length : 0;
 
       applyExtensionsDataRecord({
         installedExtensions,
         sharedBinaries,
+        customBinaryPreferences,
         registryCache,
         recentCommandIds,
       });
+
+      if (sharedBinaryKeyCountBeforeLoad > Object.keys(extensionsData.value.sharedBinaries).length) {
+        await saveStorageData();
+      }
     }
     catch (error) {
       console.error('Failed to load extensions storage:', error);
@@ -126,9 +150,14 @@ export const useExtensionsStorageStore = defineStore('extensionsStorage', () => 
   async function saveStorageData(): Promise<void> {
     if (!storage.value) return;
 
+    extensionsData.value.sharedBinaries = consolidateSharedBinariesRecord(
+      extensionsData.value.sharedBinaries,
+    );
+
     try {
       await storage.value.set('installedExtensions', extensionsData.value.installedExtensions);
       await storage.value.set('sharedBinaries', extensionsData.value.sharedBinaries);
+      await storage.value.set('customBinaryPreferences', extensionsData.value.customBinaryPreferences);
 
       if (extensionsData.value.registryCache) {
         await storage.value.set('registryCache', extensionsData.value.registryCache);
@@ -480,65 +509,59 @@ export const useExtensionsStorageStore = defineStore('extensionsStorage', () => 
     });
   }
 
-  function getSharedBinaryKey(binaryId: string, version?: string): string {
-    return `${binaryId}@${version || 'latest'}`;
-  }
-
   function getSharedBinary(binaryId: string, version?: string): SharedBinaryInfo | undefined {
-    // Try version-specific key first
-    const versionedKey = getSharedBinaryKey(binaryId, version);
-
-    if (extensionsData.value.sharedBinaries[versionedKey]) {
-      return extensionsData.value.sharedBinaries[versionedKey];
-    }
-
-    // Fallback for backwards compatibility with unversioned keys
-    return extensionsData.value.sharedBinaries[binaryId];
+    return findSharedBinaryEntry(extensionsData.value.sharedBinaries, binaryId, version)?.binary;
   }
 
   async function setSharedBinary(binaryId: string, version: string | undefined, binaryInfo: SharedBinaryInfo): Promise<void> {
-    const key = getSharedBinaryKey(binaryId, version);
-    const existingBinary = getSharedBinary(binaryId, version);
-    extensionsData.value.sharedBinaries[key] = mergeSharedBinaryInfo(existingBinary, binaryInfo);
+    let mergedBinary = binaryInfo;
+
+    for (const storageKey of listSharedBinaryStorageKeys(extensionsData.value.sharedBinaries, binaryId)) {
+      mergedBinary = mergeSharedBinaryInfo(extensionsData.value.sharedBinaries[storageKey], mergedBinary);
+    }
+
+    const canonicalVersion = resolveSharedBinaryStorageVersion(version, mergedBinary);
+    const canonicalKey = getSharedBinaryStorageKey(binaryId, canonicalVersion);
+
+    for (const storageKey of listSharedBinaryStorageKeys(extensionsData.value.sharedBinaries, binaryId)) {
+      delete extensionsData.value.sharedBinaries[storageKey];
+    }
+
+    delete extensionsData.value.sharedBinaries[binaryId];
+
+    extensionsData.value.sharedBinaries[canonicalKey] = mergeSharedBinaryInfo(undefined, {
+      ...mergedBinary,
+      id: binaryId,
+    });
     await saveStorageData();
   }
 
   async function addSharedBinaryUser(binaryId: string, extensionId: string, version?: string): Promise<void> {
-    const key = getSharedBinaryKey(binaryId, version);
-    let binary = extensionsData.value.sharedBinaries[key];
+    const sharedBinaryEntry = findSharedBinaryEntry(extensionsData.value.sharedBinaries, binaryId, version);
 
-    // Fallback to unversioned key if not found
-    if (!binary && extensionsData.value.sharedBinaries[binaryId]) {
-      binary = extensionsData.value.sharedBinaries[binaryId];
+    if (!sharedBinaryEntry) {
+      return;
     }
 
-    if (!binary) return;
-
-    if (!binary.usedBy.includes(extensionId)) {
-      binary.usedBy.push(extensionId);
+    if (!sharedBinaryEntry.binary.usedBy.includes(extensionId)) {
+      sharedBinaryEntry.binary.usedBy.push(extensionId);
       await saveStorageData();
     }
   }
 
   async function removeSharedBinaryUser(binaryId: string, extensionId: string, version?: string): Promise<void> {
-    const key = getSharedBinaryKey(binaryId, version);
-    let binaryKey = key;
-    let binary = extensionsData.value.sharedBinaries[key];
+    const sharedBinaryEntry = findSharedBinaryEntry(extensionsData.value.sharedBinaries, binaryId, version);
 
-    // Fallback to unversioned key if not found
-    if (!binary && extensionsData.value.sharedBinaries[binaryId]) {
-      binary = extensionsData.value.sharedBinaries[binaryId];
-      binaryKey = binaryId;
+    if (!sharedBinaryEntry) {
+      return;
     }
 
-    if (!binary) return;
-
-    binary.usedBy = binary.usedBy.filter(
+    sharedBinaryEntry.binary.usedBy = sharedBinaryEntry.binary.usedBy.filter(
       usedByExtensionId => usedByExtensionId !== extensionId,
     );
 
-    if (binary.usedBy.length === 0) {
-      delete extensionsData.value.sharedBinaries[binaryKey];
+    if (sharedBinaryEntry.binary.usedBy.length === 0) {
+      delete extensionsData.value.sharedBinaries[sharedBinaryEntry.key];
     }
 
     await saveStorageData();
@@ -558,7 +581,7 @@ export const useExtensionsStorageStore = defineStore('extensionsStorage', () => 
         );
         changed = true;
 
-        if (binary.usedBy.length === 0) {
+        if (binary.usedBy.length === 0 && binary.source !== 'custom') {
           orphanedBinaries.push({ ...binary });
           delete extensionsData.value.sharedBinaries[binaryKey];
         }
@@ -572,10 +595,34 @@ export const useExtensionsStorageStore = defineStore('extensionsStorage', () => 
     return orphanedBinaries;
   }
 
+  function getBinaryPathPreference(binaryId: string): BinaryPathPreference {
+    return extensionsData.value.customBinaryPreferences[binaryId] ?? { mode: 'managed' };
+  }
+
+  async function setBinaryPathPreference(binaryId: string, preference: BinaryPathPreference): Promise<void> {
+    extensionsData.value.customBinaryPreferences[binaryId] = preference;
+    await saveStorageData();
+  }
+
+  async function setBinaryPathPreferences(preferences: Record<string, BinaryPathPreference>): Promise<void> {
+    for (const [binaryId, preference] of Object.entries(preferences)) {
+      extensionsData.value.customBinaryPreferences[binaryId] = preference;
+    }
+
+    await saveStorageData();
+  }
+
   async function removeSharedBinaryEntry(binaryId: string, version?: string): Promise<void> {
-    const key = getSharedBinaryKey(binaryId, version);
-    delete extensionsData.value.sharedBinaries[key];
-    // Also try to delete unversioned for cleanup
+    const sharedBinaryEntry = findSharedBinaryEntry(extensionsData.value.sharedBinaries, binaryId, version);
+
+    if (sharedBinaryEntry) {
+      delete extensionsData.value.sharedBinaries[sharedBinaryEntry.key];
+    }
+
+    for (const storageKey of listSharedBinaryStorageKeys(extensionsData.value.sharedBinaries, binaryId)) {
+      delete extensionsData.value.sharedBinaries[storageKey];
+    }
+
     delete extensionsData.value.sharedBinaries[binaryId];
     await saveStorageData();
   }
@@ -621,6 +668,9 @@ export const useExtensionsStorageStore = defineStore('extensionsStorage', () => 
     removeSharedBinaryUser,
     removeAllSharedBinaryUsages,
     removeSharedBinaryEntry,
+    getBinaryPathPreference,
+    setBinaryPathPreference,
+    setBinaryPathPreferences,
     getRecentCommandIds,
     setRecentCommandIds,
   };

@@ -1,0 +1,211 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// License: GNU GPLv3 or later. See the license file in the project root for more information.
+// Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
+
+use std::fs;
+use std::io::ErrorKind;
+use std::path::{Path, PathBuf};
+
+use serde_json::Value;
+use tauri::Manager;
+
+use super::paths::{canonicalize_path, canonicalize_path_for_creation};
+use crate::user_storage_files_config::user_storage_files_config;
+
+fn get_extensions_storage_file_path(app_handle: &tauri::AppHandle) -> Result<PathBuf, String> {
+    let app_data_dir = app_handle
+        .path()
+        .app_data_dir()
+        .map_err(|error| format!("Failed to get app data dir: {}", error))?;
+    let app_user_data_dir = app_data_dir.join(&user_storage_files_config().user_data_dir_name);
+
+    Ok(app_user_data_dir.join(
+        &user_storage_files_config().file_names.extensions,
+    ))
+}
+
+fn read_extensions_storage_value(app_handle: &tauri::AppHandle) -> Result<Value, String> {
+    let storage_file_path = get_extensions_storage_file_path(app_handle)?;
+
+    let content = match fs::read_to_string(&storage_file_path) {
+        Ok(content) => content,
+        Err(error) if error.kind() == ErrorKind::NotFound => {
+            return Ok(Value::Object(Default::default()));
+        }
+        Err(error) => {
+            return Err(format!(
+                "Failed to read extensions storage file: {}",
+                error
+            ));
+        }
+    };
+
+    serde_json::from_str(&content)
+        .map_err(|error| format!("Failed to parse extensions storage file: {}", error))
+}
+
+fn is_drive_root_directory(directory_path: &Path) -> bool {
+    let normalized_directory = directory_path.to_string_lossy().replace('\\', "/");
+    normalized_directory.len() <= 3
+        && normalized_directory
+            .chars()
+            .next()
+            .map(|character| character.is_ascii_alphabetic())
+            .unwrap_or(false)
+        && normalized_directory.contains(':')
+}
+
+fn extension_uses_custom_binary(binary_object: &serde_json::Map<String, Value>, extension_id: &str) -> bool {
+    binary_object
+        .get("usedBy")
+        .and_then(Value::as_array)
+        .map(|used_by| {
+            used_by
+                .iter()
+                .filter_map(Value::as_str)
+                .any(|used_by_extension_id| used_by_extension_id == extension_id)
+        })
+        .unwrap_or(false)
+}
+
+fn resolve_custom_binary_allowed_root(binary_path: &Path) -> Option<PathBuf> {
+    let trimmed_path = binary_path.as_os_str().to_string_lossy().trim().to_string();
+
+    if trimmed_path.is_empty() {
+        return None;
+    }
+
+    let binary_path = PathBuf::from(trimmed_path);
+    let parent_directory = binary_path.parent()?;
+
+    if is_drive_root_directory(parent_directory) {
+        return canonicalize_path_for_creation(&binary_path, "custom binary path").ok();
+    }
+
+    canonicalize_path(parent_directory, "custom binary parent directory").ok()
+}
+
+pub fn collect_custom_binary_allowed_roots(
+    storage_value: &Value,
+    extension_id: &str,
+) -> Vec<PathBuf> {
+    let Some(shared_binaries) = storage_value
+        .get("sharedBinaries")
+        .and_then(Value::as_object)
+    else {
+        return Vec::new();
+    };
+
+    let mut allowed_roots = Vec::new();
+
+    for binary_value in shared_binaries.values() {
+        let Some(binary_object) = binary_value.as_object() else {
+            continue;
+        };
+
+        if binary_object
+            .get("source")
+            .and_then(Value::as_str)
+            != Some("custom")
+        {
+            continue;
+        }
+
+        if !extension_uses_custom_binary(binary_object, extension_id) {
+            continue;
+        }
+
+        let Some(binary_path) = binary_object
+            .get("path")
+            .and_then(Value::as_str)
+            .map(str::trim)
+            .filter(|path| !path.is_empty())
+        else {
+            continue;
+        };
+
+        if let Some(allowed_root) = resolve_custom_binary_allowed_root(Path::new(binary_path)) {
+            allowed_roots.push(allowed_root);
+        }
+    }
+
+    allowed_roots.sort();
+    allowed_roots.dedup();
+    allowed_roots
+}
+
+pub fn load_custom_binary_allowed_roots(
+    app_handle: &tauri::AppHandle,
+    extension_id: &str,
+) -> Result<Vec<PathBuf>, String> {
+    let storage_value = read_extensions_storage_value(app_handle)?;
+    Ok(collect_custom_binary_allowed_roots(
+        &storage_value,
+        extension_id,
+    ))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::collect_custom_binary_allowed_roots;
+    use serde_json::json;
+    use std::fs;
+    use tempfile::tempdir;
+
+    #[test]
+    fn collects_parent_directories_for_custom_binaries_used_by_extension() {
+        let temp_directory = tempdir().expect("create temp directory");
+        let binary_directory = temp_directory.path().join("ffmpeg").join("bin");
+        fs::create_dir_all(&binary_directory).expect("create binary directory");
+        let binary_path = binary_directory.join("ffmpeg.exe");
+        fs::write(&binary_path, b"").expect("create binary file");
+
+        let storage_value = json!({
+            "sharedBinaries": {
+                "ffmpeg": {
+                    "path": binary_path.to_string_lossy(),
+                    "source": "custom",
+                    "usedBy": ["media.converter"]
+                }
+            }
+        });
+
+        let allowed_roots =
+            collect_custom_binary_allowed_roots(&storage_value, "media.converter");
+
+        assert_eq!(allowed_roots.len(), 1);
+        assert_eq!(
+            allowed_roots[0]
+                .to_string_lossy()
+                .replace('\\', "/"),
+            binary_directory
+                .canonicalize()
+                .expect("canonicalize binary directory")
+                .to_string_lossy()
+                .replace('\\', "/")
+        );
+    }
+
+    #[test]
+    fn ignores_managed_binaries_and_unrelated_extensions() {
+        let storage_value = json!({
+            "sharedBinaries": {
+                "ffmpeg": {
+                    "path": "/downloads/ffmpeg/bin/ffmpeg.exe",
+                    "source": "custom",
+                    "usedBy": ["other.extension"]
+                },
+                "yt-dlp": {
+                    "path": "/shared/yt-dlp/yt-dlp",
+                    "source": "managed",
+                    "usedBy": ["media.converter"]
+                }
+            }
+        });
+
+        let allowed_roots =
+            collect_custom_binary_allowed_roots(&storage_value, "media.converter");
+
+        assert!(allowed_roots.is_empty());
+    }
+}

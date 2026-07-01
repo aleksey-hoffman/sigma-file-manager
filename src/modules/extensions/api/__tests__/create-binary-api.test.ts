@@ -49,6 +49,8 @@ function createContext(permissions: ExtensionPermission[] = ['shell']): Extensio
     hasDialogReadAccess: vi.fn(),
     grantDialogWriteAccess: vi.fn(),
     consumeDialogWriteAccess: vi.fn(),
+    grantSessionAccessFromNavigation: vi.fn(),
+    grantSessionAccessFromCurrentNavigation: vi.fn(),
   };
 }
 

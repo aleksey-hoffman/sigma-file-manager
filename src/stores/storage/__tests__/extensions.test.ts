@@ -122,4 +122,69 @@ describe('extensions storage shared binaries', () => {
     expect(storageStore.extensionsData.installedExtensions['ext.video']?.version).toBe('1.0.0');
     expect(storageStore.getRecentCommandIds()).toEqual(['ext.video.run']);
   });
+
+  it('stores and retrieves custom binary path preferences', async () => {
+    const storageStore = useExtensionsStorageStore();
+
+    await storageStore.setBinaryPathPreference('ffmpeg', {
+      mode: 'custom',
+      customPath: 'C:/tools/ffmpeg.exe',
+    });
+
+    expect(storageStore.getBinaryPathPreference('ffmpeg')).toEqual({
+      mode: 'custom',
+      customPath: 'C:/tools/ffmpeg.exe',
+    });
+    expect(storageStore.getBinaryPathPreference('missing')).toEqual({ mode: 'managed' });
+  });
+
+  it('does not delete custom shared binaries when last extension stops using them', async () => {
+    const storageStore = useExtensionsStorageStore();
+
+    await storageStore.setSharedBinary('ffmpeg', '8.1', {
+      id: 'ffmpeg',
+      path: 'C:/tools/ffmpeg.exe',
+      source: 'custom',
+      version: '8.1',
+      storageVersion: null,
+      installedAt: 1,
+      usedBy: ['ext.video'],
+    });
+
+    const orphanedBinaries = await storageStore.removeAllSharedBinaryUsages('ext.video');
+
+    expect(orphanedBinaries).toEqual([]);
+    expect(storageStore.getSharedBinary('ffmpeg', '8.1')).toEqual(expect.objectContaining({
+      id: 'ffmpeg',
+      source: 'custom',
+      usedBy: [],
+    }));
+  });
+
+  it('consolidates duplicate shared binary keys when a second extension registers the same binary', async () => {
+    const storageStore = useExtensionsStorageStore();
+
+    await storageStore.setSharedBinary('ffmpeg', '8.1', {
+      id: 'ffmpeg',
+      path: 'C:/shared/ffmpeg/ffmpeg.exe',
+      version: '8.1',
+      storageVersion: '8.1',
+      installedAt: 100,
+      usedBy: ['ext.video'],
+    });
+
+    await storageStore.setSharedBinary('ffmpeg', undefined, {
+      id: 'ffmpeg',
+      path: 'C:/shared/ffmpeg/ffmpeg.exe',
+      version: '8.1',
+      storageVersion: '8.1',
+      installedAt: 200,
+      usedBy: ['ext.media'],
+    });
+
+    expect(Object.keys(storageStore.extensionsData.sharedBinaries)).toEqual(['ffmpeg@8.1']);
+    expect(storageStore.getSharedBinary('ffmpeg', '8.1')).toEqual(expect.objectContaining({
+      usedBy: ['ext.video', 'ext.media'],
+    }));
+  });
 });

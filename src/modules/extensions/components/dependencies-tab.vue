@@ -15,15 +15,16 @@ import {
   HardDriveIcon,
   FolderOpenIcon,
   TriangleAlertIcon,
-  ExternalLinkIcon,
+  Settings2Icon,
 } from '@lucide/vue';
+import BinaryDownloadLinkButton from '@/modules/extensions/components/binary-download-link-button.vue';
 import { Button } from '@/components/ui/button';
+import { Alert } from '@/components/ui/alert';
 import { formatBytes, formatDate } from '@/modules/navigator/components/file-browser/utils';
 import { openNavigatorPath } from '@/utils/open-navigator-directory';
 import { useExtensionsStorageStore } from '@/stores/storage/extensions';
 import type { SharedBinaryInfo } from '@/types/extension';
 import { getBinaryDisplayVersion, getBinaryLookupVersion } from '@/modules/extensions/utils/binary-metadata';
-import { isHttpUrl, openBinaryDownloadUrl } from '@/modules/extensions/utils/binary-download-url';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { getStaggerSlideUpBinding } from '@/utils/stagger-animation';
 
@@ -33,13 +34,17 @@ type DirSizeResult = {
   status: 'Complete' | 'Partial' | 'Timeout' | 'Error' | 'Cancelled';
 };
 
-defineProps<{
+const props = withDefaults(defineProps<{
   isRemoving: Set<string>;
-}>();
+  isBinaryEditDisabled?: boolean;
+}>(), {
+  isBinaryEditDisabled: false,
+});
 
 const emit = defineEmits<{
   remove: [binaryId: string, version?: string];
   update: [binaryId: string, version?: string];
+  edit: [];
 }>();
 
 const { t } = useI18n();
@@ -79,6 +84,17 @@ const totalSize = computed(() => {
 });
 
 const hasSizeData = computed(() => binarySizes.value.size > 0);
+
+const hasManuallyHandledBinaries = computed(() => {
+  return sharedBinaries.value.some(binary => isBinaryHandledLocally(binary));
+});
+
+function isBinaryHandledLocally(binary: SharedBinaryInfo): boolean {
+  const customBinaryPreferences = extensionsStorageStore.extensionsData.customBinaryPreferences;
+
+  return customBinaryPreferences[binary.id]?.mode === 'custom'
+    || binary.source === 'custom';
+}
 
 function normalizeFsPath(pathValue: string): string {
   return pathValue
@@ -195,6 +211,23 @@ watch(
           </div>
         </div>
         <div class="dependencies-tab__stats-actions">
+          <Tooltip :disabled="!props.isBinaryEditDisabled">
+            <TooltipTrigger as-child>
+              <span class="dependencies-tab__edit-button-wrap">
+                <Button
+                  variant="outline"
+                  :disabled="props.isBinaryEditDisabled"
+                  @click="emit('edit')"
+                >
+                  <Settings2Icon :size="16" />
+                  {{ t('extensions.binaries.editButton') }}
+                </Button>
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>
+              {{ t('extensions.binaries.editBlockedWhileInstalling') }}
+            </TooltipContent>
+          </Tooltip>
           <Button
             variant="outline"
             @click="navigateToDependenciesFolder"
@@ -204,6 +237,13 @@ watch(
           </Button>
         </div>
       </div>
+
+      <Alert
+        v-if="hasManuallyHandledBinaries"
+        tone="warning"
+        :title="t('extensions.dependencies.manualBinariesAlertTitle')"
+        :description="t('extensions.dependencies.manualBinariesAlertDescription')"
+      />
 
       <div class="dependencies-tab__list">
         <div
@@ -219,6 +259,16 @@ watch(
           <div class="dependencies-tab__item-info">
             <div class="dependencies-tab__item-header">
               <span class="dependencies-tab__item-name">{{ binary.id }}</span>
+              <span
+                class="dependencies-tab__handling-badge"
+                :class="isBinaryHandledLocally(binary)
+                  ? 'dependencies-tab__handling-badge--local'
+                  : 'dependencies-tab__handling-badge--auto'"
+              >
+                {{ isBinaryHandledLocally(binary)
+                  ? t('extensions.dependencies.handlingLocal')
+                  : t('extensions.dependencies.handlingAuto') }}
+              </span>
               <span
                 v-if="binary.hasUpdate"
                 class="dependencies-tab__update-badge"
@@ -249,17 +299,7 @@ watch(
                 class="dependencies-tab__used-by-extension"
               >{{ getExtensionDisplayId(extensionId) }}<span v-if="extensionIndex < binary.usedBy.length - 1">,&nbsp;</span></span>
             </div>
-            <Button
-              v-if="binary.downloadUrl && isHttpUrl(binary.downloadUrl)"
-              variant="ghost"
-              size="sm"
-              class="dependencies-tab__item-download"
-              :title="binary.downloadUrl"
-              @click="openBinaryDownloadUrl(binary.downloadUrl)"
-            >
-              <ExternalLinkIcon :size="14" />
-              {{ t('extensions.dependencies.downloadSource') }}
-            </Button>
+            <BinaryDownloadLinkButton :download-url="binary.downloadUrl" />
           </div>
 
           <div class="dependencies-tab__item-actions">
@@ -354,6 +394,10 @@ watch(
   gap: 8px;
 }
 
+.dependencies-tab__edit-button-wrap {
+  display: inline-flex;
+}
+
 .dependencies-tab__stat {
   display: flex;
   flex-direction: column;
@@ -428,6 +472,23 @@ watch(
   font-weight: 600;
 }
 
+.dependencies-tab__handling-badge {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.dependencies-tab__handling-badge--auto {
+  background-color: hsl(var(--primary) / 12%);
+  color: hsl(var(--primary));
+}
+
+.dependencies-tab__handling-badge--local {
+  background-color: hsl(var(--warning) / 12%);
+  color: hsl(var(--warning));
+}
+
 .dependencies-tab__update-badge {
   padding: 2px 8px;
   border-radius: 4px;
@@ -465,16 +526,6 @@ watch(
 .dependencies-tab__used-by-extension {
   color: hsl(var(--primary));
   font-weight: 500;
-}
-
-.dependencies-tab__item-download {
-  max-width: 100%;
-  align-self: flex-start;
-  padding: 0 8px;
-  margin-top: 2px;
-  color: hsl(var(--primary));
-  font-size: 0.8125rem;
-  gap: 6px;
 }
 
 .dependencies-tab__item-actions {

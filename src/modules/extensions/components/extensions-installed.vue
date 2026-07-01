@@ -13,6 +13,7 @@ import {
   PackageOpenIcon,
   FolderOpenIcon,
   XIcon,
+  Settings2Icon,
 } from '@lucide/vue';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -27,7 +28,7 @@ import { getStaggerSlideUpBinding } from '@/utils/stagger-animation';
 import { useExtensionsFolderActions } from '@/modules/extensions/composables/use-extensions-folder-actions';
 import { useExtensionInstallCancelUi } from '@/modules/extensions/composables/use-extension-install-cancel-ui';
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   extensions: ExtensionWithManifest[];
   pendingFolderInstalls: PendingFolderInstall[];
   installingExtensions: Set<string>;
@@ -35,7 +36,10 @@ const props = defineProps<{
   uninstallingExtensions: Set<string>;
   togglingExtensions: Set<string>;
   isInstallingLocal?: boolean;
-}>();
+  isBinaryEditDisabled?: boolean;
+}>(), {
+  isBinaryEditDisabled: false,
+});
 
 const emit = defineEmits<{
   select: [extension: ExtensionWithManifest, event: MouseEvent];
@@ -45,6 +49,7 @@ const emit = defineEmits<{
   refresh: [extensionId: string];
   installLocal: [sourcePath: string];
   cancel: [extensionId: string];
+  editBinaries: [extension: ExtensionWithManifest];
 }>();
 
 const { t } = useI18n();
@@ -361,6 +366,25 @@ function getLocalReinstallButtonTitle(extensionId: string): string {
               >
                 <XIcon :size="16" />
               </Button>
+              <Tooltip :disabled="!props.isBinaryEditDisabled">
+                <TooltipTrigger as-child>
+                  <span class="extensions-installed__edit-button-wrap">
+                    <Button
+                      v-if="extension.binaries.length > 0"
+                      variant="ghost"
+                      size="icon"
+                      :title="props.isBinaryEditDisabled ? undefined : t('extensions.binaries.editButton')"
+                      :disabled="props.isBinaryEditDisabled"
+                      @click.stop="emit('editBinaries', extension)"
+                    >
+                      <Settings2Icon :size="16" />
+                    </Button>
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {{ t('extensions.binaries.editBlockedWhileInstalling') }}
+                </TooltipContent>
+              </Tooltip>
               <Button
                 variant="ghost"
                 size="icon"
@@ -591,6 +615,10 @@ function getLocalReinstallButtonTitle(extensionId: string): string {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.extensions-installed__edit-button-wrap {
+  display: inline-flex;
 }
 
 .extensions-installed__spinner {

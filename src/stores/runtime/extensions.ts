@@ -74,6 +74,14 @@ import {
 import { filterReachableRegistryEntries } from '@/modules/extensions/utils/registry-utils';
 import { syncManifestBinariesForExtension } from '@/modules/extensions/runtime/manifest-binaries';
 import {
+  getPlatformBinaryDefinitions,
+  promptBinarySetup,
+  shouldPromptBinarySetupForUpdate,
+} from '@/modules/extensions/utils/extension-binary-setup-state';
+import { BinarySetupCancelledError, isBinarySetupCancelledError } from '@/modules/extensions/utils/binary-setup-cancelled-error';
+import { validateCustomBinaryPaths } from '@/modules/extensions/utils/binary-health-check';
+import { showInvalidCustomBinaryToasts } from '@/modules/extensions/utils/toast-utils';
+import {
   beginExtensionInstall,
   cancelExtensionInstall as requestExtensionInstallCancel,
   endExtensionInstall,
@@ -760,6 +768,51 @@ export const useExtensionsStore = defineStore('extensions', () => {
     return parsedManifest as ExtensionManifest;
   }
 
+  async function ensureBinarySetupConfirmed(
+    extensionId: string,
+    extensionName: string,
+    manifest: ExtensionManifest,
+  ): Promise<void> {
+    const platformBinaries = await getPlatformBinaryDefinitions(manifest);
+
+    if (platformBinaries.length === 0) {
+      return;
+    }
+
+    const confirmed = await promptBinarySetup(extensionId, extensionName, manifest, 'install');
+
+    if (!confirmed) {
+      throw new BinarySetupCancelledError();
+    }
+  }
+
+  async function runCustomBinaryHealthCheck(): Promise<void> {
+    const invalidBinaries = await validateCustomBinaryPaths();
+    showInvalidCustomBinaryToasts(invalidBinaries);
+  }
+
+  async function ensureExtensionBinariesHealthy(extensionId: string, manifest: ExtensionManifest): Promise<void> {
+    const storageStore = useExtensionsStorageStore();
+    const preferences = storageStore.extensionsData.customBinaryPreferences;
+    const manifestBinaryIds = new Set((manifest.binaries ?? []).map(binaryDefinition => binaryDefinition.id));
+    const hasCustomBinary = Object.entries(preferences).some(([binaryId, preference]) => {
+      return manifestBinaryIds.has(binaryId) && preference.mode === 'custom';
+    });
+
+    if (!hasCustomBinary) {
+      return;
+    }
+
+    const invalidBinaries = await validateCustomBinaryPaths();
+    const relevantInvalidBinaries = invalidBinaries.filter(
+      invalidBinary => invalidBinary.affectedExtensionIds.includes(extensionId),
+    );
+
+    if (relevantInvalidBinaries.length > 0) {
+      showInvalidCustomBinaryToasts(relevantInvalidBinaries);
+    }
+  }
+
   async function installExtension(
     extensionId: string,
     version?: string,
@@ -807,6 +860,14 @@ export const useExtensionsStore = defineStore('extensions', () => {
 
         throwIfInstallAborted(signal);
 
+        await ensureBinarySetupConfirmed(
+          extensionId,
+          manifest.name || getExtensionDisplayName(extensionId),
+          manifest,
+        );
+
+        throwIfInstallAborted(signal);
+
         const downloadUrl = getExtensionDownloadUrl(registryEntry.repository, targetVersion);
 
         await invoke('download_extension', {
@@ -831,7 +892,7 @@ export const useExtensionsStore = defineStore('extensions', () => {
         }
       }
       catch (error) {
-        if (signal.aborted || isUserCancelledError(error)) {
+        if (signal.aborted || isUserCancelledError(error) || isBinarySetupCancelledError(error)) {
           await cleanupCancelledInstall(extensionId, persistedInstall, 'rollback');
           return;
         }
@@ -921,6 +982,14 @@ export const useExtensionsStore = defineStore('extensions', () => {
 
         throwIfInstallAborted(signal);
 
+        await ensureBinarySetupConfirmed(
+          extensionId,
+          manifest.name || folderInstallDisplayName,
+          manifest,
+        );
+
+        throwIfInstallAborted(signal);
+
         await completeNewExtensionInstall(extensionId, manifest, manifest.version, {
           isLocal: true,
           localSourcePath: sourcePath,
@@ -929,7 +998,7 @@ export const useExtensionsStore = defineStore('extensions', () => {
         persistedInstall = true;
       }
       catch (error) {
-        if (signal.aborted || isUserCancelledError(error)) {
+        if (signal.aborted || isUserCancelledError(error) || isBinarySetupCancelledError(error)) {
           await cleanupCancelledInstall(extensionId, persistedInstall, 'delete-files');
           return;
         }
@@ -1134,6 +1203,18 @@ export const useExtensionsStore = defineStore('extensions', () => {
 
         throwIfInstallAborted(signal);
 
+        const platformBinaries = await getPlatformBinaryDefinitions(manifest);
+
+        if (shouldPromptBinarySetupForUpdate(installed.manifest, manifest, platformBinaries)) {
+          await ensureBinarySetupConfirmed(
+            extensionId,
+            manifest.name || getExtensionDisplayName(extensionId),
+            manifest,
+          );
+        }
+
+        throwIfInstallAborted(signal);
+
         const downloadUrl = getExtensionDownloadUrl(registryEntry.repository, targetVersion);
 
         await invoke('download_extension', {
@@ -1189,7 +1270,7 @@ export const useExtensionsStore = defineStore('extensions', () => {
           }
         }
 
-        if (!signal.aborted && !isUserCancelledError(error)) {
+        if (!signal.aborted && !isUserCancelledError(error) && !isBinarySetupCancelledError(error)) {
           throw error;
         }
       }
@@ -1294,6 +1375,8 @@ export const useExtensionsStore = defineStore('extensions', () => {
     if (!options?.allowWhenDisabled && installed && !installed.enabled) return;
 
     if (!shouldActivateForEvent(manifest, extensionId, activationEvent)) return;
+
+    await ensureExtensionBinariesHealthy(extensionId, manifest);
 
     const existing = loadedExtensions.value.get(extensionId);
     if (existing && existing.state === 'loaded') return;
@@ -1949,6 +2032,7 @@ export const useExtensionsStore = defineStore('extensions', () => {
     await storageStore.init();
     await reconcileInstalledExtensions();
     await cleanupOrphanedIncompleteExtensionInstalls();
+    await runCustomBinaryHealthCheck();
 
     const cached = storageStore.extensionsData.registryCache;
 

@@ -59,4 +59,12 @@ export {
   clearBinaryReuseCount,
 } from '@/modules/extensions/api/binary-download-counts';
 
+export {
+  beginBinaryInstallActivity,
+  endBinaryInstallActivity,
+  isBinaryInstallInProgress,
+  hasAnyBinaryInstallInProgress,
+  useBinaryInstallActivity,
+} from '@/modules/extensions/api/binary-install-activity';
+
 export { createExtensionAPI } from '@/modules/extensions/api/create-extension-api';

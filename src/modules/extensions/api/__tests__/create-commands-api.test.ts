@@ -62,6 +62,8 @@ function createContext(permissions: ExtensionPermission[] = []): ExtensionContex
     hasDialogReadAccess: vi.fn(),
     grantDialogWriteAccess: vi.fn(),
     consumeDialogWriteAccess: vi.fn(),
+    grantSessionAccessFromNavigation: vi.fn(),
+    grantSessionAccessFromCurrentNavigation: vi.fn(),
   };
 }
 
@@ -118,28 +120,34 @@ describe('createCommandsAPI', () => {
     expect(builtinHandler).toHaveBeenCalledTimes(1);
   });
 
-  it('registers extension commands with the extension id prefix', () => {
+  it('registers extension commands with the extension id prefix', async () => {
     addCommandRegistrationMock.mockReturnValue({
       dispose: vi.fn(),
     });
 
-    const commandsApi = createCommandsAPI(createContext(['commands']));
+    const context = createContext(['commands']);
+    const commandsApi = createCommandsAPI(context);
     const command: ExtensionCommand = {
       id: 'test-command',
       title: 'Test Command',
     };
-    const handler = vi.fn();
+    const handler = vi.fn().mockResolvedValue('ok');
 
     commandsApi.registerCommand(command, handler);
 
-    expect(addCommandRegistrationMock).toHaveBeenCalledWith({
-      extensionId: 'test.extension',
-      command: {
-        id: 'test.extension.test-command',
-        title: 'Test Command',
-      },
-      handler,
+    expect(addCommandRegistrationMock).toHaveBeenCalledTimes(1);
+
+    const registration = addCommandRegistrationMock.mock.calls[0][0];
+    expect(registration.extensionId).toBe('test.extension');
+    expect(registration.command).toEqual({
+      id: 'test.extension.test-command',
+      title: 'Test Command',
     });
+
+    await registration.handler('value');
+
+    expect(context.grantSessionAccessFromCurrentNavigation).toHaveBeenCalledTimes(1);
+    expect(handler).toHaveBeenCalledWith('value');
   });
 
   it('executes registered extension commands by resolving the full command id', async () => {

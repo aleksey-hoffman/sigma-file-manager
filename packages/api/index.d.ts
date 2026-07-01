@@ -397,6 +397,13 @@ export interface SaveFileDialogOptions {
   filters?: FileDialogFilter[];
 }
 
+export type BinarySourceMode = 'managed' | 'custom';
+
+export interface BinaryPathPreference {
+  mode: BinarySourceMode;
+  customPath?: string;
+}
+
 export interface BinaryInfo {
   id: string;
   path: string;
@@ -408,6 +415,7 @@ export interface BinaryInfo {
   hasUpdate?: boolean;
   latestCheckedAt?: number;
   installedAt: number;
+  source?: BinarySourceMode;
 }
 
 export type UIElementType

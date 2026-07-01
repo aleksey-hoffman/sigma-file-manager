@@ -8,6 +8,9 @@ import { i18n } from '@/localization';
 import { useExtensionsStorageStore } from '@/stores/storage/extensions';
 import { openSettingsTab } from '@/modules/settings/utils/open-settings';
 import type { ExtensionManifest } from '@/types/extension';
+import type { InvalidCustomBinary } from '@/modules/extensions/utils/binary-health-check';
+import type { BinarySetupRowState } from '@/modules/extensions/utils/extension-binary-setup-state';
+import { openExtensionsBinaryEdit } from '@/modules/extensions/utils/open-extensions-binary-edit';
 import {
   getBinaryDownloadCount, clearBinaryDownloadCount,
   getBinaryReuseCount, clearBinaryReuseCount,
@@ -41,17 +44,104 @@ export function getExtensionToastIconPath(extensionId: string): string | undefin
   return undefined;
 }
 
+export function getBinarySetupSavedMessage(
+  rows: Pick<BinarySetupRowState, 'name' | 'useManagedDownload'>[],
+): {
+  key: string;
+  params: Record<string, string>;
+} {
+  const hasManagedDownload = rows.some(row => row.useManagedDownload);
+  const hasCustomPath = rows.some(row => !row.useManagedDownload);
+
+  if (hasManagedDownload && hasCustomPath) {
+    return {
+      key: 'extensions.binaries.savedUpdated',
+      params: {},
+    };
+  }
+
+  const relevantRows = hasCustomPath
+    ? rows.filter(row => !row.useManagedDownload)
+    : rows.filter(row => row.useManagedDownload);
+
+  if (relevantRows.length === 1) {
+    const name = relevantRows[0]!.name;
+
+    return hasCustomPath
+      ? {
+          key: 'extensions.binaries.savedUsingLocalBinary',
+          params: { name },
+        }
+      : {
+          key: 'extensions.binaries.savedManagedAutomatically',
+          params: { name },
+        };
+  }
+
+  const names = relevantRows.map(row => row.name).join(', ');
+
+  return hasCustomPath
+    ? {
+        key: 'extensions.binaries.savedUsingLocalBinaries',
+        params: { names },
+      }
+    : {
+        key: 'extensions.binaries.savedManagedAutomaticallyPlural',
+        params: { names },
+      };
+}
+
+export function getExtensionReadyDescription(
+  extensionId: string,
+  options: { reuseCount: number },
+): string {
+  const { t } = i18n.global;
+  const storageStore = useExtensionsStorageStore();
+  const manifest = storageStore.extensionsData.installedExtensions[extensionId]?.manifest;
+  const binaryDefinitions = manifest?.binaries ?? [];
+
+  if (binaryDefinitions.length === 0) {
+    return options.reuseCount > 0
+      ? t('extensions.reusedDependencies', { count: options.reuseCount })
+      : '';
+  }
+
+  const rows = binaryDefinitions.map(binaryDefinition => ({
+    name: binaryDefinition.name,
+    useManagedDownload: storageStore.getBinaryPathPreference(binaryDefinition.id).mode !== 'custom',
+  }));
+  const hasCustomPath = rows.some(row => !row.useManagedDownload);
+  const handlingMessage = getBinarySetupSavedMessage(rows);
+  const handlingDescription = t(handlingMessage.key, handlingMessage.params);
+
+  if (options.reuseCount > 0 && !hasCustomPath) {
+    return t('extensions.reusedDependencies', { count: options.reuseCount });
+  }
+
+  if (options.reuseCount > 0 && hasCustomPath) {
+    const reuseDescription = t('extensions.reusedDependencies', { count: options.reuseCount });
+    return `${reuseDescription} ${handlingDescription}`;
+  }
+
+  return handlingDescription;
+}
+
 export function showDependenciesInstalledToast(extensionId: string): void {
   const downloadCount = getBinaryDownloadCount(extensionId);
   const reuseCount = getBinaryReuseCount(extensionId);
-  if (downloadCount === 0 && reuseCount === 0) return;
+  const storageStore = useExtensionsStorageStore();
+  const binaryCount = storageStore.extensionsData.installedExtensions[extensionId]?.manifest?.binaries?.length ?? 0;
+
+  if (binaryCount === 0 && downloadCount === 0 && reuseCount === 0) {
+    return;
+  }
 
   clearBinaryDownloadCount(extensionId);
   clearBinaryReuseCount(extensionId);
 
   const { t } = i18n.global;
   const toastId = `ext-ready-${extensionId}`;
-  const description = reuseCount > 0 ? t('extensions.reusedDependencies', { count: reuseCount }) : '';
+  const description = getExtensionReadyDescription(extensionId, { reuseCount });
 
   toast.custom(markRaw(ToastStatic), {
     id: toastId,
@@ -140,4 +230,106 @@ export function showExtensionBusyToast(extensionId: string): void {
   setTimeout(() => {
     toast.dismiss(toastId);
   }, 3000);
+}
+
+export function showBinaryEditBlockedToast(): void {
+  const { t } = i18n.global;
+  const toastId = 'ext-binaries-edit-blocked';
+
+  toast.custom(markRaw(ToastStatic), {
+    id: toastId,
+    duration: Infinity,
+    componentProps: {
+      data: {
+        title: t('featureExtension'),
+        subtitle: t('extensions.binaries.editBlockedWhileInstalling'),
+      },
+    },
+  });
+
+  setTimeout(() => {
+    toast.dismiss(toastId);
+  }, 3000);
+}
+
+function getBinaryDisplayName(binaryId: string): string {
+  const storageStore = useExtensionsStorageStore();
+
+  for (const extensionData of Object.values(storageStore.extensionsData.installedExtensions)) {
+    const manifestBinary = (extensionData.manifest.binaries ?? []).find(
+      binaryDefinition => binaryDefinition.id === binaryId,
+    );
+
+    if (manifestBinary?.name) {
+      return manifestBinary.name;
+    }
+  }
+
+  return binaryId;
+}
+
+export function showBinarySetupSavedToast(
+  rows: Pick<BinarySetupRowState, 'name' | 'useManagedDownload'>[],
+  extensionId?: string,
+): void {
+  const { t } = i18n.global;
+  const toastId = extensionId
+    ? `ext-binaries-saved-${extensionId}`
+    : 'ext-binaries-saved-dependencies';
+  const message = getBinarySetupSavedMessage(rows);
+  const title = extensionId?.trim()
+    ? getExtensionToastTitle(extensionId)
+    : `${t('featureExtension')} | ${t('extensions.tabs.dependencies')}`;
+
+  toast.custom(markRaw(ToastStatic), {
+    id: toastId,
+    duration: Infinity,
+    componentProps: {
+      data: {
+        title,
+        subtitle: t(message.key, message.params),
+        extensionId,
+        extensionIconPath: extensionId ? getExtensionToastIconPath(extensionId) : undefined,
+      },
+    },
+  });
+
+  setTimeout(() => {
+    toast.dismiss(toastId);
+  }, 3000);
+}
+
+export function showInvalidCustomBinaryToasts(invalidBinaries: InvalidCustomBinary[]): void {
+  if (invalidBinaries.length === 0) {
+    return;
+  }
+
+  const { t } = i18n.global;
+
+  for (const invalidBinary of invalidBinaries) {
+    const toastId = `invalid-custom-binary-${invalidBinary.binaryId}`;
+    const binaryName = getBinaryDisplayName(invalidBinary.binaryId);
+    const targetExtensionId = invalidBinary.affectedExtensionIds[0];
+
+    toast.custom(markRaw(ToastStatic), {
+      id: toastId,
+      duration: Infinity,
+      componentProps: {
+        data: {
+          title: t('featureExtension'),
+          subtitle: t('extensions.binaries.invalidPathTitle', { name: binaryName }),
+          description: t('extensions.binaries.invalidPathDescription'),
+          actionText: t('extensions.binaries.fixBinaryPath'),
+          onAction: () => {
+            toast.dismiss(toastId);
+
+            if (targetExtensionId) {
+              void openExtensionsBinaryEdit(targetExtensionId);
+            }
+          },
+          onDismiss: () => toast.dismiss(toastId),
+        },
+      },
+    });
+  }
 }

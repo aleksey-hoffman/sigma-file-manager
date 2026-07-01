@@ -4,6 +4,7 @@
 
 import type {
   BinaryInfo,
+  BinaryPathPreference,
   ContextMenuContext,
   ExtensionActivationContext,
   ExtensionActivationEvent,
@@ -111,6 +112,7 @@ export type SharedBinaryInfo = BinaryInfo & {
 export type ExtensionStorageData = {
   installedExtensions: Record<string, InstalledExtensionData>;
   sharedBinaries: Record<string, SharedBinaryInfo>;
+  customBinaryPreferences: Record<string, BinaryPathPreference>;
   registryCache?: {
     data: ExtensionRegistry;
     fetchedAt: number;

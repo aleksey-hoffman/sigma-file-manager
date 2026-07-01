@@ -13,6 +13,7 @@ mod install;
 mod misc;
 mod paths;
 mod processes;
+mod registry_storage;
 mod security;
 mod state;
 mod types;

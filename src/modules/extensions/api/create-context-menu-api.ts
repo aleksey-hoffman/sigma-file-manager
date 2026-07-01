@@ -22,7 +22,10 @@ export function createContextMenuAPI(context: ExtensionContext) {
           ...item,
           id: `${context.extensionId}.${item.id}`,
         },
-        handler,
+        handler: async (navigationContext) => {
+          context.grantSessionAccessFromNavigation(navigationContext);
+          return handler(navigationContext);
+        },
       });
     },
   };

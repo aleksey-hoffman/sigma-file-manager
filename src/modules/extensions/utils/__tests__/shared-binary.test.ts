@@ -3,7 +3,11 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 import { describe, expect, it } from 'vitest';
-import { mergeSharedBinaryInfo } from '@/modules/extensions/utils/shared-binary';
+import {
+  consolidateSharedBinariesRecord,
+  findSharedBinaryEntry,
+  mergeSharedBinaryInfo,
+} from '@/modules/extensions/utils/shared-binary';
 
 describe('shared binary helpers', () => {
   it('merges users without dropping existing metadata', () => {
@@ -37,5 +41,52 @@ describe('shared binary helpers', () => {
     expect(mergedBinary.latestCheckedAt).toBe(123);
     expect(mergedBinary.installedAt).toBe(222);
     expect(mergedBinary.usedBy).toEqual(['ext.video', 'ext.audio']);
+  });
+
+  it('merges duplicate storage keys for the same binary id', () => {
+    const consolidated = consolidateSharedBinariesRecord({
+      'ffmpeg@8.1': {
+        id: 'ffmpeg',
+        path: 'C:/shared/ffmpeg-8.1/ffmpeg.exe',
+        version: '8.1',
+        storageVersion: '8.1',
+        installedAt: 100,
+        usedBy: ['ext.video'],
+      },
+      'ffmpeg@latest': {
+        id: 'ffmpeg',
+        path: 'D:/tools/ffmpeg.exe',
+        version: '8.1',
+        storageVersion: null,
+        source: 'custom',
+        installedAt: 200,
+        usedBy: ['ext.media'],
+      },
+    });
+
+    expect(Object.keys(consolidated)).toEqual(['ffmpeg@8.1']);
+    expect(consolidated['ffmpeg@8.1']).toMatchObject({
+      id: 'ffmpeg',
+      version: '8.1',
+      source: 'custom',
+      usedBy: ['ext.video', 'ext.media'],
+    });
+  });
+
+  it('finds shared binaries across versioned and latest storage keys', () => {
+    const sharedBinaries = {
+      'ffmpeg@latest': {
+        id: 'ffmpeg',
+        path: 'D:/tools/ffmpeg.exe',
+        version: '8.1',
+        storageVersion: null,
+        source: 'custom' as const,
+        installedAt: 1,
+        usedBy: ['ext.media'],
+      },
+    };
+
+    expect(findSharedBinaryEntry(sharedBinaries, 'ffmpeg', '8.1')?.binary.usedBy).toEqual(['ext.media']);
+    expect(findSharedBinaryEntry(sharedBinaries, 'ffmpeg')?.key).toBe('ffmpeg@latest');
   });
 });

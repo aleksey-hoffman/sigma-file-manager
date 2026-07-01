@@ -30,7 +30,10 @@ export function createCommandsAPI(context: ExtensionContext) {
           ...command,
           id: `${context.extensionId}.${command.id}`,
         },
-        handler,
+        handler: async (...args) => {
+          context.grantSessionAccessFromCurrentNavigation();
+          return handler(...args);
+        },
       });
     },
     executeCommand: async (commandId: string, ...args: unknown[]): Promise<unknown> => {

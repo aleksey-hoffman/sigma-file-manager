@@ -11,6 +11,7 @@ use tauri::Emitter;
 
 use super::binaries::get_shared_binaries_dir;
 use super::paths::{canonicalize_path, ensure_path_within_roots, get_extension_dir};
+use super::registry_storage::load_custom_binary_allowed_roots;
 use super::security::authorize_extension_caller;
 use super::state::{next_task_id, COMMAND_EXTENSION_MAP, COMMAND_PIDS, COMMAND_TASKS};
 use super::types::{ExtensionCommandComplete, ExtensionCommandProgress, ExtensionCommandResult};
@@ -222,9 +223,20 @@ fn resolve_extension_command(
 
     let (resolved_command_path, is_system_command) = if let Some(local_path) = resolved_path {
         let normalized = canonicalize_path(&local_path, "command path")?;
+        let custom_binary_roots =
+            load_custom_binary_allowed_roots(app_handle, extension_id).unwrap_or_default();
+        let mut allowed_roots = vec![
+            normalized_extension_dir.as_path(),
+            normalized_shared_dir.as_path(),
+        ];
+
+        for custom_binary_root in &custom_binary_roots {
+            allowed_roots.push(custom_binary_root.as_path());
+        }
+
         ensure_path_within_roots(
             &normalized,
-            &[&normalized_extension_dir, &normalized_shared_dir],
+            &allowed_roots,
             "Access denied: command is outside allowed directories",
         )?;
 
