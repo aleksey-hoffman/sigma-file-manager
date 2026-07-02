@@ -21,6 +21,7 @@ import { createPlatformAPI } from '@/modules/extensions/api/create-platform-api'
 import { createBinaryAPI } from '@/modules/extensions/api/create-binary-api';
 import { createPathAPI } from '@/modules/extensions/api/create-path-api';
 import { createHttpAPI } from '@/modules/extensions/api/create-http-api';
+import { createViewAPI } from '@/modules/extensions/api/create-view-api';
 import { createI18nAPI, type ExtensionLocaleMessages } from '@/modules/extensions/api/create-i18n-api';
 import { isExtensionInstallCancelledError } from '@/modules/extensions/utils/install-cancellation-error';
 
@@ -53,6 +54,7 @@ export function createExtensionAPI(
     dialog: createDialogAPI(context, commandsAPI.executeCommand),
     shell: createShellAPI(context),
     http: createHttpAPI(context),
+    view: createViewAPI(context),
     settings: createSettingsAPI(context),
     storage: createStorageAPI(context),
     platform: createPlatformAPI(),

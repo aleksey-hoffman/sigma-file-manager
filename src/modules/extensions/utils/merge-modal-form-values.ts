@@ -15,7 +15,7 @@ export function mergeModalFormValues<T extends Record<string, unknown>>(
     return nextValues;
   }
 
-  const mergedValues = { ...nextValues };
+  const mergedValues: Record<string, unknown> = { ...nextValues };
 
   for (const key of Object.keys(mergedValues)) {
     if (key in currentValues) {
@@ -23,5 +23,5 @@ export function mergeModalFormValues<T extends Record<string, unknown>>(
     }
   }
 
-  return mergedValues;
+  return mergedValues as T;
 }

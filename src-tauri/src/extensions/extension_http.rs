@@ -9,9 +9,11 @@ use std::time::Duration;
 use reqwest::Method;
 
 use super::http::{read_response_bytes_with_limit, HttpRetryError, HTTP_USER_AGENT};
+use super::manifest_permissions::load_extension_http_allowed_hosts;
 use super::security::{authorize_extension_caller, validate_extension_http_url};
 use super::types::{
-    ExtensionHttpResponsePayload, MAX_EXTENSION_HTTP_RESPONSE_BYTES,
+    ExtensionHttpResponsePayload, MAX_EXTENSION_HTTP_REQUEST_BYTES,
+    MAX_EXTENSION_HTTP_RESPONSE_BYTES,
 };
 
 const DEFAULT_EXTENSION_HTTP_TIMEOUT_MS: u64 = 30_000;
@@ -71,19 +73,31 @@ fn map_http_retry_error(error: HttpRetryError) -> String {
     error.into_message()
 }
 
+fn ensure_request_body_within_limit(body: &[u8]) -> Result<(), String> {
+    if body.len() as u64 > MAX_EXTENSION_HTTP_REQUEST_BYTES {
+        return Err(format!(
+            "HTTP request body exceeds maximum size of {} bytes",
+            MAX_EXTENSION_HTTP_REQUEST_BYTES
+        ));
+    }
+
+    Ok(())
+}
+
 pub async fn extension_http_request(
+    app_handle: tauri::AppHandle,
     extension_id: String,
     url: String,
     method: Option<String>,
     headers: Option<HashMap<String, String>>,
     body: Option<Vec<u8>>,
     timeout_ms: Option<u64>,
-    allowed_hosts: Option<Vec<String>>,
     caller_extension_id: Option<String>,
 ) -> Result<ExtensionHttpResponsePayload, String> {
     authorize_extension_caller(caller_extension_id.as_deref(), &extension_id)?;
 
-    let allowed_hosts_ref = allowed_hosts.as_deref();
+    let allowed_hosts = load_extension_http_allowed_hosts(&app_handle, &extension_id)?;
+    let allowed_hosts_ref = Some(allowed_hosts.as_slice());
     let validated_url = validate_extension_http_url(&url, allowed_hosts_ref)?;
     let request_method = parse_http_method(method.as_deref())?;
     let timeout = timeout_ms
@@ -106,6 +120,7 @@ pub async fn extension_http_request(
     }
 
     if let Some(request_body) = body {
+        ensure_request_body_within_limit(&request_body)?;
         request_builder = request_builder.body(request_body);
     }
 
@@ -132,4 +147,22 @@ pub async fn extension_http_request(
         headers: response_headers,
         body: response_body,
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{ensure_request_body_within_limit, MAX_EXTENSION_HTTP_REQUEST_BYTES};
+
+    #[test]
+    fn rejects_oversized_request_body() {
+        let oversized_body = vec![0_u8; MAX_EXTENSION_HTTP_REQUEST_BYTES as usize + 1];
+        let error = ensure_request_body_within_limit(&oversized_body).unwrap_err();
+        assert!(error.contains("HTTP request body exceeds maximum size"));
+    }
+
+    #[test]
+    fn allows_request_body_within_limit() {
+        let body = vec![0_u8; MAX_EXTENSION_HTTP_REQUEST_BYTES as usize];
+        assert!(ensure_request_body_within_limit(&body).is_ok());
+    }
 }

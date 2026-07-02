@@ -9,7 +9,10 @@ import type {
 } from '@/types/extension';
 import { getPaletteCommandEntries } from '@/modules/extensions/utils/command-display';
 
-function createInstalledExtension(commandTitle: string): InstalledExtension {
+function createInstalledExtension(
+  commandTitle: string,
+  commandId = 'test-command',
+): InstalledExtension {
   return {
     id: 'sigma.test-extension',
     version: '1.0.0',
@@ -31,7 +34,7 @@ function createInstalledExtension(commandTitle: string): InstalledExtension {
       contributes: {
         commands: [
           {
-            id: 'test-command',
+            id: commandId,
             title: commandTitle,
           },
         ],
@@ -90,21 +93,8 @@ describe('getPaletteCommandEntries', () => {
   });
 
   it('prefixes manifest command ids that contain dots', () => {
-    const enabledExtensions: InstalledExtension[] = [
-      {
-        ...createInstalledExtension('Manifest Title'),
-        manifest: {
-          ...createInstalledExtension('Manifest Title').manifest,
-          contributes: {
-            commands: [
-              {
-                id: 'demo-http-form',
-                title: 'Demo HTTP form modal',
-              },
-            ],
-          },
-        },
-      },
+    const enabledExtensions = [
+      createInstalledExtension('Demo HTTP form modal', 'demo-http-form'),
     ];
 
     const entries = getPaletteCommandEntries(enabledExtensions, []);

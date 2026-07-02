@@ -12,6 +12,7 @@ pub const MAX_EXTENSION_ARCHIVE_BYTES: u64 = 100 * 1024 * 1024;
 pub const MAX_TEXT_FETCH_BYTES: u64 = 2 * 1024 * 1024;
 pub const MAX_BINARY_DOWNLOAD_BYTES: u64 = 512 * 1024 * 1024;
 pub const MAX_EXTENSION_HTTP_RESPONSE_BYTES: u64 = 10 * 1024 * 1024;
+pub const MAX_EXTENSION_HTTP_REQUEST_BYTES: u64 = 10 * 1024 * 1024;
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]

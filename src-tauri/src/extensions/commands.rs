@@ -250,23 +250,23 @@ pub async fn download_extension_file(
 
 #[tauri::command]
 pub async fn extension_http_request(
+    app_handle: tauri::AppHandle,
     extension_id: String,
     url: String,
     method: Option<String>,
     headers: Option<std::collections::HashMap<String, String>>,
     body: Option<Vec<u8>>,
     timeout_ms: Option<u64>,
-    allowed_hosts: Option<Vec<String>>,
     caller_extension_id: Option<String>,
 ) -> Result<ExtensionHttpResponsePayload, String> {
     extension_http::extension_http_request(
+        app_handle,
         extension_id,
         url,
         method,
         headers,
         body,
         timeout_ms,
-        allowed_hosts,
         caller_extension_id,
     )
     .await

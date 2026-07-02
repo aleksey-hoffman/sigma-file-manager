@@ -19,7 +19,33 @@ export type ExtensionPermission
     | 'shell'
     | 'clipboard'
     | 'openUrl'
-    | 'http';
+    | 'http'
+    | 'view';
+
+export type ExtensionViewLayout = 'compact-list' | 'list' | 'grid';
+
+export type ExtensionViewSortColumn
+  = | 'name'
+    | 'kind'
+    | 'items'
+    | 'size'
+    | 'modified'
+    | 'created'
+    | 'tags'
+    | 'links'
+    | 'linkStatus';
+
+export type ExtensionViewSortDirection = 'asc' | 'desc';
+
+export interface ExtensionViewSorting {
+  by: ExtensionViewSortColumn;
+  order: ExtensionViewSortDirection;
+}
+
+export interface ExtensionViewSetSortingOptions {
+  by: ExtensionViewSortColumn | 'dateModified' | 'dateCreated' | 'type';
+  order?: ExtensionViewSortDirection;
+}
 
 export interface ExtensionHttpHostPermission {
   name: 'http';
@@ -814,6 +840,19 @@ export interface SigmaExtensionAPI {
   };
   http: {
     request(options: ExtensionHttpRequestOptions): Promise<ExtensionHttpResponse>;
+  };
+  view: {
+    /** Returns the current navigator layout mode. */
+    getLayout(): Promise<ExtensionViewLayout>;
+    /** Changes the navigator layout mode for the active file browser. */
+    setLayout(mode: ExtensionViewLayout): Promise<void>;
+    /** Returns sorting for the active layout mode (list settings are used for compact-list). */
+    getSorting(): Promise<ExtensionViewSorting>;
+    /**
+     * Changes sorting for the active layout mode.
+     * Accepts canonical column names and aliases: dateModified, dateCreated, type.
+     */
+    setSorting(options: ExtensionViewSetSortingOptions): Promise<void>;
   };
   settings: {
     get<T>(key: string): Promise<T | undefined>;

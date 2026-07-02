@@ -57,6 +57,7 @@ export type ModalInstance = {
   searchChangeCallbacks: ListDetailSearchChangeCallback[];
   filterChangeCallbacks: ListDetailFilterChangeCallback[];
   renderedInPalette: boolean;
+  contentRevision: number;
 };
 
 type PaletteFormHandler = (modal: ModalInstance) => void;
@@ -230,6 +231,7 @@ function createModalInstance(
     searchChangeCallbacks: [],
     filterChangeCallbacks: [],
     renderedInPalette,
+    contentRevision: 0,
   });
 }
 
@@ -296,6 +298,7 @@ function createModalHandle(modalId: string, instance: ModalInstance): ModalHandl
 
       mutableInstance.options.content = content;
       mutableInstance.values = newValues;
+      mutableInstance.contentRevision += 1;
     },
     setButtons: (buttons: ModalButton[]) => {
       const mutableInstance = resolveInstance(modalId, instance);

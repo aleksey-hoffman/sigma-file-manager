@@ -389,6 +389,7 @@ defineExpose({
           :extension-name="paletteExtensionDisplay.extensionName"
           :command-title="paletteModal!.options.commandTitle ?? paletteCommandTitle"
           :content="paletteModal!.options.content ?? []"
+          :content-revision="paletteModal!.contentRevision"
           :buttons="paletteModal!.options.buttons"
           :values="paletteModal!.values"
           :on-back="handleFormBack"

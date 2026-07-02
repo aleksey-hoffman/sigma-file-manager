@@ -64,7 +64,6 @@ export function createHttpAPI(context: ExtensionContext) {
           headers: options.headers,
           body: encodeRequestBody(options.body),
           timeoutMs: options.timeoutMs,
-          allowedHosts: context.httpAllowedHosts,
         },
       );
 

@@ -11,6 +11,7 @@ mod fs_ops;
 mod github;
 mod http;
 mod install;
+mod manifest_permissions;
 mod misc;
 mod paths;
 mod processes;
@@ -71,6 +72,14 @@ mod tests {
         let allowed_hosts = vec!["http://127.0.0.1:8080".to_string()];
         assert!(
             validate_extension_http_url("http://127.0.0.1:9090/search", Some(&allowed_hosts)).is_err()
+        );
+    }
+
+    #[test]
+    fn rejects_urls_that_do_not_match_manifest_hosts() {
+        let manifest_hosts = vec!["https://httpbin.org".to_string()];
+        assert!(
+            validate_extension_http_url("https://example.com/get", Some(&manifest_hosts)).is_err()
         );
     }
 

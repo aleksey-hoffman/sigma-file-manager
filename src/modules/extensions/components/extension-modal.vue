@@ -120,6 +120,7 @@ function handleClose(): void {
           :extension-name="extensionDisplay.extensionName"
           :command-title="commandTitle"
           :content="modal.options.content ?? []"
+          :content-revision="modal.contentRevision"
           :buttons="modal.options.buttons"
           :values="modal.values"
           :on-close="handleClose"

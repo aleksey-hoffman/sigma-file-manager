@@ -166,11 +166,30 @@ describe('modal-state', () => {
 
   it('updateElement updates content and values', () => {
     const handle = createModal('test.ext', createOptions());
+    const modal = getActiveModals().value.find(entry => entry.extensionId === 'test.ext');
+    const initialRevision = modal?.contentRevision ?? 0;
 
     handle.updateElement('name', { value: 'patched' });
 
     const values = handle.getValues();
     expect(values.name).toBe('patched');
+    expect(modal?.contentRevision).toBe(initialRevision);
+  });
+
+  it('setContent increments contentRevision', () => {
+    const handle = createModal('test.ext', createOptions());
+    const modal = getActiveModals().value.find(entry => entry.extensionId === 'test.ext');
+    const initialRevision = modal?.contentRevision ?? 0;
+
+    handle.setContent([
+      {
+        type: 'input' as const,
+        id: 'name',
+        value: 'replaced',
+      },
+    ]);
+
+    expect(modal?.contentRevision).toBe(initialRevision + 1);
   });
 
   it('setContent preserves existing values for matching ids by default', () => {

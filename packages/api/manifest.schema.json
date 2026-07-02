@@ -240,7 +240,8 @@
               "dialogs",
               "shell",
               "clipboard",
-              "openUrl"
+              "openUrl",
+              "view"
             ]
           },
           {
@@ -260,7 +261,8 @@
                 "minItems": 1,
                 "items": {
                   "type": "string",
-                  "minLength": 1
+                  "minLength": 1,
+                  "pattern": "^https?://[A-Za-z0-9.-]+(?::(\\*|\\d+))?$"
                 }
               }
             }

@@ -25,6 +25,7 @@ const BASE_EXTENSION_PERMISSIONS: ExtensionPermission[] = [
   'shell',
   'clipboard',
   'openUrl',
+  'view',
 ];
 
 function isObjectRecord(value: unknown): value is Record<string, unknown> {

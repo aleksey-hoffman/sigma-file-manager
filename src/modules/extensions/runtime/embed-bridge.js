@@ -286,6 +286,12 @@ const sigma = {
   http: {
     request: options => callHost('http.request', options),
   },
+  view: {
+    getLayout: () => callHost('view.getLayout'),
+    setLayout: mode => callHost('view.setLayout', mode),
+    getSorting: () => callHost('view.getSorting'),
+    setSorting: options => callHost('view.setSorting', options),
+  },
   fs: {
     readFile: path => callHost('fs.readFile', path),
     writeFile: (path, data) => callHost('fs.writeFile', path, data),

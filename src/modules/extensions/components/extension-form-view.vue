@@ -35,6 +35,7 @@ import {
 } from '@/modules/extensions/utils/modal-keyboard-shortcut';
 import { getPrimaryModalButton, resolveModalActionButtons } from '@/modules/extensions/utils/modal-action-buttons';
 import { useExtensionModalOtherActionsShortcut } from '@/modules/extensions/composables/use-extension-modal-other-actions-shortcut';
+import { getScrollViewportFromElement } from '@/utils/scroll-viewport';
 import ExtensionModalHeader from './extension-modal-header.vue';
 import ExtensionModalActionFooter from './extension-modal-action-footer.vue';
 
@@ -45,6 +46,7 @@ type ExtensionModalActionFooterExpose = {
 const props = defineProps<{
   title: string;
   content: UIElement[];
+  contentRevision?: number;
   buttons?: ModalButton[];
   values: Record<string, unknown>;
   extensionId?: string;
@@ -227,6 +229,18 @@ async function focusFirstInteractiveField(): Promise<void> {
   }
 }
 
+async function resetScrollAndFocus(): Promise<void> {
+  await nextTick();
+
+  const scrollViewport = getScrollViewportFromElement(formRootElement.value);
+
+  if (scrollViewport) {
+    scrollViewport.scrollTop = 0;
+  }
+
+  await focusFirstInteractiveField();
+}
+
 onMounted(() => {
   void focusFirstInteractiveField();
   void nextTick(resizeTextareas);
@@ -235,9 +249,27 @@ onMounted(() => {
 watch(
   () => props.content,
   () => {
-    resizeTextareas();
+    void nextTick(resizeTextareas);
   },
   { deep: true },
+);
+
+watch(
+  () => props.contentRevision,
+  (contentRevision, previousContentRevision) => {
+    if (contentRevision === undefined || previousContentRevision === undefined) {
+      return;
+    }
+
+    if (contentRevision === previousContentRevision) {
+      return;
+    }
+
+    void nextTick(() => {
+      resizeTextareas();
+      void resetScrollAndFocus();
+    });
+  },
 );
 </script>
 

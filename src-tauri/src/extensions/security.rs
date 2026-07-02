@@ -117,7 +117,11 @@ fn default_port_for_scheme(scheme: &str) -> u16 {
     }
 }
 
-fn parse_host_allowlist_pattern(pattern: &str) -> Result<HostAllowlistPattern, String> {
+pub fn validate_http_host_pattern(pattern: &str) -> Result<(), String> {
+    parse_host_allowlist_pattern(pattern).map(|_| ())
+}
+
+pub(crate) fn parse_host_allowlist_pattern(pattern: &str) -> Result<HostAllowlistPattern, String> {
     let trimmed_pattern = pattern.trim();
 
     if trimmed_pattern.is_empty() {

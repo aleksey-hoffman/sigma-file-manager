@@ -139,6 +139,11 @@ export const EXTENSION_PERMISSIONS_INFO: Record<string, {
     description: 'Make HTTP requests only to hosts listed in the manifest allowlist',
     risk: 'high',
   },
+  'view': {
+    title: 'Navigator View',
+    description: 'Read and change the file browser layout and sorting settings',
+    risk: 'medium',
+  },
 };
 
 export const EXTENSION_TYPES_INFO: Record<string, {

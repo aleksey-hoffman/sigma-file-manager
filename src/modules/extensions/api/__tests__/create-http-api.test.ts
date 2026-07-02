@@ -98,7 +98,6 @@ describe('createHttpAPI', () => {
         },
         body: undefined,
         timeoutMs: 5000,
-        allowedHosts: ['http://localhost:*'],
       },
     );
     expect(response.ok).toBe(true);

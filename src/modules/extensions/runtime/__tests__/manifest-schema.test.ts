@@ -56,6 +56,36 @@ describe('manifest JSON schema icon theme validation', () => {
   });
 });
 
+describe('manifest JSON schema http host validation', () => {
+  it('rejects invalid http host patterns', () => {
+    const invalidHosts = [
+      '',
+      '   ',
+      'ftp://example.com',
+      'https://',
+      'example.com',
+      'http://localhost:abc',
+    ];
+
+    for (const invalidHost of invalidHosts) {
+      expect(matchesHttpHostPatternSchema(invalidHost)).toBe(false);
+    }
+  });
+
+  it('accepts valid http host patterns', () => {
+    const validHosts = [
+      'https://httpbin.org',
+      'http://localhost:*',
+      'http://127.0.0.1:8080',
+      'https://jsonplaceholder.typicode.com',
+    ];
+
+    for (const validHost of validHosts) {
+      expect(matchesHttpHostPatternSchema(validHost)).toBe(true);
+    }
+  });
+});
+
 function matchesIconThemePropertySchema(propertyName: string, value: string): boolean {
   const propertySchema = getIconThemePropertySchema(propertyName);
   const minLength = propertySchema.minLength;
@@ -82,6 +112,42 @@ function getIconThemePropertySchema(propertyName: string): JsonObject {
   const iconThemeProperties = asJsonObject(iconThemeItem.properties);
 
   return asJsonObject(iconThemeProperties[propertyName]);
+}
+
+function matchesHttpHostPatternSchema(value: string): boolean {
+  const permissions = asJsonObject(manifestSchema.properties).permissions;
+  const permissionsSchema = asJsonObject(permissions);
+  const permissionItems = permissionsSchema.items as JsonObject;
+  const permissionVariants = permissionItems.oneOf as JsonObject[];
+  const httpPermissionSchema = permissionVariants.find((variant) => {
+    if (variant.type !== 'object') {
+      return false;
+    }
+
+    const properties = asJsonObject(variant.properties);
+    const nameProperty = asJsonObject(properties.name);
+    return nameProperty.const === 'http';
+  });
+
+  if (!httpPermissionSchema) {
+    throw new Error('HTTP permission schema variant not found');
+  }
+
+  const httpProperties = asJsonObject(httpPermissionSchema.properties);
+  const hostsProperty = asJsonObject(httpProperties.hosts);
+  const hostItemSchema = asJsonObject(hostsProperty.items);
+
+  if (typeof hostItemSchema.minLength === 'number' && value.length < hostItemSchema.minLength) {
+    return false;
+  }
+
+  const pattern = hostItemSchema.pattern;
+
+  if (typeof pattern === 'string' && !new RegExp(pattern).test(value)) {
+    return false;
+  }
+
+  return true;
 }
 
 function asJsonObject(value: unknown): JsonObject {
