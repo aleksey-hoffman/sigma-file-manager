@@ -17,6 +17,12 @@ describe('parseExtensionPermissions', () => {
     );
   });
 
+  it('parses view permission', () => {
+    expect(parseExtensionPermissions(['commands', 'view'])).toEqual({
+      permissions: ['commands', 'view'],
+    });
+  });
+
   it('parses http permission with host allowlist', () => {
     expect(parseExtensionPermissions([
       {

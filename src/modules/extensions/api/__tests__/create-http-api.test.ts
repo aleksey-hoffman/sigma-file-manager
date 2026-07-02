@@ -2,7 +2,7 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createHttpAPI } from '@/modules/extensions/api/create-http-api';
 import type { ExtensionContext } from '@/modules/extensions/api/extension-context';
 import type { ExtensionPermission } from '@/types/extension';
@@ -47,16 +47,12 @@ function createContext(
 }
 
 describe('createHttpAPI', () => {
-  it('requires http permission', async () => {
-    const httpApi = createHttpAPI(createContext([]));
-
-    await expect(httpApi.request({ url: 'https://example.com' })).rejects.toThrow(
-      'extensions.api.permissionDenied',
-    );
+  beforeEach(() => {
+    vi.mocked(invokeAsExtension).mockReset();
   });
 
-  it('requires a host allowlist', async () => {
-    const httpApi = createHttpAPI(createContext(['http']));
+  it('requires http permission', async () => {
+    const httpApi = createHttpAPI(createContext([]));
 
     await expect(httpApi.request({ url: 'https://example.com' })).rejects.toThrow(
       'extensions.api.permissionDenied',
@@ -103,5 +99,18 @@ describe('createHttpAPI', () => {
     expect(response.ok).toBe(true);
     expect(response.status).toBe(200);
     expect(response.body).toEqual(new Uint8Array([123, 125]));
+  });
+
+  it('rejects oversized request bodies before invoking the host command', async () => {
+    const httpApi = createHttpAPI(createContext(['http'], ['https://example.com']));
+    const oversizedBody = new Uint8Array(10 * 1024 * 1024 + 1);
+
+    await expect(httpApi.request({
+      url: 'https://example.com',
+      method: 'POST',
+      body: oversizedBody,
+    })).rejects.toThrow('HTTP request body exceeds maximum size');
+
+    expect(invokeAsExtension).not.toHaveBeenCalled();
   });
 });

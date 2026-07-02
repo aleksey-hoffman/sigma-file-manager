@@ -2,13 +2,28 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
+use std::collections::HashMap;
 use std::fs;
+use std::sync::{Mutex, OnceLock};
+use std::time::SystemTime;
 
 use serde_json::Value;
 
 use super::paths::get_extension_dir;
 use super::security::validate_http_host_pattern;
 use super::types::EXTENSION_MANIFEST_FILE;
+
+struct CachedHttpAllowedHosts {
+    modified_time: SystemTime,
+    hosts: Vec<String>,
+}
+
+static HTTP_ALLOWED_HOSTS_CACHE: OnceLock<Mutex<HashMap<String, CachedHttpAllowedHosts>>> =
+    OnceLock::new();
+
+fn http_allowed_hosts_cache() -> &'static Mutex<HashMap<String, CachedHttpAllowedHosts>> {
+    HTTP_ALLOWED_HOSTS_CACHE.get_or_init(|| Mutex::new(HashMap::new()))
+}
 
 pub fn parse_extension_http_allowed_hosts(manifest: &Value) -> Result<Vec<String>, String> {
     let permissions = manifest
@@ -77,6 +92,23 @@ pub fn load_extension_http_allowed_hosts(
         ));
     }
 
+    let manifest_modified_time = fs::metadata(&manifest_path)
+        .and_then(|metadata| metadata.modified())
+        .map_err(|error| {
+            format!(
+                "Access denied: failed to read {} metadata for extension {}: {}",
+                EXTENSION_MANIFEST_FILE, extension_id, error
+            )
+        })?;
+
+    if let Ok(cache) = http_allowed_hosts_cache().lock() {
+        if let Some(cached_entry) = cache.get(extension_id) {
+            if cached_entry.modified_time == manifest_modified_time {
+                return Ok(cached_entry.hosts.clone());
+            }
+        }
+    }
+
     let manifest_content = fs::read_to_string(&manifest_path).map_err(|error| {
         format!(
             "Access denied: failed to read {} for extension {}: {}",
@@ -91,7 +123,19 @@ pub fn load_extension_http_allowed_hosts(
         )
     })?;
 
-    parse_extension_http_allowed_hosts(&manifest)
+    let allowed_hosts = parse_extension_http_allowed_hosts(&manifest)?;
+
+    if let Ok(mut cache) = http_allowed_hosts_cache().lock() {
+        cache.insert(
+            extension_id.to_string(),
+            CachedHttpAllowedHosts {
+                modified_time: manifest_modified_time,
+                hosts: allowed_hosts.clone(),
+            },
+        );
+    }
+
+    Ok(allowed_hosts)
 }
 
 #[cfg(test)]

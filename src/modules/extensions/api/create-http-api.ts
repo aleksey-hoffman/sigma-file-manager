@@ -7,6 +7,7 @@ import type {
   ExtensionHttpResponse,
 } from '@/types/extension';
 import type { ExtensionContext } from '@/modules/extensions/api/extension-context';
+import { MAX_EXTENSION_HTTP_REQUEST_BYTES } from '@/modules/extensions/constants/extension-http-limits';
 import { invokeAsExtension } from '@/modules/extensions/runtime/extension-invoke';
 
 type ExtensionHttpResponsePayload = {
@@ -36,21 +37,23 @@ function encodeRequestBody(body: ExtensionHttpRequestOptions['body']): number[] 
     return undefined;
   }
 
-  if (typeof body === 'string') {
-    return Array.from(new TextEncoder().encode(body));
+  const encodedBody = typeof body === 'string'
+    ? new TextEncoder().encode(body)
+    : body;
+
+  if (encodedBody.byteLength > MAX_EXTENSION_HTTP_REQUEST_BYTES) {
+    throw new Error(
+      `HTTP request body exceeds maximum size of ${MAX_EXTENSION_HTTP_REQUEST_BYTES} bytes`,
+    );
   }
 
-  return Array.from(body);
+  return Array.from(encodedBody);
 }
 
 export function createHttpAPI(context: ExtensionContext) {
   return {
     request: async (options: ExtensionHttpRequestOptions): Promise<ExtensionHttpResponse> => {
       if (!context.hasPermission('http')) {
-        throw new Error(context.t('extensions.api.permissionDenied', { permission: 'http' }));
-      }
-
-      if (!context.httpAllowedHosts || context.httpAllowedHosts.length === 0) {
         throw new Error(context.t('extensions.api.permissionDenied', { permission: 'http' }));
       }
 
