@@ -7,7 +7,9 @@ import type { UserSettingsNavigator } from '@/types/user-settings';
 import {
   buildExtensionViewSortingUpdates,
   isExtensionViewLayout,
+  isExtensionViewSortDirection,
   normalizeExtensionViewSortColumn,
+  normalizeExtensionViewSortDirection,
   readExtensionViewLayout,
   readExtensionViewSorting,
   toNavigatorLayoutType,
@@ -50,6 +52,19 @@ describe('extension-view-settings', () => {
   it('normalizes legacy sort column aliases', () => {
     expect(normalizeExtensionViewSortColumn('dateModified')).toBe('modified');
     expect(normalizeExtensionViewSortColumn('type')).toBe('kind');
+  });
+
+  it('validates supported sort directions', () => {
+    expect(isExtensionViewSortDirection('asc')).toBe(true);
+    expect(isExtensionViewSortDirection('desc')).toBe(true);
+    expect(isExtensionViewSortDirection('ascending')).toBe(false);
+  });
+
+  it('rejects invalid sort order values', () => {
+    expect(() => buildExtensionViewSortingUpdates(createNavigator(), 'list', {
+      by: 'name',
+      order: 'ascending' as never,
+    })).toThrow('Invalid sort order: ascending');
   });
 
   it('reads layout and sorting for the active view', () => {

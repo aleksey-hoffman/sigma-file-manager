@@ -6,6 +6,7 @@ import type {
   ExtensionViewLayout,
   ExtensionViewSetSortingOptions,
   ExtensionViewSortColumn,
+  ExtensionViewSortDirection,
   ExtensionViewSorting,
 } from '@sigma-file-manager/api';
 import type {
@@ -29,6 +30,11 @@ const EXTENSION_VIEW_LAYOUTS: readonly ExtensionViewLayout[] = [
   'grid',
 ];
 
+const EXTENSION_VIEW_SORT_DIRECTIONS: readonly ExtensionViewSortDirection[] = [
+  'asc',
+  'desc',
+];
+
 const EXTENSION_VIEW_SORT_COLUMN_ALIASES: Record<string, ExtensionViewSortColumn> = {
   dateModified: 'modified',
   dateCreated: 'created',
@@ -39,6 +45,10 @@ export function isExtensionViewLayout(value: string): value is ExtensionViewLayo
   return EXTENSION_VIEW_LAYOUTS.includes(value as ExtensionViewLayout);
 }
 
+export function isExtensionViewSortDirection(value: string): value is ExtensionViewSortDirection {
+  return EXTENSION_VIEW_SORT_DIRECTIONS.includes(value as ExtensionViewSortDirection);
+}
+
 export function normalizeExtensionViewSortColumn(value: string): ExtensionViewSortColumn {
   const normalizedValue = EXTENSION_VIEW_SORT_COLUMN_ALIASES[value] ?? value;
 
@@ -47,6 +57,14 @@ export function normalizeExtensionViewSortColumn(value: string): ExtensionViewSo
   }
 
   return normalizedValue;
+}
+
+export function normalizeExtensionViewSortDirection(value: string): ExtensionViewSortDirection {
+  if (!isExtensionViewSortDirection(value)) {
+    throw new Error(`Invalid sort order: ${value}`);
+  }
+
+  return value;
 }
 
 export function toNavigatorLayoutType(mode: ExtensionViewLayout): NavigatorLayout['type'] {
@@ -98,6 +116,8 @@ export function buildExtensionViewSortingUpdates(
   const settingKeys = getNavigatorSortSettingKeys(sortLayout);
 
   if (options.order !== undefined) {
+    const order = normalizeExtensionViewSortDirection(options.order);
+
     return [
       {
         key: settingKeys.column,
@@ -105,7 +125,7 @@ export function buildExtensionViewSortingUpdates(
       },
       {
         key: settingKeys.direction,
-        value: options.order,
+        value: order,
       },
     ];
   }

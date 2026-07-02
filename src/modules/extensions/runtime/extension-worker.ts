@@ -929,6 +929,12 @@ function createBridge() {
     http: {
       request: makeCall('http.request'),
     },
+    view: {
+      getLayout: makeCall('view.getLayout'),
+      setLayout: makeCall('view.setLayout'),
+      getSorting: makeCall('view.getSorting'),
+      setSorting: makeCall('view.setSorting'),
+    },
     settings: {
       get: makeCall('settings.get'),
       set: makeCall('settings.set'),

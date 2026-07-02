@@ -91,4 +91,13 @@ describe('createViewAPI', () => {
     expect(userSettingsStoreMock.set).toHaveBeenCalledWith('navigator.gridSortColumn', 'modified');
     expect(userSettingsStoreMock.set).toHaveBeenCalledWith('navigator.gridSortDirection', 'desc');
   });
+
+  it('rejects invalid sort order values', async () => {
+    const viewApi = createViewAPI(createContext(['view']));
+
+    await expect(viewApi.setSorting({
+      by: 'name',
+      order: 'ascending' as never,
+    })).rejects.toThrow('Invalid sort order: ascending');
+  });
 });
