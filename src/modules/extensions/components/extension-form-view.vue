@@ -35,7 +35,6 @@ import {
 } from '@/modules/extensions/utils/modal-keyboard-shortcut';
 import { getPrimaryModalButton, resolveModalActionButtons } from '@/modules/extensions/utils/modal-action-buttons';
 import { useExtensionModalOtherActionsShortcut } from '@/modules/extensions/composables/use-extension-modal-other-actions-shortcut';
-import { getScrollViewportFromElement } from '@/utils/scroll-viewport';
 import ExtensionModalHeader from './extension-modal-header.vue';
 import ExtensionModalActionFooter from './extension-modal-action-footer.vue';
 
@@ -125,10 +124,11 @@ const hasSecondaryActions = computed(() => {
   return resolveModalActionButtons(actionButtons.value).secondaryButtons.length > 0;
 });
 
-const { tryOpenOtherActions, focusModalRoot } = useExtensionModalOtherActionsShortcut({
+const { focusModalRoot } = useExtensionModalOtherActionsShortcut({
   rootElement: formRootElement,
   actionFooterRef,
   hasSecondaryActions,
+  handleKeyboardShortcut: handleFormKeyboardShortcut,
 });
 
 function triggerPrimaryAction(): void {
@@ -139,11 +139,7 @@ function triggerPrimaryAction(): void {
   }
 }
 
-function handleFormKeydown(event: KeyboardEvent): void {
-  if (tryOpenOtherActions(event)) {
-    return;
-  }
-
+function handleFormKeyboardShortcut(event: KeyboardEvent): void {
   for (const button of actionButtons.value) {
     if (button.shortcut && keyboardShortcutMatches(event, button.shortcut)) {
       event.preventDefault();
@@ -166,8 +162,25 @@ function handleFormKeydown(event: KeyboardEvent): void {
   if (isUnmodifiedEnterKey(event)) {
     event.preventDefault();
     triggerPrimaryAction();
+  }
+}
+
+function handleFormMouseDown(event: MouseEvent): void {
+  const target = event.target;
+
+  if (!(target instanceof Element) || !formRootElement.value) {
     return;
   }
+
+  const interactiveField = target.closest(
+    'input, textarea, button, a, [role="combobox"], .sigma-ui-select-trigger, .sigma-ui-checkbox, label',
+  );
+
+  if (interactiveField && formRootElement.value.contains(interactiveField)) {
+    return;
+  }
+
+  focusModalRoot();
 }
 
 function parseSkeletonDimensions(value: unknown): {
@@ -207,18 +220,10 @@ async function focusFirstInteractiveField(): Promise<void> {
 
   if (!formRootElement.value) return;
 
-  const activeElement = document.activeElement as HTMLElement | null;
-
-  if (activeElement) {
-    const formField = activeElement.closest?.(
-      'input, textarea, [role="combobox"], .sigma-ui-select-trigger',
-    );
-
-    if (formField && formRootElement.value.contains(formField)) return;
-  }
+  if (isFocusWithinFormInteraction()) return;
 
   const firstFocusableElement = formRootElement.value.querySelector<HTMLElement>(
-    'input:not([disabled]), textarea:not([disabled]), button[role="combobox"]:not([disabled]), .sigma-ui-select-trigger:not([disabled])',
+    'input:not([disabled]), textarea:not([disabled]), button[role="combobox"]:not([disabled]), button[role="checkbox"]:not([disabled]), .sigma-ui-select-trigger:not([disabled]), .sigma-ui-checkbox:not([disabled])',
   );
 
   if (firstFocusableElement) {
@@ -229,16 +234,17 @@ async function focusFirstInteractiveField(): Promise<void> {
   }
 }
 
-async function resetScrollAndFocus(): Promise<void> {
-  await nextTick();
+function isFocusWithinFormInteraction(): boolean {
+  if (!formRootElement.value) return false;
 
-  const scrollViewport = getScrollViewportFromElement(formRootElement.value);
+  const activeElement = document.activeElement as HTMLElement | null;
+  if (!activeElement) return false;
 
-  if (scrollViewport) {
-    scrollViewport.scrollTop = 0;
-  }
+  const interactiveField = activeElement.closest?.(
+    'input, textarea, [role="combobox"], .sigma-ui-select-trigger, button[role="checkbox"], .sigma-ui-checkbox, label',
+  );
 
-  await focusFirstInteractiveField();
+  return Boolean(interactiveField && formRootElement.value.contains(interactiveField));
 }
 
 onMounted(() => {
@@ -253,24 +259,6 @@ watch(
   },
   { deep: true },
 );
-
-watch(
-  () => props.contentRevision,
-  (contentRevision, previousContentRevision) => {
-    if (contentRevision === undefined || previousContentRevision === undefined) {
-      return;
-    }
-
-    if (contentRevision === previousContentRevision) {
-      return;
-    }
-
-    void nextTick(() => {
-      resizeTextareas();
-      void resetScrollAndFocus();
-    });
-  },
-);
 </script>
 
 <template>
@@ -278,7 +266,7 @@ watch(
     ref="formRootElement"
     class="ext-form-view"
     tabindex="-1"
-    @keydown="handleFormKeydown"
+    @mousedown="handleFormMouseDown"
     @click="handleFormLinkClick"
   >
     <ExtensionModalHeader
