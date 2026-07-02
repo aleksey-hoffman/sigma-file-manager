@@ -98,6 +98,11 @@ pub fn path_exists(path: String) -> bool {
 }
 
 #[tauri::command]
+pub fn path_is_regular_file(path: String) -> bool {
+    path_helpers::path_is_regular_file(path)
+}
+
+#[tauri::command]
 pub async fn path_exists_with_timeout(path: String, timeout_ms: Option<u64>) -> Option<bool> {
     path_helpers::path_exists_with_timeout(path, timeout_ms.unwrap_or(2500)).await
 }

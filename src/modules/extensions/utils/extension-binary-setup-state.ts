@@ -19,6 +19,7 @@ export type BinarySetupRowState = {
   useManagedDownload: boolean;
   customPath: string;
   validationStatus: 'idle' | 'pending' | 'valid' | 'invalid';
+  validationGeneration: number;
   sharedExtensionCount: number;
   versionMismatch: boolean;
 };
@@ -213,6 +214,7 @@ async function buildBinarySetupRows(
       useManagedDownload,
       customPath: preference.customPath ?? '',
       validationStatus: 'idle' as const,
+      validationGeneration: 0,
       sharedExtensionCount: countOtherExtensionsUsingBinary(binaryDefinition.id, extensionId),
       versionMismatch: hasVersionMismatch(binaryDefinition.id, binaryDefinition.version, extensionId),
     };
@@ -275,6 +277,7 @@ async function buildAllSharedBinarySetupRows(): Promise<BinarySetupRowState[]> {
       useManagedDownload: preference.mode !== 'custom',
       customPath: preference.customPath ?? '',
       validationStatus: 'idle',
+      validationGeneration: 0,
       sharedExtensionCount: countOtherExtensionsUsingBinary(
         platformBinaryDefinition.id,
         representativeExtensionId,

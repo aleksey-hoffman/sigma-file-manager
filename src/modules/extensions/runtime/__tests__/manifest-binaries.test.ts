@@ -202,7 +202,7 @@ describe('syncManifestBinariesForExtension', () => {
     });
 
     invokeMock.mockImplementation(async (command: string) => {
-      if (command === 'path_exists') {
+      if (command === 'path_is_regular_file') {
         return true;
       }
 

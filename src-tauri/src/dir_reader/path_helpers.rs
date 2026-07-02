@@ -28,6 +28,13 @@ pub fn path_exists(path: String) -> bool {
     Path::new(&path).exists()
 }
 
+pub fn path_is_regular_file(path: String) -> bool {
+    Path::new(&path)
+        .symlink_metadata()
+        .map(|metadata| metadata.is_file())
+        .unwrap_or(false)
+}
+
 pub async fn path_exists_with_timeout(path: String, timeout_ms: u64) -> Option<bool> {
     let permit = path_exists_semaphore().acquire_owned().await.ok()?;
 

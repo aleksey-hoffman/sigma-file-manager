@@ -73,6 +73,7 @@ import {
 } from '@/modules/extensions/utils/toast-utils';
 import { filterReachableRegistryEntries } from '@/modules/extensions/utils/registry-utils';
 import { syncManifestBinariesForExtension } from '@/modules/extensions/runtime/manifest-binaries';
+import { reconcileCustomBinaryPreferences } from '@/modules/extensions/utils/reconcile-custom-binary-preferences';
 import {
   getPlatformBinaryDefinitions,
   promptBinarySetup,
@@ -2031,6 +2032,7 @@ export const useExtensionsStore = defineStore('extensions', () => {
 
     await storageStore.init();
     await reconcileInstalledExtensions();
+    await reconcileCustomBinaryPreferences();
     await cleanupOrphanedIncompleteExtensionInstalls();
     await runCustomBinaryHealthCheck();
 

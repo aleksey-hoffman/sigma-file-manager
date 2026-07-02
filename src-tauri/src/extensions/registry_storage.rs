@@ -85,6 +85,45 @@ fn resolve_custom_binary_allowed_root(binary_path: &Path) -> Option<PathBuf> {
     canonicalize_path(parent_directory, "custom binary parent directory").ok()
 }
 
+fn resolve_custom_binary_command_path(binary_path: &Path) -> Option<PathBuf> {
+    let trimmed_path = binary_path.as_os_str().to_string_lossy().trim().to_string();
+
+    if trimmed_path.is_empty() {
+        return None;
+    }
+
+    let binary_path = PathBuf::from(trimmed_path);
+
+    if is_drive_root_directory(binary_path.as_path()) {
+        return None;
+    }
+
+    canonicalize_path_for_creation(&binary_path, "custom binary path").ok()
+}
+
+fn replace_ffmpeg_with_ffprobe(file_name: &str) -> Option<String> {
+    let lower = file_name.to_ascii_lowercase();
+    let ffmpeg_index = lower.find("ffmpeg")?;
+    let mut result = String::new();
+    result.push_str(&file_name[..ffmpeg_index]);
+    result.push_str("ffprobe");
+    result.push_str(&file_name[ffmpeg_index + "ffmpeg".len()..]);
+    Some(result)
+}
+
+fn derive_ffprobe_sibling_path(binary_path: &Path) -> Option<PathBuf> {
+    let file_name = binary_path.file_name()?.to_str()?;
+    let sibling_name = replace_ffmpeg_with_ffprobe(file_name)?;
+    let parent_directory = binary_path.parent()?;
+    let sibling_path = parent_directory.join(sibling_name);
+
+    if !sibling_path.is_file() {
+        return None;
+    }
+
+    canonicalize_path(&sibling_path, "ffprobe sibling path").ok()
+}
+
 pub fn collect_custom_binary_allowed_roots(
     storage_value: &Value,
     extension_id: &str,
@@ -134,12 +173,67 @@ pub fn collect_custom_binary_allowed_roots(
     allowed_roots
 }
 
-pub fn load_custom_binary_allowed_roots(
+pub fn collect_custom_binary_allowed_command_paths(
+    storage_value: &Value,
+    extension_id: &str,
+) -> Vec<PathBuf> {
+    let Some(shared_binaries) = storage_value
+        .get("sharedBinaries")
+        .and_then(Value::as_object)
+    else {
+        return Vec::new();
+    };
+
+    let mut allowed_paths = Vec::new();
+
+    for binary_value in shared_binaries.values() {
+        let Some(binary_object) = binary_value.as_object() else {
+            continue;
+        };
+
+        if binary_object
+            .get("source")
+            .and_then(Value::as_str)
+            != Some("custom")
+        {
+            continue;
+        }
+
+        if !extension_uses_custom_binary(binary_object, extension_id) {
+            continue;
+        }
+
+        let Some(binary_path) = binary_object
+            .get("path")
+            .and_then(Value::as_str)
+            .map(str::trim)
+            .filter(|path| !path.is_empty())
+        else {
+            continue;
+        };
+
+        let binary_path = Path::new(binary_path);
+
+        if let Some(command_path) = resolve_custom_binary_command_path(binary_path) {
+            allowed_paths.push(command_path);
+        }
+
+        if let Some(ffprobe_path) = derive_ffprobe_sibling_path(binary_path) {
+            allowed_paths.push(ffprobe_path);
+        }
+    }
+
+    allowed_paths.sort();
+    allowed_paths.dedup();
+    allowed_paths
+}
+
+pub fn load_custom_binary_allowed_command_paths(
     app_handle: &tauri::AppHandle,
     extension_id: &str,
 ) -> Result<Vec<PathBuf>, String> {
     let storage_value = read_extensions_storage_value(app_handle)?;
-    Ok(collect_custom_binary_allowed_roots(
+    Ok(collect_custom_binary_allowed_command_paths(
         &storage_value,
         extension_id,
     ))
@@ -147,7 +241,9 @@ pub fn load_custom_binary_allowed_roots(
 
 #[cfg(test)]
 mod tests {
-    use super::collect_custom_binary_allowed_roots;
+    use super::{
+        collect_custom_binary_allowed_command_paths, collect_custom_binary_allowed_roots,
+    };
     use serde_json::json;
     use std::fs;
     use tempfile::tempdir;
@@ -184,6 +280,74 @@ mod tests {
                 .to_string_lossy()
                 .replace('\\', "/")
         );
+    }
+
+    #[test]
+    fn collects_exact_command_paths_and_rejects_unrelated_binaries_in_same_directory() {
+        let temp_directory = tempdir().expect("create temp directory");
+        let binary_directory = temp_directory.path().join("bin");
+        fs::create_dir_all(&binary_directory).expect("create binary directory");
+        let ffmpeg_path = binary_directory.join("ffmpeg.exe");
+        let other_path = binary_directory.join("other.exe");
+        fs::write(&ffmpeg_path, b"").expect("create ffmpeg binary");
+        fs::write(&other_path, b"").expect("create other binary");
+
+        let storage_value = json!({
+            "sharedBinaries": {
+                "ffmpeg": {
+                    "path": ffmpeg_path.to_string_lossy(),
+                    "source": "custom",
+                    "usedBy": ["media.converter"]
+                }
+            }
+        });
+
+        let allowed_paths =
+            collect_custom_binary_allowed_command_paths(&storage_value, "media.converter");
+
+        assert_eq!(allowed_paths.len(), 1);
+        assert_eq!(
+            allowed_paths[0]
+                .to_string_lossy()
+                .replace('\\', "/"),
+            ffmpeg_path
+                .canonicalize()
+                .expect("canonicalize ffmpeg path")
+                .to_string_lossy()
+                .replace('\\', "/")
+        );
+        assert!(!allowed_paths.iter().any(|allowed_path| {
+            allowed_path
+                .to_string_lossy()
+                .replace('\\', "/")
+                .ends_with("/other.exe")
+        }));
+    }
+
+    #[test]
+    fn includes_ffprobe_sibling_for_custom_ffmpeg_path() {
+        let temp_directory = tempdir().expect("create temp directory");
+        let binary_directory = temp_directory.path().join("bin");
+        fs::create_dir_all(&binary_directory).expect("create binary directory");
+        let ffmpeg_path = binary_directory.join("ffmpeg.exe");
+        let ffprobe_path = binary_directory.join("ffprobe.exe");
+        fs::write(&ffmpeg_path, b"").expect("create ffmpeg binary");
+        fs::write(&ffprobe_path, b"").expect("create ffprobe binary");
+
+        let storage_value = json!({
+            "sharedBinaries": {
+                "ffmpeg": {
+                    "path": ffmpeg_path.to_string_lossy(),
+                    "source": "custom",
+                    "usedBy": ["media.converter"]
+                }
+            }
+        });
+
+        let allowed_paths =
+            collect_custom_binary_allowed_command_paths(&storage_value, "media.converter");
+
+        assert_eq!(allowed_paths.len(), 2);
     }
 
     #[test]

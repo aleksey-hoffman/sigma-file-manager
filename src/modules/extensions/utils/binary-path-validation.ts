@@ -14,8 +14,7 @@ export async function validateBinaryPath(pathValue: string): Promise<boolean> {
   }
 
   try {
-    const pathExists = await invoke<boolean>('path_exists', { path: trimmedPath });
-    return pathExists;
+    return await invoke<boolean>('path_is_regular_file', { path: trimmedPath });
   }
   catch {
     return false;

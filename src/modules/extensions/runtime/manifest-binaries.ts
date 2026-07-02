@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
-// Copyright � 2021 - present Aleksey Hoffman. All rights reserved.
+// Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 import { listen } from '@tauri-apps/api/event';
 import { invoke } from '@tauri-apps/api/core';
@@ -72,10 +72,10 @@ async function installCustomManifestBinary(
 ): Promise<BinaryInfo> {
   const storageStore = useExtensionsStorageStore();
   const trimmedPath = customPath.trim();
-  const pathExists = await invoke<boolean>('path_exists', { path: trimmedPath });
+  const isRegularFile = await invoke<boolean>('path_is_regular_file', { path: trimmedPath });
 
-  if (!pathExists) {
-    throw new Error(`Custom binary path does not exist: ${trimmedPath}`);
+  if (!isRegularFile) {
+    throw new Error(`Custom binary path is not a regular file: ${trimmedPath}`);
   }
 
   const existingSharedBinary = storageStore.getSharedBinary(binaryDefinition.id, binaryDefinition.version);

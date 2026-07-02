@@ -26,16 +26,16 @@ describe('binary-path-validation', () => {
     expect(invokeMock).not.toHaveBeenCalled();
   });
 
-  it('returns true when path_exists succeeds', async () => {
+  it('returns true when path_is_regular_file succeeds', async () => {
     invokeMock.mockResolvedValue(true);
 
     const { validateBinaryPath } = await import('@/modules/extensions/utils/binary-path-validation');
 
     await expect(validateBinaryPath('C:/tools/ffmpeg.exe')).resolves.toBe(true);
-    expect(invokeMock).toHaveBeenCalledWith('path_exists', { path: 'C:/tools/ffmpeg.exe' });
+    expect(invokeMock).toHaveBeenCalledWith('path_is_regular_file', { path: 'C:/tools/ffmpeg.exe' });
   });
 
-  it('returns false when path_exists fails', async () => {
+  it('returns false when path_is_regular_file fails', async () => {
     invokeMock.mockRejectedValue(new Error('failed'));
 
     const { validateBinaryPath } = await import('@/modules/extensions/utils/binary-path-validation');

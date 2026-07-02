@@ -63,6 +63,19 @@ pub fn ensure_path_within_roots(
     }
 }
 
+pub fn ensure_path_is_allowed_command(
+    path: &Path,
+    allowed_roots: &[&Path],
+    allowed_exact_paths: &[PathBuf],
+    access_denied_message: &str,
+) -> Result<(), String> {
+    if allowed_exact_paths.iter().any(|allowed_path| allowed_path == path) {
+        return Ok(());
+    }
+
+    ensure_path_within_roots(path, allowed_roots, access_denied_message)
+}
+
 pub fn get_extensions_base_dir(app_handle: &tauri::AppHandle) -> Result<PathBuf, String> {
     ensure_app_data_subdir(app_handle, "extensions", "extensions directory")
 }

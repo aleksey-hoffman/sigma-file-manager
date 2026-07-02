@@ -72,15 +72,13 @@ const canContinue = computed(() => {
   });
 });
 
-let validationSequence = 0;
-
 async function validateRowPath(row: BinarySetupRowState): Promise<void> {
-  const currentSequence = ++validationSequence;
+  const currentSequence = ++row.validationGeneration;
   row.validationStatus = 'pending';
 
   const isValid = await validateBinaryPath(row.customPath);
 
-  if (currentSequence !== validationSequence) {
+  if (currentSequence !== row.validationGeneration) {
     return;
   }
 
@@ -212,7 +210,10 @@ function handleCancel(): void {
 
 watch(isOpen, (open) => {
   if (!open) {
-    validationSequence += 1;
+    for (const row of modalState.value.rows) {
+      row.validationGeneration += 1;
+    }
+
     return;
   }
 

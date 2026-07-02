@@ -10,8 +10,8 @@ use std::sync::{Arc, Mutex};
 use tauri::Emitter;
 
 use super::binaries::get_shared_binaries_dir;
-use super::paths::{canonicalize_path, ensure_path_within_roots, get_extension_dir};
-use super::registry_storage::load_custom_binary_allowed_roots;
+use super::paths::{canonicalize_path, ensure_path_is_allowed_command, get_extension_dir};
+use super::registry_storage::load_custom_binary_allowed_command_paths;
 use super::security::authorize_extension_caller;
 use super::state::{next_task_id, COMMAND_EXTENSION_MAP, COMMAND_PIDS, COMMAND_TASKS};
 use super::types::{ExtensionCommandComplete, ExtensionCommandProgress, ExtensionCommandResult};
@@ -176,23 +176,33 @@ struct ResolvedExtensionCommand {
 }
 
 #[cfg(unix)]
-fn ensure_command_is_executable(command_path: &Path) -> Result<(), String> {
+fn ensure_command_is_executable(command_path: &Path, allow_chmod: bool) -> Result<(), String> {
     use std::os::unix::fs::PermissionsExt;
 
-    let mut permissions = std::fs::metadata(command_path)
-        .map_err(|error| format!("Failed to read command metadata: {}", error))?
-        .permissions();
-    if permissions.mode() & 0o111 == 0 {
-        permissions.set_mode(0o755);
-        std::fs::set_permissions(command_path, permissions)
-            .map_err(|error| format!("Failed to set command permissions: {}", error))?;
+    let metadata = std::fs::metadata(command_path)
+        .map_err(|error| format!("Failed to read command metadata: {}", error))?;
+
+    if metadata.permissions().mode() & 0o111 != 0 {
+        return Ok(());
     }
+
+    if !allow_chmod {
+        return Err(format!(
+            "Custom binary is not executable: {}. Fix file permissions and try again.",
+            command_path.to_string_lossy()
+        ));
+    }
+
+    let mut permissions = metadata.permissions();
+    permissions.set_mode(0o755);
+    std::fs::set_permissions(command_path, permissions)
+        .map_err(|error| format!("Failed to set command permissions: {}", error))?;
 
     Ok(())
 }
 
 #[cfg(not(unix))]
-fn ensure_command_is_executable(_command_path: &Path) -> Result<(), String> {
+fn ensure_command_is_executable(_command_path: &Path, _allow_chmod: bool) -> Result<(), String> {
     Ok(())
 }
 
@@ -223,24 +233,34 @@ fn resolve_extension_command(
 
     let (resolved_command_path, is_system_command) = if let Some(local_path) = resolved_path {
         let normalized = canonicalize_path(&local_path, "command path")?;
-        let custom_binary_roots =
-            load_custom_binary_allowed_roots(app_handle, extension_id).unwrap_or_default();
-        let mut allowed_roots = vec![
+        let custom_binary_paths = match load_custom_binary_allowed_command_paths(app_handle, extension_id) {
+            Ok(paths) => paths,
+            Err(error) => {
+                log::warn!(
+                    "Failed to load custom binary command allowlist for extension {}: {}",
+                    extension_id,
+                    error
+                );
+                Vec::new()
+            }
+        };
+        let allowed_roots = vec![
             normalized_extension_dir.as_path(),
             normalized_shared_dir.as_path(),
         ];
 
-        for custom_binary_root in &custom_binary_roots {
-            allowed_roots.push(custom_binary_root.as_path());
-        }
+        let is_custom_binary_command = custom_binary_paths
+            .iter()
+            .any(|allowed_path| allowed_path == &normalized);
 
-        ensure_path_within_roots(
+        ensure_path_is_allowed_command(
             &normalized,
             &allowed_roots,
+            &custom_binary_paths,
             "Access denied: command is outside allowed directories",
         )?;
 
-        ensure_command_is_executable(&normalized)?;
+        ensure_command_is_executable(&normalized, !is_custom_binary_command)?;
         (normalized, false)
     } else if is_bare_command_name(command_path) {
         if let Some(system_path) = resolve_from_system_path(command_path) {

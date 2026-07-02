@@ -299,6 +299,7 @@ pub fn run() {
             dir_reader::get_system_drives,
             dir_reader::get_parent_dir,
             dir_reader::path_exists,
+            dir_reader::path_is_regular_file,
             dir_reader::path_exists_with_timeout,
             dir_reader::paths_are_directories,
             dir_reader::path_volume_is_case_sensitive,
