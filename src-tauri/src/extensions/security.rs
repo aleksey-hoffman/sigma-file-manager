@@ -97,13 +97,13 @@ pub fn validate_remote_url(url: &str) -> Result<reqwest::Url, String> {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-enum HostPatternPort {
+pub(crate) enum HostPatternPort {
     Any,
     Exact(u16),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-struct HostAllowlistPattern {
+pub(crate) struct HostAllowlistPattern {
     scheme: String,
     host: String,
     port: HostPatternPort,

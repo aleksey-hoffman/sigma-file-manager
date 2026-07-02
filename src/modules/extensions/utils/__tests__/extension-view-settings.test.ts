@@ -9,7 +9,6 @@ import {
   isExtensionViewLayout,
   isExtensionViewSortDirection,
   normalizeExtensionViewSortColumn,
-  normalizeExtensionViewSortDirection,
   readExtensionViewLayout,
   readExtensionViewSorting,
   toNavigatorLayoutType,

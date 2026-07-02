@@ -68,6 +68,7 @@ fn extension_uses_custom_binary(binary_object: &serde_json::Map<String, Value>, 
         .unwrap_or(false)
 }
 
+#[cfg(test)]
 fn resolve_custom_binary_allowed_root(binary_path: &Path) -> Option<PathBuf> {
     let trimmed_path = binary_path.as_os_str().to_string_lossy().trim().to_string();
 
@@ -124,6 +125,7 @@ fn derive_ffprobe_sibling_path(binary_path: &Path) -> Option<PathBuf> {
     canonicalize_path(&sibling_path, "ffprobe sibling path").ok()
 }
 
+#[cfg(test)]
 pub fn collect_custom_binary_allowed_roots(
     storage_value: &Value,
     extension_id: &str,
