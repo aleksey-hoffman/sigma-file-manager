@@ -16,6 +16,10 @@ import FileBrowserContentBody from './file-browser-content-body.vue';
 import { useFileBrowserContext } from './composables/use-file-browser-context';
 import { provideFileBrowserListColumns } from './composables/use-file-browser-list-columns';
 import { useUserSettingsStore } from '@/stores/storage/user-settings';
+import {
+  getFileBrowserGridGap,
+  getFileBrowserListSideGutter,
+} from './utils/file-browser-layout-gaps';
 
 const props = withDefaults(defineProps<{
   layout?: 'list' | 'grid';
@@ -30,6 +34,16 @@ const userSettingsStore = useUserSettingsStore();
 const { listColumnsTemplate, setScrollViewportElement } = provideFileBrowserListColumns();
 const listColumnFillWidth = computed(() => {
   return props.layout === 'list' && userSettingsStore.userSettings.navigator.listColumnFillWidth;
+});
+const contentStyle = computed(() => {
+  const listSideGutter = getFileBrowserListSideGutter(ctx.increaseFileViewGaps.value);
+  const gridGap = getFileBrowserGridGap(ctx.increaseFileViewGaps.value);
+
+  return {
+    '--file-browser-list-columns': listColumnsTemplate.value,
+    '--file-browser-list-side-gutter': `${listSideGutter}px`,
+    '--file-browser-grid-gap': `${gridGap}px`,
+  };
 });
 const listHeaderRef = ref<InstanceType<typeof FileBrowserListHeader> | null>(null);
 
@@ -57,8 +71,9 @@ function handleViewportScroll(event: Event) {
     :class="{
       'file-browser__content--fill-column-width': listColumnFillWidth,
       'file-browser__content--grid': props.layout === 'grid',
+      'file-browser__content--increased-gaps': ctx.increaseFileViewGaps,
     }"
-    :style="{ '--file-browser-list-columns': listColumnsTemplate }"
+    :style="contentStyle"
   >
     <div
       v-if="props.layout === 'list'"
@@ -76,7 +91,10 @@ function handleViewportScroll(event: Event) {
         class="file-browser__scroll-area-viewport"
         @scroll.passive="handleViewportScroll"
       >
-        <div class="file-browser__content-inner">
+        <div
+          class="file-browser__content-inner"
+          @pointerdown="ctx.handleEntriesContainerPointerDown"
+        >
           <FileBrowserContentBody
             :layout="props.layout"
             :track-relative-time="props.trackRelativeTime"
@@ -107,6 +125,8 @@ function handleViewportScroll(event: Event) {
   --file-browser-grid-section-header-height: calc(8px + 2px + 1rem + 16px);
   --file-browser-grid-section-header-bleed: 1px;
   --file-browser-list-column-gap: 16px;
+  --file-browser-grid-gap: 12px;
+  --file-browser-list-side-gutter: 0;
   --file-browser-list-columns-button-width: 36px;
   --file-browser-list-fill-width-inset: var(--file-browser-list-row-padding-x);
   --file-browser-scrollbar-gutter: 0;
@@ -119,6 +139,18 @@ function handleViewportScroll(event: Event) {
 
 .file-browser__content--grid .file-browser__content-inner {
   padding-inline: var(--file-browser-scrollbar-gutter);
+}
+
+.file-browser__content--increased-gaps:not(.file-browser__content--grid) {
+  --file-browser-scrollbar-gutter: 20px;
+}
+
+.file-browser__content--increased-gaps:not(.file-browser__content--grid) .file-browser__content-inner {
+  padding-inline: var(--file-browser-list-side-gutter);
+}
+
+.file-browser__content--increased-gaps:not(.file-browser__content--grid) .file-browser__list-header-shell {
+  padding-inline: var(--file-browser-list-side-gutter);
 }
 
 .file-browser__list-header-shell {
@@ -161,6 +193,9 @@ function handleViewportScroll(event: Event) {
   min-height: 0;
   flex: 1;
   flex-direction: column;
+}
+
+.file-browser__content:not(.file-browser__content--grid, .file-browser__content--increased-gaps) .file-browser__content-inner {
   padding-inline-end: var(--file-browser-scrollbar-gutter);
 }
 

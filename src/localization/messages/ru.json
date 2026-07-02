@@ -241,6 +241,13 @@
         "prelaunchQuickViewWindowDescription": "Занимает около 200 МБ памяти, но открывается мгновенно.",
         "prelaunchPrintViewWindow": "Держать окно печати в памяти",
         "prelaunchPrintViewWindowDescription": "Занимает около 200 МБ памяти, но открывается мгновенно."
+      },
+      "fileView": {
+        "title": "Вид файлов",
+        "enableBoxSelection": "Включить рамочное выделение",
+        "enableBoxSelectionDescription": "Перетаскивайте по пустому месту, чтобы выделить несколько элементов рамкой.",
+        "increaseFileViewGaps": "Увеличить промежутки в виде файлов",
+        "increaseFileViewGapsDescription": "Добавляет боковые отступы в списке и увеличивает промежутки в сетке для более удобного выделения."
       }
     },
     "actions": {
@@ -495,7 +502,8 @@
     "autostart": "автозапуск, запуск, вход в систему, загрузка, система",
     "extensions": "extensions, plugins, addons, configuration, settings",
     "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, video, mute, autoplay",
-    "performance": "performance, memory, quick view, print, window, launch, preload"
+    "performance": "performance, memory, quick view, print, window, launch, preload",
+    "fileView": "вид файлов, рамка, выделение, перетаскивание, список, сетка, промежутки, отступы"
   },
   "drag": {
     "holdShiftToChangeMode": "Удерживайте [Shift], чтобы изменить режим",

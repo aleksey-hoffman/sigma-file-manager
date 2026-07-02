@@ -212,6 +212,13 @@
         "prelaunchQuickViewWindowDescription": "Utilise environ 200 Mo de mémoire, mais s'ouvre instantanément.",
         "prelaunchPrintViewWindow": "Garder la fenêtre d'impression en mémoire",
         "prelaunchPrintViewWindowDescription": "Utilise environ 200 Mo de mémoire, mais s'ouvre instantanément."
+      },
+      "fileView": {
+        "title": "Vue des fichiers",
+        "enableBoxSelection": "Activer la sélection par cadre",
+        "enableBoxSelectionDescription": "Faites glisser sur un espace vide pour sélectionner plusieurs éléments avec un cadre de sélection.",
+        "increaseFileViewGaps": "Augmenter les espacements de la vue fichiers",
+        "increaseFileViewGapsDescription": "Ajoute un remplissage latéral en liste et augmente les espacements en grille pour faciliter le ciblage."
       }
     },
     "actions": {
@@ -466,7 +473,8 @@
     "autostart": "démarrage automatique, démarrage, connexion, système, boot",
     "extensions": "extensions, plugins, addons, configuration, settings",
     "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, video, mute, autoplay",
-    "performance": "performance, memory, quick view, print, window, launch, preload"
+    "performance": "performance, memory, quick view, print, window, launch, preload",
+    "fileView": "vue fichiers, cadre, sélection, glisser, liste, grille, espacements, remplissage"
   },
   "drag": {
     "holdShiftToChangeMode": "Maintenez [Shift] pour changer de mode",

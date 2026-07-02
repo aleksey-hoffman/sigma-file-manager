@@ -14,13 +14,29 @@ import {
 import type { DirEntry } from '@/types/dir-entry';
 import normalizePath from '@/utils/normalize-path';
 import { groupFileBrowserEntries } from '../file-browser-entry-groups';
+import { getFileBrowserGridGap } from '../utils/file-browser-layout-gaps';
+import {
+  getGridColumnCount,
+  type FileBrowserGridEntryVariant,
+  type FileBrowserGridItemsVirtualRow,
+  type FileBrowserGridSectionKey,
+  type FileBrowserGridSectionVirtualRow,
+  type FileBrowserListVirtualRow,
+  type FileBrowserVirtualRow,
+} from '../utils/file-browser-virtual-rows';
+
+export type {
+  FileBrowserGridEntryVariant,
+  FileBrowserGridItemsVirtualRow,
+  FileBrowserGridSectionKey,
+  FileBrowserGridSectionVirtualRow,
+  FileBrowserListVirtualRow,
+  FileBrowserVirtualRow,
+} from '../utils/file-browser-virtual-rows';
+export { getGridColumnCount } from '../utils/file-browser-virtual-rows';
 
 const LIST_ENTRY_HEIGHT = 42;
 const LIST_ENTRY_WITH_DESCRIPTION_HEIGHT = 56;
-const GRID_MIN_COLUMN_WIDTH = 170;
-const GRID_COLUMN_GAP = 12;
-const GRID_ROW_GAP = 12;
-const GRID_VIEW_PADDING_X = 0;
 const GRID_SECTION_HEADER_HEIGHT = 42;
 const GRID_DIR_ENTRY_HEIGHT = 52;
 const GRID_ENTRY_HEIGHT = 120;
@@ -33,42 +49,6 @@ const CONTENT_INNER_SELECTOR = '.file-browser__content-inner';
 const FILE_BROWSER_SELECTOR = '.file-browser';
 const STATUS_BAR_SELECTOR = '.file-browser-status-bar';
 const VIRTUAL_SPACER_SELECTOR = '.file-browser-list-view__list, .file-browser-grid-view__spacer';
-
-export type FileBrowserGridSectionKey = 'dirs' | 'images' | 'videos' | 'others';
-export type FileBrowserGridEntryVariant = 'dir' | 'image' | 'video' | 'other';
-
-interface FileBrowserVirtualRowBase {
-  key: string;
-  start: number;
-  size: number;
-}
-
-export interface FileBrowserListVirtualRow extends FileBrowserVirtualRowBase {
-  type: 'list-entry';
-  entry: DirEntry;
-  entryIndex: number;
-}
-
-export interface FileBrowserGridSectionVirtualRow extends FileBrowserVirtualRowBase {
-  type: 'grid-section';
-  sectionKey: FileBrowserGridSectionKey;
-  variant: FileBrowserGridEntryVariant;
-  count: number;
-  stickyIndex: number;
-}
-
-export interface FileBrowserGridItemsVirtualRow extends FileBrowserVirtualRowBase {
-  type: 'grid-items';
-  sectionKey: FileBrowserGridSectionKey;
-  variant: FileBrowserGridEntryVariant;
-  entries: DirEntry[];
-  rowIndex: number;
-}
-
-export type FileBrowserVirtualRow
-  = FileBrowserListVirtualRow
-    | FileBrowserGridSectionVirtualRow
-    | FileBrowserGridItemsVirtualRow;
 
 interface GridSectionDefinition {
   key: FileBrowserGridSectionKey;
@@ -106,12 +86,16 @@ function getRowEnd(row: FileBrowserVirtualRow): number {
   return row.start + row.size;
 }
 
-function getRowScrollMarginTop(row: FileBrowserVirtualRow, virtualContentOffset: number): number {
+function getRowScrollMarginTop(
+  row: FileBrowserVirtualRow,
+  virtualContentOffset: number,
+  gridGap: number,
+): number {
   if (row.type === 'list-entry') {
     return virtualContentOffset;
   }
 
-  return row.type === 'grid-items' ? GRID_SECTION_HEADER_HEIGHT + GRID_ROW_GAP : 0;
+  return row.type === 'grid-items' ? GRID_SECTION_HEADER_HEIGHT + gridGap : 0;
 }
 
 function getStatusBarOverlap(viewport: HTMLElement, statusBar: HTMLElement | null | undefined): number {
@@ -185,11 +169,6 @@ function getEntryDescriptionHeight(
   return entryDescription?.(entry) ? LIST_ENTRY_WITH_DESCRIPTION_HEIGHT : LIST_ENTRY_HEIGHT;
 }
 
-export function getGridColumnCount(viewportWidth: number): number {
-  const availableWidth = Math.max(0, viewportWidth - GRID_VIEW_PADDING_X);
-  return Math.max(1, Math.floor((availableWidth + GRID_COLUMN_GAP) / (GRID_MIN_COLUMN_WIDTH + GRID_COLUMN_GAP)));
-}
-
 export function resolveViewportContentWidth(viewport: HTMLElement): number {
   const entriesContainer = viewport.querySelector<HTMLElement>(ENTRIES_CONTAINER_SELECTOR);
 
@@ -232,6 +211,7 @@ function createGridSectionRows(
   section: GridSectionDefinition,
   columnCount: number,
   offset: number,
+  gridGap: number,
 ): {
   rows: FileBrowserVirtualRow[];
   offset: number;
@@ -252,11 +232,11 @@ function createGridSectionRows(
       count: section.entries.length,
       stickyIndex: section.stickyIndex,
       start: offset,
-      size: GRID_SECTION_HEADER_HEIGHT + GRID_ROW_GAP,
+      size: GRID_SECTION_HEADER_HEIGHT + gridGap,
     },
   ];
 
-  offset += GRID_SECTION_HEADER_HEIGHT + GRID_ROW_GAP;
+  offset += GRID_SECTION_HEADER_HEIGHT + gridGap;
 
   for (let entryIndex = 0, rowIndex = 0; entryIndex < section.entries.length; entryIndex += columnCount, rowIndex += 1) {
     const rowEntries = section.entries.slice(entryIndex, entryIndex + columnCount);
@@ -269,10 +249,10 @@ function createGridSectionRows(
       entries: rowEntries,
       rowIndex,
       start: offset,
-      size: section.entryHeight + GRID_ROW_GAP,
+      size: section.entryHeight + gridGap,
     });
 
-    offset += section.entryHeight + GRID_ROW_GAP;
+    offset += section.entryHeight + gridGap;
   }
 
   return {
@@ -281,7 +261,11 @@ function createGridSectionRows(
   };
 }
 
-function createGridRows(entries: readonly DirEntry[], columnCount: number): FileBrowserVirtualRow[] {
+function createGridRows(
+  entries: readonly DirEntry[],
+  columnCount: number,
+  gridGap: number,
+): FileBrowserVirtualRow[] {
   const groupedEntries = groupFileBrowserEntries(entries);
   const sections: GridSectionDefinition[] = [
     {
@@ -318,7 +302,7 @@ function createGridRows(entries: readonly DirEntry[], columnCount: number): File
   const rows: FileBrowserVirtualRow[] = [];
 
   for (const section of sections) {
-    const result = createGridSectionRows(section, columnCount, offset);
+    const result = createGridSectionRows(section, columnCount, offset, gridGap);
     rows.push(...result.rows);
     offset = result.offset;
   }
@@ -331,9 +315,15 @@ export function createFileBrowserVirtualRows(options: {
   layout: 'list' | 'grid' | undefined;
   viewportWidth: number;
   entryDescription?: (entry: DirEntry) => string | undefined;
+  increaseFileViewGaps?: boolean;
 }): FileBrowserVirtualRow[] {
   if (options.layout === 'grid') {
-    return createGridRows(options.entries, getGridColumnCount(options.viewportWidth));
+    const gridGap = getFileBrowserGridGap(!!options.increaseFileViewGaps);
+    return createGridRows(
+      options.entries,
+      getGridColumnCount(options.viewportWidth, gridGap),
+      gridGap,
+    );
   }
 
   return createListRows(options.entries, options.entryDescription);
@@ -369,6 +359,7 @@ export function useFileBrowserVirtualLayout(options: {
   entries: ComputedRef<DirEntry[]>;
   layout: () => 'list' | 'grid' | undefined;
   entryDescription?: (entry: DirEntry) => string | undefined;
+  increaseFileViewGaps?: () => boolean;
 }) {
   const scrollViewportRef = ref<HTMLElement | null>(null);
   const viewportHeight = ref(0);
@@ -378,7 +369,8 @@ export function useFileBrowserVirtualLayout(options: {
   const virtualContentOffset = ref(0);
   let viewportResizeObserver: ResizeObserver | null = null;
 
-  const gridColumnCount = computed(() => getGridColumnCount(viewportWidth.value));
+  const gridGap = computed(() => getFileBrowserGridGap(!!options.increaseFileViewGaps?.()));
+  const gridColumnCount = computed(() => getGridColumnCount(viewportWidth.value, gridGap.value));
 
   const rows = computed<FileBrowserVirtualRow[]>(() => {
     return createFileBrowserVirtualRows({
@@ -386,6 +378,7 @@ export function useFileBrowserVirtualLayout(options: {
       layout: options.layout(),
       viewportWidth: viewportWidth.value,
       entryDescription: options.entryDescription,
+      increaseFileViewGaps: options.increaseFileViewGaps?.(),
     });
   });
 
@@ -560,7 +553,7 @@ export function useFileBrowserVirtualLayout(options: {
 
     const viewportRect = viewport.getBoundingClientRect();
     const entryRect = entryElement.getBoundingClientRect();
-    const minVisibleTop = viewportRect.top + getRowScrollMarginTop(row, virtualContentOffset.value);
+    const minVisibleTop = viewportRect.top + getRowScrollMarginTop(row, virtualContentOffset.value, gridGap.value);
     const maxVisibleBottom = viewportRect.bottom - bottomScrollMargin.value;
     let scrollAdjustment = 0;
 
@@ -628,7 +621,7 @@ export function useFileBrowserVirtualLayout(options: {
     const currentScrollTop = scrollTop.value;
     const rowStart = virtualContentOffset.value + row.start;
     const rowEnd = virtualContentOffset.value + getRowEnd(row);
-    const scrollMarginTop = getRowScrollMarginTop(row, virtualContentOffset.value);
+    const scrollMarginTop = getRowScrollMarginTop(row, virtualContentOffset.value, gridGap.value);
     const scrollMarginBottom = bottomScrollMargin.value;
 
     if (align === 'center') {
@@ -718,7 +711,9 @@ export function useFileBrowserVirtualLayout(options: {
     viewportHeight,
     viewportWidth,
     scrollTop,
+    virtualContentOffset,
     gridColumnCount,
+    gridGap,
     rows,
     visibleRows,
     activeGridSectionRow,

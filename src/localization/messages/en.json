@@ -241,6 +241,13 @@
         "prelaunchQuickViewWindowDescription": "Uses about 200 MB of memory, but opens instantly.",
         "prelaunchPrintViewWindow": "Keep Print window in memory",
         "prelaunchPrintViewWindowDescription": "Uses about 200 MB of memory, but opens instantly."
+      },
+      "fileView": {
+        "title": "File view",
+        "enableBoxSelection": "Enable box selection",
+        "enableBoxSelectionDescription": "Drag on empty space to select multiple items with a selection box.",
+        "increaseFileViewGaps": "Increase file view gaps",
+        "increaseFileViewGapsDescription": "Adds side padding in list layout and increases gaps in grid layout for easier targeting."
       }
     },
     "actions": {
@@ -495,6 +502,7 @@
     "whatsNew": "what's new, changelog, release notes, version, update, news",
     "autostart": "autostart, startup, boot, login, launch, system, wake",
     "performance": "performance, memory, quick view, print, window, launch, preload",
+    "fileView": "file view, box selection, drag selection, list, grid, gaps, padding, spacing",
     "extensions": "extensions, plugins, addons, configuration, settings"
   },
   "drag": {

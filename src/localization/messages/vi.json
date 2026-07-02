@@ -212,6 +212,13 @@
         "prelaunchQuickViewWindowDescription": "Dùng khoảng 200 MB bộ nhớ, nhưng mở ngay lập tức.",
         "prelaunchPrintViewWindow": "Giữ cửa sổ in trong bộ nhớ",
         "prelaunchPrintViewWindowDescription": "Dùng khoảng 200 MB bộ nhớ, nhưng mở ngay lập tức."
+      },
+      "fileView": {
+        "title": "Chế độ xem tệp",
+        "enableBoxSelection": "Bật chọn bằng khung kéo",
+        "enableBoxSelectionDescription": "Kéo trên vùng trống để chọn nhiều mục bằng khung chọn.",
+        "increaseFileViewGaps": "Tăng khoảng cách trong chế độ xem tệp",
+        "increaseFileViewGapsDescription": "Thêm khoảng đệm hai bên trong chế độ danh sách và tăng khoảng cách trong chế độ lưới để dễ chọn hơn."
       }
     },
     "actions": {
@@ -466,7 +473,8 @@
     "autostart": "khởi động tự động, khởi động, đăng nhập, hệ thống, boot",
     "extensions": "extensions, plugins, addons, configuration, settings",
     "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, video, mute, autoplay",
-    "performance": "performance, memory, quick view, print, window, launch, preload"
+    "performance": "performance, memory, quick view, print, window, launch, preload",
+    "fileView": "chế độ xem tệp, khung kéo, chọn hộp, kéo chọn, danh sách, lưới, khoảng cách, đệm"
   },
   "drag": {
     "holdShiftToChangeMode": "Giữ [Shift] để thay đổi chế độ",

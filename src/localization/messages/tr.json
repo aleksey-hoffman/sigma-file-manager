@@ -212,6 +212,13 @@
         "prelaunchQuickViewWindowDescription": "Yaklaşık 200 MB bellek kullanır, ancak anında açılır.",
         "prelaunchPrintViewWindow": "Yazdırma penceresini bellekte tut",
         "prelaunchPrintViewWindowDescription": "Yaklaşık 200 MB bellek kullanır, ancak anında açılır."
+      },
+      "fileView": {
+        "title": "Dosya görünümü",
+        "enableBoxSelection": "Kutu seçimini etkinleştir",
+        "enableBoxSelectionDescription": "Boş alanda sürükleyerek bir seçim kutusuyla birden fazla öğe seçin.",
+        "increaseFileViewGaps": "Dosya görünümü boşluklarını artır",
+        "increaseFileViewGapsDescription": "Liste düzeninde yan dolgu ekler ve ızgara düzenindeki boşlukları artırarak hedeflemeyi kolaylaştırır."
       }
     },
     "actions": {
@@ -466,7 +473,8 @@
     "autostart": "otomatik başlatma, başlangıç, oturum açma, sistem, açılış",
     "extensions": "extensions, plugins, addons, configuration, settings",
     "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, video, mute, autoplay",
-    "performance": "performance, memory, quick view, print, window, launch, preload"
+    "performance": "performance, memory, quick view, print, window, launch, preload",
+    "fileView": "dosya görünümü, kutu seçimi, sürükleme seçimi, liste, ızgara, boşluklar, dolgu"
   },
   "drag": {
     "holdShiftToChangeMode": "Modu değiştirmek için [Shift]'e basılı tutun",

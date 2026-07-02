@@ -234,6 +234,6 @@ function getSectionRowStyle(row: FileBrowserGridSectionVirtualRow): Record<strin
 
 .file-browser-grid-view__grid-row {
   display: grid;
-  gap: 12px;
+  gap: var(--file-browser-grid-gap, 12px);
 }
 </style>

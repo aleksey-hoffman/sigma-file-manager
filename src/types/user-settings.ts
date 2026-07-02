@@ -329,6 +329,8 @@ export type UserSettingsNavigator = {
   listSortDirection: ListSortDirection;
   gridSortColumn: ListSortColumn | null;
   gridSortDirection: ListSortDirection;
+  enableBoxSelection: boolean;
+  increaseFileViewGaps: boolean;
 };
 
 export type UserSettingsNavigatorInfoPanel = {

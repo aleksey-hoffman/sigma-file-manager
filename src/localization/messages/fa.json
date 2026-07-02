@@ -208,6 +208,13 @@
         "prelaunchQuickViewWindowDescription": "حدود ۲۰۰ مگابایت حافظه مصرف می‌کند، اما فوراً باز می‌شود.",
         "prelaunchPrintViewWindow": "نگه داشتن پنجره چاپ در حافظه",
         "prelaunchPrintViewWindowDescription": "حدود ۲۰۰ مگابایت حافظه مصرف می‌کند، اما فوراً باز می‌شود."
+      },
+      "fileView": {
+        "title": "نمای فایل",
+        "enableBoxSelection": "فعال‌سازی انتخاب با کادر",
+        "enableBoxSelectionDescription": "روی فضای خالی بکشید تا چند مورد را با کادر انتخاب کنید.",
+        "increaseFileViewGaps": "افزایش فاصله‌ها در نمای فایل",
+        "increaseFileViewGapsDescription": "padding کناری در نمای فهرست اضافه می‌کند و فاصله‌ها در نمای شبکه‌ای را برای هدف‌گیری آسان‌تر افزایش می‌دهد."
       }
     },
     "actions": {
@@ -462,7 +469,8 @@
     "autostart": "اجرای خودکار، راه‌اندازی، ورود، سیستم، بوت",
     "extensions": "extensions, plugins, addons, configuration, settings",
     "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, video, mute, autoplay",
-    "performance": "performance, memory, quick view, print, window, launch, preload"
+    "performance": "performance, memory, quick view, print, window, launch, preload",
+    "fileView": "نمای فایل, کادر, انتخاب, کشیدن, فهرست, شبکه, فاصله, padding"
   },
   "drag": {
     "holdShiftToChangeMode": "برای تغییر حالت، [Shift] را نگه دارید",

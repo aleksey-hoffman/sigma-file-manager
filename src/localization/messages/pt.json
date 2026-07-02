@@ -212,6 +212,13 @@
         "prelaunchQuickViewWindowDescription": "Usa cerca de 200 MB de memória, mas abre instantaneamente.",
         "prelaunchPrintViewWindow": "Manter a janela de impressão na memória",
         "prelaunchPrintViewWindowDescription": "Usa cerca de 200 MB de memória, mas abre instantaneamente."
+      },
+      "fileView": {
+        "title": "Visualização de arquivos",
+        "enableBoxSelection": "Ativar seleção por caixa",
+        "enableBoxSelectionDescription": "Arraste em um espaço vazio para selecionar vários itens com uma caixa de seleção.",
+        "increaseFileViewGaps": "Aumentar espaços na visualização de arquivos",
+        "increaseFileViewGapsDescription": "Adiciona preenchimento lateral na lista e aumenta os espaços na grade para facilitar a seleção."
       }
     },
     "actions": {
@@ -466,7 +473,8 @@
     "autostart": "início automático, arranque, inicialização, login, sistema, boot",
     "extensions": "extensions, plugins, addons, configuration, settings",
     "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, video, mute, autoplay",
-    "performance": "performance, memory, quick view, print, window, launch, preload"
+    "performance": "performance, memory, quick view, print, window, launch, preload",
+    "fileView": "visualização arquivos, caixa, seleção, arrastar, lista, grade, espaços, preenchimento"
   },
   "drag": {
     "holdShiftToChangeMode": "Segure [Shift] para alterar os modos",

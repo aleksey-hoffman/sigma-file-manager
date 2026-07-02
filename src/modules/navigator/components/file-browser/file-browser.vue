@@ -159,6 +159,8 @@ provideFileBrowserContext({
   virtualGridColumnCount: fb.virtualGridColumnCount,
   onEntryMouseDown: fb.onEntryMouseDown,
   onEntryMouseUp: fb.onEntryMouseUp,
+  handleEntriesContainerPointerDown: fb.handleEntriesContainerPointerDown,
+  increaseFileViewGaps: fb.increaseFileViewGaps,
   handleEntryFocus: fb.handleEntryFocus,
   handleEntryContextMenu: fb.handleEntryContextMenu,
   handleBackgroundContextMenu: fb.handleBackgroundContextMenu,
@@ -366,6 +368,19 @@ defineExpose({
 
 .cross-pane-drop-overlay-leave-active {
   transition: opacity 0.1s ease-in;
+}
+
+:deep(.file-browser-box-selection-overlay) {
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  display: none;
+  box-sizing: border-box;
+  border: 1px solid hsl(var(--primary) / 55%);
+  background: hsl(var(--primary) / 18%);
+  pointer-events: none;
+  will-change: transform, width, height;
 }
 
 .cross-pane-drop-overlay-enter-from,

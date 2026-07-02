@@ -212,6 +212,13 @@
         "prelaunchQuickViewWindowDescription": "約200 MBのメモリを使用しますが、すぐに開きます。",
         "prelaunchPrintViewWindow": "印刷ウィンドウをメモリに保持",
         "prelaunchPrintViewWindowDescription": "約200 MBのメモリを使用しますが、すぐに開きます。"
+      },
+      "fileView": {
+        "title": "ファイルビュー",
+        "enableBoxSelection": "ボックス選択を有効にする",
+        "enableBoxSelectionDescription": "空白部分をドラッグして、選択ボックスで複数の項目を選択します。",
+        "increaseFileViewGaps": "ファイルビューの間隔を広げる",
+        "increaseFileViewGapsDescription": "リスト表示の左右余白を追加し、グリッド表示の間隔を広げて選択しやすくします。"
       }
     },
     "actions": {
@@ -466,7 +473,8 @@
     "autostart": "自動起動, スタートアップ, ログイン, システム, 起動",
     "extensions": "extensions, plugins, addons, configuration, settings",
     "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, video, mute, autoplay",
-    "performance": "performance, memory, quick view, print, window, launch, preload"
+    "performance": "performance, memory, quick view, print, window, launch, preload",
+    "fileView": "ファイルビュー, ボックス選択, ドラッグ選択, リスト, グリッド, 間隔, 余白"
   },
   "drag": {
     "holdShiftToChangeMode": "[Shift] を押してモードを変更",

@@ -212,6 +212,13 @@
         "prelaunchQuickViewWindowDescription": "Nutzt etwa 200 MB Speicher, öffnet sich aber sofort.",
         "prelaunchPrintViewWindow": "Druckfenster im Speicher halten",
         "prelaunchPrintViewWindowDescription": "Nutzt etwa 200 MB Speicher, öffnet sich aber sofort."
+      },
+      "fileView": {
+        "title": "Dateiansicht",
+        "enableBoxSelection": "Markierungsrahmen-Auswahl aktivieren",
+        "enableBoxSelectionDescription": "Ziehen Sie auf leerem Bereich, um mehrere Elemente mit einem Auswahlrahmen auszuwählen.",
+        "increaseFileViewGaps": "Abstände in der Dateiansicht vergrößern",
+        "increaseFileViewGapsDescription": "Fügt Seitenabstände in der Listenansicht hinzu und vergrößert die Abstände in der Rasteransicht für einfachere Auswahl."
       }
     },
     "actions": {
@@ -466,7 +473,8 @@
     "autostart": "Autostart, Start, Systemstart, Boot, Anmeldung, Login, System",
     "extensions": "extensions, plugins, addons, configuration, settings",
     "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, video, mute, autoplay",
-    "performance": "performance, memory, quick view, print, window, launch, preload"
+    "performance": "performance, memory, quick view, print, window, launch, preload",
+    "fileView": "dateiansicht, markierungsrahmen, rahmenauswahl, ziehauswahl, liste, raster, abstände, polsterung"
   },
   "drag": {
     "holdShiftToChangeMode": "Halten Sie [Shift] gedrückt, um den Modus zu ändern",

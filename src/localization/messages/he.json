@@ -241,6 +241,13 @@
         "prelaunchQuickViewWindowDescription": "משתמש בכ-200 MB זיכרון, אך נפתח מיד.",
         "prelaunchPrintViewWindow": "השארת חלון ההדפסה בזיכרון",
         "prelaunchPrintViewWindowDescription": "משתמש בכ-200 MB זיכרון, אך נפתח מיד."
+      },
+      "fileView": {
+        "title": "תצוגת קבצים",
+        "enableBoxSelection": "הפעל בחירה עם תיבת סימון",
+        "enableBoxSelectionDescription": "גרור על שטח ריק כדי לבחור מספר פריטים עם תיבת בחירה.",
+        "increaseFileViewGaps": "הגדל רווחים בתצוגת קבצים",
+        "increaseFileViewGapsDescription": "מוסיף ריווח צדדי בתצוגת רשימה ומגדיל רווחים בתצוגת רשת להקלה על הבחירה."
       }
     },
     "actions": {
@@ -495,7 +502,8 @@
     "autostart": "הפעלה אוטומטית, אתחול, כניסה, התחברות, הפעלה, מערכת",
     "extensions": "תוספים, תוספות, הרחבות, תצורה, הגדרות",
     "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, video, mute, autoplay",
-    "performance": "performance, memory, quick view, print, window, launch, preload"
+    "performance": "performance, memory, quick view, print, window, launch, preload",
+    "fileView": "תצוגת קבצים, תיבה, בחירה, גרירה, רשימה, רשת, רווחים, padding"
   },
   "drag": {
     "holdShiftToChangeMode": "החזק [Shift] כדי לשנות מצב",

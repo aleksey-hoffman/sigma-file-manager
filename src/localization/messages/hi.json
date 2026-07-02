@@ -241,6 +241,13 @@
         "prelaunchQuickViewWindowDescription": "लगभग 200 MB मेमोरी लेता है, लेकिन तुरंत खुलता है।",
         "prelaunchPrintViewWindow": "प्रिंट विंडो को मेमोरी में रखें",
         "prelaunchPrintViewWindowDescription": "लगभग 200 MB मेमोरी लेता है, लेकिन तुरंत खुलता है।"
+      },
+      "fileView": {
+        "title": "फ़ाइल दृश्य",
+        "enableBoxSelection": "बॉक्स चयन सक्षम करें",
+        "enableBoxSelectionDescription": "खाली जगह पर खींचकर चयन बॉक्स से कई आइटम चुनें।",
+        "increaseFileViewGaps": "फ़ाइल दृश्य में अंतर बढ़ाएँ",
+        "increaseFileViewGapsDescription": "सूची लेआउट में साइड padding जोड़ता है और ग्रिड लेआउट में अंतर बढ़ाकर चयन आसान बनाता है।"
       }
     },
     "actions": {
@@ -495,7 +502,8 @@
     "autostart": "ऑटोस्टार्ट, स्टार्टअप, बूट, लॉगिन, लॉन्च, सिस्टम, वेक",
     "extensions": "एक्सटेंशन, प्लगइन्स, ऐडऑन, कॉन्फ़िगरेशन, सेटिंग्स",
     "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, video, mute, autoplay",
-    "performance": "performance, memory, quick view, print, window, launch, preload"
+    "performance": "performance, memory, quick view, print, window, launch, preload",
+    "fileView": "फ़ाइल दृश्य, बॉक्स चयन, खींचकर चयन, सूची, ग्रिड, अंतर, padding"
   },
   "drag": {
     "holdShiftToChangeMode": "मोड बदलने के लिए [Shift] दबाए रखें",

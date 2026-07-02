@@ -241,6 +241,13 @@
         "prelaunchQuickViewWindowDescription": "Porabi približno 200 MB pomnilnika, vendar se odpre takoj.",
         "prelaunchPrintViewWindow": "Obdrži okno za tisk v pomnilniku",
         "prelaunchPrintViewWindowDescription": "Porabi približno 200 MB pomnilnika, vendar se odpre takoj."
+      },
+      "fileView": {
+        "title": "Pogled datotek",
+        "enableBoxSelection": "Omogoči izbiro s kvadratom",
+        "enableBoxSelectionDescription": "Povlecite po praznem prostoru, da izberete več elementov s kvadratom izbire.",
+        "increaseFileViewGaps": "Povečaj razmike v pogledu datotek",
+        "increaseFileViewGapsDescription": "Doda stranski odmik v seznamu in poveča razmike v mreži za lažje ciljanje."
       }
     },
     "actions": {
@@ -495,7 +502,8 @@
     "autostart": "autostart, zagon, sistem, prijava, zagon ob zagonu",
     "extensions": "extensions, plugins, addons, configuration, settings",
     "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, video, mute, autoplay",
-    "performance": "performance, memory, quick view, print, window, launch, preload"
+    "performance": "performance, memory, quick view, print, window, launch, preload",
+    "fileView": "pogled datotek, kvadrat, izbira, povleci, seznam, mreža, razmiki, odmik"
   },
   "drag": {
     "holdShiftToChangeMode": "Zadržite [Shift] za spremembo načina",

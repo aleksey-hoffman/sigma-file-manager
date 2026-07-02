@@ -212,6 +212,13 @@
         "prelaunchQuickViewWindowDescription": "约占用 200 MB 内存，但可即时打开。",
         "prelaunchPrintViewWindow": "在内存中保留打印窗口",
         "prelaunchPrintViewWindowDescription": "约占用 200 MB 内存，但可即时打开。"
+      },
+      "fileView": {
+        "title": "文件视图",
+        "enableBoxSelection": "启用框选",
+        "enableBoxSelectionDescription": "在空白区域拖动即可用选择框选中多个项目。",
+        "increaseFileViewGaps": "增大文件视图间距",
+        "increaseFileViewGapsDescription": "增加列表布局的左右内边距以及网格布局的间距，便于选择。"
       }
     },
     "actions": {
@@ -466,7 +473,8 @@
     "autostart": "自动启动, 启动, 登录, 系统, 开机启动",
     "extensions": "extensions, plugins, addons, configuration, settings",
     "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, full-size, quick view, video, mute, autoplay",
-    "performance": "performance, memory, quick view, print, window, launch, preload"
+    "performance": "performance, memory, quick view, print, window, launch, preload",
+    "fileView": "文件视图, 框选, 拖动选择, 列表, 网格, 间距, 内边距"
   },
   "drag": {
     "holdShiftToChangeMode": "按住 [Shift] 改变模式",

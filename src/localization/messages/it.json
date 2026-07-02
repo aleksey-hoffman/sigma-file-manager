@@ -212,6 +212,13 @@
         "prelaunchQuickViewWindowDescription": "Usa circa 200 MB di memoria, ma si apre all'istante.",
         "prelaunchPrintViewWindow": "Mantieni la finestra di stampa in memoria",
         "prelaunchPrintViewWindowDescription": "Usa circa 200 MB di memoria, ma si apre all'istante."
+      },
+      "fileView": {
+        "title": "Vista file",
+        "enableBoxSelection": "Abilita selezione con riquadro",
+        "enableBoxSelectionDescription": "Trascina su uno spazio vuoto per selezionare più elementi con un riquadro di selezione.",
+        "increaseFileViewGaps": "Aumenta gli spazi nella vista file",
+        "increaseFileViewGapsDescription": "Aggiunge padding laterale nella vista elenco e aumenta le distanze nella vista griglia per una selezione più facile."
       }
     },
     "actions": {
@@ -466,7 +473,8 @@
     "autostart": "avvio automatico, avvio, boot, accesso, sistema, login",
     "extensions": "extensions, plugins, addons, configuration, settings",
     "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, video, mute, autoplay",
-    "performance": "performance, memory, quick view, print, window, launch, preload"
+    "performance": "performance, memory, quick view, print, window, launch, preload",
+    "fileView": "vista file, riquadro, selezione, trascinamento, elenco, griglia, spazi, padding"
   },
   "drag": {
     "holdShiftToChangeMode": "Tieni premuto il tasto [Shift] per cambiare modalità",

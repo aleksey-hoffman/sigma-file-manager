@@ -213,6 +213,19 @@ export function useFileBrowserSelection(
     onSelect(selectedEntries.value);
   }
 
+  function setSelection(entries: DirEntry[]) {
+    selectedEntries.value = [...entries];
+    const lastEntry = selectedEntries.value.length > 0
+      ? selectedEntries.value[selectedEntries.value.length - 1]
+      : null;
+    lastSelectedEntry.value = lastEntry;
+    onSelect(selectedEntries.value);
+
+    if (entries.length === 0) {
+      blurFocusedDirEntry();
+    }
+  }
+
   function selectEntryByPath(path: string): boolean {
     const normalizedPath = normalizePath(path);
     const targetEntry = entriesRef.value.find(
@@ -1097,6 +1110,7 @@ export function useFileBrowserSelection(
     clearSelection,
     isEntrySelected,
     replaceSelection,
+    setSelection,
     handleEntryMouseDown,
     handleEntryMouseUp,
     handleEntryFocus,

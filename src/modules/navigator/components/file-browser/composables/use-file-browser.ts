@@ -42,6 +42,7 @@ import { useFileBrowserDrag } from './use-file-browser-drag';
 import { useFileBrowserInternalDropHandler } from './use-file-browser-internal-drop';
 import { useFileBrowserExternalDrop } from './use-file-browser-external-drop';
 import { useFileBrowserVirtualLayout } from './use-file-browser-virtual-layout';
+import { useFileBrowserBoxSelection } from './use-file-browser-box-selection';
 import { useNavigatorImageThumbnails } from '@/modules/navigator/composables/use-navigator-image-thumbnails';
 import { useVideoThumbnails } from './use-video-thumbnails';
 import { getNavigatorSortSettingsForLayout } from '@/modules/navigator/components/file-browser/utils/file-browser-sort-columns';
@@ -258,12 +259,20 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
   const isExternalMode = !!options.externalEntries;
   const quickViewStore = useQuickViewStore();
   const internalDropHandler = useFileBrowserInternalDropHandler();
+  const userSettingsStore = useUserSettingsStore();
+  const enableBoxSelection = computed(
+    () => userSettingsStore.userSettings.navigator.enableBoxSelection,
+  );
+  const increaseFileViewGaps = computed(
+    () => userSettingsStore.userSettings.navigator.increaseFileViewGaps,
+  );
 
   const dataSource = isExternalMode
     ? setupExternalDataSource(options)
     : setupNavigationDataSource(options, () => {
         selection.clearSelection();
         selection.resetMouseState();
+        boxSelection.stopBoxSelection();
       });
   const visualEntries = computed(() => dataSource.entries.value);
 
@@ -297,6 +306,7 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
     entries: visualEntries,
     layout: options.layout,
     entryDescription: options.entryDescription,
+    increaseFileViewGaps: () => increaseFileViewGaps.value,
   });
   const scrollStateKey = computed(() => options.scrollStateKey?.());
 
@@ -377,6 +387,23 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
         operation,
       );
     },
+  });
+
+  const boxSelection = useFileBrowserBoxSelection({
+    enabled: enableBoxSelection,
+    layout: options.layout,
+    paneElementRef: options.componentRef,
+    scrollViewportRef: virtualLayout.scrollViewportRef,
+    entriesContainerRef,
+    viewportWidth: virtualLayout.viewportWidth,
+    virtualContentOffset: virtualLayout.virtualContentOffset,
+    scrollTop: virtualLayout.scrollTop,
+    virtualRows: virtualLayout.rows,
+    increaseFileViewGaps,
+    getSelectedEntries: () => selection.selectedEntries.value,
+    applySelection: selection.setSelection,
+    clearSelection: selection.clearSelection,
+    isFileDragActive: drag.isDragging,
   });
 
   const externalDrop = useFileBrowserExternalDrop({
@@ -630,6 +657,8 @@ export function useFileBrowser(options: UseFileBrowserOptions) {
     onContextMenuAction: actions.onContextMenuAction,
     onEntryMouseDown: actions.onEntryMouseDown,
     onEntryMouseUp: actions.onEntryMouseUp,
+    handleEntriesContainerPointerDown: boxSelection.handleEntriesContainerPointerDown,
+    increaseFileViewGaps,
 
     quickView: actions.quickView,
     printEntry: actions.printEntry,

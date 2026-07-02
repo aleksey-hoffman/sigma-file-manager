@@ -241,6 +241,13 @@
         "prelaunchQuickViewWindowDescription": "تقریباً 200 MB میموری استعمال کرتا ہے، لیکن فوراً کھل جاتا ہے۔",
         "prelaunchPrintViewWindow": "پرنٹ ونڈو میموری میں رکھیں",
         "prelaunchPrintViewWindowDescription": "تقریباً 200 MB میموری استعمال کرتا ہے، لیکن فوراً کھل جاتا ہے۔"
+      },
+      "fileView": {
+        "title": "فائل منظر",
+        "enableBoxSelection": "باکس انتخاب فعال کریں",
+        "enableBoxSelectionDescription": "خالی جگہ پر گھسیٹ کر انتخاب باکس سے متعدد آئٹمز منتخب کریں۔",
+        "increaseFileViewGaps": "فائل منظر کے فاصلے بڑھائیں",
+        "increaseFileViewGapsDescription": "فہرست لے آؤٹ میں سائیڈ padding شامل کرتا ہے اور گرڈ لے آؤٹ میں فاصلے بڑھا کر نشانہ لگانا آسان بناتا ہے۔"
       }
     },
     "actions": {
@@ -495,7 +502,8 @@
     "autostart": "سٹارٹ اپ, بوٹ, لاگ ان",
     "extensions": "ایکسٹینشن, plugins, addons",
     "infoPanelPreview": "info, panel, preview, image, thumbnail, memory, original, video, mute, autoplay",
-    "performance": "performance, memory, quick view, print, window, launch, preload"
+    "performance": "performance, memory, quick view, print, window, launch, preload",
+    "fileView": "فائل منظر, باکس انتخاب, گھسیٹ کر انتخاب, فہرست, گرڈ, فاصلے, padding"
   },
   "drag": {
     "holdShiftToChangeMode": "موڈ بدلنے کے لیے [Shift] دبائے رکھیں",

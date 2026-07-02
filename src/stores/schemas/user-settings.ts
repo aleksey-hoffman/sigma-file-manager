@@ -16,7 +16,7 @@ import {
 import { BUILTIN_NAVIGATOR_ICON_THEME_IDS } from '@/types/icon-theme';
 
 export const USER_SETTINGS_SCHEMA_VERSION_KEY = '__schemaVersion';
-export const USER_SETTINGS_SCHEMA_VERSION = 20;
+export const USER_SETTINGS_SCHEMA_VERSION = 24;
 
 export const DEFAULT_GLOBAL_SEARCH_IGNORED_PATHS = [
   '/node_modules',
@@ -421,6 +421,38 @@ async function migrateUserSettingsStep(storage: StorageAdapter, fromVersion: num
   if (fromVersion === 19 && toVersion === 20) {
     await setDefaultBooleanIfMissing(storage, 'clipboard.showToolbarForExternalImages', true);
     await setDefaultBooleanIfMissing(storage, 'clipboard.showToolbarForExternalPaths', true);
+  }
+
+  if (fromVersion === 20 && toVersion === 21) {
+    await setDefaultBooleanIfMissing(storage, 'navigator.enableMarqueeBoxSelection', false);
+  }
+
+  if (fromVersion === 21 && toVersion === 22) {
+    const boxSelectionEnabled = await storage.get<boolean>('navigator.enableMarqueeBoxSelection');
+    await setDefaultBooleanIfMissing(
+      storage,
+      'navigator.increaseMarqueeSelectionGaps',
+      boxSelectionEnabled === true,
+    );
+  }
+
+  if (fromVersion === 22 && toVersion === 23) {
+    const increasedGaps = await storage.get<boolean>('navigator.increaseMarqueeSelectionGaps');
+    await setDefaultBooleanIfMissing(
+      storage,
+      'navigator.increaseFileViewGaps',
+      increasedGaps === true,
+    );
+  }
+
+  if (fromVersion === 23 && toVersion === 24) {
+    const legacyBoxSelectionEnabled = await storage.get<boolean>('navigator.enableMarqueeBoxSelection');
+    const currentBoxSelectionEnabled = await storage.get<boolean>('navigator.enableBoxSelection');
+    await setDefaultBooleanIfMissing(
+      storage,
+      'navigator.enableBoxSelection',
+      currentBoxSelectionEnabled ?? legacyBoxSelectionEnabled === true,
+    );
   }
 
   if (fromVersion === 6 && toVersion === 7) {
