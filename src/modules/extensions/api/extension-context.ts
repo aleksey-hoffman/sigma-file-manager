@@ -13,6 +13,7 @@ import { invokeAsExtension } from '@/modules/extensions/runtime/extension-invoke
 export type ExtensionContext = {
   extensionId: string;
   hasPermission: (permission: ExtensionPermission) => boolean;
+  httpAllowedHosts?: string[];
   t: (key: string, params?: Record<string, string | number>) => string;
   getExtensionPath: () => Promise<string>;
   getExtensionStoragePath: () => Promise<string>;
@@ -40,6 +41,9 @@ export type ExtensionContext = {
 export function createExtensionContext(
   extensionId: string,
   permissions: ExtensionPermission[],
+  options: {
+    httpAllowedHosts?: string[];
+  } = {},
 ): ExtensionContext {
   function hasPermission(permission: ExtensionPermission): boolean {
     return permissions.includes(permission);
@@ -426,6 +430,7 @@ export function createExtensionContext(
   return {
     extensionId,
     hasPermission,
+    httpAllowedHosts: options.httpAllowedHosts,
     t,
     getExtensionPath,
     getExtensionStoragePath,

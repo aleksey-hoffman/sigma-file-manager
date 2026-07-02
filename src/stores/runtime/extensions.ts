@@ -55,6 +55,7 @@ import { checkEngineCompatibility } from '@/modules/extensions/utils/engine-comp
 import {
   getActivationEvents,
   getCommandIdParts,
+  isCommandOwnedByAnotherExtension,
   matchesCommandActivationEvent,
   shouldActivateForEvent,
   shouldActivateOnStartup,
@@ -1636,13 +1637,19 @@ export const useExtensionsStore = defineStore('extensions', () => {
     }
   }
 
+  function isCommandOwnedByAnotherEnabledExtension(commandId: string, currentExtensionId: string): boolean {
+    return isCommandOwnedByAnotherExtension(
+      commandId,
+      currentExtensionId,
+      enabledExtensions.value.map(extension => extension.id),
+    );
+  }
+
   async function activateExtensionsForCommand(commandId: string): Promise<boolean> {
     let didActivate = false;
 
     for (const extension of enabledExtensions.value) {
-      const expectedPrefix = `${extension.id}.`;
-
-      if (commandId.includes('.') && !commandId.startsWith(expectedPrefix)) {
+      if (isCommandOwnedByAnotherEnabledExtension(commandId, extension.id)) {
         continue;
       }
 
@@ -1673,9 +1680,7 @@ export const useExtensionsStore = defineStore('extensions', () => {
     }
 
     for (const extension of enabledExtensions.value) {
-      const expectedPrefix = `${extension.id}.`;
-
-      if (commandId.includes('.') && !commandId.startsWith(expectedPrefix)) {
+      if (isCommandOwnedByAnotherEnabledExtension(commandId, extension.id)) {
         continue;
       }
 

@@ -2,8 +2,9 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-import type { ExtensionManifest, ExtensionPermission, ExtensionRegistry, ExtensionRegistryEntry } from '@/types/extension';
+import type { ExtensionManifest, ExtensionRegistry, ExtensionRegistryEntry, ExtensionManifestPermissionEntry } from '@/types/extension';
 import { compareVersions } from '@/data/extensions';
+import { parseExtensionPermissions } from '@/modules/extensions/utils/parse-extension-permissions';
 
 type RegistryVersionMetadata = {
   integrity?: string;
@@ -11,20 +12,6 @@ type RegistryVersionMetadata = {
 };
 
 const EXTENSION_ID_PATTERN = /^[a-z0-9-]+\.[a-z0-9-]+$/;
-
-const VALID_PERMISSIONS: string[] = [
-  'contextMenu',
-  'sidebar',
-  'toolbar',
-  'commands',
-  'fs.read',
-  'fs.write',
-  'notifications',
-  'dialogs',
-  'shell',
-  'clipboard',
-  'openUrl',
-];
 
 const VALID_PLATFORMS = ['windows', 'macos', 'linux'] as const;
 const VALID_ARCHES = ['x64', 'arm64'] as const;
@@ -46,8 +33,18 @@ function isVersionString(value: string): boolean {
   return /^\d+\.\d+\.\d+(?:-[\w.]+)?$/.test(value);
 }
 
-function isPermissionsList(value: unknown): value is ExtensionPermission[] {
-  return Array.isArray(value) && value.every(permission => VALID_PERMISSIONS.includes(permission as ExtensionPermission));
+function isPermissionsList(value: unknown): value is ExtensionManifestPermissionEntry[] {
+  if (!Array.isArray(value)) {
+    return false;
+  }
+
+  try {
+    parseExtensionPermissions(value as ExtensionManifestPermissionEntry[]);
+    return true;
+  }
+  catch {
+    return false;
+  }
 }
 
 function isValidPlatform(value: unknown): value is (typeof VALID_PLATFORMS)[number] {

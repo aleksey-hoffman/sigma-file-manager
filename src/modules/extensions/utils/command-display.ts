@@ -7,15 +7,12 @@ import type {
   ExtensionCommand,
   InstalledExtension,
 } from '@/types/extension';
+import { getFullCommandId } from '@/modules/extensions/utils/manifest-utils';
 
 export type PaletteCommandEntry = {
   extensionId: string;
   command: ExtensionCommand;
 };
-
-function getFullCommandId(extensionId: string, commandId: string): string {
-  return commandId.includes('.') ? commandId : `${extensionId}.${commandId}`;
-}
 
 export function getPaletteCommandEntries(
   enabledExtensions: InstalledExtension[],

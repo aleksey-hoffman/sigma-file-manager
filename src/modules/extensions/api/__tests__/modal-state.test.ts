@@ -173,7 +173,7 @@ describe('modal-state', () => {
     expect(values.name).toBe('patched');
   });
 
-  it('setContent preserves existing values for matching ids', () => {
+  it('setContent preserves existing values for matching ids by default', () => {
     const handle = createModal('test.ext', createOptions());
     handle.updateElement('name', { value: 'changed' });
 
@@ -193,6 +193,22 @@ describe('modal-state', () => {
     const values = handle.getValues();
     expect(values.name).toBe('changed');
     expect(values.newField).toBe('new');
+  });
+
+  it('setContent replaces existing values when preserveValues is false', () => {
+    const handle = createModal('test.ext', createOptions());
+    handle.updateElement('name', { value: 'changed' });
+
+    handle.setContent([
+      {
+        type: 'input' as const,
+        id: 'name',
+        value: 'replaced',
+      },
+    ], { preserveValues: false });
+
+    const values = handle.getValues();
+    expect(values.name).toBe('replaced');
   });
 
   it('routes to palette when handler is registered', () => {

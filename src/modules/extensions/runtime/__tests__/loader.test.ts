@@ -176,7 +176,9 @@ describe('extension runtime loader', () => {
       ],
     ]);
 
-    expect(createExtensionAPIMock).toHaveBeenCalledWith('test.video', ['commands']);
+    expect(createExtensionAPIMock).toHaveBeenCalledWith('test.video', ['commands'], {
+      httpAllowedHosts: undefined,
+    });
     expect(initializeWorkerMock).toHaveBeenCalledWith('blob:test.video:module');
     expect(activateWorkerMock).toHaveBeenCalledWith({
       extensionId: 'test.video',

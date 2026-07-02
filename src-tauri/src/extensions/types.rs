@@ -11,6 +11,16 @@ pub static EXTENSION_MANIFEST_FILE: &str = "package.json";
 pub const MAX_EXTENSION_ARCHIVE_BYTES: u64 = 100 * 1024 * 1024;
 pub const MAX_TEXT_FETCH_BYTES: u64 = 2 * 1024 * 1024;
 pub const MAX_BINARY_DOWNLOAD_BYTES: u64 = 512 * 1024 * 1024;
+pub const MAX_EXTENSION_HTTP_RESPONSE_BYTES: u64 = 10 * 1024 * 1024;
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ExtensionHttpResponsePayload {
+    pub ok: bool,
+    pub status: u16,
+    pub headers: std::collections::HashMap<String, String>,
+    pub body: Vec<u8>,
+}
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ExtensionOperationResult {

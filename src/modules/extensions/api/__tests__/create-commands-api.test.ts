@@ -2,7 +2,9 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-import { describe, expect, it, vi } from 'vitest';
+import {
+  describe, expect, it, vi, beforeEach,
+} from 'vitest';
 import type { ExtensionCommand, ExtensionPermission } from '@/types/extension';
 import type { ExtensionContext } from '@/modules/extensions/api/extension-context';
 
@@ -68,15 +70,30 @@ function createContext(permissions: ExtensionPermission[] = []): ExtensionContex
 }
 
 describe('createCommandsAPI', () => {
+  beforeEach(() => {
+    findCommandRegistrationMock.mockReset();
+    isBuiltinCommandMock.mockReset();
+  });
+
   it('blocks cross-extension command execution', async () => {
     isBuiltinCommandMock.mockReturnValue(false);
+    findCommandRegistrationMock.mockImplementation((commandId: string) => {
+      if (commandId === 'other.extension.test-command') {
+        return {
+          extensionId: 'other.extension',
+          handler: vi.fn(),
+        };
+      }
+
+      return undefined;
+    });
 
     const commandsApi = createCommandsAPI(createContext());
 
     await expect(commandsApi.executeCommand('other.extension.test-command')).rejects.toThrow(
       'Cross-extension command execution is not allowed',
     );
-    expect(findCommandRegistrationMock).not.toHaveBeenCalled();
+    expect(findCommandRegistrationMock).toHaveBeenCalledWith('other.extension.test-command');
   });
 
   it('blocks built-in commands when the required permission is missing', async () => {
@@ -154,15 +171,22 @@ describe('createCommandsAPI', () => {
     isBuiltinCommandMock.mockReturnValue(false);
 
     const registeredHandler = vi.fn().mockResolvedValue('ok');
-    findCommandRegistrationMock.mockReturnValue({
-      extensionId: 'test.extension',
-      handler: registeredHandler,
+    findCommandRegistrationMock.mockImplementation((commandId: string) => {
+      if (commandId === 'test.extension.test-command') {
+        return {
+          extensionId: 'test.extension',
+          handler: registeredHandler,
+        };
+      }
+
+      return undefined;
     });
 
     const commandsApi = createCommandsAPI(createContext());
 
     await expect(commandsApi.executeCommand('test-command', 'value')).resolves.toBe('ok');
-    expect(findCommandRegistrationMock).toHaveBeenCalledWith('test.extension.test-command');
+    expect(findCommandRegistrationMock).toHaveBeenNthCalledWith(1, 'test-command');
+    expect(findCommandRegistrationMock).toHaveBeenNthCalledWith(2, 'test.extension.test-command');
     expect(registeredHandler).toHaveBeenCalledWith('value');
   });
 

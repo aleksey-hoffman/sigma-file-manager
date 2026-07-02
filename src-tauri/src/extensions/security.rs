@@ -96,6 +96,132 @@ pub fn validate_remote_url(url: &str) -> Result<reqwest::Url, String> {
     Ok(parsed_url)
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+enum HostPatternPort {
+    Any,
+    Exact(u16),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct HostAllowlistPattern {
+    scheme: String,
+    host: String,
+    port: HostPatternPort,
+}
+
+fn default_port_for_scheme(scheme: &str) -> u16 {
+    if scheme == "https" {
+        443
+    } else {
+        80
+    }
+}
+
+fn parse_host_allowlist_pattern(pattern: &str) -> Result<HostAllowlistPattern, String> {
+    let trimmed_pattern = pattern.trim();
+
+    if trimmed_pattern.is_empty() {
+        return Err("HTTP host pattern cannot be empty".to_string());
+    }
+
+    let (pattern_without_wildcard, wildcard_port) = if let Some(prefix) = trimmed_pattern.strip_suffix(":*") {
+        (prefix, true)
+    } else {
+        (trimmed_pattern, false)
+    };
+
+    let parsed_pattern = if wildcard_port {
+        reqwest::Url::parse(&format!("{pattern_without_wildcard}:0"))
+    } else {
+        reqwest::Url::parse(pattern_without_wildcard)
+    }
+    .map_err(|error| format!("Invalid HTTP host pattern '{}': {}", pattern, error))?;
+
+    let scheme = parsed_pattern.scheme().to_string();
+    if scheme != "http" && scheme != "https" {
+        return Err("HTTP host patterns must use http or https".to_string());
+    }
+
+    let host = parsed_pattern
+        .host_str()
+        .ok_or_else(|| format!("HTTP host pattern '{}' is missing a host", pattern))?
+        .to_ascii_lowercase();
+
+    let port = if wildcard_port {
+        HostPatternPort::Any
+    } else if let Some(explicit_port) = parsed_pattern.port() {
+        HostPatternPort::Exact(explicit_port)
+    } else {
+        HostPatternPort::Any
+    };
+
+    Ok(HostAllowlistPattern { scheme, host, port })
+}
+
+fn url_matches_host_allowlist_pattern(
+    url: &reqwest::Url,
+    pattern: &HostAllowlistPattern,
+) -> bool {
+    if url.scheme() != pattern.scheme {
+        return false;
+    }
+
+    let Some(url_host) = url.host_str() else {
+        return false;
+    };
+
+    if url_host.to_ascii_lowercase() != pattern.host {
+        return false;
+    }
+
+    match pattern.port {
+        HostPatternPort::Any => true,
+        HostPatternPort::Exact(expected_port) => {
+            url.port()
+                .unwrap_or(default_port_for_scheme(url.scheme()))
+                == expected_port
+        }
+    }
+}
+
+pub fn url_matches_host_allowlist(
+    url: &reqwest::Url,
+    allowed_hosts: &[String],
+) -> bool {
+    allowed_hosts.iter().any(|pattern_text| {
+        parse_host_allowlist_pattern(pattern_text)
+            .ok()
+            .is_some_and(|pattern| url_matches_host_allowlist_pattern(url, &pattern))
+    })
+}
+
+pub fn validate_extension_http_url(
+    url: &str,
+    allowed_hosts: Option<&[String]>,
+) -> Result<reqwest::Url, String> {
+    let parsed_url =
+        reqwest::Url::parse(url).map_err(|error| format!("Invalid URL '{}': {}", url, error))?;
+    let scheme = parsed_url.scheme();
+
+    if scheme != "https" && scheme != "http" {
+        return Err("Only http and https URLs are allowed".to_string());
+    }
+
+    if let Some(hosts) = allowed_hosts {
+        if hosts.is_empty() {
+            return Err("Access denied: HTTP host allowlist is empty".to_string());
+        }
+
+        if !url_matches_host_allowlist(&parsed_url, hosts) {
+            return Err("Access denied: target host is not allowed".to_string());
+        }
+
+        return Ok(parsed_url);
+    }
+
+    Err("Access denied: HTTP host allowlist is required".to_string())
+}
+
 fn normalize_integrity_value(value: &str) -> String {
     value
         .trim()

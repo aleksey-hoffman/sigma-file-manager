@@ -22,6 +22,7 @@ import { type ExtensionSandbox, validateExtensionCode } from './sandbox';
 import { createExtensionApiMethodMap } from '@/modules/extensions/runtime/api-method-map';
 import { createWorkerHost, type WorkerHost } from '@/modules/extensions/runtime/worker-runtime';
 import { invokeAsExtension } from '@/modules/extensions/runtime/extension-invoke';
+import { parseExtensionPermissions } from '@/modules/extensions/utils/parse-extension-permissions';
 import normalizePath from '@/utils/normalize-path';
 
 export type LoadedExtensionRuntime = {
@@ -337,7 +338,10 @@ async function loadApiExtension(
     throw new Error(`Extension ${extensionId} main file not found: ${mainFile}`);
   }
 
-  const api = createExtensionAPI(extensionId, manifest.permissions);
+  const parsedPermissions = parseExtensionPermissions(manifest.permissions);
+  const api = createExtensionAPI(extensionId, parsedPermissions.permissions, {
+    httpAllowedHosts: parsedPermissions.httpAllowedHosts,
+  });
   runtime.api = api;
   runtime.workerHost = createWorkerHost(api);
 
@@ -426,7 +430,10 @@ async function loadIframeExtension(
 
   registerManifestContributions(extensionId, manifest);
 
-  const api = createExtensionAPI(extensionId, manifest.permissions);
+  const parsedPermissions = parseExtensionPermissions(manifest.permissions);
+  const api = createExtensionAPI(extensionId, parsedPermissions.permissions, {
+    httpAllowedHosts: parsedPermissions.httpAllowedHosts,
+  });
   runtime.api = api;
 
   function messageListener(event: MessageEvent): void {

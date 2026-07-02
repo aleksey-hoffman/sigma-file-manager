@@ -134,6 +134,11 @@ export const EXTENSION_PERMISSIONS_INFO: Record<string, {
     description: 'Open web links in the default browser',
     risk: 'low',
   },
+  'http': {
+    title: 'HTTP Requests',
+    description: 'Make HTTP requests only to hosts listed in the manifest allowlist',
+    risk: 'high',
+  },
 };
 
 export const EXTENSION_TYPES_INFO: Record<string, {

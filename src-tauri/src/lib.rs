@@ -393,6 +393,7 @@ pub fn run() {
             extensions::extension_path_exists,
             extensions::run_extension_command,
             extensions::download_extension_file,
+            extensions::extension_http_request,
             extensions::start_extension_command,
             extensions::cancel_extension_command,
             extensions::cancel_all_extension_commands,

@@ -3,6 +3,7 @@
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 use super::binaries;
+use super::extension_http;
 use super::filesystem;
 use super::github;
 use super::install;
@@ -11,8 +12,9 @@ use super::paths;
 use super::processes;
 use super::state;
 use super::types::{
-    ExtensionCommandResult, ExtensionOperationResult, FetchUrlResult, InstalledExtensionInfo,
-    LocalExtensionInstallResult, LocalExtensionManifestPreview, PlatformInfo, ReadTextPreviewResult,
+    ExtensionCommandResult, ExtensionHttpResponsePayload, ExtensionOperationResult, FetchUrlResult,
+    InstalledExtensionInfo, LocalExtensionInstallResult, LocalExtensionManifestPreview, PlatformInfo,
+    ReadTextPreviewResult,
 };
 use serde::Deserialize;
 
@@ -241,6 +243,30 @@ pub async fn download_extension_file(
         file_path,
         url,
         integrity,
+        caller_extension_id,
+    )
+    .await
+}
+
+#[tauri::command]
+pub async fn extension_http_request(
+    extension_id: String,
+    url: String,
+    method: Option<String>,
+    headers: Option<std::collections::HashMap<String, String>>,
+    body: Option<Vec<u8>>,
+    timeout_ms: Option<u64>,
+    allowed_hosts: Option<Vec<String>>,
+    caller_extension_id: Option<String>,
+) -> Result<ExtensionHttpResponsePayload, String> {
+    extension_http::extension_http_request(
+        extension_id,
+        url,
+        method,
+        headers,
+        body,
+        timeout_ms,
+        allowed_hosts,
         caller_extension_id,
     )
     .await

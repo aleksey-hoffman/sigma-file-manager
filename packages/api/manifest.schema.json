@@ -226,19 +226,45 @@
       "type": "array",
       "description": "Permissions required by the extension",
       "items": {
-        "type": "string",
-        "enum": [
-          "contextMenu",
-          "sidebar",
-          "toolbar",
-          "commands",
-          "fs.read",
-          "fs.write",
-          "notifications",
-          "dialogs",
-          "shell",
-          "clipboard",
-          "openUrl"
+        "oneOf": [
+          {
+            "type": "string",
+            "enum": [
+              "contextMenu",
+              "sidebar",
+              "toolbar",
+              "commands",
+              "fs.read",
+              "fs.write",
+              "notifications",
+              "dialogs",
+              "shell",
+              "clipboard",
+              "openUrl"
+            ]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name",
+              "hosts"
+            ],
+            "properties": {
+              "name": {
+                "type": "string",
+                "const": "http"
+              },
+              "hosts": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          }
         ]
       }
     },

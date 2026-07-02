@@ -69,6 +69,21 @@ function getElementValue(element: UIElement): unknown {
   return props.values[element.id] ?? element.value;
 }
 
+function getSelectDisplayLabel(element: UIElement, value: unknown): string {
+  if (element.type !== 'select') {
+    return '';
+  }
+
+  const stringValue = String(value ?? '');
+
+  if (stringValue.length === 0) {
+    return '';
+  }
+
+  const matchedOption = element.options?.find(option => option.value === stringValue);
+  return matchedOption?.label ?? stringValue;
+}
+
 function handleValueChange(elementId: string, value: unknown): void {
   emit('valueChange', elementId, value);
 }
@@ -217,23 +232,10 @@ onMounted(() => {
   void nextTick(resizeTextareas);
 });
 
-async function scrollContentToTop(): Promise<void> {
-  await nextTick();
-  const viewport = formRootElement.value?.querySelector<HTMLElement>(
-    '[data-radix-scroll-area-viewport], .sigma-ui-scroll-area__viewport',
-  );
-
-  if (viewport) {
-    viewport.scrollTop = 0;
-  }
-}
-
 watch(
   () => props.content,
-  async () => {
-    await scrollContentToTop();
+  () => {
     resizeTextareas();
-    void focusFirstInteractiveField();
   },
   { deep: true },
 );
@@ -337,7 +339,9 @@ watch(
               @update:model-value="(value) => { if (value != null) handleValueChange(element.id!, value) }"
             >
               <SelectTrigger :id="element.id">
-                <SelectValue :placeholder="element.placeholder || 'Select an option'" />
+                <SelectValue :placeholder="element.placeholder || 'Select an option'">
+                  {{ getSelectDisplayLabel(element, getElementValue(element)) }}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem

@@ -88,4 +88,35 @@ describe('getPaletteCommandEntries', () => {
       },
     ]);
   });
+
+  it('prefixes manifest command ids that contain dots', () => {
+    const enabledExtensions: InstalledExtension[] = [
+      {
+        ...createInstalledExtension('Manifest Title'),
+        manifest: {
+          ...createInstalledExtension('Manifest Title').manifest,
+          contributes: {
+            commands: [
+              {
+                id: 'demo-http-form',
+                title: 'Demo HTTP form modal',
+              },
+            ],
+          },
+        },
+      },
+    ];
+
+    const entries = getPaletteCommandEntries(enabledExtensions, []);
+
+    expect(entries).toEqual([
+      {
+        extensionId: 'sigma.test-extension',
+        command: {
+          id: 'sigma.test-extension.demo-http-form',
+          title: 'Demo HTTP form modal',
+        },
+      },
+    ]);
+  });
 });

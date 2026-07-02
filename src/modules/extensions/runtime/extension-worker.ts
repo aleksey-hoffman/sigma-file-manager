@@ -8,6 +8,10 @@ import { pluralRules } from '@/localization/plural-rules';
 import { createRequestId } from '@/modules/extensions/runtime/worker-protocol';
 import { isExtensionInstallCancelledError } from '@/modules/extensions/utils/install-cancellation-error';
 import { cloneForWorkerMessage } from '@/modules/extensions/utils/worker-message-clone';
+import {
+  mergeModalFormValues,
+  shouldPreserveModalValues,
+} from '@/modules/extensions/utils/merge-modal-form-values';
 import type {
   HostToWorkerMessage,
   WorkerRuntimeMessage,
@@ -717,21 +721,18 @@ function createBridge() {
               }).catch(() => {});
             }).catch(() => {});
           },
-          setContent(content: unknown[]) {
-            const nextValues = initializeValues(content);
-
-            for (const key of Object.keys(nextValues)) {
-              if (Object.prototype.hasOwnProperty.call(currentValues, key)) {
-                nextValues[key] = currentValues[key];
-              }
-            }
-
-            currentValues = nextValues;
+          setContent(content: unknown[], options?: { preserveValues?: boolean }) {
+            currentValues = mergeModalFormValues(
+              initializeValues(content),
+              currentValues,
+              shouldPreserveModalValues(options),
+            );
 
             setupPromise.then(() => {
               postRequest('modal-set-content', {
                 resourceId,
                 content,
+                options,
               }).catch(() => {});
             }).catch(() => {});
           },
@@ -924,6 +925,9 @@ function createBridge() {
         }));
       },
       renamePartFilesToTs: makeCall('shell.renamePartFilesToTs'),
+    },
+    http: {
+      request: makeCall('http.request'),
     },
     settings: {
       get: makeCall('settings.get'),

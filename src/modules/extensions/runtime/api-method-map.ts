@@ -74,6 +74,7 @@ export function createExtensionApiMethodMap(api: SigmaExtensionAPI): ExtensionAp
     'ui.showModal': options => api.ui.showModal(options as never),
     'shell.run': (commandPath, args) => api.shell.run(commandPath as string, args as string[] | undefined),
     'shell.renamePartFilesToTs': directory => api.shell.renamePartFilesToTs(directory as string),
+    'http.request': options => api.http.request(options as never),
     'settings.get': key => api.settings.get(key as string),
     'settings.set': (key, value) => api.settings.set(key as string, value),
     'settings.getAll': () => api.settings.getAll(),

@@ -18,7 +18,35 @@ export type ExtensionPermission
     | 'dialogs'
     | 'shell'
     | 'clipboard'
-    | 'openUrl';
+    | 'openUrl'
+    | 'http';
+
+export interface ExtensionHttpHostPermission {
+  name: 'http';
+  hosts: string[];
+}
+
+export type ExtensionManifestPermissionEntry
+  = | ExtensionPermission
+    | ExtensionHttpHostPermission;
+
+export type ExtensionHttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'HEAD';
+
+export interface ExtensionHttpRequestOptions {
+  url: string;
+  method?: ExtensionHttpMethod;
+  query?: Record<string, string | number | boolean>;
+  headers?: Record<string, string>;
+  body?: string | Uint8Array;
+  timeoutMs?: number;
+}
+
+export interface ExtensionHttpResponse {
+  ok: boolean;
+  status: number;
+  headers: Record<string, string>;
+  body: Uint8Array;
+}
 
 export type ExtensionActivationEvent
   = | 'onStartup'
@@ -226,7 +254,7 @@ export interface ExtensionManifestBase {
   media?: ExtensionManifestMediaItem[];
   categories?: string[];
   tags?: string[];
-  permissions: ExtensionPermission[];
+  permissions: ExtensionManifestPermissionEntry[];
   activationEvents?: ExtensionActivationEvent[];
   platforms?: PlatformOS[];
   binaries?: ManifestBinaryDefinition[];
@@ -529,6 +557,10 @@ export type ListDetailSelectionChangeCallback = (itemId: string | null) => void 
 export type ListDetailSearchChangeCallback = (searchQuery: string) => void | Promise<void>;
 export type ListDetailFilterChangeCallback = (filterValue: string) => void | Promise<void>;
 
+export interface ModalSetContentOptions {
+  preserveValues?: boolean;
+}
+
 export interface ModalHandle {
   onSubmit(callback: (values: Record<string, unknown>, buttonId: string) => void | boolean | Promise<void | boolean>): void;
   onClose(callback: () => void): void;
@@ -538,7 +570,7 @@ export interface ModalHandle {
   onFilterChange(callback: ListDetailFilterChangeCallback): void;
   close(): void;
   updateElement(id: string, updates: Partial<UIElement>): void;
-  setContent(content: UIElement[]): void;
+  setContent(content: UIElement[], options?: ModalSetContentOptions): void;
   setButtons(buttons: ModalButton[]): void | Promise<void>;
   setListDetail(updates: Partial<ListDetailState>): void | Promise<void>;
   getListDetail(): ListDetailState;
@@ -779,6 +811,9 @@ export interface SigmaExtensionAPI {
       cancel: () => Promise<void>;
     }>;
     renamePartFilesToTs(directory: string): Promise<number>;
+  };
+  http: {
+    request(options: ExtensionHttpRequestOptions): Promise<ExtensionHttpResponse>;
   };
   settings: {
     get<T>(key: string): Promise<T | undefined>;

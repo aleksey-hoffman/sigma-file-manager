@@ -258,7 +258,10 @@ export async function handleEmbedBridgeMessage(
   }
 
   if (message.type === 'embed-modal-set-content' && message.modalId && message.content) {
-    hostState.modalHandles.get(message.modalId)?.setContent(message.content as never);
+    hostState.modalHandles.get(message.modalId)?.setContent(
+      message.content as never,
+      message.options as { preserveValues?: boolean } | undefined,
+    );
     return;
   }
 

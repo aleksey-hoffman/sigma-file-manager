@@ -2,6 +2,26 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
+function shouldPreserveModalValues(options) {
+  return options?.preserveValues !== false;
+}
+
+function mergeModalFormValues(nextValues, currentValues, preserveValues) {
+  if (!preserveValues) {
+    return nextValues;
+  }
+
+  const mergedValues = { ...nextValues };
+
+  for (const key of Object.keys(mergedValues)) {
+    if (Object.prototype.hasOwnProperty.call(currentValues, key)) {
+      mergedValues[key] = currentValues[key];
+    }
+  }
+
+  return mergedValues;
+}
+
 const pending = new Map();
 const toolbarHandlers = new Map();
 const clipboardChangeHandlers = new Map();
@@ -262,6 +282,9 @@ const sigma = {
   dialog: {
     openFile: options => callHost('dialog.openFile', options),
     saveFile: options => callHost('dialog.saveFile', options),
+  },
+  http: {
+    request: options => callHost('http.request', options),
   },
   fs: {
     readFile: path => callHost('fs.readFile', path),
@@ -525,16 +548,12 @@ const sigma = {
             }, '*');
           }).catch(() => {});
         },
-        setContent(content) {
-          const nextValues = initializeValues(content);
-
-          for (const key of Object.keys(nextValues)) {
-            if (Object.prototype.hasOwnProperty.call(currentValues, key)) {
-              nextValues[key] = currentValues[key];
-            }
-          }
-
-          currentValues = nextValues;
+        setContent(content, options) {
+          currentValues = mergeModalFormValues(
+            initializeValues(content),
+            currentValues,
+            shouldPreserveModalValues(options),
+          );
 
           setupPromise.then(() => {
             parent.postMessage({
@@ -542,6 +561,7 @@ const sigma = {
               type: 'embed-modal-set-content',
               modalId,
               content,
+              options,
             }, '*');
           }).catch(() => {});
         },

@@ -11,10 +11,9 @@ import {
   isBuiltinCommand,
   getBuiltinCommandDefinitions,
 } from '@/modules/extensions/builtin-commands';
+import { getFullCommandId } from '@/modules/extensions/utils/manifest-utils';
 
 export function createCommandsAPI(context: ExtensionContext) {
-  const ownCommandPrefix = `${context.extensionId}.`;
-
   return {
     registerCommand: (
       command: ExtensionCommand,
@@ -53,13 +52,14 @@ export function createCommandsAPI(context: ExtensionContext) {
         return handler(...args);
       }
 
-      const fullCommandId = commandId.includes('.') ? commandId : `${ownCommandPrefix}${commandId}`;
+      const directRegistration = findCommandRegistration(commandId);
 
-      if (!fullCommandId.startsWith(ownCommandPrefix)) {
+      if (directRegistration && directRegistration.extensionId !== context.extensionId) {
         throw new Error('Cross-extension command execution is not allowed');
       }
 
-      const registration = findCommandRegistration(fullCommandId);
+      const fullCommandId = directRegistration ? commandId : getFullCommandId(context.extensionId, commandId);
+      const registration = directRegistration ?? findCommandRegistration(fullCommandId);
 
       if (!registration) {
         throw new Error(`Command not found: ${fullCommandId}`);

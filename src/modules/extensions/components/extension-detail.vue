@@ -29,6 +29,10 @@ import ExtensionDetailControls from './extension-detail-controls.vue';
 import type { ExtensionWithManifest } from '@/modules/extensions/composables/use-extensions';
 import type { ExtensionManifest, PlatformInfo, PlatformOS } from '@/types/extension';
 import { EXTENSION_PERMISSIONS_INFO } from '@/data/extensions';
+import {
+  getManifestPermissionHosts,
+  getManifestPermissionKey,
+} from '@/modules/extensions/utils/parse-extension-permissions';
 import { getExtensionReadmeUrl, getExtensionChangelogUrl } from '@/data/extensions';
 import { formatDate } from '@/modules/navigator/components/file-browser/utils';
 import { getBinaryDisplayVersion } from '@/modules/extensions/utils/binary-metadata';
@@ -127,8 +131,8 @@ const RISK_SORT_ORDER: Record<string, number> = {
 const permissions = computed(() => {
   const permissionsList = currentManifest.value?.permissions || [];
   return [...permissionsList].sort((permissionA, permissionB) => {
-    const riskA = RISK_SORT_ORDER[getPermissionInfo(permissionA).risk] ?? 1;
-    const riskB = RISK_SORT_ORDER[getPermissionInfo(permissionB).risk] ?? 1;
+    const riskA = RISK_SORT_ORDER[getPermissionInfo(getManifestPermissionKey(permissionA)).risk] ?? 1;
+    const riskB = RISK_SORT_ORDER[getPermissionInfo(getManifestPermissionKey(permissionB)).risk] ?? 1;
     return riskA - riskB;
   });
 });
@@ -956,23 +960,29 @@ onMounted(() => {
           class="extension-detail__permissions"
         >
           <div
-            v-for="permission in permissions"
-            :key="permission"
+            v-for="(permission, permissionIndex) in permissions"
+            :key="`${getManifestPermissionKey(permission)}-${permissionIndex}`"
             class="extension-detail__permission"
           >
             <div class="extension-detail__permission-header">
               <span class="extension-detail__permission-title">
-                {{ getPermissionInfo(permission).title }}
+                {{ getPermissionInfo(getManifestPermissionKey(permission)).title }}
               </span>
               <span
                 class="extension-detail__permission-risk"
-                :class="`extension-detail__permission-risk--${getPermissionInfo(permission).risk}`"
+                :class="`extension-detail__permission-risk--${getPermissionInfo(getManifestPermissionKey(permission)).risk}`"
               >
-                {{ getPermissionInfo(permission).risk }}
+                {{ getPermissionInfo(getManifestPermissionKey(permission)).risk }}
               </span>
             </div>
             <p class="extension-detail__permission-description">
-              {{ getPermissionInfo(permission).description }}
+              {{ getPermissionInfo(getManifestPermissionKey(permission)).description }}
+            </p>
+            <p
+              v-if="getManifestPermissionHosts(permission)?.length"
+              class="extension-detail__permission-description"
+            >
+              {{ getManifestPermissionHosts(permission)?.join(', ') }}
             </p>
           </div>
         </div>

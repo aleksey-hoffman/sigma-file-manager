@@ -20,6 +20,7 @@ import { createSettingsAPI } from '@/modules/extensions/api/create-settings-api'
 import { createPlatformAPI } from '@/modules/extensions/api/create-platform-api';
 import { createBinaryAPI } from '@/modules/extensions/api/create-binary-api';
 import { createPathAPI } from '@/modules/extensions/api/create-path-api';
+import { createHttpAPI } from '@/modules/extensions/api/create-http-api';
 import { createI18nAPI, type ExtensionLocaleMessages } from '@/modules/extensions/api/create-i18n-api';
 import { isExtensionInstallCancelledError } from '@/modules/extensions/utils/install-cancellation-error';
 
@@ -33,8 +34,11 @@ export type RuntimeExtensionAPI = SigmaExtensionAPI & {
 export function createExtensionAPI(
   extensionId: string,
   permissions: ExtensionPermission[],
+  options: {
+    httpAllowedHosts?: string[];
+  } = {},
 ): RuntimeExtensionAPI {
-  const context = createExtensionContext(extensionId, permissions);
+  const context = createExtensionContext(extensionId, permissions, options);
   const commandsAPI = createCommandsAPI(context);
 
   const api: RuntimeExtensionAPI = {
@@ -48,6 +52,7 @@ export function createExtensionAPI(
     ui: createUiAPI(context),
     dialog: createDialogAPI(context, commandsAPI.executeCommand),
     shell: createShellAPI(context),
+    http: createHttpAPI(context),
     settings: createSettingsAPI(context),
     storage: createStorageAPI(context),
     platform: createPlatformAPI(),

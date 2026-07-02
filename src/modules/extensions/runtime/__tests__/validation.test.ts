@@ -406,4 +406,28 @@ describe('manifest theme validation', () => {
 
     expect(() => assertValidManifestData(manifest)).toThrow('Invalid manifest: contributes are invalid');
   });
+
+  it('accepts http permission with host allowlist', () => {
+    const manifest = {
+      ...createManifest(),
+      permissions: [
+        'commands',
+        {
+          name: 'http',
+          hosts: ['http://localhost:*', 'http://127.0.0.1:8080'],
+        },
+      ],
+    };
+
+    expect(() => assertValidManifestData(manifest)).not.toThrow();
+  });
+
+  it('rejects plain http permission without host allowlist', () => {
+    const manifest = {
+      ...createManifest(),
+      permissions: ['commands', 'http'],
+    };
+
+    expect(() => assertValidManifestData(manifest)).toThrow('Invalid manifest: permissions are invalid');
+  });
 });

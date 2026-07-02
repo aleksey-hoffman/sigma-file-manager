@@ -315,7 +315,10 @@ export function createWorkerHost(
       }
 
       if (message.type === 'modal-set-content') {
-        modalHandles.get(message.resourceId)?.setContent(message.content as never);
+        modalHandles.get(message.resourceId)?.setContent(
+          message.content as never,
+          message.options,
+        );
         reply(true);
         return;
       }

@@ -156,6 +156,9 @@ export type HostModalSetContentMessage = {
   id: string;
   resourceId: string;
   content: unknown;
+  options?: {
+    preserveValues?: boolean;
+  };
 };
 
 export type HostModalSetButtonsMessage = {

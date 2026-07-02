@@ -23,8 +23,40 @@ export type CommandIdParts = {
   shortCommandId: string;
 };
 
+export function getFullCommandId(extensionId: string, commandId: string): string {
+  const extensionPrefix = `${extensionId}.`;
+
+  if (commandId.startsWith(extensionPrefix)) {
+    return commandId;
+  }
+
+  return `${extensionPrefix}${commandId}`;
+}
+
+export function isCommandIdQualifiedForExtension(extensionId: string, commandId: string): boolean {
+  return commandId.startsWith(`${extensionId}.`);
+}
+
+export function isCommandOwnedByAnotherExtension(
+  commandId: string,
+  currentExtensionId: string,
+  extensionIds: readonly string[],
+): boolean {
+  for (const extensionId of extensionIds) {
+    if (extensionId === currentExtensionId) {
+      continue;
+    }
+
+    if (isCommandIdQualifiedForExtension(extensionId, commandId)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 export function getCommandIdParts(extensionId: string, commandId: string): CommandIdParts {
-  const fullCommandId = commandId.includes('.') ? commandId : `${extensionId}.${commandId}`;
+  const fullCommandId = getFullCommandId(extensionId, commandId);
   const prefix = `${extensionId}.`;
   const shortCommandId = fullCommandId.startsWith(prefix)
     ? fullCommandId.slice(prefix.length)

@@ -19,6 +19,10 @@ import type {
   UIElement,
 } from '@/types/extension';
 import {
+  mergeModalFormValues,
+  shouldPreserveModalValues,
+} from '@/modules/extensions/utils/merge-modal-form-values';
+import {
   hasValue,
   toPlainValues,
   initializeFormValues,
@@ -282,15 +286,13 @@ function createModalHandle(modalId: string, instance: ModalInstance): ModalHandl
         }
       }
     },
-    setContent: (content: UIElement[]) => {
+    setContent: (content: UIElement[], options?: { preserveValues?: boolean }) => {
       const mutableInstance = resolveInstance(modalId, instance);
-      const newValues = initializeFormValues(content);
-
-      for (const key of Object.keys(newValues)) {
-        if (key in mutableInstance.values) {
-          newValues[key] = mutableInstance.values[key];
-        }
-      }
+      const newValues = mergeModalFormValues(
+        initializeFormValues(content),
+        mutableInstance.values,
+        shouldPreserveModalValues(options),
+      );
 
       mutableInstance.options.content = content;
       mutableInstance.values = newValues;
