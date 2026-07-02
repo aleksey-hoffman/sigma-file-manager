@@ -14,7 +14,7 @@
     "build": "run-p type-check \"build-only {@}\" --",
     "preview": "vite preview",
     "test": "npm run test:unit:run",
-    "test:e2e": "npm run test:e2e:webdriver:skip-build",
+    "test:e2e": "npm run test:e2e:webdriver",
     "test:e2e:webdriver": "npm run test --prefix e2e-webdriver",
     "test:e2e:webdriver:skip-build": "cross-env SFM_SKIP_TAURI_BUILD_FOR_WEBDRIVER=1 npm run test --prefix e2e-webdriver",
     "test:e2e:webdriver:install-edge-driver": "npm run install-edge-driver --prefix e2e-webdriver",

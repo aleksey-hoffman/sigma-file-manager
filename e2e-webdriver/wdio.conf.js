@@ -3,10 +3,9 @@ import os from 'node:os';
 import path from 'node:path';
 import { spawn, spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { download as downloadEdgeDriver } from 'edgedriver';
+import { resolveEdgeDriverPath } from './scripts/resolve-edge-driver.mjs';
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
-const vendoredEdgeDriverPath = path.join(__dirname, '.drivers', 'msedgedriver.exe');
 
 const repoRoot = path.resolve(__dirname, '..');
 const tauriBinaryName = process.platform === 'win32' ? 'sigma-file-manager.exe' : 'sigma-file-manager';
@@ -39,6 +38,17 @@ export const config = {
 
   onPrepare: () => {
     if (process.env.SFM_SKIP_TAURI_BUILD_FOR_WEBDRIVER === '1') {
+      const distIndexPath = path.join(repoRoot, 'dist', 'index.html');
+      if (!fs.existsSync(applicationPath)) {
+        throw new Error(
+          'Missing debug SFM binary for WebDriver e2e. Run: npm run tauri -- build --debug --no-bundle',
+        );
+      }
+      if (!fs.existsSync(distIndexPath)) {
+        throw new Error(
+          'Missing frontend dist for WebDriver e2e. Run: npm run tauri -- build --debug --no-bundle',
+        );
+      }
       return;
     }
     const buildResult = spawnSync(
@@ -61,27 +71,8 @@ export const config = {
   beforeSession: async () => {
     const tauriDriverArguments = [];
     if (process.platform === 'win32') {
-      const explicitEdgeDriverPath = process.env.SFM_MS_EDGE_DRIVER_PATH;
-      if (explicitEdgeDriverPath) {
-        tauriDriverArguments.push('--native-driver', explicitEdgeDriverPath);
-      }
-      else if (fs.existsSync(vendoredEdgeDriverPath)) {
-        tauriDriverArguments.push('--native-driver', vendoredEdgeDriverPath);
-      }
-      else {
-        try {
-          const driversDirectory = path.join(__dirname, '.drivers');
-          const downloadedEdgeDriverPath = await downloadEdgeDriver(undefined, driversDirectory);
-          tauriDriverArguments.push('--native-driver', downloadedEdgeDriverPath);
-        }
-        catch (downloadError) {
-          throw new Error(
-            'Microsoft Edge WebDriver (msedgedriver.exe) is required. Add it to PATH, set SFM_MS_EDGE_DRIVER_PATH, '
-            + 'or run: npm run install-edge-driver --prefix e2e-webdriver',
-            { cause: downloadError },
-          );
-        }
-      }
+      const edgeDriverPath = await resolveEdgeDriverPath();
+      tauriDriverArguments.push('--native-driver', edgeDriverPath);
     }
     tauriDriverProcess = spawn(
       tauriDriverPath,
